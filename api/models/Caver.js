@@ -175,7 +175,6 @@ module.exports = {
     Picture_file_name: {
       type: 'string',
       defaultsTo: null
-    },
-    passports : { collection: 'Passport', via: 'user' }
+    }
   }
 };
