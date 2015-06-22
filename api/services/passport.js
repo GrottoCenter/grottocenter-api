@@ -3,7 +3,7 @@ var passport    = require('passport'),
 
 // helper functions
 function findById(id, fn) {
-  Caver.findOne(id).done( function(err, user){
+  Caver.findOne(id).exec( function(err, user){
     if (err){
       return fn(null, null);
     }else{
@@ -15,7 +15,7 @@ function findById(id, fn) {
 function findByEmail(e, fn) {
   Caver.findOne({
     Contact: e
-  }).done(function(err, user) {
+  }).exec(function(err, user) {
     // Error handling
     if (err) {
       return fn(null, null);
