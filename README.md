@@ -33,6 +33,8 @@ sails generate api caver
 
 npm install passport passport-local bcryptjs validator --save
 
+npm install --save react react-dom	
+
 ## Upgrade :
 
 sudo npm update -g sails
@@ -41,3 +43,10 @@ npm update sails-mysql
 
 ## TODO :
 Use sails-generate-auth (abandoned??) or sails-auth to manage the login process with passport.
+
+## Testing purpose
+
+npm install mocha supertest barrels sails-memory should
+
+To run tests :
+npm test 

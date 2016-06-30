@@ -33,7 +33,11 @@ module.exports.routes = {
   ***************************************************************************/
 
   '/': {
-    view: 'homepage'
+    view: 'index'
+  },
+  
+  'GET /react': {
+    view: 'react'
   },
 
   /***************************************************************************
@@ -45,6 +49,62 @@ module.exports.routes = {
   * for configuration options and examples.                                  *
   *                                                                          *
   ***************************************************************************/
-  'get /login': 'AuthController.login',
+  
+  /* Auth controller */
+
+    'GET /auth/login': {
+        controller: 'Auth',
+        action: 'login'
+    },
+
+    'GET /auth/logout': {
+        controller: 'Auth',
+        action: 'logout'
+    },
+
+    'POST /auth/validate': {
+        controller: 'Auth',
+        action: 'validate'
+    },
+
+    /* Caver controller */
+
+    'GET /caver/': {
+        controller: 'Caver',
+        action: 'index'
+    },
+
+    'GET /caver/new': {
+        controller: 'Caver',
+        action: 'new'
+    },
+
+    'POST /caver/create': {
+        controller: 'Caver',
+        action: 'create'
+    },
+
+    'GET /caver/edit/:id': {
+        controller: 'Caver',
+        action: 'edit'
+    },
+
+    'POST /caver/validate': {
+        controller: 'Caver',
+        action: 'validate'
+    },
+
+    'GET /caver/delete/:id': {
+        controller: 'Caver',
+        action: 'delete'
+    },
+
+    /* Entry controller */
+
+    'GET /entry/': {
+        controller: 'Entry',
+        action: 'index'
+    }
+	
 
 };

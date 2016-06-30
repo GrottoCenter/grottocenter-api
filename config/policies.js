@@ -26,16 +26,20 @@ module.exports.policies = {
   *                                                                          *
   ***************************************************************************/
 
-  '*': true,
+  '*': false,
+  
   CaverController: {
     '*': true,
     'update': 'sessionAuth',
     'destroy': 'sessionAuth'
   },
+  
   AuthController: {
     'login': true,
+	'validate': true,
     'logout': 'sessionAuth'
   },
+  
   EntryController: {
     '*': 'sessionAuth',
     'find': true

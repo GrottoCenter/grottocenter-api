@@ -6,6 +6,14 @@
  */
 
 module.exports = {
+
+	index: function(req, res) {
+        TEntry.find().limit(10).exec(function (err, found){
+            return res.view({
+                entrylist: found    
+            });
+        });
+    }
 	
 };
 

@@ -1,0 +1,26 @@
+<main class="mdl-layout__content">
+    <a name="top"></a>
+    
+    <div class="mdl-grid">
+        <div class="mdl-cell mdl-cell--12-col ">
+            
+            <table class="mdl-data-table mdl-js-data-table mdl-data-table--selectable mdl-shadow--2dp">
+                <tr style="text-align: left">
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Region</th>
+                    <th>Sensitive ?</th>
+                </tr>
+
+                <% _.each(entrylist, function(entry) { %>
+                <tr>
+                    <td><%= entry.id %></td>
+                    <td><%= entry.name %></td>
+                    <td><%= entry.region %></td>
+                    <td><%= entry.isSensitive %></td>
+                </tr>
+                <% }) %>
+            </table>
+        </div>
+    </div>
+</main>

@@ -1,0 +1,256 @@
+<div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+            <header class="mdl-layout__header mdl-layout__header--scroll">
+                <div class="mdl-layout__header-row mdl-layout--large-screen-only">
+
+                    <div class="mdl-grid" style="width: 100%;">
+                        <div class="mdl-cell mdl-cell--4-col" style="text-align: left;">
+                            <img src="/images/icon/fse-logo.png" alt="logo-fse">
+                            <br/>
+                            <span class="gc-fse-info">Grottocenter bénéficie du soutien de la FSE</span>
+                        </div>
+                        <div class="mdl-cell mdl-cell--8-col" style="text-align: left;">
+                            <img src="/images/logoGC.png" alt="logo-wikicaves"> 
+
+                            <h1 class="gc-sitename">Grottocenter</h1>
+                            <span class="gc-slogan">The Wiki database made by cavers for cavers</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mdl-layout__header-row">
+                    <div class="mdl-grid" style="width: 100%;">
+
+                        <i class="material-icons">map</i>
+
+                        <div>
+                            <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="switch-1">
+                                <input type="checkbox" id="switch-1" class="mdl-switch__input" checked>
+                                <span class="mdl-switch__label"></span>
+                            </label>
+                        </div>
+
+                        <div class="mdl-cell mdl-cell--3-col" style="margin-top: 25px;">
+                            <span class="mdl-layout-title">Grottocenter</span>
+                        </div>
+
+
+                    </div>
+                </div>
+
+                <div class="mdl-layout__header-row ligther-bg">
+
+                    <div class="mdl-cell mdl-cell--6-col" style="text-align: left;">
+                        <form action="#">
+                            <div class="mdl-textfield mdl-js-textfield">
+                                <input class="mdl-textfield__input" type="text" id="sample1">
+                                <label class="mdl-textfield__label" for="sample1">Je cherche...</label>
+                            </div>
+                            <button class="mdl-button mdl-button--colored mdl-js-button mdl-button--fab mdl-js-ripple-effect">
+                                <i class="material-icons md-36">search</i>
+                            </button> 
+                        </form> 
+                    </div>
+                    
+                    <div class="mdl-cell mdl-cell--6-col" style="text-align: right;">
+
+                            <% if (req.isAuthenticated()) { %>
+                            <span>Hi <%= req._passport.session.user.nickname %> ! Nice to see you back !</span>
+                            <a class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" href="/auth/logout">Se déconnecter</a>
+                            <% } else { %>
+                            <a class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" href="/caver/new">Créer&nbsp;un&nbsp;compte</a>
+                            <a class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" href="/auth/login">Se connecter</a>
+                            <% } %>
+
+                        </div>
+                </div>
+            </header>
+
+            <div class="mdl-layout__drawer mdl-layout--small-screen-only">
+                <nav class="mdl-navigation">
+                    <span class="mdl-navigation__link" href="">Languages</span>
+                    <a class="mdl-navigation__link" href="">Français</a>
+                    <a class="mdl-navigation__link" href="">English</a>
+                    <a class="mdl-navigation__link" href="">Deutsch</a>
+                    <a class="mdl-navigation__link" href="">Català</a>
+                    <a class="mdl-navigation__link" href="">italiano</a>
+                    <a class="mdl-navigation__link" href="">български</a>
+                    <a class="mdl-navigation__link" href="">Nederlands</a>
+                    <a class="mdl-navigation__link" href="">Español</a>
+                </nav>
+            </div>
+
+
+<main class="mdl-layout__content">
+    <a name="top"></a>
+
+    <div class="mdl-grid">
+        <div class="mdl-cell mdl-cell--6-col ">
+
+            <div class="gc-poc-card-wide mdl-card mdl-shadow--2dp">
+                <div class="mdl-card__title">
+                    <h2 class="mdl-card__title-text">POC Homepage</h2>
+                </div>
+                <div class="mdl-card__supporting-text">
+                    <div>
+                        <a class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" href="/caver/">Cavers management</a>
+                        <a class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" href="/entry/">Entries management</a>
+                        <a class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" href="/news/">News management</a>
+                        <a class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" href="/file/">Files management</a>
+                    </div>
+                </div>
+            </div>
+
+            <br/>
+
+            <div class="gc-news-card-wide mdl-card mdl-shadow--2dp">
+                <div class="mdl-card__title">
+                    <h2 class="mdl-card__title-text">News</h2>
+                </div>
+                <div class="mdl-card__supporting-text">
+                    By decision of the Board of Directors of the association Wikicaves dated May 12, 2013, the license of http://www.grottocenter.org has been changed from CC-BY-NC to CC-BY-SA.
+                    <br>
+                    This decision was motivated by our will to:
+                    <li>Allow a link with other open source projects through the use of compatible licenses
+                    </li>
+                    <li>Encourage users of data from GrottoCenter to share their work under the same license. Thus, the caving data will become gradually more accessible.
+                    </li>
+                    If you have added information under copyright in GrottoCenter and if you do not want this information to remain on the site under the new license, please <a href="http://en.wikicaves.org/contact">contact us</a>
+
+                </div>
+                <div class="mdl-card__actions mdl-card--border">
+                    <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect">
+                        Read more
+                    </a>
+                </div>
+            </div>
+
+            <br/>
+
+            <div class="gc-stats-card-wide mdl-card mdl-shadow--2dp">
+                <div class="mdl-card__title">
+                    <h2 class="mdl-card__title-text">GrottoCenter offers</h2>
+                </div>
+
+                <div class="mdl-card__supporting-text">
+                    <div class="mdl-grid">
+                        <div class="mdl-cell mdl-cell--3-col">
+                            <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">Connected</button>
+                        </div>
+                        <div class="mdl-cell mdl-cell--2-col">
+                            20000 <img src="/images/entry_flat32.png" title="Entries" alt="">
+                        </div>
+                        <div class="mdl-cell mdl-cell--2-col">
+                            1000 <img src="/images/club_flat32.png" title="Grottoes" alt="">
+                        </div>
+                        <div class="mdl-cell mdl-cell--2-col">
+                            1000 <img src="/images/caver_flat32.png" title="Cavers" alt="">
+                        </div>
+                        <div class="mdl-cell mdl-cell--2-col">
+                            123 <img src="/images/esp_flat32.png" title="EuroSpeleo Projects" alt="">
+                        </div>
+                    </div>
+                    <div class="mdl-grid">
+                        <div class="mdl-cell mdl-cell--3-col">
+                            <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">Not&nbsp;connected</button>
+                        </div>
+                        <div class="mdl-cell mdl-cell--2-col">
+                            40000 <img src="/images/entry_flat32.png" title="Entries" alt="">
+                        </div>
+                        <div class="mdl-cell mdl-cell--2-col">
+                            1000 <img src="/images/club_flat32.png" title="Grottoes" alt="">
+                        </div>
+                        <div class="mdl-cell mdl-cell--2-col">
+                            2000 <img src="/images/caver_flat32.png" title="Cavers" alt="">
+                        </div>
+                        <div class="mdl-cell mdl-cell--2-col">
+                            123 <img src="/images/esp_flat32.png" title="EuroSpeleo Projects" alt="">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="mdl-cell mdl-cell--6-col">
+
+            <div class="gc-entry-card-wide mdl-card mdl-shadow--2dp">
+                <div class="mdl-card__title">
+                    <h2 class="mdl-card__title-text">Pyrénées Orientales (66) - FR <a href="fichedetailleecavite.html" target="blank">Fontrabiouse (Grotte de)</a></h2>
+
+                </div>
+                <div class="mdl-card__supporting-text">
+
+                    <div>
+                        Interest : <br/>
+                        <i class="material-icons">star</i> 2 <i class="material-icons">person</i> <br/>
+                        Ease of move : <br/>
+                        <i class="material-icons">star</i> <i class="material-icons">star</i><i class="material-icons">star</i><i class="material-icons">star</i><i class="material-icons">star</i> 2 <i class="material-icons">person</i> <br/>
+                        Access : <br/>
+                        <i class="material-icons">star</i> <i class="material-icons">star</i> 2 <i class="material-icons">person</i><br/>
+                        <br/>
+                        <br/>
+                        <img src="/images/time-to-go_flat2.png" height="50" width="50" title="time to go"> 01h30<br/>
+                        <img src="/images/underground-time-flat2.png" height="50" width="50" title="underground time"> 21h30<br/>
+                        <img src="/images/length2.png" height="50" width="50" title="length"> 1245 m<br/>
+                        <img src="/images/depth2.png" height="50" width="50" title="depth"> 130 m
+                    </div>
+                    <div>
+                        <img src="/images/topo1.png" alt="plan"/>
+                    </div>
+                </div>			
+
+                <div class="mdl-card__actions mdl-card--border">
+                    <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect">
+                        Read more
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <footer class="mdl-mega-footer">
+        <div class="mdl-mega-footer--top-section">
+            <div class="mdl-mega-footer--left-section">
+                <a href="https://www.facebook.com/GrottoCenter" target="_blank"><img src="../images/icon/facebook-box.png" alt=""></a>
+
+                <a href="http://www.grottocenter.org/html/rss_Es.xml" target="_blank"><img src="../images/icon/rss-box.png" alt=""></a>
+
+                <a href="http://blog-fr.grottocenter.org/" target="_blank"><img src="../images/icon/blogger.png" alt=""></a> 
+
+                <a href="https://twitter.com/grottocenter" target="_blank"><img src="../images/icon/twitter.png" alt=""></a>
+
+                <a href="https://github.com/GrottoCenter" target="_blank"><img src="../images/icon/github.png" alt=""></a>	
+
+                <a href="modal-mail.html" data-target="#mail" data-toggle="modal" tabindex="-1" role="dialog" aria-labelledby="mail" aria-hidden="true"><img src="../images/icon/ic_contact_mail_black_48px.png" alt=""></a>
+
+                <a href="http://www.grottocenter.org//html/legal_and_privacy_En.php"><img src="../images/icon/ic_info_black_48px.png" alt=""></a>
+
+                <a href="http://www.grottocenter.org//html/bats_Fr.php"><img src="../images/icon/bats.png" alt=""></a>
+            </div>
+
+            <div class="mdl-mega-footer--right-section">
+                Published by 
+                <img height="48" src="../images/logoGC2014.png" >
+                <a href="http://www.wikicaves.org/" target="_blank">association Wikicaves</a>
+                &nbsp;
+                Support Wikicaves 
+                <img src="../images/icon/btn_donateCC_LG.gif" height="24" alt="">
+            </div>
+        </div>
+
+        <div class="mdl-mega-footer--middle-section">
+            <p class="mdl-typography--font-light">Unless stated otherwise, all text and image are available under the terms of the Creative Commons Attribution-ShareAlike 3.0 Unported. <a href="http://creativecommons.org/licenses/by-sa/3.0/fr/"
+target="_blank"><img height="24" src="../images/icon/CC-BY-SA.png" alt=""></a></p>
+            <p class="mdl-typography--font-light">
+                This site, although it may contain detailed information on caves, was not designed to facilitate the visit for none caver people. Dangers are not necessarily reported and information mentioned is not everytime verified.
+                Caving is a discipline with many facets: cultural, science and sports. In the latter capacity, it often requires a physical commitment. It is also not free of risks, and even major risks. These risks, if they can not be completely eliminated, are at least greatly reduced by a practice in the rules, practice which is fully understood when under a caving club (grotto).
+                In any case GrottoCenter and its team can not be held liable for a bad practice of caving.
+                The novice who would engage in underground exploration is urged to contact a caving club. The names and contact information can be obtained among other to the IUS (International Union of Speleology), to GrottoCenter or to his national federation.
+            </p>
+        </div>
+    </footer>
+
+</main>
+
+
+
+

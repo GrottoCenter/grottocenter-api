@@ -1,0 +1,42 @@
+<main class="mdl-layout__content">
+    <a name="top"></a>
+
+    <div class="mdl-grid">
+        <div class="mdl-cell mdl-cell--12-col ">
+            <form action="/caver/validate" method="post">
+                
+                <div class="mdl-textfield mdl-js-textfield">
+                    <input class="mdl-textfield__input" type="text" name="login" id="login" value="<%= caver.login %>" />
+                    <label class="mdl-textfield__label" for="login">Login</label>
+                </div>
+                <br/>
+                <div class="mdl-textfield mdl-js-textfield">
+                    <input class="mdl-textfield__input" type="text" name="nickname" id="nickname" value="<%= caver.nickname %>" />
+                    <label class="mdl-textfield__label" for="nickname">Nickname</label>
+                </div>
+                <br/>
+                <div class="mdl-textfield mdl-js-textfield">
+                    <input class="mdl-textfield__input" type="text" name="city" id="city" value="<%= caver.city %>" />
+                    <label class="mdl-textfield__label" for="city">City</label>
+                </div>
+                <br/>
+                <div class="mdl-textfield mdl-js-textfield">
+                    <input class="mdl-textfield__input" type="email" name="contact" id="contact" value="<%= caver.contact %>" />
+                    <label class="mdl-textfield__label" for="contact">Email</label>
+                </div>
+                <br/>
+                <div class="mdl-textfield mdl-js-textfield">
+                    <input class="mdl-textfield__input" type="password" name="password" id="password" value="<%= caver.password %>" />
+                    <label class="mdl-textfield__label" for="password">Password</label>
+                </div>
+                <br/>
+                
+                <input type="hidden" name="id" value="<%= caver.id %>" />
+                
+                <input type="hidden" name="_csrf" value="<%= _csrf %>" />
+                <input class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--colored" type="submit" value="Save changes"/>
+
+            </form>
+        </div>
+    </div>
+</main>
