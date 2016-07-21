@@ -50,3 +50,12 @@ npm install mocha supertest barrels sails-memory should
 
 To run tests :
 npm test 
+
+## Deployment
+SSH to the server
+sudo su root
+cd /var/www/Grottocenter3
+### Start
+forever start app.js
+### Stop
+forever stop app.js
