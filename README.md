@@ -35,7 +35,11 @@ npm install passport passport-local bcryptjs validator --save
 
 npm install --save react react-dom	
 
-## Upgrade :
+## JSON Web Token authentication
+
+npm install jsonwebtoken --save 
+
+## Upgrade
 
 sudo npm update -g sails
 

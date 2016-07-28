@@ -28,21 +28,35 @@ module.exports.policies = {
 
   '*': false,
   
-  CaverController: {
-    '*': true,
-    'update': 'sessionAuth',
-    'destroy': 'sessionAuth'
-  },
-  
   AuthController: {
     'login': true,
-	'validate': true,
-    'logout': 'sessionAuth'
+    'logout': 'tokenAuth'
+  },
+  
+  UiController: {
+	'index': true,
+	'cavelist': 'sessionAuth'
+  },
+  
+  CaverController: {
+    '*': true,
+    'update': 'tokenAuth',
+    'destroy': 'tokenAuth'
   },
   
   EntryController: {
-    '*': 'sessionAuth',
-    'find': true
+    '*': 'tokenAuth',
+    'find': true,
+	'findAll': true,
+	'readAll': true
+  },
+  
+  CaveController: {
+    '*': true
+  },
+  
+  AuthorController: {
+    '*': true
   }
 
   /***************************************************************************

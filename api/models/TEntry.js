@@ -27,11 +27,10 @@ module.exports = {
             columnName: 'Locked'
         },
 
-        idAuthor : {
-            type: 'integer',
-            index: true,
-            columnName: 'Id_author'
-        },
+        author : {
+			columnName: 'Id_author',
+			model: 'TCaver'
+		},
 
         idReviewer : {
             type: 'integer',
@@ -82,10 +81,10 @@ module.exports = {
         idType : {
             type: 'integer',
             unique: true,
-            primaryKey: true,
-            required: true,
             defaultsTo: '0',
-            columnName: 'Id_type'
+            columnName: 'Id_type',
+			model: 'TType',
+            via: 'id'
         },
 
         externalUrl : {
@@ -156,6 +155,12 @@ module.exports = {
         altitude : {
             type: 'float',
             columnName: 'Altitude'
-        }
+        },
+		
+		caves : {
+		  collection: 'TCave',
+		  via: 'caves',
+		  through: 'jcaveentry'
+		}
     }
 };

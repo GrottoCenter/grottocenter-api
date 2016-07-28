@@ -5,6 +5,8 @@
 * @docs        :: http://sailsjs.org/#!documentation/models
 */
 
+var crypto = require('crypto');
+
 module.exports = {
 
     tableName: 't_caver',
@@ -236,7 +238,28 @@ module.exports = {
             type: 'string',
             size: 100,
             columnName: 'Picture_file_name'
-        }
-    }
+        },
+		
+		toJSON: function () {
+			var obj = this.toObject();
+			delete obj.password; // Removing password on JSON object
+			return obj;
+		}
+    },
+	
+	beforeCreate: function(values, next) {
+		values.password = hash;
+		next();
+	},
+	
+	comparePassword: function (password, user, next) {
+		var hash = crypto.createHash('md5').update(password).digest('hex');
+		
+		if (hash == user.password) {
+			next(null, true);
+		} else {
+			next(null, false);
+		}
+	}
 };
 
