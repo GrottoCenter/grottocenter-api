@@ -35,6 +35,10 @@ npm install passport passport-local bcryptjs validator --save
 
 npm install --save react react-dom	
 
+## React + Bootstrap
+
+npm install react-bootstrap --save
+
 ## JSON Web Token authentication
 
 npm install jsonwebtoken --save 

@@ -33,7 +33,8 @@ module.exports.routes = {
   ***************************************************************************/
 
   '/': {
-    view: 'index'
+    view: 'index',
+	policy: 'localize'
   },
   
   '/build': {
@@ -73,9 +74,19 @@ module.exports.routes = {
 		action: 'index'
 	},
 	
-	'GET /ui/login': {
+	'GET /ui/test': {
 		controller: 'UI',
+		action: 'test'
+	},
+	
+	'GET /ui/login': {
+		controller: 'Ui',
 		view: 'ui/login'
+	},
+	
+	'POST /ui/validate': {
+		controller: 'Ui',
+		action: 'validate'
 	},
 	
 	'GET /ui/cavelist': {
@@ -84,22 +95,22 @@ module.exports.routes = {
 	},
 	
 	'GET /ui/cavedetail': {
-		controller: 'UI',
+		controller: 'Ui',
 		view: 'ui/cavedetail'
 	},
 	
 	'GET /ui/entrylist': {
-		controller: 'UI',
+		controller: 'Ui',
 		view: 'ui/entrylist'
 	},
 	
 	'GET /ui/entrydetail': {
-		controller: 'UI',
+		controller: 'Ui',
 		view: 'ui/entrydetail'
 	},
 	
 	'GET /ui/caver/new': {
-        controller: 'UI',
+        controller: 'Ui',
         action: 'newcaver'
     },
 

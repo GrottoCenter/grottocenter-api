@@ -11,11 +11,25 @@ module.exports = {
         return res.view();
     },
 	
+	test: function(req, res) {
+        return res.view();
+    },
+	
 	login: function(req, res) {
 		if (req.session.authenticated == true) {
             res.redirect("/ui/");
             return;
         }
+        res.view();
+	},
+	
+	validate: function(req, res) {
+		console.log("login req.body : " + req.body);
+	
+		$.post("/auth/login", req.body, function (data) {
+			console.log("login result data : " + data);
+		});
+		
         res.view();
 	},
 	

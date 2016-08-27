@@ -26,7 +26,7 @@ module.exports.policies = {
   *                                                                          *
   ***************************************************************************/
 
-  '*': false,
+  '*': false,	
   
   AuthController: {
     'login': true,
@@ -34,8 +34,13 @@ module.exports.policies = {
   },
   
   UiController: {
-	'index': true,
-	'cavelist': 'sessionAuth'
+	'*': 'localize',
+	'index': 'localize',
+	'test': 'localize',
+	'login': 'localize',
+	'validate': 'localize',
+	//'cavelist': ['sessionAuth', 'localize' ]
+	'cavelist': 'localize'
   },
   
   CaverController: {
