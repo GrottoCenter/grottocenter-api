@@ -39,6 +39,10 @@ npm install --save react react-dom
 
 npm install react-bootstrap --save
 
+# Babel
+
+npm install grunt-babel babel-preset-es2015 babel-preset-react --save
+
 ## JSON Web Token authentication
 
 npm install jsonwebtoken --save 
@@ -55,6 +59,7 @@ Use sails-generate-auth (abandoned??) or sails-auth to manage the login process 
 ## Testing purpose
 
 npm install mocha supertest barrels sails-memory should
+
 
 To run tests :
 npm test 

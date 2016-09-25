@@ -62,6 +62,10 @@ module.exports.policies = {
   
   AuthorController: {
     '*': true
+  },
+  
+  PartnerController: {
+    '*': true
   }
 
   /***************************************************************************

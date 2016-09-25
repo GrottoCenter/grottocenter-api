@@ -33,16 +33,8 @@ module.exports.routes = {
   ***************************************************************************/
 
   '/': {
-    view: 'index',
+    view: 'homepage',
 	policy: 'localize'
-  },
-  
-  '/build': {
-    view: 'homepage'
-  },
-  
-  'GET /react': {
-    view: 'react'
   },
 
   /***************************************************************************
@@ -165,6 +157,11 @@ module.exports.routes = {
         action: 'readAll'
     },
 	
+	'GET /cave/findRandom': {
+        controller: 'Cave',
+        action: 'findRandom'
+    },
+	
 	'GET /cave/:id': {
         controller: 'Cave',
         action: 'read'
@@ -205,5 +202,37 @@ module.exports.routes = {
 	'GET /author/findAll': {
         controller: 'Author',
         action: 'readAll'
+    },
+	
+	/* REST API for Partner controller */
+	
+	'POST /partner/': {
+        controller: 'Partner',
+        action: 'create'
+    },
+	
+	'GET /partner/findAll': {
+        controller: 'Partner',
+        action: 'readAll'
+    },
+	
+	'GET /partner/findForCarousel': {
+        controller: 'Partner',
+        action: 'findForCarousel'
+    },
+	
+	'GET /partner/:id': {
+        controller: 'Partner',
+        action: 'read'
+    },
+	
+	'PUT /partner/:id': {
+        controller: 'Partner',
+        action: 'update'
+    },
+	
+	'DELETE /partner/:id': {
+        controller: 'Partner',
+        action: 'delete'
     }
 };

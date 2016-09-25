@@ -3,6 +3,7 @@
  *
  * See specification: 
  */
+"use strict";
 
 var ActionButtons = React.createClass({
   render: function() {
@@ -160,8 +161,3 @@ var FilterableProductTable = React.createClass({
 	);
   }
 });
-
-ReactDOM.render(
-  React.createElement(FilterableProductTable),  
-  document.getElementById('myEntryListTable')
-);

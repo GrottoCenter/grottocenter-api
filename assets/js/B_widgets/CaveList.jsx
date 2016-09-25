@@ -3,7 +3,8 @@
  *
  * See specification: 
  */
-
+"use strict";
+ 
 var CActionButtons = React.createClass({
   render: function() {
     return (
@@ -136,8 +137,3 @@ var CFilterableProductTable = React.createClass({
 	);
   }
 });
-
-ReactDOM.render(
-  React.createElement(CFilterableProductTable),  
-  document.getElementById('myCaveListTable')
-);

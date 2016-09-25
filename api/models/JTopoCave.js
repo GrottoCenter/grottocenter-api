@@ -1,17 +1,25 @@
 /**
-* JCaveEntry.js
+* JTopoCave.js
 *
-* @description :: jCaveEntry model imported from localhost MySql server at 31/3/2016 12:7:32.
+* @description :: jTopoCave model imported from localhost MySql server at 31/3/2016 12:7:32.
 * @docs        :: http://sailsjs.org/#!documentation/models
 */
 
 
 module.exports = {
 
-  tableName: 'j_cave_entry',
+  tableName: 'j_topo_cave',
 
   attributes: {
-    caves : {
+    idTopography : {
+      type: 'integer',
+      unique: true,
+      primaryKey: true,
+      columnName: 'Id_topography',
+	  model: 'TTopography'
+    },
+	
+    idCave : {
       type: 'integer',
       unique: true,
       primaryKey: true,
@@ -19,7 +27,7 @@ module.exports = {
 	  model: 'TCave'
     },
 	
-    entries : {
+    idEntry : {
       type: 'integer',
       unique: true,
       primaryKey: true,
