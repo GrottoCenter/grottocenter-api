@@ -25,43 +25,42 @@ module.exports.policies = {
   *                                                                          *
   ***************************************************************************/
 
-  '*': false,	
-  
+  '*': false,
+
   AuthController: {
     'login': true,
     'logout': 'tokenAuth'
   },
-  
+
   UiController: {
 	'*': 'localize',
 	'index': 'localize',
-	'test': 'localize',
 	'login': 'localize',
 	'validate': 'localize',
 	//'cavelist': ['sessionAuth', 'localize' ]
 	'cavelist': 'localize'
   },
-  
+
   CaverController: {
     '*': true,
     'update': 'tokenAuth',
     'destroy': 'tokenAuth'
   },
-  
+
   EntryController: {
     '*': 'tokenAuth',
     'find': true,
 	'findAll': true
   },
-  
+
   CaveController: {
     '*': true
   },
-  
+
   AuthorController: {
     '*': true
   },
-  
+
   PartnerController: {
     '*': true
   }

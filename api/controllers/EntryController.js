@@ -9,26 +9,38 @@ module.exports = {
 	index: function(req, res) {
         TEntry.find().limit(10).exec(function (err, found){
             return res.view({
-                entrylist: found    
+                entrylist: found
             });
         });
     },
-	
+
+	find: function(req, res) {
+     TEntry.findOneById(req.params.id).populate('author').populate('caves').exec(function(err, found) {
+			 var params = {};
+ 			 params.controllerMethod = "EntryController.find";
+ 			 params.notFoundMessage = "Entry of id " + req.params.id + " not found.";
+       return ControllerService.treat(err, found, params, res);
+     });
+   },
+
 	findAll: function(req, res) {
 		var parameters = {};
 		if (req.param('name') != undefined) {
-			parameters.name = { 'like': "%" + req.param('name') + "%" };
+			parameters.name = {
+				'like': "%" + req.param('name') + "%"
+			};
 		}
 		if (req.param('region') != undefined) {
-			parameters.region = { 'like': "%" + req.param('region') + "%" };
+			parameters.region = {
+				'like': "%" + req.param('region') + "%"
+			};
 		}
-			
-		TEntry.find(parameters).populate('author').populate('caves').sort('id ASC').limit(10).exec(function (err, found){
+
+		TEntry.find(parameters).populate('author').populate('caves').sort('id ASC').limit(10).exec(function (err, found) {
 			var params = {};
 			params.controllerMethod = "EntryController.readAll";
 			params.notFoundMessage = "No entries found.";
-            return ControllerService.treat(err, found, params, res);
-        });
+      return ControllerService.treat(err, found, params, res);
+    });
 	}
 };
-

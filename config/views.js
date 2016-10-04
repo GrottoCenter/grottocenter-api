@@ -12,7 +12,6 @@
  */
 
 module.exports.views = {
-
   /****************************************************************************
   *                                                                           *
   * View engine (aka template language) to use for your app's *server-side*   *
@@ -90,6 +89,4 @@ module.exports.views = {
   ****************************************************************************/
 
   partials: false
-
-
 };

@@ -11,8 +11,6 @@
  */
 
 module.exports.sockets = {
-
-
   /***************************************************************************
   *                                                                          *
   * Node.js (and consequently Sails.js) apps scale horizontally. It's a      *
@@ -131,5 +129,4 @@ module.exports.sockets = {
 
   // More configuration options for Sails+Socket.io:
   // http://sailsjs.org/#/documentation/reference/sails.config/sails.config.sockets.html
-
 };

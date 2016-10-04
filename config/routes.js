@@ -45,7 +45,7 @@ module.exports.routes = {
   * for configuration options and examples.                                  *
   *                                                                          *
   ***************************************************************************/
-  
+
   /* Auth controller */
 
     'POST /auth/login': {
@@ -57,49 +57,29 @@ module.exports.routes = {
         controller: 'Auth',
         action: 'logout'
     },
-	
+
 	/* UI controller */
-	
+
 	'GET /ui/': {
 		controller: 'UI',
 		action: 'index'
 	},
-	
-	'GET /ui/test': {
-		controller: 'UI',
-		action: 'test'
-	},
-	
+
 	'GET /ui/login': {
 		controller: 'Ui',
 		view: 'ui/login'
 	},
-	
+
 	'POST /ui/validate': {
 		controller: 'Ui',
 		action: 'validate'
 	},
-	
+
 	'GET /ui/cavelist': {
 		controller: 'Ui',
 		action: 'cavelist'
 	},
-	
-	'GET /ui/cavedetail': {
-		controller: 'Ui',
-		view: 'ui/cavedetail'
-	},
-	
-	'GET /ui/entrylist': {
-		controller: 'Ui',
-		view: 'ui/entrylist'
-	},
-	
-	'GET /ui/entrydetail': {
-		controller: 'Ui',
-		view: 'ui/entrydetail'
-	},
-	
+
 	'GET /ui/caver/new': {
         controller: 'Ui',
         action: 'newcaver'
@@ -116,22 +96,22 @@ module.exports.routes = {
         controller: 'Caver',
         action: 'create'
     },
-	
+
 	'GET /caver/findAll': {
         controller: 'Caver',
         action: 'findAll'
     },
-	
+
 	'GET /caver/:id': {
         controller: 'Caver',
         action: 'find'
     },
-	
+
 	'PUT /caver/:id': {
         controller: 'Caver',
         action: 'update'
     },
-	
+
 	'DELETE /caver/:id': {
         controller: 'Caver',
         action: 'destroy'
@@ -143,98 +123,103 @@ module.exports.routes = {
         controller: 'Entry',
         action: 'index'
     },
-	
-	'GET /entry/findAll': {
+
+	  'GET /entry/findAll': {
         controller: 'Entry',
         action: 'findAll'
     },
-	
+
+    'GET /entry/:id': {
+        controller: 'Entry',
+        action: 'find'
+    },
+
 	/* REST API for Cave controller */
-	
+
 	'POST /cave/': {
         controller: 'Cave',
         action: 'create'
     },
-	
+
 	'GET /cave/findAll': {
         controller: 'Cave',
         action: 'findAll'
     },
-	
+
 	'GET /cave/findRandom': {
         controller: 'Cave',
         action: 'findRandom'
     },
-	
+
 	'GET /cave/:id': {
         controller: 'Cave',
         action: 'find'
     },
-	
+
 	'PUT /cave/:id': {
         controller: 'Cave',
         action: 'update'
     },
-	
+
 	'DELETE /cave/:id': {
         controller: 'Cave',
         action: 'delete'
     },
-	
+
 	/* Author controller */
 
 	'POST /author/': {
         controller: 'Author',
         action: 'create'
     },
-	
+
 	'GET /author/:id': {
         controller: 'Author',
         action: 'find'
     },
-	
+
 	'PUT /author/:id': {
         controller: 'Author',
         action: 'update'
     },
-	
+
 	'DELETE /author/:id': {
         controller: 'Author',
         action: 'delete'
     },
-	
+
 	'GET /author/findAll': {
         controller: 'Author',
         action: 'findAll'
     },
-	
+
 	/* REST API for Partner controller */
-	
+
 	'POST /partner/': {
         controller: 'Partner',
         action: 'create'
     },
-	
+
 	'GET /partner/findAll': {
         controller: 'Partner',
         action: 'findAll'
     },
-	
+
 	'GET /partner/findForCarousel': {
         controller: 'Partner',
         action: 'findForCarousel'
     },
-	
+
 	'GET /partner/:id': {
         controller: 'Partner',
         action: 'find'
     },
-	
+
 	'PUT /partner/:id': {
         controller: 'Partner',
         action: 'update'
     },
-	
+
 	'DELETE /partner/:id': {
         controller: 'Partner',
         action: 'delete'

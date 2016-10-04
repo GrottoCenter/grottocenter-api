@@ -20,7 +20,6 @@
  */
 
 module.exports.connections = {
-
   /***************************************************************************
   *                                                                          *
   * Local disk storage for DEVELOPMENT ONLY                                  *
@@ -31,7 +30,7 @@ module.exports.connections = {
   //localDiskDb: {
   //  adapter: 'sails-disk'
   //},
-  
+
   test: {
     adapter: 'sails-memory'
   },
@@ -93,5 +92,4 @@ module.exports.connections = {
   * More adapters: https://github.com/balderdashy/sails                      *
   *                                                                          *
   ***************************************************************************/
-
 };

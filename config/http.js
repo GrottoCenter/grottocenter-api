@@ -10,7 +10,6 @@
  */
 
 module.exports.http = {
-
   /****************************************************************************
   *                                                                           *
   * Express middleware to use for every Sails request. To add custom          *
