@@ -33,7 +33,7 @@ sails generate api caver
 
 npm install passport passport-local bcryptjs validator --save
 
-npm install --save react react-dom	
+npm install --save react react-dom
 
 ## React + Bootstrap
 
@@ -45,7 +45,7 @@ npm install grunt-babel babel-preset-es2015 babel-preset-react --save
 
 ## JSON Web Token authentication
 
-npm install jsonwebtoken --save 
+npm install jsonwebtoken --save
 
 ## Upgrade
 
@@ -62,7 +62,7 @@ npm install mocha supertest barrels sails-memory should
 
 
 To run tests :
-npm test 
+npm test
 
 ## Deployment
 SSH to the server
