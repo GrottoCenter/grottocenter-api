@@ -81,11 +81,6 @@ module.exports.routes = {
     action: 'cavelist'
   },
 
-  'GET /ui/entrylist': {
-    controller: 'Ui',
-    view: 'ui/entrylist'
-  },
-
   'GET /ui/caver/new': {
     controller: 'Ui',
     action: 'newcaver'
@@ -127,8 +122,14 @@ module.exports.routes = {
 
   'GET /entry/findAll': {
     controller: 'Entry',
-    action: 'readAll'
+    action: 'findAll'
   },
+
+  'GET /entry/:id': {
+    controller: 'Entry',
+    action: 'findOneById'
+  },
+
 
   /* REST API for Cave controller */
 
@@ -139,7 +140,7 @@ module.exports.routes = {
 
   'GET /cave/findAll': {
     controller: 'Cave',
-    action: 'readAll'
+    action: 'findAll'
   },
 
   'GET /cave/findRandom': {
@@ -149,7 +150,7 @@ module.exports.routes = {
 
   'GET /cave/:id': {
     controller: 'Cave',
-    action: 'read'
+    action: 'findOneById'
   },
 
   'PUT /cave/:id': {
@@ -220,8 +221,4 @@ module.exports.routes = {
     controller: 'Partner',
     action: 'delete'
   }
-};
-er: 'Partner',
-  action: 'delete'
-}
 };

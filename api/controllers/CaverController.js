@@ -6,10 +6,10 @@
  */
 
 module.exports = {
-	
-	find: function(req, res) {
-		return res.badRequest('CaverController.find not yet implemented!');
-        /*TCaver.find().sort('id DESC').limit(10).exec(function (err, found){
+
+  find: function(req, res) {
+    return res.badRequest('CaverController.find not yet implemented!');
+    /*TCaver.find().sort('id DESC').limit(10).exec(function (err, found){
 			if (err) {
                 return res.json({success: false, message: err});
             }
@@ -18,20 +18,20 @@ module.exports = {
             }
             return res.json(found);
         });*/
-    },
+  },
 
-    create: function(req, res) {
-		return res.badRequest('CaverController.create not yet implemented!');
-       /* TCaver.create(req.params.all()).exec(function (err, created) {
-            if (err) {
-                return res.json({success: false, message: err});
-                //return res.view(500, {layout: false});
-            }
-            return res.json({success: true, message: ""});
-        });*/
-    },
+  create: function(req, res) {
+    return res.badRequest('CaverController.create not yet implemented!');
+    /* TCaver.create(req.params.all()).exec(function (err, created) {
+         if (err) {
+             return res.json({success: false, message: err});
+             //return res.view(500, {layout: false});
+         }
+         return res.json({success: true, message: ""});
+     });*/
+  },
 
-	/*
+  /*
     update: function(req, res) {
         TCaver.findOneById(req.params.id).exec(function (err, foundCaver) {
             if (err) {
@@ -49,37 +49,36 @@ module.exports = {
     },
 	*/
 
-    update: function(req, res) {
-		return res.badRequest('CaverController.update not yet implemented!');
-		
-        /*TCaver.update(req.param('id'), req.params.all(), function (err) {
-            if (err) {
-                console.log(err);
-                return res.json({success: false, message: err});
-            }
-            return res.json({success: true, message: "Caver " + req.param('id') + " updated"});
-        });*/
-    },
+  update: function(req, res) {
+    return res.badRequest('CaverController.update not yet implemented!');
 
-    destroy: function(req, res) {
-		return res.badRequest('CaverController.destroy not yet implemented!');
-        /*TCaver.findOneById(req.params.id).exec(function (err, foundCaver) {
+    /*TCaver.update(req.param('id'), req.params.all(), function (err) {
+        if (err) {
+            console.log(err);
+            return res.json({success: false, message: err});
+        }
+        return res.json({success: true, message: "Caver " + req.param('id') + " updated"});
+    });*/
+  },
+
+  destroy: function(req, res) {
+    return res.badRequest('CaverController.destroy not yet implemented!');
+    /*TCaver.findOneById(req.params.id).exec(function (err, foundCaver) {
+        if (err) {
+            console.log(err);
+            return res.redirect('/caver/');
+        }
+        if (err) {
+            console.log("Caver not found");
+            return res.redirect('/caver/');
+        }
+        TCaver.destroy(foundCaver.id, function(err) {
             if (err) {
                 console.log(err);
                 return res.redirect('/caver/');
             }
-            if (err) {
-                console.log("Caver not found");
-                return res.redirect('/caver/');
-            }
-            TCaver.destroy(foundCaver.id, function(err) {
-                if (err) {
-                    console.log(err);
-                    return res.redirect('/caver/');
-                }
-                return res.redirect('/caver/');
-            });
-        });*/
-    }
+            return res.redirect('/caver/');
+        });
+    });*/
+  }
 };
-
