@@ -49,7 +49,8 @@ module.exports.policies = {
   },
 
   EntryController: {
-    '*': 'tokenAuth',
+    //'*': 'tokenAuth',
+    '*': true,
     'find': true,
     'findAll': true,
     'readAll': true
@@ -64,6 +65,10 @@ module.exports.policies = {
   },
 
   PartnerController: {
+    '*': true
+  },
+
+  I18nController: {
     '*': true
   }
 

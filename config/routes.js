@@ -220,5 +220,12 @@ module.exports.routes = {
   'DELETE /partner/:id': {
     controller: 'Partner',
     action: 'delete'
+  },
+
+  /* REST API for I18N controller */
+
+  'POST /i18n/translate': {
+    controller: 'I18nController',
+    action: 'translate'
   }
 };
