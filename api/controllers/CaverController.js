@@ -4,23 +4,9 @@
  * @description :: Server-side logic for managing cavers
  * @help        :: See http://links.sailsjs.org/docs/controllers
  */
-
+ 
 module.exports = {
-	
-	find: function(req, res) {
-		return res.badRequest('CaverController.find not yet implemented!');
-        /*TCaver.find().sort('id DESC').limit(10).exec(function (err, found){
-			if (err) {
-                return res.json({success: false, message: err});
-            }
-            if (!found) {
-                return res.json({success: false, message: "Cave of id " + req.params.id + " not found."});
-            }
-            return res.json(found);
-        });*/
-    },
-
-    create: function(req, res) {
+	create: function(req, res) {
 		return res.badRequest('CaverController.create not yet implemented!');
        /* TCaver.create(req.params.all()).exec(function (err, created) {
             if (err) {
@@ -80,6 +66,29 @@ module.exports = {
                 return res.redirect('/caver/');
             });
         });*/
-    }
+    },
+	
+	find: function(req, res) {
+		TCaver.findOneById(req.params.id).exec(function (err, found) {
+			var params = {};
+			params.controllerMethod = "CaverController.find";
+			params.notFoundMessage = "Caver of id " + req.params.id + " not found.";
+            return ControllerService.treat(err, found, params, res);
+        });
+    },
+	
+	findAll: function(req, res) {
+		var parameters = {};
+		if (req.param('name') != undefined) {
+			parameters.name = { 'like': "%" + req.param('name') + "%" };
+			sails.log.debug("parameters " + parameters.name.like);
+		}
+			
+		TCaver.find(parameters).sort('id ASC').limit(10).exec(function (err, found) {
+			var params = {};
+			params.controllerMethod = "CaverController.findAll";
+			params.notFoundMessage = "No cavers found.";
+            return ControllerService.treat(err, found, params, res);
+        });
+	}
 };
-

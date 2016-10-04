@@ -8,7 +8,6 @@
 var passport = require('passport');
 
 module.exports = {
-
     /*login: function(req, res) {
         passport.authenticate('local', function(err, user, info) {
             if ((err) || (!user)) {

@@ -18,7 +18,6 @@
 
 
 module.exports.policies = {
-
   /***************************************************************************
   *                                                                          *
   * Default policy for all controllers and actions (`true` allows public     *
@@ -52,8 +51,7 @@ module.exports.policies = {
   EntryController: {
     '*': 'tokenAuth',
     'find': true,
-	'findAll': true,
-	'readAll': true
+	'findAll': true
   },
   
   CaveController: {

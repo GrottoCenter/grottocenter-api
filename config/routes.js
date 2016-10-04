@@ -21,7 +21,6 @@
  */
 
 module.exports.routes = {
-
   /***************************************************************************
   *                                                                          *
   * Make the view located at `views/homepage.ejs` (or `views/homepage.jade`, *
@@ -118,9 +117,14 @@ module.exports.routes = {
         action: 'create'
     },
 	
+	'GET /caver/findAll': {
+        controller: 'Caver',
+        action: 'findAll'
+    },
+	
 	'GET /caver/:id': {
         controller: 'Caver',
-        action: 'findOne'
+        action: 'find'
     },
 	
 	'PUT /caver/:id': {
@@ -142,7 +146,7 @@ module.exports.routes = {
 	
 	'GET /entry/findAll': {
         controller: 'Entry',
-        action: 'readAll'
+        action: 'findAll'
     },
 	
 	/* REST API for Cave controller */
@@ -154,7 +158,7 @@ module.exports.routes = {
 	
 	'GET /cave/findAll': {
         controller: 'Cave',
-        action: 'readAll'
+        action: 'findAll'
     },
 	
 	'GET /cave/findRandom': {
@@ -164,7 +168,7 @@ module.exports.routes = {
 	
 	'GET /cave/:id': {
         controller: 'Cave',
-        action: 'read'
+        action: 'find'
     },
 	
 	'PUT /cave/:id': {
@@ -186,7 +190,7 @@ module.exports.routes = {
 	
 	'GET /author/:id': {
         controller: 'Author',
-        action: 'read'
+        action: 'find'
     },
 	
 	'PUT /author/:id': {
@@ -201,7 +205,7 @@ module.exports.routes = {
 	
 	'GET /author/findAll': {
         controller: 'Author',
-        action: 'readAll'
+        action: 'findAll'
     },
 	
 	/* REST API for Partner controller */
@@ -213,7 +217,7 @@ module.exports.routes = {
 	
 	'GET /partner/findAll': {
         controller: 'Partner',
-        action: 'readAll'
+        action: 'findAll'
     },
 	
 	'GET /partner/findForCarousel': {
@@ -223,7 +227,7 @@ module.exports.routes = {
 	
 	'GET /partner/:id': {
         controller: 'Partner',
-        action: 'read'
+        action: 'find'
     },
 	
 	'PUT /partner/:id': {

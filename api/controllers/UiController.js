@@ -6,7 +6,6 @@
  */
 
 module.exports = {
-
 	index: function(req, res) {
         return res.view();
     },
@@ -40,6 +39,5 @@ module.exports = {
 	entryList: function(req, res) {
         return res.view();
     }
-
 };
 

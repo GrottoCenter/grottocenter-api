@@ -5,24 +5,9 @@
 * @docs        :: http://sailsjs.org/#!documentation/controllers
 */
 
-
 module.exports = {
 	create: function(req, res) {
 		return res.badRequest('PartnerController.create not yet implemented!');
-	},
-	
-	read: function(req, res) {		
-		TGrotto.findOneById(req.params.id).exec(function (err, found) {
-            if (err) {
-                console.log(err);
-                return res.badRequest('PartnerController.read error: ' + err);
-            }
-            if (!found) {
-                console.log("Partner of id " + req.params.id + " not found.");
-                return res.badRequest("Partner of id " + req.params.id + " not found.");
-            }
-            return res.json(found);
-        });
 	},
 	
 	update: function(req, res) {
@@ -33,17 +18,27 @@ module.exports = {
 		return res.badRequest('PartnerController.delete not yet implemented!');
 	},
 	
-	readAll: function(req, res) {
-		TGrotto.find().sort('id ASC').exec(function (err, found){
-			if (err) {
-                console.log(err);
-                return res.badRequest('PartnerController.readAll error: ' + err);
-            }
-			if (!found) {
-                console.log("No partners found.");
-                return res.badRequest("No partners found.");
-            }
-            return res.json(found);
+	find: function(req, res) {		
+		TGrotto.findOneById(req.params.id).exec(function (err, found) {
+			var params = {};
+			params.controllerMethod = "PartnerController.find";
+			params.notFoundMessage = "Partner of id " + req.params.id + " not found.";
+            return ControllerService.treat(err, found, params);
+        });
+	},
+	
+	findAll: function(req, res) {
+		var parameters = {};
+		if (req.param('name') != undefined) {
+			parameters.name = { 'like': "%" + req.param('name') + "%" };
+			sails.log.debug("parameters " + parameters.name.like);
+		}
+		
+		TGrotto.find(parameters).sort('id ASC').exec(function (err, found) {
+			var params = {};
+			params.controllerMethod = "PartnerController.findAll";
+			params.notFoundMessage = "No partners found.";
+            return ControllerService.treat(err, found, params, res);
         });
 	},
 	
@@ -53,15 +48,10 @@ module.exports = {
 			"pictureFileName" : { "!" : null },
 			"pictureFileName" : { "!" : "" }
 		}).sort('id ASC').exec(function (err, found){
-			if (err) {
-                console.log(err);
-                return res.badRequest('PartnerController.readAll error: ' + err);
-            }
-			if (!found) {
-                console.log("No partners found.");
-                return res.badRequest("No partners found.");
-            }
-            return res.json(found);
+			var params = {};
+			params.controllerMethod = "PartnerController.findForCarousel";
+			params.notFoundMessage = "No partners found.";
+            return ControllerService.treat(err, found, params, res);
         });
 	}
 };
