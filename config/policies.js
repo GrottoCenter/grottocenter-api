@@ -20,72 +20,71 @@
 module.exports.policies = {
 
   /***************************************************************************
-  *                                                                          *
-  * Default policy for all controllers and actions (`true` allows public     *
-  * access)                                                                  *
-  *                                                                          *
-  ***************************************************************************/
+   *                                                                          *
+   * Default policy for all controllers and actions (`true` allows public     *
+   * access)                                                                  *
+   *                                                                          *
+   ***************************************************************************/
 
-  '*': false,	
-  
+  '*': false,
+
   AuthController: {
     'login': true,
     'logout': 'tokenAuth'
   },
-  
+
   UiController: {
-	'*': 'localize',
-	'index': 'localize',
-	'test': 'localize',
-	'login': 'localize',
-	'validate': 'localize',
-	//'cavelist': ['sessionAuth', 'localize' ]
-	'cavelist': 'localize'
+    '*': 'localize',
+    'index': 'localize',
+    'login': 'localize',
+    'validate': 'localize',
+    //'cavelist': ['sessionAuth', 'localize' ]
+    'cavelist': 'localize'
   },
-  
+
   CaverController: {
     '*': true,
     'update': 'tokenAuth',
     'destroy': 'tokenAuth'
   },
-  
+
   EntryController: {
     '*': 'tokenAuth',
     'find': true,
-	'findAll': true,
-	'readAll': true
+    'findAll': true,
+    'readAll': true
   },
-  
+
   CaveController: {
     '*': true
   },
-  
+
   AuthorController: {
     '*': true
   },
-  
+
   PartnerController: {
     '*': true
   }
 
   /***************************************************************************
-  *                                                                          *
-  * Here's an example of mapping some policies to run before a controller    *
-  * and its actions                                                          *
-  *                                                                          *
-  ***************************************************************************/
-	// RabbitController: {
+   *                                                                          *
+   * Here's an example of mapping some policies to run before a controller    *
+   * and its actions                                                          *
+   *                                                                          *
+   ***************************************************************************/
+  // RabbitController: {
 
-		// Apply the `false` policy as the default for all of RabbitController's actions
-		// (`false` prevents all access, which ensures that nothing bad happens to our rabbits)
-		// '*': false,
+  // Apply the `false` policy as the default for all of RabbitController's actions
+  // (`false` prevents all access, which ensures that nothing bad happens to our rabbits)
+  // '*': false,
 
-		// For the action `nurture`, apply the 'isRabbitMother' policy
-		// (this overrides `false` above)
-		// nurture	: 'isRabbitMother',
+  // For the action `nurture`, apply the 'isRabbitMother' policy
+  // (this overrides `false` above)
+  // nurture	: 'isRabbitMother',
 
-		// Apply the `isNiceToAnimals` AND `hasRabbitFood` policies
-		// before letting any users feed our rabbits
-		// feed : ['isNiceToAnimals', 'hasRabbitFood']
-	// }
+  // Apply the `isNiceToAnimals` AND `hasRabbitFood` policies
+  // before letting any users feed our rabbits
+  // feed : ['isNiceToAnimals', 'hasRabbitFood']
+  // }
 };
