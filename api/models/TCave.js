@@ -1,9 +1,9 @@
 /**
-* TCave.js
-*
-* @description :: tCave model imported from localhost MySql server at 31/3/2016 12:7:32.
-* @docs        :: http://sailsjs.org/#!documentation/models
-*/
+ * TCave.js
+ *
+ * @description :: tCave model imported from localhost MySql server at 31/3/2016 12:7:32.
+ * @docs        :: http://sailsjs.org/#!documentation/models
+ */
 
 
 module.exports = {
@@ -11,96 +11,96 @@ module.exports = {
   tableName: 't_cave',
 
   attributes: {
-    id : {
+    id: {
       type: 'integer',
       unique: true,
       primaryKey: true,
       autoIncrement: true,
       columnName: 'Id'
     },
-	
-    locked : {
+
+    locked: {
       type: 'text',
       required: true,
       defaultsTo: 'NO',
       columnName: 'Locked'
     },
-	
-    author : {
+
+    author: {
       columnName: 'Id_author',
-	  model: 'TCaver'
+      model: 'TCaver'
     },
-	
-    idReviewer : {
+
+    idReviewer: {
       type: 'integer',
       index: true,
       columnName: 'Id_reviewer'
     },
-	
-    idLocker : {
+
+    idLocker: {
       type: 'integer',
       columnName: 'Id_locker'
     },
-	
-    name : {
+
+    name: {
       type: 'string',
       size: 36,
       columnName: 'Name'
     },
-	
-    minDepth : {
+
+    minDepth: {
       type: 'float',
       columnName: 'Min_depth'
     },
-	
-    maxDepth : {
+
+    maxDepth: {
       type: 'float',
       columnName: 'Max_depth'
     },
-	
-    depth : {
+
+    depth: {
       type: 'float',
       columnName: 'Depth'
     },
-	
-    length : {
+
+    length: {
       type: 'float',
       columnName: 'Length'
     },
-	
-    isDiving : {
+
+    isDiving: {
       type: 'text',
       defaultsTo: 'NO',
       columnName: 'Is_diving'
     },
-	
-    temperature : {
+
+    temperature: {
       type: 'float',
       columnName: 'Temperature'
     },
-	
-    dateInscription : {
+
+    dateInscription: {
       type: 'datetime',
       columnName: 'Date_inscription'
     },
-	
-    dateReviewed : {
+
+    dateReviewed: {
       type: 'datetime',
       columnName: 'Date_reviewed'
     },
-	
-    dateLocked : {
+
+    dateLocked: {
       type: 'datetime',
       columnName: 'Date_locked'
     },
-	
-	entries : {
+
+    entries: {
       collection: 'TEntry',
       via: 'entries',
       through: 'jcaveentry'
     },
-	
-	topographies : {
+
+    topographies: {
       collection: 'TTopography',
       via: 'idTopography',
       through: 'jtopocave'

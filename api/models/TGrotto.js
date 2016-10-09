@@ -1,9 +1,9 @@
 /**
-* TGrotto.js
-*
-* @description :: tGrotto model imported from localhost MySql server at 31/3/2016 12:7:32.
-* @docs        :: http://sailsjs.org/#!documentation/models
-*/
+ * TGrotto.js
+ *
+ * @description :: tGrotto model imported from localhost MySql server at 31/3/2016 12:7:32.
+ * @docs        :: http://sailsjs.org/#!documentation/models
+ */
 
 
 module.exports = {
@@ -11,124 +11,124 @@ module.exports = {
   tableName: 't_grotto',
 
   attributes: {
-    id : {
+    id: {
       type: 'integer',
       unique: true,
       primaryKey: true,
       autoIncrement: true,
       columnName: 'Id'
     },
-    locked : {
+    locked: {
       type: 'text',
       required: true,
       defaultsTo: 'NO',
       columnName: 'Locked'
     },
-    idAuthor : {
+    idAuthor: {
       type: 'integer',
       index: true,
       columnName: 'Id_author'
     },
-    idReviewer : {
+    idReviewer: {
       type: 'integer',
       index: true,
       columnName: 'Id_reviewer'
     },
-    idLocker : {
+    idLocker: {
       type: 'string',
       size: 5,
       columnName: 'Id_locker'
     },
-    name : {
+    name: {
       type: 'string',
       size: 36,
       columnName: 'Name'
     },
-    country : {
+    country: {
       type: 'string',
       size: 3,
       columnName: 'Country'
     },
-    region : {
+    region: {
       type: 'string',
       size: 32,
       columnName: 'Region'
     },
-    city : {
+    city: {
       type: 'string',
       size: 32,
       columnName: 'City'
     },
-    postalCode : {
+    postalCode: {
       type: 'string',
       size: 5,
       columnName: 'Postal_code'
     },
-    address : {
+    address: {
       type: 'string',
       size: 128,
       columnName: 'Address'
     },
-    contact : {
+    contact: {
       type: 'string',
       size: 40,
       columnName: 'Contact'
     },
-    yearBirth : {
+    yearBirth: {
       type: 'string',
       size: 4,
       columnName: 'Year_birth'
     },
-    dateInscription : {
+    dateInscription: {
       type: 'datetime',
       columnName: 'Date_inscription'
     },
-    dateReviewed : {
+    dateReviewed: {
       type: 'datetime',
       columnName: 'Date_reviewed'
     },
-    dateLocked : {
+    dateLocked: {
       type: 'datetime',
       columnName: 'Date_locked'
     },
-    idPresident : {
+    idPresident: {
       type: 'integer',
       index: true,
       columnName: 'Id_president'
     },
-    idVicePresident : {
+    idVicePresident: {
       type: 'integer',
       index: true,
       columnName: 'Id_vice_president'
     },
-    idTreasurer : {
+    idTreasurer: {
       type: 'integer',
       index: true,
       columnName: 'Id_treasurer'
     },
-    idSecretary : {
+    idSecretary: {
       type: 'integer',
       index: true,
       columnName: 'Id_secretary'
     },
-    latitude : {
+    latitude: {
       type: 'float',
       columnName: 'Latitude'
     },
-    longitude : {
+    longitude: {
       type: 'float',
       columnName: 'Longitude'
     },
-    customMessage : {
+    customMessage: {
       type: 'text',
       columnName: 'Custom_message'
     },
-    pictureFileName : {
+    pictureFileName: {
       type: 'string',
       size: 100,
       columnName: 'Picture_file_name'
     },
-    isOfficialPartner : {
+    isOfficialPartner: {
       type: 'boolean',
       columnName: 'Is_official_partner'
     }
