@@ -53,7 +53,7 @@ module.exports = {
 			"pictureFileName" : {
 				"!" : ""
 			},
-			"isPartner": "YES"
+			"isOfficialPartner": "1"
 		}).sort('id ASC').exec(function (err, found){
 			var params = {};
 			params.controllerMethod = "PartnerController.findForCarousel";

@@ -127,6 +127,10 @@ module.exports = {
       type: 'string',
       size: 100,
       columnName: 'Picture_file_name'
+    },
+    isOfficialPartner : {
+      type: 'boolean',
+      columnName: 'Is_official_partner'
     }
   }
 };
