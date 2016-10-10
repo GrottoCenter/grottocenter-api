@@ -1,74 +1,122 @@
-# Grottocenter
+# Grottocenter 3
 
-a [Sails](http://sailsjs.org) application
-
-## Run the app :
-
-cd to the root of the project
-
-sails lift
-
-[http://localhost:1337/login?email=my@email.com&password=MyPassWord] : Login to the application
-[http://localhost:1337/entry] : List all entries
+The Wiki database made by cavers for cavers
+A [Sails](http://sailsjs.org) application
 
 ## Installation :
 
+### Install NodeJS
+
+Min version XYZ
+
+### Get source code
+
+GitHub repository
+https://github.com/GrottoCenter/Grottocenter3.git
+
+### Install packages
+
+    sudo npm install
+
+### Run the app
+
+    cd to the root of the project
+    sails lift
+
+Go to [http://localhost:1337/] : homepage
+
+### ATOM modules
+
+Editor used for developments
+
+and following modules :
+
+    apm install react
+    apm install atom-react-autocomplete
+    apm install atom-beautify
+    apm install keyboard-localization
+
+For atom-beautify, on settings, activate "Beautify on save" for JS, JSX, HTML and CSS
+
+## Usefull commands
+
+### Create Sails app from scratch
+
 Install nodeJS
 
-sudo npm -g install sails
+    sudo npm -g install sails
+    sails new <myApp>
 
-npm install sails-mysql passport passport-local --save
+### Add a module on package file
 
-sails new grottocenter3
+    cd /PATH/TO/<myApp>
+    npm install sails-mysql --save
 
-cd grottocenter3
+### Generate model and controller
 
-sails generate api entry
+    sails generate api entry
 
-sails generate api caver
+### Upgrade a component
 
-...
+SailsJS:
 
-???
+    sudo npm update -g sails
 
-npm install passport passport-local bcryptjs validator --save
+Any sails module:
 
-npm install --save react react-dom
+    npm update sails-mysql
 
-## React + Bootstrap
+### Run tests
 
-npm install react-bootstrap --save
+    npm test
 
-# Babel
+### Deployment
 
-npm install grunt-babel babel-preset-es2015 babel-preset-react --save
+SSH to the server
 
-## JSON Web Token authentication
+    sudo su root
+    cd /var/www/Grottocenter3
 
-npm install jsonwebtoken --save
+#### Start
+    forever start app.js
 
-## Upgrade
+#### Stop
+    forever stop app.js
 
-sudo npm update -g sails
+## Technologic choices
 
-npm update sails-mysql
+### Database
 
-## TODO :
+MySQL v5.0
+
+    npm install sails-mysql --save
+
+We use the built-in Waterline ORM
+
+### Front layer
+
+Babel
+
+    npm install grunt-babel babel-preset-es2015 babel-preset-react --save
+
+Bootstrap v3
+
+HTML5 + CSS3
+
+### JSON Web Token authentication
+
+For API access control, JWT is used
+
+    npm install jsonwebtoken --save
+
+### User authentication
+
+    npm install passport passport-local bcryptjs validator --save
+
 Use sails-generate-auth (abandoned??) or sails-auth to manage the login process with passport.
 
-## Testing purpose
+### Testing
 
-npm install mocha supertest barrels sails-memory should
+Mocha + Barrels
 
-
-To run tests :
-npm test
-
-## Deployment
-SSH to the server
-sudo su root
-cd /var/www/Grottocenter3
-### Start
-forever start app.js
-### Stop
-forever stop app.js
+    npm install mocha supertest barrels sails-memory should
