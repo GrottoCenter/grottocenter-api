@@ -32,7 +32,7 @@ var I18n = React.createClass({
 
   render: function() {
     return (
-      <span class="translated">{this.state.text}</span>
+      <span className="translated">{this.state.text}</span>
     );
   }
 });
