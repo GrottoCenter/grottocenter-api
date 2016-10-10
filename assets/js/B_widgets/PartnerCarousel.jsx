@@ -10,14 +10,15 @@ var PartnerCarouselLinks = React.createClass({
 
     var first = true;
     for (var i = 0; i < pageCount; i++) {
+      var key = "partcl-" + i;
       if (first === true) {
         pages.push(
-          <li className="active" data-target="#myCarousel" data-slide-to={i}></li>
+          <li className="active" data-target="#myCarousel" key={key} data-slide-to={i}></li>
         );
         first = false;
       } else {
         pages.push(
-          <li data-target="#myCarousel" data-slide-to={i}></li>
+          <li data-target="#myCarousel" key={key} data-slide-to={i}></li>
         );
       }
     }
@@ -34,10 +35,12 @@ var PartnerCarouselScreen = React.createClass({
   render: function() {
     var rows = [];
 
+    var i = 0;
     this.props.items.forEach(function(partner) {
       var url = "/images/partners/" + partner.pictureFileName;
+      var key = "partcs-" + i++;
       rows.push(
-        <div><img src={url} alt={partner.name} key={partner.id}/></div>
+        <div key={key}><img src={url} alt={partner.name}/></div>
       );
     });
 
@@ -69,8 +72,10 @@ var PartnerCarouselScreens = React.createClass({
       block[y].push(this.props.partners[i]);
     }
     var start = true;
+    var i = 0;
     block.forEach(function(blockItem) {
-      rows.push(<PartnerCarouselScreen items={blockItem} active={start}/>);
+      var key = "partcss-" + i++;
+      rows.push(<PartnerCarouselScreen key={key} items={blockItem} active={start}/>);
       start = false;
     });
 
