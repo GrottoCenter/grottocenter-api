@@ -65,15 +65,15 @@ module.exports.routes = {
     action: 'index'
   },
 
-  'GET /ui/login': {
+  'POST /ui/login': {
     controller: 'Ui',
-    view: 'ui/login'
+    action: 'login'
   },
 
-  'POST /ui/validate': {
+  /*'POST /ui/validate': {
     controller: 'Ui',
     action: 'validate'
-  },
+  },*/
 
   'GET /ui/cavelist': {
     controller: 'Ui',
@@ -223,5 +223,12 @@ module.exports.routes = {
   'DELETE /partner/:id': {
     controller: 'Partner',
     action: 'delete'
+  },
+
+  /* REST API for I18N controller */
+
+  'POST /i18n/translate': {
+    controller: 'I18nController',
+    action: 'translate'
   }
 };
