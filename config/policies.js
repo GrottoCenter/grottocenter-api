@@ -63,6 +63,10 @@ module.exports.policies = {
 
   PartnerController: {
     '*': true
+  },
+
+  I18nController: {
+    '*': true
   }
 
   /***************************************************************************
