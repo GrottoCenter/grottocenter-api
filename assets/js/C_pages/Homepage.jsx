@@ -176,5 +176,3 @@ var Homepage = React.createClass({
     );
   }
 });
-
-ReactDOM.render(React.createElement(Homepage, null), document.getElementById('homepage_wrapper'));
