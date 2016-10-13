@@ -35,6 +35,7 @@ and following modules :
     apm install atom-react-autocomplete
     apm install atom-beautify
     apm install keyboard-localization
+    apm install editorconfig
 
 For atom-beautify, on settings, activate "Beautify on save" for JS, JSX, HTML and CSS
 
