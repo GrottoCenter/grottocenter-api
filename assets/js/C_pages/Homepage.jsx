@@ -126,7 +126,7 @@ var HomepageFooter = React.createClass({
               <a href="https://twitter.com/grottocenter" target="_blank"><img src="/images/twitter.png" alt=""/></a>
             </div>
             <div className="col-xs-3 infos">
-              <a href="https://github.com/GrottoCenter" target="_blank"><img src="/images/icon/github.png" alt=""/></a>
+              <a href="https://github.com/GrottoCenter" target="_blank"><img src="/images/github.png" alt=""/></a>
               <a href="modal-mail.html" data-target="#mail" data-toggle="modal" tabindex="-1" role="dialog" aria-labelledby="mail" aria-hidden="true"><img src="/images/icon/ic_contact_mail_black_48px.png" alt=""/></a>
               <a href="http://www.grottocenter.org//html/legal_and_privacy_En.php"><img src="/images/ic_info_black_48px.png" alt=""/></a>
               <a href="http://www.grottocenter.org//html/bats_Fr.php"><img src="/images/bats.svg" alt=""/></a>
