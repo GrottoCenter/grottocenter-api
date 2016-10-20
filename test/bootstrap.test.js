@@ -1,5 +1,5 @@
-var sails = require('sails');
-var Barrels = require('barrels');
+let sails = require('sails');
+let Barrels = require('barrels');
 
 before(function(done) {
 
@@ -12,23 +12,23 @@ before(function(done) {
     },
     models: {
       connection: 'test',
-      migrate: 'drop'	
+      migrate: 'drop'
     },
-	csrf: false,
+    csrf: false,
   }, function(err, server) {
     if (err) return done(err);
     // here you can load fixtures, etc.
-	
-	// Load fixtures
-    var barrels = new Barrels();
+
+    // Load fixtures
+    let barrels = new Barrels();
 
     // Save original objects in `fixtures` variable
     fixtures = barrels.data;
 
     // Populate the DB
-	barrels.populate(function(err) {
-		done(err, sails);
-	});
+    barrels.populate(function(err) {
+      done(err, sails);
+    });
   });
 });
 

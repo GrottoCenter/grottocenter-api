@@ -1,4 +1,4 @@
-var request = require('supertest');
+let request = require('supertest');
 
 describe('AuthController', function() {
 

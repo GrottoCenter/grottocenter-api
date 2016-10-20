@@ -12,20 +12,20 @@ module.exports = {
 
   /*login: function(req, res) {
     if (req.session.authenticated == true) {
-      res.redirect("/ui/");
+      res.redirect('/ui/');
       return;
     }
     res.view();
   },*/
 
   login: function(req, res) {
-    console.log("login req.body : " + req.body.contact);
+    console.log('login req.body : ' + req.body.contact);
 
-    req.post("/auth/login", req.body, function(data) {
-      console.log("login result data : " + data);
+    req.post('/auth/login', req.body, function(data) {
+      console.log('login result data : ' + data);
     });
 
-    res.redirect("/");
+    res.redirect('/');
   },
 
   cavelist: function(req, res) {

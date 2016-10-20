@@ -2,13 +2,13 @@ var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
 
 function find(sessionUser, fn) {
-    TCaver.findById(sessionUser.id, function (err, user) {
-        if (err) {
-            return fn(null, null);
-        } else {
-            return fn(null, user);
-        }
-    });
+  TCaver.findById(sessionUser.id, function(err, user) {
+    if (err) {
+      return fn(null, null);
+    } else {
+      return fn(null, user);
+    }
+  });
 }
 
 function md5(string) {
@@ -28,38 +28,40 @@ function getOldGCpassword(login, password) {
 }
 
 function verifyPassword(user, password) {
-    var hash = getOldGCpassword(user.Login, password);
-    console.log(hash);
-    
-    return (user.password == password);
+  var hash = getOldGCpassword(user.Login, password);
+  console.log(hash);
+
+  return (user.password == password);
 }
 
-passport.serializeUser(function (user, done) {
-    done(null, user);
+passport.serializeUser(function(user, done) {
+  done(null, user);
 });
 
-passport.deserializeUser(function (user, done) {
-    find(user, function (err, user) {
-        done(err, user);
-    });
+passport.deserializeUser(function(user, done) {
+  find(user, function(err, user) {
+    done(err, user);
+  });
 });
 
 passport.use(new LocalStrategy(
-    { 
-        usernameField: 'contact'
-    },
-    function(username, password, done) {
-        TCaver.findOne({ contact: username }, function (err, user) {
-            if (err) { 
-                return done(err);
-            }
-            if (!user) { 
-                return done(null, false); 
-            }
-            if (!verifyPassword(user, password)) { 
-                return done(null, false); 
-            }
-            return done(null, user);
-        });
-    }
+  {
+    usernameField: 'contact'
+  },
+  function(username, password, done) {
+    TCaver.findOne({
+      contact: username
+    }, function(err, user) {
+      if (err) {
+        return done(err);
+      }
+      if (!user) {
+        return done(null, false);
+      }
+      if (!verifyPassword(user, password)) {
+        return done(null, false);
+      }
+      return done(null, user);
+    });
+  }
 ));

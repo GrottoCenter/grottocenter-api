@@ -1,84 +1,84 @@
 /**
-* TTopography.js
-*
-* @description :: tTopography model imported from localhost MySql server at 31/3/2016 12:7:32.
-* @docs        :: http://sailsjs.org/#!documentation/models
-*/
+ * TTopography.js
+ *
+ * @description :: tTopography model imported from localhost MySql server at 31/3/2016 12:7:32.
+ * @docs        :: http://sailsjs.org/#!documentation/models
+ */
 
 module.exports = {
 
   tableName: 't_topography',
 
   attributes: {
-    id : {
+    id: {
       type: 'integer',
       unique: true,
       primaryKey: true,
       autoIncrement: true,
       columnName: 'Id'
     },
-	
-    idAuthor : {
+
+    idAuthor: {
       type: 'integer',
       columnName: 'Id_author'
     },
-	
-    dateInscription : {
+
+    dateInscription: {
       type: 'datetime',
       columnName: 'Date_inscription'
     },
-	
-    idRequest : {
+
+    idRequest: {
       type: 'integer',
       columnName: 'Id_request'
     },
-	
-    isPublic : {
+
+    isPublic: {
       type: 'text',
       required: true,
       defaultsTo: 'YES',
       columnName: 'Is_public'
     },
-	
-    removeNorth : {
+
+    removeNorth: {
       type: 'text',
       required: true,
       defaultsTo: 'NO',
       columnName: 'Remove_north'
     },
-	
-    removeScale : {
+
+    removeScale: {
       type: 'text',
       required: true,
       defaultsTo: 'NO',
       columnName: 'Remove_scale'
     },
-	
-    distortTopo : {
+
+    distortTopo: {
       type: 'text',
       required: true,
       defaultsTo: 'NO',
       columnName: 'Distort_topo'
     },
-	
-    enabled : {
+
+    enabled: {
       type: 'text',
       required: true,
       defaultsTo: 'NO',
       columnName: 'Enabled'
     },
-	
-    enabledBack : {
+
+    enabledBack: {
       type: 'text',
       required: true,
       defaultsTo: 'NO',
       columnName: 'Enabled_back'
     },
-	
-	files: {
-	  collection: 'TFile',
+
+    files: {
+      collection: 'TFile',
       via: 'idFile',
       through: 'jtopofile'
-	}
+    }
   }
 };

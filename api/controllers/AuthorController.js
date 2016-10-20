@@ -6,24 +6,23 @@
  */
 
 module.exports = {
-	create: function(req, res) {
-		return res.badRequest('AuthorController.create not yet implemented!');
-	},
-	
-	update: function(req, res) {
-		return res.badRequest('AuthorController.update not yet implemented!');
-	},
-	
-	delete: function(req, res) {
-		return res.badRequest('AuthorController.delete not yet implemented!');
-	},
-	
-	find: function(req, res) {		
-		return res.badRequest('AuthorController.find not yet implemented!');
-	},
-	
-	findAll: function(req, res) {
-		return res.badRequest('AuthorController.findAll not yet implemented!');
-	}
-};
+  create: function(req, res) {
+    return res.badRequest('AuthorController.create not yet implemented!');
+  },
 
+  update: function(req, res) {
+    return res.badRequest('AuthorController.update not yet implemented!');
+  },
+
+  delete: function(req, res) {
+    return res.badRequest('AuthorController.delete not yet implemented!');
+  },
+
+  find: function(req, res) {
+    return res.badRequest('AuthorController.find not yet implemented!');
+  },
+
+  findAll: function(req, res) {
+    return res.badRequest('AuthorController.findAll not yet implemented!');
+  }
+};

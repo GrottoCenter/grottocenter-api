@@ -1,4 +1,4 @@
-var should = require('should');
+let should = require('should');
 
 describe('TCaverModel', function() {
 
@@ -7,8 +7,8 @@ describe('TCaverModel', function() {
       TCaver.find()
       .then(function(results) {
         //fixtures['cavers'].length.should.be.greaterThan(0);
-		this.should.equal(results.length, results.length, "result size must be equals to " + fixtures['cavers'].length);
-		console.log("XXXXXXXXXXXXXXXX " + results.length);
+        this.should.equal(results.length, results.length, 'result size must be equals to ' + fixtures['cavers'].length);
+        console.log('XXXXXXXXXXXXXXXX ' + results.length);
         done();
       })
       .catch(done);

@@ -21,8 +21,8 @@ module.exports = {
   find: function(req, res) {
     TGrotto.findOneById(req.params.id).exec(function(err, found) {
       var params = {};
-      params.controllerMethod = "PartnerController.find";
-      params.notFoundMessage = "Partner of id " + req.params.id + " not found.";
+      params.controllerMethod = 'PartnerController.find';
+      params.notFoundMessage = 'Partner of id ' + req.params.id + ' not found.';
       return ControllerService.treat(err, found, params);
     });
   },
@@ -31,35 +31,35 @@ module.exports = {
     var parameters = {};
     if (req.param('name') != undefined) {
       parameters.name = {
-        'like': "%" + req.param('name') + "%"
+        'like': '%' + req.param('name') + '%'
       };
-      sails.log.debug("parameters " + parameters.name.like);
+      sails.log.debug('parameters ' + parameters.name.like);
     }
 
     TGrotto.find(parameters).sort('id ASC').exec(function(err, found) {
       var params = {};
-      params.controllerMethod = "PartnerController.findAll";
-      params.notFoundMessage = "No partners found.";
+      params.controllerMethod = 'PartnerController.findAll';
+      params.notFoundMessage = 'No partners found.';
       return ControllerService.treat(err, found, params, res);
     });
   },
 
   findForCarousel: function(req, res) {
     TGrotto.find().where({
-      "customMessage": {
-        "!": null
+      'customMessage': {
+        '!': null
       },
-      "pictureFileName": {
-        "!": null
+      'pictureFileName': {
+        '!': null
       },
-      "pictureFileName": {
-        "!": ""
+      'pictureFileName': {
+        '!': ''
       },
-      "isOfficialPartner": "1"
+      'isOfficialPartner': '1'
     }).sort('id ASC').exec(function(err, found) {
       var params = {};
-      params.controllerMethod = "PartnerController.findForCarousel";
-      params.notFoundMessage = "No partners found.";
+      params.controllerMethod = 'PartnerController.findForCarousel';
+      params.notFoundMessage = 'No partners found.';
       return ControllerService.treat(err, found, params, res);
     });
   }
