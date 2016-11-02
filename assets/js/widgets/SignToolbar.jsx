@@ -2,21 +2,7 @@
 
 var SignToolbar = React.createClass({
   getInitialState: function() {
-    return {showPopup: false, logged: false, csrf: ""};
-  },
-
-  componentWillMount: function() {
-    this.fetchData({});
-  },
-
-  fetchData: function(filters) {
-    $.ajax({
-      url: "/csrfToken",
-      dataType: 'json',
-      success: function(data) {
-        this.setState({csrf: data._csrf});
-      }.bind(this)
-    });
+    return {contact: "", password: "", showPopup: false, logged: false, nickname: ""};
   },
 
   togglePopup: function() {
@@ -25,9 +11,29 @@ var SignToolbar = React.createClass({
     });
   },
 
-  processLogin: function(form) {
-    console.log("form");
-    console.log(form);
+  processLogin: function() {
+    var _this = this;
+    $.ajax({
+      url: "/csrfToken",
+      dataType: 'json',
+      success: function(data) {
+        $.post('/auth/login', {
+          contact: this.state.contact,
+          password: this.state.password,
+          _csrf: data._csrf
+        }, function(userData) {
+          _this.setState({nickname: userData.user.nickname, logged: true, showPopup: false});
+        });
+      }.bind(this)
+    });
+  },
+
+  handleContact: function(event) {
+    this.setState({contact: event.target.value});
+  },
+
+  handlePassword: function(event) {
+    this.setState({password: event.target.value});
   },
 
   render: function() {
@@ -39,9 +45,8 @@ var SignToolbar = React.createClass({
     if (this.state.logged) {
       return (
         <div>
-          <span><I18n label="Welcome in"/>
-            man!</span>
           <div className="button">
+            <span className="hello-msg"><I18n label="Welcome in"/> {this.state.nickname}!</span>
             <a className="btn btn-success" href="#">
               <I18n label="Sign out"/>
             </a>
@@ -62,21 +67,19 @@ var SignToolbar = React.createClass({
           <div className="loginForm" style={{
             display: displayLoginPopupCss
           }}>
-            <form method="post" onSubmit={this.processLogin}>
-              <div className="form-group">
-                <label htmlFor="contact"><I18n label="Email"/></label>
-                <input className="form-control" type="email" name="contact" id="contact" placeholder="Email"/>
-              </div>
+            <div className="form-group">
+              <label htmlFor="contact"><I18n label="Email"/></label>
+              <input className="form-control" type="email" name="contact" id="contact" placeholder="Email" value={this.state.contact} onChange={this.handleContact}/>
+            </div>
 
-              <div className="form-group">
-                <label htmlFor="password"><I18n label="Password"/></label>
-                <input className="form-control" type="password" name="password" id="password" placeholder="Password"/>
-              </div>
+            <div className="form-group">
+              <label htmlFor="password"><I18n label="Password"/></label>
+              <input className="form-control" type="password" name="password" id="password" placeholder="Password" value={this.state.password} onChange={this.handlePassword}/>
+            </div>
 
-              <input type="hidden" name="_csrf" value={this.state.csrf}/>
+            <input type="hidden" name="_csrf" value={this.state.csrf}/>
 
-              <input className="btn btn-default" type="submit" value="Log in GC"/>
-            </form>
+            <button className="btn btn-default" onClick={this.processLogin}>Log in GC</button>
           </div>
         </div>
       );

@@ -34,6 +34,11 @@ header div.toolbar {
   padding: 5px 0px;
 }
 
+header .hello-msg {
+  color: white;
+  font-weight: bold;
+}
+
 header .toolbar .button {
   text-align: right;
 }
