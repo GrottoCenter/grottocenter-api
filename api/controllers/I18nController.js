@@ -7,6 +7,7 @@
 
 module.exports = {
   translate: function(req, res) {
+    req.setLocale(req.session.languagePreference);
     return res.json(req.__(req.param('label')));
   }
 };
