@@ -36,6 +36,10 @@ module.exports.routes = {
     policy: 'localize'
   },
 
+  '/test_mdl': {
+    view: 'test_mdl'
+  },
+
   /***************************************************************************
    *                                                                          *
    * Custom routes here...                                                    *

@@ -84,3 +84,7 @@ var SearchBar = React.createClass({
     );
   }
 });
+ReactDOM.render(
+  <SearchBar/>,
+  document.getElementById('searchbar_test')
+);
