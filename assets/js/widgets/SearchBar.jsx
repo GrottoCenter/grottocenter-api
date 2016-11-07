@@ -7,7 +7,7 @@ var ProposalEntry = React.createClass({
     this.props.data.forEach(function(item) {
       var linkToItem = _this.props.baseUrl + "/" + item.id;
       rows.push(
-        <dd key={item.id}>
+        <dd>
           <a href={linkToItem}>{item.name}</a>
         </dd>
       );
@@ -58,10 +58,10 @@ var SearchBar = React.createClass({
     var proposal = [];
 
     if (this.state.caveResult.length > 0) {
-      proposal.push(<ProposalEntry key="caves" title="Cave" baseUrl="/ui/cavedetail/" data={this.state.caveResult}/>);
+      proposal.push(<ProposalEntry title="Cave" baseUrl="/ui/cavedetail/" data={this.state.caveResult}/>);
     }
     if (this.state.entryResult.length > 0) {
-      proposal.push(<ProposalEntry key="entries" title="Entry" baseUrl="/ui/entrydetail/" data={this.state.entryResult}/>);
+      proposal.push(<ProposalEntry title="Entry" baseUrl="/ui/entrydetail/" data={this.state.entryResult}/>);
     }
 
     var display = "none";

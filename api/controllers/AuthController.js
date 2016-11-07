@@ -28,8 +28,7 @@ module.exports = {
   login: function(req, res) {
     var contact = req.param('contact');
     var password = req.param('password');
-    console.log("ppppppppppppppppp",req.param);
-console.log("ssssssssssss",password);
+
     if (!contact || !password) {
       return res.forbidden(res.i18n('BAD_CREDENTIAL'));
     }
