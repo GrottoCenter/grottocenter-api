@@ -129,6 +129,11 @@ module.exports.routes = {
     action: 'findAll'
   },
 
+  'GET /entry/findRandom': {
+    controller: 'Entry',
+    action: 'findRandom'
+  },
+
   'GET /entry/:id': {
     controller: 'Entry',
     action: 'find'
@@ -144,11 +149,6 @@ module.exports.routes = {
   'GET /cave/findAll': {
     controller: 'Cave',
     action: 'findAll'
-  },
-
-  'GET /cave/findRandom': {
-    controller: 'Cave',
-    action: 'findRandom'
   },
 
   'GET /cave/:id': {

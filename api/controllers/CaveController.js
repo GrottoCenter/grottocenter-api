@@ -7,6 +7,7 @@
 
 module.exports = {
   create: function(req, res) {
+    test
     return res.badRequest('CaveController.create not yet implemented!');
   },
 
@@ -39,15 +40,6 @@ module.exports = {
     TCave.find(parameters).populate('author').populate('entries').sort('id ASC').limit(10).exec(function(err, found) {
       var params = {};
       params.controllerMethod = 'CaveController.findAll';
-      params.notFoundMessage = 'No caves found.';
-      return ControllerService.treat(err, found, params, res);
-    });
-  },
-
-  findRandom: function(req, res) {
-    TCave.find().populate('author').populate('entries').sort('id ASC').limit(1).exec(function(err, found) {
-      var params = {};
-      params.controllerMethod = 'CaveController.findRandom';
       params.notFoundMessage = 'No caves found.';
       return ControllerService.treat(err, found, params, res);
     });

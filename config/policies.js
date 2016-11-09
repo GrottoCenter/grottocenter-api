@@ -55,7 +55,8 @@ module.exports.policies = {
   EntryController: {
     '*': 'tokenAuth',
     'find': true,
-    'findAll': true
+    'findAll': true,
+    'findRandom': true
   },
 
   CaveController: {

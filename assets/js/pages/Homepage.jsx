@@ -87,7 +87,7 @@ var HomepageArticles = React.createClass({
                 <HomepageCards/>
               </div>
               <div className="col-xs-12 col-md-6">
-                <RandomCaveCard/>
+                <RandomEntryCard/>
               </div>
             </div>
           </div>
