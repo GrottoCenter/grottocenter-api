@@ -81,6 +81,7 @@ Let base: master and compare: the branch
 Create the pull request
 
 After contribution (that can include follow-up commits), branch can be merged on master with button "Merge pull request"
+In most ways, change the "Merge pull request" to "Rebase and merge" using the arrow on the right of the green button
 
 ### Deployment
 
