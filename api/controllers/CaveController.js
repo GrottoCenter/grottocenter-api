@@ -7,7 +7,6 @@
 
 module.exports = {
   create: function(req, res) {
-    test
     return res.badRequest('CaveController.create not yet implemented!');
   },
 
