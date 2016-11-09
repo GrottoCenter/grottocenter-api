@@ -71,6 +71,17 @@ Any sails module:
 
     npm test
 
+### GIT usage
+
+#### Commit
+
+Commits must be done on specific branch.
+On GitHub, on "Pull request" tab (https://github.com/GrottoCenter/Grottocenter3/pulls), create a pull request (New pull request)
+Let base: master and compare: the branch
+Create the pull request
+
+After contribution (that can include follow-up commits), branch can be merged on master with button "Merge pull request"
+
 ### Deployment
 
 SSH to the server
