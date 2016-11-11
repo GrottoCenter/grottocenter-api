@@ -46,6 +46,8 @@
   "author": "bsoufflet",
   "license": "",
   "devDependencies": {
-    "sails-hook-lint": "^1.1.1"
+    "sails-hook-lint": "^1.1.1",
+    "sails-swagger": "^0.5.1",
+    "swagger-ui": "^2.2.6"
   }
 }
