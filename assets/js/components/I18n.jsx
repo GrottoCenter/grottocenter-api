@@ -1,5 +1,7 @@
-"use strict";
-
+/**
+ * TODO Add comment
+ */
+ 
 var I18n = React.createClass({
   displayName: 'I18n helper',
 

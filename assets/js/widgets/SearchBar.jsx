@@ -1,4 +1,6 @@
-"use strict";
+/**
+ * TODO Add comment
+ */
 
 var ProposalEntry = React.createClass({
   render: function() {

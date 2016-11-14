@@ -1,5 +1,7 @@
-"use strict";
-
+/**
+ * TODO Add comment
+ */
+ 
 var HomepageController = React.createClass({
   displayName: 'Homepage controller',
 
