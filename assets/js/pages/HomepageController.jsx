@@ -10,8 +10,6 @@ var HomepageController = React.createClass({
   componentDidMount: function() {},
 
   render: function() {
-    return <Homepage/>;
+    return <HomepageFlat/>;
   }
 });
-
-ReactDOM.render(React.createElement(HomepageController, null), document.getElementById('homepage_wrapper'));

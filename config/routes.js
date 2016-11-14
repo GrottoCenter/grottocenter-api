@@ -205,6 +205,11 @@ module.exports.routes = {
     action: 'findAll'
   },
 
+  'GET /partner/findForCarousel/:skip/:limit': {
+    controller: 'Partner',
+    action: 'findForCarousel'
+  },
+
   'GET /partner/findForCarousel': {
     controller: 'Partner',
     action: 'findForCarousel'
