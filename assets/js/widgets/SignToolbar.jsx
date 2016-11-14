@@ -1,4 +1,6 @@
-"use strict";
+/**
+ * TODO Add comment
+ */
 
 var SignToolbar = React.createClass({
   getInitialState: function() {

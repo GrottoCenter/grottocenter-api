@@ -1,4 +1,6 @@
-"use strict";
+/**
+ * TODO Add comment
+ */
 
 var MyCommentBox = React.createClass({
     displayName: 'MyCommentBox',

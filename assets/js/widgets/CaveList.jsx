@@ -3,7 +3,6 @@
  *
  * See specification:
  */
-"use strict";
 
 var CActionButtons = React.createClass({
   render: function() {

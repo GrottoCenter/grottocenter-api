@@ -1,5 +1,7 @@
-"use strict";
-
+/**
+ * TODO Add comment
+ */
+ 
 var HomepageHeader = React.createClass({
   displayName: 'HomepageHeader',
 

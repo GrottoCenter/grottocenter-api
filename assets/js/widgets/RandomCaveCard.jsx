@@ -1,4 +1,6 @@
-"use strict";
+/**
+ * TODO Add comment
+ */
 
 var DisplayCaveDetailsCardContent = React.createClass({
   render: function() {

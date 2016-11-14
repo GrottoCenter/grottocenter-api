@@ -1,8 +1,10 @@
-"use strict";
+/**
+ * TODO Add comment
+ */
 
 var HomepageCards = React.createClass({
     displayName: 'HomepageCards',
-	
+
     render: function() {
         return (
             <div>
