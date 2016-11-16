@@ -2,10 +2,10 @@
 
 var SimpleButton = React.createClass({
     displayName: 'SimpleButton',
-	
+
     render: function() {
         return (
-            <a className="btn btn-success" href={this.props.href}>{this.props.text}</a>
+          <ReactRouter.Link className="btn btn-success" to={this.props.href} activeClassName="active">{this.props.text}</ReactRouter.Link>
         );
     }
 });
