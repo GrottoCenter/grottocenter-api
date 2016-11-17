@@ -142,73 +142,56 @@ var HomepageLatestNews = React.createClass({
   render: function() {
     return (
       <div>
-        <div role="section" style={{'min-height': '500px', 'background': 'linear-gradient(to top, rgb(251, 251, 222) 0%, rgb(255, 223, 174) 100%)'}}>
+        <div role="section" style={{'minHeight': '500px', 'background': 'linear-gradient(to top, rgb(251, 251, 222) 0%, rgb(255, 223, 174) 100%)'}}>
           <h2  style={{'text-align': 'center', 'padding-bottom': '50px'}}>UPCOMING EVENTS</h2>
           <div className="container-fluid">
-            <div className="row">
-              <div style={{'textAlign': 'center'}} className="col-xs-12">
-                <div className="animEvent">
-                  <div style={{'display': 'inline-table', 'width': '10%'}}>
-                    <div style={{'fontSize': '1.5em', 'fontWeight': 'bold'}}>09</div>
-                    <div style={{'fontSize': '1.5em', 'fontWeight': 'bold'}}>Sep</div>
-                    <div style={{'fontSize': '1.5em', 'fontWeight': 'bold'}}>2015</div>
-                  </div>
-                  <div style={{'text-align': 'left', 'display': 'inline-table', 'width': '80%'}}>
-                    <span>
-                      <h5>
-                        <a href="#">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</a>
-                      </h5>
-                      <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-                    </span>
-                  </div>
-                  <div style={{'display': 'inline-table', 'width': '10%'}}>
-                    <span><a href="/drupal_55960/?q=node/128">view</a></span>
-                  </div>
-                </div>
+            <div className="row" style={{'width': '80%', 'margin': 'auto'}}>
+              <div style={{'textAlign': 'center'}} className="col-xs-12 col-md-4">
+                <BasicCard title="A new partner has joined!" image="/images/homepage/build.jpg">
+                  The association <a htref="#">Speleo Forever</a> has decide to contribute to GC
+                </BasicCard>
+              </div>
+              <div style={{'textAlign': 'center'}} className="col-xs-12 col-md-4">
+                <BasicCard title="National caving days" image="/images/homepage/entry.jpg">
+                  National caving days will occurs on 4th of October. A great opportunity to discover this "indoor" activity!
+                </BasicCard>
+              </div>
+              <div style={{'textAlign': 'center'}} className="col-xs-12 col-md-4">
+                <BasicCard title="Other big event" image="/images/homepage/news.jpg">
+                  Hae duae provinciae bello quondam piratico catervis mixtae praedonum a Servilio pro consule missae sub iugum factae sunt vectigales. et hae quidem regiones velut in prominenti terrarum lingua positae ob orbe eoo monte Amano disparantur.
+                </BasicCard>
               </div>
             </div>
-            <div className="row">
-              <div style={{'textAlign': 'center'}} className="col-xs-12">
-                <div className="animEvent">
-                  <div style={{'display': 'inline-table', 'width': '10%'}}>
-                    <div style={{'fontSize': '1.5em', 'fontWeight': 'bold'}}>09</div>
-                    <div style={{'fontSize': '1.5em', 'fontWeight': 'bold'}}>Sep</div>
-                    <div style={{'fontSize': '1.5em', 'fontWeight': 'bold'}}>2015</div>
-                  </div>
-                  <div style={{'text-align': 'left', 'display': 'inline-table', 'width': '80%'}}>
-                    <span>
-                      <h5>
-                        <a href="#">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</a>
-                      </h5>
-                      <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-                    </span>
-                  </div>
-                  <div style={{'display': 'inline-table', 'width': '10%'}}>
-                    <span><a href="/drupal_55960/?q=node/128">view</a></span>
-                  </div>
-                </div>
+          </div>
+        </div>
+
+      </div>
+    );
+  }
+});
+
+var HomepageAssociation = React.createClass({
+  render: function() {
+    return (
+      <div>
+        <div role="section" style={{'minHeight': '500px', 'background': 'linear-gradient(to top, rgb(251, 251, 222) 0%, rgb(255, 223, 174) 100%)'}}>
+          <div className="container-fluid">
+            <div className="row" style={{'width': '80%', 'margin': 'auto'}}>
+              <div style={{'text-align': 'left', 'padding-top': '20px'}} className="col-xs-6">
+                <h3 style={{'font-size': '35px', 'padding-bottom': '30px'}}>L'association Wikicaves</h3>
+                <h5 style={{'font-size': '18px', 'padding-bottom': '30px'}}>Le site www.grottocenter.org est une base de donnée mondiale, communautaire dédiée à la spéléologie et alimentée par les spéléologues sur le principe du Wiki. Toute cavité naturelle présentant un intérêt à tes yeux peut y être enregistrée !</h5  >
+                <p>Le site est édité par l'association Wikicaves qui s'est fixée comme objectif de :
+                  <ul>
+                    <li>Favoriser le développement de la spéléologie dans le monde, notamment par l'Internet collaboratif.</li>
+                    <li>Diffuser et partager les informations liées à la pratique de la spéléologie.</li>
+                    <li>Faciliter l'accès aux informations concernant les cavités naturelles, notamment via Internet.</li>
+                    <li>Mettre en valeur et contribuer à la protection des cavités naturelles et de leur environnement.</li>
+                    <li>Aider l'exploration et l'étude scientifique des cavités naturelles.</li>
+                  </ul>
+                </p>
               </div>
-            </div>
-            <div className="row">
-              <div style={{'textAlign': 'center'}} className="col-xs-12">
-                <div className="animEvent">
-                  <div style={{'display': 'inline-table', 'width': '10%'}}>
-                    <div style={{'fontSize': '1.5em', 'fontWeight': 'bold'}}>09</div>
-                    <div style={{'fontSize': '1.5em', 'fontWeight': 'bold'}}>Sep</div>
-                    <div style={{'fontSize': '1.5em', 'fontWeight': 'bold'}}>2015</div>
-                  </div>
-                  <div style={{'text-align': 'left', 'display': 'inline-table', 'width': '80%'}}>
-                    <span>
-                      <h5>
-                        <a href="#">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</a>
-                      </h5>
-                      <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-                    </span>
-                  </div>
-                  <div style={{'display': 'inline-table', 'width': '10%'}}>
-                    <span><a href="/drupal_55960/?q=node/128">view</a></span>
-                  </div>
-                </div>
+              <div style={{'text-align': 'center', 'padding-top': '20px'}} className="col-xs-6">
+                <img style={{'width': '100%', 'max-width': '500px'}} src="/images/homepage/montain.png"/>
               </div>
             </div>
           </div>
@@ -222,10 +205,10 @@ var HomepageWhatIsIt = React.createClass({
   render: function() {
     return (
       <div>
-        <div role="section" style={{'min-height': '500px', 'background': 'linear-gradient(to top, rgb(251, 251, 222) 0%, rgb(255, 223, 174) 100%)'}}>
+        <div role="section" style={{'minHeight': '500px', 'background': 'linear-gradient(to top, rgb(251, 251, 222) 0%, rgb(255, 223, 174) 100%)'}}>
           <h2  style={{'text-align': 'center', 'padding-bottom': '50px'}}>FOCUS ON GROTTOCENTER</h2>
           <div className="container-fluid">
-            <div className="row">
+            <div className="row" style={{'width': '80%', 'margin': 'auto'}}>
               <div style={{'text-align': 'center', 'padding-top': '20px'}} className="col-xs-6 col-sm-3">
                 <div className="animData">123</div>
 
@@ -336,7 +319,7 @@ var HomepagePartners = React.createClass({
 
     return (
       <div>
-        <div role="section" style={{'min-height': '500px', 'background': 'linear-gradient(to top, rgb(251, 251, 222) 0%, rgb(255, 223, 174) 100%)'}}>
+        <div role="section" style={{'minHeight': '500px', 'background': 'linear-gradient(to top, rgb(251, 251, 222) 0%, rgb(255, 223, 174) 100%)'}}>
           <h2 style={{'text-align': 'center', 'padding-bottom': '50px'}}>OFFICIAL PARTNERS</h2>
           <div>
             <div className="container-fluid">
@@ -355,10 +338,76 @@ var HomepageRecentContributions = React.createClass({
   render: function() {
     return (
       <div>
-        <div role="section" style={{'min-height': '500px', 'background': 'linear-gradient(to top, rgb(251, 251, 222) 0%, rgb(255, 223, 174) 100%)'}}>
+        <div role="section" style={{'minHeight': '500px', 'background': 'linear-gradient(to top, rgb(251, 251, 222) 0%, rgb(255, 223, 174) 100%)'}}>
           <h2 style={{'text-align': 'center', 'padding-bottom': '50px'}}>RECENT CONTRIBUTIONS</h2>
-
-          New contribution table
+          <div className="container-fluid">
+            <div className="row">
+              <div style={{'textAlign': 'center'}} className="col-xs-12">
+                <div className="animEvent">
+                  <div style={{'display': 'inline-table', 'width': '10%'}}>
+                    <div style={{'fontSize': '1.5em', 'fontWeight': 'bold'}}>09</div>
+                    <div style={{'fontSize': '1.5em', 'fontWeight': 'bold'}}>Sep</div>
+                    <div style={{'fontSize': '1.5em', 'fontWeight': 'bold'}}>2015</div>
+                  </div>
+                  <div style={{'text-align': 'left', 'display': 'inline-table', 'width': '80%'}}>
+                    <span>
+                      <h5>
+                        <a href="#">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</a>
+                      </h5>
+                      <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+                    </span>
+                  </div>
+                  <div style={{'display': 'inline-table', 'width': '10%'}}>
+                    <span><a href="/drupal_55960/?q=node/128">view</a></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="row">
+              <div style={{'textAlign': 'center'}} className="col-xs-12">
+                <div className="animEvent">
+                  <div style={{'display': 'inline-table', 'width': '10%'}}>
+                    <div style={{'fontSize': '1.5em', 'fontWeight': 'bold'}}>09</div>
+                    <div style={{'fontSize': '1.5em', 'fontWeight': 'bold'}}>Sep</div>
+                    <div style={{'fontSize': '1.5em', 'fontWeight': 'bold'}}>2015</div>
+                  </div>
+                  <div style={{'text-align': 'left', 'display': 'inline-table', 'width': '80%'}}>
+                    <span>
+                      <h5>
+                        <a href="#">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</a>
+                      </h5>
+                      <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+                    </span>
+                  </div>
+                  <div style={{'display': 'inline-table', 'width': '10%'}}>
+                    <span><a href="/drupal_55960/?q=node/128">view</a></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="row">
+              <div style={{'textAlign': 'center'}} className="col-xs-12">
+                <div className="animEvent">
+                  <div style={{'display': 'inline-table', 'width': '10%'}}>
+                    <div style={{'fontSize': '1.5em', 'fontWeight': 'bold'}}>09</div>
+                    <div style={{'fontSize': '1.5em', 'fontWeight': 'bold'}}>Sep</div>
+                    <div style={{'fontSize': '1.5em', 'fontWeight': 'bold'}}>2015</div>
+                  </div>
+                  <div style={{'text-align': 'left', 'display': 'inline-table', 'width': '80%'}}>
+                    <span>
+                      <h5>
+                        <a href="#">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</a>
+                      </h5>
+                      <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+                    </span>
+                  </div>
+                  <div style={{'display': 'inline-table', 'width': '10%'}}>
+                    <span><a href="/drupal_55960/?q=node/128">view</a></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -374,6 +423,7 @@ var HomepageFlat = React.createClass({
       <div>
         <HomepageHeader/>
         <HomepageLatestNews/>
+        <HomepageAssociation/>
         <HomepageWhatIsIt/>
         <HomepageRandomEntry/>
         <HomepagePartners nbDisplayed="6"/>

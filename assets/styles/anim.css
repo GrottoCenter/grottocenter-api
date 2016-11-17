@@ -1,3 +1,27 @@
+.basicCard {
+  background-color: white;
+  margin-bottom: 20px;
+}
+
+.basicCard figure {
+  overflow: hidden;
+  height: 200px;
+}
+
+.basicCard figure img {
+  height: 100%;
+}
+
+.basicCard div {
+  text-align: left;
+  padding: 16px;
+}
+
+.basicCard div:nth-child(4) {
+  text-transform: uppercase;
+  border-top: 1px solid lightgrey;
+}
+
 .vignettes {
   margin: auto;
   width: 80%;
@@ -238,6 +262,8 @@
   }
 }
 
+
+}
 
 }
 
