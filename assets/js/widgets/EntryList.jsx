@@ -76,7 +76,7 @@ var ProductTable = React.createClass({
   }
 });
 
-var SearchBar = React.createClass({
+var EntrySearchBar = React.createClass({
   handleChange: function() {
     this.props.onUserInput(this.refs.entrySearchInput.value, this.refs.regionSearchInput.value);
   },
@@ -154,7 +154,7 @@ var FilterableProductTable = React.createClass({
   render: function() {
 	return (
 		React.createElement("div", null,
-			React.createElement(SearchBar, {filterEntryName: this.state.filterEntryName, filterRegion: this.state.filterRegion, onUserInput: this.handleUserInput}),
+			React.createElement(EntrySearchBar, {filterEntryName: this.state.filterEntryName, filterRegion: this.state.filterRegion, onUserInput: this.handleUserInput}),
 			React.createElement(ProductTable, {entries: this.state.entries})
 		)
 	);
