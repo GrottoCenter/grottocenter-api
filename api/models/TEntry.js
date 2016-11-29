@@ -119,6 +119,11 @@ module.exports = {
       columnName: 'Is_sensitive'
     },
 
+    isOfInterest: {
+      type: 'boolean',
+      columnName: 'Is_of_interest'
+    },
+
     contact: {
       type: 'string',
       size: 1000,
@@ -161,6 +166,11 @@ module.exports = {
       collection: 'TCave',
       via: 'caves',
       through: 'jcaveentry'
+    },
+
+    comments: {
+      collection: 'TComment',
+      via: 'entry'
     }
   }
 };

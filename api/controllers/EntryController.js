@@ -42,5 +42,22 @@
        params.notFoundMessage = 'No entries found.';
        return ControllerService.treat(err, found, params, res);
      });
+   },
+
+   findRandom: function(req, res) {
+     // TODO : entries of interest must be linked to at least one cave, so we must check data in order to avoid asap the exist subRequest
+     TEntry.query('SELECT id FROM t_entry where Is_of_interest=1 and exists (select Id_entry from j_cave_entry where Id_entry=id) ORDER BY RAND() LIMIT 1', function(err, found) {
+       if (err) {
+         return res.serverError(err);
+       }
+       var entryId = found[0].id;
+
+       TEntry.find({id:entryId}).populate('caves').populate('comments').limit(1).exec(function(err, found) {
+         var params = {};
+         params.controllerMethod = "EntryController.findRandom";
+         params.notFoundMessage = "No entry found.";
+         return ControllerService.treat(err, found, params, res);
+       });
+     });
    }
  };
