@@ -1,4 +1,6 @@
-"use strict";
+/**
+ * TODO Add comment
+ */
 
 var SignToolbar = React.createClass({
   getInitialState: function() {
@@ -57,12 +59,8 @@ var SignToolbar = React.createClass({
       return (
         <div>
           <div className="button">
-            <a className="btn btn-success" href="/caver/new">
-              <I18n label="Sign up"/>
-            </a>
-            <a className="btn btn-success" href="#" onClick={this.togglePopup}>
-              <I18n label="Sign In"/>
-            </a>
+            <SimpleButton className="btn btn-success" href="/auth/signup"><I18n label="Sign up"/></SimpleButton>
+            <SimpleButton className="btn btn-success" href="/auth/signin"><I18n label="Sign In"/></SimpleButton>
           </div>
           <div className="loginForm" style={{
             display: displayLoginPopupCss

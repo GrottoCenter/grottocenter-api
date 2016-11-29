@@ -1,14 +1,26 @@
-"use strict";
+/**
+ * TODO Add comment
+ */
 
 var ProposalEntry = React.createClass({
   render: function() {
     var rows = [];
     var _this = this;
     this.props.data.forEach(function(item) {
-      var linkToItem = _this.props.baseUrl + "/" + item.id;
+      var linkToItem = _this.props.baseUrl;
+      if (linkToItem.endsWith("=")) {
+        linkToItem += item.id;
+      } else {
+        linkToItem += "/" + item.id;
+      }
+      var target = "";
+      if (_this.props.newWindow) {
+        target = "_blank";
+      }
+
       rows.push(
         <dd key={item.id}>
-          <a href={linkToItem}>{item.name}</a>
+          <a target={target} href={linkToItem}>{item.name}</a>
         </dd>
       );
     });
@@ -61,7 +73,8 @@ var SearchBar = React.createClass({
       proposal.push(<ProposalEntry key="caves" title="Cave" baseUrl="/ui/cavedetail/" data={this.state.caveResult}/>);
     }
     if (this.state.entryResult.length > 0) {
-      proposal.push(<ProposalEntry key="entries" title="Entry" baseUrl="/ui/entrydetail/" data={this.state.entryResult}/>);
+      var baseUrl = "http://www.grottocenter.org/html/file_Fr.php?lang=Fr&check_lang_auto=false&category=entry&id=";
+      proposal.push(<ProposalEntry newWindow="true" key="entries" title="Entry" baseUrl={baseUrl} data={this.state.entryResult}/>);
     }
 
     var display = "none";

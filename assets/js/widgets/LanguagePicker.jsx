@@ -1,4 +1,6 @@
-"use strict";
+/**
+ * TODO Add comment
+ */
 
 var LanguagePickerEntry = React.createClass({
   render: function() {

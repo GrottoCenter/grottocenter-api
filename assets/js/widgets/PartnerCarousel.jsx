@@ -1,4 +1,6 @@
-"use strict";
+/**
+ * TODO Add comment
+ */
 
 var PartnerCarouselLinks = React.createClass({
   render: function() {

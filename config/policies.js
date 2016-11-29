@@ -73,6 +73,10 @@ module.exports.policies = {
 
   I18nController: {
     '*': true
+  },
+
+  SwaggerController: {
+    '*': true
   }
 
   /***************************************************************************

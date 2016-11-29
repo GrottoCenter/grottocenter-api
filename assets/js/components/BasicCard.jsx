@@ -1,8 +1,10 @@
-"use strict";
+/**
+ * TODO Add comment
+ */
 
 var CardMenu = React.createClass({
     displayName: 'CardMenu',
-	
+
     render: function() {
         return (
             <div className="cardmenu">I'm a card menu!</div>
@@ -23,7 +25,7 @@ var CardActions = React.createClass({
 
 var CardSupportingText = React.createClass({
     displayName: 'CardSupportingText',
-	
+
     render: function() {
         return (
             <div className="cardsupportingtext">
@@ -35,7 +37,7 @@ var CardSupportingText = React.createClass({
 
 var CardTitle = React.createClass({
     displayName: 'CardTitle',
-	
+
     render: function() {
 		var styles = "cardtitle " + this.props.image + "Bg";
         return (
@@ -46,7 +48,7 @@ var CardTitle = React.createClass({
 
 var BasicCard = React.createClass({
     displayName: 'BasicCard',
-	
+
     render: function() {
         return (
             <div className="basicCard">

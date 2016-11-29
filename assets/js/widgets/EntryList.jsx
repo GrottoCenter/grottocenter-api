@@ -1,9 +1,8 @@
 /**
  * React component to display a simple cave listing table
  *
- * See specification: 
+ * See specification:
  */
-"use strict";
 
 var ActionButtons = React.createClass({
   render: function() {
@@ -15,19 +14,19 @@ var ActionButtons = React.createClass({
     );
   }
 });
- 
+
  var ProductRow = React.createClass({
   render: function() {
 	var entries = [];
 	this.props.entry.caves.forEach(function(cave) {
 		entries.push(React.createElement("li", null, cave.name));
 	});
-	
+
 	var entryElement = React.createElement("span", null, "No cave defined");
 	if (entries.length > 0) {
 		entryElement = 	React.createElement("ul", {className: "list-unstyled"}, entries);
 	}
-	
+
     return (
 		React.createElement("tr", null,
 			React.createElement("td", null, this.props.entry.id),
@@ -58,7 +57,7 @@ var ProductTable = React.createClass({
 				React.createElement("thead", null,
 					React.createElement("tr", null,
 						React.createElement("th", null, "ID"),
-						React.createElement("th", null, "Author"),	
+						React.createElement("th", null, "Author"),
 						React.createElement("th", null, "Entry name"),
 						React.createElement("th", null, "Cave(s)"),
 						React.createElement("th", null, "Region"),
@@ -77,30 +76,30 @@ var ProductTable = React.createClass({
   }
 });
 
-var SearchBar = React.createClass({
+var EntrySearchBar = React.createClass({
   handleChange: function() {
     this.props.onUserInput(this.refs.entrySearchInput.value, this.refs.regionSearchInput.value);
   },
-  
+
   render: function() {
     return (
-		React.createElement("form", null, 
-			React.createElement("div", null, 
+		React.createElement("form", null,
+			React.createElement("div", null,
 				React.createElement("label", {htmlFor: "entrySearch"}, "Filter entry name: "),
-				React.createElement("input", {id: "entrySearch", 
-											  type: "text", 
-											  placeholder: "Search...", 
-											  value: this.props.filterEntryName, 
+				React.createElement("input", {id: "entrySearch",
+											  type: "text",
+											  placeholder: "Search...",
+											  value: this.props.filterEntryName,
 											  ref: "entrySearchInput",
 											  onChange: this.handleChange}
 				)
 			),
-			React.createElement("div", null, 
+			React.createElement("div", null,
 				React.createElement("label", {htmlFor: "regionSearch"}, "Filter region name: "),
-				React.createElement("input", {id: "regionSearch", 
+				React.createElement("input", {id: "regionSearch",
 											  type: "text",
-											  placeholder: "Search...", 
-											  value: this.props.filterRegion, 
+											  placeholder: "Search...",
+											  value: this.props.filterRegion,
 											  ref: "regionSearchInput",
 											  onChange: this.handleChange}
 				)
@@ -118,7 +117,7 @@ var FilterableProductTable = React.createClass({
 	  entries: []
     };
   },
-  
+
   componentDidMount: function () {
 	this.fetchData({});
   },
@@ -127,23 +126,23 @@ var FilterableProductTable = React.createClass({
 	var _this = this;
 	var url = "/entry/findAll";
 	var params = '';
-	
+
 	if (filters.filterEntryName != undefined && filters.filterEntryName != '') {
 		params += "?name=" + filters.filterEntryName;
 	}
-	
+
 	if (filters.filterRegion != undefined && filters.filterRegion != '') {
-		params += (params == '') ? "?" : "&"; 
+		params += (params == '') ? "?" : "&";
 		params += "region=" + filters.filterRegion;
 	}
-	
+
 	$.get(url + params, function (data) {
 		_this.setState({
 		  entries: data
 		});
 	});
   },
-  
+
   handleUserInput: function(filterEntryName, filterRegion) {
 	this.setState({
 		filterEntryName: filterEntryName,
@@ -151,11 +150,11 @@ var FilterableProductTable = React.createClass({
 	});
 	this.fetchData({filterEntryName: filterEntryName, filterRegion: filterRegion});
   },
-  
+
   render: function() {
 	return (
-		React.createElement("div", null, 
-			React.createElement(SearchBar, {filterEntryName: this.state.filterEntryName, filterRegion: this.state.filterRegion, onUserInput: this.handleUserInput}),
+		React.createElement("div", null,
+			React.createElement(EntrySearchBar, {filterEntryName: this.state.filterEntryName, filterRegion: this.state.filterRegion, onUserInput: this.handleUserInput}),
 			React.createElement(ProductTable, {entries: this.state.entries})
 		)
 	);
