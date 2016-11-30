@@ -7,22 +7,24 @@
  * `.tmp/public/js` directory.
  *
  */
-module.exports = function(grunt) {
+module.exports = function (grunt) {
 
-  grunt.config.set('babel', {
-    dev: {
-      options: {
-        presets: ['react']  
-      },
-      files: [{
-        expand: true,
-        cwd: 'assets/js/',
-        src: ['**/*.jsx'],
-        dest: '.tmp/public/js/',
-        ext: '.js'
+    grunt.config.set('babel', {
+        dev: {
+            options: {
+                sourceMap: true,
+                presets: ['react', 'es2015']
+            },
+            files: [{
+                expand: true,
+                cwd: 'assets/js/',
+                src: ['components/*.jsx', 'pages/**/*.jsx',
+                    'widgets/*.jsx'],
+                dest: '.tmp/public/js/',
+                ext: '.js'
       }]
-    }
-  });
+        }
+    });
 
-  grunt.loadNpmTasks('grunt-babel');
+    grunt.loadNpmTasks('grunt-babel');
 };

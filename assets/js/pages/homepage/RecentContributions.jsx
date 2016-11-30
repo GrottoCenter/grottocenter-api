@@ -1,0 +1,77 @@
+const RecentContributions = () => (
+    <div>
+      <div role="section" style={{'minHeight': '500px', 'background': 'linear-gradient(to top, rgb(251, 251, 222) 0%, rgb(255, 223, 174) 100%)'}}>
+        <h2 style={{'text-align': 'center', 'padding-bottom': '50px'}}>RECENT CONTRIBUTIONS</h2>
+        <div className="container-fluid">
+          <div className="row">
+            <div style={{'textAlign': 'center'}} className="col-xs-12">
+              <div className="animEvent">
+                <div style={{'display': 'inline-table', 'width': '10%'}}>
+                  <div style={{'fontSize': '1.5em', 'fontWeight': 'bold'}}>09</div>
+                  <div style={{'fontSize': '1.5em', 'fontWeight': 'bold'}}>Sep</div>
+                  <div style={{'fontSize': '1.5em', 'fontWeight': 'bold'}}>2015</div>
+                </div>
+                <div style={{'text-align': 'left', 'display': 'inline-table', 'width': '80%'}}>
+                  <span>
+                    <h5>
+                      <a href="#">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</a>
+                    </h5>
+                    <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+                  </span>
+                </div>
+                <div style={{'display': 'inline-table', 'width': '10%'}}>
+                  <span><a href="/drupal_55960/?q=node/128">view</a></span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="row">
+            <div style={{'textAlign': 'center'}} className="col-xs-12">
+              <div className="animEvent">
+                <div style={{'display': 'inline-table', 'width': '10%'}}>
+                  <div style={{'fontSize': '1.5em', 'fontWeight': 'bold'}}>09</div>
+                  <div style={{'fontSize': '1.5em', 'fontWeight': 'bold'}}>Sep</div>
+                  <div style={{'fontSize': '1.5em', 'fontWeight': 'bold'}}>2015</div>
+                </div>
+                <div style={{'text-align': 'left', 'display': 'inline-table', 'width': '80%'}}>
+                  <span>
+                    <h5>
+                      <a href="#">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</a>
+                    </h5>
+                    <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+                  </span>
+                </div>
+                <div style={{'display': 'inline-table', 'width': '10%'}}>
+                  <span><a href="/drupal_55960/?q=node/128">view</a></span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="row">
+            <div style={{'textAlign': 'center'}} className="col-xs-12">
+              <div className="animEvent">
+                <div style={{'display': 'inline-table', 'width': '10%'}}>
+                  <div style={{'fontSize': '1.5em', 'fontWeight': 'bold'}}>09</div>
+                  <div style={{'fontSize': '1.5em', 'fontWeight': 'bold'}}>Sep</div>
+                  <div style={{'fontSize': '1.5em', 'fontWeight': 'bold'}}>2015</div>
+                </div>
+                <div style={{'text-align': 'left', 'display': 'inline-table', 'width': '80%'}}>
+                  <span>
+                    <h5>
+                      <a href="#">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</a>
+                    </h5>
+                    <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+                  </span>
+                </div>
+                <div style={{'display': 'inline-table', 'width': '10%'}}>
+                  <span><a href="/drupal_55960/?q=node/128">view</a></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+);
+
+export default RecentContributions;
