@@ -71,8 +71,8 @@ module.exports = {
   find: function(req, res) {
     TCaver.findOneById(req.params.id).exec(function(err, found) {
       var params = {};
-      params.controllerMethod = "CaverController.find";
-      params.notFoundMessage = "Caver of id " + req.params.id + " not found.";
+      params.controllerMethod = 'CaverController.find';
+      params.notFoundMessage = 'Caver of id ' + req.params.id + ' not found.';
       return ControllerService.treat(err, found, params, res);
     });
   },
@@ -81,15 +81,15 @@ module.exports = {
     var parameters = {};
     if (req.param('name') != undefined) {
       parameters.name = {
-        'like': "%" + req.param('name') + "%"
+        'like': '%' + req.param('name') + '%'
       };
-      sails.log.debug("parameters " + parameters.name.like);
+      sails.log.debug('parameters ' + parameters.name.like);
     }
 
     TCaver.find(parameters).sort('id ASC').limit(10).exec(function(err, found) {
       var params = {};
-      params.controllerMethod = "CaverController.findAll";
-      params.notFoundMessage = "No cavers found.";
+      params.controllerMethod = 'CaverController.findAll';
+      params.notFoundMessage = 'No cavers found.';
       return ControllerService.treat(err, found, params, res);
     });
   }

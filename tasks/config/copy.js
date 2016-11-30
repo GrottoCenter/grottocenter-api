@@ -15,24 +15,32 @@
  */
 module.exports = function(grunt) {
 
-	grunt.config.set('copy', {
-		dev: {
-			files: [{
-				expand: true,
-				cwd: './assets',
-				src: ['**/*.!(jsx|coffee|less)'],
-				dest: '.tmp/public'
-			}]
-		},
-		build: {
-			files: [{
-				expand: true,
-				cwd: '.tmp/public',
-				src: ['**/*'],
-				dest: 'www'
-			}]
-		}
-	});
+  grunt.config.set('copy', {
+    dev: {
+      files: [{
+        expand: true,
+        cwd: './assets',
+        src: ['**/*.!(jsx|coffee|less)'],
+        dest: '.tmp/public'
+      }]
+    },
+    build: {
+      files: [{
+        expand: true,
+        cwd: '.tmp/public',
+        src: ['**/*'],
+        dest: 'www'
+      }]
+    },
+    swagger: {
+      files: [{
+        expand: true,
+        cwd: './node_modules/swagger-ui/dist',
+        src: '**',
+        dest: 'assets/swagger'
+      }]
+    }
+  });
 
-	grunt.loadNpmTasks('grunt-contrib-copy');
+  grunt.loadNpmTasks('grunt-contrib-copy');
 };

@@ -48,20 +48,20 @@ module.exports.routes = {
 
    /* ReactRouter routes */
 
-   'GET /cavelist': {
-     view: 'homepage',
-     policy: 'localize'
-   },
+  'GET /cavelist': {
+    view: 'homepage',
+    policy: 'localize'
+  },
 
-   'GET /auth/signin': {
-     view: 'homepage',
-     policy: 'localize'
-   },
+  'GET /auth/signin': {
+    view: 'homepage',
+    policy: 'localize'
+  },
 
-   'GET /auth/signup': {
-     view: 'homepage',
-     policy: 'localize'
-   },
+  'GET /auth/signup': {
+    view: 'homepage',
+    policy: 'localize'
+  },
 
   /* Auth controller */
 
