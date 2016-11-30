@@ -81,7 +81,8 @@ bower_components
 .tmp
 dump.rdb
 
-
+### added by Benjamin for swagger-ui
+assets/swagger
 
 
 
