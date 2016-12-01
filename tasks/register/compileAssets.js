@@ -1,10 +1,11 @@
-module.exports = function (grunt) {
+module.exports = function(grunt) {
   grunt.registerTask('compileAssets', [
     'clean:dev',
     'jst:dev',
     'less:dev',
     'copy:dev',
+    'coffee:dev',
     'babel:dev',
-    'coffee:dev'
+    'browserify'
   ]);
 };

@@ -19,10 +19,10 @@ module.exports = {
   },*/
 
   login: function(req, res) {
-    console.log('login req.body : ' + req.body.contact);
+    sails.log('login req.body : ' + req.body.contact);
 
     req.post('/auth/login', req.body, function(data) {
-      console.log('login result data : ' + data);
+      sails.log('login result data : ' + data);
     });
 
     res.redirect('/');

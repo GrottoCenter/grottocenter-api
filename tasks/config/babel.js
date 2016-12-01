@@ -12,12 +12,13 @@ module.exports = function(grunt) {
   grunt.config.set('babel', {
     dev: {
       options: {
-        presets: ['react']  
+        sourceMap: true,
+        presets: ['react', 'es2015']
       },
       files: [{
         expand: true,
         cwd: 'assets/js/',
-        src: ['**/*.jsx'],
+        src: ['components/*.jsx', 'pages/**/*.jsx', 'widgets/*.jsx'],
         dest: '.tmp/public/js/',
         ext: '.js'
       }]

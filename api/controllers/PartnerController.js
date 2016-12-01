@@ -45,7 +45,15 @@ module.exports = {
   },
 
   findForCarousel: function(req, res) {
-    TGrotto.find().where({
+    var skip = 0;
+    if (req.param('skip') != undefined && req.param('skip') != "") {
+      skip = req.param('skip');
+    }
+    var limit = 20;
+    if (req.param('limit') != undefined && req.param('limit') != "") {
+      limit = req.param('limit');
+    }
+    TGrotto.find({ select: ['id', 'name', 'pictureFileName', 'customMessage'] }).skip(skip).limit(limit).sort('id ASC').where({
       'customMessage': {
         '!': null
       },

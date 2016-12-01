@@ -33,7 +33,7 @@ module.exports.routes = {
 
   '/': {
     view: 'homepage',
-    policy: 'localize'
+    policy: 'localize',
   },
 
   /***************************************************************************
@@ -46,7 +46,7 @@ module.exports.routes = {
    *                                                                          *
    ***************************************************************************/
 
-   /* ReactRouter routes */
+  /* ReactRouter routes */
 
   'GET /cavelist': {
     view: 'homepage',
@@ -220,6 +220,11 @@ module.exports.routes = {
   'GET /partner/findAll': {
     controller: 'Partner',
     action: 'findAll'
+  },
+
+  'GET /partner/findForCarousel/:skip/:limit': {
+    controller: 'Partner',
+    action: 'findForCarousel'
   },
 
   'GET /partner/findForCarousel': {
