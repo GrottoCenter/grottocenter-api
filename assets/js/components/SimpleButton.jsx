@@ -1,7 +1,7 @@
 /**
  * TODO Add comment
  */
-
+import React from 'react';
 var SimpleButton = React.createClass({
     displayName: 'SimpleButton',
 

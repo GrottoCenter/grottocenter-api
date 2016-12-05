@@ -1,7 +1,7 @@
 /**
  * TODO Add comment
  */
-
+import React from 'react';
 var SignupForm = React.createClass({
   getInitialState: function() {
     return {login: "", contact: "", password: "", repeatPassword: "", name: "", firstname: "", country: "", language: "", captchaControl: ""};

@@ -19,21 +19,26 @@ import Footer from './homepage/Footer';
 import injectTapEventPlugin from 'react-tap-event-plugin';
 injectTapEventPlugin();
 
-const App = () => (
-   <MuiThemeProvider muiTheme={getMuiTheme(grottoTheme)}>
-      <div>
-        <GrottoAppBar/>
-        <Header/>
-        <LatestNews/>
-        <Association/>
-        <WhatIsIt/>
-        <RandomEntry/>
-        <Partners nbDisplayed="6"/>
-        <RecentContributions/>
-        <Footer/>
-      </div>
-  </MuiThemeProvider>
-);
+export default class App extends React.Component {
+
+    render() {
+        return (
+           <MuiThemeProvider muiTheme={getMuiTheme(grottoTheme)}>
+              <div>
+                <GrottoAppBar/>
+                <Header/>
+                <LatestNews/>
+                <Association/>
+                <WhatIsIt/>
+                <RandomEntry/>
+                <Partners nbDisplayed="6"/>
+                <RecentContributions/>
+                <Footer/>
+              </div>
+          </MuiThemeProvider>
+        );
+    }
+};
 
 ReactDOM.render(
   <App />,

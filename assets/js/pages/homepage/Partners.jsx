@@ -1,3 +1,4 @@
+import React from 'react'
 class PartnersItem extends React.Component {
     constructor(props) {
         super(props);

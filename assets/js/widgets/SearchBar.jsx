@@ -1,7 +1,7 @@
 /**
  * TODO Add comment
  */
-
+import React from 'react';
 var ProposalEntry = React.createClass({
   render: function() {
     var rows = [];

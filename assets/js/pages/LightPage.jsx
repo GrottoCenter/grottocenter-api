@@ -1,4 +1,4 @@
-
+import React from 'react';
 var LightPage = React.createClass({
   displayName: 'Light page',
 

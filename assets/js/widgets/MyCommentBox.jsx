@@ -1,7 +1,7 @@
 /**
  * TODO Add comment
  */
-
+import React from 'react';
 var MyCommentBox = React.createClass({
     displayName: 'MyCommentBox',
     render: function() {

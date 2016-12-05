@@ -1,7 +1,7 @@
 /**
  * TODO Add comment
  */
-
+import React from 'react';
 var SigninForm = React.createClass({
   getInitialState: function() {
     return {contact: "", password: ""};

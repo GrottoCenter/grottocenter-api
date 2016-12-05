@@ -1,3 +1,4 @@
+import React from 'react'
 const Association = () => (
   <div>
     <div role="section" style={{

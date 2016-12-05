@@ -1,3 +1,4 @@
+import React from 'react'
 import BasicCard from './../../components/BasicCard';
 
 const LatestNews = () => (

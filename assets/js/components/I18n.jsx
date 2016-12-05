@@ -1,7 +1,7 @@
 /**
  * TODO Add comment
  */
- 
+ import React from 'react';
 var I18n = React.createClass({
   displayName: 'I18n helper',
 

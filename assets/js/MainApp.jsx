@@ -1,3 +1,4 @@
+import React from 'react';
 var MainApp = React.createClass({
   displayName: 'MainApp SPA',
 

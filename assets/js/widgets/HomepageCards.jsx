@@ -1,7 +1,7 @@
 /**
  * TODO Add comment
  */
-
+import React from 'react';
 var HomepageCards = React.createClass({
     displayName: 'HomepageCards',
 

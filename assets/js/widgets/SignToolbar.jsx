@@ -1,7 +1,7 @@
 /**
  * TODO Add comment
  */
-
+import React from 'react';
 var SignToolbar = React.createClass({
   getInitialState: function() {
     return {contact: "", password: "", showPopup: false, logged: false, nickname: ""};

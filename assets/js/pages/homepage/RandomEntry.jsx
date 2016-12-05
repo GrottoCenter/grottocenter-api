@@ -1,3 +1,4 @@
+import React from 'react'
 import RandomCave from './../../widgets/RandomCave';
 
 const RandomEntry = () => (

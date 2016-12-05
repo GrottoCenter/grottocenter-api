@@ -3,7 +3,7 @@
  *
  * See specification:
  */
-
+import React from 'react';
 var ActionButtons = React.createClass({
   render: function() {
     return (

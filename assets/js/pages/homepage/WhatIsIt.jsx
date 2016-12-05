@@ -1,3 +1,4 @@
+import React from 'react'
 const WhatIsIt = () => (
     <div>
       <div role="section" style={{'minHeight': '500px', 'background': 'linear-gradient(to top, rgb(251, 251, 222) 0%, rgb(255, 223, 174) 100%)'}}>

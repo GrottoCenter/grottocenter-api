@@ -1,6 +1,7 @@
 /**
  * TODO Add comment
  */
+ import React from 'react'
 
 var PartnerCarouselLinks = React.createClass({
   render: function() {

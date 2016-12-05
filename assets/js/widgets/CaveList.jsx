@@ -3,7 +3,7 @@
  *
  * See specification:
  */
-
+import React from 'react';
 var CActionButtons = React.createClass({
   render: function() {
     return (React.createElement("td", null, React.createElement("a", {

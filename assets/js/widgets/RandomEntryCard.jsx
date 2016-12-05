@@ -1,5 +1,5 @@
 "use strict";
-
+import React from 'react';
 var EntryData = React.createClass({
   render: function() {
     var comment = this.props.entry.comments[0];
