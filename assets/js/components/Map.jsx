@@ -1,38 +1,79 @@
-import React from 'react';
+import React from 'react'
+import { connect } from 'react-redux'
+import { Map, Marker, Popup, TileLayer } from 'react-leaflet'
 
-import {GoogleMapLoader, GoogleMap, Marker} from "react-google-maps";
-
-export default class SimpleMapExample extends React.Component {
+const position = [51.505, -0.09];
+class GrottoMapClass extends React.Component {
     constructor(props) {
       super(props);
-      this.state = {lat: -25.363882, lng: 131.044922};
-
+      this.state = {
+        hasLocation: true,
+        latlng: {
+          lat: 51.505,
+          lng: -0.09,
+        },
+        icon: L.icon({
+                    iconUrl: '/images/gc-entry.svg',
+                    iconSize: [32,32],
+                    iconAnchor: [16,32],
+                    popupAnchor: [0,-32],
+                    // shadowUrl: '/images/gc-entry.svg',
+                    // shadowSize: [68, 95],
+                    // shadowAnchor: [22, 94]
+                }),
+      };
+    //   var leaftletMap = this.refs.map.leafletElement;
+    //   window.leaftletMap = leaftletMap;
+    //   console.log("leaftletMap",leaftletMap);
     }
-    handleCenterChange(coord) {
-        this.setState(coord);
+    handleClick(e) {
+        console.log("leaftletMap handleClick",e);
+    }
+    handleLocationFound(e) {//Fired when geolocation (using the locate method) went successfully.
+        console.log("leaftletMap handleLocationFound",e);
+    }
+    handleLocationError(e) {
+        console.log("leaftletMap handleLocationError");
     }
     render() {
+        const marker = (this.props.marker != null && this.props.marker.latlng != null)
+              ? (
+                <Marker icon={this.state.icon} position={this.props.marker.latlng}>
+                    <Popup>
+                        <span>
+                            {this.props.marker.name}
+                            <br/>{this.props.marker.altitude}
+                            <br/>{this.props.marker.author}
+                        </span>
+                    </Popup>
+                </Marker>
+              )
+              : null;
         return (
-            <section style={{height: "100%"}}>
-                  <GoogleMapLoader
-                    containerElement={
-                      <div
-                        style={{
-                          height: "300px",
-                          width:"100%"
-                        }}
-                      />
-                    }
-                    googleMapElement={
-                      <GoogleMap
-                        defaultZoom={8}
-                        defaultCenter={this.state}
-                      >
-
-                      </GoogleMap>
-                    }
-                  />
-                </section>
+            <Map
+                 style={{width:"100%",height: "300px"}}
+                 center={this.props.marker.latlng}
+                 ref='map'
+                 zoom={13}
+                 length={4}
+                 onClick={this.handleClick.bind(this)}
+                 onLocationfound={this.handleLocationFound.bind(this)}
+                 onLocationerror={this.handleLocationError.bind(this)}
+                 >
+                     <TileLayer
+                       url='http://{s}.tile.osm.org/{z}/{x}/{y}.png'
+                     />
+                     {marker}
+            </Map>
         );
     }
 }
+const mapStateToProps = (state) => {
+  return {
+    marker: state.marker
+  }
+}
+const GrottoMap = connect(
+  mapStateToProps
+)(GrottoMapClass)
+export default GrottoMap

@@ -2,15 +2,14 @@ import React from 'react'
 import LanguagePicker from './../../components/LanguagePicker'
 // import SearchBar from './../../components/SearchBar';
 
-import { Provider } from 'react-redux'
-import { createStore } from 'redux'
-import { searchReducers } from './../../reducers/SearchReducers'
+// import { Provider } from 'react-redux'
+// import { createStore } from 'redux'
+// import { searchReducers } from './../../reducers/SearchReducers'
 import ReduxSearchBar from './../../containers/ReduxSearchBar'
 
 class Header extends React.Component {
 
     render() {
-        var store = createStore(searchReducers);
         return (
             <header className="header fixed-top clearfix">
 
@@ -39,9 +38,7 @@ class Header extends React.Component {
 
                 <div className="row searchbar">
                   <div className="col-xs-12">
-                      <Provider store={store}>
-                          <ReduxSearchBar />
-                      </Provider>
+                      <ReduxSearchBar />
                   </div>
                 </div>
               </div>

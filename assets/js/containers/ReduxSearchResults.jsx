@@ -19,7 +19,9 @@ class ReduxSearchResultsClass extends React.Component {
     }
     return (
       <div style={{
-          display: display
+              zIndex: 401,
+              width: "inherit",
+              display: display
         }} className="proposal">
         <dl>
           <dt>Cave</dt>

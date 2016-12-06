@@ -18,3 +18,10 @@ export const loadEntrySuccess = (data) => {
         data: data
     }
 }
+
+export const showMarker = (entry) => {
+    return {
+        type: 'SHOW_MARKER',
+        entry: entry
+    }
+}

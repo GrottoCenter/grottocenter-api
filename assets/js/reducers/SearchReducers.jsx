@@ -1,8 +1,28 @@
-import {combineReducers} from "redux";
+import {combineReducers} from "redux"
+import { startSearch, loadCaveSuccess, loadEntrySuccess, showMarker } from './../actions/Search'
 
-//import actions !!!
-// import { ADD_TODO, TOGGLE_TODO, SET_VISIBILITY_FILTER, VisibilityFilters } from './actions'
-// const { SHOW_ALL } = VisibilityFilters
+const marker = (state = [], action) => {
+  switch (action.type) {
+    case showMarker().type:// TODO useless mapping > send plain entry object to Map
+    return {
+          latlng:{
+              lat:action.entry.latitude,
+              lng:action.entry.longitude
+          },
+          name:action.entry.name,
+          altitude:action.entry.altitude?action.entry.altitude + 'm':'',
+          author:action.entry.author.nickname?action.entry.author.nickname:''
+    }
+    default://TODO no default marker on map
+      return {
+                latlng:{
+                    lat:43.9488581774652,
+                    lng:3.68913066801612
+                },
+                name:"Montméjean (Aven de)"
+            }
+  }
+}
 
 const caves = (state = [], action) => {
   switch (action.type) {
@@ -27,6 +47,7 @@ const entries = (state = [], action) => {
 
 export const searchReducers = combineReducers({
   caves,
-  entries
+  entries,
+  marker
 });
 export default searchReducers;
