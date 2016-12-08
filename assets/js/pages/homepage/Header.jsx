@@ -1,11 +1,5 @@
 import React from 'react'
-import LanguagePicker from './../../components/LanguagePicker'
-// import SearchBar from './../../components/SearchBar';
-
-// import { Provider } from 'react-redux'
-// import { createStore } from 'redux'
-// import { searchReducers } from './../../reducers/SearchReducers'
-import ReduxSearchBar from './../../containers/ReduxSearchBar'
+import SearchBar from './../../components/searchBar/Bar'
 
 class Header extends React.Component {
 
@@ -38,7 +32,7 @@ class Header extends React.Component {
 
                 <div className="row searchbar">
                   <div className="col-xs-12">
-                      <ReduxSearchBar />
+                      <SearchBar />
                   </div>
                 </div>
               </div>

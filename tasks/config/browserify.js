@@ -5,8 +5,7 @@ module.exports = function (grunt) {
             files: {
                 '.tmp/public/js/bundle.js': [
             '.tmp/public/js/actions/*.js',
-            '.tmp/public/js/components/*.js',
-            '.tmp/public/js/containers/*.js',
+            '.tmp/public/js/components/**/*.js',
             '.tmp/public/js/pages/**/*.js',
             '.tmp/public/js/reducers/*.js',
             '.tmp/public/js/widgets/*.js'

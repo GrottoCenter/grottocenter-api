@@ -1,7 +1,7 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import ReduxSearchResults from './ReduxSearchResults'
-import { startSearch, loadCaveSuccess, loadEntrySuccess } from './../actions/Search'
+import ListOfResults from './ListOfResults'
+import { startSearch, loadCaveSuccess, loadEntrySuccess } from './../../actions/Search'
 
 import TextField from 'material-ui/TextField';
 
@@ -18,7 +18,7 @@ const muiTheme = getMuiTheme({
   },
 });
 
-class ReduxSearchBar extends React.Component {
+class Bar extends React.Component {
 
   constructor(props) {
     super(props);
@@ -60,11 +60,11 @@ class ReduxSearchBar extends React.Component {
                     hintText="Quick search"
                     onChange={this.displaySelection.bind(this)}
                 />
-                <ReduxSearchResults />
+                <ListOfResults />
             </div>
         </MuiThemeProvider>
     )
   }
 }
-ReduxSearchBar = connect()(ReduxSearchBar);
-export default ReduxSearchBar
+Bar = connect()(Bar);
+export default Bar

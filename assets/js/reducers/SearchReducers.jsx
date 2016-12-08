@@ -1,6 +1,12 @@
 import {combineReducers} from "redux"
 import { startSearch, loadCaveSuccess, loadEntrySuccess, showMarker } from './../actions/Search'
 
+/*
+    The marker centered on the Map component
+    It represent a Mappable Object, or Object with latlng coordinates
+    Has side info to print on popup & to make links to more info
+    TODO : markers, a array of Mappable Object markers
+*/
 const marker = (state = [], action) => {
   switch (action.type) {
     case showMarker().type:// TODO useless mapping > send plain entry object to Map
@@ -24,6 +30,9 @@ const marker = (state = [], action) => {
   }
 }
 
+/*
+    The list of caves returned by the search
+*/
 const caves = (state = [], action) => {
   switch (action.type) {
     case 'START_SEARCH':
@@ -34,6 +43,9 @@ const caves = (state = [], action) => {
       return state
   }
 }
+/*
+    The list of entries returned by the search
+*/
 const entries = (state = [], action) => {
   switch (action.type) {
     case 'START_SEARCH':

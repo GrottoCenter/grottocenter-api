@@ -20,8 +20,7 @@ module.exports = function (grunt) {
                 cwd: 'assets/js/',
                 src: [
                     'actions/*.jsx',
-                    'components/*.jsx',
-                    'containers/*.jsx',
+                    'components/**/*.jsx',
                     'pages/**/*.jsx',
                     'reducers/*.jsx',
                     'widgets/*.jsx'

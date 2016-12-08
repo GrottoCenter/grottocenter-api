@@ -1,8 +1,8 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import ReduxSearchResult from './ReduxSearchResult'
+import Result from './Result'
 
-class ReduxSearchResultsClass extends React.Component {
+class ListOfResultsClass extends React.Component {
 
   constructor(props) {
     super(props);
@@ -26,7 +26,7 @@ class ReduxSearchResultsClass extends React.Component {
         <dl>
           <dt>Cave</dt>
           {this.props.caves.map(cave =>
-            <ReduxSearchResult
+            <Result
               key={cave.id}
               baseUrl="/ui/cavedetail/"
               {...cave}
@@ -36,7 +36,7 @@ class ReduxSearchResultsClass extends React.Component {
         <dl>
           <dt>Entry</dt>
           {this.props.entries.map(entry =>
-            <ReduxSearchResult
+            <Result
               key={entry.id}
               baseUrl="/ui/entrydetail/"
               {...entry}
@@ -53,7 +53,7 @@ const mapStateToProps = (state) => {
     entries: state.entries
   }
 }
-const ReduxSearchResults = connect(
+const ListOfResults = connect(
   mapStateToProps
-)(ReduxSearchResultsClass)
-export default ReduxSearchResults
+)(ListOfResultsClass)
+export default ListOfResults

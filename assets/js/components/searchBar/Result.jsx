@@ -1,8 +1,8 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import { showMarker } from './../actions/Search'
+import { showMarker } from './../../actions/Search'
 
-class ReduxSearchResult extends React.Component {
+class Result extends React.Component {
 
     isMappable(obj) {// TODO : move to models
         return obj.latitude && obj.longitude
@@ -20,5 +20,5 @@ class ReduxSearchResult extends React.Component {
         )
     }
 }
-ReduxSearchResult = connect()(ReduxSearchResult);
-export default ReduxSearchResult
+Result = connect()(Result);
+export default Result
