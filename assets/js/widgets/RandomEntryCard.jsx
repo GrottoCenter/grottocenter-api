@@ -1,7 +1,11 @@
-"use strict";
 import React from 'react';
-var EntryData = React.createClass({
-  render: function() {
+
+export class EntryData extends React.Component {
+  constructor(props) {
+    super(props);
+  }
+
+  render() {
     var comment = this.props.entry.comments[0];
     return (
       <div className="randomcave row">
@@ -14,10 +18,14 @@ var EntryData = React.createClass({
       </div>
     );
   }
-});
+}
 
-var EntryTitle = React.createClass({
-  render: function() {
+export class EntryTitle extends React.Component {
+  constructor(props) {
+    super(props);
+  }
+
+  render() {
     return (
       <h4>
         {this.props.entry.region} - {this.props.entry.country}
@@ -26,10 +34,14 @@ var EntryTitle = React.createClass({
       </h4>
     );
   }
-});
+}
 
-var EntryStat = React.createClass({
-  render: function() {
+export class EntryStat extends React.Component {
+  constructor(props) {
+    super(props);
+  }
+
+  render() {
     if (this.props.comment == undefined) {
       return (
         <div>At this time, there is no comment for this entry</div>
@@ -43,18 +55,25 @@ var EntryStat = React.createClass({
       </ul>
     );
   }
-});
+}
 
-var EntryStatItem = React.createClass({
-  render: function() {
+export class EntryStatItem extends React.Component {
+  constructor(props) {
+    super(props);
+  }
+
+  render() {
     if (this.props.itemScore == undefined) {
       return (
         <div/>
       );
     }
+
     var score = this.props.itemScore;
-    var imgName = "images/" + score + "star.svg";
-    var imgAlt = score + " stars";
+    var starText = "star" +  (score > 1 ? "s" : "");
+    var imgName = "images/" + score + starText + ".svg";
+    var imgAlt = score + " " + starText;
+
     return (
       <li>{this.props.itemLabel} :
         <img src={imgName} alt={imgAlt}/>
@@ -62,10 +81,14 @@ var EntryStatItem = React.createClass({
       </li>
     );
   }
-});
+}
 
-var EntryInfo = React.createClass({
-  render: function() {
+export class EntryInfo extends React.Component {
+  constructor(props) {
+    super(props);
+  }
+
+  render() {
     var rows = [];
     if (this.props.comment != undefined) {
       rows.push(<EntryInfoItem key="eiik1" itemImg="time-to-go.svg" itemLabel="time to go" itemValue={this.props.comment.eTTrail}/>);
@@ -81,10 +104,14 @@ var EntryInfo = React.createClass({
       </div>
     );
   }
-});
+}
 
-var EntryInfoItem = React.createClass({
-  render: function() {
+export class EntryInfoItem extends React.Component {
+  constructor(props) {
+    super(props);
+  }
+
+  render() {
     if (this.props.itemValue == undefined) {
       return (
         <span/>
@@ -97,45 +124,45 @@ var EntryInfoItem = React.createClass({
         {this.props.itemUnit}</span>
     );
   }
-});
+}
 
-var EntryImage = React.createClass({
-  render: function() {
+export class EntryImage extends React.Component {
+  constructor(props) {
+    super(props);
+  }
+
+  render() {
     return (
         <div className="col-xs-6">
           <img className="img img-responsive" src="images/topo1.png" alt="topo"/>
         </div>
     );
   }
-});
+}
 
-var RandomEntryCard = React.createClass({
-  displayName: 'RandomEntryCard',
-
-  getInitialState: function() {
-    return {ramdomEntry: []};
-  },
-
-  componentWillMount: function() {
+export default class RandomEntryCard extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      ramdomEntry: []
+    };
     this.fetchData({});
-  },
+  }
 
-  fetchData: function(filters) {
+  fetchData(filters) {
     var _this = this;
     var url = "/entry/findRandom";
 
     $.get(url, function(data) {
       _this.setState({ramdomEntry: data[0]});
     });
-  },
+  }
 
-  render: function() {
+  render() {
     if (this.state.ramdomEntry.length != 0) {
       return (
         <div>
-          <BasicCard title={this.state.ramdomEntry.name} image="entry" text="">
-            <EntryData entry={this.state.ramdomEntry}/>
-          </BasicCard>
+          <EntryData entry={this.state.ramdomEntry}/>
         </div>
       );
 
@@ -145,4 +172,4 @@ var RandomEntryCard = React.createClass({
       );
     }
   }
-});
+}

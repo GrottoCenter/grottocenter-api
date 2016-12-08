@@ -1,12 +1,12 @@
 import React from 'react'
-import RandomCave from './../../widgets/RandomCave';
+import RandomEntryCard from './../../widgets/RandomEntryCard';
 
 const RandomEntry = () => (
     <div>
       <div role="section" className="randomEntryBg">
         <h2  style={{'text-align': 'center', 'padding-bottom': '50px'}}>RANDOM ENTRY</h2>
         <div className="container-fluid">
-          <RandomCave/>
+          <RandomEntryCard/>
         </div>
       </div>
     </div>
