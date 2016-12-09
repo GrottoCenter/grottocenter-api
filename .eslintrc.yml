@@ -5,7 +5,7 @@ env:
 rules:
   # strict: [error, global]
   indent: [error, 2, {SwitchCase: 1}]
-  linebreak-style: [error, unix]
+  # linebreak-style: [error, unix]
   comma-dangle: [error, only-multiline]
   quotes: [error, single, {avoidEscape: true}]
   semi: [error, always]
