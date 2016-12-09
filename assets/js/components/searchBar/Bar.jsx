@@ -22,11 +22,9 @@ class Bar extends React.Component {
 
   constructor(props) {
     super(props);
-    // this.state = {
-    //   open: false
-    // };
-    // this.state = {showProposal: false, caveResult: "", entryResult: ""};
-
+    this.state = {
+      dataSource: [],
+    };
   }
 
   displaySelection() {
@@ -50,17 +48,19 @@ class Bar extends React.Component {
             });
         }
   }
-
   render() {
     return (
         <MuiThemeProvider muiTheme={muiTheme}>
             <div>
-                <TextField
-                    ref="quickSearchInput"
-                    hintText="Quick search"
-                    onChange={this.displaySelection.bind(this)}
-                />
-                <ListOfResults />
+              <TextField
+                  ref="quickSearchInput"
+                  inputStyle={{color: 'white'}}
+                  hintText="Rechercher une cavité, un club..."
+                  hintStyle={{color: 'white'}}
+                  fullWidth={true}
+                  onChange={this.displaySelection.bind(this)}
+              />
+              <ListOfResults />
             </div>
         </MuiThemeProvider>
     )

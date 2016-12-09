@@ -11,6 +11,8 @@ class Result extends React.Component {
         if ( this.isMappable(this.props)) {
             this.props.dispatch(showMarker(this.props))
         }
+        if ( this.props.id)
+          window.open('http://www.grottocenter.org/html/file_En.php?lang=En&check_lang_auto=false&category=entry&id='+this.props.id,'caveWindow');
     }
     render() {
         return (

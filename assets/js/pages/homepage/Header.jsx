@@ -1,5 +1,6 @@
 import React from 'react';
 import SearchBar from './../../components/searchBar/Bar';
+import Autocomplete from './../../components/searchBar/Autocomplete';
 import I18n from './../../components/I18n';
 
 const Header = () => (
@@ -30,6 +31,7 @@ const Header = () => (
 
       <div className="row searchbar">
         <div className="col-xs-12">
+          <Autocomplete/>
           <SearchBar/>
         </div>
       </div>
