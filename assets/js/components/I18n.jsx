@@ -1,19 +1,19 @@
 /**
- * TODO Add comment
+ * I18N helper
+ * This component requests I18N API in order to get the
  */
- import React from 'react';
-var I18n = React.createClass({
-  displayName: 'I18n helper',
+import React from 'react';
 
-  getInitialState: function() {
-    return {text: ""};
-  },
+export default class I18n extends React.Component {
+  constructor(props) {
+      super(props);
+      this.state = {
+          text: ""
+      };
+      this.fetchData({});
+  }
 
-  componentWillMount: function() {
-    this.fetchData({});
-  },
-
-  fetchData: function(filters) {
+  fetchData(filters) {
     var _this = this;
 
     $.ajax({
@@ -29,12 +29,11 @@ var I18n = React.createClass({
         });
       }.bind(this)
     });
+  }
 
-  },
-
-  render: function() {
+  render() {
     return (
       <span className="translated">{this.state.text}</span>
     );
   }
-});
+}

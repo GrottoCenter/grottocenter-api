@@ -75,33 +75,6 @@ module.exports.routes = {
     action: 'logout'
   },
 
-  /* UI controller */
-
-  'GET /ui/': {
-    controller: 'UI',
-    action: 'index'
-  },
-
-  'POST /ui/login': {
-    controller: 'Ui',
-    action: 'login'
-  },
-
-  /*'POST /ui/validate': {
-    controller: 'Ui',
-    action: 'validate'
-  },*/
-
-  'GET /ui/cavelist': {
-    controller: 'Ui',
-    action: 'cavelist'
-  },
-
-  'GET /ui/caver/new': {
-    controller: 'Ui',
-    action: 'newcaver'
-  },
-
   /* Caver controller */
 
   'GET /caver/': {
