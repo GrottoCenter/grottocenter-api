@@ -5,10 +5,7 @@ import { showMarker } from './../../actions/Search'
 import AutoComplete from 'material-ui/AutoComplete';
 import MenuItem from 'material-ui/MenuItem';
 import Map from 'material-ui/svg-icons/maps/map';
-
-import {cyan500} from 'material-ui/styles/colors';
-import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
-import getMuiTheme from 'material-ui/styles/getMuiTheme';
+import Explore from 'material-ui/svg-icons/action/explore';
 
 //TODO: get grotto icons to a font
 // import SvgIcon from 'material-ui/SvgIcon';
@@ -18,11 +15,6 @@ import getMuiTheme from 'material-ui/styles/getMuiTheme';
 //   </SvgIcon>
 // );
 
-const muiTheme = getMuiTheme({
-  palette: {
-    textColor: cyan500,
-  },
-});
 class Autocomplete extends React.Component {
   constructor(props) {
     super(props);
@@ -35,12 +27,21 @@ class Autocomplete extends React.Component {
         this.props.dispatch(showMarker(chosenRequest))
     }
     if ( chosenRequest.id )
-      window.open('http://www.grottocenter.org/html/file_En.php?lang=En&check_lang_auto=false&category=entry&id='+chosenRequest.id,'caveWindow');
+      window.open('http://www.grottocenter.org/html/file_En.php?lang=En&check_lang_auto=false&category='+chosenRequest.category+'&id='+chosenRequest.id,'GrottoV2Window');
  }
  isMappable(obj) {// TODO : move to models
      return obj.latitude && obj.longitude?true:false;
  }
+ isCave(obj) {// TODO : move to models
+     return obj.entries?true:false;
+ }
+ isEntry(obj) {// TODO : move to models
+     return obj.caves?true:false;
+ }
  foundDataToMenuItemMapping(item, i) {
+   var primaryText = item.name;
+  if (this.isEntry(item)) primaryText+=' (' + item.region + ')';
+  var category = this.isEntry(item)?'entry':'cave';
    return {
      id:item.id,
      text: item.name,
@@ -48,18 +49,25 @@ class Autocomplete extends React.Component {
      longitude: item.longitude,
      altitude: item.altitude,
     author: item.author,
+    category:category,
     isMappable:this.isMappable(item),
     value: (
       <MenuItem
-        primaryText={item.name + ' (' + item.region + ')'}
-         leftIcon={<Map />}
+        primaryText={primaryText}
+         leftIcon={this.isEntry(item)?<Explore />:<Map />}
       />
     )
   }
  }
   onUpdateInput(searchText) {
+    if (searchText.length < 3) {
+      this.setState({
+        dataSource: []
+      });
+      return;
+    }
     $.ajax({
-    url: "/entry/findAll?name=" +searchText,//TODO:needs a new optimized service for autocomplete
+    url: "/search/findAll?name=" +searchText,//TODO: optimize this service for autocomplete
     dataType: 'json',
     success: function(data) {
         this.setState({
@@ -70,20 +78,19 @@ class Autocomplete extends React.Component {
  }
   render() {
     return (
-        <MuiThemeProvider muiTheme={muiTheme}>
               <AutoComplete
               floatingLabelText="Rechercher une cavité, un club..."
               dataSource={this.state.dataSource}
               onUpdateInput={this.onUpdateInput.bind(this)}
               onNewRequest={this.onNewRequest.bind(this)}
-              textFieldStyle={{color: 'cyan500'}}
-              listStyle={{color: 'cyan500'}}
+              textFieldStyle={{color: 'red'}}
+              style={{color: 'orange'}}
+              listStyle={{color: 'green'}}
               hintStyle={{color: 'white'}}
               fullWidth={true}
               maxSearchResults={8}
               filter={AutoComplete.noFilter}
               />
-        </MuiThemeProvider>
     )
   }
 }

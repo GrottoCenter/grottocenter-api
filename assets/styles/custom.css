@@ -89,7 +89,8 @@ header .gc-fse-info {
 }
 
 header .searchbar {
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: white;
+  /*rgba(0, 0, 0, 0.5);*/
 }
 
 header .searchbar .form-group {

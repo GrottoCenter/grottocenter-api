@@ -34,7 +34,6 @@ export default class App extends React.Component {
                    <div>
                     <GrottoAppBar/>
                     <Header/>
-                    <GrottoMap/>
                     <LatestNews/>
                     <Association/>
                     <WhatIsIt/>

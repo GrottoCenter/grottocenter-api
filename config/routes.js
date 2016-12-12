@@ -21,209 +21,214 @@
  */
 
 module.exports.routes = {
-  /***************************************************************************
-   *                                                                          *
-   * Make the view located at `views/homepage.ejs` (or `views/homepage.jade`, *
-   * etc. depending on your default view engine) your home page.              *
-   *                                                                          *
-   * (Alternatively, remove this and add an `index.html` file in your         *
-   * `assets` directory)                                                      *
-   *                                                                          *
-   ***************************************************************************/
+    /***************************************************************************
+     *                                                                          *
+     * Make the view located at `views/homepage.ejs` (or `views/homepage.jade`, *
+     * etc. depending on your default view engine) your home page.              *
+     *                                                                          *
+     * (Alternatively, remove this and add an `index.html` file in your         *
+     * `assets` directory)                                                      *
+     *                                                                          *
+     ***************************************************************************/
 
-  '/': {
-    view: 'homepage',
-    policy: 'localize',
-  },
+    '/': {
+        view: 'homepage',
+        policy: 'localize',
+    },
 
-  /***************************************************************************
-   *                                                                          *
-   * Custom routes here...                                                    *
-   *                                                                          *
-   *  If a request to a URL doesn't match any of the custom routes above, it  *
-   * is matched against Sails route blueprints. See `config/blueprints.js`    *
-   * for configuration options and examples.                                  *
-   *                                                                          *
-   ***************************************************************************/
+    /***************************************************************************
+     *                                                                          *
+     * Custom routes here...                                                    *
+     *                                                                          *
+     *  If a request to a URL doesn't match any of the custom routes above, it  *
+     * is matched against Sails route blueprints. See `config/blueprints.js`    *
+     * for configuration options and examples.                                  *
+     *                                                                          *
+     ***************************************************************************/
 
-  /* ReactRouter routes */
+    /* ReactRouter routes */
 
-  'GET /cavelist': {
-    view: 'homepage',
-    policy: 'localize'
-  },
+    'GET /cavelist': {
+        view: 'homepage',
+        policy: 'localize'
+    },
 
-  'GET /auth/signin': {
-    view: 'homepage',
-    policy: 'localize'
-  },
+    'GET /auth/signin': {
+        view: 'homepage',
+        policy: 'localize'
+    },
 
-  'GET /auth/signup': {
-    view: 'homepage',
-    policy: 'localize'
-  },
+    'GET /auth/signup': {
+        view: 'homepage',
+        policy: 'localize'
+    },
 
-  /* Auth controller */
+    /* Auth controller */
 
-  'POST /auth/login': {
-    controller: 'Auth',
-    action: 'login'
-  },
+    'POST /auth/login': {
+        controller: 'Auth',
+        action: 'login'
+    },
 
-  'GET /auth/logout': {
-    controller: 'Auth',
-    action: 'logout'
-  },
+    'GET /auth/logout': {
+        controller: 'Auth',
+        action: 'logout'
+    },
 
-  /* Caver controller */
+    /* Caver controller */
 
-  'GET /caver/': {
-    controller: 'Caver',
-    action: 'find'
-  },
+    'GET /caver/': {
+        controller: 'Caver',
+        action: 'find'
+    },
 
-  'POST /caver/': {
-    controller: 'Caver',
-    action: 'create'
-  },
+    'POST /caver/': {
+        controller: 'Caver',
+        action: 'create'
+    },
 
-  'GET /caver/findAll': {
-    controller: 'Caver',
-    action: 'findAll'
-  },
+    'GET /caver/findAll': {
+        controller: 'Caver',
+        action: 'findAll'
+    },
 
-  'GET /caver/:id': {
-    controller: 'Caver',
-    action: 'find'
-  },
+    'GET /search/findAll': {
+        controller: 'Search',
+        action: 'findAll'
+    },
 
-  'PUT /caver/:id': {
-    controller: 'Caver',
-    action: 'update'
-  },
+    'GET /caver/:id': {
+        controller: 'Caver',
+        action: 'find'
+    },
 
-  'DELETE /caver/:id': {
-    controller: 'Caver',
-    action: 'destroy'
-  },
+    'PUT /caver/:id': {
+        controller: 'Caver',
+        action: 'update'
+    },
 
-  /* Entry controller */
+    'DELETE /caver/:id': {
+        controller: 'Caver',
+        action: 'destroy'
+    },
 
-  'GET /entry/': {
-    controller: 'Entry',
-    action: 'index'
-  },
+    /* Entry controller */
 
-  'GET /entry/findAll': {
-    controller: 'Entry',
-    action: 'findAll'
-  },
+    'GET /entry/': {
+        controller: 'Entry',
+        action: 'index'
+    },
 
-  'GET /entry/findRandom': {
-    controller: 'Entry',
-    action: 'findRandom'
-  },
+    'GET /entry/findAll': {
+        controller: 'Entry',
+        action: 'findAll'
+    },
 
-  'GET /entry/:id': {
-    controller: 'Entry',
-    action: 'find'
-  },
+    'GET /entry/findRandom': {
+        controller: 'Entry',
+        action: 'findRandom'
+    },
 
-  /* REST API for Cave controller */
+    'GET /entry/:id': {
+        controller: 'Entry',
+        action: 'find'
+    },
 
-  'POST /cave/': {
-    controller: 'Cave',
-    action: 'create'
-  },
+    /* REST API for Cave controller */
 
-  'GET /cave/findAll': {
-    controller: 'Cave',
-    action: 'findAll'
-  },
+    'POST /cave/': {
+        controller: 'Cave',
+        action: 'create'
+    },
 
-  'GET /cave/:id': {
-    controller: 'Cave',
-    action: 'find'
-  },
+    'GET /cave/findAll': {
+        controller: 'Cave',
+        action: 'findAll'
+    },
 
-  'PUT /cave/:id': {
-    controller: 'Cave',
-    action: 'update'
-  },
+    'GET /cave/:id': {
+        controller: 'Cave',
+        action: 'find'
+    },
 
-  'DELETE /cave/:id': {
-    controller: 'Cave',
-    action: 'delete'
-  },
+    'PUT /cave/:id': {
+        controller: 'Cave',
+        action: 'update'
+    },
 
-  /* Author controller */
+    'DELETE /cave/:id': {
+        controller: 'Cave',
+        action: 'delete'
+    },
 
-  'POST /author/': {
-    controller: 'Author',
-    action: 'create'
-  },
+    /* Author controller */
 
-  'GET /author/:id': {
-    controller: 'Author',
-    action: 'find'
-  },
+    'POST /author/': {
+        controller: 'Author',
+        action: 'create'
+    },
 
-  'PUT /author/:id': {
-    controller: 'Author',
-    action: 'update'
-  },
+    'GET /author/:id': {
+        controller: 'Author',
+        action: 'find'
+    },
 
-  'DELETE /author/:id': {
-    controller: 'Author',
-    action: 'delete'
-  },
+    'PUT /author/:id': {
+        controller: 'Author',
+        action: 'update'
+    },
 
-  'GET /author/findAll': {
-    controller: 'Author',
-    action: 'findAll'
-  },
+    'DELETE /author/:id': {
+        controller: 'Author',
+        action: 'delete'
+    },
 
-  /* REST API for Partner controller */
+    'GET /author/findAll': {
+        controller: 'Author',
+        action: 'findAll'
+    },
 
-  'POST /partner/': {
-    controller: 'Partner',
-    action: 'create'
-  },
+    /* REST API for Partner controller */
 
-  'GET /partner/findAll': {
-    controller: 'Partner',
-    action: 'findAll'
-  },
+    'POST /partner/': {
+        controller: 'Partner',
+        action: 'create'
+    },
 
-  'GET /partner/findForCarousel/:skip/:limit': {
-    controller: 'Partner',
-    action: 'findForCarousel'
-  },
+    'GET /partner/findAll': {
+        controller: 'Partner',
+        action: 'findAll'
+    },
 
-  'GET /partner/findForCarousel': {
-    controller: 'Partner',
-    action: 'findForCarousel'
-  },
+    'GET /partner/findForCarousel/:skip/:limit': {
+        controller: 'Partner',
+        action: 'findForCarousel'
+    },
 
-  'GET /partner/:id': {
-    controller: 'Partner',
-    action: 'find'
-  },
+    'GET /partner/findForCarousel': {
+        controller: 'Partner',
+        action: 'findForCarousel'
+    },
 
-  'PUT /partner/:id': {
-    controller: 'Partner',
-    action: 'update'
-  },
+    'GET /partner/:id': {
+        controller: 'Partner',
+        action: 'find'
+    },
 
-  'DELETE /partner/:id': {
-    controller: 'Partner',
-    action: 'delete'
-  },
+    'PUT /partner/:id': {
+        controller: 'Partner',
+        action: 'update'
+    },
 
-  /* REST API for I18N controller */
+    'DELETE /partner/:id': {
+        controller: 'Partner',
+        action: 'delete'
+    },
 
-  'POST /i18n/translate': {
-    controller: 'I18nController',
-    action: 'translate'
-  }
+    /* REST API for I18N controller */
+
+    'POST /i18n/translate': {
+        controller: 'I18nController',
+        action: 'translate'
+    }
 };

@@ -3,10 +3,13 @@ class PartnersItem extends React.Component {
     constructor(props) {
         super(props);
     }
+    openWindow() {
+      window.open(this.props.partner.customMessage, 'grotto_partner');
+    }
     render() {
         var url = "/images/partners/" + this.props.partner.pictureFileName;
         return (
-        <div style={{'text-align': 'center', 'padding-top': '20px'}} className="col-xs-6 col-sm-3 col-md-2">
+        <div style={{'text-align': 'center', 'padding-top': '20px'}} className="col-xs-6 col-sm-3 col-md-2" onClick={this.openWindow.bind(this)} style={{cursor:'pointer'}}>
             <div>
               <img src={url} alt={this.props.partner.name}/>
             </div>

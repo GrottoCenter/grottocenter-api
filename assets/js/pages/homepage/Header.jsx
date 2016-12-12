@@ -32,7 +32,6 @@ const Header = () => (
       <div className="row searchbar">
         <div className="col-xs-12">
           <Autocomplete/>
-          <SearchBar/>
         </div>
       </div>
     </div>
