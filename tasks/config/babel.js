@@ -23,7 +23,8 @@ module.exports = function (grunt) {
                     'components/**/*.jsx',
                     'pages/**/*.jsx',
                     'reducers/*.jsx',
-                    'widgets/*.jsx'
+                    'widgets/*.jsx',
+                    'MainApp.jsx'
                 ],
                 dest: '.tmp/public/js/',
                 ext: '.js'

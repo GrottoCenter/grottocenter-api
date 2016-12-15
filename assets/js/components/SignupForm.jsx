@@ -2,48 +2,62 @@
  * TODO Add comment
  */
 import React from 'react';
-var SignupForm = React.createClass({
-  getInitialState: function() {
-    return {login: "", contact: "", password: "", repeatPassword: "", name: "", firstname: "", country: "", language: "", captchaControl: ""};
-  },
 
-  handleLogin: function(event) {
+import BasicCard from './../components/BasicCard';
+import I18n from './../components/I18n';
+
+export default class SignupForm extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      login: '',
+      contact: '',
+      password: '',
+      repeatPassword: '',
+      name: '', firstname: '',
+      country: '',
+      language: '',
+      captchaControl: ''
+    };
+  }
+
+  handleLogin(event) {
     this.setState({login: event.target.value});
-  },
+  }
 
-  handleContact: function(event) {
+  handleContact(event) {
     this.setState({contact: event.target.value});
-  },
+  }
 
-  handlePassword: function(event) {
+  handlePassword(event) {
     this.setState({password: event.target.value});
-  },
+  }
 
-  handleRepeatPassword: function(event) {
+  handleRepeatPassword(event) {
     this.setState({repeatPassword: event.target.value});
-  },
+  }
 
-  handleName: function(event) {
+  handleName(event) {
     this.setState({name: event.target.value});
-  },
+  }
 
-  handleFirstname: function(event) {
+  handleFirstname(event) {
     this.setState({firstname: event.target.value});
-  },
+  }
 
-  handleCountry: function(event) {
+  handleCountry(event) {
     this.setState({country: event.target.value});
-  },
+  }
 
-  handleLanguage: function(event) {
+  handleLanguage(event) {
     this.setState({language: event.target.value});
-  },
+  }
 
-  handleCaptchaControl: function(event) {
+  handleCaptchaControl(event) {
     this.setState({captchaControl: event.target.value});
-  },
+  }
 
-  render: function() {
+  render() {
     return (
       <div style={{"padding": "50px 25%"}}>
         <BasicCard title="Sign up" image="news" text="Welcome to GC3!">
@@ -125,4 +139,4 @@ var SignupForm = React.createClass({
       </div>
     );
   }
-});
+}

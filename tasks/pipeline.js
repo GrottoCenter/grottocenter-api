@@ -37,8 +37,6 @@ var jsFilesToInject = [
   // 'js/widgets/**/*.js',
   'js/bundle.js',
 
-  'js/MainApp.js',
-
   // All of the rest of your client-side js files
   // will be injected here in no particular order.
   // 'js/**/*.js'

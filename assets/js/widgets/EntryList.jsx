@@ -4,6 +4,7 @@
  * See specification:
  */
 import React from 'react';
+
 var ActionButtons = React.createClass({
   render: function() {
     return (
@@ -109,7 +110,7 @@ var EntrySearchBar = React.createClass({
   }
 });
 
-var FilterableProductTable = React.createClass({
+const FilterableProductTable = React.createClass({
   getInitialState: function() {
     return {
       filterEntryName: '',
@@ -160,3 +161,5 @@ var FilterableProductTable = React.createClass({
 	);
   }
 });
+
+export default FilterableProductTable;

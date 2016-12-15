@@ -1,12 +1,15 @@
 import React from 'react';
-var LightPage = React.createClass({
-  displayName: 'Light page',
 
-  render: function() {
+export default class LightPage extends React.Component {
+  constructor(props) {
+    super(props);
+  }
+
+  render() {
     return (
       <div>
         {this.props.children}
       </div>
     );
   }
-});
+}

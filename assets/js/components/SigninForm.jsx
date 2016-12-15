@@ -2,22 +2,30 @@
  * TODO Add comment
  */
 import React from 'react';
-var SigninForm = React.createClass({
-  getInitialState: function() {
-    return {contact: "", password: ""};
-  },
 
-  handleContact: function(event) {
+import BasicCard from './../components/BasicCard';
+import I18n from './../components/I18n';
+
+export default class SigninForm extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      contact: '',
+      password: ''
+    };
+  }
+
+  handleContact(event) {
     this.setState({contact: event.target.value});
-  },
+  }
 
-  handlePassword: function(event) {
+  handlePassword(event) {
     this.setState({password: event.target.value});
-  },
+  }
 
-  render: function() {
+  render() {
     return (
-      <div style={{"padding": "50px 25%"}}>
+      <div style={{'padding': '50px 25%'}}>
         <BasicCard title="Sign In" image="news" text="Welcome to GC3!">
           <div className="loginForm">
             <div className="form-group">
@@ -36,4 +44,4 @@ var SigninForm = React.createClass({
       </div>
     );
   }
-});
+}
