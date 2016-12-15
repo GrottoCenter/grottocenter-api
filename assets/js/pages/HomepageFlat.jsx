@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import I18n from 'react-ghost-i18n';
 
 import grottoTheme from './grottoTheme';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
@@ -25,7 +26,13 @@ import GrottoMap from './../components/Map';
 import injectTapEventPlugin from 'react-tap-event-plugin';
 injectTapEventPlugin();
 
+
 export default class App extends React.Component {
+
+    constructor(props) {
+      super(props);
+      I18n.locale = catalog;
+    }
     render() {
         var store = createStore(searchReducers);
         return (

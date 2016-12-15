@@ -1,7 +1,7 @@
 import React from 'react';
 import SearchBar from './../../components/searchBar/Bar';
 import Autocomplete from './../../components/searchBar/Autocomplete';
-import I18n from './../../components/I18n';
+import I18n from 'react-ghost-i18n';
 
 const Header = () => (
   <header className="header fixed-top clearfix">
@@ -15,7 +15,7 @@ const Header = () => (
           </a>
           <h1 className="sitename">Grottocenter</h1>
           <span className="slogan">
-            <I18n label="The Wiki database made by cavers for cavers."/>
+              <I18n>The Wiki database made by cavers for cavers.</I18n>
           </span>
         </div>
       </div>
@@ -24,7 +24,7 @@ const Header = () => (
         <div className="col-xs-12">
           <img className="logofse" src="/images/FSE.svg" alt="logo-fse"/>
           <span className="gc-fse-info">
-            <I18n label="Grottocenter is supported by the FSE"/>
+            <I18n>Grottocenter is supported by the FSE</I18n>
           </span>
         </div>
       </div>
