@@ -4,23 +4,21 @@ env:
   mocha: true
 rules:
   # strict: [error, global]
-  # indent: [error, 2, {SwitchCase: 1}]
-  # linebreak-style: [error, unix]
+  indent: [error, 2, {SwitchCase: 1}]
+  linebreak-style: [error, unix]
   comma-dangle: [error, only-multiline]
-  # quotes: [error, single, {avoidEscape: true}]
+  quotes: [error, single, {avoidEscape: true}]
   semi: [error, always]
-  eqeqeq: off
+  eqeqeq: error
   camelcase: error
   curly: [error, multi-line]
   brace-style: error
   radix: error
   yoda: error
   no-const-assign: error
-  no-console: [error, {allow: [log, warn, error]}]
-  no-dupe-keys: off
-  no-var: off
-  no-undef: off
-  no-unused-vars: off
+  no-console: [error, {allow: [warn, error]}]
+  no-var: error
+  no-unused-vars: warn
   require-yield: off
 extends:
   - 'eslint:recommended'
