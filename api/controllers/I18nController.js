@@ -6,8 +6,11 @@
  */
 
 module.exports = {
-  translate: function(req, res) {
-    req.setLocale(req.session.languagePreference);
-    return res.json(req.__(req.param('label')));
-  }
+    translate: function (req, res) {
+        req.setLocale(req.session.languagePreference);
+        return res.json(req.__(req.param('label')));
+    },
+    catalog: function (req, res) {
+        return res.json(req.getCatalog(req.params.locale));
+    },
 };

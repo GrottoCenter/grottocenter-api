@@ -5,6 +5,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {Router, Route, IndexRoute} from 'react-router';
 import createBrowserHistory from 'history/lib/createBrowserHistory';
+import I18n from 'react-ghost-i18n';
 
 import LightPage from './pages/LightPage';
 import StandardPage from './pages/StandardPage';
@@ -26,6 +27,12 @@ import injectTapEventPlugin from 'react-tap-event-plugin';
 injectTapEventPlugin();
 
 let gcStore = createStore(searchReducers);
+
+/*
+  * please do not remove *
+  localization init via ejs printed global var catalog
+*/
+I18n.locale = window.catalog;
 
 ReactDOM.render(
   <MuiThemeProvider muiTheme={getMuiTheme(grottoTheme)}>

@@ -1,6 +1,5 @@
 import React from 'react';
 
-import I18n from './../components/I18n';
 import GrottoAppBar from './homepage/GrottoAppBar';
 import Header from './homepage/Header';
 import Footer from './homepage/Footer';

@@ -1,9 +1,9 @@
-module.exports = function(grunt) {
+module.exports = function (grunt) {
 
-  grunt.config.set('browserify', {
-    dev: {
-      files: {
-        '.tmp/public/js/bundle.js': [
+    grunt.config.set('browserify', {
+        dev: {
+            files: {
+                '.tmp/public/js/bundle.js': [
           '.tmp/public/js/actions/*.js',
           '.tmp/public/js/components/**/*.js',
           '.tmp/public/js/pages/**/*.js',
@@ -11,15 +11,17 @@ module.exports = function(grunt) {
           '.tmp/public/js/widgets/*.js',
           '.tmp/public/js/*.js'
         ],
-      },
-      options: {
-        transform: ['babelify']
-      }
-    },
-    dist: {
+            },
+            options: {
+                transform: [['babelify', {
+                    compact: false
+                }]]
+            }
+        },
+        dist: {
 
-    }
-  });
+        }
+    });
 
-  grunt.loadNpmTasks('grunt-browserify');
+    grunt.loadNpmTasks('grunt-browserify');
 };

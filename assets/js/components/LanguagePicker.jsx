@@ -2,31 +2,29 @@ import React, {
     Component
 }
 from 'react';
+import { connect } from 'react-redux'
+
 import SelectField from 'material-ui/SelectField';
 import MenuItem from 'material-ui/MenuItem';
 
-const languages = [
-    <MenuItem key={1} value={"fr"} primaryText="Français" />,
-    <MenuItem key={2} value={"en"} primaryText="English" />,
-    <MenuItem key={3} value={"de"} primaryText="Deutsch" />,
-    <MenuItem key={4} value={"es"} primaryText="Español" />,
-    <MenuItem key={5} value={"bg"} primaryText="Български" />,
-    <MenuItem key={6} value={"nl"} primaryText="Nederlands" />,
-    <MenuItem key={7} value={"ca"} primaryText="Català" />,
-    <MenuItem key={8} value={"it"} primaryText="Italiano" />
+let languages = [// to this.state ?
 ];
-export default class LanguagePicker extends Component {
+class LanguagePicker extends Component {
 
     constructor(props) {
         super(props);
         this.state = {
-            value: "fr"
+            value: locale
         };
+
+        languages = locales_list.map(function(el, index) {
+            return <MenuItem key={index} value={el.value} primaryText={el.primaryText} />;
+        });
+
     }
     handleChange(event, index, value) {
-        this.setState({
-            value
-        });
+      if ( value==this.state.value ) return;
+      window.location = "/?lang="+value;
     }
 
     render() {
@@ -40,3 +38,5 @@ export default class LanguagePicker extends Component {
         );
     }
 }
+LanguagePicker = connect()(LanguagePicker);
+export default LanguagePicker

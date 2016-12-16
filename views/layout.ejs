@@ -37,7 +37,16 @@
     <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.2/dist/leaflet.css" />
     <script>
-    catalog=<%- JSON.stringify(getCatalog(getLocale())) %>;
+    /*
+    i18n
+    */
+    locale = "<%= getLocale() %>";
+    locales_list = [];
+    <% var locales=getLocales(); %>
+    <% for(var i=0; i<locales.length; i++) {%>
+       locales_list.push({value:"<%= locales[i] %>", primaryText:"<%= __({phrase: 'English', locale: locales[i]}) %>"});
+    <% } %>
+    window.catalog = <%- JSON.stringify(getCatalog(getLocale())) %>;
     </script>
   </head>
 

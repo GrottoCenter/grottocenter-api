@@ -28,7 +28,8 @@ module.exports = function (grunt) {
                 ],
                 dest: '.tmp/public/js/',
                 ext: '.js'
-      }]
+            }],
+            compact: false
         }
     });
 
