@@ -8,15 +8,21 @@ import RandomEntry from './homepage/RandomEntry';
 import Partners from './homepage/Partners';
 import RecentContributions from './homepage/RecentContributions';
 
-const HomepageFlat = () => (
-  <div>
-    <LatestNews/>
-    <Association/>
-    <WhatIsIt/>
-    <RandomEntry/>
-    <Partners nbDisplayed="6"/>
-    <RecentContributions/>
-  </div>
-);
-
-export default HomepageFlat;
+export default class HomepageFlat extends React.Component {
+  constructor(props) {
+    super(props);
+    I18n.locale = catalog;
+  }
+  render() {
+    return (
+      <div>
+        <LatestNews/>
+        <Association/>
+        <WhatIsIt/>
+        <RandomEntry/>
+        <Partners nbDisplayed="6"/>
+        <RecentContributions/>
+      </div>
+    );
+  }
+}
