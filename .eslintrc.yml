@@ -2,6 +2,7 @@ env:
   es6: true
   node: true
   mocha: true
+  browser: true
 rules:
   # strict: [error, global]
   indent: [error, 2, {SwitchCase: 1}]
@@ -18,10 +19,10 @@ rules:
   no-const-assign: error
   no-console: [error, {allow: [warn, error]}]
   no-var: error
-  no-unused-vars: warn
+  no-unused-vars: error
   require-yield: off
-extends:
-  - 'eslint:recommended'
+plugins: ['react']
+extends: [ 'eslint:recommended', 'plugin:react/recommended' ]
 parserOptions:
   ecmaVersion: 6
   sourceType: module
