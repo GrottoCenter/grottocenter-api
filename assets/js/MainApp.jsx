@@ -18,9 +18,9 @@ import grottoTheme from './pages/grottoTheme';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import getMuiTheme from 'material-ui/styles/getMuiTheme';
 
-import { Provider } from 'react-redux'
-import { createStore } from 'redux'
-import { searchReducers } from './reducers/SearchReducers'
+import { Provider } from 'react-redux';
+import { createStore } from 'redux';
+import { searchReducers } from './reducers/SearchReducers';
 
 // Needed for onTouchTap// sans ça les clicks de material-ui ne fonctionnent pas
 import injectTapEventPlugin from 'react-tap-event-plugin';
