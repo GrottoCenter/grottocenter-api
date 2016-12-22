@@ -21,17 +21,10 @@ module.exports = function(grunt) {
     },
     assets: {
       // Assets to watch:
-      files: ['assets/images/**/*', 'assets/styles/**/*', 'assets/js/dependencies/**/*', 'tasks/pipeline.js'],
+      files: ['assets/**/*.!(jsx)', 'tasks/pipeline.js'],
       // When assets are changed:
       tasks: ['syncAssets', 'linkAssets']
-    },
-    browserify: {
-      // App assets to watch:
-      files: ['assets/js/**/*', '!assets/js/dependencies/**/*'],
-      // When assets are changed:
-      tasks: ['browserify']
     }
-
   });
 
   grunt.loadNpmTasks('grunt-contrib-watch');

@@ -1,22 +1,26 @@
-module.exports = function (grunt) {
+module.exports = function(grunt) {
 
-    grunt.config.set('browserify', {
-        dev: {
+  grunt.config.set('browserify', {
+    dev: {
       src: ['./assets/js/MainApp.jsx'],
       dest: '.tmp/public/js/bundle.js',
-            options: {
+      options: {
         watch : true, // use watchify for incremental builds!
-        keepAlive : true, // watchify will exit unless task is kept alive
+        //  keepAlive : true, // watchify will exit unless task is kept alive
         //fullPaths: false,
         browserifyOptions: {
           debug: true, // source mapping
-          extensions: [ '.jsx', '.js']
+          extensions: ['.jsx', '.js']
         },
-        transform: [['babelify', {compact: false, presets: ['es2015', 'react']}]],
-
+        transform: [
+          ['babelify', {
+            compact: false,
+            presets: ['es2015', 'react']
+          }]
+        ]
       }
-        }
-    });
+    }
+  });
 
-    grunt.loadNpmTasks('grunt-browserify');
+  grunt.loadNpmTasks('grunt-browserify');
 };
