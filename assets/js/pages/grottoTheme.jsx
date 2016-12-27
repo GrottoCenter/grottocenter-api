@@ -17,13 +17,13 @@ export default {
     accent1Color: pinkA200,
     accent2Color: grey100,
     accent3Color: grey500,
-    textColor: darkBlack,
+    textColor: white,
     alternateTextColor: white,
-    canvasColor: white,
+    canvasColor: grey500,
     borderColor: grey300,
     disabledColor: fade(darkBlack, 0.3),
     pickerHeaderColor: cyan500,
     clockCircleColor: fade(darkBlack, 0.07),
     shadowColor: fullBlack,
-  },
+  }
 };

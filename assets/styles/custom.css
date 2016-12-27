@@ -24,7 +24,8 @@ body {
 /* APP BAR */
 
 .gcAppBar {
-  float: left;
+  position: absolute;
+  z-index: 100;
   background-color: rgba(0, 0, 0, 0.6) !important;
 }
 
