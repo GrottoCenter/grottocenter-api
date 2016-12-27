@@ -17,16 +17,38 @@
 
 body {
   background-color: #F5F5F5;
+  margin: 0;
+}
+
+
+/* APP BAR */
+
+.gcAppBar {
+  float: left;
+  background-color: rgba(0, 0, 0, 0.6) !important;
 }
 
 
 /* HEADER */
 
+header>.container {
+  width: 100%;
+  max-width: initial;
+  padding: 0px;
+}
+
 header>div {
   color: black;
   background: url('/images/caves/Naracoorte-cave.jpg') 0 center;
   background-repeat: no-repeat;
-  background-size: 100%;
+  background-size: 200%;
+  background-position-y: 0;
+}
+
+@media (min-width: 550px) {
+  header>div {
+    background-size: 100%;
+  }
 }
 
 header div.toolbar {
@@ -69,8 +91,12 @@ header .logo img {
 
 header .sitename {
   color: white;
-  /*display: inline;*/
-  font-size: 3.5em;
+}
+
+@media (min-width: 550px) {
+  header .sitename {
+    font-size: 3.5em;
+  }
 }
 
 header .slogan {
@@ -86,6 +112,13 @@ header .logofse {
 
 header .gc-fse-info {
   color: white;
+  display: none;
+}
+
+@media (min-width: 550px) {
+  header .gc-fse-info {
+    display: inline;
+  }
 }
 
 header .searchbar {
@@ -151,7 +184,6 @@ div[role="section"] {
 
 .basicCard {
   box-shadow: 0 2px 2px 0 rgba(0, 0, 0, .14), 0 3px 1px -2px rgba(0, 0, 0, .2), 0 1px 5px 0 rgba(0, 0, 0, .12);
-  margin: 0 10px 0 10px;
 }
 
 .cardtitle {
@@ -269,18 +301,3 @@ footer .infos img {
   width: 40px;
   padding: 2px;
 }
-
-
-/**** Big device layout ****/
-
-@media (min-width: 1024px) {}
-
-
-/**** Medium device layout ****/
-
-@media (max-width: 1023px) {}
-
-
-/**** Small device layout ****/
-
-@media (max-width: 767px) {}

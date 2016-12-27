@@ -1,27 +1,21 @@
-import React from 'react'
+import React from 'react';
+
 const Association = () => (
   <div>
-    <div role="section" style={{
-      'minHeight': '500px',
-      'background': 'linear-gradient(to top, rgb(251, 251, 222) 0%, rgb(255, 223, 174) 100%)'
-    }}>
-      <div className="container-fluid">
-        <div className="row" style={{
-          'width': '80%',
-          'margin': 'auto'
-        }}>
-          <div style={{
-            'text-align': 'left',
-            'padding-top': '20px'
-          }} className="col-xs-6">
-            <h3 style={{
-              'font-size': '35px',
-              'padding-bottom': '30px'
-            }}>L'association Wikicaves</h3>
-            <h5 style={{
-              'font-size': '18px',
-              'padding-bottom': '30px'
-            }}>Le site www.grottocenter.org est une base de donnée mondiale, communautaire dédiée à la spéléologie et alimentée par les spéléologues sur le principe du Wiki. Toute cavité naturelle présentant un intérêt à tes yeux peut y être enregistrée !</h5 >
+    <div role="section" className="bgGradent association">
+      <div className="container">
+        <div className="row">
+          <div className="eight columns">
+            <h3>L'association Wikicaves</h3>
+            <h5>Le site www.grottocenter.org est une base de donnée mondiale, communautaire dédiée à la spéléologie et alimentée par les spéléologues sur le principe du Wiki.
+              Toute cavité naturelle présentant un intérêt à tes yeux peut y être enregistrée !</h5 >
+          </div>
+          <div className="four columns">
+            <img src="/images/logo.svg"/>
+          </div>
+        </div>
+        <div className="row">
+          <div className="twelve columns">
             <p>Le site est édité par l'association Wikicaves qui s'est fixée comme objectif de :
               <ul>
                 <li>Favoriser le développement de la spéléologie dans le monde, notamment par l'Internet collaboratif.</li>
@@ -31,15 +25,6 @@ const Association = () => (
                 <li>Aider l'exploration et l'étude scientifique des cavités naturelles.</li>
               </ul>
             </p>
-          </div>
-          <div style={{
-            'text-align': 'center',
-            'padding-top': '20px'
-          }} className="col-xs-6">
-            <img style={{
-              'width': '100%',
-              'max-width': '500px'
-            }} src="/images/homepage/montain.png"/>
           </div>
         </div>
       </div>

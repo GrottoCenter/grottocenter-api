@@ -1,11 +1,12 @@
-import React from 'react'
+import React from 'react';
+
 const RecentContributions = () => (
     <div>
-      <div role="section" style={{'minHeight': '500px', 'background': 'linear-gradient(to top, rgb(251, 251, 222) 0%, rgb(255, 223, 174) 100%)'}}>
+      <div role="section"  className="bgGradent recentContrib">
         <h2 style={{'text-align': 'center', 'padding-bottom': '50px'}}>RECENT CONTRIBUTIONS</h2>
-        <div className="container-fluid">
+        <div className="container">
           <div className="row">
-            <div style={{'textAlign': 'center'}} className="col-xs-12">
+            <div style={{'textAlign': 'center'}} className="twelve columns">
               <div className="animEvent">
                 <div style={{'display': 'inline-table', 'width': '10%'}}>
                   <div style={{'fontSize': '1.5em', 'fontWeight': 'bold'}}>09</div>
@@ -27,7 +28,7 @@ const RecentContributions = () => (
             </div>
           </div>
           <div className="row">
-            <div style={{'textAlign': 'center'}} className="col-xs-12">
+            <div style={{'textAlign': 'center'}} className="twelve columns">
               <div className="animEvent">
                 <div style={{'display': 'inline-table', 'width': '10%'}}>
                   <div style={{'fontSize': '1.5em', 'fontWeight': 'bold'}}>09</div>
@@ -49,7 +50,7 @@ const RecentContributions = () => (
             </div>
           </div>
           <div className="row">
-            <div style={{'textAlign': 'center'}} className="col-xs-12">
+            <div style={{'textAlign': 'center'}} className="twelve columns">
               <div className="animEvent">
                 <div style={{'display': 'inline-table', 'width': '10%'}}>
                   <div style={{'fontSize': '1.5em', 'fontWeight': 'bold'}}>09</div>

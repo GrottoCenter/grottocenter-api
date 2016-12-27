@@ -63,10 +63,7 @@ export default class GrottoAppBar extends React.Component {
       ];
 
     return (
-      <Toolbar
-          style={{
-             backgroundColor: '#55ffd699',
-           }}>
+      <Toolbar className="gcAppBar">
         <ToolbarGroup firstChild={true}>
             <ToolbarTitle text="Grottocenter" />
             <ToolbarSeparator />

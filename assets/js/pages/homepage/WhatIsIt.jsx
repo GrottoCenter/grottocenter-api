@@ -1,34 +1,31 @@
-import React from 'react'
+import React from 'react';
+
 const WhatIsIt = () => (
-    <div>
-      <div role="section" style={{'minHeight': '500px', 'background': 'linear-gradient(to top, rgb(251, 251, 222) 0%, rgb(255, 223, 174) 100%)'}}>
-        <h2  style={{'text-align': 'center', 'padding-bottom': '50px'}}>FOCUS ON GROTTOCENTER</h2>
-        <div className="container-fluid">
-          <div className="row" style={{'width': '80%', 'margin': 'auto'}}>
-            <div style={{'text-align': 'center', 'padding-top': '20px'}} className="col-xs-6 col-sm-3">
-              <div className="animData">123</div>
-
-              <div style={{'padding-top': '20px'}}>est un nombre à définir</div>
-            </div>
-            <div style={{'text-align': 'center', 'padding-top': '20px'}} className="col-xs-6 col-sm-3">
-              <div className="animData">15000</div>
-
-              <div style={{'padding-top': '20px'}}>est le nombre d'entrée que GC rassemble les données spéléos mondiale</div>
-            </div>
-            <div style={{'text-align': 'center', 'padding-top': '20px'}} className="col-xs-6 col-sm-3">
-              <div className="animData">30</div>
-
-              <div style={{'padding-top': '20px'}}>est le nombre de clubs qui font confiance à GC</div>
-            </div>
-            <div style={{'text-align': 'center', 'padding-top': '20px'}} className="col-xs-6 col-sm-3">
-              <div className="animData">250</div>
-
-              <div style={{'padding-top': '20px'}}>est le nombre de spéléos contributeurs</div>
-            </div>
+  <div>
+    <div role="section" className="bgGradent">
+      <h2  style={{'text-align': 'center', 'padding-bottom': '50px'}}>Début 2017, Grottocenter représente</h2>
+      <div className="container">
+        <div className="row">
+          <div style={{'text-align': 'center', 'padding-top': '20px'}} className="three columns">
+            <div className="animData">16</div>
+            <div style={{'padding-top': '20px'}}>partenaires accompagnent le projet en participant à son financement, en fournissant des données, en communiquant sur l’intérêt de partager les données</div>
+          </div>
+          <div style={{'text-align': 'center', 'padding-top': '20px'}} className="three columns">
+            <div className="animData">654</div>
+            <div style={{'padding-top': '20px'}}>organisations sont présentes sur le site</div>
+          </div>
+          <div style={{'text-align': 'center', 'padding-top': '20px'}} className="three columns">
+            <div className="animData">2724</div>
+            <div style={{'padding-top': '20px'}}>spéléos participent, au jour le jour, à l’amélioration de la base de données</div>
+          </div>
+          <div style={{'text-align': 'center', 'padding-top': '20px'}} className="three columns">
+            <div className="animData">39175</div>
+            <div style={{'padding-top': '20px'}}>cavités sont librement accessibles à partir de cette page </div>
           </div>
         </div>
       </div>
     </div>
+  </div>
 );
 
 export default WhatIsIt;

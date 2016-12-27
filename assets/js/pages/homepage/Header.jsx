@@ -4,12 +4,12 @@ import Autocomplete from './../../components/searchBar/Autocomplete';
 import I18n from 'react-ghost-i18n';
 
 const Header = () => (
-  <header className="header fixed-top clearfix">
+  <header className="header">
 
-    <div className="container-fluid">
+    <div className="container">
 
       <div className="row brand bgwhite">
-        <div className="col-xs-12">
+        <div className="twelve columns">
           <a href="" className="logo">
             <img src="/images/logo.svg" alt="logo-wikicaves"/>
           </a>
@@ -21,7 +21,7 @@ const Header = () => (
       </div>
 
       <div className="row bgwhite">
-        <div className="col-xs-12">
+        <div className="twelve columns">
           <img className="logofse" src="/images/FSE.svg" alt="logo-fse"/>
           <span className="gc-fse-info">
             <I18n>Grottocenter is supported by the FSE</I18n>
@@ -30,7 +30,7 @@ const Header = () => (
       </div>
 
       <div className="row searchbar">
-        <div className="col-xs-12">
+        <div className="twelve columns">
           <Autocomplete/>
         </div>
       </div>
