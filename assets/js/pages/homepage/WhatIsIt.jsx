@@ -1,9 +1,12 @@
 import React from 'react';
+import I18n from 'react-ghost-i18n';
 
 const WhatIsIt = () => (
   <div>
     <div role="section" className="bgGradent">
-      <h2  style={{'text-align': 'center', 'padding-bottom': '50px'}}>Début 2017, Grottocenter représente</h2>
+      <h2  style={{'text-align': 'center', 'padding-bottom': '50px'}}>
+        <I18n>At the beginning of 2017, Grottocenter represents:</I18n>
+      </h2>
       <div className="container">
         <div className="row">
           <div style={{'text-align': 'center', 'padding-top': '20px'}} className="three columns">
