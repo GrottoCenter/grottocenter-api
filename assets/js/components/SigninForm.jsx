@@ -3,8 +3,8 @@
  */
 import React from 'react';
 
-import BasicCard from './../components/BasicCard';
-import I18n from './../components/I18n';
+import BasicCard from './BasicCard';
+import I18n from './I18n';
 
 export default class SigninForm extends React.Component {
   constructor(props) {
