@@ -1,11 +1,15 @@
 import React from 'react';
+import PropTypes from 'react/lib/ReactPropTypes';
 
-import GrottoAppBar from './homepage/GrottoAppBar';
 import Header from './homepage/Header';
 import Footer from './homepage/Footer';
 
-const StandardPage = React.createClass({
-  render: function() {
+export default class StandardPage extends React.Component {
+  constructor(props) {
+    super(props);
+  }
+
+  render() {
     return (
       <div>
         <Header/>
@@ -14,6 +18,8 @@ const StandardPage = React.createClass({
       </div>
     );
   }
-});
+}
 
-export default StandardPage;
+StandardPage.propTypes = {
+  children: PropTypes.node.isRequired
+};
