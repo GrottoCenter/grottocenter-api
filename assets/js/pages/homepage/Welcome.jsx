@@ -1,4 +1,5 @@
 import React from 'react';
+import I18n from 'react-ghost-i18n';
 
 const Welcome = () => (
   <div>
@@ -6,13 +7,12 @@ const Welcome = () => (
       <div className="container">
         <div className="row">
           <div className="four columns">
-            <h3>Bienvenue sur Grottocenter !</h3>
+            <h3><I18n>Welcome to Grottocenter!</I18n></h3>
           </div>
           <div className="eight columns">
-            <p>Cette version 3.1 du site s’enrichit progressivement pour vous permettre une navigation plus simple depuis tous vos périphériques.</p>
-            <p>Plus rapide, l’application bénéficie d’un code de grande qualité, facile à maintenir : tout informaticien peut rejoindre l’équipe de développement et contribuer sans difficulté.</p>
-            <p>Dès aujourd’hui vous pouvez profiter d’informations actualisées sur la spéléologie, du module de recherche rapide et efficace, des informations sur les cavités disposant d’un contenu de qualité.</p>
-            <p>Revenez régulièrement pour découvrir de nouvelles fonctionnalités et continuez à utiliser <a href="http://www.grottocenter.og">Grottocenter</a> pour apporter vos contributions et consulter celles de vos pairs.</p>
+            <p><I18n>This 3.1 version of the site is  improving gradually to allow  a simpler navigation from all your peripherals.</I18n></p>
+            <p><I18n>The application is faster, and benefits  from a code of higher quality which is also easier to maintain: data processing specialist may join the development team and easily contribute.</I18n></p>
+            <p><I18n>As of today, you can access updated information on caving, an effective module for quick search and quality information on caves. Regularly  log in to discover new features and keep on using Grottocenter to take part and use information already added by the community.</I18n></p>
           </div>
         </div>
       </div>

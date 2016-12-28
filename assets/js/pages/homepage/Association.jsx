@@ -1,4 +1,5 @@
 import React from 'react';
+import I18n from 'react-ghost-i18n';
 
 const Association = () => (
   <div>
@@ -7,8 +8,11 @@ const Association = () => (
         <div className="row">
           <div className="eight columns">
             <h3>L'association Wikicaves</h3>
-            <h5>Le site www.grottocenter.org est une base de donnée mondiale, communautaire dédiée à la spéléologie et alimentée par les spéléologues sur le principe du Wiki.
-              Toute cavité naturelle présentant un intérêt à tes yeux peut y être enregistrée !</h5 >
+            <h5>
+              <I18n>GrottoCenter is a comunity database for cavers based on a wiki-like system. Cavers fill the databes for cavers.</I18n>
+              <br/>
+              <I18n>Any interesting natural cave can be added in the database!</I18n>
+            </h5>
           </div>
           <div className="four columns">
             <img src="/images/logo.svg"/>
@@ -16,13 +20,14 @@ const Association = () => (
         </div>
         <div className="row">
           <div className="twelve columns">
-            <p>Le site est édité par l'association Wikicaves qui s'est fixée comme objectif de :
+            <p>
+              <I18n>The international voluntary association WikiCaves operates the GrottoCenter web application. WikiCaves has as goals:</I18n>
               <ul>
-                <li>Favoriser le développement de la spéléologie dans le monde, notamment par l'Internet collaboratif.</li>
-                <li>Diffuser et partager les informations liées à la pratique de la spéléologie.</li>
-                <li>Faciliter l'accès aux informations concernant les cavités naturelles, notamment via Internet.</li>
-                <li>Mettre en valeur et contribuer à la protection des cavités naturelles et de leur environnement.</li>
-                <li>Aider l'exploration et l'étude scientifique des cavités naturelles.</li>
+                <li><I18n>Promote the development of the speleology in the world especially through  web-based collaboration.</I18n></li>
+                <li><I18n>Share and spread the data related to the speleology.</I18n></li>
+                <li><I18n>Make access to the natural caves data easier especially by using Internet.</I18n></li>
+                <li><I18n>Highlight and help the protection of the natural caves and their surroundings.</I18n></li>
+                <li><I18n>Help the exploration and the scientific study of natural caves.</I18n></li>
               </ul>
             </p>
           </div>
