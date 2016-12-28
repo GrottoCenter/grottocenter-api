@@ -8,7 +8,6 @@ const StandardPage = React.createClass({
   render: function() {
     return (
       <div>
-        <GrottoAppBar/>
         <Header/>
         {this.props.children}
         <Footer/>

@@ -2,11 +2,13 @@ import React from 'react';
 import SearchBar from './../../components/searchBar/Bar';
 import Autocomplete from './../../components/searchBar/Autocomplete';
 import I18n from 'react-ghost-i18n';
+import GrottoAppBar from './GrottoAppBar';
 
 const Header = () => (
   <header className="header">
-
     <div className="container">
+
+      <GrottoAppBar/>
 
       <div className="row brand bgwhite">
         <div className="twelve columns">
