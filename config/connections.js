@@ -43,13 +43,24 @@ module.exports.connections = {
    * Run: npm install sails-mysql                                             *
    *                                                                          *
    ***************************************************************************/
-  grottoceMysql: {
+  grottoceMysqlDev: {
     migrate: 'safe',
     adapter: 'sails-mysql',
     host: 'localhost',
     user: 'root',
     password: 'root',
-    database: 'grottoce'
+    database: 'grottoce',
+    timezone: 'utc'
+  },
+
+  grottoceMysqlProd: {
+    migrate: 'safe',
+    adapter: 'sails-mysql',
+    host: '',
+    user: '',
+    password: '',
+    database: 'grottoce',
+    timezone: 'utc'
   },
 
   /***************************************************************************
