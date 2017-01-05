@@ -20,7 +20,7 @@ MACHINETYPEBUILDER="n1-standard-4"
 # This google machine Image prevent the certificate bug that we have with the default Google machine image :
 # See http://stackoverflow.com/questions/40092793/error-validating-certificates-when-using-docker-machine-in-gce
 MACHINEIMAGE="https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-1604-xenial-v20161205"
-IMAGE=us.gcr.io/${PROJECT_ID}/${APPNAME}:${VERSION}
+IMAGE=eu.gcr.io/${PROJECT_ID}/${APPNAME}:${VERSION}
 ###########################################
 
 # Check that production.js is available before the deploy !
