@@ -98,7 +98,7 @@ class GrottoAppBar extends React.Component {
 
         <ToolbarGroup>
           <IconMenu iconButtonElement={
-            <IconButton iconStyle={{color: this.props.muiTheme.palette.textIconColor}} touch={true}>
+            <IconButton style={{'display': 'none'}} iconStyle={{color: this.props.muiTheme.palette.textIconColor}} touch={true}>
               <MoreVertIcon />
             </IconButton>
           }>
