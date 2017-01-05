@@ -1,10 +1,19 @@
 div[role="section"].bgGradent {
   min-height: 300px;
-  background: linear-gradient(to top, rgb(251, 251, 222) 0%, rgb(255, 223, 174) 100%);
+  /*background: linear-gradient(to top, rgb(251, 251, 222) 0%, rgb(255, 223, 174) 100%);*/
+  /*background: linear-gradient(to top, #d7ccc8 10%, #795548 80%);*/
+  background: linear-gradient(to bottom, #d7ccc8 10%, #795548 80%);
 }
 
 div[role="section"].association {
   text-align: center;
+}
+
+div[role="section"].associationBg {
+  background-image: url(http://localhost:1337/images/caves/DSC_0013b.jpg);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 div[role="section"].association .container {
@@ -35,14 +44,25 @@ div[role="section"].association .row > div:last-child {
 }
 
 div[role="section"].association .row > div:last-child img {
-  width: 100%;
-  max-width: 350px;
-  border-radius: 50%;
-  display: none;
+  max-width: 200px;
 }
 
 div[role="section"].association .row > div:last-child img:visible {
   scale: 50%
+}
+
+div[role="section"].association .row ul {
+  list-style-type: none;
+}
+
+div[role="section"].association .row li {
+  margin-bottom: 0;
+}
+
+div[role="section"].association .row .goal {
+  width: 20%;
+  text-align: center;
+  float: left;
 }
 
 @media (min-width: 550px) {
@@ -63,38 +83,98 @@ div[role="section"].association .row > div:last-child img:visible {
   }
 }
 
-div[role="section"].welcome {
+div[role="section"].welcome .row > div:first-child {
+  text-align: center;
+}
+
+div[role="section"].welcome .row > div:first-child > img {
+  border-radius: 50%;
+  width: 50%;
+}
+
+@media (min-width: 550px) {
+  div[role="section"].welcome .row > div:first-child > img {
+    width: 80%;
+  }
+}
+
+div[role="section"].welcome h3 {
+  padding-top: 30px;
   text-align: center;
 }
 
 @media (min-width: 550px) {
-  div[role="section"].welcome {
+  div[role="section"].welcome h3 {
+    padding-top: 0px;
     text-align: inherit;
   }
 }
 
-div[role="section"].welcome .row > div:first-child {
-
-}
-
-div[role="section"].welcome .row > div:first-child > h3 {
+div[role="section"].lastNews > h3 {
   text-align: center;
-  padding-top: 30%;
+  padding-bottom: 20px;
 }
 
 div[role="section"].recentContrib > .container {
   width: 100%;
 }
 
-div[role="section"].partners img {
+div[role="section"].partners .vignette {
   float: left;
-  padding-right: 4%;
-  padding-bottom: 4%;
-  width: 28%;
-  max-width: 120px;
+  margin-right: 2%;
+  margin-left: 2%;
+  margin-bottom: 4%;
+  background-color: white;
+  border: 1px solid rgb(136, 91, 57);
+  box-shadow: rgba(0, 0, 0, 0.117647) 0px 1px 6px, rgba(0, 0, 0, 0.117647) 0px 1px 4px;
+  border-radius: 2%;
+  height: 140px;
+  line-height: 140px;
+  overflow: hidden;
+  position: relative;
+}
+
+div[role="section"].partners .vignette {
+  /* 2 vignettes / lines */
+  width: calc((100% / 2) - 5%);
+}
+
+@media (min-width: 550px) {
+  div[role="section"].partners .vignette {
+    /* 3 vignettes / lines */
+    width: calc((100% / 3) - 5%);
+  }
+}
+
+@media (min-width: 750px) {
+  div[role="section"].partners .vignette {
+    /* 4 vignettes / lines */
+    width: calc((100% / 4) - 5%);
+  }
+}
+
+@media (min-width: 1000px) {
+  div[role="section"].partners .vignette {
+    /* 5 vignettes / lines */
+    width: calc((100% / 5) - 5%);
+  }
+}
+
+div[role="section"].partners .vignette img {
+  width: 100%;
+  vertical-align: middle;
 }
 
 div[role="section"].randomEntry .rom > div:last-child > img {
   width: 100%;
   max-width: 300px;
+}
+
+div[role="section"].randomEntryBg {
+  background-image: url(http://localhost:1337/images/caves/DSC_0420.JPG);
+  background-size: cover;
+  background-attachment: fixed;
+  background-position: center;
+  background-repeat: no-repeat;
+  margin-top: 0px;
 }

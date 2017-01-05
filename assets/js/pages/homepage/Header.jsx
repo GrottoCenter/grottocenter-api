@@ -2,14 +2,11 @@ import React from 'react';
 import SearchBar from './../../components/searchBar/Bar';
 import Autocomplete from './../../components/searchBar/Autocomplete';
 import I18n from 'react-ghost-i18n';
-import GrottoAppBar from './GrottoAppBar';
+import muiThemeable from 'material-ui/styles/muiThemeable';
 
-const Header = () => (
-  <header className="header">
+const Header = (props) => (
+  <header className="header" style={{color: props.muiTheme.palette.primaryTextColor, fontFamily: props.muiTheme.fontFamily}}>
     <div className="container">
-
-      <GrottoAppBar/>
-
       <div className="row brand bgwhite">
         <div className="twelve columns">
           <a href="" className="logo">
@@ -24,8 +21,8 @@ const Header = () => (
 
       <div className="row bgwhite">
         <div className="twelve columns">
-          <img className="logofse" src="/images/FSE.svg" alt="logo-fse"/>
           <span className="gc-fse-info">
+            <img className="logofse" src="/images/FSE.svg" alt="logo-fse"/>
             <I18n>Grottocenter is supported by the FSE</I18n>
           </span>
         </div>
@@ -40,4 +37,4 @@ const Header = () => (
   </header>
 );
 
-export default Header;
+export default muiThemeable()(Header);

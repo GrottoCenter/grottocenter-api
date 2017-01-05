@@ -3,10 +3,10 @@ import I18n from 'react-ghost-i18n';
 
 const WhatIsIt = () => (
   <div>
-    <div role="section" className="bgGradent">
-      <h2  style={{'text-align': 'center', 'padding-bottom': '50px'}}>
+    <div role="section" className="">
+      <h3  style={{'text-align': 'center', 'padding-bottom': '50px'}}>
         <I18n>At the beginning of 2017, Grottocenter represents:</I18n>
-      </h2>
+      </h3>
       <div className="container">
         <div className="row">
           <div style={{'text-align': 'center', 'padding-top': '20px'}} className="three columns">
@@ -30,7 +30,8 @@ const WhatIsIt = () => (
           <div style={{'text-align': 'center', 'padding-top': '20px'}} className="three columns">
             <div className="animData">39175</div>
             <div style={{'padding-top': '20px'}}>
-              <I18n>caves are freely accessible from the following page (</I18n>
+              <I18n>caves are freely accessible from the following page (</I18n>50 902 <I18n>by logging on</I18n> <a href='http://www.grottocenter.org'>Grotto v2</a>)
+
             </div>
           </div>
         </div>

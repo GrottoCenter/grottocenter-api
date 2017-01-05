@@ -12,7 +12,7 @@ class PartnersItem extends React.Component {
   render() {
     let url = '/images/partners/' + this.props.partner.pictureFileName;
     return (
-      <div>
+      <div className="vignette">
         <img src={url} alt={this.props.partner.name} onClick={this.openWindow.bind(this)}/>
       </div>
     );
@@ -51,12 +51,14 @@ export default class Partners extends React.Component {
 
     return (
       <div>
-        <div role="section" className="bgGradent partners">
-          <h2 style={{'text-align': 'center', 'padding-bottom': '50px'}}>OFFICIAL PARTNERS</h2>
+        <div role="section" className="partners">
+          <h3 style={{'text-align': 'center', 'padding-bottom': '50px'}}><I18n>Partners</I18n></h3>
           <div>
             <div className="container">
               <div className="row vignettes">
-                {rows}
+                <div className="twelve columns">
+                  {rows}
+                </div>
               </div>
             </div>
           </div>

@@ -1,8 +1,9 @@
 import React from 'react';
 import I18n from 'react-ghost-i18n';
+import muiThemeable from 'material-ui/styles/muiThemeable';
 
-const Footer = () => (
-    <footer>
+const Footer = (props) => (
+    <footer style={{backgroundColor: props.muiTheme.palette.primary1Color, color: props.muiTheme.palette.textIconColor}}>
       <div className="container">
         <div className="row">
           <div className="three columns">
@@ -26,7 +27,7 @@ const Footer = () => (
           </div>
           <div className="three columns donate">
             <div className="centered bigger">
-              <I18n>Support Wikicaves</I18n>
+              <I18n>Wikicaves association</I18n>
             </div>
             <div><img src="/images/btn_donateCC_LG.gif" alt="Donate"/></div>
           </div>
@@ -52,4 +53,4 @@ const Footer = () => (
     </footer>
 );
 
-export default Footer;
+export default muiThemeable()(Footer);

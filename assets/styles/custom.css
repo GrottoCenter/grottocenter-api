@@ -26,7 +26,7 @@ body {
 .gcAppBar {
   /*position: absolute;*/
   z-index: 100;
-  background-color: rgba(0, 0, 0, 0.6) !important;
+  width: 100%;
 }
 
 
@@ -39,8 +39,7 @@ header>.container {
 }
 
 header>div {
-  color: black;
-  background: url('/images/caves/Naracoorte-cave.jpg') 0 center;
+  background: url('/images/caves/topo.jpg') 0 center;
   background-repeat: no-repeat;
   background-size: 200%;
   background-position-y: 0;
@@ -90,10 +89,6 @@ header .logo img {
   width: 120px;
 }
 
-header .sitename {
-  color: white;
-}
-
 @media (min-width: 550px) {
   header .sitename {
     font-size: 3.5em;
@@ -101,25 +96,26 @@ header .sitename {
 }
 
 header .slogan {
-  color: white;
   font-style: italic;
   font-size: normal;
 }
 
-header .logofse {
-  width: 40px;
-  margin: 10px;
-}
-
 header .gc-fse-info {
-  color: white;
   display: none;
+  font-size: small;
+  line-height: 40px;
 }
 
 @media (min-width: 550px) {
   header .gc-fse-info {
-    display: inline;
+    display: flex;
   }
+}
+
+header .logofse {
+  width: 40px;
+  height: 40px;
+  margin: 0 10px;
 }
 
 header .searchbar {
@@ -284,8 +280,6 @@ div[role="section"] {
 
 footer {
   font-size: smaller;
-  background: linear-gradient(to bottom, #34558A 0%, #213759 100%) repeat scroll 0 0 rgba(0, 0, 0, 0);
-  color: #f5f5f5;
   padding: 15px;
 }
 
@@ -317,4 +311,55 @@ footer .donate div {
 
 footer .legal p {
   text-align: justify;
+}
+
+.ribbon {
+  float: left;
+  text-align: center;
+  overflow: hidden;
+  padding: 0;
+  margin: 5px;
+  color: white;
+}
+
+.ribbon .ribbon-piece {
+  width: 35px;
+}
+
+.ribbon .tail {
+  overflow: hidden;
+  width: 35px;
+}
+
+.ribbon .top {
+  border-bottom: solid 1px rgba(255, 255, 255, 0.6);
+  border-radius: 1px 1px 0px 0px;
+  font-size: 11px;
+  padding: 4px 0;
+  position: relative;
+  text-transform: uppercase;
+}
+
+.ribbon .ribbon-piece {
+  background-color: rgba(255, 162, 68, 1);
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.5s ease-in;
+}
+
+.ribbon .tail .left {
+  left: -16px;
+  transform: rotate(-25deg);
+  height: 10px;
+  position: relative;
+  top: -7px;
+  width: 50px;
+}
+
+.ribbon .tail .right {
+  right: 9px;
+  transform: rotate(25deg);
+  height: 10px;
+  position: relative;
+  top: -22px;
+  width: 50px;
 }

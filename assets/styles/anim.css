@@ -28,22 +28,11 @@
 }
 
 .vignettes div {
-  transition: width 3s ease-in;
-}
-
-.vignettes div div {
-  background-color: white;
-  border: 2px solid rgb(136, 91, 57);
-  box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
-  width: 120px;
-  height: 120px;
-  overflow: hidden;
-  position: relative;
+  transition: width 1s ease-in;
 }
 
 .vignettes div div img {
-  width: 100%;
-  transition: scale 3s ease;
+  transition: scale 1s ease;
 }
 
 .vignettes div div img:hover {
@@ -53,15 +42,6 @@
 
 .vignettes div div img:hover::after {
   content: ''
-}
-
-.randomEntryBg {
-  background-image: url(http://localhost:1337/images/caves/cave-and-water.jpg);
-  background-size: cover;
-  background-attachment: fixed;
-  background-position: center;
-  background-repeat: no-repeat;
-  margin-top: 0px;
 }
 
 .randomcave {
