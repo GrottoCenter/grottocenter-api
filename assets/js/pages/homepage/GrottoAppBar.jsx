@@ -90,15 +90,15 @@ class GrottoAppBar extends React.Component {
     ];
 
     return (
-      <Toolbar style={{backgroundColor: this.props.muiTheme.grottoAppBar.backgroundColor}} className="gcAppBar">
+      <Toolbar style={{backgroundColor: this.props.muiTheme.palette.primary1Color}} className="gcAppBar">
         <ToolbarGroup firstChild={true}>
-          <FontIcon className="material-icons" style={{color: this.props.muiTheme.grottoAppBar.textColor}}>language</FontIcon>
+          <FontIcon className="material-icons" style={{color: this.props.muiTheme.palette.textIconColor}}>language</FontIcon>
           <LanguagePicker/>
         </ToolbarGroup>
 
         <ToolbarGroup>
           <IconMenu iconButtonElement={
-            <IconButton iconStyle={{color: this.props.muiTheme.grottoAppBar.textColor}} touch={true}>
+            <IconButton iconStyle={{color: this.props.muiTheme.palette.textIconColor}} touch={true}>
               <MoreVertIcon />
             </IconButton>
           }>

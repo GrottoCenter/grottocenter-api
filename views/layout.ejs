@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>New Sails App</title>
 
-    <!-- Viewport mobile tag for sensible mobile support -->
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<head>
+  <title>Grottocenter v3</title>
 
-    <!--
+  <!-- Viewport mobile tag for sensible mobile support -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <!--
         Stylesheets and Preprocessors
         ==============================
 
@@ -27,32 +28,36 @@
             + Use a different or additional preprocessor, like SASS, SCSS or Stylus
     -->
 
-    <!--STYLES-->
-    <link rel="stylesheet" href="/styles/normalize.css">
-    <link rel="stylesheet" href="/styles/skeleton.css">
-    <link rel="stylesheet" href="/styles/custom.css">
-    <link rel="stylesheet" href="/styles/anim.css">
-    <link rel="stylesheet" href="/styles/importer.css">
-    <!--STYLES END-->
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.2/dist/leaflet.css" />
-    <script>
+  <!--STYLES-->
+  <link rel="stylesheet" href="/styles/normalize.css">
+  <link rel="stylesheet" href="/styles/skeleton.css">
+  <link rel="stylesheet" href="/styles/custom.css">
+  <link rel="stylesheet" href="/styles/anim.css">
+  <link rel="stylesheet" href="/styles/importer.css">
+  <!--STYLES END-->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.2/dist/leaflet.css" />
+  <script>
     /*
-    i18n
-    */
+        i18n
+        */
     locale = "<%= getLocale() %>";
-    locales_list = [];
+    localesList = [];
     <% var locales=getLocales(); %>
     <% for(var i=0; i<locales.length; i++) {%>
-       locales_list.push({value:"<%= locales[i] %>", primaryText:"<%= __({phrase: 'English', locale: locales[i]}) %>"});
+    localesList.push({
+      value: "<%= locales[i] %>",
+      primaryText: "<%= __({phrase: 'English', locale: locales[i]}) %>"
+    });
     <% } %>
     window.catalog = <%- JSON.stringify(getCatalog(getLocale())) %>;
-    </script>
-  </head>
+  </script>
+</head>
 
-  <body>
-    <%- body %>
+<body>
+  <%- body %>
 
     <!--
         Client-side Templates
@@ -76,7 +81,7 @@
     -->
 
     <!--TEMPLATES-->
-    
+
     <!--TEMPLATES END-->
 
 
@@ -109,5 +114,6 @@
     <script src="/js/bundle.js"></script>
     <!--SCRIPTS END-->
     <script src="https://unpkg.com/leaflet@1.0.2/dist/leaflet.js"></script>
-  </body>
+</body>
+
 </html>

@@ -35,7 +35,7 @@ import spacing from 'material-ui/styles/spacing';
 
 export default {
   spacing: spacing,
-  fontFamily: 'Roboto, sans-serif',
+  fontFamily: 'Open Sans',
   palette: {
     primary1Color: brown500,
     primary2Color: brown700,
@@ -50,19 +50,5 @@ export default {
     divider: grey400,
     darkBlack: darkBlack,
     fullBlack: fullBlack
-  },
-  grottoAppBar: {
-    textColor: white,
-    backgroundColor: brown500
-  },
-  welcome: {
-    backgroundColor: brown500
-  },
-  footer: {
-    backgroundColor: brown700,
-    color: brown100
-  },
-  searchBar: {
-    backgroundColor: brown100
   }
 };
