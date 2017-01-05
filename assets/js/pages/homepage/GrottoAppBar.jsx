@@ -2,36 +2,38 @@ import React from 'react';
 import IconMenu from 'material-ui/IconMenu';
 import IconButton from 'material-ui/IconButton';
 import FontIcon from 'material-ui/FontIcon';
-import NavigationExpandMoreIcon from 'material-ui/svg-icons/navigation/expand-more';
+import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert';
 import MenuItem from 'material-ui/MenuItem';
 import FlatButton from 'material-ui/FlatButton';
 import {Toolbar, ToolbarGroup} from 'material-ui/Toolbar';
 import Dialog from 'material-ui/Dialog';
 import muiThemeable from 'material-ui/styles/muiThemeable';
 import LanguagePicker from './../../components/LanguagePicker';
+import SigninForm from './../../components/SigninForm';
 
 class GrottoAppBar extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      open: false
+      openSignIn: false,
+      openRegister: false
     };
   }
 
   openSignInDialog(event, index, value) {
-    this.setState({open: true});
+    this.setState({openSignIn: true});
   }
 
   closeSignInDialog(event, index, value) {
-    this.setState({open: false});
+    this.setState({openSignIn: false});
   }
 
   openRegisterDialog(event, index, value) {
-    this.setState({open: true});
+    this.setState({openRegister: true});
   }
 
   closeRegisterDialog(event, index, value) {
-    this.setState({open: false});
+    this.setState({openRegister: false});
   }
 
   processLogin(event, index, value) {
@@ -59,7 +61,21 @@ class GrottoAppBar extends React.Component {
   }
 
   render() {
-    const actions = [
+    const actionsSignIn = [
+      <FlatButton
+        label="Cancel"
+        primary={true}
+        onTouchTap={this.closeSignInDialog.bind(this)}
+      />,
+      <FlatButton
+        label="Submit"
+        primary={true}
+        keyboardFocused={true}
+        onTouchTap={this.closeSignInDialog.bind(this)}
+      />,
+    ];
+
+    const actionsRegister = [
       <FlatButton
         label="Cancel"
         primary={true}
@@ -74,7 +90,7 @@ class GrottoAppBar extends React.Component {
     ];
 
     return (
-      <Toolbar className="gcAppBar">
+      <Toolbar style={{backgroundColor: this.props.muiTheme.grottoAppBar.backgroundColor}} className="gcAppBar">
         <ToolbarGroup firstChild={true}>
           <FontIcon className="material-icons" style={{color: this.props.muiTheme.grottoAppBar.textColor}}>language</FontIcon>
           <LanguagePicker/>
@@ -83,26 +99,28 @@ class GrottoAppBar extends React.Component {
         <ToolbarGroup>
           <IconMenu iconButtonElement={
             <IconButton iconStyle={{color: this.props.muiTheme.grottoAppBar.textColor}} touch={true}>
-              <NavigationExpandMoreIcon />
+              <MoreVertIcon />
             </IconButton>
           }>
+            <MenuItem primaryText="Sign In" onTouchTap={this.openSignInDialog.bind(this)}/>
             <MenuItem primaryText="Register" onTouchTap={this.openRegisterDialog.bind(this)}/>
           </IconMenu>
-          </ToolbarGroup>
+        </ToolbarGroup>
         <Dialog
-          title="Signin Form"
-          actions={actions}
+          title="SignIn Form"
+          actions={actionsSignIn}
           modal={false}
-          open={this.state.open}
-          onRequestClose={this.closeRegisterDialog.bind(this)}
+          open={this.state.openSignIn}
+          onRequestClose={this.closeSignInDialog.bind(this)}
+          autoScrollBodyContent={true}
         >
-          TODO: Signin form
+          <SigninForm/>
         </Dialog>
         <Dialog
           title="Register Form"
-          actions={actions}
+          actions={actionsRegister}
           modal={false}
-          open={this.state.open}
+          open={this.state.openRegister}
           onRequestClose={this.closeRegisterDialog.bind(this)}
         >
           TODO: register form
