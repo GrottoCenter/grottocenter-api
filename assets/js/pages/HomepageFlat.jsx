@@ -23,7 +23,6 @@ export default class HomepageFlat extends React.Component {
         <WhatIsIt/>
         <RandomEntry/>
         <Partners nbDisplayed="6"/>
-        <RecentContributions/>
       </div>
     );
   }
