@@ -1,6 +1,9 @@
 import React, {Component} from 'react';
 import I18n from 'react-ghost-i18n';
 import muiThemeable from 'material-ui/styles/muiThemeable';
+import ContactMailIcon from 'material-ui/svg-icons/communication/contact-mail';
+import TeamIcon from 'material-ui/svg-icons/social/people';
+import InfoIcon from 'material-ui/svg-icons/action/info';
 
 let licenceLinks = {
   'fr': 'https://creativecommons.org/licenses/by-sa/3.0/fr/',
@@ -34,6 +37,10 @@ localesList.map(function(el) { // eslint-disable-line no-undef
   rssLinks[el.value] = 'http://www.grottocenter.org/html/rss_' + language + '.xml';
 }, this);
 
+let contactLinks = {
+  'fr': ' http://fr.wikicaves.org/contact'
+};
+
 class Footer extends Component {
   constructor(props) {
     super(props);
@@ -43,11 +50,12 @@ class Footer extends Component {
   }
 
   render() {
-    let computedLink = (licenceLinks[this.state.locale] !== undefined) ? licenceLinks[this.state.locale] : 'https://creativecommons.org/licenses/by-sa/3.0/';
+    let licenceLink = (licenceLinks[this.state.locale] !== undefined) ? licenceLinks[this.state.locale] : 'https://creativecommons.org/licenses/by-sa/3.0/';
     let wikiBatsLink = (wikiBatsLinks[this.state.locale] !== undefined) ? wikiBatsLinks[this.state.locale] : 'https://wiki.grottocenter.org/wiki/GrottoCenter:Es/bats';
     let bloggerLink = (bloggerLinks[this.state.locale] !== undefined) ? bloggerLinks[this.state.locale] : 'http://blog-en.grottocenter.org/';
     let bloggerIcon = (bloggerIcons[this.state.locale] !== undefined) ? bloggerIcons[this.state.locale] : 'blogger-En.svg';
     let rssLink = (rssLinks[this.state.locale] !== undefined) ? rssLinks[this.state.locale] : 'http://www.grottocenter.org/html/rss_En.xml';
+    let contactLink = (contactLinks[this.state.locale] !== undefined) ? contactLinks[this.state.locale] : 'http://en.wikicaves.org/contact';
 
     return (
       <footer style={{backgroundColor: this.props.muiTheme.palette.primary1Color, color: this.props.muiTheme.palette.textIconColor}}>
@@ -78,17 +86,20 @@ class Footer extends Component {
               <a href="https://github.com/GrottoCenter" target="_blank">
                 <img src="/images/github.png" alt="Grottocenter3 on GitHub"/>
               </a>
-              <a href="modal-mail.html" data-target="#mail" data-toggle="modal" role="dialog" aria-labelledby="mail" aria-hidden="true">
-                <img src="/images/icon/ic_contact_mail_black_48px.png" alt=""/>
+              <a href={contactLink} target="_blank">
+                <ContactMailIcon/>
               </a>
               <a href="http://www.grottocenter.org//html/legal_and_privacy_En.php" target="_blank">
-                <img src="/images/ic_info_black_48px.png" alt=""/>
+                <InfoIcon/>
               </a>
               <a href={wikiBatsLink} target="_blank">
                 <img src="/images/bats.svg" alt="Wiki page for bats"/>
               </a>
             </div>
             <div className="three columns donate">
+              <a href="https://wiki.grottocenter.org/wiki/GrottoCenter:Contributors" target="_blank">
+                <TeamIcon/>
+              </a>
               <div className="centered bigger">
                 <I18n>Wikicaves association</I18n>
               </div>
@@ -98,7 +109,7 @@ class Footer extends Component {
           <div className="row">
             <div className="twelve columns legal">
               <div>
-                <a href={computedLink} target="_blank">
+                <a href={licenceLink} target="_blank">
                   <img height="24px" src="/images/CC-BY-SA.png" alt=""/>
                 </a>
               </div>
