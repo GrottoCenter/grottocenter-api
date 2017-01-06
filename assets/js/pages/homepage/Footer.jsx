@@ -41,6 +41,13 @@ let contactLinks = {
   'fr': ' http://fr.wikicaves.org/contact'
 };
 
+let legalLinks = {};
+localesList.map(function(el) { // eslint-disable-line no-undef
+  let language = el.value;
+  language = language.substring(0, 1).toUpperCase() + language.substring(1, language.length);
+  rssLinks[el.value] = 'https://wiki.grottocenter.org/wiki/GrottoCenter:' + language + '/Legal_and_Privacy_Statement';
+}, this);
+
 class Footer extends Component {
   constructor(props) {
     super(props);
@@ -56,50 +63,69 @@ class Footer extends Component {
     let bloggerIcon = (bloggerIcons[this.state.locale] !== undefined) ? bloggerIcons[this.state.locale] : 'blogger-En.svg';
     let rssLink = (rssLinks[this.state.locale] !== undefined) ? rssLinks[this.state.locale] : 'http://www.grottocenter.org/html/rss_En.xml';
     let contactLink = (contactLinks[this.state.locale] !== undefined) ? contactLinks[this.state.locale] : 'http://en.wikicaves.org/contact';
+    let legalLink = (legalLinks[this.state.locale] !== undefined) ? legalLinks[this.state.locale] : 'https://wiki.grottocenter.org/wiki/GrottoCenter:En/Legal_and_Privacy_Statement';
 
     return (
-      <footer style={{backgroundColor: this.props.muiTheme.palette.primary1Color, color: this.props.muiTheme.palette.textIconColor}}>
+      <footer style={{backgroundColor: this.props.muiTheme.palette.primary1Color, color: this.props.muiTheme.palette.textIconColor, fontFamily: this.props.muiTheme.fontFamily}}>
         <div className="container">
           <div className="row">
             <div className="three columns">
+              <img height="48" src="/images/logoGC.png" style={{'float': 'left'}}/>
               <div>
                 <I18n>Published by</I18n>
               </div>
-              <img height="48" src="/images/logoGC.png"/>
               <a href="http://www.wikicaves.org/" target="_blank"><I18n>Wikicaves association</I18n></a>
             </div>
-            <div className="three columns social">
-              <a href="https://www.facebook.com/GrottoCenter" target="_blank">
-                <img src="/images/facebook.svg" alt="Follow us on Facebook"/>
-              </a>
-              <a href={rssLink} target="_blank">
-                <img src="/images/rss.png" alt="RSS feed"/>
-              </a>
-              <a href={bloggerLink} target="_blank">
-                <img src={'/images/' + bloggerIcon} alt="Grottocenter blog"/>
-              </a>
-              <a href="https://twitter.com/grottocenter" target="_blank">
-                <img src="/images/twitter.svg" alt="Follow us on Twitter"/>
-              </a>
-            </div>
-            <div className="three columns infos">
-              <a href="https://github.com/GrottoCenter" target="_blank">
-                <img src="/images/github.png" alt="Grottocenter3 on GitHub"/>
-              </a>
-              <a href={contactLink} target="_blank">
-                <ContactMailIcon/>
-              </a>
-              <a href="http://www.grottocenter.org//html/legal_and_privacy_En.php" target="_blank">
-                <InfoIcon/>
-              </a>
-              <a href={wikiBatsLink} target="_blank">
-                <img src="/images/bats.svg" alt="Wiki page for bats"/>
-              </a>
+            <div className="six columns social">
+              <div className="linksIcon">
+                <div className="linkIcon">
+                  <a href="https://www.facebook.com/GrottoCenter" target="_blank">
+                    <img src="/images/facebook.svg" alt="Follow us on Facebook"/>
+                  </a>
+                </div>
+                <div className="linkIcon">
+                  <a href={rssLink} target="_blank">
+                  <img src="/images/rss.png" alt="RSS feed"/>
+                </a>
+                </div>
+                <div className="linkIcon">
+                  <a href={bloggerLink} target="_blank">
+                  <img src={'/images/' + bloggerIcon} alt="Grottocenter blog"/>
+                </a>
+                </div>
+                <div className="linkIcon">
+                  <a href="https://twitter.com/grottocenter" target="_blank">
+                  <img src="/images/twitter.svg" alt="Follow us on Twitter"/>
+                </a>
+                </div>
+                <div className="linkIcon">
+                  <a href="https://github.com/GrottoCenter" target="_blank">
+                    <img src="/images/github.png" alt="Grottocenter3 on GitHub"/>
+                  </a>
+                </div>
+                <div className="linkIcon">
+                  <a href="https://wiki.grottocenter.org/wiki/GrottoCenter:Contributors" target="_blank">
+                    <TeamIcon color={this.props.muiTheme.palette.textIconColor} style={{'height': '100%', 'width': '40px', 'background-color': 'black','border-radius': '50%', 'margin': '2px'}}/>
+                  </a>
+                </div>
+                <div className="linkIcon">
+                  <a href={contactLink} target="_blank">
+                    <ContactMailIcon color={this.props.muiTheme.palette.textIconColor} style={{'height': '100%', 'width': '40px', 'background-color': 'black','border-radius': '50%', 'margin': '2px'}}/>
+                  </a>
+                </div>
+                <div className="linkIcon">
+                  <a href={legalLink} target="_blank">
+                    <InfoIcon color={this.props.muiTheme.palette.textIconColor} style={{'height': '100%', 'width': '40px', 'background-color': 'black','border-radius': '50%', 'margin': '2px'}}/>
+                  </a>
+                </div>
+                <div className="linkIcon">
+                  <a href={wikiBatsLink} target="_blank">
+                    <img src="/images/bats.svg" alt="Wiki page for bats"/>
+                  </a>
+                </div>
+              </div>
             </div>
             <div className="three columns donate">
-              <a href="https://wiki.grottocenter.org/wiki/GrottoCenter:Contributors" target="_blank">
-                <TeamIcon/>
-              </a>
               <div className="centered bigger">
                 <I18n>Wikicaves association</I18n>
               </div>
@@ -108,14 +134,14 @@ class Footer extends Component {
           </div>
           <div className="row">
             <div className="twelve columns legal">
-              <div>
+              <p>
+                <I18n>Unless stated otherwise, all text and documents are available under the terms of the Creative Commons Attribution-ShareAlike 3.0 Unported.</I18n>
+              </p>
+              <div className="licenceIcon">
                 <a href={licenceLink} target="_blank">
                   <img height="24px" src="/images/CC-BY-SA.png" alt=""/>
                 </a>
               </div>
-              <p>
-                <I18n>Unless stated otherwise, all text and documents are available under the terms of the Creative Commons Attribution-ShareAlike 3.0 Unported.</I18n>
-              </p>
             </div>
           </div>
           <div className="row">

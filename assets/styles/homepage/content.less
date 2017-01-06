@@ -115,6 +115,16 @@ div[role="section"].lastNews > h3 {
   padding-bottom: 20px;
 }
 
+div[role="section"].lastNews .newsCard:nth-child(n+1) {
+  margin-top: 4%;
+}
+
+@media (min-width: 550px) {
+  div[role="section"].lastNews .newsCard:nth-child(n+1) {
+    margin-top: 0;
+  }
+}
+
 div[role="section"].recentContrib > .container {
   width: 100%;
 }

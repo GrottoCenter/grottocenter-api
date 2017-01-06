@@ -86,10 +86,13 @@ header .brand {
 }
 
 header .logo img {
-  width: 120px;
+  width: 140px;
 }
 
 @media (min-width: 550px) {
+  header .logo img {
+    width: 160px;
+  }
   header .sitename {
     font-size: 3.5em;
   }
@@ -283,26 +286,27 @@ footer {
   padding: 15px;
 }
 
-footer>.container {
-  width: 100%;
-  max-width: initial;
-  padding: 0px;
-}
-
 footer div.row:first-of-type {
   height: 100px;
 }
 
-footer .social img {
+footer .linkIcon {
+  float: left;
   width: 40px;
-  padding: 2px;
-  border-radius: 50%
+  margin-right: 5px;
 }
 
-footer .infos img {
-  width: 40px;
+footer .social img {
+  width: 100%;
   padding: 2px;
   border-radius: 50%;
+}
+
+@media (min-width: 550px) {
+  footer .linkIcon {
+    margin: 0;
+    margin-right: 5px;
+  }
 }
 
 footer .donate div {
@@ -311,6 +315,11 @@ footer .donate div {
 
 footer .legal p {
   text-align: justify;
+  margin-bottom: 0;
+}
+
+footer .legal .licenceIcon {
+  text-align: center;
 }
 
 .ribbon {

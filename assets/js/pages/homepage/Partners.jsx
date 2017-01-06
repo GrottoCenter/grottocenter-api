@@ -52,7 +52,7 @@ export default class Partners extends React.Component {
     return (
       <div>
         <div role="section" className="partners">
-          <h3 style={{'text-align': 'center', 'padding-bottom': '50px'}}><I18n>Partners</I18n></h3>
+          <h3 style={{'textAlign': 'center', 'paddingBottom': '50px'}}><I18n>Partners</I18n></h3>
           <div>
             <div className="container">
               <div className="row vignettes">

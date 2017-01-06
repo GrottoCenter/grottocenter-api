@@ -14,7 +14,7 @@ const LatestNews = (props) => (
       <div className="container">
         <div className="row">
           <div className="six columns">
-            <Card>
+            <Card className="newsCard">
               <CardMedia>
                 <img src="https://2.bp.blogspot.com/-i_UrbimyRqg/WA7pEX7xFRI/AAAAAAAAYa0/_KbHQTfhvbk59aTgP3QKZFKcm0BqQnYeQCLcB/s1600/sidney.PNG" />
               </CardMedia>
@@ -28,7 +28,7 @@ const LatestNews = (props) => (
             </Card>
           </div>
           <div className="six columns">
-            <Card>
+            <Card className="newsCard">
               <CardMedia>
                 <img src="https://4.bp.blogspot.com/-kdKjJclWCuw/V9wH7ywdFsI/AAAAAAAAYRU/GhVfUEmwtfcOKUKjkQjhtZAsJDJLMdTvQCLcB/s320/header.png" />
               </CardMedia>
