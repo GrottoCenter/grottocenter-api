@@ -18,9 +18,9 @@ module.exports = {
       columnName: 'Id'
     },
 
-    idAuthor: {
-      type: 'integer',
-      columnName: 'Id_author'
+    author: {
+      columnName: 'Id_author',
+      model: 'TCaver'
     },
 
     dateInscription: {
@@ -77,8 +77,20 @@ module.exports = {
 
     files: {
       collection: 'TFile',
-      via: 'idFile',
+      via: 'idTopography',
       through: 'jtopofile'
+    },
+
+    caves: {
+      collection: 'TCave',
+      via: 'idTopography',
+      through: 'jtopocave'
+    },
+
+    entries: {
+      collection: 'TEntry',
+      via: 'idTopography',
+      through: 'jtopoentry'
     }
   }
 };

@@ -77,6 +77,10 @@ module.exports.policies = {
 
   SwaggerController: {
     '*': true
+  },
+
+  TopographyController: {
+    '*': true
   }
 
   /***************************************************************************

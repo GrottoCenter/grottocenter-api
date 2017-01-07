@@ -1,4 +1,8 @@
 import React from 'react';
+import FullStarIcon from 'material-ui/svg-icons/toggle/star';
+import EmptyStarIcon from 'material-ui/svg-icons/toggle/star-border';
+import HalfStarIcon from 'material-ui/svg-icons/toggle/star-half';
+import I18n from 'react-ghost-i18n';
 
 export class EntryData extends React.Component {
   constructor(props) {
@@ -6,15 +10,20 @@ export class EntryData extends React.Component {
   }
 
   render() {
-    var comment = this.props.entry.comments[0];
+    let comment = this.props.entry.comments[0];
+
+    let imageElement = <div/>;
+    if (this.props.entry.file !== undefined) {
+      imageElement = <EntryImage src={this.props.entry.file.path}/>;
+    }
     return (
-      <div className="randomcave row">
-        <div className="col-xs-6">
+      <div className="row">
+        <div className="six columns">
           <EntryTitle entry={this.props.entry}/>
           <EntryStat comment={comment}/>
           <EntryInfo comment={comment} cave={this.props.entry.caves[0]}/>
         </div>
-        <EntryImage/>
+        {imageElement}
       </div>
     );
   }
@@ -26,12 +35,16 @@ export class EntryTitle extends React.Component {
   }
 
   render() {
+    var lang = locale.substring(0,1).toUpperCase() + locale.substring(1, locale.length);
     return (
-      <h4>
-        {this.props.entry.region} - {this.props.entry.country}
-        <br/><br/>
-        <a href="fichedetailleecavite.html" target="blank">{this.props.entry.name}</a>
-      </h4>
+      <div className="entryLocation">
+        <h5>
+          {this.props.entry.region} - {this.props.entry.country}
+        </h5>
+        <h4>
+          <a href={'http://www.grottocenter.org/html/file_' + lang + '.php?lang=' + lang + '&check_lang_auto=false&category=entry&id=' + this.props.entry.id} target="blank">{this.props.entry.name}</a>
+        </h4>
+      </div>
     );
   }
 }
@@ -69,15 +82,26 @@ export class EntryStatItem extends React.Component {
       );
     }
 
-    var score = this.props.itemScore;
-    var starText = "star" +  (score > 1 ? "s" : "");
-    var imgName = "images/" + score + starText + ".svg";
-    var imgAlt = score + " " + starText;
+    let score = this.props.itemScore / 2;
+    let half = this.props.itemScore % 2;
+
+    let starsToDisplay = [];
+    for (let i = 0; i < (score - half); i++) {
+      starsToDisplay.push(<FullStarIcon key={'star' + i} color={'#ffd700'}/>);
+    }
+    if (half == 1) {
+      starsToDisplay.push(<HalfStarIcon key={'starh'}  color={'#ffd700'}/>);
+    }
+    if (score < 5) {
+      for (let i = (score + half); i < 5; i++) {
+        starsToDisplay.push(<EmptyStarIcon key={'star' + i} color={'#ffd700'}/>);
+      }
+    }
 
     return (
-      <li>{this.props.itemLabel} :
-        <img src={imgName} alt={imgAlt}/>
-        <i className="icon icon-user"></i>
+      <li>
+        <I18n>{this.props.itemLabel}</I18n>
+        <div className="stars">{starsToDisplay}</div>
       </li>
     );
   }
@@ -119,9 +143,11 @@ export class EntryInfoItem extends React.Component {
     }
     var imgName = "images/" + this.props.itemImg;
     return (
-      <span><img src={imgName} height="50" width="50" title={this.props.itemLabel} alt={this.props.itemLabel}/>
-        {this.props.itemValue}
-        {this.props.itemUnit}</span>
+      <div className="entryInfo">
+        <img src={imgName} height="50" width="50" title={this.props.itemLabel} alt={this.props.itemLabel}/>
+        <span className="value">{this.props.itemValue}</span>
+        <span className="unit">{this.props.itemUnit}</span>
+      </div>
     );
   }
 }
@@ -132,9 +158,10 @@ export class EntryImage extends React.Component {
   }
 
   render() {
+    /*<img className="img img-responsive" src="images/topo1.png" alt="topo"/>*/
     return (
-        <div className="col-xs-6">
-          <img className="img img-responsive" src="images/topo1.png" alt="topo"/>
+        <div className="six columns">
+          <img className="topoImg" src={this.props.src} alt="topo"/>
         </div>
     );
   }

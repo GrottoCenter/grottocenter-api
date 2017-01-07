@@ -41,6 +41,12 @@ module.exports = {
       type: 'string',
       size: 1000,
       columnName: 'Path'
+    },
+
+    topographies: {
+      collection: 'TTopography',
+      via: 'idTopography',
+      through: 'jtopofile'
     }
   }
 };

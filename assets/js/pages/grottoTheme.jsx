@@ -14,7 +14,7 @@ import {
   blue100, /* #B3E5FC */
 
   /* ACCENT COLOR */
-  orange500, /* #B3E5FC */
+  orange500, /*  */
 
   /* PRIMARY TEXT */
   grey900, /* #212121 */
@@ -49,6 +49,7 @@ export default {
     textIconColor: white,
     divider: grey400,
     darkBlack: darkBlack,
-    fullBlack: fullBlack
+    fullBlack: fullBlack,
+    secondaryBlocTitle: white
   }
 };

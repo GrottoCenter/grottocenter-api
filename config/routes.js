@@ -222,6 +222,33 @@ module.exports.routes = {
     action: 'delete'
   },
 
+  /* REST API for Topography controller */
+
+  'POST /topo/': {
+    controller: 'Topography',
+    action: 'create'
+  },
+
+  'GET /topo/findAll': {
+    controller: 'Topography',
+    action: 'findAll'
+  },
+
+  'GET /topo/:id': {
+    controller: 'Topography',
+    action: 'find'
+  },
+
+  'PUT /topo/:id': {
+    controller: 'Topography',
+    action: 'update'
+  },
+
+  'DELETE /topo/:id': {
+    controller: 'Topography',
+    action: 'delete'
+  },
+
   /* REST API for I18N controller */
 
   'POST /i18n/translate': {

@@ -171,6 +171,12 @@ module.exports = {
     comments: {
       collection: 'TComment',
       via: 'entry'
+    },
+
+    topographies: {
+      collection: 'TTopography',
+      via: 'idTopography',
+      through: 'jtopoentry'
     }
   }
 };
