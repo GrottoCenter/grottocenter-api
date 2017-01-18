@@ -46,9 +46,9 @@ module.exports.connections = {
   grottoceMysqlDev: {
     migrate: 'safe',
     adapter: 'sails-mysql',
-    host: 'localhost',
-    user: 'root',
-    password: 'root',
+    host: process.env.MYSQLGROTTO_PORT_3306_TCP_ADDR,
+    user: 'sailsuser',
+    password: 'grottocepassword',
     database: 'grottoce',
     timezone: 'utc'
   },
