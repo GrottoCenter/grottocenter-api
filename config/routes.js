@@ -249,6 +249,16 @@ module.exports.routes = {
     action: 'delete'
   },
 
+  'GET /comment/stats/:entry': {
+    controller: 'Comment',
+    action: 'getEntryStats'
+  },
+
+  'GET /comment/timeinfos/:entry': {
+    controller: 'Comment',
+    action: 'getEntryTimeInfos'
+  },
+
   /* REST API for I18N controller */
 
   'POST /i18n/translate': {

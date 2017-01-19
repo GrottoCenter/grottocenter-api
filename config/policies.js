@@ -81,6 +81,10 @@ module.exports.policies = {
 
   TopographyController: {
     '*': true
+  },
+
+  CommentController: {
+    '*': true
   }
 
   /***************************************************************************
