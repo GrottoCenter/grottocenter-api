@@ -27,7 +27,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -453,13 +453,13 @@
      inkscape:window-height="1017"
      id="namedview3412"
      showgrid="false"
-     inkscape:zoom="1.1896685"
-     inkscape:cx="547.58459"
-     inkscape:cy="362.66178"
+     inkscape:zoom="1.58"
+     inkscape:cx="326.26582"
+     inkscape:cy="228.17053"
      inkscape:window-x="-8"
      inkscape:window-y="-8"
      inkscape:window-maximized="1"
-     inkscape:current-layer="g2649" />
+     inkscape:current-layer="g4327-8" />
   <g
      transform="translate(-882.20339,-844.2266)"
      id="layer1-0"
@@ -470,6 +470,12 @@
       <g
          id="g19658"
          transform="translate(-259.44415,246.98794)">
+        <path
+           inkscape:connector-curvature="0"
+           id="path3093-4"
+           d="m 760.84225,275.97378 c -11.2971,-4.00843 -26.8238,-17.4746 -33.733,-29.25628 l -7.6575,-13.05766 -0.019,-239.9999953 c -0.01,-132.0000047 0.9639,-243.5121447 2.1651,-247.8047447 3.0309,-10.83038 18.0213,-27.16938 31.003,-33.79216 10.5069,-5.3602 18.9495,-5.54596 252.06445,-5.54596 265.0726,0 252.0181,-0.85447 269.4057,17.63382 17.7359,18.85882 16.6976,4.73361 17.6066,239.509045 0.4594,118.642864 -0.303,230.206905 -1.6942,247.920135 -2.3173,29.50455 -3.24,33.09923 -11.0009,42.85715 -4.6592,5.8582 -14.1336,13.54414 -21.054,17.07985 l -12.5827,6.42857 -240.1088,-0.22542 c -132.05995,-0.1242 -242.03755,-0.91 -244.39465,-1.74635 z"
+           style="opacity:0.88399999;fill:url(#radialGradient17589);fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:20;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;filter:url(#filter17659)"
+           transform="matrix(0.15228548,0,0,0.15395455,456.71383,539.75572)" />
         <g
            transform="matrix(0.15768331,0,0,0.15952099,409.34851,557.70207)"
            inkscape:label="Calque 1"
@@ -481,7 +487,7 @@
              inkscape:export-xdpi="4.8694196"
              inkscape:export-ydpi="4.8694196">
             <path
-               style="fill:#34558a;fill-opacity:1;fill-rule:nonzero;stroke:#ffffff;stroke-width:20;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+               style="fill:#34558a;fill-opacity:1;fill-rule:nonzero;stroke:#ffffff;stroke-width:20.00006452;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
                d="m 742.06053,263.63598 c -11.2971,-4.00843 -26.82386,-17.4746 -33.73304,-29.25628 l -7.65748,-13.05766 -0.019,-240.000002 c -0.0105,-131.999998 0.96385,-243.512138 2.16512,-247.804738 3.03086,-10.83038 18.02124,-27.16938 31.00295,-33.79216 10.50687,-5.3602 18.94956,-5.54596 252.06446,-5.54596 265.07256,0 252.01806,-0.85447 269.40566,17.63382 17.7359,18.85882 16.6976,4.73361 17.6066,239.509038 0.4594,118.64286 -0.303,230.206912 -1.6942,247.920142 -2.3173,29.50455 -3.24,33.09923 -11.0009,42.85715 -4.6592,5.8582 -14.1336,13.54414 -21.054,17.07985 l -12.5827,6.42857 -240.10884,-0.22542 c -132.05988,-0.1242 -242.03745,-0.91 -244.3946,-1.74635 z"
                id="path3093"
                inkscape:connector-curvature="0" />
@@ -492,12 +498,6 @@
              id="path3876"
              inkscape:connector-curvature="0" />
         </g>
-        <path
-           inkscape:connector-curvature="0"
-           id="path3093-4"
-           d="m 760.84225,275.97378 c -11.2971,-4.00843 -26.8238,-17.4746 -33.733,-29.25628 l -7.6575,-13.05766 -0.019,-239.9999953 c -0.01,-132.0000047 0.9639,-243.5121447 2.1651,-247.8047447 3.0309,-10.83038 18.0213,-27.16938 31.003,-33.79216 10.5069,-5.3602 18.9495,-5.54596 252.06445,-5.54596 265.0726,0 252.0181,-0.85447 269.4057,17.63382 17.7359,18.85882 16.6976,4.73361 17.6066,239.509045 0.4594,118.642864 -0.303,230.206905 -1.6942,247.920135 -2.3173,29.50455 -3.24,33.09923 -11.0009,42.85715 -4.6592,5.8582 -14.1336,13.54414 -21.054,17.07985 l -12.5827,6.42857 -240.1088,-0.22542 c -132.05995,-0.1242 -242.03755,-0.91 -244.39465,-1.74635 z"
-           style="opacity:0.88399999;fill:url(#radialGradient17589);fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:20;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;filter:url(#filter17659)"
-           transform="matrix(0.15228548,0,0,0.15395455,456.71383,539.75572)" />
         <path
            inkscape:transform-center-y="-17.56745"
            inkscape:transform-center-x="-22.324972"
