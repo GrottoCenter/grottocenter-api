@@ -32,7 +32,7 @@ STATIC_IP="grottocenter-website"
 VERSION="latest"
 #MACHINETYPE="f1-micro"
 MACHINETYPE="g1-small"
-MACHINETYPEBUILDER="n1-standard-4"
+
 # This google machine Image prevent the certificate bug that we have with the default Google machine image :
 # See http://stackoverflow.com/questions/40092793/error-validating-certificates-when-using-docker-machine-in-gce
 MACHINEIMAGE="https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-1604-xenial-v20161205"
