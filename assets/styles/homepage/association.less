@@ -1,0 +1,213 @@
+div[role="section"].association {
+  text-align: center;
+}
+
+div[role="section"].associationBg {
+  background-image: url(http://localhost:1337/images/caves/DSC_0013b.jpg);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+div[role="section"].association .container {
+  width: 80%;
+  margin: auto;
+}
+
+div[role="section"].association .row > div {
+  padding-top: 20px;
+}
+
+div[role="section"].association .row > div:first-child > h3 {
+  font-size: 35px;
+  padding-bottom: 30px;
+}
+
+div[role="section"].association .row > div:first-child > h5 {
+  font-size: 18px;
+}
+
+div[role="section"].association .row > div:last-child {
+  text-align: center;
+}
+
+div[role="section"].association .row > div:last-child img {
+  max-width: 200px;
+}
+
+div[role="section"].association .row > div:last-child img:visible {
+  scale: 50%
+}
+
+div[role="section"].association .row ul {
+  width: 100%;
+  list-style-type: none;
+}
+
+div[role="section"].association .row li {
+  margin-bottom: 40px;
+}
+
+div[role="section"].association .row li::after {
+  content: '';
+  clear: both;
+}
+
+div[role="section"].association .row li > svg {
+  height: 80px !important;
+  width: 80px !important;
+  float: left;
+}
+
+div[role="section"].association .row li > svg:hover {
+  animation: checkBump 500ms ease;
+}
+
+div[role="section"].association .row .listing > span {
+  margin-bottom: 40px;
+  display: block;
+}
+
+div[role="section"].association .row .listing ul li:nth-child(2n) svg {
+  float: right;
+}
+
+div[role="section"].association .row .listing ul li:nth-child(n) div {
+  min-height: 80px;
+  line-height: 40px;
+  margin-left: 80px;
+  margin-right: 0px;
+  text-align: left;
+}
+
+div[role="section"].association .row .listing ul li:nth-child(2n) div {
+  margin-right: 80px;
+  margin-left: 0px;
+  text-align: right;
+}
+
+div[role="section"].association .row .listing ul li:nth-child(n) span {
+  display: inline-block;
+}
+
+div[role="section"].association .goalTextZone {
+  display: none;
+  text-align: center;
+}
+
+div[role="section"].association .goalTextZone > span {
+  font-size: 1.1em;
+  display: inline-block;
+  transition: transform 1s ease;
+}
+
+div[role="section"].association .floatingGoals {
+  display: none;
+  margin-top: 50px;
+}
+
+div[role="section"].association .floatingGoals .goal {
+  position: absolute;
+}
+
+div[role="section"].association .floatingGoals .goal > span:first-child {
+  text-transform: uppercase;
+  font-weight: bolder;
+}
+
+div[role="section"].association .floatingGoals .goal > span {
+  display: inline-block;
+  padding: 20px;
+  width: 160px;
+  text-align: center;
+}
+
+div[role="section"].association .floatingGoals .goal svg {
+  width: 120px !important;
+  height: 120px !important;
+  position: absolute;
+  top: -58px;
+  left: 10px;
+  opacity: 0.3;
+}
+
+div[role="section"].association .floatingGoals .goal svg:hover {
+  color: rgb(215, 204, 200) !important;
+  transform: rotate(-135deg);
+  opacity: 1;
+}
+
+
+@media (min-width: 750px) {
+  div[role="section"].association .row > div:first-child {
+    text-align: left;
+  }
+
+  div[role="section"].association .row > div:last-child img {
+    display: inline;
+  }
+}
+
+
+@media (min-width: 750px) {
+  div[role="section"].association .listing {
+    display: none;
+  }
+
+  div[role="section"].association .goalTextZone {
+    display: block;
+    position: relative;
+    top: 180px;
+    left: 40%;
+    width: 200px;
+    height: 200px;
+  }
+
+  div[role="section"].association .floatingGoals {
+    display: block;
+    height: 500px;
+    margin-top: -160px;
+  }
+
+  div[role="section"].association .floatingGoals .goal {
+    width: 20%;
+    height: 180px;
+    text-align: center;
+    float: left;
+  }
+
+  div[role="section"].association .floatingGoals .goal svg {
+    width: 180px !important;
+    height: 180px !important;
+    top: -55px;
+    left: 10px;
+  }
+
+  div[role="section"].association .floatingGoals .goal:nth-child(1) {
+    bottom: 0;
+    left: 20%;
+  }
+
+  div[role="section"].association .floatingGoals .goal:nth-child(2) {
+    bottom: 25%;
+    left: 12%;
+  }
+
+  div[role="section"].association .floatingGoals .goal:nth-child(3) {
+    left: 40%;
+  }
+
+  div[role="section"].association .floatingGoals .goal:nth-child(4) {
+    right: 12%;
+    bottom: 25%;
+  }
+
+  div[role="section"].association .floatingGoals .goal:nth-child(5) {
+    bottom: 0;
+    right: 20%;
+  }
+
+  div[role="section"].association .floatingGoals .goalText {
+    visibility: hidden;
+  }
+}

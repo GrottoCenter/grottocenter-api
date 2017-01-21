@@ -23,27 +23,6 @@
   border-top: 1px solid lightgrey;
 }
 
-.vignettes {
-  margin: auto;
-}
-
-.vignettes div {
-  transition: width 1s ease-in;
-}
-
-.vignettes div div img {
-  transition: scale 1s ease;
-}
-
-.vignettes div div img:hover {
-  opacity: 0.7;
-  /*transform: scale(1.2);*/
-}
-
-.vignettes div div img:hover::after {
-  content: ''
-}
-
 .randomcave {
   background-color: rgba(136, 91, 57, 1);
   margin: auto;
@@ -241,9 +220,11 @@
   }
 }
 
-
-}
-
-}
-
+@keyframes checkBump {
+  50% {
+    transform: scale(1.5, 1.5);
+  }
+  100% {
+    transform: scale(1, 1);
+  }
 }
