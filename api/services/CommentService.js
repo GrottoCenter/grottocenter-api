@@ -1,22 +1,25 @@
 'use strict';
+// query to get time infos average
+const TIME_INFO_QUERY = 'SELECT DATE_FORMAT(SEC_TO_TIME(AVG(IF(E_t_trail>0,TIME_TO_SEC(E_t_trail),null))),\'%T\') AS eTTrail,'
+                        + ' DATE_FORMAT(SEC_TO_TIME(AVG(IF(E_t_underground>0,TIME_TO_SEC(E_t_underground),null))),\'%T\') AS eTUnderground'
+                        + ' FROM t_comment WHERE Id_entry=?';
 module.exports = {
   /**
    * @param {integer} entryId - id of the entry for which stat is needed
-   * @param {function} next - callback
    *
    * @returns {Promise} which resolves to the succesfully getStats
    */
   getStats: function(entryId) {
     return new Promise((resolve) => {
-      // relevance
+      // aestheticism
       TComment.find({
         entry: entryId
-      }).average('relevance').exec(function(err, results) {
+      }).average('aestheticism').exec(function(err, results) {
         let statistics = new Object();
         if (err) {
           sails.log.error(err);
         } else {
-          statistics.relevance = results[0].relevance;
+          statistics.aestheticism = results[0].aestheticism;
         }
         // caving
         TComment.find({
@@ -50,35 +53,18 @@ module.exports = {
    * @returns {Promise} which resolves to the succesfully getTimeInfos
    */
   getTimeInfos: function(entryId) {
-    return new Promise((resolve) => {
-      // eTTrail
-      TComment.find({
-        entry: entryId,
-        eTTrail: {'!': null}
-      }).limit(1).exec(function(err, results) {
+    return new Promise((resolve, reject) => {
+      CommonService.query(TComment, TIME_INFO_QUERY, [entryId]).then(function(results) {
         let timeInfos = new Object();
-        if (err) {
-          sails.log.error(err);
-        } else {
-            if (results[0] !== undefined) {
-              timeInfos.eTTrail = results[0].eTTrail;
-            }
+        if (results[0] !== undefined) {
+          timeInfos.eTTrail = results[0].eTTrail;
+          timeInfos.eTUnderground = results[0].eTUnderground;
         }
-        // eTUnderground
-        TComment.find({
-          entry: entryId,
-          eTUnderground: {'!': null}
-        }).limit(1).exec(function(err, results) {
-          if (err) {
-            sails.log.error(err);
-          } else {
-            if (results[0] !== undefined) {
-              timeInfos.eTUnderground = results[0].eTUnderground;
-            }
-          }
-          // resolve timeInfos at last
-          resolve(timeInfos);
-        });
+        // resolve timeInfos at last
+        resolve(timeInfos);
+      }, function(err) {
+        // when no time info found, reject
+        reject (err);
       });
     });
   }

@@ -13,26 +13,7 @@ const ENTRY_INFO_QUERY = 'SELECT COALESCE(SE.depth, C.depth) AS depth, COALESCE(
                           + ' LEFT JOIN j_topo_file JTP ON JTP.Id_topography=COALESCE(JTE.Id_topography, JTC.Id_topography)'
                           + ' LEFT JOIN t_topography T ON T.id=JTP.Id_topography'
                           + ' LEFT JOIN t_file F ON F.id=JTP.Id_File'
-                          + ' WHERE E.id=? and T.is_public=\'YES\'';
-
-/**
- * @param {Model} model - an instance of a sails model
- * @param {string} sql - a sql string
- * @param {*[]} values - used to interpolate the string's ?
- *
- * @returns {Promise} which resolves to the succesfully queried strings
- */
-function query(model, sql, values) {
-  values = values || [];
-  return new Promise((resolve, reject) => {
-    model.query(sql, values, (err, results) => {
-      if (err) {
-        return reject(err);
-      }
-      resolve(results);
-    });
-  });
-}
+                          + ' WHERE E.id=? AND (T.is_public=\'YES\' OR T.is_public IS NULL)';
 
 module.exports = {
   /**
@@ -40,7 +21,7 @@ module.exports = {
    */
   findRandom: function() {
     return new Promise((resolve, reject) => {
-      query(TEntry, RANDOM_ENTRY_QUERY, []).then(function(results) {
+      CommonService.query(TEntry, RANDOM_ENTRY_QUERY, []).then(function(results) {
         let entryId = results[0].id;
 
         let result = [];
@@ -53,7 +34,7 @@ module.exports = {
           // add entry to result
           result.push(found[0]);
           // enrich result with entry info
-          query(TEntry, ENTRY_INFO_QUERY, [entryId]).then(function(entryInfo) {
+          CommonService.query(TEntry, ENTRY_INFO_QUERY, [entryId]).then(function(entryInfo) {
             if (entryInfo !== undefined) {
               result[0]['entryInfo'] = entryInfo;
             }

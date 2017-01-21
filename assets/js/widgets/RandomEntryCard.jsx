@@ -59,12 +59,12 @@ export class EntryStat extends React.Component {
   render() {
     if (this.props.stat === undefined) {
       return (
-        <div>At this time, there is no statistics for this entry</div>
+        <div>At this time, there is no comment for this entry</div>
       );
     }
     return (
       <ul className="rating">
-        <EntryStatItem itemScore={this.props.stat.relevance} itemLabel="Interest"/>
+        <EntryStatItem itemScore={this.props.stat.aestheticism} itemLabel="Interest"/>
         <EntryStatItem itemScore={this.props.stat.caving} itemLabel="Ease of move"/>
         <EntryStatItem itemScore={this.props.stat.approach} itemLabel="Access"/>
       </ul>
@@ -78,7 +78,7 @@ export class EntryStatItem extends React.Component {
   }
 
   render() {
-    if (this.props.itemScore == undefined) {
+    if (this.props.itemScore === undefined) {
       return (
         <div/>
       );
@@ -160,7 +160,11 @@ export class EntryImage extends React.Component {
   }
 
   render() {
-    /*<img className="img img-responsive" src="images/topo1.png" alt="topo"/>*/
+    if (!this.props.src) {
+      return (
+        <div>At this time, there is no image for this entry</div>
+      );
+    }
     return (
         <div className="six columns">
           <img className="topoImg" src={this.props.src} alt="topo"/>
