@@ -48,7 +48,7 @@ header>div {
 
 @media (min-width: 550px) {
   header>div {
-    background-size: 100%;
+    background-size: 120%;
   }
 }
 
@@ -298,12 +298,19 @@ footer {
   padding: 15px;
 }
 
-footer div.row:first-of-type {
-  height: 100px;
-}
-
 footer div.columns {
   text-align: center;
+}
+
+footer .publishedInfo {
+  background-color: white;
+  display: inline-block;
+  padding: 5px;
+  text-align: center;
+}
+
+footer .publishedInfo img {
+  width: 100px;
 }
 
 footer .linksIcon {
@@ -314,7 +321,7 @@ footer .linksIcon {
 footer .linksIcon li {
   float: left;
   width: 40px;
-  margin-right: 5px;
+  margin: 0 5px;
 }
 
 footer .linksIcon img {
@@ -325,31 +332,68 @@ footer .linksIcon img {
 
 footer .linksText {
   display: inline-block;
+  margin: 20px 0;
+  list-style: none;
 }
 
-footer .linksText li {
-  float: left;
-  margin-right: 5px;
-}
-
-@media (min-width: 550px) {
-  footer .linkIcon {
-    margin: 0;
-    margin-right: 5px;
-  }
+footer .linksText a {
+  text-decoration: none;
+  font-size: 1.3em;
 }
 
 footer .donate div {
   text-align: center;
 }
 
-footer .legal p {
-  text-align: justify;
-  margin-bottom: 0;
+footer .donate a {
+  height: auto !important;
 }
 
-footer .legal .licenceIcon {
+footer .donate a span {
+  text-transform: none !important;
+}
+
+footer .donate a>div {
+  white-space: nowrap;
+}
+
+footer .donate svg {
+  width: 40px !important;
+  height: 40px !important;
+}
+
+@media (min-width: 550px) {
+  footer .row:first-of-type div.columns:first-of-type {
+    text-align: left;
+  }
+  footer .row:first-of-type div.columns:last-of-type {
+    text-align: right;
+  }
+  footer .linkIcon {
+    margin: 0;
+    margin-right: 5px;
+  }
+  footer .linksIcon li {
+    margin: 0 14px;
+  }
+  footer .donate {
+    display: inline-block;
+    line-height: 5em;
+  }
+}
+
+.footer .legal p {
   text-align: center;
+  margin-bottom: 0;
+  font-size: 0.8em;
+}
+
+.footer .legal .licenceIcon {
+  text-align: center;
+}
+
+.footer .legal .licenceIcon img {
+  width: 100px;
 }
 
 .ribbon {
@@ -463,5 +507,7 @@ footer .legal .licenceIcon {
   text-align: "center";
 }
 
+
+}
 
 }
