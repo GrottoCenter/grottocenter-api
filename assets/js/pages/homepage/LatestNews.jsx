@@ -9,7 +9,7 @@ import DateRibbon from '../../widgets/DateRibbon';
 
 const LatestNews = (props) => (
   <div>
-    <div role="section"  className="lastNews">
+    <div role="section"  className="lastNews" style={{fontFamily: props.muiTheme.fontFamily}}>
       <h3><I18n>News</I18n></h3>
       <div className="container">
         <div className="row">

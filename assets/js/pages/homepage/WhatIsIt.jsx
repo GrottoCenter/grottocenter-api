@@ -1,8 +1,9 @@
-import React from 'react'
-import I18n from 'react-ghost-i18n'
+import React from 'react';
+import I18n from 'react-ghost-i18n';
+import muiThemeable from 'material-ui/styles/muiThemeable';
 
-const WhatIsIt = () => (
-    <div role="section" className="numbers">
+const WhatIsIt = (props) => (
+    <div role="section" className="numbers" style={{fontFamily: props.muiTheme.fontFamily}}>
       <h3 style={{'text-align': 'center', 'padding-bottom': '50px'}}>
         <I18n>Grottocenter numbers</I18n>
           <span className="icon icon-gc-bat" style={{'color':'black','vertical-align': 'super'}}></span><br/>
@@ -34,5 +35,6 @@ const WhatIsIt = () => (
         </div>
       </div>
     </div>
-)
-export default WhatIsIt
+);
+
+export default muiThemeable()(WhatIsIt);
