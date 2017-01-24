@@ -107,6 +107,7 @@ class Autocomplete extends React.Component {
           fullWidth={true}
           maxSearchResults={40}
           filter={AutoComplete.noFilter}
+          popoverProps={{style: {height: '200px'}}}
         />
       </div>
     );
