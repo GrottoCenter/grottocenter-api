@@ -8,6 +8,7 @@ import Map from 'material-ui/svg-icons/maps/map';
 import Explore from 'material-ui/svg-icons/action/explore';
 import muiThemeable from 'material-ui/styles/muiThemeable';
 import SearchIcon from 'material-ui/svg-icons/action/search';
+import I18n from 'react-ghost-i18n';
 
 //TODO: get grotto icons to a font
 // import SvgIcon from 'material-ui/SvgIcon';
@@ -97,7 +98,7 @@ class Autocomplete extends React.Component {
         <AutoComplete
           style={{backgroundColor: this.props.muiTheme.palette.primary3Color, fontFamily: this.props.muiTheme.fontFamily, width: 'calc(100% - 50px)', marginLeft: '50px'}}
           textFieldStyle={{padding: '0 10px', width: 'calc(100% - 40px)'}}
-          floatingLabelText="Rechercher une cavité, un club..."
+          floatingLabelText={<I18n>Search for a cave or an organization</I18n>}
           dataSource={this.state.dataSource}
           onUpdateInput={this.onUpdateInput.bind(this)}
           onNewRequest={this.onNewRequest.bind(this)}
