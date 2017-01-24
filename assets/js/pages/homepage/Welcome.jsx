@@ -1,6 +1,7 @@
 import React from 'react';
 import I18n from 'react-ghost-i18n';
 import muiThemeable from 'material-ui/styles/muiThemeable';
+import Avatar from 'material-ui/Avatar';
 
 const Welcome = (props) => (
   <div>
@@ -8,7 +9,7 @@ const Welcome = (props) => (
       <div className="container">
         <div className="row">
           <div className="four columns">
-            <img src="images/caves/draperie.jpg"/>
+            <Avatar src="images/caves/draperie.jpg"/>
           </div>
           <div className="eight columns">
             <h3 style={{color: props.muiTheme.palette.accent1Color}}>

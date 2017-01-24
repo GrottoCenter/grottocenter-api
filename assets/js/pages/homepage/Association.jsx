@@ -59,7 +59,7 @@ const Association = (props) => (
             <div className="floatingGoals">
               <div className="goal" onMouseHover="javascript:alert(this);">
                 <span style={{color: props.muiTheme.palette.textIconColor}}>
-                  Promote
+                  <I18n>Promote!</I18n>
                 </span>
                 <SyncIcon color={props.muiTheme.palette.primary3Color} hoverColor={props.muiTheme.palette.accent1Color} />
                 <span className="goalText">
@@ -68,7 +68,7 @@ const Association = (props) => (
               </div>
               <div className="goal">
                 <span style={{color: props.muiTheme.palette.textIconColor}}>
-                  Share
+                  <I18n>Share!</I18n>
                 </span>
                 <SyncIcon color={props.muiTheme.palette.primary3Color} hoverColor={props.muiTheme.palette.accent1Color} />
                 <span className="goalText">
@@ -77,7 +77,7 @@ const Association = (props) => (
               </div>
               <div className="goal">
                 <span style={{color: props.muiTheme.palette.textIconColor}}>
-                  Open
+                  <I18n>Open!</I18n>
                 </span>
                 <SyncIcon color={props.muiTheme.palette.primary3Color} hoverColor={props.muiTheme.palette.accent1Color} />
                 <span className="goalText">
@@ -86,7 +86,7 @@ const Association = (props) => (
               </div>
               <div className="goal">
                 <span style={{color: props.muiTheme.palette.textIconColor}}>
-                  Highlight
+                  <I18n>Highlight!</I18n>
                 </span>
                 <SyncIcon color={props.muiTheme.palette.primary3Color} hoverColor={props.muiTheme.palette.accent1Color} />
                 <span className="goalText">
@@ -95,7 +95,7 @@ const Association = (props) => (
               </div>
               <div className="goal">
                 <span style={{color: props.muiTheme.palette.textIconColor}}>
-                  Help
+                  <I18n>Help!</I18n>
                 </span>
                 <SyncIcon color={props.muiTheme.palette.primary3Color} hoverColor={props.muiTheme.palette.accent1Color} />
                 <span className="goalText">
