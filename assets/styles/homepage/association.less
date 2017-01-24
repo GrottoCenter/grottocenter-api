@@ -95,10 +95,16 @@ div[role="section"].association .goalTextZone {
   text-align: center;
 }
 
-div[role="section"].association .goalTextZone > span {
-  font-size: 1.1em;
+div[role="section"].association .goalTextZone:before {
+  content: '';
   display: inline-block;
-  transition: transform 1s ease;
+  height: 100%;
+  vertical-align: middle;
+}
+
+div[role="section"].association .goalTextZone > span {
+  display: inline-block;
+  vertical-align: middle;
 }
 
 div[role="section"].association .floatingGoals {
@@ -122,10 +128,10 @@ div[role="section"].association .floatingGoals {
   div[role="section"].association .goalTextZone {
     display: inline-block;
     position: relative;
-    top: 150px;
+    top: 90px;
     left: ~"calc((100% - 200px) / 2)";
     width: 200px;
-    height: 200px;
+    height: 150px;
   }
 
   div[role="section"].association .floatingGoals {
@@ -148,8 +154,7 @@ div[role="section"].association .floatingGoals {
   }
 
   div[role="section"].association .floatingGoals .goal > span:first-child {
-    text-transform: uppercase;
-    font-weight: bolder;
+    white-space: nowrap;
   }
 
   div[role="section"].association .floatingGoals .goal svg {
@@ -168,13 +173,13 @@ div[role="section"].association .floatingGoals {
   }
 
   div[role="section"].association .floatingGoals .goal:nth-child(1) {
-    left: ~"calc(((100% - 120px) / 2) - 120px)";
+    left: ~"calc(((100% - 120px) / 2) - 100px)";
     bottom: 120px;
   }
 
   div[role="section"].association .floatingGoals .goal:nth-child(2) {
     left: ~"calc(((100% - 120px) / 2) - 160px)";
-    bottom: 300px;
+    bottom: 280px;
   }
 
   div[role="section"].association .floatingGoals .goal:nth-child(3) {
@@ -183,11 +188,11 @@ div[role="section"].association .floatingGoals {
 
   div[role="section"].association .floatingGoals .goal:nth-child(4) {
     left: ~"calc(((100% - 120px) / 2) + 160px)";
-    bottom: 300px;
+    bottom: 280px;
   }
 
   div[role="section"].association .floatingGoals .goal:nth-child(5) {
-    left: ~"calc(((100% - 120px) / 2) + 120px)";
+    left: ~"calc(((100% - 120px) / 2) + 100px)";
     bottom: 120px;
   }
 
