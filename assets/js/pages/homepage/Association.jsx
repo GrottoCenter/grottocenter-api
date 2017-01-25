@@ -3,6 +3,7 @@ import I18n from 'react-ghost-i18n';
 import muiThemeable from 'material-ui/styles/muiThemeable';
 import CheckIcon from 'material-ui/svg-icons/navigation/check';
 import ThumbUpIcon from 'material-ui/svg-icons/action/thumb-up';
+import SyncIcon from 'material-ui/svg-icons/notification/sync';
 
 const Association = (props) => (
   <div>
@@ -23,24 +24,84 @@ const Association = (props) => (
         </div>
         <div className="row">
           <div className="twelve columns">
-            <p>
+            <p className="listing">
               <I18n>The international voluntary association WikiCaves operates the GrottoCenter web application. WikiCaves has as goals:</I18n>
               <ul>
-                <li><CheckIcon style={{height: '16px', width: '20px'}} color={props.muiTheme.palette.textIconColor}/><I18n>Promote the development of the speleology in the world especially through  web-based collaboration.</I18n></li>
-                <li><CheckIcon style={{height: '16px', width: '20px'}} color={props.muiTheme.palette.textIconColor}/><I18n>Share and spread the data related to the speleology.</I18n></li>
-                <li><CheckIcon style={{height: '16px', width: '20px'}} color={props.muiTheme.palette.textIconColor}/><I18n>Make access to the natural caves data easier especially by using Internet.</I18n></li>
-                <li><CheckIcon style={{height: '16px', width: '20px'}} color={props.muiTheme.palette.textIconColor}/><I18n>Highlight and help the protection of the natural caves and their surroundings.</I18n></li>
-                <li><CheckIcon style={{height: '16px', width: '20px'}} color={props.muiTheme.palette.textIconColor}/><I18n>Help the exploration and the scientific study of natural caves.</I18n></li>
+                <li>
+                  <CheckIcon color={props.muiTheme.palette.textIconColor} hoverColor={props.muiTheme.palette.accent1Color}/>
+                  <div>
+                    <I18n>Promote the development of the speleology in the world especially through  web-based collaboration.</I18n>
+                  </div>
+                </li>
+                <li>
+                  <CheckIcon color={props.muiTheme.palette.textIconColor} hoverColor={props.muiTheme.palette.accent1Color}/>
+                  <div><I18n>Share and spread the data related to the speleology.</I18n></div>
+                </li>
+                <li>
+                  <CheckIcon color={props.muiTheme.palette.textIconColor} hoverColor={props.muiTheme.palette.accent1Color}/>
+                  <div><I18n>Make access to the natural caves data easier especially by using Internet.</I18n></div>
+                </li>
+                <li>
+                  <CheckIcon color={props.muiTheme.palette.textIconColor} hoverColor={props.muiTheme.palette.accent1Color}/>
+                  <div><I18n>Highlight and help the protection of the natural caves and their surroundings.</I18n></div>
+                </li>
+                <li>
+                  <CheckIcon color={props.muiTheme.palette.textIconColor} hoverColor={props.muiTheme.palette.accent1Color}/>
+                  <div><I18n>Help the exploration and the scientific study of natural caves.</I18n></div>
+                </li>
               </ul>
             </p>
-          </div>
-          <div className="row">
-            <div className="twelve columns">
-              <div className="goal">Promote!<br/><ThumbUpIcon/></div>
-              <div className="goal">Share!<br/><ThumbUpIcon/></div>
-              <div className="goal">Open!<br/><ThumbUpIcon/></div>
-              <div className="goal">Highlight!<br/><ThumbUpIcon/></div>
-              <div className="goal">Help!<br/><ThumbUpIcon/></div>
+            <div className="goalTextZone">
+              <span>
+                <I18n>The international voluntary association WikiCaves operates the GrottoCenter web application. WikiCaves has as goals:</I18n>
+              </span>
+            </div>
+            <div className="floatingGoals">
+              <div className="goal" onMouseHover="javascript:alert(this);">
+                <span style={{color: props.muiTheme.palette.textIconColor}}>
+                  <I18n>Promote!</I18n>
+                </span>
+                <SyncIcon color={props.muiTheme.palette.primary3Color} hoverColor={props.muiTheme.palette.accent1Color} />
+                <span className="goalText">
+                  <I18n>Promote the development of the speleology in the world especially through  web-based collaboration.</I18n>
+                </span>
+              </div>
+              <div className="goal">
+                <span style={{color: props.muiTheme.palette.textIconColor}}>
+                  <I18n>Share!</I18n>
+                </span>
+                <SyncIcon color={props.muiTheme.palette.primary3Color} hoverColor={props.muiTheme.palette.accent1Color} />
+                <span className="goalText">
+                  <I18n>Share and spread the data related to the speleology.</I18n>
+                </span>
+              </div>
+              <div className="goal">
+                <span style={{color: props.muiTheme.palette.textIconColor}}>
+                  <I18n>Open!</I18n>
+                </span>
+                <SyncIcon color={props.muiTheme.palette.primary3Color} hoverColor={props.muiTheme.palette.accent1Color} />
+                <span className="goalText">
+                  <I18n>Make access to the natural caves data easier especially by using Internet.</I18n>
+                </span>
+              </div>
+              <div className="goal">
+                <span style={{color: props.muiTheme.palette.textIconColor}}>
+                  <I18n>Highlight!</I18n>
+                </span>
+                <SyncIcon color={props.muiTheme.palette.primary3Color} hoverColor={props.muiTheme.palette.accent1Color} />
+                <span className="goalText">
+                  <I18n>Highlight and help the protection of the natural caves and their surroundings.</I18n>
+                </span>
+              </div>
+              <div className="goal">
+                <span style={{color: props.muiTheme.palette.textIconColor}}>
+                  <I18n>Help!</I18n>
+                </span>
+                <SyncIcon color={props.muiTheme.palette.primary3Color} hoverColor={props.muiTheme.palette.accent1Color} />
+                <span className="goalText">
+                  <I18n>Help the exploration and the scientific study of natural caves.</I18n>
+                </span>
+              </div>
             </div>
           </div>
         </div>

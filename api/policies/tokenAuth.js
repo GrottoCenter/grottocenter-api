@@ -7,7 +7,7 @@
  *
  */
 module.exports = function(req, res, next) {
-  var token = req.body.token || req.query.token || req.headers['x-access-token'];
+  const token = req.body.token || req.query.token || req.headers['x-access-token'];
 
   // We delete the token from param to not mess with blueprints
   delete req.query.token;

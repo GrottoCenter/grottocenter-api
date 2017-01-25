@@ -5,174 +5,13 @@ div[role="section"].bgGradent {
   background: linear-gradient(to bottom, #d7ccc8 10%, #795548 80%);
 }
 
-div[role="section"].association {
-  text-align: center;
-}
-
-div[role="section"].associationBg {
-  background-image: url(http://localhost:1337/images/caves/DSC_0013b.jpg);
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-}
-
-div[role="section"].association .container {
-  width: 80%;
-  margin: auto;
-}
-
-div[role="section"].association .row > div {
-  padding-top: 20px;
-}
-
-div[role="section"].association .row > div:first-child > h3 {
-  font-size: 35px;
-  padding-bottom: 30px;
-}
-
-div[role="section"].association .row > div:first-child > h5 {
-  font-size: 18px;
-  padding-bottom: 30px;
-}
-
-div[role="section"].association .row > div:first-child p {
-  display: none;
-}
-
-div[role="section"].association .row > div:last-child {
-  text-align: center;
-}
-
-div[role="section"].association .row > div:last-child img {
-  max-width: 200px;
-}
-
-div[role="section"].association .row > div:last-child img:visible {
-  scale: 50%
-}
-
-div[role="section"].association .row ul {
-  list-style-type: none;
-}
-
-div[role="section"].association .row li {
-  margin-bottom: 0;
-}
-
-div[role="section"].association .row .goal {
-  width: 20%;
-  text-align: center;
-  float: left;
-}
-
-@media (min-width: 550px) {
-  div[role="section"].welcome {
-    text-align: inherit;;
-  }
-
-  div[role="section"].association .row > div:first-child {
-    text-align: left;
-  }
-
-  div[role="section"].association .row > div:first-child p {
-    display: block;
-  }
-
-  div[role="section"].association .row > div:last-child img {
-    display: inline;
-  }
-}
-
-div[role="section"].welcome .row > div:first-child {
-  text-align: center;
-}
-
-div[role="section"].welcome .row > div:first-child > img {
-  border-radius: 50%;
-  width: 50%;
-}
-
-@media (min-width: 550px) {
-  div[role="section"].welcome .row > div:first-child > img {
-    width: 80%;
-  }
-}
-
-div[role="section"].welcome h3 {
-  padding-top: 30px;
-  text-align: center;
-}
-
-@media (min-width: 550px) {
-  div[role="section"].welcome h3 {
-    padding-top: 0px;
-    text-align: inherit;
-  }
-}
-
-div[role="section"].lastNews > h3 {
-  text-align: center;
-  padding-bottom: 20px;
-}
-
-div[role="section"].lastNews .newsCard:nth-child(n+1) {
-  margin-top: 4%;
-}
-
-@media (min-width: 550px) {
-  div[role="section"].lastNews .newsCard:nth-child(n+1) {
-    margin-top: 0;
-  }
-}
+@import 'homepage/welcome.less';
+@import 'homepage/association.less';
+@import 'homepage/lastNews.less';
+@import 'homepage/partners.less';
 
 div[role="section"].recentContrib > .container {
   width: 100%;
-}
-
-div[role="section"].partners .vignette {
-  float: left;
-  margin-right: 2%;
-  margin-left: 2%;
-  margin-bottom: 4%;
-  background-color: white;
-  border: 1px solid rgb(136, 91, 57);
-  box-shadow: rgba(0, 0, 0, 0.117647) 0px 1px 6px, rgba(0, 0, 0, 0.117647) 0px 1px 4px;
-  border-radius: 2%;
-  height: 140px;
-  line-height: 140px;
-  overflow: hidden;
-  position: relative;
-}
-
-div[role="section"].partners .vignette {
-  /* 2 vignettes / lines */
-  width: calc((100% / 2) - 5%);
-}
-
-@media (min-width: 550px) {
-  div[role="section"].partners .vignette {
-    /* 3 vignettes / lines */
-    width: calc((100% / 3) - 5%);
-  }
-}
-
-@media (min-width: 750px) {
-  div[role="section"].partners .vignette {
-    /* 4 vignettes / lines */
-    width: calc((100% / 4) - 5%);
-  }
-}
-
-@media (min-width: 1000px) {
-  div[role="section"].partners .vignette {
-    /* 5 vignettes / lines */
-    width: calc((100% / 5) - 5%);
-  }
-}
-
-div[role="section"].partners .vignette img {
-  width: 100%;
-  vertical-align: middle;
 }
 
 div[role="section"].randomEntry .topoImg {
@@ -231,5 +70,9 @@ div[role="section"].randomEntry .infos .entryInfo {
 }
 
 div[role="section"].randomEntry .rating .stars {
-    display: inline;
+  display: inline;
+}
+
+div[role="section"].numbers .row .columns:nth-of-type(n+1) {
+  padding-top: 40px;
 }

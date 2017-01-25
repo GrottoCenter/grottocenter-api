@@ -6,7 +6,7 @@ module.exports = {
     }
     if (!found) {
       sails.log.debug(parameters.notFoundMessage);
-      return res.badRequest(parameters.notFoundMessage);
+      return res.notFound(parameters.notFoundMessage);
     }
     return res.json(found);
   }

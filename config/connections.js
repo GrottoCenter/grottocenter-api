@@ -53,6 +53,17 @@ module.exports.connections = {
     timezone: 'utc'
   },
 
+  grottoceMysqlLocalDocker: {
+    migrate: 'safe',
+    adapter: 'sails-mysql',
+    // See "docker link" env variables : https://docs.docker.com/engine/userguide/networking/default_network/dockerlinks/#/environment-variables
+    host: process.env.MYSQLGROTTO_PORT_3306_TCP_ADDR,
+    user: 'sailsuser',
+    password: 'grottocepassword',
+    database: 'grottoce',
+    timezone: 'utc'
+  },
+
   grottoceMysqlProd: {
     migrate: 'safe',
     adapter: 'sails-mysql',

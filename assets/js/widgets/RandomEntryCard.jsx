@@ -10,18 +10,20 @@ export class EntryData extends React.Component {
   }
 
   render() {
-    let comment = this.props.entry.comments[0];
+    let stat = this.props.entry.stat;
+    let entryInfo = this.props.entry.entryInfo[0];
+    let timeInfo = this.props.entry.timeInfo;
 
     let imageElement = <div/>;
-    if (this.props.entry.file !== undefined) {
-      imageElement = <EntryImage src={this.props.entry.file.path}/>;
+    if (entryInfo.path !== undefined) {
+      imageElement = <EntryImage src={entryInfo.path}/>;
     }
     return (
       <div className="row">
         <div className="six columns">
           <EntryTitle entry={this.props.entry}/>
-          <EntryStat comment={comment}/>
-          <EntryInfo comment={comment} cave={this.props.entry.caves[0]}/>
+          <EntryStat stat={stat}/>
+          <EntryInfo timeInfo={timeInfo} entryInfo={entryInfo}/>
         </div>
         {imageElement}
       </div>
@@ -55,16 +57,16 @@ export class EntryStat extends React.Component {
   }
 
   render() {
-    if (this.props.comment == undefined) {
+    if (this.props.stat === undefined) {
       return (
         <div>At this time, there is no comment for this entry</div>
       );
     }
     return (
       <ul className="rating">
-        <EntryStatItem itemScore={this.props.comment.relevance} itemLabel="Interest"/>
-        <EntryStatItem itemScore={this.props.comment.caving} itemLabel="Ease of move"/>
-        <EntryStatItem itemScore={this.props.comment.approach} itemLabel="Access"/>
+        <EntryStatItem itemScore={this.props.stat.aestheticism} itemLabel="Interest"/>
+        <EntryStatItem itemScore={this.props.stat.caving} itemLabel="Ease of move"/>
+        <EntryStatItem itemScore={this.props.stat.approach} itemLabel="Access"/>
       </ul>
     );
   }
@@ -76,7 +78,7 @@ export class EntryStatItem extends React.Component {
   }
 
   render() {
-    if (this.props.itemScore == undefined) {
+    if (this.props.itemScore === undefined) {
       return (
         <div/>
       );
@@ -114,13 +116,13 @@ export class EntryInfo extends React.Component {
 
   render() {
     var rows = [];
-    if (this.props.comment != undefined) {
-      rows.push(<EntryInfoItem key="eiik1" itemImg="time-to-go.svg" itemLabel="time to go" itemValue={this.props.comment.eTTrail}/>);
-      rows.push(<EntryInfoItem key="eiik2" itemImg="underground_time.svg" itemLabel="underground time" itemValue={this.props.comment.eTUnderground}/>);
+    if (this.props.timeInfo !== undefined) {
+      rows.push(<EntryInfoItem key="eiik1" itemImg="time-to-go.svg" itemLabel="time to go" itemValue={this.props.timeInfo.eTTrail}/>);
+      rows.push(<EntryInfoItem key="eiik2" itemImg="underground_time.svg" itemLabel="underground time" itemValue={this.props.timeInfo.eTUnderground}/>);
     }
-    if (this.props.cave != undefined) {
-      rows.push(<EntryInfoItem key="eiik3" itemImg="length.svg" itemLabel="length" itemValue={this.props.cave.length} itemUnit="m"/>);
-      rows.push(<EntryInfoItem key="eiik4" itemImg="depth.svg" itemLabel="depth" itemValue={this.props.cave.depth} itemUnit="m"/>);
+    if (this.props.entryInfo !== undefined) {
+      rows.push(<EntryInfoItem key="eiik3" itemImg="length.svg" itemLabel="length" itemValue={this.props.entryInfo.length} itemUnit="m"/>);
+      rows.push(<EntryInfoItem key="eiik4" itemImg="depth.svg" itemLabel="depth" itemValue={this.props.entryInfo.depth} itemUnit="m"/>);
     }
     return (
       <div className="infos">
@@ -158,7 +160,11 @@ export class EntryImage extends React.Component {
   }
 
   render() {
-    /*<img className="img img-responsive" src="images/topo1.png" alt="topo"/>*/
+    if (!this.props.src) {
+      return (
+        <div>At this time, there is no image for this entry</div>
+      );
+    }
     return (
         <div className="six columns">
           <img className="topoImg" src={this.props.src} alt="topo"/>

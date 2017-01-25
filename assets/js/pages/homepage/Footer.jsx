@@ -4,6 +4,8 @@ import muiThemeable from 'material-ui/styles/muiThemeable';
 import ContactMailIcon from 'material-ui/svg-icons/communication/contact-mail';
 import TeamIcon from 'material-ui/svg-icons/social/people';
 import InfoIcon from 'material-ui/svg-icons/action/info';
+import GiftIcon from 'material-ui/svg-icons/action/card-giftcard';
+import FlatButton from 'material-ui/FlatButton';
 
 let licenceLinks = {
   'fr': 'https://creativecommons.org/licenses/by-sa/3.0/fr/',
@@ -45,7 +47,7 @@ let legalLinks = {};
 localesList.map(function(el) { // eslint-disable-line no-undef
   let language = el.value;
   language = language.substring(0, 1).toUpperCase() + language.substring(1, language.length);
-  rssLinks[el.value] = 'https://wiki.grottocenter.org/wiki/GrottoCenter:' + language + '/Legal_and_Privacy_Statement';
+  legalLinks[el.value] = 'https://wiki.grottocenter.org/wiki/GrottoCenter:' + language + '/Legal_and_Privacy_Statement';
 }, this);
 
 class Footer extends Component {
@@ -66,93 +68,115 @@ class Footer extends Component {
     let legalLink = (legalLinks[this.state.locale] !== undefined) ? legalLinks[this.state.locale] : 'https://wiki.grottocenter.org/wiki/GrottoCenter:En/Legal_and_Privacy_Statement';
 
     return (
+      <div>
       <footer style={{backgroundColor: this.props.muiTheme.palette.primary1Color, color: this.props.muiTheme.palette.textIconColor, fontFamily: this.props.muiTheme.fontFamily}}>
         <div className="container">
           <div className="row">
-            <div className="three columns">
-              <img height="48" src="/images/logoGC.png" style={{'float': 'left'}}/>
+            <div className="four columns">
               <div>
                 <I18n>Published by</I18n>
               </div>
-              <a href="http://www.wikicaves.org/" target="_blank"><I18n>Wikicaves association</I18n></a>
+              <div className="publishedInfo">
+                <a href="http://www.wikicaves.org/" target="_blank">
+                  <img src="/images/logo.svg" alt="logo-wikicaves"/>
+                  <br/>
+                  <I18n>Wikicaves association</I18n>
+                </a>
+              </div>
             </div>
-            <div className="six columns social">
-              <div className="linksIcon">
-                <div className="linkIcon">
+
+            <div className="four columns">
+              <ul className="linksText">
+                <li>
+                  <a style={{color: this.props.muiTheme.palette.textIconColor}} href="https://wiki.grottocenter.org/wiki/GrottoCenter:Contributors" target="_blank">
+                    <I18n>Contributors</I18n>
+                  </a>
+                </li>
+                <li>
+                  <a style={{color: this.props.muiTheme.palette.textIconColor}} href={contactLink} target="_blank">
+                    <I18n>Contact</I18n>
+                  </a>
+                </li>
+                <li>
+                  <a style={{color: this.props.muiTheme.palette.textIconColor}} href={legalLink} target="_blank">
+                    <I18n>Legal notice</I18n>
+                  </a>
+                </li>
+              </ul>
+            </div>
+
+            <div className="four columns">
+              <div className="donate">
+                <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
+                  <input type="hidden" name="cmd" value="_s-xclick" />
+                  <input type="hidden" name="hosted_button_id" value="TJEU7C2TZ356Y" />
+                  <FlatButton
+                    href="#"
+                    onclick="$(this).closest('form').submit()"
+                    target="_blank"
+                    label="Donate Now"
+                    icon={<GiftIcon/>}
+                    backgroundColor={this.props.muiTheme.palette.accent1Color}
+                    hoverColor={this.props.muiTheme.palette.accent1Color}
+                    style={{color: this.props.muiTheme.palette.textIconColor}}
+                  />
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <div className="row">
+            <div className="twelve columns">
+              <ul className="linksIcon">
+                <li>
                   <a href="https://www.facebook.com/GrottoCenter" target="_blank">
                     <img src="/images/facebook.svg" alt="Follow us on Facebook"/>
                   </a>
-                </div>
-                <div className="linkIcon">
+                </li>
+                <li>
                   <a href={rssLink} target="_blank">
-                  <img src="/images/rss.png" alt="RSS feed"/>
-                </a>
-                </div>
-                <div className="linkIcon">
+                    <img src="/images/rss.png" alt="RSS feed"/>
+                  </a>
+                </li>
+                <li>
                   <a href={bloggerLink} target="_blank">
-                  <img src={'/images/' + bloggerIcon} alt="Grottocenter blog"/>
-                </a>
-                </div>
-                <div className="linkIcon">
+                    <img src={'/images/' + bloggerIcon} alt="Grottocenter blog"/>
+                  </a>
+                </li>
+                <li>
                   <a href="https://twitter.com/grottocenter" target="_blank">
-                  <img src="/images/twitter.svg" alt="Follow us on Twitter"/>
-                </a>
-                </div>
-                <div className="linkIcon">
+                    <img src="/images/twitter.svg" alt="Follow us on Twitter"/>
+                  </a>
+                </li>
+                <li>
                   <a href="https://github.com/GrottoCenter" target="_blank">
                     <img src="/images/github.png" alt="Grottocenter3 on GitHub"/>
                   </a>
-                </div>
-                <div className="linkIcon">
-                  <a href="https://wiki.grottocenter.org/wiki/GrottoCenter:Contributors" target="_blank">
-                    <TeamIcon color={this.props.muiTheme.palette.textIconColor} style={{'height': '100%', 'width': '40px', 'background-color': 'black','border-radius': '50%', 'margin': '2px'}}/>
-                  </a>
-                </div>
-                <div className="linkIcon">
-                  <a href={contactLink} target="_blank">
-                    <ContactMailIcon color={this.props.muiTheme.palette.textIconColor} style={{'height': '100%', 'width': '40px', 'background-color': 'black','border-radius': '50%', 'margin': '2px'}}/>
-                  </a>
-                </div>
-                <div className="linkIcon">
-                  <a href={legalLink} target="_blank">
-                    <InfoIcon color={this.props.muiTheme.palette.textIconColor} style={{'height': '100%', 'width': '40px', 'background-color': 'black','border-radius': '50%', 'margin': '2px'}}/>
-                  </a>
-                </div>
-                <div className="linkIcon">
+                </li>
+                <li>
                   <a href={wikiBatsLink} target="_blank">
                     <img src="/images/bats.svg" alt="Wiki page for bats"/>
                   </a>
-                </div>
-              </div>
-            </div>
-            <div className="three columns donate">
-              <div className="centered bigger">
-                <I18n>Wikicaves association</I18n>
-              </div>
-              <div><img src="/images/btn_donateCC_LG.gif" alt="Donate"/></div>
-            </div>
-          </div>
-          <div className="row">
-            <div className="twelve columns legal">
-              <p>
-                <I18n>Unless stated otherwise, all text and documents are available under the terms of the Creative Commons Attribution-ShareAlike 3.0 Unported.</I18n>
-              </p>
-              <div className="licenceIcon">
-                <a href={licenceLink} target="_blank">
-                  <img height="24px" src="/images/CC-BY-SA.png" alt=""/>
-                </a>
-              </div>
-            </div>
-          </div>
-          <div className="row">
-            <div className="twelve columns legal">
-              <p>
-                <I18n>This site, although it may contain detailed information on caves, was not designed to facilitate the visit for none caver people. Dangers are not necessarily reported and information mentioned is not everytime verified. Caving is a discipline with many facets: cultural, science and sports. In the latter capacity, it often requires a physical commitment. It is also not free of risks, and even major risks. These risks, if they can not be completely eliminated, are at least greatly reduced by a practice in the rules, practice which is fully understood when under a caving club (grotto). In any case GROTTOCENTER and its team can not be held liable for a bad practice of caving. The novice who would engage in underground exploration is urged to contact a caving club. The names and contact information can be obtained among other to the IUS (International Union of Speleology), to GROTTOCENTER or to his national federation.</I18n>
-              </p>
+                </li>
+              </ul>
             </div>
           </div>
         </div>
       </footer>
+
+      <div className="footer" style={{color: this.props.muiTheme.palette.fullBlack, backgroundColor: this.props.muiTheme.palette.primary3Color}}>
+        <div className="legal">
+          <p>
+            <I18n>Unless stated otherwise, all text and documents are available under the terms of the Creative Commons Attribution-ShareAlike 3.0 Unported.</I18n>
+          </p>
+          <p>
+            <a className="licenceIcon" href={licenceLink} target="_blank">
+              <img src="/images/CC-BY-SA.png" alt="CC-BY-SA licence"/>
+            </a>
+          </p>
+        </div>
+      </div>
+    </div>
     );
   }
 }

@@ -44,50 +44,15 @@ module.exports = {
     });
   },
 
-  // TODO : pour topo : isPublic : YES
   findRandom: function(req, res) {
-    // TODO : entries of interest must be linked to at least one cave, so we must check data in order to avoid asap the exist subRequest
-    TEntry.query('SELECT id FROM t_entry where Is_of_interest=1 and exists (select Id_entry from j_cave_entry where Id_entry=id) ORDER BY RAND() LIMIT 1', function(err, found) {
-      if (err) {
-        return res.serverError(err);
+    EntryService.findRandom().then(function(results) {
+      if (!results) {
+        return res.notFound('No entry found.');
       }
-      let entryId = found[0].id;
-
-      let result = [];
-      TEntry.find({
-        id: entryId
-      }).populate('caves').populate('comments').populate('topographies').limit(1).exec(function(err, found) {
-        // add entry to result
-        result.push(found[0]);
-
-        // add to result the first file linked to the first topo of random entry
-        let topo = found[0].topographies;
-        if (topo !== undefined) {
-          if (topo[0] !== undefined) {
-            TTopography.find({
-              id: topo[0].id
-            }).populate('files').exec(function(err, found) {
-              let files = found[0].files;
-              if (files !== undefined) {
-                // add file to result
-                result[0]['file'] = files[0];
-              }
-
-              // return full result at the end
-              let params = {};
-              params.controllerMethod = 'EntryController.findRandom';
-              params.notFoundMessage = 'No file attached to topo found.';
-              return ControllerService.treat(err, result, params, res);
-            });
-          } else {
-            // return result without topo
-            let params = {};
-            params.controllerMethod = 'EntryController.findRandom';
-            params.notFoundMessage = 'No topo found.';
-            return ControllerService.treat(err, result, params, res);
-          }
-        }
-      });
+      return res.json(results);
+    }, function(err) {
+      sails.log.error(err);
+      return res.serverError('EntryController.findRandom error : ' + err);
     });
   }
 };

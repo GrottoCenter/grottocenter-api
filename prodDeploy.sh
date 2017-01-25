@@ -2,7 +2,23 @@
 # Author: Benjamin Soufflet - Wikicaves
 # Date: Dec 29 2016
 # Requirement: docker-machine, gcloud
-# Make sure that your public SSH key has been added to the project on Google Cloud
+# Warnings :
+# - Make sure that your public SSH key has been added to the project on Google Cloud
+# - The file config/env/production.js containing the credentials to the CLoud SQL database
+#   need to be available (this file is not in the git repository for security reasons).
+#
+# Summary : This script deploy your current version of the Grottocenter3 Application
+#           to the production server on Google Cloud.
+#
+# Steps of this script :
+# - Check that the file config/env/production.js is available
+# - Connect to the google cloud project and create the compute engine (docker-machine) if
+# it doesn't exists yet.
+# - Connect to the created remote docker-machine and build the docker image on it then push
+# the docker image to the google repository
+# - Delete the running grottocenter docker container on the remote docker-machine
+# and run a new one from the pushed image created just before.
+
 
 # Set Variables ###########################
 PROJECT_ID="grottocenter-cloud"
@@ -16,7 +32,7 @@ STATIC_IP="grottocenter-website"
 VERSION="latest"
 #MACHINETYPE="f1-micro"
 MACHINETYPE="g1-small"
-MACHINETYPEBUILDER="n1-standard-4"
+
 # This google machine Image prevent the certificate bug that we have with the default Google machine image :
 # See http://stackoverflow.com/questions/40092793/error-validating-certificates-when-using-docker-machine-in-gce
 MACHINEIMAGE="https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-1604-xenial-v20161205"
@@ -89,11 +105,11 @@ echo "### BUILD the docker image ###"
 # Unlimited swap memory during build
 docker build --memory-swap -1 -t ${APPNAME} .  || { echo '######## Build failed - Exiting now #########' ; exit 1; }
 
-echo "### TAG the new Docker image into us.gcr.io repository ###"
+echo "### TAG the new Docker image into repository ###"
 docker tag ${APPNAME} ${IMAGE}
 echo "## image is : ${IMAGE} ##"
 
-echo "### PUSH the new Docker image into us.gcr.io repository ###"
+echo "### PUSH the new Docker image into repository ###"
 gcloud docker -- push ${IMAGE}
 
 echo "### remove all empty containers ###"

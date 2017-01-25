@@ -18,11 +18,11 @@ export default class HomepageFlat extends React.Component {
     return (
       <div>
         <Welcome/>
-        <LatestNews/>
-        <Association/>
         <WhatIsIt/>
         <RandomEntry/>
-        <Partners nbDisplayed="6"/>
+        <LatestNews/>
+        <Association/>
+        <Partners/>
       </div>
     );
   }

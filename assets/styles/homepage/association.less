@@ -1,0 +1,202 @@
+div[role="section"].association {
+  text-align: center;
+}
+
+div[role="section"].associationBg {
+  background-image: url(http://localhost:1337/images/caves/DSC_0013b.jpg);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+div[role="section"].association .container {
+  width: 80%;
+  margin: auto;
+}
+
+div[role="section"].association .row > div {
+  padding-top: 20px;
+}
+
+div[role="section"].association .row > div:first-child > h3 {
+  font-size: 35px;
+  padding-bottom: 30px;
+}
+
+div[role="section"].association .row > div:first-child > h5 {
+  font-size: 18px;
+}
+
+div[role="section"].association .row > div:last-child {
+  text-align: center;
+}
+
+div[role="section"].association .row > div:last-child img {
+  max-width: 200px;
+}
+
+div[role="section"].association .row > div:last-child img:visible {
+  scale: 50%
+}
+
+div[role="section"].association .row ul {
+  width: 100%;
+  list-style-type: none;
+}
+
+div[role="section"].association .row li {
+  margin-bottom: 40px;
+}
+
+div[role="section"].association .row li::after {
+  content: '';
+  clear: both;
+}
+
+div[role="section"].association .row li > svg {
+  height: 80px !important;
+  width: 80px !important;
+  float: left;
+}
+
+div[role="section"].association .row li > svg:hover {
+  animation: checkBump 500ms ease;
+}
+
+div[role="section"].association .row .listing > span {
+  margin-bottom: 40px;
+  display: block;
+}
+
+div[role="section"].association .row .listing ul li:nth-child(2n) svg {
+  float: right;
+}
+
+div[role="section"].association .row .listing ul li:nth-child(n) div {
+  min-height: 80px;
+  line-height: 40px;
+  margin-left: 80px;
+  margin-right: 0px;
+  text-align: left;
+}
+
+div[role="section"].association .row .listing ul li:nth-child(2n) div {
+  margin-right: 80px;
+  margin-left: 0px;
+  text-align: right;
+}
+
+div[role="section"].association .row .listing ul li:nth-child(n) span {
+  display: inline-block;
+}
+
+div[role="section"].association .goalTextZone {
+  display: none;
+  text-align: center;
+}
+
+div[role="section"].association .goalTextZone:before {
+  content: '';
+  display: inline-block;
+  height: 100%;
+  vertical-align: middle;
+}
+
+div[role="section"].association .goalTextZone > span {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+div[role="section"].association .floatingGoals {
+  display: none;
+  margin-top: 50px;
+}
+
+@media (min-width: 750px) {
+  div[role="section"].association .row > div:first-child {
+    text-align: left;
+  }
+
+  div[role="section"].association .row > div:last-child img {
+    display: inline;
+  }
+
+  div[role="section"].association .listing {
+    display: none;
+  }
+
+  div[role="section"].association .goalTextZone {
+    display: inline-block;
+    position: relative;
+    top: 90px;
+    left: ~"calc((100% - 200px) / 2)";
+    width: 200px;
+    height: 150px;
+  }
+
+  div[role="section"].association .floatingGoals {
+    display: block;
+    height: 450px;
+    margin-top: -160px;
+  }
+
+  div[role="section"].association .floatingGoals .goal {
+    position: absolute;
+    width: 120px;
+    text-align: center;
+    float: left;
+  }
+
+  div[role="section"].association .floatingGoals .goal > span {
+    display: block;
+    padding: 20px;
+    text-align: center;
+  }
+
+  div[role="section"].association .floatingGoals .goal > span:first-child {
+    white-space: nowrap;
+  }
+
+  div[role="section"].association .floatingGoals .goal svg {
+    width: 140px !important;
+    height: 140px !important;
+    top: -38px;
+    left: -10px;
+    position: absolute;
+    opacity: 0.3;
+  }
+
+  div[role="section"].association .floatingGoals .goal svg:hover {
+    color: rgb(215, 204, 200) !important;
+    transform: rotate(-135deg) scale(1.2, 1.2);
+    opacity: 1;
+  }
+
+  div[role="section"].association .floatingGoals .goal:nth-child(1) {
+    left: ~"calc(((100% - 120px) / 2) - 100px)";
+    bottom: 120px;
+  }
+
+  div[role="section"].association .floatingGoals .goal:nth-child(2) {
+    left: ~"calc(((100% - 120px) / 2) - 160px)";
+    bottom: 280px;
+  }
+
+  div[role="section"].association .floatingGoals .goal:nth-child(3) {
+    left: ~"calc((100% - 120px) / 2)";
+  }
+
+  div[role="section"].association .floatingGoals .goal:nth-child(4) {
+    left: ~"calc(((100% - 120px) / 2) + 160px)";
+    bottom: 280px;
+  }
+
+  div[role="section"].association .floatingGoals .goal:nth-child(5) {
+    left: ~"calc(((100% - 120px) / 2) + 100px)";
+    bottom: 120px;
+  }
+
+  div[role="section"].association .floatingGoals .goalText {
+    display: none !important;
+  }
+}

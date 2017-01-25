@@ -27,7 +27,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -264,12 +264,12 @@
      id="namedview3412"
      showgrid="false"
      inkscape:zoom="1.81"
-     inkscape:cx="336.53846"
+     inkscape:cx="235.70973"
      inkscape:cy="213.55932"
      inkscape:window-x="-8"
      inkscape:window-y="-8"
      inkscape:window-maximized="1"
-     inkscape:current-layer="svg3410" />
+     inkscape:current-layer="g4327-8" />
   <g
      id="g20286"
      transform="translate(-262.21983,-254.3159)">
@@ -288,9 +288,10 @@
          transform="translate(243.17191,-135.57971)"
          inkscape:export-filename="E:\Mes Documents\Dropbox\MaquetteGC\Test-Grottocenter3-Fred\img\icon\caver_flat32.png"
          inkscape:export-xdpi="4.8694196"
-         inkscape:export-ydpi="4.8694196">
+         inkscape:export-ydpi="4.8694196"
+         style="stroke-width:19.86342562;stroke-miterlimit:4;stroke-dasharray:none">
         <path
-           style="fill:#34558a;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:20;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+           style="fill:#34558a;fill-opacity:1;fill-rule:nonzero;stroke:#ffffff;stroke-width:19.86342562;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
            d="m 742.06053,263.63598 c -11.2971,-4.00843 -26.82386,-17.4746 -33.73304,-29.25628 l -7.65748,-13.05766 -0.019,-240.000002 c -0.0105,-131.999998 0.96385,-243.512138 2.16512,-247.804738 3.03086,-10.83038 18.02124,-27.16938 31.00295,-33.79216 10.50687,-5.3602 18.94956,-5.54596 252.06446,-5.54596 265.07256,0 252.01806,-0.85447 269.40566,17.63382 17.7359,18.85882 16.6976,4.73361 17.6066,239.509038 0.4594,118.64286 -0.303,230.206912 -1.6942,247.920142 -2.3173,29.50455 -3.24,33.09923 -11.0009,42.85715 -4.6592,5.8582 -14.1336,13.54414 -21.054,17.07985 l -12.5827,6.42857 -240.10884,-0.22542 c -132.05988,-0.1242 -242.03745,-0.91 -244.3946,-1.74635 z"
            id="path3093"
            inkscape:connector-curvature="0" />
