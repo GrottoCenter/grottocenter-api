@@ -24,6 +24,18 @@ module.exports.i18n = {
 
   locales: ['en', 'es', 'fr', 'de', 'it', 'bg', 'ca', 'nl'],
 
+  localesText: {
+    'en': 'English',
+    'es': 'Español',
+    'fr': 'Français',
+    'de': 'Deutsch',
+    'it': 'Italiano',
+    'bg': 'Български',
+    'ca': 'Català',
+    'nl': 'Nederlands',
+    'ar': 'عربية'
+  },
+
   /****************************************************************************
    *                                                                           *
    * What is the default locale for the site? Note that this setting will be   *

@@ -15,7 +15,7 @@ class LanguagePicker extends Component {
     };
 
     languages = localesList.map(function(el, index) { // eslint-disable-line no-undef
-      return <MenuItem key={index} value={el.value} primaryText={el.primaryText} />;
+      return <MenuItem key={index} value={el.value} primaryText={el.primaryText} style={{color: props.muiTheme.palette.primaryTextColor}} />;
     });
   }
 
@@ -29,8 +29,7 @@ class LanguagePicker extends Component {
   render() {
     return (
       <SelectField
-        style={{width: 'initial'}}
-        menuItemStyle={{color: this.props.muiTheme.palette.textIconColor}}
+        autoWidth={true}
         labelStyle={{paddingLeft: '10px', color: this.props.muiTheme.palette.textIconColor}}
         value={this.state.value}
         onChange={this.handleChange.bind(this)}

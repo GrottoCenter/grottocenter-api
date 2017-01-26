@@ -41,16 +41,16 @@
   <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.2/dist/leaflet.css" />
   <script>
-    /*
-        i18n
-        */
+    <!-- i18n -->
+
     locale = "<%= getLocale() %>";
     localesList = [];
-    <% var locales=getLocales(); %>
-    <% for(var i=0; i<locales.length; i++) {%>
+    <% var locales = sails.config.i18n.locales;%>
+    <% var localesText = sails.config.i18n.localesText;%>
+    <% for(var i=0; i < locales.length; i++) {%>
     localesList.push({
-      value: "<%= locales[i] %>",
-      primaryText: "<%= __({phrase: 'English', locale: locales[i]}) %>"
+      value: '<%= locales[i] %>',
+      primaryText: '<%= localesText[locales[i]] %>'
     });
     <% } %>
     window.catalog = <%- JSON.stringify(getCatalog(getLocale())) %>;
@@ -82,7 +82,7 @@
     -->
 
     <!--TEMPLATES-->
-    
+
     <!--TEMPLATES END-->
 
 
