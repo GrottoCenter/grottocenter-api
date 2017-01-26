@@ -104,18 +104,18 @@ class Footer extends Component {
 
             <div className="four columns">
               <div className="donate">
-                <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
+                <form name='donate' action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_blank">
                   <input type="hidden" name="cmd" value="_s-xclick" />
                   <input type="hidden" name="hosted_button_id" value="TJEU7C2TZ356Y" />
                   <FlatButton
-                    href="#"
-                    target="_blank"
-                    label="Donate Now"
+                    href="javascript:document.donate.submit()"
+                    label={<I18n>Donate Now</I18n>}
                     icon={<GiftIcon/>}
                     backgroundColor={this.props.muiTheme.palette.accent1Color}
                     hoverColor={this.props.muiTheme.palette.accent1Color}
                     style={{color: this.props.muiTheme.palette.textIconColor}}
                   />
+                <img alt='' src='https://www.paypalobjects.com/fr_FR/i/scr/pixel.gif' width='1' height='1' />
                 </form>
               </div>
             </div>
