@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {PropTypes} from 'react';
 import { connect } from 'react-redux';
 import { showMarker } from './../../actions/Search';
 
@@ -28,7 +28,7 @@ class Autocomplete extends React.Component {
 
   onNewRequest(chosenRequest, index) {
     if ( chosenRequest.isMappable ) {
-        this.props.dispatch(showMarker(chosenRequest));
+      this.props.dispatch(showMarker(chosenRequest));
     }
     if ( chosenRequest.id ) {
       window.open('http://www.grottocenter.org/html/file_En.php?lang=En&check_lang_auto=false&category='+chosenRequest.category+'&id='+chosenRequest.id,'GrottoV2Window');
@@ -48,11 +48,11 @@ class Autocomplete extends React.Component {
   }
 
   foundDataToMenuItemMapping(item, i) {
-    var primaryText = item.name;
+    let primaryText = item.name;
     if (this.isEntry(item)) {
       primaryText+=' (' + item.region + ')';
     }
-    var category = this.isEntry(item)?'entry':'cave';
+    let category = this.isEntry(item)?'entry':'cave';
 
     return {
       id: item.id,
@@ -113,6 +113,10 @@ class Autocomplete extends React.Component {
     );
   }
 }
+
+Autocomplete.propTypes = {
+  muiTheme: PropTypes.object.isRequired
+};
 
 Autocomplete = connect()(Autocomplete);
 

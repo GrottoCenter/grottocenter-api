@@ -20,7 +20,7 @@ class Bar extends React.Component {
 
     if (this.refs.quickSearchInput.getValue().length >= 3) {
       $.ajax({
-        url: "/cave/findAll?name=" + this.refs.quickSearchInput.getValue(),
+        url: '/cave/findAll?name=' + this.refs.quickSearchInput.getValue(),
         dataType: 'json',
         success: function(data) {
           this.props.dispatch(loadCaveSuccess(data))
@@ -28,14 +28,14 @@ class Bar extends React.Component {
       });
 
       $.ajax({
-        url: "/entry/findAll?name=" + this.refs.quickSearchInput.getValue(),
+        url: '/entry/findAll?name=' + this.refs.quickSearchInput.getValue(),
         dataType: 'json',
         success: function(data) {
-            this.props.dispatch(loadEntrySuccess(data))
+          this.props.dispatch(loadEntrySuccess(data))
         }.bind(this)
       });
 
-      
+
     }
   }
 
@@ -43,12 +43,12 @@ class Bar extends React.Component {
     return (
       <div>
         <TextField
-            ref="quickSearchInput"
-            inputStyle={{color: 'white'}}
-            hintText="Rechercher une cavité, un club..."
-            hintStyle={{color: 'white'}}
-            fullWidth={true}
-            onChange={this.displaySelection.bind(this)}
+          ref="quickSearchInput"
+          inputStyle={{color: 'white'}}
+          hintText="Rechercher une cavité, un club..."
+          hintStyle={{color: 'white'}}
+          fullWidth={true}
+          onChange={this.displaySelection.bind(this)}
         />
         <ListOfResults />
       </div>

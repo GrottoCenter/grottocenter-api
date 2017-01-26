@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React, {Component, PropTypes} from 'react';
 import {connect} from 'react-redux';
 import SelectField from 'material-ui/SelectField';
 import MenuItem from 'material-ui/MenuItem';
@@ -40,6 +40,10 @@ class LanguagePicker extends Component {
     );
   }
 }
+
+LanguagePicker.propTypes = {
+  muiTheme: PropTypes.object.isRequired
+};
 
 LanguagePicker = connect()(LanguagePicker);
 

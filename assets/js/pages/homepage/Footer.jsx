@@ -1,9 +1,6 @@
-import React, {Component} from 'react';
+import React, {Component, PropTypes} from 'react';
 import I18n from 'react-ghost-i18n';
 import muiThemeable from 'material-ui/styles/muiThemeable';
-import ContactMailIcon from 'material-ui/svg-icons/communication/contact-mail';
-import TeamIcon from 'material-ui/svg-icons/social/people';
-import InfoIcon from 'material-ui/svg-icons/action/info';
 import GiftIcon from 'material-ui/svg-icons/action/card-giftcard';
 import FlatButton from 'material-ui/FlatButton';
 
@@ -112,7 +109,6 @@ class Footer extends Component {
                   <input type="hidden" name="hosted_button_id" value="TJEU7C2TZ356Y" />
                   <FlatButton
                     href="#"
-                    onclick="$(this).closest('form').submit()"
                     target="_blank"
                     label="Donate Now"
                     icon={<GiftIcon/>}
@@ -180,5 +176,9 @@ class Footer extends Component {
     );
   }
 }
+
+Footer.propTypes = {
+  muiTheme: PropTypes.object.isRequired
+};
 
 export default muiThemeable()(Footer);

@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React, {Component, PropTypes} from 'react';
 import Autocomplete from './../../components/searchBar/Autocomplete';
 import I18n from 'react-ghost-i18n';
 import muiThemeable from 'material-ui/styles/muiThemeable';
@@ -54,5 +54,9 @@ class Header extends Component {
     );
   }
 }
+
+Header.propTypes = {
+  muiTheme: PropTypes.object.isRequired
+};
 
 export default muiThemeable()(Header);

@@ -2,9 +2,9 @@
  * TODO Add comment
  */
 import React from 'react';
-
+import I18n from 'react-ghost-i18n';
 import BasicCard from './../components/BasicCard';
-import I18n from './../components/I18n';
+
 
 export default class SignupForm extends React.Component {
   constructor(props) {

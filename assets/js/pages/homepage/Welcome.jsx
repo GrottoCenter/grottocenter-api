@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {PropTypes} from 'react';
 import I18n from 'react-ghost-i18n';
 import muiThemeable from 'material-ui/styles/muiThemeable';
 import Avatar from 'material-ui/Avatar';
@@ -24,5 +24,9 @@ const Welcome = (props) => (
     </div>
   </div>
 );
+
+Welcome.propTypes = {
+  muiTheme: PropTypes.object.isRequired
+};
 
 export default muiThemeable()(Welcome);

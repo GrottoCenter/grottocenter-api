@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {PropTypes} from 'react';
 
 export default class LightPage extends React.Component {
   constructor(props) {
@@ -13,3 +13,7 @@ export default class LightPage extends React.Component {
     );
   }
 }
+
+LightPage.propTypes = {
+  children: PropTypes.node.isRequired
+};

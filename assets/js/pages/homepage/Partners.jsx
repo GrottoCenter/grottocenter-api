@@ -1,4 +1,6 @@
-import React from 'react';
+import React, {PropTypes} from 'react';
+import muiThemeable from 'material-ui/styles/muiThemeable';
+import I18n from 'react-ghost-i18n';
 
 class PartnersItem extends React.Component {
   constructor(props) {
@@ -19,7 +21,11 @@ class PartnersItem extends React.Component {
   }
 }
 
-export default class Partners extends React.Component {
+PartnersItem.propTypes = {
+  partner: PropTypes.object.isRequired
+};
+
+class Partners extends React.Component {
   constructor(props) {
     super(props);
     this.state = { // TODO: go get default at Metadata ?
@@ -51,7 +57,7 @@ export default class Partners extends React.Component {
 
     return (
       <div>
-        <div role="section" className="partners">
+        <div role="section" className="partners" style={{fontFamily: this.props.muiTheme.fontFamily}}>
           <h3 style={{'textAlign': 'center', 'paddingBottom': '50px'}}><I18n>Partners</I18n></h3>
           <div>
             <div className="container">
@@ -67,3 +73,9 @@ export default class Partners extends React.Component {
     );
   }
 }
+
+Partners.propTypes = {
+  muiTheme: PropTypes.object.isRequired
+};
+
+export default muiThemeable()(Partners);

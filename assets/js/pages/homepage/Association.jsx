@@ -1,8 +1,7 @@
-import React from 'react';
+import React, {PropTypes} from 'react';
 import I18n from 'react-ghost-i18n';
 import muiThemeable from 'material-ui/styles/muiThemeable';
 import CheckIcon from 'material-ui/svg-icons/navigation/check';
-import ThumbUpIcon from 'material-ui/svg-icons/action/thumb-up';
 import SyncIcon from 'material-ui/svg-icons/notification/sync';
 
 const Association = (props) => (
@@ -57,7 +56,7 @@ const Association = (props) => (
               </span>
             </div>
             <div className="floatingGoals">
-              <div className="goal" onMouseHover="javascript:alert(this);">
+              <div className="goal">
                 <span style={{color: props.muiTheme.palette.textIconColor}}>
                   <I18n>Promote!</I18n>
                 </span>
@@ -109,5 +108,9 @@ const Association = (props) => (
     </div>
   </div>
 );
+
+Association.propTypes = {
+  muiTheme: PropTypes.object.isRequired
+};
 
 export default muiThemeable()(Association);

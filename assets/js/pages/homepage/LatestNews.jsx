@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {PropTypes} from 'react';
 import {Card, CardMedia, CardTitle, CardText, CardActions} from 'material-ui/Card';
 import FlatButton from 'material-ui/FlatButton';
 import ImageLoupe from 'material-ui/svg-icons/image/loupe';
@@ -9,7 +9,7 @@ import DateRibbon from '../../widgets/DateRibbon';
 
 const LatestNews = (props) => (
   <div>
-    <div role="section"  className="lastNews" style={{fontFamily: props.muiTheme.fontFamily}}>
+    <div role="section" className="lastNews" style={{fontFamily: props.muiTheme.fontFamily}}>
       <h3><I18n>News</I18n></h3>
       <div className="container">
         <div className="row">
@@ -46,5 +46,9 @@ const LatestNews = (props) => (
     </div>
   </div>
 );
+
+LatestNews.propTypes = {
+  muiTheme: PropTypes.object.isRequired
+};
 
 export default muiThemeable()(LatestNews);

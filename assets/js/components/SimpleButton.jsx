@@ -2,12 +2,10 @@
  * TODO Add comment
  */
 import React from 'react';
-var SimpleButton = React.createClass({
-    displayName: 'SimpleButton',
+import ReactRouter from 'react-router';
 
-    render: function() {
-        return (
-          <ReactRouter.Link className={this.props.className} to={this.props.href} activeClassName="active">{this.props.children}</ReactRouter.Link>
-        );
-    }
-});
+const SimpleButton = () => (
+  <ReactRouter.Link className={this.props.className} to={this.props.href} activeClassName="active">{this.props.children}</ReactRouter.Link>
+);
+
+export default SimpleButton;
