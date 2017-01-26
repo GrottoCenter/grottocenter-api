@@ -133,7 +133,7 @@ Use sails-generate-auth (abandoned??) or sails-auth to manage the login process 
 ### Swagger (interface to our API)
 
 ```
-npm install sails-swagger --save-dev
+npm install sails-magik-swagger --save-dev
 npm install swagger-ui --save-dev
 ```
 Disable /swagger in csrf.js
@@ -146,6 +146,9 @@ Run automatically by grunt tasks :
 
 Access to API list with :
     http://localhost:1337/swagger/
+
+Information :
+`sails-magik-swagger` has been used instead of `sails-swagger` because it is a fork with the latest version published to npm.
 
 ### Testing
 

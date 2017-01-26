@@ -4,6 +4,11 @@ module.exports.swagger = {
    */
   pkg: require('../package'),
   ui: {
-    url: 'http://localhost:1337/swagger/'
+    url: getSwaggerUrl
   }
 };
+
+function getSwaggerUrl(req, res) {
+  res.set(sails.config.appUrl + '/swagger/');
+  res.end();
+}

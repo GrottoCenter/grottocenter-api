@@ -3,6 +3,7 @@ env:
   node: true
   mocha: true
   browser: true
+  jquery: true
 rules:
   # strict: [error, global]
   indent: [error, 2, {SwitchCase: 1}]
@@ -21,6 +22,8 @@ rules:
   no-var: error
   no-unused-vars: error
   require-yield: off
+globals:
+  sails: true
 plugins: ['react']
 extends: [ 'eslint:recommended', 'plugin:react/recommended' ]
 parserOptions:

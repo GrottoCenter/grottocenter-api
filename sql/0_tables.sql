@@ -7,7 +7,7 @@ USE grottoce;
 
 -- Entity tables
 
-CREATE TABLE IF NOT EXISTS `t_application` (
+CREATE TABLE IF NOT EXISTS `T_application` (
   `Id` smallint(5) NOT NULL AUTO_INCREMENT,
   `Name` varchar(100) NOT NULL,
   `Is_current` enum('YES','NO') NOT NULL DEFAULT 'NO',
@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS `t_application` (
   PRIMARY KEY (`Id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE IF NOT EXISTS `t_author` (
+CREATE TABLE IF NOT EXISTS `T_author` (
   `Id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
   `Id_author` smallint(5) NOT NULL,
   `Date_inscription` datetime DEFAULT NULL,
@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS `t_author` (
   PRIMARY KEY (`Id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE IF NOT EXISTS `t_bibliography` (
+CREATE TABLE IF NOT EXISTS `T_bibliography` (
   `Id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
   `Locked` enum('YES','NO') NOT NULL DEFAULT 'NO',
   `Id_author` smallint(5) NOT NULL,
@@ -55,7 +55,7 @@ CREATE TABLE IF NOT EXISTS `t_bibliography` (
   PRIMARY KEY (`Id`,`Id_entry`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE IF NOT EXISTS `t_category` (
+CREATE TABLE IF NOT EXISTS `T_category` (
   `Id` smallint(5) NOT NULL AUTO_INCREMENT,
   `Name` varchar(100) COLLATE utf8_unicode_ci NOT NULL,
   `Fr_name` varchar(100) COLLATE utf8_unicode_ci NOT NULL,
@@ -70,7 +70,7 @@ CREATE TABLE IF NOT EXISTS `t_category` (
   PRIMARY KEY (`Id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS `t_cave` (
+CREATE TABLE IF NOT EXISTS `T_cave` (
   `Id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
   `Locked` enum('YES','NO') NOT NULL DEFAULT 'NO',
   `Id_author` smallint(5) NOT NULL,
@@ -91,7 +91,7 @@ CREATE TABLE IF NOT EXISTS `t_cave` (
   KEY `Ind_reviewer` (`Id_reviewer`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE IF NOT EXISTS `t_caver` (
+CREATE TABLE IF NOT EXISTS `T_caver` (
   `Id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
   `Activated` enum('YES','NO') NOT NULL DEFAULT 'NO',
   `Activation_code` varchar(32) NOT NULL DEFAULT '0',
@@ -132,7 +132,7 @@ CREATE TABLE IF NOT EXISTS `t_caver` (
   UNIQUE KEY `Login` (`Login`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE IF NOT EXISTS `t_comment` (
+CREATE TABLE IF NOT EXISTS `T_comment` (
   `Id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
   `Locked` enum('YES','NO') NOT NULL DEFAULT 'NO',
   `Id_author` smallint(5) unsigned NOT NULL,
@@ -159,7 +159,7 @@ CREATE TABLE IF NOT EXISTS `t_comment` (
   KEY `Id_entry` (`Id_entry`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE IF NOT EXISTS `t_country` (
+CREATE TABLE IF NOT EXISTS `T_country` (
   `Iso` varchar(2) NOT NULL,
   `Latitude` decimal(24,20) DEFAULT NULL,
   `Longitude` decimal(24,20) DEFAULT NULL,
@@ -176,7 +176,7 @@ CREATE TABLE IF NOT EXISTS `t_country` (
   PRIMARY KEY (`Iso`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE IF NOT EXISTS `t_crs` (
+CREATE TABLE IF NOT EXISTS `T_crs` (
   `Id` smallint(5) NOT NULL AUTO_INCREMENT,
   `Locked` enum('YES','NO') NOT NULL DEFAULT 'NO',
   `Id_author` smallint(5) NOT NULL,
@@ -194,7 +194,7 @@ CREATE TABLE IF NOT EXISTS `t_crs` (
   UNIQUE KEY `Code` (`Code`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE IF NOT EXISTS `t_description` (
+CREATE TABLE IF NOT EXISTS `T_description` (
   `Id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
   `Locked` enum('YES','NO') NOT NULL DEFAULT 'NO',
   `Id_author` smallint(5) NOT NULL,
@@ -213,7 +213,7 @@ CREATE TABLE IF NOT EXISTS `t_description` (
   KEY `Ind_exit` (`Id_exit`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE IF NOT EXISTS `t_entry` (
+CREATE TABLE IF NOT EXISTS `T_entry` (
   `Id` mediumint(5) unsigned NOT NULL AUTO_INCREMENT,
   `Locked` enum('YES','NO') NOT NULL DEFAULT 'NO',
   `Id_author` smallint(5) NOT NULL,
@@ -246,7 +246,7 @@ CREATE TABLE IF NOT EXISTS `t_entry` (
   KEY `Id` (`Id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE IF NOT EXISTS `t_error` (
+CREATE TABLE IF NOT EXISTS `T_error` (
   `Id` int(5) NOT NULL AUTO_INCREMENT,
   `Id_caver` smallint(5) DEFAULT NULL,
   `File` varchar(100) DEFAULT NULL,
@@ -259,7 +259,7 @@ CREATE TABLE IF NOT EXISTS `t_error` (
   KEY `Ind_caver` (`Id_caver`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE IF NOT EXISTS `t_file` (
+CREATE TABLE IF NOT EXISTS `T_file` (
   `Id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
   `Id_author` smallint(5) NOT NULL,
   `Date_inscription` datetime DEFAULT NULL,
@@ -268,7 +268,7 @@ CREATE TABLE IF NOT EXISTS `t_file` (
   PRIMARY KEY (`Id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE IF NOT EXISTS `t_grotto` (
+CREATE TABLE IF NOT EXISTS `T_grotto` (
   `Id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
   `Locked` enum('YES','NO') NOT NULL DEFAULT 'NO',
   `Id_author` smallint(5) NOT NULL,
@@ -303,7 +303,7 @@ CREATE TABLE IF NOT EXISTS `t_grotto` (
   KEY `Ind_secretary` (`Id_secretary`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE IF NOT EXISTS `t_group` (
+CREATE TABLE IF NOT EXISTS `T_group` (
   `Id` smallint(5) NOT NULL AUTO_INCREMENT,
   `Name` varchar(200) NOT NULL,
   `Comments` varchar(1000) DEFAULT NULL,
@@ -312,7 +312,7 @@ CREATE TABLE IF NOT EXISTS `t_group` (
   PRIMARY KEY (`Id`,`Id_label`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE IF NOT EXISTS `t_group_layer` (
+CREATE TABLE IF NOT EXISTS `T_group_layer` (
   `Id` smallint(5) NOT NULL AUTO_INCREMENT,
   `Code` varchar(100) NOT NULL,
   `Name` varchar(200) NOT NULL,
@@ -320,7 +320,7 @@ CREATE TABLE IF NOT EXISTS `t_group_layer` (
   PRIMARY KEY (`Id`,`Id_label`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 
-CREATE TABLE IF NOT EXISTS `t_history` (
+CREATE TABLE IF NOT EXISTS `T_history` (
   `Id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
   `Locked` enum('YES','NO') NOT NULL DEFAULT 'NO',
   `Id_author` smallint(5) NOT NULL,
@@ -335,7 +335,7 @@ CREATE TABLE IF NOT EXISTS `t_history` (
   PRIMARY KEY (`Id`,`Id_entry`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE IF NOT EXISTS `t_label` (
+CREATE TABLE IF NOT EXISTS `T_label` (
   `Id` smallint(5) NOT NULL AUTO_INCREMENT,
   `Frame` enum('banner','blank','details','filter','general','infowindow','loader','overview','site','file','home') NOT NULL,
   `Fr` varchar(1000) DEFAULT NULL,
@@ -349,7 +349,7 @@ CREATE TABLE IF NOT EXISTS `t_label` (
   PRIMARY KEY (`Id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE IF NOT EXISTS `t_label_temp` (
+CREATE TABLE IF NOT EXISTS `T_label_temp` (
   `Id_temp` smallint(5) NOT NULL,
   `Fr` varchar(1000) DEFAULT NULL,
   `En` varchar(1000) DEFAULT NULL,
@@ -358,7 +358,7 @@ CREATE TABLE IF NOT EXISTS `t_label_temp` (
   PRIMARY KEY (`Id_temp`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE IF NOT EXISTS `t_layer` (
+CREATE TABLE IF NOT EXISTS `T_layer` (
   `Id` smallint(5) NOT NULL AUTO_INCREMENT,
   `Enabled` enum('YES','NO') NOT NULL DEFAULT 'NO',
   `Code` varchar(100) NOT NULL,
@@ -373,7 +373,7 @@ CREATE TABLE IF NOT EXISTS `t_layer` (
   PRIMARY KEY (`Id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 
-CREATE TABLE IF NOT EXISTS `t_location` (
+CREATE TABLE IF NOT EXISTS `T_location` (
   `Id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
   `Locked` enum('YES','NO') NOT NULL DEFAULT 'NO',
   `Id_author` smallint(5) NOT NULL,
@@ -391,7 +391,7 @@ CREATE TABLE IF NOT EXISTS `t_location` (
   KEY `Id_entry` (`Id_entry`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE IF NOT EXISTS `t_massif` (
+CREATE TABLE IF NOT EXISTS `T_massif` (
   `Id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
   `Locked` enum('YES','NO') NOT NULL DEFAULT 'NO',
   `Id_author` smallint(5) NOT NULL,
@@ -406,7 +406,7 @@ CREATE TABLE IF NOT EXISTS `t_massif` (
   KEY `Ind_reviewer` (`Id_reviewer`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE IF NOT EXISTS `t_message_subject` (
+CREATE TABLE IF NOT EXISTS `T_message_subject` (
   `Id` smallint(5) NOT NULL AUTO_INCREMENT,
   `Subject` varchar(100) COLLATE utf8_unicode_ci NOT NULL,
   `Fr_subject` varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
@@ -432,7 +432,7 @@ CREATE TABLE IF NOT EXISTS `t_message_subject` (
   KEY `Ind_En` (`En_admin_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS `t_news` (
+CREATE TABLE IF NOT EXISTS `T_news` (
   `Id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
   `Locked` enum('YES','NO') NOT NULL DEFAULT 'NO',
   `Id_author` smallint(5) unsigned NOT NULL,
@@ -450,7 +450,7 @@ CREATE TABLE IF NOT EXISTS `t_news` (
   KEY `Ind_answered` (`Id_answered`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE IF NOT EXISTS `t_request` (
+CREATE TABLE IF NOT EXISTS `T_request` (
   `Id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
   `Locked` enum('YES','NO') NOT NULL DEFAULT 'NO',
   `Id_author` smallint(5) NOT NULL,
@@ -467,7 +467,7 @@ CREATE TABLE IF NOT EXISTS `t_request` (
   PRIMARY KEY (`Id`,`Id_recipient`,`Id_status`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE IF NOT EXISTS `t_rigging` (
+CREATE TABLE IF NOT EXISTS `T_rigging` (
   `Id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
   `Locked` enum('YES','NO') NOT NULL DEFAULT 'NO',
   `Id_author` smallint(5) NOT NULL,
@@ -489,14 +489,14 @@ CREATE TABLE IF NOT EXISTS `t_rigging` (
   KEY `Ind_exit` (`Id_exit`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE IF NOT EXISTS `t_right` (
+CREATE TABLE IF NOT EXISTS `T_right` (
   `Id` smallint(5) NOT NULL AUTO_INCREMENT,
   `Name` varchar(200) NOT NULL,
   `Comments` varchar(1000) DEFAULT NULL,
   PRIMARY KEY (`Id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE IF NOT EXISTS `t_single_entry` (
+CREATE TABLE IF NOT EXISTS `T_single_entry` (
   `Id` mediumint(5) unsigned NOT NULL,
   `Min_depth` float DEFAULT NULL,
   `Max_depth` float DEFAULT NULL,
@@ -507,14 +507,14 @@ CREATE TABLE IF NOT EXISTS `t_single_entry` (
   PRIMARY KEY (`Id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE IF NOT EXISTS `t_status` (
+CREATE TABLE IF NOT EXISTS `T_status` (
   `Id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
   `Name` varchar(100) NOT NULL,
   `Id_label` varchar(100) NOT NULL,
   PRIMARY KEY (`Id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE IF NOT EXISTS `t_topography` (
+CREATE TABLE IF NOT EXISTS `T_topography` (
   `Id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
   `Id_author` smallint(5) NOT NULL,
   `Date_inscription` datetime DEFAULT NULL,
@@ -528,7 +528,7 @@ CREATE TABLE IF NOT EXISTS `t_topography` (
   PRIMARY KEY (`Id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE IF NOT EXISTS `t_type` (
+CREATE TABLE IF NOT EXISTS `T_type` (
   `Id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
   `Fr_type` varchar(100) NOT NULL,
   `En_type` varchar(100) NOT NULL,
@@ -541,7 +541,7 @@ CREATE TABLE IF NOT EXISTS `t_type` (
   PRIMARY KEY (`Id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE IF NOT EXISTS `t_url` (
+CREATE TABLE IF NOT EXISTS `T_url` (
   `Id` smallint(5) NOT NULL AUTO_INCREMENT,
   `Locked` enum('YES','NO') NOT NULL DEFAULT 'NO',
   `Id_author` smallint(5) NOT NULL,
@@ -556,7 +556,7 @@ CREATE TABLE IF NOT EXISTS `t_url` (
   PRIMARY KEY (`Id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE IF NOT EXISTS `t_warning` (
+CREATE TABLE IF NOT EXISTS `T_warning` (
   `Id` int(5) NOT NULL AUTO_INCREMENT,
   `Id_caver` smallint(5) DEFAULT NULL,
   `Frame` varchar(50) DEFAULT NULL,
@@ -569,81 +569,81 @@ CREATE TABLE IF NOT EXISTS `t_warning` (
 
 -- Jointure tables
 
-CREATE TABLE `j_author_file` (
+CREATE TABLE `J_author_file` (
   `Id_author` smallint(5) unsigned NOT NULL,
   `Id_file` smallint(5) unsigned NOT NULL,
   PRIMARY KEY (`Id_author`,`Id_file`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE `j_cave_entry` (
+CREATE TABLE `J_cave_entry` (
   `Id_cave` smallint(5) unsigned NOT NULL,
   `Id_entry` mediumint(5) unsigned NOT NULL,
   PRIMARY KEY (`Id_cave`,`Id_entry`),
   KEY `Id_entry` (`Id_entry`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE `j_caver_group` (
+CREATE TABLE `J_caver_group` (
   `Id_caver` smallint(5) unsigned NOT NULL,
   `Id_group` smallint(5) unsigned NOT NULL,
   PRIMARY KEY (`Id_caver`,`Id_group`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE `j_country_crs` (
+CREATE TABLE `J_country_crs` (
   `Iso` varchar(2) NOT NULL,
   `Id_crs` smallint(5) unsigned NOT NULL,
   KEY `Ind_country` (`Iso`),
   KEY `Ind_crs` (`Id_crs`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE `j_entry_caver` (
+CREATE TABLE `J_entry_caver` (
   `Id_entry` mediumint(5) unsigned NOT NULL,
   `Id_caver` smallint(5) unsigned NOT NULL,
   PRIMARY KEY (`Id_entry`,`Id_caver`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE `j_entry_description` (
+CREATE TABLE `J_entry_description` (
   `Id_entry` mediumint(5) unsigned NOT NULL,
   `Id_description` smallint(5) unsigned NOT NULL,
   PRIMARY KEY (`Id_entry`,`Id_description`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE `j_entry_rigging` (
+CREATE TABLE `J_entry_rigging` (
   `Id_entry` mediumint(5) unsigned NOT NULL,
   `Id_rigging` smallint(5) unsigned NOT NULL,
   PRIMARY KEY (`Id_entry`,`Id_rigging`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE `j_entry_url` (
+CREATE TABLE `J_entry_url` (
   `Id_entry` mediumint(5) unsigned NOT NULL,
   `Id_url` smallint(5) NOT NULL,
   PRIMARY KEY (`Id_entry`,`Id_url`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE `j_grotto_caver` (
+CREATE TABLE `J_grotto_caver` (
   `Id_grotto` smallint(5) unsigned NOT NULL,
   `Id_caver` smallint(5) unsigned NOT NULL,
   PRIMARY KEY (`Id_grotto`,`Id_caver`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE `j_grotto_entry` (
+CREATE TABLE `J_grotto_entry` (
   `Id_grotto` smallint(5) unsigned NOT NULL,
   `Id_entry` mediumint(5) unsigned NOT NULL,
   PRIMARY KEY (`Id_grotto`,`Id_entry`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
-CREATE TABLE `j_group_layer` (
+CREATE TABLE `J_group_layer` (
   `Id_group` smallint(5) NOT NULL,
   `Id_layer` smallint(5) NOT NULL,
   PRIMARY KEY (`Id_group`,`Id_layer`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 
-CREATE TABLE `j_group_right` (
+CREATE TABLE `J_group_right` (
   `Id_group` smallint(5) unsigned NOT NULL,
   `Id_right` smallint(5) unsigned NOT NULL,
   PRIMARY KEY (`Id_group`,`Id_right`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE `j_help_topic` (
+CREATE TABLE `J_help_topic` (
   `Id` smallint(5) NOT NULL AUTO_INCREMENT,
   `Id_help` smallint(5) NOT NULL,
   `Language` varchar(5) NOT NULL,
@@ -654,27 +654,27 @@ CREATE TABLE `j_help_topic` (
   KEY `Id_topic` (`Id_topic`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE `j_massif_cave` (
+CREATE TABLE `J_massif_cave` (
   `Id_massif` smallint(5) unsigned NOT NULL,
   `Id_cave` smallint(5) unsigned NOT NULL,
   `Id_entry` mediumint(5) unsigned NOT NULL,
   PRIMARY KEY (`Id_entry`,`Id_cave`,`Id_massif`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE `j_topo_author` (
+CREATE TABLE `J_topo_author` (
   `Id_topography` smallint(5) unsigned NOT NULL,
   `Id_author` smallint(5) unsigned NOT NULL,
   PRIMARY KEY (`Id_topography`,`Id_author`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE `j_topo_cave` (
+CREATE TABLE `J_topo_cave` (
   `Id_topography` smallint(5) unsigned NOT NULL,
   `Id_cave` smallint(5) unsigned NOT NULL,
   `Id_entry` mediumint(5) unsigned NOT NULL,
   PRIMARY KEY (`Id_topography`,`Id_cave`,`Id_entry`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE `j_topo_file` (
+CREATE TABLE `J_topo_file` (
   `Id_topography` smallint(5) unsigned NOT NULL,
   `Id_file` smallint(5) unsigned NOT NULL,
   PRIMARY KEY (`Id_topography`,`Id_file`)

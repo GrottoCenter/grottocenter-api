@@ -26,16 +26,18 @@ APPNAME="grottocenter"
 ZONE="europe-west1-b"
 REGION="europe-west1"
 VMNAME="grottocenter-vm"
-#DOCKBUILDER="grotto-docker-builder"
+DOCKBUILDER="grotto-docker-builder"
 DOCKER="grottocenter-vm"
 STATIC_IP="grottocenter-website"
 VERSION="latest"
 #MACHINETYPE="f1-micro"
 MACHINETYPE="g1-small"
+BUILDERMACHINETYPE="n1-highcpu-4"
+
 
 # This google machine Image prevent the certificate bug that we have with the default Google machine image :
 # See http://stackoverflow.com/questions/40092793/error-validating-certificates-when-using-docker-machine-in-gce
-MACHINEIMAGE="https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-1604-xenial-v20161205"
+MACHINEIMAGE="ubuntu-os-cloud/global/images/family/ubuntu-1610"
 IMAGE=eu.gcr.io/${PROJECT_ID}/${APPNAME}:${VERSION}
 ###########################################
 
@@ -54,9 +56,69 @@ fi
 # Choose a version from the list
 #DOCKER_OS_IMAGE="gci-stable-51-8172-47-0"
 
-echo "### Set GCloud Project ###"
+echo "### Set GCloud Project to ${PROJECT_ID} ###"
 gcloud config set project ${PROJECT_ID}
 
+# Create Builder machine if necessary to build the docker image
+# Indeed the micro instance has not enough RAM to build the image...
+# This builder is started during the build time and then stopped so we just pay
+# for it during a few minutes. Then we just pay for the disk storage.
+if [ -z "$(gcloud compute instances list | grep ${DOCKBUILDER})" ]
+then
+    echo "### CREATE ${DOCKBUILDER} docker machine on Google ###"
+    docker-machine create --driver google \
+        --google-project ${PROJECT_ID} \
+        --google-zone ${ZONE} \
+        --google-machine-type ${BUILDERMACHINETYPE} \
+        --google-machine-image ${MACHINEIMAGE} \
+        ${DOCKBUILDER}
+else
+    if [ -z "$(docker-machine ls | grep ${DOCKBUILDER})" ]
+    then
+        echo "### CONNECT VM to ${DOCKBUILDER} docker-machine ###"
+        docker-machine create --driver google \
+            --google-project ${PROJECT_ID} \
+            --google-zone ${ZONE} \
+            --google-machine-type ${BUILDERMACHINETYPE} \
+            --google-use-existing \
+            --google-machine-image ${MACHINEIMAGE} \
+            ${DOCKBUILDER}
+    fi
+fi
+
+echo "### Starting docker builder machine ###"
+docker-machine start ${DOCKBUILDER}
+
+echo "### Switch context to docker-machine ${DOCKBUILDER} ###"
+eval "$(docker-machine env ${DOCKBUILDER})" || {
+  echo '######## ERROR - exiting... #########'
+  docker-machine stop ${DOCKBUILDER}
+  exit 1;
+}
+
+echo "### BUILD the docker image ###"
+# Unlimited swap memory during build
+docker build --memory-swap -1 -t ${APPNAME} . || {
+  echo '######## Build failed - Exiting now #########'
+  docker-machine stop ${DOCKBUILDER}
+  exit 1;
+}
+
+echo "### TAG the new Docker image into repository ###"
+docker tag ${APPNAME} ${IMAGE}
+echo "## image is : ${IMAGE} ##"
+
+echo "### PUSH the new Docker image into repository ###"
+gcloud docker -- push ${IMAGE}
+
+echo "### Stop docker builder machine ###"
+docker-machine stop ${DOCKBUILDER} || {
+  echo '######## ERROR - WARNING !!!!! #########'
+  echo '######## IMPORTANT : Docker builder machine failed to stop. Please stop it manually or we will be charged a lot. #########'
+  exit 1;
+}
+
+echo "### DEPLOY app with Google Compute Engine on ${DOCKER} docker-machine ###"
 # Create the Static IP
 # gcloud compute addresses create ${STATIC_IP} --project ${PROJECT_ID} --region ${REGION}
 
@@ -98,19 +160,10 @@ fi
 
 # change docker machine context to be the Google Machine
 echo "### Switch context to docker-machine ${DOCKER} ###"
-eval "$(docker-machine env ${DOCKER})"
-
-
-echo "### BUILD the docker image ###"
-# Unlimited swap memory during build
-docker build --memory-swap -1 -t ${APPNAME} .  || { echo '######## Build failed - Exiting now #########' ; exit 1; }
-
-echo "### TAG the new Docker image into repository ###"
-docker tag ${APPNAME} ${IMAGE}
-echo "## image is : ${IMAGE} ##"
-
-echo "### PUSH the new Docker image into repository ###"
-gcloud docker -- push ${IMAGE}
+eval "$(docker-machine env ${DOCKER})" || {
+  echo '######## ERROR - exiting... #########'
+  exit 1;
+}
 
 echo "### remove all empty containers ###"
 docker ps -a | grep Exit | cut -d ' ' -f 1 | xargs docker rm

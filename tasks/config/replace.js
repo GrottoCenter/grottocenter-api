@@ -21,7 +21,7 @@ module.exports = function(grunt) {
       dest: 'assets/swagger/index.html',             // destination directory or file
       replacements: [{
         from: 'http://petstore.swagger.io/v2/swagger.json',                   // string replacement
-        to: 'http://localhost:1337/swagger/doc'
+        to: '/swagger/doc'
       }]
     }
   });

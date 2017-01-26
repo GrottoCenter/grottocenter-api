@@ -47,6 +47,7 @@ docker run -d \
     --restart=always \
     --link ${MYSQL_TAGNAME} \
     -e sails_models__connection=grottoceMysqlLocalDocker \
+    -e sails_appUrl='http://localhost:${GC_LOCAL_PORT}' \
     --name=${GC_TAGNAME} \
     ${GC_TAGNAME}
 
