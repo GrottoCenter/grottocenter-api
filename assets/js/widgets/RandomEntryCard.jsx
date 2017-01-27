@@ -73,7 +73,7 @@ export class EntryStat extends React.Component {
     return (
       <ul className="rating">
         <EntryStatItem itemScore={this.props.stat.aestheticism} itemLabel="Interest"/>
-        <EntryStatItem itemScore={this.props.stat.caving} itemLabel="Ease of move"/>
+        <EntryStatItem itemScore={this.props.stat.caving} itemLabel="Ease to move"/>
         <EntryStatItem itemScore={this.props.stat.approach} itemLabel="Access"/>
       </ul>
     );

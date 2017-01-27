@@ -109,7 +109,7 @@ class Footer extends Component {
                   <input type="hidden" name="hosted_button_id" value="TJEU7C2TZ356Y" />
                   <FlatButton
                     href="javascript:document.donate.submit()"
-                    label={<I18n>Donate Now</I18n>}
+                    label={<I18n>Donate now</I18n>}
                     icon={<GiftIcon/>}
                     backgroundColor={this.props.muiTheme.palette.accent1Color}
                     hoverColor={this.props.muiTheme.palette.accent1Color}
