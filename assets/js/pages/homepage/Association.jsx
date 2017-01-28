@@ -10,7 +10,9 @@ const Association = (props) => (
       <div className="container">
         <div className="row">
           <div className="eight columns">
-            <h3 style={{color: props.muiTheme.palette.accent1Color}}><I18n>Wikicaves association</I18n></h3>
+            <h3 style={{color: props.muiTheme.palette.accent1Color}}>
+              <I18n>Wikicaves association</I18n>
+            </h3>
             <h5>
               <I18n>GrottoCenter is a comunity database for cavers based on a wiki-like system. Cavers fill the databes for cavers.</I18n>
               <br/>

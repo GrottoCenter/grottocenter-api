@@ -4,7 +4,7 @@ import muiThemeable from 'material-ui/styles/muiThemeable';
 
 const WhatIsIt = (props) => (
     <div role="section" className="numbers" style={{fontFamily: props.muiTheme.fontFamily}}>
-      <h3 style={{'textAlign': 'center', 'paddingBottom': '50px'}}>
+      <h3>
         <I18n>Grottocenter numbers</I18n>
         <span className="icon icon-gc-bat" style={{'color':'black','verticalAlign': 'super'}}></span><br/>
       </h3>

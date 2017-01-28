@@ -58,7 +58,9 @@ class Partners extends React.Component {
     return (
       <div>
         <div role="section" className="partners" style={{fontFamily: this.props.muiTheme.fontFamily}}>
-          <h3 style={{'textAlign': 'center', 'paddingBottom': '50px'}}><I18n>Partners</I18n></h3>
+          <h3>
+            <I18n>Partners</I18n>
+          </h3>
           <div>
             <div className="container">
               <div className="row vignettes">
