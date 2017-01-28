@@ -54,8 +54,8 @@ div[role="section"].association .row li::after {
 }
 
 div[role="section"].association .row li > svg {
-  height: 80px !important;
-  width: 80px !important;
+  height: 50px !important;
+  width: 50px !important;
   float: left;
 }
 
@@ -110,6 +110,13 @@ div[role="section"].association .goalTextZone > span {
 div[role="section"].association .floatingGoals {
   display: none;
   margin-top: 50px;
+}
+
+@media (min-width: 550px) {
+  div[role="section"].association .row li > svg {
+    height: 80px !important;
+    width: 80px !important;
+  }
 }
 
 @media (min-width: 750px) {
