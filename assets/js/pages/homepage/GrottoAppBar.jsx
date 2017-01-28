@@ -20,44 +20,44 @@ class GrottoAppBar extends React.Component {
     };
   }
 
-  openSignInDialog(event, index, value) {
+  openSignInDialog(event, index, value) { // eslint-disable-line no-unused-vars
     this.setState({openSignIn: true});
   }
 
-  closeSignInDialog(event, index, value) {
+  closeSignInDialog(event, index, value) { // eslint-disable-line no-unused-vars
     this.setState({openSignIn: false});
   }
 
-  openRegisterDialog(event, index, value) {
+  openRegisterDialog(event, index, value) { // eslint-disable-line no-unused-vars
     this.setState({openRegister: true});
   }
 
-  closeRegisterDialog(event, index, value) {
+  closeRegisterDialog(event, index, value) { // eslint-disable-line no-unused-vars
     this.setState({openRegister: false});
   }
 
-  processLogin(event, index, value) {
-    console.log("processLogin",this.refs.login.getValue(),this.refs.password.getValue());
+  processLogin(event, index, value) { // eslint-disable-line no-unused-vars
+    console.log('processLogin', this.refs.login.getValue(), this.refs.password.getValue());
 
     $.ajax({
-      url: "/csrfToken",
+      url: '/csrfToken',
       dataType: 'json',
       success: function(data) {
         $.post('/auth/login', {
           contact: this.refs.login.getValue(),
           password: this.refs.password.getValue(),
           _csrf: data._csrf
-      }, this.loginSuccess.bind(this), this.loginFail.bind(this))
+        }, this.loginSuccess.bind(this), this.loginFail.bind(this));
       }.bind(this)
     });
   }
 
   loginFail(data) {
-    console.log("loginFail",data);
+    console.log('loginFail', data);
   }
 
   loginSuccess(userData) {
-    console.log("loginSuccess",userData);
+    console.log('loginSuccess', userData);
   }
 
   render() {

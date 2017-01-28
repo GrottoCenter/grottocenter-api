@@ -118,6 +118,6 @@ Autocomplete.propTypes = {
   muiTheme: PropTypes.object.isRequired
 };
 
-Autocomplete = connect()(Autocomplete);
+Autocomplete = connect()(Autocomplete); // eslint-disable-line no-class-assign
 
 export default muiThemeable()(Autocomplete);

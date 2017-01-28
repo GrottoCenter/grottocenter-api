@@ -12,7 +12,7 @@ export default class HomepageFlat extends React.Component {
     super(props);
     I18n.locale = catalog; //eslint-disable-line no-undef
   }
-  
+
   render() {
     return (
       <div>

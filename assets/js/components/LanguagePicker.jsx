@@ -44,6 +44,6 @@ LanguagePicker.propTypes = {
   muiTheme: PropTypes.object.isRequired
 };
 
-LanguagePicker = connect()(LanguagePicker);
+LanguagePicker = connect()(LanguagePicker); // eslint-disable-line no-class-assign
 
 export default muiThemeable()(LanguagePicker);

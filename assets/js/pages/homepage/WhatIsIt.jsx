@@ -6,7 +6,7 @@ const WhatIsIt = (props) => (
     <div role="section" className="numbers" style={{fontFamily: props.muiTheme.fontFamily}}>
       <h3 style={{'textAlign': 'center', 'paddingBottom': '50px'}}>
         <I18n>Grottocenter numbers</I18n>
-          <span className="icon icon-gc-bat" style={{'color':'black','verticalAlign': 'super'}}></span><br/>
+        <span className="icon icon-gc-bat" style={{'color':'black','verticalAlign': 'super'}}></span><br/>
       </h3>
       <div className="container">
         <div className="row">
