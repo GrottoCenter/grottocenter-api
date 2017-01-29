@@ -29,10 +29,10 @@ class LanguagePicker extends Component {
   render() {
     return (
       <SelectField
-        autoWidth={true}
         labelStyle={{paddingLeft: '10px', color: this.props.muiTheme.palette.textIconColor}}
         value={this.state.value}
         onChange={this.handleChange.bind(this)}
+        style={{width: 'initial'}}
       >
         {languages}
       </SelectField>
