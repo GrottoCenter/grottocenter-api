@@ -56,6 +56,6 @@ class Bar extends React.Component {
   }
 }
 
-Bar = connect()(Bar);
+Bar = connect()(Bar); // eslint-disable-line no-class-assign
 
 export default muiThemeable()(Bar);

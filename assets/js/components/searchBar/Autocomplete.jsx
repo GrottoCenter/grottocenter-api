@@ -96,14 +96,13 @@ class Autocomplete extends React.Component {
           <SearchIcon color={this.props.muiTheme.palette.primary1Color} hoverColor={this.props.muiTheme.palette.accent1Color}/>
         </span>
         <AutoComplete
+          className='searchAutoComplete'
           style={{backgroundColor: this.props.muiTheme.palette.primary3Color, fontFamily: this.props.muiTheme.fontFamily, width: 'calc(100% - 50px)', marginLeft: '50px'}}
-          textFieldStyle={{padding: '0 10px', width: 'calc(100% - 40px)'}}
+          textFieldStyle={{padding: '0 10px', width: 'calc(100% - 40px)', whiteSpace: 'nowrap'}}
           floatingLabelText={<I18n>Search for a cave or an organization</I18n>}
           dataSource={this.state.dataSource}
           onUpdateInput={this.onUpdateInput.bind(this)}
           onNewRequest={this.onNewRequest.bind(this)}
-          listStyle={{color: 'green'}}
-          hintStyle={{color: 'white'}}
           fullWidth={true}
           maxSearchResults={40}
           filter={AutoComplete.noFilter}

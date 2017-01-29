@@ -1,0 +1,112 @@
+/* GLOBAL STYLING */
+
+.bgWhite {
+  color: white;
+}
+
+.centered {
+  text-align: center;
+}
+
+.bigger {
+  font-weight: bigger;
+}
+
+
+/* BODY */
+
+body {
+  background-color: #F5F5F5;
+  margin: 0;
+  min-width: 320px;
+}
+
+
+/* APP BAR */
+
+.gcAppBar {
+  /*position: absolute;*/
+  z-index: 100;
+  width: 100%;
+}
+
+div {
+  //border: 1px dotted red;
+}
+
+
+/* CONTENT */
+
+.basicCard {
+  box-shadow: 0 2px 2px 0 rgba(0, 0, 0, .14), 0 3px 1px -2px rgba(0, 0, 0, .2), 0 1px 5px 0 rgba(0, 0, 0, .12);
+}
+
+.cardtitle {
+  height: 176px;
+  color: #34558A;
+  font-weight: 800;
+  display: block;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  line-height: normal;
+}
+
+.cardsupportingtext {
+  color: rgba(0, 0, 0, .54);
+  line-height: 18px;
+  overflow: hidden;
+  padding: 16px;
+  width: 90%;
+}
+
+.ribbon {
+  float: left;
+  text-align: center;
+  overflow: hidden;
+  padding: 0;
+  margin: 5px;
+  color: white;
+}
+
+.ribbon .ribbon-piece {
+  width: 35px;
+}
+
+.ribbon .tail {
+  overflow: hidden;
+  width: 35px;
+}
+
+.ribbon .top {
+  border-bottom: solid 1px rgba(255, 255, 255, 0.6);
+  border-radius: 1px 1px 0px 0px;
+  font-size: 11px;
+  padding: 4px 0;
+  position: relative;
+  text-transform: uppercase;
+}
+
+.ribbon .ribbon-piece {
+  background-color: rgba(255, 162, 68, 1);
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.5s ease-in;
+}
+
+.ribbon .tail .left {
+  left: -16px;
+  transform: rotate(-25deg);
+  height: 10px;
+  position: relative;
+  top: -7px;
+  width: 50px;
+}
+
+.ribbon .tail .right {
+  right: 9px;
+  transform: rotate(25deg);
+  height: 10px;
+  position: relative;
+  top: -22px;
+  width: 50px;
+}

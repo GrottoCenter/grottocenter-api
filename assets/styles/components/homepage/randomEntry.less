@@ -1,29 +1,3 @@
-div[role="section"] {
-  clear: both;
-  padding: 40px 0;
-}
-
-div[role="section"].bgGradent {
-  min-height: 300px;
-  /*background: linear-gradient(to top, rgb(251, 251, 222) 0%, rgb(255, 223, 174) 100%);*/
-  /*background: linear-gradient(to top, #d7ccc8 10%, #795548 80%);*/
-  background: linear-gradient(to bottom, #d7ccc8 10%, #795548 80%);
-}
-
-div[role="section"] h3 {
-  text-align: center;
-  padding-bottom: 50px;
-}
-
-@import 'homepage/welcome.less';
-@import 'homepage/association.less';
-@import 'homepage/lastNews.less';
-@import 'homepage/partners.less';
-
-div[role="section"].recentContrib > .container {
-  width: 100%;
-}
-
 div[role="section"].randomEntry .topoImg {
   width: 100%;
   background-color: white;
@@ -72,6 +46,7 @@ div[role="section"].randomEntry ul.rating li {
 
 div[role="section"].randomEntry ul.rating li > span {
   margin-right: 20px;
+  white-space: nowrap;
 }
 
 div[role="section"].randomEntry .infos .entryInfo {
@@ -82,8 +57,5 @@ div[role="section"].randomEntry .infos .entryInfo {
 
 div[role="section"].randomEntry .rating .stars {
   display: inline;
-}
-
-div[role="section"].numbers .row .columns:nth-of-type(n+1) {
-  padding-top: 40px;
+  white-space: nowrap;
 }

@@ -14,7 +14,7 @@ import SigninForm from './components/SigninForm';
 import SignupForm from './components/SignupForm';
 import FilterableProductTable from './widgets/EntryList';
 
-import grottoTheme from './pages/grottoTheme';
+import grottoTheme from './grottoTheme';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import getMuiTheme from 'material-ui/styles/getMuiTheme';
 

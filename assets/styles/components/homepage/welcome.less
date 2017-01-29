@@ -1,0 +1,38 @@
+div[role="section"].welcome .row > div:first-child {
+  text-align: center;
+}
+
+div[role="section"].welcome .row > div:first-child > img {
+  border-radius: 50%;
+  width: 50% !important;
+  height: 50% !important;
+}
+
+div[role="section"].welcome h3 {
+  padding-top: 30px;
+  text-align: center;
+}
+
+div[role="section"].welcome p {
+  text-align: center;
+}
+
+@media (min-width: 550px) {
+  div[role="section"].welcome {
+    text-align: inherit;;
+  }
+
+  div[role="section"].welcome .row > div:first-child > img {
+    width: 80% !important;
+    height: 80% !important;
+  }
+
+  div[role="section"].welcome h3 {
+    padding-top: 0px;
+    text-align: inherit;
+  }
+
+  div[role="section"].welcome p {
+    text-align: left;
+  }
+}
