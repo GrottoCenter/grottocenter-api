@@ -4,6 +4,7 @@
  * @description :: tGrotto model imported from localhost MySql server at 31/3/2016 12:7:32.
  * @docs        :: http://sailsjs.org/#!documentation/models
  */
+'use strict';
 module.exports = {
 
   tableName: 't_grotto',

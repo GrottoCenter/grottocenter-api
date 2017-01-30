@@ -4,7 +4,7 @@
  * @description :: Server-side logic for managing cavers
  * @help        :: See http://links.sailsjs.org/docs/controllers
  */
-
+'use strict';
 module.exports = {
   create: function(req, res) {
     return res.badRequest('CaverController.create not yet implemented!');
@@ -70,7 +70,7 @@ module.exports = {
 
   find: function(req, res) {
     TCaver.findOneById(req.params.id).exec(function(err, found) {
-      var params = {};
+      let params = {};
       params.controllerMethod = 'CaverController.find';
       params.notFoundMessage = 'Caver of id ' + req.params.id + ' not found.';
       return ControllerService.treat(err, found, params, res);
@@ -78,8 +78,8 @@ module.exports = {
   },
 
   findAll: function(req, res) {
-    var parameters = {};
-    if (req.param('name') != undefined) {
+    let parameters = {};
+    if (req.param('name') !== undefined) {
       parameters.name = {
         'like': '%' + req.param('name') + '%'
       };
@@ -87,7 +87,7 @@ module.exports = {
     }
 
     TCaver.find(parameters).sort('id ASC').limit(10).exec(function(err, found) {
-      var params = {};
+      let params = {};
       params.controllerMethod = 'CaverController.findAll';
       params.notFoundMessage = 'No cavers found.';
       return ControllerService.treat(err, found, params, res);

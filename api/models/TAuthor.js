@@ -4,7 +4,7 @@
  * @description :: tAuthor model imported from localhost MySql server at 4/3/2016 23:47:21.
  * @docs        :: http://sailsjs.org/#!documentation/models
  */
-
+'use strict';
 
 module.exports = {
 

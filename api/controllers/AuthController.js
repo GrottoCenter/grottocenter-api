@@ -4,9 +4,7 @@
  * @description :: Server-side logic for managing auths
  * @help        :: See http://links.sailsjs.org/docs/controllers
  */
-
-var passport = require('passport');
-
+'use strict';
 module.exports = {
   /*login: function(req, res) {
       passport.authenticate('local', function(err, user, info) {

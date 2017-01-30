@@ -4,7 +4,7 @@
  * @description :: Server-side logic for managing Authors
  * @help        :: See http://sailsjs.org/#!/documentation/concepts/Controllers
  */
-
+'use strict';
 module.exports = {
   create: function(req, res) {
     return res.badRequest('AuthorController.create not yet implemented!');

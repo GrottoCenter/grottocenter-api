@@ -4,6 +4,7 @@
  * @description :: tTopography controller
  * @docs        :: http://sailsjs.org/#!documentation/controllers
  */
+'use strict';
 module.exports = {
   create: function(req, res) {
     return res.badRequest('TopographyController.create not yet implemented!');
@@ -19,7 +20,7 @@ module.exports = {
 
   find: function(req, res) {
     TTopography.findOneById(req.params.id).populate('author').populate('files').populate('entries').exec(function(err, found) {
-      var params = {};
+      let params = {};
       params.controllerMethod = 'TopographyController.find';
       params.notFoundMessage = 'Topography of id ' + req.params.id + ' not found.';
       return ControllerService.treat(err, found, params, res);
@@ -28,7 +29,7 @@ module.exports = {
 
   findAll: function(req, res) {
     TTopography.find().populate('author').populate('files').populate('entries').sort('id ASC').limit(10).exec(function(err, found) {
-      var params = {};
+      let params = {};
       params.controllerMethod = 'TopographyController.findAll';
       params.notFoundMessage = 'No topographies found.';
       return ControllerService.treat(err, found, params, res);

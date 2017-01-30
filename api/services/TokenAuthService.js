@@ -5,7 +5,7 @@
  * @help        :: See https://github.com/auth0/node-jsonwebtoken & http://sailsjs.org/#!/documentation/concepts/Services
  */
 
-var
+const
   jwt = require('jsonwebtoken'),
   tokenSecret = '54ff54rfyTE5656skfopkse564867fdcd54cdc534ef4se';
 

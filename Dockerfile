@@ -8,5 +8,9 @@ RUN npm install --production
 COPY . /usr/src/app
 WORKDIR /usr/src/app
 
-CMD [ "node", "app.js", "--prod" ]
+# This environment variable disable the grunt build on production
+# So the app need to be build using "grunt prod" before creating the docker image
+ENV sails_hooks__grunt=false
+ENV NODE_ENV=production
+CMD [ "node", "app.js" ]
 EXPOSE 1337

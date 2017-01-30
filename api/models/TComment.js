@@ -4,7 +4,7 @@
  * @description :: tComment model imported from localhost MySql server at 8/11/2016 19:7:20.
  * @docs        :: http://sailsjs.org/#!documentation/models
  */
-
+'use strict';
 
 module.exports = {
 

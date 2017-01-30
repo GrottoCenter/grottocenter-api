@@ -4,8 +4,9 @@
  * @description :: TODO: You might write a short summary of how this model works and what it represents here.
  * @docs        :: http://sailsjs.org/#!documentation/models
  */
+'use strict';
 
-var crypto = require('crypto');
+const crypto = require('crypto');
 
 module.exports = {
 
@@ -241,7 +242,7 @@ module.exports = {
     },
 
     toJSON: function() {
-      var obj = this.toObject();
+      let obj = this.toObject();
       delete obj.password; // Removing password on JSON object
       return obj;
     }
@@ -253,9 +254,9 @@ module.exports = {
   },
 
   comparePassword: function(password, user, next) {
-    var hash = crypto.createHash('md5').update(password).digest('hex');
+    const hash = crypto.createHash('md5').update(password).digest('hex');
 
-    if (hash == user.password) {
+    if (hash === user.password) {
       next(null, true);
     } else {
       next(null, false);

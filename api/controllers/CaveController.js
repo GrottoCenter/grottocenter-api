@@ -4,7 +4,7 @@
  * @description :: Server-side logic for managing Caves
  * @help        :: See http://sailsjs.org/#!/documentation/concepts/Controllers
  */
-
+'use strict';
 module.exports = {
   create: function(req, res) {
     return res.badRequest('CaveController.create not yet implemented!');
@@ -20,7 +20,7 @@ module.exports = {
 
   find: function(req, res) {
     TCave.findOneById(req.params.id).populate('author').populate('entries').populate('topographies').exec(function(err, found) {
-      var params = {};
+      let params = {};
       params.controllerMethod = 'CaveController.find';
       params.notFoundMessage = 'Cave of id ' + req.params.id + ' not found.';
       return ControllerService.treat(err, found, params, res);
@@ -28,8 +28,8 @@ module.exports = {
   },
 
   findAll: function(req, res) {
-    var parameters = {};
-    if (req.param('name') != undefined) {
+    let parameters = {};
+    if (req.params.name !== undefined) {
       parameters.name = {
         'like': '%' + req.param('name') + '%'
       };
@@ -37,7 +37,7 @@ module.exports = {
     }
 
     TCave.find(parameters).populate('author').populate('entries').sort('id ASC').limit(10).exec(function(err, found) {
-      var params = {};
+      let params = {};
       params.controllerMethod = 'CaveController.findAll';
       params.notFoundMessage = 'No caves found.';
       return ControllerService.treat(err, found, params, res);

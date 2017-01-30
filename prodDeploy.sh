@@ -30,11 +30,9 @@ DOCKBUILDER="grotto-docker-builder"
 DOCKER="grottocenter-vm"
 STATIC_IP="grottocenter-website"
 VERSION="latest"
-#MACHINETYPE="f1-micro"
-MACHINETYPE="g1-small"
+MACHINETYPE="f1-micro"
+#MACHINETYPE="g1-small"
 BUILDERMACHINETYPE="n1-highcpu-4"
-
-
 # This google machine Image prevent the certificate bug that we have with the default Google machine image :
 # See http://stackoverflow.com/questions/40092793/error-validating-certificates-when-using-docker-machine-in-gce
 MACHINEIMAGE="ubuntu-os-cloud/global/images/family/ubuntu-1610"
@@ -50,6 +48,12 @@ else
 	echo "$productionConfigFile not found ! Production deployment impossible. Exiting now..."
   exit 1
 fi
+
+echo "### Building app locally using prod tasks ###"
+grunt prod || {
+  echo '######## ERROR - exiting... #########'
+  exit 1;
+}
 
 # Get last Google Container Image from server
 # gcloud compute images list --project google-containers --no-standard-images

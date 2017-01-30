@@ -1,5 +1,6 @@
-var passport = require('passport');
-var LocalStrategy = require('passport-local').Strategy;
+'use strict';
+const passport = require('passport');
+const LocalStrategy = require('passport-local').Strategy;
 
 function find(sessionUser, fn) {
   TCaver.findById(sessionUser.id, function(err, user) {
@@ -12,7 +13,7 @@ function find(sessionUser, fn) {
 }
 
 function md5(string) {
-  var crypto = require('crypto');
+  const crypto = require('crypto');
   return crypto.createHash('md5').update(string).digest('hex');
 }
 
@@ -24,14 +25,14 @@ function addslashes(str) {
 }
 
 function getOldGCpassword(login, password) {
-  return addslashes(md5(login + "*" + password));
+  return addslashes(md5(login + '*' + password));
 }
 
 function verifyPassword(user, password) {
-  var hash = getOldGCpassword(user.Login, password);
+  let hash = getOldGCpassword(user.Login, password);
   console.log(hash);
 
-  return (user.password == password);
+  return (user.password === password);
 }
 
 passport.serializeUser(function(user, done) {
