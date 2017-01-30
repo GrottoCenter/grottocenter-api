@@ -1,5 +1,16 @@
 /*eslint no-console: "off"*/
-
+'use strict';
+/**
+ * importdb.js
+ *
+ * @description :: sailsjs tool to import model
+ * Usage:
+ *        To import all tables (be careful if import has already be done for some tables) :
+ *          node importdb.js USER:PASSWORD@HOST:PORT/DATABASENAME
+ *        To import specific tables :
+ *          node importdb.js USER:PASSWORD@HOST:PORT/DATABASENAME tableName1, tableName2 ...
+ *
+ */
 let mysqlConfig = [];
 
 if (process.argv.length < 3) {
@@ -81,9 +92,6 @@ fs.exists(modelsPath, function(exists) {
   }
   return;
 });
-
-
-
 
 function analysesTable(tableName, tableDetails, callback) {
   let modelFileContent = '';

@@ -1,7 +1,7 @@
 'use strict';
 // query to get time infos average
-const TIME_INFO_QUERY = 'SELECT DATE_FORMAT(SEC_TO_TIME(AVG(IF(E_t_trail>0,TIME_TO_SEC(E_t_trail),null))),\'%T\') AS eTTrail,'
-                        + ' DATE_FORMAT(SEC_TO_TIME(AVG(IF(E_t_underground>0,TIME_TO_SEC(E_t_underground),null))),\'%T\') AS eTUnderground'
+const TIME_INFO_QUERY = 'SELECT SEC_TO_TIME(AVG(IF(E_t_trail>0,TIME_TO_SEC(E_t_trail),null))) AS eTTrail,'
+                        + ' SEC_TO_TIME(AVG(IF(E_t_underground>0,TIME_TO_SEC(E_t_underground),null))) AS eTUnderground'
                         + ' FROM t_comment WHERE Id_entry=?';
 module.exports = {
   /**

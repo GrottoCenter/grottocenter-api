@@ -1,7 +1,7 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import ListOfResults from './ListOfResults'
-import { startSearch, loadCaveSuccess, loadEntrySuccess } from './../../actions/Search'
+import { startSearch, loadCaveSuccess, loadEntrySuccess, loadGrottoSuccess } from './../../actions/Search'
 
 import TextField from 'material-ui/TextField';
 
@@ -35,7 +35,13 @@ class Bar extends React.Component {
         }.bind(this)
       });
 
-
+      $.ajax({
+        url: "/grotto/findAll?name=" + this.refs.quickSearchInput.getValue(),
+        dataType: 'json',
+        success: function(data) {
+            this.props.dispatch(loadGrottoSuccess(data))
+        }.bind(this)
+      });
     }
   }
 
@@ -45,7 +51,7 @@ class Bar extends React.Component {
         <TextField
           ref="quickSearchInput"
           inputStyle={{color: 'white'}}
-          hintText="Rechercher une cavité, un club..."
+          hintText={<I18n>Search for a cave or an organization</I18n>}
           hintStyle={{color: 'white'}}
           fullWidth={true}
           onChange={this.displaySelection.bind(this)}

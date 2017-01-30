@@ -259,6 +259,28 @@ module.exports.routes = {
     action: 'getEntryTimeInfos'
   },
 
+  'GET /grotto/findAll': {
+    controller: 'Grotto',
+    action: 'findAll'
+  },
+
+  'GET /grotto/:id': {
+    controller: 'Grotto',
+    action: 'find'
+  },
+
+  /* REST API for Admin controller */
+
+  'GET /admin/': {
+    controller: 'Admin',
+    view: 'index'
+  },
+
+  'GET /admin/entry/findAllOfInterest': {
+    controller: 'Admin',
+    action: 'findAllInterestEntries'
+  },
+
   /* REST API for I18N controller */
 
   'POST /i18n/translate': {

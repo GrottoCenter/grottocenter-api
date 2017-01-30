@@ -4,8 +4,8 @@ import { showMarker } from './../../actions/Search';
 
 import AutoComplete from 'material-ui/AutoComplete';
 import MenuItem from 'material-ui/MenuItem';
-import Map from 'material-ui/svg-icons/maps/map';
-import Explore from 'material-ui/svg-icons/action/explore';
+import MapIcon from 'material-ui/svg-icons/maps/map';
+import ExploreIcon from 'material-ui/svg-icons/action/explore';
 import muiThemeable from 'material-ui/styles/muiThemeable';
 import SearchIcon from 'material-ui/svg-icons/action/search';
 import I18n from 'react-ghost-i18n';
@@ -27,24 +27,31 @@ class Autocomplete extends React.Component {
   }
 
   onNewRequest(chosenRequest, index) {
-    if ( chosenRequest.isMappable ) {
-      this.props.dispatch(showMarker(chosenRequest));
+    if (chosenRequest.isMappable) {
+        this.props.dispatch(showMarker(chosenRequest));
     }
-    if ( chosenRequest.id ) {
+    if (chosenRequest.id) {
       window.open('http://www.grottocenter.org/html/file_En.php?lang=En&check_lang_auto=false&category='+chosenRequest.category+'&id='+chosenRequest.id,'GrottoV2Window');
     }
   }
 
-  isMappable(obj) { // TODO : move to models
+  isMappable(obj) { // TODO : move to models ?
     return obj.latitude && obj.longitude?true:false;
   }
 
-  isCave(obj) {  // TODO : move to models
-    return obj.entries?true:false;
+  isCave(obj) {
+    // TODO : better when it will be possible
+    return obj.temperature;
   }
 
-  isEntry(obj) { // TODO : move to models
-    return obj.caves?true:false;
+  isEntry(obj) {
+    // TODO : better when it will be possible
+    return obj.isSensitive !== undefined;
+  }
+
+  isGrotto(obj) {
+    // TODO : better when it will be possible
+    return obj.isOfficialPartner !== undefined;
   }
 
   foundDataToMenuItemMapping(item, i) {
@@ -52,7 +59,15 @@ class Autocomplete extends React.Component {
     if (this.isEntry(item)) {
       primaryText+=' (' + item.region + ')';
     }
-    let category = this.isEntry(item)?'entry':'cave';
+
+    let category ='entry';
+    let icon = <ExploreIcon />;
+    if (this.isCave(item)) {
+      category = 'cave';
+      icon = <MapIcon />;
+    } else if (this.isGrotto(item)) {
+      category = 'grotto';
+    }
 
     return {
       id: item.id,
@@ -66,7 +81,7 @@ class Autocomplete extends React.Component {
       value: (
         <MenuItem
           primaryText={primaryText}
-          leftIcon={this.isEntry(item)?<Explore />:<Map />}
+          leftIcon={icon}
         />
       )
     };
@@ -104,7 +119,7 @@ class Autocomplete extends React.Component {
           onUpdateInput={this.onUpdateInput.bind(this)}
           onNewRequest={this.onNewRequest.bind(this)}
           fullWidth={true}
-          maxSearchResults={40}
+          maxSearchResults={50}
           filter={AutoComplete.noFilter}
           popoverProps={{style: {height: '200px'}}}
         />

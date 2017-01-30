@@ -4,8 +4,6 @@
  * @description :: tGrotto model imported from localhost MySql server at 31/3/2016 12:7:32.
  * @docs        :: http://sailsjs.org/#!documentation/models
  */
-
-
 module.exports = {
 
   tableName: 't_grotto',
@@ -24,10 +22,9 @@ module.exports = {
       defaultsTo: 'NO',
       columnName: 'Locked'
     },
-    idAuthor: {
-      type: 'integer',
-      index: true,
-      columnName: 'Id_author'
+    author: {
+      columnName: 'Id_author',
+      model: 'TCaver'
     },
     idReviewer: {
       type: 'integer',

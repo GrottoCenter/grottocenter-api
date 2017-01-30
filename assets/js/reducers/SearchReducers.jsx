@@ -1,5 +1,5 @@
 import {combineReducers} from "redux"
-import { startSearch, loadCaveSuccess, loadEntrySuccess, showMarker } from './../actions/Search'
+import { startSearch, loadCaveSuccess, loadEntrySuccess, loadGrottoSuccess, showMarker } from './../actions/Search'
 
 /*
     The marker centered on the Map component
@@ -43,6 +43,7 @@ const caves = (state = [], action) => {
       return state
   }
 }
+
 /*
     The list of entries returned by the search
 */
@@ -57,9 +58,24 @@ const entries = (state = [], action) => {
   }
 }
 
+/*
+    The list of grottos returned by the search
+*/
+const grottos = (state = [], action) => {
+  switch (action.type) {
+    case 'START_SEARCH':
+      return [];
+    case 'LOAD_GROTTO_SUCCESS':
+      return action.data;
+    default:
+      return state
+  }
+}
+
 export const searchReducers = combineReducers({
   caves,
   entries,
+  grottos,
   marker
 });
 export default searchReducers;

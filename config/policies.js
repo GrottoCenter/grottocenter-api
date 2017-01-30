@@ -85,6 +85,14 @@ module.exports.policies = {
 
   CommentController: {
     '*': true
+  },
+
+  GrottoController: {
+    '*': true
+  },
+
+  AdminController: {
+    '*': true
   }
 
   /***************************************************************************

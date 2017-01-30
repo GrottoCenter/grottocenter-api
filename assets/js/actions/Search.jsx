@@ -19,6 +19,13 @@ export const loadEntrySuccess = (data) => {
     }
 }
 
+export const loadGrottoSuccess = (data) => {
+    return {
+        type: 'LOAD_GROTTO_SUCCESS',
+        data: data
+    }
+}
+
 export const showMarker = (entry) => {
     return {
         type: 'SHOW_MARKER',

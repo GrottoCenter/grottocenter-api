@@ -162,11 +162,19 @@ module.exports = {
       columnName: 'Altitude'
     },
 
+    // if caves is not empty, singleEntry is supposed to be empty
     caves: {
       collection: 'TCave',
       via: 'caves',
       through: 'jcaveentry'
     },
+
+    // if singleEntry is not empty, caves is supposed to be empty
+    // TODO : see how to materialize fact that
+    // id of entry corresponds to id of linked single entry if exists
+    /*singleEntry: {
+      model: 'TSingleEntry'
+    },*/
 
     comments: {
       collection: 'TComment',

@@ -15,7 +15,12 @@ module.exports = {
   },
 
   find: function(req, res) {
-    TEntry.findOneById(req.params.id).populate('author').populate('caves').exec(function(err, found) {
+    TEntry.findOne({
+      id: req.params.id
+    // TODO before this : see how to materialize fact that
+    // id of entry corresponds to id of linked single entry if exists
+    //}).populate('author').populate('caves').populate('singleEntry').exec(function(err, found) {
+    }).populate('author').populate('caves').exec(function(err, found) {
       let params = {};
       params.controllerMethod = 'EntryController.find';
       params.notFoundMessage = 'Entry of id ' + req.params.id + ' not found.';
@@ -36,9 +41,12 @@ module.exports = {
       };
     }
 
+    // TODO before this : see how to materialize fact that
+    // id of entry corresponds to id of linked single entry if exists
+    //TEntry.find(parameters).populate('author').populate('caves').populate('singleEntry').sort('id ASC').limit(10).exec(function(err, found) {
     TEntry.find(parameters).populate('author').populate('caves').sort('id ASC').limit(10).exec(function(err, found) {
       let params = {};
-      params.controllerMethod = 'EntryController.readAll';
+      params.controllerMethod = 'EntryController.findAll';
       params.notFoundMessage = 'No entries found.';
       return ControllerService.treat(err, found, params, res);
     });

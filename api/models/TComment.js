@@ -58,7 +58,7 @@ module.exports = {
     },
     entry: {
       columnName: 'Id_entry',
-      model: 'TEntry',
+      model: 'TEntry'
     },
     idExit: {
       type: 'integer',
