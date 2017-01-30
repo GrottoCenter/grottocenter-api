@@ -5,7 +5,6 @@ import React from 'react';
 import I18n from 'react-ghost-i18n';
 import BasicCard from './../components/BasicCard';
 
-
 export default class SignupForm extends React.Component {
   constructor(props) {
     super(props);
@@ -59,7 +58,7 @@ export default class SignupForm extends React.Component {
 
   render() {
     return (
-      <div style={{"padding": "50px 25%"}}>
+      <div style={{'padding': '50px 25%'}}>
         <BasicCard title="Sign up" image="news" text="Welcome to GC3!">
           <div className="loginForm">
             <div className="form-group">
@@ -119,14 +118,14 @@ export default class SignupForm extends React.Component {
               <div>I can't read some characters	<a href="">Click here</a></div>
             </div>
 
-            <div class="checkbox">
+            <div className="checkbox">
               <label>
                 <input type="checkbox" value="" />
                 Keep me informed of news by e-mail
               </label>
             </div>
 
-            <div class="checkbox">
+            <div className="checkbox">
               <label>
                 <input type="checkbox" value="" />
                 I read and I accept the rules

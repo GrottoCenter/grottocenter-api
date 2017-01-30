@@ -3,8 +3,7 @@
  */
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {Router, Route, IndexRoute} from 'react-router';
-import createBrowserHistory from 'history/lib/createBrowserHistory';
+import {Router, Route, IndexRoute, browserHistory} from 'react-router';
 import I18n from 'react-ghost-i18n';
 
 import LightPage from './pages/LightPage';
@@ -38,7 +37,7 @@ I18n.locale = window.catalog;
 ReactDOM.render(
   <MuiThemeProvider muiTheme={getMuiTheme(grottoTheme)}>
     <Provider store={gcStore}>
-      <Router history={createBrowserHistory()}>
+      <Router history={browserHistory}>
         <Route path="/auth/" component={LightPage}>
           <Route path="/auth/signin" component={SigninForm}/>
           <Route path="/auth/signup" component={SignupForm}/>
