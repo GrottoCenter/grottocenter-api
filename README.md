@@ -7,7 +7,11 @@ A [Sails](http://sailsjs.org) application
 
 ### Install NodeJS
 
-Min version XYZ
+Min version: 6.9.4
+
+### Install NPM (package manager)
+
+Min version: 4.1.2
 
 ### Get source code
 

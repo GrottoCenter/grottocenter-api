@@ -5,6 +5,7 @@ import React from 'react';
 import I18n from 'react-ghost-i18n';
 import BasicCard from './../components/BasicCard';
 
+
 export default class SignupForm extends React.Component {
   constructor(props) {
     super(props);

@@ -3,7 +3,7 @@
 /**
  * importdb.js
  *
- * @description :: sailsjs tool to import model
+ * @description :: sailsjs tool to import model from physical database table to JS model file
  * Usage:
  *        To import all tables (be careful if import has already be done for some tables) :
  *          node importdb.js USER:PASSWORD@HOST:PORT/DATABASENAME
@@ -325,5 +325,5 @@ function asyncForEach(array, fn, callback) {
 }
 
 function showUsage() {
-  console.log('\nUsage: node importdb.js USER:PASSWORD@HOST:PORT/DATABASENAME (For import all tables)\n       php importdb.js USER:PASSWORD@HOST:PORT/DATABASENAME tableName1, tableName2 ... (For import selected tables)\n\n');
+  console.log('\nsailsjs tool to import model from physical database table to JS model file\n\nUsage: node importdb.js USER:PASSWORD@HOST:PORT/DATABASENAME (For import all tables)\n       php importdb.js USER:PASSWORD@HOST:PORT/DATABASENAME tableName1, tableName2 ... (For import selected tables)\n\n');
 }

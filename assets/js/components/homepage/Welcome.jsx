@@ -5,7 +5,7 @@ import Avatar from 'material-ui/Avatar';
 
 const Welcome = (props) => (
   <div>
-    <div role="section" className="welcome" style={{backgroundColor: props.muiTheme.palette.primary1Color, color: props.muiTheme.palette.textIconColor, fontFamily: props.muiTheme.fontFamily}}>
+    <div role="section" className="welcome" style={{backgroundColor: '#91756a', color: props.muiTheme.palette.textIconColor, fontFamily: props.muiTheme.fontFamily}}>
       <div className="container">
         <div className="row">
           <div className="four columns">
