@@ -1,5 +1,6 @@
 <table>
 <tr>
+  <th>Id</th>
   <th>Name</th>
   <th>Country</th>
   <th>Region</th>
@@ -17,6 +18,7 @@
 </tr>
 <% for(var i=0; i < found.length; i++) {%>
    <tr>
+     <td><%= found[i][0].id %></td>
      <td><%= found[i][0].name %></td>
      <td><%= found[i][0].country %></td>
      <td><%= found[i][0].region %></td>

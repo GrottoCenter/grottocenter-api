@@ -134,8 +134,8 @@ export class EntryInfo extends React.Component {
   render() {
     let rows = [];
     if (this.props.timeInfo !== undefined) {
-      rows.push(<EntryInfoItem key="eiik1" itemImg="time-to-go.svg" itemLabel="time to go" itemValue={this.props.timeInfo.eTTrail}/>);
-      rows.push(<EntryInfoItem key="eiik2" itemImg="underground_time.svg" itemLabel="underground time" itemValue={this.props.timeInfo.eTUnderground}/>);
+      rows.push(<EntryInfoItem key="eiik1" itemImg="time-to-go.svg" itemLabel="time to go" itemType="time" itemValue={this.props.timeInfo.eTTrail}/>);
+      rows.push(<EntryInfoItem key="eiik2" itemImg="underground_time.svg" itemLabel="underground time" itemType="time" itemValue={this.props.timeInfo.eTUnderground}/>);
     }
     if (this.props.entryInfo !== undefined) {
       rows.push(<EntryInfoItem key="eiik3" itemImg="length.svg" itemLabel="length" itemValue={this.props.entryInfo.length} itemUnit="m"/>);
@@ -160,16 +160,22 @@ export class EntryInfoItem extends React.Component {
   }
 
   render() {
-    if (this.props.itemValue === undefined) {
+    let displayValue = this.props.itemValue;
+    if (displayValue === undefined || displayValue === null) {
       return (
         <span/>
       );
     }
+
+    if (this.props.itemType === 'time') {
+      displayValue = displayValue.replace('.0000','');
+    }
+
     let imgName = 'images/' + this.props.itemImg;
     return (
       <div className="entryInfo">
         <img src={imgName} height="50" width="50" title={this.props.itemLabel} alt={this.props.itemLabel}/>
-        <span className="value">{this.props.itemValue}</span>
+        <span className="value">{displayValue}</span>
         <span className="unit">{this.props.itemUnit}</span>
       </div>
     );
