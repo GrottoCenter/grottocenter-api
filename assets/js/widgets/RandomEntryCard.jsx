@@ -97,17 +97,19 @@ export class EntryStatItem extends React.Component {
     }
 
     let score = this.props.itemScore / 2;
-    let half = this.props.itemScore % 2;
-
     let starsToDisplay = [];
-    for (let i = 0; i < (score - half); i++) {
+    let displayed = 0;
+
+    for (let i = 0; i < Math.floor(score); i++) {
       starsToDisplay.push(<FullStarIcon key={'star' + i} color={'#ffd700'}/>);
+      displayed++;
     }
-    if (half === 1) {
+    if (Math.floor(score) < score) {
       starsToDisplay.push(<HalfStarIcon key={'starh'}  color={'#ffd700'}/>);
+      displayed++;
     }
-    if (score < 5) {
-      for (let i = (score + half); i < 5; i++) {
+    if (displayed < 5) {
+      for (let i = displayed; i < 5; i++) {
         starsToDisplay.push(<EmptyStarIcon key={'star' + i} color={'#ffd700'}/>);
       }
     }
@@ -186,7 +188,8 @@ EntryInfoItem.propTypes = {
   itemValue: PropTypes.any,
   itemUnit: PropTypes.string,
   itemLabel: PropTypes.string.isRequired,
-  itemImg: PropTypes.string.isRequired
+  itemImg: PropTypes.string.isRequired,
+  itemType: PropTypes.string
 };
 
 export class EntryImage extends React.Component {
