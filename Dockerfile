@@ -1,4 +1,4 @@
-FROM node:alpine
+FROM node:6.9-alpine
 MAINTAINER Wikicaves
 
 RUN mkdir -p /usr/src/app

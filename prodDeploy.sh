@@ -50,7 +50,7 @@ else
 fi
 
 echo "### Building app locally using prod tasks ###"
-grunt prod || {
+NODE_ENV=production grunt prod || {
   echo '######## ERROR - exiting... #########'
   exit 1;
 }

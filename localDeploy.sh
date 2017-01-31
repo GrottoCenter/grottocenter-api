@@ -20,7 +20,7 @@ DOCKER_MYSQL_PASSWORD="grottocepassword"
 DOCKER_MYSQL_DATABASE="grottoce"
 
 echo "### Building app locally using prod tasks ###"
-grunt prod
+NODE_ENV=production grunt prod
 
 ### RUNNING DOCKER IMAGES INSTANCES ###
 
