@@ -11,17 +11,21 @@
      }
 
      // search for caves
-     TCave.find(parameters).sort('id ASC').limit(50).exec(function(err, foundCave) {
+     //TCave.find(parameters).sort('id ASC').limit(50).exec(function(err, foundCave) {
          // search for entries
          TEntry.find(parameters).sort('id ASC').limit(50).exec(function(err, foundEntry) {
            // search for grottos
-           TGrotto.find(parameters).sort('id ASC').limit(50).exec(function(err, foundGrotto) {
+           //TGrotto.find(parameters).sort('id ASC').limit(50).exec(function(err, foundGrotto) {
              var params = {};
              params.controllerMethod = 'SearchController.readAll';
              params.notFoundMessage = 'No items found.';
-             return ControllerService.treat(err, foundCave.concat(foundEntry).concat(foundGrotto), params, res);
-           });
+             // only search for entries at this time
+             //return ControllerService.treat(err, foundCave.concat(foundEntry).concat(foundGrotto), params, res);
+             return ControllerService.treat(err, foundEntry, params, res);
+            // end search for grottos
+           //});
          });
-     });
+      // end search for caves
+     //});
    }
  };

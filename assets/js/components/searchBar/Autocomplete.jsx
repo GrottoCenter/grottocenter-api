@@ -39,20 +39,22 @@ class Autocomplete extends React.Component {
     return obj.latitude && obj.longitude?true:false;
   }
 
-  isCave(obj) {
+  // only search for entries at this time
+  /*isCave(obj) {
     // TODO : better when it will be possible
     return obj.temperature;
-  }
+  }*/
 
   isEntry(obj) {
     // TODO : better when it will be possible
     return obj.isSensitive !== undefined;
   }
 
-  isGrotto(obj) {
+  // only search for entries at this time
+  /*isGrotto(obj) {
     // TODO : better when it will be possible
     return obj.isOfficialPartner !== undefined;
-  }
+  }*/
 
   foundDataToMenuItemMapping(item, i) {
     let primaryText = item.name;
@@ -62,12 +64,13 @@ class Autocomplete extends React.Component {
 
     let category ='entry';
     let icon = <ExploreIcon />;
-    if (this.isCave(item)) {
+    // only search for entries at this time
+    /*if (this.isCave(item)) {
       category = 'cave';
       icon = <MapIcon />;
     } else if (this.isGrotto(item)) {
       category = 'grotto';
-    }
+    }*/
 
     return {
       id: item.id,
