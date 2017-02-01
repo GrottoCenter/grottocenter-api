@@ -91,7 +91,17 @@ else
 fi
 
 echo "### Starting docker builder machine ###"
-docker-machine start ${DOCKBUILDER}
+docker-machine start ${DOCKBUILDER} || {
+  echo '######## ERROR - exiting... #########'
+  exit 1;
+}
+
+# The builder do not have a static IP so certificat need to be generated each time.
+echo "### Regenerating certificats of docker builder machine ###"
+docker-machine regenerate-certs -f ${DOCKBUILDER} || {
+  echo '######## ERROR - exiting... #########'
+  exit 1;
+}
 
 echo "### Switch context to docker-machine ${DOCKBUILDER} ###"
 eval "$(docker-machine env ${DOCKBUILDER})" || {

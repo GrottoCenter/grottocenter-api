@@ -13,7 +13,7 @@ const Welcome = (props) => (
           </div>
           <div className="eight columns">
             <h3 style={{color: props.muiTheme.palette.accent1Color}}>
-              <I18n>Welcome to Grottocenter!</I18n  >
+              <I18n>Welcome to Grottocenter!</I18n>
             </h3>
             <p><I18n>This 3.1 version of the site is  improving gradually to allow  a simpler navigation from all your peripherals.</I18n></p>
             <p><I18n>The application is faster, and benefits  from a code of higher quality which is also easier to maintain: data processing specialist may join the development team and easily contribute.</I18n></p>
