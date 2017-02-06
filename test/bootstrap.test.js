@@ -15,7 +15,7 @@ before(function(done) {
       migrate: 'drop'
     },
     csrf: false,
-  }, function(err, server) {
+  }, function(err) {
     if (err) return done(err);
     // here you can load fixtures, etc.
 
@@ -23,7 +23,7 @@ before(function(done) {
     let barrels = new Barrels();
 
     // Save original objects in `fixtures` variable
-    fixtures = barrels.data;
+    //fixtures = barrels.data;
 
     // Populate the DB
     barrels.populate(function(err) {

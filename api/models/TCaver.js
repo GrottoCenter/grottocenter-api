@@ -249,7 +249,8 @@ module.exports = {
   },
 
   beforeCreate: function(values, next) {
-    values.password = hash;
+    // TODO commented to remove ESlint warning because hash is not defined.
+    //values.password = hash;
     next();
   },
 

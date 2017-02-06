@@ -25,6 +25,7 @@ rules:
 globals:
   sails: true
   TEntry: true
+  EntryService: true
   TComment: true
   CommonService: true
   CommentService: true

@@ -30,9 +30,7 @@ function getOldGCpassword(login, password) {
 
 function verifyPassword(user, password) {
   let hash = getOldGCpassword(user.Login, password);
-  console.log(hash);
-
-  return (user.password === password);
+  return (user.password === password || user.password === hash);
 }
 
 passport.serializeUser(function(user, done) {

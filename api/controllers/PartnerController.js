@@ -58,9 +58,6 @@ module.exports = {
         '!': null
       },
       'pictureFileName': {
-        '!': null
-      },
-      'pictureFileName': {
         '!': ''
       },
       'isOfficialPartner': '1'

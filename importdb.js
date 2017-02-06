@@ -15,10 +15,10 @@ let mysqlConfig = [];
 
 if (process.argv.length < 3) {
   showUsage();
-  return;
+  process.exit(1);
 }
 
-process.argv.forEach(function(val, index, array) {
+process.argv.forEach(function(val, index) {
   if (index === 2) {
     mysqlConfig = val.split(/[:@\/]/);
   }
@@ -26,11 +26,11 @@ process.argv.forEach(function(val, index, array) {
 
 if (mysqlConfig.length !== 5) {
   showUsage();
-  return;
+  process.exit(1);
 }
 
 let error = 0;
-mysqlConfig.forEach(function(val, index, array) {
+mysqlConfig.forEach(function(val, index) {
   if (val === '') {
     switch (index) {
       case 0:
@@ -56,7 +56,7 @@ mysqlConfig.forEach(function(val, index, array) {
 });
 
 if (error !== 0) {
-  return;
+  process.exit(1);
 }
 
 const mysql = require('./node_modules/sails-mysql/node_modules/mysql/index.js');
@@ -212,7 +212,7 @@ function dbQuery(_query, callback) {
     console.log(_query);
     throw err;
     //callback (undefined, err);
-  }).on('fields', function(fields) {
+  }).on('fields', function() {
     // console.log(fields);
   }).on('result', function(row) {
     response.push(row);
@@ -223,7 +223,7 @@ function dbQuery(_query, callback) {
 
 if (typeof String.prototype.toCamelCase !== 'function') {
   String.prototype.toCamelCase = function() {
-    return this.replace(/^([A-Z])|[\s-_](\w)/g, function(match, p1, p2, offset) {
+    return this.replace(/^([A-Z])|[\s-_](\w)/g, function(match, p1, p2) {
       if (p2) return p2.toUpperCase();
       return p1.toLowerCase();
     });
@@ -252,7 +252,7 @@ if (typeof String.prototype.asyncForEach !== 'function') {
     function process() {
       counter++;
       let item = array[counter];
-      fn(item, counter, function(result) {
+      fn(item, counter, function() {
         if (array.length > (counter + 1)) {
           process();
         } else {
@@ -309,7 +309,7 @@ function asyncForEach(array, fn, callback) {
   function process() {
     counter++;
     let item = array[counter];
-    fn(item, counter, function(result) {
+    fn(item, counter, function() {
       if (array.length > (counter + 1)) {
         process();
       } else {

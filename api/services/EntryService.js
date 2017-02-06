@@ -90,7 +90,7 @@ module.exports = {
         let allEntries = [];
         let mapEntries = results.map(function(item) {
           return EntryService.completeRandomEntry(item.id).then(function(entry) {
-              allEntries.push(entry);
+            allEntries.push(entry);
           });
         });
         Promise.all(mapEntries).then(() => {
