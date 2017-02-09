@@ -3,6 +3,7 @@ import I18n from 'react-ghost-i18n';
 import muiThemeable from 'material-ui/styles/muiThemeable';
 import GiftIcon from 'material-ui/svg-icons/action/card-giftcard';
 import FlatButton from 'material-ui/FlatButton';
+import GCLink from '../GCLink';
 
 let licenceLinks = {
   'fr': 'https://creativecommons.org/licenses/by-sa/3.0/fr/',
@@ -74,30 +75,30 @@ class Footer extends Component {
                 <I18n>Published by</I18n>
               </div>
               <div className="publishedInfo">
-                <a href="http://www.wikicaves.org/" target="_blank">
+                <GCLink href="http://www.wikicaves.org/">
                   <img src="/images/logo.svg" alt="logo-wikicaves"/>
                   <br/>
                   <I18n>Wikicaves association</I18n>
-                </a>
+                </GCLink>
               </div>
             </div>
 
             <div className="four columns">
               <ul className="linksText">
                 <li>
-                  <a style={{color: this.props.muiTheme.palette.textIconColor}} href="https://wiki.grottocenter.org/wiki/GrottoCenter:Contributors" target="_blank">
+                  <GCLink style={{color: this.props.muiTheme.palette.textIconColor}} href="https://wiki.grottocenter.org/wiki/GrottoCenter:Contributors">
                     <I18n>Contributors</I18n>
-                  </a>
+                  </GCLink>
                 </li>
                 <li>
-                  <a style={{color: this.props.muiTheme.palette.textIconColor}} href={contactLink} target="_blank">
+                  <GCLink style={{color: this.props.muiTheme.palette.textIconColor}} href={contactLink}>
                     <I18n>Contact</I18n>
-                  </a>
+                  </GCLink>
                 </li>
                 <li>
-                  <a style={{color: this.props.muiTheme.palette.textIconColor}} href={legalLink} target="_blank">
+                  <GCLink style={{color: this.props.muiTheme.palette.textIconColor}} href={legalLink}>
                     <I18n>Legal notice</I18n>
-                  </a>
+                  </GCLink>
                 </li>
               </ul>
             </div>
@@ -125,34 +126,34 @@ class Footer extends Component {
             <div className="twelve columns">
               <ul className="linksIcon">
                 <li>
-                  <a href="https://www.facebook.com/GrottoCenter" target="_blank">
+                  <GCLink href="https://www.facebook.com/GrottoCenter">
                     <img src="/images/facebook.svg" alt="Follow us on Facebook"/>
-                  </a>
+                  </GCLink>
                 </li>
                 <li>
-                  <a href={rssLink} target="_blank">
+                  <GCLink href={rssLink}>
                     <img src="/images/rss.png" alt="RSS feed"/>
-                  </a>
+                  </GCLink>
                 </li>
                 <li>
-                  <a href={bloggerLink} target="_blank">
+                  <GCLink href={bloggerLink}>
                     <img src={'/images/' + bloggerIcon} alt="Grottocenter blog"/>
-                  </a>
+                  </GCLink>
                 </li>
                 <li>
-                  <a href="https://twitter.com/grottocenter" target="_blank">
+                  <GCLink href="https://twitter.com/grottocenter">
                     <img src="/images/twitter.svg" alt="Follow us on Twitter"/>
-                  </a>
+                  </GCLink>
                 </li>
                 <li>
-                  <a href="https://github.com/GrottoCenter" target="_blank">
+                  <GCLink href="https://github.com/GrottoCenter">
                     <img src="/images/github.png" alt="Grottocenter3 on GitHub"/>
-                  </a>
+                  </GCLink>
                 </li>
                 <li>
-                  <a href={wikiBatsLink} target="_blank">
+                  <GCLink href={wikiBatsLink}>
                     <img src="/images/bats.svg" alt="Wiki page for bats"/>
-                  </a>
+                  </GCLink>
                 </li>
               </ul>
             </div>
@@ -166,9 +167,9 @@ class Footer extends Component {
             <I18n>Unless stated otherwise, all text and documents are available under the terms of the Creative Commons Attribution-ShareAlike 3.0 Unported.</I18n>
           </p>
           <p>
-            <a className="licenceIcon" href={licenceLink} target="_blank">
+            <GCLink className="licenceIcon" href={licenceLink}>
               <img src="/images/CC-BY-SA.png" alt="CC-BY-SA licence"/>
-            </a>
+            </GCLink>
           </p>
         </div>
       </div>

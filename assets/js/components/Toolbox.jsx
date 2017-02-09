@@ -1,6 +1,6 @@
-import React from 'react';
+import React, {PropTypes} from 'react';
 
-const DateRibbon = (props) => (
+export const DateRibbon = (props) => (
   <div className="ribbon date">
     <div className="top ribbon-piece">{props.month}</div>
     <div className="bottom ribbon-piece">{props.day}</div>
@@ -12,8 +12,6 @@ const DateRibbon = (props) => (
 );
 
 DateRibbon.propTypes = {
-  month: React.PropTypes.string,
-  day: React.PropTypes.string
+  month: PropTypes.string,
+  day: PropTypes.string
 };
-
-export default DateRibbon;

@@ -5,7 +5,8 @@ import ImageLoupe from 'material-ui/svg-icons/image/loupe';
 import Divider from 'material-ui/Divider';
 import muiThemeable from 'material-ui/styles/muiThemeable';
 import I18n from 'react-ghost-i18n';
-import DateRibbon from '../../widgets/DateRibbon';
+import {DateRibbon} from '../Toolbox';
+import GCLink from '../GCLink';
 
 const LatestNews = (props) => (
   <div>
@@ -25,7 +26,11 @@ const LatestNews = (props) => (
               <CardText>Alors que l'IUS prépare un programme scientifique de très haut niveau sur des thèmes de recherche liés au monde souterrain, l'Australian Speleological Federation Inc (ASF)...</CardText>
               <Divider/>
               <CardActions style={{'textAlign': 'right'}}>
-                <FlatButton icon={<ImageLoupe color={props.muiTheme.palette.accent1Color} />} href="http://blog-fr.grottocenter.org/2016/10/speleo-2017a-sidney.html"/>
+                <FlatButton>
+                  <GCLink href='http://blog-fr.grottocenter.org/2016/10/speleo-2017a-sidney.html'>
+                    <ImageLoupe color={props.muiTheme.palette.accent1Color} />
+                  </GCLink>
+                </FlatButton>
               </CardActions>
             </Card>
           </div>
@@ -39,7 +44,11 @@ const LatestNews = (props) => (
               <CardText>Vous êtes invités à participer aux Rencontre Nationale de Spéléologie italien qui se tiennent sous le patronage de la Fédération Spéléologique Européenne FSE.</CardText>
               <Divider/>
               <CardActions style={{'textAlign': 'right'}}>
-                <FlatButton icon={<ImageLoupe color={props.muiTheme.palette.accent1Color} />} href="http://blog-fr.grottocenter.org/2016/09/strisciando-majella-2016.html"/>
+                <FlatButton>
+                  <GCLink href='http://blog-fr.grottocenter.org/2016/09/strisciando-majella-2016.html'>
+                    <ImageLoupe color={props.muiTheme.palette.accent1Color} />
+                  </GCLink>
+                </FlatButton>
               </CardActions>
             </Card>
           </div>

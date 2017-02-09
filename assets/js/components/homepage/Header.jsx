@@ -2,6 +2,7 @@ import React, {Component, PropTypes} from 'react';
 import Autocomplete from './../../components/searchBar/Autocomplete';
 import I18n from 'react-ghost-i18n';
 import muiThemeable from 'material-ui/styles/muiThemeable';
+import GCLink from '../GCLink';
 
 let fseLinks = {
   'fr': 'http://eurospeleo.eu/fr/'
@@ -23,9 +24,9 @@ class Header extends Component {
         <div className="container">
           <div className="row brand bgwhite">
             <div className="twelve columns">
-              <a href="" className="logo">
+              <GCLink blank={false} href="" className="logo">
                 <img src="/images/logo.svg" alt="logo-wikicaves"/>
-              </a>
+              </GCLink>
               <h1 className="sitename">Grottocenter</h1>
               <span className="slogan">
                   <I18n>The Wiki database made by cavers for cavers.</I18n>
@@ -36,9 +37,9 @@ class Header extends Component {
           <div className="row bgwhite">
             <div className="twelve columns">
               <span className="gc-fse-info">
-                <a href={fseLink} alt="Link to FSE">
+                <GCLink href={fseLink} alt="Link to FSE">
                   <img className="logofse" src="/images/FSE.svg" alt="logo-fse"/>
-                </a>
+                </GCLink>
                 <I18n>Grottocenter is supported by the FSE</I18n>
               </span>
             </div>

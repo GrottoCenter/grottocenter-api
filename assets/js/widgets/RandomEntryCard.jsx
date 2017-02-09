@@ -3,6 +3,7 @@ import FullStarIcon from 'material-ui/svg-icons/toggle/star';
 import EmptyStarIcon from 'material-ui/svg-icons/toggle/star-border';
 import HalfStarIcon from 'material-ui/svg-icons/toggle/star-half';
 import I18n from 'react-ghost-i18n';
+import GCLink from '../components/GCLink';
 
 export class EntryData extends React.Component {
   constructor(props) {
@@ -48,7 +49,7 @@ export class EntryTitle extends React.Component {
           {this.props.entry.region} - {this.props.entry.country}
         </h5>
         <h4>
-          <a href={'http://www.grottocenter.org/html/file_' + lang + '.php?lang=' + lang + '&check_lang_auto=false&category=entry&id=' + this.props.entry.id} target="blank">{this.props.entry.name}</a>
+          <GCLink href={'http://www.grottocenter.org/html/file_' + lang + '.php?lang=' + lang + '&check_lang_auto=false&category=entry&id=' + this.props.entry.id} target="blank">{this.props.entry.name}</GCLink>
         </h4>
       </div>
     );
