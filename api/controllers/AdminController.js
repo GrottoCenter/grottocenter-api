@@ -46,7 +46,7 @@ module.exports = {
       if (!results) {
         return res.notFound('No entry of interest found.');
       }
-      return res.view('admin/entriesOfInterest', {found: results});
+      return res.json(results);
     }, function(err) {
       sails.log.error(err);
       return res.serverError('EntryController.findAllRandomEntry error : ' + err);
