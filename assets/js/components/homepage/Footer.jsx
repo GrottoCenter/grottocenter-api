@@ -86,6 +86,11 @@ class Footer extends Component {
             <div className="four columns">
               <ul className="linksText">
                 <li>
+                  <GCLink internal={true} style={{color: this.props.muiTheme.palette.textIconColor}} href="/ui/faq">
+                    <I18n>Faq</I18n>
+                  </GCLink>
+                </li>
+                <li>
                   <GCLink style={{color: this.props.muiTheme.palette.textIconColor}} href="https://wiki.grottocenter.org/wiki/GrottoCenter:Contributors">
                     <I18n>Contributors</I18n>
                   </GCLink>

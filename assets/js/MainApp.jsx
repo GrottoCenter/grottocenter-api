@@ -9,9 +9,9 @@ import I18n from 'react-ghost-i18n';
 import LightPage from './pages/LightPage';
 import StandardPage from './pages/StandardPage';
 import HomepageFlat from './pages/HomepageFlat';
+import Faq from './components/Faq';
 import SigninForm from './components/SigninForm';
 import SignupForm from './components/SignupForm';
-import FilterableProductTable from './widgets/EntryList';
 
 import grottoTheme from './grottoTheme';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
@@ -42,9 +42,10 @@ ReactDOM.render(
           <Route path="/auth/signin" component={SigninForm}/>
           <Route path="/auth/signup" component={SignupForm}/>
         </Route>
+
         <Route path="/" component={StandardPage}>
           <IndexRoute component={HomepageFlat}/>
-          <Route path="/ui/cavelist" component={FilterableProductTable}/>
+          <Route path="/ui/faq" component={Faq}/>
         </Route>
       </Router>
     </Provider>
