@@ -1,0 +1,15 @@
+env:
+  es6: true
+  node: false
+  mocha: true
+  browser: true
+  jquery: true
+#rules:
+  # strict: [error, global]
+#globals:
+plugins: ['react']
+extends: [ 'eslint:recommended', 'plugin:react/recommended' ]
+parserOptions:
+  ecmaVersion: 6
+  ecmaFeatures:
+    jsx: true

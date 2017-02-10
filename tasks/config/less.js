@@ -14,6 +14,11 @@ module.exports = function(grunt) {
 
   grunt.config.set('less', {
     dev: {
+      options: {
+        plugins: [
+          new (require('less-plugin-autoprefix'))({browsers: ['last 2 versions']})
+        ]
+      },
       files: [{
         expand: true,
         cwd: 'assets/styles/',
