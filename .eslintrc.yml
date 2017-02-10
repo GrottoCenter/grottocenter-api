@@ -2,8 +2,8 @@ env:
   es6: true
   node: true
   mocha: true
-  browser: true
-  jquery: true
+  browser: false
+  jquery: false
 rules:
   # strict: [error, global]
   indent: [error, 2, {SwitchCase: 1}]
@@ -35,11 +35,9 @@ globals:
   TTopography: true
   TokenAuthService: true
   ControllerService: true
-plugins: ['react']
-extends: [ 'eslint:recommended', 'plugin:react/recommended' ]
+extends: [ 'eslint:recommended' ]
 parserOptions:
   ecmaVersion: 6
   sourceType: module
   ecmaFeatures:
-    jsx: true
     globalReturn: false
