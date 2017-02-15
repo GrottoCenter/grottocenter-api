@@ -1,13 +1,15 @@
 'use strict';
 // valid image formats
 const VALID_IMG_FORMATS = "\'.jpg\',\'.png\',\'.gif\',\'.svg\'";
+const OTHER_VALID_IMG_FORMATS = "\'.jpeg\'";
 // query to get all entries of interest
 const INTEREST_ENTRIES_QUERY = 'SELECT id FROM t_entry WHERE Is_of_interest=1';
 // query to get a random entry of interest
 const RANDOM_ENTRY_QUERY = INTEREST_ENTRIES_QUERY + ' ORDER BY RAND() LIMIT 1';
 // query to get entry info
 const ENTRY_INFO_QUERY = 'SELECT COALESCE(SE.depth, C.depth) AS depth, COALESCE(SE.length, C.length) AS length,'
-                          + ' IF(LOWER(RIGHT(F.path,4)) IN(' + VALID_IMG_FORMATS + '),F.path,null) AS path'
+                          + ' IF(LOWER(RIGHT(F.path,4)) IN(' + VALID_IMG_FORMATS + ')'
+                          + ' OR LOWER(RIGHT(F.path,5)) IN(' + OTHER_VALID_IMG_FORMATS + '),F.path,null) AS path'
                           + ' FROM t_entry E'
                           // to get depth and length entry info
                           + ' LEFT JOIN t_single_entry SE ON SE.id=E.id'
