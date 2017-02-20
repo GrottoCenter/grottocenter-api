@@ -59,7 +59,7 @@ if (error !== 0) {
   process.exit(1);
 }
 
-const mysql = require('./node_modules/sails-mysql/node_modules/mysql/index.js');
+const mysql = require('./node_modules/mysql/index.js');
 const fs = require('fs');
 const modelsPath = './api/models/';
 const controllersPath = './api/controllers/';
