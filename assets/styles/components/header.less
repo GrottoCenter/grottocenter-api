@@ -7,13 +7,19 @@ header>.container {
 header>div {
   background: url('/images/caves/topo.jpg') 0 center;
   background-repeat: no-repeat;
-  background-size: 200%;
+  background-size: 220%;
   background-position-y: 0;
 }
 
 @media (min-width: 550px) {
   header>div {
-    background-size: 120%;
+    background-size: 130%;
+  }
+}
+
+@media (min-width: 1000px) {
+  header>div {
+    background-size: 100%;
   }
 }
 
@@ -70,13 +76,21 @@ header .slogan {
 }
 
 header .gc-fse-info {
-  display: none;
+  display: flex;
   font-size: small;
   line-height: 40px;
 }
 
+header .gc-fse-info span:nth-of-type(2) {
+  display: none;
+}
+
 @media (min-width: 550px) {
   header .gc-fse-info {
+    display: flex;
+  }
+
+  header .gc-fse-info span:nth-of-type(2) {
     display: flex;
   }
 }
