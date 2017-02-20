@@ -42,6 +42,8 @@ git config --global rerere.enabled true
 git config --global push.default upstream
 git config --global rebase.autosquash true
 git config --global rebase.autostash true
+git config --global core.autocrlf false
+git config --local core.autocrlf false
 git config --global pull.rebase true
 ```
 ### GIT usage
