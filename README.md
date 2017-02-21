@@ -66,7 +66,6 @@ Following Atom modules should be installed :
 ```
 apm install react
 apm install atom-react-autocomplete
-apm install keyboard-localization
 ```
 
 #### Required modules :
