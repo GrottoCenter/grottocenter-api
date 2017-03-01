@@ -1,19 +1,15 @@
 import React, {PropTypes} from 'react';
+import GrottoAppBar from '../components/homepage/GrottoAppBar';
 
-export default class LightPage extends React.Component {
-  constructor(props) {
-    super(props);
-  }
-
-  render() {
-    return (
-      <div>
-        {this.props.children}
-      </div>
-    );
-  }
-}
+const LightPage = (props) => (
+  <div>
+    <GrottoAppBar/>
+    {props.children}
+  </div>
+);
 
 LightPage.propTypes = {
   children: PropTypes.node.isRequired
 };
+
+export default LightPage;
