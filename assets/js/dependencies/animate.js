@@ -14,4 +14,9 @@ $(document).ready(function() {
       $('div[role="section"].association .goalTextZone > span').text(initialText);
     });
   });
+
+  /* Homepage FAQ collapsible */
+  $('#collapsibleFaq').accordion({
+    collapsible: true
+  });
 });
