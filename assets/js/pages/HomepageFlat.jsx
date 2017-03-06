@@ -6,7 +6,6 @@ import Association from '../components/homepage/Association';
 import WhatIsIt from '../components/homepage/WhatIsIt';
 import RandomEntry from '../components/homepage/RandomEntry';
 import Partners from '../components/homepage/Partners';
-import Faq from '../components/homepage/Faq';
 
 export default class HomepageFlat extends Component {
   constructor(props) {
@@ -22,7 +21,6 @@ export default class HomepageFlat extends Component {
         <RandomEntry/>
         <LatestNews/>
         <Association/>
-        <Faq/>
         <Partners/>
       </div>
     );
