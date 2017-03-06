@@ -14,20 +14,23 @@ export class EntryData extends React.Component {
     let stat = this.props.entry.stat;
     let entryInfo = this.props.entry.entryInfo[0];
     let timeInfo = this.props.entry.timeInfo;
+    let lang = locale.substring(0,1).toUpperCase() + locale.substring(1, locale.length); //eslint-disable-line
 
     let imageElement = <div/>;
     if (entryInfo.path !== undefined) {
       imageElement = <EntryImage src={entryInfo.path}/>;
     }
     return (
-      <div className="row">
-        <div className="six columns">
-          <EntryTitle entry={this.props.entry}/>
-          <EntryStat stat={stat}/>
-          <EntryInfo timeInfo={timeInfo} entryInfo={entryInfo}/>
+      <GCLink className="randomEntryLink" href={'http://www.grottocenter.org/html/file_' + lang + '.php?lang=' + lang + '&check_lang_auto=false&category=entry&id=' + this.props.entry.id} target="blank">
+        <div className="row">
+          <div className="six columns">
+            <EntryTitle entry={this.props.entry}/>
+            <EntryStat stat={stat}/>
+            <EntryInfo timeInfo={timeInfo} entryInfo={entryInfo}/>
+          </div>
+          {imageElement}
         </div>
-        {imageElement}
-      </div>
+      </GCLink>
     );
   }
 }
@@ -42,14 +45,13 @@ export class EntryTitle extends React.Component {
   }
 
   render() {
-    var lang = locale.substring(0,1).toUpperCase() + locale.substring(1, locale.length); //eslint-disable-line
     return (
       <div className="entryLocation">
         <h5>
           {this.props.entry.region} - {this.props.entry.country}
         </h5>
         <h4>
-          <GCLink href={'http://www.grottocenter.org/html/file_' + lang + '.php?lang=' + lang + '&check_lang_auto=false&category=entry&id=' + this.props.entry.id} target="blank">{this.props.entry.name}</GCLink>
+          {this.props.entry.name}
         </h4>
       </div>
     );
