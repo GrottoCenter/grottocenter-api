@@ -1,13 +1,13 @@
 import React, {Component, PropTypes} from 'react';
-import {connect} from 'react-redux';
 import SelectField from 'material-ui/SelectField';
 import MenuItem from 'material-ui/MenuItem';
 import muiThemeable from 'material-ui/styles/muiThemeable';
+//import {changeLanguage} from '../actions/Language';
 
 let languages = [// to this.state ?
 ];
 
-class LanguagePicker extends Component {
+class LanguageSelector extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -23,6 +23,8 @@ class LanguagePicker extends Component {
     if (value === this.state.value) {
       return;
     }
+    // To be uncommented when we will be able to retrieve catalog without page relaod
+    // this.props.dispatch(changeLanguage(value));
     window.location = '/?lang=' + value;
   }
 
@@ -32,7 +34,7 @@ class LanguagePicker extends Component {
         labelStyle={{paddingLeft: '10px', color: this.props.muiTheme.palette.textIconColor}}
         value={this.state.value}
         onChange={this.handleChange.bind(this)}
-        style={{width: 'initial'}}
+        style={{minWidth: '150px', width: 'initial'}}
       >
         {languages}
       </SelectField>
@@ -40,10 +42,9 @@ class LanguagePicker extends Component {
   }
 }
 
-LanguagePicker.propTypes = {
+LanguageSelector.propTypes = {
+  dispatch: PropTypes.func.isRequired,
   muiTheme: PropTypes.object.isRequired
 };
 
-LanguagePicker = connect()(LanguagePicker); // eslint-disable-line no-class-assign
-
-export default muiThemeable()(LanguagePicker);
+export default muiThemeable()(LanguageSelector);

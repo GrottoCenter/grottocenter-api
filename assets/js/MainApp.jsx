@@ -21,6 +21,9 @@ import {Provider} from 'react-redux';
 import {createStore} from 'redux';
 import {searchReducers} from './reducers/SearchReducers';
 
+import {changeLanguage} from './actions/Language';
+import TextDirectionProvider from './containers/TextDirectionProvider';
+
 // Needed for onTouchTap// sans ça les clicks de material-ui ne fonctionnent pas
 import injectTapEventPlugin from 'react-tap-event-plugin';
 
@@ -34,20 +37,24 @@ let gcStore = createStore(searchReducers);
 */
 I18n.locale = window.catalog;
 
+gcStore.dispatch(changeLanguage(locale)); //eslint-disable-line no-undef
+
 ReactDOM.render(
   <MuiThemeProvider muiTheme={getMuiTheme(grottoTheme)}>
     <Provider store={gcStore}>
-      <Router history={browserHistory}>
-        <Route path="/auth/" component={LightPage}>
-          <Route path="/auth/signin" component={SigninForm}/>
-          <Route path="/auth/signup" component={SignupForm}/>
-        </Route>
+      <TextDirectionProvider>
+        <Router history={browserHistory}>
+          <Route path="/auth/" component={LightPage}>
+            <Route path="/auth/signin" component={SigninForm}/>
+            <Route path="/auth/signup" component={SignupForm}/>
+          </Route>
 
-        <Route path="/" component={StandardPage}>
-          <IndexRoute component={HomepageFlat}/>
-          <Route path="/ui/faq" component={Faq}/>
-        </Route>
-      </Router>
+          <Route path="/" component={StandardPage}>
+            <IndexRoute component={HomepageFlat}/>
+            <Route path="/ui/faq" component={Faq}/>
+          </Route>
+        </Router>
+      </TextDirectionProvider>
     </Provider>
   </MuiThemeProvider>,
   document.getElementById('gc3_content_wrapper')

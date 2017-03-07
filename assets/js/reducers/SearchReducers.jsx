@@ -1,5 +1,6 @@
-import {combineReducers} from "redux"
-import { startSearch, loadCaveSuccess, loadEntrySuccess, loadGrottoSuccess, showMarker } from './../actions/Search'
+import {combineReducers} from "redux";
+import {startSearch, loadCaveSuccess, loadEntrySuccess, loadGrottoSuccess, showMarker} from './../actions/Search';
+import {currentLanguage} from './LanguageReducer';
 
 /*
     The marker centered on the Map component
@@ -76,6 +77,7 @@ export const searchReducers = combineReducers({
   caves,
   entries,
   grottos,
-  marker
+  marker,
+  currentLanguage
 });
 export default searchReducers;

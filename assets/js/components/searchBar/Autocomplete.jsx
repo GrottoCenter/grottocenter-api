@@ -9,6 +9,7 @@ import ExploreIcon from 'material-ui/svg-icons/action/explore';
 import muiThemeable from 'material-ui/styles/muiThemeable';
 import SearchIcon from 'material-ui/svg-icons/action/search';
 import I18n from 'react-ghost-i18n';
+import {directionManager, RIGHT_TO_LEFT} from './../../containers/TextDirectionProvider';
 
 //TODO: get grotto icons to a font
 // import SvgIcon from 'material-ui/SvgIcon';
@@ -108,6 +109,17 @@ class Autocomplete extends React.Component {
   }
 
   render() {
+    let styleElements = {
+      backgroundColor: this.props.muiTheme.palette.primary3Color,
+      fontFamily: this.props.muiTheme.fontFamily,
+      width: 'calc(100% - 50px)'
+    };
+    if (this.props.direction === RIGHT_TO_LEFT) {
+      styleElements.marginRight = '50px';
+    } else {
+      styleElements.marginLeft = '50px';
+    }
+
     return (
       <div>
         <span className="searchIcon" style={{backgroundColor: this.props.muiTheme.palette.primary3Color}}>
@@ -115,7 +127,7 @@ class Autocomplete extends React.Component {
         </span>
         <AutoComplete
           className='searchAutoComplete'
-          style={{backgroundColor: this.props.muiTheme.palette.primary3Color, fontFamily: this.props.muiTheme.fontFamily, width: 'calc(100% - 50px)', marginLeft: '50px'}}
+          style={styleElements}
           textFieldStyle={{padding: '0 10px', width: 'calc(100% - 40px)', whiteSpace: 'nowrap'}}
           floatingLabelText={<I18n>Search for a cave</I18n>}
           dataSource={this.state.dataSource}
@@ -132,9 +144,10 @@ class Autocomplete extends React.Component {
 }
 
 Autocomplete.propTypes = {
-  muiTheme: PropTypes.object.isRequired
+  muiTheme: PropTypes.object.isRequired,
+  direction: PropTypes.string.isRequired
 };
 
 Autocomplete = connect()(Autocomplete); // eslint-disable-line no-class-assign
 
-export default muiThemeable()(Autocomplete);
+export default muiThemeable()(directionManager()(Autocomplete));

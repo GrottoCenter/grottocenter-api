@@ -8,7 +8,7 @@ import FlatButton from 'material-ui/FlatButton';
 import {Toolbar, ToolbarGroup} from 'material-ui/Toolbar';
 import Dialog from 'material-ui/Dialog';
 import muiThemeable from 'material-ui/styles/muiThemeable';
-import LanguagePicker from './../../components/LanguagePicker';
+import LanguagePicker from './../../containers/LanguagePicker';
 import SigninForm from './../../components/SigninForm';
 
 class GrottoAppBar extends React.Component {
@@ -53,11 +53,9 @@ class GrottoAppBar extends React.Component {
   }
 
   loginFail(data) {
-    console.log('loginFail', data);
   }
 
   loginSuccess(userData) {
-    console.log('loginSuccess', userData);
   }
 
   render() {

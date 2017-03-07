@@ -4,9 +4,10 @@ import PropTypes from 'react/lib/ReactPropTypes';
 import GrottoAppBar from '../components/homepage/GrottoAppBar';
 import Header from '../components/homepage/Header';
 import Footer from '../components/homepage/Footer';
+import {directionManager, RIGHT_TO_LEFT} from './../containers/TextDirectionProvider';
 
 const StandardPage = (props) => (
-  <div>
+  <div style={{direction: (props.direction === RIGHT_TO_LEFT ? 'rtl' : 'ltr')}}>
     <GrottoAppBar/>
     <Header/>
     {props.children}
@@ -15,7 +16,8 @@ const StandardPage = (props) => (
 );
 
 StandardPage.propTypes = {
-  children: PropTypes.node.isRequired
+  children: PropTypes.node.isRequired,
+  direction: PropTypes.string.isRequired
 };
 
-export default StandardPage;
+export default directionManager()(StandardPage);

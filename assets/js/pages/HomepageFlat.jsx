@@ -7,7 +7,7 @@ import WhatIsIt from '../components/homepage/WhatIsIt';
 import RandomEntry from '../components/homepage/RandomEntry';
 import Partners from '../components/homepage/Partners';
 
-export default class HomepageFlat extends Component {
+class HomepageFlat extends Component {
   constructor(props) {
     super(props);
     I18n.locale = catalog; //eslint-disable-line no-undef
@@ -26,3 +26,5 @@ export default class HomepageFlat extends Component {
     );
   }
 }
+
+export default HomepageFlat;
