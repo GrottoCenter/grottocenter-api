@@ -22,16 +22,16 @@ export default class GCLink extends Component {
   render() {
     let params = {};
     if (this.props.onClick) {
-      params = Object.assign({}, params, {onClick: this.props.onClick});
+      params.onClick = this.props.onClick;
     }
     if (this.props.className) {
-      params = Object.assign({}, params, {className: this.props.className});
+      params.className = this.props.className;
     }
     if (this.props.activeClassName) {
-      params = Object.assign({}, params, {activeClassName: this.props.activeClassName});
+      params.activeClassName = this.props.activeClassName;
     }
     if (this.props.style) {
-      params = Object.assign({}, params, {style: this.props.style});
+      params.style = this.props.style;
     }
     return (
       <span>
