@@ -13,6 +13,8 @@ import Faq from './components/Faq';
 import SigninForm from './components/SigninForm';
 import SignupForm from './components/SignupForm';
 
+import AvailableTools, {EntriesOfInterest} from './components/admin/Tools';
+
 import grottoTheme from './grottoTheme';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import getMuiTheme from 'material-ui/styles/getMuiTheme';
@@ -44,6 +46,11 @@ ReactDOM.render(
     <Provider store={gcStore}>
       <TextDirectionProvider>
         <Router history={browserHistory}>
+        <Route path="/ui/admin/" component={LightPage}>
+          <IndexRoute component={AvailableTools}/>
+          <Route path="/ui/admin/listEntriesOfInterest" component={EntriesOfInterest}/>
+        </Route>
+
           <Route path="/auth/" component={LightPage}>
             <Route path="/auth/signin" component={SigninForm}/>
             <Route path="/auth/signup" component={SignupForm}/>

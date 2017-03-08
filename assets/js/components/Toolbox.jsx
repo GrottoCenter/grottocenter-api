@@ -1,5 +1,9 @@
 import React, {PropTypes} from 'react';
 
+export const Loading = () => (
+  <div className="loading_anim">Loading...</div>
+);
+
 export const DateRibbon = (props) => (
   <div className="ribbon date">
     <div className="top ribbon-piece">{props.month}</div>
