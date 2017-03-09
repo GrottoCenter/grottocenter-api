@@ -46,13 +46,9 @@ module.exports.routes = {
    *                                                                          *
    ***************************************************************************/
 
-  /* ReactRouter routes */
+  /* For ReactRouter routes */
 
-  'GET /auth/signin': {
-    view: 'grottocenter'
-  },
-
-  'GET /auth/signup': {
+  'GET /auth/*': {
     view: 'grottocenter'
   },
 
@@ -62,221 +58,220 @@ module.exports.routes = {
 
   /* Auth controller */
 
-  'POST /auth/login': {
+  'POST /api/auth/login': {
     controller: 'Auth',
     action: 'login'
   },
 
-  'GET /auth/logout': {
+  'GET /api/auth/logout': {
     controller: 'Auth',
     action: 'logout'
   },
 
   /* Caver controller */
 
-  'GET /caver/': {
+  'GET /api/caver/': {
     controller: 'Caver',
     action: 'find'
   },
 
-  'POST /caver/': {
+  'POST /api/caver/': {
     controller: 'Caver',
     action: 'create'
   },
 
-  'GET /caver/findAll': {
+  'GET /api/caver/findAll': {
     controller: 'Caver',
     action: 'findAll'
   },
 
-  'GET /search/findAll': {
+  'GET /api/search/findAll': {
     controller: 'Search',
     action: 'findAll'
   },
 
-  'GET /caver/:id': {
+  'GET /api/caver/:id': {
     controller: 'Caver',
     action: 'find'
   },
 
-  'PUT /caver/:id': {
+  'PUT /api/caver/:id': {
     controller: 'Caver',
     action: 'update'
   },
 
-  'DELETE /caver/:id': {
+  'DELETE /api/caver/:id': {
     controller: 'Caver',
     action: 'destroy'
   },
 
   /* Entry controller */
 
-  'GET /entry/': {
+  'GET /api/entry/': {
     controller: 'Entry',
     action: 'index'
   },
 
-  'GET /entry/findAll': {
+  'GET /api/entry/findAll': {
     controller: 'Entry',
     action: 'findAll'
   },
 
-  'GET /entry/findRandom': {
+  'GET /api/entry/findRandom': {
     controller: 'Entry',
     action: 'findRandom'
   },
 
-  'GET /entry/:id': {
+  'GET /api/entry/:id': {
     controller: 'Entry',
     action: 'find'
   },
 
   /* REST API for Cave controller */
 
-  'POST /cave/': {
+  'POST /api/cave/': {
     controller: 'Cave',
     action: 'create'
   },
 
-  'GET /cave/findAll': {
+  'GET /api/cave/findAll': {
     controller: 'Cave',
     action: 'findAll'
   },
 
-  'GET /cave/:id': {
+  'GET /api/cave/:id': {
     controller: 'Cave',
     action: 'find'
   },
 
-  'PUT /cave/:id': {
+  'PUT /api/cave/:id': {
     controller: 'Cave',
     action: 'update'
   },
 
-  'DELETE /cave/:id': {
+  'DELETE /api/cave/:id': {
     controller: 'Cave',
     action: 'delete'
   },
 
   /* Author controller */
 
-  'POST /author/': {
+  'POST /api/author/': {
     controller: 'Author',
     action: 'create'
   },
 
-  'GET /author/:id': {
+  'GET /api/author/:id': {
     controller: 'Author',
     action: 'find'
   },
 
-  'PUT /author/:id': {
+  'PUT /api/author/:id': {
     controller: 'Author',
     action: 'update'
   },
 
-  'DELETE /author/:id': {
+  'DELETE /api/author/:id': {
     controller: 'Author',
     action: 'delete'
   },
 
-  'GET /author/findAll': {
+  'GET /api/author/findAll': {
     controller: 'Author',
     action: 'findAll'
   },
 
   /* REST API for Partner controller */
 
-  'POST /partner/': {
+  'POST /api/partner/': {
     controller: 'Partner',
     action: 'create'
   },
 
-  'GET /partner/findAll': {
+  'GET /api/partner/findAll': {
     controller: 'Partner',
     action: 'findAll'
   },
 
-  'GET /partner/findForCarousel/:skip/:limit': {
+  'GET /api/partner/findForCarousel/:skip/:limit': {
     controller: 'Partner',
     action: 'findForCarousel'
   },
 
-  'GET /partner/findForCarousel': {
+  'GET /api/partner/findForCarousel': {
     controller: 'Partner',
     action: 'findForCarousel'
   },
 
-  'GET /partner/:id': {
+  'GET /api/partner/:id': {
     controller: 'Partner',
     action: 'find'
   },
 
-  'PUT /partner/:id': {
+  'PUT /api/partner/:id': {
     controller: 'Partner',
     action: 'update'
   },
 
-  'DELETE /partner/:id': {
+  'DELETE /api/partner/:id': {
     controller: 'Partner',
     action: 'delete'
   },
 
   /* REST API for Topography controller */
 
-  'POST /topo/': {
+  'POST /api/topo/': {
     controller: 'Topography',
     action: 'create'
   },
 
-  'GET /topo/findAll': {
+  'GET /api/topo/findAll': {
     controller: 'Topography',
     action: 'findAll'
   },
 
-  'GET /topo/:id': {
+  'GET /api/topo/:id': {
     controller: 'Topography',
     action: 'find'
   },
 
-  'PUT /topo/:id': {
+  'PUT /api/topo/:id': {
     controller: 'Topography',
     action: 'update'
   },
 
-  'DELETE /topo/:id': {
+  'DELETE /api/topo/:id': {
     controller: 'Topography',
     action: 'delete'
   },
 
-  'GET /comment/stats/:entry': {
+  /* REST API for Comment controller */
+
+  'GET /api/comment/stats/:entry': {
     controller: 'Comment',
     action: 'getEntryStats'
   },
 
-  'GET /comment/timeinfos/:entry': {
+  'GET /api/comment/timeinfos/:entry': {
     controller: 'Comment',
     action: 'getEntryTimeInfos'
   },
 
-  'GET /grotto/findAll': {
+  /* REST API for Grotto controller */
+
+  'GET /api/grotto/findAll': {
     controller: 'Grotto',
     action: 'findAll'
   },
 
-  'GET /grotto/:id': {
+  'GET /api/grotto/:id': {
     controller: 'Grotto',
     action: 'find'
   },
 
   /* REST API for Admin controller */
 
-  'GET /admin/': {
-    controller: 'Admin',
-    view: 'index'
-  },
-
-  'GET /admin/entry/findAllOfInterest': {
+  'GET /api/admin/entry/findAllOfInterest': {
     controller: 'Admin',
     action: 'findAllInterestEntries'
   },
@@ -290,5 +285,6 @@ module.exports.routes = {
   'GET /i18n/catalog/:locale': {
     controller: 'I18n',
     action: 'catalog'
-  },
+  }
+
 };

@@ -98,7 +98,7 @@ class Autocomplete extends React.Component {
       return;
     }
     $.ajax({
-      url: '/search/findAll?name=' +searchText,//TODO: optimize this service for autocomplete
+      url: '/api/search/findAll?name=' +searchText,//TODO: optimize this service for autocomplete
       dataType: 'json',
       success: function(data) {
         this.setState({

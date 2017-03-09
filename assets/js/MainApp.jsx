@@ -3,17 +3,9 @@
  */
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {Router, Route, IndexRoute, browserHistory} from 'react-router';
+import {Router, browserHistory} from 'react-router';
+import routes from './Routes';
 import I18n from 'react-ghost-i18n';
-
-import LightPage from './pages/LightPage';
-import StandardPage from './pages/StandardPage';
-import HomepageFlat from './pages/HomepageFlat';
-import Faq from './components/Faq';
-import SigninForm from './components/SigninForm';
-import SignupForm from './components/SignupForm';
-
-import AvailableTools, {EntriesOfInterest} from './components/admin/Tools';
 
 import grottoTheme from './grottoTheme';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
@@ -45,22 +37,7 @@ ReactDOM.render(
   <MuiThemeProvider muiTheme={getMuiTheme(grottoTheme)}>
     <Provider store={gcStore}>
       <TextDirectionProvider>
-        <Router history={browserHistory}>
-        <Route path="/ui/admin/" component={LightPage}>
-          <IndexRoute component={AvailableTools}/>
-          <Route path="/ui/admin/listEntriesOfInterest" component={EntriesOfInterest}/>
-        </Route>
-
-          <Route path="/auth/" component={LightPage}>
-            <Route path="/auth/signin" component={SigninForm}/>
-            <Route path="/auth/signup" component={SignupForm}/>
-          </Route>
-
-          <Route path="/" component={StandardPage}>
-            <IndexRoute component={HomepageFlat}/>
-            <Route path="/ui/faq" component={Faq}/>
-          </Route>
-        </Router>
+        <Router routes={routes} history={browserHistory} />
       </TextDirectionProvider>
     </Provider>
   </MuiThemeProvider>,

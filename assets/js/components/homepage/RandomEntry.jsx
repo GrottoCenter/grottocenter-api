@@ -1,5 +1,5 @@
 import React, {PropTypes} from 'react';
-import RandomEntryCard from './../../widgets/RandomEntryCard';
+import RandomEntryCard from './../RandomEntryCard';
 import I18n from 'react-ghost-i18n';
 import muiThemeable from 'material-ui/styles/muiThemeable';
 

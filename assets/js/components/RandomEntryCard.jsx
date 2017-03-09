@@ -229,7 +229,7 @@ export default class RandomEntryCard extends React.Component {
 
   fetchData() {
     let _this = this;
-    let url = '/entry/findRandom';
+    let url = '/api/entry/findRandom';
 
     $.get(url, function(data) {
       _this.setState({ramdomEntry: data[0]});

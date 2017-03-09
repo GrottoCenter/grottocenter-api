@@ -36,7 +36,7 @@ class Partners extends React.Component {
   }
 
   fetchData(filters) {
-    let url = '/partner/findForCarousel';
+    let url = '/api/partner/findForCarousel';
     $.get(url, this.updateState.bind(this)); // TODO: remove jquery
   }
 
