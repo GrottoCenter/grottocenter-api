@@ -17,40 +17,41 @@
   */
 
 module.exports.policies = {
-  /***************************************************************************
-   *                                                                          *
-   * Default policy for all controllers and actions (`true` allows public     *
-   * access)                                                                  *
-   *                                                                          *
-   ***************************************************************************/
+    /***************************************************************************
+     *                                                                          *
+     * Default policy for all controllers and actions (`true` allows public     *
+     * access)                                                                  *
+     *                                                                          *
+     ***************************************************************************/
 
-  '*': false,
-
-  IndexController: {
     '*': false,
-    'index': 'localize'
-  },
 
-  AuthController: {
-    'login': true,
-    'logout': 'tokenAuth'
-  },
+    IndexController: {
+        '*': false,
+        'index': 'localize',
+        'map': 'localize'
+    },
 
-  CaverController: {
+    AuthController: {
+        'login': true,
+        'logout': 'tokenAuth'
+    },
+
+    CaverController: {
     '*': false,
     'getCaversNumber': true,
-    'update': 'tokenAuth',
-    'destroy': 'tokenAuth'
-  },
+        'update': 'tokenAuth',
+        'destroy': 'tokenAuth'
+    },
 
-  EntryController: {
-    '*': 'tokenAuth',
+    EntryController: {
+        '*': 'tokenAuth',
     'find': 'apiKeyAuth',
-    'findAll': true,
+        'findAll': true,
     'findRandom': true,
     'getPublicEntriesNumber' : 'apiKeyAuth',
     'getEntriesNumber' : true
-  },
+    },
 
   'v1/EntryController': {
     '*': false,
@@ -58,72 +59,72 @@ module.exports.policies = {
     'getPublicEntriesNumber' : 'apiKeyAuth',
   },
 
-  SearchController: {
+    SearchController: {
     'findAll': 'apiKeyAuth',
   },
 
   'v1/SearchController': {
     'findAll': 'apiKeyAuth',
-  },
+    },
 
-  CaveController: {
-    '*': true
-  },
+    CaveController: {
+        '*': true
+    },
 
-  AuthorController: {
+    AuthorController: {
     '*': false
-  },
+    },
 
-  PartnerController: {
-    '*': true
-  },
+    PartnerController: {
+        '*': true
+    },
 
-  I18nController: {
-    '*': true
-  },
+    I18nController: {
+        '*': true
+    },
 
-  SwaggerController: {
-    '*': true
-  },
+    SwaggerController: {
+        '*': true
+    },
 
-  TopographyController: {
+    TopographyController: {
     '*': false
-  },
+    },
 
-  CommentController: {
+    CommentController: {
     '*': false
-  },
+    },
 
-  GrottoController: {
-    '*': true
-  },
+    GrottoController: {
+        '*': true
+    },
 
-  AdminController: {
+    AdminController: {
     '*': true
   },
 
   RssController: {
-    '*': true
-  }
+        '*': true
+    }
 
-  /***************************************************************************
-   *                                                                          *
-   * Here's an example of mapping some policies to run before a controller    *
-   * and its actions                                                          *
-   *                                                                          *
-   ***************************************************************************/
-  // RabbitController: {
+    /***************************************************************************
+     *                                                                          *
+     * Here's an example of mapping some policies to run before a controller    *
+     * and its actions                                                          *
+     *                                                                          *
+     ***************************************************************************/
+    // RabbitController: {
 
-  // Apply the `false` policy as the default for all of RabbitController's actions
-  // (`false` prevents all access, which ensures that nothing bad happens to our rabbits)
-  // '*': false,
+    // Apply the `false` policy as the default for all of RabbitController's actions
+    // (`false` prevents all access, which ensures that nothing bad happens to our rabbits)
+    // '*': false,
 
-  // For the action `nurture`, apply the 'isRabbitMother' policy
-  // (this overrides `false` above)
-  // nurture	: 'isRabbitMother',
+    // For the action `nurture`, apply the 'isRabbitMother' policy
+    // (this overrides `false` above)
+    // nurture	: 'isRabbitMother',
 
-  // Apply the `isNiceToAnimals` AND `hasRabbitFood` policies
-  // before letting any users feed our rabbits
-  // feed : ['isNiceToAnimals', 'hasRabbitFood']
-  // }
+    // Apply the `isNiceToAnimals` AND `hasRabbitFood` policies
+    // before letting any users feed our rabbits
+    // feed : ['isNiceToAnimals', 'hasRabbitFood']
+    // }
 };
