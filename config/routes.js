@@ -274,17 +274,6 @@ module.exports.routes = {
   'GET /api/admin/entry/findAllOfInterest': {
     controller: 'Admin',
     action: 'findAllInterestEntries'
-  },
-
-  /* REST API for I18N controller */
-
-  'POST /i18n/translate': {
-    controller: 'I18n',
-    action: 'translate'
-  },
-  'GET /i18n/catalog/:locale': {
-    controller: 'I18n',
-    action: 'catalog'
   }
 
 };
