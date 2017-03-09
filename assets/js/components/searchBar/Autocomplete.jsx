@@ -120,6 +120,13 @@ class Autocomplete extends React.Component {
       styleElements.marginLeft = '50px';
     }
 
+    let popupStyle = {};
+    if (this.state.dataSource.length > 0) {
+      popupStyle.style = {
+        height: '200px'
+      };
+    }
+
     return (
       <div>
         <span className="searchIcon" style={{backgroundColor: this.props.muiTheme.palette.primary3Color}}>
@@ -136,7 +143,7 @@ class Autocomplete extends React.Component {
           fullWidth={true}
           maxSearchResults={50}
           filter={AutoComplete.noFilter}
-          popoverProps={{style: {maxHeight: '200px'}}}
+          popoverProps={popupStyle}
         />
       </div>
     );
