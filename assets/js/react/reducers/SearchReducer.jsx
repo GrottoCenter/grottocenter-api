@@ -1,4 +1,5 @@
-import {startSearch, loadCaveSuccess, loadEntrySuccess, loadGrottoSuccess, showMarker} from './../actions/Search';
+import { combineReducers } from "redux"
+import { startSearch, loadCaveSuccess, loadEntrySuccess, loadGrottoSuccess, showMarker } from './../actions/Search'
 
 /*
     The marker centered on the Map component
@@ -14,18 +15,12 @@ export const marker = (state = [], action) => {
               lat:action.entry.latitude,
               lng:action.entry.longitude
           },
-          name:action.entry.name,
+          text:action.entry.text,
           altitude:action.entry.altitude?action.entry.altitude + 'm':'',
           //author:action.entry.author.nickname?action.entry.author.nickname:''
     }
     default://TODO no default marker on map
-      return {
-                latlng:{
-                    lat:43.9488581774652,
-                    lng:3.68913066801612
-                },
-                name:"Montméjean (Aven de)"
-            }
+      return state
   }
 };
 
