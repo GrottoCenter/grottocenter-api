@@ -32,20 +32,60 @@ STATIC_IP="grottocenter-website"
 VERSION="latest"
 MACHINETYPE="f1-micro"
 #MACHINETYPE="g1-small"
-BUILDERMACHINETYPE="n1-highcpu-4"
+BUILDERMACHINETYPE="n1-highcpu-2"
 # This google machine Image prevent the certificate bug that we have with the default Google machine image :
 # See http://stackoverflow.com/questions/40092793/error-validating-certificates-when-using-docker-machine-in-gce
 MACHINEIMAGE="ubuntu-os-cloud/global/images/family/ubuntu-1610"
 IMAGE=eu.gcr.io/${PROJECT_ID}/${APPNAME}:${VERSION}
 ###########################################
 
+# Define functions ########################
+stopDockerBuilder() {
+  echo "### Stop docker builder machine ###"
+  docker-machine stop ${DOCKBUILDER} || {
+    echo '############# ERROR - WARNING !!!!! ##############'
+    echo '############# IMPORTANT : Docker builder machine failed to stop. Please stop it manually or we will be charged a lot. #########'
+    exit 1;
+  }
+}
+
+createConnectDockerBuilderMachine() {
+  # Create Builder machine if necessary to build the docker image
+  # Indeed the micro instance has not enough RAM to build the image...
+  # This builder is started during the build time and then stopped so we just pay
+  # for it during a few minutes. Then we just pay for the disk storage.
+  if [ -z "$(gcloud compute instances list | grep ${DOCKBUILDER})" ]
+  then
+      echo "### CREATE ${DOCKBUILDER} docker machine on Google ###"
+      docker-machine create --driver google \
+          --google-project ${PROJECT_ID} \
+          --google-zone ${ZONE} \
+          --google-machine-type ${BUILDERMACHINETYPE} \
+          --google-machine-image ${MACHINEIMAGE} \
+          ${DOCKBUILDER}
+  else
+      if [ -z "$(docker-machine ls | grep ${DOCKBUILDER})" ]
+      then
+          echo "### CONNECT VM to ${DOCKBUILDER} docker-machine ###"
+          docker-machine create --driver google \
+              --google-project ${PROJECT_ID} \
+              --google-zone ${ZONE} \
+              --google-machine-type ${BUILDERMACHINETYPE} \
+              --google-use-existing \
+              --google-machine-image ${MACHINEIMAGE} \
+              ${DOCKBUILDER}
+      fi
+  fi
+}
+###########################################
+
 # Check that production.js is available before the deploy !
 productionConfigFile="config/env/production.js"
 if [ -f "$productionConfigFile" ]
 then
-	echo "$productionConfigFile found ! Production deployment will continue."
+  echo "$productionConfigFile found ! Production deployment will continue."
 else
-	echo "$productionConfigFile not found ! Production deployment impossible. Exiting now..."
+  echo "$productionConfigFile not found ! Production deployment impossible. Exiting now..."
   exit 1
 fi
 
@@ -63,50 +103,28 @@ NODE_ENV=production grunt prod || {
 echo "### Set GCloud Project to ${PROJECT_ID} ###"
 gcloud config set project ${PROJECT_ID}
 
-# Create Builder machine if necessary to build the docker image
-# Indeed the micro instance has not enough RAM to build the image...
-# This builder is started during the build time and then stopped so we just pay
-# for it during a few minutes. Then we just pay for the disk storage.
-if [ -z "$(gcloud compute instances list | grep ${DOCKBUILDER})" ]
-then
-    echo "### CREATE ${DOCKBUILDER} docker machine on Google ###"
-    docker-machine create --driver google \
-        --google-project ${PROJECT_ID} \
-        --google-zone ${ZONE} \
-        --google-machine-type ${BUILDERMACHINETYPE} \
-        --google-machine-image ${MACHINEIMAGE} \
-        ${DOCKBUILDER}
-else
-    if [ -z "$(docker-machine ls | grep ${DOCKBUILDER})" ]
-    then
-        echo "### CONNECT VM to ${DOCKBUILDER} docker-machine ###"
-        docker-machine create --driver google \
-            --google-project ${PROJECT_ID} \
-            --google-zone ${ZONE} \
-            --google-machine-type ${BUILDERMACHINETYPE} \
-            --google-use-existing \
-            --google-machine-image ${MACHINEIMAGE} \
-            ${DOCKBUILDER}
-    fi
-fi
+createConnectDockerBuilderMachine
 
-echo "### Starting docker builder machine ###"
-docker-machine start ${DOCKBUILDER} || {
-  echo '######## ERROR - exiting... #########'
-  exit 1;
-}
+# Start docker builder machine if not started
+if [ "Running" != "$(docker-machine status ${DOCKBUILDER})" ]
+then
+    echo "### Starting ${DOCKBUILDER} ###"
+    docker-machine start ${DOCKBUILDER}
+    sleep 10
+fi
 
 # The builder do not have a static IP so certificat need to be generated each time.
 echo "### Regenerating certificats of docker builder machine ###"
 docker-machine regenerate-certs -f ${DOCKBUILDER} || {
-  echo '######## ERROR - exiting... #########'
-  exit 1;
+  echo '######## ERROR - Try to recreate Docker Builder Machine #########'
+  docker-machine rm -f ${DOCKBUILDER}
+  createConnectDockerBuilderMachine
 }
 
 echo "### Switch context to docker-machine ${DOCKBUILDER} ###"
 eval "$(docker-machine env ${DOCKBUILDER})" || {
   echo '######## ERROR - exiting... #########'
-  docker-machine stop ${DOCKBUILDER}
+  stopDockerBuilder
   exit 1;
 }
 
@@ -114,7 +132,7 @@ echo "### BUILD the docker image ###"
 # Unlimited swap memory during build
 docker build --memory-swap -1 -t ${APPNAME} . || {
   echo '######## Build failed - Exiting now #########'
-  docker-machine stop ${DOCKBUILDER}
+  stopDockerBuilder
   exit 1;
 }
 
@@ -125,12 +143,7 @@ echo "## image is : ${IMAGE} ##"
 echo "### PUSH the new Docker image into repository ###"
 gcloud docker -- push ${IMAGE}
 
-echo "### Stop docker builder machine ###"
-docker-machine stop ${DOCKBUILDER} || {
-  echo '######## ERROR - WARNING !!!!! #########'
-  echo '######## IMPORTANT : Docker builder machine failed to stop. Please stop it manually or we will be charged a lot. #########'
-  exit 1;
-}
+stopDockerBuilder
 
 echo "### DEPLOY app with Google Compute Engine on ${DOCKER} docker-machine ###"
 # Create the Static IP

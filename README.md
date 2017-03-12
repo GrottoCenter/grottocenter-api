@@ -48,12 +48,14 @@ git config --global pull.rebase true
 ```
 ### GIT usage
 
-- All features commit must be done on a specific branch. (Only urgent bug fix should be done directly on `master`)
+- All features commit must be done on a specific local branch. (Only urgent bug fix should be done directly on `master`)
 - `git rebase -i` need to be used to group multiple "work in progress" commits into a single commit.
 - When the feature is ready you need to create a `pull request` on Github (https://github.com/GrottoCenter/Grottocenter3/pulls)  : Let base: master and compare: the branch
 - After the code review (which can include follow-up commits), the branch can be merged on master with button "Merge pull request"
 In most cases, change the "Merge pull request" to "Rebase and merge" using the arrow on the right of the green button
 - Don't forget to remove the remote branch after the merge
+
+
 
 ### IDE configuration
 

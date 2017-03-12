@@ -24,6 +24,8 @@
 #
 # USAGE :
 # ./DBDeploy.sh [GROTTOCENTER_V2_SSH_USER] [GROTTOCENTER_V2_SSH_PORT] [OPTIONAL_PROD_DEPLOY]
+# EXAMPLE :
+# ./DBDeploy.sh mysshuser 12345 true
 # OPTIONAL_PROD_DEPLOY can be skipped for local deployment and need to be set to 'true' for
 # production deployment.
 # The SSH password will be asked twice. This is normal.
