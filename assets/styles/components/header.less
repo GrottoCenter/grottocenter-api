@@ -1,162 +1,137 @@
-header>.container {
-  width: 100%;
-  max-width: initial;
-  padding: 0;
-}
-
-header>div {
-  background: url('/images/caves/topo.jpg') 0 center;
-  background-repeat: no-repeat;
-  background-size: 220%;
-  background-position-y: 0;
-}
-
-@media (min-width: 550px) {
-  header>div {
-    background-size: 130%;
+header {
+  &>.container {
+    width: 100%;
+    max-width: 100%;
+    padding: 0;
   }
-}
-
-@media (min-width: 1000px) {
-  header>div {
-    background-size: 100%;
+  &>div {
+    background: url('/images/caves/topo.jpg') 0 center;
+    background-repeat: no-repeat;
+    background-size: 220%;
+    background-position: top;
   }
-}
-
-header div.toolbar {
-  background-color: rgba(0, 0, 0, 0.5);
-  padding: 5px 0;
-}
-
-header .hello-msg {
-  color: white;
-  font-weight: bold;
-}
-
-header .toolbar .button {
-  text-align: right;
-}
-
-header .loginForm {
-  padding: 10px;
-  background-color: white;
-  position: absolute;
-  right: 10px;
-  text-align: initial;
-  z-index: 100;
-  width: 300px;
-  border-radius: 4px;
-}
-
-header .btn {
-  margin: 2px 4px;
-}
-
-header .brand {
-  padding: 40px 40px;
-  text-align: center;
-}
-
-header .logo img {
-  width: 140px;
-}
-
-@media (min-width: 550px) {
-  header .logo img {
-    width: 160px;
+  .hello-msg {
+    color: white;
+    font-weight: bold;
   }
-  header .sitename {
-    font-size: 3.5em;
+  .loginForm {
+    background-color: white;
+    position: absolute;
+    right: 10px;
+    text-align: initial;
+    z-index: 100;
+    width: 300px;
+    border-radius: 4px;
   }
-}
-
-header .slogan {
-  font-style: italic;
-  font-size: normal;
-}
-
-header .gc-fse-info {
-  display: flex;
-  font-size: small;
-  line-height: 40px;
-}
-
-header .gc-fse-info span:nth-of-type(2) {
-  display: none;
-}
-
-@media (min-width: 550px) {
-  header .gc-fse-info {
+  .btn {
+    margin: 2px 4px;
+  }
+  .brand {
+    padding: 40px 40px;
+    text-align: center;
+  }
+  .sitename {
+    font-weight: 600;
+  }
+  .logo {
+    img {
+      width: 140px;
+    }
+  }
+  .slogan {
+    font-size: medium;
+    font-weight: 400;
+  }
+  .gc-fse-info {
     display: flex;
+    font-size: normal;
+    font-weight: 300;
+    line-height: 40px;
+    span:nth-of-type(2) {
+      display: none;
+    }
   }
-
-  header .gc-fse-info span:nth-of-type(2) {
-    display: flex;
+  .logofse {
+    width: 40px;
+    height: 40px;
+    margin: 0 10px;
   }
-}
-
-header .logofse {
-  width: 40px;
-  height: 40px;
-  margin: 0 10px;
-}
-
-header .searchbar {
-  background-color: white;
-  /*rgba(0, 0, 0, 0.5);*/
-}
-
-header .searchbar .form-group {
-  text-align: center;
-}
-
-header .searchbar input[type=text] {
-  display: inline;
-  width: 80%;
-}
-
-header .searchbar .form-group div:first-child {
-  display: inline;
-}
-
-header .searchbar .proposal {
-  background-color: white;
-  position: absolute;
-  text-align: left;
-  top: 36px;
-  left: 58px;
-  width: 657px;
-  z-index: 100;
-  padding: 0;
-  color: #555;
-  background-color: #fff;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
-  transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
-}
-
-header .searchbar .proposal dt {
-  padding: 2px 2px;
-}
-
-header .searchbar .proposal dd {
-  background-color: white;
-  cursor: pointer;
-  padding: 2px 12px;
-}
-
-header .searchbar .proposal dd:hover {
-  background-color: #f5f5f5;
-}
-
-header .searchbar .searchIcon {
-  position: absolute;
-  height: 72px;
-}
-
-header .searchbar .searchIcon svg {
-  height: 50px !important;
-  width: 50px !important;
-  padding-top: calc((72px - 50px) / 2);
+  .searchbar {
+    background-color: white;
+    /*rgba(0, 0, 0, 0.5);*/
+    .form-group {
+      text-align: center;
+      div:first-child {
+        display: inline;
+      }
+    }
+    .searchAutoComplete {
+      label {
+        font-weight: 300;
+        font-size: 25px;
+        top: 25px;
+      }
+    }
+    input[type=text] {
+      display: inline;
+      width: 80%;
+    }
+    .proposal {
+      background-color: white;
+      position: absolute;
+      text-align: left;
+      top: 36px;
+      left: 58px;
+      width: 657px;
+      z-index: 100;
+      padding: 0;
+      color: #555;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+      transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+      dt {
+        padding: 2px 2px;
+      }
+      dd {
+        background-color: white;
+        cursor: pointer;
+        padding: 2px 12px;
+        &:hover {
+          background-color: #f5f5f5;
+        }
+      }
+    }
+    .searchIcon {
+      position: absolute;
+      height: 72px;
+      svg {
+        height: 50px !important;
+        width: 50px !important;
+        padding-top: calc((72px - 50px) / 2);
+      }
+    }
+  }
+  @media (min-width: 550px) {
+    &>div {
+      background-size: 130%;
+    }
+    .logo img {
+      width: 160px;
+    }
+    .sitename {
+      font-size: 3.5em;
+    }
+    .gc-fse-info {
+      display: flex;
+    }
+    .gc-fse-info span:nth-of-type(2) {
+      display: flex;
+    }
+  }
+  @media (min-width: 1000px) {
+    &>div {
+      background-size: 100%;
+    }
+  }
 }
