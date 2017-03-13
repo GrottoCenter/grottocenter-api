@@ -2,7 +2,7 @@ module.exports = function(grunt) {
 
   grunt.config.set('browserify', {
     dev: {
-      src: ['./assets/js/MainApp.jsx'],
+      src: ['./assets/js/App.jsx'],
       dest: '.tmp/public/js/bundle.js',
       options: {
         watch : true, // use watchify for incremental builds!
