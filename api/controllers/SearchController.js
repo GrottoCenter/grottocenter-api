@@ -34,7 +34,8 @@ module.exports = {
         TEntry.find({
         latitude: {
           '>': req.param('sw_lat'),
-          '<': req.param('ne_lat')
+          '<': req.param('ne_lat'),
+          '!': 0 // TODO: why never empty ? remove default element
         },
         longitude: {
           '>': req.param('sw_lng'),
