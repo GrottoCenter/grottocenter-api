@@ -13,6 +13,8 @@ import SigninForm from './components/SigninForm';
 import SignupForm from './components/SignupForm';
 import AvailableTools, {EntriesOfInterest} from './components/admin/Tools';
 
+import LatestBlogNewsSection from './components/homepage/LatestBlogNewsSection';
+
 export default (
   <Route>
     <Route path="/" component={BasePage}>
@@ -34,6 +36,7 @@ export default (
         <Route path="contact" component={Contact}/>
         <Route path="entry" component={Entry}/>
         <Route path="faq" component={Faq}/>
+        <Route path="test" component={LatestBlogNewsSection}/>
         <Redirect from="*" to="/"/>
       </Route>
     </Route>

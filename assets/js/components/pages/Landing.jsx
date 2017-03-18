@@ -1,7 +1,7 @@
 import React from 'react';
 import Header from '../homepage/Header';
 import Welcome from '../homepage/Welcome';
-import LatestNews from '../homepage/LatestNews';
+import LatestBlogNewsSection from '../homepage/LatestBlogNewsSection';
 import Association from '../homepage/Association';
 import WhatIsIt from '../homepage/WhatIsIt';
 import RandomEntry from '../homepage/RandomEntry';
@@ -14,7 +14,7 @@ const Landing = () => (
     <Welcome/>
     <WhatIsIt/>
     <RandomEntry/>
-    <LatestNews/>
+    <LatestBlogNewsSection/>
     <Association/>
     <Partners/>
     <Footer/>
