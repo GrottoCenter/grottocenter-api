@@ -29,7 +29,6 @@ export default class SigninForm extends React.Component {
             <label htmlFor="contact"><I18n>Email</I18n></label>
             <input className="form-control" type="email" name="contact" id="contact" placeholder="Email" value={this.state.contact} onChange={this.handleContact}/>
           </div>
-
           <div className="form-group">
             <label htmlFor="password"><I18n label="Password"/></label>
             <input className="form-control" type="password" name="password" id="password" placeholder="Password" value={this.state.password} onChange={this.handlePassword}/>

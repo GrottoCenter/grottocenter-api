@@ -13,8 +13,8 @@ const WhatIsIt = (props) => (
         <div className="row">
           <div className="six columns">
             <span className="icon icon-gc-entries" style={{'color':'#885B39','fontSize': '4em'}}></span><br/>
-            <span style={{'color':'#885B39','fontSize': '3em'}}>39175 </span>
-            <I18n>caves are freely accessible from the following page (</I18n>50 902 <I18n>by logging on</I18n> <GCLink href='http://www.grottocenter.org'>Grotto v2</GCLink>)
+            <span style={{'color':'#885B39','fontSize': '3em'}}>39175</span>
+            <I18n>caves are freely accessible from the following page (</I18n> 50902 <I18n>by logging on</I18n> <GCLink href='http://www.grottocenter.org'>Grotto v2</GCLink>)
           </div>
           <div className="six columns">
             <span className="icon icon-gc-club" style={{'color':'#885B39','fontSize': '4em'}}></span><br/>
