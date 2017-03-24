@@ -29,7 +29,7 @@ class Header extends Component {
               </GCLink>
               <h1 className="sitename">Grottocenter</h1>
               <span className="slogan">
-                  <I18n>The Wiki database made by cavers for cavers.</I18n>
+                  <I18n>The Wiki database made by cavers for cavers</I18n>
               </span>
             </div>
           </div>

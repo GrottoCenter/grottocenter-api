@@ -6,6 +6,7 @@ module.exports = function (grunt) {
     'cssmin',
     'linkAssetsBuildProd',
     'clean:build',
-    'copy:build'
+    'copy:build',
+    'transifex:grottocenter'
   ]);
 };

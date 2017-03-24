@@ -164,7 +164,7 @@ class Footer extends Component {
       <div className="footer" style={{color: this.props.muiTheme.palette.fullBlack, backgroundColor: this.props.muiTheme.palette.primary3Color}}>
         <div className="legal">
           <p>
-            <I18n>Unless stated otherwise, all text and documents are available under the terms of the Creative Commons Attribution-ShareAlike 3.0 Unported.</I18n>
+            <I18n>Unless stated otherwise, all text and documents are available under the terms of the Creative Commons Attribution-ShareAlike 30 Unported</I18n>
           </p>
           <p>
             <GCLink className="licenceIcon" href={licenceLink}>
