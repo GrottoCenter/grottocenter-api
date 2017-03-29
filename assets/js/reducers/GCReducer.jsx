@@ -1,7 +1,7 @@
 import {combineReducers} from 'redux';
 import {caves, entries, grottos, marker} from './SearchReducer';
 import {currentLanguage} from './LanguageReducer';
-import {lastBlogNews} from './LastBlogNewsReducer';
+import {latestBlogNews} from './LatestBlogNewsReducer';
 
 const GCReducer = combineReducers({
   currentLanguage,
@@ -9,7 +9,7 @@ const GCReducer = combineReducers({
   entries,
   grottos,
   marker,
-  lastBlogNews
+  latestBlogNews
 });
 
 export default GCReducer;

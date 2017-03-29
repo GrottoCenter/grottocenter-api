@@ -274,6 +274,13 @@ module.exports.routes = {
   'GET /api/admin/entry/findAllOfInterest': {
     controller: 'Admin',
     action: 'findAllInterestEntries'
+  },
+
+  /* Rss controller */
+
+  'GET /api/rss/:language': {
+    controller: 'Rss',
+    action: 'getFeed'
   }
 
 };

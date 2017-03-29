@@ -11,6 +11,7 @@
     "babel-preset-react": "^6.11.1",
     "babelify": "^7.2.0",
     "ejs": "~0.8.4",
+    "feed-read": "0.0.1",
     "grunt": "^0.4.5",
     "grunt-browserify": "^4.0.1",
     "grunt-contrib-clean": "~0.5.0",
@@ -43,11 +44,14 @@
     "react-router": "^2.5.2",
     "react-tap-event-plugin": "^2.0.0",
     "redux": "^3.6.0",
+    "redux-thunk": "^2.2.0",
     "sails": "^0.12.0",
     "sails-disk": "~0.10.0",
     "sails-magik-swagger": "^0.5.3",
     "sails-mysql": "^0.10.12",
-    "swagger-ui": "^2.2.6"
+    "swagger-ui": "^2.2.6",
+    "underscore.date": "^0.6.1",
+    "underscore.string": "^3.3.4"
   },
   "scripts": {
     "start": "node app.js",

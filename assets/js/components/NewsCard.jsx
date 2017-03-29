@@ -32,7 +32,7 @@ class NewsCard extends Component {
     return (
       <Card className="newsCard">
         <CardMedia>
-          <img src={this.props.image} />
+          <img src='images/homepage/news.jpg' />
         </CardMedia>
         {this.props.day && this.props.month && <DateRibbon day={this.props.day} month={this.props.month}/>}
         <CardTitle>{this.props.title}</CardTitle>
@@ -52,8 +52,7 @@ class NewsCard extends Component {
 
 NewsCard.propTypes = {
   showSpinner: PropTypes.bool,
-  image: PropTypes.string,
-  day: PropTypes.string,
+  day: PropTypes.any,
   month: PropTypes.string,
   title: PropTypes.string,
   text: PropTypes.string,

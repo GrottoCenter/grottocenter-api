@@ -18,7 +18,7 @@ import thunkMiddleware from 'redux-thunk';
 import GCReducer from './reducers/GCReducer';
 
 import {changeLanguage} from './actions/Language';
-import {initLastBlogNewsFetcher, loadLastBlogNews} from './actions/LastBlogNews';
+import {loadLatestBlogNews} from './actions/LatestBlogNews';
 import TextDirectionProvider from './containers/TextDirectionProvider';
 
 // Needed for onTouchTap// sans ça les clicks de material-ui ne fonctionnent pas
@@ -47,14 +47,8 @@ gcStore.dispatch(changeLanguage(locale)); //eslint-disable-line no-undef
 
 /* Latest blog news */
 
-gcStore.dispatch(loadLastBlogNews('fr', FR_GC_BLOG)); //eslint-disable-line no-undef
-gcStore.dispatch(loadLastBlogNews('en', EN_GC_BLOG)); //eslint-disable-line no-undef
-// gcStore.dispatch(loadLastBlogNews('fr','http://localhost:3000/comics')); //eslint-disable-line no-undef
-// gcStore.dispatch(loadLastBlogNews('en','http://localhost:3000/comics?slug=akira')); //eslint-disable-line no-undef
-
-
-// gcStore.dispatch(loadLastBlogNews('fr'));
-// gcStore.dispatch(loadLastBlogNews('en'));
+gcStore.dispatch(loadLatestBlogNews('fr', FR_GC_BLOG)); //eslint-disable-line no-undef
+gcStore.dispatch(loadLatestBlogNews('en', EN_GC_BLOG)); //eslint-disable-line no-undef
 
 ReactDOM.render(
   <MuiThemeProvider muiTheme={getMuiTheme(grottoTheme)}>

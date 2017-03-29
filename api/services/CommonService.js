@@ -1,3 +1,5 @@
+const _ = require('underscore.string');
+
 module.exports = {
   /**
    * @param {Model} model - an instance of a sails model
@@ -16,5 +18,15 @@ module.exports = {
         resolve(results);
       });
     });
+  },
+
+  /**
+   * @param {string} html - the html string to convert to text
+   * @param {int} length - length to keep visible (remaining is completed by '...')
+   *
+   * @returns {string} the converted html string
+   */
+  convertHtmlToText: function(html, length) {
+    return _.prune(_.unescapeHTML(_.stripTags(html)), length);
   }
 };

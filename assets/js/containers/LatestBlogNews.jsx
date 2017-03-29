@@ -2,7 +2,7 @@ import {connect} from 'react-redux';
 import NewsCard from './../components/NewsCard';
 
 const mapStateToProps = (state, ownProps) => { // eslint-disable-line no-unused-vars
-  let attributes = state.lastBlogNews[ownProps.blog];
+  let attributes = state.latestBlogNews[ownProps.blog];
 
   if (attributes === undefined) {
     return {
@@ -12,12 +12,11 @@ const mapStateToProps = (state, ownProps) => { // eslint-disable-line no-unused-
 
   return {
     showSpinner: attributes.isFetching,
-    image: attributes.image,
-    day: attributes.day,
-    month: attributes.month,
-    title: attributes.title,
-    text: attributes.news,
-    linkMore: attributes.linkMore
+    day: attributes.news.day,
+    month: attributes.news.month,
+    title: attributes.news.title,
+    text: attributes.news.text,
+    linkMore: attributes.news.link
   };
 };
 
