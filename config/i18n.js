@@ -22,7 +22,7 @@ module.exports.i18n = {
    *                                                                          *
    ***************************************************************************/
 
-  locales: ['en', 'es', 'fr', 'de', 'it', 'bg', 'ca', 'nl', 'ar', 'id', 'el'],
+  locales: ['en', 'es', 'fr', 'de', 'it', 'bg', 'ca', 'nl', 'ar', 'id', 'el', 'he', 'pt'],
 
   localesText: {
     'en': 'English',
@@ -36,6 +36,8 @@ module.exports.i18n = {
     'ar': 'عربية',
     'id': 'Indonesia',
     'el': 'Ελληνικός',
+    'pt': 'Português',
+    'he': 'עברי',
     'ja': '日本語'
   },
 
