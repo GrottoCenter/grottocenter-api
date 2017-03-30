@@ -17,5 +17,5 @@ export const DateRibbon = (props) => (
 
 DateRibbon.propTypes = {
   month: PropTypes.string,
-  day: PropTypes.string
+  day: PropTypes.any
 };

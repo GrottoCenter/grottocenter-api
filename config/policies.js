@@ -87,6 +87,10 @@ module.exports.policies = {
 
   AdminController: {
     '*': true
+  },
+
+  RssController: {
+    '*': true
   }
 
   /***************************************************************************

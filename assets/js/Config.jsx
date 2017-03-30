@@ -1,5 +1,10 @@
 import _ from 'underscore.string';
 
+export const
+  DEFAULT_LANGUAGE = 'fr',
+  FR_GC_BLOG = '/api/rss/FR',
+  EN_GC_BLOG = '/api/rss/EN';
+
 function generateLinks(link, defaultLang) {
   let resultArray = {};
   localesList.map(function(el) { // eslint-disable-line
