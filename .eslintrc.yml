@@ -37,6 +37,7 @@ globals:
   TokenAuthService: true
   ControllerService: true
   MappingV1Service: true
+  L: true
 extends: [ 'eslint:recommended' ]
 parserOptions:
   ecmaVersion: 6
