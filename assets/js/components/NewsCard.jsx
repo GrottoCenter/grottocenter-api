@@ -35,7 +35,7 @@ class NewsCard extends Component {
           <img src='images/homepage/news.jpg' />
         </CardMedia>
         {this.props.day && this.props.month && <DateRibbon day={this.props.day} month={this.props.month}/>}
-        <CardTitle>{this.props.title}</CardTitle>
+        <CardTitle title={this.props.title}/>
         <CardText>{this.props.text}</CardText>
         <Divider/>
         {this.props.linkMore && <CardActions style={{'textAlign': 'right'}}>
