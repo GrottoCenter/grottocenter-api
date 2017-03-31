@@ -25,13 +25,15 @@ const Association = (props) => (
         </div>
         <div className="row">
           <div className="twelve columns">
-            <p className="listing">
-              <I18n>The international voluntary association WikiCaves operates the GrottoCenter web application WikiCaves has as goals:</I18n>
+            <div className="listing">
+              <p>
+                <I18n>The international voluntary association WikiCaves operates the GrottoCenter web application WikiCaves has as goals:</I18n>
+              </p>
               <ul>
                 <li>
                   <CheckIcon color={props.muiTheme.palette.textIconColor} hoverColor={props.muiTheme.palette.accent1Color}/>
                   <div>
-                    <I18n>Promote the development of the speleology in the world especially through  web-based collaboration.</I18n>
+                    <I18n>Promote the development of the speleology in the world especially through  web-based collaboration</I18n>
                   </div>
                 </li>
                 <li>
@@ -51,7 +53,7 @@ const Association = (props) => (
                   <div><I18n>Help the exploration and the scientific study of natural caves</I18n></div>
                 </li>
               </ul>
-            </p>
+            </div>
             <div className="goalTextZone">
               <span>
                 <I18n>The international voluntary association WikiCaves operates the GrottoCenter web application WikiCaves has as goals:</I18n>
