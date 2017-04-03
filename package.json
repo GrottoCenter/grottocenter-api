@@ -11,17 +11,17 @@
     "babel-preset-react": "^6.11.1",
     "babelify": "^7.2.0",
     "ejs": "~0.8.4",
-    "feed-read": "0.0.1",
+    "feed-read": "^0.0.1",
     "grunt": "^0.4.5",
     "grunt-browserify": "^4.0.1",
-    "grunt-contrib-clean": "~0.5.0",
+    "grunt-contrib-clean": "^0.5.0",
     "grunt-contrib-coffee": "^1.0.0",
-    "grunt-contrib-concat": "~1.0.1",
-    "grunt-contrib-copy": "~0.5.0",
-    "grunt-contrib-cssmin": "~1.0.2",
+    "grunt-contrib-concat": "^1.0.1",
+    "grunt-contrib-copy": "^1.0.0",
+    "grunt-contrib-cssmin": "^2.0.0",
     "grunt-contrib-jst": "~0.6.0",
-    "grunt-contrib-less": "0.11.1",
-    "grunt-contrib-uglify": "~2.0.0",
+    "grunt-contrib-less": "^1.4.1",
+    "grunt-contrib-uglify": "^2.0.0",
     "grunt-sails-linker": "~0.9.5",
     "grunt-sync": "~0.0.4",
     "grunt-text-replace": "^0.4.0",
@@ -65,10 +65,10 @@
     "url": "git://github.com/GrottoCenter/Grottocenter3.git"
   },
   "devDependencies": {
-    "grunt-contrib-watch": "~0.5.3",
-    "grunt-lesslint": "^3.2.0",
     "eslint": "^3.12.2",
     "eslint-plugin-react": "^6.8.0",
-    "sails-hook-lint": "^1.1.1"
+    "grunt-contrib-watch": "^0.5.3",
+    "grunt-eslint": "^19.0.0",
+    "grunt-lesshint": "^1.5.0"
   }
 }

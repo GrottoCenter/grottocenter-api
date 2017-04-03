@@ -1,6 +1,7 @@
 module.exports = function (grunt) {
   grunt.registerTask('default', [
-    'lesslint:dev',
+    'eslint:dev',
+    'lesshint:dev',
     'clean:dev',
     'copy:swagger',
     'replace:swaggerhtml',

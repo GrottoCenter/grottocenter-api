@@ -1,103 +1,115 @@
 footer {
   font-size: smaller;
   padding: 15px;
+
+  .columns {
+    text-align: center;
+  }
+
+  .publishedInfo {
+    background-color: @white;
+    display: inline-block;
+    padding: 5px;
+    text-align: center;
+
+    img {
+      width: 100px;
+    }
+  }
+
+  .linksIcon {
+    list-style: none;
+    display: inline-block;
+
+    li {
+      display: inline-block;
+      width: 40px;
+      margin: 0 5%;
+    }
+
+    img {
+      width: 100%;
+      padding: 2px;
+      border-radius: 10px;
+    }
+  }
+
+  .linksText {
+    display: inline-block;
+    margin: 20px 0;
+    list-style: none;
+
+    a {
+      text-decoration: none;
+      font-size: 1.3em;
+    }
+  }
+
+  .donate {
+    div {
+      text-align: center;
+    }
+
+    a {
+      height: auto !important;
+
+      &>div {
+        white-space: nowrap;
+      }
+
+      span {
+        text-transform: none !important;
+      }
+    }
+
+    svg {
+      width: 40px !important;
+      height: 40px !important;
+    }
+  }
 }
 
-footer div.columns {
-  text-align: center;
-}
+.footer {
+  .legal {
+    p {
+      text-align: center;
+      margin-bottom: 0;
+      font-size: 0.8em;
+      padding: 5px;
+    }
 
-footer .publishedInfo {
-  background-color: white;
-  display: inline-block;
-  padding: 5px;
-  text-align: center;
-}
+    .licenceIcon {
+      text-align: center;
 
-footer .publishedInfo img {
-  width: 100px;
-}
-
-footer .linksIcon {
-  list-style: none;
-  display: inline-block;
-}
-
-footer .linksIcon li {
-  display: inline-block;
-  width: 40px;
-  margin: 0 5%;
-}
-
-footer .linksIcon img {
-  width: 100%;
-  padding: 2px;
-  border-radius: 10px;
-}
-
-footer .linksText {
-  display: inline-block;
-  margin: 20px 0;
-  list-style: none;
-}
-
-footer .linksText a {
-  text-decoration: none;
-  font-size: 1.3em;
-}
-
-footer .donate div {
-  text-align: center;
-}
-
-footer .donate a {
-  height: auto !important;
-}
-
-footer .donate a span {
-  text-transform: none !important;
-}
-
-footer .donate a>div {
-  white-space: nowrap;
-}
-
-footer .donate svg {
-  width: 40px !important;
-  height: 40px !important;
-}
-
-.footer .legal p {
-  text-align: center;
-  margin-bottom: 0;
-  font-size: 0.8em;
-  padding: 5px;
-}
-
-.footer .legal .licenceIcon {
-  text-align: center;
-}
-
-.footer .legal .licenceIcon img {
-  width: 100px;
+      img {
+        width: 100px;
+      }
+    }
+  }
 }
 
 @media (min-width: 550px) {
-  footer .row:first-of-type div.columns:first-of-type {
-    text-align: left;
-  }
-  footer .row:first-of-type div.columns:last-of-type {
-    text-align: right;
-  }
-  footer .linkIcon {
-    margin: 0;
-    margin-right: 5px;
-  }
-  footer .linksIcon li {
-    margin: 0 14px;
-  }
-  footer .donate {
-    display: inline-block;
-    line-height: 5em;
+  footer {
+    .row:first-of-type .columns:first-of-type {
+      text-align: left;
+    }
+
+    .row:first-of-type .columns:last-of-type {
+      text-align: right;
+    }
+
+    .linkIcon {
+      margin: 0;
+      margin-right: 5px;
+
+      li {
+        margin: 0 14px;
+      }
+    }
+
+    .donate {
+      display: inline-block;
+      line-height: 5em;
+    }
   }
 }

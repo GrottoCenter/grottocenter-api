@@ -1,7 +1,8 @@
-div[role="section"].welcome {
+[role='section'].welcome {
   .row {
     & > div:first-child {
       text-align: center;
+
       & > img {
         border-radius: 50%;
         width: 50% !important;
@@ -9,10 +10,12 @@ div[role="section"].welcome {
       }
     }
   }
+
   h3 {
     padding-top: 30px;
     text-align: center;
   }
+
   p {
     text-align: center;
     font-weight: 300;
@@ -21,14 +24,17 @@ div[role="section"].welcome {
 
   @media (min-width: 550px) {
     text-align: inherit;
+
     .row > div:first-child > img {
       width: 80% !important;
       height: 80% !important;
     }
+
     h3 {
       padding-top: 0;
       text-align: inherit;
     }
+
     p {
       text-align: left;
     }

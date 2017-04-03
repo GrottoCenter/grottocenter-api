@@ -12,7 +12,7 @@
 //
 // (if you're using LESS with the built-in default config, you'll want
 //  to change `assets/styles/importer.less` instead.)
-var cssFilesToInject = [
+let cssFilesToInject = [
   'styles/**/normalize.css',
   'styles/**/skeleton.css',
   'styles/**/custom.css',
@@ -23,7 +23,7 @@ var cssFilesToInject = [
 
 // Client-side javascript files to inject in order
 // (uses Grunt-style wildcard/glob/splat expressions)
-var jsFilesToInject = [
+let jsFilesToInject = [
 
   // Load sails.io before everything else
   'js/dependencies/sails.io.js',
@@ -48,7 +48,7 @@ var jsFilesToInject = [
 // with the linker, no problem-- you'll just want to make sure the precompiled
 // templates get spit out to the same file.  Be sure and check out `tasks/README.md`
 // for information on customizing and installing new tasks.
-var templateFilesToInject = [
+let templateFilesToInject = [
   'templates/**/*.html'
 ];
 

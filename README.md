@@ -77,6 +77,7 @@ apm install editorconfig
 apm install linter
 apm install linter-eslint
 apm install atom-beautify
+apm install linter-lesshint
 ```
 
 For atom-beautify, on settings, activate "Beautify on save" for JS, JSX, HTML and CSS
