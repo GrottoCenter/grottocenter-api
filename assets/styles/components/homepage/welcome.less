@@ -1,12 +1,19 @@
 [role='section'].welcome {
+  background-color: @brown;
+  color: @white;
+
+  h3 {
+    color: @orange;
+  }
+
   .row {
     & > div:first-child {
       text-align: center;
 
       & > img {
         border-radius: 50%;
-        width: 50% !important;
-        height: 50% !important;
+        width: 60%;
+        height: 60%;
       }
     }
   }
@@ -14,29 +21,15 @@
   h3 {
     padding-top: 30px;
     text-align: center;
+
+    @media (min-width: @mdMin) {
+      padding-top: 0;
+    }
   }
 
   p {
-    text-align: center;
+    text-align: justify;
     font-weight: 300;
     font-size: medium;
-  }
-
-  @media (min-width: 550px) {
-    text-align: inherit;
-
-    .row > div:first-child > img {
-      width: 80% !important;
-      height: 80% !important;
-    }
-
-    h3 {
-      padding-top: 0;
-      text-align: inherit;
-    }
-
-    p {
-      text-align: left;
-    }
   }
 }

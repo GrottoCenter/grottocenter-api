@@ -1,9 +1,14 @@
-[role='section'].lastNews .newsCard:nth-child(n+1) {
-  margin-top: 4%;
-}
+[role='section'].lastNews {
 
-@media (min-width: 550px) {
-  [role='section'].lastNews .newsCard:nth-child(n+1) {
-    margin-top: 0;
+  h3 {
+    color: @orange;
+  }
+
+  .newsCard:nth-child(n+1) {
+    margin-top: 4%;
+
+    @media (min-width: @mdMin) {
+      margin-top: 0;
+    }
   }
 }

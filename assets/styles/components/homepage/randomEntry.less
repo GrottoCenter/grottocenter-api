@@ -18,13 +18,25 @@
     color: white;
   }
 
-  .entryLocation a {
-    text-decoration: none;
-    color: inherit;
-  }
+  .entryLocation {
 
-  .entryLocation a:hover {
-    color: @orange;
+    h4 {
+      font-weight: 400;
+      margin-bottom: 0;
+    }
+
+    h5 {
+      font-size: 1.5em;
+    }
+
+    a {
+      text-decoration: none;
+      color: inherit;
+
+      &:hover {
+        color: @orange;
+      }
+    }
   }
 
   .rating {
@@ -33,16 +45,19 @@
     li {
       display: inline-flex;
       width: 100%;
-    }
 
-    li > span {
-      margin-right: 20px;
-      white-space: nowrap;
-    }
+      span {
+        margin-right: 10px;
+        white-space: nowrap;
+        width: 90px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
 
-    .stars {
-      display: inline;
-      white-space: nowrap;
+      .stars {
+        display: inline;
+        white-space: nowrap;
+      }
     }
   }
 
@@ -50,6 +65,21 @@
     width: 50%;
     display: inline-flex;
     line-height: 50px;
+    font-weight: 300;
+    font-size: 1.4em;
+
+    .value {
+      margin-left: 6px;
+    }
+
+    .unit {
+      margin-left: 6px;
+    }
+  }
+
+  .noImage {
+    font-weight: 300;
+    font-style: italic;
   }
 }
 

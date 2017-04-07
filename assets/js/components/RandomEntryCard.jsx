@@ -47,12 +47,12 @@ export class EntryTitle extends React.Component {
   render() {
     return (
       <div className="entryLocation">
-        <h5>
-          {this.props.entry.region} - {this.props.entry.country}
-        </h5>
         <h4>
           {this.props.entry.name}
         </h4>
+        <h5>
+          {this.props.entry.region} - {this.props.entry.country}
+        </h5>
       </div>
     );
   }
@@ -203,7 +203,7 @@ export class EntryImage extends React.Component {
   render() {
     if (!this.props.src) {
       return (
-        <div>At this time, there is no image for this entry</div>
+        <div className="noImage">At this time, there is no image for this entry</div>
       );
     }
     return (

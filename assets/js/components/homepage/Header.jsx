@@ -20,7 +20,7 @@ class Header extends Component {
     let fseLink = (fseLinks[this.state.locale] !== undefined) ? fseLinks[this.state.locale] : 'http://eurospeleo.eu/en/';
 
     return (
-      <header className="header" style={{color: this.props.muiTheme.palette.primaryTextColor, fontFamily: this.props.muiTheme.fontFamily}}>
+      <header className="header" style={{color: this.props.muiTheme.palette.primaryTextColor}}>
         <div className="container">
           <div className="row brand bgwhite">
             <div className="twelve columns">

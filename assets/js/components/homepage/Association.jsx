@@ -6,7 +6,7 @@ import SyncIcon from 'material-ui/svg-icons/notification/sync';
 
 const Association = (props) => (
   <div>
-    <div role="section" className="association" style={{backgroundColor: props.muiTheme.palette.primary1Color, color: props.muiTheme.palette.textIconColor, fontFamily: props.muiTheme.fontFamily}}>
+    <div role="section" className="association" style={{backgroundColor: props.muiTheme.palette.primary1Color, color: props.muiTheme.palette.textIconColor}}>
       <div className="container">
         <div className="row">
           <div className="eight columns">
@@ -20,7 +20,9 @@ const Association = (props) => (
             </h5>
           </div>
           <div className="four columns">
-            <img src="/images/logo.svg"/>
+            <div className="logo">
+              <img src="/images/logo.svg"/>
+            </div>
           </div>
         </div>
         <div className="row">
@@ -31,25 +33,25 @@ const Association = (props) => (
               </p>
               <ul>
                 <li>
-                  <CheckIcon color={props.muiTheme.palette.textIconColor} hoverColor={props.muiTheme.palette.accent1Color}/>
+                  <CheckIcon color={props.muiTheme.palette.accent1Color}/>
                   <div>
                     <I18n>Promote the development of the speleology in the world especially through  web-based collaboration</I18n>
                   </div>
                 </li>
                 <li>
-                  <CheckIcon color={props.muiTheme.palette.textIconColor} hoverColor={props.muiTheme.palette.accent1Color}/>
+                  <CheckIcon color={props.muiTheme.palette.accent1Color}/>
                   <div><I18n>Share and spread the data related to the speleology</I18n></div>
                 </li>
                 <li>
-                  <CheckIcon color={props.muiTheme.palette.textIconColor} hoverColor={props.muiTheme.palette.accent1Color}/>
+                  <CheckIcon color={props.muiTheme.palette.accent1Color}/>
                   <div><I18n>Make access to the natural caves data easier especially by using Internet</I18n></div>
                 </li>
                 <li>
-                  <CheckIcon color={props.muiTheme.palette.textIconColor} hoverColor={props.muiTheme.palette.accent1Color}/>
+                  <CheckIcon color={props.muiTheme.palette.accent1Color}/>
                   <div><I18n>Highlight and help the protection of the natural caves and their surroundings</I18n></div>
                 </li>
                 <li>
-                  <CheckIcon color={props.muiTheme.palette.textIconColor} hoverColor={props.muiTheme.palette.accent1Color}/>
+                  <CheckIcon color={props.muiTheme.palette.accent1Color}/>
                   <div><I18n>Help the exploration and the scientific study of natural caves</I18n></div>
                 </li>
               </ul>

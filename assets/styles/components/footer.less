@@ -7,7 +7,7 @@ footer {
   }
 
   .publishedInfo {
-    background-color: @white;
+    background-color: lighten(@brown, 50%);
     display: inline-block;
     padding: 5px;
     text-align: center;
@@ -51,20 +51,20 @@ footer {
     }
 
     a {
-      height: auto !important;
+      height: auto !important; // lesshint importantRule: false
 
       &>div {
         white-space: nowrap;
       }
 
       span {
-        text-transform: none !important;
+        text-transform: none !important; // lesshint importantRule: false
       }
     }
 
     svg {
-      width: 40px !important;
-      height: 40px !important;
+      width: 40px !important; // lesshint importantRule: false
+      height: 40px !important; // lesshint importantRule: false
     }
   }
 }
@@ -75,6 +75,7 @@ footer {
       text-align: center;
       margin-bottom: 0;
       font-size: 0.8em;
+      font-weight: 300;
       padding: 5px;
     }
 
@@ -88,7 +89,7 @@ footer {
   }
 }
 
-@media (min-width: 550px) {
+@media (min-width: @mdMin) {
   footer {
     .row:first-of-type .columns:first-of-type {
       text-align: left;
@@ -108,8 +109,10 @@ footer {
     }
 
     .donate {
-      display: inline-block;
+      float: right;
+      max-width: 100%;
       line-height: 5em;
+      overflow: hidden;
     }
   }
 }

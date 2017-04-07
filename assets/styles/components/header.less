@@ -85,6 +85,7 @@ header {
         font-weight: 300;
         font-size: 25px;
         top: 25px;
+        color: lighten(@brown, 10%) !important; // lesshint importantRule: false
       }
     }
 
@@ -128,14 +129,14 @@ header {
       height: 72px;
 
       svg {
-        height: 50px !important;
-        width: 50px !important;
+        height: 50px !important; // lesshint importantRule: false
+        width: 50px !important; // lesshint importantRule: false
         padding-top: calc((72px - 50px) / 2);
       }
     }
   }
 
-  @media (min-width: 550px) {
+  @media (min-width: @mdMin) {
     &>div {
       background-size: 130%;
     }

@@ -27,7 +27,7 @@ class Footer extends Component {
 
     return (
       <div>
-      <footer style={{backgroundColor: this.props.muiTheme.palette.primary1Color, color: this.props.muiTheme.palette.textIconColor, fontFamily: this.props.muiTheme.fontFamily}}>
+      <footer style={{backgroundColor: this.props.muiTheme.palette.primary1Color, color: this.props.muiTheme.palette.textIconColor}}>
         <div className="container">
           <div className="row">
             <div className="four columns">

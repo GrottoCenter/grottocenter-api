@@ -1,5 +1,6 @@
 /* BODY */
 body {
+  font-family: 'Open Sans', sans-serif;
   background-color: @cream;
   margin: 0px;
   min-width: 320px;
@@ -22,7 +23,7 @@ body {
   .notOnMobile {
     display: none;
 
-    @media (min-width: 550px) {
+    @media (min-width: @mdMin) {
       display: initial;
     }
   }
@@ -30,7 +31,7 @@ body {
   .onlyMobile {
     display: initial;
 
-    @media (min-width: 550px) {
+    @media (min-width: @mdMin) {
       display: none;
     }
   }

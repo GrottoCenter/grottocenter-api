@@ -5,6 +5,16 @@
     text-align: center;
   }
 
+  h5 {
+    font-size: 18px;
+    text-align: justify;
+  }
+
+  .logo {
+    padding: 20px 10px;
+    background-color: lighten(@brown, 50%);
+  }
+
   .container {
     width: 80%;
     margin: auto;
@@ -20,16 +30,13 @@
       padding-bottom: 30px;
     }
 
-    & > div:first-child > h5 {
-      font-size: 18px;
-    }
-
     .row > div:last-child {
       text-align: center;
     }
 
     & > div:last-child img {
       max-width: 200px;
+      width: 100%;
     }
 
     & > div:last-child img:visible {
@@ -49,44 +56,53 @@
         clear: both;
       }
 
-      & > svg {
-        height: 50px !important;
-        width: 50px !important;
+      svg {
+        height: 50px !important; // lesshint importantRule: false
+        width: 50px !important; // lesshint importantRule: false
         float: left;
       }
 
-      & > svg:hover {
+      svg:hover {
         animation: checkBump 500ms ease;
       }
     }
 
     .listing {
-      & > span {
+      & > p {
         margin-bottom: 40px;
         display: block;
+        font-weight: 600;
       }
 
       ul {
-        li:nth-child(2n) svg {
-          float: right;
-        }
+        li {
+          div {
+            font-weight: 300;
+            font-size: 1.3em;
+            line-height: 25px;
+            min-height: 80px;
+            text-align: justify;
+          }
 
-        li:nth-child(n) div {
-          min-height: 80px;
-          line-height: 40px;
-          margin-left: 80px;
-          margin-right: 0;
-          text-align: left;
-        }
+          &:nth-child(2n) svg {
+            float: right;
+            fill: @orange;
+          }
 
-        li:nth-child(2n) div {
-          margin-right: 80px;
-          margin-left: 0;
-          text-align: right;
-        }
+          &:nth-child(n) div {
+            margin-left: 80px;
+            margin-right: 0;
+          }
 
-        li:nth-child(n) span {
-          display: inline-block;
+          &:nth-child(2n) div {
+            margin-right: 80px;
+            margin-left: 0;
+            text-align: right;
+          }
+
+          &:nth-child(n) span {
+            display: inline-block;
+          }
         }
       }
     }
@@ -95,6 +111,7 @@
   .goalTextZone {
     display: none;
     text-align: center;
+    font-weight: 300;
 
     &:before {
       content: '';
@@ -123,14 +140,14 @@
 }
 
 
-@media (min-width: 550px) {
+@media (min-width: @mdMin) {
   [role='section'].association .row li > svg {
-    height: 80px !important;
-    width: 80px !important;
+    height: 80px !important; // lesshint importantRule: false
+    width: 80px !important; // lesshint importantRule: false
   }
 }
 
-@media (min-width: 750px) {
+@media (min-width: @lgMin) {
   [role='section'].association {
     h3 {
       text-align: left;
@@ -159,6 +176,8 @@
       left: ~'calc((100% - 200px) / 2)';
       width: 200px;
       height: 150px;
+      font-size: 0.95em;
+      text-align: justify;
     }
 
     .floatingGoals {
@@ -168,13 +187,15 @@
 
       .goal {
         position: absolute;
-        width: 120px;
+        width: 129px;
         text-align: center;
         float: left;
+        font-size: 1.3em;
+        font-weight: 400;
 
         & > span {
           display: block;
-          padding: 20px;
+          padding: 20px 0;
           text-align: center;
         }
 
@@ -183,18 +204,17 @@
         }
 
         svg {
-          width: 140px !important;
-          height: 140px !important;
-          top: -38px;
-          left: -10px;
+          width: 180px !important; // lesshint importantRule: false
+          height: 180px !important; // lesshint importantRule: false
+          top: -57px;
+          left: -26px;
           position: absolute;
-          opacity: 0.3;
+          opacity: 0.2;
         }
 
         svg:hover {
-          color: @brownLight !important;
           transform: rotate(-135deg) scale(1.2, 1.2);
-          opacity: 1;
+          opacity: 0.6;
         }
 
         &:nth-child(1) {
@@ -223,7 +243,7 @@
       }
 
       .goalText {
-        display: none !important;
+        display: none !important; // lesshint importantRule: false
       }
     }
   }

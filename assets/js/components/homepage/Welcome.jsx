@@ -1,18 +1,17 @@
-import React, {PropTypes} from 'react';
+import React from 'react';
 import I18n from 'react-ghost-i18n';
 import muiThemeable from 'material-ui/styles/muiThemeable';
-import Avatar from 'material-ui/Avatar';
 
-const Welcome = (props) => (
+const Welcome = () => (
   <div>
-    <div role="section" className="welcome" style={{backgroundColor: '#91756a', color: props.muiTheme.palette.textIconColor, fontFamily: props.muiTheme.fontFamily}}>
+    <div role="section" className="welcome">
       <div className="container">
         <div className="row">
           <div className="four columns">
-            <Avatar src="/images/caves/draperie_small.jpg"/>
+            <img src="/images/caves/draperie_small.jpg"/>
           </div>
           <div className="eight columns">
-            <h3 style={{color: props.muiTheme.palette.accent1Color}}>
+            <h3>
               <I18n>Welcome to Grottocenter!</I18n>
             </h3>
             <p><I18n>This 31 version of the site is  improving gradually to allow  a simpler navigation from all your peripherals</I18n></p>
@@ -25,8 +24,5 @@ const Welcome = (props) => (
   </div>
 );
 
-Welcome.propTypes = {
-  muiTheme: PropTypes.object.isRequired
-};
 
 export default muiThemeable()(Welcome);

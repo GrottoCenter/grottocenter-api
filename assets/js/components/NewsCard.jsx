@@ -36,7 +36,7 @@ class NewsCard extends Component {
         </CardMedia>
         {this.props.day && this.props.month && <DateRibbon day={this.props.day} month={this.props.month}/>}
         <CardTitle title={this.props.title}/>
-        <CardText>{this.props.text}</CardText>
+        <CardText style={{textAlign: "justify"}}>{this.props.text}</CardText>
         <Divider/>
         {this.props.linkMore && <CardActions style={{'textAlign': 'right'}}>
           <FlatButton>

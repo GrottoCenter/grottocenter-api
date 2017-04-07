@@ -57,7 +57,7 @@ class Partners extends React.Component {
 
     return (
       <div>
-        <div role="section" className="partners" style={{fontFamily: this.props.muiTheme.fontFamily}}>
+        <div role="section" className="partners">
           <h3>
             <I18n>Partners</I18n>
           </h3>

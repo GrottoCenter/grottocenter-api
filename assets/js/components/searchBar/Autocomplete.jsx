@@ -111,7 +111,6 @@ class Autocomplete extends React.Component {
   render() {
     let styleElements = {
       backgroundColor: this.props.muiTheme.palette.primary3Color,
-      fontFamily: this.props.muiTheme.fontFamily,
       width: 'calc(100% - 50px)'
     };
     if (this.props.direction === RIGHT_TO_LEFT) {

@@ -6,7 +6,7 @@ import RaisedButton from 'material-ui/RaisedButton';
 
 const Faq = (props) => (
   <div>
-    <div role="section" className="faq" style={{backgroundColor: props.muiTheme.palette.secondary1Color, color: props.muiTheme.palette.textIconColor, fontFamily: props.muiTheme.fontFamily}}>
+    <div role="section" className="faq" style={{backgroundColor: props.muiTheme.palette.secondary1Color, color: props.muiTheme.palette.textIconColor}}>
       <h3>
         <I18n>Frequently asked questions</I18n>
       </h3>

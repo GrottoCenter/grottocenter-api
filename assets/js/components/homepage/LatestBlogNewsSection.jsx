@@ -1,11 +1,11 @@
-import React, {PropTypes} from 'react';
+import React from 'react';
 import muiThemeable from 'material-ui/styles/muiThemeable';
 import I18n from 'react-ghost-i18n';
 import LatestBlogNews from '../../containers/LatestBlogNews';
 
-const LatestBlogNewsSection = (props) => (
+const LatestBlogNewsSection = () => (
   <div>
-    <div role="section" className="lastNews" style={{fontFamily: props.muiTheme.fontFamily}}>
+    <div role="section" className="lastNews">
       <h3>
         <I18n>News</I18n>
       </h3>
@@ -22,9 +22,5 @@ const LatestBlogNewsSection = (props) => (
     </div>
   </div>
 );
-
-LatestBlogNewsSection.propTypes = {
-  muiTheme: PropTypes.object.isRequired
-};
 
 export default muiThemeable()(LatestBlogNewsSection);
