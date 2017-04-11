@@ -7,6 +7,7 @@
  * (Note that you can take advantage of Grunt-style wildcard/glob/splat expressions
  * for matching multiple files.)
  */
+'use strict';
 
 // CSS files to inject in order
 //
