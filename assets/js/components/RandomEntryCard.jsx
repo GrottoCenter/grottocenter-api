@@ -46,7 +46,7 @@ export class EntryTitle extends React.Component {
 
   render() {
     return (
-      <div className="entryLocation">
+      <div className="entryLocation" dir="ltr">
         <h4>
           {this.props.entry.name}
         </h4>
