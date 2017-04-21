@@ -51,3 +51,15 @@ export const
   paypalLink = 'https://www.paypal.com/cgi-bin/webscr',
   paypalImgLink = 'https://www.paypalobjects.com/fr_FR/i/scr/pixel.gif',
   paypalId = 'TJEU7C2TZ356Y';
+
+export const
+  detailPageV2Links = {
+    'fr': 'http://www.grottocenter.org/html/file_Fr.php?lang=Fr',
+    'es': 'http://www.grottocenter.org/html/file_Es.php?lang=Es',
+    'ca': 'http://www.grottocenter.org/html/file_Ca.php?lang=Ca',
+    'de': 'http://www.grottocenter.org/html/file_De.php?lang=De',
+    'bg': 'http://www.grottocenter.org/html/file_Bg.php?lang=Bg',
+    'nl': 'http://www.grottocenter.org/html/file_Nl.php?lang=Nl',
+    'it': 'http://www.grottocenter.org/html/file_It.php?lang=It',
+    '*': 'http://www.grottocenter.org/html/file_En.php?lang=En'
+  };

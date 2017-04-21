@@ -4,6 +4,7 @@ import EmptyStarIcon from 'material-ui/svg-icons/toggle/star-border';
 import HalfStarIcon from 'material-ui/svg-icons/toggle/star-half';
 import I18n from 'react-ghost-i18n';
 import GCLink from '../components/GCLink';
+import {detailPageV2Links} from '../Config';
 
 export class EntryData extends React.Component {
   constructor(props) {
@@ -20,17 +21,16 @@ export class EntryData extends React.Component {
     if (entryInfo.path !== undefined) {
       imageElement = <EntryImage src={entryInfo.path}/>;
     }
+
     return (
-      <GCLink className="randomEntryLink" href={'http://www.grottocenter.org/html/file_' + lang + '.php?lang=' + lang + '&check_lang_auto=false&category=entry&id=' + this.props.entry.id} target="blank">
-        <div className="row">
-          <div className="six columns">
-            <EntryTitle entry={this.props.entry}/>
-            <EntryStat stat={stat}/>
-            <EntryInfo timeInfo={timeInfo} entryInfo={entryInfo}/>
-          </div>
-          {imageElement}
+      <div className="row">
+        <div className="six columns">
+          <EntryTitle entry={this.props.entry}/>
+          <EntryStat stat={stat}/>
+          <EntryInfo timeInfo={timeInfo} entryInfo={entryInfo}/>
         </div>
-      </GCLink>
+        {imageElement}
+      </div>
     );
   }
 }
@@ -238,10 +238,14 @@ export default class RandomEntryCard extends React.Component {
 
   render() {
     if (this.state.ramdomEntry.length !== 0) {
+      let detailPageV2Link = (detailPageV2Links[locale] !== undefined) ? detailPageV2Links[locale] : detailPageV2Links['*']; //eslint-disable-line
+
       return (
-        <div>
-          <EntryData entry={this.state.ramdomEntry}/>
-        </div>
+        <GCLink className='randomEntryLink' href={detailPageV2Link + '&category=entry&id=' + this.state.ramdomEntry.id} target='blank'>
+          <div className='greyBg'>
+            <EntryData entry={this.state.ramdomEntry}/>
+          </div>
+        </GCLink>
       );
 
     } else {
