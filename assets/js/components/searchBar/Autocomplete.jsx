@@ -10,6 +10,7 @@ import muiThemeable from 'material-ui/styles/muiThemeable';
 import SearchIcon from 'material-ui/svg-icons/action/search';
 import I18n from 'react-ghost-i18n';
 import {directionManager, RIGHT_TO_LEFT} from './../../containers/TextDirectionProvider';
+import {detailPageV2Links} from '../../Config';
 
 //TODO: get grotto icons to a font
 // import SvgIcon from 'material-ui/SvgIcon';
@@ -32,7 +33,8 @@ class Autocomplete extends React.Component {
         this.props.dispatch(showMarker(chosenRequest));
     }
     if (chosenRequest.id) {
-      window.open('http://www.grottocenter.org/html/file_En.php?lang=En&check_lang_auto=false&category='+chosenRequest.category+'&id='+chosenRequest.id,'GrottoV2Window');
+      let detailPageV2Link = (detailPageV2Links[locale] !== undefined) ? detailPageV2Links[locale] : detailPageV2Links['*']; //eslint-disable-line
+      window.open(detailPageV2Link + '&category=' + chosenRequest.category + '&id=' + chosenRequest.id,   'GrottoV2Window');
     }
   }
 
