@@ -62,7 +62,7 @@ class Autocomplete extends React.Component {
   foundDataToMenuItemMapping(item, i) {
     let primaryText = item.name;
     if (this.isEntry(item)) {
-      primaryText+=' (' + item.region + ')';
+      primaryText+=' - ' + item.region;
     }
 
     let category ='entry';
