@@ -42,10 +42,13 @@ export const
     'fr': ' http://fr.wikicaves.org/contact',
     '*': 'http://en.wikicaves.org/contact'
   },
+  fseLinks = {
+    'fr': 'http://eurospeleo.eu/fr/',
+    '*': 'http://eurospeleo.eu/en/'
+  },
   wikiBatsLinks = generateLinks('https://wiki.grottocenter.org/wiki/GrottoCenter:%s/bats', 'en'),
   rssLinks = generateLinks('http://www.grottocenter.org/html/rss_%s.xml', 'en'),
   legalLinks = generateLinks('https://wiki.grottocenter.org/wiki/GrottoCenter:%s/Legal_and_Privacy_Statement', 'en');
-
 
 export const
   paypalLink = 'https://www.paypal.com/cgi-bin/webscr',
@@ -63,3 +66,12 @@ export const
     'it': 'http://www.grottocenter.org/html/file_It.php?lang=It',
     '*': 'http://www.grottocenter.org/html/file_En.php?lang=En'
   };
+
+export const
+  pftGdLink = 'https://docs.google.com/document/d/1SccuusPQcxrZJI3nvWcbUc2dgGyKc4ZJXqQzSPeE9Hg/edit?usp=sharing';
+
+export const
+  contributeLinks = {
+    'fr': 'http://fr.wikicaves.org/contribute-participer',
+    '*': 'http://en.wikicaves.org/contribute-participer'
+  }

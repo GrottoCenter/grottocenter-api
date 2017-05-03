@@ -3,10 +3,7 @@ import Autocomplete from './../../components/searchBar/Autocomplete';
 import I18n from 'react-ghost-i18n';
 import muiThemeable from 'material-ui/styles/muiThemeable';
 import GCLink from '../GCLink';
-
-let fseLinks = {
-  'fr': 'http://eurospeleo.eu/fr/'
-};
+import {fseLinks} from '../../Config';
 
 class Header extends Component {
   constructor(props) {
@@ -17,7 +14,7 @@ class Header extends Component {
   }
 
   render() {
-    let fseLink = (fseLinks[this.state.locale] !== undefined) ? fseLinks[this.state.locale] : 'http://eurospeleo.eu/en/';
+    let fseLink = (fseLinks[this.state.locale] !== undefined) ? fseLinks[this.state.locale] : fseLinks['*'];
 
     return (
       <header className="header" style={{color: this.props.muiTheme.palette.primaryTextColor}}>

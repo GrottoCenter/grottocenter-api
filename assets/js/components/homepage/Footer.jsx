@@ -46,6 +46,11 @@ class Footer extends Component {
             <div className="four columns">
               <ul className="linksText">
                 <li>
+                  <GCLink internal={true} style={{color: this.props.muiTheme.palette.textIconColor}} href='/ui/faq'>
+                    <I18n>FAQ</I18n>
+                  </GCLink>
+                </li>
+                <li>
                   <GCLink style={{color: this.props.muiTheme.palette.textIconColor}} href={contributorsLink}>
                     <I18n>Contributors</I18n>
                   </GCLink>
