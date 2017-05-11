@@ -39,11 +39,9 @@ class NewsCard extends Component {
         <CardText style={{textAlign: "justify"}}>{this.props.text}</CardText>
         <Divider/>
         {this.props.linkMore && <CardActions style={{'textAlign': 'right'}}>
-          <FlatButton>
-            <GCLink href={this.props.linkMore}>
-              <ImageLoupe color={this.props.muiTheme.palette.accent1Color} />
-            </GCLink>
-          </FlatButton>
+          <GCLink href={this.props.linkMore}>
+            <FlatButton icon={<ImageLoupe color={this.props.muiTheme.palette.accent1Color} />} />
+          </GCLink>
         </CardActions>}
       </Card>
     );
