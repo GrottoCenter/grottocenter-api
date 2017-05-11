@@ -73,7 +73,7 @@ class GrottoMapClass extends React.Component {
     GrottoSearchToMenuItemMapping(item) {
       let primaryText = item.name;
       if (this.isEntry(item)) {
-        primaryText+=' (' + item.region + ')';
+        primaryText = [<span>{item.name}</span>, " - " , <i>{item.region}</i>]
       }
 
       let category ='entry';
@@ -158,7 +158,7 @@ class GrottoMapClass extends React.Component {
         .search({ query: searchText })
         .then(this.treatGeoSearchResults.bind(this));
       $.ajax({
-        url: '/search/findAll?name=' +searchText,//TODO: optimize this service for autocomplete
+        url: '/api/search/findAll?name=' +searchText,//TODO: optimize this service for autocomplete
         dataType: 'json',
         success: this.treatGrottoSearchResults.bind(this)
       });
@@ -175,7 +175,7 @@ class GrottoMapClass extends React.Component {
       + '&sw_lat=' + mapBounds._southWest.lat
       + '&sw_lng=' + mapBounds._southWest.lng;
       $.ajax({
-        url: '/search/findByBounds?' + queryString,
+        url: '/api/search/findByBounds?' + queryString,
         dataType: 'json',
         success: this.treatFindByBoundsResults.bind(this)
       });
