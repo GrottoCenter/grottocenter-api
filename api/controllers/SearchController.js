@@ -15,7 +15,7 @@ module.exports = {
         // search for caves
         //TCave.find(parameters).sort('id ASC').limit(50).exec(function(err, foundCave) {
         // search for entries
-        TEntry.find(parameters).sort('id ASC').limit(50).exec(function (err, foundEntry) {
+    TEntry.find(parameters).sort('id ASC').limit(50).exec(function(err, foundEntry) {
             // search for grottos
             //TGrotto.find(parameters).sort('id ASC').limit(50).exec(function(err, foundGrotto) {
             let params = {};
@@ -29,24 +29,24 @@ module.exports = {
         // end search for caves
         //});
     },
-    findByBounds: function (req, res) {
+  findByBounds: function(req, res) {
         // https://github.com/balderdashy/waterline-docs/blob/master/queries/query-language.md
         TEntry.find({
-                latitude: {
-                    '>': req.param('sw_lat'),
-                    '<': req.param('ne_lat')
-                },
-                longitude: {
-                    '>': req.param('sw_lng'),
-                    '<': req.param('ne_lng')
-                }
-            })
-            .sort('id ASC')
-            .limit(200).exec(function (err, foundEntry) {
-                let params = {};
-                params.controllerMethod = 'SearchController.readAll';
-                params.notFoundMessage = 'No items found.';
-                return ControllerService.treat(err, foundEntry, params, res);
-            });
+        latitude: {
+          '>': req.param('sw_lat'),
+          '<': req.param('ne_lat')
+        },
+        longitude: {
+          '>': req.param('sw_lng'),
+          '<': req.param('ne_lng')
+        }
+      })
+      .sort('id ASC')
+      .limit(200).exec(function(err, foundEntry) {
+        let params = {};
+        params.controllerMethod = 'SearchController.readAll';
+        params.notFoundMessage = 'No items found.';
+        return ControllerService.treat(err, foundEntry, params, res);
+      });
     }
 };
