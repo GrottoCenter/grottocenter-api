@@ -1,6 +1,6 @@
 import React, {PropTypes} from 'react';
 import { connect } from 'react-redux'
-import { Map, Marker, Popup, TileLayer, Tooltip } from 'react-leaflet'
+import { Map, Marker, Popup, TileLayer } from 'react-leaflet'
 
 import { showMarker } from './../actions/Search';
 
@@ -11,9 +11,6 @@ import muiThemeable from 'material-ui/styles/muiThemeable';
 import I18n from 'react-ghost-i18n';
 
 import { OpenStreetMapProvider } from 'leaflet-geosearch';
-
-import Drawer from 'material-ui/Drawer';
-
 const provider = new OpenStreetMapProvider();
 const smallMarkerIcon = L.icon({
     iconUrl: '/images/gc-map-entry.svg',
@@ -38,7 +35,6 @@ class GrottoMapClass extends React.Component {
         latlng: {
           lat: null,
           lng: null,
-          drawerOpen: false
         },
         searchResultList: [],
         entries:[]
@@ -50,7 +46,7 @@ class GrottoMapClass extends React.Component {
       this.refs.map.leafletElement.locate();
     }
     onNewRequest(chosenRequest) {
-      // console.log('onNewRequest',chosenRequest);
+      console.log('onNewRequest',chosenRequest);
       if (chosenRequest.isMappable ) {
         if (chosenRequest.category!="geo-place") {
           this.props.dispatch(showMarker(chosenRequest));// useless for fullscreen Map only component
@@ -168,9 +164,9 @@ class GrottoMapClass extends React.Component {
       });
     }
     onUpdateMapBounds() {
-      // this.setState({
-      //   entries: []
-      // });
+      this.setState({
+        entries: []
+      });
       var leaftletMap = this.refs.map.leafletElement;
       var mapBounds = leaftletMap.getBounds();
       var queryString = ''
@@ -186,28 +182,18 @@ class GrottoMapClass extends React.Component {
     }
     treatFindByBoundsResults(data) {
       if ( this.props.marker != null ) {
-        data = data.filter(item => item.id != this.props.marker.id);// remove props.marker from list
+        data = data.filter(item => item.id !== this.props.marker.id);// TODO remove props.marker from list
       }
-      // to keep popup open
-      var newdata = data.filter(item => this.state.entries.filter(olditem => olditem.id == item.id).length==0);
-      var olddataStillOnMap = this.state.entries.filter(item => data.filter(olditem => olditem.id == item.id).length>0);
       this.setState({
-        entries: olddataStillOnMap.concat(newdata)
+        entries: data
       });
-      // console.log("this.state.entries",this.state.entries)
     }
 
 /*
   map events
 */
-    onMouseOverMarker(entry, e) {
-    }
-    handleEvent(e) {
-        console.log("leaftletMap handleEvent",e);
-
-        this.setState({
-          drawerOpen: true
-        })
+    handleEvent() {
+        // console.log("leaftletMap handleEvent",e);
     }
     handleLocationFound(e) {//Fired when geolocation (using the locate method) went successfully.
         // console.log("leaftletMap handleLocationFound",e);
@@ -226,10 +212,7 @@ class GrottoMapClass extends React.Component {
     render() {
         const marker = (this.props.marker != null && this.props.marker.latlng != null)
               ? (
-                <Marker icon={mainMarkerIcon} position={this.props.marker.latlng}
-                  onClick={this.handleEvent.bind(this)}
-                  onMouseOver={this.handleEvent.bind(this)}
-                  >
+                <Marker icon={mainMarkerIcon} position={this.props.marker.latlng}>
                     <Popup>
                         <span>
                             {this.props.marker.text}
@@ -260,13 +243,6 @@ class GrottoMapClass extends React.Component {
                 searchText={''}
               />
             </div>
-            <Drawer open={this.state.drawerOpen}>
-                      <MenuItem>Menu Item</MenuItem>
-                      <MenuItem>Menu Item 2</MenuItem>
-                        <span>
-
-                        </span>
-                    </Drawer>
             <Map
                  style={{width:"100%",height: "100%",position: 'absolute'}}
                  center={(this.props.marker) ? this.props.marker.latlng : undefined}
@@ -293,21 +269,8 @@ class GrottoMapClass extends React.Component {
                        <Marker icon={smallMarkerIcon} key={entry.id} position={{
                          lat: entry.latitude,
                          lng: entry.longitude
-                       }}
-                       onMouseOver={this.onMouseOverMarker.bind(this, entry)}
-                       >
-                       <Tooltip
-                         offset={L.point(0,-8)}
-                         sticky={true}>
-                         <span>
-                            <b>{entry.name}</b>
-                         </span>
-                       </Tooltip>
-                         <Popup
-                           className={"popupCss"}
-                           autoPan={false}
-                           autoClose={false}
-                           closeOnClick={false}>
+                       }}>
+                         <Popup>
                              <span>
                                 <b>{entry.name}</b>
                                 {Object.keys(entry).map(key =>
