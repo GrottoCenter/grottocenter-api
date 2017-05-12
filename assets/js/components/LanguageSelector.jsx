@@ -25,7 +25,7 @@ class LanguageSelector extends Component {
     }
     // To be uncommented when we will be able to retrieve catalog without page relaod
     // this.props.dispatch(changeLanguage(value));
-    window.location = '/?lang=' + value;
+    window.location = '?lang=' + value;
   }
 
   render() {
