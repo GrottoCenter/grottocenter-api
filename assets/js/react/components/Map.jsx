@@ -12,6 +12,8 @@ import I18n from 'react-ghost-i18n';
 
 import { OpenStreetMapProvider } from 'leaflet-geosearch';
 
+import Drawer from 'material-ui/Drawer';
+
 const provider = new OpenStreetMapProvider();
 const smallMarkerIcon = L.icon({
     iconUrl: '/images/gc-map-entry.svg',
@@ -36,6 +38,7 @@ class GrottoMapClass extends React.Component {
         latlng: {
           lat: null,
           lng: null,
+          drawerOpen: false
         },
         searchResultList: [],
         entries:[]
@@ -183,7 +186,7 @@ class GrottoMapClass extends React.Component {
     }
     treatFindByBoundsResults(data) {
       if ( this.props.marker != null ) {
-        data = data.filter(item => item.id != this.props.marker.id);// TODO remove props.marker from list
+        data = data.filter(item => item.id != this.props.marker.id);// remove props.marker from list
       }
       // to keep popup open
       var newdata = data.filter(item => this.state.entries.filter(olditem => olditem.id == item.id).length==0);
@@ -200,7 +203,11 @@ class GrottoMapClass extends React.Component {
     onMouseOverMarker(entry, e) {
     }
     handleEvent(e) {
-        // console.log("leaftletMap handleEvent",e);
+        console.log("leaftletMap handleEvent",e);
+
+        this.setState({
+          drawerOpen: true
+        })
     }
     handleLocationFound(e) {//Fired when geolocation (using the locate method) went successfully.
         // console.log("leaftletMap handleLocationFound",e);
@@ -253,6 +260,13 @@ class GrottoMapClass extends React.Component {
                 searchText={''}
               />
             </div>
+            <Drawer open={this.state.drawerOpen}>
+                      <MenuItem>Menu Item</MenuItem>
+                      <MenuItem>Menu Item 2</MenuItem>
+                        <span>
+
+                        </span>
+                    </Drawer>
             <Map
                  style={{width:"100%",height: "100%",position: 'absolute'}}
                  center={(this.props.marker) ? this.props.marker.latlng : undefined}
