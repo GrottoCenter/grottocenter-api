@@ -1,4 +1,7 @@
 [role='section'].randomEntry {
+
+  text-align: center;
+
   .topoImg {
     width: 100%;
     background-color: white;
@@ -48,7 +51,7 @@
       span {
         margin-right: 10px;
         white-space: nowrap;
-        width: 90px;
+        width: 50%;
         overflow: hidden;
         text-overflow: ellipsis;
       }
@@ -67,18 +70,35 @@
     font-weight: 300;
     font-size: 1.4em;
 
-    .value {
+    .value, .unit {
       margin-left: 6px;
-    }
-
-    .unit {
-      margin-left: 6px;
+      white-space: nowrap;
     }
   }
 
   .noImage {
     font-weight: 300;
     font-style: italic;
+  }
+
+  @media (min-width: 550px) {
+    .six.columns {
+      width: 100%;
+    }
+    .column, .columns {
+      margin-left: 0;
+    }
+  }
+
+  @media (min-width: 750px) {
+    text-align: left;
+
+    .six.columns {
+      width: 48%;
+    }
+    .column, .columns {
+      margin-left: 2%;
+    }
   }
 }
 
