@@ -5,6 +5,7 @@ import BasePage from './components/pages/BasePage';
 import Landing from './components/pages/Landing';
 import Modal from './components/pages/Modal';
 import Swagger from './components/pages/Swagger';
+import Backend from './components/pages/Backend';
 
 import Caver from './components/Caver';
 import Contact from './components/Contact';
@@ -22,7 +23,7 @@ export default (
     <Route path="/" component={BasePage}>
       <IndexRoute component={Landing}/>
       <Route path="ui">
-        <IndexRedirect to="/"/>
+        <IndexRoute component={Backend}/>
         <Route path="admin">
           <IndexRoute component={AvailableTools}/>
           <Route path="listEntriesOfInterest" component={EntriesOfInterest}/>
