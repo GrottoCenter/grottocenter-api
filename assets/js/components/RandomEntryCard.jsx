@@ -173,7 +173,18 @@ export class EntryInfoItem extends React.Component {
     }
 
     if (this.props.itemType === 'time') {
-      displayValue = displayValue.replace('.0000','');
+      let splitTime = displayValue.split(':');
+      let curHours = parseInt(splitTime[0]);
+      let curMinutes = parseInt(splitTime[1]);
+      if (curHours === 0) {
+        displayValue = <I18n><span>{curMinutes}</span> min</I18n>;
+      } else {
+        if (curMinutes === 0) {
+          displayValue = <I18n><span>{curHours}</span> hour{(curHours > 1) ? 's' : ''}</I18n>;
+        } else {
+          displayValue = <I18n><span>{curHours}</span> h <span>{curMinutes}</span></I18n>
+        }
+      }
     }
 
     let imgName = 'images/' + this.props.itemImg;
