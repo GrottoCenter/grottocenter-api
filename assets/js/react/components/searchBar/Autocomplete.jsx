@@ -10,7 +10,7 @@ import muiThemeable from 'material-ui/styles/muiThemeable';
 import SearchIcon from 'material-ui/svg-icons/action/search';
 import I18n from 'react-ghost-i18n';
 import {directionManager, RIGHT_TO_LEFT} from './../../containers/TextDirectionProvider';
-import {detailPageV2Links} from '../../Config';
+import {detailPageV2Links} from '../../conf/Config';
 
 //TODO: get grotto icons to a font
 // import SvgIcon from 'material-ui/SvgIcon';

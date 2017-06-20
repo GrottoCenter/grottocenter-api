@@ -4,9 +4,9 @@ import muiThemeable from 'material-ui/styles/muiThemeable';
 import GiftIcon from 'material-ui/svg-icons/action/card-giftcard';
 import FlatButton from 'material-ui/FlatButton';
 import GCLink from '../GCLink';
-import {licenceLinks, bloggerLinks, bloggerIcons, contactLinks, wikiBatsLinks, rssLinks, legalLinks} from '../../Config';
-import {wikicavesLink, contributorsLink, facebookLink, twitterLink, githubLink} from '../../Config';
-import {paypalLink, paypalImgLink, paypalId} from '../../Config';
+import {licenceLinks, bloggerLinks, bloggerIcons, contactLinks, wikiBatsLinks, rssLinks, legalLinks} from '../../conf/Config';
+import {wikicavesLink, contributorsLink, facebookLink, twitterLink, githubLink} from '../../conf/Config';
+import {paypalLink, paypalImgLink, paypalId} from '../../conf/Config';
 
 class Footer extends Component {
   constructor(props) {

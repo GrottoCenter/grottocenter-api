@@ -4,7 +4,7 @@ import EmptyStarIcon from 'material-ui/svg-icons/toggle/star-border';
 import HalfStarIcon from 'material-ui/svg-icons/toggle/star-half';
 import I18n from 'react-ghost-i18n';
 import GCLink from '../components/GCLink';
-import {detailPageV2Links} from '../Config';
+import {detailPageV2Links} from '../conf/Config';
 
 export class EntryData extends React.Component {
   constructor(props) {

@@ -4,10 +4,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {Router, browserHistory} from 'react-router';
-import routes from './Routes';
+import routes from './conf/Routes';
 import I18n from 'react-ghost-i18n';
 
-import grottoTheme from './grottoTheme';
+import grottoTheme from './conf/grottoTheme';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import getMuiTheme from 'material-ui/styles/getMuiTheme';
 

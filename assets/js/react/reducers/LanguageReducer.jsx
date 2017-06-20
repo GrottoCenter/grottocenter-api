@@ -1,5 +1,5 @@
 import {CHANGE_LANGUAGE} from './../actions/Language';
-import {DEFAULT_LANGUAGE} from '../Config';
+import {DEFAULT_LANGUAGE} from '../conf/Config';
 
 // State
 // =====

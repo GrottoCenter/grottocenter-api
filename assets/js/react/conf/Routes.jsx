@@ -1,22 +1,22 @@
 import React from 'react';
 import {Route, IndexRoute, Redirect, IndexRedirect} from 'react-router';
 
-import BasePage from './components/pages/BasePage';
-import Landing from './components/pages/Landing';
-import Modal from './components/pages/Modal';
-import Swagger from './components/pages/Swagger';
-import Backend from './components/pages/Backend';
+import BasePage from '../components/pages/BasePage';
+import Landing from '../components/pages/Landing';
+import Modal from '../components/pages/Modal';
+import Swagger from '../components/pages/Swagger';
+import Backend from '../components/pages/Backend';
 
-import Caver from './components/Caver';
-import Contact from './components/Contact';
-import Entry from './components/Entry';
-import Faq from './components/Faq';
-import SigninForm from './components/SigninForm';
-import SignupForm from './components/SignupForm';
-import AvailableTools, {EntriesOfInterest} from './components/admin/Tools';
-import Api from './components/Api';
+import Caver from '../components/Caver';
+import Contact from '../components/Contact';
+import Entry from '../components/Entry';
+import Faq from '../components/Faq';
+import SigninForm from '../components/SigninForm';
+import SignupForm from '../components/SignupForm';
+import AvailableTools, {EntriesOfInterest} from '../components/admin/Tools';
+import Api from '../components/Api';
 
-import LatestBlogNewsSection from './components/homepage/LatestBlogNewsSection';
+import LatestBlogNewsSection from '../components/homepage/LatestBlogNewsSection';
 
 export default (
   <Route>

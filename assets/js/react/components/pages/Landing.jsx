@@ -9,7 +9,7 @@ import Partners from '../homepage/Partners';
 import Footer from '../homepage/Footer';
 
 const Landing = () => (
-  <div>
+  <div id='landingpage'>
     <Header/>
     <Welcome/>
     <WhatIsIt/>
