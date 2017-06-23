@@ -4,7 +4,7 @@ import muiThemeable from 'material-ui/styles/muiThemeable';
 import CheckIcon from 'material-ui/svg-icons/navigation/check';
 import {Card, CardTitle, CardText} from 'material-ui/Card';
 import GCLink from './GCLink';
-import {pftGdLink, contributorsLink, contributeLinks} from '../Config';
+import {pftGdLink, contributorsLink, contributeLinks} from '../conf/Config';
 
 class Faq extends Component {
   constructor(props) {

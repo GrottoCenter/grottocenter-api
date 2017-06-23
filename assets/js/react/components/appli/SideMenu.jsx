@@ -24,7 +24,7 @@ export default class SideMenu extends React.Component {
         <RaisedButton onTouchTap={this.handleToggle}>
           <NotificationsIcon/>
         </RaisedButton>
-      <Drawer width={200} open={this.state.open} containerStyle={{top: '120px'}}>
+        <Drawer width={200} open={this.state.open} containerStyle={{top: '120px'}}>
           <MenuItem>Menu Item</MenuItem>
           <MenuItem>Menu Item 2</MenuItem>
         </Drawer>

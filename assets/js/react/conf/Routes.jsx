@@ -1,12 +1,16 @@
 import React from 'react';
-import {Route, IndexRoute, Redirect, IndexRedirect} from 'react-router';
+import {Route, IndexRoute, Redirect} from 'react-router';
 
 import BasePage from '../components/pages/BasePage';
 import Landing from '../components/pages/Landing';
 import Modal from '../components/pages/Modal';
+import Application from '../components/pages/Application';
+import Dashboard from '../components/appli/Dashboard';
+import Map from '../components/Map';
 import Swagger from '../components/pages/Swagger';
 import Backend from '../components/pages/Backend';
-
+import Dashboard from '../components/appli/Dashboard';
+import Map from '../components/Map';
 import Caver from '../components/Caver';
 import Contact from '../components/Contact';
 import Entry from '../components/Entry';
@@ -22,8 +26,8 @@ export default (
   <Route>
     <Route path="/" component={BasePage}>
       <IndexRoute component={Landing}/>
-      <Route path="ui">
-        <IndexRoute component={Backend}/>
+      <Route path="ui" component={Application}>
+        <IndexRoute component={Dashboard}/>
         <Route path="admin">
           <IndexRoute component={AvailableTools}/>
           <Route path="listEntriesOfInterest" component={EntriesOfInterest}/>
@@ -40,7 +44,7 @@ export default (
         <Route path="contact" component={Contact}/>
         <Route path="entry" component={Entry}/>
         <Route path="faq" component={Faq}/>
-        <Route path="swagger" component={Swagger} />
+        <Route path="map" component={Map}/><Route path="swagger" component={Swagger} />
         <Route path="test" component={LatestBlogNewsSection}/>
         <Redirect from="*" to="/"/>
       </Route>

@@ -3,7 +3,7 @@ import Autocomplete from './../../components/searchBar/Autocomplete';
 import I18n from 'react-ghost-i18n';
 import muiThemeable from 'material-ui/styles/muiThemeable';
 import GCLink from '../GCLink';
-import {fseLinks} from '../../Config';
+import {fseLinks} from '../../conf/Config';
 
 class Header extends Component {
   constructor(props) {
