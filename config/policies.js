@@ -46,7 +46,9 @@ module.exports.policies = {
     '*': 'tokenAuth',
     'find': true,
     'findAll': true,
-    'findRandom': true
+    'findRandom': true,
+    'getPublicEntriesNumber' : true,
+    'getEntriesNumber' : true
   },
 
   SearchController: {

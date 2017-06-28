@@ -22,6 +22,8 @@ const ENTRY_INFO_QUERY = 'SELECT COALESCE(SE.depth, C.depth) AS depth, COALESCE(
                           + ' LEFT JOIN t_topography T ON T.id=JTP.Id_topography'
                           + ' LEFT JOIN t_file F ON F.id=JTP.Id_File'
                           + ' WHERE E.id=? AND (T.is_public=\'YES\' OR T.is_public IS NULL)';
+// query to count public entries
+const PUBLIC_ENTRIES_COUNT_QUERY = 'SELECT COUNT(id) AS count FROM t_entry WHERE Is_public=\'YES\'';
 
 module.exports = {
   /**
@@ -100,6 +102,21 @@ module.exports = {
         });
       }, function(err) {
         // when no entry info found, reject
+        reject(err);
+      });
+    });
+  },
+
+  /**
+   * @returns {Promise} which resolves to the succesfully query of the number of public entries
+   */
+  getPublicEntriesNumber: function() {
+    return new Promise((resolve, reject) => {
+      CommonService.query(TEntry, PUBLIC_ENTRIES_COUNT_QUERY, []).then(function(result) {
+        if (result) {
+          resolve(result[0]);
+        }
+      }, function(err) {
         reject(err);
       });
     });

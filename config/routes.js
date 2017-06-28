@@ -95,6 +95,11 @@ module.exports.routes = {
     action: 'findAll'
   },
 
+  'GET /api/caver/count': {
+    controller: 'Caver',
+    action: 'getCaversNumber'
+  },
+
   'GET /api/caver/:id': {
     controller: 'Caver',
     action: 'find'
@@ -125,6 +130,16 @@ module.exports.routes = {
   'GET /api/entry/findRandom': {
     controller: 'Entry',
     action: 'findRandom'
+  },
+
+  'GET /api/entry/publicCount': {
+    controller: 'Entry',
+    action: 'getPublicEntriesNumber'
+  },
+
+  'GET /api/entry/count': {
+    controller: 'Entry',
+    action: 'getEntriesNumber'
   },
 
   'GET /api/entry/:id': {
@@ -267,6 +282,16 @@ module.exports.routes = {
   'GET /api/grotto/findAll': {
     controller: 'Grotto',
     action: 'findAll'
+  },
+
+  'GET /api/grotto/officialCount': {
+    controller: 'Grotto',
+    action: 'getOfficialPartnersNumber'
+  },
+
+  'GET /api/grotto/count': {
+    controller: 'Grotto',
+    action: 'getPartnersNumber'
   },
 
   'GET /api/grotto/:id': {

@@ -92,5 +92,17 @@ module.exports = {
       params.notFoundMessage = 'No cavers found.';
       return ControllerService.treat(err, found, params, res);
     });
+  },
+
+  getCaversNumber: function(req, res) {
+    TCaver.count().exec(function(err, found) {
+      let params = {};
+      params.controllerMethod = 'CaverController.getCaversNumber';
+      params.notFoundMessage = 'Problem while getting number of cavers.';
+
+      let count = {};
+      count.count = found;
+      return ControllerService.treat(err, count, params, res);
+    });
   }
 };
