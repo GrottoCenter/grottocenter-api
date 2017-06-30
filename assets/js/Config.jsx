@@ -74,4 +74,16 @@ export const
   contributeLinks = {
     'fr': 'http://fr.wikicaves.org/contribute-participer',
     '*': 'http://en.wikicaves.org/contribute-participer'
-  }
+  };
+
+export const
+    DYNAMIC_NUMBER_RELOAD_INTERVAL = 900000;
+
+export const
+  dynamicNumbersUrl = {
+    'cavers': '/api/caver/count',
+    'entries': '/api/entry/count',
+    'publicEntries': '/api/entry/publicCount',
+    'partners': '/api/grotto/count',
+    'officialPartners': '/api/grotto/officialCount'
+  };

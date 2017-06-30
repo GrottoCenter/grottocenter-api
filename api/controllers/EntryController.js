@@ -62,5 +62,29 @@ module.exports = {
       sails.log.error(err);
       return res.serverError('EntryController.findRandom error : ' + err);
     });
+  },
+
+  getPublicEntriesNumber: function(req, res) {
+    EntryService.getPublicEntriesNumber().then(function(count) {
+      if (!count) {
+        return res.notFound('Problem while getting number of public entries.');
+      }
+      return res.json(count);
+    }, function(err) {
+      sails.log.error(err);
+      return res.serverError('EntryController.getPublicEntriesNumber error : ' + err);
+    });
+  },
+
+  getEntriesNumber: function(req, res) {
+    TEntry.count().exec(function(err, found) {
+      let params = {};
+      params.controllerMethod = 'EntryController.getEntriesNumber';
+      params.notFoundMessage = 'Problem while getting number of entries.';
+
+      let count = {};
+      count.count = found;
+      return ControllerService.treat(err, count, params, res);
+    });
   }
 };
