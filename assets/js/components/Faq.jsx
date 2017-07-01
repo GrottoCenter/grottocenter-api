@@ -7,7 +7,7 @@ import GCLink from './GCLink';
 import {pftGdLink, contributorsLink, contributeLinks} from '../Config';
 
 const Faq = (props) => (
-  <div id='faq' style={{color: props.muiTheme.palette.textIconColor}}>
+  <div className='collapsible_faq' style={{color: props.muiTheme.palette.textIconColor}}>
     <Card className="faqCard" style={{backgroundColor: props.muiTheme.palette.secondary1Color}}>
       <CardTitle className='faqCardTitle' actAsExpander={true} showExpandableButton={true} style={{color: props.muiTheme.palette.textIconColor}}>
         <I18n>I would like to share some of  my work but some caves should remain protected How  are you planning to protect them ?</I18n>
