@@ -20,6 +20,18 @@
 # and run a new one from the pushed image created just before.
 
 
+
+# ______ _________________ _____ _____   ___ _____ ___________
+# |  _  \  ___| ___ \ ___ \  ___/  __ \ / _ \_   _|  ___|  _  \
+# | | | | |__ | |_/ / |_/ / |__ | /  \// /_\ \| | | |__ | | | |
+# | | | |  __||  __/|    /|  __|| |    |  _  || | |  __|| | | |
+# | |/ /| |___| |   | |\ \| |___| \__/\| | | || | | |___| |/ /
+# |___/ \____/\_|   \_| \_\____/ \____/\_| |_/\_/ \____/|___/
+echo "DEPRECATED ! WE ARE NOW USING GOOGLE APP ENGINE TO DEPLOY. Please see appEngineDeploy.sh"
+exit 1;
+
+
+
 # Set Variables ###########################
 PROJECT_ID="grottocenter-cloud"
 APPNAME="grottocenter"

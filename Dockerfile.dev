@@ -1,0 +1,19 @@
+# This is the old docker file used before we move from Compute Engine to App Engine
+#
+
+FROM node:6.9-alpine
+MAINTAINER Wikicaves
+
+RUN mkdir -p /usr/src/app
+WORKDIR /usr/src/app
+COPY package.json /usr/src/app/
+RUN npm install --production
+COPY . /usr/src/app
+WORKDIR /usr/src/app
+
+# This environment variable disable the grunt build on production
+# So the app need to be build using "grunt prod" before creating the docker image
+ENV sails_hooks__grunt=false
+ENV NODE_ENV=production
+CMD [ "node", "app.js" ]
+EXPOSE 1337

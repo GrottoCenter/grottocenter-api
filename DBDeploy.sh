@@ -3,6 +3,13 @@
 # Date: Dec 29 2016
 #
 # Requirement: docker, gsutil, gcloud
+# The user GROTTOCENTER_V2_SSH_USER need to be created on the gc2 server with sudo rights :
+# /usr/sbin/usermod -a -G wheel GROTTOCENTER_V2_SSH_USER
+# The user GROTTOCENTER_V2_SSH_USER need to have a file .my.cnf in his home directory.
+# The cloud SQL V2 Mysql database server need to be created from the UI of Google Cloud.
+# A "sailsuser" user with password need to be added from the UI.
+# The "grottoce" database need to be created from the UI.
+#
 #
 # Deploy the current dump of GC2 to the local MySQL container or to the production
 # Cloud SQL instance.
@@ -37,7 +44,7 @@ GROTTOCENTER_V2_SSH_PORT=$2
 CLOUD_STORAGE_BUCKET_NAME="grottocenter-mysql-dump"
 DUMP_FILE_PATH=".tmp/"
 DUMP_FILE_NAME="mysqldump.sql"
-SQL_PROD_INSTANCE_NAME="grottocenter-db"
+SQL_PROD_INSTANCE_NAME="grottocenter-beta-db"
 MYSQL_LOCAL_TAGNAME="mysqlgrotto"
 
 LOCAL_DOCKER_MYSQL_USER="sailsuser"
@@ -45,8 +52,8 @@ LOCAL_DOCKER_MYSQL_PASSWORD="grottocepassword"
 LOCAL_DOCKER_MYSQL_DATABASE="grottoce"
 
 PRODUCTION_DEPLOY="false"
-# Retrieved by using 'gcloud sql instances describe grottocenter-db'
-CLOUDSQL_SERVICE_ACCOUNT_EMAIL_ADDRESS="r3dzbjfubbhdrephebzfctrq6m@speckle-umbrella-4.iam.gserviceaccount.com"
+# Retrieved by using 'gcloud sql instances describe grottocenter-beta-db'
+CLOUDSQL_SERVICE_ACCOUNT_EMAIL_ADDRESS="y2uznonwl5hlnfl7cditexurbm@speckle-umbrella-4.iam.gserviceaccount.com"
 
 
 if [ $# -eq 3 ]
@@ -70,7 +77,8 @@ gunzip -f ${DUMP_FILE_PATH}${DUMP_FILE_NAME}.gz
 cat sql/0_initDatabase.sql ${DUMP_FILE_PATH}${DUMP_FILE_NAME} sql/20*.sql | gzip > ${DUMP_FILE_PATH}${DUMP_FILE_NAME}.gz
 rm -f ${DUMP_FILE_PATH}${DUMP_FILE_NAME}
 
-if [ "${PRODUCTION_DEPLOY}" = "true" ]; then
+if [ "${PRODUCTION_DEPLOY}" = "true" ]
+then
   echo '################ PRODUCTION DEPLOY ###################'
   echo '### Upload Dump file to the Cloud Storage bucket you created ###'
   gsutil cp ${DUMP_FILE_PATH}${DUMP_FILE_NAME}.gz gs://${CLOUD_STORAGE_BUCKET_NAME}

@@ -45,7 +45,7 @@ echo "### RUN grottocenter Image locally ###"
 # Here with sails_models__connection we override the production models connection to use the dev database
 docker rm -f ${GC_TAGNAME}
 docker run -d \
-    -p ${GC_LOCAL_PORT}:1337 \
+    -p ${GC_LOCAL_PORT}:8080 \
     --restart=always \
     --link ${MYSQL_TAGNAME} \
     -e sails_models__connection=grottoceMysqlLocalDocker \

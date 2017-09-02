@@ -89,8 +89,13 @@ For atom-beautify, on settings, activate "Beautify on save" for JS, JSX, HTML an
 The following tools need to be installed on the developer's computer to be able to deploy the app :
 
 - gcloud
-- docker
-- docker-machine
+- docker (optional)
+
+#### install gcloud command
+
+- Follow https://cloud.google.com/sdk/docs/
+- `gcloud components update && gcloud components install beta`
+- `gcloud init`
 
 ### Steps to deploy
 
@@ -102,7 +107,7 @@ __Warning :__ The deployment script will deploy the app as it is currently in yo
 - Make sure that `config/env/production.js` is in your project. _Otherwise ask an other Wikicaves developer for this file which is not check'in to the project because it contains the database credentials._
 - Run `./localDeploy.sh` and verify that everything is working correctly on the app deployed in your local docker.
 - [Optional] Run `./DBDeploy.sh [GC2_SSH_USER] [GC2_SSH_PORT] false` to deploy the grottocenter 2 database content to your local docker and test the app with real data.
-- Deploy in production by doing `./prodDeploy.sh`
+- Deploy in production by doing `./appEngineDeploy.sh`
 - Wait for the complete deployment and then verify online that everything works well on the production application.
 - [Optional] Run `./DBDeploy.sh [GC2_SSH_USER] [GC2_SSH_PORT] true` to deploy the grottocenter 2 database content to the cloud SQL production database (the previous GC3 database will be overwritten).
 

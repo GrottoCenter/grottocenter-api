@@ -67,7 +67,7 @@ module.exports.connections = {
   grottoceMysqlProd: {
     migrate: 'safe',
     adapter: 'sails-mysql',
-    host: '',
+    socketPath: '',
     user: '',
     password: '',
     database: 'grottoce',
