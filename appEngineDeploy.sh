@@ -19,7 +19,7 @@
 
 
 # Set Variables ###########################
-PROJECT_ID="grottocenter-cloud"
+PROJECT_ID="grottocenter-beta"
 
 ###########################################
 

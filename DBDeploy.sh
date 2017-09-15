@@ -37,14 +37,14 @@
 # production deployment.
 # The SSH password will be asked twice. This is normal.
 
-PROJECT_ID="grottocenter-cloud"
+PROJECT_ID="grottocenter-beta"
 GROTTOCENTER_V2="37.59.123.105"
 GROTTOCENTER_V2_SSH_USER=$1
 GROTTOCENTER_V2_SSH_PORT=$2
 CLOUD_STORAGE_BUCKET_NAME="grottocenter-mysql-dump"
 DUMP_FILE_PATH=".tmp/"
 DUMP_FILE_NAME="mysqldump.sql"
-SQL_PROD_INSTANCE_NAME="grottocenter-beta-db"
+SQL_PROD_INSTANCE_NAME="grottocenter-demo-db"
 MYSQL_LOCAL_TAGNAME="mysqlgrotto"
 
 LOCAL_DOCKER_MYSQL_USER="sailsuser"
@@ -52,8 +52,8 @@ LOCAL_DOCKER_MYSQL_PASSWORD="grottocepassword"
 LOCAL_DOCKER_MYSQL_DATABASE="grottoce"
 
 PRODUCTION_DEPLOY="false"
-# Retrieved by using 'gcloud sql instances describe grottocenter-beta-db'
-CLOUDSQL_SERVICE_ACCOUNT_EMAIL_ADDRESS="y2uznonwl5hlnfl7cditexurbm@speckle-umbrella-4.iam.gserviceaccount.com"
+# Retrieved by using 'gcloud sql instances describe grottocenter-demo-db'
+CLOUDSQL_SERVICE_ACCOUNT_EMAIL_ADDRESS="x7ouvznpljhvnpx6mweu3srkl4@speckle-umbrella-11.iam.gserviceaccount.com"
 
 
 if [ $# -eq 3 ]

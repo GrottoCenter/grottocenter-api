@@ -11,4 +11,4 @@ automatic_scaling:
   cpu_utilization:
     target_utilization: 0.9
 beta_settings:
-  cloud_sql_instances: grottocenter-cloud:us-central1:grottocenter-beta-db
+  cloud_sql_instances: grottocenter-beta:europe-west1:grottocenter-demo-db

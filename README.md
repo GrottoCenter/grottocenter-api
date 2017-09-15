@@ -94,7 +94,8 @@ The following tools need to be installed on the developer's computer to be able 
 #### install gcloud command
 
 - Follow https://cloud.google.com/sdk/docs/
-- `gcloud components update && gcloud components install beta`
+- `gcloud components update`
+- `gcloud components install beta`
 - `gcloud init`
 
 ### Steps to deploy
