@@ -1,5 +1,5 @@
 import fetch from 'isomorphic-fetch';
-import {dynamicNumbersUrl} from '../Config';
+import {dynamicNumbersUrl} from '../conf/Config';
 
 export const INIT_DYNNB_FETCHER = 'INIT_DYNNB_FETCHER';
 export const FETCH_DYNNB = 'FETCH_DYNNB';

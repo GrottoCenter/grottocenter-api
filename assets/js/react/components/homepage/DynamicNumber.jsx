@@ -1,6 +1,6 @@
 import React, {Component, PropTypes} from 'react';
 import CircularProgress from 'material-ui/CircularProgress';
-import {DYNAMIC_NUMBER_RELOAD_INTERVAL} from '../../Config';
+import {DYNAMIC_NUMBER_RELOAD_INTERVAL} from '../../conf/Config';
 import {loadDynamicNumber} from '../../actions/DynamicNumber';
 import SyncKOIcon from 'material-ui/svg-icons/notification/sync-problem';
 import IconButton from 'material-ui/IconButton';
