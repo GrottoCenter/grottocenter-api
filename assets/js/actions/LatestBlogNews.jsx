@@ -39,7 +39,6 @@ export const fetchLatestBlogNewsFailure = (blog, error) => {
 
 export function loadLatestBlogNews(blog, url) {
   return function (dispatch) {
-    dispatch(initLatestBlogNewsFetcher(blog, url));
     dispatch(fetchLatestBlogNews(blog));
 
     return fetch(url)
