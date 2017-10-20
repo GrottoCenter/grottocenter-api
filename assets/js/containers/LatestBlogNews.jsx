@@ -1,13 +1,19 @@
 import {connect} from 'react-redux';
 import NewsCard from './../components/NewsCard';
+import {initLatestBlogNewsFetcher, loadLatestBlogNews} from '../actions/LatestBlogNews';
+
+const mapDispatchToProps = (dispatch, ownProps) => {
+  return {
+    init: () => dispatch(initLatestBlogNewsFetcher(ownProps.blog, ownProps.url)),
+    refresh: () => dispatch(loadLatestBlogNews(ownProps.blog, ownProps.url))
+  };
+};
 
 const mapStateToProps = (state, ownProps) => { // eslint-disable-line no-unused-vars
   let attributes = state.latestBlogNews[ownProps.blog];
 
   if (attributes === undefined) {
-    return {
-      showSpinner: true
-    };
+    return {};
   }
 
   return {
@@ -21,7 +27,8 @@ const mapStateToProps = (state, ownProps) => { // eslint-disable-line no-unused-
 };
 
 const LatestBlogNews = connect(
-  mapStateToProps
+  mapStateToProps,
+  mapDispatchToProps
 )(NewsCard);
 
 export default LatestBlogNews;

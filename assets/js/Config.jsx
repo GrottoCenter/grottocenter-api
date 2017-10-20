@@ -87,3 +87,6 @@ export const
     'partners': '/api/grotto/count',
     'officialPartners': '/api/grotto/officialCount'
   };
+
+export const
+    DYNAMIC_NEWS_RELOAD_INTERVAL = 3600000;

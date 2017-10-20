@@ -19,6 +19,7 @@ import {INIT_LBNEW_FETCHER, FETCH_LBNEWS, FETCH_LBNEWS_SUCCESS, FETCH_LBNEWS_FAI
 
 export const latestBlogNews = (state = {}, action) => {
   let jNews = '';
+
   switch (action.type) {
     case INIT_LBNEW_FETCHER:
       return Object.assign({}, state, {

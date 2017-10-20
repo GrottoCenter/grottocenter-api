@@ -1,5 +1,6 @@
 import React, {Component, PropTypes} from 'react';
 import {Card, CardMedia, CardTitle, CardText, CardActions} from 'material-ui/Card';
+import {DYNAMIC_NEWS_RELOAD_INTERVAL} from '../Config';
 import FlatButton from 'material-ui/FlatButton';
 import ImageLoupe from 'material-ui/svg-icons/image/loupe';
 import SyncIcon from 'material-ui/svg-icons/notification/sync';
@@ -12,6 +13,16 @@ import GCLink from './GCLink';
 class NewsCard extends Component {
   constructor(props) {
     super(props);
+    props.init();
+    props.refresh()
+  }
+
+  componentDidMount() {
+      this.interval = setInterval(() => this.props.refresh(), DYNAMIC_NEWS_RELOAD_INTERVAL);
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.interval);
   }
 
   render() {
@@ -55,7 +66,9 @@ NewsCard.propTypes = {
   title: PropTypes.string,
   text: PropTypes.string,
   linkMore: PropTypes.string,
-  muiTheme: PropTypes.object.isRequired
+  muiTheme: PropTypes.object.isRequired,
+  init: PropTypes.func.isRequired,
+  refresh: PropTypes.func.isRequired
 };
 
 export default muiThemeable()(NewsCard);
