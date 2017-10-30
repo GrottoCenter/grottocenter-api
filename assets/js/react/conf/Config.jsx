@@ -97,5 +97,10 @@ export const
 export const
     DYNAMIC_NEWS_RELOAD_INTERVAL = 3600000;
 
+  export const
+    findRandomEntryUrl = '/api/entry/findRandom',
+    findForCarouselUrl = '/api/partner/findForCarousel',
+    quicksearchUrl = '/api/search/findAll';
+
 export const
-  swaggerLinkV1 = '/ui/swagger/?url=/swagger/apiV1.yaml';
+    swaggerLinkV1 = '/ui/swagger/?url=/swagger/apiV1.yaml';
