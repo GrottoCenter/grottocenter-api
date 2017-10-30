@@ -10,6 +10,13 @@ const FooterBar = muiThemeable()(styled.div`
   background-color: ${props => props.muiTheme.palette.primary3Color};
 `);
 
+// .fixFooter {
+//   position: fixed;
+//   bottom: 0;
+//   width: 100%;
+//   padding: 0;
+// }
+
 const DisclamerText = styled.p`
   text-align: center;
   margin-bottom: 0;

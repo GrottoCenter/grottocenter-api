@@ -14,7 +14,7 @@ const ListTitle = styled.p`
 `;
 
 const CheckListWrapper = styled.div`
-  @media (min-width: 750px) {
+  @media (min-width: 550px) {
     display: none;
   }
 `;

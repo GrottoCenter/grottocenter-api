@@ -3,8 +3,9 @@ import I18n from 'react-ghost-i18n';
 import muiThemeable from 'material-ui/styles/muiThemeable';
 import CheckIcon from 'material-ui/svg-icons/navigation/check';
 import {Card, CardTitle, CardText} from 'material-ui/Card';
-import GCLink from './GCLink';
-import {pftGdLink, contributorsLink, contributeLinks} from '../conf/Config';
+import GCLink from '../common/GCLink';
+import InternationalizedLink from '../common/InternationalizedLink';
+import {pftGdLink, contributorsLink, contributeLinks} from '../../conf/Config';
 
 class Faq extends Component {
   constructor(props) {
@@ -88,9 +89,9 @@ class Faq extends Component {
           <CardText expandable={true} style={{backgroundColor: this.props.muiTheme.palette.textIconColor}}>
             <I18n>We have our  wiki:  this is where you can find us</I18n>
             <br/>
-            <GCLink href={contributorsLink} alt='Link to contribution page'>
+        <InternationalizedLink links={contributorsLink} alt='Link to contribution page'>
               {contributorsLink}
-            </GCLink>
+        </InternationalizedLink>
           </CardText>
         </Card>
 

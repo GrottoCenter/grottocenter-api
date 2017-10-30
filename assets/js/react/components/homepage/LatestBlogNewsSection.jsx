@@ -1,27 +1,35 @@
 import React from 'react';
+import LandingSection from './LandingSection';
+import {GridRow, GridOneHalfColumn} from '../common/Grid';
+import Translate from '../common/Translate';
+import styled from 'styled-components';
 import muiThemeable from 'material-ui/styles/muiThemeable';
-import I18n from 'react-ghost-i18n';
 import LatestBlogNews from '../../containers/LatestBlogNews';
-import {FR_GC_BLOG, EN_GC_BLOG} from '../../Config';
+import {FR_GC_BLOG, EN_GC_BLOG} from '../../conf/Config';
+
+const SectionTitle = muiThemeable()(styled.h3`
+  color: ${props => props.muiTheme.palette.accent1Color};
+  text-align: center;
+  padding-bottom: 50px;
+  font-size: 35px;
+`);
 
 const LatestBlogNewsSection = () => (
-  <div>
-    <div role='section' className='lastNews'>
-      <h3>
-        <I18n>News</I18n>
-      </h3>
-      <div className='container'>
-        <div className='row'>
-          <div className='six columns'>
-            <LatestBlogNews blog='fr' url={FR_GC_BLOG}/>
-          </div>
-          <div className='six columns'>
-            <LatestBlogNews blog='en' url={EN_GC_BLOG}/>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+  <LandingSection>
+    <GridRow>
+      <SectionTitle>
+        <Translate>News</Translate>
+      </SectionTitle>
+    </GridRow>
+    <GridRow>
+      <GridOneHalfColumn>
+        <LatestBlogNews blog='fr' url={FR_GC_BLOG}/>
+      </GridOneHalfColumn>
+      <GridOneHalfColumn>
+        <LatestBlogNews blog='en' url={EN_GC_BLOG}/>
+      </GridOneHalfColumn>
+    </GridRow>
+  </LandingSection>
 );
 
-export default muiThemeable()(LatestBlogNewsSection);
+export default LatestBlogNewsSection;

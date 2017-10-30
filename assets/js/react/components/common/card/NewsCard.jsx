@@ -1,14 +1,14 @@
 import React, {Component, PropTypes} from 'react';
 import {Card, CardMedia, CardTitle, CardText, CardActions} from 'material-ui/Card';
-import {DYNAMIC_NEWS_RELOAD_INTERVAL} from '../Config';
+import {DYNAMIC_NEWS_RELOAD_INTERVAL} from '../../../conf/Config';
 import FlatButton from 'material-ui/FlatButton';
 import ImageLoupe from 'material-ui/svg-icons/image/loupe';
 import SyncIcon from 'material-ui/svg-icons/notification/sync';
 import SyncKOIcon from 'material-ui/svg-icons/notification/sync-problem';
 import Divider from 'material-ui/Divider';
 import muiThemeable from 'material-ui/styles/muiThemeable';
-import {DateRibbon} from './Toolbox';
-import GCLink from './GCLink';
+import {DateRibbon} from '../Toolbox';
+import GCLink from '../GCLink';
 
 class NewsCard extends Component {
   constructor(props) {

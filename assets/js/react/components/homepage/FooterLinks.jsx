@@ -1,5 +1,5 @@
 import React from 'react';
-import GCLink from '../GCLink';
+import GCLink from '../common/GCLink';
 import InternationalizedLink from '../common/InternationalizedLink';
 import {contactLinks, legalLinks, contributorsLink} from '../../conf/Config';
 import Translate from '../common/Translate';

@@ -13,6 +13,8 @@ const PublisherInfo = styled.div`
 
 const PublisherLogo = styled.img`
   width: 100px;
+  display: block;
+  margin: auto;
 `;
 
 const PublisherWrapper = styled.div`

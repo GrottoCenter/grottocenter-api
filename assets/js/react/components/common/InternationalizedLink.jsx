@@ -1,5 +1,5 @@
 import React, {PropTypes} from 'react';
-import GCLink from '../GCLink';
+import GCLink from './GCLink';
 
 let currentLocale = locale; // eslint-disable-line no-undef
 

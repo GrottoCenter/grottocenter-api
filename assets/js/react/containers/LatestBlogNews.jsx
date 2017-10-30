@@ -1,5 +1,5 @@
 import {connect} from 'react-redux';
-import NewsCard from './../components/NewsCard';
+import NewsCard from './../components/common/card/NewsCard';
 import {initLatestBlogNewsFetcher, loadLatestBlogNews} from '../actions/LatestBlogNews';
 
 const mapDispatchToProps = (dispatch, ownProps) => {

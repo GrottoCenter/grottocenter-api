@@ -39,7 +39,12 @@ export function fetchQuicksearchResult(criteria) {
   return function (dispatch) {
     dispatch(resetQuicksearch(criteria));
 
-    return fetch(quicksearchUrl)
+    let completeUrl = quicksearchUrl;
+    if (criteria) {
+      completeUrl += '?' + Object.keys(criteria).map(k => k + '=' + encodeURIComponent(criteria[k])).join('&');
+    }
+
+    return fetch(completeUrl)
     .then((response) => {
       if (response.status >= 400) {
         let errorMessage = 'Fetching ' + quicksearchUrl + ' status: ' + response.status;

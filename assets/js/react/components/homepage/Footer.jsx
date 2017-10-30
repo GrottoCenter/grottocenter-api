@@ -8,13 +8,6 @@ import {GridContainer, GridRow, GridOneThirdColumn, GridFullColumn} from '../com
 import muiThemeable from 'material-ui/styles/muiThemeable';
 import styled from 'styled-components';
 
-// .fixFooter {
-//   position: fixed;
-//   bottom: 0;
-//   width: 100%;
-//   padding: 0;
-// }
-
 const FooterWrapper = muiThemeable()(styled.div`
   background-color: ${props => props.muiTheme.palette.primary1Color};
   color: ${props => props.muiTheme.palette.textIconColor};

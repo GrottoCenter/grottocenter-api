@@ -67,17 +67,21 @@ const AssociationDetails = styled.h5`
 `;
 
 const AssociationLogo = styled.div`
-  margin: 20px 40px;
   padding: 20px 10px;
+  min-width: 100px;
   background-color: ${props => props.bgColor};
 
-  img {
-    max-width: 200px;
-    width: 100%;
+  @media (min-width: 750px) {
+    margin: 20px 40px;
+  }
+`;
 
-    :visible {
-      scale: 50%;
-    }
+const AssociationLogoImage = styled.img`
+  max-width: 200px;
+  width: 100%;
+
+  :visible {
+    scale: 50%;
   }
 `;
 
@@ -134,7 +138,7 @@ const Association = (props) => (
 
       <GridOneThirdColumn>
         <AssociationLogo bgColor='#e8dcd8'>
-          <img src="/images/logo.svg"/>
+          <AssociationLogoImage src="/images/logo.svg"/>
         </AssociationLogo>
       </GridOneThirdColumn>
     </AssociationGridRow>

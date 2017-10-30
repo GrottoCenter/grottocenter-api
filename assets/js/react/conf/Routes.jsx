@@ -14,12 +14,14 @@ import Map from '../components/Map';
 import Caver from '../components/Caver';
 import Contact from '../components/Contact';
 import Entry from '../components/Entry';
-import Faq from '../components/Faq';
+import Faq from '../components/appli/Faq';
+import Backend from '../components/pages/Backend';
+import Dashboard from '../components/appli/Dashboard';
+import Map from '../components/Map';
 import SigninForm from '../components/SigninForm';
 import SignupForm from '../components/SignupForm';
 import AvailableTools, {EntriesOfInterest} from '../components/admin/Tools';
 import Api from '../components/Api';
-
 import LatestBlogNewsSection from '../components/homepage/LatestBlogNewsSection';
 
 export default (
@@ -34,15 +36,15 @@ export default (
           <Route path="*" component={EntriesOfInterest}/>
         </Route>
         <Route path="api" component={Api}/>
+        <Route path="caver" component={Caver}/>
+        <Route path="contact" component={Contact}/>
+        <Route path="entry" component={Entry}/>
         <Route path="auth" component={Modal}>
           <IndexRoute component={SigninForm}/>
           <Route path="signin" component={SigninForm}/>
           <Route path="signup" component={SignupForm}/>
           <Redirect from="*" to="/"/>
         </Route>
-        <Route path="caver" component={Caver}/>
-        <Route path="contact" component={Contact}/>
-        <Route path="entry" component={Entry}/>
         <Route path="faq" component={Faq}/>
         <Route path="map" component={MapContainer}/>
         <Route path="swagger" component={Swagger} />

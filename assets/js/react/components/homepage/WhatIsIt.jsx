@@ -4,7 +4,7 @@ import {GridRow, GridOneHalfColumn} from '../common/Grid';
 import Translate from '../common/Translate';
 import styled from 'styled-components';
 import muiThemeable from 'material-ui/styles/muiThemeable';
-import GCLink from '../GCLink';
+import GCLink from '../common/GCLink';
 import DynamicNumberConnector from '../../containers/DynamicNumberConnector';
 
 const SectionTitle = muiThemeable()(styled.h3`

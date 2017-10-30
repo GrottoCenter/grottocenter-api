@@ -3,12 +3,11 @@ import FullStarIcon from 'material-ui/svg-icons/toggle/star';
 import EmptyStarIcon from 'material-ui/svg-icons/toggle/star-border';
 import HalfStarIcon from 'material-ui/svg-icons/toggle/star-half';
 import CircularProgress from 'material-ui/CircularProgress';
-import GCLink from '../components/GCLink';
-import {detailPageV2Links} from '../conf/Config';
-import {GridRow, GridOneHalfColumn} from './common/Grid';
-import Translate from './common/Translate';
+import GCLink from '../GCLink';
+import {detailPageV2Links} from '../../../conf/Config';
+import {GridRow, GridOneHalfColumn} from '../Grid';
+import Translate from '../Translate';
 import styled from 'styled-components';
-import muiThemeable from 'material-ui/styles/muiThemeable';
 
 export class EntryData extends Component {
   constructor(props) {

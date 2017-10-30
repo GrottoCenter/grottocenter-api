@@ -1,8 +1,8 @@
 import React, {Component} from 'react';
-import GCLink from '../GCLink';
+import GCLink from '../common/GCLink';
 import fetch from 'isomorphic-fetch';
 import {Table, TableBody, TableHeaderColumn, TableRow, TableRowColumn} from 'material-ui/Table';
-import {Loading} from '../Toolbox';
+import {Loading} from '../common/Toolbox';
 
 const AvailableTools = () => (
   <ul>

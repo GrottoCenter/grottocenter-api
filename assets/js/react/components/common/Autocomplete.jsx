@@ -107,7 +107,7 @@ class Autocomplete extends Component {
 
   handleUpdateInput(searchText) {
     if (searchText && searchText.length >= 3) {
-      this.props.search('name=' + searchText);
+      this.props.search({name: searchText});
     } else {
       this.props.reset();
     }

@@ -1,6 +1,6 @@
 import {connect} from 'react-redux';
-import {loadRandomEntry} from './../actions/RandomEntry';
-import RandomEntryCard from './../components/RandomEntryCard';
+import {loadRandomEntry} from '../actions/RandomEntry';
+import RandomEntryCard from '../components/common/card/RandomEntryCard';
 
 const mapDispatchToProps = (dispatch, ownProps) => { // eslint-disable-line no-unused-vars
   return {

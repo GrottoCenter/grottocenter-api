@@ -1,6 +1,6 @@
 import React from 'react';
 import QuicksearchBar from './QuicksearchBar';
-import GCLink from '../GCLink';
+import GCLink from '../common/GCLink';
 import {GridContainer, GridRow, GridFullColumn} from '../common/Grid';
 import {fseLinks} from '../../conf/Config';
 import InternationalizedLink from '../common/InternationalizedLink';
