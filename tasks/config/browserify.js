@@ -15,7 +15,8 @@ module.exports = function(grunt) {
         transform: [
           ['babelify', {
             compact: false,
-            presets: ['es2015', 'react']
+            plugins: ['babel-plugin-styled-components'],
+            presets: ['es2015', 'react'],
           }]
         ]
       }
