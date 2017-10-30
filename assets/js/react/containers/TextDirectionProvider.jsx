@@ -38,13 +38,13 @@ TextDirectionProvider.childContextTypes = {
   direction: PropTypes.string.isRequired
 };
 
-const mapPropToState = (state) => {
+const mapStateToProps = (state) => {
   return {
     direction: (state.currentLanguage === 'ar' || state.currentLanguage === 'he') ? RIGHT_TO_LEFT : LEFT_TO_RIGHT
   }
 };
 
-export default connect(mapPropToState)(TextDirectionProvider);
+export default connect(mapStateToProps)(TextDirectionProvider);
 
 export function directionManager() {
   return (Component) => {
