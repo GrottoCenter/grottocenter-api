@@ -1,28 +1,69 @@
-import React from 'react';
-import I18n from 'react-ghost-i18n';
+import React, {PropTypes} from 'react';
+import LandingSection from './LandingSection';
+import {GridRow, GridOneThirdColumn, GridTwoThirdColumn} from '../common/Grid';
+import Translate from '../common/Translate'
+import styled from 'styled-components';
 import muiThemeable from 'material-ui/styles/muiThemeable';
 
-const Welcome = () => (
-  <div>
-    <div role="section" className="welcome">
-      <div className="container">
-        <div className="row">
-          <div className="four columns">
-            <img src="/images/caves/draperie_small.jpg"/>
-          </div>
-          <div className="eight columns">
-            <h3>
-              <I18n>Welcome to Grottocenter!</I18n>
-            </h3>
-            <p><I18n>This 31 version of the site is  improving gradually to allow  a simpler navigation from all your peripherals</I18n></p>
-            <p><I18n>The application is faster, and benefits  from a code of higher quality which is also easier to maintain: data processing specialist may join the development team and easily contribute</I18n></p>
-            <p><I18n>As of today, you can access updated information on caving, an effective module for quick search and quality information on caves Regularly  log in to discover new features and keep on using Grottocenter to take part and use information already added by the community</I18n></p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+const WelcomeAvatar = styled.img`
+  border-radius: 50%;
+  width: 60%;
+  height: 60%;
+`;
+
+const WelcomeTitle = styled.h3`
+  color: ${props => props.color};
+  padding-top: 30px;
+  text-align: center;
+  padding-bottom: 50px;
+  font-size: 35px;
+
+  @media (min-width: 550px) {
+    padding-top: 0;
+  }
+`;
+
+const WelcomeParagraph = styled.p`
+  text-align: justify;
+  font-weight: 300;
+  font-size: large;
+`;
+
+const WelcomeSection = styled(LandingSection)`
+  > div:first-child {
+    text-align: center;
+  }
+`;
+
+const Welcome = (props) => (
+  <WelcomeSection
+    bgColor={props.muiTheme.palette.primary1Color}
+    fgColor={props.muiTheme.palette.secondaryBlocTitle}>
+    <GridRow>
+      <GridOneThirdColumn>
+        <WelcomeAvatar src="/images/caves/draperie_small.jpg"/>
+      </GridOneThirdColumn>
+
+      <GridTwoThirdColumn>
+        <WelcomeTitle color={props.muiTheme.palette.accent1Color}>
+          <Translate>Welcome to Grottocenter!</Translate>
+        </WelcomeTitle>
+        <WelcomeParagraph>
+          <Translate>This 31 version of the site is  improving gradually to allow  a simpler navigation from all your peripherals</Translate>
+        </WelcomeParagraph>
+        <WelcomeParagraph>
+          <Translate>The application is faster, and benefits  from a code of higher quality which is also easier to maintain: data processing specialist may join the development team and easily contribute</Translate>
+        </WelcomeParagraph>
+        <WelcomeParagraph>
+          <Translate>As of today, you can access updated information on caving, an effective module for quick search and quality information on caves Regularly  log in to discover new features and keep on using Grottocenter to take part and use information already added by the community</Translate>
+        </WelcomeParagraph>
+      </GridTwoThirdColumn>
+    </GridRow>
+  </WelcomeSection>
 );
 
+Welcome.propTypes = {
+  muiTheme: PropTypes.any.isRequired
+}
 
 export default muiThemeable()(Welcome);

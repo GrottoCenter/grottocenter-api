@@ -6,6 +6,14 @@ import SyncKOIcon from 'material-ui/svg-icons/notification/sync-problem';
 import IconButton from 'material-ui/IconButton';
 import I18n from 'react-ghost-i18n';
 import muiThemeable from 'material-ui/styles/muiThemeable';
+import styled from 'styled-components';
+
+const NumberIcon = styled(IconButton)`
+  svg {
+    height: 48px !important; // lesshint importantRule: false
+    width: 48px !important; // lesshint importantRule: false
+  }
+`;
 
 class DynamicNumber extends Component {
   constructor(props) {
@@ -33,9 +41,9 @@ class DynamicNumber extends Component {
     } else if (!this.props.number) {
       return (
           <I18n>
-            <IconButton tooltip='Synchronisation error' className='statusIcon'>
+            <NumberIcon tooltip='Synchronisation error'>
               <SyncKOIcon color={this.props.muiTheme.palette.primary3Color} hoverColor={this.props.muiTheme.palette.accent1Color}/>
-            </IconButton>
+            </NumberIcon>
           </I18n>
       );
     }

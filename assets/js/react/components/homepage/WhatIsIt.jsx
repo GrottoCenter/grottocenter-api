@@ -1,50 +1,92 @@
-import React, {Component} from 'react';
-import I18n from 'react-ghost-i18n';
+import React from 'react';
+import LandingSection from './LandingSection';
+import {GridRow, GridOneHalfColumn} from '../common/Grid';
+import Translate from '../common/Translate';
+import styled from 'styled-components';
 import muiThemeable from 'material-ui/styles/muiThemeable';
 import GCLink from '../GCLink';
 import DynamicNumberConnector from '../../containers/DynamicNumberConnector';
 
-class WhatIsIt extends Component {
-  constructor(props) {
-    super(props);
+const SectionTitle = muiThemeable()(styled.h3`
+  color: ${props => props.muiTheme.palette.accent1Color};
+  text-align: center;
+  padding-bottom: 50px;
+  font-size: 35px;
+`);
+
+const NumberBlock = styled(GridOneHalfColumn)`
+  font-weight: 300;
+  font-size: large;
+  text-align: center;
+  padding-bottom: 40px;
+
+  @media (min-width: 550px) {
+    text-align: justify;
   }
 
-  render() {
-    return (
-      <div role="section" className="numbers">
-        <h3>
-          <I18n>Grottocenter numbers</I18n>
-          <span className="icon icon-gc-bat" style={{'verticalAlign': 'super'}}></span><br/>
-        </h3>
-        <div className="container">
-          <div className="row">
-            <div className="six columns">
-              <span className="icon icon-gc-entries"></span>
-              <DynamicNumberConnector className="number" numberType='publicEntries'/><br/>
-              <I18n>caves are freely accessible from the following page (</I18n><DynamicNumberConnector numberType='entries'/> <I18n>by logging on</I18n> <GCLink href='http://www.grottocenter.org'>Grotto v2</GCLink>)
-            </div>
-            <div className="six columns">
-              <span className="icon icon-gc-club"></span>
-              <DynamicNumberConnector className="number" numberType='officialPartners'/><br/>
-              <I18n>organizations who take part in the project by  funding, providing data,communicating on the interest and benefits of  cavers to share data</I18n>
-            </div>
-          </div>
-          <div className="row">
-            <div className="six columns">
-              <span className="icon icon-gc-speleo"></span>
-              <DynamicNumberConnector className="number" numberType='cavers'/><br/>
-              <I18n>cavers take part, day after day, in improving and expanding the database</I18n>
-            </div>
-            <div className="six columns">
-              <span className="icon icon-gc-expe"></span>
-              <DynamicNumberConnector className="number" numberType='partners'/><br/>
-              <I18n>organizations are registered on the site</I18n>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+  @media (max-width: 550px) {
+    :last-child {
+      margin-bottom: 0px;
+    }
   }
-}
+`;
 
-export default muiThemeable()(WhatIsIt);
+const BlockIcon = muiThemeable()(styled.span`
+  margin-right: 10px;
+  font-size: 4.2em;
+  color: ${props => props.muiTheme.palette.primary1Color};
+  line-height: 1;
+
+  :before {
+    font-family: gc-icon !important;
+    font-style: normal;
+    font-weight: normal !important;
+    vertical-align: top;
+  }
+`);
+
+const NumberText = muiThemeable()(styled(DynamicNumberConnector)`
+  color: ${props => props.muiTheme.palette.primary1Color};
+  font-weight: 400;
+`);
+
+const BigNumberText = styled(NumberText)`
+  font-size: 2.7em;
+`;
+
+const WhatIsIt = () => (
+  <LandingSection>
+    <GridRow>
+      <SectionTitle>
+        <Translate>Grottocenter numbers</Translate>
+        <span className="icon icon-gc-bat" style={{'verticalAlign': 'super'}}></span><br/>
+      </SectionTitle>
+    </GridRow>
+    <GridRow>
+      <NumberBlock>
+        <BlockIcon className="icon-gc-entries" />
+        <BigNumberText numberType='publicEntries'/><br/>
+        <Translate>caves are freely accessible from the following page (</Translate><NumberText numberType='entries'/> <Translate>by logging on</Translate> <GCLink href='http://www.grottocenter.org'>Grotto v2</GCLink>)
+      </NumberBlock>
+      <NumberBlock>
+        <BlockIcon className="icon-gc-club" />
+        <BigNumberText numberType='officialPartners'/><br/>
+        <Translate>organizations who take part in the project by  funding, providing data,communicating on the interest and benefits of  cavers to share data</Translate>
+      </NumberBlock>
+    </GridRow>
+    <GridRow>
+      <NumberBlock>
+        <BlockIcon className="icon-gc-speleo" />
+        <BigNumberText numberType='cavers'/><br/>
+        <Translate>cavers take part, day after day, in improving and expanding the database</Translate>
+      </NumberBlock>
+      <NumberBlock>
+        <BlockIcon className="icon-gc-expe" />
+        <BigNumberText numberType='partners'/><br/>
+        <Translate>organizations are registered on the site</Translate>
+      </NumberBlock>
+    </GridRow>
+  </LandingSection>
+);
+
+export default WhatIsIt;

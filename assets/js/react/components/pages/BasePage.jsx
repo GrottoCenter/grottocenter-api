@@ -1,5 +1,4 @@
 import React, {Component, PropTypes} from 'react';
-import GrottoAppBar from '../homepage/GrottoAppBar';
 import {directionManager, RIGHT_TO_LEFT} from './../../containers/TextDirectionProvider';
 
 class BasePage extends Component {
@@ -11,7 +10,6 @@ class BasePage extends Component {
   render() {
     return (
       <div style={{direction: (this.props.direction === RIGHT_TO_LEFT ? 'rtl' : 'ltr')}}>
-        <GrottoAppBar/>
         {this.props.children}
       </div>
     );

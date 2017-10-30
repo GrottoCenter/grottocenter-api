@@ -6,7 +6,7 @@ import Landing from '../components/pages/Landing';
 import Modal from '../components/pages/Modal';
 import Application from '../components/pages/Application';
 import Dashboard from '../components/appli/Dashboard';
-import Map from '../components/Map';
+import MapContainer from '../containers/MapContainer';
 import Swagger from '../components/pages/Swagger';
 import Backend from '../components/pages/Backend';
 import Dashboard from '../components/appli/Dashboard';
@@ -44,7 +44,8 @@ export default (
         <Route path="contact" component={Contact}/>
         <Route path="entry" component={Entry}/>
         <Route path="faq" component={Faq}/>
-        <Route path="map" component={Map}/><Route path="swagger" component={Swagger} />
+        <Route path="map" component={MapContainer}/>
+        <Route path="swagger" component={Swagger} />
         <Route path="test" component={LatestBlogNewsSection}/>
         <Redirect from="*" to="/"/>
       </Route>

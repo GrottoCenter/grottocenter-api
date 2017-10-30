@@ -15,11 +15,21 @@ function generateLinks(link, defaultLang) {
 }
 
 export const
-  wikicavesLink = 'http://www.wikicaves.org/',
-  contributorsLink = 'https://wiki.grottocenter.org/wiki/GrottoCenter:Contributors',
-  facebookLink = 'https://www.facebook.com/GrottoCenter',
-  twitterLink = 'https://twitter.com/grottocenter',
-  githubLink = 'https://github.com/GrottoCenter',
+  wikicavesLink = {
+    '*': 'http://www.wikicaves.org/'
+  },
+  contributorsLink = {
+    '*': 'https://wiki.grottocenter.org/wiki/GrottoCenter:Contributors'
+  },
+  facebookLink = {
+    '*': 'https://www.facebook.com/GrottoCenter'
+  },
+  twitterLink = {
+    '*': 'https://twitter.com/grottocenter'
+  },
+  githubLink = {
+    '*': 'https://github.com/GrottoCenter'
+  },
   licenceLinks = {
     'fr': 'https://creativecommons.org/licenses/by-sa/3.0/fr/',
     'es': 'https://creativecommons.org/licenses/by-sa/3.0/deed.es_ES',

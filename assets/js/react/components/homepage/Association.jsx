@@ -1,118 +1,161 @@
 import React, {PropTypes} from 'react';
-import I18n from 'react-ghost-i18n';
+import LandingSection from './LandingSection';
+import {GridRow, GridOneThirdColumn, GridTwoThirdColumn, GridFullColumn} from '../common/Grid';
+import AssociationCheckList from './AssociationCheckList';
+import AssociationFlyingGoals from './AssociationFlyingGoals';
+import Translate from '../common/Translate';
+import styled from 'styled-components';
 import muiThemeable from 'material-ui/styles/muiThemeable';
-import CheckIcon from 'material-ui/svg-icons/navigation/check';
-import SyncIcon from 'material-ui/svg-icons/notification/sync';
+
+// [role='section'].association {
+//
+//   .row {
+//     & > div {
+//       padding-top: 20px;
+//     }
+//
+//     .row > div:last-child {
+//       text-align: center;
+//     }
+//
+//     ul {
+//       width: 100%;
+//       list-style-type: none;
+//     }
+//   }
+// }
+//
+// [role='section'].associationBg {
+//   background-image: url('../images/caves/DSC_0013b.jpg');
+//   background-size: cover;
+//   background-position: center;
+//   background-repeat: no-repeat;
+// }
+//
+// @media (min-width: @lgMin) {
+//   [role='section'].association {
+//
+//     .row > div:first-child {
+//       text-align: left;
+//     }
+//
+//     .row > div:last-child {
+//       margin-top: 40px;
+//     }
+//
+//     .row > div:last-child img {
+//       display: inline;
+//     }
+//   }
+//
+// }
+
+const AssociationTitle = styled.h3`
+  color: ${props => props.color};
+  text-align: center;
+  padding-bottom: 50px;
+  font-size: 35px;
+
+  @media (min-width: 550px) {
+    text-align: left;
+  }
+`;
+
+const AssociationDetails = styled.h5`
+  font-size: large;
+  text-align: justify;
+`;
+
+const AssociationLogo = styled.div`
+  margin: 20px 40px;
+  padding: 20px 10px;
+  background-color: ${props => props.bgColor};
+
+  img {
+    max-width: 200px;
+    width: 100%;
+
+    :visible {
+      scale: 50%;
+    }
+  }
+`;
+
+const AssociationSection = styled(LandingSection)`
+  text-align: center;
+`;
+
+const AssociationGridRow = styled(GridRow)`
+  padding-top: 20px; /* ===> TODO ne fonctionne pas car GridRow a déjà une classe */
+`;
+
+const listEntries = {
+  title: <Translate>The international voluntary association WikiCaves operates the GrottoCenter web application WikiCaves has as goals:</Translate>,
+  entries: [
+    {
+      word: <Translate>Promote!</Translate>,
+      description: <Translate>Promote the development of the speleology in the world especially through  web-based collaboration</Translate>
+    },
+    {
+      word: <Translate>Share!</Translate>,
+      description: <Translate>Share and spread the data related to the speleology</Translate>
+    },
+    {
+      word: <Translate>Open!</Translate>,
+      description: <Translate>Make access to the natural caves data easier especially by using Internet</Translate>
+    },
+    {
+      word: <Translate>Highlight!</Translate>,
+      description: <Translate>Highlight and help the protection of the natural caves and their surroundings</Translate>
+    },
+    {
+      word: <Translate>Help!</Translate>,
+      description: <Translate>Help the exploration and the scientific study of natural caves</Translate>
+    }
+  ]
+};
 
 const Association = (props) => (
-  <div>
-    <div role="section" className="association" style={{backgroundColor: props.muiTheme.palette.primary1Color, color: props.muiTheme.palette.textIconColor}}>
-      <div className="container">
-        <div className="row">
-          <div className="eight columns">
-            <h3 style={{color: props.muiTheme.palette.accent1Color}}>
-              <I18n>Wikicaves association</I18n>
-            </h3>
-            <h5>
-              <I18n>GrottoCenter is a comunity database for cavers based on a wiki-like system Cavers fill the databes for cavers</I18n>
-              <br/>
-              <I18n>Any interesting natural cave can be added in the database!</I18n>
-            </h5>
-          </div>
-          <div className="four columns">
-            <div className="logo">
-              <img src="/images/logo.svg"/>
-            </div>
-          </div>
-        </div>
-        <div className="row">
-          <div className="twelve columns">
-            <div className="listing">
-              <p>
-                <I18n>The international voluntary association WikiCaves operates the GrottoCenter web application WikiCaves has as goals:</I18n>
-              </p>
-              <ul>
-                <li>
-                  <CheckIcon color={props.muiTheme.palette.accent1Color}/>
-                  <div>
-                    <I18n>Promote the development of the speleology in the world especially through  web-based collaboration</I18n>
-                  </div>
-                </li>
-                <li>
-                  <CheckIcon color={props.muiTheme.palette.accent1Color}/>
-                  <div><I18n>Share and spread the data related to the speleology</I18n></div>
-                </li>
-                <li>
-                  <CheckIcon color={props.muiTheme.palette.accent1Color}/>
-                  <div><I18n>Make access to the natural caves data easier especially by using Internet</I18n></div>
-                </li>
-                <li>
-                  <CheckIcon color={props.muiTheme.palette.accent1Color}/>
-                  <div><I18n>Highlight and help the protection of the natural caves and their surroundings</I18n></div>
-                </li>
-                <li>
-                  <CheckIcon color={props.muiTheme.palette.accent1Color}/>
-                  <div><I18n>Help the exploration and the scientific study of natural caves</I18n></div>
-                </li>
-              </ul>
-            </div>
-            <div className="goalTextZone">
-              <span>
-                <I18n>The international voluntary association WikiCaves operates the GrottoCenter web application WikiCaves has as goals:</I18n>
-              </span>
-            </div>
-            <div className="floatingGoals">
-              <div className="goal">
-                <span style={{color: props.muiTheme.palette.textIconColor}}>
-                  <I18n>Promote!</I18n>
-                </span>
-                <SyncIcon color={props.muiTheme.palette.primary3Color} hoverColor={props.muiTheme.palette.accent1Color} />
-                <span className="goalText">
-                  <I18n>Promote the development of the speleology in the world especially through  web-based collaboration</I18n>
-                </span>
-              </div>
-              <div className="goal">
-                <span style={{color: props.muiTheme.palette.textIconColor}}>
-                  <I18n>Share!</I18n>
-                </span>
-                <SyncIcon color={props.muiTheme.palette.primary3Color} hoverColor={props.muiTheme.palette.accent1Color} />
-                <span className="goalText">
-                  <I18n>Share and spread the data related to the speleology</I18n>
-                </span>
-              </div>
-              <div className="goal">
-                <span style={{color: props.muiTheme.palette.textIconColor}}>
-                  <I18n>Open!</I18n>
-                </span>
-                <SyncIcon color={props.muiTheme.palette.primary3Color} hoverColor={props.muiTheme.palette.accent1Color} />
-                <span className="goalText">
-                  <I18n>Make access to the natural caves data easier especially by using Internet</I18n>
-                </span>
-              </div>
-              <div className="goal">
-                <span style={{color: props.muiTheme.palette.textIconColor}}>
-                  <I18n>Highlight!</I18n>
-                </span>
-                <SyncIcon color={props.muiTheme.palette.primary3Color} hoverColor={props.muiTheme.palette.accent1Color} />
-                <span className="goalText">
-                  <I18n>Highlight and help the protection of the natural caves and their surroundings</I18n>
-                </span>
-              </div>
-              <div className="goal">
-                <span style={{color: props.muiTheme.palette.textIconColor}}>
-                  <I18n>Help!</I18n>
-                </span>
-                <SyncIcon color={props.muiTheme.palette.primary3Color} hoverColor={props.muiTheme.palette.accent1Color} />
-                <span className="goalText">
-                  <I18n>Help the exploration and the scientific study of natural caves</I18n>
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+  <AssociationSection
+    bgColor={props.muiTheme.palette.primary1Color}
+    fgColor={props.muiTheme.palette.textIconColor}>
+
+    <AssociationGridRow>
+      <GridTwoThirdColumn>
+        <AssociationTitle color={props.muiTheme.palette.accent1Color}>
+          <Translate>Wikicaves association</Translate>
+        </AssociationTitle>
+        <AssociationDetails>
+          <Translate>GrottoCenter is a comunity database for cavers based on a wiki-like system Cavers fill the databes for cavers</Translate>
+          <br/>
+          <Translate>Any interesting natural cave can be added in the database!</Translate>
+        </AssociationDetails>
+      </GridTwoThirdColumn>
+
+      <GridOneThirdColumn>
+        <AssociationLogo bgColor='#e8dcd8'>
+          <img src="/images/logo.svg"/>
+        </AssociationLogo>
+      </GridOneThirdColumn>
+    </AssociationGridRow>
+
+    <AssociationGridRow>
+      <GridFullColumn>
+        <AssociationCheckList
+          title={listEntries.title}
+          entries={listEntries.entries}
+          iconColor={props.muiTheme.palette.accent1Color} />
+
+        <AssociationFlyingGoals
+          title={listEntries.title}
+          entries={listEntries.entries}
+          textColor={props.muiTheme.palette.textIconColor}
+          iconColor={props.muiTheme.palette.primary3Color}
+          iconHoverColor={props.muiTheme.palette.accent1Color} />
+      </GridFullColumn>
+    </AssociationGridRow>
+
+  </AssociationSection>
 );
 
 Association.propTypes = {

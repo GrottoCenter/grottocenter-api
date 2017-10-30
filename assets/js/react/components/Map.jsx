@@ -52,7 +52,7 @@ class GrottoMapClass extends React.Component {
         return (
             <Map
                  style={{width:"100%",height: "300px"}}
-                 center={this.props.marker.latlng}
+                 center={(this.props.marker) ? this.props.marker.latlng : undefined}
                  ref='map'
                  zoom={13}
                  length={4}

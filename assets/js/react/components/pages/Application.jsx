@@ -1,20 +1,28 @@
 import React, {PropTypes} from 'react';
-import BadgeHeader from '../appli/BadgeHeader';
-import SideMenu from '../appli/SideMenu';
-import Connected from '../appli/Connected';
+import SideMenuConnector from '../../containers/SideMenuConnector';
+import AppToolbar from '../appli/header/AppToolbar';
+import FooterDisclamer from '../common/FooterDisclamer';
+import muiThemeable from 'material-ui/styles/muiThemeable';
+import styled from 'styled-components';
+
+const ApplicationHeader = muiThemeable()(styled.header`
+  background-color: ${props => props.muiTheme.palette.secondary1Color};
+`);
+
+const FixedFooterDisclamer = styled(FooterDisclamer)`
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  padding: 0;
+`;
 
 const Application = (props) => (
   <div id='applicationpage'>
-    <div className='header'>
-      <BadgeHeader/>
-      <Connected/>
-    </div>
-    <div>
-      <SideMenu/>
-      Application
-
-      {props.children}
-    </div>
+    <ApplicationHeader><AppToolbar /></ApplicationHeader>
+    <nav></nav>
+    <aside><SideMenuConnector /></aside>
+    <article>{props.children}</article>
+    <footer><FixedFooterDisclamer /></footer>
   </div>
 );
 

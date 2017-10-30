@@ -11,7 +11,8 @@ const mapStateToProps = (state, ownProps) => { // eslint-disable-line no-unused-
 
   return {
     isFetching: attributes.isFetching,
-    number: attributes.number
+    number: attributes.number,
+    className: ownProps.className
   };
 };
 

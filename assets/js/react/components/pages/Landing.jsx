@@ -5,18 +5,20 @@ import LatestBlogNewsSection from '../homepage/LatestBlogNewsSection';
 import Association from '../homepage/Association';
 import WhatIsIt from '../homepage/WhatIsIt';
 import RandomEntry from '../homepage/RandomEntry';
-import Partners from '../homepage/Partners';
+import PartnersSection from '../homepage/PartnersSection';
 import Footer from '../homepage/Footer';
+import GrottoAppBar from '../common/header/GrottoAppBar';
 
 const Landing = () => (
   <div id='landingpage'>
+    <GrottoAppBar/>
     <Header/>
     <Welcome/>
     <WhatIsIt/>
     <RandomEntry/>
     <LatestBlogNewsSection/>
     <Association/>
-    <Partners/>
+    <PartnersSection/>
     <Footer/>
   </div>
 );

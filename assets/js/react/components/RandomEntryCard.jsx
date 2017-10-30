@@ -1,17 +1,24 @@
-import React, {PropTypes} from 'react';
+import React, {PropTypes, Component} from 'react';
 import FullStarIcon from 'material-ui/svg-icons/toggle/star';
 import EmptyStarIcon from 'material-ui/svg-icons/toggle/star-border';
 import HalfStarIcon from 'material-ui/svg-icons/toggle/star-half';
-import I18n from 'react-ghost-i18n';
+import CircularProgress from 'material-ui/CircularProgress';
 import GCLink from '../components/GCLink';
 import {detailPageV2Links} from '../conf/Config';
+import {GridRow, GridOneHalfColumn} from './common/Grid';
+import Translate from './common/Translate';
+import styled from 'styled-components';
+import muiThemeable from 'material-ui/styles/muiThemeable';
 
-export class EntryData extends React.Component {
+export class EntryData extends Component {
   constructor(props) {
     super(props);
   }
 
   render() {
+    if (!this.props.entry) {
+      return <div />;
+    }
     let stat = this.props.entry.stat;
     let entryInfo = this.props.entry.entryInfo[0];
     let timeInfo = this.props.entry.timeInfo;
@@ -23,14 +30,14 @@ export class EntryData extends React.Component {
     }
 
     return (
-      <div className="row">
-        <div className="six columns">
+      <GridRow>
+        <GridOneHalfColumn>
           <EntryTitle entry={this.props.entry}/>
           <EntryStat stat={stat}/>
-          <EntryInfo timeInfo={timeInfo} entryInfo={entryInfo}/>
-        </div>
+          <EntryInfos timeInfo={timeInfo} entryInfo={entryInfo}/>
+        </GridOneHalfColumn>
         {imageElement}
-      </div>
+      </GridRow>
     );
   }
 }
@@ -39,61 +46,72 @@ EntryData.propTypes = {
   entry: PropTypes.object.isRequired
 };
 
-export class EntryTitle extends React.Component {
-  constructor(props) {
-    super(props);
-  }
+const EntryName = styled.h4`
+  font-weight: 400;
+  margin-bottom: 0;
+`;
 
-  render() {
-    return (
-      <div className="entryLocation" dir="ltr">
-        <h4>
-          {this.props.entry.name}
-        </h4>
-        <h5>
-          {this.props.entry.region} - {this.props.entry.country}
-        </h5>
-      </div>
-    );
-  }
-}
+const EntryRegion = styled.h5`
+  font-size: 1.5em;
+`;
+
+const EntryTitle = ({entry}) => (
+  <div className="entryLocation" dir="ltr">
+    <EntryName>{entry.name}</EntryName>
+    <EntryRegion>{entry.region} - {entry.country}</EntryRegion>
+  </div>
+);
 
 EntryTitle.propTypes = {
   entry: PropTypes.object.isRequired
 };
 
-export class EntryStat extends React.Component {
-  constructor(props) {
-    super(props);
-  }
+const RatingList = styled.ul`
+  list-style-type: none;
+`;
 
-  render() {
-    if (this.props.stat === undefined) {
-      return (
-        <div>At this time, there is no comment for this entry</div>
-      );
-    }
-    return (
-      <ul className="rating">
-        <EntryStatItem itemScore={this.props.stat.aestheticism} itemLabel="Interest"/>
-        <EntryStatItem itemScore={this.props.stat.caving} itemLabel="Ease to move"/>
-        <EntryStatItem itemScore={this.props.stat.approach} itemLabel="Access"/>
-      </ul>
-    );
-  }
-}
+const EntryStat = ({stat}) => (
+  <div>
+    {!stat &&
+      <Translate>At this time, there is no comment for this entry</Translate>}
+    {stat &&
+      <RatingList>
+        <EntryStatItem itemScore={stat.aestheticism} itemLabel="Interest"/>
+        <EntryStatItem itemScore={stat.caving} itemLabel="Ease to move"/>
+        <EntryStatItem itemScore={stat.approach} itemLabel="Access"/>
+      </RatingList>}
+  </div>
+);
 
 EntryStat.propTypes = {
   stat: PropTypes.object.isRequired
 };
 
-export class EntryStatItem extends React.Component {
+const StatEntry = styled.li`
+  display: inline-flex;
+  width: 100%;
+
+  span {
+    margin-right: 10px;
+    white-space: nowrap;
+    width: 50%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+`;
+
+const Stars = styled.div`
+  display: inline;
+  white-space: nowrap;
+`;
+
+export class EntryStatItem extends Component {
   constructor(props) {
     super(props);
   }
 
   render() {
-    if (this.props.itemScore === undefined) {
+    if (!this.props.itemScore) {
       return (
         <div/>
       );
@@ -118,10 +136,10 @@ export class EntryStatItem extends React.Component {
     }
 
     return (
-      <li>
-        <I18n>{this.props.itemLabel}</I18n>
-        <div className="stars">{starsToDisplay}</div>
-      </li>
+      <StatEntry>
+        <Translate>{this.props.itemLabel}</Translate>
+        <Stars>{starsToDisplay}</Stars>
+      </StatEntry>
     );
   }
 }
@@ -131,35 +149,52 @@ EntryStatItem.propTypes = {
   itemLabel: PropTypes.string.isRequired
 };
 
-export class EntryInfo extends React.Component {
-  constructor(props) {
-    super(props);
-  }
-
-  render() {
-    let rows = [];
-    if (this.props.timeInfo !== undefined) {
-      rows.push(<EntryInfoItem key="eiik1" itemImg="time-to-go.svg" itemLabel="time to go" itemType="time" itemValue={this.props.timeInfo.eTTrail}/>);
-      rows.push(<EntryInfoItem key="eiik2" itemImg="underground_time.svg" itemLabel="underground time" itemType="time" itemValue={this.props.timeInfo.eTUnderground}/>);
+const EntryInfos = ({timeInfo, entryInfo}) => (
+  <div className="infos">
+    {timeInfo &&
+      <EntryInfoItem key="eiik1" itemImg="time-to-go.svg" itemLabel="time to go" itemType="time" itemValue={timeInfo.eTTrail}/>
     }
-    if (this.props.entryInfo !== undefined) {
-      rows.push(<EntryInfoItem key="eiik3" itemImg="length.svg" itemLabel="length" itemValue={this.props.entryInfo.length} itemUnit="m"/>);
-      rows.push(<EntryInfoItem key="eiik4" itemImg="depth.svg" itemLabel="depth" itemValue={this.props.entryInfo.depth} itemUnit="m"/>);
+    {timeInfo &&
+      <EntryInfoItem key="eiik2" itemImg="underground_time.svg" itemLabel="underground time" itemType="time" itemValue={timeInfo.eTUnderground}/>
     }
-    return (
-      <div className="infos">
-        {rows}
-      </div>
-    );
-  }
-}
+    {entryInfo &&
+      <EntryInfoItem key="eiik3" itemImg="length.svg" itemLabel="length" itemValue={entryInfo.length} itemUnit="m"/>
+    }
+    {entryInfo &&
+      <EntryInfoItem key="eiik4" itemImg="depth.svg" itemLabel="depth" itemValue={entryInfo.depth} itemUnit="m"/>
+    }
+  </div>
+);
 
-EntryInfo.propTypes = {
+EntryInfos.propTypes = {
   timeInfo: PropTypes.object.isRequired,
   entryInfo: PropTypes.object.isRequired
 };
 
-export class EntryInfoItem extends React.Component {
+const EntryInfoWrapper = styled.div`
+  width: 50%;
+  display: inline-flex;
+  line-height: 50px;
+  font-weight: 300;
+  font-size: 1.4em;
+`;
+
+const InfoImage = styled.img`
+  height: 50px;
+  width: 50px;
+`;
+
+const InfoValue = styled.span`
+  margin-left: 6px;
+  white-space: nowrap;
+`;
+
+const InfoUnit = styled.span`
+  margin-left: 6px;
+  white-space: nowrap;
+`;
+
+export class EntryInfoItem extends Component {
   constructor(props) {
     super(props);
   }
@@ -177,23 +212,22 @@ export class EntryInfoItem extends React.Component {
       let curHours = parseInt(splitTime[0]);
       let curMinutes = parseInt(splitTime[1]);
       if (curHours === 0) {
-        displayValue = <I18n><span>{curMinutes}</span> min</I18n>;
+        displayValue = <Translate>{curMinutes} min</Translate>;
       } else {
         if (curMinutes === 0) {
-          displayValue = <I18n><span>{curHours}</span> hour{(curHours > 1) ? 's' : ''}</I18n>;
+          displayValue = <Translate>{curHours} hour{(curHours > 1) ? 's' : ''}</Translate>;
         } else {
-          displayValue = <I18n><span>{curHours}</span> h <span>{curMinutes}</span></I18n>
+          displayValue = <Translate>{curHours} h {curMinutes}</Translate>
         }
       }
     }
 
-    let imgName = 'images/' + this.props.itemImg;
     return (
-      <div className="entryInfo">
-        <img src={imgName} height="50" width="50" title={this.props.itemLabel} alt={this.props.itemLabel}/>
-        <span className="value">{displayValue}</span>
-        <span className="unit">{this.props.itemUnit}</span>
-      </div>
+      <EntryInfoWrapper>
+        <InfoImage src={'images/' + this.props.itemImg} title={this.props.itemLabel} alt={this.props.itemLabel} />
+        <InfoValue>{displayValue}</InfoValue>
+        <InfoUnit>{this.props.itemUnit}</InfoUnit>
+      </EntryInfoWrapper>
     );
   }
 }
@@ -206,63 +240,102 @@ EntryInfoItem.propTypes = {
   itemType: PropTypes.string
 };
 
-export class EntryImage extends React.Component {
-  constructor(props) {
-    super(props);
-  }
+const TopoImage = styled.img`
+  width: 100%;
+  background-color: white;
+`;
 
-  render() {
-    if (!this.props.src) {
-      return (
-        <div className="noImage">At this time, there is no image for this entry</div>
-      );
-    }
-    return (
-        <div className="six columns">
-          <img className="topoImg" src={this.props.src} alt="topo"/>
-        </div>
-    );
-  }
-}
+const NoImage = styled.img`
+  font-weight: 300;
+  font-style: italic;
+`;
+
+const EntryImage = ({src}) => (
+  <GridOneHalfColumn>
+    {!src &&
+      <NoImage>
+        <Translate>At this time, there is no image for this entry</Translate>
+      </NoImage>}
+    {src &&
+      <TopoImage src={src} alt="topo" />}
+  </GridOneHalfColumn>
+);
 
 EntryImage.propTypes = {
   src: PropTypes.string.isRequired
 };
 
-export default class RandomEntryCard extends React.Component {
+const RandomEntryLink = styled(GCLink)`
+  text-decoration: none;
+  color: white;
+`;
+
+const EntryWrapper = styled.div`
+  background-color: rgba(110,110,110,.5);;
+  margin: auto;
+  padding: 20px;
+  border-radius: 5px;
+  color: white;
+`;
+
+class RandomEntryCard extends Component {
   constructor(props) {
     super(props);
-    this.state = {
-      ramdomEntry: []
-    };
-    this.fetchData();
   }
 
-  fetchData() {
-    let _this = this;
-    let url = '/api/entry/findRandom';
-
-    $.get(url, function(data) {
-      _this.setState({ramdomEntry: data[0]});
-    });
+  componentDidMount() {
+    this.props.fetch();
   }
 
   render() {
-    if (this.state.ramdomEntry.length !== 0) {
+    if (this.props.isFetching) {
+      return (<CircularProgress />);
+    }
+    if (this.props.entry && this.props.entry.id) {
       let detailPageV2Link = (detailPageV2Links[locale] !== undefined) ? detailPageV2Links[locale] : detailPageV2Links['*']; //eslint-disable-line
-
       return (
-        <GCLink className='randomEntryLink' href={detailPageV2Link + '&category=entry&id=' + this.state.ramdomEntry.id} target='blank'>
-          <div className='greyBg'>
-            <EntryData entry={this.state.ramdomEntry}/>
-          </div>
-        </GCLink>
-      );
-
-    } else {
-      return (
-        <div/>
+        <RandomEntryLink href={detailPageV2Link + '&category=entry&id=' + this.props.entry.id} target='blank'>
+          <EntryWrapper>
+            <EntryData entry={this.props.entry}/>
+          </EntryWrapper>
+        </RandomEntryLink>
       );
     }
+    return (<div/>);
   }
 }
+
+RandomEntryCard.propTypes = {
+  fetch: PropTypes.func.isRequired,
+  isFetching: PropTypes.bool,
+  entry: PropTypes.object,
+};
+
+export default RandomEntryCard;
+
+
+// [role='section'].randomEntry {
+//   @media (min-width: 550px) {
+//     .six.columns {
+//       width: 100%;
+//     }
+//
+//     .column,
+//     .columns {
+//       margin-left: 0;
+//     }
+//   }
+//
+//   @media (min-width: 750px) {
+//     text-align: left;
+//
+//     .six.columns {
+//       width: 48%;
+//     }
+//
+//     .column,
+//     .columns {
+//       margin-left: 2%;
+//     }
+//   }
+// }
