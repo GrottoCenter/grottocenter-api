@@ -1,34 +1,33 @@
-import React from 'react';
+import React, {PropTypes} from 'react';
 import Drawer from 'material-ui/Drawer';
 import MenuItem from 'material-ui/MenuItem';
-import RaisedButton from 'material-ui/RaisedButton';
-import NotificationsIcon from 'material-ui/svg-icons/social/notifications';
+import ArrowIcon from 'material-ui/svg-icons/navigation/arrow-drop-down';
+import muiThemeable from 'material-ui/styles/muiThemeable';
+import styled from 'styled-components';
 
-export default class SideMenu extends React.Component {
-
-  constructor(props) {
-    super(props);
-    this.state = {
-      open: false
-    };
-    this.handleToggle = this.handleToggle.bind(this);
+const Menubar = muiThemeable()(styled(Drawer)`
+  > div {
+    width: 200px !important;
+    top: 60px !important;
+    background-color: ${props => props.muiTheme.palette.primary1Color} !important;
   }
+`);
 
-  handleToggle() {
-    this.setState({open: !this.state.open});
-  }
+const SideMenu = (props) => (
+  <Menubar open={props.visible}>
+    <MenuItem
+      rightIcon={<ArrowIcon/>}
+      menuItems={<MenuItem>Menu Item 3</MenuItem>}
+    >Cavités</MenuItem>
+    <MenuItem>Réseaux</MenuItem>
+    <MenuItem>Organisations</MenuItem>
+    <MenuItem>Administration</MenuItem>
+    <MenuItem>Exports</MenuItem>
+  </Menubar>
+);
 
-  render() {
-    return (
-      <div>
-        <RaisedButton onTouchTap={this.handleToggle}>
-          <NotificationsIcon/>
-        </RaisedButton>
-        <Drawer width={200} open={this.state.open} containerStyle={{top: '120px'}}>
-          <MenuItem>Menu Item</MenuItem>
-          <MenuItem>Menu Item 2</MenuItem>
-        </Drawer>
-      </div>
-    );
-  }
-}
+SideMenu.propTypes = {
+  visible: PropTypes.bool.isRequired
+};
+
+export default SideMenu;

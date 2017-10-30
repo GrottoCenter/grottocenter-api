@@ -21,7 +21,7 @@ export default class Connected extends React.Component {
           style={styles.chip}
         >
           <Avatar src="images/uxceo-128.jpg" />
-          Image Avatar Chip
+          Kurdty
         </Chip>
 
       </div>

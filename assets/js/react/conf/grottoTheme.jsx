@@ -50,6 +50,23 @@ export default {
     divider: grey400,
     darkBlack: darkBlack,
     fullBlack: fullBlack,
-    secondaryBlocTitle: white
+    secondaryBlocTitle: white,
+    blackShadow: fade(fullBlack,  0.117647),
   }
 };
+
+// // Main Colors
+// @brown: rgba(121, 85, 72, 1);
+// @brownLight: lighten(@brown, 30%);//rgb(215, 204, 200);
+// @blue: rgba(33, 150, 243, 1);
+//
+// // Wikicaves Colors
+// @greenLogo: rgba(5, 152, 101, 1);
+// @blueLogo: rgba(5, 101, 152, 1);
+// @redLogo: rgba(154, 20, 12, 1);
+//
+// // Other Colors
+// @cream: rgba(245, 245, 245, 1);
+// @grey: rgba(110, 110, 110, 1);
+// @greyLight: rgba(192, 192, 192, 1);
+// @white: white;

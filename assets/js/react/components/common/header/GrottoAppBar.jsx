@@ -1,4 +1,4 @@
-import React, {PropTypes} from 'react';
+import React, {Component, PropTypes} from 'react';
 import IconMenu from 'material-ui/IconMenu';
 import IconButton from 'material-ui/IconButton';
 import FontIcon from 'material-ui/FontIcon';
@@ -8,10 +8,10 @@ import FlatButton from 'material-ui/FlatButton';
 import {Toolbar, ToolbarGroup} from 'material-ui/Toolbar';
 import Dialog from 'material-ui/Dialog';
 import muiThemeable from 'material-ui/styles/muiThemeable';
-import LanguagePicker from './../../containers/LanguagePicker';
-import SigninForm from './../../components/SigninForm';
+import LanguagePicker from '../../../containers/LanguagePicker';
+import SigninForm from '../../SigninForm';
 
-class GrottoAppBar extends React.Component {
+class GrottoAppBar extends Component {
   constructor(props) {
     super(props);
     this.state = {
