@@ -3,15 +3,15 @@
 $(document).ready(function() {
 
   /* Homepage Association goals animation */
-  $('div[role="section"].association .floatingGoals .goal').each(function(key, value) {
-    var initialText = $('div[role="section"].association .goalTextZone').text();
+  $('.animFG').each(function(key, value) {
+    var initialText = $('.animFGTarget').text();
 
     $(value).mouseover(function() {
-      $('div[role="section"].association .goalTextZone > span').text($(value).find('.goalText').text());
+      $('.animFGTarget').text($(value).find('.animFGSource').text());
     });
 
     $(value).mouseout(function() {
-      $('div[role="section"].association .goalTextZone > span').text(initialText);
+      $('.animFGTarget').text(initialText);
     });
   });
 
@@ -19,4 +19,23 @@ $(document).ready(function() {
   $('#collapsibleFaq').accordion({
     collapsible: true
   });
+
+  /* Footer position */
+  // function fixLegalFooterPosition() {
+  //   if ($("footer").height() + $("#applicationpage").height() + $("header").height() < window.innerHeight) {
+  //      $("footer").addClass('fixFooter');
+  //   } else {
+  //      $("footer").removeClass('fixFooter');
+  //   }
+  // }
+  //
+  // $("#applicationpage").bind('DOMSubtreeModified', function() {
+  //   fixLegalFooterPosition();
+  // });
+  //
+  // $(window).resize(function() {
+  //   fixLegalFooterPosition();
+  // });
+  //
+  // fixLegalFooterPosition();
 });

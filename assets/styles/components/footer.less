@@ -45,29 +45,6 @@ footer {
       font-size: 1.3em;
     }
   }
-
-  .donate {
-    div {
-      text-align: center;
-    }
-
-    a {
-      height: auto !important; // lesshint importantRule: false
-
-      &>div {
-        white-space: nowrap;
-      }
-
-      span {
-        text-transform: none !important; // lesshint importantRule: false
-      }
-    }
-
-    svg {
-      width: 40px !important; // lesshint importantRule: false
-      height: 40px !important; // lesshint importantRule: false
-    }
-  }
 }
 
 .footer {
@@ -90,6 +67,13 @@ footer {
   }
 }
 
+.fixFooter {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  padding: 0;
+}
+
 @media (min-width: @mdMin) {
   footer {
     .row:first-of-type .columns:first-of-type {
@@ -107,13 +91,6 @@ footer {
       li {
         margin: 0 14px;
       }
-    }
-
-    .donate {
-      float: right;
-      max-width: 100%;
-      line-height: 5em;
-      overflow: hidden;
     }
   }
 }
