@@ -1,7 +1,7 @@
 import React, {PropTypes} from 'react';
 import SideMenuConnector from '../../containers/SideMenuConnector';
-import AppToolbar from '../appli/header/AppToolbar';
-import FooterDisclamer from '../common/FooterDisclamer';
+import AppToolbar from '../appli/AppToolbar';
+import AppFooter from '../appli/AppFooter';
 import muiThemeable from 'material-ui/styles/muiThemeable';
 import styled from 'styled-components';
 
@@ -9,7 +9,7 @@ const ApplicationHeader = muiThemeable()(styled.header`
   background-color: ${props => props.muiTheme.palette.secondary1Color};
 `);
 
-const FixedFooterDisclamer = styled(FooterDisclamer)`
+const AppFooterStl = styled(AppFooter)`
   /* position: fixed; */
   bottom: 0;
   width: 100%;
@@ -22,7 +22,7 @@ const Application = (props) => (
     <nav></nav>
     <aside><SideMenuConnector /></aside>
     <article>{props.children}</article>
-    <footer><FixedFooterDisclamer /></footer>
+    <footer><AppFooterStl /></footer>
   </div>
 );
 

@@ -7,7 +7,7 @@ import WhatIsIt from '../homepage/WhatIsIt';
 import RandomEntry from '../homepage/RandomEntry';
 import PartnersSection from '../homepage/PartnersSection';
 import Footer from '../homepage/Footer';
-import GrottoAppBar from '../common/header/GrottoAppBar';
+import GrottoAppBar from '../common/GrottoAppBar';
 
 const Landing = () => (
   <div id='landingpage'>

@@ -1,10 +1,10 @@
 import React, {PropTypes, Component} from 'react';
+import {browserHistory} from 'react-router';
 import AutoComplete from 'material-ui/AutoComplete';
 import MenuItem from 'material-ui/MenuItem';
 import ExploreIcon from 'material-ui/svg-icons/action/explore';
 import muiThemeable from 'material-ui/styles/muiThemeable';
 import {directionManager, RIGHT_TO_LEFT} from './../../containers/TextDirectionProvider';
-import {detailPageV2Links} from '../../conf/Config';
 import Translate from '../common/Translate';
 import styled from 'styled-components';
 
@@ -45,8 +45,7 @@ class Autocomplete extends Component {
       this.props.showMarker(selectedItem);
     }
     if (selectedItem.id) {
-      let detailPageV2Link = (detailPageV2Links[locale] !== undefined) ? detailPageV2Links[locale] : detailPageV2Links['*']; //eslint-disable-line
-      window.open(detailPageV2Link + '&category=' + selectedItem.category + '&id=' + selectedItem.id,   'GrottoV2Window');
+      browserHistory.push('/ui/map');
     }
   }
 

@@ -8,8 +8,8 @@ import FlatButton from 'material-ui/FlatButton';
 import {Toolbar, ToolbarGroup} from 'material-ui/Toolbar';
 import Dialog from 'material-ui/Dialog';
 import muiThemeable from 'material-ui/styles/muiThemeable';
-import LanguagePicker from '../../../containers/LanguagePicker';
-import SigninForm from '../../SigninForm';
+import LanguagePicker from '../../containers/LanguagePicker';
+import SigninForm from '../SigninForm';
 
 class GrottoAppBar extends Component {
   constructor(props) {

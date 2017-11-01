@@ -9,6 +9,30 @@ import Divider from 'material-ui/Divider';
 import muiThemeable from 'material-ui/styles/muiThemeable';
 import {DateRibbon} from '../Toolbox';
 import GCLink from '../GCLink';
+import styled from 'styled-components';
+
+const CardTextStl = styled(CardText)`
+    min-height: 150px;
+    textAlign: justify !important;
+`;
+
+const CardActionsStl = styled(CardActions)`
+  text-align: right !important;
+`;
+
+const CardStl = styled(Card)`
+  :nth-child(n+1) {
+    margin-top: 4%;
+
+    @media (min-width: 550px) {
+      margin-top: 0;
+    }
+  }
+`;
+
+const ActionCardStl = styled(CardStl)`
+  text-align: center !important;
+`;
 
 class NewsCard extends Component {
   constructor(props) {
@@ -18,7 +42,7 @@ class NewsCard extends Component {
   }
 
   componentDidMount() {
-      this.interval = setInterval(() => this.props.refresh(), DYNAMIC_NEWS_RELOAD_INTERVAL);
+    this.interval = setInterval(() => this.props.refresh(), DYNAMIC_NEWS_RELOAD_INTERVAL);
   }
 
   componentWillUnmount() {
@@ -28,33 +52,33 @@ class NewsCard extends Component {
   render() {
     if (this.props.showSpinner && !this.props.text) {
       return (
-        <Card style={{'textAlign': 'center'}} className="newsCard">
+        <ActionCardStl>
           <SyncIcon color={this.props.muiTheme.palette.primary3Color} hoverColor={this.props.muiTheme.palette.accent1Color} />
-        </Card>
+        </ActionCardStl>
       );
     }
     if (!this.props.showSpinner && !this.props.text) {
       return (
-        <Card style={{'textAlign': 'center'}} className="newsCard">
+        <ActionCardStl>
           <SyncKOIcon color={this.props.muiTheme.palette.primary3Color} hoverColor={this.props.muiTheme.palette.accent1Color} />
-        </Card>
+        </ActionCardStl>
       );
     }
     return (
-      <Card className="newsCard">
+      <CardStl>
         <CardMedia>
           <img src='images/homepage/news.jpg' />
         </CardMedia>
         {this.props.day && this.props.month && <DateRibbon day={this.props.day} month={this.props.month}/>}
         <CardTitle title={this.props.title}/>
-        <CardText style={{textAlign: "justify"}}>{this.props.text}</CardText>
+        <CardTextStl>{this.props.text}</CardTextStl>
         <Divider/>
-        {this.props.linkMore && <CardActions style={{'textAlign': 'right'}}>
+        {this.props.linkMore && <CardActionsStl>
           <GCLink href={this.props.linkMore}>
             <FlatButton icon={<ImageLoupe color={this.props.muiTheme.palette.accent1Color} />} />
           </GCLink>
-        </CardActions>}
-      </Card>
+        </CardActionsStl>}
+      </CardStl>
     );
   }
 }

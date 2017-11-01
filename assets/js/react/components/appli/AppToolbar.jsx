@@ -1,11 +1,11 @@
 import React, {PropTypes} from 'react';
 import {Toolbar, ToolbarGroup} from 'material-ui/Toolbar';
-import HeaderTitle from '../HeaderTitle';
-import MenuBurgerConnector from '../../../containers/MenuBurgerConnector';
+import HeaderTitle from './HeaderTitle';
+import MenuBurgerConnector from '../../containers/MenuBurgerConnector';
 import Language from './Language';
 import Connected from './Connected';
 import Notifications from './Notifications';
-import QuicksearchContainer from '../../../containers/QuicksearchContainer';
+import QuicksearchContainer from '../../containers/QuicksearchContainer';
 import muiThemeable from 'material-ui/styles/muiThemeable';
 import styled from 'styled-components';
 
