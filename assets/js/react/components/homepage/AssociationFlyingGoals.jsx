@@ -1,24 +1,6 @@
-import React, {PropTypes} from 'react';
+import React, {PropTypes, Component} from 'react';
 import SyncIcon from 'material-ui/svg-icons/notification/sync';
 import styled from 'styled-components';
-
-//   .goalTextZone {
-//     display: none;
-//     text-align: center;
-//     font-weight: 300;
-//
-//     &:before {
-//       content: '';
-//       display: inline-block;
-//       height: 100%;
-//       vertical-align: middle;
-//     }
-//
-//     & > span {
-//       display: inline-block;
-//       vertical-align: middle;
-//     }
-//   }
 
 const FlyingGoals = styled.div`
   display: none;
@@ -26,7 +8,7 @@ const FlyingGoals = styled.div`
 
   @media (min-width: 550px) {
     display: block;
-    height: 400px;
+    height: 450px;
     margin-top: -160px;
   }
 `;
@@ -51,7 +33,7 @@ const CenteredText = styled.div`
   @media (min-width: 550px) {
     display: inline-block;
     position: relative;
-    top: 90px;
+    top: 140px;
     left: ~'calc((100% - 200px) / 2)';
     width: 200px;
     height: 150px;
@@ -59,7 +41,51 @@ const CenteredText = styled.div`
   }
 `;
 
-const Goal = styled.div`
+const GoalText = styled.span`
+  display: none !important; // lesshint importantRule: false
+`;
+
+class Goal extends Component {
+  constructor(props) {
+    super(props);
+  }
+
+  handleMouseOver() {
+    this.props.updateTargetZone(this.props.entry.description);
+  }
+
+  handleMouseOut() {
+    this.props.updateTargetZone(this.props.title);
+  }
+
+  render() {
+    return (
+      <div className={this.props.className}
+        onMouseOver={(event) => this.handleMouseOver(event)}
+        onMouseOut={(event) => this.handleMouseOut(event)}>
+        <span style={{color: this.props.textColor}}>
+          {this.props.entry.word}
+        </span>
+        <SyncIcon color={this.props.iconColor} hoverColor={this.props.iconHoverColor} />
+        <GoalText>
+          {this.props.entry.description}
+        </GoalText>
+      </div>
+    );
+  }
+}
+
+Goal.propTypes = {
+  className: PropTypes.string.isRequired,
+  title: PropTypes.element.isRequired,
+  entry: PropTypes.object.isRequired,
+  textColor: PropTypes.string.isRequired,
+  iconColor: PropTypes.string.isRequired,
+  iconHoverColor: PropTypes.string.isRequired,
+  updateTargetZone: PropTypes.func.isRequired
+};
+
+const GoalWrapper = styled(Goal)`
   @media (min-width: 550px) {
     position: absolute;
     width: 129px;
@@ -119,41 +145,41 @@ const Goal = styled.div`
   }
 `;
 
-const GoalText = styled.span`
-  display: none !important; // lesshint importantRule: false
-`;
+class AssociationFlyingGoals extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      targetZone: this.props.title
+    };
+  }
 
-const AssociationFlyingGoals = ({title, entries, textColor, iconColor, iconHoverColor}) => (
-  <div>
-    <CenteredText>
-      <span className='animFGTarget'>
-        {title}
-      </span>
-    </CenteredText>
-    <FlyingGoals>
-      {entries.map(function(entry, i) {
-        return (
-          <Goal key={i} className='animFG'>
-            <span style={{color: textColor}}>
-              {entry.word}
-            </span>
-            <SyncIcon color={iconColor} hoverColor={iconHoverColor} />
-            <GoalText className='animFGSource'>
-              {entry.description}
-            </GoalText>
-          </Goal>
-        );
-      })}
-    </FlyingGoals>
-  </div>
-);
+  render () {
+    return (
+      <div>
+        <CenteredText>
+          <span ref={(element) => {this.targetZone = element;}} >
+            {this.state.targetZone}
+          </span>
+        </CenteredText>
+        <FlyingGoals>
+          {this.props.entries.map((entry, i) => {
+            return (
+              <GoalWrapper
+                key={i}
+                entry={entry}
+                updateTargetZone={(text) => {this.setState({targetZone: text});}}
+                {...this.props} />
+            );
+          })}
+        </FlyingGoals>
+      </div>
+    );
+  }
+}
 
 AssociationFlyingGoals.propTypes = {
   entries: PropTypes.array.isRequired,
-  title: PropTypes.element.isRequired,
-  textColor: PropTypes.string.isRequired,
-  iconColor: PropTypes.string.isRequired,
-  iconHoverColor: PropTypes.string.isRequired
+  title: PropTypes.element.isRequired
 };
 
 export default AssociationFlyingGoals;
