@@ -293,7 +293,7 @@ class GrottoMapClass extends Component {
           />
         </div>
         <Map
-             style={{width:"100%",height: "100%",position: 'absolute'}}
+             style={{width:"100%",height: "calc(100% - 128px)",position: 'absolute'}} // TODO Dynamise value 128
                  center={(this.props.marker) ? this.props.marker.latlng : undefined}
              ref='map'
              zoom={this.state.zoom}
