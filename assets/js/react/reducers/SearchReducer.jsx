@@ -7,7 +7,7 @@ import { startSearch, loadCaveSuccess, loadEntrySuccess, loadGrottoSuccess, show
     Has side info to print on popup & to make links to more info
     TODO : markers, a array of Mappable Object markers
 */
-export const marker = (state = [], action) => {
+export const marker = (state = {}, action) => {
   switch (action.type) {
     case showMarker().type:// TODO useless mapping > send plain entry object to Map
     return {

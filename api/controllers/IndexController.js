@@ -6,10 +6,10 @@
  */
 'use strict';
 module.exports = {
-    index: function (req, res) {
-        return res.view('grottocenter');
-    },
-    map: function (req, res) {
-        return res.view('grottocenter');
-    }
+  index: function(req, res) {
+    return res.view('grottocenter');
+  },
+  map: function(req, res) {
+    return res.view('grottocenter');
+  }
 };
