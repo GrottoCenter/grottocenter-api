@@ -29,6 +29,6 @@ BurgerLink.propTypes = {
   visible: PropTypes.bool.isRequired
 }
 
-const MenuBurger = styled(BurgerLink)``;
+const SideMenuBurger = styled(BurgerLink)``;
 
-export default MenuBurger;
+export default SideMenuBurger;

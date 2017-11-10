@@ -1,7 +1,7 @@
 import React, {PropTypes} from 'react';
 import {Toolbar, ToolbarGroup} from 'material-ui/Toolbar';
 import HeaderTitle from './HeaderTitle';
-import MenuBurgerConnector from '../../containers/MenuBurgerConnector';
+import SideMenuBurgerConnector from '../../containers/SideMenuBurgerConnector';
 import Language from './Language';
 import Connected from './Connected';
 import Notifications from './Notifications';
@@ -27,7 +27,7 @@ const AppToolbar = () => (
   <StyledToolbar>
     <TitleGroup>
       <HeaderTitle title='Grottocenter' subtitle='Achere - 2017'/>
-      <MenuBurgerConnector/>
+      <SideMenuBurgerConnector/>
     </TitleGroup>
 
     <ToolbarGroup>
