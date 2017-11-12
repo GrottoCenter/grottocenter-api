@@ -89,8 +89,6 @@ const Faq = (props) => (
       </CardTitle>
 
       <CardText expandable={true} style={{backgroundColor: props.muiTheme.palette.textIconColor}}>
-        <I18n>I want to share my data only with fellow cavers Is it possible on Grottocenter?</I18n>
-        <br/>
         <I18n>Data, on Grottocenter,  is placed under free licence, it is accessible to all those who may need  it</I18n>
       </CardText>
     </Card>
