@@ -92,7 +92,10 @@ module.exports.routes = {
 
   'GET /api/search/findAll': {
     controller: 'Search',
-    action: 'findAll'
+    action: 'findAll',
+    cors: {
+      origin: '*'
+    }
   },
 
   'GET /api/caver/count': {
@@ -134,7 +137,10 @@ module.exports.routes = {
 
   'GET /api/entry/publicCount': {
     controller: 'Entry',
-    action: 'getPublicEntriesNumber'
+    action: 'getPublicEntriesNumber',
+    cors: {
+      origin: '*'
+    }
   },
 
   'GET /api/entry/count': {
@@ -144,7 +150,10 @@ module.exports.routes = {
 
   'GET /api/entry/:id': {
     controller: 'Entry',
-    action: 'find'
+    action: 'find',
+    cors: {
+      origin: '*'
+    }
   },
 
   /* REST API for Cave controller */
