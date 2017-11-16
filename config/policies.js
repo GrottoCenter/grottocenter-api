@@ -44,15 +44,15 @@ module.exports.policies = {
 
   EntryController: {
     '*': 'tokenAuth',
-    'find': true,
+    'find': 'apiKeyAuth',
     'findAll': true,
     'findRandom': true,
-    'getPublicEntriesNumber' : true,
+    'getPublicEntriesNumber' : 'apiKeyAuth',
     'getEntriesNumber' : true
   },
 
   SearchController: {
-    'findAll': true,
+    'findAll': 'apiKeyAuth',
   },
 
   CaveController: {
