@@ -117,11 +117,6 @@ module.exports.routes = {
 
   /* Entry controller */
 
-  'GET /api/entry/': {
-    controller: 'Entry',
-    action: 'index'
-  },
-
   'GET /api/entry/findAll': {
     controller: 'Entry',
     action: 'findAll'
