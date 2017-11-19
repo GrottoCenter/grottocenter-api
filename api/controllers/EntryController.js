@@ -6,17 +6,12 @@
  */
 'use strict';
 module.exports = {
-  index: function(req, res) {
-    TEntry.find().limit(10).exec(function(err, found) {
-      return res.view({
-        entrylist: found
-      });
-    });
-  },
 
   find: function(req, res) {
     TEntry.findOne({
-      id: req.params.id
+      id: req.params.id,
+      // TODO : to adapt when authentication will be implemented
+      isPublic:'YES'
     // TODO before this : see how to materialize fact that
     // id of entry corresponds to id of linked single entry if exists
     //}).populate('author').populate('caves').populate('singleEntry').exec(function(err, found) {
@@ -40,6 +35,9 @@ module.exports = {
         'like': '%' + req.param('region') + '%'
       };
     }
+
+    // TODO : to adapt when authentication will be implemented
+    parameters.isPublic = 'YES';
 
     // TODO before this : see how to materialize fact that
     // id of entry corresponds to id of linked single entry if exists

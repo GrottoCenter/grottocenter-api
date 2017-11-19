@@ -10,6 +10,9 @@ module.exports = {
       sails.log.debug('Search > parameters ' + parameters.name.like);
     }
 
+    //TODO : to adapt when authentication will be implemented
+    parameters.isPublic = 'YES';
+
     // search for caves
     //TCave.find(parameters).sort('id ASC').limit(50).exec(function(err, foundCave) {
     // search for entries
