@@ -77,6 +77,10 @@ module.exports = {
     });
   },
 
+  findVersion: function(req, res) {
+    return res.json({version: req.params.version});
+  },
+
   findAll: function(req, res) {
     let parameters = {};
     if (req.param('name') !== undefined) {
