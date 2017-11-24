@@ -58,7 +58,10 @@ module.exports.routes = {
   },
 
   'GET /ui/*': {
-    view: 'grottocenter'
+    view: 'grottocenter',
+    swagger: {
+      ignore: true
+    }
   },
 
   /* Auth controller */
@@ -106,6 +109,38 @@ module.exports.routes = {
   'GET /api/caver/:id': {
     controller: 'Caver',
     action: 'find'
+  },
+
+  'GET /api/:version/caver/:id': {
+    controller: 'Caver',
+    action: 'findVersion',
+    swagger: {
+      summary: 'Get caver by ID',
+      description: 'Get caver by ID Description',
+      produces: ['application/json'],
+      tags: ['Caver'],
+      responses: {
+        '200': {
+          description: 'Caver data',
+          schema: 'TCaver',
+          type: 'array'
+        }
+      },
+      parameters: [
+        {
+          name: 'id',
+          description: 'Requested identifier',
+          required: true,
+          type: 'integer'
+        },
+        {
+          name: 'version',
+          description: 'API version',
+          required: true,
+          type: 'string'
+        }
+      ]
+    }
   },
 
   'PUT /api/caver/:id': {
