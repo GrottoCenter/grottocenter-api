@@ -37,7 +37,8 @@ module.exports.policies = {
   },
 
   CaverController: {
-    '*': true,
+    '*': false,
+    'getCaversNumber': true,
     'update': 'tokenAuth',
     'destroy': 'tokenAuth'
   },
@@ -60,7 +61,7 @@ module.exports.policies = {
   },
 
   AuthorController: {
-    '*': true
+    '*': false
   },
 
   PartnerController: {
@@ -76,11 +77,11 @@ module.exports.policies = {
   },
 
   TopographyController: {
-    '*': true
+    '*': false
   },
 
   CommentController: {
-    '*': true
+    '*': false
   },
 
   GrottoController: {
