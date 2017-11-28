@@ -1,7 +1,6 @@
 module.exports = function (grunt) {
   grunt.registerTask('prod', [
-    'copy:swagger',
-    'replace:swaggerhtml',
+    'copy:swaggercss',
     'compileAssets',
     'concat',
     'uglify',

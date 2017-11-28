@@ -90,3 +90,6 @@ export const
 
 export const
     DYNAMIC_NEWS_RELOAD_INTERVAL = 3600000;
+
+export const
+  swaggerLinkV1 = "/ui/swagger/?url=/swagger/apiV1.yaml";

@@ -33,12 +33,18 @@ module.exports.routes = {
 
   '/': {
     controller: 'Index',
-    action: 'index'
+    action: 'index',
+    swagger: {
+      ignore: true
+    }
   },
 
   '/ui/*': {
     controller: 'Index',
-    action: 'index'
+    action: 'index',
+    swagger: {
+      ignore: true
+    }
   },
 
   /***************************************************************************
@@ -54,7 +60,10 @@ module.exports.routes = {
   /* For ReactRouter routes */
 
   'GET /auth/*': {
-    view: 'grottocenter'
+    view: 'grottocenter',
+    swagger: {
+      ignore: true
+    }
   },
 
   'GET /ui/*': {
@@ -187,6 +196,11 @@ module.exports.routes = {
     action: 'findAll'
   },
 
+  'GET /api/v1/entry/findAll': {
+    controller: 'EntryV1',
+    action: 'findAll'
+  },
+
   'GET /api/entry/findRandom': {
     controller: 'Entry',
     action: 'findRandom',
@@ -195,8 +209,8 @@ module.exports.routes = {
     }
   },
 
-  'GET /api/entry/publicCount': {
-    controller: 'Entry',
+  'GET /api/v1/entry/publicCount': {
+    controller: 'EntryV1',
     action: 'getPublicEntriesNumber',
     cors: {
       origin: '*'
@@ -211,8 +225,8 @@ module.exports.routes = {
     }
   },
 
-  'GET /api/entry/:id': {
-    controller: 'Entry',
+  'GET /api/v1/entry/:id': {
+    controller: 'EntryV1',
     action: 'find',
     cors: {
       origin: '*'

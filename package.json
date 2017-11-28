@@ -48,9 +48,8 @@
     "redux-thunk": "^2.2.0",
     "sails": "^0.12.0",
     "sails-disk": "~0.10.0",
-    "sails-magik-swagger": "^0.5.3",
     "sails-mysql": "^0.10.12",
-    "swagger-ui": "^2.2.6",
+    "swagger-ui": "^3.5.0",
     "underscore.date": "^0.6.1",
     "underscore.string": "^3.3.4"
   },

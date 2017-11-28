@@ -16,12 +16,16 @@
 module.exports = function(grunt) {
 
   grunt.config.set('replace', {
-    swaggerhtml: {
-      src: ['node_modules/swagger-ui/dist/index.html'],             // source files array (supports minimatch)
-      dest: 'assets/swagger/index.html',             // destination directory or file
+    apiDev: {
+      src: ['apiV*.yaml'], // source files array (supports minimatch)
+      dest: 'assets/swagger/', // destination directory or file
       replacements: [{
-        from: 'http://petstore.swagger.io/v2/swagger.json',                   // string replacement
-        to: '/swagger/doc'
+        from: 'beta.grottocenter.org', // string replacement
+        to: 'localhost:1337'
+      },
+      {
+        from: '- https', // string replacement
+        to: '- http'
       }]
     }
   });

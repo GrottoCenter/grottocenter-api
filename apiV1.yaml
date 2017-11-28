@@ -1,0 +1,109 @@
+swagger: '2.0'
+info:
+  description: 'This page documents the available API you can use on your website.'
+  title: 'Grottocenter 3 - REST API'
+  version: 'v.1'
+  termsOfService: 'http://swagger.io/terms/'
+  contact:
+    name: 'Slack space'
+    url: 'https://grottocenter.slack.com/messages/C858CHARY/'
+  license:
+    name: 'CC BY-SA 3.0'
+    url: 'https://creativecommons.org/licenses/by-sa/3.0/'
+host: beta.grottocenter.org
+basePath: /api/v1
+tags:
+  - name: entry
+    description: Entries managment
+  - name: search
+    description: Everything around search
+schemes:
+  - https
+paths:
+  '/entry/{entryId}':
+    get:
+      tags:
+        - entry
+      summary: Finds public entries by identifier
+      description: TODO
+      operationId: findEntryById
+      produces:
+        - application/json
+      parameters:
+        - name: entryId
+          in: path
+          description: Entry identifier
+          required: true
+          type: string
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            type: object
+            items:
+              $ref: '#/definitions/PublicEntry'
+        '400':
+          description: Invalid identifier
+  /entry/publicCount:
+    get:
+      tags:
+        - entry
+      summary: Get the number of public entries
+      description: Get the number of public entries referenced on GC3 database
+      operationId: getEntryPublicCount
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            type: object
+            items:
+              $ref: '#/definitions/Entry'
+  /search/findAll:
+    post:
+      tags:
+        - search
+      summary: Finds entries by name
+      description: TODO
+      operationId: findEntriesByName
+      produces:
+        - application/json
+      parameters:
+        - name: name
+          in: query
+          description: Entry name to filter by
+          required: true
+          type: string
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/EntrySearchResult'
+        '400':
+          description: Invalid tag value
+definitions:
+  PublicEntry:
+    type: object
+    properties:
+      count:
+        type: integer
+        format: int64
+        example: 1234
+  Entry:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+        example: 1234
+  EntrySearchResult:
+    type: object
+    properties:
+      name:
+        type: string
+        example: 'Gouffre Bernard'
