@@ -3,7 +3,7 @@ info:
   description: 'This page documents the available API you can use on your website.'
   title: 'Grottocenter 3 - REST API'
   version: 'v.1'
-  termsOfService: 'http://swagger.io/terms/'
+  termsOfService: 'https://wiki.grottocenter.org/wiki/GrottoCenter:En/API'
   contact:
     name: 'Slack space'
     url: 'https://grottocenter.slack.com/messages/C858CHARY/'
@@ -63,18 +63,18 @@ paths:
             items:
               $ref: '#/definitions/Entry'
   /search/findAll:
-    post:
+    get:
       tags:
         - search
-      summary: Finds entries by name
+      summary: Finds anything by name
       description: TODO
-      operationId: findEntriesByName
+      operationId: findByName
       produces:
         - application/json
       parameters:
         - name: name
           in: query
-          description: Entry name to filter by
+          description: Resource name to filter by
           required: true
           type: string
       responses:
@@ -83,7 +83,7 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/definitions/EntrySearchResult'
+              $ref: '#/definitions/SearchResult'
         '400':
           description: Invalid tag value
 definitions:
@@ -101,7 +101,7 @@ definitions:
         type: integer
         format: int64
         example: 1234
-  EntrySearchResult:
+  SearchResult:
     type: object
     properties:
       name:

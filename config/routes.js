@@ -125,6 +125,14 @@ module.exports.routes = {
     }
   },
 
+  'GET /api/v1/search/findAll': {
+    controller: 'SearchV1',
+    action: 'findAll',
+    cors: {
+      origin: '*'
+    }
+  },
+
   'GET /api/caver/count': {
     controller: 'Caver',
     action: 'getCaversNumber',
@@ -193,11 +201,6 @@ module.exports.routes = {
 
   'GET /api/entry/findAll': {
     controller: 'Entry',
-    action: 'findAll'
-  },
-
-  'GET /api/v1/entry/findAll': {
-    controller: 'EntryV1',
     action: 'findAll'
   },
 
