@@ -22,7 +22,7 @@ module.exports = {
       let params = {};
       params.controllerMethod = 'EntryController.find';
       params.notFoundMessage = 'Entry of id ' + req.params.id + ' not found.';
-      return ControllerService.treat(err, found, params, res);
+      return ControllerService.treatAndConvert(err, found, params, res, V1MappingService.convertToEntryModel);
     });
   },
 
