@@ -52,7 +52,7 @@ module.exports.policies = {
     'getEntriesNumber' : true
   },
 
-  EntryV1Controller: {
+  'v1/EntryController': {
     '*': false,
     'find': 'apiKeyAuth',
     'getPublicEntriesNumber' : 'apiKeyAuth',
@@ -62,7 +62,7 @@ module.exports.policies = {
     'findAll': 'apiKeyAuth',
   },
 
-  SearchV1Controller: {
+  'v1/SearchController': {
     'findAll': 'apiKeyAuth',
   },
 

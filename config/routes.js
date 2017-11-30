@@ -126,7 +126,7 @@ module.exports.routes = {
   },
 
   'GET /api/v1/search/findAll': {
-    controller: 'SearchV1',
+    controller: 'v1/Search',
     action: 'findAll',
     cors: {
       origin: '*'
@@ -213,7 +213,7 @@ module.exports.routes = {
   },
 
   'GET /api/v1/entry/publicCount': {
-    controller: 'EntryV1',
+    controller: 'v1/Entry',
     action: 'getPublicEntriesNumber',
     cors: {
       origin: '*'
@@ -228,8 +228,16 @@ module.exports.routes = {
     }
   },
 
+  'GET /api/entry/:id': {
+    controller: 'Entry',
+    action: 'find',
+    cors: {
+      origin: '*'
+    }
+  },
+
   'GET /api/v1/entry/:id': {
-    controller: 'EntryV1',
+    controller: 'v1/Entry',
     action: 'find',
     cors: {
       origin: '*'

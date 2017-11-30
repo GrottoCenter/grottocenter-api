@@ -6,10 +6,6 @@
  */
 'use strict';
 module.exports = {
-  _config: {
-    model: 'TEntryV1'
-  },
-
   find: function(req, res) {
     TEntry.findOne({
       id: req.params.id,
