@@ -7,7 +7,7 @@
 'use strict';
 module.exports = {
 
-  find: function(req, res) {
+  find: function(req, res, converter) {
     TEntry.findOne({
       id: req.params.id,
       // TODO : to adapt when authentication will be implemented
@@ -17,9 +17,8 @@ module.exports = {
     //}).populate('author').populate('caves').populate('singleEntry').exec(function(err, found) {
     }).populate('author').populate('caves').exec(function(err, found) {
       let params = {};
-      params.controllerMethod = 'EntryController.find';
-      params.notFoundMessage = 'Entry of id ' + req.params.id + ' not found.';
-      return ControllerService.treat(err, found, params, res);
+      params.searchedItem = 'Entry of id ' + req.params.id;
+      return ControllerService.treatAndConvert(err, found, params, res, converter);
     });
   },
 
@@ -62,15 +61,16 @@ module.exports = {
     });
   },
 
-  getPublicEntriesNumber: function(req, res) {
+  getPublicEntriesNumber: function(req, res, converter) {
     EntryService.getPublicEntriesNumber().then(function(count) {
       if (!count) {
-        return res.notFound('Problem while getting number of public entries.');
+        return res.json(404, { error: 'Problem while getting number of public entries' });
       }
-      return res.json(count);
+      return res.json(converter(count));
     }, function(err) {
-      sails.log.error(err);
-      return res.serverError('EntryController.getPublicEntriesNumber error : ' + err);
+      let errorMessage = 'An internal error occurred when getting number of public entries';
+      sails.log.error(errorMessage + ': ' + err);
+      return res.json(500, { error: errorMessage });
     });
   },
 

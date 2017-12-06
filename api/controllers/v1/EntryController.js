@@ -7,21 +7,10 @@
 'use strict';
 module.exports = {
   find: function(req, res) {
-    TEntry.findOne({
-      id: req.params.id,
-      // TODO : to adapt when authentication will be implemented
-      isPublic:'YES'
-    // TODO before this : see how to materialize fact that
-    // id of entry corresponds to id of linked single entry if exists
-    //}).populate('author').populate('caves').populate('singleEntry').exec(function(err, found) {
-    }).populate('author').populate('caves').exec(function(err, found) {
-      let params = {};
-      params.controllerMethod = 'EntryController.find';
-      params.notFoundMessage = 'Entry of id ' + req.params.id + ' not found.';
-      return ControllerService.treatAndConvert(err, found, params, res, V1MappingService.convertToEntryModel);
-    });
+    return sails.controllers.entry.find(req, res, MappingV1Service.convertToEntryModel);
   },
 
+  // TODO adapt
   findAll: function(req, res) {
     let parameters = {};
     if (req.param('name') !== undefined) {
@@ -49,6 +38,7 @@ module.exports = {
     });
   },
 
+  // TODO adapt
   findRandom: function(req, res) {
     EntryService.findRandom().then(function(results) {
       if (!results) {
@@ -62,17 +52,10 @@ module.exports = {
   },
 
   getPublicEntriesNumber: function(req, res) {
-    EntryService.getPublicEntriesNumber().then(function(count) {
-      if (!count) {
-        return res.notFound('Problem while getting number of public entries.');
-      }
-      return res.json(count);
-    }, function(err) {
-      sails.log.error(err);
-      return res.serverError('EntryController.getPublicEntriesNumber error : ' + err);
-    });
+    return sails.controllers.entry.getPublicEntriesNumber(req, res, MappingV1Service.convertToPublicEntryModel);
   },
 
+  // TODO adapt
   getEntriesNumber: function(req, res) {
     TEntry.count().exec(function(err, found) {
       let params = {};
