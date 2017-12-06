@@ -83,7 +83,7 @@ export const
   dynamicNumbersUrl = {
     'cavers': '/api/caver/count',
     'entries': '/api/entry/count',
-    'publicEntries': '/api/entry/publicCount',
+    'publicEntries': '/api/v1/entry/publicCount',
     'partners': '/api/grotto/count',
     'officialPartners': '/api/grotto/officialCount'
   };
