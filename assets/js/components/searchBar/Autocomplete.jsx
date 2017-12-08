@@ -81,7 +81,7 @@ class Autocomplete extends React.Component {
       latitude: item.latitude,
       longitude: item.longitude,
       altitude: item.altitude,
-      author: item.author,
+      //author: item.author,
       category:category,
       isMappable:this.isMappable(item),
       value: (
