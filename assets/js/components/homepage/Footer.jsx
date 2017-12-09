@@ -92,32 +92,37 @@ class Footer extends Component {
               <ul className="linksIcon">
                 <li>
                   <GCLink href={facebookLink}>
-                    <img src="/images/facebook.svg" alt="Follow us on Facebook"/>
+                    <img src="/images/icons8/icons8-facebook-filled-100.png" alt="Follow us on Facebook"/>
                   </GCLink>
                 </li>
                 <li>
                   <GCLink href={rssLink}>
-                    <img src="/images/rss.png" alt="RSS feed"/>
+                    <img src="/images/icons8/icons8-rss-filled-100.png" alt="RSS feed"/>
                   </GCLink>
                 </li>
                 <li>
                   <GCLink href={bloggerLink}>
-                    <img src={'/images/' + bloggerIcon} alt="Grottocenter blog"/>
+                    <img src='/images/icons8/icons8-blogger-filled-100.png' alt="Grottocenter blog"/>
                   </GCLink>
                 </li>
                 <li>
                   <GCLink href={twitterLink}>
-                    <img src="/images/twitter.svg" alt="Follow us on Twitter"/>
+                    <img src="/images/icons8/icons8-twitter-filled-100.png" alt="Follow us on Twitter"/>
                   </GCLink>
                 </li>
                 <li>
                   <GCLink href={githubLink}>
-                    <img src="/images/github.png" alt="Grottocenter3 on GitHub"/>
+                    <img src="/images/icons8/icons8-github-filled-100.png" alt="Grottocenter3 on GitHub"/>
+                  </GCLink>
+                </li>
+                <li>
+                  <GCLink internal={true} href='ui/api'>
+                    <img id='apiIcon' src="/images/icons8/icons8-rest-api-filled-100.png" alt="Want to use our API?"/>
                   </GCLink>
                 </li>
                 <li>
                   <GCLink href={wikiBatsLink}>
-                    <img src="/images/bats.svg" alt="Wiki page for bats"/>
+                    <img style={{width:'44px', padding:'5px'}} src="/images/icons8/bats.svg" alt="Wiki page for bats"/>
                   </GCLink>
                 </li>
               </ul>
