@@ -33,10 +33,7 @@ module.exports.routes = {
 
   '/': {
     controller: 'Index',
-    action: 'index',
-    swagger: {
-      ignore: true
-    }
+    action: 'index'
   },
 
   '/ui/*': {

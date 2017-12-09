@@ -24,8 +24,8 @@ paths:
     get:
       tags:
         - entry
-      summary: Finds public entries by identifier
-      description: TODO
+      summary: Get public entries by identifier
+      description: Get public entries by identifier
       operationId: findEntryById
       produces:
         - application/json
@@ -37,19 +37,21 @@ paths:
           type: string
       responses:
         '200':
-          description: successful operation
+          description: Successful operation
           schema:
             type: object
             items:
               $ref: '#/definitions/PublicEntry'
-        '400':
-          description: Invalid identifier
+        '404':
+          description: Resource not found
+        '500':
+          description: Internal error
   /entry/publicCount:
     get:
       tags:
         - entry
       summary: Get the number of public entries
-      description: Get the number of public entries referenced on GC3 database
+      description: Get the number of public entries referenced in GC3 database
       operationId: getEntryPublicCount
       consumes:
         - application/json
@@ -57,17 +59,19 @@ paths:
         - application/json
       responses:
         '200':
-          description: successful operation
+          description: Successful operation
           schema:
             type: object
             items:
               $ref: '#/definitions/Entry'
+        '500':
+          description: Internal error
   /search/findAll:
     get:
       tags:
         - search
-      summary: Finds anything by name
-      description: TODO
+      summary: Search for entries
+      description: Search by name entries referenced in GC3 database
       operationId: findByName
       produces:
         - application/json
@@ -79,13 +83,15 @@ paths:
           type: string
       responses:
         '200':
-          description: successful operation
+          description: Successful operation
           schema:
             type: array
             items:
               $ref: '#/definitions/SearchResult'
-        '400':
-          description: Invalid tag value
+        '404':
+          description: Resource not found
+        '500':
+          description: Internal error
 definitions:
   PublicEntry:
     type: object
@@ -93,17 +99,43 @@ definitions:
       count:
         type: integer
         format: int64
-        example: 1234
   Entry:
     type: object
     properties:
       id:
         type: integer
         format: int64
-        example: 1234
+      name:
+        type: string
+      country:
+        type: string
+      county:
+        type: string
+      region:
+        type: string
+      city:
+        type: string
+      postalCode:
+        type: string
+      latitude:
+        type: string
+      longitude:
+        type: string
+      altitude:
+        type: string
   SearchResult:
     type: object
     properties:
+      id:
+        type: integer
+        format: int64
       name:
         type: string
-        example: 'Gouffre Bernard'
+      region:
+        type: string
+      latitude:
+        type: string
+      longitude:
+        type: string
+      altitude:
+        type: string
