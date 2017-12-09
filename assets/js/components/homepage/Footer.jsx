@@ -117,7 +117,7 @@ class Footer extends Component {
                 </li>
                 <li>
                   <GCLink internal={true} href='ui/api'>
-                    <img id='apiIcon' src="/images/icons8/icons8-rest-api-filled-100.png" alt="Want to use our API?"/>
+                    <img className='apiIcon' src="/images/icons8/icons8-rest-api-filled-100.png" alt="Want to use our API?"/>
                   </GCLink>
                 </li>
                 <li>
