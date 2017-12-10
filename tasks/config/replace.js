@@ -27,6 +27,14 @@ module.exports = function(grunt) {
         from: '- https', // string replacement
         to: '- http'
       }]
+    },
+    api: {
+      src: ['apiV*.yaml'], // source files array (supports minimatch)
+      dest: 'assets/swagger/', // destination directory or file
+      replacements: [{
+        from: 'localhost:1337', // string replacement
+        to: 'beta.grottocenter.org'
+      }]
     }
   });
   grunt.loadNpmTasks('grunt-text-replace');
