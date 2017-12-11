@@ -85,7 +85,7 @@ paths:
         '200':
           description: Successful operation
           schema:
-            type: array
+            type: object
             items:
               $ref: '#/definitions/SearchResult'
         '404':
@@ -124,18 +124,8 @@ definitions:
       altitude:
         type: string
   SearchResult:
-    type: object
     properties:
-      id:
-        type: integer
-        format: int64
-      name:
-        type: string
-      region:
-        type: string
-      latitude:
-        type: string
-      longitude:
-        type: string
-      altitude:
-        type: string
+      entries:
+        type: array
+        items:
+          $ref: "#/definitions/Entry"

@@ -104,7 +104,7 @@ class Autocomplete extends React.Component {
       dataType: 'json',
       success: function(data) {
         this.setState({
-          dataSource: data.map(this.foundDataToMenuItemMapping.bind(this))
+          dataSource: data.entries.map(this.foundDataToMenuItemMapping.bind(this))
         });
       }.bind(this)
     });
