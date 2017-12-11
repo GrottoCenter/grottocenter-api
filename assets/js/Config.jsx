@@ -77,6 +77,12 @@ export const
   };
 
 export const
+  restApiLinks = {
+    'fr': 'https://fr.wikipedia.org/wiki/Representational_state_transfer',
+    '*': 'https://en.wikipedia.org/wiki/Representational_state_transfer'
+  };
+
+export const
     DYNAMIC_NUMBER_RELOAD_INTERVAL = 900000;
 
 export const

@@ -3,7 +3,7 @@ import I18n from 'react-ghost-i18n';
 import muiThemeable from 'material-ui/styles/muiThemeable';
 import CheckIcon from 'material-ui/svg-icons/navigation/check';
 import GCLink from './GCLink';
-import {swaggerLinkV1} from '../Config';
+import {swaggerLinkV1, restApiLinks} from '../Config';
 
 const Api = (props) => (
   <div>
@@ -18,7 +18,7 @@ const Api = (props) => (
               <I18n>Grottocenter API</I18n>
             </h3>
             <p><I18n>You need to manipulate worldwide speleology data on your website? Trust Grottocenter to manage it for you!</I18n></p>
-            <p><I18n>We offer you a set of <GCLink href='http://www.comprendre-internet.com/Qu-est-ce-qu-une-API-REST-ou-RESTful.html'>Rest API endpoints</GCLink> that you can easily insert in your pages to access this data.</I18n></p>
+            <p><I18n>We offer you a set of <GCLink href={restApiLinks} alt='Link to rest API documentation'>Rest API endpoints</GCLink> that you can easily insert in your pages to access this data.</I18n></p>
             <p></p>
             <h5><I18n>Available versions:</I18n></h5>
             <p>
@@ -26,7 +26,7 @@ const Api = (props) => (
               <GCLink style={{textDecoration: 'none', fontWeight: '600', color: props.muiTheme.palette.accent1Color}} internal={true} href={swaggerLinkV1}><I18n>Version 1</I18n></GCLink>
             </p>
             <p>
-              Not familiar with Swagger? Need support? <GCLink href='https://grottocenter.slack.com/messages/C858CHARY/'>Contact us!</GCLink>
+              <I18n>Not familiar with Swagger? Need support? <GCLink href='https://grottocenter.slack.com/messages/C858CHARY/'>Contact us!</GCLink></I18n>
             </p>
           </div>
         </div>
