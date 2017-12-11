@@ -90,14 +90,6 @@ module.exports.routes = {
     action: 'findAll'
   },
 
-  'GET /api/search/findAll': {
-    controller: 'Search',
-    action: 'findAll',
-    cors: {
-      origin: '*'
-    }
-  },
-
   'GET /api/v1/search/findAll': {
     controller: 'v1/Search',
     action: 'findAll',
@@ -118,34 +110,7 @@ module.exports.routes = {
 
   'GET /api/:version/caver/:id': {
     controller: 'Caver',
-    action: 'findVersion',
-    swagger: {
-      summary: 'Get caver by ID',
-      description: 'Get caver by ID Description',
-      produces: ['application/json'],
-      tags: ['Caver'],
-      responses: {
-        '200': {
-          description: 'Caver data',
-          schema: 'TCaver',
-          type: 'array'
-        }
-      },
-      parameters: [
-        {
-          name: 'id',
-          description: 'Requested identifier',
-          required: true,
-          type: 'integer'
-        },
-        {
-          name: 'version',
-          description: 'API version',
-          required: true,
-          type: 'string'
-        }
-      ]
-    }
+    action: 'findVersion'
   },
 
   'PUT /api/caver/:id': {
@@ -181,14 +146,6 @@ module.exports.routes = {
   'GET /api/entry/count': {
     controller: 'Entry',
     action: 'getEntriesNumber'
-  },
-
-  'GET /api/entry/:id': {
-    controller: 'Entry',
-    action: 'find',
-    cors: {
-      origin: '*'
-    }
   },
 
   'GET /api/v1/entry/:id': {
