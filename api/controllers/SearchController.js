@@ -1,7 +1,7 @@
 'use strict';
 module.exports = {
 
-  findAll: function(req, res) {
+  findAll: function(req, res, converter) {
     let parameters = {};
     if (req.param('name') !== undefined) {
       parameters.name = {
@@ -20,11 +20,10 @@ module.exports = {
       // search for grottos
       //TGrotto.find(parameters).sort('id ASC').limit(50).exec(function(err, foundGrotto) {
       let params = {};
-      params.controllerMethod = 'SearchController.readAll';
-      params.notFoundMessage = 'No items found.';
+      params.searchedItem = 'Entries';
       // only search for entries at this time
       //return ControllerService.treat(err, foundCave.concat(foundEntry).concat(foundGrotto), params, res);
-      return ControllerService.treat(err, foundEntry, params, res);
+      return ControllerService.treatAndConvert(err, foundEntry, params, res, converter);
       // end search for grottos
       //});
     });

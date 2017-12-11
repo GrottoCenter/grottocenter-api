@@ -77,16 +77,25 @@ export const
   };
 
 export const
+  restApiLinks = {
+    'fr': 'https://fr.wikipedia.org/wiki/Representational_state_transfer',
+    '*': 'https://en.wikipedia.org/wiki/Representational_state_transfer'
+  };
+
+export const
     DYNAMIC_NUMBER_RELOAD_INTERVAL = 900000;
 
 export const
   dynamicNumbersUrl = {
     'cavers': '/api/caver/count',
     'entries': '/api/entry/count',
-    'publicEntries': '/api/entry/publicCount',
+    'publicEntries': '/api/v1/entry/publicCount',
     'partners': '/api/grotto/count',
     'officialPartners': '/api/grotto/officialCount'
   };
 
 export const
     DYNAMIC_NEWS_RELOAD_INTERVAL = 3600000;
+
+export const
+  swaggerLinkV1 = '/ui/swagger/?url=/swagger/apiV1.yaml';

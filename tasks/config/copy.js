@@ -32,12 +32,12 @@ module.exports = function(grunt) {
         dest: 'www'
       }]
     },
-    swagger: {
+    swaggercss: {
       files: [{
         expand: true,
         cwd: './node_modules/swagger-ui/dist',
-        src: '**',
-        dest: 'assets/swagger'
+        src: 'swagger-ui.css',
+        dest: 'assets/styles/'
       }]
     }
   });

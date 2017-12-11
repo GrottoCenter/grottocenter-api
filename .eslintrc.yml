@@ -36,6 +36,7 @@ globals:
   TTopography: true
   TokenAuthService: true
   ControllerService: true
+  MappingV1Service: true
 extends: [ 'eslint:recommended' ]
 parserOptions:
   ecmaVersion: 6

@@ -82,8 +82,8 @@ bower_components
 dump.rdb
 
 ### added by Benjamin for swagger-ui
-assets/swagger
-
+assets/styles/swagger-ui.css
+assets/swagger/api*.yaml
 
 
 ################################################

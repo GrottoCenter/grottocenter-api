@@ -6,22 +6,11 @@
  */
 'use strict';
 module.exports = {
-
-  find: function(req, res, converter) {
-    TEntry.findOne({
-      id: req.params.id,
-      // TODO : to adapt when authentication will be implemented
-      isPublic:'YES'
-    // TODO before this : see how to materialize fact that
-    // id of entry corresponds to id of linked single entry if exists
-    //}).populate('author').populate('caves').populate('singleEntry').exec(function(err, found) {
-    }).populate('author').populate('caves').exec(function(err, found) {
-      let params = {};
-      params.searchedItem = 'Entry of id ' + req.params.id;
-      return ControllerService.treatAndConvert(err, found, params, res, converter);
-    });
+  find: function(req, res) {
+    return sails.controllers.entry.find(req, res, MappingV1Service.convertToEntryModel);
   },
 
+  // TODO adapt
   findAll: function(req, res) {
     let parameters = {};
     if (req.param('name') !== undefined) {
@@ -49,6 +38,7 @@ module.exports = {
     });
   },
 
+  // TODO adapt
   findRandom: function(req, res) {
     EntryService.findRandom().then(function(results) {
       if (!results) {
@@ -61,19 +51,11 @@ module.exports = {
     });
   },
 
-  getPublicEntriesNumber: function(req, res, converter) {
-    EntryService.getPublicEntriesNumber().then(function(count) {
-      if (!count) {
-        return res.json(404, { error: 'Problem while getting number of public entries' });
-      }
-      return res.json(converter(count));
-    }, function(err) {
-      let errorMessage = 'An internal error occurred when getting number of public entries';
-      sails.log.error(errorMessage + ': ' + err);
-      return res.json(500, { error: errorMessage });
-    });
+  getPublicEntriesNumber: function(req, res) {
+    return sails.controllers.entry.getPublicEntriesNumber(req, res, MappingV1Service.convertToPublicEntryModel);
   },
 
+  // TODO adapt
   getEntriesNumber: function(req, res) {
     TEntry.count().exec(function(err, found) {
       let params = {};

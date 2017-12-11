@@ -3,10 +3,10 @@ module.exports = function (grunt) {
     'eslint:dev',
     'lesshint:dev',
     'clean:dev',
-    'copy:swagger',
-    'replace:swaggerhtml',
+    'copy:swaggercss',
+    'replace:apiDev',
     'compileAssets',
     'linkAssets',
-    'watch']
-  );
+    'watch'
+  ]);
 };

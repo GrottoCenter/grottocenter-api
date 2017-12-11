@@ -81,7 +81,7 @@ class Autocomplete extends React.Component {
       latitude: item.latitude,
       longitude: item.longitude,
       altitude: item.altitude,
-      author: item.author,
+      //author: item.author,
       category:category,
       isMappable:this.isMappable(item),
       value: (
@@ -100,11 +100,11 @@ class Autocomplete extends React.Component {
       return;
     }
     $.ajax({
-      url: '/api/search/findAll?name=' +searchText,//TODO: optimize this service for autocomplete
+      url: '/api/v1/search/findAll?name=' +searchText,//TODO: optimize this service for autocomplete
       dataType: 'json',
       success: function(data) {
         this.setState({
-          dataSource: data.map(this.foundDataToMenuItemMapping.bind(this))
+          dataSource: data.entries.map(this.foundDataToMenuItemMapping.bind(this))
         });
       }.bind(this)
     });

@@ -16,7 +16,7 @@ export const marker = (state = [], action) => {
           },
           name:action.entry.name,
           altitude:action.entry.altitude?action.entry.altitude + 'm':'',
-          author:action.entry.author.nickname?action.entry.author.nickname:''
+          //author:action.entry.author.nickname?action.entry.author.nickname:''
     }
     default://TODO no default marker on map
       return {

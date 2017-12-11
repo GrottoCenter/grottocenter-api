@@ -58,58 +58,40 @@ module.exports.routes = {
   },
 
   'GET /ui/*': {
-    view: 'grottocenter',
-    swagger: {
-      ignore: true
-    }
+    view: 'grottocenter'
   },
 
   /* Auth controller */
 
   'POST /api/auth/login': {
     controller: 'Auth',
-    action: 'login',
-    swagger: {
-      ignore: true
-    }
+    action: 'login'
   },
 
   'GET /api/auth/logout': {
     controller: 'Auth',
-    action: 'logout',
-    swagger: {
-      ignore: true
-    }
+    action: 'logout'
   },
 
   /* Caver controller */
 
   'GET /api/caver/': {
     controller: 'Caver',
-    action: 'find',
-    swagger: {
-      ignore: true
-    }
+    action: 'find'
   },
 
   'POST /api/caver/': {
     controller: 'Caver',
-    action: 'create',
-    swagger: {
-      ignore: true
-    }
+    action: 'create'
   },
 
   'GET /api/caver/findAll': {
     controller: 'Caver',
-    action: 'findAll',
-    swagger: {
-      ignore: true
-    }
+    action: 'findAll'
   },
 
-  'GET /api/search/findAll': {
-    controller: 'Search',
+  'GET /api/v1/search/findAll': {
+    controller: 'v1/Search',
     action: 'findAll',
     cors: {
       origin: '*'
@@ -118,66 +100,27 @@ module.exports.routes = {
 
   'GET /api/caver/count': {
     controller: 'Caver',
-    action: 'getCaversNumber',
-    swagger: {
-      ignore: true
-    }
+    action: 'getCaversNumber'
   },
 
   'GET /api/caver/:id': {
     controller: 'Caver',
-    action: 'find',
-    swagger: {
-      ignore: true
-    }
+    action: 'find'
   },
 
   'GET /api/:version/caver/:id': {
     controller: 'Caver',
-    action: 'findVersion',
-    swagger: {
-      summary: 'Get caver by ID',
-      description: 'Get caver by ID Description',
-      produces: ['application/json'],
-      tags: ['Caver'],
-      responses: {
-        '200': {
-          description: 'Caver data',
-          schema: 'TCaver',
-          type: 'array'
-        }
-      },
-      parameters: [
-        {
-          name: 'id',
-          description: 'Requested identifier',
-          required: true,
-          type: 'integer'
-        },
-        {
-          name: 'version',
-          description: 'API version',
-          required: true,
-          type: 'string'
-        }
-      ]
-    }
+    action: 'findVersion'
   },
 
   'PUT /api/caver/:id': {
     controller: 'Caver',
-    action: 'update',
-    swagger: {
-      ignore: true
-    }
+    action: 'update'
   },
 
   'DELETE /api/caver/:id': {
     controller: 'Caver',
-    action: 'destroy',
-    swagger: {
-      ignore: true
-    }
+    action: 'destroy'
   },
 
   /* Entry controller */
@@ -189,14 +132,11 @@ module.exports.routes = {
 
   'GET /api/entry/findRandom': {
     controller: 'Entry',
-    action: 'findRandom',
-    swagger: {
-      ignore: true
-    }
+    action: 'findRandom'
   },
 
-  'GET /api/entry/publicCount': {
-    controller: 'Entry',
+  'GET /api/v1/entry/publicCount': {
+    controller: 'v1/Entry',
     action: 'getPublicEntriesNumber',
     cors: {
       origin: '*'
@@ -205,14 +145,11 @@ module.exports.routes = {
 
   'GET /api/entry/count': {
     controller: 'Entry',
-    action: 'getEntriesNumber',
-    swagger: {
-      ignore: true
-    }
+    action: 'getEntriesNumber'
   },
 
-  'GET /api/entry/:id': {
-    controller: 'Entry',
+  'GET /api/v1/entry/:id': {
+    controller: 'v1/Entry',
     action: 'find',
     cors: {
       origin: '*'
@@ -223,256 +160,166 @@ module.exports.routes = {
 
   'POST /api/cave/': {
     controller: 'Cave',
-    action: 'create',
-    swagger: {
-      ignore: true
-    }
+    action: 'create'
   },
 
   'GET /api/cave/findAll': {
     controller: 'Cave',
-    action: 'findAll',
-    swagger: {
-      ignore: true
-    }
+    action: 'findAll'
   },
 
   'GET /api/cave/:id': {
     controller: 'Cave',
-    action: 'find',
-    swagger: {
-      ignore: true
-    }
+    action: 'find'
   },
 
   'PUT /api/cave/:id': {
     controller: 'Cave',
-    action: 'update',
-    swagger: {
-      ignore: true
-    }
+    action: 'update'
   },
 
   'DELETE /api/cave/:id': {
     controller: 'Cave',
-    action: 'delete',
-    swagger: {
-      ignore: true
-    }
+    action: 'delete'
   },
 
   /* Author controller */
 
   'POST /api/author/': {
     controller: 'Author',
-    action: 'create',
-    swagger: {
-      ignore: true
-    }
+    action: 'create'
   },
 
   'GET /api/author/:id': {
     controller: 'Author',
-    action: 'find',
-    swagger: {
-      ignore: true
-    }
+    action: 'find'
   },
 
   'PUT /api/author/:id': {
     controller: 'Author',
-    action: 'update',
-    swagger: {
-      ignore: true
-    }
+    action: 'update'
   },
 
   'DELETE /api/author/:id': {
     controller: 'Author',
-    action: 'delete',
-    swagger: {
-      ignore: true
-    }
+    action: 'delete'
   },
 
   'GET /api/author/findAll': {
     controller: 'Author',
-    action: 'findAll',
-    swagger: {
-      ignore: true
-    }
+    action: 'findAll'
   },
 
   /* REST API for Partner controller */
 
   'POST /api/partner/': {
     controller: 'Partner',
-    action: 'create',
-    swagger: {
-      ignore: true
-    }
+    action: 'create'
   },
 
   'GET /api/partner/findAll': {
     controller: 'Partner',
-    action: 'findAll',
-    swagger: {
-      ignore: true
-    }
+    action: 'findAll'
   },
 
   'GET /api/partner/findForCarousel/:skip/:limit': {
     controller: 'Partner',
-    action: 'findForCarousel',
-    swagger: {
-      ignore: true
-    }
+    action: 'findForCarousel'
   },
 
   'GET /api/partner/findForCarousel': {
     controller: 'Partner',
-    action: 'findForCarousel',
-    swagger: {
-      ignore: true
-    }
+    action: 'findForCarousel'
   },
 
   'GET /api/partner/:id': {
     controller: 'Partner',
-    action: 'find',
-    swagger: {
-      ignore: true
-    }
+    action: 'find'
   },
 
   'PUT /api/partner/:id': {
     controller: 'Partner',
-    action: 'update',
-    swagger: {
-      ignore: true
-    }
+    action: 'update'
   },
 
   'DELETE /api/partner/:id': {
     controller: 'Partner',
-    action: 'delete',
-    swagger: {
-      ignore: true
-    }
+    action: 'delete'
   },
 
   /* REST API for Topography controller */
 
   'POST /api/topo/': {
     controller: 'Topography',
-    action: 'create',
-    swagger: {
-      ignore: true
-    }
+    action: 'create'
   },
 
   'GET /api/topo/findAll': {
     controller: 'Topography',
-    action: 'findAll',
-    swagger: {
-      ignore: true
-    }
+    action: 'findAll'
   },
 
   'GET /api/topo/:id': {
     controller: 'Topography',
-    action: 'find',
-    swagger: {
-      ignore: true
-    }
+    action: 'find'
   },
 
   'PUT /api/topo/:id': {
     controller: 'Topography',
-    action: 'update',
-    swagger: {
-      ignore: true
-    }
+    action: 'update'
   },
 
   'DELETE /api/topo/:id': {
     controller: 'Topography',
-    action: 'delete',
-    swagger: {
-      ignore: true
-    }
+    action: 'delete'
   },
 
   /* REST API for Comment controller */
 
   'GET /api/comment/stats/:entry': {
     controller: 'Comment',
-    action: 'getEntryStats',
-    swagger: {
-      ignore: true
-    }
+    action: 'getEntryStats'
   },
 
   'GET /api/comment/timeinfos/:entry': {
     controller: 'Comment',
-    action: 'getEntryTimeInfos',
-    swagger: {
-      ignore: true
-    }
+    action: 'getEntryTimeInfos'
   },
 
   /* REST API for Grotto controller */
 
   'GET /api/grotto/findAll': {
     controller: 'Grotto',
-    action: 'findAll',
-    swagger: {
-      ignore: true
-    }
+    action: 'findAll'
   },
 
   'GET /api/grotto/officialCount': {
     controller: 'Grotto',
-    action: 'getOfficialPartnersNumber',
-    swagger: {
-      ignore: true
-    }
+    action: 'getOfficialPartnersNumber'
   },
 
   'GET /api/grotto/count': {
     controller: 'Grotto',
-    action: 'getPartnersNumber',
-    swagger: {
-      ignore: true
-    }
+    action: 'getPartnersNumber'
   },
 
   'GET /api/grotto/:id': {
     controller: 'Grotto',
-    action: 'find',
-    swagger: {
-      ignore: true
-    }
+    action: 'find'
   },
 
   /* REST API for Admin controller */
 
   'GET /api/admin/entry/findAllOfInterest': {
     controller: 'Admin',
-    action: 'findAllInterestEntries',
-    swagger: {
-      ignore: true
-    }
+    action: 'findAllInterestEntries'
   },
 
   /* Rss controller */
 
   'GET /api/rss/:language': {
     controller: 'Rss',
-    action: 'getFeed',
-    swagger: {
-      ignore: true
-    }
+    action: 'getFeed'
   }
 
 };
