@@ -69,5 +69,15 @@
 	"{0} hours": "{0} heures",
 	"{0} h": "{0} h",
 	"{0} h {1}": "{0} h {1}",
-	"{0} min": "{0} min"
+	"{0} min": "{0} min",
+	"Grottocenter API": "API Grottocenter",
+	"You need to manipulate worldwide speleology data on your website? Trust Grottocenter to manage it for you!": "Vous avez besoin de manipuler des données spéléologiques provenant du monde entier, sur votre site Web ? Faites confiance à Grottocenter pour vous les fournir !",
+	"We offer you a set of Rest API endpoints that you can easily insert in your pages to access this data\\.": "Nous vous proposons un ensemble de endpoints API Rest que vous pouvez facilement insérer dans vos pages pour accéder à ces données.",
+	"Available versions:": "Versions disponibles :",
+	"Version 1": "Version 1",
+	"Not familiar with Swagger? Need support? {0}": "Vous n'êtes pas familier avec Swagger ? Vous avez besoin d'aide ? {0}",
+	"Contact us!": "Contactez-nous !",
+	"This page documents the available API you can use on your website\\.": "Cette page documente les API disponibles que vous pouvez utiliser sur votre site.",
+	"Terms of service": "Conditions d'utilisation",
+	"Base URL": "URL de base"
 }
