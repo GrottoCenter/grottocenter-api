@@ -79,5 +79,7 @@
 	"Contact us!": "Contactez-nous !",
 	"This page documents the available API you can use on your website\\.": "Cette page documente les API disponibles que vous pouvez utiliser sur votre site.",
 	"Terms of service": "Conditions d'utilisation",
-	"Base URL": "URL de base"
+	"Base URL": "URL de base",
+  "We offer you a set of {0} that you can easily insert in your pages to access this data.": "Nous mettons à votre disposition un lot {0} que vous pouvez aisément utiliser sur vos pages.",
+  "Rest API endpoints": "d'endpoints Rest"
 }
