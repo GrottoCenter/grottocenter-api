@@ -29,7 +29,7 @@ class Api extends Component {
                   <I18n>Grottocenter API</I18n>
                 </h3>
                 <p><I18n>You need to manipulate worldwide speleology data on your website? Trust Grottocenter to manage it for you!</I18n></p>
-                <p><I18n>We offer you a set of <GCLink href={restApiLink} alt='Link to rest API documentation'>Rest API endpoints</GCLink> that you can easily insert in your pages to access this data.</I18n></p>
+                <p><I18n>We offer you a set of <GCLink href={restApiLink} alt='Link to rest API documentation'>Rest API endpoints</GCLink> that you can easily insert in your pages to access this data</I18n></p>
                 <p></p>
                 <h5><I18n>Available versions:</I18n></h5>
                 <p>
