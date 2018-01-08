@@ -2,6 +2,7 @@ import React, {PropTypes} from 'react';
 import SideMenuConnector from '../../containers/SideMenuConnector';
 import AppToolbar from '../appli/AppToolbar';
 import AppFooter from '../appli/AppFooter';
+import Breadcrump from '../appli/Breadcrump';
 import muiThemeable from 'material-ui/styles/muiThemeable';
 import styled from 'styled-components';
 
@@ -16,12 +17,17 @@ const AppFooterStl = styled(AppFooter)`
   padding: 0;
 `;
 
+const ArticleWrapper = styled.article`
+  padding: 10px 0px;
+`;
+
 const Application = (props) => (
   <div id='applicationpage'>
     <ApplicationHeader><AppToolbar /></ApplicationHeader>
     <nav></nav>
     <aside><SideMenuConnector /></aside>
-    <article>{props.children}</article>
+    <Breadcrump />
+    <ArticleWrapper>{props.children}</ArticleWrapper>
     <footer><AppFooterStl /></footer>
   </div>
 );
