@@ -1,8 +1,9 @@
 import React from 'react';
 import InternationalizedLink from '../common/InternationalizedLink';
+import GCLink from '../common/GCLink';
 import {bloggerLinks, bloggerIcons, wikiBatsLinks, rssLinks} from '../../conf/Config';
 import {facebookLink, twitterLink, githubLink} from '../../conf/Config';
-import styled from 'styled-components';
+import styled, {keyframes} from 'styled-components';
 
 const SocialLinksList = styled.ul`
   list-style: none;
@@ -28,6 +29,23 @@ const SocialImage = styled.img`
   width: 100%;
   padding: 2px;
   border-radius: 10px;
+`;
+
+const rotateAnimation = keyframes`
+  {
+    45% { transform: rotateY(0deg); }
+    50% { transform: rotateY(180deg); }
+    55% { transform: rotateY(0deg); }
+  }
+`;
+
+const ApiSocialImage = styled(SocialImage)`
+  animation: ${rotateAnimation} 30s ease-out infinite;
+`;
+
+const BatSocialImage = styled(SocialImage)`
+  width: 52px;
+  padding: 6px;
 `;
 
 const bloggerIcon = (bloggerIcons[locale] !== undefined) ? bloggerIcons[locale] : bloggerIcons['*']; // eslint-disable-line
@@ -60,13 +78,13 @@ const SocialLinks = () => (
       </InternationalizedLink>
     </SocialLinksListItem>
     <SocialLinksListItem>
-      <InternationalizedLink internal={true} links={'ui/api'}>
-        <SocialImage src="/images/icons8/icons8-rest-api-filled-100.png" alt="Want to use our API?" />
-      </InternationalizedLink>
+      <GCLink internal={true} href='/ui/api'>
+        <ApiSocialImage src="/images/icons8/icons8-rest-api-filled-100.png" alt="Want to use our API?" />
+      </GCLink>
     </SocialLinksListItem>
     <SocialLinksListItem>
       <InternationalizedLink links={wikiBatsLinks}>
-        <SocialImage src="/images/bats.svg" alt="Wiki page for bats" />
+        <BatSocialImage src="/images/icons8/bats.svg" alt="Wiki page for bats" />
       </InternationalizedLink>
     </SocialLinksListItem>
   </SocialLinksList>

@@ -5,38 +5,50 @@ import GCLink from '../common/GCLink';
 import {licenceLinks, fseLinks, contactLinks, githubLink, facebookLink} from '../../conf/Config';
 import {twitterLink, rssLinks, bloggerLinks, bloggerIcons} from '../../conf/Config';
 import {Toolbar, ToolbarGroup} from 'material-ui/Toolbar';
-import MailIcon from 'material-ui/svg-icons/content/mail';
-import HelpIcon from 'material-ui/svg-icons/action/help-outline';
 import styled from 'styled-components';
 
 const FooterBar = muiThemeable()(styled(Toolbar)`
   color: ${props => props.muiTheme.palette.fullBlack} !important;
   background-color: ${props => props.muiTheme.palette.primary3Color} !important;
   padding: 0px !important;
+  height: 45px !important;
 
   img {
-    height: 30px;
-    padding: 5px;
+    padding-left: 5px;
+    padding-right: 5px;
   }
 
   svg {
     width: 30px !important;
     height: 30px !important;
-    padding: 5px;
   }
 `);
 
-const RightToolbarGroup= muiThemeable()(styled(Toolbar)`
+const RightToolbarGroup= muiThemeable()(styled(ToolbarGroup)`
   width: 40% !important;
   justify-content: flex-start !important;
   background-color: ${props => props.muiTheme.palette.primary3Color} !important;
 `);
 
-const LeftToolbarGroup= muiThemeable()(styled(Toolbar)`
+const LeftToolbarGroup= muiThemeable()(styled(ToolbarGroup)`
   width: 40% !important;
   justify-content: flex-end !important;
   background-color: ${props => props.muiTheme.palette.primary3Color} !important;
 `);
+
+const SocialImage = styled.img`
+  height: 25px;
+  padding-top: 5px;
+`;
+
+const LogoImage = styled.img`
+  height: 20px;
+  padding-top: 4px;
+`;
+
+const Version = styled.div`
+  font-size: x-small;
+`;
 
 const bloggerIcon = (bloggerIcons[locale] !== undefined) ? bloggerIcons[locale] : bloggerIcons['*']; // eslint-disable-line
 
@@ -44,45 +56,45 @@ const AppFooter = () => (
   <FooterBar>
     <RightToolbarGroup>
       <InternationalizedLink links={fseLinks}>
-        <img src="/images/FSE.svg" alt="Logo FSE" />
+        <SocialImage src="/images/FSE.svg" alt="Logo FSE" />
       </InternationalizedLink>
 
       <InternationalizedLink links={licenceLinks}>
-        <img src="/images/CC-BY-SA.png" alt="CC-BY-SA licence" />
+        <SocialImage src="/images/CC-BY-SA.png" alt="CC-BY-SA licence" />
       </InternationalizedLink>
 
-      <div>
-        texte
-      </div>
+      <Version>
+        GC v3
+      </Version>
     </RightToolbarGroup>
 
     <ToolbarGroup>
       <GCLink blank={false} href='/' className="logo">
-        <img src="/images/logo.svg" alt="logo-wikicaves"/>
+        <LogoImage src="/images/logo.svg" alt="logo-wikicaves" />
       </GCLink>
     </ToolbarGroup>
 
     <LeftToolbarGroup>
       <InternationalizedLink links={githubLink}>
-        <img src="/images/github.png" alt="Grottocenter3 on GitHub" />
+        <SocialImage src="/images/icons8/brown/icons8-github-filled-100.png" alt="Grottocenter3 on GitHub" />
       </InternationalizedLink>
       <InternationalizedLink links={facebookLink}>
-        <img src="/images/facebook.svg" alt="Follow us on Facebook" />
+        <SocialImage src="/images/icons8/brown/icons8-facebook-filled-100.png" alt="Follow us on Facebook" />
       </InternationalizedLink>
       <InternationalizedLink links={twitterLink}>
-        <img src="/images/twitter.svg" alt="Follow us on Twitter" />
+        <SocialImage src="/images/icons8/brown/icons8-twitter-filled-100.png" alt="Follow us on Twitter" />
       </InternationalizedLink>
       <InternationalizedLink links={rssLinks}>
-        <img src="/images/rss.png" alt="RSS feed" />
+        <SocialImage src="/images/icons8/brown/icons8-rss-filled-100.png" alt="RSS feed" />
       </InternationalizedLink>
       <InternationalizedLink links={bloggerLinks}>
-        <img src={'/images/' + bloggerIcon} alt="Grottocenter blog" />
+        <SocialImage src='/images/icons8/brown/icons8-blogger-filled-100.png' alt="Grottocenter blog" />
       </InternationalizedLink>
       <InternationalizedLink links={contactLinks}>
-        <MailIcon />
+        <SocialImage src='/images/icons8/brown/icons8-secured-letter-filled-100.png' alt="Contact Grottocenter team" />
       </InternationalizedLink>
       <GCLink internal={true} href='/ui/faq'>
-        <HelpIcon />
+        <SocialImage src='/images/icons8/brown/icons8-faq-filled-100.png' alt="Need help?" />
       </GCLink>
     </LeftToolbarGroup>
   </FooterBar>

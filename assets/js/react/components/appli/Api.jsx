@@ -2,8 +2,8 @@ import React, {Component, PropTypes} from 'react';
 import I18n from 'react-ghost-i18n';
 import muiThemeable from 'material-ui/styles/muiThemeable';
 import CheckIcon from 'material-ui/svg-icons/navigation/check';
-import GCLink from './GCLink';
-import {swaggerLinkV1, restApiLinks} from '../Config';
+import GCLink from '../common/GCLink';
+import {swaggerLinkV1, restApiLinks, wikiApiLinks, contactLinks} from '../../conf/Config';
 
 class Api extends Component {
   constructor(props) {
@@ -30,6 +30,7 @@ class Api extends Component {
                 </h3>
                 <p><I18n>You need to manipulate worldwide speleology data on your website? Trust Grottocenter to manage it for you!</I18n></p>
                 <p><I18n>We offer you a set of <GCLink href={restApiLink} alt='Link to rest API documentation'>Rest API endpoints</GCLink> that you can easily insert in your pages to access this data</I18n></p>
+            <p><I18n>To use them, you just need an <GCLink href={wikiApiLinks} alt='What is an API?'>API</GCLink> key, and few lines of code!</I18n> <I18n>And to get your own API key, send us an email using the <GCLink href={contactLinks} alt='Contact form'>contact form</GCLink></I18n></p>
                 <p></p>
                 <h5><I18n>Available versions:</I18n></h5>
                 <p>

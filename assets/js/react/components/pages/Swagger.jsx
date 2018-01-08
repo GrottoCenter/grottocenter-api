@@ -1,5 +1,5 @@
 import React from 'react';
-import ApiDetail from '../ApiDetail';
+import ApiDetail from '../appli/ApiDetail';
 
 const Swagger = () => (
   <ApiDetail/>

@@ -33,16 +33,15 @@ export default class GCLink extends Component {
     if (this.props.style) {
       params.style = this.props.style;
     }
+    if (!this.props.internal) {
+      return (
+        <a href={this.props.href} {...params} target='_blank'>{this.props.children}</a>
+      );
+    }
     return (
-      <span>
-        {!this.props.internal &&
-          <a href={this.props.href} {...params} target='_blank'>{this.props.children}</a>
-        ||
-          <Link to={this.props.href} {...params}>
-            {this.props.children}
-          </Link>
-        }
-      </span>
+      <Link to={this.props.href} {...params}>
+        {this.props.children}
+      </Link>
     );
   }
 }

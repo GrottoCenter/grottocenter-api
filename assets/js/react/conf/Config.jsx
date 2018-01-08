@@ -93,7 +93,7 @@ export const
   };
 
 export const
-    DYNAMIC_NUMBER_RELOAD_INTERVAL = 900000;
+  DYNAMIC_NUMBER_RELOAD_INTERVAL = 900000;
 
 export const
   dynamicNumbersUrl = {
@@ -105,12 +105,26 @@ export const
   };
 
 export const
-    DYNAMIC_NEWS_RELOAD_INTERVAL = 3600000;
-
-  export const
-    findRandomEntryUrl = '/api/entry/findRandom',
-    findForCarouselUrl = '/api/partner/findForCarousel',
-    quicksearchUrl = '/api/search/findAll';
+  DYNAMIC_NEWS_RELOAD_INTERVAL = 3600000;
 
 export const
-    swaggerLinkV1 = '/ui/swagger/?url=/swagger/apiV1.yaml';
+  findRandomEntryUrl = '/api/entry/findRandom',
+  findForCarouselUrl = '/api/partner/findForCarousel',
+  quicksearchUrl = '/api/v1/search/findAll';
+
+export const
+  swaggerLinkV1 = '/ui/swagger/?url=/swagger/apiV1.yaml';
+
+export const
+  wikiApiLinks = {
+    'fr': 'https://fr.wikipedia.org/wiki/Interface_de_programmation',
+    '*': 'https://en.wikipedia.org/wiki/Application_programming_interface'
+  };
+
+export const
+  breadcrumpKeys = {
+    'ui': 'Dashboard',
+    'faq': 'FAQ',
+    'map': 'Map',
+    'api': 'API'
+  }
