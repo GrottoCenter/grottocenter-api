@@ -2,9 +2,9 @@ import React, {PropTypes} from 'react';
 import {Toolbar, ToolbarGroup} from 'material-ui/Toolbar';
 import HeaderTitle from './HeaderTitle';
 import SideMenuBurgerConnector from '../../containers/SideMenuBurgerConnector';
-import Language from './Language';
-import Connected from './Connected';
-import Notifications from './Notifications';
+//import Language from './Language';
+//import Connected from './Connected';
+//import Notifications from './Notifications';
 import QuicksearchContainer from '../../containers/QuicksearchContainer';
 import muiThemeable from 'material-ui/styles/muiThemeable';
 import styled from 'styled-components';
@@ -23,6 +23,26 @@ const TitleGroup = muiThemeable()(styled(Toolbar)`
   height: 60px !important;
 `);
 
+const StyledQuicksearchContainer = muiThemeable()(styled(QuicksearchContainer)`
+  padding: 0px !important;
+  padding-left: 30px !important;
+
+  > label {
+    font-weight: 400;
+    font-size: 20px;
+    top: 25px !important;
+    color: ${props => props.muiTheme.palette.primary3Color} !important;
+  }
+
+  > hr {
+    display: none;
+  }
+`);
+
+const LargerToolbarGroup = styled(ToolbarGroup)`
+  width: 400px !important;
+`;
+
 const AppToolbar = () => (
   <StyledToolbar>
     <TitleGroup>
@@ -30,14 +50,12 @@ const AppToolbar = () => (
       <SideMenuBurgerConnector/>
     </TitleGroup>
 
-    <ToolbarGroup>
-      <QuicksearchContainer/>
-    </ToolbarGroup>
+    <LargerToolbarGroup>
+      <StyledQuicksearchContainer />
+    </LargerToolbarGroup>
 
     <ToolbarGroup>
-      <Notifications/>
-      <Language/>
-      <Connected/>
+
     </ToolbarGroup>
   </StyledToolbar>
 );

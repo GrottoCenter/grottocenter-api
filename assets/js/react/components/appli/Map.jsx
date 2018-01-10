@@ -87,9 +87,7 @@ class GrottoMapClass extends React.Component {
 }
 
 const BackgroundMap = (props) => (
-  <div>
-    <GrottoMapClass {...props} />
-  </div>
+  <GrottoMapClass {...props} />
 );
 
 export default BackgroundMap;

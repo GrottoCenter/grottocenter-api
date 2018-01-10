@@ -1,6 +1,7 @@
 import React from 'react';
 import SearchIcon from 'material-ui/svg-icons/action/search';
-import QuicksearContainer from '../../containers/QuicksearchContainer';
+import QuicksearchContainer from '../../containers/QuicksearchContainer';
+import {directionManager, RIGHT_TO_LEFT} from './../../containers/TextDirectionProvider';
 import muiThemeable from 'material-ui/styles/muiThemeable';
 import styled from 'styled-components';
 
@@ -24,12 +25,34 @@ const SearchIconWrapper = muiThemeable()(styled(SearchIcon)`
   }
 `);
 
+const DirQuicksearchContainer = directionManager()(muiThemeable()(styled(QuicksearchContainer)`
+  margin-right: ${props => props.direction === RIGHT_TO_LEFT ? '50px' : '0px' };
+  margin-left: ${props => props.direction === RIGHT_TO_LEFT ? '0px' : '50px' };
+`));
+
+const StyledQuicksearchContainer = muiThemeable()(styled(DirQuicksearchContainer)`
+  background-color: ${props => props.muiTheme.palette.primary3Color} !important;
+  width: calc(100% - 50px) !important;
+  padding: 0px !important;
+
+  > label {
+    font-weight: 300;
+    font-size: 25px;
+    top: 25px;
+    color: ${props => props.muiTheme.palette.primary1Color} !important;
+  }
+
+  hr {
+    width: 99% !important;
+  }
+`);
+
 const QuicksearchBar = () => (
   <div>
     <QuicksearchIcon>
       <SearchIconWrapper />
     </QuicksearchIcon>
-    <QuicksearContainer />
+    <StyledQuicksearchContainer />
   </div>
 );
 

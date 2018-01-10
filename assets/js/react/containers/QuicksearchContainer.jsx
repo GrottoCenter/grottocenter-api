@@ -14,7 +14,8 @@ const mapDispatchToProps = (dispatch, ownProps) => { // eslint-disable-line no-u
 const mapStateToProps = (state, ownProps) => { // eslint-disable-line no-unused-vars
   return {
     results: state.quicksearch.results,
-    marker: state.quicksearch.entry
+    marker: state.quicksearch.entry,
+    className: ownProps.className
   };
 };
 

@@ -3,10 +3,7 @@ import {browserHistory} from 'react-router';
 import AutoComplete from 'material-ui/AutoComplete';
 import MenuItem from 'material-ui/MenuItem';
 import ExploreIcon from 'material-ui/svg-icons/action/explore';
-import muiThemeable from 'material-ui/styles/muiThemeable';
-import {directionManager, RIGHT_TO_LEFT} from './../../containers/TextDirectionProvider';
 import Translate from '../common/Translate';
-import styled from 'styled-components';
 
 //TODO: get grotto icons to a font
 // import SvgIcon from 'material-ui/SvgIcon';
@@ -15,25 +12,6 @@ import styled from 'styled-components';
 //     <rect x="0.5" y="0.5" fill="#FFFFFF" stroke="#1D1D1B" width="79.3" height="49"/>
 //   </SvgIcon>
 // );
-
-const SearchInputZone = directionManager()(muiThemeable()(styled(AutoComplete)`
-  background-color: ${props => props.muiTheme.palette.primary3Color} !important;
-  width: calc(100% - 50px) !important;
-  margin-right: ${props => props.direction === RIGHT_TO_LEFT ? '50px' : '0px' };
-  margin-left: ${props => props.direction === RIGHT_TO_LEFT ? '0px' : '50px' };
-  padding: 0px !important;
-
-  > label {
-    font-weight: 300;
-    font-size: 25px;
-    top: 25px;
-    color: ${props => props.muiTheme.palette.primary1Color} !important;
-  }
-
-  hr {
-    width: 99% !important;
-  }
-`));
 
 class Autocomplete extends Component {
   constructor(props) {
@@ -128,7 +106,8 @@ class Autocomplete extends Component {
     }
 
     return (
-      <SearchInputZone
+      <AutoComplete
+        className={this.props.className}
         textFieldStyle={{padding: '0 10px', width: 'calc(100% - 40px)', whiteSpace: 'nowrap'}}
         floatingLabelText={<Translate>Search for a cave</Translate>}
         dataSource={formatedResults}
@@ -147,7 +126,8 @@ Autocomplete.propTypes = {
   reset: PropTypes.func.isRequired,
   search: PropTypes.func.isRequired,
   showMarker: PropTypes.func.isRequired,
-  results: PropTypes.array
+  results: PropTypes.array,
+  className: PropTypes.string
 };
 
 export default Autocomplete;
