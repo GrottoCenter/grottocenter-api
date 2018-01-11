@@ -3,11 +3,15 @@ import GCLink from './GCLink';
 
 let currentLocale = locale; // eslint-disable-line no-undef
 
-const InternationalizedLink = ({links, className, children}) => (
-  <GCLink className={className} href={(links[currentLocale] !== undefined) ? links[currentLocale] : links['*']}>
-    {children}
-  </GCLink>
-);
+const InternationalizedLink = ({links, className, children}) => {
+  let linkUrl = (links[currentLocale] !== undefined) ? links[currentLocale] : links['*'];
+  let linkText = (children) ? children : linkUrl;
+  return (
+    <GCLink className={className} href={linkUrl}>
+      {linkText}
+    </GCLink>
+  );
+};
 
 InternationalizedLink.propTypes = {
   links: PropTypes.any.isRequired,

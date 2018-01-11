@@ -89,9 +89,7 @@ class Faq extends Component {
           <CardText expandable={true} style={{backgroundColor: this.props.muiTheme.palette.textIconColor}}>
             <I18n>We have our  wiki:  this is where you can find us</I18n>
             <br/>
-        <InternationalizedLink links={contributorsLink} alt='Link to contribution page'>
-              {contributorsLink}
-        </InternationalizedLink>
+            <InternationalizedLink links={contributorsLink} alt='Link to contribution page' />
           </CardText>
         </Card>
 
