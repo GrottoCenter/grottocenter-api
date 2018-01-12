@@ -10,7 +10,7 @@
     "babel-preset-es2015": "^6.14.0",
     "babel-preset-react": "^6.11.1",
     "babelify": "^7.2.0",
-    "ejs": "~0.8.4",
+    "ejs": "~2.5.5",
     "feed-read": "^0.0.1",
     "grunt": "^0.4.5",
     "grunt-browserify": "^4.0.1",
