@@ -111,7 +111,6 @@ ALTER TABLE t_entry
 ADD COLUMN Is_of_interest BIT(1) NULL DEFAULT NULL;
 
 -- update existing data
-update t_entry set Is_of_interest=1 where id=1;
 update t_entry set Is_of_interest=1 where id=929;
 update t_entry set Is_of_interest=1 where id=175;
 update t_entry set Is_of_interest=1 where id=23575;
@@ -146,7 +145,6 @@ update t_entry set Is_of_interest=1 where id=9237;
 update t_entry set Is_of_interest=1 where id=9103;
 update t_entry set Is_of_interest=1 where id=34234;
 update t_entry set Is_of_interest=1 where id=25360;
-update t_entry set Is_of_interest=1 where id=25339;
 update t_entry set Is_of_interest=1 where id=5693;
 update t_entry set Is_of_interest=1 where id=5694;
 update t_entry set Is_of_interest=1 where id=10333;
@@ -156,4 +154,3 @@ update t_entry set Is_of_interest=1 where id=37929;
 update t_entry set Is_of_interest=1 where id=37934;
 update t_entry set Is_of_interest=1 where id=37749;
 update t_entry set Is_of_interest=1 where id=37807;
-update t_entry set Is_of_interest=1 where id=64808;

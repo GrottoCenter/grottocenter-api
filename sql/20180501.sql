@@ -1,7 +1,6 @@
 
 -- update existing data
 update t_entry set Is_of_interest=1 where id=738;
-update t_entry set Is_of_interest=1 where id=566;
 update t_entry set Is_of_interest=1 where id=2;
 update t_entry set Is_of_interest=1 where id=660;
 update t_entry set Is_of_interest=1 where id=667;
@@ -27,4 +26,3 @@ update t_entry set Is_of_interest=1 where id=37066;
 update t_entry set Is_of_interest=1 where id=810;
 update t_entry set Is_of_interest=1 where id=461;
 update t_entry set Is_of_interest=1 where id=37088;
-update t_entry set Is_of_interest=1 where id=25085;
