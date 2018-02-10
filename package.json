@@ -56,7 +56,8 @@
   "scripts": {
     "start": "node app.js",
     "debug": "node debug app.js",
-    "test": "node ./node_modules/mocha/bin/mocha test/bootstrap.test.js test/integration/**/*.test.js"
+    "test": "node ./node_modules/mocha/bin/mocha test/bootstrap.test.js test/integration/**/*.test.js",
+    "build": "NODE_ENV=production ./node_modules/grunt-cli/bin/grunt prod"
   },
   "main": "app.js",
   "repository": {
