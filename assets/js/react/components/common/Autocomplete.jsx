@@ -99,11 +99,11 @@ class Autocomplete extends Component {
     }
 
     let formatedResults = [];
-    if (this.props.results) {
-      this.props.results.map((entry, idx) => {
+    if (this.props.results && this.props.results.entries) {
+      this.props.results.entries.map((entry, idx) => {
         formatedResults.push(this.foundDataToMenuItemMapping(entry, idx));
       });
-    }
+    } // TODO message No entry found
 
     return (
       <AutoComplete
@@ -126,7 +126,7 @@ Autocomplete.propTypes = {
   reset: PropTypes.func.isRequired,
   search: PropTypes.func.isRequired,
   showMarker: PropTypes.func.isRequired,
-  results: PropTypes.array,
+  results: PropTypes.object,
   className: PropTypes.string
 };
 
