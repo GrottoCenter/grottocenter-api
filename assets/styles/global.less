@@ -4,35 +4,4 @@ body {
   background-color: @cream;
   margin: 0px;
   min-width: 320px;
-
-  /* GLOBAL STYLING */
-  .bgWhite {
-    color: white;
-  }
-
-  .centered {
-    text-align: center;
-  }
-
-  .bigger {
-    font-weight: bigger;
-  }
-
-  /* CONTENT */
-
-  .notOnMobile {
-    display: none;
-
-    @media (min-width: @mdMin) {
-      display: initial;
-    }
-  }
-
-  .onlyMobile {
-    display: initial;
-
-    @media (min-width: @mdMin) {
-      display: none;
-    }
-  }
 }
