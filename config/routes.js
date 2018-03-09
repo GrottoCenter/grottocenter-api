@@ -21,40 +21,40 @@
  */
 
 module.exports.routes = {
-    /***************************************************************************
-     *                                                                          *
-     * Make the view located at `views/homepage.ejs` (or `views/homepage.jade`, *
-     * etc. depending on your default view engine) your home page.              *
-     *                                                                          *
-     * (Alternatively, remove this and add an `index.html` file in your         *
-     * `assets` directory)                                                      *
-     *                                                                          *
-     ***************************************************************************/
+  /***************************************************************************
+   *                                                                          *
+   * Make the view located at `views/homepage.ejs` (or `views/homepage.jade`, *
+   * etc. depending on your default view engine) your home page.              *
+   *                                                                          *
+   * (Alternatively, remove this and add an `index.html` file in your         *
+   * `assets` directory)                                                      *
+   *                                                                          *
+   ***************************************************************************/
 
-    '/': {
-        controller: 'Index',
-        action: 'index'
-    },
+  '/': {
+    controller: 'Index',
+    action: 'index'
+  },
 
   '/ui/*': {
     controller: 'Index',
     action: 'index'
   },
 
-    '/map': {
-        controller: 'Index',
-        action: 'map'
-    },
+  '/map': {
+    controller: 'Index',
+    action: 'map'
+  },
 
-    /***************************************************************************
-     *                                                                          *
-     * Custom routes here...                                                    *
-     *                                                                          *
-     *  If a request to a URL doesn't match any of the custom routes above, it  *
-     * is matched against Sails route blueprints. See `config/blueprints.js`    *
-     * for configuration options and examples.                                  *
-     *                                                                          *
-     ***************************************************************************/
+  /***************************************************************************
+   *                                                                          *
+   * Custom routes here...                                                    *
+   *                                                                          *
+   *  If a request to a URL doesn't match any of the custom routes above, it  *
+   * is matched against Sails route blueprints. See `config/blueprints.js`    *
+   * for configuration options and examples.                                  *
+   *                                                                          *
+   ***************************************************************************/
 
   /* For ReactRouter routes */
 
@@ -62,45 +62,45 @@ module.exports.routes = {
     view: 'grottocenter'
   },
 
-      'GET /auth/signin': {
-        view: 'grottocenter'
-    },
+  'GET /auth/signin': {
+    view: 'grottocenter'
+  },
 
-    'GET /auth/signup': {
-        view: 'grottocenter'
-    },
-    'GET /ui/*': {
-        view: 'grottocenter'
-    },
+  'GET /auth/signup': {
+    view: 'grottocenter'
+  },
+  'GET /ui/*': {
+    view: 'grottocenter'
+  },
 
-    /* Auth controller */
+  /* Auth controller */
 
   'POST /api/auth/login': {
-        controller: 'Auth',
-        action: 'login'
-    },
+    controller: 'Auth',
+    action: 'login'
+  },
 
   'GET /api/auth/logout': {
-        controller: 'Auth',
-        action: 'logout'
-    },
+    controller: 'Auth',
+    action: 'logout'
+  },
 
-    /* Caver controller */
+  /* Caver controller */
 
   'GET /api/caver/': {
-        controller: 'Caver',
-        action: 'find'
-    },
+    controller: 'Caver',
+    action: 'find'
+  },
 
   'POST /api/caver/': {
-        controller: 'Caver',
-        action: 'create'
-    },
+    controller: 'Caver',
+    action: 'create'
+  },
 
   'GET /api/caver/findAll': {
-        controller: 'Caver',
-        action: 'findAll'
-    },
+    controller: 'Caver',
+    action: 'findAll'
+  },
 
   'GET /api/v1/search/findAll': {
     controller: 'v1/Search',
@@ -108,22 +108,22 @@ module.exports.routes = {
     cors: {
       origin: '*'
     }
-    },
+  },
 
   'GET /api/caver/count': {
     controller: 'Caver',
     action: 'getCaversNumber'
   },
 
-    'GET /search/findByBounds': {
-        controller: 'Search',
-        action: 'findByBounds'
-    },
+  'GET /api/search/findByBounds': {
+    controller: 'Search',
+    action: 'findByBounds'
+  },
 
   'GET /api/caver/:id': {
-        controller: 'Caver',
-        action: 'find'
-    },
+    controller: 'Caver',
+    action: 'find'
+  },
 
   'GET /api/:version/caver/:id': {
     controller: 'Caver',
@@ -131,26 +131,26 @@ module.exports.routes = {
   },
 
   'PUT /api/caver/:id': {
-        controller: 'Caver',
-        action: 'update'
-    },
+    controller: 'Caver',
+    action: 'update'
+  },
 
   'DELETE /api/caver/:id': {
-        controller: 'Caver',
-        action: 'destroy'
-    },
+    controller: 'Caver',
+    action: 'destroy'
+  },
 
-    /* Entry controller */
+  /* Entry controller */
 
   'GET /api/entry/findAll': {
-        controller: 'Entry',
-        action: 'findAll'
-    },
+    controller: 'Entry',
+    action: 'findAll'
+  },
 
   'GET /api/entry/findRandom': {
-        controller: 'Entry',
-        action: 'findRandom'
-    },
+    controller: 'Entry',
+    action: 'findRandom'
+  },
 
   'GET /api/v1/entry/publicCount': {
     controller: 'v1/Entry',
@@ -171,149 +171,149 @@ module.exports.routes = {
     cors: {
       origin: '*'
     }
-    },
+  },
 
-    /* REST API for Cave controller */
+  /* REST API for Cave controller */
 
   'POST /api/cave/': {
-        controller: 'Cave',
-        action: 'create'
-    },
+    controller: 'Cave',
+    action: 'create'
+  },
 
   'GET /api/cave/findAll': {
-        controller: 'Cave',
-        action: 'findAll'
-    },
+    controller: 'Cave',
+    action: 'findAll'
+  },
 
   'GET /api/cave/:id': {
-        controller: 'Cave',
-        action: 'find'
-    },
+    controller: 'Cave',
+    action: 'find'
+  },
 
   'PUT /api/cave/:id': {
-        controller: 'Cave',
-        action: 'update'
-    },
+    controller: 'Cave',
+    action: 'update'
+  },
 
   'DELETE /api/cave/:id': {
-        controller: 'Cave',
-        action: 'delete'
-    },
+    controller: 'Cave',
+    action: 'delete'
+  },
 
-    /* Author controller */
+  /* Author controller */
 
   'POST /api/author/': {
-        controller: 'Author',
-        action: 'create'
-    },
+    controller: 'Author',
+    action: 'create'
+  },
 
   'GET /api/author/:id': {
-        controller: 'Author',
-        action: 'find'
-    },
+    controller: 'Author',
+    action: 'find'
+  },
 
   'PUT /api/author/:id': {
-        controller: 'Author',
-        action: 'update'
-    },
+    controller: 'Author',
+    action: 'update'
+  },
 
   'DELETE /api/author/:id': {
-        controller: 'Author',
-        action: 'delete'
-    },
+    controller: 'Author',
+    action: 'delete'
+  },
 
   'GET /api/author/findAll': {
-        controller: 'Author',
-        action: 'findAll'
-    },
+    controller: 'Author',
+    action: 'findAll'
+  },
 
-    /* REST API for Partner controller */
+  /* REST API for Partner controller */
 
   'POST /api/partner/': {
-        controller: 'Partner',
-        action: 'create'
-    },
+    controller: 'Partner',
+    action: 'create'
+  },
 
   'GET /api/partner/findAll': {
-        controller: 'Partner',
-        action: 'findAll'
-    },
+    controller: 'Partner',
+    action: 'findAll'
+  },
 
   'GET /api/partner/findForCarousel/:skip/:limit': {
-        controller: 'Partner',
-        action: 'findForCarousel'
-    },
+    controller: 'Partner',
+    action: 'findForCarousel'
+  },
 
   'GET /api/partner/findForCarousel': {
-        controller: 'Partner',
-        action: 'findForCarousel'
-    },
+    controller: 'Partner',
+    action: 'findForCarousel'
+  },
 
   'GET /api/partner/:id': {
-        controller: 'Partner',
-        action: 'find'
-    },
+    controller: 'Partner',
+    action: 'find'
+  },
 
   'PUT /api/partner/:id': {
-        controller: 'Partner',
-        action: 'update'
-    },
+    controller: 'Partner',
+    action: 'update'
+  },
 
   'DELETE /api/partner/:id': {
-        controller: 'Partner',
-        action: 'delete'
-    },
+    controller: 'Partner',
+    action: 'delete'
+  },
 
-    /* REST API for Topography controller */
+  /* REST API for Topography controller */
 
   'POST /api/topo/': {
-        controller: 'Topography',
-        action: 'create'
-    },
+    controller: 'Topography',
+    action: 'create'
+  },
 
   'GET /api/topo/findAll': {
-        controller: 'Topography',
-        action: 'findAll'
-    },
+    controller: 'Topography',
+    action: 'findAll'
+  },
 
   'GET /api/topo/:id': {
-        controller: 'Topography',
-        action: 'find'
-    },
+    controller: 'Topography',
+    action: 'find'
+  },
 
   'PUT /api/topo/:id': {
-        controller: 'Topography',
-        action: 'update'
-    },
+    controller: 'Topography',
+    action: 'update'
+  },
 
   'DELETE /api/topo/:id': {
-        controller: 'Topography',
-        action: 'delete'
-    },
+    controller: 'Topography',
+    action: 'delete'
+  },
 
   /* REST API for Comment controller */
 
   'GET /api/comment/stats/:entry': {
-        controller: 'Comment',
-        action: 'getEntryStats'
-    },
+    controller: 'Comment',
+    action: 'getEntryStats'
+  },
 
   'GET /api/comment/timeinfos/:entry': {
-        controller: 'Comment',
-        action: 'getEntryTimeInfos'
-    },
+    controller: 'Comment',
+    action: 'getEntryTimeInfos'
+  },
 
   /* REST API for Grotto controller */
 
   'GET /api/grotto/findAll': {
-        controller: 'Grotto',
-        action: 'findAll'
-    },
+    controller: 'Grotto',
+    action: 'findAll'
+  },
 
   'GET /api/grotto/officialCount': {
-        controller: 'Grotto',
+    controller: 'Grotto',
     action: 'getOfficialPartnersNumber'
-    },
+  },
 
   'GET /api/grotto/count': {
     controller: 'Grotto',
@@ -323,14 +323,14 @@ module.exports.routes = {
   'GET /api/grotto/:id': {
     controller: 'Grotto',
     action: 'find'
-    },
+  },
 
   /* REST API for Admin controller */
 
   'GET /api/admin/entry/findAllOfInterest': {
-        controller: 'Admin',
-        action: 'findAllInterestEntries'
-    },
+    controller: 'Admin',
+    action: 'findAllInterestEntries'
+  },
 
   /* Rss controller */
 
