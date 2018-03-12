@@ -1,5 +1,6 @@
 import {combineReducers} from 'redux';
 import {quicksearch} from './QuicksearchReducer';
+import {map} from './MapReducer';
 import {currentLanguage} from './LanguageReducer';
 import {latestBlogNews} from './LatestBlogNewsReducer';
 import {dynamicNumber} from './DynamicNumberReducer';
@@ -10,6 +11,7 @@ import {partnersCarousel} from './PartnersCarouselReducer';
 const GCReducer = combineReducers({
   currentLanguage,
   quicksearch,
+  map,
   latestBlogNews,
   dynamicNumber,
   sideMenu,
