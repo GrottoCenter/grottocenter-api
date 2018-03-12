@@ -34,7 +34,7 @@ export default (
           <Redirect from="*" to="/"/>
         </Route>
         <Route path="faq" component={Faq}/>
-        <Route path="map" component={MapContainer}/>
+        <Route path="map(/:target)" component={MapContainer}/>
         <Route path="swagger" component={Swagger} />
         <Route path="test" component={LatestBlogNewsSection}/>
         <Redirect from="*" to="/"/>
