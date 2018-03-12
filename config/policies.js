@@ -28,8 +28,7 @@ module.exports.policies = {
 
   IndexController: {
     '*': false,
-    'index': 'localize',
-    'map': 'localize'
+    'index': 'localize'
   },
 
   AuthController: {

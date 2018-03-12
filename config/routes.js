@@ -41,11 +41,6 @@ module.exports.routes = {
     action: 'index'
   },
 
-  '/map': {
-    controller: 'Index',
-    action: 'map'
-  },
-
   /***************************************************************************
    *                                                                          *
    * Custom routes here...                                                    *

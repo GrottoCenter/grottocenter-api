@@ -29,6 +29,7 @@ module.exports = {
     // end search for caves
     //});
   },
+
   findByBounds: function(req, res) {
     // https://github.com/balderdashy/waterline-docs/blob/master/queries/query-language.md
     TEntry.find({
@@ -45,7 +46,7 @@ module.exports = {
     .sort('id ASC')
     .limit(200).exec(function(err, foundEntry) {
       let params = {};
-      params.controllerMethod = 'SearchController.readAll';
+      params.controllerMethod = 'SearchController.findByBounds';
       params.notFoundMessage = 'No items found.';
       return ControllerService.treat(err, foundEntry, params, res);
     });
