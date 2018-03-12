@@ -13,14 +13,14 @@ import Translate from '../common/Translate';
 //   </SvgIcon>
 // );
 
-class Autocomplete extends Component {
+class Searchbar extends Component {
   constructor(props) {
     super(props);
   }
 
   handleNewRequest(selectedItem) {
     if (selectedItem.isMappable) {
-      this.props.showMarker(selectedItem);
+      this.props.setCurrentEntry(selectedItem);
     }
     if (selectedItem.id) {
       browserHistory.push('/ui/map');
@@ -122,12 +122,12 @@ class Autocomplete extends Component {
   }
 }
 
-Autocomplete.propTypes = {
+Searchbar.propTypes = {
   reset: PropTypes.func.isRequired,
   search: PropTypes.func.isRequired,
-  showMarker: PropTypes.func.isRequired,
+  setCurrentEntry: PropTypes.func.isRequired,
   results: PropTypes.object,
   className: PropTypes.string
 };
 
-export default Autocomplete;
+export default Searchbar;
