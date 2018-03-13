@@ -28,27 +28,5 @@ module.exports = {
     });
     // end search for caves
     //});
-  },
-
-  findByBounds: function(req, res) {
-    // https://github.com/balderdashy/waterline-docs/blob/master/queries/query-language.md
-    TEntry.find({
-      latitude: {
-        '>': req.param('sw_lat'),
-        '<': req.param('ne_lat'),
-        '!': 0 // TODO: why never empty ? remove default element
-      },
-      longitude: {
-        '>': req.param('sw_lng'),
-        '<': req.param('ne_lng')
-      }
-    })
-    .sort('id ASC')
-    .limit(200).exec(function(err, foundEntry) {
-      let params = {};
-      params.controllerMethod = 'SearchController.findByBounds';
-      params.notFoundMessage = 'No items found.';
-      return ControllerService.treat(err, foundEntry, params, res);
-    });
   }
 };
