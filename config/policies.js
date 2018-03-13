@@ -59,8 +59,7 @@ module.exports.policies = {
   },
 
   SearchController: {
-    'findAll': 'apiKeyAuth',
-    'findByBounds': true
+    'findAll': 'apiKeyAuth'
   },
 
   'v1/SearchController': {
@@ -105,6 +104,11 @@ module.exports.policies = {
 
   RssController: {
     '*': true
+  },
+
+  'v1/GeoLocController': {
+    'countEntries': true,
+    'findByBounds': true
   }
 
   /***************************************************************************

@@ -52,7 +52,7 @@ module.exports = {
   },
 
   getPublicEntriesNumber: function(req, res) {
-    return sails.controllers.entry.getPublicEntriesNumber(req, res, MappingV1Service.convertToPublicEntryModel);
+    return sails.controllers.entry.getPublicEntriesNumber(req, res, MappingV1Service.convertToCountResult);
   },
 
   // TODO adapt
