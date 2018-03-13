@@ -1,21 +1,10 @@
 import fetch from 'isomorphic-fetch';
-import {findMapBoundsUrl, defaultCoord, defaultZoom} from '../conf/Config';
+import {findMapBoundsUrl} from '../conf/Config';
 
-export const RESET_MAP_ITEMS = 'RESET_MAP_ITEMS';
 export const FETCH_MAP_ITEMS_SUCCESS = 'FETCH_MAP_ITEMS_SUCCESS';
 export const FETCH_MAP_ITEMS_FAILURE = 'FETCH_MAP_ITEMS_FAILURE';
 export const CHANGE_LOCATION = 'CHANGE_LOCATION';
 export const CHANGE_ZOOM = 'CHANGE_ZOOM';
-
-export const resetMapItems = () => {
-  return {
-    type: RESET_MAP_ITEMS,
-    results: {},
-    location: defaultCoord,
-    zoom: defaultZoom,
-    error: undefined
-  }
-};
 
 export const fetchMapItemsSuccess = (results) => {
   return {

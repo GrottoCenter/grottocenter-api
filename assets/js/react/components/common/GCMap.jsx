@@ -1,6 +1,5 @@
 import React, {Component, PropTypes} from 'react';
 import {Map, Marker, Popup, TileLayer} from 'react-leaflet'
-import MenuItem from 'material-ui/MenuItem';
 import _ from 'underscore.string';
 //import {smallMarkerIcon, mainMarkerIcon} from '../../conf/Config';
 import {defaultCoord, defaultZoom} from '../../conf/Config';
@@ -85,54 +84,6 @@ class GCMap extends Component {
     }
   }
 
-  isMappable(obj) { // TODO : move to models ?
-    return obj.latitude && obj.longitude
-      ? true
-      : false;
-  }
-
-  isEntry(obj) {
-    // TODO : better when it will be possible
-    return obj.isSensitive !== undefined;
-  }
-
-  grottoSearchToMenuItemMapping(item) {
-    let primaryText = item.name;
-    if (this.isEntry(item)) {
-      primaryText = [
-        <span>{item.name}</span>,
-        " - ",
-        <i>{item.region}</i>
-      ]
-    }
-
-    let category = 'entry';
-    let icon = <span className="icon icon-gc-entry" style={{
-        'color' : this.props.muiTheme.palette.primary1Color,
-        'fontSize' : '2em'
-      }}></span>;
-
-    // only search for entries at this time
-    /*if (this.isCave(item)) {
-      category = 'cave';
-      icon = <MapIcon />;
-    } else if (this.isGrotto(item)) {
-      category = 'grotto';
-    }*/
-
-    return {
-      id: item.id,
-      text: item.name,
-      latitude: item.latitude,
-      longitude: item.longitude,
-      altitude: item.altitude,
-      author: item.author,
-      category: category,
-      isMappable: this.isMappable(item),
-      value: (<MenuItem primaryText={primaryText} leftIcon={icon}/>)
-    };
-  }
-
   getCurrentBounds() {
     if (this.refs.map && this.refs.map.leafletElement) {
       let bounds = this.refs.map.leafletElement.getBounds()
@@ -160,10 +111,6 @@ class GCMap extends Component {
   }
 
   /* map events */
-  handleEvent(e) {
-    console.log('event', e);
-  }
-
   handleMove() {
     console.log("handleMove");
     let leaftletMap = this.refs.map.leafletElement;
@@ -177,11 +124,6 @@ class GCMap extends Component {
     if (bounds) {
       this.props.searchBounds(bounds);
     }
-  }
-
-  handleMapViewReset() {
-    // console.log("leaftletMap event",e.type,e);
-    this.onUpdateMapBounds();
   }
 
   render() {
@@ -207,13 +149,31 @@ class GCMap extends Component {
 
     let boundedData = this.props.visibleEntries;
     if (boundedData && boundedData.length > 0 && this.props.selectedEntry) {
-      boundedData = boundedData.filter(item => item.id !== this.props.selectedEntry.id); // TODO remove props.selectedEntry from list
+      boundedData = boundedData.filter(item => item.id !== this.props.selectedEntry.id);
     }
 
-    return (<Map className={this.props.className} ref='map' center={center} zoom={this.state.zoom} length={4} onClick={this.handleEvent.bind(this)} onFocus={this.handleEvent.bind(this)} onAutoPanStart={this.handleEvent.bind(this)} onZoomStart={this.handleEvent.bind(this)} onDrag={this.handleEvent.bind(this)} onZoomEnd={this.handleEvent.bind(this)} onViewReset={this.handleEvent.bind(this)} onMoveEnd={this.handleMove.bind(this)} onLocationFound={this.handleEvent.bind(this)} onLocationError={this.handleEvent.bind(this)}>
+    return (
+      <Map
+        className={this.props.className}
+        ref='map'
+        center={center}
+        zoom={this.state.zoom}
+        length={4}
+        // onClick={this.handleEvent.bind(this)}
+        // onFocus={this.handleEvent.bind(this)}
+        // onAutoPanStart={this.handleEvent.bind(this)}
+        // onZoomStart={this.handleEvent.bind(this)}
+        // onDrag={this.handleEvent.bind(this)}
+        // onZoomEnd={this.handleEvent.bind(this)}
+        // onViewReset={this.handleEvent.bind(this)}
+        onMoveEnd={this.handleMove.bind(this)}
+        // onLocationFound={this.handleEvent.bind(this)}
+        // onLocationError={this.handleEvent.bind(this)}
+        >
 
       <TileLayer url='http://{s}.tile.osm.org/{z}/{x}/{y}.png'/> {marker}
       {
+
         boundedData && boundedData.map(entry => <Marker icon={smallMarkerIcon} key={entry.id} position={{
             lat: entry.latitude,
             lng: entry.longitude
@@ -238,9 +198,7 @@ GCMap.propTypes = {
   className: PropTypes.string,
   selectedEntry: PropTypes.object,
   visibleEntries: PropTypes.array,
-  resetMapItems: PropTypes.func,
   searchBounds: PropTypes.func,
-  muiTheme: PropTypes.object,
   setLocation: PropTypes.func.isRequired,
   setZoom: PropTypes.func.isRequired,
   history: PropTypes.object.isRequired,

@@ -1,26 +1,19 @@
 import {
-  RESET_MAP_ITEMS,
   FETCH_MAP_ITEMS_SUCCESS,
   FETCH_MAP_ITEMS_FAILURE,
   CHANGE_LOCATION,
   CHANGE_ZOOM
 } from './../actions/Map';
-import {defaultCoord, defaultZoom} from '../conf/Config';
 
 const initialState = {
   visibleEntries: undefined,
-  location: defaultCoord,
-  zoom: defaultZoom,
+  location: undefined,
+  zoom: undefined,
   errors: undefined
 }
 
 export const map = (state = initialState, action) => {
   switch (action.type) {
-    case RESET_MAP_ITEMS:
-      return Object.assign({}, state, {
-        visibleEntries: undefined,
-        errors: undefined
-      });
     case FETCH_MAP_ITEMS_SUCCESS:
       return Object.assign({}, state, {
         visibleEntries: action.results
