@@ -1,10 +1,9 @@
 import {connect} from 'react-redux';
-import {fetchMapItemsResult, resetMapItems, changeZoom, changeLocation} from './../actions/Map';
+import {fetchMapItemsResult, changeZoom, changeLocation} from './../actions/Map';
 import BackgroundMap from '../components/appli/BackgroundMap';
 
 const mapDispatchToProps = (dispatch, ownProps) => { // eslint-disable-line no-unused-vars
   return {
-    resetMapItems: () => dispatch(resetMapItems()),
     searchBounds: (criteria) => dispatch(fetchMapItemsResult(criteria)),
     setZoom: (zoom) => dispatch(changeZoom(zoom)),
     setLocation: (location) => dispatch(changeLocation(location))
