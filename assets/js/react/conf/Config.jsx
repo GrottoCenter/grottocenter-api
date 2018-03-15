@@ -110,7 +110,8 @@ export const
 export const
   findRandomEntryUrl = '/api/entry/findRandom',
   findForCarouselUrl = '/api/partner/findForCarousel',
-  quicksearchUrl = '/api/v1/search/findAll';
+  quicksearchUrl = '/api/v1/search/findAll',
+  findMapBoundsUrl = '/api/search/findByBounds';
 
 export const
   swaggerLinkV1 = '/ui/swagger/?url=/swagger/apiV1.yaml';
@@ -127,4 +128,8 @@ export const
     'faq': 'FAQ',
     'map': 'Map',
     'api': 'API'
-  }
+  };
+
+export const
+  defaultCoord = { lat: 51.505, lng: -0.09 }, // London
+  defaultZoom = 8;

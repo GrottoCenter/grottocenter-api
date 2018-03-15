@@ -20,7 +20,7 @@ const EntryModel = {
   altitude: undefined
 };
 
-const PublicEntry = {
+const CountResult = {
   count: undefined
 };
 
@@ -47,8 +47,8 @@ module.exports = {
     return result;
   },
 
-  convertToPublicEntryModel: function(source) {
-    let result = Object.assign({}, PublicEntry);
+  convertToCountResult: function(source) {
+    let result = Object.assign({}, CountResult);
     result.count = source.count;
     return result;
   },
