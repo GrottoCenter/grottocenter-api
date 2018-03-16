@@ -111,7 +111,7 @@ export const
   findRandomEntryUrl = '/api/entry/findRandom',
   findForCarouselUrl = '/api/partner/findForCarousel',
   quicksearchUrl = '/api/v1/search/findAll',
-  findMapBoundsUrl = '/api/search/findByBounds';
+  findMapBoundsUrl = '/api/v1/geoloc/findByBounds';
 
 export const
   swaggerLinkV1 = '/ui/swagger/?url=/swagger/apiV1.yaml';

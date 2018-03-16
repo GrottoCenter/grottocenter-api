@@ -38,6 +38,8 @@ globals:
   ControllerService: true
   MappingV1Service: true
   L: true
+  GeoLocService: true
+  SettingsService: true
 extends: [ 'eslint:recommended' ]
 parserOptions:
   ecmaVersion: 6

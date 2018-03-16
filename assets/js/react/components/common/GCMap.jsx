@@ -1,5 +1,6 @@
 import React, {Component, PropTypes} from 'react';
 import {Map, Marker, Popup, TileLayer} from 'react-leaflet'
+import DivIcon from 'react-leaflet-div-icon';
 import _ from 'underscore.string';
 //import {smallMarkerIcon, mainMarkerIcon} from '../../conf/Config';
 import {defaultCoord, defaultZoom} from '../../conf/Config';
@@ -32,7 +33,30 @@ export const smallMarkerIcon = L.icon({
   });
 
 const OverAllMarker = styled(Marker)`
-  z-index: 999;
+  z-index: 99999;
+`;
+
+const GroupDivIcon = styled(DivIcon)`
+  background-color: rgba(36, 96, 255, 0.6);
+  height: 40px !important;
+  width: 40px !important;
+  border-radius: 50%;
+  z-index: 99998 !important;
+
+  & > div {
+    border-radius: 50%;
+    height: 50px;
+    width: 50px;
+    margin-left: -5px;
+    margin-top: -5px;
+    text-align: center;
+    background-color: rgba(83, 177, 251, 0.5);;
+
+    & > span {
+      line-height: 50px;
+      font-weight: 600;
+    }
+  }
 `;
 
 class GCMap extends Component {
@@ -88,10 +112,10 @@ class GCMap extends Component {
     if (this.refs.map && this.refs.map.leafletElement) {
       let bounds = this.refs.map.leafletElement.getBounds()
       let queryString = {
-        ne_lat: bounds._northEast.lat,
-        ne_lng: bounds._northEast.lng,
-        sw_lat: bounds._southWest.lat,
-        sw_lng: bounds._southWest.lng
+        nw_lat: bounds._southWest.lat,
+        nw_lng: bounds._southWest.lng,
+        se_lat: bounds._northEast.lat,
+        se_lng: bounds._northEast.lng
       };
       return queryString;
     }
@@ -112,7 +136,6 @@ class GCMap extends Component {
 
   /* map events */
   handleMove() {
-    console.log("handleMove");
     let leaftletMap = this.refs.map.leafletElement;
     let mapBounds = leaftletMap.getBounds().getCenter();
     let zoom = leaftletMap.getZoom();
@@ -147,9 +170,39 @@ class GCMap extends Component {
       </OverAllMarker>)
       : null;
 
-    let boundedData = this.props.visibleEntries;
-    if (boundedData && boundedData.length > 0 && this.props.selectedEntry) {
-      boundedData = boundedData.filter(item => item.id !== this.props.selectedEntry.id);
+    let markersLayer = [];
+    let keyId = 0;
+    if (this.props.visibleEntries && this.props.visibleEntries.entries && this.props.visibleEntries.entries.length > 0) {
+      this.props.visibleEntries.entries.forEach((entry) => {
+        if (!this.props.selectedEntry || entry.id !== this.props.selectedEntry.id) {
+          if (entry.name === "group") {
+            markersLayer.push(<GroupDivIcon key={'entry'+keyId++} position={{
+                lat: entry.latitude,
+                lng: entry.longitude
+              }}>
+              <div>
+                <span>{entry.id}</span>
+              </div>
+            </GroupDivIcon>);
+          } else {
+            markersLayer.push(<Marker icon={smallMarkerIcon} key={'entry'+keyId++} position={{
+                lat: entry.latitude,
+                lng: entry.longitude
+              }}>
+              <Popup>
+                <span>
+                  <b>{entry.name}</b>
+                  {
+                    Object.keys(entry).map(key => <div key={key}>
+                      <i>{key}</i>
+                      {entry[key]}</div>)
+                  }
+                </span>
+              </Popup>
+            </Marker>);
+          }
+        }
+      });
     }
 
     return (
@@ -171,25 +224,9 @@ class GCMap extends Component {
         // onLocationError={this.handleEvent.bind(this)}
         >
 
-      <TileLayer url='http://{s}.tile.osm.org/{z}/{x}/{y}.png'/> {marker}
-      {
-
-        boundedData && boundedData.map(entry => <Marker icon={smallMarkerIcon} key={entry.id} position={{
-            lat: entry.latitude,
-            lng: entry.longitude
-          }}>
-          <Popup>
-            <span>
-              <b>{entry.name}</b>
-              {
-                Object.keys(entry).map(key => <div key={key}>
-                  <i>{key}</i>
-                  {entry[key]}</div>)
-              }
-            </span>
-          </Popup>
-        </Marker>)
-      }
+      <TileLayer url='http://{s}.tile.osm.org/{z}/{x}/{y}.png'/>
+      {marker}
+      {markersLayer}
     </Map>);
   }
 }
@@ -197,7 +234,7 @@ class GCMap extends Component {
 GCMap.propTypes = {
   className: PropTypes.string,
   selectedEntry: PropTypes.object,
-  visibleEntries: PropTypes.array,
+  visibleEntries: PropTypes.object,
   searchBounds: PropTypes.func,
   setLocation: PropTypes.func.isRequired,
   setZoom: PropTypes.func.isRequired,
