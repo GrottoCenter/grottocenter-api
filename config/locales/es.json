@@ -72,12 +72,12 @@
 	"{0} min": "{0} min",
 	"Grottocenter API": "API de Grottocenter",
 	"You need to manipulate worldwide speleology data on your website? Trust Grottocenter to manage it for you!": "¿Necesita manipular datos espeleológicos del mundo en su página? ¡Confíe en Grottocenter para administrarlo por usted!",
-	"We offer you a set of Rest API endpoints that you can easily insert in your pages to access this data\\.": "Le ofrecemos varios accesos API Rest que puede agregar facilmente a su página y tener acceso a los datos.",
+	"We offer you a set of {0} that you can easily insert in your pages to access this data": "Le ofrecemos un conjunto de {0} lo que puede insertar fácilmente en sus páginas para acceder a esta información.",
 	"Available versions:": "Versiones disponibles:",
 	"Version 1": "Versión 1",
 	"Not familiar with Swagger? Need support? {0}": "¿No estás familiarizado con Swagger? ¿Necesita ayuda? {0}",
 	"Contact us!": "¡Contáctanos!",
-	"This page documents the available API you can use on your website\\.": "Esta página documenta la API disponible que puede usar en su página.",
+	"This page documents the available API you can use on your website": "Esta página documenta la API disponible que puede usar en su sitio web.",
 	"Terms of service": "Términos de servicio",
 	"Base URL": "URL base"
 }

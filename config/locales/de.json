@@ -1,6 +1,6 @@
 {
 	"The Wiki database made by cavers for cavers": "Die Wiki-Datenbank vom Höhlenforscher für den Höhlenforscher!",
-	"Grottocenter is supported by the FSE": "Grottocenter wird von der FSE geholfen",
+	"Grottocenter is supported by the FSE": "Grottocenter wird von der FSE unterstützt",
 	"Quick search": "Schnellsuche",
 	"Unless stated otherwise, all text and documents are available under the terms of the Creative Commons Attribution-ShareAlike 30 Unported": "Wenn nicht anders angeben stehen alle Bilder und Texte unter der Namensnennung - Weitergabe unter gleichen Bedingungen 3.0",
 	"This site, although it may contain detailed information on caves, was not designed to facilitate the visit for none caver people Dangers are not necessarily reported and information mentioned is not everytime verified Caving is a discipline with many facets: cultural, science and sports In the latter capacity, it often requires a physical commitment It is also not free of risks, and even major risks These risks, if they can not be completely eliminated, are at least greatly reduced by a practice in the rules, practice which is fully understood when under a caving club (grotto) In any case GROTTOCENTER and its team can not be held liable for a bad practice of caving The novice who would engage in underground exploration is urged to contact a caving club The names and contact information can be obtained among other to the IUS (International Union of Speleology), to GROTTOCENTER or to his national federation": "Auch wenn diese Seite präzise Informationen über die Höhlen enthält, ist es ausdrücklich nicht das Ziel der Betreiber, Nicht-Späleologen den Besuch von Höhlen zu erleichern. Alle hier genannten Informationen sind nicht zwangsweise überprüft, mögliche Gefahren, die beim Höhlenbesuch bestehen, müssen nicht unbedingt genannt sein. Die Höhlenforschung hat viele Facetten, sie umfasst kulturelle, wissenschaftliche und auch sportlichen Aktivitäten. Im Zuge dessen ist häufig eine beträchtliche körperliche Leistung notwendig. Der Besuch von Höhlen ist stehts mit gewissen Risiken verbunden. Auch wenn sich diese nie völlig ausschließen lassen, werden sie doch deutlich reduziert, wenn du dich unter Tage an die anerkannten Regeln hälts und dein Hobby vorzugsweise im Rahmen eines entsprechenden Vereines ausübst. Die Webseite GROTTOCENTER, dessen Vertreter und die Mitwirkenden lehnen jede Verantwortung ab für Unfälle und Schäden die durch unfachgemässe Ausübung der Höhlenforschung in den auf der Webseite präsentierten Höhlen vorkommen könnten. Dem Neuling in Sachen Höhlenforschung raten wir dringend, sich mit einem Verein in Verbindung zu setzen. In Deutschland findest du die Adressen über den Verein Höhlen- und Karstforschung Deutschland e. V. (www.VHKD.de). International hilft die UIS (Union Internationale de Spéléologie).\\n",
@@ -44,6 +44,7 @@
 	"Interest": "Interesse",
 	"Ease to move": "Fortbewegung",
 	"Access": "Zugang",
+	"I find your project interesting:  How  can I  help ?": "Ich finde Euch nett. Kann ich irgendwie helfen ?",
 	"{0} hour": "{0} stunde",
 	"{0} hours": "{0} studen",
 	"{0} min": "{0} min"
