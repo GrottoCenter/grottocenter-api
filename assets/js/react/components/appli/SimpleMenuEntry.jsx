@@ -6,7 +6,18 @@ import styled from 'styled-components';
 const SecondLevelMenuItem = muiThemeable()(styled(MenuItem)`
   background-color: ${props => props.muiTheme.palette.primary3Color} !important;
   border-bottom: 1px dotted ${props => props.muiTheme.palette.primary1Color} !important;
-  transition: transform 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms !important;
+  transition: transform 2ms cubic-bezier(0.23, 1, 0.32, 1) 0ms !important;
+  font-size: 14px !important;
+
+  & > div > div {
+    padding-left: 40px !important;
+
+    & > svg {
+      left: -2px !important;
+      height: 20px !important;
+      width: 20px !important;
+    }
+  }
 `);
 
 class SimpleMenuEntry extends Component {
