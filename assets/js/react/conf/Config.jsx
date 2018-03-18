@@ -126,5 +126,9 @@ export const
     'ui': 'Dashboard',
     'faq': 'FAQ',
     'map': 'Map',
-    'api': 'API'
+    'api': 'API',
+    'admin': 'Administration',
+    'entries': 'Entries',
+    'search': 'Search',
+    'add': 'Add'
   }

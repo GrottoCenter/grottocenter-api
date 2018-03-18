@@ -5,23 +5,34 @@ import ChevronIcon from 'material-ui/svg-icons/navigation/chevron-right';
 import HomeIcon from 'material-ui/svg-icons/action/home';
 import {breadcrumpKeys} from '../../conf/Config';
 import muiThemeable from 'material-ui/styles/muiThemeable';
-
 import styled from 'styled-components';
 
 const BreadcrumpBar = muiThemeable()(styled.div`
-  color: ${props => props.muiTheme.palette.fullBlack} !important;
+  color: ${props => props.muiTheme.palette.primary1Color} !important;
   background-color: ${props => props.muiTheme.palette.primary3Color} !important;
   padding: 0px !important;
   height: 24px;
+
+  & > a, & > a:visited  {
+    font-weight: 300;
+    color: ${props => props.muiTheme.palette.primary1Color} !important;
+
+    :hover, :active {
+      font-weight: 600;
+    }
+  }
+
+  & > svg {
+    color: ${props => props.muiTheme.palette.primary1Color} !important;
+  }
 `);
 
 const StyledLink = styled(GCLink)`
   text-decoration: none;
   position: relative;
   top: -7px;
-  color: black;
 
-  > span {
+  & > span {
     font-size: small;
   }
 `;
