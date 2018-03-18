@@ -4,6 +4,7 @@ import ExpandMoreIcon from 'material-ui/svg-icons/navigation/expand-more';
 import ExpandLessIcon from 'material-ui/svg-icons/navigation/expand-less';
 import muiThemeable from 'material-ui/styles/muiThemeable';
 import styled from 'styled-components';
+import {browserHistory} from 'react-router';
 
 const FirstLevelMenuItem = muiThemeable()(styled(MenuItem)`
   background-color: ${props => props.muiTheme.palette.primary1Color} !important;
@@ -23,7 +24,7 @@ const FirstLevelMenuItem = muiThemeable()(styled(MenuItem)`
 class ComplexMenuEntry extends Component {
   constructor(props) {
     super(props);
-    this.props.register(this.props.identifier, this.props.open);
+    this.props.register(this.props.identifier, this.props.open, this.props.target);
   }
 
   render() {
@@ -39,8 +40,16 @@ class ComplexMenuEntry extends Component {
       icon = this.props.icon;
     }
 
+    let callOnClick = () => this.props.toggle(this.props.identifier);
+    if (this.props.target) {
+      callOnClick = () => {
+        browserHistory.push(this.props.target);
+        this.props.toggleSideMenu();
+      }
+    }
+
     return (<div>
-      <FirstLevelMenuItem onClick={() => this.props.toggle(this.props.identifier)} leftIcon={icon}>
+      <FirstLevelMenuItem onClick={callOnClick} leftIcon={icon}>
         {this.props.text}
       </FirstLevelMenuItem>
       <div style={{
@@ -57,7 +66,9 @@ ComplexMenuEntry.propTypes = {
   icon: PropTypes.node,
   children: PropTypes.node,
   register: PropTypes.func.isRequired,
-  toggle: PropTypes.func.isRequired
+  toggle: PropTypes.func.isRequired,
+  target: PropTypes.string,
+  toggleSideMenu: PropTypes.func.isRequired
 };
 
 export default ComplexMenuEntry;

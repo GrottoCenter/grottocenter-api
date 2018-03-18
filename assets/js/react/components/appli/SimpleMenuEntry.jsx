@@ -2,6 +2,7 @@ import React, {PropTypes, Component} from 'react';
 import MenuItem from 'material-ui/MenuItem';
 import muiThemeable from 'material-ui/styles/muiThemeable';
 import styled from 'styled-components';
+import {browserHistory} from 'react-router';
 
 const SecondLevelMenuItem = muiThemeable()(styled(MenuItem)`
   background-color: ${props => props.muiTheme.palette.primary3Color} !important;
@@ -23,12 +24,17 @@ const SecondLevelMenuItem = muiThemeable()(styled(MenuItem)`
 class SimpleMenuEntry extends Component {
   constructor(props) {
     super(props);
-    this.props.register(this.props.identifier, this.props.open);
+    this.props.register(this.props.identifier, this.props.open, this.props.target);
   }
 
   render() {
+    let callOnClick = () => {
+      browserHistory.push(this.props.target);
+      this.props.toggleSideMenu();
+    };
+
     return (
-      <SecondLevelMenuItem leftIcon={this.props.icon}>
+      <SecondLevelMenuItem leftIcon={this.props.icon} onClick={callOnClick}>
         {this.props.text}
       </SecondLevelMenuItem>
     );
@@ -40,7 +46,9 @@ SimpleMenuEntry.propTypes = {
   text: PropTypes.node.isRequired,
   icon: PropTypes.element,
   open: PropTypes.bool.isRequired,
-  register: PropTypes.func.isRequired
+  target: PropTypes.string.isRequired,
+  register: PropTypes.func.isRequired,
+  toggleSideMenu: PropTypes.func.isRequired
 };
 
 export default SimpleMenuEntry;

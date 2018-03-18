@@ -8,11 +8,12 @@ export const toggleSideMenu = () => {
   };
 };
 
-export const registerMenuEntry = (identifier, open) => {
+export const registerMenuEntry = (identifier, open, target) => {
   return {
     type: REGISTER_MENU_ENTRY,
     identifier,
-    open
+    open,
+    target
   };
 };
 
