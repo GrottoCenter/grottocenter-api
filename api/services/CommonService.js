@@ -28,5 +28,9 @@ module.exports = {
    */
   convertHtmlToText: function(html, length) {
     return _.prune(_.unescapeHTML(_.stripTags(html)), length);
+  },
+
+  difference: function(num1, num2) {
+    return (num1 > num2) ? num1 - num2 : num2 - num1; // TODO review this method and add unit test
   }
 };

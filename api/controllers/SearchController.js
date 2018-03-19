@@ -7,7 +7,6 @@ module.exports = {
       parameters.name = {
         'like': '%' + req.param('name') + '%'
       };
-      sails.log.debug('Search > parameters ' + parameters.name.like);
     }
 
     //TODO : to adapt when authentication will be implemented

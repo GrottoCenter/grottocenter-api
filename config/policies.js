@@ -1,20 +1,20 @@
 /**
-  * Policy Mappings
-  * (sails.config.policies)
-  *
-  * Policies are simple functions which run ** before ** your controllers.
-  * You can apply one or more policies to a given controller, or protect
-  * its actions individually.
-  *
-  * Any policy file(e.g. `api/policies/authenticated.js`) can be accessed
-  * below by its filename, minus the extension, (e.g. "authenticated")
-  *
-  * For more information on how policies work, see:
-  * http: //sailsjs.org/#/documentation/concepts/Policies
-  *
-  * For more information on configuring policies, check out:
-  * http: //sailsjs.org/#/documentation/reference/sails.config/sails.config.policies.html
-  */
+ * Policy Mappings
+ * (sails.config.policies)
+ *
+ * Policies are simple functions which run ** before ** your controllers.
+ * You can apply one or more policies to a given controller, or protect
+ * its actions individually.
+ *
+ * Any policy file(e.g. `api/policies/authenticated.js`) can be accessed
+ * below by its filename, minus the extension, (e.g. "authenticated")
+ *
+ * For more information on how policies work, see:
+ * http: //sailsjs.org/#/documentation/concepts/Policies
+ *
+ * For more information on configuring policies, check out:
+ * http: //sailsjs.org/#/documentation/reference/sails.config/sails.config.policies.html
+ */
 
 module.exports.policies = {
   /***************************************************************************
@@ -48,18 +48,18 @@ module.exports.policies = {
     'find': 'apiKeyAuth',
     'findAll': true,
     'findRandom': true,
-    'getPublicEntriesNumber' : 'apiKeyAuth',
-    'getEntriesNumber' : true
+    'getPublicEntriesNumber': 'apiKeyAuth',
+    'getEntriesNumber': true
   },
 
   'v1/EntryController': {
     '*': false,
     'find': 'apiKeyAuth',
-    'getPublicEntriesNumber' : 'apiKeyAuth',
+    'getPublicEntriesNumber': 'apiKeyAuth'
   },
 
   SearchController: {
-    'findAll': 'apiKeyAuth',
+    'findAll': 'apiKeyAuth'
   },
 
   'v1/SearchController': {
@@ -104,6 +104,11 @@ module.exports.policies = {
 
   RssController: {
     '*': true
+  },
+
+  'v1/GeoLocController': {
+    'countEntries': true,
+    'findByBounds': true
   }
 
   /***************************************************************************

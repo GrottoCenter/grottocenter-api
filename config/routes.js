@@ -57,6 +57,13 @@ module.exports.routes = {
     view: 'grottocenter'
   },
 
+  'GET /auth/signin': {
+    view: 'grottocenter'
+  },
+
+  'GET /auth/signup': {
+    view: 'grottocenter'
+  },
   'GET /ui/*': {
     view: 'grottocenter'
   },
@@ -320,6 +327,23 @@ module.exports.routes = {
   'GET /api/rss/:language': {
     controller: 'Rss',
     action: 'getFeed'
-  }
+  },
 
+  /* Geo localisation API */
+
+  'GET /api/v1/geoloc/countEntries': {
+    controller: 'v1/GeoLoc',
+    action: 'countEntries',
+    cors: {
+      origin: '*'
+    }
+  },
+
+  'GET /api/v1/geoloc/findByBounds': {
+    controller: 'v1/GeoLoc',
+    action: 'findByBounds',
+    cors: {
+      origin: '*'
+    }
+  },
 };
