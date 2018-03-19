@@ -1,7 +1,8 @@
 'use strict';
 
 // Methods for map search
-const PUBLIC_ENTRIES_AVG_COORDS = 'SELECT count(Id) as count, avg(Longitude) as longitude, avg(Latitude) as latitude FROM t_entry WHERE Latitude > ? AND Latitude < ? AND Longitude > ? AND Longitude < ? AND Is_public=\'YES\'';
+const PUBLIC_ENTRIES_AVG_COORDS = 'SELECT count(Id) as count, avg(Longitude) as longitude, avg(Latitude) as latitude '
+  + 'FROM t_entry WHERE Latitude > ? AND Latitude < ? AND Longitude > ? AND Longitude < ? AND Is_public=\'YES\'';
 
 module.exports = {
   /**

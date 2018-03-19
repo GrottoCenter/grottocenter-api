@@ -6,7 +6,6 @@ module.exports = {
     return new Promise((resolve, reject) => {
       // TODO replace by an access to table settings
       // For now, just implement a switchcase
-
       switch (key) {
         case 'map.partition.row':
           resolve(8);

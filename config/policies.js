@@ -55,7 +55,7 @@ module.exports.policies = {
   'v1/EntryController': {
     '*': false,
     'find': 'apiKeyAuth',
-    'getPublicEntriesNumber': 'apiKeyAuth',
+    'getPublicEntriesNumber': 'apiKeyAuth'
   },
 
   SearchController: {

@@ -23,7 +23,6 @@ module.exports = {
   },
 
   findByBounds: function(req, res) {
-    // https://github.com/balderdashy/waterline-docs/blob/master/queries/query-language.md
     let northWestBound = {
       lat: req.param('nw_lat'),
       lng: req.param('nw_lng')
@@ -42,14 +41,12 @@ module.exports = {
       if (result > 1000) { // TODO add into settings
         GeoLocService.findByBoundsPartitioned(northWestBound, southEastBound)
         .then(function(partResult) {
-          console.log("final partResult",partResult.length);
           return res.json(converter(partResult));
-          //return res.json(partResult);
         }, function(err) {
           console.log(err);
         });
       } else {
-
+        // TODO replace this call by GeoLocService.getEntriesBetweenCoords
         TEntry.find({
           latitude: {
             '>': req.param('nw_lat'),
