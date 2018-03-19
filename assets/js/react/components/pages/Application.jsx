@@ -18,7 +18,7 @@ const AppFooterStl = styled(AppFooter)`
 `;
 
 const ArticleWrapper = styled.article`
-  padding: 10px 0px;
+  padding: 0px;
 `;
 
 const Application = (props) => (

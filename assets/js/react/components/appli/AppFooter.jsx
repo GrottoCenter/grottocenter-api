@@ -12,6 +12,9 @@ const FooterBar = muiThemeable()(styled(Toolbar)`
   background-color: ${props => props.muiTheme.palette.primary3Color} !important;
   padding: 0px !important;
   height: 45px !important;
+  position: fixed;
+  bottom: 0;
+  width: 100%;
 
   img {
     padding-left: 5px;
