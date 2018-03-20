@@ -1,11 +1,12 @@
 import {connect} from 'react-redux';
 import ComplexMenuEntry from '../components/appli/ComplexMenuEntry';
-import {registerMenuEntry, toggleMenuEntry} from '../actions/SideMenu';
+import {registerMenuEntry, toggleMenuEntry, toggleSideMenu} from '../actions/SideMenu';
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    register: (identifier, open) => dispatch(registerMenuEntry(identifier, open)),
-    toggle: (identifier) => dispatch(toggleMenuEntry(identifier))
+    register: (identifier, open, target) => dispatch(registerMenuEntry(identifier, open, target)),
+    toggle: (identifier) => dispatch(toggleMenuEntry(identifier)),
+    toggleSideMenu: () => dispatch(toggleSideMenu())
   };
 };
 

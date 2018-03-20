@@ -7,7 +7,8 @@ import {TOGGLE_SIDEMENU, REGISTER_MENU_ENTRY, TOGGLE_MENU_ENTRY} from '../action
 //   items: [
 //     {
 //       identifier: string,
-//       open: boolean
+//       open: boolean,
+//       target: string
 //     },
 //     ...
 //   ]
@@ -41,7 +42,8 @@ export const sideMenu = (state = initial, action) => {
           ...state.items,
           {
             identifier: action.identifier,
-            open: action.open
+            open: action.open,
+            target: action.target
           }
         ]
       });
