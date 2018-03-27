@@ -4,6 +4,7 @@ import DivIcon from 'react-leaflet-div-icon';
 import _ from 'underscore.string';
 //import {smallMarkerIcon, mainMarkerIcon} from '../../conf/Config';
 import {defaultCoord, defaultZoom} from '../../conf/Config';
+import Spinner from '../common/Spinner';
 import styled from 'styled-components';
 
 export const smallMarkerIcon = L.icon({
@@ -67,7 +68,8 @@ class GCMap extends Component {
       showVisibleEntries: true,
       localize: false,
       location: defaultCoord,
-      zoom: defaultZoom
+      zoom: defaultZoom,
+      showSpinner: false
     }
   }
 
@@ -86,6 +88,7 @@ class GCMap extends Component {
 
   componentDidMount() {
     if (!this.props.selectedEntry && !this.props.params.target) {
+      this.setState({showSpinner: true});
       this.refs.map.leafletElement.locate({setView: true, maxZoom: 15});
     }
     let bounds = this.getCurrentBounds();
@@ -147,6 +150,10 @@ class GCMap extends Component {
     if (bounds) {
       this.props.searchBounds(bounds);
     }
+  }
+
+  hideSpinner() {
+    this.setState({showSpinner: false});
   }
 
   render() {
@@ -219,10 +226,11 @@ class GCMap extends Component {
         // onDrag={this.handleEvent.bind(this)}
         // onZoomEnd={this.handleEvent.bind(this)}
         // onViewReset={this.handleEvent.bind(this)}
-        onMoveEnd={this.handleMove.bind(this)}
-        // onLocationFound={this.handleEvent.bind(this)}
-        // onLocationError={this.handleEvent.bind(this)}
-        >
+        onMoveEnd={() => this.handleMove()}
+        onLocationFound={() => this.hideSpinner()}
+        onLocationError={() => this.hideSpinner()}
+      >
+        {this.state.showSpinner && <Spinner size={100} text='Localization'/>}
 
       <TileLayer url='http://{s}.tile.osm.org/{z}/{x}/{y}.png'/>
       {marker}
