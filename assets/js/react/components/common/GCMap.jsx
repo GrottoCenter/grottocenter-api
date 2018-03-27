@@ -160,7 +160,7 @@ class GCMap extends Component {
 
     const marker = (this.props.selectedEntry)
       ? (<OverAllMarker icon={mainMarkerIcon} position={center}>
-        <Popup>
+        <Popup autoPan={false}>
           <span>
             {this.props.selectedEntry.text}
             <br/>{this.props.selectedEntry.altitude}
@@ -189,7 +189,7 @@ class GCMap extends Component {
                 lat: entry.latitude,
                 lng: entry.longitude
               }}>
-              <Popup>
+              <Popup autoPan={false}>
                 <span>
                   <b>{entry.name}</b>
                   {
