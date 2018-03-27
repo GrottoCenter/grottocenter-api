@@ -86,7 +86,7 @@ class GCMap extends Component {
 
   componentDidMount() {
     if (!this.props.selectedEntry && !this.props.params.target) {
-      this.refs.map.leafletElement.locate({setView: true});
+      this.refs.map.leafletElement.locate({setView: true, maxZoom: 15});
     }
     let bounds = this.getCurrentBounds();
     if (bounds) {
