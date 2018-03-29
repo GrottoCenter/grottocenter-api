@@ -228,14 +228,13 @@ class GCMap extends Component {
         // onViewReset={this.handleEvent.bind(this)}
         onMoveEnd={() => this.handleMove()}
         onLocationFound={() => this.hideSpinner()}
-        onLocationError={() => this.hideSpinner()}
-      >
+        onLocationError={() => this.hideSpinner()}>
         {this.state.showSpinner && <Spinner size={100} text='Localization'/>}
-
-      <TileLayer url='http://{s}.tile.osm.org/{z}/{x}/{y}.png'/>
-      {marker}
-      {markersLayer}
-    </Map>);
+        <TileLayer url='http://{s}.tile.osm.org/{z}/{x}/{y}.png'/>
+        {marker}
+        {markersLayer}
+      </Map>
+    );
   }
 }
 

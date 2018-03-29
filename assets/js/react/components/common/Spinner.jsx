@@ -7,7 +7,7 @@ import styled from 'styled-components';
 const SpinnerDiv = styled.div`
   z-index: 99999;
   position: relative;
-  top: calc(50% - (${props => props.size}px /2));
+  top: calc(50% - (${props => props.size}px / 2));
   margin: auto;
   height: ${props => props.size}px;
   width: ${props => props.size}px;
