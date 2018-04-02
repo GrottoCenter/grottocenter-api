@@ -4,6 +4,7 @@ import DivIcon from 'react-leaflet-div-icon';
 import _ from 'underscore.string';
 //import {smallMarkerIcon, mainMarkerIcon} from '../../conf/Config';
 import {defaultCoord, defaultZoom} from '../../conf/Config';
+import Spinner from '../common/Spinner';
 import styled from 'styled-components';
 
 export const smallMarkerIcon = L.icon({
@@ -67,7 +68,8 @@ class GCMap extends Component {
       showVisibleEntries: true,
       localize: false,
       location: defaultCoord,
-      zoom: defaultZoom
+      zoom: defaultZoom,
+      showSpinner: false
     }
   }
 
@@ -76,7 +78,7 @@ class GCMap extends Component {
     if (encodedParam && encodedParam.length > 0) {
       let decoded = atob(encodedParam);
       let params = decoded.split("&").reduce(function(prev, curr) {
-        var p = curr.split("=");
+        let p = curr.split("=");
         prev[decodeURIComponent(p[0])] = decodeURIComponent(p[1]);
         return prev;
       }, {});
@@ -86,7 +88,8 @@ class GCMap extends Component {
 
   componentDidMount() {
     if (!this.props.selectedEntry && !this.props.params.target) {
-      this.refs.map.leafletElement.locate({setView: true});
+      this.setState({showSpinner: true});
+      this.refs.map.leafletElement.locate({setView: true, maxZoom: 15});
     }
     let bounds = this.getCurrentBounds();
     if (bounds) {
@@ -136,9 +139,9 @@ class GCMap extends Component {
 
   /* map events */
   handleMove() {
-    let leaftletMap = this.refs.map.leafletElement;
-    let mapBounds = leaftletMap.getBounds().getCenter();
-    let zoom = leaftletMap.getZoom();
+    let leafletMap = this.refs.map.leafletElement;
+    let mapBounds = leafletMap.getBounds().getCenter();
+    let zoom = leafletMap.getZoom();
     this.props.setLocation({lat: mapBounds.lat, lng: mapBounds.lng});
     this.props.setZoom(zoom);
     this.updateLocationUrl(mapBounds, zoom);
@@ -147,6 +150,10 @@ class GCMap extends Component {
     if (bounds) {
       this.props.searchBounds(bounds);
     }
+  }
+
+  hideSpinner() {
+    this.setState({showSpinner: false});
   }
 
   render() {
@@ -171,12 +178,11 @@ class GCMap extends Component {
       : null;
 
     let markersLayer = [];
-    let keyId = 0;
     if (this.props.visibleEntries && this.props.visibleEntries.entries && this.props.visibleEntries.entries.length > 0) {
       this.props.visibleEntries.entries.forEach((entry) => {
         if (!this.props.selectedEntry || entry.id !== this.props.selectedEntry.id) {
           if (entry.name === "group") {
-            markersLayer.push(<GroupDivIcon key={'entry'+keyId++} position={{
+            markersLayer.push(<GroupDivIcon key={entry.objectId} position={{
                 lat: entry.latitude,
                 lng: entry.longitude
               }}>
@@ -185,7 +191,7 @@ class GCMap extends Component {
               </div>
             </GroupDivIcon>);
           } else {
-            markersLayer.push(<Marker icon={smallMarkerIcon} key={'entry'+keyId++} position={{
+            markersLayer.push(<Marker icon={smallMarkerIcon} key={entry.objectId} position={{
                 lat: entry.latitude,
                 lng: entry.longitude
               }}>
@@ -219,15 +225,15 @@ class GCMap extends Component {
         // onDrag={this.handleEvent.bind(this)}
         // onZoomEnd={this.handleEvent.bind(this)}
         // onViewReset={this.handleEvent.bind(this)}
-        onMoveEnd={this.handleMove.bind(this)}
-        // onLocationFound={this.handleEvent.bind(this)}
-        // onLocationError={this.handleEvent.bind(this)}
-        >
-
-      <TileLayer url='http://{s}.tile.osm.org/{z}/{x}/{y}.png'/>
-      {marker}
-      {markersLayer}
-    </Map>);
+        onMoveEnd={() => this.handleMove()}
+        onLocationFound={() => this.hideSpinner()}
+        onLocationError={() => this.hideSpinner()}>
+        {this.state.showSpinner && <Spinner size={100} text='Localization'/>}
+        <TileLayer url='http://{s}.tile.osm.org/{z}/{x}/{y}.png'/>
+        {marker}
+        {markersLayer}
+      </Map>
+    );
   }
 }
 

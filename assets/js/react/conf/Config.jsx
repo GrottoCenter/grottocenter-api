@@ -135,5 +135,5 @@ export const
   };
 
 export const
-  defaultCoord = { lat: 51.505, lng: -0.09 }, // London
-  defaultZoom = 8;
+  defaultCoord = { lat: 0, lng: 0 },
+  defaultZoom = 2;
