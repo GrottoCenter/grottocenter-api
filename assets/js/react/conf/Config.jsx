@@ -139,6 +139,9 @@ export const
   defaultZoom = 2;
 
 export const
+  entryDetailPath = '/ui/entry/';
+  
+export const
   sideMenuWidth = '215px';
 
 export const

@@ -1,6 +1,7 @@
 import React, {Component, PropTypes} from 'react';
 import {Map, Marker, Popup, TileLayer} from 'react-leaflet'
 import DivIcon from 'react-leaflet-div-icon';
+import MapEntryPopup from './MapEntryPopup';
 import _ from 'underscore.string';
 //import {smallMarkerIcon, mainMarkerIcon} from '../../conf/Config';
 import {defaultCoord, defaultZoom} from '../../conf/Config';
@@ -17,7 +18,7 @@ export const smallMarkerIcon = L.icon({
     ],
     popupAnchor: [
       0, -24
-    ],
+    ]
     // shadowUrl: '/images/gc-entry.svg',
     // shadowSize: [68, 95],
     // shadowAnchor: [22, 94]
@@ -25,7 +26,7 @@ export const smallMarkerIcon = L.icon({
   mainMarkerIcon = L.icon({
     iconUrl: '/images/gc-entry.svg',
     iconSize: [
-      32, 32
+      48, 48
     ],
     iconAnchor: [
       16, 32
@@ -33,16 +34,12 @@ export const smallMarkerIcon = L.icon({
     popupAnchor: [0, -32]
   });
 
-const OverAllMarker = styled(Marker)`
-  z-index: 99999;
-`;
-
 const GroupDivIcon = styled(DivIcon)`
   background-color: rgba(36, 96, 255, 0.6);
   height: 40px !important;
   width: 40px !important;
   border-radius: 50%;
-  z-index: 99998 !important;
+  z-index: 1000 !important;
 
   & > div {
     border-radius: 50%;
@@ -95,6 +92,10 @@ class GCMap extends Component {
     if (bounds) {
       this.props.searchBounds(bounds);
     }
+  }
+
+  componentWillUpdate() {
+    console.log('componentWillUpdate', this.state.location, this.props.selectedEntry, this.state.zoom);
   }
 
   updateMapData(longitude, latitude, zoom) {
@@ -166,15 +167,9 @@ class GCMap extends Component {
     }
 
     const marker = (this.props.selectedEntry)
-      ? (<OverAllMarker icon={mainMarkerIcon} position={center}>
-        <Popup autoPan={false}>
-          <span>
-            {this.props.selectedEntry.text}
-            <br/>{this.props.selectedEntry.altitude}
-            <br/>{this.props.selectedEntry.author}
-          </span>
-        </Popup>
-      </OverAllMarker>)
+      ? (<Marker icon={mainMarkerIcon} position={center} zIndexOffset={1000}>
+        <MapEntryPopup entry={this.props.selectedEntry} />
+      </Marker>)
       : null;
 
     let markersLayer = [];
@@ -195,16 +190,7 @@ class GCMap extends Component {
                 lat: entry.latitude,
                 lng: entry.longitude
               }}>
-              <Popup autoPan={false}>
-                <span>
-                  <b>{entry.name}</b>
-                  {
-                    Object.keys(entry).map(key => <div key={key}>
-                      <i>{key}</i>
-                      {entry[key]}</div>)
-                  }
-                </span>
-              </Popup>
+              <MapEntryPopup entry={entry} />
             </Marker>);
           }
         }
