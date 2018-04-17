@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React, {PropTypes, Component} from 'react';
 import GCLink from '../common/GCLink';
 import fetch from 'isomorphic-fetch';
 import {Table, TableBody, TableHeaderColumn, TableRow, TableRowColumn} from 'material-ui/Table';
@@ -44,6 +44,10 @@ const EntriesOfInterestTableRow = (props) => (
     <TableRowColumn>{props.row[0]['timeInfo'].eTUnderground}</TableRowColumn>
   </TableRow>
 );
+
+EntriesOfInterestTableRow.propTypes = {
+  row: PropTypes.array
+}
 
 export class EntriesOfInterest extends Component {
   constructor(props) {

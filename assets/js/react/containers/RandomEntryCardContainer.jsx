@@ -2,13 +2,13 @@ import {connect} from 'react-redux';
 import {loadRandomEntry} from '../actions/RandomEntry';
 import RandomEntryCard from '../components/common/card/RandomEntryCard';
 
-const mapDispatchToProps = (dispatch, ownProps) => { // eslint-disable-line no-unused-vars
+const mapDispatchToProps = (dispatch) => {
   return {
     fetch: () => dispatch(loadRandomEntry())
   };
 }
 
-const mapStateToProps = (state, ownProps) => { // eslint-disable-line no-unused-vars
+const mapStateToProps = (state) => {
   return {
     isFetching: state.randomEntry.isFetching,
     entry: state.randomEntry.entry

@@ -1,7 +1,7 @@
 import {connect} from 'react-redux';
 import DynamicNumber from './../components/homepage/DynamicNumber';
 
-const mapStateToProps = (state, ownProps) => { // eslint-disable-line no-unused-vars
+const mapStateToProps = (state, ownProps) => {
   let attributes = state.dynamicNumber[ownProps.numberType];
   if (attributes === undefined) {
     return {

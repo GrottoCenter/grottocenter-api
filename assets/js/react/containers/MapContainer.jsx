@@ -2,7 +2,7 @@ import {connect} from 'react-redux';
 import {fetchMapItemsResult, changeZoom, changeLocation} from './../actions/Map';
 import BackgroundMap from '../components/appli/BackgroundMap';
 
-const mapDispatchToProps = (dispatch, ownProps) => { // eslint-disable-line no-unused-vars
+const mapDispatchToProps = (dispatch) => {
   return {
     searchBounds: (criteria) => dispatch(fetchMapItemsResult(criteria)),
     setZoom: (zoom) => dispatch(changeZoom(zoom)),
@@ -10,7 +10,7 @@ const mapDispatchToProps = (dispatch, ownProps) => { // eslint-disable-line no-u
   };
 }
 
-const mapStateToProps = (state, ownProps) => { // eslint-disable-line no-unused-vars
+const mapStateToProps = (state) => {
   return {
     selectedEntry: state.quicksearch.entry,
     visibleEntries: state.map.visibleEntries
