@@ -2,7 +2,7 @@ import {connect} from 'react-redux';
 import {fetchQuicksearchResult, resetQuicksearch, setCurrentEntry} from './../actions/Quicksearch';
 import Searchbar from '../components/common/Searchbar';
 
-const mapDispatchToProps = (dispatch, ownProps) => { // eslint-disable-line no-unused-vars
+const mapDispatchToProps = (dispatch) => {
   return {
     reset: () => dispatch(resetQuicksearch()),
     search: (criteria) => dispatch(fetchQuicksearchResult(criteria)),
@@ -10,7 +10,7 @@ const mapDispatchToProps = (dispatch, ownProps) => { // eslint-disable-line no-u
   };
 }
 
-const mapStateToProps = (state, ownProps) => { // eslint-disable-line no-unused-vars
+const mapStateToProps = (state, ownProps) => {
   return {
     results: state.quicksearch.results,
     selectedEntry: state.quicksearch.entry,

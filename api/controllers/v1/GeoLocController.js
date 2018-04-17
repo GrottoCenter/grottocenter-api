@@ -43,7 +43,7 @@ module.exports = {
         .then(function(partResult) {
           return res.json(converter(partResult));
         }, function(err) {
-          console.log(err);
+          sails.log.error(err);
         });
       } else {
         // TODO replace this call by GeoLocService.getEntriesBetweenCoords

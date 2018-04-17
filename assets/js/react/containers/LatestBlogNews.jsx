@@ -9,7 +9,7 @@ const mapDispatchToProps = (dispatch, ownProps) => {
   };
 };
 
-const mapStateToProps = (state, ownProps) => { // eslint-disable-line no-unused-vars
+const mapStateToProps = (state, ownProps) => {
   let attributes = state.latestBlogNews[ownProps.blog];
 
   if (attributes === undefined) {

@@ -24,10 +24,6 @@ const CountResult = {
   count: undefined
 };
 
-const SearchResult = {
-  entry: undefined
-};
-
 /* Mappers */
 
 module.exports = {

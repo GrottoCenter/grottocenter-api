@@ -20,25 +20,23 @@ class GrottoAppBar extends Component {
     };
   }
 
-  openSignInDialog(event, index, value) { // eslint-disable-line no-unused-vars
+  openSignInDialog() {
     this.setState({openSignIn: true});
   }
 
-  closeSignInDialog(event, index, value) { // eslint-disable-line no-unused-vars
+  closeSignInDialog() {
     this.setState({openSignIn: false});
   }
 
-  openRegisterDialog(event, index, value) { // eslint-disable-line no-unused-vars
+  openRegisterDialog() {
     this.setState({openRegister: true});
   }
 
-  closeRegisterDialog(event, index, value) { // eslint-disable-line no-unused-vars
+  closeRegisterDialog() {
     this.setState({openRegister: false});
   }
 
-  processLogin(event, index, value) { // eslint-disable-line no-unused-vars
-    console.log('processLogin', this.refs.login.getValue(), this.refs.password.getValue());
-
+  processLogin() {
     $.ajax({
       url: '/csrfToken',
       dataType: 'json',
@@ -52,10 +50,10 @@ class GrottoAppBar extends Component {
     });
   }
 
-  loginFail(data) {
+  loginFail() {
   }
 
-  loginSuccess(userData) {
+  loginSuccess() {
   }
 
   render() {

@@ -2,13 +2,13 @@ import {connect} from 'react-redux';
 import {loadPartnersForCarousel} from './../actions/PartnersForCarousel';
 import PartnersCarousel from './../components/homepage/PartnersCarousel';
 
-const mapDispatchToProps = (dispatch, ownProps) => { // eslint-disable-line no-unused-vars
+const mapDispatchToProps = (dispatch) => {
   return {
     fetch: () => dispatch(loadPartnersForCarousel())
   };
 }
 
-const mapStateToProps = (state, ownProps) => { // eslint-disable-line no-unused-vars
+const mapStateToProps = (state) => {
   return {
     isFetching: state.partnersCarousel.isFetching,
     partners: state.partnersCarousel.partners
