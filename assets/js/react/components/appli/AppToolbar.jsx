@@ -8,6 +8,7 @@ import SideMenuBurgerConnector from '../../containers/SideMenuBurgerConnector';
 import QuicksearchContainer from '../../containers/QuicksearchContainer';
 import muiThemeable from 'material-ui/styles/muiThemeable';
 import styled from 'styled-components';
+import {sideMenuWidth} from '../../conf/Config';
 
 const StyledToolbar = muiThemeable()(styled(Toolbar)`
   padding: 0px !important;
@@ -16,7 +17,7 @@ const StyledToolbar = muiThemeable()(styled(Toolbar)`
 `);
 
 const TitleGroup = muiThemeable()(styled(Toolbar)`
-  width: 200px !important;
+  width: ${sideMenuWidth} !important;
   padding: 0px !important;
   background-color: ${props => props.muiTheme.palette.primary2Color} !important;
   align-items: center;

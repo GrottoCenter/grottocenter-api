@@ -137,3 +137,9 @@ export const
 export const
   defaultCoord = { lat: 0, lng: 0 },
   defaultZoom = 2;
+
+export const
+  sideMenuWidth = '215px';
+
+export const
+  logoGC = '/images/logo.svg';

@@ -11,10 +11,11 @@ import SimpleMenuEntryConnector from '../../containers/SimpleMenuEntryConnector'
 import ComplexMenuEntryConnector from '../../containers/ComplexMenuEntryConnector';
 import muiThemeable from 'material-ui/styles/muiThemeable';
 import styled from 'styled-components';
+import {sideMenuWidth} from '../../conf/Config';
 
 const Menubar = muiThemeable()(styled(Drawer)`
   > div {
-    width: 200px !important;
+    width: ${sideMenuWidth} !important;
     top: 60px !important;
     background-color: ${props => props.muiTheme.palette.primary1Color} !important;
   }

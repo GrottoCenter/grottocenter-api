@@ -6,49 +6,7 @@ import AssociationFlyingGoals from './AssociationFlyingGoals';
 import Translate from '../common/Translate';
 import styled from 'styled-components';
 import muiThemeable from 'material-ui/styles/muiThemeable';
-
-// [role='section'].association {
-//
-//   .row {
-//     & > div {
-//       padding-top: 20px;
-//     }
-//
-//     .row > div:last-child {
-//       text-align: center;
-//     }
-//
-//     ul {
-//       width: 100%;
-//       list-style-type: none;
-//     }
-//   }
-// }
-//
-// [role='section'].associationBg {
-//   background-image: url('../images/caves/DSC_0013b.jpg');
-//   background-size: cover;
-//   background-position: center;
-//   background-repeat: no-repeat;
-// }
-//
-// @media (min-width: @lgMin) {
-//   [role='section'].association {
-//
-//     .row > div:first-child {
-//       text-align: left;
-//     }
-//
-//     .row > div:last-child {
-//       margin-top: 40px;
-//     }
-//
-//     .row > div:last-child img {
-//       display: inline;
-//     }
-//   }
-//
-// }
+import GCLogo from '../common/GCLogo';
 
 const AssociationTitle = styled.h3`
   color: ${props => props.color};
@@ -57,7 +15,7 @@ const AssociationTitle = styled.h3`
   font-size: 35px;
 
   @media (min-width: 550px) {
-    text-align: left;
+    text-align: left; 
   }
 `;
 
@@ -69,19 +27,21 @@ const AssociationDetails = styled.h5`
 const AssociationLogo = styled.div`
   padding: 20px 10px;
   min-width: 100px;
-  background-color: ${props => props.bgColor};
-
+  background-color: #e8dcd8;
+  
   @media (min-width: 750px) {
-    margin: 20px 40px;
+    margin: 20px 0 20px 40px;
   }
 `;
 
-const AssociationLogoImage = styled.img`
-  max-width: 200px;
-  width: 100%;
-
-  :visible {
-    scale: 50%;
+const AssociationLogoImage = styled(GCLogo)`
+  & > img {
+    max-width: 200px;
+    width: 100%;
+  
+    :visible {
+      scale: 50%;
+    }
   }
 `;
 
@@ -137,8 +97,8 @@ const Association = (props) => (
       </GridTwoThirdColumn>
 
       <GridOneThirdColumn>
-        <AssociationLogo bgColor='#e8dcd8'>
-          <AssociationLogoImage src="/images/logo.svg"/>
+        <AssociationLogo>
+          <AssociationLogoImage showLink={false}/>
         </AssociationLogo>
       </GridOneThirdColumn>
     </AssociationGridRow>

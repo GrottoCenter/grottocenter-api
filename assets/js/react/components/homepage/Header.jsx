@@ -6,6 +6,7 @@ import {fseLinks} from '../../conf/Config';
 import InternationalizedLink from '../common/InternationalizedLink';
 import Translate from '../common/Translate';
 import styled from 'styled-components';
+import GCLogo from '../common/GCLogo';
 
 const HeaderGridContainer = styled(GridContainer)`
   width: 100%;
@@ -41,14 +42,6 @@ const Sitename = styled.h1`
   }
 `;
 
-const SiteLogo = styled.img`
-  width: 140px;
-
-  @media (min-width: 550px) {
-    width: 160px;
-  }
-`;
-
 const Slogan = styled.span`
   font-size: large;
   font-weight: 400;
@@ -79,14 +72,22 @@ const FseImage = styled.img`
   margin: 0 10px;
 `;
 
+const LogoImage = styled(GCLogo)`
+  & > img {
+    width: 140px;
+
+    @media (min-width: 550px) {
+      width: 160px;
+    }
+  }
+`;
+
 const Header = () => (
   <header className="header">
     <HeaderGridContainer>
       <BrandRow>
         <GridFullColumn>
-          <GCLink blank={false} href='' className="logo">
-            <SiteLogo src="/images/logo.svg" alt="logo-wikicaves"/>
-          </GCLink>
+          <LogoImage />
           <Sitename>Grottocenter</Sitename>
           <Slogan>
               <Translate>The Wiki database made by cavers for cavers</Translate>

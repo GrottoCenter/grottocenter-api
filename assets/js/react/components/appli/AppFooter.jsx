@@ -2,6 +2,7 @@ import React from 'react';
 import muiThemeable from 'material-ui/styles/muiThemeable';
 import InternationalizedLink from '../common/InternationalizedLink';
 import GCLink from '../common/GCLink';
+import GCLogo from '../common/GCLogo';
 import {licenceLinks, fseLinks, contactLinks, githubLink, facebookLink} from '../../conf/Config';
 import {twitterLink, rssLinks, bloggerLinks, bloggerIcons} from '../../conf/Config';
 import {Toolbar, ToolbarGroup} from 'material-ui/Toolbar';
@@ -44,9 +45,11 @@ const SocialImage = styled.img`
   padding-top: 5px;
 `;
 
-const LogoImage = styled.img`
-  height: 20px;
-  padding-top: 4px;
+const LogoImage = styled(GCLogo)`
+  & > img {
+    height: 20px;
+    padding-top: 4px;
+  }
 `;
 
 const Version = styled.div`
@@ -72,9 +75,7 @@ const AppFooter = () => (
     </RightToolbarGroup>
 
     <ToolbarGroup>
-      <GCLink blank={false} href='/' className="logo">
-        <LogoImage src="/images/logo.svg" alt="logo-wikicaves" />
-      </GCLink>
+      <LogoImage />
     </ToolbarGroup>
 
     <LeftToolbarGroup>

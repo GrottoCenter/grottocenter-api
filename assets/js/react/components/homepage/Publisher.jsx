@@ -3,6 +3,7 @@ import InternationalizedLink from '../common/InternationalizedLink';
 import {wikicavesLink} from '../../conf/Config';
 import Translate from '../common/Translate';
 import styled from 'styled-components';
+import GCLogo from '../common/GCLogo';
 
 const PublisherInfo = styled.div`
   background-color: ${props => props.bgColor};
@@ -11,10 +12,12 @@ const PublisherInfo = styled.div`
   text-align: center;
 `;
 
-const PublisherLogo = styled.img`
-  width: 100px;
-  display: block;
-  margin: auto;
+const PublisherLogo = styled(GCLogo)`
+  & > img {
+    width: 100px;
+    display: block;
+    margin: auto;
+  }
 `;
 
 const PublisherWrapper = styled.div`
@@ -30,7 +33,7 @@ const Publisher = () => (
     </div>
     <PublisherInfo bgColor='#e8dcd8'>
       <InternationalizedLink links={wikicavesLink}>
-        <PublisherLogo src="/images/logo.svg" alt="logo-wikicaves" />
+        <PublisherLogo showLink={false} />
         <Translate>Wikicaves association</Translate>
       </InternationalizedLink>
     </PublisherInfo>
