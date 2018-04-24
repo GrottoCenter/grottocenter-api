@@ -142,7 +142,7 @@ module.exports = {
         if (count >= minGroupSize) {
           GeoLocService.getGroupedItem(northWestBound, southEastBound)
           .then(function(group) {
-            sails.log.debug('Grouping ' + count + ' items on partition', northWestBound, southEastBound);
+            //sails.log.debug('Grouping ' + count + ' items on partition', northWestBound, southEastBound);
             resolve(group);
           }, function(err) {
             reject(err);
@@ -150,7 +150,7 @@ module.exports = {
         } else {
           GeoLocService.getEntriesBetweenCoords(northWestBound, southEastBound)
           .then(function(entries) {
-            sails.log.debug('Retrieving ' + entries.length + ' items on partition', northWestBound, southEastBound);
+            //sails.log.debug('Retrieving ' + entries.length + ' items on partition', northWestBound, southEastBound);
             resolve(entries);
           }, function(err) {
             reject(err);

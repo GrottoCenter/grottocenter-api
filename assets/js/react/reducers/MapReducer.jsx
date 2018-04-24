@@ -15,6 +15,7 @@ const initialState = {
 export const map = (state = initialState, action) => {
   switch (action.type) {
     case FETCH_MAP_ITEMS_SUCCESS:
+      console.log('FETCH_MAP_ITEMS_SUCCESS');
       return Object.assign({}, state, {
         visibleEntries: action.results
       });
