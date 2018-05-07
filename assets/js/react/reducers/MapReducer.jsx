@@ -2,20 +2,25 @@ import {
   FETCH_MAP_ITEMS_SUCCESS,
   FETCH_MAP_ITEMS_FAILURE,
   CHANGE_LOCATION,
-  CHANGE_ZOOM
+  CHANGE_ZOOM,
+  FOCUS_ON_LOCATION
 } from './../actions/Map';
+import {
+  defaultCoord,
+  defaultZoom,
+  focusZoom
+} from '../conf/Config';
 
 const initialState = {
   visibleEntries: undefined,
-  location: undefined,
-  zoom: undefined,
+  location: defaultCoord,
+  zoom: defaultZoom,
   errors: undefined
-}
+};
 
 export const map = (state = initialState, action) => {
   switch (action.type) {
     case FETCH_MAP_ITEMS_SUCCESS:
-      console.log('FETCH_MAP_ITEMS_SUCCESS');
       return Object.assign({}, state, {
         visibleEntries: action.results
       });
@@ -30,6 +35,11 @@ export const map = (state = initialState, action) => {
     case CHANGE_ZOOM:
       return Object.assign({}, state, {
         zoom: action.zoom
+      });
+    case FOCUS_ON_LOCATION:
+      return Object.assign({}, state, {
+        location: action.location,
+        zoom: focusZoom
       });
     default:
       return state;

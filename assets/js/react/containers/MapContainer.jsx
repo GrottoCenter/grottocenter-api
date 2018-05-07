@@ -12,6 +12,8 @@ const mapDispatchToProps = (dispatch) => {
 
 const mapStateToProps = (state) => {
   return {
+    mapCenter: state.map.location,
+    mapZoom: state.map.zoom,
     selectedEntry: state.quicksearch.entry,
     visibleEntries: state.map.visibleEntries
   };

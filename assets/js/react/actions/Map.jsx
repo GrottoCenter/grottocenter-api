@@ -5,6 +5,7 @@ export const FETCH_MAP_ITEMS_SUCCESS = 'FETCH_MAP_ITEMS_SUCCESS';
 export const FETCH_MAP_ITEMS_FAILURE = 'FETCH_MAP_ITEMS_FAILURE';
 export const CHANGE_LOCATION = 'CHANGE_LOCATION';
 export const CHANGE_ZOOM = 'CHANGE_ZOOM';
+export const FOCUS_ON_LOCATION = 'FOCUS_ON_LOCATION';
 
 export const fetchMapItemsSuccess = (results) => {
   return {
@@ -52,5 +53,12 @@ export const changeZoom = (zoom) => {
   return {
     type: CHANGE_ZOOM,
     zoom
+  }
+};
+
+export const focusOnLocation = (location) => {
+  return {
+    type: FOCUS_ON_LOCATION,
+    location
   }
 };

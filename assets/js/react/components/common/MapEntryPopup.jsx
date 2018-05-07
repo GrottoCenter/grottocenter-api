@@ -36,6 +36,7 @@ class MapEntryPopup extends Component {
   }
 
   render() {
+    const GCLinkWithContext = withContext(GCLink, this.context);
     const FlatButtonWithContext = withContext(FlatButton, this.context);
     return (
       <Popup autoPan={false}>
@@ -45,9 +46,9 @@ class MapEntryPopup extends Component {
             <div>{this.props.entry.city} ({this.props.entry.region})</div>
           </div>
           {this.props.entry.id &&
-          <GCLink internal={true} href={entryDetailPath + this.props.entry.id}>
+          <GCLinkWithContext internal={true} href={entryDetailPath + this.props.entry.id}>
             <FlatButtonWithContext icon={<ImageLoupe color={this.props.muiTheme.palette.accent1Color} />} />
-          </GCLink>}
+          </GCLinkWithContext>}
         </PopupStl>
       </Popup>
     );
@@ -55,10 +56,12 @@ class MapEntryPopup extends Component {
 }
 
 MapEntryPopup.contextTypes = {
-  muiTheme: PropTypes.object.isRequired
+  muiTheme: PropTypes.object.isRequired,
+  router: PropTypes.object.isRequired
 };
 
 MapEntryPopup.propTypes = {
+  muiTheme: PropTypes.object.isRequired,
   entry: PropTypes.object.isRequired
 };
 

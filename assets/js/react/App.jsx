@@ -37,9 +37,9 @@ let gcStore = createStore(
 */
 I18n.locale = window.catalog;
 
-gcStore.subscribe(function() {
+/*gcStore.subscribe(function() {
   console.log(gcStore.getState());
-});
+});*/
 
 gcStore.dispatch(changeLanguage(locale)); //eslint-disable-line no-undef
 

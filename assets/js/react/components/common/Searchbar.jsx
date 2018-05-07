@@ -21,8 +21,12 @@ class Searchbar extends Component {
   handleNewRequest(selectedItem) {
     if (selectedItem.isMappable) {
       this.props.setCurrentEntry(selectedItem);
+      this.props.focusOnLocation({
+        lat: selectedItem.latitude,
+        lng: selectedItem.longitude
+      });
     }
-    if (selectedItem.id) {
+    if (selectedItem.id && !window.location.pathname.startsWith('/ui/map')) {
       browserHistory.push('/ui/map');
     }
   }
@@ -71,6 +75,9 @@ class Searchbar extends Component {
       longitude: item.longitude,
       altitude: item.altitude,
       author: item.author,
+      city: item.city,
+      country: item.country,
+      region: item.region,
       category:category,
       isMappable:(item) => this.isMappable(item),
       value: (
@@ -126,6 +133,7 @@ Searchbar.propTypes = {
   reset: PropTypes.func.isRequired,
   search: PropTypes.func.isRequired,
   setCurrentEntry: PropTypes.func.isRequired,
+  focusOnLocation: PropTypes.func.isRequired,
   results: PropTypes.object,
   className: PropTypes.string
 };
