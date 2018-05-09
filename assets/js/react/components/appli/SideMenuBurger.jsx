@@ -3,6 +3,8 @@ import Avatar from 'material-ui/Avatar';
 import BurgerIcon from 'material-ui/svg-icons/navigation/menu';
 import muiThemeable from 'material-ui/styles/muiThemeable';
 import styled from 'styled-components';
+import checkPermission from '../common/CheckPermission';
+import {VIEW_SIDEMENU} from '../../conf/Rights';
 
 const BurgerAvatar = muiThemeable()(styled(Avatar)`
   position: relative;
@@ -31,4 +33,4 @@ BurgerLink.propTypes = {
 
 const SideMenuBurger = styled(BurgerLink)``;
 
-export default SideMenuBurger;
+export default checkPermission(VIEW_SIDEMENU)(SideMenuBurger);
