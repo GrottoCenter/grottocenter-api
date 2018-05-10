@@ -12,6 +12,9 @@ import ComplexMenuEntryConnector from '../../containers/ComplexMenuEntryConnecto
 import muiThemeable from 'material-ui/styles/muiThemeable';
 import styled from 'styled-components';
 import {sideMenuWidth} from '../../conf/Config';
+import checkPermission from '../common/CheckPermission';
+import {VIEW_SIDEMENU} from '../../conf/Rights';
+
 
 const Menubar = muiThemeable()(styled(Drawer)`
   > div {
@@ -41,4 +44,4 @@ SideMenu.propTypes = {
   visible: PropTypes.bool.isRequired
 };
 
-export default SideMenu;
+export default checkPermission(VIEW_SIDEMENU)(SideMenu);
