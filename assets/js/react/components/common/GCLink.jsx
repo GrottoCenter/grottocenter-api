@@ -12,7 +12,7 @@ import {Link} from 'react-router';
  * className: (optional) Used to set the CSS classes
  * activeClassName: (optional) Used to set the CSS classes when link is active
  * styles: (optional) Used to apply inline CSS styling
- * children: (Required) The DOM content conatained inside the link
+ * children: (Required) The DOM content contained inside the link
  */
 export default class GCLink extends Component {
   constructor(props) {

@@ -136,8 +136,12 @@ export const
 
 export const
   defaultCoord = { lat: 0, lng: 0 },
-  defaultZoom = 2;
+  defaultZoom = 2,
+  focusZoom = 13;
 
+export const
+  entryDetailPath = '/ui/entry/';
+  
 export const
   sideMenuWidth = '215px';
 
