@@ -21,7 +21,7 @@ module.exports = {
   //   connection: 'someMongodbServer'
   // }
   models: {
-    connection: 'grottoceMysqlLocalDocker'
+    connection: 'grottoceMysqlDev'
   },
   connections: {
     grottoceMysqlLocalDocker: {

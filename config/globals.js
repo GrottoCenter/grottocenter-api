@@ -17,7 +17,7 @@ module.exports.globals = {
    *                                                                           *
    ****************************************************************************/
 
-  // _: true,
+  // _: require('lodash'),
 
   /****************************************************************************
    *                                                                           *
@@ -27,7 +27,7 @@ module.exports.globals = {
    *                                                                           *
    ****************************************************************************/
 
-  // async: true,
+  // async: require('async'),
 
   /****************************************************************************
    *                                                                           *
@@ -37,17 +37,6 @@ module.exports.globals = {
    ****************************************************************************/
 
   // sails: true,
-
-  /****************************************************************************
-   *                                                                           *
-   * Expose each of your app's services as global variables (using their       *
-   * "globalId"). E.g. a service defined in api/models/NaturalLanguage.js      *
-   * would have a globalId of NaturalLanguage by default. If this is disabled, *
-   * you can still access your services via sails.services.*                   *
-   *                                                                           *
-   ****************************************************************************/
-
-  // services: true,
 
   /****************************************************************************
    *                                                                           *

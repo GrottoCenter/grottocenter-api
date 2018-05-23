@@ -56,6 +56,12 @@ module.exports.routes = {
    *                                                                          *
    ***************************************************************************/
 
+  /* CSRF */
+
+  'GET /csrfToken': {
+    action: 'security/grant-csrf-token'
+  },
+
   /* For ReactRouter routes */
 
   'GET /auth/*': {
