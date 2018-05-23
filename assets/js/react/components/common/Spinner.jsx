@@ -1,6 +1,6 @@
 import React, {PropTypes} from 'react';
 import CircularProgress from 'material-ui/CircularProgress';
-import Translate from './translate';
+import Translate from './Translate';
 
 import styled from 'styled-components';
 
