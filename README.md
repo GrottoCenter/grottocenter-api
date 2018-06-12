@@ -12,16 +12,19 @@ sudo apt-get update
 sudo apt-get install nodejs npm
 sudo apt install nodejs-legacy
 
+### Install Docker (contener manager)
+sudo apt://docker.io
+
 ### Install Webpack (Bundler)
 sudo npm update webpack --global
 
 ### Get source code
 cd <root of the project>`
-git clone ttps://github.com/GrottoCenter/Grottocenter3.git
+git clone https://github.com/GrottoCenter/Grottocenter3.git
 
 ### Install packages
 cd <Grottocenter3>
-npm install`
+sudo npm install`
 
 ### Run the app locally
 `./localDeploy.sh
@@ -35,7 +38,7 @@ git pull
 
 ### Update packages
 cd <Grottocenter3>
-npm update`
+sudo npm update
 
 ### Run the app locally
 `./localDeploy.sh
