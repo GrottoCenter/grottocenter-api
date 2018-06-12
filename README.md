@@ -21,11 +21,11 @@ sudo apt://docker.io
 sudo npm update webpack --global
 
 ### Get source code
-cd [<root of the project>]
+cd \<root of the project\>
 git clone https://github.com/GrottoCenter/Grottocenter3.git
 
 ### Install packages
-cd [<Grottocenter3>]
+cd \<Grottocenter3\>
   
 sudo npm install
 
@@ -37,12 +37,12 @@ Go to [http://localhost:1337/] : homepage
 ## Following use after installation (On UBUNTU):
 
 ### Update source code
-cd [<root of the project>]
+cd \<root of the project\>
   
 git pull
 
 ### Update packages
-cd [<Grottocenter3>]
+cd \<Grottocenter3\>
   
 sudo npm update
 
