@@ -17,9 +17,6 @@ sudo apt install nodejs-legacy
 ### Install Docker (contener manager)
 sudo apt://docker.io
 
-### Install Webpack (Bundler)
-sudo npm update webpack --global
-
 ### Get source code
 cd \<root of the project\>
 git clone https://github.com/GrottoCenter/Grottocenter3.git
