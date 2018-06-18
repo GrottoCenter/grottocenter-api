@@ -69,10 +69,14 @@
   },
   "devDependencies": {
     "babel-plugin-styled-components": "^1.2.1",
+    "barrels": "^1.6.5",
     "eslint": "^3.12.2",
     "eslint-plugin-react": "^6.8.0",
     "grunt-contrib-watch": "^0.5.3",
     "grunt-lesshint": "^1.5.0",
-    "gruntify-eslint": "^3.1.0"
+    "gruntify-eslint": "^3.1.0",
+    "mocha": "^5.2.0",
+    "sails-memory": "^0.10.7",
+    "supertest": "^3.1.0"
   }
 }
