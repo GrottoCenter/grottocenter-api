@@ -1,4 +1,7 @@
-# Grottocenter 3 ![TravisCI](https://travis-ci.org/GrottoCenter/Grottocenter3.svg?branch=rc)
+# Grottocenter 3
+
+[![Travis Status](https://travis-ci.org/GrottoCenter/Grottocenter3.svg?branch=rc)](https://travis-ci.org/GrottoCenter/Grottocenter3.svg?branch=rc)
+[![Coverage Status](https://coveralls.io/repos/github/GrottoCenter/Grottocenter3/badge.svg?branch=rc)](https://coveralls.io/github/GrottoCenter/Grottocenter3?branch=rc)
 
 The Wiki database made by cavers for cavers
 
