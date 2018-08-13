@@ -1,7 +1,8 @@
-# Grottocenter 3
+# Grottocenter 3 ![TravisCI](https://travis-ci.org/GrottoCenter/Grottocenter3.svg?branch=rc)
 
 The Wiki database made by cavers for cavers
-A [Sails](http://sailsjs.org) application
+
+![GC flyer](https://rawgit.com/wiki/GrottoCenter/Grottocenter3/images/afficheGC3.svg)
 
 ## Installation :
 
