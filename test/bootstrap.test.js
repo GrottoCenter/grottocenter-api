@@ -23,7 +23,7 @@ before(function(done) {
     let barrels = new Barrels();
 
     // Save original objects in `fixtures` variable
-    //fixtures = barrels.data;
+    fixtures = barrels.data;
 
     // Populate the DB
     barrels.populate(function(err) {

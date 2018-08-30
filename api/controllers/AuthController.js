@@ -24,23 +24,23 @@ module.exports = {
   },*/
 
   login: function(req, res) {
-    const contact = req.param('contact');
-    const password = req.param('password');
+    const contact = req.body.contact;
+    const password = req.body.password;
 
     if (!contact || !password) {
-      return res.forbidden(res.i18n('BAD_CREDENTIAL'));
+      return res.unauthorized(res.i18n('BAD_CREDENTIAL'));
     }
 
     TCaver.findOne({
       contact: contact
     }, function(err, account) {
       if (!account) {
-        return res.forbidden('Bad credentials.');
+        return res.unauthorized('Bad credentials.');
       }
 
       TCaver.comparePassword(password, account, function(err, valid) {
         if (err || !valid) {
-          return res.forbidden('Bad credentials.');
+          return res.unauthorized('Bad credentials.');
         }
 
         req.session.authenticated = true;
