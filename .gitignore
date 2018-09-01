@@ -119,3 +119,6 @@ nbproject
 .node_history
 www
 .transifexrc
+
+coverage
+.coveralls.yml
