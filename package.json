@@ -60,7 +60,9 @@
   "scripts": {
     "start": "node app.js",
     "debug": "node debug app.js",
-    "test": "node ./node_modules/mocha/bin/mocha test/bootstrap.test.js test/integration/**/*.test.js"
+    "test": "node ./node_modules/mocha/bin/mocha test/bootstrap.test.js test/integration/**/*.test.js",
+    "coverage": "node node_modules/.bin/istanbul cover node_modules/.bin/_mocha test/bootstrap.test.js test/integration/**/*.test.js",
+    "coveralls": "cat ./coverage/lcov.info | node node_modules/.bin/coveralls"
   },
   "main": "app.js",
   "repository": {
@@ -70,11 +72,13 @@
   "devDependencies": {
     "babel-plugin-styled-components": "^1.2.1",
     "barrels": "^1.6.5",
+    "coveralls": "^3.0.2",
     "eslint": "^3.12.2",
     "eslint-plugin-react": "^6.8.0",
     "grunt-contrib-watch": "^0.5.3",
     "grunt-lesshint": "^1.5.0",
     "gruntify-eslint": "^3.1.0",
+    "istanbul": "^0.4.5",
     "jest": "^23.5.0",
     "mocha": "^5.2.0",
     "sails-memory": "^0.10.7",
