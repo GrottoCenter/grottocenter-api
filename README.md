@@ -7,29 +7,48 @@ The Wiki database made by cavers for cavers
 
 ![GC flyer](https://rawgit.com/wiki/GrottoCenter/Grottocenter3/images/afficheGC3.svg)
 
-## Installation :
-
-### Install NodeJS
-
-Min version: 6.9.4
+## Installation (On UBUNTU):
 
 ### Install NPM (package manager)
-
 Min version: 4.1.2
 
-### Get source code
+sudo apt-get update
 
-GitHub repository
-https://github.com/GrottoCenter/Grottocenter3.git
+sudo apt-get install nodejs npm
+
+sudo apt install nodejs-legacy
+
+### Install Docker (contener manager)
+sudo apt://docker.io
+
+### Get source code
+cd \<root of the project\>
+git clone https://github.com/GrottoCenter/Grottocenter3.git
 
 ### Install packages
-
-`npm install`
+cd \<Grottocenter3\>
+  
+sudo npm install
 
 ### Run the app locally
+./localDeploy.sh
 
-`cd <root of the project>`
-`sails lift`
+Go to [http://localhost:1337/] : homepage
+
+## Following use after installation (On UBUNTU):
+
+### Update source code
+cd \<root of the project\>
+  
+git pull
+
+### Update packages
+cd \<Grottocenter3\>
+  
+sudo npm update
+
+### Run the app locally
+./localDeploy.sh
 
 Go to [http://localhost:1337/] : homepage
 
