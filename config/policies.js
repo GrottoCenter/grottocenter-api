@@ -63,7 +63,7 @@ module.exports.policies = {
   },
 
   'v1/SearchController': {
-    'findAll': 'apiKeyAuth',
+    'findAll': ['apiKeyAuth', 'paginate']
   },
 
   CaveController: {
