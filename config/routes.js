@@ -100,6 +100,10 @@ module.exports.routes = {
   'GET /api/v1/search/findAll': {
     controller: 'v1/Search',
     action: 'findAll',
+    api: {
+      entity: 'search',
+      limit: 50,
+    },
     cors: {
       origin: '*'
     }
@@ -135,6 +139,18 @@ module.exports.routes = {
   'GET /api/entry/findAll': {
     controller: 'Entry',
     action: 'findAll'
+  },
+
+  'GET /api/v1/entries': {
+    controller: 'v1/Entry',
+    action: 'findAll',
+    api: {
+      entity: 'entry',
+      limit: 50,
+    },
+    cors: {
+      origin: '*'
+    }
   },
 
   'GET /api/entry/findRandom': {

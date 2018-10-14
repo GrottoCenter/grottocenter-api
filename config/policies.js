@@ -55,6 +55,7 @@ module.exports.policies = {
   'v1/EntryController': {
     '*': false,
     'find': 'apiKeyAuth',
+    'findAll': ['apiKeyAuth', 'paginate'],
     'getPublicEntriesNumber': 'apiKeyAuth'
   },
 

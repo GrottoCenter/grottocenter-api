@@ -1,4 +1,5 @@
-swagger: '2.0'
+openapi: '3.0.0'
+
 info:
   description: 'This page documents the available API you can use on your website.'
   title: 'Grottocenter 3 - REST API'
@@ -10,122 +11,277 @@ info:
   license:
     name: 'CC BY-SA 3.0'
     url: 'https://creativecommons.org/licenses/by-sa/3.0/'
-host: beta.grottocenter.org
-basePath: /api/v1
+
+servers:
+- url: http://beta.grottocenter.org/api/v1
+- url: https://beta.grottocenter.org/api/v1
+
 tags:
-  - name: entry
-    description: Entries managment
-  - name: search
-    description: Everything around search
-schemes:
-  - https
+- name: entry
+- name: search
+- name: geoloc
+
 paths:
-  '/entry/{entryId}':
+  '/entries':
     get:
       tags:
-        - entry
-      summary: Get public entries by identifier
-      description: Get public entries by identifier
-      operationId: findEntryById
-      produces:
-        - application/json
+      - entry
+      description: Get a list of public entries correponding to the given parameters
       parameters:
-        - name: entryId
-          in: path
-          description: Entry identifier
-          required: true
+      - name: name
+        in: query
+        description: Entry name (or part of name)
+        required: true
+        schema:
           type: string
+      - name: region
+        in: query
+        description: Entry region (or part of name)
+        required: false
+        schema:
+          type: string
+      - name: range
+        in: query
+        description: Range of data to retreive (for pagination)
+        required: false
+        schema:
+          type: string
+          pattern: '^[0-9]+-[0-9]+$'
       responses:
         '200':
           description: Successful operation
-          schema:
-            type: object
-            items:
-              $ref: '#/definitions/PublicEntry'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Entry"
+        '206':
+          description: Successful operation (partial content)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Entry"
         '404':
           description: Resource not found
         '500':
           description: Internal error
-  /entry/publicCount:
+  '/entry/{identifier}':
     get:
       tags:
-        - entry
-      summary: Get the number of public entries
+      - entry
+      description: Get a public entry by identifier
+      parameters:
+      - name: identifier
+        in: path
+        description: Entry identifier
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Entry'
+        '404':
+          description: Resource not found
+        '500':
+          description: Internal error
+  '/entry/publicCount':
+    get:
+      tags:
+      - entry
+      deprecated: true
       description: Get the number of public entries referenced in GC3 database
-      operationId: getEntryPublicCount
-      consumes:
-        - application/json
-      produces:
-        - application/json
       responses:
         '200':
           description: Successful operation
-          schema:
-            type: object
-            items:
-              $ref: '#/definitions/Entry'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Count'
         '500':
           description: Internal error
-  /search/findAll:
+  '/search/findAll':
     get:
       tags:
-        - search
-      summary: Search for entries
-      description: Search by name entries referenced in GC3 database
-      operationId: findByName
-      produces:
-        - application/json
+      - search
+      deprecated: false
+      summary: DEPRECATED - Please switch your code to use /entry instead
+      description: Search for resources by name
       parameters:
-        - name: name
-          in: query
-          description: Resource name to filter by
-          required: true
+      - name: name
+        in: query
+        description: Resource name (or part of name)
+        required: true
+        schema:
           type: string
+      - name: range
+        in: query
+        description: Range of data to retreive (for pagination)
+        required: false
+        schema:
+          type: string
+          pattern: '^[0-9]+-[0-9]+$'
       responses:
         '200':
           description: Successful operation
-          schema:
-            type: object
-            items:
-              $ref: '#/definitions/SearchResult'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Search'
+        '206':
+          description: Successful operation (partial content)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Search'
         '404':
           description: Resource not found
         '500':
           description: Internal error
-definitions:
-  PublicEntry:
-    type: object
-    properties:
-      count:
-        type: integer
-        format: int64
-  Entry:
-    type: object
-    properties:
-      id:
-        type: integer
-        format: int64
-      name:
-        type: string
-      country:
-        type: string
-      county:
-        type: string
-      region:
-        type: string
-      city:
-        type: string
-      postalCode:
-        type: string
-      latitude:
-        type: string
-      longitude:
-        type: string
-      altitude:
-        type: string
-  SearchResult:
-    properties:
-      entries:
-        type: array
-        items:
-          $ref: "#/definitions/Entry"
+  '/geoloc/countEntries':
+    get:
+      tags:
+      - geoloc
+      description: Count entries contained inside the given coords
+      parameters:
+      - name: nw_lat
+        in: query
+        description: North West latitude
+        required: true
+        schema:
+          type: string
+      - name: nw_lng
+        in: query
+        description: North West longitude
+        required: true
+        schema:
+          type: string
+      - name: se_lat
+        in: query
+        description: South East latitude
+        required: true
+        schema:
+          type: string
+      - name: se_lng
+        in: query
+        description: South East longitude
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Count'
+        '404':
+          description: Resource not found
+        '500':
+          description: Internal error
+  '/geoloc/findByBounds':
+    get:
+      tags:
+      - geoloc
+      description: Find entries contained inside the given coords
+      parameters:
+      - name: nw_lat
+        in: query
+        description: North West latitude
+        required: true
+        schema:
+          type: string
+      - name: nw_lng
+        in: query
+        description: North West longitude
+        required: true
+        schema:
+          type: string
+      - name: se_lat
+        in: query
+        description: South East latitude
+        required: true
+        schema:
+          type: string
+      - name: se_lng
+        in: query
+        description: South East longitude
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Geoloc'
+        '404':
+          description: Resource not found
+        '500':
+          description: Internal error
+
+components:
+  schemas:
+    Count:
+      type: object
+      properties:
+        count:
+          type: integer
+          format: int64
+    Entry:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        country:
+          type: string
+        county:
+          type: string
+        region:
+          type: string
+        city:
+          type: string
+        postalCode:
+          type: string
+        latitude:
+          type: string
+        longitude:
+          type: string
+        altitude:
+          type: string
+    EntryGroup:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        latitude:
+          type: string
+        longitude:
+          type: string
+    Search:
+      properties:
+        entries:
+          type: array
+          items:
+            $ref: "#/components/schemas/Entry"
+    Geoloc:
+      properties:
+        entries:
+          type: array
+          items:
+            anyOf:
+            - $ref: '#/components/schemas/Entry'
+            - $ref: '#/components/schemas/EntryGroup'

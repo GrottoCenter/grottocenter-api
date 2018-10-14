@@ -10,32 +10,8 @@ module.exports = {
     return sails.controllers.entry.find(req, res, MappingV1Service.convertToEntryModel);
   },
 
-  // TODO adapt
   findAll: function(req, res) {
-    let parameters = {};
-    if (req.param('name') !== undefined) {
-      parameters.name = {
-        'like': '%' + req.param('name') + '%'
-      };
-    }
-    if (req.param('region') !== undefined) {
-      parameters.region = {
-        'like': '%' + req.param('region') + '%'
-      };
-    }
-
-    // TODO : to adapt when authentication will be implemented
-    parameters.isPublic = 'YES';
-
-    // TODO before this : see how to materialize fact that
-    // id of entry corresponds to id of linked single entry if exists
-    //TEntry.find(parameters).populate('author').populate('caves').populate('singleEntry').sort('id ASC').limit(10).exec(function(err, found) {
-    TEntry.find(parameters).populate('author').populate('caves').sort('id ASC').limit(10).exec(function(err, found) {
-      let params = {};
-      params.controllerMethod = 'EntryController.findAll';
-      params.notFoundMessage = 'No entries found.';
-      return ControllerService.treat(err, found, params, res);
-    });
+    return sails.controllers.entry.findAll(req, res, MappingV1Service.convertToEntryList);
   },
 
   // TODO adapt
