@@ -10,58 +10,54 @@ module.exports = {
 
   tableName: 't_author',
 
+  primaryKey: 'id',
+
   attributes: {
     id: {
-      type: 'integer',
+      type: 'number',
       unique: true,
-      primaryKey: true,
       autoIncrement: true,
       columnName: 'Id'
     },
 
     idAuthor: {
-      type: 'integer',
+      type: 'number',
       unique: true,
-      primaryKey: true,
+      /*primaryKey: true,*/
       columnName: 'Id_author'
     },
 
     dateInscription: {
-      type: 'datetime',
+      type: 'string',
+      columnType: 'datetime',
       columnName: 'Date_inscription'
     },
 
     idCaver: {
-      type: 'integer',
-      unique: true,
-      primaryKey: true,
-      required: true,
-      defaultsTo: '0',
-      columnName: 'Id_caver'
+      columnName: 'Id_caver',
+      model: 'TCave'
     },
 
     name: {
       type: 'string',
-      size: 70,
+      maxLength: 70,
       columnName: 'Name'
     },
 
     contact: {
       type: 'string',
-      size: 70,
+      maxLength: 70,
       columnName: 'Contact'
     },
 
     creatorIsAuthor: {
-      type: 'text',
-      required: true,
+      type: 'string',
       defaultsTo: 'NO',
       columnName: 'Creator_is_author'
     },
 
     validated: {
-      type: 'text',
-      required: true,
+      type: 'string',
       defaultsTo: 'NO',
       columnName: 'Validated'
     }

@@ -63,12 +63,12 @@ fi;
 
 echo '### Get table names to dump from  Grottocenter V2 database ###'
 TABLES_TO_DUMP=$(ssh -p ${GROTTOCENTER_V2_SSH_PORT} ${GROTTOCENTER_V2_SSH_USER}@${GROTTOCENTER_V2} \
-"mysql -Ne\"SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='grottoce' AND TABLE_TYPE='BASE TABLE' AND TABLE_NAME NOT LIKE 'forum_%' AND TABLE_NAME NOT LIKE 'T_warning'\"")
+"mysql -p -u grottoce -Ne\"SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='grottoce' AND TABLE_TYPE='BASE TABLE' AND TABLE_NAME NOT LIKE 'forum_%' AND TABLE_NAME NOT LIKE 'T_warning'\"")
 TABLES_TO_DUMP=$(echo -n $TABLES_TO_DUMP)
 
 echo '### Dump Grottocenter V2 database to local computer ###'
 ssh -p ${GROTTOCENTER_V2_SSH_PORT} ${GROTTOCENTER_V2_SSH_USER}@${GROTTOCENTER_V2} \
-"mysqldump --user=root --skip-triggers --hex-blob grottoce ${TABLES_TO_DUMP} \
+"mysqldump --user=grottoce -p --skip-triggers --hex-blob grottoce ${TABLES_TO_DUMP} \
  | sed 's/ENGINE=MyISAM/ENGINE=InnoDB/g' | gzip -3 -c" > ${DUMP_FILE_PATH}${DUMP_FILE_NAME}.gz
 # All tables are converted from MyISAM to InnoDB
 
@@ -100,8 +100,9 @@ then
 else
   echo '################ LOCAL DEPLOY ###################'
   echo '### Upload Dump file to the local Mysql Docker ###'
+  cp ${DUMP_FILE_PATH}${DUMP_FILE_NAME}.gz ${DUMP_FILE_PATH}${DUMP_FILE_NAME}.gz.save
   gunzip -f ${DUMP_FILE_PATH}${DUMP_FILE_NAME}.gz
   docker exec -i ${MYSQL_LOCAL_TAGNAME} mysql --user=${LOCAL_DOCKER_MYSQL_USER} --password=${LOCAL_DOCKER_MYSQL_PASSWORD} ${LOCAL_DOCKER_MYSQL_DATABASE} < ${DUMP_FILE_PATH}${DUMP_FILE_NAME}
-  rm -f ${DUMP_FILE_PATH}${DUMP_FILE_NAME}
+  # rm -f ${DUMP_FILE_PATH}${DUMP_FILE_NAME}
 fi;
 echo '### End of process ###'

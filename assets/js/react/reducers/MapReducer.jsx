@@ -4,7 +4,7 @@ import {
   CHANGE_LOCATION,
   CHANGE_ZOOM,
   FOCUS_ON_LOCATION
-} from './../actions/Map';
+} from '../actions/Map';
 import {
   defaultCoord,
   defaultZoom,

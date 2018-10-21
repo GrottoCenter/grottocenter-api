@@ -28,12 +28,12 @@ module.exports = {
     let limit = apiControl.limit;
     let skip = 0;
 
-    if (req.param('name') !== undefined) {
+    if (req.param('name')) {
       parameters.name = {
         'like': '%' + req.param('name') + '%'
       };
     }
-    if (req.param('region') !== undefined) {
+    if (req.param('region')) {
       parameters.region = {
         'like': '%' + req.param('region') + '%'
       };
@@ -85,16 +85,18 @@ module.exports = {
   },
 
   getPublicEntriesNumber: function(req, res, converter) {
-    EntryService.getPublicEntriesNumber().then(function(count) {
-      if (!count) {
-        return res.json(404, { error: 'Problem while getting number of public entries' });
-      }
-      return res.json(converter(count));
-    }, function(err) {
-      let errorMessage = 'An internal error occurred when getting number of public entries';
-      sails.log.error(errorMessage + ': ' + err);
-      return res.json(500, { error: errorMessage });
-    });
+    EntryService.getPublicEntriesNumber()
+      .then(function(count) {
+        if (!count) {
+          return res.status(404).json({ error: 'Problem while getting number of public entries' });
+        }
+        return res.json(converter(count));
+      })
+      .catch(function(err) {
+        let errorMessage = 'An internal error occurred when getting number of public entries';
+        sails.log.error(errorMessage + ': ' + err);
+        return res.status(500).json({ error: errorMessage });
+      });
   },
 
   getEntriesNumber: function(req, res) {

@@ -5,9 +5,12 @@
  * @help        :: See http://links.sailsjs.org/docs/controllers
  */
 'use strict';
+
+const entryController = require('../EntryController');
+
 module.exports = {
   find: function(req, res) {
-    return sails.controllers.entry.find(req, res, MappingV1Service.convertToEntryModel);
+    return entryController.find(req, res, MappingV1Service.convertToEntryModel);
   },
 
   findAll: function(req, res) {
@@ -16,19 +19,21 @@ module.exports = {
 
   // TODO adapt
   findRandom: function(req, res) {
-    EntryService.findRandom().then(function(results) {
-      if (!results) {
-        return res.notFound('No entry found.');
-      }
-      return res.json(results);
-    }, function(err) {
-      sails.log.error(err);
-      return res.serverError('EntryController.findRandom error : ' + err);
-    });
+    EntryService.findRandom()
+      .then(function(results) {
+        if (!results) {
+          return res.notFound('No entry found.');
+        }
+        return res.json(results);
+      })
+      .catch(function(err) {
+        sails.log.error(err);
+        return res.serverError('EntryController.findRandom error : ' + err);
+      });
   },
 
   getPublicEntriesNumber: function(req, res) {
-    return sails.controllers.entry.getPublicEntriesNumber(req, res, MappingV1Service.convertToCountResult);
+    return entryController.getPublicEntriesNumber(req, res, MappingV1Service.convertToCountResult);
   },
 
   // TODO adapt

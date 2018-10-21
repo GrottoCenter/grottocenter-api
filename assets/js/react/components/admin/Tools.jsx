@@ -12,41 +12,26 @@ const AvailableTools = () => (
 
 const EntriesOfInterestTableRow = (props) => (
   <TableRow>
-    <TableRowColumn>{props.row[0].id}</TableRowColumn>
-    <TableRowColumn>{props.row[0].name}</TableRowColumn>
-    <TableRowColumn>{props.row[0].country}</TableRowColumn>
-    <TableRowColumn>{props.row[0].region}</TableRowColumn>
-    <TableRowColumn>{props.row[0].isPublic}</TableRowColumn>
-    <TableRowColumn>{props.row[0].isSensitive}</TableRowColumn>
-    <TableRowColumn>{props.row[0].isOfInterest[0]}</TableRowColumn>
-    {props.row[0]['entryInfo'][0] !== undefined &&
-      <TableRowColumn>{props.row[0]['entryInfo'][0].depth}</TableRowColumn>
-    }
-    {props.row[0]['entryInfo'][0] !== undefined &&
-      <TableRowColumn>{props.row[0]['entryInfo'][0].length}</TableRowColumn>
-    }
-    {props.row[0]['entryInfo'][0] !== undefined &&
-      <TableRowColumn><img style={{width: '150px'}} src={props.row[0]['entryInfo'][0].path}/></TableRowColumn>
-    }
-    {props.row[0]['entryInfo'][0] === undefined &&
-      <TableRowColumn>not defined</TableRowColumn>
-    }
-    {props.row[0]['entryInfo'][0] === undefined &&
-      <TableRowColumn>not defined</TableRowColumn>
-    }
-    {props.row[0]['entryInfo'][0] === undefined &&
-      <TableRowColumn>not defined</TableRowColumn>
-    }
-    <TableRowColumn>{props.row[0]['stat'].aestheticism}</TableRowColumn>
-    <TableRowColumn>{props.row[0]['stat'].caving}</TableRowColumn>
-    <TableRowColumn>{props.row[0]['stat'].approach}</TableRowColumn>
-    <TableRowColumn>{props.row[0]['timeInfo'].eTTrail}</TableRowColumn>
-    <TableRowColumn>{props.row[0]['timeInfo'].eTUnderground}</TableRowColumn>
+    <TableRowColumn>{props.row.id}</TableRowColumn>
+    <TableRowColumn>{props.row.name}</TableRowColumn>
+    <TableRowColumn>{props.row.country}</TableRowColumn>
+    <TableRowColumn>{props.row.region}</TableRowColumn>
+    <TableRowColumn>{props.row.isPublic}</TableRowColumn>
+    <TableRowColumn>{props.row.isSensitive}</TableRowColumn>
+    <TableRowColumn>{props.row.isOfInterest.data[0]}</TableRowColumn>
+    <TableRowColumn>{props.row.entryInfo && props.row.entryInfo.depth ? props.row.entryInfo.depth : ''}</TableRowColumn>
+    <TableRowColumn>{props.row.entryInfo ? props.row.entryInfo.length: ''}</TableRowColumn>
+    <TableRowColumn>{props.row.entryInfo ? <img style={{width: '150px'}} src={props.row.entryInfo.path}/> : ''}</TableRowColumn>
+    <TableRowColumn>{props.row.stat ? props.row.stat.aestheticism : ''}</TableRowColumn>
+    <TableRowColumn>{props.row.stat ? props.row.stat.caving : ''}</TableRowColumn>
+    <TableRowColumn>{props.row.stat ? props.row.stat.approach : ''}</TableRowColumn>
+    <TableRowColumn>{props.row.timeInfo ? props.row.timeInfo.eTTrail : ''}</TableRowColumn>
+    <TableRowColumn>{props.row.timeInfo ? props.row.timeInfo.eTUnderground : ''}</TableRowColumn>
   </TableRow>
 );
 
 EntriesOfInterestTableRow.propTypes = {
-  row: PropTypes.array
+  row: PropTypes.object.isRequired
 }
 
 export class EntriesOfInterest extends Component {
@@ -78,20 +63,20 @@ export class EntriesOfInterest extends Component {
   }
 
   render() {
-    let rows = [];
-    if (this.state.items.length > 0) {
-      this.state.items.forEach(function(newRow) {
-        if (newRow !== undefined) {
-          rows.push(<EntriesOfInterestTableRow key={newRow[0].id} row={newRow}/>);
-        }
-      });
+    if (this.state.items.length == 0) {
+      return <Loading />;
     }
+
+    let rows = [];
+    this.state.items.forEach(function(newRow) {
+      console.log('newRow',newRow)
+      if (newRow !== undefined) {
+        rows.push(<EntriesOfInterestTableRow key={newRow.id} row={newRow}/>);
+      }
+    });
 
     return (
       <div>
-        {rows.length === 0 &&
-          <Loading/>
-        }
         {rows.length > 0 &&
           <Table selectable={false} multiSelectable={false} wrapperStyle={{overflow: 'initial'}} bodyStyle={{overflow: 'initial'}} style={{width: 'initial'}}>
             <TableBody displayRowCheckbox={false} adjustForCheckbox={false} showRowHover={true}>
@@ -105,7 +90,7 @@ export class EntriesOfInterest extends Component {
                 <TableHeaderColumn>Is of interest</TableHeaderColumn>
                 <TableHeaderColumn>Depth</TableHeaderColumn>
                 <TableHeaderColumn>Length</TableHeaderColumn>
-                <TableHeaderColumn>Path</TableHeaderColumn>
+                <TableHeaderColumn>Displayed image</TableHeaderColumn>
                 <TableHeaderColumn>Stat for aestheticism</TableHeaderColumn>
                 <TableHeaderColumn>Stat for caving</TableHeaderColumn>
                 <TableHeaderColumn>Stat for approach</TableHeaderColumn>

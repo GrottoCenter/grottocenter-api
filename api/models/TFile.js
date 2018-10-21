@@ -10,42 +10,43 @@ module.exports = {
 
   tableName: 't_file',
 
+  primaryKey: 'id',
+
   attributes: {
     id: {
-      type: 'integer',
+      type: 'number',
       unique: true,
-      primaryKey: true,
       autoIncrement: true,
       columnName: 'Id'
     },
 
     fileauthor: {
-      type: 'integer',
       columnName: 'Id_author',
       model: 'TAuthor',
       via: 'id'
     },
 
     dateInscription: {
-      type: 'datetime',
+      type: 'string',
+      columnType: 'datetime',
       columnName: 'Date_inscription'
     },
 
     name: {
       type: 'string',
-      size: 100,
+      maxLength: 100,
       columnName: 'Name'
     },
 
     path: {
       type: 'string',
-      size: 1000,
+      maxLength: 1000,
       columnName: 'Path'
     },
 
     topographies: {
       collection: 'TTopography',
-      via: 'idTopography',
+      via: 'idFile',
       through: 'jtopofile'
     }
   }

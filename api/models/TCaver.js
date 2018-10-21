@@ -12,240 +12,232 @@ module.exports = {
 
   tableName: 't_caver',
 
+  primaryKey: 'id',
+
   attributes: {
     id: {
-      type: 'integer',
+      type: 'number',
       unique: true,
-      primaryKey: true,
       autoIncrement: true,
       columnName: 'Id'
     },
 
     activated: {
-      type: 'text',
-      enum: ['YES', 'NO'],
-      required: true,
+      type: 'string',
+      isIn: ['YES', 'NO'],
       defaultsTo: 'NO',
       columnName: 'Activated'
     },
 
     activationCode: {
       type: 'string',
-      size: 32,
-      required: true,
+      maxLength: 32,
       defaultsTo: '0',
       columnName: 'Activation_code'
     },
 
     banned: {
-      type: 'text',
-      enum: ['YES', 'NO'],
-      required: true,
+      type: 'string',
+      isIn: ['YES', 'NO'],
       defaultsTo: 'NO',
       columnName: 'Banned'
     },
 
     ip: {
       type: 'string',
-      size: 200,
+      maxLength: 200,
       columnName: 'Ip'
     },
 
     browser: {
       type: 'string',
-      size: 1000,
+      maxLength: 1000,
       columnName: 'Browser'
     },
 
     connectionCounter: {
-      type: 'integer',
-      required: true,
-      defaultsTo: '0',
+      type: 'number',
+      defaultsTo: 0,
       columnName: 'Connection_counter'
     },
 
     relevance: {
-      type: 'float',
-      required: true,
-      defaultsTo: '1',
+      type: 'number',
+      defaultsTo: 1,
       columnName: 'Relevance'
     },
 
     name: {
       type: 'string',
-      size: 36,
+      maxLength: 36,
       columnName: 'Name'
     },
 
     surname: {
       type: 'string',
-      size: 32,
+      maxLength: 32,
       columnName: 'Surname'
     },
 
     login: {
       type: 'string',
-      size: 20,
+      maxLength: 20,
       columnName: 'Login'
     },
 
     nickname: {
       type: 'string',
-      size: 68,
+      maxLength: 68,
       columnName: 'Nickname'
     },
 
     password: {
       type: 'string',
-      size: 32,
-      required: true,
+      maxLength: 32,
       defaultsTo: '0',
       columnName: 'Password'
     },
 
     country: {
       type: 'string',
-      size: 3,
+      maxLength: 3,
       columnName: 'Country'
     },
 
     region: {
       type: 'string',
-      size: 32,
+      maxLength: 32,
       columnName: 'Region'
     },
 
     city: {
       type: 'string',
-      size: 32,
+      maxLength: 32,
       columnName: 'City'
     },
 
     postalCode: {
       type: 'string',
-      size: 5,
+      maxLength: 5,
       columnName: 'Postal_code'
     },
 
     address: {
       type: 'string',
-      size: 128,
+      maxLength: 128,
       columnName: 'Address'
     },
 
     dateBirth: {
-      type: 'date',
+      type: 'string',
+      columnType: 'date',
       columnName: 'Date_birth'
     },
 
     contact: {
       type: 'string',
-      size: 50,
+      maxLength: 50,
       columnName: 'Contact'
     },
 
     yearInitiation: {
-      type: 'integer',
+      type: 'number',
       columnName: 'Year_initiation'
     },
 
     dateInscription: {
-      type: 'datetime',
+      type: 'string',
+      columnType: 'datetime',
       columnName: 'Date_inscription'
     },
 
     dateLastConnection: {
-      type: 'datetime',
+      type: 'string',
+      columnType: 'datetime',
       columnName: 'Date_last_connection'
     },
 
     language: {
       type: 'string',
-      size: 4,
+      maxLength: 4,
       columnName: 'Language'
     },
 
     contactIsPublic: {
-      type: 'integer',
-      required: true,
-      defaultsTo: '0',
+      type: 'number',
+      defaultsTo: 0,
       columnName: 'Contact_is_public'
     },
 
     alertForNews: {
-      type: 'text',
-      enum: ['YES', 'NO'],
-      required: true,
+      type: 'string',
+      isIn: ['YES', 'NO'],
       defaultsTo: 'NO',
       columnName: 'Alert_for_news'
     },
 
     showLinks: {
-      type: 'text',
-      enum: ['YES', 'NO'],
-      required: true,
+      type: 'string',
+      isIn: ['YES', 'NO'],
       defaultsTo: 'NO',
       columnName: 'Show_links'
     },
 
     detailLevel: {
-      type: 'integer',
-      required: true,
-      defaultsTo: '30',
+      type: 'number',
+      defaultsTo: 30,
       columnName: 'Detail_level'
     },
 
     latitude: {
-      type: 'float',
-      required: true,
-      defaultsTo: '0.00000000000000000000',
+      type: 'number',
+      defaultsTo: 0.0,
       columnName: 'Latitude'
     },
 
     longitude: {
-      type: 'float',
-      required: true,
-      defaultsTo: '0.00000000000000000000',
+      type: 'number',
+      defaultsTo: 0.0,
       columnName: 'Longitude'
     },
 
     defaultLatitude: {
-      type: 'float',
+      type: 'number',
       columnName: 'Default_latitude'
     },
 
     defaultLongitude: {
-      type: 'float',
+      type: 'number',
       columnName: 'Default_longitude'
     },
 
     defaultZoom: {
-      type: 'integer',
+      type: 'number',
       columnName: 'Default_zoom'
     },
 
     customMessage: {
-      type: 'text',
+      type: 'string',
       columnName: 'Custom_message'
     },
 
     facebook: {
       type: 'string',
-      size: 100,
+      maxLength: 100,
       columnName: 'Facebook'
     },
 
     pictureFileName: {
       type: 'string',
-      size: 100,
+      maxLength: 100,
       columnName: 'Picture_file_name'
-    },
-
-    toJSON: function() {
-      let obj = this.toObject();
-      delete obj.password; // Removing password on JSON object
-      return obj;
     }
+  },
+
+  customToJSON: function() {
+    let obj = this.toObject();
+    delete obj.password; // Removing password on JSON object
+    return obj;
   },
 
   beforeCreate: function(values, next) {

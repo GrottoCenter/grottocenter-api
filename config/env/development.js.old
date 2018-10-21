@@ -19,10 +19,11 @@ module.exports = {
 
   // models: {
   //   connection: 'someMongodbServer'
-  // }
+  // }1fd4178d4b08
   models: {
-    connection: 'grottoceMysqlDev'
+    connection: 'default'
   },
+
   connections: {
     grottoceMysqlLocalDocker: {
       host: 'localhost',

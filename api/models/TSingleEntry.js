@@ -8,36 +8,38 @@ module.exports = {
 
   tableName: 'tSingleEntry',
 
+  primaryKey: 'id',
+
   attributes: {
     id: {
-      type: 'integer',
+      type: 'number',
       unique: true,
-      primaryKey: true,
+      autoIncrement: true,
       columnName: 'Id'
     },
     minDepth: {
-      type: 'float',
+      type: 'number',
       columnName: 'Min_depth'
     },
     maxDepth: {
-      type: 'float',
+      type: 'number',
       columnName: 'Max_depth'
     },
     depth: {
-      type: 'float',
+      type: 'number',
       columnName: 'Depth'
     },
     length: {
-      type: 'float',
+      type: 'number',
       columnName: 'Length'
     },
     isDiving: {
-      type: 'text',
+      type: 'string',
       defaultsTo: 'NO',
       columnName: 'Is_diving'
     },
     temperature: {
-      type: 'float',
+      type: 'number',
       columnName: 'Temperature'
     },
     // TODO : see how to materialize fact that
