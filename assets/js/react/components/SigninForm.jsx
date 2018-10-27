@@ -4,7 +4,9 @@
 import React from 'react';
 import I18n from 'react-ghost-i18n';
 
-export default class SigninForm extends React.Component {
+import Modal from '../components/common/Modal';
+
+class SigninForm extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -23,7 +25,7 @@ export default class SigninForm extends React.Component {
 
   render() {
     return (
-      <div>
+      <Modal>
         <div className="loginForm">
           <div className="form-group">
             <label htmlFor="contact"><I18n>Email</I18n></label>
@@ -34,7 +36,9 @@ export default class SigninForm extends React.Component {
             <input className="form-control" type="password" name="password" id="password" placeholder="Password" value={this.state.password} onChange={this.handlePassword}/>
           </div>
         </div>
-      </div>
+      </Modal>
     );
   }
 }
+
+export default SigninForm;

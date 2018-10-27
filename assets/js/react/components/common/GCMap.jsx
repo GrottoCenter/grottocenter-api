@@ -68,10 +68,15 @@ class GCMap extends Component {
       initZoom: props.mapZoom,
       showSpinner: false
     }
+    this.getTarget = this.getTarget.bind(this);
+  }
+
+  getTarget() {
+    return this.props.match.params ? this.props.match.params.target : undefined;
   }
 
   componentWillMount() {
-    let encodedParam = this.props.params.target;
+    let encodedParam = this.getTarget();
     if (encodedParam && encodedParam.length > 0) {
       let decoded = atob(encodedParam);
       let params = decoded.split("&").reduce(function(prev, curr) {
@@ -98,7 +103,7 @@ class GCMap extends Component {
   componentDidMount() {
     if (this.state.localize
       && !this.props.selectedEntry
-      && !this.props.params.target) {
+      && !this.getTarget()) {
       this.setState({
         localize: false
       });
@@ -160,7 +165,7 @@ class GCMap extends Component {
   updateLocationUrl(coords, zoom) {
     let newUrl = window.location.pathname;
     let encodedLocation = btoa('lng=' + coords.lng + '&lat=' + coords.lat + '&zoom=' + zoom);
-    if (this.props.params.target) {
+    if (this.getTarget()) {
       let pathname = _.strRightBack(window.location.pathname, '/');
       newUrl = _.replaceAll(window.location.pathname, pathname, encodedLocation);
     } else {
@@ -275,7 +280,7 @@ GCMap.propTypes = {
   setLocation: PropTypes.func.isRequired,
   setZoom: PropTypes.func.isRequired,
   history: PropTypes.object.isRequired,
-  params: PropTypes.object
+	match: PropTypes.object
 };
 
 export default GCMap;

@@ -1,9 +1,7 @@
-import React, {Component, PropTypes} from 'react';
-import {Link} from 'react-router';
+import React, {PropTypes} from 'react';
+import {Link} from 'react-router-dom';
 
 /**
- * Stateless component
- *
  * This component encapsulate hypertext links on GC
  * Internal links are compliants with ReactRouter routing
  *
@@ -14,37 +12,31 @@ import {Link} from 'react-router';
  * styles: (optional) Used to apply inline CSS styling
  * children: (Required) The DOM content contained inside the link
  */
-export default class GCLink extends Component {
-  constructor(props) {
-    super(props);
+const GCLink = (props) => {
+  let params = {};
+  if (props.onClick) {
+    params.onClick = props.onClick;
   }
-
-  render() {
-    let params = {};
-    if (this.props.onClick) {
-      params.onClick = this.props.onClick;
-    }
-    if (this.props.className) {
-      params.className = this.props.className;
-    }
-    if (this.props.activeClassName) {
-      params.activeClassName = this.props.activeClassName;
-    }
-    if (this.props.style) {
-      params.style = this.props.style;
-    }
-    if (!this.props.internal) {
-      return (
-        <a href={this.props.href} {...params} target='_blank'>{this.props.children}</a>
-      );
-    }
+  if (props.className) {
+    params.className = props.className;
+  }
+  if (props.activeClassName) {
+    params.activeClassName = props.activeClassName;
+  }
+  if (props.style) {
+    params.style = props.style;
+  }
+  if (!props.internal) {
     return (
-      <Link to={this.props.href} {...params}>
-        {this.props.children}
-      </Link>
+      <a href={props.href} {...params} target='_blank'>{props.children}</a>
     );
   }
-}
+  return (
+    <Link to={props.href} {...params}>
+      {props.children}
+    </Link>
+  );
+};
 
 GCLink.propTypes = {
   href: PropTypes.string.isRequired,
@@ -55,3 +47,5 @@ GCLink.propTypes = {
   onClick: PropTypes.func,
   children: PropTypes.node.isRequired
 };
+
+export default GCLink;
