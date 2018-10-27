@@ -5,6 +5,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { addLocaleData, IntlProvider } from 'react-intl';
 import localeData from "react-intl/locale-data/index";
+import createDebounce from 'redux-debounced';
 import {Provider} from 'react-redux';
 import {createStore, applyMiddleware} from 'redux';
 import thunkMiddleware from 'redux-thunk';
@@ -23,9 +24,7 @@ addLocaleData(localeData);
 let gcStore = createStore(
   GCReducer,
   window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__(),
-  applyMiddleware(
-    thunkMiddleware
-  )
+  applyMiddleware(createDebounce(), thunkMiddleware)
 );
 
 /*gcStore.subscribe(function() {
