@@ -43,6 +43,15 @@ module.exports = {
     return result;
   },
 
+  convertToEntryList: function(source) {
+    let entries = [];
+    source.forEach((item) => {
+      let entry = this.convertToEntryModel(item);
+      entries.push(entry);
+    });
+    return entries;
+  },
+
   convertToCountResult: function(source) {
     let result = Object.assign({}, CountResult);
     result.count = source.count;

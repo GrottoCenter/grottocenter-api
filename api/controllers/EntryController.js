@@ -22,8 +22,12 @@ module.exports = {
     });
   },
 
-  findAll: function(req, res) {
+  findAll: function(req, res, converter) {
+    const apiControl = req.options.api;
     let parameters = {};
+    let limit = apiControl.limit;
+    let skip = 0;
+
     if (req.param('name') !== undefined) {
       parameters.name = {
         'like': '%' + req.param('name') + '%'
@@ -35,17 +39,36 @@ module.exports = {
       };
     }
 
+    const maxRange = apiControl.limit;
+    const range = req.param('range');
+
+    if (range !== undefined) {
+      const splitRange = range.split('-');
+      limit = splitRange[1] - splitRange[0];
+      skip = splitRange[0];
+    }
+
     // TODO : to adapt when authentication will be implemented
     parameters.isPublic = 'YES';
 
     // TODO before this : see how to materialize fact that
     // id of entry corresponds to id of linked single entry if exists
     //TEntry.find(parameters).populate('author').populate('caves').populate('singleEntry').sort('id ASC').limit(10).exec(function(err, found) {
-    TEntry.find(parameters).populate('author').populate('caves').sort('id ASC').limit(10).exec(function(err, found) {
-      let params = {};
-      params.controllerMethod = 'EntryController.findAll';
-      params.notFoundMessage = 'No entries found.';
-      return ControllerService.treat(err, found, params, res);
+    TEntry.count(parameters).exec(function (error, total) {
+      TEntry.find(parameters).populate('author').populate('caves').sort('id ASC').limit(limit).skip(skip).exec(function(err, found) {
+        let params = {
+          controllerMethod: 'EntryController.findAll',
+          notFoundMessage: 'No entries found.',
+          searchedItem: apiControl.entity,
+          total: total,
+          url: req.originalUrl,
+          maxRange: maxRange,
+          limit: limit,
+          skip: skip,
+        };
+
+        return ControllerService.treatAndConvert(err, found, params, res, converter);
+      });
     });
   },
 

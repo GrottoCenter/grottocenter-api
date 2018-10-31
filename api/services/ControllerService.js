@@ -23,6 +23,34 @@ module.exports = {
       sails.log.debug(notFoundMessage);
       return res.json(404, { error: notFoundMessage });
     }
+
+    res.set('Accept-Range', parameters.searchedItem + ' ' + parameters.maxRange);
+
+    if (parameters.total > found.length) {
+      const rangeTo = Math.min(parseInt(parameters.skip) + parseInt(parameters.limit), parameters.total);
+      const firstTo = Math.min(parseInt(parameters.limit), parameters.total);
+
+      const prevFrom = Math.max(parseInt(parameters.skip) - parseInt(parameters.limit), 0);
+      const prevTo = Math.max(prevFrom + parseInt(parameters.limit), 0);
+
+      const nextFrom = Math.min(parseInt(parameters.skip) + parseInt(parameters.limit), parameters.total);
+      const nextTo = Math.min(nextFrom + parseInt(parameters.limit), parameters.total);
+
+      const lastFrom = Math.max(parameters.total - parseInt(parameters.limit), 0);
+
+      const baseUrl = parameters.url;
+      const rangeExpr = /range=[0-9]+-[0-9]+/i;
+      const first = baseUrl.replace(rangeExpr, `range=0-${firstTo}`);
+      const prev = baseUrl.replace(rangeExpr, `range=${prevFrom}-${prevTo}`);
+      const next = baseUrl.replace(rangeExpr, `range=${nextFrom}-${nextTo}`);
+      const last = baseUrl.replace(rangeExpr, `range=${lastFrom}-${parameters.total}`);
+
+      res.set('Content-Range', `${parameters.skip}-${rangeTo}/${parameters.total}`);
+      res.set('Link', `<${first}>; rel="first",  <${prev}>; rel="prev", <${next}>; rel="next",  <${last}>; rel="last"`);
+
+      return res.json(206, converter(found));
+    }
+
     return res.json(converter(found));
   }
 };
