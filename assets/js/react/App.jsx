@@ -3,24 +3,23 @@
  */
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {Router, browserHistory} from 'react-router';
-import routes from './conf/Routes';
 import I18n from 'react-ghost-i18n';
-
-import grottoTheme from './conf/grottoTheme';
-import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
-import getMuiTheme from 'material-ui/styles/getMuiTheme';
-
 import {Provider} from 'react-redux';
 import {createStore, applyMiddleware} from 'redux';
 import thunkMiddleware from 'redux-thunk';
-import GCReducer from './reducers/GCReducer';
-
-import {changeLanguage} from './actions/Language';
-import TextDirectionProvider from './containers/TextDirectionProvider';
-
+import { BrowserRouter, Route, Switch } from "react-router-dom";
+import getMuiTheme from 'material-ui/styles/getMuiTheme';
+import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 // Needed for onTouchTap// sans ça les clicks de material-ui ne fonctionnent pas
 import injectTapEventPlugin from 'react-tap-event-plugin';
+
+import grottoTheme from './conf/grottoTheme';
+import GCReducer from './reducers/GCReducer';
+import {changeLanguage} from './actions/Language';
+import TextDirectionProvider from './containers/TextDirectionProvider';
+import Landing from "./components/pages/Landing";
+import Application from "./components/pages/Application";
+import Admin from "./components/pages/Admin";
 
 injectTapEventPlugin();
 
@@ -47,7 +46,15 @@ ReactDOM.render(
   <MuiThemeProvider muiTheme={getMuiTheme(grottoTheme)}>
     <Provider store={gcStore}>
       <TextDirectionProvider>
-        <Router routes={routes} history={browserHistory} />
+				<BrowserRouter>
+					<div>
+						<Switch>
+							<Route exact path="/" component={Landing} />
+							<Route path="/admin" component={Admin} />
+							<Route path="/ui" component={Application} />
+						</Switch>
+					</div>
+				</BrowserRouter>
       </TextDirectionProvider>
     </Provider>
   </MuiThemeProvider>,

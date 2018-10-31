@@ -6,7 +6,7 @@ import {Loading} from '../common/Toolbox';
 
 const AvailableTools = () => (
   <ul>
-    <li><GCLink internal={true} href="/ui/admin/listEntriesOfInterest">Entries of interest</GCLink></li>
+    <li><GCLink internal={true} href="/admin/listEntriesOfInterest">Entries of interest</GCLink></li>
   </ul>
 );
 

@@ -1,4 +1,6 @@
 import React from 'react';
+
+import BasePage from './BasePage';
 import Header from '../homepage/Header';
 import Welcome from '../homepage/Welcome';
 import LatestBlogNewsSection from '../homepage/LatestBlogNewsSection';
@@ -10,17 +12,19 @@ import Footer from '../homepage/Footer';
 import GrottoAppBar from '../common/GrottoAppBar';
 
 const Landing = () => (
-  <div id='landingpage'>
-    <GrottoAppBar/>
-    <Header/>
-    <Welcome/>
-    <WhatIsIt/>
-    <RandomEntry/>
-    <LatestBlogNewsSection/>
-    <Association/>
-    <PartnersSection/>
-    <Footer/>
-  </div>
+  <BasePage>
+    <div id='landingpage'>
+      <GrottoAppBar/>
+      <Header/>
+      <Welcome/>
+      <WhatIsIt/>
+      <RandomEntry/>
+      <LatestBlogNewsSection/>
+      <Association/>
+      <PartnersSection/>
+      <Footer/>
+    </div>
+  </BasePage>
 );
 
 export default Landing;
