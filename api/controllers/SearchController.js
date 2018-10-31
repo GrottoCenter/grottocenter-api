@@ -1,7 +1,5 @@
 'use strict';
 
-
-
 module.exports = {
 
   findAll: function(req, res, converter) {

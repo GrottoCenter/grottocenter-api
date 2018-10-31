@@ -23,7 +23,6 @@ module.exports = {
     idAuthor: {
       type: 'number',
       unique: true,
-      /*primaryKey: true,*/
       columnName: 'Id_author'
     },
 

@@ -32,6 +32,6 @@ export const loadRandomEntry = () => (dispatch) => {
     }
     return response.text();
   })
-  .then(text => dispatch(fetchRandomEntrySuccess(JSON.parse(text))))/*
-  .catch(error => dispatch(fetchRandomEntryFailure(error)))*/;
+  .then(text => dispatch(fetchRandomEntrySuccess(JSON.parse(text))))
+  .catch(error => dispatch(fetchRandomEntryFailure(error)));
 };

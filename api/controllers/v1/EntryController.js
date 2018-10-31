@@ -14,7 +14,7 @@ module.exports = {
   },
 
   findAll: function(req, res) {
-    return sails.controllers.entry.findAll(req, res, MappingV1Service.convertToEntryList);
+    return entryController.findAll(req, res, MappingV1Service.convertToEntryList);
   },
 
   // TODO adapt

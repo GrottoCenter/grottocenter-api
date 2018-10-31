@@ -3,7 +3,7 @@
 const VALID_IMG_FORMATS = "\'.jpg\',\'.png\',\'.gif\',\'.svg\'";
 const OTHER_VALID_IMG_FORMATS = "\'.jpeg\'";
 // query to get all entries of interest
-const INTEREST_ENTRIES_QUERY = 'SELECT id FROM t_entry WHERE Is_of_interest =1';
+const INTEREST_ENTRIES_QUERY = 'SELECT id FROM t_entry WHERE Is_of_interest=1';
 // query to get a random entry of interest
 const RANDOM_ENTRY_QUERY = INTEREST_ENTRIES_QUERY + ' ORDER BY RAND() LIMIT 1';
 // query to get entry info

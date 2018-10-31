@@ -313,30 +313,3 @@ RandomEntryCard.propTypes = {
 };
 
 export default RandomEntryCard;
-
-
-// [role='section'].randomEntry {
-//   @media (min-width: 550px) {
-//     .six.columns {
-//       width: 100%;
-//     }
-//
-//     .column,
-//     .columns {
-//       margin-left: 0;
-//     }
-//   }
-//EntryInfoIte
-//   @media (min-width: 750px) {
-//     text-align: left;
-//
-//     .six.columns {
-//       width: 48%;
-//     }
-//
-//     .column,
-//     .columns {
-//       margin-left: 2%;
-//     }
-//   }
-// }
