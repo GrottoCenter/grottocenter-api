@@ -10,50 +10,52 @@ module.exports = {
 
   tableName: 't_comment',
 
+  primaryKey: 'id',
+
   attributes: {
     id: {
-      type: 'integer',
+      type: 'number',
       unique: true,
-      primaryKey: true,
       autoIncrement: true,
       columnName: 'Id'
     },
     locked: {
-      type: 'text',
-      required: true,
+      type: 'string',
       defaultsTo: 'NO',
       columnName: 'Locked'
     },
     idAuthor: {
-      type: 'integer',
+      type: 'number',
       unique: true,
-      primaryKey: true,
       columnName: 'Id_author'
     },
     idAnswered: {
-      type: 'integer',
-      index: true,
+      type: 'number',
+      autoMigrations: { index: true },
       columnName: 'Id_answered'
     },
     idReviewer: {
-      type: 'integer',
-      index: true,
+      type: 'number',
+      autoMigrations: { index: true },
       columnName: 'Id_reviewer'
     },
     idLocker: {
-      type: 'integer',
+      type: 'number',
       columnName: 'Id_locker'
     },
     dateInscription: {
-      type: 'datetime',
+      type: 'string',
+      columnType: 'datetime',
       columnName: 'Date_inscription'
     },
     dateReviewed: {
-      type: 'datetime',
+      type: 'string',
+      columnType: 'datetime',
       columnName: 'Date_reviewed'
     },
     dateLocked: {
-      type: 'datetime',
+      type: 'string',
+      columnType: 'datetime',
       columnName: 'Date_locked'
     },
     entry: {
@@ -61,52 +63,47 @@ module.exports = {
       model: 'TEntry'
     },
     idExit: {
-      type: 'integer',
+      type: 'number',
       unique: true,
-      primaryKey: true,
-      required: true,
-      defaultsTo: '0',
+      defaultsTo: 0,
       columnName: 'Id_exit'
     },
     relevance: {
-      type: 'float',
-      required: true,
-      defaultsTo: '1',
+      type: 'number',
+      defaultsTo: 1,
       columnName: 'Relevance'
     },
     eTUnderground: {
-      type: 'time',
+      type: 'string',
       columnName: 'E_t_underground'
     },
     eTTrail: {
-      type: 'time',
+      type: 'string',
       columnName: 'E_t_trail'
     },
     aestheticism: {
-      type: 'string',
-      size: 5,
+      type: 'number',
       columnName: 'Aestheticism'
     },
     caving: {
-      type: 'float',
+      type: 'number',
       columnName: 'Caving'
     },
     approach: {
-      type: 'float',
+      type: 'number',
       columnName: 'Approach'
     },
     title: {
       type: 'string',
-      size: 300,
+      maxLength: 300,
       columnName: 'Title'
     },
     body: {
-      type: 'text',
+      type: 'string',
       columnName: 'Body'
     },
     alert: {
-      type: 'text',
-      required: true,
+      type: 'string',
       defaultsTo: 'NO',
       columnName: 'Alert'
     }

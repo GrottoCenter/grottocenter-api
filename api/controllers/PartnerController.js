@@ -55,10 +55,10 @@ module.exports = {
     }
     TGrotto.find({ select: ['id', 'name', 'pictureFileName', 'customMessage'] }).skip(skip).limit(limit).sort('id ASC').where({
       'customMessage': {
-        '!': null
+        '!=': null
       },
       'pictureFileName': {
-        '!': ''
+        '!=': ''
       },
       'isOfficialPartner': '1'
     }).sort('id ASC').exec(function(err, found) {

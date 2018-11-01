@@ -10,19 +10,19 @@ module.exports = {
 
   tableName: 't_entry',
 
+  primaryKey: 'id',
+
   attributes: {
     id: {
-      type: 'integer',
+      type: 'number',
       unique: true,
-      primaryKey: true,
       autoIncrement: true,
       columnName: 'Id'
     },
 
     locked: {
-      type: 'text',
-      required: true,
-      enum: ['YES', 'NO'],
+      type: 'string',
+      isIn: ['YES', 'NO'],
       defaultsTo: 'NO',
       columnName: 'Locked'
     },
@@ -33,140 +33,147 @@ module.exports = {
     },
 
     idReviewer: {
-      type: 'integer',
-      index: true,
-      columnName: 'Id_reviewer'
+      type: 'number',
+      autoMigrations: { index: true },
+      columnName: 'Id_reviewer',
+      allowNull: true
     },
 
     idLocker: {
-      type: 'integer',
-      columnName: 'Id_locker'
+      type: 'number',
+      columnName: 'Id_locker',
+      allowNull: true
     },
 
     name: {
       type: 'string',
-      size: 100,
+      maxLength: 100,
       columnName: 'Name'
     },
 
     country: {
       type: 'string',
-      size: 3,
+      maxLength: 3,
       columnName: 'Country'
     },
 
     region: {
       type: 'string',
-      size: 32,
-      columnName: 'Region'
+      maxLength: 32,
+      columnName: 'Region',
+      allowNull: true
     },
 
     city: {
       type: 'string',
-      size: 32,
-      columnName: 'City'
+      maxLength: 32,
+      columnName: 'City',
+      allowNull: true
     },
 
     address: {
       type: 'string',
-      size: 128,
-      columnName: 'Address'
+      maxLength: 128,
+      columnName: 'Address',
+      allowNull: true
     },
 
     yearDiscovery: {
-      type: 'integer',
-      columnName: 'Year_discovery'
+      type: 'number',
+      columnName: 'Year_discovery',
+      allowNull: true
     },
 
     idType: {
-      type: 'integer',
-      unique: true,
-      defaultsTo: '0',
       columnName: 'Id_type',
       model: 'TType',
       via: 'id'
     },
 
     externalUrl: {
-      type: 'text',
-      columnName: 'External_url'
+      type: 'string',
+      columnName: 'External_url',
+      allowNull: true
     },
 
     dateInscription: {
-      type: 'datetime',
+      type: 'ref',
+      columnType: 'datetime',
       columnName: 'Date_inscription'
     },
 
     dateReviewed: {
-      type: 'datetime',
+      type: 'ref',
+      columnType: 'datetime',
       columnName: 'Date_reviewed'
     },
 
     dateLocked: {
-      type: 'datetime',
+      type: 'ref',
+      columnType: 'datetime',
       columnName: 'Date_locked'
     },
 
     isPublic: {
-      type: 'text',
+      type: 'string',
       columnName: 'Is_public'
     },
 
     isSensitive: {
-      type: 'text',
-      required: true,
+      type: 'string',
       defaultsTo: 'NO',
       columnName: 'Is_sensitive'
     },
 
     isOfInterest: {
-      type: 'boolean',
+      type: 'string',
+      allowNull: true,
       columnName: 'Is_of_interest'
     },
 
     contact: {
       type: 'string',
-      size: 1000,
-      columnName: 'Contact'
+      maxLength: 1000,
+      columnName: 'Contact',
+      allowNull: true
     },
 
     modalities: {
       type: 'string',
-      size: 100,
-      required: true,
+      maxLength: 100,
       defaultsTo: 'NO,NO,NO,NO',
       columnName: 'Modalities'
     },
 
     hasContributions: {
-      type: 'text',
-      enum: ['YES', 'NO'],
-      required: true,
+      type: 'string',
+      isIn: ['YES', 'NO'],
       defaultsTo: 'NO',
       columnName: 'Has_contributions'
     },
 
     latitude: {
-      type: 'float',
-      index: true,
+      type: 'number',
+      autoMigrations: { index: true },
       columnName: 'Latitude'
     },
 
     longitude: {
-      type: 'float',
+      type: 'number',
       columnName: 'Longitude'
     },
 
     altitude: {
-      type: 'float',
+      type: 'number',
+      allowNull: true,
       columnName: 'Altitude'
     },
 
     // if caves is not empty, singleEntry is supposed to be empty
     caves: {
       collection: 'TCave',
-      via: 'caves',
-      through: 'jcaveentry'
+      via: 'entry',
+      through: 'JCaveEntry'
     },
 
     // if singleEntry is not empty, caves is supposed to be empty
@@ -183,7 +190,7 @@ module.exports = {
 
     topographies: {
       collection: 'TTopography',
-      via: 'idTopography',
+      via: 'idEntry',
       through: 'jtopoentry'
     }
   }

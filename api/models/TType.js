@@ -10,55 +10,56 @@ module.exports = {
 
   tableName: 't_type',
 
+  primaryKey: 'id',
+
   attributes: {
     id: {
-      type: 'integer',
+      type: 'number',
       unique: true,
-      primaryKey: true,
       autoIncrement: true,
       columnName: 'Id'
     },
     frType: {
       type: 'string',
-      size: 100,
+      maxLength: 100,
       columnName: 'Fr_type'
     },
     enType: {
       type: 'string',
-      size: 100,
+      maxLength: 100,
       columnName: 'En_type'
     },
     esType: {
       type: 'string',
-      size: 100,
+      maxLength: 100,
       columnName: 'Es_type'
     },
     deType: {
       type: 'string',
-      size: 100,
+      maxLength: 100,
       columnName: 'De_type'
     },
     bgType: {
       type: 'string',
-      size: 100,
+      maxLength: 100,
       required: true,
       columnName: 'Bg_type'
     },
     nlType: {
       type: 'string',
-      size: 100,
+      maxLength: 100,
       required: true,
       columnName: 'Nl_type'
     },
     caType: {
       type: 'string',
-      size: 100,
+      maxLength: 100,
       required: true,
       columnName: 'Ca_type'
     },
     itType: {
       type: 'string',
-      size: 100,
+      maxLength: 100,
       required: true,
       columnName: 'It_type'
     }

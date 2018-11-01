@@ -21,7 +21,7 @@ const ENTRY_INFO_QUERY = 'SELECT COALESCE(SE.depth, C.depth) AS depth, COALESCE(
                           + ' LEFT JOIN j_topo_file JTP ON JTP.Id_topography=COALESCE(JTE.Id_topography, JTC.Id_topography)'
                           + ' LEFT JOIN t_topography T ON T.id=JTP.Id_topography'
                           + ' LEFT JOIN t_file F ON F.id=JTP.Id_File'
-                          + ' WHERE E.id=? AND (T.is_public=\'YES\' OR T.is_public IS NULL)';
+                          + ' WHERE E.id=$1 AND (T.is_public=\'YES\' OR T.is_public IS NULL)';
 // query to count public entries
 const PUBLIC_ENTRIES_COUNT_QUERY = 'SELECT COUNT(id) AS count FROM t_entry WHERE Is_public=\'YES\'';
 
@@ -29,96 +29,72 @@ module.exports = {
   /**
    * @returns {Promise} which resolves to the succesfully findRandom
    */
-  findRandom: function() {
-    return new Promise((resolve, reject) => {
-      CommonService.query(TEntry, RANDOM_ENTRY_QUERY, []).then(function(results) {
-        let entryId = results[0].id;
-        EntryService.completeRandomEntry(entryId).then(function(entry) {
-          // resolve entry at last
-          resolve(entry);
-        }, function(err) {
-          // when no entry info found, reject
-          reject(err);
-        });
-      });
-    });
+  findRandom: async function() {
+    let result = await CommonService.query(RANDOM_ENTRY_QUERY, []);
+    let entryId = result.rows[0].id;
+    let resultComplete = await EntryService.completeRandomEntry(entryId);
+
+    return resultComplete;
+  },
+
+  findEntry: async function(entryId) {
+    return await TEntry.find({ id: entryId }).limit(1);
   },
 
   /**
    * @returns {Promise} which resolves to the succesfully completeRandomEntry
    */
-  completeRandomEntry: function(entryId) {
-    return new Promise((resolve, reject) => {
-      let result = [];
-      TEntry.find({
-        id: entryId
-      }).limit(1).exec(function(err, found) {
-        if (err) {
-          return reject(err);
-        }
-        // add entry to result
-        result.push(found[0]);
-        // enrich result with entry info
-        CommonService.query(TEntry, ENTRY_INFO_QUERY, [entryId]).then(function(entryInfo) {
-          if (entryInfo !== undefined) {
-            result[0]['entryInfo'] = entryInfo;
-          }
-          // add stats
-          CommentService.getStats(entryId).then(function(statistics) {
-            if (statistics !== undefined) {
-              result[0]['stat'] = statistics;
-            }
-            // add time to go and underground time
-            CommentService.getTimeInfos(entryId).then(function(timeInfos) {
-              if (timeInfos !== undefined) {
-                result[0]['timeInfo'] = timeInfos;
-              }
-              // resolve result at last
-              resolve(result);
-            });
-          });
-        }, function(err) {
-          // when no entry info found, reject
-          reject(err);
-        });
-      });
-    });
+  completeRandomEntry: async function(entryId) {
+    let entryData = await this.findEntry(entryId);
+
+    // add entry to result
+    const completeEntry = Object.assign({}, entryData[0]);
+
+    // enrich result with entry info
+    let entryInfo = await this.getEntryInfos(entryId);
+    if (entryInfo) {
+      completeEntry.entryInfo = entryInfo;
+    }
+
+    let statistics = await CommentService.getStats(entryId);
+    if (statistics) {
+      completeEntry.stat = statistics;
+    }
+
+    let timeInfos = await CommentService.getTimeInfos(entryId);
+    if (timeInfos) {
+      completeEntry.timeInfo = timeInfos;
+    }
+
+    return completeEntry;
+  },
+
+  getEntryInfos: async function(entryId) {
+    let result = await CommonService.query(ENTRY_INFO_QUERY, [entryId]);
+    return result.rows[0];
   },
 
   /**
    * @returns {Promise} which resolves to the succesfully findAllInterestEntries
    */
-  findAllInterestEntries: function() {
-    return new Promise((resolve, reject) => {
-      CommonService.query(TEntry, INTEREST_ENTRIES_QUERY, []).then(function(results) {
-        let allEntries = [];
-        let mapEntries = results.map(function(item) {
-          return EntryService.completeRandomEntry(item.id).then(function(entry) {
-            allEntries.push(entry);
-          });
-        });
-        Promise.all(mapEntries).then(() => {
-          resolve(allEntries);
-        });
-      }, function(err) {
-        // when no entry info found, reject
-        reject(err);
-      });
+  findAllInterestEntries: async function() {
+    let entries = await CommonService.query(INTEREST_ENTRIES_QUERY, []);
+
+    let allEntries = [];
+    let mapEntries = entries.rows.map(async function(item) {
+      let entry = await EntryService.completeRandomEntry(item.id);
+      allEntries.push(entry);
     });
+
+    await Promise.all(mapEntries);
+    return allEntries;
   },
 
   /**
    * @returns {Promise} which resolves to the succesfully query of the number of public entries
    */
-  getPublicEntriesNumber: function() {
-    return new Promise((resolve, reject) => {
-      CommonService.query(TEntry, PUBLIC_ENTRIES_COUNT_QUERY, []).then(function(result) {
-        if (result) {
-          resolve(result[0]);
-        }
-      }, function(err) {
-        reject(err);
-      });
-    });
+  getPublicEntriesNumber: async function() {
+    let result = await CommonService.query(PUBLIC_ENTRIES_COUNT_QUERY, []);
+    return result.rows[0];
   }
 };

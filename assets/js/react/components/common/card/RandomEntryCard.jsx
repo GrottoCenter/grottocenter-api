@@ -19,12 +19,12 @@ export class EntryData extends Component {
       return <div />;
     }
     let stat = this.props.entry.stat;
-    let entryInfo = this.props.entry.entryInfo[0];
+    let entryInfo = this.props.entry.entryInfo;
     let timeInfo = this.props.entry.timeInfo;
     let lang = locale.substring(0,1).toUpperCase() + locale.substring(1, locale.length); //eslint-disable-line
 
     let imageElement = <div/>;
-    if (entryInfo.path !== undefined) {
+    if (entryInfo && entryInfo.path) {
       imageElement = <EntryImage src={entryInfo.path}/>;
     }
 
@@ -211,10 +211,12 @@ export class EntryInfoItem extends Component {
       let curHours = parseInt(splitTime[0]);
       let curMinutes = parseInt(splitTime[1]);
       if (curHours === 0) {
-        displayValue = <Translate>{curMinutes} min</Translate>;
+        const toTranslate = `${curMinutes} min`;
+        displayValue = <Translate>{toTranslate}</Translate>;
       } else {
         if (curMinutes === 0) {
-          displayValue = <Translate>{curHours} hour{(curHours > 1) ? 's' : ''}</Translate>;
+          const toTranslate = `${curHours} hour${(curHours > 1) ? 's' : ''}`;
+          displayValue = <Translate>{toTranslate}</Translate>;
         } else {
           displayValue = <Translate>{curHours} h {curMinutes}</Translate>
         }
@@ -311,30 +313,3 @@ RandomEntryCard.propTypes = {
 };
 
 export default RandomEntryCard;
-
-
-// [role='section'].randomEntry {
-//   @media (min-width: 550px) {
-//     .six.columns {
-//       width: 100%;
-//     }
-//
-//     .column,
-//     .columns {
-//       margin-left: 0;
-//     }
-//   }
-//
-//   @media (min-width: 750px) {
-//     text-align: left;
-//
-//     .six.columns {
-//       width: 48%;
-//     }
-//
-//     .column,
-//     .columns {
-//       margin-left: 2%;
-//     }
-//   }
-// }

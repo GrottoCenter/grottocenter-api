@@ -11,18 +11,12 @@ module.exports = {
   tableName: 'j_cave_entry',
 
   attributes: {
-    caves: {
-      type: 'integer',
-      unique: true,
-      primaryKey: true,
+    cave: {
       columnName: 'Id_cave',
       model: 'TCave'
     },
 
-    entries: {
-      type: 'integer',
-      unique: true,
-      primaryKey: true,
+    entry: {
       columnName: 'Id_entry',
       model: 'TEntry'
     }

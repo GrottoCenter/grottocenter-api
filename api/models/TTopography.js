@@ -9,11 +9,12 @@ module.exports = {
 
   tableName: 't_topography',
 
+  primaryKey: 'id',
+
   attributes: {
     id: {
-      type: 'integer',
+      type: 'number',
       unique: true,
-      primaryKey: true,
       autoIncrement: true,
       columnName: 'Id'
     },
@@ -24,53 +25,48 @@ module.exports = {
     },
 
     dateInscription: {
-      type: 'datetime',
+      type: 'string',
+      columnType: 'datetime',
       columnName: 'Date_inscription'
     },
 
     idRequest: {
-      type: 'integer',
+      type: 'number',
       columnName: 'Id_request'
     },
 
     isPublic: {
-      type: 'text',
-      required: true,
+      type: 'string',
       defaultsTo: 'YES',
       columnName: 'Is_public'
     },
 
     removeNorth: {
-      type: 'text',
-      required: true,
+      type: 'string',
       defaultsTo: 'NO',
       columnName: 'Remove_north'
     },
 
     removeScale: {
-      type: 'text',
-      required: true,
+      type: 'string',
       defaultsTo: 'NO',
       columnName: 'Remove_scale'
     },
 
     distortTopo: {
-      type: 'text',
-      required: true,
+      type: 'string',
       defaultsTo: 'NO',
       columnName: 'Distort_topo'
     },
 
     enabled: {
-      type: 'text',
-      required: true,
+      type: 'string',
       defaultsTo: 'NO',
       columnName: 'Enabled'
     },
 
     enabledBack: {
-      type: 'text',
-      required: true,
+      type: 'string',
       defaultsTo: 'NO',
       columnName: 'Enabled_back'
     },

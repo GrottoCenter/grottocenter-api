@@ -12,13 +12,11 @@ module.exports = {
 
   attributes: {
     idTopography: {
-      type: 'integer',
       columnName: 'Id_topography',
       model: 'TTopography'
     },
 
     idFile: {
-      type: 'integer',
       columnName: 'Id_file',
       model: 'TFile'
     }

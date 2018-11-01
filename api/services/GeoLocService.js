@@ -2,7 +2,7 @@
 
 // Methods for map search
 const PUBLIC_ENTRIES_AVG_COORDS = 'SELECT count(Id) as count, avg(Longitude) as longitude, avg(Latitude) as latitude '
-  + 'FROM t_entry WHERE Latitude > ? AND Latitude < ? AND Longitude > ? AND Longitude < ? AND Is_public=\'YES\'';
+  + 'FROM t_entry WHERE Latitude > $1 AND Latitude < $2 AND Longitude > $3 AND Longitude < $4 AND Is_public=\'YES\'';
 
 module.exports = {
   /**
@@ -60,15 +60,15 @@ module.exports = {
 
   getGroupedItem: function(northWestBound, southEastBound) {
     return new Promise((resolve, reject) => {
-      CommonService.query(TEntry, PUBLIC_ENTRIES_AVG_COORDS, [northWestBound.lat, southEastBound.lat, northWestBound.lng, southEastBound.lng])
+      CommonService.query(PUBLIC_ENTRIES_AVG_COORDS, [northWestBound.lat, southEastBound.lat, northWestBound.lng, southEastBound.lng])
       .then(function(results) {
-        if (!results) {
+        if (!results || results.rows.length <= 0 || results.rows[0].count === 0) {
           reject('No data found');
         }
         resolve([{
-          id: results[0].count,
-          latitude: results[0].latitude,
-          longitude: results[0].longitude,
+          id: results.rows[0].count,
+          latitude: results.rows[0].latitude,
+          longitude: results.rows[0].longitude,
           name: 'group'
         }]);
       }, function(err) {

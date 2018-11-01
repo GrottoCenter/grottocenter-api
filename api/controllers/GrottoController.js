@@ -37,15 +37,17 @@ module.exports = {
   },
 
   getOfficialPartnersNumber: function(req, res) {
-    GrottoService.getOfficialPartnersNumber().then(function(count) {
-      if (!count) {
-        return res.notFound('Problem while getting number of official partners.');
-      }
-      return res.json(count);
-    }, function(err) {
-      sails.log.error(err);
-      return res.serverError('GrottoController.getOfficialPartnersNumber error : ' + err);
-    });
+    GrottoService.getOfficialPartnersNumber()
+      .then(function(count) {
+        if (!count) {
+          return res.notFound('Problem while getting number of official partners.');
+        }
+        return res.json(count);
+      })
+      .catch(function(err) {
+        sails.log.error(err);
+        return res.serverError('GrottoController.getOfficialPartnersNumber error : ' + err);
+      });
   },
 
   getPartnersNumber: function(req, res) {

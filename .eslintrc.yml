@@ -5,6 +5,7 @@ env:
   mocha: true
   browser: false
   jquery: false
+extends: [ 'eslint:recommended' ]
 rules:
   # strict: [error, global]
   indent: [error, 2, {SwitchCase: 1}]
@@ -41,7 +42,6 @@ globals:
   GrottoService: true
   GeoLocService: true
   SettingsService: true
-extends: [ 'eslint:recommended' ]
 parserOptions:
   ecmaVersion: 6
   sourceType: module

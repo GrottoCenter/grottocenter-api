@@ -21,6 +21,11 @@
  */
 
 module.exports.routes = {
+
+  //  ╦ ╦╔═╗╔╗ ╔═╗╔═╗╔═╗╔═╗╔═╗
+  //  ║║║║╣ ╠╩╗╠═╝╠═╣║ ╦║╣ ╚═╗
+  //  ╚╩╝╚═╝╚═╝╩  ╩ ╩╚═╝╚═╝╚═╝
+
   /***************************************************************************
    *                                                                          *
    * Make the view located at `views/homepage.ejs` (or `views/homepage.jade`, *
@@ -33,12 +38,14 @@ module.exports.routes = {
 
   '/': {
     controller: 'Index',
-    action: 'index'
+    action: 'index',
+    csrf: true
   },
 
   '/ui/*': {
     controller: 'Index',
-    action: 'index'
+    action: 'index',
+    csrf: true
   },
 
 	'/admin/*': {
@@ -56,6 +63,12 @@ module.exports.routes = {
    *                                                                          *
    ***************************************************************************/
 
+  /* CSRF */
+
+  'GET /csrfToken': {
+    action: 'security/grant-csrf-token'
+  },
+
   /* For ReactRouter routes */
 
   'GET /auth/*': {
@@ -69,9 +82,15 @@ module.exports.routes = {
   'GET /auth/signup': {
     view: 'grottocenter'
   },
-  'GET /ui/*': {
-    view: 'grottocenter'
+
+  'GET /ui/swagger/': {
+    csrf: false
   },
+
+
+  //  ╔═╗╔═╗╦  ╔═╗╔╗╔╔╦╗╔═╗╔═╗╦╔╗╔╔╦╗╔═╗
+  //  ╠═╣╠═╝║  ║╣ ║║║ ║║╠═╝║ ║║║║║ ║ ╚═╗
+  //  ╩ ╩╩  ╩  ╚═╝╝╚╝═╩╝╩  ╚═╝╩╝╚╝ ╩ ╚═╝
 
   /* Auth controller */
 
@@ -110,7 +129,7 @@ module.exports.routes = {
       limit: 50,
     },
     cors: {
-      origin: '*'
+      allowOrigins: '*'
     }
   },
 
@@ -167,7 +186,7 @@ module.exports.routes = {
     controller: 'v1/Entry',
     action: 'getPublicEntriesNumber',
     cors: {
-      origin: '*'
+      allowOrigins: '*'
     }
   },
 
@@ -180,7 +199,7 @@ module.exports.routes = {
     controller: 'v1/Entry',
     action: 'find',
     cors: {
-      origin: '*'
+      allowOrigins: '*'
     }
   },
 
@@ -356,7 +375,7 @@ module.exports.routes = {
     controller: 'v1/GeoLoc',
     action: 'countEntries',
     cors: {
-      origin: '*'
+      allowOrigins: '*'
     }
   },
 
@@ -364,7 +383,17 @@ module.exports.routes = {
     controller: 'v1/GeoLoc',
     action: 'findByBounds',
     cors: {
-      origin: '*'
+      allowOrigins: '*'
     }
   },
+
+
+  //  ╦ ╦╔═╗╔╗ ╦ ╦╔═╗╔═╗╦╔═╔═╗
+  //  ║║║║╣ ╠╩╗╠═╣║ ║║ ║╠╩╗╚═╗
+  //  ╚╩╝╚═╝╚═╝╩ ╩╚═╝╚═╝╩ ╩╚═╝
+
+
+  //  ╔╦╗╦╔═╗╔═╗
+  //  ║║║║╚═╗║
+  //  ╩ ╩╩╚═╝╚═╝
 };
