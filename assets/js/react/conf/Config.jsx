@@ -7,7 +7,7 @@ export const
 
 function generateLinks(link, defaultLang) {
   let resultArray = {};
-  localesList.map(function(el) { // eslint-disable-line
+  Object.keys(localesList).forEach(function(el) { // eslint-disable-line
     resultArray[el.value] = _.replaceAll(link, '%s', _.capitalize(el.value));
   });
   resultArray['*'] = _.replaceAll(link, '%s', _.capitalize(defaultLang));

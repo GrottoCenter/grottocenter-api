@@ -1,10 +1,11 @@
-import React, {Component, PropTypes} from 'react';
+import React, {Component} from 'react';
+import PropTypes from 'prop-types';
 import {Popup} from 'react-leaflet'
-import FlatButton from 'material-ui/FlatButton';
-import ImageLoupe from 'material-ui/svg-icons/image/loupe';
+import FlatButton from '@material-ui/core/Button';
+import ImageLoupe from '@material-ui/icons/Loupe';
 import GCLink from './GCLink';
 import {entryDetailPath} from '../../conf/Config';
-import muiThemeable from 'material-ui/styles/muiThemeable';
+import { withTheme } from '@material-ui/core/styles';
 import styled from 'styled-components';
 
 const PopupStl = styled.div`
@@ -47,7 +48,7 @@ class MapEntryPopup extends Component {
           </div>
           {this.props.entry.id &&
           <GCLinkWithContext internal={true} href={entryDetailPath + this.props.entry.id}>
-            <FlatButtonWithContext icon={<ImageLoupe color={this.props.muiTheme.palette.accent1Color} />} />
+            <FlatButtonWithContext icon={<ImageLoupe color={this.props.theme.palette.accent1Color} />} />
           </GCLinkWithContext>}
         </PopupStl>
       </Popup>
@@ -56,13 +57,9 @@ class MapEntryPopup extends Component {
 }
 
 MapEntryPopup.contextTypes = {
-  muiTheme: PropTypes.object.isRequired,
-  router: PropTypes.object.isRequired
-};
-
-MapEntryPopup.propTypes = {
-  muiTheme: PropTypes.object.isRequired,
+  theme: PropTypes.object.isRequired,
+  router: PropTypes.object.isRequired,
   entry: PropTypes.object.isRequired
 };
 
-export default muiThemeable()(MapEntryPopup);
+export default withTheme()(MapEntryPopup);

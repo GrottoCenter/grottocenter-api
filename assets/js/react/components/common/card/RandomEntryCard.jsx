@@ -1,8 +1,9 @@
-import React, {PropTypes, Component} from 'react';
-import FullStarIcon from 'material-ui/svg-icons/toggle/star';
-import EmptyStarIcon from 'material-ui/svg-icons/toggle/star-border';
-import HalfStarIcon from 'material-ui/svg-icons/toggle/star-half';
-import CircularProgress from 'material-ui/CircularProgress';
+import React, {Component} from 'react';
+import PropTypes from 'prop-types';
+import FullStarIcon from '@material-ui/icons/Star';
+import EmptyStarIcon from '@material-ui/icons/StarBorder';
+import HalfStarIcon from '@material-ui/icons/StarHalf';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import GCLink from '../GCLink';
 import {detailPageV2Links} from '../../../conf/Config';
 import {GridRow, GridOneHalfColumn} from '../Grid';

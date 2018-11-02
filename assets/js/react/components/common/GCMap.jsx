@@ -1,4 +1,5 @@
-import React, {Component, PropTypes} from 'react';
+import React, {Component} from 'react';
+import PropTypes from 'prop-types';
 import {Map, Marker, TileLayer} from 'react-leaflet'
 import DivIcon from 'react-leaflet-div-icon';
 import MapEntryPopup from './MapEntryPopup';

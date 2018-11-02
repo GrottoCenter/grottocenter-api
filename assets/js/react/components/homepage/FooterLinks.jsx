@@ -4,7 +4,7 @@ import InternationalizedLink from '../common/InternationalizedLink';
 import {contactLinks, legalLinks, contributorsLink} from '../../conf/Config';
 import Translate from '../common/Translate';
 import styled from 'styled-components';
-import muiThemeable from 'material-ui/styles/muiThemeable';
+import { withTheme } from '@material-ui/core/styles';
 
 const FooterLinksList = styled.ul`
   display: inline-block;
@@ -16,16 +16,16 @@ const FooterLinksList = styled.ul`
 const SocialLink = styled.div`
   text-decoration: none;
   font-size: large;
-  color: ${props => props.muiTheme.palette.textIconColor};
+  color: ${props => props.theme.palette.textIconColor};
 
   :hover {
-    color: ${props => props.muiTheme.palette.accent1Color};
+    color: ${props => props.theme.palette.accent1Color};
   }
 `;
 
-const SocialGCLink = muiThemeable()(SocialLink.withComponent(GCLink));
+const SocialGCLink = withTheme()(SocialLink.withComponent(GCLink));
 
-const SocialIntlLink = muiThemeable()(SocialLink.withComponent(InternationalizedLink));
+const SocialIntlLink = withTheme()(SocialLink.withComponent(InternationalizedLink));
 
 const FooterLinks = () => (
   <FooterLinksList>

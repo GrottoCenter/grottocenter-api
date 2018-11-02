@@ -1,9 +1,9 @@
 import React from 'react';
-import GiftIcon from 'material-ui/svg-icons/action/card-giftcard';
-import FlatButton from 'material-ui/FlatButton';
-import Translate from '../common/Translate';
+import GiftIcon from '@material-ui/icons/CardGiftcard';
+import FlatButton from '@material-ui/core/Button';
 import {paypalLink, paypalImgLink, paypalId} from '../../conf/Config';
-import muiThemeable from 'material-ui/styles/muiThemeable';
+import Translate from '../common/Translate';
+import { withTheme } from '@material-ui/core/styles';
 import styled, {keyframes} from 'styled-components';
 
 const btEyeCatcher = keyframes`
@@ -63,16 +63,16 @@ const DonateFormWrapper = styled.div`
   }
 `;
 
-const DonateButton = muiThemeable()(styled(FlatButton)`
-  background-color: ${props => props.muiTheme.palette.accent1Color} !important; // lesshint importantRule: false
-  color: ${props => props.muiTheme.palette.textIconColor} !important; // lesshint importantRule: false
+const DonateButton = withTheme()(styled(FlatButton)`
+  background-color: ${props => props.theme.palette.accent1Color} !important; // lesshint importantRule: false
+  color: ${props => props.theme.palette.textIconColor} !important; // lesshint importantRule: false
   height: auto !important; // lesshint importantRule: false
 
   &:hover {
-    color: ${props => props.muiTheme.palette.primaryTextColor} !important; // lesshint importantRule: false
+    color: ${props => props.theme.palette.primaryTextColor} !important; // lesshint importantRule: false
 
     svg {
-      fill: ${props => props.muiTheme.palette.primaryTextColor} !important; // lesshint importantRule: false
+      fill: ${props => props.theme.palette.primaryTextColor} !important; // lesshint importantRule: false
     }
   }
 
@@ -86,7 +86,7 @@ const DonateButton = muiThemeable()(styled(FlatButton)`
   }
 
   svg {
-    fill: ${props => props.muiTheme.palette.textIconColor} !important; // lesshint importantRule: false
+    fill: ${props => props.theme.palette.textIconColor} !important; // lesshint importantRule: false
     width: 40px !important; // lesshint importantRule: false
     height: 40px !important; // lesshint importantRule: false
   }
@@ -107,4 +107,4 @@ const DonateForm = () => (
   </DonateFormWrapper>
 );
 
-export default muiThemeable()(DonateForm);
+export default withTheme()(DonateForm);

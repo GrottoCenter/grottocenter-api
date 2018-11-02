@@ -1,16 +1,16 @@
 import React from 'react';
-import muiThemeable from 'material-ui/styles/muiThemeable';
+import { withTheme } from '@material-ui/core/styles';
 import InternationalizedLink from '../common/InternationalizedLink';
 import GCLink from '../common/GCLink';
 import GCLogo from '../common/GCLogo';
 import {licenceLinks, fseLinks, contactLinks, githubLink, facebookLink} from '../../conf/Config';
 import {twitterLink, rssLinks, bloggerLinks, bloggerIcons} from '../../conf/Config';
-import {Toolbar, ToolbarGroup} from 'material-ui/Toolbar';
+import Toolbar from '@material-ui/core/Toolbar';
 import styled from 'styled-components';
 
-const FooterBar = muiThemeable()(styled(Toolbar)`
-  color: ${props => props.muiTheme.palette.fullBlack} !important;
-  background-color: ${props => props.muiTheme.palette.primary3Color} !important;
+const FooterBar = withTheme()(styled(Toolbar)`
+  color: ${props => props.theme.palette.fullBlack} !important;
+  background-color: ${props => props.theme.palette.primary3Color} !important;
   padding: 0px !important;
   height: 45px !important;
   position: fixed;
@@ -28,16 +28,16 @@ const FooterBar = muiThemeable()(styled(Toolbar)`
   }
 `);
 
-const RightToolbarGroup= muiThemeable()(styled(ToolbarGroup)`
+const RightToolbarGroup= withTheme()(styled.div`
   width: 40% !important;
   justify-content: flex-start !important;
-  background-color: ${props => props.muiTheme.palette.primary3Color} !important;
+  background-color: ${props => props.theme.palette.primary3Color} !important;
 `);
 
-const LeftToolbarGroup= muiThemeable()(styled(ToolbarGroup)`
+const LeftToolbarGroup= withTheme()(styled.div`
   width: 40% !important;
   justify-content: flex-end !important;
-  background-color: ${props => props.muiTheme.palette.primary3Color} !important;
+  background-color: ${props => props.theme.palette.primary3Color} !important;
 `);
 
 const SocialImage = styled.img`
@@ -74,9 +74,9 @@ const AppFooter = () => (
       </Version>
     </RightToolbarGroup>
 
-    <ToolbarGroup>
+    <div>
       <LogoImage />
-    </ToolbarGroup>
+    </div>
 
     <LeftToolbarGroup>
       <InternationalizedLink links={githubLink}>

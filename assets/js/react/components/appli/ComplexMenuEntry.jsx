@@ -1,21 +1,22 @@
-import React, {PropTypes, Component} from 'react';
-import MenuItem from 'material-ui/MenuItem';
-import ExpandMoreIcon from 'material-ui/svg-icons/navigation/expand-more';
-import ExpandLessIcon from 'material-ui/svg-icons/navigation/expand-less';
-import muiThemeable from 'material-ui/styles/muiThemeable';
+import React, {Component} from 'react';
+import PropTypes from 'prop-types';
+import MenuItem from '@material-ui/core/MenuItem';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import ExpandLessIcon from '@material-ui/icons/ExpandLess';
+import { withTheme } from '@material-ui/core/styles';
 import styled from 'styled-components';
-import {browserHistory} from 'react-router';
+import browserHistory from 'react-router-dom/BrowserRouter';
 
-const FirstLevelMenuItem = muiThemeable()(styled(MenuItem)`
-  background-color: ${props => props.muiTheme.palette.primary1Color} !important;
-  color: ${props => props.muiTheme.palette.primary3Color} !important;
+const FirstLevelMenuItem = withTheme()(styled(MenuItem)`
+  background-color: ${props => props.theme.palette.primary1Color} !important;
+  color: ${props => props.theme.palette.primary3Color} !important;
   transition: all 2s cubic-bezier(0.23, 1, 0.32, 1) 0ms !important;
 
   & > div > div {
     padding-left: 40px !important;
 
     & > svg {
-      fill: ${props => props.muiTheme.palette.primary3Color} !important;
+      fill: ${props => props.theme.palette.primary3Color} !important;
       left: -4px !important;
     }
   }

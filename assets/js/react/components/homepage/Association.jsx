@@ -1,11 +1,12 @@
-import React, {PropTypes} from 'react';
+import React from 'react';
+import PropTypes from 'prop-types';
 import LandingSection from './LandingSection';
 import {GridRow, GridOneThirdColumn, GridTwoThirdColumn, GridFullColumn} from '../common/Grid';
 import AssociationCheckList from './AssociationCheckList';
 import AssociationFlyingGoals from './AssociationFlyingGoals';
 import Translate from '../common/Translate';
 import styled from 'styled-components';
-import muiThemeable from 'material-ui/styles/muiThemeable';
+import { withTheme } from '@material-ui/core/styles';
 import GCLogo from '../common/GCLogo';
 
 const AssociationTitle = styled.h3`
@@ -81,12 +82,12 @@ const listEntries = {
 
 const Association = (props) => (
   <AssociationSection
-    bgColor={props.muiTheme.palette.primary1Color}
-    fgColor={props.muiTheme.palette.textIconColor}>
+    bgColor={props.theme.palette.primary1Color}
+    fgColor={props.theme.palette.textIconColor}>
 
     <AssociationGridRow>
       <GridTwoThirdColumn>
-        <AssociationTitle color={props.muiTheme.palette.accent1Color}>
+        <AssociationTitle color={props.theme.palette.accent1Color}>
           <Translate>Wikicaves association</Translate>
         </AssociationTitle>
         <AssociationDetails>
@@ -108,14 +109,14 @@ const Association = (props) => (
         <AssociationCheckList
           title={listEntries.title}
           entries={listEntries.entries}
-          iconColor={props.muiTheme.palette.accent1Color} />
+          iconColor={props.theme.palette.accent1Color} />
 
         <AssociationFlyingGoals
           title={listEntries.title}
           entries={listEntries.entries}
-          textColor={props.muiTheme.palette.textIconColor}
-          iconColor={props.muiTheme.palette.primary3Color}
-          iconHoverColor={props.muiTheme.palette.accent1Color} />
+          textColor={props.theme.palette.textIconColor}
+          iconColor={props.theme.palette.primary3Color}
+          iconHoverColor={props.theme.palette.accent1Color} />
       </GridFullColumn>
     </AssociationGridRow>
 
@@ -123,7 +124,7 @@ const Association = (props) => (
 );
 
 Association.propTypes = {
-  muiTheme: PropTypes.object.isRequired
+  theme: PropTypes.object.isRequired
 };
 
-export default muiThemeable()(Association);
+export default withTheme()(Association);

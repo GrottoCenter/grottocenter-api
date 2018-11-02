@@ -1,7 +1,8 @@
-import React, {PropTypes, Component} from 'react';
+import React, {Component} from 'react';
+import PropTypes from 'prop-types';
 import GCLink from '../common/GCLink';
 import fetch from 'isomorphic-fetch';
-import {Table, TableBody, TableHeaderColumn, TableRow, TableRowColumn} from 'material-ui/Table';
+import {Table, TableBody, TableHeaderColumn, TableRow, TableRowColumn} from '@material-ui/core';
 import {Loading} from '../common/Toolbox';
 
 const AvailableTools = () => (

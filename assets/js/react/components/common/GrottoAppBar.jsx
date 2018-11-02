@@ -1,15 +1,21 @@
-import React, {Component, PropTypes} from 'react';
-import IconMenu from 'material-ui/IconMenu';
-import IconButton from 'material-ui/IconButton';
-import FontIcon from 'material-ui/FontIcon';
-import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert';
-import MenuItem from 'material-ui/MenuItem';
-import FlatButton from 'material-ui/FlatButton';
-import {Toolbar, ToolbarGroup} from 'material-ui/Toolbar';
-import Dialog from 'material-ui/Dialog';
-import muiThemeable from 'material-ui/styles/muiThemeable';
+import React, {Component} from 'react';
+import PropTypes from 'prop-types';
+import IconMenu from '@material-ui/core/Menu';
+import IconButton from '@material-ui/core/IconButton';
+import FontIcon from '@material-ui/core/Icon';
+import MoreVertIcon from '@material-ui/icons/Navigation';
+import MenuItem from '@material-ui/core/MenuItem';
+import FlatButton from '@material-ui/core/Button';
+import Toolbar from '@material-ui/core/Toolbar';
+import Dialog from '@material-ui/core/Dialog';
+import { withTheme } from '@material-ui/core/styles';
 import LanguagePicker from '../../containers/LanguagePicker';
 import SigninForm from '../SigninForm';
+import styled from 'styled-components';
+
+const FlexDiv = styled.div`
+  display: inline-flex;
+`;
 
 class GrottoAppBar extends Component {
   constructor(props) {
@@ -86,22 +92,22 @@ class GrottoAppBar extends Component {
     ];
 
     return (
-      <Toolbar style={{backgroundColor: this.props.muiTheme.palette.primary1Color}} className="gcAppBar">
-        <ToolbarGroup firstChild={true}>
-          <FontIcon className="material-icons" style={{color: this.props.muiTheme.palette.textIconColor}}>language</FontIcon>
+      <Toolbar style={{backgroundColor: this.props.theme.palette.primary1Color}} className="gcAppBar">
+        <FlexDiv>
+          <FontIcon className="material-icons" style={{color: this.props.theme.palette.textIconColor}}>language</FontIcon>
           <LanguagePicker/>
-        </ToolbarGroup>
+        </FlexDiv>
 
-        <ToolbarGroup>
+        <div>
           <IconMenu iconButtonElement={
-            <IconButton style={{'display': 'none'}} iconStyle={{color: this.props.muiTheme.palette.textIconColor}} touch={true}>
+            <IconButton style={{'display': 'none'}} iconStyle={{color: this.props.theme.palette.textIconColor}} touch={true}>
               <MoreVertIcon />
             </IconButton>
           }>
             <MenuItem primaryText="Sign In" onTouchTap={this.openSignInDialog.bind(this)}/>
             <MenuItem primaryText="Register" onTouchTap={this.openRegisterDialog.bind(this)}/>
           </IconMenu>
-        </ToolbarGroup>
+        </div>
         <Dialog
           title="SignIn Form"
           actions={actionsSignIn}
@@ -127,7 +133,7 @@ class GrottoAppBar extends Component {
 }
 
 GrottoAppBar.propTypes = {
-  muiTheme: PropTypes.object.isRequired
+  theme: PropTypes.object.isRequired
 };
 
-export default muiThemeable()(GrottoAppBar);
+export default withTheme()(GrottoAppBar);

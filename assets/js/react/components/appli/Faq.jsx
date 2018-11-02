@@ -1,7 +1,10 @@
-import React, {PropTypes} from 'react';
-import muiThemeable from 'material-ui/styles/muiThemeable';
-import CheckIcon from 'material-ui/svg-icons/navigation/check';
-import {Card, CardTitle, CardText} from 'material-ui/Card';
+import React from 'react';
+import PropTypes from 'prop-types';
+import { withTheme } from '@material-ui/core/styles';
+import CheckIcon from '@material-ui/icons/Navigation';
+import Card from '@material-ui/core/Card';
+import CardTitle from '@material-ui/core/CardHeader';
+import CardText from '@material-ui/core/CardContent';
 import GCLink from '../common/GCLink';
 import InternationalizedLink from '../common/InternationalizedLink';
 import {pftGdLink, contributorsLink, contributeLinks} from '../../conf/Config';
@@ -119,7 +122,7 @@ const Faq = ({ muiTheme }) => {
 };
 
 Faq.propTypes = {
-  muiTheme: PropTypes.object.isRequired
+  theme: PropTypes.object.isRequired
 };
 
-export default muiThemeable()(Faq);
+export default withTheme()(Faq);

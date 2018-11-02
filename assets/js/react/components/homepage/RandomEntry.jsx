@@ -4,7 +4,7 @@ import {GridRow} from '../common/Grid';
 import Translate from '../common/Translate';
 import styled from 'styled-components';
 import LandingSection from './LandingSection';
-import muiThemeable from 'material-ui/styles/muiThemeable';
+import { withTheme } from '@material-ui/core/styles';
 
 const RandomEntrySection = styled(LandingSection)`
   text-align: center;
@@ -19,8 +19,8 @@ const BgRandomEntrySection = styled(RandomEntrySection)`
   margin-top: 0;
 `;
 
-const SectionTitle = muiThemeable()(styled.h3`
-  color: ${props => props.muiTheme.palette.secondaryBlocTitle};
+const SectionTitle = withTheme()(styled.h3`
+  color: ${props => props.theme.palette.secondaryBlocTitle};
   text-align: center;
   padding-bottom: 50px;
   font-size: 35px;

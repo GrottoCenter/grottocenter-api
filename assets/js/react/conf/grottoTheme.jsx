@@ -1,57 +1,41 @@
-import {
-  /* DARK PRIMARY COLOR */
-  brown700, /* #5D4037 */
-  /* MIDDLE PRIMARY COLOR */
-  brown500, /* #795548 */
-  /* LIGHT PRIMARY COLOR */
-  brown100, /* #D7CCC8 */
+import brown from '@material-ui/core/colors/brown';
+import blue from '@material-ui/core/colors/blue';
+import orange from '@material-ui/core/colors/orange';
+import grey from '@material-ui/core/colors/grey';
+import {fade} from '@material-ui/core/styles/colorManipulator';
+import spacing from '@material-ui/core/styles/spacing';
 
-  /* DARK SECONDARY COLOR */
-  blue700, /* #0288D1 */
-  /* MIDDLE SECONDARY COLOR */
-  blue500, /* #03A9F4 */
-  /* LIGHT SECONDARY COLOR */
-  blue100, /* #B3E5FC */
-
-  /* ACCENT COLOR */
-  orange500, /*  */
-
-  /* PRIMARY TEXT */
-  grey900, /* #212121 */
-  /* SECONDARY COLOR */
-  grey600, /* #757575 */
-
-  /* DIVIDER */
-  grey400, /* #BDBDBD */
-
-  /* TEXT / ICONS */
-  white, /* #FFFFFF */
-
-  darkBlack,
-  fullBlack
-} from 'material-ui/styles/colors';
-import {fade} from 'material-ui/utils/colorManipulator';
-import spacing from 'material-ui/styles/spacing';
+const fontFamily = 'Open Sans';
 
 export default {
   spacing: spacing,
   fontFamily: 'Open Sans',
   palette: {
-    primary1Color: brown500,
-    primary2Color: brown700,
-    primary3Color: brown100,
-    secondary1Color: blue500,
-    secondary2Color: blue700,
-    secondary3Color: blue100,
-    accent1Color: orange500,
-    primaryTextColor: grey900,
-    secondaryTextColor: grey600,
-    textIconColor: white,
-    divider: grey400,
-    darkBlack: darkBlack,
-    fullBlack: fullBlack,
-    secondaryBlocTitle: white,
-    blackShadow: fade(fullBlack,  0.117647),
+    primary1Color: brown['500'],
+    primary2Color: brown['700'],
+    primary3Color: brown["100"],
+    secondary1Color: blue["500"],
+    secondary2Color: blue["700"],
+    secondary3Color: blue["100"],
+    accent1Color: orange["500"],
+    primaryTextColor: grey["900"],
+    secondaryTextColor: grey["600"],
+    textIconColor: '#FFFFFF',
+    divider: grey["400"],
+    darkBlack: '#000000',
+    fullBlack: '#000000',
+    secondaryBlocTitle: '#FFFFFF',
+    blackShadow: fade('#000000',  0.117647),
+  },
+  typography: {
+    fontFamily: fontFamily
+  },
+  overrides: {
+    MuiSelect: {
+      root: {
+        fontFamily: fontFamily
+      }
+    }
   }
 };
 

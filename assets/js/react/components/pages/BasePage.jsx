@@ -1,4 +1,5 @@
-import React, {Component, PropTypes} from 'react';
+import React, {Component} from 'react';
+import PropTypes from 'prop-types';
 import {directionManager, RIGHT_TO_LEFT} from './../../containers/TextDirectionProvider';
 
 class BasePage extends Component {

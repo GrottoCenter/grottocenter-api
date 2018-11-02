@@ -1,5 +1,6 @@
-import React, {PropTypes, Component} from 'react';
-import SyncIcon from 'material-ui/svg-icons/notification/sync';
+import React, {Component} from 'react';
+import PropTypes from 'prop-types';
+import SyncIcon from '@material-ui/icons/Sync';
 import styled from 'styled-components';
 
 const FlyingGoals = styled.div`

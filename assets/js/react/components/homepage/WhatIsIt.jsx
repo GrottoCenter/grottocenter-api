@@ -3,12 +3,12 @@ import LandingSection from './LandingSection';
 import {GridRow, GridOneHalfColumn} from '../common/Grid';
 import Translate from '../common/Translate';
 import styled from 'styled-components';
-import muiThemeable from 'material-ui/styles/muiThemeable';
+import { withTheme } from '@material-ui/core/styles';
 import GCLink from '../common/GCLink';
 import DynamicNumberConnector from '../../containers/DynamicNumberConnector';
 
-const SectionTitle = muiThemeable()(styled.h3`
-  color: ${props => props.muiTheme.palette.accent1Color};
+const SectionTitle = withTheme()(styled.h3`
+  color: ${props => props.theme.palette.accent1Color};
   text-align: center;
   padding-bottom: 50px;
   font-size: 35px;
@@ -31,10 +31,10 @@ const NumberBlock = styled(GridOneHalfColumn)`
   }
 `;
 
-const BlockIcon = muiThemeable()(styled.span`
+const BlockIcon = withTheme()(styled.span`
   margin-right: 10px;
   font-size: 4.2em;
-  color: ${props => props.muiTheme.palette.primary1Color};
+  color: ${props => props.theme.palette.primary1Color};
   line-height: 1;
 
   :before {
@@ -45,8 +45,8 @@ const BlockIcon = muiThemeable()(styled.span`
   }
 `);
 
-const NumberText = muiThemeable()(styled(DynamicNumberConnector)`
-  color: ${props => props.muiTheme.palette.primary1Color};
+const NumberText = withTheme()(styled(DynamicNumberConnector)`
+  color: ${props => props.theme.palette.primary1Color};
   font-weight: 400;
 `);
 

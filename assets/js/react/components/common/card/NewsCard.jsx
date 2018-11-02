@@ -1,12 +1,17 @@
-import React, {Component, PropTypes} from 'react';
-import {Card, CardMedia, CardTitle, CardText, CardActions} from 'material-ui/Card';
+import React, {Component} from 'react';
+import PropTypes from 'prop-types';
+import Card from '@material-ui/core/Card';
+import CardMedia from '@material-ui/core/CardMedia';
+import CardTitle from '@material-ui/core/CardHeader';
+import CardActions from '@material-ui/core/CardActions';
+import CardText from '@material-ui/core/CardContent';
 import {DYNAMIC_NEWS_RELOAD_INTERVAL} from '../../../conf/Config';
-import FlatButton from 'material-ui/FlatButton';
-import ImageLoupe from 'material-ui/svg-icons/image/loupe';
-import SyncIcon from 'material-ui/svg-icons/notification/sync';
-import SyncKOIcon from 'material-ui/svg-icons/notification/sync-problem';
-import Divider from 'material-ui/Divider';
-import muiThemeable from 'material-ui/styles/muiThemeable';
+import FlatButton from '@material-ui/core/Button';
+import ImageLoupe from '@material-ui/icons/Loupe';
+import SyncIcon from '@material-ui/icons/Sync';
+import SyncKOIcon from '@material-ui/icons/SyncProblem';
+import Divider from '@material-ui/core/Divider';
+import { withTheme } from '@material-ui/core/styles';
 import {DateRibbon} from '../Toolbox';
 import GCLink from '../GCLink';
 import styled from 'styled-components';
@@ -53,14 +58,14 @@ class NewsCard extends Component {
     if (this.props.showSpinner && !this.props.text) {
       return (
         <ActionCardStl>
-          <SyncIcon color={this.props.muiTheme.palette.primary3Color} hoverColor={this.props.muiTheme.palette.accent1Color} />
+          <SyncIcon color={this.props.theme.palette.primary3Color} hoverColor={this.props.theme.palette.accent1Color} />
         </ActionCardStl>
       );
     }
     if (!this.props.showSpinner && !this.props.text) {
       return (
         <ActionCardStl>
-          <SyncKOIcon color={this.props.muiTheme.palette.primary3Color} hoverColor={this.props.muiTheme.palette.accent1Color} />
+          <SyncKOIcon color={this.props.theme.palette.primary3Color} hoverColor={this.props.theme.palette.accent1Color} />
         </ActionCardStl>
       );
     }
@@ -75,7 +80,7 @@ class NewsCard extends Component {
         <Divider/>
         {this.props.linkMore && <CardActionsStl>
           <GCLink href={this.props.linkMore}>
-            <FlatButton icon={<ImageLoupe color={this.props.muiTheme.palette.accent1Color} />} />
+            <FlatButton icon={<ImageLoupe color={this.props.theme.palette.accent1Color} />} />
           </GCLink>
         </CardActionsStl>}
       </CardStl>
@@ -90,9 +95,9 @@ NewsCard.propTypes = {
   title: PropTypes.string,
   text: PropTypes.string,
   linkMore: PropTypes.string,
-  muiTheme: PropTypes.object.isRequired,
+  theme: PropTypes.object.isRequired,
   init: PropTypes.func.isRequired,
   refresh: PropTypes.func.isRequired
 };
 
-export default muiThemeable()(NewsCard);
+export default withTheme()(NewsCard);

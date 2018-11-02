@@ -13,3 +13,6 @@ parserOptions:
   ecmaVersion: 6
   ecmaFeatures:
     jsx: true
+globals:
+  locale: true
+  localesList: true

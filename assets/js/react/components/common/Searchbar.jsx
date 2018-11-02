@@ -1,8 +1,9 @@
-import React, {PropTypes, Component} from 'react';
+import React, {Component} from 'react';
+import PropTypes from 'prop-types';
 import { withRouter } from "react-router-dom";
-import AutoComplete from 'material-ui/AutoComplete';
-import MenuItem from 'material-ui/MenuItem';
-import ExploreIcon from 'material-ui/svg-icons/action/explore';
+import MenuItem from '@material-ui/core/MenuItem';
+import ExploreIcon from '@material-ui/icons/Explore';
+import Autocomplete from '../common/Autocomplete';
 import Translate from '../common/Translate';
 
 //TODO: get grotto icons to a font
@@ -113,7 +114,7 @@ class Searchbar extends Component {
     } // TODO message No entry found
 
     return (
-      <AutoComplete
+      <Autocomplete
         className={this.props.className}
         textFieldStyle={{padding: '0 10px', width: 'calc(100% - 40px)', whiteSpace: 'nowrap'}}
         floatingLabelText={<Translate>Search for a cave</Translate>}
@@ -122,7 +123,6 @@ class Searchbar extends Component {
         onNewRequest={(selectedItem) => this.handleNewRequest(selectedItem)}
         fullWidth={true}
         maxSearchResults={50}
-        filter={AutoComplete.noFilter}
         popoverProps={popupStyle}
       />
     );

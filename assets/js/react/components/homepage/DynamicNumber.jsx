@@ -1,10 +1,11 @@
-import React, {Component, PropTypes} from 'react';
-import CircularProgress from 'material-ui/CircularProgress';
+import React, {Component} from 'react';
+import PropTypes from 'prop-types';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import {DYNAMIC_NUMBER_RELOAD_INTERVAL} from '../../conf/Config';
 import {loadDynamicNumber} from '../../actions/DynamicNumber';
-import SyncKOIcon from 'material-ui/svg-icons/notification/sync-problem';
-import IconButton from 'material-ui/IconButton';
-import muiThemeable from 'material-ui/styles/muiThemeable';
+import SyncKOIcon from '@material-ui/icons/SyncProblem';
+import IconButton from '@material-ui/core/IconButton';
+import { withTheme } from '@material-ui/core/styles';
 import styled from 'styled-components';
 import Translate from '../common/Translate';
 
@@ -42,7 +43,7 @@ class DynamicNumber extends Component {
       return (
           <Translate>
             <NumberIcon tooltip='Synchronisation error'>
-              <SyncKOIcon color={this.props.muiTheme.palette.primary3Color} hoverColor={this.props.muiTheme.palette.accent1Color}/>
+              <SyncKOIcon color={this.props.theme.palette.primary3Color} hoverColor={this.props.theme.palette.accent1Color}/>
             </NumberIcon>
           </Translate>
       );
@@ -59,7 +60,7 @@ DynamicNumber.propTypes = {
   numberType: PropTypes.string,
   className: PropTypes.string,
   dispatch: PropTypes.any.isRequired,
-  muiTheme: PropTypes.object.isRequired
+  theme: PropTypes.object.isRequired
 };
 
-export default muiThemeable()(DynamicNumber);
+export default withTheme()(DynamicNumber);

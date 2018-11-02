@@ -1,6 +1,7 @@
-import React, {Component, PropTypes} from 'react';
-import muiThemeable from 'material-ui/styles/muiThemeable';
-import CheckIcon from 'material-ui/svg-icons/navigation/check';
+import React, {Component} from 'react';
+import PropTypes from 'prop-types';
+import { withTheme } from '@material-ui/core/styles';
+import { Check as CheckIcon } from '@material-ui/icons/Navigation';
 import GCLink from '../common/GCLink';
 import InternationalizedLink from '../common/InternationalizedLink';
 import {swaggerLinkV1, restApiLinks, wikiApiLinks, contactLinks} from '../../conf/Config';
@@ -81,7 +82,7 @@ class Api extends Component {
 }
 
 Api.propTypes = {
-  muiTheme: PropTypes.object.isRequired
+  theme: PropTypes.object.isRequired
 };
 
-export default muiThemeable()(Api);
+export default withTheme()(Api);

@@ -1,6 +1,6 @@
 import React from 'react';
 import GCMap from '../common/GCMap';
-import muiThemeable from 'material-ui/styles/muiThemeable';
+import { withTheme } from '@material-ui/core/styles';
 import styled from 'styled-components';
 
 const BackgroundMap = (props) => (
@@ -13,4 +13,4 @@ const FullPageGCMap = styled(GCMap)`
   position: fixed;
 `;
 
-export default muiThemeable()(BackgroundMap);
+export default withTheme()(BackgroundMap);

@@ -1,14 +1,14 @@
 import React from 'react';
-import SearchIcon from 'material-ui/svg-icons/action/search';
+import SearchIcon from '@material-ui/icons/Search';
 import QuicksearchContainer from '../../containers/QuicksearchContainer';
 import {directionManager, RIGHT_TO_LEFT} from './../../containers/TextDirectionProvider';
-import muiThemeable from 'material-ui/styles/muiThemeable';
+import { withTheme } from '@material-ui/core/styles';
 import styled from 'styled-components';
 
-const QuicksearchIcon = muiThemeable()(styled.span`
+const QuicksearchIcon = withTheme()(styled.span`
   position: absolute;
   height: 72px;
-  background-color: ${props => props.muiTheme.palette.primary3Color};
+  background-color: ${props => props.theme.palette.primary3Color};
 
   svg {
     height: 50px !important; // lesshint importantRule: false
@@ -17,21 +17,21 @@ const QuicksearchIcon = muiThemeable()(styled.span`
   }
 `);
 
-const SearchIconWrapper = muiThemeable()(styled(SearchIcon)`
-  fill: ${props => props.muiTheme.palette.primary1Color} !important;
+const SearchIconWrapper = withTheme()(styled(SearchIcon)`
+  fill: ${props => props.theme.palette.primary1Color} !important;
 
   :hover {
-    fill: ${props => props.muiTheme.palette.accent1Color} !important;
+    fill: ${props => props.theme.palette.accent1Color} !important;
   }
 `);
 
-const DirQuicksearchContainer = directionManager()(muiThemeable()(styled(QuicksearchContainer)`
+const DirQuicksearchContainer = directionManager()(withTheme()(styled(QuicksearchContainer)`
   margin-right: ${props => props.direction === RIGHT_TO_LEFT ? '50px' : '0px' };
   margin-left: ${props => props.direction === RIGHT_TO_LEFT ? '0px' : '50px' };
 `));
 
-const StyledQuicksearchContainer = muiThemeable()(styled(DirQuicksearchContainer)`
-  background-color: ${props => props.muiTheme.palette.primary3Color} !important;
+const StyledQuicksearchContainer = withTheme()(styled(DirQuicksearchContainer)`
+  background-color: ${props => props.theme.palette.primary3Color} !important;
   width: calc(100% - 50px) !important;
   padding: 0px !important;
 
@@ -39,7 +39,7 @@ const StyledQuicksearchContainer = muiThemeable()(styled(DirQuicksearchContainer
     font-weight: 300;
     font-size: 25px;
     top: 25px;
-    color: ${props => props.muiTheme.palette.primary1Color} !important;
+    color: ${props => props.theme.palette.primary1Color} !important;
   }
 
   hr {

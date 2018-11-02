@@ -1,15 +1,16 @@
-import React, {PropTypes, Component} from 'react';
-import SwaggerUi, {presets} from 'swagger-ui';
-import {Card} from 'material-ui/Card';
-import muiThemeable from 'material-ui/styles/muiThemeable';
+import React, {Component} from 'react';
+import PropTypes from 'prop-types';
+//import SwaggerUi, {presets} from 'swagger-ui';
+import {Card} from '@material-ui/core/Card';
+import { withTheme } from '@material-ui/core/styles';
 
 class ApiDetail extends Component {
   componentDidMount() {
-    SwaggerUi({
+    /*SwaggerUi({
       dom_id: '#swaggerContainer',
       url: `/swagger/apiV1.yaml`,
       presets: [presets.apis],
-    });
+    });*/
   }
 
   render() {
@@ -20,7 +21,7 @@ class ApiDetail extends Component {
       paddingBottom: '20px'
     };
     return (
-      <div style={{color: this.props.muiTheme.palette.textIconColor}}>
+      <div style={{color: this.props.theme.palette.textIconColor}}>
         <Card style={styleWrap}>
           <div id="swaggerContainer" />
         </Card>
@@ -30,7 +31,7 @@ class ApiDetail extends Component {
 }
 
 ApiDetail.propTypes = {
-  muiTheme: PropTypes.object.isRequired
+  theme: PropTypes.object.isRequired
 };
 
-export default muiThemeable()(ApiDetail);
+export default withTheme()(ApiDetail);

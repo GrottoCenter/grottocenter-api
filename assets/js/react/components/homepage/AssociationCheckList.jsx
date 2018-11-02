@@ -1,5 +1,6 @@
-import React, {PropTypes} from 'react';
-import CheckIcon from 'material-ui/svg-icons/navigation/check';
+import React from 'react';
+import PropTypes from 'prop-types';
+import CheckIcon from '@material-ui/icons/Check';
 import styled, {keyframes} from 'styled-components';
 
 const CheckList = styled.ul`

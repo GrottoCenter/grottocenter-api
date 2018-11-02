@@ -2,8 +2,10 @@
  * TODO Add comment
  */
 import React from 'react';
+import Card from '@material-ui/core/Card';
+import CardTitle from '@material-ui/core/CardHeader';
+import CardText from '@material-ui/core/CardContent';
 import Translate from './common/Translate';
-import {Card, CardTitle, CardText} from 'material-ui/Card';
 
 import Modal from '../components/common/Modal';
 

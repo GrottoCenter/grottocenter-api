@@ -1,21 +1,21 @@
 import React from 'react';
 import GCLink from '../common/GCLink';
-import ChevronIcon from 'material-ui/svg-icons/navigation/chevron-right';
-import HomeIcon from 'material-ui/svg-icons/action/home';
+import ChevronIcon from '@material-ui/icons/ChevronRight';
+import HomeIcon from '@material-ui/icons/Home';
 import {breadcrumpKeys} from '../../conf/Config';
-import muiThemeable from 'material-ui/styles/muiThemeable';
+import { withTheme } from '@material-ui/core/styles';
 import styled from 'styled-components';
 import Translate from '../common/Translate';
 
-const BreadcrumpBar = muiThemeable()(styled.div`
-  color: ${props => props.muiTheme.palette.primary1Color} !important;
-  background-color: ${props => props.muiTheme.palette.primary3Color} !important;
+const BreadcrumpBar = withTheme()(styled.div`
+  color: ${props => props.theme.palette.primary1Color} !important;
+  background-color: ${props => props.theme.palette.primary3Color} !important;
   padding: 0px !important;
   height: 24px;
 
   & > a, & > a:visited  {
     font-weight: 300;
-    color: ${props => props.muiTheme.palette.primary1Color} !important;
+    color: ${props => props.theme.palette.primary1Color} !important;
 
     :hover, :active {
       font-weight: 600;
@@ -23,7 +23,7 @@ const BreadcrumpBar = muiThemeable()(styled.div`
   }
 
   & > svg {
-    color: ${props => props.muiTheme.palette.primary1Color} !important;
+    color: ${props => props.theme.palette.primary1Color} !important;
   }
 `);
 

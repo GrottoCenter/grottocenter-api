@@ -1,6 +1,6 @@
 import React from 'react';
 import { Route, Switch } from 'react-router-dom';
-import muiThemeable from "material-ui/styles/muiThemeable";
+import { withTheme } from '@material-ui/core/styles';
 import styled from "styled-components";
 
 import BasePage from './BasePage';
@@ -11,8 +11,8 @@ import Breadcrump from '../appli/Breadcrump';
 import AvailableTools, { EntriesOfInterest } from '../../components/admin/Tools';
 
 
-const ApplicationHeader = muiThemeable()(styled.header`
-  background-color: ${props => props.muiTheme.palette.secondary1Color};
+const ApplicationHeader = withTheme()(styled.header`
+  background-color: ${props => props.theme.palette.secondary1Color};
 `);
 
 const AppFooterStl = styled(AppFooter)`

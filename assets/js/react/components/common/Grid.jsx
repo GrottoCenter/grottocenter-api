@@ -1,4 +1,5 @@
-import React, {PropTypes} from 'react';
+import React from 'react';
+import PropTypes from 'prop-types';
 import _ from 'underscore.string';
 
 /* Encapsulate the grid mecanism in React components */
