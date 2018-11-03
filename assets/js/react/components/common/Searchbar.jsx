@@ -1,5 +1,5 @@
 import React, {PropTypes, Component} from 'react';
-import {browserHistory} from 'react-router';
+import { withRouter } from "react-router-dom";
 import AutoComplete from 'material-ui/AutoComplete';
 import MenuItem from 'material-ui/MenuItem';
 import ExploreIcon from 'material-ui/svg-icons/action/explore';
@@ -27,7 +27,7 @@ class Searchbar extends Component {
       });
     }
     if (selectedItem.id && !window.location.pathname.startsWith('/ui/map')) {
-      browserHistory.push('/ui/map');
+      this.props.history.push('/ui/map');
     }
   }
 
@@ -135,7 +135,8 @@ Searchbar.propTypes = {
   setCurrentEntry: PropTypes.func.isRequired,
   focusOnLocation: PropTypes.func.isRequired,
   results: PropTypes.object,
-  className: PropTypes.string
-};
+  className: PropTypes.string,
+  history: PropTypes.object.isRequired
+}
 
-export default Searchbar;
+export default withRouter(Searchbar);

@@ -1,12 +1,16 @@
 import React, {PropTypes} from 'react';
-import I18n from 'react-ghost-i18n';
+import { FormattedMessage } from 'react-intl';
 
-const Translate = ({children}) => (
-  <I18n>{children}</I18n>
+const Translate = (props) => (
+  props.children ? <FormattedMessage id={props.children} /> : <FormattedMessage {...props} />
 );
 
 Translate.propTypes = {
-  children: PropTypes.string.isRequired
+  children: PropTypes.string
+};
+
+Translate.defaultProps = {
+  children: null
 };
 
 export default Translate;
