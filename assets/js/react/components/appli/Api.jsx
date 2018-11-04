@@ -1,10 +1,10 @@
 import React, {Component, PropTypes} from 'react';
-import I18n from 'react-ghost-i18n';
 import muiThemeable from 'material-ui/styles/muiThemeable';
 import CheckIcon from 'material-ui/svg-icons/navigation/check';
 import GCLink from '../common/GCLink';
 import InternationalizedLink from '../common/InternationalizedLink';
 import {swaggerLinkV1, restApiLinks, wikiApiLinks, contactLinks} from '../../conf/Config';
+import Translate from '../common/Translate';
 
 class Api extends Component {
   constructor(props) {
@@ -27,19 +27,49 @@ class Api extends Component {
               </div>
               <div className="eight columns">
                 <h3 style={{color: this.props.muiTheme.palette.accent1Color}}>
-                  <I18n>Grottocenter API</I18n>
+                  <Translate id="Grottocenter API" />
                 </h3>
-                <p><I18n>You need to manipulate worldwide speleology data on your website? Trust Grottocenter to manage it for you!</I18n></p>
-                <p><I18n>We offer you a set of <GCLink href={restApiLink} alt='Link to rest API documentation'>Rest API endpoints</GCLink> that you can easily insert in your pages to access this data</I18n></p>
-                <p><I18n>To use them, you just need an <InternationalizedLink links={wikiApiLinks} alt='What is an API?'>API</InternationalizedLink> key, and few lines of code!</I18n> <I18n>And to get your own API key, send us an email using the <InternationalizedLink links={contactLinks} alt='Contact form'>contact form</InternationalizedLink></I18n></p>
-                <p></p>
-                <h5><I18n>Available versions:</I18n></h5>
                 <p>
-                  <CheckIcon style={{color: this.props.muiTheme.palette.accent1Color, position: 'relative', top: '6px', marginRight: '10px'}} />
-                  <GCLink style={{textDecoration: 'none', fontWeight: '600', color: this.props.muiTheme.palette.accent1Color}} internal={true} href={swaggerLinkV1}><I18n>Version 1</I18n></GCLink>
+                  <Translate id="You need to manipulate worldwide speleology data on your website? Trust Grottocenter to manage it for you!" />
                 </p>
                 <p>
-                  <I18n>Not familiar with Swagger? Need support? <GCLink href='https://grottocenter.slack.com/messages/C858CHARY/'>Contact us!</GCLink></I18n>
+                  <Translate
+                    id="We offer you a set of {0} that you can easily insert in your pages to access this data"
+                    values={{
+                      0: <GCLink href={restApiLink} alt='Link to rest API documentation'><Translate id="Rest API endpoints" /></GCLink>
+                    }}
+                  />
+                </p>
+                <p>
+                  <Translate
+                    id="To use them, you just need an {0} key, and few lines of code!"
+                    values={{
+                      0: <InternationalizedLink links={wikiApiLinks} alt='What is an API?'><Translate id="API" /></InternationalizedLink>
+                    }}
+                  />
+                  &nbsp;
+                  <Translate
+                    id="And to get your own API key, send us an email using the {0}"
+                    values={{
+                      0: <InternationalizedLink links={contactLinks} alt='Contact form'><Translate id="contact form" /></InternationalizedLink>
+                    }}
+                  />
+                </p>
+                <p></p>
+                <h5>
+                  <Translate id="Available versions:" />
+                </h5>
+                <p>
+                  <CheckIcon style={{color: this.props.muiTheme.palette.accent1Color, position: 'relative', top: '6px', marginRight: '10px'}} />
+                  <GCLink style={{textDecoration: 'none', fontWeight: '600', color: this.props.muiTheme.palette.accent1Color}} internal={true} href={swaggerLinkV1}><Translate id="Version 1" /></GCLink>
+                </p>
+                <p>
+                  <Translate
+                    id="Not familiar with Swagger? Need support? {0}"
+                    values={{
+                      0: <GCLink href='https://grottocenter.slack.com/messages/C858CHARY/'><Translate id="Contact us!" /></GCLink>
+                    }}
+                  />
                 </p>
               </div>
             </div>

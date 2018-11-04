@@ -3,13 +3,15 @@
  */
 import React from 'react';
 import ReactDOM from 'react-dom';
-import I18n from 'react-ghost-i18n';
+import { addLocaleData, IntlProvider } from 'react-intl';
+import localeData from "react-intl/locale-data/index";
 import {Provider} from 'react-redux';
 import {createStore, applyMiddleware} from 'redux';
 import thunkMiddleware from 'redux-thunk';
 import { BrowserRouter, Route, Switch } from "react-router-dom";
 import getMuiTheme from 'material-ui/styles/getMuiTheme';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
+
 // Needed for onTouchTap// sans ça les clicks de material-ui ne fonctionnent pas
 import injectTapEventPlugin from 'react-tap-event-plugin';
 
@@ -21,6 +23,8 @@ import Landing from "./components/pages/Landing";
 import Application from "./components/pages/Application";
 import Admin from "./components/pages/Admin";
 
+addLocaleData(localeData);
+
 injectTapEventPlugin();
 
 let gcStore = createStore(
@@ -31,12 +35,6 @@ let gcStore = createStore(
   )
 );
 
-/*
-  * please do not remove *
-  localization init via ejs printed global var catalog
-*/
-I18n.locale = window.catalog;
-
 /*gcStore.subscribe(function() {
   console.log(gcStore.getState());
 });*/
@@ -44,20 +42,22 @@ I18n.locale = window.catalog;
 gcStore.dispatch(changeLanguage(locale)); //eslint-disable-line no-undef
 
 ReactDOM.render(
-  <MuiThemeProvider muiTheme={getMuiTheme(grottoTheme)}>
-    <Provider store={gcStore}>
-      <TextDirectionProvider>
-				<BrowserRouter>
-					<div>
-						<Switch>
-							<Route exact path="/" component={Landing} />
-							<Route path="/admin" component={Admin} />
-							<Route path="/ui" component={Application} />
-						</Switch>
-					</div>
-				</BrowserRouter>
-      </TextDirectionProvider>
-    </Provider>
-  </MuiThemeProvider>,
+  <IntlProvider locale={locale} messages={window.catalog}>
+    <MuiThemeProvider muiTheme={getMuiTheme(grottoTheme)}>
+      <Provider store={gcStore}>
+        <TextDirectionProvider>
+          <BrowserRouter>
+            <div>
+              <Switch>
+                <Route exact path="/" component={Landing} />
+                <Route path="/admin" component={Admin} />
+                <Route path="/ui" component={Application} />
+              </Switch>
+            </div>
+          </BrowserRouter>
+        </TextDirectionProvider>
+      </Provider>
+    </MuiThemeProvider>
+  </IntlProvider>,
   document.getElementById('gc3_content_wrapper')
 );

@@ -1,7 +1,7 @@
 import React from 'react';
 import GiftIcon from 'material-ui/svg-icons/action/card-giftcard';
 import FlatButton from 'material-ui/FlatButton';
-import I18n from 'react-ghost-i18n';
+import Translate from '../common/Translate';
 import {paypalLink, paypalImgLink, paypalId} from '../../conf/Config';
 import muiThemeable from 'material-ui/styles/muiThemeable';
 import styled, {keyframes} from 'styled-components';
@@ -99,7 +99,7 @@ const DonateForm = () => (
       <input type="hidden" name="hosted_button_id" value={paypalId} />
       <DonateButton
         href="javascript:document.donate.submit()"
-        label={<I18n>Donate now</I18n>}
+        label={<Translate id='Donate now' />}
         icon={<GiftIcon/>}
       />
       <img alt='' src={paypalImgLink} width='1' height='1' />
