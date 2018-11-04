@@ -24,7 +24,7 @@
     "leaflet": "^1.0.2",
     "leaflet-geosearch": "^2.0.3",
     "less-plugin-autoprefix": "^1.5.1",
-    "lodash": "3.10.1",
+    "lodash": "^4.17.11",
     "material-ui": "^0.16.4",
     "moment": "^2.22.2",
     "nodent": "^3.0.14",
