@@ -70,7 +70,7 @@ module.exports.models = {
   attributes: {
     // createdAt: { type: 'number', autoCreatedAt: false, },
     // updatedAt: { type: 'number', autoUpdatedAt: true, },
-    id: { type: 'number', autoIncrement: true, },
+    id: { type: 'number', autoIncrement: true },
 
     //--------------------------------------------------------------------------
     //  /\   Using MongoDB?
@@ -121,6 +121,5 @@ module.exports.models = {
 
   fetchRecordsOnCreate: true,
 
-  fetchRecordsOnCreateEach: true,
-
+  fetchRecordsOnCreateEach: true
 };

@@ -1,11 +1,23 @@
 import fetch from 'isomorphic-fetch';
 import {dynamicNumbersUrl} from '../conf/Config';
 
+//
+//
+// A C T I O N S
+//
+//
+
 export const INIT_DYNNB_FETCHER = 'INIT_DYNNB_FETCHER';
 export const FETCH_DYNNB = 'FETCH_DYNNB';
 export const FETCH_DYNNB_SUCCESS = 'FETCH_DYNNB_SUCCESS';
 export const FETCH_DYNNB_FAILURE = 'FETCH_DYNNB_FAILURE';
 export const LOAD_DYNNB = 'LOAD_DYNNB';
+
+//
+//
+// A C T I O N S - C R E A T O R S
+//
+//
 
 export const initDynamicNumberFetcher = (numberType) => {
   return {
@@ -36,6 +48,12 @@ export const fetchDynamicNumberFailure = (numberType, error) => {
     error: error
   };
 };
+
+//
+//
+// T H U N K S
+//
+//
 
 export function loadDynamicNumber(numberType) {
   return function (dispatch) {

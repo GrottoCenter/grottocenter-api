@@ -1,14 +1,12 @@
 /**
- * Precompiles Underscore templates to a `.jst` file.
+ * `tasks/config/jst`
  *
  * ---------------------------------------------------------------
  *
- * (i.e. basically it takes HTML files and turns them into tiny little
- *  javascript functions that you pass data to and return HTML. This can
- *  speed up template rendering on the client, and reduce bandwidth usage.)
+ * Precompile HTML templates using Underscore/Lodash notation.
  *
- * For usage docs see:
- * 		https://github.com/gruntjs/grunt-contrib-jst
+ * For more information, see:
+ *   https://sailsjs.com/anatomy/tasks/config/jst.js
  *
  */
 
@@ -41,5 +39,28 @@ module.exports = function(grunt) {
     }
   });
 
-  grunt.loadNpmTasks('grunt-contrib-jst');
+  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  // This Grunt plugin is part of the default asset pipeline in Sails,
+  // so it's already been automatically loaded for you at this point.
+  //
+  // Of course, you can always remove this Grunt plugin altogether by
+  // deleting this file.  But check this out: you can also use your
+  // _own_ custom version of this Grunt plugin.
+  //
+  // Here's how:
+  //
+  // 1. Install it as a local dependency of your Sails app:
+  //    ```
+  //    $ npm install grunt-contrib-jst --save-dev --save-exact
+  //    ```
+  //
+  //
+  // 2. Then uncomment the following code:
+  //
+  // ```
+  // // Load Grunt plugin from the node_modules/ folder.
+  // grunt.loadNpmTasks('grunt-contrib-jst');
+  // ```
+  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 };

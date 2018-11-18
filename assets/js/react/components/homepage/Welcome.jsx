@@ -1,10 +1,16 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import LandingSection from './LandingSection';
-import {GridRow, GridOneThirdColumn, GridTwoThirdColumn} from '../common/Grid';
+import {GridRow, GridOneThirdColumn, GridTwoThirdColumn} from '../../helpers/GridSystem';
 import Translate from '../common/Translate'
 import styled from 'styled-components';
 import { withTheme } from '@material-ui/core/styles';
+
+//
+//
+// S T Y L I N G - C O M P O N E N T S
+//
+//
 
 const WelcomeAvatar = styled.img`
   border-radius: 50%;
@@ -35,6 +41,12 @@ const WelcomeSection = styled(LandingSection)`
     text-align: center;
   }
 `;
+
+//
+//
+// M A I N - C O M P O N E N T
+//
+//
 
 const Welcome = (props) => (
   <WelcomeSection

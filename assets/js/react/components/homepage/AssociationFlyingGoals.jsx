@@ -1,7 +1,13 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
-import SyncIcon from '@material-ui/icons/Sync';
 import styled from 'styled-components';
+import FlyingGoal from './FlyingGoal';
+
+//
+//
+// S T Y L I N G - C O M P O N E N T S
+//
+//
 
 const FlyingGoals = styled.div`
   display: none;
@@ -42,51 +48,7 @@ const CenteredText = styled.div`
   }
 `;
 
-const GoalText = styled.span`
-  display: none !important; // lesshint importantRule: false
-`;
-
-class Goal extends Component {
-  constructor(props) {
-    super(props);
-  }
-
-  handleMouseOver() {
-    this.props.updateTargetZone(this.props.entry.description);
-  }
-
-  handleMouseOut() {
-    this.props.updateTargetZone(this.props.title);
-  }
-
-  render() {
-    return (
-      <div className={this.props.className}
-        onMouseOver={(event) => this.handleMouseOver(event)}
-        onMouseOut={(event) => this.handleMouseOut(event)}>
-        <span style={{color: this.props.textColor}}>
-          {this.props.entry.word}
-        </span>
-        <SyncIcon color={this.props.iconColor} hoverColor={this.props.iconHoverColor} />
-        <GoalText>
-          {this.props.entry.description}
-        </GoalText>
-      </div>
-    );
-  }
-}
-
-Goal.propTypes = {
-  className: PropTypes.string.isRequired,
-  title: PropTypes.element.isRequired,
-  entry: PropTypes.object.isRequired,
-  textColor: PropTypes.string.isRequired,
-  iconColor: PropTypes.string.isRequired,
-  iconHoverColor: PropTypes.string.isRequired,
-  updateTargetZone: PropTypes.func.isRequired
-};
-
-const GoalWrapper = styled(Goal)`
+const GoalWrapper = styled(FlyingGoal)`
   @media (min-width: 550px) {
     position: absolute;
     width: 129px;
@@ -103,20 +65,6 @@ const GoalWrapper = styled(Goal)`
 
     & > span:first-child {
       white-space: nowrap;
-    }
-
-    svg {
-      width: 180px !important; // lesshint importantRule: false
-      height: 180px !important; // lesshint importantRule: false
-      top: -57px;
-      left: -26px;
-      position: absolute;
-      opacity: 0.2;
-    }
-
-    svg:hover {
-      transform: rotate(-135deg) scale(1.2, 1.2);
-      opacity: 0.6;
     }
 
     &:nth-child(1) {
@@ -145,6 +93,12 @@ const GoalWrapper = styled(Goal)`
     }
   }
 `;
+
+//
+//
+// M A I N - C O M P O N E N T
+//
+//
 
 class AssociationFlyingGoals extends Component {
   constructor(props) {

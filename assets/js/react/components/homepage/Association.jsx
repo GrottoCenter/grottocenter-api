@@ -1,13 +1,19 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import LandingSection from './LandingSection';
-import {GridRow, GridOneThirdColumn, GridTwoThirdColumn, GridFullColumn} from '../common/Grid';
+import {GridRow, GridOneThirdColumn, GridTwoThirdColumn, GridFullColumn} from '../../helpers/GridSystem';
 import AssociationCheckList from './AssociationCheckList';
 import AssociationFlyingGoals from './AssociationFlyingGoals';
 import Translate from '../common/Translate';
 import styled from 'styled-components';
 import { withTheme } from '@material-ui/core/styles';
 import GCLogo from '../common/GCLogo';
+
+//
+//
+// S T Y L I N G - C O M P O N E N T S
+//
+//
 
 const AssociationTitle = styled.h3`
   color: ${props => props.color};
@@ -80,6 +86,12 @@ const listEntries = {
   ]
 };
 
+//
+//
+// M A I N - C O M P O N E N T
+//
+//
+
 const Association = (props) => (
   <AssociationSection
     bgColor={props.theme.palette.primary1Color}
@@ -106,10 +118,7 @@ const Association = (props) => (
 
     <AssociationGridRow>
       <GridFullColumn>
-        <AssociationCheckList
-          title={listEntries.title}
-          entries={listEntries.entries}
-          iconColor={props.theme.palette.accent1Color} />
+        <AssociationCheckList title={listEntries.title} entries={listEntries.entries} />
 
         <AssociationFlyingGoals
           title={listEntries.title}

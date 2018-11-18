@@ -22,10 +22,6 @@ module.exports = function(grunt) {
       replacements: [{
         from: 'beta.grottocenter.org', // string replacement
         to: 'localhost:1337'
-      },
-      {
-        from: '- https', // string replacement
-        to: '- http'
       }]
     },
     api: {
@@ -34,10 +30,6 @@ module.exports = function(grunt) {
       replacements: [{
         from: 'localhost:1337', // string replacement
         to: 'beta.grottocenter.org'
-      },
-      {
-        from: '- https', // string replacement
-        to: '- http'
       }]
     }
   });

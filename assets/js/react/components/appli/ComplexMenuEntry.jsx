@@ -7,6 +7,12 @@ import { withTheme } from '@material-ui/core/styles';
 import styled from 'styled-components';
 import browserHistory from 'react-router-dom/BrowserRouter';
 
+//
+//
+// S T Y L I N G - C O M P O N E N T S
+//
+//
+
 const FirstLevelMenuItem = withTheme()(styled(MenuItem)`
   background-color: ${props => props.theme.palette.primary1Color} !important;
   color: ${props => props.theme.palette.primary3Color} !important;
@@ -22,6 +28,11 @@ const FirstLevelMenuItem = withTheme()(styled(MenuItem)`
   }
 `);
 
+//
+//
+// M A I N - C O M P O N E N T
+//
+//
 class ComplexMenuEntry extends Component {
   constructor(props) {
     super(props);

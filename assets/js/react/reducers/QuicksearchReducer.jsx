@@ -5,11 +5,23 @@ import {
   SET_CURRENT_ENTRY
 } from './../actions/Quicksearch';
 
+//
+//
+// D E F A U L T - S T A T E
+//
+//
+
 const initialState = {
-  results: undefined,  // search results
-  errors: undefined,   // fetch errors
-  entry: undefined     // marker entry
-}
+  results: {},       // search results
+  errors: undefined, // fetch errors
+  entry: undefined   // marker entry
+};
+
+//
+//
+// R E D U C E R
+//
+//
 
 export const quicksearch = (state = initialState, action) => {
   switch (action.type) {

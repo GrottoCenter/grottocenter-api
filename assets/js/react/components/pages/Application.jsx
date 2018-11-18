@@ -15,6 +15,12 @@ import Swagger from '../../components/pages/Swagger';
 import Faq from '../../components/appli/Faq';
 import LatestBlogNewsSection from '../../components/homepage/LatestBlogNewsSection';
 
+//
+//
+// S T Y L I N G - C O M P O N E N T S
+//
+//
+
 const ApplicationHeader = withTheme()(styled.header`
   background-color: ${props => props.theme.palette.secondary1Color};
 `);
@@ -28,7 +34,15 @@ const AppFooterStl = styled(AppFooter)`
 
 const ArticleWrapper = styled.article`
   padding: 0px;
+  margin: 20px;
+  margin-bottom: 65px;
 `;
+
+//
+//
+// M A I N - C O M P O N E N T
+//
+//
 
 const Application = () => (
   <BasePage>

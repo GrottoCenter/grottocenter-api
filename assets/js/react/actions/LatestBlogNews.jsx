@@ -1,10 +1,22 @@
 import fetch from 'isomorphic-fetch';
 
+//
+//
+// A C T I O N S
+//
+//
+
 export const INIT_LBNEW_FETCHER = 'INIT_LBNEWS_FETCHER';
 export const FETCH_LBNEWS = 'FETCH_LBNEWS';
 export const FETCH_LBNEWS_SUCCESS = 'FETCH_LBNEWS_SUCCESS';
 export const FETCH_LBNEWS_FAILURE = 'FETCH_LBNEWS_FAILURE';
 export const LOAD_LAST_BLOGNEWS = 'LOAD_LAST_BLOGNEWS';
+
+//
+//
+// A C T I O N S - C R E A T O R S
+//
+//
 
 export const initLatestBlogNewsFetcher = (blog, url) => {
   return {
@@ -36,6 +48,12 @@ export const fetchLatestBlogNewsFailure = (blog, error) => {
     error: error
   };
 };
+
+//
+//
+// T H U N K S
+//
+//
 
 export function loadLatestBlogNews(blog, url) {
   return function (dispatch) {

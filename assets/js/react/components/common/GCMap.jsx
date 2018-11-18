@@ -9,6 +9,12 @@ import {focusZoom} from '../../conf/Config';
 import Spinner from '../common/Spinner';
 import styled from 'styled-components';
 
+//
+//
+// S T Y L I N G - C O M P O N E N T S
+//
+//
+
 export const smallMarkerIcon = L.icon({
     iconUrl: '/images/gc-map-entry.svg',
     iconSize: [
@@ -57,6 +63,12 @@ const GroupDivIcon = styled(DivIcon)`
     }
   }
 `;
+
+//
+//
+// M A I N - C O M P O N E N T
+//
+//
 
 class GCMap extends Component {
   constructor(props) {

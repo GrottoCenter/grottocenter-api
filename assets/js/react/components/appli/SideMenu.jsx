@@ -13,9 +13,14 @@ import ComplexMenuEntryConnector from '../../containers/ComplexMenuEntryConnecto
 import { withTheme } from '@material-ui/core/styles';
 import styled from 'styled-components';
 import {sideMenuWidth} from '../../conf/Config';
-import checkPermission from '../common/CheckPermission';
+import checkPermission from '../../helpers/Permissions';
 import {VIEW_SIDEMENU} from '../../conf/Rights';
 
+//
+//
+// S T Y L I N G - C O M P O N E N T S
+//
+//
 
 const Menubar = withTheme()(styled(Drawer)`
   > div {
@@ -24,6 +29,12 @@ const Menubar = withTheme()(styled(Drawer)`
     background-color: ${props => props.theme.palette.primary1Color} !important;
   }
 `);
+
+//
+//
+// M A I N - C O M P O N E N T
+//
+//
 
 const SideMenu = (props) => (
   <Menubar open={props.visible}>

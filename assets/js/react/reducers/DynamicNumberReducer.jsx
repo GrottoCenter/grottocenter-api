@@ -4,6 +4,18 @@ import {INIT_DYNNB_FETCHER, FETCH_DYNNB, FETCH_DYNNB_SUCCESS, FETCH_DYNNB_FAILUR
 // =====
 //   ???
 
+//
+//
+// D E F A U L T - S T A T E
+//
+//
+
+//
+//
+// R E D U C E R
+//
+//
+
 export const dynamicNumber = (state = {dynamicNumber: []}, action) => {
   let jDynNb = '';
 

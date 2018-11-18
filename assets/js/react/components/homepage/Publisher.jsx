@@ -5,6 +5,12 @@ import Translate from '../common/Translate';
 import styled from 'styled-components';
 import GCLogo from '../common/GCLogo';
 
+//
+//
+// S T Y L I N G - C O M P O N E N T S
+//
+//
+
 const PublisherInfo = styled.div`
   background-color: ${props => props.bgColor};
   display: inline-block;
@@ -25,6 +31,12 @@ const PublisherWrapper = styled.div`
     text-align: left;
   }
 `;
+
+//
+//
+// M A I N - C O M P O N E N T
+//
+//
 
 const Publisher = () => (
   <PublisherWrapper>

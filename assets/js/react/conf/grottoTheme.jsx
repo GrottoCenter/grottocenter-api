@@ -11,6 +11,18 @@ export default {
   spacing: spacing,
   fontFamily: 'Open Sans',
   palette: {
+    primary: {
+      light: brown['500'],
+      main: brown["700"],
+      dark: brown["100"],
+      contrastText: grey["900"],
+    },
+    secondary: {
+      light: blue["500"],
+      main: blue["700"],
+      dark: blue["100"],
+      contrastText: grey["600"],
+    },
     primary1Color: brown['500'],
     primary2Color: brown['700'],
     primary3Color: brown["100"],

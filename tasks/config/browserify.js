@@ -17,10 +17,10 @@ module.exports = function(grunt) {
           ['babelify', {
             compact: false,
             plugins: [
-              'babel-plugin-styled-components',
               '@babel/plugin-proposal-class-properties',
               '@babel/plugin-transform-spread',
-              '@babel/plugin-transform-runtime'
+              '@babel/plugin-transform-runtime',
+              'babel-plugin-styled-components'
             ],
             presets: [
               '@babel/preset-env',

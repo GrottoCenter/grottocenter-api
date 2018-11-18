@@ -6,6 +6,12 @@ import GCLink from '../common/GCLink';
 import GCLogo from '../common/GCLogo';
 import { withTheme } from '@material-ui/core/styles';
 
+//
+//
+// S T Y L I N G - C O M P O N E N T S
+//
+//
+
 const FlexDiv = styled.div`
   display: inline-flex;
 `;
@@ -36,6 +42,12 @@ const LogoImage = styled(GCLogo)`
     padding-top: 4px;
   }
 `;
+
+//
+//
+// M A I N - C O M P O N E N T
+//
+//
 
 const HeaderTitle = ({className, title, subtitle}) => (
   <FlexDiv className={className}>

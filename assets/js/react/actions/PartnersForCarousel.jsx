@@ -1,9 +1,21 @@
 import fetch from 'isomorphic-fetch';
 import {findForCarouselUrl} from '../conf/Config';
 
+//
+//
+// A C T I O N S
+//
+//
+
 export const FETCH_PARTNERS_FC = 'FETCH_PARTNERS_FC';
 export const FETCH_PARTNERS_FC_SUCCESS = 'FETCH_PARTNERS_FC_SUCCESS';
 export const FETCH_PARTNERS_FC_FAILURE = 'FETCH_PARTNERS_FC_FAILURE';
+
+//
+//
+// A C T I O N S - C R E A T O R S
+//
+//
 
 export const fetchPartnersForCarousel = () => {
   return {
@@ -25,6 +37,12 @@ export const fetchPartnersForCarouselFailure = (error) => {
     error: error
   };
 };
+
+//
+//
+// T H U N K S
+//
+//
 
 export function loadPartnersForCarousel() {
   return function (dispatch) {

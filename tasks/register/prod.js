@@ -1,6 +1,6 @@
 module.exports = function (grunt) {
   grunt.registerTask('prod', [
-    'copy:swaggercss',
+    //'copy:swaggercss',
     'replace:api',
     'compileAssets',
     'concat',
@@ -8,10 +8,7 @@ module.exports = function (grunt) {
     'cssmin',
     'sails-linker:prodJs',
     'sails-linker:prodStyles',
-    'sails-linker:devTpl',
-    'sails-linker:prodJsJade',
-    'sails-linker:prodStylesJade',
-    'sails-linker:devTplJade',
+    'sails-linker:clientSideTemplates',
     'transifex:grottocenter'
   ]);
 };

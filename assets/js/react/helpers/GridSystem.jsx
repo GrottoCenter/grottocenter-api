@@ -2,6 +2,11 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import _ from 'underscore.string';
 
+//
+//
+// H E L P E R - F U N C T I O N S
+//
+//
 /* Encapsulate the grid mecanism in React components */
 
 export const GridContainer = ({className, children}) => (

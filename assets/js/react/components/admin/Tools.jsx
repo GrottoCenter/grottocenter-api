@@ -5,11 +5,11 @@ import fetch from 'isomorphic-fetch';
 import {Table, TableBody, TableHeaderColumn, TableRow, TableRowColumn} from '@material-ui/core';
 import {Loading} from '../common/Toolbox';
 
-const AvailableTools = () => (
-  <ul>
-    <li><GCLink internal={true} href="/admin/listEntriesOfInterest">Entries of interest</GCLink></li>
-  </ul>
-);
+//
+//
+// S U B - C O M P O N E N T S
+//
+//
 
 const EntriesOfInterestTableRow = (props) => (
   <TableRow>
@@ -33,7 +33,7 @@ const EntriesOfInterestTableRow = (props) => (
 
 EntriesOfInterestTableRow.propTypes = {
   row: PropTypes.object.isRequired
-}
+};
 
 export class EntriesOfInterest extends Component {
   constructor(props) {
@@ -70,7 +70,6 @@ export class EntriesOfInterest extends Component {
 
     let rows = [];
     this.state.items.forEach(function(newRow) {
-      console.log('newRow',newRow)
       if (newRow !== undefined) {
         rows.push(<EntriesOfInterestTableRow key={newRow.id} row={newRow}/>);
       }
@@ -78,7 +77,7 @@ export class EntriesOfInterest extends Component {
 
     return (
       <div>
-        {rows.length > 0 &&
+        {rows.length > 0 && (
           <Table selectable={false} multiSelectable={false} wrapperStyle={{overflow: 'initial'}} bodyStyle={{overflow: 'initial'}} style={{width: 'initial'}}>
             <TableBody displayRowCheckbox={false} adjustForCheckbox={false} showRowHover={true}>
               <TableRow selectable={false}>
@@ -101,10 +100,22 @@ export class EntriesOfInterest extends Component {
               {rows}
             </TableBody>
           </Table>
-        }
+        )}
       </div>
     );
   }
 }
+
+//
+//
+// M A I N - C O M P O N E N T
+//
+//
+
+const AvailableTools = () => (
+  <ul>
+    <li><GCLink internal={true} href="/admin/listEntriesOfInterest">Entries of interest</GCLink></li>
+  </ul>
+);
 
 export default AvailableTools;

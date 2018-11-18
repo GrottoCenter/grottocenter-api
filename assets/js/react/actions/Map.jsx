@@ -1,11 +1,23 @@
 import fetch from 'isomorphic-fetch';
 import {findMapBoundsUrl} from '../conf/Config';
 
+//
+//
+// A C T I O N S
+//
+//
+
 export const FETCH_MAP_ITEMS_SUCCESS = 'FETCH_MAP_ITEMS_SUCCESS';
 export const FETCH_MAP_ITEMS_FAILURE = 'FETCH_MAP_ITEMS_FAILURE';
 export const CHANGE_LOCATION = 'CHANGE_LOCATION';
 export const CHANGE_ZOOM = 'CHANGE_ZOOM';
 export const FOCUS_ON_LOCATION = 'FOCUS_ON_LOCATION';
+
+//
+//
+// A C T I O N S - C R E A T O R S
+//
+//
 
 export const fetchMapItemsSuccess = (results) => {
   return {
@@ -20,6 +32,19 @@ export const fetchMapItemsFailure = (error) => {
     error
   }
 };
+
+export const changeLocation = (location) => {
+  return {
+    type: CHANGE_LOCATION,
+    location
+  }
+};
+
+//
+//
+// T H U N K S
+//
+//
 
 export function fetchMapItemsResult(criteria) {
   return function (dispatch) {
@@ -42,12 +67,7 @@ export function fetchMapItemsResult(criteria) {
   };
 }
 
-export const changeLocation = (location) => {
-  return {
-    type: CHANGE_LOCATION,
-    location
-  }
-};
+
 
 export const changeZoom = (zoom) => {
   return {

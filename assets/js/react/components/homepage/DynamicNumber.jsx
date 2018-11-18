@@ -5,16 +5,37 @@ import {DYNAMIC_NUMBER_RELOAD_INTERVAL} from '../../conf/Config';
 import {loadDynamicNumber} from '../../actions/DynamicNumber';
 import SyncKOIcon from '@material-ui/icons/SyncProblem';
 import IconButton from '@material-ui/core/IconButton';
-import { withTheme } from '@material-ui/core/styles';
-import styled from 'styled-components';
+import {withStyles} from '@material-ui/core/styles';
 import Translate from '../common/Translate';
 
-const NumberIcon = styled(IconButton)`
-  svg {
-    height: 48px !important; // lesshint importantRule: false
-    width: 48px !important; // lesshint importantRule: false
+//
+//
+// S T Y L I N G - C O M P O N E N T S
+//
+//
+
+const StyledIconButton = withStyles(theme => ({
+  root: {
+    fill: theme.palette.accent1Color
   }
-`;
+}), { withTheme: true })(IconButton);
+
+const StyledSyncKOIcon = withStyles(theme => ({
+  root: {
+    '&:hover': {
+      fill: theme.palette.accent1Color
+    },
+    fill: theme.palette.primary3Color,
+    height: '48px',
+    width: '48px'
+  }
+}), { withTheme: true })(SyncKOIcon);
+
+//
+//
+// M A I N - C O M P O N E N T
+//
+//
 
 class DynamicNumber extends Component {
   constructor(props) {
@@ -42,9 +63,9 @@ class DynamicNumber extends Component {
     } else if (!this.props.number) {
       return (
           <Translate>
-            <NumberIcon tooltip='Synchronisation error'>
-              <SyncKOIcon color={this.props.theme.palette.primary3Color} hoverColor={this.props.theme.palette.accent1Color}/>
-            </NumberIcon>
+            <StyledIconButton tooltip='Synchronisation error'>
+              <StyledSyncKOIcon />
+            </StyledIconButton>
           </Translate>
       );
     }
@@ -60,7 +81,6 @@ DynamicNumber.propTypes = {
   numberType: PropTypes.string,
   className: PropTypes.string,
   dispatch: PropTypes.any.isRequired,
-  theme: PropTypes.object.isRequired
 };
 
-export default withTheme()(DynamicNumber);
+export default DynamicNumber;

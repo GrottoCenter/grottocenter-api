@@ -1,6 +1,10 @@
 import _ from 'underscore.string';
 
 export const
+  LEFT_TO_RIGHT = 'LTR',
+  RIGHT_TO_LEFT = 'RTL';
+
+export const
   DEFAULT_LANGUAGE = 'fr',
   FR_GC_BLOG = '/api/rss/FR',
   EN_GC_BLOG = '/api/rss/EN';
@@ -114,7 +118,7 @@ export const
   findMapBoundsUrl = '/api/v1/geoloc/findByBounds';
 
 export const
-  swaggerLinkV1 = '/ui/swagger/?url=/swagger/apiV1.yaml';
+  swaggerLinkV1 = '/swagger/apiV1.yaml';
 
 export const
   wikiApiLinks = {

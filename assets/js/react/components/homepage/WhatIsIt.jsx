@@ -1,11 +1,18 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import LandingSection from './LandingSection';
-import {GridRow, GridOneHalfColumn} from '../common/Grid';
+import {GridRow, GridOneHalfColumn} from '../../helpers/GridSystem';
 import Translate from '../common/Translate';
 import styled from 'styled-components';
 import { withTheme } from '@material-ui/core/styles';
 import GCLink from '../common/GCLink';
 import DynamicNumberConnector from '../../containers/DynamicNumberConnector';
+
+//
+//
+// S T Y L I N G - C O M P O N E N T S
+//
+//
 
 const SectionTitle = withTheme()(styled.h3`
   color: ${props => props.theme.palette.accent1Color};
@@ -50,9 +57,15 @@ const NumberText = withTheme()(styled(DynamicNumberConnector)`
   font-weight: 400;
 `);
 
-const BigNumberText = styled(NumberText)`
+const BigNumberText = withTheme()(styled(NumberText)`
   font-size: 2.7em;
-`;
+`);
+
+//
+//
+// M A I N - C O M P O N E N T
+//
+//
 
 const WhatIsIt = () => (
   <LandingSection>

@@ -7,6 +7,12 @@ import { withTheme } from '@material-ui/core/styles';
 import styled from 'styled-components';
 import Translate from '../common/Translate';
 
+//
+//
+// S T Y L I N G - C O M P O N E N T S
+//
+//
+
 const BreadcrumpBar = withTheme()(styled.div`
   color: ${props => props.theme.palette.primary1Color} !important;
   background-color: ${props => props.theme.palette.primary3Color} !important;
@@ -40,6 +46,12 @@ const StyledLink = styled(GCLink)`
 const StyledHomeIcon = styled(HomeIcon)`
   padding-right: 5px;
 `;
+
+//
+//
+// M A I N - C O M P O N E N T
+//
+//
 
 const Breadcrump = () => {
   let path = window.location.pathname;

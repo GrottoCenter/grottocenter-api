@@ -2,8 +2,13 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Translate from './Translate';
-
 import styled from 'styled-components';
+
+//
+//
+// S T Y L I N G - C O M P O N E N T S
+//
+//
 
 const SpinnerDiv = styled.div`
   z-index: 99999;
@@ -21,6 +26,12 @@ const SpinnerText = styled.span`
   text-align: center;
   top: calc(50% - 10px);
 `;
+
+//
+//
+// M A I N - C O M P O N E N T
+//
+//
 
 const Spinner = ({size, text}) => (
   <SpinnerDiv size={size}>

@@ -2,6 +2,12 @@ import React from 'react';
 import Avatar from '@material-ui/core/Avatar';
 import Chip from '@material-ui/core/Chip';
 
+//
+//
+// S T Y L I N G - C O M P O N E N T S
+//
+//
+
 const styles = {
   chip: {
     margin: 4,
@@ -11,6 +17,12 @@ const styles = {
     flexWrap: 'wrap',
   },
 };
+
+//
+//
+// M A I N - C O M P O N E N T
+//
+//
 
 export default class Connected extends React.Component {
 

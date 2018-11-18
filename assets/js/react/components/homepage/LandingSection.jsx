@@ -1,7 +1,13 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import {GridContainer} from '../common/Grid';
+import {GridContainer} from '../../helpers/GridSystem';
 import styled from 'styled-components';
+
+//
+//
+// S T Y L I N G - C O M P O N E N T S
+//
+//
 
 const Section = ({className, children}) => (
   <div role="section" className={className}>
@@ -15,6 +21,12 @@ Section.propTypes = {
   className: PropTypes.string,
   children: PropTypes.any.isRequired
 };
+
+//
+//
+// M A I N - C O M P O N E N T
+//
+//
 
 const LandingSection = styled(Section)`
   clear: both;

@@ -4,6 +4,12 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import styled from 'styled-components';
 import { withTheme } from '@material-ui/core/styles';
 
+//
+//
+// S T Y L I N G - C O M P O N E N T S
+//
+//
+
 const PartnerVignette = withTheme()(styled.div`
   margin-right: 2%;
   margin-left: 2%;
@@ -54,6 +60,12 @@ PartnerItem.propTypes = {
 const PartnerVignettes = styled.div`
   text-align: center;
 `;
+
+//
+//
+// M A I N - C O M P O N E N T
+//
+//
 
 class PartnersCarousel extends Component {
   constructor(props) {

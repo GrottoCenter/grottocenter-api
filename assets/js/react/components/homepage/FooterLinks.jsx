@@ -6,6 +6,12 @@ import Translate from '../common/Translate';
 import styled from 'styled-components';
 import { withTheme } from '@material-ui/core/styles';
 
+//
+//
+// S T Y L I N G - C O M P O N E N T S
+//
+//
+
 const FooterLinksList = styled.ul`
   display: inline-block;
   margin: 20px 0;
@@ -26,6 +32,12 @@ const SocialLink = styled.div`
 const SocialGCLink = withTheme()(SocialLink.withComponent(GCLink));
 
 const SocialIntlLink = withTheme()(SocialLink.withComponent(InternationalizedLink));
+
+//
+//
+// M A I N - C O M P O N E N T
+//
+//
 
 const FooterLinks = () => (
   <FooterLinksList>

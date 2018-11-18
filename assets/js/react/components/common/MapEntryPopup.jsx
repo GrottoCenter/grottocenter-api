@@ -1,65 +1,64 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import {Popup} from 'react-leaflet'
-import FlatButton from '@material-ui/core/Button';
+import Button from '@material-ui/core/Button';
 import ImageLoupe from '@material-ui/icons/Loupe';
 import GCLink from './GCLink';
 import {entryDetailPath} from '../../conf/Config';
-import { withTheme } from '@material-ui/core/styles';
-import styled from 'styled-components';
+import {withStyles, withTheme} from '@material-ui/core/styles';
+import { withContext } from '../../helpers/Routing';
 
-const PopupStl = styled.div`
-`;
+//
+//
+// S T Y L I N G - C O M P O N E N T S
+//
+//
 
-function withContext(WrappedComponent, context){
-  class ContextProvider extends Component {
-    getChildContext() {
-      return context;
-    }
-
-    render() {
-      return <WrappedComponent {...this.props} />
-    }
+const StyledImageLoupe = withStyles(theme => ({
+  root: {
+    fill: theme.palette.accent1Color,
   }
+}), { withTheme: true })(ImageLoupe);
 
-  ContextProvider.childContextTypes = {};
+//
+//
+// M A I N - C O M P O N E N T
+//
+//
 
-  Object.keys(context).forEach(key => {
-    ContextProvider.childContextTypes[key] = PropTypes.any.isRequired;
-  });
+export default class MapEntryPopup extends Component {
+  // This make sure you have router in you this.context
+  static contextTypes = {
+    router: PropTypes.object.isRequired,
+    theme: PropTypes.object.isRequired
+  };
 
-  return ContextProvider;
-}
-
-class MapEntryPopup extends Component {
-  constructor(props) {
-    super(props);
-  }
+  static propTypes = {
+    entry: PropTypes.object.isRequired
+  };
 
   render() {
     const GCLinkWithContext = withContext(GCLink, this.context);
-    const FlatButtonWithContext = withContext(FlatButton, this.context);
+    const ButtonWithContext = withContext(Button, this.context);
+    const StyledImageLoupeComponent = <StyledImageLoupe/>;
+
     return (
       <Popup autoPan={false}>
-        <PopupStl>
+        <React.Fragment>
           <div>
             <h6>{this.props.entry.name}</h6>
             <div>{this.props.entry.city} ({this.props.entry.region})</div>
           </div>
-          {this.props.entry.id &&
-          <GCLinkWithContext internal={true} href={entryDetailPath + this.props.entry.id}>
-            <FlatButtonWithContext icon={<ImageLoupe color={this.props.theme.palette.accent1Color} />} />
-          </GCLinkWithContext>}
-        </PopupStl>
+
+          {this.props.entry.id && (
+            <GCLinkWithContext internal={true} href={entryDetailPath + this.props.entry.id}>
+              <ButtonWithContext variant='flat'>
+                {StyledImageLoupeComponent}
+              </ButtonWithContext>
+            </GCLinkWithContext>
+          )}
+        </React.Fragment>
       </Popup>
     );
   }
 }
-
-MapEntryPopup.contextTypes = {
-  theme: PropTypes.object.isRequired,
-  router: PropTypes.object.isRequired,
-  entry: PropTypes.object.isRequired
-};
-
-export default withTheme()(MapEntryPopup);

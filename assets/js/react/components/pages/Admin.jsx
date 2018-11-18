@@ -10,6 +10,11 @@ import AppFooter from '../appli/AppFooter';
 import Breadcrump from '../appli/Breadcrump';
 import AvailableTools, { EntriesOfInterest } from '../../components/admin/Tools';
 
+//
+//
+// S T Y L I N G - C O M P O N E N T S
+//
+//
 
 const ApplicationHeader = withTheme()(styled.header`
   background-color: ${props => props.theme.palette.secondary1Color};
@@ -25,6 +30,12 @@ const AppFooterStl = styled(AppFooter)`
 const ArticleWrapper = styled.article`
   padding: 0px;
 `;
+
+//
+//
+// M A I N - C O M P O N E N T
+//
+//
 
 const Admin = () => (
   <BasePage>

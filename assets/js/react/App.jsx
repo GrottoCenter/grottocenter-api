@@ -3,13 +3,13 @@
  */
 import React from 'react';
 import ReactDOM from 'react-dom';
-//import { addLocaleData, IntlProvider } from 'react-intl';
+import { addLocaleData, IntlProvider } from 'react-intl';
 import localeData from "react-intl/locale-data/index";
 import {Provider} from 'react-redux';
 import {createStore, applyMiddleware} from 'redux';
 import thunkMiddleware from 'redux-thunk';
 import { BrowserRouter, Route, Switch } from "react-router-dom";
-import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
+import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
 import grottoTheme from './conf/grottoTheme';
 import GCReducer from './reducers/GCReducer';
 import {changeLanguage} from './actions/Language';

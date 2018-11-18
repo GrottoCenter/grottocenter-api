@@ -4,26 +4,33 @@ import Input from '@material-ui/core/Input';
 import MenuItem from '@material-ui/core/MenuItem';
 import Select from '@material-ui/core/Select';
 import { withStyles } from '@material-ui/core/styles';
-//import {changeLanguage} from '../actions/Language';
 
-const languageItemStyles = (theme) => ({
+//
+//
+// S T Y L I N G - C O M P O N E N T S
+//
+//
+
+const LanguageItem = withStyles((theme) => ({
   root: {
     fontSize: '16px',
     color: theme.palette.primaryTextColor
   }
-});
+}), { withTheme: true })(MenuItem);
 
-const LanguageItem = withStyles(languageItemStyles, { withTheme: true })(MenuItem);
-
-const inputStyles = (theme) => ({
+const LanguageInput = withStyles((theme) => ({
+  root: {
+    background: 'none'
+  },
   underline: {
-    borderColor: theme.palette.textIconColor
+    '&:before,&:hover,&:after,&:focus': {
+      borderColor: `${theme.palette.textIconColor} !important`,
+      background: 'none'
+    }
   }
-});
+}), { withTheme: true })(Input);
 
-const LanguageInput = withStyles(inputStyles, { withTheme: true })(Input);
-
-const languageSelectorStyles = (theme) => ({
+const StyledSelect = withStyles((theme) => ({
   root: {
     paddingLeft: '10px',
     color: theme.palette.textIconColor,
@@ -32,8 +39,23 @@ const languageSelectorStyles = (theme) => ({
   },
   selectMenu: {
     fontSize: '16px',
+    minHeight: '12px'
+  },
+  select: {
+    '&:before,&:hover,&:after,,&:focus': {
+      background: 'none'
+    }
+  },
+  icon: {
+    color: theme.palette.textIconColor,
   }
-});
+}), { withTheme: true })(Select);
+
+//
+//
+// M A I N - C O M P O N E N T
+//
+//
 
 const LanguageSelector  = (props) => {
   const handleChange = (event) => {
@@ -48,7 +70,6 @@ const LanguageSelector  = (props) => {
 
   const items = Object.keys(localesList).map(id => <LanguageItem
       key={id}
-      classes={props.classes.menuItem}
       value={id}
     >
       {localesList[id]}
@@ -56,20 +77,18 @@ const LanguageSelector  = (props) => {
   );
 
   return (
-    <Select
-      classes={props.classes}
+    <StyledSelect
       value={locale}
       onChange={handleChange}
       input={<LanguageInput />}
     >
       {items}
-    </Select>
+    </StyledSelect>
   );
 };
 
 LanguageSelector.propTypes = {
   dispatch: PropTypes.func.isRequired,
-  classes: PropTypes.object.isRequired
 };
 
-export default withStyles(languageSelectorStyles, { withTheme: true })(LanguageSelector);
+export default LanguageSelector;
