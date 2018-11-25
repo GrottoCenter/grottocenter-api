@@ -3,9 +3,17 @@
 # Date: Dec 29 2016
 #
 # Requirement: docker, gsutil, gcloud
+#
+# On Grottocenter V2 server :
 # The user GROTTOCENTER_V2_SSH_USER need to be created on the gc2 server with sudo rights :
 # /usr/sbin/usermod -a -G wheel GROTTOCENTER_V2_SSH_USER
-# The user GROTTOCENTER_V2_SSH_USER need to have a file .my.cnf in his home directory.
+# The user GROTTOCENTER_V2_SSH_USER need to have a file .my.cnf in his home directory with
+# MySQL user root and password set :
+# [client]
+#         user=root
+#         pass=XXXXX
+#
+# On Cloud SQL :
 # The cloud SQL V2 Mysql database server need to be created from the UI of Google Cloud.
 # A "sailsuser" user with password need to be added from the UI.
 # The "grottoce" database need to be created from the UI.
@@ -35,7 +43,7 @@
 # ./DBDeploy.sh mysshuser 12345 true
 # OPTIONAL_PROD_DEPLOY can be skipped for local deployment and need to be set to 'true' for
 # production deployment.
-# The SSH password will be asked twice. This is normal.
+# -> The SSH password will be asked twice. This is normal.
 
 PROJECT_ID="grottocenter-beta"
 GROTTOCENTER_V2="37.59.123.105"
@@ -63,12 +71,12 @@ fi;
 
 echo '### Get table names to dump from  Grottocenter V2 database ###'
 TABLES_TO_DUMP=$(ssh -p ${GROTTOCENTER_V2_SSH_PORT} ${GROTTOCENTER_V2_SSH_USER}@${GROTTOCENTER_V2} \
-"mysql -p -u grottoce -Ne\"SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='grottoce' AND TABLE_TYPE='BASE TABLE' AND TABLE_NAME NOT LIKE 'forum_%' AND TABLE_NAME NOT LIKE 'T_warning'\"")
+"mysql -Ne\"SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='grottoce' AND TABLE_TYPE='BASE TABLE' AND TABLE_NAME NOT LIKE 'forum_%' AND TABLE_NAME NOT LIKE 'T_warning'\"")
 TABLES_TO_DUMP=$(echo -n $TABLES_TO_DUMP)
 
 echo '### Dump Grottocenter V2 database to local computer ###'
 ssh -p ${GROTTOCENTER_V2_SSH_PORT} ${GROTTOCENTER_V2_SSH_USER}@${GROTTOCENTER_V2} \
-"mysqldump --user=root -p --skip-triggers --hex-blob grottoce ${TABLES_TO_DUMP} \
+"mysqldump --user=root --skip-triggers --hex-blob grottoce ${TABLES_TO_DUMP} \
  | sed 's/ENGINE=MyISAM/ENGINE=InnoDB/g' | gzip -3 -c" > ${DUMP_FILE_PATH}${DUMP_FILE_NAME}.gz
 # All tables are converted from MyISAM to InnoDB
 
@@ -100,7 +108,7 @@ then
 else
   echo '################ LOCAL DEPLOY ###################'
   echo '### Upload Dump file to the local Mysql Docker ###'
-  cp ${DUMP_FILE_PATH}${DUMP_FILE_NAME}.gz ${DUMP_FILE_PATH}${DUMP_FILE_NAME}.gz.save
+  # cp ${DUMP_FILE_PATH}${DUMP_FILE_NAME}.gz ${DUMP_FILE_PATH}${DUMP_FILE_NAME}.gz.save
   gunzip -f ${DUMP_FILE_PATH}${DUMP_FILE_NAME}.gz
   docker exec -i ${MYSQL_LOCAL_TAGNAME} mysql --user=${LOCAL_DOCKER_MYSQL_USER} --password=${LOCAL_DOCKER_MYSQL_PASSWORD} ${LOCAL_DOCKER_MYSQL_DATABASE} < ${DUMP_FILE_PATH}${DUMP_FILE_NAME}
   rm -f ${DUMP_FILE_PATH}${DUMP_FILE_NAME}
