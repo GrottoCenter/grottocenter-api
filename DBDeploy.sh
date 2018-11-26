@@ -31,11 +31,13 @@
 # - Add to the created dump the modification SQL scripts from the sql folder of
 #   the project. Only the scripts starting with "20*" are used.
 # IF [OPTIONAL_PROD_DEPLOY]=true
+# - Personal data of the dump are preserved
 # - Send the dump file to Google Cloud Storage
 # - Import the dump file to the  GC3 Cloud SQL instance.
 # - Delete all dump files
 # ELSE
-# - Load dump file to local mysql container
+# - Personal data of the dump are anonymized
+# - Load dump file to local mysql docker container
 #
 # USAGE :
 # ./DBDeploy.sh [GROTTOCENTER_V2_SSH_USER] [GROTTOCENTER_V2_SSH_PORT] [OPTIONAL_PROD_DEPLOY]
@@ -80,14 +82,13 @@ ssh -p ${GROTTOCENTER_V2_SSH_PORT} ${GROTTOCENTER_V2_SSH_USER}@${GROTTOCENTER_V2
  | sed 's/ENGINE=MyISAM/ENGINE=InnoDB/g' | gzip -3 -c" > ${DUMP_FILE_PATH}${DUMP_FILE_NAME}.gz
 # All tables are converted from MyISAM to InnoDB
 
-echo '### Concatenate all SQL changes to make to V2 database ###'
 gunzip -f ${DUMP_FILE_PATH}${DUMP_FILE_NAME}.gz
-cat sql/0_initDatabase.sql ${DUMP_FILE_PATH}${DUMP_FILE_NAME} sql/20*.sql | gzip > ${DUMP_FILE_PATH}${DUMP_FILE_NAME}.gz
-rm -f ${DUMP_FILE_PATH}${DUMP_FILE_NAME}
-
 if [ "${PRODUCTION_DEPLOY}" = "true" ]
 then
   echo '################ PRODUCTION DEPLOY ###################'
+  echo '### Concatenate all SQL changes to make to V2 database ###'
+  cat sql/0_initDatabase.sql ${DUMP_FILE_PATH}${DUMP_FILE_NAME} sql/20*.sql | gzip > ${DUMP_FILE_PATH}${DUMP_FILE_NAME}.gz
+  rm -f ${DUMP_FILE_PATH}${DUMP_FILE_NAME}
   echo '### Upload Dump file to the Cloud Storage bucket you created ###'
   gsutil cp ${DUMP_FILE_PATH}${DUMP_FILE_NAME}.gz gs://${CLOUD_STORAGE_BUCKET_NAME}
   rm -f ${DUMP_FILE_PATH}${DUMP_FILE_NAME}.gz
@@ -107,6 +108,9 @@ then
   gsutil rm gs://${CLOUD_STORAGE_BUCKET_NAME}/${DUMP_FILE_NAME}.gz
 else
   echo '################ LOCAL DEPLOY ###################'
+  echo '### Concatenate all SQL changes to make to V2 database + ANONYMIZE ###'
+  cat sql/0_initDatabase.sql ${DUMP_FILE_PATH}${DUMP_FILE_NAME} sql/20*.sql sql/1_anonymize.sql | gzip > ${DUMP_FILE_PATH}${DUMP_FILE_NAME}.gz
+  rm -f ${DUMP_FILE_PATH}${DUMP_FILE_NAME}
   echo '### Upload Dump file to the local Mysql Docker ###'
   # cp ${DUMP_FILE_PATH}${DUMP_FILE_NAME}.gz ${DUMP_FILE_PATH}${DUMP_FILE_NAME}.gz.save
   gunzip -f ${DUMP_FILE_PATH}${DUMP_FILE_NAME}.gz
