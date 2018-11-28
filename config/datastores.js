@@ -41,7 +41,8 @@ module.exports.datastores = {
     inMemoryOnly: true
   },*/
 
-  /*'grottoceMysqlLocalDocker': {
+
+  'grottoceMysqlLocalDocker': {
     migrate: 'safe',
     adapter: 'sails-mysql',
     // See "docker link" env variables : https://docs.docker.com/engine/userguide/networking/default_network/dockerlinks/#/environment-variables
@@ -52,6 +53,7 @@ module.exports.datastores = {
     timezone: 'utc'
   },
 
+  /*
   'grottoceMysqlProd': {
     migrate: 'safe',
     adapter: 'sails-mysql',
