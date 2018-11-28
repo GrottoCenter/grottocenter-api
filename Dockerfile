@@ -20,6 +20,6 @@ COPY . /app
 # This environment variable disable the grunt build on production
 # So the app need to be build using "grunt prod" before creating the docker image
 ENV sails_hooks__grunt=false
-ENV NODE_ENV=production
+ENV NODE_ENV=dev
 CMD [ "node", "app.js" ]
 EXPOSE 8080
