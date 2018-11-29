@@ -1,10 +1,17 @@
 import React from 'react';
-import GiftIcon from 'material-ui/svg-icons/action/card-giftcard';
-import FlatButton from 'material-ui/FlatButton';
-import Translate from '../common/Translate';
+import GiftIcon from '@material-ui/icons/CardGiftcard';
+import Button from '@material-ui/core/Button';
 import {paypalLink, paypalImgLink, paypalId} from '../../conf/Config';
-import muiThemeable from 'material-ui/styles/muiThemeable';
+import Translate from '../common/Translate';
+import {withStyles, withTheme} from '@material-ui/core/styles';
 import styled, {keyframes} from 'styled-components';
+import Typography from "@material-ui/core/Typography/Typography";
+
+//
+//
+// S T Y L I N G - C O M P O N E N T S
+//
+//
 
 const btEyeCatcher = keyframes`
   {
@@ -63,48 +70,63 @@ const DonateFormWrapper = styled.div`
   }
 `;
 
-const DonateButton = muiThemeable()(styled(FlatButton)`
-  background-color: ${props => props.muiTheme.palette.accent1Color} !important; // lesshint importantRule: false
-  color: ${props => props.muiTheme.palette.textIconColor} !important; // lesshint importantRule: false
-  height: auto !important; // lesshint importantRule: false
+const DonateButton = withStyles(theme => ({
+  root: {
+    backgroundColor: theme.palette.accent1Color,
+    color: theme.palette.textIconColor,
+    height: 'auto',
+    padding: '4px 10px',
 
-  &:hover {
-    color: ${props => props.muiTheme.palette.primaryTextColor} !important; // lesshint importantRule: false
+    '&:hover': {
+      backgroundColor: theme.palette.accent1Color,
+    },
 
-    svg {
-      fill: ${props => props.muiTheme.palette.primaryTextColor} !important; // lesshint importantRule: false
+    '&>div': {
+      textAlign: 'center',
+      whiteSpace: 'nowrap',
+    },
+
+    '& > span': {
+      textTransform: 'none'
     }
   }
+}), { withTheme: true })(Button);
 
-  > div {
-    text-align: center;
-    white-space: nowrap;
+const StyledGiftIcon = withStyles(theme => ({
+  root: {
+    fill: theme.palette.textIconColor,
+    width: '40px',
+    height: '40px',
+    marginRight: '10px'
   }
+}), { withTheme: true })(GiftIcon);
 
-  span {
-     text-transform: none !important; // lesshint importantRule: false
+const StyledTypography = withStyles(theme => ({
+  root: {
+    fontSize: '14px',
+    textAlign: 'center',
+    color: theme.palette.textIconColor
   }
+}), { withTheme: true })(Typography);
 
-  svg {
-    fill: ${props => props.muiTheme.palette.textIconColor} !important; // lesshint importantRule: false
-    width: 40px !important; // lesshint importantRule: false
-    height: 40px !important; // lesshint importantRule: false
-  }
-`);
+//
+//
+// M A I N - C O M P O N E N T
+//
+//
 
 const DonateForm = () => (
   <DonateFormWrapper>
     <form name='donate' action={paypalLink} method="post" target="_blank">
       <input type="hidden" name="cmd" value="_s-xclick" />
       <input type="hidden" name="hosted_button_id" value={paypalId} />
-      <DonateButton
-        href="javascript:document.donate.submit()"
-        label={<Translate id='Donate now' />}
-        icon={<GiftIcon/>}
-      />
+      <DonateButton href="javascript:document.donate.submit()">
+        <StyledGiftIcon />
+        <StyledTypography component='span'><Translate id='Donate now' /></StyledTypography>
+      </DonateButton>
       <img alt='' src={paypalImgLink} width='1' height='1' />
     </form>
   </DonateFormWrapper>
 );
 
-export default muiThemeable()(DonateForm);
+export default withTheme()(DonateForm);

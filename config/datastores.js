@@ -36,10 +36,10 @@ module.exports.datastores = {
     url: 'mysql://root:root@localhost/grottoce',
   },
 
-  /*test: {
+  test: {
     adapter: 'sails-disk',
     inMemoryOnly: true
-  },*/
+  },
 
 
   'grottoceMysqlLocalDocker': {

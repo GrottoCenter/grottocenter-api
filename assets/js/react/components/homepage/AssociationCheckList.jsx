@@ -1,6 +1,14 @@
-import React, {PropTypes} from 'react';
-import CheckIcon from 'material-ui/svg-icons/navigation/check';
+import React from 'react';
+import PropTypes from 'prop-types';
+import CheckIcon from '@material-ui/icons/Check';
 import styled, {keyframes} from 'styled-components';
+import {withStyles} from "@material-ui/core";
+
+//
+//
+// S T Y L I N G - C O M P O N E N T S
+//
+//
 
 const CheckList = styled.ul`
   width: 100%;
@@ -80,16 +88,29 @@ const ListItem = styled.li`
   }
 `;
 
-const AssociationCheckList = ({title, entries, iconColor}) => (
+const StyledListIcon = withStyles(theme => ({
+  root: {
+    fill: theme.palette.accent1Color
+  }
+}), { withTheme: true })(ListIcon);
+
+//
+//
+// M A I N - C O M P O N E N T
+//
+//
+
+const AssociationCheckList = ({title, entries}) => (
   <CheckListWrapper>
     <ListTitle>
       {title}
     </ListTitle>
+
     <CheckList>
       {entries.map(function(entry, i){
         return (
           <ListItem key={i}>
-            <ListIcon color={iconColor}/>
+            <StyledListIcon />
             {entry.description}
           </ListItem>
         );
@@ -100,8 +121,7 @@ const AssociationCheckList = ({title, entries, iconColor}) => (
 
 AssociationCheckList.propTypes = {
   entries: PropTypes.array.isRequired,
-  title: PropTypes.element.isRequired,
-  iconColor: PropTypes.string.isRequired
+  title: PropTypes.element.isRequired
 };
 
 export default AssociationCheckList;

@@ -1,66 +1,72 @@
 import React from 'react';
-import muiThemeable from 'material-ui/styles/muiThemeable';
+import { withTheme } from '@material-ui/core/styles';
 import InternationalizedLink from '../common/InternationalizedLink';
 import GCLink from '../common/GCLink';
 import GCLogo from '../common/GCLogo';
 import {licenceLinks, fseLinks, contactLinks, githubLink, facebookLink} from '../../conf/Config';
 import {twitterLink, rssLinks, bloggerLinks, bloggerIcons} from '../../conf/Config';
-import {Toolbar, ToolbarGroup} from 'material-ui/Toolbar';
+import Toolbar from '@material-ui/core/Toolbar';
 import styled from 'styled-components';
+import {withStyles} from "@material-ui/core";
 
-const FooterBar = muiThemeable()(styled(Toolbar)`
-  color: ${props => props.muiTheme.palette.fullBlack} !important;
-  background-color: ${props => props.muiTheme.palette.primary3Color} !important;
-  padding: 0px !important;
-  height: 45px !important;
-  position: fixed;
-  bottom: 0;
-  width: 100%;
+//
+//
+// S T Y L I N G - C O M P O N E N T S
+//
+//
 
-  img {
-    padding-left: 5px;
-    padding-right: 5px;
+const FooterBar = withStyles(theme => ({
+  root: {
+    color: theme.palette.fullBlack,
+    backgroundColor: theme.palette.primary3Color,
+    padding: '0 10px',
+    height: '45px',
+    minHeight: '45px',
+    position: 'fixed',
+    bottom: '0',
+    width: 'calc(100% - 20px)',
+    display: 'inline-flex',
+    justifyContent: 'space-between'
   }
-
-  svg {
-    width: 30px !important;
-    height: 30px !important;
-  }
-`);
-
-const RightToolbarGroup= muiThemeable()(styled(ToolbarGroup)`
-  width: 40% !important;
-  justify-content: flex-start !important;
-  background-color: ${props => props.muiTheme.palette.primary3Color} !important;
-`);
-
-const LeftToolbarGroup= muiThemeable()(styled(ToolbarGroup)`
-  width: 40% !important;
-  justify-content: flex-end !important;
-  background-color: ${props => props.muiTheme.palette.primary3Color} !important;
-`);
+}), { withTheme: true })(Toolbar);
 
 const SocialImage = styled.img`
   height: 25px;
   padding-top: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
 `;
 
 const LogoImage = styled(GCLogo)`
   & > img {
-    height: 20px;
+    height: 25px;
     padding-top: 4px;
+    padding-left: 5px;
+    padding-right: 5px;
   }
 `;
 
-const Version = styled.div`
+const Version = styled.span`
+  line-height: 36px;
   font-size: x-small;
+  padding-left: 5px;
+`;
+
+const RightDiv = styled.div`
+  display: inline-flex;
 `;
 
 const bloggerIcon = (bloggerIcons[locale] !== undefined) ? bloggerIcons[locale] : bloggerIcons['*']; // eslint-disable-line
 
+//
+//
+// M A I N - C O M P O N E N T
+//
+//
+
 const AppFooter = () => (
   <FooterBar>
-    <RightToolbarGroup>
+    <RightDiv>
       <InternationalizedLink links={fseLinks}>
         <SocialImage src="/images/FSE.svg" alt="Logo FSE" />
       </InternationalizedLink>
@@ -72,13 +78,13 @@ const AppFooter = () => (
       <Version>
         GC v3
       </Version>
-    </RightToolbarGroup>
+    </RightDiv>
 
-    <ToolbarGroup>
+    <div>
       <LogoImage />
-    </ToolbarGroup>
+    </div>
 
-    <LeftToolbarGroup>
+    <div>
       <InternationalizedLink links={githubLink}>
         <SocialImage src="/images/icons8/brown/icons8-github-filled-100.png" alt="Grottocenter3 on GitHub" />
       </InternationalizedLink>
@@ -100,7 +106,7 @@ const AppFooter = () => (
       <GCLink internal={true} href='/ui/faq'>
         <SocialImage src='/images/icons8/brown/icons8-faq-filled-100.png' alt="Need help?" />
       </GCLink>
-    </LeftToolbarGroup>
+    </div>
   </FooterBar>
 );
 

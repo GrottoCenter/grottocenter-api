@@ -1,36 +1,47 @@
-import React, {PropTypes, Component} from 'react';
-import SwaggerUi, {presets} from 'swagger-ui';
-import {Card} from 'material-ui/Card';
-import muiThemeable from 'material-ui/styles/muiThemeable';
+import React from 'react';
+//import SwaggerUi, {presets} from 'swagger-ui';
+import Card from '@material-ui/core/Card';
+import {withStyles, withTheme} from '@material-ui/core/styles';
+import styled from "styled-components";
 
-class ApiDetail extends Component {
-  componentDidMount() {
-    SwaggerUi({
+//
+//
+// S T Y L I N G - C O M P O N E N T S
+//
+//
+
+const StyledWrapper = withTheme()(styled.div`
+  color: ${props => props.theme.palette.textIconColor};
+`);
+
+const StyledCard = withStyles({
+  root: {
+    width: '80%',
+    margin: 'auto',
+    paddingRight: '40px',
+    paddingBottom: '20px'
+  }
+})(Card);
+
+//
+//
+// M A I N - C O M P O N E N T
+//
+//
+
+const ApiDetail = () => {
+  /*SwaggerUi({
       dom_id: '#swaggerContainer',
       url: `/swagger/apiV1.yaml`,
-      presets: [presets.apis],
-    });
-  }
-
-  render() {
-    let styleWrap = {
-      width: '80%',
-      margin: 'auto',
-      paddingRight: '40px',
-      paddingBottom: '20px'
-    };
-    return (
-      <div style={{color: this.props.muiTheme.palette.textIconColor}}>
-        <Card style={styleWrap}>
-          <div id="swaggerContainer" />
-        </Card>
-      </div>
-    );
-  }
-}
-
-ApiDetail.propTypes = {
-  muiTheme: PropTypes.object.isRequired
+      presets: [presets.apis]
+  });*/
+  return (
+    <StyledWrapper>
+      <StyledCard>
+        <div id="swaggerContainer"/>
+      </StyledCard>
+    </StyledWrapper>
+  );
 };
 
-export default muiThemeable()(ApiDetail);
+export default ApiDetail;

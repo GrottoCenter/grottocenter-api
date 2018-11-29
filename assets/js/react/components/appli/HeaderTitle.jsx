@@ -1,23 +1,30 @@
-import React, {PropTypes} from 'react';
+import React from 'react';
+import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import TextDiv from '../common/TextDiv';
 import GCLink from '../common/GCLink';
 import GCLogo from '../common/GCLogo';
-import muiThemeable from 'material-ui/styles/muiThemeable';
+import { withTheme } from '@material-ui/core/styles';
+
+//
+//
+// S T Y L I N G - C O M P O N E N T S
+//
+//
 
 const FlexDiv = styled.div`
   display: inline-flex;
 `;
 
-const TitleZone1 = muiThemeable()(styled(TextDiv)`
-  color: ${props => props.muiTheme.palette.primary3Color};
+const TitleZone1 = withTheme()(styled(TextDiv)`
+  color: ${props => props.theme.palette.primary3Color};
   font-weight: 500;
   font-size: 20px;
   line-height: 12px;
 `);
 
-const TitleZone2 = muiThemeable()(styled(TextDiv)`
-  color: ${props => props.muiTheme.palette.accent1Color};
+const TitleZone2 = withTheme()(styled(TextDiv)`
+  color: ${props => props.theme.palette.accent1Color};
   font-size: 8px;
 `);
 
@@ -35,6 +42,12 @@ const LogoImage = styled(GCLogo)`
     padding-top: 4px;
   }
 `;
+
+//
+//
+// M A I N - C O M P O N E N T
+//
+//
 
 const HeaderTitle = ({className, title, subtitle}) => (
   <FlexDiv className={className}>

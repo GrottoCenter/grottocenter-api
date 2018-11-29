@@ -1,10 +1,22 @@
 import fetch from 'isomorphic-fetch';
 import {quicksearchUrl} from '../conf/Config';
 
+//
+//
+// A C T I O N S
+//
+//
+
 export const RESET_QUICKSEARCH = 'RESET_QUICKSEARCH';
 export const FETCH_QUICKSEARCH_SUCCESS = 'FETCH_QUICKSEARCH_SUCCESS';
 export const FETCH_QUICKSEARCH_FAILURE = 'FETCH_QUICKSEARCH_FAILURE';
 export const SET_CURRENT_ENTRY = 'SET_CURRENT_ENTRY';
+
+//
+//
+// A C T I O N S - C R E A T O R S
+//
+//
 
 export const resetQuicksearch = () => {
   return {
@@ -34,6 +46,12 @@ export const setCurrentEntry = (entry) => {
     entry: entry
   }
 };
+
+//
+//
+// T H U N K S
+//
+//
 
 export function fetchQuicksearchResult(criteria) {
   return function (dispatch) {

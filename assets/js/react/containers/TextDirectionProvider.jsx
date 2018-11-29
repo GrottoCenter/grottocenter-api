@@ -11,11 +11,10 @@
  * "direction"
  */
 
-import React, {Component, PropTypes} from 'react';
+import React, {Component} from 'react';
+import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
-
-export const LEFT_TO_RIGHT = 'LTR';
-export const RIGHT_TO_LEFT = 'RTL';
+import { LEFT_TO_RIGHT, RIGHT_TO_LEFT } from '../conf/Config';
 
 class TextDirectionProvider extends Component {
   getChildContext() {
@@ -48,9 +47,11 @@ export default connect(mapStateToProps)(TextDirectionProvider);
 
 export function directionManager() {
   return (Component) => {
-    const TextDirectionManagedComponent = (props, context) => {
-      return <Component direction={context.direction} {...props} />;
-    };
+    const TextDirectionManagedComponent = (props, context) => (
+      context
+        ? <Component direction={context.direction} {...props} />
+        : <Component direction={RIGHT_TO_LEFT} {...props} />
+    );
 
     TextDirectionManagedComponent.contextTypes = {
       direction: PropTypes.string.isRequired

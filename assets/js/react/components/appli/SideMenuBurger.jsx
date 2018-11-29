@@ -1,22 +1,29 @@
-import React, {PropTypes} from 'react';
-import Avatar from 'material-ui/Avatar';
-import BurgerIcon from 'material-ui/svg-icons/navigation/menu';
-import muiThemeable from 'material-ui/styles/muiThemeable';
+import React from 'react';
+import PropTypes from 'prop-types';
+import Avatar from '@material-ui/core/Avatar';
+import BurgerIcon from '@material-ui/icons/Navigation';
+import { withTheme } from '@material-ui/core/styles';
 import styled from 'styled-components';
-import checkPermission from '../common/CheckPermission';
+import checkPermission from '../../helpers/Permissions';
 import {VIEW_SIDEMENU} from '../../conf/Rights';
 
-const BurgerAvatar = muiThemeable()(styled(Avatar)`
+//
+//
+// S T Y L I N G - C O M P O N E N T S
+//
+//
+
+const BurgerAvatar = withTheme()(styled(Avatar)`
   position: relative;
   left: 20px;
   background-color: ${props => props.visible ?
-    props.muiTheme.palette.textIconColor :
-    props.muiTheme.palette.accent1Color} !important;
+    props.theme.palette.textIconColor :
+    props.theme.palette.accent1Color} !important;
 
   > svg {
     fill: ${props => props.visible ?
-      props.muiTheme.palette.primaryTextColor :
-      props.muiTheme.palette.textIconColor} !important;
+      props.theme.palette.primaryTextColor :
+      props.theme.palette.textIconColor} !important;
   }
 `);
 
@@ -30,6 +37,12 @@ BurgerLink.propTypes = {
   onclick: PropTypes.func.isRequired,
   visible: PropTypes.bool.isRequired
 }
+
+//
+//
+// M A I N - C O M P O N E N T
+//
+//
 
 const SideMenuBurger = styled(BurgerLink)``;
 

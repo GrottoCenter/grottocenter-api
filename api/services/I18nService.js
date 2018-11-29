@@ -1,24 +1,12 @@
 'use strict';
 
 module.exports = {
-  getPageDate: function(req) {
+  getPageData: function(req) {
     let locale = req.getLocale();
-    let localesList = sails.config.i18n.locales;
     let localesText = sails.config.i18n.localesText;
-    let localesListLabels = [];
-
-    localesList.forEach(function(key) {
-      if (localesText[key]) {
-        localesListLabels.push({
-          value: key,
-          primaryText: localesText[key],
-        });
-      }
-    });
-
     return {
       locale: locale,
-      localesList: JSON.stringify(localesListLabels),
+      localesList: JSON.stringify(localesText),
       catalog: JSON.stringify(this.getCatalog(req)),
     };
   },

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Redirect, Route, Switch } from 'react-router-dom';
-import muiThemeable from 'material-ui/styles/muiThemeable';
+import { withTheme } from '@material-ui/core/styles';
 import styled from 'styled-components';
 
 import BasePage from './BasePage';
@@ -15,8 +15,14 @@ import Swagger from '../../components/pages/Swagger';
 import Faq from '../../components/appli/Faq';
 import LatestBlogNewsSection from '../../components/homepage/LatestBlogNewsSection';
 
-const ApplicationHeader = muiThemeable()(styled.header`
-  background-color: ${props => props.muiTheme.palette.secondary1Color};
+//
+//
+// S T Y L I N G - C O M P O N E N T S
+//
+//
+
+const ApplicationHeader = withTheme()(styled.header`
+  background-color: ${props => props.theme.palette.secondary1Color};
 `);
 
 const AppFooterStl = styled(AppFooter)`
@@ -28,7 +34,15 @@ const AppFooterStl = styled(AppFooter)`
 
 const ArticleWrapper = styled.article`
   padding: 0px;
+  margin: 20px;
+  margin-bottom: 65px;
 `;
+
+//
+//
+// M A I N - C O M P O N E N T
+//
+//
 
 const Application = () => (
   <BasePage>

@@ -1,13 +1,21 @@
-import React, {PropTypes, Component} from 'react';
-import FullStarIcon from 'material-ui/svg-icons/toggle/star';
-import EmptyStarIcon from 'material-ui/svg-icons/toggle/star-border';
-import HalfStarIcon from 'material-ui/svg-icons/toggle/star-half';
-import CircularProgress from 'material-ui/CircularProgress';
+import React, {Component} from 'react';
+import PropTypes from 'prop-types';
+import FullStarIcon from '@material-ui/icons/Star';
+import EmptyStarIcon from '@material-ui/icons/StarBorder';
+import HalfStarIcon from '@material-ui/icons/StarHalf';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import GCLink from '../GCLink';
 import {detailPageV2Links} from '../../../conf/Config';
-import {GridRow, GridOneHalfColumn} from '../Grid';
+import {GridRow, GridOneHalfColumn} from '../../../helpers/GridSystem';
 import Translate from '../Translate';
 import styled from 'styled-components';
+import {withStyles} from "@material-ui/core";
+
+//
+//
+// S U B - C O M P O N E N T S
+//
+//
 
 export class EntryData extends Component {
   constructor(props) {
@@ -104,6 +112,24 @@ const Stars = styled.div`
   white-space: nowrap;
 `;
 
+const StyledFullStarIcon = withStyles({
+  root: {
+    fill: '#ffd700'
+  }
+})(FullStarIcon);
+
+const StyledHalfStarIcon = withStyles({
+  root: {
+    fill: '#ffd700'
+  }
+})(HalfStarIcon);
+
+const StyledEmptyStarIcon = withStyles({
+  root: {
+    fill: '#ffd700'
+  }
+})(EmptyStarIcon);
+
 export class EntryStatItem extends Component {
   constructor(props) {
     super(props);
@@ -121,16 +147,16 @@ export class EntryStatItem extends Component {
     let displayed = 0;
 
     for (let i = 0; i < Math.floor(score); i++) {
-      starsToDisplay.push(<FullStarIcon key={'star' + i} color={'#ffd700'}/>);
+      starsToDisplay.push(<StyledFullStarIcon key={'star' + i} />);
       displayed++;
     }
     if (Math.floor(score) < score) {
-      starsToDisplay.push(<HalfStarIcon key={'starh'}  color={'#ffd700'}/>);
+      starsToDisplay.push(<StyledHalfStarIcon key={'starh'}  />);
       displayed++;
     }
     if (displayed < 5) {
       for (let i = displayed; i < 5; i++) {
-        starsToDisplay.push(<EmptyStarIcon key={'star' + i} color={'#ffd700'}/>);
+        starsToDisplay.push(<StyledEmptyStarIcon key={'star' + i} />);
       }
     }
 
@@ -278,6 +304,12 @@ const EntryWrapper = styled.div`
   border-radius: 5px;
   color: white;
 `;
+
+//
+//
+// M A I N - C O M P O N E N T
+//
+//
 
 class RandomEntryCard extends Component {
   constructor(props) {

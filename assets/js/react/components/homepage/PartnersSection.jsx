@@ -1,17 +1,29 @@
 import React from 'react';
 import LandingSection from './LandingSection';
-import {GridRow, GridFullColumn} from '../common/Grid';
+import {GridRow, GridFullColumn} from '../../helpers/GridSystem';
 import PartnersCarouselContainer from '../../containers/PartnersCarouselContainer';
 import Translate from '../common/Translate';
 import styled from 'styled-components';
-import muiThemeable from 'material-ui/styles/muiThemeable';
+import { withTheme } from '@material-ui/core/styles';
 
-const SectionTitle = muiThemeable()(styled.h3`
-  color: ${props => props.muiTheme.palette.accent1Color};
+//
+//
+// S T Y L I N G - C O M P O N E N T S
+//
+//
+
+const SectionTitle = withTheme()(styled.h3`
+  color: ${props => props.theme.palette.accent1Color};
   text-align: center;
   padding-bottom: 50px;
   font-size: 35px;
 `);
+
+//
+//
+// M A I N - C O M P O N E N T
+//
+//
 
 const PartnersSection = () => (
   <LandingSection>

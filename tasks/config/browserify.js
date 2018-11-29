@@ -8,6 +8,7 @@ module.exports = function(grunt) {
         watch : true, // use watchify for incremental builds!
         //  keepAlive : true, // watchify will exit unless task is kept alive
         //fullPaths: false,
+        basedir: '/assets/js/react/',
         browserifyOptions: {
           debug: true, // source mapping
           extensions: ['.jsx', '.js']
@@ -15,8 +16,16 @@ module.exports = function(grunt) {
         transform: [
           ['babelify', {
             compact: false,
-            plugins: ['babel-plugin-styled-components'],
-            presets: ['es2015', 'react'],
+            plugins: [
+              '@babel/plugin-proposal-class-properties',
+              '@babel/plugin-transform-spread',
+              '@babel/plugin-transform-runtime',
+              'babel-plugin-styled-components'
+            ],
+            presets: [
+              '@babel/preset-env',
+              '@babel/preset-react'
+            ],
           }]
         ]
       }

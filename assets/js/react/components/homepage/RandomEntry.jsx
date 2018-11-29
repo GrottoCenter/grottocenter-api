@@ -1,10 +1,16 @@
 import React from 'react';
 import RandomEntryCardContainer from '../../containers/RandomEntryCardContainer';
-import {GridRow} from '../common/Grid';
+import {GridRow} from '../../helpers/GridSystem';
 import Translate from '../common/Translate';
 import styled from 'styled-components';
 import LandingSection from './LandingSection';
-import muiThemeable from 'material-ui/styles/muiThemeable';
+import { withTheme } from '@material-ui/core/styles';
+
+//
+//
+// S T Y L I N G - C O M P O N E N T S
+//
+//
 
 const RandomEntrySection = styled(LandingSection)`
   text-align: center;
@@ -19,12 +25,18 @@ const BgRandomEntrySection = styled(RandomEntrySection)`
   margin-top: 0;
 `;
 
-const SectionTitle = muiThemeable()(styled.h3`
-  color: ${props => props.muiTheme.palette.secondaryBlocTitle};
+const SectionTitle = withTheme()(styled.h3`
+  color: ${props => props.theme.palette.secondaryBlocTitle};
   text-align: center;
   padding-bottom: 50px;
   font-size: 35px;
 `);
+
+//
+//
+// M A I N - C O M P O N E N T
+//
+//
 
 const RandomEntry = () => (
   <BgRandomEntrySection>

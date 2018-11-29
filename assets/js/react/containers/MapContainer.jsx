@@ -2,6 +2,12 @@ import {connect} from 'react-redux';
 import {fetchMapItemsResult, changeZoom, changeLocation} from './../actions/Map';
 import BackgroundMap from '../components/appli/BackgroundMap';
 
+//
+//
+// C O N T A I N E R  // C O N N E C T O R
+//
+//
+
 const mapDispatchToProps = (dispatch) => {
   return {
     searchBounds: (criteria) => dispatch(fetchMapItemsResult(criteria)),

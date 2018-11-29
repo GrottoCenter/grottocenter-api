@@ -1,15 +1,22 @@
-import React, {PropTypes, Component} from 'react';
-import CircularProgress from 'material-ui/CircularProgress';
+import React, {Component} from 'react';
+import PropTypes from 'prop-types';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import styled from 'styled-components';
-import muiThemeable from 'material-ui/styles/muiThemeable';
+import { withTheme } from '@material-ui/core/styles';
 
-const PartnerVignette = muiThemeable()(styled.div`
+//
+//
+// S T Y L I N G - C O M P O N E N T S
+//
+//
+
+const PartnerVignette = withTheme()(styled.div`
   margin-right: 2%;
   margin-left: 2%;
   margin-bottom: 4%;
   background-color: white;
-  border: 1px solid ${props => props.muiTheme.palette.primary1Color};
-  box-shadow: ${props => props.muiTheme.palette.blackShadow} 0 1px 6px, ${props => props.muiTheme.palette.blackShadow} 0 1px 4px;
+  border: 1px solid ${props => props.theme.palette.primary1Color};
+  box-shadow: ${props => props.theme.palette.blackShadow} 0 1px 6px, ${props => props.theme.palette.blackShadow} 0 1px 4px;
   border-radius: 2%;
   height: 80px;
   line-height: 80px;
@@ -53,6 +60,12 @@ PartnerItem.propTypes = {
 const PartnerVignettes = styled.div`
   text-align: center;
 `;
+
+//
+//
+// M A I N - C O M P O N E N T
+//
+//
 
 class PartnersCarousel extends Component {
   constructor(props) {

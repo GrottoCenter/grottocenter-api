@@ -1,6 +1,13 @@
-import React, {PropTypes} from 'react';
+import React from 'react';
+import PropTypes from 'prop-types';
 
-function checkPermission(right) {
+//
+//
+// H E L P E R - F U N C T I O N S
+//
+//
+
+export default function checkPermission(right) {
   // Control rights
   let granted = false;
 
@@ -28,5 +35,3 @@ function checkPermission(right) {
     return DeniedAccessComponent;
   };
 }
-
-export default checkPermission;

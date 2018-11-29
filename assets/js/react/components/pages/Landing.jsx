@@ -11,6 +11,11 @@ import PartnersSection from '../homepage/PartnersSection';
 import Footer from '../homepage/Footer';
 import GrottoAppBar from '../common/GrottoAppBar';
 
+//
+//
+// M A I N - C O M P O N E N T
+//
+//
 const Landing = () => (
   <BasePage>
     <div id='landingpage'>

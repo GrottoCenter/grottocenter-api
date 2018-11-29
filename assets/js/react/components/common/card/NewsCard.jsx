@@ -1,38 +1,104 @@
-import React, {Component, PropTypes} from 'react';
-import {Card, CardMedia, CardTitle, CardText, CardActions} from 'material-ui/Card';
+import React, {Component} from 'react';
+import PropTypes from 'prop-types';
+import Card from '@material-ui/core/Card';
+import CardMedia from '@material-ui/core/CardMedia';
+import CardActions from '@material-ui/core/CardActions';
+import CardContent from '@material-ui/core/CardContent';
+import Typography from '@material-ui/core/Typography';
 import {DYNAMIC_NEWS_RELOAD_INTERVAL} from '../../../conf/Config';
-import FlatButton from 'material-ui/FlatButton';
-import ImageLoupe from 'material-ui/svg-icons/image/loupe';
-import SyncIcon from 'material-ui/svg-icons/notification/sync';
-import SyncKOIcon from 'material-ui/svg-icons/notification/sync-problem';
-import Divider from 'material-ui/Divider';
-import muiThemeable from 'material-ui/styles/muiThemeable';
+import Button from '@material-ui/core/Button';
+import ImageLoupe from '@material-ui/icons/Loupe';
+import SyncIcon from '@material-ui/icons/Sync';
+import SyncKOIcon from '@material-ui/icons/SyncProblem';
+import Divider from '@material-ui/core/Divider';
+import { withStyles } from '@material-ui/core/styles';
 import {DateRibbon} from '../Toolbox';
 import GCLink from '../GCLink';
 import styled from 'styled-components';
 
-const CardTextStl = styled(CardText)`
-    min-height: 150px;
-    textAlign: justify !important;
-`;
+//
+//
+// S T Y L I N G - C O M P O N E N T S
+//
+//
 
-const CardActionsStl = styled(CardActions)`
-  text-align: right !important;
-`;
+const StyledCardMedia = withStyles({
+  root: {
+    height: '150px'
+  }
+})(CardMedia);
 
-const CardStl = styled(Card)`
-  :nth-child(n+1) {
-    margin-top: 4%;
+const StyledCardContent = withStyles({
+  root: {
+    minHeight: '150px',
+    textAlign: 'justify'
+  }
+})(CardContent);
 
-    @media (min-width: 550px) {
-      margin-top: 0;
+const StyledCardActions = withStyles({
+  root: {
+    justifyContent: 'flex-end'
+  }
+})(CardActions);
+
+const StyledCard = withStyles(theme => ({
+  root: {
+    '&:nth-child(n+1)': {
+      marginTop: '4%',
+      [theme.breakpoints.up('550')]: {
+        marginTop: '0'
+      }
     }
   }
-`;
+}), { withTheme: true })(Card);
 
-const ActionCardStl = styled(CardStl)`
+const StyledActionCard = styled(StyledCard)`
   text-align: center !important;
 `;
+
+const StyledSyncIcon = withStyles(theme => ({
+  root: {
+    '&:hover': {
+      fill: theme.palette.accent1Color
+    },
+    fill: theme.palette.primary3Color
+  }
+}), { withTheme: true })(SyncIcon);
+
+const StyledSyncKOIcon = withStyles(theme => ({
+  root: {
+    '&:hover': {
+      fill: theme.palette.accent1Color
+    },
+    fill: theme.palette.primary3Color
+  }
+}), { withTheme: true })(SyncKOIcon);
+
+const StyledImageLoupe = withStyles(theme => ({
+  root: {
+    fill: theme.palette.accent1Color
+  }
+}), { withTheme: true })(ImageLoupe);
+
+const StyledTitleTypography = withStyles({
+  root: {
+    fontSize: '24px',
+    minHeight: '60px'
+  }
+})(Typography);
+
+const StyledBodyTypography = withStyles({
+  root: {
+    fontSize: '14px',
+    textAlign: 'justify'
+  }
+})(Typography);
+
+//
+//
+// M A I N - C O M P O N E N T
+//
+//
 
 class NewsCard extends Component {
   constructor(props) {
@@ -52,33 +118,43 @@ class NewsCard extends Component {
   render() {
     if (this.props.showSpinner && !this.props.text) {
       return (
-        <ActionCardStl>
-          <SyncIcon color={this.props.muiTheme.palette.primary3Color} hoverColor={this.props.muiTheme.palette.accent1Color} />
-        </ActionCardStl>
+        <StyledActionCard>
+          <StyledSyncIcon />
+        </StyledActionCard>
       );
     }
+
     if (!this.props.showSpinner && !this.props.text) {
       return (
-        <ActionCardStl>
-          <SyncKOIcon color={this.props.muiTheme.palette.primary3Color} hoverColor={this.props.muiTheme.palette.accent1Color} />
-        </ActionCardStl>
+        <StyledActionCard>
+          <StyledSyncKOIcon />
+        </StyledActionCard>
       );
     }
+
     return (
-      <CardStl>
-        <CardMedia>
-          <img src='images/homepage/news.jpg' />
-        </CardMedia>
+      <StyledCard>
+        <StyledCardMedia image='images/homepage/news.jpg' />
         {this.props.day && this.props.month && <DateRibbon day={this.props.day} month={this.props.month}/>}
-        <CardTitle title={this.props.title}/>
-        <CardTextStl>{this.props.text}</CardTextStl>
+        <StyledCardContent>
+          <StyledTitleTypography gutterBottom component="h3">
+            {this.props.title}
+            </StyledTitleTypography>
+          <StyledBodyTypography component="p">
+            {this.props.text}
+            </StyledBodyTypography>
+        </StyledCardContent>
         <Divider/>
-        {this.props.linkMore && <CardActionsStl>
-          <GCLink href={this.props.linkMore}>
-            <FlatButton icon={<ImageLoupe color={this.props.muiTheme.palette.accent1Color} />} />
-          </GCLink>
-        </CardActionsStl>}
-      </CardStl>
+        {this.props.linkMore && (
+          <StyledCardActions>
+            <GCLink href={this.props.linkMore}>
+              <Button>
+                <StyledImageLoupe />
+              </Button>
+            </GCLink>
+          </StyledCardActions>
+        )}
+      </StyledCard>
     );
   }
 }
@@ -90,9 +166,8 @@ NewsCard.propTypes = {
   title: PropTypes.string,
   text: PropTypes.string,
   linkMore: PropTypes.string,
-  muiTheme: PropTypes.object.isRequired,
   init: PropTypes.func.isRequired,
   refresh: PropTypes.func.isRequired
 };
 
-export default muiThemeable()(NewsCard);
+export default NewsCard;

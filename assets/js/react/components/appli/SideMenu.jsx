@@ -1,28 +1,40 @@
-import React, {PropTypes} from 'react';
-import Drawer from 'material-ui/Drawer';
-import ArrowDownIcon from 'material-ui/svg-icons/navigation/arrow-drop-down';
-import AddIcon from 'material-ui/svg-icons/content/add-circle-outline';
-import SearchIcon from 'material-ui/svg-icons/action/search';
-import NetworkIcon from 'material-ui/svg-icons/action/timeline';
-import AdminIcon from 'material-ui/svg-icons/action/supervisor-account';
-import ExportIcon from 'material-ui/svg-icons/content/archive';
+import React from 'react';
+import PropTypes from 'prop-types';
+import Drawer from '@material-ui/core/Drawer';
+import ArrowDownIcon from '@material-ui/icons/Navigation';
+import AddIcon from '@material-ui/icons/Add';
+import SearchIcon from '@material-ui/icons/Search';
+import NetworkIcon from '@material-ui/icons/Timelapse';
+import AdminIcon from '@material-ui/icons/SupervisorAccount';
+import ExportIcon from '@material-ui/icons/ImportExport';
 import Translate from '../common/Translate';
 import SimpleMenuEntryConnector from '../../containers/SimpleMenuEntryConnector';
 import ComplexMenuEntryConnector from '../../containers/ComplexMenuEntryConnector';
-import muiThemeable from 'material-ui/styles/muiThemeable';
+import { withTheme } from '@material-ui/core/styles';
 import styled from 'styled-components';
 import {sideMenuWidth} from '../../conf/Config';
-import checkPermission from '../common/CheckPermission';
+import checkPermission from '../../helpers/Permissions';
 import {VIEW_SIDEMENU} from '../../conf/Rights';
 
+//
+//
+// S T Y L I N G - C O M P O N E N T S
+//
+//
 
-const Menubar = muiThemeable()(styled(Drawer)`
+const Menubar = withTheme()(styled(Drawer)`
   > div {
     width: ${sideMenuWidth} !important;
     top: 60px !important;
-    background-color: ${props => props.muiTheme.palette.primary1Color} !important;
+    background-color: ${props => props.theme.palette.primary1Color} !important;
   }
 `);
+
+//
+//
+// M A I N - C O M P O N E N T
+//
+//
 
 const SideMenu = (props) => (
   <Menubar open={props.visible}>

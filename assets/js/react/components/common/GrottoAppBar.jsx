@@ -1,26 +1,78 @@
-import React, {Component, PropTypes} from 'react';
-import IconMenu from 'material-ui/IconMenu';
-import IconButton from 'material-ui/IconButton';
-import FontIcon from 'material-ui/FontIcon';
-import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert';
-import MenuItem from 'material-ui/MenuItem';
-import FlatButton from 'material-ui/FlatButton';
-import {Toolbar, ToolbarGroup} from 'material-ui/Toolbar';
-import Dialog from 'material-ui/Dialog';
-import muiThemeable from 'material-ui/styles/muiThemeable';
+import React, {Component} from 'react';
+import IconButton from '@material-ui/core/IconButton';
+import TranslateIcon from '@material-ui/icons/Translate';
+import MoreVertIcon from '@material-ui/icons/MoreVert';
+import Menu from '@material-ui/core/Menu';
+import MenuItem from '@material-ui/core/MenuItem';
+import FlatButton from '@material-ui/core/Button';
+import Toolbar from '@material-ui/core/Toolbar';
+import Dialog from '@material-ui/core/Dialog';
+import { withStyles } from '@material-ui/core/styles';
 import LanguagePicker from '../../containers/LanguagePicker';
 import SigninForm from '../SigninForm';
+import styled from 'styled-components';
+import Translate from "./Translate";
+
+//
+//
+// S T Y L I N G - C O M P O N E N T S
+//
+//
+
+const StyledToolbar = withStyles(theme => ({
+  root: {
+    width: 'auto',
+    backgroundColor: theme.palette.primary1Color,
+    zIndex: '100',
+    minHeight: '56px',
+    display: 'flex',
+    justifyContent: 'space-between'
+  }
+}), { withTheme: true })(Toolbar);
+
+const StyledTranslateIcon = withStyles(theme => ({
+  root: {
+    color: theme.palette.textIconColor
+  }
+}), { withTheme: true })(TranslateIcon);
+
+const StyledIconButton = withStyles(theme => ({
+  root: {
+    color: theme.palette.textIconColor
+  }
+}), { withTheme: true })(IconButton);
+
+
+const FlexDiv = styled.div`
+  display: inline-flex;
+`;
+
+//
+//
+// M A I N - C O M P O N E N T
+//
+//
 
 class GrottoAppBar extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      userMenuEl: null,
       openSignIn: false,
       openRegister: false
     };
   }
 
+  handleClick = event => {
+    this.setState({ userMenuEl: event.currentTarget });
+  };
+
+  handleClose = () => {
+    this.setState({ userMenuEl: null });
+  };
+
   openSignInDialog() {
+    this.handleClose();
     this.setState({openSignIn: true});
   }
 
@@ -29,6 +81,7 @@ class GrottoAppBar extends Component {
   }
 
   openRegisterDialog() {
+    this.handleClose();
     this.setState({openRegister: true});
   }
 
@@ -61,13 +114,13 @@ class GrottoAppBar extends Component {
       <FlatButton
         label="Cancel"
         primary={true}
-        onTouchTap={this.closeSignInDialog.bind(this)}
+        onClick={() => this.closeSignInDialog()}
       />,
       <FlatButton
         label="Submit"
         primary={true}
         keyboardFocused={true}
-        onTouchTap={this.closeSignInDialog.bind(this)}
+        onClick={() => this.closeSignInDialog()}
       />,
     ];
 
@@ -75,39 +128,46 @@ class GrottoAppBar extends Component {
       <FlatButton
         label="Cancel"
         primary={true}
-        onTouchTap={this.closeRegisterDialog.bind(this)}
+        onClick={() => this.closeRegisterDialog()}
       />,
       <FlatButton
         label="Submit"
         primary={true}
         keyboardFocused={true}
-        onTouchTap={this.closeRegisterDialog.bind(this)}
+        onClick={() => this.closeRegisterDialog()}
       />,
     ];
 
     return (
-      <Toolbar style={{backgroundColor: this.props.muiTheme.palette.primary1Color}} className="gcAppBar">
-        <ToolbarGroup firstChild={true}>
-          <FontIcon className="material-icons" style={{color: this.props.muiTheme.palette.textIconColor}}>language</FontIcon>
+      <StyledToolbar>
+        <FlexDiv>
+          <StyledTranslateIcon />
           <LanguagePicker/>
-        </ToolbarGroup>
+        </FlexDiv>
 
-        <ToolbarGroup>
-          <IconMenu iconButtonElement={
-            <IconButton style={{'display': 'none'}} iconStyle={{color: this.props.muiTheme.palette.textIconColor}} touch={true}>
-              <MoreVertIcon />
-            </IconButton>
-          }>
-            <MenuItem primaryText="Sign In" onTouchTap={this.openSignInDialog.bind(this)}/>
-            <MenuItem primaryText="Register" onTouchTap={this.openRegisterDialog.bind(this)}/>
-          </IconMenu>
-        </ToolbarGroup>
+        <div>
+          <StyledIconButton onClick={this.handleClick}>
+            <MoreVertIcon />
+          </StyledIconButton>
+          <Menu
+            id="user-menu"
+            anchorEl={this.state.userMenuEl}
+            open={Boolean(this.state.userMenuEl)}
+            onClose={this.handleClose}
+          >
+            <MenuItem onClick={() => this.openSignInDialog()}><Translate id={'Sign In'}/></MenuItem>
+            <MenuItem onClick={() => this.openRegisterDialog()}><Translate id={'Register'}/></MenuItem>
+          </Menu>
+        </div>
+
         <Dialog
           title="SignIn Form"
           actions={actionsSignIn}
           modal={false}
           open={this.state.openSignIn}
-          onRequestClose={this.closeSignInDialog.bind(this)}
+          onRequestClose={() => this.closeSignInDialog()}
+          onBackdropClick={() => this.closeSignInDialog()}
+          onEscapeKeyDown={() => this.closeSignInDialog()}
           autoScrollBodyContent={true}
         >
           <SigninForm/>
@@ -117,17 +177,15 @@ class GrottoAppBar extends Component {
           actions={actionsRegister}
           modal={false}
           open={this.state.openRegister}
-          onRequestClose={this.closeRegisterDialog.bind(this)}
+          onRequestClose={() => this.closeRegisterDialog()}
+          onBackdropClick={() => this.closeRegisterDialog()}
+          onEscapeKeyDown={() => this.closeRegisterDialog()}
         >
           TODO: register form
         </Dialog>
-      </Toolbar>
+      </StyledToolbar>
     );
   }
 }
 
-GrottoAppBar.propTypes = {
-  muiTheme: PropTypes.object.isRequired
-};
-
-export default muiThemeable()(GrottoAppBar);
+export default GrottoAppBar;

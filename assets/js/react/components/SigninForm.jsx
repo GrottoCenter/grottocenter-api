@@ -3,8 +3,13 @@
  */
 import React from 'react';
 import Translate from './common/Translate';
-
 import Modal from '../components/common/Modal';
+
+//
+//
+// M A I N - C O M P O N E N T
+//
+//
 
 class SigninForm extends React.Component {
   constructor(props) {

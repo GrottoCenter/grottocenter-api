@@ -1,5 +1,11 @@
 import {INIT_LBNEW_FETCHER, FETCH_LBNEWS, FETCH_LBNEWS_SUCCESS, FETCH_LBNEWS_FAILURE} from './../actions/LatestBlogNews';
 
+//
+//
+// D E F A U L T - S T A T E
+//
+//
+
 // State
 // =====
 //   fr: {
@@ -16,6 +22,12 @@ import {INIT_LBNEW_FETCHER, FETCH_LBNEWS, FETCH_LBNEWS_SUCCESS, FETCH_LBNEWS_FAI
 //     news: {},
 //     revoked: false
 //   }
+
+//
+//
+// R E D U C E R
+//
+//
 
 export const latestBlogNews = (state = {}, action) => {
   let jNews = '';

@@ -27,7 +27,8 @@ module.exports = {
     idAuthor: {
       type: 'number',
       unique: true,
-      columnName: 'Id_author'
+      columnName: 'Id_author',
+      required: true
     },
     idAnswered: {
       type: 'number',
@@ -65,8 +66,8 @@ module.exports = {
     idExit: {
       type: 'number',
       unique: true,
-      defaultsTo: 0,
-      columnName: 'Id_exit'
+      columnName: 'Id_exit',
+      required: true
     },
     relevance: {
       type: 'number',

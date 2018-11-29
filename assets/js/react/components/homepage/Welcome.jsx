@@ -1,9 +1,16 @@
-import React, {PropTypes} from 'react';
+import React from 'react';
+import PropTypes from 'prop-types';
 import LandingSection from './LandingSection';
-import {GridRow, GridOneThirdColumn, GridTwoThirdColumn} from '../common/Grid';
+import {GridRow, GridOneThirdColumn, GridTwoThirdColumn} from '../../helpers/GridSystem';
 import Translate from '../common/Translate'
 import styled from 'styled-components';
-import muiThemeable from 'material-ui/styles/muiThemeable';
+import { withTheme } from '@material-ui/core/styles';
+
+//
+//
+// S T Y L I N G - C O M P O N E N T S
+//
+//
 
 const WelcomeAvatar = styled.img`
   border-radius: 50%;
@@ -35,17 +42,23 @@ const WelcomeSection = styled(LandingSection)`
   }
 `;
 
+//
+//
+// M A I N - C O M P O N E N T
+//
+//
+
 const Welcome = (props) => (
   <WelcomeSection
-    bgColor={props.muiTheme.palette.primary1Color}
-    fgColor={props.muiTheme.palette.secondaryBlocTitle}>
+    bgColor={props.theme.palette.primary1Color}
+    fgColor={props.theme.palette.secondaryBlocTitle}>
     <GridRow>
       <GridOneThirdColumn>
         <WelcomeAvatar src="/images/caves/draperie_small.jpg"/>
       </GridOneThirdColumn>
 
       <GridTwoThirdColumn>
-        <WelcomeTitle color={props.muiTheme.palette.accent1Color}>
+        <WelcomeTitle color={props.theme.palette.accent1Color}>
           <Translate>Welcome to Grottocenter!</Translate>
         </WelcomeTitle>
         <WelcomeParagraph>
@@ -63,7 +76,7 @@ const Welcome = (props) => (
 );
 
 Welcome.propTypes = {
-  muiTheme: PropTypes.any.isRequired
+  theme: PropTypes.any.isRequired
 }
 
-export default muiThemeable()(Welcome);
+export default withTheme()(Welcome);

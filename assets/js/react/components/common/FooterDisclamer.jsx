@@ -1,13 +1,20 @@
-import React, {PropTypes} from 'react';
-import muiThemeable from 'material-ui/styles/muiThemeable';
+import React from 'react';
+import PropTypes from 'prop-types';
+import { withTheme } from '@material-ui/core/styles';
 import Translate from '../common/Translate';
 import InternationalizedLink from '../common/InternationalizedLink';
 import {licenceLinks} from '../../conf/Config';
 import styled from 'styled-components';
 
-const FooterBar = muiThemeable()(styled.div`
-  color: ${props => props.muiTheme.palette.fullBlack};
-  background-color: ${props => props.muiTheme.palette.primary3Color};
+//
+//
+// S T Y L I N G - C O M P O N E N T S
+//
+//
+
+const FooterBar = withTheme()(styled.div`
+  color: ${props => props.theme.palette.fullBlack};
+  background-color: ${props => props.theme.palette.primary3Color};
 `);
 
 // .fixFooter {

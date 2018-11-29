@@ -1,30 +1,40 @@
-import React, {PropTypes} from 'react';
-import {Toolbar, ToolbarGroup} from 'material-ui/Toolbar';
+import React from 'react';
+import PropTypes from 'prop-types';
+import Toolbar from '@material-ui/core/Toolbar';
 import HeaderTitle from './HeaderTitle';
 import SideMenuBurgerConnector from '../../containers/SideMenuBurgerConnector';
-//import Language from './Language';
-//import Connected from './Connected';
-//import Notifications from './Notifications';
 import QuicksearchContainer from '../../containers/QuicksearchContainer';
-import muiThemeable from 'material-ui/styles/muiThemeable';
+import {withStyles, withTheme} from '@material-ui/core/styles';
 import styled from 'styled-components';
 import {sideMenuWidth} from '../../conf/Config';
 
-const StyledToolbar = muiThemeable()(styled(Toolbar)`
-  padding: 0px !important;
-  background-color: ${props => props.muiTheme.palette.primary1Color} !important;
-  height: 60px !important;
-`);
+//
+//
+// S T Y L I N G - C O M P O N E N T S
+//
+//
 
-const TitleGroup = muiThemeable()(styled(Toolbar)`
-  width: ${sideMenuWidth} !important;
-  padding: 0px !important;
-  background-color: ${props => props.muiTheme.palette.primary2Color} !important;
-  align-items: center;
-  height: 60px !important;
-`);
+const StyledToolbar = withStyles(theme => ({
+  root: {
+    width: '100%',
+    padding: '0px',
+    backgroundColor: theme.palette.primary2Color,
+    height: '60px',
+    display: 'inline-flex',
+    justifyContent: 'space-between',
+  }
+}), { withTheme: true })(Toolbar);
 
-const StyledQuicksearchContainer = muiThemeable()(styled(QuicksearchContainer)`
+const TitleGroup = withStyles(theme => ({
+  root: {
+    width: sideMenuWidth,
+    padding: '0px',
+    alignItems: 'center',
+    height: '60px'
+  }
+}), { withTheme: true })(Toolbar);
+
+const StyledQuicksearchContainer = withTheme()(styled(QuicksearchContainer)`
   padding: 0px !important;
   padding-left: 30px !important;
 
@@ -32,7 +42,7 @@ const StyledQuicksearchContainer = muiThemeable()(styled(QuicksearchContainer)`
     font-weight: 400;
     font-size: 20px;
     top: 25px !important;
-    color: ${props => props.muiTheme.palette.primary3Color} !important;
+    color: ${props => props.theme.palette.primary3Color} !important;
   }
 
   > hr {
@@ -40,14 +50,20 @@ const StyledQuicksearchContainer = muiThemeable()(styled(QuicksearchContainer)`
   }
 `);
 
-const LargerToolbarGroup = styled(ToolbarGroup)`
-  width: 400px !important;
+const LargerToolbarGroup = styled.div`
+  width: 400px;
 `;
+
+//
+//
+// M A I N - C O M P O N E N T
+//
+//
 
 const AppToolbar = () => (
   <StyledToolbar>
     <TitleGroup>
-      <HeaderTitle title='Grottocenter' subtitle='Achere - 2017'/>
+      <HeaderTitle title='Grottocenter' subtitle='Achere - 2018'/>
       <SideMenuBurgerConnector/>
     </TitleGroup>
 
@@ -55,9 +71,9 @@ const AppToolbar = () => (
       <StyledQuicksearchContainer />
     </LargerToolbarGroup>
 
-    <ToolbarGroup>
+    <div>
 
-    </ToolbarGroup>
+    </div>
   </StyledToolbar>
 );
 

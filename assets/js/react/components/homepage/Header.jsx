@@ -1,11 +1,17 @@
 import React from 'react';
 import QuicksearchBar from './QuicksearchBar';
-import {GridContainer, GridRow, GridFullColumn} from '../common/Grid';
+import {GridContainer, GridRow, GridFullColumn} from '../../helpers/GridSystem';
 import {fseLinks} from '../../conf/Config';
 import InternationalizedLink from '../common/InternationalizedLink';
 import Translate from '../common/Translate';
 import styled from 'styled-components';
 import GCLogo from '../common/GCLogo';
+
+//
+//
+// S T Y L I N G - C O M P O N E N T S
+//
+//
 
 const HeaderGridContainer = styled(GridContainer)`
   width: 100%;
@@ -80,6 +86,12 @@ const LogoImage = styled(GCLogo)`
     }
   }
 `;
+
+//
+//
+// M A I N - C O M P O N E N T
+//
+//
 
 const Header = () => (
   <header className="header">

@@ -1,23 +1,53 @@
 import {connect} from 'react-redux';
 import {fetchQuicksearchResult, resetQuicksearch, setCurrentEntry} from './../actions/Quicksearch';
 import {focusOnLocation} from './../actions/Map';
-import Searchbar from '../components/common/Searchbar';
+import Searchbar2 from '../components/common/Searchbar';
+import { isMappable } from "../helpers/Entries";
 
-const mapDispatchToProps = (dispatch) => {
+//
+//
+// C O N T A I N E R  // C O N N E C T O R
+//
+//
+
+const startSearch = filter => dispatch => {
+  return new Promise(resolve => {
+    if (filter && filter.length >= 3) {
+      resolve(dispatch(fetchQuicksearchResult({name: filter})));
+    } else {
+      resolve(dispatch(resetQuicksearch()));
+    }
+  });
+};
+
+const handleSelection = (selection, ownProps) => dispatch => {
+  // TODO case of array
+
+  if (isMappable(selection[0].value)) {
+    dispatch(setCurrentEntry(selection[0].value));
+    dispatch(focusOnLocation({
+      lat: selection[0].value.latitude,
+      lng: selection[0].value.longitude
+    }));
+  }
+  if (ownProps.handleSelection) {
+    ownProps.handleSelection(selection[0].value);
+  }
+};
+
+const mapDispatchToProps = (dispatch, ownProps) => {
   return {
-    reset: () => dispatch(resetQuicksearch()),
-    search: (criteria) => dispatch(fetchQuicksearchResult(criteria)),
-    setCurrentEntry: (entry) => dispatch(setCurrentEntry(entry)),
-    focusOnLocation: (entry) => dispatch(focusOnLocation(entry))
+    startSearch: filter => dispatch(startSearch(filter)),
+    handleSelection: selection => dispatch(handleSelection(selection, ownProps)),
   };
-}
+};
 
 const mapStateToProps = (state, ownProps) => {
   return {
     results: state.quicksearch.results,
     selectedEntry: state.quicksearch.entry,
-    className: ownProps.className
+    classes: ownProps.classes,
   };
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(Searchbar);
+export default connect(mapStateToProps, mapDispatchToProps)(Searchbar2);

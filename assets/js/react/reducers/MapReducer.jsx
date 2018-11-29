@@ -18,6 +18,18 @@ const initialState = {
   errors: undefined
 };
 
+//
+//
+// D E F A U L T - S T A T E
+//
+//
+
+//
+//
+// R E D U C E R
+//
+//
+
 export const map = (state = initialState, action) => {
   switch (action.type) {
     case FETCH_MAP_ITEMS_SUCCESS:

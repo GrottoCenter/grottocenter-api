@@ -1,6 +1,13 @@
-import React, {PropTypes} from 'react';
+import React from 'react';
+import PropTypes from 'prop-types';
 import GCLink from './GCLink';
 import {logoGC} from '../../conf/Config';
+
+//
+//
+// M A I N - C O M P O N E N T
+//
+//
 
 const GCLogo = ({className, showLink = true}) => {
   if (showLink) {

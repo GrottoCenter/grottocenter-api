@@ -1,12 +1,19 @@
-import React, {PropTypes, Component} from 'react';
-import MenuItem from 'material-ui/MenuItem';
-import muiThemeable from 'material-ui/styles/muiThemeable';
+import React, {Component} from 'react';
+import PropTypes from 'prop-types';
+import MenuItem from '@material-ui/core/MenuItem';
+import { withTheme } from '@material-ui/core/styles';
 import styled from 'styled-components';
-import {browserHistory} from 'react-router';
+import browserHistory from 'react-router-dom/BrowserRouter';
 
-const SecondLevelMenuItem = muiThemeable()(styled(MenuItem)`
-  background-color: ${props => props.muiTheme.palette.primary3Color} !important;
-  border-bottom: 1px dotted ${props => props.muiTheme.palette.primary1Color} !important;
+//
+//
+// S T Y L I N G - C O M P O N E N T S
+//
+//
+
+const SecondLevelMenuItem = withTheme()(styled(MenuItem)`
+  background-color: ${props => props.theme.palette.primary3Color} !important;
+  border-bottom: 1px dotted ${props => props.theme.palette.primary1Color} !important;
   transition: transform 2ms cubic-bezier(0.23, 1, 0.32, 1) 0ms !important;
   font-size: 14px !important;
 
@@ -20,6 +27,12 @@ const SecondLevelMenuItem = muiThemeable()(styled(MenuItem)`
     }
   }
 `);
+
+//
+//
+// M A I N - C O M P O N E N T
+//
+//
 
 class SimpleMenuEntry extends Component {
   constructor(props) {

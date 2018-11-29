@@ -1,14 +1,14 @@
 /**
- * Concatenate files.
+ * `tasks/config/concat`
  *
  * ---------------------------------------------------------------
  *
- * Concatenates files javascript and css from a defined array. Creates concatenated files in
- * .tmp/public/contact directory
- * [concat](https://github.com/gruntjs/grunt-contrib-concat)
+ * An intermediate step to generate monolithic files that can
+ * then be passed in to `uglify` and/or `cssmin` for minification.
  *
- * For usage docs see:
- * 		https://github.com/gruntjs/grunt-contrib-concat
+ * For more information, see:
+ *   https://sailsjs.com/anatomy/tasks/config/concat.js
+ *
  */
 module.exports = function(grunt) {
 
@@ -23,5 +23,28 @@ module.exports = function(grunt) {
     }
   });
 
-  grunt.loadNpmTasks('grunt-contrib-concat');
+  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  // This Grunt plugin is part of the default asset pipeline in Sails,
+  // so it's already been automatically loaded for you at this point.
+  //
+  // Of course, you can always remove this Grunt plugin altogether by
+  // deleting this file.  But check this out: you can also use your
+  // _own_ custom version of this Grunt plugin.
+  //
+  // Here's how:
+  //
+  // 1. Install it as a local dependency of your Sails app:
+  //    ```
+  //    $ npm install grunt-contrib-concat --save-dev --save-exact
+  //    ```
+  //
+  //
+  // 2. Then uncomment the following code:
+  //
+  // ```
+  // // Load Grunt plugin from the node_modules/ folder.
+  // grunt.loadNpmTasks('grunt-contrib-concat');
+  // ```
+  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 };

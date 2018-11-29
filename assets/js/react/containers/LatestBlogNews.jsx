@@ -2,6 +2,12 @@ import {connect} from 'react-redux';
 import NewsCard from './../components/common/card/NewsCard';
 import {initLatestBlogNewsFetcher, loadLatestBlogNews} from '../actions/LatestBlogNews';
 
+//
+//
+// C O N T A I N E R  // C O N N E C T O R
+//
+//
+
 const mapDispatchToProps = (dispatch, ownProps) => {
   return {
     init: () => dispatch(initLatestBlogNewsFetcher(ownProps.blog, ownProps.url)),

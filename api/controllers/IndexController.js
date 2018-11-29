@@ -7,6 +7,6 @@
 'use strict';
 module.exports = {
   index: function(req, res) {
-    return res.view('grottocenter', I18nService.getPageDate(req));
+    return res.view('grottocenter', I18nService.getPageData(req));
   }
 };

@@ -23,7 +23,8 @@ module.exports = {
     idAuthor: {
       type: 'number',
       unique: true,
-      columnName: 'Id_author'
+      columnName: 'Id_author',
+      required: true
     },
 
     dateInscription: {

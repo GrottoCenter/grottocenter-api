@@ -1,16 +1,28 @@
 import React from 'react';
 import GCMap from '../common/GCMap';
-import muiThemeable from 'material-ui/styles/muiThemeable';
+import { withTheme } from '@material-ui/core/styles';
 import styled from 'styled-components';
+
+//
+//
+// S T Y L I N G - C O M P O N E N T S
+//
+//
+
+const FullPageGCMap = styled(GCMap)`
+  width: calc(100% - 40px);
+  height: calc(100% - 173px);
+  position: fixed;
+`;
+
+//
+//
+// M A I N - C O M P O N E N T
+//
+//
 
 const BackgroundMap = (props) => (
   <FullPageGCMap {...props} />
 );
 
-const FullPageGCMap = styled(GCMap)`
-  width: 100%;
-  height: calc(100% - 128px);
-  position: fixed;
-`;
-
-export default muiThemeable()(BackgroundMap);
+export default withTheme()(BackgroundMap);

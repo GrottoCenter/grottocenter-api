@@ -1,142 +1,266 @@
-import React, {PropTypes, Component} from 'react';
-import { withRouter } from "react-router-dom";
-import AutoComplete from 'material-ui/AutoComplete';
-import MenuItem from 'material-ui/MenuItem';
-import ExploreIcon from 'material-ui/svg-icons/action/explore';
-import Translate from '../common/Translate';
+import React from 'react';
+import PropTypes from 'prop-types';
+import classNames from 'classnames';
+import Async from 'react-select/lib/Async';
+import { withStyles } from '@material-ui/core/styles';
+import Typography from '@material-ui/core/Typography';
+import NoSsr from '@material-ui/core/NoSsr';
+import TextField from '@material-ui/core/TextField';
+import Paper from '@material-ui/core/Paper';
+import Chip from '@material-ui/core/Chip';
+import MenuItem from '@material-ui/core/MenuItem';
+import CancelIcon from '@material-ui/icons/Cancel';
+import Translate from "./Translate";
+import { entryOptionForSelector } from "../../helpers/Entries";
 
-//TODO: get grotto icons to a font
-// import SvgIcon from 'material-ui/SvgIcon';
-// const HomeIcon = (props) => (
-//   <SvgIcon {...props}>
-//     <rect x="0.5" y="0.5" fill="#FFFFFF" stroke="#1D1D1B" width="79.3" height="49"/>
-//   </SvgIcon>
-// );
+//
+//
+// S T Y L I N G - C O M P O N E N T S
+//
+//
 
-class Searchbar extends Component {
-  constructor(props) {
-    super(props);
-  }
+const styles = theme => ({
+  root: {
+    flexGrow: 1,
+    height: '72px',
+  },
+  input: {
+    display: 'flex',
+    padding: 0,
+    fontSize: 16,
+    lineHeight: '72px',
+  },
+  valueContainer: {
+    height: '72px',
+    display: 'flex',
+    flexWrap: 'wrap',
+    flex: 1,
+    alignItems: 'center',
+  },
+  chip: {
+    margin: `${theme.spacing.unit / 2}px ${theme.spacing.unit / 4}px`,
+    fontSize: 16,
+  },
+  chipFocused: {
+    backgroundColor: theme.palette.primary3Color,
+  },
+  noOptionsMessage: {
+    padding: `${theme.spacing.unit}px ${theme.spacing.unit * 2}px`,
+    fontSize: 16,
+  },
+  singleValue: {
+    fontSize: 16,
+  },
+  placeholder: {
+    position: 'absolute',
+    left: 2,
+    fontSize: 16,
+    color: theme.palette.primary2Color,
+    fontWeight: '100',
+    fontStyle: 'italic',
+  },
+  paper: {
+    position: 'absolute',
+    zIndex: 1,
+    marginTop: theme.spacing.unit,
+    left: 0,
+    right: 0,
+    width: 'calc(100% - 37px)',
+  },
+  option: {
+    fontSize: 16,
+  },
+  divider: {
+    height: theme.spacing.unit * 2,
+  },
+});
 
-  handleNewRequest(selectedItem) {
-    if (selectedItem.isMappable) {
-      this.props.setCurrentEntry(selectedItem);
-      this.props.focusOnLocation({
-        lat: selectedItem.latitude,
-        lng: selectedItem.longitude
-      });
+function NoOptionsMessage(props) {
+  return (
+    <Typography
+      color="textSecondary"
+      className={props.selectProps.classes.noOptionsMessage}
+      {...props.innerProps}
+    >
+      <Translate>No results to display (type at least 3 characters)</Translate>
+    </Typography>
+  );
+}
+
+function inputComponent({ inputRef, ...props }) {
+  return <div ref={inputRef} {...props} />;
+}
+
+function Control(props) {
+  return (
+    <TextField
+      fullWidth
+      InputProps={{
+        inputComponent,
+        disableUnderline: true,
+        inputProps: {
+          className: props.selectProps.classes.input,
+          inputRef: props.innerRef,
+          children: props.children,
+          ...props.innerProps,
+        },
+      }}
+      {...props.selectProps.textFieldProps}
+    />
+  );
+}
+
+function Option(props) {
+  let toDisplay = props.children;
+  if (props.data && props.data.type) {
+    if (props.data.type === 'entry') {
+      toDisplay = entryOptionForSelector(props.data);
     }
-    if (selectedItem.id && !window.location.pathname.startsWith('/ui/map')) {
-      this.props.history.push('/ui/map');
+  }
+
+  return (
+    <MenuItem
+      buttonRef={props.innerRef}
+      selected={props.isFocused}
+      className={props.selectProps.classes.option}
+      component="div"
+      style={{
+        fontWeight: props.isSelected ? 500 : 400,
+      }}
+      {...props.innerProps}
+    >
+      {toDisplay}
+    </MenuItem>
+  );
+}
+
+function Placeholder(props) {
+  return (
+    <Typography
+      color="textSecondary"
+      className={props.selectProps.classes.placeholder}
+      {...props.innerProps}
+    >
+      {props.children}
+    </Typography>
+  );
+}
+
+function SingleValue(props) {
+  return (
+    <Typography className={props.selectProps.classes.singleValue} {...props.innerProps}>
+      {props.children}
+    </Typography>
+  );
+}
+
+function ValueContainer(props) {
+  return <div className={props.selectProps.classes.valueContainer}>{props.children}</div>;
+}
+
+function MultiValue(props) {
+  return (
+    <Chip
+      tabIndex={-1}
+      label={props.children}
+      className={classNames(props.selectProps.classes.chip, {
+        [props.selectProps.classes.chipFocused]: props.isFocused,
+      })}
+      onDelete={props.removeProps.onClick}
+      deleteIcon={<CancelIcon {...props.removeProps} />}
+    />
+  );
+}
+
+function Menu(props) {
+  return (
+    <Paper square className={props.selectProps.classes.paper} {...props.innerProps}>
+      {props.children}
+    </Paper>
+  );
+}
+
+//
+//
+// M A I N - C O M P O N E N T
+//
+//
+
+class Searchbar extends React.Component {
+  state = {
+    selected: null,
+  };
+
+  handleChange = value => {
+    this.setState({
+      selected: value,
+    });
+    if (this.props.handleSelection) {
+      this.props.handleSelection(value);
     }
-  }
+  };
 
-  isMappable(obj) { // TODO : move to models ?
-    return obj.latitude && obj.longitude?true:false;
-  }
-
-  // only search for entries at this time
-  /*isCave(obj) {
-    // TODO : better when it will be possible
-    return obj.temperature;
-  }*/
-
-  isEntry(obj) {
-    // TODO : better when it will be possible
-    return obj.isSensitive !== undefined;
-  }
-
-  // only search for entries at this time
-  /*isGrotto(obj) {
-    // TODO : better when it will be possible
-    return obj.isOfficialPartner !== undefined;
-  }*/
-
-  foundDataToMenuItemMapping(item) {
-    let primaryText = item.name;
-    if (this.isEntry(item)) {
-      primaryText+=' - ' + item.region;
-    }
-
-    let category ='entry';
-    let icon = <ExploreIcon />;
-    // only search for entries at this time
-    /*if (this.isCave(item)) {
-      category = 'cave';
-      icon = <MapIcon />;
-    } else if (this.isGrotto(item)) {
-      category = 'grotto';
-    }*/
-
-    return {
-      id: item.id,
-      text: item.name,
-      latitude: item.latitude,
-      longitude: item.longitude,
-      altitude: item.altitude,
-      author: item.author,
-      city: item.city,
-      country: item.country,
-      region: item.region,
-      category:category,
-      isMappable:(item) => this.isMappable(item),
-      value: (
-        <MenuItem
-          primaryText={primaryText}
-          leftIcon={icon}
-        />
-      )
-    };
-  }
-
-  handleUpdateInput(searchText) {
-    if (searchText && searchText.length >= 3) {
-      this.props.search({name: searchText});
-    } else {
-      this.props.reset();
-    }
-  }
+  getDatasource = (filter) => {
+    return this.props.startSearch(filter)
+      .then(() => {
+        const datasource = this.props.results.entries.map(entry => ({
+          value: entry,
+          label: entry.name,
+          type: 'entry',
+        }));
+        return Promise.resolve( datasource );
+      })
+      .catch(() => Promise.resolve( [] ));
+  };
 
   render() {
-    let popupStyle = {};
-    if (this.props.results && this.props.results.length > 0) {
-      popupStyle.style = {
-        height: '200px'
-      };
-    }
+    const { classes, theme } = this.props;
 
-    let formatedResults = [];
-    if (this.props.results && this.props.results.entries) {
-      this.props.results.entries.map((entry, idx) => {
-        formatedResults.push(this.foundDataToMenuItemMapping(entry, idx));
-      });
-    } // TODO message No entry found
+    const selectStyles = {
+      input: base => ({
+        ...base,
+        color: theme.palette.text.primary,
+        '& input': {
+          font: 'inherit',
+        },
+      }),
+    };
 
     return (
-      <AutoComplete
-        className={this.props.className}
-        textFieldStyle={{padding: '0 10px', width: 'calc(100% - 40px)', whiteSpace: 'nowrap'}}
-        floatingLabelText={<Translate>Search for a cave</Translate>}
-        dataSource={formatedResults}
-        onUpdateInput={(input) => this.handleUpdateInput(input)}
-        onNewRequest={(selectedItem) => this.handleNewRequest(selectedItem)}
-        fullWidth={true}
-        maxSearchResults={50}
-        filter={AutoComplete.noFilter}
-        popoverProps={popupStyle}
-      />
+      <div className={classes.root}>
+        <NoSsr>
+          <Async
+            classes={classes}
+            styles={selectStyles}
+            loadOptions={this.getDatasource}
+            components={{
+              Control,
+              Menu,
+              MultiValue,
+              NoOptionsMessage,
+              Option,
+              Placeholder,
+              SingleValue,
+              ValueContainer,
+            }}
+            value={this.props.value}
+            onChange={this.handleChange}
+            placeholder={<Translate>Search for a cave</Translate>}
+            closeMenuOnScroll
+            isMulti
+          />
+        </NoSsr>
+      </div>
     );
   }
 }
 
 Searchbar.propTypes = {
-  reset: PropTypes.func.isRequired,
-  search: PropTypes.func.isRequired,
-  setCurrentEntry: PropTypes.func.isRequired,
-  focusOnLocation: PropTypes.func.isRequired,
-  results: PropTypes.object,
-  className: PropTypes.string,
-  history: PropTypes.object.isRequired
-}
+  classes: PropTypes.object.isRequired,
+  theme: PropTypes.object.isRequired,
+  results: PropTypes.object.isRequired,
+  startSearch: PropTypes.func.isRequired,
+  handleSelection: PropTypes.func,
+};
 
-export default withRouter(Searchbar);
+export default withStyles(styles, { withTheme: true })(Searchbar);

@@ -1,5 +1,11 @@
 import {TOGGLE_SIDEMENU, REGISTER_MENU_ENTRY, TOGGLE_MENU_ENTRY} from '../actions/SideMenu';
 
+//
+//
+// D E F A U L T - S T A T E
+//
+//
+
 // State
 // =====
 // sideMenu: {
@@ -18,6 +24,12 @@ const initial = {
   visible: false,
   items: []
 };
+
+//
+//
+// R E D U C E R
+//
+//
 
 export const sideMenu = (state = initial, action) => {
   switch (action.type) {

@@ -1,50 +1,94 @@
-import React, {Component, PropTypes} from 'react';
-import SelectField from 'material-ui/SelectField';
-import MenuItem from 'material-ui/MenuItem';
-import muiThemeable from 'material-ui/styles/muiThemeable';
-//import {changeLanguage} from '../actions/Language';
+import React from 'react';
+import PropTypes from 'prop-types';
+import Input from '@material-ui/core/Input';
+import MenuItem from '@material-ui/core/MenuItem';
+import Select from '@material-ui/core/Select';
+import { withStyles } from '@material-ui/core/styles';
 
-let languages = [// to this.state ?
-];
+//
+//
+// S T Y L I N G - C O M P O N E N T S
+//
+//
 
-class LanguageSelector extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      value: locale // eslint-disable-line no-undef
-    };
-
-    languages = localesList.map(function(el, index) { // eslint-disable-line no-undef
-      return <MenuItem key={index} value={el.value} primaryText={el.primaryText} style={{color: props.muiTheme.palette.primaryTextColor}} />;
-    });
+const LanguageItem = withStyles((theme) => ({
+  root: {
+    fontSize: '16px',
+    color: theme.palette.primaryTextColor
   }
+}), { withTheme: true })(MenuItem);
 
-  handleChange(event, index, value) {
-    if (value === this.state.value) {
+const LanguageInput = withStyles((theme) => ({
+  root: {
+    background: 'none'
+  },
+  underline: {
+    '&:before,&:hover,&:after,&:focus': {
+      borderColor: `${theme.palette.textIconColor} !important`,
+      background: 'none'
+    }
+  }
+}), { withTheme: true })(Input);
+
+const StyledSelect = withStyles((theme) => ({
+  root: {
+    paddingLeft: '10px',
+    color: theme.palette.textIconColor,
+    minWidth: '150px',
+    width: 'initial'
+  },
+  selectMenu: {
+    fontSize: '16px',
+    minHeight: '12px'
+  },
+  select: {
+    '&:before,&:hover,&:after,,&:focus': {
+      background: 'none'
+    }
+  },
+  icon: {
+    color: theme.palette.textIconColor,
+  }
+}), { withTheme: true })(Select);
+
+//
+//
+// M A I N - C O M P O N E N T
+//
+//
+
+const LanguageSelector  = (props) => {
+  const handleChange = (event) => {
+    const value = event.target.value;
+    if (value === locale) {
       return;
     }
     // To be uncommented when we will be able to retrieve catalog without page relaod
     // this.props.dispatch(changeLanguage(value));
     window.location = '?lang=' + value;
-  }
+  };
 
-  render() {
-    return (
-      <SelectField
-        labelStyle={{paddingLeft: '10px', color: this.props.muiTheme.palette.textIconColor}}
-        value={this.state.value}
-        onChange={this.handleChange.bind(this)}
-        style={{minWidth: '150px', width: 'initial'}}
-      >
-        {languages}
-      </SelectField>
-    );
-  }
-}
+  const items = Object.keys(localesList).map(id => <LanguageItem
+      key={id}
+      value={id}
+    >
+      {localesList[id]}
+    </LanguageItem>
+  );
+
+  return (
+    <StyledSelect
+      value={locale}
+      onChange={handleChange}
+      input={<LanguageInput />}
+    >
+      {items}
+    </StyledSelect>
+  );
+};
 
 LanguageSelector.propTypes = {
   dispatch: PropTypes.func.isRequired,
-  muiTheme: PropTypes.object.isRequired
 };
 
-export default muiThemeable()(LanguageSelector);
+export default LanguageSelector;

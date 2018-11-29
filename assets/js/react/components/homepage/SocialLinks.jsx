@@ -5,6 +5,12 @@ import {bloggerLinks, bloggerIcons, wikiBatsLinks, rssLinks} from '../../conf/Co
 import {facebookLink, twitterLink, githubLink} from '../../conf/Config';
 import styled, {keyframes} from 'styled-components';
 
+//
+//
+// S T Y L I N G - C O M P O N E N T S
+//
+//
+
 const SocialLinksList = styled.ul`
   list-style: none;
   display: inline-block;
@@ -49,6 +55,12 @@ const BatSocialImage = styled(SocialImage)`
 `;
 
 const bloggerIcon = (bloggerIcons[locale] !== undefined) ? bloggerIcons[locale] : bloggerIcons['*']; // eslint-disable-line
+
+//
+//
+// M A I N - C O M P O N E N T
+//
+//
 
 const SocialLinks = () => (
   <SocialLinksList>
