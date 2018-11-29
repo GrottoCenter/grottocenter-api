@@ -150,6 +150,7 @@ export const findForCarouselUrl = '/api/partner/findForCarousel';
 export const quicksearchUrl = '/api/v1/search/findAll';
 export const findMapBoundsUrl = '/api/v1/geoloc/findByBounds';
 export const findMassifUrl = '/api/massifs/';
+export const findGroupUrl = '/api/groups/';
 
 export const
   swaggerLinkV1 = '/ui/swagger/1';

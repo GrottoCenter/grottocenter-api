@@ -33,7 +33,7 @@ module.exports.datastores = {
 
   default: {
     adapter: require('sails-mysql'),
-    url: 'mysql://root:root@localhost/grottoce',
+    url: 'mysql://root:root@localhost/grottoce'
   },
 
   test: {
