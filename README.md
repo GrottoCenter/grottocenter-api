@@ -18,6 +18,7 @@ Software requirement:
 - NPM (min 4.1.2)
 - Git client (see Git usage for configuration)
 - Docker
+- [grunt-cli](https://www.npmjs.com/package/grunt-cli) and [sails](https://www.npmjs.com/package/sails) installed globally via npm.
 
 Clone the project on your computer:
 ```
@@ -26,12 +27,31 @@ Clone the project on your computer:
 
 ## Usage
 
+### Containers deployment
 Start the project:
 ```
+> npm install
 > ./localDeploy.sh
 ```
 Then go to [homepage](http://localhost:8081/)
 Or access to [API documentation](http://localhost:8081/ui/api/)
+
+Currently, this deployment is not intented to be used for development because the hot reloading is not possible through a Docker container.
+
+### Development deployment
+Start the project:
+```
+> npm install
+> ./localDeploy.sh
+```
+We will use the DB container for the next part, that's why we need to run localDeploy.sh. Change the **config/datastores.js** default config url to *'mysql://sailsuser:grottocepassword@localhost:33060/grottoce'*.
+
+Finally, run:
+```
+> sails lift
+```
+
+### Tests
 
 Run tests:
 ```
