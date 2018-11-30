@@ -19,7 +19,10 @@
 	"GrottoCenter is a comunity database for cavers based on a wiki-like system Cavers fill the databes for cavers": "GrottoCenter е общнeствена база данни за пещерняци основава като уики-система. Пещерняците предоставят данни за пещерняци. ",
 	"Any interesting natural cave can be added in the database!": "Всякакви интересни, природни подземни кухина може да се добавят в базата данни!",
 	"The international voluntary association WikiCaves operates the GrottoCenter web application WikiCaves has as goals:": "Международното доброволно сдружение WikiCaves управлява уеб приложението GrottoCenter. WikiCaves има за цел:",
+	"Promote the development of the speleology in the world especially through  web-based collaboration": "Насърчаване развитието на спелеологията в света, особено чрез уеб-базирано сътрудничество.",
+	"Make access to the natural caves data easier especially by using Internet": "Маркирайте и помогнете за защитата на природните пещери и техните околности.",
 	"Highlight and help the protection of the natural caves and their surroundings": "Маркирайте и помогнете за защитата на природните пещери и техните околности.",
+	"Help the exploration and the scientific study of natural caves": "Помощ за проучване и научно изследване на естествени пещери.",
 	"Grottocenter numbers": "Grottocenter статистика",
 	"Promote!": "Насърчаване!",
 	"Share!": "Споделяне!",
@@ -91,5 +94,6 @@
 	"And to get your own API key, send us an email using the {0}": "За да получите своя API ключ, ни изпратете имейл с помощта на {0}",
 	"contact form": "контактна форма",
 	"Email": "ел. поща",
-	"Password": "Парола"
+	"Password": "Парола",
+	"Groups": "Група"
 }

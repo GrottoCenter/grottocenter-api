@@ -149,8 +149,7 @@ export const findRandomEntryUrl = '/api/entry/findRandom';
 export const findForCarouselUrl = '/api/partner/findForCarousel';
 export const quicksearchUrl = '/api/v1/search/findAll';
 export const findMapBoundsUrl = '/api/v1/geoloc/findByBounds';
-export const findMountainUrl = '/api/v1/mountains';
-
+export const findMassifUrl = '/api/v1/massifs';
 
 export const
   swaggerLinkV1 = '/swagger/apiV1.yaml';
@@ -171,7 +170,7 @@ export const
     entries: 'Entries',
     search: 'Search',
     add: 'Add',
-    mountains: 'Mountains',
+    massifs: 'Massifs',
   };
 
 export const

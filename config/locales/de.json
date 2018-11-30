@@ -43,5 +43,7 @@
 	"I find your project interesting:  How  can I  help ?": "Ich finde Euch nett. Kann ich irgendwie helfen ?",
 	"{0} hour": "{0} stunde",
 	"{0} hours": "{0} studen",
-	"{0} min": "{0} min"
+	"{0} min": "{0} min",
+	"Password": "Passwort",
+	"Groups": "Gruppen"
 }

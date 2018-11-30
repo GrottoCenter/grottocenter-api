@@ -1,19 +1,19 @@
 import { connect } from 'react-redux';
-import { loadMountain } from '../actions/Mountain';
-import Mountain from '../components/appli/Mountain';
+import { loadMassif } from '../actions/Massif';
+import Massif from '../components/appli/Massif';
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    fetch: dispatch(loadMountain())
+    fetch: dispatch(loadMassif())
   };
 }
 
 const mapStateToProps = (state) => {
   return {
-    // mountain: state.mountain
+    // massif: state.massif
 
     // TODO : currently working with fake data, use real one (see above)
-    mountain: {
+    massif: {
       "Id": "1",
       "Locked": "NO",
       "{{3}}')": null,
@@ -28,4 +28,4 @@ const mapStateToProps = (state) => {
   };
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(Mountain);
+export default connect(mapStateToProps, mapDispatchToProps)(Massif);
