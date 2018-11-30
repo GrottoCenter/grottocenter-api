@@ -47,7 +47,7 @@ export const changeLocation = (location) => {
 //
 
 export function fetchMapItemsResult(criteria) {
-  return function (dispatch) {
+  const thunkToDebounce = function (dispatch) {
     let completeUrl = findMapBoundsUrl;
     if (criteria) {
       completeUrl += '?' + Object.keys(criteria).map(k => k + '=' + encodeURIComponent(criteria[k])).join('&');
@@ -65,6 +65,15 @@ export function fetchMapItemsResult(criteria) {
     .then(text => dispatch(fetchMapItemsSuccess(JSON.parse(text))))/*
     .catch(error => dispatch(fetchRandomEntryFailure(error)))*/;
   };
+
+  thunkToDebounce.meta = {
+    debounce: {
+      time: 1000,
+      key: 'fetchMapItemsResult'
+    }
+  };
+
+  return thunkToDebounce;
 }
 
 
