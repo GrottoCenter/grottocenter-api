@@ -14,6 +14,7 @@ import Swagger from './Swagger';
 import Faq from '../appli/Faq';
 import LatestBlogNewsSection from '../homepage/LatestBlogNewsSection';
 import Entries from '../appli/entries/Index';
+import MountainContainer from '../../containers/MountainContainer';
 
 //
 //
@@ -59,6 +60,7 @@ const Application = () => (
           <Route path="/ui/map/:target?" component={MapContainer} />
           <Route path="/ui/swagger" component={Swagger} />
           <Route path="/ui/test" component={LatestBlogNewsSection} />
+          <Route path="/ui/mountains/:mountainId" component={MountainContainer} />
           <Redirect path="/ui/*" to="/ui/" />
         </Switch>
       </ArticleWrapper>
