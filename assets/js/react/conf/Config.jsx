@@ -171,6 +171,7 @@ export const
     entries: 'Entries',
     search: 'Search',
     add: 'Add',
+    mountains: 'Mountains',
   };
 
 export const

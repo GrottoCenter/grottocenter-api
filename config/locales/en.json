@@ -19,11 +19,11 @@
 	"GrottoCenter is a comunity database for cavers based on a wiki-like system Cavers fill the databes for cavers": "GrottoCenter is a comunity database for cavers based on a wiki-like system. Cavers fill the databes for cavers.",
 	"Any interesting natural cave can be added in the database!": "Any interesting natural cave can be added in the database!",
 	"The international voluntary association WikiCaves operates the GrottoCenter web application WikiCaves has as goals:": "The international voluntary association WikiCaves operates the GrottoCenter web application. WikiCaves has as goals:",
-	"Promote the development of the speleology in the world especially through  web-based collaboration": "Promote the development of the speleology in the world especially through  web-based collaboration.",
-	"Share and spread the data related to the speleology": "Share and spread the data related to the speleology.",
-	"Make access to the natural caves data easier especially by using Internet": "Make access to the natural caves data easier especially by using Internet.",
+	"Promote the development of the speleology in the world especially through  web-based collaboration": "Promote worldwide development of speleology especially through  web-based collaboration.",
+	"Share and spread the data related to the speleology": "Collect and share cave-related data",
+	"Make access to the natural caves data easier especially by using Internet": "Promote and facilitate the protection of  natural caves and their environment.",
 	"Highlight and help the protection of the natural caves and their surroundings": "Highlight and help the protection of the natural caves and their surroundings.",
-	"Help the exploration and the scientific study of natural caves": "Help the exploration and the scientific study of natural caves.",
+	"Help the exploration and the scientific study of natural caves": "support cave exploration and the scientific study of natural caves.",
 	"Grottocenter numbers": "Grottocenter numbers",
 	"Promote!": "Promote!",
 	"Share!": "Share!",
@@ -94,5 +94,10 @@
 	"API": "API",
 	"To use them, you just need an {0} key, and few lines of code!": "To use them, you just need an {0} key, and few lines of code!",
 	"And to get your own API key, send us an email using the {0}": "And to get your own API key, send us an email using the {0}",
-	"contact form": "contact form"
+	"contact form": "contact form",
+	"Email": "Email",
+	"Password": "Password",
+	"Inscription date": "Inscription date",
+	"Last reviewed": "Last reviewed",
+	"Mountains": "Mountains"
 }
