@@ -1,11 +1,11 @@
-import React, {PropTypes} from 'react';
-import { GridContainer } from "../common/Grid";
+import React from 'react';
+import PropTypes from 'prop-types';
 import Translate from '../common/Translate';
 
 const Group = (props) => {
   const { group } = props;
   return (
-    <GridContainer>
+    <div>
           <h1>{group.Name}</h1>
           <p>{group.Country}{' - '}
             {group.Region}{' - '} 
@@ -17,8 +17,7 @@ const Group = (props) => {
           <p>
             {group.Custom_message}
           </p>
-          
-    </GridContainer>
+    </div>
   );
 };
 
