@@ -173,6 +173,7 @@ export const
     add: 'Add',
     swagger: 'Browse API',
     massifs: 'Massifs',
+    groups: 'Groups',
   };
 
 export const
