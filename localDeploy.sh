@@ -38,7 +38,7 @@ function getContainerHealth {
 # Function that waits for a container to be healthy or unhealthy.
 # It prints a "." during starting and sleep 5 seconds before checking the status of the container.
 function waitContainer {
-  while STATUS=$(getContainerHealth $1); [ $STATUS != "\"healthy\"" ]; do 
+  while STATUS=$(getContainerHealth $1); [ $STATUS != "\"healthy\"" ]; do
     if [ $STATUS == "\"unhealthy\"" ]; then
       echo "Failed!"
       exit -1
@@ -52,8 +52,9 @@ function waitContainer {
 
 ##################################################### MAIN FUNCTION #########################################################
 
-echo "### BUILDING app locally using prod tasks ###"
-NODE_ENV=production grunt prod
+echo "### BUILDING app locally using grunt's prod tasks ###"
+npm install
+NODE_ENV=demo grunt prod
 
 ### RUNNING DOCKER IMAGES INSTANCES ###
 
@@ -91,7 +92,7 @@ echo "### Database POPULATED ###"
 
 echo "### BUILD the grottocenter docker image ###"
 # Unlimited swap memory during build
-docker build --memory-swap -1 -t ${GC_TAGNAME} .  || { echo '######## Build failed - Exiting now #########' ; exit 1; }
+docker build -f Dockerfile.demo --memory-swap -1 -t ${GC_TAGNAME} .  || { echo '######## Build failed - Exiting now #########' ; exit 1; }
 
 #TODO: Use an ES container in production
 # Delete the Elasticsearch container if already running and then create an Elasticsearch container for development with only one node.
@@ -114,7 +115,7 @@ echo "### JDBC plugin downloaded and built ###"
 # Delete the Logstash container if already running and then create a Logstash container with the logstash.conf as configuration file.
 # The health of this container is defined to healthy when we can send a ping to localhost:9600. And the unhealthy status is made after 5 wrong retries
 # to access the localhost:9600
-# We parameter the elasticsearch url to be the same than the tagname of our Elasticsearch container. 
+# We parameter the elasticsearch url to be the same than the tagname of our Elasticsearch container.
 # That means we can access to elasticsearch inside a container with the url "elasticsearchgrotto:9200"
 echo "### BUILD the Logstash container ###"
 docker rm -f ${LS_TAGNAME}
@@ -135,13 +136,11 @@ echo "### Logstash available and Data IS LOADING into ${ES_TAGNAME} ### \n"
 echo "### WARNING, DEPENDING ON YOUR DATA THIS STEP CAN TAKE MORE THAN 5 MINUTES !!! ###"
 
 echo "### RUN grottocenter image locally ###"
-# Here with sails_models__connection we override the production models connection to use the dev database
 docker rm -f ${GC_TAGNAME}
 docker run -d \
     -p ${GC_LOCAL_PORT}:8080 \
     --restart=always \
-    -e sails_models__connection=grottoceMysqlLocalDocker \
-    -e sails_appUrl='http://localhost:${GC_LOCAL_PORT}' \
+    -e sails_appUrl="http://localhost:${GC_LOCAL_PORT}" \
     --name=${GC_TAGNAME} \
     --link ${MYSQL_TAGNAME} \
     --link ${ES_TAGNAME} \
