@@ -1,8 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import CircularProgress from '@material-ui/core/CircularProgress';
-import Translate from './Translate';
 import styled from 'styled-components';
+import Translate from './Translate';
 
 //
 //
@@ -33,7 +33,7 @@ const SpinnerText = styled.span`
 //
 //
 
-const Spinner = ({size, text}) => (
+const Spinner = ({ size, text }) => (
   <SpinnerDiv size={size}>
     <SpinnerText><Translate>{text}</Translate></SpinnerText>
     <CircularProgress size={size} thickness={7} />
@@ -42,7 +42,7 @@ const Spinner = ({size, text}) => (
 
 Spinner.propTypes = {
   size: PropTypes.number.isRequired,
-  text: PropTypes.string
+  text: PropTypes.string,
 };
 
 export default Spinner;

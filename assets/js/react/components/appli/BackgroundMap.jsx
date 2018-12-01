@@ -1,7 +1,7 @@
 import React from 'react';
-import GCMap from '../common/GCMap';
 import { withTheme } from '@material-ui/core/styles';
 import styled from 'styled-components';
+import GCMap from '../common/GCMap';
 
 //
 //
@@ -21,7 +21,7 @@ const FullPageGCMap = styled(GCMap)`
 //
 //
 
-const BackgroundMap = (props) => (
+const BackgroundMap = props => (
   <FullPageGCMap {...props} />
 );
 

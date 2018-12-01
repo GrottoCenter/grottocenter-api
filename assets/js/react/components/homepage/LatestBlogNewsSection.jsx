@@ -1,11 +1,11 @@
 import React from 'react';
-import LandingSection from './LandingSection';
-import {GridRow, GridOneHalfColumn} from '../../helpers/GridSystem';
-import Translate from '../common/Translate';
 import styled from 'styled-components';
 import { withTheme } from '@material-ui/core/styles';
+import LandingSection from './LandingSection';
+import { GridRow, GridOneHalfColumn } from '../../helpers/GridSystem';
+import Translate from '../common/Translate';
 import LatestBlogNews from '../../containers/LatestBlogNews';
-import {FR_GC_BLOG, EN_GC_BLOG} from '../../conf/Config';
+import { FR_GC_BLOG, EN_GC_BLOG } from '../../conf/Config';
 
 //
 //
@@ -35,10 +35,10 @@ const LatestBlogNewsSection = () => (
     </GridRow>
     <GridRow>
       <GridOneHalfColumn>
-        <LatestBlogNews blog='fr' url={FR_GC_BLOG}/>
+        <LatestBlogNews blog="fr" url={FR_GC_BLOG} />
       </GridOneHalfColumn>
       <GridOneHalfColumn>
-        <LatestBlogNews blog='en' url={EN_GC_BLOG}/>
+        <LatestBlogNews blog="en" url={EN_GC_BLOG} />
       </GridOneHalfColumn>
     </GridRow>
   </LandingSection>

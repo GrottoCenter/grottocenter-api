@@ -1,10 +1,10 @@
 import React from 'react';
-import GCLink from '../common/GCLink';
 import ChevronIcon from '@material-ui/icons/ChevronRight';
 import HomeIcon from '@material-ui/icons/Home';
-import {breadcrumpKeys} from '../../conf/Config';
 import { withTheme } from '@material-ui/core/styles';
 import styled from 'styled-components';
+import { breadcrumpKeys } from '../../conf/Config';
+import GCLink from '../common/GCLink';
 import Translate from '../common/Translate';
 
 //
@@ -54,26 +54,26 @@ const StyledHomeIcon = styled(HomeIcon)`
 //
 
 const Breadcrump = () => {
-  let path = window.location.pathname;
-  let cutPath  = path.split('/');
-  let breadcrump = [];
+  const path = window.location.pathname;
+  const cutPath = path.split('/');
+  const breadcrump = [];
   cutPath.forEach((item) => {
     if (item.trim().length > 0) {
       if (breadcrump.length > 0) {
-        breadcrump.push(<ChevronIcon key={'c'+item} />);
+        breadcrump.push(<ChevronIcon key={`c${item}`} />);
       }
       if (breadcrumpKeys[item]) {
         breadcrump.push(
-          <StyledLink internal={true} href='/ui/' key={'l'+item}>
+          <StyledLink internal href="/ui/" key={`l${item}`}>
             <Translate>{breadcrumpKeys[item]}</Translate>
-          </StyledLink>
+          </StyledLink>,
         );
       }
     }
   });
   return (
     <BreadcrumpBar>
-      <StyledHomeIcon/>
+      <StyledHomeIcon />
       {breadcrump}
     </BreadcrumpBar>
   );

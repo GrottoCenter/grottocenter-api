@@ -1,4 +1,6 @@
-import {INIT_LBNEW_FETCHER, FETCH_LBNEWS, FETCH_LBNEWS_SUCCESS, FETCH_LBNEWS_FAILURE} from './../actions/LatestBlogNews';
+import {
+  INIT_LBNEW_FETCHER, FETCH_LBNEWS, FETCH_LBNEWS_SUCCESS, FETCH_LBNEWS_FAILURE,
+} from '../actions/LatestBlogNews';
 
 //
 //
@@ -29,7 +31,7 @@ import {INIT_LBNEW_FETCHER, FETCH_LBNEWS, FETCH_LBNEWS_SUCCESS, FETCH_LBNEWS_FAI
 //
 //
 
-export const latestBlogNews = (state = {}, action) => {
+const latestBlogNews = (state = {}, action) => {
   let jNews = '';
 
   switch (action.type) {
@@ -39,16 +41,16 @@ export const latestBlogNews = (state = {}, action) => {
           url: action.url,
           isFetching: false,
           news: {},
-          revoked: true
-        }
+          revoked: true,
+        },
       });
 
     case FETCH_LBNEWS:
       return Object.assign({}, state, {
         [action.blog]: {
           isFetching: true,
-          news: {}
-        }
+          news: {},
+        },
       });
 
     case FETCH_LBNEWS_SUCCESS:
@@ -61,9 +63,9 @@ export const latestBlogNews = (state = {}, action) => {
             link: jNews.link,
             text: jNews.text,
             day: jNews.day,
-            month: jNews.month
-          }
-        }
+            month: jNews.month,
+          },
+        },
       });
 
     case FETCH_LBNEWS_FAILURE:
@@ -71,11 +73,13 @@ export const latestBlogNews = (state = {}, action) => {
         [action.blog]: {
           isFetching: false,
           news: {},
-          error: action.error
-        }
+          error: action.error,
+        },
       });
 
     default:
       return state;
   }
 };
+
+export default latestBlogNews;

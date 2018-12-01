@@ -1,10 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { withTheme } from '@material-ui/core/styles';
-import Translate from '../common/Translate';
-import InternationalizedLink from '../common/InternationalizedLink';
-import {licenceLinks} from '../../conf/Config';
 import styled from 'styled-components';
+import Translate from './Translate';
+import InternationalizedLink from './InternationalizedLink';
+import { licenceLinks } from '../../conf/Config';
 
 //
 //
@@ -41,7 +41,7 @@ const LicenceImage = styled.img`
   width: 100px;
 `;
 
-const FooterDisclamer = ({className}) => (
+const FooterDisclamer = ({ className }) => (
   <FooterBar className={className}>
     <DisclamerText>
       <Translate>Unless stated otherwise, all text and documents are available under the terms of the Creative Commons Attribution-ShareAlike 30 Unported</Translate>
@@ -55,6 +55,6 @@ const FooterDisclamer = ({className}) => (
 );
 
 FooterDisclamer.propTypes = {
-  className: PropTypes.string
-}
+  className: PropTypes.string,
+};
 export default FooterDisclamer;

@@ -1,5 +1,5 @@
 import fetch from 'isomorphic-fetch';
-import {findMapBoundsUrl} from '../conf/Config';
+import { findMapBoundsUrl } from '../conf/Config';
 
 //
 //
@@ -19,26 +19,20 @@ export const FOCUS_ON_LOCATION = 'FOCUS_ON_LOCATION';
 //
 //
 
-export const fetchMapItemsSuccess = (results) => {
-  return {
-    type: FETCH_MAP_ITEMS_SUCCESS,
-    results
-  }
-};
+export const fetchMapItemsSuccess = results => ({
+  type: FETCH_MAP_ITEMS_SUCCESS,
+  results,
+});
 
-export const fetchMapItemsFailure = (error) => {
-  return {
-    type: FETCH_MAP_ITEMS_FAILURE,
-    error
-  }
-};
+export const fetchMapItemsFailure = error => ({
+  type: FETCH_MAP_ITEMS_FAILURE,
+  error,
+});
 
-export const changeLocation = (location) => {
-  return {
-    type: CHANGE_LOCATION,
-    location
-  }
-};
+export const changeLocation = location => ({
+  type: CHANGE_LOCATION,
+  location,
+});
 
 //
 //
@@ -50,44 +44,39 @@ export function fetchMapItemsResult(criteria) {
   const thunkToDebounce = function (dispatch) {
     let completeUrl = findMapBoundsUrl;
     if (criteria) {
-      completeUrl += '?' + Object.keys(criteria).map(k => k + '=' + encodeURIComponent(criteria[k])).join('&');
+      completeUrl += `?${Object.keys(criteria).map(k => `${k}=${encodeURIComponent(criteria[k])}`).join('&')}`;
     }
 
     return fetch(completeUrl)
-    .then((response) => {
-      if (response.status >= 400) {
-        let errorMessage = 'Fetching ' + completeUrl + ' status: ' + response.status;
-        dispatch(fetchMapItemsFailure(errorMessage));
-        throw new Error(errorMessage);
-      }
-      return response.text();
-    })
-    .then(text => dispatch(fetchMapItemsSuccess(JSON.parse(text))))/*
-    .catch(error => dispatch(fetchRandomEntryFailure(error)))*/;
+      .then((response) => {
+        if (response.status >= 400) {
+          const errorMessage = `Fetching ${completeUrl} status: ${response.status}`;
+          dispatch(fetchMapItemsFailure(errorMessage));
+          throw new Error(errorMessage);
+        }
+        return response.text();
+      })
+      .then(text => dispatch(fetchMapItemsSuccess(JSON.parse(text))))/*
+    .catch(error => dispatch(fetchRandomEntryFailure(error))) */;
   };
 
   thunkToDebounce.meta = {
     debounce: {
       time: 1000,
-      key: 'fetchMapItemsResult'
-    }
+      key: 'fetchMapItemsResult',
+    },
   };
 
   return thunkToDebounce;
 }
 
 
+export const changeZoom = zoom => ({
+  type: CHANGE_ZOOM,
+  zoom,
+});
 
-export const changeZoom = (zoom) => {
-  return {
-    type: CHANGE_ZOOM,
-    zoom
-  }
-};
-
-export const focusOnLocation = (location) => {
-  return {
-    type: FOCUS_ON_LOCATION,
-    location
-  }
-};
+export const focusOnLocation = location => ({
+  type: FOCUS_ON_LOCATION,
+  location,
+});

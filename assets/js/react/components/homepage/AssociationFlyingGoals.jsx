@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import FlyingGoal from './FlyingGoal';
@@ -104,28 +104,27 @@ class AssociationFlyingGoals extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      targetZone: this.props.title
+      targetZone: this.props.title,
     };
   }
 
-  render () {
+  render() {
     return (
       <div>
         <CenteredText>
-          <span ref={(element) => {this.targetZone = element;}} >
+          <span ref={(element) => { this.targetZone = element; }}>
             {this.state.targetZone}
           </span>
         </CenteredText>
         <FlyingGoals>
-          {this.props.entries.map((entry, i) => {
-            return (
-              <GoalWrapper
-                key={i}
-                entry={entry}
-                updateTargetZone={(text) => {this.setState({targetZone: text});}}
-                {...this.props} />
-            );
-          })}
+          {this.props.entries.map((entry, i) => (
+            <GoalWrapper
+              key={i}
+              entry={entry}
+              updateTargetZone={(text) => { this.setState({ targetZone: text }); }}
+              {...this.props}
+            />
+          ))}
         </FlyingGoals>
       </div>
     );
@@ -134,7 +133,7 @@ class AssociationFlyingGoals extends Component {
 
 AssociationFlyingGoals.propTypes = {
   entries: PropTypes.array.isRequired,
-  title: PropTypes.element.isRequired
+  title: PropTypes.element.isRequired,
 };
 
 export default AssociationFlyingGoals;

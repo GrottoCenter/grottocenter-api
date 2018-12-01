@@ -1,7 +1,7 @@
-import React, {Component} from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
-import { directionManager } from './../../containers/TextDirectionProvider';
-import { RIGHT_TO_LEFT } from './../../conf/Config';
+import { directionManager } from '../../containers/TextDirectionProvider';
+import { RIGHT_TO_LEFT } from '../../conf/Config';
 
 //
 //
@@ -9,19 +9,15 @@ import { RIGHT_TO_LEFT } from './../../conf/Config';
 //
 //
 
-class BasePage extends Component {
-  render() {
-    return (
-      <div style={{direction: (this.props.direction === RIGHT_TO_LEFT ? 'rtl' : 'ltr')}}>
-        {this.props.children}
-      </div>
-    );
-  }
-}
+const BasePage = ({ children, direction }) => (
+  <div style={{ direction: (direction === RIGHT_TO_LEFT ? 'rtl' : 'ltr') }}>
+    {children}
+  </div>
+);
 
 BasePage.propTypes = {
   direction: PropTypes.string.isRequired,
-  children: PropTypes.node.isRequired
+  children: PropTypes.node.isRequired,
 };
 
 export default directionManager()(BasePage);

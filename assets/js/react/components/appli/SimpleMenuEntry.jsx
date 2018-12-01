@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import MenuItem from '@material-ui/core/MenuItem';
 import { withTheme } from '@material-ui/core/styles';
@@ -41,7 +41,7 @@ class SimpleMenuEntry extends Component {
   }
 
   render() {
-    let callOnClick = () => {
+    const callOnClick = () => {
       browserHistory.push(this.props.target);
       this.props.toggleSideMenu();
     };
@@ -61,7 +61,7 @@ SimpleMenuEntry.propTypes = {
   open: PropTypes.bool.isRequired,
   target: PropTypes.string.isRequired,
   register: PropTypes.func.isRequired,
-  toggleSideMenu: PropTypes.func.isRequired
+  toggleSideMenu: PropTypes.func.isRequired,
 };
 
 export default SimpleMenuEntry;

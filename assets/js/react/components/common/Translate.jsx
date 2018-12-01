@@ -8,16 +8,16 @@ import { FormattedMessage } from 'react-intl';
 //
 //
 
-const Translate = (props) => (
+const Translate = props => (
   props.children ? <FormattedMessage id={props.children} /> : <FormattedMessage {...props} />
 );
 
 Translate.propTypes = {
-  children: PropTypes.string
+  children: PropTypes.string,
 };
 
 Translate.defaultProps = {
-  children: null
+  children: null,
 };
 
 export default Translate;

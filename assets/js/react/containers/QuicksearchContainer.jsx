@@ -1,8 +1,8 @@
-import {connect} from 'react-redux';
-import {fetchQuicksearchResult, resetQuicksearch, setCurrentEntry} from './../actions/Quicksearch';
-import {focusOnLocation} from './../actions/Map';
+import { connect } from 'react-redux';
+import { fetchQuicksearchResult, resetQuicksearch, setCurrentEntry } from '../actions/Quicksearch';
+import { focusOnLocation } from '../actions/Map';
 import Searchbar2 from '../components/common/Searchbar';
-import { isMappable } from "../helpers/Entries";
+import { isMappable } from '../helpers/Entries';
 
 //
 //
@@ -10,24 +10,22 @@ import { isMappable } from "../helpers/Entries";
 //
 //
 
-const startSearch = filter => dispatch => {
-  return new Promise(resolve => {
-    if (filter && filter.length >= 3) {
-      resolve(dispatch(fetchQuicksearchResult({name: filter})));
-    } else {
-      resolve(dispatch(resetQuicksearch()));
-    }
-  });
-};
+const startSearch = filter => dispatch => new Promise((resolve) => {
+  if (filter && filter.length >= 3) {
+    resolve(dispatch(fetchQuicksearchResult({ name: filter })));
+  } else {
+    resolve(dispatch(resetQuicksearch()));
+  }
+});
 
-const handleSelection = (selection, ownProps) => dispatch => {
+const handleSelection = (selection, ownProps) => (dispatch) => {
   // TODO case of array
 
   if (isMappable(selection[0].value)) {
     dispatch(setCurrentEntry(selection[0].value));
     dispatch(focusOnLocation({
       lat: selection[0].value.latitude,
-      lng: selection[0].value.longitude
+      lng: selection[0].value.longitude,
     }));
   }
   if (ownProps.handleSelection) {
@@ -35,19 +33,15 @@ const handleSelection = (selection, ownProps) => dispatch => {
   }
 };
 
-const mapDispatchToProps = (dispatch, ownProps) => {
-  return {
-    startSearch: filter => dispatch(startSearch(filter)),
-    handleSelection: selection => dispatch(handleSelection(selection, ownProps)),
-  };
-};
+const mapDispatchToProps = (dispatch, ownProps) => ({
+  startSearch: filter => dispatch(startSearch(filter)),
+  handleSelection: selection => dispatch(handleSelection(selection, ownProps)),
+});
 
-const mapStateToProps = (state, ownProps) => {
-  return {
-    results: state.quicksearch.results,
-    selectedEntry: state.quicksearch.entry,
-    classes: ownProps.classes,
-  };
-};
+const mapStateToProps = (state, ownProps) => ({
+  results: state.quicksearch.results,
+  selectedEntry: state.quicksearch.entry,
+  classes: ownProps.classes,
+});
 
 export default connect(mapStateToProps, mapDispatchToProps)(Searchbar2);

@@ -10,8 +10,8 @@ import Paper from '@material-ui/core/Paper';
 import Chip from '@material-ui/core/Chip';
 import MenuItem from '@material-ui/core/MenuItem';
 import CancelIcon from '@material-ui/icons/Cancel';
-import Translate from "./Translate";
-import { entryOptionForSelector } from "../../helpers/Entries";
+import Translate from './Translate';
+import { entryOptionForSelector } from '../../helpers/Entries';
 
 //
 //
@@ -191,7 +191,7 @@ class Searchbar extends React.Component {
     selected: null,
   };
 
-  handleChange = value => {
+  handleChange = (value) => {
     this.setState({
       selected: value,
     });
@@ -200,18 +200,16 @@ class Searchbar extends React.Component {
     }
   };
 
-  getDatasource = (filter) => {
-    return this.props.startSearch(filter)
-      .then(() => {
-        const datasource = this.props.results.entries.map(entry => ({
-          value: entry,
-          label: entry.name,
-          type: 'entry',
-        }));
-        return Promise.resolve( datasource );
-      })
-      .catch(() => Promise.resolve( [] ));
-  };
+  getDatasource = filter => this.props.startSearch(filter)
+    .then(() => {
+      const datasource = this.props.results.entries.map(entry => ({
+        value: entry,
+        label: entry.name,
+        type: 'entry',
+      }));
+      return Promise.resolve(datasource);
+    })
+    .catch(() => Promise.resolve([]));
 
   render() {
     const { classes, theme } = this.props;

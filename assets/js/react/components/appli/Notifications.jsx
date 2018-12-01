@@ -19,8 +19,8 @@ import NotificationsIcon from '@material-ui/icons/Notifications';
 const Notifications = () => (
   <Badge
     badgeContent={1}
-    secondary={true}
-    badgeStyle={{top: 20, right: 20}}
+    secondary
+    badgeStyle={{ top: 20, right: 20 }}
   >
     <IconButton tooltip="Notifications">
       <NotificationsIcon />

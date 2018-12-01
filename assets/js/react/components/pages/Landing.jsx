@@ -18,16 +18,16 @@ import GrottoAppBar from '../common/GrottoAppBar';
 //
 const Landing = () => (
   <BasePage>
-    <div id='landingpage'>
-      <GrottoAppBar/>
-      <Header/>
-      <Welcome/>
-      <WhatIsIt/>
-      <RandomEntry/>
-      <LatestBlogNewsSection/>
-      <Association/>
-      <PartnersSection/>
-      <Footer/>
+    <div id="landingpage">
+      <GrottoAppBar />
+      <Header />
+      <Welcome />
+      <WhatIsIt />
+      <RandomEntry />
+      <LatestBlogNewsSection />
+      <Association />
+      <PartnersSection />
+      <Footer />
     </div>
   </BasePage>
 );

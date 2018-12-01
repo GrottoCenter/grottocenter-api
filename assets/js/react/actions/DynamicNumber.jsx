@@ -1,5 +1,5 @@
 import fetch from 'isomorphic-fetch';
-import {dynamicNumbersUrl} from '../conf/Config';
+import { dynamicNumbersUrl } from '../conf/Config';
 
 //
 //
@@ -19,35 +19,27 @@ export const LOAD_DYNNB = 'LOAD_DYNNB';
 //
 //
 
-export const initDynamicNumberFetcher = (numberType) => {
-  return {
-    type: INIT_DYNNB_FETCHER,
-    numberType: numberType
-  };
-};
+export const initDynamicNumberFetcher = numberType => ({
+  type: INIT_DYNNB_FETCHER,
+  numberType,
+});
 
-export const fetchDynamicNumber = (numberType) => {
-  return {
-    type: FETCH_DYNNB,
-    numberType: numberType
-  };
-};
+export const fetchDynamicNumber = numberType => ({
+  type: FETCH_DYNNB,
+  numberType,
+});
 
-export const fetchDynamicNumberSuccess = (numberType, number) => {
-  return {
-    type: FETCH_DYNNB_SUCCESS,
-    numberType: numberType,
-    number: number
-  };
-};
+export const fetchDynamicNumberSuccess = (numberType, number) => ({
+  type: FETCH_DYNNB_SUCCESS,
+  numberType,
+  number,
+});
 
-export const fetchDynamicNumberFailure = (numberType, error) => {
-  return {
-    type: FETCH_DYNNB_FAILURE,
-    numberType: numberType,
-    error: error
-  };
-};
+export const fetchDynamicNumberFailure = (numberType, error) => ({
+  type: FETCH_DYNNB_FAILURE,
+  numberType,
+  error,
+});
 
 //
 //
@@ -60,17 +52,17 @@ export function loadDynamicNumber(numberType) {
     dispatch(initDynamicNumberFetcher(numberType));
     dispatch(fetchDynamicNumber(numberType));
 
-    let url = dynamicNumbersUrl[numberType];
+    const url = dynamicNumbersUrl[numberType];
     return fetch(url)
-    .then((response) => {
-      if (response.status >= 400) {
-        throw new Error('Bad response from server'); // TODO Add better error management
-      }
-      return response.text();
-    })
-    .then(text => dispatch(fetchDynamicNumberSuccess(numberType, text)))
-    .catch(error => {
-      dispatch(fetchDynamicNumberFailure(numberType, error));
-    });
+      .then((response) => {
+        if (response.status >= 400) {
+          throw new Error('Bad response from server'); // TODO Add better error management
+        }
+        return response.text();
+      })
+      .then(text => dispatch(fetchDynamicNumberSuccess(numberType, text)))
+      .catch((error) => {
+        dispatch(fetchDynamicNumberFailure(numberType, error));
+      });
   };
 }

@@ -1,13 +1,17 @@
 import React from 'react';
 import { withTheme } from '@material-ui/core/styles';
+import Toolbar from '@material-ui/core/Toolbar';
+import styled from 'styled-components';
+import { withStyles } from '@material-ui/core';
 import InternationalizedLink from '../common/InternationalizedLink';
 import GCLink from '../common/GCLink';
 import GCLogo from '../common/GCLogo';
-import {licenceLinks, fseLinks, contactLinks, githubLink, facebookLink} from '../../conf/Config';
-import {twitterLink, rssLinks, bloggerLinks, bloggerIcons} from '../../conf/Config';
-import Toolbar from '@material-ui/core/Toolbar';
-import styled from 'styled-components';
-import {withStyles} from "@material-ui/core";
+import {
+  licenceLinks, fseLinks, contactLinks, githubLink, facebookLink,
+} from '../../conf/Config';
+import {
+  twitterLink, rssLinks, bloggerLinks, bloggerIcons,
+} from '../../conf/Config';
 
 //
 //
@@ -26,8 +30,8 @@ const FooterBar = withStyles(theme => ({
     bottom: '0',
     width: 'calc(100% - 20px)',
     display: 'inline-flex',
-    justifyContent: 'space-between'
-  }
+    justifyContent: 'space-between',
+  },
 }), { withTheme: true })(Toolbar);
 
 const SocialImage = styled.img`
@@ -98,13 +102,13 @@ const AppFooter = () => (
         <SocialImage src="/images/icons8/brown/icons8-rss-filled-100.png" alt="RSS feed" />
       </InternationalizedLink>
       <InternationalizedLink links={bloggerLinks}>
-        <SocialImage src='/images/icons8/brown/icons8-blogger-filled-100.png' alt="Grottocenter blog" />
+        <SocialImage src="/images/icons8/brown/icons8-blogger-filled-100.png" alt="Grottocenter blog" />
       </InternationalizedLink>
       <InternationalizedLink links={contactLinks}>
-        <SocialImage src='/images/icons8/brown/icons8-secured-letter-filled-100.png' alt="Contact Grottocenter team" />
+        <SocialImage src="/images/icons8/brown/icons8-secured-letter-filled-100.png" alt="Contact Grottocenter team" />
       </InternationalizedLink>
-      <GCLink internal={true} href='/ui/faq'>
-        <SocialImage src='/images/icons8/brown/icons8-faq-filled-100.png' alt="Need help?" />
+      <GCLink internal href="/ui/faq">
+        <SocialImage src="/images/icons8/brown/icons8-faq-filled-100.png" alt="Need help?" />
       </GCLink>
     </div>
   </FooterBar>

@@ -1,14 +1,14 @@
 import React from 'react';
 import { Route, Switch } from 'react-router-dom';
 import { withTheme } from '@material-ui/core/styles';
-import styled from "styled-components";
+import styled from 'styled-components';
 
 import BasePage from './BasePage';
 import SideMenuConnector from '../../containers/SideMenuConnector';
 import AppToolbar from '../appli/AppToolbar';
 import AppFooter from '../appli/AppFooter';
 import Breadcrump from '../appli/Breadcrump';
-import AvailableTools, { EntriesOfInterest } from '../../components/admin/Tools';
+import AvailableTools, { EntriesOfInterest } from '../admin/Tools';
 
 //
 //
@@ -39,16 +39,16 @@ const ArticleWrapper = styled.article`
 
 const Admin = () => (
   <BasePage>
-    <div id='adminpage'>
+    <div id="adminpage">
       <ApplicationHeader><AppToolbar /></ApplicationHeader>
       <aside><SideMenuConnector /></aside>
       <Breadcrump />
       <ArticleWrapper>
-				<Switch>
-					<Route exact path="/admin/" component={AvailableTools} />
-					<Route path="/admin/listEntriesOfInterest" component={EntriesOfInterest} />
-					<Route path="/admin/*" to="/admin/" />
-				</Switch>
+        <Switch>
+          <Route exact path="/admin/" component={AvailableTools} />
+          <Route path="/admin/listEntriesOfInterest" component={EntriesOfInterest} />
+          <Route path="/admin/*" to="/admin/" />
+        </Switch>
       </ArticleWrapper>
       <footer><AppFooterStl /></footer>
     </div>

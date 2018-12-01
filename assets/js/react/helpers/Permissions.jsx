@@ -9,25 +9,22 @@ import PropTypes from 'prop-types';
 
 export default function checkPermission(right) {
   // Control rights
-  let granted = false;
+  const granted = false;
+  console.debug('Under development', right);
 
   if (granted) {
     return (Component) => {
-      const GrantedAccessComponent = (props) => {
-        return <Component {...props} />;
-      };
+      const GrantedAccessComponent = props => <Component {...props} />;
 
       GrantedAccessComponent.contextTypes = {
-        direction: PropTypes.string.isRequired
+        direction: PropTypes.string.isRequired,
       };
       return GrantedAccessComponent;
     };
   }
 
   return () => {
-    const DeniedAccessComponent = () => {
-      return <div />;
-    };
+    const DeniedAccessComponent = () => <div />;
 
     DeniedAccessComponent.contextTypes = {
     };

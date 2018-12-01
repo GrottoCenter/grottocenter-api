@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import IconButton from '@material-ui/core/IconButton';
 import TranslateIcon from '@material-ui/icons/Translate';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
@@ -8,10 +8,10 @@ import FlatButton from '@material-ui/core/Button';
 import Toolbar from '@material-ui/core/Toolbar';
 import Dialog from '@material-ui/core/Dialog';
 import { withStyles } from '@material-ui/core/styles';
+import styled from 'styled-components';
 import LanguagePicker from '../../containers/LanguagePicker';
 import SigninForm from '../SigninForm';
-import styled from 'styled-components';
-import Translate from "./Translate";
+import Translate from './Translate';
 
 //
 //
@@ -26,20 +26,20 @@ const StyledToolbar = withStyles(theme => ({
     zIndex: '100',
     minHeight: '56px',
     display: 'flex',
-    justifyContent: 'space-between'
-  }
+    justifyContent: 'space-between',
+  },
 }), { withTheme: true })(Toolbar);
 
 const StyledTranslateIcon = withStyles(theme => ({
   root: {
-    color: theme.palette.textIconColor
-  }
+    color: theme.palette.textIconColor,
+  },
 }), { withTheme: true })(TranslateIcon);
 
 const StyledIconButton = withStyles(theme => ({
   root: {
-    color: theme.palette.textIconColor
-  }
+    color: theme.palette.textIconColor,
+  },
 }), { withTheme: true })(IconButton);
 
 
@@ -59,11 +59,11 @@ class GrottoAppBar extends Component {
     this.state = {
       userMenuEl: null,
       openSignIn: false,
-      openRegister: false
+      openRegister: false,
     };
   }
 
-  handleClick = event => {
+  handleClick = (event) => {
     this.setState({ userMenuEl: event.currentTarget });
   };
 
@@ -73,33 +73,33 @@ class GrottoAppBar extends Component {
 
   openSignInDialog() {
     this.handleClose();
-    this.setState({openSignIn: true});
+    this.setState({ openSignIn: true });
   }
 
   closeSignInDialog() {
-    this.setState({openSignIn: false});
+    this.setState({ openSignIn: false });
   }
 
   openRegisterDialog() {
     this.handleClose();
-    this.setState({openRegister: true});
+    this.setState({ openRegister: true });
   }
 
   closeRegisterDialog() {
-    this.setState({openRegister: false});
+    this.setState({ openRegister: false });
   }
 
   processLogin() {
     $.ajax({
       url: '/csrfToken',
       dataType: 'json',
-      success: function(data) {
+      success: function (data) {
         $.post('/auth/login', {
           contact: this.refs.login.getValue(),
           password: this.refs.password.getValue(),
-          _csrf: data._csrf
+          _csrf: data._csrf,
         }, this.loginSuccess.bind(this), this.loginFail.bind(this));
-      }.bind(this)
+      }.bind(this),
     });
   }
 
@@ -113,13 +113,13 @@ class GrottoAppBar extends Component {
     const actionsSignIn = [
       <FlatButton
         label="Cancel"
-        primary={true}
+        primary
         onClick={() => this.closeSignInDialog()}
       />,
       <FlatButton
         label="Submit"
-        primary={true}
-        keyboardFocused={true}
+        primary
+        keyboardFocused
         onClick={() => this.closeSignInDialog()}
       />,
     ];
@@ -127,13 +127,13 @@ class GrottoAppBar extends Component {
     const actionsRegister = [
       <FlatButton
         label="Cancel"
-        primary={true}
+        primary
         onClick={() => this.closeRegisterDialog()}
       />,
       <FlatButton
         label="Submit"
-        primary={true}
-        keyboardFocused={true}
+        primary
+        keyboardFocused
         onClick={() => this.closeRegisterDialog()}
       />,
     ];
@@ -142,7 +142,7 @@ class GrottoAppBar extends Component {
       <StyledToolbar>
         <FlexDiv>
           <StyledTranslateIcon />
-          <LanguagePicker/>
+          <LanguagePicker />
         </FlexDiv>
 
         <div>
@@ -155,8 +155,8 @@ class GrottoAppBar extends Component {
             open={Boolean(this.state.userMenuEl)}
             onClose={this.handleClose}
           >
-            <MenuItem onClick={() => this.openSignInDialog()}><Translate id={'Sign In'}/></MenuItem>
-            <MenuItem onClick={() => this.openRegisterDialog()}><Translate id={'Register'}/></MenuItem>
+            <MenuItem onClick={() => this.openSignInDialog()}><Translate id="Sign In" /></MenuItem>
+            <MenuItem onClick={() => this.openRegisterDialog()}><Translate id="Register" /></MenuItem>
           </Menu>
         </div>
 
@@ -168,9 +168,9 @@ class GrottoAppBar extends Component {
           onRequestClose={() => this.closeSignInDialog()}
           onBackdropClick={() => this.closeSignInDialog()}
           onEscapeKeyDown={() => this.closeSignInDialog()}
-          autoScrollBodyContent={true}
+          autoScrollBodyContent
         >
-          <SigninForm/>
+          <SigninForm />
         </Dialog>
         <Dialog
           title="Register Form"

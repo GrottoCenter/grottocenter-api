@@ -1,37 +1,39 @@
+/* eslint-disable no-underscore-dangle */
+
 /**
  * TODO Add comment
  */
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { addLocaleData, IntlProvider } from 'react-intl';
-import localeData from "react-intl/locale-data/index";
+import localeData from 'react-intl/locale-data/index';
 import createDebounce from 'redux-debounced';
-import {Provider} from 'react-redux';
-import {createStore, applyMiddleware} from 'redux';
+import { Provider } from 'react-redux';
+import { createStore, applyMiddleware } from 'redux';
 import thunkMiddleware from 'redux-thunk';
-import { BrowserRouter, Route, Switch } from "react-router-dom";
+import { BrowserRouter, Route, Switch } from 'react-router-dom';
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
 import grottoTheme from './conf/grottoTheme';
 import GCReducer from './reducers/GCReducer';
-import {changeLanguage} from './actions/Language';
+import { changeLanguage } from './actions/Language';
 import TextDirectionProvider from './containers/TextDirectionProvider';
-import Landing from "./components/pages/Landing";
-import Application from "./components/pages/Application";
-import Admin from "./components/pages/Admin";
+import Landing from './components/pages/Landing';
+import Application from './components/pages/Application';
+import Admin from './components/pages/Admin';
 
 addLocaleData(localeData);
 
-let gcStore = createStore(
+const gcStore = createStore(
   GCReducer,
   window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__(),
-  applyMiddleware(createDebounce(), thunkMiddleware)
+  applyMiddleware(createDebounce(), thunkMiddleware),
 );
 
-/*gcStore.subscribe(function() {
+/* gcStore.subscribe(function() {
   console.log(gcStore.getState());
-});*/
+}); */
 
-gcStore.dispatch(changeLanguage(locale)); //eslint-disable-line no-undef
+gcStore.dispatch(changeLanguage(locale)); // eslint-disable-line no-undef
 
 const theme = createMuiTheme(grottoTheme);
 
@@ -53,5 +55,5 @@ ReactDOM.render(
       </Provider>
     </MuiThemeProvider>
   </IntlProvider>,
-  document.getElementById('gc3_content_wrapper')
+  document.getElementById('gc3_content_wrapper'),
 );

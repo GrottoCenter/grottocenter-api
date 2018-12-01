@@ -2,53 +2,53 @@ import brown from '@material-ui/core/colors/brown';
 import blue from '@material-ui/core/colors/blue';
 import orange from '@material-ui/core/colors/orange';
 import grey from '@material-ui/core/colors/grey';
-import {fade} from '@material-ui/core/styles/colorManipulator';
+import { fade } from '@material-ui/core/styles/colorManipulator';
 import spacing from '@material-ui/core/styles/spacing';
 
 const fontFamily = 'Open Sans';
 
 export default {
-  spacing: spacing,
+  spacing,
   fontFamily: 'Open Sans',
   palette: {
     primary: {
       light: brown['500'],
-      main: brown["700"],
-      dark: brown["100"],
-      contrastText: grey["900"],
+      main: brown['700'],
+      dark: brown['100'],
+      contrastText: grey['900'],
     },
     secondary: {
-      light: blue["500"],
-      main: blue["700"],
-      dark: blue["100"],
-      contrastText: grey["600"],
+      light: blue['500'],
+      main: blue['700'],
+      dark: blue['100'],
+      contrastText: grey['600'],
     },
     primary1Color: brown['500'],
     primary2Color: brown['700'],
-    primary3Color: brown["100"],
-    secondary1Color: blue["500"],
-    secondary2Color: blue["700"],
-    secondary3Color: blue["100"],
-    accent1Color: orange["500"],
-    primaryTextColor: grey["900"],
-    secondaryTextColor: grey["600"],
+    primary3Color: brown['100'],
+    secondary1Color: blue['500'],
+    secondary2Color: blue['700'],
+    secondary3Color: blue['100'],
+    accent1Color: orange['500'],
+    primaryTextColor: grey['900'],
+    secondaryTextColor: grey['600'],
     textIconColor: '#FFFFFF',
-    divider: grey["400"],
+    divider: grey['400'],
     darkBlack: '#000000',
     fullBlack: '#000000',
     secondaryBlocTitle: '#FFFFFF',
-    blackShadow: fade('#000000',  0.117647),
+    blackShadow: fade('#000000', 0.117647),
   },
   typography: {
-    fontFamily: fontFamily
+    fontFamily,
   },
   overrides: {
     MuiSelect: {
       root: {
-        fontFamily: fontFamily
-      }
-    }
-  }
+        fontFamily,
+      },
+    },
+  },
 };
 
 // // Main Colors

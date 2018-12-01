@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import MenuItem from '@material-ui/core/MenuItem';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
@@ -40,13 +40,13 @@ class ComplexMenuEntry extends Component {
   }
 
   render() {
-    let display = (this.props.open)
+    const display = (this.props.open)
       ? 'inherit'
       : 'none';
 
     let icon = (this.props.open)
-      ? <ExpandLessIcon/>
-      : <ExpandMoreIcon/>;
+      ? <ExpandLessIcon />
+      : <ExpandMoreIcon />;
 
     if (!this.props.children) {
       icon = this.props.icon;
@@ -57,17 +57,22 @@ class ComplexMenuEntry extends Component {
       callOnClick = () => {
         browserHistory.push(this.props.target);
         this.props.toggleSideMenu();
-      }
+      };
     }
 
-    return (<div>
-      <FirstLevelMenuItem onClick={callOnClick} leftIcon={icon}>
-        {this.props.text}
-      </FirstLevelMenuItem>
-      <div style={{
-          display: display
-        }}>{this.props.children}</div>
-    </div>);
+    return (
+      <div>
+        <FirstLevelMenuItem onClick={callOnClick} leftIcon={icon}>
+          {this.props.text}
+        </FirstLevelMenuItem>
+        <div style={{
+          display,
+        }}
+        >
+          {this.props.children}
+        </div>
+      </div>
+    );
   }
 }
 
@@ -80,7 +85,7 @@ ComplexMenuEntry.propTypes = {
   register: PropTypes.func.isRequired,
   toggle: PropTypes.func.isRequired,
   target: PropTypes.string,
-  toggleSideMenu: PropTypes.func.isRequired
+  toggleSideMenu: PropTypes.func.isRequired,
 };
 
 export default ComplexMenuEntry;

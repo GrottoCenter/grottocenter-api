@@ -11,44 +11,44 @@ import { withStyles } from '@material-ui/core/styles';
 //
 //
 
-const LanguageItem = withStyles((theme) => ({
+const LanguageItem = withStyles(theme => ({
   root: {
     fontSize: '16px',
-    color: theme.palette.primaryTextColor
-  }
+    color: theme.palette.primaryTextColor,
+  },
 }), { withTheme: true })(MenuItem);
 
-const LanguageInput = withStyles((theme) => ({
+const LanguageInput = withStyles(theme => ({
   root: {
-    background: 'none'
+    background: 'none',
   },
   underline: {
     '&:before,&:hover,&:after,&:focus': {
       borderColor: `${theme.palette.textIconColor} !important`,
-      background: 'none'
-    }
-  }
+      background: 'none',
+    },
+  },
 }), { withTheme: true })(Input);
 
-const StyledSelect = withStyles((theme) => ({
+const StyledSelect = withStyles(theme => ({
   root: {
     paddingLeft: '10px',
     color: theme.palette.textIconColor,
     minWidth: '150px',
-    width: 'initial'
+    width: 'initial',
   },
   selectMenu: {
     fontSize: '16px',
-    minHeight: '12px'
+    minHeight: '12px',
   },
   select: {
     '&:before,&:hover,&:after,,&:focus': {
-      background: 'none'
-    }
+      background: 'none',
+    },
   },
   icon: {
     color: theme.palette.textIconColor,
-  }
+  },
 }), { withTheme: true })(Select);
 
 //
@@ -57,7 +57,7 @@ const StyledSelect = withStyles((theme) => ({
 //
 //
 
-const LanguageSelector  = (props) => {
+const LanguageSelector = (props) => {
   const handleChange = (event) => {
     const value = event.target.value;
     if (value === locale) {
@@ -65,16 +65,17 @@ const LanguageSelector  = (props) => {
     }
     // To be uncommented when we will be able to retrieve catalog without page relaod
     // this.props.dispatch(changeLanguage(value));
-    window.location = '?lang=' + value;
+    window.location = `?lang=${value}`;
   };
 
-  const items = Object.keys(localesList).map(id => <LanguageItem
+  const items = Object.keys(localesList).map(id => (
+    <LanguageItem
       key={id}
       value={id}
     >
       {localesList[id]}
     </LanguageItem>
-  );
+  ));
 
   return (
     <StyledSelect

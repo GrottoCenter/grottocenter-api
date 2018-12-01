@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import GCLink from './GCLink';
 
-let currentLocale = locale; // eslint-disable-line no-undef
+const currentLocale = locale; // eslint-disable-line no-undef
 
 //
 //
@@ -10,9 +10,9 @@ let currentLocale = locale; // eslint-disable-line no-undef
 //
 //
 
-const InternationalizedLink = ({links, className, children}) => {
-  let linkUrl = (links[currentLocale] !== undefined) ? links[currentLocale] : links['*'];
-  let linkText = (children) ? children : linkUrl;
+const InternationalizedLink = ({ links, className, children }) => {
+  const linkUrl = (links[currentLocale] !== undefined) ? links[currentLocale] : links['*'];
+  const linkText = (children) || linkUrl;
   return (
     <GCLink className={className} href={linkUrl}>
       {linkText}
@@ -23,7 +23,7 @@ const InternationalizedLink = ({links, className, children}) => {
 InternationalizedLink.propTypes = {
   links: PropTypes.any.isRequired,
   className: PropTypes.string,
-  children: PropTypes.any
+  children: PropTypes.any,
 };
 
 export default InternationalizedLink;

@@ -1,10 +1,10 @@
 import React from 'react';
+import styled from 'styled-components';
 import QuicksearchBar from './QuicksearchBar';
-import {GridContainer, GridRow, GridFullColumn} from '../../helpers/GridSystem';
-import {fseLinks} from '../../conf/Config';
+import { GridContainer, GridRow, GridFullColumn } from '../../helpers/GridSystem';
+import { fseLinks } from '../../conf/Config';
 import InternationalizedLink from '../common/InternationalizedLink';
 import Translate from '../common/Translate';
-import styled from 'styled-components';
 import GCLogo from '../common/GCLogo';
 
 //
@@ -101,7 +101,7 @@ const Header = () => (
           <LogoImage />
           <Sitename>Grottocenter</Sitename>
           <Slogan>
-              <Translate>The Wiki database made by cavers for cavers</Translate>
+            <Translate>The Wiki database made by cavers for cavers</Translate>
           </Slogan>
         </GridFullColumn>
       </BrandRow>

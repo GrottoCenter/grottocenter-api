@@ -1,5 +1,5 @@
 import fetch from 'isomorphic-fetch';
-import {quicksearchUrl} from '../conf/Config';
+import { quicksearchUrl } from '../conf/Config';
 
 //
 //
@@ -18,34 +18,26 @@ export const SET_CURRENT_ENTRY = 'SET_CURRENT_ENTRY';
 //
 //
 
-export const resetQuicksearch = () => {
-  return {
-    type: RESET_QUICKSEARCH,
-    results: undefined,
-    error: undefined
-  }
-};
+export const resetQuicksearch = () => ({
+  type: RESET_QUICKSEARCH,
+  results: undefined,
+  error: undefined,
+});
 
-export const fetchQuicksearchSuccess = (results) => {
-  return {
-    type: FETCH_QUICKSEARCH_SUCCESS,
-    results: results
-  }
-};
+export const fetchQuicksearchSuccess = results => ({
+  type: FETCH_QUICKSEARCH_SUCCESS,
+  results,
+});
 
-export const fetchQuicksearchFailure = (error) => {
-  return {
-    type: FETCH_QUICKSEARCH_FAILURE,
-    error: error
-  }
-};
+export const fetchQuicksearchFailure = error => ({
+  type: FETCH_QUICKSEARCH_FAILURE,
+  error,
+});
 
-export const setCurrentEntry = (entry) => {
-  return {
-    type: SET_CURRENT_ENTRY,
-    entry: entry
-  }
-};
+export const setCurrentEntry = entry => ({
+  type: SET_CURRENT_ENTRY,
+  entry,
+});
 
 //
 //
@@ -59,19 +51,19 @@ export function fetchQuicksearchResult(criteria) {
 
     let completeUrl = quicksearchUrl;
     if (criteria) {
-      completeUrl += '?' + Object.keys(criteria).map(k => k + '=' + encodeURIComponent(criteria[k])).join('&');
+      completeUrl += `?${Object.keys(criteria).map(k => `${k}=${encodeURIComponent(criteria[k])}`).join('&')}`;
     }
 
     return fetch(completeUrl)
-    .then((response) => {
-      if (response.status >= 400) {
-        let errorMessage = 'Fetching ' + completeUrl + ' status: ' + response.status;
-        dispatch(fetchQuicksearchFailure(errorMessage));
-        throw new Error(errorMessage);
-      }
-      return response.text();
-    })
-    .then(text => dispatch(fetchQuicksearchSuccess(JSON.parse(text))))/*
-    .catch(error => dispatch(fetchRandomEntryFailure(error)))*/;
+      .then((response) => {
+        if (response.status >= 400) {
+          const errorMessage = `Fetching ${completeUrl} status: ${response.status}`;
+          dispatch(fetchQuicksearchFailure(errorMessage));
+          throw new Error(errorMessage);
+        }
+        return response.text();
+      })
+      .then(text => dispatch(fetchQuicksearchSuccess(JSON.parse(text))))/*
+    .catch(error => dispatch(fetchRandomEntryFailure(error))) */;
   };
 }

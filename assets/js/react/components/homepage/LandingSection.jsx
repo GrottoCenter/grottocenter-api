@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import {GridContainer} from '../../helpers/GridSystem';
 import styled from 'styled-components';
+import { GridContainer } from '../../helpers/GridSystem';
 
 //
 //
@@ -9,7 +9,7 @@ import styled from 'styled-components';
 //
 //
 
-const Section = ({className, children}) => (
+const Section = ({ className, children }) => (
   <div role="section" className={className}>
     <GridContainer>
       {children}
@@ -19,7 +19,7 @@ const Section = ({className, children}) => (
 
 Section.propTypes = {
   className: PropTypes.string,
-  children: PropTypes.any.isRequired
+  children: PropTypes.any.isRequired,
 };
 
 //

@@ -1,10 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import LandingSection from './LandingSection';
-import {GridRow, GridOneThirdColumn, GridTwoThirdColumn} from '../../helpers/GridSystem';
-import Translate from '../common/Translate'
 import styled from 'styled-components';
 import { withTheme } from '@material-ui/core/styles';
+import LandingSection from './LandingSection';
+import { GridRow, GridOneThirdColumn, GridTwoThirdColumn } from '../../helpers/GridSystem';
+import Translate from '../common/Translate';
 
 //
 //
@@ -48,13 +48,14 @@ const WelcomeSection = styled(LandingSection)`
 //
 //
 
-const Welcome = (props) => (
+const Welcome = props => (
   <WelcomeSection
     bgColor={props.theme.palette.primary1Color}
-    fgColor={props.theme.palette.secondaryBlocTitle}>
+    fgColor={props.theme.palette.secondaryBlocTitle}
+  >
     <GridRow>
       <GridOneThirdColumn>
-        <WelcomeAvatar src="/images/caves/draperie_small.jpg"/>
+        <WelcomeAvatar src="/images/caves/draperie_small.jpg" />
       </GridOneThirdColumn>
 
       <GridTwoThirdColumn>
@@ -76,7 +77,7 @@ const Welcome = (props) => (
 );
 
 Welcome.propTypes = {
-  theme: PropTypes.any.isRequired
-}
+  theme: PropTypes.any.isRequired,
+};
 
 export default withTheme()(Welcome);
