@@ -1,6 +1,6 @@
-import {connect} from 'react-redux';
-import NewsCard from './../components/common/card/NewsCard';
-import {initLatestBlogNewsFetcher, loadLatestBlogNews} from '../actions/LatestBlogNews';
+import { connect } from 'react-redux';
+import NewsCard from '../components/common/card/NewsCard';
+import { initLatestBlogNewsFetcher, loadLatestBlogNews } from '../actions/LatestBlogNews';
 
 //
 //
@@ -8,15 +8,13 @@ import {initLatestBlogNewsFetcher, loadLatestBlogNews} from '../actions/LatestBl
 //
 //
 
-const mapDispatchToProps = (dispatch, ownProps) => {
-  return {
-    init: () => dispatch(initLatestBlogNewsFetcher(ownProps.blog, ownProps.url)),
-    refresh: () => dispatch(loadLatestBlogNews(ownProps.blog, ownProps.url))
-  };
-};
+const mapDispatchToProps = (dispatch, ownProps) => ({
+  init: () => dispatch(initLatestBlogNewsFetcher(ownProps.blog, ownProps.url)),
+  refresh: () => dispatch(loadLatestBlogNews(ownProps.blog, ownProps.url)),
+});
 
 const mapStateToProps = (state, ownProps) => {
-  let attributes = state.latestBlogNews[ownProps.blog];
+  const attributes = state.latestBlogNews[ownProps.blog];
 
   if (attributes === undefined) {
     return {};
@@ -28,13 +26,13 @@ const mapStateToProps = (state, ownProps) => {
     month: attributes.news.month,
     title: attributes.news.title,
     text: attributes.news.text,
-    linkMore: attributes.news.link
+    linkMore: attributes.news.link,
   };
 };
 
 const LatestBlogNews = connect(
   mapStateToProps,
-  mapDispatchToProps
+  mapDispatchToProps,
 )(NewsCard);
 
 export default LatestBlogNews;

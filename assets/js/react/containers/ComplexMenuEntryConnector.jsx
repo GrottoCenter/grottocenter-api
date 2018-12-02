@@ -1,6 +1,6 @@
-import {connect} from 'react-redux';
+import { connect } from 'react-redux';
 import ComplexMenuEntry from '../components/appli/ComplexMenuEntry';
-import {registerMenuEntry, toggleMenuEntry, toggleSideMenu} from '../actions/SideMenu';
+import { registerMenuEntry, toggleMenuEntry, toggleSideMenu } from '../actions/SideMenu';
 
 //
 //
@@ -8,13 +8,11 @@ import {registerMenuEntry, toggleMenuEntry, toggleSideMenu} from '../actions/Sid
 //
 //
 
-const mapDispatchToProps = (dispatch) => {
-  return {
-    register: (identifier, open, target) => dispatch(registerMenuEntry(identifier, open, target)),
-    toggle: (identifier) => dispatch(toggleMenuEntry(identifier)),
-    toggleSideMenu: () => dispatch(toggleSideMenu())
-  };
-};
+const mapDispatchToProps = dispatch => ({
+  register: (identifier, open, target) => dispatch(registerMenuEntry(identifier, open, target)),
+  toggle: identifier => dispatch(toggleMenuEntry(identifier)),
+  toggleSideMenu: () => dispatch(toggleSideMenu()),
+});
 
 const mapStateToProps = (state, ownProps) => {
   let currentItem;
@@ -25,7 +23,7 @@ const mapStateToProps = (state, ownProps) => {
   });
   return {
     open: (currentItem) ? currentItem.open : false,
-  }
+  };
 };
 
 const ComplexMenuEntryConnector = connect(mapStateToProps, mapDispatchToProps)(ComplexMenuEntry);

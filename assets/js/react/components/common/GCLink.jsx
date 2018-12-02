@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import {Link} from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 /**
  * This component encapsulate hypertext links on GC
@@ -14,7 +14,7 @@ import {Link} from 'react-router-dom';
  * children: (Required) The DOM content contained inside the link
  */
 const GCLink = (props) => {
-  let params = {};
+  const params = {};
   if (props.onClick) {
     params.onClick = props.onClick;
   }
@@ -29,7 +29,7 @@ const GCLink = (props) => {
   }
   if (!props.internal) {
     return (
-      <a href={props.href} {...params} target='_blank'>{props.children}</a>
+      <a href={props.href} {...params} target="_blank">{props.children}</a>
     );
   }
   return (
@@ -46,7 +46,7 @@ GCLink.propTypes = {
   activeClassName: PropTypes.string,
   style: PropTypes.object,
   onClick: PropTypes.func,
-  children: PropTypes.node.isRequired
+  children: PropTypes.node.isRequired,
 };
 
 export default GCLink;

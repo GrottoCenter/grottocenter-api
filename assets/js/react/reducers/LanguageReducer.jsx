@@ -1,5 +1,5 @@
-import {CHANGE_LANGUAGE} from './../actions/Language';
-import {DEFAULT_LANGUAGE} from '../conf/Config';
+import { CHANGE_LANGUAGE } from '../actions/Language';
+import { DEFAULT_LANGUAGE } from '../conf/Config';
 
 //
 //
@@ -13,7 +13,7 @@ import {DEFAULT_LANGUAGE} from '../conf/Config';
 //
 //
 
-export const currentLanguage = (state = {lang: DEFAULT_LANGUAGE}, action) => {
+const currentLanguage = (state = { lang: DEFAULT_LANGUAGE }, action) => {
   switch (action.type) {
     case CHANGE_LANGUAGE:
       return action.lang;
@@ -22,3 +22,5 @@ export const currentLanguage = (state = {lang: DEFAULT_LANGUAGE}, action) => {
       return state;
   }
 };
+
+export default currentLanguage;

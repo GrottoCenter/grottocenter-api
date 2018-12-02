@@ -1,5 +1,5 @@
-import {connect} from 'react-redux';
-import DynamicNumber from './../components/homepage/DynamicNumber';
+import { connect } from 'react-redux';
+import DynamicNumber from '../components/homepage/DynamicNumber';
 
 //
 //
@@ -8,22 +8,22 @@ import DynamicNumber from './../components/homepage/DynamicNumber';
 //
 
 const mapStateToProps = (state, ownProps) => {
-  let attributes = state.dynamicNumber[ownProps.numberType];
+  const attributes = state.dynamicNumber[ownProps.numberType];
   if (attributes === undefined) {
     return {
-      isFetching: true
+      isFetching: true,
     };
   }
 
   return {
     isFetching: attributes.isFetching,
     number: attributes.number,
-    className: ownProps.className
+    className: ownProps.className,
   };
 };
 
 const DynamicNumberConnector = connect(
-  mapStateToProps
+  mapStateToProps,
 )(DynamicNumber);
 
 export default DynamicNumberConnector;

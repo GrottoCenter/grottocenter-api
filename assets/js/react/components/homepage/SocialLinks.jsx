@@ -1,9 +1,10 @@
 import React from 'react';
+import styled, { keyframes } from 'styled-components';
 import InternationalizedLink from '../common/InternationalizedLink';
 import GCLink from '../common/GCLink';
-import {bloggerLinks, bloggerIcons, wikiBatsLinks, rssLinks} from '../../conf/Config';
-import {facebookLink, twitterLink, githubLink} from '../../conf/Config';
-import styled, {keyframes} from 'styled-components';
+import {
+  bloggerLinks, wikiBatsLinks, rssLinks, facebookLink, twitterLink, githubLink,
+} from '../../conf/Config';
 
 //
 //
@@ -54,8 +55,6 @@ const BatSocialImage = styled(SocialImage)`
   padding: 6px;
 `;
 
-const bloggerIcon = (bloggerIcons[locale] !== undefined) ? bloggerIcons[locale] : bloggerIcons['*']; // eslint-disable-line
-
 //
 //
 // M A I N - C O M P O N E N T
@@ -76,7 +75,7 @@ const SocialLinks = () => (
     </SocialLinksListItem>
     <SocialLinksListItem>
       <InternationalizedLink links={bloggerLinks}>
-        <SocialImage src='/images/icons8/icons8-blogger-filled-100.png' alt="Grottocenter blog" />
+        <SocialImage src="/images/icons8/icons8-blogger-filled-100.png" alt="Grottocenter blog" />
       </InternationalizedLink>
     </SocialLinksListItem>
     <SocialLinksListItem>
@@ -90,7 +89,7 @@ const SocialLinks = () => (
       </InternationalizedLink>
     </SocialLinksListItem>
     <SocialLinksListItem>
-      <GCLink internal={true} href='/ui/api'>
+      <GCLink internal href="/ui/api">
         <ApiSocialImage src="/images/icons8/icons8-rest-api-filled-100.png" alt="Want to use our API?" />
       </GCLink>
     </SocialLinksListItem>

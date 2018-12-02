@@ -8,7 +8,7 @@ import ApiDetail from '../appli/ApiDetail';
 //
 
 const Swagger = () => (
-  <ApiDetail/>
+  <ApiDetail />
 );
 
 export default Swagger;

@@ -3,7 +3,7 @@
  */
 import React from 'react';
 import Translate from './common/Translate';
-import Modal from '../components/common/Modal';
+import Modal from './common/Modal';
 
 //
 //
@@ -16,16 +16,16 @@ class SigninForm extends React.Component {
     super(props);
     this.state = {
       contact: '',
-      password: ''
+      password: '',
     };
   }
 
   handleContact(event) {
-    this.setState({contact: event.target.value});
+    this.setState({ contact: event.target.value });
   }
 
   handlePassword(event) {
-    this.setState({password: event.target.value});
+    this.setState({ password: event.target.value });
   }
 
   render() {
@@ -34,11 +34,11 @@ class SigninForm extends React.Component {
         <div className="loginForm">
           <div className="form-group">
             <label htmlFor="contact"><Translate id="Email" /></label>
-            <input className="form-control" type="email" name="contact" id="contact" placeholder="Email" value={this.state.contact} onChange={this.handleContact}/>
+            <input className="form-control" type="email" name="contact" id="contact" placeholder="Email" value={this.state.contact} onChange={this.handleContact} />
           </div>
           <div className="form-group">
-            <label htmlFor="password"><Translate id="Password"/></label>
-            <input className="form-control" type="password" name="password" id="password" placeholder="Password" value={this.state.password} onChange={this.handlePassword}/>
+            <label htmlFor="password"><Translate id="Password" /></label>
+            <input className="form-control" type="password" name="password" id="password" placeholder="Password" value={this.state.password} onChange={this.handlePassword} />
           </div>
         </div>
       </Modal>

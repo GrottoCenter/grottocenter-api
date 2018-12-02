@@ -1,8 +1,8 @@
 import React from 'react';
-import InternationalizedLink from '../common/InternationalizedLink';
-import {wikicavesLink} from '../../conf/Config';
-import Translate from '../common/Translate';
 import styled from 'styled-components';
+import InternationalizedLink from '../common/InternationalizedLink';
+import { wikicavesLink } from '../../conf/Config';
+import Translate from '../common/Translate';
 import GCLogo from '../common/GCLogo';
 
 //
@@ -43,7 +43,7 @@ const Publisher = () => (
     <div>
       <Translate>Published by</Translate>
     </div>
-    <PublisherInfo bgColor='#e8dcd8'>
+    <PublisherInfo bgColor="#e8dcd8">
       <InternationalizedLink links={wikicavesLink}>
         <PublisherLogo showLink={false} />
         <Translate>Wikicaves association</Translate>

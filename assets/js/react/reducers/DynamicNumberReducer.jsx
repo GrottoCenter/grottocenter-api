@@ -1,4 +1,6 @@
-import {INIT_DYNNB_FETCHER, FETCH_DYNNB, FETCH_DYNNB_SUCCESS, FETCH_DYNNB_FAILURE} from './../actions/DynamicNumber';
+import {
+  INIT_DYNNB_FETCHER, FETCH_DYNNB, FETCH_DYNNB_SUCCESS, FETCH_DYNNB_FAILURE,
+} from '../actions/DynamicNumber';
 
 // State
 // =====
@@ -16,7 +18,7 @@ import {INIT_DYNNB_FETCHER, FETCH_DYNNB, FETCH_DYNNB_SUCCESS, FETCH_DYNNB_FAILUR
 //
 //
 
-export const dynamicNumber = (state = {dynamicNumber: []}, action) => {
+const dynamicNumber = (state = { dynamicNumber: [] }, action) => {
   let jDynNb = '';
 
   switch (action.type) {
@@ -25,16 +27,16 @@ export const dynamicNumber = (state = {dynamicNumber: []}, action) => {
         [action.numberType]: {
           isFetching: false,
           number: null,
-          revoked: true
-        }
+          revoked: true,
+        },
       });
 
     case FETCH_DYNNB:
       return Object.assign({}, state, {
         [action.numberType]: {
           isFetching: true,
-          number: null
-        }
+          number: null,
+        },
       });
 
     case FETCH_DYNNB_SUCCESS:
@@ -43,8 +45,8 @@ export const dynamicNumber = (state = {dynamicNumber: []}, action) => {
       return Object.assign({}, state, {
         [action.numberType]: {
           isFetching: false,
-          number: jDynNb.count
-        }
+          number: jDynNb.count,
+        },
       });
 
     case FETCH_DYNNB_FAILURE:
@@ -52,11 +54,13 @@ export const dynamicNumber = (state = {dynamicNumber: []}, action) => {
         [action.numberType]: {
           isFetching: false,
           number: null,
-          error: action.error
-        }
+          error: action.error,
+        },
       });
 
     default:
       return state;
   }
 };
+
+export default dynamicNumber;

@@ -1,8 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import CheckIcon from '@material-ui/icons/Check';
-import styled, {keyframes} from 'styled-components';
-import {withStyles} from "@material-ui/core";
+import styled, { keyframes } from 'styled-components';
+import { withStyles } from '@material-ui/core';
 
 //
 //
@@ -90,8 +90,8 @@ const ListItem = styled.li`
 
 const StyledListIcon = withStyles(theme => ({
   root: {
-    fill: theme.palette.accent1Color
-  }
+    fill: theme.palette.accent1Color,
+  },
 }), { withTheme: true })(ListIcon);
 
 //
@@ -100,28 +100,26 @@ const StyledListIcon = withStyles(theme => ({
 //
 //
 
-const AssociationCheckList = ({title, entries}) => (
+const AssociationCheckList = ({ title, entries }) => (
   <CheckListWrapper>
     <ListTitle>
       {title}
     </ListTitle>
 
     <CheckList>
-      {entries.map(function(entry, i){
-        return (
-          <ListItem key={i}>
-            <StyledListIcon />
-            {entry.description}
-          </ListItem>
-        );
-      })}
+      {entries.map((entry, i) => (
+        <ListItem key={i}>
+          <StyledListIcon />
+          {entry.description}
+        </ListItem>
+      ))}
     </CheckList>
   </CheckListWrapper>
 );
 
 AssociationCheckList.propTypes = {
   entries: PropTypes.array.isRequired,
-  title: PropTypes.element.isRequired
+  title: PropTypes.element.isRequired,
 };
 
 export default AssociationCheckList;

@@ -9,7 +9,7 @@ import _ from 'underscore.string';
 //
 /* Encapsulate the grid mecanism in React components */
 
-export const GridContainer = ({className, children}) => (
+export const GridContainer = ({ className, children }) => (
   <div className={_.join(' ', 'container', className)}>
     {children}
   </div>
@@ -17,10 +17,10 @@ export const GridContainer = ({className, children}) => (
 
 GridContainer.propTypes = {
   children: PropTypes.any.isRequired,
-  className: PropTypes.string
+  className: PropTypes.string,
 };
 
-export const GridRow = ({className, children}) => (
+export const GridRow = ({ className, children }) => (
   <div className={_.join(' ', 'row', className)}>
     {children}
   </div>
@@ -28,10 +28,10 @@ export const GridRow = ({className, children}) => (
 
 GridRow.propTypes = {
   children: PropTypes.any.isRequired,
-  className: PropTypes.string
+  className: PropTypes.string,
 };
 
-export const GridOneThirdColumn = ({className, children}) => (
+export const GridOneThirdColumn = ({ className, children }) => (
   <div className={_.join(' ', 'four columns', className)}>
     {children}
   </div>
@@ -39,10 +39,10 @@ export const GridOneThirdColumn = ({className, children}) => (
 
 GridOneThirdColumn.propTypes = {
   children: PropTypes.any.isRequired,
-  className: PropTypes.string
+  className: PropTypes.string,
 };
 
-export const GridTwoThirdColumn = ({className, children}) => (
+export const GridTwoThirdColumn = ({ className, children }) => (
   <div className={_.join(' ', 'eight columns', className)}>
     {children}
   </div>
@@ -50,10 +50,10 @@ export const GridTwoThirdColumn = ({className, children}) => (
 
 GridTwoThirdColumn.propTypes = {
   children: PropTypes.any.isRequired,
-  className: PropTypes.string
+  className: PropTypes.string,
 };
 
-export const GridOneHalfColumn =({className, children}) => (
+export const GridOneHalfColumn = ({ className, children }) => (
   <div className={_.join(' ', 'six columns', className)}>
     {children}
   </div>
@@ -61,10 +61,10 @@ export const GridOneHalfColumn =({className, children}) => (
 
 GridOneHalfColumn.propTypes = {
   children: PropTypes.any.isRequired,
-  className: PropTypes.string
+  className: PropTypes.string,
 };
 
-export const GridFullColumn =({className, children}) => (
+export const GridFullColumn = ({ className, children }) => (
   <div className={_.join(' ', 'twelve columns', className)}>
     {children}
   </div>
@@ -72,5 +72,5 @@ export const GridFullColumn =({className, children}) => (
 
 GridFullColumn.propTypes = {
   children: PropTypes.any.isRequired,
-  className: PropTypes.string
+  className: PropTypes.string,
 };

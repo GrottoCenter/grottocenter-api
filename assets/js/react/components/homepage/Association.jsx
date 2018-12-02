@@ -1,12 +1,14 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import styled from 'styled-components';
+import { withTheme } from '@material-ui/core/styles';
 import LandingSection from './LandingSection';
-import {GridRow, GridOneThirdColumn, GridTwoThirdColumn, GridFullColumn} from '../../helpers/GridSystem';
+import {
+  GridRow, GridOneThirdColumn, GridTwoThirdColumn, GridFullColumn,
+} from '../../helpers/GridSystem';
 import AssociationCheckList from './AssociationCheckList';
 import AssociationFlyingGoals from './AssociationFlyingGoals';
 import Translate from '../common/Translate';
-import styled from 'styled-components';
-import { withTheme } from '@material-ui/core/styles';
 import GCLogo from '../common/GCLogo';
 
 //
@@ -65,25 +67,25 @@ const listEntries = {
   entries: [
     {
       word: <Translate>Promote!</Translate>,
-      description: <Translate>Promote the development of the speleology in the world especially through  web-based collaboration</Translate>
+      description: <Translate>Promote the development of the speleology in the world especially through  web-based collaboration</Translate>,
     },
     {
       word: <Translate>Share!</Translate>,
-      description: <Translate>Share and spread the data related to the speleology</Translate>
+      description: <Translate>Share and spread the data related to the speleology</Translate>,
     },
     {
       word: <Translate>Open!</Translate>,
-      description: <Translate>Make access to the natural caves data easier especially by using Internet</Translate>
+      description: <Translate>Make access to the natural caves data easier especially by using Internet</Translate>,
     },
     {
       word: <Translate>Highlight!</Translate>,
-      description: <Translate>Highlight and help the protection of the natural caves and their surroundings</Translate>
+      description: <Translate>Highlight and help the protection of the natural caves and their surroundings</Translate>,
     },
     {
       word: <Translate>Help!</Translate>,
-      description: <Translate>Help the exploration and the scientific study of natural caves</Translate>
-    }
-  ]
+      description: <Translate>Help the exploration and the scientific study of natural caves</Translate>,
+    },
+  ],
 };
 
 //
@@ -92,10 +94,11 @@ const listEntries = {
 //
 //
 
-const Association = (props) => (
+const Association = props => (
   <AssociationSection
     bgColor={props.theme.palette.primary1Color}
-    fgColor={props.theme.palette.textIconColor}>
+    fgColor={props.theme.palette.textIconColor}
+  >
 
     <AssociationGridRow>
       <GridTwoThirdColumn>
@@ -104,14 +107,14 @@ const Association = (props) => (
         </AssociationTitle>
         <AssociationDetails>
           <Translate>GrottoCenter is a comunity database for cavers based on a wiki-like system Cavers fill the databes for cavers</Translate>
-          <br/>
+          <br />
           <Translate>Any interesting natural cave can be added in the database!</Translate>
         </AssociationDetails>
       </GridTwoThirdColumn>
 
       <GridOneThirdColumn>
         <AssociationLogo>
-          <AssociationLogoImage showLink={false}/>
+          <AssociationLogoImage showLink={false} />
         </AssociationLogo>
       </GridOneThirdColumn>
     </AssociationGridRow>
@@ -125,7 +128,8 @@ const Association = (props) => (
           entries={listEntries.entries}
           textColor={props.theme.palette.textIconColor}
           iconColor={props.theme.palette.primary3Color}
-          iconHoverColor={props.theme.palette.accent1Color} />
+          iconHoverColor={props.theme.palette.accent1Color}
+        />
       </GridFullColumn>
     </AssociationGridRow>
 
@@ -133,7 +137,7 @@ const Association = (props) => (
 );
 
 Association.propTypes = {
-  theme: PropTypes.object.isRequired
+  theme: PropTypes.object.isRequired,
 };
 
 export default withTheme()(Association);

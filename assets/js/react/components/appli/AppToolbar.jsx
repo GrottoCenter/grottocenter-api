@@ -1,12 +1,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import Toolbar from '@material-ui/core/Toolbar';
+import { withStyles, withTheme } from '@material-ui/core/styles';
+import styled from 'styled-components';
 import HeaderTitle from './HeaderTitle';
 import SideMenuBurgerConnector from '../../containers/SideMenuBurgerConnector';
 import QuicksearchContainer from '../../containers/QuicksearchContainer';
-import {withStyles, withTheme} from '@material-ui/core/styles';
-import styled from 'styled-components';
-import {sideMenuWidth} from '../../conf/Config';
+import { sideMenuWidth } from '../../conf/Config';
 
 //
 //
@@ -22,7 +22,7 @@ const StyledToolbar = withStyles(theme => ({
     height: '60px',
     display: 'inline-flex',
     justifyContent: 'space-between',
-  }
+  },
 }), { withTheme: true })(Toolbar);
 
 const TitleGroup = withStyles(theme => ({
@@ -30,8 +30,8 @@ const TitleGroup = withStyles(theme => ({
     width: sideMenuWidth,
     padding: '0px',
     alignItems: 'center',
-    height: '60px'
-  }
+    height: '60px',
+  },
 }), { withTheme: true })(Toolbar);
 
 const StyledQuicksearchContainer = withTheme()(styled(QuicksearchContainer)`
@@ -63,23 +63,21 @@ const LargerToolbarGroup = styled.div`
 const AppToolbar = () => (
   <StyledToolbar>
     <TitleGroup>
-      <HeaderTitle title='Grottocenter' subtitle='Achere - 2018'/>
-      <SideMenuBurgerConnector/>
+      <HeaderTitle title="Grottocenter" subtitle="Achere - 2018" />
+      <SideMenuBurgerConnector />
     </TitleGroup>
 
     <LargerToolbarGroup>
       <StyledQuicksearchContainer />
     </LargerToolbarGroup>
 
-    <div>
-
-    </div>
+    <div />
   </StyledToolbar>
 );
 
-AppToolbar.propTypes ={
+AppToolbar.propTypes = {
   title: PropTypes.string,
-  subtitle: PropTypes.string
-}
+  subtitle: PropTypes.string,
+};
 
 export default AppToolbar;

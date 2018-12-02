@@ -1,8 +1,8 @@
 import React from 'react';
-//import SwaggerUi, {presets} from 'swagger-ui';
+// import SwaggerUi, {presets} from 'swagger-ui';
 import Card from '@material-ui/core/Card';
-import {withStyles, withTheme} from '@material-ui/core/styles';
-import styled from "styled-components";
+import { withStyles, withTheme } from '@material-ui/core/styles';
+import styled from 'styled-components';
 
 //
 //
@@ -19,8 +19,8 @@ const StyledCard = withStyles({
     width: '80%',
     margin: 'auto',
     paddingRight: '40px',
-    paddingBottom: '20px'
-  }
+    paddingBottom: '20px',
+  },
 })(Card);
 
 //
@@ -29,19 +29,11 @@ const StyledCard = withStyles({
 //
 //
 
-const ApiDetail = () => {
-  /*SwaggerUi({
-      dom_id: '#swaggerContainer',
-      url: `/swagger/apiV1.yaml`,
-      presets: [presets.apis]
-  });*/
-  return (
-    <StyledWrapper>
-      <StyledCard>
-        <div id="swaggerContainer"/>
-      </StyledCard>
-    </StyledWrapper>
-  );
-};
-
+const ApiDetail = () => (
+  <StyledWrapper>
+    <StyledCard>
+      <div id="swaggerContainer" />
+    </StyledCard>
+  </StyledWrapper>
+);
 export default ApiDetail;

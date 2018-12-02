@@ -7,7 +7,7 @@ import PropTypes from 'prop-types';
 //
 //
 
-const TextDiv = ({className, children}) => (
+const TextDiv = ({ className, children }) => (
   <div className={className}>
     {children}
   </div>
@@ -15,7 +15,7 @@ const TextDiv = ({className, children}) => (
 
 TextDiv.propTypes = {
   children: PropTypes.string.isRequired,
-  className: PropTypes.string
+  className: PropTypes.string,
 };
 
 export default TextDiv;

@@ -1,9 +1,11 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import GCLink from '../common/GCLink';
 import fetch from 'isomorphic-fetch';
-import {Table, TableBody, TableHeaderColumn, TableRow, TableRowColumn} from '@material-ui/core';
-import {Loading} from '../common/Toolbox';
+import {
+  Table, TableBody, TableHeaderColumn, TableRow, TableRowColumn,
+} from '@material-ui/core';
+import GCLink from '../common/GCLink';
+import { Loading } from '../common/Toolbox';
 
 //
 //
@@ -11,7 +13,7 @@ import {Loading} from '../common/Toolbox';
 //
 //
 
-const EntriesOfInterestTableRow = (props) => (
+const EntriesOfInterestTableRow = props => (
   <TableRow>
     <TableRowColumn>{props.row.id}</TableRowColumn>
     <TableRowColumn>{props.row.name}</TableRowColumn>
@@ -21,8 +23,8 @@ const EntriesOfInterestTableRow = (props) => (
     <TableRowColumn>{props.row.isSensitive}</TableRowColumn>
     <TableRowColumn>{props.row.isOfInterest.data[0]}</TableRowColumn>
     <TableRowColumn>{props.row.entryInfo && props.row.entryInfo.depth ? props.row.entryInfo.depth : ''}</TableRowColumn>
-    <TableRowColumn>{props.row.entryInfo ? props.row.entryInfo.length: ''}</TableRowColumn>
-    <TableRowColumn>{props.row.entryInfo ? <img style={{width: '150px'}} src={props.row.entryInfo.path}/> : ''}</TableRowColumn>
+    <TableRowColumn>{props.row.entryInfo ? props.row.entryInfo.length : ''}</TableRowColumn>
+    <TableRowColumn>{props.row.entryInfo ? <img style={{ width: '150px' }} src={props.row.entryInfo.path} /> : ''}</TableRowColumn>
     <TableRowColumn>{props.row.stat ? props.row.stat.aestheticism : ''}</TableRowColumn>
     <TableRowColumn>{props.row.stat ? props.row.stat.caving : ''}</TableRowColumn>
     <TableRowColumn>{props.row.stat ? props.row.stat.approach : ''}</TableRowColumn>
@@ -32,14 +34,14 @@ const EntriesOfInterestTableRow = (props) => (
 );
 
 EntriesOfInterestTableRow.propTypes = {
-  row: PropTypes.object.isRequired
+  row: PropTypes.object.isRequired,
 };
 
 export class EntriesOfInterest extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      items: []
+      items: [],
     };
     this.fetchData = this.fetchData.bind(this);
   }
@@ -49,18 +51,18 @@ export class EntriesOfInterest extends Component {
   }
 
   fetchData() {
-    let _this = this;
+    const _this = this;
     fetch('/api/admin/entry/findAllOfInterest')
-    .then(function(response) {
-      if (response.status >= 400) {
-        throw new Error('Bad response from server');
-      }
-      return response.json();
-    }).then(function(results) {
-      _this.setState({
-        items: results
+      .then((response) => {
+        if (response.status >= 400) {
+          throw new Error('Bad response from server');
+        }
+        return response.json();
+      }).then((results) => {
+        _this.setState({
+          items: results,
+        });
       });
-    });
   }
 
   render() {
@@ -68,18 +70,18 @@ export class EntriesOfInterest extends Component {
       return <Loading />;
     }
 
-    let rows = [];
-    this.state.items.forEach(function(newRow) {
+    const rows = [];
+    this.state.items.forEach((newRow) => {
       if (newRow !== undefined) {
-        rows.push(<EntriesOfInterestTableRow key={newRow.id} row={newRow}/>);
+        rows.push(<EntriesOfInterestTableRow key={newRow.id} row={newRow} />);
       }
     });
 
     return (
       <div>
         {rows.length > 0 && (
-          <Table selectable={false} multiSelectable={false} wrapperStyle={{overflow: 'initial'}} bodyStyle={{overflow: 'initial'}} style={{width: 'initial'}}>
-            <TableBody displayRowCheckbox={false} adjustForCheckbox={false} showRowHover={true}>
+          <Table selectable={false} multiSelectable={false} wrapperStyle={{ overflow: 'initial' }} bodyStyle={{ overflow: 'initial' }} style={{ width: 'initial' }}>
+            <TableBody displayRowCheckbox={false} adjustForCheckbox={false} showRowHover>
               <TableRow selectable={false}>
                 <TableHeaderColumn>Id</TableHeaderColumn>
                 <TableHeaderColumn>Name</TableHeaderColumn>
@@ -114,7 +116,7 @@ export class EntriesOfInterest extends Component {
 
 const AvailableTools = () => (
   <ul>
-    <li><GCLink internal={true} href="/admin/listEntriesOfInterest">Entries of interest</GCLink></li>
+    <li><GCLink internal href="/admin/listEntriesOfInterest">Entries of interest</GCLink></li>
   </ul>
 );
 

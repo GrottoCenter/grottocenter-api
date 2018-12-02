@@ -1,10 +1,10 @@
 import React from 'react';
-import GCLink from '../common/GCLink';
-import InternationalizedLink from '../common/InternationalizedLink';
-import {contactLinks, legalLinks, contributorsLink} from '../../conf/Config';
-import Translate from '../common/Translate';
 import styled from 'styled-components';
 import { withTheme } from '@material-ui/core/styles';
+import GCLink from '../common/GCLink';
+import InternationalizedLink from '../common/InternationalizedLink';
+import { contactLinks, legalLinks, contributorsLink } from '../../conf/Config';
+import Translate from '../common/Translate';
 
 //
 //
@@ -42,7 +42,7 @@ const SocialIntlLink = withTheme()(SocialLink.withComponent(InternationalizedLin
 const FooterLinks = () => (
   <FooterLinksList>
     <li>
-      <SocialGCLink internal={true} href='/ui/faq'>
+      <SocialGCLink internal href="/ui/faq">
         <Translate>FAQ</Translate>
       </SocialGCLink>
     </li>

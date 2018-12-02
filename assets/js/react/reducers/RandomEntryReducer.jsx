@@ -1,4 +1,4 @@
-import {FETCH_RANDOMENTRY, FETCH_RANDOMENTRY_SUCCESS, FETCH_RANDOMENTRY_FAILURE} from './../actions/RandomEntry';
+import { FETCH_RANDOMENTRY, FETCH_RANDOMENTRY_SUCCESS, FETCH_RANDOMENTRY_FAILURE } from '../actions/RandomEntry';
 
 //
 //
@@ -8,7 +8,7 @@ import {FETCH_RANDOMENTRY, FETCH_RANDOMENTRY_SUCCESS, FETCH_RANDOMENTRY_FAILURE}
 
 const initialState = {
   isFetching: false, // show loading spinner
-  entry: undefined   // random entry
+  entry: undefined, // random entry
 };
 
 //
@@ -17,23 +17,25 @@ const initialState = {
 //
 //
 
-export const randomEntry = (state = initialState, action) => {
+const randomEntry = (state = initialState, action) => {
   switch (action.type) {
     case FETCH_RANDOMENTRY:
       return Object.assign({}, state, {
-        isFetching: true
+        isFetching: true,
       });
     case FETCH_RANDOMENTRY_SUCCESS:
       return Object.assign({}, state, {
         isFetching: false,
-        entry: action.entry
+        entry: action.entry,
       });
     case FETCH_RANDOMENTRY_FAILURE:
       return Object.assign({}, state, {
         isFetching: false,
-        error: action.error
+        error: action.error,
       });
     default:
       return state;
   }
 };
+
+export default randomEntry;

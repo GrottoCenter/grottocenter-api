@@ -11,50 +11,51 @@
  * "direction"
  */
 
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import {connect} from 'react-redux';
+import { connect } from 'react-redux';
 import { LEFT_TO_RIGHT, RIGHT_TO_LEFT } from '../conf/Config';
 
 class TextDirectionProvider extends Component {
   getChildContext() {
+    const { direction } = this.props;
     return {
-      direction: this.props.direction || RIGHT_TO_LEFT,
+      direction: direction || RIGHT_TO_LEFT,
     };
   }
 
   render() {
-    return this.props.children;
+    const { children } = this.props;
+    return children;
   }
 }
 
 TextDirectionProvider.propTypes = {
   children: PropTypes.element.isRequired,
-  direction: PropTypes.string.isRequired
+  direction: PropTypes.string.isRequired,
 };
 
 TextDirectionProvider.childContextTypes = {
-  direction: PropTypes.string.isRequired
+  direction: PropTypes.string.isRequired,
 };
 
-const mapStateToProps = (state) => {
-  return {
-    direction: (state.currentLanguage === 'ar' || state.currentLanguage === 'he') ? RIGHT_TO_LEFT : LEFT_TO_RIGHT
-  }
-};
+const mapStateToProps = state => ({
+  direction: (state.currentLanguage === 'ar' || state.currentLanguage === 'he') ? RIGHT_TO_LEFT : LEFT_TO_RIGHT,
+});
 
 export default connect(mapStateToProps)(TextDirectionProvider);
 
 export function directionManager() {
-  return (Component) => {
-    const TextDirectionManagedComponent = (props, context) => (
-      context
-        ? <Component direction={context.direction} {...props} />
-        : <Component direction={RIGHT_TO_LEFT} {...props} />
-    );
+  return (WrappedComponent) => {
+    const TextDirectionManagedComponent = (props, context) => {
+      const { direction } = context;
+      return context
+        ? <WrappedComponent direction={direction} {...props} />
+        : <WrappedComponent direction={RIGHT_TO_LEFT} {...props} />;
+    };
 
     TextDirectionManagedComponent.contextTypes = {
-      direction: PropTypes.string.isRequired
+      direction: PropTypes.string.isRequired,
     };
 
     return TextDirectionManagedComponent;

@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import styled from 'styled-components';
@@ -45,7 +45,7 @@ const PartnerImage = styled.img`
   vertical-align: middle;
 `;
 
-const PartnerItem = ({imagePath, name, onClick}) => (
+const PartnerItem = ({ imagePath, name, onClick }) => (
   <PartnerVignette>
     <PartnerImage src={imagePath} alt={name} onClick={onClick} />
   </PartnerVignette>
@@ -53,8 +53,8 @@ const PartnerItem = ({imagePath, name, onClick}) => (
 
 PartnerItem.propTypes = {
   imagePath: PropTypes.string,
-  name:PropTypes.string,
-  onClick: PropTypes.func
+  name: PropTypes.string,
+  onClick: PropTypes.func,
 };
 
 const PartnerVignettes = styled.div`
@@ -77,17 +77,18 @@ class PartnersCarousel extends Component {
   }
 
   render() {
-    let rows = [];
+    const rows = [];
     this.props.partners
-      && this.props.partners.forEach(function (partner) {
-      rows.push(
-        <PartnerItem
-          key={'partcs-' + partner.id}
-          imagePath={'/images/partners/' + partner.pictureFileName}
-          alt={partner.name}
-          onClick={() => window.open(partner.customMessage, 'grotto_partner')} />
-      );
-    });
+      && this.props.partners.forEach((partner) => {
+        rows.push(
+          <PartnerItem
+            key={`partcs-${partner.id}`}
+            imagePath={`/images/partners/${partner.pictureFileName}`}
+            alt={partner.name}
+            onClick={() => window.open(partner.customMessage, 'grotto_partner')}
+          />,
+        );
+      });
 
     if (this.props.isFetching) {
       return (<CircularProgress />);
@@ -97,14 +98,14 @@ class PartnersCarousel extends Component {
         <PartnerVignettes>{rows}</PartnerVignettes>
       );
     }
-    return (<div/>);
+    return (<div />);
   }
 }
 
 PartnersCarousel.propTypes = {
   fetch: PropTypes.func.isRequired,
   isFetching: PropTypes.bool,
-  partners: PropTypes.any
+  partners: PropTypes.any,
 };
 
 export default PartnersCarousel;

@@ -1,4 +1,8 @@
-import {TOGGLE_SIDEMENU, REGISTER_MENU_ENTRY, TOGGLE_MENU_ENTRY} from '../actions/SideMenu';
+import {
+  TOGGLE_SIDEMENU,
+  REGISTER_MENU_ENTRY,
+  TOGGLE_MENU_ENTRY,
+} from '../actions/SideMenu';
 
 //
 //
@@ -22,7 +26,7 @@ import {TOGGLE_SIDEMENU, REGISTER_MENU_ENTRY, TOGGLE_MENU_ENTRY} from '../action
 
 const initial = {
   visible: false,
-  items: []
+  items: [],
 };
 
 //
@@ -31,17 +35,17 @@ const initial = {
 //
 //
 
-export const sideMenu = (state = initial, action) => {
+const sideMenu = (state = initial, action) => {
   switch (action.type) {
     case TOGGLE_SIDEMENU:
       return Object.assign({}, state, {
-        visible: !state.visible
+        visible: !state.visible,
       });
 
     case REGISTER_MENU_ENTRY:
     {
       let alreadyRegistered = false;
-      state.items.map((item) => {
+      state.items.forEach((item) => {
         if (item.identifier === action.identifier) {
           alreadyRegistered = true;
         }
@@ -55,9 +59,9 @@ export const sideMenu = (state = initial, action) => {
           {
             identifier: action.identifier,
             open: action.open,
-            target: action.target
-          }
-        ]
+            target: action.target,
+          },
+        ],
       });
     }
 
@@ -66,16 +70,18 @@ export const sideMenu = (state = initial, action) => {
         items: state.items.map((item) => {
           if (item.identifier === action.identifier) {
             return Object.assign({}, item, {
-              open: !item.open
+              open: !item.open,
             });
           }
           return Object.assign({}, item, {
-            open: false
+            open: false,
           });
-        })
+        }),
       });
 
     default:
       return state;
   }
 };
+
+export default sideMenu;

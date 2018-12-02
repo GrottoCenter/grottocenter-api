@@ -1,10 +1,10 @@
 import React from 'react';
-import RandomEntryCardContainer from '../../containers/RandomEntryCardContainer';
-import {GridRow} from '../../helpers/GridSystem';
-import Translate from '../common/Translate';
 import styled from 'styled-components';
-import LandingSection from './LandingSection';
 import { withTheme } from '@material-ui/core/styles';
+import RandomEntryCardContainer from '../../containers/RandomEntryCardContainer';
+import { GridRow } from '../../helpers/GridSystem';
+import Translate from '../common/Translate';
+import LandingSection from './LandingSection';
 
 //
 //
@@ -46,7 +46,7 @@ const RandomEntry = () => (
       </SectionTitle>
     </GridRow>
     <GridRow>
-      <RandomEntryCardContainer/>
+      <RandomEntryCardContainer />
     </GridRow>
   </BgRandomEntrySection>
 );

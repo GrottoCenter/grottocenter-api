@@ -14,24 +14,18 @@ export const TOGGLE_MENU_ENTRY = 'TOGGLE_MENU_ENTRY';
 //
 //
 
-export const toggleSideMenu = () => {
-  return {
-    type: TOGGLE_SIDEMENU
-  };
-};
+export const toggleSideMenu = () => ({
+  type: TOGGLE_SIDEMENU,
+});
 
-export const registerMenuEntry = (identifier, open, target) => {
-  return {
-    type: REGISTER_MENU_ENTRY,
-    identifier,
-    open,
-    target
-  };
-};
+export const registerMenuEntry = (identifier, open, target) => ({
+  type: REGISTER_MENU_ENTRY,
+  identifier,
+  open,
+  target,
+});
 
-export const toggleMenuEntry = (identifier) => {
-  return {
-    type: TOGGLE_MENU_ENTRY,
-    identifier
-  };
-};
+export const toggleMenuEntry = identifier => ({
+  type: TOGGLE_MENU_ENTRY,
+  identifier,
+});

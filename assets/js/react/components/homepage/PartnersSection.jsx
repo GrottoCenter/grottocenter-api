@@ -1,10 +1,10 @@
 import React from 'react';
-import LandingSection from './LandingSection';
-import {GridRow, GridFullColumn} from '../../helpers/GridSystem';
-import PartnersCarouselContainer from '../../containers/PartnersCarouselContainer';
-import Translate from '../common/Translate';
 import styled from 'styled-components';
 import { withTheme } from '@material-ui/core/styles';
+import LandingSection from './LandingSection';
+import { GridRow, GridFullColumn } from '../../helpers/GridSystem';
+import PartnersCarouselContainer from '../../containers/PartnersCarouselContainer';
+import Translate from '../common/Translate';
 
 //
 //

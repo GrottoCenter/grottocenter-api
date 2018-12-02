@@ -7,23 +7,26 @@ import PropTypes from 'prop-types';
 //
 //
 
-// HOC that reinject current GC context to give access to it to components outside app (example: Leaflet popup)
-export const withContext = (WrappedComponent, context) => {
+// HOC that reinject current GC context to give access to it to components outside app
+// (example: Leaflet popup)
+const withContext = (WrappedComponent, context) => {
   class ContextProvider extends React.Component {
     getChildContext() {
       return context;
     }
 
     render() {
-      return <WrappedComponent {...this.props} />
+      return <WrappedComponent {...this.props} />;
     }
   }
 
   ContextProvider.childContextTypes = {};
 
-  Object.keys(context).forEach(key => {
+  Object.keys(context).forEach((key) => {
     ContextProvider.childContextTypes[key] = PropTypes.any.isRequired;
   });
 
   return ContextProvider;
 };
+
+export default withContext;

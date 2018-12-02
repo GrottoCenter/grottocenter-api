@@ -1,11 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { withRouter } from "react-router-dom";
+import { withRouter } from 'react-router-dom';
 import SearchIcon from '@material-ui/icons/Search';
-import QuicksearchContainer from '../../containers/QuicksearchContainer';
 import { withStyles, withTheme } from '@material-ui/core/styles';
 import styled from 'styled-components';
-import { RIGHT_TO_LEFT } from './../../conf/Config';
+import QuicksearchContainer from '../../containers/QuicksearchContainer';
+import { RIGHT_TO_LEFT } from '../../conf/Config';
 
 //
 //
@@ -22,13 +22,13 @@ const StyledIconSpan = withTheme()(styled.span`
 const StyledSearchIcon = withStyles(theme => ({
   root: {
     '&:hover': {
-      fill: theme.palette.accent1Color
+      fill: theme.palette.accent1Color,
     },
     height: '50px',
     width: '50px',
     paddingTop: 'calc((72px - 50px) / 2)',
-    fill: theme.palette.primary1Color
-  }
+    fill: theme.palette.primary1Color,
+  },
 }), { withTheme: true })(SearchIcon);
 
 /*
@@ -50,13 +50,13 @@ const StyledQuicksearchContainer = withTheme()(styled(DirQuicksearchContainer)`
 `);
 */
 
-const StyledQuicksearchContainer = withStyles((theme) => ({
+const StyledQuicksearchContainer = withStyles(theme => ({
   root: {
     marginRight: theme.direction === RIGHT_TO_LEFT ? '50px' : '0px',
-    marginLeft: theme.direction === RIGHT_TO_LEFT ? '0px' : '50px'
+    marginLeft: theme.direction === RIGHT_TO_LEFT ? '0px' : '50px',
   },
   input: {
-    backgroundColor: theme.palette.primary3Color
+    backgroundColor: theme.palette.primary3Color,
   },
 }), { withTheme: true })(QuicksearchContainer);
 
@@ -72,13 +72,13 @@ const handleSelection = (selection, history) => {
   }
 };
 
-const QuicksearchBar = (props) => (
+const QuicksearchBar = props => (
   <React.Fragment>
     <StyledIconSpan>
       <StyledSearchIcon />
     </StyledIconSpan>
     <StyledQuicksearchContainer
-      handleSelection={(selection) => handleSelection(selection, props.history)}
+      handleSelection={selection => handleSelection(selection, props.history)}
     />
   </React.Fragment>
 );

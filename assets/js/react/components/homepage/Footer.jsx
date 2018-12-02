@@ -1,12 +1,14 @@
 import React from 'react';
+import { withTheme } from '@material-ui/core/styles';
+import styled from 'styled-components';
 import DonateForm from './DonateForm';
 import FooterDisclamer from '../common/FooterDisclamer';
 import Publisher from './Publisher';
 import SocialLinks from './SocialLinks';
 import FooterLinks from './FooterLinks';
-import {GridContainer, GridRow, GridOneThirdColumn, GridFullColumn} from '../../helpers/GridSystem';
-import { withTheme } from '@material-ui/core/styles';
-import styled from 'styled-components';
+import {
+  GridContainer, GridRow, GridOneThirdColumn, GridFullColumn,
+} from '../../helpers/GridSystem';
 
 //
 //
@@ -41,7 +43,7 @@ const Footer = () => (
           </GridOneThirdColumn>
 
           <GridOneThirdColumn>
-            <DonateForm/>
+            <DonateForm />
           </GridOneThirdColumn>
         </GridRow>
 

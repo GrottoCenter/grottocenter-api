@@ -1,10 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import LandingSection from './LandingSection';
-import {GridRow, GridOneHalfColumn} from '../../helpers/GridSystem';
-import Translate from '../common/Translate';
 import styled from 'styled-components';
 import { withTheme } from '@material-ui/core/styles';
+import LandingSection from './LandingSection';
+import { GridRow, GridOneHalfColumn } from '../../helpers/GridSystem';
+import Translate from '../common/Translate';
 import GCLink from '../common/GCLink';
 import DynamicNumberConnector from '../../containers/DynamicNumberConnector';
 
@@ -72,30 +72,41 @@ const WhatIsIt = () => (
     <GridRow>
       <SectionTitle>
         <Translate>Grottocenter numbers</Translate>
-        <span className="icon icon-gc-bat" style={{'verticalAlign': 'super'}}></span><br/>
+        <span className="icon icon-gc-bat" style={{ verticalAlign: 'super' }} />
+        <br />
       </SectionTitle>
     </GridRow>
     <GridRow>
       <NumberBlock>
         <BlockIcon className="icon-gc-entries" />
-        <BigNumberText numberType='publicEntries'/><br/>
-        <Translate>caves are freely accessible from the following page (</Translate><NumberText numberType='entries'/> <Translate>by logging on</Translate> <GCLink href='http://www.grottocenter.org'>Grotto v2</GCLink>)
+        <BigNumberText numberType="publicEntries" />
+        <br />
+        <Translate>caves are freely accessible from the following page (</Translate>
+        <NumberText numberType="entries" />
+        {' '}
+        <Translate>by logging on</Translate>
+        {' '}
+        <GCLink href="http://www.grottocenter.org">Grotto v2</GCLink>
+)
       </NumberBlock>
       <NumberBlock>
         <BlockIcon className="icon-gc-club" />
-        <BigNumberText numberType='officialPartners'/><br/>
+        <BigNumberText numberType="officialPartners" />
+        <br />
         <Translate>organizations who take part in the project by  funding, providing data,communicating on the interest and benefits of  cavers to share data</Translate>
       </NumberBlock>
     </GridRow>
     <GridRow>
       <NumberBlock>
         <BlockIcon className="icon-gc-speleo" />
-        <BigNumberText numberType='cavers'/><br/>
+        <BigNumberText numberType="cavers" />
+        <br />
         <Translate>cavers take part, day after day, in improving and expanding the database</Translate>
       </NumberBlock>
       <NumberBlock>
         <BlockIcon className="icon-gc-expe" />
-        <BigNumberText numberType='partners'/><br/>
+        <BigNumberText numberType="partners" />
+        <br />
         <Translate>organizations are registered on the site</Translate>
       </NumberBlock>
     </GridRow>

@@ -1,11 +1,11 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import CircularProgress from '@material-ui/core/CircularProgress';
-import {DYNAMIC_NUMBER_RELOAD_INTERVAL} from '../../conf/Config';
-import {loadDynamicNumber} from '../../actions/DynamicNumber';
 import SyncKOIcon from '@material-ui/icons/SyncProblem';
 import IconButton from '@material-ui/core/IconButton';
-import {withStyles} from '@material-ui/core/styles';
+import { withStyles } from '@material-ui/core/styles';
+import { loadDynamicNumber } from '../../actions/DynamicNumber';
+import { DYNAMIC_NUMBER_RELOAD_INTERVAL } from '../../conf/Config';
 import Translate from '../common/Translate';
 
 //
@@ -16,19 +16,19 @@ import Translate from '../common/Translate';
 
 const StyledIconButton = withStyles(theme => ({
   root: {
-    fill: theme.palette.accent1Color
-  }
+    fill: theme.palette.accent1Color,
+  },
 }), { withTheme: true })(IconButton);
 
 const StyledSyncKOIcon = withStyles(theme => ({
   root: {
     '&:hover': {
-      fill: theme.palette.accent1Color
+      fill: theme.palette.accent1Color,
     },
     fill: theme.palette.primary3Color,
     height: '48px',
-    width: '48px'
-  }
+    width: '48px',
+  },
 }), { withTheme: true })(SyncKOIcon);
 
 //
@@ -59,14 +59,13 @@ class DynamicNumber extends Component {
   render() {
     if (this.props.isFetching) {
       return (<CircularProgress />);
-
-    } else if (!this.props.number) {
+    } if (!this.props.number) {
       return (
-          <Translate>
-            <StyledIconButton tooltip='Synchronisation error'>
-              <StyledSyncKOIcon />
-            </StyledIconButton>
-          </Translate>
+        <Translate>
+          <StyledIconButton tooltip="Synchronisation error">
+            <StyledSyncKOIcon />
+          </StyledIconButton>
+        </Translate>
       );
     }
     return (

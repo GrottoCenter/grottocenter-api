@@ -1,12 +1,12 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import {Popup} from 'react-leaflet'
+import { Popup } from 'react-leaflet';
 import Button from '@material-ui/core/Button';
 import ImageLoupe from '@material-ui/icons/Loupe';
+import { withStyles, withTheme } from '@material-ui/core/styles';
 import GCLink from './GCLink';
-import {entryDetailPath} from '../../conf/Config';
-import {withStyles, withTheme} from '@material-ui/core/styles';
-import { withContext } from '../../helpers/Routing';
+import { entryDetailPath } from '../../conf/Config';
+import withContext from '../../helpers/Routing';
 
 //
 //
@@ -17,7 +17,7 @@ import { withContext } from '../../helpers/Routing';
 const StyledImageLoupe = withStyles(theme => ({
   root: {
     fill: theme.palette.accent1Color,
-  }
+  },
 }), { withTheme: true })(ImageLoupe);
 
 //
@@ -30,29 +30,35 @@ export default class MapEntryPopup extends Component {
   // This make sure you have router in you this.context
   static contextTypes = {
     router: PropTypes.object.isRequired,
-    theme: PropTypes.object.isRequired
+    theme: PropTypes.object.isRequired,
   };
 
   static propTypes = {
-    entry: PropTypes.object.isRequired
+    entry: PropTypes.object.isRequired,
   };
 
   render() {
     const GCLinkWithContext = withContext(GCLink, this.context);
     const ButtonWithContext = withContext(Button, this.context);
-    const StyledImageLoupeComponent = <StyledImageLoupe/>;
+    const StyledImageLoupeComponent = <StyledImageLoupe />;
 
     return (
       <Popup autoPan={false}>
         <React.Fragment>
           <div>
             <h6>{this.props.entry.name}</h6>
-            <div>{this.props.entry.city} ({this.props.entry.region})</div>
+            <div>
+              {this.props.entry.city}
+              {' '}
+(
+              {this.props.entry.region}
+)
+            </div>
           </div>
 
           {this.props.entry.id && (
-            <GCLinkWithContext internal={true} href={entryDetailPath + this.props.entry.id}>
-              <ButtonWithContext variant='flat'>
+            <GCLinkWithContext internal href={entryDetailPath + this.props.entry.id}>
+              <ButtonWithContext variant="flat">
                 {StyledImageLoupeComponent}
               </ButtonWithContext>
             </GCLinkWithContext>

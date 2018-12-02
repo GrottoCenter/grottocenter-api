@@ -8,12 +8,12 @@ import SideMenuConnector from '../../containers/SideMenuConnector';
 import AppToolbar from '../appli/AppToolbar';
 import AppFooter from '../appli/AppFooter';
 import Breadcrump from '../appli/Breadcrump';
-import Api from "../appli/Api";
+import Api from '../appli/Api';
 import Dashboard from '../appli/Dashboard';
 import MapContainer from '../../containers/MapContainer';
-import Swagger from '../../components/pages/Swagger';
-import Faq from '../../components/appli/Faq';
-import LatestBlogNewsSection from '../../components/homepage/LatestBlogNewsSection';
+import Swagger from './Swagger';
+import Faq from '../appli/Faq';
+import LatestBlogNewsSection from '../homepage/LatestBlogNewsSection';
 
 //
 //
@@ -46,20 +46,20 @@ const ArticleWrapper = styled.article`
 
 const Application = () => (
   <BasePage>
-    <div id='applicationpage'>
+    <div id="applicationpage">
       <ApplicationHeader><AppToolbar /></ApplicationHeader>
       <aside><SideMenuConnector /></aside>
       <Breadcrump />
       <ArticleWrapper>
-				<Switch>
-					<Route exact path="/ui/" component={Dashboard} />
-					<Route path="/ui/api" component={Api} />
-					<Route path="/ui/faq" component={Faq} />
-					<Route path="/ui/map/:target?" component={MapContainer} />
-					<Route path="/ui/swagger" component={Swagger} />
-					<Route path="/ui/test" component={LatestBlogNewsSection} />
-					<Redirect path="/ui/*" to="/ui/" />
-				</Switch>
+        <Switch>
+          <Route exact path="/ui/" component={Dashboard} />
+          <Route path="/ui/api" component={Api} />
+          <Route path="/ui/faq" component={Faq} />
+          <Route path="/ui/map/:target?" component={MapContainer} />
+          <Route path="/ui/swagger" component={Swagger} />
+          <Route path="/ui/test" component={LatestBlogNewsSection} />
+          <Redirect path="/ui/*" to="/ui/" />
+        </Switch>
       </ArticleWrapper>
       <footer><AppFooterStl /></footer>
     </div>

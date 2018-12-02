@@ -1,11 +1,11 @@
 import React from 'react';
 import GiftIcon from '@material-ui/icons/CardGiftcard';
 import Button from '@material-ui/core/Button';
-import {paypalLink, paypalImgLink, paypalId} from '../../conf/Config';
+import { withStyles, withTheme } from '@material-ui/core/styles';
+import styled, { keyframes } from 'styled-components';
+import Typography from '@material-ui/core/Typography/Typography';
 import Translate from '../common/Translate';
-import {withStyles, withTheme} from '@material-ui/core/styles';
-import styled, {keyframes} from 'styled-components';
-import Typography from "@material-ui/core/Typography/Typography";
+import { paypalLink, paypalImgLink, paypalId } from '../../conf/Config';
 
 //
 //
@@ -87,9 +87,9 @@ const DonateButton = withStyles(theme => ({
     },
 
     '& > span': {
-      textTransform: 'none'
-    }
-  }
+      textTransform: 'none',
+    },
+  },
 }), { withTheme: true })(Button);
 
 const StyledGiftIcon = withStyles(theme => ({
@@ -97,16 +97,16 @@ const StyledGiftIcon = withStyles(theme => ({
     fill: theme.palette.textIconColor,
     width: '40px',
     height: '40px',
-    marginRight: '10px'
-  }
+    marginRight: '10px',
+  },
 }), { withTheme: true })(GiftIcon);
 
 const StyledTypography = withStyles(theme => ({
   root: {
     fontSize: '14px',
     textAlign: 'center',
-    color: theme.palette.textIconColor
-  }
+    color: theme.palette.textIconColor,
+  },
 }), { withTheme: true })(Typography);
 
 //
@@ -117,14 +117,14 @@ const StyledTypography = withStyles(theme => ({
 
 const DonateForm = () => (
   <DonateFormWrapper>
-    <form name='donate' action={paypalLink} method="post" target="_blank">
+    <form name="donate" action={paypalLink} method="post" target="_blank">
       <input type="hidden" name="cmd" value="_s-xclick" />
       <input type="hidden" name="hosted_button_id" value={paypalId} />
       <DonateButton href="javascript:document.donate.submit()">
         <StyledGiftIcon />
-        <StyledTypography component='span'><Translate id='Donate now' /></StyledTypography>
+        <StyledTypography component="span"><Translate id="Donate now" /></StyledTypography>
       </DonateButton>
-      <img alt='' src={paypalImgLink} width='1' height='1' />
+      <img alt="" src={paypalImgLink} width="1" height="1" />
     </form>
   </DonateFormWrapper>
 );
