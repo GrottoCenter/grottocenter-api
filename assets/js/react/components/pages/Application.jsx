@@ -2,7 +2,6 @@ import React from 'react';
 import { Redirect, Route, Switch } from 'react-router-dom';
 import { withTheme } from '@material-ui/core/styles';
 import styled from 'styled-components';
-
 import BasePage from './BasePage';
 import SideMenuConnector from '../../containers/SideMenuConnector';
 import AppToolbar from '../appli/AppToolbar';
@@ -14,6 +13,7 @@ import MapContainer from '../../containers/MapContainer';
 import Swagger from './Swagger';
 import Faq from '../appli/Faq';
 import LatestBlogNewsSection from '../homepage/LatestBlogNewsSection';
+import Entries from '../appli/entries/Index';
 
 //
 //
@@ -54,6 +54,7 @@ const Application = () => (
         <Switch>
           <Route exact path="/ui/" component={Dashboard} />
           <Route path="/ui/api" component={Api} />
+          <Route path="/ui/entries" component={Entries} />
           <Route path="/ui/faq" component={Faq} />
           <Route path="/ui/map/:target?" component={MapContainer} />
           <Route path="/ui/swagger" component={Swagger} />
