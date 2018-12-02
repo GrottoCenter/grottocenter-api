@@ -9,7 +9,7 @@ import { addLocaleData, IntlProvider } from 'react-intl';
 import localeData from 'react-intl/locale-data/index';
 import createDebounce from 'redux-debounced';
 import { Provider } from 'react-redux';
-import { createStore, applyMiddleware } from 'redux';
+import { createStore, applyMiddleware, compose } from 'redux';
 import thunkMiddleware from 'redux-thunk';
 import { BrowserRouter, Route, Switch } from 'react-router-dom';
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
@@ -25,8 +25,10 @@ addLocaleData(localeData);
 
 const gcStore = createStore(
   GCReducer,
-  window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__(),
-  applyMiddleware(createDebounce(), thunkMiddleware),
+  compose(
+    applyMiddleware(createDebounce(), thunkMiddleware),
+    window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()
+  )
 );
 
 /* gcStore.subscribe(function() {
