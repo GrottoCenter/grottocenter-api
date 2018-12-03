@@ -48,10 +48,10 @@ module.exports.routes = {
     csrf: true
   },
 
-	'/admin/*': {
-		controller: 'Index',
-		action: 'index'
-	},
+  '/admin/*': {
+    controller: 'Index',
+    action: 'index'
+  },
 
   /***************************************************************************
    *                                                                          *
@@ -356,7 +356,7 @@ module.exports.routes = {
   },
 
   /* REST API for Grotto controller */
-  'GET /api/massif/:id': {
+  'GET /api/massifs/:id': {
     controller: 'Massif',
     action: 'find'
   },
