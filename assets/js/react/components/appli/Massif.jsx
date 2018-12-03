@@ -6,7 +6,6 @@ import GClink from '../common/GCLink';
 
 const Massif = (props) => {
   const { isFetching, massif } = props;
-  console.log(massif);
   if (isFetching) {
     return (<CircularProgress />);
   }
