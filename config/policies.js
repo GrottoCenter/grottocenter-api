@@ -107,6 +107,10 @@ module.exports.policies = {
     '*': true
   },
 
+  MassifController: {
+    '*': true
+  },
+
   'v1/GeoLocController': {
     'countEntries': true,
     'findByBounds': true

@@ -355,6 +355,12 @@ module.exports.routes = {
     action: 'find'
   },
 
+  /* REST API for Grotto controller */
+  'GET /api/massif/:id': {
+    controller: 'Massif',
+    action: 'find'
+  },
+
   /* REST API for Admin controller */
 
   'GET /api/admin/entry/findAllOfInterest': {

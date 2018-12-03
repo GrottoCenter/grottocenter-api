@@ -102,6 +102,11 @@ module.exports = {
       via: 'cave',
       through: 'JCaveEntry'
     },
+    massifs: {
+      collection: 'TMassif',
+      via: 'cave',
+      through: 'JMassifCave'
+    },
 
     topographies: {
       collection: 'TTopography',

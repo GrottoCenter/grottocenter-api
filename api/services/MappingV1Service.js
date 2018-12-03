@@ -24,6 +24,16 @@ const CountResult = {
   count: undefined
 };
 
+const MassifModel = {
+  id: undefined,
+  author: {},
+  idReviewer: undefined,
+  name: undefined,
+  dateInscription: undefined,
+  dateReviewed: undefined,
+  caves: []
+};
+
 /* Mappers */
 
 module.exports = {
@@ -67,5 +77,27 @@ module.exports = {
     });
     results.entries = entries;
     return results;
-  }
+  },
+
+  // ---------------- Massif Function ------------------------------
+
+  //TODO: Choose which attributes to keep in author
+  convertToMassifModel: function(source) {
+    let result = Object.assign({}, MassifModel);
+
+    // Store in author every attributes of the author
+    let author = {};
+    Object.keys(source.author).forEach(f => author[f] = source.author[f]);
+    
+    // Save in result the object to return
+    result.id = source.id;
+    result.author = author;
+    result.idReviewer = source.idReviewer;
+    result.name = source.name;
+    result.dateInscription = source.dateInscription;
+    result.dateReviewed = source.dateReviewed;
+    result.caves = source.caves;
+
+    return result;
+  },
 };
