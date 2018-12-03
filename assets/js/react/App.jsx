@@ -23,12 +23,11 @@ import Admin from './components/pages/Admin';
 
 addLocaleData(localeData);
 
+const middlewares = applyMiddleware(createDebounce(), thunkMiddleware);
+const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 const gcStore = createStore(
   GCReducer,
-  compose(
-    applyMiddleware(createDebounce(), thunkMiddleware),
-    window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()
-  )
+  composeEnhancers(middlewares),
 );
 
 /* gcStore.subscribe(function() {
