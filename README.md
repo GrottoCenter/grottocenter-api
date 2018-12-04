@@ -48,7 +48,7 @@ We will use the DB container for the next part, that's why we need to run localD
 
 Finally, run:
 ```
-> sails lift
+> npm run start-hot
 ```
 
 ### Tests
