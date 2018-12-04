@@ -86,8 +86,13 @@ module.exports = {
     let result = Object.assign({}, MassifModel);
 
     // Store in author every attributes of the author
-    let author = {};
-    Object.keys(source.author).forEach(f => author[f] = source.author[f]);
+    let author = {
+      id: source.author.id,
+      nickname: source.author.nickname
+    };
+
+    // line to put every attributes of author inside another object author
+    //Object.keys(source.author).forEach(f => author[f] = source.author[f]);
     
     // Save in result the object to return
     result.id = source.id;
