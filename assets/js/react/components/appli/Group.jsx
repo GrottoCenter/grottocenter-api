@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import styled from 'styled-components';
 import EmailIcon from '@material-ui/icons/Email';
 import Translate from '../common/Translate';
@@ -29,65 +30,73 @@ const EmailIconStyled = withStyles({
 })(EmailIcon);
 
 const Group = (props) => {
-  const { group } = props;
+  const { isFetching, group } = props;
+  if (isFetching) {
+    return (<CircularProgress />);
+  }
+  if (group) {
+    let completeAddress = `${group.country} - ${group.region} - ${group.county}`;
+    if (group.city) completeAddress += ` - ${group.city}`;
+    else if (group.village) completeAddress += ` - ${group.village}`;
+    if (group.postalCode) completeAddress += ` - ${group.postalCode}`;
+    if (group.address) completeAddress += ` - ${group.address}`;
 
-  let completeAddress = `${group.Country} - ${group.Region} - ${group.County}`;
-  if (group.City) completeAddress += ` - ${group.City}`;
-  else if (group.Village) completeAddress += ` - ${group.Village}`;
-  if (group.PostalCode) completeAddress += ` - ${group.PostalCode}`;
-  if (group.Address) completeAddress += ` - ${group.Address}`;
-
-  const result = (
-    <div>
-      <GroupIcon src="../../../../images/club.svg" alt="Club icon" />
-      <GroupName>
-        {group.Name}
-      </GroupName>
-      <p>
-        {group.Year_birth ? (
-          <i>
-            <Translate>Since</Translate>
-            {' '}
-            {group.Year_birth}
-          </i>
-        ) : ''}
-
-        {group.Is_official_partner ? (
-          <span>
-            {group.Year_birth ? ' - ' : ''}
-            <Translate>Official partner</Translate>
-            {' '}
-            <GClogo src="../../../../images/logoGC.png" alt="GC logo" />
-          </span>
-        ) : ''}
-      </p>
-
+    return (
       <div>
-        {completeAddress}
-      </div>
+        <GroupIcon src="../../../../images/club.svg" alt="Club icon" />
+        <GroupName>
+          {group.name}
+        </GroupName>
+        <p>
+          {group.yearBirth ? (
+            <i>
+              <Translate>Since</Translate>
+              {' '}
+              {group.yearBirth}
+            </i>
+          ) : ''}
 
-      {group.Contact ? (
+          {group.Is_official_partner ? (
+            <span>
+              {group.yearBirth ? ' - ' : ''}
+              <Translate>Official partner</Translate>
+              {' '}
+              <GClogo src="../../../../images/logoGC.png" alt="GC logo" />
+            </span>
+          ) : ''}
+        </p>
+
         <div>
-          <EmailIconStyled />
-          <b>
-            <Translate>Contact</Translate>
-          </b>
-        :
-          {' '}
-          {group.Contact}
+          {completeAddress}
         </div>
-      ) : ''}
 
-      <div>
-        {group.Custom_message}
+        {group.contact ? (
+          <div>
+            <EmailIconStyled />
+            <b>
+              <Translate>Contact</Translate>
+            </b>
+          :
+            {' '}
+            {group.contact}
+          </div>
+        ) : ''}
+
+        <div>
+          {group.customMessage}
+        </div>
       </div>
-    </div>
-  );
-  return result;
+    );
+  }
+  return <div />;
 };
 
 Group.propTypes = {
-  group: PropTypes.object.isRequired,
+  isFetching: PropTypes.bool.isRequired,
+  group: PropTypes.object,
+};
+Group.defaultProps = {
+  group: undefined,
 };
 
 export default Group;
