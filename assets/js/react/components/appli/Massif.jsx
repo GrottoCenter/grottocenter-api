@@ -18,12 +18,24 @@ const Massif = (props) => {
           <b><Translate>Inscription date</Translate></b>
           :
           {' '}
-          {massif.dateInscription}
-          <br />
-          <b><Translate>Last reviewed</Translate></b>
-          :
+          {new Date(massif.dateInscription).toLocaleDateString()}
+          {' - '}
+          {new Date(massif.dateInscription).toLocaleTimeString()}
           {' '}
-          {massif.dateReviewed}
+          <Translate>by</Translate>
+          {' '}
+          <b>{massif.author.nickname}</b>
+          <br />
+          {massif.dateReviewed ? (
+            <div>
+              <b><Translate>Last reviewed</Translate></b>
+            :
+              {' '}
+              {new Date(massif.dateReviewed).toLocaleDateString()}
+              {' - '}
+              {new Date(massif.dateReviewed).toLocaleTimeString()}
+            </div>
+          ) : ''}
         </p>
 
         {massif.caves.length > 0
@@ -45,7 +57,10 @@ const Massif = (props) => {
               </ul>
             </div>
           ) : (
-            <Translate>This massif has no caves repertoried yet.</Translate>
+            <div>
+              <Translate>This massif has no caves repertoried yet</Translate>
+              .
+            </div>
           )}
       </div>
     );
