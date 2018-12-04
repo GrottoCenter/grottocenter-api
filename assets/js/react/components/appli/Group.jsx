@@ -5,6 +5,7 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import styled from 'styled-components';
 import EmailIcon from '@material-ui/icons/Email';
 import Translate from '../common/Translate';
+import GClink from '../common/GCLink';
 
 const GroupIcon = styled.img`
   display: inline-block;
@@ -21,6 +22,44 @@ const GClogo = styled.img`
 
 const GroupName = styled.h1`
   display: inline-block;
+  margin-right: 20px;
+`;
+
+const CaverIcon = styled.img`
+  display: inline-block;
+  margin-right: 10px;
+  vertical-align: text-bottom;
+  width: 3rem;
+`;
+
+const EntryIcon = styled.img`
+  display: inline-block;
+  vertical-align: text-bottom;
+  width: 3rem;
+`;
+
+const GroupCaversNb = styled.span`
+  font-size: 3rem;
+`;
+
+const GroupEntriesNb = styled.span`
+  font-size: 3rem;
+`;
+
+const EntriesList = styled.ul`
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  max-height: 1000px;
+`;
+
+const EntryListItem = styled.li`
+  list-style-type: none;
+  max-width: 20vw;
+  min-width: 210px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 `;
 
 const EmailIconStyled = withStyles({
@@ -47,6 +86,14 @@ const Group = (props) => {
         <GroupName>
           {group.name}
         </GroupName>
+        <GroupCaversNb>
+          {group.cavers.length}
+        </GroupCaversNb>
+        <CaverIcon src="../../../../images/caver.svg" alt="Caver icon" />
+        <GroupEntriesNb>
+          {group.entries.length}
+        </GroupEntriesNb>
+        <EntryIcon src="../../../../images/entry.svg" alt="Entry icon" />
         <p>
           {group.yearBirth ? (
             <i>
@@ -82,9 +129,22 @@ const Group = (props) => {
           </div>
         ) : ''}
 
-        <div>
+        <p>
           {group.customMessage}
-        </div>
+        </p>
+
+        {group.entries.length > 0 ? (
+          <div>
+            <b><Translate>Entries related to this group</Translate></b>
+            <EntriesList>
+              {group.entries.sort((a, b) => a.name > b.name).map(entry => (
+                <EntryListItem key={entry.id}><GClink internal href={`/ui/entries/${entry.id}`}>{entry.name}</GClink></EntryListItem>
+              ))}
+            </EntriesList>
+          </div>
+        ) : (
+          <i><Translate>There is no entries related to this group currently</Translate></i>
+        )}
       </div>
     );
   }
