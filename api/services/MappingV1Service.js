@@ -34,6 +34,30 @@ const MassifModel = {
   caves: []
 };
 
+const GrottoModel = {
+  id: undefined,
+  name: undefined,
+  country: undefined,
+  region: undefined,
+  city: undefined,
+  postalCode: undefined,
+  address: undefined,
+  contact: undefined,
+  yearBirth: undefined,
+  latitude: undefined,
+  longitude: undefined,
+  customMessage: undefined,
+  pictureFileName: undefined,
+  isOfficialPartner: undefined,
+  village: undefined,
+  county: undefined,
+  documentary: undefined,
+  URL: undefined,
+  Facebook: undefined,
+  cavers: [],
+  entries: [],
+};
+
 /* Mappers */
 
 module.exports = {
@@ -102,6 +126,47 @@ module.exports = {
     result.dateInscription = source.dateInscription;
     result.dateReviewed = source.dateReviewed;
     result.caves = source.caves;
+
+    return result;
+  },
+  },
+
+  // ---------------- Grotto Function ---------------------------
+
+  // TODO: Filter Entries information
+  convertToGrottoModel: function(source) {
+    let result = Object.assign({}, GrottoModel);
+
+    // Select only attributes needed for cavers
+    const cavers = source.cavers.map(caver => {
+      return {
+        id: caver.id,
+        nickname: caver.nickname,
+      };
+    });
+    
+    // Build the result
+    result.id = source.id;
+    result.name = source.name;
+    result.country = source.country;
+    result.county = source.county;
+    result.region = source.region;
+    result.city = source.city;
+    result.postalCode = source.postalCode;
+    result.latitude = source.latitude;
+    result.longitude = source.longitude;
+    result.address = source.address;
+    result.contact = source.contact;
+    result.yearBirth = source.yearBirth;
+    result.customMessage = source.customMessage;
+    result.pictureFileName = source.pictureFileName;
+    result.isOfficialPartner = source.isOfficialPartner;
+    result.village = source.village;
+    result.documentary = source.documentary;
+    result.URL = source.URL;
+    result.Facebook = source.Facebook;
+    result.cavers = cavers;
+    result.entries = source.entries;
 
     return result;
   },

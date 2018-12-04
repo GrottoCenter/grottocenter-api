@@ -231,7 +231,13 @@ module.exports = {
       type: 'string',
       maxLength: 100,
       columnName: 'Picture_file_name'
-    }
+    },
+
+    grottos: {
+      collection: 'TGrotto',
+      via: 'caver',
+      through: 'JGrottoCaver'
+    },
   },
 
   customToJSON: function() {

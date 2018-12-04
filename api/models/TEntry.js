@@ -192,6 +192,12 @@ module.exports = {
       collection: 'TTopography',
       via: 'idEntry',
       through: 'jtopoentry'
-    }
+    },
+
+    grottos: {
+      collection: 'TGrotto',
+      via: 'entry',
+      through: 'JGrottoEntry'
+    },
   }
 };
