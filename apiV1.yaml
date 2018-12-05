@@ -226,6 +226,39 @@ paths:
           description: Resource not found
         '500':
           description: Internal error
+  '/api/massifs/:id':
+    get:
+      tags:
+      - massif
+      description: Get a massif, its author and all its caves
+      parameters:
+      - name: id
+        in: query
+        description: Massif id 
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Massif"
+        '206':
+          description: Successful operation (partial content)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Massif"
+        '404':
+          description: Resource not found
+        '500':
+          description: Internal error
 
 components:
   schemas:
@@ -285,3 +318,74 @@ components:
             anyOf:
             - $ref: '#/components/schemas/Entry'
             - $ref: '#/components/schemas/EntryGroup'
+    Caver:
+      type: object
+      properties:
+        id: 
+          type: integer
+          format: int64
+        nickname: 
+          type: string
+    Cave:
+      type: object
+      properties:
+        id: 
+          type: integer
+          format: int64
+        locked: 
+          type: boolean
+        idReviewer: 
+          type: integer
+          format: int64
+        idLocker: 
+          type: integer
+          format: int64
+        name: 
+          type: string
+        minDepth: 
+          type: integer
+          format: int64
+        maxDepth: 
+          type: integer
+          format: int64
+        depth: 
+          type: integer
+          format: int64
+        length: 
+          type: integer
+          format: int64
+        isDiving: 
+          type: boolean
+        temperature: 
+          type: integer
+          format: int64
+        dateInscription: 
+          type: string
+        dateReviewed: 
+          type: string
+        dateLocked: 
+          type: string
+        author: 
+          type: integer
+          format: int64
+    Massif:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        author: 
+            $ref: '#/components/schemas/Caver'
+        idReviewer:
+          type: integer
+          format: int64
+        name:
+          type: string
+        dateInscription:
+          type: string
+        dateReviewed:
+          type: string
+        caves:
+          type: array
+          items: 
+            $ref: '#/components/schemas/Cave'
