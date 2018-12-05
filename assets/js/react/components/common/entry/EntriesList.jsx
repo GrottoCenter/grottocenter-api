@@ -19,7 +19,7 @@ const EntriesList = (props) => {
     <div>
       { entries.length > 0 ? (
         <div>
-          <b><Translate>Entries related to this group</Translate></b>
+          <b><Translate>Caves related to this group</Translate></b>
           <List className={classes.entriesList}>
             {entries.sort((a, b) => a.name > b.name).map(entry => (
               <EntryListItem key={entry.id} entry={entry} />
@@ -27,7 +27,7 @@ const EntriesList = (props) => {
           </List>
         </div>
       ) : (
-        <i><Translate>There is no entries related to this group currently</Translate></i>
+        <i><Translate>There is no caves related to this group currently</Translate></i>
       ) }
     </div>
   );
