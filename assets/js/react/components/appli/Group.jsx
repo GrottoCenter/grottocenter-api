@@ -5,7 +5,7 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import styled from 'styled-components';
 import EmailIcon from '@material-ui/icons/Email';
 import Translate from '../common/Translate';
-import GClink from '../common/GCLink';
+import EntriesList from '../common/entry/EntriesList';
 
 const GroupIcon = styled.img`
   display: inline-block;
@@ -44,22 +44,6 @@ const GroupCaversNb = styled.span`
 
 const GroupEntriesNb = styled.span`
   font-size: 3rem;
-`;
-
-const EntriesList = styled.ul`
-  display: flex;
-  flex-direction: column;
-  flex-wrap: wrap;
-  max-height: 1000px;
-`;
-
-const EntryListItem = styled.li`
-  list-style-type: none;
-  max-width: 20vw;
-  min-width: 210px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 `;
 
 const EmailIconStyled = withStyles({
@@ -133,18 +117,8 @@ const Group = (props) => {
           {group.customMessage}
         </p>
 
-        {group.entries.length > 0 ? (
-          <div>
-            <b><Translate>Entries related to this group</Translate></b>
-            <EntriesList>
-              {group.entries.sort((a, b) => a.name > b.name).map(entry => (
-                <EntryListItem key={entry.id}><GClink internal href={`/ui/entries/${entry.id}`}>{entry.name}</GClink></EntryListItem>
-              ))}
-            </EntriesList>
-          </div>
-        ) : (
-          <i><Translate>There is no entries related to this group currently</Translate></i>
-        )}
+        <EntriesList entries={group.entries} />
+
       </div>
     );
   }
@@ -153,7 +127,7 @@ const Group = (props) => {
 
 Group.propTypes = {
   isFetching: PropTypes.bool.isRequired,
-  group: PropTypes.object,
+  group: PropTypes.shape({}),
 };
 Group.defaultProps = {
   group: undefined,
