@@ -4,15 +4,13 @@ import { withStyles } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import styled from 'styled-components';
 import EmailIcon from '@material-ui/icons/Email';
+import LocationIcon from '@material-ui/icons/LocationOn';
+
+import Badge from '@material-ui/core/Badge';
+import Card from '@material-ui/core/Card';
+import CardContent from '@material-ui/core/CardContent';
 import Translate from '../common/Translate';
 import EntriesList from '../common/entry/EntriesList';
-
-const GroupIcon = styled.img`
-  display: inline-block;
-  margin-right: 10px;
-  vertical-align: baseline;
-  width: 3rem;
-`;
 
 const GClogo = styled.img`
   display: inline-block;
@@ -27,23 +25,13 @@ const GroupName = styled.h1`
 
 const CaverIcon = styled.img`
   display: inline-block;
-  margin-right: 10px;
-  vertical-align: text-bottom;
-  width: 3rem;
+  width: 3.5rem;
 `;
 
 const EntryIcon = styled.img`
   display: inline-block;
   vertical-align: text-bottom;
-  width: 3rem;
-`;
-
-const GroupCaversNb = styled.span`
-  font-size: 3rem;
-`;
-
-const GroupEntriesNb = styled.span`
-  font-size: 3rem;
+  width: 3.5rem;
 `;
 
 const EmailIconStyled = withStyles({
@@ -52,8 +40,27 @@ const EmailIconStyled = withStyles({
   },
 })(EmailIcon);
 
+const LocationIconStyled = withStyles({
+  root: {
+    verticalAlign: 'bottom',
+  },
+})(LocationIcon);
+
+const styles = {
+  badge: {
+    color: '#eee',
+    fontSize: '1.5rem',
+    fontWeight: 'bold',
+    padding: '1px',
+  },
+  root: {
+    marginRight: '10px',
+    verticalAlign: 'baseline',
+  },
+};
+
 const Group = (props) => {
-  const { isFetching, group } = props;
+  const { isFetching, group, classes } = props;
   if (isFetching) {
     return (<CircularProgress />);
   }
@@ -65,67 +72,66 @@ const Group = (props) => {
     if (group.address) completeAddress += ` - ${group.address}`;
 
     return (
-      <div>
-        <GroupIcon src="../../../../images/club.svg" alt="Club icon" />
-        <GroupName>
-          {group.name}
-        </GroupName>
-        <GroupCaversNb>
-          {group.cavers.length}
-        </GroupCaversNb>
-        <CaverIcon src="../../../../images/caver.svg" alt="Caver icon" />
-        <GroupEntriesNb>
-          {group.entries.length}
-        </GroupEntriesNb>
-        <EntryIcon src="../../../../images/entry.svg" alt="Entry icon" />
-        <p>
-          {group.yearBirth ? (
-            <i>
-              <Translate>Since</Translate>
-              {' '}
-              {group.yearBirth}
-            </i>
-          ) : ''}
+      <Card>
+        <CardContent>
+          <GroupName>
+            {group.name}
+          </GroupName>
 
-          {group.Is_official_partner ? (
-            <span>
-              {group.yearBirth ? ' - ' : ''}
-              <Translate>Official partner</Translate>
-              {' '}
-              <GClogo src="../../../../images/logoGC.png" alt="GC logo" />
-            </span>
-          ) : ''}
-        </p>
+          <Badge classes={{ badge: classes.badge, root: classes.root }} color="primary" badgeContent={group.cavers.length}>
+            <CaverIcon src="../../../../images/caver.svg" alt="Caver icon" />
+          </Badge>
 
-        <div>
-          {completeAddress}
-        </div>
+          <Badge classes={{ badge: classes.badge, root: classes.root }} color="primary" badgeContent={group.entries.length}>
+            <EntryIcon src="../../../../images/entry.svg" alt="Entry icon" />
+          </Badge>
 
-        {group.contact ? (
+          <p>
+            {group.yearBirth ? (
+              <i>
+                <Translate>Since</Translate>
+                {' '}
+                {group.yearBirth}
+              </i>
+            ) : ''}
+
+            {group.Is_official_partner ? (
+              <span>
+                {group.yearBirth ? ' - ' : ''}
+                <Translate>Official partner</Translate>
+                {' '}
+                <GClogo src="../../../../images/logoGC.png" alt="GC logo" />
+              </span>
+            ) : ''}
+          </p>
+
           <div>
-            <EmailIconStyled />
-            <b>
-              <Translate>Contact</Translate>
-            </b>
-          :
-            {' '}
-            {group.contact}
+            <LocationIconStyled />
+            {completeAddress}
           </div>
-        ) : ''}
 
-        <p>
-          {group.customMessage}
-        </p>
+          {group.contact ? (
+            <div>
+              <EmailIconStyled />
+              {' '}
+              {group.contact}
+            </div>
+          ) : ''}
 
-        <EntriesList entries={group.entries} />
+          <p>
+            {group.customMessage}
+          </p>
 
-      </div>
+          <EntriesList entries={group.entries} />
+        </CardContent>
+      </Card>
     );
   }
   return <div />;
 };
 
 Group.propTypes = {
+  classes: PropTypes.shape({}).isRequired,
   isFetching: PropTypes.bool.isRequired,
   group: PropTypes.shape({}),
 };
@@ -133,4 +139,4 @@ Group.defaultProps = {
   group: undefined,
 };
 
-export default Group;
+export default withStyles(styles)(Group);
