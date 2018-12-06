@@ -103,7 +103,9 @@
 	"Groups": "Groupes",
 	"Since": "Depuis",
 	"Official partner": "Partenaire officiel",
-	"Caves list": "Liste des caves",
+	"Caves list": "Liste des cavités",
 	"This massif has no caves repertoried yet": "Ce massif n'a pas encore de caves répertoriées",
-	"by": "par"
+	"by": "par",
+	"Caves related to this group": "Cavités en lien avec ce groupe",
+	"There is no caves related to this group currently": "Il n'y a pas de cavités en lien avec ce groupe pour le moment."
 }

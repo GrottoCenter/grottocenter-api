@@ -1,6 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import CircularProgress from '@material-ui/core/CircularProgress';
+import Card from '@material-ui/core/Card';
+import CardContent from '@material-ui/core/CardContent';
 import CavesList from '../common/cave/CavesList';
 
 const Massif = (props) => {
@@ -10,10 +12,12 @@ const Massif = (props) => {
   }
   if (massif) {
     return (
-      <div>
-        <h1>{massif.name}</h1>
-        <CavesList caves={massif.caves} />
-      </div>
+      <Card>
+        <CardContent>
+          <h1>{massif.name}</h1>
+          <CavesList caves={massif.caves} />
+        </CardContent>
+      </Card>
     );
   }
 

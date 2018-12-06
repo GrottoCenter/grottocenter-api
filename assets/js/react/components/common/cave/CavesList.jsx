@@ -21,7 +21,6 @@ const CavesList = (props) => {
         ? (
           <div>
             <b><Translate>Caves list</Translate></b>
-            :
             <List className={classes.cavesList}>
               {caves.sort((a, b) => a.name > b.name).map(cave => (
                 <CaveListItem key={cave.id} cave={cave} />
