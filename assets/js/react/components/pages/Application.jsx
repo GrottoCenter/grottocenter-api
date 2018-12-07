@@ -58,7 +58,7 @@ const Application = () => (
           <Route path="/ui/entries" component={Entries} />
           <Route path="/ui/faq" component={Faq} />
           <Route path="/ui/map/:target?" component={MapContainer} />
-          <Route path="/ui/swagger" component={Swagger} />
+          <Route path="/ui/swagger/:version" component={Swagger} />
           <Route path="/ui/test" component={LatestBlogNewsSection} />
           <Route path="/ui/massifs/:massifId" component={MassifContainer} />
           <Redirect path="/ui/*" to="/ui/" />
