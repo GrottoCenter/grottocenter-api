@@ -19,11 +19,7 @@
 	"GrottoCenter is a comunity database for cavers based on a wiki-like system Cavers fill the databes for cavers": "GrottoCenter ist eine Höhlendatenbank der Gemeinschaft, aufbauend auf dem Prinzip von Wikipedia.",
 	"Any interesting natural cave can be added in the database!": "Jede natürliche Höhle, die von Interesse ist, kann hier gespeichert werden!",
 	"The international voluntary association WikiCaves operates the GrottoCenter web application WikiCaves has as goals:": "Die Webseite wird von dem Verei \\\"Wikicaves\\\" veröffentlicht mit dem Ziel:",
-	"Promote the development of the speleology in the world especially through  web-based collaboration": "Höhlenforschung in der Welt zu entwickeln, insbesondere durch Mitwirkinternet.",
-	"Share and spread the data related to the speleology": "Informationen auszubreiten undzu teilen, die mit Höhlenforschung zu tun haben;",
-	"Make access to the natural caves data easier especially by using Internet": "Durchgang zu den Informationen über Naturhöhlen durch Internet zu erleichtern",
 	"Highlight and help the protection of the natural caves and their surroundings": "Die natürlichen Höhlen und ihre Umgebung ins Licht zu setzen und an ihrem Schutz beizutragen.",
-	"Help the exploration and the scientific study of natural caves": "Bei der Durchsuchung und der wissenschaftlichen Forschung der natürlichen Höhlen zu helfen.",
 	"Grottocenter numbers": "Grottocenter in Ziffern.",
 	"Promote!": "Befördern!",
 	"Share!": "Mitteilen!",
@@ -47,5 +43,8 @@
 	"I find your project interesting:  How  can I  help ?": "Ich finde Euch nett. Kann ich irgendwie helfen ?",
 	"{0} hour": "{0} stunde",
 	"{0} hours": "{0} studen",
-	"{0} min": "{0} min"
+	"{0} min": "{0} min",
+	"Password": "Passwort",
+	"Last reviewed": "letzte Aktualisierung",
+	"Groups": "Gruppen"
 }

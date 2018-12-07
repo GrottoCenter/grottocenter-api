@@ -35,6 +35,7 @@ globals:
   TGrotto: true
   TCaver: true
   TTopography: true
+  TMassif: true
   TokenAuthService: true
   ControllerService: true
   MappingV1Service: true

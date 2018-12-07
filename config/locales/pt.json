@@ -19,11 +19,7 @@
 	"GrottoCenter is a comunity database for cavers based on a wiki-like system Cavers fill the databes for cavers": "GrottoCenter é uma base de dados comunitária para espeleólogos, baseada no sistema wiki. Espeleólogos entram com dados para os próprios espeleólogos.",
 	"Any interesting natural cave can be added in the database!": "Qualquer cavidade natural interessante pode ser adicionada na base de dados!",
 	"The international voluntary association WikiCaves operates the GrottoCenter web application WikiCaves has as goals:": "Quem opera a aplicação Web GrottoCenter é a associação internacional voluntária WikiCaves. WikiCaves tem como objetivos:",
-	"Promote the development of the speleology in the world especially through  web-based collaboration": "Promover o desenvolvimento da espeleologia no mundo, especialmente a partir de uma colaboração baseada na web.",
-	"Share and spread the data related to the speleology": "Compartilhar e divulgar as informações relacionadas à espeleologia.",
-	"Make access to the natural caves data easier especially by using Internet": "Tornar o acesso à informação sobre cavernas mais fácil, especialmente usando a Internet.",
 	"Highlight and help the protection of the natural caves and their surroundings": "Destacar e ajudar a proteção de cavernas e suas áreas de entorno.",
-	"Help the exploration and the scientific study of natural caves": "Ajude na exploração e estudos científicos de cavernas.",
 	"Grottocenter numbers": "Grottocenter em números",
 	"Promote!": "Promover!",
 	"Share!": "Compartilhar!",
@@ -43,5 +39,7 @@
 	"Donate now": "Faça sua doação",
 	"Interest": "Interesse",
 	"Ease to move": "Fácil accesso",
-	"Access": "Acesso"
+	"Access": "Acesso",
+	"Password": "Password",
+	"Groups": "Grupos"
 }

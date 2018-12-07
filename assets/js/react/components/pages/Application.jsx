@@ -14,6 +14,7 @@ import Swagger from './Swagger';
 import Faq from '../appli/Faq';
 import LatestBlogNewsSection from '../homepage/LatestBlogNewsSection';
 import Entries from '../appli/entries/Index';
+import MassifContainer from '../../containers/MassifContainer';
 
 //
 //
@@ -59,8 +60,10 @@ const Application = () => (
           <Route path="/ui/map/:target?" component={MapContainer} />
           <Route path="/ui/swagger" component={Swagger} />
           <Route path="/ui/test" component={LatestBlogNewsSection} />
+          <Route path="/ui/massifs/:massifId" component={MassifContainer} />
           <Redirect path="/ui/*" to="/ui/" />
         </Switch>
+
       </ArticleWrapper>
       <footer><AppFooterStl /></footer>
     </div>
