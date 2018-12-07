@@ -25,11 +25,13 @@ const GroupName = styled.h1`
 
 const CaverIcon = styled.img`
   display: inline-block;
+  height: 3.5rem;
   width: 3.5rem;
 `;
 
 const EntryIcon = styled.img`
   display: inline-block;
+  height: 3.5rem;
   vertical-align: text-bottom;
   width: 3.5rem;
 `;
