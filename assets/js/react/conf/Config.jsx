@@ -152,7 +152,7 @@ export const findMapBoundsUrl = '/api/v1/geoloc/findByBounds';
 export const findMassifUrl = '/api/massifs/';
 
 export const
-  swaggerLinkV1 = '/swagger/apiV1.yaml';
+  swaggerLinkV1 = '/ui/swagger/1';
 
 export const
   wikiApiLinks = {
@@ -170,6 +170,7 @@ export const
     entries: 'Entries',
     search: 'Search',
     add: 'Add',
+    swagger: 'Browse API',
     massifs: 'Massifs',
   };
 

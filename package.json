@@ -48,6 +48,7 @@
     "sails-hook-sockets": "^1.5.2",
     "sails-mysql": "^1.0.1",
     "styled-components": "^4.1.1",
+    "swagger-ui-dist": "^3.20.2",
     "underscore.date": "^0.6.1",
     "underscore.string": "^3.3.4"
   },
