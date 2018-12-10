@@ -16,7 +16,7 @@ module.exports = {
       let params = {};
       params.controllerMethod = 'EntryController.find';
       params.notFoundMessage = 'Entry of id ' + req.params.id + ' not found.';
-      return ControllerService.treat(err, found, params, res);
+      return ControllerService.treat(req, err, found, params, res);
     });
   },
 
@@ -37,7 +37,7 @@ module.exports = {
       let params = {};
       params.controllerMethod = 'EntryController.findAll';
       params.notFoundMessage = 'No entries found.';
-      return ControllerService.treat(err, found, params, res);
+      return ControllerService.treat(req, err, found, params, res);
     });
   },
 

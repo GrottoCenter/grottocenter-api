@@ -45,7 +45,7 @@ module.exports = {
 
       let count = {};
       count.count = found;
-      return ControllerService.treat(err, count, params, res);
+      return ControllerService.treat(req, err, count, params, res);
     });
   }
 };

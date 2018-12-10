@@ -62,7 +62,7 @@ module.exports = {
           let params = {};
           params.controllerMethod = 'SearchController.findByBounds';
           params.notFoundMessage = 'No items found.';
-          return ControllerService.treatAndConvert(err, foundEntry, params, res, converter);
+          return ControllerService.treatAndConvert(req, err, foundEntry, params, res, converter);
         });
       }
     }, function(err) {

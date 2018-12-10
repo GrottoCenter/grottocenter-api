@@ -23,7 +23,7 @@ module.exports = {
       let params = {};
       params.controllerMethod = 'TopographyController.find';
       params.notFoundMessage = 'Topography of id ' + req.params.id + ' not found.';
-      return ControllerService.treat(err, found, params, res);
+      return ControllerService.treat(req, err, found, params, res);
     });
   },
 
@@ -32,7 +32,7 @@ module.exports = {
       let params = {};
       params.controllerMethod = 'TopographyController.findAll';
       params.notFoundMessage = 'No topographies found.';
-      return ControllerService.treat(err, found, params, res);
+      return ControllerService.treat(req, err, found, params, res);
     });
   }
 };

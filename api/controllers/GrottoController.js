@@ -33,7 +33,7 @@ module.exports = {
       let params = {};
       params.controllerMethod = 'GrottoController.findAll';
       params.notFoundMessage = 'No grottos found.';
-      return ControllerService.treat(err, found, params, res);
+      return ControllerService.treat(req, err, found, params, res);
     });
   },
 
@@ -59,7 +59,7 @@ module.exports = {
 
       let count = {};
       count.count = found;
-      return ControllerService.treat(err, count, params, res);
+      return ControllerService.treat(req, err, count, params, res);
     });
   }
 };
