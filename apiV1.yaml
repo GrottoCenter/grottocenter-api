@@ -259,7 +259,7 @@ paths:
           description: Resource not found
         '500':
           description: Internal error
-  '/api/grotto/:id':
+  '/api/grottos/:id':
     get:
       tags:
       - grotto
