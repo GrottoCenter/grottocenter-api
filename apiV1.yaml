@@ -68,7 +68,7 @@ paths:
           description: Resource not found
         '500':
           description: Internal error
-  '/entry/{identifier}':
+  '/entries/{identifier}':
     get:
       tags:
       - entry
@@ -91,7 +91,7 @@ paths:
           description: Resource not found
         '500':
           description: Internal error
-  '/entry/publicCount':
+  '/entries/publicCount':
     get:
       tags:
       - entry
