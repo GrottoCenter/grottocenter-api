@@ -129,7 +129,6 @@ module.exports = {
 
     return result;
   },
-  },
 
   // ---------------- Grotto Function ---------------------------
 
