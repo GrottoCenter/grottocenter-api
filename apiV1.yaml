@@ -259,6 +259,39 @@ paths:
           description: Resource not found
         '500':
           description: Internal error
+  '/api/grotto/:id':
+    get:
+      tags:
+      - grotto
+      description: Get a grotto that means an organization or a group of cavers.
+      parameters:
+      - name: id
+        in: query
+        description: Grotto id 
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Grotto"
+        '206':
+          description: Successful operation (partial content)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Grotto"
+        '404':
+          description: Resource not found
+        '500':
+          description: Internal error
 
 components:
   schemas:
@@ -389,3 +422,58 @@ components:
           type: array
           items: 
             $ref: '#/components/schemas/Cave'
+    Grotto:
+      type: object
+      properties:
+        id: 
+          type: integer
+          format: int64
+        author: 
+          $ref: '#/components/schemas/Caver'
+        idReviewer: 
+          type: integer
+          format: int64
+        name: 
+          type: 'string'
+        country:
+          type: 'string'
+        region: 
+          type: 'string'
+        city: 
+          type: 'string'
+        postalCode:
+          type: 'string'
+        address:
+          type: 'string'
+        contact:
+          type: 'string'
+        yearBirth:
+          type: 'string'
+        dateInscription: 
+          type: 'string'
+        dateReviewed: 
+          type: 'string'
+        latitude: 
+          type: integer
+          format: int64
+        longitude: 
+          type: integer
+          format: int64
+        customMessage: 
+          type: 'string'
+        pictureFileName: 
+          type: 'string'
+        isOfficialPartner: 
+          type: 'boolean'
+        village: 
+          type: 'string'
+        county:
+          type: 'string'
+        cavers: 
+          type: array
+          items: 
+            $ref: '#/components/schemas/Caver'
+        entries: 
+          type: array
+          items: 
+            $ref: '#/components/schemas/Entry'
