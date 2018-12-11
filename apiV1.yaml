@@ -91,7 +91,33 @@ paths:
           description: Resource not found
         '500':
           description: Internal error
-  '/entries/publicCount':
+  '/entry/{identifier}':
+    get:
+      tags:
+      - entry
+      deprecated: true
+      summary: DEPRECATED - Please switch your code to use /entries instead
+      description: Get a public entry by identifier
+      parameters:
+      - name: identifier
+        in: path
+        description: Entry identifier
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Entry'
+        '404':
+          description: Resource not found
+        '500':
+          description: Internal error
+
+  '/entry/publicCount':
     get:
       tags:
       - entry
@@ -226,7 +252,7 @@ paths:
           description: Resource not found
         '500':
           description: Internal error
-  '/api/massifs/:id':
+  '/massifs/:id':
     get:
       tags:
       - massif

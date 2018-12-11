@@ -181,7 +181,8 @@ module.exports.routes = {
     action: 'findRandom'
   },
 
-  'GET /api/v1/entries/publicCount': {
+  // /!\ DEPRECATED /!\
+  'GET /api/v1/entry/publicCount': {
     controller: 'v1/Entry',
     action: 'getPublicEntriesNumber',
     cors: {
@@ -195,6 +196,15 @@ module.exports.routes = {
   },
 
   'GET /api/v1/entries/:id': {
+    controller: 'v1/Entry',
+    action: 'find',
+    cors: {
+      allowOrigins: '*'
+    }
+  },
+
+  // /!\ DEPRECATED (use plural route) /!\
+  'GET /api/v1/entry/:id': {
     controller: 'v1/Entry',
     action: 'find',
     cors: {
