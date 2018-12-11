@@ -1,6 +1,6 @@
 'use strict';
 
-const client = require('../../config/elasticsearch');
+const client = require('../../config/elasticsearch').elasticsearchCli;
 
 const resourcesToUpdate = [
   'grotto', 'caves', 'entries'
@@ -68,4 +68,22 @@ module.exports = {
       
     }
   },
+
+  /**
+   * Retrieve data from elasticsearch on all index according to a string
+   * Params should contain an attribute query
+   * @param {*} params : list of params of the request
+   */
+  searchQuery: function(params) {
+    return new Promise(function(resolve, reject) {
+      client.search({
+        index: '_all',
+        q: params.query
+      }).then(result => {
+        resolve(result);
+      }).catch(err => {
+        reject(err);
+      });
+    });
+  }
 };

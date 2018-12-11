@@ -398,6 +398,15 @@ module.exports.routes = {
     action: 'findByBounds',
     cors: {
       allowOrigins: '*'
+    },
+  },
+
+  /* Search */
+  'GET /api/v1/search': {
+    controller: 'v1/Search',
+    action: 'search',
+    cors: {
+      allowOrigins: '*'
     }
   },
 

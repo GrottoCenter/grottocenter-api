@@ -58,6 +58,21 @@ const GrottoModel = {
   entries: [],
 };
 
+const CaveModel = {
+  id: undefined,
+  idAuthor: undefined,
+  idReviewer: undefined,
+  name: undefined,
+  minDepth: undefined,
+  maxDepth: undefined,
+  depth : undefined,
+  length: undefined,
+  isDiving: undefined,
+  temperature: undefined,
+  dateInscription: undefined,
+  dateReviewed: undefined,
+};
+
 /* Mappers */
 
 module.exports = {
@@ -92,7 +107,8 @@ module.exports = {
     return result;
   },
 
-  convertToSearchResult: function(source) {
+  //Depecated for v1
+  convertToOldSearchResult: function(source) {
     let results = {};
     let entries = [];
     source.forEach((item) => {
@@ -101,6 +117,79 @@ module.exports = {
     });
     results.entries = entries;
     return results;
+  },
+
+  /**
+   * Function that return all data for the search
+   * @param {*} source : the elasticsearch result
+   */
+  convertToCompleteSearchResult: function(source) {
+    let res = {};
+    let values = [];
+    // For each result of the research, convert the item and add it to the json to send
+    source.hits.hits.forEach((item) => {
+      let data = '';
+      // Convert the data according to its type
+      switch(item._source.type){
+        case 'entry':
+          data = this.convertToEntryModel(item._source);
+          break;
+        case 'cave':
+          data = this.convertToCaveModel(item._source);
+          break;
+        case 'grotto':
+          data = this.convertToGrottoModel(item._source);
+          break;
+      }
+      // Add the type of the data
+      data.type = item._source.type;
+
+      values.push(data);
+    });
+    res.results = values;
+    return res;
+  },
+
+  /**
+   * Function that return all data for the search but incomplete, that means only the id and the name
+   * @param {*} source : the elasticsearch result
+   */
+  convertToSearchResult: function(source) {
+    let res = {};
+    let values = [];
+    // For each result of the research, only keep the id and the name then add it to the json to send
+    source.hits.hits.forEach((item) => {
+      let data = {
+        id: item._source.id,
+        name: item._source.name,
+        type: item._source.type,
+      };
+      values.push(data);
+    });
+
+    res.results = values;
+    return res;
+  },
+
+  // ---------------- Cave Function ------------------------------
+
+  convertToCaveModel: function(source) {
+    let result = Object.assign({}, CaveModel);
+
+    result.id = source.id;
+    result.idAuthor = source.idAuthor;
+    result.idReviewer = source.idReviewer;
+    result.name = source.name;
+    result.minDepth = source.minDepth;
+    result.maxDepth = source.maxDepth;
+    result.depth = source.depth;
+    result.length = source.length;
+    result.isDiving = source.isDiving;
+    result.temperature = source.temperature;
+    result.dateInscription = source.dateInscription;
+    result.dateReviewed = source.dateReviewed;
+
+    return result;
   },
 
   // ---------------- Massif Function ------------------------------
