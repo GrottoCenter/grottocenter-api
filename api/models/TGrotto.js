@@ -132,6 +132,27 @@ module.exports = {
     isOfficialPartner: {
       type: 'boolean',
       columnName: 'Is_official_partner'
-    }
+    },
+    village: {
+      type: 'string',
+      maxLength: 100,
+      columnName: 'Village'
+    },
+    county: {
+      type: 'string',
+      maxLength: 100,
+      columnName: 'County'
+    },
+
+    cavers: {
+      collection: 'TCaver',
+      via: 'grotto',
+      through: 'JGrottoCaver'
+    },
+    entries: {
+      collection: 'TEntry',
+      via: 'grotto',
+      through: 'JGrottoEntry'
+    },
   }
 };

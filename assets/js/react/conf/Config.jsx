@@ -138,8 +138,8 @@ export const
     cavers: '/api/caver/count',
     entries: '/api/entry/count',
     publicEntries: '/api/v1/entry/publicCount',
-    partners: '/api/grotto/count',
-    officialPartners: '/api/grotto/officialCount',
+    partners: '/api/grottos/count',
+    officialPartners: '/api/grottos/officialCount',
   };
 
 export const
@@ -150,6 +150,7 @@ export const findForCarouselUrl = '/api/partner/findForCarousel';
 export const quicksearchUrl = '/api/v1/search/findAll';
 export const findMapBoundsUrl = '/api/v1/geoloc/findByBounds';
 export const findMassifUrl = '/api/massifs/';
+export const findGroupUrl = '/api/grottos/';
 
 export const
   swaggerLinkV1 = '/ui/swagger/1';
@@ -172,6 +173,7 @@ export const
     add: 'Add',
     swagger: 'Browse API',
     massifs: 'Massifs',
+    groups: 'Groups',
   };
 
 export const

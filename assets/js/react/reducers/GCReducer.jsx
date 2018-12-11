@@ -7,6 +7,7 @@ import dynamicNumber from './DynamicNumberReducer';
 import sideMenu from './SideMenuReducer';
 import randomEntry from './RandomEntryReducer';
 import partnersCarousel from './PartnersCarouselReducer';
+import group from './GroupReducer';
 import massif from './MassifReducer';
 
 //
@@ -24,6 +25,7 @@ const GCReducer = combineReducers({
   sideMenu,
   randomEntry,
   partnersCarousel,
+  group,
   massif,
 });
 

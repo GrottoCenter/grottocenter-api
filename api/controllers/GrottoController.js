@@ -7,11 +7,12 @@
 'use strict';
 module.exports = {
   find: function(req, res) {
-    TGrotto.findOneById(req.params.id).populate('author').exec(function(err, found) {
+    TGrotto.findOne({
+      id: req.params.id,
+    }).populate('cavers').populate('entries').exec(function(err, found) {
       let params = {};
-      params.controllerMethod = 'GrottoController.find';
-      params.notFoundMessage = 'Grotto of id ' + req.params.id + ' not found.';
-      return ControllerService.treat(err, found, params, res);
+      params.searchedItem = 'Grotto of id ' + req.params.id;
+      return ControllerService.treatAndConvert(err, found, params, res, MappingV1Service.convertToGrottoModel);
     });
   },
 

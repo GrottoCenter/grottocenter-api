@@ -335,27 +335,27 @@ module.exports.routes = {
 
   /* REST API for Grotto controller */
 
-  'GET /api/grotto/findAll': {
+  'GET /api/grottos/findAll': {
     controller: 'Grotto',
     action: 'findAll'
   },
 
-  'GET /api/grotto/officialCount': {
+  'GET /api/grottos/officialCount': {
     controller: 'Grotto',
     action: 'getOfficialPartnersNumber'
   },
 
-  'GET /api/grotto/count': {
+  'GET /api/grottos/count': {
     controller: 'Grotto',
     action: 'getPartnersNumber'
   },
 
-  'GET /api/grotto/:id': {
+  'GET /api/grottos/:id': {
     controller: 'Grotto',
     action: 'find'
   },
 
-  /* REST API for Grotto controller */
+  /* REST API for Massif controller */
   'GET /api/massifs/:id': {
     controller: 'Massif',
     action: 'find'
