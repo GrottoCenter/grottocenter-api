@@ -12,7 +12,7 @@ import {
 //
 
 const initialState = {
-  results: {}, // search results
+  results: [], // search results
   errors: undefined, // fetch errors
   entry: undefined, // marker entry
 };
@@ -27,7 +27,7 @@ const quicksearch = (state = initialState, action) => {
   switch (action.type) {
     case RESET_QUICKSEARCH:
       return Object.assign({}, state, {
-        results: {},
+        results: [],
         errors: undefined,
       });
     case FETCH_QUICKSEARCH_SUCCESS:

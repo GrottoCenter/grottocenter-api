@@ -1,7 +1,7 @@
 import { connect } from 'react-redux';
 import { fetchQuicksearchResult, resetQuicksearch, setCurrentEntry } from '../actions/Quicksearch';
 import { focusOnLocation } from '../actions/Map';
-import Searchbar2 from '../components/common/Searchbar';
+import Searchbar from '../components/common/Searchbar';
 import { isMappable } from '../helpers/Entries';
 
 //
@@ -10,9 +10,9 @@ import { isMappable } from '../helpers/Entries';
 //
 //
 
-const startSearch = filter => dispatch => new Promise((resolve) => {
-  if (filter && filter.length >= 3) {
-    resolve(dispatch(fetchQuicksearchResult({ name: filter })));
+const startSearch = keyword => dispatch => new Promise((resolve) => {
+  if (keyword && keyword.length >= 3) {
+    resolve(dispatch(fetchQuicksearchResult({ query: keyword })));
   } else {
     resolve(dispatch(resetQuicksearch()));
   }
@@ -44,4 +44,4 @@ const mapStateToProps = (state, ownProps) => ({
   classes: ownProps.classes,
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(Searchbar2);
+export default connect(mapStateToProps, mapDispatchToProps)(Searchbar);

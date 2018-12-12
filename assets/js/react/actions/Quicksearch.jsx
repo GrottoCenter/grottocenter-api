@@ -45,25 +45,25 @@ export const setCurrentEntry = entry => ({
 //
 //
 
-export function fetchQuicksearchResult(criteria) {
-  return function (dispatch) {
-    dispatch(resetQuicksearch(criteria));
+export const fetchQuicksearchResult = criteria => (dispatch) => {
+  dispatch(resetQuicksearch(criteria));
 
-    let completeUrl = quicksearchUrl;
-    if (criteria) {
-      completeUrl += `?${Object.keys(criteria).map(k => `${k}=${encodeURIComponent(criteria[k])}`).join('&')}`;
-    }
+  let completeUrl = quicksearchUrl;
+  if (criteria) {
+    completeUrl += `?${Object.keys(criteria).map(k => `${k}=${encodeURIComponent(criteria[k])}`).join('&')}`;
+  }
 
-    return fetch(completeUrl)
-      .then((response) => {
-        if (response.status >= 400) {
-          const errorMessage = `Fetching ${completeUrl} status: ${response.status}`;
-          dispatch(fetchQuicksearchFailure(errorMessage));
-          throw new Error(errorMessage);
-        }
-        return response.text();
-      })
-      .then(text => dispatch(fetchQuicksearchSuccess(JSON.parse(text))))/*
-    .catch(error => dispatch(fetchRandomEntryFailure(error))) */;
-  };
-}
+  return fetch(completeUrl)
+    .then((response) => {
+      if (response.status >= 400) {
+        const errorMessage = `Fetching ${completeUrl} status: ${response.status}`;
+        dispatch(fetchQuicksearchFailure(errorMessage));
+        throw new Error(errorMessage);
+      }
+      return response.text();
+    })
+    .then((text) => {
+      dispatch(fetchQuicksearchSuccess(JSON.parse(text).results));
+    });
+  // .catch(error => dispatch(fetchRandomEntryFailure(error)))
+};

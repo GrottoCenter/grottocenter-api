@@ -126,6 +126,7 @@ module.exports = {
   convertToCompleteSearchResult: function(source) {
     let res = {};
     let values = [];
+        
     // For each result of the research, convert the item and add it to the json to send
     source.hits.hits.forEach((item) => {
       let data = '';
@@ -226,12 +227,18 @@ module.exports = {
     let result = Object.assign({}, GrottoModel);
 
     // Select only attributes needed for cavers
-    const cavers = source.cavers.map(caver => {
-      return {
-        id: caver.id,
-        nickname: caver.nickname,
-      };
-    });
+
+    // TODO: currently source.cavers doesn't exist. The "JOIN" need to be done in Elasticsearch
+    // populating process by logstash, in logstash.conf.
+    if(source.cavers) {
+      const cavers = source.cavers.map(caver => {
+        return {
+          id: caver.id,
+          nickname: caver.nickname,
+        };
+      });
+      result.cavers = cavers;
+    }
     
     // Build the result
     result.id = source.id;
@@ -253,7 +260,6 @@ module.exports = {
     result.documentary = source.documentary;
     result.URL = source.URL;
     result.Facebook = source.Facebook;
-    result.cavers = cavers;
     result.entries = source.entries;
 
     return result;
