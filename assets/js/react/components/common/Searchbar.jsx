@@ -11,7 +11,7 @@ import Chip from '@material-ui/core/Chip';
 import MenuItem from '@material-ui/core/MenuItem';
 import CancelIcon from '@material-ui/icons/Cancel';
 import Translate from './Translate';
-import { entryOptionForSelector } from '../../helpers/Entries';
+import { entityOptionForSelector } from '../../helpers/Entity';
 
 //
 //
@@ -111,21 +111,21 @@ function Control(props) {
 }
 
 function Option(props) {
-  let toDisplay = props.children;
-  if (props.data && props.data.type) {
-    if (props.data.type === 'entry') {
-      toDisplay = entryOptionForSelector(props.data);
-    }
+  let { children: toDisplay } = props;
+  const {
+    data, innerRef, isFocused, selectProps, isSelected,
+  } = props;
+  if (data && data.type) {
+    toDisplay = entityOptionForSelector(data);
   }
-
+  
   return (
     <MenuItem
-      buttonRef={props.innerRef}
-      selected={props.isFocused}
-      className={props.selectProps.classes.option}
+      selected={isFocused}
+      className={selectProps.classes.option}
       component="div"
       style={{
-        fontWeight: props.isSelected ? 500 : 400,
+        fontWeight: isSelected ? 500 : 400,
       }}
       {...props.innerProps}
     >
@@ -202,10 +202,10 @@ class Searchbar extends React.Component {
 
   getDatasource = filter => this.props.startSearch(filter)
     .then(() => {
-      const datasource = this.props.results.entries.map(entry => ({
-        value: entry,
-        label: entry.name,
-        type: 'entry',
+      const datasource = this.props.results.map(result => ({
+        value: result,
+        label: result.name,
+        type: result.type,
       }));
       return Promise.resolve(datasource);
     })
@@ -254,9 +254,9 @@ class Searchbar extends React.Component {
 }
 
 Searchbar.propTypes = {
-  classes: PropTypes.object.isRequired,
-  theme: PropTypes.object.isRequired,
-  results: PropTypes.object.isRequired,
+  classes: PropTypes.shape({}).isRequired,
+  theme: PropTypes.shape({}).isRequired,
+  results: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
   startSearch: PropTypes.func.isRequired,
   handleSelection: PropTypes.func,
 };

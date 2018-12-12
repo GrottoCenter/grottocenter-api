@@ -2,7 +2,7 @@ import { connect } from 'react-redux';
 import { fetchQuicksearchResult, resetQuicksearch, setCurrentEntry } from '../actions/Quicksearch';
 import { focusOnLocation } from '../actions/Map';
 import Searchbar from '../components/common/Searchbar';
-import { isMappable } from '../helpers/Entries';
+import { isMappable } from '../helpers/Entity';
 
 //
 //
