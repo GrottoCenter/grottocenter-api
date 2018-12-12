@@ -172,7 +172,7 @@ module.exports.routes = {
       limit: 50,
     },
     cors: {
-      origin: '*'
+      allowOrigins: '*'
     }
   },
 
