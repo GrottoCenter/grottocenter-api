@@ -31,6 +31,7 @@ module.exports.datastores = {
    *                                                                          *
    ***************************************************************************/
 
+  //TODO: Change the url to 'mysql://sailsuser:grottocepassword@mysqlgrotto/grottoce' for dockerization
   default: {
     adapter: require('sails-mysql'),
     url: 'mysql://root:root@localhost/grottoce'
