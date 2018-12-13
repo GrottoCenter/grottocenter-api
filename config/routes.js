@@ -106,17 +106,17 @@ module.exports.routes = {
 
   /* Caver controller */
 
-  'GET /api/caver/': {
+  'GET /api/cavers/': {
     controller: 'Caver',
     action: 'find'
   },
 
-  'POST /api/caver/': {
+  'POST /api/cavers/': {
     controller: 'Caver',
     action: 'create'
   },
 
-  'GET /api/caver/findAll': {
+  'GET /api/cavers/findAll': {
     controller: 'Caver',
     action: 'findAll'
   },
@@ -133,34 +133,33 @@ module.exports.routes = {
     }
   },
 
-  'GET /api/caver/count': {
+  'GET /api/cavers/count': {
     controller: 'Caver',
     action: 'getCaversNumber'
   },
 
-  'GET /api/caver/:id': {
+  'GET /api/cavers/:id': {
     controller: 'Caver',
     action: 'find'
   },
 
-  'GET /api/:version/caver/:id': {
+  'GET /api/:version/cavers/:id': {
     controller: 'Caver',
     action: 'findVersion'
   },
 
-  'PUT /api/caver/:id': {
+  'PUT /api/cavers/:id': {
     controller: 'Caver',
     action: 'update'
   },
 
-  'DELETE /api/caver/:id': {
+  'DELETE /api/cavers/:id': {
     controller: 'Caver',
     action: 'destroy'
   },
 
   /* Entry controller */
-
-  'GET /api/entry/findAll': {
+  'GET /api/entries/findAll': {
     controller: 'Entry',
     action: 'findAll'
   },
@@ -173,15 +172,16 @@ module.exports.routes = {
       limit: 50,
     },
     cors: {
-      origin: '*'
+      allowOrigins: '*'
     }
   },
 
-  'GET /api/entry/findRandom': {
+  'GET /api/entries/findRandom': {
     controller: 'Entry',
     action: 'findRandom'
   },
 
+  // /!\ DEPRECATED /!\
   'GET /api/v1/entry/publicCount': {
     controller: 'v1/Entry',
     action: 'getPublicEntriesNumber',
@@ -190,11 +190,20 @@ module.exports.routes = {
     }
   },
 
-  'GET /api/entry/count': {
+  'GET /api/entries/count': {
     controller: 'Entry',
     action: 'getEntriesNumber'
   },
 
+  'GET /api/v1/entries/:id': {
+    controller: 'v1/Entry',
+    action: 'find',
+    cors: {
+      allowOrigins: '*'
+    }
+  },
+
+  // /!\ DEPRECATED (use plural route) /!\
   'GET /api/v1/entry/:id': {
     controller: 'v1/Entry',
     action: 'find',
@@ -204,131 +213,130 @@ module.exports.routes = {
   },
 
   /* REST API for Cave controller */
-
-  'POST /api/cave/': {
+  'POST /api/caves/': {
     controller: 'Cave',
     action: 'create'
   },
 
-  'GET /api/cave/findAll': {
+  'GET /api/caves/findAll': {
     controller: 'Cave',
     action: 'findAll'
   },
 
-  'GET /api/cave/:id': {
+  'GET /api/caves/:id': {
     controller: 'Cave',
     action: 'find'
   },
 
-  'PUT /api/cave/:id': {
+  'PUT /api/caves/:id': {
     controller: 'Cave',
     action: 'update'
   },
 
-  'DELETE /api/cave/:id': {
+  'DELETE /api/caves/:id': {
     controller: 'Cave',
     action: 'delete'
   },
 
   /* Author controller */
 
-  'POST /api/author/': {
+  'POST /api/authors/': {
     controller: 'Author',
     action: 'create'
   },
 
-  'GET /api/author/:id': {
+  'GET /api/authors/:id': {
     controller: 'Author',
     action: 'find'
   },
 
-  'PUT /api/author/:id': {
+  'PUT /api/authors/:id': {
     controller: 'Author',
     action: 'update'
   },
 
-  'DELETE /api/author/:id': {
+  'DELETE /api/authors/:id': {
     controller: 'Author',
     action: 'delete'
   },
 
-  'GET /api/author/findAll': {
+  'GET /api/authors/findAll': {
     controller: 'Author',
     action: 'findAll'
   },
 
   /* REST API for Partner controller */
 
-  'POST /api/partner/': {
+  'POST /api/partners/': {
     controller: 'Partner',
     action: 'create'
   },
 
-  'GET /api/partner/findAll': {
+  'GET /api/partners/findAll': {
     controller: 'Partner',
     action: 'findAll'
   },
 
-  'GET /api/partner/findForCarousel/:skip/:limit': {
+  'GET /api/partners/findForCarousel/:skip/:limit': {
     controller: 'Partner',
     action: 'findForCarousel'
   },
 
-  'GET /api/partner/findForCarousel': {
+  'GET /api/partners/findForCarousel': {
     controller: 'Partner',
     action: 'findForCarousel'
   },
 
-  'GET /api/partner/:id': {
+  'GET /api/partners/:id': {
     controller: 'Partner',
     action: 'find'
   },
 
-  'PUT /api/partner/:id': {
+  'PUT /api/partners/:id': {
     controller: 'Partner',
     action: 'update'
   },
 
-  'DELETE /api/partner/:id': {
+  'DELETE /api/partners/:id': {
     controller: 'Partner',
     action: 'delete'
   },
 
   /* REST API for Topography controller */
 
-  'POST /api/topo/': {
+  'POST /api/topos/': {
     controller: 'Topography',
     action: 'create'
   },
 
-  'GET /api/topo/findAll': {
+  'GET /api/topos/findAll': {
     controller: 'Topography',
     action: 'findAll'
   },
 
-  'GET /api/topo/:id': {
+  'GET /api/topos/:id': {
     controller: 'Topography',
     action: 'find'
   },
 
-  'PUT /api/topo/:id': {
+  'PUT /api/topos/:id': {
     controller: 'Topography',
     action: 'update'
   },
 
-  'DELETE /api/topo/:id': {
+  'DELETE /api/topos/:id': {
     controller: 'Topography',
     action: 'delete'
   },
 
   /* REST API for Comment controller */
 
-  'GET /api/comment/stats/:entry': {
+  'GET /api/comments/stats/:entry': {
     controller: 'Comment',
     action: 'getEntryStats'
   },
 
-  'GET /api/comment/timeinfos/:entry': {
+  'GET /api/comments/timeinfos/:entry': {
     controller: 'Comment',
     action: 'getEntryTimeInfos'
   },
@@ -363,7 +371,7 @@ module.exports.routes = {
 
   /* REST API for Admin controller */
 
-  'GET /api/admin/entry/findAllOfInterest': {
+  'GET /api/admin/entries/findAllOfInterest': {
     controller: 'Admin',
     action: 'findAllInterestEntries'
   },

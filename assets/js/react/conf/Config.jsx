@@ -135,9 +135,9 @@ export const
 
 export const
   dynamicNumbersUrl = {
-    cavers: '/api/caver/count',
-    entries: '/api/entry/count',
-    publicEntries: '/api/v1/entry/publicCount',
+    cavers: '/api/cavers/count',
+    entries: '/api/entries/count',
+    publicEntries: '/api/v1/entries/publicCount',
     partners: '/api/grottos/count',
     officialPartners: '/api/grottos/officialCount',
   };
@@ -145,8 +145,8 @@ export const
 export const
   DYNAMIC_NEWS_RELOAD_INTERVAL = 3600000;
 
-export const findRandomEntryUrl = '/api/entry/findRandom';
-export const findForCarouselUrl = '/api/partner/findForCarousel';
+export const findRandomEntryUrl = '/api/entries/findRandom';
+export const findForCarouselUrl = '/api/partners/findForCarousel';
 export const quicksearchUrl = '/api/v1/search/findAll';
 export const findMapBoundsUrl = '/api/v1/geoloc/findByBounds';
 export const findMassifUrl = '/api/massifs/';
@@ -186,7 +186,7 @@ export const defaultZoom = 2;
 export const focusZoom = 13;
 
 export const
-  entryDetailPath = '/ui/entry/';
+  entryDetailPath = '/ui/entries/';
 
 export const
   sideMenuWidth = '215px';

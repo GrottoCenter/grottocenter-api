@@ -43,8 +43,8 @@ const SideMenu = props => (
       <SimpleMenuEntryConnector identifier="entrysub2" open={false} icon={<AddIcon />} text={<Translate>Add</Translate>} target="/ui/entries/add" />
     </ComplexMenuEntryConnector>
     <ComplexMenuEntryConnector identifier="cave1" open={false} icon={<ArrowDownIcon />} text={<Translate>Caves</Translate>}>
-      <SimpleMenuEntryConnector identifier="cavesub1" open={false} icon={<SearchIcon />} text={<Translate>Search</Translate>} target="/ui/cave/search" />
-      <SimpleMenuEntryConnector identifier="cavesub2" open={false} icon={<AddIcon />} text={<Translate>Add</Translate>} target="/ui/cave/add" />
+      <SimpleMenuEntryConnector identifier="cavesub1" open={false} icon={<SearchIcon />} text={<Translate>Search</Translate>} target="/ui/caves/search" />
+      <SimpleMenuEntryConnector identifier="cavesub2" open={false} icon={<AddIcon />} text={<Translate>Add</Translate>} target="/ui/caves/add" />
     </ComplexMenuEntryConnector>
     <ComplexMenuEntryConnector identifier="orga1" open={false} icon={<NetworkIcon />} text={<Translate>Organizations</Translate>} target="/ui/orga/" />
     <ComplexMenuEntryConnector identifier="admin1" open={false} icon={<AdminIcon />} text={<Translate>Administration</Translate>} target="/ui/admin/" />

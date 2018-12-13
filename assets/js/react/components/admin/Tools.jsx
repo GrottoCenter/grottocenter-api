@@ -52,7 +52,7 @@ export class EntriesOfInterest extends Component {
 
   fetchData() {
     const _this = this;
-    fetch('/api/admin/entry/findAllOfInterest')
+    fetch('/api/admin/entries/findAllOfInterest')
       .then((response) => {
         if (response.status >= 400) {
           throw new Error('Bad response from server');
