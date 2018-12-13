@@ -78,7 +78,25 @@ module.exports = {
     return new Promise(function(resolve, reject) {
       client.search({
         index: '_all',
-        q: params.query
+        body: {
+          query: {
+            query_string: {
+              query: '*'+params.query+'*',
+              fields: [
+                // General useful fields
+                'name^3', 'city^2', 'country', 'county',
+                
+                // ==== Caves 
+
+                // ==== Entries
+                'descriptions.titles', 'descriptions.bodies^0.5',
+
+                // ==== Grottos
+                'custom_message', 'members.nickames'
+              ]
+            }
+          }          
+        }
       }).then(result => {
         resolve(result);
       }).catch(err => {
