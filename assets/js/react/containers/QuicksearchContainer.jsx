@@ -12,7 +12,12 @@ import { isMappable } from '../helpers/Entity';
 
 const startSearch = keyword => dispatch => new Promise((resolve) => {
   if (keyword && keyword.length >= 3) {
-    resolve(dispatch(fetchQuicksearchResult({ query: keyword })));
+    // complete is set to false because
+    // we don't need the complete results about the data (we just want their name)
+    resolve(dispatch(fetchQuicksearchResult({
+      query: keyword,
+      complete: false,
+    })));
   } else {
     resolve(dispatch(resetQuicksearch()));
   }

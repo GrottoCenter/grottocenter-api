@@ -113,7 +113,7 @@ function Control(props) {
 function Option(props) {
   let { children: toDisplay } = props;
   const {
-    data, innerRef, isFocused, selectProps, isSelected,
+    data, isFocused, selectProps, isSelected,
   } = props;
   if (data && data.type) {
     toDisplay = entityOptionForSelector(data);
@@ -205,6 +205,7 @@ class Searchbar extends React.Component {
       const datasource = this.props.results.map(result => ({
         value: result,
         label: result.name,
+        highlights: result.highlights,
         type: result.type,
       }));
       return Promise.resolve(datasource);

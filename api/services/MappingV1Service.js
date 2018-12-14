@@ -31,7 +31,8 @@ const MassifModel = {
   name: undefined,
   dateInscription: undefined,
   dateReviewed: undefined,
-  caves: []
+  caves: [],
+  entries: []
 };
 
 const GrottoModel = {
@@ -56,21 +57,6 @@ const GrottoModel = {
   Facebook: undefined,
   cavers: [],
   entries: [],
-};
-
-const CaveModel = {
-  id: undefined,
-  idAuthor: undefined,
-  idReviewer: undefined,
-  name: undefined,
-  minDepth: undefined,
-  maxDepth: undefined,
-  depth : undefined,
-  length: undefined,
-  isDiving: undefined,
-  temperature: undefined,
-  dateInscription: undefined,
-  dateReviewed: undefined,
 };
 
 /* Mappers */
@@ -135,15 +121,16 @@ module.exports = {
         case 'entry':
           data = this.convertToEntryModel(item._source);
           break;
-        case 'cave':
-          data = this.convertToCaveModel(item._source);
+        case 'massif':
+          data = this.convertToMassifModel(item._source);
           break;
         case 'grotto':
           data = this.convertToGrottoModel(item._source);
           break;
       }
-      // Add the type of the data
+      // Add the type and hightlight of the data
       data.type = item._source.type;
+      data.highlights = item.highlight;
 
       values.push(data);
     });
@@ -164,6 +151,7 @@ module.exports = {
         id: item._source.id,
         name: item._source.name,
         type: item._source.type,
+        highlights: item.highlight
       };
       values.push(data);
     });
@@ -171,46 +159,24 @@ module.exports = {
     res.results = values;
     return res;
   },
-
-  // ---------------- Cave Function ------------------------------
-
-  convertToCaveModel: function(source) {
-    let result = Object.assign({}, CaveModel);
-
-    result.id = source.id;
-    result.idAuthor = source.idAuthor;
-    result.idReviewer = source.idReviewer;
-    result.name = source.name;
-    result.minDepth = source.minDepth;
-    result.maxDepth = source.maxDepth;
-    result.depth = source.depth;
-    result.length = source.length;
-    result.isDiving = source.isDiving;
-    result.temperature = source.temperature;
-    result.dateInscription = source.dateInscription;
-    result.dateReviewed = source.dateReviewed;
-
-    return result;
-  },
-
   // ---------------- Massif Function ------------------------------
 
   //TODO: Choose which attributes to keep in author
   convertToMassifModel: function(source) {
     let result = Object.assign({}, MassifModel);
 
-    // Store in author every attributes of the author
-    let author = {
-      id: source.author.id,
-      nickname: source.author.nickname
-    };
-
+    if(source.author) {
+      result.author = {
+        id: source.author.id,
+        nickname: source.author.nickname
+      };
+    }
+    
     // line to put every attributes of author inside another object author
-    //Object.keys(source.author).forEach(f => author[f] = source.author[f]);
+    // Object.keys(source.author).forEach(f => author[f] = source.author[f]);
     
     // Save in result the object to return
     result.id = source.id;
-    result.author = author;
     result.idReviewer = source.idReviewer;
     result.name = source.name;
     result.dateInscription = source.dateInscription;
@@ -231,13 +197,12 @@ module.exports = {
     // TODO: currently source.cavers doesn't exist. The "JOIN" need to be done in Elasticsearch
     // populating process by logstash, in logstash.conf.
     if(source.cavers) {
-      const cavers = source.cavers.map(caver => {
+      result.cavers  = source.cavers.map(caver => {
         return {
           id: caver.id,
           nickname: caver.nickname,
         };
       });
-      result.cavers = cavers;
     }
     
     // Build the result

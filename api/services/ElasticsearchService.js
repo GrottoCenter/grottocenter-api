@@ -77,6 +77,7 @@ module.exports = {
   searchQuery: function(params) {
     return new Promise(function(resolve, reject) {
       client.search({
+        /* eslint-disable camelcase */
         index: '_all',
         body: {
           query: {
@@ -84,19 +85,33 @@ module.exports = {
               query: '*'+params.query+'*',
               fields: [
                 // General useful fields
-                'name^3', 'city^2', 'country', 'county',
+                'name^3', 'city^2', 'country', 'county', 'region',
                 
-                // ==== Caves 
-
                 // ==== Entries
-                'descriptions.titles', 'descriptions.bodies^0.5',
-
+                'descriptions.titles', 'descriptions.bodies^0.5', 
+                'caves.names',
+                'riggings.titles', 'riggings.observations', 'riggings.obstacles',
+                'locations.bodies^0.5',    
+                'bibliographies.bodies^0.5',            
+                
                 // ==== Grottos
-                'custom_message', 'members.nickames'
-              ]
-            }
-          }          
+                'custom_message', 'members.nickames',
+
+                // ==== Massifs 
+                'entries.names^3', 'entries.cities^2', 'entries.counties', 'entries.countries', 'entries.regions'
+              ],
+            },           
+          },
+          highlight : {
+            number_of_fragments : 3,
+            fragment_size : 50,
+            fields: { 
+              '*': {} 
+            },
+            order: 'score' 
+          }        
         }
+        /* eslint-enable camelcase */
       }).then(result => {
         resolve(result);
       }).catch(err => {
