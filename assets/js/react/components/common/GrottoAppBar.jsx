@@ -145,7 +145,7 @@ class GrottoAppBar extends Component {
           <LanguagePicker />
         </FlexDiv>
 
-        <div>
+        <div style={{display: 'none'}}>
           <StyledIconButton onClick={this.handleClick}>
             <MoreVertIcon />
           </StyledIconButton>

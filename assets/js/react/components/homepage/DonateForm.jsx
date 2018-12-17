@@ -59,7 +59,7 @@ const btEyeCatcher = keyframes`
 `;
 
 const DonateFormWrapper = styled.div`
-  float: left;
+  float: right;
   animation: ${btEyeCatcher} 10s linear infinite;
 
   @media (max-width: 550px) {
