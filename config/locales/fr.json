@@ -109,5 +109,18 @@
 	"Caves related to this group": "Cavités en lien avec ce groupe",
 	"There is no caves related to this group currently": "Il n'y a pas de cavités en lien avec ce groupe pour le moment.",
 	"Browse API": "Parcourir l'API",
-	"No results to display (type at least 3 characters)": "Aucun résultat (entrez au moins 3 caractères)"
+	"No results to display (type at least 3 characters)": "Aucun résultat (entrez au moins 3 caractères)",
+	"name": "nom",
+	"city": "commune",
+	"country": "pays",
+	"county": "département",
+	"region": "région",
+	"description": "description",
+	"caves": "cavités",
+	"riggings": "équipements",
+	"location": "localisation",
+	"bibliography": "bibliographie",
+	"custom_message": "message personnalisé",
+	"members": "membres",
+	"entries": "entrées"
 }

@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { withTheme } from '@material-ui/core/styles';
+import Translate from '../components/common/Translate';
 
 //
 //
@@ -16,10 +17,14 @@ const EntityIcon = styled.img`
   width: 30px;
 `;
 
+const EntityLabel = styled.span`
+  font-size: 1.5rem;
+`;
+
+// The hightlighted words are inside <em> tags.
 const HighlightText = withTheme()(styled.span`
   color: #888;
   font-size: 1.1rem;
-  margin-left: 10px;
   overflow: hidden;
   text-overflow: ellipsis;
   vertical-align: baseline;
@@ -27,7 +32,19 @@ const HighlightText = withTheme()(styled.span`
   em {
     background-color: ${props => props.theme.palette.accent1Color};
     color: white;
+    font-style: normal;
+    font-weight: bold;
   }
+`);
+
+const HighlightTextKey = withTheme()(styled.span`
+  color: #888;
+  font-size: 1.1rem;
+  font-weight: bold;
+  margin-left: 10px;
+  margin-right: 2px;
+  vertical-align: baseline;
+  white-space: nowrap;
 `);
 
 export const entityOptionForSelector = (option) => {
@@ -42,17 +59,22 @@ export const entityOptionForSelector = (option) => {
       {option.type === 'grotto' ? <EntityIcon src="../../../../images/club.svg" alt="Group icon" /> : '' }
       {option.type === 'massif' ? <EntityIcon src="../../../../images/entry-cluster.svg" alt="Entry cluster icon" /> : '' }
 
-      {option.label}
+      <EntityLabel>{option.label}</EntityLabel>
       {highlights.map((hl) => {
         const key = Object.keys(hl)[0];
         return (
-          <HighlightText
-            key={key}
-            dangerouslySetInnerHTML={{
-              __html:
-              `<b>${key}</b>: ${hl[key]}`,
-            }}
-          />
+          <React.Fragment key={key}>
+            <HighlightTextKey>
+              <Translate>{key}</Translate>
+              {':'}
+            </HighlightTextKey>
+            <HighlightText
+              dangerouslySetInnerHTML={{
+                __html:
+                `${hl[key]}`,
+              }}
+            />
+          </React.Fragment>
         );
       })}
     </React.Fragment>

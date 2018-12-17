@@ -88,17 +88,18 @@ module.exports = {
                 'name^3', 'city^2', 'country', 'county', 'region',
                 
                 // ==== Entries
-                'descriptions.titles', 'descriptions.bodies^0.5', 
-                'caves.names',
-                'riggings.titles', 'riggings.observations', 'riggings.obstacles',
-                'locations.bodies^0.5',    
-                'bibliographies.bodies^0.5',            
+                'description^0.5',
+                'caves',
+                'riggings',
+                'location^0.5',
+                'bibliography^0.5',
                 
                 // ==== Grottos
-                'custom_message', 'members.nickames',
+                'custom_message', 
+                'members',
 
                 // ==== Massifs 
-                'entries.names^3', 'entries.cities^2', 'entries.counties', 'entries.countries', 'entries.regions'
+                'entries'
               ],
             },           
           },
