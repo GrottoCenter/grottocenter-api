@@ -56,13 +56,13 @@ const CaveListItem = (props) => {
 
         {cave.depth ? (
           <Fragment>
-            <CaveDepthIcon src="../../../../../images/depth.svg" alt="Cave depth icon" />
+            <CaveDepthIcon src="/images/depth.svg" alt="Cave depth icon" />
             <span style={{ marginRight: '5px', verticalAlign: 'super' }}>{`${cave.depth.toLocaleString()}m`}</span>
           </Fragment>
         ) : ('')}
         {cave.length ? (
           <Fragment>
-            <CaveLengthIcon src="../../../../../images/length.svg" alt="Cave depth icon" />
+            <CaveLengthIcon src="/images/length.svg" alt="Cave depth icon" />
             <span style={{ verticalAlign: 'super' }}>{`${cave.length.toLocaleString()}m`}</span>
           </Fragment>
         ) : ('')}

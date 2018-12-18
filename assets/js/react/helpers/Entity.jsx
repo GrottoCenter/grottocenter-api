@@ -55,9 +55,9 @@ export const entityOptionForSelector = (option) => {
 
   return (
     <React.Fragment>
-      {option.type === 'entry' ? <EntityIcon src="../../../../images/entry.svg" alt="Entry icon" /> : ''}
-      {option.type === 'grotto' ? <EntityIcon src="../../../../images/club.svg" alt="Group icon" /> : '' }
-      {option.type === 'massif' ? <EntityIcon src="../../../../images/entry-cluster.svg" alt="Entry cluster icon" /> : '' }
+      {option.type === 'entry' ? <EntityIcon src="/images/entry.svg" alt="Entry icon" /> : ''}
+      {option.type === 'grotto' ? <EntityIcon src="/images/club.svg" alt="Group icon" /> : '' }
+      {option.type === 'massif' ? <EntityIcon src="/images/entry-cluster.svg" alt="Entry cluster icon" /> : '' }
 
       <EntityLabel>{option.label}</EntityLabel>
       {highlights.map((hl) => {
