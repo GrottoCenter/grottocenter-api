@@ -3,7 +3,7 @@
 const client = require('../../config/elasticsearch').elasticsearchCli;
 
 const resourcesToUpdate = [
-  'grotto', 'caves', 'entries'
+  'grottos', 'caves', 'entries'
 ];
 
 module.exports = {
