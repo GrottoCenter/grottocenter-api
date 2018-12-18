@@ -4,6 +4,7 @@ const client = require('../../config/elasticsearch').elasticsearchCli;
 const resourcesToUpdate = [
   'grottos', 'massifs', 'entries'
 ];
+const advancedSearchMetaParams = ['type', 'complete', 'match_all_queries'];
 
 /*  Define the fuziness criteria. If equals to X, Elasticsearch will search
     all the keywords by changing / inverting / deleting X letters.
@@ -31,6 +32,7 @@ module.exports = {
     let resourceIndex = -1;
     while(resourceIndex === -1 && i < urlPieces.length) {
       if(urlPieces[i] === 'api') {
+        advancedSearchMetaParams;
         resourceIndex = i + 1;
       }
       i += 1;
@@ -127,5 +129,72 @@ module.exports = {
         reject(err);
       });
     });
+  }, 
+
+  /**
+   * Retrieve data from elasticsearch on all index according to the given params.
+   * The results must match all the params in the url which are not metaParams (@see advancedSearchMetaParams).
+   * Each value can be prefix or suffix.
+   * 
+   * For more info, see ES 6.5 documentation:
+   * - https://www.elastic.co/guide/en/elasticsearch/reference/6.5/query-dsl-wildcard-query.html 
+   * - https://www.elastic.co/guide/en/elasticsearch/reference/6.5/query-filter-context.html
+   * 
+   * @param {*} params : list of params of the request 
+   */
+  advancedSearchQuery: function(params) {
+    /* eslint-disable camelcase */
+    return new Promise(function(resolve, reject) {
+
+      // Build match fields, i.e. every parameters in the url which are not metaParams
+      const mustMatch = [];
+      Object.keys(params).forEach(key => {
+        if(!advancedSearchMetaParams.includes(key)) {
+          const words = params[key].split(' ');
+          words.map((word, index) => {
+            const matchObj = {
+              wildcard: {}
+            };
+          
+            /* 
+              The value is set to lower case because the data are indexed in lowercase. 
+              We want a search not case sensitive.
+
+              Also, the character * is used for the first and the last word to complete the query.
+            */
+            if(words.length === 1) matchObj.wildcard[key] = '*' + word.toLowerCase() + '*';
+            else if(index === 0) matchObj.wildcard[key] = '*' + word.toLowerCase();
+            else if(index === words.length - 1) matchObj.wildcard[key] = word.toLowerCase() + '*';
+            else matchObj.wildcard[key] = word.toLowerCase();
+
+            mustMatch.push(matchObj);
+          });
+        }
+      });
+      
+      client.search({
+        index: params.type + '-index',
+        body: {
+          query: {
+            bool: {
+              must: mustMatch
+            },           
+          },
+          highlight : {
+            number_of_fragments : 3,
+            fragment_size : 50,
+            fields: { 
+              '*': {} 
+            },
+            order: 'score' 
+          }        
+        }
+      }).then(result => {
+        resolve(result);
+      }).catch(err => {
+        reject(err);
+      });
+    });
+    /* eslint-enable camelcase */
   }
 };
