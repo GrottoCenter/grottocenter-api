@@ -28,7 +28,7 @@
 # | |/ /| |___| |   | |\ \| |___| \__/\| | | || | | |___| |/ /
 # |___/ \____/\_|   \_| \_\____/ \____/\_| |_/\_/ \____/|___/
 echo "DEPRECATED ! WE ARE NOW USING GOOGLE APP ENGINE TO DEPLOY. Please see appEngineDeploy.sh"
-exit 1;
+//exit 1;
 
 
 
