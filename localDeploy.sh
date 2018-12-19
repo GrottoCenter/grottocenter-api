@@ -52,7 +52,7 @@ function waitContainer {
 
 ##################################################### MAIN FUNCTION #########################################################
 
-echo "### Building app locally using prod tasks ###"
+echo "### BUILDING app locally using prod tasks ###"
 NODE_ENV=production grunt prod
 
 ### RUNNING DOCKER IMAGES INSTANCES ###
@@ -60,7 +60,7 @@ NODE_ENV=production grunt prod
 # Delete the MySQL container if one was running then launch a MySQL container with data loaded.
 # The health of this container is defined to healthy when we can send a ping to mysqladmin.
 # The database is populated with files in the sql folder.
-echo "### Launching MySQL Container ###"
+echo "### LAUNCHING MySQL Container ###"
 docker rm -f ${MYSQL_TAGNAME}
 docker run -d \
 --name ${MYSQL_TAGNAME} \
@@ -75,10 +75,10 @@ mysql/mysql-server:5.7
 
 # Wait the container to be running
 waitContainer ${MYSQL_TAGNAME}
-echo "### MySQL is running ###"
+echo "### MySQL is RUNNING ###"
 
 # The database is entirely populated when we can reach a request to mysql from outside the container
-echo "### Populating Database ###"
+echo "### POPULATING Database ###"
 #TODO: Handle the message when database is populated
 until curl -X GET "localhost:${MYSQL_LOCAL_PORT}" --silent
 do
@@ -86,6 +86,8 @@ do
     printf .
     sleep 5
 done
+
+echo "### Database POPULATED ###"
 
 echo "### BUILD the grottocenter docker image ###"
 # Unlimited swap memory during build
@@ -130,9 +132,9 @@ docker run --rm -d \
 waitContainer ${LS_TAGNAME}
 echo "### Logstash available and Data IS LOADING into ${ES_TAGNAME} ### \n"
 
-echo "### WARNING, DEPENDING TO YOUR DATA THIS STEP CAN TAKE MORE THAN 5 MINUTES !!! ###"
+echo "### WARNING, DEPENDING ON YOUR DATA THIS STEP CAN TAKE MORE THAN 5 MINUTES !!! ###"
 
-echo "### RUN grottocenter Image locally ###"
+echo "### RUN grottocenter image locally ###"
 # Here with sails_models__connection we override the production models connection to use the dev database
 docker rm -f ${GC_TAGNAME}
 docker run -d \
@@ -144,6 +146,8 @@ docker run -d \
     --link ${MYSQL_TAGNAME} \
     --link ${ES_TAGNAME} \
     ${GC_TAGNAME}
+
+echo "########################################"
 echo "### End of the deployment process - Grottocenter available on port ${GC_LOCAL_PORT} ###"
 
 
