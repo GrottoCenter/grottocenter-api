@@ -1,18 +1,18 @@
 /**
- *GrottoController
+ * GrottoController
  *
  * @description :: Server-side logic for managing entries
  * @help        :: See http://links.sailsjs.org/docs/controllers
  */
 'use strict';
 module.exports = {
-  find: function(req, res) {
+  find: function(req, res, next, converter = MappingV1Service.convertToGrottoModel) {
     TGrotto.findOne({
       id: req.params.id,
     }).populate('cavers').populate('entries').exec(function(err, found) {
       let params = {};
       params.searchedItem = 'Grotto of id ' + req.params.id;
-      return ControllerService.treatAndConvert(req, err, found, params, res, MappingV1Service.convertToGrottoModel);
+      return ControllerService.treatAndConvert(req, err, found, params, res, converter);
     });
   },
 

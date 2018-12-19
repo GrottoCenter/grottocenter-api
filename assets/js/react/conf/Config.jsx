@@ -1,5 +1,7 @@
 import _ from 'underscore.string';
 
+export const apiVersion = 'v1';
+
 export const
   LEFT_TO_RIGHT = 'LTR';
 
@@ -137,7 +139,7 @@ export const
   dynamicNumbersUrl = {
     cavers: '/api/cavers/count',
     entries: '/api/entries/count',
-    publicEntries: '/api/v1/entry/publicCount',
+    publicEntries: `/api/${apiVersion}/entry/publicCount`,
     partners: '/api/grottos/count',
     officialPartners: '/api/grottos/officialCount',
   };
@@ -145,12 +147,12 @@ export const
 export const
   DYNAMIC_NEWS_RELOAD_INTERVAL = 3600000;
 
-export const findRandomEntryUrl = '/api/entry/findRandom';
-export const findForCarouselUrl = '/api/partner/findForCarousel';
-export const quicksearchUrl = 'api/v1/search';
-export const findMapBoundsUrl = '/api/v1/geoloc/findByBounds';
-export const findMassifUrl = '/api/massifs/';
-export const findGroupUrl = '/api/grottos/';
+export const findRandomEntryUrl = '/api/entries/findRandom';
+export const findForCarouselUrl = '/api/partners/findForCarousel';
+export const quicksearchUrl = `/api/${apiVersion}/search/findAll`;
+export const findMapBoundsUrl = `/api/${apiVersion}/geoloc/findByBounds`;
+export const findMassifUrl = `/api/${apiVersion}/massifs/`;
+export const findGroupUrl = `/api/${apiVersion}/grottos/`;
 
 export const
   swaggerLinkV1 = '/ui/swagger/1';
