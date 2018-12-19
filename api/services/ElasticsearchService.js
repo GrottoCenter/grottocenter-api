@@ -146,8 +146,15 @@ module.exports = {
     /* eslint-disable camelcase */
     return new Promise(function(resolve, reject) {
 
-      // Build match fields, i.e. every parameters in the url which are not metaParams
-      const mustMatch = [];
+      // Determine if the logic operator is OR (should) or AND (must) for the request.
+      let queryVerb = 'must';
+      if(params.match_all_queries) {
+        queryVerb = (params.match_all_queries === true ? 'must' : 'should');  
+      }      
+      
+      // Build match fields to search on, i.e. every parameters in the url which are not metaParams
+      const matchingParams = [];
+
       Object.keys(params).forEach(key => {
         if(!advancedSearchMetaParams.includes(key)) {
           const words = params[key].split(' ');
@@ -167,17 +174,17 @@ module.exports = {
             else if(index === words.length - 1) matchObj.wildcard[key] = word.toLowerCase() + '*';
             else matchObj.wildcard[key] = word.toLowerCase();
 
-            mustMatch.push(matchObj);
+            matchingParams.push(matchObj);
           });
         }
       });
-      
-      client.search({
+
+      let query = {
         index: params.type + '-index',
         body: {
           query: {
             bool: {
-              must: mustMatch
+              
             },           
           },
           highlight : {
@@ -189,7 +196,11 @@ module.exports = {
             order: 'score' 
           }        
         }
-      }).then(result => {
+      };
+
+      query.body.query.bool[queryVerb] = matchingParams;
+      
+      client.search(query).then(result => {
         resolve(result);
       }).catch(err => {
         reject(err);
