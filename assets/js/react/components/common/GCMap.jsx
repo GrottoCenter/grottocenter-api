@@ -73,27 +73,42 @@ const GroupDivIcon = styled(DivIcon)`
 //
 
 class GCMap extends Component {
+  static propTypes = {
+    className: PropTypes.string,
+    selectedEntry: PropTypes.object,
+    visibleEntries: PropTypes.object,
+    searchBounds: PropTypes.func,
+    mapCenter: PropTypes.object.isRequired,
+    mapZoom: PropTypes.number.isRequired,
+    setLocation: PropTypes.func.isRequired,
+    setZoom: PropTypes.func.isRequired,
+    history: PropTypes.object.isRequired,
+    match: PropTypes.object,
+  };
+
+  static defaultProps = {
+    className: '',
+    selectedEntry: null,
+    visibleEntries: null,
+    searchBounds: (() => {}),
+    match: {},
+  };
+
   constructor(props) {
     super(props);
     this.state = {
-      showSelectedEntry: true,
-      showVisibleEntries: true,
+      mapRef: React.createRef(),
       localize: true,
       initCenter: props.mapCenter,
       initZoom: props.mapZoom,
       showSpinner: false,
     };
-    this.getTarget = this.getTarget.bind(this);
-  }
-
-  getTarget() {
-    return this.props.match.params ? this.props.match.params.target : undefined;
   }
 
   componentWillMount() {
     const encodedParam = this.getTarget();
     if (encodedParam && encodedParam.length > 0) {
-      const decoded = atob(encodedParam);
+      const decoded = Buffer.from(encodedParam, 'base64').toString();
       const params = decoded.split('&').reduce((prev, curr) => {
         const p = curr.split('=');
         prev[decodeURIComponent(p[0])] = decodeURIComponent(p[1]);
@@ -115,50 +130,64 @@ class GCMap extends Component {
   }
 
   componentDidMount() {
-    if (this.state.localize
-      && !this.props.selectedEntry
+    const { selectedEntry } = this.props;
+    const {
+      localize,
+      mapRef,
+    } = this.state;
+
+    if (localize
+      && !selectedEntry
       && !this.getTarget()) {
       this.setState({
         localize: false,
       });
-      this.showSpinner();
-      this.refs.map.leafletElement.locate({
-        setView: true,
-        maxZoom: focusZoom,
-      });
+      this.toggleSpinner(true);
+      if (mapRef) {
+        mapRef.current.leafletElement.locate({
+          setView: true,
+          maxZoom: focusZoom,
+        });
+      }
     } else {
       this.searchEntriesInBounds();
     }
   }
 
-  updateReduxMapData(center, zoom) {
-    if (center.lat !== this.props.mapCenter.lat
-      || center.lng !== this.props.mapCenter.lng) {
-      this.props.setLocation({
+  getTarget = () => {
+    const { match: { params } } = this.props;
+    return params ? params.target : undefined;
+  };
+
+  updateReduxMapData = (center, zoom) => {
+    const {
+      mapCenter,
+      setLocation,
+      mapZoom,
+      setZoom,
+    } = this.props;
+
+    if (center.lat !== mapCenter.lat
+      || center.lng !== mapCenter.lng) {
+      setLocation({
         lat: center.lat,
         lng: center.lng,
       });
     }
-    if (zoom && zoom !== this.props.mapZoom) {
-      this.props.setZoom(zoom);
+    if (zoom && zoom !== mapZoom) {
+      setZoom(zoom);
     }
-  }
+  };
 
-  showSpinner() {
-    this.setState({
-      showSpinner: true,
-    });
-  }
+  toggleSpinner = (showSpinner) => {
+    this.setState({ showSpinner });
+  };
 
-  hideSpinner() {
-    this.setState({
-      showSpinner: false,
-    });
-  }
+  getLeafletCurrentBounds = () => {
+    const { mapRef } = this.state;
 
-  getLeafletCurrentBounds() {
-    if (this.refs.map && this.refs.map.leafletElement) {
-      const bounds = this.refs.map.leafletElement.getBounds();
+    if (mapRef && mapRef.current.leafletElement) {
+      const bounds = mapRef.current.leafletElement.getBounds();
       return {
         nw_lat: bounds._southWest.lat,
         nw_lng: bounds._southWest.lng,
@@ -167,109 +196,138 @@ class GCMap extends Component {
       };
     }
     return undefined;
-  }
+  };
 
-  searchEntriesInBounds() {
+  searchEntriesInBounds = () => {
+    const { searchBounds } = this.props;
+
     const bounds = this.getLeafletCurrentBounds();
     if (bounds) {
-      this.props.searchBounds(bounds);
+      searchBounds(bounds);
     }
-  }
+  };
 
-  updateLocationUrl(coords, zoom) {
+  updateLocationUrl = (coords, zoom) => {
+    const { history } = this.props;
+
     let newUrl = window.location.pathname;
-    const encodedLocation = btoa(`lng=${coords.lng}&lat=${coords.lat}&zoom=${zoom}`);
+    const coordPath = `lng=${coords.lng}&lat=${coords.lat}&zoom=${zoom}`;
+    const encodedLocation = Buffer.from(coordPath).toString('base64');
+
     if (this.getTarget()) {
       const pathname = _.strRightBack(window.location.pathname, '/');
       newUrl = _.replaceAll(window.location.pathname, pathname, encodedLocation);
     } else {
       newUrl += `/${encodedLocation}`;
     }
-    this.props.history.push(newUrl);
-  }
+    history.push(newUrl);
+  };
 
   /* map events */
-  handleMove() {
-    const leafletMap = this.refs.map.leafletElement;
+  handleMove = () => {
+    const { mapRef } = this.state;
+
+    const leafletMap = mapRef.current.leafletElement;
     const mapBounds = leafletMap.getBounds().getCenter();
     const zoom = leafletMap.getZoom();
 
     this.updateReduxMapData(mapBounds, zoom);
     this.updateLocationUrl(mapBounds, zoom);
     this.searchEntriesInBounds();
-  }
+  };
 
-  handleLocationFound() {
-    const leafletMap = this.refs.map.leafletElement;
+  handleLocationFound = () => {
+    const { mapRef } = this.state;
+
+    const leafletMap = mapRef.current.leafletElement;
     const mapBounds = leafletMap.getBounds().getCenter();
     const zoom = leafletMap.getZoom();
 
     this.updateReduxMapData(mapBounds, zoom);
-    this.hideSpinner();
-  }
+    this.toggleSpinner(false);
+  };
 
-  handleLocationError() {
-    this.hideSpinner();
-  }
+  handleLocationError = () => {
+    this.toggleSpinner(false);
+  };
 
   render() {
-    let zoom = this.state.initZoom;
-    let center = this.state.initCenter;
-    if (this.props.selectedEntry) {
+    const {
+      selectedEntry,
+      visibleEntries,
+      className,
+    } = this.props;
+    const {
+      initZoom,
+      initCenter,
+      showSpinner,
+      mapRef,
+    } = this.state;
+
+    let zoom = initZoom;
+    let center = initCenter;
+    if (selectedEntry) {
       center = {
-        lat: this.props.selectedEntry.latitude,
-        lng: this.props.selectedEntry.longitude,
+        lat: selectedEntry.latitude,
+        lng: selectedEntry.longitude,
       };
       zoom = focusZoom;
     }
 
-    const marker = (this.props.selectedEntry)
+    const marker = (selectedEntry)
       ? (
         <Marker icon={mainMarkerIcon} position={center} zIndexOffset={1000}>
-          <MapEntryPopup entry={this.props.selectedEntry} />
+          <MapEntryPopup entry={selectedEntry} />
         </Marker>
       )
       : null;
 
     const markersLayer = [];
-    if (this.props.visibleEntries && this.props.visibleEntries.entries && this.props.visibleEntries.entries.length > 0) {
+    if (visibleEntries
+      && visibleEntries.entries
+      && visibleEntries.entries.length > 0) {
       let keyInc = 1;
-      this.props.visibleEntries.entries.forEach((entry) => {
-        const keyId = `marker${keyInc}`;
-        if (!this.props.selectedEntry || entry.id !== this.props.selectedEntry.id) {
+      visibleEntries.entries.forEach((entry) => {
+        if (!selectedEntry || entry.id !== selectedEntry.id) {
           if (entry.name === 'group') {
-            markersLayer.push(<GroupDivIcon
-              key={keyId}
-              position={{
-                lat: entry.latitude,
-                lng: entry.longitude,
-              }}
-            >
-              <div>
-                <span>{entry.id}</span>
-              </div>
-            </GroupDivIcon>);
+            markersLayer.push(
+              <GroupDivIcon
+                key={`group_${keyInc}`}
+                position={{
+                  lat: entry.latitude,
+                  lng: entry.longitude,
+                }}
+              >
+                <div>
+                  <span>{entry.id}</span>
+                </div>
+              </GroupDivIcon>
+            );
           } else {
-            markersLayer.push(<Marker
-              icon={smallMarkerIcon}
-              key={keyId}
-              position={{
-                lat: entry.latitude,
-                lng: entry.longitude,
-              }}
-            >
-              <MapEntryPopup entry={entry} />
-            </Marker>);
+            markersLayer.push(
+              <Marker
+                icon={smallMarkerIcon}
+                key={`entry_${entry.id}`}
+                position={{
+                  lat: entry.latitude,
+                  lng: entry.longitude,
+                }}
+              >
+                <MapEntryPopup
+                  entry={entry}
+                />
+              </Marker>
+            );
           }
         }
-        keyInc++;
+        keyInc += 1;
       });
     }
 
     return (
       <Map
-        className={this.props.className}
-        ref="map"
+        className={className}
+        ref={mapRef}
         center={center}
         zoom={zoom}
         length={4}
@@ -284,7 +342,7 @@ class GCMap extends Component {
         onLocationFound={() => this.handleLocationFound()}
         onLocationError={() => this.handleLocationError()}
       >
-        {this.state.showSpinner && <Spinner size={100} text="Localization" />}
+        {showSpinner && <Spinner size={100} text="Localization" />}
         <TileLayer url="http://{s}.tile.osm.org/{z}/{x}/{y}.png" />
         {marker}
         {markersLayer}
@@ -292,18 +350,5 @@ class GCMap extends Component {
     );
   }
 }
-
-GCMap.propTypes = {
-  className: PropTypes.string,
-  selectedEntry: PropTypes.object,
-  visibleEntries: PropTypes.object,
-  searchBounds: PropTypes.func,
-  mapCenter: PropTypes.object.isRequired,
-  mapZoom: PropTypes.number.isRequired,
-  setLocation: PropTypes.func.isRequired,
-  setZoom: PropTypes.func.isRequired,
-  history: PropTypes.object.isRequired,
-  match: PropTypes.object,
-};
 
 export default GCMap;

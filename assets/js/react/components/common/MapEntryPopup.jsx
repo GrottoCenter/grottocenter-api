@@ -1,9 +1,9 @@
-import React, { Component } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import { Popup } from 'react-leaflet';
 import Button from '@material-ui/core/Button';
 import ImageLoupe from '@material-ui/icons/Loupe';
-import { withStyles, withTheme } from '@material-ui/core/styles';
+import { withStyles } from '@material-ui/core/styles';
 import GCLink from './GCLink';
 import { entryDetailPath } from '../../conf/Config';
 import withContext from '../../helpers/Routing';
@@ -26,45 +26,44 @@ const StyledImageLoupe = withStyles(theme => ({
 //
 //
 
-export default class MapEntryPopup extends Component {
-  // This make sure you have router in you this.context
-  static contextTypes = {
-    router: PropTypes.object.isRequired,
-    theme: PropTypes.object.isRequired,
-  };
+const MapEntryPopup = ({ entry }, context) => {
+  const GCLinkWithContext = withContext(GCLink, context);
+  const ButtonWithContext = withContext(Button, context);
+  const StyledImageLoupeComponent = <StyledImageLoupe />;
 
-  static propTypes = {
-    entry: PropTypes.object.isRequired,
-  };
-
-  render() {
-    const GCLinkWithContext = withContext(GCLink, this.context);
-    const ButtonWithContext = withContext(Button, this.context);
-    const StyledImageLoupeComponent = <StyledImageLoupe />;
-
-    return (
-      <Popup autoPan={false}>
-        <React.Fragment>
+  return (
+    <Popup autoPan={false}>
+      <React.Fragment>
+        <div>
+          <h6>{entry.name}</h6>
           <div>
-            <h6>{this.props.entry.name}</h6>
-            <div>
-              {this.props.entry.city}
-              {' '}
-(
-              {this.props.entry.region}
-)
-            </div>
+            {entry.city}
+            {' '}
+            (
+            {entry.region}
+            )
           </div>
+        </div>
 
-          {this.props.entry.id && (
-            <GCLinkWithContext internal href={entryDetailPath + this.props.entry.id}>
-              <ButtonWithContext variant="flat">
-                {StyledImageLoupeComponent}
-              </ButtonWithContext>
-            </GCLinkWithContext>
-          )}
-        </React.Fragment>
-      </Popup>
-    );
-  }
-}
+        {entry.id && (
+          <GCLinkWithContext internal href={entryDetailPath + entry.id}>
+            <ButtonWithContext variant="text">
+              {StyledImageLoupeComponent}
+            </ButtonWithContext>
+          </GCLinkWithContext>
+        )}
+      </React.Fragment>
+    </Popup>
+  );
+};
+
+// This make sure you have router in you this.context
+MapEntryPopup.contextTypes = {
+  router: PropTypes.object.isRequired,
+};
+
+MapEntryPopup.propTypes = {
+  entry: PropTypes.object.isRequired,
+};
+
+export default MapEntryPopup;
