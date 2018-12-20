@@ -109,7 +109,7 @@ module.exports = {
                 'members',
 
                 // ==== Massifs 
-                'entries'
+                'entries names', 'entries regions', 'entries cities', 'entry counties', 'entries countries'
               ],
             }         
           },
