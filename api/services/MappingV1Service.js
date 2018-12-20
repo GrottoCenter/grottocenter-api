@@ -59,11 +59,6 @@ const GrottoModel = {
   entries: [],
 };
 
-const AuthorModel = {
-  id: undefined,
-  nickname: undefined
-};
-
 const CaverModel = {
   id: undefined,
   nickname: undefined
@@ -127,13 +122,6 @@ module.exports = {
     return results;
   },
 
-  convertToAuthorModel: function(source) {
-    let result = Object.assign({}, AuthorModel);
-    result.id = source.id;
-    result.nickname = source.nickname;
-    return result;
-  },
-
   convertToCaverModel: function(source) {
     let result = Object.assign({}, CaverModel);
     result.id = source.id;
@@ -152,7 +140,7 @@ module.exports = {
     result.isDiving = source.isDiving;
     result.temperature = source.temperature;
     if (source.author instanceof Object) {
-      result.author = this.convertToAuthorModel(source.author);
+      result.author = this.convertToCaverModel(source.author);
     }
     return result;
   },
@@ -219,10 +207,9 @@ module.exports = {
     let result = Object.assign({}, MassifModel);
 
     if(source.author) {
-      result.author = this.convertToAuthorModel(source.author);
-
-      const caves = source.caves.map(cave =>  this.convertToCaveModel(cave));
+      result.author = this.convertToCaverModel(source.author);
     }
+    const caves = source.caves.map(cave =>  this.convertToCaveModel(cave));
 
     // line to put every attributes of author inside another object author
     // Object.keys(source.author).forEach(f => author[f] = source.author[f]);
@@ -248,10 +235,10 @@ module.exports = {
     // TODO: currently source.cavers doesn't exist. The "JOIN" need to be done in Elasticsearch
     // populating process by logstash, in logstash.conf.
     if(source.cavers) {
-      result. cavers = source.cavers.map(caver =>  this.convertToCaverModel(caver));
-
-      const entries = source.entries.map(entry => this.convertToEntryModel(entry));
+      result.cavers = source.cavers.map(caver => this.convertToCaverModel(caver));
     }
+
+    const entries = source.entries.map(entry => this.convertToEntryModel(entry));
     
     // Build the result
     result.id = source.id;
