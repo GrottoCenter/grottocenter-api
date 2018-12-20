@@ -59,12 +59,15 @@ const GrottoModel = {
   entries: [],
 };
 
-const CaverModel = {
+const AuthorModel = {
   id: undefined,
   nickname: undefined
 };
 
-const AuthorModel = CaverModel;
+const CaverModel = {
+  id: undefined,
+  nickname: undefined
+};
 
 const CaveModel = {
   id: undefined,
@@ -127,14 +130,14 @@ module.exports = {
   convertToAuthorModel: function(source) {
     let result = Object.assign({}, AuthorModel);
     result.id = source.id;
-    result.name = source.name;
+    result.nickname = source.nickname;
     return result;
   },
 
   convertToCaverModel: function(source) {
     let result = Object.assign({}, CaverModel);
     result.id = source.id;
-    result.name = source.name;
+    result.nickname = source.nickname;
     return result;
   },
 
@@ -148,7 +151,9 @@ module.exports = {
     result.length = source.length;
     result.isDiving = source.isDiving;
     result.temperature = source.temperature;
-    result.author = this.convertToAuthorModel(source.author);
+    if (source.author instanceof Object) {
+      result.author = this.convertToAuthorModel(source.author);
+    }
     return result;
   },
 
