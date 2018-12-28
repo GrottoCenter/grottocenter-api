@@ -40,8 +40,8 @@ module.exports = {
         };
 
         // only search for entries at this time
-        //return ControllerService.treat(err, foundCave.concat(foundEntry).concat(foundGrotto), params, res);
-        return ControllerService.treatAndConvert(err, foundEntry, params, res, converter);
+        //return ControllerService.treat(req, err, foundCave.concat(foundEntry).concat(foundGrotto), params, res);
+        return ControllerService.treatAndConvert(req, err, foundEntry, params, res, converter);
       });
     });
   }

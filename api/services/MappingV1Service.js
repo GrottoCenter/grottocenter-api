@@ -31,7 +31,8 @@ const MassifModel = {
   name: undefined,
   dateInscription: undefined,
   dateReviewed: undefined,
-  caves: []
+  caves: [],
+  entries: []
 };
 
 const GrottoModel = {
@@ -92,7 +93,8 @@ module.exports = {
     return result;
   },
 
-  convertToSearchResult: function(source) {
+  //Depecated for v1
+  convertToOldSearchResult: function(source) {
     let results = {};
     let entries = [];
     source.forEach((item) => {
@@ -103,24 +105,78 @@ module.exports = {
     return results;
   },
 
+  /**
+   * Function that return all data for the search
+   * @param {*} source : the elasticsearch result
+   */
+  convertToCompleteSearchResult: function(source) {
+    let res = {};
+    let values = [];
+        
+    // For each result of the research, convert the item and add it to the json to send
+    source.hits.hits.forEach((item) => {
+      let data = '';
+      // Convert the data according to its type
+      switch(item._source.type){
+        case 'entry':
+          data = this.convertToEntryModel(item._source);
+          break;
+        case 'massif':
+          data = this.convertToMassifModel(item._source);
+          break;
+        case 'grotto':
+          data = this.convertToGrottoModel(item._source);
+          break;
+      }
+      // Add the type and hightlight of the data
+      data.type = item._source.type;
+      data.highlights = item.highlight;
+
+      values.push(data);
+    });
+    res.results = values;
+    return res;
+  },
+
+  /**
+   * Function that return all data for the search but incomplete, that means only the id and the name
+   * @param {*} source : the elasticsearch result
+   */
+  convertToSearchResult: function(source) {
+    let res = {};
+    let values = [];
+    // For each result of the research, only keep the id and the name then add it to the json to send
+    source.hits.hits.forEach((item) => {
+      let data = {
+        id: item._source.id,
+        name: item._source.name,
+        type: item._source.type,
+        highlights: item.highlight
+      };
+      values.push(data);
+    });
+
+    res.results = values;
+    return res;
+  },
   // ---------------- Massif Function ------------------------------
 
   //TODO: Choose which attributes to keep in author
   convertToMassifModel: function(source) {
     let result = Object.assign({}, MassifModel);
 
-    // Store in author every attributes of the author
-    let author = {
-      id: source.author.id,
-      nickname: source.author.nickname
-    };
-
+    if(source.author) {
+      result.author = {
+        id: source.author.id,
+        nickname: source.author.nickname
+      };
+    }
+    
     // line to put every attributes of author inside another object author
-    //Object.keys(source.author).forEach(f => author[f] = source.author[f]);
+    // Object.keys(source.author).forEach(f => author[f] = source.author[f]);
     
     // Save in result the object to return
     result.id = source.id;
-    result.author = author;
     result.idReviewer = source.idReviewer;
     result.name = source.name;
     result.dateInscription = source.dateInscription;
@@ -137,12 +193,17 @@ module.exports = {
     let result = Object.assign({}, GrottoModel);
 
     // Select only attributes needed for cavers
-    const cavers = source.cavers.map(caver => {
-      return {
-        id: caver.id,
-        nickname: caver.nickname,
-      };
-    });
+
+    // TODO: currently source.cavers doesn't exist. The "JOIN" need to be done in Elasticsearch
+    // populating process by logstash, in logstash.conf.
+    if(source.cavers) {
+      result.cavers  = source.cavers.map(caver => {
+        return {
+          id: caver.id,
+          nickname: caver.nickname,
+        };
+      });
+    }
     
     // Build the result
     result.id = source.id;
@@ -164,7 +225,6 @@ module.exports = {
     result.documentary = source.documentary;
     result.URL = source.URL;
     result.Facebook = source.Facebook;
-    result.cavers = cavers;
     result.entries = source.entries;
 
     return result;

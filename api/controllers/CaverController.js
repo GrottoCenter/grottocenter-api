@@ -73,7 +73,7 @@ module.exports = {
       let params = {};
       params.controllerMethod = 'CaverController.find';
       params.notFoundMessage = 'Caver of id ' + req.params.id + ' not found.';
-      return ControllerService.treat(err, found, params, res);
+      return ControllerService.treat(req, err, found, params, res);
     });
   },
 
@@ -94,7 +94,7 @@ module.exports = {
       let params = {};
       params.controllerMethod = 'CaverController.findAll';
       params.notFoundMessage = 'No cavers found.';
-      return ControllerService.treat(err, found, params, res);
+      return ControllerService.treat(req, err, found, params, res);
     });
   },
 
@@ -106,7 +106,7 @@ module.exports = {
 
       let count = {};
       count.count = found;
-      return ControllerService.treat(err, count, params, res);
+      return ControllerService.treat(req, err, count, params, res);
     });
   }
 };

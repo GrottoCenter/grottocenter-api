@@ -19,7 +19,11 @@
 	"GrottoCenter is a comunity database for cavers based on a wiki-like system Cavers fill the databes for cavers": "Το GrottoCenter είναι μια βάση δεδομένων, βασισμένη στο wiki-συστημα,  για σπηλαιοεξερευνητές που συντηρείται απο την σπηλαιοεξερευνητική κοινότητα. ",
 	"Any interesting natural cave can be added in the database!": "Οποιδήποτε φυσικό σπήλαιο μπορεί να προστεθέι στη βάση δεδομένων! ",
 	"The international voluntary association WikiCaves operates the GrottoCenter web application WikiCaves has as goals:": "Ο διεθνής εθελοντικός οργανισμός WikiCaves λειτουργεί την εφαρμογή Grottocenter. Το WikiCaves έχει τους παρακάτω σκοπούς:",
+	"Promote the development of the speleology in the world especially through  web-based collaboration": "Προώθηση και ανάτπυξη της σπηλαιολογίας σε παγκόσμιο επίπεδο με συνεργασίες μέσω διαδυκτίου.",
+	"Share and spread the data related to the speleology": "Μοιραστείτε και διαδώστε δεδομένα σχετικά με την σπηλαιολογία.",
+	"Make access to the natural caves data easier especially by using Internet": "Κάνε την πρόσβαση στα σπήλαια ευκολότερη, με την χρήση του διαδυκτίου. ",
 	"Highlight and help the protection of the natural caves and their surroundings": "Επεσήμανε και βοήθησε στην προστασία των σπηλαίων",
+	"Help the exploration and the scientific study of natural caves": "Βοήθησε στην εξερεύνηση και την επιστημονική μελέτη των σπηλαίων ",
 	"Grottocenter numbers": "Το GrottoCenter σε αριθμούς",
 	"Promote!": "Προώθησε!",
 	"Share!": "Μοιράσου!",
@@ -39,5 +43,13 @@
 	"Donate now": "Δωρεά",
 	"Interest": "Ενδιαφέρον",
 	"Ease to move": " Ευκολία στην κίνηση",
-	"Access": "Πρόσβαση"
+	"Access": "Πρόσβαση",
+	"Search": "Αναζήτηση",
+	"Caves": "Λίστα εισόδων σπηλαίων",
+	"Map": "Χάρτης",
+	"contact form": "Επικοινωνία",
+	"Password": "Συνθηματικό",
+	"Inscription date": "Ημερομηνία δημιουργίας",
+	"Last reviewed": "Ημερομηνία αναθεώρησης",
+	"Caves list": "Λίστα εισόδων σπηλαίων"
 }

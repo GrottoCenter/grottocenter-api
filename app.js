@@ -27,6 +27,7 @@
 process.chdir(__dirname);
 
 
+const esCli = require('./config/elasticsearch').elasticsearchCli;
 
 // Attempt to import `sails` dependency, as well as `rc` (for loading `.sailsrc` files).
 var sails;

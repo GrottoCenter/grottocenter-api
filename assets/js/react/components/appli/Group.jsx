@@ -81,11 +81,11 @@ const Group = (props) => {
           </GroupName>
 
           <Badge classes={{ badge: classes.badge, root: classes.root }} color="primary" badgeContent={group.cavers.length}>
-            <CaverIcon src="../../../../images/caver.svg" alt="Caver icon" />
+            <CaverIcon src="/images/caver.svg" alt="Caver icon" />
           </Badge>
 
           <Badge classes={{ badge: classes.badge, root: classes.root }} color="primary" badgeContent={group.entries.length}>
-            <EntryIcon src="../../../../images/entry.svg" alt="Entry icon" />
+            <EntryIcon src="/images/entry.svg" alt="Entry icon" />
           </Badge>
 
           <p>
@@ -102,7 +102,7 @@ const Group = (props) => {
                 {group.yearBirth ? ' - ' : ''}
                 <Translate>Official partner</Translate>
                 {' '}
-                <GClogo src="../../../../images/logoGC.png" alt="GC logo" />
+                <GClogo src="/images/logoGC.png" alt="GC logo" />
               </span>
             ) : ''}
           </p>

@@ -18,7 +18,7 @@ module.exports = {
     }).populate('author').populate('caves').exec(function(err, found) {
       let params = {};
       params.searchedItem = 'Entry of id ' + req.params.id;
-      return ControllerService.treatAndConvert(err, found, params, res, converter);
+      return ControllerService.treatAndConvert(req, err, found, params, res, converter);
     });
   },
 
@@ -67,7 +67,7 @@ module.exports = {
           skip: skip,
         };
 
-        return ControllerService.treatAndConvert(err, found, params, res, converter);
+        return ControllerService.treatAndConvert(req, err, found, params, res, converter);
       });
     });
   },
@@ -107,7 +107,7 @@ module.exports = {
 
       let count = {};
       count.count = found;
-      return ControllerService.treat(err, count, params, res);
+      return ControllerService.treat(req, err, count, params, res);
     });
   }
 };

@@ -23,7 +23,7 @@ module.exports = {
       let params = {};
       params.controllerMethod = 'CaveController.find';
       params.notFoundMessage = 'Cave of id ' + req.params.id + ' not found.';
-      return ControllerService.treat(err, found, params, res);
+      return ControllerService.treat(req, err, found, params, res);
     });
   },
 
@@ -40,7 +40,7 @@ module.exports = {
       let params = {};
       params.controllerMethod = 'CaveController.findAll';
       params.notFoundMessage = 'No caves found.';
-      return ControllerService.treat(err, found, params, res);
+      return ControllerService.treat(req, err, found, params, res);
     });
   }
 };

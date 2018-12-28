@@ -23,7 +23,7 @@ module.exports = {
       let params = {};
       params.controllerMethod = 'PartnerController.find';
       params.notFoundMessage = 'Partner of id ' + req.params.id + ' not found.';
-      return ControllerService.treat(err, found, params);
+      return ControllerService.treat(req, err, found, params);
     });
   },
 
@@ -40,7 +40,7 @@ module.exports = {
       let params = {};
       params.controllerMethod = 'PartnerController.findAll';
       params.notFoundMessage = 'No partners found.';
-      return ControllerService.treat(err, found, params, res);
+      return ControllerService.treat(req, err, found, params, res);
     });
   },
 
@@ -65,7 +65,7 @@ module.exports = {
       let params = {};
       params.controllerMethod = 'PartnerController.findForCarousel';
       params.notFoundMessage = 'No partners found.';
-      return ControllerService.treat(err, found, params, res);
+      return ControllerService.treat(req, err, found, params, res);
     });
   }
 };

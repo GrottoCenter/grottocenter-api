@@ -122,3 +122,12 @@ www
 
 coverage
 .coveralls.yml
+
+################################################
+# Logstash
+#
+# Plugins downloaded to run logstash in the 
+# docker container.
+################################################
+mysql-connector.tar.gz
+mysql-connector-java-5.1.47

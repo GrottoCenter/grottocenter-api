@@ -108,5 +108,19 @@
 	"by": "by",
 	"Caves related to this group": "Caves related to this group",
 	"There is no caves related to this group currently": "There is no caves related to this group currently.",
-	"Browse API": "Browse API"
+	"Browse API": "Browse API",
+	"No results to display (type at least 3 characters)": "No results to display (type at least 3 characters)",
+	"name": "name",
+	"city": "city",
+	"country": "country",
+	"county": "county",
+	"region": "region",
+	"description": "description",
+	"caves": "caves",
+	"riggings": "riggings",
+	"location": "location",
+	"bibliography": "bibliography",
+	"custom_message": "custom message",
+	"members": "members",
+	"entries": "entries"
 }
