@@ -363,10 +363,34 @@ module.exports.routes = {
     action: 'find'
   },
 
+  'GET /api/v1/grottos/:id': {
+    controller: 'v1/Grotto',
+    action: 'find',
+    api: {
+      entity: 'grotto',
+      limit: 50,
+    },
+    cors: {
+      allowOrigins: '*'
+    }
+  },
+
   /* REST API for Massif controller */
   'GET /api/massifs/:id': {
     controller: 'Massif',
     action: 'find'
+  },
+
+  'GET /api/v1/massifs/:id': {
+    controller: 'v1/Massif',
+    action: 'find',
+    api: {
+      entity: 'massif',
+      limit: 50,
+    },
+    cors: {
+      allowOrigins: '*'
+    }
   },
 
   /* REST API for Admin controller */

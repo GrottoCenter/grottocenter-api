@@ -100,6 +100,10 @@ module.exports.policies = {
     '*': true
   },
 
+  'v1/GrottoController': {
+    'find': ['apiKeyAuth', 'paginate']
+  },
+
   AdminController: {
     '*': true
   },
@@ -110,6 +114,10 @@ module.exports.policies = {
 
   MassifController: {
     '*': true
+  },
+
+  'v1/MassifController': {
+    'find': ['apiKeyAuth', 'paginate']
   },
 
   'v1/GeoLocController': {

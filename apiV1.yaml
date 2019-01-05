@@ -68,15 +68,15 @@ paths:
           description: Resource not found
         '500':
           description: Internal error
-  '/entries/{identifier}':
+  '/entries/{entryId}':
     get:
       tags:
       - entry
-      description: Get a public entry by identifier
+      description: Get a public entry by ID
       parameters:
-      - name: identifier
+      - name: entryId
         in: path
-        description: Entry identifier
+        description: Entry ID
         required: true
         schema:
           type: string
@@ -91,17 +91,17 @@ paths:
           description: Resource not found
         '500':
           description: Internal error
-  '/entry/{identifier}':
+  '/entry/{entryId}':
     get:
       tags:
       - entry
       deprecated: true
       summary: DEPRECATED - Please switch your code to use /entries instead
-      description: Get a public entry by identifier
+      description: Get a public entry by ID
       parameters:
-      - name: identifier
+      - name: entryId
         in: path
-        description: Entry identifier
+        description: Entry ID
         required: true
         schema:
           type: string
@@ -252,15 +252,15 @@ paths:
           description: Resource not found
         '500':
           description: Internal error
-  '/massifs/:id':
+  '/massifs/{massifId}':
     get:
       tags:
       - massif
       description: Get a massif, its author and all its caves
       parameters:
-      - name: id
-        in: query
-        description: Massif id 
+      - name: massifId
+        in: path
+        description: Massif ID
         required: true
         schema:
           type: string
@@ -285,15 +285,15 @@ paths:
           description: Resource not found
         '500':
           description: Internal error
-  '/api/grottos/:id':
+  '/grottos/{grottoId}':
     get:
       tags:
       - grotto
       description: Get a grotto that means an organization or a group of cavers.
       parameters:
-      - name: id
-        in: query
-        description: Grotto id 
+      - name: grottoId
+        in: path
+        description: Grotto ID
         required: true
         schema:
           type: string

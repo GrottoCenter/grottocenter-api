@@ -59,6 +59,23 @@ const GrottoModel = {
   entries: [],
 };
 
+const CaverModel = {
+  id: undefined,
+  nickname: undefined
+};
+
+const CaveModel = {
+  id: undefined,
+  name: undefined,
+  minDepth: undefined,
+  maxDepth: undefined,
+  depth: undefined,
+  length: undefined,
+  isDiving: undefined,
+  temperature: undefined,
+  author: undefined
+};
+
 /* Mappers */
 
 module.exports = {
@@ -105,6 +122,29 @@ module.exports = {
     return results;
   },
 
+  convertToCaverModel: function(source) {
+    let result = Object.assign({}, CaverModel);
+    result.id = source.id;
+    result.nickname = source.nickname;
+    return result;
+  },
+
+  convertToCaveModel: function(source) {
+    let result = Object.assign({}, CaveModel);
+    result.id = source.id;
+    result.name = source.name;
+    result.minDepth = source.minDepth;
+    result.maxDepth = source.maxDepth;
+    result.depth = source.depth;
+    result.length = source.length;
+    result.isDiving = source.isDiving;
+    result.temperature = source.temperature;
+    if (source.author instanceof Object) {
+      result.author = this.convertToCaverModel(source.author);
+    }
+    return result;
+  },
+
   /**
    * Function that return all data for the search
    * @param {*} source : the elasticsearch result
@@ -112,7 +152,7 @@ module.exports = {
   convertToCompleteSearchResult: function(source) {
     let res = {};
     let values = [];
-        
+
     // For each result of the research, convert the item and add it to the json to send
     source.hits.hits.forEach((item) => {
       let data = '';
@@ -159,6 +199,7 @@ module.exports = {
     res.results = values;
     return res;
   },
+
   // ---------------- Massif Function ------------------------------
 
   //TODO: Choose which attributes to keep in author
@@ -166,12 +207,10 @@ module.exports = {
     let result = Object.assign({}, MassifModel);
 
     if(source.author) {
-      result.author = {
-        id: source.author.id,
-        nickname: source.author.nickname
-      };
+      result.author = this.convertToCaverModel(source.author);
     }
-    
+    const caves = source.caves.map(cave =>  this.convertToCaveModel(cave));
+
     // line to put every attributes of author inside another object author
     // Object.keys(source.author).forEach(f => author[f] = source.author[f]);
     
@@ -181,14 +220,13 @@ module.exports = {
     result.name = source.name;
     result.dateInscription = source.dateInscription;
     result.dateReviewed = source.dateReviewed;
-    result.caves = source.caves;
+    result.caves = caves;
 
     return result;
   },
 
   // ---------------- Grotto Function ---------------------------
 
-  // TODO: Filter Entries information
   convertToGrottoModel: function(source) {
     let result = Object.assign({}, GrottoModel);
 
@@ -197,13 +235,10 @@ module.exports = {
     // TODO: currently source.cavers doesn't exist. The "JOIN" need to be done in Elasticsearch
     // populating process by logstash, in logstash.conf.
     if(source.cavers) {
-      result.cavers  = source.cavers.map(caver => {
-        return {
-          id: caver.id,
-          nickname: caver.nickname,
-        };
-      });
+      result.cavers = source.cavers.map(caver => this.convertToCaverModel(caver));
     }
+
+    const entries = source.entries.map(entry => this.convertToEntryModel(entry));
     
     // Build the result
     result.id = source.id;
@@ -225,7 +260,7 @@ module.exports = {
     result.documentary = source.documentary;
     result.URL = source.URL;
     result.Facebook = source.Facebook;
-    result.entries = source.entries;
+    result.entries = entries;
 
     return result;
   },
