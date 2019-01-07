@@ -100,9 +100,6 @@ lib-cov
 npm-debug.log
 
 
-
-
-
 ################################################
 # Miscellaneous
 #
@@ -131,3 +128,10 @@ coverage
 ################################################
 mysql-connector.tar.gz
 mysql-connector-java-5.1.47
+
+################################################
+# Anonymized data
+#
+# Path to the anonymized sql data file.
+################################################
+sql/grottoce_anonymize*.sql
