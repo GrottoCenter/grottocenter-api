@@ -12,7 +12,7 @@ module.exports = {
   },
 
   find: function(req, res) {
-    TEntry.findOneById(req.params.id).populate('author').populate('caves').populate('singleEntry').exec(function(err, found) {
+    TEntry.findOneById(req.params.id).populate('author').populate('cave').populate('singleEntry').exec(function(err, found) {
       let params = {};
       params.controllerMethod = 'EntryController.find';
       params.notFoundMessage = 'Entry of id ' + req.params.id + ' not found.';
@@ -33,7 +33,7 @@ module.exports = {
       };
     }
 
-    TEntry.find(parameters).populate('author').populate('caves').populate('singleEntry').sort('id ASC').limit(10).exec(function(err, found) {
+    TEntry.find(parameters).populate('author').populate('cave').populate('singleEntry').sort('id ASC').limit(10).exec(function(err, found) {
       let params = {};
       params.controllerMethod = 'EntryController.findAll';
       params.notFoundMessage = 'No entries found.';

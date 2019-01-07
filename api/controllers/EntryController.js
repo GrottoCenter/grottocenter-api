@@ -14,8 +14,8 @@ module.exports = {
       isPublic:'YES'
     // TODO before this : see how to materialize fact that
     // id of entry corresponds to id of linked single entry if exists
-    //}).populate('author').populate('caves').populate('singleEntry').exec(function(err, found) {
-    }).populate('author').populate('caves').exec(function(err, found) {
+    //}).populate('author').populate('cave').populate('singleEntry').exec(function(err, found) {
+    }).populate('author').populate('cave').exec(function(err, found) {
       let params = {};
       params.searchedItem = 'Entry of id ' + req.params.id;
       return ControllerService.treatAndConvert(req, err, found, params, res, converter);
@@ -53,9 +53,9 @@ module.exports = {
 
     // TODO before this : see how to materialize fact that
     // id of entry corresponds to id of linked single entry if exists
-    //TEntry.find(parameters).populate('author').populate('caves').populate('singleEntry').sort('id ASC').limit(10).exec(function(err, found) {
+    //TEntry.find(parameters).populate('author').populate('cave').populate('singleEntry').sort('id ASC').limit(10).exec(function(err, found) {
     TEntry.count(parameters).exec(function (error, total) {
-      TEntry.find(parameters).populate('author').populate('caves').sort('id ASC').limit(limit).skip(skip).exec(function(err, found) {
+      TEntry.find(parameters).populate('author').populate('cave').sort('id ASC').limit(limit).skip(skip).exec(function(err, found) {
         let params = {
           controllerMethod: 'EntryController.findAll',
           notFoundMessage: 'No entries found.',

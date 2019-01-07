@@ -13,8 +13,7 @@ const ENTRY_INFO_QUERY = 'SELECT COALESCE(SE.depth, C.depth) AS depth, COALESCE(
                           + ' FROM t_entry E'
                           // to get depth and length entry info
                           + ' LEFT JOIN t_single_entry SE ON SE.id=E.id'
-                          + ' LEFT JOIN j_cave_entry JCE ON JCE.Id_entry=E.id'
-                          + ' LEFT JOIN t_cave C ON JCE.Id_cave=C.id'
+                          + ' LEFT JOIN t_cave C ON E.Id_cave=C.id'
                           // to get topo file linked to entry
                           + ' LEFT JOIN j_topo_entry JTE ON JTE.Id_entry=E.id'
                           + ' LEFT JOIN j_topo_cave JTC ON JTC.Id_cave=C.id'

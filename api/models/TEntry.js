@@ -169,11 +169,9 @@ module.exports = {
       columnName: 'Altitude'
     },
 
-    // if caves is not empty, singleEntry is supposed to be empty
-    caves: {
-      collection: 'TCave',
-      via: 'entry',
-      through: 'JCaveEntry'
+    cave: {
+      columnName: 'Id_cave',
+      model: 'TCave'
     },
 
     // if singleEntry is not empty, caves is supposed to be empty
