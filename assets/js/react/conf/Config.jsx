@@ -149,7 +149,7 @@ export const
 
 export const findRandomEntryUrl = '/api/entries/findRandom';
 export const findForCarouselUrl = '/api/partners/findForCarousel';
-export const quicksearchUrl = `/api/${apiVersion}/search/findAll`;
+export const quicksearchUrl = `/api/${apiVersion}/search`;
 export const findMapBoundsUrl = `/api/${apiVersion}/geoloc/findByBounds`;
 export const findMassifUrl = `/api/${apiVersion}/massifs/`;
 export const findGroupUrl = `/api/${apiVersion}/grottos/`;
