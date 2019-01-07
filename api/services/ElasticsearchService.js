@@ -154,38 +154,73 @@ module.exports = {
       
       // Build match fields to search on, i.e. every parameters in the url which are not metaParams
       const matchingParams = [];
+      const rangeParams = [];
 
+      // ==== Construct the params
       Object.keys(params).forEach(key => {
+        // Meta params ? 
         if(!advancedSearchMetaParams.includes(key)) {
-          const words = params[key].split(' ');
-          words.map((word, index) => {
-            const matchObj = {
-              wildcard: {}
-            };
+
+          // min / max (range) param ? or field param ?
+          const minParam = (key.split('-min').length > 1);
+          const maxParam = (key.split('-max').length > 1);
+          const fieldParam = (!minParam && !maxParam); 
+
+          // Value of a field
+          if(fieldParam) {
+            const words = params[key].split(' ');
+            words.map((word, index) => {
+              const matchObj = {
+                wildcard: {}
+              };
           
-            /* 
-              The value is set to lower case because the data are indexed in lowercase. 
-              We want a search not case sensitive.
+              /* 
+                The value is set to lower case because the data are indexed in lowercase. 
+                We want a search not case sensitive.
 
-              Also, the character * is used for the first and the last word to complete the query.
-            */
-            if(words.length === 1) matchObj.wildcard[key] = '*' + word.toLowerCase() + '*';
-            else if(index === 0) matchObj.wildcard[key] = '*' + word.toLowerCase();
-            else if(index === words.length - 1) matchObj.wildcard[key] = word.toLowerCase() + '*';
-            else matchObj.wildcard[key] = word.toLowerCase();
+                Also, the character * is used for the first and the last word to (auto)complete the query.
+              */
+              if(words.length === 1) matchObj.wildcard[key] = '*' + word.toLowerCase() + '*';
+              else if(index === 0) matchObj.wildcard[key] = '*' + word.toLowerCase();
+              else if(index === words.length - 1) matchObj.wildcard[key] = word.toLowerCase() + '*';
+              else matchObj.wildcard[key] = word.toLowerCase();
 
-            matchingParams.push(matchObj);
-          });
+              matchingParams.push(matchObj);
+            });
+          
+          // Min range param
+          } else if(minParam) {
+            const rangeObj = {
+              range: {
+              }
+            };
+            rangeObj.range[key.split('-min')[0].toString()] = {
+              gte: params[key]
+            };
+            rangeParams.push(rangeObj);
+
+          // Max range param
+          } else if(maxParam) {
+            const rangeObj = {
+              range: {
+              }
+            };
+            rangeObj.range[key.split('-max')[0].toString()] = {
+              lte: params[key]
+            };
+            rangeParams.push(rangeObj);
+          }
         }
       });
 
+      // ==== Build the query
       let query = {
         index: params.type + '-index',
         body: {
           query: {
             bool: {
-              
-            },           
+                      
+            },
           },
           highlight : {
             number_of_fragments : 3,
@@ -198,7 +233,7 @@ module.exports = {
         }
       };
 
-      query.body.query.bool[queryVerb] = matchingParams;
+      query.body.query.bool[queryVerb] = matchingParams.concat(rangeParams);
       
       client.search(query).then(result => {
         resolve(result);
