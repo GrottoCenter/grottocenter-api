@@ -132,12 +132,46 @@ paths:
                 $ref: '#/components/schemas/Count'
         '500':
           description: Internal error
-  '/search/findAll':
+          
+  '/search':
     get:
       tags:
       - search
       deprecated: false
-      summary: DEPRECATED - Please switch your code to use /entry instead
+      summary: Search for resources (entries, massifs & organizations)
+      description: Search for resources (entries, massifs & organizations). Case insensitive. Search over a lots of resource properties (not only name).
+      parameters:
+      - name: query
+        in: query
+        description: Resource property (or part of property)
+        required: true
+        schema:
+          type: string
+      - name: complete
+        in: query
+        description: Does the query need to send every information about the results ? If set to false, returns only the id and the name of each result.
+        required: false
+        schema:
+          type: boolean
+          default: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Search'
+        '404':
+          description: Resource not found
+        '500':
+          description: Internal error
+          
+  '/search/findAll':
+    get:
+      tags:
+      - search
+      deprecated: true
+      summary: DEPRECATED - Please switch your code to use /entries or /search instead
       description: Search for resources by name
       parameters:
       - name: name
@@ -159,17 +193,18 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Search'
+                $ref: '#/components/schemas/Search_findAll'
         '206':
           description: Successful operation (partial content)
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Search'
+                $ref: '#/components/schemas/Search_findAll'
         '404':
           description: Resource not found
         '500':
           description: Internal error
+
   '/geoloc/countEntries':
     get:
       tags:
@@ -273,19 +308,11 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Massif"
-        '206':
-          description: Successful operation (partial content)
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Massif"
         '404':
           description: Resource not found
         '500':
           description: Internal error
-  '/grottos/{grottoId}':
+  '/api/grottos/:id':
     get:
       tags:
       - grotto
@@ -300,14 +327,6 @@ paths:
       responses:
         '200':
           description: Successful operation
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Grotto"
-        '206':
-          description: Successful operation (partial content)
           content:
             application/json:
               schema:
@@ -363,12 +382,22 @@ components:
           type: string
         longitude:
           type: string
-    Search:
+    Search_findAll:
       properties:
         entries:
           type: array
           items:
             $ref: "#/components/schemas/Entry"
+            
+    Search:
+      properties:
+        results:
+          type: array
+          items: 
+            oneOf:
+              - $ref: '#/components/schemas/Entry'
+              - $ref: '#/components/schemas/Massif'
+              - $ref: '#/components/schemas/Grotto'
     Geoloc:
       properties:
         entries:
@@ -503,3 +532,5 @@ components:
           type: array
           items: 
             $ref: '#/components/schemas/Entry'
+
+  '/grottos/{grottoId}':
