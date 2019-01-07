@@ -99,8 +99,7 @@ module.exports = {
 
     entries: {
       collection: 'TEntry',
-      via: 'cave',
-      through: 'JCaveEntry'
+      via: 'cave'
     },
     massifs: {
       collection: 'TMassif',
