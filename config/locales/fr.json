@@ -122,5 +122,12 @@
 	"bibliography": "bibliographie",
 	"custom_message": "message personnalisé",
 	"members": "membres",
-	"entries": "entrées"
+	"entries": "entrées",
+	"entries names": "noms des entrées",
+	"entries cities": "villes des entrées",
+	"entries counties": "départements des entrées",
+	"entries countries": "pays des entrées",
+	"entries regions": "régions des entrées",
+	"cave length": "longueur de la cavité",
+	"cave depth": "profondeur de la cavité"
 }

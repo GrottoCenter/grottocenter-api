@@ -122,5 +122,12 @@
 	"bibliography": "bibliography",
 	"custom_message": "custom message",
 	"members": "members",
-	"entries": "entries"
+	"entries": "entries",
+	"entries names": "entries names",
+	"entries cities": "entries cities",
+	"entries counties": "entries counties",
+	"entries countries": "entries countries",
+	"entries regions": "entries regions",
+	"cave length": "cave length",
+	"cave depth": "cave depth"
 }
