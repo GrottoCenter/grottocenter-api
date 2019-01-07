@@ -134,4 +134,4 @@ mysql-connector-java-5.1.47
 #
 # Path to the anonymized sql data file.
 ################################################
-sql/grottoce_anonymize*.sql
+sql/*grottoce_anonymize*.sql
