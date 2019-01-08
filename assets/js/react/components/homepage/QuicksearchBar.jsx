@@ -4,6 +4,7 @@ import { withRouter } from 'react-router-dom';
 import SearchIcon from '@material-ui/icons/Search';
 import { withStyles, withTheme } from '@material-ui/core/styles';
 import styled from 'styled-components';
+import AdvancedSearchContainer from '../../containers/AdvancedSearchContainer';
 import QuicksearchContainer from '../../containers/QuicksearchContainer';
 import { RIGHT_TO_LEFT } from '../../conf/Config';
 
@@ -23,6 +24,7 @@ const StyledSearchIcon = withStyles(theme => ({
   root: {
     '&:hover': {
       fill: theme.palette.accent1Color,
+      cursor: 'pointer',
     },
     height: '50px',
     width: '50px',
@@ -65,26 +67,42 @@ const StyledQuicksearchContainer = withStyles(theme => ({
 // M A I N - C O M P O N E N T
 //
 //
-
-const handleSelection = (selection, history) => {
-  if (selection.id && !window.location.pathname.startsWith('/ui/map')) {
-    history.push('/ui/map');
+class QuicksearchBar extends React.Component {
+  state = {
+    showAdvancedSearched: false,
   }
-};
 
-const QuicksearchBar = props => (
-  <React.Fragment>
-    <StyledIconSpan>
-      <StyledSearchIcon />
-    </StyledIconSpan>
-    <StyledQuicksearchContainer
-      handleSelection={selection => handleSelection(selection, props.history)}
-    />
-  </React.Fragment>
-);
+ handleSelection = (selection, history) => {
+   if (selection.id && !window.location.pathname.startsWith('/ui/map')) {
+     history.push('/ui/map');
+   }
+ };
+
+ render() {
+   const { history } = this.props;
+   const { showAdvancedSearched } = this.state;
+
+   return (
+     <React.Fragment>
+       <StyledIconSpan>
+         <StyledSearchIcon onClick={() => this.setState({
+           showAdvancedSearched: !showAdvancedSearched,
+         })
+        }
+         />
+       </StyledIconSpan>
+       <StyledQuicksearchContainer
+         handleSelection={selection => this.handleSelection(selection, history)}
+       />
+       {showAdvancedSearched ? (
+         <AdvancedSearchContainer />
+       ) : ''}
+     </React.Fragment>
+   );
+ }
+}
 
 QuicksearchBar.propTypes = {
-  history: PropTypes.object.isRequired,
+  history: PropTypes.shape({}).isRequired,
 };
-
 export default withRouter(QuicksearchBar);
