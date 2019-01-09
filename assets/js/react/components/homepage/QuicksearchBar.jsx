@@ -22,10 +22,10 @@ const StyledIconSpan = withTheme()(styled.span`
 `);
 
 const StyledAdvancedSearchText = withTheme()(styled.span`
-  background-color: ${props => props.theme.palette.primary3Color};
   bottom: 0;
-  font-size: 1rem;
   color: ${props => props.theme.palette.primary2Color};
+  font-size: 1rem;
+  left: 5px;
   position: absolute;
   z-index: 9999;
 `);
@@ -55,10 +55,10 @@ const StyledQuicksearchContainer = withTheme()(styled(DirQuicksearchContainer)`
     top: 25px;
     color: ${props => props.theme.palette.primary1Color} !important;
   }
-
-  hr {
-    width: 99% !important;
-  }
+AdvancedSearchContainer
+AdvancedSearchContainer
+AdvancedSearchContainer
+AdvancedSearchContainer
 `);
 */
 
