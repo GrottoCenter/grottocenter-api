@@ -1,7 +1,13 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
+
+import FormControl from '@material-ui/core/FormControl';
+import Input from '@material-ui/core/Input';
+import InputLabel from '@material-ui/core/InputLabel';
+import NativeSelect from '@material-ui/core/NativeSelect';
 import TextField from '@material-ui/core/TextField';
+import Translate from '../common/Translate';
 
 const styles = theme => ({
   container: {
@@ -11,13 +17,6 @@ const styles = theme => ({
   textField: {
     marginLeft: theme.spacing.unit,
     marginRight: theme.spacing.unit,
-    width: 200,
-  },
-  dense: {
-    marginTop: 19,
-  },
-  menu: {
-    width: 200,
   },
 });
 
@@ -66,33 +65,32 @@ const undergroundChoices = [
 class EntriesSearch extends React.Component {
   // TODO: Rename variables with names of the API
   state = {
+    caveSystem: '',
+    city: '',
+    country: '',
+    detailedSheet: '',
+    divingCave: '',
     entryName: '',
     entryMaps: '',
-    detailedSheet: '',
-    minDepth: 0,
-    maxDepth: 1000,
-    minLength: 0,
-    maxLength: 1000,
-    minLatitude: -90,
-    maxLatitude: 90,
-    minLongitude: -180,
-    maxLongitude: 180,
-    country: '',
-    stateOrRegion: '',
-    city: '',
-    mountainRange: '',
-    caveSystem: '',
-    undergroundType: '',
-    divingCave: '',
     minAesthetics: 0,
     maxAesthetics: 10,
     minEaseOfMove: 0,
     maxEaseOfMove: 10,
     minEaseOfReach: 0,
     maxEaseOfReach: 10,
+    minDepth: 0,
+    maxDepth: 1000,
+    minLatitude: -90,
+    maxLatitude: 90,
+    minLength: 0,
+    maxLength: 1000,
+    minLongitude: -180,
+    maxLongitude: 180,
     minYearOfDiscovery: 1900,
     maxYearOfDiscovery: new Date().getFullYear(),
-    value: { min: 2, max: 10 },
+    mountainRange: '',
+    stateOrRegion: '',
+    undergroundType: '',
   };
 
   handleChange = keyName => (event) => {
@@ -104,48 +102,63 @@ class EntriesSearch extends React.Component {
   render() {
     const { classes } = this.props;
     const {
+      caveSystem,
+      city,
+      country,
+      divingCave,
       entryName,
       entryMaps,
       detailedSheet,
+      minAesthetics,
+      maxAesthetics,
       minDepth,
       maxDepth,
+      minEaseOfMove,
+      maxEaseOfMove,
+      minEaseOfReach,
+      maxEaseOfReach,
       minLength,
       maxLength,
       minLatitude,
       maxLatitude,
       minLongitude,
       maxLongitude,
-      country,
-      stateOrRegion,
-      city,
-      mountainRange,
-      caveSystem,
-      undergroundType,
-      divingCave,
-      minAesthetics,
-      maxAesthetics,
-      minEaseOfMove,
-      maxEaseOfMove,
-      minEaseOfReach,
-      maxEaseOfReach,
       minYearOfDiscovery,
       maxYearOfDiscovery,
-      value,
+      mountainRange,
+      stateOrRegion,
+      undergroundType,
     } = this.state;
 
     return (
       <React.Fragment>
         <form className={classes.container} noValidate autoComplete="off">
           <TextField
-            id="standard-name"
-            label="Entry Name"
-            className={classes.textField}
+            id="entry-name"
+            label={<Translate>Entry name</Translate>}
             value={entryName}
-            onChange={this.handleChange('entryName')}
-            margin="normal"
+            className={classes.textField}
+            helperText="TODO: helper text?"
           />
+
+          <FormControl>
+            <InputLabel shrink htmlFor="entry-maps-native-label-placeholder">
+              Entry maps
+            </InputLabel>
+            <NativeSelect
+              value={entryMaps}
+              onChange={this.handleChange('entry-maps')}
+              input={<Input name="entry-maps" id="entry-maps-native-label-placeholder" />}
+            >
+              <option value="">None</option>
+              <option value={10}>Ten</option>
+              <option value={20}>Twenty</option>
+              <option value={30}>Thirty</option>
+            </NativeSelect>
+          </FormControl>
+
           <TextField
-            id="standard-select-currency-native"
+            id="standard-select-native"
             select
             label="Entry maps"
             className={classes.textField}

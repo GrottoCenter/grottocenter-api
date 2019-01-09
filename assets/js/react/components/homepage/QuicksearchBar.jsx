@@ -7,6 +7,7 @@ import styled from 'styled-components';
 import AdvancedSearchContainer from '../../containers/AdvancedSearchContainer';
 import QuicksearchContainer from '../../containers/QuicksearchContainer';
 import { RIGHT_TO_LEFT } from '../../conf/Config';
+import Translate from '../common/Translate';
 
 //
 //
@@ -18,6 +19,15 @@ const StyledIconSpan = withTheme()(styled.span`
   position: absolute;
   height: 72px;
   background-color: ${props => props.theme.palette.primary3Color};
+`);
+
+const StyledAdvancedSearchText = withTheme()(styled.span`
+  background-color: ${props => props.theme.palette.primary3Color};
+  bottom: 0;
+  font-size: 1rem;
+  color: ${props => props.theme.palette.primary2Color};
+  position: absolute;
+  z-index: 9999;
 `);
 
 const StyledSearchIcon = withStyles(theme => ({
@@ -72,34 +82,40 @@ class QuicksearchBar extends React.Component {
     showAdvancedSearched: false,
   }
 
- handleSelection = (selection, history) => {
-   if (selection.id && !window.location.pathname.startsWith('/ui/map')) {
-     history.push('/ui/map');
-   }
- };
+  handleSelection = (selection, history) => {
+    if (selection.id && !window.location.pathname.startsWith('/ui/map')) {
+      history.push('/ui/map');
+    }
+  };
 
- render() {
-   const { history } = this.props;
-   const { showAdvancedSearched } = this.state;
+  render() {
+    const { history } = this.props;
+    const { showAdvancedSearched } = this.state;
 
-   return (
-     <React.Fragment>
-       <StyledIconSpan>
-         <StyledSearchIcon onClick={() => this.setState({
-           showAdvancedSearched: !showAdvancedSearched,
-         })
-        }
-         />
-       </StyledIconSpan>
-       <StyledQuicksearchContainer
-         handleSelection={selection => this.handleSelection(selection, history)}
-       />
-       {showAdvancedSearched ? (
-         <AdvancedSearchContainer />
-       ) : ''}
-     </React.Fragment>
-   );
- }
+    return (
+      <React.Fragment>
+        <StyledIconSpan>
+          <StyledSearchIcon onClick={() => this.setState({
+            showAdvancedSearched: !showAdvancedSearched,
+          })
+          }
+          />
+        </StyledIconSpan>
+        <StyledAdvancedSearchText>
+          <Translate>Advanced search</Translate>
+        </StyledAdvancedSearchText>
+
+        <StyledQuicksearchContainer
+          handleSelection={selection => this.handleSelection(selection, history)}
+        />
+
+
+        {showAdvancedSearched ? (
+          <AdvancedSearchContainer />
+        ) : ''}
+      </React.Fragment>
+    );
+  }
 }
 
 QuicksearchBar.propTypes = {
