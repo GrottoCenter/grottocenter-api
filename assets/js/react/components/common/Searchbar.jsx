@@ -118,7 +118,7 @@ function Option(props) {
   if (data && data.type) {
     toDisplay = entityOptionForSelector(data);
   }
-  
+
   return (
     <MenuItem
       selected={isFocused}
@@ -244,7 +244,12 @@ class Searchbar extends React.Component {
             }}
             value={this.props.value}
             onChange={this.handleChange}
-            placeholder={<Translate>Search for a cave</Translate>}
+            placeholder={(
+              <React.Fragment>
+                <Translate>Search for a cave, massif, group</Translate>
+                <span>...</span>
+              </React.Fragment>
+            )}
             closeMenuOnScroll
             isMulti
           />
