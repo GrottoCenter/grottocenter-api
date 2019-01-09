@@ -3,6 +3,7 @@ module.exports = function(grunt) {
     'jst:dev',
     'less:dev',
     'copy:dev',
+    'copy:rcSliderCss',
     'browserify:dev'
   ]);
 };
