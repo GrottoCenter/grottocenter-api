@@ -1,10 +1,18 @@
 'use strict';
 
 const client = require('../../config/elasticsearch').elasticsearchCli;
-
 const resourcesToUpdate = [
   'grottos', 'massifs', 'entries'
 ];
+
+/*  Define the fuziness criteria. If equals to X, Elasticsearch will search
+    all the keywords by changing / inverting / deleting X letters.
+
+    Examples: 
+    FUZINESS=1 and query=clomb will also use the query 'climb' (change 'o' to 'i' => 1 operation)
+    FUZINESS=2 and query=clomb will also use the query 'lamb' (delete 'c', change 'o' to 'a' => 2 operations)
+*/
+const FUZINESS = 1;
 
 module.exports = {
   /**
@@ -82,7 +90,7 @@ module.exports = {
         body: {
           query: {
             query_string: {
-              query: '*'+params.query+'*',
+              query: '*'+params.query+'* + '+params.query+'~'+FUZINESS,
               fields: [
                 // General useful fields
                 'name^3', 'city^2', 'country', 'county', 'region',
@@ -101,7 +109,7 @@ module.exports = {
                 // ==== Massifs 
                 'entries'
               ],
-            },           
+            }         
           },
           highlight : {
             number_of_fragments : 3,
