@@ -73,35 +73,33 @@ const undergroundChoices = [
 ];
 
 class EntriesSearch extends React.Component {
+  // TODO: Handle the max of depth and length dynamically
   constructor(props) {
     super(props);
     this.state = {
-      caveSystem: '',
+      'aestheticism-min': 0,
+      'aestheticism-max': 10,
+      'approach-min': 0,
+      'approach-max': 10,
+      'cave depth-min': 0,
+      'cave depth-max': 2000,
+      'cave is diving': '',
+      'cave length-min': 0,
+      'cave length-max': 700000,
+      'caving-min': 0,
+      'caving-max': 10,
       city: '',
       country: '',
-      detailedSheet: '',
-      divingCave: '',
-      entryName: '',
-      entryMaps: '',
-      minAesthetics: 0,
-      maxAesthetics: 10,
-      minEaseOfMove: 0,
-      maxEaseOfMove: 10,
-      minEaseOfReach: 0,
-      maxEaseOfReach: 10,
-      minDepth: 0,
-      maxDepth: 80000,
-      minLatitude: -90,
-      maxLatitude: 90,
-      minLength: 0,
-      maxLength: 1000,
-      minLongitude: -180,
-      maxLongitude: 180,
-      minYearOfDiscovery: 1900,
-      maxYearOfDiscovery: new Date().getFullYear(),
-      mountainRange: '',
-      stateOrRegion: '',
-      undergroundType: '',
+      county: '',
+      'latitude-min': -90,
+      'latitude-max': 90,
+      'longitude-min': -180,
+      'longitude-max': 180,
+      'massif range': '',
+      name: '',
+      'underground type': '',
+      'year_discovery-min': 1900,
+      'year_discovery-max': new Date().getFullYear(),
     };
     this.handleValueChange = this.handleValueChange.bind(this);
     this.handleRangeChange = this.handleRangeChange.bind(this);
@@ -115,60 +113,73 @@ class EntriesSearch extends React.Component {
 
   handleRangeChange = (keyName, values) => {
     this.setState({
-      [`min${keyName}`]: values[0],
-      [`max${keyName}`]: values[1],
+      [`${keyName}-min`]: values[0],
+      [`${keyName}-max`]: values[1],
     });
   };
 
   render() {
-    const { classes } = this.props;
+    const { classes, startAdvancedsearch, resourceType } = this.props;
     const {
-      caveSystem,
+      'aestheticism-min': aestheticMin,
+      'aestheticism-max': aestheticMax,
+      'approach-min': easeOfReachMin,
+      'approach-max': easeOfReachMax,
+      'cave depth-min': caveDepthMin,
+      'cave depth-max': caveDepthMax,
+      'cave is diving': caveIsDiving,
+      'cave length-min': caveLengthMin,
+      'cave length-max': caveLengthMax,
+      'caving-min': easeOfMoveMin,
+      'caving-max': easeOfMoveMax,
       city,
       country,
-      divingCave,
-      entryName,
-      entryMaps,
-      detailedSheet,
-      minAesthetics, maxAesthetics,
-      minDepth, maxDepth,
-      minEaseOfMove, maxEaseOfMove,
-      minEaseOfReach, maxEaseOfReach,
-      minLength, maxLength,
-      minLatitude, maxLatitude,
-      minLongitude, maxLongitude,
-      minYearOfDiscovery, maxYearOfDiscovery,
-      mountainRange,
-      stateOrRegion,
-      undergroundType,
+      county,
+      'latitude-min': latitudeMin,
+      'latitude-max': latitudeMax,
+      'longitude-min': longitudeMin,
+      'longitude-max': longitudeMax,
+      'massif range': massifRange,
+      name,
+      'underground type': undergroundType,
+      'year_discovery-min': yearOfDiscoveryMin,
+      'year_discovery-max': yearOfDiscoveryMax,
     } = this.state;
 
     return (
       <React.Fragment>
-        <form className={classes.container} noValidate autoComplete="off">
+        <form
+          className={classes.container}
+          noValidate
+          autoComplete="off"
+          onSubmit={(event) => {
+            event.preventDefault();
+            startAdvancedsearch(this.state, resourceType);
+          }
+        }
+        >
           <TextField
             className={classes.formElement}
             helperText="TODO: helper text?"
             label={<Translate>Entry name</Translate>}
-            onChange={event => this.handleValueChange('entryName', event)}
-            value={entryName}
+            onChange={event => this.handleValueChange('name', event)}
+            value={name}
           />
 
           <FormControl
             className={classes.formElement}
           >
-            <InputLabel shrink htmlFor="entry-maps-native-label-placeholder">
-              Entry maps
+            <InputLabel shrink htmlFor="cave-is-diving-native-label-placeholder">
+              Diving Cave
             </InputLabel>
             <NativeSelect
-              value={entryMaps}
-              onChange={event => this.handleValueChange('entryMaps', event)}
-              input={<Input name="entry-maps" id="entry-maps-native-label-placeholder" />}
+              value={caveIsDiving}
+              onChange={event => this.handleValueChange('cave is diving', event)}
+              input={<Input name="cave-is-diving" id="cave-is-diving-native-label-placeholder" />}
             >
-              <option value="">None</option>
-              <option value={10}>Ten</option>
-              <option value={20}>Twenty</option>
-              <option value={30}>Thirty</option>
+              <option value="">All</option>
+              <option value="true">Yes</option>
+              <option value="false">No</option>
             </NativeSelect>
           </FormControl>
 
@@ -181,21 +192,24 @@ class EntriesSearch extends React.Component {
             <Range
               className={classes.formRange}
               min={0}
-              max={80000}
+              max={2000}
               onChange={(values) => {
-                this.handleRangeChange('Depth', values);
+                this.handleRangeChange('cave depth', values);
               }}
               tipFormatter={value => `${value}m`}
-              value={[minDepth, maxDepth]}
+              value={[caveDepthMin, caveDepthMax]}
             />
             <p>
-              {minDepth}
+              {caveDepthMin}
               m -
               {' '}
-              {maxDepth}
+              {caveDepthMax}
               m
             </p>
           </FormControl>
+          <button type="submit">
+            <Translate>Search</Translate>
+          </button>
         </form>
       </React.Fragment>
     );
@@ -204,6 +218,8 @@ class EntriesSearch extends React.Component {
 
 EntriesSearch.propTypes = {
   classes: PropTypes.shape({}).isRequired,
+  startAdvancedsearch: PropTypes.func.isRequired,
+  resourceType: PropTypes.string.isRequired,
 };
 
 export default withStyles(styles)(EntriesSearch);

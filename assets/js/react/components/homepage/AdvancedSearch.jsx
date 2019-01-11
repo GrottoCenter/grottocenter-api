@@ -10,6 +10,8 @@ import styled from 'styled-components';
 import EntriesSearch from './EntriesSearch';
 import Translate from '../common/Translate';
 
+const advancedSearchTypes = ['entries', 'grottos', 'massifs'];
+
 function TabContainer(props) {
   const { children } = props;
 
@@ -52,7 +54,7 @@ class AdvancedSearch extends React.Component {
   };
 
   render() {
-    const { classes } = this.props;
+    const { classes, startAdvancedsearch } = this.props;
     const { value } = this.state;
 
     return (
@@ -94,7 +96,11 @@ class AdvancedSearch extends React.Component {
             />
           </Tabs>
         </AppBar>
-        {value === 0 && <TabContainer><EntriesSearch /></TabContainer>}
+        {value === 0 && (
+        <TabContainer>
+          <EntriesSearch startAdvancedsearch={startAdvancedsearch} resourceType={advancedSearchTypes[0]} />
+        </TabContainer>
+        )}
         {value === 1 && <TabContainer>Groups search content</TabContainer> }
         {value === 2 && <TabContainer>Massifs search content</TabContainer>}
       </div>
@@ -104,6 +110,7 @@ class AdvancedSearch extends React.Component {
 
 AdvancedSearch.propTypes = {
   classes: PropTypes.shape({}).isRequired,
+  startAdvancedsearch: PropTypes.func.isRequired,
 };
 
 export default withStyles(styles)(AdvancedSearch);

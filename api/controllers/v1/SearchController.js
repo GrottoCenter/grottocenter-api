@@ -47,7 +47,7 @@ module.exports = {
     // Store every params in the url and check if there is the type parameter
     const paramsURL = req.query;
 
-    if(!advancedSearchTypes.includes(paramsURL.type)){
+    if(!advancedSearchTypes.includes(paramsURL.resourceType)){
       return res.badRequest();
     }
 

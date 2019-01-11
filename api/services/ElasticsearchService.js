@@ -4,7 +4,7 @@ const client = require('../../config/elasticsearch').elasticsearchCli;
 const resourcesToUpdate = [
   'grottos', 'massifs', 'entries'
 ];
-const advancedSearchMetaParams = ['type', 'complete', 'match_all_queries'];
+const advancedSearchMetaParams = ['resourceType', 'complete', 'match_all_queries'];
 
 /*  Define the fuziness criteria. If equals to X, Elasticsearch will search
     all the keywords by changing / inverting / deleting X letters.
@@ -162,12 +162,12 @@ module.exports = {
         if(!advancedSearchMetaParams.includes(key)) {
 
           // min / max (range) param ? or field param ?
-          const minParam = (key.split('-min').length > 1);
-          const maxParam = (key.split('-max').length > 1);
-          const fieldParam = (!minParam && !maxParam); 
+          const isMinParam = (key.split('-min').length > 1);
+          const isMaxParam = (key.split('-max').length > 1);
+          const isFieldParam = (!isMinParam && !isMaxParam); 
 
           // Value of a field
-          if(fieldParam) {
+          if(isFieldParam && params[key] !== '') {
             const words = params[key].split(' ');
             words.map((word, index) => {
               const matchObj = {
@@ -189,7 +189,7 @@ module.exports = {
             });
           
           // Min range param
-          } else if(minParam) {
+          } else if(isMinParam) {
             const rangeObj = {
               range: {
               }
@@ -200,7 +200,7 @@ module.exports = {
             rangeParams.push(rangeObj);
 
           // Max range param
-          } else if(maxParam) {
+          } else if(isMaxParam) {
             const rangeObj = {
               range: {
               }
@@ -215,7 +215,7 @@ module.exports = {
 
       // ==== Build the query
       let query = {
-        index: params.type + '-index',
+        index: params.resourceType + '-index',
         body: {
           query: {
             bool: {
