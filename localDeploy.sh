@@ -38,15 +38,15 @@ function getContainerHealth {
 # Function that waits for a container to be healthy or unhealthy.
 # It prints a "." during starting and sleep 5 seconds before checking the status of the container.
 function waitContainer {
-  while STATUS=$(getContainerHealth $1); [ $STATUS != "\"healthy\"" ]; do 
-    if [ $STATUS == "\"unhealthy\"" ]; then
+  while STATUS=$(getContainerHealth $1); [[ $STATUS != "\"healthy\"" ]]; do 
+    if [[ $STATUS == "\"unhealthy\"" ]]; then
       echo "Failed!"
       exit -1
     fi
     printf .
-    lf=$'\n'
     sleep 5
   done
+  lf=$'\n'
   printf "$lf"
 }
 
@@ -114,8 +114,8 @@ echo "### JDBC plugin downloaded and built ###"
 # Delete the Logstash container if already running and then create a Logstash container with the logstash.conf as configuration file.
 # The health of this container is defined to healthy when we can send a ping to localhost:9600. And the unhealthy status is made after 5 wrong retries
 # to access the localhost:9600
-# We parameter the elasticsearch url to be the same than the tagname of our Elasticsearch container. 
-# That means we can access to elasticsearch inside a container with the url "elasticsearchgrotto:9200"
+# We set the elasticsearch url to be the same than the tagname of our Elasticsearch container. 
+# That means we can access to elasticsearch inside a container with the url "elasticsearchgrotto:9200".
 echo "### BUILD the Logstash container ###"
 docker rm -f ${LS_TAGNAME}
 docker run --rm -d \
@@ -130,10 +130,11 @@ docker run --rm -d \
 
 # Wait the container to be running
 waitContainer ${LS_TAGNAME}
-echo "### Logstash available and Data IS LOADING into ${ES_TAGNAME} ### \n"
+echo "### Logstash available and Data IS LOADING into ${ES_TAGNAME} ###"
 
-echo "### WARNING, DEPENDING ON YOUR DATA THIS STEP CAN TAKE MORE THAN 5 MINUTES !!! ###"
-
+echo "### WARNING, depending on your data this step can take more than 5 minutes ! ###"
+echo "### Note that even if the deployment process is finished, the indexation will continue in the background. ###"
+ 
 echo "### RUN grottocenter image locally ###"
 # Here with sails_models__connection we override the production models connection to use the dev database
 docker rm -f ${GC_TAGNAME}

@@ -12,9 +12,10 @@ module.exports = {
       return res.badRequest();
     }
 
-    // By default, the query asked will send every information. We can limit these information just by adding a complete parameter to false in the query
+    // By default, the query asked will send every information.
+    // We can limit these information just by adding a "complete" parameter to false in the query.
     let complete = true;
-    if (paramsURl.complete && paramsURl.complete==='false'){
+    if (paramsURl.complete==='false' || paramsURl.complete===false){
       complete = false;
     }
 
