@@ -22,31 +22,31 @@ Software requirement:
 
 Clone the project on your computer:
 ```
-> git clone https://github.com/GrottoCenter/Grottocenter3.git
+git clone https://github.com/GrottoCenter/Grottocenter3.git
 ```
 
 ## Usage
 
-### Containers deployment
-Start the project:
-```
-> npm install
-> ./localDeploy.sh
-```
-Then go to [homepage](http://localhost:8081/)
-Or access to [API documentation](http://localhost:8081/ui/api/)
+Using Docker, 3 deployment modes are possible : 
+- Demonstration - Deploy the application directly to http://localhost:1337.
+- Development - Set up the development environment.
+- Production - Used to deploy in production.
 
-Currently, this deployment is not intented to be used for development because the hot reloading is not possible through a Docker container.
+### Demonstration deployment
+
+```
+./deployDemo.sh
+```
+Then go to http://localhost:1337/.
 
 ### Development deployment
-Start the project:
-```
-> npm install
-> ./localDeploy.sh
-```
-We will use the DB container for the next part, that's why we need to run localDeploy.sh. Change the **config/datastores.js** default config url to *'mysql://sailsuser:grottocepassword@localhost:33060/grottoce'*.
 
-Finally, run:
+Set up all the environment: 
+```
+./deployDev.sh
+```
+
+Finally, to launch the server with live reloading activated, run:
 ```
 > npm run start-hot
 ```
@@ -55,12 +55,12 @@ Finally, run:
 
 Run tests:
 ```
-> npm run test
+npm run test
 ```
 
 Check code coverage:
 ```
-> npm run coverage
+npm run coverage
 ```
 
 For more details, read [the installation guide](https://github.com/GrottoCenter/Grottocenter3/wiki/Installation-guide)
