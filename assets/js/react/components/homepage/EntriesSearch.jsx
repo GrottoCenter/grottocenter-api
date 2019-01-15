@@ -8,7 +8,9 @@ import InputLabel from '@material-ui/core/InputLabel';
 import FormLabel from '@material-ui/core/FormLabel';
 import NativeSelect from '@material-ui/core/NativeSelect';
 import TextField from '@material-ui/core/TextField';
+import Switch from '@material-ui/core/Switch';
 import Slider from 'rc-slider';
+
 
 import Translate from '../common/Translate';
 
@@ -30,120 +32,129 @@ const styles = theme => ({
   },
 });
 
-const yesNoChoices = [
-  {
-    value: 'All',
-    label: 'All',
-  },
-  {
-    value: 'True',
-    label: 'Yes',
-  },
-  {
-    value: 'False',
-    label: 'No',
-  },
-];
-
-const undergroundChoices = [
-  {
-    value: 'All',
-    label: 'All',
-  },
-  {
-    value: '1',
-    label: 'Cavities in evaporite (gypsum, salt)',
-  },
-  {
-    value: '2',
-    label: 'Ice cave (cave under the glacier...)',
-  },
-  {
-    value: '3',
-    label: 'Karstic (all carbonate rocks)',
-  },
-  {
-    value: '4',
-    label: 'Lava tube',
-  },
-  {
-    value: '5',
-    label: 'Other (granite, quartzite, laterite, ...)',
-  },
-];
-
 class EntriesSearch extends React.Component {
   // TODO: Handle the max of depth and length dynamically
+
+  /*
+    The state is created with particular key names because, these names are directly linked to
+    the names of these properties in Elasticsearch. Here we have a syntax that
+    enable us to distinguish range parameters from others parameters.
+   */
   constructor(props) {
     super(props);
     this.state = {
-      'aestheticism-min': 0,
-      'aestheticism-max': 10,
-      'approach-min': 0,
-      'approach-max': 10,
-      'cave depth-min': 0,
-      'cave depth-max': 2000,
+      'aestheticism-range': {
+        isEditable: false,
+        min: 0,
+        max: 10,
+      },
+      'approach-range': {
+        isEditable: false,
+        min: 0,
+        max: 10,
+      },
+      'cave depth-range': {
+        isEditable: false,
+        min: 0,
+        max: 2000,
+      },
       'cave is diving': '',
-      'cave length-min': 0,
-      'cave length-max': 700000,
-      'caving-min': 0,
-      'caving-max': 10,
+      'cave length-range': {
+        isEditable: false,
+        min: 0,
+        max: 700000,
+      },
+      'caving-range': {
+        isEditable: false,
+        min: 0,
+        max: 10,
+      },
       city: '',
       country: '',
       county: '',
-      'latitude-min': -90,
-      'latitude-max': 90,
-      'longitude-min': -180,
-      'longitude-max': 180,
+      'latitude-range': {
+        isEditable: false,
+        min: -90,
+        max: 90,
+      },
+      'longitude-range': {
+        isEditable: false,
+        min: -180,
+        max: 180,
+      },
       'massif range': '',
       name: '',
       'underground type': '',
-      'year_discovery-min': 1900,
-      'year_discovery-max': new Date().getFullYear(),
+      'year_discovery-range': {
+        isEditable: false,
+        min: -1,
+        max: new Date().getFullYear(),
+      },
     };
+    this.handleCheckedChange = this.handleCheckedChange.bind(this);
     this.handleValueChange = this.handleValueChange.bind(this);
     this.handleRangeChange = this.handleRangeChange.bind(this);
   }
 
+  /**
+   * This function set the state of the keyname property
+   * to be the same value as the event of the slider.
+   */
+  handleCheckedChange = keyName => (event) => {
+    const newState = {
+      [keyName]: {
+        ...this.state[keyName],
+        isEditable: event.target.checked,
+      },
+    };
+    this.setState(newState);
+  };
+
+  /**
+   * keyName: String
+   * event: Event
+   * This function changes the state of the keyName property
+   * with the value of the target event.
+   */
   handleValueChange = (keyName, event) => {
     this.setState({
       [keyName]: event.target.value,
     });
   };
 
+  /**
+   * This function set the state of the keyname property
+   * to be the same value of the range.
+   */
   handleRangeChange = (keyName, values) => {
-    this.setState({
-      [`${keyName}-min`]: values[0],
-      [`${keyName}-max`]: values[1],
-    });
+    const newState = {
+      [keyName]: {
+        ...this.state[keyName],
+        min: values[0],
+        max: values[1],
+      },
+    };
+    this.setState(newState);
   };
 
   render() {
     const { classes, startAdvancedsearch, resourceType } = this.props;
     const {
-      'aestheticism-min': aestheticMin,
-      'aestheticism-max': aestheticMax,
-      'approach-min': easeOfReachMin,
-      'approach-max': easeOfReachMax,
-      'cave depth-min': caveDepthMin,
-      'cave depth-max': caveDepthMax,
+      'aestheticism-range': aestheticRange,
+      'approach-range': easeOfReachRange,
+      'cave depth-range': caveDepthRange,
       'cave is diving': caveIsDiving,
-      'cave length-min': caveLengthMin,
-      'cave length-max': caveLengthMax,
-      'caving-min': easeOfMoveMin,
-      'caving-max': easeOfMoveMax,
+      'cave length-range': caveLengthRange,
+      'caving-range': cavingRange,
       city,
       country,
       county,
-      'latitude-min': latitudeMin,
-      'latitude-max': latitudeMax,
-      'longitude-min': longitudeMin,
-      'longitude-max': longitudeMax,
+      'latitude-range': latitudeRange,
+      'longitude-range': longitudeRange,
       'massif range': massifRange,
       name,
       'underground type': undergroundType,
-      'year_discovery-min': yearOfDiscoveryMin,
-      'year_discovery-max': yearOfDiscoveryMax,
+      'year_discovery-range': yearOfDiscoveryRange,
     } = this.state;
 
     return (
@@ -156,7 +167,7 @@ class EntriesSearch extends React.Component {
             event.preventDefault();
             startAdvancedsearch(this.state, resourceType);
           }
-        }
+          }
         >
           <TextField
             className={classes.formElement}
@@ -178,8 +189,8 @@ class EntriesSearch extends React.Component {
               input={<Input name="cave-is-diving" id="cave-is-diving-native-label-placeholder" />}
             >
               <option value="">All</option>
-              <option value="true">Yes</option>
-              <option value="false">No</option>
+              <option value="yes">Yes</option>
+              <option value="no">No</option>
             </NativeSelect>
           </FormControl>
 
@@ -187,6 +198,11 @@ class EntriesSearch extends React.Component {
             className={classes.formElement}
           >
             <FormLabel>
+              <Switch
+                checked={caveDepthRange.isEditable}
+                onChange={this.handleCheckedChange('cave depth-range')}
+                value={caveDepthRange.isEditable}
+              />
               <Translate>Depth</Translate>
             </FormLabel>
             <Range
@@ -194,16 +210,17 @@ class EntriesSearch extends React.Component {
               min={0}
               max={2000}
               onChange={(values) => {
-                this.handleRangeChange('cave depth', values);
+                this.handleRangeChange('cave depth-range', values);
               }}
               tipFormatter={value => `${value}m`}
-              value={[caveDepthMin, caveDepthMax]}
+              value={[caveDepthRange.min, caveDepthRange.max]}
+              disabled={!caveDepthRange.isEditable}
             />
             <p>
-              {caveDepthMin}
+              {caveDepthRange.min}
               m -
               {' '}
-              {caveDepthMax}
+              {caveDepthRange.max}
               m
             </p>
           </FormControl>

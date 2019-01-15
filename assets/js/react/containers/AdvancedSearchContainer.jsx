@@ -18,11 +18,26 @@ const startAdvancedsearch = (formValues, resourceType) => dispatch => new Promis
   };
 
   Object.keys(formValues).forEach((key) => {
-    if (formValues[key] !== '') {
+    let keyValue = formValues[key];
+    // If String trim it
+    if (typeof formValues[key] === 'string') {
+      keyValue = formValues[key].trim();
+    }
+
+    if (keyValue !== '' && key.split('-range').length === 1) {
       paramsToSend[key] = formValues[key];
+
+      // If the key contains '-range' and this is editable
+      // then we send the parameter in two parameters min and max
+    } else if (key.split('-range').length > 1 && formValues[key].isEditable === true) {
+      const keyBase = key.split('-range');
+      const rangeMin = `${keyBase[0]}-min`;
+      const rangeMax = `${keyBase[0]}-max`;
+
+      paramsToSend[rangeMin] = formValues[key].min;
+      paramsToSend[rangeMax] = formValues[key].max;
     }
   });
-
 
   resolve(dispatch(fetchAdvancedsearchResult(paramsToSend)));
 });

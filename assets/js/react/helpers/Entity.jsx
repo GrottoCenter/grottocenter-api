@@ -49,9 +49,11 @@ const HighlightTextKey = withTheme()(styled.span`
 
 export const entityOptionForSelector = (option) => {
   const highlights = [];
-  Object.keys(option.highlights).forEach((key) => {
-    highlights.push({ [key]: option.highlights[key].join(' [...] ') });
-  });
+  if (option.highlights) {
+    Object.keys(option.highlights).forEach((key) => {
+      highlights.push({ [key]: option.highlights[key].join(' [...] ') });
+    });
+  }
 
   return (
     <React.Fragment>

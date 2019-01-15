@@ -111,7 +111,7 @@ module.exports = {
                 // ==== Massifs 
                 'entries names', 'entries regions', 'entries cities', 'entry counties', 'entries countries'
               ],
-            }         
+            },       
           },
           highlight : {
             number_of_fragments : 3,
@@ -120,8 +120,8 @@ module.exports = {
               '*': {} 
             },
             order: 'score' 
-          }        
-        }
+          },       
+        },
         /* eslint-enable camelcase */
       }).then(result => {
         resolve(result);
