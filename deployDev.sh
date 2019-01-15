@@ -18,8 +18,8 @@
 # MySQL Database
 MYSQL_TAGNAME="mysqlgrotto"
 MYSQL_LOCAL_PORT=33060
-DOCKER_MYSQL_USER="sailsuser"
-DOCKER_MYSQL_PASSWORD="grottocepassword"
+DOCKER_MYSQL_USER="root"
+DOCKER_MYSQL_PASSWORD="root"
 DOCKER_MYSQL_DATABASE="grottoce"
 
 # Elasticsearch
@@ -112,7 +112,7 @@ echo "### Elasticsearch available on port ${ES_LOCAL_PORT} ###"
 
 # Dowload and extract a plugin to be used by Logstash to load data from MySQL
 echo "### Download and Build the JDBC plugin for Logstash ###"
-wget http://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-5.1.47.tar.gz -O ./mysql-connector.tar.gz
+wget https://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-5.1.47.tar.gz -O ./mysql-connector.tar.gz
 tar -xzf mysql-connector.tar.gz
 echo "### JDBC plugin downloaded and built ###"
 
