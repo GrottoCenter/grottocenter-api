@@ -136,7 +136,7 @@ docker run --rm -d \
     --link ${ES_TAGNAME} \
     -e XPACK.MONITORING.ELASTICSEARCH.URL=${ES_TAGNAME} \
     -v "$PWD":/config-dir docker.elastic.co/logstash/logstash:6.5.2 \
-    -f /config-dir/logstash.conf
+    -f /config-dir/logstash.dev.conf
 
 # Wait the container to be running
 waitContainer ${LS_TAGNAME}
@@ -145,7 +145,7 @@ echo "### Logstash available and Data IS LOADING into ${ES_TAGNAME} ###"
 echo "### WARNING, depending on your data this step can take 5-10 minutes or even more! ###"
 echo "### Note that even if the deployment process is finished, the indexation will continue in the background. ###"
 echo "### You can go to http://localhost:9200/_cat/indices?v to see the number of documents indexed."
- echo ""
+echo ""
 echo "####################################################"
 echo "#### Grottocenter development environment ready ####"
 echo "####################################################"

@@ -1,5 +1,4 @@
 # This Dockerfile is used to deploy the app on App Engine
-# It can also be used to deploy the app locally on Docker.
 #
 # Dockerfile extending the generic Node image with application files for a
 # single application.
