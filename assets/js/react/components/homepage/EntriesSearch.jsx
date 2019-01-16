@@ -11,7 +11,6 @@ import TextField from '@material-ui/core/TextField';
 import Switch from '@material-ui/core/Switch';
 import Slider from 'rc-slider';
 
-
 import Translate from '../common/Translate';
 
 const Range = Slider.createSliderWithTooltip(Slider.Range);
@@ -30,6 +29,22 @@ const styles = theme => ({
     minWidth: '200px',
     width: '25rem',
   },
+  textField: {
+    minWidth: '200px',
+    minHeight: '20px',
+    fontSize: 14,
+  },
+  colorSwitchBase: {
+    color: theme.palette.primary.light,
+    '&$colorChecked': {
+      color: theme.palette.accent1Color,
+      '& + $colorBar': {
+        backgroundColor: theme.palette.accent1Color,
+      },
+    },
+  },
+  colorBar: {},
+  colorChecked: {},
 });
 
 class EntriesSearch extends React.Component {
@@ -171,10 +186,14 @@ class EntriesSearch extends React.Component {
         >
           <TextField
             className={classes.formElement}
-            helperText="TODO: helper text?"
             label={<Translate>Entry name</Translate>}
             onChange={event => this.handleValueChange('name', event)}
             value={name}
+            InputProps={{
+              classes: {
+                input: classes.textField,
+              },
+            }}
           />
 
           <FormControl
@@ -202,6 +221,11 @@ class EntriesSearch extends React.Component {
                 checked={caveDepthRange.isEditable}
                 onChange={this.handleCheckedChange('cave depth-range')}
                 value={caveDepthRange.isEditable}
+                classes={{
+                  switchBase: classes.colorSwitchBase,
+                  checked: classes.colorChecked,
+                  bar: classes.colorBar,
+                }}
               />
               <Translate>Depth</Translate>
             </FormLabel>
@@ -215,14 +239,25 @@ class EntriesSearch extends React.Component {
               tipFormatter={value => `${value}m`}
               value={[caveDepthRange.min, caveDepthRange.max]}
               disabled={!caveDepthRange.isEditable}
+              trackStyle={[{ backgroundColor: 'orange' }]}
+              handleStyle={[{ backgroundColor: 'brown', borderColor: 'brown' }, { backgroundColor: 'brown', borderColor: 'brown' }]}
             />
-            <p>
-              {caveDepthRange.min}
-              m -
-              {' '}
-              {caveDepthRange.max}
-              m
-            </p>
+            <TextField
+              // TODO: Handle if Max is under the Min ...
+              className={classes.formElement}
+              onChange={event => this.handleRangeChange('cave depth-range', [event.target.value, caveDepthRange.max])}
+              value={caveDepthRange.min}
+              disabled={!caveDepthRange.isEditable}
+            />
+            <span>m - </span>
+            <TextField
+              // TODO: Handle if Min is above the Max ...
+              className={classes.formElement}
+              onChange={event => this.handleRangeChange('cave depth-range', [caveDepthRange.min, event.target.value])}
+              value={caveDepthRange.max}
+              disabled={!caveDepthRange.isEditable}
+            />
+            <span>m</span>
           </FormControl>
           <button type="submit">
             <Translate>Search</Translate>
