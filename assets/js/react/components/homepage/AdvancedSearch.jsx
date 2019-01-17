@@ -4,27 +4,12 @@ import { withStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
-import Typography from '@material-ui/core/Typography';
 import styled from 'styled-components';
 
 import EntriesSearch from './EntriesSearch';
 import Translate from '../common/Translate';
 
 const advancedSearchTypes = ['entries', 'grottos', 'massifs'];
-
-function TabContainer(props) {
-  const { children } = props;
-
-  return (
-    <Typography component="div" style={{ padding: 8 * 3 }}>
-      {children}
-    </Typography>
-  );
-}
-
-TabContainer.propTypes = {
-  children: PropTypes.node.isRequired,
-};
 
 const styles = theme => ({
   root: {
@@ -34,6 +19,10 @@ const styles = theme => ({
   },
   tabName: {
     fontSize: '1.2rem',
+  },
+  tabContainer: {
+    backgroundColor: theme.palette.primary3Color,
+    padding: '24px',
   },
 });
 
@@ -97,12 +86,15 @@ class AdvancedSearch extends React.Component {
           </Tabs>
         </AppBar>
         {value === 0 && (
-        <TabContainer>
-          <EntriesSearch startAdvancedsearch={startAdvancedsearch} resourceType={advancedSearchTypes[0]} />
-        </TabContainer>
+        <div className={classes.tabContainer}>
+          <EntriesSearch
+            startAdvancedsearch={startAdvancedsearch}
+            resourceType={advancedSearchTypes[0]}
+          />
+        </div>
         )}
-        {value === 1 && <TabContainer>Groups search content</TabContainer> }
-        {value === 2 && <TabContainer>Massifs search content</TabContainer>}
+        {value === 1 && <div className={classes.tabContainer}>Groups search content</div> }
+        {value === 2 && <div className={classes.tabContainer}>Massifs search content</div>}
       </div>
     );
   }
