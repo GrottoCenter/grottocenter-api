@@ -17,7 +17,12 @@ const EntryModel = {
   postalCode : undefined,
   latitude: undefined,
   longitude: undefined,
-  altitude: undefined
+  altitude: undefined,
+  cave: undefined,
+  massif: undefined,
+  aestheticism: undefined,
+  caving: undefined,
+  approach: undefined,
 };
 
 const CountResult = {
@@ -73,15 +78,16 @@ const CaveModel = {
   length: undefined,
   isDiving: undefined,
   temperature: undefined,
-  author: undefined
+  author: undefined,
+  massif: undefined,
 };
 
 /* Mappers */
 
 module.exports = {
-  convertToEntryModel: function(source) {
+  convertToEntryModel: function(source) {   
     let result = Object.assign({}, EntryModel);
-    //console.log('Source : ' + JSON.stringify(source));
+
     result.id = source.id;
     result.name = source.name;
     result.country = source.country;
@@ -92,6 +98,17 @@ module.exports = {
     result.latitude = source.latitude;
     result.longitude = source.longitude;
     result.altitude = source.altitude;
+    result.aestheticism = source.aestheticism;
+    result.approach = source.approach;
+    result.caving = source.caving;
+    result.cave = {
+      depth: source['cave depth'],
+      length: source['cave length'],
+      name: source['cave name'],
+    };
+    result.massif = {
+      name: source['massif name']
+    };
     return result;
   },
 
@@ -110,7 +127,7 @@ module.exports = {
     return result;
   },
 
-  //Depecated for v1
+  //Deprecated for v1
   convertToOldSearchResult: function(source) {
     let results = {};
     let entries = [];

@@ -14,7 +14,7 @@ const startAdvancedsearch = (formValues, resourceType) => (dispatch) => {
   // resourceType is set to "entries", "grottos" or "massifs" according to the search wanted
   const paramsToSend = {
     resourceType,
-    complete: false,
+    complete: true,
   };
 
   Object.keys(formValues).forEach((key) => {
@@ -57,9 +57,8 @@ const mapDispatchToProps = dispatch => ({
   ),
 });
 
-const mapStateToProps = state => ({
-  isLoading: state.advancedsearch.isLoading,
-  results: state.advancedsearch.results,
+const mapStateToProps = () => ({
+
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(AdvancedSearch);

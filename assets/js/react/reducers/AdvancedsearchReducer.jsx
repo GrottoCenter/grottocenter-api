@@ -13,6 +13,7 @@ import {
 
 const initialState = {
   results: undefined, // search results
+  resultType: '', // results type (one of: enty, group, massif)
   errors: undefined, // fetch errors
   isLoading: false,
 };
