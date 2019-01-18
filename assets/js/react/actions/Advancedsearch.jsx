@@ -7,9 +7,11 @@ import { advancedsearchUrl } from '../conf/Config';
 //
 //
 
-export const RESET_ADVANCEDSEARCH = 'RESET_ADVANCEDSEARCH';
+export const FETCH_ADVANCEDSEARCH_STARTED = 'FETCH_ADVANCEDSEARCH_STARTED';
 export const FETCH_ADVANCEDSEARCH_SUCCESS = 'FETCH_ADVANCEDSEARCH_SUCCESS';
 export const FETCH_ADVANCEDSEARCH_FAILURE = 'FETCH_ADVANCEDSEARCH_FAILURE';
+
+export const RESET_ADVANCEDSEARCH_RESULTS = 'RESET_ADVANCEDSEARCH_RESULTS';
 
 //
 //
@@ -17,10 +19,8 @@ export const FETCH_ADVANCEDSEARCH_FAILURE = 'FETCH_ADVANCEDSEARCH_FAILURE';
 //
 //
 
-export const resetAdvancedsearch = () => ({
-  type: RESET_ADVANCEDSEARCH,
-  results: undefined,
-  error: undefined,
+export const fetchAdvancedsearchStarted = () => ({
+  type: FETCH_ADVANCEDSEARCH_STARTED,
 });
 
 export const fetchAdvancedsearchSuccess = results => ({
@@ -33,6 +33,10 @@ export const fetchAdvancedsearchFailure = error => ({
   error,
 });
 
+export const resetAdvancedSearchResults = () => ({
+  type: RESET_ADVANCEDSEARCH_RESULTS,
+});
+
 //
 //
 // T H U N K S
@@ -40,7 +44,7 @@ export const fetchAdvancedsearchFailure = error => ({
 //
 
 export const fetchAdvancedsearchResult = criteria => (dispatch) => {
-  dispatch(resetAdvancedsearch());
+  dispatch(fetchAdvancedsearchStarted());
 
   let completeUrl = advancedsearchUrl;
   if (criteria) {

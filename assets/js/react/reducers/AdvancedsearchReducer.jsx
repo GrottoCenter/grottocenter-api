@@ -1,7 +1,8 @@
 import {
-  RESET_ADVANCEDSEARCH,
+  FETCH_ADVANCEDSEARCH_STARTED,
   FETCH_ADVANCEDSEARCH_SUCCESS,
   FETCH_ADVANCEDSEARCH_FAILURE,
+  RESET_ADVANCEDSEARCH_RESULTS,
 } from '../actions/Advancedsearch';
 
 //
@@ -11,9 +12,9 @@ import {
 //
 
 const initialState = {
-  results: [], // search results
+  results: undefined, // search results
   errors: undefined, // fetch errors
-  entry: undefined, // marker entry
+  isLoading: false,
 };
 
 //
@@ -24,18 +25,26 @@ const initialState = {
 
 const advancedsearch = (state = initialState, action) => {
   switch (action.type) {
-    case RESET_ADVANCEDSEARCH:
+    case FETCH_ADVANCEDSEARCH_STARTED:
       return Object.assign({}, state, {
-        results: [],
         errors: undefined,
+        isLoading: true,
+        results: [],
       });
     case FETCH_ADVANCEDSEARCH_SUCCESS:
       return Object.assign({}, state, {
         results: action.results,
+        isLoading: false,
       });
     case FETCH_ADVANCEDSEARCH_FAILURE:
       return Object.assign({}, state, {
         error: action.error,
+        isLoading: false,
+      });
+    case RESET_ADVANCEDSEARCH_RESULTS:
+      return Object.assign({}, state, {
+        isLoading: false,
+        results: undefined,
       });
     default:
       return state;

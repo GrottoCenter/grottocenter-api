@@ -1,6 +1,6 @@
 import { connect } from 'react-redux';
-import { fetchAdvancedsearchResult } from '../actions/Advancedsearch';
-import AdvancedSearch from '../components/homepage/AdvancedSearch';
+import { fetchAdvancedsearchResult, resetAdvancedSearchResults } from '../actions/Advancedsearch';
+import AdvancedSearch from '../components/homepage/advancedSearch/AdvancedSearch';
 
 //
 //
@@ -8,7 +8,7 @@ import AdvancedSearch from '../components/homepage/AdvancedSearch';
 //
 //
 
-const startAdvancedsearch = (formValues, resourceType) => dispatch => new Promise((resolve) => {
+const startAdvancedsearch = (formValues, resourceType) => (dispatch) => {
   // complete is set to false because
   // we don't need the complete results about the data (we just want their name)
   // resourceType is set to "entries", "grottos" or "massifs" according to the search wanted
@@ -41,16 +41,24 @@ const startAdvancedsearch = (formValues, resourceType) => dispatch => new Promis
     }
   });
 
-  resolve(dispatch(fetchAdvancedsearchResult(paramsToSend)));
-});
+  dispatch(fetchAdvancedsearchResult(paramsToSend));
+};
+
+const resetAdvancedSearch = () => (dispatch) => {
+  dispatch(resetAdvancedSearchResults());
+};
 
 const mapDispatchToProps = dispatch => ({
   startAdvancedsearch: (formValues, resourceType) => dispatch(
     startAdvancedsearch(formValues, resourceType),
   ),
+  resetAdvancedSearch: () => dispatch(
+    resetAdvancedSearch(),
+  ),
 });
 
 const mapStateToProps = state => ({
+  isLoading: state.advancedsearch.isLoading,
   results: state.advancedsearch.results,
 });
 
