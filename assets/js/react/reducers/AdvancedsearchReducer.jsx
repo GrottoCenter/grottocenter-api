@@ -14,13 +14,12 @@ import {
 const initialState = {
   totalNbResults: 0, // total number of results for the search
   results: undefined, // search results
-  resultsType: '', // results type (one of: enty, group, massif)
   errors: undefined, // fetch errors
   isLoading: false,
   searchCriterias: {
     from: 0,
-    limit: 10,
-    resourceType: '',
+    size: 10,
+    resourceType: '', // results type (one of: entries, groups, massifs)
   },
 };
 
@@ -32,26 +31,38 @@ const initialState = {
 
 const advancedsearch = (state = initialState, action) => {
   switch (action.type) {
-    case FETCH_ADVANCEDSEARCH_STARTED:
+    case FETCH_ADVANCEDSEARCH_STARTED: {
       return Object.assign({}, state, {
         errors: undefined,
         isLoading: true,
-        results: [],
-        searchCriterias: action.criterias,
+        searchCriterias: {
+          ...state.searchCriterias,
+          ...action.criterias,
+        },
       });
-    case FETCH_ADVANCEDSEARCH_SUCCESS:
+    }
+    case FETCH_ADVANCEDSEARCH_SUCCESS: {
+      let mergedResults = [];
+      if (state.results) {
+        mergedResults = mergedResults.concat(state.results);
+      }
+      mergedResults = mergedResults.concat(action.results);
+
       return Object.assign({}, state, {
         totalNbResults: action.totalNbResults,
-        results: action.results,
+        results: mergedResults,
         isLoading: false,
       });
-    case FETCH_ADVANCEDSEARCH_FAILURE:
+    }
+    case FETCH_ADVANCEDSEARCH_FAILURE: {
       return Object.assign({}, state, {
         error: action.error,
         isLoading: false,
       });
-    case RESET_ADVANCEDSEARCH_RESULTS:
+    }
+    case RESET_ADVANCEDSEARCH_RESULTS: {
       return initialState;
+    }
     default:
       return state;
   }

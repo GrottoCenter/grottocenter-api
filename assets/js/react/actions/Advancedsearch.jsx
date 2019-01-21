@@ -25,7 +25,7 @@ export const fetchAdvancedsearchStarted = criterias => ({
   criterias,
 });
 
-export const fetchAdvancedsearchSuccess = (totalNbResults, results) => ({
+export const fetchAdvancedsearchSuccess = (results, totalNbResults) => ({
   type: FETCH_ADVANCEDSEARCH_SUCCESS,
   totalNbResults,
   results,

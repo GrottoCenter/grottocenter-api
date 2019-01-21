@@ -209,6 +209,7 @@ class EntriesSearch extends React.Component {
       caveLengthMinValue, caveLengthMaxValue,
       cavingMinValue, cavingMaxValue,
     } = this.props;
+
     const {
       'aestheticism-range': aestheticismRange,
       'approach-range': approachRange,

@@ -94,7 +94,11 @@ class AdvancedSearch extends React.Component {
         {tabSelected === 0 && (
           <div className={classes.tabContainer}>
             <EntriesSearch
-              startAdvancedsearch={startAdvancedsearch}
+              startAdvancedsearch={(state, resourceType) => {
+                // Reset everything before launching a new request
+                resetAdvancedSearch();
+                startAdvancedsearch(state, resourceType);
+              }}
               resourceType={advancedSearchTypes[0]}
               resetResults={resetAdvancedSearch}
             />

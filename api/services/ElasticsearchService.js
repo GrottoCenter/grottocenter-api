@@ -4,7 +4,7 @@ const client = require('../../config/elasticsearch').elasticsearchCli;
 const resourcesToUpdate = [
   'grottos', 'massifs', 'entries'
 ];
-const advancedSearchMetaParams = ['resourceType', 'complete', 'match_all_queries'];
+const advancedSearchMetaParams = ['resourceType', 'complete', 'match_all_queries', 'from', 'size'];
 
 /*  Define the fuziness criteria. If equals to X, Elasticsearch will search
     all the keywords by changing / inverting / deleting X letters.
@@ -120,7 +120,7 @@ module.exports = {
               '*': {} 
             },
             order: 'score' 
-          },       
+          },     
         },
         /* eslint-enable camelcase */
       }).then(result => {
@@ -150,7 +150,7 @@ module.exports = {
       let queryVerb = 'must';
       if(params.match_all_queries) {
         queryVerb = (params.match_all_queries === true ? 'must' : 'should');  
-      }      
+      }
       
       // Build match fields to search on, i.e. every parameters in the url which are not metaParams
       const matchingParams = [];
@@ -229,7 +229,9 @@ module.exports = {
               '*': {} 
             },
             order: 'score' 
-          }        
+          },
+          from: params.from ? params.from : 0,
+          size: params.size ? params.size : 10 
         }
       };
 

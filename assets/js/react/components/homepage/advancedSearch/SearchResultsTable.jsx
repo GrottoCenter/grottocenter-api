@@ -7,6 +7,7 @@ import { withRouter } from 'react-router-dom';
 import { Card, CardContent } from '@material-ui/core';
 import CircularProgress from '@material-ui/core/CircularProgress';
 
+import styled from 'styled-components';
 
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
@@ -14,9 +15,10 @@ import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
 import TablePagination from '@material-ui/core/TablePagination';
 import TableRow from '@material-ui/core/TableRow';
-import TableSortLabel from '@material-ui/core/TableSortLabel';
 
 import Translate from '../../common/Translate';
+
+import SearchTableActions from './SearchTableActions';
 
 // ===========================================
 
@@ -58,13 +60,25 @@ const styles = theme => ({
   },
 });
 
+const DEFAULT_PAGE = 0;
+const DEFAULT_ROWS_PER_PAGE = 10;
+
+
+const HeaderIcon = styled.img`
+  height: 3.6rem;
+  vertical-align: middle;
+  width: 3.6rem;
+`;
+
+// ============= MAIN COMPONENT ============= //
+
 class SearchResultsTable extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      page: 0,
-      rowsPerPage: 10,
+      page: DEFAULT_PAGE,
+      rowsPerPage: DEFAULT_ROWS_PER_PAGE,
     };
     this.entriesTableHead = this.entriesTableHead.bind(this);
     this.groupsTableHead = this.groupsTableHead.bind(this);
@@ -74,6 +88,7 @@ class SearchResultsTable extends React.Component {
 
   entriesTableHead = () => {
     const { classes } = this.props;
+    const { intl } = this.context;
     return (
       <TableHead>
         <TableRow className={classes.tableHeadRow}>
@@ -99,10 +114,18 @@ class SearchResultsTable extends React.Component {
             <Translate>Cave name</Translate>
           </TableCell>
           <TableCell className={classes.tableHeadRowCell}>
-            <Translate>Cave length</Translate>
+            <HeaderIcon
+              src="/images/length.svg"
+              title={intl.formatMessage({ id: 'Cave length', defaultMessage: 'Cave length' })}
+              alt="Cave length icon"
+            />
           </TableCell>
           <TableCell className={classes.tableHeadRowCell}>
-            <Translate>Cave depth</Translate>
+            <HeaderIcon
+              src="/images/depth.svg"
+              title={intl.formatMessage({ id: 'Cave depth', defaultMessage: 'Cave depth' })}
+              alt="Cave depth icon"
+            />
           </TableCell>
         </TableRow>
       </TableHead>
@@ -145,6 +168,20 @@ class SearchResultsTable extends React.Component {
     );
   };
 
+  // If the results are empty, the component must get back to the initial pagination state.
+  componentDidUpdate = () => {
+    const { results } = this.props;
+    const { page, rowsPerPage } = this.state;
+
+    if (!results && (page !== DEFAULT_PAGE || rowsPerPage !== DEFAULT_ROWS_PER_PAGE)
+    ) {
+      this.setState({
+        page: DEFAULT_PAGE,
+        rowsPerPage: DEFAULT_ROWS_PER_PAGE,
+      });
+    }
+  }
+
   // ===== Handle functions ===== //
 
   handleRowClick = (id) => {
@@ -155,11 +192,52 @@ class SearchResultsTable extends React.Component {
     if (resourceType === 'massifs') history.push(`/ui/massifs/${id}`);
   }
 
-  handleChangePage = (event, page) => {
-    this.setState({ page });
+  handleChangePage = (event, newPage) => {
+    const {
+      currentSearchCriterias, results, startAdvancedsearch, totalNbResults,
+    } = this.props;
+    const { page, rowsPerPage } = this.state;
+
+    /* Load new results if not enough already loaded:
+      - click next page
+      - totalNbResults > results.length (not ALL results already loaded)
+      - rowsPerpage + rowsPerPage * page > results.length (results on the asked page are not loaded)
+    */
+    if (newPage > page
+      && totalNbResults > results.length
+      && rowsPerPage + rowsPerPage * newPage > results.length
+    ) {
+      startAdvancedsearch(
+        currentSearchCriterias,
+        rowsPerPage + rowsPerPage * (newPage - 1),
+        rowsPerPage,
+      );
+    }
+    this.setState({ page: newPage });
   }
 
   handleChangeRowsPerPage = (event) => {
+    const {
+      currentSearchCriterias, results, startAdvancedsearch, totalNbResults,
+    } = this.props;
+    const { page } = this.state;
+
+    const newRowsPerPage = event.target.value;
+
+    /* Load new results if not enough already loaded:
+      - totalNbResults > results.length (not ALL results already loaded)
+      - newRowsPerPage + newRowsPerPage * page > results.length
+        (results on the asked page are not loaded)
+    */
+    if (totalNbResults > results.length
+      && newRowsPerPage + newRowsPerPage * page > results.length
+    ) {
+      startAdvancedsearch(
+        currentSearchCriterias,
+        newRowsPerPage + newRowsPerPage * page,
+        newRowsPerPage,
+      );
+    }
     this.setState({ rowsPerPage: event.target.value });
   }
 
@@ -167,7 +245,7 @@ class SearchResultsTable extends React.Component {
 
   render() {
     const {
-      classes, isLoading, results, resourceType,
+      classes, isLoading, results, resourceType, totalNbResults,
     } = this.props;
 
     const { page, rowsPerPage } = this.state;
@@ -215,9 +293,9 @@ class SearchResultsTable extends React.Component {
                     </TableBody>
                   </Table>
                   <StyledTablePagination
-                    rowsPerPageOptions={[5, 10, 25]}
+                    rowsPerPageOptions={[5, 10, 20]}
                     component="div"
-                    count={results.length}
+                    count={totalNbResults}
                     rowsPerPage={rowsPerPage}
                     page={page}
                     backIconButtonProps={{
@@ -227,8 +305,16 @@ class SearchResultsTable extends React.Component {
                       'aria-label': 'Next Page',
                     }}
                     labelRowsPerPage={<Translate>Results per page</Translate>}
-                    onChangePage={(event, page) => this.handleChangePage(event, page)}
+                    onChangePage={(event, pageNb) => this.handleChangePage(event, pageNb)}
                     onChangeRowsPerPage={event => this.handleChangeRowsPerPage(event)}
+                    ActionsComponent={() => (
+                      <SearchTableActions
+                        page={page}
+                        rowsPerPage={rowsPerPage}
+                        onChangePage={this.handleChangePage}
+                        count={totalNbResults}
+                      />
+                    )}
                   />
                 </React.Fragment>
               ) : (
@@ -247,15 +333,22 @@ class SearchResultsTable extends React.Component {
 
 SearchResultsTable.propTypes = {
   classes: PropTypes.shape({}).isRequired,
+  currentSearchCriterias: PropTypes.shape({}).isRequired,
   history: PropTypes.shape({ push: PropTypes.func }).isRequired,
   isLoading: PropTypes.bool.isRequired,
   resetAdvancedSearch: PropTypes.func.isRequired,
   results: PropTypes.arrayOf(PropTypes.shape({})),
   resourceType: PropTypes.oneOf(['', 'entries', 'groups', 'massifs']).isRequired,
+  startAdvancedsearch: PropTypes.func.isRequired,
+  totalNbResults: PropTypes.number.isRequired,
 };
 
 SearchResultsTable.defaultProps = {
   results: undefined,
+};
+
+SearchResultsTable.contextTypes = {
+  intl: PropTypes.shape({}).isRequired,
 };
 
 export default withRouter(withStyles(styles)(SearchResultsTable));
