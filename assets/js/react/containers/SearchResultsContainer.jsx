@@ -21,9 +21,7 @@ const mapDispatchToProps = dispatch => ({
 const mapStateToProps = state => ({
   isLoading: state.advancedsearch.isLoading,
   results: state.advancedsearch.results,
-
-  // TODO : handle it in Redux store
-  resultsType: 'entries',
+  resourceType: state.advancedsearch.searchCriterias.resourceType,
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(SearchResultsTable);

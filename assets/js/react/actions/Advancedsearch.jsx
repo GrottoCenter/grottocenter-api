@@ -19,12 +19,15 @@ export const RESET_ADVANCEDSEARCH_RESULTS = 'RESET_ADVANCEDSEARCH_RESULTS';
 //
 //
 
-export const fetchAdvancedsearchStarted = () => ({
+// from & limit are used for pagination
+export const fetchAdvancedsearchStarted = criterias => ({
   type: FETCH_ADVANCEDSEARCH_STARTED,
+  criterias,
 });
 
-export const fetchAdvancedsearchSuccess = results => ({
+export const fetchAdvancedsearchSuccess = (totalNbResults, results) => ({
   type: FETCH_ADVANCEDSEARCH_SUCCESS,
+  totalNbResults,
   results,
 });
 
@@ -43,12 +46,12 @@ export const resetAdvancedSearchResults = () => ({
 //
 //
 
-export const fetchAdvancedsearchResult = criteria => (dispatch) => {
-  dispatch(fetchAdvancedsearchStarted());
+export const fetchAdvancedsearchResult = criterias => (dispatch) => {
+  dispatch(fetchAdvancedsearchStarted(criterias));
 
   let completeUrl = advancedsearchUrl;
-  if (criteria) {
-    completeUrl += `?${Object.keys(criteria).map(k => `${k}=${encodeURIComponent(criteria[k])}`).join('&')}`;
+  if (criterias) {
+    completeUrl += `?${Object.keys(criterias).map(k => `${k}=${encodeURIComponent(criterias[k])}`).join('&')}`;
   }
 
   return fetch(completeUrl)
@@ -61,7 +64,8 @@ export const fetchAdvancedsearchResult = criteria => (dispatch) => {
       return response.text();
     })
     .then((text) => {
-      dispatch(fetchAdvancedsearchSuccess(JSON.parse(text).results));
+      const response = JSON.parse(text);
+      dispatch(fetchAdvancedsearchSuccess(response.results, response.totalNbResults));
     });
   // .catch(error => dispatch(fetchRandomEntryFailure(error)))
 };

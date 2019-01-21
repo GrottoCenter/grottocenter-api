@@ -12,10 +12,16 @@ import {
 //
 
 const initialState = {
+  totalNbResults: 0, // total number of results for the search
   results: undefined, // search results
-  resultType: '', // results type (one of: enty, group, massif)
+  resultsType: '', // results type (one of: enty, group, massif)
   errors: undefined, // fetch errors
   isLoading: false,
+  searchCriterias: {
+    from: 0,
+    limit: 10,
+    resourceType: '',
+  },
 };
 
 //
@@ -31,9 +37,11 @@ const advancedsearch = (state = initialState, action) => {
         errors: undefined,
         isLoading: true,
         results: [],
+        searchCriterias: action.criterias,
       });
     case FETCH_ADVANCEDSEARCH_SUCCESS:
       return Object.assign({}, state, {
+        totalNbResults: action.totalNbResults,
         results: action.results,
         isLoading: false,
       });
@@ -43,10 +51,7 @@ const advancedsearch = (state = initialState, action) => {
         isLoading: false,
       });
     case RESET_ADVANCEDSEARCH_RESULTS:
-      return Object.assign({}, state, {
-        isLoading: false,
-        results: undefined,
-      });
+      return initialState;
     default:
       return state;
   }
