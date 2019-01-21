@@ -192,6 +192,7 @@ module.exports = {
       values.push(data);
     });
     res.results = values;
+    res.totalNbResults = source.hits.total;
     return res;
   },
 
@@ -214,6 +215,7 @@ module.exports = {
     });
 
     res.results = values;
+    res.totalNbResults = source.hits.total;
     return res;
   },
 
