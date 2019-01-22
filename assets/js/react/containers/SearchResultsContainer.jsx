@@ -1,5 +1,5 @@
 import { connect } from 'react-redux';
-import { fetchAdvancedsearchResult, resetAdvancedSearchResults } from '../actions/Advancedsearch';
+import { fetchNextAdvancedsearchResults, resetAdvancedSearchResults } from '../actions/Advancedsearch';
 import SearchResultsTable from '../components/homepage/advancedSearch/SearchResultsTable';
 
 //
@@ -8,13 +8,8 @@ import SearchResultsTable from '../components/homepage/advancedSearch/SearchResu
 //
 //
 
-const startAdvancedsearch = (criterias, from, size) => (dispatch) => {
-  const paramsToSend = {
-    ...criterias,
-    from,
-    size,
-  };
-  dispatch(fetchAdvancedsearchResult(paramsToSend));
+const getNewResults = size => (dispatch) => {
+  dispatch(fetchNextAdvancedsearchResults(size));
 };
 
 const resetAdvancedSearch = () => (dispatch) => {
@@ -22,8 +17,8 @@ const resetAdvancedSearch = () => (dispatch) => {
 };
 
 const mapDispatchToProps = dispatch => ({
-  startAdvancedsearch: (formValues, resourceType, from, size) => dispatch(
-    startAdvancedsearch(formValues, resourceType, from, size),
+  getNewResults: size => dispatch(
+    getNewResults(size),
   ),
   resetAdvancedSearch: () => dispatch(
     resetAdvancedSearch(),
@@ -31,7 +26,6 @@ const mapDispatchToProps = dispatch => ({
 });
 
 const mapStateToProps = state => ({
-  currentSearchCriterias: state.advancedsearch.searchCriterias,
   isLoading: state.advancedsearch.isLoading,
   results: state.advancedsearch.results,
   resourceType: state.advancedsearch.searchCriterias.resourceType,

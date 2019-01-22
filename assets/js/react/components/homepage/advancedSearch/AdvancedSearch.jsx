@@ -23,7 +23,7 @@ const styles = theme => ({
   },
   tabContainer: {
     backgroundColor: theme.palette.primary3Color,
-    padding: '24px',
+    margin: '24px',
   },
 });
 
@@ -89,7 +89,6 @@ class AdvancedSearch extends React.Component {
           </Tabs>
         </AppBar>
 
-        <SearchResultsContainer />
 
         {tabSelected === 0 && (
           <div className={classes.tabContainer}>
@@ -106,6 +105,9 @@ class AdvancedSearch extends React.Component {
         )}
         {tabSelected === 1 && <div className={classes.tabContainer}>Groups search content</div>}
         {tabSelected === 2 && <div className={classes.tabContainer}>Massifs search content</div>}
+
+        <SearchResultsContainer />
+
       </div>
     );
   }

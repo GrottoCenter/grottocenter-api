@@ -1,5 +1,5 @@
 import { connect } from 'react-redux';
-import { fetchAdvancedsearchResult, resetAdvancedSearchResults } from '../actions/Advancedsearch';
+import { fetchAdvancedsearchResults, resetAdvancedSearchResults } from '../actions/Advancedsearch';
 import AdvancedSearch from '../components/homepage/advancedSearch/AdvancedSearch';
 
 //
@@ -40,7 +40,7 @@ const startAdvancedsearch = (formValues, resourceType) => (dispatch) => {
     }
   });
 
-  dispatch(fetchAdvancedsearchResult(paramsToSend));
+  dispatch(fetchAdvancedsearchResults(paramsToSend));
 };
 
 const resetAdvancedSearch = () => (dispatch) => {

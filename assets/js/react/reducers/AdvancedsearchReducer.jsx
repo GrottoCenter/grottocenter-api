@@ -2,6 +2,11 @@ import {
   FETCH_ADVANCEDSEARCH_STARTED,
   FETCH_ADVANCEDSEARCH_SUCCESS,
   FETCH_ADVANCEDSEARCH_FAILURE,
+
+  FETCH_NEXT_ADVANCEDSEARCH_STARTED,
+  FETCH_NEXT_ADVANCEDSEARCH_SUCCESS,
+  FETCH_NEXT_ADVANCEDSEARCH_FAILURE,
+
   RESET_ADVANCEDSEARCH_RESULTS,
 } from '../actions/Advancedsearch';
 
@@ -31,6 +36,7 @@ const initialState = {
 
 const advancedsearch = (state = initialState, action) => {
   switch (action.type) {
+    // Search "from nothing"
     case FETCH_ADVANCEDSEARCH_STARTED: {
       return Object.assign({}, state, {
         errors: undefined,
@@ -60,6 +66,38 @@ const advancedsearch = (state = initialState, action) => {
         isLoading: false,
       });
     }
+
+    // Get next page of results
+    case FETCH_NEXT_ADVANCEDSEARCH_STARTED: {
+      return Object.assign({}, state, {
+        errors: undefined,
+        isLoading: true,
+        searchCriterias: {
+          ...state.searchCriterias,
+          ...action.criterias,
+        },
+      });
+    }
+    case FETCH_NEXT_ADVANCEDSEARCH_SUCCESS: {
+      let mergedResults = [];
+      if (state.results) {
+        mergedResults = mergedResults.concat(state.results);
+      }
+      mergedResults = mergedResults.concat(action.results);
+
+      return Object.assign({}, state, {
+        results: mergedResults,
+        isLoading: false,
+      });
+    }
+    case FETCH_NEXT_ADVANCEDSEARCH_FAILURE: {
+      return Object.assign({}, state, {
+        error: action.error,
+        isLoading: false,
+      });
+    }
+
+    // Reset search
     case RESET_ADVANCEDSEARCH_RESULTS: {
       return initialState;
     }

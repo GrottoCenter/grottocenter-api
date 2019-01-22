@@ -11,15 +11,20 @@ export const FETCH_ADVANCEDSEARCH_STARTED = 'FETCH_ADVANCEDSEARCH_STARTED';
 export const FETCH_ADVANCEDSEARCH_SUCCESS = 'FETCH_ADVANCEDSEARCH_SUCCESS';
 export const FETCH_ADVANCEDSEARCH_FAILURE = 'FETCH_ADVANCEDSEARCH_FAILURE';
 
+export const FETCH_NEXT_ADVANCEDSEARCH_STARTED = 'FETCH_NEXT_ADVANCEDSEARCH_STARTED';
+export const FETCH_NEXT_ADVANCEDSEARCH_SUCCESS = 'FETCH_NEXT_ADVANCEDSEARCH_SUCCESS';
+export const FETCH_NEXT_ADVANCEDSEARCH_FAILURE = 'FETCH_NEXT_ADVANCEDSEARCH_FAILURE';
+
 export const RESET_ADVANCEDSEARCH_RESULTS = 'RESET_ADVANCEDSEARCH_RESULTS';
 
-//
-//
-// A C T I O N S - C R E A T O R S
-//
-//
+// FETCH_NEXT_ADVANCEDSEARCH_STARTED
+// FETCH_NEXT_ADVANCEDSEARCH_STARTED
+// FETCH_NEXT_ADVANCEDSEARCH_STARTED
+// FETCH_NEXT_ADVANCEDSEARCH_STARTED
+// FETCH_NEXT_ADVANCEDSEARCH_STARTED
 
-// from & limit are used for pagination
+
+// Start an advanced search from nothing
 export const fetchAdvancedsearchStarted = criterias => ({
   type: FETCH_ADVANCEDSEARCH_STARTED,
   criterias,
@@ -36,6 +41,23 @@ export const fetchAdvancedsearchFailure = error => ({
   error,
 });
 
+// Get next page of an existing advanced search
+export const fetchNextAdvancedSearchStarted = criterias => ({
+  type: FETCH_NEXT_ADVANCEDSEARCH_STARTED,
+  criterias,
+});
+
+export const fetchNextAdvancedSearchSucess = results => ({
+  type: FETCH_NEXT_ADVANCEDSEARCH_SUCCESS,
+  results,
+});
+
+export const fetchNextAdvancedSearchFailure = error => ({
+  type: FETCH_NEXT_ADVANCEDSEARCH_FAILURE,
+  error,
+});
+
+// Reset everything
 export const resetAdvancedSearchResults = () => ({
   type: RESET_ADVANCEDSEARCH_RESULTS,
 });
@@ -45,8 +67,7 @@ export const resetAdvancedSearchResults = () => ({
 // T H U N K S
 //
 //
-
-export const fetchAdvancedsearchResult = criterias => (dispatch) => {
+export const fetchAdvancedsearchResults = criterias => (dispatch) => {
   dispatch(fetchAdvancedsearchStarted(criterias));
 
   let completeUrl = advancedsearchUrl;
@@ -66,6 +87,37 @@ export const fetchAdvancedsearchResult = criterias => (dispatch) => {
     .then((text) => {
       const response = JSON.parse(text);
       dispatch(fetchAdvancedsearchSuccess(response.results, response.totalNbResults));
+    });
+  // .catch(error => dispatch(fetchRandomEntryFailure(error)))
+};
+
+export const fetchNextAdvancedsearchResults = size => (dispatch, getState) => {
+  const currentState = getState().advancedsearch;
+  const criterias = {
+    ...currentState.searchCriterias,
+    size,
+    from: currentState.searchCriterias.from + size,
+  };
+
+  dispatch(fetchNextAdvancedSearchStarted(criterias));
+
+  let completeUrl = advancedsearchUrl;
+  if (criterias) {
+    completeUrl += `?${Object.keys(criterias).map(k => `${k}=${encodeURIComponent(criterias[k])}`).join('&')}`;
+  }
+
+  return fetch(completeUrl)
+    .then((response) => {
+      if (response.status >= 400) {
+        const errorMessage = `Fetching ${completeUrl} status: ${response.status}`;
+        dispatch(fetchNextAdvancedSearchFailure(errorMessage));
+        throw new Error(errorMessage);
+      }
+      return response.text();
+    })
+    .then((text) => {
+      const response = JSON.parse(text);
+      dispatch(fetchNextAdvancedSearchSucess(response.results));
     });
   // .catch(error => dispatch(fetchRandomEntryFailure(error)))
 };
