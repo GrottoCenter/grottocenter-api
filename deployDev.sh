@@ -135,8 +135,12 @@ docker run --rm -d \
     --link ${MYSQL_TAGNAME} \
     --link ${ES_TAGNAME} \
     -e XPACK.MONITORING.ELASTICSEARCH.URL=${ES_TAGNAME} \
+    -e JDBC_MYSQL="jdbc:mysql://${MYSQL_TAGNAME}/${DOCKER_MYSQL_DATABASE}" \
+    -e JDBC_USER=${DOCKER_MYSQL_USER} \
+    -e JDBC_PASSWORD=${DOCKER_MYSQL_PASSWORD} \
+    -e ES_HOSTS="${ES_TAGNAME}:${ES_LOCAL_PORT}" \
     -v "$PWD":/config-dir docker.elastic.co/logstash/logstash:6.5.2 \
-    -f /config-dir/logstash.dev.conf
+    -f /config-dir/logstash.conf
 
 # Wait the container to be running
 waitContainer ${LS_TAGNAME}
