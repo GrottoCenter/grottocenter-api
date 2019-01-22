@@ -20,7 +20,7 @@ import Translate from '../../common/Translate';
 
 import SearchTableActions from './SearchTableActions';
 
-// ===========================================
+// =================== STYLES ========================
 
 const StyledTablePagination = withStyles(() => ({
   root: {
@@ -31,32 +31,44 @@ const StyledTablePagination = withStyles(() => ({
   },
 }))(TablePagination);
 
-const styles = theme => ({
-  resultsContainer: {
-    margin: '24px',
-  },
-  table: {
-    marginBottom: 0,
-  },
-  tableCell: {
+const StyledTableCell = withStyles(() => ({
+  root: {
     fontSize: '1.2rem',
     textAlign: 'center',
   },
-  tableHeadRowCell: {
+}))(TableCell);
+
+const StyledTableHeadRowCell = withStyles(() => ({
+  root: {
     fontSize: '1.3rem',
     fontWeight: 'bold',
     color: '#eee',
     textAlign: 'center',
   },
-  tableHeadRow: {
-    backgroundColor: theme.palette.primary.light,
-  },
-  tableRow: {
+}))(TableCell);
+
+const StyledTableRow = withStyles(theme => ({
+  root: {
     height: '3rem',
     '&:hover': {
       backgroundColor: theme.palette.primary.dark,
       cursor: 'pointer',
     },
+  },
+}))(TableRow);
+
+const StyledTableHeadRow = withStyles(theme => ({
+  root: {
+    backgroundColor: theme.palette.primary.light,
+  },
+}))(TableRow);
+
+const styles = () => ({
+  resultsContainer: {
+    margin: '24px',
+  },
+  table: {
+    marginBottom: 0,
   },
 });
 
@@ -86,87 +98,83 @@ class SearchResultsTable extends React.Component {
     this.handleRowClick = this.handleRowClick.bind(this);
   }
 
+  // ===== Table headers ===== //
   entriesTableHead = () => {
-    const { classes } = this.props;
     const { intl } = this.context;
     return (
       <TableHead>
-        <TableRow className={classes.tableHeadRow}>
-          <TableCell className={classes.tableHeadRowCell}>
+        <StyledTableHeadRow>
+          <StyledTableHeadRowCell>
             <Translate>Name</Translate>
-          </TableCell>
-          <TableCell className={classes.tableHeadRowCell}>
+          </StyledTableHeadRowCell>
+          <StyledTableHeadRowCell>
             <Translate>Country</Translate>
-          </TableCell>
-          <TableCell className={classes.tableHeadRowCell}>
+          </StyledTableHeadRowCell>
+          <StyledTableHeadRowCell>
             <Translate>Massif name</Translate>
-          </TableCell>
-          <TableCell className={classes.tableHeadRowCell}>
+          </StyledTableHeadRowCell>
+          <StyledTableHeadRowCell>
             <Translate>Aesthetic</Translate>
-          </TableCell>
-          <TableCell className={classes.tableHeadRowCell}>
+          </StyledTableHeadRowCell>
+          <StyledTableHeadRowCell>
             <Translate>Ease of move</Translate>
-          </TableCell>
-          <TableCell className={classes.tableHeadRowCell}>
+          </StyledTableHeadRowCell>
+          <StyledTableHeadRowCell>
             <Translate>Ease of reach</Translate>
-          </TableCell>
-          <TableCell className={classes.tableHeadRowCell}>
+          </StyledTableHeadRowCell>
+          <StyledTableHeadRowCell>
             <Translate>Cave name</Translate>
-          </TableCell>
-          <TableCell className={classes.tableHeadRowCell}>
+          </StyledTableHeadRowCell>
+          <StyledTableHeadRowCell>
             <HeaderIcon
               src="/images/length.svg"
               title={intl.formatMessage({ id: 'Cave length', defaultMessage: 'Cave length' })}
               alt="Cave length icon"
             />
-          </TableCell>
-          <TableCell className={classes.tableHeadRowCell}>
+          </StyledTableHeadRowCell>
+          <StyledTableHeadRowCell>
             <HeaderIcon
               src="/images/depth.svg"
               title={intl.formatMessage({ id: 'Cave depth', defaultMessage: 'Cave depth' })}
               alt="Cave depth icon"
             />
-          </TableCell>
-        </TableRow>
+          </StyledTableHeadRowCell>
+        </StyledTableHeadRow>
       </TableHead>
     );
   };
 
-  groupsTableHead = () => {
-    const { classes } = this.props;
-    return (
-      <TableHead>
-        <TableRow className={classes.tableHeadRow}>
-          <TableCell className={classes.tableCell}><Translate>Name</Translate></TableCell>
-          <TableCell className={classes.tableCell}><Translate>Country</Translate></TableCell>
-          <TableCell className={classes.tableCell}><Translate>Massif</Translate></TableCell>
-          <TableCell className={classes.tableCell}><Translate>Aesthetic</Translate></TableCell>
-          <TableCell className={classes.tableCell}><Translate>Ease of move</Translate></TableCell>
-          <TableCell className={classes.tableCell}><Translate>Ease of reach</Translate></TableCell>
-          <TableCell className={classes.tableCell}><Translate>Cave length</Translate></TableCell>
-          <TableCell className={classes.tableCell}><Translate>Cave depth</Translate></TableCell>
-        </TableRow>
-      </TableHead>
-    );
-  };
+  groupsTableHead = () => (
+    <TableHead>
+      <StyledTableHeadRow>
+        <TableCell><Translate>Name</Translate></TableCell>
+        <TableCell><Translate>Country</Translate></TableCell>
+        <TableCell><Translate>Massif</Translate></TableCell>
+        <TableCell><Translate>Aesthetic</Translate></TableCell>
+        <TableCell><Translate>Ease of move</Translate></TableCell>
+        <TableCell><Translate>Ease of reach</Translate></TableCell>
+        <TableCell><Translate>Cave length</Translate></TableCell>
+        <TableCell><Translate>Cave depth</Translate></TableCell>
+      </StyledTableHeadRow>
+    </TableHead>
+  );
 
-  massifsTableHead = () => {
-    const { classes } = this.props;
-    return (
-      <TableHead>
-        <TableRow className={classes.tableHeadRow}>
-          <TableCell className={classes.tableCell}><Translate>Name</Translate></TableCell>
-          <TableCell className={classes.tableCell}><Translate>Country</Translate></TableCell>
-          <TableCell className={classes.tableCell}><Translate>Massif</Translate></TableCell>
-          <TableCell className={classes.tableCell}><Translate>Aesthetic</Translate></TableCell>
-          <TableCell className={classes.tableCell}><Translate>Ease of move</Translate></TableCell>
-          <TableCell className={classes.tableCell}><Translate>Ease of reach</Translate></TableCell>
-          <TableCell className={classes.tableCell}><Translate>Cave length</Translate></TableCell>
-          <TableCell className={classes.tableCell}><Translate>Cave depth</Translate></TableCell>
-        </TableRow>
-      </TableHead>
-    );
-  };
+  massifsTableHead = () => (
+    <TableHead>
+      <StyledTableHeadRow>
+        <TableCell><Translate>Name</Translate></TableCell>
+        <TableCell><Translate>Country</Translate></TableCell>
+        <TableCell><Translate>Massif</Translate></TableCell>
+        <TableCell><Translate>Aesthetic</Translate></TableCell>
+        <TableCell><Translate>Ease of move</Translate></TableCell>
+        <TableCell><Translate>Ease of reach</Translate></TableCell>
+        <TableCell><Translate>Cave length</Translate></TableCell>
+        <TableCell><Translate>Cave depth</Translate></TableCell>
+      </StyledTableHeadRow>
+    </TableHead>
+  );
+
+  // ============================== //
 
   // If the results are empty, the component must get back to the initial pagination state.
   componentDidUpdate = () => {
@@ -194,7 +202,7 @@ class SearchResultsTable extends React.Component {
 
   handleChangePage = (event, newPage) => {
     const {
-      currentSearchCriterias, results, startAdvancedsearch, totalNbResults,
+      results, getNewResults, totalNbResults,
     } = this.props;
     const { page, rowsPerPage } = this.state;
 
@@ -207,9 +215,7 @@ class SearchResultsTable extends React.Component {
       && totalNbResults > results.length
       && rowsPerPage + rowsPerPage * newPage > results.length
     ) {
-      startAdvancedsearch(
-        currentSearchCriterias,
-        rowsPerPage + rowsPerPage * (newPage - 1),
+      getNewResults(
         rowsPerPage,
       );
     }
@@ -218,7 +224,7 @@ class SearchResultsTable extends React.Component {
 
   handleChangeRowsPerPage = (event) => {
     const {
-      currentSearchCriterias, results, startAdvancedsearch, totalNbResults,
+      results, getNewResults, totalNbResults,
     } = this.props;
     const { page } = this.state;
 
@@ -232,9 +238,7 @@ class SearchResultsTable extends React.Component {
     if (totalNbResults > results.length
       && newRowsPerPage + newRowsPerPage * page > results.length
     ) {
-      startAdvancedsearch(
-        currentSearchCriterias,
-        newRowsPerPage + newRowsPerPage * page,
+      getNewResults(
         newRowsPerPage,
       );
     }
@@ -271,23 +275,21 @@ class SearchResultsTable extends React.Component {
                       {results
                         .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                         .map(result => (
-                          <TableRow
+                          <StyledTableRow
                             key={result.id}
                             className={classes.tableRow}
                             onClick={() => this.handleRowClick(result.id)}
                           >
-                            <TableCell className={classes.tableCell} component="th" scope="result">
-                              {result.name}
-                            </TableCell>
-                            <TableCell className={classes.tableCell}>{result.country ? result.country : '-'}</TableCell>
-                            <TableCell className={classes.tableCell}>{result.massif.name ? result.massif.name : '-'}</TableCell>
-                            <TableCell className={classes.tableCell}>{result.aestheticism ? Number(result.aestheticism.toFixed(1)) : '-'}</TableCell>
-                            <TableCell className={classes.tableCell}>{result.caving ? Number(result.caving.toFixed(1)) : '-'}</TableCell>
-                            <TableCell className={classes.tableCell}>{result.approach ? Number(result.approach.toFixed(1)) : '-'}</TableCell>
-                            <TableCell className={classes.tableCell}>{result.cave.name ? result.cave.name : '-'}</TableCell>
-                            <TableCell className={classes.tableCell}>{result.cave.length ? `${result.cave.length}m` : '-'}</TableCell>
-                            <TableCell className={classes.tableCell}>{result.cave.depth ? `${result.cave.depth}m` : '-'}</TableCell>
-                          </TableRow>
+                            <StyledTableCell>{result.name}</StyledTableCell>
+                            <StyledTableCell>{result.country ? result.country : '-'}</StyledTableCell>
+                            <StyledTableCell>{result.massif.name ? result.massif.name : '-'}</StyledTableCell>
+                            <StyledTableCell>{result.aestheticism ? Number(result.aestheticism.toFixed(1)) : '-'}</StyledTableCell>
+                            <StyledTableCell>{result.caving ? Number(result.caving.toFixed(1)) : '-'}</StyledTableCell>
+                            <StyledTableCell>{result.approach ? Number(result.approach.toFixed(1)) : '-'}</StyledTableCell>
+                            <StyledTableCell>{result.cave.name ? result.cave.name : '-'}</StyledTableCell>
+                            <StyledTableCell>{result.cave.length ? `${result.cave.length}m` : '-'}</StyledTableCell>
+                            <StyledTableCell>{result.cave.depth ? `${result.cave.depth}m` : '-'}</StyledTableCell>
+                          </StyledTableRow>
                         ))}
 
                     </TableBody>
@@ -333,13 +335,12 @@ class SearchResultsTable extends React.Component {
 
 SearchResultsTable.propTypes = {
   classes: PropTypes.shape({}).isRequired,
-  currentSearchCriterias: PropTypes.shape({}).isRequired,
   history: PropTypes.shape({ push: PropTypes.func }).isRequired,
   isLoading: PropTypes.bool.isRequired,
   resetAdvancedSearch: PropTypes.func.isRequired,
   results: PropTypes.arrayOf(PropTypes.shape({})),
   resourceType: PropTypes.oneOf(['', 'entries', 'groups', 'massifs']).isRequired,
-  startAdvancedsearch: PropTypes.func.isRequired,
+  getNewResults: PropTypes.func.isRequired,
   totalNbResults: PropTypes.number.isRequired,
 };
 
