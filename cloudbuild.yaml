@@ -1,9 +1,11 @@
 steps:
 
 - name: gcr.io/cloud-builders/gsutil
-  args: ['cp', 'gs://grottocenter3-private/production.js', 'config/env/production.js']
+  args: ['cp', 'gs://grottocenter3-private/production-test.js', 'config/env/production.js']
 - name: gcr.io/cloud-builders/gsutil
   args: ['cp', 'gs://grottocenter3-private/.transifexrc', '.transifexrc']
+- name: gcr.io/cloud-builders/gsutil
+  args: ['cp', 'gs://grottocenter3-private/.env', '.env']
 
 - name: gcr.io/cloud-builders/npm
   args: ['install']
