@@ -10,6 +10,7 @@
     "@material-ui/core": "^3.5.1",
     "@material-ui/icons": "^3.0.1",
     "async": "2.6.1",
+    "dotenv": "^6.2.0",
     "ejs": "~2.6.1",
     "elasticsearch": "^15.2.0",
     "feed-read": "^0.0.1",

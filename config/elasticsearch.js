@@ -4,13 +4,13 @@ let client = {};
 
 if(process.env.NODE_ENV === 'demo') {
   client = new elasticsearch.Client({
-    host: 'elasticsearchgrotto:9200',
+    host: process.env.ES_HOST,
     log: 'trace'
   });
 } else if(process.env.NODE_ENV === 'production') {
   client = new elasticsearch.Client({
-    host: 'elasticsearchgrotto:9200',
-    log: 'trace'
+    host: process.env.ES_HOST,
+    log: 'error'
   });
 } else {
   // In dev, we don't use a container for the server. So we don't have access to elasticsearchgrotto.
