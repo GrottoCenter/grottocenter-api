@@ -41,6 +41,7 @@ const advancedsearch = (state = initialState, action) => {
       return Object.assign({}, state, {
         errors: undefined,
         isLoading: true,
+        results: undefined,
         searchCriterias: {
           ...state.searchCriterias,
           ...action.criterias,
@@ -53,6 +54,9 @@ const advancedsearch = (state = initialState, action) => {
         mergedResults = mergedResults.concat(state.results);
       }
       mergedResults = mergedResults.concat(action.results);
+
+      // Remove duplicates
+      mergedResults = [...new Set(mergedResults)];
 
       return Object.assign({}, state, {
         totalNbResults: action.totalNbResults,
@@ -79,11 +83,10 @@ const advancedsearch = (state = initialState, action) => {
       });
     }
     case FETCH_NEXT_ADVANCEDSEARCH_SUCCESS: {
-      let mergedResults = [];
-      if (state.results) {
-        mergedResults = mergedResults.concat(state.results);
-      }
+      let mergedResults = (state.results ? state.results : []);
       mergedResults = mergedResults.concat(action.results);
+      // Remove duplicates
+      mergedResults = [...new Set(mergedResults)];
 
       return Object.assign({}, state, {
         results: mergedResults,

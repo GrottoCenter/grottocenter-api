@@ -8,8 +8,8 @@ import SearchResultsTable from '../components/homepage/advancedSearch/SearchResu
 //
 //
 
-const getNewResults = size => (dispatch) => {
-  dispatch(fetchNextAdvancedsearchResults(size));
+const getNewResults = (from, size) => (dispatch) => {
+  dispatch(fetchNextAdvancedsearchResults(from, size));
 };
 
 const resetAdvancedSearch = () => (dispatch) => {
@@ -17,8 +17,8 @@ const resetAdvancedSearch = () => (dispatch) => {
 };
 
 const mapDispatchToProps = dispatch => ({
-  getNewResults: size => dispatch(
-    getNewResults(size),
+  getNewResults: (from, size) => dispatch(
+    getNewResults(from, size),
   ),
   resetAdvancedSearch: () => dispatch(
     resetAdvancedSearch(),

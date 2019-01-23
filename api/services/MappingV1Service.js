@@ -249,16 +249,17 @@ module.exports = {
   convertToGrottoModel: function(source) {
     let result = Object.assign({}, GrottoModel);
 
-    // Select only attributes needed for cavers
-
-    // TODO: currently source.cavers doesn't exist. The "JOIN" need to be done in Elasticsearch
-    // populating process by logstash, in logstash.conf.
-    if(source.cavers) {
+    if(source.cavers && source.cavers instanceof Array) {
       result.cavers = source.cavers.map(caver => this.convertToCaverModel(caver));
+    } else if (source.cavers) {
+      // In Elasticsearch, cavers is the nicknames separated with a ','
+      result.cavers = source.cavers.split(',').map(nickname => this.convertToCaverModel({nickname}));
     }
 
-    const entries = source.entries.map(entry => this.convertToEntryModel(entry));
-    
+    if(source.entries) {
+      result.entries = source.entries.map(entry => this.convertToEntryModel(entry));
+    }
+
     // Build the result
     result.id = source.id;
     result.name = source.name;
@@ -279,7 +280,6 @@ module.exports = {
     result.documentary = source.documentary;
     result.URL = source.URL;
     result.Facebook = source.Facebook;
-    result.entries = entries;
 
     return result;
   },

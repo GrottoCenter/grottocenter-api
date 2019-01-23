@@ -91,12 +91,17 @@ export const fetchAdvancedsearchResults = criterias => (dispatch) => {
   // .catch(error => dispatch(fetchRandomEntryFailure(error)))
 };
 
-export const fetchNextAdvancedsearchResults = size => (dispatch, getState) => {
+export const fetchNextAdvancedsearchResults = (from, size) => (dispatch, getState) => {
   const currentState = getState().advancedsearch;
+
+  // Load only new data (to avoid duplicates)
+  const newFrom = currentState.results.length;
+  const newSize = from + size - currentState.results.length;
+
   const criterias = {
     ...currentState.searchCriterias,
-    size,
-    from: currentState.searchCriterias.from + size,
+    from: newFrom,
+    size: newSize,
   };
 
   dispatch(fetchNextAdvancedSearchStarted(criterias));

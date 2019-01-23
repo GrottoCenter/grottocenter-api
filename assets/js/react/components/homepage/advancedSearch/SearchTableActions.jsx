@@ -4,10 +4,8 @@ import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 
 import IconButton from '@material-ui/core/IconButton';
-import FirstPageIcon from '@material-ui/icons/FirstPage';
 import KeyboardArrowLeft from '@material-ui/icons/KeyboardArrowLeft';
 import KeyboardArrowRight from '@material-ui/icons/KeyboardArrowRight';
-import LastPageIcon from '@material-ui/icons/LastPage';
 
 // ==========================
 
@@ -32,7 +30,7 @@ class TablePaginationActions extends React.Component {
 
     render() {
       const {
-        classes, count, page, rowsPerPage, theme,
+        classes, count, page, size, theme,
       } = this.props;
 
       return (
@@ -46,7 +44,7 @@ class TablePaginationActions extends React.Component {
           </IconButton>
           <IconButton
             onClick={this.handleNextButtonClick}
-            disabled={page >= Math.ceil(count / rowsPerPage) - 1}
+            disabled={page * size + size >= count}
             aria-label="Next Page"
           >
             {theme.direction === 'rtl' ? <KeyboardArrowLeft /> : <KeyboardArrowRight />}
@@ -61,7 +59,7 @@ TablePaginationActions.propTypes = {
   count: PropTypes.number.isRequired,
   onChangePage: PropTypes.func.isRequired,
   page: PropTypes.number.isRequired,
-  rowsPerPage: PropTypes.number.isRequired,
+  size: PropTypes.number.isRequired,
   theme: PropTypes.shape({}).isRequired,
 };
 

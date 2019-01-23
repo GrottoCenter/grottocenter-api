@@ -6,6 +6,7 @@ import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import styled from 'styled-components';
 import EntriesSearch from './EntriesSearch';
+import GroupsSearch from './GroupsSearch';
 import Translate from '../../common/Translate';
 
 import SearchResultsContainer from '../../../containers/SearchResultsContainer';
@@ -23,7 +24,7 @@ const styles = theme => ({
   },
   tabContainer: {
     backgroundColor: theme.palette.primary3Color,
-    margin: '24px',
+    padding: '24px',
   },
 });
 
@@ -94,8 +95,6 @@ class AdvancedSearch extends React.Component {
           <div className={classes.tabContainer}>
             <EntriesSearch
               startAdvancedsearch={(state, resourceType) => {
-                // Reset everything before launching a new request
-                resetAdvancedSearch();
                 startAdvancedsearch(state, resourceType);
               }}
               resourceType={advancedSearchTypes[0]}
@@ -103,7 +102,17 @@ class AdvancedSearch extends React.Component {
             />
           </div>
         )}
-        {tabSelected === 1 && <div className={classes.tabContainer}>Groups search content</div>}
+        {tabSelected === 1 && (
+          <div className={classes.tabContainer}>
+            <GroupsSearch
+              startAdvancedsearch={(state, resourceType) => {
+                startAdvancedsearch(state, resourceType);
+              }}
+              resourceType={advancedSearchTypes[1]}
+              resetResults={resetAdvancedSearch}
+            />
+          </div>
+        )}
         {tabSelected === 2 && <div className={classes.tabContainer}>Massifs search content</div>}
 
         <SearchResultsContainer />

@@ -72,8 +72,9 @@ const styles = () => ({
   },
 });
 
+const DEFAULT_FROM = 0;
 const DEFAULT_PAGE = 0;
-const DEFAULT_ROWS_PER_PAGE = 10;
+const DEFAULT_SIZE = 10;
 
 
 const HeaderIcon = styled.img`
@@ -89,8 +90,9 @@ class SearchResultsTable extends React.Component {
     super(props);
 
     this.state = {
+      from: DEFAULT_FROM,
       page: DEFAULT_PAGE,
-      rowsPerPage: DEFAULT_ROWS_PER_PAGE,
+      size: DEFAULT_SIZE,
     };
     this.entriesTableHead = this.entriesTableHead.bind(this);
     this.groupsTableHead = this.groupsTableHead.bind(this);
@@ -144,20 +146,28 @@ class SearchResultsTable extends React.Component {
     );
   };
 
-  groupsTableHead = () => (
-    <TableHead>
-      <StyledTableHeadRow>
-        <TableCell><Translate>Name</Translate></TableCell>
-        <TableCell><Translate>Country</Translate></TableCell>
-        <TableCell><Translate>Massif</Translate></TableCell>
-        <TableCell><Translate>Aesthetic</Translate></TableCell>
-        <TableCell><Translate>Ease of move</Translate></TableCell>
-        <TableCell><Translate>Ease of reach</Translate></TableCell>
-        <TableCell><Translate>Cave length</Translate></TableCell>
-        <TableCell><Translate>Cave depth</Translate></TableCell>
-      </StyledTableHeadRow>
-    </TableHead>
-  );
+  groupsTableHead = () => {
+    const { intl } = this.context;
+    return (
+      <TableHead>
+        <StyledTableHeadRow>
+          <StyledTableHeadRowCell><Translate>Name</Translate></StyledTableHeadRowCell>
+          <StyledTableHeadRowCell><Translate>Contact</Translate></StyledTableHeadRowCell>
+          <StyledTableHeadRowCell><Translate>City</Translate></StyledTableHeadRowCell>
+          <StyledTableHeadRowCell><Translate>County</Translate></StyledTableHeadRowCell>
+          <StyledTableHeadRowCell><Translate>Region</Translate></StyledTableHeadRowCell>
+          <StyledTableHeadRowCell><Translate>Country</Translate></StyledTableHeadRowCell>
+          <StyledTableHeadRowCell>
+            <HeaderIcon
+              src="/images/caver.svg"
+              title={intl.formatMessage({ id: 'Number of cavers', defaultMessage: 'Number of cavers' })}
+              alt="Caver icon"
+            />
+          </StyledTableHeadRowCell>
+        </StyledTableHeadRow>
+      </TableHead>
+    );
+  };
 
   massifsTableHead = () => (
     <TableHead>
@@ -179,13 +189,14 @@ class SearchResultsTable extends React.Component {
   // If the results are empty, the component must get back to the initial pagination state.
   componentDidUpdate = () => {
     const { results } = this.props;
-    const { page, rowsPerPage } = this.state;
+    const { from, page, size } = this.state;
 
-    if (!results && (page !== DEFAULT_PAGE || rowsPerPage !== DEFAULT_ROWS_PER_PAGE)
+    if (!results && (from !== DEFAULT_FROM || page !== DEFAULT_PAGE || size !== DEFAULT_SIZE)
     ) {
       this.setState({
+        from: DEFAULT_FROM,
         page: DEFAULT_PAGE,
-        rowsPerPage: DEFAULT_ROWS_PER_PAGE,
+        size: DEFAULT_SIZE,
       });
     }
   }
@@ -196,7 +207,7 @@ class SearchResultsTable extends React.Component {
     const { history, resourceType, resetAdvancedSearch } = this.props;
     resetAdvancedSearch();
     if (resourceType === 'entries') history.push(`/ui/entries/${id}`);
-    if (resourceType === 'groups') history.push(`/ui/groups/${id}`);
+    if (resourceType === 'grottos') history.push(`/ui/groups/${id}`);
     if (resourceType === 'massifs') history.push(`/ui/massifs/${id}`);
   }
 
@@ -204,45 +215,71 @@ class SearchResultsTable extends React.Component {
     const {
       results, getNewResults, totalNbResults,
     } = this.props;
-    const { page, rowsPerPage } = this.state;
+
+    const {
+      from, size,
+    } = this.state;
+
+    // Formula: From = Page * Size (size remains the same here)
+    const newFrom = newPage * size;
 
     /* Load new results if not enough already loaded:
       - click next page
-      - totalNbResults > results.length (not ALL results already loaded)
-      - rowsPerpage + rowsPerPage * page > results.length (results on the asked page are not loaded)
+      - results.length < totalNbResults (not ALL results already loaded)
+      - results.length < newFrom + size (results on the asked page are not loaded)
     */
-    if (newPage > page
-      && totalNbResults > results.length
-      && rowsPerPage + rowsPerPage * newPage > results.length
+    if (newFrom > from
+      && results.length < totalNbResults
+      && results.length < newFrom + size
     ) {
       getNewResults(
-        rowsPerPage,
+        newFrom,
+        size,
       );
     }
-    this.setState({ page: newPage });
+
+    this.setState({
+      page: newPage,
+      from: newFrom,
+    });
   }
 
   handleChangeRowsPerPage = (event) => {
     const {
       results, getNewResults, totalNbResults,
     } = this.props;
-    const { page } = this.state;
+    const {
+      from,
+    } = this.state;
 
-    const newRowsPerPage = event.target.value;
+    /*
+      Formula used here:
+        Page = From / Size
+
+      Size is changing here so we need to calculate the new page and the new from.
+    */
+    const newSize = event.target.value;
+    const newPage = Math.trunc(from / newSize);
+    const newFrom = newPage * newSize;
 
     /* Load new results if not enough already loaded:
-      - totalNbResults > results.length (not ALL results already loaded)
-      - newRowsPerPage + newRowsPerPage * page > results.length
-        (results on the asked page are not loaded)
+      - results.length < totalNbResults (not ALL results already loaded)
+      - results.length < newFrom + newSize (not enough results loaded)
     */
-    if (totalNbResults > results.length
-      && newRowsPerPage + newRowsPerPage * page > results.length
+    if (results.length < totalNbResults
+      && results.length < newFrom + newSize
     ) {
       getNewResults(
-        newRowsPerPage,
+        newFrom,
+        newSize,
       );
     }
-    this.setState({ rowsPerPage: event.target.value });
+
+    this.setState({
+      from: newFrom,
+      page: newPage,
+      size: newSize,
+    });
   }
 
   // ===== Render ===== //
@@ -252,11 +289,11 @@ class SearchResultsTable extends React.Component {
       classes, isLoading, results, resourceType, totalNbResults,
     } = this.props;
 
-    const { page, rowsPerPage } = this.state;
+    const { from, page, size } = this.state;
 
     let ResultsTableHead;
     if (resourceType === 'entries') ResultsTableHead = this.entriesTableHead;
-    if (resourceType === 'groups') ResultsTableHead = this.groupsTableHead;
+    if (resourceType === 'grottos') ResultsTableHead = this.groupsTableHead;
     if (resourceType === 'massifs') ResultsTableHead = this.massifsTableHead;
 
     return (
@@ -273,22 +310,37 @@ class SearchResultsTable extends React.Component {
                     <TableBody>
 
                       {results
-                        .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                        .slice(from, from + size)
                         .map(result => (
                           <StyledTableRow
                             key={result.id}
                             className={classes.tableRow}
                             onClick={() => this.handleRowClick(result.id)}
                           >
-                            <StyledTableCell>{result.name}</StyledTableCell>
-                            <StyledTableCell>{result.country ? result.country : '-'}</StyledTableCell>
-                            <StyledTableCell>{result.massif.name ? result.massif.name : '-'}</StyledTableCell>
-                            <StyledTableCell>{result.aestheticism ? Number(result.aestheticism.toFixed(1)) : '-'}</StyledTableCell>
-                            <StyledTableCell>{result.caving ? Number(result.caving.toFixed(1)) : '-'}</StyledTableCell>
-                            <StyledTableCell>{result.approach ? Number(result.approach.toFixed(1)) : '-'}</StyledTableCell>
-                            <StyledTableCell>{result.cave.name ? result.cave.name : '-'}</StyledTableCell>
-                            <StyledTableCell>{result.cave.length ? `${result.cave.length}m` : '-'}</StyledTableCell>
-                            <StyledTableCell>{result.cave.depth ? `${result.cave.depth}m` : '-'}</StyledTableCell>
+                            {(resourceType === 'entries' && (
+                            <React.Fragment>
+                              <StyledTableCell>{result.name}</StyledTableCell>
+                              <StyledTableCell>{result.country ? result.country : '-'}</StyledTableCell>
+                              <StyledTableCell>{result.massif.name ? result.massif.name : '-'}</StyledTableCell>
+                              <StyledTableCell>{result.aestheticism ? Number(result.aestheticism.toFixed(1)) : '-'}</StyledTableCell>
+                              <StyledTableCell>{result.caving ? Number(result.caving.toFixed(1)) : '-'}</StyledTableCell>
+                              <StyledTableCell>{result.approach ? Number(result.approach.toFixed(1)) : '-'}</StyledTableCell>
+                              <StyledTableCell>{result.cave.name ? result.cave.name : '-'}</StyledTableCell>
+                              <StyledTableCell>{result.cave.length ? `${result.cave.length}m` : '-'}</StyledTableCell>
+                              <StyledTableCell>{result.cave.depth ? `${result.cave.depth}m` : '-'}</StyledTableCell>
+                            </React.Fragment>
+                            ))}
+                            {(resourceType === 'grottos' && (
+                              <React.Fragment>
+                                <StyledTableCell>{result.name}</StyledTableCell>
+                                <StyledTableCell>{result.contact ? result.contact : '-'}</StyledTableCell>
+                                <StyledTableCell>{result.city ? result.city : '-'}</StyledTableCell>
+                                <StyledTableCell>{result.county ? result.county : '-'}</StyledTableCell>
+                                <StyledTableCell>{result.region ? result.region : '-'}</StyledTableCell>
+                                <StyledTableCell>{result.country ? result.country : '-'}</StyledTableCell>
+                                <StyledTableCell>{result.cavers ? result.cavers.length : '0'}</StyledTableCell>
+                              </React.Fragment>
+                            ))}
                           </StyledTableRow>
                         ))}
 
@@ -298,7 +350,7 @@ class SearchResultsTable extends React.Component {
                     rowsPerPageOptions={[5, 10, 20]}
                     component="div"
                     count={totalNbResults}
-                    rowsPerPage={rowsPerPage}
+                    rowsPerPage={size}
                     page={page}
                     backIconButtonProps={{
                       'aria-label': 'Previous Page',
@@ -312,7 +364,7 @@ class SearchResultsTable extends React.Component {
                     ActionsComponent={() => (
                       <SearchTableActions
                         page={page}
-                        rowsPerPage={rowsPerPage}
+                        size={size}
                         onChangePage={this.handleChangePage}
                         count={totalNbResults}
                       />
@@ -339,7 +391,7 @@ SearchResultsTable.propTypes = {
   isLoading: PropTypes.bool.isRequired,
   resetAdvancedSearch: PropTypes.func.isRequired,
   results: PropTypes.arrayOf(PropTypes.shape({})),
-  resourceType: PropTypes.oneOf(['', 'entries', 'groups', 'massifs']).isRequired,
+  resourceType: PropTypes.oneOf(['', 'entries', 'grottos', 'massifs']).isRequired,
   getNewResults: PropTypes.func.isRequired,
   totalNbResults: PropTypes.number.isRequired,
 };

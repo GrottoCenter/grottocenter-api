@@ -81,7 +81,7 @@ class EntriesSearch extends React.Component {
   /*
     The state is created with particular key names because, these names are directly linked to
     the names of these properties in Elasticsearch. Here we have a syntax that
-    enable us to distinguish range parameters from others parameters.
+    allow us to distinguish search range parameters from others parameters.
    */
   constructor(props) {
     super(props);
@@ -123,24 +123,14 @@ class EntriesSearch extends React.Component {
         max: caveLengthMaxValue,
       },
       'cave name': '',
-      city: '',
-      country: '',
-      county: '',
       'caving-range': {
         isEditable: false,
         min: cavingMinValue,
         max: cavingMaxValue,
       },
-      'latitude-range': {
-        isEditable: false,
-        min: -90,
-        max: 90,
-      },
-      'longitude-range': {
-        isEditable: false,
-        min: -180,
-        max: 180,
-      },
+      city: '',
+      country: '',
+      county: '',
       'massif name': '',
       name: '',
       region: '',
@@ -217,13 +207,10 @@ class EntriesSearch extends React.Component {
       'cave is diving': caveIsDiving,
       'cave length-range': caveLengthRange,
       'cave name': caveName,
-      // 'caving-range': cavingRange,
+      'caving-range': cavingRange,
       city,
       country,
       county,
-      'caving-range': cavingRange,
-      // 'latitude-range': latitudeRange,maxValueAuthorized
-      // 'longitude-range': longitudeRange,
       'massif name': massifName,
       name,
       region,
