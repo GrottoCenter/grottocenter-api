@@ -101,7 +101,7 @@ then
   gcloud config set project ${PROJECT_ID}
 
   echo '### Import dump file to the prod database ###'
-  gcloud sql instances import ${SQL_PROD_INSTANCE_NAME} gs://${CLOUD_STORAGE_BUCKET_NAME}/${DUMP_FILE_NAME}.gz
+  gcloud sql import sql ${SQL_PROD_INSTANCE_NAME} gs://${CLOUD_STORAGE_BUCKET_NAME}/${DUMP_FILE_NAME}.gz
 
   echo "### Remove dump file from Google Cloud Storage"
   gsutil acl ch -d ${CLOUDSQL_SERVICE_ACCOUNT_EMAIL_ADDRESS} gs://${CLOUD_STORAGE_BUCKET_NAME}
