@@ -153,5 +153,18 @@
 	"Localization": "Localization",
 	"Advanced search": "Advanced search",
 	"No results": "No results",
-	"Reset": "Reset"
+	"Reset": "Reset",
+	"Results per page": "Results per page",
+	"Postal code": "Postal code",
+	"Group properties": "Group properties",
+	"Group name": "Group name",
+	"Number of cavers": "Number of cavers",
+	"Number of caves": "Number of caves",
+	"Number of entries": "Number of entries",
+	"All": "All",
+	"Yes": "Yes",
+	"No": "No",
+	"Network name": "Network name",
+	"Network properties": "Network properties",
+	"Massif properties": "Massif properties"
 }

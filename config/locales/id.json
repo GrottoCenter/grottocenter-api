@@ -52,6 +52,13 @@
 	"Last reviewed": "Tanggal revisi",
 	"by": "oleh",
 	"name": "Nama",
+	"Name": "Nama",
 	"city": "Kota",
-	"country": "Negara"
+	"City": "Kota",
+	"country": "Negara",
+	"Country": "Negara",
+	"Depth": "Kedalaman",
+	"Length": "Panjang",
+	"Diving cave": "Menyelam dalam gua",
+	"Ease of move": "Mudah bergerak"
 }

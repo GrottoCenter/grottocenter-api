@@ -162,6 +162,16 @@ module.exports = {
     return result;
   },
 
+  convertToCaveList: function(source) {
+    let caves = [];
+    console.log(source)
+    source.forEach((item) => {
+      let cave = this.convertToCaveModel(item);
+      caves.push(cave);
+    });
+    return caves;
+  },
+
   /**
    * Function that return all data for the search
    * @param {*} source : the elasticsearch result
@@ -221,17 +231,26 @@ module.exports = {
 
   // ---------------- Massif Function ------------------------------
 
-  //TODO: Choose which attributes to keep in author
   convertToMassifModel: function(source) {
     let result = Object.assign({}, MassifModel);
 
     if(source.author) {
       result.author = this.convertToCaverModel(source.author);
     }
-    const caves = source.caves.map(cave =>  this.convertToCaveModel(cave));
 
-    // line to put every attributes of author inside another object author
-    // Object.keys(source.author).forEach(f => author[f] = source.author[f]);
+    if(source.caves) {
+      result.caves = source.caves.map(cave => this.convertToCaveModel(cave));
+    } else if (source['caves names']) {
+      // In Elasticsearch
+      result.caves = source['caves names'].split(',').map(name => this.convertToCaveModel({name}));
+    }
+
+    if(source.entries) {
+      result.entries = source.entries.map(entries => this.convertToEntryModel(entries));
+    } else if (source['entries names']) {
+      // In Elasticsearch
+      result.entries = source['entries names'].split(',').map(name => this.convertToEntryModel({name}));
+    }
     
     // Save in result the object to return
     result.id = source.id;
@@ -239,7 +258,6 @@ module.exports = {
     result.name = source.name;
     result.dateInscription = source.dateInscription;
     result.dateReviewed = source.dateReviewed;
-    result.caves = caves;
 
     return result;
   },
@@ -251,9 +269,9 @@ module.exports = {
 
     if(source.cavers && source.cavers instanceof Array) {
       result.cavers = source.cavers.map(caver => this.convertToCaverModel(caver));
-    } else if (source.cavers) {
-      // In Elasticsearch, cavers is the nicknames separated with a ','
-      result.cavers = source.cavers.split(',').map(nickname => this.convertToCaverModel({nickname}));
+    } else if (source['cavers names']) {
+      // In Elasticsearch, cavers names are the nicknames separated with a ','
+      result.cavers = source['cavers names'].split(',').map(nickname => this.convertToCaverModel({nickname}));
     }
 
     if(source.entries) {

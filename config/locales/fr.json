@@ -153,5 +153,18 @@
 	"Localization": "Localisation",
 	"Advanced search": "Recherche avancée",
 	"No results": "Pas de résultats",
-	"Reset": "Réinitialiser"
+	"Reset": "Réinitialiser",
+	"Results per page": "Résultats par page",
+	"Postal code": "Code postal",
+	"Group properties": "Propriétés du groupe",
+	"Group name": "Nom du groupe",
+	"Number of cavers": "Nombre de spéléologues",
+	"Number of caves": "Nombre de grottes",
+	"Number of entries": "Nombre d'entrées",
+	"All": "Tous",
+	"Yes": "Oui",
+	"No": "Non",
+	"Network name": "Nom du réseau",
+	"Network properties": "Propriétés du réseau",
+	"Massif properties": "Propriétés du massif"
 }

@@ -77,10 +77,15 @@
 	"by": "von",
 	"Browse API": "API durchsuchen",
 	"name": "name",
+	"Name": "Name",
 	"city": "stadt",
+	"City": "Stadt",
 	"country": "land",
+	"Country": "Land",
 	"county": "bezirk",
+	"County": "Bezirk",
 	"region": "region",
+	"Region": "Region",
 	"description": "beschreibung",
 	"caves": "höhlen",
 	"riggings": "Ausrüstung",
@@ -89,5 +94,10 @@
 	"custom_message": "benutzerdefinierte Nachricht",
 	"members": "mitglieder",
 	"entries": "Mundlochs",
-	"entries names": "Name des Mundlochs"
+	"entries names": "Name des Mundlochs",
+	"Depth": "Tiefe",
+	"Length": "Länge",
+	"Diving cave": "Tauchhöhle",
+	"Ease of move": "Fortbewegung",
+	"No results": "Keine Ergebnisse gefunden"
 }
