@@ -106,7 +106,7 @@ module.exports = {
                 
                 // ==== Grottos
                 'custom_message', 
-                'cavers',
+                'cavers names',
 
                 // ==== Massifs 
                 'entries names', 'entries regions', 'entries cities', 'entry counties', 'entries countries'

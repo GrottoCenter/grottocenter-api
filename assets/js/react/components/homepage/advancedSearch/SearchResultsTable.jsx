@@ -313,7 +313,7 @@ class SearchResultsTable extends React.Component {
     if (resultsSliced) {
       resultsSliced = results.slice(from, from + size);
       if (resultsSliced.length === 0) {
-        resultsSliced = results.slice(from - size, from);
+        resultsSliced = results.slice(results.length - size, results.length);
       }
     }
 
