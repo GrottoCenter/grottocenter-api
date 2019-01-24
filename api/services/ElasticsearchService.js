@@ -10,10 +10,10 @@ const advancedSearchMetaParams = ['resourceType', 'complete', 'match_all_queries
     all the keywords by changing / inverting / deleting X letters.
 
     Examples: 
-    FUZINESS=1 and query=clomb will also use the query 'climb' (change 'o' to 'i' => 1 operation)
-    FUZINESS=2 and query=clomb will also use the query 'lamb' (delete 'c', change 'o' to 'a' => 2 operations)
+    FUZZINESS=1 and query=clomb will also use the query 'climb' (change 'o' to 'i' => 1 operation)
+    FUZZINESS=2 and query=clomb will also use the query 'lamb' (delete 'c', change 'o' to 'a' => 2 operations)
 */
-const FUZINESS = 1;
+const FUZZINESS = 1;
 
 module.exports = {
   /**
@@ -92,7 +92,7 @@ module.exports = {
         body: {
           query: {
             query_string: {
-              query: '*'+params.query+'* + '+params.query+'~'+FUZINESS,
+              query: '*'+params.query+'* + '+params.query+'~'+FUZZINESS,
               fields: [
                 // General useful fields
                 'name^3', 'city^2', 'country', 'county', 'region',
