@@ -218,6 +218,8 @@ class EntriesSearch extends React.Component {
       // 'year_discovery-range': yearOfDiscoveryRange,
     } = this.state;
 
+    const { intl } = this.context;
+
     return (
       <Card
         className={classes.cardContainer}
@@ -485,13 +487,13 @@ class EntriesSearch extends React.Component {
             </fieldset>
 
             <fieldset className={classes.fieldset}>
-              <legend className={classes.legend}><Translate>Cave properties</Translate></legend>
+              <legend className={classes.legend}><Translate>Network properties</Translate></legend>
 
               <TextField
                 className={classes.formElement}
                 label={(
                   <span className={classes.formElementFontSize}>
-                    <Translate>Cave name</Translate>
+                    <Translate>Network name</Translate>
                   </span>
                 )}
                 onChange={event => this.handleValueChange('cave name', event)}
@@ -507,7 +509,7 @@ class EntriesSearch extends React.Component {
                 className={classes.formElement}
               >
                 <InputLabel shrink htmlFor="cave-is-diving-native-label-placeholder">
-                  Diving Cave
+                  <Translate>Diving cave</Translate>
                 </InputLabel>
                 <NativeSelect
                   value={caveIsDiving}
@@ -517,9 +519,9 @@ class EntriesSearch extends React.Component {
                     select: classes.formElementFontSize,
                   }}
                 >
-                  <option value="">All</option>
-                  <option value="yes">Yes</option>
-                  <option value="no">No</option>
+                  <option value="">{intl.formatMessage({ id: 'All', defaultMessage: 'All' })}</option>
+                  <option value="yes">{intl.formatMessage({ id: 'Yes', defaultMessage: 'Yes' })}</option>
+                  <option value="no">{intl.formatMessage({ id: 'No', defaultMessage: 'No' })}</option>
                 </NativeSelect>
               </FormControl>
 
@@ -698,6 +700,10 @@ EntriesSearch.defaultProps = {
   caveDepthMaxValue: 2000,
   caveLengthMinValue: 0,
   caveLengthMaxValue: 700000,
+};
+
+EntriesSearch.contextTypes = {
+  intl: PropTypes.shape({}).isRequired,
 };
 
 export default withStyles(styles)(EntriesSearch);

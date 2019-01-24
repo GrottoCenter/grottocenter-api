@@ -11,9 +11,15 @@ import Card from '@material-ui/core/Card';
 import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
 
+import FormControl from '@material-ui/core/FormControl';
+import FormLabel from '@material-ui/core/FormLabel';
 import TextField from '@material-ui/core/TextField';
+import Switch from '@material-ui/core/Switch';
+import Slider from 'rc-slider';
 
 import Translate from '../../common/Translate';
+
+const Range = Slider.createSliderWithTooltip(Slider.Range);
 
 
 const styles = theme => ({
@@ -32,7 +38,7 @@ const styles = theme => ({
   formContainer: {
     display: 'flex',
     flexWrap: 'wrap',
-    justifyContent: 'space-between',
+    justifyContent: 'space-evenly',
     marginBottom: 0,
   },
   formElement: {
@@ -68,7 +74,7 @@ const styles = theme => ({
 });
 
 class GroupsSearch extends React.Component {
-  // TODO: Handle the max of depth and length dynamically
+  // TODO: Handle the max of number of cavers dynamically
 
   /*
     The state is created with particular key names because, these names are directly linked to
@@ -81,14 +87,23 @@ class GroupsSearch extends React.Component {
     this.handleValueChange = this.handleValueChange.bind(this);
   }
 
-  getInitialState = () => ({
-    city: '',
-    county: '',
-    country: '',
-    name: '',
-    postal_code: '',
-    region: '',
-  })
+  getInitialState = () => {
+    const { numberOfCaversMinValue, numberOfCaversMaxValue } = this.props;
+
+    return ({
+      'number of cavers-range': {
+        isEditable: false,
+        min: numberOfCaversMinValue,
+        max: numberOfCaversMaxValue,
+      },
+      city: '',
+      county: '',
+      country: '',
+      name: '',
+      postal_code: '',
+      region: '',
+    });
+  }
 
   /**
    * keyName: String
@@ -102,15 +117,49 @@ class GroupsSearch extends React.Component {
     });
   };
 
+  /**
+   * This function set the state of the keyname property
+   * to be the same value of the range.
+   * If the values given are > (or <) to the minValueAuthorized (or maxValueAuthorized),
+   * it set it to the min/maxValueAuthorized.
+   */
+  handleRangeChange = (keyName, values, minValueAuthorized, maxValueAuthorized) => {
+    const newState = {
+      [keyName]: {
+        ...this.state[keyName],
+        min: (values[0] < minValueAuthorized ? minValueAuthorized : values[0]),
+        max: (values[1] > maxValueAuthorized ? maxValueAuthorized : values[1]),
+      },
+    };
+    this.setState(newState);
+  };
+
+  /**
+   * This function set the state of the keyname property
+   * to be the same value as the event of the slider.
+   */
+  handleCheckedChange = keyName => (event) => {
+    const newState = {
+      [keyName]: {
+        ...this.state[keyName],
+        isEditable: event.target.checked,
+      },
+    };
+    this.setState(newState);
+  };
+
   render() {
     const {
       classes,
       resourceType,
       resetResults,
       startAdvancedsearch,
+
+      numberOfCaversMinValue, numberOfCaversMaxValue,
     } = this.props;
 
     const {
+      'number of cavers-range': numberOfCaversRange,
       city,
       county,
       country,
@@ -150,6 +199,54 @@ class GroupsSearch extends React.Component {
                 },
               }}
             />
+
+            <FormControl
+              className={classes.formElement}
+            >
+              <FormLabel>
+                <span className={classes.formElementFontSize}>
+                  <Translate>Number of cavers</Translate>
+                </span>
+                <Switch
+                  checked={numberOfCaversRange.isEditable}
+                  onChange={this.handleCheckedChange('number of cavers-range')}
+                  value={numberOfCaversRange.isEditable}
+                  classes={{
+                    switchBase: classes.colorSwitchBase,
+                    checked: classes.colorChecked,
+                    bar: classes.colorBar,
+                  }}
+                />
+              </FormLabel>
+              <Range
+                className={classes.formRange}
+                min={numberOfCaversMinValue}
+                max={numberOfCaversMaxValue}
+                onChange={(values) => {
+                  this.handleRangeChange('number of cavers-range', values, numberOfCaversMinValue, numberOfCaversMaxValue);
+                }}
+                tipFormatter={value => `${value}`}
+                value={[numberOfCaversRange.min, numberOfCaversRange.max]}
+                disabled={!numberOfCaversRange.isEditable}
+                trackStyle={[!numberOfCaversRange.isEditable ? { backgroundColor: '#9e9e9e' } : { backgroundColor: '#ff9800' }]}
+                handleStyle={[{ backgroundColor: '#795548', borderColor: '#795548' }, { backgroundColor: '#795548', borderColor: '#795548' }]}
+              />
+
+              <div style={{ display: 'inline-flex', justifyContent: 'space-between' }}>
+                <TextField
+                  onChange={event => this.handleRangeChange('number of cavers-range', [parseInt(event.target.value, 10) || 0, numberOfCaversRange.max], numberOfCaversMinValue, numberOfCaversMaxValue)}
+                  value={numberOfCaversRange.min}
+                  disabled={!numberOfCaversRange.isEditable}
+                  style={{ width: '50px' }}
+                />
+                <TextField
+                  onChange={event => this.handleRangeChange('number of cavers-range', [numberOfCaversRange.min, parseInt(event.target.value, 10) || 0], numberOfCaversMinValue, numberOfCaversMaxValue)}
+                  value={numberOfCaversRange.max}
+                  disabled={!numberOfCaversRange.isEditable}
+                  style={{ width: '50px' }}
+                />
+              </div>
+            </FormControl>
 
             <fieldset className={classes.fieldset}>
               <legend className={classes.legend}><Translate>Localization</Translate></legend>
@@ -274,10 +371,15 @@ GroupsSearch.propTypes = {
   startAdvancedsearch: PropTypes.func.isRequired,
   resetResults: PropTypes.func.isRequired,
   resourceType: PropTypes.string.isRequired,
+
+  // Min / max values for form
+  numberOfCaversMinValue: PropTypes.number,
+  numberOfCaversMaxValue: PropTypes.number,
 };
 
 GroupsSearch.defaultProps = {
-
+  numberOfCaversMinValue: 0,
+  numberOfCaversMaxValue: 100,
 };
 
 export default withStyles(styles)(GroupsSearch);

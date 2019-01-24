@@ -1,12 +1,10 @@
 /* eslint-disable no-nested-ternary */
+
 import React from 'react';
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import { withRouter } from 'react-router-dom';
-
 import { Card, CardContent } from '@material-ui/core';
-import CircularProgress from '@material-ui/core/CircularProgress';
-
 import styled from 'styled-components';
 
 import Table from '@material-ui/core/Table';
@@ -65,7 +63,7 @@ const StyledTableHeadRow = withStyles(theme => ({
 
 const styles = () => ({
   resultsContainer: {
-    margin: '24px',
+    marginTop: '24px',
   },
   table: {
     marginBottom: 0,
@@ -75,7 +73,6 @@ const styles = () => ({
 const DEFAULT_FROM = 0;
 const DEFAULT_PAGE = 0;
 const DEFAULT_SIZE = 10;
-
 
 const HeaderIcon = styled.img`
   height: 3.6rem;
@@ -99,6 +96,23 @@ class SearchResultsTable extends React.Component {
     this.massifsTableHead = this.massifsTableHead.bind(this);
     this.handleRowClick = this.handleRowClick.bind(this);
   }
+
+  // ============================== //
+
+   // If the results are empty, the component must get back to the initial pagination state.
+   componentDidUpdate = () => {
+     const { results } = this.props;
+     const { from, page, size } = this.state;
+
+     if (!results && (from !== DEFAULT_FROM || page !== DEFAULT_PAGE || size !== DEFAULT_SIZE)
+     ) {
+       this.setState({
+         from: DEFAULT_FROM,
+         page: DEFAULT_PAGE,
+         size: DEFAULT_SIZE,
+       });
+     }
+   }
 
   // ===== Table headers ===== //
   entriesTableHead = () => {
@@ -125,7 +139,7 @@ class SearchResultsTable extends React.Component {
             <Translate>Ease of reach</Translate>
           </StyledTableHeadRowCell>
           <StyledTableHeadRowCell>
-            <Translate>Cave name</Translate>
+            <Translate>Network name</Translate>
           </StyledTableHeadRowCell>
           <StyledTableHeadRowCell>
             <HeaderIcon
@@ -159,9 +173,9 @@ class SearchResultsTable extends React.Component {
           <StyledTableHeadRowCell><Translate>Country</Translate></StyledTableHeadRowCell>
           <StyledTableHeadRowCell>
             <HeaderIcon
-              src="/images/caver.svg"
+              src="/images/caver-cluster.svg"
               title={intl.formatMessage({ id: 'Number of cavers', defaultMessage: 'Number of cavers' })}
-              alt="Caver icon"
+              alt="Cavers icon"
             />
           </StyledTableHeadRowCell>
         </StyledTableHeadRow>
@@ -169,37 +183,30 @@ class SearchResultsTable extends React.Component {
     );
   };
 
-  massifsTableHead = () => (
-    <TableHead>
-      <StyledTableHeadRow>
-        <TableCell><Translate>Name</Translate></TableCell>
-        <TableCell><Translate>Country</Translate></TableCell>
-        <TableCell><Translate>Massif</Translate></TableCell>
-        <TableCell><Translate>Aesthetic</Translate></TableCell>
-        <TableCell><Translate>Ease of move</Translate></TableCell>
-        <TableCell><Translate>Ease of reach</Translate></TableCell>
-        <TableCell><Translate>Cave length</Translate></TableCell>
-        <TableCell><Translate>Cave depth</Translate></TableCell>
-      </StyledTableHeadRow>
-    </TableHead>
-  );
-
-  // ============================== //
-
-  // If the results are empty, the component must get back to the initial pagination state.
-  componentDidUpdate = () => {
-    const { results } = this.props;
-    const { from, page, size } = this.state;
-
-    if (!results && (from !== DEFAULT_FROM || page !== DEFAULT_PAGE || size !== DEFAULT_SIZE)
-    ) {
-      this.setState({
-        from: DEFAULT_FROM,
-        page: DEFAULT_PAGE,
-        size: DEFAULT_SIZE,
-      });
-    }
-  }
+  massifsTableHead = () => {
+    const { intl } = this.context;
+    return (
+      <TableHead>
+        <StyledTableHeadRow>
+          <StyledTableHeadRowCell><Translate>Name</Translate></StyledTableHeadRowCell>
+          <StyledTableHeadRowCell>
+            <HeaderIcon
+              src="/images/entry-cluster.svg"
+              title={intl.formatMessage({ id: 'Number of caves', defaultMessage: 'Number of caves' })}
+              alt="Caves icon"
+            />
+          </StyledTableHeadRowCell>
+          <StyledTableHeadRowCell>
+            <HeaderIcon
+              src="/images/gc-entries.svg"
+              title={intl.formatMessage({ id: 'Number of entries', defaultMessage: 'Number of entries' })}
+              alt="Entries icon"
+            />
+          </StyledTableHeadRowCell>
+        </StyledTableHeadRow>
+      </TableHead>
+    );
+  };
 
   // ===== Handle functions ===== //
 
@@ -296,28 +303,42 @@ class SearchResultsTable extends React.Component {
     if (resourceType === 'grottos') ResultsTableHead = this.groupsTableHead;
     if (resourceType === 'massifs') ResultsTableHead = this.massifsTableHead;
 
+    /*
+      When the component is loading the new page, we want to keep the
+      previous results displayed (instead of a white board).
+      That's why we check if the slice asked by the user is returning more
+      than 0 results: if not, we keep the old results.
+    */
+    let resultsSliced = results;
+    if (resultsSliced) {
+      resultsSliced = results.slice(from, from + size);
+      if (resultsSliced.length === 0) {
+        resultsSliced = results.slice(from - size, from);
+      }
+    }
+
     return (
-      (results !== undefined && resourceType !== '' ? (
+      (resultsSliced !== undefined && resourceType !== '' ? (
         <Card className={classes.resultsContainer}>
           <CardContent>
-            {isLoading ? (
-              <CircularProgress />
-            ) : (
-              results.length > 0 ? (
-                <React.Fragment>
-                  <Table className={classes.table}>
-                    <ResultsTableHead />
-                    <TableBody>
+            {resultsSliced.length > 0 ? (
+              <React.Fragment>
+                <Table className={classes.table}>
+                  <ResultsTableHead />
 
-                      {results
-                        .slice(from, from + size)
-                        .map(result => (
-                          <StyledTableRow
-                            key={result.id}
-                            className={classes.tableRow}
-                            onClick={() => this.handleRowClick(result.id)}
-                          >
-                            {(resourceType === 'entries' && (
+                  <TableBody style={{
+                    opacity: isLoading ? 0.3 : 1,
+                  }}
+                  >
+
+                    {resultsSliced
+                      .map(result => (
+                        <StyledTableRow
+                          key={result.id}
+                          className={classes.tableRow}
+                          onClick={() => this.handleRowClick(result.id)}
+                        >
+                          {(resourceType === 'entries' && (
                             <React.Fragment>
                               <StyledTableCell>{result.name}</StyledTableCell>
                               <StyledTableCell>{result.country ? result.country : '-'}</StyledTableCell>
@@ -329,52 +350,61 @@ class SearchResultsTable extends React.Component {
                               <StyledTableCell>{result.cave.length ? `${result.cave.length}m` : '-'}</StyledTableCell>
                               <StyledTableCell>{result.cave.depth ? `${result.cave.depth}m` : '-'}</StyledTableCell>
                             </React.Fragment>
-                            ))}
-                            {(resourceType === 'grottos' && (
-                              <React.Fragment>
-                                <StyledTableCell>{result.name}</StyledTableCell>
-                                <StyledTableCell>{result.contact ? result.contact : '-'}</StyledTableCell>
-                                <StyledTableCell>{result.city ? result.city : '-'}</StyledTableCell>
-                                <StyledTableCell>{result.county ? result.county : '-'}</StyledTableCell>
-                                <StyledTableCell>{result.region ? result.region : '-'}</StyledTableCell>
-                                <StyledTableCell>{result.country ? result.country : '-'}</StyledTableCell>
-                                <StyledTableCell>{result.cavers ? result.cavers.length : '0'}</StyledTableCell>
-                              </React.Fragment>
-                            ))}
-                          </StyledTableRow>
-                        ))}
+                          ))}
+                          {(resourceType === 'grottos' && (
+                          <React.Fragment>
+                            <StyledTableCell>{result.name}</StyledTableCell>
+                            <StyledTableCell>{result.contact ? result.contact : '-'}</StyledTableCell>
+                            <StyledTableCell>{result.city ? result.city : '-'}</StyledTableCell>
+                            <StyledTableCell>{result.county ? result.county : '-'}</StyledTableCell>
+                            <StyledTableCell>{result.region ? result.region : '-'}</StyledTableCell>
+                            <StyledTableCell>{result.country ? result.country : '-'}</StyledTableCell>
+                            <StyledTableCell>{result.cavers ? result.cavers.length : '0'}</StyledTableCell>
+                          </React.Fragment>
+                          ))}
+                          {(resourceType === 'massifs' && (
+                          <React.Fragment>
+                            <StyledTableCell>{result.name}</StyledTableCell>
+                            <StyledTableCell>{result.caves ? result.caves.length : '0'}</StyledTableCell>
+                            <StyledTableCell>{result.entries ? result.entries.length : '0'}</StyledTableCell>
+                          </React.Fragment>
+                          ))}
+                        </StyledTableRow>
+                      ))}
 
-                    </TableBody>
-                  </Table>
-                  <StyledTablePagination
-                    rowsPerPageOptions={[5, 10, 20]}
-                    component="div"
-                    count={totalNbResults}
-                    rowsPerPage={size}
-                    page={page}
-                    backIconButtonProps={{
-                      'aria-label': 'Previous Page',
-                    }}
-                    nextIconButtonProps={{
-                      'aria-label': 'Next Page',
-                    }}
-                    labelRowsPerPage={<Translate>Results per page</Translate>}
-                    onChangePage={(event, pageNb) => this.handleChangePage(event, pageNb)}
-                    onChangeRowsPerPage={event => this.handleChangeRowsPerPage(event)}
-                    ActionsComponent={() => (
-                      <SearchTableActions
-                        page={page}
-                        size={size}
-                        onChangePage={this.handleChangePage}
-                        count={totalNbResults}
-                      />
-                    )}
-                  />
-                </React.Fragment>
-              ) : (
-                <Translate>No results</Translate>
-              )
-            )}
+                  </TableBody>
+                </Table>
+
+                <StyledTablePagination
+                  rowsPerPageOptions={[5, 10, 20]}
+                  component="div"
+                  count={totalNbResults}
+                  rowsPerPage={size}
+                  page={page}
+                  backIconButtonProps={{
+                    'aria-label': 'Previous Page',
+                  }}
+                  nextIconButtonProps={{
+                    'aria-label': 'Next Page',
+                  }}
+                  labelRowsPerPage={<Translate>Results per page</Translate>}
+                  onChangePage={(event, pageNb) => this.handleChangePage(event, pageNb)}
+                  onChangeRowsPerPage={event => this.handleChangeRowsPerPage(event)}
+                  ActionsComponent={() => (
+                    <SearchTableActions
+                      page={page}
+                      size={size}
+                      onChangePage={this.handleChangePage}
+                      count={totalNbResults}
+                    />
+                  )}
+                />
+
+              </React.Fragment>
+            ) : (
+              <Translate>No results</Translate>
+            )
+            }
           </CardContent>
         </Card>
       ) : (

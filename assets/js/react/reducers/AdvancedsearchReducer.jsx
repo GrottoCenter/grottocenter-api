@@ -43,7 +43,6 @@ const advancedsearch = (state = initialState, action) => {
         isLoading: true,
         results: undefined,
         searchCriterias: {
-          ...state.searchCriterias,
           ...action.criterias,
         },
       });

@@ -7,6 +7,7 @@ import Tab from '@material-ui/core/Tab';
 import styled from 'styled-components';
 import EntriesSearch from './EntriesSearch';
 import GroupsSearch from './GroupsSearch';
+import MassifsSearch from './MassifsSearch';
 import Translate from '../../common/Translate';
 
 import SearchResultsContainer from '../../../containers/SearchResultsContainer';
@@ -82,7 +83,7 @@ class AdvancedSearch extends React.Component {
               className={classes.tabName}
               label={(
                 <React.Fragment>
-                  <TabIcon src="/images/entry-cluster.svg" alt="Massif icon" />
+                  <TabIcon src="/images/massif.svg" alt="Massif icon" />
                   <Translate>Massifs</Translate>
                 </React.Fragment>
               )}
@@ -91,8 +92,8 @@ class AdvancedSearch extends React.Component {
         </AppBar>
 
 
-        {tabSelected === 0 && (
-          <div className={classes.tabContainer}>
+        <div className={classes.tabContainer}>
+          {tabSelected === 0 && (
             <EntriesSearch
               startAdvancedsearch={(state, resourceType) => {
                 startAdvancedsearch(state, resourceType);
@@ -100,10 +101,8 @@ class AdvancedSearch extends React.Component {
               resourceType={advancedSearchTypes[0]}
               resetResults={resetAdvancedSearch}
             />
-          </div>
-        )}
-        {tabSelected === 1 && (
-          <div className={classes.tabContainer}>
+          )}
+          {tabSelected === 1 && (
             <GroupsSearch
               startAdvancedsearch={(state, resourceType) => {
                 startAdvancedsearch(state, resourceType);
@@ -111,11 +110,19 @@ class AdvancedSearch extends React.Component {
               resourceType={advancedSearchTypes[1]}
               resetResults={resetAdvancedSearch}
             />
-          </div>
-        )}
-        {tabSelected === 2 && <div className={classes.tabContainer}>Massifs search content</div>}
+          )}
+          {tabSelected === 2 && (
+            <MassifsSearch
+              startAdvancedsearch={(state, resourceType) => {
+                startAdvancedsearch(state, resourceType);
+              }}
+              resourceType={advancedSearchTypes[2]}
+              resetResults={resetAdvancedSearch}
+            />
+          )}
 
-        <SearchResultsContainer />
+          <SearchResultsContainer />
+        </div>
 
       </div>
     );
