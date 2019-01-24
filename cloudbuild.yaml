@@ -12,12 +12,16 @@ steps:
 - name: gcr.io/cloud-builders/npm
   args: ['run-script', 'build']
 
-# Build Docker image and push to registry
+# Build Docker image
 - name: gcr.io/cloud-builders/docker
   args: ['build',
     '-t', 'eu.gcr.io/$PROJECT_ID/grottocenter-3:$TAG_NAME',
     '-t', 'eu.gcr.io/$PROJECT_ID/grottocenter-3:latest',
     '.']
+
+# Push latest Docker image to registry (tag image will be pushed at the end of the build with "images:")
+- name: gcr.io/cloud-builders/docker
+  args: ['push', 'eu.gcr.io/$PROJECT_ID/grottocenter-3:latest']
 
 - name: gcr.io/cloud-builders/gcloud
   args: ['compute', 'instances', 'delete', 'grottocenter-3', '--zone', 'us-east1-b', '--quiet']
@@ -32,4 +36,3 @@ timeout: 3600s
 
 images:
 - eu.gcr.io/$PROJECT_ID/grottocenter-3:$TAG_NAME
-- eu.gcr.io/$PROJECT_ID/grottocenter-3:latest

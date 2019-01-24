@@ -1,4 +1,3 @@
-ALTER TABLE t_caver DROP COLUMN Country;
 ALTER TABLE t_caver DROP COLUMN Village;
 ALTER TABLE t_caver DROP COLUMN County;
 ALTER TABLE t_caver DROP COLUMN Region;
