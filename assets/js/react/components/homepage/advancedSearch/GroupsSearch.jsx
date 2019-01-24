@@ -27,6 +27,9 @@ const styles = theme => ({
   cardContainer: {},
   fieldset: {
     border: `1px solid ${theme.palette.primary.light}`,
+    width: '100%',
+  },
+  formPartContainer: {
     display: 'flex',
     flexWrap: 'wrap',
     justifyContent: 'space-evenly',
@@ -184,153 +187,160 @@ class GroupsSearch extends React.Component {
           >
             <h5 style={{ width: '100%' }}><Translate>Group properties</Translate></h5>
 
-            <TextField
-              className={classes.formElement}
-              label={(
-                <span className={classes.formElementFontSize}>
-                  <Translate>Group name</Translate>
-                </span>
-              )}
-              onChange={event => this.handleValueChange('name', event)}
-              value={name}
-              InputProps={{
-                classes: {
-                  input: classes.formElementFontSize,
-                },
-              }}
-            />
+            <div className={classes.formPartContainer} style={{ justifyContent: 'flex-start' }}>
 
-            <FormControl
-              className={classes.formElement}
-            >
-              <FormLabel>
-                <span className={classes.formElementFontSize}>
-                  <Translate>Number of cavers</Translate>
-                </span>
-                <Switch
-                  checked={numberOfCaversRange.isEditable}
-                  onChange={this.handleCheckedChange('number of cavers-range')}
-                  value={numberOfCaversRange.isEditable}
-                  classes={{
-                    switchBase: classes.colorSwitchBase,
-                    checked: classes.colorChecked,
-                    bar: classes.colorBar,
-                  }}
-                />
-              </FormLabel>
-              <Range
-                className={classes.formRange}
-                min={numberOfCaversMinValue}
-                max={numberOfCaversMaxValue}
-                onChange={(values) => {
-                  this.handleRangeChange('number of cavers-range', values, numberOfCaversMinValue, numberOfCaversMaxValue);
+              <TextField
+                className={classes.formElement}
+                label={(
+                  <span className={classes.formElementFontSize}>
+                    <Translate>Group name</Translate>
+                  </span>
+                )}
+                onChange={event => this.handleValueChange('name', event)}
+                value={name}
+                InputProps={{
+                  classes: {
+                    input: classes.formElementFontSize,
+                  },
                 }}
-                tipFormatter={value => `${value}`}
-                value={[numberOfCaversRange.min, numberOfCaversRange.max]}
-                disabled={!numberOfCaversRange.isEditable}
-                trackStyle={[!numberOfCaversRange.isEditable ? { backgroundColor: '#9e9e9e' } : { backgroundColor: '#ff9800' }]}
-                handleStyle={[{ backgroundColor: '#795548', borderColor: '#795548' }, { backgroundColor: '#795548', borderColor: '#795548' }]}
               />
 
-              <div style={{ display: 'inline-flex', justifyContent: 'space-between' }}>
-                <TextField
-                  onChange={event => this.handleRangeChange('number of cavers-range', [parseInt(event.target.value, 10) || 0, numberOfCaversRange.max], numberOfCaversMinValue, numberOfCaversMaxValue)}
-                  value={numberOfCaversRange.min}
+              <FormControl
+                className={classes.formElement}
+              >
+                <FormLabel>
+                  <span className={classes.formElementFontSize}>
+                    <Translate>Number of cavers</Translate>
+                  </span>
+                  <Switch
+                    checked={numberOfCaversRange.isEditable}
+                    onChange={this.handleCheckedChange('number of cavers-range')}
+                    value={numberOfCaversRange.isEditable}
+                    classes={{
+                      switchBase: classes.colorSwitchBase,
+                      checked: classes.colorChecked,
+                      bar: classes.colorBar,
+                    }}
+                  />
+                </FormLabel>
+                <Range
+                  className={classes.formRange}
+                  min={numberOfCaversMinValue}
+                  max={numberOfCaversMaxValue}
+                  onChange={(values) => {
+                    this.handleRangeChange('number of cavers-range', values, numberOfCaversMinValue, numberOfCaversMaxValue);
+                  }}
+                  tipFormatter={value => `${value}`}
+                  value={[numberOfCaversRange.min, numberOfCaversRange.max]}
                   disabled={!numberOfCaversRange.isEditable}
-                  style={{ width: '50px' }}
+                  trackStyle={[!numberOfCaversRange.isEditable ? { backgroundColor: '#9e9e9e' } : { backgroundColor: '#ff9800' }]}
+                  handleStyle={[{ backgroundColor: '#795548', borderColor: '#795548' }, { backgroundColor: '#795548', borderColor: '#795548' }]}
                 />
-                <TextField
-                  onChange={event => this.handleRangeChange('number of cavers-range', [numberOfCaversRange.min, parseInt(event.target.value, 10) || 0], numberOfCaversMinValue, numberOfCaversMaxValue)}
-                  value={numberOfCaversRange.max}
-                  disabled={!numberOfCaversRange.isEditable}
-                  style={{ width: '50px' }}
-                />
-              </div>
-            </FormControl>
+
+                <div style={{ display: 'inline-flex', justifyContent: 'space-between' }}>
+                  <TextField
+                    onChange={event => this.handleRangeChange('number of cavers-range', [parseInt(event.target.value, 10) || 0, numberOfCaversRange.max], numberOfCaversMinValue, numberOfCaversMaxValue)}
+                    value={numberOfCaversRange.min}
+                    disabled={!numberOfCaversRange.isEditable}
+                    style={{ width: '50px' }}
+                  />
+                  <TextField
+                    onChange={event => this.handleRangeChange('number of cavers-range', [numberOfCaversRange.min, parseInt(event.target.value, 10) || 0], numberOfCaversMinValue, numberOfCaversMaxValue)}
+                    value={numberOfCaversRange.max}
+                    disabled={!numberOfCaversRange.isEditable}
+                    style={{ width: '50px' }}
+                  />
+                </div>
+              </FormControl>
+
+            </div>
 
             <fieldset className={classes.fieldset}>
               <legend className={classes.legend}><Translate>Localization</Translate></legend>
 
-              <TextField
-                className={classes.formElement}
-                label={(
-                  <span className={classes.formElementFontSize}>
-                    <Translate>City</Translate>
-                  </span>
-                )}
-                onChange={event => this.handleValueChange('city', event)}
-                value={city}
-                InputProps={{
-                  classes: {
-                    input: classes.formElementFontSize,
-                  },
-                }}
-              />
+              <div className={classes.formPartContainer}>
 
-              <TextField
-                className={classes.formElement}
-                label={(
-                  <span className={classes.formElementFontSize}>
-                    <Translate>Postal code</Translate>
-                  </span>
-                )}
-                onChange={event => this.handleValueChange('postal_code', event)}
-                value={postal_code}
-                InputProps={{
-                  classes: {
-                    input: classes.formElementFontSize,
-                  },
-                }}
-              />
+                <TextField
+                  className={classes.formElement}
+                  label={(
+                    <span className={classes.formElementFontSize}>
+                      <Translate>City</Translate>
+                    </span>
+                  )}
+                  onChange={event => this.handleValueChange('city', event)}
+                  value={city}
+                  InputProps={{
+                    classes: {
+                      input: classes.formElementFontSize,
+                    },
+                  }}
+                />
 
-              <TextField
-                className={classes.formElement}
-                label={(
-                  <span className={classes.formElementFontSize}>
-                    <Translate>County</Translate>
-                  </span>
-                )}
-                onChange={event => this.handleValueChange('county', event)}
-                value={county}
-                InputProps={{
-                  classes: {
-                    input: classes.formElementFontSize,
-                  },
-                }}
-              />
+                <TextField
+                  className={classes.formElement}
+                  label={(
+                    <span className={classes.formElementFontSize}>
+                      <Translate>Postal code</Translate>
+                    </span>
+                  )}
+                  onChange={event => this.handleValueChange('postal_code', event)}
+                  value={postal_code}
+                  InputProps={{
+                    classes: {
+                      input: classes.formElementFontSize,
+                    },
+                  }}
+                />
 
-              <TextField
-                className={classes.formElement}
-                label={(
-                  <span className={classes.formElementFontSize}>
-                    <Translate>Region</Translate>
-                  </span>
-                )}
-                onChange={event => this.handleValueChange('region', event)}
-                value={region}
-                InputProps={{
-                  classes: {
-                    input: classes.formElementFontSize,
-                  },
-                }}
-              />
+                <TextField
+                  className={classes.formElement}
+                  label={(
+                    <span className={classes.formElementFontSize}>
+                      <Translate>County</Translate>
+                    </span>
+                  )}
+                  onChange={event => this.handleValueChange('county', event)}
+                  value={county}
+                  InputProps={{
+                    classes: {
+                      input: classes.formElementFontSize,
+                    },
+                  }}
+                />
 
-              <TextField
-                className={classes.formElement}
-                label={(
-                  <span className={classes.formElementFontSize}>
-                    <Translate>Country</Translate>
-                  </span>
-                )}
-                onChange={event => this.handleValueChange('country', event)}
-                value={country}
-                InputProps={{
-                  classes: {
-                    input: classes.formElementFontSize,
-                  },
-                }}
-              />
+                <TextField
+                  className={classes.formElement}
+                  label={(
+                    <span className={classes.formElementFontSize}>
+                      <Translate>Region</Translate>
+                    </span>
+                  )}
+                  onChange={event => this.handleValueChange('region', event)}
+                  value={region}
+                  InputProps={{
+                    classes: {
+                      input: classes.formElementFontSize,
+                    },
+                  }}
+                />
 
+                <TextField
+                  className={classes.formElement}
+                  label={(
+                    <span className={classes.formElementFontSize}>
+                      <Translate>Country</Translate>
+                    </span>
+                  )}
+                  onChange={event => this.handleValueChange('country', event)}
+                  value={country}
+                  InputProps={{
+                    classes: {
+                      input: classes.formElementFontSize,
+                    },
+                  }}
+                />
+
+              </div>
             </fieldset>
 
             <CardActions className={classes.cardBottomButtons}>

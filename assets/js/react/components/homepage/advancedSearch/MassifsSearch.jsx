@@ -21,6 +21,9 @@ const styles = theme => ({
   cardContainer: {},
   fieldset: {
     border: `1px solid ${theme.palette.primary.light}`,
+    width: '100%',
+  },
+  formPartContainer: {
     display: 'flex',
     flexWrap: 'wrap',
     justifyContent: 'space-evenly',
@@ -123,21 +126,23 @@ class MassifsSearch extends React.Component {
           >
             <h5 style={{ width: '100%' }}><Translate>Massif properties</Translate></h5>
 
-            <TextField
-              className={classes.formElement}
-              label={(
-                <span className={classes.formElementFontSize}>
-                  <Translate>Massif name</Translate>
-                </span>
-              )}
-              onChange={event => this.handleValueChange('name', event)}
-              value={name}
-              InputProps={{
-                classes: {
-                  input: classes.formElementFontSize,
-                },
-              }}
-            />
+            <div className={classes.formPartContainer} style={{ justifyContent: 'flex-start' }}>
+              <TextField
+                className={classes.formElement}
+                label={(
+                  <span className={classes.formElementFontSize}>
+                    <Translate>Massif name</Translate>
+                  </span>
+                )}
+                onChange={event => this.handleValueChange('name', event)}
+                value={name}
+                InputProps={{
+                  classes: {
+                    input: classes.formElementFontSize,
+                  },
+                }}
+              />
+            </div>
 
             <CardActions className={classes.cardBottomButtons}>
               <Button
