@@ -8,6 +8,7 @@
 
 const crypto = require('crypto');
 
+// 01/2018 C. ROIG : remove RGPD fields (see sql/20181231_del_fields.sql)
 module.exports = {
 
   tableName: 't_caver',
@@ -104,6 +105,7 @@ module.exports = {
       columnName: 'Country'
     },
 
+    /*
     region: {
       type: 'string',
       maxLength: 32,
@@ -133,6 +135,7 @@ module.exports = {
       columnType: 'date',
       columnName: 'Date_birth'
     },
+    */
 
     contact: {
       type: 'string',
@@ -140,10 +143,12 @@ module.exports = {
       columnName: 'Contact'
     },
 
+    /*
     yearInitiation: {
       type: 'number',
       columnName: 'Year_initiation'
     },
+    */
 
     dateInscription: {
       type: 'string',
@@ -189,6 +194,7 @@ module.exports = {
       columnName: 'Detail_level'
     },
 
+    /*
     latitude: {
       type: 'number',
       defaultsTo: 0.0,
@@ -200,6 +206,7 @@ module.exports = {
       defaultsTo: 0.0,
       columnName: 'Longitude'
     },
+    */
 
     defaultLatitude: {
       type: 'number',
@@ -216,6 +223,7 @@ module.exports = {
       columnName: 'Default_zoom'
     },
 
+    /*
     customMessage: {
       type: 'string',
       columnName: 'Custom_message'
@@ -226,6 +234,7 @@ module.exports = {
       maxLength: 100,
       columnName: 'Facebook'
     },
+    */
 
     pictureFileName: {
       type: 'string',

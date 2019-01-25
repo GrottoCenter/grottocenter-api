@@ -164,7 +164,6 @@ module.exports = {
 
   convertToCaveList: function(source) {
     let caves = [];
-    console.log(source)
     source.forEach((item) => {
       let cave = this.convertToCaveModel(item);
       caves.push(cave);
