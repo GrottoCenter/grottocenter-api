@@ -66,7 +66,7 @@ Check code coverage:
 
 For more details, read [the installation guide](https://github.com/GrottoCenter/Grottocenter3/wiki/Installation-guide)
 
-## Developement
+## Development
 
 Caver's community needs YOU!
 
