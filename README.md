@@ -18,35 +18,36 @@ Software requirement:
 - NPM (min 4.1.2)
 - Git client (see Git usage for configuration)
 - Docker
-- [grunt-cli](https://www.npmjs.com/package/grunt-cli) and [sails](https://www.npmjs.com/package/sails) installed globally via npm.
 
 Clone the project on your computer:
 ```
-git clone https://github.com/GrottoCenter/Grottocenter3.git
+> git clone https://github.com/GrottoCenter/Grottocenter3.git
 ```
 
 ## Usage
 
-Using Docker, 3 deployment modes are possible : 
-- Demonstration - Deploy the application directly to http://localhost:1337.
-- Development - Set up the development environment.
-- Production - Used to deploy in production.
-
 ### Demonstration deployment
 
+The demonstration deployment aims to launch locally an instance of Grottocenter to demonstrate its features.
+
+Start the project:
 ```
-./deployDemo.sh
+> ./deployDemo.sh
 ```
-Then go to http://localhost:1337/.
+Then go to [homepage](http://localhost:1337/)
+Or access to [API documentation](http://localhost:1337/ui/api/) for example.
 
 ### Development deployment
 
-Set up all the environment: 
+The development deployment aims to launch locally all the tools needed for the Grottocenter development.
+
+Start the project:
 ```
-./deployDev.sh
+> ./deployDev.sh
+> npm install
 ```
 
-Finally, to launch the server with live reloading activated, run:
+Finally, run the server with live-reloading using:
 ```
 > npm run start-hot
 ```
@@ -55,12 +56,12 @@ Finally, to launch the server with live reloading activated, run:
 
 Run tests:
 ```
-npm run test
+> npm run test
 ```
 
 Check code coverage:
 ```
-npm run coverage
+> npm run coverage
 ```
 
 For more details, read [the installation guide](https://github.com/GrottoCenter/Grottocenter3/wiki/Installation-guide)
@@ -69,20 +70,9 @@ For more details, read [the installation guide](https://github.com/GrottoCenter/
 
 Caver's community needs YOU!
 
-Software requirement:
-- MySql server (v5.5)
-- A Github account
-- Any advanced IDE (Atom, IntelliJ, PHPStorm, SublimeText...)
-
-To start development, you have to:
-- Fork this repository on your own GitHub space
-- Clone the forked project on your computer
-- Edit **/config/local.js** to set up your local configuration
-- Create a working branch, add your code
-
 Yon can also join us on Slack! (using the QR-code above)
 
-For more details, read [the development guide](https://github.com/GrottoCenter/Grottocenter3/wiki/Development-guide)
+~~For more details, read [the development guide](https://github.com/GrottoCenter/Grottocenter3/wiki/Development-guide)~~ ==> DEPRECATED
 
 ## Licence
 
