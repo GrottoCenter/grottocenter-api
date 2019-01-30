@@ -96,5 +96,21 @@
 	"Email": "ел. поща",
 	"Password": "Парола",
 	"Inscription date": "Дата на създаване",
-	"Groups": "Група"
+	"Groups": "Група",
+	"Caves list": "списък Пещери",
+	"by": "от",
+	"name": "име",
+	"Name": "Име",
+	"City": "Град",
+	"Country": "Държава",
+	"description": "Описание",
+	"location": "Местоположение",
+	"bibliography": "Библиография",
+	"Entry name": "Име на пещ. вход",
+	"Depth": "Дълбочина",
+	"Length": "Дължина",
+	"Diving cave": "Пещера за гмуркане",
+	"Entry properties": "Свойства",
+	"Ease of move": "Лекотата на движение",
+	"No results": "Не са намерени резултати"
 }

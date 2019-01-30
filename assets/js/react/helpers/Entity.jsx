@@ -49,15 +49,17 @@ const HighlightTextKey = withTheme()(styled.span`
 
 export const entityOptionForSelector = (option) => {
   const highlights = [];
-  Object.keys(option.highlights).forEach((key) => {
-    highlights.push({ [key]: option.highlights[key].join(' [...] ') });
-  });
+  if (option.highlights) {
+    Object.keys(option.highlights).forEach((key) => {
+      highlights.push({ [key]: option.highlights[key].join(' [...] ') });
+    });
+  }
 
   return (
     <React.Fragment>
       {option.type === 'entry' ? <EntityIcon src="/images/entry.svg" alt="Entry icon" /> : ''}
       {option.type === 'grotto' ? <EntityIcon src="/images/club.svg" alt="Group icon" /> : '' }
-      {option.type === 'massif' ? <EntityIcon src="/images/entry-cluster.svg" alt="Entry cluster icon" /> : '' }
+      {option.type === 'massif' ? <EntityIcon src="/images/massif.svg" alt="Massif icon" /> : '' }
 
       <EntityLabel>{option.label}</EntityLabel>
       {highlights.map((hl) => {

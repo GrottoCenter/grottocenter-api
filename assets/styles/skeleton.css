@@ -311,21 +311,32 @@ a:hover {
 
 /* Forms
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
+/*
+
+██╗    ██╗ █████╗ ██████╗ ███╗   ██╗██╗███╗   ██╗ ██████╗                           
+██║    ██║██╔══██╗██╔══██╗████╗  ██║██║████╗  ██║██╔════╝                           
+██║ █╗ ██║███████║██████╔╝██╔██╗ ██║██║██╔██╗ ██║██║  ███╗                          
+██║███╗██║██╔══██║██╔══██╗██║╚██╗██║██║██║╚██╗██║██║   ██║                          
+╚███╔███╔╝██║  ██║██║  ██║██║ ╚████║██║██║ ╚████║╚██████╔╝                          
+ ╚══╝╚══╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝╚═╝  ╚═══╝ ╚═════╝  
+08 January 2019 : This part of the code has been commented because it was overriding every inputs from material-ui
 
 input[type="email"], input[type="number"], input[type="search"], input[type="text"], input[type="tel"], input[type="url"], input[type="password"], textarea, select {
   height: 38px;
   padding: 6px 10px;
+  */
   /* The 6px vertically centers text on FF, ignored by Webkit */
+  /*
   background-color: #fff;
   border: 1px solid #D1D1D1;
   border-radius: 4px;
   box-shadow: none;
   box-sizing: border-box;
 }
-
+*/
 
 /* Removes awkward default styles on some inputs for iOS */
-
+/*
 input[type="email"], input[type="number"], input[type="search"], input[type="text"], input[type="tel"], input[type="url"], input[type="password"], textarea {
   -webkit-appearance: none;
   -moz-appearance: none;
@@ -363,7 +374,7 @@ label>.label-body {
   margin-left: .5rem;
   font-weight: normal;
 }
-
+*/
 
 /* Lists
 –––––––––––––––––––––––––––––––––––––––––––––––––– */

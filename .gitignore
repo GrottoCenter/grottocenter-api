@@ -41,7 +41,7 @@
 
 config/local.js
 config/env/production.js
-
+.env
 
 
 

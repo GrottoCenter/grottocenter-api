@@ -17,7 +17,12 @@ const EntryModel = {
   postalCode : undefined,
   latitude: undefined,
   longitude: undefined,
-  altitude: undefined
+  altitude: undefined,
+  cave: undefined,
+  massif: undefined,
+  aestheticism: undefined,
+  caving: undefined,
+  approach: undefined,
 };
 
 const CountResult = {
@@ -73,15 +78,16 @@ const CaveModel = {
   length: undefined,
   isDiving: undefined,
   temperature: undefined,
-  author: undefined
+  author: undefined,
+  massif: undefined,
 };
 
 /* Mappers */
 
 module.exports = {
-  convertToEntryModel: function(source) {
+  convertToEntryModel: function(source) {   
     let result = Object.assign({}, EntryModel);
-    //console.log('Source : ' + JSON.stringify(source));
+
     result.id = source.id;
     result.name = source.name;
     result.country = source.country;
@@ -92,6 +98,17 @@ module.exports = {
     result.latitude = source.latitude;
     result.longitude = source.longitude;
     result.altitude = source.altitude;
+    result.aestheticism = source.aestheticism;
+    result.approach = source.approach;
+    result.caving = source.caving;
+    result.cave = {
+      depth: source['cave depth'],
+      length: source['cave length'],
+      name: source['cave name'],
+    };
+    result.massif = {
+      name: source['massif name']
+    };
     return result;
   },
 
@@ -110,7 +127,7 @@ module.exports = {
     return result;
   },
 
-  //Depecated for v1
+  //Deprecated for v1
   convertToOldSearchResult: function(source) {
     let results = {};
     let entries = [];
@@ -145,6 +162,15 @@ module.exports = {
     return result;
   },
 
+  convertToCaveList: function(source) {
+    let caves = [];
+    source.forEach((item) => {
+      let cave = this.convertToCaveModel(item);
+      caves.push(cave);
+    });
+    return caves;
+  },
+
   /**
    * Function that return all data for the search
    * @param {*} source : the elasticsearch result
@@ -175,6 +201,7 @@ module.exports = {
       values.push(data);
     });
     res.results = values;
+    res.totalNbResults = source.hits.total;
     return res;
   },
 
@@ -197,22 +224,32 @@ module.exports = {
     });
 
     res.results = values;
+    res.totalNbResults = source.hits.total;
     return res;
   },
 
   // ---------------- Massif Function ------------------------------
 
-  //TODO: Choose which attributes to keep in author
   convertToMassifModel: function(source) {
     let result = Object.assign({}, MassifModel);
 
     if(source.author) {
       result.author = this.convertToCaverModel(source.author);
     }
-    const caves = source.caves.map(cave =>  this.convertToCaveModel(cave));
 
-    // line to put every attributes of author inside another object author
-    // Object.keys(source.author).forEach(f => author[f] = source.author[f]);
+    if(source.caves) {
+      result.caves = source.caves.map(cave => this.convertToCaveModel(cave));
+    } else if (source['caves names']) {
+      // In Elasticsearch
+      result.caves = source['caves names'].split(',').map(name => this.convertToCaveModel({name}));
+    }
+
+    if(source.entries) {
+      result.entries = source.entries.map(entries => this.convertToEntryModel(entries));
+    } else if (source['entries names']) {
+      // In Elasticsearch
+      result.entries = source['entries names'].split(',').map(name => this.convertToEntryModel({name}));
+    }
     
     // Save in result the object to return
     result.id = source.id;
@@ -220,7 +257,6 @@ module.exports = {
     result.name = source.name;
     result.dateInscription = source.dateInscription;
     result.dateReviewed = source.dateReviewed;
-    result.caves = caves;
 
     return result;
   },
@@ -230,16 +266,17 @@ module.exports = {
   convertToGrottoModel: function(source) {
     let result = Object.assign({}, GrottoModel);
 
-    // Select only attributes needed for cavers
-
-    // TODO: currently source.cavers doesn't exist. The "JOIN" need to be done in Elasticsearch
-    // populating process by logstash, in logstash.conf.
-    if(source.cavers) {
+    if(source.cavers && source.cavers instanceof Array) {
       result.cavers = source.cavers.map(caver => this.convertToCaverModel(caver));
+    } else if (source['cavers names']) {
+      // In Elasticsearch, cavers names are the nicknames separated with a ','
+      result.cavers = source['cavers names'].split(',').map(nickname => this.convertToCaverModel({nickname}));
     }
 
-    const entries = source.entries.map(entry => this.convertToEntryModel(entry));
-    
+    if(source.entries) {
+      result.entries = source.entries.map(entry => this.convertToEntryModel(entry));
+    }
+
     // Build the result
     result.id = source.id;
     result.name = source.name;
@@ -260,7 +297,6 @@ module.exports = {
     result.documentary = source.documentary;
     result.URL = source.URL;
     result.Facebook = source.Facebook;
-    result.entries = entries;
 
     return result;
   },

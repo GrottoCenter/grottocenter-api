@@ -4,15 +4,16 @@ const client = require('../../config/elasticsearch').elasticsearchCli;
 const resourcesToUpdate = [
   'grottos', 'massifs', 'entries'
 ];
+const advancedSearchMetaParams = ['resourceType', 'complete', 'match_all_queries', 'from', 'size'];
 
 /*  Define the fuziness criteria. If equals to X, Elasticsearch will search
     all the keywords by changing / inverting / deleting X letters.
 
     Examples: 
-    FUZINESS=1 and query=clomb will also use the query 'climb' (change 'o' to 'i' => 1 operation)
-    FUZINESS=2 and query=clomb will also use the query 'lamb' (delete 'c', change 'o' to 'a' => 2 operations)
+    FUZZINESS=1 and query=clomb will also use the query 'climb' (change 'o' to 'i' => 1 operation)
+    FUZZINESS=2 and query=clomb will also use the query 'lamb' (delete 'c', change 'o' to 'a' => 2 operations)
 */
-const FUZINESS = 1;
+const FUZZINESS = 1;
 
 module.exports = {
   /**
@@ -31,6 +32,7 @@ module.exports = {
     let resourceIndex = -1;
     while(resourceIndex === -1 && i < urlPieces.length) {
       if(urlPieces[i] === 'api') {
+        advancedSearchMetaParams;
         resourceIndex = i + 1;
       }
       i += 1;
@@ -90,7 +92,7 @@ module.exports = {
         body: {
           query: {
             query_string: {
-              query: '*'+params.query+'* + '+params.query+'~'+FUZINESS,
+              query: '*'+params.query+'* + '+params.query+'~'+FUZZINESS,
               fields: [
                 // General useful fields
                 'name^3', 'city^2', 'country', 'county', 'region',
@@ -104,12 +106,12 @@ module.exports = {
                 
                 // ==== Grottos
                 'custom_message', 
-                'members',
+                'cavers names',
 
                 // ==== Massifs 
-                'entries'
+                'entries names', 'entries regions', 'entries cities', 'entry counties', 'entries countries'
               ],
-            }         
+            },       
           },
           highlight : {
             number_of_fragments : 3,
@@ -118,8 +120,8 @@ module.exports = {
               '*': {} 
             },
             order: 'score' 
-          }        
-        }
+          },     
+        },
         /* eslint-enable camelcase */
       }).then(result => {
         resolve(result);
@@ -127,5 +129,120 @@ module.exports = {
         reject(err);
       });
     });
+  }, 
+
+  /**
+   * Retrieve data from elasticsearch on all index according to the given params.
+   * The results must match all the params in the url which are not metaParams (@see advancedSearchMetaParams).
+   * Each value can be prefix or suffix.
+   * 
+   * For more info, see ES 6.5 documentation:
+   * - https://www.elastic.co/guide/en/elasticsearch/reference/6.5/query-dsl-wildcard-query.html 
+   * - https://www.elastic.co/guide/en/elasticsearch/reference/6.5/query-filter-context.html
+   * 
+   * @param {*} params : list of params of the request 
+   */
+  advancedSearchQuery: function(params) {
+    /* eslint-disable camelcase */
+    return new Promise(function(resolve, reject) {
+
+      // Determine if the logic operator is OR (should) or AND (must) for the request.
+      let queryVerb = 'must';
+      if(params.match_all_queries) {
+        queryVerb = (params.match_all_queries === true ? 'must' : 'should');  
+      }
+      
+      // Build match fields to search on, i.e. every parameters in the url which are not metaParams
+      const matchingParams = [];
+      const rangeParams = [];
+
+      // ==== Construct the params
+      Object.keys(params).forEach(key => {
+        // Meta params ? 
+        if(!advancedSearchMetaParams.includes(key)) {
+
+          // min / max (range) param ? or field param ?
+          const isMinParam = (key.split('-min').length > 1);
+          const isMaxParam = (key.split('-max').length > 1);
+          const isFieldParam = (!isMinParam && !isMaxParam); 
+
+          // Value of a field
+          if(isFieldParam && params[key] !== '') {
+            const words = params[key].split(' ');
+            words.map((word, index) => {
+              const matchObj = {
+                wildcard: {}
+              };
+          
+              /* 
+                The value is set to lower case because the data are indexed in lowercase. 
+                We want a search not case sensitive.
+
+                Also, the character * is used for the first and the last word to (auto)complete the query.
+              */
+              if(words.length === 1) matchObj.wildcard[key] = '*' + word.toLowerCase() + '*';
+              else if(index === 0) matchObj.wildcard[key] = '*' + word.toLowerCase();
+              else if(index === words.length - 1) matchObj.wildcard[key] = word.toLowerCase() + '*';
+              else matchObj.wildcard[key] = word.toLowerCase();
+
+              matchingParams.push(matchObj);
+            });
+          
+          // Min range param
+          } else if(isMinParam) {
+            const rangeObj = {
+              range: {
+              }
+            };
+            rangeObj.range[key.split('-min')[0].toString()] = {
+              gte: params[key]
+            };
+            rangeParams.push(rangeObj);
+
+          // Max range param
+          } else if(isMaxParam) {
+            const rangeObj = {
+              range: {
+              }
+            };
+            rangeObj.range[key.split('-max')[0].toString()] = {
+              lte: params[key]
+            };
+            rangeParams.push(rangeObj);
+          }
+        }
+      });
+
+      // ==== Build the query
+      let query = {
+        index: params.resourceType + '-index',
+        body: {
+          query: {
+            bool: {
+                      
+            },
+          },
+          highlight : {
+            number_of_fragments : 3,
+            fragment_size : 50,
+            fields: { 
+              '*': {} 
+            },
+            order: 'score' 
+          },
+          from: params.from ? params.from : 0,
+          size: params.size ? params.size : 10 
+        }
+      };
+
+      query.body.query.bool[queryVerb] = matchingParams.concat(rangeParams);
+      
+      client.search(query).then(result => {
+        resolve(result);
+      }).catch(err => {
+        reject(err);
+      });
+    });
+    /* eslint-enable camelcase */
   }
 };

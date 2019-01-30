@@ -1,4 +1,4 @@
-# This Dockerfile is used to deploy the app on App Engine
+# This Dockerfile is used to deploy the app locally on Docker.
 #
 # Dockerfile extending the generic Node image with application files for a
 # single application.
@@ -19,6 +19,6 @@ COPY . /app
 # This environment variable disable the grunt build on production
 # So the app need to be build using "grunt prod" before creating the docker image
 ENV sails_hooks__grunt=false
-ENV NODE_ENV=production
-CMD [ "node", "app.js" ]
+ENV NODE_ENV=demo
+CMD [ "node", "app.js", "--silly" ]
 EXPOSE 8080

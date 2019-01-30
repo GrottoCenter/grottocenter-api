@@ -10,6 +10,7 @@
     "@material-ui/core": "^3.5.1",
     "@material-ui/icons": "^3.0.1",
     "async": "2.6.1",
+    "dotenv": "^6.2.0",
     "ejs": "~2.6.1",
     "elasticsearch": "^15.2.0",
     "feed-read": "^0.0.1",
@@ -29,6 +30,7 @@
     "passport-local": "^1.0.0",
     "prop-types": "^15.6.2",
     "rc": "~1.2.8",
+    "rc-slider": "8.6.3",
     "react": "^16.6.0",
     "react-bootstrap": "^0.32.4",
     "react-dom": "^16.6.0",
@@ -59,7 +61,8 @@
     "debug": "node debug app.js",
     "test": "node ./node_modules/mocha/bin/mocha test/bootstrap.test.js test/integration/**/*.test.js",
     "coverage": "node node_modules/.bin/istanbul cover node_modules/.bin/_mocha test/bootstrap.test.js test/integration/**/*.test.js",
-    "coveralls": "cat ./coverage/lcov.info | node node_modules/.bin/coveralls"
+    "coveralls": "cat ./coverage/lcov.info | node node_modules/.bin/coveralls",
+    "build": "NODE_ENV=production ./node_modules/grunt-cli/bin/grunt prod"
   },
   "main": "app.js",
   "repository": {

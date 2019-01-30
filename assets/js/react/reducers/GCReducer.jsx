@@ -1,4 +1,5 @@
 import { combineReducers } from 'redux';
+import advancedsearch from './AdvancedsearchReducer';
 import quicksearch from './QuicksearchReducer';
 import map from './MapReducer';
 import currentLanguage from './LanguageReducer';
@@ -18,6 +19,7 @@ import massif from './MassifReducer';
 
 const GCReducer = combineReducers({
   currentLanguage,
+  advancedsearch,
   quicksearch,
   map,
   latestBlogNews,

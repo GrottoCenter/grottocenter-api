@@ -149,10 +149,12 @@ export const
 
 export const findRandomEntryUrl = '/api/entries/findRandom';
 export const findForCarouselUrl = '/api/partners/findForCarousel';
-export const quicksearchUrl = `/api/${apiVersion}/search`;
 export const findMapBoundsUrl = `/api/${apiVersion}/geoloc/findByBounds`;
 export const findMassifUrl = `/api/${apiVersion}/massifs/`;
 export const findGroupUrl = `/api/${apiVersion}/grottos/`;
+
+export const advancedsearchUrl = `/api/${apiVersion}/advancedSearch`;
+export const quicksearchUrl = `/api/${apiVersion}/search`;
 
 export const
   swaggerLinkV1 = '/ui/swagger/1';

@@ -434,6 +434,14 @@ module.exports.routes = {
     }
   },
 
+  'GET /api/v1/advancedSearch': {
+    controller: 'v1/Search',
+    action: 'advancedSearch',
+    cors: {
+      allowOrigins: '*'
+    }
+  },
+
 
   //  ╦ ╦╔═╗╔╗ ╦ ╦╔═╗╔═╗╦╔═╔═╗
   //  ║║║║╣ ╠╩╗╠═╣║ ║║ ║╠╩╗╚═╗

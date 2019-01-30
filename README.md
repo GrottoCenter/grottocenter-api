@@ -18,7 +18,6 @@ Software requirement:
 - NPM (min 4.1.2)
 - Git client (see Git usage for configuration)
 - Docker
-- [grunt-cli](https://www.npmjs.com/package/grunt-cli) and [sails](https://www.npmjs.com/package/sails) installed globally via npm.
 
 Clone the project on your computer:
 ```
@@ -27,26 +26,28 @@ Clone the project on your computer:
 
 ## Usage
 
-### Containers deployment
+### Demonstration deployment
+
+The demonstration deployment aims to launch locally an instance of Grottocenter to demonstrate its features.
+
 Start the project:
 ```
-> npm install
-> ./localDeploy.sh
+> ./deployDemo.sh
 ```
-Then go to [homepage](http://localhost:8081/)
-Or access to [API documentation](http://localhost:8081/ui/api/)
-
-Currently, this deployment is not intented to be used for development because the hot reloading is not possible through a Docker container.
+Then go to [homepage](http://localhost:1337/)
+Or access to [API documentation](http://localhost:1337/ui/api/) for example.
 
 ### Development deployment
+
+The development deployment aims to launch locally all the tools needed for the Grottocenter development.
+
 Start the project:
 ```
+> ./deployDev.sh
 > npm install
-> ./localDeploy.sh
 ```
-We will use the DB container for the next part, that's why we need to run localDeploy.sh. Change the **config/datastores.js** default config url to *'mysql://sailsuser:grottocepassword@localhost:33060/grottoce'*.
 
-Finally, run:
+Finally, run the server with live-reloading using:
 ```
 > npm run start-hot
 ```
@@ -65,24 +66,13 @@ Check code coverage:
 
 For more details, read [the installation guide](https://github.com/GrottoCenter/Grottocenter3/wiki/Installation-guide)
 
-## Developement
+## Development
 
 Caver's community needs YOU!
 
-Software requirement:
-- MySql server (v5.5)
-- A Github account
-- Any advanced IDE (Atom, IntelliJ, PHPStorm, SublimeText...)
-
-To start development, you have to:
-- Fork this repository on your own GitHub space
-- Clone the forked project on your computer
-- Edit **/config/local.js** to set up your local configuration
-- Create a working branch, add your code
-
 Yon can also join us on Slack! (using the QR-code above)
 
-For more details, read [the development guide](https://github.com/GrottoCenter/Grottocenter3/wiki/Development-guide)
+~~For more details, read [the development guide](https://github.com/GrottoCenter/Grottocenter3/wiki/Development-guide)~~ ==> DEPRECATED
 
 ## Licence
 

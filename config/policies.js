@@ -65,6 +65,7 @@ module.exports.policies = {
 
   'v1/SearchController': {
     'search': true,
+    'advancedSearch': true,
     'findAll': ['apiKeyAuth', 'paginate'],
   },
 
