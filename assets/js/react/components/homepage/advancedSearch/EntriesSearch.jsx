@@ -50,8 +50,8 @@ const styles = theme => ({
     flex: 1,
     maxWidth: '30rem',
     minWidth: '20rem',
-    marginLeft: '1rem',
-    marginRight: '1rem',
+    marginLeft: '2rem',
+    marginRight: '2rem',
     marginBottom: '10px',
   },
   formRange: {},
@@ -239,7 +239,7 @@ class EntriesSearch extends React.Component {
           >
             <h5 style={{ width: '100%' }}><Translate>Entry properties</Translate></h5>
 
-            <div className={classes.formPartContainer} style={{ justifyContent: 'flex-start' }}>
+            <div className={classes.formPartContainer} style={{ justifyContent: '' }}>
               <TextField
                 className={classes.formElement}
                 label={(
@@ -255,6 +255,43 @@ class EntriesSearch extends React.Component {
                   },
                 }}
               />
+
+
+              <TextField
+                className={classes.formElement}
+                label={(
+                  <span className={classes.formElementFontSize}>
+                    <Translate>Network name</Translate>
+                  </span>
+                  )}
+                onChange={event => this.handleValueChange('cave name', event)}
+                value={caveName}
+                InputProps={{
+                  classes: {
+                    input: classes.formElementFontSize,
+                  },
+                }}
+              />
+
+              <FormControl
+                className={classes.formElement}
+              >
+                <InputLabel shrink htmlFor="cave-is-diving-native-label-placeholder" className={classes.formElementFontSize}>
+                  <Translate>Diving cave</Translate>
+                </InputLabel>
+                <NativeSelect
+                  value={caveIsDiving}
+                  onChange={event => this.handleValueChange('cave is diving', event)}
+                  input={<Input name="cave-is-diving" id="cave-is-diving-native-label-placeholder" />}
+                  classes={{
+                    select: classes.formElementFontSize,
+                  }}
+                >
+                  <option value="">{intl.formatMessage({ id: 'All', defaultMessage: 'All' })}</option>
+                  <option value="yes">{intl.formatMessage({ id: 'Yes', defaultMessage: 'Yes' })}</option>
+                  <option value="no">{intl.formatMessage({ id: 'No', defaultMessage: 'No' })}</option>
+                </NativeSelect>
+              </FormControl>
             </div>
 
             <fieldset className={classes.fieldset}>
@@ -313,7 +350,7 @@ class EntriesSearch extends React.Component {
                   className={classes.formElement}
                   label={(
                     <span className={classes.formElementFontSize}>
-                      <Translate>Country</Translate>
+                      <Translate>Country code</Translate>
                     </span>
                   )}
                   onChange={event => this.handleValueChange('country', event)}
@@ -490,51 +527,6 @@ class EntriesSearch extends React.Component {
                       style={{ width: '50px' }}
                     />
                   </div>
-                </FormControl>
-
-              </div>
-
-            </fieldset>
-
-            <fieldset className={classes.fieldset}>
-              <legend className={classes.legend}><Translate>Network properties</Translate></legend>
-
-              <div className={classes.formPartContainer}>
-
-                <TextField
-                  className={classes.formElement}
-                  label={(
-                    <span className={classes.formElementFontSize}>
-                      <Translate>Network name</Translate>
-                    </span>
-                  )}
-                  onChange={event => this.handleValueChange('cave name', event)}
-                  value={caveName}
-                  InputProps={{
-                    classes: {
-                      input: classes.formElementFontSize,
-                    },
-                  }}
-                />
-
-                <FormControl
-                  className={classes.formElement}
-                >
-                  <InputLabel shrink htmlFor="cave-is-diving-native-label-placeholder">
-                    <Translate>Diving cave</Translate>
-                  </InputLabel>
-                  <NativeSelect
-                    value={caveIsDiving}
-                    onChange={event => this.handleValueChange('cave is diving', event)}
-                    input={<Input name="cave-is-diving" id="cave-is-diving-native-label-placeholder" />}
-                    classes={{
-                      select: classes.formElementFontSize,
-                    }}
-                  >
-                    <option value="">{intl.formatMessage({ id: 'All', defaultMessage: 'All' })}</option>
-                    <option value="yes">{intl.formatMessage({ id: 'Yes', defaultMessage: 'Yes' })}</option>
-                    <option value="no">{intl.formatMessage({ id: 'No', defaultMessage: 'No' })}</option>
-                  </NativeSelect>
                 </FormControl>
 
                 <FormControl

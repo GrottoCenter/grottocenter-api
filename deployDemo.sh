@@ -47,7 +47,7 @@ function getContainerHealth {
 function waitContainer {
   while STATUS=$(getContainerHealth $1); [[ $STATUS != "\"healthy\"" ]]; do 
     if [[ $STATUS == "\"unhealthy\"" ]]; then
-      echo "Failed!"
+      printf "$1 container failed: its status has been unhealthy! Relaunching the whole script could resolve this error."
       exit -1
     fi
     printf .

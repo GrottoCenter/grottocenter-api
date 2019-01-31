@@ -112,5 +112,13 @@
 	"Diving cave": "Пещера за гмуркане",
 	"Entry properties": "Свойства",
 	"Ease of move": "Лекотата на движение",
-	"No results": "Не са намерени резултати"
+	"Ease of reach": "Лесен достъп за влизане",
+	"Advanced search": "Подробно търсене",
+	"No results": "Не са намерени резултати",
+	"Postal code": "Пощенски код",
+	"Group name": "Име на група",
+	"All": "всичко",
+	"Yes": "Да",
+	"No": "Не",
+	"Network properties": "име на Пещерна система"
 }

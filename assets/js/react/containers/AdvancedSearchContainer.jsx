@@ -24,12 +24,15 @@ const startAdvancedsearch = (formValues, resourceType) => (dispatch) => {
       keyValue = formValues[key].trim();
     }
 
-    // Handle range values
+    // Handle input / select values
     if (keyValue !== '' && key.split('-range').length === 1) {
       paramsToSend[key] = keyValue;
 
-      // If the key contains '-range' and it is editable
-      // then we send the parameter in two parameters min and max
+      /*
+        Handle range values
+        If the key contains '-range' and it is editable
+        then we send the parameter in two parameters, min and max.
+      */
     } else if (key.split('-range').length > 1 && keyValue.isEditable === true) {
       const keyBase = key.split('-range');
       const rangeMin = `${keyBase[0]}-min`;

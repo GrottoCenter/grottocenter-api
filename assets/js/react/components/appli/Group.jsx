@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import styled from 'styled-components';
-import EmailIcon from '@material-ui/icons/Email';
 import LocationIcon from '@material-ui/icons/LocationOn';
 
 import Badge from '@material-ui/core/Badge';
@@ -35,12 +34,6 @@ const EntryIcon = styled.img`
   vertical-align: text-bottom;
   width: 3.5rem;
 `;
-
-const EmailIconStyled = withStyles({
-  root: {
-    verticalAlign: 'bottom',
-  },
-})(EmailIcon);
 
 const LocationIconStyled = withStyles({
   root: {
@@ -111,14 +104,6 @@ const Group = (props) => {
             <LocationIconStyled />
             {completeAddress}
           </div>
-
-          {group.contact ? (
-            <div>
-              <EmailIconStyled />
-              {' '}
-              {group.contact}
-            </div>
-          ) : ''}
 
           <p>
             {group.customMessage}

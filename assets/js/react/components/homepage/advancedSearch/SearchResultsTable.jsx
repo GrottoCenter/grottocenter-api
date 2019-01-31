@@ -61,12 +61,48 @@ const StyledTableHeadRow = withStyles(theme => ({
   },
 }))(TableRow);
 
+const StyledEntriesTable = withStyles(() => ({
+  root: {
+    marginBottom: 0,
+    // Media query to allow horizontal scroll on small devices
+    '@media (max-width:1200px)': {
+      overflowX: 'auto',
+      whiteSpace: 'nowrap',
+      display: 'block',
+      paddingBottom: '5px',
+    },
+  },
+}))(Table);
+
+const StyledGroupsTable = withStyles(() => ({
+  root: {
+    marginBottom: 0,
+    // Media query to allow horizontal scroll on small devices
+    '@media (max-width:1100px)': {
+      overflowX: 'auto',
+      whiteSpace: 'nowrap',
+      display: 'block',
+      paddingBottom: '5px',
+    },
+  },
+}))(Table);
+
+const StyledMassifsTable = withStyles(() => ({
+  root: {
+    marginBottom: 0,
+    // Media query to allow horizontal scroll on small devices
+    '@media (max-width:550px)': {
+      overflowX: 'auto',
+      whiteSpace: 'nowrap',
+      display: 'block',
+      paddingBottom: '5px',
+    },
+  },
+}))(Table);
+
 const styles = () => ({
   resultsContainer: {
     marginTop: '24px',
-  },
-  table: {
-    marginBottom: 0,
   },
 });
 
@@ -99,20 +135,20 @@ class SearchResultsTable extends React.Component {
 
   // ============================== //
 
-   // If the results are empty, the component must get back to the initial pagination state.
-   componentDidUpdate = () => {
-     const { results } = this.props;
-     const { from, page, size } = this.state;
+  // If the results are empty, the component must get back to the initial pagination state.
+  componentDidUpdate = () => {
+    const { results } = this.props;
+    const { from, page, size } = this.state;
 
-     if (!results && (from !== DEFAULT_FROM || page !== DEFAULT_PAGE || size !== DEFAULT_SIZE)
-     ) {
-       this.setState({
-         from: DEFAULT_FROM,
-         page: DEFAULT_PAGE,
-         size: DEFAULT_SIZE,
-       });
-     }
-   }
+    if (!results && (from !== DEFAULT_FROM || page !== DEFAULT_PAGE || size !== DEFAULT_SIZE)
+    ) {
+      this.setState({
+        from: DEFAULT_FROM,
+        page: DEFAULT_PAGE,
+        size: DEFAULT_SIZE,
+      });
+    }
+  }
 
   // ===== Table headers ===== //
   entriesTableHead = () => {
@@ -130,13 +166,25 @@ class SearchResultsTable extends React.Component {
             <Translate>Massif name</Translate>
           </StyledTableHeadRowCell>
           <StyledTableHeadRowCell>
-            <Translate>Aesthetic</Translate>
+            <HeaderIcon
+              src="/images/aesthetic.svg"
+              title={intl.formatMessage({ id: 'Aesthetic', defaultMessage: 'Aesthetic' })}
+              alt="Aesthetic icon"
+            />
           </StyledTableHeadRowCell>
           <StyledTableHeadRowCell>
-            <Translate>Ease of move</Translate>
+            <HeaderIcon
+              src="/images/ease_of_move.svg"
+              title={intl.formatMessage({ id: 'Ease of move', defaultMessage: 'Ease of move' })}
+              alt="Ease of move icon"
+            />
           </StyledTableHeadRowCell>
           <StyledTableHeadRowCell>
-            <Translate>Ease of reach</Translate>
+            <HeaderIcon
+              src="/images/ease_of_reach.svg"
+              title={intl.formatMessage({ id: 'Ease of reach', defaultMessage: 'Ease of reach' })}
+              alt="Ease of reach icon"
+            />
           </StyledTableHeadRowCell>
           <StyledTableHeadRowCell>
             <Translate>Network name</Translate>
@@ -166,7 +214,6 @@ class SearchResultsTable extends React.Component {
       <TableHead>
         <StyledTableHeadRow>
           <StyledTableHeadRowCell><Translate>Name</Translate></StyledTableHeadRowCell>
-          <StyledTableHeadRowCell><Translate>Contact</Translate></StyledTableHeadRowCell>
           <StyledTableHeadRowCell><Translate>City</Translate></StyledTableHeadRowCell>
           <StyledTableHeadRowCell><Translate>County</Translate></StyledTableHeadRowCell>
           <StyledTableHeadRowCell><Translate>Region</Translate></StyledTableHeadRowCell>
@@ -299,12 +346,22 @@ class SearchResultsTable extends React.Component {
     const { from, page, size } = this.state;
 
     let ResultsTableHead;
-    if (resourceType === 'entries') ResultsTableHead = this.entriesTableHead;
-    if (resourceType === 'grottos') ResultsTableHead = this.groupsTableHead;
-    if (resourceType === 'massifs') ResultsTableHead = this.massifsTableHead;
+    let ResultsTable;
+    if (resourceType === 'entries') {
+      ResultsTableHead = this.entriesTableHead;
+      ResultsTable = StyledEntriesTable;
+    }
+    if (resourceType === 'grottos') {
+      ResultsTableHead = this.groupsTableHead;
+      ResultsTable = StyledGroupsTable;
+    }
+    if (resourceType === 'massifs') {
+      ResultsTableHead = this.massifsTableHead;
+      ResultsTable = StyledMassifsTable;
+    }
 
     /*
-      When the component is loading the new page, we want to keep the
+      When the component is loading the new <Tableage, we want to keep the
       previous results displayed (instead of a white board).
       That's why we check if the slice asked by the user is returning more
       than 0 results: if not, we keep the old results.
@@ -323,7 +380,8 @@ class SearchResultsTable extends React.Component {
           <CardContent>
             {resultsSliced.length > 0 ? (
               <React.Fragment>
-                <Table className={classes.table}>
+
+                <ResultsTable>
                   <ResultsTableHead />
 
                   <TableBody style={{
@@ -352,28 +410,27 @@ class SearchResultsTable extends React.Component {
                             </React.Fragment>
                           ))}
                           {(resourceType === 'grottos' && (
-                          <React.Fragment>
-                            <StyledTableCell>{result.name}</StyledTableCell>
-                            <StyledTableCell>{result.contact ? result.contact : '-'}</StyledTableCell>
-                            <StyledTableCell>{result.city ? result.city : '-'}</StyledTableCell>
-                            <StyledTableCell>{result.county ? result.county : '-'}</StyledTableCell>
-                            <StyledTableCell>{result.region ? result.region : '-'}</StyledTableCell>
-                            <StyledTableCell>{result.country ? result.country : '-'}</StyledTableCell>
-                            <StyledTableCell>{result.cavers ? result.cavers.length : '0'}</StyledTableCell>
-                          </React.Fragment>
+                            <React.Fragment>
+                              <StyledTableCell>{result.name}</StyledTableCell>
+                              <StyledTableCell>{result.city ? result.city : '-'}</StyledTableCell>
+                              <StyledTableCell>{result.county ? result.county : '-'}</StyledTableCell>
+                              <StyledTableCell>{result.region ? result.region : '-'}</StyledTableCell>
+                              <StyledTableCell>{result.country ? result.country : '-'}</StyledTableCell>
+                              <StyledTableCell>{result.cavers ? result.cavers.length : '0'}</StyledTableCell>
+                            </React.Fragment>
                           ))}
                           {(resourceType === 'massifs' && (
-                          <React.Fragment>
-                            <StyledTableCell>{result.name}</StyledTableCell>
-                            <StyledTableCell>{result.caves ? result.caves.length : '0'}</StyledTableCell>
-                            <StyledTableCell>{result.entries ? result.entries.length : '0'}</StyledTableCell>
-                          </React.Fragment>
+                            <React.Fragment>
+                              <StyledTableCell>{result.name}</StyledTableCell>
+                              <StyledTableCell>{result.caves ? result.caves.length : '0'}</StyledTableCell>
+                              <StyledTableCell>{result.entries ? result.entries.length : '0'}</StyledTableCell>
+                            </React.Fragment>
                           ))}
                         </StyledTableRow>
                       ))}
 
                   </TableBody>
-                </Table>
+                </ResultsTable>
 
                 <StyledTablePagination
                   rowsPerPageOptions={[5, 10, 20]}

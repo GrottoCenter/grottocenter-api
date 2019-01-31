@@ -103,7 +103,6 @@ class GroupsSearch extends React.Component {
       county: '',
       country: '',
       name: '',
-      postal_code: '',
       region: '',
     });
   }
@@ -167,7 +166,6 @@ class GroupsSearch extends React.Component {
       county,
       country,
       name,
-      postal_code,
       region,
     } = this.state;
 
@@ -280,22 +278,6 @@ class GroupsSearch extends React.Component {
                   className={classes.formElement}
                   label={(
                     <span className={classes.formElementFontSize}>
-                      <Translate>Postal code</Translate>
-                    </span>
-                  )}
-                  onChange={event => this.handleValueChange('postal_code', event)}
-                  value={postal_code}
-                  InputProps={{
-                    classes: {
-                      input: classes.formElementFontSize,
-                    },
-                  }}
-                />
-
-                <TextField
-                  className={classes.formElement}
-                  label={(
-                    <span className={classes.formElementFontSize}>
                       <Translate>County</Translate>
                     </span>
                   )}
@@ -328,7 +310,7 @@ class GroupsSearch extends React.Component {
                   className={classes.formElement}
                   label={(
                     <span className={classes.formElementFontSize}>
-                      <Translate>Country</Translate>
+                      <Translate>Country code</Translate>
                     </span>
                   )}
                   onChange={event => this.handleValueChange('country', event)}

@@ -180,6 +180,11 @@ function Menu(props) {
   );
 }
 
+// Hide the dropdown icon
+function DropdownIndicator() {
+  return '';
+}
+
 //
 //
 // M A I N - C O M P O N E N T
@@ -234,6 +239,7 @@ class Searchbar extends React.Component {
             loadOptions={this.getDatasource}
             components={{
               Control,
+              DropdownIndicator,
               Menu,
               MultiValue,
               NoOptionsMessage,

@@ -46,6 +46,7 @@
 	"{0} min": "{0} min",
 	"Search": "Cerca...",
 	"Add": "Afegir",
+	"Caves": "Coves",
 	"Organizations": "Organitzacions",
 	"Administration": "Administració",
 	"Map": "Mapa",
@@ -62,6 +63,7 @@
 	"City": "Ciutat",
 	"country": "país",
 	"Country": "País",
+	"caves": "coves",
 	"location": "localització",
 	"bibliography": "bibliografia",
 	"Entry name": "Nom de l'entrada",
@@ -73,5 +75,10 @@
 	"Entry properties": "Propietats",
 	"Ease of move": "Progressió",
 	"Ease of reach": "Facilitat d'accés a l'entrada",
-	"Advanced search": "Cerca avançada..."
+	"Advanced search": "Cerca avançada...",
+	"Postal code": "Codi Postal",
+	"Group name": "Nom del grup",
+	"All": "Tots",
+	"Yes": "Sí",
+	"No": "No"
 }
