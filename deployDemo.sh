@@ -61,7 +61,7 @@ function waitContainer {
 
 echo "### BUILDING app locally using prod tasks ###"
 npm install
-NODE_ENV=demo grunt prod
+NODE_ENV=demo ./node_modules/grunt/bin/grunt prod
 
 ### RUNNING DOCKER IMAGES INSTANCES ###
 # Delete the MySQL container if one was running then launch a MySQL container with data loaded.
