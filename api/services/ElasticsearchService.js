@@ -85,6 +85,10 @@ module.exports = {
    * @param {*} params : list of params of the request
    */
   searchQuery: function(params) {
+
+    // Remove - symbol (conflicting with Elasticsearch which interprets it)
+    const query = params.query.replace('-', ' ');
+
     return new Promise(function(resolve, reject) {
       client.search({
         /* eslint-disable camelcase */
@@ -92,7 +96,7 @@ module.exports = {
         body: {
           query: {
             query_string: {
-              query: '*'+params.query+'* + '+params.query+'~'+FUZZINESS,
+              query: '*'+query+'* + '+query+'~'+FUZZINESS,
               fields: [
                 // General useful fields
                 'name^3', 'city^2', 'country', 'county', 'region',
@@ -168,12 +172,15 @@ module.exports = {
 
           // Value of a field
           if(isFieldParam && params[key] !== '') {
-            const words = params[key].split(' ');
+
+            // Remove - symbol (conflicting with Elasticsearch which interprets it)
+            const escapedWords = params[key].replace('-', ' ');
+
+            const words = escapedWords.split(' ');
             words.map((word, index) => {
               const matchObj = {
                 wildcard: {}
-              };
-          
+              };          
               /* 
                 The value is set to lower case because the data are indexed in lowercase. 
                 We want a search not case sensitive.
