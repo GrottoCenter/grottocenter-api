@@ -29,6 +29,18 @@ ES_LOCAL_PORT=9200
 # Logstash
 LS_TAGNAME="logstashgrotto"
 
+###################################################### EXPORT VARIABLES #######################################################
+echo "### EXPORTING VARIABLES TO .ENV FILE ###"
+
+cat > .env <<EOF
+MYSQL_USER=${DOCKER_MYSQL_USER}
+MYSQL_PASSWORD=${DOCKER_MYSQL_PASSWORD}
+MYSQL_DATABASE=${DOCKER_MYSQL_DATABASE}
+MYSQL_URL=${MYSQL_TAGNAME}:${MYSQL_LOCAL_PORT}
+MYSQL_PORT=${MYSQL_LOCAL_PORT}
+EOF
+
+echo "### .ENV GENERATED ###"
 ##################################################### FUNCTIONS #########################################################
 
 # Get the status of the health of the container name passed in parameter.

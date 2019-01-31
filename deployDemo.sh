@@ -176,6 +176,11 @@ docker run -d \
     --restart=always \
     -e sails_appUrl="http://localhost:${GC_LOCAL_PORT}" \
     -e ES_HOST="${ES_TAGNAME}:${ES_LOCAL_PORT}" \
+    -e MYSQL_URL=${MYSQL_TAGNAME} \
+    -e MYSQL_USER=${DOCKER_MYSQL_USER} \
+    -e MYSQL_PASSWORD=${DOCKER_MYSQL_PASSWORD} \
+    -e MYSQL_PORT=${MYSQL_LOCAL_PORT} \
+    -e MYSQL_DATABASE=${DOCKER_MYSQL_DATABASE} \
     --name=${GC_TAGNAME} \
     --link ${MYSQL_TAGNAME} \
     --link ${ES_TAGNAME} \
