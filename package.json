@@ -94,7 +94,7 @@
     "gruntify-eslint": "^5.0.0",
     "istanbul": "^0.4.5",
     "jest": "^23.6.0",
-    "mocha": "^5.2.0",
+    "mocha": "^6.0.0",
     "nodemon": "^1.18.5",
     "sails-disk": "^1.0.1",
     "sails-memory": "^0.10.7",
