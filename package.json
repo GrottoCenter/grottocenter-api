@@ -99,7 +99,7 @@
     "sails-disk": "^1.0.1",
     "sails-memory": "^0.10.7",
     "should": "^13.2.3",
-    "supertest": "^3.1.0"
+    "supertest": "^4.0.0"
   },
   "engines": {
     "node": ">=8.11"
