@@ -8,7 +8,6 @@ module.exports = function (grunt) {
     'cssmin',
     'sails-linker:prodJs',
     'sails-linker:prodStyles',
-    'sails-linker:clientSideTemplates',
-    'transifex:grottocenter'
+    'sails-linker:clientSideTemplates'
   ]);
 };
