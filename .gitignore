@@ -119,6 +119,7 @@ www
 
 coverage
 .coveralls.yml
+.vscode
 
 ################################################
 # Logstash
