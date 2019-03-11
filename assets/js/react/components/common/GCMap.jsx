@@ -1,19 +1,43 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Map, Marker, TileLayer } from 'react-leaflet';
-import DivIcon from 'react-leaflet-div-icon';
+import { divIcon } from 'leaflet';
 import _ from 'underscore.string';
-import styled from 'styled-components';
 import MapEntryPopup from './MapEntryPopup';
 // import {smallMarkerIcon, mainMarkerIcon} from '../../conf/Config';
 import { focusZoom } from '../../conf/Config';
 import Spinner from './Spinner';
+import MapGroupIcon from './MapGroupIcon';
+import styled from 'styled-components';
 
 //
 //
 // S T Y L I N G - C O M P O N E N T S
 //
 //
+
+const StyledMapGroupIcon = styled(MapGroupIcon)`
+  background-color: rgba(36, 96, 255, 0.6);
+  height: 40px !important;
+  width: 40px !important;
+  border-radius: 50%;
+  z-index: 1000 !important;
+
+  & > div {
+    border-radius: 50%;
+    height: 50px;
+    width: 50px;
+    margin-left: -5px;
+    margin-top: -5px;
+    text-align: center;
+    background-color: rgba(83, 177, 251, 0.5);;
+
+    & > span {
+      line-height: 50px;
+      font-weight: 600;
+    }
+  }
+`;
 
 export const smallMarkerIcon = L.icon({
   iconUrl: '/images/gc-map-entry.svg',
@@ -43,28 +67,19 @@ const mainMarkerIcon = L.icon({
   popupAnchor: [0, -32],
 });
 
-const GroupDivIcon = styled(DivIcon)`
-  background-color: rgba(36, 96, 255, 0.6);
-  height: 40px !important;
-  width: 40px !important;
-  border-radius: 50%;
-  z-index: 1000 !important;
+const generateGroupDivIcon = (key, position, text) => {
+  const icon = divIcon({
+    html: `<span>${text}</span>`,
+  });
 
-  & > div {
-    border-radius: 50%;
-    height: 50px;
-    width: 50px;
-    margin-left: -5px;
-    margin-top: -5px;
-    text-align: center;
-    background-color: rgba(83, 177, 251, 0.5);;
-
-    & > span {
-      line-height: 50px;
-      font-weight: 600;
-    }
-  }
-`;
+  return (
+    <Marker
+      key={key}
+      position={position}
+      icon={icon}
+    />
+  );
+};
 
 //
 //
@@ -291,17 +306,14 @@ class GCMap extends Component {
         if (!selectedEntry || entry.id !== selectedEntry.id) {
           if (entry.name === 'group') {
             markersLayer.push(
-              <GroupDivIcon
-                key={`group_${keyInc}`}
+              <StyledMapGroupIcon
+                key={`group_${entry.id}`}
                 position={{
                   lat: entry.latitude,
                   lng: entry.longitude,
                 }}
-              >
-                <div>
-                  <span>{entry.id}</span>
-                </div>
-              </GroupDivIcon>
+                text={`${entry.id}`}
+              />,
             );
           } else {
             markersLayer.push(
@@ -316,7 +328,7 @@ class GCMap extends Component {
                 <MapEntryPopup
                   entry={entry}
                 />
-              </Marker>
+              </Marker>,
             );
           }
         }

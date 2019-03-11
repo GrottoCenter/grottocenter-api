@@ -128,7 +128,7 @@ module.exports = {
   },
 
   //Deprecated for v1
-  convertToOldSearchResult: function(source) {
+  convertDbToSearchResult: function(source) {
     let results = {};
     let entries = [];
     source.forEach((item) => {
@@ -209,22 +209,27 @@ module.exports = {
    * Function that return all data for the search but incomplete, that means only the id and the name
    * @param {*} source : the elasticsearch result
    */
-  convertToSearchResult: function(source) {
+  convertEsToSearchResult: function(source) {
     let res = {};
     let values = [];
+
     // For each result of the research, only keep the id and the name then add it to the json to send
-    source.hits.hits.forEach((item) => {
+    source.hits && source.hits.hits.forEach((item) => {
       let data = {
         id: item._source.id,
         name: item._source.name,
         type: item._source.type,
         highlights: item.highlight
       };
+      if (item._source.longitude) {
+        data.longitude = item._source.longitude;
+        data.latitude = item._source.latitude;
+      }
       values.push(data);
     });
 
     res.results = values;
-    res.totalNbResults = source.hits.total;
+    res.totalNbResults = source.hits ? source.hits.total : 0;
     return res;
   },
 

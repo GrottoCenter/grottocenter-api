@@ -61,19 +61,19 @@ module.exports = {
   getGroupedItem: function(northWestBound, southEastBound) {
     return new Promise((resolve, reject) => {
       CommonService.query(PUBLIC_ENTRIES_AVG_COORDS, [northWestBound.lat, southEastBound.lat, northWestBound.lng, southEastBound.lng])
-      .then(function(results) {
-        if (!results || results.rows.length <= 0 || results.rows[0].count === 0) {
-          reject('No data found');
-        }
-        resolve([{
-          id: results.rows[0].count,
-          latitude: results.rows[0].latitude,
-          longitude: results.rows[0].longitude,
-          name: 'group'
-        }]);
-      }, function(err) {
-        reject(err);
-      });
+        .then(function(results) {
+          if (!results || results.rows.length <= 0 || results.rows[0].count === 0) {
+            reject('No data found');
+          }
+          resolve([{
+            id: results.rows[0].count,
+            latitude: results.rows[0].latitude,
+            longitude: results.rows[0].longitude,
+            name: 'group'
+          }]);
+        }, function(err) {
+          reject(err);
+        });
     });
   },
 
@@ -84,17 +84,17 @@ module.exports = {
       let columnNumber = 6; // Default value
       let minGroupSize = 100; // Default value
       settingsPromiseList.push(SettingsService.getSetting('map.partition.row')
-      .then(function(value) {
-        rowNumber = value;
-      }));
+        .then(function(value) {
+          rowNumber = value;
+        }));
       settingsPromiseList.push(SettingsService.getSetting('map.partition.column')
-      .then(function(value) {
-        columnNumber = value;
-      }));
+        .then(function(value) {
+          columnNumber = value;
+        }));
       settingsPromiseList.push(SettingsService.getSetting('map.partition.group.minsize')
-      .then(function(value) {
-        minGroupSize = value;
-      }));
+        .then(function(value) {
+          minGroupSize = value;
+        }));
 
       Promise.all(settingsPromiseList).then(function() {
         let mapLon = CommonService.difference(northWestBound.lng,  southEastBound.lng);
@@ -120,17 +120,19 @@ module.exports = {
           }
         }
 
-        Promise.all(promiseList).then(function(values) {
-          let results = [];
-          values.forEach(function(items) {
-            items.forEach(function(details) {
-              results.push(details);
+        Promise.all(promiseList)
+          .then(function(values) {
+            let results = [];
+            values.forEach(function(items) {
+              items.forEach(function(details) {
+                results.push(details);
+              });
             });
+            resolve(results);
+          })
+          .catch(function(err) {
+            reject(err);
           });
-          resolve(results);
-        }, function(err) {
-          reject(err);
-        });
       });
     });
   },
@@ -138,27 +140,29 @@ module.exports = {
   findByBoundsPartitionedSub: function(northWestBound, southEastBound, minGroupSize) {
     return new Promise((resolve, reject) => {
       GeoLocService.countEntries(northWestBound, southEastBound)
-      .then(function(count) {
-        if (count >= minGroupSize) {
-          GeoLocService.getGroupedItem(northWestBound, southEastBound)
-          .then(function(group) {
-            //sails.log.debug('Grouping ' + count + ' items on partition', northWestBound, southEastBound);
-            resolve(group);
-          }, function(err) {
-            reject(err);
-          });
-        } else {
-          GeoLocService.getEntriesBetweenCoords(northWestBound, southEastBound)
-          .then(function(entries) {
-            //sails.log.debug('Retrieving ' + entries.length + ' items on partition', northWestBound, southEastBound);
-            resolve(entries);
-          }, function(err) {
-            reject(err);
-          });
-        }
-      }, function(err) {
-        reject(err);
-      });
+        .then(function(count) {
+          if (count >= minGroupSize) {
+            GeoLocService.getGroupedItem(northWestBound, southEastBound)
+              .then(function(group) {
+                //sails.log.debug('Grouping ' + count + ' items on partition', northWestBound, southEastBound);
+                resolve(group);
+              })
+              .catch(function(err) {
+                reject(err);
+              });
+          } else {
+            GeoLocService.getEntriesBetweenCoords(northWestBound, southEastBound)
+              .then(function(entries) {
+                //sails.log.debug('Retrieving ' + entries.length + ' items on partition', northWestBound, southEastBound);
+                resolve(entries);
+              })
+              .catch(function(err) {
+                reject(err);
+              });
+          }
+        }, function(err) {
+          reject(err);
+        });
     });
   }
 };
