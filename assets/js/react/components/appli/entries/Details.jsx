@@ -44,6 +44,11 @@ class Details extends React.Component {
     block7: false,
   };
 
+  componentDidMount() {
+    const entryId = this.props.match.params.id;
+    // TODO Get entry details using REST
+  }
+
   render() {
     const title = `Détails de l'entrée : ${this.props.match.params.id}`;
 

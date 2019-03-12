@@ -5,7 +5,7 @@ import Button from '@material-ui/core/Button';
 import ImageLoupe from '@material-ui/icons/Loupe';
 import { withStyles } from '@material-ui/core/styles';
 import GCLink from './GCLink';
-import { entryDetailPath } from '../../conf/Config';
+import { entryDetailPath, detailPageV2Links } from '../../conf/Config';
 import withContext from '../../helpers/Routing';
 
 //
@@ -31,6 +31,8 @@ const MapEntryPopup = ({ entry }, context) => {
   const ButtonWithContext = withContext(Button, context);
   const StyledImageLoupeComponent = <StyledImageLoupe />;
 
+  const externalLink = `${(detailPageV2Links[locale] !== undefined) ? detailPageV2Links[locale] : detailPageV2Links['*']}&category=entry&id=${entry.id}}`; //eslint-disable-line
+
   return (
     <Popup autoPan={false}>
       <React.Fragment>
@@ -46,7 +48,7 @@ const MapEntryPopup = ({ entry }, context) => {
         </div>
 
         {entry.id && (
-          <GCLinkWithContext internal href={entryDetailPath + entry.id}>
+          <GCLinkWithContext internal={false} href={externalLink} target="_blank" /*href={entryDetailPath + entry.id}*/>
             <ButtonWithContext variant="text">
               {StyledImageLoupeComponent}
             </ButtonWithContext>
