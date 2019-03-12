@@ -26,15 +26,17 @@ module.exports = {
     };
   
     // Use the Elasticsearch Service to do the search according to the parameters of the URL
-    ElasticSearch.searchQuery(paramsURl).then(results => {
-      if(complete) {
-        return ControllerService.treatAndConvert(req, undefined, results, params, res, MappingV1Service.convertToCompleteSearchResult);
-      } else {
-        return ControllerService.treatAndConvert(req, undefined, results, params, res, MappingV1Service.convertToSearchResult);
-      }
-    }).catch(err => {
-      return ControllerService.treatAndConvert(req, err, undefined, params, res, MappingV1Service.convertToSearchResult);
-    });
+    ElasticSearch.searchQuery(paramsURl)
+      .then(results => {
+        if(complete) {
+          return ControllerService.treatAndConvert(req, undefined, results, params, res, MappingV1Service.convertToCompleteSearchResult);
+        } else {
+          return ControllerService.treatAndConvert(req, undefined, results, params, res, MappingV1Service.convertEsToSearchResult);
+        }
+      })
+      .catch(err => {
+        return ControllerService.treatAndConvert(req, err, undefined, params, res, MappingV1Service.convertEsToSearchResult);
+      });
   },
 
   /**
@@ -60,20 +62,21 @@ module.exports = {
     const params = {};
   
     // Use the Elasticsearch Service to do the search according to the parameters of the URL
-    ElasticSearch.advancedSearchQuery(paramsURL).then(results => {
-      if(complete) {
-        return ControllerService.treatAndConvert(req, undefined, results, params, res, MappingV1Service.convertToCompleteSearchResult);
-      } else {
-        return ControllerService.treatAndConvert(req, undefined, results, params, res, MappingV1Service.convertToSearchResult);
-      }
-    }).catch(err => {
-      return ControllerService.treatAndConvert(req, err, undefined, params, res, MappingV1Service.convertToSearchResult);
-    });
+    ElasticSearch.advancedSearchQuery(paramsURL)
+      .then(results => {
+        if(complete) {
+          return ControllerService.treatAndConvert(req, undefined, results, params, res, MappingV1Service.convertToCompleteSearchResult);
+        } else {
+          return ControllerService.treatAndConvert(req, undefined, results, params, res, MappingV1Service.convertEsToSearchResult);
+        }
+      })
+      .catch(err => {
+        return ControllerService.treatAndConvert(req, err, undefined, params, res, MappingV1Service.convertEsToSearchResult);
+      });
   },
 
   findAll: function(req, res) {
-    return searchController.findAll(req, res, MappingV1Service.convertToOldSearchResult);
+    return searchController.findAll(req, res, MappingV1Service.convertDbToSearchResult);
   },
-
 
 };

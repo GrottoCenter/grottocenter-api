@@ -84,12 +84,6 @@ module.exports = {
       allowNull: true
     },
 
-    idType: {
-      columnName: 'Id_type',
-      model: 'TType',
-      via: 'id'
-    },
-
     externalUrl: {
       type: 'string',
       columnName: 'External_url',

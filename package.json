@@ -57,7 +57,7 @@
   },
   "scripts": {
     "start": "node app.js",
-    "start-hot": "nodemon sails lift",
+    "start-hot": "nodemon sails lift --silly",
     "debug": "node debug app.js",
     "test": "node ./node_modules/mocha/bin/mocha test/bootstrap.test.js test/integration/**/*.test.js",
     "coverage": "node node_modules/.bin/istanbul cover node_modules/.bin/_mocha test/bootstrap.test.js test/integration/**/*.test.js",
