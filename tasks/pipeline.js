@@ -18,7 +18,7 @@ let cssFilesToInject = [
   'styles/**/skeleton.css',
   'styles/**/custom.css',
   'styles/**/anim.css',
-
+  'styles/swagger-ui.css',
   'styles/**/*.css'
 ];
 
