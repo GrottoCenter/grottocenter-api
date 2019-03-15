@@ -4,9 +4,9 @@ import { Popup } from 'react-leaflet';
 import Button from '@material-ui/core/Button';
 import ImageLoupe from '@material-ui/icons/Loupe';
 import { withStyles } from '@material-ui/core/styles';
-import GCLink from './GCLink';
-import { entryDetailPath, detailPageV2Links } from '../../conf/Config';
-import withContext from '../../helpers/Routing';
+import GCLink from '../GCLink';
+import { entryDetailPath, detailPageV2Links } from '../../../conf/Config';
+import withContext from '../../../helpers/Routing';
 
 //
 //

@@ -1,14 +1,14 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import styled from 'styled-components';
 import { Map, Marker, TileLayer } from 'react-leaflet';
-import { divIcon } from 'leaflet';
 import _ from 'underscore.string';
-import MapEntryPopup from './MapEntryPopup';
-// import {smallMarkerIcon, mainMarkerIcon} from '../../conf/Config';
+import MapEntryMarker from './map/MapEntryMarker';
+import MapGrottoMarker from './map/MapGrottoMarker';
+import MapEntryPopup from './map/MapEntryPopup';
 import { focusZoom } from '../../conf/Config';
 import Spinner from './Spinner';
 import MapGroupIcon from './MapGroupIcon';
-import styled from 'styled-components';
 
 //
 //
@@ -54,32 +54,6 @@ export const smallMarkerIcon = L.icon({
   // shadowSize: [68, 95],
   // shadowAnchor: [22, 94]
 });
-
-
-const mainMarkerIcon = L.icon({
-  iconUrl: '/images/gc-entry.svg',
-  iconSize: [
-    48, 48,
-  ],
-  iconAnchor: [
-    16, 32,
-  ],
-  popupAnchor: [0, -32],
-});
-
-const generateGroupDivIcon = (key, position, text) => {
-  const icon = divIcon({
-    html: `<span>${text}</span>`,
-  });
-
-  return (
-    <Marker
-      key={key}
-      position={position}
-      icon={icon}
-    />
-  );
-};
 
 //
 //
@@ -289,13 +263,17 @@ class GCMap extends Component {
       zoom = focusZoom;
     }
 
-    const marker = (selectedEntry)
-      ? (
-        <Marker icon={mainMarkerIcon} position={center} zIndexOffset={1000}>
-          <MapEntryPopup entry={selectedEntry} />
-        </Marker>
-      )
-      : null;
+    let marker = null;
+
+    if (selectedEntry) {
+      switch (selectedEntry.type) {
+        case 'grotto':
+          marker = <MapGrottoMarker grotto={selectedEntry} position={center} />;
+          break;
+        default:
+          marker = <MapEntryMarker entry={selectedEntry} position={center} />;
+      }
+    }
 
     const markersLayer = [];
     if (visibleEntries

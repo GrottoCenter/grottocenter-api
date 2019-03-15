@@ -5,46 +5,53 @@ import { withStyles } from '@material-ui/core/styles';
 import Translate from '../Translate';
 import CaveListItem from './CaveListItem';
 
-const styles = () => ({
-  cavesList: {
+const StyledList = withStyles({
+  root: {
     display: 'flex',
     flexWrap: 'wrap',
     width: '100%',
   },
-});
+})(List);
 
 const CavesList = (props) => {
-  const { caves, classes } = props;
+  const {
+    caves,
+    title,
+    emptyMessage,
+  } = props;
+
   return (
     <div>
-      {caves.length > 0
+      { caves.length > 0
         ? (
-          <div>
-            <b><Translate>Caves list</Translate></b>
-            <List className={classes.cavesList}>
-              {caves.sort((a, b) => a.name > b.name).map(cave => (
-                <CaveListItem key={cave.id} cave={cave} />
-              ))}
-            </List>
-          </div>
+          <React.Fragment>
+            <strong>{title}</strong>
+            <StyledList>
+              { caves
+                .sort((a, b) => a.name > b.name)
+                .map(cave => (
+                  <CaveListItem key={cave.id} cave={cave} />
+                )) }
+            </StyledList>
+          </React.Fragment>
         ) : (
-          <div>
-            <Translate>This massif has no caves repertoried yet</Translate>
-            .
-          </div>
+          <em>{emptyMessage}</em>
         )
-    }
+     }
     </div>
   );
 };
 
-
 CavesList.propTypes = {
   caves: PropTypes.arrayOf(PropTypes.object),
-  classes: PropTypes.shape({}).isRequired,
-};
-CavesList.defaultProps = {
-  caves: undefined,
+  title: PropTypes.node,
+  emptyMessage: PropTypes.node,
 };
 
-export default withStyles(styles)(CavesList);
+CavesList.defaultProps = {
+  caves: undefined,
+  title: <Translate>Caves list</Translate>,
+  emptyMessage: <Translate>Empty list</Translate>,
+};
+
+export default CavesList;

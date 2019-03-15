@@ -166,5 +166,7 @@
 	"No": "No",
 	"Network name": "Network name",
 	"Network properties": "Network properties",
-	"Massif properties": "Massif properties"
+	"Massif properties": "Massif properties",
+	"Entries list": "Entries list",
+	"Empty list": "No items found"
 }

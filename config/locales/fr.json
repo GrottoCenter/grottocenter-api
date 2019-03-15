@@ -103,7 +103,7 @@
 	"Groups": "Groupes",
 	"Since": "Depuis",
 	"Official partner": "Partenaire officiel",
-	"Caves list": "Liste des cavités",
+	"Caves list": "Liste des réseaux",
 	"This massif has no caves repertoried yet": "Ce massif n'a pas encore de caves répertoriées",
 	"by": "par",
 	"Caves related to this group": "Cavités en lien avec ce groupe",
@@ -159,12 +159,14 @@
 	"Group properties": "Propriétés du groupe",
 	"Group name": "Nom du groupe",
 	"Number of cavers": "Nombre de spéléologues",
-	"Number of caves": "Nombre de grottes",
-	"Number of entries": "Nombre d'entrées",
+	"Number of caves": "Nombre de réseaux",
+	"Number of entries": "Nombre de cavités",
 	"All": "Tous",
 	"Yes": "Oui",
 	"No": "Non",
 	"Network name": "Nom du réseau",
 	"Network properties": "Propriétés du réseau",
-	"Massif properties": "Propriétés du massif"
+	"Massif properties": "Propriétés du massif",
+	"Entries list": "Liste des cavités",
+	"Empty list": "Pas de résultats"
 }
