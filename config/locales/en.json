@@ -116,6 +116,7 @@
 	"City": "City",
 	"country": "country",
 	"Country": "Country",
+	"Country code": "Country code",
 	"county": "county",
 	"County": "County",
 	"region": "region",
@@ -159,7 +160,7 @@
 	"Group properties": "Group properties",
 	"Group name": "Group name",
 	"Number of cavers": "Number of cavers",
-	"Number of caves": "Number of caves",
+	"Number of caves": "Number of cave networks",
 	"Number of entries": "Number of entries",
 	"All": "All",
 	"Yes": "Yes",
@@ -168,5 +169,5 @@
 	"Network properties": "Network properties",
 	"Massif properties": "Massif properties",
 	"Entries list": "Entries list",
-	"Empty list": "No items found"
+	"Empty list": "Empty list"
 }
