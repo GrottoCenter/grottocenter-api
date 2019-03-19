@@ -5,30 +5,40 @@ import { withStyles } from '@material-ui/core/styles';
 import Translate from '../Translate';
 import EntryListItem from './EntryListItem';
 
-const styles = () => ({
-  entriesList: {
+const StyledList = withStyles({
+  root: {
     display: 'flex',
     flexWrap: 'wrap',
     width: '100%',
   },
-});
+})(List);
 
 const EntriesList = (props) => {
-  const { entries, classes } = props;
+  const {
+    entries,
+    title,
+    emptyMessage,
+  } = props;
+
   return (
     <div>
-      { entries.length > 0 ? (
-        <div>
-          <b><Translate>Caves related to this group</Translate></b>
-          <List className={classes.entriesList}>
-            {entries.sort((a, b) => a.name > b.name).map(entry => (
-              <EntryListItem key={entry.id} entry={entry} />
-            ))}
-          </List>
-        </div>
-      ) : (
-        <i><Translate>There is no caves related to this group currently</Translate></i>
-      ) }
+      { entries.length > 0
+        ? (
+          <React.Fragment>
+            <strong>{title}</strong>
+            <StyledList>
+              { entries
+                .sort((a, b) => a.name > b.name)
+                .map(entry => (
+                  <EntryListItem key={entry.id} entry={entry} />
+                )) }
+            </StyledList>
+          </React.Fragment>
+        )
+        : (
+          <em>{emptyMessage}</em>
+        )
+      }
     </div>
   );
 };
@@ -36,10 +46,14 @@ const EntriesList = (props) => {
 
 EntriesList.propTypes = {
   entries: PropTypes.arrayOf(PropTypes.object),
-  classes: PropTypes.shape({}).isRequired,
-};
-EntriesList.defaultProps = {
-  entries: undefined,
+  title: PropTypes.node,
+  emptyMessage: PropTypes.node,
 };
 
-export default withStyles(styles)(EntriesList);
+EntriesList.defaultProps = {
+  entries: undefined,
+  title: <Translate>Entries list</Translate>,
+  emptyMessage: <Translate>Empty list</Translate>,
+};
+
+export default EntriesList;

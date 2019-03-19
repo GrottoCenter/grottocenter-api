@@ -85,19 +85,19 @@ const CaveModel = {
 /* Mappers */
 
 module.exports = {
-  convertToEntryModel: function(source) {   
+  convertToEntryModel: function(source) {
     let result = Object.assign({}, EntryModel);
 
     result.id = source.id;
     result.name = source.name;
-    result.country = source.country;
+    result.country = source.Country;
     result.county = source.county;
-    result.region = source.region;
-    result.city = source.city;
+    result.region = source.Region;
+    result.city = source.City;
     result.postalCode = source.postalCode;
-    result.latitude = source.latitude;
-    result.longitude = source.longitude;
-    result.altitude = source.altitude;
+    result.latitude = source.Latitude;
+    result.longitude = source.Longitude;
+    result.altitude = source.Altitude;
     result.aestheticism = source.aestheticism;
     result.approach = source.approach;
     result.caving = source.caving;

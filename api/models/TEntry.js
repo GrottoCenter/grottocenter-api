@@ -191,5 +191,11 @@ module.exports = {
       via: 'entry',
       through: 'JGrottoEntry'
     },
+
+    massifs: {
+      collection: 'TMassif',
+      via: 'entry',
+      through: 'JMassifCave'
+    },
   }
 };
