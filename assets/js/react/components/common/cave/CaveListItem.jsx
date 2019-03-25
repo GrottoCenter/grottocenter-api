@@ -50,8 +50,9 @@ const styles = theme => ({
 const CaveListItem = (props) => {
   const { classes, cave } = props;
   return (
-    <ListItem className={classes.caveItem} button onClick={() => props.history.push(`/ui/caves/${cave.id}`)}>
-      <GClink className={classes.caveLink} internal href={`/ui/caves/${cave.id}`}>{cave.name}</GClink>
+    <ListItem className={classes.caveItem} button /*onClick={() => props.history.push(`/ui/caves/${cave.id}`)}*/>
+      {/*<GClink className={classes.caveLink} internal href={`/ui/caves/${cave.id}`}>{cave.name}</GClink>*/}
+      {cave.name}
       <ListItemText className={classes.caveText}>
 
         {cave.depth ? (

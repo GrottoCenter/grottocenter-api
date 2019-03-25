@@ -17,6 +17,7 @@ import TableRow from '@material-ui/core/TableRow';
 import Translate from '../../common/Translate';
 
 import SearchTableActions from './SearchTableActions';
+import {detailPageV2Links} from '../../../conf/Config';
 
 // =================== STYLES ========================
 
@@ -213,7 +214,14 @@ class SearchResultsTable extends React.Component {
   handleRowClick = (id) => {
     const { history, resourceType, resetAdvancedSearch } = this.props;
     resetAdvancedSearch();
-    if (resourceType === 'entries') history.push(`/ui/entries/${id}`);
+    const externalLink = `${(detailPageV2Links[locale] !== undefined) ? detailPageV2Links[locale] : detailPageV2Links['*']}&category=entry&id=${id}`; //eslint-disable-line
+
+    if (resourceType === 'entries') {
+      window.open(
+        externalLink,
+        '_blank',
+      );
+    }
     if (resourceType === 'grottos') history.push(`/ui/groups/${id}`);
     if (resourceType === 'massifs') history.push(`/ui/massifs/${id}`);
   }
