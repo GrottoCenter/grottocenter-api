@@ -1,12 +1,14 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import Toolbar from '@material-ui/core/Toolbar';
+import SearchIcon from '@material-ui/icons/Search';
 import { withStyles, withTheme } from '@material-ui/core/styles';
 import styled from 'styled-components';
 import HeaderTitle from './HeaderTitle';
 import SideMenuBurgerConnector from '../../containers/SideMenuBurgerConnector';
 import QuicksearchContainer from '../../containers/QuicksearchContainer';
 import { sideMenuWidth } from '../../conf/Config';
+
 
 //
 //
@@ -34,17 +36,39 @@ const TitleGroup = withStyles(theme => ({
   },
 }), { withTheme: true })(Toolbar);
 
+const StyledBarContainer = withTheme()(styled.div`
+  background-color: ${props => props.theme.palette.primary3Color};
+  display: flex;
+  width: 400px;
+  height: 60px;
+`);
+
 const StyledQuicksearchContainer = withStyles(theme => ({
   root: {
     flex: 10,
   },
   input: {
-    backgroundColor: theme.palette.primary3Color,
+    backgroundColor: theme.palette.primary3Color
   },
   valueContainer: {
-    height: '64px',
-  },
+    height: '60px'
+  }
 }), { withTheme: true })(QuicksearchContainer);
+
+const StyledIconSpan = withTheme()(styled.span`
+  height: 64px;
+  text-align: center;
+`);
+
+
+const StyledSearchIcon = withStyles(theme => ({
+  root: {
+    height: '50px',
+    width: '50px',
+    paddingTop: 'calc((72px - 50px) / 2)',
+    fill: theme.palette.primary1Color,
+  },
+}), { withTheme: true })(SearchIcon);
 
 const LargerToolbarGroup = styled.div`
   width: 400px;
@@ -63,9 +87,14 @@ const AppToolbar = () => (
       <SideMenuBurgerConnector />
     </TitleGroup>
 
-    <LargerToolbarGroup>
-      <StyledQuicksearchContainer />
-    </LargerToolbarGroup>
+    <StyledBarContainer>
+      <StyledIconSpan>
+        <StyledSearchIcon />
+      </StyledIconSpan>
+
+      <StyledQuicksearchContainer/>
+
+    </StyledBarContainer>
 
     <div />
   </StyledToolbar>
