@@ -34,21 +34,17 @@ const TitleGroup = withStyles(theme => ({
   },
 }), { withTheme: true })(Toolbar);
 
-const StyledQuicksearchContainer = withTheme()(styled(QuicksearchContainer)`
-  padding: 0px !important;
-  padding-left: 30px !important;
-
-  > label {
-    font-weight: 400;
-    font-size: 20px;
-    top: 25px !important;
-    color: ${props => props.theme.palette.primary3Color} !important;
-  }
-
-  > hr {
-    display: none;
-  }
-`);
+const StyledQuicksearchContainer = withStyles(theme => ({
+  root: {
+    flex: 10,
+  },
+  input: {
+    backgroundColor: theme.palette.primary3Color,
+  },
+  valueContainer: {
+    height: '64px',
+  },
+}), { withTheme: true })(QuicksearchContainer);
 
 const LargerToolbarGroup = styled.div`
   width: 400px;
