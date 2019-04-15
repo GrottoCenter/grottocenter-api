@@ -9,7 +9,6 @@ import MapEntryPopup from './map/MapEntryPopup';
 import { focusZoom } from '../../conf/Config';
 import Spinner from './Spinner';
 import MapGroupIcon from './MapGroupIcon';
-
 //
 //
 // S T Y L I N G - C O M P O N E N T S
@@ -92,9 +91,8 @@ class GCMap extends Component {
       initZoom: props.mapZoom,
       showSpinner: false,
     };
-  }
 
-  componentWillMount() {
+
     const encodedParam = this.getTarget();
     if (encodedParam && encodedParam.length > 0) {
       const decoded = Buffer.from(encodedParam, 'base64').toString();
@@ -111,10 +109,10 @@ class GCMap extends Component {
         initZoom: Number(params.zoom),
       });
       this.updateReduxMapData({
-        lat: Number(params.lat),
-        lng: Number(params.lng),
-      },
-      Number(params.zoom));
+          lat: Number(params.lat),
+          lng: Number(params.lng),
+        },
+        Number(params.zoom));
     }
   }
 
@@ -178,10 +176,10 @@ class GCMap extends Component {
     if (mapRef && mapRef.current.leafletElement) {
       const bounds = mapRef.current.leafletElement.getBounds();
       return {
-        nw_lat: bounds._southWest.lat,
-        nw_lng: bounds._southWest.lng,
-        se_lat: bounds._northEast.lat,
-        se_lng: bounds._northEast.lng,
+        nw_lat: bounds.getSouthWest().lat,
+        nw_lng: bounds.getSouthWest().lng,
+        se_lat: bounds.getNorthEast().lat,
+        se_lng: bounds.getNorthEast().lng,
       };
     }
     return undefined;
@@ -219,10 +217,10 @@ class GCMap extends Component {
     const leafletMap = mapRef.current.leafletElement;
     const mapBounds = leafletMap.getBounds().getCenter();
     const zoom = leafletMap.getZoom();
-
     this.updateReduxMapData(mapBounds, zoom);
     this.updateLocationUrl(mapBounds, zoom);
     this.searchEntriesInBounds();
+
   };
 
   handleLocationFound = () => {
@@ -279,7 +277,6 @@ class GCMap extends Component {
     if (visibleEntries
       && visibleEntries.entries
       && visibleEntries.entries.length > 0) {
-      let keyInc = 1;
       visibleEntries.entries.forEach((entry) => {
         if (!selectedEntry || entry.id !== selectedEntry.id) {
           if (entry.name === 'group') {
@@ -310,7 +307,6 @@ class GCMap extends Component {
             );
           }
         }
-        keyInc += 1;
       });
     }
 
