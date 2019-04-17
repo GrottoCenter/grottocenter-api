@@ -11,7 +11,7 @@ module.exports = function(grunt) {
         basedir: '/assets/js/react/',
         browserifyOptions: {
           debug: true, // source mapping
-          extensions: ['.jsx', '.js']
+          extensions: ['.jsx', '.js', '.css']
         },
         transform: [
           ['babelify', {

@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import {
-  Map, Marker, CircleMarker, TileLayer, Tooltip,
+  Map, Marker, TileLayer, LayersControl, Tooltip,
 } from 'react-leaflet';
 import _ from 'underscore.string';
 import Control from 'react-leaflet-control';
@@ -489,6 +489,21 @@ class GCMap extends Component {
           }
         </Control>
 
+
+        <LayersControl position="topleft">
+          <LayersControl.BaseLayer name="Satellite">
+            <TileLayer
+              attribution="Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community"
+              url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+            />
+          </LayersControl.BaseLayer>
+          <LayersControl.BaseLayer name="OpenStreetMap Basic" checked>
+            <TileLayer
+              attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+          </LayersControl.BaseLayer>
+        </LayersControl>
         {marker}
         {this.state.markersChecked.includes(markers[0]) && entriesMarkersLayer}
         {this.state.markersChecked.includes(markers[0]) && groupsMarkersLayer}

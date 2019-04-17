@@ -40,6 +40,7 @@
     "react-leaflet": "^2.1.2",
     "react-leaflet-control": "^2.1.1",
     "react-leaflet-div-icon": "^1.1.0",
+    "react-leaflet-gridcanvas": "^0.1.1",
     "react-redux": "^6.0.0",
     "react-router": "^4.3.1",
     "react-router-dom": "^4.3.1",
@@ -83,6 +84,8 @@
     "babel-plugin-styled-components": "^1.8.0",
     "babelify": "^10.0.0",
     "barrels": "^1.6.5",
+    "browserify": "^16.2.3",
+    "browserify-css": "^0.14.0",
     "coveralls": "^3.0.2",
     "eslint": "^5.9.0",
     "eslint-config-airbnb": "^17.1.0",
@@ -105,5 +108,15 @@
   },
   "engines": {
     "node": ">=8.11"
+  },
+  "browserify": {
+    "transform": [
+      [
+        "browserify-css",
+        {
+          "global": "true"
+        }
+      ]
+    ]
   }
 }
