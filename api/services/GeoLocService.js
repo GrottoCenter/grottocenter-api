@@ -4,6 +4,17 @@
 const PUBLIC_ENTRIES_AVG_COORDS = 'SELECT count(Id) as count, avg(Longitude) as longitude, avg(Latitude) as latitude '
   + 'FROM t_entry WHERE Latitude > $1 AND Latitude < $2 AND Longitude > $3 AND Longitude < $4 AND Is_public=\'YES\'';
 
+const PUBLIC_ENTRIES_AVG_COORDS_WITHOUT_QUALITY_ENTRY =
+  'SELECT count(t1.Id) as count, avg(t1.Latitude) as latitude, avg(t1.Longitude) as longitude' +
+  'FROM t_entry as t1' +
+  'LEFT JOIN (SELECT *' +
+  'FROM t_entry' +
+  'WHERE Latitude > 42 AND Latitude < 46 AND Longitude > -1 AND Longitude < 15 AND Is_public=\'YES\'' +
+  'ORDER BY Quality DESC' +
+  'LIMIT 10) as t2 on t1.Id = t2.Id' +
+  'WHERE t1.Latitude > 42 AND t1.Latitude < 46 AND t1.Longitude > -1 AND t1.Longitude < 15 AND t1.Is_public=\'YES\'' +
+  'AND t2.Id IS NULL';
+
 module.exports = {
   /**
    * @returns {Promise} which resolves to the succesfully countEntries
@@ -49,7 +60,10 @@ module.exports = {
       //TODO : to adapt when authentication will be implemented
       parameters.isPublic = 'YES';
 
-      TEntry.find(parameters).exec(function(err, result) {
+      TEntry.find(parameters)
+        .populate('cave')
+        .sort('quality DESC')
+        .exec(function(err, result) {
         if (err) {
           reject(err);
         }
@@ -164,5 +178,92 @@ module.exports = {
           reject(err);
         });
     });
+  },
+
+  /**
+   * format the "bests" entries in a light version of the entries
+   * @param entries
+   * @returns {Promise<any>}
+   */
+  formatQualityEntriesMap: function (entries){
+    return entries.map(function(entry) {
+      let entryCave;
+      if (entry.cave) {
+        entryCave =
+          {
+            id: entry.cave.id,
+            name: entry.cave.name,
+            depth: entry.cave.depth
+          }
+      } else {
+        entryCave = null;
+      }
+
+      return {
+        id: entry.id,
+        name: entry.name,
+        city: entry.city,
+        region: entry.region,
+        cave: entryCave,
+        longitude: entry.longitude,
+        latitude: entry.latitude,
+        quality: entry.quality
+      };
+    });
+  },
+
+
+  /**
+   * format the quality entries with the groups of entries
+   * @param formattedQualityEntries
+   * @param formattedGroupEntry
+   */
+  formatEntriesMap: function(formattedQualityEntries, formattedGroupEntry){
+    sails.log.debug(formattedQualityEntries);
+    return {
+      qualityEntriesMap: formattedQualityEntries,
+      groupEntriesMap: formattedGroupEntry
+    };
+  },
+
+
+  /**
+   *
+   * @param northWestBound
+   * @param southEastBound
+   * @param limitEntries
+   * @returns {Promise<any>}
+   */
+  getEntriesMap: function (northWestBound, southEastBound, limitEntries) {
+
+    return new Promise((resolve, reject)=>{
+
+      this.countEntries(northWestBound, southEastBound)
+        .then(function(result){
+          if (!result){
+            return {};
+          }
+
+          if (result > limitEntries){
+
+          } else {
+            GeoLocService.getEntriesBetweenCoords(northWestBound, southEastBound)
+              .then(function(entries) {
+                const formattedEntries = GeoLocService.formatQualityEntriesMap(entries);
+                resolve(GeoLocService.formatEntriesMap(formattedEntries, []));
+              })
+              .catch(function(err) {
+                reject(err);
+              });
+          }
+        })
+        .catch(function (err) {
+          sails.log.error(err);
+          return res.serverError('Call to countEntries raised an error : ' + err);
+        });
+
+
+    });
   }
+
 };
