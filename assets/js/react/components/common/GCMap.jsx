@@ -5,6 +5,7 @@ import {
   Map, Marker, TileLayer, LayersControl, Tooltip,
 } from 'react-leaflet';
 import _ from 'underscore.string';
+import { CoordinatesControl } from 'react-leaflet-coordinates';
 import Control from 'react-leaflet-control';
 import IconButton from '@material-ui/core/IconButton';
 import MenuIcon from '@material-ui/icons/Menu';
@@ -504,6 +505,13 @@ class GCMap extends Component {
             />
           </LayersControl.BaseLayer>
         </LayersControl>
+
+        <CoordinatesControl
+          position="bottomleft"
+          coordinates="decimal"
+          style={{ width: '380px', height: '35px', background: 'white' }}
+        />
+
         {marker}
         {this.state.markersChecked.includes(markers[0]) && entriesMarkersLayer}
         {this.state.markersChecked.includes(markers[0]) && groupsMarkersLayer}

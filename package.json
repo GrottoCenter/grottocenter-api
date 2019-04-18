@@ -39,6 +39,7 @@
     "react-intl": "^2.7.2",
     "react-leaflet": "^2.1.2",
     "react-leaflet-control": "^2.1.1",
+    "react-leaflet-coordinates": "^1.0.0",
     "react-leaflet-div-icon": "^1.1.0",
     "react-leaflet-gridcanvas": "^0.1.1",
     "react-redux": "^6.0.0",
