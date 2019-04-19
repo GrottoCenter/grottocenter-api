@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import {
-  Map, Marker, TileLayer, LayersControl, Tooltip,
+  Map, Marker, TileLayer, LayersControl, ScaleControl, Tooltip,
 } from 'react-leaflet';
 import _ from 'underscore.string';
 import { CoordinatesControl } from 'react-leaflet-coordinates';
@@ -490,6 +490,8 @@ class GCMap extends Component {
           }
         </Control>
 
+
+        <ScaleControl position="bottomright" />
 
         <LayersControl position="topleft">
           <LayersControl.BaseLayer name="Satellite">
