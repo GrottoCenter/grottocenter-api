@@ -19,6 +19,7 @@ import MapGrottoMarker from './map/MapGrottoMarker';
 import MapEntryPopup from './map/MapEntryPopup';
 import MapGrottosPopup from './map/MapGrottosPopup';
 import { focusZoom } from '../../conf/Config';
+import { layers } from '../../conf/MapLayersConfig';
 import { markers } from '../../conf/MapMarkersConfig';
 import Spinner from './Spinner';
 import MapGroupIcon from './MapGroupIcon';
@@ -454,6 +455,14 @@ class GCMap extends Component {
       />
     ));
 
+    const layersControl = layers.map(layer =>
+      <LayersControl.BaseLayer name={layer.name}>
+        <TileLayer
+          attribution={layer.attribution}
+          url={layer.url}
+        />
+      </LayersControl.BaseLayer>);
+
     return (
       <Map
         className={className}
@@ -494,18 +503,13 @@ class GCMap extends Component {
         <ScaleControl position="bottomright" />
 
         <LayersControl position="topleft">
-          <LayersControl.BaseLayer name="Satellite">
-            <TileLayer
-              attribution="Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community"
-              url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-            />
-          </LayersControl.BaseLayer>
           <LayersControl.BaseLayer name="OpenStreetMap Basic" checked>
             <TileLayer
               attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
           </LayersControl.BaseLayer>
+          {layersControl}
         </LayersControl>
 
         <CoordinatesControl
