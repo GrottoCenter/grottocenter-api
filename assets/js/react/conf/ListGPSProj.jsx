@@ -15,5 +15,14 @@ export const projections = {
     yName: 'Y',
     yUnit: 'm',
   },
-}
+  EPSG63126405: {
+    name: 'MGI',
+    code: 'EPSG:63126405',
+    xName: 'Lng',
+    xUnit: '°E',
+    yName: 'Lat',
+    yUnit: '°N',
+  },
 
+
+}
