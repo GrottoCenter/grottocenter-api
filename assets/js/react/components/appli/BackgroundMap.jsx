@@ -10,9 +10,11 @@ import GCMap from '../common/GCMap';
 //
 
 const FullPageGCMap = styled(GCMap)`
-  width: calc(100% - 40px);
-  height: calc(100% - 173px);
+  width: calc(100% - 0px);
+  height: calc(100% - 132px);
   position: fixed;
+  margin-left: -20px;
+  margin-top: -20px;
 `;
 
 //
