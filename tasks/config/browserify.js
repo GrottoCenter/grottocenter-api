@@ -26,7 +26,8 @@ module.exports = function(grunt) {
               '@babel/preset-env',
               '@babel/preset-react'
             ],
-          }]
+          }],
+          ['browserify-css', { global: true }]
         ]
       }
     }
