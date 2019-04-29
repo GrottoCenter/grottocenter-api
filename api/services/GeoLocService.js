@@ -9,10 +9,10 @@ const PUBLIC_ENTRIES_AVG_COORDS_WITHOUT_QUALITY_ENTRY =
   'FROM t_entry as t1' +
   'LEFT JOIN (SELECT *' +
   'FROM t_entry' +
-  'WHERE Latitude > 42 AND Latitude < 46 AND Longitude > -1 AND Longitude < 15 AND Is_public=\'YES\'' +
+  'WHERE Latitude > $5 AND Latitude < $6 AND Longitude > $7 AND Longitude < $8 AND Is_public=\'YES\'' +
   'ORDER BY Quality DESC' +
-  'LIMIT 10) as t2 on t1.Id = t2.Id' +
-  'WHERE t1.Latitude > 42 AND t1.Latitude < 46 AND t1.Longitude > -1 AND t1.Longitude < 15 AND t1.Is_public=\'YES\'' +
+  'LIMIT $9) as t2 on t1.Id = t2.Id' +
+  'WHERE t1.Latitude > $1 AND t1.Latitude < $2 AND t1.Longitude > $3 AND t1.Longitude < $4 AND t1.Is_public=\'YES\'' +
   'AND t2.Id IS NULL';
 
 module.exports = {
