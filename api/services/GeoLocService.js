@@ -91,7 +91,11 @@ module.exports = {
     });
   },
 
+
   findByBoundsPartitioned: function(southWestBound, northEastBound) {
+    sails.log.debug(northWestBound);
+    sails.log.debug(southEastBound);
+
     return new Promise((resolve, reject) => {
       let settingsPromiseList = [];
       let rowNumber = 5; // Default value
@@ -124,13 +128,14 @@ module.exports = {
             let stopLat = Number(southWestBound.lat) + (j * partLar) + partLar;
             let stopLng = Number(southWestBound.lng) + (i * partLon) + partLon;
 
-            promiseList.push(GeoLocService.findByBoundsPartitionedSub({
+            promiseList.push(GeoLocService.findByBoundsPartitionedSub(northWestBound,southEastBound,{
               lat: startLat,
               lng: startLng
             }, {
               lat: stopLat,
               lng: stopLng
             }, minGroupSize));
+
           }
         }
 
@@ -142,6 +147,7 @@ module.exports = {
                 results.push(details);
               });
             });
+            sails.log.debug(results);
             resolve(results);
           })
           .catch(function(err) {
@@ -151,7 +157,7 @@ module.exports = {
     });
   },
 
-  findByBoundsPartitionedSub: function(southWestBound, northEastBound, minGroupSize) {
+  findByBoundsPartitionedSub: function(southWestGlobalBound, northEastGlobalBound, southWestBound, northEastBound, minGroupSize) {
     return new Promise((resolve, reject) => {
       GeoLocService.countEntries(southWestBound, northEastBound)
         .then(function(count) {

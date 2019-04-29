@@ -55,7 +55,7 @@ module.exports = {
         if (!result) {
           return res.json(converter([]));
         }
-        if (false/*result > 1000*/) { // TODO add into settings
+        if (result > 1000) { // TODO add into settings
           GeoLocService.findByBoundsPartitioned(northWestBound, southEastBound)
             .then(function(partResult) {
               return res.json(converter(partResult));
