@@ -35,19 +35,21 @@ module.exports = {
     };
 
 
-    /**
+
     GeoLocService.getEntriesMap(northWestBound,southEastBound, 1000)
       .then(function(result){
+        sails.log.debug("entriesMap");
+        sails.log.debug(result);
         return res.json(result);
       })
       .catch(function(err) {
         sails.log.error(err);
         return res.serverError('Call to getEntries raised an error : ' + err);
-      });**/
+      });
 
 
 
-    /** DEBUT REFACTORING **/
+    /**
     GeoLocService.countEntries(northWestBound, southEastBound)
       .then(function(result) {
         let converter = MappingV1Service.convertDbToSearchResult;
@@ -56,7 +58,7 @@ module.exports = {
           return res.json(converter([]));
         }
         if (result > 1000) { // TODO add into settings
-          GeoLocService.findByBoundsPartitioned(northWestBound, southEastBound)
+          GeoLocService.findByBoundsPartitioned(northWestBound, southEastBound, 1000)
             .then(function(partResult) {
               return res.json(converter(partResult));
             })
@@ -81,7 +83,7 @@ module.exports = {
             .limit(1000)
             .exec(function(err, foundEntry) {
 
-        /** FIN REFACTORING **/
+
 
 
               let params = {};
@@ -94,6 +96,6 @@ module.exports = {
       .catch(function(err) {
         sails.log.error(err);
         return res.serverError('Call to countEntries raised an error : ' + err);
-      });
+      });**/
   }
 };
