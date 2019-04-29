@@ -19,16 +19,16 @@ module.exports = {
   /**
    * @returns {Promise} which resolves to the succesfully countEntries
    */
-  countEntries: function(northWestBound, southEastBound) {
+  countEntries: function(southWestBound, northEastBound) {
     return new Promise((resolve, reject) => {
       let parameters = {
         latitude: {
-          '>': northWestBound.lat,
-          '<': southEastBound.lat
+          '>': southWestBound.lat,
+          '<': northEastBound.lat
         },
         longitude: {
-          '>': northWestBound.lng,
-          '<': southEastBound.lng
+          '>': southWestBound.lng,
+          '<': northEastBound.lng
         }
       }; // TODO add controls on parameters
 
@@ -44,16 +44,16 @@ module.exports = {
     });
   },
 
-  getEntriesBetweenCoords: function(northWestBound, southEastBound) {
+  getEntriesBetweenCoords: function(southWestBound, northEastBound) {
     return new Promise((resolve, reject) => {
       let parameters = {
         latitude: {
-          '>': northWestBound.lat,
-          '<': southEastBound.lat
+          '>': southWestBound.lat,
+          '<': northEastBound.lat
         },
         longitude: {
-          '>': northWestBound.lng,
-          '<': southEastBound.lng
+          '>': southWestBound.lng,
+          '<': northEastBound.lng
         }
       }; // TODO add controls on parameters
 
@@ -72,9 +72,9 @@ module.exports = {
     });
   },
 
-  getGroupedItem: function(northWestBound, southEastBound) {
+  getGroupedItem: function(southWestBound, northEastBound) {
     return new Promise((resolve, reject) => {
-      CommonService.query(PUBLIC_ENTRIES_AVG_COORDS, [northWestBound.lat, southEastBound.lat, northWestBound.lng, southEastBound.lng])
+      CommonService.query(PUBLIC_ENTRIES_AVG_COORDS, [southWestBound.lat, northEastBound.lat, southWestBound.lng, northEastBound.lng])
         .then(function(results) {
           if (!results || results.rows.length <= 0 || results.rows[0].count === 0) {
             reject('No data found');
@@ -91,7 +91,7 @@ module.exports = {
     });
   },
 
-  findByBoundsPartitioned: function(northWestBound, southEastBound) {
+  findByBoundsPartitioned: function(southWestBound, northEastBound) {
     return new Promise((resolve, reject) => {
       let settingsPromiseList = [];
       let rowNumber = 5; // Default value
@@ -111,18 +111,18 @@ module.exports = {
         }));
 
       Promise.all(settingsPromiseList).then(function() {
-        let mapLon = CommonService.difference(northWestBound.lng,  southEastBound.lng);
-        let mapLar = CommonService.difference(northWestBound.lat, southEastBound.lat);
+        let mapLon = CommonService.difference(southWestBound.lng,  northEastBound.lng);
+        let mapLar = CommonService.difference(southWestBound.lat, northEastBound.lat);
         let partLon = mapLon / columnNumber;
         let partLar = mapLar / rowNumber;
         let promiseList = [];
 
         for (let i = 0; i < columnNumber; i++) {
           for (let j = 0; j < rowNumber; j++) {
-            let startLat = Number(northWestBound.lat) + (j * partLar);
-            let startLng = Number(northWestBound.lng) + (i * partLon);
-            let stopLat = Number(northWestBound.lat) + (j * partLar) + partLar;
-            let stopLng = Number(northWestBound.lng) + (i * partLon) + partLon;
+            let startLat = Number(southWestBound.lat) + (j * partLar);
+            let startLng = Number(southWestBound.lng) + (i * partLon);
+            let stopLat = Number(southWestBound.lat) + (j * partLar) + partLar;
+            let stopLng = Number(southWestBound.lng) + (i * partLon) + partLon;
 
             promiseList.push(GeoLocService.findByBoundsPartitionedSub({
               lat: startLat,
@@ -151,23 +151,23 @@ module.exports = {
     });
   },
 
-  findByBoundsPartitionedSub: function(northWestBound, southEastBound, minGroupSize) {
+  findByBoundsPartitionedSub: function(southWestBound, northEastBound, minGroupSize) {
     return new Promise((resolve, reject) => {
-      GeoLocService.countEntries(northWestBound, southEastBound)
+      GeoLocService.countEntries(southWestBound, northEastBound)
         .then(function(count) {
           if (count >= minGroupSize) {
-            GeoLocService.getGroupedItem(northWestBound, southEastBound)
+            GeoLocService.getGroupedItem(southWestBound, northEastBound)
               .then(function(group) {
-                //sails.log.debug('Grouping ' + count + ' items on partition', northWestBound, southEastBound);
+                //sails.log.debug('Grouping ' + count + ' items on partition', southWestBound, northEastBound);
                 resolve(group);
               })
               .catch(function(err) {
                 reject(err);
               });
           } else {
-            GeoLocService.getEntriesBetweenCoords(northWestBound, southEastBound)
+            GeoLocService.getEntriesBetweenCoords(southWestBound, northEastBound)
               .then(function(entries) {
-                //sails.log.debug('Retrieving ' + entries.length + ' items on partition', northWestBound, southEastBound);
+                //sails.log.debug('Retrieving ' + entries.length + ' items on partition', southWestBound, northEastBound);
                 resolve(entries);
               })
               .catch(function(err) {
@@ -229,16 +229,16 @@ module.exports = {
 
   /**
    *
-   * @param northWestBound
-   * @param southEastBound
+   * @param southWestBound
+   * @param northEastBound
    * @param limitEntries
    * @returns {Promise<any>}
    */
-  getEntriesMap: function (northWestBound, southEastBound, limitEntries) {
+  getEntriesMap: function (southWestBound, northEastBound, limitEntries) {
 
     return new Promise((resolve, reject)=>{
 
-      this.countEntries(northWestBound, southEastBound)
+      this.countEntries(southWestBound, northEastBound)
         .then(function(result){
           if (!result){
             return {};
@@ -247,7 +247,7 @@ module.exports = {
           if (result > limitEntries){
 
           } else {
-            GeoLocService.getEntriesBetweenCoords(northWestBound, southEastBound)
+            GeoLocService.getEntriesBetweenCoords(southWestBound, northEastBound)
               .then(function(entries) {
                 const formattedEntries = GeoLocService.formatQualityEntriesMap(entries);
                 resolve(GeoLocService.formatEntriesMap(formattedEntries, []));
