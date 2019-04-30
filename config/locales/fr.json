@@ -169,5 +169,10 @@
 	"Network properties": "Propriétés du réseau",
 	"Massif properties": "Propriétés du massif",
 	"Entries list": "Liste des cavités",
-	"Empty list": "Pas de résultats"
+	"Empty list": "Pas de résultats",
+  "Converter": "Convertisseur",
+  "Convert": "Convertir",
+  "Input": "Entrée",
+  "Output": "Sortie",
+  "Coordinate system": "Système de coordonnées"
 }

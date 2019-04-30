@@ -14,6 +14,7 @@ import FormControl from '@material-ui/core/FormControl';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Checkbox from '@material-ui/core/Checkbox';
 import FormGroup from '@material-ui/core/FormGroup';
+import PopPop from 'react-poppop';
 import MapEntryMarker from './map/MapEntryMarker';
 import MapGrottoMarker from './map/MapGrottoMarker';
 import MapEntryPopup from './map/MapEntryPopup';
@@ -23,6 +24,7 @@ import { layers } from '../../conf/MapLayersConfig';
 import { markers } from '../../conf/MapMarkersConfig';
 import Spinner from './Spinner';
 import MapGroupIcon from './MapGroupIcon';
+import Convert from './map/Convert';
 import Translate from './Translate';
 
 
@@ -130,6 +132,7 @@ class GCMap extends Component {
       showSpinner: false,
       showListMarkers: true,
       markersChecked: [markers[0]],
+      showConvertPopup: false,
     };
 
     const encodedParam = this.getTarget();
@@ -322,6 +325,10 @@ class GCMap extends Component {
     this.updateLocationUrl(mapBounds, newZoom);
   };
 
+  toggleShow = (showConvertPopup) => {
+    this.setState({ showConvertPopup });
+  };
+
   render() {
     const {
       selectedEntry,
@@ -463,6 +470,8 @@ class GCMap extends Component {
         />
       </LayersControl.BaseLayer>);
 
+    const showConvertPopup = this.state.showConvertPopup;
+
     return (
       <Map
         className={className}
@@ -517,6 +526,28 @@ class GCMap extends Component {
           coordinates="decimal"
           style={{ width: '380px', height: '35px', background: 'white' }}
         />
+
+        <Control position="bottomleft">
+          <button
+            className="btn btn-default"
+            onClick={() => this.toggleShow(true)}
+            style={{ background: 'white' }}
+          >
+            <Translate>Converter</Translate>
+          </button>
+          <PopPop
+            position="centerCenter"
+            open={showConvertPopup}
+            closeBtn
+            closeOnEsc
+            onClose={() => this.toggleShow(false)}
+            closeOnOverlay
+
+          >
+            <h1><Translate>Converter</Translate></h1>
+            <Convert />
+          </PopPop>
+        </Control>
 
         {marker}
         {this.state.markersChecked.includes(markers[0]) && entriesMarkersLayer}

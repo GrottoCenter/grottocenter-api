@@ -1,10 +1,42 @@
 import React from 'react';
 import fetch from 'isomorphic-fetch';
+import { withStyles } from '@material-ui/core';
+import PropTypes from 'prop-types';
 import { projections } from '../../../conf/ListGPSProj';
+import Translate from '../Translate';
 
+
+//
+//
+// S T Y L I N G
+//
+//
+
+const styles = theme => ({
+  mainContainer: {
+    backgroundColor: theme.palette.primary1Color,
+    padding: '10px',
+  },
+  subContainer: {
+    backgroundColor: theme.palette.primary3Color,
+    padding: '10px',
+    margin: '20px',
+  },
+  element: {
+    margin: '10px',
+  },
+  button: {
+    backgroundColor: 'white',
+  },
+});
+
+//
+//
+// M A I N - C O M P O N E N T
+//
+//
 
 class Convert extends React.Component {
-
   constructor(props) {
     super(props);
     this.state = {
@@ -34,7 +66,6 @@ class Convert extends React.Component {
   }
 
   handleConvert(event) {
-
     fetch(`http://twcc.fr/en/ws/?fmt=json&x=${this.state.valueXInput}&y=${this.state.valueYInput}&in=${projections[this.state.keyGPSInput].code}&out=${projections[this.state.keyGPSOutput].code}`, { mode: 'cors' })
       .then(response => response.json())
       .then((responseJson) => {
@@ -49,6 +80,10 @@ class Convert extends React.Component {
   }
 
   render() {
+    const {
+      classes,
+    } = this.props;
+
     const options = [];
     for (var key in projections) {
       var proj = projections[key];
@@ -59,13 +94,16 @@ class Convert extends React.Component {
 
     return (
 
-      <div id="convert">
+      <div id="convert" className={classes.mainContainer}>
 
-        <div id="input">
-
+        <div id="input" className={classes.subContainer}>
+          <h5><b><Translate>Input</Translate></b></h5>
           <div id="selectInput">
+            <hr />
+            <Translate>Coordinate system</Translate> :
             <select
               value={this.state.keyGPSInput}
+              className={classes.element}
               onChange={this.handleChangeGPSInput.bind(this)}
             >
               { options }
@@ -74,23 +112,23 @@ class Convert extends React.Component {
 
           <div id="xInput">
             {projections[this.state.keyGPSInput].xName} :
-            <input type="number" onChange={this.handleChangeXValue.bind(this)} />
+            <input type="number" className={classes.element} onChange={this.handleChangeXValue.bind(this)} />
           </div>
 
           <div id="yInput">
             {projections[this.state.keyGPSInput].yName} :
-            <input type="number" onChange={this.handleChangeYValue.bind(this)} />
+            <input type="number" className={classes.element} onChange={this.handleChangeYValue.bind(this)} />
           </div>
-
+          <button type="button" className={classes.button} onClick={this.handleConvert.bind(this)}><Translate>Convert</Translate></button>
         </div>
-
-        <button type="button" onClick={this.handleConvert.bind(this)}>Convertir</button>
-
-        <div id="output">
-
+        <div id="output" className={classes.subContainer}>
+          <h5><b><Translate>Output</Translate></b></h5>
           <div id="selectOutput">
+            <hr />
+            <Translate>Coordinate system</Translate> :
             <select
               value={this.state.keyGPSOutput}
+              className={classes.element}
               onChange={this.handleChangeGPSOutput.bind(this)}
             >
               { options }
@@ -106,7 +144,6 @@ class Convert extends React.Component {
             {projections[this.state.keyGPSOutput].yName} :
             <p>{this.state.valueYOutput}</p>
           </div>
-
         </div>
 
       </div>
@@ -115,4 +152,8 @@ class Convert extends React.Component {
   }
 }
 
-export default Convert;
+Convert.propTypes = {
+  classes: PropTypes.shape({}).isRequired,
+};
+
+export default withStyles(styles)(Convert);
