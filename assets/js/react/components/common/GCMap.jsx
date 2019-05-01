@@ -15,6 +15,7 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Checkbox from '@material-ui/core/Checkbox';
 import FormGroup from '@material-ui/core/FormGroup';
 import PopPop from 'react-poppop';
+import { Collapse } from 'react-collapse';
 import MapEntryMarker from './map/MapEntryMarker';
 import MapGrottoMarker from './map/MapGrottoMarker';
 import MapEntryPopup from './map/MapEntryPopup';
@@ -81,6 +82,17 @@ const MarkersForm = withTheme()(styled(FormControl)`
 
 export const smallMarkerIconList = markers.map(m => L.icon({
   iconUrl: m.url,
+const LayerButton = styled.button`
+
+  background-color: white;
+  background-image: url("../../../../images/layers.svg");
+  background-repeat: no-repeat;
+  background-position: center;
+  padding: 23px;
+`;
+
+export const smallMarkerIcon = L.icon({
+  iconUrl: '/images/gc-map-entry.svg',
   iconSize: [
     24, 24,
   ],
@@ -133,6 +145,9 @@ class GCMap extends Component {
       showListMarkers: true,
       markersChecked: [markers[0]],
       showConvertPopup: false,
+      currentLayer: layers[0],
+      currentLayersAvailable: layers,
+      collapseLayers: false,
     };
 
     const encodedParam = this.getTarget();
@@ -264,6 +279,20 @@ class GCMap extends Component {
     this.updateReduxMapData(mapBounds, zoom);
     this.updateLocationUrl(mapBounds, zoom);
     this.searchEntriesInBounds();
+
+
+    // Set the layers available depending on the map bounds
+    const layersAvailableForMap = [];
+
+    layers.forEach((layer) => {
+      if (leafletMap.getBounds().intersects(layer.bounds)) {
+        layersAvailableForMap.push(layer);
+      }
+    });
+
+    this.setState({
+      currentLayersAvailable: layersAvailableForMap,
+    });
   };
 
   handleLocationFound = () => {
@@ -326,7 +355,22 @@ class GCMap extends Component {
   };
 
   toggleShow = (showConvertPopup) => {
+  toggleShowConverter = (showConvertPopup) => {
     this.setState({ showConvertPopup });
+  };
+
+  toggleShowLayers = () => {
+    this.setState({ collapseLayers: !this.state.collapseLayers });
+  };
+
+  onLayerChanged = (e) => {
+    layers.forEach((layer) => {
+      if (layer.name === e.currentTarget.value) {
+        this.setState({
+          currentLayer: layer,
+        });
+      }
+    });
   };
 
   render() {
@@ -462,15 +506,9 @@ class GCMap extends Component {
       />
     ));
 
-    const layersControl = layers.map(layer =>
-      <LayersControl.BaseLayer name={layer.name}>
-        <TileLayer
-          attribution={layer.attribution}
-          url={layer.url}
-        />
-      </LayersControl.BaseLayer>);
-
     const showConvertPopup = this.state.showConvertPopup;
+
+    var layersInput = this.state.currentLayersAvailable.map((layer, index) => [<br />, <input type="radio" value={layer.name} checked={this.state.currentLayer === layer} onChange={this.onLayerChanged} id={index}/>, <label htmlFor={index}> {layer.name}</label>]);
 
     return (
       <Map
@@ -511,15 +549,20 @@ class GCMap extends Component {
 
         <ScaleControl position="bottomright" />
 
-        <LayersControl position="topleft">
-          <LayersControl.BaseLayer name="OpenStreetMap Basic" checked>
-            <TileLayer
-              attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
-          </LayersControl.BaseLayer>
-          {layersControl}
-        </LayersControl>
+        <Control position="topleft">
+          <LayerButton onMouseOver={() => this.toggleShowLayers()} />
+
+          <Collapse isOpened={this.state.collapseLayers}>
+            <form style={{ padding: '10px', background: 'white' }}>
+              {layersInput}
+            </form>
+          </Collapse>
+        </Control>
+
+        <TileLayer
+          attribution={this.state.currentLayer.attribution}
+          url={this.state.currentLayer.url}
+        />
 
         <CoordinatesControl
           position="bottomleft"
@@ -530,7 +573,7 @@ class GCMap extends Component {
         <Control position="bottomleft">
           <button
             className="btn btn-default"
-            onClick={() => this.toggleShow(true)}
+            onClick={() => this.toggleShowConverter(true)}
             style={{ background: 'white' }}
           >
             <Translate>Converter</Translate>
@@ -540,7 +583,7 @@ class GCMap extends Component {
             open={showConvertPopup}
             closeBtn
             closeOnEsc
-            onClose={() => this.toggleShow(false)}
+            onClose={() => this.toggleShowConverter(false)}
             closeOnOverlay
 
           >
