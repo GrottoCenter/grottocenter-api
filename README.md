@@ -78,3 +78,4 @@ Yon can also join us on Slack! (using the QR-code above)
 
 ## Licence
 
+GNU Affero General Public License v3.0
