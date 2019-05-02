@@ -64,7 +64,7 @@ class GCMap extends Component {
   static propTypes = {
     className: PropTypes.string,
     selectedEntry: PropTypes.object,
-    visibleEntries: PropTypes.object,
+    entriesMap: PropTypes.object,
     searchBounds: PropTypes.func,
     mapCenter: PropTypes.object.isRequired,
     mapZoom: PropTypes.number.isRequired,
@@ -77,7 +77,7 @@ class GCMap extends Component {
   static defaultProps = {
     className: '',
     selectedEntry: null,
-    visibleEntries: null,
+    entriesMap: {qualityEntriesMap: [], groupEntriesMap: []},
     searchBounds: (() => {}),
     match: {},
   };
@@ -241,7 +241,7 @@ class GCMap extends Component {
   render() {
     const {
       selectedEntry,
-      visibleEntries,
+      entriesMap,
       className,
     } = this.props;
     const {
@@ -274,10 +274,10 @@ class GCMap extends Component {
     }
 
     const markersLayer = [];
-    if (visibleEntries
-      && visibleEntries.entries
-      && visibleEntries.entries.length > 0) {
-      visibleEntries.entries.forEach((entry) => {
+    if (entriesMap
+      && entriesMap.entries
+      && entriesMap.entries.length > 0) {
+      entriesMap.entries.forEach((entry) => {
         if (!selectedEntry || entry.id !== selectedEntry.id) {
           if (entry.name === 'group') {
             markersLayer.push(
