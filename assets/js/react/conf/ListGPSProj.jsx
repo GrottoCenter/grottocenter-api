@@ -23,6 +23,4 @@ export const projections = {
     yName: 'Lat',
     yUnit: '°N',
   },
-
-
 }

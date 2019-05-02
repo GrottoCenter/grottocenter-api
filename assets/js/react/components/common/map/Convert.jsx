@@ -66,6 +66,7 @@ class Convert extends React.Component {
   }
 
   handleConvert(event) {
+    /*
     fetch(`http://twcc.fr/en/ws/?fmt=json&x=${this.state.valueXInput}&y=${this.state.valueYInput}&in=${projections[this.state.keyGPSInput].code}&out=${projections[this.state.keyGPSOutput].code}`, { mode: 'cors' })
       .then(response => response.json())
       .then((responseJson) => {
@@ -75,7 +76,17 @@ class Convert extends React.Component {
       .catch((error) => {
         console.error(error);
       });
-
+*/
+    fetch(`/api/convert?x=${this.state.valueXInput}&y=${this.state.valueYInput}&in=${projections[this.state.keyGPSInput].code}&out=${projections[this.state.keyGPSOutput].code}`)
+      .then(response => response.json())
+      .then((responseJson) => {
+        console.log(responseJson);
+        this.setState({ valueXOutput: responseJson.point.x, valueYOutput: responseJson.point.y });
+        console.log(responseJson);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
     event.preventDefault();
   }
 

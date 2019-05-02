@@ -93,6 +93,10 @@ module.exports.policies = {
     '*': false
   },
 
+  ConvertController: {
+    '*': true
+  },
+
   CommentController: {
     '*': false
   },
