@@ -12,7 +12,7 @@
     "async": "2.6.1",
     "dotenv": "^6.2.0",
     "ejs": "~2.6.1",
-    "elasticsearch": "^15.2.0",
+    "elasticsearch": "^16.0.0",
     "feed-read": "^0.0.1",
     "grunt-text-replace": "^0.4.0",
     "grunt-transifex": "^0.1.1",
