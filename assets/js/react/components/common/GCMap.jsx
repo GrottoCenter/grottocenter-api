@@ -15,7 +15,6 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Checkbox from '@material-ui/core/Checkbox';
 import FormGroup from '@material-ui/core/FormGroup';
 import PopPop from 'react-poppop';
-import { Collapse } from 'react-collapse';
 import MapEntryMarker from './map/MapEntryMarker';
 import MapGrottoMarker from './map/MapGrottoMarker';
 import MapEntryPopup from './map/MapEntryPopup';
@@ -91,6 +90,14 @@ const LayerButton = styled.button`
   padding: 23px;
 `;
 
+const ConverterButton = styled.button`
+  background-color: white;
+  background-image: url("../../../../images/convert.svg");
+  background-repeat: no-repeat;
+  background-position: left;
+  padding-right: 5px;
+`;
+
 export const smallMarkerIcon = L.icon({
   iconUrl: '/images/gc-map-entry.svg',
   iconSize: [
@@ -147,7 +154,7 @@ class GCMap extends Component {
       showConvertPopup: false,
       currentLayer: layers[0],
       currentLayersAvailable: layers,
-      collapseLayers: false,
+      showListLayers: true,
     };
 
     const encodedParam = this.getTarget();
@@ -285,7 +292,9 @@ class GCMap extends Component {
     const layersAvailableForMap = [];
 
     layers.forEach((layer) => {
-      if (leafletMap.getBounds().intersects(layer.bounds)) {
+      if (layer === this.state.currentLayer) {
+        layersAvailableForMap.push(layer);
+      } else if (leafletMap.getBounds().intersects(layer.bounds)) {
         layersAvailableForMap.push(layer);
       }
     });
@@ -360,7 +369,7 @@ class GCMap extends Component {
   };
 
   toggleShowLayers = () => {
-    this.setState({ collapseLayers: !this.state.collapseLayers });
+    this.setState({ showListLayers: !this.state.showListLayers });
   };
 
   onLayerChanged = (e) => {
@@ -508,7 +517,10 @@ class GCMap extends Component {
 
     const showConvertPopup = this.state.showConvertPopup;
 
-    var layersInput = this.state.currentLayersAvailable.map((layer, index) => [<br />, <input type="radio" value={layer.name} checked={this.state.currentLayer === layer} onChange={this.onLayerChanged} id={index}/>, <label htmlFor={index}> {layer.name}</label>]);
+    const layersInput = this.state.currentLayersAvailable.map((layer, index) => [<br />, <input type="radio" value={layer.name} checked={this.state.currentLayer === layer} onChange={this.onLayerChanged} id={index} />, <label htmlFor={index}>
+      {' '}
+      {layer.name}
+    </label>]);
 
     return (
       <Map
@@ -550,13 +562,14 @@ class GCMap extends Component {
         <ScaleControl position="bottomright" />
 
         <Control position="topleft">
-          <LayerButton onMouseOver={() => this.toggleShowLayers()} />
-
-          <Collapse isOpened={this.state.collapseLayers}>
-            <form style={{ padding: '10px', background: 'white' }}>
+          { this.state.showListLayers ? (
+            <LayerButton onMouseOver={() => this.toggleShowLayers()} />
+          ) : (
+            <form style={{ padding: '10px', background: 'white' }} onMouseLeave={() => this.toggleShowLayers()}>
               {layersInput}
             </form>
-          </Collapse>
+          )
+          }
         </Control>
 
         <TileLayer
@@ -567,17 +580,15 @@ class GCMap extends Component {
         <CoordinatesControl
           position="bottomleft"
           coordinates="decimal"
-          style={{ width: '380px', height: '35px', background: 'white' }}
+          style={{ background: 'white', padding: '0 5px' }}
         />
 
         <Control position="bottomleft">
-          <button
-            className="btn btn-default"
+          <ConverterButton
             onClick={() => this.toggleShowConverter(true)}
-            style={{ background: 'white' }}
           >
             <Translate>Converter</Translate>
-          </button>
+          </ConverterButton>
           <PopPop
             position="centerCenter"
             open={showConvertPopup}

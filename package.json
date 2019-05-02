@@ -34,7 +34,6 @@
     "rc-slider": "8.6.3",
     "react": "^16.8.6",
     "react-bootstrap": "^0.32.4",
-    "react-collapse": "^4.0.3",
     "react-dom": "^16.6.0",
     "react-ghost-i18n": "^1.0.4",
     "react-intl": "^2.7.2",
