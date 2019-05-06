@@ -275,9 +275,9 @@ class GCMap extends Component {
 
     const markersLayer = [];
     if (entriesMap
-      && entriesMap.entries
-      && entriesMap.entries.length > 0) {
-      entriesMap.entries.forEach((entry) => {
+      && entriesMap.qualityEntriesMap
+      && entriesMap.qualityEntriesMap.length > 0) {
+      entriesMap.qualityEntriesMap.forEach((entry) => {
         if (!selectedEntry || entry.id !== selectedEntry.id) {
           if (entry.name === 'group') {
             markersLayer.push(

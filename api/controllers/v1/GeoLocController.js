@@ -38,8 +38,7 @@ module.exports = {
 
     GeoLocService.getEntriesMap(northWestBound,southEastBound, 1000)
       .then(function(result){
-        sails.log.debug("entriesMap");
-        sails.log.debug(result);
+        sails.log.debug("entriesMap sent");
         return res.json(result);
       })
       .catch(function(err) {
