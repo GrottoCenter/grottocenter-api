@@ -46,30 +46,42 @@ const ArticleWrapper = styled.article`
 //
 //
 
-const Application = () => (
-  <BasePage>
-    <div id="applicationpage">
-      <ApplicationHeader><AppToolbar /></ApplicationHeader>
-      <aside><SideMenuConnector /></aside>
-      <Breadcrump />
-      <ArticleWrapper>
-        <Switch>
-          <Route exact path="/ui/" component={Dashboard} />
-          <Route path="/ui/api" component={Api} />
-          <Route path="/ui/entries" component={Entries} />
-          <Route path="/ui/faq" component={Faq} />
-          <Route path="/ui/map/:target?" component={MapContainer} />
-          <Route path="/ui/swagger/:version" component={Swagger} />
-          <Route path="/ui/test" component={LatestBlogNewsSection} />
-          <Route path="/ui/groups/:groupId" component={GroupContainer} />
-          <Route path="/ui/massifs/:massifId" component={MassifContainer} />
-          <Redirect path="/ui/*" to="/ui/" />
-        </Switch>
+const Application = () => {
 
-      </ArticleWrapper>
-      <footer><AppFooterStl /></footer>
-    </div>
-  </BasePage>
-);
+  // We want to display the Breadcrump everywhere except on the Map
+  const path = window.location.pathname;
+  const cutPath = path.split('/');
+  var displayBreadcrump = <Breadcrump />;
+
+  if (cutPath[2] === 'map') {
+    displayBreadcrump = '';
+  }
+
+  return (
+    <BasePage>
+      <div id="applicationpage">
+        <ApplicationHeader><AppToolbar /></ApplicationHeader>
+        <aside><SideMenuConnector /></aside>
+        {displayBreadcrump}
+        <ArticleWrapper>
+          <Switch>
+            <Route exact path="/ui/" component={Dashboard} />
+            <Route path="/ui/api" component={Api} />
+            <Route path="/ui/entries" component={Entries} />
+            <Route path="/ui/faq" component={Faq} />
+            <Route path="/ui/map/:target?" component={MapContainer} />
+            <Route path="/ui/swagger/:version" component={Swagger} />
+            <Route path="/ui/test" component={LatestBlogNewsSection} />
+            <Route path="/ui/groups/:groupId" component={GroupContainer} />
+            <Route path="/ui/massifs/:massifId" component={MassifContainer} />
+            <Redirect path="/ui/*" to="/ui/" />
+          </Switch>
+
+        </ArticleWrapper>
+        <footer><AppFooterStl /></footer>
+      </div>
+    </BasePage>
+  );
+};
 
 export default Application;
