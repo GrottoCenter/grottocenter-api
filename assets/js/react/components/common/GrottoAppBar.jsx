@@ -153,8 +153,10 @@ class GrottoAppBar extends Component {
         </FlexDiv>
 
         <FlexDiv>
-          <a href="/ui/map" style={{ color: 'white', textDecoration: 'none' }}>
+          <a href="/ui/map">
             <StyledMapIcon />
+          </a>
+          <a href="/ui/map" style={{ color: 'white', textDecoration: 'none' }}>
             <Translate>Map</Translate>
           </a>
         </FlexDiv>

@@ -51,7 +51,7 @@ const Application = () => {
   // We want to display the Breadcrump everywhere except on the Map
   const path = window.location.pathname;
   const cutPath = path.split('/');
-  var displayBreadcrump = <Breadcrump />;
+  let displayBreadcrump = <Breadcrump />;
 
   if (cutPath[2] === 'map') {
     displayBreadcrump = '';
