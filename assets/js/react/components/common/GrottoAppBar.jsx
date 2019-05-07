@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import IconButton from '@material-ui/core/IconButton';
 import TranslateIcon from '@material-ui/icons/Translate';
+import MapIcon from '@material-ui/icons/Map';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
@@ -36,12 +37,17 @@ const StyledTranslateIcon = withStyles(theme => ({
   },
 }), { withTheme: true })(TranslateIcon);
 
+const StyledMapIcon = withStyles(theme => ({
+  root: {
+    color: theme.palette.textIconColor,
+  },
+}), { withTheme: true })(MapIcon);
+
 const StyledIconButton = withStyles(theme => ({
   root: {
     color: theme.palette.textIconColor,
   },
 }), { withTheme: true })(IconButton);
-
 
 const FlexDiv = styled.div`
   display: inline-flex;
@@ -140,9 +146,17 @@ class GrottoAppBar extends Component {
 
     return (
       <StyledToolbar>
+
         <FlexDiv>
           <StyledTranslateIcon />
           <LanguagePicker />
+        </FlexDiv>
+
+        <FlexDiv>
+          <a href="/ui/map" style={{ color: 'white', textDecoration: 'none' }}>
+            <StyledMapIcon />
+            <Translate>Map</Translate>
+          </a>
         </FlexDiv>
 
         <div style={{display: 'none'}}>
