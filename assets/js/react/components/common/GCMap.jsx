@@ -77,7 +77,7 @@ class GCMap extends Component {
   static defaultProps = {
     className: '',
     selectedEntry: null,
-    entriesMap: {qualityEntriesMap: [], groupEntriesMap: []},
+    entriesMap: {qualityEntriesMap: [], groupEntriesMap: [], grottos: []},
     searchBounds: (() => {}),
     match: {},
   };
@@ -176,10 +176,10 @@ class GCMap extends Component {
     if (mapRef && mapRef.current.leafletElement) {
       const bounds = mapRef.current.leafletElement.getBounds();
       return {
-        nw_lat: bounds.getSouthWest().lat,
-        nw_lng: bounds.getSouthWest().lng,
-        se_lat: bounds.getNorthEast().lat,
-        se_lng: bounds.getNorthEast().lng,
+        sw_lat: bounds.getSouthWest().lat,
+        sw_lng: bounds.getSouthWest().lng,
+        ne_lat: bounds.getNorthEast().lat,
+        ne_lng: bounds.getNorthEast().lng,
       };
     }
     return undefined;

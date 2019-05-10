@@ -289,39 +289,6 @@ module.exports = {
   },
 
   /**
-   * format the group entries
-   * @param entries
-   * @returns {Promise<any>}
-   */
-  formatGroupEntriesMap: function (entries){
-    return entries.map(function(entry) {
-      let entryCave;
-      if (entry.cave) {
-        entryCave =
-          {
-            id: entry.cave.id,
-            name: entry.cave.name,
-            depth: entry.cave.depth
-          }
-      } else {
-        entryCave = null;
-      }
-
-      return {
-        id: entry.id,
-        name: entry.name,
-        city: entry.city,
-        region: entry.region,
-        cave: entryCave,
-        longitude: entry.longitude,
-        latitude: entry.latitude,
-        quality: entry.quality
-      };
-    });
-  },
-
-
-  /**
    * format the quality entries with the groups of entries and the grotto
    * @param formattedQualityEntries
    * @param formattedGroupEntry
@@ -334,8 +301,6 @@ module.exports = {
       grottos: formattedGrottos
     };
   },
-
-
 
   /**
    *
