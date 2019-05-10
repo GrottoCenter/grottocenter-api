@@ -25,6 +25,7 @@ module.exports = {
   },
 
   findByBounds: function(req, res) {
+    sails.log.debug("zoom: "+ req.param('zoom'));
     let southWestBound = {
       lat: req.param('sw_lat'),
       lng: req.param('sw_lng')
@@ -34,9 +35,9 @@ module.exports = {
       lng: req.param('ne_lng')
     };
 
-    sails.log.debug(southWestBound);
-    sails.log.debug(northEastBound);
-    GeoLocService.getEntriesMap(southWestBound,northEastBound, 100)
+    let zoom = req.param('zoom');
+
+    GeoLocService.getEntriesMap(southWestBound,northEastBound, zoom, 20)
       .then(function(result){
         sails.log.debug("entriesMap sent");
         sails.log.debug(result.qualityEntriesMap.length);
