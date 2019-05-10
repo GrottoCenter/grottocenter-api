@@ -1,26 +1,14 @@
-export const projections = {
-  WGS84: {
-    name: 'WGS84',
-    code: 'WGS84',
-    xName: 'Lng',
-    xUnit: '°E',
-    yName: 'Lat',
-    yUnit: '°N',
+export const unitsTab = {
+  degrees: {
+    xName: 'Lat',
+    xUnit: '°N',
+    yName: 'Lng',
+    yUnit: '°E',
   },
-  EPSG2154: {
-    name: 'Lambert 93',
-    code: 'EPSG:2154',
+  m: {
     xName: 'X',
     xUnit: 'm',
     yName: 'Y',
     yUnit: 'm',
-  },
-  EPSG63126405: {
-    name: 'MGI',
-    code: 'EPSG:63126405',
-    xName: 'Lng',
-    xUnit: '°E',
-    yName: 'Lat',
-    yUnit: '°N',
   },
 }

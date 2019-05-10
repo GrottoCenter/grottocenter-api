@@ -26,6 +26,7 @@ import Spinner from './Spinner';
 import MapGroupIcon from './MapGroupIcon';
 import Convert from './map/Convert';
 import Translate from './Translate';
+import fetch from "isomorphic-fetch";
 
 
 //
@@ -155,6 +156,7 @@ class GCMap extends Component {
       currentLayer: layers[0],
       currentLayersAvailable: layers,
       showListLayers: true,
+      projectionsList: [],
     };
 
     const encodedParam = this.getTarget();
@@ -203,6 +205,16 @@ class GCMap extends Component {
     } else {
       this.searchEntriesInBounds();
     }
+
+    fetch('/api/convert')
+      .then(response => response.json())
+      .then((responseJson) => {
+        console.log(responseJson);
+        this.setState({ projectionsList: responseJson });
+      })
+      .catch((error) => {
+        console.error(error);
+      });
   }
 
   getTarget = () => {
@@ -599,7 +611,9 @@ class GCMap extends Component {
 
           >
             <h1><Translate>Converter</Translate></h1>
-            <Convert />
+            <Convert
+              list = {this.state.projectionsList}
+            />
           </PopPop>
         </Control>
 
