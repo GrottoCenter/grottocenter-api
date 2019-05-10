@@ -101,6 +101,29 @@ module.exports = {
     });
   },
 
+  getGrottoBetweenCoords: function(southWestBound, northEastBound) {
+    return new Promise((resolve, reject) => {
+      let parameters = {
+        latitude: {
+          '>': southWestBound.lat,
+          '<': northEastBound.lat
+        },
+        longitude: {
+          '>': southWestBound.lng,
+          '<': northEastBound.lng
+        }
+      }; // TODO add controls on parameters
+
+      TGrotto.find(parameters)
+        .exec(function(err, result) {
+          if (err) {
+            reject(err);
+          }
+          resolve(result);
+        });
+    });
+  },
+
   getGroupedItem: function(southWestGlobalBound, northEastGlobalBound, southWestBound, northEastBound, qualityLimit) {
     return new Promise((resolve, reject) => {
       CommonService.query(PUBLIC_ENTRIES_AVG_COORDS_WITHOUT_QUALITY_ENTRY, [southWestBound.lat, northEastBound.lat, southWestBound.lng, northEastBound.lng, southWestGlobalBound.lat, northEastGlobalBound.lat, southWestGlobalBound.lng, northEastGlobalBound.lng, qualityLimit])
@@ -251,6 +274,21 @@ module.exports = {
   },
 
   /**
+   * return a light version of the grottos
+   * @param grottos
+   */
+  formatGrottos: function(grottos){
+    return grottos.map(function(grotto){
+      return {
+        id: grotto.id,
+        name: grotto.name,
+        address: grotto.address
+      }
+
+    });
+  },
+
+  /**
    * format the group entries
    * @param entries
    * @returns {Promise<any>}
@@ -284,14 +322,16 @@ module.exports = {
 
 
   /**
-   * format the quality entries with the groups of entries
+   * format the quality entries with the groups of entries and the grotto
    * @param formattedQualityEntries
    * @param formattedGroupEntry
+   * @param formattedGrottos
    */
-  formatEntriesMap: function(formattedQualityEntries, formattedGroupEntry){
+  formatEntriesMap: function(formattedQualityEntries, formattedGroupEntry, formattedGrottos){
     return {
       qualityEntriesMap: formattedQualityEntries,
-      groupEntriesMap: formattedGroupEntry
+      groupEntriesMap: formattedGroupEntry,
+      grottos: formattedGrottos
     };
   },
 
@@ -305,20 +345,21 @@ module.exports = {
    * @returns {Promise<any>}
    */
   getEntriesMap: function (southWestBound, northEastBound, limitEntries) {
+    sails.log.debug("début getEntriesMap");
 
     return new Promise((resolve, reject)=>{
 
       this.countEntries(southWestBound, northEastBound)
         .then(function(result){
           if (!result){
-            resolve(GeoLocService.formatEntriesMap([], []))
+            resolve(GeoLocService.formatEntriesMap([], [], []))
           }
 
           if (result > limitEntries){
-            let qualityEntriesMap= [];
-            let groupEntriesMap= [];
-
-           let getEntriesPromiseList = [];
+            let qualityEntriesMap = [];
+            let groupEntriesMap = [];
+            let grottoMap = [];
+            let getEntriesPromiseList = [];
             getEntriesPromiseList.push(GeoLocService.getQualityEntriesBetweenCoords(southWestBound, northEastBound, limitEntries)
               .then(function(partResult) {
                 qualityEntriesMap = partResult;
@@ -335,21 +376,50 @@ module.exports = {
                 sails.log.error(err);
               }));
 
+            getEntriesPromiseList.push(GeoLocService.getGrottoBetweenCoords(southWestBound, northEastBound)
+              .then(function (grottos) {
+                grottoMap = grottos;
+              })
+              .catch(function (err) {
+                reject(err);
+              }));
+
             Promise.all(getEntriesPromiseList).then(function (values) {
               const formattedEntries = GeoLocService.formatQualityEntriesMap(qualityEntriesMap);
-              resolve(GeoLocService.formatEntriesMap(formattedEntries, groupEntriesMap));
-            })
+              const formattedGrottos = GeoLocService.formatGrottos(grottoMap);
+              resolve(GeoLocService.formatEntriesMap(formattedEntries, groupEntriesMap, formattedGrottos));
+            });
 
           } else {
-            GeoLocService.getEntriesBetweenCoords(southWestBound, northEastBound)
-              .then(function(entries) {
-                const formattedEntries = GeoLocService.formatQualityEntriesMap(entries);
-                resolve(GeoLocService.formatEntriesMap(formattedEntries, []));
+            let qualityEntriesMap = [];
+            let groupEntriesMap = [];
+            let grottoMap = [];
+            let getEntriesPromiseList = [];
+
+            getEntriesPromiseList.push(GeoLocService.getEntriesBetweenCoords(southWestBound, northEastBound)
+              .then(function (entries) {
+                qualityEntriesMap = entries;
               })
-              .catch(function(err) {
+              .catch(function (err) {
                 reject(err);
-              });
+              }));
+
+            getEntriesPromiseList.push(GeoLocService.getGrottoBetweenCoords(southWestBound, northEastBound)
+              .then(function (grottos) {
+                grottoMap = grottos;
+              })
+              .catch(function (err) {
+                reject(err);
+              }));
+
+            Promise.all(getEntriesPromiseList).then(function (values) {
+              const formattedEntries = GeoLocService.formatQualityEntriesMap(qualityEntriesMap);
+              const formattedGrottos = GeoLocService.formatGrottos(grottoMap);
+              resolve(GeoLocService.formatEntriesMap(formattedEntries, groupEntriesMap, formattedGrottos));
+            });
+
           }
+
         })
         .catch(function (err) {
           sails.log.error(err);
