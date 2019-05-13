@@ -388,10 +388,10 @@ class GCMap extends Component {
     if (entriesMap
       && entriesMap.groupEntriesMap
       && entriesMap.groupEntriesMap.length > 0) {
-      entriesMap.groupEntriesMap.forEach((group) => {
+      entriesMap.groupEntriesMap.forEach((group, index) => {
         groupsMarkersLayer.push(
           <StyledMapGroupIcon
-            key={`group_${group.id}`}
+            key={`group_${index}`}
             position={{
               lat: group.latitude,
               lng: group.longitude,
