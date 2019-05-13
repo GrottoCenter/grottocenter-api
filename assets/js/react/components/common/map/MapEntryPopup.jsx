@@ -37,7 +37,9 @@ const MapEntryPopup = ({ entry }, context) => {
     <Popup autoPan={false}>
       <React.Fragment>
         <div>
-          <h6>{entry.name}</h6>
+          <GCLinkWithContext internal={false} href={externalLink} target="_blank" /*href={entryDetailPath + entry.id}*/>
+            <h6>{entry.name}</h6>
+          </GCLinkWithContext>
           <div>
             {entry.city}
             {' '}
@@ -46,14 +48,6 @@ const MapEntryPopup = ({ entry }, context) => {
             )
           </div>
         </div>
-
-        {entry.id && (
-          <GCLinkWithContext internal={false} href={externalLink} target="_blank" /*href={entryDetailPath + entry.id}*/>
-            <ButtonWithContext variant="text">
-              {StyledImageLoupeComponent}
-            </ButtonWithContext>
-          </GCLinkWithContext>
-        )}
       </React.Fragment>
     </Popup>
   );
