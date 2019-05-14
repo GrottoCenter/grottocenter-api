@@ -41,6 +41,8 @@ module.exports = {
       .then(function(result){
         sails.log.debug("entriesMap sent");
         sails.log.debug(result.qualityEntriesMap.length);
+        sails.log.debug("Cluster sent");
+        sails.log.debug(result.groupEntriesMap.length);
         return res.json(result);
       })
       .catch(function(err) {

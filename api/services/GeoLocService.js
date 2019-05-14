@@ -1,5 +1,12 @@
 'use strict';
 
+const CAVES_IN_BOUNDS =
+  'SELECT c.Id as id, c.Name as name, avg(en.Longitude) as longitude, avg(en.Latitude) as latitude ' +
+  'FROM t_entry as en ' +
+  'INNER JOIN t_cave c on c.Id = en.Id_cave ' +
+  'WHERE en.Latitude > $1 AND en.Latitude < $2 AND en.Longitude > $3 AND en.Longitude < $4 AND en.Is_public=\'YES\' ' +
+  'GROUP BY c.Id, c.Name;';
+
 const PUBLIC_ENTRIES_AVG_COORDS_WITHOUT_QUALITY_ENTRY =
   'SELECT count(t1.Id) as count, avg(t1.Latitude) as latitude, avg(t1.Longitude) as longitude ' +
   'FROM t_entry as t1 ' +
@@ -38,6 +45,35 @@ module.exports = {
         resolve(result);
       });
     });
+  },
+
+  //TODO : optimize the request (too slow)
+  getMassif: function(southWestBound, northEastBound) {
+    return new Promise((resolve, reject) => {
+      TMassif.find()
+        .populate('entries')
+        .exec(function (err, result) {
+          if(err){
+            reject(err);
+          }
+          resolve(result);
+        })
+    });
+  },
+
+
+  getCaves: function(southWestBound, northEastBound){
+    return new Promise((resolve,reject) => {
+      CommonService.query(CAVES_IN_BOUNDS, [southWestBound.lat, northEastBound.lat, southWestBound.lng, northEastBound.lng])
+        .then(function(results) {
+          if (!results || results.rows.length <= 0 || results.rows[0].count === 0) {
+            resolve([]);
+          }
+          resolve(results.rows);
+        }, function(err) {
+          reject(err);
+        });
+    })
   },
 
   getEntriesBetweenCoords: function(southWestBound, northEastBound) {
@@ -274,12 +310,30 @@ module.exports = {
    * @param formattedGroupEntry
    * @param formattedGrottos
    */
-  formatEntriesMap: function(formattedQualityEntries, formattedGroupEntry, formattedGrottos){
+  formatEntriesMap: function(formattedQualityEntries, formattedGroupEntry, formattedGrottos, formattedCaves){
     return {
       qualityEntriesMap: formattedQualityEntries,
       groupEntriesMap: formattedGroupEntry,
-      grottos: formattedGrottos
+      grottos: formattedGrottos,
+      caves: formattedCaves,
     };
+  },
+
+
+  /**
+   * return a light version of the caves
+   * @param cave
+   */
+  formatCaves: function(caves){
+    return caves.map(function(caves){
+      return {
+        id: caves.id,
+        name: caves.name,
+        longitude: caves.longitude,
+        latitude: caves.latitude,
+      }
+
+    });
   },
 
   /**
@@ -290,39 +344,25 @@ module.exports = {
    * @returns {Promise<any>}
    */
   getEntriesMap: function (southWestBound, northEastBound, zoom, limitEntries) {
-    sails.log.debug("début getEntriesMap");
-
     return new Promise((resolve, reject)=>{
       let qualityEntriesMap = [];
       let groupEntriesMap = [];
       let grottoMap = [];
+      let caveMap = [];
       let getEntriesPromiseList = [];
+
       if (zoom > 11) {  // no clustering
         getEntriesPromiseList.push(GeoLocService.getEntriesBetweenCoords(southWestBound, northEastBound)
           .then(function (entries) {
-            qualityEntriesMap = entries;
+            qualityEntriesMap = GeoLocService.formatQualityEntriesMap(entries);
           })
           .catch(function (err) {
             reject(err);
           }));
-
-        getEntriesPromiseList.push(GeoLocService.getGrottoBetweenCoords(southWestBound, northEastBound)
-          .then(function (grottos) {
-            grottoMap = grottos;
-          })
-          .catch(function (err) {
-            reject(err);
-          }));
-
-        Promise.all(getEntriesPromiseList).then(function (values) {
-          const formattedEntries = GeoLocService.formatQualityEntriesMap(qualityEntriesMap);
-          const formattedGrottos = GeoLocService.formatGrottos(grottoMap);
-          resolve(GeoLocService.formatEntriesMap(formattedEntries, groupEntriesMap, formattedGrottos));
-        });
       }else if(zoom > 9){
         getEntriesPromiseList.push(GeoLocService.getQualityEntriesBetweenCoords(southWestBound, northEastBound, limitEntries)
-          .then(function(partResult) {
-            qualityEntriesMap = partResult;
+          .then(function(entries) {
+            qualityEntriesMap = GeoLocService.formatQualityEntriesMap(entries)
           })
           .catch(function(err) {
             sails.log.error(err);
@@ -336,19 +376,6 @@ module.exports = {
             sails.log.error(err);
           }));
 
-        getEntriesPromiseList.push(GeoLocService.getGrottoBetweenCoords(southWestBound, northEastBound)
-          .then(function (grottos) {
-            grottoMap = grottos;
-          })
-          .catch(function (err) {
-            reject(err);
-          }));
-
-        Promise.all(getEntriesPromiseList).then(function (values) {
-          const formattedEntries = GeoLocService.formatQualityEntriesMap(qualityEntriesMap);
-          const formattedGrottos = GeoLocService.formatGrottos(grottoMap);
-          resolve(GeoLocService.formatEntriesMap(formattedEntries, groupEntriesMap, formattedGrottos));
-        });
       } else {
         getEntriesPromiseList.push(GeoLocService.findByBoundsPartitioned(southWestBound, northEastBound, 0)
           .then(function(partResult) {
@@ -357,20 +384,27 @@ module.exports = {
           .catch(function(err) {
             sails.log.error(err);
           }));
-
-        getEntriesPromiseList.push(GeoLocService.getGrottoBetweenCoords(southWestBound, northEastBound)
-          .then(function (grottos) {
-            grottoMap = grottos;
-          })
-          .catch(function (err) {
-            reject(err);
-          }));
-
-        Promise.all(getEntriesPromiseList).then(function (values) {
-          const formattedGrottos = GeoLocService.formatGrottos(grottoMap);
-          resolve(GeoLocService.formatEntriesMap(qualityEntriesMap, groupEntriesMap, formattedGrottos));
-        });
       }
+
+      getEntriesPromiseList.push(GeoLocService.getGrottoBetweenCoords(southWestBound, northEastBound)
+        .then(function (grottos) {
+          grottoMap = GeoLocService.formatGrottos(grottos);
+        })
+        .catch(function (err) {
+          reject(err);
+        }));
+
+      getEntriesPromiseList.push(GeoLocService.getCaves(southWestBound, northEastBound)
+        .then(function(caves) {
+          caveMap = GeoLocService.formatCaves(caves);
+        })
+        .catch(function(err) {
+          sails.log.error(err);
+        }));
+
+      Promise.all(getEntriesPromiseList).then(function (values) {
+        resolve(GeoLocService.formatEntriesMap(qualityEntriesMap, groupEntriesMap, grottoMap, caveMap));
+      });
     });
   }
 
