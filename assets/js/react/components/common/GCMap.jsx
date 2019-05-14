@@ -9,6 +9,7 @@ import Control from 'react-leaflet-control';
 import MapEntryMarker from './map/MapEntryMarker';
 import MapGrottoMarker from './map/MapGrottoMarker';
 import MapEntryPopup from './map/MapEntryPopup';
+import MapGrottosPopup from './map/MapGrottosPopup';
 import { focusZoom } from '../../conf/Config';
 import { markers } from '../../conf/MapMarkersConfig';
 import Spinner from './Spinner';
@@ -379,6 +380,9 @@ class GCMap extends Component {
               lng: grotto.longitude,
             }}
           >
+            <MapGrottosPopup
+              grotto={grotto}
+            />
           </Marker>,
         );
       });
@@ -406,7 +410,7 @@ class GCMap extends Component {
     const markersInput = markers.map((m, index) => [
       <div>
         <input type="checkbox" value={m.name} id={index} checked={this.state.markersChecked.includes(m)} onChange={this.onMarkerLayerChanged} />
-        <img src={m.url} width="20px" style={{ marginLeft: '10px' }} />
+        <img src={m.url} width="20px" style={{ marginLeft: '10px', verticalAlign: 'middle' }} />
         <label htmlFor={index}> {m.name} </label>
       </div>,
     ]);
