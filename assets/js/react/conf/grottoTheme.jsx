@@ -29,6 +29,7 @@ export default {
     secondary1Color: blue['500'],
     secondary2Color: blue['700'],
     secondary3Color: blue['100'],
+    secondary4Color: blue['300'],
     accent1Color: orange['500'],
     primaryTextColor: grey['900'],
     secondaryTextColor: grey['600'],

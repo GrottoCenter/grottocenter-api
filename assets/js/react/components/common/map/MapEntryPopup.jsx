@@ -3,6 +3,9 @@ import PropTypes from 'prop-types';
 import { Popup } from 'react-leaflet';
 import styled from 'styled-components';
 import DescriptionIcon from '@material-ui/icons/Description';
+import LocationCityIcon from '@material-ui/icons/LocationCity';
+import PlaceIcon from '@material-ui/icons/Place';
+import { withTheme } from '@material-ui/core/styles';
 import GCLink from '../GCLink';
 import { detailPageV2Links } from '../../../conf/Config';
 import withContext from '../../../helpers/Routing';
@@ -14,6 +17,10 @@ import Translate from '../Translate';
 // S T Y L I N G - C O M P O N E N T S
 //
 //
+
+const StyledTitle = styled.h5`
+  text-align: center;
+`;
 
 const ImageElement = styled.img`
   width: 30px;
@@ -38,6 +45,18 @@ const Info = styled.span`
   font-size: medium;
 `;
 
+const StyledDescriptionIcon = styled(DescriptionIcon)`
+  vertical-align: middle;
+`;
+
+const StyledPlaceIcon = withTheme()(styled(PlaceIcon)`
+  color: ${props => props.theme.palette.secondary4Color};
+`);
+
+const StyledLocationCityIcon = withTheme()(styled(LocationCityIcon)`
+  color: ${props => props.theme.palette.secondary4Color};
+`);
+
 //
 //
 // M A I N - C O M P O N E N T
@@ -59,14 +78,14 @@ const MapEntryPopup = ({ entry }, context) => {
       <React.Fragment>
         <div>
           <GCLinkWithContext internal={false} href={externalLinkEntry} target="_blank" /*href={entryDetailPath + entry.id}*/ style={{ verticalAlign: ''}}>
-            <h5 style={{ textAlign: 'center' }}>
+            <StyledTitle>
               {entry.name}
-              <DescriptionIcon style={{ verticalAlign: 'middle' }} />
-            </h5>
+              <StyledDescriptionIcon />
+            </StyledTitle>
           </GCLinkWithContext>
 
           <MainDiv>
-            <ImageElement src="../../../../../images/localisation.svg" alt="" />
+            <StyledLocationCityIcon />
             <SubDiv>
               {entry.city}
               <br />
@@ -79,7 +98,7 @@ const MapEntryPopup = ({ entry }, context) => {
           </MainDiv>
 
           <MainDiv>
-            <ImageElement src="../../../../../images/map-coordinates.svg" alt="" />
+            <StyledPlaceIcon />
             <SubDiv>
               {'Lat : '}
               {entry.latitude.toFixed(6)}
@@ -100,7 +119,7 @@ const MapEntryPopup = ({ entry }, context) => {
                     <Info>
                       <span>
                         {entry.cave.name}
-                        <DescriptionIcon style={{ verticalAlign: 'middle' }} />
+                        <StyledDescriptionIcon />
                       </span>
                     </Info>
                   </GCLinkWithContext>
