@@ -98,7 +98,9 @@ class GCMap extends Component {
   static defaultProps = {
     className: '',
     selectedEntry: null,
-    entriesMap: { qualityEntriesMap: [], groupEntriesMap: [], grottos: [], caves: [] },
+    entriesMap: {
+      qualityEntriesMap: [], groupEntriesMap: [], grottos: [], caves: [],
+    },
     searchBounds: (() => {}),
     match: {},
   };
@@ -131,10 +133,10 @@ class GCMap extends Component {
         initZoom: Number(params.zoom),
       });
       this.updateReduxMapData({
-          lat: Number(params.lat),
-          lng: Number(params.lng),
-        },
-        Number(params.zoom));
+        lat: Number(params.lat),
+        lng: Number(params.lng),
+      },
+      Number(params.zoom));
     }
   }
 
@@ -380,8 +382,7 @@ class GCMap extends Component {
               lat: cave.latitude,
               lng: cave.longitude,
             }}
-          >
-          </Marker>,
+          />,
         );
       });
     }
@@ -399,11 +400,7 @@ class GCMap extends Component {
               lat: grotto.latitude,
               lng: grotto.longitude,
             }}
-          >
-            <MapGrottosPopup
-              grotto={grotto}
-            />
-          </Marker>,
+          />,
         );
       });
     }
@@ -431,7 +428,11 @@ class GCMap extends Component {
       <div>
         <input type="checkbox" value={m.name} id={index} checked={this.state.markersChecked.includes(m)} onChange={this.onMarkerLayerChanged} />
         <img src={m.url} width="20px" style={{ marginLeft: '10px' }} />
-        <label htmlFor={index}> <Translate>{m.name}</Translate> </label>
+        <label htmlFor={index}>
+          {' '}
+          <Translate>{m.name}</Translate>
+          {' '}
+        </label>
       </div>,
     ]);
 
