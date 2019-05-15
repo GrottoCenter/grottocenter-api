@@ -8,7 +8,7 @@ import MenuItem from '@material-ui/core/MenuItem';
 import FlatButton from '@material-ui/core/Button';
 import Toolbar from '@material-ui/core/Toolbar';
 import Dialog from '@material-ui/core/Dialog';
-import { withStyles } from '@material-ui/core/styles';
+import { withTheme, withStyles } from '@material-ui/core/styles';
 import styled from 'styled-components';
 import LanguagePicker from '../../containers/LanguagePicker';
 import SigninForm from '../SigninForm';
@@ -52,6 +52,11 @@ const StyledIconButton = withStyles(theme => ({
 const FlexDiv = styled.div`
   display: inline-flex;
 `;
+
+const StyledTextIcon = withTheme()(styled.a`
+  color: ${props => props.theme.palette.textIconColor};
+  text-decoration: none;
+`);
 
 //
 //
@@ -156,9 +161,9 @@ class GrottoAppBar extends Component {
           <a href="/ui/map">
             <StyledMapIcon />
           </a>
-          <a href="/ui/map" style={{ color: 'white', textDecoration: 'none' }}>
+          <StyledTextIcon href="/ui/map">
             <Translate>Map</Translate>
-          </a>
+          </StyledTextIcon>
         </FlexDiv>
 
         <div style={{display: 'none'}}>
