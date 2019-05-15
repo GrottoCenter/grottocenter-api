@@ -7,14 +7,22 @@ import {
 import _ from 'underscore.string';
 import { CoordinatesControl } from 'react-leaflet-coordinates';
 import Control from 'react-leaflet-control';
-import IconButton from '@material-ui/core/IconButton';
 import MenuIcon from '@material-ui/icons/Menu';
 import { withTheme } from '@material-ui/core/styles';
-import FormControl from '@material-ui/core/FormControl';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Checkbox from '@material-ui/core/Checkbox';
 import FormGroup from '@material-ui/core/FormGroup';
 import PopPop from 'react-poppop';
+import fetch from 'isomorphic-fetch';
+import ConvertIcon from '@material-ui/icons/Transform';
+import LayersIcon from '@material-ui/icons/Layers';
+import Button from '@material-ui/core/Button';
+import IconButton from '@material-ui/core/IconButton';
+import { withTheme } from '@material-ui/core/styles';
+import Radio from '@material-ui/core/Radio';
+import RadioGroup from '@material-ui/core/RadioGroup';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import FormControl from '@material-ui/core/FormControl';
+import FormLabel from '@material-ui/core/FormLabel';
 import MapEntryMarker from './map/MapEntryMarker';
 import MapGrottoMarker from './map/MapGrottoMarker';
 import MapEntryPopup from './map/MapEntryPopup';
@@ -26,7 +34,6 @@ import Spinner from './Spinner';
 import MapGroupIcon from './MapGroupIcon';
 import Convert from './map/Convert';
 import Translate from './Translate';
-import fetch from "isomorphic-fetch";
 
 
 //
@@ -82,22 +89,42 @@ const MarkersForm = withTheme()(styled(FormControl)`
 
 export const smallMarkerIconList = markers.map(m => L.icon({
   iconUrl: m.url,
-const LayerButton = styled.button`
+const LayerButton = withTheme()(styled(IconButton)`
+  && { 
+  background: ${props => props.theme.palette.backgroundButton}; 
+  border: 1px solid;
+  border-color: ${props => props.theme.palette.divider};
+  border-radius: 4px; 
+  padding: 0px;
+  width: 45px;
+  height: 45px;
+  }
+`);
 
-  background-color: white;
-  background-image: url("../../../../images/layers.svg");
-  background-repeat: no-repeat;
-  background-position: center;
-  padding: 23px;
-`;
+const LayersForm = withTheme()(styled(FormControl)`
+  && { 
+  background: ${props => props.theme.palette.backgroundButton};
+  border: 1px solid;
+  border-color: ${props => props.theme.palette.divider};
+  border-radius: 4px; 
+  padding: 0 10px;
+  }
+`);
 
-const ConverterButton = styled.button`
-  background-color: white;
-  background-image: url("../../../../images/convert.svg");
-  background-repeat: no-repeat;
-  background-position: left;
-  padding-right: 5px;
-`;
+const ConverterButton = withTheme()(styled(Button)`
+  && { 
+  background: ${props => props.theme.palette.backgroundButton};
+  border: 1px solid;
+  border-color: ${props => props.theme.palette.divider};
+  padding: 0 10px;
+  },
+  &&:hover {
+    background: ${props => props.theme.palette.backgroundButton};
+  },
+  &&:active {
+    background: ${props => props.theme.palette.divider};
+  }
+`);
 
 export const smallMarkerIcon = L.icon({
   iconUrl: '/images/gc-map-entry.svg',
@@ -529,10 +556,7 @@ class GCMap extends Component {
 
     const showConvertPopup = this.state.showConvertPopup;
 
-    const layersInput = this.state.currentLayersAvailable.map((layer, index) => [<br />, <input type="radio" value={layer.name} checked={this.state.currentLayer === layer} onChange={this.onLayerChanged} id={index} />, <label htmlFor={index}>
-      {' '}
-      {layer.name}
-    </label>]);
+    const layersInput = this.state.currentLayersAvailable.map(layer => <FormControlLabel value={layer.name} control={<Radio />} label={layer.name} />);
 
     return (
       <Map
@@ -553,7 +577,6 @@ class GCMap extends Component {
         onLocationError={() => this.handleLocationError()}
       >
         {showSpinner && <Spinner size={100} text="Localization" />}
-        <TileLayer url="http://{s}.tile.osm.org/{z}/{x}/{y}.png" />
 
         <Control position="topright">
           { this.state.showListMarkers ? (
@@ -575,11 +598,19 @@ class GCMap extends Component {
 
         <Control position="topleft">
           { this.state.showListLayers ? (
-            <LayerButton onMouseOver={() => this.toggleShowLayers()} />
+            <LayerButton onMouseOver={() => this.toggleShowLayers()}>
+              <LayersIcon />
+            </LayerButton>
           ) : (
-            <form style={{ padding: '10px', background: 'white' }} onMouseLeave={() => this.toggleShowLayers()}>
-              {layersInput}
-            </form>
+            <LayersForm onMouseLeave={() => this.toggleShowLayers()}>
+              <FormLabel>LAYERS</FormLabel>
+              <RadioGroup
+                value={this.state.currentLayer.name}
+                onChange={this.onLayerChanged}
+              >
+                {layersInput}
+              </RadioGroup>
+            </LayersForm>
           )
           }
         </Control>
@@ -596,9 +627,8 @@ class GCMap extends Component {
         />
 
         <Control position="bottomleft">
-          <ConverterButton
-            onClick={() => this.toggleShowConverter(true)}
-          >
+          <ConverterButton onClick={() => this.toggleShowConverter(true)}>
+            <ConvertIcon />
             <Translate>Converter</Translate>
           </ConverterButton>
           <PopPop
@@ -608,11 +638,10 @@ class GCMap extends Component {
             closeOnEsc
             onClose={() => this.toggleShowConverter(false)}
             closeOnOverlay
-
           >
             <h1><Translate>Converter</Translate></h1>
             <Convert
-              list = {this.state.projectionsList}
+              list={this.state.projectionsList}
             />
           </PopPop>
         </Control>

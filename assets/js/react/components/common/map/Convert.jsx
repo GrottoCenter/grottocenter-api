@@ -1,13 +1,16 @@
 import React from 'react';
-import { withStyles } from '@material-ui/core';
+import { withStyles, withTheme } from '@material-ui/core';
 import PropTypes from 'prop-types';
 import proj4 from 'proj4';
-import ReactHtmlParser from 'react-html-parser';
+import Button from '@material-ui/core/Button';
+import styled from 'styled-components';
+import Input from '@material-ui/core/Input';
+import MenuItem from '@material-ui/core/MenuItem';
+import FormControl from '@material-ui/core/FormControl';
+import Select from '@material-ui/core/Select';
+import Divider from '@material-ui/core/Divider';
 import { unitsTab } from '../../../conf/ListGPSProj';
 import Translate from '../Translate';
-
-
-
 
 //
 //
@@ -24,14 +27,83 @@ const styles = theme => ({
     backgroundColor: theme.palette.primary3Color,
     padding: '10px',
     margin: '20px',
+    textAlign: 'center',
+  },
+  bottomContainer: {
+    padding: '10px',
+    margin: '20px',
+    textAlign: 'center',
   },
   element: {
-    margin: '10px',
+    display: 'table',
   },
-  button: {
-    backgroundColor: 'white',
+  subElement: {
+    display: 'table-cell',
+    verticalAlign: 'middle',
   },
 });
+
+// For input of coordinates
+const StyledInput = withTheme()(styled(Input)`
+  &&{
+  background: ${props => props.theme.palette.backgroundButton}; 
+  border: 1px solid;
+  border-color: ${props => props.theme.palette.borderColor};
+  padding: 7px;
+  margin: 10px;
+  font-size: small;
+  }
+`);
+
+// For the select of coodinates system
+const StyledSelect = withTheme()(styled(Select)`
+  &&{
+  background: ${props => props.theme.palette.backgroundButton}; 
+  border: 1px solid;
+  border-color: ${props => props.theme.palette.borderColor};
+  padding: 7px;
+  margin: 10px;
+  }
+`);
+
+const MenuItemGroup = withTheme()(styled(MenuItem)`
+  &&{
+  font-size: larger;
+  font-weight: bold;
+  } 
+`);
+
+const StyledMenuItem = withTheme()(styled(MenuItem)`
+  &&{
+  font-size: small;
+  padding: 0 30px;
+  } 
+`);
+
+//
+const ConvertButton = withTheme()(styled(Button)`
+  && { 
+  background: ${props => props.theme.palette.backgroundButton}; 
+  border: 1px solid;
+  border-color: ${props => props.theme.palette.borderColor};
+  border-radius: 4px; 
+  padding: 0 20px;
+  },
+  &&:hover {
+    background: ${props => props.theme.palette.backgroundButton};
+  },
+`);
+
+const StyledDivider = withTheme()(styled(Divider)`
+  &&{
+  background: ${props => props.theme.palette.divider}; 
+  margin-bottom: 10px;
+  }
+`);
+
+const StyledTitle = styled.h5`
+  font-weight: bold;
+`;
 
 //
 //
@@ -124,21 +196,18 @@ class Convert extends React.Component {
     this.setState({ yUnitOutput: unitsTab[this.getUnits(event.target.value)].yUnit });
   }
 
-
   handleConvert(event) {
     const firstProjection = this.getProj(this.state.keyGPSInput);
     const secondProjection = this.getProj(this.state.keyGPSOutput);
-    var xValue = this.state.valueXInput;
-    var yValue = this.state.valueYInput;
+    let xValue = this.state.valueXInput;
+    let yValue = this.state.valueYInput;
     if (this.getUnits(this.state.keyGPSInput) == "degrees") {
-      console.log("ok");
       xValue = this.state.valueYInput;
       yValue = this.state.valueXInput;
     }
     const tmp = proj4(firstProjection, secondProjection, [parseInt(xValue, 10), parseInt(yValue, 10)]);
 
     if (this.getUnits(this.state.keyGPSOutput) == "degrees") {
-      console.log("ok");
       this.setState({ valueXOutput: tmp[1], valueYOutput: tmp[0] });
     } else {
       this.setState({valueXOutput: tmp[0], valueYOutput: tmp[1]});
@@ -152,113 +221,117 @@ class Convert extends React.Component {
       classes,
     } = this.props;
 
+    // Recover all the coodinates system for options select
     const options = [];
+    let actualCountry = 'World';
+    options.push(<MenuItemGroup disabled>World</MenuItemGroup>);
 
-    var actualCountry = "World";
-
-    options.push(ReactHtmlParser('<optgroup label = "World">'));
-
-    for (let i = 0; i < this.state.projectionsList.length; i++) {
-
-      if (this.state.projectionsList[i].Fr_name && actualCountry != this.state.projectionsList[i].Fr_name) {
-        actualCountry = this.state.projectionsList[i].Fr_name;
-        options.push(ReactHtmlParser('</optgroup>'));
-        options.push(ReactHtmlParser(`<optgroup label = ${actualCountry}>`));
+    this.state.projectionsList.forEach((projection) => {
+      if (projection.Fr_name && actualCountry !== projection.Fr_name) {
+        actualCountry = projection.Fr_name;
+        options.push(<MenuItemGroup disabled>{actualCountry}</MenuItemGroup>);
       }
-
-      const option = (
-      <option value={this.state.projectionsList[i].Code}>
-      {' '}
-      {this.state.projectionsList[i].title}
-      {' '}
-      </option>
+      options.push(
+        <StyledMenuItem value={projection.Code}>
+          {' '}
+          {projection.title}
+          {' '}
+        </StyledMenuItem>,
       );
-      options.push(option);
-    }
-
-
-    options.push(ReactHtmlParser('</optgroup>'));
-
+    });
 
     return (
 
       <div id="convert" className={classes.mainContainer}>
 
+        {/* INPUT SECTION */}
         <div id="input" className={classes.subContainer}>
-          <h5><b><Translate>Input</Translate></b></h5>
-          <div id="selectInput">
-            <hr />
-            <Translate>Coordinate system</Translate>
-            {' '}
-:
-            <select
-              value={this.state.keyGPSInput}
-              className={classes.element}
-              onChange={this.handleChangeGPSInput.bind(this)}
-            >
-              {
-                options
-              }
-            </select>
+          <StyledTitle><Translate>Input</Translate></StyledTitle>
+          <StyledDivider />
 
-
+          {/* COORDINATES SYSTEMS SECTION */}
+          <div id="selectInput" className={classes.element}>
+            <div className={classes.subElement}>
+              <Translate>Coordinate system</Translate>
+              {' : '}
+            </div>
+            <FormControl>
+              <StyledSelect
+                value={this.state.keyGPSInput}
+                onChange={this.handleChangeGPSInput.bind(this)}
+              >
+                {options}
+              </StyledSelect>
+            </FormControl>
           </div>
 
+          {/* COORDINATES INPUT SECTION */}
           <div id="xInput">
             {this.state.xNameInput}
-            {' '}
-:
-            <input type="number" className={classes.element} onChange={this.handleChangeXValue.bind(this)} />
+            {' : '}
+            <StyledInput type="number" placeholder="0" onChange={this.handleChangeXValue.bind(this)} />
             {this.state.xUnitInput}
           </div>
 
           <div id="yInput">
             {this.state.yNameInput}
-            {' '}
-:
-            <input type="number" className={classes.element} onChange={this.handleChangeYValue.bind(this)} />
+            {' : '}
+            <StyledInput type="number" placeholder="0" style={{ marginLeft: '5px' }} onChange={this.handleChangeYValue.bind(this)} />
             {this.state.yUnitInput}
           </div>
-          <button type="button" className={classes.button} onClick={this.handleConvert.bind(this)}><Translate>Convert</Translate></button>
+
+          {/* BUTTON SECTION */}
+          <ConvertButton onClick={this.handleConvert.bind(this)}>
+            <Translate>Convert</Translate>
+          </ConvertButton>
         </div>
+
+        {/* OUTPUT SECTION */}
         <div id="output" className={classes.subContainer}>
-          <h5><b><Translate>Output</Translate></b></h5>
-          <div id="selectOutput">
-            <hr />
-            <Translate>Coordinate system</Translate>
-            {' '}
-:
-            <select
-              value={this.state.keyGPSOutput}
-              className={classes.element}
-              onChange={this.handleChangeGPSOutput.bind(this)}
-            >
-              { options }
-            </select>
+          <StyledTitle><Translate>Output</Translate></StyledTitle>
+          <StyledDivider />
+
+          {/* COORDINATES SYSTEMS SECTION */}
+          <div id="selectOutput" className={classes.element}>
+            <div className={classes.subElement}>
+              <Translate>Coordinate system</Translate>
+              {' : '}
+            </div>
+            <FormControl>
+              <StyledSelect
+                value={this.state.keyGPSOutput}
+                onChange={this.handleChangeGPSOutput.bind(this)}
+              >
+                {options}
+              </StyledSelect>
+            </FormControl>
           </div>
 
-
+          {/* COORDINATES OUTPUT SECTION */}
           <div id="xOutput">
-
-
-              {this.state.xNameOutput} :
-              <input type="number" className={classes.element} value={this.state.valueXOutput} disabled />
-              {this.state.xUnitOutput}
-
+            {this.state.xNameOutput}
+            {' : '}
+            <StyledInput type="number" value={this.state.valueXOutput} disabled />
+            {this.state.xUnitOutput}
           </div>
 
           <div id="yOutput">
-
-
-              {this.state.yNameOutput} :
-              <input type="number" className={classes.element} value={this.state.valueYOutput} disabled />
-              {this.state.yUnitOutput}
-
+            {this.state.yNameOutput}
+            {' : '}
+            <StyledInput type="number" value={this.state.valueYOutput} style={{ marginLeft: '2px' }} disabled />
+            {this.state.yUnitOutput}
           </div>
         </div>
 
-      </div>
+        {/* BOTTOM SECTION */}
+        <div id="bottom" className={classes.bottomContainer}>
 
+          <span>
+            Basé sur la librairie <a href="http://proj4js.org" >Proj4js</a> et sur le projet <a href="http://trac.osgeo.org/proj">Proj.4</a>, <br />ce convertisseur utilise les constantes de conversion de <a href="http://spatialreference.org">Spatial Reference</a>.
+          </span>
+
+        </div>
+      </div>
     );
   }
 }
