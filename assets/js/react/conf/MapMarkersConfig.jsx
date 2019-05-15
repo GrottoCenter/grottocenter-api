@@ -1,18 +1,18 @@
 export const markers = [
   {
-    name: 'Cave',
+    name: 'Entries',
     url: '/images/gc-entry2.svg',
   },
   {
-    name: 'Massif',
-    url: '/images/massif.svg',
-  },
-  {
-    name: 'Network',
+    name: 'Caves',
     url: '/images/entry-cluster.svg',
   },
   {
-    name: 'Caving club',
+    name: 'Massifs',
+    url: '/images/massif.svg',
+  },
+  {
+    name: 'Groups',
     url: '/images/club.svg',
   },
 ];

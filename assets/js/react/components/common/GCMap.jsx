@@ -14,6 +14,7 @@ import { focusZoom } from '../../conf/Config';
 import { markers } from '../../conf/MapMarkersConfig';
 import Spinner from './Spinner';
 import MapGroupIcon from './MapGroupIcon';
+import Translate from './Translate';
 //
 //
 // S T Y L I N G - C O M P O N E N T S
@@ -97,7 +98,7 @@ class GCMap extends Component {
   static defaultProps = {
     className: '',
     selectedEntry: null,
-    entriesMap: {qualityEntriesMap: [], groupEntriesMap: [], grottos: []},
+    entriesMap: { qualityEntriesMap: [], groupEntriesMap: [], grottos: [], caves: [] },
     searchBounds: (() => {}),
     match: {},
   };
@@ -339,13 +340,13 @@ class GCMap extends Component {
       }
     }
 
-    const markersLayer = [];
+    const entriesMarkersLayer = [];
     if (entriesMap
       && entriesMap.qualityEntriesMap
       && entriesMap.qualityEntriesMap.length > 0) {
       entriesMap.qualityEntriesMap.forEach((entry) => {
         if (!selectedEntry || entry.id !== selectedEntry.id) {
-          markersLayer.push(
+          entriesMarkersLayer.push(
             <CircleMarker
               key={`entry_${entry.id}`}
               center={{
@@ -363,6 +364,25 @@ class GCMap extends Component {
             </CircleMarker>,
           );
         }
+      });
+    }
+
+    const cavesMarkersLayer = [];
+    if (entriesMap
+      && entriesMap.caves
+      && entriesMap.caves.length > 0) {
+      entriesMap.caves.forEach((cave) => {
+        cavesMarkersLayer.push(
+          <Marker
+            icon={smallMarkerIconList[1]}
+            key={`cave${cave.id}`}
+            position={{
+              lat: cave.latitude,
+              lng: cave.longitude,
+            }}
+          >
+          </Marker>,
+        );
       });
     }
 
@@ -410,8 +430,8 @@ class GCMap extends Component {
     const markersInput = markers.map((m, index) => [
       <div>
         <input type="checkbox" value={m.name} id={index} checked={this.state.markersChecked.includes(m)} onChange={this.onMarkerLayerChanged} />
-        <img src={m.url} width="20px" style={{ marginLeft: '10px', verticalAlign: 'middle' }} />
-        <label htmlFor={index}> {m.name} </label>
+        <img src={m.url} width="20px" style={{ marginLeft: '10px' }} />
+        <label htmlFor={index}> <Translate>{m.name}</Translate> </label>
       </div>,
     ]);
 
@@ -450,7 +470,8 @@ class GCMap extends Component {
 
         {marker}
         {groupsMarkersLayer}
-        {markersInput[0][0].props.children[0].props.checked && markersLayer}
+        {markersInput[0][0].props.children[0].props.checked && entriesMarkersLayer}
+        {markersInput[1][0].props.children[0].props.checked && cavesMarkersLayer}
         {markersInput[3][0].props.children[0].props.checked && grottosMarkersLayer}
 
       </Map>
