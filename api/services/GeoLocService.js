@@ -1,11 +1,25 @@
 'use strict';
 
+const PUBLIC_ENTRIES_IN_BOUNDS =
+  'SELECT e.Id as id, e.Name as name, e.City as city, ' +
+  'e.Region as region, e.Longitude as longitude, e.Latitude as latitude, ' +
+  'e.Quality as quality, e.Id_cave as idCave, c.Name as nameCave, c.Depth as dephtCave, ' +
+  'c.Length as lengthCave, se.Depth as depthSE, se.Length as lengthSE ' +
+  'from t_entry as e ' +
+  'inner join t_single_entry as se on se.Id=e.Id ' +
+  'LEFT JOIN t_cave as c ON c.Id = e.Id_cave ' +
+  'WHERE e.Latitude > $1 AND e.Latitude < $2 AND e.Longitude > $3 AND e.Longitude < $4 AND e.Is_public=\'YES\' ' +
+  'ORDER BY Quality DESC ' +
+  'LIMIT $5; ';
+
 const CAVES_IN_BOUNDS =
   'SELECT c.Id as id, c.Name as name, avg(en.Longitude) as longitude, avg(en.Latitude) as latitude ' +
   'FROM t_entry as en ' +
   'INNER JOIN t_cave c on c.Id = en.Id_cave ' +
   'WHERE en.Latitude > $1 AND en.Latitude < $2 AND en.Longitude > $3 AND en.Longitude < $4 AND en.Is_public=\'YES\' ' +
   'GROUP BY c.Id, c.Name;';
+
+
 
 const PUBLIC_ENTRIES_AVG_COORDS_WITHOUT_QUALITY_ENTRY =
   'SELECT count(t1.Id) as count, avg(t1.Latitude) as latitude, avg(t1.Longitude) as longitude ' +
@@ -16,7 +30,7 @@ const PUBLIC_ENTRIES_AVG_COORDS_WITHOUT_QUALITY_ENTRY =
   'ORDER BY Quality DESC ' +
   'LIMIT $9) as t2 on t1.Id = t2.Id ' +
   'WHERE t1.Latitude > $1 AND t1.Latitude < $2 AND t1.Longitude > $3 AND t1.Longitude < $4 AND t1.Is_public=\'YES\' ' +
-  'AND t2.Id IS NULL ';
+  'AND t2.Id IS NULL; ';
 
 module.exports = {
   /**
@@ -77,60 +91,33 @@ module.exports = {
   },
 
   getEntriesBetweenCoords: function(southWestBound, northEastBound) {
-    return new Promise((resolve, reject) => {
-      let parameters = {
-        latitude: {
-          '>': southWestBound.lat,
-          '<': northEastBound.lat
-        },
-        longitude: {
-          '>': southWestBound.lng,
-          '<': northEastBound.lng
-        }
-      }; // TODO add controls on parameters
+    return new Promise((resolve,reject) => {
+      CommonService.query(PUBLIC_ENTRIES_IN_BOUNDS, [southWestBound.lat, northEastBound.lat, southWestBound.lng, northEastBound.lng, 99999999])
+        .then(function(results) {
+          if (!results || results.rows.length <= 0 || results.rows[0].count === 0) {
+            resolve([]);
+          }
 
-      //TODO : to adapt when authentication will be implemented
-      parameters.isPublic = 'YES';
-
-      TEntry.find(parameters)
-        .populate('cave')
-        .sort('quality DESC')
-        .exec(function(err, result) {
-        if (err) {
+          resolve(results.rows);
+        }, function(err) {
           reject(err);
-        }
-        resolve(result);
-      });
-    });
+        });
+    })
   },
 
   getQualityEntriesBetweenCoords: function(southWestBound, northEastBound, qualityLimit) {
-    return new Promise((resolve, reject) => {
-      let parameters = {
-        latitude: {
-          '>': southWestBound.lat,
-          '<': northEastBound.lat
-        },
-        longitude: {
-          '>': southWestBound.lng,
-          '<': northEastBound.lng
-        }
-      }; // TODO add controls on parameters
-
-      //TODO : to adapt when authentication will be implemented
-      parameters.isPublic = 'YES';
-
-      TEntry.find(parameters)
-        .populate('cave')
-        .sort('quality DESC')
-        .limit(qualityLimit)
-        .exec(function(err, result) {
-          if (err) {
-            reject(err);
+    return new Promise((resolve,reject) => {
+      CommonService.query(PUBLIC_ENTRIES_IN_BOUNDS, [southWestBound.lat, northEastBound.lat, southWestBound.lng, northEastBound.lng, qualityLimit])
+        .then(function(results) {
+          if (!results || results.rows.length <= 0 || results.rows[0].count === 0) {
+            resolve([]);
           }
-          resolve(result);
+
+          resolve(results.rows);
+        }, function(err) {
+          reject(err);
         });
-    });
+    })
   },
 
   getGrottoBetweenCoords: function(southWestBound, northEastBound) {
@@ -196,8 +183,8 @@ module.exports = {
         }));
 
       Promise.all(settingsPromiseList).then(function() {
-        let mapLon = CommonService.difference(southWestBound.lng,  northEastBound.lng);
-        let mapLar = CommonService.difference(southWestBound.lat, northEastBound.lat);
+        let mapLon = northEastBound.lng - southWestBound.lng;
+        let mapLar = northEastBound.lat - southWestBound.lat;
         let partLon = mapLon / columnNumber;
         let partLar = mapLar / rowNumber;
         let promiseList = [];
@@ -262,16 +249,21 @@ module.exports = {
   formatQualityEntriesMap: function (entries){
     return entries.map(function(entry) {
       let entryCave;
-      if (entry.cave) {
+
+      if (entry.idCave){
         entryCave =
           {
-            id: entry.cave.id,
-            name: entry.cave.name,
-            depth: entry.cave.depth,
-            length: entry.cave.length,
+            id: entry.idCave,
+            name: entry.nameCave,
+            depth: entry.depthCave,
+            length: entry.lengthCave,
           }
       } else {
-        entryCave = null;
+        entryCave =
+          {
+            depth: entry.depthSE,
+            length: entry.lengthSE,
+          }
       }
 
       return {
