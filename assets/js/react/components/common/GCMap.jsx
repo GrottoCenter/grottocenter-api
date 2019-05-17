@@ -6,6 +6,13 @@ import {
 } from 'react-leaflet';
 import _ from 'underscore.string';
 import Control from 'react-leaflet-control';
+import IconButton from '@material-ui/core/IconButton';
+import MenuIcon from '@material-ui/icons/Menu';
+import { withTheme } from '@material-ui/core/styles';
+import FormControl from '@material-ui/core/FormControl';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import Checkbox from '@material-ui/core/Checkbox';
+import FormGroup from '@material-ui/core/FormGroup';
 import MapEntryMarker from './map/MapEntryMarker';
 import MapGrottoMarker from './map/MapGrottoMarker';
 import MapEntryPopup from './map/MapEntryPopup';
@@ -15,6 +22,7 @@ import { markers } from '../../conf/MapMarkersConfig';
 import Spinner from './Spinner';
 import MapGroupIcon from './MapGroupIcon';
 import Translate from './Translate';
+
 //
 //
 // S T Y L I N G - C O M P O N E N T S
@@ -44,23 +52,27 @@ const StyledMapGroupIcon = styled(MapGroupIcon)`
   }
 `;
 
-const MarkersButton = styled.button`
-  background-color: white;
-  background-image: url("../../../../images/gc-markers.svg");
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: contain;
-`;
+const MarkersButton = withTheme()(styled(IconButton)`
+  && { 
+  background: ${props => props.theme.palette.backgroundButton}; 
+  border: 1px solid;
+  border-color: ${props => props.theme.palette.divider};
+  border-radius: 4px; 
+  padding: 0px;
+  width: 45px;
+  height: 45px;
+  }
+`);
 
-const FormMarkers = styled.form`
-  background-color: white;
-  padding: 10px;
-  border-radius: 5px;
-  box-shadow: 50px;
-  border-style: solid;
-  border-width: 1px;
-  border-color: lightgrey;
-`;
+const MarkersForm = withTheme()(styled(FormControl)`
+  && { 
+  background: ${props => props.theme.palette.backgroundButton};
+  border: 1px solid;
+  border-color: ${props => props.theme.palette.divider};
+  border-radius: 4px; 
+  padding: 0 10px;
+  }
+`);
 
 export const smallMarkerIconList = markers.map(m => L.icon({
   iconUrl: m.url,
@@ -133,10 +145,10 @@ class GCMap extends Component {
         initZoom: Number(params.zoom),
       });
       this.updateReduxMapData({
-        lat: Number(params.lat),
-        lng: Number(params.lng),
-      },
-      Number(params.zoom));
+          lat: Number(params.lat),
+          lng: Number(params.lng),
+        },
+        Number(params.zoom));
     }
   }
 
@@ -424,17 +436,17 @@ class GCMap extends Component {
       });
     }
 
-    const markersInput = markers.map((m, index) => [
-      <div>
-        <input type="checkbox" value={m.name} id={index} checked={this.state.markersChecked.includes(m)} onChange={this.onMarkerLayerChanged} />
-        <img src={m.url} width="20px" style={{ marginLeft: '10px' }} />
-        <label htmlFor={index}>
-          {' '}
-          <Translate>{m.name}</Translate>
-          {' '}
-        </label>
-      </div>,
-    ]);
+    const markersInput = markers.map(m => (
+      <FormControlLabel
+        control={<Checkbox value={m.name} checked={this.state.markersChecked.includes(m)} onChange={this.onMarkerLayerChanged} />}
+        label={(
+          <React.Fragment>
+            <img src={m.url} width="20px" style={{ marginRight: '5px' }} alt="" />
+            <span style={{ fontSize: 'small' }}><Translate>{m.name}</Translate></span>
+          </React.Fragment>
+        )}
+      />
+    ));
 
     return (
       <Map
@@ -459,21 +471,24 @@ class GCMap extends Component {
 
         <Control position="topright">
           { this.state.showListMarkers ? (
-            <MarkersButton onMouseOver={() => this.toggleShowMarkers()} />
+            <MarkersButton onMouseOver={() => this.toggleShowMarkers()}>
+              <MenuIcon />
+            </MarkersButton>
           ) : (
-            <FormMarkers onMouseLeave={() => this.toggleShowMarkers()}>
-              MARKERS
-              {markersInput}
-            </FormMarkers>
+            <MarkersForm onMouseLeave={() => this.toggleShowMarkers()}>
+              <FormGroup>
+                {markersInput}
+              </FormGroup>
+            </MarkersForm>
           )
           }
         </Control>
 
         {marker}
         {groupsMarkersLayer}
-        {markersInput[0][0].props.children[0].props.checked && entriesMarkersLayer}
-        {markersInput[1][0].props.children[0].props.checked && cavesMarkersLayer}
-        {markersInput[3][0].props.children[0].props.checked && grottosMarkersLayer}
+        {this.state.markersChecked.includes(markers[0]) && entriesMarkersLayer}
+        {this.state.markersChecked.includes(markers[1]) && cavesMarkersLayer}
+        {this.state.markersChecked.includes(markers[3]) && grottosMarkersLayer}
 
       </Map>
     );

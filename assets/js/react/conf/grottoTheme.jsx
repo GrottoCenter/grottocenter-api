@@ -39,6 +39,7 @@ export default {
     fullBlack: '#000000',
     secondaryBlocTitle: '#FFFFFF',
     blackShadow: fade('#000000', 0.117647),
+    backgroundButton: '#FFFFFF',
   },
   typography: {
     fontFamily,
