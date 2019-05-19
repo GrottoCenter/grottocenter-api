@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import {
-  Map, Marker, CircleMarker, TileLayer,
+  Map, Marker, CircleMarker, TileLayer, Tooltip,
 } from 'react-leaflet';
 import _ from 'underscore.string';
 import Control from 'react-leaflet-control';
@@ -22,6 +22,7 @@ import { markers } from '../../conf/MapMarkersConfig';
 import Spinner from './Spinner';
 import MapGroupIcon from './MapGroupIcon';
 import Translate from './Translate';
+
 
 //
 //
@@ -46,7 +47,7 @@ const StyledMapGroupIcon = styled(MapGroupIcon)`
     background-color: rgba(83, 177, 251, 0.5);;
 
     & > span {
-      line-height: 50px;
+      line-height: 40px;
       font-weight: 600;
     }
   }
@@ -371,10 +372,14 @@ class GCMap extends Component {
               fillColor="red"
               fillOpacity="1"
               weight="1"
+              onClick={(e) => {
+                e.target.closeTooltip();
+              }}
             >
               <MapEntryPopup
                 entry={entry}
               />
+              <Tooltip direction="top">{entry.name}</Tooltip>
             </CircleMarker>,
           );
         }
@@ -485,8 +490,8 @@ class GCMap extends Component {
         </Control>
 
         {marker}
-        {groupsMarkersLayer}
         {this.state.markersChecked.includes(markers[0]) && entriesMarkersLayer}
+        {this.state.markersChecked.includes(markers[0]) && groupsMarkersLayer}
         {this.state.markersChecked.includes(markers[1]) && cavesMarkersLayer}
         {this.state.markersChecked.includes(markers[3]) && grottosMarkersLayer}
 
