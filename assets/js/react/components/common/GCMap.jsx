@@ -2,13 +2,12 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import {
-  Map, Marker, TileLayer, LayersControl, ScaleControl, Tooltip,
+  Map, Marker, TileLayer, ScaleControl, Tooltip, CircleMarker
 } from 'react-leaflet';
 import _ from 'underscore.string';
 import { CoordinatesControl } from 'react-leaflet-coordinates';
 import Control from 'react-leaflet-control';
 import MenuIcon from '@material-ui/icons/Menu';
-import { withTheme } from '@material-ui/core/styles';
 import Checkbox from '@material-ui/core/Checkbox';
 import FormGroup from '@material-ui/core/FormGroup';
 import PopPop from 'react-poppop';
@@ -87,8 +86,7 @@ const MarkersForm = withTheme()(styled(FormControl)`
   }
 `);
 
-export const smallMarkerIconList = markers.map(m => L.icon({
-  iconUrl: m.url,
+
 const LayerButton = withTheme()(styled(IconButton)`
   && { 
   background: ${props => props.theme.palette.backgroundButton}; 
@@ -126,8 +124,8 @@ const ConverterButton = withTheme()(styled(Button)`
   }
 `);
 
-export const smallMarkerIcon = L.icon({
-  iconUrl: '/images/gc-map-entry.svg',
+export const smallMarkerIconList = markers.map(m => L.icon({
+  iconUrl: m.url,
   iconSize: [
     24, 24,
   ],
@@ -402,7 +400,6 @@ class GCMap extends Component {
     this.updateLocationUrl(mapBounds, newZoom);
   };
 
-  toggleShow = (showConvertPopup) => {
   toggleShowConverter = (showConvertPopup) => {
     this.setState({ showConvertPopup });
   };
