@@ -46,7 +46,7 @@
     "redux-debounced": "^0.5.0",
     "redux-thunk": "^2.2.0",
     "sails": "^1.1.0",
-    "sails-hook-grunt": "^3.1.0",
+    "sails-hook-grunt": "^4.0.0",
     "sails-hook-orm": "^2.0.0-0",
     "sails-hook-sockets": "^1.5.2",
     "sails-mysql": "^1.0.1",
