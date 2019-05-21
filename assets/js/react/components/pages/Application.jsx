@@ -2,6 +2,7 @@ import React from 'react';
 import { Redirect, Route, Switch } from 'react-router-dom';
 import { withTheme } from '@material-ui/core/styles';
 import styled from 'styled-components';
+import { isMobileOnly } from 'react-device-detect';
 import BasePage from './BasePage';
 import SideMenuConnector from '../../containers/SideMenuConnector';
 import AppToolbar from '../appli/AppToolbar';
@@ -72,9 +73,8 @@ const Application = () => {
             <Route path="/ui/massifs/:massifId" component={MassifContainer} />
             <Redirect path="/ui/*" to="/ui/" />
           </Switch>
-
         </ArticleWrapper>
-        <footer><AppFooterStl /></footer>
+        { !isMobileOnly && <footer><AppFooterStl /></footer> }
       </div>
     </BasePage>
   );

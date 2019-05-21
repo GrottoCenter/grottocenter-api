@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import { withTheme } from '@material-ui/core/styles';
+import { isMobileOnly } from 'react-device-detect';
 import TextDiv from '../common/TextDiv';
 import GCLink from '../common/GCLink';
 import GCLogo from '../common/GCLogo';
@@ -52,10 +53,14 @@ const LogoImage = styled(GCLogo)`
 const HeaderTitle = ({ className, title, subtitle }) => (
   <FlexDiv className={className}>
     <LogoImage />
-    <GCLinkStl internal href="/">
-      <TitleZone1>{title}</TitleZone1>
-      <TitleZone2>{subtitle}</TitleZone2>
-    </GCLinkStl>
+    { !isMobileOnly
+      && (
+        <GCLinkStl internal href="/">
+          <TitleZone1>{title}</TitleZone1>
+          <TitleZone2>{subtitle}</TitleZone2>
+        </GCLinkStl>
+      )
+    }
   </FlexDiv>
 );
 

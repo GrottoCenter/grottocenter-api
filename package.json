@@ -35,6 +35,7 @@
     "rc-slider": "8.6.3",
     "react": "^16.8.6",
     "react-bootstrap": "^0.32.4",
+    "react-device-detect": "^1.6.2",
     "react-dom": "^16.6.0",
     "react-ghost-i18n": "^1.0.4",
     "react-intl": "^2.7.2",

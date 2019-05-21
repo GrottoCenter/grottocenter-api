@@ -1,6 +1,7 @@
 import React from 'react';
 import { withTheme } from '@material-ui/core/styles';
 import styled from 'styled-components';
+import { isMobileOnly } from 'react-device-detect';
 import GCMap from '../common/GCMap';
 
 //
@@ -11,7 +12,7 @@ import GCMap from '../common/GCMap';
 
 const FullPageGCMap = styled(GCMap)`
   width: calc(100% - 0px);
-  height: calc(100% - 132px);
+  height: ${isMobileOnly ? 'calc(100% - 60px)' : 'calc(100% - 110px)'};
   position: fixed;
   margin-left: -20px;
   margin-top: -20px;

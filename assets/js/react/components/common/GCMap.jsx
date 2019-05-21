@@ -21,7 +21,6 @@ import Radio from '@material-ui/core/Radio';
 import RadioGroup from '@material-ui/core/RadioGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import FormControl from '@material-ui/core/FormControl';
-import FormLabel from '@material-ui/core/FormLabel';
 import MapEntryMarker from './map/MapEntryMarker';
 import MapGrottoMarker from './map/MapGrottoMarker';
 import MapEntryPopup from './map/MapEntryPopup';
@@ -33,6 +32,7 @@ import Spinner from './Spinner';
 import MapGroupIcon from './MapGroupIcon';
 import Convert from './map/Convert';
 import Translate from './Translate';
+import MapCavesPopup from './map/MapCavesPopup';
 
 
 //
@@ -123,6 +123,16 @@ const ConverterButton = withTheme()(styled(Button)`
     background: ${props => props.theme.palette.divider};
   }
 `);
+
+const StyledLegendText = styled.span`
+  font-size: small;
+`;
+
+const ImageMarkerLegend = styled.img`
+  width: 20px;
+  margin-right: 5px;
+  vertical-align: middle;  
+`;
 
 export const smallMarkerIconList = markers.map(m => L.icon({
   iconUrl: m.url,
@@ -497,7 +507,11 @@ class GCMap extends Component {
               lat: cave.latitude,
               lng: cave.longitude,
             }}
-          />,
+          >
+            <MapCavesPopup
+              cave={cave}
+            />
+          </Marker>,
         );
       });
     }
@@ -515,7 +529,11 @@ class GCMap extends Component {
               lat: grotto.latitude,
               lng: grotto.longitude,
             }}
-          />,
+          >
+            <MapGrottosPopup
+              grotto={grotto}
+            />
+          </Marker>,
         );
       });
     }
@@ -544,8 +562,8 @@ class GCMap extends Component {
         control={<Checkbox value={m.name} checked={this.state.markersChecked.includes(m)} onChange={this.onMarkerLayerChanged} />}
         label={(
           <React.Fragment>
-            <img src={m.url} width="20px" style={{ marginRight: '5px' }} alt="" />
-            <span style={{ fontSize: 'small' }}><Translate>{m.name}</Translate></span>
+            <ImageMarkerLegend src={m.url} alt="" />
+            <StyledLegendText><Translate>{m.name}</Translate></StyledLegendText>
           </React.Fragment>
         )}
       />
@@ -553,7 +571,16 @@ class GCMap extends Component {
 
     const showConvertPopup = this.state.showConvertPopup;
 
-    const layersInput = this.state.currentLayersAvailable.map(layer => <FormControlLabel value={layer.name} control={<Radio />} label={layer.name} />);
+    const layersInput = this.state.currentLayersAvailable.map(layer =>
+      <FormControlLabel
+        value={layer.name}
+        control={<Radio />}
+        label={(
+          <React.Fragment>
+            <StyledLegendText>{layer.name}</StyledLegendText>
+          </React.Fragment>
+        )}
+      />);
 
     return (
       <Map
@@ -600,7 +627,6 @@ class GCMap extends Component {
             </LayerButton>
           ) : (
             <LayersForm onMouseLeave={() => this.toggleShowLayers()}>
-              <FormLabel>LAYERS</FormLabel>
               <RadioGroup
                 value={this.state.currentLayer.name}
                 onChange={this.onLayerChanged}
