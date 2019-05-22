@@ -12,7 +12,7 @@ import {
 } from '../conf/Config';
 
 const initialState = {
-  visibleEntries: undefined,
+  entriesMap: undefined,
   location: defaultCoord,
   zoom: defaultZoom,
   errors: undefined,
@@ -34,7 +34,7 @@ const map = (state = initialState, action) => {
   switch (action.type) {
     case FETCH_MAP_ITEMS_SUCCESS:
       return Object.assign({}, state, {
-        visibleEntries: action.results,
+        entriesMap: action.results,
       });
     case FETCH_MAP_ITEMS_FAILURE:
       return Object.assign({}, state, {

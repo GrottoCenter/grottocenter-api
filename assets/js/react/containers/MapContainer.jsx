@@ -18,7 +18,7 @@ const mapStateToProps = state => ({
   mapCenter: state.map.location,
   mapZoom: state.map.zoom,
   selectedEntry: state.quicksearch.entry,
-  visibleEntries: state.map.visibleEntries,
+  entriesMap: state.map.entriesMap,
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(BackgroundMap);

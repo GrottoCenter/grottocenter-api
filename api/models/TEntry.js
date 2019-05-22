@@ -162,6 +162,11 @@ module.exports = {
       allowNull: true,
       columnName: 'Altitude'
     },
+    quality: {
+      type: 'number',
+      columnName: 'Quality',
+      allowNull: true
+    },
 
     cave: {
       columnName: 'Id_cave',

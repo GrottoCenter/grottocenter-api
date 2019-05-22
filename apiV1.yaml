@@ -211,27 +211,27 @@ paths:
       - geoloc
       description: Count entries contained inside the given coords
       parameters:
-      - name: nw_lat
+      - name: sw_lat
         in: query
-        description: North West latitude
+        description: South West latitude
         required: true
         schema:
           type: string
-      - name: nw_lng
+      - name: sw_lng
         in: query
-        description: North West longitude
+        description: South West longitude
         required: true
         schema:
           type: string
-      - name: se_lat
+      - name: ne_lat
         in: query
-        description: South East latitude
+        description: North East latitude
         required: true
         schema:
           type: string
-      - name: se_lng
+      - name: ne_lng
         in: query
-        description: South East longitude
+        description: North East longitude
         required: true
         schema:
           type: string
@@ -252,27 +252,27 @@ paths:
       - geoloc
       description: Find entries contained inside the given coords
       parameters:
-      - name: nw_lat
+      - name: sw_lat
         in: query
-        description: North West latitude
+        description: South West latitude
         required: true
         schema:
           type: string
-      - name: nw_lng
+      - name: sw_lng
         in: query
-        description: North West longitude
+        description: South West longitude
         required: true
         schema:
           type: string
-      - name: se_lat
+      - name: ne_lat
         in: query
-        description: South East latitude
+        description: North East latitude
         required: true
         schema:
           type: string
-      - name: se_lng
+      - name: ne_lng
         in: query
-        description: South East longitude
+        description: North East longitude
         required: true
         schema:
           type: string
