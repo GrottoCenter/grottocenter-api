@@ -225,6 +225,21 @@ module.exports = {
         data.longitude = item._source.longitude;
         data.latitude = item._source.latitude;
       }
+      switch(item._source.type){
+        case 'entry':
+          data.cave = {
+            id: item._source.id_cave,
+            name: item._source['cave name'],
+            depth: item._source['cave depth'],
+            length: item._source['cave length'],
+          };
+          data.city = item._source.city;
+          data.region = item._source.region;
+          break;
+        case 'grotto':
+          data.address = item._source.address;
+          break;
+      }
       values.push(data);
     });
 
