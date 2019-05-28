@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import {
-  Map, TileLayer, ScaleControl,
+  Map, TileLayer, ScaleControl, Rectangle, Tooltip,
 } from 'react-leaflet';
 import _ from 'underscore.string';
 import { CoordinatesControl } from 'react-leaflet-coordinates';
@@ -21,6 +21,7 @@ import Radio from '@material-ui/core/Radio';
 import RadioGroup from '@material-ui/core/RadioGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import FormControl from '@material-ui/core/FormControl';
+import { isMobileOnly, isMobile } from 'react-device-detect';
 import MapEntryMarker from './map/MapEntryMarker';
 import MapSelectedEntryMarker from './map/MapSelectedEntryMarker';
 import MapGrottoMarker from './map/MapGrottoMarker';
@@ -178,6 +179,7 @@ class GCMap extends Component {
       currentLayersAvailable: layers,
       showListLayers: true,
       projectionsList: [],
+      layerBoundsToDisplay: 0,
     };
 
     const encodedParam = this.getTarget();
@@ -414,6 +416,10 @@ class GCMap extends Component {
     });
   };
 
+  toggleShowLayerBound = (layer) => {
+    this.setState({ layerBoundsToDisplay: layer });
+  };
+
   render() {
     const {
       selectedEntry,
@@ -478,9 +484,11 @@ class GCMap extends Component {
       && entriesMap.grottos
       && entriesMap.grottos.length > 0) {
       entriesMap.grottos.forEach((grotto) => {
-        grottosMarkersLayer.push(
-          <MapGrottoMarker grotto={grotto} />,
-        );
+        if (!selectedEntry || grotto.id !== selectedEntry.id) {
+          grottosMarkersLayer.push(
+            <MapGrottoMarker grotto={grotto} />,
+          );
+        }
       });
     }
 
@@ -526,6 +534,8 @@ class GCMap extends Component {
             <StyledLegendText>{layer.name}</StyledLegendText>
           </React.Fragment>
         )}
+        onMouseOver={this.toggleShowLayerBound.bind(this, layer)}
+        onMouseLeave={this.toggleShowLayerBound.bind(this, 0)}
       />);
 
     return (
@@ -584,16 +594,31 @@ class GCMap extends Component {
           }
         </Control>
 
+        { (!isMobile && this.state.layerBoundsToDisplay)
+          && (
+            <Rectangle
+              bounds={this.state.layerBoundsToDisplay.bounds}
+              onAdd={(e) => { e.target.openTooltip(); }}
+            >
+              <Tooltip>{`Zone d'application du fond de carte ${  this.state.layerBoundsToDisplay.name}`}</Tooltip>
+            </Rectangle>
+          )
+        }
+
         <TileLayer
           attribution={this.state.currentLayer.attribution}
           url={this.state.currentLayer.url}
         />
 
-        <CoordinatesControl
-          position="bottomleft"
-          coordinates="decimal"
-          style={{ background: 'white', padding: '0 5px' }}
-        />
+        {!isMobileOnly
+          && (
+            <CoordinatesControl
+              position="bottomleft"
+              coordinates="decimal"
+              style={{ background: 'white', padding: '0 5px' }}
+            />
+          )
+        }
 
         <Control position="bottomleft">
           <ConverterButton onClick={() => this.toggleShowConverter(true)}>

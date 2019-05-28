@@ -53,7 +53,7 @@ const StyledLocationCityIcon = withTheme()(styled(LocationCityIcon)`
 const MapGrottosPopup = ({ grotto }, context) => {
   const GCLinkWithContext = withContext(GCLink, context);
 
-  const externalLinkEntry = `${(detailPageV2Links[locale] !== undefined) ? detailPageV2Links[locale] : detailPageV2Links['*']}&category=grotto&id=${grotto.id}}`; //eslint-disable-line
+  const externalLinkEntry = `${(detailPageV2Links[locale] !== undefined) ? detailPageV2Links[locale] : detailPageV2Links['*']}&category=grotto&id=${grotto.id}}`;
 
   return (
     <Popup autoPan={false}>
