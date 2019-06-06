@@ -2,7 +2,6 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Marker } from 'react-leaflet';
 import MapGrottosPopup from './MapGrottosPopup';
-import { markers } from '../../../conf/MapMarkersConfig';
 
 //
 //
@@ -11,16 +10,14 @@ import { markers } from '../../../conf/MapMarkersConfig';
 //
 
 const mainMarkerIcon = L.icon({
-  iconUrl: markers[3].url,
+  iconUrl: '/images/club.svg',
   iconSize: [
-    24, 24,
+    30, 30,
   ],
   iconAnchor: [
-    12, 24,
+    16, 32,
   ],
-  popupAnchor: [
-    0, -24,
-  ],
+  popupAnchor: [0, -32],
 });
 
 const MapGrottoMarker = ({ grotto }) => (
@@ -30,6 +27,9 @@ const MapGrottoMarker = ({ grotto }) => (
     position={{
       lat: grotto.latitude,
       lng: grotto.longitude,
+    }}
+    onAdd={(e) => {
+      e.target.openPopup();
     }}
   >
     <MapGrottosPopup

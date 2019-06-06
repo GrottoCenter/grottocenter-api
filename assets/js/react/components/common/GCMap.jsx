@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import {
-  Map, Marker, TileLayer, ScaleControl, Tooltip, CircleMarker
+  Map, TileLayer, ScaleControl, Rectangle, Tooltip,
 } from 'react-leaflet';
 import _ from 'underscore.string';
 import { CoordinatesControl } from 'react-leaflet-coordinates';
@@ -21,10 +21,11 @@ import Radio from '@material-ui/core/Radio';
 import RadioGroup from '@material-ui/core/RadioGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import FormControl from '@material-ui/core/FormControl';
+import { isMobileOnly, isMobile } from 'react-device-detect';
 import MapEntryMarker from './map/MapEntryMarker';
+import MapSelectedEntryMarker from './map/MapSelectedEntryMarker';
 import MapGrottoMarker from './map/MapGrottoMarker';
-import MapEntryPopup from './map/MapEntryPopup';
-import MapGrottosPopup from './map/MapGrottosPopup';
+import MapSelectedGrottoMarker from './map/MapSelectedGrottoMarker';
 import { focusZoom } from '../../conf/Config';
 import { layers } from '../../conf/MapLayersConfig';
 import { markers } from '../../conf/MapMarkersConfig';
@@ -32,8 +33,7 @@ import Spinner from './Spinner';
 import MapGroupIcon from './MapGroupIcon';
 import Convert from './map/Convert';
 import Translate from './Translate';
-import MapCavesPopup from './map/MapCavesPopup';
-
+import MapCaveMarker from './map/MapCaveMarker';
 
 //
 //
@@ -134,19 +134,6 @@ const ImageMarkerLegend = styled.img`
   vertical-align: middle;  
 `;
 
-export const smallMarkerIconList = markers.map(m => L.icon({
-  iconUrl: m.url,
-  iconSize: [
-    24, 24,
-  ],
-  iconAnchor: [
-    12, 24,
-  ],
-  popupAnchor: [
-    0, -24,
-  ],
-}));
-
 //
 //
 // M A I N - C O M P O N E N T
@@ -192,6 +179,7 @@ class GCMap extends Component {
       currentLayersAvailable: layers,
       showListLayers: true,
       projectionsList: [],
+      layerBoundsToDisplay: 0,
     };
 
     const encodedParam = this.getTarget();
@@ -210,10 +198,10 @@ class GCMap extends Component {
         initZoom: Number(params.zoom),
       });
       this.updateReduxMapData({
-          lat: Number(params.lat),
-          lng: Number(params.lng),
-        },
-        Number(params.zoom));
+        lat: Number(params.lat),
+        lng: Number(params.lng),
+      },
+      Number(params.zoom));
     }
   }
 
@@ -428,6 +416,10 @@ class GCMap extends Component {
     });
   };
 
+  toggleShowLayerBound = (layer) => {
+    this.setState({ layerBoundsToDisplay: layer });
+  };
+
   render() {
     const {
       selectedEntry,
@@ -456,10 +448,10 @@ class GCMap extends Component {
     if (selectedEntry) {
       switch (selectedEntry.type) {
         case 'grotto':
-          marker = <MapGrottoMarker grotto={selectedEntry} position={center} />;
+          marker = <MapSelectedGrottoMarker grotto={selectedEntry} />;
           break;
         default:
-          marker = <MapEntryMarker entry={selectedEntry} position={center} />;
+          marker = <MapSelectedEntryMarker selectedEntry={selectedEntry} />;
       }
     }
 
@@ -470,25 +462,7 @@ class GCMap extends Component {
       entriesMap.qualityEntriesMap.forEach((entry) => {
         if (!selectedEntry || entry.id !== selectedEntry.id) {
           entriesMarkersLayer.push(
-            <CircleMarker
-              key={`entry_${entry.id}`}
-              center={{
-                lat: entry.latitude,
-                lng: entry.longitude,
-              }}
-              color="white"
-              fillColor="red"
-              fillOpacity="1"
-              weight="1"
-              onClick={(e) => {
-                e.target.closeTooltip();
-              }}
-            >
-              <MapEntryPopup
-                entry={entry}
-              />
-              <Tooltip direction="top">{entry.name}</Tooltip>
-            </CircleMarker>,
+            <MapEntryMarker entry={entry} />,
           );
         }
       });
@@ -500,18 +474,7 @@ class GCMap extends Component {
       && entriesMap.caves.length > 0) {
       entriesMap.caves.forEach((cave) => {
         cavesMarkersLayer.push(
-          <Marker
-            icon={smallMarkerIconList[1]}
-            key={`cave${cave.id}`}
-            position={{
-              lat: cave.latitude,
-              lng: cave.longitude,
-            }}
-          >
-            <MapCavesPopup
-              cave={cave}
-            />
-          </Marker>,
+          <MapCaveMarker cave={cave} />,
         );
       });
     }
@@ -521,20 +484,11 @@ class GCMap extends Component {
       && entriesMap.grottos
       && entriesMap.grottos.length > 0) {
       entriesMap.grottos.forEach((grotto) => {
-        grottosMarkersLayer.push(
-          <Marker
-            icon={smallMarkerIconList[3]}
-            key={`grotto_${grotto.id}`}
-            position={{
-              lat: grotto.latitude,
-              lng: grotto.longitude,
-            }}
-          >
-            <MapGrottosPopup
-              grotto={grotto}
-            />
-          </Marker>,
-        );
+        if (!selectedEntry || grotto.id !== selectedEntry.id) {
+          grottosMarkersLayer.push(
+            <MapGrottoMarker grotto={grotto} />,
+          );
+        }
       });
     }
 
@@ -580,6 +534,8 @@ class GCMap extends Component {
             <StyledLegendText>{layer.name}</StyledLegendText>
           </React.Fragment>
         )}
+        onMouseOver={this.toggleShowLayerBound.bind(this, layer)}
+        onMouseLeave={this.toggleShowLayerBound.bind(this, 0)}
       />);
 
     return (
@@ -638,16 +594,31 @@ class GCMap extends Component {
           }
         </Control>
 
+        { (!isMobile && this.state.layerBoundsToDisplay)
+          && (
+            <Rectangle
+              bounds={this.state.layerBoundsToDisplay.bounds}
+              onAdd={(e) => { e.target.openTooltip(); }}
+            >
+              <Tooltip>{`Zone d'application du fond de carte ${  this.state.layerBoundsToDisplay.name}`}</Tooltip>
+            </Rectangle>
+          )
+        }
+
         <TileLayer
           attribution={this.state.currentLayer.attribution}
           url={this.state.currentLayer.url}
         />
 
-        <CoordinatesControl
-          position="bottomleft"
-          coordinates="decimal"
-          style={{ background: 'white', padding: '0 5px' }}
-        />
+        {!isMobileOnly
+          && (
+            <CoordinatesControl
+              position="bottomleft"
+              coordinates="decimal"
+              style={{ background: 'white', padding: '0 5px' }}
+            />
+          )
+        }
 
         <Control position="bottomleft">
           <ConverterButton onClick={() => this.toggleShowConverter(true)}>

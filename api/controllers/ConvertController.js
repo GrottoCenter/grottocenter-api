@@ -50,10 +50,18 @@ module.exports = {
           if (words2[j].startsWith('+units')) {
             reponse[i].units = words2[j].split('=')[1];
           }
+          if (words2[j].startsWith('+proj')) {
+            reponse[i].proj = words2[j].split('=')[1];
+          }
+
         }
+        if (reponse[i].proj == 'utm') {
+          sails.log.debug(reponse[i].Definition);
+        }
+
       }
 
-      sails.log.debug(reponse);
+
       return res.json(reponse);
     }, function(err) {
       sails.log.error(err);

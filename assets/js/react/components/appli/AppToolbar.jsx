@@ -8,7 +8,7 @@ import HeaderTitle from './HeaderTitle';
 import SideMenuBurgerConnector from '../../containers/SideMenuBurgerConnector';
 import QuicksearchContainer from '../../containers/QuicksearchContainer';
 import { sideMenuWidth } from '../../conf/Config';
-
+import { isMobileOnly } from 'react-device-detect';
 
 //
 //
