@@ -38,7 +38,7 @@
     "react-device-detect": "^1.6.2",
     "react-dom": "^16.6.0",
     "react-ghost-i18n": "^1.0.4",
-    "react-intl": "^2.7.2",
+    "react-intl": "^3.0.0",
     "react-leaflet": "^2.1.2",
     "react-leaflet-control": "^2.1.1",
     "react-leaflet-coordinates": "^1.0.0",
