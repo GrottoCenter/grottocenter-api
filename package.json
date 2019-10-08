@@ -91,7 +91,7 @@
     "browserify": "^16.2.3",
     "browserify-css": "^0.14.0",
     "coveralls": "^3.0.2",
-    "eslint": "^5.9.0",
+    "eslint": "^6.0.0",
     "eslint-config-airbnb": "^17.1.0",
     "eslint-plugin-import": "^2.14.0",
     "eslint-plugin-jsx-a11y": "^6.1.2",
