@@ -85,19 +85,19 @@ const CaveModel = {
 /* Mappers */
 
 module.exports = {
-  convertToEntryModel: function(source) {   
+  convertToEntryModel: function(source) {
     let result = Object.assign({}, EntryModel);
 
     result.id = source.id;
     result.name = source.name;
-    result.country = source.country;
+    result.country = source.Country || source.country;
     result.county = source.county;
-    result.region = source.region;
-    result.city = source.city;
+    result.region = source.Region || source.region;
+    result.city = source.City || source.city;
     result.postalCode = source.postalCode;
-    result.latitude = source.latitude;
-    result.longitude = source.longitude;
-    result.altitude = source.altitude;
+    result.latitude = source.Latitude || source.latitude;
+    result.longitude = source.Longitude || source.longitude;
+    result.altitude = source.Altitude;
     result.aestheticism = source.aestheticism;
     result.approach = source.approach;
     result.caving = source.caving;
@@ -224,6 +224,21 @@ module.exports = {
       if (item._source.longitude) {
         data.longitude = item._source.longitude;
         data.latitude = item._source.latitude;
+      }
+      switch(item._source.type){
+        case 'entry':
+          data.cave = {
+            id: item._source.id_cave,
+            name: item._source['cave name'],
+            depth: item._source['cave depth'],
+            length: item._source['cave length'],
+          };
+          data.city = item._source.city;
+          data.region = item._source.region;
+          break;
+        case 'grotto':
+          data.address = item._source.address;
+          break;
       }
       values.push(data);
     });

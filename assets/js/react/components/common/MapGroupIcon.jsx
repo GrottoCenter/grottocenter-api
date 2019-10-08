@@ -17,6 +17,7 @@ class MapGroupIcon extends Component {
       lat: PropTypes.number,
     }).isRequired,
     text: PropTypes.string.isRequired,
+    handleOnClick: PropTypes.func.isRequired,
   };
 
   render() {
@@ -29,6 +30,7 @@ class MapGroupIcon extends Component {
       <Marker
         position={this.props.position}
         icon={icon}
+        onClick={this.props.handleOnClick}
       />
     );
   }

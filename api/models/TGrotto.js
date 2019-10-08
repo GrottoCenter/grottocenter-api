@@ -30,12 +30,14 @@ module.exports = {
     idReviewer: {
       type: 'number',
       autoMigrations: { index: true },
-      columnName: 'Id_reviewer'
+      columnName: 'Id_reviewer',
+      allowNull: true
     },
     idLocker: {
       type: 'string',
       maxLength: 5,
-      columnName: 'Id_locker'
+      columnName: 'Id_locker',
+      allowNull: true
     },
     name: {
       type: 'string',
@@ -50,67 +52,77 @@ module.exports = {
     region: {
       type: 'string',
       maxLength: 32,
-      columnName: 'Region'
+      columnName: 'Region',
+      allowNull: true
     },
     city: {
       type: 'string',
       maxLength: 32,
-      columnName: 'City'
+      columnName: 'City',
+      allowNull: true
     },
     postalCode: {
       type: 'string',
       maxLength: 5,
-      columnName: 'Postal_code'
+      columnName: 'Postal_code',
+      allowNull: true
     },
     address: {
       type: 'string',
       maxLength: 128,
-      columnName: 'Address'
+      columnName: 'Address',
+      allowNull: true
     },
     contact: {
       type: 'string',
       maxLength: 40,
-      columnName: 'Contact'
+      columnName: 'Contact',
+      allowNull: true
     },
     yearBirth: {
       type: 'string',
       maxLength: 4,
-      columnName: 'Year_birth'
+      columnName: 'Year_birth',
+      allowNull: true
     },
     dateInscription: {
-      type: 'string',
+      type: 'ref',
       columnType: 'datetime',
       columnName: 'Date_inscription'
     },
     dateReviewed: {
-      type: 'string',
+      type: 'ref',
       columnType: 'datetime',
       columnName: 'Date_reviewed'
     },
     dateLocked: {
-      type: 'string',
+      type: 'ref',
       columnType: 'datetime',
       columnName: 'Date_locked'
     },
     idPresident: {
       type: 'number',
       autoMigrations: { index: true },
-      columnName: 'Id_president'
+      columnName: 'Id_president',
+      allowNull: true
     },
     idVicePresident: {
       type: 'number',
       autoMigrations: { index: true },
-      columnName: 'Id_vice_president'
+      columnName: 'Id_vice_president',
+      allowNull: true
     },
     idTreasurer: {
       type: 'number',
       autoMigrations: { index: true },
-      columnName: 'Id_treasurer'
+      columnName: 'Id_treasurer',
+      allowNull: true
     },
     idSecretary: {
       type: 'number',
       autoMigrations: { index: true },
-      columnName: 'Id_secretary'
+      columnName: 'Id_secretary',
+      allowNull: true
     },
     latitude: {
       type: 'number',
@@ -122,26 +134,31 @@ module.exports = {
     },
     customMessage: {
       type: 'string',
-      columnName: 'Custom_message'
+      columnName: 'Custom_message',
+      allowNull: true
     },
     pictureFileName: {
       type: 'string',
       maxLength: 100,
-      columnName: 'Picture_file_name'
+      columnName: 'Picture_file_name',
+      allowNull: true
     },
     isOfficialPartner: {
       type: 'boolean',
-      columnName: 'Is_official_partner'
+      columnName: 'Is_official_partner',
+      allowNull: true
     },
     village: {
       type: 'string',
       maxLength: 100,
-      columnName: 'Village'
+      columnName: 'Village',
+      allowNull: true
     },
     county: {
       type: 'string',
       maxLength: 100,
-      columnName: 'County'
+      columnName: 'County',
+      allowNull: true
     },
 
     cavers: {

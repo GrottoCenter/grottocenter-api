@@ -8,10 +8,10 @@ module.exports = {
       // For now, just implement a switchcase
       switch (key) {
         case 'map.partition.row':
-          resolve(8);
+          resolve(4);
           break;
         case 'map.partition.column':
-          resolve(10);
+          resolve(5);
           break;
         case 'map.partition.group.minsize':
           resolve(50);

@@ -28,16 +28,22 @@
     "nodent": "^3.0.14",
     "passport": "^0.4.0",
     "passport-local": "^1.0.0",
+    "proj4": "^2.5.0",
     "prop-types": "^15.6.2",
     "rc": "~1.2.8",
     "rc-slider": "8.6.3",
-    "react": "^16.6.0",
+    "react": "^16.8.6",
     "react-bootstrap": "^0.32.4",
+    "react-device-detect": "^1.6.2",
     "react-dom": "^16.6.0",
     "react-ghost-i18n": "^1.0.4",
     "react-intl": "^2.7.2",
     "react-leaflet": "^2.1.2",
-    "react-leaflet-div-icon": "^1.1.0",
+    "react-leaflet-control": "^2.1.1",
+    "react-leaflet-coordinates": "^1.0.0",
+    "react-leaflet-gridcanvas": "^0.1.1",
+    "react-motion": "^0.5.2",
+    "react-poppop": "^1.5.0",
     "react-redux": "^6.0.0",
     "react-router": "^4.3.1",
     "react-router-dom": "^4.3.1",
@@ -81,6 +87,8 @@
     "babel-plugin-styled-components": "^1.8.0",
     "babelify": "^10.0.0",
     "barrels": "^1.6.5",
+    "browserify": "^16.2.3",
+    "browserify-css": "^0.14.0",
     "coveralls": "^3.0.2",
     "eslint": "^5.9.0",
     "eslint-config-airbnb": "^17.1.0",
@@ -103,5 +111,15 @@
   },
   "engines": {
     "node": ">=8.11"
+  },
+  "browserify": {
+    "transform": [
+      [
+        "browserify-css",
+        {
+          "global": "true"
+        }
+      ]
+    ]
   }
 }
