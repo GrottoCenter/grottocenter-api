@@ -32,7 +32,7 @@
     "proj4": "^2.5.0",
     "prop-types": "^15.6.2",
     "rc": "~1.2.8",
-    "rc-slider": "8.6.3",
+    "rc-slider": "8.6.5",
     "react": "^16.8.6",
     "react-bootstrap": "^0.32.4",
     "react-device-detect": "^1.6.2",
