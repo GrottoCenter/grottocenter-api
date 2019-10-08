@@ -442,6 +442,16 @@ module.exports.routes = {
     }
   },
 
+  /* Convert */
+
+  'GET /api/convert' : {
+    controller: 'ConvertController',
+    action: 'convert',
+    cors: {
+      allowOrigins: '*'
+    }
+  },
+
 
   //  ╦ ╦╔═╗╔╗ ╦ ╦╔═╗╔═╗╦╔═╔═╗
   //  ║║║║╣ ╠╩╗╠═╣║ ║║ ║╠╩╗╚═╗

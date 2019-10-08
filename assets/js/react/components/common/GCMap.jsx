@@ -1,13 +1,39 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { Map, Marker, TileLayer } from 'react-leaflet';
-import DivIcon from 'react-leaflet-div-icon';
-import _ from 'underscore.string';
 import styled from 'styled-components';
-import MapEntryPopup from './MapEntryPopup';
-// import {smallMarkerIcon, mainMarkerIcon} from '../../conf/Config';
+import {
+  Map, TileLayer, ScaleControl, Rectangle, Tooltip,
+} from 'react-leaflet';
+import _ from 'underscore.string';
+import { CoordinatesControl } from 'react-leaflet-coordinates';
+import Control from 'react-leaflet-control';
+import MenuIcon from '@material-ui/icons/Menu';
+import Checkbox from '@material-ui/core/Checkbox';
+import FormGroup from '@material-ui/core/FormGroup';
+import PopPop from 'react-poppop';
+import fetch from 'isomorphic-fetch';
+import ConvertIcon from '@material-ui/icons/Transform';
+import LayersIcon from '@material-ui/icons/Layers';
+import Button from '@material-ui/core/Button';
+import IconButton from '@material-ui/core/IconButton';
+import { withTheme } from '@material-ui/core/styles';
+import Radio from '@material-ui/core/Radio';
+import RadioGroup from '@material-ui/core/RadioGroup';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import FormControl from '@material-ui/core/FormControl';
+import { isMobileOnly, isMobile } from 'react-device-detect';
+import MapEntryMarker from './map/MapEntryMarker';
+import MapSelectedEntryMarker from './map/MapSelectedEntryMarker';
+import MapGrottoMarker from './map/MapGrottoMarker';
+import MapSelectedGrottoMarker from './map/MapSelectedGrottoMarker';
 import { focusZoom } from '../../conf/Config';
+import { layers } from '../../conf/MapLayersConfig';
+import { markers } from '../../conf/MapMarkersConfig';
 import Spinner from './Spinner';
+import MapGroupIcon from './MapGroupIcon';
+import Convert from './map/Convert';
+import Translate from './Translate';
+import MapCaveMarker from './map/MapCaveMarker';
 
 //
 //
@@ -15,55 +41,97 @@ import Spinner from './Spinner';
 //
 //
 
-export const smallMarkerIcon = L.icon({
-  iconUrl: '/images/gc-map-entry.svg',
-  iconSize: [
-    24, 24,
-  ],
-  iconAnchor: [
-    12, 24,
-  ],
-  popupAnchor: [
-    0, -24,
-  ],
-  // shadowUrl: '/images/gc-entry.svg',
-  // shadowSize: [68, 95],
-  // shadowAnchor: [22, 94]
-});
-
-
-const mainMarkerIcon = L.icon({
-  iconUrl: '/images/gc-entry.svg',
-  iconSize: [
-    48, 48,
-  ],
-  iconAnchor: [
-    16, 32,
-  ],
-  popupAnchor: [0, -32],
-});
-
-const GroupDivIcon = styled(DivIcon)`
+const StyledMapGroupIcon = styled(MapGroupIcon)`
   background-color: rgba(36, 96, 255, 0.6);
-  height: 40px !important;
-  width: 40px !important;
+  height: 30px !important;
+  width: 30px !important;
   border-radius: 50%;
   z-index: 1000 !important;
 
   & > div {
     border-radius: 50%;
-    height: 50px;
-    width: 50px;
+    height: 40px;
+    width: 40px;
     margin-left: -5px;
     margin-top: -5px;
     text-align: center;
     background-color: rgba(83, 177, 251, 0.5);;
 
     & > span {
-      line-height: 50px;
+      line-height: 40px;
       font-weight: 600;
     }
   }
+`;
+
+const MarkersButton = withTheme()(styled(IconButton)`
+  && { 
+  background: ${props => props.theme.palette.backgroundButton}; 
+  border: 1px solid;
+  border-color: ${props => props.theme.palette.divider};
+  border-radius: 4px; 
+  padding: 0px;
+  width: 45px;
+  height: 45px;
+  }
+`);
+
+const MarkersForm = withTheme()(styled(FormControl)`
+  && { 
+  background: ${props => props.theme.palette.backgroundButton};
+  border: 1px solid;
+  border-color: ${props => props.theme.palette.divider};
+  border-radius: 4px; 
+  padding: 0 10px;
+  }
+`);
+
+
+const LayerButton = withTheme()(styled(IconButton)`
+  && { 
+  background: ${props => props.theme.palette.backgroundButton}; 
+  border: 1px solid;
+  border-color: ${props => props.theme.palette.divider};
+  border-radius: 4px; 
+  padding: 0px;
+  width: 45px;
+  height: 45px;
+  }
+`);
+
+const LayersForm = withTheme()(styled(FormControl)`
+  && { 
+  background: ${props => props.theme.palette.backgroundButton};
+  border: 1px solid;
+  border-color: ${props => props.theme.palette.divider};
+  border-radius: 4px; 
+  padding: 0 10px;
+  }
+`);
+
+const ConverterButton = withTheme()(styled(Button)`
+  && { 
+  background: ${props => props.theme.palette.backgroundButton};
+  border: 1px solid;
+  border-color: ${props => props.theme.palette.divider};
+  padding: 0 10px;
+  },
+  &&:hover {
+    background: ${props => props.theme.palette.backgroundButton};
+  },
+  &&:active {
+    background: ${props => props.theme.palette.divider};
+  }
+`);
+
+const StyledLegendText = styled.span`
+  font-size: small;
+`;
+
+const ImageMarkerLegend = styled.img`
+  width: 20px;
+  margin-right: 5px;
+  vertical-align: middle;  
 `;
 
 //
@@ -76,7 +144,7 @@ class GCMap extends Component {
   static propTypes = {
     className: PropTypes.string,
     selectedEntry: PropTypes.object,
-    visibleEntries: PropTypes.object,
+    entriesMap: PropTypes.object,
     searchBounds: PropTypes.func,
     mapCenter: PropTypes.object.isRequired,
     mapZoom: PropTypes.number.isRequired,
@@ -89,7 +157,9 @@ class GCMap extends Component {
   static defaultProps = {
     className: '',
     selectedEntry: null,
-    visibleEntries: null,
+    entriesMap: {
+      qualityEntriesMap: [], groupEntriesMap: [], grottos: [], caves: [],
+    },
     searchBounds: (() => {}),
     match: {},
   };
@@ -102,10 +172,16 @@ class GCMap extends Component {
       initCenter: props.mapCenter,
       initZoom: props.mapZoom,
       showSpinner: false,
+      showListMarkers: true,
+      markersChecked: [markers[0]],
+      showConvertPopup: false,
+      currentLayer: layers[0],
+      currentLayersAvailable: layers,
+      showListLayers: true,
+      projectionsList: [],
+      layerBoundsToDisplay: 0,
     };
-  }
 
-  componentWillMount() {
     const encodedParam = this.getTarget();
     if (encodedParam && encodedParam.length > 0) {
       const decoded = Buffer.from(encodedParam, 'base64').toString();
@@ -152,6 +228,16 @@ class GCMap extends Component {
     } else {
       this.searchEntriesInBounds();
     }
+
+    fetch('/api/convert')
+      .then(response => response.json())
+      .then((responseJson) => {
+        console.log(responseJson);
+        this.setState({ projectionsList: responseJson });
+      })
+      .catch((error) => {
+        console.error(error);
+      });
   }
 
   getTarget = () => {
@@ -185,14 +271,16 @@ class GCMap extends Component {
 
   getLeafletCurrentBounds = () => {
     const { mapRef } = this.state;
+    const { mapZoom } = this.props;
 
     if (mapRef && mapRef.current.leafletElement) {
       const bounds = mapRef.current.leafletElement.getBounds();
       return {
-        nw_lat: bounds._southWest.lat,
-        nw_lng: bounds._southWest.lng,
-        se_lat: bounds._northEast.lat,
-        se_lng: bounds._northEast.lng,
+        sw_lat: bounds.getSouthWest().lat,
+        sw_lng: bounds.getSouthWest().lng,
+        ne_lat: bounds.getNorthEast().lat,
+        ne_lng: bounds.getNorthEast().lng,
+        zoom: mapZoom,
       };
     }
     return undefined;
@@ -230,10 +318,25 @@ class GCMap extends Component {
     const leafletMap = mapRef.current.leafletElement;
     const mapBounds = leafletMap.getBounds().getCenter();
     const zoom = leafletMap.getZoom();
-
     this.updateReduxMapData(mapBounds, zoom);
     this.updateLocationUrl(mapBounds, zoom);
     this.searchEntriesInBounds();
+
+
+    // Set the layers available depending on the map bounds
+    const layersAvailableForMap = [];
+
+    layers.forEach((layer) => {
+      if (layer === this.state.currentLayer) {
+        layersAvailableForMap.push(layer);
+      } else if (leafletMap.getBounds().intersects(layer.bounds)) {
+        layersAvailableForMap.push(layer);
+      }
+    });
+
+    this.setState({
+      currentLayersAvailable: layersAvailableForMap,
+    });
   };
 
   handleLocationFound = () => {
@@ -251,10 +354,76 @@ class GCMap extends Component {
     this.toggleSpinner(false);
   };
 
+  toggleShowMarkers = () => {
+    this.setState({ showListMarkers: !this.state.showListMarkers });
+  };
+
+  onMarkerLayerChanged = (e) => {
+    const m = markers.find(marker => marker.name === e.currentTarget.value);
+    const listMarkersChecked = this.state.markersChecked;
+
+    if (this.state.markersChecked.includes(m)) {
+      // if the marker is checked
+      this.setState({
+        markersChecked: listMarkersChecked.filter(marker => marker !== m),
+      });
+    } else {
+      listMarkersChecked.push(m);
+      this.setState({
+        markersChecked: listMarkersChecked,
+      });
+    }
+  };
+
+  handleOnClickGroup = (e) => {
+    const { mapRef } = this.state;
+
+    const leafletMap = mapRef.current.leafletElement;
+    const mapBounds = e.latlng;
+    const currentZoom = leafletMap.getZoom();
+
+    let newZoom = currentZoom;
+    if (currentZoom < 5) {
+      newZoom = currentZoom + 3;
+    } else {
+      newZoom = currentZoom + 2;
+    }
+
+    this.setState({
+      initCenter: mapBounds,
+      initZoom: newZoom,
+    });
+
+    this.updateReduxMapData(mapBounds, newZoom);
+    this.updateLocationUrl(mapBounds, newZoom);
+  };
+
+  toggleShowConverter = (showConvertPopup) => {
+    this.setState({ showConvertPopup });
+  };
+
+  toggleShowLayers = () => {
+    this.setState({ showListLayers: !this.state.showListLayers });
+  };
+
+  onLayerChanged = (e) => {
+    layers.forEach((layer) => {
+      if (layer.name === e.currentTarget.value) {
+        this.setState({
+          currentLayer: layer,
+        });
+      }
+    });
+  };
+
+  toggleShowLayerBound = (layer) => {
+    this.setState({ layerBoundsToDisplay: layer });
+  };
+
   render() {
     const {
       selectedEntry,
-      visibleEntries,
+      entriesMap,
       className,
     } = this.props;
     const {
@@ -274,55 +443,100 @@ class GCMap extends Component {
       zoom = focusZoom;
     }
 
-    const marker = (selectedEntry)
-      ? (
-        <Marker icon={mainMarkerIcon} position={center} zIndexOffset={1000}>
-          <MapEntryPopup entry={selectedEntry} />
-        </Marker>
-      )
-      : null;
+    let marker = null;
 
-    const markersLayer = [];
-    if (visibleEntries
-      && visibleEntries.entries
-      && visibleEntries.entries.length > 0) {
-      let keyInc = 1;
-      visibleEntries.entries.forEach((entry) => {
+    if (selectedEntry) {
+      switch (selectedEntry.type) {
+        case 'grotto':
+          marker = <MapSelectedGrottoMarker grotto={selectedEntry} />;
+          break;
+        default:
+          marker = <MapSelectedEntryMarker selectedEntry={selectedEntry} />;
+      }
+    }
+
+    const entriesMarkersLayer = [];
+    if (entriesMap
+      && entriesMap.qualityEntriesMap
+      && entriesMap.qualityEntriesMap.length > 0) {
+      entriesMap.qualityEntriesMap.forEach((entry) => {
         if (!selectedEntry || entry.id !== selectedEntry.id) {
-          if (entry.name === 'group') {
-            markersLayer.push(
-              <GroupDivIcon
-                key={`group_${keyInc}`}
-                position={{
-                  lat: entry.latitude,
-                  lng: entry.longitude,
-                }}
-              >
-                <div>
-                  <span>{entry.id}</span>
-                </div>
-              </GroupDivIcon>
-            );
-          } else {
-            markersLayer.push(
-              <Marker
-                icon={smallMarkerIcon}
-                key={`entry_${entry.id}`}
-                position={{
-                  lat: entry.latitude,
-                  lng: entry.longitude,
-                }}
-              >
-                <MapEntryPopup
-                  entry={entry}
-                />
-              </Marker>
-            );
-          }
+          entriesMarkersLayer.push(
+            <MapEntryMarker entry={entry} />,
+          );
         }
-        keyInc += 1;
       });
     }
+
+    const cavesMarkersLayer = [];
+    if (entriesMap
+      && entriesMap.caves
+      && entriesMap.caves.length > 0) {
+      entriesMap.caves.forEach((cave) => {
+        cavesMarkersLayer.push(
+          <MapCaveMarker cave={cave} />,
+        );
+      });
+    }
+
+    const grottosMarkersLayer = [];
+    if (entriesMap
+      && entriesMap.grottos
+      && entriesMap.grottos.length > 0) {
+      entriesMap.grottos.forEach((grotto) => {
+        if (!selectedEntry || grotto.id !== selectedEntry.id) {
+          grottosMarkersLayer.push(
+            <MapGrottoMarker grotto={grotto} />,
+          );
+        }
+      });
+    }
+
+    const groupsMarkersLayer = [];
+    if (entriesMap
+      && entriesMap.groupEntriesMap
+      && entriesMap.groupEntriesMap.length > 0) {
+      entriesMap.groupEntriesMap.forEach((group, index) => {
+        groupsMarkersLayer.push(
+          <StyledMapGroupIcon
+            key={`group_${index}`}
+            position={{
+              lat: group.latitude,
+              lng: group.longitude,
+            }}
+            text={`${group.number}`}
+            handleOnClick={this.handleOnClickGroup}
+          />,
+        );
+      });
+    }
+
+    const markersInput = markers.map(m => (
+      <FormControlLabel
+        control={<Checkbox value={m.name} checked={this.state.markersChecked.includes(m)} onChange={this.onMarkerLayerChanged} />}
+        label={(
+          <React.Fragment>
+            <ImageMarkerLegend src={m.url} alt="" />
+            <StyledLegendText><Translate>{m.name}</Translate></StyledLegendText>
+          </React.Fragment>
+        )}
+      />
+    ));
+
+    const showConvertPopup = this.state.showConvertPopup;
+
+    const layersInput = this.state.currentLayersAvailable.map(layer =>
+      <FormControlLabel
+        value={layer.name}
+        control={<Radio />}
+        label={(
+          <React.Fragment>
+            <StyledLegendText>{layer.name}</StyledLegendText>
+          </React.Fragment>
+        )}
+        onMouseOver={this.toggleShowLayerBound.bind(this, layer)}
+        onMouseLeave={this.toggleShowLayerBound.bind(this, 0)}
+      />);
 
     return (
       <Map
@@ -343,9 +557,95 @@ class GCMap extends Component {
         onLocationError={() => this.handleLocationError()}
       >
         {showSpinner && <Spinner size={100} text="Localization" />}
-        <TileLayer url="http://{s}.tile.osm.org/{z}/{x}/{y}.png" />
+
+        <Control position="topright">
+          { this.state.showListMarkers ? (
+            <MarkersButton onMouseOver={() => this.toggleShowMarkers()}>
+              <MenuIcon />
+            </MarkersButton>
+          ) : (
+            <MarkersForm onMouseLeave={() => this.toggleShowMarkers()}>
+              <FormGroup>
+                {markersInput}
+              </FormGroup>
+            </MarkersForm>
+          )
+          }
+        </Control>
+
+
+        <ScaleControl position="bottomright" />
+
+        <Control position="topleft">
+          { this.state.showListLayers ? (
+            <LayerButton onMouseOver={() => this.toggleShowLayers()}>
+              <LayersIcon />
+            </LayerButton>
+          ) : (
+            <LayersForm onMouseLeave={() => this.toggleShowLayers()}>
+              <RadioGroup
+                value={this.state.currentLayer.name}
+                onChange={this.onLayerChanged}
+              >
+                {layersInput}
+              </RadioGroup>
+            </LayersForm>
+          )
+          }
+        </Control>
+
+        { (!isMobile && this.state.layerBoundsToDisplay)
+          && (
+            <Rectangle
+              bounds={this.state.layerBoundsToDisplay.bounds}
+              onAdd={(e) => { e.target.openTooltip(); }}
+            >
+              <Tooltip>{`Zone d'application du fond de carte ${  this.state.layerBoundsToDisplay.name}`}</Tooltip>
+            </Rectangle>
+          )
+        }
+
+        <TileLayer
+          attribution={this.state.currentLayer.attribution}
+          url={this.state.currentLayer.url}
+        />
+
+        {!isMobileOnly
+          && (
+            <CoordinatesControl
+              position="bottomleft"
+              coordinates="decimal"
+              style={{ background: 'white', padding: '0 5px' }}
+            />
+          )
+        }
+
+        <Control position="bottomleft">
+          <ConverterButton onClick={() => this.toggleShowConverter(true)}>
+            <ConvertIcon />
+            <Translate>Converter</Translate>
+          </ConverterButton>
+          <PopPop
+            position="centerCenter"
+            open={showConvertPopup}
+            closeBtn
+            closeOnEsc
+            onClose={() => this.toggleShowConverter(false)}
+            closeOnOverlay
+          >
+            <h1><Translate>Converter</Translate></h1>
+            <Convert
+              list={this.state.projectionsList}
+            />
+          </PopPop>
+        </Control>
+
         {marker}
-        {markersLayer}
+        {this.state.markersChecked.includes(markers[0]) && entriesMarkersLayer}
+        {this.state.markersChecked.includes(markers[0]) && groupsMarkersLayer}
+        {this.state.markersChecked.includes(markers[1]) && cavesMarkersLayer}
+        {this.state.markersChecked.includes(markers[3]) && grottosMarkersLayer}
+
       </Map>
     );
   }

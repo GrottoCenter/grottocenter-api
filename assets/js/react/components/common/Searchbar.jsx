@@ -200,17 +200,19 @@ class Searchbar extends React.Component {
     }
   };
 
-  getDatasource = filter => this.props.startSearch(filter)
-    .then(() => {
-      const datasource = this.props.results.map(result => ({
-        value: result,
-        label: result.name,
-        highlights: result.highlights,
-        type: result.type,
-      }));
-      return Promise.resolve(datasource);
-    })
-    .catch(() => Promise.resolve([]));
+  getDatasource = filter => (
+    this.props.startSearch(filter)
+      .then(() => {
+        const datasource = this.props.results.map(result => ({
+          value: result,
+          label: result.name,
+          highlights: result.highlights,
+          type: result.type,
+        }));
+        return Promise.resolve(datasource);
+      })
+      .catch(() => Promise.resolve([]))
+  );
 
   render() {
     const { classes, theme } = this.props;

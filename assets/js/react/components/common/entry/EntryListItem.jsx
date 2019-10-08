@@ -5,6 +5,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import { withStyles } from '@material-ui/core';
 import { withRouter } from 'react-router-dom';
 import GClink from '../GCLink';
+import {detailPageV2Links} from '../../../conf/Config';
 
 const styles = theme => ({
   entryItem: {
@@ -36,9 +37,11 @@ const styles = theme => ({
 
 const EntryListItem = (props) => {
   const { classes, entry } = props;
+  const externalLink = `${(detailPageV2Links[locale] !== undefined) ? detailPageV2Links[locale] : detailPageV2Links['*']}&category=entry&id=${entry.id}`; //eslint-disable-line
+
   return (
-    <ListItem className={classes.entryItem} button onClick={() => props.history.push(`/ui/entries/${entry.id}`)}>
-      <GClink className={classes.entryLink} internal href={`/ui/entries/${entry.id}`}>{entry.name}</GClink>
+    <ListItem className={classes.entryItem} button /*onClick={() => props.history.push(`/ui/entries/${entry.id}`)}*/>
+      <GClink className={classes.entryLink} internal={false} target="_blank" href={externalLink} /*href={`/ui/entries/${entry.id}`}*/>{entry.name}</GClink>
       <ListItemText className={classes.entryText}>
         {entry.country}
         {' - '}
@@ -54,6 +57,7 @@ EntryListItem.propTypes = {
   entry: PropTypes.shape({}),
   history: PropTypes.shape({ push: PropTypes.func }).isRequired,
 };
+
 EntryListItem.defaultProps = {
   entry: undefined,
 };

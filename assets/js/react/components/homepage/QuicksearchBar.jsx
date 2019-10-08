@@ -87,8 +87,12 @@ class QuicksearchBar extends React.Component {
   }
 
   handleSelection = (selection, history) => {
-    if (selection.id && !window.location.pathname.startsWith('/ui/map')) {
-      history.push('/ui/map');
+    if (selection.id) {
+      if (selection.type === 'massif') {
+        history.push(`/ui/massifs/${selection.id}`);
+      } else if (!window.location.pathname.startsWith('/ui/map')) {
+        history.push('/ui/map');
+      }
     }
   };
 

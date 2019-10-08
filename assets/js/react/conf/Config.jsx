@@ -193,6 +193,9 @@ export const
   entryDetailPath = '/ui/entries/';
 
 export const
+  grottoDetailPath = '/ui/groups/';
+
+export const
   sideMenuWidth = '215px';
 
 export const

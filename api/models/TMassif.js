@@ -47,5 +47,10 @@ module.exports = {
       via: 'massif',
       through: 'JMassifCave'
     },
+    entries: {
+      collection: 'TEntry',
+      via: 'massif',
+      through: 'JMassifCave'
+    },
   }
 };

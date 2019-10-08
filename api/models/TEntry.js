@@ -84,12 +84,6 @@ module.exports = {
       allowNull: true
     },
 
-    idType: {
-      columnName: 'Id_type',
-      model: 'TType',
-      via: 'id'
-    },
-
     externalUrl: {
       type: 'string',
       columnName: 'External_url',
@@ -168,14 +162,22 @@ module.exports = {
       allowNull: true,
       columnName: 'Altitude'
     },
+    quality: {
+      type: 'number',
+      columnName: 'Quality',
+      allowNull: true
+    },
 
     cave: {
       columnName: 'Id_cave',
       model: 'TCave'
     },
 
+
+
+    //
     // if singleEntry is not empty, caves is supposed to be empty
-    // TODO : see how to materialize fact that
+    // TODO : Add a new column in t_entry that correspond to the id of t_single_entry, currently the id of t_entry is used as foreign key.
     // id of entry corresponds to id of linked single entry if exists
     /*singleEntry: {
       model: 'TSingleEntry'
@@ -196,6 +198,12 @@ module.exports = {
       collection: 'TGrotto',
       via: 'entry',
       through: 'JGrottoEntry'
+    },
+
+    massifs: {
+      collection: 'TMassif',
+      via: 'entry',
+      through: 'JMassifCave'
     },
   }
 };

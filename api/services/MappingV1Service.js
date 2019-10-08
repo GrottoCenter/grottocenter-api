@@ -85,19 +85,19 @@ const CaveModel = {
 /* Mappers */
 
 module.exports = {
-  convertToEntryModel: function(source) {   
+  convertToEntryModel: function(source) {
     let result = Object.assign({}, EntryModel);
 
     result.id = source.id;
     result.name = source.name;
-    result.country = source.country;
+    result.country = source.Country || source.country;
     result.county = source.county;
-    result.region = source.region;
-    result.city = source.city;
+    result.region = source.Region || source.region;
+    result.city = source.City || source.city;
     result.postalCode = source.postalCode;
-    result.latitude = source.latitude;
-    result.longitude = source.longitude;
-    result.altitude = source.altitude;
+    result.latitude = source.Latitude || source.latitude;
+    result.longitude = source.Longitude || source.longitude;
+    result.altitude = source.Altitude;
     result.aestheticism = source.aestheticism;
     result.approach = source.approach;
     result.caving = source.caving;
@@ -128,7 +128,7 @@ module.exports = {
   },
 
   //Deprecated for v1
-  convertToOldSearchResult: function(source) {
+  convertDbToSearchResult: function(source) {
     let results = {};
     let entries = [];
     source.forEach((item) => {
@@ -209,22 +209,42 @@ module.exports = {
    * Function that return all data for the search but incomplete, that means only the id and the name
    * @param {*} source : the elasticsearch result
    */
-  convertToSearchResult: function(source) {
+  convertEsToSearchResult: function(source) {
     let res = {};
     let values = [];
+
     // For each result of the research, only keep the id and the name then add it to the json to send
-    source.hits.hits.forEach((item) => {
+    source.hits && source.hits.hits.forEach((item) => {
       let data = {
         id: item._source.id,
         name: item._source.name,
         type: item._source.type,
         highlights: item.highlight
       };
+      if (item._source.longitude) {
+        data.longitude = item._source.longitude;
+        data.latitude = item._source.latitude;
+      }
+      switch(item._source.type){
+        case 'entry':
+          data.cave = {
+            id: item._source.id_cave,
+            name: item._source['cave name'],
+            depth: item._source['cave depth'],
+            length: item._source['cave length'],
+          };
+          data.city = item._source.city;
+          data.region = item._source.region;
+          break;
+        case 'grotto':
+          data.address = item._source.address;
+          break;
+      }
       values.push(data);
     });
 
     res.results = values;
-    res.totalNbResults = source.hits.total;
+    res.totalNbResults = source.hits ? source.hits.total : 0;
     return res;
   },
 

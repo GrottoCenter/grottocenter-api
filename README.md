@@ -18,6 +18,8 @@ Software requirement:
 - NPM (min 4.1.2)
 - Git client (see Git usage for configuration)
 - Docker
+- SailsJS (min v1)
+- Grunt
 
 Clone the project on your computer:
 ```
@@ -76,3 +78,4 @@ Yon can also join us on Slack! (using the QR-code above)
 
 ## Licence
 
+GNU Affero General Public License v3.0

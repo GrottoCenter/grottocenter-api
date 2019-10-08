@@ -56,8 +56,11 @@ export function fetchMapItemsResult(criteria) {
         }
         return response.text();
       })
-      .then(text => dispatch(fetchMapItemsSuccess(JSON.parse(text))))/*
-    .catch(error => dispatch(fetchRandomEntryFailure(error))) */;
+      .then(text => dispatch(fetchMapItemsSuccess(JSON.parse(text))))
+      .catch((error) => {
+        // dispatch(fetchRandomEntryFailure(error)
+        console.log(error);
+      });
   };
 
   thunkToDebounce.meta = {

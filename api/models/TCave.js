@@ -34,12 +34,14 @@ module.exports = {
     idReviewer: {
       type: 'number',
       autoMigrations: { index: true },
-      columnName: 'Id_reviewer'
+      columnName: 'Id_reviewer',
+      allowNull: true
     },
 
     idLocker: {
       type: 'number',
-      columnName: 'Id_locker'
+      columnName: 'Id_locker',
+      allowNull: true
     },
 
     name: {
@@ -50,22 +52,26 @@ module.exports = {
 
     minDepth: {
       type: 'number',
-      columnName: 'Min_depth'
+      columnName: 'Min_depth',
+      allowNull: true
     },
 
     maxDepth: {
       type: 'number',
-      columnName: 'Max_depth'
+      columnName: 'Max_depth',
+      allowNull: true
     },
 
     depth: {
       type: 'number',
-      columnName: 'Depth'
+      columnName: 'Depth',
+      allowNull: true
     },
 
     length: {
       type: 'number',
-      columnName: 'Length'
+      columnName: 'Length',
+      allowNull: true
     },
 
     isDiving: {
@@ -76,23 +82,24 @@ module.exports = {
 
     temperature: {
       type: 'number',
-      columnName: 'Temperature'
+      columnName: 'Temperature',
+      allowNull: true
     },
 
     dateInscription: {
-      type: 'string',
+      type: 'ref',
       columnType: 'datetime',
       columnName: 'Date_inscription'
     },
 
     dateReviewed: {
-      type: 'string',
+      type: 'ref',
       columnType: 'datetime',
       columnName: 'Date_reviewed'
     },
 
     dateLocked: {
-      type: 'string',
+      type: 'ref',
       columnType: 'datetime',
       columnName: 'Date_locked'
     },

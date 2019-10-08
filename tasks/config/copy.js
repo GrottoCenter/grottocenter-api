@@ -44,14 +44,14 @@ module.exports = function(grunt) {
         dest: 'assets/styles/'
       }]
     },
-    /*swaggercss: {
+    swaggercss: {
       files: [{
         expand: true,
-        cwd: './node_modules/swagger-ui/dist',
+        cwd: './node_modules/swagger-ui-dist',
         src: 'swagger-ui.css',
         dest: 'assets/styles/'
       }]
-    }*/
+    }
   });
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
