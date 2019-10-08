@@ -10,7 +10,7 @@
     "@material-ui/core": "^3.5.1",
     "@material-ui/icons": "^3.0.1",
     "async": "2.6.1",
-    "browserify-css": "^0.14.0",
+    "browserify-css": "^0.15.0",
     "dotenv": "^7.0.0",
     "ejs": "~2.6.1",
     "elasticsearch": "^15.2.0",
