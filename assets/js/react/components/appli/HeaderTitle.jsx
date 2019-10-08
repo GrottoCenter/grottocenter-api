@@ -71,6 +71,6 @@ HeaderTitle.propTypes = {
 };
 
 export default styled(HeaderTitle)`
-  width: 200px !important;
+  width: ${!isMobileOnly && '200px !important'};
   text-align: center;
 `;

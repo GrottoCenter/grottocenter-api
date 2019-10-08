@@ -69,10 +69,6 @@ const MapEntryPopup = ({ entry }, context) => {
   const externalLinkEntry = `${(detailPageV2Links[locale] !== undefined) ? detailPageV2Links[locale] : detailPageV2Links['*']}&category=entry&id=${entry.id}}`; //eslint-disable-line
   let externalLinkCave;
 
-  if (entry.cave) {
-    externalLinkCave = `${(detailPageV2Links[locale] !== undefined) ? detailPageV2Links[locale] : detailPageV2Links['*']}&category=cave&id=${entry.cave.id}}`;
-  }
-
   return (
     <Popup autoPan={false}>
       <React.Fragment>
@@ -115,14 +111,11 @@ const MapEntryPopup = ({ entry }, context) => {
                 <SubDiv>
                   <Translate>Caves</Translate>
                   {' : '}
-                  <GCLinkWithContext internal={false} href={externalLinkCave} target="_blank">
-                    <Info>
-                      <span>
-                        {entry.cave.name}
-                        <StyledDescriptionIcon />
-                      </span>
-                    </Info>
-                  </GCLinkWithContext>
+                  <Info>
+                    <span>
+                      {entry.cave.name}
+                    </span>
+                  </Info>
                 </SubDiv>
               </MainDiv>
             ))}

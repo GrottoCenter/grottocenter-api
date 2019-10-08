@@ -76,6 +76,12 @@ module.exports = {
   },
 
 
+  /**
+   * Return the cave in the bounds
+   * @param southWestBound
+   * @param northEastBound
+   * @returns {Promise<any>}
+   */
   getCaves: function(southWestBound, northEastBound){
     return new Promise((resolve,reject) => {
       CommonService.query(CAVES_IN_BOUNDS, [southWestBound.lat, northEastBound.lat, southWestBound.lng, northEastBound.lng])
@@ -90,6 +96,12 @@ module.exports = {
     })
   },
 
+  /**
+   * Return all the entries in the bounds
+   * @param southWestBound
+   * @param northEastBound
+   * @returns {Promise<any>}
+   */
   getEntriesBetweenCoords: function(southWestBound, northEastBound) {
     return new Promise((resolve,reject) => {
       CommonService.query(PUBLIC_ENTRIES_IN_BOUNDS, [southWestBound.lat, northEastBound.lat, southWestBound.lng, northEastBound.lng, 99999999])
@@ -105,6 +117,15 @@ module.exports = {
     })
   },
 
+
+  /**
+   * Return the Quality entries in the bounds
+   * Quality entry stand for an entry that won't be clustered
+   * @param southWestBound
+   * @param northEastBound
+   * @param qualityLimit
+   * @returns {Promise<any>}
+   */
   getQualityEntriesBetweenCoords: function(southWestBound, northEastBound, qualityLimit) {
     return new Promise((resolve,reject) => {
       CommonService.query(PUBLIC_ENTRIES_IN_BOUNDS, [southWestBound.lat, northEastBound.lat, southWestBound.lng, northEastBound.lng, qualityLimit])
@@ -120,6 +141,12 @@ module.exports = {
     })
   },
 
+  /**
+   * Return the speleological group in the bounds
+   * @param southWestBound
+   * @param northEastBound
+   * @returns {Promise<any>}
+   */
   getGrottoBetweenCoords: function(southWestBound, northEastBound) {
     return new Promise((resolve, reject) => {
       let parameters = {
@@ -143,6 +170,15 @@ module.exports = {
     });
   },
 
+  /**
+   * Return one cluster for the bounds
+   * @param southWestGlobalBound
+   * @param northEastGlobalBound
+   * @param southWestBound
+   * @param northEastBound
+   * @param qualityLimit
+   * @returns {Promise<any>}
+   */
   getGroupedItem: function(southWestGlobalBound, northEastGlobalBound, southWestBound, northEastBound, qualityLimit) {
     return new Promise((resolve, reject) => {
       CommonService.query(PUBLIC_ENTRIES_AVG_COORDS_WITHOUT_QUALITY_ENTRY, [southWestBound.lat, northEastBound.lat, southWestBound.lng, northEastBound.lng, southWestGlobalBound.lat, northEastGlobalBound.lat, southWestGlobalBound.lng, northEastGlobalBound.lng, qualityLimit])
@@ -162,7 +198,13 @@ module.exports = {
     });
   },
 
-
+  /**
+   * Divide The map in subZones in order to do the clustering
+   * @param southWestBound
+   * @param northEastBound
+   * @param qualityLimit
+   * @returns {Promise<any>}
+   */
   findByBoundsPartitioned: function(southWestBound, northEastBound, qualityLimit) {
     return new Promise((resolve, reject) => {
       let settingsPromiseList = [];
@@ -242,7 +284,8 @@ module.exports = {
   },
 
   /**
-   * format the "bests" entries in a light version of the entries
+   * format the quality entries in a light version of the entries
+   * Quality entry stand for an entry that won't be clustered
    * @param entries
    * @returns {Promise<any>}
    */
@@ -329,10 +372,12 @@ module.exports = {
   },
 
   /**
-   *
+   * Return the entries, the caves, the groups and the clusters of entries in certain bounds and at specific level of zoom,
+   * Depending of the zoom level, the clustering behaviour will change.
    * @param southWestBound
    * @param northEastBound
-   * @param limitEntries
+   * @param zoom : Zoom of the leaflet Map
+   * @param limitEntries : Maximum number of entries that will be showed at a certain level of zoom
    * @returns {Promise<any>}
    */
   getEntriesMap: function (southWestBound, northEastBound, zoom, limitEntries) {
