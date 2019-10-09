@@ -133,6 +133,8 @@ mysql-connector-java-5.1.47
 ################################################
 # Anonymized data
 #
-# Path to the anonymized sql data file.
+# - Path to the Grottocneter anonymized sql data file.
+# - Path to the BBS anonymized sql data file.
 ################################################
 sql/*grottoce_anonymize*.sql
+sql/*t_bbs.sql
