@@ -2,7 +2,7 @@
 
 const client = require('../../config/elasticsearch').elasticsearchCli;
 const resourcesToUpdate = [
-  'grottos', 'massifs', 'entries'
+  'grottos', 'massifs', 'entries', 'bbs'
 ];
 const advancedSearchMetaParams = ['resourceType', 'complete', 'match_all_queries', 'from', 'size'];
 
