@@ -7,10 +7,10 @@
 
 module.exports = {
   tableName: 't_bbs_chapter',
-  primaryKey: 'codeMatiere',
+  primaryKey: 'id',
 
   attributes: {    
-    codeMatiere: {
+    id: {
       type: 'string',
       unique: true,
       autoIncrement: true,

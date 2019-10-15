@@ -90,6 +90,8 @@ module.exports = {
         /* eslint-disable camelcase */
         index: '_all',
         body: {
+          from: params.from ? params.from : 0,
+          size: params.size ? params.size : 10,
           query: {
             query_string: {
               query: '*'+params.query+'* + '+params.query+'~'+FUZZINESS,
@@ -109,7 +111,10 @@ module.exports = {
                 'cavers names',
 
                 // ==== Massifs 
-                'entries names', 'entries regions', 'entries cities', 'entry counties', 'entries countries'
+                'entries names', 'entries regions', 'entries cities', 'entry counties', 'entries countries',
+
+                // ==== BBS 
+                'bbs title^3', 'bbs authors', 'bbs abstract^0.5', 'bbs refNumerique', 'bbs ref', 'bbs country'
               ],
             },       
           },

@@ -7,11 +7,11 @@
 
 module.exports = {
   tableName: 't_bbs',
-  primaryKey: 'ref_',
+  primaryKey: 'id',
 
   attributes: {
-    ref_: {
-      type: 'string',
+    id : {
+      type: 'number',
       unique: true,
       autoIncrement: true,
       columnName: 'ref_'

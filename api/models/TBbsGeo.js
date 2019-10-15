@@ -7,10 +7,10 @@
 
 module.exports = {
   tableName: 't_bbs_geo',
-  primaryKey: 'code',
+  primaryKey: 'id',
 
   attributes: {    
-    code: {
+    id: {
       type: 'string',
       unique: true,
       autoIncrement: true,

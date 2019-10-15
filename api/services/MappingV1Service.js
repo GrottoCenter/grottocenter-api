@@ -82,6 +82,18 @@ const CaveModel = {
   massif: undefined,
 };
 
+const BbsModel = {
+  ref_: undefined,
+  xRefNumeriqueFinal: undefined,
+  articleTitle: undefined,
+  articleYear: undefined,
+  publicationExport: undefined,
+  crosChapRebuilt: undefined,
+  crosCountryRebuilt: undefined,
+  chapter: undefined,
+  country: undefined,
+};
+
 /* Mappers */
 
 module.exports = {
@@ -193,6 +205,9 @@ module.exports = {
         case 'grotto':
           data = this.convertToGrottoModel(item._source);
           break;
+        case 'bbs': 
+          data = this.convertToBbsModel(item._source);
+          break;
       }
       // Add the type and hightlight of the data
       data.type = item._source.type;
@@ -206,7 +221,7 @@ module.exports = {
   },
 
   /**
-   * Function that return all data for the search but incomplete, that means only the id and the name
+   * Function that return only the main information about a result.
    * @param {*} source : the elasticsearch result
    */
   convertEsToSearchResult: function(source) {
@@ -238,6 +253,13 @@ module.exports = {
           break;
         case 'grotto':
           data.address = item._source.address;
+          break;
+        case 'bbs':
+          data.xrefnumeriquefinal = item._source.xrefnumeriquefinal;
+          data.articletitle = item._source.articletitle;
+          data.articleyear = item._source.articleyear;
+          data.cauthorsfull = item._source.cauthorsfull;
+          data.ref_ = item._source.ref_;
           break;
       }
       values.push(data);
@@ -318,6 +340,34 @@ module.exports = {
     result.URL = source.URL;
     result.Facebook = source.Facebook;
 
+    return result;
+  },
+
+  // ---------------- BBS Function ---------------------------
+
+  convertToBbsModel: function(source) {
+    let result = Object.assign({}, BbsModel);
+    result.publicationExport = source.publicationExport;
+    result.crosChapRebuilt = source.crosChapRebuilt;
+    result.crosCountryRebuilt = source.crosCountryRebuilt;
+    result.chapter = source.chapter;
+    result.country = source.country;
+    result.cAuthorsFull =  source.cAuthorsFull;
+    
+    // Don't return the abstract from Elasticsearch ('bbs abstract') = too big
+    result.abstract = result.abstract;
+
+    // Conversion (from Elasticsearch or not)
+    result.xRefNumeriqueFinal = source['bbs refnumerique'] ? source['bbs refnumerique'] : result.xRefNumeriqueFinal;
+    result.ref_ = source['bbs ref'] ? source['bbs ref'] : result.ref_;
+    result.articleTitle = source['bbs title'] ? source['bbs title'] : result.articleTitle;
+    result.articleYear = source['bbs year'] ? source['bbs year'] : result.articleYear;
+    result.cAuthorsFull = source['bbs authors'] ? source['bbs authors'] : result.cAuthorsFull;
+
+    // Populate country
+    result.country = result.country ? result.country : {};
+    result.country.id = source['bbs country code'] ? source['bbs country code'] : null;  
+    
     return result;
   },
 };

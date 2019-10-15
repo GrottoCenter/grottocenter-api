@@ -393,6 +393,19 @@ module.exports.routes = {
     }
   },
 
+  /* REST API for BBS controller */
+  'GET /api/v1/bbs/:ref_': {
+    controller: 'v1/Bbs',
+    action: 'find',
+    api: {
+      entity: 'bbs',
+      limit: 50,
+    },
+    cors: {
+      allowOrigins: '*'
+    }
+  },
+
   /* REST API for Admin controller */
 
   'GET /api/admin/entries/findAllOfInterest': {
