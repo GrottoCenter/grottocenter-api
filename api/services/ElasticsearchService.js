@@ -97,10 +97,10 @@ module.exports = {
               query: '*'+params.query+'* + '+params.query+'~'+FUZZINESS,
               fields: [
                 // General useful fields
-                'name^3', 'city^2', 'country', 'county', 'region',
+                'name^5', 'city^2', 'country', 'county', 'region',
                 
                 // ==== Entries
-                'description^0.5',
+                'descriptions^0.5',
                 'caves',
                 'riggings',
                 'location^0.5',
@@ -114,7 +114,7 @@ module.exports = {
                 'entries names', 'entries regions', 'entries cities', 'entry counties', 'entries countries',
 
                 // ==== BBS 
-                'bbs title^3', 'bbs authors', 'bbs abstract^0.5', 'bbs refNumerique', 'bbs ref', 'bbs country'
+                'bbs title^2', 'bbs authors', 'bbs abstract^0.5', 'bbs refNumerique', 'bbs ref', 'bbs country'
               ],
             },       
           },

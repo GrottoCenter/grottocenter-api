@@ -231,15 +231,15 @@ module.exports = {
     // For each result of the research, only keep the id and the name then add it to the json to send
     source.hits && source.hits.hits.forEach((item) => {
       let data = {
-        id: item._source.id,
-        name: item._source.name,
+        id: item._id,
+        name: item._source.name ? item._source.name : item._source['bbs title'], // Handle BBS case
         type: item._source.type,
         highlights: item.highlight
       };
-      if (item._source.longitude) {
-        data.longitude = item._source.longitude;
-        data.latitude = item._source.latitude;
-      }
+      
+      data.longitude = item._source.longitude;
+      data.latitude = item._source.latitude;
+      
       switch(item._source.type){
         case 'entry':
           data.cave = {
@@ -255,10 +255,7 @@ module.exports = {
           data.address = item._source.address;
           break;
         case 'bbs':
-          data.xrefnumeriquefinal = item._source.xrefnumeriquefinal;
           data.articletitle = item._source.articletitle;
-          data.articleyear = item._source.articleyear;
-          data.cauthorsfull = item._source.cauthorsfull;
           data.ref_ = item._source.ref_;
           break;
       }
