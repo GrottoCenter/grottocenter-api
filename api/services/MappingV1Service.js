@@ -251,12 +251,39 @@ module.exports = {
           data.city = item._source.city;
           data.region = item._source.region;
           break;
+
         case 'grotto':
           data.address = item._source.address;
           break;
+
         case 'bbs':
-          data.articletitle = item._source.articletitle;
-          data.ref_ = item._source.ref_;
+          // Convert from a collection of keys newKeys, rename the keys of obj
+          const renameKeys = (obj, newKeys) => {
+            const keyValues = Object.keys(obj).map(key => {
+              const newKey = newKeys[key] || key;
+              return { [newKey]: obj[key] };
+            });
+            return Object.assign({}, ...keyValues);
+          }
+
+          const replacementKeys = { 
+            'bbs title': 'title', 
+            'bbs ref' : 'reference', 
+            'bbs authors' : 'authors', 
+            'bbs matiere' : 'thematic',
+            'bbs abstract' : 'abstract',
+            'refnumerique' : 'numerical reference' 
+          };
+          // Rename keys of data and highlights
+          const newSource = renameKeys(item._source, replacementKeys);
+          data.highlights = renameKeys(data.highlights, replacementKeys);
+          
+          // Fill data with appropriate key
+          var newKey; 
+          for(const key in replacementKeys) {
+            newKey = replacementKeys[key]
+            data[newKey] = newSource[newKey]
+          }          
           break;
       }
       values.push(data);
