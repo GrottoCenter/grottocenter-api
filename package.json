@@ -11,7 +11,7 @@
     "@material-ui/icons": "^3.0.1",
     "async": "2.6.1",
     "browserify-css": "^0.15.0",
-    "dotenv": "^7.0.0",
+    "dotenv": "^8.2.0",
     "ejs": "~2.7.1",
     "elasticsearch": "^15.2.0",
     "feed-read": "^0.0.1",
