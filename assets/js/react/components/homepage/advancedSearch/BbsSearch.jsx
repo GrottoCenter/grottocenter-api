@@ -98,7 +98,11 @@ class BbsSearch extends React.Component {  /*
       },
       'bbs ref': '',
       'bbs title': '',
-      'bbs authors' : ''
+      'bbs authors': '',
+      'bbs abstract': '',
+      'bbs theme': '',
+      'bbs subtheme': '',
+      'bbs country': ''
     });
   }
 
@@ -159,7 +163,11 @@ class BbsSearch extends React.Component {  /*
       'bbs year-range': yearRange,
       'bbs ref': ref,
       'bbs title': title,
-      'bbs authors': authors
+      'bbs authors': authors,
+      'bbs abstract': abstract,
+      'bbs theme': theme,
+      'bbs subtheme': subtheme,
+      'bbs country': country
     } = this.state;
 
     return (
@@ -180,6 +188,98 @@ class BbsSearch extends React.Component {  /*
 
             <div className={classes.formPartContainer} style={{ justifyContent: 'flex-start' }}>
 
+              <fieldset className={classes.fieldset}>
+                <legend className={classes.legend}><Translate>Content</Translate></legend>
+
+                <div className={classes.formPartContainer}>
+                  <TextField
+                    className={classes.formElement}
+                    label={(
+                      <span className={classes.formElementFontSize}>
+                        <Translate>Title</Translate>
+                      </span>
+                    )}
+                    onChange={event => this.handleValueChange('bbs title', event)}
+                    value={title}
+                    InputProps={{
+                      classes: {
+                        input: classes.formElementFontSize,
+                      },
+                    }}
+                  />
+
+                  <TextField
+                    className={classes.formElement}
+                    label={(
+                      <span className={classes.formElementFontSize}>
+                        <Translate>Abstract</Translate>
+                      </span>
+                    )}
+                    onChange={event => this.handleValueChange('bbs abstract', event)}
+                    value={abstract}
+                    InputProps={{
+                      classes: {
+                        input: classes.formElementFontSize,
+                      },
+                    }}
+                  />
+                </div>
+              </fieldset>
+
+              <fieldset className={classes.fieldset}>
+                <legend className={classes.legend}><Translate>Subject</Translate></legend>
+
+                <div className={classes.formPartContainer}>
+                  <TextField
+                    className={classes.formElement}
+                    label={(
+                      <span className={classes.formElementFontSize}>
+                        <Translate>Theme</Translate>
+                      </span>
+                    )}
+                    onChange={event => this.handleValueChange('bbs theme', event)}
+                    value={theme}
+                    InputProps={{
+                      classes: {
+                        input: classes.formElementFontSize,
+                      },
+                    }}
+                  />
+
+                  <TextField
+                    className={classes.formElement}
+                    label={(
+                      <span className={classes.formElementFontSize}>
+                        <Translate>Subtheme</Translate>
+                      </span>
+                    )}
+                    onChange={event => this.handleValueChange('bbs subtheme', event)}
+                    value={subtheme}
+                    InputProps={{
+                      classes: {
+                        input: classes.formElementFontSize,
+                      },
+                    }}
+                  />
+                </div>
+              </fieldset>
+
+              <TextField
+                className={classes.formElement}
+                label={(
+                  <span className={classes.formElementFontSize}>
+                    <Translate>Country or region</Translate>
+                  </span>
+                )}
+                onChange={event => this.handleValueChange('bbs country', event)}
+                value={country}
+                InputProps={{
+                  classes: {
+                    input: classes.formElementFontSize,
+                  },
+                }}
+              />
+
               <TextField
                 className={classes.formElement}
                 label={(
@@ -197,22 +297,6 @@ class BbsSearch extends React.Component {  /*
               />
 
               <TextField
-                className={classes.formElement}
-                label={(
-                  <span className={classes.formElementFontSize}>
-                    <Translate>Title</Translate>
-                  </span>
-                )}
-                onChange={event => this.handleValueChange('bbs title', event)}
-                value={title}
-                InputProps={{
-                  classes: {
-                    input: classes.formElementFontSize,
-                  },
-                }}
-              />
-
-<TextField
                 className={classes.formElement}
                 label={(
                   <span className={classes.formElementFontSize}>
