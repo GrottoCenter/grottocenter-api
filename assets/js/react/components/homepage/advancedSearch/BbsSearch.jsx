@@ -268,11 +268,11 @@ class BbsSearch extends React.Component {  /*
                 className={classes.formElement}
                 label={(
                   <span className={classes.formElementFontSize}>
-                    <Translate>Country or region</Translate>
+                    <Translate>Reference</Translate>
                   </span>
                 )}
-                onChange={event => this.handleValueChange('bbs country', event)}
-                value={country}
+                onChange={event => this.handleValueChange('bbs ref', event)}
+                value={ref}
                 InputProps={{
                   classes: {
                     input: classes.formElementFontSize,
@@ -284,11 +284,11 @@ class BbsSearch extends React.Component {  /*
                 className={classes.formElement}
                 label={(
                   <span className={classes.formElementFontSize}>
-                    <Translate>Reference</Translate>
+                    <Translate>Country or region</Translate>
                   </span>
                 )}
-                onChange={event => this.handleValueChange('bbs ref', event)}
-                value={ref}
+                onChange={event => this.handleValueChange('bbs country', event)}
+                value={country}
                 InputProps={{
                   classes: {
                     input: classes.formElementFontSize,

@@ -217,6 +217,8 @@ class SearchResultsTable extends React.Component {
         <StyledTableHeadRow>
           <StyledTableHeadRowCell><Translate>Reference</Translate></StyledTableHeadRowCell>
           <StyledTableHeadRowCell><Translate>Title</Translate></StyledTableHeadRowCell>
+          <StyledTableHeadRowCell><Translate>Subtheme code</Translate></StyledTableHeadRowCell>
+          <StyledTableHeadRowCell><Translate>Country Code</Translate></StyledTableHeadRowCell>
           <StyledTableHeadRowCell><Translate>Authors</Translate></StyledTableHeadRowCell>
           <StyledTableHeadRowCell><Translate>Year</Translate></StyledTableHeadRowCell>
         </StyledTableHeadRow>
@@ -398,6 +400,8 @@ class SearchResultsTable extends React.Component {
                           <React.Fragment>
                             <StyledTableCell>{result.ref_}</StyledTableCell>
                             <StyledTableCell>{result.title}</StyledTableCell>
+                            <StyledTableCell>{result.subtheme.id}</StyledTableCell>
+                            <StyledTableCell>{result.country.id}</StyledTableCell>
                             <StyledTableCell>{result.authors}</StyledTableCell>
                             <StyledTableCell>{result.year}</StyledTableCell>
                           </React.Fragment>
