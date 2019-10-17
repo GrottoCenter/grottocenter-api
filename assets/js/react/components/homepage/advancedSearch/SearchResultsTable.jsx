@@ -95,6 +95,7 @@ class SearchResultsTable extends React.Component {
     this.entriesTableHead = this.entriesTableHead.bind(this);
     this.groupsTableHead = this.groupsTableHead.bind(this);
     this.massifsTableHead = this.massifsTableHead.bind(this);
+    this.bbsTableHead = this.bbsTableHead.bind(this);
     this.handleRowClick = this.handleRowClick.bind(this);
   }
 
@@ -209,6 +210,20 @@ class SearchResultsTable extends React.Component {
     );
   };
 
+  bbsTableHead = () => {
+    const { intl } = this.context;
+    return (
+      <TableHead>
+        <StyledTableHeadRow>
+          <StyledTableHeadRowCell><Translate>Reference</Translate></StyledTableHeadRowCell>
+          <StyledTableHeadRowCell><Translate>Title</Translate></StyledTableHeadRowCell>
+          <StyledTableHeadRowCell><Translate>Authors</Translate></StyledTableHeadRowCell>
+          <StyledTableHeadRowCell><Translate>Year</Translate></StyledTableHeadRowCell>
+        </StyledTableHeadRow>
+      </TableHead>
+    );
+  };
+
   // ===== Handle functions ===== //
 
   handleRowClick = (id) => {
@@ -224,6 +239,7 @@ class SearchResultsTable extends React.Component {
     }
     if (resourceType === 'grottos') history.push(`/ui/groups/${id}`);
     if (resourceType === 'massifs') history.push(`/ui/massifs/${id}`);
+    if (resourceType === 'bbs') history.push(`/ui/bbs/${id}`);
   }
 
   handleChangePage = (event, newPage) => {
@@ -310,6 +326,7 @@ class SearchResultsTable extends React.Component {
     if (resourceType === 'entries') ResultsTableHead = this.entriesTableHead;
     if (resourceType === 'grottos') ResultsTableHead = this.groupsTableHead;
     if (resourceType === 'massifs') ResultsTableHead = this.massifsTableHead;
+    if (resourceType === 'bbs') ResultsTableHead = this.bbsTableHead;
 
     /*
       When the component is loading the new page, we want to keep the
@@ -377,6 +394,14 @@ class SearchResultsTable extends React.Component {
                             <StyledTableCell>{result.entries ? result.entries.length : '0'}</StyledTableCell>
                           </React.Fragment>
                           ))}
+                          {(resourceType === 'bbs' && (
+                          <React.Fragment>
+                            <StyledTableCell>{result.ref_}</StyledTableCell>
+                            <StyledTableCell>{result.title}</StyledTableCell>
+                            <StyledTableCell>{result.authors}</StyledTableCell>
+                            <StyledTableCell>{result.year}</StyledTableCell>
+                          </React.Fragment>
+                          ))}
                         </StyledTableRow>
                       ))}
 
@@ -429,7 +454,7 @@ SearchResultsTable.propTypes = {
   isLoading: PropTypes.bool.isRequired,
   resetAdvancedSearch: PropTypes.func.isRequired,
   results: PropTypes.arrayOf(PropTypes.shape({})),
-  resourceType: PropTypes.oneOf(['', 'entries', 'grottos', 'massifs']).isRequired,
+  resourceType: PropTypes.oneOf(['', 'entries', 'grottos', 'massifs', 'bbs']).isRequired,
   getNewResults: PropTypes.func.isRequired,
   totalNbResults: PropTypes.number.isRequired,
 };

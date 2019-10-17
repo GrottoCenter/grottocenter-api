@@ -270,7 +270,8 @@ module.exports = {
             'bbs title': 'title', 
             'bbs ref' : 'reference', 
             'bbs authors' : 'authors', 
-            'bbs matiere' : 'thematic',
+            'bbs thematic' : 'thematic',
+            'bbs subthematic' : 'subthematic',
             'bbs abstract' : 'abstract',
             'refnumerique' : 'numerical reference' 
           };
@@ -376,17 +377,17 @@ module.exports = {
     result.crosCountryRebuilt = source.crosCountryRebuilt;
     result.chapter = source.chapter;
     result.country = source.country;
-    result.cAuthorsFull =  source.cAuthorsFull;
     
     // Don't return the abstract from Elasticsearch ('bbs abstract') = too big
     result.abstract = result.abstract;
 
     // Conversion (from Elasticsearch or not)
-    result.xRefNumeriqueFinal = source['bbs refnumerique'] ? source['bbs refnumerique'] : result.xRefNumeriqueFinal;
+    result.numericalRef = source['bbs refnumerique'] ? source['bbs refnumerique'] : result.xRefNumeriqueFinal;
     result.ref_ = source['bbs ref'] ? source['bbs ref'] : result.ref_;
-    result.articleTitle = source['bbs title'] ? source['bbs title'] : result.articleTitle;
-    result.articleYear = source['bbs year'] ? source['bbs year'] : result.articleYear;
-    result.cAuthorsFull = source['bbs authors'] ? source['bbs authors'] : result.cAuthorsFull;
+    result.id = result.ref_; // Use ref_ as an id
+    result.title = source['bbs title'] ? source['bbs title'] : result.articleTitle;
+    result.year = source['bbs year'] ? source['bbs year'] : result.articleYear;
+    result.authors = source['bbs authors'] ? source['bbs authors'] : result.cAuthorsFull;
 
     // Populate country
     result.country = result.country ? result.country : {};

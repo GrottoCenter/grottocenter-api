@@ -8,11 +8,12 @@ import styled from 'styled-components';
 import EntriesSearch from './EntriesSearch';
 import GroupsSearch from './GroupsSearch';
 import MassifsSearch from './MassifsSearch';
+import BbsSearch from './BbsSearch';
 import Translate from '../../common/Translate';
 
 import SearchResultsContainer from '../../../containers/SearchResultsContainer';
 
-const advancedSearchTypes = ['entries', 'grottos', 'massifs'];
+const advancedSearchTypes = ['entries', 'grottos', 'massifs', 'bbs'];
 
 const styles = theme => ({
   root: {
@@ -88,6 +89,15 @@ class AdvancedSearch extends React.Component {
                 </React.Fragment>
               )}
             />
+            <Tab
+              className={classes.tabName}
+              label={(
+                <React.Fragment>
+                  <TabIcon src="/images/bibliography.svg" alt="BBS icon" />
+                  <Translate>BBS</Translate>
+                </React.Fragment>
+              )}
+            />
           </Tabs>
         </AppBar>
 
@@ -117,6 +127,15 @@ class AdvancedSearch extends React.Component {
                 startAdvancedsearch(state, resourceType);
               }}
               resourceType={advancedSearchTypes[2]}
+              resetResults={resetAdvancedSearch}
+            />
+          )}
+          {tabSelected === 3 && (
+            <BbsSearch
+              startAdvancedsearch={(state, resourceType) => {
+                startAdvancedsearch(state, resourceType);
+              }}
+              resourceType={advancedSearchTypes[3]}
               resetResults={resetAdvancedSearch}
             />
           )}

@@ -114,7 +114,7 @@ module.exports = {
                 'entries names', 'entries regions', 'entries cities', 'entry counties', 'entries countries',
 
                 // ==== BBS 
-                'bbs title^2', 'bbs authors', 'bbs abstract^0.5', 'bbs refNumerique', 'bbs ref', 'bbs country'
+                'bbs title^2', 'bbs authors', 'bbs abstract^0.5', 'bbs refNumerique', 'bbs ref', 'bbs country', 'bbs thematic', 'bbs subthematic'
               ],
             },       
           },
