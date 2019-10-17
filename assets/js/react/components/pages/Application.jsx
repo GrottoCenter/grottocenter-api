@@ -17,6 +17,7 @@ import LatestBlogNewsSection from '../homepage/LatestBlogNewsSection';
 import Entries from '../appli/entries/Index';
 import MassifContainer from '../../containers/MassifContainer';
 import GroupContainer from '../../containers/GroupContainer';
+import BbsContainer from '../../containers/BbsContainer';
 import Convert from '../common/map/Convert';
 
 //
@@ -71,6 +72,7 @@ const Application = () => {
             <Route path="/ui/test" component={LatestBlogNewsSection} />
             <Route path="/ui/groups/:groupId" component={GroupContainer} />
             <Route path="/ui/massifs/:massifId" component={MassifContainer} />
+            <Route path="/ui/bbs/:bbsId" component={BbsContainer} />
             <Redirect path="/ui/*" to="/ui/" />
           </Switch>
         </ArticleWrapper>

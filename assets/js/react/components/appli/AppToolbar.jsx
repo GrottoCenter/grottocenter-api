@@ -39,7 +39,7 @@ const TitleGroup = withStyles(theme => ({
 const StyledBarContainer = withTheme()(styled.div`
   background-color: ${props => props.theme.palette.primary3Color};
   display: flex;
-  width: 400px;
+  width: 600px;
   height: 60px;
 `);
 

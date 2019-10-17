@@ -10,6 +10,7 @@ import randomEntry from './RandomEntryReducer';
 import partnersCarousel from './PartnersCarouselReducer';
 import group from './GroupReducer';
 import massif from './MassifReducer';
+import bbs from './BbsReducer';
 
 //
 //
@@ -29,6 +30,7 @@ const GCReducer = combineReducers({
   partnersCarousel,
   group,
   massif,
+  bbs
 });
 
 export default GCReducer;
