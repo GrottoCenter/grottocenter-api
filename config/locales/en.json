@@ -1,5 +1,4 @@
 {
-	"9": "NON CAVING SUBJECT",
 	"The Wiki database made by cavers for cavers": "The Wiki database made by cavers for cavers.",
 	"Grottocenter is supported by the FSE": "Grottocenter is supported by the FSE",
 	"Quick search": "Quick search",
@@ -789,6 +788,7 @@
 	"8.42": "FILMS AND AUDIO-VISUAL DEVICES",
 	"8.5": "GENERAL WORKS: Speleological books",
 	"8.6": "INVENTORIES",
+	"9.0": "NON CAVING SUBJECT",
 	"9.1": "CANYON",
 	"Editor": "Editor",
 	"Depository Library": "Depository Library",
@@ -797,9 +797,10 @@
 	"title": "title",
 	"Abstract": "Abstract",
 	"abstract": "abstract",
-	"Thematic": "Thematic",
-	"thematic": "thematic",
-	"Thematics": "Thematics",
+	"Theme": "Theme",
+	"theme": "theme",
+	"Subtheme": "Subtheme",
+	"subtheme": "subtheme",
 	"Location": "Location",
 	"Locations": "Locations",
 	"Publication": "Publication",
@@ -813,5 +814,8 @@
 	"Reference": "Reference",
 	"reference": "reference",
 	"Year": "Year",
-	"year": "year"
+	"year": "year",
+	"Content": "Content",
+	"Subject": "Subject",
+	"Country or region": "Country or region"
 }

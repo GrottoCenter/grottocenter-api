@@ -270,10 +270,10 @@ module.exports = {
             'bbs title': 'title', 
             'bbs ref' : 'reference', 
             'bbs authors' : 'authors', 
-            'bbs thematic' : 'thematic',
-            'bbs subthematic' : 'subthematic',
+            'bbs theme' : 'theme',
+            'bbs subtheme' : 'subtheme',
             'bbs abstract' : 'abstract',
-            'refnumerique' : 'numerical reference' 
+            'refnumerique' : 'numerical reference'
           };
           // Rename keys of data and highlights
           const newSource = renameKeys(item._source, replacementKeys);
@@ -375,8 +375,6 @@ module.exports = {
     result.publicationExport = source.publicationExport;
     result.crosChapRebuilt = source.crosChapRebuilt;
     result.crosCountryRebuilt = source.crosCountryRebuilt;
-    result.chapter = source.chapter;
-    result.country = source.country;
     
     // Don't return the abstract from Elasticsearch ('bbs abstract') = too big
     result.abstract = result.abstract;
@@ -387,11 +385,20 @@ module.exports = {
     result.id = result.ref_; // Use ref_ as an id
     result.title = source['bbs title'] ? source['bbs title'] : result.articleTitle;
     result.year = source['bbs year'] ? source['bbs year'] : result.articleYear;
-    result.authors = source['bbs authors'] ? source['bbs authors'] : result.cAuthorsFull;
+    result.authors = source['bbs authors'] ? source['bbs authors'] : result.cAuthorsFull;  
+    
+    // Build country / region
+    result.country = {
+      id: source['bbs country code'] ? source['bbs country code'] : result.CountryCode,
+      name: source['bbs country'] ? source['bbs country'] : result.country
+    };
 
-    // Populate country
-    result.country = result.country ? result.country : {};
-    result.country.id = source['bbs country code'] ? source['bbs country code'] : null;  
+    // Build theme
+    result.theme = source['bbs theme'];
+    result.subtheme = {
+      id: source['bbs chaptercode'],
+      name: source['bbs subtheme']
+    };
     
     return result;
   },
