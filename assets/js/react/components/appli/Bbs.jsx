@@ -31,10 +31,19 @@ const Bbs = (props) => {
             {currentLanguage == 'fr' ? bbs.chapter.textMatiereFrancais : bbs.chapter.textMatiereAnglais}
           </p>
 
-          <strong><Translate>Abstract</Translate></strong>
-          <p>
-            {bbs.abstract}
-          </p>
+          {bbs.country ? 
+            <div>
+              <strong><Translate>Country</Translate></strong>
+              <p>
+                {bbs.country.country}
+              </p>
+
+              <strong><Translate>Abstract</Translate></strong>
+              <p>
+                {bbs.abstract}
+              </p>
+            </div>
+           : ''}
 
           <strong><Translate>Reference</Translate></strong>
           <p>
