@@ -85,12 +85,13 @@ const CaveModel = {
 const BbsModel = {
   ref_: undefined,
   xRefNumeriqueFinal: undefined,
-  articleTitle: undefined,
-  articleYear: undefined,
+  title: undefined,
+  year: undefined,
   publicationExport: undefined,
   crosChapRebuilt: undefined,
   crosCountryRebuilt: undefined,
-  chapter: undefined,
+  theme: undefined,
+  subtheme: undefined,
   country: undefined,
 };
 
@@ -377,29 +378,34 @@ module.exports = {
     result.crosCountryRebuilt = source.crosCountryRebuilt;
     
     // Don't return the abstract from Elasticsearch ('bbs abstract') = too big
-    result.abstract = result.abstract;
+    result.abstract = source.abstract;
 
     // Conversion (from Elasticsearch or not)
-    result.numericalRef = source['bbs refnumerique'] ? source['bbs refnumerique'] : result.xRefNumeriqueFinal;
-    result.ref_ = source['bbs ref'] ? source['bbs ref'] : result.ref_;
-    result.id = result.ref_; // Use ref_ as an id
-    result.title = source['bbs title'] ? source['bbs title'] : result.articleTitle;
-    result.year = source['bbs year'] ? source['bbs year'] : result.articleYear;
-    result.authors = source['bbs authors'] ? source['bbs authors'] : result.cAuthorsFull;  
+    result.numericalRef = source['bbs refnumerique'] ? source['bbs refnumerique'] : source.xRefNumeriqueFinal;
+    result.ref_ = source['bbs ref'] ? source['bbs ref'] : source.ref_;
+    result.id = source.id ? source.id : result.ref_; // Use ref_ as a fallback id
+    result.title = source['bbs title'] ? source['bbs title'] : source.articleTitle;
+    result.year = source['bbs year'] ? source['bbs year'] : source.articleYear;
+    result.authors = source['bbs authors'] ? source['bbs authors'] : source.cAuthorsFull;  
     
     // Build country / region
-    result.country = {
-      id: source['bbs country code'] ? source['bbs country code'] : result.CountryCode,
-      name: source['bbs country'] ? source['bbs country'] : result.country
-    };
+    if (source['bbs country code'] || source.country) {
+      result.country = {
+        id: source['bbs country code'] ? source['bbs country code'] : source.country.id,
+        name: source['bbs country'] ? source['bbs country'] : source.country.country
+      };
+    }
 
-    // Build theme
-    result.theme = source['bbs theme'];
-    result.subtheme = {
-      id: source['bbs chaptercode'],
-      name: source['bbs subtheme']
-    };
-    
+    // Build (sub)theme
+    if(source['bbs chaptercode'] || source.chapter) {
+      // In ES, the french and english theme and subtheme names are gathered and separated by " / "
+      result.theme = source['bbs theme'] ? source['bbs theme'].split(" / ")[0] : source.chapter.cTexteMatiere;
+      result.subtheme = {
+        id: source['bbs chaptercode'] ? source['bbs chaptercode'] : source.chapter.id,
+        name: source['bbs subtheme'] ? source['bbs subtheme'].split(" / ")[0] : source.chapter.cTexteChapitre
+      };     
+    }
+
     return result;
   },
 };

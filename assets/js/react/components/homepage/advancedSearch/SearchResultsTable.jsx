@@ -39,9 +39,9 @@ const StyledTableCell = withStyles(() => ({
 
 const StyledTableHeadRowCell = withStyles(() => ({
   root: {
+    color: '#eee',
     fontSize: '1.3rem',
     fontWeight: 'bold',
-    color: '#eee',
     textAlign: 'center',
   },
 }))(TableCell);
@@ -217,8 +217,8 @@ class SearchResultsTable extends React.Component {
         <StyledTableHeadRow>
           <StyledTableHeadRowCell><Translate>Reference</Translate></StyledTableHeadRowCell>
           <StyledTableHeadRowCell><Translate>Title</Translate></StyledTableHeadRowCell>
-          <StyledTableHeadRowCell><Translate>Subtheme code</Translate></StyledTableHeadRowCell>
-          <StyledTableHeadRowCell><Translate>Country Code</Translate></StyledTableHeadRowCell>
+          <StyledTableHeadRowCell><Translate>Subtheme</Translate></StyledTableHeadRowCell>
+          <StyledTableHeadRowCell><Translate>Country or region</Translate></StyledTableHeadRowCell>
           <StyledTableHeadRowCell><Translate>Authors</Translate></StyledTableHeadRowCell>
           <StyledTableHeadRowCell><Translate>Year</Translate></StyledTableHeadRowCell>
         </StyledTableHeadRow>
@@ -400,10 +400,10 @@ class SearchResultsTable extends React.Component {
                           <React.Fragment>
                             <StyledTableCell>{result.ref_}</StyledTableCell>
                             <StyledTableCell>{result.title}</StyledTableCell>
-                            <StyledTableCell>{result.subtheme.id}</StyledTableCell>
-                            <StyledTableCell>{result.country.id}</StyledTableCell>
-                            <StyledTableCell>{result.authors}</StyledTableCell>
-                            <StyledTableCell>{result.year}</StyledTableCell>
+                            <StyledTableCell><Translate>{result.subtheme ? result.subtheme.name : '-'}</Translate></StyledTableCell>
+                            <StyledTableCell><Translate>{result.country ? result.country.name : '-'}</Translate></StyledTableCell>
+                            <StyledTableCell>{result.authors ? result.authors : '-'}</StyledTableCell>
+                            <StyledTableCell>{result.year ? result.year : '-'}</StyledTableCell>
                           </React.Fragment>
                           ))}
                         </StyledTableRow>

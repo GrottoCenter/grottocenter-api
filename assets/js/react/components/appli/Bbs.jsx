@@ -17,33 +17,41 @@ const Bbs = (props) => {
     return (
       <Card>
         <CardContent>
-          <h1>{bbs.articleTitle}</h1>
+          <h1>{bbs.title}</h1>
           <p>
-            {bbs.publicationExport}<Translate> by </Translate>{bbs.cAuthorsFull}
+            {bbs.publicationExport}<Translate> by </Translate>{bbs.authors}
           </p>
 
-          <strong><Translate>Theme</Translate></strong>
-          <p>
-            {bbs.chapter.id} 
-            {" - "}
-            {currentLanguage == 'fr' ? bbs.chapter.texteChapitreFrancais : bbs.chapter.texteChapitreAnglais}
-            {" - "}
-            {currentLanguage == 'fr' ? bbs.chapter.textMatiereFrancais : bbs.chapter.textMatiereAnglais}
-          </p>
-
-          {bbs.country ? 
-            <div>
-              <strong><Translate>Country</Translate></strong>
+          {bbs.subtheme ? (
+            <React.Fragment>
+              <strong><Translate>Theme</Translate></strong>
               <p>
-                {bbs.country.country}
+                {bbs.subtheme.id}
+                {" - "}
+                <Translate>{bbs.theme}</Translate>
+                {" - "}
+                <Translate>{bbs.subtheme.name}</Translate>
               </p>
+            </React.Fragment>
+          ) : ''}
 
+          {bbs.country ? (
+            <React.Fragment>
+              <strong><Translate>Country or region</Translate></strong>
+              <p>
+                {bbs.country.name}
+              </p>
+            </React.Fragment>
+          ) : ''}
+
+          {bbs.abstract ? (
+            <React.Fragment>
               <strong><Translate>Abstract</Translate></strong>
               <p>
                 {bbs.abstract}
               </p>
-            </div>
-           : ''}
+            </React.Fragment>
+          ) : ''}
 
           <strong><Translate>Reference</Translate></strong>
           <p>
