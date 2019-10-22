@@ -4,8 +4,9 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import { withRouter } from 'react-router-dom';
-import { Card, CardContent } from '@material-ui/core';
+import { Button, Card, CardContent, CircularProgress } from '@material-ui/core';
 import styled from 'styled-components';
+import DescriptionIcon from '@material-ui/icons/Description';
 
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
@@ -13,11 +14,12 @@ import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
 import TablePagination from '@material-ui/core/TablePagination';
 import TableRow from '@material-ui/core/TableRow';
+import { CSVDownload } from "react-csv";
 
 import Translate from '../../common/Translate';
 
 import SearchTableActions from './SearchTableActions';
-import {detailPageV2Links} from '../../../conf/Config';
+import { detailPageV2Links } from '../../../conf/Config';
 
 // =================== STYLES ========================
 
@@ -62,6 +64,12 @@ const StyledTableHeadRow = withStyles(theme => ({
   },
 }))(TableRow);
 
+const StyledTableFooter = styled.div`
+  align-items: center;  
+  display: flex;
+  justify-content: space-between;
+`;
+
 const styles = () => ({
   resultsContainer: {
     marginTop: '24px',
@@ -69,11 +77,16 @@ const styles = () => ({
   table: {
     marginBottom: 0,
   },
+  textError: {
+    color: '#ff3333',
+  }
 });
 
 const DEFAULT_FROM = 0;
 const DEFAULT_PAGE = 0;
 const DEFAULT_SIZE = 10;
+// Don't authorize anyone to download all the database in CSV
+const MAX_NUMBER_OF_DATA_TO_EXPORT_IN_CSV = 10000;
 
 const HeaderIcon = styled.img`
   height: 3.6rem;
@@ -91,30 +104,32 @@ class SearchResultsTable extends React.Component {
       from: DEFAULT_FROM,
       page: DEFAULT_PAGE,
       size: DEFAULT_SIZE,
+      completeCSVResults: [{}]
     };
     this.entriesTableHead = this.entriesTableHead.bind(this);
     this.groupsTableHead = this.groupsTableHead.bind(this);
     this.massifsTableHead = this.massifsTableHead.bind(this);
     this.bbsTableHead = this.bbsTableHead.bind(this);
     this.handleRowClick = this.handleRowClick.bind(this);
+    this.loadCSVData = this.loadCSVData.bind(this);
   }
 
   // ============================== //
 
-   // If the results are empty, the component must get back to the initial pagination state.
-   componentDidUpdate = () => {
-     const { results } = this.props;
-     const { from, page, size } = this.state;
+  // If the results are empty, the component must get back to the initial pagination state.
+  componentDidUpdate = () => {
+    const { results } = this.props;
+    const { from, page, size } = this.state;
 
-     if (!results && (from !== DEFAULT_FROM || page !== DEFAULT_PAGE || size !== DEFAULT_SIZE)
-     ) {
-       this.setState({
-         from: DEFAULT_FROM,
-         page: DEFAULT_PAGE,
-         size: DEFAULT_SIZE,
-       });
-     }
-   }
+    if (!results && (from !== DEFAULT_FROM || page !== DEFAULT_PAGE || size !== DEFAULT_SIZE)
+    ) {
+      this.setState({
+        from: DEFAULT_FROM,
+        page: DEFAULT_PAGE,
+        size: DEFAULT_SIZE,
+      });
+    }
+  }
 
   // ===== Table headers ===== //
   entriesTableHead = () => {
@@ -315,13 +330,18 @@ class SearchResultsTable extends React.Component {
     });
   }
 
+  // ===== CSV Export
+  loadCSVData = (event, done) => {
+    const { fetchFullAdvancedsearchResults } = this.props;
+    fetchFullAdvancedsearchResults();
+  }
+
   // ===== Render ===== //
 
   render() {
     const {
-      classes, isLoading, results, resourceType, totalNbResults,
+      classes, isLoading, results, resourceType, totalNbResults, isLoadingFullData, wantToDownloadCSV
     } = this.props;
-
     const { from, page, size } = this.state;
 
     let ResultsTableHead;
@@ -330,6 +350,7 @@ class SearchResultsTable extends React.Component {
     if (resourceType === 'massifs') ResultsTableHead = this.massifsTableHead;
     if (resourceType === 'bbs') ResultsTableHead = this.bbsTableHead;
 
+    const canDownloadDataAsCSV = totalNbResults < MAX_NUMBER_OF_DATA_TO_EXPORT_IN_CSV;
     /*
       When the component is loading the new page, we want to keep the
       previous results displayed (instead of a white board).
@@ -379,32 +400,32 @@ class SearchResultsTable extends React.Component {
                             </React.Fragment>
                           ))}
                           {(resourceType === 'grottos' && (
-                          <React.Fragment>
-                            <StyledTableCell>{result.name}</StyledTableCell>
-                            <StyledTableCell>{result.contact ? result.contact : '-'}</StyledTableCell>
-                            <StyledTableCell>{result.city ? result.city : '-'}</StyledTableCell>
-                            <StyledTableCell>{result.county ? result.county : '-'}</StyledTableCell>
-                            <StyledTableCell>{result.region ? result.region : '-'}</StyledTableCell>
-                            <StyledTableCell>{result.country ? result.country : '-'}</StyledTableCell>
-                            <StyledTableCell>{result.cavers ? result.cavers.length : '0'}</StyledTableCell>
-                          </React.Fragment>
+                            <React.Fragment>
+                              <StyledTableCell>{result.name}</StyledTableCell>
+                              <StyledTableCell>{result.contact ? result.contact : '-'}</StyledTableCell>
+                              <StyledTableCell>{result.city ? result.city : '-'}</StyledTableCell>
+                              <StyledTableCell>{result.county ? result.county : '-'}</StyledTableCell>
+                              <StyledTableCell>{result.region ? result.region : '-'}</StyledTableCell>
+                              <StyledTableCell>{result.country ? result.country : '-'}</StyledTableCell>
+                              <StyledTableCell>{result.cavers ? result.cavers.length : '0'}</StyledTableCell>
+                            </React.Fragment>
                           ))}
                           {(resourceType === 'massifs' && (
-                          <React.Fragment>
-                            <StyledTableCell>{result.name}</StyledTableCell>
-                            <StyledTableCell>{result.caves ? result.caves.length : '0'}</StyledTableCell>
-                            <StyledTableCell>{result.entries ? result.entries.length : '0'}</StyledTableCell>
-                          </React.Fragment>
+                            <React.Fragment>
+                              <StyledTableCell>{result.name}</StyledTableCell>
+                              <StyledTableCell>{result.caves ? result.caves.length : '0'}</StyledTableCell>
+                              <StyledTableCell>{result.entries ? result.entries.length : '0'}</StyledTableCell>
+                            </React.Fragment>
                           ))}
                           {(resourceType === 'bbs' && (
-                          <React.Fragment>
-                            <StyledTableCell>{result.ref_}</StyledTableCell>
-                            <StyledTableCell>{result.title}</StyledTableCell>
-                            <StyledTableCell><Translate>{result.subtheme ? result.subtheme.name : '-'}</Translate></StyledTableCell>
-                            <StyledTableCell><Translate>{result.country ? result.country.name : '-'}</Translate></StyledTableCell>
-                            <StyledTableCell>{result.authors ? result.authors : '-'}</StyledTableCell>
-                            <StyledTableCell>{result.year ? result.year : '-'}</StyledTableCell>
-                          </React.Fragment>
+                            <React.Fragment>
+                              <StyledTableCell>{result.ref_}</StyledTableCell>
+                              <StyledTableCell>{result.title}</StyledTableCell>
+                              <StyledTableCell><Translate>{result.subtheme ? result.subtheme.name : '-'}</Translate></StyledTableCell>
+                              <StyledTableCell><Translate>{result.country ? result.country.name : '-'}</Translate></StyledTableCell>
+                              <StyledTableCell>{result.authors ? result.authors : '-'}</StyledTableCell>
+                              <StyledTableCell>{result.year ? result.year : '-'}</StyledTableCell>
+                            </React.Fragment>
                           ))}
                         </StyledTableRow>
                       ))}
@@ -412,41 +433,75 @@ class SearchResultsTable extends React.Component {
                   </TableBody>
                 </Table>
 
-                <StyledTablePagination
-                  rowsPerPageOptions={[5, 10, 20]}
-                  component="div"
-                  count={totalNbResults}
-                  rowsPerPage={size}
-                  page={page}
-                  backIconButtonProps={{
-                    'aria-label': 'Previous Page',
-                  }}
-                  nextIconButtonProps={{
-                    'aria-label': 'Next Page',
-                  }}
-                  labelRowsPerPage={<Translate>Results per page</Translate>}
-                  onChangePage={(event, pageNb) => this.handleChangePage(event, pageNb)}
-                  onChangeRowsPerPage={event => this.handleChangeRowsPerPage(event)}
-                  ActionsComponent={() => (
-                    <SearchTableActions
-                      page={page}
-                      size={size}
-                      onChangePage={this.handleChangePage}
-                      count={totalNbResults}
-                    />
-                  )}
-                />
+                <StyledTableFooter>
+                  <Button
+                    disabled={!canDownloadDataAsCSV}
+                    type="button"
+                    variant="contained"
+                    color="default"
+                    size="large"
+                    onClick={() => this.loadCSVData()}
+                  >
+                    <DescriptionIcon />
+                    <Translate>Export to CSV</Translate>
+                  </Button>
+
+                  {!isLoadingFullData && !isLoading && results.length == totalNbResults && wantToDownloadCSV ? (
+                    <CSVDownload data={results} target="_blank" />
+                  ) : ''}
+
+                  <StyledTablePagination
+                    rowsPerPageOptions={[5, 10, 20]}
+                    component="div"
+                    count={totalNbResults}
+                    rowsPerPage={size}
+                    page={page}
+                    backIconButtonProps={{
+                      'aria-label': 'Previous Page',
+                    }}
+                    nextIconButtonProps={{
+                      'aria-label': 'Next Page',
+                    }}
+                    labelRowsPerPage={<Translate>Results per page</Translate>}
+                    onChangePage={(event, pageNb) => this.handleChangePage(event, pageNb)}
+                    onChangeRowsPerPage={event => this.handleChangeRowsPerPage(event)}
+                    ActionsComponent={() => (
+                      <SearchTableActions
+                        page={page}
+                        size={size}
+                        onChangePage={this.handleChangePage}
+                        count={totalNbResults}
+                      />
+                    )}
+                  />
+                </StyledTableFooter>
+              
+                {isLoadingFullData ? (
+                  <div style={{ display: 'flex', alignItems: 'center'}}>
+                    <CircularProgress style={{ marginRight: '5px' }}/>
+                    <Translate>Loading full data, please wait...</Translate>
+                  </div>
+                ): ''}
+                {!canDownloadDataAsCSV ? (
+                  <React.Fragment>
+                  <p className={classes.textError}>
+                    <Translate>Too many results to download.</Translate> (<b>{totalNbResults}</b>)
+                    <br/>
+                    <Translate>You can only download</Translate> <b>{MAX_NUMBER_OF_DATA_TO_EXPORT_IN_CSV}</b> <Translate>results at once.</Translate>
+                  </p>
+                  </React.Fragment>
+                ) : ''}
 
               </React.Fragment>
             ) : (
-              <Translate>No results</Translate>
-            )
+                <Translate>No results</Translate>
+              )
             }
           </CardContent>
         </Card>
       ) : (
-        ''
-      ))
+          ''
+        ))
 
     );
   }
@@ -456,10 +511,13 @@ SearchResultsTable.propTypes = {
   classes: PropTypes.shape({}).isRequired,
   history: PropTypes.shape({ push: PropTypes.func }).isRequired,
   isLoading: PropTypes.bool.isRequired,
+  isLoadingFullData: PropTypes.bool.isRequired,
   resetAdvancedSearch: PropTypes.func.isRequired,
   results: PropTypes.arrayOf(PropTypes.shape({})),
   resourceType: PropTypes.oneOf(['', 'entries', 'grottos', 'massifs', 'bbs']).isRequired,
   getNewResults: PropTypes.func.isRequired,
+  fetchFullAdvancedsearchResults: PropTypes.func.isRequired,
+  wantToDownloadCSV: PropTypes.bool.isRequired,
   totalNbResults: PropTypes.number.isRequired,
 };
 

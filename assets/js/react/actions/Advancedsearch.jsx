@@ -15,6 +15,10 @@ export const FETCH_NEXT_ADVANCEDSEARCH_STARTED = 'FETCH_NEXT_ADVANCEDSEARCH_STAR
 export const FETCH_NEXT_ADVANCEDSEARCH_SUCCESS = 'FETCH_NEXT_ADVANCEDSEARCH_SUCCESS';
 export const FETCH_NEXT_ADVANCEDSEARCH_FAILURE = 'FETCH_NEXT_ADVANCEDSEARCH_FAILURE';
 
+export const FETCH_FULL_ADVANCEDSEARCH_STARTED = 'FETCH_FULL_ADVANCEDSEARCH_STARTED';
+export const FETCH_FULL_ADVANCEDSEARCH_SUCCESS = 'FETCH_FULL_ADVANCEDSEARCH_SUCCESS';
+export const FETCH_FULL_ADVANCEDSEARCH_FAILURE = 'FETCH_FULL_ADVANCEDSEARCH_FAILURE';
+
 export const RESET_ADVANCEDSEARCH_RESULTS = 'RESET_ADVANCEDSEARCH_RESULTS';
 
 
@@ -48,6 +52,22 @@ export const fetchNextAdvancedSearchSucess = results => ({
 
 export const fetchNextAdvancedSearchFailure = error => ({
   type: FETCH_NEXT_ADVANCEDSEARCH_FAILURE,
+  error,
+});
+
+// Get all results from the previous search criterias
+export const fetchFullAdvancedSearchStarted = criterias => ({
+  type: FETCH_FULL_ADVANCEDSEARCH_STARTED,
+  criterias,
+});
+
+export const fetchFullAdvancedSearchSucess = results => ({
+  type: FETCH_FULL_ADVANCEDSEARCH_SUCCESS,
+  results,
+});
+
+export const fetchFullAdvancedSearchFailure = error => ({
+  type: FETCH_FULL_ADVANCEDSEARCH_FAILURE,
   error,
 });
 
@@ -117,6 +137,39 @@ export const fetchNextAdvancedsearchResults = (from, size) => (dispatch, getStat
     .then((text) => {
       const response = JSON.parse(text);
       dispatch(fetchNextAdvancedSearchSucess(response.results));
+    });
+  // .catch(error => dispatch(fetchRandomEntryFailure(error)))
+};
+
+export const fetchFullAdvancedsearchResults = () => (dispatch, getState) => {
+  const currentState = getState().advancedsearch;
+
+  // Load all data
+  const criterias = {
+    ...currentState.searchCriterias,
+    from: 0,
+    size: currentState.totalNbResults,
+  };
+
+  dispatch(fetchFullAdvancedSearchStarted(criterias));
+
+  let completeUrl = advancedsearchUrl;
+  if (criterias) {
+    completeUrl += `?${Object.keys(criterias).map(k => `${k}=${encodeURIComponent(criterias[k])}`).join('&')}`;
+  }
+
+  return fetch(completeUrl)
+    .then((response) => {
+      if (response.status >= 400) {
+        const errorMessage = `Fetching ${completeUrl} status: ${response.status}`;
+        dispatch(fetchFullAdvancedSearchFailure(errorMessage));
+        throw new Error(errorMessage);
+      }
+      return response.text();
+    })
+    .then((text) => {
+      const response = JSON.parse(text);
+      dispatch(fetchFullAdvancedSearchSucess(response.results));
     });
   // .catch(error => dispatch(fetchRandomEntryFailure(error)))
 };
