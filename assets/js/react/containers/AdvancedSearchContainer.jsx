@@ -11,7 +11,7 @@ import AdvancedSearch from '../components/homepage/advancedSearch/AdvancedSearch
 
 const startAdvancedsearch = (formValues, resourceType) => (dispatch) => {
   // complete is set to true because we need the complete results about the data
-  // resourceType is set to "entries", "grottos" or "massifs" according to the search wanted
+  // resourceType is set to "entries", "grottos", "massifs" or "bbs" according to the search wanted
   const paramsToSend = {
     resourceType,
     complete: true,
