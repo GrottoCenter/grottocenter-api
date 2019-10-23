@@ -476,7 +476,7 @@ class SearchResultsTable extends React.Component {
                             <React.Fragment>
                               <StyledTableCell>{result.ref_}</StyledTableCell>
                               <StyledTableCell>{result.title}</StyledTableCell>
-                              <StyledTableCell><Translate>{result.subtheme ? result.subtheme.name : '-'}</Translate></StyledTableCell>
+                              <StyledTableCell><Translate>{result.subtheme ? result.subtheme.id + ' - ' + result.subtheme.name : '-'}</Translate></StyledTableCell>
                               <StyledTableCell><Translate>{result.country ? result.country.name : '-'}</Translate></StyledTableCell>
                               <StyledTableCell>{result.authors ? result.authors : '-'}</StyledTableCell>
                               <StyledTableCell>{result.year ? result.year : '-'}</StyledTableCell>

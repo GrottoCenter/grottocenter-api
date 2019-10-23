@@ -126,6 +126,7 @@ export const findGroupUrl = `/api/${apiVersion}/grottos/`;
 export const findBbsUrl = `/api/${apiVersion}/bbs/`;
 export const advancedsearchUrl = `/api/${apiVersion}/advancedSearch`;
 export const quicksearchUrl = `/api/${apiVersion}/search`;
+export const subthemesUrl = `/api/${apiVersion}/bbsSubthemes`;
 
 // ===== Grottocenter Client routes
 export const swaggerLinkV1 = '/ui/swagger/1';

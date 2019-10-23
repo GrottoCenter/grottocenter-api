@@ -97,11 +97,10 @@ const Group = (props) => {
               </i>
             ) : ''}
 
-            {group.Is_official_partner ? (
+            {group.isOfficialPartner ? (
               <span>
                 {group.yearBirth ? ' - ' : ''}
                 <Translate>Official partner</Translate>
-                {' '}
                 <GClogo src="/images/logoGC.png" alt="GC logo" />
               </span>
             ) : ''}

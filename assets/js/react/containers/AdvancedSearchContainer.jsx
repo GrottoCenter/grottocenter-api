@@ -1,5 +1,6 @@
 import { connect } from 'react-redux';
 import { fetchAdvancedsearchResults, resetAdvancedSearchResults } from '../actions/Advancedsearch';
+import { loadSubthemes } from '../actions/Subtheme';
 import AdvancedSearch from '../components/homepage/advancedSearch/AdvancedSearch';
 
 //
@@ -47,6 +48,10 @@ const resetAdvancedSearch = () => (dispatch) => {
   dispatch(resetAdvancedSearchResults());
 };
 
+const getSubThemes = () => (dispatch) => {
+  dispatch(loadSubthemes());
+}
+
 const mapDispatchToProps = dispatch => ({
   startAdvancedsearch: (formValues, resourceType) => dispatch(
     startAdvancedsearch(formValues, resourceType),
@@ -54,10 +59,14 @@ const mapDispatchToProps = dispatch => ({
   resetAdvancedSearch: () => dispatch(
     resetAdvancedSearch(),
   ),
+  getSubThemes: () => dispatch(
+    getSubThemes(),
+  ),
 });
 
-const mapStateToProps = () => ({
-
+const mapStateToProps = (state) => ({
+  themes: state.subtheme.themes,
+  subthemes: state.subtheme.subthemes,
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(AdvancedSearch);

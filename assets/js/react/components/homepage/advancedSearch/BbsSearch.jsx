@@ -11,10 +11,8 @@ import Card from '@material-ui/core/Card';
 import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
 
-import FormControl from '@material-ui/core/FormControl';
-import FormLabel from '@material-ui/core/FormLabel';
-import TextField from '@material-ui/core/TextField';
-import Switch from '@material-ui/core/Switch';
+import { FormLabel, FormControl, TextField, Switch, InputLabel, Select, MenuItem } from '@material-ui/core';
+
 import Slider from 'rc-slider';
 
 import Translate from '../../common/Translate';
@@ -85,6 +83,7 @@ class BbsSearch extends React.Component {  /*
     super(props);
     this.state = this.getInitialState();
     this.handleValueChange = this.handleValueChange.bind(this);
+    props.getSubThemes();
   }
 
   getInitialState = () => {
@@ -155,7 +154,8 @@ class BbsSearch extends React.Component {  /*
       resourceType,
       resetResults,
       startAdvancedsearch,
-
+      subthemes,
+      themes,
       yearMinValue, yearMaxValue
     } = this.props;
 
@@ -230,37 +230,48 @@ class BbsSearch extends React.Component {  /*
                 <legend className={classes.legend}><Translate>Subject</Translate></legend>
 
                 <div className={classes.formPartContainer}>
-                  <TextField
-                    className={classes.formElement}
-                    label={(
-                      <span className={classes.formElementFontSize}>
-                        <Translate>Theme</Translate>
-                      </span>
-                    )}
-                    onChange={event => this.handleValueChange('bbs theme', event)}
-                    value={theme}
-                    InputProps={{
-                      classes: {
-                        input: classes.formElementFontSize,
-                      },
-                    }}
-                  />
+                  <FormControl className={classes.formElement}>
+                    <InputLabel htmlFor="bbs theme"><Translate>Theme</Translate></InputLabel>
+                    <Select
+                      value={theme}
+                      onChange={event => this.handleValueChange('bbs theme', event)}
+                      inputProps={{
+                        name: 'bbs theme',
+                        id: 'bbs theme',
+                      }}
+                    >
+                      <MenuItem key={0} value={""}><i><Translate>All themes</Translate></i></MenuItem>
+                      {themes.map(theme => (
+                        <MenuItem key={theme.id} value={theme.name}>
+                          {theme.id}
+                          {"\u00a0-\u00a0"}
+                          <Translate>{theme.name}</Translate>
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
 
-                  <TextField
-                    className={classes.formElement}
-                    label={(
-                      <span className={classes.formElementFontSize}>
-                        <Translate>Subtheme</Translate>
-                      </span>
-                    )}
-                    onChange={event => this.handleValueChange('bbs subtheme', event)}
-                    value={subtheme}
-                    InputProps={{
-                      classes: {
-                        input: classes.formElementFontSize,
-                      },
-                    }}
-                  />
+                  <FormControl className={classes.formElement}>
+                    <InputLabel htmlFor="bbs subtheme"><Translate>Subtheme</Translate></InputLabel>
+                    <Select
+                      value={subtheme}
+                      onChange={event => this.handleValueChange('bbs subtheme', event)}
+                      inputProps={{
+                        name: 'bbs subtheme',
+                        id: 'bbs subtheme',
+                      }}
+                    >
+                      <MenuItem key={0} value={""}><i><Translate>All subthemes</Translate></i></MenuItem>
+                      {subthemes.map(subtheme => (
+                        <MenuItem key={subtheme.id} value={subtheme.name}>
+                          {subtheme.id}
+                          {"\u00a0-\u00a0"}
+                          <Translate>{subtheme.name}</Translate>
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+
                 </div>
               </fieldset>
 
@@ -400,6 +411,9 @@ BbsSearch.propTypes = {
   startAdvancedsearch: PropTypes.func.isRequired,
   resetResults: PropTypes.func.isRequired,
   resourceType: PropTypes.string.isRequired,
+  getSubThemes: PropTypes.func.isRequired,
+  subthemes: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
+  themes: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
 
   yearMinValue: PropTypes.number,
   yearMaxValue: PropTypes.number,

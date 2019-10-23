@@ -418,7 +418,7 @@ module.exports.routes = {
     }
   },
 
-  'GET /api/v1/bbsSubThemes/:id': {
+  'GET /api/v1/bbsSubthemes/:id': {
     controller: 'v1/BbsChapter',
     action: 'find',
     api: {
@@ -430,7 +430,7 @@ module.exports.routes = {
     }
   },
 
-  'GET /api/v1/bbsSubThemes': {
+  'GET /api/v1/bbsSubthemes': {
     controller: 'v1/BbsChapter',
     action: 'findAll',
     api: {

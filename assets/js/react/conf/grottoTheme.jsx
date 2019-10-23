@@ -51,6 +51,11 @@ export default {
         fontFamily,
       },
     },
+    MuiFormLabel: {
+      root: {
+        fontSize: '1.4rem',
+      },
+    },
   },
 };
 

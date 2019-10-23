@@ -11,6 +11,7 @@ import partnersCarousel from './PartnersCarouselReducer';
 import group from './GroupReducer';
 import massif from './MassifReducer';
 import bbs from './BbsReducer';
+import subtheme from './SubthemeReducer';
 
 //
 //
@@ -30,7 +31,8 @@ const GCReducer = combineReducers({
   partnersCarousel,
   group,
   massif,
-  bbs
+  bbs,
+  subtheme
 });
 
 export default GCReducer;

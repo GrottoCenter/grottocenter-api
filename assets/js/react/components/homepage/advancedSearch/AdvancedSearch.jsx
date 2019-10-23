@@ -48,7 +48,7 @@ class AdvancedSearch extends React.Component {
 
   render() {
     const {
-      classes, resetAdvancedSearch, startAdvancedsearch,
+      classes, resetAdvancedSearch, startAdvancedsearch, getSubThemes, subthemes, themes
     } = this.props;
     const { tabSelected } = this.state;
 
@@ -137,6 +137,9 @@ class AdvancedSearch extends React.Component {
               }}
               resourceType={advancedSearchTypes[3]}
               resetResults={resetAdvancedSearch}
+              getSubThemes={getSubThemes}
+              subthemes={subthemes}
+              themes={themes}
             />
           )}
 
@@ -152,6 +155,9 @@ AdvancedSearch.propTypes = {
   classes: PropTypes.shape({}).isRequired,
   resetAdvancedSearch: PropTypes.func.isRequired,
   startAdvancedsearch: PropTypes.func.isRequired,
+  getSubThemes: PropTypes.func.isRequired,
+  subthemes: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
+  themes: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
 };
 
 AdvancedSearch.defaultProps = {
