@@ -95,6 +95,12 @@ const BbsModel = {
   country: undefined,
 };
 
+const BbsChapterModel = {
+  id: undefined,
+  name: undefined,
+  theme: undefined,
+}
+
 /* Mappers */
 
 module.exports = {
@@ -408,4 +414,26 @@ module.exports = {
 
     return result;
   },
+
+  convertToBbsGeoModel: function(source) {
+    
+    return source;
+  },
+
+  convertToBbsChapterModel: function(source) {
+    let result = Object.assign({}, BbsChapterModel);
+    result.id = source.id;
+    result.name = source.cTexteMatiere;
+    result.theme = source.cTexteChapitre;
+    return result;
+  },
+
+  convertToBbsChapterList: function(source) {
+    let chapters = [];
+    source.forEach((item) => {
+      let chapter = this.convertToBbsChapterModel(item);
+      chapters.push(chapter);
+    });
+    return chapters;
+  }
 };

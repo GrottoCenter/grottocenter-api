@@ -20,12 +20,14 @@ module.exports = {
     if (err) {
       let errorMessage = 'An internal error occurred when getting ' + parameters.searchedItem;
       sails.log.error(errorMessage + ': ' + err);
-      return res.json(500, { error: errorMessage });
+      res.status(500);
+      return res.json({ error: errorMessage });
     }
     if (!found) {
       let notFoundMessage = parameters.searchedItem + ' not found';
       sails.log.debug(notFoundMessage);
-      return res.json(404, { error: notFoundMessage });
+      res.status(404);
+      return res.json({ error: notFoundMessage });
     }
 
     res.set('Accept-Range', parameters.searchedItem + ' ' + parameters.maxRange);

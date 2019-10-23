@@ -393,7 +393,7 @@ module.exports.routes = {
     }
   },
 
-  /* REST API for BBS controller */
+  /* REST API for BBS controllers */
   'GET /api/v1/bbs/:ref_': {
     controller: 'v1/Bbs',
     action: 'find',
@@ -406,8 +406,42 @@ module.exports.routes = {
     }
   },
 
-  /* REST API for Admin controller */
+  'GET /api/v1/bbsGeos/:id': {
+    controller: 'v1/BbsGeo',
+    action: 'find',
+    api: {
+      entity: 'bbsGeo',
+      limit: 50,
+    },
+    cors: {
+      allowOrigins: '*'
+    }
+  },
 
+  'GET /api/v1/bbsSubThemes/:id': {
+    controller: 'v1/BbsChapter',
+    action: 'find',
+    api: {
+      entity: 'bbsChapter',
+      limit: 50,
+    },
+    cors: {
+      allowOrigins: '*'
+    }
+  },
+
+  'GET /api/v1/bbsSubThemes': {
+    controller: 'v1/BbsChapter',
+    action: 'findAll',
+    api: {
+      entity: 'bbsChapter',
+    },
+    cors: {
+      allowOrigins: '*'
+    }
+  },
+
+  /* REST API for Admin controller */
   'GET /api/admin/entries/findAllOfInterest': {
     controller: 'Admin',
     action: 'findAllInterestEntries'
