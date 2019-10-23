@@ -23,8 +23,8 @@ const mapDispatchToProps = dispatch => ({
   getNewResults: (from, size) => dispatch(
     getNewResults(from, size),
   ),
-  fetchFullAdvancedsearchResults: () => dispatch(
-    fetchFullAdvancedsearchResults(),
+  getFullResults: () => dispatch(
+    getFullResults(),
   ),
   resetAdvancedSearch: () => dispatch(
     resetAdvancedSearch(),
@@ -36,6 +36,7 @@ const mapStateToProps = state => ({
   isLoadingFullData: state.advancedsearch.isLoadingFullData,
   wantToDownloadCSV: state.advancedsearch.wantToDownloadCSV,
   results: state.advancedsearch.results,
+  fullResults: state.advancedsearch.fullResults,
   resourceType: state.advancedsearch.searchCriterias.resourceType,
   totalNbResults: state.advancedsearch.totalNbResults,
 });

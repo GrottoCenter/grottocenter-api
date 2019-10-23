@@ -24,6 +24,7 @@ const initialState = {
   totalNbResults: 0, // total number of results for the search
   results: undefined, // search results
   errors: undefined, // fetch errors
+  fullResults: [], // All search results
   isLoading: false,
   isLoadingFullData: false,
   wantToDownloadCSV: false, // specify if a download of the full data was asked by the user
@@ -51,7 +52,7 @@ const advancedsearch = (state = initialState, action) => {
         searchCriterias: {
           ...action.criterias,
         },
-        wantToDownloadCSV: false,
+        wantToDownloadCSV: false, // Reset the need of downloading as CSV because it's a new search
       });
     }
     case FETCH_ADVANCEDSEARCH_SUCCESS: {
@@ -120,7 +121,7 @@ const advancedsearch = (state = initialState, action) => {
     case FETCH_FULL_ADVANCEDSEARCH_SUCCESS: {
       // Remove duplicates
       return Object.assign({}, state, {
-        results: [...new Set(action.results)],
+        fullResults: [...new Set(action.results)],
         isLoadingFullData: false,
         wantToDownloadCSV: true,
       });

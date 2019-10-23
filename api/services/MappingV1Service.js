@@ -31,7 +31,7 @@ const CountResult = {
 
 const MassifModel = {
   id: undefined,
-  author: {},
+  author: undefined,
   idReviewer: undefined,
   name: undefined,
   dateInscription: undefined,

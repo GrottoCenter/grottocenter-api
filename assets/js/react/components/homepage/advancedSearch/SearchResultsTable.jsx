@@ -112,6 +112,7 @@ class SearchResultsTable extends React.Component {
     this.bbsTableHead = this.bbsTableHead.bind(this);
     this.handleRowClick = this.handleRowClick.bind(this);
     this.loadCSVData = this.loadCSVData.bind(this);
+    this.getFullResultsAsCSV = this.getFullResultsAsCSV.bind(this);
   }
 
   // ============================== //
@@ -332,15 +333,69 @@ class SearchResultsTable extends React.Component {
 
   // ===== CSV Export
   loadCSVData = (event, done) => {
-    const { fetchFullAdvancedsearchResults } = this.props;
-    fetchFullAdvancedsearchResults();
+    const { getFullResults } = this.props;
+    getFullResults();
+  }
+
+  getFullResultsAsCSV = () => {
+    const { resourceType, fullResults } = this.props;
+    let cleanedResults = fullResults;
+    switch (resourceType) {
+      case 'entries':
+        // Flatten cave and massif
+        for(let result of cleanedResults) {
+          result.cave = result.cave.name;
+          result.massif = result.massif.name;
+          delete result['type'];
+          delete result['highlights'];
+        }    
+        break;
+
+      case 'grottos': 
+        // Flatten cavers and entries
+        for(let result of cleanedResults) {
+          result.cavers = result.cavers.map(c => c.nickname);
+          result.entries = result.entries.map(e => e.name);
+          delete result['type'];
+          delete result['highlights'];
+        }  
+        break;
+
+      case 'massifs':
+        // Flatten caves and entries
+        for(let result of cleanedResults) {
+          result.caves = result.caves.map(c => c.name);
+          result.entries = result.entries.map(e => e.name);
+          delete result['type'];
+          delete result['highlights'];
+        }
+        break;
+
+      case 'bbs':
+        // Flatten countries and subthemes
+        for(let result of cleanedResults) {
+          if(result.country) {
+            result.countryCode = result.country.id;
+            result.country = result.country.name;
+          }
+          if(result.subtheme) {
+            result.subthemeId = result.subtheme.id;
+            result.subtheme = result.subtheme.name;
+          }
+          delete result['type'];
+          delete result['highlights'];
+        }
+        break;
+    }
+
+    return cleanedResults;
   }
 
   // ===== Render ===== //
 
   render() {
     const {
-      classes, isLoading, results, resourceType, totalNbResults, isLoadingFullData, wantToDownloadCSV
+      classes, isLoading, results, resourceType, totalNbResults, isLoadingFullData, wantToDownloadCSV, fullResults
     } = this.props;
     const { from, page, size } = this.state;
 
@@ -446,8 +501,8 @@ class SearchResultsTable extends React.Component {
                     <Translate>Export to CSV</Translate>
                   </Button>
 
-                  {!isLoadingFullData && !isLoading && results.length == totalNbResults && wantToDownloadCSV ? (
-                    <CSVDownload data={results} target="_blank" />
+                  {!isLoadingFullData && fullResults.length == totalNbResults && wantToDownloadCSV ? (
+                    <CSVDownload data={this.getFullResultsAsCSV()} target="_blank" />
                   ) : ''}
 
                   <StyledTablePagination
@@ -516,13 +571,15 @@ SearchResultsTable.propTypes = {
   results: PropTypes.arrayOf(PropTypes.shape({})),
   resourceType: PropTypes.oneOf(['', 'entries', 'grottos', 'massifs', 'bbs']).isRequired,
   getNewResults: PropTypes.func.isRequired,
-  fetchFullAdvancedsearchResults: PropTypes.func.isRequired,
+  getFullResults: PropTypes.func.isRequired,
   wantToDownloadCSV: PropTypes.bool.isRequired,
   totalNbResults: PropTypes.number.isRequired,
+  fullResults: PropTypes.arrayOf(PropTypes.shape({})),
 };
 
 SearchResultsTable.defaultProps = {
   results: undefined,
+  fullResults: undefined,
 };
 
 SearchResultsTable.contextTypes = {
