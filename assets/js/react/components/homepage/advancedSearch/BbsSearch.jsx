@@ -157,17 +157,15 @@ class BbsSearch extends React.Component {  /*
         });
 
         // Eventually, empty the subtheme if it's not valid anymore regarding the new theme
-        // TODO C. ROIG
         const subtheme = this.state['bbs subtheme'];
-        let newSubtheme = subtheme;
-
-        if (newFilteredSubthemes.indexOf(subtheme) == -1) {
-          newSubtheme = "";
+        let newSubthemeId = subtheme;
+        if(!newFilteredSubthemes.find(st => st.id == newSubthemeId)) {
+          newSubthemeId = "";
         }
 
         this.setState({
           filteredSubthemes: newFilteredSubthemes,
-          'bbs subtheme': newSubtheme, // TODO doesn't work
+          'bbs subtheme': newSubthemeId, 
           'bbs theme': themeObj.id,
         });
         return;
@@ -261,7 +259,7 @@ class BbsSearch extends React.Component {  /*
               
               // Get theme and subtheme name from id
               const subthemeObj = this.getSubthemeObjFromId(stateToSearch['bbs subtheme']);
-              const themeObj = this.getSubthemeObjFromId(stateToSearch['bbs theme']);
+              const themeObj = this.getThemeObjFromId(stateToSearch['bbs theme']);
               stateToSearch['bbs subtheme'] = subthemeObj ? subthemeObj.name : '';
               stateToSearch['bbs theme'] = themeObj ? themeObj.name: '';
               startAdvancedsearch(stateToSearch, resourceType);
