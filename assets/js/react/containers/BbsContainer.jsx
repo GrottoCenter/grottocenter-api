@@ -9,7 +9,6 @@ const mapDispatchToProps = (dispatch, props) => ({
 const mapStateToProps = state => ({
   isFetching: state.bbs.isFetching,
   bbs: state.bbs.bbs,
-  currentLanguage: state.currentLanguage
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(Bbs);

@@ -7,7 +7,7 @@ import Translate from '../common/Translate';
 
 // A BBS object has its chapter and matiere in french or english. That's why we need to know the current language chosen by the user.
 const Bbs = (props) => {
-  const { isFetching, bbs, currentLanguage } = props;
+  const { isFetching, bbs } = props;
 
   if (isFetching) {
     return (<CircularProgress />);
@@ -19,7 +19,7 @@ const Bbs = (props) => {
         <CardContent>
           <h1>{bbs.title}</h1>
           <p>
-            {bbs.publicationExport}<Translate> by </Translate>{bbs.authors}
+            <b><Translate>Published in</Translate></b> {bbs.publicationExport} <b><Translate>by</Translate></b> {bbs.authors}
           </p>
 
           {bbs.subtheme ? (
@@ -68,11 +68,9 @@ const Bbs = (props) => {
 Bbs.propTypes = {
   isFetching: PropTypes.bool.isRequired,
   bbs: PropTypes.shape({}),
-  currentLanguage: "en"
 };
 Bbs.defaultProps = {
   bbs: undefined,
-  currentLanguage: "en"
 };
 
 export default Bbs;
