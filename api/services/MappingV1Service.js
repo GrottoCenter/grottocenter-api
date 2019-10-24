@@ -383,7 +383,7 @@ module.exports = {
     result.crosChapRebuilt = source.crosChapRebuilt;
     result.crosCountryRebuilt = source.crosCountryRebuilt;
     
-    // Don't return the abstract from Elasticsearch ('bbs abstract') = too big
+    // Don't return the abstract from Elasticsearch ('bbs abstract') = too big and useless as a search results
     result.abstract = source.abstract;
 
     // Conversion (from Elasticsearch or not)
@@ -416,7 +416,6 @@ module.exports = {
   },
 
   convertToBbsGeoModel: function(source) {
-    
     return source;
   },
 
