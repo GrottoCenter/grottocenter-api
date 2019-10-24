@@ -13,6 +13,7 @@ import CategoryIcon from '@material-ui/icons/Category';
 
 import Translate from '../common/Translate';
 
+// =====================
 
 const BottomBlock = styled.div`
   display: flex;
@@ -24,35 +25,17 @@ const CrossIndexBlock = styled.div`
   flex-basis: 300px;
 `;
 
-const StyledPublicationIcon = withStyles({
+const rootVAlignBottom = {
   root: {
     verticalAlign: 'bottom',
   },
-})(ImportContactsIcon);
+};
 
-const StyledPersonIcon = withStyles({
-  root: {
-    verticalAlign: 'bottom',
-  },
-})(PersonIcon);
-
-const StyledReferenceIcon = withStyles({
-  root: {
-    verticalAlign: 'bottom',
-  },
-})(ClassIcon);
-
-const StyledCountryIcon = withStyles({
-  root: {
-    verticalAlign: 'bottom',
-  },
-})(PublicIcon);
-
-const StyledThemeIcon = withStyles({
-  root: {
-    verticalAlign: 'bottom',
-  },
-})(CategoryIcon);
+const StyledPublicationIcon = withStyles(rootVAlignBottom)(ImportContactsIcon);
+const StyledPersonIcon = withStyles(rootVAlignBottom)(PersonIcon);
+const StyledReferenceIcon = withStyles(rootVAlignBottom)(ClassIcon);
+const StyledCountryIcon = withStyles(rootVAlignBottom)(PublicIcon);
+const StyledThemeIcon = withStyles(rootVAlignBottom)(CategoryIcon);
 
 // =================== End styles ==================
 
