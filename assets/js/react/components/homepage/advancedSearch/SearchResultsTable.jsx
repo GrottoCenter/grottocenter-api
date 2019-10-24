@@ -76,6 +76,8 @@ const styles = () => ({
   },
   table: {
     marginBottom: 0,
+    display: 'block',
+    overflow: 'auto',
   },
   textError: {
     color: '#ff3333',
