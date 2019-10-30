@@ -172,14 +172,18 @@ class BbsSearch extends React.Component {  /*
       }
     }
 
-    // Select appropriate theme according to the subtheme
+    // Select appropriate theme according to the subtheme and filter subthemes
     if (keyName == 'bbs subtheme' && event.target.value != "") {
       const { themes, subthemes } = this.props;
       const subthemeObj = this.getSubthemeObjFromId(event.target.value);
       const themeObj = themes.find(t => t.id == subthemeObj.id.split('.')[0]);
+      const newFilteredSubthemes = subthemes.filter(st => {
+        return st.id.split('.')[0] == themeObj.id;
+      });
       this.setState({
         'bbs theme': themeObj.id,
         'bbs subtheme': subthemeObj.id,
+        filteredSubthemes: newFilteredSubthemes,
       })
       return;
     }
