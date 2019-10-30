@@ -1,5 +1,5 @@
 import { connect } from 'react-redux';
-import { fetchNextAdvancedsearchResults, fetchFullAdvancedsearchResults, resetAdvancedSearchResults } from '../actions/Advancedsearch';
+import { fetchNextAdvancedsearchResults, fetchFullAdvancedsearchResults } from '../actions/Advancedsearch';
 import SearchResultsTable from '../components/homepage/advancedSearch/SearchResultsTable';
 
 //
@@ -13,25 +13,18 @@ const getNewResults = (from, size) => (dispatch) => {
 
 const getFullResults = () => (dispatch) => {
   dispatch(fetchFullAdvancedsearchResults());
-}
-
-const resetAdvancedSearch = () => (dispatch) => {
-  dispatch(resetAdvancedSearchResults());
 };
 
-const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = (dispatch) => ({
   getNewResults: (from, size) => dispatch(
     getNewResults(from, size),
   ),
   getFullResults: () => dispatch(
     getFullResults(),
   ),
-  resetAdvancedSearch: () => dispatch(
-    resetAdvancedSearch(),
-  ),
 });
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   isLoading: state.advancedsearch.isLoading,
   isLoadingFullData: state.advancedsearch.isLoadingFullData,
   wantToDownloadCSV: state.advancedsearch.wantToDownloadCSV,

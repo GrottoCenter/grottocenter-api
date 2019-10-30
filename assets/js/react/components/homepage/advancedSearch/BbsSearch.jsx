@@ -12,7 +12,7 @@ import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
 
 import {
-  FormLabel, FormControl, TextField, Switch, InputLabel, Select, MenuItem 
+  FormLabel, FormControl, TextField, Switch, InputLabel, Select, MenuItem
 } from '@material-ui/core';
 
 import Slider from 'rc-slider';
@@ -243,6 +243,7 @@ class BbsSearch extends React.Component {
       'bbs theme': theme,
       'bbs subtheme': subtheme,
       'bbs country': country,
+      'bbs publication': publication,
       filteredSubthemes,
     } = this.state;
 
@@ -402,6 +403,22 @@ class BbsSearch extends React.Component {
                 )}
                 onChange={(event) => this.handleValueChange('bbs authors', event)}
                 value={authors}
+                InputProps={{
+                  classes: {
+                    input: classes.formElementFontSize,
+                  },
+                }}
+              />
+
+              <TextField
+                className={classes.formElement}
+                label={(
+                  <span className={classes.formElementFontSize}>
+                    <Translate>Publication</Translate>
+                  </span>
+                )}
+                onChange={(event) => this.handleValueChange('bbs publication', event)}
+                value={publication}
                 InputProps={{
                   classes: {
                     input: classes.formElementFontSize,

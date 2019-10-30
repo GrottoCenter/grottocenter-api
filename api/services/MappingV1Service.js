@@ -281,6 +281,7 @@ module.exports = {
             'bbs subtheme' : 'subtheme',
             'bbs abstract' : 'abstract',
             'bbs country': 'country',
+            'bbs publication': 'publication',
             'numericalRef' : 'numerical reference'
           };
           // Rename keys of data and highlights
@@ -381,20 +382,20 @@ module.exports = {
 
   convertToBbsModel: function(source) {
     let result = Object.assign({}, BbsModel);
-    result.publicationExport = source.publicationExport;
     result.crosChapRebuilt = source.crosChapRebuilt;
     result.crosCountryRebuilt = source.crosCountryRebuilt;
     
     // Don't return the abstract from Elasticsearch ('bbs abstract') = too big and useless as a search results
     result.abstract = source.abstract;
-
+    
     // Conversion (from Elasticsearch or not)
     result.numericalRef = source['bbs numericalRef'] ? source['bbs numericalRef'] : source.xRefNumeriqueFinal;
     result.ref = source['bbs ref'] ? source['bbs ref'] : source.ref_;
     result.id = source['bbs numericalref'] ? source['bbs numericalref'] : source.id; // Use xRefNumeriqueFinal as a fallback id
     result.title = source['bbs title'] ? source['bbs title'] : source.articleTitle;
     result.year = source['bbs year'] ? source['bbs year'] : source.articleYear;
-    result.authors = source['bbs authors'] ? source['bbs authors'] : source.cAuthorsFull;  
+    result.authors = source['bbs authors'] ? source['bbs authors'] : source.cAuthorsFull;
+    result.publication = source['bbs publication'] ? source['bbs publication'] : source.publicationExport;
     
     // Build country / region
     if (source['bbs country code'] || source.country) {

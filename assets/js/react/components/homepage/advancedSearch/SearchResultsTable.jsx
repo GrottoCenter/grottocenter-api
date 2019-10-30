@@ -245,8 +245,7 @@ class SearchResultsTable extends React.Component {
   // ===== Handle functions ===== //
 
   handleRowClick = (id) => {
-    const { resourceType, resetAdvancedSearch } = this.props;
-    resetAdvancedSearch();
+    const { resourceType } = this.props;
 
     if (resourceType === 'entries') {
       const externalLink = `${(detailPageV2Links[locale] !== undefined) ? detailPageV2Links[locale] : detailPageV2Links['*']}&category=entry&id=${id}`; //eslint-disable-line
@@ -566,14 +565,13 @@ class SearchResultsTable extends React.Component {
 
               </React.Fragment>
             ) : (
-                <Translate>No results</Translate>
-              )
-            }
+              <Translate>No results</Translate>
+            )}
           </CardContent>
         </Card>
       ) : (
-          ''
-        ))
+        ''
+      ))
     );
   }
 }
@@ -583,7 +581,6 @@ SearchResultsTable.propTypes = {
   history: PropTypes.shape({ push: PropTypes.func }).isRequired,
   isLoading: PropTypes.bool.isRequired,
   isLoadingFullData: PropTypes.bool.isRequired,
-  resetAdvancedSearch: PropTypes.func.isRequired,
   results: PropTypes.arrayOf(PropTypes.shape({})),
   resourceType: PropTypes.oneOf(['', 'entries', 'grottos', 'massifs', 'bbs']).isRequired,
   getNewResults: PropTypes.func.isRequired,
