@@ -281,7 +281,7 @@ module.exports = {
             'bbs subtheme' : 'subtheme',
             'bbs abstract' : 'abstract',
             'bbs country': 'country',
-            'refnumerique' : 'numerical reference'
+            'numericalRef' : 'numerical reference'
           };
           // Rename keys of data and highlights
           const newSource = renameKeys(item._source, replacementKeys);
@@ -389,9 +389,9 @@ module.exports = {
     result.abstract = source.abstract;
 
     // Conversion (from Elasticsearch or not)
-    result.numericalRef = source['bbs refnumerique'] ? source['bbs refnumerique'] : source.xRefNumeriqueFinal;
-    result.ref_ = source['bbs ref'] ? source['bbs ref'] : source.ref_;
-    result.id = source.id ? source.id : result.ref_; // Use ref_ as a fallback id
+    result.numericalRef = source['bbs numericalRef'] ? source['bbs numericalRef'] : source.xRefNumeriqueFinal;
+    result.ref = source['bbs ref'] ? source['bbs ref'] : source.ref_;
+    result.id = source['bbs numericalref'] ? source['bbs numericalref'] : source.id; // Use xRefNumeriqueFinal as a fallback id
     result.title = source['bbs title'] ? source['bbs title'] : source.articleTitle;
     result.year = source['bbs year'] ? source['bbs year'] : source.articleYear;
     result.authors = source['bbs authors'] ? source['bbs authors'] : source.cAuthorsFull;  

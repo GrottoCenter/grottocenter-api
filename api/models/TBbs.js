@@ -14,12 +14,12 @@ module.exports = {
       type: 'number',
       unique: true,
       autoIncrement: true,
-      columnName: 'ref_'
+      columnName: 'XrefNumeriqueFinal'
     },
 
-    xRefNumeriqueFinal: {
+    ref_: {
       type: 'number',
-      columnName: 'XrefNumeriqueFinal'
+      columnName: 'ref_'
     },
 
     articleTitle: {

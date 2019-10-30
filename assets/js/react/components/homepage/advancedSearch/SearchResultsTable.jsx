@@ -233,7 +233,6 @@ class SearchResultsTable extends React.Component {
   bbsTableHead = () => (
     <TableHead>
       <StyledTableHeadRow>
-        <StyledTableHeadRowCell><Translate>Reference</Translate></StyledTableHeadRowCell>
         <StyledTableHeadRowCell><Translate>Title</Translate></StyledTableHeadRowCell>
         <StyledTableHeadRowCell><Translate>Subtheme</Translate></StyledTableHeadRowCell>
         <StyledTableHeadRowCell><Translate>Country or region</Translate></StyledTableHeadRowCell>
@@ -259,7 +258,7 @@ class SearchResultsTable extends React.Component {
 
     if (resourceType === 'grottos') window.open(`/ui/groups/${id}`, '_blank');
     if (resourceType === 'massifs') window.open(`/ui/massifs/${id}`, '_blank');
-    if (resourceType === 'bbs') window.open(`/ui/bbs/${id}/`, '_blank');
+    if (resourceType === 'bbs') window.open(`/ui/bbs/${id}`, '_blank');
   }
 
   handleChangePage = (event, newPage) => {
@@ -485,7 +484,6 @@ class SearchResultsTable extends React.Component {
                           ))}
                           {(resourceType === 'bbs' && (
                             <React.Fragment>
-                              <StyledTableCell>{result.ref_}</StyledTableCell>
                               <StyledTableCell>{result.title}</StyledTableCell>
                               <StyledTableCell><Translate>{result.subtheme ? result.subtheme.id + ' - ' + result.subtheme.name : '-'}</Translate></StyledTableCell>
                               <StyledTableCell><Translate>{result.country ? result.country.name : '-'}</Translate></StyledTableCell>

@@ -131,7 +131,6 @@ export const subthemesUrl = `/api/${apiVersion}/bbsSubthemes`;
 // ===== Grottocenter Client routes
 export const swaggerLinkV1 = '/ui/swagger/1';
 export const entryDetailPath = '/ui/entries/';
-export const grottoDetailPath = '/ui/groups/';
 
 
 // ===== Misc config values

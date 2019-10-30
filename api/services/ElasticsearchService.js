@@ -15,7 +15,7 @@ const advancedSearchMetaParams = ['resourceType', 'complete', 'match_all_queries
 */
 const FUZZINESS = 1;
 
-var self = module.exports = {
+const self = module.exports = {
   /**
   * Update the Elasticsearch index according to the request.
   * @param {*} found resource to be updated 
@@ -114,7 +114,7 @@ var self = module.exports = {
                 'entries names', 'entries regions', 'entries cities', 'entry counties', 'entries countries',
 
                 // ==== BBS 
-                'bbs title^2', 'bbs authors', 'bbs abstract^0.5', 'bbs refNumerique', 'bbs ref', 'bbs country', 'bbs theme', 'bbs subtheme'
+                'bbs title^2', 'bbs authors', 'bbs abstract^0.5', 'bbs ref', 'bbs country', 'bbs theme', 'bbs subtheme', 'bbs publication'
               ],
             },       
           },
@@ -174,7 +174,7 @@ var self = module.exports = {
           // Value of a field
           if(isFieldParam && params[key] !== '') {
             // Sanitize all the query and remove empty words
-            const sanitizedWords = self.sanitizeQuery(params[key]).split(" ").filter(w => w != "");
+            const sanitizedWords = self.sanitizeQuery(params[key]).split(' ').filter(w => w !== '');
             sanitizedWords.map((word, index) => {
               const matchObj = {
                 wildcard: {}
@@ -192,7 +192,6 @@ var self = module.exports = {
               else matchObj.wildcard[key] = word.toLowerCase();
 
               matchingParams.push(matchObj);
-              
             });
           
           // Min range param
@@ -226,7 +225,7 @@ var self = module.exports = {
         body: {
           query: {
             bool: {
-                      
+              
             },
           },
           highlight : {
@@ -238,7 +237,7 @@ var self = module.exports = {
             order: 'score' 
           },
           from: params.from ? params.from : 0,
-          size: params.size ? params.size : 10 
+          size: params.size ? params.size : 10,
         }
       };
 

@@ -394,7 +394,7 @@ module.exports.routes = {
   },
 
   /* REST API for BBS controllers */
-  'GET /api/v1/bbs/:ref_': {
+  'GET /api/v1/bbs/:id': {
     controller: 'v1/Bbs',
     action: 'find',
     api: {

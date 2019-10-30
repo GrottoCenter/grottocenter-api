@@ -99,7 +99,7 @@ const Bbs = (props) => {
             {' '}
             <strong><Translate>Reference</Translate></strong>
             {': '}
-            {bbs.id}
+            {bbs.ref}
           </Typography>
 
           <hr />

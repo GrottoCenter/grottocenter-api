@@ -11,7 +11,9 @@ import Card from '@material-ui/core/Card';
 import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
 
-import { FormLabel, FormControl, TextField, Switch, InputLabel, Select, MenuItem } from '@material-ui/core';
+import {
+  FormLabel, FormControl, TextField, Switch, InputLabel, Select, MenuItem 
+} from '@material-ui/core';
 
 import Slider from 'rc-slider';
 
@@ -20,7 +22,7 @@ import Translate from '../../common/Translate';
 const Range = Slider.createSliderWithTooltip(Slider.Range);
 
 
-const styles = theme => ({
+const styles = (theme) => ({
   mainContainer: {},
   cardContainer: {},
   fieldset: {
@@ -74,11 +76,12 @@ const styles = theme => ({
   },
 });
 
-class BbsSearch extends React.Component {  /*
+class BbsSearch extends React.Component {
+  /*
     The state is created with particular key names because, these names are directly linked to
     the names of these properties in Elasticsearch. Here we have a syntax that
     allow us to distinguish search range parameters from others parameters.
-   */
+  */
   constructor(props) {
     super(props);
     this.state = this.getInitialState();
@@ -89,7 +92,7 @@ class BbsSearch extends React.Component {  /*
   }
 
   getInitialState = () => {
-    const { yearMinValue, yearMaxValue, themes, subthemes } = this.props;
+    const { yearMinValue, yearMaxValue } = this.props;
 
     return ({
       'bbs year-range': {
@@ -97,7 +100,7 @@ class BbsSearch extends React.Component {  /*
         min: yearMinValue,
         max: yearMaxValue,
       },
-      'bbs ref': '',
+      'bbs numericalRef': '',
       'bbs title': '',
       'bbs authors': '',
       'bbs abstract': '',
@@ -112,8 +115,11 @@ class BbsSearch extends React.Component {  /*
     const { subthemes } = this.props;
     const { filteredSubthemes } = this.state;
 
-    // Update only when the filtered subthemes are empty. Then, they are fully managed by the component itself.
-    if (filteredSubthemes != subthemes && filteredSubthemes.length == 0) {
+    /*
+      Update only when the filtered subthemes are empty.
+      Then, they are fully managed by the component itself.
+    */
+    if (filteredSubthemes !== subthemes && filteredSubthemes.length === 0) {
       this.setState({
         filteredSubthemes: subthemes,
       });
@@ -122,69 +128,63 @@ class BbsSearch extends React.Component {  /*
 
   getThemeObjFromId = (id) => {
     const { themes } = this.props;
-    return themes.find(t => t.id == id);
+    return themes.find((t) => t.id === id);
   }
 
   getSubthemeObjFromId = (id) => {
     const { subthemes } = this.props;
-    return subthemes.find(st => st.id == id);
+    return subthemes.find((st) => st.id === id);
   }
 
   /**
    * keyName: String
    * event: Event
    * This function changes the state of the keyName property
-   * with the value of the target event. 
+   * with the value of the target event.
    * It also filters the themes and subthemes mutually.
    */
   handleValueChange = (keyName, event) => {
-    if (keyName == 'bbs theme') {
+    if (keyName === 'bbs theme') {
       const { subthemes } = this.props;
       // Repopulate all subthemes
-      if (event.target.value == "") {
+      if (event.target.value === '') {
         this.setState({
           filteredSubthemes: subthemes,
-          'bbs theme': "",
+          'bbs theme': '',
         });
         return;
       }
 
       // Filter subthemes
-      else {
-        const themeObj = this.getThemeObjFromId(event.target.value);
-        const newFilteredSubthemes = subthemes.filter(st => {
-          return st.id.split('.')[0] == themeObj.id;
-        });
+      const themeObj = this.getThemeObjFromId(event.target.value);
+      const newFilteredSubthemes = subthemes.filter((st) => st.id.split('.')[0] === themeObj.id);
 
-        // Eventually, empty the subtheme if it's not valid anymore regarding the new theme
-        const subtheme = this.state['bbs subtheme'];
-        let newSubthemeId = subtheme;
-        if(!newFilteredSubthemes.find(st => st.id == newSubthemeId)) {
-          newSubthemeId = "";
-        }
-
-        this.setState({
-          filteredSubthemes: newFilteredSubthemes,
-          'bbs subtheme': newSubthemeId, 
-          'bbs theme': themeObj.id,
-        });
-        return;
+      // Eventually, empty the subtheme if it's not valid anymore regarding the new theme
+      const { 'bbs subtheme': subtheme } = this.state;
+      let newSubthemeId = subtheme;
+      if (!newFilteredSubthemes.find((st) => st.id === newSubthemeId)) {
+        newSubthemeId = '';
       }
+
+      this.setState({
+        filteredSubthemes: newFilteredSubthemes,
+        'bbs subtheme': newSubthemeId,
+        'bbs theme': themeObj.id,
+      });
+      return;
     }
 
     // Select appropriate theme according to the subtheme and filter subthemes
-    if (keyName == 'bbs subtheme' && event.target.value != "") {
+    if (keyName === 'bbs subtheme' && event.target.value !== '') {
       const { themes, subthemes } = this.props;
       const subthemeObj = this.getSubthemeObjFromId(event.target.value);
-      const themeObj = themes.find(t => t.id == subthemeObj.id.split('.')[0]);
-      const newFilteredSubthemes = subthemes.filter(st => {
-        return st.id.split('.')[0] == themeObj.id;
-      });
+      const themeObj = themes.find((t) => t.id === subthemeObj.id.split('.')[0]);
+      const newFilteredSubthemes = subthemes.filter((st) => st.id.split('.')[0] === themeObj.id);
       this.setState({
         'bbs theme': themeObj.id,
         'bbs subtheme': subthemeObj.id,
         filteredSubthemes: newFilteredSubthemes,
-      })
+      });
       return;
     }
 
@@ -214,7 +214,7 @@ class BbsSearch extends React.Component {  /*
    * This function set the state of the keyname property
    * to be the same value as the event of the slider.
    */
-  handleCheckedChange = keyName => (event) => {
+  handleCheckedChange = (keyName) => (event) => {
     const newState = {
       [keyName]: {
         ...this.state[keyName],
@@ -231,7 +231,7 @@ class BbsSearch extends React.Component {  /*
       resetResults,
       startAdvancedsearch,
       yearMinValue, yearMaxValue,
-      themes
+      themes,
     } = this.props;
 
     const {
@@ -243,7 +243,7 @@ class BbsSearch extends React.Component {  /*
       'bbs theme': theme,
       'bbs subtheme': subtheme,
       'bbs country': country,
-      filteredSubthemes
+      filteredSubthemes,
     } = this.state;
 
     return (
@@ -256,16 +256,16 @@ class BbsSearch extends React.Component {  /*
             autoComplete="off"
             onSubmit={(event) => {
               event.preventDefault();
-              
+
               // We don't want to use filteredSubthemes for the search
               const stateToSearch = { ...this.state };
               delete stateToSearch.filteredSubthemes;
-              
+
               // Get theme and subtheme name from id
               const subthemeObj = this.getSubthemeObjFromId(stateToSearch['bbs subtheme']);
               const themeObj = this.getThemeObjFromId(stateToSearch['bbs theme']);
               stateToSearch['bbs subtheme'] = subthemeObj ? subthemeObj.name : '';
-              stateToSearch['bbs theme'] = themeObj ? themeObj.name: '';
+              stateToSearch['bbs theme'] = themeObj ? themeObj.name : '';
               startAdvancedsearch(stateToSearch, resourceType);
             }}
             className={classes.formContainer}
@@ -285,7 +285,7 @@ class BbsSearch extends React.Component {  /*
                         <Translate>Title</Translate>
                       </span>
                     )}
-                    onChange={event => this.handleValueChange('bbs title', event)}
+                    onChange={(event) => this.handleValueChange('bbs title', event)}
                     value={title}
                     InputProps={{
                       classes: {
@@ -301,7 +301,7 @@ class BbsSearch extends React.Component {  /*
                         <Translate>Abstract</Translate>
                       </span>
                     )}
-                    onChange={event => this.handleValueChange('bbs abstract', event)}
+                    onChange={(event) => this.handleValueChange('bbs abstract', event)}
                     value={abstract}
                     InputProps={{
                       classes: {
@@ -320,17 +320,17 @@ class BbsSearch extends React.Component {  /*
                     <InputLabel htmlFor="bbs theme"><Translate>Theme</Translate></InputLabel>
                     <Select
                       value={theme}
-                      onChange={event => this.handleValueChange('bbs theme', event)}
+                      onChange={(event) => this.handleValueChange('bbs theme', event)}
                       inputProps={{
                         name: 'theme',
                         id: 'bbs theme',
                       }}
                     >
-                      <MenuItem key={-1} value={""}><i><Translate>All themes</Translate></i></MenuItem>
-                      {themes.map(choiceTheme => (
+                      <MenuItem key={-1} value=""><i><Translate>All themes</Translate></i></MenuItem>
+                      {themes.map((choiceTheme) => (
                         <MenuItem key={choiceTheme.id} value={choiceTheme.id}>
                           {choiceTheme.id}
-                          {"\u00a0-\u00a0"}
+                          {'\u00a0-\u00a0'}
                           <Translate>{choiceTheme.name}</Translate>
                         </MenuItem>
                       ))}
@@ -341,17 +341,17 @@ class BbsSearch extends React.Component {  /*
                     <InputLabel htmlFor="bbs subtheme"><Translate>Subtheme</Translate></InputLabel>
                     <Select
                       value={subtheme}
-                      onChange={event => this.handleValueChange('bbs subtheme', event)}
+                      onChange={(event) => this.handleValueChange('bbs subtheme', event)}
                       inputProps={{
                         name: 'subtheme',
                         id: 'bbs subtheme',
                       }}
                     >
-                      <MenuItem key={-1} value={""}><i><Translate>All subthemes</Translate></i></MenuItem>
-                      {filteredSubthemes.map(choiceSubtheme => (
+                      <MenuItem key={-1} value=""><i><Translate>All subthemes</Translate></i></MenuItem>
+                      {filteredSubthemes.map((choiceSubtheme) => (
                         <MenuItem key={choiceSubtheme.id} value={choiceSubtheme.id}>
                           {choiceSubtheme.id}
-                          {"\u00a0-\u00a0"}
+                          {'\u00a0-\u00a0'}
                           <Translate>{choiceSubtheme.name}</Translate>
                         </MenuItem>
                       ))}
@@ -368,7 +368,7 @@ class BbsSearch extends React.Component {  /*
                     <Translate>Reference</Translate>
                   </span>
                 )}
-                onChange={event => this.handleValueChange('bbs ref', event)}
+                onChange={(event) => this.handleValueChange('bbs ref', event)}
                 value={ref}
                 InputProps={{
                   classes: {
@@ -384,7 +384,7 @@ class BbsSearch extends React.Component {  /*
                     <Translate>Country or region</Translate>
                   </span>
                 )}
-                onChange={event => this.handleValueChange('bbs country', event)}
+                onChange={(event) => this.handleValueChange('bbs country', event)}
                 value={country}
                 InputProps={{
                   classes: {
@@ -400,7 +400,7 @@ class BbsSearch extends React.Component {  /*
                     <Translate>Authors</Translate>
                   </span>
                 )}
-                onChange={event => this.handleValueChange('bbs authors', event)}
+                onChange={(event) => this.handleValueChange('bbs authors', event)}
                 value={authors}
                 InputProps={{
                   classes: {
@@ -434,7 +434,7 @@ class BbsSearch extends React.Component {  /*
                   onChange={(values) => {
                     this.handleRangeChange('bbs year-range', values, yearMinValue, yearMaxValue);
                   }}
-                  tipFormatter={value => `${value}`}
+                  tipFormatter={(value) => `${value}`}
                   value={[yearRange.min, yearRange.max]}
                   disabled={!yearRange.isEditable}
                   trackStyle={[!yearRange.isEditable ? { backgroundColor: '#9e9e9e' } : { backgroundColor: '#ff9800' }]}
@@ -443,13 +443,13 @@ class BbsSearch extends React.Component {  /*
 
                 <div style={{ display: 'inline-flex', justifyContent: 'space-between' }}>
                   <TextField
-                    onChange={event => this.handleRangeChange('bbs year-range', [parseInt(event.target.value, 10) || 0, yearRange.max], 0, 2100)}
+                    onChange={(event) => this.handleRangeChange('bbs year-range', [parseInt(event.target.value, 10) || 0, yearRange.max], 0, 2100)}
                     value={yearRange.min}
                     disabled={!yearRange.isEditable}
                     style={{ width: '50px' }}
                   />
                   <TextField
-                    onChange={event => this.handleRangeChange('bbs year-range', [yearRange.min, parseInt(event.target.value, 10) || 0], 0, 2100)}
+                    onChange={(event) => this.handleRangeChange('bbs year-range', [yearRange.min, parseInt(event.target.value, 10) || 0], 0, 2100)}
                     value={yearRange.max}
                     disabled={!yearRange.isEditable}
                     style={{ width: '50px' }}
