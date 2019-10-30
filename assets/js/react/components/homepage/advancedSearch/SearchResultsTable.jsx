@@ -247,19 +247,20 @@ class SearchResultsTable extends React.Component {
   // ===== Handle functions ===== //
 
   handleRowClick = (id) => {
-    const { history, resourceType, resetAdvancedSearch } = this.props;
+    const { resourceType, resetAdvancedSearch } = this.props;
     resetAdvancedSearch();
-    const externalLink = `${(detailPageV2Links[locale] !== undefined) ? detailPageV2Links[locale] : detailPageV2Links['*']}&category=entry&id=${id}`; //eslint-disable-line
-
+    
     if (resourceType === 'entries') {
+      const externalLink = `${(detailPageV2Links[locale] !== undefined) ? detailPageV2Links[locale] : detailPageV2Links['*']}&category=entry&id=${id}`; //eslint-disable-line
       window.open(
         externalLink,
         '_blank',
       );
     }
-    if (resourceType === 'grottos') history.push(`/ui/groups/${id}`);
-    if (resourceType === 'massifs') history.push(`/ui/massifs/${id}`);
-    if (resourceType === 'bbs') history.push(`/ui/bbs/${id}`);
+
+    if (resourceType === 'grottos') window.open(`/ui/groups/${id}`, '_blank');
+    if (resourceType === 'massifs') window.open(`/ui/massifs/${id}`, '_blank');
+    if (resourceType === 'bbs') window.open(`/ui/bbs/${id}/`, '_blank');
   }
 
   handleChangePage = (event, newPage) => {
