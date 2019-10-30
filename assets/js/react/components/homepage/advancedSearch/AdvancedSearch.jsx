@@ -23,6 +23,7 @@ const styles = theme => ({
   },
   tabName: {
     fontSize: '1.4rem',
+    flexShrink: 0,
   },
   tabContainer: {
     backgroundColor: theme.palette.primary3Color,
@@ -56,11 +57,13 @@ class AdvancedSearch extends React.Component {
       <div className={classes.root}>
         <AppBar position="static" color="default">
           <Tabs
+            fullWidth
+            scrollable={true} 
+            scrollButtons="off"
             value={tabSelected}
             onChange={this.handleChange}
             indicatorColor="primary"
             textColor="primary"
-            centered
           >
             <Tab
               className={classes.tabName}
