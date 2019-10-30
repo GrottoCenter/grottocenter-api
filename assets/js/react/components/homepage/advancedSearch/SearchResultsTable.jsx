@@ -4,7 +4,9 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import { withRouter } from 'react-router-dom';
-import { Button, Card, CardContent, CircularProgress } from '@material-ui/core';
+import {
+  Button, Card, CardContent, CircularProgress,
+} from '@material-ui/core';
 import styled from 'styled-components';
 import DescriptionIcon from '@material-ui/icons/Description';
 
@@ -14,7 +16,7 @@ import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
 import TablePagination from '@material-ui/core/TablePagination';
 import TableRow from '@material-ui/core/TableRow';
-import { CSVDownload } from "react-csv";
+import { CSVDownload } from 'react-csv';
 
 import Translate from '../../common/Translate';
 
@@ -48,7 +50,7 @@ const StyledTableHeadRowCell = withStyles(() => ({
   },
 }))(TableCell);
 
-const StyledTableRow = withStyles(theme => ({
+const StyledTableRow = withStyles((theme) => ({
   root: {
     height: '3rem',
     '&:hover': {
@@ -58,7 +60,7 @@ const StyledTableRow = withStyles(theme => ({
   },
 }))(TableRow);
 
-const StyledTableHeadRow = withStyles(theme => ({
+const StyledTableHeadRow = withStyles((theme) => ({
   root: {
     backgroundColor: theme.palette.primary.light,
   },
@@ -76,12 +78,11 @@ const styles = () => ({
   },
   table: {
     marginBottom: 0,
-    display: 'block',
     overflow: 'auto',
   },
   textError: {
     color: '#ff3333',
-  }
+  },
 });
 
 const DEFAULT_FROM = 0;
@@ -106,7 +107,6 @@ class SearchResultsTable extends React.Component {
       from: DEFAULT_FROM,
       page: DEFAULT_PAGE,
       size: DEFAULT_SIZE,
-      completeCSVResults: [{}]
     };
     this.entriesTableHead = this.entriesTableHead.bind(this);
     this.groupsTableHead = this.groupsTableHead.bind(this);
@@ -122,7 +122,9 @@ class SearchResultsTable extends React.Component {
   // If the results are empty, the component must get back to the initial pagination state.
   componentDidUpdate = () => {
     const { results } = this.props;
-    const { from, page, size } = this.state;
+    const {
+      from, page, size,
+    } = this.state;
 
     if (!results && (from !== DEFAULT_FROM || page !== DEFAULT_PAGE || size !== DEFAULT_SIZE)
     ) {
@@ -228,28 +230,25 @@ class SearchResultsTable extends React.Component {
     );
   };
 
-  bbsTableHead = () => {
-    const { intl } = this.context;
-    return (
-      <TableHead>
-        <StyledTableHeadRow>
-          <StyledTableHeadRowCell><Translate>Reference</Translate></StyledTableHeadRowCell>
-          <StyledTableHeadRowCell><Translate>Title</Translate></StyledTableHeadRowCell>
-          <StyledTableHeadRowCell><Translate>Subtheme</Translate></StyledTableHeadRowCell>
-          <StyledTableHeadRowCell><Translate>Country or region</Translate></StyledTableHeadRowCell>
-          <StyledTableHeadRowCell><Translate>Authors</Translate></StyledTableHeadRowCell>
-          <StyledTableHeadRowCell><Translate>Year</Translate></StyledTableHeadRowCell>
-        </StyledTableHeadRow>
-      </TableHead>
-    );
-  };
+  bbsTableHead = () => (
+    <TableHead>
+      <StyledTableHeadRow>
+        <StyledTableHeadRowCell><Translate>Reference</Translate></StyledTableHeadRowCell>
+        <StyledTableHeadRowCell><Translate>Title</Translate></StyledTableHeadRowCell>
+        <StyledTableHeadRowCell><Translate>Subtheme</Translate></StyledTableHeadRowCell>
+        <StyledTableHeadRowCell><Translate>Country or region</Translate></StyledTableHeadRowCell>
+        <StyledTableHeadRowCell><Translate>Authors</Translate></StyledTableHeadRowCell>
+        <StyledTableHeadRowCell><Translate>Year</Translate></StyledTableHeadRowCell>
+      </StyledTableHeadRow>
+    </TableHead>
+  );
 
   // ===== Handle functions ===== //
 
   handleRowClick = (id) => {
     const { resourceType, resetAdvancedSearch } = this.props;
     resetAdvancedSearch();
-    
+
     if (resourceType === 'entries') {
       const externalLink = `${(detailPageV2Links[locale] !== undefined) ? detailPageV2Links[locale] : detailPageV2Links['*']}&category=entry&id=${id}`; //eslint-disable-line
       window.open(
@@ -335,38 +334,38 @@ class SearchResultsTable extends React.Component {
   }
 
   // ===== CSV Export
-  loadCSVData = (event, done) => {
+  loadCSVData = () => {
     const { getFullResults } = this.props;
     getFullResults();
   }
 
   getFullResultsAsCSV = () => {
     const { resourceType, fullResults } = this.props;
-    let cleanedResults = fullResults;
+    const cleanedResults = fullResults;
     switch (resourceType) {
       case 'entries':
         // Flatten cave and massif
-        for(let result of cleanedResults) {
+        for (let result of cleanedResults) {
           result.cave = result.cave.name;
           result.massif = result.massif.name;
           delete result['type'];
           delete result['highlights'];
-        }    
+        }
         break;
 
-      case 'grottos': 
+      case 'grottos':
         // Flatten cavers and entries
-        for(let result of cleanedResults) {
+        for (let result of cleanedResults) {
           result.cavers = result.cavers.map(c => c.nickname);
           result.entries = result.entries.map(e => e.name);
           delete result['type'];
           delete result['highlights'];
-        }  
+        }
         break;
 
       case 'massifs':
         // Flatten caves and entries
-        for(let result of cleanedResults) {
+        for (let result of cleanedResults) {
           result.caves = result.caves.map(c => c.name);
           result.entries = result.entries.map(e => e.name);
           delete result['type'];
@@ -376,12 +375,12 @@ class SearchResultsTable extends React.Component {
 
       case 'bbs':
         // Flatten countries and subthemes
-        for(let result of cleanedResults) {
-          if(result.country) {
+        for (let result of cleanedResults) {
+          if (result.country) {
             result.countryCode = result.country.id;
             result.country = result.country.name;
           }
-          if(result.subtheme) {
+          if (result.subtheme) {
             result.subthemeId = result.subtheme.id;
             result.subtheme = result.subtheme.name;
           }
@@ -389,6 +388,8 @@ class SearchResultsTable extends React.Component {
           delete result['highlights'];
         }
         break;
+
+      default:
     }
 
     return cleanedResults;
@@ -398,7 +399,8 @@ class SearchResultsTable extends React.Component {
 
   render() {
     const {
-      classes, isLoading, results, resourceType, totalNbResults, isLoadingFullData, wantToDownloadCSV, fullResults
+      classes, isLoading, results, resourceType, totalNbResults,
+      isLoadingFullData, wantToDownloadCSV, fullResults,
     } = this.props;
     const { from, page, size } = this.state;
 
@@ -423,13 +425,19 @@ class SearchResultsTable extends React.Component {
       }
     }
 
+    /* For small screens, change the display property to allow horizontal scroll.
+      Screen smaller than 1200px AND results type not "massif" => scrollable table (display: "block")
+      (for massif, no scroll needed because the results are not very large)
+    */
+    const tableDisplayValueForScroll = window.innerWidth < 1200 && resourceType !== 'massifs' ? 'block' : 'table';
+
     return (
       (resultsSliced !== undefined && resourceType !== '' ? (
         <Card className={classes.resultsContainer}>
           <CardContent>
             {resultsSliced.length > 0 ? (
               <React.Fragment>
-                <Table className={classes.table}>
+                <Table className={classes.table} style={{ display: tableDisplayValueForScroll }}>
                   <ResultsTableHead />
 
                   <TableBody style={{
@@ -522,7 +530,7 @@ class SearchResultsTable extends React.Component {
                     }}
                     labelRowsPerPage={<Translate>Results per page</Translate>}
                     onChangePage={(event, pageNb) => this.handleChangePage(event, pageNb)}
-                    onChangeRowsPerPage={event => this.handleChangeRowsPerPage(event)}
+                    onChangeRowsPerPage={(event) => this.handleChangeRowsPerPage(event)}
                     ActionsComponent={() => (
                       <SearchTableActions
                         page={page}
@@ -533,20 +541,28 @@ class SearchResultsTable extends React.Component {
                     )}
                   />
                 </StyledTableFooter>
-              
+
                 {isLoadingFullData ? (
-                  <div style={{ display: 'flex', alignItems: 'center'}}>
-                    <CircularProgress style={{ marginRight: '5px' }}/>
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <CircularProgress style={{ marginRight: '5px' }} />
                     <Translate>Loading full data, please wait...</Translate>
                   </div>
-                ): ''}
+                ) : ''}
                 {!canDownloadDataAsCSV ? (
                   <React.Fragment>
-                  <p className={classes.textError}>
-                    <Translate>Too many results to download.</Translate> (<b>{totalNbResults}</b>)
-                    <br/>
-                    <Translate>You can only download</Translate> <b>{MAX_NUMBER_OF_DATA_TO_EXPORT_IN_CSV}</b> <Translate>results at once.</Translate>
-                  </p>
+                    <p className={classes.textError}>
+                      <Translate>Too many results to download.</Translate>
+                      {' '}
+                      (
+                      <b>{totalNbResults}</b>
+                      )
+                      <br />
+                      <Translate>You can only download</Translate>
+                      {' '}
+                      <b>{MAX_NUMBER_OF_DATA_TO_EXPORT_IN_CSV}</b>
+                      {' '}
+                      <Translate>results at once.</Translate>
+                    </p>
                   </React.Fragment>
                 ) : ''}
 
@@ -560,7 +576,6 @@ class SearchResultsTable extends React.Component {
       ) : (
           ''
         ))
-
     );
   }
 }
