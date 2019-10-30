@@ -99,7 +99,7 @@ const BbsChapterModel = {
   id: undefined,
   name: undefined,
   theme: undefined,
-}
+};
 
 /* Mappers */
 
@@ -263,7 +263,7 @@ module.exports = {
           data.address = item._source.address;
           break;
 
-        case 'bbs':
+        case 'bbs': {
           // Convert from a collection of keys newKeys, rename the keys of obj
           const renameKeys = (obj, newKeys) => {
             const keyValues = Object.keys(obj).map(key => {
@@ -271,7 +271,7 @@ module.exports = {
               return { [newKey]: obj[key] };
             });
             return Object.assign({}, ...keyValues);
-          }
+          };
 
           const replacementKeys = { 
             'bbs title': 'title', 
@@ -280,6 +280,7 @@ module.exports = {
             'bbs theme' : 'theme',
             'bbs subtheme' : 'subtheme',
             'bbs abstract' : 'abstract',
+            'bbs country': 'country',
             'refnumerique' : 'numerical reference'
           };
           // Rename keys of data and highlights
@@ -287,12 +288,13 @@ module.exports = {
           data.highlights = renameKeys(data.highlights, replacementKeys);
           
           // Fill data with appropriate key
-          var newKey; 
+          let newKey; 
           for(const key in replacementKeys) {
-            newKey = replacementKeys[key]
-            data[newKey] = newSource[newKey]
+            newKey = replacementKeys[key];
+            data[newKey] = newSource[newKey];
           }          
           break;
+        }
       }
       values.push(data);
     });
@@ -403,12 +405,12 @@ module.exports = {
     }
 
     // Build (sub)theme
-    if(source['bbs chaptercode'] || source.chapter) {
-      // In ES, the french and english theme and subtheme names are gathered and separated by " / "
-      result.theme = source['bbs theme'] ? source['bbs theme'].split(" / ")[0] : source.chapter.cTexteMatiere;
+    if(source['bbs chaptercode'] || source.chapter) {
+      // In ES, the french and english theme and subtheme names are gathered and separated by ' / '
+      result.theme = source['bbs theme'] ? source['bbs theme'].split(' / ')[0] : source.chapter.cTexteMatiere;
       result.subtheme = {
         id: source['bbs chaptercode'] ? source['bbs chaptercode'] : source.chapter.id,
-        name: source['bbs subtheme'] ? source['bbs subtheme'].split(" / ")[0] : source.chapter.cTexteChapitre
+        name: source['bbs subtheme'] ? source['bbs subtheme'].split(' / ')[0] : source.chapter.cTexteChapitre
       };     
     }
 
