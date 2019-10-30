@@ -15,7 +15,7 @@ const advancedSearchMetaParams = ['resourceType', 'complete', 'match_all_queries
 */
 const FUZZINESS = 1;
 
-module.exports = {
+var self = module.exports = {
   /**
   * Update the Elasticsearch index according to the request.
   * @param {*} found resource to be updated 
@@ -94,7 +94,7 @@ module.exports = {
           size: params.size ? params.size : 10,
           query: {
             query_string: {
-              query: '*'+params.query+'* + '+params.query+'~'+FUZZINESS,
+              query: '*'+self.sanitizeQuery(params.query)+'* + '+self.sanitizeQuery(params.query)+'~'+FUZZINESS,
               fields: [
                 // General useful fields
                 'name^5', 'city^2', 'country', 'county', 'region',
@@ -173,24 +173,26 @@ module.exports = {
 
           // Value of a field
           if(isFieldParam && params[key] !== '') {
-            const words = params[key].split(' ');
-            words.map((word, index) => {
+            // Sanitize all the query and remove empty words
+            const sanitizedWords = self.sanitizeQuery(params[key]).split(" ").filter(w => w != "");
+            sanitizedWords.map((word, index) => {
               const matchObj = {
                 wildcard: {}
               };
-          
+
               /* 
                 The value is set to lower case because the data are indexed in lowercase. 
                 We want a search not case sensitive.
 
                 Also, the character * is used for the first and the last word to (auto)complete the query.
               */
-              if(words.length === 1) matchObj.wildcard[key] = '*' + word.toLowerCase() + '*';
+              if(sanitizedWords.length === 1) matchObj.wildcard[key] = '*' + word.toLowerCase() + '*';
               else if(index === 0) matchObj.wildcard[key] = '*' + word.toLowerCase();
-              else if(index === words.length - 1) matchObj.wildcard[key] = word.toLowerCase() + '*';
+              else if(index === sanitizedWords.length - 1) matchObj.wildcard[key] = word.toLowerCase() + '*';
               else matchObj.wildcard[key] = word.toLowerCase();
 
               matchingParams.push(matchObj);
+              
             });
           
           // Min range param
@@ -249,5 +251,13 @@ module.exports = {
       });
     });
     /* eslint-enable camelcase */
-  }
+  },
+
+  /**
+   * Replace all special characters from a source string by a space.
+   * @param {*} sourceString 
+   */
+  sanitizeQuery: function(sourceString) {
+    return sourceString.replace(/[`~!@#$%^&*()_|+\-=?;:'",.<>\{\}\[\]\\\/]/gi, ' ');
+  },
 };
