@@ -15,7 +15,7 @@ import SearchResultsContainer from '../../../containers/SearchResultsContainer';
 
 const advancedSearchTypes = ['entries', 'grottos', 'massifs', 'bbs'];
 
-const styles = theme => ({
+const styles = (theme) => ({
   root: {
     backgroundColor: theme.palette.primary.dark,
     flexGrow: 1,
@@ -49,7 +49,7 @@ class AdvancedSearch extends React.Component {
 
   render() {
     const {
-      classes, resetAdvancedSearch, startAdvancedsearch, getSubThemes, subthemes, themes
+      classes, resetAdvancedSearch, startAdvancedsearch, getSubThemes, subthemes, themes,
     } = this.props;
     const { tabSelected } = this.state;
 
@@ -58,7 +58,7 @@ class AdvancedSearch extends React.Component {
         <AppBar position="static" color="default">
           <Tabs
             fullWidth
-            scrollable={true} 
+            scrollable
             scrollButtons="off"
             value={tabSelected}
             onChange={this.handleChange}

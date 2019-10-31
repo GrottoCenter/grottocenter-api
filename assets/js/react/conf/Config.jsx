@@ -12,8 +12,8 @@ export const EN_GC_BLOG = '/api/rss/EN';
 
 function generateLinks(link, defaultLang) {
   const resultArray = {};
-  Object.keys(localesList).forEach(function (el) { // eslint-disable-line
-    resultArray[el.value] = _.replaceAll(link, '%s', _.capitalize(el.value));
+  Object.keys(localesList).forEach((value) => {
+    resultArray[value] = _.replaceAll(link, '%s', _.capitalize(value));
   });
   resultArray['*'] = _.replaceAll(link, '%s', _.capitalize(defaultLang));
   return resultArray;
@@ -62,6 +62,7 @@ export const fseLinks = {
 };
 
 export const wikiBatsLinks = generateLinks('https://wiki.grottocenter.org/wiki/GrottoCenter:%s/bats', 'en');
+export const wikiBBSLinks = generateLinks('https://wiki.grottocenter.org/wiki/GrottoCenter:%s/bbs', 'en');
 export const rssLinks = generateLinks('http://www.grottocenter.org/html/rss_%s.xml', 'en');
 export const legalLinks = generateLinks('https://wiki.grottocenter.org/wiki/GrottoCenter:%s/Legal_and_Privacy_Statement', 'en');
 

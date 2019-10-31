@@ -1,26 +1,23 @@
 /* eslint-disable camelcase */
 import React from 'react';
 import PropTypes from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
 
 import SearchIcon from '@material-ui/icons/Search';
 import ClearIcon from '@material-ui/icons/Clear';
-
-import Button from '@material-ui/core/Button';
-import Card from '@material-ui/core/Card';
-import CardActions from '@material-ui/core/CardActions';
-import CardContent from '@material-ui/core/CardContent';
-
 import {
-  FormLabel, FormControl, TextField, Switch, InputLabel, Select, MenuItem
+  FormLabel, FormControl, TextField, Switch, InputLabel, Select,
+  MenuItem, Typography, withStyles, CardActions, CardContent, Card,
+  Button,
 } from '@material-ui/core';
 
 import Slider from 'rc-slider';
-
 import Translate from '../../common/Translate';
+import InternationalizedLink from '../../common/InternationalizedLink';
+import { wikiBBSLinks } from '../../../conf/Config';
+
+// =====================================
 
 const Range = Slider.createSliderWithTooltip(Slider.Range);
-
 
 const styles = (theme) => ({
   mainContainer: {},
@@ -252,6 +249,21 @@ class BbsSearch extends React.Component {
         className={classes.cardContainer}
       >
         <CardContent>
+
+          <Typography variant="body1" gutterBottom paragraph style={{fontStyle: 'italic'}}>
+            <Translate>
+              {'The BBS ("Bulletin Bibliographique Spéléologique" in french) is an annual review of the worldwide speleological litterature.'}
+            </Translate>
+            {' '}
+            <InternationalizedLink links={wikiBBSLinks}>
+              <Translate>
+                {'You can find more info about the BBS on the dedicated Grottocenter-wiki page.'}
+              </Translate>
+            </InternationalizedLink>
+          </Typography>
+
+          <h5><Translate>BBS properties</Translate></h5>
+
           <form
             noValidate
             autoComplete="off"
@@ -271,8 +283,6 @@ class BbsSearch extends React.Component {
             }}
             className={classes.formContainer}
           >
-            <h5 style={{ width: '100%' }}><Translate>BBS properties</Translate></h5>
-
             <div className={classes.formPartContainer} style={{ justifyContent: 'flex-start' }}>
 
               <fieldset className={classes.fieldset}>
