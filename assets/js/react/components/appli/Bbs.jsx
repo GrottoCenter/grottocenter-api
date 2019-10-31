@@ -66,42 +66,43 @@ const Bbs = (props) => {
           </StyledHeaderInfo>
 
           {bbs.subtheme ? (
-            <React.Fragment>
-              <StyledHeaderInfo variant="body1">
-                <StyledThemeIcon />
-                {' '}
-                <strong><Translate>Theme</Translate></strong>
-                {': '}
-                {bbs.subtheme.id}
-                {' - '}
-                <Translate>{bbs.theme}</Translate>
-                {' - '}
-                <Translate>{bbs.subtheme.name}</Translate>
-              </StyledHeaderInfo>
+            <StyledHeaderInfo variant="body1" gutterBottom={!bbs.crosChapRebuilt}>
+              <StyledThemeIcon />
+              {' '}
+              <strong><Translate>Theme</Translate></strong>
+              {': '}
+              {bbs.subtheme.id}
+              {' - '}
+              <Translate>{bbs.theme}</Translate>
+              {' - '}
+              <Translate>{bbs.subtheme.name}</Translate>
+            </StyledHeaderInfo>
+          ) : ''}
 
-              <Typography variant="body1" gutterBottom style={{ textIndent: '31px' }}>
-                <strong><Translate>Secondary themes</Translate></strong>
-                {': '}
-                {bbs.crosChapRebuilt}
-              </Typography>
-            </React.Fragment>
+          {bbs.crosChapRebuilt ? (
+            <Typography variant="body1" gutterBottom style={{ textIndent: '31px' }}>
+              <strong><Translate>Secondary themes</Translate></strong>
+              {': '}
+              {bbs.crosChapRebuilt}
+            </Typography>
           ) : ''}
 
           {bbs.country ? (
-            <React.Fragment>
-              <StyledHeaderInfo variant="body1">
-                <StyledCountryIcon />
-                {' '}
-                <strong><Translate>Country or region</Translate></strong>
-                {': '}
-                {bbs.country.name}
-              </StyledHeaderInfo>
-              <Typography variant="body1" gutterBottom style={{ textIndent: '31px' }}>
-                <strong><Translate>Secondary countries or regions</Translate></strong>
-                {': '}
-                {bbs.crosCountryRebuilt}
-              </Typography>
-            </React.Fragment>
+            <StyledHeaderInfo variant="body1" gutterBottom={!bbs.crosCountryRebuilt}>
+              <StyledCountryIcon />
+              {' '}
+              <strong><Translate>Country or region</Translate></strong>
+              {': '}
+              {bbs.country.name}
+            </StyledHeaderInfo>
+          ) : ''}
+
+          {bbs.crosCountryRebuilt ? (
+            <Typography variant="body1" gutterBottom style={{ textIndent: '31px' }}>
+              <strong><Translate>Secondary countries or regions</Translate></strong>
+              {': '}
+              {bbs.crosCountryRebuilt}
+            </Typography>
           ) : ''}
 
           <StyledHeaderInfo variant="body1" gutterBottom>
