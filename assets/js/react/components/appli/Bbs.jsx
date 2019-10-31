@@ -15,27 +15,24 @@ import Translate from '../common/Translate';
 
 // =====================
 
-const BottomBlock = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-`;
-
-const CrossIndexBlock = styled.div`
-  flex: 1;
-  flex-basis: 300px;
-`;
-
-const rootVAlignBottom = {
+const styledIcon = {
   root: {
     verticalAlign: 'bottom',
+    fontSize: '2.7rem',
   },
 };
 
-const StyledPublicationIcon = withStyles(rootVAlignBottom)(ImportContactsIcon);
-const StyledPersonIcon = withStyles(rootVAlignBottom)(PersonIcon);
-const StyledReferenceIcon = withStyles(rootVAlignBottom)(ClassIcon);
-const StyledCountryIcon = withStyles(rootVAlignBottom)(PublicIcon);
-const StyledThemeIcon = withStyles(rootVAlignBottom)(CategoryIcon);
+const StyledHeaderInfo = withStyles({
+  root: {
+    fontSize: '1.7rem',
+  },
+})(Typography);
+
+const StyledPublicationIcon = withStyles(styledIcon)(ImportContactsIcon);
+const StyledPersonIcon = withStyles(styledIcon)(PersonIcon);
+const StyledReferenceIcon = withStyles(styledIcon)(ClassIcon);
+const StyledCountryIcon = withStyles(styledIcon)(PublicIcon);
+const StyledThemeIcon = withStyles(styledIcon)(CategoryIcon);
 
 // =================== End styles ==================
 
@@ -51,24 +48,26 @@ const Bbs = (props) => {
       <Card>
         <CardContent>
           <Typography variant="h1">{bbs.title}</Typography>
-          <Typography variant="body1" gutterBottom>
+
+          <StyledHeaderInfo variant="body1" gutterBottom>
             <StyledPublicationIcon />
             {' '}
             <b><Translate>Published in</Translate></b>
             {' '}
-            {bbs.publicationExport}
-          </Typography>
-          <Typography variant="body1" gutterBottom>
+            {bbs.publication}
+          </StyledHeaderInfo>
+
+          <StyledHeaderInfo variant="body1" gutterBottom>
             <StyledPersonIcon />
             {' '}
             <b><Translate>Author</Translate></b>
             {': '}
             {bbs.authors}
-          </Typography>
+          </StyledHeaderInfo>
 
           {bbs.subtheme ? (
             <React.Fragment>
-              <Typography variant="body1" gutterBottom>
+              <StyledHeaderInfo variant="body1">
                 <StyledThemeIcon />
                 {' '}
                 <strong><Translate>Theme</Translate></strong>
@@ -78,29 +77,40 @@ const Bbs = (props) => {
                 <Translate>{bbs.theme}</Translate>
                 {' - '}
                 <Translate>{bbs.subtheme.name}</Translate>
+              </StyledHeaderInfo>
+
+              <Typography variant="body1" gutterBottom style={{ textIndent: '31px' }}>
+                <strong><Translate>Secondary themes</Translate></strong>
+                {': '}
+                {bbs.crosChapRebuilt}
               </Typography>
             </React.Fragment>
           ) : ''}
 
           {bbs.country ? (
             <React.Fragment>
-              <Typography variant="body1" gutterBottom>
+              <StyledHeaderInfo variant="body1">
                 <StyledCountryIcon />
                 {' '}
                 <strong><Translate>Country or region</Translate></strong>
                 {': '}
                 {bbs.country.name}
+              </StyledHeaderInfo>
+              <Typography variant="body1" gutterBottom style={{ textIndent: '31px' }}>
+                <strong><Translate>Secondary countries or regions</Translate></strong>
+                {': '}
+                {bbs.crosCountryRebuilt}
               </Typography>
             </React.Fragment>
           ) : ''}
 
-          <Typography variant="body1" gutterBottom>
+          <StyledHeaderInfo variant="body1" gutterBottom>
             <StyledReferenceIcon />
             {' '}
             <strong><Translate>Reference</Translate></strong>
             {': '}
             {bbs.ref}
-          </Typography>
+          </StyledHeaderInfo>
 
           <hr />
 
@@ -112,26 +122,6 @@ const Bbs = (props) => {
               </Typography>
             </React.Fragment>
           ) : ''}
-
-          <BottomBlock>
-            {bbs.crosChapRebuilt ? (
-              <CrossIndexBlock>
-                <Typography variant="h2" gutterBottom><Translate>Secondary subthemes</Translate></Typography>
-                <ul>
-                  {bbs.crosChapRebuilt.trim().split(' ').map((chapter) => <li key={chapter}>{chapter}</li>)}
-                </ul>
-              </CrossIndexBlock>
-            ) : ''}
-
-            {bbs.crosCountryRebuilt ? (
-              <CrossIndexBlock>
-                <Typography variant="h2" gutterBottom><Translate>Secondary countries or regions</Translate></Typography>
-                <ul>
-                  {bbs.crosCountryRebuilt.trim().split(' ').map((country) => <li key={country}>{country}</li>)}
-                </ul>
-              </CrossIndexBlock>
-            ) : ''}
-          </BottomBlock>
         </CardContent>
       </Card>
     );
