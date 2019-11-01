@@ -36,104 +36,112 @@ const StyledThemeIcon = withStyles(styledIcon)(CategoryIcon);
 
 // =================== End styles ==================
 
-const Bbs = (props) => {
-  const { isFetching, bbs } = props;
-
-  if (isFetching) {
-    return (<CircularProgress />);
+export class Bbs extends React.Component {
+  componentDidMount() {
+    const { updatePageTitle } = this.props;
+    updatePageTitle('BBS');
   }
 
-  if (bbs) {
-    return (
-      <Card>
-        <CardContent>
-          <Typography variant="h1">{bbs.title}</Typography>
+  render() {
+    const { isFetching, bbs } = this.props;
 
-          <StyledHeaderInfo variant="body1" gutterBottom>
-            <StyledPublicationIcon />
-            {' '}
-            <b><Translate>Published in</Translate></b>
-            {' '}
-            {bbs.publication}
-          </StyledHeaderInfo>
+    if (isFetching) {
+      return (<CircularProgress />);
+    }
 
-          <StyledHeaderInfo variant="body1" gutterBottom>
-            <StyledPersonIcon />
-            {' '}
-            <b><Translate>Author</Translate></b>
-            {': '}
-            {bbs.authors}
-          </StyledHeaderInfo>
+    if (bbs) {
+      return (
+        <Card>
+          <CardContent>
+            <Typography variant="h1">{bbs.title}</Typography>
 
-          {bbs.subtheme ? (
-            <StyledHeaderInfo variant="body1" gutterBottom={!bbs.crosChapRebuilt}>
-              <StyledThemeIcon />
+            <StyledHeaderInfo variant="body1" gutterBottom>
+              <StyledPublicationIcon />
               {' '}
-              <strong><Translate>Theme</Translate></strong>
-              {': '}
-              {bbs.subtheme.id}
-              {' - '}
-              <Translate>{bbs.theme}</Translate>
-              {' - '}
-              <Translate>{bbs.subtheme.name}</Translate>
-            </StyledHeaderInfo>
-          ) : ''}
-
-          {bbs.crosChapRebuilt ? (
-            <Typography variant="body1" gutterBottom style={{ textIndent: '31px' }}>
-              <strong><Translate>Secondary themes</Translate></strong>
-              {': '}
-              {bbs.crosChapRebuilt}
-            </Typography>
-          ) : ''}
-
-          {bbs.country ? (
-            <StyledHeaderInfo variant="body1" gutterBottom={!bbs.crosCountryRebuilt}>
-              <StyledCountryIcon />
+              <b><Translate>Published in</Translate></b>
               {' '}
-              <strong><Translate>Country or region</Translate></strong>
-              {': '}
-              {bbs.country.name}
+              {bbs.publication}
             </StyledHeaderInfo>
-          ) : ''}
 
-          {bbs.crosCountryRebuilt ? (
-            <Typography variant="body1" gutterBottom style={{ textIndent: '31px' }}>
-              <strong><Translate>Secondary countries or regions</Translate></strong>
+            <StyledHeaderInfo variant="body1" gutterBottom>
+              <StyledPersonIcon />
+              {' '}
+              <b><Translate>Author</Translate></b>
               {': '}
-              {bbs.crosCountryRebuilt}
-            </Typography>
-          ) : ''}
+              {bbs.authors}
+            </StyledHeaderInfo>
 
-          <StyledHeaderInfo variant="body1" gutterBottom>
-            <StyledReferenceIcon />
-            {' '}
-            <strong><Translate>Reference</Translate></strong>
-            {': '}
-            {bbs.ref}
-          </StyledHeaderInfo>
+            {bbs.subtheme ? (
+              <StyledHeaderInfo variant="body1" gutterBottom={!bbs.crosChapRebuilt}>
+                <StyledThemeIcon />
+                {' '}
+                <strong><Translate>Theme</Translate></strong>
+                {': '}
+                {bbs.subtheme.id}
+                {' - '}
+                <Translate>{bbs.theme}</Translate>
+                {' - '}
+                <Translate>{bbs.subtheme.name}</Translate>
+              </StyledHeaderInfo>
+            ) : ''}
 
-          <hr />
-
-          {bbs.abstract ? (
-            <React.Fragment>
-              <Typography variant="h2" gutterBottom><Translate>Abstract</Translate></Typography>
-              <Typography variant="body1" paragraph>
-                {bbs.abstract}
+            {bbs.crosChapRebuilt ? (
+              <Typography variant="body1" gutterBottom style={{ textIndent: '31px' }}>
+                <strong><Translate>Secondary themes</Translate></strong>
+                {': '}
+                {bbs.crosChapRebuilt}
               </Typography>
-            </React.Fragment>
-          ) : ''}
-        </CardContent>
-      </Card>
-    );
-  }
+            ) : ''}
 
-  return <div />;
-};
+            {bbs.country ? (
+              <StyledHeaderInfo variant="body1" gutterBottom={!bbs.crosCountryRebuilt}>
+                <StyledCountryIcon />
+                {' '}
+                <strong><Translate>Country or region</Translate></strong>
+                {': '}
+                {bbs.country.name}
+              </StyledHeaderInfo>
+            ) : ''}
+
+            {bbs.crosCountryRebuilt ? (
+              <Typography variant="body1" gutterBottom style={{ textIndent: '31px' }}>
+                <strong><Translate>Secondary countries or regions</Translate></strong>
+                {': '}
+                {bbs.crosCountryRebuilt}
+              </Typography>
+            ) : ''}
+
+            <StyledHeaderInfo variant="body1" gutterBottom>
+              <StyledReferenceIcon />
+              {' '}
+              <strong><Translate>Reference</Translate></strong>
+              {': '}
+              {bbs.ref}
+            </StyledHeaderInfo>
+
+            <hr />
+
+            {bbs.abstract ? (
+              <React.Fragment>
+                <Typography variant="h2" gutterBottom><Translate>Abstract</Translate></Typography>
+                <Typography variant="body1" paragraph>
+                  {bbs.abstract}
+                </Typography>
+              </React.Fragment>
+            ) : ''}
+          </CardContent>
+        </Card>
+      );
+    }
+
+    return <div />;
+  }
+}
 
 Bbs.propTypes = {
   isFetching: PropTypes.bool.isRequired,
   bbs: PropTypes.shape({}),
+  updatePageTitle: PropTypes.func.isRequired,
 };
 Bbs.defaultProps = {
   bbs: undefined,

@@ -12,6 +12,7 @@ import group from './GroupReducer';
 import massif from './MassifReducer';
 import bbs from './BbsReducer';
 import subtheme from './SubthemeReducer';
+import pageTitle from './PageTitleReducer';
 
 //
 //
@@ -32,7 +33,8 @@ const GCReducer = combineReducers({
   group,
   massif,
   bbs,
-  subtheme
+  subtheme,
+  pageTitle
 });
 
 export default GCReducer;

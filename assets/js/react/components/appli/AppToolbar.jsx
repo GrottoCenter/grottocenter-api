@@ -1,9 +1,13 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import Toolbar from '@material-ui/core/Toolbar';
-import { withStyles } from '@material-ui/core/styles';
+import { withStyles, withTheme } from '@material-ui/core';
+import styled from 'styled-components';
+
 import HeaderTitle from './HeaderTitle';
 import SideMenuBurgerConnector from '../../containers/SideMenuBurgerConnector';
 import { sideMenuWidth } from '../../conf/Config';
+import Translate from '../common/Translate';
 
 //
 //
@@ -22,6 +26,21 @@ const StyledToolbar = withStyles((theme) => ({
   },
 }), { withTheme: true })(Toolbar);
 
+// Center in the parent div using absolute because the Grottocenter logo is taking some place on the left.
+const StyledPageTitle = withTheme()(styled.span`
+  position: absolute;
+  left: 50%;
+  transform: translate(-50%, 0);
+  @media (max-width: 500px) {
+    position: initial;
+  }
+`);
+
+const StyledPageTitleText = withTheme()(styled.span`
+  color: ${(props) => props.theme.palette.primary3Color};
+  font-size: 4rem;
+`);
+
 const TitleGroup = withStyles(() => ({
   root: {
     width: sideMenuWidth,
@@ -37,13 +56,32 @@ const TitleGroup = withStyles(() => ({
 //
 //
 
-const AppToolbar = () => (
-  <StyledToolbar>
-    <TitleGroup>
-      <HeaderTitle title="Grottocenter" subtitle="Achere - 2018" />
-      <SideMenuBurgerConnector />
-    </TitleGroup>
-  </StyledToolbar>
-);
+const AppToolbar = (props) => {
+  const { pageTitle } = props;
+  const PageTitleComponent = pageTitle ? (
+    <StyledPageTitle>
+      <StyledPageTitleText>
+        <Translate>{pageTitle}</Translate>
+      </StyledPageTitleText>
+    </StyledPageTitle>
+  ) : '';
+
+  return (
+    <StyledToolbar>
+      <TitleGroup>
+        <HeaderTitle title="Grottocenter" subtitle="Achere - 2018" />
+        <SideMenuBurgerConnector />
+      </TitleGroup>
+      {PageTitleComponent}
+    </StyledToolbar>
+  );
+};
+
+AppToolbar.propTypes = {
+  pageTitle: PropTypes.string,
+};
+AppToolbar.defaultProps = {
+  pageTitle: '',
+};
 
 export default AppToolbar;

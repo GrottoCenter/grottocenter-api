@@ -7,37 +7,45 @@ import CavesList from '../common/cave/CavesList';
 import EntriesList from '../common/entry/EntriesList';
 import Translate from '../common/Translate';
 
-const Massif = (props) => {
-  const { isFetching, massif } = props;
-
-  if (isFetching) {
-    return (<CircularProgress />);
+export class Massif extends React.Component {
+  componentDidMount() {
+    const { updatePageTitle } = this.props;
+    updatePageTitle('Massif');
   }
 
-  if (massif) {
-    return (
-      <Card>
-        <CardContent>
-          <h1>{massif.name}</h1>
-          <CavesList
-            caves={massif.caves}
-            emptyMessage={<Translate>This massif has no caves repertoried yet</Translate>}
-          />
-          <EntriesList
-            entries={massif.entries}
-            emptyMessage={<Translate>This massif has no entries repertoried yet</Translate>}
-          />
-        </CardContent>
-      </Card>
-    );
-  }
+  render = () => {
+    const { isFetching, massif } = this.props;
 
-  return <div />;
-};
+    if (isFetching) {
+      return (<CircularProgress />);
+    }
+
+    if (massif) {
+      return (
+        <Card>
+          <CardContent>
+            <h1>{massif.name}</h1>
+            <CavesList
+              caves={massif.caves}
+              emptyMessage={<Translate>This massif has no caves repertoried yet</Translate>}
+            />
+            <EntriesList
+              entries={massif.entries}
+              emptyMessage={<Translate>This massif has no entries repertoried yet</Translate>}
+            />
+          </CardContent>
+        </Card>
+      );
+    }
+
+    return <div />;
+  };
+}
 
 Massif.propTypes = {
   isFetching: PropTypes.bool.isRequired,
   massif: PropTypes.shape({}),
+  updatePageTitle: PropTypes.func.isRequired,
 };
 Massif.defaultProps = {
   massif: undefined,
