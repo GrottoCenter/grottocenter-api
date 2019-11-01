@@ -204,6 +204,7 @@ class BbsSearch extends React.Component {
         max: (values[1] > maxValueAuthorized ? maxValueAuthorized : values[1]),
       },
     };
+    console.log(newState)
     this.setState(newState);
   };
 
@@ -473,13 +474,13 @@ class BbsSearch extends React.Component {
                     onChange={(event) => this.handleRangeChange('bbs year-range', [parseInt(event.target.value, 10) || 0, yearRange.max], 0, 2100)}
                     value={yearRange.min}
                     disabled={!yearRange.isEditable}
-                    style={{ width: '50px' }}
+                    style={{ width: '35px' }}
                   />
                   <TextField
                     onChange={(event) => this.handleRangeChange('bbs year-range', [yearRange.min, parseInt(event.target.value, 10) || 0], 0, 2100)}
                     value={yearRange.max}
                     disabled={!yearRange.isEditable}
-                    style={{ width: '50px' }}
+                    style={{ width: '35px' }}
                   />
                 </div>
               </FormControl>
