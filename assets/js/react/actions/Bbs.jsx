@@ -9,12 +9,12 @@ export const fetchBbs = () => ({
   type: FETCH_BBS,
 });
 
-export const fetchBbsSuccess = bbs => ({
+export const fetchBbsSuccess = (bbs) => ({
   type: FETCH_BBS_SUCCESS,
   bbs,
 });
 
-export const fetchBbsFailure = error => ({
+export const fetchBbsFailure = (error) => ({
   type: FETCH_BBS_FAILURE,
   error,
 });
@@ -23,7 +23,7 @@ export function loadBbs(bbsId) {
   return (dispatch) => {
     dispatch(fetchBbs());
 
-    return fetch(findBbsUrl + encodeURIComponent(bbsId) + "/") // WORKAROUND: there is a dot in the bbsId so a trailing slash is needed here
+    return fetch(findBbsUrl + encodeURIComponent(bbsId))
       .then((response) => {
         if (response.status >= 400) {
           const errorMessage = `Fetching ${findBbsUrl} status: ${response.status}`;
@@ -32,6 +32,6 @@ export function loadBbs(bbsId) {
         }
         return response.text();
       })
-      .then(text => dispatch(fetchBbsSuccess(JSON.parse(text))));
+      .then((text) => dispatch(fetchBbsSuccess(JSON.parse(text))));
   };
 }
