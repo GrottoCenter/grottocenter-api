@@ -408,10 +408,10 @@ module.exports = {
     // Build (sub)theme
     if(source['bbs chaptercode'] || source.chapter) {
       // In ES, the french and english theme and subtheme names are gathered and separated by ' / '
-      result.theme = source['bbs theme'] ? source['bbs theme'].split(' / ')[0] : source.chapter.cTexteMatiere;
+      result.theme = source['bbs theme'] ? source['bbs theme'].split(' / ')[0] : source.chapter.cTexteChapitre;
       result.subtheme = {
         id: source['bbs chaptercode'] ? source['bbs chaptercode'] : source.chapter.id,
-        name: source['bbs subtheme'] ? source['bbs subtheme'].split(' / ')[0] : source.chapter.cTexteChapitre
+        name: source['bbs subtheme'] ? source['bbs subtheme'].split(' / ')[0] : source.chapter.cTexteMatiere
       };     
     }
 

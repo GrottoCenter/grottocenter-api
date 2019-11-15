@@ -81,7 +81,7 @@ export class Bbs extends React.Component {
                 {' - '}
                 <Translate>{bbs.theme}</Translate>
                 {' - '}
-                <Translate>{bbs.subtheme.name}</Translate>
+                <Translate id={bbs.subtheme.id} defaultMessage={bbs.subtheme.name} />
               </StyledHeaderInfo>
             ) : ''}
 
