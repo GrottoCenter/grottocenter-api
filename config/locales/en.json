@@ -817,5 +817,19 @@
 	"year": "year",
 	"Content": "Content",
 	"Subject": "Subject",
-	"Country or region": "Country or region"
+	"Country or region": "Country or region",
+	"BBS": "BBS",
+	"The BBS (\"Bulletin Bibliographique Spéléologique\" in french) is an annual review of the worldwide speleological litterature.": "The BBS (\"Bulletin Bibliographique Spéléologique\" in french) is an annual review of the worldwide speleological litterature.",
+	"You can find more info about the BBS on the dedicated Grottocenter-wiki page.": "You can find more info about the BBS on the dedicated Grottocenter-wiki page.",
+	"BBS properties": "BBS properties",
+	"Published in": "Published in",
+	"Geospeleology and Karstology": "Geospeleology and Karstology",
+	"Regional speleology": "Regional speleology",
+	"Biospeleology": "Biospeleology",
+	"Anthropospeleology": "Anthropospeleology",
+	"Paleontospeleology": "Paleontospeleology",
+	"Applied speleology": "Applied speleology",
+	"Technical speleology": "Technical speleology",
+	"Documentary speleology": "Documentary speleology",
+	"Non spéléo": "Non spéléo"
 }
