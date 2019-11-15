@@ -204,7 +204,6 @@ class BbsSearch extends React.Component {
         max: (values[1] > maxValueAuthorized ? maxValueAuthorized : values[1]),
       },
     };
-    console.log(newState)
     this.setState(newState);
   };
 
@@ -251,7 +250,7 @@ class BbsSearch extends React.Component {
       >
         <CardContent>
 
-          <Typography variant="body1" gutterBottom paragraph style={{fontStyle: 'italic'}}>
+          <Typography variant="body1" gutterBottom paragraph style={{ fontStyle: 'italic' }}>
             <Translate>
               {'The BBS ("Bulletin Bibliographique Spéléologique" in french) is an annual review of the worldwide speleological litterature.'}
             </Translate>
@@ -364,7 +363,9 @@ class BbsSearch extends React.Component {
                         <MenuItem key={choiceSubtheme.id} value={choiceSubtheme.id}>
                           {choiceSubtheme.id}
                           {'\u00a0-\u00a0'}
-                          <Translate>{choiceSubtheme.name}</Translate>
+
+                          {/* In Transifex, the subtheme key for its name is its id. */}
+                          <Translate id={choiceSubtheme.id} defaultMessage={choiceSubtheme.name} />
                         </MenuItem>
                       ))}
                     </Select>

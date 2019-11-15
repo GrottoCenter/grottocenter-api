@@ -484,7 +484,18 @@ class SearchResultsTable extends React.Component {
                           {(resourceType === 'bbs' && (
                             <React.Fragment>
                               <StyledTableCell>{result.title}</StyledTableCell>
-                              <StyledTableCell><Translate>{result.subtheme ? result.subtheme.id + ' - ' + result.subtheme.name : '-'}</Translate></StyledTableCell>
+                              <StyledTableCell>
+                                {result.subtheme ? (
+                                  <React.Fragment>
+                                    {result.subtheme.id}
+                                    {' - '}
+                                    <Translate
+                                      id={result.subtheme.id}
+                                      defaultMessage={result.subtheme.name}
+                                    />
+                                  </React.Fragment>
+                                ) : '-'}
+                              </StyledTableCell>
                               <StyledTableCell><Translate>{result.country ? result.country.name : '-'}</Translate></StyledTableCell>
                               <StyledTableCell>{result.authors ? result.authors : '-'}</StyledTableCell>
                               <StyledTableCell>{result.year ? result.year : '-'}</StyledTableCell>
@@ -565,13 +576,13 @@ class SearchResultsTable extends React.Component {
 
               </React.Fragment>
             ) : (
-              <Translate>No results</Translate>
-            )}
+                <Translate>No results</Translate>
+              )}
           </CardContent>
         </Card>
       ) : (
-        ''
-      ))
+          ''
+        ))
     );
   }
 }

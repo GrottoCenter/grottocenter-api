@@ -125,9 +125,9 @@ export const findMapBoundsUrl = `/api/${apiVersion}/geoloc/findByBounds`;
 export const findMassifUrl = `/api/${apiVersion}/massifs/`;
 export const findGroupUrl = `/api/${apiVersion}/grottos/`;
 export const findBbsUrl = `/api/${apiVersion}/bbs/`;
-export const advancedsearchUrl = `/api/${apiVersion}/advancedSearch`;
+export const advancedsearchUrl = `/api/${apiVersion}/advanced-search`;
 export const quicksearchUrl = `/api/${apiVersion}/search`;
-export const subthemesUrl = `/api/${apiVersion}/bbsSubthemes`;
+export const subthemesUrl = `/api/${apiVersion}/bbs-subthemes`;
 
 // ===== Grottocenter Client routes
 export const swaggerLinkV1 = '/ui/swagger/1';
