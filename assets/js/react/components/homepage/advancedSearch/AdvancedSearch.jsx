@@ -8,13 +8,14 @@ import styled from 'styled-components';
 import EntriesSearch from './EntriesSearch';
 import GroupsSearch from './GroupsSearch';
 import MassifsSearch from './MassifsSearch';
+import BbsSearch from './BbsSearch';
 import Translate from '../../common/Translate';
 
 import SearchResultsContainer from '../../../containers/SearchResultsContainer';
 
-const advancedSearchTypes = ['entries', 'grottos', 'massifs'];
+const advancedSearchTypes = ['entries', 'grottos', 'massifs', 'bbs'];
 
-const styles = theme => ({
+const styles = (theme) => ({
   root: {
     backgroundColor: theme.palette.primary.dark,
     flexGrow: 1,
@@ -22,6 +23,7 @@ const styles = theme => ({
   },
   tabName: {
     fontSize: '1.4rem',
+    flexShrink: 0,
   },
   tabContainer: {
     backgroundColor: theme.palette.primary3Color,
@@ -47,7 +49,7 @@ class AdvancedSearch extends React.Component {
 
   render() {
     const {
-      classes, resetAdvancedSearch, startAdvancedsearch,
+      classes, resetAdvancedSearch, startAdvancedsearch, getSubThemes, subthemes, themes,
     } = this.props;
     const { tabSelected } = this.state;
 
@@ -55,11 +57,13 @@ class AdvancedSearch extends React.Component {
       <div className={classes.root}>
         <AppBar position="static" color="default">
           <Tabs
+            fullWidth
+            scrollable
+            scrollButtons="off"
             value={tabSelected}
             onChange={this.handleChange}
             indicatorColor="primary"
             textColor="primary"
-            centered
           >
             <Tab
               className={classes.tabName}
@@ -85,6 +89,15 @@ class AdvancedSearch extends React.Component {
                 <React.Fragment>
                   <TabIcon src="/images/massif.svg" alt="Massif icon" />
                   <Translate>Massifs</Translate>
+                </React.Fragment>
+              )}
+            />
+            <Tab
+              className={classes.tabName}
+              label={(
+                <React.Fragment>
+                  <TabIcon src="/images/bibliography.svg" alt="BBS icon" />
+                  <Translate>BBS</Translate>
                 </React.Fragment>
               )}
             />
@@ -120,6 +133,18 @@ class AdvancedSearch extends React.Component {
               resetResults={resetAdvancedSearch}
             />
           )}
+          {tabSelected === 3 && (
+            <BbsSearch
+              startAdvancedsearch={(state, resourceType) => {
+                startAdvancedsearch(state, resourceType);
+              }}
+              resourceType={advancedSearchTypes[3]}
+              resetResults={resetAdvancedSearch}
+              getSubThemes={getSubThemes}
+              subthemes={subthemes}
+              themes={themes}
+            />
+          )}
 
           <SearchResultsContainer />
         </div>
@@ -133,6 +158,9 @@ AdvancedSearch.propTypes = {
   classes: PropTypes.shape({}).isRequired,
   resetAdvancedSearch: PropTypes.func.isRequired,
   startAdvancedsearch: PropTypes.func.isRequired,
+  getSubThemes: PropTypes.func.isRequired,
+  subthemes: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
+  themes: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
 };
 
 AdvancedSearch.defaultProps = {

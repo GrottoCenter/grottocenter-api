@@ -61,82 +61,91 @@ const styles = {
   },
 };
 
-const Group = (props) => {
-  const { isFetching, group, classes } = props;
-  if (isFetching) {
-    return (<CircularProgress />);
+
+export class Group extends React.Component {
+  componentDidMount() {
+    const { updatePageTitle } = this.props;
+    updatePageTitle('Group');
   }
-  if (group) {
-    let completeAddress = `${group.country} - ${group.region} - ${group.county}`;
-    if (group.city) completeAddress += ` - ${group.city}`;
-    else if (group.village) completeAddress += ` - ${group.village}`;
-    if (group.postalCode) completeAddress += ` - ${group.postalCode}`;
-    if (group.address) completeAddress += ` - ${group.address}`;
 
-    return (
-      <Card>
-        <CardContent>
-          <GroupName>
-            {group.name}
-          </GroupName>
+  render() {
+    const { isFetching, group, classes } = this.props;
+    if (isFetching) {
+      return (<CircularProgress />);
+    }
+    if (group) {
+      let completeAddress = `${group.country} - ${group.region} - ${group.county}`;
+      if (group.city) completeAddress += ` - ${group.city}`;
+      else if (group.village) completeAddress += ` - ${group.village}`;
+      if (group.postalCode) completeAddress += ` - ${group.postalCode}`;
+      if (group.address) completeAddress += ` - ${group.address}`;
 
-          <Badge classes={{ badge: classes.badge, root: classes.root }} color="primary" badgeContent={group.cavers.length}>
-            <CaverIcon src="/images/caver.svg" alt="Caver icon" />
-          </Badge>
+      return (
+        <Card>
+          <CardContent>
+            <GroupName>
+              {group.name}
+            </GroupName>
 
-          <Badge classes={{ badge: classes.badge, root: classes.root }} color="primary" badgeContent={group.entries.length}>
-            <EntryIcon src="/images/entry.svg" alt="Entry icon" />
-          </Badge>
+            <Badge classes={{ badge: classes.badge, root: classes.root }} color="primary" badgeContent={group.cavers.length}>
+              <CaverIcon src="/images/caver.svg" alt="Caver icon" />
+            </Badge>
 
-          <p>
-            {group.yearBirth ? (
-              <i>
-                <Translate>Since</Translate>
-                {' '}
-                {group.yearBirth}
-              </i>
-            ) : ''}
+            <Badge classes={{ badge: classes.badge, root: classes.root }} color="primary" badgeContent={group.entries.length}>
+              <EntryIcon src="/images/entry.svg" alt="Entry icon" />
+            </Badge>
 
-            {group.Is_official_partner ? (
-              <span>
-                {group.yearBirth ? ' - ' : ''}
-                <Translate>Official partner</Translate>
-                {' '}
-                <GClogo src="/images/logoGC.png" alt="GC logo" />
-              </span>
-            ) : ''}
-          </p>
+            <p>
+              {group.yearBirth ? (
+                <i>
+                  <Translate>Since</Translate>
+                  {' '}
+                  {group.yearBirth}
+                </i>
+              ) : ''}
 
-          <div>
-            <LocationIconStyled />
-            {completeAddress}
-          </div>
+              {group.isOfficialPartner ? (
+                <span>
+                  {group.yearBirth ? ' - ' : ''}
+                  <Translate>Official partner</Translate>
+                  <GClogo src="/images/logoGC.png" alt="GC logo" />
+                </span>
+              ) : ''}
+            </p>
 
-          {group.contact ? (
             <div>
-              <EmailIconStyled />
-              {' '}
-              {group.contact}
+              <LocationIconStyled />
+              {completeAddress}
             </div>
-          ) : ''}
 
-          <p>
-            {group.customMessage}
-          </p>
+            {group.contact ? (
+              <div>
+                <EmailIconStyled />
+                {' '}
+                {group.contact}
+              </div>
+            ) : ''}
 
-          <EntriesList entries={group.entries} />
-        </CardContent>
-      </Card>
-    );
+            <p>
+              {group.customMessage}
+            </p>
+
+            <EntriesList entries={group.entries} />
+          </CardContent>
+        </Card>
+      );
+    }
+    return <div />;
   }
-  return <div />;
-};
+}
 
 Group.propTypes = {
   classes: PropTypes.shape({}).isRequired,
   isFetching: PropTypes.bool.isRequired,
   group: PropTypes.shape({}),
+  updatePageTitle: PropTypes.func.isRequired,
 };
+
 Group.defaultProps = {
   group: undefined,
 };

@@ -2,7 +2,7 @@
 
 const client = require('../../config/elasticsearch').elasticsearchCli;
 const resourcesToUpdate = [
-  'grottos', 'massifs', 'entries'
+  'grottos', 'massifs', 'entries', 'bbs'
 ];
 const advancedSearchMetaParams = ['resourceType', 'complete', 'match_all_queries', 'from', 'size'];
 
@@ -15,7 +15,7 @@ const advancedSearchMetaParams = ['resourceType', 'complete', 'match_all_queries
 */
 const FUZZINESS = 1;
 
-module.exports = {
+const self = module.exports = {
   /**
   * Update the Elasticsearch index according to the request.
   * @param {*} found resource to be updated 
@@ -90,15 +90,17 @@ module.exports = {
         /* eslint-disable camelcase */
         index: '_all',
         body: {
+          from: params.from ? params.from : 0,
+          size: params.size ? params.size : 10,
           query: {
             query_string: {
-              query: '*'+params.query+'* + '+params.query+'~'+FUZZINESS,
+              query: '*'+self.sanitizeQuery(params.query)+'* + '+self.sanitizeQuery(params.query)+'~'+FUZZINESS,
               fields: [
                 // General useful fields
-                'name^3', 'city^2', 'country', 'county', 'region',
+                'name^5', 'city^2', 'country', 'county', 'region',
                 
                 // ==== Entries
-                'description^0.5',
+                'descriptions^0.5',
                 'caves',
                 'riggings',
                 'location^0.5',
@@ -109,7 +111,10 @@ module.exports = {
                 'cavers names',
 
                 // ==== Massifs 
-                'entries names', 'entries regions', 'entries cities', 'entry counties', 'entries countries'
+                'entries names', 'entries regions', 'entries cities', 'entry counties', 'entries countries',
+
+                // ==== BBS 
+                'bbs title^2', 'bbs authors', 'bbs abstract^0.5', 'bbs ref', 'bbs country', 'bbs theme', 'bbs subtheme', 'bbs publication'
               ],
             },       
           },
@@ -168,21 +173,22 @@ module.exports = {
 
           // Value of a field
           if(isFieldParam && params[key] !== '') {
-            const words = params[key].split(' ');
-            words.map((word, index) => {
+            // Sanitize all the query and remove empty words
+            const sanitizedWords = self.sanitizeQuery(params[key]).split(' ').filter(w => w !== '');
+            sanitizedWords.map((word, index) => {
               const matchObj = {
                 wildcard: {}
               };
-          
+
               /* 
                 The value is set to lower case because the data are indexed in lowercase. 
                 We want a search not case sensitive.
 
                 Also, the character * is used for the first and the last word to (auto)complete the query.
               */
-              if(words.length === 1) matchObj.wildcard[key] = '*' + word.toLowerCase() + '*';
+              if(sanitizedWords.length === 1) matchObj.wildcard[key] = '*' + word.toLowerCase() + '*';
               else if(index === 0) matchObj.wildcard[key] = '*' + word.toLowerCase();
-              else if(index === words.length - 1) matchObj.wildcard[key] = word.toLowerCase() + '*';
+              else if(index === sanitizedWords.length - 1) matchObj.wildcard[key] = word.toLowerCase() + '*';
               else matchObj.wildcard[key] = word.toLowerCase();
 
               matchingParams.push(matchObj);
@@ -219,7 +225,7 @@ module.exports = {
         body: {
           query: {
             bool: {
-                      
+              
             },
           },
           highlight : {
@@ -231,7 +237,7 @@ module.exports = {
             order: 'score' 
           },
           from: params.from ? params.from : 0,
-          size: params.size ? params.size : 10 
+          size: params.size ? params.size : 10,
         }
       };
 
@@ -244,5 +250,13 @@ module.exports = {
       });
     });
     /* eslint-enable camelcase */
-  }
+  },
+
+  /**
+   * Replace all special characters from a source string by a space.
+   * @param {*} sourceString 
+   */
+  sanitizeQuery: function(sourceString) {
+    return sourceString.replace(/[`~!@#$%^&*()_|+\-=?;:'",.<>\{\}\[\]\\\/]/gi, ' ');
+  },
 };

@@ -105,6 +105,18 @@ module.exports.policies = {
     '*': true
   },
 
+  'v1/BbsController': {
+    '*': true
+  },
+
+  'v1/BbsGeoController': {
+    '*': true
+  },
+
+  'v1/BbsChapterController': {
+    '*': true
+  },
+
   'v1/GrottoController': {
     'find': ['apiKeyAuth', 'paginate']
   },

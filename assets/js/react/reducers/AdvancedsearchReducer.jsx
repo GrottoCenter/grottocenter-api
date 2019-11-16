@@ -7,6 +7,10 @@ import {
   FETCH_NEXT_ADVANCEDSEARCH_SUCCESS,
   FETCH_NEXT_ADVANCEDSEARCH_FAILURE,
 
+  FETCH_FULL_ADVANCEDSEARCH_STARTED,
+  FETCH_FULL_ADVANCEDSEARCH_SUCCESS,
+  FETCH_FULL_ADVANCEDSEARCH_FAILURE,
+
   RESET_ADVANCEDSEARCH_RESULTS,
 } from '../actions/Advancedsearch';
 
@@ -20,7 +24,10 @@ const initialState = {
   totalNbResults: 0, // total number of results for the search
   results: undefined, // search results
   errors: undefined, // fetch errors
+  fullResults: [], // All search results
   isLoading: false,
+  isLoadingFullData: false,
+  wantToDownloadCSV: false, // specify if a download of the full data was asked by the user
   searchCriterias: {
     from: 0,
     size: 10,
@@ -45,6 +52,7 @@ const advancedsearch = (state = initialState, action) => {
         searchCriterias: {
           ...action.criterias,
         },
+        wantToDownloadCSV: false, // Reset the need of downloading as CSV because it's a new search
       });
     }
     case FETCH_ADVANCEDSEARCH_SUCCESS: {
@@ -96,6 +104,33 @@ const advancedsearch = (state = initialState, action) => {
       return Object.assign({}, state, {
         error: action.error,
         isLoading: false,
+      });
+    }
+
+    // Get all results
+    case FETCH_FULL_ADVANCEDSEARCH_STARTED: {
+      return Object.assign({}, state, {
+        errors: undefined,
+        isLoadingFullData: true,
+        searchCriterias: {
+          ...state.searchCriterias,
+          ...action.criterias,
+        },
+      });
+    }
+    case FETCH_FULL_ADVANCEDSEARCH_SUCCESS: {
+      // Remove duplicates
+      return Object.assign({}, state, {
+        fullResults: [...new Set(action.results)],
+        isLoadingFullData: false,
+        wantToDownloadCSV: true,
+      });
+    }
+    case FETCH_FULL_ADVANCEDSEARCH_FAILURE: {
+      return Object.assign({}, state, {
+        error: action.error,
+        isLoadingFullData: false,
+        wantToDownloadCSV: false,
       });
     }
 

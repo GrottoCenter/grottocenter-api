@@ -242,13 +242,13 @@ class GroupsSearch extends React.Component {
                     onChange={event => this.handleRangeChange('number of cavers-range', [parseInt(event.target.value, 10) || 0, numberOfCaversRange.max], numberOfCaversMinValue, numberOfCaversMaxValue)}
                     value={numberOfCaversRange.min}
                     disabled={!numberOfCaversRange.isEditable}
-                    style={{ width: '50px' }}
+                    style={{ width: '30px' }}
                   />
                   <TextField
                     onChange={event => this.handleRangeChange('number of cavers-range', [numberOfCaversRange.min, parseInt(event.target.value, 10) || 0], numberOfCaversMinValue, numberOfCaversMaxValue)}
                     value={numberOfCaversRange.max}
                     disabled={!numberOfCaversRange.isEditable}
-                    style={{ width: '50px' }}
+                    style={{ width: '30px' }}
                   />
                 </div>
               </FormControl>

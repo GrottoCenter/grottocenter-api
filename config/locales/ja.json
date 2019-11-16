@@ -176,7 +176,7 @@
   "Input": "Input",
   "Output": "Output",
   "Coordinate system": "座標参照系：",
-  "Based on the library Proj4js (http: //proj4js.org) and the project proj.4 (http: //trac.osgeo.org/proj), this converter uses the conversion constants from Spatial Reference (http: //spatialreference.org).": "ライブラリProj4js(<a href=\"http: //proj4js.org\" title=\"Proj4js\" target=\"_blank\"> http：//proj4js.org </a>)とプロジェクトproj.4(<http：//trac.osgeo.org/proj)、このコンバーターは 空間参照からの変換定数(<a href=\"http:\\spatialreference.org\" title=\"空間参照_\" target=\"_blank\"> http：//spatialreference.org </a>)。",
+  "Based on the library Proj4js (http: //proj4js.org) and the project proj.4 (http: //trac.osgeo.org/proj), this converter uses the conversion constants from Spatial Reference (http: //spatialreference.org).": "ライブラリProj4js(<a href=\"http: //proj4js.org\" title=\"Proj4js\" target=\"_blank\"> http：//proj4js.org </a>)とプロジェクトproj.4(<http：//trac.osgeo.org/proj)、このコンバーターは 空間参照からの変換定数(<a href=\"http:spatialreference.org\" title=\"空間参照_\" target=\"_blank\"> http：//spatialreference.org </a>)。",
   "Deg. min. sec.": "Deg。 分。 秒である。",
   "Dec. Degrees": "12度",
   "North": "北",

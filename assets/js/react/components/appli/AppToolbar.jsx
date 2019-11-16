@@ -1,14 +1,13 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import Toolbar from '@material-ui/core/Toolbar';
-import SearchIcon from '@material-ui/icons/Search';
-import { withStyles, withTheme } from '@material-ui/core/styles';
+import { withStyles, withTheme } from '@material-ui/core';
 import styled from 'styled-components';
+
 import HeaderTitle from './HeaderTitle';
 import SideMenuBurgerConnector from '../../containers/SideMenuBurgerConnector';
-import QuicksearchContainer from '../../containers/QuicksearchContainer';
 import { sideMenuWidth } from '../../conf/Config';
-import { isMobileOnly } from 'react-device-detect';
+import Translate from '../common/Translate';
 
 //
 //
@@ -16,7 +15,7 @@ import { isMobileOnly } from 'react-device-detect';
 //
 //
 
-const StyledToolbar = withStyles(theme => ({
+const StyledToolbar = withStyles((theme) => ({
   root: {
     width: '100%',
     padding: '0px',
@@ -27,7 +26,22 @@ const StyledToolbar = withStyles(theme => ({
   },
 }), { withTheme: true })(Toolbar);
 
-const TitleGroup = withStyles(theme => ({
+// Center in the parent div using absolute because the Grottocenter logo is taking some place on the left.
+const StyledPageTitle = withTheme()(styled.span`
+  position: absolute;
+  left: 50%;
+  transform: translate(-50%, 0);
+  @media (max-width: 500px) {
+    position: initial;
+  }
+`);
+
+const StyledPageTitleText = withTheme()(styled.span`
+  color: ${(props) => props.theme.palette.primary3Color};
+  font-size: 4rem;
+`);
+
+const TitleGroup = withStyles(() => ({
   root: {
     width: sideMenuWidth,
     padding: '0px',
@@ -36,73 +50,38 @@ const TitleGroup = withStyles(theme => ({
   },
 }), { withTheme: true })(Toolbar);
 
-const StyledBarContainer = withTheme()(styled.div`
-  background-color: ${props => props.theme.palette.primary3Color};
-  display: flex;
-  width: 400px;
-  height: 60px;
-`);
-
-const StyledQuicksearchContainer = withStyles(theme => ({
-  root: {
-    flex: 10,
-  },
-  input: {
-    backgroundColor: theme.palette.primary3Color
-  },
-  valueContainer: {
-    height: '60px'
-  }
-}), { withTheme: true })(QuicksearchContainer);
-
-const StyledIconSpan = withTheme()(styled.span`
-  height: 64px;
-  text-align: center;
-`);
-
-
-const StyledSearchIcon = withStyles(theme => ({
-  root: {
-    height: '50px',
-    width: '50px',
-    paddingTop: 'calc((72px - 50px) / 2)',
-    fill: theme.palette.primary1Color,
-  },
-}), { withTheme: true })(SearchIcon);
-
-const LargerToolbarGroup = styled.div`
-  width: 400px;
-`;
-
 //
 //
 // M A I N - C O M P O N E N T
 //
 //
 
-const AppToolbar = () => (
-  <StyledToolbar>
-    <TitleGroup>
-      <HeaderTitle title="Grottocenter" subtitle="Achere - 2018" />
-      <SideMenuBurgerConnector />
-    </TitleGroup>
+const AppToolbar = (props) => {
+  const { pageTitle } = props;
+  const PageTitleComponent = pageTitle ? (
+    <StyledPageTitle>
+      <StyledPageTitleText>
+        <Translate>{pageTitle}</Translate>
+      </StyledPageTitleText>
+    </StyledPageTitle>
+  ) : '';
 
-    <StyledBarContainer>
-      <StyledIconSpan>
-        <StyledSearchIcon />
-      </StyledIconSpan>
-
-      <StyledQuicksearchContainer/>
-
-    </StyledBarContainer>
-
-    <div />
-  </StyledToolbar>
-);
+  return (
+    <StyledToolbar>
+      <TitleGroup>
+        <HeaderTitle title="Grottocenter" subtitle="Achere - 2018" />
+        <SideMenuBurgerConnector />
+      </TitleGroup>
+      {PageTitleComponent}
+    </StyledToolbar>
+  );
+};
 
 AppToolbar.propTypes = {
-  title: PropTypes.string,
-  subtitle: PropTypes.string,
+  pageTitle: PropTypes.string,
+};
+AppToolbar.defaultProps = {
+  pageTitle: '',
 };
 
 export default AppToolbar;

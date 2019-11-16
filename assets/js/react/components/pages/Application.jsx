@@ -4,8 +4,13 @@ import { withTheme } from '@material-ui/core/styles';
 import styled from 'styled-components';
 import { isMobileOnly } from 'react-device-detect';
 import BasePage from './BasePage';
+
 import SideMenuConnector from '../../containers/SideMenuConnector';
-import AppToolbar from '../appli/AppToolbar';
+import MassifContainer from '../../containers/MassifContainer';
+import GroupContainer from '../../containers/GroupContainer';
+import BbsContainer from '../../containers/BbsContainer';
+import AppToolbarContainer from '../../containers/AppToolbarContainer';
+
 import AppFooter from '../appli/AppFooter';
 import Breadcrump from '../appli/Breadcrump';
 import Api from '../appli/Api';
@@ -15,8 +20,6 @@ import Swagger from './Swagger';
 import Faq from '../appli/Faq';
 import LatestBlogNewsSection from '../homepage/LatestBlogNewsSection';
 import Entries from '../appli/entries/Index';
-import MassifContainer from '../../containers/MassifContainer';
-import GroupContainer from '../../containers/GroupContainer';
 import Convert from '../common/map/Convert';
 
 //
@@ -56,7 +59,7 @@ const Application = () => {
   return (
     <BasePage>
       <div id="applicationpage">
-        <ApplicationHeader><AppToolbar /></ApplicationHeader>
+        <ApplicationHeader><AppToolbarContainer /></ApplicationHeader>
         <aside><SideMenuConnector /></aside>
         { (cutPath[2] !== 'map') && <Breadcrump /> }
         <ArticleWrapper>
@@ -71,6 +74,7 @@ const Application = () => {
             <Route path="/ui/test" component={LatestBlogNewsSection} />
             <Route path="/ui/groups/:groupId" component={GroupContainer} />
             <Route path="/ui/massifs/:massifId" component={MassifContainer} />
+            <Route path="/ui/bbs/:bbsId" component={BbsContainer} />
             <Redirect path="/ui/*" to="/ui/" />
           </Switch>
         </ArticleWrapper>

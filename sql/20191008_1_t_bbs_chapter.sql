@@ -1,0 +1,132 @@
+-- phpMyAdmin SQL Dump
+-- version 4.7.8
+-- https://www.phpmyadmin.net/
+--
+-- Hôte : db
+-- Généré le :  sam. 05 oct. 2019 à 15:48
+-- Version du serveur :  5.7.18
+-- Version de PHP :  7.2.2
+
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+SET AUTOCOMMIT = 0;
+START TRANSACTION;
+SET time_zone = "+00:00";
+
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
+
+--
+-- Base de données :  `grottoce`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `t_bbs_chapter`
+--
+
+CREATE TABLE `t_bbs_chapter` (
+  `code_matiere` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `cTexte_chapitre` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `cTexte_Matiere` varchar(1000) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `geographical_connection` bit(10) DEFAULT NULL,
+  `Texte_chapitre_anglais` varchar(1000) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `Texte_chapitre_francais` varchar(1000) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `texte_matiere_anglais` varchar(1000) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `texte_matiere_francais` varchar(1000) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `texte_titre_chap` varchar(1000) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  PRIMARY KEY (code_matiere)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Déchargement des données de la table `t_bbs_chapter`
+--
+
+INSERT INTO `t_bbs_chapter` (`code_matiere`, `cTexte_chapitre`, `cTexte_Matiere`, `geographical_connection`, `Texte_chapitre_anglais`, `Texte_chapitre_francais`, `texte_matiere_anglais`, `texte_matiere_francais`, `texte_titre_chap`) VALUES
+('1.11', 'Geospeleology and Karstology', 'KARST MORPHOLOGY AND MORPHOGENESIS : Exokarst of carbonatic rocks (limestones, dolomites, chalk, marbles); Geochemistry; Soil - CO2; Corrosion; Karst types (holo-, mero-, fluvio-, glacio-, volcano- karst; Tropical karst).', b'0000000000', 'Geospeleology and Karstology', 'Géospéléologie et karstologie', 'KARST MORPHOLOGY AND MORPHOGENESIS : Exokarst of carbonatic rocks (limestones, dolomites, chalk, marbles); Geochemistry', 'MORPHOLOGIE ET MORPHOGENESE KARSTIQUE : Exokarst des roches carbonatées (calcaires, dolomies, craies, marbres) Géochimie...', '1.1__tabKarstology\n__tabKarstologie'),
+('1.12', 'Geospeleology and Karstology', 'HYDROLOGY : Water chemistry and physics; Springs and sinks; Karstic groundwater; Water tracings, hydrogeology', b'0000000000', 'Geospeleology and Karstology', 'Géospéléologie et karstologie', 'HYDROLOGY : Water chemistry and physics; Springs and sinks; Karstic groundwater; Water tracings, hydrogeology', 'HYDROLOGIE : Chimie et physique des eaux; Sources et pertes; Aquifères karstiques; Traçages, hydrogéologie', NULL),
+('1.13', 'Geospeleology and Karstology', 'GEOLOGY AND PEDOLOGY : Petrography; Tectonics; Bauxite; Glaciations.', b'0000000000', 'Geospeleology and Karstology', 'Géospéléologie et karstologie', 'GEOLOGY AND PEDOLOGY : Petrography; Tectonics; Bauxite; Glaciations.', 'GEOLOGIE ET PEDOLOGIE : Petrographie; Tectonique; Bauxite; Glaciations.', NULL),
+('1.14', 'Geospeleology and Karstology', 'CLIMATOLOGY AND BIOLOGY OF KARST REGIONS', b'0000000000', 'Geospeleology and Karstology', 'Géospéléologie et karstologie', 'CLIMATOLOGY AND BIOLOGY OF KARST REGIONS', 'CLIMATOLOGIE ET BIOLOGIE DU KARST', NULL),
+('1.15', 'Geospeleology and Karstology', 'FOSSIL KARST : Paleokarst; Karstic fillings; Paleogeography.', b'0000000000', 'Geospeleology and Karstology', 'Géospéléologie et karstologie', 'FOSSIL KARST : Paleokarst; Karstic fillings; Paleogeography.', 'KARST FOSSILE : Paléokarst; Remplissages karstiques; Paléogéographie.', NULL),
+('1.16', 'Geospeleology and Karstology', 'HYDROTHERMAL KARST', b'0000000000', 'Geospeleology and Karstology', 'Géospéléologie et karstologie', 'HYDROTHERMAL KARST', 'KARST HYDROTHERMAL', NULL),
+('1.21', 'Geospeleology and Karstology', 'MORPHOLOGY AND SPELEOGENESIS IN CARBONATIC ROCKS : Caves, potholes; Corrosion and erosion; Small and large hollow forms; Sumps', b'0000000000', 'Geospeleology and Karstology', 'Géospéléologie et karstologie', 'MORPHOLOGY AND SPELEOGENESIS IN CARBONATIC ROCKS : Caves, potholes; Corrosion and erosion; Small and large hollow forms; Sumps', 'MORPHOLOGIE ET SPELEOGENESE EN ROCHE CARBONATEE : Grottes, gouffres; Corrosion et érosion; Formes de creusement; Siphons.', NULL),
+('1.22', 'Geospeleology and Karstology', 'PARA-, PSEUDO- ET/AND HYPOKARST', b'0000000000', 'Geospeleology and Karstology', 'Géospéléologie et karstologie', 'PARA-, PSEUDO- ET/AND HYPOKARST', 'PARA-, PSEUDO- ET/AND HYPOKARST', NULL),
+('1.23', 'Geospeleology and Karstology', 'SUBTERRANEAN DEPOSITS AND FILLINGS : Chemistry and mineralogy; Sinter morphology; Clay and alluvial sediments; Collapses.', b'0000000000', 'Geospeleology and Karstology', 'Géospéléologie et karstologie', 'SUBTERRANEAN DEPOSITS AND FILLINGS : Chemistry and mineralogy; Sinter morphology; Clay and alluvial sediments; Collapses.', 'DEPOTS ET REMPLISSAGES SOUTERRAINS : Chimie et minéralogie; Morphologie du concrétionnement; Argile et sédiments alluviaux; éboulements.', NULL),
+('1.24', 'Geospeleology and Karstology', 'SUBTERRANEAN CLIMATOLOGY : Temperature, Hygrometry, Winds, Air-CO2; Dripping and condensation waters, Ice.', b'0000000000', 'Geospeleology and Karstology', 'Géospéléologie et karstologie', 'SUBTERRANEAN CLIMATOLOGY : Temperature, Hygrometry, Winds, Air-CO2; Dripping and condensation waters, Ice.', 'CLIMATOLOGIE SOUTERRAINE : Température, Hygrométrie, Vents, CO2 de l´air; Eaux de ruissellement et de condensation; Glace', NULL),
+('1.25', 'Geospeleology and Karstology', 'GEOPHYSICS : Radioactivity; Seismology; Geothermalism; Volcanism.', b'0000000000', 'Geospeleology and Karstology', 'Géospéléologie et karstologie', 'GEOPHYSICS : Radioactivity; Seismology; Geothermalism; Volcanism.', 'GEOPHYSIQUE : Radioactivité; Seismologie; Géothermalisme; Volcanisme.', NULL),
+('1.26', 'Geospeleology and Karstology', 'CHRONOLOGY OF SUBTERRANEAN FILLINGS : Stratigraphy; Datings; Palynology; Paleoenvironment', b'0000000000', 'Geospeleology and Karstology', 'Géospéléologie et karstologie', 'CHRONOLOGY OF SUBTERRANEAN FILLINGS : Stratigraphy; Datings; Palynology; Paleoenvironment', 'CHRONOLOGIE DE REMPLISSAGES SOUTERRAINS : Stratigraphie; Datations; Palynologie; Paléoenvironnement', NULL),
+('1.3', 'Geospeleology and Karstology', 'SPECIAL KARSTS : Conglomerates; Magnesite; Travertine; Tufa ; Calcarenite; Corals; Chalk; Calcareous flysch', b'0000000000', 'Geospeleology and Karstology', 'Géospéléologie et karstologie', 'SPECIAL KARSTS : Conglomerates; Magnesite; Travertine; Tufa ; Calcarenite; Corals; Chalk; Calcareous flysch', 'KARST SPECIAUX : Conglomérats; Magnésite; Travertin; Tufs; Calcarénite; Coraux; Craie; Flysch calcaire etc.', NULL),
+('1.4', 'Geospeleology and Karstology', 'PARAKARST IN EVAPORITES : Gypsum, halides.', b'0000000000', 'Geospeleology and Karstology', 'Géospéléologie et karstologie', 'PARAKARST IN EVAPORITES : Gypsum, halides.', 'PARAKARST EN ROCHES EVAPORITIQUES : Gypse, halides', NULL),
+('1.5', 'Geospeleology and Karstology', 'PARAKARST IN SILICEOUS ROCKS : Quartzite; Sandstones; Flysch; Loess; Marles; Piping in alluvial material', b'0000000000', 'Geospeleology and Karstology', 'Géospéléologie et karstologie', 'PARAKARST IN SILICEOUS ROCKS : Quartzite; Sandstones; Flysch; Loess; Marles; Piping in alluvial material', 'PARAKARST EN ROCHES SILICIEUSES : Quartzite; Grès, Flysch; Loess, Marnes.', NULL),
+('1.6', 'Geospeleology and Karstology', 'PSEUDOKARST : Granites, Gneiss; Talus-caves', b'0000000000', 'Geospeleology and Karstology', 'Géospéléologie et karstologie', 'PSEUDOKARST : Granites, Gneiss; Talus-caves', 'PSEUDOKARST : Granits, Gneiss; Grottes-éboulis', NULL),
+('1.7', 'Geospeleology and Karstology', 'ICE HYPOKARST; PERMAFROST- AND THERMOKARST', b'0000000000', 'Geospeleology and Karstology', 'Géospéléologie et karstologie', 'ICE HYPOKARST; PERMAFROST- AND THERMOKARST', 'HYPOKARST EN GLACE; PERMAFROST- ET THERMOKARST', NULL),
+('1.8', 'Geospeleology and Karstology', 'HYPO- AND PSEUDOKARST IN VOLCANIC ROCKS : Lavas, basalt.', b'0000000000', 'Geospeleology and Karstology', 'Géospéléologie et karstologie', 'HYPO- AND PSEUDOKARST IN VOLCANIC ROCKS : Lavas, basalt.', 'HYPO- ET PSEUDOKARST EN ROCHE VOLCANIQUE : Laves, basalte.', NULL),
+('2.0', 'Regional speleology', 'GENERALITIES; WORLD (Continents)', b'0000000000', 'Regional speleology', 'Spéléologie régionale', 'GENERALITIES; WORLD (Continents)', 'GENERALITES ; GLOBE (continents)', '2.0__tabGeneral; World\n__tabGénéralités; Globe\n'),
+('2.11', 'Regional speleology', ' WESTERN & CENTRAL EUROPE', b'0000000001', 'Regional speleology', 'Spéléologie régionale', 'WESTERN & CENTRAL EUROPE', 'EUROPE OCCIDENTALE ET CENTRALE', NULL),
+('2.12', 'Regional speleology', 'EASTERN EUROPE', b'0000000001', 'Regional speleology', 'Spéléologie régionale', 'EASTERN EUROPE', 'EUROPE ORIENTALE', NULL),
+('2.21', 'Regional speleology', 'NORTHERN AMERICA', b'0000000001', 'Regional speleology', 'Spéléologie régionale', 'NORTHERN AMERICA', 'SPELEOLOGIE ET KARSTOLOGIE REGIONALE : AMERIQUE DU NORD', '2.2__tabAmerica\n__tabAmérique\n'),
+('2.22', 'Regional speleology', 'REGIONAL SPELEOLOGY AND KARSTOLOGY : CENTRAL AND SOUTHERN AMERICA', b'0000000001', 'Regional speleology', 'Spéléologie régionale', 'CENTRAL AND SOUTHERN AMERICA', 'AMERIQUE CENTRALE ET MERIDIONALE', NULL),
+('2.3', 'Regional speleology', 'ASIA', b'0000000001', 'Regional speleology', 'Spéléologie régionale', 'ASIA', 'ASIE', '2.3__tabAsia\n__tabAsie\n'),
+('2.4', 'Regional speleology', 'AFRICA', b'0000000001', 'Regional speleology', 'Spéléologie régionale', 'AFRICA', 'AFRIQUE', '2.4__tabAfrica\n__tabAfrique\n'),
+('2.5', 'Regional speleology', 'AUSTRALASIA, OCEANIA', b'0000000001', 'Regional speleology', 'Spéléologie régionale', 'AUSTRALASIA, OCEANIA', 'AUSTRALIE, OCEANIE', '2.5__tabAustralasia; Oceania\n__tabAustralasie; Océanie\n'),
+('2.6', 'Regional speleology', 'COSMOS', b'0000000000', 'Regional speleology', 'Spéléologie régionale', 'COSMOS', 'COSMOS', '2.6__tabCosmos\n'),
+('3.11', 'Biospeleology', 'CRUSTACEA', b'0000000000', 'Biospeleology', 'Biospéléologie', 'CRUSTACEA', 'CRUSTACE', '3.1__tabSystematics\n__tabSystématique\n'),
+('3.12', 'Biospeleology', 'HEXAPODA', b'0000000000', 'Biospeleology', 'Biospéléologie', 'HEXAPODA', 'HEXAPODE', NULL),
+('3.13', 'Biospeleology', 'ARACHNIDA, PALPIGRADA, PSEUDOSCORPIONES, MYRIAPODA, ONYCHOPHORA', b'0000000000', 'Biospeleology', 'Biospéléologie', 'ARACHNIDA, PALPIGRADA, PSEUDOSCORPIONES, MYRIAPODA, ONYCHOPHORA', 'ARACHNIDE, PALPIGRADA, PSEUDOSCORPIONES, MYRIAPODA, ONYCHOPHORA', NULL),
+('3.14', 'Biospeleology', 'MOLLUSCA, VERMES, OTHER INVERTEBRATA', b'0000000000', 'Biospeleology', 'Biospéléologie', 'MOLLUSCA, VERMES, OTHER INVERTEBRATA', 'MOLLUQUES; VERS, AUTRES INVERTEBRES', NULL),
+('3.15', 'Biospeleology', 'VERTEBRATA', b'0000000000', 'Biospeleology', 'Biospéléologie', 'VERTEBRATA', 'VERTEBRES', NULL),
+('3.16', 'Biospeleology', 'MICROBIOLOGY SOIL- AIR- WATER', b'0000000000', 'Biospeleology', 'Biospéléologie', 'MICROBIOLOGY SOIL- AIR- WATER', 'MICROBIOLOGIE SOL- AIR- EAU', NULL),
+('3.17', 'Biospeleology', 'HYPOGEAN FLORA, FUNGI, ALGAE', b'0000000000', 'Biospeleology', 'Biospéléologie', 'HYPOGEAN FLORA, FUNGI, ALGAE', 'FLORE HYPOGEE, CHAMPIGNONS, ALGUES', NULL),
+('3.2', 'Biospeleology', 'GENERAL BIOLOGY', b'0000000000', 'Biospeleology', 'Biospéléologie', 'GENERAL BIOLOGY', 'BIOLOGIE GENERALE', NULL),
+('3.31', 'Biospeleology', 'EUROPE', b'0000000001', 'Biospeleology', 'Biospéléologie', 'EUROPE', 'EUROPE', '3.3__tabRegional biospeleology\n__tabBiospéléologie régionale\n'),
+('3.32', 'Biospeleology', 'AMERICA', b'0000000001', 'Biospeleology', 'Biospéléologie', 'AMERICA', 'AMERIQUES', NULL),
+('3.33', 'Biospeleology', 'ASIA', b'0000000001', 'Biospeleology', 'Biospéléologie', 'ASIA', 'ASIE', NULL),
+('3.34', 'Biospeleology', 'AFRICA', b'0000000001', 'Biospeleology', 'Biospéléologie', 'AFRICA', 'AFRIQUE', NULL),
+('3.35', 'Biospeleology', 'AUSTRALASIA, OCEANIA', b'0000000001', 'Biospeleology', 'Biospéléologie', 'AUSTRALASIA, OCEANIA', 'AUSTRALASIE, OCEANIE', NULL),
+('4.10', 'Anthropospeleology', 'ARCHAEOLOGY; PREHISTORICAL AND HISTORICAL CULTURES : GENERALITIES without regional connections', b'0000000000', 'Anthropospeleology', 'Antropospéléologie', 'ARCHAEOLOGY; PREHISTORICAL AND HISTORICAL CULTURES : GENERALITIES without regional connections', 'ARCHEOLOGIE; CULTURES PREHISTORIQUES ET HISTORIQUES : GENERALITES sans rapports régionaux', '4.1__tabArchaeology; Prehistorical and historical cultures\n__tabArchéologie; Cultures préhistoriques et historiques\n'),
+('4.11', 'Anthropospeleology', 'ARCHAEOLOGY; PREHISTORICAL AND HISTORICAL CULTURES : EUROPE', b'0000000001', 'Anthropospeleology', 'Antropospéléologie', 'ARCHAEOLOGY; PREHISTORICAL AND HISTORICAL CULTURES : EUROPE', 'ARCHEOLOGIE; CULTURES PREHISTORIQUES ET HISTORIQUES : EUROPE', NULL),
+('4.12', 'Anthropospeleology', 'ARCHAEOLOGY; PREHISTORICAL AND HISTORICAL CULTURES : AMERICA', b'0000000001', 'Anthropospeleology', 'Antropospéléologie', 'ARCHAEOLOGY; PREHISTORICAL AND HISTORICAL CULTURES : AMERICA', 'ARCHEOLOGIE; CULTURES PREHISTORIQUES ET HISTORIQUES : AMERIQUES', NULL),
+('4.13', 'Anthropospeleology', 'ARCHAEOLOGY; PREHISTORICAL AND HISTORICAL CULTURES : ASIA', b'0000000001', 'Anthropospeleology', 'Antropospéléologie', 'ARCHAEOLOGY; PREHISTORICAL AND HISTORICAL CULTURES : ASIA', 'ARCHEOLOGIE; CULTURES PREHISTORIQUES ET HISTORIQUES : ASIE', NULL),
+('4.14', 'Anthropospeleology', 'ARCHAEOLOGY; PREHISTORICAL AND HISTORICAL CULTURES : AFRICA', b'0000000001', 'Anthropospeleology', 'Antropospéléologie', 'ARCHAEOLOGY; PREHISTORICAL AND HISTORICAL CULTURES : AFRICA', 'ARCHEOLOGIE; CULTURES PREHISTORIQUES ET HISTORIQUES : AFRIQUE', NULL),
+('4.15', 'Anthropospeleology', 'ARCHAEOLOGY; PREHISTORICAL AND HISTORICAL CULTURES : AUSTRALASIA, OCEANIA', b'0000000001', 'Anthropospeleology', 'Antropospéléologie', 'ARCHAEOLOGY; PREHISTORICAL AND HISTORICAL CULTURES : AUSTRALASIA, OCEANIA', 'ARCHEOLOGIE; CULTURES PREHISTORIQUES ET HISTORIQUES : AUSTRALASIE, OCEANIE', NULL),
+('4.2', 'Anthropospeleology', 'HISTORY OF SPELEOLOGY', b'0000000000', 'Anthropospeleology', 'Antropospéléologie', 'HISTORY OF SPELEOLOGY', 'HISTOIRE DE LA SPELEOLOGIE', '4.2__tabHistory of speleology\n__tabHistoire de la spéléologie\n'),
+('4.3', 'Anthropospeleology', 'PERSONALIA', b'0000000000', 'Anthropospeleology', 'Antropospéléologie', 'PERSONALIA', 'PERSONALIA', '4.3__tabPersonalia\n'),
+('4.4', 'Anthropospeleology', 'VARIA : Fine arts; comics etc', b'0000000000', 'Anthropospeleology', 'Antropospéléologie', 'VARIA : Fine arts; comics etc', 'VARIA : Art, récits, comics etc', '4.4__tabVaria\n'),
+('5.10', 'Paleontospeleology', 'FOSSIL AND SUBFOSSIL FAUNAS AND FLORAS (QUATERNARY) : GENERALITIES without regional connections', b'0000000000', 'Paleontospeleology', 'Paléontospéléologie', 'FOSSIL AND SUBFOSSIL FAUNAS AND FLORAS (QUATERNARY) : GENERALITIES without regional connections', 'FAUNES ET FLORES FOSSILES ET SUBFOSSILES (QUATERNAIRE) : GENERALITES sans rapports régionaux', '5.1__tabFossil and subfossil faunas and floras\n__tabFaunes et flores fossiles et subfossiles\n'),
+('5.11', 'Paleontospeleology', 'FOSSIL AND SUBFOSSIL FAUNAS AND FLORAS (QUATERNARY) : EUROPE', b'0000000001', 'Paleontospeleology', 'Paléontospéléologie', 'FOSSIL AND SUBFOSSIL FAUNAS AND FLORAS (QUATERNARY) : EUROPE', 'FAUNES ET FLORES FOSSILES ET SUBFOSSILES (QUATERNAIRE) : EUROPE', NULL),
+('5.12', 'Paleontospeleology', 'FOSSIL AND SUBFOSSIL FAUNAS AND FLORAS (QUATERNARY) : AMERICA', b'0000000001', 'Paleontospeleology', 'Paléontospéléologie', 'FOSSIL AND SUBFOSSIL FAUNAS AND FLORAS (QUATERNARY) : AMERICA', 'FAUNES ET FLORES FOSSILES ET SUBFOSSILES (QUATERNAIRE) : AMERIQUES', NULL),
+('5.13', 'Paleontospeleology', 'FOSSIL AND SUBFOSSIL FAUNAS AND FLORAS (QUATERNARY) : ASIA', b'0000000001', 'Paleontospeleology', 'Paléontospéléologie', 'FOSSIL AND SUBFOSSIL FAUNAS AND FLORAS (QUATERNARY) : ASIA', 'FAUNES ET FLORES FOSSILES ET SUBFOSSILES (QUATERNAIRE) : ASIE', NULL),
+('5.14', 'Paleontospeleology', 'FOSSIL AND SUBFOSSIL FAUNAS AND FLORAS (QUATERNARY) : AFRICA', b'0000000001', 'Paleontospeleology', 'Paléontospéléologie', 'FOSSIL AND SUBFOSSIL FAUNAS AND FLORAS (QUATERNARY) : AFRICA', 'FAUNES ET FLORES FOSSILES ET SUBFOSSILES (QUATERNAIRE) : AFRIQUE', NULL),
+('5.15', 'Paleontospeleology', 'FOSSIL AND SUBFOSSIL FAUNAS AND FLORAS (QUATERNARY) :', b'0000000001', 'Paleontospeleology', 'Paléontospéléologie', 'FOSSIL AND SUBFOSSIL FAUNAS AND FLORAS (QUATERNARY) :', 'FAUNES ET FLORES FOSSILES ET SUBFOSSILES (QUATERNAIRE) : AUSTRALASIE, OCEANIE / AUSTRALASIA, OCEANIA', NULL),
+('5.2', 'Paleontospeleology', 'FOSSIL AND SUBFOSSIL FAUNAS AND FLORAS (QUATERNARY) : VARIA', b'0000000000', 'Paleontospeleology', 'Paléontospéléologie', 'FOSSIL AND SUBFOSSIL FAUNAS AND FLORAS (QUATERNARY) : VARIA', 'FAUNES ET FLORES FOSSILES ET SUBFOSSILES (QUATERNAIRE) : VARIA', '5.2__tabVaria\n'),
+('6.1', 'Applied speleology', 'ENVIRONMENT and HYGIENE : Drinking waters; Pollution; Cleaning. Geosystem.', b'0000000000', 'Applied speleology', 'Spéléologie appliquée', 'ENVIRONMENT and HYGIENE : Drinking waters; Pollution; Cleaning. Geosystem, vulnerabiblity, cave protection', 'ENVIRONMENT et HYGIENE : Eaux potables; Pollution; Dépollution. Géosystème. Vulnérabilité, protection des cavernes', '6.1__tabEnvironment and hygiene\n__tabEnvironnement et hygiène\n'),
+('6.2', 'Applied speleology', 'MINES, ENGINEERING : Use of artificial and natural cavities, poljes and hydraulic power, irrigations. Flood and collapse control. Urban and mine speleology', b'0000000000', 'Applied speleology', 'Spéléologie appliquée', 'MINES, ENGINEERING : Use of artificial and natural cavities, poljes and hydraulic power, irrigations. Flood and collapse control. Urban and mine speleology', 'MINES, GENIE : Utilisation de cavités naturelles et artificielles, poljés et énergie hydraulique, irrigations. Contrôle d\' inondations et effondrements. Spéléologie urbaine et minière', '6.2__tabMines; Engineering\nMines; génie\n'),
+('6.3', 'Applied speleology', 'LAW, PROTECTION : Legislation, protection, vandalism, access restrictions. Ownership.', b'0000000000', 'Applied speleology', 'Spéléologie appliquée', 'LAW, PROTECTION : Legislation, protection, vandalism, access restrictions. Ownership.', 'DROIT, PROTECTION : Législation , conservation, vandalisme, réglementation d´accès.', '6.3__tabLaw; Protection\n__tabDroit; Protection\n'),
+('6.4', 'Applied speleology', 'RECREATION, TOURISM, GEOSYSTEM : Biogeography, Planning, Agriculture, Demography, Parks; Show caves and management. Anthropogenic impacts', b'0000000000', 'Applied speleology', 'Spéléologie appliquée', 'RECREATION, TOURISM, GEOSYSTEM : Biogeography, Planning, Agriculture, Demography, Parks; Show caves and management. Anthropogenic impacts', 'RECREATION, TOURISME, GEOSYSTEME : Biogéographie, Planification, Agriculture, Démographie, Parcs; Grottes touristiques et aménagement. Impacts anthropogéniques', '6.4__tabRecreation; Tourism; Geosystem \n__tabRécréation; Tourisme; Géosystème\n'),
+('6.5', 'Applied speleology', 'SUBTERRANEAN THERAPY', b'0000000000', 'Applied speleology', 'Spéléologie appliquée', 'SUBTERRANEAN THERAPY', 'THERAPEUTIQUE SOUTERRAINE', '6.5__tabSubterranean therapy\n__tabThérapeutique souterraine\n'),
+('6.6', 'Applied speleology', 'RESEARCH MANAGEMENT : Research centres, Subterranean laboratories, Museums.', b'0000000000', 'Applied speleology', 'Spéléologie appliquée', 'RESEARCH MANAGEMENT : Research centres, Subterranean laboratories, Museums.', 'RECHERCHE : Centres de recherche, laboratoires souterrains, Musées', '6.6__tabResearch management\n__tabRecherche\n'),
+('6.7', 'Applied speleology', 'VARIA : Collectables : Philately, Badges, Postcards etc.', b'0000000000', 'Applied speleology', 'Spéléologie appliquée', 'VARIA : Collectables : Philately, Badges, Postcards etc.', 'VARIA : Collections : Philatélie, Insignes, cartes postales etc.', '6.7__tabVaria\n'),
+('7.1', 'Technical speleology', 'EXPLORATION TECHNIQUES AND MATERIALS : Personal equipement, Exploration techniques, explosives, logistics.', b'0000000000', 'Technical speleology', 'Spéléologie technique', 'EXPLORATION TECHNIQUES AND MATERIALS : Personal equipement, Exploration techniques, explosives, logistics.', 'TECHNIQUE ET MATERIEL D\' EXPLORATION : Equipement personnel, techniques de progression, explosifs, logistique.', '7.1__tabExploration techniques and materials\n__tabTechnique et matériel d\'exploration\n'),
+('7.2', 'Technical speleology', 'DIVING : Techniques and material', b'0000000000', 'Technical speleology', 'Spéléologie technique', 'DIVING : Techniques and material', 'PLONGEE : Technique et matériel', '7.2__tabDiving\n__tabPlongée\n'),
+('7.3', 'Technical speleology', 'PROSPECTION : Geophysical, chemical, mathematical methods; Photogrammetry', b'0000000000', 'Technical speleology', 'Spéléologie technique', 'PROSPECTION : Geophysical, chemical, mathematical methods; Photogrammetry', 'PROSPECTION : Méthodes géophysiques, chimiques, mathématiques etc.; Photogrammétrie', '7.3__tabProspecting\n__tabProspection\n'),
+('7.4', 'Technical speleology', 'ACCIDENTS AND RESCUE : Techniques and material including dive accidents. Accident reports and analysis. Rescue exercises.', b'0000000000', 'Technical speleology', 'Spéléologie technique', 'ACCIDENTS AND RESCUE : Techniques and material including dive accidents. Accident reports and analysis. Rescue exercises, safety', 'ACCIDENTS ET SAUVETAGE : Technique et matériel y-inclus plongée. Analyse d´accidents; excercices de sauvetage, sécurité', '7.4__tabAccidents and rescue\n__tabAccidents et sauvetage\n'),
+('7.5', 'Technical speleology', 'MEDICINE : Human physiology and psychology, sociology, nutrition. Subterranean therapy', b'0000000000', 'Technical speleology', 'Spéléologie technique', 'MEDICINE : Human physiology and psychology, sociology, nutrition', 'MEDECINE : Physiologie, psychologie, sociologie, nutrition', '7.5__tabMedicine\n__tabMédecine\n'),
+('7.6', 'Technical speleology', 'ENSEIGNEMENT EDUCATION : Caving schools. Training exercises. Didactics. Ethics. Teaching. Exhibitions.', b'0000000000', 'Technical speleology', 'Spéléologie technique', 'ENSEIGNEMENT EDUCATION : Caving schools. Training exercises. Didactics. Ethics. Teaching. Exhibitions.', 'ENSEIGNEMENT EDUCATION : Ecoles de spéléologie, Entraînements. Didactique. Ethique. Expositions.', '7.6__tabEducation\n__tabEnseignement\n'),
+('7.7', 'Technical speleology', 'ACTIVITIES', b'0000000000', 'Technical speleology', 'Spéléologie technique', 'ACTIVITIES', 'ACTIVITES', '7.7__tabActivities\n__tabActivités\n'),
+('8.1', 'Documentary speleology', 'TOPOGRAPHY : Methods and material for subterranean surveying and cartography. Computer assisted mapping.', b'0000000000', 'Documentary speleology', 'Spéléologie documentaire', 'TOPOGRAPHY : Methods and material for subterranean surveying and cartography. Computer assisted mapping.', 'TOPOGRAPHIE : Méthodes et matériel pour topographie souterraine et cartographie. Topographie informatisée.', '8.1__tabTopography\n__tabTopographie\n'),
+('8.2', 'Documentary speleology', 'TERMINOLOGY, TOPONYMY : Glossaries. Multilingual terminology list. Naming practice.', b'0000000000', 'Documentary speleology', 'Spéléologie documentaire', 'TERMINOLOGY, TOPONYMY : Glossaries. Multilingual terminology list. Naming practice.', 'TERMINOLOGIE, TOPONYMIE : Dictionnaires. Noms de cavités.', '8.2__tabTerminology; Toponymy\n__tabTerminologie; Toponymie\n'),
+('8.3', 'Documentary speleology', 'BIBLIOGRAPHY : General Bibliographic documentation. Indexes of periodca. Libraries. Catalogues. Documentation by informatics. Regional, scientific, technical bibliographies', b'0000000000', 'Documentary speleology', 'Spéléologie documentaire', 'BIBLIOGRAPHY : General Bibliographic documentation. Indexes of periodca. Libraries. Catalogues. Documentation by informatics. Regional, scientific, technical bibliographies', 'BIBLIOGRAPHIE : Documentation bibliographique générale. Index de périodiques. Bibliothèques. Catalogues. Documentation informatisée. Bibliographies régionales, scientifiques, techniques', '8.3__tabBibliography\n__tabBibliographie\n'),
+('8.41', 'Documentary speleology', 'PHOTOGRAPHIC METHODS AND MATERIALS', b'0000000000', 'Documentary speleology', 'Spéléologie documentaire', 'PHOTOGRAPHIC METHODS AND MATERIALS', 'METHODES ET MATERIEL PHOTOGRAPHIQUES', '8.4__tabPhoto and film\n__tabPhoto et film'),
+('8.42', 'Documentary speleology', 'FILMS AND AUDIO-VISUAL DEVICES', b'0000000000', 'Documentary speleology', 'Spéléologie documentaire', 'FILMS AND AUDIO-VISUAL DEVICES', 'FILMS ET MOYENS AUDIO-VISUELS', NULL),
+('8.5', 'Documentary speleology', 'GENERAL WORKS : Speleological books, Popular works', b'0000000000', 'Documentary speleology', 'Spéléologie documentaire', 'GENERAL WORKS : Speleological books, Popular works', 'OUVRAGES GENERAUX : livres de spéléologie, articles de divulgation', '8.5__tabGeneral works\n__tabOuvrages généraux\n'),
+('8.6', 'Documentary speleology', 'INVENTORIES, SURVEYS, MAPS : Cave cadastres and records. Geomorphological maps of karst forms, Computer assisted databases. Identification systems', b'0000000000', 'Documentary speleology', 'Spéléologie documentaire', 'INVENTORIES, SURVEYS, MAPS : Cave cadastres and records. Geomorphological maps of karst forms, Computer assisted databases. Identification systems, modelling', 'INVENTAIRES, CADASTRES, CARTES : Liste cadastrales spéléologiques. Cartes géomorphologiques. Gestion de données informatisées. Systèmes d\' identification, modélisation', '8.6__tabInventories; Surveys; Maps\n__tabInventaires; Cadastres; Cartes\n'),
+('9', 'Non spéléo', 'Non spéléo', b'0000000000', 'Non spéléo', 'non spéléo', 'no caving subject', 'Non spéléo', '9__tabNon spéléo\n__tabNo Caving\n'),
+('9.1', 'canyon', 'canyon', b'0000000000', 'canyoning', 'canyon', 'canyoning', 'canyon', '9.1__tabNon spéléo : canyon\n__tabNo Caving : canyoning\n');
+COMMIT;
+
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;

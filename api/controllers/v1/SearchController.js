@@ -3,7 +3,7 @@
 const searchController = require('../SearchController');
 const ElasticSearch = require('../../services/ElasticsearchService');
 
-const advancedSearchTypes = ['massifs','entries', 'grottos'];
+const advancedSearchTypes = ['massifs','entries', 'grottos', 'bbs'];
 
 module.exports = {
 
@@ -42,7 +42,7 @@ module.exports = {
   /**
    * Perform an advanced search using multiple URL parameters : 
    * - type: string, entity type to search for (@see advancedSearchTypes) (NEEDED)
-   * - compelte: bool, determine if the results must be returned in their entirely or just their id and name (default = false) (FACULTATIVE)
+   * - complete: bool, determine if the results must be returned in their entirely or just their id and name (default = false) (FACULTATIVE)
    * - match_all_queries: bool, determine if the results need to match all the queries (logic AND) or at least of them (logic OR) (default = true) (FACULTATIVE)
    */
   advancedSearch: function(req, res) {

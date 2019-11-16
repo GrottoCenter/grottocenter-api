@@ -51,6 +51,25 @@ export default {
         fontFamily,
       },
     },
+    MuiFormLabel: {
+      root: {
+        fontSize: '1.4rem',
+      },
+    },
+    MuiTypography: {
+      body1: {
+        fontSize: '1.5rem',
+      },
+      h1: {
+        marginBottom: '3rem',
+      },
+      h2: {
+        fontSize: '3.5rem',
+      },
+      gutterBottom: {
+        marginBottom: '1rem',
+      },
+    },
   },
 };
 

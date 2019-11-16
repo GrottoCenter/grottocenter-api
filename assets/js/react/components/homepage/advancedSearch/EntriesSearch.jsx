@@ -385,13 +385,13 @@ class EntriesSearch extends React.Component {
                       onChange={event => this.handleRangeChange('aestheticism-range', [parseInt(event.target.value, 10) || 0, aestheticismRange.max], aestheticismMinValue, aestheticismMaxValue)}
                       value={aestheticismRange.min}
                       disabled={!aestheticismRange.isEditable}
-                      style={{ width: '50px' }}
+                      style={{ width: '30px' }}
                     />
                     <TextField
                       onChange={event => this.handleRangeChange('aestheticism-range', [aestheticismRange.min, parseInt(event.target.value, 10) || 0], aestheticismMinValue, aestheticismMaxValue)}
                       value={aestheticismRange.max}
                       disabled={!aestheticismRange.isEditable}
-                      style={{ width: '50px' }}
+                      style={{ width: '30px' }}
                     />
                   </div>
                 </FormControl>
@@ -433,13 +433,13 @@ class EntriesSearch extends React.Component {
                       onChange={event => this.handleRangeChange('caving-range', [parseInt(event.target.value, 10) || 0, cavingRange.max], cavingMinValue, cavingMaxValue)}
                       value={cavingRange.min}
                       disabled={!cavingRange.isEditable}
-                      style={{ width: '50px' }}
+                      style={{ width: '30px' }}
                     />
                     <TextField
                       onChange={event => this.handleRangeChange('caving-range', [cavingRange.min, parseInt(event.target.value, 10) || 0], cavingMinValue, cavingMaxValue)}
                       value={cavingRange.max}
                       disabled={!cavingRange.isEditable}
-                      style={{ width: '50px' }}
+                      style={{ width: '30px' }}
                     />
                   </div>
                 </FormControl>
@@ -481,13 +481,13 @@ class EntriesSearch extends React.Component {
                       onChange={event => this.handleRangeChange('approach-range', [parseInt(event.target.value, 10) || 0, approachRange.max], approachMinValue, approachMaxValue)}
                       value={approachRange.min}
                       disabled={!approachRange.isEditable}
-                      style={{ width: '50px' }}
+                      style={{ width: '30px' }}
                     />
                     <TextField
                       onChange={event => this.handleRangeChange('approach-range', [approachRange.min, parseInt(event.target.value, 10) || 0], approachMinValue, approachMaxValue)}
                       value={approachRange.max}
                       disabled={!approachRange.isEditable}
-                      style={{ width: '50px' }}
+                      style={{ width: '630px0px' }}
                     />
                   </div>
                 </FormControl>
@@ -577,7 +577,7 @@ class EntriesSearch extends React.Component {
                       InputProps={{
                         endAdornment: <InputAdornment position="start">m</InputAdornment>,
                       }}
-                      style={{ width: '50px' }}
+                      style={{ width: '60px' }}
                     />
                     <TextField
                       onChange={event => this.handleRangeChange('cave depth-range', [caveDepthRange.min, parseInt(event.target.value, 10) || 0], caveDepthMinValue, caveDepthMaxValue)}
@@ -586,7 +586,7 @@ class EntriesSearch extends React.Component {
                       InputProps={{
                         endAdornment: <InputAdornment position="start">m</InputAdornment>,
                       }}
-                      style={{ width: '50px' }}
+                      style={{ width: '60px' }}
                     />
                   </div>
                 </FormControl>
@@ -631,7 +631,7 @@ class EntriesSearch extends React.Component {
                       InputProps={{
                         endAdornment: <InputAdornment position="start">m</InputAdornment>,
                       }}
-                      style={{ width: '50px' }}
+                      style={{ width: '60px' }}
                     />
                     <TextField
                       onChange={event => this.handleRangeChange('cave length-range', [caveLengthRange.min, parseInt(event.target.value, 10) || 0], caveLengthMinValue, caveLengthMaxValue)}
@@ -640,7 +640,7 @@ class EntriesSearch extends React.Component {
                       InputProps={{
                         endAdornment: <InputAdornment position="start">m</InputAdornment>,
                       }}
-                      style={{ width: '50px' }}
+                      style={{ width: '60px' }}
                     />
                   </div>
                 </FormControl>

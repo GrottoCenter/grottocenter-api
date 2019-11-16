@@ -60,6 +60,7 @@ export const entityOptionForSelector = (option) => {
       {option.type === 'entry' ? <EntityIcon src="/images/entry.svg" alt="Entry icon" /> : ''}
       {option.type === 'grotto' ? <EntityIcon src="/images/club.svg" alt="Group icon" /> : '' }
       {option.type === 'massif' ? <EntityIcon src="/images/massif.svg" alt="Massif icon" /> : '' }
+      {option.type === 'bbs' ? <EntityIcon src="/images/bibliography.svg" alt="BBS article icon" /> : '' }
 
       <EntityLabel>{option.label}</EntityLabel>
       {highlights.map((hl) => {
