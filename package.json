@@ -105,7 +105,7 @@
     "istanbul": "^0.4.5",
     "jest": "^23.6.0",
     "mocha": "^6.0.0",
-    "nodemon": "^1.18.5",
+    "nodemon": "^2.0.0",
     "sails-disk": "^1.1.2",
     "sails-memory": "^0.10.7",
     "should": "^13.2.3",
