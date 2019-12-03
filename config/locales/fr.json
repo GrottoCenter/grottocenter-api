@@ -831,5 +831,8 @@
 	"Applied speleology": "Spéléologie appliquée",
 	"Technical speleology": "Techniques spéléologiques",
 	"Documentary speleology": "Documentation spéléologique",
-	"Non spéléo": "Ne concerne pas la spéléologie"
+	"Non spéléo": "Ne concerne pas la spéléologie",
+	"Export to CSV": "Exporter en CSV",
+	"Group": "Organisation",
+	"Speleological Abstracts": "Bulletin Bibliographique Spéléologique"
 }

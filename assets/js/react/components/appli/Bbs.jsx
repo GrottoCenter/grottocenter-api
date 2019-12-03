@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import {
   Card, CardContent, CircularProgress, withStyles, Typography,
 } from '@material-ui/core';
-import styled from 'styled-components';
 
 import ImportContactsIcon from '@material-ui/icons/ImportContacts';
 import PersonIcon from '@material-ui/icons/Person';
@@ -38,8 +37,9 @@ const StyledThemeIcon = withStyles(styledIcon)(CategoryIcon);
 
 export class Bbs extends React.Component {
   componentDidMount() {
-    const { updatePageTitle } = this.props;
+    const { updatePageTitle, updatePageTitleTooltip } = this.props;
     updatePageTitle('BBS');
+    updatePageTitleTooltip('Speleological Abstracts');
   }
 
   render() {
@@ -142,6 +142,7 @@ Bbs.propTypes = {
   isFetching: PropTypes.bool.isRequired,
   bbs: PropTypes.shape({}),
   updatePageTitle: PropTypes.func.isRequired,
+  updatePageTitleTooltip: PropTypes.func.isRequired,
 };
 Bbs.defaultProps = {
   bbs: undefined,

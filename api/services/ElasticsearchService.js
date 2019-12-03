@@ -257,6 +257,6 @@ const self = module.exports = {
    * @param {*} sourceString 
    */
   sanitizeQuery: function(sourceString) {
-    return sourceString.replace(/[`~!@#$%^&*()_|+\-=?;:'",.<>\{\}\[\]\\\/]/gi, ' ');
+    return sourceString.replace(/[`~!@#$%^&*()_|+\-=?;:'",<>\{\}\[\]\\\/]/gi, ' ');
   },
 };

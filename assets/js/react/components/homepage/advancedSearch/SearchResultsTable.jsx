@@ -424,7 +424,8 @@ class SearchResultsTable extends React.Component {
     }
 
     /* For small screens, change the display property to allow horizontal scroll.
-      Screen smaller than 1200px AND results type not "massif" => scrollable table (display: "block")
+      Screen smaller than 1200px AND results type not "massif"
+        => scrollable table (display: "block")
       (for massif, no scroll needed because the results are not very large)
     */
     const tableDisplayValueForScroll = window.innerWidth < 1200 && resourceType !== 'massifs' ? 'block' : 'table';
@@ -444,7 +445,7 @@ class SearchResultsTable extends React.Component {
                   >
 
                     {resultsSliced
-                      .map(result => (
+                      .map((result) => (
                         <StyledTableRow
                           key={result.id}
                           className={classes.tableRow}
@@ -520,8 +521,8 @@ class SearchResultsTable extends React.Component {
                     <Translate>Export to CSV</Translate>
                   </Button>
 
-                  {!isLoadingFullData && fullResults.length == totalNbResults && wantToDownloadCSV ? (
-                    <CSVDownload data={this.getFullResultsAsCSV()} target="_blank" />
+                  {!isLoadingFullData && fullResults.length === totalNbResults && wantToDownloadCSV ? (
+                    <CSVDownload data={this.getFullResultsAsCSV()} target="_self" />
                   ) : ''}
 
                   <StyledTablePagination
@@ -576,13 +577,13 @@ class SearchResultsTable extends React.Component {
 
               </React.Fragment>
             ) : (
-                <Translate>No results</Translate>
-              )}
+              <Translate>No results</Translate>
+            )}
           </CardContent>
         </Card>
       ) : (
-          ''
-        ))
+        ''
+      ))
     );
   }
 }

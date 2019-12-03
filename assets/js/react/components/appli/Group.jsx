@@ -20,6 +20,7 @@ const GClogo = styled.img`
 
 const GroupName = styled.h1`
   display: inline-block;
+  font-size: 4rem;
   margin-right: 20px;
 `;
 
