@@ -3,20 +3,17 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 
-import SearchIcon from '@material-ui/icons/Search';
-import ClearIcon from '@material-ui/icons/Clear';
+import {
+  Card, CardContent, TextField,
+} from '@material-ui/core';
 
-import Button from '@material-ui/core/Button';
-import Card from '@material-ui/core/Card';
-import CardActions from '@material-ui/core/CardActions';
-import CardContent from '@material-ui/core/CardContent';
-
-import TextField from '@material-ui/core/TextField';
-
+import SearchBottomActionButtons from './SearchBottomActionButtons';
 import Translate from '../../common/Translate';
 
+// ==========
 
-const styles = theme => ({
+
+const styles = (theme) => ({
   mainContainer: {},
   cardContainer: {},
   fieldset: {
@@ -98,6 +95,10 @@ class MassifsSearch extends React.Component {
     });
   };
 
+  resetToInitialState = () => {
+    this.setState(this.getInitialState());
+  }
+
   render() {
     const {
       classes,
@@ -134,7 +135,7 @@ class MassifsSearch extends React.Component {
                     <Translate>Massif name</Translate>
                   </span>
                 )}
-                onChange={event => this.handleValueChange('name', event)}
+                onChange={(event) => this.handleValueChange('name', event)}
                 value={name}
                 InputProps={{
                   classes: {
@@ -144,31 +145,10 @@ class MassifsSearch extends React.Component {
               />
             </div>
 
-            <CardActions className={classes.cardBottomButtons}>
-              <Button
-                type="submit"
-                variant="contained"
-                color="default"
-                size="large"
-              >
-                <SearchIcon />
-                <Translate>Search</Translate>
-              </Button>
-
-              <Button
-                type="button"
-                variant="contained"
-                color="default"
-                size="large"
-                onClick={() => {
-                  this.setState(this.getInitialState());
-                  resetResults();
-                }}
-              >
-                <ClearIcon />
-                <Translate>Reset</Translate>
-              </Button>
-            </CardActions>
+            <SearchBottomActionButtons
+              resetResults={resetResults}
+              resetParentState={this.resetToInitialState}
+            />
 
           </form>
         </CardContent>

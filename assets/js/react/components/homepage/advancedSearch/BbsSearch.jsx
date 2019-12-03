@@ -2,18 +2,17 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import SearchIcon from '@material-ui/icons/Search';
-import ClearIcon from '@material-ui/icons/Clear';
 import {
   FormLabel, FormControl, TextField, Switch, InputLabel, Select,
-  MenuItem, Typography, withStyles, CardActions, CardContent, Card,
-  Button,
+  MenuItem, Typography, withStyles, CardContent, Card,
 } from '@material-ui/core';
 
 import Slider from 'rc-slider';
+
 import Translate from '../../common/Translate';
 import InternationalizedLink from '../../common/InternationalizedLink';
 import { wikiBBSLinks } from '../../../conf/Config';
+import SearchBottomActionButtons from './SearchBottomActionButtons';
 
 // =====================================
 
@@ -71,6 +70,15 @@ const styles = (theme) => ({
     textAlign: 'center',
     width: '100%',
   },
+
+  bottomButton: {
+    margin: '0 4px',
+  },
+
+  bottomButtonSmallScreen: {
+    marginBottom: '10px',
+    width: '100%',
+  },
 });
 
 class BbsSearch extends React.Component {
@@ -104,6 +112,7 @@ class BbsSearch extends React.Component {
       'bbs theme': '',
       'bbs subtheme': '',
       'bbs country': '',
+      'bbs ref': '',
       filteredSubthemes: [],
     });
   }
@@ -220,6 +229,10 @@ class BbsSearch extends React.Component {
     };
     this.setState(newState);
   };
+
+  resetToInitialState = () => {
+    this.setState(this.getInitialState());
+  }
 
   render() {
     const {
@@ -488,31 +501,10 @@ class BbsSearch extends React.Component {
 
             </div>
 
-            <CardActions className={classes.cardBottomButtons}>
-              <Button
-                type="submit"
-                variant="contained"
-                color="default"
-                size="large"
-              >
-                <SearchIcon />
-                <Translate>Search</Translate>
-              </Button>
-
-              <Button
-                type="button"
-                variant="contained"
-                color="default"
-                size="large"
-                onClick={() => {
-                  this.setState(this.getInitialState());
-                  resetResults();
-                }}
-              >
-                <ClearIcon />
-                <Translate>Reset</Translate>
-              </Button>
-            </CardActions>
+            <SearchBottomActionButtons
+              resetResults={resetResults}
+              resetParentState={this.resetToInitialState}
+            />
 
           </form>
         </CardContent>
