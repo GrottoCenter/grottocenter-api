@@ -19,12 +19,12 @@ export const LOAD_DYNNB = 'LOAD_DYNNB';
 //
 //
 
-export const initDynamicNumberFetcher = numberType => ({
+export const initDynamicNumberFetcher = (numberType) => ({
   type: INIT_DYNNB_FETCHER,
   numberType,
 });
 
-export const fetchDynamicNumber = numberType => ({
+export const fetchDynamicNumber = (numberType) => ({
   type: FETCH_DYNNB,
   numberType,
 });
@@ -48,7 +48,7 @@ export const fetchDynamicNumberFailure = (numberType, error) => ({
 //
 
 export function loadDynamicNumber(numberType) {
-  return function (dispatch) {
+  return (dispatch) => {
     dispatch(initDynamicNumberFetcher(numberType));
     dispatch(fetchDynamicNumber(numberType));
 
@@ -60,7 +60,7 @@ export function loadDynamicNumber(numberType) {
         }
         return response.text();
       })
-      .then(text => dispatch(fetchDynamicNumberSuccess(numberType, text)))
+      .then((text) => dispatch(fetchDynamicNumberSuccess(numberType, text)))
       .catch((error) => {
         dispatch(fetchDynamicNumberFailure(numberType, error));
       });

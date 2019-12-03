@@ -114,7 +114,7 @@ const self = module.exports = {
                 'entries names', 'entries regions', 'entries cities', 'entry counties', 'entries countries',
 
                 // ==== BBS 
-                'bbs title^2', 'bbs authors', 'bbs abstract^0.5', 'bbs ref', 'bbs country', 'bbs theme', 'bbs subtheme', 'bbs publication'
+                'bbs title^2.8', 'bbs authors', 'bbs abstract^0.5', 'bbs ref', 'bbs country', 'bbs theme', 'bbs subtheme', 'bbs publication'
               ],
             },       
           },

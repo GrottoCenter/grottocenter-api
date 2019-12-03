@@ -822,7 +822,7 @@
 	"The BBS (\"Bulletin Bibliographique Spéléologique\" in french) is an annual review of the worldwide speleological litterature.": "Le BBS (\"Bulletin Bibliographique Spéléologique\") est une revue annuelle de la littérature spéléologique mondiale.",
 	"You can find more info about the BBS on the dedicated Grottocenter-wiki page.": "Vous pouvez trouver plus d'informations à propos du BBS sur la page dédiée du wiki de Grottocenter.",
 	"BBS properties": "Propriétés de la fiche BBS",
-	"Published in": "Publié en",
+	"Published in": "Publié dans",
 	"Geospeleology and Karstology": "Géospéléologie et Karstologie",
 	"Regional speleology": "Spéléologie régionale",
 	"Biospeleology": "Biospéléologie",
@@ -834,5 +834,7 @@
 	"Non spéléo": "Ne concerne pas la spéléologie",
 	"Export to CSV": "Exporter en CSV",
 	"Group": "Organisation",
-	"Speleological Abstracts": "Bulletin Bibliographique Spéléologique"
+	"SA": "BBS",
+	"Speleological Abstracts": "Bulletin Bibliographique Spéléologique",
+	"Too many results to download ({0}). You can only download {1} results at once.": "Trop de résultats à télécharger ({0}). Vous ne pouvez télécharger que {1} résultats à la fois."
 }

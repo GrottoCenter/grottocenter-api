@@ -16,7 +16,9 @@ import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
 import TablePagination from '@material-ui/core/TablePagination';
 import TableRow from '@material-ui/core/TableRow';
+
 import { CSVDownload } from 'react-csv';
+import _ from 'lodash';
 
 import Translate from '../../common/Translate';
 
@@ -234,6 +236,7 @@ class SearchResultsTable extends React.Component {
     <TableHead>
       <StyledTableHeadRow>
         <StyledTableHeadRowCell><Translate>Title</Translate></StyledTableHeadRowCell>
+        <StyledTableHeadRowCell><Translate>Published in</Translate></StyledTableHeadRowCell>
         <StyledTableHeadRowCell><Translate>Subtheme</Translate></StyledTableHeadRowCell>
         <StyledTableHeadRowCell><Translate>Country or region</Translate></StyledTableHeadRowCell>
         <StyledTableHeadRowCell><Translate>Authors</Translate></StyledTableHeadRowCell>
@@ -485,19 +488,13 @@ class SearchResultsTable extends React.Component {
                           {(resourceType === 'bbs' && (
                             <React.Fragment>
                               <StyledTableCell>{result.title}</StyledTableCell>
+                              <StyledTableCell>{result.publication ? result.publication : '-'}</StyledTableCell>
                               <StyledTableCell>
                                 {result.subtheme ? (
-                                  <React.Fragment>
-                                    {result.subtheme.id}
-                                    {' - '}
-                                    <Translate
-                                      id={result.subtheme.id}
-                                      defaultMessage={result.subtheme.name}
-                                    />
-                                  </React.Fragment>
+                                  result.subtheme.id
                                 ) : '-'}
                               </StyledTableCell>
-                              <StyledTableCell><Translate>{result.country ? result.country.name : '-'}</Translate></StyledTableCell>
+                              <StyledTableCell>{result.country ? _.truncate(result.country.name, 30) : '-'}</StyledTableCell>
                               <StyledTableCell>{result.authors ? result.authors : '-'}</StyledTableCell>
                               <StyledTableCell>{result.year ? result.year : '-'}</StyledTableCell>
                             </React.Fragment>
@@ -560,17 +557,14 @@ class SearchResultsTable extends React.Component {
                 {!canDownloadDataAsCSV ? (
                   <React.Fragment>
                     <p className={classes.textError}>
-                      <Translate>Too many results to download.</Translate>
-                      {' '}
-                      (
-                      <b>{totalNbResults}</b>
-                      )
-                      <br />
-                      <Translate>You can only download</Translate>
-                      {' '}
-                      <b>{MAX_NUMBER_OF_DATA_TO_EXPORT_IN_CSV}</b>
-                      {' '}
-                      <Translate>results at once.</Translate>
+                      <Translate
+                        id="Too many results to download ({0}). You can only download {1} results at once."
+                        defaultMessage="Too many results to download ({0}). You can only download {1} results at once."
+                        values={{
+                          0: <b>{totalNbResults}</b>,
+                          1: <b>{MAX_NUMBER_OF_DATA_TO_EXPORT_IN_CSV}</b>,
+                        }}
+                      />
                     </p>
                   </React.Fragment>
                 ) : ''}

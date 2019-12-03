@@ -117,6 +117,7 @@ export const dynamicNumbersUrl = {
   publicEntries: `/api/${apiVersion}/entry/publicCount`,
   partners: '/api/grottos/count',
   officialPartners: '/api/grottos/officialCount',
+  bbs: `/api/${apiVersion}/bbs/count`,
 };
 
 export const findRandomEntryUrl = '/api/entries/findRandom';

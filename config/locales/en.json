@@ -834,5 +834,7 @@
 	"Non spéléo": "Non spéléo",
 	"Export to CSV": "Export to CSV",
 	"Group": "Group",
-	"Speleological Abstracts": "Speleological Abstracts"
+	"SA": "SA",
+	"Speleological Abstracts": "Speleological Abstracts",
+	"Too many results to download ({0}). You can only download {1} results at once.": "Too many results to download ({0}). You can only download {1} results at once."
 }

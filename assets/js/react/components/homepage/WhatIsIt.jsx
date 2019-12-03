@@ -1,11 +1,12 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import { withTheme } from '@material-ui/core/styles';
 import LandingSection from './LandingSection';
-import { GridRow, GridOneHalfColumn } from '../../helpers/GridSystem';
+import { GridRow, GridOneHalfColumn, GridFullColumn } from '../../helpers/GridSystem';
 import Translate from '../common/Translate';
 import GCLink from '../common/GCLink';
+import InternationalizedLink from '../common/InternationalizedLink';
+import { wikiBBSLinks } from '../../conf/Config';
 import DynamicNumberConnector from '../../containers/DynamicNumberConnector';
 
 //
@@ -15,13 +16,14 @@ import DynamicNumberConnector from '../../containers/DynamicNumberConnector';
 //
 
 const SectionTitle = withTheme()(styled.h3`
-  color: ${props => props.theme.palette.accent1Color};
+  color: ${(props) => props.theme.palette.accent1Color};
   text-align: center;
   padding-bottom: 50px;
   font-size: 35px;
 `);
 
-const NumberBlock = styled(GridOneHalfColumn)`
+
+const NumberBlockHalfWidth = styled(GridOneHalfColumn)`
   font-weight: 300;
   font-size: large;
   text-align: center;
@@ -38,10 +40,23 @@ const NumberBlock = styled(GridOneHalfColumn)`
   }
 `;
 
+const NumberBlockFullWidth = styled(GridFullColumn)`
+  font-weight: 300;
+  font-size: large;
+  text-align: center;
+  padding-bottom: 40px;
+
+  @media (max-width: 550px) {
+    :last-child {
+      margin-bottom: 0px;
+    }
+  }
+`;
+
 const BlockIcon = withTheme()(styled.span`
   margin-right: 10px;
   font-size: 4.2em;
-  color: ${props => props.theme.palette.primary1Color};
+  color: ${(props) => props.theme.palette.primary1Color};
   line-height: 1;
 
   :before {
@@ -53,7 +68,7 @@ const BlockIcon = withTheme()(styled.span`
 `);
 
 const NumberText = withTheme()(styled(DynamicNumberConnector)`
-  color: ${props => props.theme.palette.primary1Color};
+  color: ${(props) => props.theme.palette.primary1Color};
   font-weight: 400;
 `);
 
@@ -77,7 +92,7 @@ const WhatIsIt = () => (
       </SectionTitle>
     </GridRow>
     <GridRow>
-      <NumberBlock>
+      <NumberBlockHalfWidth>
         <BlockIcon className="icon-gc-entries" />
         <BigNumberText numberType="publicEntries" />
         <br />
@@ -87,28 +102,39 @@ const WhatIsIt = () => (
         <Translate>by logging on</Translate>
         {' '}
         <GCLink href="http://www.grottocenter.org">Grotto v2</GCLink>
-)
-      </NumberBlock>
-      <NumberBlock>
+        )
+      </NumberBlockHalfWidth>
+      <NumberBlockHalfWidth>
         <BlockIcon className="icon-gc-club" />
         <BigNumberText numberType="officialPartners" />
         <br />
         <Translate>organizations who take part in the project by  funding, providing data,communicating on the interest and benefits of  cavers to share data</Translate>
-      </NumberBlock>
+      </NumberBlockHalfWidth>
     </GridRow>
     <GridRow>
-      <NumberBlock>
+      <NumberBlockHalfWidth>
         <BlockIcon className="icon-gc-speleo" />
         <BigNumberText numberType="cavers" />
         <br />
         <Translate>cavers take part, day after day, in improving and expanding the database</Translate>
-      </NumberBlock>
-      <NumberBlock>
+      </NumberBlockHalfWidth>
+      <NumberBlockHalfWidth>
         <BlockIcon className="icon-gc-expe" />
         <BigNumberText numberType="partners" />
         <br />
         <Translate>organizations are registered on the site</Translate>
-      </NumberBlock>
+      </NumberBlockHalfWidth>
+    </GridRow>
+    <GridRow>
+      <NumberBlockFullWidth>
+        <BigNumberText numberType="bbs" />
+        <br />
+        <InternationalizedLink links={wikiBBSLinks}>
+          <Translate>
+            {'speleological abstracts are referenced'}
+          </Translate>
+        </InternationalizedLink>
+      </NumberBlockFullWidth>
     </GridRow>
   </LandingSection>
 );
