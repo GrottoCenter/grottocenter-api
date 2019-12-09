@@ -67,6 +67,11 @@ const BlockIcon = withTheme()(styled.span`
   }
 `);
 
+const BbsIcon = styled.img`
+  margin-right: 10px;
+  width: 76px;
+`;
+
 const NumberText = withTheme()(styled(DynamicNumberConnector)`
   color: ${(props) => props.theme.palette.primary1Color};
   font-weight: 400;
@@ -127,6 +132,7 @@ const WhatIsIt = () => (
     </GridRow>
     <GridRow>
       <NumberBlockFullWidth>
+        <BbsIcon src="/images/bbs_logo.png" alt="BBS logo" />
         <BigNumberText numberType="bbs" />
         <br />
         <InternationalizedLink links={wikiBBSLinks}>

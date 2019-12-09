@@ -16,26 +16,22 @@ import Translate from '../common/Translate';
 //
 
 const StyledBarContainer = withTheme()(styled.div`
-  background-color: ${props => props.theme.palette.primary3Color};
+  background-color: ${(props) => props.theme.palette.primary3Color};
   display: flex;  
-`);
-
-const StyledIconSpan = withTheme()(styled.span`
-  height: 72px;
-  text-align: center;
 `);
 
 const StyledAdvancedSearchText = withTheme()(styled.span`
   bottom: 0;
-  color: ${props => props.theme.palette.primary2Color};
-  font-size: 1rem;
+  color: ${(props) => props.theme.palette.primary2Color};
+  font-size: 1.4rem;
   left: 50%;
+  line-height: 1.8rem;
   position: absolute;
   transform: translate(-50%, 0);
   width: 100%;
 `);
 
-const StyledSearchIcon = withStyles(theme => ({
+const StyledSearchIcon = withStyles((theme) => ({
   root: {
     height: '50px',
     width: '50px',
@@ -44,7 +40,7 @@ const StyledSearchIcon = withStyles(theme => ({
   },
 }), { withTheme: true })(SearchIcon);
 
-const StyledChevronLeftIcon = withStyles(theme => ({
+const StyledChevronLeftIcon = withStyles((theme) => ({
   root: {
     '&:hover': {
       fill: theme.palette.accent1Color,
@@ -67,9 +63,9 @@ const StyledAdvancedSearchBlock = withTheme()(styled.span`
   };
 `);
 
-const StyledQuicksearchContainer = withStyles(theme => ({
+const StyledQuicksearchContainer = withStyles((theme) => ({
   root: {
-    flex: 10,
+    flex: 8,
   },
   input: {
     backgroundColor: theme.palette.primary3Color,
@@ -106,12 +102,10 @@ class QuicksearchBar extends React.Component {
     return (
       <React.Fragment>
         <StyledBarContainer>
-          <StyledIconSpan>
-            <StyledSearchIcon />
-          </StyledIconSpan>
+          <StyledSearchIcon />
 
           <StyledQuicksearchContainer
-            handleSelection={selection => this.handleSelection(selection, history)}
+            handleSelection={(selection) => this.handleSelection(selection, history)}
           />
 
           <StyledAdvancedSearchBlock
@@ -119,16 +113,14 @@ class QuicksearchBar extends React.Component {
               showAdvancedSearched: !showAdvancedSearched,
             })}
           >
-            <StyledIconSpan>
-              <StyledChevronLeftIcon
-                style={showAdvancedSearched ? {
-                  paddingTop: 0,
-                  paddingRight: 'calc((72px - 28px) / 2)',
-                  transform: 'rotateZ(-90deg)',
-                  transition: '0.5s',
-                } : {}}
-              />
-            </StyledIconSpan>
+            <StyledChevronLeftIcon
+              style={showAdvancedSearched ? {
+                paddingTop: 0,
+                paddingRight: 'calc((72px - 28px) / 2)',
+                transform: 'rotateZ(-90deg)',
+                transition: '0.5s',
+              } : {}}
+            />
             <StyledAdvancedSearchText>
               <Translate>Advanced search</Translate>
             </StyledAdvancedSearchText>

@@ -113,6 +113,7 @@ class BbsSearch extends React.Component {
       'bbs subtheme': '',
       'bbs country': '',
       'bbs ref': '',
+      matchAllFields: true,
       filteredSubthemes: [],
     });
   }
@@ -230,6 +231,12 @@ class BbsSearch extends React.Component {
     this.setState(newState);
   };
 
+  handleBooleanChange = (keyName) => (event) => {
+    this.setState({
+      [keyName]: event.target.checked,
+    });
+  };
+
   resetToInitialState = () => {
     this.setState(this.getInitialState());
   }
@@ -254,6 +261,7 @@ class BbsSearch extends React.Component {
       'bbs subtheme': subtheme,
       'bbs country': country,
       'bbs publication': publication,
+      'matchAllFields': matchAllFields,
       filteredSubthemes,
     } = this.state;
 
@@ -263,11 +271,11 @@ class BbsSearch extends React.Component {
       >
         <CardContent>
 
-          <Typography variant="body1" gutterBottom paragraph style={{ fontStyle: 'italic' }}>
+          <Typography variant="body1" gutterBottom paragraph style={{ fontStyle: 'italic', textAlign: 'center' }}>
             <Translate>
               {'The BBS ("Bulletin Bibliographique Spéléologique" in french) is an annual review of the worldwide speleological litterature.'}
             </Translate>
-            {' '}
+            <br />
             <InternationalizedLink links={wikiBBSLinks}>
               <Translate>
                 {'You can find more info about the BBS on the dedicated Grottocenter-wiki page.'}
@@ -497,6 +505,31 @@ class BbsSearch extends React.Component {
                     style={{ width: '35px' }}
                   />
                 </div>
+              </FormControl>
+
+            </div>
+
+            <div className={classes.formPartContainer} style={{ justifyContent: 'flex-start' }}>
+              <FormControl>
+                <FormLabel>
+                  <span className={classes.formElementFontSize}>
+                    <Translate>
+                      {matchAllFields ? 'Matching all fields' : 'Matching at least one field'}
+                    </Translate>
+                  </span>
+                  <Switch
+                    checked={matchAllFields}
+                    onChange={this.handleBooleanChange('matchAllFields')}
+                    value={matchAllFields}
+                    classes={{
+                      switchBase: classes.colorSwitchBase,
+                      checked: classes.colorChecked,
+                      bar: classes.colorBar,
+                    }}
+                  />
+                  <br />
+                  <i><Translate className={classes.formElementFontSize}>Specify if the search results must match all the fields you typed above (default is yes).</Translate></i>
+                </FormLabel>
               </FormControl>
 
             </div>

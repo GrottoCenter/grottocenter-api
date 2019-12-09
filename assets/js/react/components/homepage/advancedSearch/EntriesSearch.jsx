@@ -126,6 +126,7 @@ class EntriesSearch extends React.Component {
         min: -1,
         max: new Date().getFullYear(),
       },
+      matchAllFields: true,
     });
   }
 
@@ -133,7 +134,7 @@ class EntriesSearch extends React.Component {
    * This function set the state of the keyname property
    * to be the same value as the event of the slider.
    */
-  handleCheckedChange = keyName => (event) => {
+  handleCheckedChange = (keyName) => (event) => {
     const newState = {
       [keyName]: {
         ...this.state[keyName],
@@ -173,6 +174,12 @@ class EntriesSearch extends React.Component {
     this.setState(newState);
   };
 
+  handleBooleanChange = (keyName) => (event) => {
+    this.setState({
+      [keyName]: event.target.checked,
+    });
+  };
+
   resetToInitialState = () => {
     this.setState(this.getInitialState());
   }
@@ -204,6 +211,7 @@ class EntriesSearch extends React.Component {
       'massif name': massifName,
       name,
       region,
+      matchAllFields,
       // 'underground type': undergroundType,
       // 'year_discovery-range': yearOfDiscoveryRange,
     } = this.state;
@@ -631,10 +639,34 @@ class EntriesSearch extends React.Component {
                     />
                   </div>
                 </FormControl>
-
               </div>
 
+
             </fieldset>
+
+            <div className={classes.formPartContainer} style={{ justifyContent: 'flex-start' }}>
+              <FormControl>
+                <FormLabel>
+                  <span className={classes.formElementFontSize}>
+                    <Translate>
+                      {matchAllFields ? 'Matching all fields' : 'Matching at least one field'}
+                    </Translate>
+                  </span>
+                  <Switch
+                    checked={matchAllFields}
+                    onChange={this.handleBooleanChange('matchAllFields')}
+                    value={matchAllFields}
+                    classes={{
+                      switchBase: classes.colorSwitchBase,
+                      checked: classes.colorChecked,
+                      bar: classes.colorBar,
+                    }}
+                  />
+                  <br />
+                  <i><Translate className={classes.formElementFontSize}>Specify if the search results must match all the fields you typed above (default is yes).</Translate></i>
+                </FormLabel>
+              </FormControl>
+            </div>
 
             <SearchBottomActionButtons
               resetResults={resetResults}
@@ -643,7 +675,7 @@ class EntriesSearch extends React.Component {
 
           </form>
         </CardContent>
-      </Card>
+      </Card >
     );
   }
 }

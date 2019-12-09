@@ -101,6 +101,7 @@ class GroupsSearch extends React.Component {
       name: '',
       postal_code: '',
       region: '',
+      matchAllFields: true,
     });
   }
 
@@ -147,6 +148,12 @@ class GroupsSearch extends React.Component {
     this.setState(newState);
   };
 
+  handleBooleanChange = (keyName) => (event) => {
+    this.setState({
+      [keyName]: event.target.checked,
+    });
+  };
+
   resetToInitialState = () => {
     this.setState(this.getInitialState());
   }
@@ -169,6 +176,7 @@ class GroupsSearch extends React.Component {
       name,
       postal_code,
       region,
+      matchAllFields,
     } = this.state;
 
     return (
@@ -342,6 +350,30 @@ class GroupsSearch extends React.Component {
 
               </div>
             </fieldset>
+
+            <div className={classes.formPartContainer} style={{ justifyContent: 'flex-start' }}>
+              <FormControl>
+                <FormLabel>
+                  <span className={classes.formElementFontSize}>
+                    <Translate>
+                      {matchAllFields ? 'Matching all fields' : 'Matching at least one field'}
+                    </Translate>
+                  </span>
+                  <Switch
+                    checked={matchAllFields}
+                    onChange={this.handleBooleanChange('matchAllFields')}
+                    value={matchAllFields}
+                    classes={{
+                      switchBase: classes.colorSwitchBase,
+                      checked: classes.colorChecked,
+                      bar: classes.colorBar,
+                    }}
+                  />
+                  <br />
+                  <i><Translate className={classes.formElementFontSize}>Specify if the search results must match all the fields you typed above (default is yes).</Translate></i>
+                </FormLabel>
+              </FormControl>
+            </div>
 
             <SearchBottomActionButtons
               resetResults={resetResults}

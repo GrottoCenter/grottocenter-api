@@ -43,7 +43,7 @@ module.exports = {
    * Perform an advanced search using multiple URL parameters : 
    * - type: string, entity type to search for (@see advancedSearchTypes) (NEEDED)
    * - complete: bool, determine if the results must be returned in their entirely or just their id and name (default = false) (FACULTATIVE)
-   * - match_all_queries: bool, determine if the results need to match all the queries (logic AND) or at least of them (logic OR) (default = true) (FACULTATIVE)
+   * - matchAllFields: bool, determine if the results need to match all the fields (logic AND) or at least one of them (logic OR) (default = true) (FACULTATIVE)
    */
   advancedSearch: function(req, res) {
     // Store every params in the url and check if there is the type parameter
@@ -57,6 +57,13 @@ module.exports = {
     let complete = true;
     if (paramsURL.complete && paramsURL.complete === 'false'){
       complete = false;
+    }
+
+    // Cast matchAllFields to bool
+    if (paramsURL.matchAllFields && paramsURL.matchAllFields === 'false'){
+      paramsURL.matchAllFields = false;
+    } else if (paramsURL.matchAllFields && paramsURL.matchAllFields === 'true'){
+      paramsURL.matchAllFields = true;
     }
 
     const params = {};

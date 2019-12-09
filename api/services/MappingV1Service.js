@@ -93,6 +93,8 @@ const BbsModel = {
   theme: undefined,
   subtheme: undefined,
   country: undefined,
+  lib: undefined,
+  editor: undefined,
 };
 
 const BbsChapterModel = {
@@ -413,6 +415,23 @@ module.exports = {
         id: source['bbs chaptercode'] ? source['bbs chaptercode'] : source.chapter.id,
         name: source['bbs subtheme'] ? source['bbs subtheme'].split(' / ')[0] : source.chapter.cTexteMatiere
       };     
+    }
+
+    // Build library
+    if(source['lib']) {
+      result.lib = {
+        id: source['lib']['id'],
+        name: source['lib']['nomCentre'],
+        country: source['lib']['pays']
+      };
+    }
+
+    // Build editor
+    if(source['editorAddress'] !== '' || source['editorEmail'] !== '' || source['editorUrl'] !== '') {
+      result.editor = {};
+      result.editor['address'] = source['editorAddress'] ? source['editorAddress'] : '';
+      result.editor['email'] = source['editorEmail'] ? source['editorEmail'] : '';
+      result.editor['url'] = source['editorUrl'] ? source['editorUrl'] : '';
     }
 
     return result;
