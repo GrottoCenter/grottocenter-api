@@ -5,7 +5,10 @@ import PropTypes from 'prop-types';
 import {
   FormLabel, FormControl, TextField, Switch, InputLabel, Select,
   MenuItem, Typography, withStyles, CardContent, Card,
+  ExpansionPanel, ExpansionPanelSummary, ExpansionPanelDetails,
 } from '@material-ui/core';
+
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 
 import Slider from 'rc-slider';
 
@@ -115,6 +118,8 @@ class BbsSearch extends React.Component {
       'bbs ref': '',
       matchAllFields: true,
       filteredSubthemes: [],
+      allFieldsRequest: '',
+      panelExpanded: '',
     });
   }
 
@@ -237,8 +242,20 @@ class BbsSearch extends React.Component {
     });
   };
 
+  /**
+   * Change search panels state (expanded or not)
+   */
+  handlePanelSelected = (panel) => (event, isExpanded) => {
+    this.setState({
+      panelExpanded: (isExpanded ? panel : ''),
+    });
+  };
+
   resetToInitialState = () => {
-    this.setState(this.getInitialState());
+    const initialState = this.getInitialState();
+    // Don't reset the expanded panel
+    delete initialState.panelExpanded;
+    this.setState(initialState);
   }
 
   render() {
@@ -261,8 +278,10 @@ class BbsSearch extends React.Component {
       'bbs subtheme': subtheme,
       'bbs country': country,
       'bbs publication': publication,
-      'matchAllFields': matchAllFields,
+      matchAllFields,
+      allFieldsRequest,
       filteredSubthemes,
+      panelExpanded,
     } = this.state;
 
     return (
@@ -283,263 +302,346 @@ class BbsSearch extends React.Component {
             </InternationalizedLink>
           </Typography>
 
-          <h5><Translate>BBS properties</Translate></h5>
+          <ExpansionPanel expanded={panelExpanded === 'all-fields-panel'} onChange={this.handlePanelSelected('all-fields-panel')}>
+            <ExpansionPanelSummary
+              expandIcon={<ExpandMoreIcon />}
+              aria-controls="all-fields-search-content"
+              id="all-fields-search-content"
+            >
+              <h5 style={{ marginBottom: 0, width: '100%' }}><Translate>Search on all fields</Translate></h5>
+            </ExpansionPanelSummary>
+            <ExpansionPanelDetails style={{ flexDirection: 'column' }}>
+              <Typography className={classes.formElementFontSize} variant="body1" gutterBottom paragraph>
+                <i>
+                  <Translate>Perform an advanced search on all the fields. Results displayed will have at least one field matching your request.</Translate>
+                </i>
+              </Typography>
+              <form
+                noValidate
+                autoComplete="off"
+                onSubmit={(event) => {
+                  event.preventDefault();
 
-          <form
-            noValidate
-            autoComplete="off"
-            onSubmit={(event) => {
-              event.preventDefault();
+                  // We don't want to use filteredSubthemes & allFieldsRequest for the search
+                  const stateToSearch = this.getInitialState();
+                  delete stateToSearch.filteredSubthemes;
+                  delete stateToSearch.allFieldsRequest;
+                  delete stateToSearch.panelExpanded;
 
-              // We don't want to use filteredSubthemes for the search
-              const stateToSearch = { ...this.state };
-              delete stateToSearch.filteredSubthemes;
+                  // Fill state with same request
+                  stateToSearch.matchAllFields = false;
+                  stateToSearch['bbs ref'] = allFieldsRequest;
+                  stateToSearch['bbs title'] = allFieldsRequest;
+                  stateToSearch['bbs authors'] = allFieldsRequest;
+                  stateToSearch['bbs abstract'] = allFieldsRequest;
+                  stateToSearch['bbs theme'] = allFieldsRequest;
+                  stateToSearch['bbs subtheme'] = allFieldsRequest;
+                  stateToSearch['bbs country'] = allFieldsRequest;
+                  stateToSearch['bbs publication'] = allFieldsRequest;
 
-              // Get theme and subtheme name from id
-              const subthemeObj = this.getSubthemeObjFromId(stateToSearch['bbs subtheme']);
-              const themeObj = this.getThemeObjFromId(stateToSearch['bbs theme']);
-              stateToSearch['bbs subtheme'] = subthemeObj ? subthemeObj.name : '';
-              stateToSearch['bbs theme'] = themeObj ? themeObj.name : '';
-              startAdvancedsearch(stateToSearch, resourceType);
-            }}
-            className={classes.formContainer}
-          >
-            <div className={classes.formPartContainer} style={{ justifyContent: 'flex-start' }}>
-
-              <fieldset className={classes.fieldset}>
-                <legend className={classes.legend}><Translate>Content</Translate></legend>
-
-                <div className={classes.formPartContainer}>
-                  <TextField
-                    className={classes.formElement}
-                    label={(
-                      <span className={classes.formElementFontSize}>
-                        <Translate>Title</Translate>
-                      </span>
-                    )}
-                    onChange={(event) => this.handleValueChange('bbs title', event)}
-                    value={title}
-                    InputProps={{
-                      classes: {
-                        input: classes.formElementFontSize,
-                      },
-                    }}
-                  />
-
-                  <TextField
-                    className={classes.formElement}
-                    label={(
-                      <span className={classes.formElementFontSize}>
-                        <Translate>Abstract</Translate>
-                      </span>
-                    )}
-                    onChange={(event) => this.handleValueChange('bbs abstract', event)}
-                    value={abstract}
-                    InputProps={{
-                      classes: {
-                        input: classes.formElementFontSize,
-                      },
-                    }}
-                  />
-                </div>
-              </fieldset>
-
-              <fieldset className={classes.fieldset}>
-                <legend className={classes.legend}><Translate>Subject</Translate></legend>
-
-                <div className={classes.formPartContainer}>
-                  <FormControl className={classes.formElement}>
-                    <InputLabel htmlFor="bbs theme"><Translate>Theme</Translate></InputLabel>
-                    <Select
-                      value={theme}
-                      onChange={(event) => this.handleValueChange('bbs theme', event)}
-                      inputProps={{
-                        name: 'theme',
-                        id: 'bbs theme',
-                      }}
-                    >
-                      <MenuItem key={-1} value=""><i><Translate>All themes</Translate></i></MenuItem>
-                      {themes.map((choiceTheme) => (
-                        <MenuItem key={choiceTheme.id} value={choiceTheme.id}>
-                          {choiceTheme.id}
-                          {'\u00a0-\u00a0'}
-                          <Translate>{choiceTheme.name}</Translate>
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-
-                  <FormControl className={classes.formElement}>
-                    <InputLabel htmlFor="bbs subtheme"><Translate>Subtheme</Translate></InputLabel>
-                    <Select
-                      value={subtheme}
-                      onChange={(event) => this.handleValueChange('bbs subtheme', event)}
-                      inputProps={{
-                        name: 'subtheme',
-                        id: 'bbs subtheme',
-                      }}
-                    >
-                      <MenuItem key={-1} value=""><i><Translate>All subthemes</Translate></i></MenuItem>
-                      {filteredSubthemes.map((choiceSubtheme) => (
-                        <MenuItem key={choiceSubtheme.id} value={choiceSubtheme.id}>
-                          {choiceSubtheme.id}
-                          {'\u00a0-\u00a0'}
-
-                          {/* In Transifex, the subtheme key for its name is its id. */}
-                          <Translate id={choiceSubtheme.id} defaultMessage={choiceSubtheme.name} />
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-
-                </div>
-              </fieldset>
-
-              <TextField
-                className={classes.formElement}
-                label={(
-                  <span className={classes.formElementFontSize}>
-                    <Translate>Reference</Translate>
-                  </span>
-                )}
-                onChange={(event) => this.handleValueChange('bbs ref', event)}
-                value={ref}
-                InputProps={{
-                  classes: {
-                    input: classes.formElementFontSize,
-                  },
+                  startAdvancedsearch(stateToSearch, resourceType);
                 }}
-              />
-
-              <TextField
-                className={classes.formElement}
-                label={(
-                  <span className={classes.formElementFontSize}>
-                    <Translate>Country or region</Translate>
-                  </span>
-                )}
-                onChange={(event) => this.handleValueChange('bbs country', event)}
-                value={country}
-                InputProps={{
-                  classes: {
-                    input: classes.formElementFontSize,
-                  },
-                }}
-              />
-
-              <TextField
-                className={classes.formElement}
-                label={(
-                  <span className={classes.formElementFontSize}>
-                    <Translate>Authors</Translate>
-                  </span>
-                )}
-                onChange={(event) => this.handleValueChange('bbs authors', event)}
-                value={authors}
-                InputProps={{
-                  classes: {
-                    input: classes.formElementFontSize,
-                  },
-                }}
-              />
-
-              <TextField
-                className={classes.formElement}
-                label={(
-                  <span className={classes.formElementFontSize}>
-                    <Translate>Publication</Translate>
-                  </span>
-                )}
-                onChange={(event) => this.handleValueChange('bbs publication', event)}
-                value={publication}
-                InputProps={{
-                  classes: {
-                    input: classes.formElementFontSize,
-                  },
-                }}
-              />
-
-              <FormControl
-                className={classes.formElement}
+                className={classes.formContainer}
               >
-                <FormLabel>
-                  <span className={classes.formElementFontSize}>
-                    <Translate>Year</Translate>
-                  </span>
-                  <Switch
-                    checked={yearRange.isEditable}
-                    onChange={this.handleCheckedChange('bbs year-range')}
-                    value={yearRange.isEditable}
-                    classes={{
-                      switchBase: classes.colorSwitchBase,
-                      checked: classes.colorChecked,
-                      bar: classes.colorBar,
+
+                <div className={classes.formPartContainer} style={{ justifyContent: 'flex-start' }}>
+                  <TextField
+                    className={classes.formElement}
+                    label={(
+                      <span className={classes.formElementFontSize}>
+                        <Translate>All fields request</Translate>
+                      </span>
+                    )}
+                    onChange={(event) => this.handleValueChange('allFieldsRequest', event)}
+                    value={allFieldsRequest}
+                    InputProps={{
+                      classes: {
+                        input: classes.formElementFontSize,
+                      },
                     }}
                   />
-                </FormLabel>
-                <Range
-                  className={classes.formRange}
-                  min={yearMinValue}
-                  max={yearMaxValue}
-                  onChange={(values) => {
-                    this.handleRangeChange('bbs year-range', values, yearMinValue, yearMaxValue);
-                  }}
-                  tipFormatter={(value) => `${value}`}
-                  value={[yearRange.min, yearRange.max]}
-                  disabled={!yearRange.isEditable}
-                  trackStyle={[!yearRange.isEditable ? { backgroundColor: '#9e9e9e' } : { backgroundColor: '#ff9800' }]}
-                  handleStyle={[{ backgroundColor: '#795548', borderColor: '#795548' }, { backgroundColor: '#795548', borderColor: '#795548' }]}
+                </div>
+
+                <SearchBottomActionButtons
+                  resetResults={resetResults}
+                  resetParentState={this.resetToInitialState}
                 />
 
-                <div style={{ display: 'inline-flex', justifyContent: 'space-between' }}>
-                  <TextField
-                    onChange={(event) => this.handleRangeChange('bbs year-range', [parseInt(event.target.value, 10) || 0, yearRange.max], 0, 2100)}
-                    value={yearRange.min}
-                    disabled={!yearRange.isEditable}
-                    style={{ width: '35px' }}
-                  />
-                  <TextField
-                    onChange={(event) => this.handleRangeChange('bbs year-range', [yearRange.min, parseInt(event.target.value, 10) || 0], 0, 2100)}
-                    value={yearRange.max}
-                    disabled={!yearRange.isEditable}
-                    style={{ width: '35px' }}
-                  />
-                </div>
-              </FormControl>
+              </form>
+            </ExpansionPanelDetails>
+          </ExpansionPanel>
 
-            </div>
+          <ExpansionPanel expanded={panelExpanded === 'specific-fields-panel'} onChange={this.handlePanelSelected('specific-fields-panel')}>
+            <ExpansionPanelSummary
+              expandIcon={<ExpandMoreIcon />}
+              aria-controls="specific-fields-search-content"
+              id="specific-fields-search-content"
+            >
+              <h5 style={{ marginBottom: 0, width: '100%' }}><Translate>Search on specific fields</Translate></h5>
+            </ExpansionPanelSummary>
+            <ExpansionPanelDetails style={{ flexDirection: 'column' }}>
+              <form
+                noValidate
+                autoComplete="off"
+                onSubmit={(event) => {
+                  event.preventDefault();
 
-            <div className={classes.formPartContainer} style={{ justifyContent: 'flex-start' }}>
-              <FormControl>
-                <FormLabel>
-                  <span className={classes.formElementFontSize}>
-                    <Translate>
-                      {matchAllFields ? 'Matching all fields' : 'Matching at least one field'}
-                    </Translate>
-                  </span>
-                  <Switch
-                    checked={matchAllFields}
-                    onChange={this.handleBooleanChange('matchAllFields')}
-                    value={matchAllFields}
-                    classes={{
-                      switchBase: classes.colorSwitchBase,
-                      checked: classes.colorChecked,
-                      bar: classes.colorBar,
+                  // We don't want to use filteredSubthemes & allFieldsRequest for the search
+                  const stateToSearch = { ...this.state };
+                  delete stateToSearch.filteredSubthemes;
+                  delete stateToSearch.allFieldsRequest;
+                  delete stateToSearch.panelExpanded;
+
+                  // Get theme and subtheme name from id
+                  const subthemeObj = this.getSubthemeObjFromId(stateToSearch['bbs subtheme']);
+                  const themeObj = this.getThemeObjFromId(stateToSearch['bbs theme']);
+                  stateToSearch['bbs subtheme'] = subthemeObj ? subthemeObj.name : '';
+                  stateToSearch['bbs theme'] = themeObj ? themeObj.name : '';
+                  startAdvancedsearch(stateToSearch, resourceType);
+                }}
+                className={classes.formContainer}
+              >
+                <div className={classes.formPartContainer} style={{ justifyContent: 'flex-start' }}>
+
+                  <fieldset className={classes.fieldset}>
+                    <legend className={classes.legend}><Translate>Content</Translate></legend>
+
+                    <div className={classes.formPartContainer}>
+                      <TextField
+                        className={classes.formElement}
+                        label={(
+                          <span className={classes.formElementFontSize}>
+                            <Translate>Title</Translate>
+                          </span>
+                        )}
+                        onChange={(event) => this.handleValueChange('bbs title', event)}
+                        value={title}
+                        InputProps={{
+                          classes: {
+                            input: classes.formElementFontSize,
+                          },
+                        }}
+                      />
+
+                      <TextField
+                        className={classes.formElement}
+                        label={(
+                          <span className={classes.formElementFontSize}>
+                            <Translate>Abstract</Translate>
+                          </span>
+                        )}
+                        onChange={(event) => this.handleValueChange('bbs abstract', event)}
+                        value={abstract}
+                        InputProps={{
+                          classes: {
+                            input: classes.formElementFontSize,
+                          },
+                        }}
+                      />
+                    </div>
+                  </fieldset>
+
+                  <fieldset className={classes.fieldset}>
+                    <legend className={classes.legend}><Translate>Subject</Translate></legend>
+
+                    <div className={classes.formPartContainer}>
+                      <FormControl className={classes.formElement}>
+                        <InputLabel htmlFor="bbs theme"><Translate>Theme</Translate></InputLabel>
+                        <Select
+                          value={theme}
+                          onChange={(event) => this.handleValueChange('bbs theme', event)}
+                          inputProps={{
+                            name: 'theme',
+                            id: 'bbs theme',
+                          }}
+                        >
+                          <MenuItem key={-1} value=""><i><Translate>All themes</Translate></i></MenuItem>
+                          {themes.map((choiceTheme) => (
+                            <MenuItem key={choiceTheme.id} value={choiceTheme.id}>
+                              {choiceTheme.id}
+                              {'\u00a0-\u00a0'}
+                              <Translate>{choiceTheme.name}</Translate>
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+
+                      <FormControl className={classes.formElement}>
+                        <InputLabel htmlFor="bbs subtheme"><Translate>Subtheme</Translate></InputLabel>
+                        <Select
+                          value={subtheme}
+                          onChange={(event) => this.handleValueChange('bbs subtheme', event)}
+                          inputProps={{
+                            name: 'subtheme',
+                            id: 'bbs subtheme',
+                          }}
+                        >
+                          <MenuItem key={-1} value=""><i><Translate>All subthemes</Translate></i></MenuItem>
+                          {filteredSubthemes.map((choiceSubtheme) => (
+                            <MenuItem key={choiceSubtheme.id} value={choiceSubtheme.id}>
+                              {choiceSubtheme.id}
+                              {'\u00a0-\u00a0'}
+
+                              {/* In Transifex, the subtheme key for its name is its id. */}
+                              <Translate id={choiceSubtheme.id} defaultMessage={choiceSubtheme.name} />
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+
+                    </div>
+                  </fieldset>
+
+                  <TextField
+                    className={classes.formElement}
+                    label={(
+                      <span className={classes.formElementFontSize}>
+                        <Translate>Reference</Translate>
+                      </span>
+                    )}
+                    onChange={(event) => this.handleValueChange('bbs ref', event)}
+                    value={ref}
+                    InputProps={{
+                      classes: {
+                        input: classes.formElementFontSize,
+                      },
                     }}
                   />
-                  <br />
-                  <i><Translate className={classes.formElementFontSize}>Specify if the search results must match all the fields you typed above (default is yes).</Translate></i>
-                </FormLabel>
-              </FormControl>
 
-            </div>
+                  <TextField
+                    className={classes.formElement}
+                    label={(
+                      <span className={classes.formElementFontSize}>
+                        <Translate>Country or region</Translate>
+                      </span>
+                    )}
+                    onChange={(event) => this.handleValueChange('bbs country', event)}
+                    value={country}
+                    InputProps={{
+                      classes: {
+                        input: classes.formElementFontSize,
+                      },
+                    }}
+                  />
 
-            <SearchBottomActionButtons
-              resetResults={resetResults}
-              resetParentState={this.resetToInitialState}
-            />
+                  <TextField
+                    className={classes.formElement}
+                    label={(
+                      <span className={classes.formElementFontSize}>
+                        <Translate>Authors</Translate>
+                      </span>
+                    )}
+                    onChange={(event) => this.handleValueChange('bbs authors', event)}
+                    value={authors}
+                    InputProps={{
+                      classes: {
+                        input: classes.formElementFontSize,
+                      },
+                    }}
+                  />
 
-          </form>
+                  <TextField
+                    className={classes.formElement}
+                    label={(
+                      <span className={classes.formElementFontSize}>
+                        <Translate>Publication</Translate>
+                      </span>
+                    )}
+                    onChange={(event) => this.handleValueChange('bbs publication', event)}
+                    value={publication}
+                    InputProps={{
+                      classes: {
+                        input: classes.formElementFontSize,
+                      },
+                    }}
+                  />
+
+                  <FormControl
+                    className={classes.formElement}
+                  >
+                    <FormLabel>
+                      <span className={classes.formElementFontSize}>
+                        <Translate>Year</Translate>
+                      </span>
+                      <Switch
+                        checked={yearRange.isEditable}
+                        onChange={this.handleCheckedChange('bbs year-range')}
+                        value={yearRange.isEditable}
+                        classes={{
+                          switchBase: classes.colorSwitchBase,
+                          checked: classes.colorChecked,
+                          bar: classes.colorBar,
+                        }}
+                      />
+                    </FormLabel>
+                    <Range
+                      className={classes.formRange}
+                      min={yearMinValue}
+                      max={yearMaxValue}
+                      onChange={(values) => {
+                        this.handleRangeChange('bbs year-range', values, yearMinValue, yearMaxValue);
+                      }}
+                      tipFormatter={(value) => `${value}`}
+                      value={[yearRange.min, yearRange.max]}
+                      disabled={!yearRange.isEditable}
+                      trackStyle={[!yearRange.isEditable ? { backgroundColor: '#9e9e9e' } : { backgroundColor: '#ff9800' }]}
+                      handleStyle={[{ backgroundColor: '#795548', borderColor: '#795548' }, { backgroundColor: '#795548', borderColor: '#795548' }]}
+                    />
+
+                    <div style={{ display: 'inline-flex', justifyContent: 'space-between' }}>
+                      <TextField
+                        onChange={(event) => this.handleRangeChange('bbs year-range', [parseInt(event.target.value, 10) || 0, yearRange.max], 0, 2100)}
+                        value={yearRange.min}
+                        disabled={!yearRange.isEditable}
+                        style={{ width: '35px' }}
+                      />
+                      <TextField
+                        onChange={(event) => this.handleRangeChange('bbs year-range', [yearRange.min, parseInt(event.target.value, 10) || 0], 0, 2100)}
+                        value={yearRange.max}
+                        disabled={!yearRange.isEditable}
+                        style={{ width: '35px' }}
+                      />
+                    </div>
+                  </FormControl>
+
+                </div>
+
+                <div className={classes.formPartContainer} style={{ justifyContent: 'flex-start' }}>
+                  <FormControl>
+                    <FormLabel>
+                      <span className={classes.formElementFontSize}>
+                        <Translate>
+                          {matchAllFields ? 'Matching all fields' : 'Matching at least one field'}
+                        </Translate>
+                      </span>
+                      <Switch
+                        checked={matchAllFields}
+                        onChange={this.handleBooleanChange('matchAllFields')}
+                        value={matchAllFields}
+                        classes={{
+                          switchBase: classes.colorSwitchBase,
+                          checked: classes.colorChecked,
+                          bar: classes.colorBar,
+                        }}
+                      />
+                      <br />
+                    </FormLabel>
+                    <Typography className={classes.formElementFontSize} variant="body1" gutterBottom paragraph>
+                      <i><Translate className={classes.formElementFontSize}>Specify if the search results must match all the fields you typed above (default is yes).</Translate></i>
+                    </Typography>
+                  </FormControl>
+
+                </div>
+
+                <SearchBottomActionButtons
+                  resetResults={resetResults}
+                  resetParentState={this.resetToInitialState}
+                />
+
+              </form>
+            </ExpansionPanelDetails>
+          </ExpansionPanel>
+
         </CardContent>
       </Card>
     );
