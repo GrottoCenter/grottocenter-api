@@ -22,6 +22,48 @@ tags:
 - name: geoloc
 
 paths:
+  '/bbs/{id}':
+    get:
+      tags:
+      - bbs
+      description: Get a BBS ("Bulletin Biliographique Spéléologique" in french) by ID
+      parameters:
+      - name: id
+        in: path
+        description: BBS ID
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bbs'
+        '404':
+          description: Resource not found
+        '500':
+          description: Internal error
+
+  '/bbs/subthemes':
+    get:
+      tags:
+      - bbs
+      - subthemes
+      description: Get BBS ("Bulletin Biliographique Spéléologique" in french) subthemes list
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Bbs subtheme"
+        '500':
+          description: Internal error
+
   '/entries':
     get:
       tags:
@@ -68,13 +110,13 @@ paths:
           description: Resource not found
         '500':
           description: Internal error
-  '/entries/{entryId}':
+  '/entries/{id}':
     get:
       tags:
       - entry
       description: Get a public entry by ID
       parameters:
-      - name: entryId
+      - name: id
         in: path
         description: Entry ID
         required: true
@@ -91,7 +133,7 @@ paths:
           description: Resource not found
         '500':
           description: Internal error
-  '/entry/{entryId}':
+  '/entry/{id}':
     get:
       tags:
       - entry
@@ -99,7 +141,7 @@ paths:
       summary: DEPRECATED - Please switch your code to use /entries instead
       description: Get a public entry by ID
       parameters:
-      - name: entryId
+      - name: id
         in: path
         description: Entry ID
         required: true
@@ -138,8 +180,8 @@ paths:
       tags:
       - search
       deprecated: false
-      summary: Search for resources (entries, massifs & organizations)
-      description: Search for resources (entries, massifs & organizations). Case insensitive. Search over a lots of resource properties (not only name).
+      summary: Search for resources (entries, massifs, organizations & bbs)
+      description: Search for resources (entries, massifs & organizations & bbs). Case insensitive. Search over a lots of resource properties (not only name).
       parameters:
       - name: query
         in: query
@@ -287,13 +329,13 @@ paths:
           description: Resource not found
         '500':
           description: Internal error
-  '/massifs/{massifId}':
+  '/massifs/{id}':
     get:
       tags:
       - massif
       description: Get a massif, its author and all its caves
       parameters:
-      - name: massifId
+      - name: id
         in: path
         description: Massif ID
         required: true
@@ -312,13 +354,13 @@ paths:
           description: Resource not found
         '500':
           description: Internal error
-  '/api/grottos/:id':
+  '/api/grottos/{id}':
     get:
       tags:
       - grotto
       description: Get a grotto that means an organization or a group of cavers.
       parameters:
-      - name: grottoId
+      - name: id
         in: path
         description: Grotto ID
         required: true
@@ -406,6 +448,80 @@ components:
             anyOf:
             - $ref: '#/components/schemas/Entry'
             - $ref: '#/components/schemas/EntryGroup'
+
+    Bbs:
+      type: object
+      description: A BBS (french for "Bulletin Bibliographique Spéléologique") object is a reference to a published spelological article.
+      properties:
+        id: 
+          type: integer
+          format: int64
+        title: 
+          type: string
+        year: 
+          type: int
+        crosChapRebuilt: 
+          type: string
+        crosCountryRebuilt: 
+          type: string
+        theme: 
+          type: string
+        subtheme: 
+          $ref: '#/components/schemas/Bbs subtheme'
+        lib: 
+          $ref: '#/components/schemas/Bbs lib'
+        editor: 
+          $ref: '#/components/schemas/Bbs editor'
+        abstract:
+          type: string
+        ref:
+          type: string
+        authors:
+          type: string
+        publication:
+          type: string
+
+    Bbs country:
+      type: object
+      properties:
+        id: 
+          type: integer
+          format: int64
+        name: 
+          type: string
+
+    Bbs editor:
+      type: object
+      properties:
+        address: 
+          type: string
+        email: 
+          type: string
+        url: 
+          type: string
+    
+    Bbs lib:
+      type: object
+      properties:
+        id: 
+          type: integer
+          format: int64
+        name: 
+          type: string
+        country: 
+          type: string
+
+    Bbs subtheme:
+      type: object
+      properties:
+        id: 
+          type: integer
+          format: int64
+        name: 
+          type: string
+        theme: 
+          type: string
+
     Caver:
       type: object
       properties:
@@ -414,6 +530,7 @@ components:
           format: int64
         nickname: 
           type: string
+
     Cave:
       type: object
       properties:
