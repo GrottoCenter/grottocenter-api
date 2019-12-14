@@ -429,9 +429,9 @@ module.exports = {
     // Build editor
     if(source['editorAddress'] !== '' || source['editorEmail'] !== '' || source['editorUrl'] !== '') {
       result.editor = {};
-      result.editor['address'] = source['editorAddress'] ? source['editorAddress'] : '';
-      result.editor['email'] = source['editorEmail'] ? source['editorEmail'] : '';
-      result.editor['url'] = source['editorUrl'] ? source['editorUrl'] : '';
+      source['editorAddress'] ? result.editor['address'] = source['editorAddress'] : '';
+      source['editorEmail'] ? result.editor['email'] = source['editorEmail'] : '';
+      source['editorUrl'] ? result.editor['url'] = source['editorUrl'] : '';
     }
 
     return result;
