@@ -24,11 +24,11 @@ const SocialLinksList = styled.ul`
 
 const SocialLinksListItem = styled.li`
   display: inline-block;
-  width: 60px;
-  margin: 0 5%;
+  width: 40px;
+  margin: 0 10px;
 
   @media (min-width: 550px) {
-    margin: 0 14px;
+    margin: 0 10px;
   }
 `;
 
@@ -48,11 +48,6 @@ const rotateAnimation = keyframes`
 
 const ApiSocialImage = styled(SocialImage)`
   animation: ${rotateAnimation} 30s ease-out infinite;
-`;
-
-const BatSocialImage = styled(SocialImage)`
-  width: 52px;
-  padding: 6px;
 `;
 
 //
@@ -95,7 +90,7 @@ const SocialLinks = () => (
     </SocialLinksListItem>
     <SocialLinksListItem>
       <InternationalizedLink links={wikiBatsLinks}>
-        <BatSocialImage src="/images/icons8/bats.svg" alt="Wiki page for bats" />
+        <SocialImage src="/images/icons8/bats.svg" alt="Wiki page for bats" />
       </InternationalizedLink>
     </SocialLinksListItem>
   </SocialLinksList>

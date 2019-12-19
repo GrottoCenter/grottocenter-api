@@ -6,8 +6,9 @@ import FooterDisclamer from '../common/FooterDisclamer';
 import Publisher from './Publisher';
 import SocialLinks from './SocialLinks';
 import FooterLinks from './FooterLinks';
+import Divider from '@material-ui/core/Divider';
 import {
-  GridContainer, GridRow, GridOneThirdColumn, GridFullColumn,
+  GridContainer, GridRow, GridOneHalfColumn,
 } from '../../helpers/GridSystem';
 
 //
@@ -19,8 +20,6 @@ import {
 const FooterWrapper = withTheme()(styled.div`
   background-color: ${props => props.theme.palette.primary1Color};
   color: ${props => props.theme.palette.textIconColor};
-  font-size: smaller;
-  padding: 15px;
   text-align: center;
 `);
 
@@ -29,32 +28,36 @@ const FooterWrapper = withTheme()(styled.div`
 // M A I N - C O M P O N E N T
 //
 //
+
 const Footer = () => (
   <div>
     <FooterWrapper>
       <GridContainer>
+        
         <GridRow>
-          <GridOneThirdColumn>
+          <GridOneHalfColumn>
             <Publisher />
-          </GridOneThirdColumn>
+          </GridOneHalfColumn>
 
-          <GridOneThirdColumn>
-            <FooterLinks />
-          </GridOneThirdColumn>
-
-          <GridOneThirdColumn>
+          <GridOneHalfColumn>
             <DonateForm />
-          </GridOneThirdColumn>
+          </GridOneHalfColumn>
         </GridRow>
+
+        <Divider />
 
         <GridRow>
-          <GridFullColumn>
+          <GridOneHalfColumn>
+            <FooterLinks />
+          </GridOneHalfColumn>
+
+          <GridOneHalfColumn>
             <SocialLinks />
-          </GridFullColumn>
+          </GridOneHalfColumn>
         </GridRow>
+
       </GridContainer>
     </FooterWrapper>
-
 
     <FooterDisclamer />
   </div>

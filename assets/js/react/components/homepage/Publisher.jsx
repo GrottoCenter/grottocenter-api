@@ -12,24 +12,21 @@ import GCLogo from '../common/GCLogo';
 //
 
 const PublisherInfo = styled.div`
-  background-color: ${props => props.bgColor};
+  margin-right: 4px;
   display: inline-block;
-  padding: 5px;
-  text-align: center;
 `;
 
 const PublisherLogo = styled(GCLogo)`
   & > img {
-    width: 100px;
-    display: block;
-    margin: auto;
+    width: 50px;
+    margin-left:15px;
   }
 `;
 
 const PublisherWrapper = styled.div`
-  @media (min-width: 550px) {
-    text-align: left;
-  }
+  display: inline-block;
+  font-size: small;
+  margin-top:10px;
 `;
 
 //
@@ -40,15 +37,15 @@ const PublisherWrapper = styled.div`
 
 const Publisher = () => (
   <PublisherWrapper>
-    <div>
+    <PublisherInfo> 
       <Translate>Published by</Translate>
-    </div>
-    <PublisherInfo bgColor="#e8dcd8">
-      <InternationalizedLink links={wikicavesLink}>
-        <PublisherLogo showLink={false} />
-        <Translate>Wikicaves association</Translate>
-      </InternationalizedLink>
     </PublisherInfo>
+
+    <InternationalizedLink links={wikicavesLink}>
+      <Translate>Wikicaves association</Translate>
+      <PublisherLogo showLink={false} />
+    </InternationalizedLink>
+
   </PublisherWrapper>
 );
 
