@@ -21,7 +21,7 @@ function addslashes(str) {
   // From: http://phpjs.org/functions
   // *     example 1: addslashes("kevin's birthday");
   // *     returns 1: 'kevin\'s birthday'
-  return (str + '').replace(/[\\"']/g, '\\$&').replace(/\u0000/g, '\\0');
+  return (str + '').replace(/["']/g, '$&').replace(/\u0000/g, '0');
 }
 
 function getOldGCpassword(login, password) {

@@ -119,7 +119,7 @@ class BbsSearch extends React.Component {
       matchAllFields: true,
       filteredSubthemes: [],
       allFieldsRequest: '',
-      panelExpanded: '',
+      panelExpanded: 'all-fields-panel',
     });
   }
 

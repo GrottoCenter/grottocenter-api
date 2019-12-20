@@ -837,5 +837,12 @@
 	"SA": "SA",
 	"Speleological Abstracts": "Speleological Abstracts",
 	"Too many results to download ({0}). You can only download {1} results at once.": "Too many results to download ({0}). You can only download {1} results at once.",
-	"Library": "Library"
+	"Library": "Library",
+	"Specify if the search results must match all the fields you typed above (default is yes).": "Specify if the search results must match all the fields you typed above (default is yes).",
+	"Matching at least one field": "Matching at least one field",
+	"Matching all fields": "Matching all fields",
+	"Search on all fields": "Search on all fields",
+	"Perform an advanced search on all the fields. Results displayed will have at least one field matching your request.": "Perform an advanced search on all the fields. Results displayed will have at least one field matching your request.",
+	"All fields request": "All fields request",
+	"Search on specific fields": "Search on specific fields"
 }
