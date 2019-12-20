@@ -836,5 +836,13 @@
 	"Group": "Organisation",
 	"SA": "BBS",
 	"Speleological Abstracts": "Bulletin Bibliographique Spéléologique",
-	"Too many results to download ({0}). You can only download {1} results at once.": "Trop de résultats à télécharger ({0}). Vous ne pouvez télécharger que {1} résultats à la fois."
+	"Too many results to download ({0}). You can only download {1} results at once.": "Trop de résultats à télécharger ({0}). Vous ne pouvez télécharger que {1} résultats à la fois.",
+	"Library": "Librairie",
+	"Specify if the search results must match all the fields you typed above (default is yes).": "Indique si les résultats de recherche doivent correspondre à tous les champs entrés ci-dessus (par défaut : oui).",
+	"Matching at least one field": "Correspondre à au moins un champ",
+	"Matching all fields": "Correspondre à tous les champs",
+	"Search on all fields": "Chercher sur tous les champs",
+	"Perform an advanced search on all the fields. Results displayed will have at least one field matching your request.": "Exécuter la recherche avancée sur tous les champs. Les résultats affichés auront au moins un champ correspondant à votre requête.",
+	"All fields request": "Requêtes sur tous les champs",
+	"Search on specific fields": "Chercher sur des champs spécifiques"
 }
