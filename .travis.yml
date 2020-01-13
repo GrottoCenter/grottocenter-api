@@ -1,5 +1,25 @@
 language: node_js
 node_js:
- - "10"
-script: npm run coverage
-after_success: 'npm run coveralls'
+  - "10"
+stages:
+  - name: build
+    if: branch = rc AND type != pull_request
+  - name: deploy
+    if: branch = rc AND type != pull_request
+jobs:
+  include:
+  - stage: build
+    name: compile
+    script: npm build
+  - stage: deploy
+    name: deploy on aws
+    script: skip
+    deploy: //TODO
+      skip_cleanup: true
+      provider: s3
+      access_key_id: "YOUR AWS ACCESS KEY"
+      secret_access_key: "YOUR AWS SECRET KEY"
+      bucket: "S3 Bucker"
+      on:
+        branch: rc
+        tags: true
