@@ -248,8 +248,7 @@ class Searchbar extends React.Component {
             onChange={this.handleChange}
             placeholder={(
               <React.Fragment>
-                <Translate>Search for a cave, massif, group</Translate>
-                <span>...</span>
+                <Translate>Quick search</Translate>
               </React.Fragment>
             )}
             closeMenuOnScroll

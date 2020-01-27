@@ -406,6 +406,11 @@ module.exports.routes = {
     }
   },
 
+  'GET /api/v1/bbs/count': {
+    controller: 'v1/Bbs',
+    action: 'count'
+  },
+
   'GET /api/v1/bbs-geos/:id': {
     controller: 'v1/BbsGeo',
     action: 'find',
@@ -418,7 +423,7 @@ module.exports.routes = {
     }
   },
 
-  'GET /api/v1/bbs-subthemes/:id': {
+  'GET /api/v1/bbs/subthemes/:id': {
     controller: 'v1/BbsChapter',
     action: 'find',
     api: {
@@ -430,7 +435,7 @@ module.exports.routes = {
     }
   },
 
-  'GET /api/v1/bbs-subthemes': {
+  'GET /api/v1/bbs/subthemes': {
     controller: 'v1/BbsChapter',
     action: 'findAll',
     api: {

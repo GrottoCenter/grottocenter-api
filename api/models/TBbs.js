@@ -71,6 +71,29 @@ module.exports = {
     country: {
       columnName: 'CountryCode',
       model: 'TBbsGeo'
+    },
+
+    editorAddress: {
+      type: 'string',
+      maxLength: 500,
+      columnName: 'editor_address'
+    },
+
+    editorEmail: {
+      type: 'string',
+      maxLength: 200,
+      columnName: 'editor_email'
+    },
+
+    editorUrl: {
+      type: 'string',
+      maxLength: 1000,
+      columnName: 'editor_url'
+    },
+
+    lib: {
+      columnName: 'LibraryCode',
+      model: 'TBbsLib'
     }
     
   }

@@ -4,7 +4,7 @@ const client = require('../../config/elasticsearch').elasticsearchCli;
 const resourcesToUpdate = [
   'grottos', 'massifs', 'entries', 'bbs'
 ];
-const advancedSearchMetaParams = ['resourceType', 'complete', 'match_all_queries', 'from', 'size'];
+const advancedSearchMetaParams = ['resourceType', 'complete', 'matchAllFields', 'from', 'size'];
 
 /*  Define the fuziness criteria. If equals to X, Elasticsearch will search
     all the keywords by changing / inverting / deleting X letters.
@@ -114,7 +114,7 @@ const self = module.exports = {
                 'entries names', 'entries regions', 'entries cities', 'entry counties', 'entries countries',
 
                 // ==== BBS 
-                'bbs title^2', 'bbs authors', 'bbs abstract^0.5', 'bbs ref', 'bbs country', 'bbs theme', 'bbs subtheme', 'bbs publication'
+                'bbs title^2.7', 'bbs authors', 'bbs abstract^0.5', 'bbs ref', 'bbs country', 'bbs theme', 'bbs subtheme', 'bbs publication'
               ],
             },       
           },
@@ -152,10 +152,7 @@ const self = module.exports = {
     return new Promise(function(resolve, reject) {
 
       // Determine if the logic operator is OR (should) or AND (must) for the request.
-      let queryVerb = 'must';
-      if(params.match_all_queries) {
-        queryVerb = (params.match_all_queries === true ? 'must' : 'should');  
-      }
+      const queryVerb = (params.matchAllFields === false ? 'should' : 'must');  
       
       // Build match fields to search on, i.e. every parameters in the url which are not metaParams
       const matchingParams = [];
@@ -257,6 +254,6 @@ const self = module.exports = {
    * @param {*} sourceString 
    */
   sanitizeQuery: function(sourceString) {
-    return sourceString.replace(/[`~!@#$%^&*()_|+\-=?;:'",.<>\{\}\[\]\\\/]/gi, ' ');
+    return sourceString.replace(/[`~!@#$%^&*()_|+\-=?;:'",<>\{\}\[\]\/]/gi, ' ');
   },
 };

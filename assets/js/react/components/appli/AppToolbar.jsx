@@ -1,7 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import Toolbar from '@material-ui/core/Toolbar';
-import { withStyles, withTheme } from '@material-ui/core';
+import {
+  withStyles, withTheme, Toolbar, Tooltip,
+} from '@material-ui/core';
+import HelpIcon from '@material-ui/icons/Help';
+
 import styled from 'styled-components';
 
 import HeaderTitle from './HeaderTitle';
@@ -14,6 +17,23 @@ import Translate from '../common/Translate';
 // S T Y L I N G - C O M P O N E N T S
 //
 //
+
+const StyledHelpIcon = withStyles((theme) => ({
+  root: {
+    color: theme.palette.primary3Color,
+    fontSize: '18px',
+    marginLeft: '5px',
+    verticalAlign: 'super',
+  },
+}), { withTheme: true })(HelpIcon);
+
+const StyledTooltip = withStyles((theme) => ({
+  tooltip: {
+    backgroundColor: theme.palette.primary3Color,
+    color: theme.palette.primaryTextColor,
+    fontSize: '1.5rem',
+  },
+}), { withTheme: true })(Tooltip);
 
 const StyledToolbar = withStyles((theme) => ({
   root: {
@@ -57,12 +77,18 @@ const TitleGroup = withStyles(() => ({
 //
 
 const AppToolbar = (props) => {
-  const { pageTitle } = props;
+  const { pageTitle, pageTitleTooltip } = props;
   const PageTitleComponent = pageTitle ? (
     <StyledPageTitle>
       <StyledPageTitleText>
         <Translate>{pageTitle}</Translate>
       </StyledPageTitleText>
+
+      {pageTitleTooltip ? (
+        <StyledTooltip title={<Translate>{pageTitleTooltip}</Translate>} placement="right">
+          <StyledHelpIcon />
+        </StyledTooltip>
+      ) : ''}
     </StyledPageTitle>
   ) : '';
 
@@ -79,9 +105,11 @@ const AppToolbar = (props) => {
 
 AppToolbar.propTypes = {
   pageTitle: PropTypes.string,
+  pageTitleTooltip: PropTypes.string,
 };
 AppToolbar.defaultProps = {
-  pageTitle: '',
+  pageTitle: undefined,
+  pageTitleTooltip: undefined,
 };
 
 export default AppToolbar;

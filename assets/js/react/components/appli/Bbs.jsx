@@ -3,13 +3,14 @@ import PropTypes from 'prop-types';
 import {
   Card, CardContent, CircularProgress, withStyles, Typography,
 } from '@material-ui/core';
-import styled from 'styled-components';
 
 import ImportContactsIcon from '@material-ui/icons/ImportContacts';
 import PersonIcon from '@material-ui/icons/Person';
 import ClassIcon from '@material-ui/icons/Class';
 import PublicIcon from '@material-ui/icons/Public';
 import CategoryIcon from '@material-ui/icons/Category';
+import YearIcon from '@material-ui/icons/Today'
+import LibraryIcon from '@material-ui/icons/LocalLibrary';
 
 import Translate from '../common/Translate';
 
@@ -33,13 +34,16 @@ const StyledPersonIcon = withStyles(styledIcon)(PersonIcon);
 const StyledReferenceIcon = withStyles(styledIcon)(ClassIcon);
 const StyledCountryIcon = withStyles(styledIcon)(PublicIcon);
 const StyledThemeIcon = withStyles(styledIcon)(CategoryIcon);
+const StyledYearIcon = withStyles(styledIcon)(YearIcon);
+const StyledLibraryIcon = withStyles(styledIcon)(LibraryIcon);
 
 // =================== End styles ==================
 
 export class Bbs extends React.Component {
   componentDidMount() {
-    const { updatePageTitle } = this.props;
+    const { updatePageTitle, updatePageTitleTooltip } = this.props;
     updatePageTitle('BBS');
+    updatePageTitleTooltip('Speleological Abstracts');
   }
 
   render() {
@@ -61,6 +65,14 @@ export class Bbs extends React.Component {
               <b><Translate>Published in</Translate></b>
               {' '}
               {bbs.publication}
+            </StyledHeaderInfo>
+
+            <StyledHeaderInfo variant="body1" gutterBottom>
+              <StyledYearIcon />
+              {' '}
+              <b><Translate>Year</Translate></b>
+              {': '}
+              {bbs.year}
             </StyledHeaderInfo>
 
             <StyledHeaderInfo variant="body1" gutterBottom>
@@ -111,6 +123,16 @@ export class Bbs extends React.Component {
               </Typography>
             ) : ''}
 
+            {bbs.lib ? (
+              <StyledHeaderInfo variant="body1" gutterBottom>
+                <StyledLibraryIcon />
+                {' '}
+                <strong><Translate>Library</Translate></strong>
+                {': '}
+                {bbs.lib.name}
+              </StyledHeaderInfo>
+            ) : ''}
+
             <StyledHeaderInfo variant="body1" gutterBottom>
               <StyledReferenceIcon />
               {' '}
@@ -119,10 +141,32 @@ export class Bbs extends React.Component {
               {bbs.ref}
             </StyledHeaderInfo>
 
-            <hr />
+
+            {bbs.editor ? (
+              <React.Fragment>
+                <hr />
+                <Typography variant="h2" gutterBottom><Translate>Editor</Translate></Typography>
+                {bbs.editor.address ? (
+                  <Typography variant="body1" paragraph>
+                    {bbs.editor.address}
+                  </Typography>
+                ) : ''}
+                {bbs.editor.email ? (
+                  <Typography variant="body1" paragraph>
+                    {bbs.editor.email}
+                  </Typography>
+                ) : ''}
+                {bbs.editor.url ? (
+                  <Typography variant="body1" paragraph>
+                    {bbs.editor.url}
+                  </Typography>
+                ) : ''}
+              </React.Fragment>
+            ) : ''}
 
             {bbs.abstract ? (
               <React.Fragment>
+                <hr />
                 <Typography variant="h2" gutterBottom><Translate>Abstract</Translate></Typography>
                 <Typography variant="body1" paragraph>
                   {bbs.abstract}
@@ -142,6 +186,7 @@ Bbs.propTypes = {
   isFetching: PropTypes.bool.isRequired,
   bbs: PropTypes.shape({}),
   updatePageTitle: PropTypes.func.isRequired,
+  updatePageTitleTooltip: PropTypes.func.isRequired,
 };
 Bbs.defaultProps = {
   bbs: undefined,

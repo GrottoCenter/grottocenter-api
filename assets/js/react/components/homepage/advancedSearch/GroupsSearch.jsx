@@ -3,26 +3,22 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 
-import SearchIcon from '@material-ui/icons/Search';
-import ClearIcon from '@material-ui/icons/Clear';
+import {
+  Card, CardContent, FormControl, FormLabel,
+  TextField, Switch,
+} from '@material-ui/core';
 
-import Button from '@material-ui/core/Button';
-import Card from '@material-ui/core/Card';
-import CardActions from '@material-ui/core/CardActions';
-import CardContent from '@material-ui/core/CardContent';
-
-import FormControl from '@material-ui/core/FormControl';
-import FormLabel from '@material-ui/core/FormLabel';
-import TextField from '@material-ui/core/TextField';
-import Switch from '@material-ui/core/Switch';
 import Slider from 'rc-slider';
 
 import Translate from '../../common/Translate';
+import SearchBottomActionButtons from './SearchBottomActionButtons';
+
+// ==========
 
 const Range = Slider.createSliderWithTooltip(Slider.Range);
 
 
-const styles = theme => ({
+const styles = (theme) => ({
   mainContainer: {},
   cardContainer: {},
   fieldset: {
@@ -105,6 +101,7 @@ class GroupsSearch extends React.Component {
       name: '',
       postal_code: '',
       region: '',
+      matchAllFields: true,
     });
   }
 
@@ -141,7 +138,7 @@ class GroupsSearch extends React.Component {
    * This function set the state of the keyname property
    * to be the same value as the event of the slider.
    */
-  handleCheckedChange = keyName => (event) => {
+  handleCheckedChange = (keyName) => (event) => {
     const newState = {
       [keyName]: {
         ...this.state[keyName],
@@ -150,6 +147,16 @@ class GroupsSearch extends React.Component {
     };
     this.setState(newState);
   };
+
+  handleBooleanChange = (keyName) => (event) => {
+    this.setState({
+      [keyName]: event.target.checked,
+    });
+  };
+
+  resetToInitialState = () => {
+    this.setState(this.getInitialState());
+  }
 
   render() {
     const {
@@ -169,6 +176,7 @@ class GroupsSearch extends React.Component {
       name,
       postal_code,
       region,
+      matchAllFields,
     } = this.state;
 
     return (
@@ -196,7 +204,7 @@ class GroupsSearch extends React.Component {
                     <Translate>Group name</Translate>
                   </span>
                 )}
-                onChange={event => this.handleValueChange('name', event)}
+                onChange={(event) => this.handleValueChange('name', event)}
                 value={name}
                 InputProps={{
                   classes: {
@@ -230,7 +238,7 @@ class GroupsSearch extends React.Component {
                   onChange={(values) => {
                     this.handleRangeChange('number of cavers-range', values, numberOfCaversMinValue, numberOfCaversMaxValue);
                   }}
-                  tipFormatter={value => `${value}`}
+                  tipFormatter={(value) => `${value}`}
                   value={[numberOfCaversRange.min, numberOfCaversRange.max]}
                   disabled={!numberOfCaversRange.isEditable}
                   trackStyle={[!numberOfCaversRange.isEditable ? { backgroundColor: '#9e9e9e' } : { backgroundColor: '#ff9800' }]}
@@ -239,13 +247,13 @@ class GroupsSearch extends React.Component {
 
                 <div style={{ display: 'inline-flex', justifyContent: 'space-between' }}>
                   <TextField
-                    onChange={event => this.handleRangeChange('number of cavers-range', [parseInt(event.target.value, 10) || 0, numberOfCaversRange.max], numberOfCaversMinValue, numberOfCaversMaxValue)}
+                    onChange={(event) => this.handleRangeChange('number of cavers-range', [parseInt(event.target.value, 10) || 0, numberOfCaversRange.max], numberOfCaversMinValue, numberOfCaversMaxValue)}
                     value={numberOfCaversRange.min}
                     disabled={!numberOfCaversRange.isEditable}
                     style={{ width: '30px' }}
                   />
                   <TextField
-                    onChange={event => this.handleRangeChange('number of cavers-range', [numberOfCaversRange.min, parseInt(event.target.value, 10) || 0], numberOfCaversMinValue, numberOfCaversMaxValue)}
+                    onChange={(event) => this.handleRangeChange('number of cavers-range', [numberOfCaversRange.min, parseInt(event.target.value, 10) || 0], numberOfCaversMinValue, numberOfCaversMaxValue)}
                     value={numberOfCaversRange.max}
                     disabled={!numberOfCaversRange.isEditable}
                     style={{ width: '30px' }}
@@ -267,7 +275,7 @@ class GroupsSearch extends React.Component {
                       <Translate>City</Translate>
                     </span>
                   )}
-                  onChange={event => this.handleValueChange('city', event)}
+                  onChange={(event) => this.handleValueChange('city', event)}
                   value={city}
                   InputProps={{
                     classes: {
@@ -283,7 +291,7 @@ class GroupsSearch extends React.Component {
                       <Translate>Postal code</Translate>
                     </span>
                   )}
-                  onChange={event => this.handleValueChange('postal_code', event)}
+                  onChange={(event) => this.handleValueChange('postal_code', event)}
                   value={postal_code}
                   InputProps={{
                     classes: {
@@ -299,7 +307,7 @@ class GroupsSearch extends React.Component {
                       <Translate>County</Translate>
                     </span>
                   )}
-                  onChange={event => this.handleValueChange('county', event)}
+                  onChange={(event) => this.handleValueChange('county', event)}
                   value={county}
                   InputProps={{
                     classes: {
@@ -315,7 +323,7 @@ class GroupsSearch extends React.Component {
                       <Translate>Region</Translate>
                     </span>
                   )}
-                  onChange={event => this.handleValueChange('region', event)}
+                  onChange={(event) => this.handleValueChange('region', event)}
                   value={region}
                   InputProps={{
                     classes: {
@@ -331,7 +339,7 @@ class GroupsSearch extends React.Component {
                       <Translate>Country</Translate>
                     </span>
                   )}
-                  onChange={event => this.handleValueChange('country', event)}
+                  onChange={(event) => this.handleValueChange('country', event)}
                   value={country}
                   InputProps={{
                     classes: {
@@ -343,31 +351,34 @@ class GroupsSearch extends React.Component {
               </div>
             </fieldset>
 
-            <CardActions className={classes.cardBottomButtons}>
-              <Button
-                type="submit"
-                variant="contained"
-                color="default"
-                size="large"
-              >
-                <SearchIcon />
-                <Translate>Search</Translate>
-              </Button>
+            <div className={classes.formPartContainer} style={{ justifyContent: 'flex-start' }}>
+              <FormControl>
+                <FormLabel>
+                  <span className={classes.formElementFontSize}>
+                    <Translate>
+                      {matchAllFields ? 'Matching all fields' : 'Matching at least one field'}
+                    </Translate>
+                  </span>
+                  <Switch
+                    checked={matchAllFields}
+                    onChange={this.handleBooleanChange('matchAllFields')}
+                    value={matchAllFields}
+                    classes={{
+                      switchBase: classes.colorSwitchBase,
+                      checked: classes.colorChecked,
+                      bar: classes.colorBar,
+                    }}
+                  />
+                  <br />
+                  <i><Translate className={classes.formElementFontSize}>Specify if the search results must match all the fields you typed above (default is yes).</Translate></i>
+                </FormLabel>
+              </FormControl>
+            </div>
 
-              <Button
-                type="button"
-                variant="contained"
-                color="default"
-                size="large"
-                onClick={() => {
-                  this.setState(this.getInitialState());
-                  resetResults();
-                }}
-              >
-                <ClearIcon />
-                <Translate>Reset</Translate>
-              </Button>
-            </CardActions>
+            <SearchBottomActionButtons
+              resetResults={resetResults}
+              resetParentState={this.resetToInitialState}
+            />
 
           </form>
         </CardContent>

@@ -1,11 +1,15 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import CircularProgress from '@material-ui/core/CircularProgress';
-import Card from '@material-ui/core/Card';
-import CardContent from '@material-ui/core/CardContent';
+
+import {
+  Typography, CircularProgress, Card, CardContent,
+} from '@material-ui/core';
+
 import CavesList from '../common/cave/CavesList';
 import EntriesList from '../common/entry/EntriesList';
 import Translate from '../common/Translate';
+
+// ==========
 
 export class Massif extends React.Component {
   componentDidMount() {
@@ -24,7 +28,7 @@ export class Massif extends React.Component {
       return (
         <Card>
           <CardContent>
-            <h1>{massif.name}</h1>
+            <Typography variant="h1">{massif.name}</Typography>
             <CavesList
               caves={massif.caves}
               emptyMessage={<Translate>This massif has no caves repertoried yet</Translate>}
