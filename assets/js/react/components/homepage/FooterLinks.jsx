@@ -13,15 +13,18 @@ import Translate from '../common/Translate';
 //
 
 const FooterLinksList = styled.ul`
-  display: inline-block;
-  margin: 20px 0;
   list-style: none;
   font-size: large;
 `;
 
+const FooterLinksLi = styled.li`
+  display: inline-block;
+  margin-right:15px;
+`;
+
 const SocialLink = styled.div`
   text-decoration: none;
-  font-size: large;
+  font-size: medium;
   color: ${props => props.theme.palette.textIconColor};
 
   :hover {
@@ -41,26 +44,26 @@ const SocialIntlLink = withTheme()(SocialLink.withComponent(InternationalizedLin
 
 const FooterLinks = () => (
   <FooterLinksList>
-    <li>
+    <FooterLinksLi>
       <SocialGCLink internal href="/ui/faq">
         <Translate>FAQ</Translate>
       </SocialGCLink>
-    </li>
-    <li>
+    </FooterLinksLi>
+    <FooterLinksLi>
       <SocialIntlLink links={contributorsLink}>
         <Translate>Contributors</Translate>
       </SocialIntlLink>
-    </li>
-    <li>
+    </FooterLinksLi>
+    <FooterLinksLi>
       <SocialIntlLink links={contactLinks}>
         <Translate>Contact</Translate>
       </SocialIntlLink>
-    </li>
-    <li>
+    </FooterLinksLi>
+    <FooterLinksLi>
       <SocialIntlLink links={legalLinks}>
         <Translate>Legal notice</Translate>
       </SocialIntlLink>
-    </li>
+    </FooterLinksLi>
   </FooterLinksList>
 );
 

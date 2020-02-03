@@ -14,7 +14,9 @@ import { licenceLinks } from '../../conf/Config';
 
 const FooterBar = withTheme()(styled.div`
   color: ${props => props.theme.palette.fullBlack};
-  background-color: ${props => props.theme.palette.primary3Color};
+  background-color: ${props => props.theme.palette.primary1Color};
+  text-align: center;
+  padding-top: 15px;
 `);
 
 // .fixFooter {
@@ -25,26 +27,26 @@ const FooterBar = withTheme()(styled.div`
 // }
 
 const DisclamerText = styled.p`
-  text-align: center;
-  margin-bottom: 0;
   font-size: 0.8em;
   font-weight: 300;
-  padding: 5px;
+  color: white;
+  display: inline-block;
 `;
 
 const LicenceLink = styled.p`
-  text-align: center;
-  margin: 0;
+  display: inline-block;
 `;
 
 const LicenceImage = styled.img`
-  width: 100px;
+  width: 80px;
+  margin-left: 10px;
+  display: inline-block;
 `;
 
 const FooterDisclamer = ({ className }) => (
   <FooterBar className={className}>
     <DisclamerText>
-      <Translate>Unless stated otherwise, all text and documents are available under the terms of the Creative Commons Attribution-ShareAlike 30 Unported</Translate>
+      <Translate>Unless stated otherwise, all text and documents are available under the terms</Translate>
     </DisclamerText>
     <LicenceLink>
       <InternationalizedLink links={licenceLinks}>

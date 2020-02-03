@@ -59,7 +59,6 @@ const btEyeCatcher = keyframes`
 `;
 
 const DonateFormWrapper = styled.div`
-  float: right;
   animation: ${btEyeCatcher} 10s linear infinite;
 
   @media (max-width: 550px) {
@@ -75,7 +74,7 @@ const DonateButton = withStyles(theme => ({
     backgroundColor: theme.palette.accent1Color,
     color: theme.palette.textIconColor,
     height: 'auto',
-    padding: '4px 10px',
+    marginTop: '10px',
 
     '&:hover': {
       backgroundColor: theme.palette.accent1Color,
@@ -95,15 +94,15 @@ const DonateButton = withStyles(theme => ({
 const StyledGiftIcon = withStyles(theme => ({
   root: {
     fill: theme.palette.textIconColor,
-    width: '40px',
-    height: '40px',
+    width: '20px',
+    height: '30px',
     marginRight: '10px',
   },
 }), { withTheme: true })(GiftIcon);
 
 const StyledTypography = withStyles(theme => ({
   root: {
-    fontSize: '14px',
+    fontSize: 'small',
     textAlign: 'center',
     color: theme.palette.textIconColor,
   },
