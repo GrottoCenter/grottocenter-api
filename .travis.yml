@@ -1,5 +1,33 @@
 language: node_js
 node_js:
- - "10"
-script: npm run coverage
-after_success: 'npm run coveralls'
+- '10.4.1'
+cache: npm
+before_deploy: echo 'Deployment is beginning'
+deploy:
+  - provider: s3
+    access_key_id: $AWS_ACCESS_KEY
+    secret_access_key: $AWS_SECRET_KEY
+    local_dir: grotto_center_zip
+    skip_cleanup: true
+    on: &2
+      repo: GrottoCenter/Grottocenter3 
+      #tags: true
+      branch: aws_refont
+    bucket: appgrottocenter3
+    region: eu-central-1
+  - provider: codedeploy
+    access_key_id: $AWS_ACCESS_KEY
+    secret_access_key: $AWS_SECRET_KEY
+    bucket: appgrottocenter3
+    key: latest.tar.gz
+    bundle_type: tar
+    application: GrottoCenter3
+    deployment_group: GrottoCenter3App
+    region: eu-central-1
+    on: *2
+    
+script:
+- tar -cf latest.tar.gz *
+- mkdir -p grotto_center_zip
+- mv latest.tar.gz grotto_center_zip
+after_deploy: echo  'finished'
