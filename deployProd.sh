@@ -34,6 +34,10 @@ npm install --production --unsafe-perm || \
 # Install files from private bucket
 aws s3 cp  s3://appgrottocenter3/production.js /home/ec2-user/GrottoCenter3/config/env/production.js
 aws s3 cp  s3://appgrottocenter3/env /home/ec2-user/GrottoCenter3/.env
-aws s3 cp  s3://appgrottocenter3/transifexrc /home/ec2-user/GrottoCenter3/.transifexrcgit
+aws s3 cp  s3://appgrottocenter3/transifexrc /home/ec2-user/GrottoCenter3/.transifexrc
+
+NODE_ENV=production sails_hooks__grunt=false nohup node app.js --production  > /dev/null 2> /dev/null < /dev/null &
+
+
 
 
