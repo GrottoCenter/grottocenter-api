@@ -14,7 +14,7 @@ const EntryModel = {
   county: undefined,
   region: undefined,
   city: undefined,
-  postalCode : undefined,
+  postalCode: undefined,
   latitude: undefined,
   longitude: undefined,
   altitude: undefined,
@@ -106,7 +106,7 @@ const BbsChapterModel = {
 /* Mappers */
 
 module.exports = {
-  convertToEntryModel: function(source) {
+  convertToEntryModel: function (source) {
     let result = Object.assign({}, EntryModel);
 
     result.id = source.id;
@@ -133,7 +133,7 @@ module.exports = {
     return result;
   },
 
-  convertToEntryList: function(source) {
+  convertToEntryList: function (source) {
     let entries = [];
     source.forEach((item) => {
       let entry = this.convertToEntryModel(item);
@@ -142,14 +142,14 @@ module.exports = {
     return entries;
   },
 
-  convertToCountResult: function(source) {
+  convertToCountResult: function (source) {
     let result = Object.assign({}, CountResult);
     result.count = source.count;
     return result;
   },
 
   //Deprecated for v1
-  convertDbToSearchResult: function(source) {
+  convertDbToSearchResult: function (source) {
     let results = {};
     let entries = [];
     source.forEach((item) => {
@@ -160,14 +160,14 @@ module.exports = {
     return results;
   },
 
-  convertToCaverModel: function(source) {
+  convertToCaverModel: function (source) {
     let result = Object.assign({}, CaverModel);
     result.id = source.id;
     result.nickname = source.nickname;
     return result;
   },
 
-  convertToCaveModel: function(source) {
+  convertToCaveModel: function (source) {
     let result = Object.assign({}, CaveModel);
     result.id = source.id;
     result.name = source.name;
@@ -183,7 +183,7 @@ module.exports = {
     return result;
   },
 
-  convertToCaveList: function(source) {
+  convertToCaveList: function (source) {
     let caves = [];
     source.forEach((item) => {
       let cave = this.convertToCaveModel(item);
@@ -196,7 +196,7 @@ module.exports = {
    * Function that return all data for the search
    * @param {*} source : the elasticsearch result
    */
-  convertToCompleteSearchResult: function(source) {
+  convertToCompleteSearchResult: function (source) {
     let res = {};
     let values = [];
 
@@ -204,7 +204,7 @@ module.exports = {
     source.hits.hits.forEach((item) => {
       let data = '';
       // Convert the data according to its type
-      switch(item._source.type){
+      switch (item._source.type) {
         case 'entry':
           data = this.convertToEntryModel(item._source);
           break;
@@ -214,7 +214,7 @@ module.exports = {
         case 'grotto':
           data = this.convertToGrottoModel(item._source);
           break;
-        case 'bbs': 
+        case 'bbs':
           data = this.convertToBbsModel(item._source);
           break;
       }
@@ -225,7 +225,7 @@ module.exports = {
       values.push(data);
     });
     res.results = values;
-    res.totalNbResults = source.hits.total;
+    res.totalNbResults = source.hits.total.value;
     return res;
   },
 
@@ -233,7 +233,7 @@ module.exports = {
    * Function that return only the main information about a result.
    * @param {*} source : the elasticsearch result
    */
-  convertEsToSearchResult: function(source) {
+  convertEsToSearchResult: function (source) {
     let res = {};
     let values = [];
 
@@ -245,11 +245,11 @@ module.exports = {
         type: item._source.type,
         highlights: item.highlight
       };
-      
+
       data.longitude = item._source.longitude;
       data.latitude = item._source.latitude;
-      
-      switch(item._source.type){
+
+      switch (item._source.type) {
         case 'entry':
           data.cave = {
             id: item._source.id_cave,
@@ -275,27 +275,27 @@ module.exports = {
             return Object.assign({}, ...keyValues);
           };
 
-          const replacementKeys = { 
-            'bbs title': 'title', 
-            'bbs ref' : 'reference', 
-            'bbs authors' : 'authors', 
-            'bbs theme' : 'theme',
-            'bbs subtheme' : 'subtheme',
-            'bbs abstract' : 'abstract',
+          const replacementKeys = {
+            'bbs title': 'title',
+            'bbs ref': 'reference',
+            'bbs authors': 'authors',
+            'bbs theme': 'theme',
+            'bbs subtheme': 'subtheme',
+            'bbs abstract': 'abstract',
             'bbs country': 'country',
             'bbs publication': 'publication',
-            'numericalRef' : 'numerical reference'
+            'numericalRef': 'numerical reference'
           };
           // Rename keys of data and highlights
           const newSource = renameKeys(item._source, replacementKeys);
           data.highlights = renameKeys(data.highlights, replacementKeys);
-          
+
           // Fill data with appropriate key
-          let newKey; 
-          for(const key in replacementKeys) {
+          let newKey;
+          for (const key in replacementKeys) {
             newKey = replacementKeys[key];
             data[newKey] = newSource[newKey];
-          }          
+          }
           break;
         }
       }
@@ -309,27 +309,27 @@ module.exports = {
 
   // ---------------- Massif Function ------------------------------
 
-  convertToMassifModel: function(source) {
+  convertToMassifModel: function (source) {
     let result = Object.assign({}, MassifModel);
 
-    if(source.author) {
+    if (source.author) {
       result.author = this.convertToCaverModel(source.author);
     }
 
-    if(source.caves) {
+    if (source.caves) {
       result.caves = source.caves.map(cave => this.convertToCaveModel(cave));
     } else if (source['caves names']) {
       // In Elasticsearch
-      result.caves = source['caves names'].split(',').map(name => this.convertToCaveModel({name}));
+      result.caves = source['caves names'].split(',').map(name => this.convertToCaveModel({ name }));
     }
 
-    if(source.entries) {
+    if (source.entries) {
       result.entries = source.entries.map(entries => this.convertToEntryModel(entries));
     } else if (source['entries names']) {
       // In Elasticsearch
-      result.entries = source['entries names'].split(',').map(name => this.convertToEntryModel({name}));
+      result.entries = source['entries names'].split(',').map(name => this.convertToEntryModel({ name }));
     }
-    
+
     // Save in result the object to return
     result.id = source.id;
     result.idReviewer = source.idReviewer;
@@ -342,17 +342,17 @@ module.exports = {
 
   // ---------------- Grotto Function ---------------------------
 
-  convertToGrottoModel: function(source) {
+  convertToGrottoModel: function (source) {
     let result = Object.assign({}, GrottoModel);
 
-    if(source.cavers && source.cavers instanceof Array) {
+    if (source.cavers && source.cavers instanceof Array) {
       result.cavers = source.cavers.map(caver => this.convertToCaverModel(caver));
     } else if (source['cavers names']) {
       // In Elasticsearch, cavers names are the nicknames separated with a ','
-      result.cavers = source['cavers names'].split(',').map(nickname => this.convertToCaverModel({nickname}));
+      result.cavers = source['cavers names'].split(',').map(nickname => this.convertToCaverModel({ nickname }));
     }
 
-    if(source.entries) {
+    if (source.entries) {
       result.entries = source.entries.map(entry => this.convertToEntryModel(entry));
     }
 
@@ -382,14 +382,14 @@ module.exports = {
 
   // ---------------- BBS Function ---------------------------
 
-  convertToBbsModel: function(source) {
+  convertToBbsModel: function (source) {
     let result = Object.assign({}, BbsModel);
     result.crosChapRebuilt = source.crosChapRebuilt;
     result.crosCountryRebuilt = source.crosCountryRebuilt;
-    
+
     // Don't return the abstract from Elasticsearch ('bbs abstract') = too big and useless as a search results
     result.abstract = source.abstract;
-    
+
     // Conversion (from Elasticsearch or not)
     result.numericalRef = source['bbs numericalRef'] ? source['bbs numericalRef'] : source.xRefNumeriqueFinal;
     result.ref = source['bbs ref'] ? source['bbs ref'] : source.ref_;
@@ -398,7 +398,7 @@ module.exports = {
     result.year = source['bbs year'] ? source['bbs year'] : source.articleYear;
     result.authors = source['bbs authors'] ? source['bbs authors'] : source.cAuthorsFull;
     result.publication = source['bbs publication'] ? source['bbs publication'] : source.publicationExport;
-    
+
     // Build country / region
     if (source['bbs country code'] || source.country) {
       result.country = {
@@ -408,17 +408,17 @@ module.exports = {
     }
 
     // Build (sub)theme
-    if(source['bbs chaptercode'] || source.chapter) {
+    if (source['bbs chaptercode'] || source.chapter) {
       // In ES, the french and english theme and subtheme names are gathered and separated by ' / '
       result.theme = source['bbs theme'] ? source['bbs theme'].split(' / ')[0] : source.chapter.cTexteChapitre;
       result.subtheme = {
         id: source['bbs chaptercode'] ? source['bbs chaptercode'] : source.chapter.id,
         name: source['bbs subtheme'] ? source['bbs subtheme'].split(' / ')[0] : source.chapter.cTexteMatiere
-      };     
+      };
     }
 
     // Build library
-    if(source['lib']) {
+    if (source['lib']) {
       result.lib = {
         id: source['lib']['id'],
         name: source['lib']['nomCentre'],
@@ -427,7 +427,7 @@ module.exports = {
     }
 
     // Build editor
-    if(source['editorAddress'] !== '' || source['editorEmail'] !== '' || source['editorUrl'] !== '') {
+    if (source['editorAddress'] !== '' || source['editorEmail'] !== '' || source['editorUrl'] !== '') {
       result.editor = {};
       source['editorAddress'] ? result.editor['address'] = source['editorAddress'] : '';
       source['editorEmail'] ? result.editor['email'] = source['editorEmail'] : '';
@@ -437,11 +437,11 @@ module.exports = {
     return result;
   },
 
-  convertToBbsGeoModel: function(source) {
+  convertToBbsGeoModel: function (source) {
     return source;
   },
 
-  convertToBbsChapterModel: function(source) {
+  convertToBbsChapterModel: function (source) {
     let result = Object.assign({}, BbsChapterModel);
     result.id = source.id;
     result.name = source.cTexteMatiere;
@@ -449,7 +449,7 @@ module.exports = {
     return result;
   },
 
-  convertToBbsChapterList: function(source) {
+  convertToBbsChapterList: function (source) {
     let chapters = [];
     source.forEach((item) => {
       let chapter = this.convertToBbsChapterModel(item);

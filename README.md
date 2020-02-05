@@ -76,6 +76,16 @@ Yon can also join us on Slack! (using the QR-code above)
 
 ~~For more details, read [the development guide](https://github.com/GrottoCenter/Grottocenter3/wiki/Development-guide)~~ ==> DEPRECATED
 
+## Deployment on AWS :
+Grottocenter is evolving, its deployment is now based on AWS services.
+To help the usage of deployed services, we have put in place the following documentation :
+- Deployment of the MySQL database on Amazon RDS : https://docs.google.com/document/d/1nmfGdScWYBWa91L0SRd7LrH5XK_DQKbkGMtVdDQlmgg/edit?usp=sharing
+- Deployment of the Grottocenter3 application on EC2 : https://docs.google.com/document/d/1h8cdmlkZJG5SANKLfQQpOR1kNjMQiSKqb-N-LhM1Zlk/edit?usp=sharing
+- Creation and configuration of the Lightsail server :
+https://docs.google.com/document/d/1hRB9sJ6gXm2nrepli0ipBozq4agg36qQaQCSicxkxQk/edit?usp=sharing
+- Deployment of ElasticSearch and Logstash on Lightsail : https://docs.google.com/document/d/1ZarlIOUUWfZvo3jOQ28w8NVA9q9GmK9dIUONhkUw7ZA/edit?usp=sharing
+
+
 ### React tools
 ##### storybook
 
