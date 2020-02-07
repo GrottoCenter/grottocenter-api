@@ -33,11 +33,13 @@
     "prop-types": "^15.6.2",
     "rc": "~1.2.8",
     "rc-slider": "8.6.5",
-    "react": "^16.8.6",
+    "react": "^16.12.0",
+    "react-alice-carousel": "^1.17.3",
     "react-bootstrap": "^0.32.4",
     "react-csv": "^1.1.1",
     "react-device-detect": "^1.6.2",
-    "react-dom": "^16.6.0",
+    "react-dom": "^16.12.0",
+    "react-getscreen": "^1.1.3",
     "react-ghost-i18n": "^1.0.4",
     "react-intl": "^2.7.2",
     "react-leaflet": "^2.1.2",
@@ -71,7 +73,8 @@
     "test": "node ./node_modules/mocha/bin/mocha test/bootstrap.test.js test/integration/**/*.test.js",
     "coverage": "node node_modules/.bin/istanbul cover node_modules/.bin/_mocha test/bootstrap.test.js test/integration/**/*.test.js",
     "coveralls": "cat ./coverage/lcov.info | node node_modules/.bin/coveralls",
-    "build": "NODE_ENV=production grunt prod"
+    "build": "NODE_ENV=production grunt prod",
+    "format": "prettier --write \"**/*.+(js|jsx|json|css|md)\""
   },
   "main": "app.js",
   "repository": {
@@ -86,6 +89,8 @@
     "@babel/preset-env": "^7.1.0",
     "@babel/preset-react": "^7.0.0",
     "@babel/runtime": "^7.1.5",
+    "@commitlint/cli": "^8.3.5",
+    "@commitlint/config-conventional": "^8.3.4",
     "babel-eslint": "^10.0.1",
     "babel-plugin-styled-components": "^1.8.0",
     "babelify": "^10.0.0",
@@ -93,20 +98,28 @@
     "browserify": "^16.2.3",
     "browserify-css": "^0.15.0",
     "coveralls": "^3.0.2",
-    "eslint": "^6.0.0",
-    "eslint-config-airbnb": "^18.0.0",
-    "eslint-plugin-import": "^2.14.0",
-    "eslint-plugin-jsx-a11y": "^6.1.2",
-    "eslint-plugin-react": "^7.11.1",
+    "eslint": "^6.1.0",
+    "eslint-config-airbnb": "^18.0.1",
+    "eslint-config-node": "^4.0.0",
+    "eslint-config-prettier": "^6.10.0",
+    "eslint-plugin-import": "^2.20.0",
+    "eslint-plugin-jsx-a11y": "^6.2.3",
+    "eslint-plugin-node": "^11.0.0",
+    "eslint-plugin-prettier": "^3.1.2",
+    "eslint-plugin-react": "^7.18.0",
+    "eslint-plugin-react-hooks": "^1.7.0",
     "grunt": "^1.0.4",
     "grunt-babel": "^8.0.0",
     "grunt-browserify": "^5.3.0",
     "grunt-lesshint": "^2.0.0",
     "gruntify-eslint": "^5.0.0",
+    "husky": "^4.2.1",
     "istanbul": "^0.4.5",
     "jest": "^23.6.0",
+    "lint-staged": "^10.0.7",
     "mocha": "^6.2.2",
     "nodemon": "^1.18.5",
+    "prettier": "^1.19.1",
     "sails-disk": "^1.1.2",
     "sails-memory": "^0.10.7",
     "should": "^13.2.3",
@@ -124,5 +137,14 @@
         }
       ]
     ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged",
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+    }
+  },
+  "lint-staged": {
+    "*.{js,jsx}": "eslint --cache --fix"
   }
 }

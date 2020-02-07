@@ -40,7 +40,7 @@ function getContainerHealth {
 # Function that waits for a container to be healthy or unhealthy.
 # It prints a "." during starting and sleep 5 seconds before checking the status of the container.
 function waitContainer {
-  while STATUS=$(getContainerHealth $1); [[ $STATUS != "\"healthy\"" ]]; do 
+  while STATUS=$(getContainerHealth $1); [[ $STATUS != "\"healthy\"" ]]; do
     if [[ $STATUS == "\"unhealthy\"" ]]; then
       echo "Failed!"
       exit -1
@@ -59,6 +59,7 @@ function waitContainer {
 # Delete the MySQL container if one was running then launch a MySQL container with data loaded.
 # The health of this container is defined to healthy when we can send a ping to mysqladmin.
 # The database is populated with files in the sql folder.
+# For Windows replace the `PWD` with the full path
 isSQLContainerExisting="$(docker ps --all --quiet --filter=name="$MYSQL_TAGNAME")"
 if [ -n "$isSQLContainerExisting" ]; then
   echo "### DELETING old MySQL Container ###"
@@ -119,7 +120,7 @@ echo "### JDBC plugin downloaded and built ###"
 # Delete the Logstash container if already running and then create a Logstash container with the logstash.conf as configuration file.
 # The health of this container is defined to healthy when we can send a ping to localhost:9600. And the unhealthy status is made after 5 wrong retries
 # to access the localhost:9600
-# We set the elasticsearch url to be the same than the tagname of our Elasticsearch container. 
+# We set the elasticsearch url to be the same than the tagname of our Elasticsearch container.
 # That means we can access to elasticsearch inside a container with the url "elasticsearchgrotto:9200".
 isLSContainerExisting="$(docker ps --all --quiet --filter=name="$LS_TAGNAME")"
 if [ -n "$isLSContainerExisting" ]; then
