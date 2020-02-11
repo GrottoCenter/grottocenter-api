@@ -114,6 +114,7 @@ npm-debug.log
 nbproject
 .idea
 .node_history
+.eslintcache
 www
 .transifexrc
 
@@ -124,7 +125,7 @@ coverage
 ################################################
 # Logstash
 #
-# Plugins downloaded to run logstash in the 
+# Plugins downloaded to run logstash in the
 # docker container.
 ################################################
 mysql-connector.tar.gz
