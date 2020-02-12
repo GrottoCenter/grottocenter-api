@@ -76,12 +76,45 @@ Yon can also join us on Slack! (using the QR-code above)
 
 ~~For more details, read [the development guide](https://github.com/GrottoCenter/Grottocenter3/wiki/Development-guide)~~ ==> DEPRECATED
 
+
 ## Deployment on AWS :
 Grottocenter is evolving, its deployment is now based on AWS services. 
 To help the usage of deployed services, we have put in place the following documentation: 
 - Deployment of the MySQL database on Amazon RDS: https://docs.google.com/document/d/1nmfGdScWYBWa91L0SRd7LrH5XK_DQKbkGMtVdDQlmgg/edit?usp=sharing 
 - Deployment of the Grottocenter3 application on EC2 : https://docs.google.com/document/d/1h8cdmlkZJG5SANKLfQQpOR1kNjMQiSKqb-N-LhM1Zlk/edit?usp=sharing 
 - Deployment of ElasticSearch and Logstash on Lightsail : https://docs.google.com/document/d/1ZarlIOUUWfZvo3jOQ28w8NVA9q9GmK9dIUONhkUw7ZA/edit?usp=sharing 
+
+
+### React tools
+##### storybook
+
+[Storybook](https://storybook.js.org/) is used to develop in isolation UI component.
+It can be start independently with `npm run storybook`
+
+### Git-rules
+#### Overview
+This project follows the conventional commit specification. It uses commitlint to enforce conventional commit messages.
+
+##### Hooks
+To prevent bad commit and push, we use the Git hooks [Husky](https://github.com/typicode/husky)
+
+Husky is used to:
+- Verify if the commit name use the [conventional commit specification](https://www.conventionalcommits.org/)
+- Do a [lint-staged](https://github.com/okonet/lint-staged)
+
+##### Commit types
+The commit linter accepts the following types:
+
+- feat: Adds a new feature to the application
+- tech: Adds a new technical feature to the application (ex: a new reusable component). Neither fixes a bug nor adds a feature
+- refactor: Refactor a current implementation without adding a new feature or fixing a bug
+- improvement: Improve a current implementation without adding a new feature or fixing a bug
+- fix: A bug fix
+- chore: Changes to the build process or auxiliary tools and libraries such as documentation generation
+- docs: Documentation only changes
+- style: Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc)
+- test: Adding missing or correcting existing tests
+- revert: Reverts a previous work
 
 
 ## Licence
