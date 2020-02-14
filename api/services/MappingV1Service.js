@@ -303,8 +303,6 @@ module.exports = {
     });
 
     res.results = values;
-    console.log("================")
-    console.log(source.hits.total)
     res.totalNbResults = source.hits ? source.hits.total : 0;
     return res;
   },
