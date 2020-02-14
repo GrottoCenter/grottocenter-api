@@ -36,7 +36,7 @@
     "react": "^16.12.0",
     "react-alice-carousel": "^1.17.3",
     "react-bootstrap": "^0.32.4",
-    "react-csv": "^1.1.1",
+    "react-csv": "^2.0.0",
     "react-device-detect": "^1.6.2",
     "react-dom": "^16.12.0",
     "react-getscreen": "^1.1.3",
