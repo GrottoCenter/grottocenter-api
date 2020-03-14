@@ -11,7 +11,7 @@ cd /home/ec2-user/GrottoCenter3
 #  ============= FIRST DEPLOYEMENT ONLY /!\ ============= 
 #
 #   Check prerequisites for development:
-#   npm install -g grunt-cli
+  npm install -g grunt-cli
 #   sudo amazon-linux-extras install nginx1.12
 #   npm install forever -g
 #
