@@ -5,11 +5,11 @@ import grey from '@material-ui/core/colors/grey';
 import { fade } from '@material-ui/core/styles/colorManipulator';
 import spacing from '@material-ui/core/styles/spacing';
 
-const fontFamily = 'Open Sans';
+const fontFamily = 'Roboto, Open Sans';
 
 export default {
   spacing,
-  fontFamily: 'Open Sans',
+  fontFamily: 'Roboto, Open Sans',
   palette: {
     primary: {
       light: brown['500'],

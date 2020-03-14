@@ -1,14 +1,34 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+//import 'typeface-roboto';
+import Mark from './Mark'
+
+
 import Card from '@material-ui/core/Card';
 import CardHeader from '@material-ui/core/CardHeader';
 import CardText from '@material-ui/core/CardContent';
-import Collapse from '@material-ui/core/Collapse/Collapse';
+import CardActions from '@material-ui/core/CardActions';
+import Collapse from '@material-ui/core/Collapse';
 import styled from 'styled-components';
 import {
   GridContainer, GridRow, GridOneThirdColumn, GridTwoThirdColumn, GridFullColumn,
 } from '../../../helpers/GridSystem';
 import Translate from '../../common/Translate';
+import { withStyles } from '@material-ui/core/styles';
+import { Share, Print, GpsFixed, Map, Create, Room, LocationCity, ShowChart, LinearScale } from '@material-ui/icons/';
+import Typography from '@material-ui/core/Typography/Typography';
+import Table from '@material-ui/core/Table';
+import TableBody from '@material-ui/core/TableBody';
+import TableCell from '@material-ui/core/TableCell';
+import TableHead from '@material-ui/core/TableHead';
+import TableRow from '@material-ui/core/TableRow';
+import ActionBar from './ActionBar';
+
+/*const useStyles = makeStyles(theme => ({
+  button: {
+    margin: theme.spacing(1),
+  },
+}));*/
 
 const EntriesContainer = styled(GridContainer)`
   max-width: initial;
@@ -28,10 +48,84 @@ const EntriesContainer = styled(GridContainer)`
   }
 `;
 
+
 const WarningCardText = styled(CardText)`
   background-color: red;
   color: white !important;
 `;
+
+const OverFlowCardText = styled(CardText)`
+  overflow-x : auto;
+`;
+
+
+const StyledCardHeader = withStyles({
+  title: {
+    color: '#056598 !important',
+    fontSize: '18px !important',
+    fontWeight:'bold !important'
+  },
+})(CardHeader);
+
+
+
+
+
+const BoldText = withStyles(theme => ({
+  root: {
+    fontSize: '14px',
+    color: '#795548',
+    fontWeight: 'bold',
+    display: 'block',
+    marginTop: '-5px',
+  },
+}), { withTheme: true })(Typography);
+
+const DetailContainer = withStyles(theme => ({
+  root: {
+    marginLeft: '15px',
+    display: 'inline-block',
+    maxWidth: '80%',
+  },
+}), { withTheme: true })(Typography);
+
+
+const Content = withStyles(theme => ({
+  root: {
+    fontSize: '14px',
+    color: '#333',
+    display: 'block',
+  },
+}), { withTheme: true })(Typography);
+
+const Contributor = withStyles(theme => ({
+  root: {
+    fontSize: '12px',
+    color: '#555',
+    display: 'block',
+    textAlign: 'right',
+    marginLeft: 'auto !important',
+    marginRight: '10px !important',
+  },
+}), { withTheme: true })(Typography);
+
+const Title = withStyles(theme => ({
+  root: {
+    fontSize: '20px',
+    color: '#056598',
+    paddingLeft: '4px',
+    fontWeight: 'bold',
+    marginBottom: '10px',
+  },
+}), { withTheme: true })(Typography);
+
+
+const StyledTableCell = withStyles(theme => ({
+  root: {
+    fontSize: '14px !important',
+  },
+}), { withTheme: true })(TableCell);
+
 
 class Details extends React.Component {
   state = {
@@ -50,12 +144,13 @@ class Details extends React.Component {
   }
 
   render() {
-    const title = `Détails de l'entrée : ${this.props.match.params.id}`;
-
+    const title = this.props.match.params.id;
     // https://wiki.grottocenter.org/wiki/Fr/0006077
 
     return (
       <EntriesContainer>
+        <Title component="span">{title}</Title>
+        <ActionBar/>
         <GridRow>
           <GridFullColumn>
             <Card>
@@ -68,30 +163,68 @@ class Details extends React.Component {
         <GridRow>
           <GridTwoThirdColumn>
             <Card>
-              <CardHeader title={title} />
               <CardText>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                Donec mattis pretium massa. Aliquam erat volutpat. Nulla facilisi.
-                Donec vulputate interdum sollicitudin. Nunc lacinia auctor quam sed pellentesque.
-                Aliquam dui mauris, mattis quis lacus id, pellentesque lobortis odio.
+                MAP
               </CardText>
             </Card>
           </GridTwoThirdColumn>
           <GridOneThirdColumn>
             <Card>
+              <StyledCardHeader title={(<Translate id="Cave properties" />)} />
               <CardText>
-                MAP
+                <div style={{ marginBottom: '35px' }}>
+                  <LocationCity style={{ color: '#795548' }} />
+                  <DetailContainer>
+                    <BoldText component="span">Nom:</BoldText>
+                    <Content>I'm a name</Content>
+                  </DetailContainer>
+                </div>
+                <div style={{ marginBottom: '35px' }}>
+                  <Room style={{ color: '#795548' }} />
+                  <DetailContainer>
+                    <BoldText component="span">Localisation:</BoldText>
+                    <Content>I'm a location</Content>
+                  </DetailContainer>
+                </div>
+
+                <div style={{ marginBottom: '35px' }}>
+                  <ShowChart style={{ color: '#795548' }} />
+                  <DetailContainer>
+                    <BoldText component="span">Denivellation:</BoldText>
+                    <Content>I'm a value</Content>
+                  </DetailContainer>
+                </div>
+
+                <div style={{ marginBottom: '35px' }}>
+                  <LinearScale style={{ color: '#795548' }} />
+                  <DetailContainer>
+                    <BoldText component="span">Developpement:</BoldText>
+                    <Content>I'm a value</Content>
+                  </DetailContainer>
+                </div>
+                <div>
+                  <Mark name={"Interet"} mark={3} />
+                  <Mark name={"Progression"} mark={3} />
+                  <Mark name={"Accès"} mark={3} />
+                </div>
               </CardText>
+              <CardActions>
+                <Contributor>
+                  Créé par XXXX le YYYYYYYYYYYY<br />
+                  Modifié par XXXXX le YYYYYYYYYYYY
+                </Contributor>
+              </CardActions>
             </Card>
           </GridOneThirdColumn>
         </GridRow>
         <GridRow>
           <GridFullColumn>
             <Card>
-              <CardHeader
+              <StyledCardHeader
                 title={(
                   <Translate id="Localisation" />
                 )}
+                className={'title'}
                 onClick={() => this.setState(state => ({ block1: !state.block1 }))}
               />
 
@@ -102,6 +235,12 @@ class Details extends React.Component {
                   Donec vulputate interdum sollicitudin. Nunc lacinia auctor quam sed pellentesque.
                   Aliquam dui mauris, mattis quis lacus id, pellentesque lobortis odio.
                 </CardText>
+                <CardActions>
+                  <Contributor>
+                    Créé par XXXX <br />
+                    Modifié par XXXXX
+                </Contributor>
+                </CardActions>
               </Collapse>
             </Card>
           </GridFullColumn>
@@ -109,13 +248,12 @@ class Details extends React.Component {
         <GridRow>
           <GridFullColumn>
             <Card>
-              <CardHeader
+              <StyledCardHeader
                 title={(
                   <Translate id="Description" />
                 )}
                 onClick={() => this.setState(state => ({ block2: !state.block2 }))}
               />
-
               <Collapse in={this.state.block2} timeout="auto" unmountOnExit>
                 <CardText>
                   Lorem ipsum dolor sit amet, consectetur adipiscing elit.
@@ -123,6 +261,12 @@ class Details extends React.Component {
                   Donec vulputate interdum sollicitudin. Nunc lacinia auctor quam sed pellentesque.
                   Aliquam dui mauris, mattis quis lacus id, pellentesque lobortis odio.
                 </CardText>
+                <CardActions>
+                  <Contributor>
+                    Créé par XXXX <br />
+                    Modifié par XXXXX
+                </Contributor>
+                </CardActions>
               </Collapse>
             </Card>
           </GridFullColumn>
@@ -130,7 +274,7 @@ class Details extends React.Component {
         <GridRow>
           <GridFullColumn>
             <Card>
-              <CardHeader
+              <StyledCardHeader
                 title={(
                   <Translate id="Topographie" />
                 )}
@@ -144,6 +288,12 @@ class Details extends React.Component {
                   Donec vulputate interdum sollicitudin. Nunc lacinia auctor quam sed pellentesque.
                   Aliquam dui mauris, mattis quis lacus id, pellentesque lobortis odio.
                 </CardText>
+                <CardActions>
+                  <Contributor>
+                    Créé par XXXX <br />
+                    Modifié par XXXXX
+                </Contributor>
+                </CardActions>
               </Collapse>
             </Card>
           </GridFullColumn>
@@ -151,7 +301,7 @@ class Details extends React.Component {
         <GridRow>
           <GridFullColumn>
             <Card>
-              <CardHeader
+              <StyledCardHeader
                 title={(
                   <Translate id="Fiche équipement" />
                 )}
@@ -159,12 +309,34 @@ class Details extends React.Component {
               />
 
               <Collapse in={this.state.block4} timeout="auto" unmountOnExit>
-                <CardText>
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                  Donec mattis pretium massa. Aliquam erat volutpat. Nulla facilisi.
-                  Donec vulputate interdum sollicitudin. Nunc lacinia auctor quam sed pellentesque.
-                  Aliquam dui mauris, mattis quis lacus id, pellentesque lobortis odio.
-                </CardText>
+                <OverFlowCardText>
+                  <Table aria-label="simple table">
+                    <TableHead>
+                      <TableRow>
+                        <StyledTableCell>Obstacles</StyledTableCell>
+                        <StyledTableCell align="right">Cordes</StyledTableCell>
+                        <StyledTableCell align="right">Amarrages</StyledTableCell>
+                        <StyledTableCell>Observations</StyledTableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      <TableRow>
+                        <StyledTableCell component="th" scope="row">
+                          Bonjour
+                        </StyledTableCell>
+                        <StyledTableCell align="right">Test</StyledTableCell>
+                        <StyledTableCell align="right">test</StyledTableCell>
+                        <StyledTableCell>test</StyledTableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </OverFlowCardText>
+                <CardActions>
+                  <Contributor>
+                    Créé par XXXX <br />
+                    Modifié par XXXXX
+                </Contributor>
+                </CardActions>
               </Collapse>
             </Card>
           </GridFullColumn>
@@ -172,7 +344,7 @@ class Details extends React.Component {
         <GridRow>
           <GridFullColumn>
             <Card>
-              <CardHeader
+              <StyledCardHeader
                 title={(
                   <Translate id="Historique" />
                 )}
@@ -186,6 +358,12 @@ class Details extends React.Component {
                   Donec vulputate interdum sollicitudin. Nunc lacinia auctor quam sed pellentesque.
                   Aliquam dui mauris, mattis quis lacus id, pellentesque lobortis odio.
                 </CardText>
+                <CardActions>
+                  <Contributor>
+                    Créé par XXXX <br />
+                    Modifié par XXXXX
+                </Contributor>
+                </CardActions>
               </Collapse>
             </Card>
           </GridFullColumn>
@@ -193,7 +371,7 @@ class Details extends React.Component {
         <GridRow>
           <GridFullColumn>
             <Card>
-              <CardHeader
+              <StyledCardHeader
                 title={(
                   <Translate id="Commentaires" />
                 )}
@@ -207,6 +385,12 @@ class Details extends React.Component {
                   Donec vulputate interdum sollicitudin. Nunc lacinia auctor quam sed pellentesque.
                   Aliquam dui mauris, mattis quis lacus id, pellentesque lobortis odio.
                 </CardText>
+                <CardActions>
+                  <Contributor>
+                    Créé par XXXX <br />
+                    Modifié par XXXXX
+                </Contributor>
+                </CardActions>
               </Collapse>
             </Card>
           </GridFullColumn>
@@ -214,7 +398,7 @@ class Details extends React.Component {
         <GridRow>
           <GridFullColumn>
             <Card>
-              <CardHeader
+              <StyledCardHeader
                 title={(
                   <Translate id="Bibliographie" />
                 )}
@@ -228,6 +412,12 @@ class Details extends React.Component {
                   Donec vulputate interdum sollicitudin. Nunc lacinia auctor quam sed pellentesque.
                   Aliquam dui mauris, mattis quis lacus id, pellentesque lobortis odio.
                 </CardText>
+                <CardActions>
+                  <Contributor>
+                    Créé par XXXX <br />
+                    Modifié par XXXXX
+                </Contributor>
+                </CardActions>
               </Collapse>
             </Card>
           </GridFullColumn>
