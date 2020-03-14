@@ -9,28 +9,11 @@ import MenuIcon from '@material-ui/icons/Menu';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import { withStyles } from '@material-ui/core/styles';
-import SideMenu from '../common/SideMenu/SideMenu';
-
-import BasePage from './BasePage';
-import Header from '../homepage/Header';
-import Welcome from '../homepage/Welcome';
-import LatestBlogNewsSection from '../homepage/LatestBlogNewsSection';
-import Association from '../homepage/Association';
-import WhatIsIt from '../homepage/WhatIsIt';
-import RandomEntry from '../homepage/RandomEntry';
-import PartnersSection from '../homepage/PartnersSection';
-import Footer from '../homepage/Footer';
-import GrottoAppBar from '../common/GrottoAppBar';
-
-//
-//
-// S T Y L I N G - C O M P O N E N T S
-//
-//
+import SideMenu from './SideMenu';
 
 const drawerWidth = 240;
 
-const styles = (theme) => ({
+const styles = theme => ({
   root: {
     display: 'flex',
   },
@@ -58,25 +41,17 @@ const styles = (theme) => ({
   },
   content: {
     flexGrow: 1,
+    padding: theme.spacing.unit * 3,
   },
 });
 
-//
-//
-// M A I N - C O M P O N E N T
-//
-//
-
-class Landing extends React.Component {
-  constructor() {
-    super();
-    this.state = {
-      mobileOpen: false,
-    };
-  }
+class ResponsiveDrawer extends React.Component {
+  state = {
+    mobileOpen: false,
+  };
 
   handleDrawerToggle = () => {
-    this.setState((state) => ({ mobileOpen: !this.state.mobileOpen }));
+    this.setState(state => ({ mobileOpen: !state.mobileOpen }));
   };
 
   render() {
@@ -96,7 +71,7 @@ class Landing extends React.Component {
               <MenuIcon />
             </IconButton>
             <Typography variant="h6" color="inherit" noWrap>
-              GrottoCenter
+              Responsive drawer
             </Typography>
           </Toolbar>
         </AppBar>
@@ -113,7 +88,7 @@ class Landing extends React.Component {
                 paper: classes.drawerPaper,
               }}
             >
-              <SideMenu />
+                <SideMenu />
             </Drawer>
           </Hidden>
           <Hidden xsDown implementation="css">
@@ -124,37 +99,24 @@ class Landing extends React.Component {
               variant="permanent"
               open
             >
-              <SideMenu />
+                <SideMenu />
             </Drawer>
           </Hidden>
         </nav>
         <main className={classes.content}>
           <div className={classes.toolbar} />
-          <BasePage>
-            <div id="landingpage">
-              <GrottoAppBar />
-              <Header />
-              <Welcome />
-              <WhatIsIt />
-              <RandomEntry />
-              <LatestBlogNewsSection />
-              <Association />
-              <PartnersSection />
-              <Footer />
-            </div>
-          </BasePage>
         </main>
       </div>
     );
   }
 }
 
-Landing.propTypes = {
+ResponsiveDrawer.propTypes = {
   classes: PropTypes.object.isRequired,
   // Injected by the documentation to work in an iframe.
   // You won't need it on your project.
   container: PropTypes.object,
-  theme: PropTypes.object.isRequired
+  theme: PropTypes.object.isRequired,
 };
 
-export default withStyles(styles, { withTheme: true })(Landing);
+export default withStyles(styles, { withTheme: true })(ResponsiveDrawer);
