@@ -3,7 +3,7 @@
 # Contributors: Lucas Gonçalves
 # Date: Jan 2019 (v2 Feb 2020)
 
-nvm use 10.4.1
+# nvm use 10.4.1
 
 . /home/ec2-user/.nvm/nvm.sh
 . /home/ec2-user/.bashrc
