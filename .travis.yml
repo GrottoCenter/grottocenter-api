@@ -12,7 +12,7 @@ deploy:
     on: &2
       repo: GrottoCenter/Grottocenter3 
       #tags: true
-      branch: devops_aws
+      branch: aws_refont
     bucket: appgrottocenter3
     region: eu-central-1
   - provider: codedeploy
