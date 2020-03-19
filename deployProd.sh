@@ -31,11 +31,12 @@ echo "# ========== Installation des dépendances"
 
 
 npm install grunt-cli
-npm run-script build
-npm install --production --unsafe-perm || \
-  ((if [ -f npm-debug.log ]; then \
-      cat npm-debug.log; \
-    fi) && false)
+#
+#npm run-script build
+#npm install --production --unsafe-perm || \
+#  ((if [ -f npm-debug.log ]; then \
+#      cat npm-debug.log; \
+#    fi) && false)
 
 # Install files from private bucket
 echo "# ========== Récupération des fichiers privés"
