@@ -27,6 +27,8 @@ deploy:
     on: *2
     
 script:
+- npm install grunt-cli
+- npm run-script build
 - tar -cf latest.tar.gz *
 - mkdir -p grotto_center_zip
 - mv latest.tar.gz grotto_center_zip

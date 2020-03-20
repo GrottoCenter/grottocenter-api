@@ -7,7 +7,7 @@
 
 cd /home/ec2-user/GrottoCenter3
 
-NODE_ENV=production sails_hooks__grunt=false nohup node app.js --production
+NODE_ENV=production sails_hooks__grunt=false nohup node app.js --production > log.txt
 
-cd /home/ec2-user/db
-sh ./dump_db.sh
+#cd /home/ec2-user/db
+#sh ./dump_db.sh
