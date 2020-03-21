@@ -15,7 +15,7 @@ cd /home/ec2-user/GrottoCenter3
 #  ============= FIRST DEPLOYEMENT ONLY /!\ ============= 
 #
 #   Check prerequisites for development:
-  npm install -g grunt-cli
+#   npm install -g grunt-cli
 #   sudo amazon-linux-extras install nginx1.12
 #   npm install forever -g
 #
@@ -30,13 +30,13 @@ sudo chown -R ec2-user /home/ec2-user/GrottoCenter3/
 echo "# ========== Installation des dépendances" 
 
 
-npm install grunt-cli
+# npm install grunt-cli
 #
-npm run-script build
-npm install --production --unsafe-perm || \
-  ((if [ -f npm-debug.log ]; then \
-      cat npm-debug.log; \
-    fi) && false)
+# npm run-script build
+#npm install --production --unsafe-perm || \
+#  ((if [ -f npm-debug.log ]; then \
+#      cat npm-debug.log; \
+#    fi) && false)
 
 # Install files from private bucket
 echo "# ========== Récupération des fichiers privés"
@@ -48,5 +48,4 @@ aws s3 cp  s3://appgrottocenter3/transifexrc /home/ec2-user/GrottoCenter3/.trans
 
 echo "# ========== Lancement de l'application"
 # NODE_ENV=production sails_hooks__grunt=false nohup node app.js --production > log.txt
-
 echo "# ========== Lancement terminé"
