@@ -126,7 +126,7 @@
     "lint-staged": "^10.0.7",
     "mocha": "^6.2.2",
     "nodemon": "^1.18.5",
-    "prettier": "^1.19.1",
+    "prettier": "^2.0.0",
     "sails-disk": "^1.1.2",
     "sails-memory": "^0.10.7",
     "should": "^13.2.3",
