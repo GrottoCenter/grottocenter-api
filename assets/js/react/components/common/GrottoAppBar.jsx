@@ -156,15 +156,6 @@ class GrottoAppBar extends Component {
           <LanguagePicker />
         </FlexDiv>
 
-        <FlexDiv>
-          <a href="/ui/map">
-            <StyledMapIcon />
-          </a>
-          <StyledTextIcon href="/ui/map">
-            <Translate>Map</Translate>
-          </StyledTextIcon>
-        </FlexDiv>
-
         <div style={{display: 'none'}}>
           <StyledIconButton onClick={this.handleClick}>
             <MoreVertIcon />
