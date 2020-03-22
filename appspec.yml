@@ -14,8 +14,8 @@ hooks:
   AfterInstall:
     - location: deployProd.sh
       timeout: 500
-      runas: root
+      runas: ec2-user
 
 ApplicationStart:
   - location: restart_prod.sh
-    runas: root
+    runas: ec2-user
