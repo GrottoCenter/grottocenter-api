@@ -53,6 +53,9 @@ const styles = (theme) => ({
     },
   },
   toolbar: theme.mixins.toolbar,
+  toolBarStyle: {
+    backgroundColor: theme.palette.primary1Color,
+  },
   drawerPaper: {
     width: drawerWidth,
   },
@@ -86,7 +89,7 @@ class Landing extends React.Component {
       <div className={classes.root}>
         <CssBaseline />
         <AppBar position="fixed" className={classes.appBar}>
-          <Toolbar>
+          <Toolbar className={classes.toolBarStyle}>
             <IconButton
               color="inherit"
               aria-label="Open drawer"
@@ -95,9 +98,9 @@ class Landing extends React.Component {
             >
               <MenuIcon />
             </IconButton>
-            <Typography variant="h6" color="inherit" noWrap>
-              GrottoCenter
-            </Typography>
+            
+            <GrottoAppBar />
+            
           </Toolbar>
         </AppBar>
         <nav className={classes.drawer}>
@@ -132,7 +135,6 @@ class Landing extends React.Component {
           <div className={classes.toolbar} />
           <BasePage>
             <div id="landingpage">
-              <GrottoAppBar />
               <Header />
               <Welcome />
               <WhatIsIt />
