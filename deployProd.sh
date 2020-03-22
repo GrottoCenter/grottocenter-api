@@ -47,7 +47,3 @@ aws s3 cp  s3://appgrottocenter3/production.js /home/ec2-user/GrottoCenter3/conf
 aws s3 cp  s3://appgrottocenter3/env /home/ec2-user/GrottoCenter3/.env
 aws s3 cp  s3://appgrottocenter3/transifexrc /home/ec2-user/GrottoCenter3/.transifexrc
 
-
-echo "# ========== Lancement de l'application"
-NODE_ENV=production sails_hooks__grunt=false nohup node app.js --production
-echo "# ========== Lancement terminé"

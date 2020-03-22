@@ -6,17 +6,16 @@ files:
   - source: ./
     destination: /home/ec2-user/GrottoCenter3
 hooks:
+  ApplicationStop:
+    - location: stop_prod.sh
+      timeout: 10
+      runas: ec2-user
 
- ApplicationStop:
-   - location: stop_prod.sh
-     timeout: 10
-     runas: ec2-user
-
- AfterInstall:
+  AfterInstall:
     - location: deployProd.sh
       timeout: 500
-      runas: ec2-user
+      runas: root
 
 ApplicationStart:
-    - location: restart_prod.sh
-      runas: ec2-user
+  - location: restart_prod.sh
+    runas: root
