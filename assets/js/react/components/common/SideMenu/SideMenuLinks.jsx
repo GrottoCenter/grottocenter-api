@@ -15,13 +15,14 @@ const Icon = withTheme()(styled.img`
 `);
 
 const SideMenuLi = styled.li`
-  font-size:15px;
+  font-size: 15px;
   margin-bottom: 4%;
   padding: 6px 6px;
   padding-left: 5%;
   width: 85%;
   border-radius: 2px;
-  :hover, :active {
+  :hover,
+  :active {
     background-color: #f0ebeb;
     cursor: pointer;
   }
@@ -33,6 +34,17 @@ const SideMenuList = styled.ul`
   list-style: none;
 `;
 
+const SideMenuA = styled.a`
+  text-decoration: none;
+  color: black;
+
+  :hover,
+  :active {
+    text-decoration: none;
+    color: black;
+  }
+`;
+
 //
 //
 // M A I N - C O M P O N E N T
@@ -41,22 +53,33 @@ const SideMenuList = styled.ul`
 
 const SideMenuLinks = () => (
   <SideMenuList>
-    <SideMenuLi>
-      <Icon src="/images/sidemenu/home.png" alt="home icon" />
-      <Translate>Home page</Translate>
-    </SideMenuLi>
-    <SideMenuLi>
-      <Icon src="/images/sidemenu/search.png" alt="search icon" />
-      <Translate>Advanced search</Translate>
-    </SideMenuLi>
-    <SideMenuLi>
-      <Icon src="/images/sidemenu/loc.png" alt="map icon" />
-      <Translate>Map</Translate>
-    </SideMenuLi>
-    <SideMenuLi>
-      <Icon src="/images/sidemenu/wrench.png" alt="wrench icon" />
-      <Translate>Toolbox</Translate>
-    </SideMenuLi>
+    <SideMenuA href="/">
+      <SideMenuLi>
+        <Icon src="/images/sidemenu/home.png" alt="home icon" />
+        <Translate>Home page</Translate>
+      </SideMenuLi>
+    </SideMenuA>
+
+    <SideMenuA hred="#">
+      <SideMenuLi>
+        <Icon src="/images/sidemenu/search.png" alt="search icon" />
+        <Translate>Advanced search</Translate>
+      </SideMenuLi>
+    </SideMenuA>
+
+    <SideMenuA href="/ui/map">
+      <SideMenuLi>
+        <Icon src="/images/sidemenu/loc.png" alt="map icon" />
+        <Translate>Map</Translate>
+      </SideMenuLi>
+    </SideMenuA>
+
+    <SideMenuA hred="#">
+      <SideMenuLi>
+        <Icon src="/images/sidemenu/wrench.png" alt="wrench icon" />
+        <Translate>Toolbox</Translate>
+      </SideMenuLi>
+    </SideMenuA>
   </SideMenuList>
 );
 
