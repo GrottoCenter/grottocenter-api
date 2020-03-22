@@ -1,6 +1,6 @@
 language: node_js
 node_js:
-- '10.4.1'
+- '10.15.2'
 cache: npm
 before_deploy: echo 'Deployment is beginning'
 deploy:
@@ -10,7 +10,7 @@ deploy:
     local_dir: grotto_center_zip
     skip_cleanup: true
     on: &2
-      repo: GrottoCenter/Grottocenter3 
+      repo: GrottoCenter/Grottocenter3
       #tags: true
       branch: aws_refont
     bucket: appgrottocenter3
@@ -25,7 +25,7 @@ deploy:
     deployment_group: GrottoCenter3App
     region: eu-central-1
     on: *2
-    
+
 script:
 - npm install grunt-cli
 - npm run-script build
