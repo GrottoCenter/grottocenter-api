@@ -7,7 +7,6 @@ import Hidden from '@material-ui/core/Hidden';
 import IconButton from '@material-ui/core/IconButton';
 import MenuIcon from '@material-ui/icons/Menu';
 import Toolbar from '@material-ui/core/Toolbar';
-import Typography from '@material-ui/core/Typography';
 import { withStyles } from '@material-ui/core/styles';
 import SideMenu from '../common/SideMenu/SideMenu';
 
@@ -55,7 +54,6 @@ const AppFooterStl = styled(AppFooter)`
 const ArticleWrapper = styled.article`
   padding: 0px;
   margin: 20px;
-  margin-bottom: 65px;
 `;
 
 
@@ -129,9 +127,9 @@ class Application extends React.Component {
             >
               <MenuIcon />
             </IconButton>
-            <Typography variant="h6" color="inherit" noWrap>
-              GrottoCenter
-            </Typography>
+
+            <ApplicationHeader><AppToolbarContainer /></ApplicationHeader>
+            
           </Toolbar>
         </AppBar>
         <nav className={classes.drawer}>
@@ -166,7 +164,6 @@ class Application extends React.Component {
           <div className={classes.toolbar} />
           <BasePage>
             <div id="applicationpage">
-              <ApplicationHeader><AppToolbarContainer /></ApplicationHeader>
               <aside><SideMenuConnector /></aside>
               { (cutPath[2] !== 'map') && <Breadcrump /> }
               <ArticleWrapper>
