@@ -35,7 +35,7 @@
     "rc-slider": "8.6.5",
     "react": "^16.12.0",
     "react-alice-carousel": "^1.17.3",
-    "react-bootstrap": "^0.32.4",
+    "react-bootstrap": "^1.0.0",
     "react-csv": "^1.1.1",
     "react-device-detect": "^1.6.2",
     "react-dom": "^16.12.0",
