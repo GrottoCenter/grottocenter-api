@@ -12,15 +12,9 @@ import { markers } from '../../../conf/MapMarkersConfig';
 
 const mainMarkerIcon = L.icon({
   iconUrl: markers[3].url,
-  iconSize: [
-    24, 24,
-  ],
-  iconAnchor: [
-    12, 24,
-  ],
-  popupAnchor: [
-    0, -24,
-  ],
+  iconSize: [24, 24],
+  iconAnchor: [12, 24],
+  popupAnchor: [0, -24],
 });
 
 const MapGrottoMarker = ({ grotto }) => (
@@ -32,9 +26,7 @@ const MapGrottoMarker = ({ grotto }) => (
       lng: grotto.longitude,
     }}
   >
-    <MapGrottosPopup
-      grotto={grotto}
-    />
+    <MapGrottosPopup grotto={grotto} />
   </Marker>
 );
 

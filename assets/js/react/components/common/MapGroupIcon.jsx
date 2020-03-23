@@ -26,13 +26,7 @@ class MapGroupIcon extends Component {
       html: `<div><span>${this.props.text}</span></div>`,
     });
 
-    return (
-      <Marker
-        position={this.props.position}
-        icon={icon}
-        onClick={this.props.handleOnClick}
-      />
-    );
+    return <Marker position={this.props.position} icon={icon} onClick={this.props.handleOnClick} />;
   }
 }
 

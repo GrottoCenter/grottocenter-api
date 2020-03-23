@@ -14,28 +14,30 @@ const GoalText = styled.span`
   display: none !important; // lesshint importantRule: false
 `;
 
-const StyledSyncIcon = withStyles(theme => ({
-  root: {
-    fill: theme.palette.iconColor,
-    transition: 'all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms',
-    '&:hover': {
-      fill: theme.palette.accent1Color,
-    },
-    [theme.breakpoints.up('550')]: {
-      width: '180px',
-      height: '180px',
-      top: '-57px',
-      left: '-26px',
-      position: 'absolute',
-      opacity: '0.2',
+const StyledSyncIcon = withStyles(
+  (theme) => ({
+    root: {
+      fill: theme.palette.iconColor,
+      transition: 'all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms',
       '&:hover': {
-        transform: 'rotate(-135deg) scale(1.2, 1.2)',
-        opacity: '0.6',
+        fill: theme.palette.accent1Color,
       },
-
+      [theme.breakpoints.up('550')]: {
+        width: '180px',
+        height: '180px',
+        top: '-57px',
+        left: '-26px',
+        position: 'absolute',
+        opacity: '0.2',
+        '&:hover': {
+          transform: 'rotate(-135deg) scale(1.2, 1.2)',
+          opacity: '0.6',
+        },
+      },
     },
-  },
-}), { withTheme: true })(SyncIcon);
+  }),
+  { withTheme: true },
+)(SyncIcon);
 
 //
 //
@@ -60,16 +62,12 @@ class Goal extends Component {
     return (
       <div
         className={this.props.className}
-        onMouseOver={event => this.handleMouseOver(event)}
-        onMouseOut={event => this.handleMouseOut(event)}
+        onMouseOver={(event) => this.handleMouseOver(event)}
+        onMouseOut={(event) => this.handleMouseOut(event)}
       >
-        <span style={{ color: this.props.textColor }}>
-          {this.props.entry.word}
-        </span>
+        <span style={{ color: this.props.textColor }}>{this.props.entry.word}</span>
         <StyledSyncIcon />
-        <GoalText>
-          {this.props.entry.description}
-        </GoalText>
+        <GoalText>{this.props.entry.description}</GoalText>
       </div>
     );
   }

@@ -1,26 +1,26 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
-import {
-  Map, TileLayer, ScaleControl, Rectangle, Tooltip,
-} from 'react-leaflet';
+import { Map as LeafletMap, TileLayer, ScaleControl, Rectangle, Tooltip } from 'react-leaflet';
 import _ from 'underscore.string';
 import { CoordinatesControl } from 'react-leaflet-coordinates';
 import Control from 'react-leaflet-control';
 import MenuIcon from '@material-ui/icons/Menu';
-import Checkbox from '@material-ui/core/Checkbox';
-import FormGroup from '@material-ui/core/FormGroup';
-import PopPop from 'react-poppop';
-import fetch from 'isomorphic-fetch';
 import ConvertIcon from '@material-ui/icons/Transform';
 import LayersIcon from '@material-ui/icons/Layers';
-import Button from '@material-ui/core/Button';
-import IconButton from '@material-ui/core/IconButton';
+import {
+  Checkbox,
+  FormGroup,
+  Button,
+  IconButton,
+  Radio,
+  RadioGroup,
+  FormControlLabel,
+  FormControl,
+} from '@material-ui/core';
 import { withTheme } from '@material-ui/core/styles';
-import Radio from '@material-ui/core/Radio';
-import RadioGroup from '@material-ui/core/RadioGroup';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import FormControl from '@material-ui/core/FormControl';
+import PopPop from 'react-poppop';
+import fetch from 'isomorphic-fetch';
 import { isMobileOnly, isMobile } from 'react-device-detect';
 import MapEntryMarker from './map/MapEntryMarker';
 import MapSelectedEntryMarker from './map/MapSelectedEntryMarker';
@@ -40,6 +40,19 @@ import MapCaveMarker from './map/MapCaveMarker';
 // S T Y L I N G - C O M P O N E N T S
 //
 //
+//
+// width: calc(100% - ${({ isSideMenuOpen, theme }) =>
+// isSideMenuOpen ? theme.sideMenuWidth : 0}px);
+
+const Map = styled(LeafletMap)`
+ width: calc(100% - ${({ isSideMenuOpen, theme }) => (isSideMenuOpen ? theme.sideMenuWidth : 0)}px);
+   //height: 1000px;
+  height: calc(100vh - ${({ theme }) => theme.appBarHeight}px);
+  // height: ${isMobileOnly ? 'calc(100% - 60px)' : 'calc(100% - 110px)'};
+  position: fixed;
+  //margin-left: -20px;
+  //margin-top: -20px;
+`;
 
 const StyledMapGroupIcon = styled(MapGroupIcon)`
   background-color: rgba(36, 96, 255, 0.6);
@@ -55,7 +68,7 @@ const StyledMapGroupIcon = styled(MapGroupIcon)`
     margin-left: -5px;
     margin-top: -5px;
     text-align: center;
-    background-color: rgba(83, 177, 251, 0.5);;
+    background-color: rgba(83, 177, 251, 0.5);
 
     & > span {
       line-height: 40px;
@@ -64,63 +77,64 @@ const StyledMapGroupIcon = styled(MapGroupIcon)`
   }
 `;
 
-const MarkersButton = withTheme()(styled(IconButton)`
-  && { 
-  background: ${props => props.theme.palette.backgroundButton}; 
-  border: 1px solid;
-  border-color: ${props => props.theme.palette.divider};
-  border-radius: 4px; 
-  padding: 0px;
-  width: 45px;
-  height: 45px;
+const MarkersButton = withTheme(styled(IconButton)`
+  && {
+    background: ${(props) => props.theme.palette.backgroundButton};
+    border: 1px solid;
+    border-color: ${(props) => props.theme.palette.divider};
+    border-radius: 4px;
+    padding: 0px;
+    width: 45px;
+    height: 45px;
   }
 `);
 
-const MarkersForm = withTheme()(styled(FormControl)`
-  && { 
-  background: ${props => props.theme.palette.backgroundButton};
-  border: 1px solid;
-  border-color: ${props => props.theme.palette.divider};
-  border-radius: 4px; 
-  padding: 0 10px;
+const MarkersForm = withTheme(styled(FormControl)`
+  && {
+    background: ${(props) => props.theme.palette.backgroundButton};
+    border: 1px solid;
+    border-color: ${(props) => props.theme.palette.divider};
+    border-radius: 4px;
+    padding: 0 10px;
   }
 `);
 
-
-const LayerButton = withTheme()(styled(IconButton)`
-  && { 
-  background: ${props => props.theme.palette.backgroundButton}; 
-  border: 1px solid;
-  border-color: ${props => props.theme.palette.divider};
-  border-radius: 4px; 
-  padding: 0px;
-  width: 45px;
-  height: 45px;
+const LayerButton = withTheme(styled(IconButton)`
+  && {
+    background: ${(props) => props.theme.palette.backgroundButton};
+    border: 1px solid;
+    border-color: ${(props) => props.theme.palette.divider};
+    border-radius: 4px;
+    padding: 0px;
+    width: 45px;
+    height: 45px;
   }
 `);
 
-const LayersForm = withTheme()(styled(FormControl)`
-  && { 
-  background: ${props => props.theme.palette.backgroundButton};
-  border: 1px solid;
-  border-color: ${props => props.theme.palette.divider};
-  border-radius: 4px; 
-  padding: 0 10px;
+const LayersForm = withTheme(styled(FormControl)`
+  && {
+    background: ${(props) => props.theme.palette.backgroundButton};
+    border: 1px solid;
+    border-color: ${(props) => props.theme.palette.divider};
+    border-radius: 4px;
+    padding: 0 10px;
   }
 `);
 
-const ConverterButton = withTheme()(styled(Button)`
-  && { 
-  background: ${props => props.theme.palette.backgroundButton};
-  border: 1px solid;
-  border-color: ${props => props.theme.palette.divider};
-  padding: 0 10px;
-  },
+const ConverterButton = withTheme(styled(Button)`
+  && {
+    background: ${(props) => props.theme.palette.backgroundButton};
+    border: 1px solid;
+    border-color: ${(props) => props.theme.palette.divider};
+    padding: 0 10px;
+  }
+  ,
   &&:hover {
-    background: ${props => props.theme.palette.backgroundButton};
-  },
+    background: ${(props) => props.theme.palette.backgroundButton};
+  }
+  ,
   &&:active {
-    background: ${props => props.theme.palette.divider};
+    background: ${(props) => props.theme.palette.divider};
   }
 `);
 
@@ -131,7 +145,7 @@ const StyledLegendText = styled.span`
 const ImageMarkerLegend = styled.img`
   width: 20px;
   margin-right: 5px;
-  vertical-align: middle;  
+  vertical-align: middle;
 `;
 
 //
@@ -152,15 +166,19 @@ class GCMap extends Component {
     setZoom: PropTypes.func.isRequired,
     history: PropTypes.object.isRequired,
     match: PropTypes.object,
+    isSideMenuOpen: PropTypes.bool.isRequired,
   };
 
   static defaultProps = {
     className: '',
     selectedEntry: null,
     entriesMap: {
-      qualityEntriesMap: [], groupEntriesMap: [], grottos: [], caves: [],
+      qualityEntriesMap: [],
+      groupEntriesMap: [],
+      grottos: [],
+      caves: [],
     },
-    searchBounds: (() => {}),
+    searchBounds: () => {},
     match: {},
   };
 
@@ -197,24 +215,21 @@ class GCMap extends Component {
         },
         initZoom: Number(params.zoom),
       });
-      this.updateReduxMapData({
-        lat: Number(params.lat),
-        lng: Number(params.lng),
-      },
-      Number(params.zoom));
+      this.updateReduxMapData(
+        {
+          lat: Number(params.lat),
+          lng: Number(params.lng),
+        },
+        Number(params.zoom),
+      );
     }
   }
 
   componentDidMount() {
     const { selectedEntry } = this.props;
-    const {
-      localize,
-      mapRef,
-    } = this.state;
+    const { localize, mapRef } = this.state;
 
-    if (localize
-      && !selectedEntry
-      && !this.getTarget()) {
+    if (localize && !selectedEntry && !this.getTarget()) {
       this.setState({
         localize: false,
       });
@@ -230,7 +245,7 @@ class GCMap extends Component {
     }
 
     fetch('/api/convert')
-      .then(response => response.json())
+      .then((response) => response.json())
       .then((responseJson) => {
         console.log(responseJson);
         this.setState({ projectionsList: responseJson });
@@ -241,20 +256,16 @@ class GCMap extends Component {
   }
 
   getTarget = () => {
-    const { match: { params } } = this.props;
+    const {
+      match: { params },
+    } = this.props;
     return params ? params.target : undefined;
   };
 
   updateReduxMapData = (center, zoom) => {
-    const {
-      mapCenter,
-      setLocation,
-      mapZoom,
-      setZoom,
-    } = this.props;
+    const { mapCenter, setLocation, mapZoom, setZoom } = this.props;
 
-    if (center.lat !== mapCenter.lat
-      || center.lng !== mapCenter.lng) {
+    if (center.lat !== mapCenter.lat || center.lng !== mapCenter.lng) {
       setLocation({
         lat: center.lat,
         lng: center.lng,
@@ -322,7 +333,6 @@ class GCMap extends Component {
     this.updateLocationUrl(mapBounds, zoom);
     this.searchEntriesInBounds();
 
-
     // Set the layers available depending on the map bounds
     const layersAvailableForMap = [];
 
@@ -359,13 +369,13 @@ class GCMap extends Component {
   };
 
   onMarkerLayerChanged = (e) => {
-    const m = markers.find(marker => marker.name === e.currentTarget.value);
+    const m = markers.find((marker) => marker.name === e.currentTarget.value);
     const listMarkersChecked = this.state.markersChecked;
 
     if (this.state.markersChecked.includes(m)) {
       // if the marker is checked
       this.setState({
-        markersChecked: listMarkersChecked.filter(marker => marker !== m),
+        markersChecked: listMarkersChecked.filter((marker) => marker !== m),
       });
     } else {
       listMarkersChecked.push(m);
@@ -421,17 +431,8 @@ class GCMap extends Component {
   };
 
   render() {
-    const {
-      selectedEntry,
-      entriesMap,
-      className,
-    } = this.props;
-    const {
-      initZoom,
-      initCenter,
-      showSpinner,
-      mapRef,
-    } = this.state;
+    const { selectedEntry, entriesMap, className } = this.props;
+    const { initZoom, initCenter, showSpinner, mapRef } = this.state;
 
     let zoom = initZoom;
     let center = initCenter;
@@ -456,46 +457,32 @@ class GCMap extends Component {
     }
 
     const entriesMarkersLayer = [];
-    if (entriesMap
-      && entriesMap.qualityEntriesMap
-      && entriesMap.qualityEntriesMap.length > 0) {
+    if (entriesMap && entriesMap.qualityEntriesMap && entriesMap.qualityEntriesMap.length > 0) {
       entriesMap.qualityEntriesMap.forEach((entry) => {
         if (!selectedEntry || entry.id !== selectedEntry.id) {
-          entriesMarkersLayer.push(
-            <MapEntryMarker entry={entry} />,
-          );
+          entriesMarkersLayer.push(<MapEntryMarker entry={entry} />);
         }
       });
     }
 
     const cavesMarkersLayer = [];
-    if (entriesMap
-      && entriesMap.caves
-      && entriesMap.caves.length > 0) {
+    if (entriesMap && entriesMap.caves && entriesMap.caves.length > 0) {
       entriesMap.caves.forEach((cave) => {
-        cavesMarkersLayer.push(
-          <MapCaveMarker cave={cave} />,
-        );
+        cavesMarkersLayer.push(<MapCaveMarker cave={cave} />);
       });
     }
 
     const grottosMarkersLayer = [];
-    if (entriesMap
-      && entriesMap.grottos
-      && entriesMap.grottos.length > 0) {
+    if (entriesMap && entriesMap.grottos && entriesMap.grottos.length > 0) {
       entriesMap.grottos.forEach((grotto) => {
         if (!selectedEntry || grotto.id !== selectedEntry.id) {
-          grottosMarkersLayer.push(
-            <MapGrottoMarker grotto={grotto} />,
-          );
+          grottosMarkersLayer.push(<MapGrottoMarker grotto={grotto} />);
         }
       });
     }
 
     const groupsMarkersLayer = [];
-    if (entriesMap
-      && entriesMap.groupEntriesMap
-      && entriesMap.groupEntriesMap.length > 0) {
+    if (entriesMap && entriesMap.groupEntriesMap && entriesMap.groupEntriesMap.length > 0) {
       entriesMap.groupEntriesMap.forEach((group, index) => {
         groupsMarkersLayer.push(
           <StyledMapGroupIcon
@@ -511,35 +498,45 @@ class GCMap extends Component {
       });
     }
 
-    const markersInput = markers.map(m => (
+    const markersInput = markers.map((m) => (
       <FormControlLabel
-        control={<Checkbox value={m.name} checked={this.state.markersChecked.includes(m)} onChange={this.onMarkerLayerChanged} />}
-        label={(
+        control={
+          <Checkbox
+            value={m.name}
+            checked={this.state.markersChecked.includes(m)}
+            onChange={this.onMarkerLayerChanged}
+          />
+        }
+        label={
           <React.Fragment>
             <ImageMarkerLegend src={m.url} alt="" />
-            <StyledLegendText><Translate>{m.name}</Translate></StyledLegendText>
+            <StyledLegendText>
+              <Translate>{m.name}</Translate>
+            </StyledLegendText>
           </React.Fragment>
-        )}
+        }
       />
     ));
 
     const showConvertPopup = this.state.showConvertPopup;
 
-    const layersInput = this.state.currentLayersAvailable.map(layer =>
+    const layersInput = this.state.currentLayersAvailable.map((layer) => (
       <FormControlLabel
         value={layer.name}
         control={<Radio />}
-        label={(
+        label={
           <React.Fragment>
             <StyledLegendText>{layer.name}</StyledLegendText>
           </React.Fragment>
-        )}
+        }
         onMouseOver={this.toggleShowLayerBound.bind(this, layer)}
         onMouseLeave={this.toggleShowLayerBound.bind(this, 0)}
-      />);
+      />
+    ));
 
     return (
       <Map
+        isSideMenuOpen={this.props.isSideMenuOpen}
         className={className}
         ref={mapRef}
         center={center}
@@ -559,66 +556,56 @@ class GCMap extends Component {
         {showSpinner && <Spinner size={100} text="Localization" />}
 
         <Control position="topright">
-          { this.state.showListMarkers ? (
+          {this.state.showListMarkers ? (
             <MarkersButton onMouseOver={() => this.toggleShowMarkers()}>
               <MenuIcon />
             </MarkersButton>
           ) : (
             <MarkersForm onMouseLeave={() => this.toggleShowMarkers()}>
-              <FormGroup>
-                {markersInput}
-              </FormGroup>
+              <FormGroup>{markersInput}</FormGroup>
             </MarkersForm>
-          )
-          }
+          )}
         </Control>
-
 
         <ScaleControl position="bottomright" />
 
         <Control position="topleft">
-          { this.state.showListLayers ? (
+          {this.state.showListLayers ? (
             <LayerButton onMouseOver={() => this.toggleShowLayers()}>
               <LayersIcon />
             </LayerButton>
           ) : (
             <LayersForm onMouseLeave={() => this.toggleShowLayers()}>
-              <RadioGroup
-                value={this.state.currentLayer.name}
-                onChange={this.onLayerChanged}
-              >
+              <RadioGroup value={this.state.currentLayer.name} onChange={this.onLayerChanged}>
                 {layersInput}
               </RadioGroup>
             </LayersForm>
-          )
-          }
+          )}
         </Control>
 
-        { (!isMobile && this.state.layerBoundsToDisplay)
-          && (
-            <Rectangle
-              bounds={this.state.layerBoundsToDisplay.bounds}
-              onAdd={(e) => { e.target.openTooltip(); }}
-            >
-              <Tooltip>{`Zone d'application du fond de carte ${  this.state.layerBoundsToDisplay.name}`}</Tooltip>
-            </Rectangle>
-          )
-        }
+        {!isMobile && this.state.layerBoundsToDisplay && (
+          <Rectangle
+            bounds={this.state.layerBoundsToDisplay.bounds}
+            onAdd={(e) => {
+              e.target.openTooltip();
+            }}
+          >
+            <Tooltip>{`Zone d'application du fond de carte ${this.state.layerBoundsToDisplay.name}`}</Tooltip>
+          </Rectangle>
+        )}
 
         <TileLayer
           attribution={this.state.currentLayer.attribution}
           url={this.state.currentLayer.url}
         />
 
-        {!isMobileOnly
-          && (
-            <CoordinatesControl
-              position="bottomleft"
-              coordinates="decimal"
-              style={{ background: 'white', padding: '0 5px' }}
-            />
-          )
-        }
+        {!isMobileOnly && (
+          <CoordinatesControl
+            position="bottomleft"
+            coordinates="decimal"
+            style={{ background: 'white', padding: '0 5px' }}
+          />
+        )}
 
         <Control position="bottomleft">
           <ConverterButton onClick={() => this.toggleShowConverter(true)}>
@@ -633,10 +620,10 @@ class GCMap extends Component {
             onClose={() => this.toggleShowConverter(false)}
             closeOnOverlay
           >
-            <h1><Translate>Converter</Translate></h1>
-            <Convert
-              list={this.state.projectionsList}
-            />
+            <h1>
+              <Translate>Converter</Translate>
+            </h1>
+            <Convert list={this.state.projectionsList} />
           </PopPop>
         </Control>
 
@@ -645,7 +632,6 @@ class GCMap extends Component {
         {this.state.markersChecked.includes(markers[0]) && groupsMarkersLayer}
         {this.state.markersChecked.includes(markers[1]) && cavesMarkersLayer}
         {this.state.markersChecked.includes(markers[3]) && grottosMarkersLayer}
-
       </Map>
     );
   }

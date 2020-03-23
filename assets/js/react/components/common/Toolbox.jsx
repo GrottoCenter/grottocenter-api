@@ -1,11 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-export const Loading = () => (
-  <div className="loading_anim">Loading...</div>
-);
+export const Loading = () => <div className="loading_anim">Loading...</div>;
 
-export const DateRibbon = props => (
+export const DateRibbon = (props) => (
   <div className="ribbon date">
     <div className="top ribbon-piece">{props.month}</div>
     <div className="bottom ribbon-piece">{props.day}</div>

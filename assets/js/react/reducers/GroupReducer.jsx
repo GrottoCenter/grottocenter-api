@@ -1,8 +1,4 @@
-import {
-  FETCH_GROUP,
-  FETCH_GROUP_FAILURE,
-  FETCH_GROUP_SUCCESS,
-} from '../actions/Group';
+import { FETCH_GROUP, FETCH_GROUP_FAILURE, FETCH_GROUP_SUCCESS } from '../actions/Group';
 
 //
 //

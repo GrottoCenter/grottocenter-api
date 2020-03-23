@@ -19,22 +19,22 @@ const FooterLinksList = styled.ul`
 
 const FooterLinksLi = styled.li`
   display: inline-block;
-  margin-right:15px;
+  margin-right: 15px;
 `;
 
 const SocialLink = styled.div`
   text-decoration: none;
   font-size: medium;
-  color: ${props => props.theme.palette.textIconColor};
+  color: ${(props) => props.theme.palette.textIconColor};
 
   :hover {
-    color: ${props => props.theme.palette.accent1Color};
+    color: ${(props) => props.theme.palette.accent1Color};
   }
 `;
 
-const SocialGCLink = withTheme()(SocialLink.withComponent(GCLink));
+const SocialGCLink = withTheme(SocialLink.withComponent(GCLink));
 
-const SocialIntlLink = withTheme()(SocialLink.withComponent(InternationalizedLink));
+const SocialIntlLink = withTheme(SocialLink.withComponent(InternationalizedLink));
 
 //
 //

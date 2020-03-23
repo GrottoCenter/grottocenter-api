@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import ApiDetail from '../appli/ApiDetail';
+import ApiDetail from '../components/appli/ApiDetail';
 
 //
 //
@@ -9,8 +9,12 @@ import ApiDetail from '../appli/ApiDetail';
 //
 
 const Swagger = (props) => {
-  const { match: { params: { version } } } = props;
-  return (<ApiDetail version={Number.parseInt(version, 10) } />);
+  const {
+    match: {
+      params: { version },
+    },
+  } = props;
+  return <ApiDetail version={Number.parseInt(version, 10)} />;
 };
 
 Swagger.propTypes = {

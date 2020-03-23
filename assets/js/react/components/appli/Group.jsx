@@ -62,7 +62,6 @@ const styles = {
   },
 };
 
-
 export class Group extends React.Component {
   componentDidMount() {
     const { updatePageTitle } = this.props;
@@ -72,7 +71,7 @@ export class Group extends React.Component {
   render() {
     const { isFetching, group, classes } = this.props;
     if (isFetching) {
-      return (<CircularProgress />);
+      return <CircularProgress />;
     }
     if (group) {
       let completeAddress = `${group.country} - ${group.region} - ${group.county}`;
@@ -84,26 +83,32 @@ export class Group extends React.Component {
       return (
         <Card>
           <CardContent>
-            <GroupName>
-              {group.name}
-            </GroupName>
+            <GroupName>{group.name}</GroupName>
 
-            <Badge classes={{ badge: classes.badge, root: classes.root }} color="primary" badgeContent={group.cavers.length}>
+            <Badge
+              classes={{ badge: classes.badge, root: classes.root }}
+              color="primary"
+              badgeContent={group.cavers.length}
+            >
               <CaverIcon src="/images/caver.svg" alt="Caver icon" />
             </Badge>
 
-            <Badge classes={{ badge: classes.badge, root: classes.root }} color="primary" badgeContent={group.entries.length}>
+            <Badge
+              classes={{ badge: classes.badge, root: classes.root }}
+              color="primary"
+              badgeContent={group.entries.length}
+            >
               <EntryIcon src="/images/entry.svg" alt="Entry icon" />
             </Badge>
 
             <p>
               {group.yearBirth ? (
                 <i>
-                  <Translate>Since</Translate>
-                  {' '}
-                  {group.yearBirth}
+                  <Translate>Since</Translate> {group.yearBirth}
                 </i>
-              ) : ''}
+              ) : (
+                ''
+              )}
 
               {group.isOfficialPartner ? (
                 <span>
@@ -111,7 +116,9 @@ export class Group extends React.Component {
                   <Translate>Official partner</Translate>
                   <GClogo src="/images/logoGC.png" alt="GC logo" />
                 </span>
-              ) : ''}
+              ) : (
+                ''
+              )}
             </p>
 
             <div>
@@ -121,15 +128,13 @@ export class Group extends React.Component {
 
             {group.contact ? (
               <div>
-                <EmailIconStyled />
-                {' '}
-                {group.contact}
+                <EmailIconStyled /> {group.contact}
               </div>
-            ) : ''}
+            ) : (
+              ''
+            )}
 
-            <p>
-              {group.customMessage}
-            </p>
+            <p>{group.customMessage}</p>
 
             <EntriesList entries={group.entries} />
           </CardContent>

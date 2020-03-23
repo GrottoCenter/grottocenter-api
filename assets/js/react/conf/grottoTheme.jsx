@@ -1,28 +1,61 @@
-import brown from '@material-ui/core/colors/brown';
-import blue from '@material-ui/core/colors/blue';
-import orange from '@material-ui/core/colors/orange';
-import grey from '@material-ui/core/colors/grey';
-import { fade } from '@material-ui/core/styles/colorManipulator';
-import spacing from '@material-ui/core/styles/spacing';
+import { brown, blue, orange, grey } from '@material-ui/core/colors';
+import { createMuiTheme, fade } from '@material-ui/core/styles';
+import { isMobileOnly } from 'react-device-detect';
 
-const fontFamily = 'Open Sans';
+const fontFamily = [
+  '-apple-system',
+  'BlinkMacSystemFont',
+  '"Segoe UI"',
+  'Roboto',
+  '"Helvetica Neue"',
+  'Arial',
+  'sans-serif',
+  '"Apple Color Emoji"',
+  '"Segoe UI Emoji"',
+  '"Segoe UI Symbol"',
+].join(',');
 
-export default {
-  spacing,
-  fontFamily: 'Open Sans',
+const sideMenuWidth = 240;
+const appBarHeight = isMobileOnly ? 56 : 64;
+const paddingUnit = 8;
+
+export const overridings = {
+  name: 'Main theme',
+  spacing: [
+    paddingUnit / 4,
+    paddingUnit / 2,
+    paddingUnit,
+    paddingUnit * 2,
+    paddingUnit * 4,
+    paddingUnit * 8,
+  ],
+  sideMenuWidth,
+  appBarHeight,
   palette: {
     primary: {
       light: brown['500'],
       main: brown['700'],
-      dark: brown['100'],
-      contrastText: grey['900'],
+      dark: brown['900'],
+      contrastText: grey['100'],
     },
     secondary: {
-      light: blue['500'],
-      main: blue['700'],
-      dark: blue['100'],
-      contrastText: grey['600'],
+      light: orange['500'],
+      main: orange['700'],
+      dark: orange['900'],
+      contrastText: grey['900'],
     },
+    common: {
+      white: '#fff',
+      black: '#000',
+    },
+    onPrimary: {
+      main: grey['100'],
+    },
+    action: {
+      disabled: brown['300'],
+      disabledBackground: brown['200'],
+    },
+    contrastThreshold: 3,
     primary1Color: brown['500'],
     primary2Color: brown['700'],
     primary3Color: brown['100'],
@@ -42,10 +75,44 @@ export default {
     blackShadow: fade('#000000', 0.117647),
     backgroundButton: '#FFFFFF',
   },
+  shape: {
+    borderRadius: '4px',
+  },
   typography: {
     fontFamily,
+    htmlFontSize: 10,
   },
   overrides: {
+    MuiDrawer: {
+      root: {
+        width: sideMenuWidth,
+        flexShrink: 0,
+      },
+      paper: {
+        top: appBarHeight,
+        height: `calc(100% - ${appBarHeight}px)`,
+        width: sideMenuWidth,
+        padding: '8px',
+      },
+    },
+    MuiSvgIcon: {
+      padding: '4px',
+    },
+    MuiDivider: {
+      root: {
+        backgroundColor: brown['500'],
+      },
+    },
+    MuiInputBase: {
+      root: {
+        color: 'inherit',
+      },
+    },
+    MuiFormControl: {
+      root: {
+        padding: '4px',
+      },
+    },
     MuiSelect: {
       root: {
         fontFamily,
@@ -53,45 +120,13 @@ export default {
     },
     MuiFormLabel: {
       root: {
-        fontSize: '1.4rem',
+        // fontSize: '1.9rem',
       },
     },
-    MuiTypography: {
-      body1: {
-        fontSize: '1.5rem',
-      },
-      h1: {
-        fontSize: '4rem',
-        marginBottom: '3rem',
-      },
-      h2: {
-        fontSize: '3.5rem',
-      },
-      h3: {
-        fontSize: '3rem',
-      },
-      h4: {
-        fontSize: '2.7rem',
-      },
-      gutterBottom: {
-        marginBottom: '1rem',
-      },
+    gutterBottom: {
+      marginBottom: '1rem',
     },
   },
 };
 
-// // Main Colors
-// @brown: rgba(121, 85, 72, 1);
-// @brownLight: lighten(@brown, 30%);//rgb(215, 204, 200);
-// @blue: rgba(33, 150, 243, 1);
-//
-// // Wikicaves Colors
-// @greenLogo: rgba(5, 152, 101, 1);
-// @blueLogo: rgba(5, 101, 152, 1);
-// @redLogo: rgba(154, 20, 12, 1);
-//
-// // Other Colors
-// @cream: rgba(245, 245, 245, 1);
-// @grey: rgba(110, 110, 110, 1);
-// @greyLight: rgba(192, 192, 192, 1);
-// @white: white;
+export default createMuiTheme(overridings);

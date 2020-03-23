@@ -8,9 +8,7 @@ const Add = () => (
     <GridRow>
       <GridFullColumn>
         <Card>
-          <CardText>
-            Formulaire d'ajout non implémenté
-          </CardText>
+          <CardText>Formulaire d'ajout non implémenté</CardText>
         </Card>
       </GridFullColumn>
     </GridRow>

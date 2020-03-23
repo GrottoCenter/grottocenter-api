@@ -11,8 +11,8 @@ import styled from 'styled-components';
 //
 //
 
-const StyledWrapper = withTheme()(styled.div`
-  color: ${props => props.theme.palette.textIconColor};
+const StyledWrapper = withTheme(styled.div`
+  color: ${(props) => props.theme.palette.textIconColor};
 `);
 
 const StyledCard = withStyles({
@@ -38,9 +38,7 @@ class ApiDetail extends Component {
         url: `/swagger/apiV${version}.yaml`,
         dom_id: '#swaggerContainer',
         deepLinking: true,
-        presets: [
-          SwaggerUIBundle.presets.apis,
-        ],
+        presets: [SwaggerUIBundle.presets.apis],
       });
     }
   }
@@ -49,12 +47,12 @@ class ApiDetail extends Component {
     return (
       <StyledWrapper>
         <StyledCard>
-          <div id="swaggerContainer"/>
+          <div id="swaggerContainer" />
         </StyledCard>
       </StyledWrapper>
     );
   }
-};
+}
 
 ApiDetail.propTypes = {
   version: PropTypes.number.isRequired,

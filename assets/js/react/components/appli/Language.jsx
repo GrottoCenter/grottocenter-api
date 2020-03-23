@@ -15,9 +15,7 @@ import LanguageIcon from '@material-ui/icons/Translate';
 //
 //
 
-const Language = () => (
-  <Avatar icon={<LanguageIcon style={{ color: 'red' }} />} />
-);
+const Language = () => <Avatar icon={<LanguageIcon style={{ color: 'red' }} />} />;
 
 Language.propTypes = {
   title: PropTypes.string,

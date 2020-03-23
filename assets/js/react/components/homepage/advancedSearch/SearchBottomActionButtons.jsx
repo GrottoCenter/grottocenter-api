@@ -32,9 +32,7 @@ const buttonsStyle = () => ({
 
 class SearchBottomActionButtons extends React.Component {
   render() {
-    const {
-      classes, resetResults, resetParentState,
-    } = this.props;
+    const { classes, resetResults, resetParentState } = this.props;
 
     return (
       <CardActions className={classes.cardBottomButtons}>
@@ -93,7 +91,6 @@ class SearchBottomActionButtons extends React.Component {
             <Translate>Reset</Translate>
           </Button>
         </Breakpoint>
-
       </CardActions>
     );
   }

@@ -39,8 +39,11 @@ TextDirectionProvider.childContextTypes = {
   direction: PropTypes.string.isRequired,
 };
 
-const mapStateToProps = state => ({
-  direction: (state.currentLanguage === 'ar' || state.currentLanguage === 'he') ? RIGHT_TO_LEFT : LEFT_TO_RIGHT,
+const mapStateToProps = (state) => ({
+  direction:
+    state.currentLanguage === 'ar' || state.currentLanguage === 'he'
+      ? RIGHT_TO_LEFT
+      : LEFT_TO_RIGHT,
 });
 
 export default connect(mapStateToProps)(TextDirectionProvider);
@@ -49,9 +52,11 @@ export function directionManager() {
   return (WrappedComponent) => {
     const TextDirectionManagedComponent = (props, context) => {
       const { direction } = context;
-      return context
-        ? <WrappedComponent direction={direction} {...props} />
-        : <WrappedComponent direction={RIGHT_TO_LEFT} {...props} />;
+      return context ? (
+        <WrappedComponent direction={direction} {...props} />
+      ) : (
+        <WrappedComponent direction={RIGHT_TO_LEFT} {...props} />
+      );
     };
 
     TextDirectionManagedComponent.contextTypes = {

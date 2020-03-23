@@ -11,15 +11,9 @@ import { markers } from '../../../conf/MapMarkersConfig';
 
 const mainMarkerIcon = L.icon({
   iconUrl: markers[1].url,
-  iconSize: [
-    24, 24,
-  ],
-  iconAnchor: [
-    12, 24,
-  ],
-  popupAnchor: [
-    0, -24,
-  ],
+  iconSize: [24, 24],
+  iconAnchor: [12, 24],
+  popupAnchor: [0, -24],
 });
 
 //
@@ -37,7 +31,9 @@ const MapCaveMarker = ({ cave }) => (
       lng: cave.longitude,
     }}
   >
-    <Tooltip direction="top" offset={[0, -20]}>{cave.name}</Tooltip>
+    <Tooltip direction="top" offset={[0, -20]}>
+      {cave.name}
+    </Tooltip>
   </Marker>
 );
 

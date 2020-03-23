@@ -25,8 +25,8 @@ const BgRandomEntrySection = styled(RandomEntrySection)`
   margin-top: 0;
 `;
 
-const SectionTitle = withTheme()(styled.h3`
-  color: ${props => props.theme.palette.secondaryBlocTitle};
+const SectionTitle = withTheme(styled.h3`
+  color: ${(props) => props.theme.palette.secondaryBlocTitle};
   text-align: center;
   padding-bottom: 50px;
   font-size: 35px;

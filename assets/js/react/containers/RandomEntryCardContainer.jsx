@@ -8,11 +8,11 @@ import RandomEntryCard from '../components/common/card/RandomEntryCard';
 //
 //
 
-const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = (dispatch) => ({
   fetch: () => dispatch(loadRandomEntry()),
 });
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   isFetching: state.randomEntry.isFetching,
   entry: state.randomEntry.entry,
 });

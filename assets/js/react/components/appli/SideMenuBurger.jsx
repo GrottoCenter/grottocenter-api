@@ -13,17 +13,19 @@ import { VIEW_SIDEMENU } from '../../conf/Rights';
 //
 //
 
-const BurgerAvatar = withTheme()(styled(Avatar)`
+const BurgerAvatar = withTheme(styled(Avatar)`
   position: relative;
   left: 20px;
-  background-color: ${props => (props.visible
-    ? props.theme.palette.textIconColor
-    : props.theme.palette.accent1Color)} !important;
+  background-color: ${(props) =>
+    props.visible
+      ? props.theme.palette.textIconColor
+      : props.theme.palette.accent1Color} !important;
 
   > svg {
-    fill: ${props => (props.visible
-    ? props.theme.palette.primaryTextColor
-    : props.theme.palette.textIconColor)} !important;
+    fill: ${(props) =>
+      props.visible
+        ? props.theme.palette.primaryTextColor
+        : props.theme.palette.textIconColor} !important;
   }
 `);
 

@@ -15,12 +15,12 @@ import Translate from '../common/Translate';
 //
 //
 
-const StyledBarContainer = withTheme()(styled.div`
+const StyledBarContainer = withTheme(styled.div`
   background-color: ${(props) => props.theme.palette.primary3Color};
-  display: flex;  
+  display: flex;
 `);
 
-const StyledAdvancedSearchText = withTheme()(styled.span`
+const StyledAdvancedSearchText = withTheme(styled.span`
   bottom: 0;
   color: ${(props) => props.theme.palette.primary2Color};
   font-size: 1.4rem;
@@ -31,46 +31,55 @@ const StyledAdvancedSearchText = withTheme()(styled.span`
   width: 100%;
 `);
 
-const StyledSearchIcon = withStyles((theme) => ({
-  root: {
-    height: '50px',
-    width: '50px',
-    paddingTop: 'calc((72px - 50px) / 2)',
-    fill: theme.palette.primary1Color,
-  },
-}), { withTheme: true })(SearchIcon);
-
-const StyledChevronLeftIcon = withStyles((theme) => ({
-  root: {
-    '&:hover': {
-      fill: theme.palette.accent1Color,
-      cursor: 'pointer',
+const StyledSearchIcon = withStyles(
+  (theme) => ({
+    root: {
+      height: '50px',
+      width: '50px',
+      paddingTop: 'calc((72px - 50px) / 2)',
+      fill: theme.palette.primary1Color,
     },
-    height: '40px',
-    width: '40px',
-    paddingTop: 'calc((72px - 50px) / 2)',
-    fill: theme.palette.primary1Color,
-    transition: '0.5s',
-  },
-}), { withTheme: true })(ChevronLeftIcon);
+  }),
+  { withTheme: true },
+)(SearchIcon);
 
-const StyledAdvancedSearchBlock = withTheme()(styled.span`
+const StyledChevronLeftIcon = withStyles(
+  (theme) => ({
+    root: {
+      '&:hover': {
+        fill: theme.palette.accent1Color,
+        cursor: 'pointer',
+      },
+      height: '40px',
+      width: '40px',
+      paddingTop: 'calc((72px - 50px) / 2)',
+      fill: theme.palette.primary1Color,
+      transition: '0.5s',
+    },
+  }),
+  { withTheme: true },
+)(ChevronLeftIcon);
+
+const StyledAdvancedSearchBlock = withTheme(styled.span`
   flex: 1;
   position: relative;
   text-align: center;
   &:hover {
     cursor: pointer;
-  };
+  }
 `);
 
-const StyledQuicksearchContainer = withStyles((theme) => ({
-  root: {
-    flex: 8,
-  },
-  input: {
-    backgroundColor: theme.palette.primary3Color,
-  },
-}), { withTheme: true })(QuicksearchContainer);
+const StyledQuicksearchContainer = withStyles(
+  (theme) => ({
+    root: {
+      flex: 8,
+    },
+    input: {
+      backgroundColor: theme.palette.primary3Color,
+    },
+  }),
+  { withTheme: true },
+)(QuicksearchContainer);
 
 //
 //
@@ -80,7 +89,7 @@ const StyledQuicksearchContainer = withStyles((theme) => ({
 class QuicksearchBar extends React.Component {
   state = {
     showAdvancedSearched: false,
-  }
+  };
 
   handleSelection = (selection, history) => {
     if (selection.id) {
@@ -109,39 +118,47 @@ class QuicksearchBar extends React.Component {
           />
 
           <StyledAdvancedSearchBlock
-            onClick={() => this.setState({
-              showAdvancedSearched: !showAdvancedSearched,
-            })}
+            onClick={() =>
+              this.setState({
+                showAdvancedSearched: !showAdvancedSearched,
+              })
+            }
           >
             <StyledChevronLeftIcon
-              style={showAdvancedSearched ? {
-                paddingTop: 0,
-                paddingRight: 'calc((72px - 28px) / 2)',
-                transform: 'rotateZ(-90deg)',
-                transition: '0.5s',
-              } : {}}
+              style={
+                showAdvancedSearched
+                  ? {
+                      paddingTop: 0,
+                      paddingRight: 'calc((72px - 28px) / 2)',
+                      transform: 'rotateZ(-90deg)',
+                      transition: '0.5s',
+                    }
+                  : {}
+              }
             />
             <StyledAdvancedSearchText>
               <Translate>Advanced search</Translate>
             </StyledAdvancedSearchText>
           </StyledAdvancedSearchBlock>
-
         </StyledBarContainer>
 
         <div
-          style={showAdvancedSearched ? {
-            height: 'auto',
-            opacity: 1,
-            transition: '0.7s ease-in',
-          } : {
-            height: 0,
-            opacity: 0,
-            transition: '0.7s ease-in',
-          }}
+          style={
+            showAdvancedSearched
+              ? {
+                  height: 'auto',
+                  opacity: 1,
+                  transition: '0.7s ease-in',
+                }
+              : {
+                  height: 0,
+                  opacity: 0,
+                  transition: '0.7s ease-in',
+                }
+          }
         >
           <AdvancedSearchContainer />
         </div>
-
       </React.Fragment>
     );
   }

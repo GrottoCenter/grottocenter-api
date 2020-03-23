@@ -3,9 +3,20 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import {
-  FormLabel, FormControl, TextField, Switch, InputLabel, Select,
-  MenuItem, Typography, withStyles, CardContent, Card,
-  ExpansionPanel, ExpansionPanelSummary, ExpansionPanelDetails,
+  FormLabel,
+  FormControl,
+  TextField,
+  Switch,
+  InputLabel,
+  Select,
+  MenuItem,
+  Typography,
+  withStyles,
+  CardContent,
+  Card,
+  ExpansionPanel,
+  ExpansionPanelSummary,
+  ExpansionPanelDetails,
 } from '@material-ui/core';
 
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
@@ -102,7 +113,7 @@ class BbsSearch extends React.Component {
   getInitialState = () => {
     const { yearMinValue, yearMaxValue } = this.props;
 
-    return ({
+    return {
       'bbs year-range': {
         isEditable: false,
         min: yearMinValue,
@@ -120,8 +131,8 @@ class BbsSearch extends React.Component {
       filteredSubthemes: [],
       allFieldsRequest: '',
       panelExpanded: 'all-fields-panel',
-    });
-  }
+    };
+  };
 
   componentDidUpdate = () => {
     const { subthemes } = this.props;
@@ -136,17 +147,17 @@ class BbsSearch extends React.Component {
         filteredSubthemes: subthemes,
       });
     }
-  }
+  };
 
   getThemeObjFromId = (id) => {
     const { themes } = this.props;
     return themes.find((t) => t.id === id);
-  }
+  };
 
   getSubthemeObjFromId = (id) => {
     const { subthemes } = this.props;
     return subthemes.find((st) => st.id === id);
-  }
+  };
 
   /**
    * keyName: String
@@ -215,8 +226,8 @@ class BbsSearch extends React.Component {
     const newState = {
       [keyName]: {
         ...this.state[keyName],
-        min: (values[0] < minValueAuthorized ? minValueAuthorized : values[0]),
-        max: (values[1] > maxValueAuthorized ? maxValueAuthorized : values[1]),
+        min: values[0] < minValueAuthorized ? minValueAuthorized : values[0],
+        max: values[1] > maxValueAuthorized ? maxValueAuthorized : values[1],
       },
     };
     this.setState(newState);
@@ -247,7 +258,7 @@ class BbsSearch extends React.Component {
    */
   handlePanelSelected = (panel) => (event, isExpanded) => {
     this.setState({
-      panelExpanded: (isExpanded ? panel : ''),
+      panelExpanded: isExpanded ? panel : '',
     });
   };
 
@@ -256,7 +267,7 @@ class BbsSearch extends React.Component {
     // Don't reset the expanded panel
     delete initialState.panelExpanded;
     this.setState(initialState);
-  }
+  };
 
   render() {
     const {
@@ -264,7 +275,8 @@ class BbsSearch extends React.Component {
       resourceType,
       resetResults,
       startAdvancedsearch,
-      yearMinValue, yearMaxValue,
+      yearMinValue,
+      yearMaxValue,
       themes,
     } = this.props;
 
@@ -285,14 +297,18 @@ class BbsSearch extends React.Component {
     } = this.state;
 
     return (
-      <Card
-        className={classes.cardContainer}
-      >
+      <Card className={classes.cardContainer}>
         <CardContent>
-
-          <Typography variant="body1" gutterBottom paragraph style={{ fontStyle: 'italic', textAlign: 'center' }}>
+          <Typography
+            variant="body1"
+            gutterBottom
+            paragraph
+            style={{ fontStyle: 'italic', textAlign: 'center' }}
+          >
             <Translate>
-              {'The BBS ("Bulletin Bibliographique Spéléologique" in french) is an annual review of the worldwide speleological litterature.'}
+              {
+                'The BBS ("Bulletin Bibliographique Spéléologique" in french) is an annual review of the worldwide speleological litterature.'
+              }
             </Translate>
             <br />
             <InternationalizedLink links={wikiBBSLinks}>
@@ -302,18 +318,31 @@ class BbsSearch extends React.Component {
             </InternationalizedLink>
           </Typography>
 
-          <ExpansionPanel expanded={panelExpanded === 'all-fields-panel'} onChange={this.handlePanelSelected('all-fields-panel')}>
+          <ExpansionPanel
+            expanded={panelExpanded === 'all-fields-panel'}
+            onChange={this.handlePanelSelected('all-fields-panel')}
+          >
             <ExpansionPanelSummary
               expandIcon={<ExpandMoreIcon />}
               aria-controls="all-fields-search-content"
               id="all-fields-search-content"
             >
-              <h5 style={{ marginBottom: 0, width: '100%' }}><Translate>Search on all fields</Translate></h5>
+              <h5 style={{ marginBottom: 0, width: '100%' }}>
+                <Translate>Search on all fields</Translate>
+              </h5>
             </ExpansionPanelSummary>
             <ExpansionPanelDetails style={{ flexDirection: 'column' }}>
-              <Typography className={classes.formElementFontSize} variant="body1" gutterBottom paragraph>
+              <Typography
+                className={classes.formElementFontSize}
+                variant="body1"
+                gutterBottom
+                paragraph
+              >
                 <i>
-                  <Translate>Perform an advanced search on all the fields. Results displayed will have at least one field matching your request.</Translate>
+                  <Translate>
+                    Perform an advanced search on all the fields. Results displayed will have at
+                    least one field matching your request.
+                  </Translate>
                 </i>
               </Typography>
               <form
@@ -343,15 +372,14 @@ class BbsSearch extends React.Component {
                 }}
                 className={classes.formContainer}
               >
-
                 <div className={classes.formPartContainer} style={{ justifyContent: 'flex-start' }}>
                   <TextField
                     className={classes.formElement}
-                    label={(
+                    label={
                       <span className={classes.formElementFontSize}>
                         <Translate>All fields request</Translate>
                       </span>
-                    )}
+                    }
                     onChange={(event) => this.handleValueChange('allFieldsRequest', event)}
                     value={allFieldsRequest}
                     InputProps={{
@@ -366,18 +394,22 @@ class BbsSearch extends React.Component {
                   resetResults={resetResults}
                   resetParentState={this.resetToInitialState}
                 />
-
               </form>
             </ExpansionPanelDetails>
           </ExpansionPanel>
 
-          <ExpansionPanel expanded={panelExpanded === 'specific-fields-panel'} onChange={this.handlePanelSelected('specific-fields-panel')}>
+          <ExpansionPanel
+            expanded={panelExpanded === 'specific-fields-panel'}
+            onChange={this.handlePanelSelected('specific-fields-panel')}
+          >
             <ExpansionPanelSummary
               expandIcon={<ExpandMoreIcon />}
               aria-controls="specific-fields-search-content"
               id="specific-fields-search-content"
             >
-              <h5 style={{ marginBottom: 0, width: '100%' }}><Translate>Search on specific fields</Translate></h5>
+              <h5 style={{ marginBottom: 0, width: '100%' }}>
+                <Translate>Search on specific fields</Translate>
+              </h5>
             </ExpansionPanelSummary>
             <ExpansionPanelDetails style={{ flexDirection: 'column' }}>
               <form
@@ -402,18 +434,19 @@ class BbsSearch extends React.Component {
                 className={classes.formContainer}
               >
                 <div className={classes.formPartContainer} style={{ justifyContent: 'flex-start' }}>
-
                   <fieldset className={classes.fieldset}>
-                    <legend className={classes.legend}><Translate>Content</Translate></legend>
+                    <legend className={classes.legend}>
+                      <Translate>Content</Translate>
+                    </legend>
 
                     <div className={classes.formPartContainer}>
                       <TextField
                         className={classes.formElement}
-                        label={(
+                        label={
                           <span className={classes.formElementFontSize}>
                             <Translate>Title</Translate>
                           </span>
-                        )}
+                        }
                         onChange={(event) => this.handleValueChange('bbs title', event)}
                         value={title}
                         InputProps={{
@@ -425,11 +458,11 @@ class BbsSearch extends React.Component {
 
                       <TextField
                         className={classes.formElement}
-                        label={(
+                        label={
                           <span className={classes.formElementFontSize}>
                             <Translate>Abstract</Translate>
                           </span>
-                        )}
+                        }
                         onChange={(event) => this.handleValueChange('bbs abstract', event)}
                         value={abstract}
                         InputProps={{
@@ -442,11 +475,15 @@ class BbsSearch extends React.Component {
                   </fieldset>
 
                   <fieldset className={classes.fieldset}>
-                    <legend className={classes.legend}><Translate>Subject</Translate></legend>
+                    <legend className={classes.legend}>
+                      <Translate>Subject</Translate>
+                    </legend>
 
                     <div className={classes.formPartContainer}>
                       <FormControl className={classes.formElement}>
-                        <InputLabel htmlFor="bbs theme"><Translate>Theme</Translate></InputLabel>
+                        <InputLabel htmlFor="bbs theme">
+                          <Translate>Theme</Translate>
+                        </InputLabel>
                         <Select
                           value={theme}
                           onChange={(event) => this.handleValueChange('bbs theme', event)}
@@ -455,7 +492,11 @@ class BbsSearch extends React.Component {
                             id: 'bbs theme',
                           }}
                         >
-                          <MenuItem key={-1} value=""><i><Translate>All themes</Translate></i></MenuItem>
+                          <MenuItem key={-1} value="">
+                            <i>
+                              <Translate>All themes</Translate>
+                            </i>
+                          </MenuItem>
                           {themes.map((choiceTheme) => (
                             <MenuItem key={choiceTheme.id} value={choiceTheme.id}>
                               {choiceTheme.id}
@@ -467,7 +508,9 @@ class BbsSearch extends React.Component {
                       </FormControl>
 
                       <FormControl className={classes.formElement}>
-                        <InputLabel htmlFor="bbs subtheme"><Translate>Subtheme</Translate></InputLabel>
+                        <InputLabel htmlFor="bbs subtheme">
+                          <Translate>Subtheme</Translate>
+                        </InputLabel>
                         <Select
                           value={subtheme}
                           onChange={(event) => this.handleValueChange('bbs subtheme', event)}
@@ -476,29 +519,35 @@ class BbsSearch extends React.Component {
                             id: 'bbs subtheme',
                           }}
                         >
-                          <MenuItem key={-1} value=""><i><Translate>All subthemes</Translate></i></MenuItem>
+                          <MenuItem key={-1} value="">
+                            <i>
+                              <Translate>All subthemes</Translate>
+                            </i>
+                          </MenuItem>
                           {filteredSubthemes.map((choiceSubtheme) => (
                             <MenuItem key={choiceSubtheme.id} value={choiceSubtheme.id}>
                               {choiceSubtheme.id}
                               {'\u00a0-\u00a0'}
 
                               {/* In Transifex, the subtheme key for its name is its id. */}
-                              <Translate id={choiceSubtheme.id} defaultMessage={choiceSubtheme.name} />
+                              <Translate
+                                id={choiceSubtheme.id}
+                                defaultMessage={choiceSubtheme.name}
+                              />
                             </MenuItem>
                           ))}
                         </Select>
                       </FormControl>
-
                     </div>
                   </fieldset>
 
                   <TextField
                     className={classes.formElement}
-                    label={(
+                    label={
                       <span className={classes.formElementFontSize}>
                         <Translate>Reference</Translate>
                       </span>
-                    )}
+                    }
                     onChange={(event) => this.handleValueChange('bbs ref', event)}
                     value={ref}
                     InputProps={{
@@ -510,11 +559,11 @@ class BbsSearch extends React.Component {
 
                   <TextField
                     className={classes.formElement}
-                    label={(
+                    label={
                       <span className={classes.formElementFontSize}>
                         <Translate>Country or region</Translate>
                       </span>
-                    )}
+                    }
                     onChange={(event) => this.handleValueChange('bbs country', event)}
                     value={country}
                     InputProps={{
@@ -526,11 +575,11 @@ class BbsSearch extends React.Component {
 
                   <TextField
                     className={classes.formElement}
-                    label={(
+                    label={
                       <span className={classes.formElementFontSize}>
                         <Translate>Authors</Translate>
                       </span>
-                    )}
+                    }
                     onChange={(event) => this.handleValueChange('bbs authors', event)}
                     value={authors}
                     InputProps={{
@@ -542,11 +591,11 @@ class BbsSearch extends React.Component {
 
                   <TextField
                     className={classes.formElement}
-                    label={(
+                    label={
                       <span className={classes.formElementFontSize}>
                         <Translate>Publication</Translate>
                       </span>
-                    )}
+                    }
                     onChange={(event) => this.handleValueChange('bbs publication', event)}
                     value={publication}
                     InputProps={{
@@ -556,9 +605,7 @@ class BbsSearch extends React.Component {
                     }}
                   />
 
-                  <FormControl
-                    className={classes.formElement}
-                  >
+                  <FormControl className={classes.formElement}>
                     <FormLabel>
                       <span className={classes.formElementFontSize}>
                         <Translate>Year</Translate>
@@ -579,31 +626,56 @@ class BbsSearch extends React.Component {
                       min={yearMinValue}
                       max={yearMaxValue}
                       onChange={(values) => {
-                        this.handleRangeChange('bbs year-range', values, yearMinValue, yearMaxValue);
+                        this.handleRangeChange(
+                          'bbs year-range',
+                          values,
+                          yearMinValue,
+                          yearMaxValue,
+                        );
                       }}
                       tipFormatter={(value) => `${value}`}
                       value={[yearRange.min, yearRange.max]}
                       disabled={!yearRange.isEditable}
-                      trackStyle={[!yearRange.isEditable ? { backgroundColor: '#9e9e9e' } : { backgroundColor: '#ff9800' }]}
-                      handleStyle={[{ backgroundColor: '#795548', borderColor: '#795548' }, { backgroundColor: '#795548', borderColor: '#795548' }]}
+                      trackStyle={[
+                        !yearRange.isEditable
+                          ? { backgroundColor: '#9e9e9e' }
+                          : { backgroundColor: '#ff9800' },
+                      ]}
+                      handleStyle={[
+                        { backgroundColor: '#795548', borderColor: '#795548' },
+                        { backgroundColor: '#795548', borderColor: '#795548' },
+                      ]}
                     />
 
                     <div style={{ display: 'inline-flex', justifyContent: 'space-between' }}>
                       <TextField
-                        onChange={(event) => this.handleRangeChange('bbs year-range', [parseInt(event.target.value, 10) || 0, yearRange.max], 0, 2100)}
+                        onChange={(event) =>
+                          this.handleRangeChange(
+                            'bbs year-range',
+                            [parseInt(event.target.value, 10) || 0, yearRange.max],
+                            0,
+                            2100,
+                          )
+                        }
                         value={yearRange.min}
                         disabled={!yearRange.isEditable}
                         style={{ width: '35px' }}
                       />
                       <TextField
-                        onChange={(event) => this.handleRangeChange('bbs year-range', [yearRange.min, parseInt(event.target.value, 10) || 0], 0, 2100)}
+                        onChange={(event) =>
+                          this.handleRangeChange(
+                            'bbs year-range',
+                            [yearRange.min, parseInt(event.target.value, 10) || 0],
+                            0,
+                            2100,
+                          )
+                        }
                         value={yearRange.max}
                         disabled={!yearRange.isEditable}
                         style={{ width: '35px' }}
                       />
                     </div>
                   </FormControl>
-
                 </div>
 
                 <div className={classes.formPartContainer} style={{ justifyContent: 'flex-start' }}>
@@ -626,22 +698,29 @@ class BbsSearch extends React.Component {
                       />
                       <br />
                     </FormLabel>
-                    <Typography className={classes.formElementFontSize} variant="body1" gutterBottom paragraph>
-                      <i><Translate className={classes.formElementFontSize}>Specify if the search results must match all the fields you typed above (default is yes).</Translate></i>
+                    <Typography
+                      className={classes.formElementFontSize}
+                      variant="body1"
+                      gutterBottom
+                      paragraph
+                    >
+                      <i>
+                        <Translate className={classes.formElementFontSize}>
+                          Specify if the search results must match all the fields you typed above
+                          (default is yes).
+                        </Translate>
+                      </i>
                     </Typography>
                   </FormControl>
-
                 </div>
 
                 <SearchBottomActionButtons
                   resetResults={resetResults}
                   resetParentState={this.resetToInitialState}
                 />
-
               </form>
             </ExpansionPanelDetails>
           </ExpansionPanel>
-
         </CardContent>
       </Card>
     );

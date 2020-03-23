@@ -3,10 +3,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 
-import {
-  Card, CardContent, FormControl, FormLabel,
-  TextField, Switch,
-} from '@material-ui/core';
+import { Card, CardContent, FormControl, FormLabel, TextField, Switch } from '@material-ui/core';
 
 import Slider from 'rc-slider';
 
@@ -16,7 +13,6 @@ import SearchBottomActionButtons from './SearchBottomActionButtons';
 // ==========
 
 const Range = Slider.createSliderWithTooltip(Slider.Range);
-
 
 const styles = (theme) => ({
   mainContainer: {},
@@ -89,7 +85,7 @@ class GroupsSearch extends React.Component {
   getInitialState = () => {
     const { numberOfCaversMinValue, numberOfCaversMaxValue } = this.props;
 
-    return ({
+    return {
       'number of cavers-range': {
         isEditable: false,
         min: numberOfCaversMinValue,
@@ -102,8 +98,8 @@ class GroupsSearch extends React.Component {
       postal_code: '',
       region: '',
       matchAllFields: true,
-    });
-  }
+    };
+  };
 
   /**
    * keyName: String
@@ -127,8 +123,8 @@ class GroupsSearch extends React.Component {
     const newState = {
       [keyName]: {
         ...this.state[keyName],
-        min: (values[0] < minValueAuthorized ? minValueAuthorized : values[0]),
-        max: (values[1] > maxValueAuthorized ? maxValueAuthorized : values[1]),
+        min: values[0] < minValueAuthorized ? minValueAuthorized : values[0],
+        max: values[1] > maxValueAuthorized ? maxValueAuthorized : values[1],
       },
     };
     this.setState(newState);
@@ -156,7 +152,7 @@ class GroupsSearch extends React.Component {
 
   resetToInitialState = () => {
     this.setState(this.getInitialState());
-  }
+  };
 
   render() {
     const {
@@ -165,7 +161,8 @@ class GroupsSearch extends React.Component {
       resetResults,
       startAdvancedsearch,
 
-      numberOfCaversMinValue, numberOfCaversMaxValue,
+      numberOfCaversMinValue,
+      numberOfCaversMaxValue,
     } = this.props;
 
     const {
@@ -180,9 +177,7 @@ class GroupsSearch extends React.Component {
     } = this.state;
 
     return (
-      <Card
-        className={classes.cardContainer}
-      >
+      <Card className={classes.cardContainer}>
         <CardContent>
           <form
             noValidate
@@ -193,17 +188,18 @@ class GroupsSearch extends React.Component {
             }}
             className={classes.formContainer}
           >
-            <h5 style={{ width: '100%' }}><Translate>Group properties</Translate></h5>
+            <h5 style={{ width: '100%' }}>
+              <Translate>Group properties</Translate>
+            </h5>
 
             <div className={classes.formPartContainer} style={{ justifyContent: 'flex-start' }}>
-
               <TextField
                 className={classes.formElement}
-                label={(
+                label={
                   <span className={classes.formElementFontSize}>
                     <Translate>Group name</Translate>
                   </span>
-                )}
+                }
                 onChange={(event) => this.handleValueChange('name', event)}
                 value={name}
                 InputProps={{
@@ -213,9 +209,7 @@ class GroupsSearch extends React.Component {
                 }}
               />
 
-              <FormControl
-                className={classes.formElement}
-              >
+              <FormControl className={classes.formElement}>
                 <FormLabel>
                   <span className={classes.formElementFontSize}>
                     <Translate>Number of cavers</Translate>
@@ -236,45 +230,71 @@ class GroupsSearch extends React.Component {
                   min={numberOfCaversMinValue}
                   max={numberOfCaversMaxValue}
                   onChange={(values) => {
-                    this.handleRangeChange('number of cavers-range', values, numberOfCaversMinValue, numberOfCaversMaxValue);
+                    this.handleRangeChange(
+                      'number of cavers-range',
+                      values,
+                      numberOfCaversMinValue,
+                      numberOfCaversMaxValue,
+                    );
                   }}
                   tipFormatter={(value) => `${value}`}
                   value={[numberOfCaversRange.min, numberOfCaversRange.max]}
                   disabled={!numberOfCaversRange.isEditable}
-                  trackStyle={[!numberOfCaversRange.isEditable ? { backgroundColor: '#9e9e9e' } : { backgroundColor: '#ff9800' }]}
-                  handleStyle={[{ backgroundColor: '#795548', borderColor: '#795548' }, { backgroundColor: '#795548', borderColor: '#795548' }]}
+                  trackStyle={[
+                    !numberOfCaversRange.isEditable
+                      ? { backgroundColor: '#9e9e9e' }
+                      : { backgroundColor: '#ff9800' },
+                  ]}
+                  handleStyle={[
+                    { backgroundColor: '#795548', borderColor: '#795548' },
+                    { backgroundColor: '#795548', borderColor: '#795548' },
+                  ]}
                 />
 
                 <div style={{ display: 'inline-flex', justifyContent: 'space-between' }}>
                   <TextField
-                    onChange={(event) => this.handleRangeChange('number of cavers-range', [parseInt(event.target.value, 10) || 0, numberOfCaversRange.max], numberOfCaversMinValue, numberOfCaversMaxValue)}
+                    onChange={(event) =>
+                      this.handleRangeChange(
+                        'number of cavers-range',
+                        [parseInt(event.target.value, 10) || 0, numberOfCaversRange.max],
+                        numberOfCaversMinValue,
+                        numberOfCaversMaxValue,
+                      )
+                    }
                     value={numberOfCaversRange.min}
                     disabled={!numberOfCaversRange.isEditable}
                     style={{ width: '30px' }}
                   />
                   <TextField
-                    onChange={(event) => this.handleRangeChange('number of cavers-range', [numberOfCaversRange.min, parseInt(event.target.value, 10) || 0], numberOfCaversMinValue, numberOfCaversMaxValue)}
+                    onChange={(event) =>
+                      this.handleRangeChange(
+                        'number of cavers-range',
+                        [numberOfCaversRange.min, parseInt(event.target.value, 10) || 0],
+                        numberOfCaversMinValue,
+                        numberOfCaversMaxValue,
+                      )
+                    }
                     value={numberOfCaversRange.max}
                     disabled={!numberOfCaversRange.isEditable}
                     style={{ width: '30px' }}
                   />
                 </div>
               </FormControl>
-
             </div>
 
             <fieldset className={classes.fieldset}>
-              <legend className={classes.legend}><Translate>Localization</Translate></legend>
+              <legend className={classes.legend}>
+                <Translate>Localization</Translate>
+              </legend>
 
               <div className={classes.formPartContainer}>
-
                 <TextField
                   className={classes.formElement}
-                  label={(
+                  label={
                     <span className={classes.formElementFontSize}>
                       <Translate>City</Translate>
                     </span>
-                  )}
+                  }
                   onChange={(event) => this.handleValueChange('city', event)}
                   value={city}
                   InputProps={{
@@ -286,11 +306,11 @@ class GroupsSearch extends React.Component {
 
                 <TextField
                   className={classes.formElement}
-                  label={(
+                  label={
                     <span className={classes.formElementFontSize}>
                       <Translate>Postal code</Translate>
                     </span>
-                  )}
+                  }
                   onChange={(event) => this.handleValueChange('postal_code', event)}
                   value={postal_code}
                   InputProps={{
@@ -302,11 +322,11 @@ class GroupsSearch extends React.Component {
 
                 <TextField
                   className={classes.formElement}
-                  label={(
+                  label={
                     <span className={classes.formElementFontSize}>
                       <Translate>County</Translate>
                     </span>
-                  )}
+                  }
                   onChange={(event) => this.handleValueChange('county', event)}
                   value={county}
                   InputProps={{
@@ -318,11 +338,11 @@ class GroupsSearch extends React.Component {
 
                 <TextField
                   className={classes.formElement}
-                  label={(
+                  label={
                     <span className={classes.formElementFontSize}>
                       <Translate>Region</Translate>
                     </span>
-                  )}
+                  }
                   onChange={(event) => this.handleValueChange('region', event)}
                   value={region}
                   InputProps={{
@@ -334,11 +354,11 @@ class GroupsSearch extends React.Component {
 
                 <TextField
                   className={classes.formElement}
-                  label={(
+                  label={
                     <span className={classes.formElementFontSize}>
                       <Translate>Country</Translate>
                     </span>
-                  )}
+                  }
                   onChange={(event) => this.handleValueChange('country', event)}
                   value={country}
                   InputProps={{
@@ -347,7 +367,6 @@ class GroupsSearch extends React.Component {
                     },
                   }}
                 />
-
               </div>
             </fieldset>
 
@@ -370,7 +389,12 @@ class GroupsSearch extends React.Component {
                     }}
                   />
                   <br />
-                  <i><Translate className={classes.formElementFontSize}>Specify if the search results must match all the fields you typed above (default is yes).</Translate></i>
+                  <i>
+                    <Translate className={classes.formElementFontSize}>
+                      Specify if the search results must match all the fields you typed above
+                      (default is yes).
+                    </Translate>
+                  </i>
                 </FormLabel>
               </FormControl>
             </div>
@@ -379,7 +403,6 @@ class GroupsSearch extends React.Component {
               resetResults={resetResults}
               resetParentState={this.resetToInitialState}
             />
-
           </form>
         </CardContent>
       </Card>

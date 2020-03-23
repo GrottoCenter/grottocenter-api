@@ -13,23 +13,25 @@ import Translate from '../common/Translate';
 //
 //
 
-const BreadcrumpBar = withTheme()(styled.div`
-  color: ${props => props.theme.palette.primary1Color} !important;
-  background-color: ${props => props.theme.palette.primary3Color} !important;
+const BreadcrumpBar = withTheme(styled.div`
+  color: ${(props) => props.theme.palette.primary1Color} !important;
+  background-color: ${(props) => props.theme.palette.primary3Color} !important;
   padding: 0px !important;
   height: 24px;
 
-  & > a, & > a:visited  {
+  & > a,
+  & > a:visited {
     font-weight: 300;
-    color: ${props => props.theme.palette.primary1Color} !important;
+    color: ${(props) => props.theme.palette.primary1Color} !important;
 
-    :hover, :active {
+    :hover,
+    :active {
       font-weight: 600;
     }
   }
 
   & > svg {
-    color: ${props => props.theme.palette.primary1Color} !important;
+    color: ${(props) => props.theme.palette.primary1Color} !important;
   }
 `);
 

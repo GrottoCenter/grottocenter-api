@@ -13,8 +13,8 @@ import { FR_GC_BLOG, EN_GC_BLOG } from '../../conf/Config';
 //
 //
 
-const SectionTitle = withTheme()(styled.h3`
-  color: ${props => props.theme.palette.accent1Color};
+const SectionTitle = withTheme(styled.h3`
+  color: ${(props) => props.theme.palette.accent1Color};
   text-align: center;
   padding-bottom: 50px;
   font-size: 35px;

@@ -10,12 +10,12 @@ export const fetchGroup = () => ({
   group: undefined,
 });
 
-export const fetchGroupSuccess = group => ({
+export const fetchGroupSuccess = (group) => ({
   type: FETCH_GROUP_SUCCESS,
   group,
 });
 
-export const fetchGroupFailure = error => ({
+export const fetchGroupFailure = (error) => ({
   type: FETCH_GROUP_FAILURE,
   error,
 });
@@ -33,6 +33,6 @@ export function loadGroup(groupId) {
         }
         return response.text();
       })
-      .then(text => dispatch(fetchGroupSuccess(JSON.parse(text))));
+      .then((text) => dispatch(fetchGroupSuccess(JSON.parse(text))));
   };
 }

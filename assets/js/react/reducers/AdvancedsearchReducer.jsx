@@ -2,15 +2,12 @@ import {
   FETCH_ADVANCEDSEARCH_STARTED,
   FETCH_ADVANCEDSEARCH_SUCCESS,
   FETCH_ADVANCEDSEARCH_FAILURE,
-
   FETCH_NEXT_ADVANCEDSEARCH_STARTED,
   FETCH_NEXT_ADVANCEDSEARCH_SUCCESS,
   FETCH_NEXT_ADVANCEDSEARCH_FAILURE,
-
   FETCH_FULL_ADVANCEDSEARCH_STARTED,
   FETCH_FULL_ADVANCEDSEARCH_SUCCESS,
   FETCH_FULL_ADVANCEDSEARCH_FAILURE,
-
   RESET_ADVANCEDSEARCH_RESULTS,
 } from '../actions/Advancedsearch';
 
@@ -90,7 +87,7 @@ const advancedsearch = (state = initialState, action) => {
       });
     }
     case FETCH_NEXT_ADVANCEDSEARCH_SUCCESS: {
-      let mergedResults = (state.results ? state.results : []);
+      let mergedResults = state.results ? state.results : [];
       mergedResults = mergedResults.concat(action.results);
       // Remove duplicates
       mergedResults = [...new Set(mergedResults)];

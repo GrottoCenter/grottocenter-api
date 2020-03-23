@@ -3,15 +3,12 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 
-import {
-  Card, CardContent, TextField,
-} from '@material-ui/core';
+import { Card, CardContent, TextField } from '@material-ui/core';
 
 import SearchBottomActionButtons from './SearchBottomActionButtons';
 import Translate from '../../common/Translate';
 
 // ==========
-
 
 const styles = (theme) => ({
   mainContainer: {},
@@ -81,7 +78,7 @@ class MassifsSearch extends React.Component {
 
   getInitialState = () => ({
     name: '',
-  })
+  });
 
   /**
    * keyName: String
@@ -97,24 +94,15 @@ class MassifsSearch extends React.Component {
 
   resetToInitialState = () => {
     this.setState(this.getInitialState());
-  }
+  };
 
   render() {
-    const {
-      classes,
-      resourceType,
-      resetResults,
-      startAdvancedsearch,
-    } = this.props;
+    const { classes, resourceType, resetResults, startAdvancedsearch } = this.props;
 
-    const {
-      name,
-    } = this.state;
+    const { name } = this.state;
 
     return (
-      <Card
-        className={classes.cardContainer}
-      >
+      <Card className={classes.cardContainer}>
         <CardContent>
           <form
             noValidate
@@ -125,16 +113,18 @@ class MassifsSearch extends React.Component {
             }}
             className={classes.formContainer}
           >
-            <h5 style={{ width: '100%' }}><Translate>Massif properties</Translate></h5>
+            <h5 style={{ width: '100%' }}>
+              <Translate>Massif properties</Translate>
+            </h5>
 
             <div className={classes.formPartContainer} style={{ justifyContent: 'flex-start' }}>
               <TextField
                 className={classes.formElement}
-                label={(
+                label={
                   <span className={classes.formElementFontSize}>
                     <Translate>Massif name</Translate>
                   </span>
-                )}
+                }
                 onChange={(event) => this.handleValueChange('name', event)}
                 value={name}
                 InputProps={{
@@ -149,7 +139,6 @@ class MassifsSearch extends React.Component {
               resetResults={resetResults}
               resetParentState={this.resetToInitialState}
             />
-
           </form>
         </CardContent>
       </Card>
@@ -164,8 +153,6 @@ MassifsSearch.propTypes = {
   resourceType: PropTypes.string.isRequired,
 };
 
-MassifsSearch.defaultProps = {
-
-};
+MassifsSearch.defaultProps = {};
 
 export default withStyles(styles)(MassifsSearch);

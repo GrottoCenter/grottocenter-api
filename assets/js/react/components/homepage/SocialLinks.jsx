@@ -3,7 +3,12 @@ import styled, { keyframes } from 'styled-components';
 import InternationalizedLink from '../common/InternationalizedLink';
 import GCLink from '../common/GCLink';
 import {
-  bloggerLinks, wikiBatsLinks, rssLinks, facebookLink, twitterLink, githubLink,
+  bloggerLinks,
+  wikiBatsLinks,
+  rssLinks,
+  facebookLink,
+  twitterLink,
+  githubLink,
 } from '../../conf/Config';
 
 //
@@ -60,7 +65,10 @@ const SocialLinks = () => (
   <SocialLinksList>
     <SocialLinksListItem>
       <InternationalizedLink links={facebookLink}>
-        <SocialImage src="/images/icons8/icons8-facebook-filled-100.png" alt="Follow us on Facebook" />
+        <SocialImage
+          src="/images/icons8/icons8-facebook-filled-100.png"
+          alt="Follow us on Facebook"
+        />
       </InternationalizedLink>
     </SocialLinksListItem>
     <SocialLinksListItem>
@@ -75,17 +83,26 @@ const SocialLinks = () => (
     </SocialLinksListItem>
     <SocialLinksListItem>
       <InternationalizedLink links={twitterLink}>
-        <SocialImage src="/images/icons8/icons8-twitter-filled-100.png" alt="Follow us on Twitter" />
+        <SocialImage
+          src="/images/icons8/icons8-twitter-filled-100.png"
+          alt="Follow us on Twitter"
+        />
       </InternationalizedLink>
     </SocialLinksListItem>
     <SocialLinksListItem>
       <InternationalizedLink links={githubLink}>
-        <SocialImage src="/images/icons8/icons8-github-filled-100.png" alt="Grottocenter3 on GitHub" />
+        <SocialImage
+          src="/images/icons8/icons8-github-filled-100.png"
+          alt="Grottocenter3 on GitHub"
+        />
       </InternationalizedLink>
     </SocialLinksListItem>
     <SocialLinksListItem>
       <GCLink internal href="/ui/api">
-        <ApiSocialImage src="/images/icons8/icons8-rest-api-filled-100.png" alt="Want to use our API?" />
+        <ApiSocialImage
+          src="/images/icons8/icons8-rest-api-filled-100.png"
+          alt="Want to use our API?"
+        />
       </GCLink>
     </SocialLinksListItem>
     <SocialLinksListItem>

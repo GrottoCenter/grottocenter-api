@@ -6,13 +6,13 @@ import { withTheme } from '@material-ui/core/styles';
 import AliceCarousel from 'react-alice-carousel';
 import 'react-alice-carousel/lib/alice-carousel.css';
 
-const PartnerVignette = withTheme()(styled.div`
+const PartnerVignette = withTheme(styled.div`
   margin-left: 2%;
   margin-right: 2%;
   margin-top: 2%;
   margin-bottom: 2%;
   background-color: white;
-  border: 1px solid ${props => props.theme.palette.primary1Color};
+  border: 1px solid ${(props) => props.theme.palette.primary1Color};
   border-radius: 2%;
   overflow: hidden;
   position: relative;
@@ -52,17 +52,17 @@ const PartnerImage = styled.img`
   transform: translate(-50%, -50%);
 `;
 
-const CarouselDiv = withTheme()(styled.div`
+const CarouselDiv = withTheme(styled.div`
   text-align: center;
-   width: 100%;
-   li.alice-carousel__dots-item {
-   opacity: 50%;
-    background-color: ${props => props.theme.palette.accent1Color};
-   }
-   li.alice-carousel__dots-item.__active {
+  width: 100%;
+  li.alice-carousel__dots-item {
+    opacity: 50%;
+    background-color: ${(props) => props.theme.palette.accent1Color};
+  }
+  li.alice-carousel__dots-item.__active {
     opacity: 100%;
-    background-color: ${props => props.theme.palette.accent1Color};
-   }
+    background-color: ${(props) => props.theme.palette.accent1Color};
+  }
 `);
 
 const PartnerItem = ({ imagePath, name, onClick }) => (
@@ -78,27 +78,28 @@ PartnerItem.propTypes = {
 };
 
 const PartnersCarousel = ({ fetch, partners, isFetching }) => {
-  const isFirstLoad = useRef(true)
-  const rows = partners ? partners.map(({ id, pictureFileName, name, customMessage }) => (
-    <PartnerItem
-      key={`partcs-${id}`}
-      imagePath={`/images/partners/${pictureFileName}`}
-      alt={name}
-      onClick={() => window.open(customMessage, 'grotto_partner')}
-    />
-  )) : [];
+  const isFirstLoad = useRef(true);
+  const rows = partners
+    ? partners.map(({ id, pictureFileName, name, customMessage }) => (
+        <PartnerItem
+          key={`partcs-${id}`}
+          imagePath={`/images/partners/${pictureFileName}`}
+          alt={name}
+          onClick={() => window.open(customMessage, 'grotto_partner')}
+        />
+      ))
+    : [];
 
   useEffect(() => {
     if (isFirstLoad.current) {
       fetch();
       isFirstLoad.current = false;
     }
-  }, [])
+  }, []);
 
   if (isFetching) {
-    return (<CircularProgress />);
-  }
-  else if (rows.length > 0) {
+    return <CircularProgress />;
+  } else if (rows.length > 0) {
     return (
       <CarouselDiv>
         <AliceCarousel
@@ -113,7 +114,7 @@ const PartnersCarousel = ({ fetch, partners, isFetching }) => {
     );
   }
   return null;
-}
+};
 
 PartnersCarousel.propTypes = {
   fetch: PropTypes.func.isRequired,

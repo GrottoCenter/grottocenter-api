@@ -16,7 +16,8 @@ const updatePageTitleTooltip = (newPageTitleTooltip) => (dispatch) => {
 const mapDispatchToProps = (dispatch, props) => ({
   fetch: dispatch(loadBbs(props.match.params.bbsId)),
   updatePageTitle: (newPageTitle) => dispatch(updatePageTitle(newPageTitle)),
-  updatePageTitleTooltip: (newPageTitleTooltip) => dispatch(updatePageTitleTooltip(newPageTitleTooltip)),
+  updatePageTitleTooltip: (newPageTitleTooltip) =>
+    dispatch(updatePageTitleTooltip(newPageTitleTooltip)),
 });
 
 const mapStateToProps = (state) => ({

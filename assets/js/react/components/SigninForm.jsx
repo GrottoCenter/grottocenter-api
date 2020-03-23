@@ -33,12 +33,32 @@ class SigninForm extends React.Component {
       <Modal>
         <div className="loginForm">
           <div className="form-group">
-            <label htmlFor="contact"><Translate id="Email" /></label>
-            <input className="form-control" type="email" name="contact" id="contact" placeholder="Email" value={this.state.contact} onChange={this.handleContact} />
+            <label htmlFor="contact">
+              <Translate id="Email" />
+            </label>
+            <input
+              className="form-control"
+              type="email"
+              name="contact"
+              id="contact"
+              placeholder="Email"
+              value={this.state.contact}
+              onChange={this.handleContact}
+            />
           </div>
           <div className="form-group">
-            <label htmlFor="password"><Translate id="Password" /></label>
-            <input className="form-control" type="password" name="password" id="password" placeholder="Password" value={this.state.password} onChange={this.handlePassword} />
+            <label htmlFor="password">
+              <Translate id="Password" />
+            </label>
+            <input
+              className="form-control"
+              type="password"
+              name="password"
+              id="password"
+              placeholder="Password"
+              value={this.state.password}
+              onChange={this.handlePassword}
+            />
           </div>
         </div>
       </Modal>

@@ -29,7 +29,7 @@ export class EntryData extends Component {
     const stat = this.props.entry.stat;
     const entryInfo = this.props.entry.entryInfo;
     const timeInfo = this.props.entry.timeInfo;
-    let lang = locale.substring(0,1).toUpperCase() + locale.substring(1, locale.length); //eslint-disable-line
+    let lang = locale.substring(0, 1).toUpperCase() + locale.substring(1, locale.length); //eslint-disable-line
 
     let imageElement = <div />;
     if (entryInfo && entryInfo.path) {
@@ -66,11 +66,7 @@ const EntryTitle = ({ entry }) => (
   <div className="entryLocation" dir="ltr">
     <EntryName>{entry.name}</EntryName>
     <EntryRegion>
-      {entry.region}
-      {' '}
--
-      {' '}
-      {entry.country}
+      {entry.region} - {entry.country}
     </EntryRegion>
   </div>
 );
@@ -85,16 +81,14 @@ const RatingList = styled.ul`
 
 const EntryStat = ({ stat }) => (
   <div>
-    {!stat
-      && <Translate>At this time, there is no comment for this entry</Translate>}
-    {stat
-      && (
+    {!stat && <Translate>At this time, there is no comment for this entry</Translate>}
+    {stat && (
       <RatingList>
         <EntryStatItem itemScore={stat.aestheticism} itemLabel="Interest" />
         <EntryStatItem itemScore={stat.caving} itemLabel="Ease to move" />
         <EntryStatItem itemScore={stat.approach} itemLabel="Access" />
       </RatingList>
-      )}
+    )}
   </div>
 );
 
@@ -145,9 +139,7 @@ export class EntryStatItem extends Component {
 
   render() {
     if (!this.props.itemScore) {
-      return (
-        <div />
-      );
+      return <div />;
     }
 
     const score = this.props.itemScore / 2;
@@ -184,18 +176,42 @@ EntryStatItem.propTypes = {
 
 const EntryInfos = ({ timeInfo, entryInfo }) => (
   <div className="infos">
-    {timeInfo
-      && <EntryInfoItem key="eiik1" itemImg="time-to-go.svg" itemLabel="time to go" itemType="time" itemValue={timeInfo.eTTrail} />
-    }
-    {timeInfo
-      && <EntryInfoItem key="eiik2" itemImg="underground_time.svg" itemLabel="underground time" itemType="time" itemValue={timeInfo.eTUnderground} />
-    }
-    {entryInfo
-      && <EntryInfoItem key="eiik3" itemImg="length.svg" itemLabel="length" itemValue={entryInfo.length} itemUnit="m" />
-    }
-    {entryInfo
-      && <EntryInfoItem key="eiik4" itemImg="depth.svg" itemLabel="depth" itemValue={entryInfo.depth} itemUnit="m" />
-    }
+    {timeInfo && (
+      <EntryInfoItem
+        key="eiik1"
+        itemImg="time-to-go.svg"
+        itemLabel="time to go"
+        itemType="time"
+        itemValue={timeInfo.eTTrail}
+      />
+    )}
+    {timeInfo && (
+      <EntryInfoItem
+        key="eiik2"
+        itemImg="underground_time.svg"
+        itemLabel="underground time"
+        itemType="time"
+        itemValue={timeInfo.eTUnderground}
+      />
+    )}
+    {entryInfo && (
+      <EntryInfoItem
+        key="eiik3"
+        itemImg="length.svg"
+        itemLabel="length"
+        itemValue={entryInfo.length}
+        itemUnit="m"
+      />
+    )}
+    {entryInfo && (
+      <EntryInfoItem
+        key="eiik4"
+        itemImg="depth.svg"
+        itemLabel="depth"
+        itemValue={entryInfo.depth}
+        itemUnit="m"
+      />
+    )}
   </div>
 );
 
@@ -235,9 +251,7 @@ export class EntryInfoItem extends Component {
   render() {
     let displayValue = this.props.itemValue;
     if (displayValue === undefined || displayValue === null) {
-      return (
-        <span />
-      );
+      return <span />;
     }
 
     if (this.props.itemType === 'time') {
@@ -248,16 +262,12 @@ export class EntryInfoItem extends Component {
         const toTranslate = `${curMinutes} min`;
         displayValue = <Translate>{toTranslate}</Translate>;
       } else if (curMinutes === 0) {
-        const toTranslate = `${curHours} hour${(curHours > 1) ? 's' : ''}`;
+        const toTranslate = `${curHours} hour${curHours > 1 ? 's' : ''}`;
         displayValue = <Translate>{toTranslate}</Translate>;
       } else {
         displayValue = (
           <Translate>
-            {curHours}
-            {' '}
-h
-            {' '}
-            {curMinutes}
+            {curHours} h {curMinutes}
           </Translate>
         );
       }
@@ -265,7 +275,11 @@ h
 
     return (
       <EntryInfoWrapper>
-        <InfoImage src={`images/${this.props.itemImg}`} title={this.props.itemLabel} alt={this.props.itemLabel} />
+        <InfoImage
+          src={`images/${this.props.itemImg}`}
+          title={this.props.itemLabel}
+          alt={this.props.itemLabel}
+        />
         <InfoValue>{displayValue}</InfoValue>
         <InfoUnit>{this.props.itemUnit}</InfoUnit>
       </EntryInfoWrapper>
@@ -293,14 +307,12 @@ const NoImage = styled.img`
 
 const EntryImage = ({ src }) => (
   <GridOneHalfColumn>
-    {!src
-      && (
+    {!src && (
       <NoImage>
         <Translate>At this time, there is no image for this entry</Translate>
       </NoImage>
-      )}
-    {src
-      && <TopoImage src={src} alt="topo" />}
+    )}
+    {src && <TopoImage src={src} alt="topo" />}
   </GridOneHalfColumn>
 );
 
@@ -314,7 +326,7 @@ const RandomEntryLink = styled(GCLink)`
 `;
 
 const EntryWrapper = styled.div`
-  background-color: rgba(110,110,110,.5);;
+  background-color: rgba(110, 110, 110, 0.5);
   margin: auto;
   padding: 20px;
   border-radius: 5px;
@@ -338,19 +350,25 @@ class RandomEntryCard extends Component {
 
   render() {
     if (this.props.isFetching) {
-      return (<CircularProgress />);
+      return <CircularProgress />;
     }
     if (this.props.entry && this.props.entry.id) {
-      let detailPageV2Link = (detailPageV2Links[locale] !== undefined) ? detailPageV2Links[locale] : detailPageV2Links['*']; //eslint-disable-line
+      let detailPageV2Link =
+        detailPageV2Links[locale] !== undefined
+          ? detailPageV2Links[locale]
+          : detailPageV2Links['*']; //eslint-disable-line
       return (
-        <RandomEntryLink href={`${detailPageV2Link}&category=entry&id=${this.props.entry.id}`} target="blank">
+        <RandomEntryLink
+          href={`${detailPageV2Link}&category=entry&id=${this.props.entry.id}`}
+          target="blank"
+        >
           <EntryWrapper>
             <EntryData entry={this.props.entry} />
           </EntryWrapper>
         </RandomEntryLink>
       );
     }
-    return (<div />);
+    return <div />;
   }
 }
 

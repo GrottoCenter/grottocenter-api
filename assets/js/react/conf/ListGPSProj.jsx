@@ -11,4 +11,4 @@ export const unitsTab = {
     yName: 'Y',
     yUnit: 'm',
   },
-}
+};

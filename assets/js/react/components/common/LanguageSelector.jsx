@@ -1,95 +1,86 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import Input from '@material-ui/core/Input';
-import MenuItem from '@material-ui/core/MenuItem';
-import Select from '@material-ui/core/Select';
+import { Select, MenuItem, Input } from '@material-ui/core';
 import { withStyles } from '@material-ui/core/styles';
+import LanguageIcon from '@material-ui/icons/Translate';
+import styled from 'styled-components';
+import { isMobileOnly } from 'react-device-detect';
 
-//
-//
-// S T Y L I N G - C O M P O N E N T S
-//
-//
-
-const LanguageItem = withStyles(theme => ({
-  root: {
-    fontSize: '16px',
-    color: theme.palette.primaryTextColor,
-  },
-}), { withTheme: true })(MenuItem);
-
-const LanguageInput = withStyles(theme => ({
-  root: {
-    background: 'none',
-  },
-  underline: {
-    '&:before,&:hover,&:after,&:focus': {
-      borderColor: `${theme.palette.textIconColor} !important`,
+const LanguageInput = withStyles(
+  (theme) => ({
+    root: {
       background: 'none',
     },
-  },
-}), { withTheme: true })(Input);
-
-const StyledSelect = withStyles(theme => ({
-  root: {
-    paddingLeft: '10px',
-    color: theme.palette.textIconColor,
-    minWidth: '150px',
-    width: 'initial',
-  },
-  selectMenu: {
-    fontSize: '16px',
-    minHeight: '12px',
-  },
-  select: {
-    '&:before,&:hover,&:after,,&:focus': {
-      background: 'none',
+    underline: {
+      '&:before,&:hover,&:after,&:focus': {
+        borderColor: `${theme.palette.textIconColor} !important`,
+        background: 'none',
+      },
     },
-  },
-  icon: {
-    color: theme.palette.textIconColor,
-  },
-}), { withTheme: true })(Select);
+  }),
+  { withTheme: true },
+)(Input);
 
-//
-//
-// M A I N - C O M P O N E N T
-//
-//
+const StyledSelect = withStyles(
+  (theme) => ({
+    root: {
+      paddingLeft: '10px',
+      color: theme.palette.onPrimary.main,
+      minWidth: isMobileOnly ? 'auto' : '150px',
+      width: 'initial',
+    },
+    selectMenu: {
+      fontSize: '16px',
+      minHeight: '12px',
+    },
+    select: {
+      '&:before,&:hover,&:after,,&:focus': {
+        background: 'none',
+      },
+    },
+    icon: {
+      color: theme.palette.onPrimary.main,
+    },
+  }),
+  { withTheme: true },
+)(Select);
 
-const LanguageSelector = (props) => {
+const Wrapper = styled.div`
+  display: flex;
+  align-items: center;
+`;
+
+const LanguageSelector = ({ dispatch = () => {} }) => {
   const handleChange = (event) => {
-    const value = event.target.value;
+    const { value } = event.target;
     if (value === locale) {
       return;
     }
+
     // To be uncommented when we will be able to retrieve catalog without page relaod
-    // this.props.dispatch(changeLanguage(value));
+    // props.dispatch(changeLanguage(value));
     window.location = `?lang=${value}`;
   };
 
-  const items = Object.keys(localesList).map(id => (
-    <LanguageItem
-      key={id}
-      value={id}
-    >
+  const items = Object.keys(localesList).map((id) => (
+    <MenuItem key={id} value={id}>
       {localesList[id]}
-    </LanguageItem>
+    </MenuItem>
   ));
 
   return (
-    <StyledSelect
-      value={locale}
-      onChange={handleChange}
-      input={<LanguageInput />}
-    >
-      {items}
-    </StyledSelect>
+    <Wrapper>
+      <LanguageIcon />
+      <StyledSelect value={locale} onChange={handleChange} input={<LanguageInput />}>
+        {items}
+      </StyledSelect>
+    </Wrapper>
   );
 };
 
 LanguageSelector.propTypes = {
-  dispatch: PropTypes.func.isRequired,
+  // eslint-disable-next-line react/require-default-props
+  dispatch: PropTypes.func,
 };
 
 export default LanguageSelector;

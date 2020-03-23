@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { directionManager } from '../../containers/TextDirectionProvider';
-import { RIGHT_TO_LEFT } from '../../conf/Config';
+import { directionManager } from '../containers/TextDirectionProvider';
+import { RIGHT_TO_LEFT } from '../conf/Config';
 
 //
 //
@@ -10,9 +10,7 @@ import { RIGHT_TO_LEFT } from '../../conf/Config';
 //
 
 const BasePage = ({ children, direction }) => (
-  <div style={{ direction: (direction === RIGHT_TO_LEFT ? 'rtl' : 'ltr') }}>
-    {children}
-  </div>
+  <div style={{ direction: direction === RIGHT_TO_LEFT ? 'rtl' : 'ltr' }}>{children}</div>
 );
 
 BasePage.propTypes = {

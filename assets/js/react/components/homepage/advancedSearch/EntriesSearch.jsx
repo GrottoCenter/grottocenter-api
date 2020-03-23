@@ -2,8 +2,17 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import {
-  Card, CardContent, FormControl, Input, InputAdornment, InputLabel, FormLabel,
-  NativeSelect, TextField, Switch, withStyles,
+  Card,
+  CardContent,
+  FormControl,
+  Input,
+  InputAdornment,
+  InputLabel,
+  FormLabel,
+  NativeSelect,
+  TextField,
+  Switch,
+  withStyles,
 } from '@material-ui/core';
 
 import Slider from 'rc-slider';
@@ -79,14 +88,19 @@ class EntriesSearch extends React.Component {
 
   getInitialState = () => {
     const {
-      aestheticismMinValue, aestheticismMaxValue,
-      approachMinValue, approachMaxValue,
-      caveDepthMinValue, caveDepthMaxValue,
-      caveLengthMinValue, caveLengthMaxValue,
-      cavingMinValue, cavingMaxValue,
+      aestheticismMinValue,
+      aestheticismMaxValue,
+      approachMinValue,
+      approachMaxValue,
+      caveDepthMinValue,
+      caveDepthMaxValue,
+      caveLengthMinValue,
+      caveLengthMaxValue,
+      cavingMinValue,
+      cavingMaxValue,
     } = this.props;
 
-    return ({
+    return {
       'aestheticism-range': {
         isEditable: false,
         min: aestheticismMinValue,
@@ -127,8 +141,8 @@ class EntriesSearch extends React.Component {
         max: new Date().getFullYear(),
       },
       matchAllFields: true,
-    });
-  }
+    };
+  };
 
   /**
    * This function set the state of the keyname property
@@ -166,8 +180,8 @@ class EntriesSearch extends React.Component {
     const newState = {
       [keyName]: {
         ...this.state[keyName],
-        min: (values[0] < minValueAuthorized ? minValueAuthorized : values[0]),
-        max: (values[1] > maxValueAuthorized ? maxValueAuthorized : values[1]),
+        min: values[0] < minValueAuthorized ? minValueAuthorized : values[0],
+        max: values[1] > maxValueAuthorized ? maxValueAuthorized : values[1],
       },
     };
 
@@ -182,7 +196,7 @@ class EntriesSearch extends React.Component {
 
   resetToInitialState = () => {
     this.setState(this.getInitialState());
-  }
+  };
 
   render() {
     const {
@@ -190,11 +204,16 @@ class EntriesSearch extends React.Component {
       resourceType,
       resetResults,
       startAdvancedsearch,
-      aestheticismMinValue, aestheticismMaxValue,
-      approachMinValue, approachMaxValue,
-      caveDepthMinValue, caveDepthMaxValue,
-      caveLengthMinValue, caveLengthMaxValue,
-      cavingMinValue, cavingMaxValue,
+      aestheticismMinValue,
+      aestheticismMaxValue,
+      approachMinValue,
+      approachMaxValue,
+      caveDepthMinValue,
+      caveDepthMaxValue,
+      caveLengthMinValue,
+      caveLengthMaxValue,
+      cavingMinValue,
+      cavingMaxValue,
     } = this.props;
 
     const {
@@ -219,9 +238,7 @@ class EntriesSearch extends React.Component {
     const { intl } = this.context;
 
     return (
-      <Card
-        className={classes.cardContainer}
-      >
+      <Card className={classes.cardContainer}>
         <CardContent>
           <form
             noValidate
@@ -232,16 +249,18 @@ class EntriesSearch extends React.Component {
             }}
             className={classes.formContainer}
           >
-            <h5 style={{ width: '100%' }}><Translate>Entry properties</Translate></h5>
+            <h5 style={{ width: '100%' }}>
+              <Translate>Entry properties</Translate>
+            </h5>
 
             <div className={classes.formPartContainer} style={{ justifyContent: 'flex-start' }}>
               <TextField
                 className={classes.formElement}
-                label={(
+                label={
                   <span className={classes.formElementFontSize}>
                     <Translate>Entry name</Translate>
                   </span>
-                )}
+                }
                 onChange={(event) => this.handleValueChange('name', event)}
                 value={name}
                 InputProps={{
@@ -253,16 +272,18 @@ class EntriesSearch extends React.Component {
             </div>
 
             <fieldset className={classes.fieldset}>
-              <legend className={classes.legend}><Translate>Localization</Translate></legend>
+              <legend className={classes.legend}>
+                <Translate>Localization</Translate>
+              </legend>
 
               <div className={classes.formPartContainer}>
                 <TextField
                   className={classes.formElement}
-                  label={(
+                  label={
                     <span className={classes.formElementFontSize}>
                       <Translate>City</Translate>
                     </span>
-                  )}
+                  }
                   onChange={(event) => this.handleValueChange('city', event)}
                   value={city}
                   InputProps={{
@@ -274,11 +295,11 @@ class EntriesSearch extends React.Component {
 
                 <TextField
                   className={classes.formElement}
-                  label={(
+                  label={
                     <span className={classes.formElementFontSize}>
                       <Translate>County</Translate>
                     </span>
-                  )}
+                  }
                   onChange={(event) => this.handleValueChange('county', event)}
                   value={county}
                   InputProps={{
@@ -290,11 +311,11 @@ class EntriesSearch extends React.Component {
 
                 <TextField
                   className={classes.formElement}
-                  label={(
+                  label={
                     <span className={classes.formElementFontSize}>
                       <Translate>Region</Translate>
                     </span>
-                  )}
+                  }
                   onChange={(event) => this.handleValueChange('region', event)}
                   value={region}
                   InputProps={{
@@ -306,11 +327,11 @@ class EntriesSearch extends React.Component {
 
                 <TextField
                   className={classes.formElement}
-                  label={(
+                  label={
                     <span className={classes.formElementFontSize}>
                       <Translate>Country</Translate>
                     </span>
-                  )}
+                  }
                   onChange={(event) => this.handleValueChange('country', event)}
                   value={country}
                   InputProps={{
@@ -322,11 +343,11 @@ class EntriesSearch extends React.Component {
 
                 <TextField
                   className={classes.formElement}
-                  label={(
+                  label={
                     <span className={classes.formElementFontSize}>
                       <Translate>Massif name</Translate>
                     </span>
-                  )}
+                  }
                   onChange={(event) => this.handleValueChange('massif name', event)}
                   value={massifName}
                   InputProps={{
@@ -339,13 +360,12 @@ class EntriesSearch extends React.Component {
             </fieldset>
 
             <fieldset className={classes.fieldset}>
-              <legend className={classes.legend}><Translate>Rating criterias</Translate></legend>
+              <legend className={classes.legend}>
+                <Translate>Rating criterias</Translate>
+              </legend>
 
               <div className={classes.formPartContainer}>
-
-                <FormControl
-                  className={classes.formElement}
-                >
+                <FormControl className={classes.formElement}>
                   <FormLabel>
                     <span className={classes.formElementFontSize}>
                       <Translate>Aesthetic</Translate>
@@ -366,24 +386,50 @@ class EntriesSearch extends React.Component {
                     min={aestheticismMinValue}
                     max={aestheticismMaxValue}
                     onChange={(values) => {
-                      this.handleRangeChange('aestheticism-range', values, aestheticismMinValue, aestheticismMaxValue);
+                      this.handleRangeChange(
+                        'aestheticism-range',
+                        values,
+                        aestheticismMinValue,
+                        aestheticismMaxValue,
+                      );
                     }}
                     tipFormatter={(value) => `${value}`}
                     value={[aestheticismRange.min, aestheticismRange.max]}
                     disabled={!aestheticismRange.isEditable}
-                    trackStyle={[!aestheticismRange.isEditable ? { backgroundColor: '#9e9e9e' } : { backgroundColor: '#ff9800' }]}
-                    handleStyle={[{ backgroundColor: '#795548', borderColor: '#795548' }, { backgroundColor: '#795548', borderColor: '#795548' }]}
+                    trackStyle={[
+                      !aestheticismRange.isEditable
+                        ? { backgroundColor: '#9e9e9e' }
+                        : { backgroundColor: '#ff9800' },
+                    ]}
+                    handleStyle={[
+                      { backgroundColor: '#795548', borderColor: '#795548' },
+                      { backgroundColor: '#795548', borderColor: '#795548' },
+                    ]}
                   />
 
                   <div style={{ display: 'inline-flex', justifyContent: 'space-between' }}>
                     <TextField
-                      onChange={(event) => this.handleRangeChange('aestheticism-range', [parseInt(event.target.value, 10) || 0, aestheticismRange.max], aestheticismMinValue, aestheticismMaxValue)}
+                      onChange={(event) =>
+                        this.handleRangeChange(
+                          'aestheticism-range',
+                          [parseInt(event.target.value, 10) || 0, aestheticismRange.max],
+                          aestheticismMinValue,
+                          aestheticismMaxValue,
+                        )
+                      }
                       value={aestheticismRange.min}
                       disabled={!aestheticismRange.isEditable}
                       style={{ width: '30px' }}
                     />
                     <TextField
-                      onChange={(event) => this.handleRangeChange('aestheticism-range', [aestheticismRange.min, parseInt(event.target.value, 10) || 0], aestheticismMinValue, aestheticismMaxValue)}
+                      onChange={(event) =>
+                        this.handleRangeChange(
+                          'aestheticism-range',
+                          [aestheticismRange.min, parseInt(event.target.value, 10) || 0],
+                          aestheticismMinValue,
+                          aestheticismMaxValue,
+                        )
+                      }
                       value={aestheticismRange.max}
                       disabled={!aestheticismRange.isEditable}
                       style={{ width: '30px' }}
@@ -391,9 +437,7 @@ class EntriesSearch extends React.Component {
                   </div>
                 </FormControl>
 
-                <FormControl
-                  className={classes.formElement}
-                >
+                <FormControl className={classes.formElement}>
                   <FormLabel>
                     <span className={classes.formElementFontSize}>
                       <Translate>Ease of move</Translate>
@@ -414,24 +458,50 @@ class EntriesSearch extends React.Component {
                     min={cavingMinValue}
                     max={cavingMaxValue}
                     onChange={(values) => {
-                      this.handleRangeChange('caving-range', values, cavingMinValue, cavingMaxValue);
+                      this.handleRangeChange(
+                        'caving-range',
+                        values,
+                        cavingMinValue,
+                        cavingMaxValue,
+                      );
                     }}
                     tipFormatter={(value) => `${value}`}
                     value={[cavingRange.min, cavingRange.max]}
                     disabled={!cavingRange.isEditable}
-                    trackStyle={[!cavingRange.isEditable ? { backgroundColor: '#9e9e9e' } : { backgroundColor: '#ff9800' }]}
-                    handleStyle={[{ backgroundColor: '#795548', borderColor: '#795548' }, { backgroundColor: '#795548', borderColor: '#795548' }]}
+                    trackStyle={[
+                      !cavingRange.isEditable
+                        ? { backgroundColor: '#9e9e9e' }
+                        : { backgroundColor: '#ff9800' },
+                    ]}
+                    handleStyle={[
+                      { backgroundColor: '#795548', borderColor: '#795548' },
+                      { backgroundColor: '#795548', borderColor: '#795548' },
+                    ]}
                   />
 
                   <div style={{ display: 'inline-flex', justifyContent: 'space-between' }}>
                     <TextField
-                      onChange={(event) => this.handleRangeChange('caving-range', [parseInt(event.target.value, 10) || 0, cavingRange.max], cavingMinValue, cavingMaxValue)}
+                      onChange={(event) =>
+                        this.handleRangeChange(
+                          'caving-range',
+                          [parseInt(event.target.value, 10) || 0, cavingRange.max],
+                          cavingMinValue,
+                          cavingMaxValue,
+                        )
+                      }
                       value={cavingRange.min}
                       disabled={!cavingRange.isEditable}
                       style={{ width: '30px' }}
                     />
                     <TextField
-                      onChange={(event) => this.handleRangeChange('caving-range', [cavingRange.min, parseInt(event.target.value, 10) || 0], cavingMinValue, cavingMaxValue)}
+                      onChange={(event) =>
+                        this.handleRangeChange(
+                          'caving-range',
+                          [cavingRange.min, parseInt(event.target.value, 10) || 0],
+                          cavingMinValue,
+                          cavingMaxValue,
+                        )
+                      }
                       value={cavingRange.max}
                       disabled={!cavingRange.isEditable}
                       style={{ width: '30px' }}
@@ -439,9 +509,7 @@ class EntriesSearch extends React.Component {
                   </div>
                 </FormControl>
 
-                <FormControl
-                  className={classes.formElement}
-                >
+                <FormControl className={classes.formElement}>
                   <FormLabel>
                     <span className={classes.formElementFontSize}>
                       <Translate>Ease of reach</Translate>
@@ -462,47 +530,72 @@ class EntriesSearch extends React.Component {
                     min={aestheticismMinValue}
                     max={aestheticismMaxValue}
                     onChange={(values) => {
-                      this.handleRangeChange('approach-range', values, approachMinValue, approachMaxValue);
+                      this.handleRangeChange(
+                        'approach-range',
+                        values,
+                        approachMinValue,
+                        approachMaxValue,
+                      );
                     }}
                     tipFormatter={(value) => `${value}`}
                     value={[approachRange.min, approachRange.max]}
                     disabled={!approachRange.isEditable}
-                    trackStyle={[!approachRange.isEditable ? { backgroundColor: '#9e9e9e' } : { backgroundColor: '#ff9800' }]}
-                    handleStyle={[{ backgroundColor: '#795548', borderColor: '#795548' }, { backgroundColor: '#795548', borderColor: '#795548' }]}
+                    trackStyle={[
+                      !approachRange.isEditable
+                        ? { backgroundColor: '#9e9e9e' }
+                        : { backgroundColor: '#ff9800' },
+                    ]}
+                    handleStyle={[
+                      { backgroundColor: '#795548', borderColor: '#795548' },
+                      { backgroundColor: '#795548', borderColor: '#795548' },
+                    ]}
                   />
 
                   <div style={{ display: 'inline-flex', justifyContent: 'space-between' }}>
                     <TextField
-                      onChange={(event) => this.handleRangeChange('approach-range', [parseInt(event.target.value, 10) || 0, approachRange.max], approachMinValue, approachMaxValue)}
+                      onChange={(event) =>
+                        this.handleRangeChange(
+                          'approach-range',
+                          [parseInt(event.target.value, 10) || 0, approachRange.max],
+                          approachMinValue,
+                          approachMaxValue,
+                        )
+                      }
                       value={approachRange.min}
                       disabled={!approachRange.isEditable}
                       style={{ width: '30px' }}
                     />
                     <TextField
-                      onChange={(event) => this.handleRangeChange('approach-range', [approachRange.min, parseInt(event.target.value, 10) || 0], approachMinValue, approachMaxValue)}
+                      onChange={(event) =>
+                        this.handleRangeChange(
+                          'approach-range',
+                          [approachRange.min, parseInt(event.target.value, 10) || 0],
+                          approachMinValue,
+                          approachMaxValue,
+                        )
+                      }
                       value={approachRange.max}
                       disabled={!approachRange.isEditable}
                       style={{ width: '630px0px' }}
                     />
                   </div>
                 </FormControl>
-
               </div>
-
             </fieldset>
 
             <fieldset className={classes.fieldset}>
-              <legend className={classes.legend}><Translate>Network properties</Translate></legend>
+              <legend className={classes.legend}>
+                <Translate>Network properties</Translate>
+              </legend>
 
               <div className={classes.formPartContainer}>
-
                 <TextField
                   className={classes.formElement}
-                  label={(
+                  label={
                     <span className={classes.formElementFontSize}>
                       <Translate>Network name</Translate>
                     </span>
-                  )}
+                  }
                   onChange={(event) => this.handleValueChange('cave name', event)}
                   value={caveName}
                   InputProps={{
@@ -512,29 +605,33 @@ class EntriesSearch extends React.Component {
                   }}
                 />
 
-                <FormControl
-                  className={classes.formElement}
-                >
+                <FormControl className={classes.formElement}>
                   <InputLabel shrink htmlFor="cave-is-diving-native-label-placeholder">
                     <Translate>Diving cave</Translate>
                   </InputLabel>
                   <NativeSelect
                     value={caveIsDiving}
                     onChange={(event) => this.handleValueChange('cave is diving', event)}
-                    input={<Input name="cave-is-diving" id="cave-is-diving-native-label-placeholder" />}
+                    input={
+                      <Input name="cave-is-diving" id="cave-is-diving-native-label-placeholder" />
+                    }
                     classes={{
                       select: classes.formElementFontSize,
                     }}
                   >
-                    <option value="">{intl.formatMessage({ id: 'All', defaultMessage: 'All' })}</option>
-                    <option value="yes">{intl.formatMessage({ id: 'Yes', defaultMessage: 'Yes' })}</option>
-                    <option value="no">{intl.formatMessage({ id: 'No', defaultMessage: 'No' })}</option>
+                    <option value="">
+                      {intl.formatMessage({ id: 'All', defaultMessage: 'All' })}
+                    </option>
+                    <option value="yes">
+                      {intl.formatMessage({ id: 'Yes', defaultMessage: 'Yes' })}
+                    </option>
+                    <option value="no">
+                      {intl.formatMessage({ id: 'No', defaultMessage: 'No' })}
+                    </option>
                   </NativeSelect>
                 </FormControl>
 
-                <FormControl
-                  className={classes.formElement}
-                >
+                <FormControl className={classes.formElement}>
                   <FormLabel>
                     <span className={classes.formElementFontSize}>
                       <Translate>Depth</Translate>
@@ -555,18 +652,37 @@ class EntriesSearch extends React.Component {
                     min={caveDepthMinValue}
                     max={caveDepthMaxValue}
                     onChange={(values) => {
-                      this.handleRangeChange('cave depth-range', values, caveDepthMinValue, caveDepthMaxValue);
+                      this.handleRangeChange(
+                        'cave depth-range',
+                        values,
+                        caveDepthMinValue,
+                        caveDepthMaxValue,
+                      );
                     }}
                     tipFormatter={(value) => `${value}m`}
                     value={[caveDepthRange.min, caveDepthRange.max]}
                     disabled={!caveDepthRange.isEditable}
-                    trackStyle={[!caveDepthRange.isEditable ? { backgroundColor: '#9e9e9e' } : { backgroundColor: '#ff9800' }]}
-                    handleStyle={[{ backgroundColor: '#795548', borderColor: '#795548' }, { backgroundColor: '#795548', borderColor: '#795548' }]}
+                    trackStyle={[
+                      !caveDepthRange.isEditable
+                        ? { backgroundColor: '#9e9e9e' }
+                        : { backgroundColor: '#ff9800' },
+                    ]}
+                    handleStyle={[
+                      { backgroundColor: '#795548', borderColor: '#795548' },
+                      { backgroundColor: '#795548', borderColor: '#795548' },
+                    ]}
                   />
 
                   <div style={{ display: 'inline-flex', justifyContent: 'space-between' }}>
                     <TextField
-                      onChange={(event) => this.handleRangeChange('cave depth-range', [parseInt(event.target.value, 10) || 0, caveDepthRange.max], caveDepthMinValue, caveDepthMaxValue)}
+                      onChange={(event) =>
+                        this.handleRangeChange(
+                          'cave depth-range',
+                          [parseInt(event.target.value, 10) || 0, caveDepthRange.max],
+                          caveDepthMinValue,
+                          caveDepthMaxValue,
+                        )
+                      }
                       value={caveDepthRange.min}
                       disabled={!caveDepthRange.isEditable}
                       InputProps={{
@@ -575,7 +691,14 @@ class EntriesSearch extends React.Component {
                       style={{ width: '60px' }}
                     />
                     <TextField
-                      onChange={(event) => this.handleRangeChange('cave depth-range', [caveDepthRange.min, parseInt(event.target.value, 10) || 0], caveDepthMinValue, caveDepthMaxValue)}
+                      onChange={(event) =>
+                        this.handleRangeChange(
+                          'cave depth-range',
+                          [caveDepthRange.min, parseInt(event.target.value, 10) || 0],
+                          caveDepthMinValue,
+                          caveDepthMaxValue,
+                        )
+                      }
                       value={caveDepthRange.max}
                       disabled={!caveDepthRange.isEditable}
                       InputProps={{
@@ -586,9 +709,7 @@ class EntriesSearch extends React.Component {
                   </div>
                 </FormControl>
 
-                <FormControl
-                  className={classes.formElement}
-                >
+                <FormControl className={classes.formElement}>
                   <FormLabel>
                     <span className={classes.formElementFontSize}>
                       <Translate>Length</Translate>
@@ -609,18 +730,37 @@ class EntriesSearch extends React.Component {
                     min={caveLengthMinValue}
                     max={caveLengthMaxValue}
                     onChange={(values) => {
-                      this.handleRangeChange('cave length-range', values, caveLengthMinValue, caveLengthMaxValue);
+                      this.handleRangeChange(
+                        'cave length-range',
+                        values,
+                        caveLengthMinValue,
+                        caveLengthMaxValue,
+                      );
                     }}
                     tipFormatter={(value) => `${value}m`}
                     value={[caveLengthRange.min, caveLengthRange.max]}
                     disabled={!caveLengthRange.isEditable}
-                    trackStyle={[!caveLengthRange.isEditable ? { backgroundColor: '#9e9e9e' } : { backgroundColor: '#ff9800' }]}
-                    handleStyle={[{ backgroundColor: '#795548', borderColor: '#795548' }, { backgroundColor: '#795548', borderColor: '#795548' }]}
+                    trackStyle={[
+                      !caveLengthRange.isEditable
+                        ? { backgroundColor: '#9e9e9e' }
+                        : { backgroundColor: '#ff9800' },
+                    ]}
+                    handleStyle={[
+                      { backgroundColor: '#795548', borderColor: '#795548' },
+                      { backgroundColor: '#795548', borderColor: '#795548' },
+                    ]}
                   />
 
                   <div style={{ display: 'inline-flex', justifyContent: 'space-between' }}>
                     <TextField
-                      onChange={(event) => this.handleRangeChange('cave length-range', [parseInt(event.target.value, 10) || 0, caveLengthRange.max], caveLengthMinValue, caveLengthMaxValue)}
+                      onChange={(event) =>
+                        this.handleRangeChange(
+                          'cave length-range',
+                          [parseInt(event.target.value, 10) || 0, caveLengthRange.max],
+                          caveLengthMinValue,
+                          caveLengthMaxValue,
+                        )
+                      }
                       value={caveLengthRange.min}
                       disabled={!caveLengthRange.isEditable}
                       InputProps={{
@@ -629,7 +769,14 @@ class EntriesSearch extends React.Component {
                       style={{ width: '60px' }}
                     />
                     <TextField
-                      onChange={(event) => this.handleRangeChange('cave length-range', [caveLengthRange.min, parseInt(event.target.value, 10) || 0], caveLengthMinValue, caveLengthMaxValue)}
+                      onChange={(event) =>
+                        this.handleRangeChange(
+                          'cave length-range',
+                          [caveLengthRange.min, parseInt(event.target.value, 10) || 0],
+                          caveLengthMinValue,
+                          caveLengthMaxValue,
+                        )
+                      }
                       value={caveLengthRange.max}
                       disabled={!caveLengthRange.isEditable}
                       InputProps={{
@@ -640,8 +787,6 @@ class EntriesSearch extends React.Component {
                   </div>
                 </FormControl>
               </div>
-
-
             </fieldset>
 
             <div className={classes.formPartContainer} style={{ justifyContent: 'flex-start' }}>
@@ -663,7 +808,12 @@ class EntriesSearch extends React.Component {
                     }}
                   />
                   <br />
-                  <i><Translate className={classes.formElementFontSize}>Specify if the search results must match all the fields you typed above (default is yes).</Translate></i>
+                  <i>
+                    <Translate className={classes.formElementFontSize}>
+                      Specify if the search results must match all the fields you typed above
+                      (default is yes).
+                    </Translate>
+                  </i>
                 </FormLabel>
               </FormControl>
             </div>
@@ -672,10 +822,9 @@ class EntriesSearch extends React.Component {
               resetResults={resetResults}
               resetParentState={this.resetToInitialState}
             />
-
           </form>
         </CardContent>
-      </Card >
+      </Card>
     );
   }
 }

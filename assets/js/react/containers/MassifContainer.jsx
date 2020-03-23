@@ -9,7 +9,6 @@ const updatePageTitle = (newPageTitle) => (dispatch) => {
   dispatch(setPageTitle(newPageTitle));
 };
 
-
 const mapDispatchToProps = (dispatch, props) => ({
   fetch: dispatch(loadMassif(props.match.params.massifId)),
   updatePageTitle: (newPageTitle) => dispatch(updatePageTitle(newPageTitle)),

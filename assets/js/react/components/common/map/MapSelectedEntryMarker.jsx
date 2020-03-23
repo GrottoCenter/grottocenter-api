@@ -25,9 +25,7 @@ const MapSelectedEntryMarker = ({ selectedEntry }) => (
       e.target.openPopup();
     }}
   >
-    <MapEntryPopup
-      entry={selectedEntry}
-    />
+    <MapEntryPopup entry={selectedEntry} />
   </CircleMarker>
 );
 

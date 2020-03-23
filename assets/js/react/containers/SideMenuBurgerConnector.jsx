@@ -8,11 +8,11 @@ import { toggleSideMenu } from '../actions/SideMenu';
 //
 //
 
-const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = (dispatch) => ({
   onclick: () => dispatch(toggleSideMenu()),
 });
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   visible: state.sideMenu.visible,
 });
 

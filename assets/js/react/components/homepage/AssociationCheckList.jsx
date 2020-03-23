@@ -38,7 +38,7 @@ const ListIcon = styled(CheckIcon)`
   height: 50px !important; // lesshint importantRule: false
   width: 50px !important; // lesshint importantRule: false
   float: left;
-  fill: ${props => props.color} !important; // lesshint importantRule: false
+  fill: ${(props) => props.color} !important; // lesshint importantRule: false
 
   :hover {
     animation: ${zoomAnimation} 500ms ease;
@@ -88,11 +88,14 @@ const ListItem = styled.li`
   }
 `;
 
-const StyledListIcon = withStyles(theme => ({
-  root: {
-    fill: theme.palette.accent1Color,
-  },
-}), { withTheme: true })(ListIcon);
+const StyledListIcon = withStyles(
+  (theme) => ({
+    root: {
+      fill: theme.palette.accent1Color,
+    },
+  }),
+  { withTheme: true },
+)(ListIcon);
 
 //
 //
@@ -102,9 +105,7 @@ const StyledListIcon = withStyles(theme => ({
 
 const AssociationCheckList = ({ title, entries }) => (
   <CheckListWrapper>
-    <ListTitle>
-      {title}
-    </ListTitle>
+    <ListTitle>{title}</ListTitle>
 
     <CheckList>
       {entries.map((entry, i) => (

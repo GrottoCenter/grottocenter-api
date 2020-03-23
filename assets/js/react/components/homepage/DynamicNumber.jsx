@@ -14,22 +14,28 @@ import Translate from '../common/Translate';
 //
 //
 
-const StyledIconButton = withStyles(theme => ({
-  root: {
-    fill: theme.palette.accent1Color,
-  },
-}), { withTheme: true })(IconButton);
-
-const StyledSyncKOIcon = withStyles(theme => ({
-  root: {
-    '&:hover': {
+const StyledIconButton = withStyles(
+  (theme) => ({
+    root: {
       fill: theme.palette.accent1Color,
     },
-    fill: theme.palette.primary3Color,
-    height: '48px',
-    width: '48px',
-  },
-}), { withTheme: true })(SyncKOIcon);
+  }),
+  { withTheme: true },
+)(IconButton);
+
+const StyledSyncKOIcon = withStyles(
+  (theme) => ({
+    root: {
+      '&:hover': {
+        fill: theme.palette.accent1Color,
+      },
+      fill: theme.palette.primary3Color,
+      height: '48px',
+      width: '48px',
+    },
+  }),
+  { withTheme: true },
+)(SyncKOIcon);
 
 //
 //
@@ -58,8 +64,9 @@ class DynamicNumber extends Component {
 
   render() {
     if (this.props.isFetching) {
-      return (<CircularProgress />);
-    } if (!this.props.number) {
+      return <CircularProgress />;
+    }
+    if (!this.props.number) {
       return (
         <Translate>
           <StyledIconButton tooltip="Synchronisation error">
@@ -68,9 +75,7 @@ class DynamicNumber extends Component {
         </Translate>
       );
     }
-    return (
-      <span className={this.props.className}>{this.props.number}</span>
-    );
+    return <span className={this.props.className}>{this.props.number}</span>;
   }
 }
 

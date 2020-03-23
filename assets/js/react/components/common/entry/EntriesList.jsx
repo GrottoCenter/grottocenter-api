@@ -14,35 +14,27 @@ const StyledList = withStyles({
 })(List);
 
 const EntriesList = (props) => {
-  const {
-    entries,
-    title,
-    emptyMessage,
-  } = props;
+  const { entries, title, emptyMessage } = props;
 
   return (
     <div>
-      { entries.length > 0
-        ? (
-          <React.Fragment>
-            <strong>{title}</strong>
-            <StyledList>
-              { entries
-                .sort((a, b) => a.name > b.name)
-                .map(entry => (
-                  <EntryListItem key={entry.id} entry={entry} />
-                )) }
-            </StyledList>
-          </React.Fragment>
-        )
-        : (
-          <em>{emptyMessage}</em>
-        )
-      }
+      {entries.length > 0 ? (
+        <React.Fragment>
+          <strong>{title}</strong>
+          <StyledList>
+            {entries
+              .sort((a, b) => a.name > b.name)
+              .map((entry) => (
+                <EntryListItem key={entry.id} entry={entry} />
+              ))}
+          </StyledList>
+        </React.Fragment>
+      ) : (
+        <em>{emptyMessage}</em>
+      )}
     </div>
   );
 };
-
 
 EntriesList.propTypes = {
   entries: PropTypes.arrayOf(PropTypes.object),

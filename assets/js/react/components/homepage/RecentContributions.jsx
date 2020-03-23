@@ -22,13 +22,24 @@ const RecentContributions = () => (
               <div style={{ 'text-align': 'left', display: 'inline-table', width: '80%' }}>
                 <span>
                   <h5>
-                    <a href="#">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</a>
+                    <a href="#">
+                      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
+                      incididunt ut labore et dolore magna aliqua.
+                    </a>
                   </h5>
-                  <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+                  <p>
+                    Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
+                    aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in
+                    voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint
+                    occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim
+                    id est laborum.
+                  </p>
                 </span>
               </div>
               <div style={{ display: 'inline-table', width: '10%' }}>
-                <span><a href="/drupal_55960/?q=node/128">view</a></span>
+                <span>
+                  <a href="/drupal_55960/?q=node/128">view</a>
+                </span>
               </div>
             </div>
           </div>
@@ -44,13 +55,24 @@ const RecentContributions = () => (
               <div style={{ 'text-align': 'left', display: 'inline-table', width: '80%' }}>
                 <span>
                   <h5>
-                    <a href="#">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</a>
+                    <a href="#">
+                      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
+                      incididunt ut labore et dolore magna aliqua.
+                    </a>
                   </h5>
-                  <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+                  <p>
+                    Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
+                    aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in
+                    voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint
+                    occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim
+                    id est laborum.
+                  </p>
                 </span>
               </div>
               <div style={{ display: 'inline-table', width: '10%' }}>
-                <span><a href="/drupal_55960/?q=node/128">view</a></span>
+                <span>
+                  <a href="/drupal_55960/?q=node/128">view</a>
+                </span>
               </div>
             </div>
           </div>
@@ -66,13 +88,24 @@ const RecentContributions = () => (
               <div style={{ 'text-align': 'left', display: 'inline-table', width: '80%' }}>
                 <span>
                   <h5>
-                    <a href="#">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</a>
+                    <a href="#">
+                      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
+                      incididunt ut labore et dolore magna aliqua.
+                    </a>
                   </h5>
-                  <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+                  <p>
+                    Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
+                    aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in
+                    voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint
+                    occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim
+                    id est laborum.
+                  </p>
                 </span>
               </div>
               <div style={{ display: 'inline-table', width: '10%' }}>
-                <span><a href="/drupal_55960/?q=node/128">view</a></span>
+                <span>
+                  <a href="/drupal_55960/?q=node/128">view</a>
+                </span>
               </div>
             </div>
           </div>

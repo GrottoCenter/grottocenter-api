@@ -9,7 +9,7 @@ import Translate from '../components/common/Translate';
 //
 //
 
-export const isMappable = entry => entry.latitude && entry.longitude;
+export const isMappable = (entry) => entry.latitude && entry.longitude;
 
 const EntityIcon = styled.img`
   height: 30px;
@@ -22,7 +22,7 @@ const EntityLabel = styled.span`
 `;
 
 // The hightlighted words are inside <em> tags.
-const HighlightText = withTheme()(styled.span`
+const HighlightText = withTheme(styled.span`
   color: #888;
   font-size: 1.1rem;
   overflow: hidden;
@@ -30,14 +30,14 @@ const HighlightText = withTheme()(styled.span`
   vertical-align: baseline;
   white-space: nowrap;
   em {
-    background-color: ${props => props.theme.palette.accent1Color};
+    background-color: ${(props) => props.theme.palette.accent1Color};
     color: white;
     font-style: normal;
     font-weight: bold;
   }
 `);
 
-const HighlightTextKey = withTheme()(styled.span`
+const HighlightTextKey = styled.span`
   color: #888;
   font-size: 1.1rem;
   font-weight: bold;
@@ -45,7 +45,7 @@ const HighlightTextKey = withTheme()(styled.span`
   margin-right: 2px;
   vertical-align: baseline;
   white-space: nowrap;
-`);
+`;
 
 export const entityOptionForSelector = (option) => {
   const highlights = [];
@@ -56,11 +56,15 @@ export const entityOptionForSelector = (option) => {
   }
 
   return (
-    <React.Fragment>
+    <>
       {option.type === 'entry' ? <EntityIcon src="/images/entry.svg" alt="Entry icon" /> : ''}
-      {option.type === 'grotto' ? <EntityIcon src="/images/club.svg" alt="Group icon" /> : '' }
-      {option.type === 'massif' ? <EntityIcon src="/images/massif.svg" alt="Massif icon" /> : '' }
-      {option.type === 'bbs' ? <EntityIcon src="/images/bibliography.svg" alt="BBS article icon" /> : '' }
+      {option.type === 'grotto' ? <EntityIcon src="/images/club.svg" alt="Group icon" /> : ''}
+      {option.type === 'massif' ? <EntityIcon src="/images/massif.svg" alt="Massif icon" /> : ''}
+      {option.type === 'bbs' ? (
+        <EntityIcon src="/images/bibliography.svg" alt="BBS article icon" />
+      ) : (
+        ''
+      )}
 
       <EntityLabel>{option.label}</EntityLabel>
       {highlights.map((hl) => {
@@ -73,13 +77,12 @@ export const entityOptionForSelector = (option) => {
             </HighlightTextKey>
             <HighlightText
               dangerouslySetInnerHTML={{
-                __html:
-                `${hl[key]}`,
+                __html: `${hl[key]}`,
               }}
             />
           </React.Fragment>
         );
       })}
-    </React.Fragment>
+    </>
   );
 };

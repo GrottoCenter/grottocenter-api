@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import {CircleMarker, Tooltip} from 'react-leaflet';
+import { CircleMarker, Tooltip } from 'react-leaflet';
 import MapEntryPopup from './MapEntryPopup';
 
 //
@@ -28,9 +28,7 @@ const MapEntryMarker = ({ entry }) => (
       e.target.bringToBack();
     }}
   >
-    <MapEntryPopup
-      entry={entry}
-    />
+    <MapEntryPopup entry={entry} />
     <Tooltip direction="top">{entry.name}</Tooltip>
   </CircleMarker>
 );

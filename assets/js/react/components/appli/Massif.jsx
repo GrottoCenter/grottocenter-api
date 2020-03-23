@@ -1,9 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import {
-  Typography, CircularProgress, Card, CardContent,
-} from '@material-ui/core';
+import { Typography, CircularProgress, Card, CardContent } from '@material-ui/core';
 
 import CavesList from '../common/cave/CavesList';
 import EntriesList from '../common/entry/EntriesList';
@@ -21,7 +19,7 @@ export class Massif extends React.Component {
     const { isFetching, massif } = this.props;
 
     if (isFetching) {
-      return (<CircularProgress />);
+      return <CircularProgress />;
     }
 
     if (massif) {

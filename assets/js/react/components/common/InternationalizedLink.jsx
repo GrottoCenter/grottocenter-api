@@ -11,8 +11,8 @@ const currentLocale = locale; // eslint-disable-line no-undef
 //
 
 const InternationalizedLink = ({ links, className, children }) => {
-  const linkUrl = (links[currentLocale] !== undefined) ? links[currentLocale] : links['*'];
-  const linkText = (children) || linkUrl;
+  const linkUrl = links[currentLocale] !== undefined ? links[currentLocale] : links['*'];
+  const linkText = children || linkUrl;
   return (
     <GCLink className={className} href={linkUrl}>
       {linkText}

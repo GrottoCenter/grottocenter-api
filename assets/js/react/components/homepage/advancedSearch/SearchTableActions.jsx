@@ -9,49 +9,47 @@ import KeyboardArrowRight from '@material-ui/icons/KeyboardArrowRight';
 
 // ==========================
 
-const actionsStyles = theme => ({
+const actionsStyles = (theme) => ({
   root: {
     flexShrink: 0,
     color: theme.palette.text.secondary,
-    marginLeft: theme.spacing.unit * 2.5,
+    marginLeft: theme.spacing(2.5),
   },
 });
 
 class TablePaginationActions extends React.Component {
-    handleBackButtonClick = (event) => {
-      const { onChangePage, page } = this.props;
-      onChangePage(event, page - 1);
-    };
+  handleBackButtonClick = (event) => {
+    const { onChangePage, page } = this.props;
+    onChangePage(event, page - 1);
+  };
 
-    handleNextButtonClick = (event) => {
-      const { onChangePage, page } = this.props;
-      onChangePage(event, page + 1);
-    };
+  handleNextButtonClick = (event) => {
+    const { onChangePage, page } = this.props;
+    onChangePage(event, page + 1);
+  };
 
-    render() {
-      const {
-        classes, count, page, size, theme,
-      } = this.props;
+  render() {
+    const { classes, count, page, size, theme } = this.props;
 
-      return (
-        <div className={classes.root}>
-          <IconButton
-            onClick={this.handleBackButtonClick}
-            disabled={page === 0}
-            aria-label="Previous Page"
-          >
-            {theme.direction === 'rtl' ? <KeyboardArrowRight /> : <KeyboardArrowLeft />}
-          </IconButton>
-          <IconButton
-            onClick={this.handleNextButtonClick}
-            disabled={page * size + size >= count}
-            aria-label="Next Page"
-          >
-            {theme.direction === 'rtl' ? <KeyboardArrowLeft /> : <KeyboardArrowRight />}
-          </IconButton>
-        </div>
-      );
-    }
+    return (
+      <div className={classes.root}>
+        <IconButton
+          onClick={this.handleBackButtonClick}
+          disabled={page === 0}
+          aria-label="Previous Page"
+        >
+          {theme.direction === 'rtl' ? <KeyboardArrowRight /> : <KeyboardArrowLeft />}
+        </IconButton>
+        <IconButton
+          onClick={this.handleNextButtonClick}
+          disabled={page * size + size >= count}
+          aria-label="Next Page"
+        >
+          {theme.direction === 'rtl' ? <KeyboardArrowLeft /> : <KeyboardArrowRight />}
+        </IconButton>
+      </div>
+    );
+  }
 }
 
 TablePaginationActions.propTypes = {

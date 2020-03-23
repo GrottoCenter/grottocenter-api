@@ -1,8 +1,4 @@
-import {
-  FETCH_BBS,
-  FETCH_BBS_FAILURE,
-  FETCH_BBS_SUCCESS,
-} from '../actions/Bbs';
+import { FETCH_BBS, FETCH_BBS_FAILURE, FETCH_BBS_SUCCESS } from '../actions/Bbs';
 
 //
 //

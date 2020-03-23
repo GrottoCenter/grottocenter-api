@@ -29,7 +29,9 @@ const GCLink = (props) => {
   }
   if (!props.internal) {
     return (
-      <a href={props.href} {...params} target="_blank">{props.children}</a>
+      <a href={props.href} {...params} target="_blank">
+        {props.children}
+      </a>
     );
   }
   return (
