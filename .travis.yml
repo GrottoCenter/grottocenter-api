@@ -7,7 +7,7 @@ deploy:
   - provider: s3
     access_key_id: $AWS_ACCESS_KEY
     secret_access_key: $AWS_SECRET_KEY
-    local_dir: grotto_center_zip
+    local_dir: grotto_center_tar
     skip_cleanup: true
     on: &2
       repo: GrottoCenter/Grottocenter3
@@ -19,7 +19,7 @@ deploy:
     access_key_id: $AWS_ACCESS_KEY
     secret_access_key: $AWS_SECRET_KEY
     bucket: appgrottocenter3
-    key: latest.tar.gz
+    key: latest.tar
     bundle_type: tar
     application: GrottoCenter3
     deployment_group: GrottoCenter3App
@@ -29,7 +29,7 @@ deploy:
 script:
 - npm install grunt-cli
 - npm run-script build
-- tar -cf latest.tar.gz *
-- mkdir -p grotto_center_zip
-- mv latest.tar.gz grotto_center_zip
+- tar -cf latest.tar --exclude=*.tar .
+- mkdir -p grotto_center_tar
+- mv latest.tar grotto_center_tar
 after_deploy: echo  'finished'
