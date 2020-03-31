@@ -1,3 +1,6 @@
+/**
+ */
+
 const _ = require('underscore.string');
 
 module.exports = {
@@ -7,10 +10,7 @@ module.exports = {
    *
    * @returns {Promise} which resolves to the succesfully queried strings
    */
-  query: async function(sql, values) {
-    let controlledValues = values || [];
-    return await sails.sendNativeQuery(sql, controlledValues);
-  },
+  query: async (sql, values) => sails.sendNativeQuery(sql, values || []),
 
   /**
    * @param {string} html - the html string to convert to text
@@ -18,11 +18,8 @@ module.exports = {
    *
    * @returns {string} the converted html string
    */
-  convertHtmlToText: function(html, length) {
-    return _.prune(_.unescapeHTML(_.stripTags(html)), length);
-  },
+  convertHtmlToText: (html, length) => _.prune(_.unescapeHTML(_.stripTags(html)), length),
 
-  difference: function(num1, num2) {
-    return (num1 > num2) ? num1 - num2 : num2 - num1; // TODO review this method and add unit test
-  }
+  // TODO review this method and add unit test
+  difference: (num1, num2) => (num1 > num2 ? num1 - num2 : num2 - num1),
 };

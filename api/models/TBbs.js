@@ -10,92 +10,90 @@ module.exports = {
   primaryKey: 'id',
 
   attributes: {
-    id : {
+    id: {
       type: 'number',
       unique: true,
       autoIncrement: true,
-      columnName: 'XrefNumeriqueFinal'
+      columnName: 'XrefNumeriqueFinal',
     },
 
     ref_: {
       type: 'number',
-      columnName: 'ref_'
+      columnName: 'ref_',
     },
 
     articleTitle: {
       type: 'string',
       maxLength: 1000,
-      columnName: 'ArticleTitle'
+      columnName: 'ArticleTitle',
     },
 
     articleYear: {
       type: 'number',
-      columnName: 'ArticleYear'
+      columnName: 'ArticleYear',
     },
 
     publicationExport: {
       type: 'string',
       maxLength: 1000,
-      columnName: 'publication_export'
+      columnName: 'publication_export',
     },
 
     abstract: {
       type: 'string',
       maxLength: 10000,
-      columnName: 'Abstract'
+      columnName: 'Abstract',
     },
 
     crosChapRebuilt: {
       type: 'string',
       maxLength: 100,
-      columnName: 'cros_chap_rebuilt'
+      columnName: 'cros_chap_rebuilt',
     },
 
     crosCountryRebuilt: {
       type: 'string',
       maxLength: 100,
-      columnName: 'cros_country_rebuilt'
+      columnName: 'cros_country_rebuilt',
     },
 
     cAuthorsFull: {
       type: 'string',
       maxLength: 1000,
-      columnName: 'cAuthorsFull'
+      columnName: 'cAuthorsFull',
     },
 
     chapter: {
       columnName: 'ChapterCode',
-      model: 'TBbsChapter'
+      model: 'TBbsChapter',
     },
 
     country: {
       columnName: 'CountryCode',
-      model: 'TBbsGeo'
+      model: 'TBbsGeo',
     },
 
     editorAddress: {
       type: 'string',
       maxLength: 500,
-      columnName: 'editor_address'
+      columnName: 'editor_address',
     },
 
     editorEmail: {
       type: 'string',
       maxLength: 200,
-      columnName: 'editor_email'
+      columnName: 'editor_email',
     },
 
     editorUrl: {
       type: 'string',
       maxLength: 1000,
-      columnName: 'editor_url'
+      columnName: 'editor_url',
     },
 
     lib: {
       columnName: 'LibraryCode',
-      model: 'TBbsLib'
-    }
-    
-  }
-
+      model: 'TBbsLib',
+    },
+  },
 };

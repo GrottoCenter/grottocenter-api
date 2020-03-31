@@ -4,10 +4,8 @@
  * @description :: tAuthor model imported from localhost MySql server at 4/3/2016 23:47:21.
  * @docs        :: http://sailsjs.org/#!documentation/models
  */
-'use strict';
 
 module.exports = {
-
   tableName: 't_author',
 
   primaryKey: 'id',
@@ -17,49 +15,49 @@ module.exports = {
       type: 'number',
       unique: true,
       autoIncrement: true,
-      columnName: 'Id'
+      columnName: 'Id',
     },
 
     idAuthor: {
       type: 'number',
       unique: true,
       columnName: 'Id_author',
-      required: true
+      required: true,
     },
 
     dateInscription: {
       type: 'string',
       columnType: 'datetime',
-      columnName: 'Date_inscription'
+      columnName: 'Date_inscription',
     },
 
     idCaver: {
       columnName: 'Id_caver',
-      model: 'TCave'
+      model: 'TCave',
     },
 
     name: {
       type: 'string',
       maxLength: 70,
-      columnName: 'Name'
+      columnName: 'Name',
     },
 
     contact: {
       type: 'string',
       maxLength: 70,
-      columnName: 'Contact'
+      columnName: 'Contact',
     },
 
     creatorIsAuthor: {
       type: 'string',
       defaultsTo: 'NO',
-      columnName: 'Creator_is_author'
+      columnName: 'Creator_is_author',
     },
 
     validated: {
       type: 'string',
       defaultsTo: 'NO',
-      columnName: 'Validated'
-    }
-  }
+      columnName: 'Validated',
+    },
+  },
 };

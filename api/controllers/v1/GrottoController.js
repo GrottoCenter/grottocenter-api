@@ -1,10 +1,9 @@
-'use strict';
+/**
+ */
 
-var grottoController = require('../GrottoController');
+const grottoController = require('../GrottoController');
 
 module.exports = {
-
-  find: function(req, res, next) {
-    return grottoController.find(req, res, next, MappingV1Service.convertToGrottoModel);
-  }
+  find: (req, res, next) =>
+    grottoController.find(req, res, next, MappingV1Service.convertToGrottoModel),
 };

@@ -8,11 +8,13 @@
  */
 const _ = require('underscore.string');
 
-module.exports = function(req, res, next) {
+module.exports = (req, res, next) => {
   const apiControl = req.options.api;
 
   if (!apiControl) {
-    sails.log.error(`Asked route ${req.route.path} is not correctly configurated: missing block api: {...}`);
+    sails.log.error(
+      `Asked route ${req.route.path} is not correctly configurated: missing block api: {...}`,
+    );
     return res.serverError('Misconfigurated route'); // TODO
   }
 
@@ -21,19 +23,19 @@ module.exports = function(req, res, next) {
 
     if (askedRange !== undefined) {
       if (!askedRange.match(/[0-9]+-[0-9]+/)) {
-        throw 'Invalid range';
+        throw new Error('Invalid range');
       }
 
       const splitRange = askedRange.split('-');
-      const diffRange = parseInt(splitRange[1]) - parseInt(splitRange[0]);
+      const diffRange = parseInt(splitRange[1], 10) - parseInt(splitRange[0], 10);
 
       if (diffRange < 0 || diffRange > apiControl.limit) {
-        throw 'Invalid range';
+        throw new Error('Invalid range');
       }
     }
 
-    next();
-  } catch(e) {
+    return next();
+  } catch (e) {
     res.set('Accept-Range', _.capitalize(apiControl.entity).concat(' ', apiControl.limit));
     return res.badRequest('Requested range not allowed');
   }

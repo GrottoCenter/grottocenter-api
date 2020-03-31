@@ -8,7 +8,14 @@
     "jquery": false
   },
   "extends": [
-    "eslint:recommended"
+    "airbnb",
+    "plugin:prettier/recommended",
+    "prettier/react"
+  ],
+  "plugins": [
+    "react",
+    "prettier",
+    "react-hooks"
   ],
   "rules": {
     "indent": [
@@ -58,7 +65,8 @@
     ],
     "no-var": "error",
     "no-unused-vars": "error",
-    "require-yield": "off"
+    "require-yield": "off",
+    "prefer-destructuring": ["error", {"object": true, "array": false}]
   },
   "globals": {
     "sails": true,
@@ -78,10 +86,15 @@
     "L": true,
     "GrottoService": true,
     "GeoLocService": true,
-    "SettingsService": true
+    "SettingsService": true,
+    "ConvertService": true,
+    "I18nService": true,
+    "TBbs": true,
+    "TBbsGeo": true,
+    "TBbsChapter": true
   },
+  "parser": "babel-eslint",
   "parserOptions": {
-    "ecmaVersion": 6,
     "sourceType": "module",
     "ecmaFeatures": {
       "globalReturn": false

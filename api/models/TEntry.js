@@ -4,10 +4,8 @@
  * @description :: tEntry model imported from localhost MySql server at 4/3/2016 23:34:32.
  * @docs        :: http://sailsjs.org/#!documentation/models
  */
-'use strict';
 
 module.exports = {
-
   tableName: 't_entry',
 
   primaryKey: 'id',
@@ -17,193 +15,193 @@ module.exports = {
       type: 'number',
       unique: true,
       autoIncrement: true,
-      columnName: 'Id'
+      columnName: 'Id',
     },
 
     locked: {
       type: 'string',
       isIn: ['YES', 'NO'],
       defaultsTo: 'NO',
-      columnName: 'Locked'
+      columnName: 'Locked',
     },
 
     author: {
       columnName: 'Id_author',
-      model: 'TCaver'
+      model: 'TCaver',
     },
 
     idReviewer: {
       type: 'number',
       autoMigrations: { index: true },
       columnName: 'Id_reviewer',
-      allowNull: true
+      allowNull: true,
     },
 
     idLocker: {
       type: 'number',
       columnName: 'Id_locker',
-      allowNull: true
+      allowNull: true,
     },
 
     name: {
       type: 'string',
       maxLength: 100,
-      columnName: 'Name'
+      columnName: 'Name',
     },
 
     country: {
       type: 'string',
       maxLength: 3,
-      columnName: 'Country'
+      columnName: 'Country',
     },
 
     region: {
       type: 'string',
       maxLength: 32,
       columnName: 'Region',
-      allowNull: true
+      allowNull: true,
     },
 
     city: {
       type: 'string',
       maxLength: 32,
       columnName: 'City',
-      allowNull: true
+      allowNull: true,
     },
 
     address: {
       type: 'string',
       maxLength: 128,
       columnName: 'Address',
-      allowNull: true
+      allowNull: true,
     },
 
     yearDiscovery: {
       type: 'number',
       columnName: 'Year_discovery',
-      allowNull: true
+      allowNull: true,
     },
 
     externalUrl: {
       type: 'string',
       columnName: 'External_url',
-      allowNull: true
+      allowNull: true,
     },
 
     dateInscription: {
       type: 'ref',
       columnType: 'datetime',
-      columnName: 'Date_inscription'
+      columnName: 'Date_inscription',
     },
 
     dateReviewed: {
       type: 'ref',
       columnType: 'datetime',
-      columnName: 'Date_reviewed'
+      columnName: 'Date_reviewed',
     },
 
     dateLocked: {
       type: 'ref',
       columnType: 'datetime',
-      columnName: 'Date_locked'
+      columnName: 'Date_locked',
     },
 
     isPublic: {
       type: 'string',
-      columnName: 'Is_public'
+      columnName: 'Is_public',
     },
 
     isSensitive: {
       type: 'string',
       defaultsTo: 'NO',
-      columnName: 'Is_sensitive'
+      columnName: 'Is_sensitive',
     },
 
     isOfInterest: {
       type: 'string',
       allowNull: true,
-      columnName: 'Is_of_interest'
+      columnName: 'Is_of_interest',
     },
 
     contact: {
       type: 'string',
       maxLength: 1000,
       columnName: 'Contact',
-      allowNull: true
+      allowNull: true,
     },
 
     modalities: {
       type: 'string',
       maxLength: 100,
       defaultsTo: 'NO,NO,NO,NO',
-      columnName: 'Modalities'
+      columnName: 'Modalities',
     },
 
     hasContributions: {
       type: 'string',
       isIn: ['YES', 'NO'],
       defaultsTo: 'NO',
-      columnName: 'Has_contributions'
+      columnName: 'Has_contributions',
     },
 
     latitude: {
       type: 'number',
       autoMigrations: { index: true },
-      columnName: 'Latitude'
+      columnName: 'Latitude',
     },
 
     longitude: {
       type: 'number',
-      columnName: 'Longitude'
+      columnName: 'Longitude',
     },
 
     altitude: {
       type: 'number',
       allowNull: true,
-      columnName: 'Altitude'
+      columnName: 'Altitude',
     },
     quality: {
       type: 'number',
       columnName: 'Quality',
-      allowNull: true
+      allowNull: true,
     },
 
     cave: {
       columnName: 'Id_cave',
-      model: 'TCave'
+      model: 'TCave',
     },
-
-
 
     //
     // if singleEntry is not empty, caves is supposed to be empty
     // TODO : Add a new column in t_entry that correspond to the id of t_single_entry, currently the id of t_entry is used as foreign key.
     // id of entry corresponds to id of linked single entry if exists
-    /*singleEntry: {
+    /*
+    singleEntry: {
       model: 'TSingleEntry'
-    },*/
+    },
+    */
 
     comments: {
       collection: 'TComment',
-      via: 'entry'
+      via: 'entry',
     },
 
     topographies: {
       collection: 'TTopography',
       via: 'idEntry',
-      through: 'jtopoentry'
+      through: 'jtopoentry',
     },
 
     grottos: {
       collection: 'TGrotto',
       via: 'entry',
-      through: 'JGrottoEntry'
+      through: 'JGrottoEntry',
     },
 
     massifs: {
       collection: 'TMassif',
       via: 'entry',
-      through: 'JMassifCave'
+      through: 'JMassifCave',
     },
-  }
+  },
 };

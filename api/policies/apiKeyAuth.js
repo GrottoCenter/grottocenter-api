@@ -6,7 +6,7 @@
  * @docs        :: http://sailsjs.org/#!documentation/policies
  *
  */
-module.exports = function(req, res, next) {
+module.exports = (req, res, next) => {
   const apiKey = req.headers.authorization;
 
   if (apiKey) {
@@ -15,5 +15,5 @@ module.exports = function(req, res, next) {
     }
   }
 
-  next();
+  return next();
 };

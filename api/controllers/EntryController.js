@@ -4,38 +4,40 @@
  * @description :: Server-side logic for managing entries
  * @help        :: See http://links.sailsjs.org/docs/controllers
  */
-'use strict';
-module.exports = {
 
-  find: function(req, res, converter) {
+module.exports = {
+  find: (req, res, converter) => {
     TEntry.findOne({
       id: req.params.id,
       // TODO : to adapt when authentication will be implemented
-      isPublic:'YES'
-    // TODO before this : see how to materialize fact that
-    // id of entry corresponds to id of linked single entry if exists
-    //}).populate('author').populate('cave').populate('singleEntry').exec(function(err, found) {
-    }).populate('author').populate('cave').exec(function(err, found) {
-      let params = {};
-      params.searchedItem = 'Entry of id ' + req.params.id;
-      return ControllerService.treatAndConvert(req, err, found, params, res, converter);
-    });
+      isPublic: 'YES',
+      // TODO before this : see how to materialize fact that
+      // id of entry corresponds to id of linked single entry if exists
+      // }).populate('author').populate('cave').populate('singleEntry').exec(function(err, found) {
+    })
+      .populate('author')
+      .populate('cave')
+      .exec((err, found) => {
+        const params = {};
+        params.searchedItem = `Entry of id ${req.params.id}`;
+        return ControllerService.treatAndConvert(req, err, found, params, res, converter);
+      });
   },
 
-  findAll: function(req, res, converter) {
+  findAll: (req, res, converter) => {
     const apiControl = req.options.api;
-    let parameters = {};
-    let limit = apiControl.limit;
+    const parameters = {};
+    let { limit } = apiControl;
     let skip = 0;
 
     if (req.param('name')) {
       parameters.name = {
-        'like': '%' + req.param('name') + '%'
+        like: `%${req.param('name')}%`,
       };
     }
     if (req.param('region')) {
       parameters.region = {
-        'like': '%' + req.param('region') + '%'
+        like: `%${req.param('region')}%`,
       };
     }
 
@@ -53,61 +55,70 @@ module.exports = {
 
     // TODO before this : see how to materialize fact that
     // id of entry corresponds to id of linked single entry if exists
-    //TEntry.find(parameters).populate('author').populate('cave').populate('singleEntry').sort('id ASC').limit(10).exec(function(err, found) {
-    TEntry.count(parameters).exec(function (error, total) {
-      TEntry.find(parameters).populate('author').populate('cave').sort('id ASC').limit(limit).skip(skip).exec(function(err, found) {
-        let params = {
-          controllerMethod: 'EntryController.findAll',
-          notFoundMessage: 'No entries found.',
-          searchedItem: apiControl.entity,
-          total: total,
-          url: req.originalUrl,
-          maxRange: maxRange,
-          limit: limit,
-          skip: skip,
-        };
+    // TEntry.find(parameters).populate('author').populate('cave').populate('singleEntry').sort('id ASC').limit(10).exec(function(err, found) {
+    TEntry.count(parameters).exec((error, total) => {
+      TEntry.find(parameters)
+        .populate('author')
+        .populate('cave')
+        .sort('id ASC')
+        .limit(limit)
+        .skip(skip)
+        .exec((err, found) => {
+          const params = {
+            controllerMethod: 'EntryController.findAll',
+            notFoundMessage: 'No entries found.',
+            searchedItem: apiControl.entity,
+            total,
+            url: req.originalUrl,
+            maxRange,
+            limit,
+            skip,
+          };
 
-        return ControllerService.treatAndConvert(req, err, found, params, res, converter);
-      });
+          return ControllerService.treatAndConvert(req, err, found, params, res, converter);
+        });
     });
   },
 
-  findRandom: function(req, res) {
-    EntryService.findRandom().then(function(results) {
-      if (!results) {
-        return res.notFound('No entry found.');
-      }
-      return res.json(results);
-    }, function(err) {
-      sails.log.error(err);
-      return res.serverError('EntryController.findRandom error : ' + err);
-    });
+  findRandom: (req, res) => {
+    EntryService.findRandom().then(
+      (results) => {
+        if (!results) {
+          return res.notFound();
+        }
+        return res.json(results);
+      },
+      (err) => {
+        sails.log.error(err);
+        return res.serverError(`EntryController.findRandom error ${err}`);
+      },
+    );
   },
 
-  getPublicEntriesNumber: function(req, res, converter) {
+  getPublicEntriesNumber: (req, res, converter) => {
     EntryService.getPublicEntriesNumber()
-      .then(function(count) {
+      .then((count) => {
         if (!count) {
           return res.status(404).json({ error: 'Problem while getting number of public entries' });
         }
         return res.json(converter(count));
       })
-      .catch(function(err) {
-        let errorMessage = 'An internal error occurred when getting number of public entries';
-        sails.log.error(errorMessage + ': ' + err);
+      .catch((err) => {
+        const errorMessage = 'An internal error occurred when getting number of public entries';
+        sails.log.error(`${errorMessage}: ${err}`);
         return res.status(500).json({ error: errorMessage });
       });
   },
 
-  getEntriesNumber: function(req, res) {
+  getEntriesNumber: (req, res) => {
     TEntry.count().exec(function(err, found) {
-      let params = {};
+      const params = {};
       params.controllerMethod = 'EntryController.getEntriesNumber';
       params.notFoundMessage = 'Problem while getting number of entries.';
 
-      let count = {};
+      const count = {};
       count.count = found;
       return ControllerService.treat(req, err, count, params, res);
     });
-  }
+  },
 };
