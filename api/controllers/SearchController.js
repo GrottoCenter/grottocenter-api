@@ -1,16 +1,16 @@
-'use strict';
+/**
+ */
 
 module.exports = {
-
-  findAll: function(req, res, converter) {
+  findAll: (req, res, converter) => {
     const apiControl = req.options.api;
-    let parameters = {};
-    let limit = apiControl.limit;
+    const parameters = {};
+    let { limit } = apiControl;
     let skip = 0;
 
-    if (req.param('name') !== undefined) {
+    if (req.param('name')) {
       parameters.name = {
-        'like': '%' + req.param('name') + '%',
+        like: `%${req.param('name')}%`,
       };
     }
 
@@ -23,26 +23,37 @@ module.exports = {
       skip = splitRange[0];
     }
 
-    //TODO : to adapt when authentication will be implemented
+    // TODO : to adapt when authentication will be implemented
     parameters.isPublic = 'YES';
 
-    TEntry.count(parameters).exec(function (error, total) {
-      TEntry.find(parameters).sort('id ASC').limit(limit).skip(skip).exec(function(err, foundEntry) {
-        let params = {
-          controllerMethod: 'SearchController.findAll',
-          notFoundMessage: 'No entries found.',
-          searchedItem: apiControl.entity,
-          total: total,
-          url: req.originalUrl,
-          maxRange: maxRange,
-          limit: limit,
-          skip: skip,
-        };
+    TEntry.count(parameters).exec((error, total) => {
+      TEntry.find(parameters)
+        .sort('id ASC')
+        .limit(limit)
+        .skip(skip)
+        .exec((err, foundEntry) => {
+          const params = {
+            controllerMethod: 'SearchController.findAll',
+            notFoundMessage: 'No entries found.',
+            searchedItem: apiControl.entity,
+            total,
+            url: req.originalUrl,
+            maxRange,
+            limit,
+            skip,
+          };
 
-        // only search for entries at this time
-        //return ControllerService.treat(req, err, foundCave.concat(foundEntry).concat(foundGrotto), params, res);
-        return ControllerService.treatAndConvert(req, err, foundEntry, params, res, converter);
-      });
+          // only search for entries at this time
+          // return ControllerService.treat(req, err, foundCave.concat(foundEntry).concat(foundGrotto), params, res);
+          return ControllerService.treatAndConvert(
+            req,
+            err,
+            foundEntry,
+            params,
+            res,
+            converter,
+          );
+        });
     });
-  }
+  },
 };

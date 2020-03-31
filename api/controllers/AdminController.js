@@ -1,55 +1,72 @@
 /**
  * AdminController
  */
-'use strict';
+
 module.exports = {
-  index: function(req, res) {
-    TEntry.find().limit(10).exec(function(err, found) {
-      return res.view({
-        entrylist: found
+  index: (req, res) => {
+    TEntry.find()
+      .limit(10)
+      .exec((err, found) => {
+        return res.view({
+          entrylist: found,
+        });
       });
-    });
   },
 
-  find: function(req, res) {
-    TEntry.findOneById(req.params.id).populate('author').populate('cave').populate('singleEntry').exec(function(err, found) {
-      let params = {};
-      params.controllerMethod = 'EntryController.find';
-      params.notFoundMessage = 'Entry of id ' + req.params.id + ' not found.';
-      return ControllerService.treat(req, err, found, params, res);
-    });
+  find: (req, res) => {
+    TEntry.findOneById(req.params.id)
+      .populate('author')
+      .populate('cave')
+      .populate('singleEntry')
+      .exec((err, found) => {
+        const params = {};
+        params.controllerMethod = 'EntryController.find';
+        params.notFoundMessage = `Entry of id ${req.params.id} not found.`;
+        return ControllerService.treat(req, err, found, params, res);
+      });
   },
 
-  findAll: function(req, res) {
-    let parameters = {};
-    if (req.param('name') !== undefined) {
+  findAll: (req, res) => {
+    const parameters = {};
+    if (req.param('name')) {
       parameters.name = {
-        'like': '%' + req.param('name') + '%'
+        like: `%${req.param('name')}%`,
       };
     }
-    if (req.param('region') !== undefined) {
+    if (req.param('region')) {
       parameters.region = {
-        'like': '%' + req.param('region') + '%'
+        like: `%${req.param('region')}%`,
       };
     }
 
-    TEntry.find(parameters).populate('author').populate('cave').populate('singleEntry').sort('id ASC').limit(10).exec(function(err, found) {
-      let params = {};
-      params.controllerMethod = 'EntryController.findAll';
-      params.notFoundMessage = 'No entries found.';
-      return ControllerService.treat(req, err, found, params, res);
-    });
+    TEntry.find(parameters)
+      .populate('author')
+      .populate('cave')
+      .populate('singleEntry')
+      .sort('id ASC')
+      .limit(10)
+      .exec((err, found) => {
+        const params = {};
+        params.controllerMethod = 'EntryController.findAll';
+        params.notFoundMessage = 'No entries found.';
+        return ControllerService.treat(req, err, found, params, res);
+      });
   },
 
-  findAllInterestEntries: function(req, res) {
-    EntryService.findAllInterestEntries().then(function(results) {
-      if (!results) {
-        return res.notFound('No entry of interest found.');
-      }
-      return res.json(results);
-    }, function(err) {
-      sails.log.error(err);
-      return res.serverError('EntryController.findAllRandomEntry error : ' + err);
-    });
-  }
+  findAllInterestEntries: (req, res) => {
+    EntryService.findAllInterestEntries().then(
+      (results) => {
+        if (!results) {
+          return res.notFound();
+        }
+        return res.json(results);
+      },
+      (err) => {
+        sails.log.error(err);
+        return res.serverError(
+          `EntryController.findAllRandomEntry error : ${err}`,
+        );
+      },
+    );
+  },
 };

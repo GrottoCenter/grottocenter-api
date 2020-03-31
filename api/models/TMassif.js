@@ -4,9 +4,8 @@
  * @description :: tMassif model imported from localhost MySql server at 03/12/2018 15:22:13.
  * @docs        :: http://sailsjs.org/#!documentation/models
  */
-'use strict';
-module.exports = {
 
+module.exports = {
   tableName: 't_massif',
 
   primaryKey: 'id',
@@ -16,41 +15,41 @@ module.exports = {
       type: 'number',
       unique: true,
       autoIncrement: true,
-      columnName: 'Id'
+      columnName: 'Id',
     },
     author: {
       columnName: 'Id_author',
-      model: 'TCaver'
+      model: 'TCaver',
     },
     idReviewer: {
       type: 'number',
       autoMigrations: { index: true },
-      columnName: 'Id_reviewer'
+      columnName: 'Id_reviewer',
     },
     name: {
       type: 'string',
       maxLength: 36,
-      columnName: 'Name'
+      columnName: 'Name',
     },
     dateInscription: {
       type: 'string',
       columnType: 'datetime',
-      columnName: 'Date_inscription'
+      columnName: 'Date_inscription',
     },
     dateReviewed: {
       type: 'string',
       columnType: 'datetime',
-      columnName: 'Date_reviewed'
+      columnName: 'Date_reviewed',
     },
     caves: {
       collection: 'TCave',
       via: 'massif',
-      through: 'JMassifCave'
+      through: 'JMassifCave',
     },
     entries: {
       collection: 'TEntry',
       via: 'massif',
-      through: 'JMassifCave'
+      through: 'JMassifCave',
     },
-  }
+  },
 };

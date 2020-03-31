@@ -9,61 +9,59 @@ module.exports = {
   tableName: 't_bbs_chapter',
   primaryKey: 'id',
 
-  attributes: {    
+  attributes: {
     id: {
       type: 'string',
       unique: true,
       autoIncrement: true,
-      columnName: 'code_matiere'
+      columnName: 'code_matiere',
     },
 
     cTexteChapitre: {
       type: 'string',
       maxLength: 100,
-      columnName: 'cTexte_chapitre'
+      columnName: 'cTexte_chapitre',
     },
 
     cTexteMatiere: {
       type: 'string',
       maxLength: 1000,
-      columnName: 'cTexte_Matiere'
+      columnName: 'cTexte_Matiere',
     },
 
     geographicalConnection: {
       type: 'number',
-      columnName: 'geographical_connection'
+      columnName: 'geographical_connection',
     },
 
     texteChapitreAnglais: {
       type: 'string',
       maxLength: 1000,
-      columnName: 'Texte_chapitre_anglais'
+      columnName: 'Texte_chapitre_anglais',
     },
 
     texteChapitreFrancais: {
       type: 'string',
       maxLength: 1000,
-      columnName: 'Texte_chapitre_francais'
+      columnName: 'Texte_chapitre_francais',
     },
 
     textMatiereAnglais: {
       type: 'string',
       maxLength: 1000,
-      columnName: 'texte_matiere_anglais'
+      columnName: 'texte_matiere_anglais',
     },
 
     textMatiereFrancais: {
       type: 'string',
       maxLength: 1000,
-      columnName: 'texte_matiere_francais'
+      columnName: 'texte_matiere_francais',
     },
 
     textTitreChap: {
       type: 'string',
       maxLength: 1000,
-      columnName: 'texte_titre_chap'
+      columnName: 'texte_titre_chap',
     },
   },
-
 };
-

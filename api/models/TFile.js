@@ -4,10 +4,8 @@
  * @description :: tFile model imported from localhost MySql server at 4/3/2016 23:47:21.
  * @docs        :: http://sailsjs.org/#!documentation/models
  */
-'use strict';
 
 module.exports = {
-
   tableName: 't_file',
 
   primaryKey: 'id',
@@ -17,37 +15,37 @@ module.exports = {
       type: 'number',
       unique: true,
       autoIncrement: true,
-      columnName: 'Id'
+      columnName: 'Id',
     },
 
     fileauthor: {
       columnName: 'Id_author',
       model: 'TAuthor',
-      via: 'id'
+      via: 'id',
     },
 
     dateInscription: {
       type: 'string',
       columnType: 'datetime',
-      columnName: 'Date_inscription'
+      columnName: 'Date_inscription',
     },
 
     name: {
       type: 'string',
       maxLength: 100,
-      columnName: 'Name'
+      columnName: 'Name',
     },
 
     path: {
       type: 'string',
       maxLength: 1000,
-      columnName: 'Path'
+      columnName: 'Path',
     },
 
     topographies: {
       collection: 'TTopography',
       via: 'idFile',
-      through: 'jtopofile'
-    }
-  }
+      through: 'jtopofile',
+    },
+  },
 };

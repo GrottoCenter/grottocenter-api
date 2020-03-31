@@ -9,50 +9,48 @@ module.exports = {
   tableName: 't_bbs_geo',
   primaryKey: 'id',
 
-  attributes: {    
+  attributes: {
     id: {
       type: 'string',
       unique: true,
       autoIncrement: true,
-      columnName: 'Code'
+      columnName: 'Code',
     },
 
     country: {
       type: 'string',
       maxLength: 1000,
-      columnName: 'Country'
+      columnName: 'Country',
     },
 
     espagnol: {
       type: 'string',
       maxLength: 1000,
-      columnName: 'Espagnol'
+      columnName: 'Espagnol',
     },
 
     francais: {
       type: 'string',
       maxLength: 1000,
-      columnName: 'Francais'
+      columnName: 'Francais',
     },
 
     italien: {
       type: 'string',
       maxLength: 1000,
-      columnName: 'Italien'
+      columnName: 'Italien',
     },
 
     texteTitrePays: {
       type: 'string',
       maxLength: 1000,
-      columnName: 'texte_titre_pays'
+      columnName: 'texte_titre_pays',
     },
 
     texteTitreRegion: {
       type: 'string',
       maxLength: 1000,
-      columnName: 'texte_titre_region'
+      columnName: 'texte_titre_region',
     },
   },
-
 };
-
