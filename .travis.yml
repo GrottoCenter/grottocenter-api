@@ -10,9 +10,10 @@ deploy:
     local_dir: grotto_center_tar
     skip_cleanup: true
     on: &2
+      # deploy only if tag is push on "rc" git branch
       repo: GrottoCenter/Grottocenter3
-      #tags: true
-      branch: devops_aws
+      tags: true
+      branch: rc
     bucket: appgrottocenter3
     region: eu-central-1
   - provider: codedeploy
