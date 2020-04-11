@@ -1,5 +1,36 @@
 language: node_js
 node_js:
- - "10"
-script: npm run coverage
-after_success: 'npm run coveralls'
+- '10.15.2'
+cache: npm
+before_deploy: echo 'Deployment is beginning'
+deploy:
+  - provider: s3
+    access_key_id: $AWS_ACCESS_KEY
+    secret_access_key: $AWS_SECRET_KEY
+    local_dir: grotto_center_tar
+    skip_cleanup: true
+    on: &2
+      # deploy only if tag is push on "rc" git branch
+      repo: GrottoCenter/Grottocenter3
+      tags: true
+      branch: rc
+    bucket: appgrottocenter3
+    region: eu-central-1
+  - provider: codedeploy
+    access_key_id: $AWS_ACCESS_KEY
+    secret_access_key: $AWS_SECRET_KEY
+    bucket: appgrottocenter3
+    key: latest.tar
+    bundle_type: tar
+    application: GrottoCenter3
+    deployment_group: GrottoCenter3App
+    region: eu-central-1
+    on: *2
+
+script:
+- npm install grunt-cli
+- npm run-script build
+- tar -cf latest.tar --exclude=*.tar .
+- mkdir -p grotto_center_tar
+- mv latest.tar grotto_center_tar
+after_deploy: echo  'finished'
