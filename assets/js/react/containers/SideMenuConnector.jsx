@@ -7,7 +7,7 @@ import SideMenu from '../components/appli/SideMenu';
 //
 //
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   visible: state.sideMenu.visible,
 });
 

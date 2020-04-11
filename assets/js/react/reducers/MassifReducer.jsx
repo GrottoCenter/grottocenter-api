@@ -1,8 +1,4 @@
-import {
-  FETCH_MASSIF,
-  FETCH_MASSIF_FAILURE,
-  FETCH_MASSIF_SUCCESS,
-} from '../actions/Massif';
+import { FETCH_MASSIF, FETCH_MASSIF_FAILURE, FETCH_MASSIF_SUCCESS } from '../actions/Massif';
 
 //
 //

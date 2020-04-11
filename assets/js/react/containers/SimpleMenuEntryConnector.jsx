@@ -8,12 +8,12 @@ import { registerMenuEntry, toggleSideMenu } from '../actions/SideMenu';
 //
 //
 
-const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = (dispatch) => ({
   register: (identifier, open, target) => dispatch(registerMenuEntry(identifier, open, target)),
   toggleSideMenu: () => dispatch(toggleSideMenu()),
 });
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   visible: state.sideMenu.visible,
 });
 

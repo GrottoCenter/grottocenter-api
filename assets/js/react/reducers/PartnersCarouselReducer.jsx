@@ -1,4 +1,8 @@
-import { FETCH_PARTNERS_FC, FETCH_PARTNERS_FC_SUCCESS, FETCH_PARTNERS_FC_FAILURE } from '../actions/PartnersForCarousel';
+import {
+  FETCH_PARTNERS_FC,
+  FETCH_PARTNERS_FC_SUCCESS,
+  FETCH_PARTNERS_FC_FAILURE,
+} from '../actions/PartnersForCarousel';
 
 //
 //

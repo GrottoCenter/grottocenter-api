@@ -28,13 +28,10 @@ export default class Connected extends React.Component {
   render() {
     return (
       <div style={styles.wrapper}>
-        <Chip
-          style={styles.chip}
-        >
+        <Chip style={styles.chip}>
           <Avatar src="images/uxceo-128.jpg" />
           Kurdty
         </Chip>
-
       </div>
     );
   }

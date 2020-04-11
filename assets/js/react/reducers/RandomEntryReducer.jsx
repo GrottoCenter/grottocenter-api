@@ -1,4 +1,8 @@
-import { FETCH_RANDOMENTRY, FETCH_RANDOMENTRY_SUCCESS, FETCH_RANDOMENTRY_FAILURE } from '../actions/RandomEntry';
+import {
+  FETCH_RANDOMENTRY,
+  FETCH_RANDOMENTRY_SUCCESS,
+  FETCH_RANDOMENTRY_FAILURE,
+} from '../actions/RandomEntry';
 
 //
 //

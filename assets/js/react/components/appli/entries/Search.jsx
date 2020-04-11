@@ -9,9 +9,7 @@ const Search = () => (
     <GridRow>
       <GridFullColumn>
         <Card>
-          <CardText>
-            Formulaire de recherche non implémenté
-          </CardText>
+          <CardText>Formulaire de recherche non implémenté</CardText>
         </Card>
       </GridFullColumn>
     </GridRow>
@@ -19,9 +17,7 @@ const Search = () => (
       <GridFullColumn>
         <Card>
           <CardTitle title="Résultats" />
-          <CardText>
-            Tableau de résultats non implémenté
-          </CardText>
+          <CardText>Tableau de résultats non implémenté</CardText>
         </Card>
       </GridFullColumn>
     </GridRow>

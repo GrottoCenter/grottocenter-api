@@ -12,8 +12,8 @@ import Translate from '../common/Translate';
 //
 //
 
-const SectionTitle = withTheme()(styled.h3`
-  color: ${props => props.theme.palette.accent1Color};
+const SectionTitle = withTheme(styled.h3`
+  color: ${(props) => props.theme.palette.accent1Color};
   text-align: center;
   padding-bottom: 20px;
   font-size: 35px;

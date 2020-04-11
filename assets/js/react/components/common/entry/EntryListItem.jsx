@@ -5,9 +5,9 @@ import ListItemText from '@material-ui/core/ListItemText';
 import { withStyles } from '@material-ui/core';
 import { withRouter } from 'react-router-dom';
 import GClink from '../GCLink';
-import {detailPageV2Links} from '../../../conf/Config';
+import { detailPageV2Links } from '../../../conf/Config';
 
-const styles = theme => ({
+const styles = (theme) => ({
   entryItem: {
     alignItems: 'flex-start',
     flexDirection: 'column',
@@ -37,11 +37,23 @@ const styles = theme => ({
 
 const EntryListItem = (props) => {
   const { classes, entry } = props;
-  const externalLink = `${(detailPageV2Links[locale] !== undefined) ? detailPageV2Links[locale] : detailPageV2Links['*']}&category=entry&id=${entry.id}`; //eslint-disable-line
+  const externalLink = `${
+    detailPageV2Links[locale] !== undefined ? detailPageV2Links[locale] : detailPageV2Links['*']
+  }&category=entry&id=${entry.id}`; //eslint-disable-line
 
   return (
-    <ListItem className={classes.entryItem} button /*onClick={() => props.history.push(`/ui/entries/${entry.id}`)}*/>
-      <GClink className={classes.entryLink} internal={false} target="_blank" href={externalLink} /*href={`/ui/entries/${entry.id}`}*/>{entry.name}</GClink>
+    <ListItem
+      className={classes.entryItem}
+      button /*onClick={() => props.history.push(`/ui/entries/${entry.id}`)}*/
+    >
+      <GClink
+        className={classes.entryLink}
+        internal={false}
+        target="_blank"
+        href={externalLink} /*href={`/ui/entries/${entry.id}`}*/
+      >
+        {entry.name}
+      </GClink>
       <ListItemText className={classes.entryText}>
         {entry.country}
         {' - '}
@@ -50,7 +62,6 @@ const EntryListItem = (props) => {
     </ListItem>
   );
 };
-
 
 EntryListItem.propTypes = {
   classes: PropTypes.shape({}).isRequired,

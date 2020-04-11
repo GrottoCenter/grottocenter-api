@@ -30,25 +30,25 @@ const subtheme = (state = initialState, action) => {
       });
 
     case FETCH_SUBTHEMES_SUCCESS:
-      const subthemes = action.subthemes.map(st => {
+      const subthemes = action.subthemes.map((st) => {
         return { id: st.id, name: st.name };
       });
 
       // The id of the theme is the first number before the first dot (ex: 1.1 - subthemeNumberOneTwo)
-      const themes = action.subthemes.map(st => {
+      const themes = action.subthemes.map((st) => {
         return { id: st.id.split('.')[0], name: st.theme };
       });
 
       let themesWithoutDuplicates = [];
       let previousThemeId = -1;
       // Remove duplicates
-      for(const theme of themes) {
-        if(theme.id != previousThemeId) {
+      for (const theme of themes) {
+        if (theme.id != previousThemeId) {
           previousThemeId = theme.id;
           themesWithoutDuplicates.push(theme);
-        }        
+        }
       }
-      
+
       return Object.assign({}, state, {
         subthemes,
         themes: themesWithoutDuplicates,

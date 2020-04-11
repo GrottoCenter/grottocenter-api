@@ -4,11 +4,11 @@ import { withTheme } from '@material-ui/core/styles';
 import styled from 'styled-components';
 
 import BasePage from './BasePage';
-import SideMenuConnector from '../../containers/SideMenuConnector';
-import AppToolbar from '../appli/AppToolbar';
-import AppFooter from '../appli/AppFooter';
-import Breadcrump from '../appli/Breadcrump';
-import AvailableTools, { EntriesOfInterest } from '../admin/Tools';
+import SideMenuConnector from '../containers/SideMenuConnector';
+import AppToolbar from '../components/appli/AppToolbar';
+import AppFooter from '../components/appli/AppFooter';
+import Breadcrump from '../components/appli/Breadcrump';
+import AvailableTools, { EntriesOfInterest } from '../components/admin/Tools';
 
 //
 //
@@ -16,8 +16,8 @@ import AvailableTools, { EntriesOfInterest } from '../admin/Tools';
 //
 //
 
-const ApplicationHeader = withTheme()(styled.header`
-  background-color: ${props => props.theme.palette.secondary1Color};
+const ApplicationHeader = withTheme(styled.header`
+  background-color: ${(props) => props.theme.palette.secondary1Color};
 `);
 
 const AppFooterStl = styled(AppFooter)`
@@ -40,8 +40,12 @@ const ArticleWrapper = styled.article`
 const Admin = () => (
   <BasePage>
     <div id="adminpage">
-      <ApplicationHeader><AppToolbar /></ApplicationHeader>
-      <aside><SideMenuConnector /></aside>
+      <ApplicationHeader>
+        <AppToolbar />
+      </ApplicationHeader>
+      <aside>
+        <SideMenuConnector />
+      </aside>
       <Breadcrump />
       <ArticleWrapper>
         <Switch>
@@ -50,7 +54,9 @@ const Admin = () => (
           <Route path="/admin/*" to="/admin/" />
         </Switch>
       </ArticleWrapper>
-      <footer><AppFooterStl /></footer>
+      <footer>
+        <AppFooterStl />
+      </footer>
     </div>
   </BasePage>
 );

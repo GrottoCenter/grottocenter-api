@@ -11,9 +11,7 @@ import { GridContainer } from '../../helpers/GridSystem';
 
 const Section = ({ className, children }) => (
   <div role="section" className={className}>
-    <GridContainer>
-      {children}
-    </GridContainer>
+    <GridContainer>{children}</GridContainer>
   </div>
 );
 
@@ -31,8 +29,8 @@ Section.propTypes = {
 const LandingSection = styled(Section)`
   clear: both;
   padding: 40px 0;
-  background-color: ${props => props.bgColor};
-  color: ${props => props.fgColor};
+  background-color: ${(props) => props.bgColor};
+  color: ${(props) => props.fgColor};
 `;
 
 export default LandingSection;

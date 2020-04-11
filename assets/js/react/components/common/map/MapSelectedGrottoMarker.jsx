@@ -11,12 +11,8 @@ import MapGrottosPopup from './MapGrottosPopup';
 
 const mainMarkerIcon = L.icon({
   iconUrl: '/images/club.svg',
-  iconSize: [
-    30, 30,
-  ],
-  iconAnchor: [
-    16, 32,
-  ],
+  iconSize: [30, 30],
+  iconAnchor: [16, 32],
   popupAnchor: [0, -32],
 });
 
@@ -32,9 +28,7 @@ const MapGrottoMarker = ({ grotto }) => (
       e.target.openPopup();
     }}
   >
-    <MapGrottosPopup
-      grotto={grotto}
-    />
+    <MapGrottosPopup grotto={grotto} />
   </Marker>
 );
 

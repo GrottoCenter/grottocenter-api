@@ -11,7 +11,6 @@ import { detailPageV2Links } from '../../../conf/Config';
 import withContext from '../../../helpers/Routing';
 import Translate from '../Translate';
 
-
 //
 //
 // S T Y L I N G - C O M P O N E N T S
@@ -49,12 +48,12 @@ const StyledDescriptionIcon = styled(DescriptionIcon)`
   vertical-align: middle;
 `;
 
-const StyledPlaceIcon = withTheme()(styled(PlaceIcon)`
-  color: ${props => props.theme.palette.secondary4Color};
+const StyledPlaceIcon = withTheme(styled(PlaceIcon)`
+  color: ${(props) => props.theme.palette.secondary4Color};
 `);
 
-const StyledLocationCityIcon = withTheme()(styled(LocationCityIcon)`
-  color: ${props => props.theme.palette.secondary4Color};
+const StyledLocationCityIcon = withTheme(styled(LocationCityIcon)`
+  color: ${(props) => props.theme.palette.secondary4Color};
 `);
 
 //
@@ -66,14 +65,21 @@ const StyledLocationCityIcon = withTheme()(styled(LocationCityIcon)`
 const MapEntryPopup = ({ entry }, context) => {
   const GCLinkWithContext = withContext(GCLink, context);
 
-  const externalLinkEntry = `${(detailPageV2Links[locale] !== undefined) ? detailPageV2Links[locale] : detailPageV2Links['*']}&category=entry&id=${entry.id}}`; //eslint-disable-line
+  const externalLinkEntry = `${
+    detailPageV2Links[locale] !== undefined ? detailPageV2Links[locale] : detailPageV2Links['*']
+  }&category=entry&id=${entry.id}}`; //eslint-disable-line
   let externalLinkCave;
 
   return (
     <Popup autoPan={false}>
       <React.Fragment>
         <div>
-          <GCLinkWithContext internal={false} href={externalLinkEntry} target="_blank" /*href={entryDetailPath + entry.id}*/ style={{ verticalAlign: ''}}>
+          <GCLinkWithContext
+            internal={false}
+            href={externalLinkEntry}
+            target="_blank"
+            /*href={entryDetailPath + entry.id}*/ style={{ verticalAlign: '' }}
+          >
             <StyledTitle>
               {entry.name}
               <StyledDescriptionIcon />
@@ -85,11 +91,7 @@ const MapEntryPopup = ({ entry }, context) => {
             <SubDiv>
               {entry.city}
               <br />
-              {entry.region
-              && (
-                entry.region
-              )
-              }
+              {entry.region && entry.region}
             </SubDiv>
           </MainDiv>
 
@@ -104,24 +106,22 @@ const MapEntryPopup = ({ entry }, context) => {
             </SubDiv>
           </MainDiv>
 
-          {entry.cave && (entry.cave.name
-            && (
+          {entry.cave &&
+            entry.cave.name && (
               <MainDiv>
                 <ImageElement src="../../../../../images/entry-cluster.svg" alt="" />
                 <SubDiv>
                   <Translate>Caves</Translate>
                   {' : '}
                   <Info>
-                    <span>
-                      {entry.cave.name}
-                    </span>
+                    <span>{entry.cave.name}</span>
                   </Info>
                 </SubDiv>
               </MainDiv>
-            ))}
+            )}
 
-          {entry.cave && (entry.cave.depth
-            && (
+          {entry.cave &&
+            entry.cave.depth && (
               <div>
                 <ImageElement src="../../../../../images/depth.svg" alt="" />
                 <Translate>Depth</Translate>
@@ -131,10 +131,10 @@ const MapEntryPopup = ({ entry }, context) => {
                   {' m'}
                 </Info>
               </div>
-            ))}
+            )}
 
-          {entry.cave && (entry.cave.length
-            && (
+          {entry.cave &&
+            entry.cave.length && (
               <div>
                 <ImageElement src="../../../../../images/length.svg" alt="" />
                 <Translate>Length</Translate>
@@ -144,8 +144,7 @@ const MapEntryPopup = ({ entry }, context) => {
                   {' m'}
                 </Info>
               </div>
-            ))}
-
+            )}
         </div>
       </React.Fragment>
     </Popup>

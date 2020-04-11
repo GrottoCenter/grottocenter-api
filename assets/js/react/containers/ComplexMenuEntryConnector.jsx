@@ -8,9 +8,9 @@ import { registerMenuEntry, toggleMenuEntry, toggleSideMenu } from '../actions/S
 //
 //
 
-const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = (dispatch) => ({
   register: (identifier, open, target) => dispatch(registerMenuEntry(identifier, open, target)),
-  toggle: identifier => dispatch(toggleMenuEntry(identifier)),
+  toggle: (identifier) => dispatch(toggleMenuEntry(identifier)),
   toggleSideMenu: () => dispatch(toggleSideMenu()),
 });
 
@@ -22,7 +22,7 @@ const mapStateToProps = (state, ownProps) => {
     }
   });
   return {
-    open: (currentItem) ? currentItem.open : false,
+    open: currentItem ? currentItem.open : false,
   };
 };
 

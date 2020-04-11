@@ -9,12 +9,12 @@ export const fetchMassif = () => ({
   type: FETCH_MASSIF,
 });
 
-export const fetchMassifSuccess = massif => ({
+export const fetchMassifSuccess = (massif) => ({
   type: FETCH_MASSIF_SUCCESS,
   massif,
 });
 
-export const fetchMassifFailure = error => ({
+export const fetchMassifFailure = (error) => ({
   type: FETCH_MASSIF_FAILURE,
   error,
 });
@@ -32,6 +32,6 @@ export function loadMassif(massifId) {
         }
         return response.text();
       })
-      .then(text => dispatch(fetchMassifSuccess(JSON.parse(text))));
+      .then((text) => dispatch(fetchMassifSuccess(JSON.parse(text))));
   };
 }

@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import MenuItem from '@material-ui/core/MenuItem';
 import { withTheme } from '@material-ui/core/styles';
 import styled from 'styled-components';
-import browserHistory from 'react-router-dom/BrowserRouter';
+import { BrowserRouter } from 'react-router-dom';
 
 //
 //
@@ -11,9 +11,9 @@ import browserHistory from 'react-router-dom/BrowserRouter';
 //
 //
 
-const SecondLevelMenuItem = withTheme()(styled(MenuItem)`
-  background-color: ${props => props.theme.palette.primary3Color} !important;
-  border-bottom: 1px dotted ${props => props.theme.palette.primary1Color} !important;
+const SecondLevelMenuItem = withTheme(styled(MenuItem)`
+  background-color: ${(props) => props.theme.palette.primary3Color} !important;
+  border-bottom: 1px dotted ${(props) => props.theme.palette.primary1Color} !important;
   transition: transform 2ms cubic-bezier(0.23, 1, 0.32, 1) 0ms !important;
   font-size: 14px !important;
 
@@ -42,7 +42,7 @@ class SimpleMenuEntry extends Component {
 
   render() {
     const callOnClick = () => {
-      browserHistory.push(this.props.target);
+      BrowserRouter.push(this.props.target);
       this.props.toggleSideMenu();
     };
 

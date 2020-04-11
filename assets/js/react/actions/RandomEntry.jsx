@@ -22,12 +22,12 @@ export const fetchRandomEntryNumber = () => ({
   entry: undefined,
 });
 
-export const fetchRandomEntrySuccess = entry => ({
+export const fetchRandomEntrySuccess = (entry) => ({
   type: FETCH_RANDOMENTRY_SUCCESS,
   entry,
 });
 
-export const fetchRandomEntryFailure = error => ({
+export const fetchRandomEntryFailure = (error) => ({
   type: FETCH_RANDOMENTRY_FAILURE,
   error,
 });
@@ -50,6 +50,6 @@ export const loadRandomEntry = () => (dispatch) => {
       }
       return response.text();
     })
-    .then(text => dispatch(fetchRandomEntrySuccess(JSON.parse(text))))
-    .catch(error => dispatch(fetchRandomEntryFailure(error)));
+    .then((text) => dispatch(fetchRandomEntrySuccess(JSON.parse(text))))
+    .catch((error) => dispatch(fetchRandomEntryFailure(error)));
 };

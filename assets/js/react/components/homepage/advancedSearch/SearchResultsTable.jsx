@@ -4,9 +4,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import { withRouter } from 'react-router-dom';
-import {
-  Button, Card, CardContent, CircularProgress,
-} from '@material-ui/core';
+import { Button, Card, CardContent, CircularProgress } from '@material-ui/core';
 import styled from 'styled-components';
 import DescriptionIcon from '@material-ui/icons/Description';
 
@@ -69,7 +67,7 @@ const StyledTableHeadRow = withStyles((theme) => ({
 }))(TableRow);
 
 const StyledTableFooter = styled.div`
-  align-items: center;  
+  align-items: center;
   display: flex;
   justify-content: space-between;
 `;
@@ -124,19 +122,16 @@ class SearchResultsTable extends React.Component {
   // If the results are empty, the component must get back to the initial pagination state.
   componentDidUpdate = () => {
     const { results } = this.props;
-    const {
-      from, page, size,
-    } = this.state;
+    const { from, page, size } = this.state;
 
-    if (!results && (from !== DEFAULT_FROM || page !== DEFAULT_PAGE || size !== DEFAULT_SIZE)
-    ) {
+    if (!results && (from !== DEFAULT_FROM || page !== DEFAULT_PAGE || size !== DEFAULT_SIZE)) {
       this.setState({
         from: DEFAULT_FROM,
         page: DEFAULT_PAGE,
         size: DEFAULT_SIZE,
       });
     }
-  }
+  };
 
   // ===== Table headers ===== //
   entriesTableHead = () => {
@@ -189,16 +184,31 @@ class SearchResultsTable extends React.Component {
     return (
       <TableHead>
         <StyledTableHeadRow>
-          <StyledTableHeadRowCell><Translate>Name</Translate></StyledTableHeadRowCell>
-          <StyledTableHeadRowCell><Translate>Contact</Translate></StyledTableHeadRowCell>
-          <StyledTableHeadRowCell><Translate>City</Translate></StyledTableHeadRowCell>
-          <StyledTableHeadRowCell><Translate>County</Translate></StyledTableHeadRowCell>
-          <StyledTableHeadRowCell><Translate>Region</Translate></StyledTableHeadRowCell>
-          <StyledTableHeadRowCell><Translate>Country</Translate></StyledTableHeadRowCell>
+          <StyledTableHeadRowCell>
+            <Translate>Name</Translate>
+          </StyledTableHeadRowCell>
+          <StyledTableHeadRowCell>
+            <Translate>Contact</Translate>
+          </StyledTableHeadRowCell>
+          <StyledTableHeadRowCell>
+            <Translate>City</Translate>
+          </StyledTableHeadRowCell>
+          <StyledTableHeadRowCell>
+            <Translate>County</Translate>
+          </StyledTableHeadRowCell>
+          <StyledTableHeadRowCell>
+            <Translate>Region</Translate>
+          </StyledTableHeadRowCell>
+          <StyledTableHeadRowCell>
+            <Translate>Country</Translate>
+          </StyledTableHeadRowCell>
           <StyledTableHeadRowCell>
             <HeaderIcon
               src="/images/caver-cluster.svg"
-              title={intl.formatMessage({ id: 'Number of cavers', defaultMessage: 'Number of cavers' })}
+              title={intl.formatMessage({
+                id: 'Number of cavers',
+                defaultMessage: 'Number of cavers',
+              })}
               alt="Cavers icon"
             />
           </StyledTableHeadRowCell>
@@ -212,18 +222,26 @@ class SearchResultsTable extends React.Component {
     return (
       <TableHead>
         <StyledTableHeadRow>
-          <StyledTableHeadRowCell><Translate>Name</Translate></StyledTableHeadRowCell>
+          <StyledTableHeadRowCell>
+            <Translate>Name</Translate>
+          </StyledTableHeadRowCell>
           <StyledTableHeadRowCell>
             <HeaderIcon
               src="/images/entry-cluster.svg"
-              title={intl.formatMessage({ id: 'Number of caves', defaultMessage: 'Number of caves' })}
+              title={intl.formatMessage({
+                id: 'Number of caves',
+                defaultMessage: 'Number of caves',
+              })}
               alt="Caves icon"
             />
           </StyledTableHeadRowCell>
           <StyledTableHeadRowCell>
             <HeaderIcon
               src="/images/gc-entries.svg"
-              title={intl.formatMessage({ id: 'Number of entries', defaultMessage: 'Number of entries' })}
+              title={intl.formatMessage({
+                id: 'Number of entries',
+                defaultMessage: 'Number of entries',
+              })}
               alt="Entries icon"
             />
           </StyledTableHeadRowCell>
@@ -235,12 +253,24 @@ class SearchResultsTable extends React.Component {
   bbsTableHead = () => (
     <TableHead>
       <StyledTableHeadRow>
-        <StyledTableHeadRowCell><Translate>Title</Translate></StyledTableHeadRowCell>
-        <StyledTableHeadRowCell><Translate>Published in</Translate></StyledTableHeadRowCell>
-        <StyledTableHeadRowCell><Translate>Subtheme</Translate></StyledTableHeadRowCell>
-        <StyledTableHeadRowCell><Translate>Country or region</Translate></StyledTableHeadRowCell>
-        <StyledTableHeadRowCell><Translate>Authors</Translate></StyledTableHeadRowCell>
-        <StyledTableHeadRowCell><Translate>Year</Translate></StyledTableHeadRowCell>
+        <StyledTableHeadRowCell>
+          <Translate>Title</Translate>
+        </StyledTableHeadRowCell>
+        <StyledTableHeadRowCell>
+          <Translate>Published in</Translate>
+        </StyledTableHeadRowCell>
+        <StyledTableHeadRowCell>
+          <Translate>Subtheme</Translate>
+        </StyledTableHeadRowCell>
+        <StyledTableHeadRowCell>
+          <Translate>Country or region</Translate>
+        </StyledTableHeadRowCell>
+        <StyledTableHeadRowCell>
+          <Translate>Authors</Translate>
+        </StyledTableHeadRowCell>
+        <StyledTableHeadRowCell>
+          <Translate>Year</Translate>
+        </StyledTableHeadRowCell>
       </StyledTableHeadRow>
     </TableHead>
   );
@@ -251,26 +281,21 @@ class SearchResultsTable extends React.Component {
     const { resourceType } = this.props;
 
     if (resourceType === 'entries') {
-      const externalLink = `${(detailPageV2Links[locale] !== undefined) ? detailPageV2Links[locale] : detailPageV2Links['*']}&category=entry&id=${id}`; //eslint-disable-line
-      window.open(
-        externalLink,
-        '_blank',
-      );
+      const externalLink = `${
+        detailPageV2Links[locale] !== undefined ? detailPageV2Links[locale] : detailPageV2Links['*']
+      }&category=entry&id=${id}`; //eslint-disable-line
+      window.open(externalLink, '_blank');
     }
 
     if (resourceType === 'grottos') window.open(`/ui/groups/${id}`, '_blank');
     if (resourceType === 'massifs') window.open(`/ui/massifs/${id}`, '_blank');
     if (resourceType === 'bbs') window.open(`/ui/bbs/${id}`, '_blank');
-  }
+  };
 
   handleChangePage = (event, newPage) => {
-    const {
-      results, getNewResults, totalNbResults,
-    } = this.props;
+    const { results, getNewResults, totalNbResults } = this.props;
 
-    const {
-      from, size,
-    } = this.state;
+    const { from, size } = this.state;
 
     // Formula: From = Page * Size (size remains the same here)
     const newFrom = newPage * size;
@@ -280,29 +305,19 @@ class SearchResultsTable extends React.Component {
       - results.length < totalNbResults (not ALL results already loaded)
       - results.length < newFrom + size (results on the asked page are not loaded)
     */
-    if (newFrom > from
-      && results.length < totalNbResults
-      && results.length < newFrom + size
-    ) {
-      getNewResults(
-        newFrom,
-        size,
-      );
+    if (newFrom > from && results.length < totalNbResults && results.length < newFrom + size) {
+      getNewResults(newFrom, size);
     }
 
     this.setState({
       page: newPage,
       from: newFrom,
     });
-  }
+  };
 
   handleChangeRowsPerPage = (event) => {
-    const {
-      results, getNewResults, totalNbResults,
-    } = this.props;
-    const {
-      from,
-    } = this.state;
+    const { results, getNewResults, totalNbResults } = this.props;
+    const { from } = this.state;
 
     /*
       Formula used here:
@@ -318,13 +333,8 @@ class SearchResultsTable extends React.Component {
       - results.length < totalNbResults (not ALL results already loaded)
       - results.length < newFrom + newSize (not enough results loaded)
     */
-    if (results.length < totalNbResults
-      && results.length < newFrom + newSize
-    ) {
-      getNewResults(
-        newFrom,
-        newSize,
-      );
+    if (results.length < totalNbResults && results.length < newFrom + newSize) {
+      getNewResults(newFrom, newSize);
     }
 
     this.setState({
@@ -332,13 +342,13 @@ class SearchResultsTable extends React.Component {
       page: newPage,
       size: newSize,
     });
-  }
+  };
 
   // ===== CSV Export
   loadCSVData = () => {
     const { getFullResults } = this.props;
     getFullResults();
-  }
+  };
 
   getFullResultsAsCSV = () => {
     const { resourceType, fullResults } = this.props;
@@ -357,8 +367,8 @@ class SearchResultsTable extends React.Component {
       case 'grottos':
         // Flatten cavers and entries
         for (let result of cleanedResults) {
-          result.cavers = result.cavers.map(c => c.nickname);
-          result.entries = result.entries.map(e => e.name);
+          result.cavers = result.cavers.map((c) => c.nickname);
+          result.entries = result.entries.map((e) => e.name);
           delete result['type'];
           delete result['highlights'];
         }
@@ -367,8 +377,8 @@ class SearchResultsTable extends React.Component {
       case 'massifs':
         // Flatten caves and entries
         for (let result of cleanedResults) {
-          result.caves = result.caves.map(c => c.name);
-          result.entries = result.entries.map(e => e.name);
+          result.caves = result.caves.map((c) => c.name);
+          result.entries = result.entries.map((e) => e.name);
           delete result['type'];
           delete result['highlights'];
         }
@@ -394,14 +404,20 @@ class SearchResultsTable extends React.Component {
     }
 
     return cleanedResults;
-  }
+  };
 
   // ===== Render ===== //
 
   render() {
     const {
-      classes, isLoading, results, resourceType, totalNbResults,
-      isLoadingFullData, wantToDownloadCSV, fullResults,
+      classes,
+      isLoading,
+      results,
+      resourceType,
+      totalNbResults,
+      isLoadingFullData,
+      wantToDownloadCSV,
+      fullResults,
     } = this.props;
     const { from, page, size } = this.state;
 
@@ -431,153 +447,179 @@ class SearchResultsTable extends React.Component {
         => scrollable table (display: "block")
       (for massif, no scroll needed because the results are not very large)
     */
-    const tableDisplayValueForScroll = window.innerWidth < 1200 && resourceType !== 'massifs' ? 'block' : 'table';
+    const tableDisplayValueForScroll =
+      window.innerWidth < 1200 && resourceType !== 'massifs' ? 'block' : 'table';
 
-    return (
-      (resultsSliced !== undefined && resourceType !== '' ? (
-        <Card className={classes.resultsContainer}>
-          <CardContent>
-            {resultsSliced.length > 0 ? (
-              <React.Fragment>
-                <Table className={classes.table} style={{ display: tableDisplayValueForScroll }}>
-                  <ResultsTableHead />
+    return resultsSliced !== undefined && resourceType !== '' ? (
+      <Card className={classes.resultsContainer}>
+        <CardContent>
+          {resultsSliced.length > 0 ? (
+            <React.Fragment>
+              <Table className={classes.table} style={{ display: tableDisplayValueForScroll }}>
+                <ResultsTableHead />
 
-                  <TableBody style={{
+                <TableBody
+                  style={{
                     opacity: isLoading ? 0.3 : 1,
                   }}
-                  >
+                >
+                  {resultsSliced.map((result) => (
+                    <StyledTableRow
+                      key={result.id}
+                      className={classes.tableRow}
+                      onClick={() => this.handleRowClick(result.id)}
+                    >
+                      {resourceType === 'entries' && (
+                        <React.Fragment>
+                          <StyledTableCell>{result.name}</StyledTableCell>
+                          <StyledTableCell>{result.country ? result.country : '-'}</StyledTableCell>
+                          <StyledTableCell>
+                            {result.massif.name ? result.massif.name : '-'}
+                          </StyledTableCell>
+                          <StyledTableCell>
+                            {result.aestheticism ? Number(result.aestheticism.toFixed(1)) : '-'}
+                          </StyledTableCell>
+                          <StyledTableCell>
+                            {result.caving ? Number(result.caving.toFixed(1)) : '-'}
+                          </StyledTableCell>
+                          <StyledTableCell>
+                            {result.approach ? Number(result.approach.toFixed(1)) : '-'}
+                          </StyledTableCell>
+                          <StyledTableCell>
+                            {result.cave.name ? result.cave.name : '-'}
+                          </StyledTableCell>
+                          <StyledTableCell>
+                            {result.cave.length ? `${result.cave.length}m` : '-'}
+                          </StyledTableCell>
+                          <StyledTableCell>
+                            {result.cave.depth ? `${result.cave.depth}m` : '-'}
+                          </StyledTableCell>
+                        </React.Fragment>
+                      )}
+                      {resourceType === 'grottos' && (
+                        <React.Fragment>
+                          <StyledTableCell>{result.name}</StyledTableCell>
+                          <StyledTableCell>{result.contact ? result.contact : '-'}</StyledTableCell>
+                          <StyledTableCell>{result.city ? result.city : '-'}</StyledTableCell>
+                          <StyledTableCell>{result.county ? result.county : '-'}</StyledTableCell>
+                          <StyledTableCell>{result.region ? result.region : '-'}</StyledTableCell>
+                          <StyledTableCell>{result.country ? result.country : '-'}</StyledTableCell>
+                          <StyledTableCell>
+                            {result.cavers ? result.cavers.length : '0'}
+                          </StyledTableCell>
+                        </React.Fragment>
+                      )}
+                      {resourceType === 'massifs' && (
+                        <React.Fragment>
+                          <StyledTableCell>{result.name}</StyledTableCell>
+                          <StyledTableCell>
+                            {result.caves ? result.caves.length : '0'}
+                          </StyledTableCell>
+                          <StyledTableCell>
+                            {result.entries ? result.entries.length : '0'}
+                          </StyledTableCell>
+                        </React.Fragment>
+                      )}
+                      {resourceType === 'bbs' && (
+                        <React.Fragment>
+                          <StyledTableCell>{result.title}</StyledTableCell>
+                          <StyledTableCell>
+                            {result.publication ? result.publication : '-'}
+                          </StyledTableCell>
+                          <StyledTableCell>
+                            {result.subtheme ? result.subtheme.id : '-'}
+                          </StyledTableCell>
+                          <StyledTableCell>
+                            {result.country ? _.truncate(result.country.name, 30) : '-'}
+                          </StyledTableCell>
+                          <StyledTableCell>{result.authors ? result.authors : '-'}</StyledTableCell>
+                          <StyledTableCell>{result.year ? result.year : '-'}</StyledTableCell>
+                        </React.Fragment>
+                      )}
+                    </StyledTableRow>
+                  ))}
+                </TableBody>
+              </Table>
 
-                    {resultsSliced
-                      .map((result) => (
-                        <StyledTableRow
-                          key={result.id}
-                          className={classes.tableRow}
-                          onClick={() => this.handleRowClick(result.id)}
-                        >
-                          {(resourceType === 'entries' && (
-                            <React.Fragment>
-                              <StyledTableCell>{result.name}</StyledTableCell>
-                              <StyledTableCell>{result.country ? result.country : '-'}</StyledTableCell>
-                              <StyledTableCell>{result.massif.name ? result.massif.name : '-'}</StyledTableCell>
-                              <StyledTableCell>{result.aestheticism ? Number(result.aestheticism.toFixed(1)) : '-'}</StyledTableCell>
-                              <StyledTableCell>{result.caving ? Number(result.caving.toFixed(1)) : '-'}</StyledTableCell>
-                              <StyledTableCell>{result.approach ? Number(result.approach.toFixed(1)) : '-'}</StyledTableCell>
-                              <StyledTableCell>{result.cave.name ? result.cave.name : '-'}</StyledTableCell>
-                              <StyledTableCell>{result.cave.length ? `${result.cave.length}m` : '-'}</StyledTableCell>
-                              <StyledTableCell>{result.cave.depth ? `${result.cave.depth}m` : '-'}</StyledTableCell>
-                            </React.Fragment>
-                          ))}
-                          {(resourceType === 'grottos' && (
-                            <React.Fragment>
-                              <StyledTableCell>{result.name}</StyledTableCell>
-                              <StyledTableCell>{result.contact ? result.contact : '-'}</StyledTableCell>
-                              <StyledTableCell>{result.city ? result.city : '-'}</StyledTableCell>
-                              <StyledTableCell>{result.county ? result.county : '-'}</StyledTableCell>
-                              <StyledTableCell>{result.region ? result.region : '-'}</StyledTableCell>
-                              <StyledTableCell>{result.country ? result.country : '-'}</StyledTableCell>
-                              <StyledTableCell>{result.cavers ? result.cavers.length : '0'}</StyledTableCell>
-                            </React.Fragment>
-                          ))}
-                          {(resourceType === 'massifs' && (
-                            <React.Fragment>
-                              <StyledTableCell>{result.name}</StyledTableCell>
-                              <StyledTableCell>{result.caves ? result.caves.length : '0'}</StyledTableCell>
-                              <StyledTableCell>{result.entries ? result.entries.length : '0'}</StyledTableCell>
-                            </React.Fragment>
-                          ))}
-                          {(resourceType === 'bbs' && (
-                            <React.Fragment>
-                              <StyledTableCell>{result.title}</StyledTableCell>
-                              <StyledTableCell>{result.publication ? result.publication : '-'}</StyledTableCell>
-                              <StyledTableCell>
-                                {result.subtheme ? (
-                                  result.subtheme.id
-                                ) : '-'}
-                              </StyledTableCell>
-                              <StyledTableCell>{result.country ? _.truncate(result.country.name, 30) : '-'}</StyledTableCell>
-                              <StyledTableCell>{result.authors ? result.authors : '-'}</StyledTableCell>
-                              <StyledTableCell>{result.year ? result.year : '-'}</StyledTableCell>
-                            </React.Fragment>
-                          ))}
-                        </StyledTableRow>
-                      ))}
+              <StyledTableFooter>
+                <Button
+                  disabled={!canDownloadDataAsCSV}
+                  type="button"
+                  variant="contained"
+                  color="default"
+                  size="large"
+                  onClick={() => this.loadCSVData()}
+                >
+                  <DescriptionIcon />
+                  <Translate>Export to CSV</Translate>
+                </Button>
 
-                  </TableBody>
-                </Table>
+                {!isLoadingFullData &&
+                fullResults.length === totalNbResults &&
+                wantToDownloadCSV ? (
+                  <CSVDownload data={this.getFullResultsAsCSV()} target="_self" />
+                ) : (
+                  ''
+                )}
 
-                <StyledTableFooter>
-                  <Button
-                    disabled={!canDownloadDataAsCSV}
-                    type="button"
-                    variant="contained"
-                    color="default"
-                    size="large"
-                    onClick={() => this.loadCSVData()}
-                  >
-                    <DescriptionIcon />
-                    <Translate>Export to CSV</Translate>
-                  </Button>
+                <StyledTablePagination
+                  rowsPerPageOptions={[5, 10, 20]}
+                  component="div"
+                  count={totalNbResults}
+                  rowsPerPage={size}
+                  page={page}
+                  backIconButtonProps={{
+                    'aria-label': 'Previous Page',
+                  }}
+                  nextIconButtonProps={{
+                    'aria-label': 'Next Page',
+                  }}
+                  labelRowsPerPage={<Translate>Results per page</Translate>}
+                  onChangePage={(event, pageNb) => this.handleChangePage(event, pageNb)}
+                  onChangeRowsPerPage={(event) => this.handleChangeRowsPerPage(event)}
+                  ActionsComponent={() => (
+                    <SearchTableActions
+                      page={page}
+                      size={size}
+                      onChangePage={this.handleChangePage}
+                      count={totalNbResults}
+                    />
+                  )}
+                />
+              </StyledTableFooter>
 
-                  {!isLoadingFullData && fullResults.length === totalNbResults && wantToDownloadCSV ? (
-                    <CSVDownload data={this.getFullResultsAsCSV()} target="_self" />
-                  ) : ''}
-
-                  <StyledTablePagination
-                    rowsPerPageOptions={[5, 10, 20]}
-                    component="div"
-                    count={totalNbResults}
-                    rowsPerPage={size}
-                    page={page}
-                    backIconButtonProps={{
-                      'aria-label': 'Previous Page',
-                    }}
-                    nextIconButtonProps={{
-                      'aria-label': 'Next Page',
-                    }}
-                    labelRowsPerPage={<Translate>Results per page</Translate>}
-                    onChangePage={(event, pageNb) => this.handleChangePage(event, pageNb)}
-                    onChangeRowsPerPage={(event) => this.handleChangeRowsPerPage(event)}
-                    ActionsComponent={() => (
-                      <SearchTableActions
-                        page={page}
-                        size={size}
-                        onChangePage={this.handleChangePage}
-                        count={totalNbResults}
-                      />
-                    )}
-                  />
-                </StyledTableFooter>
-
-                {isLoadingFullData ? (
-                  <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <CircularProgress style={{ marginRight: '5px' }} />
-                    <Translate>Loading full data, please wait...</Translate>
-                  </div>
-                ) : ''}
-                {!canDownloadDataAsCSV ? (
-                  <React.Fragment>
-                    <p className={classes.textError}>
-                      <Translate
-                        id="Too many results to download ({0}). You can only download {1} results at once."
-                        defaultMessage="Too many results to download ({0}). You can only download {1} results at once."
-                        values={{
-                          0: <b>{totalNbResults}</b>,
-                          1: <b>{MAX_NUMBER_OF_DATA_TO_EXPORT_IN_CSV}</b>,
-                        }}
-                      />
-                    </p>
-                  </React.Fragment>
-                ) : ''}
-
-              </React.Fragment>
-            ) : (
-              <Translate>No results</Translate>
-            )}
-          </CardContent>
-        </Card>
-      ) : (
-        ''
-      ))
+              {isLoadingFullData ? (
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <CircularProgress style={{ marginRight: '5px' }} />
+                  <Translate>Loading full data, please wait...</Translate>
+                </div>
+              ) : (
+                ''
+              )}
+              {!canDownloadDataAsCSV ? (
+                <React.Fragment>
+                  <p className={classes.textError}>
+                    <Translate
+                      id="Too many results to download ({0}). You can only download {1} results at once."
+                      defaultMessage="Too many results to download ({0}). You can only download {1} results at once."
+                      values={{
+                        0: <b>{totalNbResults}</b>,
+                        1: <b>{MAX_NUMBER_OF_DATA_TO_EXPORT_IN_CSV}</b>,
+                      }}
+                    />
+                  </p>
+                </React.Fragment>
+              ) : (
+                ''
+              )}
+            </React.Fragment>
+          ) : (
+            <Translate>No results</Translate>
+          )}
+        </CardContent>
+      </Card>
+    ) : (
+      ''
     );
   }
 }

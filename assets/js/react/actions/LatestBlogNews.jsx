@@ -24,7 +24,7 @@ export const initLatestBlogNewsFetcher = (blog, url) => ({
   url,
 });
 
-export const fetchLatestBlogNews = blog => ({
+export const fetchLatestBlogNews = (blog) => ({
   type: FETCH_LBNEWS,
   blog,
 });
@@ -48,7 +48,7 @@ export const fetchLatestBlogNewsFailure = (blog, error) => ({
 //
 
 export function loadLatestBlogNews(blog, url) {
-  return function (dispatch) {
+  return function(dispatch) {
     dispatch(fetchLatestBlogNews(blog));
 
     return fetch(url)
@@ -58,7 +58,7 @@ export function loadLatestBlogNews(blog, url) {
         }
         return response.text();
       })
-      .then(text => dispatch(fetchLatestBlogNewsSuccess(blog, text)))
+      .then((text) => dispatch(fetchLatestBlogNewsSuccess(blog, text)))
       .catch((error) => {
         dispatch(fetchLatestBlogNewsFailure(blog, error));
       });

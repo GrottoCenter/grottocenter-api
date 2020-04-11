@@ -1,9 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import fetch from 'isomorphic-fetch';
-import {
-  Table, TableBody, TableHeaderColumn, TableRow, TableRowColumn,
-} from '@material-ui/core';
+import { Table, TableBody, TableHeaderColumn, TableRow, TableRowColumn } from '@material-ui/core';
 import GCLink from '../common/GCLink';
 import { Loading } from '../common/Toolbox';
 
@@ -13,7 +11,7 @@ import { Loading } from '../common/Toolbox';
 //
 //
 
-const EntriesOfInterestTableRow = props => (
+const EntriesOfInterestTableRow = (props) => (
   <TableRow>
     <TableRowColumn>{props.row.id}</TableRowColumn>
     <TableRowColumn>{props.row.name}</TableRowColumn>
@@ -22,9 +20,13 @@ const EntriesOfInterestTableRow = props => (
     <TableRowColumn>{props.row.isPublic}</TableRowColumn>
     <TableRowColumn>{props.row.isSensitive}</TableRowColumn>
     <TableRowColumn>{props.row.isOfInterest.data[0]}</TableRowColumn>
-    <TableRowColumn>{props.row.entryInfo && props.row.entryInfo.depth ? props.row.entryInfo.depth : ''}</TableRowColumn>
+    <TableRowColumn>
+      {props.row.entryInfo && props.row.entryInfo.depth ? props.row.entryInfo.depth : ''}
+    </TableRowColumn>
     <TableRowColumn>{props.row.entryInfo ? props.row.entryInfo.length : ''}</TableRowColumn>
-    <TableRowColumn>{props.row.entryInfo ? <img style={{ width: '150px' }} src={props.row.entryInfo.path} /> : ''}</TableRowColumn>
+    <TableRowColumn>
+      {props.row.entryInfo ? <img style={{ width: '150px' }} src={props.row.entryInfo.path} /> : ''}
+    </TableRowColumn>
     <TableRowColumn>{props.row.stat ? props.row.stat.aestheticism : ''}</TableRowColumn>
     <TableRowColumn>{props.row.stat ? props.row.stat.caving : ''}</TableRowColumn>
     <TableRowColumn>{props.row.stat ? props.row.stat.approach : ''}</TableRowColumn>
@@ -58,7 +60,8 @@ export class EntriesOfInterest extends Component {
           throw new Error('Bad response from server');
         }
         return response.json();
-      }).then((results) => {
+      })
+      .then((results) => {
         _this.setState({
           items: results,
         });
@@ -80,7 +83,13 @@ export class EntriesOfInterest extends Component {
     return (
       <div>
         {rows.length > 0 && (
-          <Table selectable={false} multiSelectable={false} wrapperStyle={{ overflow: 'initial' }} bodyStyle={{ overflow: 'initial' }} style={{ width: 'initial' }}>
+          <Table
+            selectable={false}
+            multiSelectable={false}
+            wrapperStyle={{ overflow: 'initial' }}
+            bodyStyle={{ overflow: 'initial' }}
+            style={{ width: 'initial' }}
+          >
             <TableBody displayRowCheckbox={false} adjustForCheckbox={false} showRowHover>
               <TableRow selectable={false}>
                 <TableHeaderColumn>Id</TableHeaderColumn>
@@ -116,7 +125,11 @@ export class EntriesOfInterest extends Component {
 
 const AvailableTools = () => (
   <ul>
-    <li><GCLink internal href="/admin/listEntriesOfInterest">Entries of interest</GCLink></li>
+    <li>
+      <GCLink internal href="/admin/listEntriesOfInterest">
+        Entries of interest
+      </GCLink>
+    </li>
   </ul>
 );
 

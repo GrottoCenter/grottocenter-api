@@ -5,11 +5,7 @@ import {
   CHANGE_ZOOM,
   FOCUS_ON_LOCATION,
 } from '../actions/Map';
-import {
-  defaultCoord,
-  defaultZoom,
-  focusZoom,
-} from '../conf/Config';
+import { defaultCoord, defaultZoom, focusZoom } from '../conf/Config';
 
 const initialState = {
   entriesMap: undefined,

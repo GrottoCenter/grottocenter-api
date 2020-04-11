@@ -15,13 +15,12 @@ import DynamicNumberConnector from '../../containers/DynamicNumberConnector';
 //
 //
 
-const SectionTitle = withTheme()(styled.h3`
+const SectionTitle = withTheme(styled.h3`
   color: ${(props) => props.theme.palette.accent1Color};
   text-align: center;
   padding-bottom: 50px;
   font-size: 35px;
 `);
-
 
 const NumberBlockHalfWidth = styled(GridOneHalfColumn)`
   font-weight: 300;
@@ -53,7 +52,7 @@ const NumberBlockFullWidth = styled(GridFullColumn)`
   }
 `;
 
-const BlockIcon = withTheme()(styled.span`
+const BlockIcon = withTheme(styled.span`
   margin-right: 10px;
   font-size: 4.2em;
   color: ${(props) => props.theme.palette.primary1Color};
@@ -72,12 +71,12 @@ const BbsIcon = styled.img`
   width: 76px;
 `;
 
-const NumberText = withTheme()(styled(DynamicNumberConnector)`
+const NumberText = withTheme(styled(DynamicNumberConnector)`
   color: ${(props) => props.theme.palette.primary1Color};
   font-weight: 400;
 `);
 
-const BigNumberText = withTheme()(styled(NumberText)`
+const BigNumberText = withTheme(styled(NumberText)`
   font-size: 2.7em;
 `);
 
@@ -102,18 +101,17 @@ const WhatIsIt = () => (
         <BigNumberText numberType="publicEntries" />
         <br />
         <Translate>caves are freely accessible from the following page (</Translate>
-        <NumberText numberType="entries" />
-        {' '}
-        <Translate>by logging on</Translate>
-        {' '}
-        <GCLink href="http://www.grottocenter.org">Grotto v2</GCLink>
-        )
+        <NumberText numberType="entries" /> <Translate>by logging on</Translate>{' '}
+        <GCLink href="http://www.grottocenter.org">Grotto v2</GCLink>)
       </NumberBlockHalfWidth>
       <NumberBlockHalfWidth>
         <BlockIcon className="icon-gc-club" />
         <BigNumberText numberType="officialPartners" />
         <br />
-        <Translate>organizations who take part in the project by  funding, providing data,communicating on the interest and benefits of  cavers to share data</Translate>
+        <Translate>
+          organizations who take part in the project by funding, providing data,communicating on the
+          interest and benefits of cavers to share data
+        </Translate>
       </NumberBlockHalfWidth>
     </GridRow>
     <GridRow>
@@ -121,7 +119,9 @@ const WhatIsIt = () => (
         <BlockIcon className="icon-gc-speleo" />
         <BigNumberText numberType="cavers" />
         <br />
-        <Translate>cavers take part, day after day, in improving and expanding the database</Translate>
+        <Translate>
+          cavers take part, day after day, in improving and expanding the database
+        </Translate>
       </NumberBlockHalfWidth>
       <NumberBlockHalfWidth>
         <BlockIcon className="icon-gc-expe" />
@@ -136,9 +136,7 @@ const WhatIsIt = () => (
         <BigNumberText numberType="bbs" />
         <br />
         <InternationalizedLink links={wikiBBSLinks}>
-          <Translate>
-            {'speleological abstracts are referenced'}
-          </Translate>
+          <Translate>{'speleological abstracts are referenced'}</Translate>
         </InternationalizedLink>
       </NumberBlockFullWidth>
     </GridRow>

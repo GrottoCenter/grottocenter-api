@@ -30,7 +30,9 @@ const StyledDescriptionIcon = styled(DescriptionIcon)`
 const MapCavesPopup = ({ cave }, context) => {
   const GCLinkWithContext = withContext(GCLink, context);
 
-  const externalLinkEntry = `${(detailPageV2Links[locale] !== undefined) ? detailPageV2Links[locale] : detailPageV2Links['*']}&category=cave&id=${cave.id}}`; //eslint-disable-line
+  const externalLinkEntry = `${
+    detailPageV2Links[locale] !== undefined ? detailPageV2Links[locale] : detailPageV2Links['*']
+  }&category=cave&id=${cave.id}}`; //eslint-disable-line
 
   return (
     <Popup autoPan={false}>

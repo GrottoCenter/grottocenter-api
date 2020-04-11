@@ -19,14 +19,14 @@ const PublisherInfo = styled.div`
 const PublisherLogo = styled(GCLogo)`
   & > img {
     width: 50px;
-    margin-left:15px;
+    margin-left: 15px;
   }
 `;
 
 const PublisherWrapper = styled.div`
   display: inline-block;
   font-size: small;
-  margin-top:10px;
+  margin-top: 10px;
 `;
 
 //
@@ -37,7 +37,7 @@ const PublisherWrapper = styled.div`
 
 const Publisher = () => (
   <PublisherWrapper>
-    <PublisherInfo> 
+    <PublisherInfo>
       <Translate>Published by</Translate>
     </PublisherInfo>
 
@@ -45,7 +45,6 @@ const Publisher = () => (
       <Translate>Wikicaves association</Translate>
       <PublisherLogo showLink={false} />
     </InternationalizedLink>
-
   </PublisherWrapper>
 );
 

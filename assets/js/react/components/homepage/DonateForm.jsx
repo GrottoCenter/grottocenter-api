@@ -69,63 +69,68 @@ const DonateFormWrapper = styled.div`
   }
 `;
 
-const DonateButton = withStyles(theme => ({
-  root: {
-    backgroundColor: theme.palette.accent1Color,
-    color: theme.palette.textIconColor,
-    height: 'auto',
-    marginTop: '10px',
-
-    '&:hover': {
+const DonateButton = withStyles(
+  (theme) => ({
+    root: {
       backgroundColor: theme.palette.accent1Color,
-    },
+      color: theme.palette.textIconColor,
+      height: 'auto',
+      marginTop: '10px',
 
-    '&>div': {
+      '&:hover': {
+        backgroundColor: theme.palette.accent1Color,
+      },
+
+      '&>div': {
+        textAlign: 'center',
+        whiteSpace: 'nowrap',
+      },
+
+      '& > span': {
+        textTransform: 'none',
+      },
+    },
+  }),
+  { withTheme: true },
+)(Button);
+
+const StyledGiftIcon = withStyles(
+  (theme) => ({
+    root: {
+      fill: theme.palette.textIconColor,
+      width: '20px',
+      height: '30px',
+      marginRight: '10px',
+    },
+  }),
+  { withTheme: true },
+)(GiftIcon);
+
+const StyledTypography = withStyles(
+  (theme) => ({
+    root: {
+      fontSize: 'small',
       textAlign: 'center',
-      whiteSpace: 'nowrap',
+      color: theme.palette.textIconColor,
     },
-
-    '& > span': {
-      textTransform: 'none',
-    },
-  },
-}), { withTheme: true })(Button);
-
-const StyledGiftIcon = withStyles(theme => ({
-  root: {
-    fill: theme.palette.textIconColor,
-    width: '20px',
-    height: '30px',
-    marginRight: '10px',
-  },
-}), { withTheme: true })(GiftIcon);
-
-const StyledTypography = withStyles(theme => ({
-  root: {
-    fontSize: 'small',
-    textAlign: 'center',
-    color: theme.palette.textIconColor,
-  },
-}), { withTheme: true })(Typography);
-
-//
-//
-// M A I N - C O M P O N E N T
-//
-//
+  }),
+  { withTheme: true },
+)(Typography);
 
 const DonateForm = () => (
   <DonateFormWrapper>
     <form name="donate" action={paypalLink} method="post" target="_blank">
       <input type="hidden" name="cmd" value="_s-xclick" />
       <input type="hidden" name="hosted_button_id" value={paypalId} />
-      <DonateButton href="javascript:document.donate.submit()">
+      <DonateButton type="submit">
         <StyledGiftIcon />
-        <StyledTypography component="span"><Translate id="Donate now" /></StyledTypography>
+        <StyledTypography component="span">
+          <Translate id="Donate now" />
+        </StyledTypography>
       </DonateButton>
       <img alt="" src={paypalImgLink} width="1" height="1" />
     </form>
   </DonateFormWrapper>
 );
 
-export default withTheme()(DonateForm);
+export default withTheme(DonateForm);

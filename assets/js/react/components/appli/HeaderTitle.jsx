@@ -17,15 +17,15 @@ const FlexDiv = styled.div`
   display: inline-flex;
 `;
 
-const TitleZone1 = withTheme()(styled(TextDiv)`
-  color: ${props => props.theme.palette.primary3Color};
+const TitleZone1 = withTheme(styled(TextDiv)`
+  color: ${(props) => props.theme.palette.primary3Color};
   font-weight: 500;
   font-size: 20px;
   line-height: 12px;
 `);
 
-const TitleZone2 = withTheme()(styled(TextDiv)`
-  color: ${props => props.theme.palette.accent1Color};
+const TitleZone2 = withTheme(styled(TextDiv)`
+  color: ${(props) => props.theme.palette.accent1Color};
   font-size: 8px;
 `);
 
@@ -37,7 +37,7 @@ const LogoImage = styled(GCLogo)`
   margin-top: -5px;
   margin-right: 10px;
   margin-left: 10px;
-  
+
   & > img {
     height: 20px;
     padding-top: 4px;
@@ -53,14 +53,12 @@ const LogoImage = styled(GCLogo)`
 const HeaderTitle = ({ className, title, subtitle }) => (
   <FlexDiv className={className}>
     <LogoImage />
-    { !isMobileOnly
-      && (
-        <GCLinkStl internal href="/">
-          <TitleZone1>{title}</TitleZone1>
-          <TitleZone2>{subtitle}</TitleZone2>
-        </GCLinkStl>
-      )
-    }
+    {!isMobileOnly && (
+      <GCLinkStl internal href="/">
+        <TitleZone1>{title}</TitleZone1>
+        <TitleZone2>{subtitle}</TitleZone2>
+      </GCLinkStl>
+    )}
   </FlexDiv>
 );
 

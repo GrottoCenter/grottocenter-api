@@ -22,12 +22,12 @@ export const fetchPartnersForCarousel = () => ({
   partners: undefined,
 });
 
-export const fetchPartnersForCarouselSuccess = entry => ({
+export const fetchPartnersForCarouselSuccess = (entry) => ({
   type: FETCH_PARTNERS_FC_SUCCESS,
   entry,
 });
 
-export const fetchPartnersForCarouselFailure = error => ({
+export const fetchPartnersForCarouselFailure = (error) => ({
   type: FETCH_PARTNERS_FC_FAILURE,
   error,
 });
@@ -39,7 +39,7 @@ export const fetchPartnersForCarouselFailure = error => ({
 //
 
 export function loadPartnersForCarousel() {
-  return function (dispatch) {
+  return function(dispatch) {
     dispatch(fetchPartnersForCarousel());
 
     return fetch(findForCarouselUrl)
@@ -51,7 +51,9 @@ export function loadPartnersForCarousel() {
         }
         return response.text();
       })
-      .then(text => dispatch(fetchPartnersForCarouselSuccess(JSON.parse(text))))/*
+      .then((text) =>
+        dispatch(fetchPartnersForCarouselSuccess(JSON.parse(text))),
+      ) /*
     .catch(error => dispatch(fetchPartnersForCarouselFailure(error))) */;
   };
 }

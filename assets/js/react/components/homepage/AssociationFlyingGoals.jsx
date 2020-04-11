@@ -112,7 +112,11 @@ class AssociationFlyingGoals extends Component {
     return (
       <div>
         <CenteredText>
-          <span ref={(element) => { this.targetZone = element; }}>
+          <span
+            ref={(element) => {
+              this.targetZone = element;
+            }}
+          >
             {this.state.targetZone}
           </span>
         </CenteredText>
@@ -121,7 +125,9 @@ class AssociationFlyingGoals extends Component {
             <GoalWrapper
               key={i}
               entry={entry}
-              updateTargetZone={(text) => { this.setState({ targetZone: text }); }}
+              updateTargetZone={(text) => {
+                this.setState({ targetZone: text });
+              }}
               {...this.props}
             />
           ))}

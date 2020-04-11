@@ -36,12 +36,12 @@ const StyledDescriptionIcon = styled(DescriptionIcon)`
   vertical-align: middle;
 `;
 
-const StyledPlaceIcon = withTheme()(styled(PlaceIcon)`
-  color: ${props => props.theme.palette.secondary4Color};
+const StyledPlaceIcon = withTheme(styled(PlaceIcon)`
+  color: ${(props) => props.theme.palette.secondary4Color};
 `);
 
-const StyledLocationCityIcon = withTheme()(styled(LocationCityIcon)`
-  color: ${props => props.theme.palette.secondary4Color};
+const StyledLocationCityIcon = withTheme(styled(LocationCityIcon)`
+  color: ${(props) => props.theme.palette.secondary4Color};
 `);
 
 //
@@ -53,7 +53,9 @@ const StyledLocationCityIcon = withTheme()(styled(LocationCityIcon)`
 const MapGrottosPopup = ({ grotto }, context) => {
   const GCLinkWithContext = withContext(GCLink, context);
 
-  const externalLinkEntry = `${(detailPageV2Links[locale] !== undefined) ? detailPageV2Links[locale] : detailPageV2Links['*']}&category=grotto&id=${grotto.id}}`;
+  const externalLinkEntry = `${
+    detailPageV2Links[locale] !== undefined ? detailPageV2Links[locale] : detailPageV2Links['*']
+  }&category=grotto&id=${grotto.id}}`;
 
   return (
     <Popup autoPan={false}>
@@ -66,13 +68,10 @@ const MapGrottosPopup = ({ grotto }, context) => {
             </StyledTitle>
           </GCLinkWithContext>
 
-          {grotto.address
-          && (
+          {grotto.address && (
             <MainDiv>
               <StyledLocationCityIcon />
-              <SubDiv>
-                {grotto.address}
-              </SubDiv>
+              <SubDiv>{grotto.address}</SubDiv>
             </MainDiv>
           )}
 

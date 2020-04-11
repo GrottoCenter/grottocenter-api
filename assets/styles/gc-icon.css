@@ -1,9 +1,11 @@
 @font-face {
-  font-family: "gc-icon";
-  src: url("/fonts/gc-icon.svg?6159bbcd3fc1c7ecee0fc0915aba5869#gc-icon") format("svg"), url("/fonts/gc-icon.woff?6159bbcd3fc1c7ecee0fc0915aba5869") format("woff"), url("/fonts/gc-icon.eot?6159bbcd3fc1c7ecee0fc0915aba5869?#iefix") format("embedded-opentype");
+  font-family: 'gc-icon';
+  src: url('/fonts/gc-icon.svg?6159bbcd3fc1c7ecee0fc0915aba5869#gc-icon') format('svg'),
+    url('/fonts/gc-icon.woff?6159bbcd3fc1c7ecee0fc0915aba5869') format('woff'),
+    url('/fonts/gc-icon.eot?6159bbcd3fc1c7ecee0fc0915aba5869?#iefix') format('embedded-opentype');
 }
 
-.popupCss>div:first-child {
+.popupCss > div:first-child {
   border-radius: 2px;
 }
 
@@ -19,25 +21,25 @@
 }
 
 .icon-gc-bat:before {
-  content: "\f101";
+  content: '\f101';
 }
 
 .icon-gc-speleo:before {
-  content: "\f102";
+  content: '\f102';
 }
 
 .icon-gc-entry:before {
-  content: "\f103";
+  content: '\f103';
 }
 
 .icon-gc-entries:before {
-  content: "\f104";
+  content: '\f104';
 }
 
 .icon-gc-club:before {
-  content: "\f105";
+  content: '\f105';
 }
 
 .icon-gc-expe:before {
-  content: "\f106";
+  content: '\f106';
 }

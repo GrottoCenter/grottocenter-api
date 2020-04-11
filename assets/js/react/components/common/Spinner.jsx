@@ -13,10 +13,10 @@ import Translate from './Translate';
 const SpinnerDiv = styled.div`
   z-index: 99999;
   position: relative;
-  top: calc(50% - (${props => props.size}px / 2));
+  top: calc(50% - (${(props) => props.size}px / 2));
   margin: auto;
-  height: ${props => props.size}px;
-  width: ${props => props.size}px;
+  height: ${(props) => props.size}px;
+  width: ${(props) => props.size}px;
 `;
 
 const SpinnerText = styled.span`
@@ -35,7 +35,9 @@ const SpinnerText = styled.span`
 
 const Spinner = ({ size, text }) => (
   <SpinnerDiv size={size}>
-    <SpinnerText><Translate>{text}</Translate></SpinnerText>
+    <SpinnerText>
+      <Translate>{text}</Translate>
+    </SpinnerText>
     <CircularProgress size={size} thickness={7} />
   </SpinnerDiv>
 );

@@ -1,5 +1,8 @@
 import { connect } from 'react-redux';
-import { fetchNextAdvancedsearchResults, fetchFullAdvancedsearchResults } from '../actions/Advancedsearch';
+import {
+  fetchNextAdvancedsearchResults,
+  fetchFullAdvancedsearchResults,
+} from '../actions/Advancedsearch';
 import SearchResultsTable from '../components/homepage/advancedSearch/SearchResultsTable';
 
 //
@@ -16,12 +19,8 @@ const getFullResults = () => (dispatch) => {
 };
 
 const mapDispatchToProps = (dispatch) => ({
-  getNewResults: (from, size) => dispatch(
-    getNewResults(from, size),
-  ),
-  getFullResults: () => dispatch(
-    getFullResults(),
-  ),
+  getNewResults: (from, size) => dispatch(getNewResults(from, size)),
+  getFullResults: () => dispatch(getFullResults()),
 });
 
 const mapStateToProps = (state) => ({

@@ -8,6 +8,13 @@
     "object-curly-newline": "off",
     "func-names": "off",
     "comma-dangle": "warn",
+    "react/jsx-props-no-spreading": "off",
+    "import/no-extraneous-dependencies": [
+      "error",
+      {
+        "devDependencies": [".storybook/**", "stories/**", "**/*stories.js"]
+      }
+    ],
     "no-console": [
       "warn",
       {
@@ -16,6 +23,7 @@
     ],
     "jsx-a11y/href-no-hash": ["off"],
     "react/jsx-filename-extension": ["warn", { "extensions": [".js", ".jsx"] }],
+    "react/require-default-props": ["off"],
     "max-len": [
       "warn",
       {

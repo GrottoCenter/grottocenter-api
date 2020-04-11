@@ -22,8 +22,6 @@ const mapStateToProps = (state, ownProps) => {
   };
 };
 
-const DynamicNumberConnector = connect(
-  mapStateToProps,
-)(DynamicNumber);
+const DynamicNumberConnector = connect(mapStateToProps)(DynamicNumber);
 
 export default DynamicNumberConnector;

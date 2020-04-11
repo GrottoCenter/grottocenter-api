@@ -12,9 +12,9 @@ import { licenceLinks } from '../../conf/Config';
 //
 //
 
-const FooterBar = withTheme()(styled.div`
-  color: ${props => props.theme.palette.fullBlack};
-  background-color: ${props => props.theme.palette.primary1Color};
+const FooterBar = withTheme(styled.div`
+  color: ${(props) => props.theme.palette.fullBlack};
+  background-color: ${(props) => props.theme.palette.primary1Color};
   text-align: center;
   padding-top: 15px;
 `);
@@ -46,7 +46,9 @@ const LicenceImage = styled.img`
 const FooterDisclamer = ({ className }) => (
   <FooterBar className={className}>
     <DisclamerText>
-      <Translate>Unless stated otherwise, all text and documents are available under the terms</Translate>
+      <Translate>
+        Unless stated otherwise, all text and documents are available under the terms
+      </Translate>
     </DisclamerText>
     <LicenceLink>
       <InternationalizedLink links={licenceLinks}>

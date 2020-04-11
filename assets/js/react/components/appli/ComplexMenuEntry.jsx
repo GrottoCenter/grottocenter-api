@@ -5,7 +5,7 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import ExpandLessIcon from '@material-ui/icons/ExpandLess';
 import { withTheme } from '@material-ui/core/styles';
 import styled from 'styled-components';
-import browserHistory from 'react-router-dom/BrowserRouter';
+import { BrowserRouter } from 'react-router-dom';
 
 //
 //
@@ -13,16 +13,16 @@ import browserHistory from 'react-router-dom/BrowserRouter';
 //
 //
 
-const FirstLevelMenuItem = withTheme()(styled(MenuItem)`
-  background-color: ${props => props.theme.palette.primary1Color} !important;
-  color: ${props => props.theme.palette.primary3Color} !important;
+const FirstLevelMenuItem = withTheme(styled(MenuItem)`
+  background-color: ${(props) => props.theme.palette.primary1Color} !important;
+  color: ${(props) => props.theme.palette.primary3Color} !important;
   transition: all 2s cubic-bezier(0.23, 1, 0.32, 1) 0ms !important;
 
   & > div > div {
     padding-left: 40px !important;
 
     & > svg {
-      fill: ${props => props.theme.palette.primary3Color} !important;
+      fill: ${(props) => props.theme.palette.primary3Color} !important;
       left: -4px !important;
     }
   }
@@ -40,13 +40,9 @@ class ComplexMenuEntry extends Component {
   }
 
   render() {
-    const display = (this.props.open)
-      ? 'inherit'
-      : 'none';
+    const display = this.props.open ? 'inherit' : 'none';
 
-    let icon = (this.props.open)
-      ? <ExpandLessIcon />
-      : <ExpandMoreIcon />;
+    let icon = this.props.open ? <ExpandLessIcon /> : <ExpandMoreIcon />;
 
     if (!this.props.children) {
       icon = this.props.icon;
@@ -55,7 +51,7 @@ class ComplexMenuEntry extends Component {
     let callOnClick = () => this.props.toggle(this.props.identifier);
     if (this.props.target) {
       callOnClick = () => {
-        browserHistory.push(this.props.target);
+        BrowserRouter.push(this.props.target);
         this.props.toggleSideMenu();
       };
     }
@@ -65,9 +61,10 @@ class ComplexMenuEntry extends Component {
         <FirstLevelMenuItem onClick={callOnClick} leftIcon={icon}>
           {this.props.text}
         </FirstLevelMenuItem>
-        <div style={{
-          display,
-        }}
+        <div
+          style={{
+            display,
+          }}
         >
           {this.props.children}
         </div>

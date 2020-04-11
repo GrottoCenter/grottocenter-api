@@ -30,9 +30,6 @@ const mapStateToProps = (state, ownProps) => {
   };
 };
 
-const LatestBlogNews = connect(
-  mapStateToProps,
-  mapDispatchToProps,
-)(NewsCard);
+const LatestBlogNews = connect(mapStateToProps, mapDispatchToProps)(NewsCard);
 
 export default LatestBlogNews;

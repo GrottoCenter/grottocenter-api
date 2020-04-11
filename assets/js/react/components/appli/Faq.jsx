@@ -23,36 +23,48 @@ const FaqDiv = styled.div`
   margin: 20px;
 `;
 
-const StyledCard = withStyles(theme => ({
-  root: {
-    marginBottom: '20px',
-  },
-}), { withTheme: true })(Card);
+const StyledCard = withStyles(
+  (theme) => ({
+    root: {
+      marginBottom: '20px',
+    },
+  }),
+  { withTheme: true },
+)(Card);
 
-const StyledCardHeader = withStyles(theme => ({
-  root: {
-    backgroundColor: theme.palette.secondary1Color,
-  },
-  title: {
-    color: theme.palette.secondaryBlocTitle,
-  },
-}), { withTheme: true })(CardTitle);
+const StyledCardHeader = withStyles(
+  (theme) => ({
+    root: {
+      backgroundColor: theme.palette.secondary1Color,
+    },
+    title: {
+      color: theme.palette.secondaryBlocTitle,
+    },
+  }),
+  { withTheme: true },
+)(CardTitle);
 
-const StyledCardText = withStyles(theme => ({
-  root: {
-    backgroundColor: theme.palette.textIconColor,
-  },
-}), { withTheme: true })(CardText);
+const StyledCardText = withStyles(
+  (theme) => ({
+    root: {
+      backgroundColor: theme.palette.textIconColor,
+    },
+  }),
+  { withTheme: true },
+)(CardText);
 
 const ItemList = styled.ul`
   list-style-type: none;
 `;
 
-const StyledCheckIcon = withStyles(theme => ({
-  root: {
-    color: theme.palette.accent1Color,
-  },
-}), { withTheme: true })(CheckIcon);
+const StyledCheckIcon = withStyles(
+  (theme) => ({
+    root: {
+      color: theme.palette.accent1Color,
+    },
+  }),
+  { withTheme: true },
+)(CheckIcon);
 
 //
 //
@@ -71,16 +83,17 @@ class Faq extends React.Component {
   };
 
   render() {
-    const contributeLink = (contributeLinks[locale] !== undefined) ? contributeLinks[locale] : contributeLinks['*'];
+    const contributeLink =
+      contributeLinks[locale] !== undefined ? contributeLinks[locale] : contributeLinks['*'];
 
     return (
       <FaqDiv>
         <StyledCard>
           <StyledCardHeader
-            title={(
+            title={
               <Translate id="I would like to share some of  my work but some caves should remain protected How  are you planning to protect them ?" />
-            )}
-            onClick={() => this.setState(state => ({ block1: !state.block1 }))}
+            }
+            onClick={() => this.setState((state) => ({ block1: !state.block1 }))}
           />
 
           <Collapse in={this.state.block1} timeout="auto" unmountOnExit>
@@ -96,10 +109,10 @@ class Faq extends React.Component {
 
         <StyledCard>
           <StyledCardHeader
-            title={(
+            title={
               <Translate id="How can you guarantee the quality of the data  on Grottocenter ?" />
-            )}
-            onClick={() => this.setState(state => ({ block2: !state.block2 }))}
+            }
+            onClick={() => this.setState((state) => ({ block2: !state.block2 }))}
           />
 
           <Collapse in={this.state.block2} timeout="auto" unmountOnExit>
@@ -111,10 +124,8 @@ class Faq extends React.Component {
 
         <StyledCard>
           <StyledCardHeader
-            title={(
-              <Translate id="I find your project interesting:  How  can I  help ?" />
-            )}
-            onClick={() => this.setState(state => ({ block3: !state.block3 }))}
+            title={<Translate id="I find your project interesting:  How  can I  help ?" />}
+            onClick={() => this.setState((state) => ({ block3: !state.block3 }))}
           />
 
           <Collapse in={this.state.block3} timeout="auto" unmountOnExit>
@@ -125,7 +136,11 @@ class Faq extends React.Component {
                   <Translate
                     id="You can show your support by  joining  Grottocenter {0}"
                     values={{
-                      0: <GCLink href={contributeLink} alt="Link to become a member"><Translate id="as active member" /></GCLink>,
+                      0: (
+                        <GCLink href={contributeLink} alt="Link to become a member">
+                          <Translate id="as active member" />
+                        </GCLink>
+                      ),
                     }}
                   />
                 </li>
@@ -134,7 +149,11 @@ class Faq extends React.Component {
                   <Translate
                     id="Here is another way: In order to share with the greatest number, we are  always  {0}"
                     values={{
-                      0: <GCLink href={contributeLink} alt="Link to become a translator"><Translate id="looking for translators" /></GCLink>,
+                      0: (
+                        <GCLink href={contributeLink} alt="Link to become a translator">
+                          <Translate id="looking for translators" />
+                        </GCLink>
+                      ),
                     }}
                   />
                 </li>
@@ -143,7 +162,11 @@ class Faq extends React.Component {
                   <Translate
                     id="If you have programming skills how about  {0}"
                     values={{
-                      0: <GCLink href={contributeLink} alt="Link to become a developer"><Translate id="joining our team of developpers" /></GCLink>,
+                      0: (
+                        <GCLink href={contributeLink} alt="Link to become a developer">
+                          <Translate id="joining our team of developpers" />
+                        </GCLink>
+                      ),
                     }}
                   />
                 </li>
@@ -152,7 +175,11 @@ class Faq extends React.Component {
                   <Translate
                     id="As a group, a club or  federation,  {0} : The project will move on thanks to  organizations such as yours"
                     values={{
-                      0: <GCLink href={contributeLink} alt="Link to become a partner"><Translate id="you can be  one of our partners" /></GCLink>,
+                      0: (
+                        <GCLink href={contributeLink} alt="Link to become a partner">
+                          <Translate id="you can be  one of our partners" />
+                        </GCLink>
+                      ),
                     }}
                   />
                 </li>
@@ -163,10 +190,10 @@ class Faq extends React.Component {
 
         <StyledCard>
           <StyledCardHeader
-            title={(
+            title={
               <Translate id="One of my caving  buddies  told me I should NOT  post anything at  all on Grottocenter That sometimes makes it  hard to contribute !" />
-            )}
-            onClick={() => this.setState(state => ({ block4: !state.block4 }))}
+            }
+            onClick={() => this.setState((state) => ({ block4: !state.block4 }))}
           />
 
           <Collapse in={this.state.block4} timeout="auto" unmountOnExit>
@@ -178,10 +205,8 @@ class Faq extends React.Component {
 
         <StyledCard>
           <StyledCardHeader
-            title={(
-              <Translate id="Who are  you  at  Grottocenter ?" />
-            )}
-            onClick={() => this.setState(state => ({ block5: !state.block5 }))}
+            title={<Translate id="Who are  you  at  Grottocenter ?" />}
+            onClick={() => this.setState((state) => ({ block5: !state.block5 }))}
           />
 
           <Collapse in={this.state.block5} timeout="auto" unmountOnExit>
@@ -195,10 +220,10 @@ class Faq extends React.Component {
 
         <StyledCard>
           <StyledCardHeader
-            title={(
+            title={
               <Translate id="I want to share my data only with fellow cavers Is it possible on Grottocenter?" />
-            )}
-            onClick={() => this.setState(state => ({ block6: !state.block6 }))}
+            }
+            onClick={() => this.setState((state) => ({ block6: !state.block6 }))}
           />
 
           <Collapse in={this.state.block6} timeout="auto" unmountOnExit>

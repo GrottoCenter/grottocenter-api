@@ -19,7 +19,7 @@ import { entityOptionForSelector } from '../../helpers/Entity';
 //
 //
 
-const styles = theme => ({
+const styles = (theme) => ({
   root: {
     flexGrow: 1,
     height: '72px',
@@ -38,14 +38,14 @@ const styles = theme => ({
     alignItems: 'center',
   },
   chip: {
-    margin: `${theme.spacing.unit / 2}px ${theme.spacing.unit / 4}px`,
+    margin: `${theme.spacing(0.5)}px ${theme.spacing(0.25)}px`,
     fontSize: 16,
   },
   chipFocused: {
     backgroundColor: theme.palette.primary3Color,
   },
   noOptionsMessage: {
-    padding: `${theme.spacing.unit}px ${theme.spacing.unit * 2}px`,
+    padding: `${theme.spacing(1)}px ${theme.spacing(2)}px`,
     fontSize: 16,
   },
   singleValue: {
@@ -62,7 +62,7 @@ const styles = theme => ({
   paper: {
     position: 'absolute',
     zIndex: 1,
-    marginTop: theme.spacing.unit,
+    marginTop: theme.spacing(1),
     left: 0,
     right: 0,
     width: 'calc(100% - 37px)',
@@ -71,7 +71,7 @@ const styles = theme => ({
     fontSize: 16,
   },
   divider: {
-    height: theme.spacing.unit * 2,
+    height: theme.spacing(2),
   },
 });
 
@@ -112,9 +112,7 @@ function Control(props) {
 
 function Option(props) {
   let { children: toDisplay } = props;
-  const {
-    data, isFocused, selectProps, isSelected,
-  } = props;
+  const { data, isFocused, selectProps, isSelected } = props;
   if (data && data.type) {
     toDisplay = entityOptionForSelector(data);
   }
@@ -200,10 +198,11 @@ class Searchbar extends React.Component {
     }
   };
 
-  getDatasource = filter => (
-    this.props.startSearch(filter)
+  getDatasource = (filter) =>
+    this.props
+      .startSearch(filter)
       .then(() => {
-        const datasource = this.props.results.map(result => ({
+        const datasource = this.props.results.map((result) => ({
           value: result,
           label: result.name,
           highlights: result.highlights,
@@ -211,14 +210,13 @@ class Searchbar extends React.Component {
         }));
         return Promise.resolve(datasource);
       })
-      .catch(() => Promise.resolve([]))
-  );
+      .catch(() => Promise.resolve([]));
 
   render() {
     const { classes, theme } = this.props;
 
     const selectStyles = {
-      input: base => ({
+      input: (base) => ({
         ...base,
         color: theme.palette.text.primary,
         '& input': {
@@ -246,11 +244,11 @@ class Searchbar extends React.Component {
             }}
             value={this.props.value}
             onChange={this.handleChange}
-            placeholder={(
+            placeholder={
               <React.Fragment>
                 <Translate>Quick search</Translate>
               </React.Fragment>
-            )}
+            }
             closeMenuOnScroll
             isMulti
           />

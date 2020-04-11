@@ -19,17 +19,17 @@ export const FOCUS_ON_LOCATION = 'FOCUS_ON_LOCATION';
 //
 //
 
-export const fetchMapItemsSuccess = results => ({
+export const fetchMapItemsSuccess = (results) => ({
   type: FETCH_MAP_ITEMS_SUCCESS,
   results,
 });
 
-export const fetchMapItemsFailure = error => ({
+export const fetchMapItemsFailure = (error) => ({
   type: FETCH_MAP_ITEMS_FAILURE,
   error,
 });
 
-export const changeLocation = location => ({
+export const changeLocation = (location) => ({
   type: CHANGE_LOCATION,
   location,
 });
@@ -41,10 +41,12 @@ export const changeLocation = location => ({
 //
 
 export function fetchMapItemsResult(criteria) {
-  const thunkToDebounce = function (dispatch) {
+  const thunkToDebounce = function(dispatch) {
     let completeUrl = findMapBoundsUrl;
     if (criteria) {
-      completeUrl += `?${Object.keys(criteria).map(k => `${k}=${encodeURIComponent(criteria[k])}`).join('&')}`;
+      completeUrl += `?${Object.keys(criteria)
+        .map((k) => `${k}=${encodeURIComponent(criteria[k])}`)
+        .join('&')}`;
     }
 
     return fetch(completeUrl)
@@ -56,7 +58,7 @@ export function fetchMapItemsResult(criteria) {
         }
         return response.text();
       })
-      .then(text => dispatch(fetchMapItemsSuccess(JSON.parse(text))))
+      .then((text) => dispatch(fetchMapItemsSuccess(JSON.parse(text))))
       .catch((error) => {
         // dispatch(fetchRandomEntryFailure(error)
         console.log(error);
@@ -73,13 +75,12 @@ export function fetchMapItemsResult(criteria) {
   return thunkToDebounce;
 }
 
-
-export const changeZoom = zoom => ({
+export const changeZoom = (zoom) => ({
   type: CHANGE_ZOOM,
   zoom,
 });
 
-export const focusOnLocation = location => ({
+export const focusOnLocation = (location) => ({
   type: FOCUS_ON_LOCATION,
   location,
 });

@@ -14,30 +14,24 @@ const StyledList = withStyles({
 })(List);
 
 const CavesList = (props) => {
-  const {
-    caves,
-    title,
-    emptyMessage,
-  } = props;
+  const { caves, title, emptyMessage } = props;
 
   return (
     <div>
-      { caves.length > 0
-        ? (
-          <React.Fragment>
-            <strong>{title}</strong>
-            <StyledList>
-              { caves
-                .sort((a, b) => a.name > b.name)
-                .map(cave => (
-                  <CaveListItem key={cave.id} cave={cave} />
-                )) }
-            </StyledList>
-          </React.Fragment>
-        ) : (
-          <em>{emptyMessage}</em>
-        )
-     }
+      {caves.length > 0 ? (
+        <React.Fragment>
+          <strong>{title}</strong>
+          <StyledList>
+            {caves
+              .sort((a, b) => a.name > b.name)
+              .map((cave) => (
+                <CaveListItem key={cave.id} cave={cave} />
+              ))}
+          </StyledList>
+        </React.Fragment>
+      ) : (
+        <em>{emptyMessage}</em>
+      )}
     </div>
   );
 };

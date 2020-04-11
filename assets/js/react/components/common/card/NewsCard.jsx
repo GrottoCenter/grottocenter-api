@@ -41,44 +41,56 @@ const StyledCardActions = withStyles({
   },
 })(CardActions);
 
-const StyledCard = withStyles(theme => ({
-  root: {
-    '&:nth-child(n+1)': {
-      marginTop: '4%',
-      [theme.breakpoints.up('550')]: {
-        marginTop: '0',
+const StyledCard = withStyles(
+  (theme) => ({
+    root: {
+      '&:nth-child(n+1)': {
+        marginTop: '4%',
+        [theme.breakpoints.up('550')]: {
+          marginTop: '0',
+        },
       },
     },
-  },
-}), { withTheme: true })(Card);
+  }),
+  { withTheme: true },
+)(Card);
 
 const StyledActionCard = styled(StyledCard)`
   text-align: center !important;
 `;
 
-const StyledSyncIcon = withStyles(theme => ({
-  root: {
-    '&:hover': {
+const StyledSyncIcon = withStyles(
+  (theme) => ({
+    root: {
+      '&:hover': {
+        fill: theme.palette.accent1Color,
+      },
+      fill: theme.palette.primary3Color,
+    },
+  }),
+  { withTheme: true },
+)(SyncIcon);
+
+const StyledSyncKOIcon = withStyles(
+  (theme) => ({
+    root: {
+      '&:hover': {
+        fill: theme.palette.accent1Color,
+      },
+      fill: theme.palette.primary3Color,
+    },
+  }),
+  { withTheme: true },
+)(SyncKOIcon);
+
+const StyledImageLoupe = withStyles(
+  (theme) => ({
+    root: {
       fill: theme.palette.accent1Color,
     },
-    fill: theme.palette.primary3Color,
-  },
-}), { withTheme: true })(SyncIcon);
-
-const StyledSyncKOIcon = withStyles(theme => ({
-  root: {
-    '&:hover': {
-      fill: theme.palette.accent1Color,
-    },
-    fill: theme.palette.primary3Color,
-  },
-}), { withTheme: true })(SyncKOIcon);
-
-const StyledImageLoupe = withStyles(theme => ({
-  root: {
-    fill: theme.palette.accent1Color,
-  },
-}), { withTheme: true })(ImageLoupe);
+  }),
+  { withTheme: true },
+)(ImageLoupe);
 
 const StyledTitleTypography = withStyles({
   root: {
@@ -135,14 +147,14 @@ class NewsCard extends Component {
     return (
       <StyledCard>
         <StyledCardMedia image="images/homepage/news.jpg" />
-        {this.props.day && this.props.month && <DateRibbon day={this.props.day} month={this.props.month} />}
+        {this.props.day && this.props.month && (
+          <DateRibbon day={this.props.day} month={this.props.month} />
+        )}
         <StyledCardContent>
           <StyledTitleTypography gutterBottom component="h3">
             {this.props.title}
           </StyledTitleTypography>
-          <StyledBodyTypography component="p">
-            {this.props.text}
-          </StyledBodyTypography>
+          <StyledBodyTypography component="p">{this.props.text}</StyledBodyTypography>
         </StyledCardContent>
         <Divider />
         {this.props.linkMore && (

@@ -7,9 +7,7 @@ import Publisher from './Publisher';
 import SocialLinks from './SocialLinks';
 import FooterLinks from './FooterLinks';
 import Divider from '@material-ui/core/Divider';
-import {
-  GridContainer, GridRow, GridOneHalfColumn,
-} from '../../helpers/GridSystem';
+import { GridContainer, GridRow, GridOneHalfColumn } from '../../helpers/GridSystem';
 
 //
 //
@@ -17,9 +15,9 @@ import {
 //
 //
 
-const FooterWrapper = withTheme()(styled.div`
-  background-color: ${props => props.theme.palette.primary1Color};
-  color: ${props => props.theme.palette.textIconColor};
+const FooterWrapper = withTheme(styled.div`
+  background-color: ${(props) => props.theme.palette.primary1Color};
+  color: ${(props) => props.theme.palette.textIconColor};
   text-align: center;
 `);
 
@@ -33,7 +31,6 @@ const Footer = () => (
   <div>
     <FooterWrapper>
       <GridContainer>
-        
         <GridRow>
           <GridOneHalfColumn>
             <Publisher />
@@ -55,7 +52,6 @@ const Footer = () => (
             <SocialLinks />
           </GridOneHalfColumn>
         </GridRow>
-
       </GridContainer>
     </FooterWrapper>
 

@@ -1,6 +1,4 @@
-import {
-  SET_PAGE_TITLE, SET_PAGE_TITLE_TOOLTIP,
-} from '../actions/PageTitle';
+import { SET_PAGE_TITLE, SET_PAGE_TITLE_TOOLTIP } from '../actions/PageTitle';
 
 //
 //

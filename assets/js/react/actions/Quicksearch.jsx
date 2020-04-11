@@ -24,17 +24,17 @@ export const resetQuicksearch = () => ({
   error: undefined,
 });
 
-export const fetchQuicksearchSuccess = results => ({
+export const fetchQuicksearchSuccess = (results) => ({
   type: FETCH_QUICKSEARCH_SUCCESS,
   results,
 });
 
-export const fetchQuicksearchFailure = error => ({
+export const fetchQuicksearchFailure = (error) => ({
   type: FETCH_QUICKSEARCH_FAILURE,
   error,
 });
 
-export const setCurrentEntry = entry => ({
+export const setCurrentEntry = (entry) => ({
   type: SET_CURRENT_ENTRY,
   entry,
 });
@@ -45,12 +45,14 @@ export const setCurrentEntry = entry => ({
 //
 //
 
-export const fetchQuicksearchResult = criteria => (dispatch) => {
+export const fetchQuicksearchResult = (criteria) => (dispatch) => {
   dispatch(resetQuicksearch(criteria));
 
   let completeUrl = quicksearchUrl;
   if (criteria) {
-    completeUrl += `?${Object.keys(criteria).map(k => `${k}=${encodeURIComponent(criteria[k])}`).join('&')}`;
+    completeUrl += `?${Object.keys(criteria)
+      .map((k) => `${k}=${encodeURIComponent(criteria[k])}`)
+      .join('&')}`;
   }
 
   return fetch(completeUrl)

@@ -244,15 +244,15 @@ return new(b[["Active"].concat("Object").join("X")])("Microsoft.XMLHTTP")}catch(
         if (typeof htmlAttrVal === 'string') {
           try { return JSON.parse(htmlAttrVal); } catch (e) { return htmlAttrVal; }
         }
-        // If `null` was returned from getAttribute(), it means that the HTML attribute
-        // was not specified, so we treat it as undefined (which will cause the property
+          // If `null` was returned from getAttribute(), it means that the HTML attribute
+          // was not specified, so we treat it as undefined (which will cause the property
         // to be removed below)
         else if (htmlAttrVal === null) {
           return undefined;
         }
-        // Any other contingency shouldn't be possible:
-        // - if no quotes are used in the HTML attribute, it still comes in as a string.
-        // - if no RHS is provided for the attribute, it still comes in as "" (empty string)
+          // Any other contingency shouldn't be possible:
+          // - if no quotes are used in the HTML attribute, it still comes in as a string.
+          // - if no RHS is provided for the attribute, it still comes in as "" (empty string)
         // (but we still handle this with an explicit error just in case--for debugging and support purposes)
         else throw new Error('sails.io.js :: Unexpected/invalid script tag configuration for `'+configKey+'`: `'+htmlAttrVal+'` (a `'+typeof htmlAttrVal+'`). Should be a string.');
       })();
@@ -508,7 +508,7 @@ return new(b[["Active"].concat("Object").join("X")])("Microsoft.XMLHTTP")}catch(
         // Remove it, but only if it still exists
         // https://github.com/balderdashy/sails.io.js/issues/92
         if (scriptEl && scriptEl.parentNode) {
-            scriptEl.parentNode.removeChild(scriptEl);
+          scriptEl.parentNode.removeChild(scriptEl);
         }
 
         cb(response);
@@ -948,9 +948,9 @@ return new(b[["Active"].concat("Object").join("X")])("Microsoft.XMLHTTP")}catch(
             // '    |>    ' + '\n' +
             // '  ___/  '+️
             // '\n'+
-             '  |>    Now connected to '+(self.url ? self.url : 'Sails')+'.' + '\n' +
+            '  |>    Now connected to '+(self.url ? self.url : 'Sails')+'.' + '\n' +
             '___/   For help, see: http://bit.ly/2q0QDpf' + '\n' +
-             '        (using sails.io.js '+io.sails.sdk.platform+' SDK @v'+io.sails.sdk.version+')'+ '\n' +
+            '        (using sails.io.js '+io.sails.sdk.platform+' SDK @v'+io.sails.sdk.version+')'+ '\n' +
             '         Connected at: '+(new Date())+'\n'+
             '\n'+
             '\n'+
@@ -1036,7 +1036,7 @@ return new(b[["Active"].concat("Object").join("X")])("Microsoft.XMLHTTP")}catch(
 
           consolog(
             '\n'+
-             '  |>    Socket reconnected successfully after'+'\n'+
+            '  |>    Socket reconnected successfully after'+'\n'+
             '___/   being offline at least ' + numSecsOffline + ' seconds.'+'\n'+
             '\n'
           );
@@ -1392,12 +1392,12 @@ return new(b[["Active"].concat("Object").join("X")])("Microsoft.XMLHTTP")}catch(
     SailsSocket.prototype.request = function(options, cb) {
 
       var usage =
-      'Usage:\n'+
-      'socket.request( options, [fnToCallWhenComplete] )\n\n'+
-      'options.url :: e.g. "/foo/bar"'+'\n'+
-      'options.method :: e.g. "get", "post", "put", or "delete", etc.'+'\n'+
-      'options.params :: e.g. { emailAddress: "mike@example.com" }'+'\n'+
-      'options.headers :: e.g. { "x-my-custom-header": "some string" }';
+        'Usage:\n'+
+        'socket.request( options, [fnToCallWhenComplete] )\n\n'+
+        'options.url :: e.g. "/foo/bar"'+'\n'+
+        'options.method :: e.g. "get", "post", "put", or "delete", etc.'+'\n'+
+        'options.params :: e.g. { emailAddress: "mike@example.com" }'+'\n'+
+        'options.headers :: e.g. { "x-my-custom-header": "some string" }';
       // Old usage:
       // var usage = 'Usage:\n socket.'+(options.method||'request')+'('+
       //   ' destinationURL, [dataToSend], [fnToCallWhenComplete] )';

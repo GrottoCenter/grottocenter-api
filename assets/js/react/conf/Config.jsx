@@ -1,4 +1,5 @@
 import _ from 'underscore.string';
+import { isEmpty } from 'lodash';
 
 export const apiVersion = 'v1';
 
@@ -12,10 +13,14 @@ export const EN_GC_BLOG = '/api/rss/EN';
 
 function generateLinks(link, defaultLang) {
   const resultArray = {};
-  Object.keys(localesList).forEach((value) => {
-    resultArray[value] = _.replaceAll(link, '%s', _.capitalize(value));
-  });
-  resultArray['*'] = _.replaceAll(link, '%s', _.capitalize(defaultLang));
+  if (typeof localesList === 'undefined' || isEmpty(localesList)) {
+    resultArray[0] = { en: 'English' };
+  } else {
+    Object.keys(localesList).forEach((value) => {
+      resultArray[value] = _.replaceAll(link, '%s', _.capitalize(value));
+    });
+    resultArray['*'] = _.replaceAll(link, '%s', _.capitalize(defaultLang));
+  }
   return resultArray;
 }
 
@@ -61,10 +66,19 @@ export const fseLinks = {
   '*': 'http://eurospeleo.eu/en/',
 };
 
-export const wikiBatsLinks = generateLinks('https://wiki.grottocenter.org/wiki/GrottoCenter:%s/bats', 'en');
-export const wikiBBSLinks = generateLinks('https://wiki.grottocenter.org/wiki/GrottoCenter:%s/bbs', 'en');
+export const wikiBatsLinks = generateLinks(
+  'https://wiki.grottocenter.org/wiki/GrottoCenter:%s/bats',
+  'en',
+);
+export const wikiBBSLinks = generateLinks(
+  'https://wiki.grottocenter.org/wiki/GrottoCenter:%s/bbs',
+  'en',
+);
 export const rssLinks = generateLinks('http://www.grottocenter.org/html/rss_%s.xml', 'en');
-export const legalLinks = generateLinks('https://wiki.grottocenter.org/wiki/GrottoCenter:%s/Legal_and_Privacy_Statement', 'en');
+export const legalLinks = generateLinks(
+  'https://wiki.grottocenter.org/wiki/GrottoCenter:%s/Legal_and_Privacy_Statement',
+  'en',
+);
 
 export const detailPageV2Links = {
   fr: 'http://www.grottocenter.org/html/file_Fr.php?lang=Fr',
@@ -77,16 +91,17 @@ export const detailPageV2Links = {
   '*': 'http://www.grottocenter.org/html/file_En.php?lang=En',
 };
 
-export const pftGdLink = 'https://docs.google.com/document/d/1SccuusPQcxrZJI3nvWcbUc2dgGyKc4ZJXqQzSPeE9Hg/edit?usp=sharing';
+export const pftGdLink =
+  'https://docs.google.com/document/d/1SccuusPQcxrZJI3nvWcbUc2dgGyKc4ZJXqQzSPeE9Hg/edit?usp=sharing';
 
-export const  contributeLinks = {
-    fr: 'http://fr.wikicaves.org/contribute-participer',
-    '*': 'http://en.wikicaves.org/contribute-participer',
-  };
+export const contributeLinks = {
+  fr: 'http://fr.wikicaves.org/contribute-participer',
+  '*': 'http://en.wikicaves.org/contribute-participer',
+};
 
 export const restApiLinks = {
-    fr: 'https://fr.wikipedia.org/wiki/Representational_state_transfer',
-    '*': 'https://en.wikipedia.org/wiki/Representational_state_transfer',
+  fr: 'https://fr.wikipedia.org/wiki/Representational_state_transfer',
+  '*': 'https://en.wikipedia.org/wiki/Representational_state_transfer',
 };
 
 export const wikiApiLinks = {
@@ -105,7 +120,7 @@ export const bloggerIcons = {
   '*': 'blogger-En.svg',
 };
 
-// ===== Paypal 
+// ===== Paypal
 export const paypalId = 'TJEU7C2TZ356Y';
 export const paypalLink = 'https://www.paypal.com/cgi-bin/webscr';
 export const paypalImgLink = 'https://www.paypalobjects.com/fr_FR/i/scr/pixel.gif';
@@ -134,7 +149,6 @@ export const subthemesUrl = `/api/${apiVersion}/bbs/subthemes`;
 export const swaggerLinkV1 = '/ui/swagger/1';
 export const entryDetailPath = '/ui/entries/';
 
-
 // ===== Misc config values
 export const DYNAMIC_NUMBER_RELOAD_INTERVAL = 900000;
 export const DYNAMIC_NEWS_RELOAD_INTERVAL = 3600000;
@@ -151,7 +165,7 @@ export const breadcrumpKeys = {
   swagger: 'Browse API',
   massifs: 'Massifs',
   groups: 'Groups',
-  bbs: 'BBS'
+  bbs: 'BBS',
 };
 
 export const defaultCoord = { lat: 0, lng: 0 };

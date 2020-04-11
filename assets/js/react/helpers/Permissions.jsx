@@ -14,7 +14,7 @@ export default function checkPermission(right) {
 
   if (granted) {
     return (Component) => {
-      const GrantedAccessComponent = props => <Component {...props} />;
+      const GrantedAccessComponent = (props) => <Component {...props} />;
 
       GrantedAccessComponent.contextTypes = {
         direction: PropTypes.string.isRequired,
@@ -26,8 +26,7 @@ export default function checkPermission(right) {
   return () => {
     const DeniedAccessComponent = () => <div />;
 
-    DeniedAccessComponent.contextTypes = {
-    };
+    DeniedAccessComponent.contextTypes = {};
 
     return DeniedAccessComponent;
   };

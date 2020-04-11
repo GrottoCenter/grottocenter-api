@@ -9,26 +9,24 @@ import { addLocaleData, IntlProvider } from 'react-intl';
 import localeData from 'react-intl/locale-data/index';
 import createDebounce from 'redux-debounced';
 import { Provider } from 'react-redux';
+import ErrorBoundary from 'react-error-boundary';
 import { createStore, applyMiddleware, compose } from 'redux';
 import thunkMiddleware from 'redux-thunk';
-import { BrowserRouter, Route, Switch } from 'react-router-dom';
-import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
+import { BrowserRouter } from 'react-router-dom';
+import { MuiThemeProvider, createMuiTheme, StylesProvider } from '@material-ui/core/styles';
+import CssBaseline from '@material-ui/core/CssBaseline';
+import { ThemeProvider as StyledThemeProvider } from 'styled-components';
 import grottoTheme from './conf/grottoTheme';
 import GCReducer from './reducers/GCReducer';
 import { changeLanguage } from './actions/Language';
 import TextDirectionProvider from './containers/TextDirectionProvider';
-import Landing from './components/pages/Landing';
-import Application from './components/pages/Application';
-import Admin from './components/pages/Admin';
+import Application from './pages/Application';
 
 addLocaleData(localeData);
 
 const middlewares = applyMiddleware(createDebounce(), thunkMiddleware);
 const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
-const gcStore = createStore(
-  GCReducer,
-  composeEnhancers(middlewares),
-);
+const gcStore = createStore(GCReducer, composeEnhancers(middlewares));
 
 /* gcStore.subscribe(function() {
   console.log(gcStore.getState());
@@ -40,21 +38,24 @@ const theme = createMuiTheme(grottoTheme);
 
 ReactDOM.render(
   <IntlProvider locale={locale} messages={window.catalog}>
-    <MuiThemeProvider theme={theme}>
-      <Provider store={gcStore}>
-        <TextDirectionProvider>
-          <BrowserRouter>
-            <div>
-              <Switch>
-                <Route exact path="/" component={Landing} />
-                <Route path="/admin" component={Admin} />
-                <Route path="/ui" component={Application} />
-              </Switch>
-            </div>
-          </BrowserRouter>
-        </TextDirectionProvider>
-      </Provider>
-    </MuiThemeProvider>
+    <StylesProvider injectFirst>
+      <CssBaseline />
+      <StyledThemeProvider theme={theme}>
+        <MuiThemeProvider theme={theme}>
+          <Provider store={gcStore}>
+            <TextDirectionProvider>
+              <BrowserRouter>
+                <div>
+                  <ErrorBoundary>
+                    <Application />
+                  </ErrorBoundary>
+                </div>
+              </BrowserRouter>
+            </TextDirectionProvider>
+          </Provider>
+        </MuiThemeProvider>
+      </StyledThemeProvider>
+    </StylesProvider>
   </IntlProvider>,
   document.getElementById('gc3_content_wrapper'),
 );

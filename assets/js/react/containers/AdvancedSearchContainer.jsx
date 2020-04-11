@@ -50,18 +50,13 @@ const resetAdvancedSearch = () => (dispatch) => {
 
 const getSubThemes = () => (dispatch) => {
   dispatch(loadSubthemes());
-}
+};
 
-const mapDispatchToProps = dispatch => ({
-  startAdvancedsearch: (formValues, resourceType) => dispatch(
-    startAdvancedsearch(formValues, resourceType),
-  ),
-  resetAdvancedSearch: () => dispatch(
-    resetAdvancedSearch(),
-  ),
-  getSubThemes: () => dispatch(
-    getSubThemes(),
-  ),
+const mapDispatchToProps = (dispatch) => ({
+  startAdvancedsearch: (formValues, resourceType) =>
+    dispatch(startAdvancedsearch(formValues, resourceType)),
+  resetAdvancedSearch: () => dispatch(resetAdvancedSearch()),
+  getSubThemes: () => dispatch(getSubThemes()),
 });
 
 const mapStateToProps = (state) => ({

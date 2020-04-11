@@ -34,7 +34,7 @@ const GCReducer = combineReducers({
   massif,
   bbs,
   subtheme,
-  pageTitle
+  pageTitle,
 });
 
 export default GCReducer;

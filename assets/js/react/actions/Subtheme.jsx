@@ -9,12 +9,12 @@ export const fetchSubthemes = () => ({
   type: FETCH_SUBTHEMES,
 });
 
-export const fetchSubthemesSuccess = subthemes => ({
+export const fetchSubthemesSuccess = (subthemes) => ({
   type: FETCH_SUBTHEMES_SUCCESS,
   subthemes,
 });
 
-export const fetchSubthemesFailure = error => ({
+export const fetchSubthemesFailure = (error) => ({
   type: FETCH_SUBTHEMES_FAILURE,
   error,
 });
@@ -32,6 +32,6 @@ export function loadSubthemes() {
         }
         return response.text();
       })
-      .then(text => dispatch(fetchSubthemesSuccess(JSON.parse(text))));
+      .then((text) => dispatch(fetchSubthemesSuccess(JSON.parse(text))));
   };
 }
