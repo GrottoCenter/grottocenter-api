@@ -1,10 +1,14 @@
-'use strict';
+/**
+ */
 
-var bbsGeoController = require('../BbsGeoController');
+const bbsGeoController = require('../BbsGeoController');
 
 module.exports = {
-
-  find: function(req, res, next) {
-    return bbsGeoController.find(req, res, next, MappingV1Service.convertToBbsGeoModel);
-  }
+  find: (req, res, next) =>
+    bbsGeoController.find(
+      req,
+      res,
+      next,
+      MappingV1Service.convertToBbsGeoModel,
+    ),
 };

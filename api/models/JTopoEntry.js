@@ -1,24 +1,22 @@
 /**
-* JTopoEntry.js
-*
-* @description :: jTopoEntry model imported from localhost MySql server at 15/11/2016 19:18:6.
-* @docs        :: http://sailsjs.org/#!documentation/models
-*/
-'use strict';
+ * JTopoEntry.js
+ *
+ * @description :: jTopoEntry model imported from localhost MySql server at 15/11/2016 19:18:6.
+ * @docs        :: http://sailsjs.org/#!documentation/models
+ */
 
 module.exports = {
-
   tableName: 'j_topo_entry',
 
   attributes: {
-    idTopography : {
+    idTopography: {
       columnName: 'Id_topography',
-      model: 'TTopography'
+      model: 'TTopography',
     },
 
-    idEntry : {
+    idEntry: {
       columnName: 'Id_entry',
-      model: 'TEntry'
-    }
-  }
+      model: 'TEntry',
+    },
+  },
 };

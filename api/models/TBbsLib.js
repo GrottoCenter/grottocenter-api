@@ -9,26 +9,24 @@ module.exports = {
   tableName: 't_bbs_lib',
   primaryKey: 'id',
 
-  attributes: {    
+  attributes: {
     id: {
       type: 'string',
       unique: true,
       autoIncrement: true,
-      columnName: 'code_centre'
+      columnName: 'code_centre',
     },
 
     nomCentre: {
       type: 'string',
       maxLength: 500,
-      columnName: 'nom_centre'
+      columnName: 'nom_centre',
     },
 
     pays: {
       type: 'string',
       maxLength: 50,
-      columnName: 'pays'
+      columnName: 'pays',
     },
   },
-
 };
-

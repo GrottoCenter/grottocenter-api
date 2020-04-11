@@ -1,9 +1,9 @@
-'use strict';
-
+/**
+ */
 
 module.exports = {
-  getSetting: function(key) {
-    return new Promise((resolve, reject) => {
+  getSetting: (key) =>
+    new Promise((resolve, reject) => {
       // TODO replace by an access to table settings
       // For now, just implement a switchcase
       switch (key) {
@@ -17,8 +17,7 @@ module.exports = {
           resolve(50);
           break;
         default:
-          reject('Key not found');
+          reject(new Error('Key not found'));
       }
-    });
-  }
+    }),
 };

@@ -6,19 +6,20 @@
  * @docs        :: http://sailsjs.org/#!documentation/policies
  *
  */
-module.exports = function(req, res, next) {
-  const token = req.body.token || req.query.token || req.headers['x-access-token'];
+module.exports = (req, res, next) => {
+  const token =
+    req.body.token || req.query.token || req.headers['x-access-token'];
 
   // We delete the token from param to not mess with blueprints
   delete req.query.token;
 
   if (token) {
-    TokenAuthService.verify(token, function(err, token) {
+    TokenAuthService.verify(token, (err, responseToken) => {
       if (err) {
         return res.forbidden('Invalid Token');
       }
-      req.token = token; // This is the decrypted token or the payload you provided
-      next();
+      req.token = responseToken; // This is the decrypted token or the payload you provided
+      return next();
     });
   }
 

@@ -8,34 +8,15 @@
     "jquery": false
   },
   "extends": [
-    "eslint:recommended"
+    "plugin:prettier/recommended"
+  ],
+  "plugins": [
+    "prettier"
   ],
   "rules": {
-    "indent": [
-      "error",
-      2,
-      {
-        "SwitchCase": 1
-      }
-    ],
     "linebreak-style": [
       "error",
       "unix"
-    ],
-    "comma-dangle": [
-      "error",
-      "only-multiline"
-    ],
-    "quotes": [
-      "error",
-      "single",
-      {
-        "avoidEscape": true
-      }
-    ],
-    "semi": [
-      "error",
-      "always"
     ],
     "eqeqeq": "error",
     "camelcase": "error",
@@ -46,7 +27,6 @@
     "brace-style": "error",
     "radix": "error",
     "yoda": "error",
-    "no-const-assign": "error",
     "no-console": [
       "error",
       {
@@ -57,8 +37,8 @@
       }
     ],
     "no-var": "error",
-    "no-unused-vars": "error",
-    "require-yield": "off"
+    "require-yield": "off",
+    "prefer-destructuring": ["error", {"object": true, "array": false}]
   },
   "globals": {
     "sails": true,
@@ -78,10 +58,15 @@
     "L": true,
     "GrottoService": true,
     "GeoLocService": true,
-    "SettingsService": true
+    "SettingsService": true,
+    "ConvertService": true,
+    "I18nService": true,
+    "TBbs": true,
+    "TBbsGeo": true,
+    "TBbsChapter": true
   },
+  "parser": "babel-eslint",
   "parserOptions": {
-    "ecmaVersion": 6,
     "sourceType": "module",
     "ecmaFeatures": {
       "globalReturn": false

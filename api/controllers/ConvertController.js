@@ -1,6 +1,7 @@
-'use strict';
-module.exports = {
+/**
+ */
 
+module.exports = {
   /*
   convert: function (req, res) {
 
@@ -26,47 +27,45 @@ module.exports = {
 };
 */
 
-  convert: function (req, res) {
-    ConvertService.findAllProj().then(function(results) {
-      if (!results) {
-        return res.notFound('No proj found.');
-      }
-
-      var reponse = results.rows;
-      for (var i = 0; i < reponse.length; i++) {
-
-        if (!reponse[i].Fr_name) {
-          reponse[i].Fr_name = 'World';
+  convert: (req, res) => {
+    ConvertService.findAllProj().then(
+      (results) => {
+        if (!results) {
+          return res.notFound();
         }
 
-        //recuperation du nom
-        var words = reponse[i].Definition.split('+title=');
-        reponse[i].title = words[1].split('+', 1)[0];
-
-        //recuperation de l'unité
-        reponse[i].units = 'degrees';
-        var words2 = reponse[i].Definition.split(' ');
-        for (var j = 0; j < words2.length; j++) {
-          if (words2[j].startsWith('+units')) {
-            reponse[i].units = words2[j].split('=')[1];
-          }
-          if (words2[j].startsWith('+proj')) {
-            reponse[i].proj = words2[j].split('=')[1];
+        const response = results.rows;
+        for (let i = 0; i < response.length; i += 1) {
+          if (!response[i].Fr_name) {
+            response[i]['Fr_name'] = 'World';
           }
 
+          // recuperation du nom
+          const words = response[i].Definition.split('+title=');
+          response[i].title = words[1].split('+', 1)[0];
+
+          // recuperation de l'unité
+          response[i].units = 'degrees';
+          const words2 = response[i].Definition.split(' ');
+          for (let j = 0; j < words2.length; j += 1) {
+            if (words2[j].startsWith('+units')) {
+              response[i].units = words2[j].split('=')[1];
+            }
+            if (words2[j].startsWith('+proj')) {
+              response[i].proj = words2[j].split('=')[1];
+            }
+          }
+          if (response[i].proj === 'utm') {
+            sails.log.debug(response[i].Definition);
+          }
         }
-        if (reponse[i].proj == 'utm') {
-          sails.log.debug(reponse[i].Definition);
-        }
 
-      }
-
-
-      return res.json(reponse);
-    }, function(err) {
-      sails.log.error(err);
-      return res.serverError('ConvertController.findAllProjs error : ' + err);
-    });
-  }
-}
-
+        return res.json(response);
+      },
+      (err) => {
+        sails.log.error(err);
+        return res.serverError(`ConvertController.findAllProjs error : ${err}`);
+      },
+    );
+  },
+};
