@@ -8,13 +8,6 @@ import PlaceIcon from '@material-ui/icons/Place';
 import { withTheme } from '@material-ui/core';
 import GCLink from '../GCLink';
 import { detailPageV2Links } from '../../../conf/Config';
-import withContext from '../../../helpers/Routing';
-
-//
-//
-// S T Y L I N G - C O M P O N E N T S
-//
-//
 
 const StyledTitle = styled.h5`
   text-align: center;
@@ -44,37 +37,29 @@ const StyledLocationCityIcon = withTheme(styled(LocationCityIcon)`
   color: ${(props) => props.theme.palette.secondary4Color};
 `);
 
-//
-//
-// M A I N - C O M P O N E N T
-//
-//
-
-const MapGrottosPopup = ({ grotto }, context) => {
-  const GCLinkWithContext = withContext(GCLink, context);
-
+const MapGrottosPopup = ({ grotto }) => {
   const externalLinkEntry = `${
-    detailPageV2Links[locale] !== undefined ? detailPageV2Links[locale] : detailPageV2Links['*']
+    detailPageV2Links[locale] !== undefined
+      ? detailPageV2Links[locale]
+      : detailPageV2Links['*']
   }&category=grotto&id=${grotto.id}}`;
 
   return (
     <Popup autoPan={false}>
-      <React.Fragment>
+      <>
         <div>
-          <GCLinkWithContext internal={false} href={externalLinkEntry} target="_blank">
+          <GCLink internal={false} href={externalLinkEntry} target="_blank">
             <StyledTitle>
               {grotto.name}
               <StyledDescriptionIcon />
             </StyledTitle>
-          </GCLinkWithContext>
-
+          </GCLink>
           {grotto.address && (
             <MainDiv>
               <StyledLocationCityIcon />
               <SubDiv>{grotto.address}</SubDiv>
             </MainDiv>
           )}
-
           <MainDiv>
             <StyledPlaceIcon />
             <SubDiv>
@@ -86,17 +71,13 @@ const MapGrottosPopup = ({ grotto }, context) => {
             </SubDiv>
           </MainDiv>
         </div>
-      </React.Fragment>
+      </>
     </Popup>
   );
 };
 
-// This make sure you have router in you this.context
-MapGrottosPopup.contextTypes = {
-  router: PropTypes.object.isRequired,
-};
-
 MapGrottosPopup.propTypes = {
+  // eslint-disable-next-line react/forbid-prop-types
   grotto: PropTypes.object.isRequired,
 };
 

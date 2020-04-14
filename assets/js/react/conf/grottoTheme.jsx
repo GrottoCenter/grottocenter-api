@@ -95,9 +95,6 @@ export const overridings = {
         padding: '8px',
       },
     },
-    MuiSvgIcon: {
-      padding: '4px',
-    },
     MuiDivider: {
       root: {
         backgroundColor: brown['500'],
