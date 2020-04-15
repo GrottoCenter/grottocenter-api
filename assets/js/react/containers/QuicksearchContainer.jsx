@@ -1,5 +1,9 @@
 import { connect } from 'react-redux';
-import { fetchQuicksearchResult, resetQuicksearch, setCurrentEntry } from '../actions/Quicksearch';
+import {
+  fetchQuicksearchResult,
+  resetQuicksearch,
+  setCurrentEntry,
+} from '../actions/Quicksearch';
 import { focusOnLocation } from '../actions/Map';
 import Searchbar from '../components/common/Searchbar';
 import { isMappable } from '../helpers/Entity';
@@ -47,7 +51,8 @@ const handleSelection = (selection, ownProps) => (dispatch) => {
 
 const mapDispatchToProps = (dispatch, ownProps) => ({
   startSearch: (filter) => dispatch(startSearch(filter)),
-  handleSelection: (selection) => dispatch(handleSelection(selection, ownProps)),
+  handleSelection: (selection) =>
+    dispatch(handleSelection(selection, ownProps)),
 });
 
 const mapStateToProps = (state, ownProps) => ({
