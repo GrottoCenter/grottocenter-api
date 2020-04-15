@@ -38,9 +38,11 @@ const MenuLinks = () => (
       href="/"
     />
     <Item
-      ItemIcon={() => <Icon src="/images/sidemenu/search.png" alt="search icon" />}
+      ItemIcon={() => (
+        <Icon src="/images/sidemenu/search.png" alt="search icon" />
+      )}
       label="Advanced search"
-      href="#"
+      href="/ui/search"
     />
     <Item
       ItemIcon={() => <Icon src="/images/sidemenu/loc.png" alt="map icon" />}
@@ -48,7 +50,9 @@ const MenuLinks = () => (
       href="/ui/map"
     />
     <Item
-      ItemIcon={() => <Icon src="/images/sidemenu/wrench.png" alt="wrench icon" />}
+      ItemIcon={() => (
+        <Icon src="/images/sidemenu/wrench.png" alt="wrench icon" />
+      )}
       label="Toolbox"
       href="#"
     />
