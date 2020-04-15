@@ -9,7 +9,6 @@ import { withStyles } from '@material-ui/core/styles';
 import { Breakpoint } from 'react-socks';
 
 import Translate from '../../common/Translate';
-// ==========================
 
 const buttonsStyle = () => ({
   cardBottomButtons: {
@@ -41,7 +40,6 @@ class SearchBottomActionButtons extends React.Component {
             className={classes.bottomButtonSmallScreen}
             type="submit"
             variant="contained"
-            color="default"
             size="large"
           >
             <SearchIcon />
@@ -52,7 +50,6 @@ class SearchBottomActionButtons extends React.Component {
             className={classes.bottomButtonSmallScreen}
             type="button"
             variant="contained"
-            color="default"
             size="large"
             onClick={() => {
               this.setState(this.getInitialState());
@@ -69,7 +66,6 @@ class SearchBottomActionButtons extends React.Component {
             className={classes.bottomButton}
             type="submit"
             variant="contained"
-            color="default"
             size="large"
           >
             <SearchIcon />
@@ -80,7 +76,6 @@ class SearchBottomActionButtons extends React.Component {
             className={classes.bottomButton}
             type="button"
             variant="contained"
-            color="default"
             size="large"
             onClick={() => {
               resetParentState();

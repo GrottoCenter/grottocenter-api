@@ -38,127 +38,112 @@ const TabIcon = styled.img`
   width: 2rem;
 `;
 
-class AdvancedSearch extends React.Component {
-  state = {
-    tabSelected: 0,
+const AdvancedSearch = ({
+  resetAdvancedSearch,
+  startAdvancedsearch,
+  subthemes,
+  getSubThemes,
+  themes,
+}) => {
+  const [selectedType, setSelectedType] = React.useState(0);
+
+  const handleSelectType = (_event, value) => {
+    setSelectedType(value);
   };
 
-  handleChange = (event, value) => {
-    this.setState({ tabSelected: value });
-  };
+  return (
+    <div>
+      <Tabs
+        variant="fullWidth"
+        // scrollable
+        // scrollButtons="off"
+        value={selectedType}
+        onChange={handleSelectType}
+        // indicatorColor="primary"
+        // textColor="primary"
+      >
+        <Tab
+          label={
+            <>
+              <TabIcon src="/images/entry.svg" alt="Entry icon" />
+              <Translate>Entries</Translate>
+            </>
+          }
+        />
+        <Tab
+          label={
+            <>
+              <TabIcon src="/images/club.svg" alt="Group icon" />
+              <Translate>Groups</Translate>
+            </>
+          }
+        />
+        <Tab
+          label={
+            <>
+              <TabIcon src="/images/massif.svg" alt="Massif icon" />
+              <Translate>Massifs</Translate>
+            </>
+          }
+        />
+        <Tab
+          label={
+            <>
+              <TabIcon src="/images/bibliography.svg" alt="BBS icon" />
+              <Translate>BBS</Translate>
+            </>
+          }
+        />
+      </Tabs>
 
-  render() {
-    const {
-      classes,
-      resetAdvancedSearch,
-      startAdvancedsearch,
-      getSubThemes,
-      subthemes,
-      themes,
-    } = this.props;
-    const { tabSelected } = this.state;
+      <>
+        {selectedType === 0 && (
+          <EntriesSearch
+            startAdvancedsearch={(state, resourceType) => {
+              startAdvancedsearch(state, resourceType);
+            }}
+            resourceType={advancedSearchTypes[0]}
+            resetResults={resetAdvancedSearch}
+          />
+        )}
+        {selectedType === 1 && (
+          <GroupsSearch
+            startAdvancedsearch={(state, resourceType) => {
+              startAdvancedsearch(state, resourceType);
+            }}
+            resourceType={advancedSearchTypes[1]}
+            resetResults={resetAdvancedSearch}
+          />
+        )}
+        {selectedType === 2 && (
+          <MassifsSearch
+            startAdvancedsearch={(state, resourceType) => {
+              startAdvancedsearch(state, resourceType);
+            }}
+            resourceType={advancedSearchTypes[2]}
+            resetResults={resetAdvancedSearch}
+          />
+        )}
+        {selectedType === 3 && (
+          <BbsSearch
+            startAdvancedsearch={(state, resourceType) => {
+              startAdvancedsearch(state, resourceType);
+            }}
+            resourceType={advancedSearchTypes[3]}
+            resetResults={resetAdvancedSearch}
+            getSubThemes={getSubThemes}
+            subthemes={subthemes}
+            themes={themes}
+          />
+        )}
 
-    return (
-      <div className={classes.root}>
-        <AppBar position="static" color="default">
-          <Tabs
-            variant="fullWidth"
-            // scrollable
-            // scrollButtons="off"
-            value={tabSelected}
-            onChange={this.handleChange}
-            indicatorColor="primary"
-            textColor="primary"
-          >
-            <Tab
-              className={classes.tabName}
-              label={
-                <>
-                  <TabIcon src="/images/entry.svg" alt="Entry icon" />
-                  <Translate>Entries</Translate>
-                </>
-              }
-            />
-            <Tab
-              className={classes.tabName}
-              label={
-                <React.Fragment>
-                  <TabIcon src="/images/club.svg" alt="Group icon" />
-                  <Translate>Groups</Translate>
-                </React.Fragment>
-              }
-            />
-            <Tab
-              className={classes.tabName}
-              label={
-                <React.Fragment>
-                  <TabIcon src="/images/massif.svg" alt="Massif icon" />
-                  <Translate>Massifs</Translate>
-                </React.Fragment>
-              }
-            />
-            <Tab
-              className={classes.tabName}
-              label={
-                <React.Fragment>
-                  <TabIcon src="/images/bibliography.svg" alt="BBS icon" />
-                  <Translate>BBS</Translate>
-                </React.Fragment>
-              }
-            />
-          </Tabs>
-        </AppBar>
-
-        <div className={classes.tabContainer}>
-          {tabSelected === 0 && (
-            <EntriesSearch
-              startAdvancedsearch={(state, resourceType) => {
-                startAdvancedsearch(state, resourceType);
-              }}
-              resourceType={advancedSearchTypes[0]}
-              resetResults={resetAdvancedSearch}
-            />
-          )}
-          {tabSelected === 1 && (
-            <GroupsSearch
-              startAdvancedsearch={(state, resourceType) => {
-                startAdvancedsearch(state, resourceType);
-              }}
-              resourceType={advancedSearchTypes[1]}
-              resetResults={resetAdvancedSearch}
-            />
-          )}
-          {tabSelected === 2 && (
-            <MassifsSearch
-              startAdvancedsearch={(state, resourceType) => {
-                startAdvancedsearch(state, resourceType);
-              }}
-              resourceType={advancedSearchTypes[2]}
-              resetResults={resetAdvancedSearch}
-            />
-          )}
-          {tabSelected === 3 && (
-            <BbsSearch
-              startAdvancedsearch={(state, resourceType) => {
-                startAdvancedsearch(state, resourceType);
-              }}
-              resourceType={advancedSearchTypes[3]}
-              resetResults={resetAdvancedSearch}
-              getSubThemes={getSubThemes}
-              subthemes={subthemes}
-              themes={themes}
-            />
-          )}
-
-          <SearchResultsContainer />
-        </div>
-      </div>
-    );
-  }
-}
+        <SearchResultsContainer />
+      </>
+    </div>
+  );
+};
 
 AdvancedSearch.propTypes = {
-  classes: PropTypes.shape({}).isRequired,
   resetAdvancedSearch: PropTypes.func.isRequired,
   startAdvancedsearch: PropTypes.func.isRequired,
   getSubThemes: PropTypes.func.isRequired,
@@ -168,4 +153,4 @@ AdvancedSearch.propTypes = {
 
 AdvancedSearch.defaultProps = {};
 
-export default withStyles(styles)(AdvancedSearch);
+export default AdvancedSearch;

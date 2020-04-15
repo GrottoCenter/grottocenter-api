@@ -1,9 +1,7 @@
 /* eslint-disable camelcase */
 import React from 'react';
 import PropTypes from 'prop-types';
-
 import {
-  FormLabel,
   FormControl,
   TextField,
   Switch,
@@ -17,83 +15,17 @@ import {
   ExpansionPanel,
   ExpansionPanelSummary,
   ExpansionPanelDetails,
+  FormLabel,
+  FormHelperText,
 } from '@material-ui/core';
-
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-
-import Slider from 'rc-slider';
 
 import Translate from '../../common/Translate';
 import InternationalizedLink from '../../common/InternationalizedLink';
 import { wikiBBSLinks } from '../../../conf/Config';
 import SearchBottomActionButtons from './SearchBottomActionButtons';
-
-// =====================================
-
-const Range = Slider.createSliderWithTooltip(Slider.Range);
-
-const styles = (theme) => ({
-  mainContainer: {},
-  cardContainer: {},
-  fieldset: {
-    border: `1px solid ${theme.palette.primary.light}`,
-    width: '100%',
-  },
-  formPartContainer: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    justifyContent: 'space-evenly',
-    width: '100%',
-  },
-  legend: {
-    padding: '0 5px',
-  },
-  formContainer: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    justifyContent: 'space-evenly',
-    marginBottom: 0,
-  },
-  formElement: {
-    flex: 1,
-    maxWidth: '30rem',
-    minWidth: '20rem',
-    marginLeft: '1rem',
-    marginRight: '1rem',
-    marginBottom: '10px',
-  },
-  formRange: {},
-  formElementFontSize: {
-    fontSize: '1.4rem',
-  },
-  colorSwitchBase: {
-    '&$colorChecked': {
-      color: theme.palette.accent1Color,
-      '& + $colorBar': {
-        backgroundColor: theme.palette.accent1Color,
-      },
-    },
-  },
-  colorBar: {},
-  colorChecked: {},
-
-  cardBottomButtons: {
-    display: 'block',
-    marginTop: '10px',
-    padding: 0,
-    textAlign: 'center',
-    width: '100%',
-  },
-
-  bottomButton: {
-    margin: '0 4px',
-  },
-
-  bottomButtonSmallScreen: {
-    marginBottom: '10px',
-    width: '100%',
-  },
-});
+import styles from './styles';
+import SliderForm from './SliderForm';
 
 class BbsSearch extends React.Component {
   /*
@@ -180,7 +112,9 @@ class BbsSearch extends React.Component {
 
       // Filter subthemes
       const themeObj = this.getThemeObjFromId(event.target.value);
-      const newFilteredSubthemes = subthemes.filter((st) => st.id.split('.')[0] === themeObj.id);
+      const newFilteredSubthemes = subthemes.filter(
+        (st) => st.id.split('.')[0] === themeObj.id,
+      );
 
       // Eventually, empty the subtheme if it's not valid anymore regarding the new theme
       const { 'bbs subtheme': subtheme } = this.state;
@@ -201,8 +135,12 @@ class BbsSearch extends React.Component {
     if (keyName === 'bbs subtheme' && event.target.value !== '') {
       const { themes, subthemes } = this.props;
       const subthemeObj = this.getSubthemeObjFromId(event.target.value);
-      const themeObj = themes.find((t) => t.id === subthemeObj.id.split('.')[0]);
-      const newFilteredSubthemes = subthemes.filter((st) => st.id.split('.')[0] === themeObj.id);
+      const themeObj = themes.find(
+        (t) => t.id === subthemeObj.id.split('.')[0],
+      );
+      const newFilteredSubthemes = subthemes.filter(
+        (st) => st.id.split('.')[0] === themeObj.id,
+      );
       this.setState({
         'bbs theme': themeObj.id,
         'bbs subtheme': subthemeObj.id,
@@ -222,7 +160,12 @@ class BbsSearch extends React.Component {
    * If the values given are > (or <) to the minValueAuthorized (or maxValueAuthorized),
    * it set it to the min/maxValueAuthorized.
    */
-  handleRangeChange = (keyName, values, minValueAuthorized, maxValueAuthorized) => {
+  handleRangeChange = (
+    keyName,
+    values,
+    minValueAuthorized,
+    maxValueAuthorized,
+  ) => {
     const newState = {
       [keyName]: {
         ...this.state[keyName],
@@ -280,6 +223,8 @@ class BbsSearch extends React.Component {
       themes,
     } = this.props;
 
+    const { intl } = this.context;
+
     const {
       'bbs year-range': yearRange,
       'bbs ref': ref,
@@ -297,7 +242,7 @@ class BbsSearch extends React.Component {
     } = this.state;
 
     return (
-      <Card className={classes.cardContainer}>
+      <Card>
         <CardContent>
           <Typography
             variant="body1"
@@ -306,14 +251,14 @@ class BbsSearch extends React.Component {
             style={{ fontStyle: 'italic', textAlign: 'center' }}
           >
             <Translate>
-              {
-                'The BBS ("Bulletin Bibliographique Spéléologique" in french) is an annual review of the worldwide speleological litterature.'
-              }
+              The BBS ("Bulletin Bibliographique Spéléologique" in french) is an
+              annual review of the worldwide speleological litterature.
             </Translate>
             <br />
             <InternationalizedLink links={wikiBBSLinks}>
               <Translate>
-                {'You can find more info about the BBS on the dedicated Grottocenter-wiki page.'}
+                You can find more info about the BBS on the dedicated
+                Grottocenter-wiki page.
               </Translate>
             </InternationalizedLink>
           </Typography>
@@ -327,21 +272,17 @@ class BbsSearch extends React.Component {
               aria-controls="all-fields-search-content"
               id="all-fields-search-content"
             >
-              <h5 style={{ marginBottom: 0, width: '100%' }}>
+              <Typography variant="h6">
                 <Translate>Search on all fields</Translate>
-              </h5>
+              </Typography>
             </ExpansionPanelSummary>
             <ExpansionPanelDetails style={{ flexDirection: 'column' }}>
-              <Typography
-                className={classes.formElementFontSize}
-                variant="body1"
-                gutterBottom
-                paragraph
-              >
+              <Typography variant="body1" gutterBottom paragraph>
                 <i>
                   <Translate>
-                    Perform an advanced search on all the fields. Results displayed will have at
-                    least one field matching your request.
+                    Perform an advanced search on all the fields. Results
+                    displayed will have at least one field matching your
+                    request.
                   </Translate>
                 </i>
               </Typography>
@@ -372,21 +313,21 @@ class BbsSearch extends React.Component {
                 }}
                 className={classes.formContainer}
               >
-                <div className={classes.formPartContainer} style={{ justifyContent: 'flex-start' }}>
+                <div
+                  className={classes.formPartContainer}
+                  style={{ justifyContent: 'flex-start' }}
+                >
                   <TextField
                     className={classes.formElement}
                     label={
-                      <span className={classes.formElementFontSize}>
+                      <span>
                         <Translate>All fields request</Translate>
                       </span>
                     }
-                    onChange={(event) => this.handleValueChange('allFieldsRequest', event)}
+                    onChange={(event) =>
+                      this.handleValueChange('allFieldsRequest', event)
+                    }
                     value={allFieldsRequest}
-                    InputProps={{
-                      classes: {
-                        input: classes.formElementFontSize,
-                      },
-                    }}
                   />
                 </div>
 
@@ -407,9 +348,9 @@ class BbsSearch extends React.Component {
               aria-controls="specific-fields-search-content"
               id="specific-fields-search-content"
             >
-              <h5 style={{ marginBottom: 0, width: '100%' }}>
+              <Typography variant="h6">
                 <Translate>Search on specific fields</Translate>
-              </h5>
+              </Typography>
             </ExpansionPanelSummary>
             <ExpansionPanelDetails style={{ flexDirection: 'column' }}>
               <form
@@ -425,15 +366,24 @@ class BbsSearch extends React.Component {
                   delete stateToSearch.panelExpanded;
 
                   // Get theme and subtheme name from id
-                  const subthemeObj = this.getSubthemeObjFromId(stateToSearch['bbs subtheme']);
-                  const themeObj = this.getThemeObjFromId(stateToSearch['bbs theme']);
-                  stateToSearch['bbs subtheme'] = subthemeObj ? subthemeObj.name : '';
+                  const subthemeObj = this.getSubthemeObjFromId(
+                    stateToSearch['bbs subtheme'],
+                  );
+                  const themeObj = this.getThemeObjFromId(
+                    stateToSearch['bbs theme'],
+                  );
+                  stateToSearch['bbs subtheme'] = subthemeObj
+                    ? subthemeObj.name
+                    : '';
                   stateToSearch['bbs theme'] = themeObj ? themeObj.name : '';
                   startAdvancedsearch(stateToSearch, resourceType);
                 }}
                 className={classes.formContainer}
               >
-                <div className={classes.formPartContainer} style={{ justifyContent: 'flex-start' }}>
+                <div
+                  className={classes.formPartContainer}
+                  style={{ justifyContent: 'flex-start' }}
+                >
                   <fieldset className={classes.fieldset}>
                     <legend className={classes.legend}>
                       <Translate>Content</Translate>
@@ -443,11 +393,13 @@ class BbsSearch extends React.Component {
                       <TextField
                         className={classes.formElement}
                         label={
-                          <span className={classes.formElementFontSize}>
+                          <span>
                             <Translate>Title</Translate>
                           </span>
                         }
-                        onChange={(event) => this.handleValueChange('bbs title', event)}
+                        onChange={(event) =>
+                          this.handleValueChange('bbs title', event)
+                        }
                         value={title}
                         InputProps={{
                           classes: {
@@ -459,17 +411,14 @@ class BbsSearch extends React.Component {
                       <TextField
                         className={classes.formElement}
                         label={
-                          <span className={classes.formElementFontSize}>
+                          <span>
                             <Translate>Abstract</Translate>
                           </span>
                         }
-                        onChange={(event) => this.handleValueChange('bbs abstract', event)}
+                        onChange={(event) =>
+                          this.handleValueChange('bbs abstract', event)
+                        }
                         value={abstract}
-                        InputProps={{
-                          classes: {
-                            input: classes.formElementFontSize,
-                          },
-                        }}
                       />
                     </div>
                   </fieldset>
@@ -486,7 +435,9 @@ class BbsSearch extends React.Component {
                         </InputLabel>
                         <Select
                           value={theme}
-                          onChange={(event) => this.handleValueChange('bbs theme', event)}
+                          onChange={(event) =>
+                            this.handleValueChange('bbs theme', event)
+                          }
                           inputProps={{
                             name: 'theme',
                             id: 'bbs theme',
@@ -498,7 +449,10 @@ class BbsSearch extends React.Component {
                             </i>
                           </MenuItem>
                           {themes.map((choiceTheme) => (
-                            <MenuItem key={choiceTheme.id} value={choiceTheme.id}>
+                            <MenuItem
+                              key={choiceTheme.id}
+                              value={choiceTheme.id}
+                            >
                               {choiceTheme.id}
                               {'\u00a0-\u00a0'}
                               <Translate>{choiceTheme.name}</Translate>
@@ -513,7 +467,9 @@ class BbsSearch extends React.Component {
                         </InputLabel>
                         <Select
                           value={subtheme}
-                          onChange={(event) => this.handleValueChange('bbs subtheme', event)}
+                          onChange={(event) =>
+                            this.handleValueChange('bbs subtheme', event)
+                          }
                           inputProps={{
                             name: 'subtheme',
                             id: 'bbs subtheme',
@@ -525,7 +481,10 @@ class BbsSearch extends React.Component {
                             </i>
                           </MenuItem>
                           {filteredSubthemes.map((choiceSubtheme) => (
-                            <MenuItem key={choiceSubtheme.id} value={choiceSubtheme.id}>
+                            <MenuItem
+                              key={choiceSubtheme.id}
+                              value={choiceSubtheme.id}
+                            >
                               {choiceSubtheme.id}
                               {'\u00a0-\u00a0'}
 
@@ -544,173 +503,100 @@ class BbsSearch extends React.Component {
                   <TextField
                     className={classes.formElement}
                     label={
-                      <span className={classes.formElementFontSize}>
+                      <span>
                         <Translate>Reference</Translate>
                       </span>
                     }
-                    onChange={(event) => this.handleValueChange('bbs ref', event)}
+                    onChange={(event) =>
+                      this.handleValueChange('bbs ref', event)
+                    }
                     value={ref}
-                    InputProps={{
-                      classes: {
-                        input: classes.formElementFontSize,
-                      },
-                    }}
                   />
 
                   <TextField
                     className={classes.formElement}
                     label={
-                      <span className={classes.formElementFontSize}>
+                      <span>
                         <Translate>Country or region</Translate>
                       </span>
                     }
-                    onChange={(event) => this.handleValueChange('bbs country', event)}
+                    onChange={(event) =>
+                      this.handleValueChange('bbs country', event)
+                    }
                     value={country}
-                    InputProps={{
-                      classes: {
-                        input: classes.formElementFontSize,
-                      },
-                    }}
                   />
 
                   <TextField
                     className={classes.formElement}
                     label={
-                      <span className={classes.formElementFontSize}>
+                      <span>
                         <Translate>Authors</Translate>
                       </span>
                     }
-                    onChange={(event) => this.handleValueChange('bbs authors', event)}
+                    onChange={(event) =>
+                      this.handleValueChange('bbs authors', event)
+                    }
                     value={authors}
-                    InputProps={{
-                      classes: {
-                        input: classes.formElementFontSize,
-                      },
-                    }}
                   />
 
                   <TextField
                     className={classes.formElement}
                     label={
-                      <span className={classes.formElementFontSize}>
+                      <span>
                         <Translate>Publication</Translate>
                       </span>
                     }
-                    onChange={(event) => this.handleValueChange('bbs publication', event)}
+                    onChange={(event) =>
+                      this.handleValueChange('bbs publication', event)
+                    }
                     value={publication}
-                    InputProps={{
-                      classes: {
-                        input: classes.formElementFontSize,
-                      },
-                    }}
                   />
 
-                  <FormControl className={classes.formElement}>
-                    <FormLabel>
-                      <span className={classes.formElementFontSize}>
-                        <Translate>Year</Translate>
-                      </span>
-                      <Switch
-                        checked={yearRange.isEditable}
-                        onChange={this.handleCheckedChange('bbs year-range')}
-                        value={yearRange.isEditable}
-                        classes={{
-                          switchBase: classes.colorSwitchBase,
-                          checked: classes.colorChecked,
-                          bar: classes.colorBar,
-                        }}
-                      />
-                    </FormLabel>
-                    <Range
-                      className={classes.formRange}
-                      min={yearMinValue}
-                      max={yearMaxValue}
-                      onChange={(values) => {
-                        this.handleRangeChange(
-                          'bbs year-range',
-                          values,
-                          yearMinValue,
-                          yearMaxValue,
-                        );
-                      }}
-                      tipFormatter={(value) => `${value}`}
-                      value={[yearRange.min, yearRange.max]}
-                      disabled={!yearRange.isEditable}
-                      trackStyle={[
-                        !yearRange.isEditable
-                          ? { backgroundColor: '#9e9e9e' }
-                          : { backgroundColor: '#ff9800' },
-                      ]}
-                      handleStyle={[
-                        { backgroundColor: '#795548', borderColor: '#795548' },
-                        { backgroundColor: '#795548', borderColor: '#795548' },
-                      ]}
-                    />
-
-                    <div style={{ display: 'inline-flex', justifyContent: 'space-between' }}>
-                      <TextField
-                        onChange={(event) =>
-                          this.handleRangeChange(
-                            'bbs year-range',
-                            [parseInt(event.target.value, 10) || 0, yearRange.max],
-                            0,
-                            2100,
-                          )
-                        }
-                        value={yearRange.min}
-                        disabled={!yearRange.isEditable}
-                        style={{ width: '35px' }}
-                      />
-                      <TextField
-                        onChange={(event) =>
-                          this.handleRangeChange(
-                            'bbs year-range',
-                            [yearRange.min, parseInt(event.target.value, 10) || 0],
-                            0,
-                            2100,
-                          )
-                        }
-                        value={yearRange.max}
-                        disabled={!yearRange.isEditable}
-                        style={{ width: '35px' }}
-                      />
-                    </div>
-                  </FormControl>
+                  <SliderForm
+                    label={intl.formatMessage({
+                      id: 'Year',
+                    })}
+                    disabled={!yearRange.isEditable}
+                    onDisable={this.handleCheckedChange('bbs year-range')}
+                    min={yearMinValue}
+                    max={yearMaxValue}
+                    onChange={(values) => {
+                      this.handleRangeChange(
+                        'bbs year-range',
+                        values,
+                        yearMinValue,
+                        yearMaxValue,
+                      );
+                    }}
+                    value={[yearRange.min, yearRange.max]}
+                  />
                 </div>
 
-                <div className={classes.formPartContainer} style={{ justifyContent: 'flex-start' }}>
+                <div
+                  className={classes.formPartContainer}
+                  style={{ justifyContent: 'flex-start' }}
+                >
                   <FormControl>
-                    <FormLabel>
-                      <span className={classes.formElementFontSize}>
+                    <FormLabel className={classes.formLabel}>
+                      <span>
                         <Translate>
-                          {matchAllFields ? 'Matching all fields' : 'Matching at least one field'}
+                          {matchAllFields
+                            ? 'Matching all fields'
+                            : 'Matching at least one field'}
                         </Translate>
                       </span>
                       <Switch
                         checked={matchAllFields}
                         onChange={this.handleBooleanChange('matchAllFields')}
                         value={matchAllFields}
-                        classes={{
-                          switchBase: classes.colorSwitchBase,
-                          checked: classes.colorChecked,
-                          bar: classes.colorBar,
-                        }}
                       />
-                      <br />
                     </FormLabel>
-                    <Typography
-                      className={classes.formElementFontSize}
-                      variant="body1"
-                      gutterBottom
-                      paragraph
-                    >
-                      <i>
-                        <Translate className={classes.formElementFontSize}>
-                          Specify if the search results must match all the fields you typed above
-                          (default is yes).
-                        </Translate>
-                      </i>
-                    </Typography>
+                    <FormHelperText>
+                      <Translate>
+                        Specify if the search results must match all the fields
+                        you typed above (default is yes).
+                      </Translate>
+                    </FormHelperText>
                   </FormControl>
                 </div>
 
@@ -744,5 +630,10 @@ BbsSearch.defaultProps = {
   yearMinValue: 1800,
   yearMaxValue: new Date().getFullYear(),
 };
+
+BbsSearch.contextTypes = {
+  intl: PropTypes.shape({}).isRequired,
+};
+
 
 export default withStyles(styles)(BbsSearch);
