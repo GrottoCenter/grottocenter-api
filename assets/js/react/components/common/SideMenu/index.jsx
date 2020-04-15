@@ -1,30 +1,25 @@
 import React from 'react';
 import { Divider, Drawer, Typography } from '@material-ui/core';
-import { isMobileOnly } from 'react-device-detect';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import Translate from '../Translate';
 import MenuLinks from './MenuLinks';
 import Footer from './Footer';
-import AutoCompleteSearch from '../AutoCompleteSearch';
 
 const UserIcon = styled.img`
   width: 40px;
   src: url('/images/sidemenu/user.png');
 `;
 
-const SideMenu = ({ isOpen, toggle, isConnected = false }) => (
+const SideMenu = ({
+  isOpen,
+  toggle,
+  isConnected = false,
+  AutoCompleteSearch,
+}) => (
   <Drawer variant="persistent" anchor="left" open={isOpen} onClose={toggle}>
     <UserInformation isConnected={isConnected} />
-    <AutoCompleteSearch
-      disabled
-      onSelection={() => {}}
-      input=""
-      inputValue=""
-      onInputChange={() => {}}
-      suggestions={[]}
-      renderOption={() => {}}
-    />
+    {!!AutoCompleteSearch && <AutoCompleteSearch />}
     <Divider />
     <MenuLinks />
     <Footer />
@@ -64,6 +59,11 @@ SideMenu.propTypes = {
   isOpen: PropTypes.bool.isRequired,
   toggle: PropTypes.func.isRequired,
   isConnected: PropTypes.bool,
+  AutoCompleteSearch: PropTypes.oneOfType([
+    PropTypes.node,
+    PropTypes.element,
+    PropTypes.func,
+  ]),
 };
 
 UserInformation.propTypes = {
