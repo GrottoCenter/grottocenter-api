@@ -10,6 +10,7 @@ import Translate from '../Translate';
 
 const Icon = styled.img`
   width: 20px;
+  height: 20px;
 `;
 
 const StyledLink = styled(Link)`
