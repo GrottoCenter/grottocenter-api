@@ -121,11 +121,6 @@ export const overridings = {
         fontFamily,
       },
     },
-    MuiFormLabel: {
-      root: {
-        // fontSize: '1.9rem',
-      },
-    },
     gutterBottom: {
       marginBottom: '1rem',
     },
@@ -139,7 +134,7 @@ export const overridings = {
         backgroundColor: brown['500'],
         color: grey['100'],
       },
-    },
+    }
   },
 };
 

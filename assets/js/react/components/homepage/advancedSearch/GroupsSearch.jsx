@@ -2,6 +2,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
+import { injectIntl, intlShape } from 'react-intl';
 
 import {
   Card,
@@ -118,9 +119,8 @@ class GroupsSearch extends React.Component {
       startAdvancedsearch,
       numberOfCaversMinValue,
       numberOfCaversMaxValue,
+      intl,
     } = this.props;
-
-    const { intl } = this.context;
 
     const {
       'number of cavers-range': numberOfCaversRange,
@@ -295,6 +295,8 @@ GroupsSearch.propTypes = {
   // Min / max values for form
   numberOfCaversMinValue: PropTypes.number,
   numberOfCaversMaxValue: PropTypes.number,
+
+  intl: PropTypes.shape(intlShape).isRequired,
 };
 
 GroupsSearch.defaultProps = {
@@ -302,8 +304,4 @@ GroupsSearch.defaultProps = {
   numberOfCaversMaxValue: 100,
 };
 
-GroupsSearch.contextTypes = {
-  intl: PropTypes.shape({}).isRequired,
-};
-
-export default withStyles(styles)(GroupsSearch);
+export default injectIntl(withStyles(styles)(GroupsSearch));

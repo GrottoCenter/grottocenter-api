@@ -1,6 +1,7 @@
 /* eslint-disable camelcase */
 import React from 'react';
 import PropTypes from 'prop-types';
+import { injectIntl, intlShape } from 'react-intl';
 import {
   FormControl,
   TextField,
@@ -221,9 +222,8 @@ class BbsSearch extends React.Component {
       yearMinValue,
       yearMaxValue,
       themes,
+      intl,
     } = this.props;
-
-    const { intl } = this.context;
 
     const {
       'bbs year-range': yearRange,
@@ -624,6 +624,8 @@ BbsSearch.propTypes = {
 
   yearMinValue: PropTypes.number,
   yearMaxValue: PropTypes.number,
+
+  intl: PropTypes.shape(intlShape).isRequired,
 };
 
 BbsSearch.defaultProps = {
@@ -631,9 +633,4 @@ BbsSearch.defaultProps = {
   yearMaxValue: new Date().getFullYear(),
 };
 
-BbsSearch.contextTypes = {
-  intl: PropTypes.shape({}).isRequired,
-};
-
-
-export default withStyles(styles)(BbsSearch);
+export default injectIntl(withStyles(styles)(BbsSearch));

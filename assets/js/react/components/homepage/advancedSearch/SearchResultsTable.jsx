@@ -1,6 +1,7 @@
 /* eslint-disable no-nested-ternary */
 import React from 'react';
 import PropTypes from 'prop-types';
+import { injectIntl, intlShape } from 'react-intl';
 import { withStyles } from '@material-ui/core/styles';
 import { withRouter } from 'react-router-dom';
 import styled from 'styled-components';
@@ -98,7 +99,7 @@ class SearchResultsTable extends React.Component {
 
   // ===== Table headers ===== //
   entriesTableHead = () => {
-    const { intl } = this.context;
+    const { intl } = this.props;
     return (
       <TableHead>
         <TableRow>
@@ -149,7 +150,7 @@ class SearchResultsTable extends React.Component {
   };
 
   groupsTableHead = () => {
-    const { intl } = this.context;
+    const { intl } = this.props;
     return (
       <TableHead>
         <TableRow>
@@ -187,7 +188,7 @@ class SearchResultsTable extends React.Component {
   };
 
   massifsTableHead = () => {
-    const { intl } = this.context;
+    const { intl } = this.props;
     return (
       <TableHead>
         <TableRow>
@@ -393,9 +394,9 @@ class SearchResultsTable extends React.Component {
       isLoadingFullData,
       wantToDownloadCSV,
       fullResults,
+      intl,
     } = this.props;
     const { from, page, size } = this.state;
-    const { intl } = this.context;
 
     let ResultsTableHead;
     if (resourceType === 'entries') ResultsTableHead = this.entriesTableHead;
@@ -638,6 +639,7 @@ SearchResultsTable.propTypes = {
   wantToDownloadCSV: PropTypes.bool.isRequired,
   totalNbResults: PropTypes.number.isRequired,
   fullResults: PropTypes.arrayOf(PropTypes.shape({})),
+  intl: PropTypes.shape(intlShape).isRequired,
 };
 
 SearchResultsTable.defaultProps = {
@@ -645,8 +647,4 @@ SearchResultsTable.defaultProps = {
   fullResults: undefined,
 };
 
-SearchResultsTable.contextTypes = {
-  intl: PropTypes.shape({}).isRequired,
-};
-
-export default withRouter(withStyles(styles)(SearchResultsTable));
+export default injectIntl(withRouter(withStyles(styles)(SearchResultsTable)));
