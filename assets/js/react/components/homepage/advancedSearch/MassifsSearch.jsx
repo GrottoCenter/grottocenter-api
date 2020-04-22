@@ -2,67 +2,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
-
-import { Card, CardContent, TextField } from '@material-ui/core';
+import { Card, CardContent, TextField, Typography } from '@material-ui/core';
 
 import SearchBottomActionButtons from './SearchBottomActionButtons';
 import Translate from '../../common/Translate';
-
-// ==========
-
-const styles = (theme) => ({
-  mainContainer: {},
-  cardContainer: {},
-  fieldset: {
-    border: `1px solid ${theme.palette.primary.light}`,
-    width: '100%',
-  },
-  formPartContainer: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    justifyContent: 'space-evenly',
-    width: '100%',
-  },
-  legend: {
-    padding: '0 5px',
-  },
-  formContainer: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    marginBottom: 0,
-  },
-  formElement: {
-    flex: 1,
-    maxWidth: '30rem',
-    minWidth: '20rem',
-    marginLeft: '1rem',
-    marginRight: '1rem',
-    marginBottom: '10px',
-  },
-  formRange: {},
-  formElementFontSize: {
-    fontSize: '1.4rem',
-  },
-  colorSwitchBase: {
-    '&$colorChecked': {
-      color: theme.palette.accent1Color,
-      '& + $colorBar': {
-        backgroundColor: theme.palette.accent1Color,
-      },
-    },
-  },
-  colorBar: {},
-  colorChecked: {},
-
-  cardBottomButtons: {
-    display: 'block',
-    marginTop: '10px',
-    padding: 0,
-    textAlign: 'center',
-    width: '100%',
-  },
-});
+import styles from './styles';
 
 class MassifsSearch extends React.Component {
   /*
@@ -97,12 +41,12 @@ class MassifsSearch extends React.Component {
   };
 
   render() {
-    const { classes, resourceType, resetResults, startAdvancedsearch } = this.props;
+    const { resourceType, resetResults, startAdvancedsearch } = this.props;
 
     const { name } = this.state;
 
     return (
-      <Card className={classes.cardContainer}>
+      <Card>
         <CardContent>
           <form
             noValidate
@@ -111,29 +55,20 @@ class MassifsSearch extends React.Component {
               event.preventDefault();
               startAdvancedsearch(this.state, resourceType);
             }}
-            className={classes.formContainer}
           >
-            <h5 style={{ width: '100%' }}>
+            <Typography variant="h6">
               <Translate>Massif properties</Translate>
-            </h5>
+            </Typography>
 
-            <div className={classes.formPartContainer} style={{ justifyContent: 'flex-start' }}>
-              <TextField
-                className={classes.formElement}
-                label={
-                  <span className={classes.formElementFontSize}>
-                    <Translate>Massif name</Translate>
-                  </span>
-                }
-                onChange={(event) => this.handleValueChange('name', event)}
-                value={name}
-                InputProps={{
-                  classes: {
-                    input: classes.formElementFontSize,
-                  },
-                }}
-              />
-            </div>
+            <TextField
+              label={
+                <span>
+                  <Translate>Massif name</Translate>
+                </span>
+              }
+              onChange={(event) => this.handleValueChange('name', event)}
+              value={name}
+            />
 
             <SearchBottomActionButtons
               resetResults={resetResults}

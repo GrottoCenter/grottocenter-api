@@ -1,74 +1,23 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-
+import { pathOr } from 'ramda';
 import {
   Card,
   CardContent,
   FormControl,
-  Input,
-  InputAdornment,
-  InputLabel,
   FormLabel,
-  NativeSelect,
   TextField,
   Switch,
   withStyles,
+  Typography,
+  FormHelperText,
 } from '@material-ui/core';
 
-import Slider from 'rc-slider';
-
+import styles from './styles';
 import Translate from '../../common/Translate';
 import SearchBottomActionButtons from './SearchBottomActionButtons';
-
-// ==========
-
-const Range = Slider.createSliderWithTooltip(Slider.Range);
-
-const styles = (theme) => ({
-  mainContainer: {},
-  cardContainer: {},
-  fieldset: {
-    border: `1px solid ${theme.palette.primary.light}`,
-    width: '100%',
-  },
-  formPartContainer: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    justifyContent: 'space-evenly',
-    width: '100%',
-  },
-  legend: {
-    padding: '0 5px',
-  },
-  formContainer: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    marginBottom: 0,
-  },
-  formElement: {
-    flex: 1,
-    maxWidth: '30rem',
-    minWidth: '20rem',
-    marginLeft: '1rem',
-    marginRight: '1rem',
-    marginBottom: '10px',
-  },
-  formRange: {},
-  formElementFontSize: {
-    fontSize: '1.4rem',
-  },
-  colorSwitchBase: {
-    '&$colorChecked': {
-      color: theme.palette.accent1Color,
-      '& + $colorBar': {
-        backgroundColor: theme.palette.accent1Color,
-      },
-    },
-  },
-  colorBar: {},
-  colorChecked: {},
-});
+import SliderForm from './SliderForm';
+import DivingTypesForm from './DivingTypesForm';
 
 class EntriesSearch extends React.Component {
   // TODO: Handle the max of depth and length dynamically
@@ -166,7 +115,7 @@ class EntriesSearch extends React.Component {
    */
   handleValueChange = (keyName, event) => {
     this.setState({
-      [keyName]: event.target.value,
+      [keyName]: pathOr(event, ['target', 'value'], event),
     });
   };
 
@@ -176,7 +125,12 @@ class EntriesSearch extends React.Component {
    * If the values given are > (or <) to the minValueAuthorized (or maxValueAuthorized),
    * it set it to the min/maxValueAuthorized.
    */
-  handleRangeChange = (keyName, values, minValueAuthorized, maxValueAuthorized) => {
+  handleRangeChange = (
+    keyName,
+    values,
+    minValueAuthorized,
+    maxValueAuthorized,
+  ) => {
     const newState = {
       [keyName]: {
         ...this.state[keyName],
@@ -238,7 +192,7 @@ class EntriesSearch extends React.Component {
     const { intl } = this.context;
 
     return (
-      <Card className={classes.cardContainer}>
+      <Card>
         <CardContent>
           <form
             noValidate
@@ -249,25 +203,20 @@ class EntriesSearch extends React.Component {
             }}
             className={classes.formContainer}
           >
-            <h5 style={{ width: '100%' }}>
+            <Typography variant="h6">
               <Translate>Entry properties</Translate>
-            </h5>
-
-            <div className={classes.formPartContainer} style={{ justifyContent: 'flex-start' }}>
+            </Typography>
+            <div
+              className={classes.formPartContainer}
+              style={{ justifyContent: 'flex-start' }}
+            >
               <TextField
                 className={classes.formElement}
-                label={
-                  <span className={classes.formElementFontSize}>
-                    <Translate>Entry name</Translate>
-                  </span>
-                }
+                label={intl.formatMessage({
+                  id: 'Entry name',
+                })}
                 onChange={(event) => this.handleValueChange('name', event)}
                 value={name}
-                InputProps={{
-                  classes: {
-                    input: classes.formElementFontSize,
-                  },
-                }}
               />
             </div>
 
@@ -279,82 +228,49 @@ class EntriesSearch extends React.Component {
               <div className={classes.formPartContainer}>
                 <TextField
                   className={classes.formElement}
-                  label={
-                    <span className={classes.formElementFontSize}>
-                      <Translate>City</Translate>
-                    </span>
-                  }
+                  label={intl.formatMessage({
+                    id: 'City',
+                  })}
                   onChange={(event) => this.handleValueChange('city', event)}
                   value={city}
-                  InputProps={{
-                    classes: {
-                      input: classes.formElementFontSize,
-                    },
-                  }}
                 />
 
                 <TextField
                   className={classes.formElement}
-                  label={
-                    <span className={classes.formElementFontSize}>
-                      <Translate>County</Translate>
-                    </span>
-                  }
+                  label={intl.formatMessage({
+                    id: 'County',
+                  })}
                   onChange={(event) => this.handleValueChange('county', event)}
                   value={county}
-                  InputProps={{
-                    classes: {
-                      input: classes.formElementFontSize,
-                    },
-                  }}
                 />
 
                 <TextField
                   className={classes.formElement}
-                  label={
-                    <span className={classes.formElementFontSize}>
-                      <Translate>Region</Translate>
-                    </span>
-                  }
+                  label={intl.formatMessage({
+                    id: 'Region',
+                  })}
                   onChange={(event) => this.handleValueChange('region', event)}
                   value={region}
-                  InputProps={{
-                    classes: {
-                      input: classes.formElementFontSize,
-                    },
-                  }}
                 />
 
                 <TextField
                   className={classes.formElement}
-                  label={
-                    <span className={classes.formElementFontSize}>
-                      <Translate>Country</Translate>
-                    </span>
-                  }
+                  label={intl.formatMessage({
+                    id: 'Country',
+                  })}
                   onChange={(event) => this.handleValueChange('country', event)}
                   value={country}
-                  InputProps={{
-                    classes: {
-                      input: classes.formElementFontSize,
-                    },
-                  }}
                 />
 
                 <TextField
                   className={classes.formElement}
-                  label={
-                    <span className={classes.formElementFontSize}>
-                      <Translate>Massif name</Translate>
-                    </span>
+                  label={intl.formatMessage({
+                    id: 'Massif name',
+                  })}
+                  onChange={(event) =>
+                    this.handleValueChange('massif name', event)
                   }
-                  onChange={(event) => this.handleValueChange('massif name', event)}
                   value={massifName}
-                  InputProps={{
-                    classes: {
-                      input: classes.formElementFontSize,
-                    },
-                  }}
                 />
               </div>
             </fieldset>
@@ -363,223 +279,61 @@ class EntriesSearch extends React.Component {
               <legend className={classes.legend}>
                 <Translate>Rating criterias</Translate>
               </legend>
-
               <div className={classes.formPartContainer}>
-                <FormControl className={classes.formElement}>
-                  <FormLabel>
-                    <span className={classes.formElementFontSize}>
-                      <Translate>Aesthetic</Translate>
-                    </span>
-                    <Switch
-                      checked={aestheticismRange.isEditable}
-                      onChange={this.handleCheckedChange('aestheticism-range')}
-                      value={aestheticismRange.isEditable}
-                      classes={{
-                        switchBase: classes.colorSwitchBase,
-                        checked: classes.colorChecked,
-                        bar: classes.colorBar,
-                      }}
-                    />
-                  </FormLabel>
-                  <Range
-                    className={classes.formRange}
-                    min={aestheticismMinValue}
-                    max={aestheticismMaxValue}
-                    onChange={(values) => {
-                      this.handleRangeChange(
-                        'aestheticism-range',
-                        values,
-                        aestheticismMinValue,
-                        aestheticismMaxValue,
-                      );
-                    }}
-                    tipFormatter={(value) => `${value}`}
-                    value={[aestheticismRange.min, aestheticismRange.max]}
-                    disabled={!aestheticismRange.isEditable}
-                    trackStyle={[
-                      !aestheticismRange.isEditable
-                        ? { backgroundColor: '#9e9e9e' }
-                        : { backgroundColor: '#ff9800' },
-                    ]}
-                    handleStyle={[
-                      { backgroundColor: '#795548', borderColor: '#795548' },
-                      { backgroundColor: '#795548', borderColor: '#795548' },
-                    ]}
-                  />
-
-                  <div style={{ display: 'inline-flex', justifyContent: 'space-between' }}>
-                    <TextField
-                      onChange={(event) =>
-                        this.handleRangeChange(
-                          'aestheticism-range',
-                          [parseInt(event.target.value, 10) || 0, aestheticismRange.max],
-                          aestheticismMinValue,
-                          aestheticismMaxValue,
-                        )
-                      }
-                      value={aestheticismRange.min}
-                      disabled={!aestheticismRange.isEditable}
-                      style={{ width: '30px' }}
-                    />
-                    <TextField
-                      onChange={(event) =>
-                        this.handleRangeChange(
-                          'aestheticism-range',
-                          [aestheticismRange.min, parseInt(event.target.value, 10) || 0],
-                          aestheticismMinValue,
-                          aestheticismMaxValue,
-                        )
-                      }
-                      value={aestheticismRange.max}
-                      disabled={!aestheticismRange.isEditable}
-                      style={{ width: '30px' }}
-                    />
-                  </div>
-                </FormControl>
-
-                <FormControl className={classes.formElement}>
-                  <FormLabel>
-                    <span className={classes.formElementFontSize}>
-                      <Translate>Ease of move</Translate>
-                    </span>
-                    <Switch
-                      checked={cavingRange.isEditable}
-                      onChange={this.handleCheckedChange('caving-range')}
-                      value={cavingRange.isEditable}
-                      classes={{
-                        switchBase: classes.colorSwitchBase,
-                        checked: classes.colorChecked,
-                        bar: classes.colorBar,
-                      }}
-                    />
-                  </FormLabel>
-                  <Range
-                    className={classes.formRange}
-                    min={cavingMinValue}
-                    max={cavingMaxValue}
-                    onChange={(values) => {
-                      this.handleRangeChange(
-                        'caving-range',
-                        values,
-                        cavingMinValue,
-                        cavingMaxValue,
-                      );
-                    }}
-                    tipFormatter={(value) => `${value}`}
-                    value={[cavingRange.min, cavingRange.max]}
-                    disabled={!cavingRange.isEditable}
-                    trackStyle={[
-                      !cavingRange.isEditable
-                        ? { backgroundColor: '#9e9e9e' }
-                        : { backgroundColor: '#ff9800' },
-                    ]}
-                    handleStyle={[
-                      { backgroundColor: '#795548', borderColor: '#795548' },
-                      { backgroundColor: '#795548', borderColor: '#795548' },
-                    ]}
-                  />
-
-                  <div style={{ display: 'inline-flex', justifyContent: 'space-between' }}>
-                    <TextField
-                      onChange={(event) =>
-                        this.handleRangeChange(
-                          'caving-range',
-                          [parseInt(event.target.value, 10) || 0, cavingRange.max],
-                          cavingMinValue,
-                          cavingMaxValue,
-                        )
-                      }
-                      value={cavingRange.min}
-                      disabled={!cavingRange.isEditable}
-                      style={{ width: '30px' }}
-                    />
-                    <TextField
-                      onChange={(event) =>
-                        this.handleRangeChange(
-                          'caving-range',
-                          [cavingRange.min, parseInt(event.target.value, 10) || 0],
-                          cavingMinValue,
-                          cavingMaxValue,
-                        )
-                      }
-                      value={cavingRange.max}
-                      disabled={!cavingRange.isEditable}
-                      style={{ width: '30px' }}
-                    />
-                  </div>
-                </FormControl>
-
-                <FormControl className={classes.formElement}>
-                  <FormLabel>
-                    <span className={classes.formElementFontSize}>
-                      <Translate>Ease of reach</Translate>
-                    </span>
-                    <Switch
-                      checked={approachRange.isEditable}
-                      onChange={this.handleCheckedChange('approach-range')}
-                      value={approachRange.isEditable}
-                      classes={{
-                        switchBase: classes.colorSwitchBase,
-                        checked: classes.colorChecked,
-                        bar: classes.colorBar,
-                      }}
-                    />
-                  </FormLabel>
-                  <Range
-                    className={classes.formRange}
-                    min={aestheticismMinValue}
-                    max={aestheticismMaxValue}
-                    onChange={(values) => {
-                      this.handleRangeChange(
-                        'approach-range',
-                        values,
-                        approachMinValue,
-                        approachMaxValue,
-                      );
-                    }}
-                    tipFormatter={(value) => `${value}`}
-                    value={[approachRange.min, approachRange.max]}
-                    disabled={!approachRange.isEditable}
-                    trackStyle={[
-                      !approachRange.isEditable
-                        ? { backgroundColor: '#9e9e9e' }
-                        : { backgroundColor: '#ff9800' },
-                    ]}
-                    handleStyle={[
-                      { backgroundColor: '#795548', borderColor: '#795548' },
-                      { backgroundColor: '#795548', borderColor: '#795548' },
-                    ]}
-                  />
-
-                  <div style={{ display: 'inline-flex', justifyContent: 'space-between' }}>
-                    <TextField
-                      onChange={(event) =>
-                        this.handleRangeChange(
-                          'approach-range',
-                          [parseInt(event.target.value, 10) || 0, approachRange.max],
-                          approachMinValue,
-                          approachMaxValue,
-                        )
-                      }
-                      value={approachRange.min}
-                      disabled={!approachRange.isEditable}
-                      style={{ width: '30px' }}
-                    />
-                    <TextField
-                      onChange={(event) =>
-                        this.handleRangeChange(
-                          'approach-range',
-                          [approachRange.min, parseInt(event.target.value, 10) || 0],
-                          approachMinValue,
-                          approachMaxValue,
-                        )
-                      }
-                      value={approachRange.max}
-                      disabled={!approachRange.isEditable}
-                      style={{ width: '630px0px' }}
-                    />
-                  </div>
-                </FormControl>
+                <SliderForm
+                  label={intl.formatMessage({
+                    id: 'Aesthetic',
+                  })}
+                  disabled={!aestheticismRange.isEditable}
+                  onDisable={this.handleCheckedChange('aestheticism-range')}
+                  min={aestheticismMinValue}
+                  max={aestheticismMaxValue}
+                  onChange={(values) => {
+                    this.handleRangeChange(
+                      'aestheticism-range',
+                      values,
+                      aestheticismMinValue,
+                      aestheticismMaxValue,
+                    );
+                  }}
+                  value={[aestheticismRange.min, aestheticismRange.max]}
+                />
+                <SliderForm
+                  label={intl.formatMessage({
+                    id: 'Ease of move',
+                  })}
+                  disabled={!cavingRange.isEditable}
+                  onDisable={this.handleCheckedChange('caving-range')}
+                  min={cavingMinValue}
+                  max={cavingMaxValue}
+                  onChange={(values) => {
+                    this.handleRangeChange(
+                      'caving-range',
+                      values,
+                      cavingMinValue,
+                      cavingMaxValue,
+                    );
+                  }}
+                  value={[cavingRange.min, cavingRange.max]}
+                />
+                <SliderForm
+                  label={intl.formatMessage({
+                    id: 'Ease of reach',
+                  })}
+                  disabled={!approachRange.isEditable}
+                  onDisable={this.handleCheckedChange('approach-range')}
+                  min={approachMinValue}
+                  max={approachMaxValue}
+                  onChange={(values) => {
+                    this.handleRangeChange(
+                      'approach-range',
+                      values,
+                      approachMinValue,
+                      approachMaxValue,
+                    );
+                  }}
+                  value={[approachRange.min, approachRange.max]}
+                />
               </div>
             </fieldset>
 
@@ -591,230 +345,90 @@ class EntriesSearch extends React.Component {
               <div className={classes.formPartContainer}>
                 <TextField
                   className={classes.formElement}
-                  label={
-                    <span className={classes.formElementFontSize}>
-                      <Translate>Network name</Translate>
-                    </span>
+                  label={intl.formatMessage({
+                    id: 'Network name',
+                  })}
+                  onChange={(event) =>
+                    this.handleValueChange('cave name', event)
                   }
-                  onChange={(event) => this.handleValueChange('cave name', event)}
                   value={caveName}
-                  InputProps={{
-                    classes: {
-                      input: classes.formElementFontSize,
-                    },
-                  }}
                 />
 
-                <FormControl className={classes.formElement}>
-                  <InputLabel shrink htmlFor="cave-is-diving-native-label-placeholder">
-                    <Translate>Diving cave</Translate>
-                  </InputLabel>
-                  <NativeSelect
-                    value={caveIsDiving}
-                    onChange={(event) => this.handleValueChange('cave is diving', event)}
-                    input={
-                      <Input name="cave-is-diving" id="cave-is-diving-native-label-placeholder" />
-                    }
-                    classes={{
-                      select: classes.formElementFontSize,
-                    }}
-                  >
-                    <option value="">
-                      {intl.formatMessage({ id: 'All', defaultMessage: 'All' })}
-                    </option>
-                    <option value="yes">
-                      {intl.formatMessage({ id: 'Yes', defaultMessage: 'Yes' })}
-                    </option>
-                    <option value="no">
-                      {intl.formatMessage({ id: 'No', defaultMessage: 'No' })}
-                    </option>
-                  </NativeSelect>
-                </FormControl>
+                <DivingTypesForm
+                  onChange={(event) =>
+                    this.handleValueChange('cave is diving', event)
+                  }
+                  value={caveIsDiving}
+                />
+                <SliderForm
+                  label={intl.formatMessage({
+                    id: 'Depth',
+                  })}
+                  helperText={intl.formatMessage({
+                    id: 'In meter',
+                  })}
+                  disabled={!caveDepthRange.isEditable}
+                  onDisable={this.handleCheckedChange('cave depth-range')}
+                  min={caveDepthMinValue}
+                  max={caveDepthMaxValue}
+                  onChange={(values) => {
+                    this.handleRangeChange(
+                      'cave depth-range',
+                      values,
+                      caveDepthMinValue,
+                      caveDepthMaxValue,
+                    );
+                  }}
+                  value={[caveDepthRange.min, caveDepthRange.max]}
+                />
 
-                <FormControl className={classes.formElement}>
-                  <FormLabel>
-                    <span className={classes.formElementFontSize}>
-                      <Translate>Depth</Translate>
-                    </span>
-                    <Switch
-                      checked={caveDepthRange.isEditable}
-                      onChange={this.handleCheckedChange('cave depth-range')}
-                      value={caveDepthRange.isEditable}
-                      classes={{
-                        switchBase: classes.colorSwitchBase,
-                        checked: classes.colorChecked,
-                        bar: classes.colorBar,
-                      }}
-                    />
-                  </FormLabel>
-                  <Range
-                    className={classes.formRange}
-                    min={caveDepthMinValue}
-                    max={caveDepthMaxValue}
-                    onChange={(values) => {
-                      this.handleRangeChange(
-                        'cave depth-range',
-                        values,
-                        caveDepthMinValue,
-                        caveDepthMaxValue,
-                      );
-                    }}
-                    tipFormatter={(value) => `${value}m`}
-                    value={[caveDepthRange.min, caveDepthRange.max]}
-                    disabled={!caveDepthRange.isEditable}
-                    trackStyle={[
-                      !caveDepthRange.isEditable
-                        ? { backgroundColor: '#9e9e9e' }
-                        : { backgroundColor: '#ff9800' },
-                    ]}
-                    handleStyle={[
-                      { backgroundColor: '#795548', borderColor: '#795548' },
-                      { backgroundColor: '#795548', borderColor: '#795548' },
-                    ]}
-                  />
-
-                  <div style={{ display: 'inline-flex', justifyContent: 'space-between' }}>
-                    <TextField
-                      onChange={(event) =>
-                        this.handleRangeChange(
-                          'cave depth-range',
-                          [parseInt(event.target.value, 10) || 0, caveDepthRange.max],
-                          caveDepthMinValue,
-                          caveDepthMaxValue,
-                        )
-                      }
-                      value={caveDepthRange.min}
-                      disabled={!caveDepthRange.isEditable}
-                      InputProps={{
-                        endAdornment: <InputAdornment position="start">m</InputAdornment>,
-                      }}
-                      style={{ width: '60px' }}
-                    />
-                    <TextField
-                      onChange={(event) =>
-                        this.handleRangeChange(
-                          'cave depth-range',
-                          [caveDepthRange.min, parseInt(event.target.value, 10) || 0],
-                          caveDepthMinValue,
-                          caveDepthMaxValue,
-                        )
-                      }
-                      value={caveDepthRange.max}
-                      disabled={!caveDepthRange.isEditable}
-                      InputProps={{
-                        endAdornment: <InputAdornment position="start">m</InputAdornment>,
-                      }}
-                      style={{ width: '60px' }}
-                    />
-                  </div>
-                </FormControl>
-
-                <FormControl className={classes.formElement}>
-                  <FormLabel>
-                    <span className={classes.formElementFontSize}>
-                      <Translate>Length</Translate>
-                    </span>
-                    <Switch
-                      checked={caveLengthRange.isEditable}
-                      onChange={this.handleCheckedChange('cave length-range')}
-                      value={caveLengthRange.isEditable}
-                      classes={{
-                        switchBase: classes.colorSwitchBase,
-                        checked: classes.colorChecked,
-                        bar: classes.colorBar,
-                      }}
-                    />
-                  </FormLabel>
-                  <Range
-                    className={classes.formRange}
-                    min={caveLengthMinValue}
-                    max={caveLengthMaxValue}
-                    onChange={(values) => {
-                      this.handleRangeChange(
-                        'cave length-range',
-                        values,
-                        caveLengthMinValue,
-                        caveLengthMaxValue,
-                      );
-                    }}
-                    tipFormatter={(value) => `${value}m`}
-                    value={[caveLengthRange.min, caveLengthRange.max]}
-                    disabled={!caveLengthRange.isEditable}
-                    trackStyle={[
-                      !caveLengthRange.isEditable
-                        ? { backgroundColor: '#9e9e9e' }
-                        : { backgroundColor: '#ff9800' },
-                    ]}
-                    handleStyle={[
-                      { backgroundColor: '#795548', borderColor: '#795548' },
-                      { backgroundColor: '#795548', borderColor: '#795548' },
-                    ]}
-                  />
-
-                  <div style={{ display: 'inline-flex', justifyContent: 'space-between' }}>
-                    <TextField
-                      onChange={(event) =>
-                        this.handleRangeChange(
-                          'cave length-range',
-                          [parseInt(event.target.value, 10) || 0, caveLengthRange.max],
-                          caveLengthMinValue,
-                          caveLengthMaxValue,
-                        )
-                      }
-                      value={caveLengthRange.min}
-                      disabled={!caveLengthRange.isEditable}
-                      InputProps={{
-                        endAdornment: <InputAdornment position="start">m</InputAdornment>,
-                      }}
-                      style={{ width: '60px' }}
-                    />
-                    <TextField
-                      onChange={(event) =>
-                        this.handleRangeChange(
-                          'cave length-range',
-                          [caveLengthRange.min, parseInt(event.target.value, 10) || 0],
-                          caveLengthMinValue,
-                          caveLengthMaxValue,
-                        )
-                      }
-                      value={caveLengthRange.max}
-                      disabled={!caveLengthRange.isEditable}
-                      InputProps={{
-                        endAdornment: <InputAdornment position="start">m</InputAdornment>,
-                      }}
-                      style={{ width: '60px' }}
-                    />
-                  </div>
-                </FormControl>
+                <SliderForm
+                  label={intl.formatMessage({
+                    id: 'Length',
+                  })}
+                  helperText={intl.formatMessage({
+                    id: 'In meter',
+                  })}
+                  disabled={!caveLengthRange.isEditable}
+                  onDisable={this.handleCheckedChange('cave length-range')}
+                  min={caveLengthMinValue}
+                  max={caveLengthMaxValue}
+                  onChange={(values) => {
+                    this.handleRangeChange(
+                      'cave length-range',
+                      values,
+                      caveLengthMinValue,
+                      caveLengthMaxValue,
+                    );
+                  }}
+                  value={[caveLengthRange.min, caveLengthRange.max]}
+                />
               </div>
             </fieldset>
 
-            <div className={classes.formPartContainer} style={{ justifyContent: 'flex-start' }}>
+            <div
+              className={classes.formPartContainer}
+              style={{ justifyContent: 'flex-start' }}
+            >
               <FormControl>
-                <FormLabel>
-                  <span className={classes.formElementFontSize}>
-                    <Translate>
-                      {matchAllFields ? 'Matching all fields' : 'Matching at least one field'}
-                    </Translate>
-                  </span>
+                <FormLabel className={classes.formLabel}>
+                  <Translate>
+                    {matchAllFields
+                      ? 'Matching all fields'
+                      : 'Matching at least one field'}
+                  </Translate>
                   <Switch
                     checked={matchAllFields}
                     onChange={this.handleBooleanChange('matchAllFields')}
                     value={matchAllFields}
-                    classes={{
-                      switchBase: classes.colorSwitchBase,
-                      checked: classes.colorChecked,
-                      bar: classes.colorBar,
-                    }}
                   />
-                  <br />
-                  <i>
-                    <Translate className={classes.formElementFontSize}>
-                      Specify if the search results must match all the fields you typed above
-                      (default is yes).
-                    </Translate>
-                  </i>
                 </FormLabel>
+                <FormHelperText>
+                  <Translate>
+                    Specify if the search results must match all the fields you
+                    typed above (default is yes).
+                  </Translate>
+                </FormHelperText>
               </FormControl>
             </div>
 

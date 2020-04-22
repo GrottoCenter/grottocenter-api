@@ -19,6 +19,7 @@ const EntityIcon = styled.img`
 
 const EntityLabel = styled.span`
   font-size: 1.5rem;
+  white-space: nowrap;
 `;
 
 // The hightlighted words are inside <em> tags.
@@ -57,23 +58,34 @@ export const entityOptionForSelector = (option) => {
 
   return (
     <>
-      {option.type === 'entry' ? <EntityIcon src="/images/entry.svg" alt="Entry icon" /> : ''}
-      {option.type === 'grotto' ? <EntityIcon src="/images/club.svg" alt="Group icon" /> : ''}
-      {option.type === 'massif' ? <EntityIcon src="/images/massif.svg" alt="Massif icon" /> : ''}
+      {option.type === 'entry' ? (
+        <EntityIcon src="/images/entry.svg" alt="Entry icon" />
+      ) : (
+        ''
+      )}
+      {option.type === 'grotto' ? (
+        <EntityIcon src="/images/club.svg" alt="Group icon" />
+      ) : (
+        ''
+      )}
+      {option.type === 'massif' ? (
+        <EntityIcon src="/images/massif.svg" alt="Massif icon" />
+      ) : (
+        ''
+      )}
       {option.type === 'bbs' ? (
         <EntityIcon src="/images/bibliography.svg" alt="BBS article icon" />
       ) : (
         ''
       )}
 
-      <EntityLabel>{option.label}</EntityLabel>
+      <EntityLabel>{option.name}</EntityLabel>
       {highlights.map((hl) => {
         const key = Object.keys(hl)[0];
         return (
           <React.Fragment key={key}>
             <HighlightTextKey>
-              <Translate>{key}</Translate>
-              {':'}
+              <Translate>{key}</Translate>:
             </HighlightTextKey>
             <HighlightText
               dangerouslySetInnerHTML={{

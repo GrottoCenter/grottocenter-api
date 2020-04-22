@@ -1,6 +1,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { AppBar as MuiAppBar, Toolbar, IconButton, Typography, Link } from '@material-ui/core';
+import {
+  AppBar as MuiAppBar,
+  Toolbar,
+  IconButton,
+  Typography,
+  Link,
+} from '@material-ui/core';
 import MenuIcon from '@material-ui/icons/Menu';
 import styled from 'styled-components';
 import { isMobileOnly } from 'react-device-detect';
@@ -13,6 +19,7 @@ const StyledMuiAppBar = styled(MuiAppBar)`
 `;
 
 const LanguageWrapper = styled.div`
+  height: 56px;
   padding: ${(props) => props.theme.spacing(2)}px;
 `;
 
@@ -46,7 +53,12 @@ const AppBar = ({ toggleMenu, isAuth, AutoCompleteSearch }) => (
   <>
     <StyledMuiAppBar>
       <Toolbar>
-        <IconButton color="inherit" aria-label="open drawer" edge="start" onClick={toggleMenu}>
+        <IconButton
+          color="inherit"
+          aria-label="open drawer"
+          edge="start"
+          onClick={toggleMenu}
+        >
           <MenuIcon />
         </IconButton>
         <TitleWrapper>
@@ -86,5 +98,9 @@ AppBar.propTypes = {
   toggleMenu: PropTypes.func.isRequired,
   // eslint-disable-next-line react/require-default-props
   isAuth: PropTypes.bool.isRequired,
-  AutoCompleteSearch: PropTypes.node,
+  AutoCompleteSearch: PropTypes.oneOfType([
+    PropTypes.node,
+    PropTypes.element,
+    PropTypes.func,
+  ]),
 };

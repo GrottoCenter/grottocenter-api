@@ -82,6 +82,12 @@ export const overridings = {
     fontFamily,
     htmlFontSize: 10,
   },
+  // https://material-ui.com/customization/globals/#default-props
+  props: {
+    MuiTextField: {
+      variant: 'filled',
+    },
+  },
   overrides: {
     MuiDrawer: {
       root: {
@@ -94,9 +100,6 @@ export const overridings = {
         width: sideMenuWidth,
         padding: '8px',
       },
-    },
-    MuiSvgIcon: {
-      padding: '4px',
     },
     MuiDivider: {
       root: {
@@ -125,6 +128,17 @@ export const overridings = {
     },
     gutterBottom: {
       marginBottom: '1rem',
+    },
+    MuiLink: {
+      root: {
+        display: 'flex',
+      },
+    },
+    MuiTableCell: {
+      head: {
+        backgroundColor: brown['500'],
+        color: grey['100'],
+      },
     },
   },
 };

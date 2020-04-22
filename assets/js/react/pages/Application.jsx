@@ -11,11 +11,13 @@ import MapContainer from '../containers/MapContainer';
 import Swagger from './Swagger';
 import HomePage from './HomePage';
 import Admin from './Admin';
+import AdvancedSearchPage from './AdvancedSearchPage';
 import Faq from '../components/appli/Faq';
 import LatestBlogNewsSection from '../components/homepage/LatestBlogNewsSection';
 import Entries from '../components/appli/entries/Index';
 import Convert from '../components/common/map/Convert';
 import Layout from '../components/common/Layout';
+import QuickSearch from '../features/QuickSearch';
 
 const Application = () => {
   const dispatch = useDispatch();
@@ -25,11 +27,14 @@ const Application = () => {
     <Layout
       isSideMenuOpen={isSideMenuOpen}
       toggleSideMenu={() => dispatch({ type: 'TOGGLE_SIDEMENU' })}
+      SideBarQuickSearch={() => <QuickSearch />}
+      HeaderQuickSearch={() => <QuickSearch hasFixWidth={false} />}
     >
       <Switch>
         <Route exact path="/" component={HomePage} />
         <Route path="/admin" component={Admin} />
         <Route exact path="/ui/" component={Dashboard} />
+        <Route path="/ui/search" component={AdvancedSearchPage} />
         <Route path="/ui/api" component={Api} />
         <Route path="/ui/entries" component={Entries} />
         <Route path="/ui/faq" component={Faq} />

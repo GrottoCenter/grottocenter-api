@@ -3,48 +3,46 @@ import {
   FETCH_QUICKSEARCH_SUCCESS,
   FETCH_QUICKSEARCH_FAILURE,
   SET_CURRENT_ENTRY,
+  FETCH_LOADING,
 } from '../actions/Quicksearch';
-
-//
-//
-// D E F A U L T - S T A T E
-//
-//
 
 const initialState = {
   results: [], // search results
   errors: undefined, // fetch errors
+  isLoading: false,
   entry: undefined, // marker entry
 };
 
-//
-//
-// R E D U C E R
-//
-//
-
-const quicksearch = (state = initialState, action) => {
+const reducer = (state = initialState, action) => {
   switch (action.type) {
     case RESET_QUICKSEARCH:
-      return Object.assign({}, state, {
-        results: [],
-        errors: undefined,
-      });
+      return initialState;
+    case FETCH_LOADING:
+      return {
+        ...state,
+        isLoading: true,
+      };
     case FETCH_QUICKSEARCH_SUCCESS:
-      return Object.assign({}, state, {
+      return {
+        ...state,
         results: action.results,
-      });
+        isLoading: false,
+      };
     case FETCH_QUICKSEARCH_FAILURE:
-      return Object.assign({}, state, {
-        error: action.error,
-      });
+      return {
+        ...state,
+        errors: action.error,
+        isLoading: false,
+      };
     case SET_CURRENT_ENTRY:
-      return Object.assign({}, state, {
+      return {
+        ...state,
         entry: action.entry,
-      });
+        isLoading: false,
+      };
     default:
       return state;
   }
 };
 
-export default quicksearch;
+export default reducer;

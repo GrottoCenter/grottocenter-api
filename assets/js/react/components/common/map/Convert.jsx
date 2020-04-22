@@ -223,19 +223,35 @@ class Convert extends React.Component {
 
   handleChangeGPSInput(event) {
     this.setState({ keyGPSInput: event.target.value });
-    this.setState({ xNameInput: unitsTab[this.getUnits(event.target.value)].xName });
-    this.setState({ xUnitInput: unitsTab[this.getUnits(event.target.value)].xUnit });
-    this.setState({ yNameInput: unitsTab[this.getUnits(event.target.value)].yName });
-    this.setState({ yUnitInput: unitsTab[this.getUnits(event.target.value)].yUnit });
+    this.setState({
+      xNameInput: unitsTab[this.getUnits(event.target.value)].xName,
+    });
+    this.setState({
+      xUnitInput: unitsTab[this.getUnits(event.target.value)].xUnit,
+    });
+    this.setState({
+      yNameInput: unitsTab[this.getUnits(event.target.value)].yName,
+    });
+    this.setState({
+      yUnitInput: unitsTab[this.getUnits(event.target.value)].yUnit,
+    });
     this.setState({ utmInput: this.isUtm(event.target.value) });
   }
 
   handleChangeGPSOutput(event) {
     this.setState({ keyGPSOutput: event.target.value });
-    this.setState({ xNameOutput: unitsTab[this.getUnits(event.target.value)].xName });
-    this.setState({ xUnitOutput: unitsTab[this.getUnits(event.target.value)].xUnit });
-    this.setState({ yNameOutput: unitsTab[this.getUnits(event.target.value)].yName });
-    this.setState({ yUnitOutput: unitsTab[this.getUnits(event.target.value)].yUnit });
+    this.setState({
+      xNameOutput: unitsTab[this.getUnits(event.target.value)].xName,
+    });
+    this.setState({
+      xUnitOutput: unitsTab[this.getUnits(event.target.value)].xUnit,
+    });
+    this.setState({
+      yNameOutput: unitsTab[this.getUnits(event.target.value)].yName,
+    });
+    this.setState({
+      yUnitOutput: unitsTab[this.getUnits(event.target.value)].yUnit,
+    });
     this.setState({ utmOutput: this.isUtm(event.target.value) });
   }
 
@@ -292,9 +308,17 @@ class Convert extends React.Component {
     this.state.projectionsList.forEach((projection) => {
       if (projection.Fr_name && actualCountry !== projection.Fr_name) {
         actualCountry = projection.Fr_name;
-        options.push(<MenuItemGroup disabled>{actualCountry}</MenuItemGroup>);
+        options.push(
+          <MenuItemGroup key={projection.Code} disabled>
+            {actualCountry}
+          </MenuItemGroup>,
+        );
       }
-      options.push(<StyledMenuItem value={projection.Code}> {projection.title} </StyledMenuItem>);
+      options.push(
+        <StyledMenuItem key={projection.Code} value={projection.Code}>
+          {projection.title}
+        </StyledMenuItem>,
+      );
     });
 
     return (
@@ -427,7 +451,11 @@ class Convert extends React.Component {
           <div id="xOutput">
             {this.state.xNameOutput}
             {' : '}
-            <StyledInput type="number" value={this.state.valueXOutput} disabled />
+            <StyledInput
+              type="number"
+              value={this.state.valueXOutput}
+              disabled
+            />
             {this.state.xUnitOutput}
           </div>
 
@@ -447,8 +475,9 @@ class Convert extends React.Component {
         {/* BOTTOM SECTION */}
         <div id="bottom" className={classes.bottomContainer}>
           <span>
-            Basé sur la librairie <a href="http://proj4js.org">Proj4js</a> et sur le projet{' '}
-            <a href="http://trac.osgeo.org/proj">Proj.4</a>, <br />
+            Basé sur la librairie <a href="http://proj4js.org">Proj4js</a> et
+            sur le projet <a href="http://trac.osgeo.org/proj">Proj.4</a>,{' '}
+            <br />
             ce convertisseur utilise les constantes de conversion de{' '}
             <a href="http://spatialreference.org">Spatial Reference</a>.
           </span>

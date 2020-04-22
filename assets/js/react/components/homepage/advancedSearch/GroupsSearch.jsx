@@ -3,70 +3,21 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 
-import { Card, CardContent, FormControl, FormLabel, TextField, Switch } from '@material-ui/core';
+import {
+  Card,
+  CardContent,
+  FormControl,
+  TextField,
+  Switch,
+  Typography,
+  FormLabel,
+  FormHelperText,
+} from '@material-ui/core';
 
-import Slider from 'rc-slider';
-
+import SliderForm from './SliderForm';
 import Translate from '../../common/Translate';
 import SearchBottomActionButtons from './SearchBottomActionButtons';
-
-// ==========
-
-const Range = Slider.createSliderWithTooltip(Slider.Range);
-
-const styles = (theme) => ({
-  mainContainer: {},
-  cardContainer: {},
-  fieldset: {
-    border: `1px solid ${theme.palette.primary.light}`,
-    width: '100%',
-  },
-  formPartContainer: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    justifyContent: 'space-evenly',
-    width: '100%',
-  },
-  legend: {
-    padding: '0 5px',
-  },
-  formContainer: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    justifyContent: 'space-evenly',
-    marginBottom: 0,
-  },
-  formElement: {
-    flex: 1,
-    maxWidth: '30rem',
-    minWidth: '20rem',
-    marginLeft: '1rem',
-    marginRight: '1rem',
-    marginBottom: '10px',
-  },
-  formRange: {},
-  formElementFontSize: {
-    fontSize: '1.4rem',
-  },
-  colorSwitchBase: {
-    '&$colorChecked': {
-      color: theme.palette.accent1Color,
-      '& + $colorBar': {
-        backgroundColor: theme.palette.accent1Color,
-      },
-    },
-  },
-  colorBar: {},
-  colorChecked: {},
-
-  cardBottomButtons: {
-    display: 'block',
-    marginTop: '10px',
-    padding: 0,
-    textAlign: 'center',
-    width: '100%',
-  },
-});
+import styles from './styles';
 
 class GroupsSearch extends React.Component {
   // TODO: Handle the max of number of cavers dynamically
@@ -119,7 +70,12 @@ class GroupsSearch extends React.Component {
    * If the values given are > (or <) to the minValueAuthorized (or maxValueAuthorized),
    * it set it to the min/maxValueAuthorized.
    */
-  handleRangeChange = (keyName, values, minValueAuthorized, maxValueAuthorized) => {
+  handleRangeChange = (
+    keyName,
+    values,
+    minValueAuthorized,
+    maxValueAuthorized,
+  ) => {
     const newState = {
       [keyName]: {
         ...this.state[keyName],
@@ -160,10 +116,11 @@ class GroupsSearch extends React.Component {
       resourceType,
       resetResults,
       startAdvancedsearch,
-
       numberOfCaversMinValue,
       numberOfCaversMaxValue,
     } = this.props;
+
+    const { intl } = this.context;
 
     const {
       'number of cavers-range': numberOfCaversRange,
@@ -177,7 +134,7 @@ class GroupsSearch extends React.Component {
     } = this.state;
 
     return (
-      <Card className={classes.cardContainer}>
+      <Card>
         <CardContent>
           <form
             noValidate
@@ -188,98 +145,41 @@ class GroupsSearch extends React.Component {
             }}
             className={classes.formContainer}
           >
-            <h5 style={{ width: '100%' }}>
+            <Typography variant="h6">
               <Translate>Group properties</Translate>
-            </h5>
-
-            <div className={classes.formPartContainer} style={{ justifyContent: 'flex-start' }}>
+            </Typography>
+            <div
+              className={classes.formPartContainer}
+              style={{ justifyContent: 'flex-start' }}
+            >
               <TextField
                 className={classes.formElement}
                 label={
-                  <span className={classes.formElementFontSize}>
+                  <span>
                     <Translate>Group name</Translate>
                   </span>
                 }
                 onChange={(event) => this.handleValueChange('name', event)}
                 value={name}
-                InputProps={{
-                  classes: {
-                    input: classes.formElementFontSize,
-                  },
-                }}
               />
-
-              <FormControl className={classes.formElement}>
-                <FormLabel>
-                  <span className={classes.formElementFontSize}>
-                    <Translate>Number of cavers</Translate>
-                  </span>
-                  <Switch
-                    checked={numberOfCaversRange.isEditable}
-                    onChange={this.handleCheckedChange('number of cavers-range')}
-                    value={numberOfCaversRange.isEditable}
-                    classes={{
-                      switchBase: classes.colorSwitchBase,
-                      checked: classes.colorChecked,
-                      bar: classes.colorBar,
-                    }}
-                  />
-                </FormLabel>
-                <Range
-                  className={classes.formRange}
-                  min={numberOfCaversMinValue}
-                  max={numberOfCaversMaxValue}
-                  onChange={(values) => {
-                    this.handleRangeChange(
-                      'number of cavers-range',
-                      values,
-                      numberOfCaversMinValue,
-                      numberOfCaversMaxValue,
-                    );
-                  }}
-                  tipFormatter={(value) => `${value}`}
-                  value={[numberOfCaversRange.min, numberOfCaversRange.max]}
-                  disabled={!numberOfCaversRange.isEditable}
-                  trackStyle={[
-                    !numberOfCaversRange.isEditable
-                      ? { backgroundColor: '#9e9e9e' }
-                      : { backgroundColor: '#ff9800' },
-                  ]}
-                  handleStyle={[
-                    { backgroundColor: '#795548', borderColor: '#795548' },
-                    { backgroundColor: '#795548', borderColor: '#795548' },
-                  ]}
-                />
-
-                <div style={{ display: 'inline-flex', justifyContent: 'space-between' }}>
-                  <TextField
-                    onChange={(event) =>
-                      this.handleRangeChange(
-                        'number of cavers-range',
-                        [parseInt(event.target.value, 10) || 0, numberOfCaversRange.max],
-                        numberOfCaversMinValue,
-                        numberOfCaversMaxValue,
-                      )
-                    }
-                    value={numberOfCaversRange.min}
-                    disabled={!numberOfCaversRange.isEditable}
-                    style={{ width: '30px' }}
-                  />
-                  <TextField
-                    onChange={(event) =>
-                      this.handleRangeChange(
-                        'number of cavers-range',
-                        [numberOfCaversRange.min, parseInt(event.target.value, 10) || 0],
-                        numberOfCaversMinValue,
-                        numberOfCaversMaxValue,
-                      )
-                    }
-                    value={numberOfCaversRange.max}
-                    disabled={!numberOfCaversRange.isEditable}
-                    style={{ width: '30px' }}
-                  />
-                </div>
-              </FormControl>
+              <SliderForm
+                label={intl.formatMessage({
+                  id: 'Number of cavers',
+                })}
+                disabled={!numberOfCaversRange.isEditable}
+                onDisable={this.handleCheckedChange('number of cavers-range')}
+                min={numberOfCaversMinValue}
+                max={numberOfCaversMaxValue}
+                onChange={(values) => {
+                  this.handleRangeChange(
+                    'number of cavers-range',
+                    values,
+                    numberOfCaversMinValue,
+                    numberOfCaversMaxValue,
+                  );
+                }}
+                value={[numberOfCaversRange.min, numberOfCaversRange.max]}
+              />
             </div>
 
             <fieldset className={classes.fieldset}>
@@ -291,111 +191,87 @@ class GroupsSearch extends React.Component {
                 <TextField
                   className={classes.formElement}
                   label={
-                    <span className={classes.formElementFontSize}>
+                    <span>
                       <Translate>City</Translate>
                     </span>
                   }
                   onChange={(event) => this.handleValueChange('city', event)}
                   value={city}
-                  InputProps={{
-                    classes: {
-                      input: classes.formElementFontSize,
-                    },
-                  }}
                 />
 
                 <TextField
                   className={classes.formElement}
                   label={
-                    <span className={classes.formElementFontSize}>
+                    <span>
                       <Translate>Postal code</Translate>
                     </span>
                   }
-                  onChange={(event) => this.handleValueChange('postal_code', event)}
+                  onChange={(event) =>
+                    this.handleValueChange('postal_code', event)
+                  }
                   value={postal_code}
-                  InputProps={{
-                    classes: {
-                      input: classes.formElementFontSize,
-                    },
-                  }}
                 />
 
                 <TextField
                   className={classes.formElement}
                   label={
-                    <span className={classes.formElementFontSize}>
+                    <span>
                       <Translate>County</Translate>
                     </span>
                   }
                   onChange={(event) => this.handleValueChange('county', event)}
                   value={county}
-                  InputProps={{
-                    classes: {
-                      input: classes.formElementFontSize,
-                    },
-                  }}
                 />
 
                 <TextField
                   className={classes.formElement}
                   label={
-                    <span className={classes.formElementFontSize}>
+                    <span>
                       <Translate>Region</Translate>
                     </span>
                   }
                   onChange={(event) => this.handleValueChange('region', event)}
                   value={region}
-                  InputProps={{
-                    classes: {
-                      input: classes.formElementFontSize,
-                    },
-                  }}
                 />
 
                 <TextField
                   className={classes.formElement}
                   label={
-                    <span className={classes.formElementFontSize}>
+                    <span>
                       <Translate>Country</Translate>
                     </span>
                   }
                   onChange={(event) => this.handleValueChange('country', event)}
                   value={country}
-                  InputProps={{
-                    classes: {
-                      input: classes.formElementFontSize,
-                    },
-                  }}
                 />
               </div>
             </fieldset>
 
-            <div className={classes.formPartContainer} style={{ justifyContent: 'flex-start' }}>
+            <div
+              className={classes.formPartContainer}
+              style={{ justifyContent: 'flex-start' }}
+            >
               <FormControl>
-                <FormLabel>
-                  <span className={classes.formElementFontSize}>
+                <FormLabel className={classes.formLabel}>
+                  <span>
                     <Translate>
-                      {matchAllFields ? 'Matching all fields' : 'Matching at least one field'}
+                      {matchAllFields
+                        ? 'Matching all fields'
+                        : 'Matching at least one field'}
                     </Translate>
                   </span>
                   <Switch
                     checked={matchAllFields}
                     onChange={this.handleBooleanChange('matchAllFields')}
                     value={matchAllFields}
-                    classes={{
-                      switchBase: classes.colorSwitchBase,
-                      checked: classes.colorChecked,
-                      bar: classes.colorBar,
-                    }}
                   />
-                  <br />
-                  <i>
-                    <Translate className={classes.formElementFontSize}>
-                      Specify if the search results must match all the fields you typed above
-                      (default is yes).
-                    </Translate>
-                  </i>
                 </FormLabel>
+                <FormHelperText>
+                  <Translate>
+                    Specify if the search results must match all the fields you
+                    typed above (default is yes).
+                  </Translate>
+                </FormHelperText>
               </FormControl>
             </div>
 
@@ -424,6 +300,10 @@ GroupsSearch.propTypes = {
 GroupsSearch.defaultProps = {
   numberOfCaversMinValue: 0,
   numberOfCaversMaxValue: 100,
+};
+
+GroupsSearch.contextTypes = {
+  intl: PropTypes.shape({}).isRequired,
 };
 
 export default withStyles(styles)(GroupsSearch);

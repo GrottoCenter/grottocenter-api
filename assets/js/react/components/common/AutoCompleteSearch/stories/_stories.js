@@ -2,7 +2,12 @@ import React from 'react';
 import { storiesOf } from '@storybook/react';
 import { action } from '@storybook/addon-actions';
 import styled from 'styled-components';
-import { Typography, Slider, Switch, Divider as MuiDivider } from '@material-ui/core';
+import {
+  Typography,
+  Slider,
+  Switch,
+  Divider as MuiDivider,
+} from '@material-ui/core';
 
 import AutoCompleteSearch from '../index';
 import countries from './suggestions';
@@ -16,11 +21,18 @@ const Wrapper = styled.div`
   background-color: ${({ theme }) => theme.palette.primary.light};
 `;
 
+const SearchWrapper = styled.div`
+  margin-left: auto;
+  width: ${(props) => (props.width ? props.width : 100)}%;
+`;
+
 function countryToFlag(isoCode) {
   return typeof String.fromCodePoint !== 'undefined'
     ? isoCode
         .toUpperCase()
-        .replace(/./g, (char) => String.fromCodePoint(char.charCodeAt(0) + 127397))
+        .replace(/./g, (char) =>
+          String.fromCodePoint(char.charCodeAt(0) + 127397),
+        )
     : isoCode;
 }
 
@@ -31,15 +43,21 @@ const renderOption = (option) => (
   </>
 );
 
+const getOptionLabel = (option) => option.label;
+
 const WithState = () => {
   const [input, setInput] = React.useState('');
   const [hasError, setHasError] = React.useState(false);
   const [isDisable, setDisable] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
   const [suggestions, setSuggestions] = React.useState([]);
+  const [width, setWidth] = React.useState(100);
 
   const [delay, setDelay] = React.useState(0);
 
+  const handleWidth = (_event, newWidth) => {
+    setWidth(newWidth);
+  };
   const handleDelay = (_event, newValue) => {
     setDelay(newValue);
   };
@@ -67,8 +85,20 @@ const WithState = () => {
 
   return (
     <Wrapper>
+      <Typography id="width-slider" gutterBottom>
+        width in % : {width}%
+      </Typography>
+      <Slider
+        min={0}
+        max={100}
+        value={width}
+        onChange={handleWidth}
+        aria-labelledby="width-slider"
+        valueLabelDisplay="auto"
+      />
+      <Divider light />
       <Typography id="delay-slider" gutterBottom>
-        delay in seconds
+        delay in seconds : {delay} second(s)
       </Typography>
       <Slider
         min={0}
@@ -101,19 +131,21 @@ const WithState = () => {
         inputProps={{ 'aria-label': 'primary checkbox' }}
       />
       <Divider light />
-      <AutoCompleteSearch
-        disabled={isDisable}
-        onSelection={action('onSelection')}
-        label="Quick search"
-        input={input}
-        inputValue={input}
-        onInputChange={setInput}
-        suggestions={suggestions}
-        renderOption={renderOption}
-        hasError={hasError}
-        errorMessage="Unexpected error"
-        isLoading={isLoading}
-      />
+      <SearchWrapper width={width}>
+        <AutoCompleteSearch
+          disabled={isDisable}
+          onSelection={action('onSelection')}
+          label="Quick search"
+          inputValue={input}
+          onInputChange={setInput}
+          suggestions={suggestions}
+          renderOption={renderOption}
+          getOptionLabel={getOptionLabel}
+          hasError={hasError}
+          errorMessage="Unexpected error"
+          isLoading={isLoading}
+        />
+      </SearchWrapper>
     </Wrapper>
   );
 };

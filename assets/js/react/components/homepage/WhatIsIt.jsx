@@ -2,7 +2,11 @@ import React from 'react';
 import styled from 'styled-components';
 import { withTheme } from '@material-ui/core/styles';
 import LandingSection from './LandingSection';
-import { GridRow, GridOneHalfColumn, GridFullColumn } from '../../helpers/GridSystem';
+import {
+  GridRow,
+  GridOneHalfColumn,
+  GridFullColumn,
+} from '../../helpers/GridSystem';
 import Translate from '../common/Translate';
 import GCLink from '../common/GCLink';
 import InternationalizedLink from '../common/InternationalizedLink';
@@ -100,7 +104,9 @@ const WhatIsIt = () => (
         <BlockIcon className="icon-gc-entries" />
         <BigNumberText numberType="publicEntries" />
         <br />
-        <Translate>caves are freely accessible from the following page (</Translate>
+        <Translate>
+          caves are freely accessible from the following page (
+        </Translate>
         <NumberText numberType="entries" /> <Translate>by logging on</Translate>{' '}
         <GCLink href="http://www.grottocenter.org">Grotto v2</GCLink>)
       </NumberBlockHalfWidth>
@@ -109,8 +115,9 @@ const WhatIsIt = () => (
         <BigNumberText numberType="officialPartners" />
         <br />
         <Translate>
-          organizations who take part in the project by funding, providing data,communicating on the
-          interest and benefits of cavers to share data
+          organizations who take part in the project by funding, providing
+          data,communicating on the interest and benefits of cavers to share
+          data
         </Translate>
       </NumberBlockHalfWidth>
     </GridRow>
@@ -120,7 +127,8 @@ const WhatIsIt = () => (
         <BigNumberText numberType="cavers" />
         <br />
         <Translate>
-          cavers take part, day after day, in improving and expanding the database
+          cavers take part, day after day, in improving and expanding the
+          database
         </Translate>
       </NumberBlockHalfWidth>
       <NumberBlockHalfWidth>
@@ -136,7 +144,7 @@ const WhatIsIt = () => (
         <BigNumberText numberType="bbs" />
         <br />
         <InternationalizedLink links={wikiBBSLinks}>
-          <Translate>{'speleological abstracts are referenced'}</Translate>
+          <Translate>speleological abstracts are referenced</Translate>
         </InternationalizedLink>
       </NumberBlockFullWidth>
     </GridRow>

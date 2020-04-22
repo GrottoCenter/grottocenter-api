@@ -1,7 +1,13 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
-import { Map as LeafletMap, TileLayer, ScaleControl, Rectangle, Tooltip } from 'react-leaflet';
+import {
+  Map as LeafletMap,
+  TileLayer,
+  ScaleControl,
+  Rectangle,
+  Tooltip,
+} from 'react-leaflet';
 import _ from 'underscore.string';
 import { CoordinatesControl } from 'react-leaflet-coordinates';
 import Control from 'react-leaflet-control';
@@ -45,7 +51,8 @@ import MapCaveMarker from './map/MapCaveMarker';
 // isSideMenuOpen ? theme.sideMenuWidth : 0}px);
 
 const Map = styled(LeafletMap)`
- width: calc(100% - ${({ isSideMenuOpen, theme }) => (isSideMenuOpen ? theme.sideMenuWidth : 0)}px);
+ width: calc(100% - ${({ isSideMenuOpen, theme }) =>
+   isSideMenuOpen ? theme.sideMenuWidth : 0}px);
    //height: 1000px;
   height: calc(100vh - ${({ theme }) => theme.appBarHeight}px);
   // height: ${isMobileOnly ? 'calc(100% - 60px)' : 'calc(100% - 110px)'};
@@ -315,7 +322,11 @@ class GCMap extends Component {
 
     if (this.getTarget()) {
       const pathname = _.strRightBack(window.location.pathname, '/');
-      newUrl = _.replaceAll(window.location.pathname, pathname, encodedLocation);
+      newUrl = _.replaceAll(
+        window.location.pathname,
+        pathname,
+        encodedLocation,
+      );
     } else {
       newUrl += `/${encodedLocation}`;
     }
@@ -457,7 +468,11 @@ class GCMap extends Component {
     }
 
     const entriesMarkersLayer = [];
-    if (entriesMap && entriesMap.qualityEntriesMap && entriesMap.qualityEntriesMap.length > 0) {
+    if (
+      entriesMap &&
+      entriesMap.qualityEntriesMap &&
+      entriesMap.qualityEntriesMap.length > 0
+    ) {
       entriesMap.qualityEntriesMap.forEach((entry) => {
         if (!selectedEntry || entry.id !== selectedEntry.id) {
           entriesMarkersLayer.push(<MapEntryMarker entry={entry} />);
@@ -482,7 +497,11 @@ class GCMap extends Component {
     }
 
     const groupsMarkersLayer = [];
-    if (entriesMap && entriesMap.groupEntriesMap && entriesMap.groupEntriesMap.length > 0) {
+    if (
+      entriesMap &&
+      entriesMap.groupEntriesMap &&
+      entriesMap.groupEntriesMap.length > 0
+    ) {
       entriesMap.groupEntriesMap.forEach((group, index) => {
         groupsMarkersLayer.push(
           <StyledMapGroupIcon
@@ -500,6 +519,7 @@ class GCMap extends Component {
 
     const markersInput = markers.map((m) => (
       <FormControlLabel
+        key={m.name}
         control={
           <Checkbox
             value={m.name}
@@ -522,6 +542,7 @@ class GCMap extends Component {
 
     const layersInput = this.state.currentLayersAvailable.map((layer) => (
       <FormControlLabel
+        key={layer.name}
         value={layer.name}
         control={<Radio />}
         label={
@@ -576,7 +597,10 @@ class GCMap extends Component {
             </LayerButton>
           ) : (
             <LayersForm onMouseLeave={() => this.toggleShowLayers()}>
-              <RadioGroup value={this.state.currentLayer.name} onChange={this.onLayerChanged}>
+              <RadioGroup
+                value={this.state.currentLayer.name}
+                onChange={this.onLayerChanged}
+              >
                 {layersInput}
               </RadioGroup>
             </LayersForm>
