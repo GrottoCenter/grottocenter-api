@@ -22,7 +22,7 @@ module.exports = {
     }
 
     const params = {
-      searchedItem: `Search entity with the following query ${req.query}`,
+      searchedItem: `Search entity with the following query ${req.query.query}`,
     };
 
     // Use the Elasticsearch Service to do the search according to the parameters of the URL
