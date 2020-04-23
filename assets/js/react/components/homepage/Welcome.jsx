@@ -60,10 +60,15 @@ const Welcome = ({ theme }) => (
           <Translate>Welcome to Grottocenter!</Translate>
         </WelcomeTitle>
         <WelcomeParagraph>
-          <Translate>
-            This 31 version of the site is improving gradually to allow a simpler navigation from
-            all your peripherals
-          </Translate>
+          <Translate
+            id="This {0} version of the site is improving gradually to allow a simpler navigation from
+            all your peripherals"
+            values={{
+              0: (
+                <span>3.3.1</span>
+              ),
+            }}
+          />
         </WelcomeParagraph>
         <WelcomeParagraph>
           <Translate>

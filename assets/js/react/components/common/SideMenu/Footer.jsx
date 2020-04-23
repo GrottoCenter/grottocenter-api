@@ -31,7 +31,7 @@ const Footer = () => {
       <div>
         <LogoFooter />
         {/* TODO get correct version */}
-        <Typography variant="caption"> v 3.0.0 </Typography>
+        <Typography variant="caption"> v 3.3.1 </Typography>
       </div>
       <InternationalizedLink links={licenceLinks}>
         <LicenceImage src="/images/CC-BY-SA.png" alt="CC-BY-SA licence" />
