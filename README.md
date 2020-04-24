@@ -15,6 +15,7 @@ Current production version is available [here](http://beta.grottocenter.org/)
 ## Installation
 
 Software requirement:
+
 - NodeJS (min v8)
 - NPM (min 4.1.2)
 - Git client (see Git usage for configuration)
@@ -23,6 +24,7 @@ Software requirement:
 - Grunt
 
 Clone the project on your computer:
+
 ```
 > git clone https://github.com/GrottoCenter/Grottocenter3.git
 ```
@@ -34,9 +36,11 @@ Clone the project on your computer:
 The demonstration deployment aims to launch locally an instance of Grottocenter to demonstrate its features.
 
 Start the project:
+
 ```
 > ./deployDemo.sh
 ```
+
 Then go to [homepage](http://localhost:1337/)
 Or access to [API documentation](http://localhost:1337/ui/api/) for example.
 
@@ -45,12 +49,14 @@ Or access to [API documentation](http://localhost:1337/ui/api/) for example.
 The development deployment aims to launch locally all the tools needed for the Grottocenter development.
 
 Start the project:
+
 ```
 > ./deployDev.sh
 > npm install
 ```
 
 Finally, run the server with live-reloading using:
+
 ```
 > npm run start-hot
 ```
@@ -58,11 +64,13 @@ Finally, run the server with live-reloading using:
 ### Tests
 
 Run tests:
+
 ```
 > npm run test
 ```
 
 Check code coverage:
+
 ```
 > npm run coverage
 ```
@@ -78,33 +86,40 @@ Yon can also join us on Slack! (using the QR-code above)
 ~~For more details, read [the development guide](https://github.com/GrottoCenter/Grottocenter3/wiki/Development-guide)~~ ==> DEPRECATED
 
 ## Deployment on AWS :
+
 Grottocenter is evolving, its deployment is now based on AWS services.
 To help the usage of deployed services, we have put in place the following documentation :
+
 - Deployment of the MySQL database on Amazon RDS : https://docs.google.com/document/d/1nmfGdScWYBWa91L0SRd7LrH5XK_DQKbkGMtVdDQlmgg/edit?usp=sharing
 - Deployment of the Grottocenter3 application on EC2 : https://docs.google.com/document/d/1h8cdmlkZJG5SANKLfQQpOR1kNjMQiSKqb-N-LhM1Zlk/edit?usp=sharing
 - Creation and configuration of the Lightsail server :
-https://docs.google.com/document/d/1hRB9sJ6gXm2nrepli0ipBozq4agg36qQaQCSicxkxQk/edit?usp=sharing
+  https://docs.google.com/document/d/1hRB9sJ6gXm2nrepli0ipBozq4agg36qQaQCSicxkxQk/edit?usp=sharing
 - Deployment of ElasticSearch and Logstash on Lightsail : https://docs.google.com/document/d/1ZarlIOUUWfZvo3jOQ28w8NVA9q9GmK9dIUONhkUw7ZA/edit?usp=sharing
 
-
 ### React tools
+
 ##### storybook
 
 [Storybook](https://storybook.js.org/) is used to develop in isolation UI component.
 It can be start independently with `npm run storybook`
 
 ### Git-rules
+
 #### Overview
+
 This project follows the conventional commit specification. It uses commitlint to enforce conventional commit messages.
 
 ##### Hooks
-To prevent bad commit and push, we use the Git hooks [Husky](https://github.com/typicode/husky)
+
+To prevent a bad commit and push, we use the Git hooks [Husky](https://github.com/typicode/husky)
 
 Husky is used to:
+
 - Verify if the commit name use the [conventional commit specification](https://www.conventionalcommits.org/)
 - Do a [lint-staged](https://github.com/okonet/lint-staged)
 
 ##### Commit types
+
 The commit linter accepts the following types:
 
 - feat: Adds a new feature to the application
@@ -117,6 +132,22 @@ The commit linter accepts the following types:
 - style: Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc)
 - test: Adding missing or correcting existing tests
 - revert: Reverts a previous work
+
+### Release
+
+Grottocenter use the [semver](https://semver.org/) specifications
+
+![semver spec](https://digitalcommunications.wp.st-andrews.ac.uk/files/2017/01/semver03-768x481.png)
+
+#### Triggering a release
+
+[`semantic-release`](https://github.com/semantic-release/semantic-release)
+For each new commits merged the semantic-release command runs to make a release.
+If there are codebase changes since the last release:
+
+- bump the version based on the commit logs
+- generate a CHANGELOG
+- create a Tag and commit the changes.
 
 ## Licence
 
