@@ -270,10 +270,8 @@ module.exports = {
               [newKey]: obj[key],
             };
           });
-          return { ...keyValues };
+          return keyValues;
         };
-
-        const newSource = renameKeys(item['_source'], replacementKeys);
 
         switch (item['_source'].type) {
           case 'entry':
@@ -293,12 +291,16 @@ module.exports = {
 
           case 'bbs':
             // Rename keys of data and highlights
-            data.highlights = renameKeys(data.highlights, replacementKeys);
+            const newHighLights = renameKeys(data.highlights, replacementKeys);
+            const newSource = renameKeys(item['_source'], replacementKeys);
 
             // Fill data with appropriate key
-            replacementKeys.forEach((key) => {
-              data[replacementKeys[key]] = newSource[replacementKeys[key]];
-            });
+            for(var key in replacementKeys) {
+              let value = replacementKeys[key];
+              data[value] = newSource[value];
+              data.highlights[value] = newHighLights[value];
+            }
+            
             break;
 
           default:
