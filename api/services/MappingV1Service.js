@@ -223,7 +223,7 @@ module.exports = {
       values.push(data);
     });
     res.results = values;
-    res.totalNbResults = source.hits.total.value;
+    res.totalNbResults = source.hits.total;
     return res;
   },
 
@@ -264,13 +264,12 @@ module.exports = {
 
         // Convert from a collection of keys newKeys, rename the keys of obj
         const renameKeys = (obj, newKeys) => {
-          const keyValues = Object.keys(obj).map((key) => {
-            const newKey = newKeys[key] || key;
-            return {
-              [newKey]: obj[key],
-            };
+          Object.keys(obj).map((key) => {
+            if(newKeys[key]) {
+              obj[newKeys[key]] = obj[key];
+              delete obj[key];
+            }
           });
-          return keyValues;
         };
 
         switch (item['_source'].type) {
@@ -290,15 +289,13 @@ module.exports = {
             break;
 
           case 'bbs':
-            // Rename keys of data and highlights
-            const newHighLights = renameKeys(data.highlights, replacementKeys);
-            const newSource = renameKeys(item['_source'], replacementKeys);
+            // Rename keys of source and highlights
+            renameKeys(item['_source'], replacementKeys);
+            renameKeys(data.highlights, replacementKeys);
 
-            // Fill data with appropriate key
-            for(var key in replacementKeys) {
-              let value = replacementKeys[key];
-              data[value] = newSource[value];
-              data.highlights[value] = newHighLights[value];
+            // Fill data with appropriate keys
+            for(var key in item['_source']) {
+              data[key] = item['_source'][key];
             }
             
             break;
