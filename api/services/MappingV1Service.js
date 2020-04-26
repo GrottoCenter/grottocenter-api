@@ -307,7 +307,7 @@ module.exports = {
     }
 
     res.results = values;
-    res.totalNbResults = source.hits ? source.hits.total.value : 0;
+    res.totalNbResults = source.hits ? source.hits.total : 0;
     return res;
   },
 
