@@ -19,6 +19,7 @@ import {
 } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import { ThemeProvider as StyledThemeProvider } from 'styled-components';
+
 import grottoTheme from './conf/grottoTheme';
 import GCReducer from './reducers/GCReducer';
 import { changeLanguage } from './actions/Language';
@@ -28,12 +29,7 @@ import Application from './pages/Application';
 const middlewares = applyMiddleware(createDebounce(), thunkMiddleware);
 const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 const gcStore = createStore(GCReducer, composeEnhancers(middlewares));
-
-/* gcStore.subscribe(function() {
-  console.log(gcStore.getState());
-}); */
-
-gcStore.dispatch(changeLanguage(locale)); // eslint-disable-line no-undef
+gcStore.dispatch(changeLanguage(locale));
 
 const theme = createMuiTheme(grottoTheme);
 

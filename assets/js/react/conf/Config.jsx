@@ -150,6 +150,10 @@ export const quicksearchUrl = `/api/${apiVersion}/search`;
 export const subthemesUrl = `/api/${apiVersion}/bbs/subthemes`;
 export const getEntryUrl = `/api/${apiVersion}/entries/`;
 
+// ===== Auth url
+export const loginUrl = `/api/${apiVersion}/login`;
+export const logoutUrl = `/api/${apiVersion}/logout`;
+
 // ===== Grottocenter Client routes
 export const swaggerLinkV1 = '/ui/swagger/1';
 export const entryDetailPath = '/ui/entries/';

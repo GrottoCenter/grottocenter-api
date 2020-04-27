@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { FormattedMessage } from 'react-intl';
 import {
+  Button,
   FormControl,
   InputLabel,
   FilledInput,
@@ -12,12 +13,29 @@ import Visibility from '@material-ui/icons/Visibility';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
 import styled from 'styled-components';
 
-const Wrapper = styled.div`
+import Translate from '../Translate';
+
+const ColumnWrapper = styled.div`
   display: flex;
   flex-direction: column;
+  margin: 1rem 20%;
+  @media (max-width: 768px) {
+    margin: 1rem 1rem;
+  }
 `;
 
-const Login = ({ username, onUsernameChange, password, onPasswordChange }) => {
+const LoginButton = styled(Button)`
+  display: block;
+  margin: auto;
+`;
+
+const Login = ({
+  username,
+  onUsernameChange,
+  password,
+  onPasswordChange,
+  onLogin,
+}) => {
   const [isPasswordVisible, setIsPasswordVisible] = React.useState(false);
 
   const toggleIsPasswordVisible = () => {
@@ -26,45 +44,51 @@ const Login = ({ username, onUsernameChange, password, onPasswordChange }) => {
   const handleMouseDownPassword = (event) => {
     event.preventDefault();
   };
-  const handleUsernameChange = (event) => {
-    onUsernameChange(event.target.value);
-  };
-  const handlePasswordChange = (event) => {
-    onPasswordChange(event.target.value);
-  };
 
   return (
-    <Wrapper>
-      <FormControl variant="filled">
-        <InputLabel htmlFor="input-with-icon-adornment">
-          <FormattedMessage id="Username" />
-        </InputLabel>
-        <FilledInput value={username} onChange={handleUsernameChange} />
-      </FormControl>
+    <>
+      <ColumnWrapper>
+        <FormControl variant="filled">
+          <InputLabel htmlFor="input-with-icon-adornment">
+            <FormattedMessage id="Username" />
+          </InputLabel>
+          <FilledInput value={username} onChange={onUsernameChange} />
+        </FormControl>
 
-      <FormControl variant="filled">
-        <InputLabel htmlFor="filled-adornment-password">
-          <FormattedMessage id="Password" />
-        </InputLabel>
-        <FilledInput
-          type={isPasswordVisible ? 'text' : 'password'}
-          value={password}
-          onChange={handlePasswordChange}
-          endAdornment={
-            <InputAdornment position="end">
-              <IconButton
-                aria-label="toggle password visibility"
-                onClick={toggleIsPasswordVisible}
-                onMouseDown={handleMouseDownPassword}
-                edge="end"
-              >
-                {isPasswordVisible ? <Visibility /> : <VisibilityOff />}
-              </IconButton>
-            </InputAdornment>
-          }
-        />
-      </FormControl>
-    </Wrapper>
+        <FormControl variant="filled">
+          <InputLabel htmlFor="filled-adornment-password">
+            <FormattedMessage id="Password" />
+          </InputLabel>
+          <FilledInput
+            type={isPasswordVisible ? 'text' : 'password'}
+            value={password}
+            onChange={onPasswordChange}
+            endAdornment={
+              <InputAdornment position="end">
+                <IconButton
+                  aria-label="toggle password visibility"
+                  onClick={toggleIsPasswordVisible}
+                  onMouseDown={handleMouseDownPassword}
+                  edge="end"
+                >
+                  {isPasswordVisible ? <Visibility /> : <VisibilityOff />}
+                </IconButton>
+              </InputAdornment>
+            }
+          />
+        </FormControl>
+      </ColumnWrapper>
+
+      <LoginButton
+        className
+        type="button"
+        variant="contained"
+        size="large"
+        onClick={onLogin}
+      >
+        <Translate>Login</Translate>
+      </LoginButton>
+    </>
   );
 };
 
@@ -73,6 +97,7 @@ Login.propTypes = {
   onUsernameChange: PropTypes.func.isRequired,
   password: PropTypes.string.isRequired,
   onPasswordChange: PropTypes.func.isRequired,
+  onLogin: PropTypes.func.isRequired,
 };
 
 export default Login;

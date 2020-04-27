@@ -13,22 +13,25 @@ module.exports = {
       return res.unauthorized(res.i18n('BAD_CREDENTIAL'));
     }
 
-    return TCaver.findOne({ contact }, (err, account) => {
-      if (!account) {
+    return TCaver.findOne({ contact }).exec((err, account) => {
+      if (!account || err) {
         return res.unauthorized('Bad credentials.');
       }
+      const accountObj = { ...account }; // account is a RowDataPacket => cast it to JS Object
 
-      return TCaver.comparePassword(password, account, (err2, valid) => {
+      return TCaver.comparePassword(password, accountObj, (err2, valid) => {
         if (err2 || !valid) {
           return res.unauthorized('Bad credentials.');
         }
 
         req.session.authenticated = true;
+        const token = TokenAuthService.issue({
+          id: accountObj.id,
+        });
+
         return res.json({
-          user: account,
-          token: TokenAuthService.issue({
-            id: account.id,
-          }),
+          user: accountObj,
+          token,
         });
       });
     });

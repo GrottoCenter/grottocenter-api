@@ -2,12 +2,14 @@ import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Redirect, Route, Switch } from 'react-router-dom';
 
-import MassifContainer from '../containers/MassifContainer';
-import GroupContainer from '../containers/GroupContainer';
 import BbsContainer from '../containers/BbsContainer';
+import GroupContainer from '../containers/GroupContainer';
+import LoginContainer from '../containers/LoginContainer';
+import MapContainer from '../containers/MapContainer';
+import MassifContainer from '../containers/MassifContainer';
+
 import Api from '../components/appli/Api';
 import Dashboard from '../components/appli/Dashboard';
-import MapContainer from '../containers/MapContainer';
 import Swagger from './Swagger';
 import HomePage from './HomePage';
 import Admin from './Admin';
@@ -43,6 +45,7 @@ const Application = () => {
         <Route path="/ui/groups/:groupId" component={GroupContainer} />
         <Route path="/ui/massifs/:massifId" component={MassifContainer} />
         <Route path="/ui/bbs/:bbsId" component={BbsContainer} />
+        <Route path="/ui/login" component={LoginContainer} />
         <Redirect path="/ui/*" to="/ui/" />
       </Switch>
     </Layout>
