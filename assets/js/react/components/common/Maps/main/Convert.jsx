@@ -112,6 +112,24 @@ const StyledTitle = styled.h5`
 //
 
 class Convert extends React.Component {
+  static addZone(definition, zone) {
+    const tmp = definition.split('+zone=');
+    const tmp2 = tmp[1].substring(2);
+    const res = `${tmp[0]}+zone=${zone} ${tmp2}`;
+    return res;
+  }
+
+  static removeSouth(definition) {
+    const tmp = definition.split('+south');
+    let res = '';
+    if (tmp.length > 1) {
+      res = tmp[0] + tmp[1];
+    } else {
+      res = tmp[0];
+    }
+    return res;
+  }
+
   constructor(props) {
     super(props);
     this.state = {
@@ -134,14 +152,14 @@ class Convert extends React.Component {
       hemiInput: 'North',
       hemiOutput: 'North',
       zoneInput: 31,
-      zoneOuptut: 31,
       projectionsList: props.list,
     };
   }
 
   componentDidMount() {
-    const unitInput = this.getUnits(this.state.keyGPSInput);
-    const unitOutput = this.getUnits(this.state.keyGPSOutput);
+    const { keyGPSInput, keyGPSOutput } = this.state;
+    const unitInput = this.getUnits(keyGPSInput);
+    const unitOutput = this.getUnits(keyGPSOutput);
 
     this.setState({ xNameInput: unitsTab[unitInput].xName });
     this.setState({ xUnitInput: unitsTab[unitInput].xUnit });
@@ -153,48 +171,36 @@ class Convert extends React.Component {
     this.setState({ yUnitOutput: unitsTab[unitOutput].yUnit });
   }
 
-  isUtm(keyGps) {
-    for (let i = 0; i < this.state.projectionsList.length; i++) {
-      if (this.state.projectionsList[i].Code == keyGps) {
-        return this.state.projectionsList[i].proj == 'utm';
-      }
-    }
-    return null;
-  }
-
   getDef(keyGps) {
-    for (let i = 0; i < this.state.projectionsList.length; i++) {
-      if (this.state.projectionsList[i].Code == keyGps) {
-        return this.state.projectionsList[i].Definition;
+    const { projectionsList } = this.state;
+    for (let i = 0; i < projectionsList.length; i += 1) {
+      if (projectionsList[i].Code == keyGps) {
+        return projectionsList[i].Definition;
       }
     }
     return null;
   }
 
   getUnits(keyGps) {
-    for (let i = 0; i < this.state.projectionsList.length; i++) {
-      if (this.state.projectionsList[i].Code == keyGps) {
-        return this.state.projectionsList[i].units;
+    let units;
+    const { projectionsList } = this.state;
+    for (let i = 0; i < projectionsList.length; i += 1) {
+      if (projectionsList[i].Code == keyGps) {
+        units = projectionsList[i].units;
+        break;
       }
     }
+    return units;
   }
 
-  addZone(definition, zone) {
-    var tmp = definition.split('+zone=');
-    var tmp2 = tmp[1].substring(2);
-    var res = tmp[0] + '+zone=' + zone + ' ' + tmp2;
-    return res;
-  }
-
-  removeSouth(definition) {
-    var tmp = definition.split('+south');
-    var res = '';
-    if (tmp.length > 1) {
-      res = tmp[0] + tmp[1];
-    } else {
-      res = tmp[0];
+  isUtm(keyGps) {
+    const { projectionsList } = this.state;
+    for (let i = 0; i < projectionsList.length; i += 1) {
+      if (projectionsList[i].Code == keyGps) {
+        return projectionsList[i].proj == 'utm';
+      }
     }
-    return res;
+    return null;
   }
 
   handleChangeXValue(event) {
@@ -256,39 +262,49 @@ class Convert extends React.Component {
   }
 
   handleConvert(event) {
-    var firstProjection = this.getDef(this.state.keyGPSInput);
-    var secondProjection = this.getDef(this.state.keyGPSOutput);
-    let xValue = this.state.valueXInput;
-    let yValue = this.state.valueYInput;
-    if (this.getUnits(this.state.keyGPSInput) == 'degrees') {
-      xValue = this.state.valueYInput;
-      yValue = this.state.valueXInput;
+    const {
+      keyGPSInput,
+      keyGPSOutput,
+      valueXInput,
+      valueYInput,
+      utmInput,
+      zoneInput,
+      zoneOutput,
+      hemiInput,
+      hemiOutput,
+      utmOutput,
+    } = this.state;
+    let firstProjection = this.getDef(keyGPSInput);
+    let secondProjection = this.getDef(keyGPSOutput);
+    let xValue = valueXInput;
+    let yValue = valueYInput;
+    if (this.getUnits(keyGPSInput) === 'degrees') {
+      xValue = valueYInput;
+      yValue = valueXInput;
     }
 
-    if (this.state.utmInput) {
-      firstProjection = this.addZone(firstProjection, this.state.zoneInput);
+    if (utmInput) {
+      firstProjection = this.addZone(firstProjection, zoneInput);
       firstProjection = this.removeSouth(firstProjection);
-      if (this.state.hemiInput == 'South') {
+      if (hemiInput === 'South') {
         firstProjection += ' +south';
       }
     }
 
-    if (this.state.utmOutput) {
-      secondProjection = this.addZone(secondProjection, this.state.zoneOutput);
+    if (utmOutput) {
+      secondProjection = this.addZone(secondProjection, zoneOutput);
       secondProjection = this.removeSouth(secondProjection);
-      if (this.state.hemiOutput == 'South') {
+      if (hemiOutput === 'South') {
         secondProjection += ' +south';
       }
     }
 
-    console.log('first : ' + firstProjection);
-    console.log('second : ' + secondProjection);
     const tmp = proj4(firstProjection, secondProjection, [
       parseInt(xValue, 10),
       parseInt(yValue, 10),
     ]);
 
-    if (this.getUnits(this.state.keyGPSOutput) == 'degrees') {
+    if (this.getUnits(keyGPSOutput) === 'degrees') {
       this.setState({ valueXOutput: tmp[1], valueYOutput: tmp[0] });
     } else {
       this.setState({ valueXOutput: tmp[0], valueYOutput: tmp[1] });
@@ -299,13 +315,31 @@ class Convert extends React.Component {
 
   render() {
     const { classes } = this.props;
-
+    const {
+      hemiInput,
+      hemiOutput,
+      keyGPSInput,
+      keyGPSOutput,
+      projectionsList,
+      utmInput,
+      utmOutput,
+      valueXOutput,
+      valueYOutput,
+      xNameInput,
+      xNameOutput,
+      yNameInput,
+      yNameOutput,
+      xUnitInput,
+      xUnitOutput,
+      yUnitInput,
+      yUnitOutput,
+    } = this.state;
     // Recover all the coodinates system for options select
     const options = [];
     let actualCountry = 'World';
     options.push(<MenuItemGroup disabled>World</MenuItemGroup>);
 
-    this.state.projectionsList.forEach((projection) => {
+    projectionsList.forEach((projection) => {
       if (projection.Fr_name && actualCountry !== projection.Fr_name) {
         actualCountry = projection.Fr_name;
         options.push(
@@ -338,7 +372,7 @@ class Convert extends React.Component {
             </div>
             <FormControl>
               <StyledSelect
-                value={this.state.keyGPSInput}
+                value={keyGPSInput}
                 onChange={this.handleChangeGPSInput.bind(this)}
               >
                 {options}
@@ -347,16 +381,16 @@ class Convert extends React.Component {
           </div>
 
           {/* UTM SECTION HEMISPHERE AND ZONE INPUT */}
-          {this.state.utmInput && [
+          {utmInput && [
             <div id="hemisphereInput" className={classes.element}>
               <div className={classes.subElement}>{' Hemisphere : '}</div>
               <FormControl>
                 <StyledSelect
-                  value={this.state.hemiInput}
+                  value={hemiInput}
                   onChange={this.handleChangeHemiInput.bind(this)}
                 >
-                  <StyledMenuItem value="North">{'North'}</StyledMenuItem>
-                  <StyledMenuItem value="South">{'South'}</StyledMenuItem>
+                  <StyledMenuItem value="North">North</StyledMenuItem>
+                  <StyledMenuItem value="South">South</StyledMenuItem>
                 </StyledSelect>
               </FormControl>
             </div>,
@@ -372,18 +406,18 @@ class Convert extends React.Component {
 
           {/* COORDINATES INPUT SECTION */}
           <div id="xInput">
-            {this.state.xNameInput}
+            {xNameInput}
             {' : '}
             <StyledInput
               type="number"
               placeholder="0"
               onChange={this.handleChangeXValue.bind(this)}
             />
-            {this.state.xUnitInput}
+            {xUnitInput}
           </div>
 
           <div id="yInput">
-            {this.state.yNameInput}
+            {yNameInput}
             {' : '}
             <StyledInput
               type="number"
@@ -391,7 +425,7 @@ class Convert extends React.Component {
               style={{ marginLeft: '5px' }}
               onChange={this.handleChangeYValue.bind(this)}
             />
-            {this.state.yUnitInput}
+            {yUnitInput}
           </div>
 
           {/* BUTTON SECTION */}
@@ -415,7 +449,7 @@ class Convert extends React.Component {
             </div>
             <FormControl>
               <StyledSelect
-                value={this.state.keyGPSOutput}
+                value={keyGPSOutput}
                 onChange={this.handleChangeGPSOutput.bind(this)}
               >
                 {options}
@@ -424,16 +458,16 @@ class Convert extends React.Component {
           </div>
 
           {/* UTM SECTION HEMISPHERE AND ZONE OUTPUT */}
-          {this.state.utmOutput && [
+          {utmOutput && [
             <div id="hemisphereOutput" className={classes.element}>
               <div className={classes.subElement}>{' Hemisphere : '}</div>
               <FormControl>
                 <StyledSelect
-                  value={this.state.hemiOutput}
+                  value={hemiOutput}
                   onChange={this.handleChangeHemiOutput.bind(this)}
                 >
-                  <StyledMenuItem value="North">{'North'}</StyledMenuItem>
-                  <StyledMenuItem value="South">{'South'}</StyledMenuItem>
+                  <StyledMenuItem value="North">North</StyledMenuItem>
+                  <StyledMenuItem value="South">South</StyledMenuItem>
                 </StyledSelect>
               </FormControl>
             </div>,
@@ -449,26 +483,22 @@ class Convert extends React.Component {
 
           {/* COORDINATES OUTPUT SECTION */}
           <div id="xOutput">
-            {this.state.xNameOutput}
+            {xNameOutput}
             {' : '}
-            <StyledInput
-              type="number"
-              value={this.state.valueXOutput}
-              disabled
-            />
-            {this.state.xUnitOutput}
+            <StyledInput type="number" value={valueXOutput} disabled />
+            {xUnitOutput}
           </div>
 
           <div id="yOutput">
-            {this.state.yNameOutput}
+            {yNameOutput}
             {' : '}
             <StyledInput
               type="number"
-              value={this.state.valueYOutput}
+              value={valueYOutput}
               style={{ marginLeft: '2px' }}
               disabled
             />
-            {this.state.yUnitOutput}
+            {yUnitOutput}
           </div>
         </div>
 

@@ -14,7 +14,6 @@ import Admin from './Admin';
 import AdvancedSearchPage from './AdvancedSearchPage';
 import Faq from '../components/appli/Faq';
 import LatestBlogNewsSection from '../components/homepage/LatestBlogNewsSection';
-import Convert from '../components/common/Maps/main/Convert';
 import Layout from '../components/common/Layouts/Main';
 import QuickSearch from '../features/QuickSearch';
 import EntryPage from './Entry';
@@ -38,7 +37,6 @@ const Application = () => {
         <Route path="/ui/api" component={Api} />
         <Route path="/ui/entries/:id?" component={EntryPage} />
         <Route path="/ui/faq" component={Faq} />
-        <Route path="/ui/testConvert" component={Convert} />
         <Route path="/ui/map/:target?" component={MapContainer} />
         <Route path="/ui/swagger/:version" component={Swagger} />
         <Route path="/ui/test" component={LatestBlogNewsSection} />
