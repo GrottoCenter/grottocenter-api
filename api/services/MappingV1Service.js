@@ -223,7 +223,7 @@ module.exports = {
       values.push(data);
     });
     res.results = values;
-    res.totalNbResults = source.hits.total;
+    res.totalNbResults = source.hits.total.value;
     return res;
   },
 
@@ -265,7 +265,7 @@ module.exports = {
         // Convert from a collection of keys newKeys, rename the keys of obj
         const renameKeys = (obj, newKeys) => {
           Object.keys(obj).map((key) => {
-            if(newKeys[key]) {
+            if (newKeys[key]) {
               obj[newKeys[key]] = obj[key];
               delete obj[key];
             }
@@ -294,10 +294,10 @@ module.exports = {
             renameKeys(data.highlights, replacementKeys);
 
             // Fill data with appropriate keys
-            for(var key in item['_source']) {
+            for (let key in item['_source']) {
               data[key] = item['_source'][key];
             }
-            
+
             break;
 
           default:
@@ -307,7 +307,7 @@ module.exports = {
     }
 
     res.results = values;
-    res.totalNbResults = source.hits ? source.hits.total : 0;
+    res.totalNbResults = source.hits.total.value;
     return res;
   },
 
