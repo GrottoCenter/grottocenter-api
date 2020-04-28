@@ -7,11 +7,11 @@ files:
     destination: /home/ec2-user/GrottoCenter3/
 hooks:
   ApplicationStop:
-    - location: stop_prod.sh
+    - location: AWSStopProd.sh
       timeout: 10
       runas: ec2-user
 
   AfterInstall:
-    - location: deployProd.sh
+    - location: AWSDeployProd.sh
       runas: ec2-user
       timeout: 100
