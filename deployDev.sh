@@ -29,6 +29,9 @@ ES_LOCAL_PORT=9200
 # Logstash
 LS_TAGNAME="logstashgrotto"
 
+# Keep the same version as the production one (on AWS)
+ES_AND_LS_VERSION="7.6.1"
+
 ##################################################### FUNCTIONS #########################################################
 
 # Get the status of the health of the container name passed in parameter.
@@ -108,7 +111,7 @@ docker run -d \
     -p 9300:9300 \
     -e "discovery.type=single-node" \
     --cpus=0.5 \
-    elasticsearch:6.5.0
+    elasticsearch:${ES_AND_LS_VERSION}
 echo "### Elasticsearch available on port ${ES_LOCAL_PORT} ###"
 
 # Dowload and extract a plugin to be used by Logstash to load data from MySQL
@@ -140,7 +143,7 @@ docker run --rm -d \
     -e JDBC_USER=${DOCKER_MYSQL_USER} \
     -e JDBC_PASSWORD=${DOCKER_MYSQL_PASSWORD} \
     -e ES_HOSTS="${ES_TAGNAME}:${ES_LOCAL_PORT}" \
-    -v "$PWD":/config-dir docker.elastic.co/logstash/logstash:6.5.2 \
+    -v "$PWD":/config-dir docker.elastic.co/logstash/logstash:${ES_AND_LS_VERSION} \
     -f /config-dir/logstash.conf
 
 # Wait the container to be running
