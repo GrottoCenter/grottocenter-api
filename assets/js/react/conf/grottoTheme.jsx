@@ -1,6 +1,6 @@
 import { brown, blue, orange, grey } from '@material-ui/core/colors';
 import { createMuiTheme, fade } from '@material-ui/core/styles';
-import { isMobileOnly } from 'react-device-detect';
+import { isMobile } from 'react-device-detect';
 
 const fontFamily = [
   '-apple-system',
@@ -16,7 +16,7 @@ const fontFamily = [
 ].join(',');
 
 const sideMenuWidth = 240;
-const appBarHeight = isMobileOnly ? 56 : 64;
+const appBarHeight = 56;
 const paddingUnit = 8;
 
 export const overridings = {
@@ -26,6 +26,7 @@ export const overridings = {
     paddingUnit / 2,
     paddingUnit,
     paddingUnit * 2,
+    paddingUnit * 3,
     paddingUnit * 4,
     paddingUnit * 8,
   ],
@@ -51,10 +52,8 @@ export const overridings = {
     onPrimary: {
       main: grey['100'],
     },
-    action: {
-      disabled: brown['300'],
-      disabledBackground: brown['200'],
-    },
+    action: {},
+    backgroundColor: grey['100'],
     contrastThreshold: 3,
     primary1Color: brown['500'],
     primary2Color: brown['700'],
@@ -87,8 +86,32 @@ export const overridings = {
     MuiTextField: {
       variant: 'filled',
     },
+    MuiButton: {
+      variant: 'contained',
+    },
+    MuiSkeleton: {
+      animation: 'wave',
+    },
+    // For default color on a specific variant on Typography
+    // Wait until V5 to (maybe) use this for some titles
+    // https://github.com/mui-org/material-ui/issues/15573
+    // MuiTypography: {
+    //   h5: {
+    //     color: 'secondary',
+    //   },
+    // },
   },
   overrides: {
+    MuiCardContent: {
+      root: {
+        padding: isMobile ? paddingUnit : paddingUnit * 2,
+      },
+    },
+    MuiCardHeader: {
+      root: {
+        padding: isMobile ? paddingUnit : paddingUnit * 2,
+      },
+    },
     MuiDrawer: {
       root: {
         width: sideMenuWidth,
@@ -121,6 +144,11 @@ export const overridings = {
         fontFamily,
       },
     },
+    MuiToolbar: {
+      root: {
+        height: `${appBarHeight}px`,
+      },
+    },
     gutterBottom: {
       marginBottom: '1rem',
     },
@@ -134,7 +162,7 @@ export const overridings = {
         backgroundColor: brown['500'],
         color: grey['100'],
       },
-    }
+    },
   },
 };
 

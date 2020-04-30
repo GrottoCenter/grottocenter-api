@@ -1,10 +1,21 @@
-import { Button, IconButton, Menu, MenuItem } from '@material-ui/core';
+import {
+  Button as MuiButton,
+  IconButton,
+  Menu,
+  MenuItem,
+} from '@material-ui/core';
 import AccountCircle from '@material-ui/icons/AccountCircle';
 import React from 'react';
 import { isMobileOnly } from 'react-device-detect';
 import PropTypes from 'prop-types';
+import styled from 'styled-components';
+
 import Translate from '../Translate';
 import DisabledTooltip from '../DisabledTooltip';
+
+const Button = styled(MuiButton)`
+  padding-right: 0;
+`;
 
 // eslint-disable-next-line no-unused-vars
 const UserMenu = ({ onLogout, disabled = true, isAuth = false }) => {
@@ -24,8 +35,13 @@ const UserMenu = ({ onLogout, disabled = true, isAuth = false }) => {
       {!isAuth ? (
         <DisabledTooltip disabled={disabled}>
           <span>
-            <Button startIcon={<AccountCircle />} color="inherit" disabled={disabled}>
-              {!isMobileOnly && <Translate>Login</Translate>}
+            <Button
+              variant="text"
+              startIcon={<AccountCircle />}
+              disabled={disabled}
+              size={isMobileOnly ? 'small' : 'medium'}
+            >
+              <Translate>Login</Translate>
             </Button>
           </span>
         </DisabledTooltip>
