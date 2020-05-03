@@ -502,11 +502,21 @@ module.exports.routes = {
     },
   },
 
-  /* Reverse Geocoding */
+  /* Reverse Geocoding API */
 
   'GET /api/reverseGeocode': {
     controller: 'ReverseGeocodingController',
     action: 'findNearBy',
+    cors: {
+      allowOrigins: '*',
+    },
+  },
+
+  /* Database Enrichment */
+
+  'GET /api/launchDBEnrichmentScript': {
+    controller: 'DBEnrichmentController',
+    action: 'launchDBEnrichment',
     cors: {
       allowOrigins: '*',
     },
