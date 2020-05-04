@@ -2,6 +2,7 @@
  */
 const http = require('http');
 let querystring = require('querystring');
+const fs = require('fs');
 const PATH_ALL_ENTRIES =
   '/api/v1/advanced-search?resourceType=entries&complete=true&matchAllFields=true&from=0&size=10000';
 
@@ -58,9 +59,6 @@ function update(entry) {
     };
     const req = http.request(options, (res) => {
       res.setEncoding('utf8');
-      res.on('data', (data) => {
-        process.stdout.write(data);
-      });
     });
     req.write(data);
     req.end();
@@ -96,51 +94,53 @@ function reverseGeo(latitude, longitude) {
   });
 }
 
-function enrichment() {
-  findAllEntries(process.argv[2]).then(function(res) {
+async function enrichment() {
+  findAllEntries(process.argv[2]).then(async function(res) {
     let allEntries = Array.from(res['results']);
-    allEntries.map((entry) => {
-      reverseGeo(entry['latitude'], entry['longitude']).then((res) => {
-        if (process.argv[3] === 'completion') {
-          if (res['county']) {
-            if (entry['county'] === '' || entry['county'] === null) {
-              entry['county'] = res['county'];
-            }
-          }
-          if (res['country']) {
-            if (entry['country'] === '' || entry['country'] === null) {
-              entry['country'] = res['country'];
-            }
-          }
-          if (res['region']) {
-            if (entry['region'] === '' || entry['region'] === null) {
-              entry['region'] = res['region'];
-            }
-          }
-          if (res['city']) {
-            if (entry['city'] === '' || entry['city'] === null) {
-              entry['city'] = res['city'];
-            }
-          }
-        } else {
-          if (res['county']) {
+    let i = 1;
+    for (let entry of allEntries) {
+      const res = await reverseGeo(entry['latitude'], entry['longitude']);
+      if (process.argv[3] === 'completion') {
+        if (res['county']) {
+          if (entry['county'] === '' || entry['county'] === null) {
             entry['county'] = res['county'];
           }
-          if (res['country']) {
+        }
+        if (res['country']) {
+          if (entry['country'] === '' || entry['country'] === null) {
             entry['country'] = res['country'];
           }
-          if (res['region']) {
+        }
+        if (res['region']) {
+          if (entry['region'] === '' || entry['region'] === null) {
             entry['region'] = res['region'];
           }
-          if (res['city']) {
+        }
+        if (res['city']) {
+          if (entry['city'] === '' || entry['city'] === null) {
             entry['city'] = res['city'];
           }
         }
-        // console.log(entry);
-
-        update(entry);
-      });
-    });
+      } else {
+        if (res['county']) {
+          entry['county'] = res['county'];
+        }
+        if (res['country']) {
+          entry['country'] = res['country'];
+        }
+        if (res['region']) {
+          entry['region'] = res['region'];
+        }
+        if (res['city']) {
+          entry['city'] = res['city'];
+        }
+      }
+      update(entry);
+      const progress = i + ' / ' + allEntries.length;
+      fs.writeFileSync('tmpDBEnrichmentProgress', progress);
+      ++i;
+    }
+    fs.unlinkSync('tmpDBEnrichmentProgress');
   });
 }
 
