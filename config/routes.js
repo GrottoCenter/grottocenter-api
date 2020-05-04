@@ -161,6 +161,10 @@ module.exports.routes = {
     controller: 'Entry',
     action: 'findAll',
   },
+  'PUT /api/entries/updateOneAdministrative': {
+    controller: 'Entry',
+    action: 'updateEntryAdministrative',
+  },
 
   'GET /api/v1/entries': {
     controller: 'v1/Entry',

@@ -50,6 +50,7 @@ module.exports.policies = {
     findRandom: true,
     getPublicEntriesNumber: 'apiKeyAuth',
     getEntriesNumber: true,
+    updateEntryAdministrative: true,
   },
 
   'v1/EntryController': {

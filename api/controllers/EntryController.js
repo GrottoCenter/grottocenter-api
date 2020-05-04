@@ -138,4 +138,17 @@ module.exports = {
       return ControllerService.treat(req, err, count, params, res);
     });
   },
+
+  updateEntryAdministrative: (req, res) => {
+    const { county, id, country, region, city } = req.body;
+    TEntry.updateOne({ id: id })
+      .set({ county: county, country: country, region: region, city: city })
+      .exec((err, found) => {
+        if (err) {
+          return res.json({ msg: 'Update failed for row : ' + id });
+        } else {
+          return res.json(found);
+        }
+      });
+  },
 };
