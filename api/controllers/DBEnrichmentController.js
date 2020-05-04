@@ -6,6 +6,7 @@
  */
 
 const SCRIPT_NAME = 'DBEnrichment';
+const fs = require('fs');
 
 module.exports = {
   /**
@@ -14,7 +15,14 @@ module.exports = {
   launchDBEnrichment: (req, res) => {
     DBEnrichmentService.isScriptRunning(SCRIPT_NAME).then((result) => {
       if (result) {
-        return res.json({ msg: 'script already running ...' });
+        let progress = 'starting...';
+        if (fs.existsSync('tmpDBEnrichmentProgress')) {
+          progress = fs.readFileSync('tmpDBEnrichmentProgress', 'utf8');
+        }
+        return res.json({
+          msg: 'script already running ...',
+          progress: progress,
+        });
       } else {
         const country = req.param('country');
         const type = req.param('type');
