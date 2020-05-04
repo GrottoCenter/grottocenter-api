@@ -8,5 +8,6 @@ module.exports = {
     '@storybook/addon-links',
     '@storybook/addon-viewport/register',
     'storybook-addon-intl/register',
+    '@storybook/addon-knobs/register',
   ],
 };
