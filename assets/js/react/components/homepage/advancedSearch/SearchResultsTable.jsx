@@ -24,7 +24,6 @@ import _ from 'lodash';
 import Translate from '../../common/Translate';
 
 import SearchTableActions from './SearchTableActions';
-import { detailPageV2Links } from '../../../conf/Config';
 
 const StyledTableFooter = styled.div`
   align-items: center;
@@ -250,18 +249,22 @@ class SearchResultsTable extends React.Component {
   handleRowClick = (id) => {
     const { resourceType } = this.props;
 
-    if (resourceType === 'entries') {
-      const externalLink = `${
-        detailPageV2Links[locale] !== undefined
-          ? detailPageV2Links[locale]
-          : detailPageV2Links['*']
-      }&category=entry&id=${id}`; //eslint-disable-line
-      window.open(externalLink, '_blank');
+    switch (resourceType) {
+      case 'entries':
+        window.open(`/ui/entries/${id}`, '_blank');
+        break;
+      case 'grottos':
+        window.open(`/ui/groups/${id}`, '_blank');
+        break;
+      case 'massifs':
+        window.open(`/ui/massifs/${id}`, '_blank');
+        break;
+      case 'bbs':
+        window.open(`/ui/bbs/${id}`, '_blank');
+        break;
+      default:
+        break;
     }
-
-    if (resourceType === 'grottos') window.open(`/ui/groups/${id}`, '_blank');
-    if (resourceType === 'massifs') window.open(`/ui/massifs/${id}`, '_blank');
-    if (resourceType === 'bbs') window.open(`/ui/bbs/${id}`, '_blank');
   };
 
   handleChangePage = (event, newPage) => {

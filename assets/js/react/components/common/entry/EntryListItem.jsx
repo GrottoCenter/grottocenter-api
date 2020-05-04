@@ -37,9 +37,6 @@ const styles = (theme) => ({
 
 const EntryListItem = (props) => {
   const { classes, entry } = props;
-  const externalLink = `${
-    detailPageV2Links[locale] !== undefined ? detailPageV2Links[locale] : detailPageV2Links['*']
-  }&category=entry&id=${entry.id}`; //eslint-disable-line
 
   return (
     <ListItem
@@ -50,7 +47,7 @@ const EntryListItem = (props) => {
         className={classes.entryLink}
         internal={false}
         target="_blank"
-        href={externalLink} /*href={`/ui/entries/${entry.id}`}*/
+        href={`/ui/entries/${entry.id}`}
       >
         {entry.name}
       </GClink>
