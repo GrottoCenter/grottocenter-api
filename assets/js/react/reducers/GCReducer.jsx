@@ -13,6 +13,7 @@ import massif from './MassifReducer';
 import bbs from './BbsReducer';
 import subtheme from './SubthemeReducer';
 import pageTitle from './PageTitleReducer';
+import entry from './EntryReducer';
 
 //
 //
@@ -35,6 +36,7 @@ const GCReducer = combineReducers({
   bbs,
   subtheme,
   pageTitle,
+  entry,
 });
 
 export default GCReducer;
