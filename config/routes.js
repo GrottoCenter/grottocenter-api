@@ -93,12 +93,12 @@ module.exports.routes = {
   /* Auth controller */
 
   'POST /api/v1/login': {
-    controller: 'Auth',
+    controller: 'v1/Auth',
     action: 'login',
   },
 
   'GET /api/v1/logout': {
-    controller: 'Auth',
+    controller: 'v1/Auth',
     action: 'logout',
   },
 

@@ -5,6 +5,8 @@
  * @help        :: See http://links.sailsjs.org/docs/controllers
  */
 
+const passport = require('passport');
+
 module.exports = {
   login: (req, res) => {
     passport.authenticate('local', (err, user) => {
@@ -21,15 +23,11 @@ module.exports = {
         if (err) return res.json({ message: err });
         req.session.authenticated = true;
         const token = TokenAuthService.issue({
-          id: accountObj.id,
+          id: user.id,
         });
-
-        return res.json({
-          user: accountObj,
-          token,
-        });
+        return res.json({ token });
       });
-    });
+    })(req, res);
   },
 
   logout: (req, res) => {

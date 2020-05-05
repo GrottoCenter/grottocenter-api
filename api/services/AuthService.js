@@ -5,8 +5,8 @@ const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const crypto = require('crypto');
 
-function find(sessionUser, fn) {
-  TCaver.findById(sessionUser.id, (err, user) => {
+function findCaver(sessionUser, fn) {
+  TCaver.findOne(sessionUser.id).exec((err, user) => {
     if (err) {
       return fn(null, null);
     }
@@ -34,7 +34,7 @@ function getOldGCpassword(login, password) {
 }
 
 function verifyPassword(user, password) {
-  const hash = getOldGCpassword(user.Login, password);
+  const hash = getOldGCpassword(user.login, password);
   return user.password === password || user.password === hash;
 }
 
@@ -43,7 +43,7 @@ passport.serializeUser((user, done) => {
 });
 
 passport.deserializeUser((user, done) => {
-  find(user, (err, cbUser) => {
+  findCaver(user, (err, cbUser) => {
     done(err, cbUser);
   });
 });
