@@ -115,9 +115,8 @@ const WhatIsIt = () => (
         <BigNumberText numberType="officialPartners" />
         <br />
         <Translate>
-          organizations who take part in the project by funding, providing
-          data,communicating on the interest and benefits of cavers to share
-          data
+          organizations who take part in the project by funding, providing data,
+          communicating on the interest and benefits of cavers to share data.
         </Translate>
       </NumberBlockHalfWidth>
     </GridRow>

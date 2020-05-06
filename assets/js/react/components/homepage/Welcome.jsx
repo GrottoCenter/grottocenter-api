@@ -3,7 +3,11 @@ import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import { withTheme } from '@material-ui/core/styles';
 import LandingSection from './LandingSection';
-import { GridRow, GridOneThirdColumn, GridTwoThirdColumn } from '../../helpers/GridSystem';
+import {
+  GridRow,
+  GridOneThirdColumn,
+  GridTwoThirdColumn,
+} from '../../helpers/GridSystem';
 import Translate from '../common/Translate';
 
 //
@@ -49,7 +53,10 @@ const WelcomeSection = styled(LandingSection)`
 //
 
 const Welcome = ({ theme }) => (
-  <WelcomeSection bgColor={theme.palette.primary1Color} fgColor={theme.palette.secondaryBlocTitle}>
+  <WelcomeSection
+    bgColor={theme.palette.primary1Color}
+    fgColor={theme.palette.secondaryBlocTitle}
+  >
     <GridRow>
       <GridOneThirdColumn>
         <WelcomeAvatar src="/images/caves/draperie_small.jpg" />
@@ -64,25 +71,24 @@ const Welcome = ({ theme }) => (
             id="This {0} version of the site is improving gradually to allow a simpler navigation from
             all your peripherals"
             values={{
-              0: (
-                <span>3.3.1</span>
-              ),
+              0: <span>3.3.1</span>,
             }}
           />
         </WelcomeParagraph>
         <WelcomeParagraph>
           <Translate>
-            The application is faster, and benefits from a code of higher quality which is also
-            easier to maintain: data processing specialist may join the development team and easily
-            contribute
+            The application is faster, and benefits from a code of higher
+            quality which is also easier to maintain: data processing specialist
+            may join the development team and easily contribute.
           </Translate>
         </WelcomeParagraph>
         <WelcomeParagraph>
           <Translate>
-            As of today, you can access updated information on caving, an effective module for quick
-            search and quality information on caves Regularly log in to discover new features and
-            keep on using Grottocenter to take part and use information already added by the
-            community
+            As of today, you can access updated information on caving, an
+            effective module for quick search and quality information on caves.
+            Regularly log in to discover new features and keep on using
+            Grottocenter to take part and use information already added by the
+            community.
           </Translate>
         </WelcomeParagraph>
       </GridTwoThirdColumn>
