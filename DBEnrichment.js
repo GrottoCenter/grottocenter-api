@@ -3,17 +3,23 @@
 const http = require('http');
 let querystring = require('querystring');
 const fs = require('fs');
+const os = require('os');
+
 const PATH_ALL_ENTRIES =
   '/api/v1/advanced-search?resourceType=entries&complete=true&matchAllFields=true&from=0&size=10000';
 
+const HOST = os.hostname();
+const PORT = 1337;
+
 /**
- * Retrieves the closest geolocated object in the geonames database based on coordinates
+ * Retrieves all the entries of the database, or, if a country was specified as parameter, retrieves all the entries from this country.
+ * @param country
  */
 function findAllEntries(country) {
   return new Promise((resolve) => {
     const options = {
-      host: 'localhost',
-      port: 1337,
+      host: HOST,
+      port: PORT,
       path:
         country === 'all'
           ? PATH_ALL_ENTRIES
@@ -37,7 +43,10 @@ function findAllEntries(country) {
     });
   });
 }
-
+/**
+ * Updates the entry specified as parameter.
+ * @param entry
+ */
 function update(entry) {
   return new Promise((resolve) => {
     const data = querystring.stringify({
@@ -48,8 +57,8 @@ function update(entry) {
       city: entry['city'],
     });
     const options = {
-      host: 'localhost',
-      port: 1337,
+      host: HOST,
+      port: PORT,
       path: '/api/entries/updateOneAdministrative',
       method: 'PUT',
       headers: {
@@ -68,11 +77,16 @@ function update(entry) {
   });
 }
 
+/**
+ * Returns the nearest location information (country, county, region, city) based on the latitude and the longitude provided as parameters
+ * @param latitude
+ * @param longitude
+ */
 function reverseGeo(latitude, longitude) {
   return new Promise((resolve) => {
     const options = {
-      host: 'localhost',
-      port: 1337,
+      host: HOST,
+      port: PORT,
       path: `/api/reverseGeocode?latitude=${latitude}&longitude=${longitude}`,
       method: 'GET',
     };
@@ -93,13 +107,28 @@ function reverseGeo(latitude, longitude) {
     });
   });
 }
+/**
+ * Transforms a 3 letters country code into a 2 letters country code (iso3 -> iso2).
+ * @param codeCountry
+ */
+function countryCodeTransformer(codeCountry) {
+  let rawdata = fs.readFileSync('all.json');
+  let countries = JSON.parse(rawdata);
+  return countries
+    .filter((country) => country['alpha-3'] === codeCountry)
+    .map((country) => country['alpha-2'])[0];
+}
 
+/**
+ * Main of the DBEnrichment script.
+ */
 async function enrichment() {
   findAllEntries(process.argv[2]).then(async function(res) {
     let allEntries = Array.from(res['results']);
     let i = 1;
     for (let entry of allEntries) {
       const res = await reverseGeo(entry['latitude'], entry['longitude']);
+      // if the type parameter is completion, only fill the null fields, otherwise overwrite all the fields.
       if (process.argv[3] === 'completion') {
         if (res['county']) {
           if (entry['county'] === '' || entry['county'] === null) {
@@ -107,6 +136,7 @@ async function enrichment() {
           }
         }
         if (res['country']) {
+          res['country'] = countryCodeTransformer(res['country']);
           if (entry['country'] === '' || entry['country'] === null) {
             entry['country'] = res['country'];
           }
@@ -126,6 +156,7 @@ async function enrichment() {
           entry['county'] = res['county'];
         }
         if (res['country']) {
+          res['country'] = countryCodeTransformer(res['country']);
           entry['country'] = res['country'];
         }
         if (res['region']) {
@@ -137,12 +168,15 @@ async function enrichment() {
       }
       update(entry);
       const progress = i + ' / ' + allEntries.length;
+      // Writes the progression in a tmp txt file to show progress on server side.
       fs.writeFileSync('tmpDBEnrichmentProgress', progress);
       ++i;
     }
+    // Deletes the tmp file after the script's end.
     fs.unlinkSync('tmpDBEnrichmentProgress');
   });
 }
 
 process.title = 'DBenrichment';
+// Main launch
 enrichment();
