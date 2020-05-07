@@ -3,9 +3,25 @@ import { storiesOf } from '@storybook/react';
 import { Card } from '@material-ui/core';
 import DocumentForm from './index';
 
+const allLanguages = [
+  {
+    id: 'ENG',
+    name: 'English',
+  },
+  {
+    id: 'FR',
+    name: 'French',
+  },
+  {
+    id: 'ESP',
+    name: 'Spanish',
+  },
+];
+
 const DefaultDocumentForm = () => {
   const [description, setDescription] = React.useState('');
-  const [documentLanguage, setDocumentLanguage] = React.useState('');
+  const [descriptionLanguage, setDescriptionLanguage] = React.useState('');
+  const [documentMainLanguage, setDocumentMainLanguage] = React.useState('');
   const [identifier, setIdentifier] = React.useState('');
   const [isFromBbs, setIsFromBbsChange] = React.useState(false);
   const [issue, setIssue] = React.useState('');
@@ -23,13 +39,16 @@ const DefaultDocumentForm = () => {
     <div style={{ padding: '3rem' }}>
       <Card style={{ padding: '2rem' }}>
         <DocumentForm
+          allLanguages={allLanguages}
           description={description}
-          documentLanguage={documentLanguage}
+          descriptionLanguage={descriptionLanguage}
+          documentMainLanguage={documentMainLanguage}
           identifier={identifier}
           isFromBbs={isFromBbs}
           issue={issue}
           onDescriptionChange={setDescription}
-          onDocumentLanguageChange={setDocumentLanguage}
+          onDescriptionLanguageChange={setDescriptionLanguage}
+          onDocumentMainLanguageChange={setDocumentMainLanguage}
           onIdentifierChange={setIdentifier}
           onIsFromBbsChange={setIsFromBbsChange}
           onIssueChange={setIssue}

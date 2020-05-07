@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { FormControl, FormLabel, Switch } from '@material-ui/core';
 
-import Translate from '../../Translate';
+import Translate from '../../../Translate';
 
 const IsFromBBSSwitch = ({ isFromBbs, onIsFromBbsChange }) => {
   const handleIsFromBbsChange = (event) => {

@@ -7,18 +7,19 @@ import {
   MenuItem,
   Select,
 } from '@material-ui/core';
-import Translate from '../../Translate';
+import Translate from '../../../Translate';
 
 // ===================================
 
 const LanguageSelect = ({
+  allLanguages,
   helperText,
   required = false,
   language,
   onLanguageChange,
   itemReferringTo,
 }) => {
-  const handlelanguageChange = (event) => {
+  const handleLanguageChange = (event) => {
     onLanguageChange(event.target.value);
   };
 
@@ -29,7 +30,7 @@ const LanguageSelect = ({
       </InputLabel>
       <Select
         language={language}
-        onChange={handlelanguageChange}
+        onChange={handleLanguageChange}
         inputProps={{
           name: `${itemReferringTo}-language`,
           id: `${itemReferringTo}-language`,
@@ -38,10 +39,9 @@ const LanguageSelect = ({
         <MenuItem value={0} disabled>
           {`${itemReferringTo} Language`}
         </MenuItem>
-        <MenuItem value={1}>ENG</MenuItem>
-        <MenuItem value={2}>FR</MenuItem>
-        <MenuItem value={3}>ESP</MenuItem>
-        <MenuItem value={4}>Todo: get all languages</MenuItem>
+        {allLanguages.map((l) => (
+          <MenuItem value={l.id}>{l.name}</MenuItem>
+        ))}
       </Select>
       {helperText && (
         <FormHelperText>
@@ -53,6 +53,12 @@ const LanguageSelect = ({
 };
 
 LanguageSelect.propTypes = {
+  allLanguages: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string.isRequired,
+      name: PropTypes.string.isRequired,
+    }),
+  ).isRequired,
   helperText: PropTypes.string.isRequired,
   itemReferringTo: PropTypes.string.isRequired,
   language: PropTypes.string.isRequired,

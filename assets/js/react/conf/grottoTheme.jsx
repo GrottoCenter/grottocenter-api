@@ -164,6 +164,26 @@ export const overridings = {
         color: grey['100'],
       },
     },
+    MuiStepConnector: {
+      line: {
+        borderWidth: '1px',
+      },
+      lineHorizontal: {
+        borderWidth: '1px',
+      },
+      active: {
+        '& $line': {
+          borderColor: brown['300'],
+          borderStyle: 'dashed',
+        },
+      },
+      completed: {
+        '& $line': {
+          borderColor: brown['500'],
+          borderWidth: '2px',
+        },
+      },
+    },
   },
 };
 
