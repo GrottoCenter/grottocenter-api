@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { pathOr } from 'ramda';
+import { injectIntl, intlShape } from 'react-intl';
 import {
   Card,
   CardContent,
@@ -168,6 +169,7 @@ class EntriesSearch extends React.Component {
       caveLengthMaxValue,
       cavingMinValue,
       cavingMaxValue,
+      intl,
     } = this.props;
 
     const {
@@ -188,8 +190,6 @@ class EntriesSearch extends React.Component {
       // 'underground type': undergroundType,
       // 'year_discovery-range': yearOfDiscoveryRange,
     } = this.state;
-
-    const { intl } = this.context;
 
     return (
       <Card>
@@ -461,6 +461,8 @@ EntriesSearch.propTypes = {
   caveDepthMaxValue: PropTypes.number,
   caveLengthMinValue: PropTypes.number,
   caveLengthMaxValue: PropTypes.number,
+
+  intl: PropTypes.shape(intlShape).isRequired,
 };
 
 EntriesSearch.defaultProps = {
@@ -477,8 +479,4 @@ EntriesSearch.defaultProps = {
   caveLengthMaxValue: 700000,
 };
 
-EntriesSearch.contextTypes = {
-  intl: PropTypes.shape({}).isRequired,
-};
-
-export default withStyles(styles)(EntriesSearch);
+export default injectIntl(withStyles(styles)(EntriesSearch));

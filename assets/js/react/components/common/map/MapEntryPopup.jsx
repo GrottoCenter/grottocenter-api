@@ -65,20 +65,15 @@ const StyledLocationCityIcon = withTheme(styled(LocationCityIcon)`
 const MapEntryPopup = ({ entry }, context) => {
   const GCLinkWithContext = withContext(GCLink, context);
 
-  const externalLinkEntry = `${
-    detailPageV2Links[locale] !== undefined ? detailPageV2Links[locale] : detailPageV2Links['*']
-  }&category=entry&id=${entry.id}}`; //eslint-disable-line
-  let externalLinkCave;
-
   return (
     <Popup autoPan={false}>
       <React.Fragment>
         <div>
           <GCLinkWithContext
             internal={false}
-            href={externalLinkEntry}
+            href={`/ui/entries/${entry.id}`}
             target="_blank"
-            /*href={entryDetailPath + entry.id}*/ style={{ verticalAlign: '' }}
+            style={{ verticalAlign: '' }}
           >
             <StyledTitle>
               {entry.name}
@@ -106,45 +101,45 @@ const MapEntryPopup = ({ entry }, context) => {
             </SubDiv>
           </MainDiv>
 
-          {entry.cave &&
-            entry.cave.name && (
-              <MainDiv>
-                <ImageElement src="../../../../../images/entry-cluster.svg" alt="" />
-                <SubDiv>
-                  <Translate>Caves</Translate>
-                  {' : '}
-                  <Info>
-                    <span>{entry.cave.name}</span>
-                  </Info>
-                </SubDiv>
-              </MainDiv>
-            )}
-
-          {entry.cave &&
-            entry.cave.depth && (
-              <div>
-                <ImageElement src="../../../../../images/depth.svg" alt="" />
-                <Translate>Depth</Translate>
+          {entry.cave && entry.cave.name && (
+            <MainDiv>
+              <ImageElement
+                src="../../../../../images/entry-cluster.svg"
+                alt=""
+              />
+              <SubDiv>
+                <Translate>Caves</Translate>
                 {' : '}
                 <Info>
-                  {entry.cave.depth}
-                  {' m'}
+                  <span>{entry.cave.name}</span>
                 </Info>
-              </div>
-            )}
+              </SubDiv>
+            </MainDiv>
+          )}
 
-          {entry.cave &&
-            entry.cave.length && (
-              <div>
-                <ImageElement src="../../../../../images/length.svg" alt="" />
-                <Translate>Length</Translate>
-                {' : '}
-                <Info>
-                  {entry.cave.length}
-                  {' m'}
-                </Info>
-              </div>
-            )}
+          {entry.cave && entry.cave.depth && (
+            <div>
+              <ImageElement src="../../../../../images/depth.svg" alt="" />
+              <Translate>Depth</Translate>
+              {' : '}
+              <Info>
+                {entry.cave.depth}
+                {' m'}
+              </Info>
+            </div>
+          )}
+
+          {entry.cave && entry.cave.length && (
+            <div>
+              <ImageElement src="../../../../../images/length.svg" alt="" />
+              <Translate>Length</Translate>
+              {' : '}
+              <Info>
+                {entry.cave.length}
+                {' m'}
+              </Info>
+            </div>
+          )}
         </div>
       </React.Fragment>
     </Popup>

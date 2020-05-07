@@ -74,7 +74,10 @@ export const wikiBBSLinks = generateLinks(
   'https://wiki.grottocenter.org/wiki/GrottoCenter:%s/bbs',
   'en',
 );
-export const rssLinks = generateLinks('http://www.grottocenter.org/html/rss_%s.xml', 'en');
+export const rssLinks = generateLinks(
+  'http://www.grottocenter.org/html/rss_%s.xml',
+  'en',
+);
 export const legalLinks = generateLinks(
   'https://wiki.grottocenter.org/wiki/GrottoCenter:%s/Legal_and_Privacy_Statement',
   'en',
@@ -123,7 +126,8 @@ export const bloggerIcons = {
 // ===== Paypal
 export const paypalId = 'TJEU7C2TZ356Y';
 export const paypalLink = 'https://www.paypal.com/cgi-bin/webscr';
-export const paypalImgLink = 'https://www.paypalobjects.com/fr_FR/i/scr/pixel.gif';
+export const paypalImgLink =
+  'https://www.paypalobjects.com/fr_FR/i/scr/pixel.gif';
 
 // ===== Grottocenter API routes
 export const dynamicNumbersUrl = {
@@ -144,6 +148,7 @@ export const findBbsUrl = `/api/${apiVersion}/bbs/`;
 export const advancedsearchUrl = `/api/${apiVersion}/advanced-search`;
 export const quicksearchUrl = `/api/${apiVersion}/search`;
 export const subthemesUrl = `/api/${apiVersion}/bbs/subthemes`;
+export const getEntryUrl = `/api/${apiVersion}/entries/`;
 
 // ===== Grottocenter Client routes
 export const swaggerLinkV1 = '/ui/swagger/1';

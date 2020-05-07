@@ -14,10 +14,10 @@ import Admin from './Admin';
 import AdvancedSearchPage from './AdvancedSearchPage';
 import Faq from '../components/appli/Faq';
 import LatestBlogNewsSection from '../components/homepage/LatestBlogNewsSection';
-import Entries from '../components/appli/entries/Index';
 import Convert from '../components/common/map/Convert';
-import Layout from '../components/common/Layout';
+import Layout from '../components/common/Layouts/Main';
 import QuickSearch from '../features/QuickSearch';
+import EntryPage from './Entry';
 
 const Application = () => {
   const dispatch = useDispatch();
@@ -36,7 +36,7 @@ const Application = () => {
         <Route exact path="/ui/" component={Dashboard} />
         <Route path="/ui/search" component={AdvancedSearchPage} />
         <Route path="/ui/api" component={Api} />
-        <Route path="/ui/entries" component={Entries} />
+        <Route path="/ui/entries/:id?" component={EntryPage} />
         <Route path="/ui/faq" component={Faq} />
         <Route path="/ui/testConvert" component={Convert} />
         <Route path="/ui/map/:target?" component={MapContainer} />

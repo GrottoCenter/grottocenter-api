@@ -4,8 +4,8 @@ import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import ErrorBoundary from 'react-error-boundary';
 import { Fade } from '@material-ui/core';
-import AppBar from '../AppBar';
-import SideMenu from '../SideMenu';
+import AppBar from '../../AppBar';
+import SideMenu from '../../SideMenu';
 
 const MainWrapper = styled.main`
   flex-grow: 1;

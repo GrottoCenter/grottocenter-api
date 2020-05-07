@@ -1,6 +1,7 @@
 /* eslint-disable no-nested-ternary */
 import React from 'react';
 import PropTypes from 'prop-types';
+import { injectIntl, intlShape } from 'react-intl';
 import { withStyles } from '@material-ui/core/styles';
 import { withRouter } from 'react-router-dom';
 import styled from 'styled-components';
@@ -23,7 +24,6 @@ import _ from 'lodash';
 import Translate from '../../common/Translate';
 
 import SearchTableActions from './SearchTableActions';
-import { detailPageV2Links } from '../../../conf/Config';
 
 const StyledTableFooter = styled.div`
   align-items: center;
@@ -98,7 +98,7 @@ class SearchResultsTable extends React.Component {
 
   // ===== Table headers ===== //
   entriesTableHead = () => {
-    const { intl } = this.context;
+    const { intl } = this.props;
     return (
       <TableHead>
         <TableRow>
@@ -149,7 +149,7 @@ class SearchResultsTable extends React.Component {
   };
 
   groupsTableHead = () => {
-    const { intl } = this.context;
+    const { intl } = this.props;
     return (
       <TableHead>
         <TableRow>
@@ -187,7 +187,7 @@ class SearchResultsTable extends React.Component {
   };
 
   massifsTableHead = () => {
-    const { intl } = this.context;
+    const { intl } = this.props;
     return (
       <TableHead>
         <TableRow>
@@ -249,18 +249,22 @@ class SearchResultsTable extends React.Component {
   handleRowClick = (id) => {
     const { resourceType } = this.props;
 
-    if (resourceType === 'entries') {
-      const externalLink = `${
-        detailPageV2Links[locale] !== undefined
-          ? detailPageV2Links[locale]
-          : detailPageV2Links['*']
-      }&category=entry&id=${id}`; //eslint-disable-line
-      window.open(externalLink, '_blank');
+    switch (resourceType) {
+      case 'entries':
+        window.open(`/ui/entries/${id}`, '_blank');
+        break;
+      case 'grottos':
+        window.open(`/ui/groups/${id}`, '_blank');
+        break;
+      case 'massifs':
+        window.open(`/ui/massifs/${id}`, '_blank');
+        break;
+      case 'bbs':
+        window.open(`/ui/bbs/${id}`, '_blank');
+        break;
+      default:
+        break;
     }
-
-    if (resourceType === 'grottos') window.open(`/ui/groups/${id}`, '_blank');
-    if (resourceType === 'massifs') window.open(`/ui/massifs/${id}`, '_blank');
-    if (resourceType === 'bbs') window.open(`/ui/bbs/${id}`, '_blank');
   };
 
   handleChangePage = (event, newPage) => {
@@ -393,9 +397,9 @@ class SearchResultsTable extends React.Component {
       isLoadingFullData,
       wantToDownloadCSV,
       fullResults,
+      intl,
     } = this.props;
     const { from, page, size } = this.state;
-    const { intl } = this.context;
 
     let ResultsTableHead;
     if (resourceType === 'entries') ResultsTableHead = this.entriesTableHead;
@@ -638,6 +642,7 @@ SearchResultsTable.propTypes = {
   wantToDownloadCSV: PropTypes.bool.isRequired,
   totalNbResults: PropTypes.number.isRequired,
   fullResults: PropTypes.arrayOf(PropTypes.shape({})),
+  intl: PropTypes.shape(intlShape).isRequired,
 };
 
 SearchResultsTable.defaultProps = {
@@ -645,8 +650,4 @@ SearchResultsTable.defaultProps = {
   fullResults: undefined,
 };
 
-SearchResultsTable.contextTypes = {
-  intl: PropTypes.shape({}).isRequired,
-};
-
-export default withRouter(withStyles(styles)(SearchResultsTable));
+export default injectIntl(withRouter(withStyles(styles)(SearchResultsTable)));

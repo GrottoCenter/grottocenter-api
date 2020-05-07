@@ -52,7 +52,7 @@ const RightWrapper = styled.div`
 const AppBar = ({ toggleMenu, isAuth, AutoCompleteSearch }) => (
   <>
     <StyledMuiAppBar>
-      <Toolbar>
+      <Toolbar variant="dense">
         <IconButton
           color="inherit"
           aria-label="open drawer"
@@ -84,7 +84,7 @@ const AppBar = ({ toggleMenu, isAuth, AutoCompleteSearch }) => (
         <UserMenu isAuth={isAuth} />
       </Toolbar>
     </StyledMuiAppBar>
-    <Toolbar />
+    <Toolbar variant="dense" />
   </>
 );
 

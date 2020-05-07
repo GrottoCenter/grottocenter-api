@@ -3,6 +3,7 @@ import { isNil, length } from 'ramda';
 import { useDispatch, useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
 import { useHistory } from 'react-router-dom';
+import { useIntl } from 'react-intl';
 import AutoCompleteSearch from '../components/common/AutoCompleteSearch';
 import {
   fetchQuicksearchResult,
@@ -18,6 +19,7 @@ const renderOption = (option) => entityOptionForSelector(option);
 const getOptionLabel = (option) => option.name;
 
 const QuickSearch = ({ ...autoCompleteProps }) => {
+  const { formatMessage } = useIntl();
   const history = useHistory();
   const dispatch = useDispatch();
   const { results, errors, isLoading } = useSelector(
@@ -66,8 +68,7 @@ const QuickSearch = ({ ...autoCompleteProps }) => {
     <AutoCompleteSearch
       onInputChange={setInput}
       inputValue={input}
-      // Todo: add translation
-      label="Quick search"
+      label={formatMessage({ id: 'Quick search' })}
       suggestions={results}
       onSelection={handleSelection}
       renderOption={renderOption}
