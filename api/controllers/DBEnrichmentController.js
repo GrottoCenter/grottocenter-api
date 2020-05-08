@@ -10,7 +10,7 @@ const fs = require('fs');
 
 module.exports = {
   /**
-   * Checks if the script is already running, and if not, runs it with the parameters specified (country and type)
+   * Checks if the script is already running, and if not, runs it with the parameters specified (country, type and detail)
    */
   launchDBEnrichment: (req, res) => {
     DBEnrichmentService.isScriptRunning(SCRIPT_NAME).then((result) => {
@@ -26,16 +26,33 @@ module.exports = {
       } else {
         const country = req.param('country');
         const type = req.param('type');
+        const detail = req.param('detail');
         if (type) {
-          if (type !== 'completion') {
+          if (type !== 'all') {
             return res.badRequest(
-              'launchDBEnrichment : the optional parameter "type" can only be "completion"',
+              'launchDBEnrichment : the optional parameter "type" can only be "all"',
+            );
+          }
+        }
+        if (detail) {
+          if (
+            detail !== 'country' &&
+            detail !== 'region' &&
+            detail !== 'county' &&
+            detail !== 'city'
+          ) {
+            return res.badRequest(
+              'launchDBEnrichment : the optional parameter "detail" can only be "country", "region", "county" or "city"',
             );
           }
         }
         DBEnrichmentService.runScript(
           SCRIPT_NAME + '.js',
-          [country ? country : 'all', type ? type : 'all'],
+          [
+            country ? country : 'all',
+            type ? type : 'completion',
+            detail ? detail : 'city',
+          ],
           (err) => {
             if (err) throw err;
           },

@@ -120,6 +120,32 @@ function countryCodeTransformer(codeCountry) {
 }
 
 /**
+ * Set fields to null if they are similar to avoid wrong information.
+ * @param entry
+ */
+function verifInfo(entry) {
+  if ((entry['region'] === entry['county']) === entry['city']) {
+    entry['region'] = entry['county'] = entry['city'] = null;
+  }
+  if (entry['county'] === entry['city']) {
+    entry['county'] = entry['city'] = null;
+  }
+  if (entry['region'] === entry['city']) {
+    entry['region'] = entry['city'] = null;
+  }
+  if (entry['countryName'] === entry['region']) {
+    entry['region'] = null;
+  }
+  if (entry['countryName'] === entry['county']) {
+    entry['county'] = null;
+  }
+  if (entry['countryName'] === entry['city']) {
+    entry['city'] = null;
+  }
+  return entry;
+}
+
+/**
  * Main of the DBEnrichment script.
  */
 async function enrichment() {
@@ -127,45 +153,47 @@ async function enrichment() {
     let allEntries = Array.from(res['results']);
     let i = 1;
     for (let entry of allEntries) {
-      const res = await reverseGeo(entry['latitude'], entry['longitude']);
+      let res = await reverseGeo(entry['latitude'], entry['longitude']);
+      res = verifInfo(res);
       // if the type parameter is completion, only fill the null fields, otherwise overwrite all the fields.
       if (process.argv[3] === 'completion') {
-        if (res['county']) {
-          if (entry['county'] === '' || entry['county'] === null) {
-            entry['county'] = res['county'];
-          }
-        }
-        if (res['country']) {
+        if (res['country'] && country) {
           res['country'] = countryCodeTransformer(res['country']);
           if (entry['country'] === '' || entry['country'] === null) {
             entry['country'] = res['country'];
           }
         }
-        if (res['region']) {
+        if (res['region'] && region) {
           if (entry['region'] === '' || entry['region'] === null) {
             entry['region'] = res['region'];
           }
         }
-        if (res['city']) {
+        if (res['county'] && county) {
+          if (entry['county'] === '' || entry['county'] === null) {
+            entry['county'] = res['county'];
+          }
+        }
+        if (res['city'] && city) {
           if (entry['city'] === '' || entry['city'] === null) {
             entry['city'] = res['city'];
           }
         }
       } else {
-        if (res['county']) {
-          entry['county'] = res['county'];
-        }
-        if (res['country']) {
+        if (res['country'] && country) {
           res['country'] = countryCodeTransformer(res['country']);
           entry['country'] = res['country'];
         }
-        if (res['region']) {
+        if (res['region'] && region) {
           entry['region'] = res['region'];
         }
-        if (res['city']) {
+        if (res['county'] && county) {
+          entry['county'] = res['county'];
+        }
+        if (res['city'] && city) {
           entry['city'] = res['city'];
         }
       }
+
       update(entry);
       const progress = i + ' / ' + allEntries.length;
       // Writes the progression in a tmp txt file to show progress on server side.
@@ -178,5 +206,25 @@ async function enrichment() {
 }
 
 process.title = 'DBenrichment';
+
+// Booleans to insure that the fields used are the ones specified as parameters.
+let city = false;
+let county = false;
+let region = false;
+let country = false;
+switch (process.argv[4]) {
+  case 'city':
+    city = county = region = country = true;
+    break;
+  case 'county':
+    county = region = country = true;
+    break;
+  case 'region':
+    region = country = true;
+    break;
+  case 'country':
+    country = true;
+}
+
 // Main launch
 enrichment();
