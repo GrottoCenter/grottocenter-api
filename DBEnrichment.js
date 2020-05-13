@@ -5,8 +5,7 @@ let querystring = require('querystring');
 const fs = require('fs');
 const os = require('os');
 
-const PATH_ALL_ENTRIES =
-  '/api/v1/advanced-search?resourceType=entries&complete=true&matchAllFields=true&from=0&size=10000';
+const PATH_ALL_ENTRIES = '/api/entries/findByCountry';
 
 const HOST = os.hostname();
 const PORT = 1337;
@@ -23,7 +22,7 @@ function findAllEntries(country) {
       path:
         country === 'all'
           ? PATH_ALL_ENTRIES
-          : PATH_ALL_ENTRIES + '&country=' + country,
+          : PATH_ALL_ENTRIES + '?country=' + country,
       method: 'GET',
     };
     const req = http.request(options, (res) => {
@@ -150,7 +149,7 @@ function verifInfo(entry) {
  */
 async function enrichment() {
   findAllEntries(process.argv[2]).then(async function(res) {
-    let allEntries = Array.from(res['results']);
+    let allEntries = Array.from(res);
     let i = 1;
     for (let entry of allEntries) {
       let res = await reverseGeo(entry['latitude'], entry['longitude']);

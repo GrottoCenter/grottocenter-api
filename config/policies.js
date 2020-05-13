@@ -51,6 +51,7 @@ module.exports.policies = {
     getPublicEntriesNumber: 'apiKeyAuth',
     getEntriesNumber: true,
     updateEntryAdministrative: true,
+    findByCountry: true,
   },
 
   'v1/EntryController': {

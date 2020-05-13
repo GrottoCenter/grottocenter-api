@@ -31,6 +31,27 @@ module.exports = {
       });
   },
 
+  findByCountry: (req, res, converter) => {
+    TEntry.find({
+      select: ['country', 'region', 'county', 'city', 'latitude', 'longitude'],
+      where: {
+        country: req.param('country'),
+      },
+      sort: 'id asc',
+    }).then(
+      (results) => {
+        if (!results) {
+          return res.notFound();
+        }
+        return res.json(results);
+      },
+      (err) => {
+        sails.log.error(err);
+        return res.serverError(`EntryController.findRandom error ${err}`);
+      },
+    );
+  },
+
   findAll: (req, res, converter) => {
     const apiControl = req.options.api;
     const parameters = {};

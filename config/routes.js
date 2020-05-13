@@ -183,6 +183,11 @@ module.exports.routes = {
     action: 'findRandom',
   },
 
+  'GET /api/entries/findByCountry': {
+    controller: 'Entry',
+    action: 'findByCountry',
+  },
+
   // /!\ DEPRECATED /!\
   'GET /api/v1/entry/publicCount': {
     controller: 'v1/Entry',
