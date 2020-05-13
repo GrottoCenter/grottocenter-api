@@ -12,8 +12,13 @@ module.exports = function(grunt) {
         filename: '_lang_.json',
         templateFn: function(strings) {
           strings.sort((a, b) => a.key.localeCompare(b.key));
-          const keys = _.pluck(strings, 'key');
-          const translationValues = _.pluck(strings, 'translation');
+          // Remove double backslashes added by Transifex when downloading the translations
+          const stringsCleaned = strings.map((s) => {
+            const newKey = s.key.replace(/\\/g, '');
+            return { ...s, key: newKey };
+          });
+          const keys = _.pluck(stringsCleaned, 'key');
+          const translationValues = _.pluck(stringsCleaned, 'translation');
           const obj = _.object(keys, translationValues);
           return JSON.stringify(obj, null, '\t');
         },
