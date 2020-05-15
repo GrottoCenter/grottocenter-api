@@ -2,10 +2,10 @@ import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import { useIntl } from 'react-intl';
 
-import Provider, { detailsType, EntryContext, positionType } from './Provider';
+import Provider, { detailsType, EntryContext } from './Provider';
 import Layout from '../../common/Layouts/Fixed';
 import FixedContent from '../../common/Layouts/Fixed/FixedContent';
-import Index from '../../common/CustomIcon';
+import CustomIcon from '../../common/CustomIcon';
 import EntryMap from './EntryMap';
 import Properties from './Properties';
 
@@ -40,7 +40,7 @@ export const Entry = ({ children }) => {
           title={name || ''}
           content={<EntryProperties />}
           footer={footer}
-          icon={<Index type="entry" />}
+          icon={<CustomIcon type="entry" />}
         />
       }
     >
@@ -61,7 +61,7 @@ Entry.propTypes = {
 
 HydratedEntry.propTypes = {
   details: detailsType.isRequired,
-  position: positionType.isRequired,
+  loading: PropTypes.bool,
   children: PropTypes.node.isRequired,
 };
 

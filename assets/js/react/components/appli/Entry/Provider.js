@@ -1,6 +1,6 @@
 import React, { useState, createContext, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { pathOr } from 'ramda';
+import { all, allPass, equals, is, length, pathOr, pipe } from 'ramda';
 
 const date = new Date();
 const todayDate = date.toISOString().substring(0, 10);
@@ -21,6 +21,9 @@ const defaultContext = {
     position: [51.505, -0.09],
   },
 };
+
+const isPair = pipe(length, equals(2));
+export const isValidCoordinates = allPass([is(Array), all(is(Number)), isPair]);
 
 export const EntryContext = createContext(defaultContext);
 
@@ -60,7 +63,7 @@ const Entry = ({ details, loading = true, children }) => {
 };
 
 export const detailsType = PropTypes.shape({
-  id: PropTypes.number,
+  id: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   name: PropTypes.string,
   localisation: PropTypes.string,
   depth: PropTypes.number,

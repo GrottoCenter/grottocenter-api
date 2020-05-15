@@ -1,9 +1,8 @@
 import React from 'react';
 import { storiesOf } from '@storybook/react';
-import { Card as MuiCard, Typography } from '@material-ui/core';
+import { Typography } from '@material-ui/core';
 import { useIntl } from 'react-intl';
 import PropTypes from 'prop-types';
-import styled from 'styled-components';
 import { boolean } from '@storybook/addon-knobs';
 
 import Properties from './Properties';
@@ -37,10 +36,6 @@ const details = {
   altitude: 748,
   isDivingCave: true,
 };
-
-const Card = styled(MuiCard)`
-  margin: ${({ theme }) => theme.spacing(2)}px;
-`;
 
 const Content = ({ title }) => {
   const { formatMessage } = useIntl();
@@ -78,14 +73,6 @@ const PropertiesWithState = () => {
       <EntryMap />
       <Properties />
     </>
-  );
-};
-
-const MapWithState = () => {
-  return (
-    <Card style={{ width: '500px' }}>
-      <EntryMap />
-    </Card>
   );
 };
 
@@ -128,7 +115,6 @@ storiesOf('Entry', module)
       {storyFn()}
     </StoryContextProvider>
   ))
-  .add('Map', () => <MapWithState />)
   .add('Properties', () => <PropertiesWithState />)
   .add('With Fixed-Content layout', () => <EntryWithContent />)
   .add('With Fixed-Content and Main Layout', () => (
