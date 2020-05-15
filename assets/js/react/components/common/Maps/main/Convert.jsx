@@ -9,8 +9,8 @@ import MenuItem from '@material-ui/core/MenuItem';
 import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
 import Divider from '@material-ui/core/Divider';
-import { unitsTab } from '../../../conf/ListGPSProj';
-import Translate from '../Translate';
+import { unitsTab } from '../../../../conf/ListGPSProj';
+import Translate from '../../Translate';
 
 //
 //

@@ -6,10 +6,10 @@ import DescriptionIcon from '@material-ui/icons/Description';
 import LocationCityIcon from '@material-ui/icons/LocationCity';
 import PlaceIcon from '@material-ui/icons/Place';
 import { withTheme } from '@material-ui/core/styles';
-import GCLink from '../GCLink';
-import { detailPageV2Links } from '../../../conf/Config';
-import withContext from '../../../helpers/Routing';
-import Translate from '../Translate';
+import GCLink from '../../GCLink';
+import { detailPageV2Links } from '../../../../conf/Config';
+import withContext from '../../../../helpers/Routing';
+import Translate from '../../Translate';
 
 //
 //

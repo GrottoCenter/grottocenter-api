@@ -28,18 +28,18 @@ import { withTheme } from '@material-ui/core/styles';
 import PopPop from 'react-poppop';
 import fetch from 'isomorphic-fetch';
 import { isMobileOnly, isMobile } from 'react-device-detect';
-import MapEntryMarker from './map/MapEntryMarker';
-import MapSelectedEntryMarker from './map/MapSelectedEntryMarker';
-import MapGrottoMarker from './map/MapGrottoMarker';
-import MapSelectedGrottoMarker from './map/MapSelectedGrottoMarker';
+import MapEntryMarker from './Maps/main/MapEntryMarker';
+import MapSelectedEntryMarker from './Maps/main/MapSelectedEntryMarker';
+import MapGrottoMarker from './Maps/main/MapGrottoMarker';
+import MapSelectedGrottoMarker from './Maps/main/MapSelectedGrottoMarker';
 import { focusZoom } from '../../conf/Config';
 import { layers } from '../../conf/MapLayersConfig';
 import { markers } from '../../conf/MapMarkersConfig';
 import Spinner from './Spinner';
 import MapGroupIcon from './MapGroupIcon';
-import Convert from './map/Convert';
+import Convert from './Maps/main/Convert';
 import Translate from './Translate';
-import MapCaveMarker from './map/MapCaveMarker';
+import MapCaveMarker from './Maps/main/MapCaveMarker';
 
 //
 //

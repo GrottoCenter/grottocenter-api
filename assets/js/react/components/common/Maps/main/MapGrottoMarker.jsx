@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Marker } from 'react-leaflet';
 import MapGrottosPopup from './MapGrottosPopup';
-import { markers } from '../../../conf/MapMarkersConfig';
+import { markers } from '../../../../conf/MapMarkersConfig';
 
 //
 //

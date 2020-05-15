@@ -3,9 +3,9 @@ import PropTypes from 'prop-types';
 import { Popup } from 'react-leaflet';
 import styled from 'styled-components';
 import DescriptionIcon from '@material-ui/icons/Description';
-import GCLink from '../GCLink';
-import { detailPageV2Links } from '../../../conf/Config';
-import withContext from '../../../helpers/Routing';
+import GCLink from '../../GCLink';
+import { detailPageV2Links } from '../../../../conf/Config';
+import withContext from '../../../../helpers/Routing';
 
 //
 //

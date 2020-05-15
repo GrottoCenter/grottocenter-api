@@ -14,7 +14,7 @@ import Admin from './Admin';
 import AdvancedSearchPage from './AdvancedSearchPage';
 import Faq from '../components/appli/Faq';
 import LatestBlogNewsSection from '../components/homepage/LatestBlogNewsSection';
-import Convert from '../components/common/map/Convert';
+import Convert from '../components/common/Maps/main/Convert';
 import Layout from '../components/common/Layouts/Main';
 import QuickSearch from '../features/QuickSearch';
 import EntryPage from './Entry';
