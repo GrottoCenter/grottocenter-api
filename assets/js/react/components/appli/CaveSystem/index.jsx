@@ -2,27 +2,27 @@ import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import { useIntl } from 'react-intl';
 
-import Provider, { detailsType, EntryContext } from './Provider';
 import Layout from '../../common/Layouts/Fixed';
 import FixedContent from '../../common/Layouts/Fixed/FixedContent';
 import CustomIcon from '../../common/CustomIcon';
-import EntryMap from './EntryMap';
+import EntriesMap from './EntriesMap';
+import Provider, { CaveContext, caveTypes } from './Provider';
 import Properties from './Properties';
 
-const EntryProperties = () => (
+const Content = () => (
   <>
-    <EntryMap />
+    <EntriesMap />
     <Properties />
   </>
 );
 
-export const Entry = ({ children }) => {
+export const CaveSystem = ({ children }) => {
   const { formatMessage } = useIntl();
   const {
     state: {
-      details: { name, author, creationDate, lastEditor, editionDate },
+      cave: { name, author, creationDate, lastEditor, editionDate },
     },
-  } = useContext(EntryContext);
+  } = useContext(CaveContext);
 
   const footer = `${formatMessage({ id: 'Created by' })}
         ${author} (${creationDate})
@@ -38,9 +38,9 @@ export const Entry = ({ children }) => {
       fixedContent={
         <FixedContent
           title={name || ''}
-          content={<EntryProperties />}
+          content={<Content />}
           footer={footer}
-          icon={<CustomIcon type="entry" />}
+          icon={<CustomIcon type="cave_system" />}
         />
       }
     >
@@ -49,20 +49,20 @@ export const Entry = ({ children }) => {
   );
 };
 
-const HydratedEntry = ({ children, ...props }) => (
+const HydratedCaveSystem = ({ children, ...props }) => (
   <Provider {...props}>
-    <Entry>{children}</Entry>
+    <CaveSystem>{children}</CaveSystem>
   </Provider>
 );
 
-Entry.propTypes = {
+CaveSystem.propTypes = {
   children: PropTypes.node.isRequired,
 };
 
-HydratedEntry.propTypes = {
-  details: detailsType.isRequired,
+HydratedCaveSystem.propTypes = {
+  data: caveTypes.isRequired,
   loading: PropTypes.bool,
   children: PropTypes.node.isRequired,
 };
 
-export default HydratedEntry;
+export default HydratedCaveSystem;

@@ -2,10 +2,10 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import { Typography } from '@material-ui/core';
-import Rating from '@material-ui/lab/Rating';
+import MuiRating from '@material-ui/lab/Rating';
 import StarBorderIcon from '@material-ui/icons/StarBorder';
 
-import Translate from '../../common/Translate';
+import Translate from '../Translate';
 
 const Wrapper = styled.div`
   display: flex;
@@ -14,13 +14,13 @@ const Wrapper = styled.div`
   padding: ${({ theme }) => theme.spacing(1)}px;
 `;
 
-const EntryRating = ({ value, label }) => {
+const Rating = ({ value, label }) => {
   return (
     <Wrapper>
       <Typography color="primary" component="legend">
         <Translate>{label}</Translate>
       </Typography>
-      <Rating
+      <MuiRating
         readOnly
         name={label}
         defaultValue={value}
@@ -31,9 +31,9 @@ const EntryRating = ({ value, label }) => {
   );
 };
 
-EntryRating.propTypes = {
+Rating.propTypes = {
   value: PropTypes.number.isRequired,
   label: PropTypes.string.isRequired,
 };
 
-export default EntryRating;
+export default Rating;

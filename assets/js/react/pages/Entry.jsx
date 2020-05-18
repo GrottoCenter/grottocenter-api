@@ -70,7 +70,7 @@ const EntryPage = () => {
   }&category=entry&id=${id}`;
 
   return (
-    <Entry loading={loading} details={details} position={details.coordinates}>
+    <Entry loading={loading} details={details}>
       <Content title="Description">
         <Typography>
           {formatMessage({ id: 'For more details please visit ' })}

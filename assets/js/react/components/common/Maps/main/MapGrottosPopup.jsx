@@ -6,8 +6,8 @@ import DescriptionIcon from '@material-ui/icons/Description';
 import LocationCityIcon from '@material-ui/icons/LocationCity';
 import PlaceIcon from '@material-ui/icons/Place';
 import { withTheme } from '@material-ui/core';
-import GCLink from '../GCLink';
-import { detailPageV2Links } from '../../../conf/Config';
+import GCLink from '../../GCLink';
+import { detailPageV2Links } from '../../../../conf/Config';
 
 const StyledTitle = styled.h5`
   text-align: center;

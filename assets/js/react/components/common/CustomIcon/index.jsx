@@ -14,7 +14,7 @@ const Img = styled.img`
   padding: ${({ theme }) => theme.spacing(0)}px;
 `;
 
-const Index = ({ type, size = 35, margin = '0px 4px 0px 0px' }) => (
+const CustomIcon = ({ type, size = 35, margin = '0px 4px 0px 0px' }) => (
   <Icon color="inherit" margin={margin} size={size}>
     <Img
       src={`../../../../images/iconsV3/${type}.svg`}
@@ -25,10 +25,10 @@ const Index = ({ type, size = 35, margin = '0px 4px 0px 0px' }) => (
   </Icon>
 );
 
-Index.propTypes = {
-  type: PropTypes.oneOf(['entry', 'depth', 'length']).isRequired,
+CustomIcon.propTypes = {
+  type: PropTypes.oneOf(['entry', 'depth', 'length', 'cave_system']).isRequired,
   size: PropTypes.number,
   margin: PropTypes.number,
 };
 
-export default Index;
+export default CustomIcon;

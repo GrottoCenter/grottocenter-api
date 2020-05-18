@@ -1,15 +1,15 @@
 import React from 'react';
 import { isNil } from 'ramda';
 import { useIntl } from 'react-intl';
-import { Tooltip, IconButton } from '@material-ui/core';
+import { Tooltip, Fab } from '@material-ui/core';
 import { Share, Print, GpsFixed, Map } from '@material-ui/icons';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
 import ReactToPrint from 'react-to-print';
 import { isMobile } from 'react-device-detect';
+import grey from '@material-ui/core/colors/grey';
 
 const Wrapper = styled.div`
-  background-color: ${({ theme }) => theme.palette.backgroundColor};
   position: sticky;
   top: ${({ theme }) => theme.appBarHeight}px;
   display: flex;
@@ -23,6 +23,13 @@ const Wrapper = styled.div`
   }
 `;
 
+const StyledFab = styled(Fab)`
+  margin: ${({ theme }) => theme.spacing(2)}px;
+  :disabled {
+    background-color: ${grey[100]};
+  }
+`;
+
 const ActionButton = ({ Icon, label, onClick }) => {
   const { formatMessage } = useIntl();
   const tooltipMessage = isNil(onClick)
@@ -32,9 +39,14 @@ const ActionButton = ({ Icon, label, onClick }) => {
   return (
     <Tooltip title={tooltipMessage}>
       <span>
-        <IconButton disabled={isNil(onClick)} onClick={onClick}>
+        <StyledFab
+          aria-label={label}
+          size="small"
+          disabled={isNil(onClick)}
+          onClick={onClick}
+        >
           {Icon}
-        </IconButton>
+        </StyledFab>
       </span>
     </Tooltip>
   );

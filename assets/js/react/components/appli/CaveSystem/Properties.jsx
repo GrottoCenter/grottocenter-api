@@ -2,7 +2,6 @@ import React, { useContext } from 'react';
 import { useIntl } from 'react-intl';
 import styled from 'styled-components';
 import {
-  GpsFixed,
   Terrain,
   Waves,
   CalendarToday,
@@ -10,9 +9,13 @@ import {
   TrendingUp,
   Public,
 } from '@material-ui/icons';
+
 import CustomIcon from '../../common/CustomIcon';
-import { Property, Rating } from '../../common/Properties';
-import { EntryContext, isValidCoordinates } from './Provider';
+import Rating from '../../common/Properties/Rating';
+import { isValidPositions } from '../../common/Maps/MultipleMarkers';
+import { Property } from '../../common/Properties';
+import EntriesSelection from './EntriesSelection';
+import { CaveContext } from './Provider';
 
 const Wrapper = styled.div`
   display: flex;
@@ -36,7 +39,7 @@ const SecondaryPropertiesWrapper = styled.div`
 const Properties = () => {
   const {
     state: {
-      details: {
+      cave: {
         localisation,
         depth,
         development,
@@ -45,30 +48,27 @@ const Properties = () => {
         accessRate,
         undergroundType,
         discoveryYear,
-        coordinates,
         mountain,
         altitude,
         isDivingCave,
       },
+      coordinates,
+      selectedEntries,
+      entries,
       loading,
     },
-  } = useContext(EntryContext);
+    action: { onSelectEntry },
+  } = useContext(CaveContext);
   const { formatMessage } = useIntl();
-  const makeCoordinatesValue = (coordinatesValue) =>
-    `${formatMessage({
-      id: 'Latitude',
-    })}: ${coordinatesValue[0].toFixed(4)} - ${formatMessage({
-      id: 'Longitude',
-    })}: ${coordinatesValue[1].toFixed(4)}`;
 
   return (
     <Wrapper>
-      {isValidCoordinates(coordinates) && (
-        <Property
+      {isValidPositions(coordinates) && (
+        <EntriesSelection
+          onSelect={onSelectEntry}
           loading={loading}
-          label={formatMessage({ id: 'Coordinates' })}
-          value={makeCoordinatesValue(coordinates)}
-          icon={<GpsFixed fontSize="large" color="primary" />}
+          entries={entries}
+          selection={selectedEntries}
         />
       )}
       <Property

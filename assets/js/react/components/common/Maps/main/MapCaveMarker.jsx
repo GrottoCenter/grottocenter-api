@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Marker, Tooltip } from 'react-leaflet';
-import { markers } from '../../../conf/MapMarkersConfig';
+import { markers } from '../../../../conf/MapMarkersConfig';
 
 //
 //
