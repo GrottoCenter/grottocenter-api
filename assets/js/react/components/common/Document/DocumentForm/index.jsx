@@ -9,7 +9,6 @@ import {
   Step,
   StepLabel,
   Stepper,
-  Typography,
 } from '@material-ui/core';
 import NavigateNextIcon from '@material-ui/icons/NavigateNext';
 import NavigateBeforeIcon from '@material-ui/icons/NavigateBefore';

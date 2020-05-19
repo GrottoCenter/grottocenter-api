@@ -42,7 +42,7 @@ const FixedContent = ({ title, icon, content, footer, onEdit }) => {
       <CardHeader
         title={
           <Title>
-            <Typography variant="h5" color="secondary">
+            <Typography variant="h1" color="secondary">
               {title}
             </Typography>
             {!isNil(icon) && icon}

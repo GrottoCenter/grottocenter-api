@@ -1,5 +1,9 @@
 import { brown, blue, orange, grey } from '@material-ui/core/colors';
-import { createMuiTheme, fade } from '@material-ui/core/styles';
+import {
+  createMuiTheme,
+  fade,
+  responsiveFontSizes,
+} from '@material-ui/core/styles';
 import { isMobile } from 'react-device-detect';
 
 const fontFamily = [
@@ -81,6 +85,21 @@ export const overridings = {
   typography: {
     fontFamily,
     htmlFontSize: 10,
+    h1: {
+      fontSize: '4.2rem',
+    },
+    h2: {
+      fontSize: '3.5rem',
+    },
+    h3: {
+      fontSize: '2.9rem',
+    },
+    h4: {
+      fontSize: '2.4rem',
+    },
+    h5: {
+      fontSize: '2rem',
+    },
   },
   // https://material-ui.com/customization/globals/#default-props
   props: {
@@ -199,4 +218,4 @@ export const overridings = {
   },
 };
 
-export default createMuiTheme(overridings);
+export default responsiveFontSizes(createMuiTheme(overridings));
