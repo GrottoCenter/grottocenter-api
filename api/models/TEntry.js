@@ -55,6 +55,13 @@ module.exports = {
       columnName: 'Country',
     },
 
+    county: {
+      type: 'string',
+      maxLength: 32,
+      columnName: 'County',
+      allowNull: true,
+    },
+
     region: {
       type: 'string',
       maxLength: 32,

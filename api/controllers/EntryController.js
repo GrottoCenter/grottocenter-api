@@ -31,6 +31,27 @@ module.exports = {
       });
   },
 
+  findByCountry: (req, res, converter) => {
+    TEntry.find({
+      select: ['country', 'region', 'county', 'city', 'latitude', 'longitude'],
+      where: {
+        country: req.param('country'),
+      },
+      sort: 'id asc',
+    }).then(
+      (results) => {
+        if (!results) {
+          return res.notFound();
+        }
+        return res.json(results);
+      },
+      (err) => {
+        sails.log.error(err);
+        return res.serverError(`EntryController.findRandom error ${err}`);
+      },
+    );
+  },
+
   findAll: (req, res, converter) => {
     const apiControl = req.options.api;
     const parameters = {};
@@ -137,5 +158,18 @@ module.exports = {
       count.count = found;
       return ControllerService.treat(req, err, count, params, res);
     });
+  },
+
+  updateEntryAdministrative: (req, res) => {
+    const { county, id, country, region, city } = req.body;
+    TEntry.updateOne({ id: id })
+      .set({ county: county, country: country, region: region, city: city })
+      .exec((err, found) => {
+        if (err) {
+          return res.json({ msg: 'Update failed for row : ' + id });
+        } else {
+          return res.json(found);
+        }
+      });
   },
 };
