@@ -1,20 +1,10 @@
-import {
-  Button as MuiButton,
-  IconButton,
-  Menu,
-  MenuItem,
-} from '@material-ui/core';
+import { Button, IconButton, Menu, MenuItem } from '@material-ui/core';
 import AccountCircle from '@material-ui/icons/AccountCircle';
 import React from 'react';
 import { isMobileOnly } from 'react-device-detect';
 import PropTypes from 'prop-types';
-import styled from 'styled-components';
 
 import Translate from '../Translate';
-
-const Button = styled(MuiButton)`
-  padding-right: 0;
-`;
 
 const UserMenu = ({ onLoginClick, onLogoutClick, isAuth }) => {
   const [anchorEl, setAnchorEl] = React.useState(null);
@@ -39,11 +29,7 @@ const UserMenu = ({ onLoginClick, onLogoutClick, isAuth }) => {
     <>
       {!isAuth ? (
         <span>
-          <Button
-            startIcon={<AccountCircle />}
-            color="inherit"
-            onClick={onLoginClick}
-          >
+          <Button startIcon={<AccountCircle />} onClick={onLoginClick}>
             {!isMobileOnly && <Translate>Log in</Translate>}
           </Button>
         </span>

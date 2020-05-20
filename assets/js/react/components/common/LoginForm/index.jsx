@@ -109,9 +109,9 @@ const LoginForm = ({
           />
         </FormControl>
 
-        {authError && (
+        {authError !== '' && (
           <FormControl>
-            <Fade in={authError}>
+            <Fade in={authError !== ''}>
               <ErrorText>
                 <Translate>{authError}</Translate>
               </ErrorText>

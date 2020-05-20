@@ -1,11 +1,8 @@
 import React from 'react';
 import { storiesOf } from '@storybook/react';
 import { action } from '@storybook/addon-actions';
-import { Button, Divider } from '@material-ui/core';
-import SendIcon from '@material-ui/icons/Send';
-import ClearIcon from '@material-ui/icons/Clear';
+import { Divider } from '@material-ui/core';
 import FaceIcon from '@material-ui/icons/Face';
-import { FormattedMessage } from 'react-intl';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
 
@@ -18,7 +15,7 @@ const DefaultLoginForm = () => {
 
   const onLogin = (e) => {
     e.preventDefault();
-    window.alert('form submitted');
+    window.alert('form submitted'); // eslint-disable-line no-alert
   };
   return (
     <LoginForm
@@ -27,6 +24,7 @@ const DefaultLoginForm = () => {
       password={password}
       onPasswordChange={setPassword}
       onLogin={onLogin}
+      authError=""
     />
   );
 };
@@ -95,36 +93,8 @@ const DialogLoginForm = ({
 
   const onLogin = (e) => {
     e.preventDefault();
-    window.alert('form submitted');
+    window.alert('form submitted'); // eslint-disable-line no-alert
   };
-
-  const ClearButton = () => (
-    <Button
-      disabled={email === '' && password === ''}
-      key={0}
-      onClick={handleReset}
-      color="primary"
-    >
-      <>
-        <ClearIcon color="inherit" />
-        <FormattedMessage id="Clear" />
-      </>
-    </Button>
-  );
-
-  const LoginButton = () => (
-    <Button
-      disabled={email === '' || password === ''}
-      key={1}
-      onClick={handleReset}
-      color="primary"
-    >
-      <>
-        <SendIcon color="inherit" />
-        <FormattedMessage id="Login" />
-      </>
-    </Button>
-  );
 
   return (
     <StandardDialog
@@ -132,7 +102,6 @@ const DialogLoginForm = ({
       open={isOpen}
       onClose={action('onClose')}
       title={<Title />}
-      actions={[<ClearButton />, <LoginButton />]}
     >
       <LoginForm
         email={email}
