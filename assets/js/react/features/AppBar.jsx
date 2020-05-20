@@ -8,10 +8,8 @@ import {
   displayLoginDialog,
   hideLoginDialog,
   postLogout,
-  postLogin,
 } from '../actions/Auth';
-import AppBar from '../components/common/AppBar';
-import Translate from '../components/common/Translate';
+import AppBarComponent from '../components/common/AppBar';
 import isAuth from '../helpers/AuthHelper';
 
 // eslint-disable-next-line react/prop-types
@@ -23,21 +21,10 @@ const HeaderAutoCompleteSearch = ({ isSideMenuOpen, HeaderQuickSearch }) => (
   </Fade>
 );
 
-const AppBarProvider = ({
-  toggleSideMenu,
-  isSideMenuOpen,
-  HeaderQuickSearch,
-}) => {
+const AppBar = ({ toggleSideMenu, isSideMenuOpen, HeaderQuickSearch }) => {
   const dispatch = useDispatch();
   const authState = useSelector((state) => state.auth);
   const history = useHistory();
-  const [email, setEmail] = React.useState('');
-  const [password, setPassword] = React.useState('');
-
-  const onLogin = (event) => {
-    event.preventDefault();
-    dispatch(postLogin(email, password));
-  };
 
   const onLoginClick = () =>
     authState.isLoginDialogDisplayed
@@ -49,31 +36,12 @@ const AppBarProvider = ({
     history.push('/');
   };
 
-  const appBarManager = {
-    toggleMenu: toggleSideMenu,
-    isAuth: isAuth(),
-    onLoginClick,
-    onLogoutClick,
-  };
-
-  const loginManager = {
-    onLogin: (e) => onLogin(e),
-    email,
-    onEmailChange: setEmail,
-    password,
-    onPasswordChange: setPassword,
-    isFetching: authState.isFetching,
-    open: authState.isLoginDialogDisplayed,
-    onClose: () => dispatch(hideLoginDialog()),
-    title: <Translate>Log in</Translate>,
-    actions: [],
-    authError: authState.errorMessage,
-  };
-
   return (
-    <AppBar
-      AppBarManager={appBarManager}
-      LoginManager={loginManager}
+    <AppBarComponent
+      toggleMenu={toggleSideMenu}
+      isAuth={isAuth()}
+      onLoginClick={onLoginClick}
+      onLogoutClick={onLogoutClick}
       AutoCompleteSearch={() => (
         <HeaderAutoCompleteSearch
           isSideMenuOpen={isSideMenuOpen}
@@ -84,7 +52,7 @@ const AppBarProvider = ({
   );
 };
 
-AppBarProvider.propTypes = {
+AppBar.propTypes = {
   isSideMenuOpen: PropTypes.bool.isRequired,
   toggleSideMenu: PropTypes.func.isRequired,
   HeaderQuickSearch: PropTypes.oneOfType([
@@ -94,4 +62,4 @@ AppBarProvider.propTypes = {
   ]).isRequired,
 };
 
-export default AppBarProvider;
+export default AppBar;

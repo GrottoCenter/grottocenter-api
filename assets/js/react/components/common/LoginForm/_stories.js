@@ -25,7 +25,7 @@ const DefaultLoginForm = () => {
       password={password}
       onPasswordChange={setPassword}
       onLogin={onLogin}
-      authError=""
+      authErrors={[]}
     />
   );
 };
@@ -51,7 +51,7 @@ const Title = () => (
 const DialogLoginForm = ({
   isOpen = true,
   isLoading = false,
-  authError = '',
+  authErrors = [],
   initialEmail = '',
   initialPassword = '',
 }) => {
@@ -119,14 +119,14 @@ const DialogLoginForm = ({
         onEmailChange={setEmail}
         password={password}
         onPasswordChange={setPassword}
-        authError={authError}
+        authErrors={authErrors}
       />
     </StandardDialog>
   );
 };
 
 DialogLoginForm.propTypes = {
-  authError: PropTypes.string,
+  authErrors: PropTypes.string,
   initialEmail: PropTypes.string,
   initialPassword: PropTypes.string,
   isOpen: PropTypes.bool,
@@ -138,8 +138,11 @@ storiesOf('Login', module)
   .add('In Dialog', () => <DialogLoginForm />)
   .add('In Dialog, with error', () => (
     <DialogLoginForm
-      authError="Invalid email or password."
-      initialEmail="wrong@email.com"
-      initialPassword="wrongPassword"
+      authErrors={[
+        'You must provide a valid email.',
+        'You must provide a password.',
+      ]}
+      initialEmail="wrongEmail.com"
+      initialPassword=""
     />
   ));

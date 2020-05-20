@@ -9,6 +9,8 @@ export const FETCH_LOGIN_FAILURE = 'FETCH_LOGIN_FAILURE';
 export const DISPLAY_LOGIN_DIALOG = 'DISPLAY_LOGIN_DIALOG';
 export const HIDE_LOGIN_DIALOG = 'HIDE_LOGIN_DIALOG';
 
+export const SET_AUTH_ERROR_MESSAGES = 'SET_AUTH_ERROR_MESSAGES';
+
 export const LOGOUT = 'LOGOUT';
 
 // ==========
@@ -23,9 +25,9 @@ export const fetchLoginSuccess = (account, token) => ({
   token,
 });
 
-export const fetchLoginFailure = (errorMessage) => ({
+export const fetchLoginFailure = (errorMessages) => ({
   type: FETCH_LOGIN_FAILURE,
-  errorMessage,
+  errorMessages,
 });
 
 export const displayLoginDialog = () => ({
@@ -39,6 +41,17 @@ export const hideLoginDialog = () => ({
 export const logout = () => ({
   type: LOGOUT,
 });
+
+export const setAuthErrorMessagesAction = (errorMessages) => ({
+  type: SET_AUTH_ERROR_MESSAGES,
+  errorMessages,
+});
+
+export function setAuthErrorMessages(errorMessages) {
+  return (dispatch) => {
+    dispatch(setAuthErrorMessagesAction(errorMessages));
+  };
+}
 
 export function postLogout() {
   return (dispatch) => {
@@ -59,12 +72,15 @@ export function postLogin(contactEmail, password) {
     return fetch(loginUrl, requestOptions)
       .then((response) => {
         if (response.status >= 400) {
-          let errorMessage = `Fetching ${loginUrl} status: ${response.status}`;
+          const errorMessages = [];
           if (response.status === 401) {
-            errorMessage = 'Invalid email or password.';
+            errorMessages.push('Invalid email or password.');
           }
-          dispatch(fetchLoginFailure(errorMessage));
-          throw new Error(errorMessage);
+          dispatch(fetchLoginFailure(errorMessages));
+          throw new Error(
+            `Fetching ${loginUrl} status: ${response.status}`,
+            errorMessages,
+          );
         }
         return response.json();
       })

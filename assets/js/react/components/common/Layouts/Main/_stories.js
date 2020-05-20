@@ -2,10 +2,9 @@ import React from 'react';
 import styled from 'styled-components';
 import { Map, Marker, Popup, TileLayer } from 'react-leaflet';
 import { storiesOf } from '@storybook/react';
-import { Fade, Typography } from '@material-ui/core';
+import { Typography } from '@material-ui/core';
 
 import AutoCompleteSearch from '../../AutoCompleteSearch';
-
 import AppBar from '../../AppBar';
 import Layout from './index';
 
@@ -25,62 +24,20 @@ export const Search = () => (
   />
 );
 
-const FakeAppBarProvider = ({
-  toggleSideMenu, // eslint-disable-line react/prop-types
+// Export for stories
+export const FakeAppBar = ({
   isSideMenuOpen, // eslint-disable-line react/prop-types
-  HeaderQuickSearch, // eslint-disable-line react/prop-types
-}) => {
-  const [formValues, setValues] = React.useState({ email: '', password: '' });
-  const [isLoginFormVisible, setIsLoginFormVisible] = React.useState(false);
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setValues({ ...formValues, [name]: value });
-  };
-
-  const onLogin = (event) => {
-    event.preventDefault();
-    window.alert('Action on log in'); // eslint-disable-line no-alert
-  };
-
-  const onLoginClick = () => setIsLoginFormVisible(true);
-  const onLogoutClick = () => window.alert('Log out click'); // eslint-disable-line no-alert
-
-  const appBarManager = {
-    toggleMenu: toggleSideMenu,
-    isAuth: false,
-    onLoginClick,
-    onLogoutClick,
-  };
-
-  const loginManager = {
-    onLogin: (e) => onLogin(e),
-    email: formValues.email,
-    onEmailChange: (e) => handleInputChange(e),
-    password: formValues.password,
-    onPasswordChange: (e) => handleInputChange(e),
-    isFetching: false,
-    open: isLoginFormVisible,
-    onClose: () => setIsLoginFormVisible(false),
-    title: <>Log in</>,
-    actions: [],
-    authError: '',
-  };
-
-  return (
-    <AppBar
-      AppBarManager={appBarManager}
-      LoginManager={loginManager}
-      AutoCompleteSearch={() => (
-        <Fade in={!isSideMenuOpen}>
-          <div>
-            <HeaderQuickSearch />
-          </div>
-        </Fade>
-      )}
-    />
-  );
-};
+  toggleSideMenu, // eslint-disable-line react/prop-types
+}) => (
+  <AppBar
+    isSideMenuOpen={isSideMenuOpen}
+    isAuth
+    toggleMenu={toggleSideMenu}
+    onLoginClick={() => window.alert('click log in')} // eslint-disable-line no-alert
+    onLogoutClick={() => window.alert('click log out')} // eslint-disable-line no-alert
+    AutoCompleteSearch={Search}
+  />
+);
 
 // eslint-disable-next-line react/prop-types
 export const Default = ({ children }) => {
@@ -90,13 +47,20 @@ export const Default = ({ children }) => {
     setToggleSideMenu(!isSideMenuOpen);
   };
 
+  const FakeAppBarWithProperties = () => (
+    <FakeAppBar
+      isSideMenuOpen={isSideMenuOpen}
+      toggleSideMenu={toggleSideMenu}
+    />
+  );
+
   return (
     <Layout
+      AppBar={FakeAppBarWithProperties}
       isSideMenuOpen={isSideMenuOpen}
       toggleSideMenu={toggleSideMenu}
       HeaderQuickSearch={Search}
       SideBarQuickSearch={Search}
-      AppBarProvider={FakeAppBarProvider}
     >
       {children}
     </Layout>
@@ -240,6 +204,13 @@ const WithMap = () => {
     zoom: 13,
   });
 
+  const FakeAppBarWithProperties = () => (
+    <FakeAppBar
+      isSideMenuOpen={isSideMenuOpen}
+      toggleSideMenu={toggleSideMenu}
+    />
+  );
+
   const position = [state.lat, state.lng];
   return (
     <Layout
@@ -247,7 +218,7 @@ const WithMap = () => {
       toggleSideMenu={toggleSideMenu}
       HeaderQuickSearch={Search}
       SideBarQuickSearch={Search}
-      AppBarProvider={FakeAppBarProvider}
+      AppBar={FakeAppBarWithProperties}
     >
       <StyledMap center={position} zoom={state.zoom}>
         <TileLayer

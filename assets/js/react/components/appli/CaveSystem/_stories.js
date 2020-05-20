@@ -10,7 +10,7 @@ import { boolean } from '@storybook/addon-knobs';
 
 import Provider, { CaveContext } from './Provider';
 import Layout from '../../common/Layouts/Main';
-import { Search } from '../../common/Layouts/Main/_stories';
+import { Search, FakeAppBar } from '../../common/Layouts/Main/_stories';
 import ScrollableContent from '../../common/Layouts/Fixed/ScrollableContent';
 import Properties from './Properties';
 import { CaveSystem } from './index';
@@ -135,6 +135,7 @@ const WithLayout = () => {
 
   return (
     <Layout
+      AppBar={FakeAppBar}
       isSideMenuOpen={isSideMenuOpen}
       toggleSideMenu={toggleSideMenu}
       HeaderQuickSearch={Search}

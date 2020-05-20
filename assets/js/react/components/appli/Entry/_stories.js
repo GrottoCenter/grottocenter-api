@@ -10,7 +10,7 @@ import EntryMap from './EntryMap';
 import Provider from './Provider';
 import { Entry } from './index';
 import Layout from '../../common/Layouts/Main';
-import { Search } from '../../common/Layouts/Main/_stories';
+import { Search, FakeAppBar } from '../../common/Layouts/Main/_stories';
 import ScrollableContent from '../../common/Layouts/Fixed/ScrollableContent';
 
 const date = new Date('2015-03');
@@ -99,9 +99,9 @@ const WithLayout = () => {
 
   return (
     <Layout
+      AppBar={FakeAppBar}
       isSideMenuOpen={isSideMenuOpen}
       toggleSideMenu={toggleSideMenu}
-      HeaderQuickSearch={Search}
       SideBarQuickSearch={Search}
     >
       <EntryWithContent />

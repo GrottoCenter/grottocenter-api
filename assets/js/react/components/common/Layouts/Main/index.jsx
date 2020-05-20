@@ -43,6 +43,11 @@ const Layout = ({
 );
 
 Layout.propTypes = {
+  AppBar: PropTypes.oneOfType([
+    PropTypes.node,
+    PropTypes.element,
+    PropTypes.func,
+  ]).isRequired,
   children: PropTypes.node,
   isSideMenuOpen: PropTypes.bool.isRequired,
   toggleSideMenu: PropTypes.func.isRequired,

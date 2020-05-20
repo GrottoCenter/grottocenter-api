@@ -28,6 +28,7 @@ const ErrorText = styled(Typography)`
   background-color: ${theme.palette.errorColor};
   border-radius: ${theme.shape.borderRadius};
   color: ${theme.palette.common.white};
+  margin: ${theme.spacing(0)}px 0;
   padding: ${theme.spacing(2)}px;
   `}
 `;
@@ -37,7 +38,7 @@ const LoginForm = ({
   onEmailChange,
   password,
   onPasswordChange,
-  authError,
+  authErrors,
 }) => {
   const [isPasswordVisible, setIsPasswordVisible] = React.useState(false);
 
@@ -67,6 +68,7 @@ const LoginForm = ({
             value={email}
             onChange={handleEmailChange}
             required
+            type="email"
           />
         </FormControl>
 
@@ -95,13 +97,15 @@ const LoginForm = ({
           />
         </FormControl>
 
-        {authError !== '' && (
+        {authErrors.length > 0 && (
           <FormControl>
-            <Fade in={authError !== ''}>
-              <ErrorText>
-                <Translate>{authError}</Translate>
-              </ErrorText>
-            </Fade>
+            {authErrors.map((error) => (
+              <Fade in={authErrors.length > 0} key={error}>
+                <ErrorText>
+                  <Translate>{error}</Translate>
+                </ErrorText>
+              </Fade>
+            ))}
           </FormControl>
         )}
       </FormWrapper>
@@ -110,7 +114,7 @@ const LoginForm = ({
 };
 
 LoginForm.propTypes = {
-  authError: PropTypes.string.isRequired,
+  authErrors: PropTypes.arrayOf(PropTypes.string).isRequired,
   email: PropTypes.string.isRequired,
   onEmailChange: PropTypes.func.isRequired,
   password: PropTypes.string.isRequired,

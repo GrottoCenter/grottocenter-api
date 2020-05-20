@@ -16,8 +16,11 @@ import AdvancedSearchPage from './AdvancedSearchPage';
 import Faq from '../components/appli/Faq';
 import LatestBlogNewsSection from '../components/homepage/LatestBlogNewsSection';
 import Layout from '../components/common/Layouts/Main';
+
+import LoginDialog from '../features/Login';
 import QuickSearch from '../features/QuickSearch';
-import AppBarProvider from '../features/AppBarProvider';
+import AppBar from '../features/AppBar';
+
 import EntryPage from './Entry';
 
 const Application = () => {
@@ -37,6 +40,7 @@ const Application = () => {
       toggleSideMenu={toggleSideMenu}
       SideBarQuickSearch={() => <QuickSearch />}
     >
+      <LoginDialog />
       <Switch>
         <Route exact path="/" component={HomePage} />
         <Route path="/admin" component={Admin} />
