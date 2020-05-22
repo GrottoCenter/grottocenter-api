@@ -17,12 +17,13 @@ import Faq from '../components/appli/Faq';
 import LatestBlogNewsSection from '../components/homepage/LatestBlogNewsSection';
 import Layout from '../components/common/Layouts/Main';
 import QuickSearch from '../features/QuickSearch';
+import AppBarProvider from '../features/AppBarProvider';
 import EntryPage from './Entry';
 
 const Application = () => {
   const dispatch = useDispatch();
   const isSideMenuOpen = useSelector((state) => state.sideMenu.open);
-
+  const toggleSideMenu = () => dispatch({ type: 'TOGGLE_SIDEMENU' });
   return (
     <Layout
       AppBar={() => (
@@ -33,9 +34,8 @@ const Application = () => {
         />
       )}
       isSideMenuOpen={isSideMenuOpen}
-      toggleSideMenu={() => dispatch({ type: 'TOGGLE_SIDEMENU' })}
+      toggleSideMenu={toggleSideMenu}
       SideBarQuickSearch={() => <QuickSearch />}
-      HeaderQuickSearch={() => <QuickSearch hasFixWidth={false} />}
     >
       <Switch>
         <Route exact path="/" component={HomePage} />

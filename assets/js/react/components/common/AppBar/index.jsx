@@ -10,10 +10,13 @@ import {
 import MenuIcon from '@material-ui/icons/Menu';
 import styled from 'styled-components';
 import { isMobileOnly } from 'react-device-detect';
+
 import LanguageSelector from '../LanguageSelector';
 import UserMenu from './User';
 import { logoGC } from '../../../conf/Config';
-import Login from '../../../features/Login';
+
+import StandardDialog from '../StandardDialog';
+import LoginForm from '../LoginForm';
 
 const StyledMuiAppBar = styled(MuiAppBar)`
   flex-grow: 1;
@@ -50,13 +53,7 @@ const RightWrapper = styled.div`
   display: flex;
 `;
 
-const AppBar = ({
-  toggleMenu,
-  isAuth,
-  AutoCompleteSearch,
-  onLoginClick,
-  onLogoutClick,
-}) => (
+const AppBar = ({ AppBarManager, AutoCompleteSearch, LoginManager }) => (
   <>
     <StyledMuiAppBar>
       <StandardDialog
@@ -81,7 +78,7 @@ const AppBar = ({
           color="inherit"
           aria-label="open drawer"
           edge="start"
-          onClick={toggleMenu}
+          onClick={AppBarManager.toggleMenu}
         >
           <MenuIcon />
         </IconButton>
@@ -106,9 +103,9 @@ const AppBar = ({
           </LanguageWrapper>
         </RightWrapper>
         <UserMenu
-          isAuth={isAuth}
-          onLoginClick={onLoginClick}
-          onLogoutClick={onLogoutClick}
+          isAuth={AppBarManager.isAuth}
+          onLoginClick={AppBarManager.onLoginClick}
+          onLogoutClick={AppBarManager.onLogoutClick}
         />
       </Toolbar>
     </StyledMuiAppBar>
@@ -117,17 +114,6 @@ const AppBar = ({
 );
 
 AppBar.propTypes = {
-  toggleMenu: PropTypes.func.isRequired,
-};
-
-export default AppBar;
-
-AppBar.propTypes = {
-  toggleMenu: PropTypes.func.isRequired,
-  // eslint-disable-next-line react/require-default-props
-  isAuth: PropTypes.bool.isRequired,
-  onLoginClick: PropTypes.func.isRequired,
-  onLogoutClick: PropTypes.func.isRequired,
   AutoCompleteSearch: PropTypes.oneOfType([
     PropTypes.node,
     PropTypes.element,
@@ -153,3 +139,5 @@ AppBar.propTypes = {
     authError: PropTypes.string,
   }),
 };
+
+export default AppBar;

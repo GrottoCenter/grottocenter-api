@@ -49,9 +49,14 @@ const Title = () => (
   </TitleWrapper>
 );
 
-const DialogLoginForm = ({ isOpen = true, authError = '' }) => {
-  const [email, setEmail] = React.useState('');
-  const [password, setPassword] = React.useState('');
+const DialogLoginForm = ({
+  isOpen = true,
+  authError = '',
+  initialEmail = '',
+  initialPassword = '',
+}) => {
+  const [email, setEmail] = React.useState(initialEmail);
+  const [password, setPassword] = React.useState(initialPassword);
 
   return (
     <>
@@ -142,13 +147,19 @@ const DialogLoginForm = ({ isOpen = true, authError = '' }) => {
 };
 
 DialogLoginForm.propTypes = {
-  isOpen: PropTypes.bool,
   authError: PropTypes.string,
+  initialEmail: PropTypes.string,
+  initialPassword: PropTypes.string,
+  isOpen: PropTypes.bool,
 };
 
 storiesOf('Login', module)
   .add('Default', () => <DefaultLoginForm />)
   .add('In Dialog', () => <DialogLoginForm />)
   .add('In Dialog, with error', () => (
-    <DialogLoginForm authError="Invalid email or password." />
+    <DialogLoginForm
+      authError="Invalid email or password."
+      initialEmail="wrong@email.com"
+      initialPassword="wrongPassword"
+    />
   ));

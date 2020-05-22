@@ -80,7 +80,7 @@ const UserMenu = ({ onLoginClick, onLogoutClick, isAuth }) => {
               <Translate>My Account</Translate>
             </MenuItem>
             <MenuItem onClick={handleLogoutClick}>
-              <Translate>Logout</Translate>
+              <Translate>Log out</Translate>
             </MenuItem>
           </Menu>
         </>

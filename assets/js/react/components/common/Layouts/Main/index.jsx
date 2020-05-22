@@ -38,19 +38,10 @@ const Layout = ({
   isSideMenuOpen,
   toggleSideMenu,
   SideBarQuickSearch,
-  HeaderQuickSearch,
+  AppBar,
 }) => (
   <>
-    <AppBar
-      toggleMenu={toggleSideMenu}
-      isAuth={isAuth}
-      AutoCompleteSearch={() => (
-        <HeaderAutoCompleteSearch
-          isSideMenuOpen={isSideMenuOpen}
-          HeaderQuickSearch={HeaderQuickSearch}
-        />
-      )}
-    />
+    <AppBar toggleSideMenu={toggleSideMenu} isSideMenuOpen={isSideMenuOpen} />
     <SideMenu
       isOpen={isSideMenuOpen}
       toggle={toggleSideMenu}
@@ -68,11 +59,6 @@ Layout.propTypes = {
   isSideMenuOpen: PropTypes.bool.isRequired,
   toggleSideMenu: PropTypes.func.isRequired,
   SideBarQuickSearch: PropTypes.oneOfType([
-    PropTypes.node,
-    PropTypes.element,
-    PropTypes.func,
-  ]).isRequired,
-  HeaderQuickSearch: PropTypes.oneOfType([
     PropTypes.node,
     PropTypes.element,
     PropTypes.func,
