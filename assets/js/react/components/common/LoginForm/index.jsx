@@ -2,13 +2,11 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { FormattedMessage } from 'react-intl';
 import {
-  Button,
   FormControl,
   InputLabel,
   FilledInput,
   InputAdornment,
   IconButton,
-  CircularProgress,
   Typography,
   Fade,
 } from '@material-ui/core';
@@ -25,22 +23,12 @@ const FormWrapper = styled.form`
   margin-bottom: 0;
 `;
 
-const LoginButton = styled(Button)`
-  display: block;
-  margin: auto;
-`;
-
-const CircularProgressCentered = styled(CircularProgress)`
-  display: block;
-  margin: auto;
-`;
-
 const ErrorText = styled(Typography)`
   ${({ theme }) => `
   background-color: ${theme.palette.errorColor};
-  border-radius: 3px;
+  border-radius: ${theme.shape.borderRadius};
   color: ${theme.palette.common.white};
-  padding: 0.5rem;
+  padding: ${theme.spacing(2)}px;
   `}
 `;
 
@@ -49,8 +37,6 @@ const LoginForm = ({
   onEmailChange,
   password,
   onPasswordChange,
-  onLogin,
-  isFetching,
   authError,
 }) => {
   const [isPasswordVisible, setIsPasswordVisible] = React.useState(false);
@@ -71,7 +57,7 @@ const LoginForm = ({
 
   return (
     <>
-      <FormWrapper onSubmit={onLogin}>
+      <FormWrapper>
         <FormControl variant="filled">
           <InputLabel htmlFor="input-with-icon-adornment">
             <FormattedMessage id="Email" />
@@ -118,16 +104,6 @@ const LoginForm = ({
             </Fade>
           </FormControl>
         )}
-
-        <FormControl>
-          {isFetching ? (
-            <CircularProgressCentered />
-          ) : (
-            <LoginButton type="submit" variant="contained" size="large">
-              <Translate>Log in</Translate>
-            </LoginButton>
-          )}
-        </FormControl>
       </FormWrapper>
     </>
   );
@@ -139,8 +115,6 @@ LoginForm.propTypes = {
   onEmailChange: PropTypes.func.isRequired,
   password: PropTypes.string.isRequired,
   onPasswordChange: PropTypes.func.isRequired,
-  onLogin: PropTypes.func.isRequired,
-  isFetching: PropTypes.bool.isRequired,
 };
 
 export default LoginForm;

@@ -1,10 +1,15 @@
 import React from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-
-import { hideLoginDialog, postLogin } from '../actions/Auth';
+import { Button, CircularProgress } from '@material-ui/core';
+import { useDispatch, useSelector } from 'react-redux';
+import { isEmpty, match } from 'ramda';
+import {
+  hideLoginDialog,
+  postLogin,
+  setAuthErrorMessages,
+} from '../actions/Auth';
+import Translate from '../components/common/Translate';
 import StandardDialog from '../components/common/StandardDialog';
 import LoginForm from '../components/common/LoginForm';
-import Translate from '../components/common/Translate';
 
 // ===========================
 
@@ -14,14 +19,10 @@ const isEmailValid = (email) => {
 };
 
 const Login = () => {
-  const [formValues, setValues] = React.useState({ email: '', password: '' });
-  const authState = useSelector((state) => state.auth);
   const dispatch = useDispatch();
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setValues({ ...formValues, [name]: value });
-  };
+  const authState = useSelector((state) => state.auth);
+  const [email, setEmail] = React.useState('');
+  const [password, setPassword] = React.useState('');
 
   const onLogin = (event) => {
     event.preventDefault();
@@ -62,15 +63,16 @@ const Login = () => {
       open={authState.isLoginDialogDisplayed}
       onClose={() => dispatch(hideLoginDialog())}
       title={<Translate>Log in</Translate>}
-      actions={[]}
+      actions={[LoginButton]}
     >
       <LoginForm
-        onLogin={onLogin}
-        email={formValues.email}
-        onEmailChange={handleInputChange}
-        password={formValues.password}
-        onPasswordChange={handleInputChange}
+        authErrors={authState.errorMessages}
+        email={email}
         isFetching={authState.isFetching}
+        onEmailChange={setEmail}
+        onLogin={onLogin}
+        onPasswordChange={setPassword}
+        password={password}
       />
     </StandardDialog>
   );

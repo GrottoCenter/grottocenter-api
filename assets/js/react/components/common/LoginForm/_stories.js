@@ -1,11 +1,12 @@
 import React from 'react';
 import { storiesOf } from '@storybook/react';
 import { action } from '@storybook/addon-actions';
-import { Divider } from '@material-ui/core';
+import { Button, CircularProgress, Divider } from '@material-ui/core';
 import FaceIcon from '@material-ui/icons/Face';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
 
+import Translate from '../Translate';
 import StandardDialog from '../StandardDialog';
 import LoginForm from './index';
 
@@ -49,6 +50,7 @@ const Title = () => (
 
 const DialogLoginForm = ({
   isOpen = true,
+  isLoading = false,
   authError = '',
   initialEmail = '',
   initialPassword = '',
@@ -102,13 +104,21 @@ const DialogLoginForm = ({
       open={isOpen}
       onClose={action('onClose')}
       title={<Title />}
+      actions={
+        isLoading ? (
+          <CircularProgress />
+        ) : (
+          <Button type="submit" variant="text" size="large" onClick={onLogin}>
+            <Translate>Log in</Translate>
+          </Button>
+        )
+      }
     >
       <LoginForm
         email={email}
         onEmailChange={setEmail}
         password={password}
         onPasswordChange={setPassword}
-        onLogin={onLogin}
         authError={authError}
       />
     </StandardDialog>
@@ -120,6 +130,7 @@ DialogLoginForm.propTypes = {
   initialEmail: PropTypes.string,
   initialPassword: PropTypes.string,
   isOpen: PropTypes.bool,
+  isLoading: PropTypes.bool,
 };
 
 storiesOf('Login', module)

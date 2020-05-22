@@ -28,11 +28,14 @@ const UserMenu = ({ onLoginClick, onLogoutClick, isAuth }) => {
   return (
     <>
       {!isAuth ? (
-        <span>
-          <Button startIcon={<AccountCircle />} onClick={onLoginClick}>
-            {!isMobileOnly && <Translate>Log in</Translate>}
-          </Button>
-        </span>
+        <Button
+          color="inherit"
+          onClick={onLoginClick}
+          startIcon={<AccountCircle />}
+          variant="text"
+        >
+          {!isMobileOnly && <Translate>Log in</Translate>}
+        </Button>
       ) : (
         <>
           <IconButton
@@ -59,10 +62,10 @@ const UserMenu = ({ onLoginClick, onLogoutClick, isAuth }) => {
             open={open}
             onClose={handleClose}
           >
-            <MenuItem onClick={handleClose}>
+            <MenuItem onClick={handleClose} disabled>
               <Translate>Profile</Translate>
             </MenuItem>
-            <MenuItem onClick={handleClose}>
+            <MenuItem onClick={handleClose} disabled>
               <Translate>My Account</Translate>
             </MenuItem>
             <MenuItem onClick={handleLogoutClick}>
