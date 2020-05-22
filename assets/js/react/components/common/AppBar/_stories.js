@@ -1,19 +1,21 @@
 import React from 'react';
-import { storiesOf } from '@storybook/react';
 import PropTypes from 'prop-types';
+import { storiesOf } from '@storybook/react';
+import { action } from '@storybook/addon-actions';
 
 import AppBar from './index';
 import AutoCompleteSearch from '../AutoCompleteSearch';
+import User from './User';
 
-const WithState = ({ isAuth }) => {
+const AppBarWithState = ({ isAuth }) => {
   const getOptionLabel = (option) => option.name;
   return (
     <>
       <AppBar
-        toggleMenu={() => window.alert('toggle side menu')} // eslint-disable-line no-alert
+        toggleMenu={action('toggle side menu')}
         isAuth={isAuth}
-        onLoginClick={() => window.alert('click log in')} // eslint-disable-line no-alert
-        onLogoutClick={() => window.alert('click log out')} // eslint-disable-line no-alert
+        onLoginClick={action('click log in')}
+        onLogoutClick={action('click log out')}
         AutoCompleteSearch={() => (
           <AutoCompleteSearch
             hasFixWidth={false}
@@ -31,10 +33,26 @@ const WithState = ({ isAuth }) => {
   );
 };
 
-WithState.propTypes = {
+AppBarWithState.propTypes = {
+  isAuth: PropTypes.bool.isRequired,
+};
+
+const UserWithState = ({ isAuth }) => {
+  return (
+    <User
+      isAuth={isAuth}
+      onLoginClick={action('onLoginClick')}
+      onLogoutClick={action('onLogouClick')}
+    />
+  );
+};
+
+UserWithState.propTypes = {
   isAuth: PropTypes.bool.isRequired,
 };
 
 storiesOf('AppBar', module)
-  .add('Logged', () => <WithState isAuth />)
-  .add('Not logged', () => <WithState isAuth={false} />);
+  .add('Logged', () => <AppBarWithState isAuth />)
+  .add('Not logged', () => <AppBarWithState isAuth={false} />)
+  .add('User menu, logged', () => <UserWithState isAuth />)
+  .add('User menu, not logged', () => <UserWithState isAuth={false} />);

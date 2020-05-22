@@ -1,7 +1,7 @@
 import React from 'react';
 import { storiesOf } from '@storybook/react';
 import { action } from '@storybook/addon-actions';
-import { Button, CircularProgress, Divider } from '@material-ui/core';
+import { Button, CircularProgress, Divider, Switch } from '@material-ui/core';
 import FaceIcon from '@material-ui/icons/Face';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
@@ -14,21 +14,27 @@ const DefaultLoginForm = () => {
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
 
-  const onLogin = (e) => {
-    e.preventDefault();
-    window.alert('form submitted'); // eslint-disable-line no-alert
-  };
   return (
     <LoginForm
       email={email}
       onEmailChange={setEmail}
       password={password}
       onPasswordChange={setPassword}
-      onLogin={onLogin}
+      onLogin={action('onLogin')}
       authErrors={[]}
     />
   );
 };
+
+const StoryControlsWrapper = styled.div`
+  background-color: ${({ theme }) => theme.palette.primary.light};
+  font-size: 1.5rem;
+  left: 0;
+  padding: 0.5rem;
+  position: absolute;
+  right: 0;
+  top: -75px;
+`;
 
 const TitleWrapper = styled.div`
   display: flex;
@@ -50,13 +56,14 @@ const Title = () => (
 
 const DialogLoginForm = ({
   isOpen = true,
-  isLoading = false,
   authErrors = [],
   initialEmail = '',
   initialPassword = '',
 }) => {
   const [email, setEmail] = React.useState(initialEmail);
   const [password, setPassword] = React.useState(initialPassword);
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [hasErrors, setHasErrors] = React.useState(false);
 
   return (
     <>
@@ -98,51 +105,42 @@ const DialogLoginForm = ({
     window.alert('form submitted'); // eslint-disable-line no-alert
   };
 
-  return (
-    <StandardDialog
-      buttonType="button"
-      open={isOpen}
-      onClose={action('onClose')}
-      title={<Title />}
-      actions={
-        isLoading ? (
-          <CircularProgress />
-        ) : (
-          <Button type="submit" variant="text" size="large" onClick={onLogin}>
-            <Translate>Log in</Translate>
-          </Button>
-        )
-      }
-    >
-      <LoginForm
-        email={email}
-        onEmailChange={setEmail}
-        password={password}
-        onPasswordChange={setPassword}
-        authErrors={authErrors}
-      />
-    </StandardDialog>
+          <Switch
+            checked={hasErrors}
+            onChange={(event) => setHasErrors(event.target.checked)}
+            color="primary"
+            inputProps={{ 'aria-label': 'primary checkbox' }}
+          />
+          <span>Has errors</span>
+        </StoryControlsWrapper>
+
+        <LoginForm
+          email={email}
+          onEmailChange={setEmail}
+          password={password}
+          onPasswordChange={setPassword}
+          authErrors={hasErrors ? authErrors : []}
+        />
+      </StandardDialog>
+    </>
   );
 };
 
 DialogLoginForm.propTypes = {
-  authErrors: PropTypes.string,
+  authErrors: PropTypes.arrayOf(PropTypes.string),
   initialEmail: PropTypes.string,
   initialPassword: PropTypes.string,
   isOpen: PropTypes.bool,
-  isLoading: PropTypes.bool,
 };
 
 storiesOf('Login', module)
   .add('Default', () => <DefaultLoginForm />)
-  .add('In Dialog', () => <DialogLoginForm />)
-  .add('In Dialog, with error', () => (
+  .add('In Dialog', () => (
     <DialogLoginForm
       authErrors={[
+        'You must provide an email.',
         'You must provide a valid email.',
         'You must provide a password.',
       ]}
-      initialEmail="wrongEmail.com"
-      initialPassword=""
     />
   ));

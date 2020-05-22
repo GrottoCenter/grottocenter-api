@@ -2,6 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { Map, Marker, Popup, TileLayer } from 'react-leaflet';
 import { storiesOf } from '@storybook/react';
+import { action } from '@storybook/addon-actions';
 import { Typography } from '@material-ui/core';
 
 import AutoCompleteSearch from '../../AutoCompleteSearch';
@@ -33,9 +34,9 @@ export const FakeAppBar = ({
     isSideMenuOpen={isSideMenuOpen}
     isAuth
     toggleMenu={toggleSideMenu}
-    onLoginClick={() => window.alert('click log in')} // eslint-disable-line no-alert
-    onLogoutClick={() => window.alert('click log out')} // eslint-disable-line no-alert
-    AutoCompleteSearch={Search}
+    onLoginClick={action('click log in')}
+    onLogoutClick={action('click log out')}
+    AutoCompleteSearch={!isSideMenuOpen ? Search : ''}
   />
 );
 
@@ -47,19 +48,11 @@ export const Default = ({ children }) => {
     setToggleSideMenu(!isSideMenuOpen);
   };
 
-  const FakeAppBarWithProperties = () => (
-    <FakeAppBar
-      isSideMenuOpen={isSideMenuOpen}
-      toggleSideMenu={toggleSideMenu}
-    />
-  );
-
   return (
     <Layout
-      AppBar={FakeAppBarWithProperties}
+      AppBar={FakeAppBar}
       isSideMenuOpen={isSideMenuOpen}
       toggleSideMenu={toggleSideMenu}
-      HeaderQuickSearch={Search}
       SideBarQuickSearch={Search}
     >
       {children}
@@ -204,21 +197,13 @@ const WithMap = () => {
     zoom: 13,
   });
 
-  const FakeAppBarWithProperties = () => (
-    <FakeAppBar
-      isSideMenuOpen={isSideMenuOpen}
-      toggleSideMenu={toggleSideMenu}
-    />
-  );
-
   const position = [state.lat, state.lng];
   return (
     <Layout
       isSideMenuOpen={isSideMenuOpen}
       toggleSideMenu={toggleSideMenu}
-      HeaderQuickSearch={Search}
       SideBarQuickSearch={Search}
-      AppBar={FakeAppBarWithProperties}
+      AppBar={FakeAppBar}
     >
       <StyledMap center={position} zoom={state.zoom}>
         <TileLayer
