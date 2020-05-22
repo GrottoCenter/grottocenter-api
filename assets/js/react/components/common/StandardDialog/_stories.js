@@ -14,7 +14,6 @@ const Content = styled.div`
 storiesOf('Standard dialog', module).add('Default', () => (
   <StandardDialog
     maxWidth="lg"
-    buttonType="button"
     open
     onClose={action('onClose')}
     title="title"

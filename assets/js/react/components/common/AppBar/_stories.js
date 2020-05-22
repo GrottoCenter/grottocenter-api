@@ -1,9 +1,7 @@
 import React from 'react';
 import { storiesOf } from '@storybook/react';
 import PropTypes from 'prop-types';
-import { Typography } from '@material-ui/core';
 
-import SideMenu from '../SideMenu';
 import AppBar from './index';
 import AutoCompleteSearch from '../AutoCompleteSearch';
 
@@ -19,12 +17,14 @@ const WithState = ({ isAuth = null }) => {
       <AppBar
         toggleMenu={toggleSideMenu}
         isAuth={isAuth}
+        onLoginClick={() => window.alert('click login')}
+        onLogoutClick={() => window.alert('click logout')}
         AutoCompleteSearch={() => (
           <AutoCompleteSearch
             hasFixWidth={false}
             onSelection={() => {}}
-            input={''}
-            inputValue={''}
+            input=""
+            inputValue=""
             onInputChange={() => {}}
             suggestions={[]}
             renderOption={() => {}}
@@ -41,6 +41,5 @@ WithState.propTypes = {
 };
 
 storiesOf('AppBar', module)
-  .add('Login disabled', () => <WithState />)
   .add('Logged', () => <WithState isAuth />)
   .add('Not logged', () => <WithState isAuth={false} />);

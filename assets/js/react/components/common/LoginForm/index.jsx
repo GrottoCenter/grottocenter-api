@@ -8,20 +8,21 @@ import {
   FilledInput,
   InputAdornment,
   IconButton,
+  CircularProgress,
+  Typography,
+  Fade,
 } from '@material-ui/core';
+
 import Visibility from '@material-ui/icons/Visibility';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
 import styled from 'styled-components';
 
 import Translate from '../Translate';
 
-const ColumnWrapper = styled.div`
+const FormWrapper = styled.form`
   display: flex;
   flex-direction: column;
-  margin: 1rem 20%;
-  @media (max-width: 768px) {
-    margin: 1rem 1rem;
-  }
+  margin-bottom: 0;
 `;
 
 const LoginButton = styled(Button)`
@@ -29,12 +30,28 @@ const LoginButton = styled(Button)`
   margin: auto;
 `;
 
-const Login = ({
-  username,
-  onUsernameChange,
+const CircularProgressCentered = styled(CircularProgress)`
+  display: block;
+  margin: auto;
+`;
+
+const ErrorText = styled(Typography)`
+  ${({ theme }) => `
+  background-color: ${theme.palette.errorColor};
+  border-radius: 3px;
+  color: ${theme.palette.common.white};
+  padding: 0.5rem;
+  `}
+`;
+
+const LoginForm = ({
+  email,
+  onEmailChange,
   password,
   onPasswordChange,
   onLogin,
+  isFetching,
+  authError,
 }) => {
   const [isPasswordVisible, setIsPasswordVisible] = React.useState(false);
 
@@ -45,14 +62,26 @@ const Login = ({
     event.preventDefault();
   };
 
+  const handleEmailChange = (event) => {
+    onEmailChange(event.target.value);
+  };
+  const handlePasswordChange = (event) => {
+    onPasswordChange(event.target.value);
+  };
+
   return (
     <>
-      <ColumnWrapper>
+      <FormWrapper onSubmit={onLogin}>
         <FormControl variant="filled">
           <InputLabel htmlFor="input-with-icon-adornment">
-            <FormattedMessage id="Username" />
+            <FormattedMessage id="Email" />
           </InputLabel>
-          <FilledInput value={username} onChange={onUsernameChange} />
+          <FilledInput
+            name="email"
+            value={email}
+            onChange={handleEmailChange}
+            required
+          />
         </FormControl>
 
         <FormControl variant="filled">
@@ -60,9 +89,10 @@ const Login = ({
             <FormattedMessage id="Password" />
           </InputLabel>
           <FilledInput
+            name="password"
             type={isPasswordVisible ? 'text' : 'password'}
             value={password}
-            onChange={onPasswordChange}
+            onChange={handlePasswordChange}
             endAdornment={
               <InputAdornment position="end">
                 <IconButton
@@ -75,29 +105,42 @@ const Login = ({
                 </IconButton>
               </InputAdornment>
             }
+            required
           />
         </FormControl>
-      </ColumnWrapper>
 
-      <LoginButton
-        className
-        type="button"
-        variant="contained"
-        size="large"
-        onClick={onLogin}
-      >
-        <Translate>Login</Translate>
-      </LoginButton>
+        {authError && (
+          <FormControl>
+            <Fade in={authError}>
+              <ErrorText>
+                <Translate>{authError}</Translate>
+              </ErrorText>
+            </Fade>
+          </FormControl>
+        )}
+
+        <FormControl>
+          {isFetching ? (
+            <CircularProgressCentered />
+          ) : (
+            <LoginButton type="submit" variant="contained" size="large">
+              <Translate>Log in</Translate>
+            </LoginButton>
+          )}
+        </FormControl>
+      </FormWrapper>
     </>
   );
 };
 
-Login.propTypes = {
-  username: PropTypes.string.isRequired,
-  onUsernameChange: PropTypes.func.isRequired,
+LoginForm.propTypes = {
+  authError: PropTypes.string.isRequired,
+  email: PropTypes.string.isRequired,
+  onEmailChange: PropTypes.func.isRequired,
   password: PropTypes.string.isRequired,
   onPasswordChange: PropTypes.func.isRequired,
   onLogin: PropTypes.func.isRequired,
+  isFetching: PropTypes.bool.isRequired,
 };
 
-export default Login;
+export default LoginForm;

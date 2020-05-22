@@ -182,3 +182,5 @@ export const defaultZoom = 2;
 export const focusZoom = 13;
 export const sideMenuWidth = '215px';
 export const logoGC = '/images/logo.svg';
+
+export const identificationTokenName = 'grottocenter_token';

@@ -4,7 +4,6 @@ import { Redirect, Route, Switch } from 'react-router-dom';
 
 import BbsContainer from '../containers/BbsContainer';
 import GroupContainer from '../containers/GroupContainer';
-import LoginContainer from '../containers/LoginContainer';
 import MapContainer from '../containers/MapContainer';
 import MassifContainer from '../containers/MassifContainer';
 
@@ -26,6 +25,13 @@ const Application = () => {
 
   return (
     <Layout
+      AppBar={() => (
+        <AppBar
+          isSideMenuOpen={isSideMenuOpen}
+          toggleSideMenu={toggleSideMenu}
+          HeaderQuickSearch={() => <QuickSearch hasFixWidth={false} />}
+        />
+      )}
       isSideMenuOpen={isSideMenuOpen}
       toggleSideMenu={() => dispatch({ type: 'TOGGLE_SIDEMENU' })}
       SideBarQuickSearch={() => <QuickSearch />}
@@ -45,7 +51,7 @@ const Application = () => {
         <Route path="/ui/groups/:groupId" component={GroupContainer} />
         <Route path="/ui/massifs/:massifId" component={MassifContainer} />
         <Route path="/ui/bbs/:bbsId" component={BbsContainer} />
-        <Route path="/ui/login" component={LoginContainer} />
+        <Route path="/ui/login" component={HomePage} />
         <Redirect path="/ui/*" to="/ui/" />
       </Switch>
     </Layout>

@@ -11,14 +11,12 @@ import PropTypes from 'prop-types';
 import styled from 'styled-components';
 
 import Translate from '../Translate';
-import DisabledTooltip from '../DisabledTooltip';
 
 const Button = styled(MuiButton)`
   padding-right: 0;
 `;
 
-// eslint-disable-next-line no-unused-vars
-const UserMenu = ({ onLogout, disabled = true, isAuth = false }) => {
+const UserMenu = ({ onLoginClick, onLogoutClick, isAuth }) => {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
 
@@ -30,25 +28,28 @@ const UserMenu = ({ onLogout, disabled = true, isAuth = false }) => {
     setAnchorEl(null);
   };
 
+  // Before using onLogoutClick(), we need to handle the menu closing
+  // to detach the popover menu before the account icon/button changes.
+  const handleLogoutClick = () => {
+    handleClose();
+    onLogoutClick();
+  };
+
   return (
     <>
       {!isAuth ? (
-        <DisabledTooltip disabled={disabled}>
-          <span>
-            <Button
-              variant="text"
-              startIcon={<AccountCircle />}
-              disabled={disabled}
-              size={isMobileOnly ? 'small' : 'medium'}
-            >
-              <Translate>Login</Translate>
-            </Button>
-          </span>
-        </DisabledTooltip>
+        <span>
+          <Button
+            startIcon={<AccountCircle />}
+            color="inherit"
+            onClick={onLoginClick}
+          >
+            {!isMobileOnly && <Translate>Log in</Translate>}
+          </Button>
+        </span>
       ) : (
         <>
           <IconButton
-            disabled={disabled}
             aria-label="account of current user"
             aria-controls="menu-appbar"
             aria-haspopup="true"
@@ -78,6 +79,9 @@ const UserMenu = ({ onLogout, disabled = true, isAuth = false }) => {
             <MenuItem onClick={handleClose}>
               <Translate>My Account</Translate>
             </MenuItem>
+            <MenuItem onClick={handleLogoutClick}>
+              <Translate>Logout</Translate>
+            </MenuItem>
           </Menu>
         </>
       )}
@@ -86,10 +90,8 @@ const UserMenu = ({ onLogout, disabled = true, isAuth = false }) => {
 };
 
 UserMenu.propTypes = {
-  // eslint-disable-next-line react/require-default-props
-  onLogout: PropTypes.func,
-  // eslint-disable-next-line react/require-default-props
-  disabled: PropTypes.bool,
+  onLoginClick: PropTypes.func.isRequired,
+  onLogoutClick: PropTypes.func.isRequired,
   isAuth: PropTypes.bool.isRequired,
 };
 

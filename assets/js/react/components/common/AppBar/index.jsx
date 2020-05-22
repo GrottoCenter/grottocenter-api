@@ -13,6 +13,7 @@ import { isMobileOnly } from 'react-device-detect';
 import LanguageSelector from '../LanguageSelector';
 import UserMenu from './User';
 import { logoGC } from '../../../conf/Config';
+import Login from '../../../features/Login';
 
 const StyledMuiAppBar = styled(MuiAppBar)`
   flex-grow: 1;
@@ -49,9 +50,32 @@ const RightWrapper = styled.div`
   display: flex;
 `;
 
-const AppBar = ({ toggleMenu, isAuth, AutoCompleteSearch }) => (
+const AppBar = ({
+  toggleMenu,
+  isAuth,
+  AutoCompleteSearch,
+  onLoginClick,
+  onLogoutClick,
+}) => (
   <>
     <StyledMuiAppBar>
+      <StandardDialog
+        open={LoginManager.open}
+        onClose={LoginManager.onClose}
+        title={LoginManager.title}
+        actions={LoginManager.actions}
+      >
+        <LoginForm
+          onLogin={LoginManager.onLogin}
+          email={LoginManager.email}
+          onEmailChange={LoginManager.onEmailChange}
+          password={LoginManager.password}
+          onPasswordChange={LoginManager.onPasswordChange}
+          isFetching={LoginManager.isFetching}
+          authError={LoginManager.authError}
+        />
+      </StandardDialog>
+
       <Toolbar variant="dense">
         <IconButton
           color="inherit"
@@ -81,7 +105,11 @@ const AppBar = ({ toggleMenu, isAuth, AutoCompleteSearch }) => (
             <LanguageSelector />
           </LanguageWrapper>
         </RightWrapper>
-        <UserMenu isAuth={isAuth} />
+        <UserMenu
+          isAuth={isAuth}
+          onLoginClick={onLoginClick}
+          onLogoutClick={onLogoutClick}
+        />
       </Toolbar>
     </StyledMuiAppBar>
     <Toolbar variant="dense" />
@@ -98,9 +126,30 @@ AppBar.propTypes = {
   toggleMenu: PropTypes.func.isRequired,
   // eslint-disable-next-line react/require-default-props
   isAuth: PropTypes.bool.isRequired,
+  onLoginClick: PropTypes.func.isRequired,
+  onLogoutClick: PropTypes.func.isRequired,
   AutoCompleteSearch: PropTypes.oneOfType([
     PropTypes.node,
     PropTypes.element,
     PropTypes.func,
   ]),
+  AppBarManager: PropTypes.shape({
+    toggleMenu: PropTypes.func.isRequired,
+    isAuth: PropTypes.bool.isRequired,
+    onLoginClick: PropTypes.func.isRequired,
+    onLogoutClick: PropTypes.func.isRequired,
+  }),
+  LoginManager: PropTypes.shape({
+    onLogin: PropTypes.func.isRequired,
+    email: PropTypes.string.isRequired,
+    onEmailChange: PropTypes.func.isRequired,
+    password: PropTypes.string.isRequired,
+    onPasswordChange: PropTypes.func.isRequired,
+    isFetching: PropTypes.bool.isRequired,
+    open: PropTypes.bool.isRequired,
+    onClose: PropTypes.func.isRequired,
+    title: PropTypes.shape({}).isRequired,
+    actions: PropTypes.array.isRequired,
+    authError: PropTypes.string,
+  }),
 };
