@@ -71,7 +71,7 @@ const Welcome = ({ theme }) => (
             id="This {0} version of the site is improving gradually to allow a simpler navigation from
             all your peripherals"
             values={{
-              0: <span>3.3.5</span>,
+              0: <span>3.3.1</span>,
             }}
           />
         </WelcomeParagraph>

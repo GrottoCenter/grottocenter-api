@@ -8,7 +8,7 @@
  * For more information on configuration, check out:
  * http://sailsjs.org/#/documentation/reference/sails.config/sails.config.http.html
  */
-const passport = require('passport');
+//const passport = require('passport');
 
 module.exports.http = {
   /****************************************************************************
@@ -22,8 +22,6 @@ module.exports.http = {
    ****************************************************************************/
 
   middleware: {
-    passportInit: passport.initialize(),
-    passportSession: passport.session(),
 
     /***************************************************************************
      *                                                                          *
@@ -32,18 +30,20 @@ module.exports.http = {
      *                                                                          *
      ***************************************************************************/
 
-    order: [
+    /*order: [
       'cookieParser',
       'session',
-      'passportInit',
-      'passportSession',
       'bodyParser',
       'compress',
       'poweredBy',
       'router',
       'www',
       'favicon',
-    ],
+    ],*/
+
+    //passportInit: passport.initialize,
+
+    //passportSession: passport.session,
 
     /****************************************************************************
      *                                                                           *
@@ -56,10 +56,11 @@ module.exports.http = {
     //     return next();
     // }
 
-    poweredBy: function(req, res, next) {
+    poweredBy: function (req, res, next) {
       res.removeHeader('x-powered-by');
       return next();
-    },
+    }
+
 
     /***************************************************************************
      *                                                                          *
@@ -74,6 +75,7 @@ module.exports.http = {
     //   var middlewareFn = skipper({ strict: true });
     //   return middlewareFn;
     // })(),
+
   },
 
   /***************************************************************************

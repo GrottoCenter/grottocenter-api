@@ -14,7 +14,6 @@ import bbs from './BbsReducer';
 import subtheme from './SubthemeReducer';
 import pageTitle from './PageTitleReducer';
 import entry from './EntryReducer';
-import auth from './AuthReducer';
 
 //
 //
@@ -37,7 +36,6 @@ const GCReducer = combineReducers({
   bbs,
   subtheme,
   pageTitle,
-  auth,
   entry,
 });
 

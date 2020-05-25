@@ -3,7 +3,8 @@ import { isMobileOnly } from 'react-device-detect';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import ErrorBoundary from 'react-error-boundary';
-
+import { Fade } from '@material-ui/core';
+import AppBar from '../../AppBar';
 import SideMenu from '../../SideMenu';
 
 const MainWrapper = styled.main`
@@ -22,15 +23,34 @@ const MainWrapper = styled.main`
     !isMobileOnly && (isSideMenuOpen ? theme.sideMenuWidth : 0)}px;
 `;
 
+// eslint-disable-next-line react/prop-types
+const HeaderAutoCompleteSearch = ({ isSideMenuOpen, HeaderQuickSearch }) => (
+  <Fade in={!isSideMenuOpen}>
+    <div>
+      <HeaderQuickSearch />
+    </div>
+  </Fade>
+);
+
 const Layout = ({
   children,
+  isAuth = false,
   isSideMenuOpen,
   toggleSideMenu,
   SideBarQuickSearch,
-  AppBar,
+  HeaderQuickSearch,
 }) => (
   <>
-    <AppBar toggleSideMenu={toggleSideMenu} isSideMenuOpen={isSideMenuOpen} />
+    <AppBar
+      toggleMenu={toggleSideMenu}
+      isAuth={isAuth}
+      AutoCompleteSearch={() => (
+        <HeaderAutoCompleteSearch
+          isSideMenuOpen={isSideMenuOpen}
+          HeaderQuickSearch={HeaderQuickSearch}
+        />
+      )}
+    />
     <SideMenu
       isOpen={isSideMenuOpen}
       toggle={toggleSideMenu}
@@ -43,15 +63,16 @@ const Layout = ({
 );
 
 Layout.propTypes = {
-  AppBar: PropTypes.oneOfType([
-    PropTypes.node,
-    PropTypes.element,
-    PropTypes.func,
-  ]).isRequired,
+  isAuth: PropTypes.bool,
   children: PropTypes.node,
   isSideMenuOpen: PropTypes.bool.isRequired,
   toggleSideMenu: PropTypes.func.isRequired,
   SideBarQuickSearch: PropTypes.oneOfType([
+    PropTypes.node,
+    PropTypes.element,
+    PropTypes.func,
+  ]).isRequired,
+  HeaderQuickSearch: PropTypes.oneOfType([
     PropTypes.node,
     PropTypes.element,
     PropTypes.func,

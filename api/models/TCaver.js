@@ -149,13 +149,13 @@ module.exports = {
     */
 
     dateInscription: {
-      type: 'ref',
+      type: 'string',
       columnType: 'datetime',
       columnName: 'Date_inscription',
     },
 
     dateLastConnection: {
-      type: 'ref',
+      type: 'string',
       columnType: 'datetime',
       columnName: 'Date_last_connection',
     },
@@ -248,8 +248,9 @@ module.exports = {
   },
 
   customToJSON: () => {
-    // Removing password on JSON object
-    return _.omit(this, ['password']);
+    const obj = this.toObject();
+    delete obj.password; // Removing password on JSON object
+    return obj;
   },
 
   beforeCreate: (values, next) => {

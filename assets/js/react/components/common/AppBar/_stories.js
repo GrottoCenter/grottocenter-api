@@ -1,31 +1,33 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { storiesOf } from '@storybook/react';
-import { action } from '@storybook/addon-actions';
+import PropTypes from 'prop-types';
+import { Typography } from '@material-ui/core';
 
+import SideMenu from '../SideMenu';
 import AppBar from './index';
 import AutoCompleteSearch from '../AutoCompleteSearch';
-import User from './User';
 
-const AppBarWithState = ({ isAuth }) => {
-  const getOptionLabel = (option) => option.name;
+const WithState = ({ isAuth = null }) => {
+  const [isSideMenuOpen, setToggleSideMenu] = React.useState(false);
+
+  const toggleSideMenu = () => {
+    setToggleSideMenu(!isSideMenuOpen);
+  };
+
   return (
     <>
       <AppBar
-        toggleMenu={action('toggle side menu')}
+        toggleMenu={toggleSideMenu}
         isAuth={isAuth}
-        onLoginClick={action('click log in')}
-        onLogoutClick={action('click log out')}
         AutoCompleteSearch={() => (
           <AutoCompleteSearch
             hasFixWidth={false}
             onSelection={() => {}}
-            input=""
-            inputValue=""
+            input={''}
+            inputValue={''}
             onInputChange={() => {}}
             suggestions={[]}
             renderOption={() => {}}
-            getOptionLabel={getOptionLabel}
           />
         )}
       />
@@ -33,26 +35,12 @@ const AppBarWithState = ({ isAuth }) => {
   );
 };
 
-AppBarWithState.propTypes = {
-  isAuth: PropTypes.bool.isRequired,
-};
-
-const UserWithState = ({ isAuth }) => {
-  return (
-    <User
-      isAuth={isAuth}
-      onLoginClick={action('onLoginClick')}
-      onLogoutClick={action('onLogouClick')}
-    />
-  );
-};
-
-UserWithState.propTypes = {
-  isAuth: PropTypes.bool.isRequired,
+WithState.propTypes = {
+  // eslint-disable-next-line react/require-default-props
+  isAuth: PropTypes.bool,
 };
 
 storiesOf('AppBar', module)
-  .add('Logged', () => <AppBarWithState isAuth />)
-  .add('Not logged', () => <AppBarWithState isAuth={false} />)
-  .add('User menu, logged', () => <UserWithState isAuth />)
-  .add('User menu, not logged', () => <UserWithState isAuth={false} />);
+  .add('Login disabled', () => <WithState />)
+  .add('Logged', () => <WithState isAuth />)
+  .add('Not logged', () => <WithState isAuth={false} />);

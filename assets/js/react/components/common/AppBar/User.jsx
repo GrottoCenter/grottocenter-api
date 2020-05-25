@@ -1,12 +1,24 @@
-import { Button, IconButton, Menu, MenuItem } from '@material-ui/core';
+import {
+  Button as MuiButton,
+  IconButton,
+  Menu,
+  MenuItem,
+} from '@material-ui/core';
 import AccountCircle from '@material-ui/icons/AccountCircle';
 import React from 'react';
 import { isMobileOnly } from 'react-device-detect';
 import PropTypes from 'prop-types';
+import styled from 'styled-components';
 
 import Translate from '../Translate';
+import DisabledTooltip from '../DisabledTooltip';
 
-const UserMenu = ({ onLoginClick, onLogoutClick, isAuth }) => {
+const Button = styled(MuiButton)`
+  padding-right: 0;
+`;
+
+// eslint-disable-next-line no-unused-vars
+const UserMenu = ({ onLogout, disabled = true, isAuth = false }) => {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
 
@@ -18,27 +30,25 @@ const UserMenu = ({ onLoginClick, onLogoutClick, isAuth }) => {
     setAnchorEl(null);
   };
 
-  // Before using onLogoutClick(), we need to handle the menu closing
-  // to detach the popover menu before the account icon/button changes.
-  const handleLogoutClick = () => {
-    handleClose();
-    onLogoutClick();
-  };
-
   return (
     <>
       {!isAuth ? (
-        <Button
-          color="inherit"
-          onClick={onLoginClick}
-          startIcon={<AccountCircle />}
-          variant="text"
-        >
-          {!isMobileOnly && <Translate>Log in</Translate>}
-        </Button>
+        <DisabledTooltip disabled={disabled}>
+          <span>
+            <Button
+              variant="text"
+              startIcon={<AccountCircle />}
+              disabled={disabled}
+              size={isMobileOnly ? 'small' : 'medium'}
+            >
+              <Translate>Login</Translate>
+            </Button>
+          </span>
+        </DisabledTooltip>
       ) : (
         <>
           <IconButton
+            disabled={disabled}
             aria-label="account of current user"
             aria-controls="menu-appbar"
             aria-haspopup="true"
@@ -62,14 +72,11 @@ const UserMenu = ({ onLoginClick, onLogoutClick, isAuth }) => {
             open={open}
             onClose={handleClose}
           >
-            <MenuItem onClick={handleClose} disabled>
+            <MenuItem onClick={handleClose}>
               <Translate>Profile</Translate>
             </MenuItem>
-            <MenuItem onClick={handleClose} disabled>
+            <MenuItem onClick={handleClose}>
               <Translate>My Account</Translate>
-            </MenuItem>
-            <MenuItem onClick={handleLogoutClick}>
-              <Translate>Log out</Translate>
             </MenuItem>
           </Menu>
         </>
@@ -79,8 +86,10 @@ const UserMenu = ({ onLoginClick, onLogoutClick, isAuth }) => {
 };
 
 UserMenu.propTypes = {
-  onLoginClick: PropTypes.func.isRequired,
-  onLogoutClick: PropTypes.func.isRequired,
+  // eslint-disable-next-line react/require-default-props
+  onLogout: PropTypes.func,
+  // eslint-disable-next-line react/require-default-props
+  disabled: PropTypes.bool,
   isAuth: PropTypes.bool.isRequired,
 };
 

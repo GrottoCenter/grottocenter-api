@@ -5,29 +5,33 @@
  * @help        :: See http://links.sailsjs.org/docs/controllers
  */
 
-const passport = require('passport');
-
 module.exports = {
   login: (req, res) => {
-    passport.authenticate('local', (err, user) => {
-      if (!err && !user) {
-        return res.unauthorized({ message: 'Invalid email or password.' });
+    const { contact, password } = req.body;
+
+    if (!contact || !password) {
+      return res.unauthorized(res.i18n('BAD_CREDENTIAL'));
+    }
+
+    return TCaver.findOne({ contact }, (err, account) => {
+      if (!account) {
+        return res.unauthorized('Bad credentials.');
       }
-      if (err) {
-        sails.log.error('Error while trying to log in: ' + err);
-        return res
-          .status(500)
-          .send({ message: 'An internal server error occurred.' });
-      }
-      req.logIn(user, (err) => {
-        if (err) return res.json({ message: err });
+
+      return TCaver.comparePassword(password, account, (err2, valid) => {
+        if (err2 || !valid) {
+          return res.unauthorized('Bad credentials.');
+        }
+
         req.session.authenticated = true;
-        const token = TokenAuthService.issue({
-          id: user.id,
+        return res.json({
+          user: account,
+          token: TokenAuthService.issue({
+            id: account.id,
+          }),
         });
-        return res.json({ token });
       });
-    })(req, res);
+    });
   },
 
   logout: (req, res) => {
