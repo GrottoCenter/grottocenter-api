@@ -100,11 +100,6 @@ const DialogLoginForm = ({
           />
           <span>Is loading</span>
 
-  const onLogin = (e) => {
-    e.preventDefault();
-    window.alert('form submitted'); // eslint-disable-line no-alert
-  };
-
           <Switch
             checked={hasErrors}
             onChange={(event) => setHasErrors(event.target.checked)}
