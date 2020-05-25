@@ -29,23 +29,25 @@ const QuickSearch = ({ ...autoCompleteProps }) => {
   const debouncedInput = useDebounce(input);
 
   const handleSelection = (selection) => {
-    dispatch(setCurrentEntry(selection));
-    dispatch(
-      focusOnLocation({
-        lat: selection.latitude,
-        lng: selection.longitude,
-      }),
-    );
     if (selection.id) {
       switch (selection.type) {
+        case 'entry':
+          dispatch(setCurrentEntry(selection));
+          dispatch(
+            focusOnLocation({
+              lat: selection.latitude,
+              lng: selection.longitude,
+            }),
+          );
+          history.push('/ui/map');
+          break;
         case 'massif':
           history.push(`/ui/massifs/${encodeURIComponent(selection.id)}`);
           break;
         case 'bbs':
-          history.push(`/ui/massifs/${encodeURIComponent(selection.id)}`);
+          history.push(`/ui/bbs/${encodeURIComponent(selection.id)}`);
           break;
         default:
-          history.push('/ui/map');
       }
     }
     setInput('');
