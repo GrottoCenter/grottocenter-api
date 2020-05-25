@@ -10,6 +10,7 @@ import {
 import MenuIcon from '@material-ui/icons/Menu';
 import styled from 'styled-components';
 import { isMobileOnly } from 'react-device-detect';
+
 import LanguageSelector from '../LanguageSelector';
 import UserMenu from './User';
 import { logoGC } from '../../../conf/Config';
@@ -49,7 +50,13 @@ const RightWrapper = styled.div`
   display: flex;
 `;
 
-const AppBar = ({ toggleMenu, isAuth, AutoCompleteSearch }) => (
+const AppBar = ({
+  toggleMenu,
+  isAuth,
+  onLoginClick,
+  onLogoutClick,
+  AutoCompleteSearch,
+}) => (
   <>
     <StyledMuiAppBar>
       <Toolbar variant="dense">
@@ -81,7 +88,11 @@ const AppBar = ({ toggleMenu, isAuth, AutoCompleteSearch }) => (
             <LanguageSelector />
           </LanguageWrapper>
         </RightWrapper>
-        <UserMenu isAuth={isAuth} />
+        <UserMenu
+          isAuth={isAuth}
+          onLoginClick={onLoginClick}
+          onLogoutClick={onLogoutClick}
+        />
       </Toolbar>
     </StyledMuiAppBar>
     <Toolbar variant="dense" />
@@ -89,18 +100,15 @@ const AppBar = ({ toggleMenu, isAuth, AutoCompleteSearch }) => (
 );
 
 AppBar.propTypes = {
-  toggleMenu: PropTypes.func.isRequired,
-};
-
-export default AppBar;
-
-AppBar.propTypes = {
-  toggleMenu: PropTypes.func.isRequired,
-  // eslint-disable-next-line react/require-default-props
-  isAuth: PropTypes.bool.isRequired,
   AutoCompleteSearch: PropTypes.oneOfType([
     PropTypes.node,
     PropTypes.element,
     PropTypes.func,
   ]),
+  toggleMenu: PropTypes.func.isRequired,
+  isAuth: PropTypes.bool.isRequired,
+  onLoginClick: PropTypes.func.isRequired,
+  onLogoutClick: PropTypes.func.isRequired,
 };
+
+export default AppBar;

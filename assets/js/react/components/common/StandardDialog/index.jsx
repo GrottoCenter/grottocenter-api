@@ -1,7 +1,5 @@
 import * as React from 'react';
-import { FormattedMessage } from 'react-intl';
 import {
-  Button,
   Dialog,
   DialogActions,
   DialogContent as MuiDialogContent,
@@ -9,6 +7,12 @@ import {
 } from '@material-ui/core';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
+import CloseIcon from '@material-ui/icons/Close';
+import IconButton from '@material-ui/core/IconButton';
+
+const CustomDialogTitle = styled(DialogTitle)`
+  margin-top: 1rem;
+`;
 
 const DialogContent = styled(MuiDialogContent)`
   && {
@@ -16,11 +20,15 @@ const DialogContent = styled(MuiDialogContent)`
   }
 `;
 
+const CloseButton = styled(IconButton)`
+  position: absolute;
+  right: 0;
+`;
+
 const StandardDialog = ({
   fullScreen = false,
   fullWidth = false,
   maxWidth = 'sm',
-  buttonType = 'button',
   open = false,
   onClose = () => {},
   title,
@@ -35,14 +43,14 @@ const StandardDialog = ({
     onClose={onClose}
     PaperProps={{ style: { overflow: 'visible' } }}
   >
-    <DialogTitle>{title}</DialogTitle>
+    {onClose && (
+      <CloseButton aria-label="close" onClick={onClose} color="primary">
+        <CloseIcon />
+      </CloseButton>
+    )}
+    <CustomDialogTitle>{title}</CustomDialogTitle>
     {children && <DialogContent>{children}</DialogContent>}
-    <DialogActions>
-      <Button color="primary" type={buttonType} onClick={onClose}>
-        <FormattedMessage id="Close" />
-      </Button>
-      {actions || null}
-    </DialogActions>
+    <DialogActions>{actions || null}</DialogActions>
   </Dialog>
 );
 
@@ -50,7 +58,6 @@ export default StandardDialog;
 
 StandardDialog.propTypes = {
   // eslint-disable-next-line react/require-default-props
-  buttonType: PropTypes.oneOf(['button', 'submit']),
   fullScreen: PropTypes.bool,
   fullWidth: PropTypes.bool,
   maxWidth: PropTypes.oneOf(['xs', 'sm', 'md', 'lg']),

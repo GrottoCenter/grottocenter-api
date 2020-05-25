@@ -28,119 +28,123 @@ module.exports.policies = {
 
   IndexController: {
     '*': false,
-    'index': 'localize'
+    index: 'localize',
   },
 
   AuthController: {
-    'login': true,
-    'logout': 'tokenAuth'
+    login: true,
+    logout: 'tokenAuth',
   },
 
   CaverController: {
     '*': false,
-    'getCaversNumber': true,
-    'update': 'tokenAuth',
-    'destroy': 'tokenAuth'
+    getCaversNumber: true,
+    update: 'tokenAuth',
+    destroy: 'tokenAuth',
   },
 
   EntryController: {
     '*': 'tokenAuth',
-    'find': 'apiKeyAuth',
-    'findAll': true,
-    'findRandom': true,
-    'getPublicEntriesNumber': 'apiKeyAuth',
-    'getEntriesNumber': true
+    find: 'apiKeyAuth',
+    findAll: true,
+    findRandom: true,
+    getPublicEntriesNumber: 'apiKeyAuth',
+    getEntriesNumber: true,
   },
 
   'v1/EntryController': {
     '*': false,
-    'find': 'apiKeyAuth',
-    'findAll': ['apiKeyAuth', 'paginate'],
-    'getPublicEntriesNumber': 'apiKeyAuth'
+    find: 'apiKeyAuth',
+    findAll: ['apiKeyAuth', 'paginate'],
+    getPublicEntriesNumber: 'apiKeyAuth',
   },
 
   SearchController: {
-    'findAll': 'apiKeyAuth'
+    findAll: 'apiKeyAuth',
   },
 
   'v1/SearchController': {
-    'search': true,
-    'advancedSearch': true,
-    'findAll': ['apiKeyAuth', 'paginate'],
+    search: true,
+    advancedSearch: true,
+    findAll: ['apiKeyAuth', 'paginate'],
   },
 
   CaveController: {
-    '*': true
+    '*': true,
   },
 
   AuthorController: {
-    '*': false
+    '*': false,
   },
 
   PartnerController: {
-    '*': true
+    '*': true,
   },
 
   I18nController: {
-    '*': true
+    '*': true,
   },
 
   SwaggerController: {
-    '*': true
+    '*': true,
   },
 
   TopographyController: {
-    '*': false
+    '*': false,
   },
 
   ConvertController: {
-    '*': true
+    '*': true,
   },
 
   CommentController: {
-    '*': false
+    '*': false,
   },
 
   GrottoController: {
-    '*': true
-  },
-
-  'v1/BbsController': {
-    '*': true
-  },
-
-  'v1/BbsGeoController': {
-    '*': true
-  },
-
-  'v1/BbsChapterController': {
-    '*': true
-  },
-
-  'v1/GrottoController': {
-    'find': ['apiKeyAuth', 'paginate']
+    '*': true,
   },
 
   AdminController: {
-    '*': true
+    '*': true,
   },
 
   RssController: {
-    '*': true
+    '*': true,
   },
 
   MassifController: {
-    '*': true
+    '*': true,
+  },
+
+  'v1/AuthController': {
+    '*': true,
+  },
+
+  'v1/BbsController': {
+    '*': true,
+  },
+
+  'v1/BbsGeoController': {
+    '*': true,
+  },
+
+  'v1/BbsChapterController': {
+    '*': true,
+  },
+
+  'v1/GrottoController': {
+    find: ['apiKeyAuth', 'paginate'],
   },
 
   'v1/MassifController': {
-    'find': ['apiKeyAuth', 'paginate']
+    find: ['apiKeyAuth', 'paginate'],
   },
 
   'v1/GeoLocController': {
-    'countEntries': true,
-    'findByBounds': true
-  }
+    countEntries: true,
+    findByBounds: true,
+  },
 
   /***************************************************************************
    *                                                                          *
