@@ -7,6 +7,11 @@ const ElasticSearch = require('../../services/ElasticsearchService');
 const advancedSearchTypes = ['massifs', 'entries', 'grottos', 'bbs'];
 
 module.exports = {
+  /**
+   * Perform a quick search using multiple URL parameters :
+   * - resourceType:  string, entity type to search for (@see advancedSearchTypes) (FACULTATIVE).
+   *                  By default, search on all entities
+   **/
   search: (req, res) => {
     // Store every params in the url and check if the query parameter exists
     const paramsURl = req.query;
@@ -61,7 +66,7 @@ module.exports = {
 
   /**
    * Perform an advanced search using multiple URL parameters :
-   * - type: string, entity type to search for (@see advancedSearchTypes) (NEEDED)
+   * - resourceType: string, entity type to search for (@see advancedSearchTypes) (NEEDED)
    * - complete: bool, determine if the results must be returned in their entirely or just their id and name (default = false) (FACULTATIVE)
    * - matchAllFields: bool, determine if the results need to match all the fields (logic AND) or at least one of them (logic OR) (default = true) (FACULTATIVE)
    */

@@ -35,14 +35,14 @@ export const fetchLoading = () => ({
 });
 
 // THUNKS
-export const fetchQuicksearchResult = (criteria) => (dispatch) => {
-  dispatch(resetQuicksearch(criteria));
+export const fetchQuicksearchResult = (criterias) => (dispatch) => {
+  dispatch(resetQuicksearch(criterias));
   dispatch(fetchLoading());
 
   let completeUrl = quicksearchUrl;
-  if (criteria) {
-    completeUrl += `?${Object.keys(criteria)
-      .map((k) => `${k}=${encodeURIComponent(criteria[k])}`)
+  if (criterias) {
+    completeUrl += `?${Object.keys(criterias)
+      .map((k) => `${k}=${encodeURIComponent(criterias[k])}`)
       .join('&')}`;
   }
 
@@ -58,5 +58,4 @@ export const fetchQuicksearchResult = (criteria) => (dispatch) => {
     .then((text) => {
       dispatch(fetchQuicksearchSuccess(JSON.parse(text).results));
     });
-  // .catch(error => dispatch(fetchRandomEntryFailure(error)))
 };

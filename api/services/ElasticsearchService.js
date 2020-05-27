@@ -95,7 +95,7 @@ const self = (module.exports = {
       client
         .search({
           /* eslint-disable camelcase */
-          index: '_all',
+          index: params.resourceType ? `${params.resourceType}-index` : '_all',
           body: {
             from: params.from ? params.from : 0,
             size: params.size ? params.size : 10,

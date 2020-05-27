@@ -12,11 +12,19 @@ import {
 import { entityOptionForSelector } from '../helpers/Entity';
 import { useDebounce } from '../hooks';
 
-const renderOption = (option) => entityOptionForSelector(option);
+// ========================
 
+export const searchableTypes = {
+  bbs: 'bbs',
+  entries: 'entries',
+  groups: 'grottos',
+  massifs: 'massifs',
+};
+
+const renderOption = (option) => entityOptionForSelector(option);
 const getOptionLabel = (option) => option.name;
 
-const QuickSearch = ({ ...autoCompleteProps }) => {
+const QuickSearch = ({ searchOnType = '', ...autoCompleteProps }) => {
   const { formatMessage } = useIntl();
   const history = useHistory();
   const dispatch = useDispatch();
@@ -49,12 +57,12 @@ const QuickSearch = ({ ...autoCompleteProps }) => {
 
   React.useEffect(() => {
     if (length(debouncedInput) > 2) {
-      dispatch(
-        fetchQuicksearchResult({
-          query: debouncedInput.trim(),
-          complete: false,
-        }),
-      );
+      const criterias = {
+        query: debouncedInput.trim(),
+        complete: false,
+        ...(searchOnType !== '' && { resourceType: searchOnType }), // use resource type only if not empty
+      };
+      dispatch(fetchQuicksearchResult(criterias));
     } else {
       dispatch(resetQuicksearch());
     }
@@ -81,4 +89,5 @@ export default QuickSearch;
 QuickSearch.propTypes = {
   hasFixWidth: PropTypes.bool,
   label: PropTypes.string,
+  searchOnType: PropTypes.string,
 };
