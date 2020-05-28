@@ -178,3 +178,9 @@ export const defaultZoom = 2;
 export const focusZoom = 13;
 export const sideMenuWidth = '215px';
 export const logoGC = '/images/logo.svg';
+
+// ===== Google places API
+export const placesDetail =
+  'https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/place/details/json';
+export const placesAutocomplete =
+  'https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/place/autocomplete/json';

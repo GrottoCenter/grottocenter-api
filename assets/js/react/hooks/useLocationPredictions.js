@@ -1,113 +1,149 @@
-import { useState, useEffect, useCallback } from "react";
-import { debounce } from "lodash";
+import { useState, useEffect, useCallback } from 'react';
+import { debounce } from 'lodash';
+import { placesAutocomplete } from '../conf/Config';
 
-/* global google */
-
-const API_KEY = '';
+const API_KEY = 'AIzaSyDEhu_hKSYRA_z3alWshvH2P41vDdHgO2o';
 /**
  * Custom hook that fetches and returns places predictions
- * @param input : String containing the user research (eg : fra) 
+ * @param input : String containing the user research (eg : fra)
  * @param type : String that can only be (country, region, county, city)
  * @param country : Optional string containing a Iso2 country code
- * @param bounds : Optional LatLng Google object used for localization restriction 
- * @param startLength : Optional Int specifying the amount of chars an user has to type to trigger the autocomplete
+ * @param bounds : Optional LatLng Google object used to restrict localization
+ * @param startLength : Optional Int, amount of chars to trigger autocomplete
  */
-export default function useLocationPredictions(input, type, country = null, bounds = null, startLength = 2) {
-    const [predictions, setPredictions] = useState([]);
-    
-    /**
-     * Fetches the most look a like places based on the user input and localization restriction parameters
-     * @param input : String containing the user research (eg : fra) 
-     * @param type : String that can only be (country, region, county, city)
-     * @param country : Optional string containing a Iso2 country code
-     * @param bounds : Optional LatLng Google object used for localization restriction 
-     * @return : An array of Google places object https://developers.google.com/places/web-service/autocomplete?hl=fr#place_autocomplete_results
-     */
-    function fetchPlacesPredictions(input, type, country, bounds) {
-        var service = new google.maps.places.AutocompleteService();
-        var tmp = [];
-        if (type === 'city' || type === 'county') {
-            var tmp = [];
+export default function useLocationPredictions(
+  input,
+  type,
+  country = null,
+  bounds = null,
+  startLength = 3,
+) {
+  const [predictions, setPredictions] = useState([]);
 
-            // r = radius of the earth in statute miles
-            var r = 3963.0;  
-            const latCenter = bounds.getCenter().lat();
-            const lngCenter = bounds.getCenter().lng();
-            const latNE = bounds.getNorthEast().lat();
-            const lngNE = bounds.getNorthEast().lng();
+  /**
+   * Converts Google Bounds to lat lng and radius
+   * @param boundsGoogle : LatLng Google object used to restrict localization
+   * @return Object containing a latitude, longitude and a radius
+   */
+  function getLocalizationRestriction(boundsGoogle) {
+    const latCenter = boundsGoogle.getCenter().lat();
+    const lngCenter = boundsGoogle.getCenter().lng();
+    const latNE = boundsGoogle.getNorthEast().lat();
+    const lngNE = boundsGoogle.getNorthEast().lng();
+    // Convert lat or lng from decimal degrees into radians
+    const lat1 = latCenter / 57.2958;
+    const lon1 = lngCenter / 57.2958;
+    const lat2 = latNE / 57.2958;
+    const lon2 = lngNE / 57.2958;
+    // r = radius of the earth in statute miles
+    const r = 3963.0;
+    // distance = circle radius from center to Northeast corner of bounds
+    let dis =
+      r *
+      Math.acos(
+        Math.sin(lat1) * Math.sin(lat2) +
+          Math.cos(lat1) * Math.cos(lat2) * Math.cos(lon2 - lon1),
+      );
+    // convert to meters
+    dis = dis * 1.60934 * 1000;
+    return {
+      lat: latCenter,
+      lng: lngCenter,
+      radius: dis,
+    };
+  }
 
-            // Convert lat or lng from decimal degrees into radians (divide by 57.2958)
-            var lat1 = latCenter / 57.2958; 
-            var lon1 = lngCenter / 57.2958;
-            var lat2 = latNE / 57.2958;
-            var lon2 = lngNE / 57.2958;
-
-            // distance = circle radius from center to Northeast corner of bounds
-            var dis = r * Math.acos(Math.sin(lat1) * Math.sin(lat2) + 
-            Math.cos(lat1) * Math.cos(lat2) * Math.cos(lon2 - lon1));
-
-            // convert to meters
-            dis = dis * 1.60934 * 1000;
-            fetch(`https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${input}&types=${type === 'city' ? '(cities)' : '(regions)'}&key=${API_KEY}&location=${latCenter},${lngCenter}&radius=${dis}&strictbounds=true` , {
-                method: "GET",
-            })
-            .then((resp) => {
-                return resp.json()
-            }) 
-            .then((data) => {
-                for (var i = 0; i < data.predictions.length; i++) {
-                    if (type === 'county') {
-                        if (data.predictions[i].types.includes('administrative_area_level_2')) {
-                            tmp.push({ label: `${data.predictions[i].structured_formatting.main_text}`, id: `${data.predictions[i].place_id}` });
-                        }
-                    } else {
-                        tmp.push({ label: `${data.predictions[i].structured_formatting.main_text}`, id: `${data.predictions[i].place_id}` });
-                    }
-                }
-                setPredictions(tmp);      
-            })
-            .catch((error) => {
-                console.log(error, "error while retrieving predictions")
-            });
-
-        } else {
-            service.getPlacePredictions(type === 'country' ? {
-                input: input,
-                types: ['(regions)']
-            } : {
-                input: input,
-                types: ['(regions)'],
-                componentRestrictions: {country: country}
-            }, (predictions) => {
-                if (predictions) {
-                    var tmp =[];
-                    for (var i = 0; i < predictions.length; i++) {
-                        if (type === 'country') {
-                            if (predictions[i].types.includes('country')) {
-                                tmp.push({ label: `${predictions[i].structured_formatting.main_text}`, id: `${predictions[i].place_id}` });
-                            }  
-                        } else {
-                            if (predictions[i].types.includes('administrative_area_level_1')) {
-                                tmp.push({ label: `${predictions[i].structured_formatting.main_text}`, id: `${predictions[i].place_id}` });
-                            }  
-                        }
-                    }
-                }
-                setPredictions(tmp);
-            });
-        }
+  /**
+   * Filter the array of suggestions by type of administration
+   * @param suggestions : Places suggestions returned by Google API
+   * @param typeAdmin : Administrative type used to filter the suggestions
+   * @return Array of predictions filtered by the type of administration
+   */
+  function sortPredictions(suggestions, typeAdmin) {
+    const predictionsResults = [];
+    let typeAdm = typeAdmin;
+    if (typeAdmin !== 'country' && typeAdmin !== 'city') {
+      typeAdm =
+        typeAdmin === 'region'
+          ? 'administrative_area_level_1'
+          : 'administrative_area_level_2';
     }
-    // Set a timeout to avoid redoing the request
-    const debouncedFetchPlacePredictions = useCallback(
-        debounce(fetchPlacesPredictions, 500),
-        []
-    );
+    for (let i = 0; i < suggestions.length; i += 1) {
+      if (typeAdmin === 'city') {
+        predictionsResults.push({
+          label: `${suggestions[i].structured_formatting.main_text}`,
+          id: `${suggestions[i].place_id}`,
+        });
+      } else if (suggestions[i].types.includes(typeAdm)) {
+        predictionsResults.push({
+          label: `${suggestions[i].structured_formatting.main_text}`,
+          id: `${suggestions[i].place_id}`,
+        });
+      }
+    }
+    return predictionsResults;
+  }
 
-    useEffect(() => {
-        if (input.length >= startLength)
-            debouncedFetchPlacePredictions(input, type, country, bounds);
-    }, [input]);
+  /**
+   * Fetches places suggestions with user input and localization optional params
+   * @param userInput : String containing the user research (eg : fra)
+   * @param typeAdmin : String that can only be (country, region, county, city)
+   * @param countryRestriction : Optional string containing a Iso2 country code
+   * @param boundsRestriction : Optional LatLng Google object
+   * @return : An array of Google places object https://developers.google.com/places/web-service/autocomplete?hl=fr#place_autocomplete_results
+   */
+  function fetchPlacesPredictions(
+    userInput,
+    typeAdmin,
+    countryRestriction,
+    boundsRestriction,
+  ) {
+    const service = new window.google.maps.places.AutocompleteService();
+    if (typeAdmin === 'city' || typeAdmin === 'county') {
+      const localization = getLocalizationRestriction(boundsRestriction);
+      fetch(
+        `${placesAutocomplete}?input=${userInput}&types=${
+          typeAdmin === 'city' ? '(cities)' : '(regions)'
+        }&key=${API_KEY}&location=${localization.lat},${localization.lng}&radius=${localization.radius}&strictbounds=true`,
+        {
+          method: 'GET',
+        },
+      )
+        .then((resp) => {
+          return resp.json();
+        })
+        .then((data) => {
+          setPredictions(sortPredictions(data.predictions, typeAdmin));
+        });
+    } else {
+      service.getPlacePredictions(
+        typeAdmin === 'country'
+          ? {
+              input: userInput,
+              types: ['(regions)'],
+            }
+          : {
+              input: userInput,
+              types: ['(regions)'],
+              componentRestrictions: { country: countryRestriction },
+            },
+        (suggestions) => {
+          if (suggestions)
+            setPredictions(sortPredictions(suggestions, typeAdmin));
+        },
+      );
+    }
+  }
+  // Set a timeout to avoid redoing the request
+  const debouncedFetchPlacePredictions = useCallback(
+    debounce(fetchPlacesPredictions, 500),
+    [],
+  );
 
-    return predictions;
+  useEffect(() => {
+    if (input.length >= startLength)
+      debouncedFetchPlacePredictions(input, type, country, bounds);
+  }, [input]);
 
+  return predictions;
 }
