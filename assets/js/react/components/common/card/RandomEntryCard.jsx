@@ -17,40 +17,34 @@ import Translate from '../Translate';
 //
 //
 
-export class EntryData extends Component {
-  constructor(props) {
-    super(props);
+const EntryData = ({ entry }) => {
+  if (!entry) {
+    return <div />;
   }
+  const { entryInfo, stat, timeInfo } = entry;
+  const imageElement =
+    entryInfo && entryInfo.path ? <EntryImage src={entryInfo.path} /> : '';
 
-  render() {
-    if (!this.props.entry) {
-      return <div />;
-    }
-    const stat = this.props.entry.stat;
-    const entryInfo = this.props.entry.entryInfo;
-    const timeInfo = this.props.entry.timeInfo;
-    let lang = locale.substring(0, 1).toUpperCase() + locale.substring(1, locale.length); //eslint-disable-line
-
-    let imageElement = <div />;
-    if (entryInfo && entryInfo.path) {
-      imageElement = <EntryImage src={entryInfo.path} />;
-    }
-
-    return (
-      <GridRow>
-        <GridOneHalfColumn>
-          <EntryTitle entry={this.props.entry} />
-          <EntryStat stat={stat} />
-          <EntryInfos timeInfo={timeInfo} entryInfo={entryInfo} />
-        </GridOneHalfColumn>
-        {imageElement}
-      </GridRow>
-    );
-  }
-}
+  return (
+    <GridRow>
+      <GridOneHalfColumn>
+        <EntryTitle entry={entry} />
+        <EntryStat stat={stat} />
+        <EntryInfos timeInfo={timeInfo} entryInfo={entryInfo} />
+      </GridOneHalfColumn>
+      {imageElement}
+    </GridRow>
+  );
+};
 
 EntryData.propTypes = {
-  entry: PropTypes.object.isRequired,
+  entry: PropTypes.shape({
+    entryInfo: PropTypes.shape({
+      path: PropTypes.string,
+    }),
+    stat: PropTypes.shape({}),
+    timeInfo: PropTypes.any,
+  }).isRequired,
 };
 
 const EntryName = styled.h4`
@@ -72,7 +66,11 @@ const EntryTitle = ({ entry }) => (
 );
 
 EntryTitle.propTypes = {
-  entry: PropTypes.object.isRequired,
+  entry: PropTypes.shape({
+    country: PropTypes.string,
+    name: PropTypes.string,
+    region: PropTypes.string,
+  }).isRequired,
 };
 
 const RatingList = styled.ul`
@@ -81,7 +79,9 @@ const RatingList = styled.ul`
 
 const EntryStat = ({ stat }) => (
   <div>
-    {!stat && <Translate>At this time, there is no comment for this entry</Translate>}
+    {!stat && (
+      <Translate>At this time, there is no comment for this entry</Translate>
+    )}
     {stat && (
       <RatingList>
         <EntryStatItem itemScore={stat.aestheticism} itemLabel="Interest" />
@@ -93,7 +93,11 @@ const EntryStat = ({ stat }) => (
 );
 
 EntryStat.propTypes = {
-  stat: PropTypes.object.isRequired,
+  stat: PropTypes.shape({
+    aestheticism: PropTypes.number,
+    approach: PropTypes.number,
+    caving: PropTypes.number,
+  }).isRequired,
 };
 
 const StatEntry = styled.li`
@@ -132,42 +136,36 @@ const StyledEmptyStarIcon = withStyles({
   },
 })(EmptyStarIcon);
 
-export class EntryStatItem extends Component {
-  constructor(props) {
-    super(props);
+const EntryStatItem = ({ itemLabel, itemScore }) => {
+  if (!itemScore) {
+    return <div />;
   }
 
-  render() {
-    if (!this.props.itemScore) {
-      return <div />;
-    }
+  const score = itemScore / 2;
+  const starsToDisplay = [];
+  let displayed = 0;
 
-    const score = this.props.itemScore / 2;
-    const starsToDisplay = [];
-    let displayed = 0;
-
-    for (let i = 0; i < Math.floor(score); i++) {
-      starsToDisplay.push(<StyledFullStarIcon key={`star${i}`} />);
-      displayed++;
-    }
-    if (Math.floor(score) < score) {
-      starsToDisplay.push(<StyledHalfStarIcon key="starh" />);
-      displayed++;
-    }
-    if (displayed < 5) {
-      for (let i = displayed; i < 5; i++) {
-        starsToDisplay.push(<StyledEmptyStarIcon key={`star${i}`} />);
-      }
-    }
-
-    return (
-      <StatEntry>
-        <Translate>{this.props.itemLabel}</Translate>
-        <Stars>{starsToDisplay}</Stars>
-      </StatEntry>
-    );
+  for (let i = 0; i < Math.floor(score); i += 1) {
+    starsToDisplay.push(<StyledFullStarIcon key={`star${i}`} />);
+    displayed += 1;
   }
-}
+  if (Math.floor(score) < score) {
+    starsToDisplay.push(<StyledHalfStarIcon key="starh" />);
+    displayed += 1;
+  }
+  if (displayed < 5) {
+    for (let i = displayed; i < 5; i += 1) {
+      starsToDisplay.push(<StyledEmptyStarIcon key={`star${i}`} />);
+    }
+  }
+
+  return (
+    <StatEntry>
+      <Translate>{itemLabel}</Translate>
+      <Stars>{starsToDisplay}</Stars>
+    </StatEntry>
+  );
+};
 
 EntryStatItem.propTypes = {
   itemScore: PropTypes.number,
@@ -216,8 +214,14 @@ const EntryInfos = ({ timeInfo, entryInfo }) => (
 );
 
 EntryInfos.propTypes = {
-  timeInfo: PropTypes.object.isRequired,
-  entryInfo: PropTypes.object.isRequired,
+  timeInfo: PropTypes.shape({
+    eTTrail: PropTypes.any,
+    eTUnderground: PropTypes.any,
+  }).isRequired,
+  entryInfo: PropTypes.shape({
+    depth: PropTypes.number,
+    length: PropTypes.number,
+  }).isRequired,
 };
 
 const EntryInfoWrapper = styled.div`
@@ -243,52 +247,48 @@ const InfoUnit = styled.span`
   white-space: nowrap;
 `;
 
-export class EntryInfoItem extends Component {
-  constructor(props) {
-    super(props);
+const EntryInfoItem = ({
+  itemImg,
+  itemLabel,
+  itemType,
+  itemUnit,
+  itemValue,
+}) => {
+  let displayValue = itemValue;
+  if (displayValue === undefined || displayValue === null) {
+    return <span />;
   }
 
-  render() {
-    let displayValue = this.props.itemValue;
-    if (displayValue === undefined || displayValue === null) {
-      return <span />;
+  if (itemType === 'time') {
+    const splitTime = displayValue.split(':');
+    const curHours = parseInt(splitTime[0], 10);
+    const curMinutes = parseInt(splitTime[1], 10);
+    if (curHours === 0) {
+      const toTranslate = `${curMinutes} min`;
+      displayValue = <Translate>{toTranslate}</Translate>;
+    } else if (curMinutes === 0) {
+      const toTranslate = `${curHours} hour${curHours > 1 ? 's' : ''}`;
+      displayValue = <Translate>{toTranslate}</Translate>;
+    } else {
+      displayValue = (
+        <Translate>
+          {curHours} h {curMinutes}
+        </Translate>
+      );
     }
-
-    if (this.props.itemType === 'time') {
-      const splitTime = displayValue.split(':');
-      const curHours = parseInt(splitTime[0]);
-      const curMinutes = parseInt(splitTime[1]);
-      if (curHours === 0) {
-        const toTranslate = `${curMinutes} min`;
-        displayValue = <Translate>{toTranslate}</Translate>;
-      } else if (curMinutes === 0) {
-        const toTranslate = `${curHours} hour${curHours > 1 ? 's' : ''}`;
-        displayValue = <Translate>{toTranslate}</Translate>;
-      } else {
-        displayValue = (
-          <Translate>
-            {curHours} h {curMinutes}
-          </Translate>
-        );
-      }
-    }
-
-    return (
-      <EntryInfoWrapper>
-        <InfoImage
-          src={`images/${this.props.itemImg}`}
-          title={this.props.itemLabel}
-          alt={this.props.itemLabel}
-        />
-        <InfoValue>{displayValue}</InfoValue>
-        <InfoUnit>{this.props.itemUnit}</InfoUnit>
-      </EntryInfoWrapper>
-    );
   }
-}
+
+  return (
+    <EntryInfoWrapper>
+      <InfoImage src={`images/${itemImg}`} title={itemLabel} alt={itemLabel} />
+      <InfoValue>{displayValue}</InfoValue>
+      <InfoUnit>{itemUnit}</InfoUnit>
+    </EntryInfoWrapper>
+  );
+};
 
 EntryInfoItem.propTypes = {
-  itemValue: PropTypes.any,
+  itemValue: PropTypes.any, // eslint-disable-line react/forbid-prop-types
   itemUnit: PropTypes.string,
   itemLabel: PropTypes.string.isRequired,
   itemImg: PropTypes.string.isRequired,
@@ -340,30 +340,28 @@ const EntryWrapper = styled.div`
 //
 
 class RandomEntryCard extends Component {
-  constructor(props) {
-    super(props);
-  }
-
   componentDidMount() {
-    this.props.fetch();
+    const { fetch } = this.props;
+    fetch();
   }
 
   render() {
-    if (this.props.isFetching) {
+    const { entry, isFetching } = this.props;
+    if (isFetching) {
       return <CircularProgress />;
     }
-    if (this.props.entry && this.props.entry.id) {
-      let detailPageV2Link =
+    if (entry && entry.id) {
+      const detailPageV2Link =
         detailPageV2Links[locale] !== undefined
           ? detailPageV2Links[locale]
-          : detailPageV2Links['*']; //eslint-disable-line
+          : detailPageV2Links['*'];
       return (
         <RandomEntryLink
-          href={`${detailPageV2Link}&category=entry&id=${this.props.entry.id}`}
+          href={`${detailPageV2Link}&category=entry&id=${entry.id}`}
           target="blank"
         >
           <EntryWrapper>
-            <EntryData entry={this.props.entry} />
+            <EntryData entry={entry} />
           </EntryWrapper>
         </RandomEntryLink>
       );
@@ -375,7 +373,9 @@ class RandomEntryCard extends Component {
 RandomEntryCard.propTypes = {
   fetch: PropTypes.func.isRequired,
   isFetching: PropTypes.bool,
-  entry: PropTypes.object,
+  entry: PropTypes.shape({
+    id: PropTypes.any,
+  }),
 };
 
 export default RandomEntryCard;
