@@ -285,5 +285,5 @@ const self = (module.exports = {
    */
   sanitizeQuery: (sourceString) =>
     // eslint-disable-next-line no-useless-escape
-    sourceString.replace(/[`~!@#$%^&*()_|+\-=?;:'",<>\{\}\[\]\/]/gi, ' '),
+    sourceString.replace(/[`~!@#$%^&*()_|+\-=?;:",<>\{\}\[\]\/]/gi, ' '),
 });
