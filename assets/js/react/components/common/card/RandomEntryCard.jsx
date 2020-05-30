@@ -8,7 +8,6 @@ import styled from 'styled-components';
 import { withStyles } from '@material-ui/core';
 import GCLink from '../GCLink';
 import { detailPageV2Links } from '../../../conf/Config';
-import { GridRow, GridOneHalfColumn } from '../../../helpers/GridSystem';
 import Translate from '../Translate';
 
 //
@@ -16,6 +15,18 @@ import Translate from '../Translate';
 // S U B - C O M P O N E N T S
 //
 //
+
+const FlexWrapper = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+`;
+
+const FlexItemWrapper = styled.div`
+  flex: 1;
+  flex-basis: 300px;
+  margin: ${({ theme }) => theme.spacing(2)}px;
+  overflow: hidden;
+`;
 
 const EntryData = ({ entry }) => {
   if (!entry) {
@@ -26,14 +37,14 @@ const EntryData = ({ entry }) => {
     entryInfo && entryInfo.path ? <EntryImage src={entryInfo.path} /> : '';
 
   return (
-    <GridRow>
-      <GridOneHalfColumn>
+    <FlexWrapper>
+      <FlexItemWrapper>
         <EntryTitle entry={entry} />
         <EntryStat stat={stat} />
         <EntryInfos timeInfo={timeInfo} entryInfo={entryInfo} />
-      </GridOneHalfColumn>
-      {imageElement}
-    </GridRow>
+      </FlexItemWrapper>
+      <FlexItemWrapper>{imageElement}</FlexItemWrapper>
+    </FlexWrapper>
   );
 };
 
@@ -52,21 +63,29 @@ const EntryName = styled.h4`
   margin-bottom: 0;
 `;
 
-const EntryRegion = styled.h5`
+const EntryLocalizationPart = styled.h5`
   font-size: 1.5em;
+  margin-bottom: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 `;
 
-const EntryTitle = ({ entry }) => (
-  <div className="entryLocation" dir="ltr">
-    <EntryName>{entry.name}</EntryName>
-    <EntryRegion>
-      {entry.region} - {entry.country}
-    </EntryRegion>
-  </div>
-);
+const EntryTitle = ({ entry }) => {
+  const { county, country, name, region } = entry;
+  return (
+    <div className="entryLocation" dir="ltr">
+      <EntryName>{name}</EntryName>
+      {county && <EntryLocalizationPart>{county}</EntryLocalizationPart>}
+      {region && <EntryLocalizationPart>{region}</EntryLocalizationPart>}
+      {country && <EntryLocalizationPart>{country}</EntryLocalizationPart>}
+    </div>
+  );
+};
 
 EntryTitle.propTypes = {
   entry: PropTypes.shape({
+    county: PropTypes.string,
     country: PropTypes.string,
     name: PropTypes.string,
     region: PropTypes.string,
@@ -306,14 +325,14 @@ const NoImage = styled.img`
 `;
 
 const EntryImage = ({ src }) => (
-  <GridOneHalfColumn>
+  <>
     {!src && (
       <NoImage>
         <Translate>At this time, there is no image for this entry</Translate>
       </NoImage>
     )}
     {src && <TopoImage src={src} alt="topo" />}
-  </GridOneHalfColumn>
+  </>
 );
 
 EntryImage.propTypes = {
@@ -327,10 +346,10 @@ const RandomEntryLink = styled(GCLink)`
 
 const EntryWrapper = styled.div`
   background-color: rgba(110, 110, 110, 0.5);
-  margin: auto;
-  padding: 20px;
-  border-radius: 5px;
+  border-radius: ${({ theme }) => theme.spacing(1)}px;
   color: white;
+  margin: auto;
+  padding: ${({ theme }) => theme.spacing(3)}px;
 `;
 
 //
