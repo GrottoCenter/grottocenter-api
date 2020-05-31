@@ -1,7 +1,7 @@
-module.exports = function (grunt) {
+module.exports = function(grunt) {
   grunt.registerTask('linkAssetsBuildProd', [
     'sails-linker:prodJsBuild',
     'sails-linker:prodStylesBuild',
-    'sails-linker:clientSideTemplatesBuild'
+    'sails-linker:clientSideTemplatesBuild',
   ]);
 };

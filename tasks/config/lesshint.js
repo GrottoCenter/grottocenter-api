@@ -3,15 +3,14 @@
  *
  */
 module.exports = function(grunt) {
-
   grunt.config.set('lesshint', {
     dev: {
       src: ['assets/styles/**/*.less'],
       options: {
         allowWarnings: true,
-        lesshintrc: '.lesshintrc'
-      }
-    }
+        lesshintrc: '.lesshintrc',
+      },
+    },
   });
 
   grunt.loadNpmTasks('grunt-lesshint');

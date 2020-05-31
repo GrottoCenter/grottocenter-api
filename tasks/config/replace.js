@@ -14,24 +14,27 @@
  * 		https://github.com/gruntjs/grunt-contrib-copy
  */
 module.exports = function(grunt) {
-
   grunt.config.set('replace', {
     apiDev: {
       src: ['apiV*.yaml'], // source files array (supports minimatch)
       dest: 'assets/swagger/', // destination directory or file
-      replacements: [{
-        from: 'beta.grottocenter.org', // string replacement
-        to: 'localhost:1337'
-      }]
+      replacements: [
+        {
+          from: 'beta.grottocenter.org', // string replacement
+          to: 'localhost:1337',
+        },
+      ],
     },
     api: {
       src: ['apiV*.yaml'], // source files array (supports minimatch)
       dest: 'assets/swagger/', // destination directory or file
-      replacements: [{
-        from: 'localhost:1337', // string replacement
-        to: 'beta.grottocenter.org'
-      }]
-    }
+      replacements: [
+        {
+          from: 'localhost:1337', // string replacement
+          to: 'beta.grottocenter.org',
+        },
+      ],
+    },
   });
   grunt.loadNpmTasks('grunt-text-replace');
 };

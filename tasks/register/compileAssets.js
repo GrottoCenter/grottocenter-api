@@ -5,6 +5,6 @@ module.exports = function(grunt) {
     'copy:dev',
     'copy:rcSliderCss',
     'copy:swaggercss',
-    'browserify:dev'
+    'browserify:dev',
   ]);
 };
