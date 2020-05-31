@@ -1,4 +1,4 @@
-œmodule.exports = function(grunt) {
+module.exports = function(grunt) {
   grunt.registerTask('linkAssetsBuild', [
     'sails-linker:devJsBuild',
     'sails-linker:devStylesBuild',

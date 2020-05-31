@@ -50,8 +50,8 @@ module.exports = function(grunt) {
   // 2. Then uncomment the following code:
   //
   // ```
-  // // Load Grunt plugin from the node_modules/ folder.
-  // grunt.loadNpmTasks('grunt-contrib-less');
+  // Load Grunt plugin from the node_modules/ folder.
+  grunt.loadNpmTasks('grunt-contrib-less');
   // ```
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 };
