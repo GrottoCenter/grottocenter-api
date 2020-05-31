@@ -61,15 +61,16 @@
     "redux": "^4.0.5",
     "redux-debounced": "^0.5.0",
     "redux-thunk": "^2.2.0",
-    "sails": "^1.2.3",
-    "sails-hook-grunt": "^3.1.0",
+    "sails": "^1.2.4",
+    "sails-hook-grunt": "^4.0.0",
     "sails-hook-orm": "^2.0.0-0",
-    "sails-hook-sockets": "^1.5.2",
+    "sails-hook-sockets": "^2.0.0",
     "sails-mysql": "^1.0.1",
     "styled-components": "^5.1.0",
     "swagger-ui-dist": "^3.20.2",
     "underscore.date": "^0.6.1",
-    "underscore.string": "^3.3.4"
+    "underscore.string": "^3.3.4",
+    "snyk": "^1.333.0"
   },
   "scripts": {
     "start": "node app.js",
@@ -81,7 +82,9 @@
     "build": "NODE_ENV=production grunt prod",
     "format": "prettier --write \"**/*.+(js|jsx|json|css|md)\"",
     "storybook": "start-storybook -s ./assets -p 6006",
-    "build-storybook": "build-storybook"
+    "build-storybook": "build-storybook",
+    "snyk-protect": "snyk protect",
+    "prepare": "npm run snyk-protect"
   },
   "main": "app.js",
   "repository": {
@@ -164,5 +167,6 @@
   },
   "lint-staged": {
     "*.{js,jsx}": "eslint --cache --fix"
-  }
+  },
+  "snyk": true
 }
