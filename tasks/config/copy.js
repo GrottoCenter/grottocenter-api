@@ -41,16 +41,6 @@ module.exports = function(grunt) {
         },
       ],
     },
-    rcSliderCss: {
-      files: [
-        {
-          expand: true,
-          cwd: './node_modules/rc-slider/assets',
-          src: 'index.css',
-          dest: 'assets/styles/',
-        },
-      ],
-    },
     swaggercss: {
       files: [
         {
