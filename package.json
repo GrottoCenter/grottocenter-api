@@ -38,7 +38,7 @@
     "react": "^16.12.0",
     "react-alice-carousel": "^1.17.3",
     "react-csv": "^1.1.1",
-    "react-device-detect": "^1.6.2",
+    "react-device-detect": "^1.12.1",
     "react-dom": "^16.12.0",
     "react-error-boundary": "^1.2.5",
     "react-getscreen": "^1.1.3",
