@@ -8,6 +8,6 @@ module.exports = function(grunt) {
     'cssmin',
     'sails-linker:prodJs',
     'sails-linker:prodStyles',
-    'sails-linker:clientSideTemplates',
+    // 'sails-linker:clientSideTemplates', // Templates are not used in Grottocenter currently
   ]);
 };
