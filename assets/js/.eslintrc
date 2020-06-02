@@ -41,7 +41,8 @@
     "window": true,
     "document": true,
     "locale": true,
-    "localesList": true
+    "localesList": true,
+    "fetch": true
   },
   "plugins": ["prettier"]
 }

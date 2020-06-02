@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from 'react';
 import { debounce } from 'lodash';
 import { placesAutocomplete } from '../conf/Config';
 
-const API_KEY = 'AIzaSyDEhu_hKSYRA_z3alWshvH2P41vDdHgO2o';
 /**
  * Custom hook that fetches and returns places predictions
  * @param input : String containing the user research (eg : fra)
@@ -26,15 +25,11 @@ export default function useLocationPredictions(
    * @return Object containing a latitude, longitude and a radius
    */
   function getLocalizationRestriction(boundsGoogle) {
-    const latCenter = boundsGoogle.getCenter().lat();
-    const lngCenter = boundsGoogle.getCenter().lng();
-    const latNE = boundsGoogle.getNorthEast().lat();
-    const lngNE = boundsGoogle.getNorthEast().lng();
     // Convert lat or lng from decimal degrees into radians
-    const lat1 = latCenter / 57.2958;
-    const lon1 = lngCenter / 57.2958;
-    const lat2 = latNE / 57.2958;
-    const lon2 = lngNE / 57.2958;
+    const lat1 = boundsGoogle.latCenter / 57.2958;
+    const lon1 = boundsGoogle.lngCenter / 57.2958;
+    const lat2 = boundsGoogle.latNE / 57.2958;
+    const lon2 = boundsGoogle.lngNE / 57.2958;
     // r = radius of the earth in statute miles
     const r = 3963.0;
     // distance = circle radius from center to Northeast corner of bounds
@@ -47,8 +42,8 @@ export default function useLocationPredictions(
     // convert to meters
     dis = dis * 1.60934 * 1000;
     return {
-      lat: latCenter,
-      lng: lngCenter,
+      lat: boundsGoogle.latCenter,
+      lng: boundsGoogle.lngCenter,
       radius: dis,
     };
   }
@@ -98,41 +93,24 @@ export default function useLocationPredictions(
     countryRestriction,
     boundsRestriction,
   ) {
-    const service = new window.google.maps.places.AutocompleteService();
+    let url = `${placesAutocomplete}`;
     if (typeAdmin === 'city' || typeAdmin === 'county') {
       const localization = getLocalizationRestriction(boundsRestriction);
-      fetch(
-        `${placesAutocomplete}?input=${userInput}&types=${
-          typeAdmin === 'city' ? '(cities)' : '(regions)'
-        }&key=${API_KEY}&location=${localization.lat},${localization.lng}&radius=${localization.radius}&strictbounds=true`,
-        {
-          method: 'GET',
-        },
-      )
-        .then((resp) => {
-          return resp.json();
-        })
-        .then((data) => {
-          setPredictions(sortPredictions(data.predictions, typeAdmin));
-        });
+      url += `?input=${userInput}&type=${typeAdmin}&location=${localization.lat},${localization.lng}&radius=${localization.radius}`;
+    } else if (typeAdmin === 'country') {
+      url += `?input=${userInput}&type=${typeAdmin}`;
     } else {
-      service.getPlacePredictions(
-        typeAdmin === 'country'
-          ? {
-              input: userInput,
-              types: ['(regions)'],
-            }
-          : {
-              input: userInput,
-              types: ['(regions)'],
-              componentRestrictions: { country: countryRestriction },
-            },
-        (suggestions) => {
-          if (suggestions)
-            setPredictions(sortPredictions(suggestions, typeAdmin));
-        },
-      );
+      url += `?input=${userInput}&type=${typeAdmin}&country=${countryRestriction}`;
     }
+    fetch(url, {
+      method: 'GET',
+    })
+      .then((resp) => {
+        return resp.json();
+      })
+      .then((data) => {
+        setPredictions(sortPredictions(data.predictions, typeAdmin));
+      });
   }
   // Set a timeout to avoid redoing the request
   const debouncedFetchPlacePredictions = useCallback(
