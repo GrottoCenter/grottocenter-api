@@ -21,7 +21,6 @@
  */
 
 module.exports.routes = {
-
   //  ╦ ╦╔═╗╔╗ ╔═╗╔═╗╔═╗╔═╗╔═╗
   //  ║║║║╣ ╠╩╗╠═╝╠═╣║ ╦║╣ ╚═╗
   //  ╚╩╝╚═╝╚═╝╩  ╩ ╩╚═╝╚═╝╚═╝
@@ -39,18 +38,18 @@ module.exports.routes = {
   '/': {
     controller: 'Index',
     action: 'index',
-    csrf: true
+    csrf: true,
   },
 
   '/ui/*': {
     controller: 'Index',
     action: 'index',
-    csrf: true
+    csrf: true,
   },
 
   '/admin/*': {
     controller: 'Index',
-    action: 'index'
+    action: 'index',
   },
 
   /***************************************************************************
@@ -66,27 +65,26 @@ module.exports.routes = {
   /* CSRF */
 
   'GET /csrfToken': {
-    action: 'security/grant-csrf-token'
+    action: 'security/grant-csrf-token',
   },
 
   /* For ReactRouter routes */
 
   'GET /auth/*': {
-    view: 'grottocenter'
+    view: 'grottocenter',
   },
 
   'GET /auth/signin': {
-    view: 'grottocenter'
+    view: 'grottocenter',
   },
 
   'GET /auth/signup': {
-    view: 'grottocenter'
+    view: 'grottocenter',
   },
 
   'GET /ui/swagger/': {
-    csrf: false
+    csrf: false,
   },
-
 
   //  ╔═╗╔═╗╦  ╔═╗╔╗╔╔╦╗╔═╗╔═╗╦╔╗╔╔╦╗╔═╗
   //  ╠═╣╠═╝║  ║╣ ║║║ ║║╠═╝║ ║║║║║ ║ ╚═╗
@@ -96,29 +94,29 @@ module.exports.routes = {
 
   'POST /api/auth/login': {
     controller: 'Auth',
-    action: 'login'
+    action: 'login',
   },
 
   'GET /api/auth/logout': {
     controller: 'Auth',
-    action: 'logout'
+    action: 'logout',
   },
 
   /* Caver controller */
 
   'GET /api/cavers/': {
     controller: 'Caver',
-    action: 'find'
+    action: 'find',
   },
 
   'POST /api/cavers/': {
     controller: 'Caver',
-    action: 'create'
+    action: 'create',
   },
 
   'GET /api/cavers/findAll': {
     controller: 'Caver',
-    action: 'findAll'
+    action: 'findAll',
   },
 
   'GET /api/v1/search/findAll': {
@@ -129,39 +127,39 @@ module.exports.routes = {
       limit: 50,
     },
     cors: {
-      allowOrigins: '*'
-    }
+      allowOrigins: '*',
+    },
   },
 
   'GET /api/cavers/count': {
     controller: 'Caver',
-    action: 'getCaversNumber'
+    action: 'getCaversNumber',
   },
 
   'GET /api/cavers/:id': {
     controller: 'Caver',
-    action: 'find'
+    action: 'find',
   },
 
   'GET /api/:version/cavers/:id': {
     controller: 'Caver',
-    action: 'findVersion'
+    action: 'findVersion',
   },
 
   'PUT /api/cavers/:id': {
     controller: 'Caver',
-    action: 'update'
+    action: 'update',
   },
 
   'DELETE /api/cavers/:id': {
     controller: 'Caver',
-    action: 'destroy'
+    action: 'destroy',
   },
 
   /* Entry controller */
   'GET /api/entries/findAll': {
     controller: 'Entry',
-    action: 'findAll'
+    action: 'findAll',
   },
 
   'GET /api/v1/entries': {
@@ -172,13 +170,13 @@ module.exports.routes = {
       limit: 50,
     },
     cors: {
-      allowOrigins: '*'
-    }
+      allowOrigins: '*',
+    },
   },
 
   'GET /api/entries/findRandom': {
     controller: 'Entry',
-    action: 'findRandom'
+    action: 'findRandom',
   },
 
   // /!\ DEPRECATED /!\
@@ -186,21 +184,21 @@ module.exports.routes = {
     controller: 'v1/Entry',
     action: 'getPublicEntriesNumber',
     cors: {
-      allowOrigins: '*'
-    }
+      allowOrigins: '*',
+    },
   },
 
   'GET /api/entries/count': {
     controller: 'Entry',
-    action: 'getEntriesNumber'
+    action: 'getEntriesNumber',
   },
 
   'GET /api/v1/entries/:id': {
     controller: 'v1/Entry',
     action: 'find',
     cors: {
-      allowOrigins: '*'
-    }
+      allowOrigins: '*',
+    },
   },
 
   // /!\ DEPRECATED (use plural route) /!\
@@ -208,159 +206,159 @@ module.exports.routes = {
     controller: 'v1/Entry',
     action: 'find',
     cors: {
-      allowOrigins: '*'
-    }
+      allowOrigins: '*',
+    },
   },
 
   /* REST API for Cave controller */
   'POST /api/caves/': {
     controller: 'Cave',
-    action: 'create'
+    action: 'create',
   },
 
   'GET /api/caves/findAll': {
     controller: 'Cave',
-    action: 'findAll'
+    action: 'findAll',
   },
 
   'GET /api/caves/:id': {
     controller: 'Cave',
-    action: 'find'
+    action: 'find',
   },
 
   'PUT /api/caves/:id': {
     controller: 'Cave',
-    action: 'update'
+    action: 'update',
   },
 
   'DELETE /api/caves/:id': {
     controller: 'Cave',
-    action: 'delete'
+    action: 'delete',
   },
 
   /* Author controller */
 
   'POST /api/authors/': {
     controller: 'Author',
-    action: 'create'
+    action: 'create',
   },
 
   'GET /api/authors/:id': {
     controller: 'Author',
-    action: 'find'
+    action: 'find',
   },
 
   'PUT /api/authors/:id': {
     controller: 'Author',
-    action: 'update'
+    action: 'update',
   },
 
   'DELETE /api/authors/:id': {
     controller: 'Author',
-    action: 'delete'
+    action: 'delete',
   },
 
   'GET /api/authors/findAll': {
     controller: 'Author',
-    action: 'findAll'
+    action: 'findAll',
   },
 
   /* REST API for Partner controller */
 
   'POST /api/partners/': {
     controller: 'Partner',
-    action: 'create'
+    action: 'create',
   },
 
   'GET /api/partners/findAll': {
     controller: 'Partner',
-    action: 'findAll'
+    action: 'findAll',
   },
 
   'GET /api/partners/findForCarousel/:skip/:limit': {
     controller: 'Partner',
-    action: 'findForCarousel'
+    action: 'findForCarousel',
   },
 
   'GET /api/partners/findForCarousel': {
     controller: 'Partner',
-    action: 'findForCarousel'
+    action: 'findForCarousel',
   },
 
   'GET /api/partners/:id': {
     controller: 'Partner',
-    action: 'find'
+    action: 'find',
   },
 
   'PUT /api/partners/:id': {
     controller: 'Partner',
-    action: 'update'
+    action: 'update',
   },
 
   'DELETE /api/partners/:id': {
     controller: 'Partner',
-    action: 'delete'
+    action: 'delete',
   },
 
   /* REST API for Topography controller */
 
   'POST /api/topos/': {
     controller: 'Topography',
-    action: 'create'
+    action: 'create',
   },
 
   'GET /api/topos/findAll': {
     controller: 'Topography',
-    action: 'findAll'
+    action: 'findAll',
   },
 
   'GET /api/topos/:id': {
     controller: 'Topography',
-    action: 'find'
+    action: 'find',
   },
 
   'PUT /api/topos/:id': {
     controller: 'Topography',
-    action: 'update'
+    action: 'update',
   },
 
   'DELETE /api/topos/:id': {
     controller: 'Topography',
-    action: 'delete'
+    action: 'delete',
   },
 
   /* REST API for Comment controller */
 
   'GET /api/comments/stats/:entry': {
     controller: 'Comment',
-    action: 'getEntryStats'
+    action: 'getEntryStats',
   },
 
   'GET /api/comments/timeinfos/:entry': {
     controller: 'Comment',
-    action: 'getEntryTimeInfos'
+    action: 'getEntryTimeInfos',
   },
 
   /* REST API for Grotto controller */
 
   'GET /api/grottos/findAll': {
     controller: 'Grotto',
-    action: 'findAll'
+    action: 'findAll',
   },
 
   'GET /api/grottos/officialCount': {
     controller: 'Grotto',
-    action: 'getOfficialPartnersNumber'
+    action: 'getOfficialPartnersNumber',
   },
 
   'GET /api/grottos/count': {
     controller: 'Grotto',
-    action: 'getPartnersNumber'
+    action: 'getPartnersNumber',
   },
 
   'GET /api/grottos/:id': {
     controller: 'Grotto',
-    action: 'find'
+    action: 'find',
   },
 
   'GET /api/v1/grottos/:id': {
@@ -371,14 +369,14 @@ module.exports.routes = {
       limit: 50,
     },
     cors: {
-      allowOrigins: '*'
-    }
+      allowOrigins: '*',
+    },
   },
 
   /* REST API for Massif controller */
   'GET /api/massifs/:id': {
     controller: 'Massif',
-    action: 'find'
+    action: 'find',
   },
 
   'GET /api/v1/massifs/:id': {
@@ -389,8 +387,8 @@ module.exports.routes = {
       limit: 50,
     },
     cors: {
-      allowOrigins: '*'
-    }
+      allowOrigins: '*',
+    },
   },
 
   /* REST API for BBS controllers */
@@ -402,13 +400,13 @@ module.exports.routes = {
       limit: 50,
     },
     cors: {
-      allowOrigins: '*'
-    }
+      allowOrigins: '*',
+    },
   },
 
   'GET /api/v1/bbs/count': {
     controller: 'v1/Bbs',
-    action: 'count'
+    action: 'count',
   },
 
   'GET /api/v1/bbs-geos/:id': {
@@ -419,8 +417,8 @@ module.exports.routes = {
       limit: 50,
     },
     cors: {
-      allowOrigins: '*'
-    }
+      allowOrigins: '*',
+    },
   },
 
   'GET /api/v1/bbs/subthemes/:id': {
@@ -431,8 +429,8 @@ module.exports.routes = {
       limit: 50,
     },
     cors: {
-      allowOrigins: '*'
-    }
+      allowOrigins: '*',
+    },
   },
 
   'GET /api/v1/bbs/subthemes': {
@@ -442,21 +440,21 @@ module.exports.routes = {
       entity: 'bbsChapter',
     },
     cors: {
-      allowOrigins: '*'
-    }
+      allowOrigins: '*',
+    },
   },
 
   /* REST API for Admin controller */
   'GET /api/admin/entries/findAllOfInterest': {
     controller: 'Admin',
-    action: 'findAllInterestEntries'
+    action: 'findAllInterestEntries',
   },
 
   /* Rss controller */
 
   'GET /api/rss/:language': {
     controller: 'Rss',
-    action: 'getFeed'
+    action: 'getFeed',
   },
 
   /* Geo localisation API */
@@ -465,15 +463,15 @@ module.exports.routes = {
     controller: 'v1/GeoLoc',
     action: 'countEntries',
     cors: {
-      allowOrigins: '*'
-    }
+      allowOrigins: '*',
+    },
   },
 
   'GET /api/v1/geoloc/findByBounds': {
     controller: 'v1/GeoLoc',
     action: 'findByBounds',
     cors: {
-      allowOrigins: '*'
+      allowOrigins: '*',
     },
   },
 
@@ -482,33 +480,59 @@ module.exports.routes = {
     controller: 'v1/Search',
     action: 'search',
     cors: {
-      allowOrigins: '*'
-    }
+      allowOrigins: '*',
+    },
   },
 
   'GET /api/v1/advanced-search': {
     controller: 'v1/Search',
     action: 'advancedSearch',
     cors: {
-      allowOrigins: '*'
-    }
+      allowOrigins: '*',
+    },
   },
 
   /* Convert */
 
-  'GET /api/convert' : {
+  'GET /api/convert': {
     controller: 'ConvertController',
     action: 'convert',
     cors: {
-      allowOrigins: '*'
-    }
+      allowOrigins: '*',
+    },
   },
 
+  /* GeoAutocomplete  */
+
+  'GET /api/getPlacePredictions': {
+    controller: 'GeoAutocompleteController',
+    action: 'getSuggestions',
+    cors: {
+      allowOrigins: [
+        'http://beta.grottocenter.org/',
+        'http://beta2.grottocenter.org/',
+        'https://www.grottocenter.org/',
+        '*',
+      ],
+    },
+  },
+
+  'GET /api/getPlaceDetails': {
+    controller: 'GeoAutocompleteController',
+    action: 'getPlaceDetails',
+    cors: {
+      allowOrigins: [
+        'http://beta.grottocenter.org/',
+        'http://beta2.grottocenter.org/',
+        'https://www.grottocenter.org/',
+        '*',
+      ],
+    },
+  },
 
   //  ╦ ╦╔═╗╔╗ ╦ ╦╔═╗╔═╗╦╔═╔═╗
   //  ║║║║╣ ╠╩╗╠═╣║ ║║ ║╠╩╗╚═╗
   //  ╚╩╝╚═╝╚═╝╩ ╩╚═╝╚═╝╩ ╩╚═╝
-
 
   //  ╔╦╗╦╔═╗╔═╗
   //  ║║║║╚═╗║
