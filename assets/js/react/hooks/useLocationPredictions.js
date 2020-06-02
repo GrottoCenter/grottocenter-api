@@ -13,6 +13,7 @@ import { placesAutocomplete } from '../conf/Config';
 export default function useLocationPredictions(
   input,
   type,
+  token,
   country = null,
   bounds = null,
   startLength = 3,
@@ -83,6 +84,7 @@ export default function useLocationPredictions(
    * Fetches places suggestions with user input and localization optional params
    * @param userInput : String containing the user research (eg : fra)
    * @param typeAdmin : String that can only be (country, region, county, city)
+   * @param sessionToken : String to reduce Google API requests per session
    * @param countryRestriction : Optional string containing a Iso2 country code
    * @param boundsRestriction : Optional LatLng Google object
    * @return : An array of Google places object https://developers.google.com/places/web-service/autocomplete?hl=fr#place_autocomplete_results
@@ -90,17 +92,18 @@ export default function useLocationPredictions(
   function fetchPlacesPredictions(
     userInput,
     typeAdmin,
+    sessionToken,
     countryRestriction,
     boundsRestriction,
   ) {
-    let url = `${placesAutocomplete}`;
+    let url = `${placesAutocomplete}?sessionToken=${sessionToken}`;
     if (typeAdmin === 'city' || typeAdmin === 'county') {
       const localization = getLocalizationRestriction(boundsRestriction);
-      url += `?input=${userInput}&type=${typeAdmin}&location=${localization.lat},${localization.lng}&radius=${localization.radius}`;
+      url += `&input=${userInput}&type=${typeAdmin}&location=${localization.lat},${localization.lng}&radius=${localization.radius}`;
     } else if (typeAdmin === 'country') {
-      url += `?input=${userInput}&type=${typeAdmin}`;
+      url += `&input=${userInput}&type=${typeAdmin}`;
     } else {
-      url += `?input=${userInput}&type=${typeAdmin}&country=${countryRestriction}`;
+      url += `&input=${userInput}&type=${typeAdmin}&country=${countryRestriction}`;
     }
     fetch(url, {
       method: 'GET',
@@ -120,7 +123,7 @@ export default function useLocationPredictions(
 
   useEffect(() => {
     if (input.length >= startLength)
-      debouncedFetchPlacePredictions(input, type, country, bounds);
+      debouncedFetchPlacePredictions(input, type, token, country, bounds);
   }, [input]);
 
   return predictions;

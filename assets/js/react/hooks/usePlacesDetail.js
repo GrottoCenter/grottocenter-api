@@ -5,17 +5,18 @@ import { placesDetail } from '../conf/Config';
 /**
  * Hook used to translate Google places and retrieve Google places detail
  */
-export default function usePlacesDetail(placeId, countryCode) {
+export default function usePlacesDetail(placeId, countryCode, token) {
   const [placeDetail, setPlaceDetail] = useState([]);
 
   /**
    * Retrieves the detail of the given Google Places id in the given language
    * @param id : Google places ID
    * @param languageCode : optional Iso2 country code
+   * @param sessionToken : String to reduce Google API requests per session
    * @return : Google Places detailed object https://developers.google.com/places/web-service/details?hl=fr#PlaceDetailsResults in the language specified
    */
-  function getPlaceDetail(id, languageCode = null) {
-    let url = `${placesDetail}?place_id=${id}`;
+  function getPlaceDetail(id, languageCode = null, sessionToken) {
+    let url = `${placesDetail}?place_id=${id}&sessionToken=${sessionToken}`;
     if (languageCode) {
       url += `&language=${languageCode}`;
     }
@@ -53,7 +54,7 @@ export default function usePlacesDetail(placeId, countryCode) {
 
   useEffect(() => {
     if (placeId !== '') {
-      debouncedFetchPlaceDetail(placeId, countryCode);
+      debouncedFetchPlaceDetail(placeId, countryCode, token);
     }
   }, [placeId]);
 
