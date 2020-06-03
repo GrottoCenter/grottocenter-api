@@ -1,6 +1,6 @@
-module.exports = function (grunt) {
+module.exports = function(grunt) {
   grunt.registerTask('prod', [
-    //'copy:swaggercss',
+    'copy:swaggercss',
     'replace:api',
     'compileAssets',
     'concat',
@@ -8,6 +8,6 @@ module.exports = function (grunt) {
     'cssmin',
     'sails-linker:prodJs',
     'sails-linker:prodStyles',
-    'sails-linker:clientSideTemplates'
+    // 'sails-linker:clientSideTemplates', // Templates are not used in Grottocenter currently
   ]);
 };

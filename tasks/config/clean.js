@@ -10,10 +10,9 @@
  *
  */
 module.exports = function(grunt) {
-
   grunt.config.set('clean', {
     dev: ['.tmp/public/**'],
-    build: ['www']
+    build: ['www'],
   });
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -39,5 +38,4 @@ module.exports = function(grunt) {
   // grunt.loadNpmTasks('grunt-contrib-clean');
   // ```
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
 };

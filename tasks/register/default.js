@@ -1,4 +1,4 @@
-module.exports = function (grunt) {
+module.exports = function(grunt) {
   grunt.registerTask('default', [
     'eslint:dev',
     'lesshint:dev',
@@ -7,6 +7,6 @@ module.exports = function (grunt) {
     'replace:apiDev',
     'compileAssets',
     'linkAssets',
-    'watch'
+    'watch',
   ]);
 };

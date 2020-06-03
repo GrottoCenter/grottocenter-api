@@ -10,22 +10,25 @@
  *
  */
 module.exports = function(grunt) {
-
   grunt.config.set('less', {
     dev: {
       options: {
         plugins: [
-          new (require('less-plugin-autoprefix'))({browsers: ['last 2 versions']})
-        ]
+          new (require('less-plugin-autoprefix'))({
+            browsers: ['last 2 versions'],
+          }),
+        ],
       },
-      files: [{
-        expand: true,
-        cwd: 'assets/styles/',
-        src: ['importer.less'],
-        dest: '.tmp/public/styles/',
-        ext: '.css'
-      }]
-    }
+      files: [
+        {
+          expand: true,
+          cwd: 'assets/styles/',
+          src: ['importer.less'],
+          dest: '.tmp/public/styles/',
+          ext: '.css',
+        },
+      ],
+    },
   });
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -47,9 +50,8 @@ module.exports = function(grunt) {
   // 2. Then uncomment the following code:
   //
   // ```
-  // // Load Grunt plugin from the node_modules/ folder.
-  // grunt.loadNpmTasks('grunt-contrib-less');
+  // Load Grunt plugin from the node_modules/ folder.
+  grunt.loadNpmTasks('grunt-contrib-less');
   // ```
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
 };

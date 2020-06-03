@@ -10,48 +10,47 @@
  *
  */
 module.exports = function(grunt) {
-
   grunt.config.set('copy', {
     dev: {
-      files: [{
-        expand: true,
-        cwd: './assets',
-        src: ['**/*.!(jsx|coffee|less)'],
-        dest: '.tmp/public'
-      }]
+      files: [
+        {
+          expand: true,
+          cwd: './assets',
+          src: ['**/*.!(jsx|coffee|less)'],
+          dest: '.tmp/public',
+        },
+      ],
     },
     build: {
-      files: [{
-        expand: true,
-        cwd: '.tmp/public',
-        src: ['**/*'],
-        dest: 'www'
-      }]
+      files: [
+        {
+          expand: true,
+          cwd: '.tmp/public',
+          src: ['**/*'],
+          dest: 'www',
+        },
+      ],
     },
     beforeLinkBuildProd: {
-      files: [{
-        expand: true,
-        cwd: '.tmp/public/hash',
-        src: ['**/*'],
-        dest: '.tmp/public/dist'
-      }]
-    },
-    rcSliderCss: {
-      files: [{
-        expand: true,
-        cwd: './node_modules/rc-slider/assets',
-        src: 'index.css',
-        dest: 'assets/styles/'
-      }]
+      files: [
+        {
+          expand: true,
+          cwd: '.tmp/public/hash',
+          src: ['**/*'],
+          dest: '.tmp/public/dist',
+        },
+      ],
     },
     swaggercss: {
-      files: [{
-        expand: true,
-        cwd: './node_modules/swagger-ui-dist',
-        src: 'swagger-ui.css',
-        dest: 'assets/styles/'
-      }]
-    }
+      files: [
+        {
+          expand: true,
+          cwd: './node_modules/swagger-ui-dist',
+          src: 'swagger-ui.css',
+          dest: 'assets/styles/',
+        },
+      ],
+    },
   });
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -77,5 +76,4 @@ module.exports = function(grunt) {
   // grunt.loadNpmTasks('grunt-contrib-copy');
   // ```
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
 };
