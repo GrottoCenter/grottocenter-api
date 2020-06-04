@@ -47,6 +47,9 @@ const QuickSearch = ({ ...autoCompleteProps }) => {
         case 'bbs':
           history.push(`/ui/bbs/${encodeURIComponent(selection.id)}`);
           break;
+        case 'grotto':
+          history.push(`/ui/groups/${encodeURIComponent(selection.id)}`);
+          break;
         default:
       }
     }
