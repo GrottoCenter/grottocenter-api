@@ -23,7 +23,10 @@ import { isMobileOnly } from 'react-device-detect';
 import { Icon } from '@material-ui/core';
 import Skeleton from '@material-ui/lab/Skeleton';
 import { divIcon, Point } from 'leaflet';
-import FullscreenControl from 'react-leaflet-fullscreen';
+
+// C. ROIG 04/06/2020 : currently broken
+// import FullscreenControl from 'react-leaflet-fullscreen';
+
 import PropTypes from 'prop-types';
 
 const EntryIconMap = () => (
@@ -106,7 +109,8 @@ const MultipleMarkers = ({ positions, loading }) => {
           viewport={null}
           scrollWheelZoom={false}
         >
-          <FullscreenControl />
+          {/* C. ROIG 04/06/2020 : currently broken */}
+          {/* <FullscreenControl /> */}
           <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
