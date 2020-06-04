@@ -1,0 +1,95 @@
+# Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.
+version: v1.14.1
+ignore: {}
+# patches apply the minimum changes required to fix a vulnerability
+patch:
+  'npm:hawk:20160119':
+    - grunt-transifex > request > hawk:
+        patched: '2020-06-04T10:03:12.857Z'
+  'npm:http-signature:20150122':
+    - grunt-transifex > request > http-signature:
+        patched: '2020-06-04T10:03:12.857Z'
+  SNYK-JS-LODASH-567746:
+    - lodash:
+        patched: '2020-06-04T10:03:12.857Z'
+    - browserify-css > lodash:
+        patched: '2020-06-04T10:03:12.857Z'
+    - elasticsearch > lodash:
+        patched: '2020-06-04T10:03:12.857Z'
+    - sails > async > lodash:
+        patched: '2020-06-04T10:03:12.857Z'
+    - sails-hook-orm > async > lodash:
+        patched: '2020-06-04T10:03:12.857Z'
+    - sails-hook-sockets > async > lodash:
+        patched: '2020-06-04T10:03:12.857Z'
+    - sails-mysql > async > lodash:
+        patched: '2020-06-04T10:03:12.857Z'
+    - styled-components > @babel/traverse > lodash:
+        patched: '2020-06-04T10:03:12.857Z'
+    - styled-components > babel-plugin-styled-components > lodash:
+        patched: '2020-06-04T10:03:12.857Z'
+    - sails > machinepack-redis > async > lodash:
+        patched: '2020-06-04T10:03:12.857Z'
+    - sails > sails-generate > async > lodash:
+        patched: '2020-06-04T10:03:12.857Z'
+    - sails > skipper > async > lodash:
+        patched: '2020-06-04T10:03:12.857Z'
+    - sails-hook-orm > sails-disk > async > lodash:
+        patched: '2020-06-04T10:03:12.857Z'
+    - sails-hook-orm > waterline-utils > async > lodash:
+        patched: '2020-06-04T10:03:12.857Z'
+    - sails-mysql > waterline-utils > async > lodash:
+        patched: '2020-06-04T10:03:12.857Z'
+    - sails-hook-orm > waterline > async > lodash:
+        patched: '2020-06-04T10:03:12.857Z'
+    - sails-hook-sockets > machinepack-redis > async > lodash:
+        patched: '2020-06-04T10:03:12.857Z'
+    - sails-hook-orm > waterline > encrypted-attr > lodash:
+        patched: '2020-06-04T10:03:12.857Z'
+    - styled-components > @babel/helper-module-imports > @babel/types > lodash:
+        patched: '2020-06-04T10:03:12.857Z'
+    - styled-components > @babel/traverse > @babel/types > lodash:
+        patched: '2020-06-04T10:03:12.857Z'
+    - styled-components > @babel/traverse > @babel/generator > lodash:
+        patched: '2020-06-04T10:03:12.857Z'
+    - sails-hook-orm > waterline > waterline-utils > async > lodash:
+        patched: '2020-06-04T10:03:12.857Z'
+    - sails-mysql > machinepack-mysql > waterline-sql-builder > knex > lodash:
+        patched: '2020-06-04T10:03:12.857Z'
+    - styled-components > babel-plugin-styled-components > @babel/helper-module-imports > @babel/types > lodash:
+        patched: '2020-06-04T10:03:12.857Z'
+    - styled-components > babel-plugin-styled-components > @babel/helper-annotate-as-pure > @babel/types > lodash:
+        patched: '2020-06-04T10:03:12.857Z'
+    - styled-components > @babel/traverse > @babel/generator > @babel/types > lodash:
+        patched: '2020-06-04T10:03:12.857Z'
+    - styled-components > @babel/traverse > @babel/helper-function-name > @babel/types > lodash:
+        patched: '2020-06-04T10:03:12.857Z'
+    - styled-components > @babel/traverse > @babel/helper-split-export-declaration > @babel/types > lodash:
+        patched: '2020-06-04T10:03:12.857Z'
+    - sails-mysql > machinepack-mysql > waterline-sql-builder > waterline-utils > async > lodash:
+        patched: '2020-06-04T10:03:12.857Z'
+    - styled-components > @babel/traverse > @babel/helper-function-name > @babel/helper-get-function-arity > @babel/types > lodash:
+        patched: '2020-06-04T10:03:12.857Z'
+    - styled-components > @babel/traverse > @babel/helper-function-name > @babel/template > @babel/types > lodash:
+        patched: '2020-06-04T10:03:12.857Z'
+  'npm:lodash:20180130':
+    - sails-hook-sockets > machinepack-redis > machine > include-all > lodash:
+        patched: '2020-06-04T10:03:12.857Z'
+  'npm:mime:20170907':
+    - grunt-transifex > request > mime:
+        patched: '2020-06-04T10:03:12.857Z'
+    - grunt-transifex > request > form-data > mime:
+        patched: '2020-06-04T10:03:12.857Z'
+  'npm:minimatch:20160620':
+    - grunt-transifex > grunt > findup-sync > glob > minimatch:
+        patched: '2020-06-04T10:03:12.857Z'
+    - grunt-transifex > grunt > minimatch:
+        patched: '2020-06-04T10:03:12.857Z'
+    - grunt-transifex > grunt > glob > minimatch:
+        patched: '2020-06-04T10:03:12.857Z'
+  'npm:qs:20140806-1':
+    - grunt-transifex > request > qs:
+        patched: '2020-06-04T10:03:12.857Z'
+  'npm:request:20160119':
+    - grunt-transifex > request:
+        patched: '2020-06-04T10:03:12.857Z'
