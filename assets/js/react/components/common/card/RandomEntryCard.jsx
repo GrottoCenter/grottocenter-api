@@ -8,7 +8,6 @@ import styled from 'styled-components';
 import { withStyles } from '@material-ui/core';
 import GCLink from '../GCLink';
 import { detailPageV2Links } from '../../../conf/Config';
-import { GridRow, GridOneHalfColumn } from '../../../helpers/GridSystem';
 import Translate from '../Translate';
 
 //
@@ -17,40 +16,46 @@ import Translate from '../Translate';
 //
 //
 
-export class EntryData extends Component {
-  constructor(props) {
-    super(props);
+const FlexWrapper = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+`;
+
+const FlexItemWrapper = styled.div`
+  flex: 1;
+  flex-basis: 300px;
+  margin: ${({ theme }) => theme.spacing(2)}px;
+  overflow: hidden;
+`;
+
+const EntryData = ({ entry }) => {
+  if (!entry) {
+    return <div />;
   }
+  const { entryInfo, stat, timeInfo } = entry;
+  const imageElement =
+    entryInfo && entryInfo.path ? <EntryImage src={entryInfo.path} /> : '';
 
-  render() {
-    if (!this.props.entry) {
-      return <div />;
-    }
-    const stat = this.props.entry.stat;
-    const entryInfo = this.props.entry.entryInfo;
-    const timeInfo = this.props.entry.timeInfo;
-    let lang = locale.substring(0, 1).toUpperCase() + locale.substring(1, locale.length); //eslint-disable-line
-
-    let imageElement = <div />;
-    if (entryInfo && entryInfo.path) {
-      imageElement = <EntryImage src={entryInfo.path} />;
-    }
-
-    return (
-      <GridRow>
-        <GridOneHalfColumn>
-          <EntryTitle entry={this.props.entry} />
-          <EntryStat stat={stat} />
-          <EntryInfos timeInfo={timeInfo} entryInfo={entryInfo} />
-        </GridOneHalfColumn>
-        {imageElement}
-      </GridRow>
-    );
-  }
-}
+  return (
+    <FlexWrapper>
+      <FlexItemWrapper>
+        <EntryTitle entry={entry} />
+        <EntryStat stat={stat} />
+        <EntryInfos timeInfo={timeInfo} entryInfo={entryInfo} />
+      </FlexItemWrapper>
+      <FlexItemWrapper>{imageElement}</FlexItemWrapper>
+    </FlexWrapper>
+  );
+};
 
 EntryData.propTypes = {
-  entry: PropTypes.object.isRequired,
+  entry: PropTypes.shape({
+    entryInfo: PropTypes.shape({
+      path: PropTypes.string,
+    }),
+    stat: PropTypes.shape({}),
+    timeInfo: PropTypes.any,
+  }).isRequired,
 };
 
 const EntryName = styled.h4`
@@ -58,21 +63,33 @@ const EntryName = styled.h4`
   margin-bottom: 0;
 `;
 
-const EntryRegion = styled.h5`
+const EntryLocalizationPart = styled.h5`
   font-size: 1.5em;
+  margin-bottom: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 `;
 
-const EntryTitle = ({ entry }) => (
-  <div className="entryLocation" dir="ltr">
-    <EntryName>{entry.name}</EntryName>
-    <EntryRegion>
-      {entry.region} - {entry.country}
-    </EntryRegion>
-  </div>
-);
+const EntryTitle = ({ entry }) => {
+  const { county, country, name, region } = entry;
+  return (
+    <div className="entryLocation" dir="ltr">
+      <EntryName>{name}</EntryName>
+      {county && <EntryLocalizationPart>{county}</EntryLocalizationPart>}
+      {region && <EntryLocalizationPart>{region}</EntryLocalizationPart>}
+      {country && <EntryLocalizationPart>{country}</EntryLocalizationPart>}
+    </div>
+  );
+};
 
 EntryTitle.propTypes = {
-  entry: PropTypes.object.isRequired,
+  entry: PropTypes.shape({
+    county: PropTypes.string,
+    country: PropTypes.string,
+    name: PropTypes.string,
+    region: PropTypes.string,
+  }).isRequired,
 };
 
 const RatingList = styled.ul`
@@ -81,7 +98,9 @@ const RatingList = styled.ul`
 
 const EntryStat = ({ stat }) => (
   <div>
-    {!stat && <Translate>At this time, there is no comment for this entry</Translate>}
+    {!stat && (
+      <Translate>At this time, there is no comment for this entry</Translate>
+    )}
     {stat && (
       <RatingList>
         <EntryStatItem itemScore={stat.aestheticism} itemLabel="Interest" />
@@ -93,7 +112,11 @@ const EntryStat = ({ stat }) => (
 );
 
 EntryStat.propTypes = {
-  stat: PropTypes.object.isRequired,
+  stat: PropTypes.shape({
+    aestheticism: PropTypes.number,
+    approach: PropTypes.number,
+    caving: PropTypes.number,
+  }).isRequired,
 };
 
 const StatEntry = styled.li`
@@ -132,42 +155,36 @@ const StyledEmptyStarIcon = withStyles({
   },
 })(EmptyStarIcon);
 
-export class EntryStatItem extends Component {
-  constructor(props) {
-    super(props);
+const EntryStatItem = ({ itemLabel, itemScore }) => {
+  if (!itemScore) {
+    return <div />;
   }
 
-  render() {
-    if (!this.props.itemScore) {
-      return <div />;
-    }
+  const score = itemScore / 2;
+  const starsToDisplay = [];
+  let displayed = 0;
 
-    const score = this.props.itemScore / 2;
-    const starsToDisplay = [];
-    let displayed = 0;
-
-    for (let i = 0; i < Math.floor(score); i++) {
-      starsToDisplay.push(<StyledFullStarIcon key={`star${i}`} />);
-      displayed++;
-    }
-    if (Math.floor(score) < score) {
-      starsToDisplay.push(<StyledHalfStarIcon key="starh" />);
-      displayed++;
-    }
-    if (displayed < 5) {
-      for (let i = displayed; i < 5; i++) {
-        starsToDisplay.push(<StyledEmptyStarIcon key={`star${i}`} />);
-      }
-    }
-
-    return (
-      <StatEntry>
-        <Translate>{this.props.itemLabel}</Translate>
-        <Stars>{starsToDisplay}</Stars>
-      </StatEntry>
-    );
+  for (let i = 0; i < Math.floor(score); i += 1) {
+    starsToDisplay.push(<StyledFullStarIcon key={`star${i}`} />);
+    displayed += 1;
   }
-}
+  if (Math.floor(score) < score) {
+    starsToDisplay.push(<StyledHalfStarIcon key="starh" />);
+    displayed += 1;
+  }
+  if (displayed < 5) {
+    for (let i = displayed; i < 5; i += 1) {
+      starsToDisplay.push(<StyledEmptyStarIcon key={`star${i}`} />);
+    }
+  }
+
+  return (
+    <StatEntry>
+      <Translate>{itemLabel}</Translate>
+      <Stars>{starsToDisplay}</Stars>
+    </StatEntry>
+  );
+};
 
 EntryStatItem.propTypes = {
   itemScore: PropTypes.number,
@@ -216,8 +233,14 @@ const EntryInfos = ({ timeInfo, entryInfo }) => (
 );
 
 EntryInfos.propTypes = {
-  timeInfo: PropTypes.object.isRequired,
-  entryInfo: PropTypes.object.isRequired,
+  timeInfo: PropTypes.shape({
+    eTTrail: PropTypes.any,
+    eTUnderground: PropTypes.any,
+  }).isRequired,
+  entryInfo: PropTypes.shape({
+    depth: PropTypes.number,
+    length: PropTypes.number,
+  }).isRequired,
 };
 
 const EntryInfoWrapper = styled.div`
@@ -243,52 +266,48 @@ const InfoUnit = styled.span`
   white-space: nowrap;
 `;
 
-export class EntryInfoItem extends Component {
-  constructor(props) {
-    super(props);
+const EntryInfoItem = ({
+  itemImg,
+  itemLabel,
+  itemType,
+  itemUnit,
+  itemValue,
+}) => {
+  let displayValue = itemValue;
+  if (displayValue === undefined || displayValue === null) {
+    return <span />;
   }
 
-  render() {
-    let displayValue = this.props.itemValue;
-    if (displayValue === undefined || displayValue === null) {
-      return <span />;
+  if (itemType === 'time') {
+    const splitTime = displayValue.split(':');
+    const curHours = parseInt(splitTime[0], 10);
+    const curMinutes = parseInt(splitTime[1], 10);
+    if (curHours === 0) {
+      const toTranslate = `${curMinutes} min`;
+      displayValue = <Translate>{toTranslate}</Translate>;
+    } else if (curMinutes === 0) {
+      const toTranslate = `${curHours} hour${curHours > 1 ? 's' : ''}`;
+      displayValue = <Translate>{toTranslate}</Translate>;
+    } else {
+      displayValue = (
+        <Translate>
+          {curHours} h {curMinutes}
+        </Translate>
+      );
     }
-
-    if (this.props.itemType === 'time') {
-      const splitTime = displayValue.split(':');
-      const curHours = parseInt(splitTime[0]);
-      const curMinutes = parseInt(splitTime[1]);
-      if (curHours === 0) {
-        const toTranslate = `${curMinutes} min`;
-        displayValue = <Translate>{toTranslate}</Translate>;
-      } else if (curMinutes === 0) {
-        const toTranslate = `${curHours} hour${curHours > 1 ? 's' : ''}`;
-        displayValue = <Translate>{toTranslate}</Translate>;
-      } else {
-        displayValue = (
-          <Translate>
-            {curHours} h {curMinutes}
-          </Translate>
-        );
-      }
-    }
-
-    return (
-      <EntryInfoWrapper>
-        <InfoImage
-          src={`images/${this.props.itemImg}`}
-          title={this.props.itemLabel}
-          alt={this.props.itemLabel}
-        />
-        <InfoValue>{displayValue}</InfoValue>
-        <InfoUnit>{this.props.itemUnit}</InfoUnit>
-      </EntryInfoWrapper>
-    );
   }
-}
+
+  return (
+    <EntryInfoWrapper>
+      <InfoImage src={`images/${itemImg}`} title={itemLabel} alt={itemLabel} />
+      <InfoValue>{displayValue}</InfoValue>
+      <InfoUnit>{itemUnit}</InfoUnit>
+    </EntryInfoWrapper>
+  );
+};
 
 EntryInfoItem.propTypes = {
-  itemValue: PropTypes.any,
+  itemValue: PropTypes.any, // eslint-disable-line react/forbid-prop-types
   itemUnit: PropTypes.string,
   itemLabel: PropTypes.string.isRequired,
   itemImg: PropTypes.string.isRequired,
@@ -306,14 +325,14 @@ const NoImage = styled.img`
 `;
 
 const EntryImage = ({ src }) => (
-  <GridOneHalfColumn>
+  <>
     {!src && (
       <NoImage>
         <Translate>At this time, there is no image for this entry</Translate>
       </NoImage>
     )}
     {src && <TopoImage src={src} alt="topo" />}
-  </GridOneHalfColumn>
+  </>
 );
 
 EntryImage.propTypes = {
@@ -327,10 +346,10 @@ const RandomEntryLink = styled(GCLink)`
 
 const EntryWrapper = styled.div`
   background-color: rgba(110, 110, 110, 0.5);
-  margin: auto;
-  padding: 20px;
-  border-radius: 5px;
+  border-radius: ${({ theme }) => theme.spacing(1)}px;
   color: white;
+  margin: auto;
+  padding: ${({ theme }) => theme.spacing(3)}px;
 `;
 
 //
@@ -340,30 +359,28 @@ const EntryWrapper = styled.div`
 //
 
 class RandomEntryCard extends Component {
-  constructor(props) {
-    super(props);
-  }
-
   componentDidMount() {
-    this.props.fetch();
+    const { fetch } = this.props;
+    fetch();
   }
 
   render() {
-    if (this.props.isFetching) {
+    const { entry, isFetching } = this.props;
+    if (isFetching) {
       return <CircularProgress />;
     }
-    if (this.props.entry && this.props.entry.id) {
-      let detailPageV2Link =
+    if (entry && entry.id) {
+      const detailPageV2Link =
         detailPageV2Links[locale] !== undefined
           ? detailPageV2Links[locale]
-          : detailPageV2Links['*']; //eslint-disable-line
+          : detailPageV2Links['*'];
       return (
         <RandomEntryLink
-          href={`${detailPageV2Link}&category=entry&id=${this.props.entry.id}`}
+          href={`${detailPageV2Link}&category=entry&id=${entry.id}`}
           target="blank"
         >
           <EntryWrapper>
-            <EntryData entry={this.props.entry} />
+            <EntryData entry={entry} />
           </EntryWrapper>
         </RandomEntryLink>
       );
@@ -375,7 +392,9 @@ class RandomEntryCard extends Component {
 RandomEntryCard.propTypes = {
   fetch: PropTypes.func.isRequired,
   isFetching: PropTypes.bool,
-  entry: PropTypes.object,
+  entry: PropTypes.shape({
+    id: PropTypes.any,
+  }),
 };
 
 export default RandomEntryCard;
