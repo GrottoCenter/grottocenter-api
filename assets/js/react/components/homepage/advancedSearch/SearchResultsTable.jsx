@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import { injectIntl, intlShape } from 'react-intl';
 import { withStyles } from '@material-ui/core/styles';
 import { withRouter } from 'react-router-dom';
+import { isMobile } from 'react-device-detect';
 import styled from 'styled-components';
 import DescriptionIcon from '@material-ui/icons/Description';
 import {
@@ -39,6 +40,11 @@ const styles = () => ({
   table: {
     marginBottom: 0,
     overflow: 'auto',
+  },
+  tableRow: {
+    '&:hover': {
+      cursor: 'pointer',
+    },
   },
   textError: {
     color: '#ff3333',
@@ -79,7 +85,8 @@ class SearchResultsTable extends React.Component {
 
   // ============================== //
 
-  // If the results are empty, the component must get back to the initial pagination state.
+  // If the results are empty, the component must
+  // get back to the initial pagination state.
   componentDidUpdate = () => {
     const { results } = this.props;
     const { from, page, size } = this.state;
@@ -88,6 +95,7 @@ class SearchResultsTable extends React.Component {
       !results &&
       (from !== DEFAULT_FROM || page !== DEFAULT_PAGE || size !== DEFAULT_SIZE)
     ) {
+      // eslint-disable-next-line react/no-did-update-set-state
       this.setState({
         from: DEFAULT_FROM,
         page: DEFAULT_PAGE,
@@ -247,23 +255,31 @@ class SearchResultsTable extends React.Component {
   // ===== Handle functions ===== //
 
   handleRowClick = (id) => {
-    const { resourceType } = this.props;
-
+    const { history, resourceType } = this.props;
+    let urlToRedirectTo = '';
     switch (resourceType) {
       case 'entries':
-        window.open(`/ui/entries/${id}`, '_blank');
+        urlToRedirectTo = `/ui/entries/${id}`;
         break;
       case 'grottos':
-        window.open(`/ui/groups/${id}`, '_blank');
+        urlToRedirectTo = `/ui/groups/${id}`;
         break;
       case 'massifs':
-        window.open(`/ui/massifs/${id}`, '_blank');
+        urlToRedirectTo = `/ui/massifs/${id}`;
         break;
       case 'bbs':
-        window.open(`/ui/bbs/${id}`, '_blank');
+        urlToRedirectTo = `/ui/bbs/${id}`;
         break;
       default:
         break;
+    }
+    if (urlToRedirectTo !== '') {
+      // Different behaviour if on mobile or not (better UX)
+      if (isMobile) {
+        history.push(urlToRedirectTo);
+      } else {
+        window.open(urlToRedirectTo, '_blank');
+      }
     }
   };
 
@@ -278,7 +294,8 @@ class SearchResultsTable extends React.Component {
     /* Load new results if not enough already loaded:
       - click next page
       - results.length < totalNbResults (not ALL results already loaded)
-      - results.length < newFrom + size (results on the asked page are not loaded)
+      - results.length < newFrom + size (results on the asked page 
+          are not loaded)
     */
     if (
       newFrom > from &&
@@ -302,7 +319,8 @@ class SearchResultsTable extends React.Component {
       Formula used here:
         Page = From / Size
 
-      Size is changing here so we need to calculate the new page and the new from.
+      Size is changing here.
+      So we need to calculate the new page and the new from.
     */
     const newSize = event.target.value;
     const newPage = Math.trunc(from / newSize);
@@ -331,52 +349,60 @@ class SearchResultsTable extends React.Component {
 
   getFullResultsAsCSV = () => {
     const { resourceType, fullResults } = this.props;
-    const cleanedResults = fullResults;
+    let cleanedResults;
     switch (resourceType) {
       case 'entries':
         // Flatten cave and massif
-        for (let result of cleanedResults) {
-          result.cave = result.cave.name;
-          result.massif = result.massif.name;
-          delete result['type'];
-          delete result['highlights'];
-        }
+        cleanedResults = fullResults.map((result) => {
+          const cleanedResult = result;
+          cleanedResult.cave = result.cave.name;
+          cleanedResult.massif = result.massif.name;
+          delete cleanedResult.type;
+          delete cleanedResult.highlights;
+          return cleanedResult;
+        });
         break;
 
       case 'grottos':
         // Flatten cavers and entries
-        for (let result of cleanedResults) {
-          result.cavers = result.cavers.map((c) => c.nickname);
-          result.entries = result.entries.map((e) => e.name);
-          delete result['type'];
-          delete result['highlights'];
-        }
+        cleanedResults = fullResults.map((result) => {
+          const cleanedResult = result;
+          cleanedResult.cavers = result.cavers.map((c) => c.nickname);
+          cleanedResult.entries = result.entries.map((e) => e.name);
+          delete cleanedResult.type;
+          delete cleanedResult.highlights;
+          return cleanedResult;
+        });
         break;
 
       case 'massifs':
         // Flatten caves and entries
-        for (let result of cleanedResults) {
-          result.caves = result.caves.map((c) => c.name);
-          result.entries = result.entries.map((e) => e.name);
-          delete result['type'];
-          delete result['highlights'];
-        }
+        cleanedResults = fullResults.map((result) => {
+          const cleanedResult = result;
+          cleanedResult.caves = result.caves.map((c) => c.name);
+          cleanedResult.entries = result.entries.map((e) => e.name);
+          delete cleanedResult.type;
+          delete cleanedResult.highlights;
+          return cleanedResult;
+        });
         break;
 
       case 'bbs':
         // Flatten countries and subthemes
-        for (let result of cleanedResults) {
+        cleanedResults = fullResults.map((result) => {
+          const cleanedResult = result;
           if (result.country) {
-            result.countryCode = result.country.id;
-            result.country = result.country.name;
+            cleanedResult.countryCode = result.country.id;
+            cleanedResult.country = result.country.name;
           }
           if (result.subtheme) {
-            result.subthemeId = result.subtheme.id;
-            result.subtheme = result.subtheme.name;
+            cleanedResult.subthemeId = result.subtheme.id;
+            cleanedResult.subtheme = result.subtheme.name;
           }
-          delete result['type'];
-          delete result['highlights'];
-        }
+          delete cleanedResult.type;
+          delete cleanedResult.highlights;
+          return cleanedResult;
+        });
         break;
 
       default:
@@ -423,7 +449,8 @@ class SearchResultsTable extends React.Component {
       }
     }
 
-    /* For small screens, change the display property to allow horizontal scroll.
+    /* 
+      For small screens, change the display property to allow horizontal scroll.
       Screen smaller than 1200px AND results type not "massif"
         => scrollable table (display: "block")
       (for massif, no scroll needed because the results are not very large)
@@ -630,7 +657,12 @@ class SearchResultsTable extends React.Component {
 }
 
 SearchResultsTable.propTypes = {
-  classes: PropTypes.shape({}).isRequired,
+  classes: PropTypes.shape({
+    resultsContainer: PropTypes.string,
+    table: PropTypes.string,
+    tableRow: PropTypes.string,
+    textError: PropTypes.string,
+  }).isRequired,
   history: PropTypes.shape({ push: PropTypes.func }).isRequired,
   isLoading: PropTypes.bool.isRequired,
   isLoadingFullData: PropTypes.bool.isRequired,
