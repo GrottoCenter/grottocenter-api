@@ -1,13 +1,16 @@
 import React, { useState, createContext, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { pipe, pluck, reject, isNil } from 'ramda';
+import { pipe, reject, isNil, map, prop } from 'ramda';
 
 import { detailsType as entryDetailsType } from '../Entry/Provider';
 
 const date = new Date();
 const todayDate = date.toISOString().substring(0, 10);
 
-export const getPositions = pipe(pluck('coordinates'), reject(isNil));
+export const getPositions = pipe(
+  map((entry) => [prop('latitude', entry), prop('longitude', entry)]),
+  reject(isNil),
+);
 
 const defaultContext = {
   state: {

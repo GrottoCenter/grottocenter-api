@@ -19,7 +19,7 @@ const EntriesList = (props) => {
   return (
     <div>
       {entries.length > 0 ? (
-        <React.Fragment>
+        <>
           <strong>{title}</strong>
           <StyledList>
             {entries
@@ -28,7 +28,7 @@ const EntriesList = (props) => {
                 <EntryListItem key={entry.id} entry={entry} />
               ))}
           </StyledList>
-        </React.Fragment>
+        </>
       ) : (
         <em>{emptyMessage}</em>
       )}

@@ -104,7 +104,6 @@ const MultipleMarkers = ({ positions, loading }) => {
       ) : (
         <Map
           ref={mapRef}
-          center={positions[0]}
           dragging={false}
           viewport={null}
           scrollWheelZoom={false}

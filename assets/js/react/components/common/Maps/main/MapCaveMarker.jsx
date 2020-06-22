@@ -2,12 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Marker, Tooltip } from 'react-leaflet';
 import { markers } from '../../../../conf/MapMarkersConfig';
-
-//
-//
-// S T Y L I N G - C O M P O N E N T S
-//
-//
+import MapCavesPopup from './MapCavesPopup';
 
 const mainMarkerIcon = L.icon({
   iconUrl: markers[1].url,
@@ -16,28 +11,25 @@ const mainMarkerIcon = L.icon({
   popupAnchor: [0, -24],
 });
 
-//
-//
-// M A I N - C O M P O N E N T S
-//
-//
-
 const MapCaveMarker = ({ cave }) => (
   <Marker
     icon={mainMarkerIcon}
-    key={`cave${cave.id}`}
+    key={`cave_${cave.id}`}
     position={{
       lat: cave.latitude,
       lng: cave.longitude,
     }}
+    onClick={(e) => {
+      e.target.closeTooltip();
+    }}
   >
-    <Tooltip direction="top" offset={[0, -20]}>
-      {cave.name}
-    </Tooltip>
+    <MapCavesPopup cave={cave} />
+    <Tooltip direction="top">{cave.name}</Tooltip>
   </Marker>
 );
 
 MapCaveMarker.propTypes = {
+  // eslint-disable-next-line react/forbid-prop-types
   cave: PropTypes.object.isRequired,
 };
 

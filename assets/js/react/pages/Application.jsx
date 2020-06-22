@@ -22,6 +22,7 @@ import QuickSearch from '../features/QuickSearch';
 import AppBar from '../features/AppBar';
 
 import EntryPage from './Entry';
+import CaveSystemPage from './CaveSystem';
 
 const Application = () => {
   const dispatch = useDispatch();
@@ -48,6 +49,7 @@ const Application = () => {
         <Route path="/ui/search" component={AdvancedSearchPage} />
         <Route path="/ui/api" component={Api} />
         <Route path="/ui/entries/:id?" component={EntryPage} />
+        <Route path="/ui/caves/:id?" component={CaveSystemPage} />
         <Route path="/ui/faq" component={Faq} />
         <Route path="/ui/map/:target?" component={MapContainer} />
         <Route path="/ui/swagger/:version" component={Swagger} />
