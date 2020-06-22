@@ -5,7 +5,6 @@ import DescriptionIcon from '@material-ui/icons/Description';
 import DocumentIcon from '@material-ui/icons/Filter';
 import { useIntl } from 'react-intl';
 import PropTypes from 'prop-types';
-// import styled from 'styled-components';
 import { boolean } from '@storybook/addon-knobs';
 
 import Provider, { CaveContext } from './Provider';
