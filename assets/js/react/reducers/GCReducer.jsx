@@ -14,6 +14,7 @@ import bbs from './BbsReducer';
 import subtheme from './SubthemeReducer';
 import pageTitle from './PageTitleReducer';
 import entry from './EntryReducer';
+import cave from './CaveReducer';
 import auth from './AuthReducer';
 
 //
@@ -39,6 +40,7 @@ const GCReducer = combineReducers({
   pageTitle,
   auth,
   entry,
+  cave,
 });
 
 export default GCReducer;
