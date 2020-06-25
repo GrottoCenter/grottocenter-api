@@ -2,10 +2,7 @@ import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Redirect, Route, Switch } from 'react-router-dom';
 
-import BbsContainer from '../containers/BbsContainer';
-import GroupContainer from '../containers/GroupContainer';
 import MapContainer from '../containers/MapContainer';
-import MassifContainer from '../containers/MassifContainer';
 
 import Api from '../components/appli/Api';
 import Dashboard from '../components/appli/Dashboard';
@@ -22,12 +19,16 @@ import QuickSearch from '../features/QuickSearch';
 import AppBar from '../features/AppBar';
 
 import EntryPage from './Entry';
+import GroupPage from './Group';
+import BbsPage from './Bbs';
+import MassifPage from './Massif';
 import CaveSystemPage from './CaveSystem';
 
 const Application = () => {
   const dispatch = useDispatch();
   const isSideMenuOpen = useSelector((state) => state.sideMenu.open);
   const toggleSideMenu = () => dispatch({ type: 'TOGGLE_SIDEMENU' });
+
   return (
     <Layout
       AppBar={() => (
@@ -54,9 +55,9 @@ const Application = () => {
         <Route path="/ui/map/:target?" component={MapContainer} />
         <Route path="/ui/swagger/:version" component={Swagger} />
         <Route path="/ui/test" component={LatestBlogNewsSection} />
-        <Route path="/ui/groups/:groupId" component={GroupContainer} />
-        <Route path="/ui/massifs/:massifId" component={MassifContainer} />
-        <Route path="/ui/bbs/:bbsId" component={BbsContainer} />
+        <Route path="/ui/groups/:groupId" component={GroupPage} />
+        <Route path="/ui/massifs/:massifId" component={MassifPage} />
+        <Route path="/ui/bbs/:bbsId" component={BbsPage} />
         <Route path="/ui/login" component={HomePage} />
         <Redirect path="/ui/*" to="/ui/" />
       </Switch>
