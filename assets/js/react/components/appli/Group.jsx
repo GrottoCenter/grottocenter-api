@@ -1,159 +1,150 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
-import CircularProgress from '@material-ui/core/CircularProgress';
+import { pathOr, __, isNil } from 'ramda';
+import {
+  CircularProgress,
+  Badge,
+  Card,
+  CardContent,
+  CardHeader,
+  Typography,
+} from '@material-ui/core';
 import styled from 'styled-components';
 import EmailIcon from '@material-ui/icons/Email';
 import LocationIcon from '@material-ui/icons/LocationOn';
+import { useIntl } from 'react-intl';
 
-import Badge from '@material-ui/core/Badge';
-import Card from '@material-ui/core/Card';
-import CardContent from '@material-ui/core/CardContent';
-import Translate from '../common/Translate';
 import EntriesList from '../common/entry/EntriesList';
-
-const GClogo = styled.img`
-  display: inline-block;
-  vertical-align: baseline;
-  height: 3rem;
-`;
-
-const GroupName = styled.h1`
-  display: inline-block;
-  font-size: 4rem;
-  margin-right: 20px;
-`;
 
 const CaverIcon = styled.img`
   display: inline-block;
-  height: 3.5rem;
-  width: 3.5rem;
+  height: 4rem;
+  width: 4rem;
 `;
 
 const EntryIcon = styled.img`
   display: inline-block;
-  height: 3.5rem;
+  height: 4rem;
   vertical-align: text-bottom;
-  width: 3.5rem;
+  width: 4rem;
 `;
 
-const EmailIconStyled = withStyles({
-  root: {
-    verticalAlign: 'bottom',
-  },
-})(EmailIcon);
+const StyledBadge = styled(Badge)`
+  color: #eee;
+  font-size: 1.5rem;
+  font-weight: bold;
+  padding: 1px;
+`;
 
-const LocationIconStyled = withStyles({
-  root: {
-    verticalAlign: 'bottom',
-  },
-})(LocationIcon);
+const ContentWrapper = styled.div`
+  display: flex;
+  padding: ${({ theme }) => theme.spacing(1)}px;
+`;
 
-const styles = {
-  badge: {
-    color: '#eee',
-    fontSize: '1.5rem',
-    fontWeight: 'bold',
-    padding: '1px',
-  },
-  root: {
-    marginRight: '10px',
-    verticalAlign: 'baseline',
-  },
-};
+const StyledLocationIcon = styled(LocationIcon)`
+  margin-right: ${({ theme }) => theme.spacing(1)}px;
+`;
 
-export class Group extends React.Component {
-  componentDidMount() {
-    const { updatePageTitle } = this.props;
-    updatePageTitle('Group');
-  }
+const StyledEmailIcon = styled(EmailIcon)`
+  margin-right: ${({ theme }) => theme.spacing(1)}px;
+`;
 
-  render() {
-    const { isFetching, group, classes } = this.props;
-    if (isFetching) {
-      return <CircularProgress />;
-    }
-    if (group) {
-      let completeAddress = `${group.country} - ${group.region} - ${group.county}`;
-      if (group.city) completeAddress += ` - ${group.city}`;
-      else if (group.village) completeAddress += ` - ${group.village}`;
-      if (group.postalCode) completeAddress += ` - ${group.postalCode}`;
-      if (group.address) completeAddress += ` - ${group.address}`;
+const Group = ({ isFetching, group }) => {
+  const safeGet = pathOr('N/A', __, group || {});
+  const { formatMessage } = useIntl();
 
-      return (
+  return (
+    <>
+      {isFetching || isNil(group) ? (
+        <CircularProgress />
+      ) : (
         <Card>
+          <CardHeader
+            avatar={
+              <>
+                <StyledBadge
+                  color="primary"
+                  badgeContent={!isNil(group.cavers) ? group.cavers.length : 0}
+                >
+                  <CaverIcon src="/images/caver.svg" alt="Caver icon" />
+                </StyledBadge>
+
+                <StyledBadge
+                  color="primary"
+                  badgeContent={group.entries.length}
+                >
+                  <EntryIcon src="/images/entry.svg" alt="Entry icon" />
+                </StyledBadge>
+              </>
+            }
+            title={
+              <Typography variant="h5" color="secondary">
+                {safeGet(['name'])}
+              </Typography>
+            }
+            subheader={
+              <>
+                {group.yearBirth &&
+                  `${formatMessage({ id: 'Since' })} - ${group.yearBirth} -`}
+                {group.isOfficialPartner && (
+                  <>{formatMessage({ id: 'Official partner' })}</>
+                )}
+              </>
+            }
+          />
           <CardContent>
-            <GroupName>{group.name}</GroupName>
+            <ContentWrapper>
+              <StyledLocationIcon color="primary" />
+              <Typography>
+                {`${safeGet(['country'])} - ${safeGet(['region'])} - ${safeGet([
+                  'county',
+                ])}`}
+                {!isNil(group.city) && ` - ${group.city}`}
+                {!isNil(group.village) && ` - ${group.village}`}
+                {!isNil(group.postalCode) && ` - ${group.postalCode}`}
+                {!isNil(group.address) && ` - ${group.address}`}
+              </Typography>
+            </ContentWrapper>
 
-            <Badge
-              classes={{ badge: classes.badge, root: classes.root }}
-              color="primary"
-              badgeContent={group.cavers.length}
-            >
-              <CaverIcon src="/images/caver.svg" alt="Caver icon" />
-            </Badge>
-
-            <Badge
-              classes={{ badge: classes.badge, root: classes.root }}
-              color="primary"
-              badgeContent={group.entries.length}
-            >
-              <EntryIcon src="/images/entry.svg" alt="Entry icon" />
-            </Badge>
-
-            <p>
-              {group.yearBirth ? (
-                <i>
-                  <Translate>Since</Translate> {group.yearBirth}
-                </i>
-              ) : (
-                ''
-              )}
-
-              {group.isOfficialPartner ? (
-                <span>
-                  {group.yearBirth ? ' - ' : ''}
-                  <Translate>Official partner</Translate>
-                  <GClogo src="/images/logoGC.png" alt="GC logo" />
-                </span>
-              ) : (
-                ''
-              )}
-            </p>
-
-            <div>
-              <LocationIconStyled />
-              {completeAddress}
-            </div>
-
-            {group.contact ? (
-              <div>
-                <EmailIconStyled /> {group.contact}
-              </div>
-            ) : (
-              ''
+            {group.contact && (
+              <ContentWrapper>
+                <StyledEmailIcon color="primary" />
+                <Typography>{group.contact}</Typography>
+              </ContentWrapper>
             )}
 
-            <p>{group.customMessage}</p>
+            <ContentWrapper>
+              <Typography>{group.customMessage}</Typography>
+            </ContentWrapper>
 
             <EntriesList entries={group.entries} />
           </CardContent>
         </Card>
-      );
-    }
-    return <div />;
-  }
-}
+      )}
+    </>
+  );
+};
 
 Group.propTypes = {
-  classes: PropTypes.shape({}).isRequired,
   isFetching: PropTypes.bool.isRequired,
-  group: PropTypes.shape({}),
-  updatePageTitle: PropTypes.func.isRequired,
+  group:
+    PropTypes.shape({
+      customMessage: PropTypes.string,
+      entries: PropTypes.arrayOf(PropTypes.object),
+      postalCode: PropTypes.string,
+      address: PropTypes.string,
+      village: PropTypes.string,
+      city: PropTypes.string,
+      isOfficialPartner: PropTypes.bool,
+      yearBirth: PropTypes.string,
+      cavers: PropTypes.arrayOf(PropTypes.object),
+      name: PropTypes.string,
+      contact: PropTypes.string,
+    }) || undefined,
 };
 
 Group.defaultProps = {
   group: undefined,
 };
 
-export default withStyles(styles)(Group);
+export default Group;

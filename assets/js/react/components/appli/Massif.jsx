@@ -1,53 +1,61 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-
-import { Typography, CircularProgress, Card, CardContent } from '@material-ui/core';
+import { isNil } from 'ramda';
+import {
+  Typography,
+  CircularProgress,
+  Card,
+  CardContent,
+  CardHeader,
+} from '@material-ui/core';
+import { useIntl } from 'react-intl';
 
 import CavesList from '../common/cave/CavesList';
 import EntriesList from '../common/entry/EntriesList';
-import Translate from '../common/Translate';
 
-// ==========
+const Massif = ({ isFetching, massif }) => {
+  const { formatMessage } = useIntl();
 
-export class Massif extends React.Component {
-  componentDidMount() {
-    const { updatePageTitle } = this.props;
-    updatePageTitle('Massif');
-  }
-
-  render = () => {
-    const { isFetching, massif } = this.props;
-
-    if (isFetching) {
-      return <CircularProgress />;
-    }
-
-    if (massif) {
-      return (
+  return (
+    <>
+      {isFetching || isNil(massif) ? (
+        <CircularProgress />
+      ) : (
         <Card>
+          <CardHeader
+            title={
+              <Typography variant="h5" color="secondary">
+                {massif.name}
+              </Typography>
+            }
+          />
           <CardContent>
-            <Typography variant="h1">{massif.name}</Typography>
             <CavesList
               caves={massif.caves}
-              emptyMessage={<Translate>This massif has no caves repertoried yet</Translate>}
+              emptyMessage={formatMessage({
+                id: 'This massif has no caves listed yet',
+              })}
             />
             <EntriesList
               entries={massif.entries}
-              emptyMessage={<Translate>This massif has no entries repertoried yet</Translate>}
+              emptyMessage={formatMessage({
+                id: 'This massif has no entries listed yet',
+              })}
             />
           </CardContent>
         </Card>
-      );
-    }
-
-    return <div />;
-  };
-}
+      )}
+    </>
+  );
+};
 
 Massif.propTypes = {
   isFetching: PropTypes.bool.isRequired,
-  massif: PropTypes.shape({}),
-  updatePageTitle: PropTypes.func.isRequired,
+  massif: PropTypes.shape({
+    name: PropTypes.string,
+    caves: PropTypes.arrayOf(PropTypes.object),
+    entries: PropTypes.arrayOf(PropTypes.object),
+  }),
 };
 Massif.defaultProps = {
   massif: undefined,
