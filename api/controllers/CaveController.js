@@ -16,7 +16,9 @@ module.exports = {
     res.badRequest('CaveController.delete not yet implemented!'),
 
   find: (req, res) => {
-    TCave.findOneById(req.params.id)
+    TCave.findOne({
+      id: req.params.id,
+    })
       .populate('author')
       .populate('entries')
       .populate('topographies')

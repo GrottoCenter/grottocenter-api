@@ -221,7 +221,7 @@ module.exports.routes = {
     action: 'findAll',
   },
 
-  'GET /api/caves/:id': {
+  'GET /api/v1/caves/:id': {
     controller: 'Cave',
     action: 'find',
   },
