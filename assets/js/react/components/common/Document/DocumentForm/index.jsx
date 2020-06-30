@@ -147,20 +147,6 @@ const DocumentForm = ({
           ))}
         </Stepper>
 
-      <Stepper
-        activeStep={getFormStep(currentFormStepId).id - 1}
-        alternativeLabel
-      >
-        {formSteps.map((step) => (
-          <Step
-            key={step.id}
-            completed={validSteps.find((s) => s.id === step.id).isValid}
-          >
-            <StepLabel>{step.name}</StepLabel>
-          </Step>
-        ))}
-      </Stepper>
-
         <ChangeStepWrapper>
           <PreviousStepButton
             disabled={currentFormStepId === 1}

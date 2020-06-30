@@ -67,9 +67,9 @@ const DocumentForm = ({
     // Common validation (title and description)
     let newIsValid =
       title !== '' &&
-      titleLanguage !== '' &&
+      titleLanguage !== null &&
       description !== '' &&
-      descriptionLanguage !== '';
+      descriptionLanguage !== null;
 
     // Specific validations
     if (documentType === null) {
