@@ -7,10 +7,8 @@ import { useIntl } from 'react-intl';
 import AutoCompleteSearch from '../components/common/AutoCompleteSearch';
 import {
   fetchQuicksearchResult,
-  setCurrentEntry,
   resetQuicksearch,
 } from '../actions/Quicksearch';
-import { focusOnLocation } from '../actions/Map';
 import { entityOptionForSelector } from '../helpers/Entity';
 import { useDebounce } from '../hooks';
 
@@ -32,14 +30,7 @@ const QuickSearch = ({ ...autoCompleteProps }) => {
     if (selection.id) {
       switch (selection.type) {
         case 'entry':
-          dispatch(setCurrentEntry(selection));
-          dispatch(
-            focusOnLocation({
-              lat: selection.latitude,
-              lng: selection.longitude,
-            }),
-          );
-          history.push('/ui/map');
+          history.push(`/ui/entries/${encodeURIComponent(selection.id)}`);
           break;
         case 'massif':
           history.push(`/ui/massifs/${encodeURIComponent(selection.id)}`);
