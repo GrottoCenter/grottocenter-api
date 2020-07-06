@@ -1,11 +1,10 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import { withStyles } from '@material-ui/core';
 import { withRouter } from 'react-router-dom';
 import styled from 'styled-components';
-import GClink from '../GCLink';
 
 const CaveDepthIcon = styled.img`
   display: inline-block;
@@ -49,29 +48,31 @@ const styles = (theme) => ({
 
 const CaveListItem = (props) => {
   const { classes, cave } = props;
+  const handleClick = () => {
+    cave.id && props.history.push(`/ui/caves/${cave.id}`);
+  };
+
   return (
-    <ListItem
-      className={classes.caveItem}
-      button /*onClick={() => props.history.push(`/ui/caves/${cave.id}`)}*/
-    >
-      {/*<GClink className={classes.caveLink} internal href={`/ui/caves/${cave.id}`}>{cave.name}</GClink>*/}
+    <ListItem className={classes.caveItem} button onClick={handleClick}>
       {cave.name}
       <ListItemText className={classes.caveText}>
         {cave.depth ? (
-          <Fragment>
+          <>
             <CaveDepthIcon src="/images/depth.svg" alt="Cave depth icon" />
             <span
               style={{ marginRight: '5px', verticalAlign: 'super' }}
             >{`${cave.depth.toLocaleString()}m`}</span>
-          </Fragment>
+          </>
         ) : (
           ''
         )}
         {cave.length ? (
-          <Fragment>
+          <>
             <CaveLengthIcon src="/images/length.svg" alt="Cave depth icon" />
-            <span style={{ verticalAlign: 'super' }}>{`${cave.length.toLocaleString()}m`}</span>
-          </Fragment>
+            <span
+              style={{ verticalAlign: 'super' }}
+            >{`${cave.length.toLocaleString()}m`}</span>
+          </>
         ) : (
           ''
         )}

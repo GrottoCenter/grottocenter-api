@@ -5,7 +5,6 @@ import DescriptionIcon from '@material-ui/icons/Description';
 import DocumentIcon from '@material-ui/icons/Filter';
 import { useIntl } from 'react-intl';
 import PropTypes from 'prop-types';
-// import styled from 'styled-components';
 import { boolean } from '@storybook/addon-knobs';
 
 import Provider, { CaveContext } from './Provider';
@@ -55,7 +54,8 @@ const data = {
       editionDate: today.toISOString().substring(0, 10),
       undergroundType: 'Karstic (all carbonate rocks)',
       discoveryYear: 1925,
-      coordinates: [43.35266, 5.81689],
+      latitude: 43.35266,
+      longitude: 5.81689,
       mountain: 'Sainte-Baume (massif de la)',
       altitude: 748,
       isDivingCave: true,
@@ -76,7 +76,8 @@ const data = {
       editionDate: today.toISOString().substring(0, 10),
       undergroundType: 'Karstic (all carbonate rocks)',
       discoveryYear: 1925,
-      coordinates: [43.35766, 5.82089],
+      latitude: 43.35766,
+      longitude: 5.82089,
       mountain: 'Sainte-Baume (massif de la)',
       altitude: 748,
       isDivingCave: true,

@@ -44,7 +44,10 @@ const EntriesList = () => {
             <LoadingList />
           ) : (
             entries.map((entry) => (
-              <ListItem selected={includes(entry.id, selectedEntries)}>
+              <ListItem
+                key={entry.id}
+                selected={includes(entry.id, selectedEntries)}
+              >
                 <ListItemIcon>
                   <CustomIcon type="entry" />
                 </ListItemIcon>

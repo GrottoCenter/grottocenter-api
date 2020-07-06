@@ -1,13 +1,16 @@
 import React, { useState, createContext, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { pipe, pluck, reject, isNil } from 'ramda';
+import { pipe, reject, isNil, map, prop } from 'ramda';
 
 import { detailsType as entryDetailsType } from '../Entry/Provider';
 
 const date = new Date();
 const todayDate = date.toISOString().substring(0, 10);
 
-export const getPositions = pipe(pluck('coordinates'), reject(isNil));
+export const getPositions = pipe(
+  map((entry) => [prop('latitude', entry), prop('longitude', entry)]),
+  reject(isNil),
+);
 
 const defaultContext = {
   state: {
@@ -86,25 +89,25 @@ const Provider = ({ data, loading = true, children }) => {
 };
 
 export const caveTypes = PropTypes.shape({
-  id: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-  name: PropTypes.string,
-  localisation: PropTypes.string,
-  depth: PropTypes.number,
-  development: PropTypes.number,
-  interestRate: PropTypes.number,
-  progressionRate: PropTypes.number,
   accessRate: PropTypes.number,
+  altitude: PropTypes.number,
   author: PropTypes.string,
   creationDate: PropTypes.string,
-  lastEditor: PropTypes.string,
-  editionDate: PropTypes.string,
-  undergroundType: PropTypes.string,
+  depth: PropTypes.number,
+  development: PropTypes.number,
   discoveryYear: PropTypes.number,
-  mountain: PropTypes.string,
-  altitude: PropTypes.number,
-  isDivingCave: PropTypes.bool,
-  temperature: PropTypes.number,
+  editionDate: PropTypes.string,
   entries: PropTypes.arrayOf(entryDetailsType),
+  id: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+  interestRate: PropTypes.number,
+  isDivingCave: PropTypes.bool,
+  lastEditor: PropTypes.string,
+  localisation: PropTypes.string,
+  mountain: PropTypes.string,
+  name: PropTypes.string,
+  progressionRate: PropTypes.number,
+  temperature: PropTypes.number,
+  undergroundType: PropTypes.string,
 });
 
 Provider.propTypes = {

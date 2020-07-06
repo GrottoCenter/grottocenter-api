@@ -149,6 +149,7 @@ export const advancedsearchUrl = `/api/${apiVersion}/advanced-search`;
 export const quicksearchUrl = `/api/${apiVersion}/search`;
 export const subthemesUrl = `/api/${apiVersion}/bbs/subthemes`;
 export const getEntryUrl = `/api/${apiVersion}/entries/`;
+export const getCaveUrl = `/api/${apiVersion}/caves/`;
 
 // ===== Auth url
 export const loginUrl = `/api/${apiVersion}/login`;
