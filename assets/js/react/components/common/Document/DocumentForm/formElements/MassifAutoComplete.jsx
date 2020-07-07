@@ -37,7 +37,7 @@ const MassifAutoComplete = ({
   const [massifInputTmp, setMassifInputTmp] = React.useState('');
 
   const handleInputChange = (value) => {
-    if (value === massif.name) {
+    if (massif && massif.name === value) {
       setMassifInputTmp('');
     } else {
       setMassifInputTmp(value);
@@ -65,7 +65,7 @@ const MassifAutoComplete = ({
         </InputLabel>
         <MassifInput
           disabled
-          value={massif && massif.name}
+          value={massif ? massif.name : ''}
           endAdornment={
             <InputAdornment position="end">
               <img
@@ -116,7 +116,7 @@ MassifAutoComplete.propTypes = {
   massif: PropTypes.shape({
     id: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
-  }).isRequired,
+  }),
   hasError: PropTypes.bool.isRequired,
   onMassifChange: PropTypes.func.isRequired,
   required: PropTypes.bool.isRequired,

@@ -23,8 +23,8 @@ const DefaultDocumentForm = ({
   forcedDescription = '',
   forcedDescriptionLanguage = '',
   forcedDocumentType = -1,
-  forcedEditor = { id: '', name: '' },
-  forcedPartOf = { id: '', name: '' },
+  forcedEditor = null,
+  forcedPartOf = null,
   forcedPublicationDate = null,
   forcedRegions = [],
   forcedSubjects = [],
@@ -41,13 +41,10 @@ const DefaultDocumentForm = ({
   const [editor, setEditor] = React.useState(forcedEditor);
   const [endPage, setEndPage] = React.useState(0);
   const [identifier, setIdentifier] = React.useState('');
-  const [identifierType, setIdentifierType] = React.useState({
-    id: '',
-    text: '',
-  });
+  const [identifierType, setIdentifierType] = React.useState(null);
   const [issue, setIssue] = React.useState('');
-  const [library, setLibrary] = React.useState({ id: '', name: '' });
-  const [massif, setMassif] = React.useState({ id: '', name: '' });
+  const [library, setLibrary] = React.useState(null);
+  const [massif, setMassif] = React.useState(null);
   const [pageComment, setPageComment] = React.useState('');
   const [partOf, setPartOf] = React.useState(forcedPartOf);
   const [publicationDate, setPublicationDate] = React.useState(
@@ -143,18 +140,16 @@ DefaultDocumentForm.propTypes = {
     id: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
   }).isRequired,
-  forcedPartOf: PropTypes.arrayOf(
-    PropTypes.shape({
+  forcedPartOf: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    name: PropTypes.string.isRequired,
+    issue: PropTypes.string,
+    documenType: PropTypes.shape({
       id: PropTypes.string.isRequired,
       name: PropTypes.string.isRequired,
-      issue: PropTypes.string,
-      documenType: PropTypes.shape({
-        id: PropTypes.string.isRequired,
-        name: PropTypes.string.isRequired,
-      }),
-      partOf: PropTypes.shape({}),
     }),
-  ),
+    partOf: PropTypes.shape({}),
+  }),
   forcedPublicationDate: PropTypes.objectOf(Date),
   forcedRegions: PropTypes.arrayOf(
     PropTypes.shape({

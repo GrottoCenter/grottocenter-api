@@ -112,7 +112,7 @@ Step3.propTypes = {
   // Document attributes
   documentType: PropTypes.number.isRequired,
   endPage: PropTypes.number.isRequired,
-  identifier: PropTypes.string.isRequired,
+  identifier: PropTypes.string,
   identifierType: PropTypes.shape({
     id: PropTypes.string.isRequired,
     text: PropTypes.string.isRequired,

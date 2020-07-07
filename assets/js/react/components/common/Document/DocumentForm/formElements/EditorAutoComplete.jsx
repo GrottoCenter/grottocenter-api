@@ -50,7 +50,7 @@ const EditorAutoComplete = ({
   }
 
   const handleInputChange = (value) => {
-    if (value === editor.name) {
+    if (editor && editor.name === value) {
       setEditorInputTmp('');
     } else {
       setEditorInputTmp(value);
@@ -78,7 +78,7 @@ const EditorAutoComplete = ({
         </InputLabel>
         <EditorInput
           disabled
-          value={editor && editor.name}
+          value={editor ? editor.name : ''}
           endAdornment={
             <InputAdornment position="end">
               <img
@@ -158,7 +158,7 @@ EditorAutoComplete.propTypes = {
   editor: PropTypes.shape({
     id: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
-  }).isRequired,
+  }),
   hasError: PropTypes.bool.isRequired,
   onEditorChange: PropTypes.func.isRequired,
   required: PropTypes.bool.isRequired,

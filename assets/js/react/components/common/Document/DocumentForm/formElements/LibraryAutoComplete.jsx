@@ -50,7 +50,7 @@ const LibraryAutoComplete = ({
   }
 
   const handleInputChange = (value) => {
-    if (value === library.name) {
+    if (library && library.name === value) {
       setLibraryInputTmp('');
     } else {
       setLibraryInputTmp(value);
@@ -78,7 +78,7 @@ const LibraryAutoComplete = ({
         </InputLabel>
         <LibraryInput
           disabled
-          value={library && library.name}
+          value={library ? library.name : ''}
           endAdornment={
             <InputAdornment position="end">
               <img
@@ -159,7 +159,7 @@ LibraryAutoComplete.propTypes = {
   library: PropTypes.shape({
     id: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
-  }).isRequired,
+  }),
   hasError: PropTypes.bool.isRequired,
   onLibraryChange: PropTypes.func.isRequired,
   required: PropTypes.bool.isRequired,

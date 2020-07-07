@@ -404,7 +404,7 @@ DocumentForm.propTypes = {
   editor: PropTypes.shape({
     id: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
-  }).isRequired,
+  }),
   endPage: PropTypes.number.isRequired,
   identifier: PropTypes.string.isRequired,
   identifierType: PropTypes.shape({
@@ -415,11 +415,11 @@ DocumentForm.propTypes = {
   library: PropTypes.shape({
     id: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
-  }).isRequired,
+  }),
   massif: PropTypes.shape({
     id: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
-  }).isRequired,
+  }),
   pageComment: PropTypes.string.isRequired,
   partOf: PropTypes.shape({
     id: PropTypes.string.isRequired,

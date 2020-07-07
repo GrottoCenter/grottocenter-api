@@ -40,22 +40,6 @@ const PartOfAutoComplete = ({
   const [partOfInputTmp, setPartOfInputTmp] = React.useState('');
   const { formatMessage } = useIntl();
 
-  const handleInputChange = (value) => {
-    if (value === partOf.name) {
-      setPartOfInputTmp('');
-    } else {
-      setPartOfInputTmp(value);
-    }
-  };
-  const handlePartOfSelection = (value) => {
-    // Defensive programming because the selection is triggerred
-    // when the input is emptied.
-    if (value !== null) {
-      onPartOfChange(value);
-    }
-    setPartOfInputTmp('');
-  };
-
   const getIsPartOfName = (part, childPart = '') => {
     const conditionalChildPart = childPart === '' ? '' : `> ${childPart}`;
 
@@ -140,7 +124,7 @@ PartOfAutoComplete.propTypes = {
   partOf: PropTypes.shape({
     id: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
-  }).isRequired,
+  }),
   required: PropTypes.bool.isRequired,
 };
 

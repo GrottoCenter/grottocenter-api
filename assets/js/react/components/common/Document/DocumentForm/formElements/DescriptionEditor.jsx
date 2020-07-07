@@ -19,7 +19,7 @@ const DescriptionContainer = styled.div`
 
 const LanguageSelectContainer = styled.div`
   flex: 5;
-  min-width: 200px;
+  min-width: 230px;
 `;
 // ===================================
 

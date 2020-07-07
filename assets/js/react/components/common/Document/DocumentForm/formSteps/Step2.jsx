@@ -58,9 +58,9 @@ const Step2 = ({
 
     // Specific validations
     if (isCollection(documentType)) {
-      newIsValid = newIsValid && editor.id !== '';
+      newIsValid = newIsValid && editor;
     } else if (isCollectionElement(documentType)) {
-      newIsValid = newIsValid && editor.id !== '' && partOf.id !== '';
+      newIsValid = newIsValid && editor && partOf;
     } else if (isText(documentType)) {
       newIsValid = true;
     } else if (isImage(documentType)) {
@@ -78,7 +78,7 @@ const Step2 = ({
     <>
       {(isText(documentType) || isCollectionElement(documentType)) && (
         <PartOfAutoComplete
-          hasError={isCollectionElement(documentType) && partOf.id === ''}
+          hasError={isCollectionElement(documentType) && !partOf}
           onPartOfChange={onPartOfChange}
           partOfSuggestions={allPartOf}
           partOf={partOf}
@@ -92,7 +92,7 @@ const Step2 = ({
             hasError={
               (isCollection(documentType) ||
                 isCollectionElement(documentType)) &&
-              editor.id === ''
+              !editor
             }
             editor={editor}
             editorSuggestions={allEditors}
@@ -190,19 +190,19 @@ Step2.propTypes = {
   editor: PropTypes.shape({
     id: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
-  }).isRequired,
+  }),
   library: PropTypes.shape({
     id: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
-  }).isRequired,
+  }),
   massif: PropTypes.shape({
     id: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
-  }).isRequired,
+  }),
   partOf: PropTypes.shape({
     id: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
-  }).isRequired,
+  }),
   regions: PropTypes.arrayOf(
     PropTypes.shape({
       id: PropTypes.string.isRequired,

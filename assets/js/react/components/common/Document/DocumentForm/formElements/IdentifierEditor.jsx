@@ -44,7 +44,7 @@ const IdentifierEditor = ({
 }) => {
   const handleIdentifierChange = (newIdentifier) => {
     if (newIdentifier === '') {
-      onIdentifierTypeChange({ id: '', text: '' });
+      onIdentifierTypeChange(null);
     }
     onIdentifierChange(newIdentifier);
   };
@@ -80,13 +80,13 @@ const IdentifierEditor = ({
               variant="filled"
               required={!isImage(documentType) && identifier !== ''}
               fullWidth
-              error={!isImage(documentType) && identifierType.id === ''} // TODO
+              error={!isImage(documentType) && !identifierType} // TODO
             >
               <InputLabel htmlFor="identifier-type">
                 <Translate>Identifier Type</Translate>
               </InputLabel>
               <Select
-                value={identifierType.id}
+                value={identifierType ? identifierType.id : -1}
                 onChange={handleIdentifierTypeChange}
                 inputProps={{
                   id: `identifier-type`,
@@ -94,7 +94,9 @@ const IdentifierEditor = ({
                 }}
               >
                 <MenuItem key={-1} value={-1} disabled>
-                  <Translate>Select an Identifier Type.</Translate>
+                  <i>
+                    <Translate>Select an Identifier Type</Translate>
+                  </i>
                 </MenuItem>
                 {allIdentifierTypes.map((l) => (
                   <MenuItem key={l.id} value={l.id}>
@@ -122,7 +124,7 @@ IdentifierEditor.propTypes = {
     }),
   ),
   documentType: PropTypes.number.isRequired,
-  identifier: PropTypes.string.isRequired,
+  identifier: PropTypes.string,
   identifierType: PropTypes.shape({
     id: PropTypes.string.isRequired,
     text: PropTypes.string.isRequired,
