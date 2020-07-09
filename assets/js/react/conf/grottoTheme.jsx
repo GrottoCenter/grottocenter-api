@@ -103,6 +103,12 @@ export const overridings = {
     // },
   },
   overrides: {
+    MuiFormHelperText: {
+      root: {
+        color: brown['500'],
+        fontSize: '1.3rem',
+      },
+    },
     MuiCardContent: {
       root: {
         padding: isMobile ? paddingUnit : paddingUnit * 2,
@@ -111,6 +117,12 @@ export const overridings = {
     MuiCardHeader: {
       root: {
         padding: isMobile ? paddingUnit : paddingUnit * 2,
+      },
+    },
+    MuiChip: {
+      root: {
+        backgroundColor: brown['500'],
+        color: '#fff',
       },
     },
     MuiDrawer: {

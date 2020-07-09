@@ -13,13 +13,13 @@ const InlineWrapper = styled.div`
 `;
 
 const TitleContainer = styled.div`
-  flex: 10;
-  flex-basis: 400px;
+  flex: 12;
+  min-width: 300px;
 `;
 
 const LanguageSelectContainer = styled.div`
-  flex: 3;
-  flex-basis: 200px;
+  flex: 5;
+  min-width: 200px;
 `;
 // ===================================
 
@@ -28,32 +28,38 @@ const TitleEditor = ({
   language,
   languageHelperText,
   languageItemReferringTo,
-  onLanguageChange,
-  onTitleChange,
-  title,
+  required = false,
 }) => {
-  return (
-    <InlineWrapper>
-      <TitleContainer>
-        <StringInput
-          helperText="Some helper text for Title"
-          onValueChange={onTitleChange}
-          value={title}
-          valueName="Title"
-          required
-        />
-      </TitleContainer>
-      <LanguageSelectContainer>
-        <LanguageSelect
-          allLanguages={allLanguages}
-          itemReferringTo={languageItemReferringTo}
-          helperText={languageHelperText}
-          required
-          language={language}
-          onLanguageChange={onLanguageChange}
-        />
-      </LanguageSelectContainer>
-    </InlineWrapper>
+  const {
+    docAttributes: { title, titleLanguage },
+    updateAttribute,
+  } = useContext(DocumentFormContext);
+
+  const memoizedValues = [allLanguages, title, titleLanguage];
+  return useMemo(
+    () => (
+      <InlineWrapper>
+        <TitleContainer>
+          <StringInput
+            helperText="Main title of the document. Don't enter the issue number here if you are submitting a magazine for example: it will be asked later in the form."
+            onValueChange={(value) => updateAttribute('title', value)}
+            value={title}
+            valueName="Title"
+            required={required}
+          />
+        </TitleContainer>
+        <LanguageSelectContainer>
+          <LanguageSelect
+            allLanguages={allLanguages}
+            contextValueNameToUpdate="titleLanguage"
+            helperText={languageHelperText}
+            itemReferringTo={languageItemReferringTo}
+            required={required}
+          />
+        </LanguageSelectContainer>
+      </InlineWrapper>
+    ),
+    memoizedValues,
   );
 };
 
@@ -67,9 +73,7 @@ TitleEditor.propTypes = {
   language: PropTypes.string.isRequired,
   languageHelperText: PropTypes.string.isRequired,
   languageItemReferringTo: PropTypes.string.isRequired,
-  onLanguageChange: PropTypes.func.isRequired,
-  onTitleChange: PropTypes.func.isRequired,
-  title: PropTypes.string.isRequired,
+  required: PropTypes.bool,
 };
 
 export default TitleEditor;

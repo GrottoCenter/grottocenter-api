@@ -7,40 +7,59 @@ import {
   MenuItem,
   Select,
 } from '@material-ui/core';
+import LanguageIcon from '@material-ui/icons/Translate';
 import Translate from '../../../Translate';
 
 // ===================================
 
 const LanguageSelect = ({
   allLanguages,
+  hasError = false,
   helperText,
+  itemReferringTo,
   required = false,
   language,
   onLanguageChange,
-  itemReferringTo,
 }) => {
   const handleLanguageChange = (event) => {
     onLanguageChange(event.target.value);
   };
 
-  return (
-    <FormControl variant="filled" required={required} fullWidth>
-      <InputLabel htmlFor={`${itemReferringTo}-language`}>
-        <Translate>{`${itemReferringTo} Language`}</Translate>
-      </InputLabel>
-      <Select
-        language={language}
-        onChange={handleLanguageChange}
-        inputProps={{
-          name: `${itemReferringTo}-language`,
-          id: `${itemReferringTo}-language`,
-        }}
+  const handleChange = (event, child) => {
+    const newLanguage = {
+      id: event.target.value,
+      name: child.props.name,
+    };
+    updateAttribute(contextValueNameToUpdate, newLanguage);
+  };
+
+  const memoizedValues = [allLanguages, language];
+  return useMemo(
+    () => (
+      <FormControl
+        variant="filled"
+        required={required}
+        fullWidth
+        error={required && language === null}
       >
-        <MenuItem value={0} disabled>
-          {`${itemReferringTo} Language`}
-        </MenuItem>
-        {allLanguages.map((l) => (
-          <MenuItem value={l.id}>{l.name}</MenuItem>
+        <InputLabel htmlFor={`${itemReferringTo}-language`}>
+          <LanguageIcon style={{ verticalAlign: 'middle' }} />
+          <Translate>{`${itemReferringTo} Language`}</Translate>
+        </InputLabel>
+
+        <Select
+          value={language === null ? -1 : language.id}
+          onChange={handleChange}
+          inputProps={{
+            name: `${itemReferringTo}-language`,
+            id: `${itemReferringTo}-language`,
+          }}
+        >
+          <MenuItem key={-1} value={-1} disabled>
+            <i>
+              <Translate>Select a language</Translate>
+            </i>
+          </MenuItem>
         ))}
       </Select>
       {helperText && (
@@ -59,6 +78,7 @@ LanguageSelect.propTypes = {
       name: PropTypes.string.isRequired,
     }),
   ).isRequired,
+  hasError: PropTypes.bool,
   helperText: PropTypes.string.isRequired,
   itemReferringTo: PropTypes.string.isRequired,
   language: PropTypes.string.isRequired,

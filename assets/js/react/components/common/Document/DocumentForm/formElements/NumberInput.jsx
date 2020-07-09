@@ -8,18 +8,31 @@ import {
 } from '@material-ui/core';
 import Translate from '../../../Translate';
 
-const StringInput = ({
+const NumberInput = ({
   fullWidth = true,
   helperText,
   multiline = false,
   required = false,
   hasError = false,
-  value,
   onValueChange,
+  value,
   valueName,
 }) => {
+  const [localStringValue, setLocalStringValue] = React.useState(
+    value.toString(),
+  );
+  const [formatErrorText, setFormatErrorText] = React.useState('');
+  const hasFormatError = formatErrorText !== '';
+
   const handleValueChange = (event) => {
-    onValueChange(event.target.value);
+    setLocalStringValue(event.target.value);
+    const numberValue = Number(event.target.value);
+    if (Number.isNaN(numberValue)) {
+      setFormatErrorText('Enter a number.');
+    } else {
+      onValueChange(numberValue);
+      setFormatErrorText('');
+    }
   };
 
   return (
@@ -27,7 +40,7 @@ const StringInput = ({
       variant="filled"
       fullWidth={fullWidth}
       required={required}
-      error={hasError}
+      error={hasError || hasFormatError}
     >
       <InputLabel>
         <Translate>{valueName}</Translate>
@@ -38,27 +51,36 @@ const StringInput = ({
         onChange={handleValueChange}
         required={required}
         type="text"
-        value={value}
+        value={localStringValue}
         error={hasError}
       />
       {helperText && (
         <FormHelperText>
           <Translate>{helperText}</Translate>
+
+          {formatErrorText && (
+            <>
+              <br />
+              <b>
+                <Translate>{formatErrorText}</Translate>
+              </b>
+            </>
+          )}
         </FormHelperText>
       )}
     </FormControl>
   );
 };
 
-StringInput.propTypes = {
+NumberInput.propTypes = {
   fullWidth: PropTypes.bool,
   helperText: PropTypes.string.isRequired,
   multiline: PropTypes.bool,
   onValueChange: PropTypes.func.isRequired,
   required: PropTypes.bool,
-  value: PropTypes.string.isRequired,
+  value: PropTypes.number.isRequired,
   valueName: PropTypes.string.isRequired,
   hasError: PropTypes.bool,
 };
 
-export default StringInput;
+export default NumberInput;

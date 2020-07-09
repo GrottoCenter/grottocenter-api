@@ -13,13 +13,13 @@ const InlineWrapper = styled.div`
 `;
 
 const DescriptionContainer = styled.div`
-  flex: 10;
-  flex-basis: 400px;
+  flex: 12;
+  flex-basis: 300px;
 `;
 
 const LanguageSelectContainer = styled.div`
-  flex: 3;
-  flex-basis: 200px;
+  flex: 5;
+  min-width: 200px;
 `;
 // ===================================
 
@@ -28,33 +28,41 @@ const DescriptionEditor = ({
   language,
   languageHelperText,
   languageItemReferringTo,
-  onLanguageChange,
-  onDescriptionChange,
-  description,
+  required = false,
 }) => {
-  return (
-    <InlineWrapper>
-      <DescriptionContainer>
-        <StringInput
-          helperText="Some helper text for Description"
-          onValueChange={onDescriptionChange}
-          value={description}
-          valueName="Description"
-          required
-          multiline
-        />
-      </DescriptionContainer>
-      <LanguageSelectContainer>
-        <LanguageSelect
-          allLanguages={allLanguages}
-          itemReferringTo={languageItemReferringTo}
-          helperText={languageHelperText}
-          required
-          language={language}
-          onLanguageChange={onLanguageChange}
-        />
-      </LanguageSelectContainer>
-    </InlineWrapper>
+  const {
+    docAttributes: { description, descriptionLanguage },
+    updateAttribute,
+  } = useContext(DocumentFormContext);
+
+  const memoizedValues = [allLanguages, description, descriptionLanguage];
+  return useMemo(
+    () => (
+      <InlineWrapper>
+        <DescriptionContainer>
+          <StringInput
+            helperText={
+              'Try to go straight to the point, mention keywords and be precise. Don\'t start with "this document is about...".'
+            }
+            multiline
+            onValueChange={(value) => updateAttribute('description', value)}
+            required={required}
+            value={description}
+            valueName="Description"
+          />
+        </DescriptionContainer>
+        <LanguageSelectContainer>
+          <LanguageSelect
+            allLanguages={allLanguages}
+            contextValueNameToUpdate="descriptionLanguage"
+            helperText={languageHelperText}
+            itemReferringTo={languageItemReferringTo}
+            required={required}
+          />
+        </LanguageSelectContainer>
+      </InlineWrapper>
+    ),
+    memoizedValues,
   );
 };
 
@@ -68,9 +76,7 @@ DescriptionEditor.propTypes = {
   language: PropTypes.string.isRequired,
   languageHelperText: PropTypes.string.isRequired,
   languageItemReferringTo: PropTypes.string.isRequired,
-  onLanguageChange: PropTypes.func.isRequired,
-  onDescriptionChange: PropTypes.func.isRequired,
-  description: PropTypes.string.isRequired,
+  required: PropTypes.bool,
 };
 
 export default DescriptionEditor;

@@ -1,4 +1,5 @@
 import React from 'react';
+import { isMobileOnly } from 'react-device-detect';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import {
@@ -62,9 +63,9 @@ const SubmitButton = styled(Button)`
 // ===================================
 
 const formSteps = [
-  { id: 1, name: 'Title & Identifiers' },
-  { id: 2, name: 'Description' },
-  { id: 3, name: 'Misc' },
+  { id: 1, name: 'General Information' },
+  { id: 2, name: 'Linked Information' },
+  { id: 3, name: 'Meta Information' },
 ];
 const getFormStep = (index) => {
   return formSteps.find((step) => step.id === index);
@@ -73,27 +74,55 @@ const getFormStep = (index) => {
 // ===================================
 
 const DocumentForm = ({
+  allAuthors,
+  allEditors,
+  allIdentifierTypes,
   allLanguages,
+  allLibraries,
+  allMassifs,
+  allPartOf,
+  allRegions,
+  allSubjects,
   // Doc attributes
+  authors,
   description,
   descriptionLanguage,
   documentMainLanguage,
+  documentType,
+  editor,
+  endPage,
   identifier,
-  isFromBbs,
+  identifierType,
   issue,
+  library,
+  massif,
+  pageComment,
+  partOf,
   publicationDate,
-  reference,
+  regions,
+  startPage,
+  subjects,
   title,
   titleLanguage,
   // onChange functions
+  onAuthorsChange,
   onDescriptionChange,
   onDescriptionLanguageChange,
   onDocumentMainLanguageChange,
+  onDocumentTypeChange,
+  onEditorChange,
+  onEndPageChange,
   onIdentifierChange,
-  onIsFromBbsChange,
+  onIdentifierTypeChange,
   onIssueChange,
+  onLibraryChange,
+  onMassifChange,
+  onPageCommentChange,
+  onPartOfChange,
   onPublicationDateChange,
-  onReferenceChange,
+  onRegionsChange,
+  onStartPageChange,
+  onSubjectsChange,
   onSubmit,
   onTitleChange,
   onTitleLanguageChange,
@@ -134,9 +163,24 @@ const DocumentForm = ({
 
   return (
     <>
-      <Typography variant="h1">
-        <Translate>Document Submission form</Translate>
-      </Typography>
+      <LinearProgress
+        // visibility is used to keep the space needed for the LinearProgress
+        // even if it's not shown.
+        style={isLoading ? { visibility: 'visible' } : { visibility: 'hidden' }}
+      />
+      <div style={isLoading ? { opacity: '0.6' } : {}}>
+        <Stepper
+          activeStep={getFormStep(currentFormStepId).id - 1}
+          alternativeLabel
+        >
+          {formSteps.map((step) => (
+            <Step key={step.id} completed={isStepCompleted(step.id)}>
+              <StepLabel>
+                <Translate>{step.name}</Translate>
+              </StepLabel>
+            </Step>
+          ))}
+        </Stepper>
 
       <Stepper
         activeStep={getFormStep(currentFormStepId).id - 1}
@@ -169,17 +213,31 @@ const DocumentForm = ({
       <FormWrapper onSubmit={onSubmit}>
         {getFormStep(currentFormStepId).id === 1 && (
           <Step1
+            // Suggestions
+            allAuthors={allAuthors}
+            allSubjects={allSubjects}
             allLanguages={allLanguages}
+            // Doc attributes
+            authors={authors}
+            description={description}
+            descriptionLanguage={descriptionLanguage}
             documentMainLanguage={documentMainLanguage}
-            identifier={identifier}
-            reference={reference}
+            documentType={documentType}
+            publicationDate={publicationDate}
+            subjects={subjects}
             title={title}
             titleLanguage={titleLanguage}
+            // onChange functions
+            onAuthorsChange={onAuthorsChange}
+            onDescriptionChange={onDescriptionChange}
+            onDescriptionLanguageChange={onDescriptionLanguageChange}
             onDocumentMainLanguageChange={onDocumentMainLanguageChange}
-            onIdentifierChange={onIdentifierChange}
-            onReferenceChange={onReferenceChange}
+            onDocumentTypeChange={onDocumentTypeChange}
+            onPublicationDateChange={onPublicationDateChange}
             onTitleChange={onTitleChange}
             onTitleLanguageChange={onTitleLanguageChange}
+            onSubjectsChange={onSubjectsChange}
+            // Steps
             onStepIsValidChange={onStepIsValidChange}
             stepId={1}
           />
@@ -187,26 +245,68 @@ const DocumentForm = ({
 
         {getFormStep(currentFormStepId).id === 2 && (
           <Step2
+            // Suggestions
+            allEditors={allEditors}
             allLanguages={allLanguages}
-            description={description}
-            descriptionLanguage={descriptionLanguage}
-            onDescriptionChange={onDescriptionChange}
-            onDescriptionLanguageChange={onDescriptionLanguageChange}
+            allLibraries={allLibraries}
+            allMassifs={allMassifs}
+            allPartOf={allPartOf}
+            allRegions={allRegions}
+            // Doc attributes
+            documentType={documentType}
+            editor={editor}
+            library={library}
+            massif={massif}
+            partOf={partOf}
+            regions={regions}
+            // onChange functions
+            onEditorChange={onEditorChange}
+            onLibraryChange={onLibraryChange}
+            onMassifChange={onMassifChange}
+            onPartOfChange={onPartOfChange}
+            onRegionsChange={onRegionsChange}
+            // Steps
             onStepIsValidChange={onStepIsValidChange}
             stepId={2}
           />
         )}
         {getFormStep(currentFormStepId).id === 3 && (
           <Step3
-            isFromBbs={isFromBbs}
+            // Suggestions
+            allIdentifierTypes={allIdentifierTypes}
+            // Doc attributes
+            documentType={documentType}
+            endPage={endPage}
+            identifier={identifier}
+            identifierType={identifierType}
             issue={issue}
-            publicationDate={publicationDate}
-            onIsFromBbsChange={onIsFromBbsChange}
+            pageComment={pageComment}
+            startPage={startPage}
+            // onChange functions
+            onEndPageChange={onEndPageChange}
+            onIdentifierChange={onIdentifierChange}
+            onIdentifierTypeChange={onIdentifierTypeChange}
             onIssueChange={onIssueChange}
-            onPublicationDateChange={onPublicationDateChange}
+            onPageCommentChange={onPageCommentChange}
+            onStartPageChange={onStartPageChange}
+            // Steps
             onStepIsValidChange={onStepIsValidChange}
             stepId={3}
           />
+        )}
+
+        {isMobileOnly && (
+          <ChangeStepWrapper>
+            <PreviousStepButton
+              disabled={currentFormStepId === 1}
+              onClick={handleStepBack}
+            />
+            <NextStepButton
+              disabled={isNextStepButtonDisabled()}
+              onClick={handleStepNext}
+              style={{ float: 'right' }}
+            />
+          </ChangeStepWrapper>
         )}
 
         {currentFormStepId === formSteps.length && (
@@ -228,34 +328,140 @@ const DocumentForm = ({
 };
 
 DocumentForm.propTypes = {
+  allAuthors: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string.isRequired,
+      name: PropTypes.string.isRequired,
+      surname: PropTypes.string.isRequired,
+    }),
+  ).isRequired,
+  allEditors: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string.isRequired,
+      name: PropTypes.string.isRequired,
+    }),
+  ),
+  allIdentifierTypes: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string.isRequired,
+      text: PropTypes.string.isRequired,
+    }),
+  ),
   allLanguages: PropTypes.arrayOf(
     PropTypes.shape({
       id: PropTypes.string.isRequired,
       name: PropTypes.string.isRequired,
     }),
   ).isRequired,
+  allLibraries: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string.isRequired,
+      name: PropTypes.string.isRequired,
+    }),
+  ),
+  allMassifs: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string.isRequired,
+      name: PropTypes.string.isRequired,
+    }),
+  ),
+  allRegions: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string.isRequired,
+      name: PropTypes.string.isRequired,
+    }),
+  ),
+  allSubjects: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string.isRequired,
+      subject: PropTypes.string.isRequired,
+    }),
+  ),
+  allPartOf: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string.isRequired,
+      name: PropTypes.string.isRequired,
+      issue: PropTypes.string,
+      documenType: PropTypes.shape({
+        id: PropTypes.string.isRequired,
+        name: PropTypes.string.isRequired,
+      }),
+      partOf: PropTypes.shape({}),
+    }),
+  ),
 
   // Document attributes
+  authors: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string.isRequired,
+      name: PropTypes.string.isRequired,
+      surname: PropTypes.string.isRequired,
+    }),
+  ).isRequired,
   description: PropTypes.string.isRequired,
   descriptionLanguage: PropTypes.string.isRequired,
   documentMainLanguage: PropTypes.string.isRequired,
+  documentType: PropTypes.number.isRequired,
+  editor: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    name: PropTypes.string.isRequired,
+  }).isRequired,
+  endPage: PropTypes.number.isRequired,
   identifier: PropTypes.string.isRequired,
-  isFromBbs: PropTypes.bool.isRequired,
+  identifierType: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    text: PropTypes.string.isRequired,
+  }),
   issue: PropTypes.string.isRequired,
+  library: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    name: PropTypes.string.isRequired,
+  }).isRequired,
+  massif: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    name: PropTypes.string.isRequired,
+  }).isRequired,
+  pageComment: PropTypes.string.isRequired,
+  partOf: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    name: PropTypes.string.isRequired,
+  }).isRequired,
   publicationDate: PropTypes.instanceOf(Date),
-  reference: PropTypes.string.isRequired,
+  regions: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string.isRequired,
+      name: PropTypes.string.isRequired,
+    }),
+  ),
+  startPage: PropTypes.number.isRequired,
+  subjects: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string.isRequired,
+      subject: PropTypes.string.isRequired,
+    }),
+  ),
   title: PropTypes.string.isRequired,
   titleLanguage: PropTypes.string.isRequired,
 
   // On change functions
+  onAuthorsChange: PropTypes.func.isRequired,
   onDescriptionChange: PropTypes.func.isRequired,
   onDescriptionLanguageChange: PropTypes.func.isRequired,
   onDocumentMainLanguageChange: PropTypes.func.isRequired,
+  onDocumentTypeChange: PropTypes.func.isRequired,
+  onEditorChange: PropTypes.func.isRequired,
+  onEndPageChange: PropTypes.func.isRequired,
   onIdentifierChange: PropTypes.func.isRequired,
-  onIsFromBbsChange: PropTypes.func.isRequired,
+  onIdentifierTypeChange: PropTypes.func.isRequired,
   onIssueChange: PropTypes.func.isRequired,
+  onLibraryChange: PropTypes.func.isRequired,
+  onMassifChange: PropTypes.func.isRequired,
+  onPageCommentChange: PropTypes.func.isRequired,
+  onPartOfChange: PropTypes.func.isRequired,
   onPublicationDateChange: PropTypes.func.isRequired,
-  onReferenceChange: PropTypes.func.isRequired,
+  onRegionsChange: PropTypes.func.isRequired,
+  onStartPageChange: PropTypes.func.isRequired,
+  onSubjectsChange: PropTypes.func.isRequired,
   onSubmit: PropTypes.func.isRequired,
   onTitleChange: PropTypes.func.isRequired,
   onTitleLanguageChange: PropTypes.func.isRequired,
