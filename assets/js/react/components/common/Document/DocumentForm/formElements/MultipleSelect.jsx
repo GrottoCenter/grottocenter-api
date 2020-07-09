@@ -1,30 +1,33 @@
-import React from 'react';
+import React, { useContext, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import { FormHelperText, TextField } from '@material-ui/core';
 
 import Translate from '../../../Translate';
 
+import { DocumentFormContext } from '../Provider';
+
 const MultipleSelect = ({
   allPossibleValues,
+  contextValueNameToUpdate,
   getOptionLabel,
-  hasError = false,
+  computeHasError,
   helperText,
   labelName,
-  onValuesChange,
   required = false,
-  value,
 }) => {
+  const context = useContext(DocumentFormContext);
+  const { updateAttribute } = context;
+  const value = context.docAttributes[contextValueNameToUpdate];
+
   const handleOnChange = (event, newValue, reason) => {
     switch (reason) {
       case 'clear':
-        onValuesChange([]);
+        updateAttribute(contextValueNameToUpdate, []);
         break;
       case 'select-option':
-        onValuesChange(newValue);
-        break;
       case 'remove-option':
-        onValuesChange(newValue);
+        updateAttribute(contextValueNameToUpdate, newValue);
         break;
       default:
     }
@@ -65,25 +68,20 @@ const MultipleSelect = ({
             <Translate>{helperText}</Translate>
           </FormHelperText>
         )}
-      />
-      {helperText && (
-        <FormHelperText variant="filled" error={hasError}>
-          <Translate>{helperText}</Translate>
-        </FormHelperText>
-      )}
-    </>
+      </>
+    ),
+    [memoizedValues],
   );
 };
 
 MultipleSelect.propTypes = {
   allPossibleValues: PropTypes.arrayOf(PropTypes.shape({})),
+  contextValueNameToUpdate: PropTypes.string.isRequired,
   getOptionLabel: PropTypes.func.isRequired,
-  hasError: PropTypes.bool,
+  computeHasError: PropTypes.func.isRequired,
   helperText: PropTypes.string.isRequired,
   labelName: PropTypes.string.isRequired,
-  onValuesChange: PropTypes.func.isRequired,
   required: PropTypes.bool,
-  value: PropTypes.arrayOf(PropTypes.shape({})),
 };
 
 export default MultipleSelect;

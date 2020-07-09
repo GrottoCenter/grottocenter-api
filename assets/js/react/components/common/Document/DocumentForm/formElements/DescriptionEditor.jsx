@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useContext, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
+
+import { DocumentFormContext } from '../Provider';
 
 import StringInput from './StringInput';
 import LanguageSelect from './LanguageSelect';
@@ -25,7 +27,6 @@ const LanguageSelectContainer = styled.div`
 
 const DescriptionEditor = ({
   allLanguages,
-  language,
   languageHelperText,
   languageItemReferringTo,
   required = false,
@@ -73,7 +74,6 @@ DescriptionEditor.propTypes = {
       name: PropTypes.string.isRequired,
     }),
   ).isRequired,
-  language: PropTypes.string.isRequired,
   languageHelperText: PropTypes.string.isRequired,
   languageItemReferringTo: PropTypes.string.isRequired,
   required: PropTypes.bool,

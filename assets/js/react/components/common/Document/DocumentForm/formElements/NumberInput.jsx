@@ -56,16 +56,15 @@ const NumberInput = ({
       />
       {helperText && (
         <FormHelperText>
-          <Translate>{helperText}</Translate>
-
           {formatErrorText && (
             <>
-              <br />
               <b>
                 <Translate>{formatErrorText}</Translate>
               </b>
+              <br />
             </>
           )}
+          <Translate>{helperText}</Translate>
         </FormHelperText>
       )}
     </FormControl>

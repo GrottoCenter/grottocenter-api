@@ -13,7 +13,6 @@ const StringInput = ({
   helperText,
   multiline = false,
   required = false,
-  hasError = false,
   value,
   onValueChange,
   valueName,
@@ -27,7 +26,7 @@ const StringInput = ({
       variant="filled"
       fullWidth={fullWidth}
       required={required}
-      error={hasError}
+      error={required && value === ''}
     >
       <InputLabel>
         <Translate>{valueName}</Translate>
@@ -39,7 +38,7 @@ const StringInput = ({
         required={required}
         type="text"
         value={value}
-        error={hasError}
+        error={required && value === ''}
       />
       {helperText && (
         <FormHelperText>
@@ -58,7 +57,6 @@ StringInput.propTypes = {
   required: PropTypes.bool,
   value: PropTypes.string.isRequired,
   valueName: PropTypes.string.isRequired,
-  hasError: PropTypes.bool,
 };
 
 export default StringInput;

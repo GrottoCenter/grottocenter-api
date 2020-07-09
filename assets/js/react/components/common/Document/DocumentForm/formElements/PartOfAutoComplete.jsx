@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext, useMemo } from 'react';
 import { useIntl } from 'react-intl';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
@@ -12,9 +12,11 @@ import {
 import { pathOr } from 'ramda';
 
 import AutoCompleteSearch from '../../../AutoCompleteSearch';
-
 import Translate from '../../../Translate';
+
+import { DocumentFormContext } from '../Provider';
 import { isCollection } from '../DocumentTypesHelper';
+import { allPartOf } from '../stories/documentFormFakeData';
 
 // ===================================
 const PartOfInput = styled(FilledInput)`
@@ -30,16 +32,25 @@ const StyledFormControl = styled(FormControl)`
 `;
 // ===================================
 
-const PartOfAutoComplete = ({
-  hasError,
-  onPartOfChange,
-  partOf,
-  partOfSuggestions,
-  required,
-}) => {
+const PartOfAutoComplete = ({ hasError, partOfSuggestions, required }) => {
   const [partOfInputTmp, setPartOfInputTmp] = React.useState('');
   const { formatMessage } = useIntl();
+  const {
+    docAttributes: { partOf },
+    updateAttribute,
+  } = useContext(DocumentFormContext);
 
+  /**
+   * Recursive function to build the complete name of a "part" element
+   * from all its parents and children.
+   * @param part : element to build the name
+   * @param childPart : previously child part name computed
+   *
+   * Ex:
+   * If myArticle is from a Spelunca issue,
+   * getIsPartOfName(myArticle, '') will return:
+   * Spelunca [COLLECTION] > Spelunca n°142 > "the title of myArticle"
+   */
   const getIsPartOfName = (part, childPart = '') => {
     const conditionalChildPart = childPart === '' ? '' : `> ${childPart}`;
 
@@ -87,33 +98,57 @@ const PartOfAutoComplete = ({
           variant="filled"
           required={required}
           error={hasError}
+          fullWidth
         >
-          <AutoCompleteSearch
-            onSelection={handlePartOfSelection}
-            label="Search for a document..."
-            inputValue={partOfInputTmp}
-            onInputChange={handleInputChange}
-            suggestions={partOfSuggestions}
-            renderOption={(option) => getIsPartOfName(option)}
-            getOptionLabel={(option) => getIsPartOfName(option)}
-            hasError={false} // TODO ?
-            isLoading={false} // TODO
+          <InputLabel>
+            <Translate>Parent document</Translate>
+          </InputLabel>
+          <PartOfInput
+            disabled
+            value={partOf ? getIsPartOfName(partOf) : ''}
+            endAdornment={
+              <InputAdornment position="end">
+                <img
+                  src="/images/link.png"
+                  alt="Link icon"
+                  style={{ width: '35px' }}
+                />
+              </InputAdornment>
+            }
           />
-        </StyledFormControl>
 
-        <FormHelperText>
-          <Translate>
-            Use the search bar to search for an existing document.
-          </Translate>
-        </FormHelperText>
-      </FormControl>
-    </>
+          <StyledFormControl
+            variant="filled"
+            required={required}
+            error={hasError}
+          >
+            <AutoCompleteSearch
+              onSelection={handlePartOfSelection}
+              label="Search for a document..."
+              inputValue={partOfInputTmp}
+              onInputChange={handleInputChange}
+              suggestions={partOfSuggestions}
+              renderOption={(option) => getIsPartOfName(option)}
+              getOptionLabel={(option) => getIsPartOfName(option)}
+              hasError={false} // TODO ?
+              isLoading={false} // TODO
+            />
+          </StyledFormControl>
+
+          <FormHelperText>
+            <Translate>
+              Use the search bar to search for an existing document.
+            </Translate>
+          </FormHelperText>
+        </FormControl>
+      </>
+    ),
+    [memoizedValues],
   );
 };
 
 PartOfAutoComplete.propTypes = {
   hasError: PropTypes.bool.isRequired,
-  onPartOfChange: PropTypes.func.isRequired,
   partOfSuggestions: PropTypes.arrayOf(
     PropTypes.shape({
       id: PropTypes.string.isRequired,
@@ -121,10 +156,6 @@ PartOfAutoComplete.propTypes = {
       issue: PropTypes.string,
     }),
   ),
-  partOf: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    name: PropTypes.string.isRequired,
-  }),
   required: PropTypes.bool.isRequired,
 };
 

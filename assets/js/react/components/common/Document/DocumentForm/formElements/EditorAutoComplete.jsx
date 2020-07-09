@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import {
@@ -11,8 +11,9 @@ import {
 import { pathOr } from 'ramda';
 
 import AutoCompleteSearch from '../../../AutoCompleteSearch';
-
 import Translate from '../../../Translate';
+
+import { DocumentFormContext } from '../Provider';
 
 // ===================================
 const EditorInput = styled(FilledInput)`
@@ -28,13 +29,7 @@ const StyledFormControl = styled(FormControl)`
 `;
 // ===================================
 
-const EditorAutoComplete = ({
-  editor,
-  editorSuggestions,
-  hasError,
-  onEditorChange,
-  required,
-}) => {
+const EditorAutoComplete = ({ editorSuggestions, hasError, required }) => {
   const [editorInputTmp, setEditorInputTmp] = React.useState('');
   const {
     docAttributes: { editor: ownEditor, partOf },
@@ -60,40 +55,20 @@ const EditorAutoComplete = ({
     // Defensive programming because the selection is triggerred
     // when the input is emptied.
     if (value !== null) {
-      onEditorChange(value);
+      updateAttribute('editor', value);
     }
     setEditorInputTmp('');
   };
 
-  return (
-    <>
-      <FormControl
-        variant="filled"
-        required={required}
-        error={hasError}
-        fullWidth
-      >
-        <InputLabel>
-          <Translate>Editor</Translate>
-        </InputLabel>
-        <EditorInput
-          disabled
-          value={editor ? editor.name : ''}
-          endAdornment={
-            <InputAdornment position="end">
-              <img
-                src="/images/bibliography.svg"
-                alt="Bibliography icon"
-                style={{ width: '40px' }}
-              />
-            </InputAdornment>
-          }
-        />
-
-        <StyledFormControl
+  const memoizedValues = [editor, editorSuggestions, hasError];
+  return useMemo(
+    () => (
+      <>
+        <FormControl
           variant="filled"
           required={required}
           error={hasError}
+          fullWidth
         >
           <InputLabel>
             <Translate>Editor</Translate>
@@ -111,7 +86,6 @@ const EditorAutoComplete = ({
               </InputAdornment>
             }
           />
-        </StyledFormControl>
 
           <StyledFormControl
             variant="filled"
@@ -155,12 +129,7 @@ EditorAutoComplete.propTypes = {
       name: PropTypes.string.isRequired,
     }),
   ),
-  editor: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    name: PropTypes.string.isRequired,
-  }),
   hasError: PropTypes.bool.isRequired,
-  onEditorChange: PropTypes.func.isRequired,
   required: PropTypes.bool.isRequired,
 };
 

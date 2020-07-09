@@ -1,7 +1,8 @@
 import React from 'react';
-import PropTypes from 'prop-types';
+import styled from 'styled-components';
+import { action } from '@storybook/addon-actions';
 import { storiesOf } from '@storybook/react';
-import { Card } from '@material-ui/core';
+import { Card, Switch } from '@material-ui/core';
 import DocumentForm from '../index';
 import DocumentFormProvider, { defaultContext } from '../Provider';
 import { allDocumentTypes } from '../DocumentTypesHelper';
@@ -18,53 +19,44 @@ import {
   allSubjects,
 } from './documentFormFakeData';
 
-const DefaultDocumentForm = ({
-  forcedAuthors = [],
-  forcedDescription = '',
-  forcedDescriptionLanguage = '',
-  forcedDocumentType = -1,
-  forcedEditor = null,
-  forcedPartOf = null,
-  forcedPublicationDate = null,
-  forcedRegions = [],
-  forcedSubjects = [],
-  forcedTitle = '',
-  forcedTitleLanguage = '',
-}) => {
-  const [authors, setAuthors] = React.useState(forcedAuthors);
-  const [description, setDescription] = React.useState(forcedDescription);
-  const [descriptionLanguage, setDescriptionLanguage] = React.useState(
-    forcedDescriptionLanguage,
-  );
-  const [documentMainLanguage, setDocumentMainLanguage] = React.useState('');
-  const [documentType, setDocumentType] = React.useState(forcedDocumentType);
-  const [editor, setEditor] = React.useState(forcedEditor);
-  const [endPage, setEndPage] = React.useState(0);
-  const [identifier, setIdentifier] = React.useState('');
-  const [identifierType, setIdentifierType] = React.useState(null);
-  const [issue, setIssue] = React.useState('');
-  const [library, setLibrary] = React.useState(null);
-  const [massif, setMassif] = React.useState(null);
-  const [pageComment, setPageComment] = React.useState('');
-  const [partOf, setPartOf] = React.useState(forcedPartOf);
-  const [publicationDate, setPublicationDate] = React.useState(
-    forcedPublicationDate,
-  );
-  const [reference, setReferenceChange] = React.useState('');
-  const [regions, setRegions] = React.useState(forcedRegions);
-  const [startPage, setStartPage] = React.useState(0);
-  const [subjects, setSubjects] = React.useState(forcedSubjects);
-  const [title, setTitle] = React.useState(forcedTitle);
-  const [titleLanguage, setTitleLanguage] = React.useState(forcedTitleLanguage);
+// ==========================
+
+const PaddedCard = styled(Card)`
+  padding: 2rem;
+`;
+
+const StoryControlsCard = styled(PaddedCard)`
+  background-color: ${({ theme }) => theme.palette.primary.light};
+  font-size: 1.5rem;
+`;
+
+// ==========================
+
+const DefaultDocumentForm = () => {
+  const [isLoading, setIsLoading] = React.useState(false);
 
   const onSubmit = (e) => {
     e.preventDefault();
-    window.alert('Form submitted'); // eslint-disable-line no-alert
+    setIsLoading(true);
+    action('on form submitted')(e);
   };
 
   return (
     <div style={{ padding: '3rem' }}>
-      <Card style={{ padding: '2rem' }}>
+      <StoryControlsCard>
+        <div>
+          <b>Form State StoryControls</b>
+        </div>
+        <Switch
+          color="secondary"
+          checked={isLoading}
+          onChange={(event) => setIsLoading(event.target.checked)}
+          inputProps={{ 'aria-label': 'primary checkbox' }}
+        />
+        <span>Is loading</span>
+      </StoryControlsCard>
+      <br />
+      <PaddedCard>
         <DocumentForm
           allAuthors={allAuthors}
           allEditors={allEditors}
@@ -75,98 +67,24 @@ const DefaultDocumentForm = ({
           allPartOf={allPartOf}
           allRegions={allRegions}
           allSubjects={allSubjects}
-          authors={authors}
-          description={description}
-          descriptionLanguage={descriptionLanguage}
-          documentMainLanguage={documentMainLanguage}
-          documentType={documentType}
-          editor={editor}
-          endPage={endPage}
-          identifier={identifier}
-          identifierType={identifierType}
-          issue={issue}
-          library={library}
-          massif={massif}
-          onAuthorsChange={setAuthors}
-          onDescriptionChange={setDescription}
-          onEditorChange={setEditor}
-          onDescriptionLanguageChange={setDescriptionLanguage}
-          onDocumentMainLanguageChange={setDocumentMainLanguage}
-          onDocumentTypeChange={setDocumentType}
-          onEditorEchange={setEditor}
-          onEndPageChange={setEndPage}
-          onIdentifierChange={setIdentifier}
-          onIdentifierTypeChange={setIdentifierType}
-          onIssueChange={setIssue}
-          onLibraryChange={setLibrary}
-          onMassifChange={setMassif}
-          onPageCommentChange={setPageComment}
-          onPartOfChange={setPartOf}
-          onPublicationDateChange={setPublicationDate}
-          onRegionsChange={setRegions}
-          onReferenceChange={setReferenceChange}
-          onStartPageChange={setStartPage}
-          onSubjectsChange={setSubjects}
+          isLoading={isLoading}
           onSubmit={onSubmit}
-          onTitleChange={setTitle}
-          onTitleLanguageChange={setTitleLanguage}
-          pageComment={pageComment}
-          partOf={partOf}
-          publicationDate={publicationDate}
-          reference={reference}
-          regions={regions}
-          startPage={startPage}
-          subjects={subjects}
-          title={title}
-          titleLanguage={titleLanguage}
         />
-      </Card>
+      </PaddedCard>
     </div>
   );
 };
 
-DefaultDocumentForm.propTypes = {
-  forcedAuthors: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      name: PropTypes.string.isRequired,
-      surname: PropTypes.string.isRequired,
-    }),
-  ),
-  forcedDescription: PropTypes.string,
-  forcedDescriptionLanguage: PropTypes.string,
-  forcedDocumentType: PropTypes.number,
-  forcedEditor: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    name: PropTypes.string.isRequired,
-  }).isRequired,
-  forcedPartOf: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    name: PropTypes.string.isRequired,
-    issue: PropTypes.string,
-    documenType: PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      name: PropTypes.string.isRequired,
-    }),
-    partOf: PropTypes.shape({}),
-  }),
-  forcedPublicationDate: PropTypes.objectOf(Date),
-  forcedRegions: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      name: PropTypes.string.isRequired,
-    }),
-  ),
-  forcedSubjects: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      subject: PropTypes.string.isRequired,
-    }),
-  ),
-  forcedTitle: PropTypes.string,
-  forcedTitleLanguage: PropTypes.string,
-};
+DefaultDocumentForm.propTypes = {};
 
+const ProviderDecorator = (
+  storyFn,
+  docAttributes = defaultContext.docAttributes,
+) => (
+  <DocumentFormProvider docAttributes={docAttributes}>
+    {storyFn()}
+  </DocumentFormProvider>
+);
 storiesOf('DocumentForm', module)
   .add('Default', () => <DefaultDocumentForm />, {
     decorators: [(storyFn) => ProviderDecorator(storyFn)],

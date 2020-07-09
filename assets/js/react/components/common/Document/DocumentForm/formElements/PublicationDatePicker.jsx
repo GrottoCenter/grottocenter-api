@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import DateFnsUtils from '@date-io/date-fns';
@@ -8,6 +8,8 @@ import {
   MuiPickersUtilsProvider,
 } from '@material-ui/pickers';
 import Translate from '../../../Translate';
+
+import { DocumentFormContext } from '../Provider';
 
 // ===================================
 
@@ -26,12 +28,7 @@ const DateButton = styled(Button)`
 `;
 // ===================================
 
-const PublicationDatePicker = ({
-  hasError = false,
-  onPublicationDateChange,
-  publicationDate,
-  required = false,
-}) => {
+const PublicationDatePicker = ({ required = false }) => {
   const [dateTypes, setDateTypes] = React.useState(['year', 'month', 'date']);
   const [isDatePickerOpen, setIsDatePickerOpen] = React.useState(false);
   const handleDateTypesChanges = (newTypes) => {
@@ -41,9 +38,10 @@ const PublicationDatePicker = ({
     }
   };
 
-  const handlePublicationDateChange = (date) => {
-    onPublicationDateChange(date);
-  };
+  const {
+    docAttributes: { publicationDate },
+    updateAttribute,
+  } = useContext(DocumentFormContext);
 
   const getDisplayedDateFormat = () => {
     if (dateTypes.includes('month')) {
@@ -152,9 +150,6 @@ const PublicationDatePicker = ({
 };
 
 PublicationDatePicker.propTypes = {
-  hasError: PropTypes.bool,
-  onPublicationDateChange: PropTypes.func.isRequired,
-  publicationDate: PropTypes.instanceOf(Date),
   required: PropTypes.bool,
 };
 

@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useContext, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import { Fade } from '@material-ui/core';
+
+import { DocumentFormContext } from '../Provider';
 
 import DescriptionEditor from '../formElements/DescriptionEditor';
 import DocumentTypeSelect from '../formElements/DocumentTypeSelect';
@@ -43,31 +45,23 @@ const DocumentForm = ({
   allAuthors,
   allLanguages,
   allSubjects,
-  // Doc attributes
-  authors,
-  description,
-  descriptionLanguage,
-  documentMainLanguage,
-  documentType,
-  publicationDate,
-  subjects,
-  title,
-  titleLanguage,
-  // onChange functions
-  onAuthorsChange,
-  onDescriptionChange,
-  onDescriptionLanguageChange,
-  onDocumentMainLanguageChange,
-  onDocumentTypeChange,
-  onPublicationDateChange,
-  onSubjectsChange,
-  onTitleChange,
-  onTitleLanguageChange,
-
   onStepIsValidChange,
   stepId,
 }) => {
   const [isValid, setIsValid] = React.useState(false);
+
+  const {
+    docAttributes: {
+      authors,
+      description,
+      descriptionLanguage,
+      documentType,
+      publicationDate,
+      subjects,
+      title,
+      titleLanguage,
+    },
+  } = useContext(DocumentFormContext);
 
   React.useEffect(() => {
     // Common validation (title and description)
@@ -137,9 +131,15 @@ const DocumentForm = ({
                       languageItemReferringTo="Title"
                       required
                     />
-                  </PublicationDateWrapper>
-                )}
-              </FlexWrapper>
+                  </TitleEditorWrapper>
+                  {!isCollection(documentType) && (
+                    <PublicationDateWrapper>
+                      <PublicationDatePicker
+                        required={isCollectionElement(documentType)}
+                      />
+                    </PublicationDateWrapper>
+                  )}
+                </FlexWrapper>
 
                 <DescriptionEditor
                   allLanguages={allLanguages}
@@ -148,35 +148,39 @@ const DocumentForm = ({
                   required
                 />
 
-              <MultipleSelect
-                allPossibleValues={allAuthors}
-                getOptionLabel={(option) => `${option.name} ${option.surname}`}
-                hasError={
-                  (isImage(documentType) || isText(documentType)) &&
-                  authors.length === 0
-                }
-                helperText="Use authors' full name, no abreviation. In a next version of the website, if the author is not in the Grottocenter database, you will be able to add it."
-                labelName="Authors"
-                onValuesChange={onAuthorsChange}
-                required={isText(documentType) || isImage(documentType)}
-                value={authors}
-              />
+                <MultipleSelect
+                  allPossibleValues={allAuthors}
+                  contextValueNameToUpdate="authors"
+                  getOptionLabel={(option) =>
+                    `${option.name} ${option.surname}`
+                  }
+                  computeHasError={(newAuthors) =>
+                    (isImage(documentType) || isText(documentType)) &&
+                    newAuthors.length === 0
+                  }
+                  helperText="Use authors' full name, no abreviation. In a next version of the website, if the author is not in the Grottocenter database, you will be able to add it."
+                  labelName="Authors"
+                  required={isImage(documentType) || isText(documentType)}
+                />
 
-              <MultipleSelect
-                allPossibleValues={allSubjects}
-                getOptionLabel={(option) => `${option.id} ${option.subject}`}
-                hasError={isText(documentType) && subjects.length === 0}
-                helperText="Be precise about the subjects discussed in the document: there are plenty of subject choices in Grottocenter."
-                labelName="Subjects"
-                onValuesChange={onSubjectsChange}
-                required={isText(documentType)}
-                value={subjects}
-              />
-            </>
-          )}
-        </div>
-      </Fade>
-    </>
+                <MultipleSelect
+                  allPossibleValues={allSubjects}
+                  contextValueNameToUpdate="subjects"
+                  getOptionLabel={(option) => `${option.id} ${option.subject}`}
+                  computeHasError={(newSubjects) =>
+                    isText(documentType) && newSubjects.length === 0
+                  }
+                  helperText="Be precise about the subjects discussed in the document: there are plenty of subject choices in Grottocenter."
+                  labelName="Subjects"
+                  required={isText(documentType)}
+                />
+              </>
+            )}
+          </div>
+        </Fade>
+      </>
+    ),
+    memoizedValues,
   );
 };
 
@@ -200,40 +204,6 @@ DocumentForm.propTypes = {
       subject: PropTypes.string.isRequired,
     }),
   ).isRequired,
-
-  // Document attributes
-  authors: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      name: PropTypes.string.isRequired,
-      surname: PropTypes.string.isRequired,
-    }),
-  ).isRequired,
-  description: PropTypes.string.isRequired,
-  descriptionLanguage: PropTypes.string.isRequired,
-  documentMainLanguage: PropTypes.string.isRequired,
-  documentType: PropTypes.number.isRequired,
-  publicationDate: PropTypes.instanceOf(Date),
-  subjects: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      subject: PropTypes.string.isRequired,
-    }),
-  ).isRequired,
-  title: PropTypes.string.isRequired,
-  titleLanguage: PropTypes.string.isRequired,
-
-  // On change functions
-  onAuthorsChange: PropTypes.func.isRequired,
-  onDescriptionChange: PropTypes.func.isRequired,
-  onDescriptionLanguageChange: PropTypes.func.isRequired,
-  onDocumentMainLanguageChange: PropTypes.func.isRequired,
-  onDocumentTypeChange: PropTypes.func.isRequired,
-  onPublicationDateChange: PropTypes.func.isRequired,
-  onSubjectsChange: PropTypes.func.isRequired,
-  onTitleChange: PropTypes.func.isRequired,
-  onTitleLanguageChange: PropTypes.func.isRequired,
-
   onStepIsValidChange: PropTypes.func.isRequired,
   stepId: PropTypes.number.isRequired,
 };

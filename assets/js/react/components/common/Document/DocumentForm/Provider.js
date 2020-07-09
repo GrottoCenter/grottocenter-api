@@ -24,13 +24,12 @@ export const defaultContext = {
     title: '',
     titleLanguage: null,
   },
-  loading: false,
   updateAttribute: (attributeName, newValue) => {}, // eslint-disable-line no-unused-vars
 };
 
 export const DocumentFormContext = createContext(defaultContext);
 
-const DocumentForm = ({ docAttributes, loading = true, children }) => {
+const DocumentForm = ({ docAttributes, children }) => {
   const [docFormState, setState] = useState(docAttributes);
   const updateAttribute = (attributeName, newValue) => {
     setState((prevState) => ({
@@ -43,7 +42,6 @@ const DocumentForm = ({ docAttributes, loading = true, children }) => {
     <DocumentFormContext.Provider
       value={{
         docAttributes: docFormState,
-        loading,
         action: {},
         updateAttribute,
       }}
@@ -121,7 +119,6 @@ export const docAttributesType = PropTypes.shape({
 
 DocumentForm.propTypes = {
   docAttributes: docAttributesType.isRequired,
-  loading: PropTypes.bool,
   children: PropTypes.node.isRequired,
 };
 

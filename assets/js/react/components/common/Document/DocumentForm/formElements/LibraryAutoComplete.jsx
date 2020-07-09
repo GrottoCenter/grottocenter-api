@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import {
@@ -11,8 +11,9 @@ import {
 import { pathOr } from 'ramda';
 
 import AutoCompleteSearch from '../../../AutoCompleteSearch';
-
 import Translate from '../../../Translate';
+
+import { DocumentFormContext } from '../Provider';
 
 // ===================================
 const LibraryInput = styled(FilledInput)`
@@ -28,13 +29,7 @@ const StyledFormControl = styled(FormControl)`
 `;
 // ===================================
 
-const LibraryAutoComplete = ({
-  library,
-  librarySuggestions,
-  hasError,
-  onLibraryChange,
-  required,
-}) => {
+const LibraryAutoComplete = ({ librarySuggestions, hasError, required }) => {
   const [libraryInputTmp, setLibraryInputTmp] = React.useState('');
   const {
     docAttributes: { library: ownLibrary, partOf },
@@ -60,40 +55,20 @@ const LibraryAutoComplete = ({
     // Defensive programming because the selection is triggerred
     // when the input is emptied.
     if (value !== null) {
-      onLibraryChange(value);
+      updateAttribute('library', value);
     }
     setLibraryInputTmp('');
   };
 
-  return (
-    <>
-      <FormControl
-        variant="filled"
-        required={required}
-        error={hasError}
-        fullWidth
-      >
-        <InputLabel>
-          <Translate>Library</Translate>
-        </InputLabel>
-        <LibraryInput
-          disabled
-          value={library ? library.name : ''}
-          endAdornment={
-            <InputAdornment position="end">
-              <img
-                src="/images/club.svg"
-                alt="Club icon"
-                style={{ width: '40px' }}
-              />
-            </InputAdornment>
-          }
-        />
-
-        <StyledFormControl
+  const memoizedValues = [library, librarySuggestions, hasError];
+  return useMemo(
+    () => (
+      <>
+        <FormControl
           variant="filled"
           required={required}
           error={hasError}
+          fullWidth
         >
           <InputLabel>
             <Translate>Library</Translate>
@@ -111,7 +86,6 @@ const LibraryAutoComplete = ({
               </InputAdornment>
             }
           />
-        </StyledFormControl>
 
           <StyledFormControl
             variant="filled"
@@ -156,12 +130,7 @@ LibraryAutoComplete.propTypes = {
       name: PropTypes.string.isRequired,
     }),
   ),
-  library: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    name: PropTypes.string.isRequired,
-  }),
   hasError: PropTypes.bool.isRequired,
-  onLibraryChange: PropTypes.func.isRequired,
   required: PropTypes.bool.isRequired,
 };
 

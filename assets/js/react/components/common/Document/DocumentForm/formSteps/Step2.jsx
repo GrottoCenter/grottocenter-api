@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useContext, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
+
+import { DocumentFormContext } from '../Provider';
 
 import EditorAutoComplete from '../formElements/EditorAutoComplete';
 import LibraryAutoComplete from '../formElements/LibraryAutoComplete';
@@ -33,24 +35,14 @@ const Step2 = ({
   allMassifs,
   allPartOf,
   allRegions,
-  // Doc attributes
-  documentType,
-  editor,
-  library,
-  massif,
-  partOf,
-  regions,
-  // onChange functions
-  onEditorChange,
-  onLibraryChange,
-  onMassifChange,
-  onPartOfChange,
-  onRegionsChange,
-
   onStepIsValidChange,
   stepId,
 }) => {
   const [isValid, setIsValid] = React.useState(false);
+
+  const {
+    docAttributes: { editor, documentType, partOf },
+  } = useContext(DocumentFormContext);
 
   React.useEffect(() => {
     // Common validation
@@ -60,7 +52,7 @@ const Step2 = ({
     if (isCollection(documentType)) {
       newIsValid = newIsValid && editor;
     } else if (isCollectionElement(documentType)) {
-      newIsValid = newIsValid && editor && partOf;
+      newIsValid = newIsValid && editor !== null && partOf !== null;
     } else if (isText(documentType)) {
       newIsValid = true;
     } else if (isImage(documentType)) {
@@ -74,76 +66,76 @@ const Step2 = ({
     }
   });
 
-  return (
-    <>
-      {(isText(documentType) || isCollectionElement(documentType)) && (
-        <PartOfAutoComplete
-          hasError={isCollectionElement(documentType) && !partOf}
-          onPartOfChange={onPartOfChange}
-          partOfSuggestions={allPartOf}
-          partOf={partOf}
-          required={isCollectionElement(documentType)}
-        />
-      )}
-
-      <FlexWrapper>
-        <FlexItemWrapper>
-          <EditorAutoComplete
-            hasError={
-              (isCollection(documentType) ||
-                isCollectionElement(documentType)) &&
-              !editor
-            }
-            editor={editor}
-            editorSuggestions={allEditors}
-            onEditorChange={onEditorChange}
-            required={
-              isCollection(documentType) || isCollectionElement(documentType)
-            }
+  const memoizedValues = [documentType, isValid];
+  return useMemo(
+    () => (
+      <>
+        {(isText(documentType) || isCollectionElement(documentType)) && (
+          <PartOfAutoComplete
+            hasError={isCollectionElement(documentType) && !partOf}
+            partOfSuggestions={allPartOf}
+            required={isCollectionElement(documentType)}
           />
-        </FlexItemWrapper>
+        )}
 
-        {(isCollectionElement(documentType) || isText(documentType)) && (
-          <FlexItemWrapper>
-            <LibraryAutoComplete
-              hasError={false}
-              library={library}
-              librarySuggestions={allLibraries}
-              onLibraryChange={onLibraryChange}
-              required={false}
-            />
-          </FlexItemWrapper>
-        )}
-      </FlexWrapper>
+        <FlexWrapper>
+          {(isCollection(documentType) ||
+            isCollectionElement(documentType) ||
+            isText(documentType)) && (
+            <FlexItemWrapper>
+              <EditorAutoComplete
+                hasError={
+                  (isCollection(documentType) ||
+                    isCollectionElement(documentType)) &&
+                  !editor
+                }
+                editorSuggestions={allEditors}
+                required={
+                  isCollection(documentType) ||
+                  isCollectionElement(documentType)
+                }
+              />
+            </FlexItemWrapper>
+          )}
 
-      <FlexWrapper>
-        {(isText(documentType) || isImage(documentType)) && (
-          <FlexItemWrapper>
-            <MultipleSelect
-              allPossibleValues={allRegions}
-              getOptionLabel={(option) => `${option.name}`}
-              hasError={false}
-              helperText="If the document is related to one or many regions, you can link it to them."
-              labelName="Regions"
-              onValuesChange={onRegionsChange}
-              required={false}
-              value={regions}
-            />
-          </FlexItemWrapper>
-        )}
-        {(isText(documentType) || isImage(documentType)) && (
-          <FlexItemWrapper>
-            <MassifAutoComplete
-              hasError={false}
-              massifSuggestions={allMassifs}
-              massif={massif}
-              onMassifChange={onMassifChange}
-              required={false}
-            />
-          </FlexItemWrapper>
-        )}
-      </FlexWrapper>
-    </>
+          {(isCollectionElement(documentType) || isText(documentType)) && (
+            <FlexItemWrapper>
+              <LibraryAutoComplete
+                hasError={false}
+                librarySuggestions={allLibraries}
+                required={false}
+              />
+            </FlexItemWrapper>
+          )}
+        </FlexWrapper>
+
+        <FlexWrapper>
+          {(isText(documentType) || isImage(documentType)) && (
+            <FlexItemWrapper>
+              <MultipleSelect
+                allPossibleValues={allRegions}
+                contextValueNameToUpdate="regions"
+                getOptionLabel={(option) => `${option.name}`}
+                computeHasError={() => false}
+                helperText="If the document is related to one or many regions, you can link it to them."
+                labelName="Regions"
+                required={false}
+              />
+            </FlexItemWrapper>
+          )}
+          {(isText(documentType) || isImage(documentType)) && (
+            <FlexItemWrapper>
+              <MassifAutoComplete
+                hasError={false}
+                massifSuggestions={allMassifs}
+                required={false}
+              />
+            </FlexItemWrapper>
+          )}
+        </FlexWrapper>
+      </>
+    ),
+    [memoizedValues],
   );
 };
 
@@ -184,38 +176,6 @@ Step2.propTypes = {
       name: PropTypes.string.isRequired,
     }),
   ),
-
-  // Document attributes
-  documentType: PropTypes.number.isRequired,
-  editor: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    name: PropTypes.string.isRequired,
-  }),
-  library: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    name: PropTypes.string.isRequired,
-  }),
-  massif: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    name: PropTypes.string.isRequired,
-  }),
-  partOf: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    name: PropTypes.string.isRequired,
-  }),
-  regions: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      name: PropTypes.string.isRequired,
-    }),
-  ),
-
-  // On change functions
-  onEditorChange: PropTypes.func.isRequired,
-  onLibraryChange: PropTypes.func.isRequired,
-  onMassifChange: PropTypes.func.isRequired,
-  onPartOfChange: PropTypes.func.isRequired,
-  onRegionsChange: PropTypes.func.isRequired,
 
   onStepIsValidChange: PropTypes.func.isRequired,
   stepId: PropTypes.number.isRequired,

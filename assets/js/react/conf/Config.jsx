@@ -130,6 +130,7 @@ export const paypalImgLink =
   'https://www.paypalobjects.com/fr_FR/i/scr/pixel.gif';
 
 // ===== Grottocenter API routes
+
 export const dynamicNumbersUrl = {
   cavers: '/api/cavers/count',
   entries: '/api/entries/count',
@@ -150,6 +151,7 @@ export const quicksearchUrl = `/api/${apiVersion}/search`;
 export const subthemesUrl = `/api/${apiVersion}/bbs/subthemes`;
 export const getEntryUrl = `/api/${apiVersion}/entries/`;
 export const getCaveUrl = `/api/${apiVersion}/caves/`;
+export const postDocumentUrl = `/api/${apiVersion}/document`;
 
 // ===== Auth url
 export const loginUrl = `/api/${apiVersion}/login`;

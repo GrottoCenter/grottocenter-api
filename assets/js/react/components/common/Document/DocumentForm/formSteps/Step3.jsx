@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 
@@ -6,6 +6,7 @@ import IdentifierEditor from '../formElements/IdentifierEditor';
 import PagesEditor from '../formElements/PagesEditor';
 import StringInput from '../formElements/StringInput';
 
+import { DocumentFormContext } from '../Provider';
 import { isText, isCollectionElement } from '../DocumentTypesHelper';
 
 // ===================================
@@ -20,28 +21,7 @@ const FlexItemWrapper = styled.div`
 `;
 // ===================================
 
-const Step3 = ({
-  allIdentifierTypes,
-  // Doc attributes
-  documentType,
-  endPage,
-  identifier,
-  identifierType,
-  issue,
-  pageComment,
-  startPage,
-
-  // onChange functions
-  onEndPageChange,
-  onIdentifierChange,
-  onIdentifierTypeChange,
-  onIssueChange,
-  onPageCommentChange,
-  onStartPageChange,
-
-  onStepIsValidChange,
-  stepId,
-}) => {
+const Step3 = ({ allIdentifierTypes, onStepIsValidChange, stepId }) => {
   const [isValid, setIsValid] = React.useState(false);
 
   const {
@@ -58,41 +38,30 @@ const Step3 = ({
       onStepIsValidChange(stepId, newIsValid);
     }
   });
-  return (
-    <>
-      <FlexWrapper>
-        {isText(documentType) && (
-          <FlexItemWrapper>
-            <PagesEditor
-              endPage={endPage}
-              pageComment={pageComment}
-              startPage={startPage}
-              onEndPageChange={onEndPageChange}
-              onPageCommentChange={onPageCommentChange}
-              onStartPageChange={onStartPageChange}
-            />
-          </FlexItemWrapper>
-        )}
-        {isCollectionElement(documentType) && (
-          <FlexItemWrapper>
-            <StringInput
-              helperText="Can be a volume (vol.2) or a magazine issue (n°38) for example. Use what is written on the cover of the document."
-              onValueChange={onIssueChange}
-              value={issue}
-              valueName="Issue"
-            />
-          </FlexItemWrapper>
-        )}
-      </FlexWrapper>
 
-      <IdentifierEditor
-        allIdentifierTypes={allIdentifierTypes}
-        documentType={documentType}
-        identifier={identifier}
-        identifierType={identifierType}
-        onIdentifierChange={onIdentifierChange}
-        onIdentifierTypeChange={onIdentifierTypeChange}
-      />
+  const memoizedValues = [documentType, isValid];
+  return useMemo(
+    () => (
+      <>
+        <FlexWrapper>
+          {isText(documentType) && (
+            <FlexItemWrapper>
+              <PagesEditor />
+            </FlexItemWrapper>
+          )}
+          {isCollectionElement(documentType) && (
+            <FlexItemWrapper>
+              <StringInput
+                hasError={false}
+                helperText="Can be a volume (vol.2) or a magazine issue (n°38) for example. Use what is written on the cover of the document."
+                valueName="Issue"
+                onValueChange={(value) => updateAttribute('issue', value)}
+                required={false}
+                value={issue}
+              />
+            </FlexItemWrapper>
+          )}
+        </FlexWrapper>
 
         <IdentifierEditor allIdentifierTypes={allIdentifierTypes} />
       </>
@@ -108,26 +77,6 @@ Step3.propTypes = {
       text: PropTypes.string.isRequired,
     }),
   ),
-
-  // Document attributes
-  documentType: PropTypes.number.isRequired,
-  endPage: PropTypes.number.isRequired,
-  identifier: PropTypes.string,
-  identifierType: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    text: PropTypes.string.isRequired,
-  }),
-  issue: PropTypes.string.isRequired,
-  pageComment: PropTypes.string.isRequired,
-  startPage: PropTypes.number.isRequired,
-
-  // On change functions
-  onEndPageChange: PropTypes.func.isRequired,
-  onIdentifierChange: PropTypes.func.isRequired,
-  onIdentifierTypeChange: PropTypes.func.isRequired,
-  onIssueChange: PropTypes.func.isRequired,
-  onPageCommentChange: PropTypes.func.isRequired,
-  onStartPageChange: PropTypes.func.isRequired,
 
   onStepIsValidChange: PropTypes.func.isRequired,
   stepId: PropTypes.number.isRequired,

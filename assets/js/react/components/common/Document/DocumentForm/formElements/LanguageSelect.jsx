@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import {
   FormControl,
@@ -10,20 +10,20 @@ import {
 import LanguageIcon from '@material-ui/icons/Translate';
 import Translate from '../../../Translate';
 
+import { DocumentFormContext } from '../Provider';
+
 // ===================================
 
 const LanguageSelect = ({
   allLanguages,
-  hasError = false,
+  contextValueNameToUpdate,
   helperText,
   itemReferringTo,
   required = false,
-  language,
-  onLanguageChange,
 }) => {
-  const handleLanguageChange = (event) => {
-    onLanguageChange(event.target.value);
-  };
+  const context = useContext(DocumentFormContext);
+  const { updateAttribute } = context;
+  const language = context.docAttributes[contextValueNameToUpdate];
 
   const handleChange = (event, child) => {
     const newLanguage = {
@@ -60,14 +60,20 @@ const LanguageSelect = ({
               <Translate>Select a language</Translate>
             </i>
           </MenuItem>
-        ))}
-      </Select>
-      {helperText && (
-        <FormHelperText>
-          <Translate>{helperText}</Translate>
-        </FormHelperText>
-      )}
-    </FormControl>
+          {allLanguages.map((l) => (
+            <MenuItem key={l.id} value={l.id}>
+              {l.name}
+            </MenuItem>
+          ))}
+        </Select>
+        {helperText && (
+          <FormHelperText>
+            <Translate>{helperText}</Translate>
+          </FormHelperText>
+        )}
+      </FormControl>
+    ),
+    memoizedValues,
   );
 };
 
@@ -78,11 +84,9 @@ LanguageSelect.propTypes = {
       name: PropTypes.string.isRequired,
     }),
   ).isRequired,
-  hasError: PropTypes.bool,
+  contextValueNameToUpdate: PropTypes.string.isRequired,
   helperText: PropTypes.string.isRequired,
   itemReferringTo: PropTypes.string.isRequired,
-  language: PropTypes.string.isRequired,
-  onLanguageChange: PropTypes.func.isRequired,
   required: PropTypes.bool,
 };
 

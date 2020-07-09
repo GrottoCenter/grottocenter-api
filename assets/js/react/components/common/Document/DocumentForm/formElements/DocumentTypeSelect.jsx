@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import {
   FormControl,
@@ -9,18 +9,19 @@ import {
 } from '@material-ui/core';
 import Translate from '../../../Translate';
 
+import { DocumentFormContext } from '../Provider';
+
 // ===================================
 
 const DocumentTypeSelect = ({
   allDocumentTypes,
   helperText,
   required = false,
-  documentType,
-  onDocumentTypeChange,
 }) => {
-  const handleDocumentTypeChange = (event) => {
-    onDocumentTypeChange(event.target.value);
-  };
+  const {
+    docAttributes: { documentType },
+    updateAttribute,
+  } = useContext(DocumentFormContext);
 
   const handleChange = (event, child) => {
     const newDocType = {
@@ -53,7 +54,7 @@ const DocumentTypeSelect = ({
           </MenuItem>
           {allDocumentTypes.map((t) => (
             <MenuItem key={t.id} value={t.id} name={t.name}>
-              {t.name}
+              <Translate>{t.name}</Translate>
             </MenuItem>
           ))}
         </Select>
@@ -71,13 +72,11 @@ const DocumentTypeSelect = ({
 DocumentTypeSelect.propTypes = {
   allDocumentTypes: PropTypes.arrayOf(
     PropTypes.shape({
-      id: PropTypes.number.isRequired,
+      id: PropTypes.string.isRequired,
       name: PropTypes.string.isRequired,
     }),
   ).isRequired,
   helperText: PropTypes.string.isRequired,
-  documentType: PropTypes.number.isRequired,
-  onDocumentTypeChange: PropTypes.func.isRequired,
   required: PropTypes.bool,
 };
 

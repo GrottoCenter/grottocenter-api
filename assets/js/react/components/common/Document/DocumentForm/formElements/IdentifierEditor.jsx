@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 
@@ -13,6 +13,7 @@ import {
 
 import Translate from '../../../Translate';
 
+import { DocumentFormContext } from '../Provider';
 import { isImage } from '../DocumentTypesHelper';
 import StringInput from './StringInput';
 
@@ -34,25 +35,24 @@ const IdentifierTypeContainer = styled.div`
 `;
 // ===================================
 
-const IdentifierEditor = ({
-  allIdentifierTypes,
-  documentType,
-  identifier,
-  identifierType,
-  onIdentifierChange,
-  onIdentifierTypeChange,
-}) => {
+const IdentifierEditor = ({ allIdentifierTypes }) => {
+  const {
+    docAttributes: { identifier, identifierType, documentType },
+    updateAttribute,
+  } = useContext(DocumentFormContext);
+
   const handleIdentifierChange = (newIdentifier) => {
     if (newIdentifier === '') {
-      onIdentifierTypeChange(null);
+      updateAttribute('identifierType', null);
     }
-    onIdentifierChange(newIdentifier);
+    updateAttribute('identifier', newIdentifier);
   };
+
   const handleIdentifierTypeChange = (event) => {
     const idType = allIdentifierTypes.find(
       (idT) => idT.id === event.target.value,
     );
-    onIdentifierTypeChange({
+    updateAttribute('identifierType', {
       id: idType.id,
       text: idType.text,
     });
@@ -73,46 +73,50 @@ const IdentifierEditor = ({
           />
         </IdentifierContainer>
 
-      {identifier !== '' && (
-        <Fade in={identifier !== ''}>
-          <IdentifierTypeContainer>
-            <FormControl
-              variant="filled"
-              required={!isImage(documentType) && identifier !== ''}
-              fullWidth
-              error={!isImage(documentType) && !identifierType} // TODO
-            >
-              <InputLabel htmlFor="identifier-type">
-                <Translate>Identifier Type</Translate>
-              </InputLabel>
-              <Select
-                value={identifierType ? identifierType.id : -1}
-                onChange={handleIdentifierTypeChange}
-                inputProps={{
-                  id: `identifier-type`,
-                  name: `identifier-type`,
-                }}
+        {identifier !== '' && (
+          <Fade in={identifier !== ''}>
+            <IdentifierTypeContainer>
+              <FormControl
+                variant="filled"
+                required={!isImage(documentType) && identifier !== ''}
+                fullWidth
+                error={!isImage(documentType) && !identifierType} // TODO
               >
-                <MenuItem key={-1} value={-1} disabled>
-                  <i>
-                    <Translate>Select an Identifier Type</Translate>
-                  </i>
-                </MenuItem>
-                {allIdentifierTypes.map((l) => (
-                  <MenuItem key={l.id} value={l.id}>
-                    {l.text}
+                <InputLabel htmlFor="identifier-type">
+                  <Translate>Identifier Type</Translate>
+                </InputLabel>
+                <Select
+                  value={identifierType ? identifierType.id : -1}
+                  onChange={handleIdentifierTypeChange}
+                  inputProps={{
+                    id: `identifier-type`,
+                    name: `identifier-type`,
+                  }}
+                >
+                  <MenuItem key={-1} value={-1} disabled>
+                    <i>
+                      <Translate>Select an identifier type</Translate>
+                    </i>
                   </MenuItem>
-                ))}
-              </Select>
+                  {allIdentifierTypes.map((l) => (
+                    <MenuItem key={l.id} value={l.id}>
+                      {l.text}
+                    </MenuItem>
+                  ))}
+                </Select>
 
-              <FormHelperText>
-                <Translate>Some helper text for Identifier Type.</Translate>
-              </FormHelperText>
-            </FormControl>
-          </IdentifierTypeContainer>
-        </Fade>
-      )}
-    </InlineWrapper>
+                <FormHelperText>
+                  {/* <Translate>
+                  Some helper text for Identifier Type.
+                  </Translate> */}
+                </FormHelperText>
+              </FormControl>
+            </IdentifierTypeContainer>
+          </Fade>
+        )}
+      </InlineWrapper>
+    ),
+    [memoizedValues],
   );
 };
 
@@ -123,14 +127,6 @@ IdentifierEditor.propTypes = {
       text: PropTypes.string.isRequired,
     }),
   ),
-  documentType: PropTypes.number.isRequired,
-  identifier: PropTypes.string,
-  identifierType: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    text: PropTypes.string.isRequired,
-  }),
-  onIdentifierChange: PropTypes.func.isRequired,
-  onIdentifierTypeChange: PropTypes.func.isRequired,
 };
 
 export default IdentifierEditor;

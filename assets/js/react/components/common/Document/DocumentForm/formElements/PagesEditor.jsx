@@ -1,9 +1,10 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React, { useContext, useMemo } from 'react';
 import styled from 'styled-components';
 
 import { Typography } from '@material-ui/core';
 import Translate from '../../../Translate';
+
+import { DocumentFormContext } from '../Provider';
 import NumberInput from './NumberInput';
 import StringInput from './StringInput';
 
@@ -17,19 +18,26 @@ const InlineWrapper = styled.div`
 const InputWrapper = styled.div`
   flex: 1;
 `;
+
+const IntervalErrorWrapper = styled.div`
+  width: 100%;
+`;
+
+const PageIntervalWrapper = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+`;
+
 // ===================================
 
-const PagesEditor = ({
-  endPage,
-  pageComment,
-  startPage,
-  onEndPageChange,
-  onPageCommentChange,
-  onStartPageChange,
-}) => {
+const PagesEditor = () => {
   const [intervalError, setIntervalError] = React.useState('');
   const [positiveEndError, setPositiveEndError] = React.useState('');
   const [positiveStartError, setPositiveStartError] = React.useState('');
+  const {
+    docAttributes: { endPage, pageComment, startPage },
+    updateAttribute,
+  } = useContext(DocumentFormContext);
 
   React.useEffect(() => {
     const newEndGreater =
@@ -48,64 +56,81 @@ const PagesEditor = ({
       setPositiveStartError(newPositiveStart);
   });
 
-  return (
-    <>
-      {intervalError !== '' && (
-        <Typography align="center" color="error">
-          <Translate>{intervalError}</Translate>
-        </Typography>
-      )}
+  const handleValueChange = (contextValueName, newValue) => {
+    updateAttribute(contextValueName, newValue);
+  };
 
-      <InlineWrapper>
-        <InputWrapper>
-          {positiveStartError !== '' && (
-            <Typography align="center" color="error">
-              <Translate>{positiveStartError}</Translate>
-            </Typography>
-          )}
-          <NumberInput
-            hasError={positiveStartError !== '' || intervalError !== ''}
-            helperText="Page where the document starts if it's part of another document (ex: an article in a magazine). Leave it blank if you just want to mention the total number of pages (ex: a book)."
-            onValueChange={onStartPageChange}
-            value={startPage}
-            valueName="Start Page"
-          />
-        </InputWrapper>
-        <InputWrapper>
-          {positiveEndError !== '' && (
-            <Typography align="center" color="error">
-              <Translate>{positiveEndError}</Translate>
-            </Typography>
-          )}
-          <NumberInput
-            hasError={positiveEndError !== '' || intervalError !== ''}
-            helperText="Page where the document ends if it's part of another document (ex: an article in a magazine)."
-            onValueChange={onEndPageChange}
-            value={endPage}
-            valueName="End Page"
-          />
-        </InputWrapper>
-        <InputWrapper>
-          <StringInput
-            hasError={false}
-            helperText='Additional information about the pages where the document is located (example with an article from pages 10 to 15: "There are adds from page 12 to 14.").'
-            onValueChange={onPageCommentChange}
-            value={pageComment}
-            valueName="Page Comment"
-          />
-        </InputWrapper>
-      </InlineWrapper>
-    </>
+  const memoizedValues = [
+    endPage,
+    pageComment,
+    startPage,
+    intervalError,
+    positiveEndError,
+    positiveStartError,
+  ];
+  return useMemo(
+    () => (
+      <>
+        <InlineWrapper>
+          <PageIntervalWrapper>
+            {intervalError !== '' && (
+              <IntervalErrorWrapper>
+                <Typography align="center" color="error">
+                  <Translate>{intervalError}</Translate>
+                </Typography>
+              </IntervalErrorWrapper>
+            )}
+            <InputWrapper>
+              {positiveStartError !== '' && (
+                <Typography align="center" color="error">
+                  <Translate>{positiveStartError}</Translate>
+                </Typography>
+              )}
+              <NumberInput
+                hasError={positiveStartError !== '' || intervalError !== ''}
+                helperText="Page where the document starts if it's part of another document (ex: an article in a magazine). Leave it blank if you just want to mention the total number of pages (ex: a book)."
+                onValueChange={(newValue) =>
+                  handleValueChange('startPage', newValue)
+                }
+                value={startPage}
+                valueName="Start Page"
+              />
+            </InputWrapper>
+            <InputWrapper>
+              {positiveEndError !== '' && (
+                <Typography align="center" color="error">
+                  <Translate>{positiveEndError}</Translate>
+                </Typography>
+              )}
+              <NumberInput
+                hasError={positiveEndError !== '' || intervalError !== ''}
+                helperText="Page where the document ends if it's part of another document (ex: an article in a magazine)."
+                onValueChange={(newValue) =>
+                  handleValueChange('endPage', newValue)
+                }
+                value={endPage}
+                valueName="End Page"
+              />
+            </InputWrapper>
+          </PageIntervalWrapper>
+          <InputWrapper>
+            <StringInput
+              hasError={false}
+              helperText='Additional information about the pages where the document is located (example with an article from pages 10 to 15: "There are ads from page 12 to 14.").'
+              onValueChange={(newValue) =>
+                handleValueChange('pageComment', newValue)
+              }
+              value={pageComment}
+              valueName="Page Comment"
+            />
+          </InputWrapper>
+        </InlineWrapper>
+      </>
+    ),
+    [memoizedValues],
   );
 };
 
-PagesEditor.propTypes = {
-  endPage: PropTypes.number.isRequired,
-  pageComment: PropTypes.string.isRequired,
-  startPage: PropTypes.number.isRequired,
-  onEndPageChange: PropTypes.func.isRequired,
-  onPageCommentChange: PropTypes.func.isRequired,
-  onStartPageChange: PropTypes.func.isRequired,
-};
+PagesEditor.propTypes = {};
 
 export default PagesEditor;

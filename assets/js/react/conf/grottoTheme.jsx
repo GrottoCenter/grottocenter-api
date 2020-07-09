@@ -195,6 +195,12 @@ export const overridings = {
         color: grey['100'],
       },
     },
+    MuiStepIcon: {
+      active: {
+        color: `${orange['700']} !important`,
+        borderRadius: '100%',
+      },
+    },
     MuiStepConnector: {
       line: {
         borderWidth: '1px',

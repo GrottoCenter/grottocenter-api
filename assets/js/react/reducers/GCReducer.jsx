@@ -16,6 +16,7 @@ import pageTitle from './PageTitleReducer';
 import entry from './EntryReducer';
 import cave from './CaveReducer';
 import auth from './AuthReducer';
+import document from './DocumentReducer';
 
 //
 //
@@ -41,6 +42,7 @@ const GCReducer = combineReducers({
   auth,
   entry,
   cave,
+  document,
 });
 
 export default GCReducer;
