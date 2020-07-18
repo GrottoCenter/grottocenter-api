@@ -15,9 +15,7 @@ import NavigateNextIcon from '@material-ui/icons/NavigateNext';
 import NavigateBeforeIcon from '@material-ui/icons/NavigateBefore';
 import Translate from '../../../common/Translate';
 
-import Step1 from './formSteps/Step1';
-import Step2 from './formSteps/Step2';
-import Step3 from './formSteps/Step3';
+import FormBody from './FormBody';
 
 // ===================================
 const NextStepButton = (props) => (
@@ -62,17 +60,6 @@ const SubmitButton = styled(Button)`
 
 // ===================================
 
-const formSteps = [
-  { id: 1, name: 'General Information' },
-  { id: 2, name: 'Linked Information' },
-  { id: 3, name: 'Meta Information' },
-];
-const getFormStep = (index) => {
-  return formSteps.find((step) => step.id === index);
-};
-
-// ===================================
-
 const DocumentForm = ({
   allAuthors,
   allIdentifierTypes,
@@ -82,34 +69,37 @@ const DocumentForm = ({
   allPartOf,
   allRegions,
   allSubjects,
+  formSteps,
   isLoading,
   onSubmit,
 }) => {
   const [currentFormStepId, setCurrentFormStepId] = React.useState(
     formSteps[0].id,
   );
-  const [validSteps, setValidSteps] = React.useState(
-    formSteps.map((step) => ({ ...step, isValid: false })),
-  );
+
+  const [
+    isNextStepButtonDisabled,
+    setIsNextStepButtonDisabled,
+  ] = React.useState(true);
+
+  const [isFormValid, setIsFormValid] = React.useState(false);
+
+  const updateIsNextStepButtonDisabled = () => {
+    const lastStep = currentFormStepId === formSteps.length;
+    const currentStep = formSteps.find((s) => s.id === currentFormStepId);
+    setIsNextStepButtonDisabled(lastStep || !currentStep.isValid);
+  };
 
   const onStepIsValidChange = (stepId, isValid) => {
-    const newValidSteps = validSteps.map((s) => {
-      const newStep = s;
-      if (newStep.id === stepId) {
-        newStep.isValid = isValid;
-      }
-      return newStep;
-    });
-    if (newValidSteps !== validSteps) {
-      setValidSteps(newValidSteps);
-    }
+    const stepToUpdate = formSteps.find((step) => step.id === stepId);
+    stepToUpdate.isValid = isValid;
+    setIsFormValid(formSteps.every((step) => step.isValid));
+    updateIsNextStepButtonDisabled();
   };
 
-  const isNextStepButtonDisabled = () => {
-    const lastStep = currentFormStepId === formSteps.length;
-    const currentStep = validSteps.find((s) => s.id === currentFormStepId);
-    return lastStep || !currentStep.isValid;
-  };
+  React.useEffect(() => {
+    updateIsNextStepButtonDisabled();
+  }, [currentFormStepId]);
 
   const handleStepNext = () => {
     setCurrentFormStepId((prevFormStep) => prevFormStep + 1);
@@ -120,7 +110,7 @@ const DocumentForm = ({
   };
 
   const isStepCompleted = (stepId) => {
-    const step = validSteps.find((s) => s.id === stepId);
+    const step = formSteps.find((s) => s.id === stepId);
     return step.isValid;
   };
 
@@ -134,10 +124,7 @@ const DocumentForm = ({
     <>
       <LinearProgressVisibleOrNot />
       <div style={isLoading ? { opacity: '0.6' } : {}}>
-        <Stepper
-          activeStep={getFormStep(currentFormStepId).id - 1}
-          alternativeLabel
-        >
+        <Stepper activeStep={currentFormStepId.id - 1} alternativeLabel>
           {formSteps.map((step) => (
             <Step key={step.id} completed={isStepCompleted(step.id)}>
               <StepLabel>
@@ -153,7 +140,7 @@ const DocumentForm = ({
             onClick={handleStepBack}
           />
           <NextStepButton
-            disabled={isNextStepButtonDisabled()}
+            disabled={isNextStepButtonDisabled}
             onClick={handleStepNext}
             style={{ float: 'right' }}
           />
@@ -162,40 +149,22 @@ const DocumentForm = ({
         <StyledDivider />
 
         <FormWrapper onSubmit={onSubmit}>
-          {getFormStep(currentFormStepId).id === 1 && (
-            <Step1
-              // Suggestions
-              allAuthors={allAuthors}
-              allSubjects={allSubjects}
-              allLanguages={allLanguages}
-              // Steps
-              onStepIsValidChange={onStepIsValidChange}
-              stepId={1}
-            />
-          )}
-
-          {getFormStep(currentFormStepId).id === 2 && (
-            <Step2
-              // Suggestions
-              allLanguages={allLanguages}
-              allLibraries={allLibraries}
-              allMassifs={allMassifs}
-              allPartOf={allPartOf}
-              allRegions={allRegions}
-              // Steps
-              onStepIsValidChange={onStepIsValidChange}
-              stepId={2}
-            />
-          )}
-          {getFormStep(currentFormStepId).id === 3 && (
-            <Step3
-              // Suggestions
-              allIdentifierTypes={allIdentifierTypes}
-              // Steps
-              onStepIsValidChange={onStepIsValidChange}
-              stepId={3}
-            />
-          )}
+          <FormBody
+            allAuthors={allAuthors}
+            allIdentifierTypes={allIdentifierTypes}
+            allLanguages={allLanguages}
+            allLibraries={allLibraries}
+            allMassifs={allMassifs}
+            allPartOf={allPartOf}
+            allRegions={allRegions}
+            allSubjects={allSubjects}
+            formSteps={formSteps}
+            currentFormStepId={currentFormStepId}
+            handleStepBack={handleStepBack}
+            handleStepNext={handleStepNext}
+            isNextStepButtonDisabled={isNextStepButtonDisabled}
+            onStepIsValidChange={onStepIsValidChange}
+          />
 
           {isMobileOnly && (
             <ChangeStepWrapper>
@@ -204,7 +173,7 @@ const DocumentForm = ({
                 onClick={handleStepBack}
               />
               <NextStepButton
-                disabled={isNextStepButtonDisabled()}
+                disabled={isNextStepButtonDisabled}
                 onClick={handleStepNext}
                 style={{ float: 'right' }}
               />
@@ -218,7 +187,7 @@ const DocumentForm = ({
                 variant="contained"
                 color="primary"
                 size="large"
-                disabled={validSteps.some((s) => !s.isValid)}
+                disabled={!isFormValid}
               >
                 <Translate>Submit</Translate>
               </SubmitButton>
@@ -287,6 +256,13 @@ DocumentForm.propTypes = {
     }),
   ),
 
+  formSteps: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.number.isRequired,
+      name: PropTypes.string.isRequired,
+      isValid: PropTypes.bool.isRequired,
+    }),
+  ).isRequired,
   isLoading: PropTypes.bool.isRequired,
   onSubmit: PropTypes.func.isRequired,
 };

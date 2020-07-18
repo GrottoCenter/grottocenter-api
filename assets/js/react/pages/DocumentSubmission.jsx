@@ -78,6 +78,7 @@ const DocumentSubmission = () => {
               allPartOf={allPartOf}
               allRegions={allRegions}
               allSubjects={allSubjects}
+              formSteps={docAttributes.formSteps}
               isLoading={documentState.isLoading}
               onSubmit={onSubmit}
             />

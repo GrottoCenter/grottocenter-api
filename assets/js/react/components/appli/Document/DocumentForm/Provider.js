@@ -23,6 +23,12 @@ export const defaultContext = {
     subjects: [],
     title: '',
     titleLanguage: null,
+
+    formSteps: [
+      { id: 1, name: 'General Information', isValid: false },
+      { id: 2, name: 'Linked Information', isValid: false },
+      { id: 3, name: 'Meta Information', isValid: false },
+    ],
   },
   updateAttribute: (attributeName, newValue) => {}, // eslint-disable-line no-unused-vars
 };
