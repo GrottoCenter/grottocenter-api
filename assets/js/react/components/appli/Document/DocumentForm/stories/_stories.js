@@ -4,13 +4,13 @@ import { storiesOf } from '@storybook/react';
 import { Card } from '@material-ui/core';
 import DocumentFormProvider, { defaultContext } from '../Provider';
 
-import DescriptionEditor from '../formElements/DescriptionEditor';
-import DocumentTypeSelect from '../formElements/DocumentTypeSelect';
-import IdentifierEditor from '../formElements/IdentifierEditor';
-import LanguageSelect from '../formElements/LanguageSelect';
-import PagesEditor from '../formElements/PagesEditor';
-import PublicationDatePicker from '../formElements/PublicationDatePicker';
-import TitleEditor from '../formElements/TitleEditor';
+import DescriptionEditor from '../../../../common/Form/DescriptionEditor';
+import DocumentTypeSelect from '../../../../common/Form/DocumentTypeSelect';
+import IdentifierEditor from '../../../../common/Form/IdentifierEditor';
+import LanguageSelect from '../../../../common/Form/LanguageSelect';
+import PagesEditor from '../../../../common/Form/PagesEditor';
+import PublicationDatePicker from '../../../../common/Form/PublicationDatePicker';
+import TitleEditor from '../../../../common/Form/TitleEditor';
 
 import { allDocumentTypes } from '../DocumentTypesHelper';
 
