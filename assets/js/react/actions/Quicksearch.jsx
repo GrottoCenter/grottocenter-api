@@ -36,7 +36,7 @@ export const fetchLoading = () => ({
 
 // THUNKS
 export const fetchQuicksearchResult = (criterias) => (dispatch) => {
-  dispatch(resetQuicksearch(criterias));
+  dispatch(resetQuicksearch());
   dispatch(fetchLoading());
 
   let completeUrl = quicksearchUrl;

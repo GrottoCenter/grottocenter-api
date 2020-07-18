@@ -1,14 +1,16 @@
 import React, { useContext, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
+import { pathOr } from 'ramda';
+
+import Translate from '../../../Translate';
 
 import { DocumentFormContext } from '../Provider';
-
-import EditorAutoComplete from '../formElements/EditorAutoComplete';
-import LibraryAutoComplete from '../formElements/LibraryAutoComplete';
 import MassifAutoComplete from '../formElements/MassifAutoComplete';
 import MultipleSelect from '../formElements/MultipleSelect';
 import PartOfAutoComplete from '../formElements/PartOfAutoComplete';
+
+import OrganizationAutoComplete from '../../../../../features/OrganizationAutoComplete';
 
 import {
   isImage,
@@ -30,8 +32,6 @@ const FlexItemWrapper = styled.div`
 // ===================================
 
 const Step2 = ({
-  allEditors,
-  allLibraries,
   allMassifs,
   allPartOf,
   allRegions,
@@ -41,7 +41,8 @@ const Step2 = ({
   const [isValid, setIsValid] = React.useState(false);
 
   const {
-    docAttributes: { editor, documentType, partOf },
+    docAttributes: { editor, documentType, library, partOf },
+    updateAttribute,
   } = useContext(DocumentFormContext);
 
   React.useEffect(() => {
@@ -50,7 +51,7 @@ const Step2 = ({
 
     // Specific validations
     if (isCollection(documentType)) {
-      newIsValid = newIsValid && editor;
+      newIsValid = newIsValid && editor !== null;
     } else if (isCollectionElement(documentType)) {
       newIsValid = newIsValid && editor !== null && partOf !== null;
     } else if (isText(documentType)) {
@@ -66,7 +67,7 @@ const Step2 = ({
     }
   });
 
-  const memoizedValues = [documentType, isValid];
+  const memoizedValues = [documentType, isValid, partOf];
   return useMemo(
     () => (
       <>
@@ -83,27 +84,61 @@ const Step2 = ({
             isCollectionElement(documentType) ||
             isText(documentType)) && (
             <FlexItemWrapper>
-              <EditorAutoComplete
-                hasError={
-                  (isCollection(documentType) ||
-                    isCollectionElement(documentType)) &&
-                  !editor
+              <OrganizationAutoComplete
+                isValueForced={pathOr(null, ['editor'], partOf) !== null}
+                helperContent={
+                  <Translate>
+                    Use the search bar above to find an existing editor.
+                  </Translate>
                 }
-                editorSuggestions={allEditors}
+                helperContentIfValueIsForced={
+                  <Translate>
+                    The editor has been deduced from the parent document.
+                  </Translate>
+                }
+                labelText="Editor"
                 required={
                   isCollection(documentType) ||
                   isCollectionElement(documentType)
                 }
+                searchLabelText="Search for an editor..."
+                setValue={(newValue) => updateAttribute('editor', newValue)}
+                value={editor}
               />
             </FlexItemWrapper>
           )}
 
           {(isCollectionElement(documentType) || isText(documentType)) && (
             <FlexItemWrapper>
-              <LibraryAutoComplete
-                hasError={false}
-                librarySuggestions={allLibraries}
+              <OrganizationAutoComplete
+                isValueForced={pathOr(null, ['library'], partOf) !== null}
+                helperContent={
+                  <>
+                    <Translate>
+                      Use the search bar above to find an existing library.
+                    </Translate>
+                    <br />
+                    <Translate>
+                      The library is where the document is physically stored.
+                    </Translate>
+                  </>
+                }
+                helperContentIfValueIsForced={
+                  <>
+                    <Translate>
+                      The library has been deduced from the parent document.
+                    </Translate>
+                    <br />
+                    <Translate>
+                      The library is where the document is physically stored.
+                    </Translate>
+                  </>
+                }
+                labelText="Library"
                 required={false}
+                searchLabelText="Search for a library..."
+                setValue={(newValue) => updateAttribute('library', newValue)}
+                value={library}
               />
             </FlexItemWrapper>
           )}
@@ -140,18 +175,6 @@ const Step2 = ({
 };
 
 Step2.propTypes = {
-  allEditors: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      name: PropTypes.string.isRequired,
-    }),
-  ),
-  allLibraries: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      name: PropTypes.string.isRequired,
-    }),
-  ),
   allMassifs: PropTypes.arrayOf(
     PropTypes.shape({
       id: PropTypes.string.isRequired,

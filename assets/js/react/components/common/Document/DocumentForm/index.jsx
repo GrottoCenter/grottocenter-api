@@ -75,7 +75,6 @@ const getFormStep = (index) => {
 
 const DocumentForm = ({
   allAuthors,
-  allEditors,
   allIdentifierTypes,
   allLanguages,
   allLibraries,
@@ -125,13 +124,15 @@ const DocumentForm = ({
     return step.isValid;
   };
 
+  // visibility is used to keep the space needed for the LinearProgress
+  // even if it's not shown.
+  const LinearProgressVisibleOrNot = styled(LinearProgress)`
+    visibility: ${isLoading ? 'visible' : 'hidden'};
+  `;
+
   return (
     <>
-      <LinearProgress
-        // visibility is used to keep the space needed for the LinearProgress
-        // even if it's not shown.
-        style={isLoading ? { visibility: 'visible' } : { visibility: 'hidden' }}
-      />
+      <LinearProgressVisibleOrNot />
       <div style={isLoading ? { opacity: '0.6' } : {}}>
         <Stepper
           activeStep={getFormStep(currentFormStepId).id - 1}
@@ -190,7 +191,6 @@ const DocumentForm = ({
           {getFormStep(currentFormStepId).id === 2 && (
             <Step2
               // Suggestions
-              allEditors={allEditors}
               allLanguages={allLanguages}
               allLibraries={allLibraries}
               allMassifs={allMassifs}
@@ -252,12 +252,6 @@ DocumentForm.propTypes = {
       surname: PropTypes.string.isRequired,
     }),
   ).isRequired,
-  allEditors: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      name: PropTypes.string.isRequired,
-    }),
-  ),
   allIdentifierTypes: PropTypes.arrayOf(
     PropTypes.shape({
       id: PropTypes.string.isRequired,
