@@ -7,13 +7,12 @@ import {
   Divider,
   FormControl,
   LinearProgress,
-  Step,
-  StepLabel,
-  Stepper,
 } from '@material-ui/core';
 import NavigateNextIcon from '@material-ui/icons/NavigateNext';
 import NavigateBeforeIcon from '@material-ui/icons/NavigateBefore';
+
 import Translate from '../../../common/Translate';
+import Stepper from '../../../common/Form/Stepper';
 
 import FormBody from './FormBody';
 
@@ -109,11 +108,6 @@ const DocumentForm = ({
     setCurrentFormStepId((prevFormStep) => prevFormStep - 1);
   };
 
-  const isStepCompleted = (stepId) => {
-    const step = formSteps.find((s) => s.id === stepId);
-    return step.isValid;
-  };
-
   // visibility is used to keep the space needed for the LinearProgress
   // even if it's not shown.
   const LinearProgressVisibleOrNot = styled(LinearProgress)`
@@ -124,27 +118,13 @@ const DocumentForm = ({
     <>
       <LinearProgressVisibleOrNot />
       <div style={isLoading ? { opacity: '0.6' } : {}}>
-        <Stepper activeStep={currentFormStepId.id - 1} alternativeLabel>
-          {formSteps.map((step) => (
-            <Step key={step.id} completed={isStepCompleted(step.id)}>
-              <StepLabel>
-                <Translate>{step.name}</Translate>
-              </StepLabel>
-            </Step>
-          ))}
-        </Stepper>
-
-        <ChangeStepWrapper>
-          <PreviousStepButton
-            disabled={currentFormStepId === 1}
-            onClick={handleStepBack}
-          />
-          <NextStepButton
-            disabled={isNextStepButtonDisabled}
-            onClick={handleStepNext}
-            style={{ float: 'right' }}
-          />
-        </ChangeStepWrapper>
+        <Stepper
+          currentFormStepId={currentFormStepId}
+          formSteps={formSteps}
+          isNextStepButtonDisabled={isNextStepButtonDisabled}
+          handleStepBack={handleStepBack}
+          handleStepNext={handleStepNext}
+        />
 
         <StyledDivider />
 
@@ -160,9 +140,6 @@ const DocumentForm = ({
             allSubjects={allSubjects}
             formSteps={formSteps}
             currentFormStepId={currentFormStepId}
-            handleStepBack={handleStepBack}
-            handleStepNext={handleStepNext}
-            isNextStepButtonDisabled={isNextStepButtonDisabled}
             onStepIsValidChange={onStepIsValidChange}
           />
 

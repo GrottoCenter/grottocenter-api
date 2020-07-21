@@ -1,42 +1,9 @@
 import React from 'react';
-import { isMobileOnly } from 'react-device-detect';
 import PropTypes from 'prop-types';
-import styled from 'styled-components';
-import { Button, FormControl } from '@material-ui/core';
-import NavigateNextIcon from '@material-ui/icons/NavigateNext';
-import NavigateBeforeIcon from '@material-ui/icons/NavigateBefore';
-import Translate from '../../../common/Translate';
 
 import Step1 from './formSteps/Step1';
 import Step2 from './formSteps/Step2';
 import Step3 from './formSteps/Step3';
-
-// ===================================
-const NextStepButton = (props) => (
-  <Button
-    {...props}
-    variant="contained"
-    color="primary"
-    endIcon={<NavigateNextIcon />}
-  >
-    <Translate>Next</Translate>
-  </Button>
-);
-
-const PreviousStepButton = (props) => (
-  <Button
-    {...props}
-    variant="contained"
-    color="primary"
-    startIcon={<NavigateBeforeIcon />}
-  >
-    <Translate>Back</Translate>
-  </Button>
-);
-
-const ChangeStepWrapper = styled(FormControl)`
-  display: block;
-`;
 
 // ===================================
 
@@ -50,9 +17,6 @@ const FormBody = ({
   allRegions,
   allSubjects,
   currentFormStepId,
-  handleStepBack,
-  handleStepNext,
-  isNextStepButtonDisabled,
   onStepIsValidChange,
 }) => {
   return (
@@ -90,20 +54,6 @@ const FormBody = ({
           onStepIsValidChange={onStepIsValidChange}
           stepId={3}
         />
-      )}
-
-      {isMobileOnly && (
-        <ChangeStepWrapper>
-          <PreviousStepButton
-            disabled={currentFormStepId === 1}
-            onClick={handleStepBack}
-          />
-          <NextStepButton
-            disabled={isNextStepButtonDisabled}
-            onClick={handleStepNext}
-            style={{ float: 'right' }}
-          />
-        </ChangeStepWrapper>
       )}
     </>
   );
@@ -167,9 +117,6 @@ FormBody.propTypes = {
   ),
 
   currentFormStepId: PropTypes.number.isRequired,
-  handleStepBack: PropTypes.func.isRequired,
-  handleStepNext: PropTypes.func.isRequired,
-  isNextStepButtonDisabled: PropTypes.bool.isRequired,
   onStepIsValidChange: PropTypes.func.isRequired,
 };
 
