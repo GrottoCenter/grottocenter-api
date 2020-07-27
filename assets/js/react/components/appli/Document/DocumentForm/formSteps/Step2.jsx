@@ -40,7 +40,7 @@ const Step2 = ({
   stepId,
 }) => {
   const {
-    docAttributes: { editor, documentType, library, partOf },
+    docAttributes: { editor, documentType, authors, library, partOf, subjects },
     updateAttribute,
     validatedSteps,
   } = useContext(DocumentFormContext);
