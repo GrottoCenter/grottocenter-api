@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { isMobileOnly } from 'react-device-detect';
+import { useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import {
@@ -11,6 +12,12 @@ import {
 import NavigateNextIcon from '@material-ui/icons/NavigateNext';
 import NavigateBeforeIcon from '@material-ui/icons/NavigateBefore';
 
+import DocumentFormProvider, {
+  defaultContext,
+  DocumentFormContext,
+} from './Provider';
+
+import { postDocument } from '../../../../actions/Document';
 import Translate from '../../../common/Translate';
 import Stepper from '../../../common/Form/Stepper';
 
@@ -72,10 +79,17 @@ const DocumentForm = ({
   allPartOf,
   allRegions,
   allSubjects,
-  formSteps,
   isLoading,
-  onSubmit,
 }) => {
+  const { docAttributes } = useContext(DocumentFormContext);
+  const { formSteps } = docAttributes;
+  const dispatch = useDispatch();
+
+  const onSubmit = (event) => {
+    event.preventDefault();
+    dispatch(postDocument(docAttributes));
+  };
+
   const [currentFormStepId, setCurrentFormStepId] = React.useState(
     formSteps[0].id,
   );
@@ -170,7 +184,7 @@ const DocumentForm = ({
           )}
         </FormWrapper>
       </div>
-    </>
+    </DocumentFormProvider>
   );
 };
 
@@ -230,16 +244,7 @@ DocumentForm.propTypes = {
       partOf: PropTypes.shape({}),
     }),
   ),
-
-  formSteps: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.number.isRequired,
-      name: PropTypes.string.isRequired,
-      isValid: PropTypes.bool.isRequired,
-    }),
-  ).isRequired,
   isLoading: PropTypes.bool.isRequired,
-  onSubmit: PropTypes.func.isRequired,
 };
 
 export default DocumentForm;

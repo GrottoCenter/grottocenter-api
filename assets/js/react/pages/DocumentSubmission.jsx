@@ -1,17 +1,13 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { useHistory } from 'react-router-dom';
 import { Button, Fade, FormControl, Typography } from '@material-ui/core';
 import { useIntl } from 'react-intl';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
 import isAuth from '../helpers/AuthHelper';
-import { postDocument } from '../actions/Document';
+
 import DocumentForm from '../components/appli/Document/DocumentForm';
-import DocumentFormProvider, {
-  defaultContext,
-  DocumentFormContext,
-} from '../components/appli/Document/DocumentForm/Provider';
 import Layout from '../components/common/Layouts/Fixed/FixedContent';
 import Translate from '../components/common/Translate';
 
@@ -49,17 +45,10 @@ const SpacedButton = styled(Button)`
 // ====================
 
 const DocumentSubmission = () => {
-  const { docAttributes } = useContext(DocumentFormContext);
-  const dispatch = useDispatch();
   const history = useHistory();
   const documentState = useSelector((state) => state.document);
 
   const { formatMessage } = useIntl();
-
-  const onSubmit = (event) => {
-    event.preventDefault();
-    dispatch(postDocument(docAttributes));
-  };
 
   return (
     <Layout
@@ -78,9 +67,7 @@ const DocumentSubmission = () => {
               allPartOf={allPartOf}
               allRegions={allRegions}
               allSubjects={allSubjects}
-              formSteps={docAttributes.formSteps}
               isLoading={documentState.isLoading}
-              onSubmit={onSubmit}
             />
             {documentState.errorMessages.length > 0 && (
               <FormControl>
@@ -117,15 +104,6 @@ const DocumentSubmission = () => {
   );
 };
 
-const DocumentSubmissionWithContext = () => {
-  return (
-    <DocumentFormProvider docAttributes={defaultContext.docAttributes}>
-      <DocumentSubmission />
-    </DocumentFormProvider>
-  );
-};
-
 DocumentSubmission.propTypes = {};
-DocumentSubmissionWithContext.propTypes = {};
 
-export default DocumentSubmissionWithContext;
+export default DocumentSubmission;
