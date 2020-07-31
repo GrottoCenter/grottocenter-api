@@ -1,21 +1,20 @@
 /**
- * TType.js
+ * TLicense.js
  *
- * @description :: tType model
+ * @description :: tLicense model
  * @docs        :: http://sailsjs.org/#!documentation/models
  */
 
 module.exports = {
-  tableName: 't_type',
+  tableName: 't_license',
 
   primaryKey: 'id',
 
   attributes: {
     id: {
       type: 'number',
-      autoIncrement: true,
       columnName: 'id',
-      unique: true,
+      required: true,
     },
 
     name: {
@@ -25,16 +24,9 @@ module.exports = {
       maxLength: 30,
     },
 
-    comment: {
+    text: {
       type: 'string',
-      allowNull: false,
-      columnName: 'comment',
-      maxLength: 500,
-    },
-
-    parent: {
-      columnName: 'id_parent',
-      model: 'TType',
+      columnName: 'text',
     },
   },
 };

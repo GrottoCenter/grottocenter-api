@@ -1,7 +1,7 @@
 /**
  * TCaver.js
  *
- * @description :: TODO: You might write a short summary of how this model works and what it represents here.
+ * @description :: tCaver model
  * @docs        :: http://sailsjs.org/#!documentation/models
  */
 
@@ -16,234 +16,140 @@ module.exports = {
   attributes: {
     id: {
       type: 'number',
-      unique: true,
       autoIncrement: true,
-      columnName: 'Id',
+      columnName: 'id',
+      unique: true,
+    },
+
+    login: {
+      type: 'string',
+      columnName: 'login',
+      maxLength: 20,
+      unique: true,
+    },
+
+    password: {
+      type: 'string',
+      columnName: 'password',
+      maxLength: 64,
     },
 
     activated: {
-      type: 'string',
-      isIn: ['YES', 'NO'],
-      defaultsTo: 'NO',
-      columnName: 'Activated',
+      type: 'boolean',
+      columnName: 'activated',
+      defaultsTo: false,
     },
 
     activationCode: {
       type: 'string',
-      maxLength: 32,
-      defaultsTo: '0',
-      columnName: 'Activation_code',
+      allowNull: false,
+      columnName: 'activation_code',
+      maxLength: 64,
     },
 
     banned: {
-      type: 'string',
-      isIn: ['YES', 'NO'],
-      defaultsTo: 'NO',
-      columnName: 'Banned',
-    },
-
-    ip: {
-      type: 'string',
-      maxLength: 200,
-      columnName: 'Ip',
-    },
-
-    browser: {
-      type: 'string',
-      maxLength: 1000,
-      columnName: 'Browser',
+      type: 'boolean',
+      columnName: 'banned',
+      defaultsTo: false,
     },
 
     connectionCounter: {
       type: 'number',
+      allowNull: false,
+      columnName: 'connection_counter',
       defaultsTo: 0,
-      columnName: 'Connection_counter',
     },
 
     relevance: {
       type: 'number',
+      allowNull: false,
+      columnName: 'relevance',
       defaultsTo: 1,
-      columnName: 'Relevance',
     },
 
     name: {
       type: 'string',
       maxLength: 36,
-      columnName: 'Name',
+      columnName: 'name',
     },
 
     surname: {
       type: 'string',
+      columnName: 'surname',
       maxLength: 32,
-      columnName: 'Surname',
-    },
-
-    login: {
-      type: 'string',
-      maxLength: 20,
-      columnName: 'Login',
     },
 
     nickname: {
       type: 'string',
+      columnName: 'nickname',
       maxLength: 68,
-      columnName: 'Nickname',
     },
 
-    password: {
+    mail: {
       type: 'string',
-      maxLength: 32,
-      defaultsTo: '0',
-      columnName: 'Password',
-    },
-
-    country: {
-      type: 'string',
-      maxLength: 3,
-      columnName: 'Country',
-    },
-
-    /*
-    region: {
-      type: 'string',
-      maxLength: 32,
-      columnName: 'Region'
-    },
-
-    city: {
-      type: 'string',
-      maxLength: 32,
-      columnName: 'City'
-    },
-
-    postalCode: {
-      type: 'string',
-      maxLength: 5,
-      columnName: 'Postal_code'
-    },
-
-    address: {
-      type: 'string',
-      maxLength: 128,
-      columnName: 'Address'
-    },
-
-    dateBirth: {
-      type: 'string',
-      columnType: 'date',
-      columnName: 'Date_birth'
-    },
-    */
-
-    contact: {
-      type: 'string',
+      allowNull: false,
+      columnName: 'mail',
       maxLength: 50,
-      columnName: 'Contact',
     },
 
-    /*
-    yearInitiation: {
-      type: 'number',
-      columnName: 'Year_initiation'
+    mailIsValid: {
+      type: 'boolean',
+      allowNull: false,
+      columnName: 'mail_is_valid',
+      defaultsTo: true,
     },
-    */
 
     dateInscription: {
       type: 'ref',
+      allowNull: false,
+      columnName: 'date_inscription',
       columnType: 'datetime',
-      columnName: 'Date_inscription',
+      defaultsTo: '2000-01-01 00:00:00',
     },
 
     dateLastConnection: {
       type: 'ref',
+      columnName: 'date_last_connection',
       columnType: 'datetime',
-      columnName: 'Date_last_connection',
-    },
-
-    language: {
-      type: 'string',
-      maxLength: 4,
-      columnName: 'Language',
     },
 
     contactIsPublic: {
       type: 'number',
+      allowNull: false,
       defaultsTo: 0,
-      columnName: 'Contact_is_public',
+      columnName: 'contact_is_public',
     },
 
     alertForNews: {
-      type: 'string',
-      isIn: ['YES', 'NO'],
-      defaultsTo: 'NO',
-      columnName: 'Alert_for_news',
+      type: 'boolean',
+      allowNull: false,
+      columnName: 'alert_for_news',
+      defaultsTo: false,
     },
 
     showLinks: {
-      type: 'string',
-      isIn: ['YES', 'NO'],
-      defaultsTo: 'NO',
-      columnName: 'Show_links',
+      type: 'boolean',
+      allowNull: false,
+      columnName: 'show_links',
+      defaultsTo: false,
     },
 
     detailLevel: {
       type: 'number',
+      allowNull: false,
       defaultsTo: 30,
-      columnName: 'Detail_level',
-    },
-
-    /*
-    latitude: {
-      type: 'number',
-      defaultsTo: 0.0,
-      columnName: 'Latitude'
-    },
-
-    longitude: {
-      type: 'number',
-      defaultsTo: 0.0,
-      columnName: 'Longitude'
-    },
-    */
-
-    defaultLatitude: {
-      type: 'number',
-      columnName: 'Default_latitude',
-    },
-
-    defaultLongitude: {
-      type: 'number',
-      columnName: 'Default_longitude',
+      columnName: 'detail_level',
     },
 
     defaultZoom: {
       type: 'number',
-      columnName: 'Default_zoom',
+      columnName: 'default_zoom',
     },
 
-    /*
-    customMessage: {
-      type: 'string',
-      columnName: 'Custom_message'
-    },
-
-    facebook: {
-      type: 'string',
-      maxLength: 100,
-      columnName: 'Facebook'
-    },
-    */
-
-    pictureFileName: {
-      type: 'string',
-      maxLength: 100,
-      columnName: 'Picture_file_name',
-    },
-
-    grottos: {
-      collection: 'TGrotto',
-      via: 'caver',
-      through: 'JGrottoCaver',
+    language: {
+      allowNull: false,
+      columnName: 'id_language',
+      model: 'TLanguage',
     },
   },
 
