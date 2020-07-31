@@ -1,7 +1,7 @@
 /**
  * TFile.js
  *
- * @description :: tFile model imported from localhost MySql server at 4/3/2016 23:47:21.
+ * @description :: tFile model
  * @docs        :: http://sailsjs.org/#!documentation/models
  */
 
@@ -13,39 +13,42 @@ module.exports = {
   attributes: {
     id: {
       type: 'number',
-      unique: true,
       autoIncrement: true,
-      columnName: 'Id',
-    },
-
-    fileauthor: {
-      columnName: 'Id_author',
-      model: 'TAuthor',
-      via: 'id',
+      columnName: 'id',
+      unique: true,
     },
 
     dateInscription: {
       type: 'string',
+      allowNull: false,
+      columnName: 'date_inscription',
       columnType: 'datetime',
-      columnName: 'Date_inscription',
+      defaultsTo: '2000-01-01 00:00:00',
     },
 
-    name: {
+    dateReviewed: {
       type: 'string',
-      maxLength: 100,
-      columnName: 'Name',
+      columnName: 'date_reviewed',
+      columnType: 'datetime',
     },
 
-    path: {
+    fileName: {
       type: 'string',
-      maxLength: 1000,
-      columnName: 'Path',
+      allowNull: false,
+      maxLength: 200,
+      columnName: 'filename',
     },
 
-    topographies: {
-      collection: 'TTopography',
-      via: 'idFile',
-      through: 'jtopofile',
+    fileFormat: {
+      allowNull: false,
+      columnName: 'id_file_format',
+      model: 'TFileFormat',
+    },
+
+    document: {
+      allowNull: false,
+      columnName: 'id_document',
+      model: 'TDocument',
     },
   },
 };

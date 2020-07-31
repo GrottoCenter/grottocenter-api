@@ -1,7 +1,7 @@
 /**
  * JGrottoCaver.js
  *
- * @description :: jGrottoCaver model imported from localhost MySql server at 04/12/2018 11:28:57.
+ * @description :: jGrottoCaver model
  * @docs        :: http://sailsjs.org/#!documentation/models
  */
 
@@ -10,12 +10,12 @@ module.exports = {
 
   attributes: {
     grotto: {
-      columnName: 'Id_grotto',
+      columnName: 'id_grotto',
       model: 'TGrotto',
     },
 
     caver: {
-      columnName: 'Id_caver',
+      columnName: 'id_caver',
       model: 'TCaver',
     },
   },

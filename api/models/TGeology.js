@@ -1,12 +1,12 @@
 /**
- * TType.js
+ * TGeology.js
  *
- * @description :: tType model
+ * @description :: tGeology model
  * @docs        :: http://sailsjs.org/#!documentation/models
  */
 
 module.exports = {
-  tableName: 't_type',
+  tableName: 't_geology',
 
   primaryKey: 'id',
 
@@ -18,23 +18,16 @@ module.exports = {
       unique: true,
     },
 
-    name: {
+    label: {
       type: 'string',
       allowNull: false,
-      columnName: 'name',
-      maxLength: 30,
-    },
-
-    comment: {
-      type: 'string',
-      allowNull: false,
-      columnName: 'comment',
+      columnName: 'label',
       maxLength: 500,
     },
 
     parent: {
       columnName: 'id_parent',
-      model: 'TType',
+      model: 'TGeology',
     },
   },
 };

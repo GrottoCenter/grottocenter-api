@@ -1,7 +1,7 @@
 /**
  * TMassif.js
  *
- * @description :: tMassif model imported from localhost MySql server at 03/12/2018 15:22:13.
+ * @description :: tMassif model
  * @docs        :: http://sailsjs.org/#!documentation/models
  */
 
@@ -13,43 +13,40 @@ module.exports = {
   attributes: {
     id: {
       type: 'number',
-      unique: true,
       autoIncrement: true,
-      columnName: 'Id',
+      columnName: 'id',
+      unique: true,
     },
+
     author: {
-      columnName: 'Id_author',
+      allowNull: false,
+      columnName: 'id_author',
       model: 'TCaver',
     },
-    idReviewer: {
-      type: 'number',
-      autoMigrations: { index: true },
-      columnName: 'Id_reviewer',
+
+    reviewer: {
+      columnName: 'id_reviewer',
+      model: 'TCaver',
     },
-    name: {
-      type: 'string',
-      maxLength: 36,
-      columnName: 'Name',
-    },
+
     dateInscription: {
-      type: 'string',
+      type: 'ref',
+      allowNull: false,
       columnType: 'datetime',
-      columnName: 'Date_inscription',
+      columnName: 'date_inscription',
+      defaultsTo: '2000-01-01 00:00:00',
     },
+
     dateReviewed: {
-      type: 'string',
+      type: 'ref',
       columnType: 'datetime',
-      columnName: 'Date_reviewed',
+      columnName: 'date_reviewed',
     },
-    caves: {
-      collection: 'TCave',
-      via: 'massif',
-      through: 'JMassifCave',
-    },
-    entries: {
-      collection: 'TEntry',
-      via: 'massif',
-      through: 'JMassifCave',
+
+    geometryKml: {
+      type: 'string',
+      maxLength: 2000,
+      columnName: 'geometry_kml',
     },
   },
 };

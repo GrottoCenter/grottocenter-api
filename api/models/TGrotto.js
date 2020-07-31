@@ -1,7 +1,7 @@
 /**
  * TGrotto.js
  *
- * @description :: tGrotto model imported from localhost MySql server at 31/3/2016 12:7:32.
+ * @description :: tGrotto model
  * @docs        :: http://sailsjs.org/#!documentation/models
  */
 
@@ -13,162 +13,133 @@ module.exports = {
   attributes: {
     id: {
       type: 'number',
-      unique: true,
       autoIncrement: true,
-      columnName: 'Id',
+      columnName: 'id',
+      unique: true,
     },
-    locked: {
-      type: 'string',
-      defaultsTo: 'NO',
-      columnName: 'Locked',
-    },
+
     author: {
-      columnName: 'Id_author',
+      allowNull: false,
+      columnName: 'id_author',
       model: 'TCaver',
     },
-    idReviewer: {
-      type: 'number',
-      autoMigrations: { index: true },
-      columnName: 'Id_reviewer',
-      allowNull: true,
+
+    reviewer: {
+      columnName: 'id_reviewer',
+      model: 'TCaver',
     },
-    idLocker: {
+
+    village: {
       type: 'string',
+      maxLength: 100,
+      columnName: 'village',
+    },
+
+    county: {
+      type: 'string',
+      maxLength: 100,
+      columnName: 'county',
+    },
+
+    region: {
+      type: 'string',
+      maxLength: 100,
+      columnName: 'region',
+    },
+
+    city: {
+      type: 'string',
+      maxLength: 100,
+      columnName: 'city',
+    },
+
+    postalCode: {
+      type: 'string',
+      columnName: 'postal_code',
       maxLength: 5,
-      columnName: 'Id_locker',
-      allowNull: true,
     },
-    name: {
+
+    address: {
       type: 'string',
-      maxLength: 36,
-      columnName: 'Name',
+      columnName: 'address',
+      maxLength: 200,
     },
+
+    mail: {
+      type: 'string',
+      columnName: 'mail',
+      maxLength: 50,
+    },
+
+    yearBirth: {
+      type: 'number',
+      columnName: 'year_birth',
+    },
+
+    dateInscription: {
+      type: 'ref',
+      allowNull: false,
+      columnType: 'datetime',
+      columnName: 'date_inscription',
+      defaultsTo: '2000-01-01 00:00:00',
+    },
+
+    dateReviewed: {
+      type: 'ref',
+      columnType: 'datetime',
+      columnName: 'date_reviewed',
+    },
+
+    names: {
+      collection: 'TName',
+      via: 'grotto',
+    },
+
     country: {
       type: 'string',
       maxLength: 3,
       columnName: 'Country',
     },
-    region: {
-      type: 'string',
-      maxLength: 32,
-      columnName: 'Region',
-      allowNull: true,
-    },
-    city: {
-      type: 'string',
-      maxLength: 32,
-      columnName: 'City',
-      allowNull: true,
-    },
-    postalCode: {
-      type: 'string',
-      maxLength: 5,
-      columnName: 'Postal_code',
-      allowNull: true,
-    },
-    address: {
-      type: 'string',
-      maxLength: 128,
-      columnName: 'Address',
-      allowNull: true,
-    },
-    contact: {
-      type: 'string',
-      maxLength: 40,
-      columnName: 'Contact',
-      allowNull: true,
-    },
-    yearBirth: {
-      type: 'string',
-      maxLength: 4,
-      columnName: 'Year_birth',
-      allowNull: true,
-    },
-    dateInscription: {
-      type: 'ref',
-      columnType: 'datetime',
-      columnName: 'Date_inscription',
-    },
-    dateReviewed: {
-      type: 'ref',
-      columnType: 'datetime',
-      columnName: 'Date_reviewed',
-    },
-    dateLocked: {
-      type: 'ref',
-      columnType: 'datetime',
-      columnName: 'Date_locked',
-    },
-    idPresident: {
-      type: 'number',
-      autoMigrations: { index: true },
-      columnName: 'Id_president',
-      allowNull: true,
-    },
-    idVicePresident: {
-      type: 'number',
-      autoMigrations: { index: true },
-      columnName: 'Id_vice_president',
-      allowNull: true,
-    },
-    idTreasurer: {
-      type: 'number',
-      autoMigrations: { index: true },
-      columnName: 'Id_treasurer',
-      allowNull: true,
-    },
-    idSecretary: {
-      type: 'number',
-      autoMigrations: { index: true },
-      columnName: 'Id_secretary',
-      allowNull: true,
-    },
+
     latitude: {
       type: 'number',
-      columnName: 'Latitude',
-    },
-    longitude: {
-      type: 'number',
-      columnName: 'Longitude',
-    },
-    customMessage: {
-      type: 'string',
-      columnName: 'Custom_message',
-      allowNull: true,
-    },
-    pictureFileName: {
-      type: 'string',
-      maxLength: 100,
-      columnName: 'Picture_file_name',
-      allowNull: true,
-    },
-    isOfficialPartner: {
-      type: 'boolean',
-      columnName: 'Is_official_partner',
-      allowNull: true,
-    },
-    village: {
-      type: 'string',
-      maxLength: 100,
-      columnName: 'Village',
-      allowNull: true,
-    },
-    county: {
-      type: 'string',
-      maxLength: 100,
-      columnName: 'County',
-      allowNull: true,
+      columnName: 'latitude',
+      columnType: 'numeric(24,20)',
     },
 
-    cavers: {
-      collection: 'TCaver',
-      via: 'grotto',
-      through: 'JGrottoCaver',
+    longitude: {
+      type: 'number',
+      columnName: 'longitude',
+      columnType: 'numeric(24,20)',
     },
-    entries: {
-      collection: 'TEntry',
-      via: 'grotto',
-      through: 'JGrottoEntry',
+
+    customMessage: {
+      type: 'string',
+      columnName: 'custom_message',
+    },
+
+    isOfficialPartner: {
+      type: 'boolean',
+      allowNull: false,
+      columnName: 'is_official_partner',
+      defaultsTo: false,
+    },
+
+    url: {
+      type: 'string',
+      columnName: 'url',
+      maxLength: 200,
+    },
+
+    country: {
+      columnName: 'id_country',
+      model: 'TCountry',
+    },
+
+    pictureFileName: {
+      type: 'string',
+      columnName: 'picture_file_name',
+      maxLength: 100,
     },
   },
 };
