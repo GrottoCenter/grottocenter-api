@@ -182,45 +182,7 @@ paths:
           description: Resource not found
         '500':
           description: Internal error
-          
-  '/search/findAll':
-    get:
-      tags:
-      - search
-      deprecated: true
-      summary: DEPRECATED - Please switch your code to use /entries or /search instead
-      description: Search for resources by name
-      parameters:
-      - name: name
-        in: query
-        description: Resource name (or part of name)
-        required: true
-        schema:
-          type: string
-      - name: range
-        in: query
-        description: Range of data to retreive (for pagination)
-        required: false
-        schema:
-          type: string
-          pattern: '^[0-9]+-[0-9]+$'
-      responses:
-        '200':
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Search_findAll'
-        '206':
-          description: Successful operation (partial content)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Search_findAll'
-        '404':
-          description: Resource not found
-        '500':
-          description: Internal error
+
 
   '/geoloc/countEntries':
     get:
@@ -263,6 +225,7 @@ paths:
           description: Resource not found
         '500':
           description: Internal error
+
   '/geoloc/findByBounds':
     get:
       tags:
@@ -399,12 +362,6 @@ components:
           type: string
         longitude:
           type: string
-    Search_findAll:
-      properties:
-        entries:
-          type: array
-          items:
-            $ref: "#/components/schemas/Entry"
             
     Search:
       properties:
