@@ -30,69 +30,6 @@ module.exports = {
       });
   },
 
-  findAll: (req, res, converter) => {
-    const apiControl = req.options.api;
-    const parameters = {};
-    let { limit } = apiControl;
-    let skip = 0;
-
-    if (req.param('name')) {
-      parameters.name = {
-        like: `%${req.param('name')}%`,
-      };
-    }
-    if (req.param('region')) {
-      parameters.region = {
-        like: `%${req.param('region')}%`,
-      };
-    }
-
-    const maxRange = apiControl.limit;
-    const range = req.param('range');
-
-    if (range !== undefined) {
-      const splitRange = range.split('-');
-      limit = splitRange[1] - splitRange[0];
-      skip = splitRange[0];
-    }
-
-    // TODO : to adapt when authentication will be implemented
-    parameters.isPublic = 'YES';
-
-    // TODO before this : see how to materialize fact that
-    // id of entrance corresponds to id of linked single entrance if exists
-    // TEntrance.find(parameters).populate('author').populate('cave').populate('singleentry').sort('id ASC').limit(10).exec(function(err, found) {
-    TEntrance.count(parameters).exec((error, total) => {
-      TEntrance.find(parameters)
-        .populate('author')
-        .populate('cave')
-        .sort('id ASC')
-        .limit(limit)
-        .skip(skip)
-        .exec((err, found) => {
-          const params = {
-            controllerMethod: 'EntranceController.findAll',
-            notFoundMessage: 'No entrances found.',
-            searchedItem: apiControl.entity,
-            total,
-            url: req.originalUrl,
-            maxRange,
-            limit,
-            skip,
-          };
-
-          return ControllerService.treatAndConvert(
-            req,
-            err,
-            found,
-            params,
-            res,
-            converter,
-          );
-        });
-    });
-  },
-
   findRandom: (req, res) => {
     EntranceService.findRandom().then(
       (results) => {
