@@ -112,9 +112,8 @@ docker run -d \
     elasticsearch:${ES_AND_LS_VERSION}
 echo "### Elasticsearch available on port ${ES_LOCAL_PORT} ###"
 
-# Dowload and extract a plugin to be used by Logstash to load data from MySQL
 echo "### Download and Build the JDBC plugin for Logstash ###"
-wget https://jdbc.postgresql.org/download/postgresql-42.2.14.jar -0 ./postgresql-connector.jar
+wget https://jdbc.postgresql.org/download/postgresql-42.2.14.jar -O ./postgresql-connector.jar
 echo "### JDBC plugin downloaded and built ###"
 
 # Delete the Logstash container if already running and then create a Logstash container with the logstash.conf as configuration file.
@@ -134,8 +133,9 @@ docker run --rm -d \
     --health-cmd='curl -X GET "localhost:9600" --silent' \
     --health-retries=5 \
     --link ${DB_TAGNAME} \
-    --link ${ES_TAGNAME} \
+    --link "${ES_TAGNAME}:elasticsearch" \
     -e XPACK.MONITORING.ELASTICSEARCH.URL=${ES_TAGNAME} \
+    -e CONFIG.SUPPORT_ESCAPES=true \
     -e JDBC_POSTGRESQL="jdbc:postgresql://${DB_TAGNAME}/${DOCKER_DB_DATABASE}" \
     -e JDBC_USER=${DOCKER_DB_USER} \
     -e JDBC_PASSWORD=${DOCKER_DB_PASSWORD} \
