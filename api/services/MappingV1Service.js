@@ -88,7 +88,7 @@ const CaveModel = {
   massif: undefined,
 };
 
-const BbsModel = {
+const DocumentModel = {
   ref_: undefined,
   xRefNumeriqueFinal: undefined,
   title: undefined,
@@ -159,17 +159,6 @@ module.exports = {
     return result;
   },
 
-  // Deprecated for v1
-  convertDbToSearchResult: (source) => {
-    const results = {};
-    const entries = [];
-    source.forEach((item) =>
-      entries.push(MappingV1Service.convertToEntranceModel(item)),
-    );
-    results.entries = entries;
-    return results;
-  },
-
   convertToCaverModel: (source) => {
     const result = { ...CaverModel };
     result.id = source.id;
@@ -219,7 +208,7 @@ module.exports = {
       let data = '';
       // Convert the data according to its type
       switch (item['_source'].type) {
-        case 'entry':
+        case 'entrance':
           data = MappingV1Service.convertToEntranceModel(item['_source']);
           break;
         case 'massif':
@@ -228,8 +217,8 @@ module.exports = {
         case 'grotto':
           data = MappingV1Service.convertToGrottoModel(item['_source']);
           break;
-        case 'bbs':
-          data = MappingV1Service.convertToBbsModel(item['_source']);
+        case 'document':
+          data = MappingV1Service.convertToDocumentModel(item['_source']);
           break;
         default:
       }
@@ -259,7 +248,7 @@ module.exports = {
           id: item['_id'],
           name: item['_source'].name
             ? item['_source'].name
-            : item['_source']['bbs title'], // Handle BBS case
+            : item['_source']['title'], // Handle title for documents (instead of name)
           type: item['_source'].type,
           highlights: item.highlight,
         };
@@ -276,7 +265,6 @@ module.exports = {
           'bbs abstract': 'abstract',
           'bbs country': 'country',
           'bbs publication': 'publication',
-          numericalRef: 'numerical reference',
         };
 
         // Convert from a collection of keys newKeys, rename the keys of obj
@@ -290,7 +278,7 @@ module.exports = {
         };
 
         switch (item['_source'].type) {
-          case 'entry':
+          case 'entrance':
             data.cave = {
               id: item['_source'].id_cave,
               name: item['_source']['cave name'],
@@ -305,7 +293,7 @@ module.exports = {
             data.address = item['_source'].address;
             break;
 
-          case 'bbs':
+          case 'document':
             // Rename keys of source and highlights
             renameKeys(item['_source'], replacementKeys);
             renameKeys(data.highlights, replacementKeys);
@@ -421,8 +409,8 @@ module.exports = {
 
   // ---------------- BBS Function ---------------------------
 
-  convertToBbsModel: (source) => {
-    const result = { ...BbsModel };
+  convertToDocumentModel: (source) => {
+    const result = { ...DocumentModel };
     result.crosChapRebuilt = source.crosChapRebuilt;
     result.crosCountryRebuilt = source.crosCountryRebuilt;
 
@@ -430,13 +418,8 @@ module.exports = {
     result.abstract = source.abstract;
 
     // Conversion (from Elasticsearch or not)
-    result.numericalRef = source['bbs numericalRef']
-      ? source['bbs numericalRef']
-      : source.xRefNumeriqueFinal;
-    result.ref = source['bbs ref'] ? source['bbs ref'] : source['ref_'];
-    result.id = source['bbs numericalref']
-      ? source['bbs numericalref']
-      : source.id; // Use xRefNumeriqueFinal as a fallback id
+    result.ref = source['ref_bbs'] ? source['ref_bbs'] : source['refBbs'];
+    result.id = source.id;
     result.title = source['bbs title']
       ? source['bbs title']
       : source.articleTitle;

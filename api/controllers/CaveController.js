@@ -20,8 +20,7 @@ module.exports = {
       id: req.params.id,
     })
       .populate('author')
-      .populate('entries')
-      .populate('topographies')
+      .populate('entrances')
       .exec((err, found) => {
         const params = {};
         params.controllerMethod = 'CaveController.find';
@@ -41,7 +40,7 @@ module.exports = {
 
     return TCave.find(parameters)
       .populate('author')
-      .populate('entries')
+      .populate('entrances')
       .sort('id ASC')
       .limit(10)
       .exec((err, found) => {

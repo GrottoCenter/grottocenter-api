@@ -63,13 +63,11 @@ module.exports.routes = {
    ***************************************************************************/
 
   /* CSRF */
-
   'GET /csrfToken': {
     action: 'security/grant-csrf-token',
   },
 
   /* For ReactRouter routes */
-
   'GET /auth/*': {
     view: 'grottocenter',
   },
@@ -91,7 +89,6 @@ module.exports.routes = {
   //  ╩ ╩╩  ╩  ╚═╝╝╚╝═╩╝╩  ╚═╝╩╝╚╝ ╩ ╚═╝
 
   /* Auth controller */
-
   'POST /api/v1/login': {
     controller: 'v1/Auth',
     action: 'login',
@@ -103,7 +100,6 @@ module.exports.routes = {
   },
 
   /* Caver controller */
-
   'GET /api/cavers/': {
     controller: 'Caver',
     action: 'find',
@@ -117,18 +113,6 @@ module.exports.routes = {
   'GET /api/cavers/findAll': {
     controller: 'Caver',
     action: 'findAll',
-  },
-
-  'GET /api/v1/search/findAll': {
-    controller: 'v1/Search',
-    action: 'findAll',
-    api: {
-      entity: 'search',
-      limit: 50,
-    },
-    cors: {
-      allowOrigins: '*',
-    },
   },
 
   'GET /api/cavers/count': {
@@ -156,12 +140,7 @@ module.exports.routes = {
     action: 'destroy',
   },
 
-  /* Entry controller */
-  'GET /api/entries/findAll': {
-    controller: 'Entrance',
-    action: 'findAll',
-  },
-
+  /* Entrance controller */
   'GET /api/v1/entries': {
     controller: 'v1/Entry',
     action: 'findAll',
@@ -201,15 +180,6 @@ module.exports.routes = {
     },
   },
 
-  // /!\ DEPRECATED (use plural route) /!\
-  'GET /api/v1/entry/:id': {
-    controller: 'v1/Entry',
-    action: 'find',
-    cors: {
-      allowOrigins: '*',
-    },
-  },
-
   /* REST API for Cave controller */
   'POST /api/caves/': {
     controller: 'Cave',
@@ -237,7 +207,6 @@ module.exports.routes = {
   },
 
   /* Author controller */
-
   'POST /api/authors/': {
     controller: 'Author',
     action: 'create',
@@ -264,7 +233,6 @@ module.exports.routes = {
   },
 
   /* REST API for Partner controller */
-
   'POST /api/partners/': {
     controller: 'Partner',
     action: 'create',
@@ -300,35 +268,7 @@ module.exports.routes = {
     action: 'delete',
   },
 
-  /* REST API for Topography controller */
-
-  'POST /api/topos/': {
-    controller: 'Topography',
-    action: 'create',
-  },
-
-  'GET /api/topos/findAll': {
-    controller: 'Topography',
-    action: 'findAll',
-  },
-
-  'GET /api/topos/:id': {
-    controller: 'Topography',
-    action: 'find',
-  },
-
-  'PUT /api/topos/:id': {
-    controller: 'Topography',
-    action: 'update',
-  },
-
-  'DELETE /api/topos/:id': {
-    controller: 'Topography',
-    action: 'delete',
-  },
-
   /* REST API for Comment controller */
-
   'GET /api/comments/stats/:entry': {
     controller: 'Comment',
     action: 'getEntryStats',
@@ -340,7 +280,6 @@ module.exports.routes = {
   },
 
   /* REST API for Grotto controller */
-
   'GET /api/grottos/findAll': {
     controller: 'Grotto',
     action: 'findAll',
@@ -451,14 +390,12 @@ module.exports.routes = {
   },
 
   /* Rss controller */
-
   'GET /api/rss/:language': {
     controller: 'Rss',
     action: 'getFeed',
   },
 
   /* Geo localisation API */
-
   'GET /api/v1/geoloc/countEntries': {
     controller: 'v1/GeoLoc',
     action: 'countEntries',
@@ -493,7 +430,6 @@ module.exports.routes = {
   },
 
   /* Convert */
-
   'GET /api/convert': {
     controller: 'ConvertController',
     action: 'convert',
