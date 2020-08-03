@@ -16,17 +16,6 @@ import { useIntl } from 'react-intl';
 
 import EntriesList from '../common/entry/EntriesList';
 
-const GClogo = styled.img`
-  display: inline-block;
-  vertical-align: baseline;
-  height: 3rem;
-`;
-
-const GroupName = styled.h1`
-  display: inline-block;
-  margin-right: 20px;
-`;
-
 const CaverIcon = styled.img`
   display: inline-block;
   height: 4rem;
@@ -159,7 +148,6 @@ Group.propTypes = {
     cavers: PropTypes.any,
     yearBirth: PropTypes.any,
   }),
-  updatePageTitle: PropTypes.func.isRequired,
 };
 
 Group.defaultProps = {

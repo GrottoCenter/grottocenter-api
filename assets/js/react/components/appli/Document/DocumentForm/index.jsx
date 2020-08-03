@@ -6,7 +6,7 @@ import {
   Button,
   Divider,
   FormControl,
-  LinearProgress,
+  LinearProgress as MuiLinearProgress,
 } from '@material-ui/core';
 import NavigateNextIcon from '@material-ui/icons/NavigateNext';
 import NavigateBeforeIcon from '@material-ui/icons/NavigateBefore';
@@ -55,6 +55,10 @@ const StyledDivider = styled(Divider)`
 const SubmitButton = styled(Button)`
   display: block;
   margin: auto;
+`;
+
+const LinearProgress = styled(MuiLinearProgress)`
+  visibility: ${({ isVisible }) => (isVisible ? 'visible' : 'hidden')};
 `;
 
 // ===================================
@@ -108,15 +112,9 @@ const DocumentForm = ({
     setCurrentFormStepId((prevFormStep) => prevFormStep - 1);
   };
 
-  // visibility is used to keep the space needed for the LinearProgress
-  // even if it's not shown.
-  const LinearProgressVisibleOrNot = styled(LinearProgress)`
-    visibility: ${isLoading ? 'visible' : 'hidden'};
-  `;
-
   return (
-    <>
-      <LinearProgressVisibleOrNot />
+    <DocumentFormProvider docAttributes={defaultContext.docAttributes}>
+      <LinearProgress />
       <div style={isLoading ? { opacity: '0.6' } : {}}>
         <Stepper
           currentFormStepId={currentFormStepId}

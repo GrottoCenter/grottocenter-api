@@ -32,16 +32,18 @@ const FlexItemWrapper = styled.div`
 // ===================================
 
 const Step2 = ({
+  allAuthors,
   allMassifs,
   allPartOf,
   allRegions,
+  allSubjects,
   onStepIsValidChange,
   stepId,
 }) => {
   const [isValid, setIsValid] = React.useState(false);
 
   const {
-    docAttributes: { editor, documentType, library, partOf },
+    docAttributes: { editor, documentType, authors, library, partOf, subjects },
     updateAttribute,
   } = useContext(DocumentFormContext);
 
@@ -55,9 +57,9 @@ const Step2 = ({
     } else if (isCollectionElement(documentType)) {
       newIsValid = newIsValid && editor !== null && partOf !== null;
     } else if (isText(documentType)) {
-      newIsValid = true;
+      newIsValid = newIsValid && authors.length > 0 && subjects.length > 0;
     } else if (isImage(documentType)) {
-      newIsValid = true;
+      newIsValid = newIsValid && authors.length > 0;
     }
 
     // Lazy state change
@@ -71,6 +73,30 @@ const Step2 = ({
   return useMemo(
     () => (
       <>
+        <MultipleSelect
+          allPossibleValues={allAuthors}
+          contextValueNameToUpdate="authors"
+          getOptionLabel={(option) => `${option.name} ${option.surname}`}
+          computeHasError={(newAuthors) =>
+            (isImage(documentType) || isText(documentType)) &&
+            newAuthors.length === 0
+          }
+          helperText="Use authors' full name, no abreviation. In a next version of the website, if the author is not in the Grottocenter database, you will be able to add it."
+          labelName="Authors"
+          required={isImage(documentType) || isText(documentType)}
+        />
+
+        <MultipleSelect
+          allPossibleValues={allSubjects}
+          contextValueNameToUpdate="subjects"
+          getOptionLabel={(option) => `${option.id} ${option.subject}`}
+          computeHasError={(newSubjects) =>
+            isText(documentType) && newSubjects.length === 0
+          }
+          helperText="Be precise about the subjects discussed in the document: there are plenty of subject choices in Grottocenter."
+          labelName="Subjects"
+          required={isText(documentType)}
+        />
         {(isText(documentType) || isCollectionElement(documentType)) && (
           <PartOfAutoComplete
             hasError={isCollectionElement(documentType) && !partOf}
@@ -175,6 +201,13 @@ const Step2 = ({
 };
 
 Step2.propTypes = {
+  allAuthors: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string.isRequired,
+      name: PropTypes.string.isRequired,
+      surname: PropTypes.string.isRequired,
+    }),
+  ).isRequired,
   allMassifs: PropTypes.arrayOf(
     PropTypes.shape({
       id: PropTypes.string.isRequired,
@@ -199,6 +232,12 @@ Step2.propTypes = {
       name: PropTypes.string.isRequired,
     }),
   ),
+  allSubjects: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string.isRequired,
+      subject: PropTypes.string.isRequired,
+    }),
+  ).isRequired,
 
   onStepIsValidChange: PropTypes.func.isRequired,
   stepId: PropTypes.number.isRequired,

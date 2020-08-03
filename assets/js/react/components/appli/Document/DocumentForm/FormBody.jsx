@@ -24,7 +24,6 @@ const FormBody = ({
       {currentFormStepId === 1 && (
         <Step1
           // Suggestions
-          allAuthors={allAuthors}
           allSubjects={allSubjects}
           allLanguages={allLanguages}
           // Steps
@@ -36,11 +35,13 @@ const FormBody = ({
       {currentFormStepId === 2 && (
         <Step2
           // Suggestions
+          allAuthors={allAuthors}
           allLanguages={allLanguages}
           allLibraries={allLibraries}
           allMassifs={allMassifs}
           allPartOf={allPartOf}
           allRegions={allRegions}
+          allSubjects={allSubjects}
           // Steps
           onStepIsValidChange={onStepIsValidChange}
           stepId={2}

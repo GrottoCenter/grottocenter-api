@@ -40,23 +40,15 @@ const PublicationDateWrapper = styled.div`
 `;
 // ===================================
 
-const DocumentForm = ({
-  allAuthors,
-  allLanguages,
-  allSubjects,
-  onStepIsValidChange,
-  stepId,
-}) => {
+const DocumentForm = ({ allLanguages, onStepIsValidChange, stepId }) => {
   const [isValid, setIsValid] = React.useState(false);
 
   const {
     docAttributes: {
-      authors,
       description,
       descriptionLanguage,
       documentType,
       publicationDate,
-      subjects,
       title,
       titleLanguage,
     },
@@ -78,9 +70,9 @@ const DocumentForm = ({
     } else if (isCollectionElement(documentType)) {
       newIsValid = newIsValid && publicationDate !== null;
     } else if (isText(documentType)) {
-      newIsValid = newIsValid && authors.length > 0 && subjects.length > 0;
+      newIsValid = true;
     } else if (isImage(documentType)) {
-      newIsValid = newIsValid && authors.length > 0;
+      newIsValid = true;
     }
 
     // Lazy state change
@@ -146,33 +138,6 @@ const DocumentForm = ({
                   languageItemReferringTo="Description"
                   required
                 />
-
-                <MultipleSelect
-                  allPossibleValues={allAuthors}
-                  contextValueNameToUpdate="authors"
-                  getOptionLabel={(option) =>
-                    `${option.name} ${option.surname}`
-                  }
-                  computeHasError={(newAuthors) =>
-                    (isImage(documentType) || isText(documentType)) &&
-                    newAuthors.length === 0
-                  }
-                  helperText="Use authors' full name, no abreviation. In a next version of the website, if the author is not in the Grottocenter database, you will be able to add it."
-                  labelName="Authors"
-                  required={isImage(documentType) || isText(documentType)}
-                />
-
-                <MultipleSelect
-                  allPossibleValues={allSubjects}
-                  contextValueNameToUpdate="subjects"
-                  getOptionLabel={(option) => `${option.id} ${option.subject}`}
-                  computeHasError={(newSubjects) =>
-                    isText(documentType) && newSubjects.length === 0
-                  }
-                  helperText="Be precise about the subjects discussed in the document: there are plenty of subject choices in Grottocenter."
-                  labelName="Subjects"
-                  required={isText(documentType)}
-                />
               </>
             )}
           </div>
@@ -184,23 +149,10 @@ const DocumentForm = ({
 };
 
 DocumentForm.propTypes = {
-  allAuthors: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      name: PropTypes.string.isRequired,
-      surname: PropTypes.string.isRequired,
-    }),
-  ).isRequired,
   allLanguages: PropTypes.arrayOf(
     PropTypes.shape({
       id: PropTypes.string.isRequired,
       name: PropTypes.string.isRequired,
-    }),
-  ).isRequired,
-  allSubjects: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      subject: PropTypes.string.isRequired,
     }),
   ).isRequired,
   onStepIsValidChange: PropTypes.func.isRequired,
