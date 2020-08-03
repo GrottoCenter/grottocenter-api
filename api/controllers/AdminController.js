@@ -4,7 +4,7 @@
 
 module.exports = {
   index: (req, res) => {
-    TEntry.find()
+    TEntrance.find()
       .limit(10)
       .exec((err, found) => {
         return res.view({
@@ -14,13 +14,13 @@ module.exports = {
   },
 
   find: (req, res) => {
-    TEntry.findOneById(req.params.id)
+    TEntrance.findOneById(req.params.id)
       .populate('author')
       .populate('cave')
       .populate('singleEntry')
       .exec((err, found) => {
         const params = {};
-        params.controllerMethod = 'EntryController.find';
+        params.controllerMethod = 'EntranceController.find';
         params.notFoundMessage = `Entry of id ${req.params.id} not found.`;
         return ControllerService.treat(req, err, found, params, res);
       });
@@ -39,7 +39,7 @@ module.exports = {
       };
     }
 
-    TEntry.find(parameters)
+    TEntrance.find(parameters)
       .populate('author')
       .populate('cave')
       .populate('singleEntry')
@@ -47,14 +47,14 @@ module.exports = {
       .limit(10)
       .exec((err, found) => {
         const params = {};
-        params.controllerMethod = 'EntryController.findAll';
+        params.controllerMethod = 'EntranceController.findAll';
         params.notFoundMessage = 'No entries found.';
         return ControllerService.treat(req, err, found, params, res);
       });
   },
 
   findAllInterestEntries: (req, res) => {
-    EntryService.findAllInterestEntries().then(
+    EntranceService.findAllInterestEntries().then(
       (results) => {
         if (!results) {
           return res.notFound();
@@ -64,7 +64,7 @@ module.exports = {
       (err) => {
         sails.log.error(err);
         return res.serverError(
-          `EntryController.findAllRandomEntry error : ${err}`,
+          `EntranceController.findAllRandomEntry error : ${err}`,
         );
       },
     );

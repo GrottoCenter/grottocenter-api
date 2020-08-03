@@ -1,13 +1,13 @@
 /**
- * EntryController
+ * EntranceController
  *
- * @description :: Server-side logic for managing entries
+ * @description :: Server-side logic for managing entrances
  * @help        :: See http://links.sailsjs.org/docs/controllers
  */
 
 module.exports = {
   find: (req, res, converter) => {
-    TEntry.findOne({
+    TEntrance.findOne({
       id: req.params.id,
       // TODO : to adapt when authentication will be implemented
       isPublic: 'YES',
@@ -62,9 +62,9 @@ module.exports = {
 
     // TODO before this : see how to materialize fact that
     // id of entry corresponds to id of linked single entry if exists
-    // TEntry.find(parameters).populate('author').populate('cave').populate('singleEntry').sort('id ASC').limit(10).exec(function(err, found) {
-    TEntry.count(parameters).exec((error, total) => {
-      TEntry.find(parameters)
+    // TEntrance.find(parameters).populate('author').populate('cave').populate('singleEntry').sort('id ASC').limit(10).exec(function(err, found) {
+    TEntrance.count(parameters).exec((error, total) => {
+      TEntrance.find(parameters)
         .populate('author')
         .populate('cave')
         .sort('id ASC')
@@ -72,8 +72,8 @@ module.exports = {
         .skip(skip)
         .exec((err, found) => {
           const params = {
-            controllerMethod: 'EntryController.findAll',
-            notFoundMessage: 'No entries found.',
+            controllerMethod: 'EntranceController.findAll',
+            notFoundMessage: 'No entrances found.',
             searchedItem: apiControl.entity,
             total,
             url: req.originalUrl,
@@ -95,7 +95,7 @@ module.exports = {
   },
 
   findRandom: (req, res) => {
-    EntryService.findRandom().then(
+    EntranceService.findRandom().then(
       (results) => {
         if (!results) {
           return res.notFound();
@@ -104,34 +104,34 @@ module.exports = {
       },
       (err) => {
         sails.log.error(err);
-        return res.serverError(`EntryController.findRandom error ${err}`);
+        return res.serverError(`EntranceController.findRandom error ${err}`);
       },
     );
   },
 
-  getPublicEntriesNumber: (req, res, converter) => {
-    EntryService.getPublicEntriesNumber()
+  getPublicEntrancesNumber: (req, res, converter) => {
+    EntranceService.getPublicEntrancesNumber()
       .then((count) => {
         if (!count) {
-          return res
-            .status(404)
-            .json({ error: 'Problem while getting number of public entries' });
+          return res.status(404).json({
+            error: 'Problem while getting number of public entrances',
+          });
         }
         return res.json(converter(count));
       })
       .catch((err) => {
         const errorMessage =
-          'An internal error occurred when getting number of public entries';
+          'An internal error occurred when getting number of public entrances';
         sails.log.error(`${errorMessage}: ${err}`);
         return res.status(500).json({ error: errorMessage });
       });
   },
 
-  getEntriesNumber: (req, res) => {
-    TEntry.count().exec((err, found) => {
+  getEntrancesNumber: (req, res) => {
+    TEntrance.count().exec((err, found) => {
       const params = {};
-      params.controllerMethod = 'EntryController.getEntriesNumber';
-      params.notFoundMessage = 'Problem while getting number of entries.';
+      params.controllerMethod = 'EntranceController.getEntrancesNumber';
+      params.notFoundMessage = 'Problem while getting number of entrances.';
 
       const count = {};
       count.count = found;

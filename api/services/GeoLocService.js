@@ -51,7 +51,7 @@ module.exports = {
       // TODO : to adapt when authentication will be implemented
       parameters.isPublic = 'YES';
 
-      TEntry.count(parameters).exec((err, result) => {
+      TEntrance.count(parameters).exec((err, result) => {
         if (err) {
           reject(err);
         }

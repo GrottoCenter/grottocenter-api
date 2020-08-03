@@ -26,8 +26,8 @@ module.exports = {
     // TODO : to adapt when authentication will be implemented
     parameters.isPublic = 'YES';
 
-    TEntry.count(parameters).exec((error, total) => {
-      TEntry.find(parameters)
+    TEntrance.count(parameters).exec((error, total) => {
+      TEntrance.find(parameters)
         .sort('id ASC')
         .limit(limit)
         .skip(skip)

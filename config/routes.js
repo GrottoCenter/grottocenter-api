@@ -158,7 +158,7 @@ module.exports.routes = {
 
   /* Entry controller */
   'GET /api/entries/findAll': {
-    controller: 'Entry',
+    controller: 'Entrance',
     action: 'findAll',
   },
 
@@ -175,22 +175,22 @@ module.exports.routes = {
   },
 
   'GET /api/entries/findRandom': {
-    controller: 'Entry',
+    controller: 'Entrance',
     action: 'findRandom',
   },
 
   // /!\ DEPRECATED /!\
   'GET /api/v1/entry/publicCount': {
-    controller: 'v1/Entry',
-    action: 'getPublicEntriesNumber',
+    controller: 'v1/Entrance',
+    action: 'getPublicEntrancesNumber',
     cors: {
       allowOrigins: '*',
     },
   },
 
   'GET /api/entries/count': {
-    controller: 'Entry',
-    action: 'getEntriesNumber',
+    controller: 'Entrance',
+    action: 'getEntrancesNumber',
   },
 
   'GET /api/v1/entries/:id': {
@@ -405,8 +405,8 @@ module.exports.routes = {
   },
 
   'GET /api/v1/bbs/count': {
-    controller: 'v1/Bbs',
-    action: 'count',
+    controller: 'v1/Document',
+    action: 'countBBS',
   },
 
   'GET /api/v1/bbs-geos/:id': {
