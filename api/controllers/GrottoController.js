@@ -1,7 +1,7 @@
 /**
  * GrottoController
  *
- * @description :: Server-side logic for managing entries
+ * @description :: Server-side logic for managing grottos
  * @help        :: See http://links.sailsjs.org/docs/controllers
  */
 

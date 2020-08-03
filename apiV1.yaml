@@ -133,38 +133,13 @@ paths:
           description: Resource not found
         '500':
           description: Internal error
-  '/entry/{id}':
-    get:
-      tags:
-      - entry
-      deprecated: true
-      summary: DEPRECATED - Please switch your code to use /entries instead
-      description: Get a public entry by ID
-      parameters:
-      - name: id
-        in: path
-        description: Entry ID
-        required: true
-        schema:
-          type: string
-      responses:
-        '200':
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Entry'
-        '404':
-          description: Resource not found
-        '500':
-          description: Internal error
 
   '/entry/publicCount':
     get:
       tags:
       - entry
       deprecated: true
-      description: Get the number of public entries referenced in GC3 database
+      description: Get the number of public entrances referenced in GC3 database
       responses:
         '200':
           description: Successful operation
