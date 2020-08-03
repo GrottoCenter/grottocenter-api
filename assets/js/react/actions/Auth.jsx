@@ -72,22 +72,27 @@ export function postLogin(contactEmail, password) {
     return fetch(loginUrl, requestOptions)
       .then((response) => {
         if (response.status >= 400) {
-          const errorMessages = [];
+          let errorMessage = '';
           if (response.status === 401) {
-            errorMessages.push('Invalid email or password.');
+            errorMessage = 'Invalid email or password.';
+          } else if (response.status === 500) {
+            errorMessage =
+              'A server error occurred, please try again later or contact Wikicaves for more information.';
+          } else {
+            errorMessage = 'An unknown error occurred.';
           }
-          dispatch(fetchLoginFailure(errorMessages));
-          throw new Error(
-            `Fetching ${loginUrl} status: ${response.status}`,
-            errorMessages,
-          );
+          throw new Error(errorMessage);
+        } else {
+          return response.json();
         }
-        return response.json();
       })
       .then((json) => {
         window.localStorage.setItem(identificationTokenName, json.token);
         dispatch(fetchLoginSuccess(json.user, json.token));
         dispatch(hideLoginDialog());
+      })
+      .catch((authError) => {
+        dispatch(fetchLoginFailure([authError.message]));
       });
   };
 }
