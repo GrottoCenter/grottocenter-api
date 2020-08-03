@@ -2,11 +2,11 @@ import React, { useContext, useMemo } from 'react';
 import styled from 'styled-components';
 
 import { Typography } from '@material-ui/core';
-import Translate from '../../../Translate';
+import Translate from '../../../../common/Translate';
 
 import { DocumentFormContext } from '../Provider';
-import NumberInput from './NumberInput';
-import StringInput from './StringInput';
+import NumberInput from '../../../../common/Form/NumberInput';
+import StringInput from '../../../../common/Form/StringInput';
 
 // ===================================
 const InlineWrapper = styled.div`

@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import { FormHelperText, TextField } from '@material-ui/core';
 
-import Translate from '../../../Translate';
+import Translate from '../../../../common/Translate';
 
 import { DocumentFormContext } from '../Provider';
 

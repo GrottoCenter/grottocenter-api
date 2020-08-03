@@ -4,7 +4,7 @@ import styled from 'styled-components';
 
 import IdentifierEditor from '../formElements/IdentifierEditor';
 import PagesEditor from '../formElements/PagesEditor';
-import StringInput from '../formElements/StringInput';
+import StringInput from '../../../../common/Form/StringInput';
 
 import { DocumentFormContext } from '../Provider';
 import { isText, isCollectionElement } from '../DocumentTypesHelper';

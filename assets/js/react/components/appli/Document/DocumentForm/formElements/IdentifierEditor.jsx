@@ -11,11 +11,11 @@ import {
   Select,
 } from '@material-ui/core';
 
-import Translate from '../../../Translate';
+import Translate from '../../../../common/Translate';
 
 import { DocumentFormContext } from '../Provider';
 import { isImage } from '../DocumentTypesHelper';
-import StringInput from './StringInput';
+import StringInput from '../../../../common/Form/StringInput';
 
 // ===================================
 const InlineWrapper = styled.div`

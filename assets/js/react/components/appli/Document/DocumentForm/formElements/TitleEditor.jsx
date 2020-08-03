@@ -4,7 +4,7 @@ import styled from 'styled-components';
 
 import { DocumentFormContext } from '../Provider';
 
-import StringInput from './StringInput';
+import StringInput from '../../../../common/Form/StringInput';
 import LanguageSelect from './LanguageSelect';
 
 // ===================================
@@ -14,48 +14,45 @@ const InlineWrapper = styled.div`
   flex-wrap: wrap;
 `;
 
-const DescriptionContainer = styled.div`
+const TitleContainer = styled.div`
   flex: 12;
-  flex-basis: 300px;
+  min-width: 300px;
 `;
 
 const LanguageSelectContainer = styled.div`
   flex: 5;
-  min-width: 230px;
+  min-width: 200px;
 `;
 // ===================================
 
-const DescriptionEditor = ({
+const TitleEditor = ({
   allLanguages,
   languageHelperText,
   languageItemReferringTo,
   required = false,
 }) => {
   const {
-    docAttributes: { description, descriptionLanguage },
+    docAttributes: { title, titleLanguage },
     updateAttribute,
   } = useContext(DocumentFormContext);
 
-  const memoizedValues = [allLanguages, description, descriptionLanguage];
+  const memoizedValues = [allLanguages, title, titleLanguage];
   return useMemo(
     () => (
       <InlineWrapper>
-        <DescriptionContainer>
+        <TitleContainer>
           <StringInput
-            helperText={
-              'Try to go straight to the point, mention keywords and be precise. Don\'t start with "this document is about...".'
-            }
-            multiline
-            onValueChange={(value) => updateAttribute('description', value)}
+            helperText="Main title of the document. Don't enter the issue number here if you are submitting a magazine for example: it will be asked later in the form."
+            onValueChange={(value) => updateAttribute('title', value)}
+            value={title}
+            valueName="Title"
             required={required}
-            value={description}
-            valueName="Description"
           />
-        </DescriptionContainer>
+        </TitleContainer>
         <LanguageSelectContainer>
           <LanguageSelect
             allLanguages={allLanguages}
-            contextValueNameToUpdate="descriptionLanguage"
+            contextValueNameToUpdate="titleLanguage"
             helperText={languageHelperText}
             itemReferringTo={languageItemReferringTo}
             required={required}
@@ -67,7 +64,7 @@ const DescriptionEditor = ({
   );
 };
 
-DescriptionEditor.propTypes = {
+TitleEditor.propTypes = {
   allLanguages: PropTypes.arrayOf(
     PropTypes.shape({
       id: PropTypes.string.isRequired,
@@ -79,4 +76,4 @@ DescriptionEditor.propTypes = {
   required: PropTypes.bool,
 };
 
-export default DescriptionEditor;
+export default TitleEditor;

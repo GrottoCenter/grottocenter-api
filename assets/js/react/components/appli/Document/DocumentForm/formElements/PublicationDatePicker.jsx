@@ -7,7 +7,7 @@ import {
   KeyboardDatePicker,
   MuiPickersUtilsProvider,
 } from '@material-ui/pickers';
-import Translate from '../../../Translate';
+import Translate from '../../../../common/Translate';
 
 import { DocumentFormContext } from '../Provider';
 

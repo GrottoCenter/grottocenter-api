@@ -6,7 +6,7 @@ import {
   FormHelperText,
   InputLabel,
 } from '@material-ui/core';
-import Translate from '../../../Translate';
+import Translate from '../Translate';
 
 const StringInput = ({
   fullWidth = true,

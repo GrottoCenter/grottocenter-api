@@ -8,7 +8,7 @@ import {
   InputLabel,
 } from '@material-ui/core';
 
-import Translate from '../../../Translate';
+import Translate from '../Translate';
 
 // ===================================
 const StyledInput = styled(FilledInput)`
@@ -24,7 +24,7 @@ const StyledFormControl = styled(FormControl)`
 `;
 // ===================================
 
-const DocumentFormAutoComplete = ({
+const FormAutoComplete = ({
   autoCompleteSearch,
   getValueName,
   hasError,
@@ -71,7 +71,7 @@ const DocumentFormAutoComplete = ({
   );
 };
 
-DocumentFormAutoComplete.propTypes = {
+FormAutoComplete.propTypes = {
   autoCompleteSearch: PropTypes.node,
   getValueName: PropTypes.func.isRequired,
   hasError: PropTypes.bool.isRequired,
@@ -82,4 +82,4 @@ DocumentFormAutoComplete.propTypes = {
   value: PropTypes.shape({}),
 };
 
-export default DocumentFormAutoComplete;
+export default FormAutoComplete;

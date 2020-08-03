@@ -13,7 +13,7 @@ import {
 } from '@material-ui/core';
 import NavigateNextIcon from '@material-ui/icons/NavigateNext';
 import NavigateBeforeIcon from '@material-ui/icons/NavigateBefore';
-import Translate from '../../Translate';
+import Translate from '../../../common/Translate';
 
 import Step1 from './formSteps/Step1';
 import Step2 from './formSteps/Step2';

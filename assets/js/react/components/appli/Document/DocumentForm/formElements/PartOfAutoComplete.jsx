@@ -11,8 +11,8 @@ import {
 } from '@material-ui/core';
 import { pathOr } from 'ramda';
 
-import AutoCompleteSearch from '../../../AutoCompleteSearch';
-import Translate from '../../../Translate';
+import AutoCompleteSearch from '../../../../common/AutoCompleteSearch';
+import Translate from '../../../../common/Translate';
 
 import { DocumentFormContext } from '../Provider';
 import { isCollection } from '../DocumentTypesHelper';

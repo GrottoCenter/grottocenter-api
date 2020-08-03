@@ -9,8 +9,8 @@ import {
   InputLabel,
 } from '@material-ui/core';
 
-import AutoCompleteSearch from '../../../AutoCompleteSearch';
-import Translate from '../../../Translate';
+import AutoCompleteSearch from '../../../../common/AutoCompleteSearch';
+import Translate from '../../../../common/Translate';
 
 import { DocumentFormContext } from '../Provider';
 

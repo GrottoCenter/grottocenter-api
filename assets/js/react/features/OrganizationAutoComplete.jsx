@@ -12,7 +12,7 @@ import { useDebounce } from '../hooks';
 
 import { entityOptionForSelector } from '../helpers/Entity';
 import AutoCompleteSearch from '../components/common/AutoCompleteSearch';
-import DocumentFormAutoComplete from '../components/common/Document/DocumentForm/formElements/DocumentFormAutoComplete';
+import FormAutoComplete from '../components/common/Form/FormAutoComplete';
 
 // ===================================
 
@@ -97,7 +97,7 @@ const OrganizationAutoComplete = ({
   value,
 }) => {
   return (
-    <DocumentFormAutoComplete
+    <FormAutoComplete
       autoCompleteSearch={
         <SearchBar
           isValueForced={isValueForced}

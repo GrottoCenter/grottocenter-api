@@ -7,7 +7,7 @@ import {
   MenuItem,
   Select,
 } from '@material-ui/core';
-import Translate from '../../../Translate';
+import Translate from '../../../../common/Translate';
 
 import { DocumentFormContext } from '../Provider';
 

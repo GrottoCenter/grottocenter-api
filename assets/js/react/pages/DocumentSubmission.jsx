@@ -7,11 +7,11 @@ import styled from 'styled-components';
 
 import isAuth from '../helpers/AuthHelper';
 import { postDocument } from '../actions/Document';
-import DocumentForm from '../components/common/Document/DocumentForm';
+import DocumentForm from '../components/appli/Document/DocumentForm';
 import DocumentFormProvider, {
   defaultContext,
   DocumentFormContext,
-} from '../components/common/Document/DocumentForm/Provider';
+} from '../components/appli/Document/DocumentForm/Provider';
 import Layout from '../components/common/Layouts/Fixed/FixedContent';
 import Translate from '../components/common/Translate';
 
@@ -26,7 +26,7 @@ import {
   allPartOf,
   allRegions,
   allSubjects,
-} from '../components/common/Document/DocumentForm/stories/documentFormFakeData';
+} from '../components/appli/Document/DocumentForm/stories/documentFormFakeData';
 
 // ====================
 // TODO : get this component from LoginForm. Refactor it later.

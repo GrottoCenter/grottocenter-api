@@ -8,7 +8,6 @@ import { DocumentFormContext } from '../Provider';
 import DescriptionEditor from '../formElements/DescriptionEditor';
 import DocumentTypeSelect from '../formElements/DocumentTypeSelect';
 import LanguageSelect from '../formElements/LanguageSelect';
-import MultipleSelect from '../formElements/MultipleSelect';
 import PublicationDatePicker from '../formElements/PublicationDatePicker';
 import TitleEditor from '../formElements/TitleEditor';
 

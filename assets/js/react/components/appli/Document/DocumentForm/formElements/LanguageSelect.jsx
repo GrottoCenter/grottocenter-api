@@ -8,7 +8,7 @@ import {
   Select,
 } from '@material-ui/core';
 import LanguageIcon from '@material-ui/icons/Translate';
-import Translate from '../../../Translate';
+import Translate from '../../../../common/Translate';
 
 import { DocumentFormContext } from '../Provider';
 
