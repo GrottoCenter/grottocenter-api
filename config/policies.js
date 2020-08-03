@@ -43,20 +43,20 @@ module.exports.policies = {
     destroy: 'tokenAuth',
   },
 
-  EntryController: {
+  EntranceController: {
     '*': 'tokenAuth',
     find: 'apiKeyAuth',
     findAll: true,
     findRandom: true,
-    getPublicEntriesNumber: 'apiKeyAuth',
-    getEntriesNumber: true,
+    getPublicEntrancesNumber: 'apiKeyAuth',
+    getEntrancesNumber: true,
   },
 
-  'v1/EntryController': {
+  'v1/EntranceController': {
     '*': false,
     find: 'apiKeyAuth',
     findAll: ['apiKeyAuth', 'paginate'],
-    getPublicEntriesNumber: 'apiKeyAuth',
+    getPublicEntrancesNumber: 'apiKeyAuth',
   },
 
   SearchController: {
@@ -121,15 +121,15 @@ module.exports.policies = {
     '*': true,
   },
 
-  'v1/BbsController': {
-    '*': true,
-  },
-
   'v1/BbsGeoController': {
     '*': true,
   },
 
   'v1/BbsChapterController': {
+    '*': true,
+  },
+
+  'v1/DocumentController': {
     '*': true,
   },
 

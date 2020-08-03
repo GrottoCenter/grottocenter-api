@@ -52,7 +52,7 @@ module.exports = {
     if (req.param('limit')) {
       limit = req.param('limit');
     }
-    TGrotto.find({ select: ['id', 'name', 'pictureFileName', 'customMessage'] })
+    TGrotto.find({ select: ['id', 'pictureFileName', 'customMessage'] })
       .skip(skip)
       .limit(limit)
       .sort('id ASC')
@@ -66,6 +66,7 @@ module.exports = {
         isOfficialPartner: '1',
       })
       .sort('id ASC')
+      .populate('names')
       .exec((err, found) => {
         const params = {};
         params.controllerMethod = 'PartnerController.findForCarousel';

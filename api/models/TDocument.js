@@ -141,5 +141,40 @@ module.exports = {
       columnName: 'id_license',
       model: 'TLicense',
     },
+
+    pathOld: {
+      type: 'string',
+      columnName: 'path_old',
+      maxLength: 1000,
+    },
+
+    pagesBBSOld: {
+      type: 'string',
+      columnName: 'pages_bbs_old',
+      maxLength: 100,
+    },
+
+    commentsBBSOld: {
+      type: 'string',
+      columnName: 'comments_bbs_old',
+      maxLength: 500,
+    },
+
+    isBBS: {
+      type: 'boolean',
+      columnName: 'bbs',
+    },
+
+    publicationOtherBBSOld: {
+      type: 'string',
+      columnName: 'publication_other_bbs_old',
+      maxLength: 500,
+    },
+
+    publicationFasciculeBBSOld: {
+      type: 'string',
+      columnName: 'publication_fascicule_bbs_old',
+      maxLength: 300,
+    },
   },
 };
