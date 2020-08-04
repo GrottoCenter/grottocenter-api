@@ -1,7 +1,7 @@
 import React, { useContext, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
-import { pathOr } from 'ramda';
+import { includes, pathOr } from 'ramda';
 
 import Translate from '../../../../common/Translate';
 
@@ -37,39 +37,19 @@ const Step2 = ({
   allPartOf,
   allRegions,
   allSubjects,
-  onStepIsValidChange,
   stepId,
 }) => {
-  const [isValid, setIsValid] = React.useState(false);
-
   const {
-    docAttributes: { editor, documentType, authors, library, partOf, subjects },
+    docAttributes: { editor, documentType, library, partOf },
     updateAttribute,
+    validatedSteps,
   } = useContext(DocumentFormContext);
 
-  React.useEffect(() => {
-    // Common validation
-    let newIsValid = true;
-
-    // Specific validations
-    if (isCollection(documentType)) {
-      newIsValid = newIsValid && editor !== null;
-    } else if (isCollectionElement(documentType)) {
-      newIsValid = newIsValid && editor !== null && partOf !== null;
-    } else if (isText(documentType)) {
-      newIsValid = newIsValid && authors.length > 0 && subjects.length > 0;
-    } else if (isImage(documentType)) {
-      newIsValid = newIsValid && authors.length > 0;
-    }
-
-    // Lazy state change
-    if (newIsValid !== isValid) {
-      setIsValid(newIsValid);
-      onStepIsValidChange(stepId, newIsValid);
-    }
-  });
-
-  const memoizedValues = [documentType, isValid, partOf];
+  const memoizedValues = [
+    documentType,
+    includes(stepId, validatedSteps),
+    partOf,
+  ];
   return useMemo(
     () => (
       <>
@@ -238,8 +218,6 @@ Step2.propTypes = {
       subject: PropTypes.string.isRequired,
     }),
   ).isRequired,
-
-  onStepIsValidChange: PropTypes.func.isRequired,
   stepId: PropTypes.number.isRequired,
 };
 

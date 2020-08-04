@@ -146,7 +146,7 @@ export const allPartOf = [
     id: '10',
     name: 'Spelunca',
     documentType: {
-      id: '1',
+      id: 1,
       name: 'Collection',
     },
     editor: allEditors[5],
@@ -164,7 +164,7 @@ export const allPartOf = [
       id: '10',
       name: 'Spelunca',
       documentType: {
-        id: '1',
+        id: 1,
         name: 'Collection',
       },
       editor: allEditors[5],
@@ -172,7 +172,7 @@ export const allPartOf = [
     editor: allEditors[5],
     library: allLibraries[1],
     documentType: {
-      id: '2',
+      id: 2,
       name: 'Collection Element',
     },
   },
@@ -180,7 +180,7 @@ export const allPartOf = [
     id: '20',
     name: 'Spéléoscope',
     documentType: {
-      id: '1',
+      id: 1,
       name: 'Collection',
     },
     editor: allEditors[5],
@@ -198,12 +198,12 @@ export const allPartOf = [
       id: '20',
       name: 'Spéléoscope',
       documentType: {
-        id: '1',
+        id: 1,
         name: 'Collection',
       },
     },
     documentType: {
-      id: '2',
+      id: 2,
       name: 'Collection Element',
     },
   },
@@ -215,12 +215,12 @@ export const allPartOf = [
       id: '20',
       name: 'Spéléoscope',
       documentType: {
-        id: '1',
+        id: 1,
         name: 'Collection',
       },
     },
     documentType: {
-      id: '2',
+      id: 2,
       name: 'Collection Element',
     },
   },

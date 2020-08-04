@@ -2,9 +2,9 @@ import React, { useContext, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import { Fade } from '@material-ui/core';
+import { includes } from 'ramda';
 
 import { DocumentFormContext } from '../Provider';
-
 import DescriptionEditor from '../formElements/DescriptionEditor';
 import DocumentTypeSelect from '../formElements/DocumentTypeSelect';
 import LanguageSelect from '../formElements/LanguageSelect';
@@ -15,8 +15,7 @@ import {
   allDocumentTypes,
   isCollection,
   isCollectionElement,
-  isImage,
-  isText,
+  isUnknown,
 } from '../DocumentTypesHelper';
 
 // ===================================
@@ -38,49 +37,12 @@ const PublicationDateWrapper = styled.div`
   flex: 1;
   flex-basis: 350px;
 `;
-// ===================================
 
-const DocumentForm = ({ allLanguages, onStepIsValidChange, stepId }) => {
-  const [isValid, setIsValid] = React.useState(false);
-
+const DocumentForm = ({ allLanguages, stepId }) => {
   const {
-    docAttributes: {
-      description,
-      descriptionLanguage,
-      documentType,
-      publicationDate,
-      title,
-      titleLanguage,
-    },
+    docAttributes: { documentType },
+    validatedSteps,
   } = useContext(DocumentFormContext);
-
-  React.useEffect(() => {
-    // Common validation (title and description)
-    let newIsValid =
-      title !== '' &&
-      titleLanguage !== null &&
-      description !== '' &&
-      descriptionLanguage !== null;
-
-    // Specific validations
-    if (documentType === null) {
-      newIsValid = false;
-    } else if (isCollection(documentType)) {
-      // nothing to do
-    } else if (isCollectionElement(documentType)) {
-      newIsValid = newIsValid && publicationDate !== null;
-    } else if (isText(documentType)) {
-      newIsValid = true;
-    } else if (isImage(documentType)) {
-      newIsValid = true;
-    }
-
-    // Lazy state change
-    if (newIsValid !== isValid) {
-      setIsValid(newIsValid);
-      onStepIsValidChange(stepId, newIsValid);
-    }
-  });
 
   /**
    * Performance improvement to avoid useless re-rendering
@@ -88,7 +50,7 @@ const DocumentForm = ({ allLanguages, onStepIsValidChange, stepId }) => {
    * - it becomes valid
    * - the DocumentType changes
    */
-  const memoizedValues = [documentType, isValid];
+  const memoizedValues = [documentType, includes(stepId, validatedSteps)];
   return useMemo(
     () => (
       <>
@@ -110,9 +72,9 @@ const DocumentForm = ({ allLanguages, onStepIsValidChange, stepId }) => {
           </FlexItemWrapper>
         </FlexWrapper>
 
-        <Fade in={documentType !== null}>
+        <Fade in={!isUnknown(documentType)}>
           <div>
-            {documentType !== null && (
+            {!isUnknown(isUnknown) && (
               <>
                 <FlexWrapper>
                   <TitleEditorWrapper>
@@ -155,7 +117,6 @@ DocumentForm.propTypes = {
       name: PropTypes.string.isRequired,
     }),
   ).isRequired,
-  onStepIsValidChange: PropTypes.func.isRequired,
   stepId: PropTypes.number.isRequired,
 };
 

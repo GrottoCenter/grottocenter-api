@@ -2,10 +2,11 @@ import React from 'react';
 import { useHistory } from 'react-router-dom';
 import { Button, Fade, FormControl, Typography } from '@material-ui/core';
 import { useIntl } from 'react-intl';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
 import isAuth from '../helpers/AuthHelper';
+import { postDocument } from '../actions/Document';
 
 import DocumentForm from '../components/appli/Document/DocumentForm';
 import Layout from '../components/common/Layouts/Fixed/FixedContent';
@@ -46,9 +47,13 @@ const SpacedButton = styled(Button)`
 
 const DocumentSubmission = () => {
   const history = useHistory();
+  const dispatch = useDispatch();
   const documentState = useSelector((state) => state.document);
 
   const { formatMessage } = useIntl();
+  const submitForm = (formData) => {
+    dispatch(postDocument(formData));
+  };
 
   return (
     <Layout
@@ -68,6 +73,7 @@ const DocumentSubmission = () => {
               allRegions={allRegions}
               allSubjects={allSubjects}
               isLoading={documentState.isLoading}
+              onSubmit={submitForm}
             />
             {documentState.errorMessages.length > 0 && (
               <FormControl>

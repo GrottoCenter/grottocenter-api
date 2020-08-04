@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { includes } from 'ramda';
 import styled from 'styled-components';
 import {
   Button,
@@ -44,41 +45,39 @@ const ChangeStepWrapper = styled(FormControl)`
 const Stepper = ({
   currentFormStepId,
   formSteps,
+  completedSteps,
   handleStepBack,
   handleStepNext,
   isNextStepButtonDisabled,
-}) => {
-  const isStepCompleted = (stepId) => {
-    const step = formSteps.find((s) => s.id === stepId);
-    return step.isValid;
-  };
+}) => (
+  <>
+    <MuiStepper activeStep={currentFormStepId.id - 1} alternativeLabel>
+      {formSteps.map((step) => (
+        <Step
+          key={step.id}
+          active={step.id === currentFormStepId}
+          completed={includes(step.id, completedSteps)}
+        >
+          <StepLabel>
+            <Translate>{step.name}</Translate>
+          </StepLabel>
+        </Step>
+      ))}
+    </MuiStepper>
 
-  return (
-    <>
-      <MuiStepper activeStep={currentFormStepId.id - 1} alternativeLabel>
-        {formSteps.map((step) => (
-          <Step key={step.id} completed={isStepCompleted(step.id)}>
-            <StepLabel>
-              <Translate>{step.name}</Translate>
-            </StepLabel>
-          </Step>
-        ))}
-      </MuiStepper>
-
-      <ChangeStepWrapper>
-        <PreviousStepButton
-          disabled={currentFormStepId === 1}
-          onClick={handleStepBack}
-        />
-        <NextStepButton
-          disabled={isNextStepButtonDisabled}
-          onClick={handleStepNext}
-          style={{ float: 'right' }}
-        />
-      </ChangeStepWrapper>
-    </>
-  );
-};
+    <ChangeStepWrapper>
+      <PreviousStepButton
+        disabled={currentFormStepId === 1}
+        onClick={handleStepBack}
+      />
+      <NextStepButton
+        disabled={isNextStepButtonDisabled}
+        onClick={handleStepNext}
+        style={{ float: 'right' }}
+      />
+    </ChangeStepWrapper>
+  </>
+);
 
 Stepper.propTypes = {
   currentFormStepId: PropTypes.number.isRequired,
@@ -86,9 +85,9 @@ Stepper.propTypes = {
     PropTypes.shape({
       id: PropTypes.number.isRequired,
       name: PropTypes.string.isRequired,
-      isValid: PropTypes.bool.isRequired,
     }),
   ).isRequired,
+  completedSteps: PropTypes.arrayOf(PropTypes.number).isRequired,
   handleStepBack: PropTypes.func.isRequired,
   handleStepNext: PropTypes.func.isRequired,
   isNextStepButtonDisabled: PropTypes.bool.isRequired,

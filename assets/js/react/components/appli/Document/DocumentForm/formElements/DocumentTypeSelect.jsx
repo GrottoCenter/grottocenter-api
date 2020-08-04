@@ -9,6 +9,7 @@ import {
 } from '@material-ui/core';
 import Translate from '../../../../common/Translate';
 
+import { isUnknown } from '../DocumentTypesHelper';
 import { DocumentFormContext } from '../Provider';
 
 // ===================================
@@ -40,7 +41,7 @@ const DocumentTypeSelect = ({
         </InputLabel>
         <Select
           defaultValue={-1}
-          value={documentType === null ? -1 : documentType.id}
+          value={isUnknown(documentType) ? -1 : documentType.id}
           onChange={handleChange}
           inputProps={{
             id: `document-type`,
@@ -72,7 +73,7 @@ const DocumentTypeSelect = ({
 DocumentTypeSelect.propTypes = {
   allDocumentTypes: PropTypes.arrayOf(
     PropTypes.shape({
-      id: PropTypes.string.isRequired,
+      id: PropTypes.number.isRequired,
       name: PropTypes.string.isRequired,
     }),
   ).isRequired,

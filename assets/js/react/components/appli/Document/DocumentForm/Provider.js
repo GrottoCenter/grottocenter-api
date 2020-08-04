@@ -1,5 +1,14 @@
-import React, { useState, createContext } from 'react';
+import React, { useState, createContext, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
+import { pathOr, isNil, without, append, uniq, pipe, __ } from 'ramda';
+import { isStepValid } from './formSteps/DocumentStepsHelper';
+import { DocumentTypes } from './DocumentTypesHelper';
+
+const defaultFormSteps = [
+  { id: 1, name: 'General Information', isValid: false },
+  { id: 2, name: 'Linked Information', isValid: false },
+  { id: 3, name: 'Meta Information', isValid: false },
+];
 
 export const defaultContext = {
   docAttributes: {
@@ -7,7 +16,7 @@ export const defaultContext = {
     description: '',
     descriptionLanguage: null,
     documentMainLanguage: null,
-    documentType: null,
+    documentType: { id: DocumentTypes.UNKNOWN },
     editor: null,
     endPage: 0,
     identifier: '',
@@ -23,26 +32,48 @@ export const defaultContext = {
     subjects: [],
     title: '',
     titleLanguage: null,
-
-    formSteps: [
-      { id: 1, name: 'General Information', isValid: false },
-      { id: 2, name: 'Linked Information', isValid: false },
-      { id: 3, name: 'Meta Information', isValid: false },
-    ],
+    formSteps: defaultFormSteps,
   },
+  currentStep: 1,
+
   updateAttribute: (attributeName, newValue) => {}, // eslint-disable-line no-unused-vars
 };
 
 export const DocumentFormContext = createContext(defaultContext);
 
-const DocumentForm = ({ docAttributes, children }) => {
-  const [docFormState, setState] = useState(docAttributes);
-  const updateAttribute = (attributeName, newValue) => {
-    setState((prevState) => ({
-      ...prevState,
-      [attributeName]: newValue,
-    }));
-  };
+const Provider = ({ children }) => {
+  const [docFormState, setState] = useState(defaultContext.docAttributes);
+  const [validatedSteps, setValidatedSteps] = useState([]);
+  const [currentStep, setCurrentStep] = useState(
+    pathOr(null, [0, 'id'], defaultFormSteps),
+  );
+  const [isFormValid, setIsFormValid] = useState(false);
+
+  const updateAttribute = useCallback(
+    (attributeName, newValue) => {
+      setState((prevState) => ({
+        ...prevState,
+        [attributeName]: newValue,
+      }));
+    },
+    [setState],
+  );
+
+  useEffect(() => {
+    const invalidateSteps = without(__, validatedSteps);
+    const validateStep = pipe(append(__, validatedSteps), uniq);
+    if (!isNil(currentStep)) {
+      if (isStepValid(currentStep, docFormState, docFormState.documentType)) {
+        setValidatedSteps(validateStep(currentStep));
+      } else {
+        setValidatedSteps(invalidateSteps([currentStep]));
+      }
+    }
+  }, [docFormState, currentStep]);
+
+  useEffect(() => {
+    setIsFormValid(defaultFormSteps.length === validatedSteps.length);
+  }, [validatedSteps]);
 
   return (
     <DocumentFormContext.Provider
@@ -50,6 +81,10 @@ const DocumentForm = ({ docAttributes, children }) => {
         docAttributes: docFormState,
         action: {},
         updateAttribute,
+        currentStep,
+        validatedSteps,
+        updateCurrentStep: setCurrentStep,
+        isFormValid,
       }}
     >
       {children}
@@ -57,75 +92,8 @@ const DocumentForm = ({ docAttributes, children }) => {
   );
 };
 
-export const docAttributesType = PropTypes.shape({
-  authors: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      name: PropTypes.string.isRequired,
-      surname: PropTypes.string.isRequired,
-    }),
-  ).isRequired,
-  description: PropTypes.string.isRequired,
-  descriptionLanguage: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    name: PropTypes.string.isRequired,
-  }),
-  documentMainLanguage: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    name: PropTypes.string.isRequired,
-  }),
-  documentType: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    name: PropTypes.string.isRequired,
-  }),
-  editor: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    name: PropTypes.string.isRequired,
-  }),
-  endPage: PropTypes.number.isRequired,
-  identifier: PropTypes.string.isRequired,
-  identifierType: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    text: PropTypes.string.isRequired,
-  }),
-  issue: PropTypes.string.isRequired,
-  library: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    name: PropTypes.string.isRequired,
-  }),
-  massif: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    name: PropTypes.string.isRequired,
-  }),
-  pageComment: PropTypes.string.isRequired,
-  partOf: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    name: PropTypes.string.isRequired,
-  }),
-  publicationDate: PropTypes.instanceOf(Date),
-  regions: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      name: PropTypes.string.isRequired,
-    }),
-  ),
-  startPage: PropTypes.number.isRequired,
-  subjects: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      subject: PropTypes.string.isRequired,
-    }),
-  ),
-  title: PropTypes.string.isRequired,
-  titleLanguage: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    name: PropTypes.string.isRequired,
-  }),
-});
-
-DocumentForm.propTypes = {
-  docAttributes: docAttributesType.isRequired,
+Provider.propTypes = {
   children: PropTypes.node.isRequired,
 };
 
-export default DocumentForm;
+export default Provider;

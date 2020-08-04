@@ -2,6 +2,7 @@ import React, { useContext, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 
+import { includes } from 'ramda';
 import IdentifierEditor from '../formElements/IdentifierEditor';
 import PagesEditor from '../formElements/PagesEditor';
 import StringInput from '../../../../common/Form/StringInput';
@@ -21,25 +22,14 @@ const FlexItemWrapper = styled.div`
 `;
 // ===================================
 
-const Step3 = ({ allIdentifierTypes, onStepIsValidChange, stepId }) => {
-  const [isValid, setIsValid] = React.useState(false);
-
+const Step3 = ({ allIdentifierTypes, stepId }) => {
   const {
-    docAttributes: { documentType, identifier, identifierType, issue },
+    docAttributes: { documentType, issue },
     updateAttribute,
+    validatedSteps,
   } = useContext(DocumentFormContext);
 
-  React.useEffect(() => {
-    // Common validation
-    const newIsValid =
-      identifier === '' || (identifier !== '' && identifierType !== null);
-    if (newIsValid !== isValid) {
-      setIsValid(newIsValid);
-      onStepIsValidChange(stepId, newIsValid);
-    }
-  });
-
-  const memoizedValues = [documentType, isValid];
+  const memoizedValues = [documentType, includes(stepId, validatedSteps)];
   return useMemo(
     () => (
       <>
@@ -77,8 +67,6 @@ Step3.propTypes = {
       text: PropTypes.string.isRequired,
     }),
   ),
-
-  onStepIsValidChange: PropTypes.func.isRequired,
   stepId: PropTypes.number.isRequired,
 };
 

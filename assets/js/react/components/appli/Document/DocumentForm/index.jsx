@@ -1,7 +1,5 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { isMobileOnly } from 'react-device-detect';
-import { useDispatch } from 'react-redux';
-import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import {
   Button,
@@ -9,21 +7,18 @@ import {
   FormControl,
   LinearProgress as MuiLinearProgress,
 } from '@material-ui/core';
+import { includes } from 'ramda';
 import NavigateNextIcon from '@material-ui/icons/NavigateNext';
 import NavigateBeforeIcon from '@material-ui/icons/NavigateBefore';
 
-import DocumentFormProvider, {
-  defaultContext,
-  DocumentFormContext,
-} from './Provider';
+import DocumentFormProvider, { DocumentFormContext } from './Provider';
+import { DocumentFormTypes } from './types';
 
-import { postDocument } from '../../../../actions/Document';
 import Translate from '../../../common/Translate';
 import Stepper from '../../../common/Form/Stepper';
 
 import FormBody from './FormBody';
 
-// ===================================
 const NextStepButton = (props) => (
   <Button
     {...props}
@@ -65,10 +60,8 @@ const SubmitButton = styled(Button)`
 `;
 
 const LinearProgress = styled(MuiLinearProgress)`
-  visibility: ${({ isVisible }) => (isVisible ? 'visible' : 'hidden')};
+  visibility: ${({ $isLoading }) => ($isLoading ? 'visible' : 'hidden')};
 `;
-
-// ===================================
 
 const DocumentForm = ({
   allAuthors,
@@ -80,67 +73,54 @@ const DocumentForm = ({
   allRegions,
   allSubjects,
   isLoading,
+  onSubmit,
 }) => {
-  const { docAttributes } = useContext(DocumentFormContext);
-  const { formSteps } = docAttributes;
-  const dispatch = useDispatch();
+  const {
+    docAttributes,
+    isFormValid,
+    currentStep: currentFormStep,
+    validatedSteps,
+    updateCurrentStep,
+    docAttributes: { formSteps },
+  } = useContext(DocumentFormContext);
+  const [isNextStepDisabled, setIsNextStepDisabled] = React.useState(true);
 
-  const onSubmit = (event) => {
+  const handleSubmit = (event) => {
     event.preventDefault();
-    dispatch(postDocument(docAttributes));
+    onSubmit(docAttributes);
   };
 
-  const [currentFormStepId, setCurrentFormStepId] = React.useState(
-    formSteps[0].id,
-  );
-
-  const [
-    isNextStepButtonDisabled,
-    setIsNextStepButtonDisabled,
-  ] = React.useState(true);
-
-  const [isFormValid, setIsFormValid] = React.useState(false);
-
-  const updateIsNextStepButtonDisabled = () => {
-    const lastStep = currentFormStepId === formSteps.length;
-    const currentStep = formSteps.find((s) => s.id === currentFormStepId);
-    setIsNextStepButtonDisabled(lastStep || !currentStep.isValid);
-  };
-
-  const onStepIsValidChange = (stepId, isValid) => {
-    const stepToUpdate = formSteps.find((step) => step.id === stepId);
-    stepToUpdate.isValid = isValid;
-    setIsFormValid(formSteps.every((step) => step.isValid));
-    updateIsNextStepButtonDisabled();
-  };
-
-  React.useEffect(() => {
-    updateIsNextStepButtonDisabled();
-  }, [currentFormStepId]);
+  useEffect(() => {
+    setIsNextStepDisabled(
+      currentFormStep === formSteps.length ||
+        !includes(currentFormStep, validatedSteps),
+    );
+  }, [validatedSteps, currentFormStep, formSteps, setIsNextStepDisabled]);
 
   const handleStepNext = () => {
-    setCurrentFormStepId((prevFormStep) => prevFormStep + 1);
+    updateCurrentStep((prevFormStep) => prevFormStep + 1);
   };
 
   const handleStepBack = () => {
-    setCurrentFormStepId((prevFormStep) => prevFormStep - 1);
+    updateCurrentStep((prevFormStep) => prevFormStep - 1);
   };
 
   return (
-    <DocumentFormProvider docAttributes={defaultContext.docAttributes}>
-      <LinearProgress />
+    <>
+      <LinearProgress $isLoading={isLoading} />
       <div style={isLoading ? { opacity: '0.6' } : {}}>
         <Stepper
-          currentFormStepId={currentFormStepId}
+          currentFormStepId={currentFormStep}
+          completedSteps={validatedSteps}
           formSteps={formSteps}
-          isNextStepButtonDisabled={isNextStepButtonDisabled}
+          isNextStepButtonDisabled={isNextStepDisabled}
           handleStepBack={handleStepBack}
           handleStepNext={handleStepNext}
         />
 
         <StyledDivider />
 
-        <FormWrapper onSubmit={onSubmit}>
+        <FormWrapper onSubmit={handleSubmit}>
           <FormBody
             allAuthors={allAuthors}
             allIdentifierTypes={allIdentifierTypes}
@@ -151,25 +131,24 @@ const DocumentForm = ({
             allRegions={allRegions}
             allSubjects={allSubjects}
             formSteps={formSteps}
-            currentFormStepId={currentFormStepId}
-            onStepIsValidChange={onStepIsValidChange}
+            currentFormStepId={currentFormStep}
           />
 
           {isMobileOnly && (
             <ChangeStepWrapper>
               <PreviousStepButton
-                disabled={currentFormStepId === 1}
+                disabled={currentFormStep === 1}
                 onClick={handleStepBack}
               />
               <NextStepButton
-                disabled={isNextStepButtonDisabled}
+                disabled={isNextStepDisabled}
                 onClick={handleStepNext}
                 style={{ float: 'right' }}
               />
             </ChangeStepWrapper>
           )}
 
-          {currentFormStepId === formSteps.length && (
+          {currentFormStep === formSteps.length && (
             <FormControl>
               <SubmitButton
                 type="submit"
@@ -184,67 +163,23 @@ const DocumentForm = ({
           )}
         </FormWrapper>
       </div>
-    </DocumentFormProvider>
+    </>
+    // </DocumentFormProvider>
   );
 };
 
+const HydratedDocumentForm = (props) => (
+  <DocumentFormProvider>
+    <DocumentForm {...props} />
+  </DocumentFormProvider>
+);
+
 DocumentForm.propTypes = {
-  allAuthors: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      name: PropTypes.string.isRequired,
-      surname: PropTypes.string.isRequired,
-    }),
-  ).isRequired,
-  allIdentifierTypes: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      text: PropTypes.string.isRequired,
-    }),
-  ),
-  allLanguages: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      name: PropTypes.string.isRequired,
-    }),
-  ).isRequired,
-  allLibraries: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      name: PropTypes.string.isRequired,
-    }),
-  ),
-  allMassifs: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      name: PropTypes.string.isRequired,
-    }),
-  ),
-  allRegions: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      name: PropTypes.string.isRequired,
-    }),
-  ),
-  allSubjects: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      subject: PropTypes.string.isRequired,
-    }),
-  ),
-  allPartOf: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      name: PropTypes.string.isRequired,
-      issue: PropTypes.string,
-      documenType: PropTypes.shape({
-        id: PropTypes.string.isRequired,
-        name: PropTypes.string.isRequired,
-      }),
-      partOf: PropTypes.shape({}),
-    }),
-  ),
-  isLoading: PropTypes.bool.isRequired,
+  ...DocumentFormTypes,
 };
 
-export default DocumentForm;
+HydratedDocumentForm.propTypes = {
+  ...DocumentFormTypes,
+};
+
+export default HydratedDocumentForm;
