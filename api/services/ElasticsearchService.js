@@ -174,15 +174,17 @@ const self = (module.exports = {
       // Build match fields to search on, i.e. every parameters in the url which are not metaParams
       const matchingParams = [];
       const rangeParams = [];
+      const boolParams = [];
 
       // ==== Construct the params
       Object.keys(params).forEach((key) => {
         // Meta params ?
         if (!advancedSearchMetaParams.includes(key)) {
-          // min / max (range) param ? or field param ?
+          // min / max (range) param ? boolean param ? field param ?
           const isMinParam = key.split('-min').length > 1;
           const isMaxParam = key.split('-max').length > 1;
-          const isFieldParam = !isMinParam && !isMaxParam;
+          const isBoolParam = key.split('-bool').length > 1;
+          const isFieldParam = !isMinParam && !isMaxParam && !isBoolParam;
 
           // Value of a field
           if (isFieldParam && params[key] !== '') {
@@ -234,6 +236,14 @@ const self = (module.exports = {
               lte: params[key],
             };
             rangeParams.push(rangeObj);
+
+            // Bool param
+          } else if (isBoolParam) {
+            const boolObj = {
+              term: {},
+            };
+            boolObj.term[key.split('-bool')[0].toString()] = params[key];
+            boolParams.push(boolObj);
           }
         }
       });
@@ -258,7 +268,9 @@ const self = (module.exports = {
         },
       };
 
-      query.body.query.bool[queryVerb] = matchingParams.concat(rangeParams);
+      query.body.query.bool[queryVerb] = matchingParams
+        .concat(rangeParams)
+        .concat(boolParams);
 
       client
         .search(query)
