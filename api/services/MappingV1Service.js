@@ -15,6 +15,7 @@ const EntranceModel = {
   names: undefined,
   descriptions: [],
   country: undefined,
+  countryCode: undefined,
   county: undefined,
   region: undefined,
   city: undefined,
@@ -44,7 +45,6 @@ const MassifModel = {
   dateInscription: undefined,
   dateReviewed: undefined,
   caves: [],
-  entries: [],
   descriptions: [],
 };
 
@@ -52,6 +52,7 @@ const GrottoModel = {
   id: undefined,
   name: undefined,
   country: undefined,
+  countryCode: undefined,
   region: undefined,
   city: undefined,
   postalCode: undefined,
@@ -133,7 +134,10 @@ module.exports = {
       result.cave = source.cave;
     } else if (source['cave name']) {
       result.cave = {
+        depth: source['cave depth'],
+        length: source['cave length'],
         name: source['cave name'],
+        isDiving: source['cave is diving'],
       };
     }
 
@@ -149,6 +153,7 @@ module.exports = {
     result.id = source.id;
     result.descriptions = source.descriptions;
     result.country = source.Country || source.country;
+    result.countryCode = source['country code'];
     result.county = source.county;
     result.region = source.Region || source.region;
     result.city = source.City || source.city;
@@ -167,11 +172,11 @@ module.exports = {
   },
 
   convertToEntranceList: (source) => {
-    const entries = [];
+    const entrances = [];
     source.forEach((item) =>
-      entries.push(MappingV1Service.convertToEntranceModel(item)),
+      entrances.push(MappingV1Service.convertToEntranceModel(item)),
     );
-    return entries;
+    return entrances;
   },
 
   convertToCountResult: (source) => {
@@ -413,6 +418,7 @@ module.exports = {
     result.names = source.names;
     result.id = source.id;
     result.country = source.country;
+    result.countryCode = source['country code'];
     result.county = source.county;
     result.region = source.region;
     result.city = source.city;

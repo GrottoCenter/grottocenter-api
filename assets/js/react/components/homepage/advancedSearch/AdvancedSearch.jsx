@@ -1,35 +1,19 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
-import AppBar from '@material-ui/core/AppBar';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import styled from 'styled-components';
-import EntriesSearch from './EntriesSearch';
+
+import EntrancesSearch from './EntrancesSearch';
 import GroupsSearch from './GroupsSearch';
 import MassifsSearch from './MassifsSearch';
-import BbsSearch from './BbsSearch';
+import DocumentSearch from './DocumentSearch';
+
 import Translate from '../../common/Translate';
 
 import SearchResultsContainer from '../../../containers/SearchResultsContainer';
 
-const advancedSearchTypes = ['entries', 'grottos', 'massifs', 'bbs'];
-
-const styles = (theme) => ({
-  root: {
-    backgroundColor: theme.palette.primary.dark,
-    flexGrow: 1,
-    width: '100%',
-  },
-  tabName: {
-    fontSize: '1.4rem',
-    flexShrink: 0,
-  },
-  tabContainer: {
-    backgroundColor: theme.palette.primary3Color,
-    padding: '24px',
-  },
-});
+const advancedSearchTypes = ['entrances', 'grottos', 'massifs', 'documents'];
 
 const TabIcon = styled.img`
   height: 2rem;
@@ -41,9 +25,8 @@ const TabIcon = styled.img`
 const AdvancedSearch = ({
   resetAdvancedSearch,
   startAdvancedsearch,
-  subthemes,
-  getSubThemes,
-  themes,
+  getSubjects,
+  subjects,
 }) => {
   const [selectedType, setSelectedType] = React.useState(0);
 
@@ -66,7 +49,7 @@ const AdvancedSearch = ({
           label={
             <>
               <TabIcon src="/images/entry.svg" alt="Entry icon" />
-              <Translate>Entries</Translate>
+              <Translate>Entrances</Translate>
             </>
           }
         />
@@ -89,8 +72,8 @@ const AdvancedSearch = ({
         <Tab
           label={
             <>
-              <TabIcon src="/images/bibliography.svg" alt="BBS icon" />
-              <Translate>BBS</Translate>
+              <TabIcon src="/images/bibliography.svg" alt="Bibliography icon" />
+              <Translate>Documents</Translate>
             </>
           }
         />
@@ -98,7 +81,7 @@ const AdvancedSearch = ({
 
       <>
         {selectedType === 0 && (
-          <EntriesSearch
+          <EntrancesSearch
             startAdvancedsearch={(state, resourceType) => {
               startAdvancedsearch(state, resourceType);
             }}
@@ -125,15 +108,14 @@ const AdvancedSearch = ({
           />
         )}
         {selectedType === 3 && (
-          <BbsSearch
+          <DocumentSearch
             startAdvancedsearch={(state, resourceType) => {
               startAdvancedsearch(state, resourceType);
             }}
             resourceType={advancedSearchTypes[3]}
             resetResults={resetAdvancedSearch}
-            getSubThemes={getSubThemes}
-            subthemes={subthemes}
-            themes={themes}
+            getAllSubjects={getSubjects}
+            allSubjects={subjects}
           />
         )}
 
@@ -146,9 +128,8 @@ const AdvancedSearch = ({
 AdvancedSearch.propTypes = {
   resetAdvancedSearch: PropTypes.func.isRequired,
   startAdvancedsearch: PropTypes.func.isRequired,
-  getSubThemes: PropTypes.func.isRequired,
-  subthemes: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
-  themes: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
+  getSubjects: PropTypes.func.isRequired,
+  subjects: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
 };
 
 AdvancedSearch.defaultProps = {};

@@ -22,15 +22,11 @@ const DivingTypesForm = ({ onChange, value }) => {
       <FormLabel>
         <Translate>Diving cave</Translate>
       </FormLabel>
-      <ToggleButtonGroup
-        value={value}
-        exclusive
-        onChange={handleCavity}
-      >
-        <ToggleButton value="yes" aria-label="left aligned">
+      <ToggleButtonGroup value={value} exclusive onChange={handleCavity}>
+        <ToggleButton value="true" aria-label="left aligned">
           <Translate>yes</Translate>
         </ToggleButton>
-        <ToggleButton value="no" aria-label="centered">
+        <ToggleButton value="false" aria-label="centered">
           <Translate>no</Translate>
         </ToggleButton>
         <ToggleButton value="" aria-label="right aligned">
