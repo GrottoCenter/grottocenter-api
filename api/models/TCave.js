@@ -35,25 +35,25 @@ module.exports = {
 
     minDepth: {
       type: 'number',
-      columnName: 'Min_depth',
+      columnName: 'min_depth',
       allowNull: true,
     },
 
     maxDepth: {
       type: 'number',
-      columnName: 'Max_depth',
+      columnName: 'max_depth',
       allowNull: true,
     },
 
     depth: {
       type: 'number',
-      columnName: 'Depth',
+      columnName: 'depth',
       allowNull: true,
     },
 
     length: {
       type: 'number',
-      columnName: 'Length',
+      columnName: 'length',
       allowNull: true,
     },
 
@@ -85,22 +85,43 @@ module.exports = {
       columnType: 'datetime',
     },
 
+    // Sails' ORM, Waterline, doesn't support large number: that's why we use the type 'string' for the latitude
     latitude: {
-      type: 'number',
+      type: 'string',
+      allowNull: true,
       columnName: 'latitude',
       columnType: 'numeric(24,20)',
     },
 
+    // Sails' ORM, Waterline, doesn't support large number: that's why we use the type 'string' for the longitude
     longitude: {
-      type: 'number',
+      type: 'string',
+      allowNull: true,
       columnName: 'longitude',
       columnType: 'numeric(24,20)',
     },
 
     massif: {
       allowNull: false,
-      via: 'id_massif',
+      columnName: 'id_massif',
       model: 'TMassif',
+    },
+
+    exploringGrottos: {
+      collection: 'TGrotto',
+      via: 'cave',
+      through: 'JGrottoCaveExplorer',
+    },
+
+    partneringGrottos: {
+      collection: 'TGrotto',
+      via: 'cave',
+      through: 'JGrottoCavePartner',
+    },
+
+    entrances: {
+      collection: 'TEntrance',
+      via: 'cave',
     },
   },
 };

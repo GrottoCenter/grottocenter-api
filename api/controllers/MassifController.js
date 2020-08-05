@@ -12,18 +12,22 @@ module.exports = {
     })
       .populate('author')
       .populate('caves')
-      .populate('entries')
+      .populate('names')
+      .populate('descriptions')
       .exec((err, found) => {
         const params = {};
         params.searchedItem = `Massif of id ${req.params.id}`;
-        return ControllerService.treatAndConvert(
-          req,
-          err,
-          found,
-          params,
-          res,
-          converter,
-        );
+        NameService.setNames(found.caves, 'cave').then((cavesPopulated) => {
+          found.caves = cavesPopulated;
+          return ControllerService.treatAndConvert(
+            req,
+            err,
+            found,
+            params,
+            res,
+            converter,
+          );
+        });
       });
   },
 };

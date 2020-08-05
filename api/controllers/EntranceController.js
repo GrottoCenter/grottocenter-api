@@ -10,16 +10,15 @@ module.exports = {
     TEntrance.findOne({
       id: req.params.id,
       // TODO : to adapt when authentication will be implemented
-      isPublic: 'YES',
-      // TODO before this : see how to materialize fact that
-      // id of entry corresponds to id of linked single entry if exists
-      // }).populate('author').populate('cave').populate('singleEntry').exec(function(err, found) {
+      isPublic: true,
     })
       .populate('author')
       .populate('cave')
+      .populate('names')
+      .populate('descriptions')
       .exec((err, found) => {
         const params = {};
-        params.searchedItem = `Entry of id ${req.params.id}`;
+        params.searchedItem = `Entrance of id ${req.params.id}`;
         return ControllerService.treatAndConvert(
           req,
           err,
@@ -61,8 +60,8 @@ module.exports = {
     parameters.isPublic = 'YES';
 
     // TODO before this : see how to materialize fact that
-    // id of entry corresponds to id of linked single entry if exists
-    // TEntrance.find(parameters).populate('author').populate('cave').populate('singleEntry').sort('id ASC').limit(10).exec(function(err, found) {
+    // id of entrance corresponds to id of linked single entrance if exists
+    // TEntrance.find(parameters).populate('author').populate('cave').populate('singleentry').sort('id ASC').limit(10).exec(function(err, found) {
     TEntrance.count(parameters).exec((error, total) => {
       TEntrance.find(parameters)
         .populate('author')
