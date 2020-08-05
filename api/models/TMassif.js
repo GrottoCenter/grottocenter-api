@@ -43,10 +43,26 @@ module.exports = {
       columnName: 'date_reviewed',
     },
 
+    names: {
+      collection: 'TName',
+      via: 'massif',
+    },
+
+    descriptions: {
+      collection: 'TDescription',
+      via: 'massif',
+    },
+
     geometryKml: {
       type: 'string',
-      maxLength: 2000,
+      allowNull: true,
       columnName: 'geometry_kml',
+      maxLength: 2000,
+    },
+
+    caves: {
+      collection: 'TCave',
+      via: 'massif',
     },
   },
 };

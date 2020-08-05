@@ -69,12 +69,14 @@ module.exports = {
 
     name: {
       type: 'string',
+      allowNull: true,
       maxLength: 36,
       columnName: 'name',
     },
 
     surname: {
       type: 'string',
+      allowNull: true,
       columnName: 'surname',
       maxLength: 32,
     },
@@ -136,13 +138,13 @@ module.exports = {
 
     detailLevel: {
       type: 'number',
-      allowNull: false,
-      defaultsTo: 30,
+      allowNull: true,
       columnName: 'detail_level',
     },
 
     defaultZoom: {
       type: 'number',
+      allowNull: true,
       columnName: 'default_zoom',
     },
 
@@ -150,6 +152,12 @@ module.exports = {
       allowNull: false,
       columnName: 'id_language',
       model: 'TLanguage',
+    },
+
+    grottos: {
+      collection: 'TGrotto',
+      via: 'caver',
+      through: 'JGrottoCaver',
     },
   },
 

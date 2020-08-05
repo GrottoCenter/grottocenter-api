@@ -31,48 +31,56 @@ module.exports = {
 
     village: {
       type: 'string',
+      allowNull: true,
       maxLength: 100,
       columnName: 'village',
     },
 
     county: {
       type: 'string',
+      allowNull: true,
       maxLength: 100,
       columnName: 'county',
     },
 
     region: {
       type: 'string',
+      allowNull: true,
       maxLength: 100,
       columnName: 'region',
     },
 
     city: {
       type: 'string',
+      allowNull: true,
       maxLength: 100,
       columnName: 'city',
     },
 
     postalCode: {
       type: 'string',
+      allowNull: true,
       columnName: 'postal_code',
       maxLength: 5,
     },
 
     address: {
       type: 'string',
+      allowNull: true,
       columnName: 'address',
       maxLength: 200,
     },
 
     mail: {
       type: 'string',
+      allowNull: true,
       columnName: 'mail',
       maxLength: 50,
     },
 
     yearBirth: {
       type: 'number',
+      allowNull: true,
       columnName: 'year_birth',
     },
 
@@ -101,14 +109,18 @@ module.exports = {
       columnName: 'Country',
     },
 
+    // Sails' ORM, Waterline, doesn't support large number: that's why we use the type 'string' for the latitude
     latitude: {
-      type: 'number',
+      type: 'string',
+      allowNull: true,
       columnName: 'latitude',
       columnType: 'numeric(24,20)',
     },
 
+    // Sails' ORM, Waterline, doesn't support large number: that's why we use the type 'string' for the longitude
     longitude: {
-      type: 'number',
+      type: 'string',
+      allowNull: true,
       columnName: 'longitude',
       columnType: 'numeric(24,20)',
     },
@@ -127,6 +139,7 @@ module.exports = {
 
     url: {
       type: 'string',
+      allowNull: true,
       columnName: 'url',
       maxLength: 200,
     },
@@ -138,8 +151,27 @@ module.exports = {
 
     pictureFileName: {
       type: 'string',
+      allowNull: true,
       columnName: 'picture_file_name',
       maxLength: 100,
+    },
+
+    cavers: {
+      collection: 'TCaver',
+      via: 'grotto',
+      through: 'JGrottoCaver',
+    },
+
+    exploredCaves: {
+      collection: 'TCave',
+      via: 'grotto',
+      through: 'JGrottoCaveExplorer',
+    },
+
+    partneredCaves: {
+      collection: 'TCave',
+      via: 'grotto',
+      through: 'JGrottoCavePartner',
     },
   },
 };
