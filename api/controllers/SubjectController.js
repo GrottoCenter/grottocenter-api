@@ -1,5 +1,5 @@
 /**
- * BbsChapterController
+ * SubjectController
  *
  * @description :: Server-side actions for handling incoming requests.
  * @help        :: See https://sailsjs.com/docs/concepts/actions
@@ -7,12 +7,12 @@
 
 module.exports = {
   find: (req, res, next, converter) => {
-    TBbsChapter.findOne({
-      id: req.params.id,
+    TSubject.findOne({
+      code: req.params.code,
     }).exec((err, found) => {
       const params = {};
-      params.controllerMethod = 'BbsChapterController.find';
-      params.searchedItem = `BbsChapter of id ${req.params.id}`;
+      params.controllerMethod = 'TSubjectController.find';
+      params.searchedItem = `Subject of code ${req.params.code}`;
       return ControllerService.treatAndConvert(
         req,
         err,
@@ -25,10 +25,10 @@ module.exports = {
   },
 
   findAll: (req, res, next, converter) => {
-    TBbsChapter.find({}).exec((err, found) => {
+    TSubject.find().exec((err, found) => {
       const params = {
-        controllerMethod: 'BbsChapterController.findAll',
-        searchedItem: 'All BbsChapters',
+        controllerMethod: 'TSubjectController.findAll',
+        searchedItem: 'All Subjects',
       };
       return ControllerService.treatAndConvert(
         req,
