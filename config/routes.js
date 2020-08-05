@@ -194,7 +194,7 @@ module.exports.routes = {
   },
 
   'GET /api/v1/entries/:id': {
-    controller: 'v1/Entry',
+    controller: 'v1/Entrance',
     action: 'find',
     cors: {
       allowOrigins: '*',

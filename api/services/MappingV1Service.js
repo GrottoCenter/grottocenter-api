@@ -7,9 +7,11 @@
 
 /* Models */
 
-const EntryModel = {
+const EntranceModel = {
   id: undefined,
   name: undefined,
+  names: undefined,
+  descriptions: [],
   country: undefined,
   county: undefined,
   region: undefined,
@@ -38,6 +40,7 @@ const MassifModel = {
   dateReviewed: undefined,
   caves: [],
   entries: [],
+  descriptions: [],
 };
 
 const GrottoModel = {
@@ -61,7 +64,8 @@ const GrottoModel = {
   URL: undefined,
   Facebook: undefined,
   cavers: [],
-  entries: [],
+  exploredCaves: [],
+  partneredCaves: [],
 };
 
 const CaverModel = {
@@ -72,6 +76,8 @@ const CaverModel = {
 const CaveModel = {
   id: undefined,
   name: undefined,
+  names: undefined,
+  descriptions: [],
   minDepth: undefined,
   maxDepth: undefined,
   depth: undefined,
@@ -106,11 +112,17 @@ const BbsChapterModel = {
 /* Mappers */
 
 module.exports = {
-  convertToEntryModel: (source) => {
-    const result = { ...EntryModel };
+  convertToEntranceModel: (source) => {
+    const result = { ...EntranceModel };
+
+    let mainName = source.names.find((name) => name.isMain);
+    mainName = mainName === undefined ? '' : mainName.name;
+
+    result.name = mainName;
+    result.names = source.names;
 
     result.id = source.id;
-    result.name = source.name;
+    result.descriptions = source.descriptions;
     result.country = source.Country || source.country;
     result.county = source.county;
     result.region = source.Region || source.region;
@@ -136,7 +148,7 @@ module.exports = {
   convertToEntryList: (source) => {
     const entries = [];
     source.forEach((item) =>
-      entries.push(MappingV1Service.convertToEntryModel(item)),
+      entries.push(MappingV1Service.convertToEntranceModel(item)),
     );
     return entries;
   },
@@ -152,7 +164,7 @@ module.exports = {
     const results = {};
     const entries = [];
     source.forEach((item) =>
-      entries.push(MappingV1Service.convertToEntryModel(item)),
+      entries.push(MappingV1Service.convertToEntranceModel(item)),
     );
     results.entries = entries;
     return results;
@@ -168,7 +180,12 @@ module.exports = {
   convertToCaveModel: (source) => {
     const result = { ...CaveModel };
     result.id = source.id;
-    result.name = source.name;
+
+    let mainName = source.names.find((name) => name.isMain);
+    mainName = mainName === undefined ? '' : mainName.name;
+
+    result.name = mainName;
+    result.names = source.names;
     result.minDepth = source.minDepth;
     result.maxDepth = source.maxDepth;
     result.depth = source.depth;
@@ -203,7 +220,7 @@ module.exports = {
       // Convert the data according to its type
       switch (item['_source'].type) {
         case 'entry':
-          data = MappingV1Service.convertToEntryModel(item['_source']);
+          data = MappingV1Service.convertToEntranceModel(item['_source']);
           break;
         case 'massif':
           data = MappingV1Service.convertToMassifModel(item['_source']);
@@ -320,10 +337,9 @@ module.exports = {
       result.author = MappingV1Service.convertToCaverModel(source.author);
     }
 
+    // Caves
     if (source.caves) {
-      result.caves = source.caves.map((cave) =>
-        MappingV1Service.convertToCaveModel(cave),
-      );
+      result.caves = MappingV1Service.convertToCaveList(source.caves);
     } else if (source['caves names']) {
       // In Elasticsearch
       result.caves = source['caves names']
@@ -331,21 +347,15 @@ module.exports = {
         .map((name) => MappingV1Service.convertToCaveModel({ name }));
     }
 
-    if (source.entries) {
-      result.entries = source.entries.map((entries) =>
-        MappingV1Service.convertToEntryModel(entries),
-      );
-    } else if (source['entries names']) {
-      // In Elasticsearch
-      result.entries = source['entries names']
-        .split(',')
-        .map((name) => MappingV1Service.convertToEntryModel({ name }));
-    }
-
     // Save in result the object to return
+    let mainName = source.names.find((name) => name.isMain);
+    mainName = mainName === undefined ? '' : mainName.name;
+
     result.id = source.id;
+    result.descriptions = source.descriptions;
     result.idReviewer = source.idReviewer;
-    result.name = source.name;
+    result.name = mainName;
+    result.names = source.names;
     result.dateInscription = source.dateInscription;
     result.dateReviewed = source.dateReviewed;
 
@@ -357,6 +367,7 @@ module.exports = {
   convertToGrottoModel: (source) => {
     const result = { ...GrottoModel };
 
+    // Convert cavers
     if (source.cavers && source.cavers instanceof Array) {
       result.cavers = source.cavers.map((caver) =>
         MappingV1Service.convertToCaverModel(caver),
@@ -368,15 +379,25 @@ module.exports = {
         .map((nickname) => MappingV1Service.convertToCaverModel({ nickname }));
     }
 
-    if (source.entries) {
-      result.entries = source.entries.map((entry) =>
-        MappingV1Service.convertToEntryModel(entry),
+    // Convert caves
+    if (source.exploredCaves && source.exploredCaves instanceof Array) {
+      result.exploredCaves = MappingV1Service.convertToCaveList(
+        source.exploredCaves,
+      );
+    }
+    if (source.partneredCaves && source.partneredCaves instanceof Array) {
+      result.partneredCaves = MappingV1Service.convertToCaveList(
+        source.partneredCaves,
       );
     }
 
     // Build the result
+    let mainName = source.names.find((name) => name.isMain);
+    mainName = mainName === undefined ? '' : mainName.name;
+
+    result.name = mainName;
+    result.names = source.names;
     result.id = source.id;
-    result.name = source.name;
     result.country = source.country;
     result.county = source.county;
     result.region = source.region;
