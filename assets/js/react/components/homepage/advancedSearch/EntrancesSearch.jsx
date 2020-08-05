@@ -20,13 +20,13 @@ import SearchBottomActionButtons from './SearchBottomActionButtons';
 import SliderForm from './SliderForm';
 import DivingTypesForm from './DivingTypesForm';
 
-class EntriesSearch extends React.Component {
+class EntrancesSearch extends React.Component {
   // TODO: Handle the max of depth and length dynamically
 
   /*
-    The state is created with particular key names because, these names are directly linked to
-    the names of these properties in Elasticsearch. Here we have a syntax that
-    allow us to distinguish search range parameters from others parameters.
+    The state is created with particular key names because, 
+    these names are directly linked to
+    the names of these properties in Elasticsearch.
    */
   constructor(props) {
     super(props);
@@ -66,7 +66,7 @@ class EntriesSearch extends React.Component {
         min: caveDepthMinValue,
         max: caveDepthMaxValue,
       },
-      'cave is diving': '',
+      'cave is diving-bool': '',
       'cave length-range': {
         isEditable: false,
         min: caveLengthMinValue,
@@ -101,7 +101,7 @@ class EntriesSearch extends React.Component {
   handleCheckedChange = (keyName) => (event) => {
     const newState = {
       [keyName]: {
-        ...this.state[keyName],
+        ...this.state[keyName], // eslint-disable-line react/destructuring-assignment
         isEditable: event.target.checked,
       },
     };
@@ -121,9 +121,10 @@ class EntriesSearch extends React.Component {
   };
 
   /**
-   * This function set the state of the keyname property
+   * Set the state of the keyname property
    * to be the same value of the range.
-   * If the values given are > (or <) to the minValueAuthorized (or maxValueAuthorized),
+   * If the values given are > to the minValueAuthorized
+   * (same for < to maxValueAuthorized),
    * it set it to the min/maxValueAuthorized.
    */
   handleRangeChange = (
@@ -134,7 +135,7 @@ class EntriesSearch extends React.Component {
   ) => {
     const newState = {
       [keyName]: {
-        ...this.state[keyName],
+        ...this.state[keyName], // eslint-disable-line react/destructuring-assignment
         min: values[0] < minValueAuthorized ? minValueAuthorized : values[0],
         max: values[1] > maxValueAuthorized ? maxValueAuthorized : values[1],
       },
@@ -176,7 +177,7 @@ class EntriesSearch extends React.Component {
       'aestheticism-range': aestheticismRange,
       'approach-range': approachRange,
       'cave depth-range': caveDepthRange,
-      'cave is diving': caveIsDiving,
+      'cave is diving-bool': caveIsDiving,
       'cave length-range': caveLengthRange,
       'cave name': caveName,
       'caving-range': cavingRange,
@@ -204,7 +205,7 @@ class EntriesSearch extends React.Component {
             className={classes.formContainer}
           >
             <Typography variant="h6">
-              <Translate>Entry properties</Translate>
+              <Translate>Entrance properties</Translate>
             </Typography>
             <div
               className={classes.formPartContainer}
@@ -213,7 +214,7 @@ class EntriesSearch extends React.Component {
               <TextField
                 className={classes.formElement}
                 label={intl.formatMessage({
-                  id: 'Entry name',
+                  id: 'Entrance name',
                 })}
                 onChange={(event) => this.handleValueChange('name', event)}
                 value={name}
@@ -356,7 +357,7 @@ class EntriesSearch extends React.Component {
 
                 <DivingTypesForm
                   onChange={(event) =>
-                    this.handleValueChange('cave is diving', event)
+                    this.handleValueChange('cave is diving-bool', event)
                   }
                   value={caveIsDiving}
                 />
@@ -443,8 +444,8 @@ class EntriesSearch extends React.Component {
   }
 }
 
-EntriesSearch.propTypes = {
-  classes: PropTypes.shape({}).isRequired,
+EntrancesSearch.propTypes = {
+  classes: PropTypes.shape(PropTypes.any).isRequired,
   startAdvancedsearch: PropTypes.func.isRequired,
   resetResults: PropTypes.func.isRequired,
   resourceType: PropTypes.string.isRequired,
@@ -465,7 +466,7 @@ EntriesSearch.propTypes = {
   intl: PropTypes.shape(intlShape).isRequired,
 };
 
-EntriesSearch.defaultProps = {
+EntrancesSearch.defaultProps = {
   aestheticismMinValue: 0,
   aestheticismMaxValue: 10,
   approachMinValue: 0,
@@ -479,4 +480,4 @@ EntriesSearch.defaultProps = {
   caveLengthMaxValue: 700000,
 };
 
-export default injectIntl(withStyles(styles)(EntriesSearch));
+export default injectIntl(withStyles(styles)(EntrancesSearch));
