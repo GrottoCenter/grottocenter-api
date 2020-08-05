@@ -13,15 +13,15 @@ module.exports = {
    **/
   search: (req, res) => {
     // Store every params in the url and check if the query parameter exists
-    const paramsURl = req.query;
-    if (!paramsURl.query) {
+    const paramsURL = req.query;
+    if (!paramsURL.query) {
       return res.badRequest();
     }
 
     // By default, the query asked will send every information.
     // We can limit these information just by adding a "complete" parameter to false in the query.
     let complete = true;
-    if (paramsURl.complete === 'false' || paramsURl.complete === false) {
+    if (paramsURL.complete === 'false' || paramsURL.complete === false) {
       complete = false;
     }
 
@@ -30,7 +30,7 @@ module.exports = {
     };
 
     // Use the Elasticsearch Service to do the search according to the parameters of the URL
-    return ElasticSearch.searchQuery(paramsURl)
+    return ElasticSearch.searchQuery(paramsURL)
       .then((results) => {
         if (complete) {
           return ControllerService.treatAndConvert(

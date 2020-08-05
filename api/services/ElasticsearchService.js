@@ -3,7 +3,7 @@
 
 const client = require('../../config/elasticsearch').elasticsearchCli;
 
-const resourcesToUpdate = ['grottos', 'massifs', 'entries', 'bbs'];
+const resourcesToUpdate = ['grottos', 'massifs', 'entrances', 'documents'];
 const advancedSearchMetaParams = [
   'resourceType',
   'complete',
@@ -107,13 +107,15 @@ const self = (module.exports = {
                 fields: [
                   // General useful fields
                   'name^5',
+                  'names^1.5',
+                  'description^0.5',
+                  'descriptions^0.5',
                   'city^2',
                   'country',
                   'county',
                   'region',
 
-                  // ==== Entries
-                  'descriptions^0.5',
+                  // ==== Entrances
                   'caves',
                   'riggings',
                   'location^0.5',
@@ -121,24 +123,15 @@ const self = (module.exports = {
 
                   // ==== Grottos
                   'custom_message',
-                  'cavers names',
 
                   // ==== Massifs
-                  'entries names',
-                  'entries regions',
-                  'entries cities',
-                  'entry counties',
-                  'entries countries',
 
-                  // ==== BBS
-                  'bbs title^2.7',
-                  'bbs authors',
-                  'bbs abstract^0.5',
-                  'bbs ref',
-                  'bbs country',
-                  'bbs theme',
-                  'bbs subtheme',
-                  'bbs publication',
+                  // ==== Document
+                  'title^2.7',
+                  'authors',
+                  'ref_bbs',
+                  'subjects',
+                  'identifier^1.5',
                 ],
               },
             },

@@ -9,7 +9,7 @@ import Translate from '../components/common/Translate';
 //
 //
 
-export const isMappable = (entry) => entry.latitude && entry.longitude;
+export const isMappable = (entity) => entity.latitude && entity.longitude;
 
 const EntityIcon = styled.img`
   height: 30px;
@@ -58,25 +58,17 @@ export const entityOptionForSelector = (option) => {
 
   return (
     <>
-      {option.type === 'entry' ? (
-        <EntityIcon src="/images/entry.svg" alt="Entry icon" />
-      ) : (
-        ''
+      {option.type === 'entrance' && (
+        <EntityIcon src="/images/entry.svg" alt="Entrance icon" />
       )}
-      {option.type === 'grotto' ? (
+      {option.type === 'grotto' && (
         <EntityIcon src="/images/club.svg" alt="Group icon" />
-      ) : (
-        ''
       )}
-      {option.type === 'massif' ? (
+      {option.type === 'massif' && (
         <EntityIcon src="/images/massif.svg" alt="Massif icon" />
-      ) : (
-        ''
       )}
-      {option.type === 'bbs' ? (
-        <EntityIcon src="/images/bibliography.svg" alt="BBS article icon" />
-      ) : (
-        ''
+      {option.type === 'document' && (
+        <EntityIcon src="/images/bibliography.svg" alt="Document icon" />
       )}
 
       <EntityLabel>{option.name}</EntityLabel>

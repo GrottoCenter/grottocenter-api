@@ -348,23 +348,11 @@ module.exports.routes = {
     action: 'countBBS',
   },
 
-  'GET /api/v1/bbs-geos/:id': {
-    controller: 'v1/BbsGeo',
-    action: 'find',
-    api: {
-      entity: 'bbsGeo',
-      limit: 50,
-    },
-    cors: {
-      allowOrigins: '*',
-    },
-  },
-
   'GET /api/v1/bbs/subthemes/:id': {
-    controller: 'v1/BbsChapter',
+    controller: 'v1/Subject',
     action: 'find',
     api: {
-      entity: 'bbsChapter',
+      entity: 'subject',
       limit: 50,
     },
     cors: {
@@ -373,10 +361,10 @@ module.exports.routes = {
   },
 
   'GET /api/v1/bbs/subthemes': {
-    controller: 'v1/BbsChapter',
+    controller: 'v1/Subject',
     action: 'findAll',
     api: {
-      entity: 'bbsChapter',
+      entity: 'subject',
     },
     cors: {
       allowOrigins: '*',
