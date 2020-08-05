@@ -348,7 +348,7 @@ module.exports.routes = {
     action: 'countBBS',
   },
 
-  'GET /api/v1/bbs/subthemes/:id': {
+  'GET /api/v1/documents/subjects/:id': {
     controller: 'v1/Subject',
     action: 'find',
     api: {
@@ -360,7 +360,7 @@ module.exports.routes = {
     },
   },
 
-  'GET /api/v1/bbs/subthemes': {
+  'GET /api/v1/documents/subjects': {
     controller: 'v1/Subject',
     action: 'findAll',
     api: {

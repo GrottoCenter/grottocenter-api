@@ -28,7 +28,7 @@ const initialState = {
   searchCriterias: {
     from: 0,
     size: 10,
-    resourceType: '', // results type (one of: entries, groups, massifs)
+    resourceType: '', // results type (one of: entrances, groups, massifs or documents)
   },
 };
 
@@ -42,7 +42,8 @@ const advancedsearch = (state = initialState, action) => {
   switch (action.type) {
     // Search "from nothing"
     case FETCH_ADVANCEDSEARCH_STARTED: {
-      return Object.assign({}, state, {
+      return {
+        ...state,
         errors: undefined,
         isLoading: true,
         results: undefined,
@@ -50,7 +51,7 @@ const advancedsearch = (state = initialState, action) => {
           ...action.criterias,
         },
         wantToDownloadCSV: false, // Reset the need of downloading as CSV because it's a new search
-      });
+      };
     }
     case FETCH_ADVANCEDSEARCH_SUCCESS: {
       let mergedResults = [];
@@ -62,29 +63,28 @@ const advancedsearch = (state = initialState, action) => {
       // Remove duplicates
       mergedResults = [...new Set(mergedResults)];
 
-      return Object.assign({}, state, {
+      return {
+        ...state,
         totalNbResults: action.totalNbResults,
         results: mergedResults,
         isLoading: false,
-      });
+      };
     }
     case FETCH_ADVANCEDSEARCH_FAILURE: {
-      return Object.assign({}, state, {
-        error: action.error,
-        isLoading: false,
-      });
+      return { ...state, error: action.error, isLoading: false };
     }
 
     // Get next page of results
     case FETCH_NEXT_ADVANCEDSEARCH_STARTED: {
-      return Object.assign({}, state, {
+      return {
+        ...state,
         errors: undefined,
         isLoading: true,
         searchCriterias: {
           ...state.searchCriterias,
           ...action.criterias,
         },
-      });
+      };
     }
     case FETCH_NEXT_ADVANCEDSEARCH_SUCCESS: {
       let mergedResults = state.results ? state.results : [];
@@ -92,43 +92,40 @@ const advancedsearch = (state = initialState, action) => {
       // Remove duplicates
       mergedResults = [...new Set(mergedResults)];
 
-      return Object.assign({}, state, {
-        results: mergedResults,
-        isLoading: false,
-      });
+      return { ...state, results: mergedResults, isLoading: false };
     }
     case FETCH_NEXT_ADVANCEDSEARCH_FAILURE: {
-      return Object.assign({}, state, {
-        error: action.error,
-        isLoading: false,
-      });
+      return { ...state, error: action.error, isLoading: false };
     }
 
     // Get all results
     case FETCH_FULL_ADVANCEDSEARCH_STARTED: {
-      return Object.assign({}, state, {
+      return {
+        ...state,
         errors: undefined,
         isLoadingFullData: true,
         searchCriterias: {
           ...state.searchCriterias,
           ...action.criterias,
         },
-      });
+      };
     }
     case FETCH_FULL_ADVANCEDSEARCH_SUCCESS: {
       // Remove duplicates
-      return Object.assign({}, state, {
+      return {
+        ...state,
         fullResults: [...new Set(action.results)],
         isLoadingFullData: false,
         wantToDownloadCSV: true,
-      });
+      };
     }
     case FETCH_FULL_ADVANCEDSEARCH_FAILURE: {
-      return Object.assign({}, state, {
+      return {
+        ...state,
         error: action.error,
         isLoadingFullData: false,
         wantToDownloadCSV: false,
-      });
+      };
     }
 
     // Reset search

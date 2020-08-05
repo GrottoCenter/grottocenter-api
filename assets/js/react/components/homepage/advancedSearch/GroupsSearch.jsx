@@ -23,15 +23,11 @@ import styles from './styles';
 class GroupsSearch extends React.Component {
   // TODO: Handle the max of number of cavers dynamically
 
-  /*
-    The state is created with particular key names because, these names are directly linked to
-    the names of these properties in Elasticsearch. Here we have a syntax that
-    allow us to distinguish search range parameters from others parameters.
-   */
   constructor(props) {
     super(props);
     this.state = this.getInitialState();
     this.handleValueChange = this.handleValueChange.bind(this);
+    this.handleRangeChange = this.handleRangeChange.bind(this);
   }
 
   getInitialState = () => {
@@ -54,9 +50,9 @@ class GroupsSearch extends React.Component {
   };
 
   /**
-   * keyName: String
-   * event: Event
-   * This function changes the state of the keyName property
+   * @param {string} keyName
+   * @param {Event} event
+   * Change the state of the keyName property
    * with the value of the target event.
    */
   handleValueChange = (keyName, event) => {
@@ -66,9 +62,10 @@ class GroupsSearch extends React.Component {
   };
 
   /**
-   * This function set the state of the keyname property
+   * Set the state of the keyname property
    * to be the same value of the range.
-   * If the values given are > (or <) to the minValueAuthorized (or maxValueAuthorized),
+   * If the values given are > to the minValueAuthorized
+   * (same for < to maxValueAuthorized),
    * it set it to the min/maxValueAuthorized.
    */
   handleRangeChange = (
@@ -79,7 +76,7 @@ class GroupsSearch extends React.Component {
   ) => {
     const newState = {
       [keyName]: {
-        ...this.state[keyName],
+        ...this.state[keyName], // eslint-disable-line react/destructuring-assignment
         min: values[0] < minValueAuthorized ? minValueAuthorized : values[0],
         max: values[1] > maxValueAuthorized ? maxValueAuthorized : values[1],
       },
@@ -88,13 +85,13 @@ class GroupsSearch extends React.Component {
   };
 
   /**
-   * This function set the state of the keyname property
+   * Set the state of the keyname property
    * to be the same value as the event of the slider.
    */
   handleCheckedChange = (keyName) => (event) => {
     const newState = {
       [keyName]: {
-        ...this.state[keyName],
+        ...this.state[keyName], // eslint-disable-line react/destructuring-assignment
         isEditable: event.target.checked,
       },
     };
@@ -287,7 +284,7 @@ class GroupsSearch extends React.Component {
 }
 
 GroupsSearch.propTypes = {
-  classes: PropTypes.shape({}).isRequired,
+  classes: PropTypes.shape(PropTypes.any).isRequired,
   startAdvancedsearch: PropTypes.func.isRequired,
   resetResults: PropTypes.func.isRequired,
   resourceType: PropTypes.string.isRequired,
