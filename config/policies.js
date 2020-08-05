@@ -125,7 +125,7 @@ module.exports.policies = {
     '*': true,
   },
 
-  'v1/BbsChapterController': {
+  'v1/SubjectController': {
     '*': true,
   },
 

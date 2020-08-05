@@ -5,6 +5,8 @@
  * BE CAREFULL Any change here must be reported on file apiV1.yaml!
  */
 
+const ramda = require('ramda');
+
 /* Models */
 
 const EntranceModel = {
@@ -89,24 +91,22 @@ const CaveModel = {
 };
 
 const DocumentModel = {
-  ref_: undefined,
-  xRefNumeriqueFinal: undefined,
+  refBbs: undefined,
   title: undefined,
-  year: undefined,
-  publicationExport: undefined,
-  crosChapRebuilt: undefined,
-  crosCountryRebuilt: undefined,
+  publicationDate: undefined,
+  bbs: undefined,
+  subjects: undefined,
   theme: undefined,
-  subtheme: undefined,
   country: undefined,
-  lib: undefined,
+  library: undefined,
   editor: undefined,
+  regions: undefined,
 };
 
-const BbsChapterModel = {
-  id: undefined,
-  name: undefined,
-  theme: undefined,
+const SubjectModel = {
+  code: undefined,
+  subject: undefined,
+  parent: undefined,
 };
 
 /* Mappers */
@@ -115,11 +115,33 @@ module.exports = {
   convertToEntranceModel: (source) => {
     const result = { ...EntranceModel };
 
-    let mainName = source.names.find((name) => name.isMain);
-    mainName = mainName === undefined ? '' : mainName.name;
-
+    // Build the result
+    // In ES, the name is already set. When coming from the DB, it's not.
+    let mainName = ramda.pathOr(null, ['name'], source);
+    if (mainName === null && source.names instanceof Array) {
+      mainName = source.names.find((name) => name.isMain);
+      mainName = mainName === undefined ? null : mainName.name;
+    }
     result.name = mainName;
     result.names = source.names;
+
+    // Cave (DB or ES)
+    if (source.cave) {
+      result.cave = source.cave;
+    } else if (source['cave name']) {
+      result.cave = {
+        name: source['cave name'],
+      };
+    }
+
+    // Massif  (DB or ES)
+    if (source.massif) {
+      result.massif = source.massif;
+    } else if (source['massif name']) {
+      result.massif = {
+        name: source['massif name'],
+      };
+    }
 
     result.id = source.id;
     result.descriptions = source.descriptions;
@@ -134,18 +156,14 @@ module.exports = {
     result.aestheticism = source.aestheticism;
     result.approach = source.approach;
     result.caving = source.caving;
-    result.cave = {
-      depth: source['cave depth'],
-      length: source['cave length'],
-      name: source['cave name'],
-    };
-    result.massif = {
-      name: source['massif name'],
-    };
+    result.documents = source.documents;
+    result.stats = source.stats;
+    result.timeInfo = source.timeInfo;
+
     return result;
   },
 
-  convertToEntryList: (source) => {
+  convertToEntranceList: (source) => {
     const entries = [];
     source.forEach((item) =>
       entries.push(MappingV1Service.convertToEntranceModel(item)),
@@ -171,7 +189,7 @@ module.exports = {
     result.id = source.id;
 
     let mainName = source.names.find((name) => name.isMain);
-    mainName = mainName === undefined ? '' : mainName.name;
+    mainName = mainName === undefined ? undefined : mainName.name;
 
     result.name = mainName;
     result.names = source.names;
@@ -287,10 +305,18 @@ module.exports = {
             };
             data.city = item['_source'].city;
             data.region = item['_source'].region;
+            data.names = item['_source'].names;
+            data.descriptions = item['_source'].descriptions;
             break;
 
           case 'grotto':
+            data.names = item['_source'].names;
             data.address = item['_source'].address;
+            break;
+
+          case 'massif':
+            data.names = item['_source'].names;
+            data.descriptions = item['_source'].descriptions;
             break;
 
           case 'document':
@@ -325,19 +351,22 @@ module.exports = {
       result.author = MappingV1Service.convertToCaverModel(source.author);
     }
 
-    // Caves
+    // Caves (from DB)
     if (source.caves) {
       result.caves = MappingV1Service.convertToCaveList(source.caves);
-    } else if (source['caves names']) {
-      // In Elasticsearch
-      result.caves = source['caves names']
-        .split(',')
-        .map((name) => MappingV1Service.convertToCaveModel({ name }));
     }
 
-    // Save in result the object to return
-    let mainName = source.names.find((name) => name.isMain);
-    mainName = mainName === undefined ? '' : mainName.name;
+    // Nb caves & entrances (from ES)
+    result.nbCaves = ramda.pathOr(undefined, ['nb caves'], source);
+    result.nbEntrances = ramda.pathOr(undefined, ['nb entrances'], source);
+
+    // Build the result
+    // In ES, the name is already set. When coming from the DB, it's not.
+    let mainName = ramda.pathOr(null, ['name'], source);
+    if (mainName === null && source.names instanceof Array) {
+      mainName = source.names.find((name) => name.isMain);
+      mainName = mainName === undefined ? null : mainName.name;
+    }
 
     result.id = source.id;
     result.descriptions = source.descriptions;
@@ -356,32 +385,33 @@ module.exports = {
     const result = { ...GrottoModel };
 
     // Convert cavers
-    if (source.cavers && source.cavers instanceof Array) {
+    if (source.cavers instanceof Array) {
       result.cavers = source.cavers.map((caver) =>
         MappingV1Service.convertToCaverModel(caver),
       );
-    } else if (source['cavers names']) {
-      // In Elasticsearch, cavers names are the nicknames separated with a ','
-      result.cavers = source['cavers names']
-        .split(',')
-        .map((nickname) => MappingV1Service.convertToCaverModel({ nickname }));
+    } else {
+      result.nbCavers = ramda.pathOr(undefined, ['nb cavers'], source);
     }
 
     // Convert caves
-    if (source.exploredCaves && source.exploredCaves instanceof Array) {
+    if (source.exploredCaves instanceof Array) {
       result.exploredCaves = MappingV1Service.convertToCaveList(
         source.exploredCaves,
       );
     }
-    if (source.partneredCaves && source.partneredCaves instanceof Array) {
+    if (source.partneredCaves instanceof Array) {
       result.partneredCaves = MappingV1Service.convertToCaveList(
         source.partneredCaves,
       );
     }
 
     // Build the result
-    let mainName = source.names.find((name) => name.isMain);
-    mainName = mainName === undefined ? '' : mainName.name;
+    // In ES, the name is already set. When coming from the DB, it's not.
+    let mainName = ramda.pathOr(null, ['name'], source);
+    if (mainName === null && source.names instanceof Array) {
+      mainName = source.names.find((name) => name.isMain);
+      mainName = mainName === undefined ? null : mainName.name;
+    }
 
     result.name = mainName;
     result.names = source.names;
@@ -394,7 +424,7 @@ module.exports = {
     result.latitude = source.latitude;
     result.longitude = source.longitude;
     result.address = source.address;
-    result.contact = source.contact;
+    result.mail = source.mail;
     result.yearBirth = source.yearBirth;
     result.customMessage = source.customMessage;
     result.pictureFileName = source.pictureFileName;
@@ -407,90 +437,92 @@ module.exports = {
     return result;
   },
 
-  // ---------------- BBS Function ---------------------------
+  // ---------------- Document Function ---------------------------
 
   convertToDocumentModel: (source) => {
     const result = { ...DocumentModel };
-    result.crosChapRebuilt = source.crosChapRebuilt;
-    result.crosCountryRebuilt = source.crosCountryRebuilt;
 
     // Don't return the abstract from Elasticsearch ('bbs abstract') = too big and useless as a search results
-    result.abstract = source.abstract;
+    result.description = source.description;
 
     // Conversion (from Elasticsearch or not)
-    result.ref = source['ref_bbs'] ? source['ref_bbs'] : source['refBbs'];
     result.id = source.id;
-    result.title = source['bbs title']
-      ? source['bbs title']
-      : source.articleTitle;
-    result.year = source['bbs year'] ? source['bbs year'] : source.articleYear;
-    result.authors = source['bbs authors']
-      ? source['bbs authors']
-      : source.cAuthorsFull;
-    result.publication = source['bbs publication']
-      ? source['bbs publication']
-      : source.publicationExport;
-    // Build country / region
-    if (source['bbs country code'] || source.country) {
-      result.country = {
-        id: source['bbs country code']
-          ? source['bbs country code']
-          : source.country.id,
-        name: source['bbs country']
-          ? source['bbs country']
-          : source.country.country,
-      };
-    }
+    result.refBbs = source.ref_bbs;
+    result.bbs = source.bbs;
+    result.title = source.title;
+    result.publicationDate = source.date_publication;
 
-    // Build (sub)theme
-    if (source['bbs chaptercode'] || source.chapter) {
-      // In ES, the french and english theme and subtheme names are gathered and separated by ' / '
-      result.theme = source['bbs theme']
-        ? source['bbs theme'].split(' / ')[0]
-        : source.chapter.cTexteChapitre;
-      result.subtheme = {
-        id: source['bbs chaptercode']
-          ? source['bbs chaptercode']
-          : source.chapter.id,
-        name: source['bbs subtheme']
-          ? source['bbs subtheme'].split(' / ')[0]
-          : source.chapter.cTexteMatiere,
-      };
+    // TODO: handle authors as a string (ES)
+    result.authors = source.authors;
+
+    // TODO: handle publication (old bbs & parent)
+    result.publication = source.publication_other_bbs_old;
+
+    // Build regions
+    if (source.regions) {
+      if (source.regions instanceof Array) {
+        result.regions = source.regions;
+      } else {
+        // ES
+        result.regions = source.regions.split(', ').map((r) => {
+          return {
+            name: r,
+          };
+        });
+      }
+    }
+    // Build subjects
+    if (source.subjects) {
+      if (source.subjects instanceof Array) {
+        result.subjects = source.subjects;
+      } else {
+        // ES
+        result.subjects = source.subjects.split(', ').map((s) => {
+          return {
+            code: s,
+          };
+        });
+      }
     }
 
     // Build library
-    if (source.lib) {
-      result.lib = {
-        id: source.lib.id,
-        name: source.lib.nomCentre,
-        country: source.lib.pays,
+    if (source.library) {
+      result.library = source.library;
+    } else {
+      // ES
+      result.library = {
+        id: source['library id'],
+        name: source['library name'],
       };
     }
 
     // Build editor
-    result.editor = {};
-    result.editor.address = source.editorAddress ? source.editorAddress : '';
-    result.editor.email = source.editorEmail ? source.editorEmail : '';
-    result.editor.url = source.editorUrl ? source.editorUrl : '';
+    if (source.editor) {
+      result.editor = source.editor;
+    } else {
+      // ES
+      result.editor = {
+        id: source['editor id'],
+        name: source['editor name'],
+      };
+    }
 
     return result;
   },
 
-  convertToBbsGeoModel: (source) => source,
-
-  convertToBbsChapterModel: (source) => {
-    const result = { ...BbsChapterModel };
-    result.id = source.id;
-    result.name = source.cTexteMatiere;
-    result.theme = source.cTexteChapitre;
+  convertToSubjectModel: (source) => {
+    const result = { ...SubjectModel };
+    result.code = source.id;
+    result.subject = source.subject;
+    result.parent = source.parent;
     return result;
   },
 
-  convertToBbsChapterList: (source) => {
-    const chapters = [];
+  convertToSubjectList: (source) => {
+    const subjects = [];
     source.forEach((item) =>
-      chapters.push(MappingV1Service.convertToBbsChapterModel(item)),
+      subjects.push(MappingV1Service.convertToSubjectModel(item)),
     );
-    return chapters;
+    return subjects;
   },
 };
