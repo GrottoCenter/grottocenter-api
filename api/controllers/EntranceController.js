@@ -19,14 +19,20 @@ module.exports = {
       .exec((err, found) => {
         const params = {};
         params.searchedItem = `Entrance of id ${req.params.id}`;
-        return ControllerService.treatAndConvert(
-          req,
-          err,
-          found,
-          params,
-          res,
-          converter,
-        );
+
+        // Populate stats
+        const statsPromise = CommentService.getStats(req.params.id);
+        statsPromise.then((stats) => {
+          found.stats = stats;
+          return ControllerService.treatAndConvert(
+            req,
+            err,
+            found,
+            params,
+            res,
+            converter,
+          );
+        });
       });
   },
 

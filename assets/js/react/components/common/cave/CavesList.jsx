@@ -14,13 +14,13 @@ const StyledList = withStyles({
 })(List);
 
 const CavesList = (props) => {
-  const { caves, title, emptyMessage } = props;
+  const { caves, title, emptyMessageComponent } = props;
 
   return (
     <div>
       {caves.length > 0 ? (
-        <React.Fragment>
-          <strong>{title}</strong>
+        <>
+          {title}
           <StyledList>
             {caves
               .sort((a, b) => a.name > b.name)
@@ -28,9 +28,13 @@ const CavesList = (props) => {
                 <CaveListItem key={cave.id} cave={cave} />
               ))}
           </StyledList>
-        </React.Fragment>
+        </>
       ) : (
-        <em>{emptyMessage}</em>
+        <>
+          {title}
+          <br />
+          <em>{emptyMessageComponent}</em>
+        </>
       )}
     </div>
   );
@@ -39,13 +43,17 @@ const CavesList = (props) => {
 CavesList.propTypes = {
   caves: PropTypes.arrayOf(PropTypes.object),
   title: PropTypes.node,
-  emptyMessage: PropTypes.node,
+  emptyMessageComponent: PropTypes.node,
 };
 
 CavesList.defaultProps = {
   caves: undefined,
-  title: <Translate>Caves list</Translate>,
-  emptyMessage: <Translate>Empty list</Translate>,
+  title: (
+    <strong>
+      <Translate>Caves list</Translate>
+    </strong>
+  ),
+  emptyMessageComponent: <Translate>Empty list</Translate>,
 };
 
 export default CavesList;
