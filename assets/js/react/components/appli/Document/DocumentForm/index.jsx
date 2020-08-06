@@ -72,7 +72,6 @@ const DocumentForm = ({
   allPartOf,
   allRegions,
   allSubjects,
-  formSteps,
   isLoading,
   onSubmit,
 }) => {
@@ -97,17 +96,6 @@ const DocumentForm = ({
         !includes(currentFormStep, validatedSteps),
     );
   }, [validatedSteps, currentFormStep, formSteps, setIsNextStepDisabled]);
-
-  const onStepIsValidChange = (stepId, isValid) => {
-    const stepToUpdate = formSteps.find((step) => step.id === stepId);
-    stepToUpdate.isValid = isValid;
-    setIsFormValid(formSteps.every((step) => step.isValid));
-    updateIsNextStepButtonDisabled();
-  };
-
-  React.useEffect(() => {
-    updateIsNextStepButtonDisabled();
-  }, [currentFormStepId]);
 
   const handleStepNext = () => {
     updateCurrentStep((prevFormStep) => prevFormStep + 1);
