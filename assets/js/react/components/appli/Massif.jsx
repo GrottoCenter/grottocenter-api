@@ -11,20 +11,28 @@ import {
 import { useIntl } from 'react-intl';
 
 import CavesList from '../common/cave/CavesList';
-import EntriesList from '../common/entry/EntriesList';
+import Translate from '../common/Translate';
 
 const Massif = ({ isFetching, massif }) => {
   const { formatMessage } = useIntl();
 
+  if (isNil(massif) && !isFetching) {
+    return (
+      <Translate>
+        Error, the massif data you are looking for is not available.
+      </Translate>
+    );
+  }
+
   return (
     <>
-      {isFetching || isNil(massif) ? (
+      {isFetching ? (
         <CircularProgress />
       ) : (
         <Card>
           <CardHeader
             title={
-              <Typography variant="h5" color="secondary">
+              <Typography variant="h1" color="secondary">
                 {massif.name}
               </Typography>
             }
@@ -32,14 +40,8 @@ const Massif = ({ isFetching, massif }) => {
           <CardContent>
             <CavesList
               caves={massif.caves}
-              emptyMessage={formatMessage({
+              emptyMessageComponent={formatMessage({
                 id: 'This massif has no caves listed yet',
-              })}
-            />
-            <EntriesList
-              entries={massif.entries}
-              emptyMessage={formatMessage({
-                id: 'This massif has no entries listed yet',
               })}
             />
           </CardContent>
@@ -54,7 +56,6 @@ Massif.propTypes = {
   massif: PropTypes.shape({
     name: PropTypes.string,
     caves: PropTypes.arrayOf(PropTypes.object),
-    entries: PropTypes.arrayOf(PropTypes.object),
   }),
 };
 Massif.defaultProps = {
