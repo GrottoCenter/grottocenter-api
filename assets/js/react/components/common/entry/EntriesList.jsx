@@ -14,7 +14,7 @@ const StyledList = withStyles({
 })(List);
 
 const EntriesList = (props) => {
-  const { entries, title, emptyMessage } = props;
+  const { entries, title, emptyMessageComponent } = props;
 
   return (
     <div>
@@ -30,7 +30,11 @@ const EntriesList = (props) => {
           </StyledList>
         </>
       ) : (
-        <em>{emptyMessage}</em>
+        <>
+          {title}
+          <br />
+          <em>{emptyMessageComponent}</em>
+        </>
       )}
     </div>
   );
@@ -39,13 +43,13 @@ const EntriesList = (props) => {
 EntriesList.propTypes = {
   entries: PropTypes.arrayOf(PropTypes.object),
   title: PropTypes.node,
-  emptyMessage: PropTypes.node,
+  emptyMessageComponent: PropTypes.node,
 };
 
 EntriesList.defaultProps = {
   entries: undefined,
   title: <Translate>Entries list</Translate>,
-  emptyMessage: <Translate>Empty list</Translate>,
+  emptyMessageComponent: <Translate>Empty list</Translate>,
 };
 
 export default EntriesList;
