@@ -9,24 +9,19 @@ const entranceController = require('../EntranceController');
 
 module.exports = {
   find: (req, res) =>
-    entranceController.find(req, res, MappingV1Service.convertToEntryModel),
+    entranceController.find(req, res, MappingV1Service.convertToEntranceModel),
 
   findAll: (req, res) =>
     entranceController.findAll(req, res, MappingV1Service.convertToEntryList),
 
   // TODO adapt
-  findRandom: (req, res) => {
-    EntranceService.findRandom()
-      .then((results) => {
-        if (!results) {
-          return res.notFound();
-        }
-        return res.json(results);
-      })
-      .catch((err) => {
-        sails.log.error(err);
-        return res.serverError(`EntranceController.findRandom error : ${err}`);
-      });
+  findRandom: (req, res, next) => {
+    entranceController.findRandom(
+      req,
+      res,
+      next,
+      MappingV1Service.convertToEntranceModel,
+    );
   },
 
   getPublicEntrancesNumber: (req, res) =>
