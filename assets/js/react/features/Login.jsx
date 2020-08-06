@@ -48,7 +48,7 @@ const Login = () => {
       type="submit"
       size="large"
       onClick={onLogin}
-      color={authState.isFetching ? '' : 'primary'}
+      color={authState.isFetching ? 'default' : 'primary'}
     >
       {authState.isFetching ? (
         <CircularProgress size="2.8rem" />

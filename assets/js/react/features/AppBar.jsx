@@ -33,7 +33,7 @@ const AppBar = ({ toggleSideMenu, isSideMenuOpen, HeaderQuickSearch }) => {
 
   const onLogoutClick = () => {
     dispatch(postLogout());
-    history.push('/');
+    history.go(); // refresh the current page
   };
 
   return (

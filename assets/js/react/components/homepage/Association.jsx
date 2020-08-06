@@ -68,8 +68,8 @@ const AssociationGridRow = styled(GridRow)`
 const listEntries = {
   title: (
     <Translate>
-      The international voluntary association WikiCaves operates the GrottoCenter web application
-      WikiCaves has as goals:
+      The international voluntary association WikiCaves operates the
+      GrottoCenter web application WikiCaves has as goals:
     </Translate>
   ),
   entries: [
@@ -77,20 +77,25 @@ const listEntries = {
       word: <Translate>Promote!</Translate>,
       description: (
         <Translate>
-          Promote the development of the speleology in the world especially through web-based
-          collaboration
+          Promote the development of the speleology in the world especially
+          through web-based collaboration.
         </Translate>
       ),
     },
     {
       word: <Translate>Share!</Translate>,
-      description: <Translate>Share and spread the data related to the speleology</Translate>,
+      description: (
+        <Translate>
+          Share and spread the data related to the speleology
+        </Translate>
+      ),
     },
     {
       word: <Translate>Open!</Translate>,
       description: (
         <Translate>
-          Make access to the natural caves data easier especially by using Internet
+          Make access to the natural caves data easier especially by using
+          Internet
         </Translate>
       ),
     },
@@ -98,14 +103,17 @@ const listEntries = {
       word: <Translate>Highlight!</Translate>,
       description: (
         <Translate>
-          Highlight and help the protection of the natural caves and their surroundings
+          Highlight and help the protection of the natural caves and their
+          surroundings
         </Translate>
       ),
     },
     {
       word: <Translate>Help!</Translate>,
       description: (
-        <Translate>Help the exploration and the scientific study of natural caves</Translate>
+        <Translate>
+          Help the exploration and the scientific study of natural caves
+        </Translate>
       ),
     },
   ],
@@ -117,51 +125,69 @@ const listEntries = {
 //
 //
 
-const Association = (props) => (
-  <AssociationSection
-    bgColor={props.theme.palette.primary1Color}
-    fgColor={props.theme.palette.textIconColor}
-  >
-    <AssociationGridRow>
-      <GridTwoThirdColumn>
-        <AssociationTitle color={props.theme.palette.accent1Color}>
-          <Translate>Wikicaves association</Translate>
-        </AssociationTitle>
-        <AssociationDetails>
-          <Translate>
-            GrottoCenter is a comunity database for cavers based on a wiki-like system Cavers fill
-            the databes for cavers
-          </Translate>
-          <br />
-          <Translate>Any interesting natural cave can be added in the database!</Translate>
-        </AssociationDetails>
-      </GridTwoThirdColumn>
+const Association = (props) => {
+  const {
+    theme: { palette },
+  } = props;
 
-      <GridOneThirdColumn>
-        <AssociationLogo>
-          <AssociationLogoImage showLink={false} />
-        </AssociationLogo>
-      </GridOneThirdColumn>
-    </AssociationGridRow>
+  return (
+    <AssociationSection
+      bgColor={palette.primary1Color}
+      fgColor={palette.textIconColor}
+    >
+      <AssociationGridRow>
+        <GridTwoThirdColumn>
+          <AssociationTitle color={palette.accent1Color}>
+            <Translate>Wikicaves association</Translate>
+          </AssociationTitle>
+          <AssociationDetails>
+            <Translate>
+              GrottoCenter is a comunity database for cavers based on a
+              wiki-like system Cavers fill the databes for cavers
+            </Translate>
+            <br />
+            <Translate>
+              Any interesting natural cave can be added in the database!
+            </Translate>
+          </AssociationDetails>
+        </GridTwoThirdColumn>
 
-    <AssociationGridRow>
-      <GridFullColumn>
-        <AssociationCheckList title={listEntries.title} entries={listEntries.entries} />
+        <GridOneThirdColumn>
+          <AssociationLogo>
+            <AssociationLogoImage showLink={false} />
+          </AssociationLogo>
+        </GridOneThirdColumn>
+      </AssociationGridRow>
 
-        <AssociationFlyingGoals
-          title={listEntries.title}
-          entries={listEntries.entries}
-          textColor={props.theme.palette.textIconColor}
-          iconColor={props.theme.palette.primary3Color}
-          iconHoverColor={props.theme.palette.accent1Color}
-        />
-      </GridFullColumn>
-    </AssociationGridRow>
-  </AssociationSection>
-);
+      <AssociationGridRow>
+        <GridFullColumn>
+          <AssociationCheckList
+            title={listEntries.title}
+            entries={listEntries.entries}
+          />
+
+          <AssociationFlyingGoals
+            title={listEntries.title}
+            entries={listEntries.entries}
+            textColor={palette.textIconColor}
+            iconColor={palette.primary3Color}
+            iconHoverColor={palette.accent1Color}
+          />
+        </GridFullColumn>
+      </AssociationGridRow>
+    </AssociationSection>
+  );
+};
 
 Association.propTypes = {
-  theme: PropTypes.object.isRequired,
+  theme: PropTypes.shape({
+    palette: PropTypes.shape({
+      accent1Color: PropTypes.string.isRequired,
+      primary1Color: PropTypes.string.isRequired,
+      primary3Color: PropTypes.string.isRequired,
+      textIconColor: PropTypes.string.isRequired,
+    }),
+  }).isRequired,
 };
 
 export default withTheme(Association);

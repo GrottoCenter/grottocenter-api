@@ -1,5 +1,9 @@
 import { brown, blue, orange, grey } from '@material-ui/core/colors';
-import { createMuiTheme, fade } from '@material-ui/core/styles';
+import {
+  createMuiTheme,
+  fade,
+  responsiveFontSizes,
+} from '@material-ui/core/styles';
 import { isMobile } from 'react-device-detect';
 
 const fontFamily = [
@@ -81,6 +85,21 @@ export const overridings = {
   typography: {
     fontFamily,
     htmlFontSize: 10,
+    h1: {
+      fontSize: '4.2rem',
+    },
+    h2: {
+      fontSize: '3.5rem',
+    },
+    h3: {
+      fontSize: '2.9rem',
+    },
+    h4: {
+      fontSize: '2.4rem',
+    },
+    h5: {
+      fontSize: '2rem',
+    },
   },
   // https://material-ui.com/customization/globals/#default-props
   props: {
@@ -103,6 +122,12 @@ export const overridings = {
     // },
   },
   overrides: {
+    MuiFormHelperText: {
+      root: {
+        color: brown['500'],
+        fontSize: '1.3rem',
+      },
+    },
     MuiCardContent: {
       root: {
         padding: isMobile ? paddingUnit : paddingUnit * 2,
@@ -111,6 +136,12 @@ export const overridings = {
     MuiCardHeader: {
       root: {
         padding: isMobile ? paddingUnit : paddingUnit * 2,
+      },
+    },
+    MuiChip: {
+      root: {
+        backgroundColor: brown['500'],
+        color: '#fff',
       },
     },
     MuiDrawer: {
@@ -164,7 +195,33 @@ export const overridings = {
         color: grey['100'],
       },
     },
+    MuiStepIcon: {
+      active: {
+        color: `${orange['700']} !important`,
+        borderRadius: '100%',
+      },
+    },
+    MuiStepConnector: {
+      line: {
+        borderWidth: '1px',
+      },
+      lineHorizontal: {
+        borderWidth: '1px',
+      },
+      active: {
+        '& $line': {
+          borderColor: brown['300'],
+          borderStyle: 'dashed',
+        },
+      },
+      completed: {
+        '& $line': {
+          borderColor: brown['500'],
+          borderWidth: '2px',
+        },
+      },
+    },
   },
 };
 
-export default createMuiTheme(overridings);
+export default responsiveFontSizes(createMuiTheme(overridings));

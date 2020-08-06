@@ -18,6 +18,7 @@ import LoginDialog from '../features/Login';
 import QuickSearch from '../features/QuickSearch';
 import AppBar from '../features/AppBar';
 
+import DocumentSubmission from './DocumentSubmission';
 import EntryPage from './Entry';
 import GroupPage from './Group';
 import BbsPage from './Bbs';
@@ -59,6 +60,7 @@ const Application = () => {
         <Route path="/ui/massifs/:massifId" component={MassifPage} />
         <Route path="/ui/bbs/:bbsId" component={BbsPage} />
         <Route path="/ui/login" component={HomePage} />
+        <Route path="/ui/documents/add" component={DocumentSubmission} />
         <Redirect path="/ui/*" to="/ui/" />
       </Switch>
     </Layout>

@@ -57,6 +57,13 @@ const MenuLinks = () => (
       label="Toolbox"
       href="#"
     />
+    <Item
+      ItemIcon={() => (
+        <Icon src="/images/sidemenu/add-document.png" alt="add document icon" />
+      )}
+      label="Add document"
+      href="/ui/documents/add"
+    />
   </List>
 );
 

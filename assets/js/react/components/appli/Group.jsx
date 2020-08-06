@@ -126,21 +126,28 @@ const Group = ({ isFetching, group }) => {
 };
 
 Group.propTypes = {
+  // TODO : mark some properties as required + add details for the "any""
+  classes: PropTypes.shape({
+    root: PropTypes.any,
+    badge: PropTypes.any,
+  }).isRequired,
   isFetching: PropTypes.bool.isRequired,
-  group:
-    PropTypes.shape({
-      customMessage: PropTypes.string,
-      entries: PropTypes.arrayOf(PropTypes.object),
-      postalCode: PropTypes.string,
-      address: PropTypes.string,
-      village: PropTypes.string,
-      city: PropTypes.string,
-      isOfficialPartner: PropTypes.bool,
-      yearBirth: PropTypes.string,
-      cavers: PropTypes.arrayOf(PropTypes.object),
-      name: PropTypes.string,
-      contact: PropTypes.string,
-    }) || undefined,
+  group: PropTypes.shape({
+    address: PropTypes.string,
+    contact: PropTypes.string,
+    customMessage: PropTypes.string,
+    city: PropTypes.string,
+    country: PropTypes.string,
+    county: PropTypes.string,
+    isOfficialPartner: PropTypes.bool,
+    name: PropTypes.string,
+    region: PropTypes.string,
+    postalCode: PropTypes.string,
+    village: PropTypes.string,
+    entries: PropTypes.any,
+    cavers: PropTypes.any,
+    yearBirth: PropTypes.any,
+  }),
 };
 
 Group.defaultProps = {
