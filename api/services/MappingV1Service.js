@@ -27,6 +27,9 @@ const EntranceModel = {
   aestheticism: undefined,
   caving: undefined,
   approach: undefined,
+  documents: [],
+  stats: undefined,
+  timeInfo: undefined,
 };
 
 const CountResult = {
@@ -36,7 +39,7 @@ const CountResult = {
 const MassifModel = {
   id: undefined,
   author: undefined,
-  idReviewer: undefined,
+  reviewer: undefined,
   name: undefined,
   dateInscription: undefined,
   dateReviewed: undefined,
@@ -259,9 +262,9 @@ module.exports = {
     const res = {};
     const values = [];
 
-    // For each result of the research, only keep the id and the name then add it to the json to send
     if (source.hits) {
       source.hits.hits.forEach((item) => {
+        // Common data
         const data = {
           id: item['_id'],
           name: item['_source'].name
@@ -274,26 +277,18 @@ module.exports = {
         data.longitude = item['_source'].longitude;
         data.latitude = item['_source'].latitude;
 
-        const replacementKeys = {
-          'bbs title': 'title',
-          'bbs ref': 'reference',
-          'bbs authors': 'authors',
-          'bbs theme': 'theme',
-          'bbs subtheme': 'subtheme',
-          'bbs abstract': 'abstract',
-          'bbs country': 'country',
-          'bbs publication': 'publication',
-        };
+        // 08/2020 - C. ROIG - Not needed at the moment but keep in case
+        // const replacementKeys = {};
 
-        // Convert from a collection of keys newKeys, rename the keys of obj
-        const renameKeys = (obj, newKeys) => {
-          Object.keys(obj).map((key) => {
-            if (newKeys[key]) {
-              obj[newKeys[key]] = obj[key];
-              delete obj[key];
-            }
-          });
-        };
+        // // Convert from a collection of keys newKeys, rename the keys of obj
+        // const renameKeys = (obj, newKeys) => {
+        //   Object.keys(obj).map((key) => {
+        //     if (newKeys[key]) {
+        //       obj[newKeys[key]] = obj[key];
+        //       delete obj[key];
+        //     }
+        //   });
+        // };
 
         switch (item['_source'].type) {
           case 'entrance':
@@ -321,8 +316,9 @@ module.exports = {
 
           case 'document':
             // Rename keys of source and highlights
-            renameKeys(item['_source'], replacementKeys);
-            renameKeys(data.highlights, replacementKeys);
+            // 08/2020 - C. ROIG - Not needed at the moment but keep in case
+            // renameKeys(item['_source'], replacementKeys);
+            // renameKeys(data.highlights, replacementKeys);
 
             // Fill data with appropriate keys
             for (let key in item['_source']) {
@@ -370,7 +366,7 @@ module.exports = {
 
     result.id = source.id;
     result.descriptions = source.descriptions;
-    result.idReviewer = source.idReviewer;
+    result.reviewer = source.reviewer;
     result.name = mainName;
     result.names = source.names;
     result.dateInscription = source.dateInscription;
