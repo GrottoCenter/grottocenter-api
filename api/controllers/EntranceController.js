@@ -30,19 +30,38 @@ module.exports = {
       });
   },
 
-  findRandom: (req, res) => {
-    EntranceService.findRandom().then(
-      (results) => {
-        if (!results) {
+  findRandom: (
+    req,
+    res,
+    next,
+    converter = MappingV1Service.convertToEntranceModel,
+  ) => {
+    const params = {};
+    params.searchedItem = `Random entrance`;
+    EntranceService.findRandom()
+      .then((result) => {
+        if (!result) {
           return res.notFound();
         }
-        return res.json(results);
-      },
-      (err) => {
-        sails.log.error(err);
-        return res.serverError(`EntranceController.findRandom error ${err}`);
-      },
-    );
+        return ControllerService.treatAndConvert(
+          req,
+          null,
+          result,
+          params,
+          res,
+          converter,
+        );
+      })
+      .catch((err) => {
+        return ControllerService.treatAndConvert(
+          req,
+          err,
+          undefined,
+          params,
+          res,
+          converter,
+        );
+      });
   },
 
   getPublicEntrancesNumber: (req, res, converter) => {

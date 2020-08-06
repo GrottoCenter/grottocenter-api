@@ -80,7 +80,7 @@ module.exports = {
     },
 
     identifierType: {
-      columnName: 'identifier_type',
+      columnName: 'id_identifier_type',
       model: 'TIdentifierType',
     },
 
@@ -175,6 +175,11 @@ module.exports = {
       type: 'string',
       columnName: 'publication_fascicule_bbs_old',
       maxLength: 300,
+    },
+
+    files: {
+      collection: 'TFile',
+      via: 'document',
     },
   },
 };

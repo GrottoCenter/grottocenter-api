@@ -166,5 +166,10 @@ module.exports = {
       allowNull: false,
       model: 'TGeology',
     },
+
+    documents: {
+      collection: 'Tdocument',
+      via: 'entrance',
+    },
   },
 };
