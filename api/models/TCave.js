@@ -123,5 +123,15 @@ module.exports = {
       collection: 'TEntrance',
       via: 'cave',
     },
+
+    descriptions: {
+      collection: 'TDescription',
+      via: 'cave',
+    },
+
+    documents: {
+      collection: 'TDocument',
+      via: 'cave',
+    },
   },
 };

@@ -20,7 +20,10 @@ module.exports = {
       id: req.params.id,
     })
       .populate('author')
+      .populate('reviewer')
       .populate('entrances')
+      .populate('descriptions')
+      .populate('documents')
       .exec((err, found) => {
         const params = {};
         params.controllerMethod = 'CaveController.find';

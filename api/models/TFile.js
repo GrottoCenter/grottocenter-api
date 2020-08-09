@@ -19,7 +19,7 @@ module.exports = {
     },
 
     dateInscription: {
-      type: 'string',
+      type: 'ref',
       allowNull: false,
       columnName: 'date_inscription',
       columnType: 'datetime',
@@ -27,7 +27,7 @@ module.exports = {
     },
 
     dateReviewed: {
-      type: 'string',
+      type: 'ref',
       columnName: 'date_reviewed',
       columnType: 'datetime',
     },
