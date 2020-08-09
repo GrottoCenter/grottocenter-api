@@ -60,13 +60,13 @@ export function postLogout() {
   };
 }
 
-export function postLogin(contactEmail, password) {
+export function postLogin(email, password) {
   return (dispatch) => {
     dispatch(fetchLogin());
 
     const requestOptions = {
       method: 'POST',
-      body: JSON.stringify({ contact: contactEmail, password }),
+      body: JSON.stringify({ email, password }),
     };
 
     return fetch(loginUrl, requestOptions)
