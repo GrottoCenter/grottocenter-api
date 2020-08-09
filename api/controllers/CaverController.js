@@ -76,8 +76,6 @@ module.exports = {
     });
   },
 
-  findVersion: (req, res) => res.json({ version: req.params.version }),
-
   findAll: (req, res) => {
     const parameters = {};
     if (req.param('name') !== undefined) {

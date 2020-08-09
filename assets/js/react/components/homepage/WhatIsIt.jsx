@@ -102,12 +102,13 @@ const WhatIsIt = () => (
     <GridRow>
       <NumberBlockHalfWidth>
         <BlockIcon className="icon-gc-entries" />
-        <BigNumberText numberType="publicEntries" />
+        <BigNumberText numberType="publicEntrances" />
         <br />
         <Translate>
           caves are freely accessible from the following page (
         </Translate>
-        <NumberText numberType="entries" /> <Translate>by logging on</Translate>{' '}
+        <NumberText numberType="entrances" />{' '}
+        <Translate>by logging on</Translate>{' '}
         <GCLink href="http://www.grottocenter.org">Grotto v2</GCLink>)
       </NumberBlockHalfWidth>
       <NumberBlockHalfWidth>
@@ -140,10 +141,10 @@ const WhatIsIt = () => (
     <GridRow>
       <NumberBlockFullWidth>
         <BbsIcon src="/images/bbs_logo.png" alt="BBS logo" />
-        <BigNumberText numberType="bbs" />
+        <BigNumberText numberType="documents" />
         <br />
         <InternationalizedLink links={wikiBBSLinks}>
-          <Translate>speleological abstracts are referenced</Translate>
+          <Translate>documents are referenced</Translate>
         </InternationalizedLink>
       </NumberBlockFullWidth>
     </GridRow>
