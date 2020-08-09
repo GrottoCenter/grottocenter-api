@@ -1,7 +1,13 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import fetch from 'isomorphic-fetch';
-import { Table, TableBody, TableHeaderColumn, TableRow, TableRowColumn } from '@material-ui/core';
+import {
+  Table,
+  TableBody,
+  TableHeaderColumn,
+  TableRow,
+  TableRowColumn,
+} from '@material-ui/core';
 import GCLink from '../common/GCLink';
 import { Loading } from '../common/Toolbox';
 
@@ -11,32 +17,56 @@ import { Loading } from '../common/Toolbox';
 //
 //
 
-const EntriesOfInterestTableRow = (props) => (
-  <TableRow>
-    <TableRowColumn>{props.row.id}</TableRowColumn>
-    <TableRowColumn>{props.row.name}</TableRowColumn>
-    <TableRowColumn>{props.row.country}</TableRowColumn>
-    <TableRowColumn>{props.row.region}</TableRowColumn>
-    <TableRowColumn>{props.row.isPublic}</TableRowColumn>
-    <TableRowColumn>{props.row.isSensitive}</TableRowColumn>
-    <TableRowColumn>{props.row.isOfInterest.data[0]}</TableRowColumn>
-    <TableRowColumn>
-      {props.row.entryInfo && props.row.entryInfo.depth ? props.row.entryInfo.depth : ''}
-    </TableRowColumn>
-    <TableRowColumn>{props.row.entryInfo ? props.row.entryInfo.length : ''}</TableRowColumn>
-    <TableRowColumn>
-      {props.row.entryInfo ? <img style={{ width: '150px' }} src={props.row.entryInfo.path} /> : ''}
-    </TableRowColumn>
-    <TableRowColumn>{props.row.stat ? props.row.stat.aestheticism : ''}</TableRowColumn>
-    <TableRowColumn>{props.row.stat ? props.row.stat.caving : ''}</TableRowColumn>
-    <TableRowColumn>{props.row.stat ? props.row.stat.approach : ''}</TableRowColumn>
-    <TableRowColumn>{props.row.timeInfo ? props.row.timeInfo.eTTrail : ''}</TableRowColumn>
-    <TableRowColumn>{props.row.timeInfo ? props.row.timeInfo.eTUnderground : ''}</TableRowColumn>
-  </TableRow>
-);
+const EntriesOfInterestTableRow = (props) => {
+  const {
+    row: {
+      id,
+      name,
+      country,
+      region,
+      isPublic,
+      isSensitive,
+      isOfInterest,
+      entryInfo,
+      stats,
+      timeInfo,
+    },
+  } = props;
+  return (
+    <TableRow>
+      <TableRowColumn>{id}</TableRowColumn>
+      <TableRowColumn>{name}</TableRowColumn>
+      <TableRowColumn>{country}</TableRowColumn>
+      <TableRowColumn>{region}</TableRowColumn>
+      <TableRowColumn>{isPublic}</TableRowColumn>
+      <TableRowColumn>{isSensitive}</TableRowColumn>
+      <TableRowColumn>{isOfInterest.data[0]}</TableRowColumn>
+      <TableRowColumn>
+        {entryInfo && entryInfo.depth ? entryInfo.depth : ''}
+      </TableRowColumn>
+      <TableRowColumn>{entryInfo ? entryInfo.length : ''}</TableRowColumn>
+      <TableRowColumn>
+        {entryInfo ? (
+          <img
+            style={{ width: '150px' }}
+            src={entryInfo.path}
+            alt="Entry info"
+          />
+        ) : (
+          ''
+        )}
+      </TableRowColumn>
+      <TableRowColumn>{stats ? stats.aestheticism : ''}</TableRowColumn>
+      <TableRowColumn>{stats ? stats.caving : ''}</TableRowColumn>
+      <TableRowColumn>{stats ? stats.approach : ''}</TableRowColumn>
+      <TableRowColumn>{timeInfo ? timeInfo.eTTrail : ''}</TableRowColumn>
+      <TableRowColumn>{timeInfo ? timeInfo.eTUnderground : ''}</TableRowColumn>
+    </TableRow>
+  );
+};
 
 EntriesOfInterestTableRow.propTypes = {
-  row: PropTypes.object.isRequired,
+  row: PropTypes.shape(PropTypes.any).isRequired,
 };
 
 export class EntriesOfInterest extends Component {
@@ -53,8 +83,8 @@ export class EntriesOfInterest extends Component {
   }
 
   fetchData() {
-    const _this = this;
-    fetch('/api/admin/entries/findAllOfInterest')
+    const _this = this; // eslint-disable-line no-underscore-dangle
+    fetch('/api/admin/entrances/findAllOfInterest')
       .then((response) => {
         if (response.status >= 400) {
           throw new Error('Bad response from server');
@@ -69,12 +99,13 @@ export class EntriesOfInterest extends Component {
   }
 
   render() {
-    if (this.state.items.length == 0) {
+    const { items } = this.state;
+    if (items.length === 0) {
       return <Loading />;
     }
 
     const rows = [];
-    this.state.items.forEach((newRow) => {
+    items.forEach((newRow) => {
       if (newRow !== undefined) {
         rows.push(<EntriesOfInterestTableRow key={newRow.id} row={newRow} />);
       }
@@ -90,7 +121,11 @@ export class EntriesOfInterest extends Component {
             bodyStyle={{ overflow: 'initial' }}
             style={{ width: 'initial' }}
           >
-            <TableBody displayRowCheckbox={false} adjustForCheckbox={false} showRowHover>
+            <TableBody
+              displayRowCheckbox={false}
+              adjustForCheckbox={false}
+              showRowHover
+            >
               <TableRow selectable={false}>
                 <TableHeaderColumn>Id</TableHeaderColumn>
                 <TableHeaderColumn>Name</TableHeaderColumn>
