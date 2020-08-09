@@ -1,7 +1,7 @@
 openapi: '3.0.0'
 
 info:
-  description: 'This page documents the available API you can use on your website.'
+  description: "This page documents the available Grottocenter's API."
   title: 'Grottocenter 3 - REST API'
   version: 'v.1'
   termsOfService: 'https://wiki.grottocenter.org/wiki/GrottoCenter:En/API'
@@ -17,20 +17,81 @@ servers:
 - url: https://beta.grottocenter.org/api/v1
 
 tags:
-- name: entry
-- name: search
+- name: authentication
+- name: documents
+- name: entrances
 - name: geoloc
+- name: massifs
+- name: organizations
+- name: search
+- name: subjects
 
 paths:
-  '/bbs/{id}':
+
+  '/auth/login':
+    post:
+      tags:
+        - authentication
+      description: Login to Grottocenter
+      parameters:
+        - name: email
+          in: query
+          description: Email of the account you want to connect to
+          required: true
+          schema:
+            type: string
+        - name: password
+          in: query
+          description: Password of the account you want to connect to
+          required: true
+          schema:
+            type: string
+      responses: 
+        '200':
+          description: Successful login
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Auth-success"
+        
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  '/documents/subjects':
     get:
       tags:
-      - bbs
-      description: Get a BBS ("Bulletin Biliographique Spéléologique" in french) by ID
+      - documents
+      - subjects
+      description: Get all the document subjects.
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Document-subject"
+        '500':
+          description: Internal error
+
+  '/documents/subjects/{code}':
+    get:
+      tags:
+      - documents
+      - subjects
+      description: Get a subject by its code.
       parameters:
-      - name: id
+      - name: code
         in: path
-        description: BBS ID
+        description: Subject code
         required: true
         schema:
           type: string
@@ -40,85 +101,21 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Bbs'
+                $ref: '#/components/schemas/Document-subject'
         '404':
-          description: Resource not found
+          description: Subject not found
         '500':
           description: Internal error
 
-  '/bbs/subthemes':
+  '/entrances/{id}':
     get:
       tags:
-      - bbs
-      - subthemes
-      description: Get BBS ("Bulletin Biliographique Spéléologique" in french) subthemes list
-      responses:
-        '200':
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Bbs subtheme"
-        '500':
-          description: Internal error
-
-  '/entries':
-    get:
-      tags:
-      - entry
-      description: Get a list of public entries correponding to the given parameters
-      parameters:
-      - name: name
-        in: query
-        description: Entry name (or part of name)
-        required: true
-        schema:
-          type: string
-      - name: region
-        in: query
-        description: Entry region (or part of name)
-        required: false
-        schema:
-          type: string
-      - name: range
-        in: query
-        description: Range of data to retreive (for pagination)
-        required: false
-        schema:
-          type: string
-          pattern: '^[0-9]+-[0-9]+$'
-      responses:
-        '200':
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Entry"
-        '206':
-          description: Successful operation (partial content)
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Entry"
-        '404':
-          description: Resource not found
-        '500':
-          description: Internal error
-  '/entries/{id}':
-    get:
-      tags:
-      - entry
+      - entrances
       description: Get a public entry by ID
       parameters:
       - name: id
         in: path
-        description: Entry ID
+        description: Entrance ID
         required: true
         schema:
           type: string
@@ -128,18 +125,34 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Entry'
+                $ref: '#/components/schemas/Entrance'
         '404':
           description: Resource not found
         '500':
           description: Internal error
 
-  '/entry/publicCount':
+  '/entrances/publicCount':
     get:
       tags:
-      - entry
-      deprecated: true
+      - entrances
+      deprecated: false
       description: Get the number of public entrances referenced in GC3 database
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Count'
+        '500':
+          description: Internal error
+  
+  '/entrances/count':
+    get:
+      tags:
+      - entrances
+      deprecated: false
+      description: Get the number of entrances referenced in GC3 database
       responses:
         '200':
           description: Successful operation
@@ -154,9 +167,8 @@ paths:
     get:
       tags:
       - search
-      deprecated: false
-      summary: Search for resources (entries, massifs, organizations & bbs)
-      description: Search for resources (entries, massifs & organizations & bbs). Case insensitive. Search over a lots of resource properties (not only name).
+      summary: Search for resources (documents, entrances, massifs & organizations)
+      description: Search for resources (entrances, massifs & organizations & documents). Case insensitive. Search over a lots of resource properties (not only name).
       parameters:
       - name: query
         in: query
@@ -166,11 +178,76 @@ paths:
           type: string
       - name: complete
         in: query
-        description: Does the query need to send every information about the results ? If set to false, returns only the id and the name of each result.
+        description: Does the query need to send every information about the results? If it's set to false, the id and the name of each result will be returned.
         required: false
         schema:
           type: boolean
           default: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Search'
+        '404':
+          description: Resource not found
+        '500':
+          description: Internal error
+  
+  '/advanced-search':
+    get:
+      tags:
+      - search
+      summary: Advanced search for resources (documents, entrances, massifs & organizations)
+      description: Search for resources (entrances, massifs, organizations & documents) in the criterias mentionned in the request. It's case insensitive.
+      parameters:
+      - name: query
+        in: query
+        description: Resource property (or part of property)
+        required: true
+        schema:
+          type: string
+      - name: resourceType
+        in: query
+        description: Resource type to be searched
+        required: true
+        schema:
+          type: string
+          enum: [documents, entrances, massifs, organizations]
+      - name: complete
+        in: query
+        description: Does the query need to send every information about the results? If it's set to false, the id and the name of each result will be returned.
+        required: false
+        schema:
+          type: boolean
+          default: true
+      - name: paramX
+        in: query
+        description: String property of the resource you want to search on. The resource property will be matched exactly (no auto-complete, no fuzziness etc.). You can specify as much properties as you want.
+        required: false
+        schema:
+          type: string
+      - name: paramY-min
+        in: query
+        description: Range number property of the resource you want to search on. The resource property will be superior or equal to this value. You can specify as much properties as you want.
+        required: false
+        schema:
+          type: number
+      - name: paramY-max
+        in: query
+        description: Range number property of the resource you want to search on. The resource property will be inferior or equal to this value. You can specify as much properties as you want.
+        required: false
+        schema:
+          type: number
+      - name: paramZ-bool
+        in: query
+        description: Boolean property of the resource you want to search on. You can specify as much properties as you want.
+        required: false
+        schema:
+          type: boolean
+          default: true
+          
       responses:
         '200':
           description: Successful operation
@@ -270,7 +347,7 @@ paths:
   '/massifs/{id}':
     get:
       tags:
-      - massif
+      - massifs
       description: Get a massif, its author and all its caves
       parameters:
       - name: id
@@ -292,15 +369,16 @@ paths:
           description: Resource not found
         '500':
           description: Internal error
-  '/api/grottos/{id}':
+
+  '/organizations/{id}':
     get:
       tags:
-      - grotto
-      description: Get a grotto that means an organization or a group of cavers.
+      - organizations
+      description: Get an organization (speleo club, association, library, editor etc.).
       parameters:
       - name: id
         in: path
-        description: Grotto ID
+        description: Organization ID
         required: true
         schema:
           type: string
@@ -312,157 +390,37 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Grotto"
+                  $ref: "#/components/schemas/Organization"
         '404':
           description: Resource not found
+        '500':
+          description: Internal error
+  
+  '/organizations/count':
+    get:
+      tags:
+      - organizations
+      deprecated: false
+      description: Get the number of organizations referenced in GC3 database
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Count'
         '500':
           description: Internal error
 
 components:
   schemas:
-    Count:
-      type: object
-      properties:
-        count:
-          type: integer
-          format: int64
-    Entry:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        name:
-          type: string
-        country:
-          type: string
-        county:
-          type: string
-        region:
-          type: string
-        city:
-          type: string
-        postalCode:
-          type: string
-        latitude:
-          type: string
-        longitude:
-          type: string
-        altitude:
-          type: string
-    EntryGroup:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        name:
-          type: string
-        latitude:
-          type: string
-        longitude:
-          type: string
-            
-    Search:
-      properties:
-        results:
-          type: array
-          items: 
-            oneOf:
-              - $ref: '#/components/schemas/Entry'
-              - $ref: '#/components/schemas/Massif'
-              - $ref: '#/components/schemas/Grotto'
-    Geoloc:
-      properties:
-        entries:
-          type: array
-          items:
-            anyOf:
-            - $ref: '#/components/schemas/Entry'
-            - $ref: '#/components/schemas/EntryGroup'
 
-    Bbs:
-      type: object
-      description: A BBS (french for "Bulletin Bibliographique Spéléologique") object is a reference to a published spelological article.
-      properties:
-        id: 
-          type: integer
-          format: int64
-        title: 
-          type: string
-        year: 
-          type: int
-        crosChapRebuilt: 
-          type: string
-        crosCountryRebuilt: 
-          type: string
-        theme: 
-          type: string
-        subtheme: 
-          $ref: '#/components/schemas/Bbs subtheme'
-        lib: 
-          $ref: '#/components/schemas/Bbs lib'
-        editor: 
-          $ref: '#/components/schemas/Bbs editor'
-        abstract:
-          type: string
-        ref:
-          type: string
-        authors:
-          type: string
-        publication:
-          type: string
-
-    Bbs country:
+    Auth-success: 
       type: object
       properties:
-        id: 
-          type: integer
-          format: int64
-        name: 
-          type: string
-
-    Bbs editor:
-      type: object
-      properties:
-        address: 
-          type: string
-        email: 
-          type: string
-        url: 
+        token:
           type: string
     
-    Bbs lib:
-      type: object
-      properties:
-        id: 
-          type: integer
-          format: int64
-        name: 
-          type: string
-        country: 
-          type: string
-
-    Bbs subtheme:
-      type: object
-      properties:
-        id: 
-          type: integer
-          format: int64
-        name: 
-          type: string
-        theme: 
-          type: string
-
-    Caver:
-      type: object
-      properties:
-        id: 
-          type: integer
-          format: int64
-        nickname: 
-          type: string
-
     Cave:
       type: object
       properties:
@@ -505,6 +463,213 @@ components:
         author: 
           type: integer
           format: int64
+
+    Caver:
+      type: object
+      properties:
+        id: 
+          type: integer
+          format: int64
+        nickname: 
+          type: string
+    
+    Comment:
+      type: object
+      properties:
+        id: 
+          type: integer
+        dateInscription:
+          type: string
+        dateReviewed:
+          type: string
+        author:
+          $ref: '#/components/schemas/Caver'
+        reviewer:
+          $ref: '#/components/schemas/Caver'
+        relevance:
+          type: number
+        eTUnderground:
+          type: object
+        eTTrail:
+          type: object
+        aestheticism:
+          type: number
+        caving:
+          type: number
+        approach:
+          type: number
+        title:
+          type: string
+        body:
+          type: string
+        alert:
+          type: boolean
+        cave:
+          $ref: '#/components/schemas/Cave'
+        entrance:
+          $ref: '#/components/schemas/Entrance'
+        exit:
+          $ref: '#/components/schemas/Entrance'
+        language:
+          type: string
+        
+          
+    Count:
+      type: object
+      properties:
+        count:
+          type: integer
+          format: int64
+       
+    Document-subject:
+      type: object
+      properties:
+        code: 
+          type: string
+        subject: 
+          type: string
+        parent: 
+          type: string
+    
+    Document:
+      type: object
+      properties:
+        id: 
+          type: integer
+        dateInscription:
+          type: string
+        dateReviewed:
+          type: string
+        author:
+          $ref: '#/components/schemas/Caver'
+        reviewer:
+          $ref: '#/components/schemas/Caver'
+        isValidated:
+          type: boolean
+        validationComment:
+          type: string
+        pages:
+          type: string
+        identifier:
+          type: object
+        refBbs:
+          type: string
+        pathOld:
+          type: string
+        pagesBBSOld:
+          type: string
+        commentsBBSOld:
+          type: string
+        isBBS: 
+          type: boolean
+        publicationOtherBBSOld:
+          type: string
+        publicationFasciculeBBSOld:
+          type: string
+        validator:
+          type: object
+        identifierType:
+          type: object
+        entrance:
+          $ref: '#/components/schemas/Entrance'
+        massif:
+          $ref: '#/components/schemas/Massif'
+        cave:
+          $ref: '#/components/schemas/Cave'
+        editor:
+          $ref: '#/components/schemas/Organization'
+        library:
+          $ref: '#/components/schemas/Organization'
+        parent:
+          $ref: '#/components/schemas/Document'
+
+    Entrance:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        names:
+          type: array
+          items:
+            $ref: '#/components/schemas/Name'
+        descriptions:
+          type: array
+          items:
+            type: string
+        city:
+          type: string
+        county:
+          type: string
+        region:
+          type: string
+        country:
+          type: string
+        latitude:
+          type: number
+        longitude:
+          type: number
+        stats: 
+          $ref: '#/components/schemas/Entrance-stats'
+        cave: 
+          $ref: '#/components/schemas/Cave'
+        documents:
+          type: array
+          items:
+            $ref: '#/components/schemas/Document'
+        locations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Location'
+        riggings:
+          type: array
+          items:
+            $ref: '#/components/schemas/Rigging'
+        comments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Comment'
+
+    Entrance-group:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        latitude:
+          type: number
+        longitude:
+          type: number
+    
+    Entrance-stats:
+      type: object
+      properties:
+        aestheticism:
+          type: number
+          format: float
+        caving:
+          type: number
+          format: float
+        approach:
+          type: number
+          format: float
+    
+    Geoloc:
+      properties:
+        entries:
+          type: array
+          items:
+            anyOf:
+            - $ref: '#/components/schemas/Entrance'
+            - $ref: '#/components/schemas/Entrance-group'
+    
+    Location:
+      type: object
+        
     Massif:
       type: object
       properties:
@@ -512,10 +677,9 @@ components:
           type: integer
           format: int64
         author: 
-            $ref: '#/components/schemas/Caver'
-        idReviewer:
-          type: integer
-          format: int64
+          $ref: '#/components/schemas/Caver'
+        reviewer:
+          $ref: '#/components/schemas/Caver'
         name:
           type: string
         dateInscription:
@@ -526,7 +690,37 @@ components:
           type: array
           items: 
             $ref: '#/components/schemas/Cave'
-    Grotto:
+       
+    Name:
+      properties:
+        id: 
+          type: integer
+        name:
+          type: string
+        isMain:
+          type: boolean
+        dateInscription:
+          type: string
+        dateReviewed:
+          type: string
+        author:
+          $ref: '#/components/schemas/Caver'
+        reviewer:
+          $ref: '#/components/schemas/Caver'
+        language:
+          type: string
+        entrance:
+          $ref: '#/components/schemas/Entrance'
+        cave:
+          $ref: '#/components/schemas/Cave'
+        point:
+          type: object
+        massif:
+          $ref: '#/components/schemas/Massif'
+        organization:
+          $ref: '#/components/schemas/Organization'
+  
+    Organization:
       type: object
       properties:
         id: 
@@ -534,22 +728,25 @@ components:
           format: int64
         author: 
           $ref: '#/components/schemas/Caver'
-        idReviewer: 
-          type: integer
-          format: int64
+        reviewer: 
+          $ref: '#/components/schemas/Caver'
         name: 
-          type: 'string'
-        country:
-          type: 'string'
-        region: 
-          type: 'string'
-        city: 
-          type: 'string'
-        postalCode:
           type: 'string'
         address:
           type: 'string'
-        contact:
+        city: 
+          type: 'string'
+        village:
+          type: 'string'
+        postalCode:
+          type: 'string'
+        county:
+          type: 'string'
+        region: 
+          type: 'string'
+        country:
+          type: 'string'
+        mail:
           type: 'string'
         yearBirth:
           type: 'string'
@@ -558,28 +755,72 @@ components:
         dateReviewed: 
           type: 'string'
         latitude: 
-          type: integer
-          format: int64
+          type: number
         longitude: 
-          type: integer
-          format: int64
+          type: number
         customMessage: 
           type: 'string'
         pictureFileName: 
           type: 'string'
         isOfficialPartner: 
           type: 'boolean'
-        village: 
-          type: 'string'
-        county:
-          type: 'string'
         cavers: 
           type: array
           items: 
             $ref: '#/components/schemas/Caver'
-        entries: 
+        exploredCaves: 
           type: array
           items: 
-            $ref: '#/components/schemas/Entry'
+            $ref: '#/components/schemas/Cave'
+        partneredCaves: 
+          type: array
+          items: 
+            $ref: '#/components/schemas/Cave'
+    
+    Point:
+      type: object
+    
+    Rigging:
+      type: object
+      properties:
+        id: 
+          type: integer
+        name:
+          type: string
+        dateInscription:
+          type: string
+        dateReviewed:
+          type: string
+        author:
+          $ref: '#/components/schemas/Caver'
+        reviewer:
+          $ref: '#/components/schemas/Caver'
+        relevance:
+          type: number
+        title:
+          type: string
+        obstacles: 
+          type: string
+        ropes:
+          type: string
+        anchors: 
+          type: string
+        observations:
+          type: string
+        exit:
+          $ref: '#/components/schemas/Entrance'
+        point:
+          $ref: '#/components/schemas/Point'
+        language:
+          type: string
 
-  '/grottos/{grottoId}':
+    Search:
+      properties:
+        results:
+          type: array
+          items: 
+            oneOf:
+              - $ref: '#/components/schemas/Entrance'
+              - $ref: '#/components/schemas/Massif'
+              - $ref: '#/components/schemas/Organization'
+
