@@ -11,9 +11,6 @@ module.exports = {
   find: (req, res) =>
     entranceController.find(req, res, MappingV1Service.convertToEntranceModel),
 
-  findAll: (req, res) =>
-    entranceController.findAll(req, res, MappingV1Service.convertToEntryList),
-
   // TODO adapt
   findRandom: (req, res, next) => {
     entranceController.findRandom(
