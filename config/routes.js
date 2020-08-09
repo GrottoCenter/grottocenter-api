@@ -125,11 +125,6 @@ module.exports.routes = {
     action: 'find',
   },
 
-  'GET /api/:version/cavers/:id': {
-    controller: 'Caver',
-    action: 'findVersion',
-  },
-
   'PUT /api/cavers/:id': {
     controller: 'Caver',
     action: 'update',
@@ -141,25 +136,12 @@ module.exports.routes = {
   },
 
   /* Entrance controller */
-  'GET /api/v1/entries': {
-    controller: 'v1/Entry',
-    action: 'findAll',
-    api: {
-      entity: 'entry',
-      limit: 50,
-    },
-    cors: {
-      allowOrigins: '*',
-    },
-  },
-
-  'GET /api/entries/findRandom': {
+  'GET /api/entrances/findRandom': {
     controller: 'Entrance',
     action: 'findRandom',
   },
 
-  // /!\ DEPRECATED /!\
-  'GET /api/v1/entry/publicCount': {
+  'GET /api/v1/entrances/publicCount': {
     controller: 'v1/Entrance',
     action: 'getPublicEntrancesNumber',
     cors: {
@@ -167,12 +149,12 @@ module.exports.routes = {
     },
   },
 
-  'GET /api/entries/count': {
+  'GET /api/entrances/count': {
     controller: 'Entrance',
     action: 'getEntrancesNumber',
   },
 
-  'GET /api/v1/entries/:id': {
+  'GET /api/v1/entrances/:id': {
     controller: 'v1/Entrance',
     action: 'find',
     cors: {
@@ -280,32 +262,26 @@ module.exports.routes = {
   },
 
   /* REST API for Grotto controller */
-  'GET /api/grottos/findAll': {
+  'GET /api/organizations/findAll': {
     controller: 'Grotto',
     action: 'findAll',
   },
 
-  'GET /api/grottos/officialCount': {
+  'GET /api/organizations/officialCount': {
     controller: 'Grotto',
     action: 'getOfficialPartnersNumber',
   },
 
-  'GET /api/grottos/count': {
+  'GET /api/organizations/count': {
     controller: 'Grotto',
     action: 'getPartnersNumber',
   },
 
-  'GET /api/grottos/:id': {
-    controller: 'Grotto',
-    action: 'find',
-  },
-
-  'GET /api/v1/grottos/:id': {
+  'GET /api/v1/organizations/:id': {
     controller: 'v1/Grotto',
     action: 'find',
     api: {
       entity: 'grotto',
-      limit: 50,
     },
     cors: {
       allowOrigins: '*',
@@ -323,37 +299,24 @@ module.exports.routes = {
     action: 'find',
     api: {
       entity: 'massif',
-      limit: 50,
     },
     cors: {
       allowOrigins: '*',
     },
   },
 
-  /* REST API for BBS controllers */
-  'GET /api/v1/bbs/:id': {
-    controller: 'v1/Bbs',
-    action: 'find',
-    api: {
-      entity: 'bbs',
-      limit: 50,
-    },
-    cors: {
-      allowOrigins: '*',
-    },
-  },
-
-  'GET /api/v1/bbs/count': {
+  /* REST API for Documents controllers */
+  'GET /api/v1/documents/count': {
     controller: 'v1/Document',
-    action: 'countBBS',
+    action: 'count',
   },
 
-  'GET /api/v1/documents/subjects/:id': {
+  'GET /api/v1/documents/subjects/:code': {
     controller: 'v1/Subject',
     action: 'find',
+    skipAssets: false, // Disable this parameter to allow a dot in the url (for the code)
     api: {
       entity: 'subject',
-      limit: 50,
     },
     cors: {
       allowOrigins: '*',
@@ -372,7 +335,7 @@ module.exports.routes = {
   },
 
   /* REST API for Admin controller */
-  'GET /api/admin/entries/findAllOfInterest': {
+  'GET /api/admin/entrances/findAllOfInterest': {
     controller: 'Admin',
     action: 'findAllInterestEntries',
   },
