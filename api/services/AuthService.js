@@ -51,12 +51,12 @@ passport.deserializeUser((user, done) => {
 passport.use(
   new LocalStrategy(
     {
-      usernameField: 'contact',
+      usernameField: 'email', // which property to search on the JSON login request?
     },
-    (username, password, done) => {
+    (email, password, done) => {
       TCaver.findOne(
         {
-          contact: username,
+          mail: email,
         },
         (err, user) => {
           if (err) {
