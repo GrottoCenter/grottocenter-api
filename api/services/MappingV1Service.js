@@ -82,16 +82,16 @@ const CaverModel = {
 const CaveModel = {
   id: undefined,
   name: undefined,
-  names: undefined,
+  names: [],
   descriptions: [],
-  minDepth: undefined,
-  maxDepth: undefined,
   depth: undefined,
   length: undefined,
   isDiving: undefined,
   temperature: undefined,
   author: undefined,
   massif: undefined,
+  entrances: [],
+  documents: [],
 };
 
 const DocumentModel = {
@@ -201,14 +201,27 @@ module.exports = {
 
     result.name = mainName;
     result.names = source.names;
-    result.minDepth = source.minDepth;
-    result.maxDepth = source.maxDepth;
+    result.descriptions = source.descriptions;
     result.depth = source.depth;
     result.length = source.length;
     result.isDiving = source.isDiving;
     result.temperature = source.temperature;
+
     if (source.author instanceof Object) {
       result.author = MappingV1Service.convertToCaverModel(source.author);
+    }
+    if (source.reviewer instanceof Object) {
+      result.reviewer = MappingV1Service.convertToCaverModel(source.reviewer);
+    }
+    if (source.entrances instanceof Array) {
+      result.entrances = MappingV1Service.convertToEntranceList(
+        source.entrances,
+      );
+    }
+    if (source.documents instanceof Array) {
+      result.documents = MappingV1Service.convertToDocumentList(
+        source.documents,
+      );
     }
     return result;
   },
@@ -510,6 +523,14 @@ module.exports = {
     }
 
     return result;
+  },
+
+  convertToDocumentList: (source) => {
+    const documents = [];
+    source.forEach((item) =>
+      documents.push(MappingV1Service.convertToDocumentModel(item)),
+    );
+    return documents;
   },
 
   convertToSubjectModel: (source) => {
