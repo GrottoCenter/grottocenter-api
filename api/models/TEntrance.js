@@ -143,6 +143,7 @@ module.exports = {
 
     altitude: {
       type: 'number',
+      allowNull: true,
       columnName: 'altitude',
     },
 
@@ -169,6 +170,26 @@ module.exports = {
 
     documents: {
       collection: 'Tdocument',
+      via: 'entrance',
+    },
+
+    locations: {
+      collection: 'TLocation',
+      via: 'entrance',
+    },
+
+    documents: {
+      collection: 'TDocument',
+      via: 'entrance',
+    },
+
+    riggings: {
+      collection: 'TRigging',
+      via: 'entrance',
+    },
+
+    comments: {
+      collection: 'TComment',
       via: 'entrance',
     },
   },
