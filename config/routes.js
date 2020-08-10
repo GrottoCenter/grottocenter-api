@@ -331,6 +331,7 @@ module.exports.routes = {
   'GET /api/v1/documents/subjects/name/:name': {
     controller: 'v1/Subject',
     action: 'findByName',
+    skipAssets: false, // Disable this parameter to allow a dot in the url (for the code)
     api: {
       entity: 'subject',
     },
