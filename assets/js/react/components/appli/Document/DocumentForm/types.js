@@ -21,12 +21,6 @@ export const DocumentFormTypes = {
       name: PropTypes.string.isRequired,
     }),
   ).isRequired,
-  allLibraries: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      name: PropTypes.string.isRequired,
-    }),
-  ),
   allRegions: PropTypes.arrayOf(
     PropTypes.shape({
       id: PropTypes.string.isRequired,

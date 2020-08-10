@@ -18,7 +18,6 @@ import {
   allEditors,
   allIdentifierTypes,
   allLanguages,
-  allLibraries,
   allPartOf,
   allRegions,
   allSubjects,
@@ -66,7 +65,6 @@ const DocumentSubmission = () => {
               allEditors={allEditors}
               allIdentifierTypes={allIdentifierTypes}
               allLanguages={allLanguages}
-              allLibraries={allLibraries}
               allPartOf={allPartOf}
               allRegions={allRegions}
               allSubjects={allSubjects}

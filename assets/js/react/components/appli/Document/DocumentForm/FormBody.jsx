@@ -11,7 +11,6 @@ const FormBody = ({
   allAuthors,
   allIdentifierTypes,
   allLanguages,
-  allLibraries,
   allPartOf,
   allRegions,
   allSubjects,
@@ -34,7 +33,6 @@ const FormBody = ({
           // Suggestions
           allAuthors={allAuthors}
           allLanguages={allLanguages}
-          allLibraries={allLibraries}
           allPartOf={allPartOf}
           allRegions={allRegions}
           allSubjects={allSubjects}
@@ -74,12 +72,6 @@ FormBody.propTypes = {
       name: PropTypes.string.isRequired,
     }),
   ).isRequired,
-  allLibraries: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      name: PropTypes.string.isRequired,
-    }),
-  ),
   allRegions: PropTypes.arrayOf(
     PropTypes.shape({
       id: PropTypes.string.isRequired,
