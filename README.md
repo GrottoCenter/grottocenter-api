@@ -75,7 +75,7 @@ Caver's community needs YOU!
 
 Yon can also join us on Slack! (using the QR-code above)
 
-~~For more details, read [the development guide](https://github.com/GrottoCenter/Grottocenter3/wiki/Development-guide)~~ ==> DEPRECATED
+~~For more details, read [the development guide](https://github.com/GrottoCenter/Grottocenter3/wiki/Development-guide)
 
 ## Deployment on AWS :
 Grottocenter is evolving, its deployment is now based on AWS services.
