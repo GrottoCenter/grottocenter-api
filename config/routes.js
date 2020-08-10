@@ -311,6 +311,11 @@ module.exports.routes = {
     action: 'count',
   },
 
+  'POST /api/v1/documents': {
+    controller: 'v1/Document',
+    action: 'create',
+  },
+
   'GET /api/v1/documents/subjects/:code': {
     controller: 'v1/Subject',
     action: 'find',
@@ -375,6 +380,29 @@ module.exports.routes = {
   'GET /api/v1/advanced-search': {
     controller: 'v1/Search',
     action: 'advancedSearch',
+    cors: {
+      allowOrigins: '*',
+    },
+  },
+
+  /* Languages */
+  'GET /api/v1/languages/:id': {
+    controller: 'v1/Language',
+    action: 'find',
+    api: {
+      entity: 'language',
+    },
+    cors: {
+      allowOrigins: '*',
+    },
+  },
+
+  'GET /api/v1/languages': {
+    controller: 'v1/Language',
+    action: 'findAll',
+    api: {
+      entity: 'language',
+    },
     cors: {
       allowOrigins: '*',
     },

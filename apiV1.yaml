@@ -21,12 +21,47 @@ tags:
 - name: documents
 - name: entrances
 - name: geoloc
+- name: languages
 - name: massifs
 - name: organizations
 - name: search
 - name: subjects
 
 paths:
+
+  '/languages':
+    get:
+      tags:
+        - languages
+      description: Get all languages supported by Grottocenter
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Language-list'
+    
+  '/languages/{id}':
+    get:
+      tags:
+        - languages
+      description: Get a language by its id.
+      parameters:
+        - name: id
+          in: path
+          description: id of the language (generally, three letters)
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Language'
+    
 
   '/auth/login':
     post:
@@ -632,7 +667,7 @@ components:
           items:
             $ref: '#/components/schemas/Comment'
 
-    Entrance-group:
+    Entrance-list:
       type: object
       properties:
         id:
@@ -665,7 +700,33 @@ components:
           items:
             anyOf:
             - $ref: '#/components/schemas/Entrance'
-            - $ref: '#/components/schemas/Entrance-group'
+            - $ref: '#/components/schemas/Entrance-list'
+    
+    Language:
+      properties:
+        id:
+          type: string
+        part2b:
+          type: string
+        part2t:
+          type: string
+        part1:
+          type: string
+        scope:
+          type: string
+        type:
+          type: string
+        ref_name:
+          type: string
+        comment:
+          type: string
+        
+    Language-list:
+      properties:
+        languages:
+          type: array
+          items:
+            $ref: '#/components/schemas/Language'
     
     Location:
       type: object
@@ -823,4 +884,3 @@ components:
               - $ref: '#/components/schemas/Entrance'
               - $ref: '#/components/schemas/Massif'
               - $ref: '#/components/schemas/Organization'
-

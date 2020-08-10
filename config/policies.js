@@ -129,6 +129,10 @@ module.exports.policies = {
     '*': true,
   },
 
+  'v1/LanguageController': {
+    '*': true,
+  },
+
   'v1/DocumentController': {
     '*': true,
   },
