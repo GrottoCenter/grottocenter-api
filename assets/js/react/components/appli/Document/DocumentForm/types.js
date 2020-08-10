@@ -27,12 +27,6 @@ export const DocumentFormTypes = {
       name: PropTypes.string.isRequired,
     }),
   ),
-  allMassifs: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      name: PropTypes.string.isRequired,
-    }),
-  ),
   allRegions: PropTypes.arrayOf(
     PropTypes.shape({
       id: PropTypes.string.isRequired,

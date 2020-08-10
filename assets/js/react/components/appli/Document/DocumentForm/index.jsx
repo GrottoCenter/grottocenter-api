@@ -68,7 +68,6 @@ const DocumentForm = ({
   allIdentifierTypes,
   allLanguages,
   allLibraries,
-  allMassifs,
   allPartOf,
   allRegions,
   allSubjects,
@@ -126,7 +125,6 @@ const DocumentForm = ({
             allIdentifierTypes={allIdentifierTypes}
             allLanguages={allLanguages}
             allLibraries={allLibraries}
-            allMassifs={allMassifs}
             allPartOf={allPartOf}
             allRegions={allRegions}
             allSubjects={allSubjects}

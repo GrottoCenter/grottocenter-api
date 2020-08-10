@@ -6,10 +6,10 @@ import { includes, pathOr } from 'ramda';
 import Translate from '../../../../common/Translate';
 
 import { DocumentFormContext } from '../Provider';
-import MassifAutoComplete from '../formElements/MassifAutoComplete';
 import MultipleSelect from '../formElements/MultipleSelect';
 import PartOfAutoComplete from '../formElements/PartOfAutoComplete';
 
+import MassifAutoComplete from '../../../../../features/MassifAutoComplete';
 import OrganizationAutoComplete from '../../../../../features/OrganizationAutoComplete';
 
 import {
@@ -31,16 +31,9 @@ const FlexItemWrapper = styled.div`
 `;
 // ===================================
 
-const Step2 = ({
-  allAuthors,
-  allMassifs,
-  allPartOf,
-  allRegions,
-  allSubjects,
-  stepId,
-}) => {
+const Step2 = ({ allAuthors, allPartOf, allRegions, allSubjects, stepId }) => {
   const {
-    docAttributes: { editor, documentType, library, partOf },
+    docAttributes: { editor, documentType, library, massif, partOf },
     updateAttribute,
     validatedSteps,
   } = useContext(DocumentFormContext);
@@ -167,9 +160,18 @@ const Step2 = ({
           {(isText(documentType) || isImage(documentType)) && (
             <FlexItemWrapper>
               <MassifAutoComplete
-                hasError={false}
-                massifSuggestions={allMassifs}
+                isValueForced={pathOr(null, ['massif'], partOf) !== null}
+                helperContent={
+                  <Translate>
+                    If the document is related to a massif, you can link it to
+                    it. Use the search bar above to find an existing massif.{' '}
+                  </Translate>
+                }
+                labelText="Massif"
                 required={false}
+                searchLabelText="Search for a massif..."
+                setValue={(newValue) => updateAttribute('massif', newValue)}
+                value={massif}
               />
             </FlexItemWrapper>
           )}
@@ -188,12 +190,6 @@ Step2.propTypes = {
       surname: PropTypes.string.isRequired,
     }),
   ).isRequired,
-  allMassifs: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      name: PropTypes.string.isRequired,
-    }),
-  ),
   allPartOf: PropTypes.arrayOf(
     PropTypes.shape({
       id: PropTypes.string.isRequired,
