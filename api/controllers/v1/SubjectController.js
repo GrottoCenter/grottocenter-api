@@ -19,4 +19,12 @@ module.exports = {
       next,
       MappingV1Service.convertToSubjectList,
     ),
+
+  findByName: (req, res, next) =>
+    subjectController.findByName(
+      req,
+      res,
+      next,
+      MappingV1Service.convertToSubjectList,
+    ),
 };

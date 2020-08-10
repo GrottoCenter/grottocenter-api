@@ -141,6 +141,31 @@ paths:
           description: Subject not found
         '500':
           description: Internal error
+  
+  '/documents/subjects/name/{name}':
+    get:
+      tags:
+      - documents
+      - subjects
+      description: Get a subject by its name. The search is case insensitive and autocompleted (i.e. it search for {name} parameter being contained in the actual subject name).
+      parameters:
+      - name: name
+        in: path
+        description: Subject name (case insensitive)
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Document-subject'
+        '500':
+          description: Internal error
 
   '/entrances/{id}':
     get:
@@ -884,3 +909,4 @@ components:
               - $ref: '#/components/schemas/Entrance'
               - $ref: '#/components/schemas/Massif'
               - $ref: '#/components/schemas/Organization'
+

@@ -328,6 +328,17 @@ module.exports.routes = {
     },
   },
 
+  'GET /api/v1/documents/subjects/name/:name': {
+    controller: 'v1/Subject',
+    action: 'findByName',
+    api: {
+      entity: 'subject',
+    },
+    cors: {
+      allowOrigins: '*',
+    },
+  },
+
   'GET /api/v1/documents/subjects': {
     controller: 'v1/Subject',
     action: 'findAll',
