@@ -2,6 +2,10 @@ import {
   FETCH_SUBJECTS,
   FETCH_SUBJECTS_FAILURE,
   FETCH_SUBJECTS_SUCCESS,
+  FETCH_SUBJECTS_BY_NAME,
+  FETCH_SUBJECTS_BY_NAME_FAILURE,
+  FETCH_SUBJECTS_BY_NAME_SUCCESS,
+  RESET_SUBJECTS_BY_NAME,
 } from '../actions/Subject';
 
 //
@@ -12,6 +16,7 @@ import {
 
 const initialState = {
   subjects: [],
+  subjectsByName: [],
   isFetching: false,
   errors: undefined,
 };
@@ -24,6 +29,7 @@ const initialState = {
 const subject = (state = initialState, action) => {
   switch (action.type) {
     case FETCH_SUBJECTS:
+    case FETCH_SUBJECTS_BY_NAME:
       return { ...state, isFetching: true };
 
     case FETCH_SUBJECTS_SUCCESS:
@@ -33,8 +39,19 @@ const subject = (state = initialState, action) => {
         isFetching: false,
       };
 
+    case FETCH_SUBJECTS_BY_NAME_SUCCESS:
+      return {
+        ...state,
+        subjectsByName: action.subjects,
+        isFetching: false,
+      };
+
     case FETCH_SUBJECTS_FAILURE:
+    case FETCH_SUBJECTS_BY_NAME_FAILURE:
       return { ...state, error: action.error, isFetching: false };
+
+    case RESET_SUBJECTS_BY_NAME:
+      return { ...state, subjectsByName: [] };
 
     default:
       return state;

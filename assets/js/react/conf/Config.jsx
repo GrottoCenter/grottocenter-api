@@ -149,6 +149,7 @@ export const findBbsUrl = `/api/${apiVersion}/bbs/`;
 export const advancedsearchUrl = `/api/${apiVersion}/advanced-search`;
 export const quicksearchUrl = `/api/${apiVersion}/search`;
 export const subjectsUrl = `/api/${apiVersion}/documents/subjects`;
+export const subjectsByNameUrl = `/api/${apiVersion}/documents/subjects/name/`;
 export const getEntryUrl = `/api/${apiVersion}/entrances/`;
 export const getCaveUrl = `/api/${apiVersion}/caves/`;
 export const postDocumentUrl = `/api/${apiVersion}/document`;

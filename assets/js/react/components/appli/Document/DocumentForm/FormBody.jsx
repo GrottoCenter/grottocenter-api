@@ -13,7 +13,6 @@ const FormBody = ({
   allLanguages,
   allPartOf,
   allRegions,
-  allSubjects,
   currentFormStepId,
 }) => {
   return (
@@ -21,7 +20,6 @@ const FormBody = ({
       {currentFormStepId === 1 && (
         <Step1
           // Suggestions
-          allSubjects={allSubjects}
           allLanguages={allLanguages}
           // Steps
           stepId={1}
@@ -35,7 +33,6 @@ const FormBody = ({
           allLanguages={allLanguages}
           allPartOf={allPartOf}
           allRegions={allRegions}
-          allSubjects={allSubjects}
           // Steps
           stepId={2}
         />
@@ -76,12 +73,6 @@ FormBody.propTypes = {
     PropTypes.shape({
       id: PropTypes.string.isRequired,
       name: PropTypes.string.isRequired,
-    }),
-  ),
-  allSubjects: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      subject: PropTypes.string.isRequired,
     }),
   ),
   allPartOf: PropTypes.arrayOf(

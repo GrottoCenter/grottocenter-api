@@ -1,4 +1,5 @@
 import React, { useContext, useMemo } from 'react';
+import { useIntl } from 'react-intl';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import { includes, pathOr } from 'ramda';
@@ -11,6 +12,7 @@ import PartOfAutoComplete from '../formElements/PartOfAutoComplete';
 
 import MassifAutoComplete from '../../../../../features/MassifAutoComplete';
 import OrganizationAutoComplete from '../../../../../features/OrganizationAutoComplete';
+import MultipleSubjectsSelect from '../../../../../features/MultipleSubjectsSelect';
 
 import {
   isImage,
@@ -31,12 +33,14 @@ const FlexItemWrapper = styled.div`
 `;
 // ===================================
 
-const Step2 = ({ allAuthors, allPartOf, allRegions, allSubjects, stepId }) => {
+const Step2 = ({ allAuthors, allPartOf, allRegions, stepId }) => {
   const {
-    docAttributes: { editor, documentType, library, massif, partOf },
+    docAttributes: { editor, documentType, library, massif, partOf, subjects },
     updateAttribute,
     validatedSteps,
   } = useContext(DocumentFormContext);
+
+  const { formatMessage } = useIntl();
 
   const memoizedValues = [
     documentType,
@@ -59,17 +63,25 @@ const Step2 = ({ allAuthors, allPartOf, allRegions, allSubjects, stepId }) => {
           required={isImage(documentType) || isText(documentType)}
         />
 
-        <MultipleSelect
-          allPossibleValues={allSubjects}
-          contextValueNameToUpdate="subjects"
-          getOptionLabel={(option) => `${option.id} ${option.subject}`}
+        <MultipleSubjectsSelect
           computeHasError={(newSubjects) =>
             isText(documentType) && newSubjects.length === 0
           }
+          getOptionLabel={(option) => {
+            const { code } = option;
+            const subjectName = formatMessage({
+              id: option.code,
+              defaultMessage: option.subject,
+            });
+            return `${code} ${subjectName}`;
+          }}
           helperText="Be precise about the subjects discussed in the document: there are plenty of subject choices in Grottocenter."
           labelName="Subjects"
           required={isText(documentType)}
+          setValue={(newValue) => updateAttribute('subjects', newValue)}
+          value={subjects}
         />
+
         {(isText(documentType) || isCollectionElement(documentType)) && (
           <PartOfAutoComplete
             hasError={isCollectionElement(documentType) && !partOf}
@@ -202,18 +214,6 @@ Step2.propTypes = {
       partOf: PropTypes.shape({}),
     }),
   ),
-  allRegions: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      name: PropTypes.string.isRequired,
-    }),
-  ),
-  allSubjects: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      subject: PropTypes.string.isRequired,
-    }),
-  ).isRequired,
   stepId: PropTypes.number.isRequired,
 };
 

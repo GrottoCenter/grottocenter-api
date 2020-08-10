@@ -541,7 +541,7 @@ module.exports = {
 
   convertToSubjectModel: (source) => {
     const result = { ...SubjectModel };
-    result.code = source.id;
+    result.code = source.id.trim(); // We get a string with a length of 5 characters by default (example: 1.1 will be "1.1  "). We must trim it.
     result.subject = source.subject;
     result.parent = source.parent;
     return result;

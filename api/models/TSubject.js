@@ -13,7 +13,6 @@ module.exports = {
       type: 'string',
       allowNull: false,
       columnName: 'code',
-      maxLength: 5,
       required: true,
     },
 
