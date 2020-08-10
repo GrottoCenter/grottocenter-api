@@ -33,4 +33,12 @@ module.exports = {
         return ControllerService.treat(req, err, count, params, res);
       });
   },
+
+  create: (req, res) => {
+    // TODO later
+    const err = null;
+    const found = {};
+    const params = {};
+    return ControllerService.treat(req, err, count, params, res);
+  },
 };
