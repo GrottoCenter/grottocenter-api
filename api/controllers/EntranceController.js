@@ -16,6 +16,11 @@ module.exports = {
       .populate('cave')
       .populate('names')
       .populate('descriptions')
+      .populate('geology')
+      .populate('locations')
+      .populate('documents')
+      .populate('riggings')
+      .populate('comments')
       .exec((err, found) => {
         const params = {};
         params.searchedItem = `Entrance of id ${req.params.id}`;

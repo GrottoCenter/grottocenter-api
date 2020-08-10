@@ -31,6 +31,10 @@ const EntranceModel = {
   documents: [],
   stats: undefined,
   timeInfo: undefined,
+  locations: [],
+  documents: [],
+  riggings: [],
+  comments: [],
 };
 
 const CountResult = {
@@ -155,21 +159,23 @@ module.exports = {
 
     result.id = source.id;
     result.descriptions = source.descriptions;
-    result.country = source.Country || source.country;
+    result.country = source.country;
     result.countryCode = source['country code'];
     result.county = source.county;
-    result.region = source.Region || source.region;
-    result.city = source.City || source.city;
+    result.region = source.region;
+    result.city = source.city;
     result.postalCode = source.postalCode;
-    result.latitude = source.Latitude || source.latitude;
-    result.longitude = source.Longitude || source.longitude;
-    result.altitude = source.Altitude;
+    result.latitude = parseFloat(source.latitude);
+    result.longitude = parseFloat(source.longitude);
     result.aestheticism = source.aestheticism;
     result.approach = source.approach;
     result.caving = source.caving;
     result.documents = source.documents;
     result.stats = source.stats;
     result.timeInfo = source.timeInfo;
+    result.locations = source.locations;
+    result.riggings = source.riggings;
+    result.comments = source.comments;
 
     return result;
   },
@@ -297,8 +303,8 @@ module.exports = {
           highlights: item.highlight,
         };
 
-        data.longitude = item['_source'].longitude;
-        data.latitude = item['_source'].latitude;
+        data.longitude = parseFloat(item['_source'].longitude);
+        data.latitude = parseFloat(item['_source'].latitude);
 
         // 08/2020 - C. ROIG - Not needed at the moment but keep in case
         // const replacementKeys = {};
@@ -441,8 +447,8 @@ module.exports = {
     result.region = source.region;
     result.city = source.city;
     result.postalCode = source.postalCode;
-    result.latitude = source.latitude;
-    result.longitude = source.longitude;
+    result.latitude = parseFloat(source.latitude);
+    result.longitude = parseFloat(source.longitude);
     result.address = source.address;
     result.mail = source.mail;
     result.yearBirth = source.yearBirth;
