@@ -137,6 +137,10 @@ module.exports.policies = {
     '*': true,
   },
 
+  'v1/RegionController': {
+    '*': true,
+  },
+
   'v1/GrottoController': {
     find: ['apiKeyAuth', 'paginate'],
   },

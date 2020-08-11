@@ -24,10 +24,33 @@ tags:
 - name: languages
 - name: massifs
 - name: organizations
+- name: regions
 - name: search
 - name: subjects
 
 paths:
+
+  '/regions/bbs/name/{name}':
+    get:
+      tags:
+        - regions
+      description: Get a BBS region by its name. The search is case insensitive and autocompleted (i.e. it search for {name} parameter being contained in the actual region name).
+      parameters:
+      - name: name
+        in: path
+        description: Region name (case insensitive)
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Region-list'
+        '500':
+          description: Internal error
 
   '/languages':
     get:
@@ -899,6 +922,26 @@ components:
           $ref: '#/components/schemas/Point'
         language:
           type: string
+          
+    Region:
+      properties:
+        id: 
+          type: integer
+        name:
+          type: string
+        code:
+          type: string
+        isDeprecated:
+          type: boolean
+        country:
+          type: string
+    
+    Region-list:
+      properties:
+        regions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Region'
 
     Search:
       properties:

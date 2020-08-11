@@ -351,6 +351,18 @@ module.exports.routes = {
     },
   },
 
+  /* REST API for Region controller */
+  'GET /api/v1/regions/bbs/name/:name': {
+    controller: 'v1/Region',
+    action: 'findDeprecatedByName',
+    api: {
+      entity: 'region',
+    },
+    cors: {
+      allowOrigins: '*',
+    },
+  },
+
   /* REST API for Admin controller */
   'GET /api/admin/entrances/findAllOfInterest': {
     controller: 'Admin',
