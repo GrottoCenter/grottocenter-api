@@ -548,10 +548,12 @@ module.exports = {
   },
 
   convertToSubjectList: (source) => {
-    const subjects = [];
+    const result = {
+      subjects: [],
+    };
     source.forEach((item) =>
-      subjects.push(MappingV1Service.convertToSubjectModel(item)),
+      result.subjects.push(MappingV1Service.convertToSubjectModel(item)),
     );
-    return subjects;
+    return result;
   },
 };

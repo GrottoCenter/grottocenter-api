@@ -72,6 +72,8 @@ export function loadSubjectsByName(subjectName) {
         }
         return response.text();
       })
-      .then((text) => dispatch(fetchSubjectsByNameSuccess(JSON.parse(text))));
+      .then((text) =>
+        dispatch(fetchSubjectsByNameSuccess(JSON.parse(text).subjects)),
+      );
   };
 }
