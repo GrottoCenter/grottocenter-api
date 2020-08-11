@@ -12,7 +12,6 @@ const FormBody = ({
   allIdentifierTypes,
   allLanguages,
   allPartOf,
-  allRegions,
   currentFormStepId,
 }) => {
   return (
@@ -32,7 +31,6 @@ const FormBody = ({
           allAuthors={allAuthors}
           allLanguages={allLanguages}
           allPartOf={allPartOf}
-          allRegions={allRegions}
           // Steps
           stepId={2}
         />
@@ -69,12 +67,6 @@ FormBody.propTypes = {
       name: PropTypes.string.isRequired,
     }),
   ).isRequired,
-  allRegions: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      name: PropTypes.string.isRequired,
-    }),
-  ),
   allPartOf: PropTypes.arrayOf(
     PropTypes.shape({
       id: PropTypes.string.isRequired,

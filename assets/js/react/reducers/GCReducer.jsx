@@ -17,6 +17,7 @@ import entry from './EntryReducer';
 import cave from './CaveReducer';
 import auth from './AuthReducer';
 import document from './DocumentReducer';
+import region from './RegionReducer';
 
 //
 //
@@ -43,6 +44,7 @@ const GCReducer = combineReducers({
   entry,
   cave,
   document,
+  region,
 });
 
 export default GCReducer;

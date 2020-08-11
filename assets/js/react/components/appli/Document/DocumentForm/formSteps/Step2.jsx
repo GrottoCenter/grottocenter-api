@@ -11,8 +11,9 @@ import MultipleSelect from '../formElements/MultipleSelect';
 import PartOfAutoComplete from '../formElements/PartOfAutoComplete';
 
 import MassifAutoComplete from '../../../../../features/MassifAutoComplete';
-import OrganizationAutoComplete from '../../../../../features/OrganizationAutoComplete';
+import MultipleBBSRegionsSelect from '../../../../../features/MultipleBBSRegionsSelect';
 import MultipleSubjectsSelect from '../../../../../features/MultipleSubjectsSelect';
+import OrganizationAutoComplete from '../../../../../features/OrganizationAutoComplete';
 
 import {
   isImage,
@@ -33,9 +34,17 @@ const FlexItemWrapper = styled.div`
 `;
 // ===================================
 
-const Step2 = ({ allAuthors, allPartOf, allRegions, stepId }) => {
+const Step2 = ({ allAuthors, allPartOf, stepId }) => {
   const {
-    docAttributes: { editor, documentType, library, massif, partOf, subjects },
+    docAttributes: {
+      editor,
+      documentType,
+      library,
+      massif,
+      partOf,
+      regions,
+      subjects,
+    },
     updateAttribute,
     validatedSteps,
   } = useContext(DocumentFormContext);
@@ -158,14 +167,14 @@ const Step2 = ({ allAuthors, allPartOf, allRegions, stepId }) => {
         <FlexWrapper>
           {(isText(documentType) || isImage(documentType)) && (
             <FlexItemWrapper>
-              <MultipleSelect
-                allPossibleValues={allRegions}
-                contextValueNameToUpdate="regions"
+              <MultipleBBSRegionsSelect
                 getOptionLabel={(option) => `${option.name}`}
                 computeHasError={() => false}
                 helperText="If the document is related to one or many regions, you can link it to them."
                 labelName="Regions"
                 required={false}
+                setValue={(newValue) => updateAttribute('regions', newValue)}
+                value={regions}
               />
             </FlexItemWrapper>
           )}
@@ -176,7 +185,7 @@ const Step2 = ({ allAuthors, allPartOf, allRegions, stepId }) => {
                 helperContent={
                   <Translate>
                     If the document is related to a massif, you can link it to
-                    it. Use the search bar above to find an existing massif.{' '}
+                    it. Use the search bar above to find an existing massif.
                   </Translate>
                 }
                 labelText="Massif"

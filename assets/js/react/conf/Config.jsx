@@ -153,6 +153,7 @@ export const subjectsByNameUrl = `/api/${apiVersion}/documents/subjects/name/`;
 export const getEntryUrl = `/api/${apiVersion}/entrances/`;
 export const getCaveUrl = `/api/${apiVersion}/caves/`;
 export const postDocumentUrl = `/api/${apiVersion}/document`;
+export const bbsRegionsByNameUrl = `/api/${apiVersion}/regions/bbs/name/`;
 
 // ===== Auth url
 export const loginUrl = `/api/${apiVersion}/login`;
