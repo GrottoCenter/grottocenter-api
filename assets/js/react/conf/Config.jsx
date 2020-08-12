@@ -154,6 +154,7 @@ export const getEntryUrl = `/api/${apiVersion}/entrances/`;
 export const getCaveUrl = `/api/${apiVersion}/caves/`;
 export const postDocumentUrl = `/api/${apiVersion}/document`;
 export const regionsSearchUrl = `/api/${apiVersion}/regions/search/logical/or`;
+export const identifierTypesUrl = `/api/${apiVersion}/documents/identifierTypes`;
 
 // ===== Auth url
 export const loginUrl = `/api/${apiVersion}/login`;

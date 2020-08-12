@@ -3,9 +3,10 @@ import PropTypes from 'prop-types';
 import styled from 'styled-components';
 
 import { includes } from 'ramda';
-import IdentifierEditor from '../formElements/IdentifierEditor';
 import PagesEditor from '../formElements/PagesEditor';
 import StringInput from '../../../../common/Form/StringInput';
+
+import DocIdentifierEditor from '../../../../../features/DocIdentifierEditor';
 
 import { DocumentFormContext } from '../Provider';
 import { isText, isCollectionElement } from '../DocumentTypesHelper';
@@ -22,9 +23,9 @@ const FlexItemWrapper = styled.div`
 `;
 // ===================================
 
-const Step3 = ({ allIdentifierTypes, stepId }) => {
+const Step3 = ({ stepId }) => {
   const {
-    docAttributes: { documentType, issue },
+    docAttributes: { documentType, identifier, identifierType, issue },
     updateAttribute,
     validatedSteps,
   } = useContext(DocumentFormContext);
@@ -53,7 +54,15 @@ const Step3 = ({ allIdentifierTypes, stepId }) => {
           )}
         </FlexWrapper>
 
-        <IdentifierEditor allIdentifierTypes={allIdentifierTypes} />
+        <DocIdentifierEditor
+          documentType={documentType}
+          identifier={identifier}
+          identifierType={identifierType}
+          setIdentifier={(value) => updateAttribute('identifier', value)}
+          setIdentifierType={(value) =>
+            updateAttribute('identifierType', value)
+          }
+        />
       </>
     ),
     [memoizedValues],
@@ -61,12 +70,6 @@ const Step3 = ({ allIdentifierTypes, stepId }) => {
 };
 
 Step3.propTypes = {
-  allIdentifierTypes: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      text: PropTypes.string.isRequired,
-    }),
-  ),
   stepId: PropTypes.number.isRequired,
 };
 

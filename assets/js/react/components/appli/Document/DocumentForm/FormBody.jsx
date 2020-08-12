@@ -9,7 +9,6 @@ import Step3 from './formSteps/Step3';
 
 const FormBody = ({
   allAuthors,
-  allIdentifierTypes,
   allLanguages,
   allPartOf,
   currentFormStepId,
@@ -37,8 +36,6 @@ const FormBody = ({
       )}
       {currentFormStepId === 3 && (
         <Step3
-          // Suggestions
-          allIdentifierTypes={allIdentifierTypes}
           // Steps
           stepId={3}
         />
@@ -55,12 +52,6 @@ FormBody.propTypes = {
       surname: PropTypes.string.isRequired,
     }),
   ).isRequired,
-  allIdentifierTypes: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      text: PropTypes.string.isRequired,
-    }),
-  ),
   allLanguages: PropTypes.arrayOf(
     PropTypes.shape({
       id: PropTypes.string.isRequired,

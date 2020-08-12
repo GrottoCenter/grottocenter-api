@@ -6,7 +6,6 @@ import { includes, pathOr } from 'ramda';
 import Translate from '../../../../common/Translate';
 
 import { DocumentFormContext } from '../Provider';
-import MultipleSelect from '../formElements/MultipleSelect';
 import PartOfAutoComplete from '../formElements/PartOfAutoComplete';
 
 import MassifAutoComplete from '../../../../../features/MassifAutoComplete';
@@ -33,7 +32,7 @@ const FlexItemWrapper = styled.div`
 `;
 // ===================================
 
-const Step2 = ({ allAuthors, allPartOf, stepId }) => {
+const Step2 = ({ /* allAuthors, */ allPartOf, stepId }) => {
   const {
     docAttributes: {
       editor,
@@ -56,7 +55,8 @@ const Step2 = ({ allAuthors, allPartOf, stepId }) => {
   return useMemo(
     () => (
       <>
-        <MultipleSelect
+        {/* To be replaced by an autocomplete component */}
+        {/* <MultipleSelect
           allPossibleValues={allAuthors}
           contextValueNameToUpdate="authors"
           getOptionLabel={(option) => `${option.name} ${option.surname}`}
@@ -67,7 +67,7 @@ const Step2 = ({ allAuthors, allPartOf, stepId }) => {
           helperText="Use authors' full name, no abreviation. In a next version of the website, if the author is not in the Grottocenter database, you will be able to add it."
           labelName="Authors"
           required={isImage(documentType) || isText(documentType)}
-        />
+        /> */}
 
         <MultipleSubjectsSelect
           computeHasError={(newSubjects) =>

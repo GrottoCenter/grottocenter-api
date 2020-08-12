@@ -13,7 +13,11 @@ module.exports = {
         searchedItem: 'All document identifier types',
       };
       const formattedFound = {
-        identifierTypes: found,
+        identifierTypes: found.map((idType) => ({
+          code: idType.id,
+          text: idType.text,
+          regexp: idType.regexp,
+        })),
       };
       return ControllerService.treat(req, err, formattedFound, params, res);
     });

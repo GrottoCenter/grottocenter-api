@@ -1,4 +1,4 @@
-import React, { useContext, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 
@@ -13,7 +13,6 @@ import {
 
 import Translate from '../../../../common/Translate';
 
-import { DocumentFormContext } from '../Provider';
 import { isImage } from '../DocumentTypesHelper';
 import StringInput from '../../../../common/Form/StringInput';
 
@@ -35,29 +34,14 @@ const IdentifierTypeContainer = styled.div`
 `;
 // ===================================
 
-const IdentifierEditor = ({ allIdentifierTypes }) => {
-  const {
-    docAttributes: { identifier, identifierType, documentType },
-    updateAttribute,
-  } = useContext(DocumentFormContext);
-
-  const handleIdentifierChange = (newIdentifier) => {
-    if (newIdentifier === '') {
-      updateAttribute('identifierType', null);
-    }
-    updateAttribute('identifier', newIdentifier);
-  };
-
-  const handleIdentifierTypeChange = (event) => {
-    const idType = allIdentifierTypes.find(
-      (idT) => idT.id === event.target.value,
-    );
-    updateAttribute('identifierType', {
-      id: idType.id,
-      text: idType.text,
-    });
-  };
-
+const IdentifierEditor = ({
+  allIdentifierTypes,
+  documentType,
+  handleIdentifierChange,
+  handleIdentifierTypeChange,
+  identifier,
+  identifierType,
+}) => {
   const memoizedValues = [documentType, identifier, identifierType];
   return useMemo(
     () => (
@@ -86,10 +70,12 @@ const IdentifierEditor = ({ allIdentifierTypes }) => {
                   <Translate>Identifier Type</Translate>
                 </InputLabel>
                 <Select
-                  value={identifierType ? identifierType.id : -1}
-                  onChange={handleIdentifierTypeChange}
+                  value={identifierType ? identifierType.code : -1}
+                  onChange={(event) =>
+                    handleIdentifierTypeChange(event.target.value)
+                  }
                   inputProps={{
-                    id: `identifier-type`,
+                    code: `identifier-type`,
                     name: `identifier-type`,
                   }}
                 >
@@ -98,9 +84,9 @@ const IdentifierEditor = ({ allIdentifierTypes }) => {
                       <Translate>Select an identifier type</Translate>
                     </i>
                   </MenuItem>
-                  {allIdentifierTypes.map((l) => (
-                    <MenuItem key={l.id} value={l.id}>
-                      {l.text}
+                  {allIdentifierTypes.map((idType) => (
+                    <MenuItem key={idType.code} value={idType.code}>
+                      {idType.code}
                     </MenuItem>
                   ))}
                 </Select>
@@ -123,10 +109,22 @@ const IdentifierEditor = ({ allIdentifierTypes }) => {
 IdentifierEditor.propTypes = {
   allIdentifierTypes: PropTypes.arrayOf(
     PropTypes.shape({
-      id: PropTypes.string.isRequired,
+      code: PropTypes.string.isRequired,
       text: PropTypes.string.isRequired,
     }),
   ),
+  documentType: PropTypes.shape({
+    id: PropTypes.number.isRequired,
+    name: PropTypes.string.isRequired,
+  }).isRequired,
+  handleIdentifierChange: PropTypes.func.isRequired,
+  handleIdentifierTypeChange: PropTypes.func.isRequired,
+  identifier: PropTypes.string,
+  identifierType: PropTypes.shape({
+    code: PropTypes.string.isRequired,
+    text: PropTypes.string.isRequired,
+    regexp: PropTypes.string.isRequired,
+  }),
 };
 
 export default IdentifierEditor;

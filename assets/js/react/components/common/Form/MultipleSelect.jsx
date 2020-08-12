@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { useIntl } from 'react-intl';
 import PropTypes from 'prop-types';
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import { FormHelperText, TextField } from '@material-ui/core';
@@ -26,6 +27,7 @@ const MultipleSelect = ({
 }) => {
   const [inputValue, setInputValue] = React.useState('');
   const debouncedInput = useDebounce(inputValue);
+  const { formatMessage } = useIntl();
 
   const handleInputChange = (event, newValue, reason) => {
     switch (reason) {
@@ -72,9 +74,20 @@ const MultipleSelect = ({
             inputValue.length >= nbCharactersNeededToLaunchSearch ? (
               noOptionsText
             ) : (
-              <Translate>
-                Enter at least {nbCharactersNeededToLaunchSearch} character(s)
-              </Translate>
+              <span>
+                {formatMessage(
+                  {
+                    id: 'Type at least {nbOfChars} character(s)',
+                  },
+                  {
+                    nbOfChars: (
+                      <span key="notEnoughCharsEntered">
+                        {nbCharactersNeededToLaunchSearch}
+                      </span>
+                    ),
+                  },
+                )}
+              </span>
             )
           }
           required={required}
