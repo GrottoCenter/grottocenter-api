@@ -350,6 +350,18 @@ module.exports.routes = {
     },
   },
 
+  /* REST API for Document Identifier Types controller */
+  'GET /api/v1/documents/identifierTypes': {
+    controller: 'v1/IdentifierType',
+    action: 'findAll',
+    api: {
+      entity: 'identifierType',
+    },
+    cors: {
+      allowOrigins: '*',
+    },
+  },
+
   /* REST API for Region controller */
   'POST /api/v1/regions/search/logical/or': {
     controller: 'v1/Region',

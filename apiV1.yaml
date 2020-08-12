@@ -27,8 +27,31 @@ tags:
 - name: regions
 - name: search
 - name: subjects
+- name: identifierTypes
 
 paths:
+
+  '/documents/identifierTypes':
+    get:
+      tags:
+      - documents
+      - identifierTypes
+      description: Get all the document identifier types.
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  identifierTypes:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Document-identifierType"
+        '500':
+          description: Internal error
+    
 
   '/regions/search/logical/or':
     post:
@@ -632,16 +655,6 @@ components:
         count:
           type: integer
           format: int64
-       
-    Document-subject:
-      type: object
-      properties:
-        code: 
-          type: string
-        subject: 
-          type: string
-        parent: 
-          type: string
     
     Document:
       type: object
@@ -694,6 +707,26 @@ components:
           $ref: '#/components/schemas/Organization'
         parent:
           $ref: '#/components/schemas/Document'
+    
+    Document-identifierType:
+      type: object
+      properties:
+        code: 
+          type: string
+        text: 
+          type: string
+        regexp: 
+          type: string
+    
+    Document-subject:
+      type: object
+      properties:
+        code: 
+          type: string
+        subject: 
+          type: string
+        parent: 
+          type: string
 
     Entrance:
       type: object
