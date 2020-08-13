@@ -12,25 +12,34 @@ module.exports = {
    *                  By default, search on all entities
    **/
   search: (req, res) => {
-    // Store every params in the url and check if the query parameter exists
-    const paramsURL = req.query;
-    if (!paramsURL.query) {
+    if (!req.param('query')) {
       return res.badRequest();
     }
 
     // By default, the query asked will send every information.
     // We can limit these information just by adding a "complete" parameter to false in the query.
     let complete = true;
-    if (paramsURL.complete === 'false' || paramsURL.complete === false) {
+    if (req.param('complete') === 'false' || req.param('complete') === false) {
       complete = false;
     }
 
     const params = {
-      searchedItem: `Search entity with the following query ${req.query.query}`,
+      searchedItem: `Search entity with the following query ${req.param(
+        'query',
+      )}`,
+    };
+
+    // Extract search parameters
+    const searchParams = {
+      from: req.param('from'),
+      size: req.param('size'),
+      query: req.param('query'),
+      resourceType: req.param('resourceType'),
+      resourceTypes: req.param('resourceTypes'),
     };
 
     // Use the Elasticsearch Service to do the search according to the parameters of the URL
-    return ElasticSearch.searchQuery(paramsURL)
+    return ElasticSearch.searchQuery(searchParams)
       .then((results) => {
         if (complete) {
           return ControllerService.treatAndConvert(

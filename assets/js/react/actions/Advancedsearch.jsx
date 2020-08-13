@@ -11,13 +11,19 @@ export const FETCH_ADVANCEDSEARCH_STARTED = 'FETCH_ADVANCEDSEARCH_STARTED';
 export const FETCH_ADVANCEDSEARCH_SUCCESS = 'FETCH_ADVANCEDSEARCH_SUCCESS';
 export const FETCH_ADVANCEDSEARCH_FAILURE = 'FETCH_ADVANCEDSEARCH_FAILURE';
 
-export const FETCH_NEXT_ADVANCEDSEARCH_STARTED = 'FETCH_NEXT_ADVANCEDSEARCH_STARTED';
-export const FETCH_NEXT_ADVANCEDSEARCH_SUCCESS = 'FETCH_NEXT_ADVANCEDSEARCH_SUCCESS';
-export const FETCH_NEXT_ADVANCEDSEARCH_FAILURE = 'FETCH_NEXT_ADVANCEDSEARCH_FAILURE';
+export const FETCH_NEXT_ADVANCEDSEARCH_STARTED =
+  'FETCH_NEXT_ADVANCEDSEARCH_STARTED';
+export const FETCH_NEXT_ADVANCEDSEARCH_SUCCESS =
+  'FETCH_NEXT_ADVANCEDSEARCH_SUCCESS';
+export const FETCH_NEXT_ADVANCEDSEARCH_FAILURE =
+  'FETCH_NEXT_ADVANCEDSEARCH_FAILURE';
 
-export const FETCH_FULL_ADVANCEDSEARCH_STARTED = 'FETCH_FULL_ADVANCEDSEARCH_STARTED';
-export const FETCH_FULL_ADVANCEDSEARCH_SUCCESS = 'FETCH_FULL_ADVANCEDSEARCH_SUCCESS';
-export const FETCH_FULL_ADVANCEDSEARCH_FAILURE = 'FETCH_FULL_ADVANCEDSEARCH_FAILURE';
+export const FETCH_FULL_ADVANCEDSEARCH_STARTED =
+  'FETCH_FULL_ADVANCEDSEARCH_STARTED';
+export const FETCH_FULL_ADVANCEDSEARCH_SUCCESS =
+  'FETCH_FULL_ADVANCEDSEARCH_SUCCESS';
+export const FETCH_FULL_ADVANCEDSEARCH_FAILURE =
+  'FETCH_FULL_ADVANCEDSEARCH_FAILURE';
 
 export const RESET_ADVANCEDSEARCH_RESULTS = 'RESET_ADVANCEDSEARCH_RESULTS';
 
@@ -90,7 +96,7 @@ export const fetchAdvancedsearchResults = (criterias) => (dispatch) => {
       .join('&')}`;
   }
 
-  return fetch(completeUrl)
+  return fetch(completeUrl, { method: 'POST' })
     .then((response) => {
       if (response.status >= 400) {
         const errorMessage = `Fetching ${completeUrl} status: ${response.status}`;
@@ -101,12 +107,17 @@ export const fetchAdvancedsearchResults = (criterias) => (dispatch) => {
     })
     .then((text) => {
       const response = JSON.parse(text);
-      dispatch(fetchAdvancedsearchSuccess(response.results, response.totalNbResults));
+      dispatch(
+        fetchAdvancedsearchSuccess(response.results, response.totalNbResults),
+      );
     });
   // .catch(error => dispatch(fetchRandomEntryFailure(error)))
 };
 
-export const fetchNextAdvancedsearchResults = (from, size) => (dispatch, getState) => {
+export const fetchNextAdvancedsearchResults = (from, size) => (
+  dispatch,
+  getState,
+) => {
   const currentState = getState().advancedsearch;
 
   // Load only new data (to avoid duplicates)
@@ -128,7 +139,7 @@ export const fetchNextAdvancedsearchResults = (from, size) => (dispatch, getStat
       .join('&')}`;
   }
 
-  return fetch(completeUrl)
+  return fetch(completeUrl, { method: 'POST' })
     .then((response) => {
       if (response.status >= 400) {
         const errorMessage = `Fetching ${completeUrl} status: ${response.status}`;

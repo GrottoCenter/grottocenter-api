@@ -299,7 +299,7 @@ paths:
           description: Internal error
           
   '/search':
-    get:
+    post:
       tags:
       - search
       summary: Search for resources (documents, entrances, massifs & organizations)
@@ -331,7 +331,7 @@ paths:
           description: Internal error
   
   '/advanced-search':
-    get:
+    post:
       tags:
       - search
       summary: Advanced search for resources (documents, entrances, massifs & organizations)

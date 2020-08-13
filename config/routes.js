@@ -404,7 +404,7 @@ module.exports.routes = {
   },
 
   /* Search */
-  'GET /api/v1/search': {
+  'POST /api/v1/search': {
     controller: 'v1/Search',
     action: 'search',
     cors: {
@@ -412,7 +412,7 @@ module.exports.routes = {
     },
   },
 
-  'GET /api/v1/advanced-search': {
+  'POST /api/v1/advanced-search': {
     controller: 'v1/Search',
     action: 'advancedSearch',
     cors: {
