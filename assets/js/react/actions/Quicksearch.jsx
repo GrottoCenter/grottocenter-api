@@ -39,17 +39,13 @@ export const fetchQuicksearchResult = (criterias) => (dispatch) => {
   dispatch(resetQuicksearch());
   dispatch(fetchLoading());
 
-  let completeUrl = quicksearchUrl;
-  if (criterias) {
-    completeUrl += `?${Object.keys(criterias)
-      .map((k) => `${k}=${encodeURIComponent(criterias[k])}`)
-      .join('&')}`;
-  }
-
-  return fetch(completeUrl, { method: 'POST' })
+  return fetch(quicksearchUrl, {
+    method: 'POST',
+    body: JSON.stringify(criterias),
+  })
     .then((response) => {
       if (response.status >= 400) {
-        const errorMessage = `Fetching ${completeUrl} status: ${response.status}`;
+        const errorMessage = `Fetching ${quicksearchUrl} status: ${response.status}`;
         dispatch(fetchQuicksearchFailure(errorMessage));
         throw new Error(errorMessage);
       }

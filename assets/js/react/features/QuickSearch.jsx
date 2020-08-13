@@ -19,12 +19,16 @@ export const searchableTypes = {
   entries: 'entries',
   groups: 'grottos',
   massifs: 'massifs',
+  cavers: 'cavers',
 };
 
 const renderOption = (option) => entityOptionForSelector(option);
 const getOptionLabel = (option) => option.name;
 
-const QuickSearch = ({ searchOnType = '', ...autoCompleteProps }) => {
+const QuickSearch = ({
+  searchOnTypes = ['documents', 'entrances', 'grottos', 'massifs'],
+  ...autoCompleteProps
+}) => {
   const { formatMessage } = useIntl();
   const history = useHistory();
   const dispatch = useDispatch();
@@ -43,11 +47,14 @@ const QuickSearch = ({ searchOnType = '', ...autoCompleteProps }) => {
         case 'massif':
           history.push(`/ui/massifs/${encodeURIComponent(selection.id)}`);
           break;
-        case 'bbs':
+        case 'documents':
           history.push(`/ui/bbs/${encodeURIComponent(selection.id)}`);
           break;
         case 'grotto':
           history.push(`/ui/groups/${encodeURIComponent(selection.id)}`);
+          break;
+        case 'caver':
+          history.push(`/ui/cavers/${encodeURIComponent(selection.id)}`);
           break;
         default:
       }
@@ -60,8 +67,8 @@ const QuickSearch = ({ searchOnType = '', ...autoCompleteProps }) => {
       const criterias = {
         query: debouncedInput.trim(),
         complete: false,
-        ...(searchOnType !== '' && { resourceType: searchOnType }), // use resource type only if not empty
       };
+      if (searchOnTypes.length !== 0) criterias.resourceTypes = searchOnTypes;
       dispatch(fetchQuicksearchResult(criterias));
     } else {
       dispatch(resetQuicksearch());
@@ -89,5 +96,5 @@ export default QuickSearch;
 QuickSearch.propTypes = {
   hasFixWidth: PropTypes.bool,
   label: PropTypes.string,
-  searchOnType: PropTypes.string,
+  searchOnTypes: PropTypes.arrayOf(PropTypes.string),
 };

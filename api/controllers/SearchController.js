@@ -3,7 +3,13 @@
 
 const ElasticSearch = require('../services/ElasticsearchService');
 
-const advancedSearchTypes = ['massifs', 'entrances', 'grottos', 'documents'];
+const advancedSearchTypes = [
+  'massifs',
+  'entrances',
+  'grottos',
+  'documents',
+  'cavers',
+];
 
 module.exports = {
   /**

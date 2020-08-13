@@ -3,7 +3,13 @@
 
 const client = require('../../config/elasticsearch').elasticsearchCli;
 
-const resourcesToUpdate = ['grottos', 'massifs', 'entrances', 'documents'];
+const resourcesToUpdate = [
+  'grottos',
+  'massifs',
+  'entrances',
+  'documents',
+  'cavers',
+];
 const advancedSearchMetaParams = [
   'resourceType',
   'complete',
@@ -93,9 +99,9 @@ const self = (module.exports = {
    *    @param {integer}        from (optional, default = 0) number of first results to skip
    *    @param {integer}        size (optional, default = 10) number of first results to return
    *    @param {string}         resourceType (optional) resource type to search on.
-   *            Must be one of ['grottos', 'entrances', 'massifs', 'documents']
+   *            Must be one of ['grottos', 'entrances', 'massifs', 'documents', 'cavers']
    *    @param {Array(string)}  resourceTypes (optional) resource types to search on.
-   *            Must be an array containing some of the following string ['grottos', 'entrances', 'massifs', 'documents']
+   *            Must be an array containing some of the following string ['grottos', 'entrances', 'massifs', 'documents', 'cavers']
    */
   searchQuery: (params) =>
     new Promise((resolve, reject) => {
@@ -148,6 +154,10 @@ const self = (module.exports = {
                   'ref_bbs',
                   'subjects',
                   'identifier^1.5',
+
+                  // ==== Cavers
+                  'surname^5',
+                  'nickname^3',
                 ],
               },
             },

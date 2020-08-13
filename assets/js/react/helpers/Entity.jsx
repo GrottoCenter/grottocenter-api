@@ -56,22 +56,44 @@ export const entityOptionForSelector = (option) => {
     });
   }
 
+  let iconPath = '/images/';
+  let textToDisplay = option.name; // Default for all entities except for caver (see below)
+  switch (option.type) {
+    case 'caver':
+      if (!option.name && !option.surname) {
+        textToDisplay = option.nickname;
+      } else if (option.name) {
+        textToDisplay = option.name;
+        if (option.surname) {
+          textToDisplay += ` ${option.surname.toUpperCase()}`;
+        }
+      } else {
+        textToDisplay = option.surname.toUpperCase();
+      }
+
+      iconPath += 'caver.svg';
+      break;
+    case 'document':
+      iconPath += 'bibliography.svg';
+      break;
+    case 'entrance':
+      iconPath += 'entry.svg';
+      break;
+    case 'group':
+      iconPath += 'club.svg';
+      break;
+    case 'massif':
+      iconPath += 'massif.svg';
+      break;
+    default:
+      break;
+  }
+
   return (
     <>
-      {option.type === 'entrance' && (
-        <EntityIcon src="/images/entry.svg" alt="Entrance icon" />
-      )}
-      {option.type === 'grotto' && (
-        <EntityIcon src="/images/club.svg" alt="Group icon" />
-      )}
-      {option.type === 'massif' && (
-        <EntityIcon src="/images/massif.svg" alt="Massif icon" />
-      )}
-      {option.type === 'document' && (
-        <EntityIcon src="/images/bibliography.svg" alt="Document icon" />
-      )}
+      <EntityIcon src={iconPath} alt={`${option.type} icon`} />
+      <EntityLabel>{textToDisplay}</EntityLabel>
 
-      <EntityLabel>{option.name}</EntityLabel>
       {highlights.map((hl) => {
         const key = Object.keys(hl)[0];
         return (

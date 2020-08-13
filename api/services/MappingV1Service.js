@@ -81,6 +81,8 @@ const GrottoModel = {
 const CaverModel = {
   id: undefined,
   nickname: undefined,
+  surname: undefined,
+  name: undefined,
 };
 
 const CaveModel = {
@@ -350,6 +352,10 @@ module.exports = {
             }
 
             break;
+
+          case 'caver':
+            data.surname = item['_source'].surname;
+            data.nickname = item['_source'].nickname;
 
           default:
         }

@@ -302,22 +302,30 @@ paths:
     post:
       tags:
       - search
-      summary: Search for resources (documents, entrances, massifs & organizations)
-      description: Search for resources (entrances, massifs & organizations & documents). Case insensitive. Search over a lots of resource properties (not only name).
-      parameters:
-      - name: query
-        in: query
-        description: Resource property (or part of property)
-        required: true
-        schema:
-          type: string
-      - name: complete
-        in: query
-        description: Does the query need to send every information about the results? If it's set to false, the id and the name of each result will be returned.
-        required: false
-        schema:
-          type: boolean
-          default: true
+      summary: Search for resources (cavers, documents, entrances, massifs & organizations)
+      description: Search for resources (cavers, documents, entrances, massifs & organizations). Case insensitive. Search over a lots of resource properties (not only name).
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - query
+              properties:
+                query:
+                  type: string
+                  description: Resource property (or part of property) to search.
+                resourceTypes:
+                  type: array
+                  description: Resource types to search on. If not specified, it will search on all resources.
+                  items:
+                    $ref: '#/components/schemas/Search-type'
+                complete:
+                  type: boolean
+                  description: Does the query need to send every information about the results? If it's set to false, the id and the name of each result only will be returned.
+
+                
+                
       responses:
         '200':
           description: Successful operation
@@ -1007,4 +1015,12 @@ components:
               - $ref: '#/components/schemas/Entrance'
               - $ref: '#/components/schemas/Massif'
               - $ref: '#/components/schemas/Organization'
-
+    
+    Search-type:
+      type: string
+      enum:
+        - cavers
+        - documents
+        - entrances
+        - grottos
+        - massifs
