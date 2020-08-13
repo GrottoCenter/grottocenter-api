@@ -1,5 +1,5 @@
 # Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.
-version: v1.14.1
+version: v1.19.0
 ignore: {}
 # patches apply the minimum changes required to fix a vulnerability
 patch:
@@ -93,3 +93,6 @@ patch:
   'npm:request:20160119':
     - grunt-transifex > request:
         patched: '2020-06-04T10:03:12.857Z'
+  'npm:qs:20140806':
+    - grunt-transifex > request > qs:
+        patched: '2020-08-13T10:13:54.797Z'

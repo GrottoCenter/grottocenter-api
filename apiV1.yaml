@@ -79,7 +79,7 @@ paths:
           type: boolean
       responses:
         '200':
-          description: Successful operation
+          description: Successful login
           content:
             application/json:
               schema:
