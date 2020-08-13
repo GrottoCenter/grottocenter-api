@@ -1,8 +1,8 @@
 import {
-  FETCH_BBS_REGIONS_BY_NAME,
-  FETCH_BBS_REGIONS_BY_NAME_FAILURE,
-  FETCH_BBS_REGIONS_BY_NAME_SUCCESS,
-  RESET_BBS_REGIONS_BY_NAME,
+  REGIONS_SEARCH,
+  REGIONS_SEARCH_FAILURE,
+  REGIONS_SEARCH_SUCCESS,
+  RESET_REGIONS_SEARCH,
 } from '../actions/Region';
 
 //
@@ -24,20 +24,20 @@ const initialState = {
 //
 const region = (state = initialState, action) => {
   switch (action.type) {
-    case FETCH_BBS_REGIONS_BY_NAME:
+    case REGIONS_SEARCH:
       return { ...state, isFetching: true };
 
-    case FETCH_BBS_REGIONS_BY_NAME_SUCCESS:
+    case REGIONS_SEARCH_SUCCESS:
       return {
         ...state,
         bbsRegionsByName: action.regions,
         isFetching: false,
       };
 
-    case FETCH_BBS_REGIONS_BY_NAME_FAILURE:
+    case REGIONS_SEARCH_FAILURE:
       return { ...state, error: action.error, isFetching: false };
 
-    case RESET_BBS_REGIONS_BY_NAME:
+    case RESET_REGIONS_SEARCH:
       return { ...state, bbsRegionsByName: [] };
 
     default:

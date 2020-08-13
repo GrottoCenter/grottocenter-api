@@ -8,11 +8,11 @@
 module.exports = {
   find: (req, res, next, converter) => {
     TSubject.findOne({
-      id: req.params.code,
+      id: req.param('code', null),
     }).exec((err, found) => {
       const params = {};
       params.controllerMethod = 'TSubjectController.find';
-      params.searchedItem = `Subject of code ${req.params.code}`;
+      params.searchedItem = `Subject of code ${req.param('code', null)}`;
       return ControllerService.treatAndConvert(
         req,
         err,
@@ -41,32 +41,44 @@ module.exports = {
     });
   },
 
-  findByName: (req, res, next, converter) => {
-    TSubject.find()
-      .where({
-        /* Case insensitive search + first letter capitalized
+  search: (req, res, next, converter) => {
+    const orSearchArray = [];
+    if (req.param('name', null)) {
+      const name = req.param('name');
+      /* Case insensitive search + first letter capitalized
           Example with "grot" => search with ["grot", "grot", "GROT", "Grot"]
                   with "GROT" => search with ["GROT", "grot", "GROT", "Grot"]
                   with "Grot" => search with ["Grot", "grot", "GROT", "Grot"]
             ===>  in all cases, it searches with all the possible cases
         */
-        or: [
-          { subject: { contains: req.params.name } },
-          { subject: { contains: req.params.name.toLowerCase() } },
-          { subject: { contains: req.params.name.toUpperCase() } },
-          {
-            subject: {
-              contains:
-                req.params.name.charAt(0).toUpperCase() +
-                req.params.name.slice(1).toLowerCase(),
-            },
-          },
-        ],
+      orSearchArray.push({ subject: { contains: name } });
+      orSearchArray.push({
+        subject: { contains: name.toLowerCase() },
+      });
+      orSearchArray.push({
+        subject: { contains: name.toUpperCase() },
+      });
+      orSearchArray.push({
+        subject: {
+          contains: name.charAt(0).toUpperCase() + name.slice(1).toLowerCase(),
+        },
+      });
+    }
+    if (req.param('code', null)) {
+      const code = req.param('code');
+      orSearchArray.push({ id: { contains: code } });
+    }
+
+    TSubject.find()
+      .where({
+        or: orSearchArray,
       })
       .exec((err, found) => {
         const params = {};
-        params.controllerMethod = 'TSubjectController.findByName';
-        params.searchedItem = `Subject with name ${req.params.name}`;
+        params.controllerMethod = 'TSubjectController.search';
+        params.searchedItem = `Subject with name ${req.param(
+          'name',
+        )} or code ${req.param('code')}.`;
         return ControllerService.treatAndConvert(
           req,
           err,

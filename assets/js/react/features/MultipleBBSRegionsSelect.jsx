@@ -4,11 +4,10 @@ import PropTypes from 'prop-types';
 
 import Translate from '../components/common/Translate';
 import MultipleSelect from '../components/common/Form/MultipleSelect';
-import { loadBBSRegionsByName, resetBBSRegionsByName } from '../actions/Region';
+import { loadRegionsSearch, resetRegionsSearch } from '../actions/Region';
 
 const MultipleBBSRegionsSelect = ({
   computeHasError,
-  getOptionLabel,
   helperText,
   labelName,
   required = false,
@@ -16,14 +15,16 @@ const MultipleBBSRegionsSelect = ({
   value,
 }) => {
   const dispatch = useDispatch();
-  const { errors, isFetching, bbsRegionsByName: searchResults } = useSelector(
-    (state) => state.region,
-  );
+  const {
+    errors: searchErrors,
+    isFetching,
+    bbsRegionsByName: searchResults,
+  } = useSelector((state) => state.region);
 
   const handleOnChange = (event, newValue, reason) => {
     switch (reason) {
       case 'clear':
-        setValue('');
+        setValue([]);
         break;
       case 'select-option':
       case 'remove-option':
@@ -34,36 +35,42 @@ const MultipleBBSRegionsSelect = ({
   };
 
   const loadSearchResults = (inputValue) => {
-    dispatch(loadBBSRegionsByName(inputValue));
+    dispatch(loadRegionsSearch(inputValue, inputValue, true));
   };
   const resetSearchResults = () => {
-    dispatch(resetBBSRegionsByName());
+    dispatch(resetRegionsSearch());
   };
 
   const hasError = computeHasError(value);
   const memoizedValues = [searchResults, hasError, value];
   return useMemo(
     () => (
-      <>
-        <MultipleSelect
-          computeHasError={computeHasError}
-          getOptionLabel={getOptionLabel}
-          handleOnChange={handleOnChange}
-          helperText={helperText}
-          isLoading={isFetching}
-          labelName={labelName}
-          loadSearchResults={loadSearchResults}
-          nbCharactersNeededToLaunchSearch={3}
-          noOptionsText={
-            <Translate>No region matches you search criteria</Translate>
+      <MultipleSelect
+        computeHasError={computeHasError}
+        getOptionSelected={(optionToTest, valueToTest) =>
+          optionToTest.id === valueToTest.id
+        }
+        getOptionLabel={(option) => {
+          if (option.name === null) {
+            return option.code;
           }
-          required={required}
-          resetSearchResults={resetSearchResults}
-          searchErrors={errors}
-          searchResults={searchResults}
-          value={value}
-        />
-      </>
+          return `${option.code} - ${option.name}`;
+        }}
+        handleOnChange={handleOnChange}
+        helperText={helperText}
+        isLoading={isFetching}
+        labelName={labelName}
+        loadSearchResults={loadSearchResults}
+        nbCharactersNeededToLaunchSearch={1}
+        noOptionsText={
+          <Translate>No region matches you search criteria</Translate>
+        }
+        required={required}
+        resetSearchResults={resetSearchResults}
+        searchErrors={searchErrors}
+        searchResults={searchResults}
+        value={value}
+      />
     ),
     [memoizedValues],
   );
@@ -71,7 +78,6 @@ const MultipleBBSRegionsSelect = ({
 
 MultipleBBSRegionsSelect.propTypes = {
   computeHasError: PropTypes.func.isRequired,
-  getOptionLabel: PropTypes.func.isRequired,
   helperText: PropTypes.string.isRequired,
   labelName: PropTypes.string.isRequired,
   required: PropTypes.bool,

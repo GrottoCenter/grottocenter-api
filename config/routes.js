@@ -328,10 +328,9 @@ module.exports.routes = {
     },
   },
 
-  'GET /api/v1/documents/subjects/name/:name': {
+  'POST /api/v1/documents/subjects/search/logical/or': {
     controller: 'v1/Subject',
-    action: 'findByName',
-    skipAssets: false, // Disable this parameter to allow a dot in the url (for the code)
+    action: 'search',
     api: {
       entity: 'subject',
     },
@@ -352,9 +351,9 @@ module.exports.routes = {
   },
 
   /* REST API for Region controller */
-  'GET /api/v1/regions/bbs/name/:name': {
+  'POST /api/v1/regions/search/logical/or': {
     controller: 'v1/Region',
-    action: 'findDeprecatedByName',
+    action: 'search',
     api: {
       entity: 'region',
     },

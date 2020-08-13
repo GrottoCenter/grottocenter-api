@@ -1,5 +1,4 @@
 import React, { useContext, useMemo } from 'react';
-import { useIntl } from 'react-intl';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import { includes, pathOr } from 'ramda';
@@ -49,8 +48,6 @@ const Step2 = ({ allAuthors, allPartOf, stepId }) => {
     validatedSteps,
   } = useContext(DocumentFormContext);
 
-  const { formatMessage } = useIntl();
-
   const memoizedValues = [
     documentType,
     includes(stepId, validatedSteps),
@@ -76,14 +73,6 @@ const Step2 = ({ allAuthors, allPartOf, stepId }) => {
           computeHasError={(newSubjects) =>
             isText(documentType) && newSubjects.length === 0
           }
-          getOptionLabel={(option) => {
-            const { code } = option;
-            const subjectName = formatMessage({
-              id: option.code,
-              defaultMessage: option.subject,
-            });
-            return `${code} ${subjectName}`;
-          }}
           helperText="Be precise about the subjects discussed in the document: there are plenty of subject choices in Grottocenter."
           labelName="Subjects"
           required={isText(documentType)}
@@ -168,7 +157,6 @@ const Step2 = ({ allAuthors, allPartOf, stepId }) => {
           {(isText(documentType) || isImage(documentType)) && (
             <FlexItemWrapper>
               <MultipleBBSRegionsSelect
-                getOptionLabel={(option) => `${option.name}`}
                 computeHasError={() => false}
                 helperText="If the document is related to one or many regions, you can link it to them."
                 labelName="Regions"

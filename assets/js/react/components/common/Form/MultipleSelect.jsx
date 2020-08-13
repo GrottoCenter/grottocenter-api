@@ -7,9 +7,10 @@ import { length } from 'ramda';
 import { useDebounce } from '../../../hooks';
 import Translate from '../Translate';
 
-const MultipleBBSRegionsSelect = ({
+const MultipleSelect = ({
   computeHasError,
   getOptionLabel,
+  getOptionSelected,
   handleOnChange,
   helperText,
   isLoading = false,
@@ -65,16 +66,14 @@ const MultipleBBSRegionsSelect = ({
           inputValue={inputValue}
           loading={isLoading}
           getOptionLabel={getOptionLabel}
-          getOptionSelected={(optionToTest, valueToTest) =>
-            optionToTest.code === valueToTest.code
-          }
+          getOptionSelected={getOptionSelected}
           filterSelectedOptions
           noOptionsText={
             inputValue.length >= nbCharactersNeededToLaunchSearch ? (
               noOptionsText
             ) : (
               <Translate>
-                Enter at least {nbCharactersNeededToLaunchSearch} characters
+                Enter at least {nbCharactersNeededToLaunchSearch} character(s)
               </Translate>
             )
           }
@@ -100,9 +99,10 @@ const MultipleBBSRegionsSelect = ({
   );
 };
 
-MultipleBBSRegionsSelect.propTypes = {
+MultipleSelect.propTypes = {
   computeHasError: PropTypes.func.isRequired,
   getOptionLabel: PropTypes.func.isRequired,
+  getOptionSelected: PropTypes.func.isRequired,
   handleOnChange: PropTypes.func.isRequired, // handleOnChange(event: object, value: T | T[], reason: string)
   helperText: PropTypes.string.isRequired,
   isLoading: PropTypes.bool,
@@ -112,9 +112,9 @@ MultipleBBSRegionsSelect.propTypes = {
   noOptionsText: PropTypes.node,
   required: PropTypes.bool,
   resetSearchResults: PropTypes.func.isRequired, // should reset all the search results
-  searchErrors: PropTypes.arrayOf(PropTypes.any).isRequired,
+  searchErrors: PropTypes.arrayOf(PropTypes.any),
   searchResults: PropTypes.arrayOf(PropTypes.any).isRequired,
-  value: PropTypes.shape({}).isRequired,
+  value: PropTypes.arrayOf(PropTypes.any).isRequired,
 };
 
-export default MultipleBBSRegionsSelect;
+export default MultipleSelect;

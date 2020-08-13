@@ -20,8 +20,8 @@ module.exports = {
       MappingV1Service.convertToSubjectList,
     ),
 
-  findByName: (req, res, next) =>
-    subjectController.findByName(
+  search: (req, res, next) =>
+    subjectController.search(
       req,
       res,
       next,

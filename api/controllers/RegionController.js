@@ -30,28 +30,49 @@ module.exports = {
     });
   },
 
-  findDeprecatedByName: (req, res, next, converter) => {
-    TRegion.find()
-      .where({
-        /* Case insensitive search + first letter capitalized
+  search: (req, res, next, converter) => {
+    const orSearchArray = [];
+    if (req.param('name', null)) {
+      const name = req.param('name');
+      /* Case insensitive search + first letter capitalized
           Example with "grot" => search with ["grot", "grot", "GROT", "Grot"]
                   with "GROT" => search with ["GROT", "grot", "GROT", "Grot"]
                   with "Grot" => search with ["Grot", "grot", "GROT", "Grot"]
             ===>  in all cases, it searches with all the possible cases
         */
-        or: [
-          { name: { contains: req.params.name } },
-          { name: { contains: req.params.name.toLowerCase() } },
-          { name: { contains: req.params.name.toUpperCase() } },
-          {
-            name: {
-              contains:
-                req.params.name.charAt(0).toUpperCase() +
-                req.params.name.slice(1).toLowerCase(),
-            },
-          },
-        ],
-        isDeprecated: true,
+      orSearchArray.push({ name: { contains: name } });
+      orSearchArray.push({
+        name: { contains: name.toLowerCase() },
+      });
+      orSearchArray.push({
+        name: { contains: name.toUpperCase() },
+      });
+      orSearchArray.push({
+        name: {
+          contains: name.charAt(0).toUpperCase() + name.slice(1).toLowerCase(),
+        },
+      });
+    }
+    if (req.param('code', null)) {
+      const code = req.param('code');
+      orSearchArray.push({ code: { contains: code } });
+      orSearchArray.push({
+        code: { contains: code.toLowerCase() },
+      });
+      orSearchArray.push({
+        code: { contains: code.toUpperCase() },
+      });
+      orSearchArray.push({
+        code: {
+          contains: code.charAt(0).toUpperCase() + code.slice(1).toLowerCase(),
+        },
+      });
+    }
+
+    TRegion.find()
+      .where({
+        or: orSearchArray,
+        isDeprecated: req.param('isDeprecated'),
       })
       .exec((err, found) => {
         const params = {};

@@ -149,11 +149,11 @@ export const findBbsUrl = `/api/${apiVersion}/bbs/`;
 export const advancedsearchUrl = `/api/${apiVersion}/advanced-search`;
 export const quicksearchUrl = `/api/${apiVersion}/search`;
 export const subjectsUrl = `/api/${apiVersion}/documents/subjects`;
-export const subjectsByNameUrl = `/api/${apiVersion}/documents/subjects/name/`;
+export const subjectsSearchUrl = `/api/${apiVersion}/documents/subjects/search/logical/or`;
 export const getEntryUrl = `/api/${apiVersion}/entrances/`;
 export const getCaveUrl = `/api/${apiVersion}/caves/`;
 export const postDocumentUrl = `/api/${apiVersion}/document`;
-export const bbsRegionsByNameUrl = `/api/${apiVersion}/regions/bbs/name/`;
+export const regionsSearchUrl = `/api/${apiVersion}/regions/search/logical/or`;
 
 // ===== Auth url
 export const loginUrl = `/api/${apiVersion}/login`;

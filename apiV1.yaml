@@ -30,25 +30,42 @@ tags:
 
 paths:
 
-  '/regions/bbs/name/{name}':
-    get:
+  '/regions/search/logical/or':
+    post:
       tags:
-        - regions
-      description: Get a BBS region by its name. The search is case insensitive and autocompleted (i.e. it search for {name} parameter being contained in the actual region name).
+      - regions
+      description: Get a region according to the parameters given, applying a logical OR. The search is case insensitive and autocompleted (i.e. it search for the parameters being contained in the actual field).
       parameters:
       - name: name
-        in: path
+        in: query
         description: Region name (case insensitive)
-        required: true
+        required: false
         schema:
           type: string
+      - name: code
+        in: query
+        description: Region code (case insensitive)
+        required: false
+        schema:
+          type: string
+      - name: isDeprecated
+        in: query
+        description: Region deprecated or not (currently, the deprecated ones are the ones from the BBS)
+        required: false
+        schema:
+          type: boolean
       responses:
         '200':
           description: Successful operation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Region-list'
+                type: object
+                properties:
+                  regions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Region'
         '500':
           description: Internal error
 
@@ -134,9 +151,12 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Document-subject"
+                type: object
+                properties:
+                  subjects:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Document-subject"
         '500':
           description: Internal error
 
@@ -165,17 +185,23 @@ paths:
         '500':
           description: Internal error
   
-  '/documents/subjects/name/{name}':
-    get:
+  '/documents/subjects/search/logical/or':
+    post:
       tags:
       - documents
       - subjects
-      description: Get a subject by its name. The search is case insensitive and autocompleted (i.e. it search for {name} parameter being contained in the actual subject name).
+      description: Get a subject according to the parameters given, applying a logical OR. The search is case insensitive and autocompleted (i.e. it search for the parameters being contained in the actual field).
       parameters:
       - name: name
-        in: path
+        in: query
         description: Subject name (case insensitive)
-        required: true
+        required: false
+        schema:
+          type: string
+      - name: code
+        in: query
+        description: Subject code (case insensitive)
+        required: false
         schema:
           type: string
       responses:
@@ -938,13 +964,6 @@ components:
           type: boolean
         country:
           type: string
-    
-    Region-list:
-      properties:
-        regions:
-          type: array
-          items:
-            $ref: '#/components/schemas/Region'
 
     Search:
       properties:

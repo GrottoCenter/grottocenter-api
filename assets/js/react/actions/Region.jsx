@@ -1,46 +1,49 @@
 import fetch from 'isomorphic-fetch';
-import { bbsRegionsByNameUrl } from '../conf/Config';
+import { regionsSearchUrl } from '../conf/Config';
 
-export const FETCH_BBS_REGIONS_BY_NAME = 'FETCH_BBS_REGIONS_BY_NAME';
-export const FETCH_BBS_REGIONS_BY_NAME_SUCCESS =
-  'FETCH_BBS_REGIONS_BY_NAME_SUCCESS';
-export const FETCH_BBS_REGIONS_BY_NAME_FAILURE =
-  'FETCH_BBS_REGIONS_BY_NAME_FAILURE';
-export const RESET_BBS_REGIONS_BY_NAME = 'RESET_BBS_REGIONS_BY_NAME';
+export const REGIONS_SEARCH = 'REGIONS_SEARCH';
+export const REGIONS_SEARCH_SUCCESS = 'REGIONS_SEARCH_SUCCESS';
+export const REGIONS_SEARCH_FAILURE = 'REGIONS_SEARCH_FAILURE';
+export const RESET_REGIONS_SEARCH = 'RESET_REGIONS_SEARCH';
 
-export const fetchBBSRegionsByName = () => ({
-  type: FETCH_BBS_REGIONS_BY_NAME,
+export const searchRegions = () => ({
+  type: REGIONS_SEARCH,
 });
 
-export const fetchBBSRegionsByNameSuccess = (regions) => ({
-  type: FETCH_BBS_REGIONS_BY_NAME_SUCCESS,
+export const searchRegionsSuccess = (regions) => ({
+  type: REGIONS_SEARCH_SUCCESS,
   regions,
 });
 
-export const fetchBBSRegionsByNameFailure = (error) => ({
-  type: FETCH_BBS_REGIONS_BY_NAME_FAILURE,
+export const searchRegionsFailure = (error) => ({
+  type: REGIONS_SEARCH_FAILURE,
   error,
 });
 
-export const resetBBSRegionsByName = () => ({
-  type: RESET_BBS_REGIONS_BY_NAME,
+export const resetRegionsSearch = () => ({
+  type: RESET_REGIONS_SEARCH,
 });
 
-export function loadBBSRegionsByName(regionName) {
+export function loadRegionsSearch(regionCode, regionName, isDeprecated) {
   return (dispatch) => {
-    dispatch(fetchBBSRegionsByName());
+    dispatch(searchRegions());
 
-    return fetch(bbsRegionsByNameUrl + regionName)
+    return fetch(regionsSearchUrl, {
+      method: 'POST',
+      body: JSON.stringify({
+        code: regionCode,
+        name: regionName,
+        isDeprecated,
+      }),
+    })
       .then((response) => {
         if (response.status >= 400) {
-          const errorMessage = `Fetching ${bbsRegionsByNameUrl} status: ${response.status}`;
-          dispatch(fetchBBSRegionsByNameFailure(errorMessage));
+          const errorMessage = `Fetching ${regionsSearchUrl} status: ${response.status}`;
+          dispatch(searchRegionsFailure(errorMessage));
           throw new Error(errorMessage);
         }
         return response.text();
       })
-      .then((text) =>
-        dispatch(fetchBBSRegionsByNameSuccess(JSON.parse(text).regions)),
-      );
+      .then((text) => dispatch(searchRegionsSuccess(JSON.parse(text).regions)));
   };
 }

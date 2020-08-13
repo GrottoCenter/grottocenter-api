@@ -1,14 +1,14 @@
 import fetch from 'isomorphic-fetch';
-import { subjectsUrl, subjectsByNameUrl } from '../conf/Config';
+import { subjectsUrl, subjectsSearchUrl } from '../conf/Config';
 
 export const FETCH_SUBJECTS = 'FETCH_SUBJECTS';
 export const FETCH_SUBJECTS_SUCCESS = 'FETCH_SUBJECTS_SUCCESS';
 export const FETCH_SUBJECTS_FAILURE = 'FETCH_SUBJECTS_FAILURE';
 
-export const FETCH_SUBJECTS_BY_NAME = 'FETCH_SUBJECTS_BY_NAME';
-export const FETCH_SUBJECTS_BY_NAME_SUCCESS = 'FETCH_SUBJECTS_BY_NAME_SUCCESS';
-export const FETCH_SUBJECTS_BY_NAME_FAILURE = 'FETCH_SUBJECTS_BY_NAME_FAILURE';
-export const RESET_SUBJECTS_BY_NAME = 'RESET_SUBJECTS_BY_NAME';
+export const SUBJECTS_SEARCH = 'SUBJECTS_SEARCH';
+export const SUBJECTS_SEARCH_SUCCESS = 'SUBJECTS_SEARCH_SUCCESS';
+export const SUBJECTS_SEARCH_FAILURE = 'SUBJECTS_SEARCH_FAILURE';
+export const RESET_SUBJECTS_SEARCH = 'RESET_SUBJECTS_SEARCH';
 
 export const fetchSubjects = () => ({
   type: FETCH_SUBJECTS,
@@ -24,22 +24,22 @@ export const fetchSubjectsFailure = (error) => ({
   error,
 });
 
-export const fetchSubjectsByName = () => ({
-  type: FETCH_SUBJECTS_BY_NAME,
+export const subjectsSearch = () => ({
+  type: SUBJECTS_SEARCH,
 });
 
-export const fetchSubjectsByNameSuccess = (subjects) => ({
-  type: FETCH_SUBJECTS_BY_NAME_SUCCESS,
+export const subjectsSearchSuccess = (subjects) => ({
+  type: SUBJECTS_SEARCH_SUCCESS,
   subjects,
 });
 
-export const fetchSubjectsByNameFailure = (error) => ({
-  type: FETCH_SUBJECTS_BY_NAME_FAILURE,
+export const subjectsSearchFailure = (error) => ({
+  type: SUBJECTS_SEARCH_FAILURE,
   error,
 });
 
-export const resetSubjectsByName = () => ({
-  type: RESET_SUBJECTS_BY_NAME,
+export const resetSubjectsSearch = () => ({
+  type: RESET_SUBJECTS_SEARCH,
 });
 
 export function loadSubjects() {
@@ -55,25 +55,32 @@ export function loadSubjects() {
         }
         return response.text();
       })
-      .then((text) => dispatch(fetchSubjectsSuccess(JSON.parse(text))));
+      .then((text) =>
+        dispatch(fetchSubjectsSuccess(JSON.parse(text).subjects)),
+      );
   };
 }
 
-export function loadSubjectsByName(subjectName) {
+export function loadSubjectsSearch(subjectCode, subjectName) {
   return (dispatch) => {
-    dispatch(fetchSubjectsByName());
-
-    return fetch(subjectsByNameUrl + subjectName)
+    dispatch(subjectsSearch());
+    return fetch(subjectsSearchUrl, {
+      method: 'POST',
+      body: JSON.stringify({
+        code: subjectCode,
+        name: subjectName,
+      }),
+    })
       .then((response) => {
         if (response.status >= 400) {
-          const errorMessage = `Fetching ${subjectsByNameUrl} status: ${response.status}`;
-          dispatch(fetchSubjectsByNameFailure(errorMessage));
+          const errorMessage = `Fetching ${subjectsSearchUrl} status: ${response.status}`;
+          dispatch(subjectsSearchFailure(errorMessage));
           throw new Error(errorMessage);
         }
         return response.text();
       })
       .then((text) =>
-        dispatch(fetchSubjectsByNameSuccess(JSON.parse(text).subjects)),
+        dispatch(subjectsSearchSuccess(JSON.parse(text).subjects)),
       );
   };
 }
