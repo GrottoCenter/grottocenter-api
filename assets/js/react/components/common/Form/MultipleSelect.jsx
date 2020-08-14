@@ -19,6 +19,7 @@ const MultipleSelect = ({
   loadSearchResults,
   nbCharactersNeededToLaunchSearch = 3,
   noOptionsText,
+  renderOption,
   required = false,
   resetSearchResults,
   searchErrors,
@@ -68,6 +69,7 @@ const MultipleSelect = ({
           inputValue={inputValue}
           loading={isLoading}
           getOptionLabel={getOptionLabel}
+          renderOption={renderOption}
           getOptionSelected={getOptionSelected}
           filterSelectedOptions
           noOptionsText={
@@ -78,6 +80,7 @@ const MultipleSelect = ({
                 {formatMessage(
                   {
                     id: 'Type at least {nbOfChars} character(s)',
+                    defaultMessage: 'Type at least {nbOfChars} character(s)',
                   },
                   {
                     nbOfChars: (
@@ -123,6 +126,7 @@ MultipleSelect.propTypes = {
   loadSearchResults: PropTypes.func.isRequired, // should load new search results according to the search string entered by the user
   nbCharactersNeededToLaunchSearch: PropTypes.number,
   noOptionsText: PropTypes.node,
+  renderOption: PropTypes.func,
   required: PropTypes.bool,
   resetSearchResults: PropTypes.func.isRequired, // should reset all the search results
   searchErrors: PropTypes.arrayOf(PropTypes.any),

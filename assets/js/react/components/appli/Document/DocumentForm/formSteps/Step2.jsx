@@ -10,6 +10,7 @@ import PartOfAutoComplete from '../formElements/PartOfAutoComplete';
 
 import MassifAutoComplete from '../../../../../features/MassifAutoComplete';
 import MultipleBBSRegionsSelect from '../../../../../features/MultipleBBSRegionsSelect';
+import MultipleCaversSelect from '../../../../../features/MultipleCaversSelect';
 import MultipleSubjectsSelect from '../../../../../features/MultipleSubjectsSelect';
 import OrganizationAutoComplete from '../../../../../features/OrganizationAutoComplete';
 
@@ -35,6 +36,7 @@ const FlexItemWrapper = styled.div`
 const Step2 = ({ /* allAuthors, */ allPartOf, stepId }) => {
   const {
     docAttributes: {
+      authors,
       editor,
       documentType,
       library,
@@ -55,25 +57,23 @@ const Step2 = ({ /* allAuthors, */ allPartOf, stepId }) => {
   return useMemo(
     () => (
       <>
-        {/* To be replaced by an autocomplete component */}
-        {/* <MultipleSelect
-          allPossibleValues={allAuthors}
-          contextValueNameToUpdate="authors"
-          getOptionLabel={(option) => `${option.name} ${option.surname}`}
+        <MultipleCaversSelect
           computeHasError={(newAuthors) =>
             (isImage(documentType) || isText(documentType)) &&
             newAuthors.length === 0
           }
-          helperText="Use authors' full name, no abreviation. In a next version of the website, if the author is not in the Grottocenter database, you will be able to add it."
+          helperText="Use this search bar to find existing authors. In a next version of the website, if the author is not in the Grottocenter database, you will be able to add it."
           labelName="Authors"
           required={isImage(documentType) || isText(documentType)}
-        /> */}
+          setValue={(newValue) => updateAttribute('authors', newValue)}
+          value={authors}
+        />
 
         <MultipleSubjectsSelect
           computeHasError={(newSubjects) =>
             isText(documentType) && newSubjects.length === 0
           }
-          helperText="Be precise about the subjects discussed in the document: there are plenty of subject choices in Grottocenter."
+          helperText="Use this search bar to find subjects. Be precise about the subjects discussed in the document: there are plenty of subject choices in Grottocenter."
           labelName="Subjects"
           required={isText(documentType)}
           setValue={(newValue) => updateAttribute('subjects', newValue)}
