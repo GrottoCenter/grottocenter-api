@@ -39,7 +39,7 @@
     "ramda": "^0.27.0",
     "rc": "~1.2.8",
     "react": "^16.12.0",
-    "react-alice-carousel": "^1.17.3",
+    "react-alice-carousel": "^1.19.3",
     "react-csv": "^2.0.3",
     "react-device-detect": "^1.6.2",
     "react-dom": "^16.12.0",
