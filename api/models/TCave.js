@@ -33,6 +33,11 @@ module.exports = {
       required: true,
     },
 
+    names: {
+      collection: 'TName',
+      via: 'cave',
+    },
+
     minDepth: {
       type: 'number',
       columnName: 'min_depth',
@@ -121,6 +126,16 @@ module.exports = {
 
     entrances: {
       collection: 'TEntrance',
+      via: 'cave',
+    },
+
+    descriptions: {
+      collection: 'TDescription',
+      via: 'cave',
+    },
+
+    documents: {
+      collection: 'TDocument',
       via: 'cave',
     },
   },

@@ -28,6 +28,26 @@ tags:
 
 paths:
 
+  '/caves/{id}':
+    get:
+      tags:
+        - caves
+      description: Get a cave by its id.
+      parameters:
+        - name: id
+          in: path
+          description: id of the cave
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cave'
+    
   '/auth/login':
     post:
       tags:
@@ -427,42 +447,34 @@ components:
         id: 
           type: integer
           format: int64
-        locked: 
-          type: boolean
-        idReviewer: 
-          type: integer
-          format: int64
-        idLocker: 
-          type: integer
-          format: int64
+        author:
+          $ref: '#/components/schemas/Caver'
         name: 
           type: string
-        minDepth: 
-          type: integer
-          format: int64
-        maxDepth: 
-          type: integer
-          format: int64
+        names:
+          type: array
+          items:
+            $ref: '#/components/schemas/Name'
         depth: 
           type: integer
-          format: int64
         length: 
           type: integer
-          format: int64
         isDiving: 
           type: boolean
         temperature: 
           type: integer
-          format: int64
-        dateInscription: 
-          type: string
-        dateReviewed: 
-          type: string
-        dateLocked: 
-          type: string
-        author: 
-          type: integer
-          format: int64
+        descriptions: 
+          type: array
+          items: 
+            type: object
+        entrances:
+          type: array
+          items:
+            $ref: '#/components/schemas/Entrance'
+        documents:
+          type: array
+          items: 
+            $ref: '#/components/schemas/Document'
 
     Caver:
       type: object

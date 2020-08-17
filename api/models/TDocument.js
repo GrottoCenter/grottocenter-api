@@ -35,21 +35,20 @@ module.exports = {
     },
 
     dateInscription: {
-      type: 'string',
-      allowNull: false,
+      type: 'ref',
       columnName: 'date_inscription',
       columnType: 'datetime',
       defaultsTo: '2000-01-01 00:00:00',
     },
 
     dateValidation: {
-      type: 'string',
+      type: 'ref',
       columnName: 'date_validation',
       columnType: 'datetime',
     },
 
     datePublication: {
-      type: 'string',
+      type: 'ref',
       columnName: 'date_publication',
       columnType: 'datetime',
     },
@@ -63,18 +62,21 @@ module.exports = {
 
     validationComment: {
       type: 'string',
+      allowNull: true,
       maxLength: 300,
       columnName: 'validation_comment',
     },
 
     pages: {
       type: 'string',
+      allowNull: true,
       maxLength: 20,
       columnName: 'pages',
     },
 
     identifier: {
       type: 'string',
+      allowNull: true,
       maxLength: 250,
       columnName: 'identifier',
     },
@@ -86,6 +88,7 @@ module.exports = {
 
     refBbs: {
       type: 'string',
+      allowNull: true,
       maxLength: 10,
       columnName: 'ref_bbs',
     },
@@ -144,35 +147,41 @@ module.exports = {
 
     pathOld: {
       type: 'string',
+      allowNull: true,
       columnName: 'path_old',
       maxLength: 1000,
     },
 
     pagesBBSOld: {
       type: 'string',
+      allowNull: true,
       columnName: 'pages_bbs_old',
       maxLength: 100,
     },
 
     commentsBBSOld: {
       type: 'string',
+      allowNull: true,
       columnName: 'comments_bbs_old',
       maxLength: 500,
     },
 
     isBBS: {
+      allowNull: true,
       type: 'boolean',
       columnName: 'bbs',
     },
 
     publicationOtherBBSOld: {
       type: 'string',
+      allowNull: true,
       columnName: 'publication_other_bbs_old',
       maxLength: 500,
     },
 
     publicationFasciculeBBSOld: {
       type: 'string',
+      allowNull: true,
       columnName: 'publication_fascicule_bbs_old',
       maxLength: 300,
     },

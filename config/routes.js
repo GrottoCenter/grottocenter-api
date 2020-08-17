@@ -168,7 +168,7 @@ module.exports.routes = {
     action: 'create',
   },
 
-  'GET /api/caves/findAll': {
+  'GET /api/v1/caves/findAll': {
     controller: 'Cave',
     action: 'findAll',
   },
