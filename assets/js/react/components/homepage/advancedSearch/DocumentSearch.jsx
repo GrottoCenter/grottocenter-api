@@ -28,9 +28,10 @@ import SearchBottomActionButtons from './SearchBottomActionButtons';
 import styles from './styles';
 import SliderForm from './SliderForm';
 
-class BbsSearch extends React.Component {
+class DocumentSearch extends React.Component {
   /*
-    The state is created with particular key names because, these names are directly linked to
+    The state is created with particular key names 
+    because these names are directly linked to
     the names of these properties in Elasticsearch. Here we have a syntax that
     allow us to distinguish search range parameters from others parameters.
   */
@@ -38,118 +39,44 @@ class BbsSearch extends React.Component {
     super(props);
     this.state = this.getInitialState();
     this.handleValueChange = this.handleValueChange.bind(this);
-    this.getThemeObjFromId = this.getThemeObjFromId.bind(this);
-    this.getSubthemeObjFromId = this.getSubthemeObjFromId.bind(this);
-    props.getSubThemes();
+    this.getSubjectObjFromCode = this.getSubjectObjFromCode.bind(this);
+    props.getAllSubjects();
   }
 
   getInitialState = () => {
     const { yearMinValue, yearMaxValue } = this.props;
 
     return {
-      'bbs year-range': {
+      'publication_year-range': {
         isEditable: false,
         min: yearMinValue,
         max: yearMaxValue,
       },
-      'bbs numericalRef': '',
-      'bbs title': '',
-      'bbs authors': '',
-      'bbs abstract': '',
-      'bbs theme': '',
-      'bbs subtheme': '',
-      'bbs country': '',
-      'bbs ref': '',
+      authors: '',
+      description: '',
+      publication_other_bbs_old: '',
+      regions: '',
+      ref_bbs: '',
+      subjects: '',
+      title: '',
       matchAllFields: true,
-      filteredSubthemes: [],
       allFieldsRequest: '',
       panelExpanded: 'all-fields-panel',
     };
   };
 
-  componentDidUpdate = () => {
-    const { subthemes } = this.props;
-    const { filteredSubthemes } = this.state;
-
-    /*
-      Update only when the filtered subthemes are empty.
-      Then, they are fully managed by the component itself.
-    */
-    if (filteredSubthemes !== subthemes && filteredSubthemes.length === 0) {
-      this.setState({
-        filteredSubthemes: subthemes,
-      });
-    }
-  };
-
-  getThemeObjFromId = (id) => {
-    const { themes } = this.props;
-    return themes.find((t) => t.id === id);
-  };
-
-  getSubthemeObjFromId = (id) => {
-    const { subthemes } = this.props;
-    return subthemes.find((st) => st.id === id);
+  getSubjectObjFromCode = (code) => {
+    const { allSubjects } = this.props;
+    return allSubjects.find((t) => t.code === code);
   };
 
   /**
-   * keyName: String
-   * event: Event
+   * @param {string} keyName
+   * @param {Event} event
    * This function changes the state of the keyName property
    * with the value of the target event.
-   * It also filters the themes and subthemes mutually.
    */
   handleValueChange = (keyName, event) => {
-    if (keyName === 'bbs theme') {
-      const { subthemes } = this.props;
-      // Repopulate all subthemes
-      if (event.target.value === '') {
-        this.setState({
-          filteredSubthemes: subthemes,
-          'bbs theme': '',
-        });
-        return;
-      }
-
-      // Filter subthemes
-      const themeObj = this.getThemeObjFromId(event.target.value);
-      const newFilteredSubthemes = subthemes.filter(
-        (st) => st.id.split('.')[0] === themeObj.id,
-      );
-
-      // Eventually, empty the subtheme if it's not valid anymore regarding the new theme
-      const { 'bbs subtheme': subtheme } = this.state;
-      let newSubthemeId = subtheme;
-      if (!newFilteredSubthemes.find((st) => st.id === newSubthemeId)) {
-        newSubthemeId = '';
-      }
-
-      this.setState({
-        filteredSubthemes: newFilteredSubthemes,
-        'bbs subtheme': newSubthemeId,
-        'bbs theme': themeObj.id,
-      });
-      return;
-    }
-
-    // Select appropriate theme according to the subtheme and filter subthemes
-    if (keyName === 'bbs subtheme' && event.target.value !== '') {
-      const { themes, subthemes } = this.props;
-      const subthemeObj = this.getSubthemeObjFromId(event.target.value);
-      const themeObj = themes.find(
-        (t) => t.id === subthemeObj.id.split('.')[0],
-      );
-      const newFilteredSubthemes = subthemes.filter(
-        (st) => st.id.split('.')[0] === themeObj.id,
-      );
-      this.setState({
-        'bbs theme': themeObj.id,
-        'bbs subtheme': subthemeObj.id,
-        filteredSubthemes: newFilteredSubthemes,
-      });
-      return;
-    }
-
     this.setState({
       [keyName]: event.target.value,
     });
@@ -158,7 +85,8 @@ class BbsSearch extends React.Component {
   /**
    * This function set the state of the keyname property
    * to be the same value of the range.
-   * If the values given are > (or <) to the minValueAuthorized (or maxValueAuthorized),
+   * If the values given are > to the minValueAuthorized
+   * (same for < to maxValueAuthorized),
    * it set it to the min/maxValueAuthorized.
    */
   handleRangeChange = (
@@ -169,7 +97,7 @@ class BbsSearch extends React.Component {
   ) => {
     const newState = {
       [keyName]: {
-        ...this.state[keyName],
+        ...this.state[keyName], // eslint-disable-line react/destructuring-assignment
         min: values[0] < minValueAuthorized ? minValueAuthorized : values[0],
         max: values[1] > maxValueAuthorized ? maxValueAuthorized : values[1],
       },
@@ -184,7 +112,7 @@ class BbsSearch extends React.Component {
   handleCheckedChange = (keyName) => (event) => {
     const newState = {
       [keyName]: {
-        ...this.state[keyName],
+        ...this.state[keyName], // eslint-disable-line react/destructuring-assignment
         isEditable: event.target.checked,
       },
     };
@@ -221,23 +149,21 @@ class BbsSearch extends React.Component {
       startAdvancedsearch,
       yearMinValue,
       yearMaxValue,
-      themes,
+      allSubjects,
       intl,
     } = this.props;
 
     const {
-      'bbs year-range': yearRange,
-      'bbs ref': ref,
-      'bbs title': title,
-      'bbs authors': authors,
-      'bbs abstract': abstract,
-      'bbs theme': theme,
-      'bbs subtheme': subtheme,
-      'bbs country': country,
-      'bbs publication': publication,
+      'publication_year-range': yearRange,
+      ref_bbs,
+      title,
+      authors,
+      description: abstract,
+      subjects, // TODO: currently, we select only one subject via a dropdown menu. It should be possible to search multiple subjects.
+      regions,
+      publication_other_bbs_old,
       matchAllFields,
       allFieldsRequest,
-      filteredSubthemes,
       panelExpanded,
     } = this.state;
 
@@ -251,8 +177,9 @@ class BbsSearch extends React.Component {
             style={{ fontStyle: 'italic', textAlign: 'center' }}
           >
             <Translate>
-              The BBS ("Bulletin Bibliographique Spéléologique" in french) is an
-              annual review of the worldwide speleological litterature.
+              The BBS (&quot;Bulletin Bibliographique Spéléologique&quot; in
+              french) is an annual review of the worldwide speleological
+              litterature.
             </Translate>
             <br />
             <InternationalizedLink links={wikiBBSLinks}>
@@ -292,22 +219,20 @@ class BbsSearch extends React.Component {
                 onSubmit={(event) => {
                   event.preventDefault();
 
-                  // We don't want to use filteredSubthemes & allFieldsRequest for the search
+                  // We don't want to use allFieldsRequest for the search
                   const stateToSearch = this.getInitialState();
-                  delete stateToSearch.filteredSubthemes;
                   delete stateToSearch.allFieldsRequest;
                   delete stateToSearch.panelExpanded;
 
                   // Fill state with same request
                   stateToSearch.matchAllFields = false;
-                  stateToSearch['bbs ref'] = allFieldsRequest;
-                  stateToSearch['bbs title'] = allFieldsRequest;
-                  stateToSearch['bbs authors'] = allFieldsRequest;
-                  stateToSearch['bbs abstract'] = allFieldsRequest;
-                  stateToSearch['bbs theme'] = allFieldsRequest;
-                  stateToSearch['bbs subtheme'] = allFieldsRequest;
-                  stateToSearch['bbs country'] = allFieldsRequest;
-                  stateToSearch['bbs publication'] = allFieldsRequest;
+                  stateToSearch.ref_bbs = allFieldsRequest;
+                  stateToSearch.title = allFieldsRequest;
+                  stateToSearch.authors = allFieldsRequest;
+                  stateToSearch.description = allFieldsRequest;
+                  stateToSearch.subjects = allFieldsRequest;
+                  stateToSearch.regions = allFieldsRequest;
+                  stateToSearch.publication_other_bbs_old = allFieldsRequest;
 
                   startAdvancedsearch(stateToSearch, resourceType);
                 }}
@@ -359,23 +284,18 @@ class BbsSearch extends React.Component {
                 onSubmit={(event) => {
                   event.preventDefault();
 
-                  // We don't want to use filteredSubthemes & allFieldsRequest for the search
+                  // We don't want to use allFieldsRequest for the search
                   const stateToSearch = { ...this.state };
-                  delete stateToSearch.filteredSubthemes;
                   delete stateToSearch.allFieldsRequest;
                   delete stateToSearch.panelExpanded;
 
-                  // Get theme and subtheme name from id
-                  const subthemeObj = this.getSubthemeObjFromId(
-                    stateToSearch['bbs subtheme'],
+                  // Get subject from id
+                  const subjectObj = this.getSubjectObjFromCode(
+                    stateToSearch[subjects],
                   );
-                  const themeObj = this.getThemeObjFromId(
-                    stateToSearch['bbs theme'],
-                  );
-                  stateToSearch['bbs subtheme'] = subthemeObj
-                    ? subthemeObj.name
+                  stateToSearch[subjects] = subjectObj
+                    ? subjectObj.subject
                     : '';
-                  stateToSearch['bbs theme'] = themeObj ? themeObj.name : '';
                   startAdvancedsearch(stateToSearch, resourceType);
                 }}
                 className={classes.formContainer}
@@ -398,7 +318,7 @@ class BbsSearch extends React.Component {
                           </span>
                         }
                         onChange={(event) =>
-                          this.handleValueChange('bbs title', event)
+                          this.handleValueChange('title', event)
                         }
                         value={title}
                         InputProps={{
@@ -416,83 +336,41 @@ class BbsSearch extends React.Component {
                           </span>
                         }
                         onChange={(event) =>
-                          this.handleValueChange('bbs abstract', event)
+                          this.handleValueChange('description', event)
                         }
                         value={abstract}
                       />
-                    </div>
-                  </fieldset>
 
-                  <fieldset className={classes.fieldset}>
-                    <legend className={classes.legend}>
-                      <Translate>Subject</Translate>
-                    </legend>
-
-                    <div className={classes.formPartContainer}>
                       <FormControl className={classes.formElement}>
-                        <InputLabel htmlFor="bbs theme">
-                          <Translate>Theme</Translate>
+                        <InputLabel htmlFor="subjects">
+                          <Translate>Subjects</Translate>
                         </InputLabel>
                         <Select
-                          value={theme}
+                          value={subjects}
                           onChange={(event) =>
-                            this.handleValueChange('bbs theme', event)
+                            this.handleValueChange('subjects', event)
                           }
                           inputProps={{
-                            name: 'theme',
-                            id: 'bbs theme',
+                            id: 'code',
+                            name: 'subject',
                           }}
                         >
                           <MenuItem key={-1} value="">
                             <i>
-                              <Translate>All themes</Translate>
+                              <Translate>All subjects</Translate>
                             </i>
                           </MenuItem>
-                          {themes.map((choiceTheme) => (
+                          {allSubjects.map((choiceSubject) => (
                             <MenuItem
-                              key={choiceTheme.id}
-                              value={choiceTheme.id}
+                              key={choiceSubject.code}
+                              value={choiceSubject.code}
                             >
-                              {choiceTheme.id}
-                              {'\u00a0-\u00a0'}
-                              <Translate>{choiceTheme.name}</Translate>
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
-
-                      <FormControl className={classes.formElement}>
-                        <InputLabel htmlFor="bbs subtheme">
-                          <Translate>Subtheme</Translate>
-                        </InputLabel>
-                        <Select
-                          value={subtheme}
-                          onChange={(event) =>
-                            this.handleValueChange('bbs subtheme', event)
-                          }
-                          inputProps={{
-                            name: 'subtheme',
-                            id: 'bbs subtheme',
-                          }}
-                        >
-                          <MenuItem key={-1} value="">
-                            <i>
-                              <Translate>All subthemes</Translate>
-                            </i>
-                          </MenuItem>
-                          {filteredSubthemes.map((choiceSubtheme) => (
-                            <MenuItem
-                              key={choiceSubtheme.id}
-                              value={choiceSubtheme.id}
-                            >
-                              {choiceSubtheme.id}
-                              {'\u00a0-\u00a0'}
-
-                              {/* In Transifex, the subtheme key for its name is its id. */}
-                              <Translate
-                                id={choiceSubtheme.id}
-                                defaultMessage={choiceSubtheme.name}
-                              />
+                              {/* sub-subject indentation */}
+                              {choiceSubject.parent !== null
+                                ? '\u00a0\u00a0\u00a0\u00a0'
+                                : ''}
+                              {`${choiceSubject.code} - `}
+                              <Translate>{choiceSubject.subject}</Translate>
                             </MenuItem>
                           ))}
                         </Select>
@@ -504,26 +382,26 @@ class BbsSearch extends React.Component {
                     className={classes.formElement}
                     label={
                       <span>
-                        <Translate>Reference</Translate>
+                        <Translate>BBS Reference</Translate>
                       </span>
                     }
                     onChange={(event) =>
-                      this.handleValueChange('bbs ref', event)
+                      this.handleValueChange('ref_bbs', event)
                     }
-                    value={ref}
+                    value={ref_bbs}
                   />
 
                   <TextField
                     className={classes.formElement}
                     label={
                       <span>
-                        <Translate>Country or region</Translate>
+                        <Translate>Regions</Translate>
                       </span>
                     }
                     onChange={(event) =>
-                      this.handleValueChange('bbs country', event)
+                      this.handleValueChange('regions', event)
                     }
-                    value={country}
+                    value={regions}
                   />
 
                   <TextField
@@ -534,7 +412,7 @@ class BbsSearch extends React.Component {
                       </span>
                     }
                     onChange={(event) =>
-                      this.handleValueChange('bbs authors', event)
+                      this.handleValueChange('authors', event)
                     }
                     value={authors}
                   />
@@ -547,9 +425,9 @@ class BbsSearch extends React.Component {
                       </span>
                     }
                     onChange={(event) =>
-                      this.handleValueChange('bbs publication', event)
+                      this.handleValueChange('publication_other_bbs_old', event)
                     }
-                    value={publication}
+                    value={publication_other_bbs_old}
                   />
 
                   <SliderForm
@@ -557,12 +435,14 @@ class BbsSearch extends React.Component {
                       id: 'Year',
                     })}
                     disabled={!yearRange.isEditable}
-                    onDisable={this.handleCheckedChange('bbs year-range')}
+                    onDisable={this.handleCheckedChange(
+                      'publication_year-range',
+                    )}
                     min={yearMinValue}
                     max={yearMaxValue}
                     onChange={(values) => {
                       this.handleRangeChange(
-                        'bbs year-range',
+                        'publication_year-range',
                         values,
                         yearMinValue,
                         yearMaxValue,
@@ -613,14 +493,13 @@ class BbsSearch extends React.Component {
   }
 }
 
-BbsSearch.propTypes = {
-  classes: PropTypes.shape({}).isRequired,
+DocumentSearch.propTypes = {
+  classes: PropTypes.shape(PropTypes.any).isRequired,
   startAdvancedsearch: PropTypes.func.isRequired,
   resetResults: PropTypes.func.isRequired,
   resourceType: PropTypes.string.isRequired,
-  getSubThemes: PropTypes.func.isRequired,
-  subthemes: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
-  themes: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
+  getAllSubjects: PropTypes.func.isRequired,
+  allSubjects: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
 
   yearMinValue: PropTypes.number,
   yearMaxValue: PropTypes.number,
@@ -628,9 +507,9 @@ BbsSearch.propTypes = {
   intl: PropTypes.shape(intlShape).isRequired,
 };
 
-BbsSearch.defaultProps = {
+DocumentSearch.defaultProps = {
   yearMinValue: 1800,
   yearMaxValue: new Date().getFullYear(),
 };
 
-export default injectIntl(withStyles(styles)(BbsSearch));
+export default injectIntl(withStyles(styles)(DocumentSearch));
