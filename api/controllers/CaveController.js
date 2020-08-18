@@ -15,7 +15,7 @@ module.exports = {
   delete: (req, res) =>
     res.badRequest('CaveController.delete not yet implemented!'),
 
-  find: (req, res) => {
+  find: (req, res, next, converter = MappingV1Service.convertToCaveModel) => {
     TCave.findOne({
       id: req.params.id,
     })
@@ -24,22 +24,25 @@ module.exports = {
       .populate('entrances')
       .populate('descriptions')
       .populate('documents')
+      .populate('names')
       .exec((err, found) => {
         const params = {};
         params.controllerMethod = 'CaveController.find';
+        params.searchedItem = `Cave of id ${req.params.id}`;
         params.notFoundMessage = `Cave of id ${req.params.id} not found.`;
-        return ControllerService.treat(req, err, found, params, res);
+        return ControllerService.treatAndConvert(
+          req,
+          err,
+          found,
+          params,
+          res,
+          converter,
+        );
       });
   },
 
-  findAll: (req, res) => {
+  findAll: (req, res, converter) => {
     const parameters = {};
-    if (req.params.name) {
-      parameters.name = {
-        like: `%${req.param('name')}%`,
-      };
-      sails.log.debug(`parameters ${parameters.name.like}`);
-    }
 
     return TCave.find(parameters)
       .populate('author')
@@ -50,7 +53,7 @@ module.exports = {
         const params = {};
         params.controllerMethod = 'CaveController.findAll';
         params.notFoundMessage = 'No caves found.';
-        return ControllerService.treat(req, err, found, params, res);
+        return ControllerService.treat(req, err, found, params, res, converter);
       });
   },
 };

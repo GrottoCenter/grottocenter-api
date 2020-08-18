@@ -54,7 +54,7 @@ class DocumentSearch extends React.Component {
       },
       authors: '',
       description: '',
-      publication: '',
+      publication_other_bbs_old: '',
       regions: '',
       ref_bbs: '',
       subjects: '',
@@ -161,7 +161,7 @@ class DocumentSearch extends React.Component {
       description: abstract,
       subjects, // TODO: currently, we select only one subject via a dropdown menu. It should be possible to search multiple subjects.
       regions,
-      // publication, TODO !!
+      publication_other_bbs_old,
       matchAllFields,
       allFieldsRequest,
       panelExpanded,
@@ -232,7 +232,7 @@ class DocumentSearch extends React.Component {
                   stateToSearch.description = allFieldsRequest;
                   stateToSearch.subjects = allFieldsRequest;
                   stateToSearch.regions = allFieldsRequest;
-                  stateToSearch['bbs publication'] = allFieldsRequest;
+                  stateToSearch.publication_other_bbs_old = allFieldsRequest;
 
                   startAdvancedsearch(stateToSearch, resourceType);
                 }}
@@ -417,7 +417,7 @@ class DocumentSearch extends React.Component {
                     value={authors}
                   />
 
-                  {/* <TextField
+                  <TextField
                     className={classes.formElement}
                     label={
                       <span>
@@ -425,10 +425,10 @@ class DocumentSearch extends React.Component {
                       </span>
                     }
                     onChange={(event) =>
-                      this.handleValueChange('bbs publication', event)
+                      this.handleValueChange('publication_other_bbs_old', event)
                     }
-                    value={publication}
-                  /> */}
+                    value={publication_other_bbs_old}
+                  />
 
                   <SliderForm
                     label={intl.formatMessage({

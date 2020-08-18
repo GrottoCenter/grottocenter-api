@@ -83,6 +83,7 @@ const CaverModel = {
   nickname: undefined,
   surname: undefined,
   name: undefined,
+  mail: undefined,
 };
 
 const CaveModel = {
@@ -197,6 +198,8 @@ module.exports = {
     const result = { ...CaverModel };
     result.id = source.id;
     result.nickname = source.nickname;
+    result.surname = source.surname;
+    result.name = source.name;
     return result;
   },
 
@@ -474,8 +477,8 @@ module.exports = {
 
     // Conversion (from Elasticsearch or not)
     result.id = source.id;
-    result.refBbs = source.ref_bbs;
-    result.bbs = source.bbs;
+    result.refBbs = source.ref_bbs ? source.ref_bbs : source.refBbs;
+    result.bbs = source.bbs ? source.bbs : source.isBBS;
     result.title = source.title;
     result.publicationDate = source.date_publication;
 
@@ -483,7 +486,9 @@ module.exports = {
     result.authors = source.authors;
 
     // TODO: handle publication (old bbs & parent)
-    result.publication = source.publication_other_bbs_old;
+    result.publication = source.publication_other_bbs_old
+      ? source.publication_other_bbs_old
+      : source.publicationOtherBBSOld;
 
     // Build regions
     if (source.regions) {
@@ -515,7 +520,7 @@ module.exports = {
     // Build library
     if (source.library) {
       result.library = source.library;
-    } else {
+    } else if (source['library id']) {
       // ES
       result.library = {
         id: source['library id'],
@@ -526,7 +531,7 @@ module.exports = {
     // Build editor
     if (source.editor) {
       result.editor = source.editor;
-    } else {
+    } else if (source['editor id']) {
       // ES
       result.editor = {
         id: source['editor id'],
@@ -547,19 +552,19 @@ module.exports = {
 
   convertToSubjectModel: (source) => {
     const result = { ...SubjectModel };
-    result.code = source.id.trim(); // We get a string with a length of 5 characters by default (example: 1.1 will be "1.1  "). We must trim it.
+    result.code = source.id;
     result.subject = source.subject;
     result.parent = source.parent;
     return result;
   },
 
   convertToSubjectList: (source) => {
-    const result = {
-      subjects: [],
-    };
+    const subjects = [];
     source.forEach((item) =>
-      result.subjects.push(MappingV1Service.convertToSubjectModel(item)),
+      subjects.push(MappingV1Service.convertToSubjectModel(item)),
     );
-    return result;
+    return {
+      subjects,
+    };
   },
 };

@@ -402,6 +402,71 @@ paths:
           description: Resource not found
         '500':
           description: Internal error
+  
+  '/advanced-search':
+    get:
+      tags:
+      - search
+      summary: Advanced search for resources (documents, entrances, massifs & organizations)
+      description: Search for resources (entrances, massifs, organizations & documents) in the criterias mentionned in the request. It's case insensitive.
+      parameters:
+      - name: query
+        in: query
+        description: Resource property (or part of property)
+        required: true
+        schema:
+          type: string
+      - name: resourceType
+        in: query
+        description: Resource type to be searched
+        required: true
+        schema:
+          type: string
+          enum: [documents, entrances, massifs, organizations]
+      - name: complete
+        in: query
+        description: Does the query need to send every information about the results? If it's set to false, the id and the name of each result will be returned.
+        required: false
+        schema:
+          type: boolean
+          default: true
+      - name: paramX
+        in: query
+        description: String property of the resource you want to search on. The resource property will be matched exactly (no auto-complete, no fuzziness etc.). You can specify as much properties as you want.
+        required: false
+        schema:
+          type: string
+      - name: paramY-min
+        in: query
+        description: Range number property of the resource you want to search on. The resource property will be superior or equal to this value. You can specify as much properties as you want.
+        required: false
+        schema:
+          type: number
+      - name: paramY-max
+        in: query
+        description: Range number property of the resource you want to search on. The resource property will be inferior or equal to this value. You can specify as much properties as you want.
+        required: false
+        schema:
+          type: number
+      - name: paramZ-bool
+        in: query
+        description: Boolean property of the resource you want to search on. You can specify as much properties as you want.
+        required: false
+        schema:
+          type: boolean
+          default: true
+          
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Search'
+        '404':
+          description: Resource not found
+        '500':
+          description: Internal error
 
 
   '/geoloc/countEntries':
@@ -1024,3 +1089,4 @@ components:
         - entrances
         - grottos
         - massifs
+

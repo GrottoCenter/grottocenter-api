@@ -33,6 +33,11 @@ module.exports = {
       required: true,
     },
 
+    names: {
+      collection: 'TName',
+      via: 'cave',
+    },
+
     minDepth: {
       type: 'number',
       columnName: 'min_depth',
