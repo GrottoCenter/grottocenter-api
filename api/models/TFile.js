@@ -23,7 +23,6 @@ module.exports = {
       allowNull: false,
       columnName: 'date_inscription',
       columnType: 'datetime',
-      defaultsTo: '2000-01-01 00:00:00',
     },
 
     dateReviewed: {
