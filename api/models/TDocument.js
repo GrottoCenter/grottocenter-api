@@ -189,5 +189,11 @@ module.exports = {
       collection: 'TFile',
       via: 'document',
     },
+
+    authors: {
+      collection: 'TCaver',
+      via: 'document',
+      through: 'JDocumentCaverAuthor',
+    },
   },
 };

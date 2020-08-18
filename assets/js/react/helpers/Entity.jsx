@@ -79,7 +79,7 @@ export const entityOptionForSelector = (option) => {
     case 'entrance':
       iconPath += 'entry.svg';
       break;
-    case 'group':
+    case 'grotto':
       iconPath += 'club.svg';
       break;
     case 'massif':

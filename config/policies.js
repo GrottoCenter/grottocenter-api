@@ -135,6 +135,7 @@ module.exports.policies = {
 
   'v1/DocumentController': {
     '*': true,
+    // create: 'tokenAuth', TODO decomment when auth is working
   },
 
   'v1/IdentifierTypeController': {

@@ -5,6 +5,8 @@
  * @help        :: See https://sailsjs.com/docs/concepts/actions
  */
 
+const ramda = require('ramda');
+
 module.exports = {
   count: (req, res) => {
     TDocument.count().exec((err, found) => {
@@ -35,10 +37,37 @@ module.exports = {
   },
 
   create: (req, res) => {
-    // TODO later
-    const err = null;
-    const found = {};
-    const params = {};
-    return ControllerService.treat(req, err, count, params, res);
+    const cleanedData = {
+      ...req.body,
+      editor: ramda.pathOr(undefined, ['editor', 'id'], req.body),
+      library: ramda.pathOr(undefined, ['library', 'id'], req.body),
+      identifierType: ramda.pathOr(
+        undefined,
+        ['identifierType', 'code'],
+        req.body,
+      ),
+      authors: req.body.authors ? req.body.authors.map((a) => a.id) : undefined,
+      license: 1,
+      dateInscription: new Date(),
+    };
+
+    TDocument.create(cleanedData)
+      .then(() => {
+        const params = {};
+        params.controllerMethod = 'DocumentController.create';
+        return ControllerService.treat(req, null, {}, params, res);
+      })
+      .catch({ code: 'E_UNIQUE' }, (err) => {
+        return res.sendStatus(409);
+      })
+      .catch({ name: 'UsageError' }, (err) => {
+        return res.badRequest(err.cause.message);
+      })
+      .catch({ name: 'AdapterError' }, (err) => {
+        return res.badRequest(err.cause.message);
+      })
+      .catch((err) => {
+        return res.serverError(err.cause.message);
+      });
   },
 };
