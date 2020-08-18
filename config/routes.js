@@ -316,6 +316,16 @@ module.exports.routes = {
     action: 'create',
   },
 
+  'GET /api/v1/documents/types/:id': {
+    controller: 'v1/DocumentType',
+    action: 'find',
+  },
+
+  'GET /api/v1/documents/types': {
+    controller: 'v1/DocumentType',
+    action: 'findAll',
+  },
+
   'GET /api/v1/documents/subjects/:code': {
     controller: 'v1/Subject',
     action: 'find',
