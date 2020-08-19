@@ -1,7 +1,7 @@
 /**
  * GrottoController
  *
- * @description :: Server-side logic for managing entries
+ * @description :: Server-side logic for managing grottos
  * @help        :: See http://links.sailsjs.org/docs/controllers
  */
 
@@ -10,19 +10,35 @@ module.exports = {
     TGrotto.findOne({
       id: req.params.id,
     })
+      .populate('names')
       .populate('cavers')
-      .populate('entries')
+      .populate('exploredCaves')
+      .populate('partneredCaves')
       .exec((err, found) => {
         const params = {};
         params.searchedItem = `Grotto of id ${req.params.id}`;
-        return ControllerService.treatAndConvert(
-          req,
-          err,
-          found,
-          params,
-          res,
-          converter,
+        const expCavesPromise = NameService.setNames(
+          found.exploredCaves,
+          'cave',
         );
+        expCavesPromise.then((expCavesPopulated) => {
+          found.exploredCaves = expCavesPopulated;
+          const partnCavesPromise = NameService.setNames(
+            found.partneredCaves,
+            'cave',
+          );
+          partnCavesPromise.then((partnCavesPopulated) => {
+            found.partneredCaves = partnCavesPopulated;
+            return ControllerService.treatAndConvert(
+              req,
+              err,
+              found,
+              params,
+              res,
+              converter,
+            );
+          });
+        });
       });
   },
 

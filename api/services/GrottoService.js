@@ -3,7 +3,7 @@
 
 // query to count official partners
 const OFFICIAL_PARTNERS_COUNT_QUERY =
-  'SELECT COUNT(id) AS count FROM t_grotto WHERE is_official_partner=1';
+  'SELECT COUNT(id) AS count FROM t_grotto WHERE is_official_partner=true';
 
 module.exports = {
   /**

@@ -4,23 +4,23 @@
 # Requirement: docker
 #
 # This script will create and run 2 Docker containers on your local computer :
-# - {MYSQL_TAGNAME} mysql container with initial data loaded (all scripts of "sql" folder executed)
+# - {DB_TAGNAME} mysql container with initial data loaded (all scripts of "sql" folder executed)
 # - {ES_TAGNAME} elasticsearch container that is used for all research on the app
-# - {LS_TAGNAME} logstash container that pipe data from {MYSQL_TAGNAME} container to {ES_TAGNAME} container.
+# - {LS_TAGNAME} logstash container that pipe data from {DB_TAGNAME} container to {ES_TAGNAME} container.
 #   The config file is the logstash.conf and populates the elasticsearch container.
 #
-# - The database is accessible from your local machine on 127.0.0.1 and port {MYSQL_LOCAL_PORT}
+# - The database is accessible from your local machine on 127.0.0.1 and port {DB_LOCAL_PORT}
 # - The Grottocenter App running on the docker container is accessible on http://localhost:{GC_LOCAL_PORT}/
 # - The Elasticsearch App running on the docker container is accessible on http://localhost:{ES_LOCAL_PORT}/ or through the container {ES_TAGNAME}:{ES_LOCAL_PORT}
 #
 
 ###################################################### LOCAL VARIABLES #########################################################
-# MySQL Database
-MYSQL_TAGNAME="mysqlgrotto"
-MYSQL_LOCAL_PORT=33060
-DOCKER_MYSQL_USER="root"
-DOCKER_MYSQL_PASSWORD="root"
-DOCKER_MYSQL_DATABASE="grottoce"
+# PostgreSQL Database
+DB_TAGNAME="postgresgrotto"
+DB_LOCAL_PORT=33060
+DOCKER_DB_USER="root"
+DOCKER_DB_PASSWORD="root"
+DOCKER_DB_DATABASE="grottoce"
 
 # Elasticsearch
 ES_TAGNAME="elasticsearchgrotto"
@@ -40,7 +40,7 @@ function getContainerHealth {
   docker inspect --format "{{json .State.Health.Status }}" $1
 }
 
-# Function that waits for a container to be healthy or unhealthy.
+# Wait for a container to be healthy or unhealthy.
 # It prints a "." during starting and sleep 5 seconds before checking the status of the container.
 function waitContainer {
   while STATUS=$(getContainerHealth $1); [[ $STATUS != "\"healthy\"" ]]; do
@@ -63,39 +63,37 @@ function waitContainer {
 # The health of this container is defined to healthy when we can send a ping to mysqladmin.
 # The database is populated with files in the sql folder.
 # For Windows replace the `PWD` with the full path
-isSQLContainerExisting="$(docker ps --all --quiet --filter=name="$MYSQL_TAGNAME")"
+isSQLContainerExisting="$(docker ps --all --quiet --filter=name="$DB_TAGNAME")"
 if [ -n "$isSQLContainerExisting" ]; then
-  echo "### DELETING old MySQL Container ###"
-  docker stop $MYSQL_TAGNAME && docker rm -f $MYSQL_TAGNAME
+  echo "### DELETING old PostgreSQL Container ###"
+  docker stop $DB_TAGNAME && docker rm -f $DB_TAGNAME
 fi
 
-echo "### LAUNCHING MySQL Container ###"
+echo "### LAUNCHING PostgreSQL Container ###"
 docker run -d \
---name ${MYSQL_TAGNAME} \
---health-cmd='mysqladmin ping --silent' \
--p ${MYSQL_LOCAL_PORT}:3306 \
+--name ${DB_TAGNAME} \
+--health-cmd='pg_isready' \
+-p ${DB_LOCAL_PORT}:5432 \
 -v "$PWD"/sql:/docker-entrypoint-initdb.d \
--e MYSQL_RANDOM_ROOT_PASSWORD=yes \
--e MYSQL_USER=${DOCKER_MYSQL_USER} \
--e MYSQL_PASSWORD=${DOCKER_MYSQL_PASSWORD} \
--e MYSQL_DATABASE=${DOCKER_MYSQL_DATABASE} \
-mysql/mysql-server:5.7
+-e POSTGRES_USER=${DOCKER_DB_USER} \
+-e POSTGRES_PASSWORD=${DOCKER_DB_PASSWORD} \
+postgres
 
 # Wait the container to be running
-waitContainer ${MYSQL_TAGNAME}
+waitContainer ${DB_TAGNAME}
 echo "### MySQL is RUNNING ###"
 
 # The database is entirely populated when we can reach a request to mysql from outside the container
-echo "### POPULATING Database ###"
-#TODO: Handle the message when database is populated
-until curl -X GET "localhost:${MYSQL_LOCAL_PORT}" --silent > /dev/null
-do
-    # Print a "." and wait for 5 seconds before check again
-    printf .
-    sleep 5
-done
-echo ""
-echo "### Database POPULATED ###"
+# echo "### POPULATING Database ###"
+# #TODO: Handle the message when database is populated
+# until curl -X GET "localhost:${DB_LOCAL_PORT}" --silent > /dev/null
+# do
+#     # Print a "." and wait for 5 seconds before check again
+#     printf .
+#     sleep 5
+# done
+# echo ""
+# echo "### Database POPULATED ###"
 
 # Delete the Elasticsearch container if already running and then create an Elasticsearch container for development with only one node.
 isESContainerExisting="$(docker ps --all --quiet --filter=name="$ES_TAGNAME")"
@@ -114,10 +112,8 @@ docker run -d \
     elasticsearch:${ES_AND_LS_VERSION}
 echo "### Elasticsearch available on port ${ES_LOCAL_PORT} ###"
 
-# Dowload and extract a plugin to be used by Logstash to load data from MySQL
 echo "### Download and Build the JDBC plugin for Logstash ###"
-wget https://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-5.1.47.tar.gz -O ./mysql-connector.tar.gz
-tar -xzf mysql-connector.tar.gz
+wget https://jdbc.postgresql.org/download/postgresql-42.2.14.jar -O ./postgresql-connector.jar
 echo "### JDBC plugin downloaded and built ###"
 
 # Delete the Logstash container if already running and then create a Logstash container with the logstash.conf as configuration file.
@@ -136,12 +132,13 @@ docker run --rm -d \
     --name ${LS_TAGNAME} \
     --health-cmd='curl -X GET "localhost:9600" --silent' \
     --health-retries=5 \
-    --link ${MYSQL_TAGNAME} \
-    --link ${ES_TAGNAME} \
+    --link ${DB_TAGNAME} \
+    --link "${ES_TAGNAME}:elasticsearch" \
     -e XPACK.MONITORING.ELASTICSEARCH.URL=${ES_TAGNAME} \
-    -e JDBC_MYSQL="jdbc:mysql://${MYSQL_TAGNAME}/${DOCKER_MYSQL_DATABASE}" \
-    -e JDBC_USER=${DOCKER_MYSQL_USER} \
-    -e JDBC_PASSWORD=${DOCKER_MYSQL_PASSWORD} \
+    -e CONFIG.SUPPORT_ESCAPES=true \
+    -e JDBC_POSTGRESQL="jdbc:postgresql://${DB_TAGNAME}/${DOCKER_DB_DATABASE}" \
+    -e JDBC_USER=${DOCKER_DB_USER} \
+    -e JDBC_PASSWORD=${DOCKER_DB_PASSWORD} \
     -e ES_HOSTS="${ES_TAGNAME}:${ES_LOCAL_PORT}" \
     -v "$PWD":/config-dir docker.elastic.co/logstash/logstash:${ES_AND_LS_VERSION} \
     -f /config-dir/logstash.conf

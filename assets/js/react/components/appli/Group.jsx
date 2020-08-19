@@ -14,7 +14,8 @@ import EmailIcon from '@material-ui/icons/Email';
 import LocationIcon from '@material-ui/icons/LocationOn';
 import { useIntl } from 'react-intl';
 
-import EntriesList from '../common/entry/EntriesList';
+import CavesList from '../common/cave/CavesList';
+import Translate from '../common/Translate';
 
 const CaverIcon = styled.img`
   display: inline-block;
@@ -53,9 +54,17 @@ const Group = ({ isFetching, group }) => {
   const safeGet = pathOr('N/A', __, group || {});
   const { formatMessage } = useIntl();
 
+  if (isNil(group) && !isFetching) {
+    return (
+      <Translate>
+        Error, the group data you are looking for is not available.
+      </Translate>
+    );
+  }
+
   return (
     <>
-      {isFetching || isNil(group) ? (
+      {isFetching ? (
         <CircularProgress />
       ) : (
         <Card>
@@ -71,21 +80,22 @@ const Group = ({ isFetching, group }) => {
 
                 <StyledBadge
                   color="primary"
-                  badgeContent={group.entries.length}
+                  badgeContent={group.exploredCaves.length}
                 >
-                  <EntryIcon src="/images/entry.svg" alt="Entry icon" />
+                  <EntryIcon src="/images/entry-cluster.svg" alt="Cave icon" />
                 </StyledBadge>
               </>
             }
             title={
-              <Typography variant="h5" color="secondary">
+              <Typography variant="h1" color="secondary">
                 {safeGet(['name'])}
               </Typography>
             }
             subheader={
               <>
                 {group.yearBirth &&
-                  `${formatMessage({ id: 'Since' })} - ${group.yearBirth} -`}
+                  `${formatMessage({ id: 'Since' })} ${group.yearBirth}`}
+                {group.yearBirth && group.isOfficialPartner && ` - `}
                 {group.isOfficialPartner && (
                   <>{formatMessage({ id: 'Official partner' })}</>
                 )}
@@ -106,10 +116,10 @@ const Group = ({ isFetching, group }) => {
               </Typography>
             </ContentWrapper>
 
-            {group.contact && (
+            {group.mail && (
               <ContentWrapper>
                 <StyledEmailIcon color="primary" />
-                <Typography>{group.contact}</Typography>
+                <Typography>{group.mail}</Typography>
               </ContentWrapper>
             )}
 
@@ -117,7 +127,30 @@ const Group = ({ isFetching, group }) => {
               <Typography>{group.customMessage}</Typography>
             </ContentWrapper>
 
-            <EntriesList entries={group.entries} />
+            <hr />
+            <CavesList
+              caves={group.exploredCaves}
+              title={
+                <strong>
+                  <Translate>Explored caves</Translate>
+                </strong>
+              }
+              emptyMessageComponent={
+                <Translate>No explored caves found.</Translate>
+              }
+            />
+            <hr />
+            <CavesList
+              caves={group.partneredCaves}
+              title={
+                <strong>
+                  <Translate>Partnered caves</Translate>
+                </strong>
+              }
+              emptyMessageComponent={
+                <Translate>No partnered caves found.</Translate>
+              }
+            />
           </CardContent>
         </Card>
       )}
@@ -134,7 +167,7 @@ Group.propTypes = {
   isFetching: PropTypes.bool.isRequired,
   group: PropTypes.shape({
     address: PropTypes.string,
-    contact: PropTypes.string,
+    mail: PropTypes.string,
     customMessage: PropTypes.string,
     city: PropTypes.string,
     country: PropTypes.string,
@@ -144,7 +177,8 @@ Group.propTypes = {
     region: PropTypes.string,
     postalCode: PropTypes.string,
     village: PropTypes.string,
-    entries: PropTypes.any,
+    exploredCaves: PropTypes.arrayOf(PropTypes.any),
+    partneredCaves: PropTypes.arrayOf(PropTypes.any),
     cavers: PropTypes.any,
     yearBirth: PropTypes.any,
   }),

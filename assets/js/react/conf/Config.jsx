@@ -133,23 +133,23 @@ export const paypalImgLink =
 
 export const dynamicNumbersUrl = {
   cavers: '/api/cavers/count',
-  entries: '/api/entries/count',
-  publicEntries: `/api/${apiVersion}/entry/publicCount`,
-  partners: '/api/grottos/count',
-  officialPartners: '/api/grottos/officialCount',
-  bbs: `/api/${apiVersion}/bbs/count`,
+  documents: `/api/${apiVersion}/documents/count`,
+  entrances: '/api/entrances/count',
+  publicEntrances: `/api/${apiVersion}/entrances/publicCount`,
+  partners: '/api/organizations/count',
+  officialPartners: '/api/organizations/officialCount',
 };
 
-export const findRandomEntryUrl = '/api/entries/findRandom';
+export const findRandomEntryUrl = '/api/entrances/findRandom';
 export const findForCarouselUrl = '/api/partners/findForCarousel';
 export const findMapBoundsUrl = `/api/${apiVersion}/geoloc/findByBounds`;
 export const findMassifUrl = `/api/${apiVersion}/massifs/`;
-export const findGroupUrl = `/api/${apiVersion}/grottos/`;
+export const findGroupUrl = `/api/${apiVersion}/organizations/`;
 export const findBbsUrl = `/api/${apiVersion}/bbs/`;
 export const advancedsearchUrl = `/api/${apiVersion}/advanced-search`;
 export const quicksearchUrl = `/api/${apiVersion}/search`;
-export const subthemesUrl = `/api/${apiVersion}/bbs/subthemes`;
-export const getEntryUrl = `/api/${apiVersion}/entries/`;
+export const subjectsUrl = `/api/${apiVersion}/documents/subjects`;
+export const getEntryUrl = `/api/${apiVersion}/entrances/`;
 export const getCaveUrl = `/api/${apiVersion}/caves/`;
 export const postDocumentUrl = `/api/${apiVersion}/document`;
 
@@ -159,7 +159,7 @@ export const logoutUrl = `/api/${apiVersion}/logout`;
 
 // ===== Grottocenter Client routes
 export const swaggerLinkV1 = '/ui/swagger/1';
-export const entryDetailPath = '/ui/entries/';
+export const entryDetailPath = `/api/${apiVersion}/entrances/`;
 
 // ===== Misc config values
 export const DYNAMIC_NUMBER_RELOAD_INTERVAL = 900000;

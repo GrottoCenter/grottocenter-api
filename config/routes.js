@@ -63,13 +63,11 @@ module.exports.routes = {
    ***************************************************************************/
 
   /* CSRF */
-
   'GET /csrfToken': {
     action: 'security/grant-csrf-token',
   },
 
   /* For ReactRouter routes */
-
   'GET /auth/*': {
     view: 'grottocenter',
   },
@@ -91,7 +89,6 @@ module.exports.routes = {
   //  ╩ ╩╩  ╩  ╚═╝╝╚╝═╩╝╩  ╚═╝╩╝╚╝ ╩ ╚═╝
 
   /* Auth controller */
-
   'POST /api/v1/login': {
     controller: 'v1/Auth',
     action: 'login',
@@ -103,7 +100,6 @@ module.exports.routes = {
   },
 
   /* Caver controller */
-
   'GET /api/cavers/': {
     controller: 'Caver',
     action: 'find',
@@ -119,18 +115,6 @@ module.exports.routes = {
     action: 'findAll',
   },
 
-  'GET /api/v1/search/findAll': {
-    controller: 'v1/Search',
-    action: 'findAll',
-    api: {
-      entity: 'search',
-      limit: 50,
-    },
-    cors: {
-      allowOrigins: '*',
-    },
-  },
-
   'GET /api/cavers/count': {
     controller: 'Caver',
     action: 'getCaversNumber',
@@ -139,11 +123,6 @@ module.exports.routes = {
   'GET /api/cavers/:id': {
     controller: 'Caver',
     action: 'find',
-  },
-
-  'GET /api/:version/cavers/:id': {
-    controller: 'Caver',
-    action: 'findVersion',
   },
 
   'PUT /api/cavers/:id': {
@@ -156,54 +135,27 @@ module.exports.routes = {
     action: 'destroy',
   },
 
-  /* Entry controller */
-  'GET /api/entries/findAll': {
-    controller: 'Entry',
-    action: 'findAll',
-  },
-
-  'GET /api/v1/entries': {
-    controller: 'v1/Entry',
-    action: 'findAll',
-    api: {
-      entity: 'entry',
-      limit: 50,
-    },
-    cors: {
-      allowOrigins: '*',
-    },
-  },
-
-  'GET /api/entries/findRandom': {
-    controller: 'Entry',
+  /* Entrance controller */
+  'GET /api/entrances/findRandom': {
+    controller: 'Entrance',
     action: 'findRandom',
   },
 
-  // /!\ DEPRECATED /!\
-  'GET /api/v1/entry/publicCount': {
-    controller: 'v1/Entry',
-    action: 'getPublicEntriesNumber',
+  'GET /api/v1/entrances/publicCount': {
+    controller: 'v1/Entrance',
+    action: 'getPublicEntrancesNumber',
     cors: {
       allowOrigins: '*',
     },
   },
 
-  'GET /api/entries/count': {
-    controller: 'Entry',
-    action: 'getEntriesNumber',
+  'GET /api/entrances/count': {
+    controller: 'Entrance',
+    action: 'getEntrancesNumber',
   },
 
-  'GET /api/v1/entries/:id': {
-    controller: 'v1/Entry',
-    action: 'find',
-    cors: {
-      allowOrigins: '*',
-    },
-  },
-
-  // /!\ DEPRECATED (use plural route) /!\
-  'GET /api/v1/entry/:id': {
-    controller: 'v1/Entry',
+  'GET /api/v1/entrances/:id': {
+    controller: 'v1/Entrance',
     action: 'find',
     cors: {
       allowOrigins: '*',
@@ -216,7 +168,7 @@ module.exports.routes = {
     action: 'create',
   },
 
-  'GET /api/caves/findAll': {
+  'GET /api/v1/caves/findAll': {
     controller: 'Cave',
     action: 'findAll',
   },
@@ -237,7 +189,6 @@ module.exports.routes = {
   },
 
   /* Author controller */
-
   'POST /api/authors/': {
     controller: 'Author',
     action: 'create',
@@ -264,7 +215,6 @@ module.exports.routes = {
   },
 
   /* REST API for Partner controller */
-
   'POST /api/partners/': {
     controller: 'Partner',
     action: 'create',
@@ -300,35 +250,7 @@ module.exports.routes = {
     action: 'delete',
   },
 
-  /* REST API for Topography controller */
-
-  'POST /api/topos/': {
-    controller: 'Topography',
-    action: 'create',
-  },
-
-  'GET /api/topos/findAll': {
-    controller: 'Topography',
-    action: 'findAll',
-  },
-
-  'GET /api/topos/:id': {
-    controller: 'Topography',
-    action: 'find',
-  },
-
-  'PUT /api/topos/:id': {
-    controller: 'Topography',
-    action: 'update',
-  },
-
-  'DELETE /api/topos/:id': {
-    controller: 'Topography',
-    action: 'delete',
-  },
-
   /* REST API for Comment controller */
-
   'GET /api/comments/stats/:entry': {
     controller: 'Comment',
     action: 'getEntryStats',
@@ -340,33 +262,26 @@ module.exports.routes = {
   },
 
   /* REST API for Grotto controller */
-
-  'GET /api/grottos/findAll': {
+  'GET /api/organizations/findAll': {
     controller: 'Grotto',
     action: 'findAll',
   },
 
-  'GET /api/grottos/officialCount': {
+  'GET /api/organizations/officialCount': {
     controller: 'Grotto',
     action: 'getOfficialPartnersNumber',
   },
 
-  'GET /api/grottos/count': {
+  'GET /api/organizations/count': {
     controller: 'Grotto',
     action: 'getPartnersNumber',
   },
 
-  'GET /api/grottos/:id': {
-    controller: 'Grotto',
-    action: 'find',
-  },
-
-  'GET /api/v1/grottos/:id': {
+  'GET /api/v1/organizations/:id': {
     controller: 'v1/Grotto',
     action: 'find',
     api: {
       entity: 'grotto',
-      limit: 50,
     },
     cors: {
       allowOrigins: '*',
@@ -384,60 +299,35 @@ module.exports.routes = {
     action: 'find',
     api: {
       entity: 'massif',
-      limit: 50,
     },
     cors: {
       allowOrigins: '*',
     },
   },
 
-  /* REST API for BBS controllers */
-  'GET /api/v1/bbs/:id': {
-    controller: 'v1/Bbs',
-    action: 'find',
-    api: {
-      entity: 'bbs',
-      limit: 50,
-    },
-    cors: {
-      allowOrigins: '*',
-    },
-  },
-
-  'GET /api/v1/bbs/count': {
-    controller: 'v1/Bbs',
+  /* REST API for Documents controllers */
+  'GET /api/v1/documents/count': {
+    controller: 'v1/Document',
     action: 'count',
   },
 
-  'GET /api/v1/bbs-geos/:id': {
-    controller: 'v1/BbsGeo',
+  'GET /api/v1/documents/subjects/:code': {
+    controller: 'v1/Subject',
     action: 'find',
+    skipAssets: false, // Disable this parameter to allow a dot in the url (for the code)
     api: {
-      entity: 'bbsGeo',
-      limit: 50,
+      entity: 'subject',
     },
     cors: {
       allowOrigins: '*',
     },
   },
 
-  'GET /api/v1/bbs/subthemes/:id': {
-    controller: 'v1/BbsChapter',
-    action: 'find',
-    api: {
-      entity: 'bbsChapter',
-      limit: 50,
-    },
-    cors: {
-      allowOrigins: '*',
-    },
-  },
-
-  'GET /api/v1/bbs/subthemes': {
-    controller: 'v1/BbsChapter',
+  'GET /api/v1/documents/subjects': {
+    controller: 'v1/Subject',
     action: 'findAll',
     api: {
-      entity: 'bbsChapter',
+      entity: 'subject',
     },
     cors: {
       allowOrigins: '*',
@@ -445,20 +335,18 @@ module.exports.routes = {
   },
 
   /* REST API for Admin controller */
-  'GET /api/admin/entries/findAllOfInterest': {
+  'GET /api/admin/entrances/findAllOfInterest': {
     controller: 'Admin',
     action: 'findAllInterestEntries',
   },
 
   /* Rss controller */
-
   'GET /api/rss/:language': {
     controller: 'Rss',
     action: 'getFeed',
   },
 
   /* Geo localisation API */
-
   'GET /api/v1/geoloc/countEntries': {
     controller: 'v1/GeoLoc',
     action: 'countEntries',
@@ -493,7 +381,6 @@ module.exports.routes = {
   },
 
   /* Convert */
-
   'GET /api/convert': {
     controller: 'ConvertController',
     action: 'convert',

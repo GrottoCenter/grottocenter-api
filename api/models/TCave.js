@@ -1,7 +1,7 @@
 /**
  * TCave.js
  *
- * @description :: tCave model imported from localhost MySql server at 31/3/2016 12:7:32.
+ * @description :: tCave model
  * @docs        :: http://sailsjs.org/#!documentation/models
  */
 
@@ -13,109 +13,129 @@ module.exports = {
   attributes: {
     id: {
       type: 'number',
-      unique: true,
+      allowNull: false,
       autoIncrement: true,
-      columnName: 'Id',
-    },
-
-    locked: {
-      type: 'string',
-      defaultsTo: 'NO',
-      columnName: 'Locked',
+      columnName: 'id',
+      unique: true,
     },
 
     author: {
-      columnName: 'Id_author',
+      allowNull: false,
+      columnName: 'id_author',
       model: 'TCaver',
+      required: true,
     },
 
-    idReviewer: {
-      type: 'number',
-      autoMigrations: { index: true },
-      columnName: 'Id_reviewer',
-      allowNull: true,
+    reviewer: {
+      allowNull: false,
+      columnName: 'id_reviewer',
+      model: 'TCaver',
+      required: true,
     },
 
-    idLocker: {
-      type: 'number',
-      columnName: 'Id_locker',
-      allowNull: true,
-    },
-
-    name: {
-      type: 'string',
-      maxLength: 36,
-      columnName: 'Name',
+    names: {
+      collection: 'TName',
+      via: 'cave',
     },
 
     minDepth: {
       type: 'number',
-      columnName: 'Min_depth',
+      columnName: 'min_depth',
       allowNull: true,
     },
 
     maxDepth: {
       type: 'number',
-      columnName: 'Max_depth',
+      columnName: 'max_depth',
       allowNull: true,
     },
 
     depth: {
       type: 'number',
-      columnName: 'Depth',
+      columnName: 'depth',
       allowNull: true,
     },
 
     length: {
       type: 'number',
-      columnName: 'Length',
+      columnName: 'length',
       allowNull: true,
     },
 
     isDiving: {
-      type: 'string',
-      defaultsTo: 'NO',
-      columnName: 'Is_diving',
+      type: 'boolean',
+      allowNull: false,
+      columnName: 'is_diving',
+      defaultsTo: false,
     },
 
     temperature: {
       type: 'number',
-      columnName: 'Temperature',
       allowNull: true,
+      columnName: 'temperature',
     },
 
     dateInscription: {
       type: 'ref',
+      allowNull: false,
+      columnName: 'date_inscription',
       columnType: 'datetime',
-      columnName: 'Date_inscription',
     },
 
     dateReviewed: {
       type: 'ref',
+      allowNull: false,
+      columnName: 'date_reviewed',
       columnType: 'datetime',
-      columnName: 'Date_reviewed',
     },
 
-    dateLocked: {
-      type: 'ref',
-      columnType: 'datetime',
-      columnName: 'Date_locked',
+    // Sails' ORM, Waterline, doesn't support large number: that's why we use the type 'string' for the latitude
+    latitude: {
+      type: 'string',
+      allowNull: true,
+      columnName: 'latitude',
+      columnType: 'numeric(24,20)',
     },
 
-    entries: {
-      collection: 'TEntry',
+    // Sails' ORM, Waterline, doesn't support large number: that's why we use the type 'string' for the longitude
+    longitude: {
+      type: 'string',
+      allowNull: true,
+      columnName: 'longitude',
+      columnType: 'numeric(24,20)',
+    },
+
+    massif: {
+      allowNull: false,
+      columnName: 'id_massif',
+      model: 'TMassif',
+    },
+
+    exploringGrottos: {
+      collection: 'TGrotto',
+      via: 'cave',
+      through: 'JGrottoCaveExplorer',
+    },
+
+    partneringGrottos: {
+      collection: 'TGrotto',
+      via: 'cave',
+      through: 'JGrottoCavePartner',
+    },
+
+    entrances: {
+      collection: 'TEntrance',
       via: 'cave',
     },
-    massifs: {
-      collection: 'TMassif',
+
+    descriptions: {
+      collection: 'TDescription',
       via: 'cave',
-      through: 'JMassifCave',
     },
 
-    topographies: {
-      collection: 'TTopography',
-      via: 'idCave',
-      through: 'jtopocave',
+    documents: {
+      collection: 'TDocument',
+      via: 'cave',
     },
   },
 };

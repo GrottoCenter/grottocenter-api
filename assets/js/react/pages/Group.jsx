@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 // eslint-disable-next-line import/no-named-as-default
 import Group from '../components/appli/Group';
 import { loadGroup } from '../actions/Group';
+import { setPageTitle } from '../actions/PageTitle';
 
 const EntryPage = () => {
   const { groupId } = useParams();
@@ -12,6 +13,7 @@ const EntryPage = () => {
 
   useEffect(() => {
     dispatch(loadGroup(groupId));
+    dispatch(setPageTitle('Organization'));
   }, [groupId]);
 
   return <Group isFetching={isFetching} group={group} />;

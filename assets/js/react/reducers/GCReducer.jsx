@@ -11,7 +11,7 @@ import partnersCarousel from './PartnersCarouselReducer';
 import group from './GroupReducer';
 import massif from './MassifReducer';
 import bbs from './BbsReducer';
-import subtheme from './SubthemeReducer';
+import subject from './SubjectReducer';
 import pageTitle from './PageTitleReducer';
 import entry from './EntryReducer';
 import cave from './CaveReducer';
@@ -37,7 +37,7 @@ const GCReducer = combineReducers({
   group,
   massif,
   bbs,
-  subtheme,
+  subject,
   pageTitle,
   auth,
   entry,
