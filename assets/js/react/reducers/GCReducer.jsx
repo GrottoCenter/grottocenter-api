@@ -19,6 +19,7 @@ import auth from './AuthReducer';
 import document from './DocumentReducer';
 import region from './RegionReducer';
 import identifierType from './IdentifierTypesReducer';
+import documentType from './DocumentTypeReducer';
 
 //
 //
@@ -47,6 +48,7 @@ const GCReducer = combineReducers({
   document,
   region,
   identifierType,
+  documentType,
 });
 
 export default GCReducer;
