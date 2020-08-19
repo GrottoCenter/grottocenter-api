@@ -47,7 +47,7 @@ const isStep2Valid = (stepData, documentType) => {
     case DocumentTypes.IMAGE:
       return authors.length > 0;
     case DocumentTypes.TEXT:
-      return /* authors.length > 0 && */ subjects.length > 0;
+      return authors.length > 0 && subjects.length > 0;
     default:
       return true;
   }
