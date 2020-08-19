@@ -34,7 +34,26 @@ gcStore.dispatch(changeLanguage(locale));
 const theme = createMuiTheme(grottoTheme);
 
 ReactDOM.render(
-  <IntlProvider locale={locale} messages={window.catalog}>
+  <IntlProvider
+    locale={locale}
+    messages={window.catalog}
+    onError={(err) => {
+      /* 
+      Custom handler for missing translation. 
+      By default, it shows the stacktrace which is very annoying. 
+      This handler wrap everything in a collapsed group.
+      */
+      if (err.code === 'MISSING_TRANSLATION') {
+        console.groupCollapsed('MISSING_TRANSLATION'); // eslint-disable-line no-console
+        console.warn(
+          `Missing Translation for message with id: \n${err.descriptor.id}`,
+        );
+        console.groupEnd(); // eslint-disable-line no-console
+        return;
+      }
+      throw err;
+    }}
+  >
     <StylesProvider injectFirst>
       <CssBaseline />
       <StyledThemeProvider theme={theme}>
