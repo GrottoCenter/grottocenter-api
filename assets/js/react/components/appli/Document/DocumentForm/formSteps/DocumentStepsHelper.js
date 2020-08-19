@@ -58,8 +58,15 @@ const isStep3Valid = (stepData) => {
     return false;
   }
   const { identifier, identifierType } = stepData;
-
-  return identifier === '' || (identifier !== '' && identifierType !== null);
+  let regexpValidation = false;
+  if (identifierType !== null) {
+    const regexp = new RegExp(identifierType.regexp);
+    regexpValidation = regexp.test(identifier);
+  }
+  return (
+    identifier === '' ||
+    (identifier !== '' && identifierType !== null && regexpValidation)
+  );
 };
 
 // currentStep must be the index +1

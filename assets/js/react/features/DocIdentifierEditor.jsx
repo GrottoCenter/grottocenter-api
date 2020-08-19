@@ -20,6 +20,7 @@ const DocIdentifierEditor = ({
   const handleIdentifierChange = (newIdentifier) => {
     if (newIdentifier === '') {
       setIdentifier(null);
+      setIdentifierType(null);
     }
     setIdentifier(newIdentifier);
   };
