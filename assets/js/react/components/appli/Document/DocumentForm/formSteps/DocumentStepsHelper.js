@@ -7,16 +7,12 @@ const isStep1Valid = (stepData, documentType) => {
   }
   const {
     title,
-    titleLanguage,
+    titleAndDescriptionLanguage,
     description,
-    descriptionLanguage,
     publicationDate,
   } = stepData;
   const isValid =
-    title !== '' &&
-    titleLanguage !== null &&
-    description !== '' &&
-    descriptionLanguage !== null;
+    title !== '' && titleAndDescriptionLanguage !== null && description !== '';
 
   switch (documentType.id) {
     case DocumentTypes.UNKNOWN:

@@ -14,7 +14,6 @@ export const defaultContext = {
   docAttributes: {
     authors: [],
     description: '',
-    descriptionLanguage: null,
     documentMainLanguage: null,
     documentType: { id: DocumentTypes.UNKNOWN },
     editor: null,
@@ -31,7 +30,7 @@ export const defaultContext = {
     startPage: 0,
     subjects: [],
     title: '',
-    titleLanguage: null,
+    titleAndDescriptionLanguage: null,
     formSteps: defaultFormSteps,
   },
   currentStep: 1,

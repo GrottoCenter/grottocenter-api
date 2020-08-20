@@ -52,7 +52,7 @@ const TitleEditor = ({
         <LanguageSelectContainer>
           <LanguageSelect
             allLanguages={allLanguages}
-            contextValueNameToUpdate="titleLanguage"
+            contextValueNameToUpdate="titleAndDescriptionLanguage"
             helperText={languageHelperText}
             itemReferringTo={languageItemReferringTo}
             required={required}

@@ -5,7 +5,6 @@ import styled from 'styled-components';
 import { DocumentFormContext } from '../Provider';
 
 import StringInput from '../../../../common/Form/StringInput';
-import LanguageSelect from './LanguageSelect';
 
 // ===================================
 const InlineWrapper = styled.div`
@@ -19,24 +18,15 @@ const DescriptionContainer = styled.div`
   flex-basis: 300px;
 `;
 
-const LanguageSelectContainer = styled.div`
-  flex: 5;
-  min-width: 230px;
-`;
 // ===================================
 
-const DescriptionEditor = ({
-  allLanguages,
-  languageHelperText,
-  languageItemReferringTo,
-  required = false,
-}) => {
+const DescriptionEditor = ({ allLanguages, required = false }) => {
   const {
-    docAttributes: { description, descriptionLanguage },
+    docAttributes: { description },
     updateAttribute,
   } = useContext(DocumentFormContext);
 
-  const memoizedValues = [allLanguages, description, descriptionLanguage];
+  const memoizedValues = [allLanguages, description];
   return useMemo(
     () => (
       <InlineWrapper>
@@ -52,15 +42,6 @@ const DescriptionEditor = ({
             valueName="Description"
           />
         </DescriptionContainer>
-        <LanguageSelectContainer>
-          <LanguageSelect
-            allLanguages={allLanguages}
-            contextValueNameToUpdate="descriptionLanguage"
-            helperText={languageHelperText}
-            itemReferringTo={languageItemReferringTo}
-            required={required}
-          />
-        </LanguageSelectContainer>
       </InlineWrapper>
     ),
     memoizedValues,
@@ -74,8 +55,6 @@ DescriptionEditor.propTypes = {
       name: PropTypes.string.isRequired,
     }),
   ).isRequired,
-  languageHelperText: PropTypes.string.isRequired,
-  languageItemReferringTo: PropTypes.string.isRequired,
   required: PropTypes.bool,
 };
 

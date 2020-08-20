@@ -80,8 +80,8 @@ const DocumentForm = ({ allLanguages, stepId }) => {
                   <TitleEditorWrapper>
                     <TitleEditor
                       allLanguages={allLanguages}
-                      languageHelperText="Language of the title. You will be able to add more translations of the title later."
-                      languageItemReferringTo="Title"
+                      languageHelperText="Language of the title and the description."
+                      languageItemReferringTo="Title and description"
                       required
                     />
                   </TitleEditorWrapper>
@@ -94,12 +94,7 @@ const DocumentForm = ({ allLanguages, stepId }) => {
                   )}
                 </FlexWrapper>
 
-                <DescriptionEditor
-                  allLanguages={allLanguages}
-                  languageHelperText="Language of the description you provided."
-                  languageItemReferringTo="Description"
-                  required
-                />
+                <DescriptionEditor allLanguages={allLanguages} required />
               </>
             )}
           </div>
