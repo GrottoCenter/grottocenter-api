@@ -1,6 +1,9 @@
 import { connect } from 'react-redux';
-import { fetchAdvancedsearchResults, resetAdvancedSearchResults } from '../actions/Advancedsearch';
-import { loadSubthemes } from '../actions/Subtheme';
+import {
+  fetchAdvancedsearchResults,
+  resetAdvancedSearchResults,
+} from '../actions/Advancedsearch';
+import { loadSubjects } from '../actions/Subject';
 import AdvancedSearch from '../components/homepage/advancedSearch/AdvancedSearch';
 
 //
@@ -11,10 +14,11 @@ import AdvancedSearch from '../components/homepage/advancedSearch/AdvancedSearch
 
 const startAdvancedsearch = (formValues, resourceType) => (dispatch) => {
   // complete is set to true because we need the complete results about the data
-  // resourceType is set to "entries", "grottos", "massifs" or "bbs" according to the search wanted
+  // resourceType is set to "entrances", "grottos", "massifs" or "documents"
+  // according to the search desired
   const paramsToSend = {
-    resourceType,
     complete: true,
+    resourceType,
   };
 
   Object.keys(formValues).forEach((key) => {
@@ -48,20 +52,19 @@ const resetAdvancedSearch = () => (dispatch) => {
   dispatch(resetAdvancedSearchResults());
 };
 
-const getSubThemes = () => (dispatch) => {
-  dispatch(loadSubthemes());
+const getSubjects = () => (dispatch) => {
+  dispatch(loadSubjects());
 };
 
 const mapDispatchToProps = (dispatch) => ({
   startAdvancedsearch: (formValues, resourceType) =>
     dispatch(startAdvancedsearch(formValues, resourceType)),
   resetAdvancedSearch: () => dispatch(resetAdvancedSearch()),
-  getSubThemes: () => dispatch(getSubThemes()),
+  getSubjects: () => dispatch(getSubjects()),
 });
 
 const mapStateToProps = (state) => ({
-  themes: state.subtheme.themes,
-  subthemes: state.subtheme.subthemes,
+  subjects: state.subject.subjects,
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(AdvancedSearch);

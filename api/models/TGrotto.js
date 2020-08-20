@@ -1,7 +1,7 @@
 /**
  * TGrotto.js
  *
- * @description :: tGrotto model imported from localhost MySql server at 31/3/2016 12:7:32.
+ * @description :: tGrotto model
  * @docs        :: http://sailsjs.org/#!documentation/models
  */
 
@@ -13,151 +13,146 @@ module.exports = {
   attributes: {
     id: {
       type: 'number',
-      unique: true,
       autoIncrement: true,
-      columnName: 'Id',
+      columnName: 'id',
+      unique: true,
     },
-    locked: {
-      type: 'string',
-      defaultsTo: 'NO',
-      columnName: 'Locked',
-    },
+
     author: {
-      columnName: 'Id_author',
+      allowNull: false,
+      columnName: 'id_author',
       model: 'TCaver',
     },
-    idReviewer: {
-      type: 'number',
-      autoMigrations: { index: true },
-      columnName: 'Id_reviewer',
-      allowNull: true,
+
+    reviewer: {
+      columnName: 'id_reviewer',
+      model: 'TCaver',
     },
-    idLocker: {
+
+    village: {
       type: 'string',
+      allowNull: true,
+      maxLength: 100,
+      columnName: 'village',
+    },
+
+    county: {
+      type: 'string',
+      allowNull: true,
+      maxLength: 100,
+      columnName: 'county',
+    },
+
+    region: {
+      type: 'string',
+      allowNull: true,
+      maxLength: 100,
+      columnName: 'region',
+    },
+
+    city: {
+      type: 'string',
+      allowNull: true,
+      maxLength: 100,
+      columnName: 'city',
+    },
+
+    postalCode: {
+      type: 'string',
+      allowNull: true,
+      columnName: 'postal_code',
       maxLength: 5,
-      columnName: 'Id_locker',
-      allowNull: true,
     },
-    name: {
+
+    address: {
       type: 'string',
-      maxLength: 36,
-      columnName: 'Name',
+      allowNull: true,
+      columnName: 'address',
+      maxLength: 200,
     },
+
+    mail: {
+      type: 'string',
+      allowNull: true,
+      columnName: 'mail',
+      maxLength: 50,
+    },
+
+    yearBirth: {
+      type: 'number',
+      allowNull: true,
+      columnName: 'year_birth',
+    },
+
+    dateInscription: {
+      type: 'ref',
+      allowNull: false,
+      columnType: 'datetime',
+      columnName: 'date_inscription',
+    },
+
+    dateReviewed: {
+      type: 'ref',
+      columnType: 'datetime',
+      columnName: 'date_reviewed',
+    },
+
+    names: {
+      collection: 'TName',
+      via: 'grotto',
+    },
+
     country: {
       type: 'string',
       maxLength: 3,
       columnName: 'Country',
     },
-    region: {
-      type: 'string',
-      maxLength: 32,
-      columnName: 'Region',
-      allowNull: true,
-    },
-    city: {
-      type: 'string',
-      maxLength: 32,
-      columnName: 'City',
-      allowNull: true,
-    },
-    postalCode: {
-      type: 'string',
-      maxLength: 5,
-      columnName: 'Postal_code',
-      allowNull: true,
-    },
-    address: {
-      type: 'string',
-      maxLength: 128,
-      columnName: 'Address',
-      allowNull: true,
-    },
-    contact: {
-      type: 'string',
-      maxLength: 40,
-      columnName: 'Contact',
-      allowNull: true,
-    },
-    yearBirth: {
-      type: 'string',
-      maxLength: 4,
-      columnName: 'Year_birth',
-      allowNull: true,
-    },
-    dateInscription: {
-      type: 'ref',
-      columnType: 'datetime',
-      columnName: 'Date_inscription',
-    },
-    dateReviewed: {
-      type: 'ref',
-      columnType: 'datetime',
-      columnName: 'Date_reviewed',
-    },
-    dateLocked: {
-      type: 'ref',
-      columnType: 'datetime',
-      columnName: 'Date_locked',
-    },
-    idPresident: {
-      type: 'number',
-      autoMigrations: { index: true },
-      columnName: 'Id_president',
-      allowNull: true,
-    },
-    idVicePresident: {
-      type: 'number',
-      autoMigrations: { index: true },
-      columnName: 'Id_vice_president',
-      allowNull: true,
-    },
-    idTreasurer: {
-      type: 'number',
-      autoMigrations: { index: true },
-      columnName: 'Id_treasurer',
-      allowNull: true,
-    },
-    idSecretary: {
-      type: 'number',
-      autoMigrations: { index: true },
-      columnName: 'Id_secretary',
-      allowNull: true,
-    },
+
+    // Sails' ORM, Waterline, doesn't support large number: that's why we use the type 'string' for the latitude
     latitude: {
-      type: 'number',
-      columnName: 'Latitude',
+      type: 'string',
+      allowNull: true,
+      columnName: 'latitude',
+      columnType: 'numeric(24,20)',
     },
+
+    // Sails' ORM, Waterline, doesn't support large number: that's why we use the type 'string' for the longitude
     longitude: {
-      type: 'number',
-      columnName: 'Longitude',
+      type: 'string',
+      allowNull: true,
+      columnName: 'longitude',
+      columnType: 'numeric(24,20)',
     },
+
     customMessage: {
       type: 'string',
-      columnName: 'Custom_message',
-      allowNull: true,
+      columnName: 'custom_message',
     },
-    pictureFileName: {
-      type: 'string',
-      maxLength: 100,
-      columnName: 'Picture_file_name',
-      allowNull: true,
-    },
+
     isOfficialPartner: {
       type: 'boolean',
-      columnName: 'Is_official_partner',
-      allowNull: true,
+      allowNull: false,
+      columnName: 'is_official_partner',
+      defaultsTo: false,
     },
-    village: {
+
+    url: {
       type: 'string',
-      maxLength: 100,
-      columnName: 'Village',
       allowNull: true,
+      columnName: 'url',
+      maxLength: 200,
     },
-    county: {
+
+    country: {
+      columnName: 'id_country',
+      model: 'TCountry',
+    },
+
+    pictureFileName: {
       type: 'string',
-      maxLength: 100,
-      columnName: 'County',
       allowNull: true,
+      columnName: 'picture_file_name',
+      maxLength: 100,
     },
 
     cavers: {
@@ -165,10 +160,17 @@ module.exports = {
       via: 'grotto',
       through: 'JGrottoCaver',
     },
-    entries: {
-      collection: 'TEntry',
+
+    exploredCaves: {
+      collection: 'TCave',
       via: 'grotto',
-      through: 'JGrottoEntry',
+      through: 'JGrottoCaveExplorer',
+    },
+
+    partneredCaves: {
+      collection: 'TCave',
+      via: 'grotto',
+      through: 'JGrottoCavePartner',
     },
   },
 };

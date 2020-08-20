@@ -32,7 +32,7 @@ const EntryData = ({ entry }) => {
   if (!entry) {
     return <div />;
   }
-  const { entryInfo, stat, timeInfo } = entry;
+  const { entryInfo, stats, timeInfo } = entry;
   const imageElement =
     entryInfo && entryInfo.path ? <EntryImage src={entryInfo.path} /> : '';
 
@@ -40,7 +40,7 @@ const EntryData = ({ entry }) => {
     <FlexWrapper>
       <FlexItemWrapper>
         <EntryTitle entry={entry} />
-        <EntryStat stat={stat} />
+        <EntryStat stat={stats} />
         <EntryInfos timeInfo={timeInfo} entryInfo={entryInfo} />
       </FlexItemWrapper>
       <FlexItemWrapper>{imageElement}</FlexItemWrapper>
@@ -53,7 +53,7 @@ EntryData.propTypes = {
     entryInfo: PropTypes.shape({
       path: PropTypes.string,
     }),
-    stat: PropTypes.shape({}),
+    stats: PropTypes.shape({}),
     timeInfo: PropTypes.any,
   }).isRequired,
 };

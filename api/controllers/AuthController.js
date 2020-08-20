@@ -9,7 +9,7 @@ const passport = require('passport');
 
 module.exports = {
   login: (req, res) => {
-    passport.authenticate('local', (err, user) => {
+    passport.authenticate('local', (err, user, info) => {
       if (!err && !user) {
         return res.unauthorized({ message: 'Invalid email or password.' });
       }

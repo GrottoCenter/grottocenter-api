@@ -1,7 +1,7 @@
 /**
  * TComment.js
  *
- * @description :: tComment model imported from localhost MySql server at 8/11/2016 19:7:20.
+ * @description :: tComment model
  * @docs        :: http://sailsjs.org/#!documentation/models
  */
 
@@ -13,98 +13,105 @@ module.exports = {
   attributes: {
     id: {
       type: 'number',
-      unique: true,
       autoIncrement: true,
-      columnName: 'Id',
-    },
-    locked: {
-      type: 'string',
-      defaultsTo: 'NO',
-      columnName: 'Locked',
-    },
-    idAuthor: {
-      type: 'number',
+      columnName: 'id',
       unique: true,
-      columnName: 'Id_author',
+    },
+
+    author: {
+      allowNull: false,
+      columnName: 'id_author',
+      model: 'TCaver',
       required: true,
     },
-    idAnswered: {
-      type: 'number',
-      autoMigrations: { index: true },
-      columnName: 'Id_answered',
+
+    reviewer: {
+      columnName: 'id_reviewer',
+      model: 'TCaver',
     },
-    idReviewer: {
-      type: 'number',
-      autoMigrations: { index: true },
-      columnName: 'Id_reviewer',
-    },
-    idLocker: {
-      type: 'number',
-      columnName: 'Id_locker',
-    },
+
     dateInscription: {
-      type: 'string',
+      type: 'ref',
+      allowNull: false,
+      columnName: 'date_inscription',
       columnType: 'datetime',
-      columnName: 'Date_inscription',
     },
+
     dateReviewed: {
-      type: 'string',
+      type: 'ref',
+      columnName: 'date_reviewed',
       columnType: 'datetime',
-      columnName: 'Date_reviewed',
     },
-    dateLocked: {
-      type: 'string',
-      columnType: 'datetime',
-      columnName: 'Date_locked',
-    },
-    entry: {
-      columnName: 'Id_entry',
-      model: 'TEntry',
-    },
-    idExit: {
-      type: 'number',
-      unique: true,
-      columnName: 'Id_exit',
-      required: true,
-    },
+
     relevance: {
       type: 'number',
-      defaultsTo: 1,
-      columnName: 'Relevance',
+      allowNull: false,
+      columnName: 'relevance',
     },
+
     eTUnderground: {
       type: 'string',
-      columnName: 'E_t_underground',
+      columnName: 'e_t_underground',
     },
+
     eTTrail: {
       type: 'string',
-      columnName: 'E_t_trail',
+      columnName: 'e_t_trail',
     },
+
     aestheticism: {
       type: 'number',
-      columnName: 'Aestheticism',
+      columnName: 'aestheticism',
     },
+
     caving: {
       type: 'number',
-      columnName: 'Caving',
+      columnName: 'caving',
     },
+
     approach: {
       type: 'number',
-      columnName: 'Approach',
+      columnName: 'approach',
     },
+
     title: {
       type: 'string',
+      allowNull: false,
+      columnName: 'title',
       maxLength: 300,
-      columnName: 'Title',
     },
+
     body: {
       type: 'string',
-      columnName: 'Body',
+      allowNull: false,
+      columnName: 'body',
     },
+
     alert: {
-      type: 'string',
-      defaultsTo: 'NO',
-      columnName: 'Alert',
+      type: 'boolean',
+      allowNull: false,
+      defaultsTo: false,
+      columnName: 'alert',
+    },
+
+    cave: {
+      columnName: 'id_cave',
+      model: 'TCave',
+    },
+
+    entrance: {
+      columnName: 'id_entrance',
+      model: 'TEntrance',
+    },
+
+    exit: {
+      columnName: 'id_exit',
+      model: 'TEntrance',
+    },
+
+    language: {
+      columnName: 'id_language',
+      model: 'TLanguage',
     },
   },
 };

@@ -1,0 +1,16 @@
+/**
+ * CaveController
+ *
+ * @description :: Server-side logic for managing caves
+ * @help        :: See http://links.sailsjs.org/docs/controllers
+ */
+
+const caveController = require('../CaveController');
+
+module.exports = {
+  find: (req, res) =>
+    caveController.find(req, res, next, MappingV1Service.convertToCaveModel),
+
+  findAll: (req, res) =>
+    caveController.findAll(req, res, MappingV1Service.convertToCaveModel),
+};

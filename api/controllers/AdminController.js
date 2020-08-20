@@ -4,24 +4,23 @@
 
 module.exports = {
   index: (req, res) => {
-    TEntry.find()
+    TEntrance.find()
       .limit(10)
       .exec((err, found) => {
         return res.view({
-          entrylist: found,
+          entrancelist: found,
         });
       });
   },
 
   find: (req, res) => {
-    TEntry.findOneById(req.params.id)
+    TEntrance.findOneById(req.params.id)
       .populate('author')
       .populate('cave')
-      .populate('singleEntry')
       .exec((err, found) => {
         const params = {};
-        params.controllerMethod = 'EntryController.find';
-        params.notFoundMessage = `Entry of id ${req.params.id} not found.`;
+        params.controllerMethod = 'EntranceController.find';
+        params.notFoundMessage = `Entrance of id ${req.params.id} not found.`;
         return ControllerService.treat(req, err, found, params, res);
       });
   },
@@ -39,22 +38,21 @@ module.exports = {
       };
     }
 
-    TEntry.find(parameters)
+    TEntrance.find(parameters)
       .populate('author')
       .populate('cave')
-      .populate('singleEntry')
       .sort('id ASC')
       .limit(10)
       .exec((err, found) => {
         const params = {};
-        params.controllerMethod = 'EntryController.findAll';
-        params.notFoundMessage = 'No entries found.';
+        params.controllerMethod = 'EntranceController.findAll';
+        params.notFoundMessage = 'No entrances found.';
         return ControllerService.treat(req, err, found, params, res);
       });
   },
 
-  findAllInterestEntries: (req, res) => {
-    EntryService.findAllInterestEntries().then(
+  findAllInterestEntrances: (req, res) => {
+    EntranceService.findAllInterestEntrances().then(
       (results) => {
         if (!results) {
           return res.notFound();
@@ -64,7 +62,7 @@ module.exports = {
       (err) => {
         sails.log.error(err);
         return res.serverError(
-          `EntryController.findAllRandomEntry error : ${err}`,
+          `EntranceController.findAllInterestEntrances error : ${err}`,
         );
       },
     );

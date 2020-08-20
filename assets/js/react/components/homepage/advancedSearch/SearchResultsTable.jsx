@@ -18,6 +18,7 @@ import {
   TablePagination,
   TableRow,
 } from '@material-ui/core';
+import { pathOr } from 'ramda';
 
 import { CSVDownload } from 'react-csv';
 import _ from 'lodash';
@@ -74,10 +75,10 @@ class SearchResultsTable extends React.Component {
       page: DEFAULT_PAGE,
       size: DEFAULT_SIZE,
     };
-    this.entriesTableHead = this.entriesTableHead.bind(this);
+    this.entrancesTableHead = this.entrancesTableHead.bind(this);
     this.groupsTableHead = this.groupsTableHead.bind(this);
     this.massifsTableHead = this.massifsTableHead.bind(this);
-    this.bbsTableHead = this.bbsTableHead.bind(this);
+    this.documentsTableHead = this.documentsTableHead.bind(this);
     this.handleRowClick = this.handleRowClick.bind(this);
     this.loadCSVData = this.loadCSVData.bind(this);
     this.getFullResultsAsCSV = this.getFullResultsAsCSV.bind(this);
@@ -105,7 +106,7 @@ class SearchResultsTable extends React.Component {
   };
 
   // ===== Table headers ===== //
-  entriesTableHead = () => {
+  entrancesTableHead = () => {
     const { intl } = this.props;
     return (
       <TableHead>
@@ -165,7 +166,7 @@ class SearchResultsTable extends React.Component {
             <Translate>Name</Translate>
           </TableCell>
           <TableCell>
-            <Translate>Contact</Translate>
+            <Translate>Email</Translate>
           </TableCell>
           <TableCell>
             <Translate>City</Translate>
@@ -209,17 +210,17 @@ class SearchResultsTable extends React.Component {
                 id: 'Number of caves',
                 defaultMessage: 'Number of caves',
               })}
-              alt="Caves icon"
+              alt="Cave icon"
             />
           </TableCell>
           <TableCell>
             <HeaderIcon
               src="/images/gc-entries.svg"
               title={intl.formatMessage({
-                id: 'Number of entries',
-                defaultMessage: 'Number of entries',
+                id: 'Number of entrances',
+                defaultMessage: 'Number of entrances',
               })}
-              alt="Entries icon"
+              alt="Entrances icon"
             />
           </TableCell>
         </TableRow>
@@ -227,7 +228,7 @@ class SearchResultsTable extends React.Component {
     );
   };
 
-  bbsTableHead = () => (
+  documentsTableHead = () => (
     <TableHead>
       <TableRow>
         <TableCell>
@@ -237,7 +238,7 @@ class SearchResultsTable extends React.Component {
           <Translate>Published in</Translate>
         </TableCell>
         <TableCell>
-          <Translate>Subtheme</Translate>
+          <Translate>Subjects</Translate>
         </TableCell>
         <TableCell>
           <Translate>Country or region</Translate>
@@ -258,7 +259,7 @@ class SearchResultsTable extends React.Component {
     const { history, resourceType } = this.props;
     let urlToRedirectTo = '';
     switch (resourceType) {
-      case 'entries':
+      case 'entrances':
         urlToRedirectTo = `/ui/entries/${id}`;
         break;
       case 'grottos':
@@ -267,7 +268,7 @@ class SearchResultsTable extends React.Component {
       case 'massifs':
         urlToRedirectTo = `/ui/massifs/${id}`;
         break;
-      case 'bbs':
+      case 'documents':
         urlToRedirectTo = `/ui/bbs/${id}`;
         break;
       default:
@@ -351,7 +352,7 @@ class SearchResultsTable extends React.Component {
     const { resourceType, fullResults } = this.props;
     let cleanedResults;
     switch (resourceType) {
-      case 'entries':
+      case 'entrances':
         // Flatten cave and massif
         cleanedResults = fullResults.map((result) => {
           const cleanedResult = result;
@@ -364,40 +365,32 @@ class SearchResultsTable extends React.Component {
         break;
 
       case 'grottos':
-        // Flatten cavers and entries
-        cleanedResults = fullResults.map((result) => {
-          const cleanedResult = result;
-          cleanedResult.cavers = result.cavers.map((c) => c.nickname);
-          cleanedResult.entries = result.entries.map((e) => e.name);
-          delete cleanedResult.type;
-          delete cleanedResult.highlights;
-          return cleanedResult;
-        });
-        break;
-
       case 'massifs':
-        // Flatten caves and entries
         cleanedResults = fullResults.map((result) => {
           const cleanedResult = result;
-          cleanedResult.caves = result.caves.map((c) => c.name);
-          cleanedResult.entries = result.entries.map((e) => e.name);
           delete cleanedResult.type;
           delete cleanedResult.highlights;
           return cleanedResult;
         });
         break;
 
-      case 'bbs':
-        // Flatten countries and subthemes
+      case 'documents':
+        // Flatten regions and subjects
         cleanedResults = fullResults.map((result) => {
           const cleanedResult = result;
-          if (result.country) {
-            cleanedResult.countryCode = result.country.id;
-            cleanedResult.country = result.country.name;
+          if (result.regions) {
+            cleanedResult.regions = result.regions
+              .map((s) => {
+                return s.names;
+              })
+              .join(', ');
           }
-          if (result.subtheme) {
-            cleanedResult.subthemeId = result.subtheme.id;
-            cleanedResult.subtheme = result.subtheme.name;
+          if (result.subjects) {
+            cleanedResult.subjects = result.subjects
+              .map((s) => {
+                return s.code;
+              })
+              .join(', ');
           }
           delete cleanedResult.type;
           delete cleanedResult.highlights;
@@ -428,13 +421,15 @@ class SearchResultsTable extends React.Component {
     const { from, page, size } = this.state;
 
     let ResultsTableHead;
-    if (resourceType === 'entries') ResultsTableHead = this.entriesTableHead;
+    if (resourceType === 'entrances')
+      ResultsTableHead = this.entrancesTableHead;
     if (resourceType === 'grottos') ResultsTableHead = this.groupsTableHead;
     if (resourceType === 'massifs') ResultsTableHead = this.massifsTableHead;
-    if (resourceType === 'bbs') ResultsTableHead = this.bbsTableHead;
+    if (resourceType === 'documents')
+      ResultsTableHead = this.documentsTableHead;
 
     const canDownloadDataAsCSV =
-      totalNbResults < MAX_NUMBER_OF_DATA_TO_EXPORT_IN_CSV;
+      totalNbResults <= MAX_NUMBER_OF_DATA_TO_EXPORT_IN_CSV;
     /*
       When the component is loading the new page, we want to keep the
       previous results displayed (instead of a white board).
@@ -483,14 +478,14 @@ class SearchResultsTable extends React.Component {
                     className={classes.tableRow}
                     onClick={() => this.handleRowClick(result.id)}
                   >
-                    {resourceType === 'entries' && (
+                    {resourceType === 'entrances' && (
                       <>
                         <TableCell>{result.name}</TableCell>
                         <TableCell>
-                          {result.country ? result.country : '-'}
+                          {result.countryCode ? result.countryCode : '-'}
                         </TableCell>
                         <TableCell>
-                          {result.massif.name ? result.massif.name : '-'}
+                          {pathOr('-', ['massif', 'name'], result)}
                         </TableCell>
                         <TableCell>
                           {result.aestheticism
@@ -508,22 +503,24 @@ class SearchResultsTable extends React.Component {
                             : '-'}
                         </TableCell>
                         <TableCell>
-                          {result.cave.name ? result.cave.name : '-'}
+                          {pathOr('-', ['cave', 'name'], result)}
                         </TableCell>
                         <TableCell>
-                          {result.cave.length ? `${result.cave.length}m` : '-'}
+                          {result.cave && result.cave.length
+                            ? `${result.cave.length}m`
+                            : '-'}
                         </TableCell>
                         <TableCell>
-                          {result.cave.depth ? `${result.cave.depth}m` : '-'}
+                          {result.cave && result.cave.depth
+                            ? `${result.cave.depth}m`
+                            : '-'}
                         </TableCell>
                       </>
                     )}
                     {resourceType === 'grottos' && (
                       <>
                         <TableCell>{result.name}</TableCell>
-                        <TableCell>
-                          {result.contact ? result.contact : '-'}
-                        </TableCell>
+                        <TableCell>{result.mail ? result.mail : '-'}</TableCell>
                         <TableCell>{result.city ? result.city : '-'}</TableCell>
                         <TableCell>
                           {result.county ? result.county : '-'}
@@ -532,10 +529,10 @@ class SearchResultsTable extends React.Component {
                           {result.region ? result.region : '-'}
                         </TableCell>
                         <TableCell>
-                          {result.country ? result.country : '-'}
+                          {result.countryCode ? result.countryCode : '-'}
                         </TableCell>
                         <TableCell>
-                          {result.cavers ? result.cavers.length : '0'}
+                          {result.nbCavers ? result.nbCavers : '0'}
                         </TableCell>
                       </>
                     )}
@@ -543,31 +540,40 @@ class SearchResultsTable extends React.Component {
                       <>
                         <TableCell>{result.name}</TableCell>
                         <TableCell>
-                          {result.caves ? result.caves.length : '0'}
+                          {result.nbCaves ? result.nbCaves : '0'}
                         </TableCell>
                         <TableCell>
-                          {result.entries ? result.entries.length : '0'}
+                          {result.nbEntrances ? result.nbEntrances : '0'}
                         </TableCell>
                       </>
                     )}
-                    {resourceType === 'bbs' && (
+                    {resourceType === 'documents' && (
                       <>
                         <TableCell>{result.title}</TableCell>
                         <TableCell>
                           {result.publication ? result.publication : '-'}
                         </TableCell>
                         <TableCell>
-                          {result.subtheme ? result.subtheme.id : '-'}
+                          {result.subjects
+                            ? result.subjects.map((s) => s.code).join(', ')
+                            : '-'}
                         </TableCell>
                         <TableCell>
-                          {result.country
-                            ? _.truncate(result.country.name, 30)
+                          {result.regions
+                            ? _.truncate(
+                                result.regions.map((s) => s.name).join(', '),
+                                30,
+                              )
                             : '-'}
                         </TableCell>
                         <TableCell>
                           {result.authors ? result.authors : '-'}
                         </TableCell>
-                        <TableCell>{result.year ? result.year : '-'}</TableCell>
+                        <TableCell>
+                          {result.publicationDate
+                            ? new Date(result.publicationDate).getFullYear()
+                            : '-'}
+                        </TableCell>
                       </>
                     )}
                   </TableRow>
@@ -667,8 +673,13 @@ SearchResultsTable.propTypes = {
   isLoading: PropTypes.bool.isRequired,
   isLoadingFullData: PropTypes.bool.isRequired,
   results: PropTypes.arrayOf(PropTypes.shape({})),
-  resourceType: PropTypes.oneOf(['', 'entries', 'grottos', 'massifs', 'bbs'])
-    .isRequired,
+  resourceType: PropTypes.oneOf([
+    '',
+    'entrances',
+    'grottos',
+    'massifs',
+    'documents',
+  ]).isRequired,
   getNewResults: PropTypes.func.isRequired,
   getFullResults: PropTypes.func.isRequired,
   wantToDownloadCSV: PropTypes.bool.isRequired,

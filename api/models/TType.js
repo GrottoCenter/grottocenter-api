@@ -1,7 +1,7 @@
 /**
  * TType.js
  *
- * @description :: tType model imported from localhost MySql server at 31/3/2016 12:7:32.
+ * @description :: tType model
  * @docs        :: http://sailsjs.org/#!documentation/models
  */
 
@@ -13,53 +13,28 @@ module.exports = {
   attributes: {
     id: {
       type: 'number',
-      unique: true,
       autoIncrement: true,
-      columnName: 'Id',
+      columnName: 'id',
+      unique: true,
     },
-    frType: {
+
+    name: {
       type: 'string',
-      maxLength: 100,
-      columnName: 'Fr_type',
+      allowNull: false,
+      columnName: 'name',
+      maxLength: 30,
     },
-    enType: {
+
+    comment: {
       type: 'string',
-      maxLength: 100,
-      columnName: 'En_type',
+      allowNull: false,
+      columnName: 'comment',
+      maxLength: 500,
     },
-    esType: {
-      type: 'string',
-      maxLength: 100,
-      columnName: 'Es_type',
-    },
-    deType: {
-      type: 'string',
-      maxLength: 100,
-      columnName: 'De_type',
-    },
-    bgType: {
-      type: 'string',
-      maxLength: 100,
-      required: true,
-      columnName: 'Bg_type',
-    },
-    nlType: {
-      type: 'string',
-      maxLength: 100,
-      required: true,
-      columnName: 'Nl_type',
-    },
-    caType: {
-      type: 'string',
-      maxLength: 100,
-      required: true,
-      columnName: 'Ca_type',
-    },
-    itType: {
-      type: 'string',
-      maxLength: 100,
-      required: true,
-      columnName: 'It_type',
+
+    parent: {
+      columnName: 'id_parent',
+      model: 'TType',
     },
   },
 };

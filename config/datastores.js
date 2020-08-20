@@ -14,7 +14,6 @@
  */
 
 module.exports.datastores = {
-
   /***************************************************************************
    *                                                                          *
    * Your app's default datastore.                                            *
@@ -32,13 +31,18 @@ module.exports.datastores = {
    ***************************************************************************/
 
   default: {
+    adapter: require('sails-postgresql'),
+    url: 'postgres://root:root@localhost:33060/root',
+  },
+
+  mysql: {
     adapter: require('sails-mysql'),
     url: 'mysql://root:root@localhost:33060/grottoce',
   },
 
   test: {
     adapter: require('sails-disk'),
-    inMemoryOnly: true
+    inMemoryOnly: true,
   },
 
   /***************************************************************************
@@ -57,23 +61,4 @@ module.exports.datastores = {
   // password: 'password',
   // database: 'your_mongo_db_name_here'
   //},
-
-  /***************************************************************************
-   *                                                                          *
-   * PostgreSQL is another officially supported relational database.          *
-   * http://en.wikipedia.org/wiki/PostgreSQL                                  *
-   *                                                                          *
-   * Run: npm install sails-postgresql                                        *
-   *                                                                          *
-   *                                                                          *
-   ***************************************************************************/
-  //'somePostgresqlServer': {
-  //  adapter: 'sails-postgresql',
-  //  host: 'YOUR_POSTGRES_SERVER_HOSTNAME_OR_IP_ADDRESS',
-  //  user: 'YOUR_POSTGRES_USER',
-  //  password: 'YOUR_POSTGRES_PASSWORD',
-  //  database: 'YOUR_POSTGRES_DB'
-  //}
-
 };
-

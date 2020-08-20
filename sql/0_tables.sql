@@ -1,688 +1,761 @@
---
--- Grottocenter database model
--- Schema coming from v2
---
+-----------------------------------------------------------
+-- Create structure in Postgre 
+-- Version v3.04 - 20200727 - V. Verdon
+------------------------------------------------------------
+-- use before postgre_injection.sql
 
-USE grottoce;
 
--- Entity tables
+------------------------------------------------------------
+-- Table: t_country
+------------------------------------------------------------
+CREATE TABLE t_country(
+	iso           CHAR (2) NOT NULL ,
+	iso3          CHAR(3) NOT NULL,
+	numeric       INTEGER NOT NULL,
+	latitude      DECIMAL (24,20)   ,
+	longitude     DECIMAL (24,20)   ,
+	native_name   VARCHAR (50) ,
+	en_name       VARCHAR (50) NOT NULL ,
+	fr_name       VARCHAR (50) NOT NULL ,
+	es_name       VARCHAR (50) NOT NULL ,
+	de_name       VARCHAR (50) NOT NULL ,
+	bg_name       VARCHAR (50) NOT NULL ,
+	it_name       VARCHAR (50) NOT NULL ,
+	ca_name       VARCHAR (50) NOT NULL ,
+	nl_name       VARCHAR (50) NOT NULL ,
+	rs_name       VARCHAR (50) NOT NULL  ,
+	CONSTRAINT t_country_PK PRIMARY KEY (Iso)
+);
 
-CREATE TABLE IF NOT EXISTS `T_application` (
-  `Id` smallint(5) NOT NULL AUTO_INCREMENT,
-  `Name` varchar(100) NOT NULL,
-  `Is_current` enum('YES','NO') NOT NULL DEFAULT 'NO',
-  `Version` varchar(10) NOT NULL,
-  `Url` varchar(100) NOT NULL,
-  `Contact` varchar(200) NOT NULL,
-  `Host` varchar(100) NOT NULL,
-  `Timer_min` double NOT NULL DEFAULT '5',
-  `Availability` int(11) NOT NULL,
-  `Estimated_reopening_time` datetime DEFAULT NULL,
-  `Creation` date NOT NULL,
-  `Revision` date NOT NULL,
-  `Authors` varchar(200) NOT NULL,
-  `Authors_contact` varchar(200) DEFAULT NULL,
-  `Thanks` varchar(200) DEFAULT NULL,
-  `Copyright` varchar(300) NOT NULL,
-  `Id_comments` int(5) DEFAULT NULL,
-  PRIMARY KEY (`Id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE IF NOT EXISTS `T_author` (
-  `Id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
-  `Id_author` smallint(5) NOT NULL,
-  `Date_inscription` datetime DEFAULT NULL,
-  `Id_caver` smallint(5) NOT NULL DEFAULT '0',
-  `Name` varchar(70) DEFAULT NULL,
-  `Contact` varchar(70) DEFAULT NULL,
-  `Creator_is_author` enum('YES','NO') NOT NULL DEFAULT 'NO',
-  `Validated` enum('YES','NO') NOT NULL DEFAULT 'NO',
-  PRIMARY KEY (`Id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+------------------------------------------------------------
+-- Table: t_language
+------------------------------------------------------------
+CREATE TABLE t_language(
+	id         CHAR (3)  NOT NULL ,
+	part2B     CHAR (3)   ,
+	part2T     CHAR (3)   ,
+	part1      CHAR (2)   ,
+	scope      CHAR (1)  NOT NULL ,
+	type       CHAR (1)  NOT NULL ,
+	ref_name   VARCHAR (150) NOT NULL ,
+	comment    VARCHAR (150)   ,
+	CONSTRAINT t_language_PK PRIMARY KEY (id)
+);
 
-CREATE TABLE IF NOT EXISTS `T_bibliography` (
-  `Id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
-  `Locked` enum('YES','NO') NOT NULL DEFAULT 'NO',
-  `Id_author` smallint(5) NOT NULL,
-  `Id_reviewer` smallint(5) DEFAULT NULL,
-  `Id_locker` smallint(5) DEFAULT NULL,
-  `Date_inscription` datetime DEFAULT NULL,
-  `Date_reviewed` datetime DEFAULT NULL,
-  `Date_locked` datetime DEFAULT NULL,
-  `Id_entry` mediumint(5) unsigned NOT NULL,
-  `Relevance` double NOT NULL DEFAULT '1',
-  `Body` longtext NOT NULL,
-  PRIMARY KEY (`Id`,`Id_entry`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE IF NOT EXISTS `T_category` (
-  `Id` smallint(5) NOT NULL AUTO_INCREMENT,
-  `Name` varchar(100) COLLATE utf8_unicode_ci NOT NULL,
-  `Fr_name` varchar(100) COLLATE utf8_unicode_ci NOT NULL,
-  `En_name` varchar(100) COLLATE utf8_unicode_ci NOT NULL,
-  `Es_name` varchar(100) COLLATE utf8_unicode_ci NOT NULL,
-  `De_name` varchar(100) COLLATE utf8_unicode_ci NOT NULL,
-  `Bg_name` varchar(100) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
-  `It_name` varchar(100) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
-  `Ca_name` varchar(100) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
-  `Nl_name` varchar(100) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
-  `Rs_name` varchar(100) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
-  PRIMARY KEY (`Id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+------------------------------------------------------------
+-- Table: j_country_language
+------------------------------------------------------------
+CREATE TABLE j_country_language(
+	id_country          CHAR(2)  NOT NULL ,
+	id_language         CHAR (3)  NOT NULL ,
+	is_official         BOOL  NOT NULL  ,
+	is_main 			BOOL NOT NULL DEFAULT FALSE,
+	CONSTRAINT j_country_language_PK PRIMARY KEY (id_country,id_language)
+	,CONSTRAINT j_country_language0_FK FOREIGN KEY (id_country) REFERENCES t_country(Iso)
+	,CONSTRAINT j_country_language1_FK FOREIGN KEY (id_language) REFERENCES t_language(id)
+);
 
-CREATE TABLE IF NOT EXISTS `T_cave` (
-  `Id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
-  `Locked` enum('YES','NO') NOT NULL DEFAULT 'NO',
-  `Id_author` smallint(5) NOT NULL,
-  `Id_reviewer` smallint(5) DEFAULT NULL,
-  `Id_locker` smallint(5) DEFAULT NULL,
-  `Name` varchar(36) NOT NULL,
-  `Min_depth` double DEFAULT NULL,
-  `Max_depth` double DEFAULT NULL,
-  `Depth` double DEFAULT NULL,
-  `Length` double DEFAULT NULL,
-  `Is_diving` enum('YES','NO') DEFAULT 'NO',
-  `Temperature` double DEFAULT NULL,
-  `Date_inscription` datetime DEFAULT NULL,
-  `Date_reviewed` datetime DEFAULT NULL,
-  `Date_locked` datetime DEFAULT NULL,
-  PRIMARY KEY (`Id`),
-  KEY `Ind_author` (`Id_author`),
-  KEY `Ind_reviewer` (`Id_reviewer`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE IF NOT EXISTS `T_caver` (
-  `Id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
-  `Activated` enum('YES','NO') NOT NULL DEFAULT 'NO',
-  `Activation_code` varchar(32) NOT NULL DEFAULT '0',
-  `Banned` enum('YES','NO') NOT NULL DEFAULT 'NO',
-  `Ip` varchar(200) DEFAULT NULL,
-  `Browser` varchar(1000) DEFAULT NULL,
-  `Connection_counter` int(10) NOT NULL DEFAULT '0',
-  `Relevance` double NOT NULL DEFAULT '1',
-  `Name` varchar(36) DEFAULT NULL,
-  `Surname` varchar(32) DEFAULT NULL,
-  `Login` varchar(20) NOT NULL,
-  `Nickname` varchar(68) NOT NULL,
-  `Password` varchar(32) NOT NULL DEFAULT '0',
-  `Country` varchar(3) DEFAULT NULL,
-  `Region` varchar(64) DEFAULT NULL,
-  `County` varchar(64) DEFAULT NULL,
-  `Village` varchar(64) DEFAULT NULL,
-  `City` varchar(64) DEFAULT NULL,
-  `Postal_code` varchar(5) DEFAULT NULL,
-  `Address` varchar(128) DEFAULT NULL,
-  `Date_birth` date DEFAULT NULL,
-  `Contact` varchar(50) NOT NULL,
-  `Year_initiation` int(4) DEFAULT NULL,
-  `Date_inscription` datetime DEFAULT NULL,
-  `Date_last_connection` datetime DEFAULT NULL,
-  `Language` varchar(4) NOT NULL,
-  `Contact_is_public` int(2) NOT NULL DEFAULT '0',
-  `Alert_for_news` enum('YES','NO') NOT NULL DEFAULT 'NO',
-  `Show_links` enum('YES','NO') NOT NULL DEFAULT 'NO',
-  `Detail_level` int(3) NOT NULL DEFAULT '30',
-  `Latitude` decimal(24,20) NOT NULL DEFAULT '0.00000000000000000000',
-  `Longitude` decimal(24,20) NOT NULL DEFAULT '0.00000000000000000000',
-  `Default_latitude` decimal(24,20) DEFAULT NULL,
-  `Default_longitude` decimal(24,20) DEFAULT NULL,
-  `Default_zoom` int(11) DEFAULT NULL,
-  `Custom_message` longtext,
-  `Facebook` varchar(100) DEFAULT NULL,
-  `Picture_file_name` varchar(100) DEFAULT NULL,
-  `Email_is_valid` tinyint(1) NOT NULL DEFAULT '1',
-  PRIMARY KEY (`Id`),
-  UNIQUE KEY `Login` (`Login`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+------------------------------------------------------------
+-- Table: t_type
+------------------------------------------------------------
+CREATE TABLE t_type(
+	id        INT2  NOT NULL,
+	name      VARCHAR (30) NOT NULL,
+	comment   VARCHAR (500),
+	id_parent INT2,
+	CONSTRAINT t_type_PK PRIMARY KEY (id),
+	CONSTRAINT t_type_FK FOREIGN KEY (id_parent) REFERENCES t_type(id)
+);
 
-CREATE TABLE IF NOT EXISTS `T_comment` (
-  `Id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
-  `Locked` enum('YES','NO') NOT NULL DEFAULT 'NO',
-  `Id_author` smallint(5) unsigned NOT NULL,
-  `Id_answered` smallint(5) DEFAULT NULL,
-  `Id_reviewer` smallint(5) DEFAULT NULL,
-  `Id_locker` smallint(5) DEFAULT NULL,
-  `Date_inscription` datetime DEFAULT NULL,
-  `Date_reviewed` datetime DEFAULT NULL,
-  `Date_locked` datetime DEFAULT NULL,
-  `Id_entry` mediumint(5) unsigned NOT NULL,
-  `Id_exit` smallint(5) NOT NULL DEFAULT '0',
-  `Relevance` double NOT NULL DEFAULT '1',
-  `E_t_underground` time DEFAULT NULL,
-  `E_t_trail` time DEFAULT NULL,
-  `Aestheticism` varchar(5) DEFAULT NULL,
-  `Caving` double DEFAULT NULL,
-  `Approach` double DEFAULT NULL,
-  `Title` varchar(300) NOT NULL,
-  `Body` longtext NOT NULL,
-  `Alert` enum('YES','NO') NOT NULL DEFAULT 'NO',
-  PRIMARY KEY (`Id`,`Id_author`,`Id_entry`,`Id_exit`),
-  KEY `Ind_reviewer` (`Id_reviewer`),
-  KEY `Ind_answered` (`Id_answered`),
-  KEY `Id_entry` (`Id_entry`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+------------------------------------------------------------
+-- Table: t_subject
+------------------------------------------------------------
+CREATE TABLE t_subject(
+	code         CHAR(5)  NOT NULL,
+	subject      VARCHAR (300) NOT NULL,
+	code_parent  CHAR(5),
+	CONSTRAINT t_subject_PK PRIMARY KEY (code),
+	CONSTRAINT t_subject_FK FOREIGN KEY (code_parent) REFERENCES t_subject(code)
+);
 
-CREATE TABLE IF NOT EXISTS `T_country` (
-  `Iso` varchar(2) NOT NULL,
-  `Latitude` decimal(24,20) DEFAULT NULL,
-  `Longitude` decimal(24,20) DEFAULT NULL,
-  `Native_name` varchar(50) DEFAULT NULL,
-  `En_name` varchar(50) NOT NULL,
-  `Fr_name` varchar(50) NOT NULL,
-  `Es_name` varchar(50) NOT NULL DEFAULT '-Unknown-',
-  `De_name` varchar(50) NOT NULL DEFAULT '-UNK-',
-  `Bg_name` varchar(50) NOT NULL DEFAULT '?',
-  `It_name` varchar(50) NOT NULL DEFAULT '?',
-  `Ca_name` varchar(50) NOT NULL DEFAULT '?',
-  `Nl_name` varchar(50) NOT NULL DEFAULT '?',
-  `Rs_name` varchar(50) NOT NULL DEFAULT '?',
-  PRIMARY KEY (`Iso`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE IF NOT EXISTS `T_crs` (
-  `Id` smallint(5) NOT NULL AUTO_INCREMENT,
-  `Locked` enum('YES','NO') NOT NULL DEFAULT 'NO',
-  `Id_author` smallint(5) NOT NULL,
-  `Id_reviewer` smallint(5) DEFAULT NULL,
-  `Id_locker` smallint(5) DEFAULT NULL,
-  `Date_inscription` datetime DEFAULT NULL,
-  `Date_reviewed` datetime DEFAULT NULL,
-  `Date_locked` datetime DEFAULT NULL,
-  `Code` varchar(50) NOT NULL,
-  `Definition` varchar(1000) NOT NULL,
-  `Bounds` varchar(100) DEFAULT NULL,
-  `Url` varchar(200) DEFAULT NULL,
-  `Enabled` enum('YES','NO') NOT NULL DEFAULT 'NO',
-  PRIMARY KEY (`Id`),
-  UNIQUE KEY `Code` (`Code`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+------------------------------------------------------------
+-- Table: t_file_format
+------------------------------------------------------------
+CREATE TABLE t_file_format(
+	id serial2 not null,
+	extension      CHAR (12),
+	comment        VARCHAR (250),
+	mime_type      VARCHAR (100),
+	softwares   VARCHAR (300),
+	CONSTRAINT t_file_format_PK PRIMARY KEY (id)
+);
 
-CREATE TABLE IF NOT EXISTS `T_description` (
-  `Id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
-  `Locked` enum('YES','NO') NOT NULL DEFAULT 'NO',
-  `Id_author` smallint(5) NOT NULL,
-  `Id_reviewer` smallint(5) DEFAULT NULL,
-  `Id_locker` varchar(5) DEFAULT NULL,
-  `Date_inscription` datetime DEFAULT NULL,
-  `Date_reviewed` datetime DEFAULT NULL,
-  `Date_locked` datetime DEFAULT NULL,
-  `Relevance` double NOT NULL DEFAULT '1',
-  `Id_exit` smallint(5) DEFAULT NULL,
-  `Title` varchar(300) NOT NULL,
-  `Body` longtext NOT NULL,
-  PRIMARY KEY (`Id`),
-  KEY `Ind_author` (`Id_author`),
-  KEY `Ind_reviewer` (`Id_reviewer`),
-  KEY `Ind_exit` (`Id_exit`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE IF NOT EXISTS `T_entry` (
-  `Id` mediumint(5) unsigned NOT NULL AUTO_INCREMENT,
-  `Locked` enum('YES','NO') NOT NULL DEFAULT 'NO',
-  `Id_author` smallint(5) NOT NULL,
-  `Id_reviewer` smallint(5) DEFAULT NULL,
-  `Id_locker` smallint(5) DEFAULT NULL,
-  `Name` varchar(100) NOT NULL,
-  `Country` varchar(3) NOT NULL,
-  `Region` varchar(64) DEFAULT NULL,
-  `County` varchar(64) DEFAULT NULL,
-  `Village` varchar(64) DEFAULT NULL,
-  `City` varchar(64) DEFAULT NULL,
-  `Address` varchar(128) DEFAULT NULL,
-  `Year_discovery` int(4) DEFAULT NULL,
-  `Id_type` smallint(5) NOT NULL DEFAULT '0',
-  `External_url` longtext,
-  `Date_inscription` datetime DEFAULT NULL,
-  `Date_reviewed` datetime DEFAULT NULL,
-  `Date_locked` datetime DEFAULT NULL,
-  `Is_public` enum('YES','NO') NOT NULL,
-  `Is_sensitive` enum('YES','NO') NOT NULL DEFAULT 'NO',
-  `Contact` varchar(1000) DEFAULT NULL,
-  `Modalities` varchar(100) NOT NULL DEFAULT 'NO,NO,NO,NO',
-  `Has_contributions` enum('YES','NO') NOT NULL DEFAULT 'NO',
-  `Latitude` decimal(24,20) NOT NULL,
-  `Longitude` decimal(24,20) NOT NULL,
-  `Altitude` smallint DEFAULT NULL,
-  PRIMARY KEY (`Id`),
-  KEY `Ind_author` (`Id_author`),
-  KEY `Ind_reviewer` (`Id_reviewer`),
-  KEY `Ind_type` (`Id_type`),
-  KEY `latitude_longitude` (`Latitude`,`Longitude`),
-  KEY `Id` (`Id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+------------------------------------------------------------
+-- Table: t_geology
+------------------------------------------------------------
+CREATE TABLE t_geology(
+	id        CHAR(10) NOT NULL ,
+	label     VARCHAR (500) NOT NULL ,
+	id_parent CHAR(10) NOT NULL ,
+	CONSTRAINT t_geology_PK PRIMARY KEY (id),
+	CONSTRAINT t_geology_FK FOREIGN KEY (id) REFERENCES t_geology(id)
+);
 
-CREATE TABLE IF NOT EXISTS `T_error` (
-  `Id` int(5) NOT NULL AUTO_INCREMENT,
-  `Id_caver` smallint(5) DEFAULT NULL,
-  `File` varchar(100) DEFAULT NULL,
-  `Frame` enum('banner','blank','details','filter','general','infowindow','loader','overview','site','function','file') DEFAULT NULL,
-  `Function` varchar(100) DEFAULT NULL,
-  `Date` datetime DEFAULT NULL,
-  `Error` varchar(200) DEFAULT NULL,
-  `Comment` varchar(5000) DEFAULT NULL,
-  PRIMARY KEY (`Id`),
-  KEY `Ind_caver` (`Id_caver`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE IF NOT EXISTS `T_file` (
-  `Id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
-  `Id_author` smallint(5) NOT NULL,
-  `Date_inscription` datetime DEFAULT NULL,
-  `Name` varchar(100) NOT NULL,
-  `Path` varchar(1000) NOT NULL,
-  PRIMARY KEY (`Id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+------------------------------------------------------------
+-- Table: t_license
+------------------------------------------------------------
+CREATE TABLE t_license(
+	id		SERIAL2 NOT NULL,
+	name	VARCHAR (30) NOT NULL,
+	text	text,
+	CONSTRAINT t_license_PK PRIMARY KEY (id)
+);
 
-CREATE TABLE IF NOT EXISTS `T_grotto` (
-  `Id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
-  `Locked` enum('YES','NO') NOT NULL DEFAULT 'NO',
-  `Id_author` smallint(5) NOT NULL,
-  `Id_reviewer` smallint(5) DEFAULT NULL,
-  `Id_locker` varchar(5) DEFAULT NULL,
-  `Name` varchar(100) NOT NULL,
-  `Country` varchar(3) DEFAULT NULL,
-  `Region` varchar(64) DEFAULT NULL,
-  `County` varchar(64) DEFAULT NULL,
-  `Village` varchar(64) DEFAULT NULL,
-  `City` varchar(64) DEFAULT NULL,
-  `Postal_code` varchar(5) DEFAULT NULL,
-  `Address` varchar(128) DEFAULT NULL,
-  `Contact` varchar(40) DEFAULT NULL,
-  `Year_birth` varchar(4) DEFAULT NULL,
-  `Date_inscription` datetime DEFAULT NULL,
-  `Date_reviewed` datetime DEFAULT NULL,
-  `Date_locked` datetime DEFAULT NULL,
-  `Id_president` int(6) DEFAULT NULL,
-  `Id_vice_president` int(6) DEFAULT NULL,
-  `Id_treasurer` int(6) DEFAULT NULL,
-  `Id_secretary` int(6) DEFAULT NULL,
-  `Latitude` decimal(24,20) DEFAULT NULL,
-  `Longitude` decimal(24,20) DEFAULT NULL,
-  `Custom_message` longtext,
-  `Picture_file_name` varchar(100) DEFAULT NULL,
-  `isPartner` enum('YES','NO') DEFAULT 'NO',
-  PRIMARY KEY (`Id`),
-  KEY `Ind_author` (`Id_author`),
-  KEY `Ind_reviewer` (`Id_reviewer`),
-  KEY `Ind_president` (`Id_president`),
-  KEY `Ind_vice_president` (`Id_vice_president`),
-  KEY `Ind_treasurer` (`Id_treasurer`),
-  KEY `Ind_secretary` (`Id_secretary`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+------------------------------------------------------------
+-- Table: j_license_type
+------------------------------------------------------------
+CREATE TABLE j_license_type(
+	id_license		INT2 NOT NULL,
+	id_type			INT2 NOT NULL,
+	CONSTRAINT j_license_type_PK PRIMARY KEY (id_license,id_type),
+	CONSTRAINT j_license_type_t_license_FK FOREIGN KEY (id_license) REFERENCES t_license(id),
+	CONSTRAINT j_license_type_t_type_FK FOREIGN KEY (id_type) REFERENCES t_type(id)
+);
 
-CREATE TABLE IF NOT EXISTS `T_group` (
-  `Id` smallint(5) NOT NULL AUTO_INCREMENT,
-  `Name` varchar(200) NOT NULL,
-  `Comments` varchar(1000) DEFAULT NULL,
-  `Level` smallint(5) DEFAULT NULL,
-  `Id_label` smallint(5) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`Id`,`Id_label`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+------------------------------------------------------------
+-- Table: t_identifier_type
+------------------------------------------------------------
+CREATE TABLE t_identifier_type(
+	code		CHAR(5) NOT NULL,
+	text		VARCHAR (250) NOT NULL,
+	regexp		VARCHAR (250) NOT NULL,
+	CONSTRAINT t_identifier_type_PK PRIMARY KEY (code)
+);
 
-CREATE TABLE IF NOT EXISTS `T_group_layer` (
-  `Id` smallint(5) NOT NULL AUTO_INCREMENT,
-  `Code` varchar(100) NOT NULL,
-  `Name` varchar(200) NOT NULL,
-  `Id_label` smallint(5) NOT NULL,
-  PRIMARY KEY (`Id`,`Id_label`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 
-CREATE TABLE IF NOT EXISTS `T_history` (
-  `Id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
-  `Locked` enum('YES','NO') NOT NULL DEFAULT 'NO',
-  `Id_author` smallint(5) NOT NULL,
-  `Id_reviewer` smallint(5) DEFAULT NULL,
-  `Id_locker` varchar(5) DEFAULT NULL,
-  `Date_inscription` datetime DEFAULT NULL,
-  `Date_reviewed` datetime DEFAULT NULL,
-  `Date_locked` datetime DEFAULT NULL,
-  `Id_entry` mediumint(5) unsigned NOT NULL,
-  `Relevance` double NOT NULL DEFAULT '1',
-  `Body` longtext NOT NULL,
-  PRIMARY KEY (`Id`,`Id_entry`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+------------------------------------------------------------
+-- Table: t_region
+------------------------------------------------------------
+CREATE TABLE t_region(
+	id 				serial NOT NULL,
+	code 			varchar(20) not null,
+	is_deprecated	BOOLEAN NOT NULL DEFAULT false,
+	name varchar(300),
+	id_country CHAR(2) NOT NULL,
+	CONSTRAINT t_region_PK PRIMARY KEY (id),
+	CONSTRAINT t_region_t_country_FK FOREIGN KEY (id_country) REFERENCES t_country(iso)
+);
 
-CREATE TABLE IF NOT EXISTS `T_label` (
-  `Id` smallint(5) NOT NULL AUTO_INCREMENT,
-  `Frame` enum('banner','blank','details','filter','general','infowindow','loader','overview','site','file','home') NOT NULL,
-  `Fr` varchar(1000) DEFAULT NULL,
-  `En` varchar(1000) DEFAULT NULL,
-  `Es` varchar(1000) DEFAULT NULL,
-  `De` varchar(1000) DEFAULT NULL,
-  `Bg` varchar(1000) DEFAULT NULL,
-  `Nl` varchar(1000) DEFAULT NULL,
-  `Ca` varchar(1000) DEFAULT NULL,
-  `It` varchar(1000) DEFAULT NULL,
-  PRIMARY KEY (`Id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE IF NOT EXISTS `T_label_temp` (
-  `Id_temp` smallint(5) NOT NULL,
-  `Fr` varchar(1000) DEFAULT NULL,
-  `En` varchar(1000) DEFAULT NULL,
-  `Es` varchar(1000) DEFAULT NULL,
-  `Ca` varchar(1000) DEFAULT NULL,
-  PRIMARY KEY (`Id_temp`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+------------------------------------------------------------
+-- Table: t_caver
+------------------------------------------------------------
+CREATE TABLE t_caver(
+	id                     serial  NOT NULL ,
+	login                  VARCHAR (20) unique ,
+	password               VARCHAR (64)  ,	
+	activated              bool not null default false ,
+	activation_code        VARCHAR (64),
+	banned                 bool not null default false  ,
+	connection_counter     INT  NOT NULL default 0,
+	relevance              INT2  NOT NULL default 0,
+	name                   VARCHAR (36)  ,
+	surname                VARCHAR (32)  ,
+	nickname               VARCHAR (68) NOT NULL ,
+	mail                   VARCHAR (50) NOT NULL ,	
+	mail_is_valid          bool not null default true ,
+	date_inscription       timestamp not null default now() ,
+	date_last_connection   timestamp   ,
+	contact_is_public      INT2 not null check(Contact_is_public in (0,1,2)) default 0 ,
+	alert_for_news         bool not null default false ,
+	show_links             bool not null default false  ,
+	detail_level           INT,
+	default_zoom           INT,
+	id_language            CHAR (3)  NOT NULL,
+	CONSTRAINT t_caver_PK PRIMARY KEY (id),
+	CONSTRAINT t_caver_t_language0_FK FOREIGN KEY (id_language) REFERENCES t_language(id)
+);
+--index pour accélérer la recherche suivant le login
+CREATE INDEX t_caver_idx ON t_caver (Login);
 
-CREATE TABLE IF NOT EXISTS `T_layer` (
-  `Id` smallint(5) NOT NULL AUTO_INCREMENT,
-  `Enabled` enum('YES','NO') NOT NULL DEFAULT 'NO',
-  `Code` varchar(100) NOT NULL,
-  `Url` varchar(1000) NOT NULL,
-  `Name` varchar(200) NOT NULL,
-  `Short_name` varchar(100) NOT NULL,
-  `Layer` varchar(100) NOT NULL,
-  `Style` varchar(200) DEFAULT NULL,
-  `Format` varchar(100) NOT NULL,
-  `Version` varchar(50) NOT NULL,
-  `Background_color` varchar(8) NOT NULL,
-  PRIMARY KEY (`Id`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 
-CREATE TABLE IF NOT EXISTS `T_location` (
-  `Id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
-  `Locked` enum('YES','NO') NOT NULL DEFAULT 'NO',
-  `Id_author` smallint(5) NOT NULL,
-  `Id_reviewer` smallint(5) DEFAULT NULL,
-  `Id_locker` varchar(5) DEFAULT NULL,
-  `Date_inscription` datetime DEFAULT NULL,
-  `Date_reviewed` datetime DEFAULT NULL,
-  `Date_locked` datetime DEFAULT NULL,
-  `Id_entry` mediumint(5) unsigned NOT NULL,
-  `Relevance` double NOT NULL DEFAULT '1',
-  `Body` longtext NOT NULL,
-  PRIMARY KEY (`Id`,`Id_entry`),
-  KEY `Ind_author` (`Id_author`),
-  KEY `Ind_reviewer` (`Id_reviewer`),
-  KEY `Id_entry` (`Id_entry`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+------------------------------------------------------------
+-- Table: t_group
+------------------------------------------------------------
+CREATE TABLE t_group(
+	id         serial2  NOT NULL ,
+	name       VARCHAR (200) NOT NULL ,
+	comments   VARCHAR (1000)  ,
+	CONSTRAINT t_group_PK PRIMARY KEY (id)
+);
 
-CREATE TABLE IF NOT EXISTS `T_massif` (
-  `Id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
-  `Locked` enum('YES','NO') NOT NULL DEFAULT 'NO',
-  `Id_author` smallint(5) NOT NULL,
-  `Id_reviewer` smallint(5) DEFAULT NULL,
-  `Id_locker` varchar(5) DEFAULT NULL,
-  `Name` varchar(36) NOT NULL,
-  `Date_inscription` datetime DEFAULT NULL,
-  `Date_reviewed` datetime DEFAULT NULL,
-  `Date_locked` datetime DEFAULT NULL,
-  PRIMARY KEY (`Id`),
-  KEY `Ind_author` (`Id_author`),
-  KEY `Ind_reviewer` (`Id_reviewer`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE IF NOT EXISTS `T_message_subject` (
-  `Id` smallint(5) NOT NULL AUTO_INCREMENT,
-  `Subject` varchar(100) COLLATE utf8_unicode_ci NOT NULL,
-  `Fr_subject` varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `Fr_admin_id` smallint(5) NOT NULL,
-  `En_subject` varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `En_admin_id` smallint(5) NOT NULL,
-  `Es_subject` varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `Es_admin_id` smallint(5) NOT NULL,
-  `De_subject` varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `De_admin_id` smallint(5) NOT NULL,
-  `Bg_subject` varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `Bg_admin_id` smallint(5) NOT NULL,
-  `Nl_subject` varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `Nl_admin_id` smallint(5) NOT NULL,
-  `Ca_subject` varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `Ca_admin_id` smallint(5) NOT NULL,
-  `It_subject` varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `It_admin_id` smallint(5) NOT NULL,
-  PRIMARY KEY (`Id`),
-  KEY `Ind_subject` (`Subject`),
-  KEY `Ind_Fr` (`Fr_admin_id`),
-  KEY `Ind_Es` (`Es_admin_id`),
-  KEY `Ind_En` (`En_admin_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+------------------------------------------------------------
+-- Table: t_right
+------------------------------------------------------------
+CREATE TABLE t_right(
+	id         serial2  NOT NULL ,
+	name       VARCHAR (200) NOT NULL ,
+	comments   VARCHAR (1000)   ,
+	CONSTRAINT t_right_PK PRIMARY KEY (id)
+);
 
-CREATE TABLE IF NOT EXISTS `T_news` (
-  `Id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
-  `Locked` enum('YES','NO') NOT NULL DEFAULT 'NO',
-  `Id_author` smallint(5) unsigned NOT NULL,
-  `Id_answered` smallint(5) DEFAULT NULL,
-  `Id_reviewer` smallint(5) DEFAULT NULL,
-  `Id_locker` varchar(5) DEFAULT NULL,
-  `Date_inscription` datetime DEFAULT NULL,
-  `Date_reviewed` datetime DEFAULT NULL,
-  `Date_locked` datetime DEFAULT NULL,
-  `Is_public` enum('YES','NO') NOT NULL DEFAULT 'NO',
-  `Title` varchar(300) NOT NULL,
-  `Body` longtext NOT NULL,
-  PRIMARY KEY (`Id`,`Id_author`),
-  KEY `Ind_reviewer` (`Id_reviewer`),
-  KEY `Ind_answered` (`Id_answered`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE IF NOT EXISTS `T_request` (
-  `Id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
-  `Locked` enum('YES','NO') NOT NULL DEFAULT 'NO',
-  `Id_author` smallint(5) NOT NULL,
-  `Id_reviewer` smallint(5) DEFAULT NULL,
-  `Id_locker` smallint(5) DEFAULT NULL,
-  `Date_inscription` datetime DEFAULT NULL,
-  `Date_reviewed` datetime DEFAULT NULL,
-  `Date_locked` datetime DEFAULT NULL,
-  `Date_issue` datetime DEFAULT NULL,
-  `Name` varchar(100) NOT NULL,
-  `Id_recipient` smallint(5) unsigned NOT NULL,
-  `Id_status` smallint(5) unsigned NOT NULL,
-  `Comments` longtext,
-  PRIMARY KEY (`Id`,`Id_recipient`,`Id_status`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+------------------------------------------------------------
+-- Table: t_grotto
+------------------------------------------------------------
+CREATE TABLE t_grotto(
+	id                          serial  NOT NULL ,
+	id_author                   INT  NOT NULL ,
+	id_reviewer                 INT   ,
+	village                     VARCHAR (100)  ,
+	county                      VARCHAR (100)  ,
+	region                      VARCHAR (100)  ,
+	city                        VARCHAR (100)  ,
+	postal_code                 VARCHAR (5)  ,
+	address                     VARCHAR (200)  ,
+	mail                     	VARCHAR (50)  ,
+	year_birth                  int2  ,
+	date_inscription            timestamp  not null default now() ,
+	date_reviewed               timestamp   ,
+	latitude                    DECIMAL (24,20)   ,
+	longitude                   DECIMAL (24,20)   ,
+	custom_message              VARCHAR (2000)   ,
+	is_official_partner         BOOL  not null default false ,
+	url                         VARCHAR (200)  ,
+	id_country                  CHAR (2) NOT NULL ,
+	CONSTRAINT t_grotto_PK PRIMARY KEY (id),
+	CONSTRAINT t_grotto_t_country_FK FOREIGN KEY (id_country) REFERENCES t_country(iso),
+	CONSTRAINT t_grotto_t_caver4_FK FOREIGN KEY (id_author) REFERENCES t_caver(id),
+	CONSTRAINT t_grotto_t_caver5_FK FOREIGN KEY (id_reviewer) REFERENCES t_caver(id)
+);
 
-CREATE TABLE IF NOT EXISTS `T_rigging` (
-  `Id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
-  `Locked` enum('YES','NO') NOT NULL DEFAULT 'NO',
-  `Id_author` smallint(5) NOT NULL,
-  `Id_reviewer` smallint(5) DEFAULT NULL,
-  `Id_locker` varchar(5) DEFAULT NULL,
-  `Date_inscription` datetime DEFAULT NULL,
-  `Date_reviewed` datetime DEFAULT NULL,
-  `Date_locked` datetime DEFAULT NULL,
-  `Relevance` double NOT NULL DEFAULT '1',
-  `Id_exit` smallint(5) DEFAULT NULL,
-  `Title` varchar(300) NOT NULL,
-  `Obstacles` longtext,
-  `Ropes` longtext,
-  `Anchors` longtext,
-  `Observations` longtext,
-  PRIMARY KEY (`Id`),
-  KEY `Ind_author` (`Id_author`),
-  KEY `Ind_reviewer` (`Id_reviewer`),
-  KEY `Ind_exit` (`Id_exit`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE IF NOT EXISTS `T_right` (
-  `Id` smallint(5) NOT NULL AUTO_INCREMENT,
-  `Name` varchar(200) NOT NULL,
-  `Comments` varchar(1000) DEFAULT NULL,
-  PRIMARY KEY (`Id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+------------------------------------------------------------
+-- Table: t_massif
+------------------------------------------------------------
+CREATE TABLE t_massif(
+	id                 serial  NOT NULL ,
+	id_author          INT  NOT NULL ,
+	id_reviewer        INT   ,
+	date_inscription   timestamp  not null default now() ,
+	date_reviewed      timestamp   ,
+	geometry_kml       VARCHAR (2000)    ,
+	CONSTRAINT t_massif_PK PRIMARY KEY (id),
+	CONSTRAINT t_massif_t_caver_FK FOREIGN KEY (id_author) REFERENCES t_caver(id),
+	CONSTRAINT t_massif_t_caver2_FK FOREIGN KEY (id_reviewer) REFERENCES t_caver(id)
+);
 
-CREATE TABLE IF NOT EXISTS `T_single_entry` (
-  `Id` mediumint(5) unsigned NOT NULL,
-  `Min_depth` float DEFAULT NULL,
-  `Max_depth` float DEFAULT NULL,
-  `Depth` float DEFAULT NULL,
-  `Length` float unsigned DEFAULT NULL,
-  `Is_diving` enum('YES','NO') DEFAULT 'NO',
-  `Temperature` float DEFAULT NULL,
-  PRIMARY KEY (`Id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE IF NOT EXISTS `T_status` (
-  `Id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
-  `Name` varchar(100) NOT NULL,
-  `Id_label` varchar(100) NOT NULL,
-  PRIMARY KEY (`Id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+------------------------------------------------------------
+-- Table: t_cave
+------------------------------------------------------------
+CREATE TABLE t_cave(
+	id                 serial  NOT NULL ,
+	id_author          INT  NOT NULL ,
+	id_reviewer        INT   ,
+	min_depth          int   ,
+	max_depth          int   ,
+	depth              int   ,
+	length             int   ,
+	is_diving          bool not null default false ,
+	temperature        FLOAT   ,
+	date_inscription   timestamp  not null default now() ,
+	date_reviewed      timestamp   ,
+	longitude          DECIMAL (24,20) ,
+	latitude           DECIMAL (24,20) ,
+	id_massif          INT  NOT NULL ,
+	CONSTRAINT t_cave_PK PRIMARY KEY (id),
+	CONSTRAINT t_cave_t_massif0_FK FOREIGN KEY (id_massif) REFERENCES t_massif(id),
+	CONSTRAINT t_cave_t_caver_FK FOREIGN KEY (id_author) REFERENCES t_caver(id),
+	CONSTRAINT t_cave_t_caver2_FK FOREIGN KEY (id_reviewer) REFERENCES t_caver(id)
+);
 
-CREATE TABLE IF NOT EXISTS `T_topography` (
-  `Id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
-  `Id_author` smallint(5) NOT NULL,
-  `Date_inscription` datetime DEFAULT NULL,
-  `Id_request` smallint(5) unsigned NOT NULL,
-  `Is_public` enum('YES','NO') NOT NULL DEFAULT 'YES',
-  `Remove_north` enum('YES','NO') NOT NULL DEFAULT 'NO',
-  `Remove_scale` enum('YES','NO') NOT NULL DEFAULT 'NO',
-  `Distort_topo` enum('YES','NO') NOT NULL DEFAULT 'NO',
-  `Enabled` enum('YES','NO') NOT NULL DEFAULT 'NO',
-  `Enabled_back` enum('YES','NO') NOT NULL DEFAULT 'NO',
-  PRIMARY KEY (`Id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE IF NOT EXISTS `T_type` (
-  `Id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
-  `Fr_type` varchar(100) NOT NULL,
-  `En_type` varchar(100) NOT NULL,
-  `Es_type` varchar(100) NOT NULL,
-  `De_type` varchar(100) NOT NULL,
-  `Bg_type` varchar(100) NOT NULL DEFAULT '',
-  `Nl_type` varchar(100) NOT NULL DEFAULT '',
-  `Ca_type` varchar(100) NOT NULL DEFAULT '',
-  `It_type` varchar(100) NOT NULL DEFAULT '',
-  PRIMARY KEY (`Id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+------------------------------------------------------------
+-- Table: t_entrance
+------------------------------------------------------------
+CREATE TABLE t_entrance(
+	id                  serial  NOT NULL ,
+	type                CHAR (8)  NOT NULL check(Type in ('entrance','loss','emerg','outcrop')) default 'entrance',
+	id_author           INT  NOT NULL ,
+	id_reviewer         INT   ,
+	region              VARCHAR (100)  ,
+	county              VARCHAR (100)  ,
+	village             VARCHAR (100)  ,
+	city                VARCHAR (100)  ,
+	address             VARCHAR (200)  ,
+	year_discovery      INT2   ,
+	external_url        VARCHAR (2000)   ,
+	date_inscription    timestamp  not null default now() ,
+	date_reviewed       timestamp   ,
+	is_public           bool ,
+	is_sensitive        bool not null default false ,
+	contact             VARCHAR (1000)  ,
+	modalities          VARCHAR (100) NOT NULL ,
+	has_contributions   bool not null default false ,
+	latitude            DECIMAL (24,20)  NOT NULL ,
+	longitude           DECIMAL (24,20)  NOT NULL ,
+	altitude            INT2   ,
+	is_of_interest      BOOL   ,
+	id_cave           	INT   ,
+	id_country          CHAR (2) NOT NULL  ,
+	id_geology          CHAR(10) NOT NULL default 'Q35758',
+	CONSTRAINT t_entrance_PK PRIMARY KEY (id),
+	CONSTRAINT t_entrance_t_cave_FK FOREIGN KEY (id_cave) REFERENCES t_cave(id),
+	CONSTRAINT t_entrance_t_country_FK FOREIGN KEY (id_country) REFERENCES t_country(Iso),
+	CONSTRAINT t_entrance_t_caver_FK FOREIGN KEY (id_author) REFERENCES t_caver(id),
+	CONSTRAINT t_entrance_t_caver2_FK FOREIGN KEY (id_reviewer) REFERENCES t_caver(id),
+	CONSTRAINT t_entrance_t_geology_FK FOREIGN KEY (id_geology) REFERENCES t_geology(id)
+);
 
-CREATE TABLE IF NOT EXISTS `T_url` (
-  `Id` smallint(5) NOT NULL AUTO_INCREMENT,
-  `Locked` enum('YES','NO') NOT NULL DEFAULT 'NO',
-  `Id_author` smallint(5) NOT NULL,
-  `Id_reviewer` smallint(5) DEFAULT NULL,
-  `Id_locker` smallint(5) DEFAULT NULL,
-  `Date_inscription` datetime DEFAULT NULL,
-  `Date_reviewed` datetime DEFAULT NULL,
-  `Date_locked` datetime DEFAULT NULL,
-  `Url` varchar(200) DEFAULT NULL,
-  `Name` varchar(200) NOT NULL,
-  `Comments` varchar(1000) DEFAULT NULL,
-  PRIMARY KEY (`Id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE IF NOT EXISTS `T_warning` (
-  `Id` int(5) NOT NULL AUTO_INCREMENT,
-  `Id_caver` smallint(5) DEFAULT NULL,
-  `Frame` varchar(50) DEFAULT NULL,
-  `Date` datetime DEFAULT NULL,
-  `Warning` varchar(5000) DEFAULT NULL,
-  `Comment` varchar(5000) DEFAULT NULL,
-  PRIMARY KEY (`Id`),
-  KEY `Ind_caver` (`Id_caver`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+------------------------------------------------------------
+-- Table: t_point
+------------------------------------------------------------
+CREATE TABLE t_point(
+	id                  serial  NOT NULL ,
+	type                CHAR (8)  NOT NULL check(Type in ('a','b','c')) default 'a',
+	id_author           INT  NOT NULL ,
+	id_reviewer         INT   ,
+	year_discovery      INT2   ,
+	date_inscription    timestamp  not null default now() ,
+	date_reviewed       timestamp   ,
+	rel_latitude            DECIMAL (24,20)  NOT NULL ,
+	rel_longitude           DECIMAL (24,20)  NOT NULL ,
+	rel_depth            INT2   ,
+	id_entrance           	INT   ,
+	id_geology          CHAR(10) NOT NULL default 'Q35758',
+	CONSTRAINT t_point_PK PRIMARY KEY (id),
+	CONSTRAINT t_point_t_entrance_FK FOREIGN KEY (id_entrance) REFERENCES t_entrance(id),
+	CONSTRAINT t_point_t_caver_FK FOREIGN KEY (id_author) REFERENCES t_caver(id),
+	CONSTRAINT t_point_t_caver2_FK FOREIGN KEY (id_reviewer) REFERENCES t_caver(id),
+	CONSTRAINT t_point_t_geology_FK FOREIGN KEY (id_geology) REFERENCES t_geology(id)
+);
 
--- Jointure tables
 
-CREATE TABLE `J_author_file` (
-  `Id_author` smallint(5) unsigned NOT NULL,
-  `Id_file` smallint(5) unsigned NOT NULL,
-  PRIMARY KEY (`Id_author`,`Id_file`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+------------------------------------------------------------
+-- Table: t_junction
+------------------------------------------------------------
+CREATE TABLE t_junction(
+	id_cave_main	INT NOT NULL,
+	id_cave_add		INT NOT NULL,
+	id_point		INT NOT NULL,
+	CONSTRAINT t_junction_PK PRIMARY KEY (id_cave_main,id_cave_add,id_point),
+	CONSTRAINT t_junction_t_cave_FK FOREIGN KEY (id_cave_main) REFERENCES t_cave(id),
+	CONSTRAINT t_junction_t_cave2_FK FOREIGN KEY (id_cave_add) REFERENCES t_cave(id),	
+	CONSTRAINT t_junction_t_point_FK FOREIGN KEY (id_point) REFERENCES t_point(id)
+);
 
-CREATE TABLE `J_cave_entry` (
-  `Id_cave` smallint(5) unsigned NOT NULL,
-  `Id_entry` mediumint(5) unsigned NOT NULL,
-  PRIMARY KEY (`Id_cave`,`Id_entry`),
-  KEY `Id_entry` (`Id_entry`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE `J_caver_group` (
-  `Id_caver` smallint(5) unsigned NOT NULL,
-  `Id_group` smallint(5) unsigned NOT NULL,
-  PRIMARY KEY (`Id_caver`,`Id_group`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+------------------------------------------------------------
+-- Table: t_document
+------------------------------------------------------------
+CREATE TABLE t_document(
+	id                 SERIAL NOT NULL,
+	id_author          INT NOT NULL,
+	id_reviewer        INT,
+	id_validator       INT,
+	date_inscription   timestamp  not null default now(),
+	date_validation    timestamp,
+	date_publication   date,
+    is_validated       boolean not null default false,
+    validation_comment varchar(300),    
+	pages        	   VARCHAR(100),
+	identifier		   VARCHAR (250),
+    id_identifier_type CHAR(5),
+	ref_bbs			   CHAR(10),
+	id_entrance		   INT,
+	id_massif		   INT,
+	id_cave            INT,
+	id_author_caver    INT,
+	id_author_grotto   INT,
+	id_editor		   INT,
+	id_library		   INT,
+	id_type			   INT2 NOT NULL,
+	id_parent		   INT,
+	id_license		   INT2 NOT NULL DEFAULT 1,
+	CONSTRAINT t_document_PK PRIMARY KEY (id),
+	CONSTRAINT t_document_t_entrance_FK FOREIGN KEY (id_entrance) REFERENCES t_entrance(id),
+	CONSTRAINT t_document_t_massif_FK FOREIGN KEY (id_massif) REFERENCES t_massif(id),
+	CONSTRAINT t_document_t_cave_FK FOREIGN KEY (id_cave) REFERENCES t_cave(id),
+	CONSTRAINT t_document_t_caver4_FK FOREIGN KEY (id_author_caver) REFERENCES t_caver(id),
+	CONSTRAINT t_document_t_grotto_FK FOREIGN KEY (id_author_grotto) REFERENCES t_grotto(id),
+	CONSTRAINT t_document_t_grotto2_FK FOREIGN KEY (id_editor) REFERENCES t_grotto(id),
+	CONSTRAINT t_document_t_grotto3_FK FOREIGN KEY (id_library) REFERENCES t_grotto(id),
+	CONSTRAINT t_document_t_type_FK FOREIGN KEY (id_type) REFERENCES t_type(id),
+	CONSTRAINT t_document_t_document_FK FOREIGN KEY (id_parent) REFERENCES t_document(id),
+	CONSTRAINT t_document_t_identifier_type_FK FOREIGN KEY (id_identifier_type) REFERENCES t_identifier_type(code),
+	CONSTRAINT t_document_t_license_FK FOREIGN KEY (id_license) REFERENCES t_license(id),
+	CONSTRAINT t_document_t_caver_FK FOREIGN KEY (id_author) REFERENCES t_caver(id),
+	CONSTRAINT t_document_t_caver2_FK FOREIGN KEY (id_reviewer) REFERENCES t_caver(id),
+	CONSTRAINT t_document_t_caver3_FK FOREIGN KEY (id_validator) REFERENCES t_caver(id)
+);
 
-CREATE TABLE `J_country_crs` (
-  `Iso` varchar(2) NOT NULL,
-  `Id_crs` smallint(5) unsigned NOT NULL,
-  KEY `Ind_country` (`Iso`),
-  KEY `Ind_crs` (`Id_crs`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE `J_entry_caver` (
-  `Id_entry` mediumint(5) unsigned NOT NULL,
-  `Id_caver` smallint(5) unsigned NOT NULL,
-  PRIMARY KEY (`Id_entry`,`Id_caver`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+------------------------------------------------------------
+-- Table: j_document_subject
+------------------------------------------------------------
+CREATE TABLE j_document_subject(
+	id_document		INT NOT NULL,
+	code_subject	CHAR(5) NOT NULL,
+	CONSTRAINT j_document_subject_PK PRIMARY KEY (id_document,code_subject),
+	CONSTRAINT j_document_subject_t_document_FK FOREIGN KEY (id_document) REFERENCES t_document(id),
+	CONSTRAINT j_document_subject_t_subject_FK FOREIGN KEY (code_subject) REFERENCES t_subject(code)
+);
 
-CREATE TABLE `J_entry_description` (
-  `Id_entry` mediumint(5) unsigned NOT NULL,
-  `Id_description` smallint(5) unsigned NOT NULL,
-  PRIMARY KEY (`Id_entry`,`Id_description`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE `J_entry_rigging` (
-  `Id_entry` mediumint(5) unsigned NOT NULL,
-  `Id_rigging` smallint(5) unsigned NOT NULL,
-  PRIMARY KEY (`Id_entry`,`Id_rigging`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+------------------------------------------------------------
+-- Table: j_document_language
+------------------------------------------------------------
+CREATE TABLE j_document_language(
+	id_document		INT NOT NULL,
+	id_language		CHAR(3) NOT NULL,
+	is_main			BOOLEAN NOT NULL DEFAULT FALSE,
+	CONSTRAINT j_document_language_PK PRIMARY KEY (id_document,id_language),
+	CONSTRAINT j_document_language_t_document_FK FOREIGN KEY (id_document) REFERENCES t_document(id),
+	CONSTRAINT j_document_language_t_language_FK FOREIGN KEY (id_language) REFERENCES t_language(id)
+);
 
-CREATE TABLE `J_entry_url` (
-  `Id_entry` mediumint(5) unsigned NOT NULL,
-  `Id_url` smallint(5) NOT NULL,
-  PRIMARY KEY (`Id_entry`,`Id_url`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE `J_grotto_caver` (
-  `Id_grotto` smallint(5) unsigned NOT NULL,
-  `Id_caver` smallint(5) unsigned NOT NULL,
-  PRIMARY KEY (`Id_grotto`,`Id_caver`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+------------------------------------------------------------
+-- Table: j_document_region
+------------------------------------------------------------
+CREATE TABLE j_document_region(
+	id_document		INT NOT NULL,
+	id_region		INT NOT NULL,
+	CONSTRAINT j_document_region_PK PRIMARY KEY (id_document,id_region),
+	CONSTRAINT j_document_region_t_document_FK FOREIGN KEY (id_document) REFERENCES t_document(id),
+	CONSTRAINT j_document_region_t_region_FK FOREIGN KEY (id_region) REFERENCES t_region(id)
+);
 
-CREATE TABLE `J_grotto_entry` (
-  `Id_grotto` smallint(5) unsigned NOT NULL,
-  `Id_entry` mediumint(5) unsigned NOT NULL,
-  PRIMARY KEY (`Id_grotto`,`Id_entry`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
-CREATE TABLE `J_group_layer` (
-  `Id_group` smallint(5) NOT NULL,
-  `Id_layer` smallint(5) NOT NULL,
-  PRIMARY KEY (`Id_group`,`Id_layer`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+------------------------------------------------------------
+-- Table: j_document_caver_author
+------------------------------------------------------------
+CREATE TABLE j_document_caver_author(
+	id_document		INT NOT NULL,
+	id_caver		INT NOT NULL,
+	CONSTRAINT j_document_caver_author_PK PRIMARY KEY (id_document,id_caver),
+	CONSTRAINT j_document_caver_author_t_document_FK FOREIGN KEY (id_document) REFERENCES t_document(id),
+	CONSTRAINT j_document_caver_author_t_caver_FK FOREIGN KEY (id_caver) REFERENCES t_caver(id)
+);
 
-CREATE TABLE `J_group_right` (
-  `Id_group` smallint(5) unsigned NOT NULL,
-  `Id_right` smallint(5) unsigned NOT NULL,
-  PRIMARY KEY (`Id_group`,`Id_right`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE `J_help_topic` (
-  `Id` smallint(5) NOT NULL AUTO_INCREMENT,
-  `Id_help` smallint(5) NOT NULL,
-  `Language` varchar(5) NOT NULL,
-  `Id_forum` smallint(5) NOT NULL,
-  `Id_topic` smallint(5) NOT NULL,
-  `Comments` varchar(100) DEFAULT NULL,
-  PRIMARY KEY (`Id`,`Id_forum`,`Id_topic`),
-  KEY `Id_topic` (`Id_topic`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+-----------------------------------------------------------
+-- Table: j_document_grotto_author
+------------------------------------------------------------
+CREATE TABLE j_document_grotto_author(
+	id_document		INT NOT NULL,
+	id_grotto		INT NOT NULL,
+	CONSTRAINT j_document_grotto_author_PK PRIMARY KEY (id_document,id_grotto),
+	CONSTRAINT j_document_grotto_author_t_document_FK FOREIGN KEY (id_document) REFERENCES t_document(id),
+	CONSTRAINT j_document_grotto_author_t_caver_FK FOREIGN KEY (id_grotto) REFERENCES t_grotto(id)
+);
 
-CREATE TABLE `J_massif_cave` (
-  `Id_massif` smallint(5) unsigned NOT NULL,
-  `Id_cave` smallint(5) unsigned NOT NULL,
-  `Id_entry` mediumint(5) unsigned NOT NULL,
-  PRIMARY KEY (`Id_entry`,`Id_cave`,`Id_massif`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE `J_topo_author` (
-  `Id_topography` smallint(5) unsigned NOT NULL,
-  `Id_author` smallint(5) unsigned NOT NULL,
-  PRIMARY KEY (`Id_topography`,`Id_author`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+------------------------------------------------------------
+-- Table: t_history
+------------------------------------------------------------
+CREATE TABLE t_history(
+	id                 serial  NOT NULL ,
+	id_author          INT  NOT NULL ,
+	id_reviewer        INT   ,
+	date_inscription   timestamp not null default now()  ,
+	date_reviewed      timestamp   ,
+	relevance          INT2  NOT NULL ,
+	body               text  NOT NULL ,
+	id_cave          INT,
+	id_entrance		 INT,
+	id_point       INT,
+	id_language      CHAR (3)  NOT NULL ,
+	CONSTRAINT t_history_PK PRIMARY KEY (id),
+	CONSTRAINT t_history_t_cave_FK FOREIGN KEY (id_cave) REFERENCES t_cave(id),
+	CONSTRAINT t_history_t_entrance_FK FOREIGN KEY (id_entrance) REFERENCES t_entrance(id),
+	CONSTRAINT t_history_t_point_FK FOREIGN KEY (id_point) REFERENCES t_point(id),
+	CONSTRAINT t_history_t_language0_FK FOREIGN KEY (id_language) REFERENCES t_language(id),
+	CONSTRAINT t_history_t_caver_FK FOREIGN KEY (id_author) REFERENCES t_caver(id),
+	CONSTRAINT t_history_t_caver2_FK FOREIGN KEY (id_reviewer) REFERENCES t_caver(id)
+);
 
-CREATE TABLE `J_topo_cave` (
-  `Id_topography` smallint(5) unsigned NOT NULL,
-  `Id_cave` smallint(5) unsigned NOT NULL,
-  `Id_entry` mediumint(5) unsigned NOT NULL,
-  PRIMARY KEY (`Id_topography`,`Id_cave`,`Id_entry`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE `J_topo_file` (
-  `Id_topography` smallint(5) unsigned NOT NULL,
-  `Id_file` smallint(5) unsigned NOT NULL,
-  PRIMARY KEY (`Id_topography`,`Id_file`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+------------------------------------------------------------
+-- Table: t_location
+------------------------------------------------------------
+CREATE TABLE t_location(
+	id                 serial  NOT NULL ,
+	id_author          INT  NOT NULL ,
+	id_reviewer        INT   ,
+	date_inscription   timestamp not null default now()  ,
+	date_reviewed      timestamp   ,
+	relevance          INT2  NOT NULL ,
+	body               text  NOT NULL ,
+	id_entrance         INT  NOT NULL ,
+	id_language      CHAR (3)  NOT NULL  ,
+	CONSTRAINT t_location_PK PRIMARY KEY (id),
+	CONSTRAINT t_location_t_entrance_FK FOREIGN KEY (id_entrance) REFERENCES t_entrance(id),
+	CONSTRAINT t_location_t_language0_FK FOREIGN KEY (id_language) REFERENCES t_language(id),
+	CONSTRAINT t_location_t_caver_FK FOREIGN KEY (id_author) REFERENCES t_caver(id),
+	CONSTRAINT t_location_t_caver2_FK FOREIGN KEY (id_reviewer) REFERENCES t_caver(id)
+);
+
+
+------------------------------------------------------------
+-- Table: t_name
+------------------------------------------------------------
+CREATE TABLE t_name(
+	id                 SERIAL NOT NULL ,
+	Name               VARCHAR (100)  ,
+	is_main            BOOL  NOT NULL DEFAULT FALSE,
+	id_author          int NOT NULL ,
+	id_reviewer        int  ,
+	date_inscription   timestamp  NOT NULL default now() ,
+	date_reviewed      timestamp   ,
+	id_language        CHAR(3) NOT NULL,
+	id_entrance        INT,
+	id_cave            INT,
+	id_massif		   INT,
+	id_point		   INT,
+	id_grotto          INT,
+	CONSTRAINT t_name_PK PRIMARY KEY (id),
+	CONSTRAINT t_name_t_entrance_FK FOREIGN KEY (id_entrance) REFERENCES t_entrance(id),
+	CONSTRAINT t_name_t_language_FK FOREIGN KEY (id_language) REFERENCES t_language(id),
+	CONSTRAINT t_name_t_cave0_FK FOREIGN KEY (id_cave) REFERENCES t_cave(id),
+	CONSTRAINT t_name_t_point_FK FOREIGN KEY (id_point) REFERENCES t_point(id),
+	CONSTRAINT t_name_t_massif0_FK FOREIGN KEY (id_massif) REFERENCES t_massif(id),
+	CONSTRAINT t_name_t_grotto0_FK FOREIGN KEY (id_grotto) REFERENCES t_grotto(id),
+	CONSTRAINT t_name_t_caver2_FK FOREIGN KEY (id_reviewer) REFERENCES t_caver(id)
+);
+
+
+------------------------------------------------------------
+-- Table: t_comment
+------------------------------------------------------------
+CREATE TABLE t_comment(
+	id                   serial  NOT NULL ,
+	id_author            INT  NOT NULL ,
+	id_reviewer          INT   ,
+	date_inscription     timestamp  not null default now() ,
+	date_reviewed        timestamp   ,
+	relevance            INT2  NOT NULL ,
+	e_t_underground      interval   ,
+	e_t_trail            interval   ,
+	aestheticism         float  ,
+	caving               FLOAT   ,
+	approach             FLOAT   ,
+	title                VARCHAR (300) NOT NULL ,
+	body                 text  NOT NULL ,
+	alert                bool not null default false ,
+	id_cave              INT   ,
+	id_entrance          INT   ,
+	id_exit              INT,
+	id_language          CHAR (3)  NOT NULL,
+	CONSTRAINT t_comment_PK PRIMARY KEY (id),
+	CONSTRAINT t_comment_t_cave_FK FOREIGN KEY (id_cave) REFERENCES t_cave(id),
+	CONSTRAINT t_comment_t_language0_FK FOREIGN KEY (id_language) REFERENCES t_language(id),
+	CONSTRAINT t_comment_t_entrance1_FK FOREIGN KEY (id_entrance) REFERENCES t_entrance(id),
+	CONSTRAINT t_comment_t_entrance2_FK FOREIGN KEY (id_exit) REFERENCES t_entrance(id),
+	CONSTRAINT t_comment_t_caver_FK FOREIGN KEY (id_author) REFERENCES t_caver(id),
+	CONSTRAINT t_comment_t_caver2_FK FOREIGN KEY (id_reviewer) REFERENCES t_caver(id)
+);
+
+
+------------------------------------------------------------
+-- Table: t_description
+------------------------------------------------------------
+CREATE TABLE t_description(
+	id                   serial  NOT NULL,
+	id_author            INT  NOT NULL,
+	id_reviewer          INT,
+	date_inscription     timestamp  not null default now(),
+	date_reviewed        timestamp,
+	relevance            INT2  NOT NULL default 0,
+	title                VARCHAR (300) NOT NULL,
+	body                 text  ,
+	id_cave              INT,
+	id_entrance          INT,
+	id_exit              INT,
+	id_massif            INT,
+	id_point             INT,
+	id_document			 INT,
+	id_language          CHAR (3)  NOT NULL ,
+	CONSTRAINT t_description_PK PRIMARY KEY (id),
+	CONSTRAINT t_description_t_cave_FK FOREIGN KEY (id_cave) REFERENCES t_cave(id),
+	CONSTRAINT t_description_t_language0_FK FOREIGN KEY (id_language) REFERENCES t_language(id),
+	CONSTRAINT t_description_t_entrance1_FK FOREIGN KEY (id_entrance) REFERENCES t_entrance(id),
+	CONSTRAINT t_description_t_entrance2_FK FOREIGN KEY (id_exit) REFERENCES t_entrance(id),
+	CONSTRAINT t_description_t_massif3_FK FOREIGN KEY (id_massif) REFERENCES t_massif(id),
+	CONSTRAINT t_description_t_point_FK FOREIGN KEY (id_point) REFERENCES t_point(id),
+	CONSTRAINT t_description_t_document_FK FOREIGN KEY (id_document) REFERENCES t_document(id),
+	CONSTRAINT t_description_t_caver_FK FOREIGN KEY (id_author) REFERENCES t_caver(id),
+	CONSTRAINT t_description_t_caver2_FK FOREIGN KEY (id_reviewer) REFERENCES t_caver(id)
+);
+
+
+------------------------------------------------------------
+-- Table: t_rigging
+------------------------------------------------------------
+CREATE TABLE t_rigging(
+	id                   serial  NOT NULL ,
+	id_author            INT  NOT NULL ,
+	id_reviewer          INT   ,
+	date_inscription     timestamp not null default now()  ,
+	date_reviewed        timestamp   ,
+	relevance            INT2  NOT NULL ,
+	title                VARCHAR (300) NOT NULL ,
+	obstacles            VARCHAR (2000)   ,
+	ropes                VARCHAR (2000)   ,
+	anchors              VARCHAR (2000)   ,
+	observations         VARCHAR (2000)   ,
+	id_entrance          INT   ,
+	id_exit              INT   ,
+	id_point             INT   ,
+	id_language        CHAR (3)  NOT NULL ,
+	CONSTRAINT t_rigging_PK PRIMARY KEY (id),
+	CONSTRAINT t_rigging_t_entrance_FK FOREIGN KEY (id_entrance) REFERENCES t_entrance(id),
+	CONSTRAINT t_rigging_t_entrance1_FK FOREIGN KEY (id_exit) REFERENCES t_entrance(id),
+	CONSTRAINT t_rigging_t_point_FK FOREIGN KEY (id_point) REFERENCES t_point(id),
+	CONSTRAINT t_rigging_t_language0_FK FOREIGN KEY (id_language) REFERENCES t_language(id),
+	CONSTRAINT t_rigging_t_caver_FK FOREIGN KEY (id_author) REFERENCES t_caver(id),
+	CONSTRAINT t_rigging_t_caver2_FK FOREIGN KEY (id_reviewer) REFERENCES t_caver(id)
+);
+
+
+------------------------------------------------------------
+-- Table: t_file
+------------------------------------------------------------
+CREATE TABLE t_file(
+	id                   SERIAL NOT NULL ,
+	date_inscription     timestamp  not null default now()  ,
+	date_reviewed        timestamp   ,
+	filename             varchar(200) NOT NULL,
+	id_file_format       INT  NOT NULL ,
+	id_document          INT  NOT NULL ,
+	CONSTRAINT t_file_PK PRIMARY KEY (id),
+	CONSTRAINT t_file_t_file_format_FK FOREIGN KEY (id_file_format) REFERENCES t_file_format(id),
+	CONSTRAINT t_file_t_document_FK FOREIGN KEY (id_document) REFERENCES t_document(id)
+);
+
+
+------------------------------------------------------------
+-- Table: j_grotto_caver
+------------------------------------------------------------
+CREATE TABLE j_grotto_caver(
+	id_caver		INT  NOT NULL ,
+	id_grotto		INT  NOT NULL  ,
+	CONSTRAINT j_grotto_caver_PK PRIMARY KEY (id_caver,id_grotto),
+	CONSTRAINT j_grotto_caver_t_caver_FK FOREIGN KEY (id_caver) REFERENCES t_caver(id),
+	CONSTRAINT j_grotto_caver_t_grotto0_FK FOREIGN KEY (id_grotto) REFERENCES t_grotto(id)
+);
+
+
+------------------------------------------------------------
+-- Table: j_grotto_cave_explorer
+------------------------------------------------------------
+CREATE TABLE j_grotto_cave_explorer(
+	id_cave		INT  NOT NULL ,
+	id_grotto   INT  NOT NULL  ,
+	CONSTRAINT j_grotto_cave_explorer_PK PRIMARY KEY (id_cave,id_grotto),
+	CONSTRAINT j_grotto_cave_explorer_t_cave_FK FOREIGN KEY (id_cave) REFERENCES t_cave(id),
+	CONSTRAINT j_grotto_cave_explorer_t_grotto0_FK FOREIGN KEY (id_grotto) REFERENCES t_grotto(id)
+);
+
+
+------------------------------------------------------------
+-- Table: j_group_right
+------------------------------------------------------------
+CREATE TABLE j_group_right(
+	id_group   	INT2  NOT NULL ,
+	id_right   	INT2  NOT NULL  ,
+	CONSTRAINT j_group_right_PK PRIMARY KEY (id_group,id_right),
+	CONSTRAINT j_group_right_t_group_FK FOREIGN KEY (id_group) REFERENCES t_group(id),
+	CONSTRAINT j_group_right_t_right0_FK FOREIGN KEY (id_right) REFERENCES t_right(id)
+);
+
+
+------------------------------------------------------------
+-- Table: j_caver_group
+------------------------------------------------------------
+CREATE TABLE j_caver_group(
+	id_caver	INT  NOT NULL ,
+	id_group	INT2  NOT NULL  ,
+	CONSTRAINT j_caver_group_PK PRIMARY KEY (id_caver,id_group),
+	CONSTRAINT j_caver_group_t_caver_FK FOREIGN KEY (id_caver) REFERENCES t_caver(id),
+	CONSTRAINT j_caver_group_t_group0_FK FOREIGN KEY (id_group) REFERENCES t_group(id)
+);
+
+
+------------------------------------------------------------
+-- Table: t_crs
+------------------------------------------------------------
+CREATE TABLE t_crs(
+	id                 SERIAL2 NOT NULL ,
+	id_author          INT NOT NULL ,
+	id_reviewer        INT   ,
+	date_inscription   timestamp  not null default now(),
+	date_reviewed      timestamp   ,
+	definition         VARCHAR (1000) NOT NULL ,
+	bounds             VARCHAR (100)  ,
+	url                VARCHAR (200)  ,
+	enabled            bool not null default false ,
+	code               VARCHAR (50) unique NOT NULL  ,
+	CONSTRAINT t_crs_PK PRIMARY KEY (id),
+	CONSTRAINT t_crs_t_caver_FK FOREIGN KEY (id_author) REFERENCES t_caver(id),
+	CONSTRAINT t_crs_t_caver2_FK FOREIGN KEY (id_reviewer) REFERENCES t_caver(id)
+);
+
+
+------------------------------------------------------------
+-- Table: j_country_crs
+------------------------------------------------------------
+CREATE TABLE j_country_crs(
+	id_crs    	INT2  NOT NULL ,
+	id_country	CHAR(2) NOT NULL  ,
+	CONSTRAINT j_country_crs_PK PRIMARY KEY (id_crs,id_country),
+	CONSTRAINT j_country_crs_t_crs_FK FOREIGN KEY (id_crs) REFERENCES t_crs(id),
+	CONSTRAINT j_country_crs_t_country0_FK FOREIGN KEY (id_country) REFERENCES t_country(Iso)
+);
+
+
+------------------------------------------------------------
+-- Table: j_entrance_caver
+------------------------------------------------------------
+CREATE TABLE j_entrance_caver(
+	id_entrance		INT NOT NULL ,
+	id_caver		INT NOT NULL  ,
+	CONSTRAINT j_entrance_caver_PK PRIMARY KEY (id_entrance,id_caver),
+	CONSTRAINT j_entrance_caver_t_entrance_FK FOREIGN KEY (id_entrance) REFERENCES t_entrance(id),
+	CONSTRAINT j_entrance_caver_t_caver0_FK FOREIGN KEY (id_caver) REFERENCES t_caver(id)
+);
+
+
+------------------------------------------------------------
+-- Table: j_grotto_cave_partner
+------------------------------------------------------------
+CREATE TABLE j_grotto_cave_partner(
+	id_grotto 		INT NOT NULL ,
+	id_cave			INT NOT NULL  ,
+	CONSTRAINT j_grotto_cave_partner_PK PRIMARY KEY (id_grotto,id_cave),
+	CONSTRAINT j_grotto_cave_partner_t_grotto_FK FOREIGN KEY (id_grotto) REFERENCES t_grotto(id),
+	CONSTRAINT j_grotto_cave_partner_t_cave0_FK FOREIGN KEY (id_cave) REFERENCES t_cave(id)
+);
+
+
+------------------------------------------------------------
+-- Table: t_coloration
+------------------------------------------------------------
+
+------------------------------------------------------------
+-- Table: j_coloration_entrance
+------------------------------------------------------------
+
+------------------------------------------------------------
+-- Table: j_coloration_point
+------------------------------------------------------------
+
