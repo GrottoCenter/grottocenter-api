@@ -376,6 +376,16 @@ module.exports.routes = {
     },
   },
 
+  'PUT /api/v1/documents/:id/validate': {
+    controller: 'v1/Document',
+    action: 'validate',
+  },
+
+  'PUT /api/v1/documents/validate': {
+    controller: 'v1/Document',
+    action: 'multipleValidate',
+  },
+
   /* REST API for Document Identifier Types controller */
   'GET /api/v1/documents/identifierTypes': {
     controller: 'v1/IdentifierType',

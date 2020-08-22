@@ -150,4 +150,69 @@ module.exports = {
           });
       });
   },
+
+  validate: (req, res, next) => {
+    const isValidated = req.param('isValidated')
+      ? !(req.param('isValidated').toLowerCase() === 'false')
+      : true;
+    const validationComment = req.param('validationComment', null);
+    const id = req.param('id');
+
+    if (isValidated === false && !validationComment) {
+      return res.badRequest(
+        `If the document with id ${req.param(
+          'id',
+        )} is refused, a comment must be provided.`,
+      );
+    }
+
+    TDocument.updateOne({ id: id })
+      .set({
+        isValidated: isValidated,
+        validationComment: validationComment,
+        dateValidation: new Date(),
+      })
+      .then((updatedDocument) => {
+        const params = {
+          controllerMethod: 'DocumentController.validate',
+          notFoundMessage: `Document of id ${id} not found`,
+          searchedItem: `Document of id ${id}`,
+        };
+        return ControllerService.treat(req, null, updatedDocument, params, res);
+      });
+  },
+
+  multipleValidate: (req, res, next) => {
+    const documents = req.param('documents');
+    if (!documents) {
+      return res.ok();
+    }
+    const updatePromises = [];
+    documents.map((doc) => {
+      const isValidated = doc.isValidated
+        ? !(doc.isValidated.toLowerCase() === 'false')
+        : true;
+      const { validationComment } = doc;
+      const { id } = doc;
+
+      if (isValidated === false && !validationComment) {
+        return res.badRequest(
+          `If the document with id ${req.param(
+            'id',
+          )} is refused, a comment must be provided.`,
+        );
+      }
+
+      updatePromises.push(
+        TDocument.updateOne({ id: id }).set({
+          isValidated: isValidated,
+          validationComment: validationComment,
+          dateValidation: new Date(),
+        }),
+      );
+      Promise.all(updatePromises).then((results) => {
+        res.ok();
+      });
+    });
+  },
 };

@@ -137,6 +137,8 @@ module.exports.policies = {
   'v1/DocumentController': {
     '*': true,
     create: 'tokenAuth',
+    validate: 'tokenAuth',
+    multipleValidate: 'tokenAuth',
   },
 
   'v1/DocumentTypeController': {
