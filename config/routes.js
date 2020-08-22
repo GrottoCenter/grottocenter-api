@@ -360,6 +360,11 @@ module.exports.routes = {
     },
   },
 
+  'POST /api/v1/documents/:id/validate': {
+    controller: 'v1/Document',
+    action: 'validate',
+  },
+
   /* REST API for Document Identifier Types controller */
   'GET /api/v1/documents/identifierTypes': {
     controller: 'v1/IdentifierType',
