@@ -91,4 +91,50 @@ module.exports = {
         return res.serverError(err.cause.message);
       });
   },
+
+  findAll: (
+    req,
+    res,
+    next,
+    converter = MappingV1Service.convertToDocumentList,
+  ) => {
+    const sort = `${req.param('sortBy', 'dateInscription')} ${req.param(
+      'orderBy',
+      'ASC',
+    )}`;
+    TDocument.find()
+      .where({ isValidated: req.param('isValidated') === 'true' })
+      .skip(req.param('skip', 0))
+      .limit(req.param('limit', 50))
+      .sort(sort)
+      .populate('editor')
+      .populate('library')
+      .populate('cave')
+      .populate('massif')
+      .populate('entrance')
+      .populate('author')
+      .populate('reviewer')
+      .populate('identifierType')
+      .populate('type')
+      .populate('license')
+      .populate('author')
+      .populate('parent')
+      .populate('authors')
+      .populate('regions')
+      .populate('subjects')
+      .exec((err, found) => {
+        const params = {
+          controllerMethod: 'DocumentController.findAll',
+          searchedItem: 'All documents',
+        };
+        return ControllerService.treatAndConvert(
+          req,
+          err,
+          found,
+          params,
+          res,
+          converter,
+        );
+      });
+  },
 };

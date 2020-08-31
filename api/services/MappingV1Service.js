@@ -104,13 +104,21 @@ const CaveModel = {
 const DocumentModel = {
   refBbs: undefined,
   title: undefined,
-  publicationDate: undefined,
+  datePublication: undefined,
+  dateValidation: undefined,
+  dateInscription: undefined,
+  pages: undefined,
+  reviewer: undefined,
+  author: undefined,
   subjects: undefined,
   theme: undefined,
   country: undefined,
   library: undefined,
   editor: undefined,
   regions: undefined,
+  license: undefined,
+  type: undefined,
+  identifierType: undefined,
 };
 
 const SubjectModel = {
@@ -496,7 +504,19 @@ module.exports = {
     result.id = source.id;
     result.refBbs = source.ref_bbs ? source.ref_bbs : source.refBbs;
     result.title = source.title;
-    result.publicationDate = source.date_publication;
+    result.datePublication = source.date_publication
+      ? source.date_publication
+      : source.datePublication;
+    result.dateValidation = source.dateValidation;
+    result.dateInscription = source.dateInscription;
+    result.pages = source.pages;
+    result.author = source.author;
+    result.reviewer = source.reviewer;
+    result.license = source.license;
+    result.type = source.type;
+    result.identifierType = source.identifierType;
+    result.publicationFasciculeBBSOld = source.publicationFasciculeBBSOld;
+    result.parent = source.parent;
 
     if (source.authors instanceof Array) {
       result.authors = MappingV1Service.convertToCaverList(
@@ -524,10 +544,13 @@ module.exports = {
         });
       }
     }
+
     // Build subjects
     if (source.subjects) {
       if (source.subjects instanceof Array) {
-        result.subjects = source.subjects;
+        result.subjects = MappingV1Service.convertToSubjectList(
+          source.subjects,
+        ).subjects;
       } else {
         // ES
         result.subjects = source.subjects.split(', ').map((s) => {
@@ -579,7 +602,9 @@ module.exports = {
     source.forEach((item) =>
       documents.push(MappingV1Service.convertToDocumentModel(item)),
     );
-    return documents;
+    return {
+      documents,
+    };
   },
 
   convertToSubjectModel: (source) => {
