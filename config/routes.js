@@ -349,6 +349,11 @@ module.exports.routes = {
     },
   },
 
+  'GET /api/v1/documents': {
+    controller: 'v1/Document',
+    action: 'findAll',
+  },
+
   'POST /api/v1/documents/subjects/search/logical/or': {
     controller: 'v1/Subject',
     action: 'search',

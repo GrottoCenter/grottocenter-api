@@ -96,4 +96,58 @@ module.exports = {
         return res.serverError(err.cause.message);
       });
   },
+
+  findAll: (
+    req,
+    res,
+    next,
+    converter = MappingV1Service.convertToDocumentList,
+  ) => {
+    const sort = `${req.param('sortBy', 'dateInscription')} ${req.param(
+      'orderBy',
+      'ASC',
+    )}`;
+    TDocument.find()
+      .where({ isValidated: req.param('isValidated') === 'true' })
+      .skip(req.param('skip', 0))
+      .limit(req.param('limit', 50))
+      .sort(sort)
+      .populate('author')
+      .populate('authors')
+      .populate('cave')
+      .populate('descriptions')
+      .populate('editor')
+      .populate('entrance')
+      .populate('identifierType')
+      .populate('library')
+      .populate('license')
+      .populate('massif')
+      .populate('parent')
+      .populate('regions')
+      .populate('reviewer')
+      .populate('subjects')
+      .populate('type')
+      .exec((err, found) => {
+        TDocument.count()
+          .where({ isValidated: req.param('isValidated') === 'true' })
+          .exec((err, countFound) => {
+            const params = {
+              controllerMethod: 'DocumentController.findAll',
+              limit: req.param('limit', 50),
+              searchedItem: 'All documents',
+              skip: req.param('skip', 0),
+              total: countFound,
+              url: req.originalUrl,
+            };
+            return ControllerService.treatAndConvert(
+              req,
+              err,
+              found,
+              params,
+              res,
+              converter,
+            );
+          });
+      });
+  },
 };

@@ -92,7 +92,60 @@ paths:
           description: "Bad request. Either the caverId and groupId parameters should exist in the database."
         '500':
           description: Internal error
-  
+
+  '/documents':
+    get:
+      tags:
+        - documents
+      description: Get all documents.
+      parameters:
+      - name: isValidated
+        in: query
+        description: If the documents must be validated or not.
+        required: false
+        schema:
+          type: boolean
+      - name: skip
+        in: query
+        description: Number of documents to skip.
+        required: false
+        schema:
+          type: integer
+          default: 0
+      - name: limit
+        in: query
+        description: Maximum number of documents.
+        required: false
+        schema:
+          type: integer
+          default: 50
+      - name: sortBy
+        in: query
+        description: Attribute to sort the documents by.
+        required: false
+        schema:
+          type: string
+          default: dateInscription
+      - name: orderBy
+        in: query
+        description: Order used by the sortBy attribute
+        required: false
+        schema:
+          type: string
+          enum: [ASC, DESC]
+          default: ASC
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  documents:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Document'
 
   '/documents/identifierTypes':
     get:
