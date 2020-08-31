@@ -68,7 +68,7 @@ storiesOf('DocumentForm', module)
     () => (
       <DocumentTypeSelect
         allDocumentTypes={allDocumentTypes}
-        helperText="For examples, a magazine is a Collection, an article from a magazine is a Collection Element."
+        helperText="For example, a magazine published regularly is an Issue, an article from a magazine is an Article."
       />
     ),
     {

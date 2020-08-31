@@ -17,10 +17,10 @@ const isStep1Valid = (stepData, documentType) => {
   switch (documentType.id) {
     case DocumentTypes.UNKNOWN:
       return false;
-    case DocumentTypes.COLLECTION_ELEMENT:
+    case DocumentTypes.ISSUE:
       return isValid && publicationDate !== null;
     case DocumentTypes.IMAGE:
-    case DocumentTypes.TEXT:
+    case DocumentTypes.ARTICLE:
     case DocumentTypes.COLLECTION:
     default:
       return isValid;
@@ -38,14 +38,13 @@ const isStep2Valid = (stepData, documentType) => {
       return false;
     case DocumentTypes.COLLECTION:
       return editor !== null;
-    case DocumentTypes.COLLECTION_ELEMENT:
+    case DocumentTypes.ISSUE:
       return editor !== null && partOf !== null;
-    case DocumentTypes.IMAGE:
-      return authors.length > 0;
-    case DocumentTypes.TEXT:
+    case DocumentTypes.ARTICLE:
       return authors.length > 0 && subjects.length > 0;
+    case DocumentTypes.IMAGE:
     default:
-      return true;
+      return authors.length > 0;
   }
 };
 

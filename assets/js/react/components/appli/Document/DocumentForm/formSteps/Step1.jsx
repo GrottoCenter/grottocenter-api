@@ -14,7 +14,7 @@ import TitleEditor from '../formElements/TitleEditor';
 import {
   allDocumentTypes,
   isCollection,
-  isCollectionElement,
+  isIssue,
   isUnknown,
 } from '../DocumentTypesHelper';
 
@@ -58,7 +58,7 @@ const DocumentForm = ({ allLanguages, stepId }) => {
           <FlexItemWrapper>
             <DocumentTypeSelect
               allDocumentTypes={allDocumentTypes}
-              helperText="For example, a magazine is a Collection, an article from a magazine is a Collection Element."
+              helperText="For example, a magazine issue is an Issue, an article from a magazine is an Article."
               required
             />
           </FlexItemWrapper>
@@ -87,9 +87,7 @@ const DocumentForm = ({ allLanguages, stepId }) => {
                   </TitleEditorWrapper>
                   {!isCollection(documentType) && (
                     <PublicationDateWrapper>
-                      <PublicationDatePicker
-                        required={isCollectionElement(documentType)}
-                      />
+                      <PublicationDatePicker required={isIssue(documentType)} />
                     </PublicationDateWrapper>
                   )}
                 </FlexWrapper>

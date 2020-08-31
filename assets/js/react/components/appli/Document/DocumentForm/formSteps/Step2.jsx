@@ -15,10 +15,10 @@ import MultipleSubjectsSelect from '../../../../../features/MultipleSubjectsSele
 import OrganizationAutoComplete from '../../../../../features/OrganizationAutoComplete';
 
 import {
-  isImage,
-  isCollectionElement,
-  isText,
+  isIssue,
+  isArticle,
   isCollection,
+  isOther,
 } from '../DocumentTypesHelper';
 
 // ===================================
@@ -59,28 +59,28 @@ const Step2 = ({ stepId }) => {
       <>
         <MultipleCaversSelect
           computeHasError={(newAuthors) =>
-            (isImage(documentType) || isText(documentType)) &&
+            (isOther(documentType) || isArticle(documentType)) &&
             newAuthors.length === 0
           }
           helperText="Use this search bar to find existing authors. In a next version of the website, if the author is not in the Grottocenter database, you will be able to add it."
           labelName="Authors"
-          required={isImage(documentType) || isText(documentType)}
+          required={isOther(documentType) || isArticle(documentType)}
           setValue={(newValue) => updateAttribute('authors', newValue)}
           value={authors}
         />
 
         <MultipleSubjectsSelect
           computeHasError={(newSubjects) =>
-            isText(documentType) && newSubjects.length === 0
+            isArticle(documentType) && newSubjects.length === 0
           }
           helperText="Use this search bar to find subjects. Be precise about the subjects discussed in the document: there are plenty of subject choices in Grottocenter."
           labelName="Subjects"
-          required={isText(documentType)}
+          required={isArticle(documentType)}
           setValue={(newValue) => updateAttribute('subjects', newValue)}
           value={subjects}
         />
 
-        {(isText(documentType) || isCollectionElement(documentType)) && (
+        {(isArticle(documentType) || isIssue(documentType)) && (
           <DocumentAutoComplete
             isValueForced={false}
             helperContent={
@@ -98,8 +98,8 @@ const Step2 = ({ stepId }) => {
 
         <FlexWrapper>
           {(isCollection(documentType) ||
-            isCollectionElement(documentType) ||
-            isText(documentType)) && (
+            isIssue(documentType) ||
+            isArticle(documentType)) && (
             <FlexItemWrapper>
               <OrganizationAutoComplete
                 isValueForced={pathOr(null, ['editor'], partOf) !== null}
@@ -114,10 +114,7 @@ const Step2 = ({ stepId }) => {
                   </Translate>
                 }
                 labelText="Editor"
-                required={
-                  isCollection(documentType) ||
-                  isCollectionElement(documentType)
-                }
+                required={isCollection(documentType) || isIssue(documentType)}
                 searchLabelText="Search for an editor..."
                 setValue={(newValue) => updateAttribute('editor', newValue)}
                 value={editor}
@@ -125,7 +122,7 @@ const Step2 = ({ stepId }) => {
             </FlexItemWrapper>
           )}
 
-          {(isCollectionElement(documentType) || isText(documentType)) && (
+          {(isIssue(documentType) || isArticle(documentType)) && (
             <FlexItemWrapper>
               <OrganizationAutoComplete
                 isValueForced={pathOr(null, ['library'], partOf) !== null}
@@ -162,7 +159,7 @@ const Step2 = ({ stepId }) => {
         </FlexWrapper>
 
         <FlexWrapper>
-          {(isText(documentType) || isImage(documentType)) && (
+          {(isArticle(documentType) || isOther(documentType)) && (
             <FlexItemWrapper>
               <MultipleBBSRegionsSelect
                 computeHasError={() => false}
@@ -174,7 +171,7 @@ const Step2 = ({ stepId }) => {
               />
             </FlexItemWrapper>
           )}
-          {(isText(documentType) || isImage(documentType)) && (
+          {(isArticle(documentType) || isOther(documentType)) && (
             <FlexItemWrapper>
               <MassifAutoComplete
                 isValueForced={pathOr(null, ['massif'], partOf) !== null}

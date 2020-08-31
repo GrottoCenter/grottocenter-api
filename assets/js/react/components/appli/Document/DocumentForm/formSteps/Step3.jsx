@@ -9,7 +9,7 @@ import StringInput from '../../../../common/Form/StringInput';
 import DocIdentifierEditor from '../../../../../features/DocIdentifierEditor';
 
 import { DocumentFormContext } from '../Provider';
-import { isText, isCollectionElement } from '../DocumentTypesHelper';
+import { isArticle, isIssue } from '../DocumentTypesHelper';
 
 // ===================================
 const FlexWrapper = styled.div`
@@ -35,12 +35,12 @@ const Step3 = ({ stepId }) => {
     () => (
       <>
         <FlexWrapper>
-          {isText(documentType) && (
+          {isArticle(documentType) && (
             <FlexItemWrapper>
               <PagesEditor />
             </FlexItemWrapper>
           )}
-          {isCollectionElement(documentType) && (
+          {isIssue(documentType) && (
             <FlexItemWrapper>
               <StringInput
                 hasError={false}
