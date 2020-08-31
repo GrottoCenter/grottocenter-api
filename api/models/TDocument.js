@@ -189,5 +189,17 @@ module.exports = {
       via: 'document',
       through: 'JDocumentCaverAuthor',
     },
+
+    regions: {
+      collection: 'TRegion',
+      via: 'document',
+      through: 'JDocumentRegion',
+    },
+
+    subjects: {
+      collection: 'TSubject',
+      via: 'document',
+      through: 'JDocumentSubject',
+    },
   },
 };

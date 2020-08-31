@@ -39,5 +39,11 @@ module.exports = {
       columnName: 'id_country',
       model: 'TCountry',
     },
+
+    documents: {
+      collection: 'TDocument',
+      via: 'region',
+      through: 'JDocumentRegion',
+    },
   },
 };

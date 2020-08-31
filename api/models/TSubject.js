@@ -33,5 +33,11 @@ module.exports = {
       collection: 'TSubject',
       via: 'parent',
     },
+
+    documents: {
+      collection: 'TDocument',
+      via: 'subject',
+      through: 'JDocumentSubject',
+    },
   },
 };
