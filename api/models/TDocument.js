@@ -165,12 +165,6 @@ module.exports = {
       maxLength: 500,
     },
 
-    isBBS: {
-      allowNull: true,
-      type: 'boolean',
-      columnName: 'bbs',
-    },
-
     publicationOtherBBSOld: {
       type: 'string',
       allowNull: true,

@@ -23,12 +23,13 @@ module.exports = {
   countBBS: (req, res) => {
     TDocument.count()
       .where({
-        isBBS: true,
+        refBbs: { '!=': null },
       })
       .exec((err, found) => {
         const params = {};
-        params.controllerMethod = 'DocumentController.count';
-        params.notFoundMessage = 'Problem while getting number of documents.';
+        params.controllerMethod = 'DocumentController.countBBS';
+        params.notFoundMessage =
+          'Problem while getting number of BBS documents.';
 
         const count = {};
         count.count = found;

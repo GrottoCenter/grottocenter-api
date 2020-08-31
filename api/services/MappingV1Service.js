@@ -105,7 +105,6 @@ const DocumentModel = {
   refBbs: undefined,
   title: undefined,
   publicationDate: undefined,
-  bbs: undefined,
   subjects: undefined,
   theme: undefined,
   country: undefined,
@@ -478,7 +477,6 @@ module.exports = {
     // Conversion (from Elasticsearch or not)
     result.id = source.id;
     result.refBbs = source.ref_bbs ? source.ref_bbs : source.refBbs;
-    result.bbs = source.bbs ? source.bbs : source.isBBS;
     result.title = source.title;
     result.publicationDate = source.date_publication;
 
