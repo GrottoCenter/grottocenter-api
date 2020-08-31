@@ -11,6 +11,16 @@ module.exports = {
         entity.names = await TName.find().where({
           [entitiesType]: entity.id,
         });
+
+        // For a cave, if there is no name for it, search the name of its first entrance (the only one):
+        //    the name of the cave is the same as its entrance.
+        if (Array.isArray(entity.names) && entity.names.length === 0) {
+          if (entitiesType === 'cave') {
+            entity.names = await TName.find().where({
+              entrance: entity.entrances[0].id,
+            });
+          }
+        }
         return entity;
       }),
     );
