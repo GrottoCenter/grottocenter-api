@@ -193,6 +193,16 @@ module.exports = {
     return result;
   },
 
+  convertToCaverList: (source) => {
+    const cavers = [];
+    source.forEach((item) =>
+      cavers.push(MappingV1Service.convertToCaverModel(item)),
+    );
+    return {
+      cavers,
+    };
+  },
+
   convertToCaverModel: (source) => {
     const result = { ...CaverModel };
     result.id = source.id;
@@ -480,8 +490,13 @@ module.exports = {
     result.title = source.title;
     result.publicationDate = source.date_publication;
 
-    // TODO: handle authors as a string (ES)
-    result.authors = source.authors;
+    if (source.authors instanceof Array) {
+      result.authors = MappingV1Service.convertToCaverList(
+        source.authors,
+      ).cavers;
+    } else {
+      result.authors = source.authors;
+    }
 
     // TODO: handle publication (old bbs & parent)
     result.publication = source.publication_other_bbs_old
