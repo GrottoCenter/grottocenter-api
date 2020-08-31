@@ -363,6 +363,14 @@ module.exports = {
               data[key] = item['_source'][key];
             }
 
+            // Construct document type
+            data.documentType = {
+              id: ramda.pathOr(null, ['_source', 'type id'], item),
+              name: ramda.pathOr(null, ['_source', 'type name'], item),
+            };
+            delete data['type id'];
+            delete data['type name'];
+
             break;
 
           case 'caver':
@@ -549,6 +557,17 @@ module.exports = {
       result.editor = {
         id: source['editor id'],
         name: source['editor name'],
+      };
+    }
+
+    // Build type
+    if (source.type) {
+      result.type = source.type;
+    } else if (source['type id']) {
+      // ES
+      result.type = {
+        id: source['type id'],
+        name: source['type name'],
       };
     }
 

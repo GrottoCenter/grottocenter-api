@@ -6,8 +6,8 @@ import { includes, pathOr } from 'ramda';
 import Translate from '../../../../common/Translate';
 
 import { DocumentFormContext } from '../Provider';
-import PartOfAutoComplete from '../formElements/PartOfAutoComplete';
 
+import DocumentAutoComplete from '../../../../../features/DocumentAutoComplete';
 import MassifAutoComplete from '../../../../../features/MassifAutoComplete';
 import MultipleBBSRegionsSelect from '../../../../../features/MultipleBBSRegionsSelect';
 import MultipleCaversSelect from '../../../../../features/MultipleCaversSelect';
@@ -33,7 +33,7 @@ const FlexItemWrapper = styled.div`
 `;
 // ===================================
 
-const Step2 = ({ /* allAuthors, */ allPartOf, stepId }) => {
+const Step2 = ({ stepId }) => {
   const {
     docAttributes: {
       authors,
@@ -81,10 +81,18 @@ const Step2 = ({ /* allAuthors, */ allPartOf, stepId }) => {
         />
 
         {(isText(documentType) || isCollectionElement(documentType)) && (
-          <PartOfAutoComplete
-            hasError={isCollectionElement(documentType) && !partOf}
-            partOfSuggestions={allPartOf}
-            required={isCollectionElement(documentType)}
+          <DocumentAutoComplete
+            isValueForced={false}
+            helperContent={
+              <Translate>
+                Use the search bar to search for an existing document.
+              </Translate>
+            }
+            labelText="Document Parent"
+            required={false}
+            searchLabelText="Search for a document..."
+            setValue={(newValue) => updateAttribute('partOf', newValue)}
+            value={partOf}
           />
         )}
 
@@ -192,25 +200,6 @@ const Step2 = ({ /* allAuthors, */ allPartOf, stepId }) => {
 };
 
 Step2.propTypes = {
-  allAuthors: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      name: PropTypes.string.isRequired,
-      surname: PropTypes.string.isRequired,
-    }),
-  ).isRequired,
-  allPartOf: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      name: PropTypes.string.isRequired,
-      issue: PropTypes.string,
-      documenType: PropTypes.shape({
-        id: PropTypes.string.isRequired,
-        name: PropTypes.string.isRequired,
-      }),
-      partOf: PropTypes.shape({}),
-    }),
-  ),
   stepId: PropTypes.number.isRequired,
 };
 
