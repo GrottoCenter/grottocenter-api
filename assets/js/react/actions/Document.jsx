@@ -1,5 +1,5 @@
 import fetch from 'isomorphic-fetch';
-import { postDocumentUrl } from '../conf/Config';
+import { identificationTokenName, postDocumentUrl } from '../conf/Config';
 
 // ==========
 export const POST_DOCUMENT = 'POST_DOCUMENT';
@@ -25,9 +25,10 @@ export function postDocument(docAttributes) {
   return (dispatch) => {
     dispatch(postDocumentAction());
 
+    const authToken = window.localStorage.getItem(identificationTokenName);
     const requestOptions = {
       method: 'POST',
-      body: JSON.stringify({ ...docAttributes }),
+      body: JSON.stringify({ ...docAttributes, token: authToken }),
     };
 
     return fetch(postDocumentUrl, requestOptions)

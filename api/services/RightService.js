@@ -1,0 +1,52 @@
+module.exports = {
+  /**
+   * This helper contains all the words used in the right names in the database.
+   * Use them with the check-right helper.
+   */
+  RightEntities: {
+    APPLICATION: 'Application',
+    BIBLIOGRAPHY: 'Bibliography',
+    CACHE_REFRESH_ALL: 'Cache_refresh_all',
+    CAVE: 'Cave',
+    CAVER: 'Caver',
+    CHAT: 'Chat',
+    COMMENT: 'Comment',
+    DESCRIPTION: 'Description',
+    ENTRY: 'Entry',
+    ENTRY_EXPORT_ALL: 'Entry_export_all',
+    ERROR: 'Error',
+    GROTTO: 'Grotto',
+    GROUP: 'Group',
+    HISTORY: 'History',
+    KEEP_CONNECTED: 'Keep connected',
+    LOCATION: 'Location',
+    MASSIF: 'Massif',
+    PROPERTIES: 'Properties',
+    REQUEST_APPROVE_ALL: 'Request_approve_all',
+    REQUEST_DELETE_ALL: 'Request_delete_all',
+    REQUEST_DELETE_MINE: 'Request_delete_mine',
+    REQUEST_EDIT_ALL: 'Request_edit_all',
+    REQUEST_EDIT_MINE: 'Request_edit_mine',
+    REQUEST_VIEW_ALL: 'Request_view_all',
+    REQUEST_VIEW_MINE: 'Request_view_mine',
+    RIGGING: 'Rigging',
+    RIGHT: 'Right',
+    TOPO_VIEW_ALL: 'Topo_view_all',
+    TRANSLATION_DELETE_ALL: 'Translation_delete_all',
+    TRANSLATION_EDIT_ALL: 'Translation_edit_all',
+    TRANSLATION_VIEW_ALL: 'Translation_view_all',
+    URL: 'Url',
+    WARNING: 'Warning',
+  },
+
+  RightActions: {
+    NO_ACTION: '',
+    ALL: 'all',
+    DELETE_ALL: 'delete all',
+    DELETE_HIMSELF: 'delete himself',
+    EDIT_ALL: 'edit all',
+    EDIT_HIMSELF: 'edit himself',
+    LOCK_ALL: 'lock all',
+    VIEW_ALL: 'view all',
+  },
+};

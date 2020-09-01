@@ -37,7 +37,24 @@ module.exports = {
       });
   },
 
-  create: (req, res) => {
+  create: async (req, res) => {
+    // Check right
+    const hasRight = await sails.helpers.checkRight
+      .with({
+        groups: req.token.groups,
+        rightEntity: RightService.RightEntities.BIBLIOGRAPHY,
+        rightAction: RightService.RightActions.EDIT_ALL,
+      })
+      .intercept('rightNotFound', (err) => {
+        return res.serverError(
+          'A server error occured when checking your right to create a document.',
+        );
+      });
+    if (!hasRight) {
+      return res.forbidden('You are not authorized to create a document.');
+    }
+
+    // Clean the data
     const cleanedData = {
       ...req.body,
       editor: ramda.pathOr(undefined, ['editor', 'id'], req.body),
@@ -50,8 +67,11 @@ module.exports = {
       authors: req.body.authors ? req.body.authors.map((a) => a.id) : undefined,
       license: 1,
       dateInscription: new Date(),
+      author: req.token.id,
+      type: ramda.pathOr(undefined, ['documentType', 'id'], req.body),
     };
 
+    // Launch creation request
     TDocument.create(cleanedData)
       .then(() => {
         const params = {};

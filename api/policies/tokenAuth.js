@@ -23,7 +23,7 @@ module.exports = (req, res, next) => {
       req.token = responseToken; // This is the decrypted token or the payload you provided
       return next();
     });
+  } else {
+    return res.forbidden('You are not permitted to perform this action.');
   }
-
-  return res.forbidden('You are not permitted to perform this action.');
 };
