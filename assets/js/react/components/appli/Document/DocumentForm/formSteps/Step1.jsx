@@ -28,9 +28,15 @@ const FlexItemWrapper = styled.div`
   flex: 1;
 `;
 
-const TitleEditorWrapper = styled.div`
-  flex: 8;
+const BigFlexItemWrapper = styled.div`
+  flex: 2;
+`;
+
+const TitleAndLanguageWrapper = styled.div`
+  display: flex;
+  flex: 1;
   flex-basis: 600px;
+  flex-wrap: wrap;
 `;
 
 const PublicationDateWrapper = styled.div`
@@ -76,23 +82,33 @@ const DocumentForm = ({ allLanguages, stepId }) => {
           <div>
             {!isUnknown(isUnknown) && (
               <>
-                <FlexWrapper>
-                  <TitleEditorWrapper>
-                    <TitleEditor
+                <TitleAndLanguageWrapper>
+                  <BigFlexItemWrapper>
+                    <TitleEditor required />
+                  </BigFlexItemWrapper>
+                  <FlexItemWrapper style={{ minWidth: '300px' }}>
+                    <LanguageSelect
                       allLanguages={allLanguages}
-                      languageHelperText="Language of the title and the description."
-                      languageItemReferringTo="Title and description"
+                      contextValueNameToUpdate="titleAndDescriptionLanguage"
+                      helperText="Language of the title and the description."
+                      itemReferringTo="Title and description"
                       required
                     />
-                  </TitleEditorWrapper>
-                  {!isCollection(documentType) && (
-                    <PublicationDateWrapper>
-                      <PublicationDatePicker required={isIssue(documentType)} />
-                    </PublicationDateWrapper>
-                  )}
-                </FlexWrapper>
+                  </FlexItemWrapper>
+                </TitleAndLanguageWrapper>
 
-                <DescriptionEditor allLanguages={allLanguages} required />
+                <FlexWrapper>
+                  <FlexItemWrapper>
+                    <DescriptionEditor allLanguages={allLanguages} required />
+                    {!isCollection(documentType) && (
+                      <PublicationDateWrapper>
+                        <PublicationDatePicker
+                          required={isIssue(documentType)}
+                        />
+                      </PublicationDateWrapper>
+                    )}
+                  </FlexItemWrapper>
+                </FlexWrapper>
               </>
             )}
           </div>

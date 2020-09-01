@@ -62,7 +62,7 @@ const LanguageSelect = ({
           </MenuItem>
           {allLanguages.map((l) => (
             <MenuItem key={l.id} value={l.id}>
-              {l.name}
+              <Translate>{l.name}</Translate>
             </MenuItem>
           ))}
         </Select>
