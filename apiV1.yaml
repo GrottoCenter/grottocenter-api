@@ -572,8 +572,6 @@ components:
           type: string
         commentsBBSOld:
           type: string
-        isBBS: 
-          type: boolean
         publicationOtherBBSOld:
           type: string
         publicationFasciculeBBSOld:

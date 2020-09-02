@@ -114,13 +114,6 @@ module.exports = {
       columnType: 'datetime',
     },
 
-    contactIsPublic: {
-      type: 'number',
-      allowNull: false,
-      defaultsTo: 0,
-      columnName: 'contact_is_public',
-    },
-
     alertForNews: {
       type: 'boolean',
       allowNull: false,
