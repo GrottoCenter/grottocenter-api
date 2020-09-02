@@ -130,6 +130,7 @@ coverage
 ################################################
 mysql-connector.tar.gz
 mysql-connector-java-5.1.47
+postgresql-connector.jar
 
 ################################################
 # Anonymized data
