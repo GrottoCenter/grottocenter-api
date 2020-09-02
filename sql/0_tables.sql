@@ -1,6 +1,6 @@
 -----------------------------------------------------------
 -- Create structure in Postgre 
--- Version v3.04 - 20200727 - V. Verdon
+-- Version v3.06 - 20200901 - V. Verdon
 ------------------------------------------------------------
 -- use before postgre_injection.sql
 
@@ -9,12 +9,12 @@
 -- Table: t_country
 ------------------------------------------------------------
 CREATE TABLE t_country(
-	iso           CHAR (2) NOT NULL ,
+	iso           CHAR (2) NOT NULL,
 	iso3          CHAR(3) NOT NULL,
 	numeric       INTEGER NOT NULL,
-	latitude      DECIMAL (24,20)   ,
-	longitude     DECIMAL (24,20)   ,
-	native_name   VARCHAR (50) ,
+	latitude      DECIMAL (24,20),
+	longitude     DECIMAL (24,20),
+	native_name   VARCHAR (50),
 	en_name       VARCHAR (50) NOT NULL ,
 	fr_name       VARCHAR (50) NOT NULL ,
 	es_name       VARCHAR (50) NOT NULL ,
@@ -23,7 +23,7 @@ CREATE TABLE t_country(
 	it_name       VARCHAR (50) NOT NULL ,
 	ca_name       VARCHAR (50) NOT NULL ,
 	nl_name       VARCHAR (50) NOT NULL ,
-	rs_name       VARCHAR (50) NOT NULL  ,
+	rs_name       VARCHAR (50) NOT NULL
 	CONSTRAINT t_country_PK PRIMARY KEY (Iso)
 );
 
@@ -40,6 +40,7 @@ CREATE TABLE t_language(
 	type       CHAR (1)  NOT NULL ,
 	ref_name   VARCHAR (150) NOT NULL ,
 	comment    VARCHAR (150)   ,
+    is_prefered   boolean not null default false,
 	CONSTRAINT t_language_PK PRIMARY KEY (id)
 );
 
@@ -172,7 +173,6 @@ CREATE TABLE t_caver(
 	mail_is_valid          bool not null default true ,
 	date_inscription       timestamp not null default now() ,
 	date_last_connection   timestamp   ,
-	contact_is_public      INT2 not null check(Contact_is_public in (0,1,2)) default 0 ,
 	alert_for_news         bool not null default false ,
 	show_links             bool not null default false  ,
 	detail_level           INT,
