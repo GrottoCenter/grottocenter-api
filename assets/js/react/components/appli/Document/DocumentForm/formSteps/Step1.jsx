@@ -7,9 +7,10 @@ import { includes } from 'ramda';
 import { DocumentFormContext } from '../Provider';
 import DescriptionEditor from '../formElements/DescriptionEditor';
 import DocumentTypeSelect from '../formElements/DocumentTypeSelect';
-import LanguageSelect from '../formElements/LanguageSelect';
 import PublicationDatePicker from '../formElements/PublicationDatePicker';
 import TitleEditor from '../formElements/TitleEditor';
+
+import DocumentLanguageSelect from '../../../../../features/DocumentLanguageSelect';
 
 import {
   allDocumentTypes,
@@ -44,9 +45,14 @@ const PublicationDateWrapper = styled.div`
   flex-basis: 350px;
 `;
 
-const DocumentForm = ({ allLanguages, stepId }) => {
+const Step1 = ({ stepId }) => {
   const {
-    docAttributes: { documentType },
+    docAttributes: {
+      documentType,
+      documentMainLanguage,
+      titleAndDescriptionLanguage,
+    },
+    updateAttribute,
     validatedSteps,
   } = useContext(DocumentFormContext);
 
@@ -68,14 +74,19 @@ const DocumentForm = ({ allLanguages, stepId }) => {
               required
             />
           </FlexItemWrapper>
-          <FlexItemWrapper>
-            <LanguageSelect
-              allLanguages={allLanguages}
-              itemReferringTo="Document Main"
-              helperText="Main language of the document"
-              contextValueNameToUpdate="documentMainLanguage"
-            />
-          </FlexItemWrapper>
+          <Fade in={!isUnknown(documentType)}>
+            <FlexItemWrapper>
+              <DocumentLanguageSelect
+                helperText="Language in which the document is written"
+                labelText="Document main language"
+                language={documentMainLanguage}
+                required
+                setLanguage={(newValue) =>
+                  updateAttribute('documentMainLanguage', newValue)
+                }
+              />
+            </FlexItemWrapper>
+          </Fade>
         </FlexWrapper>
 
         <Fade in={!isUnknown(documentType)}>
@@ -87,19 +98,21 @@ const DocumentForm = ({ allLanguages, stepId }) => {
                     <TitleEditor required />
                   </BigFlexItemWrapper>
                   <FlexItemWrapper style={{ minWidth: '300px' }}>
-                    <LanguageSelect
-                      allLanguages={allLanguages}
-                      contextValueNameToUpdate="titleAndDescriptionLanguage"
-                      helperText="Language of the title and the description."
-                      itemReferringTo="Title and description"
+                    <DocumentLanguageSelect
+                      helperText="Language used for the title and the description you provide."
+                      labelText="Title and description language"
+                      language={titleAndDescriptionLanguage}
                       required
+                      setLanguage={(newValue) =>
+                        updateAttribute('titleAndDescriptionLanguage', newValue)
+                      }
                     />
                   </FlexItemWrapper>
                 </TitleAndLanguageWrapper>
 
                 <FlexWrapper>
                   <FlexItemWrapper>
-                    <DescriptionEditor allLanguages={allLanguages} required />
+                    <DescriptionEditor required />
                     {!isCollection(documentType) && (
                       <PublicationDateWrapper>
                         <PublicationDatePicker
@@ -115,18 +128,12 @@ const DocumentForm = ({ allLanguages, stepId }) => {
         </Fade>
       </>
     ),
-    memoizedValues,
+    [memoizedValues],
   );
 };
 
-DocumentForm.propTypes = {
-  allLanguages: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      name: PropTypes.string.isRequired,
-    }),
-  ).isRequired,
+Step1.propTypes = {
   stepId: PropTypes.number.isRequired,
 };
 
-export default DocumentForm;
+export default Step1;

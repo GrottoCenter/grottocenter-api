@@ -18,15 +18,18 @@ module.exports = {
   },
 
   findAll: (req, res, next) => {
-    TLanguage.find().exec((err, found) => {
-      const params = {
-        controllerMethod: 'LanguageController.findAll',
-        searchedItem: 'All Languages',
-      };
-      const formattedFound = {
-        languages: found,
-      };
-      return ControllerService.treat(req, err, formattedFound, params, res);
-    });
+    TLanguage.find()
+      .where({ isPrefered: req.param('isPrefered', true) })
+      .exec((err, found) => {
+        const params = {
+          controllerMethod: 'LanguageController.findAll',
+          searchedItem:
+            'All Languages' + (req.param('isPrefered') ? ' prefered' : ''),
+        };
+        const formattedFound = {
+          languages: found,
+        };
+        return ControllerService.treat(req, err, formattedFound, params, res);
+      });
   },
 };

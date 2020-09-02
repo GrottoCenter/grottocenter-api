@@ -1,4 +1,4 @@
-import React, { useContext, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
 import {
   FormControl,
@@ -10,27 +10,22 @@ import {
 import LanguageIcon from '@material-ui/icons/Translate';
 import Translate from '../../../../common/Translate';
 
-import { DocumentFormContext } from '../Provider';
-
 // ===================================
 
 const LanguageSelect = ({
-  allLanguages,
-  contextValueNameToUpdate,
+  allLanguages = [],
+  handleLanguageChange,
   helperText,
-  itemReferringTo,
+  labelText,
+  language,
   required = false,
 }) => {
-  const context = useContext(DocumentFormContext);
-  const { updateAttribute } = context;
-  const language = context.docAttributes[contextValueNameToUpdate];
-
   const handleChange = (event, child) => {
     const newLanguage = {
       id: event.target.value,
-      name: child.props.name,
+      refName: child.props.refName,
     };
-    updateAttribute(contextValueNameToUpdate, newLanguage);
+    handleLanguageChange(newLanguage);
   };
 
   const memoizedValues = [allLanguages, language];
@@ -42,17 +37,17 @@ const LanguageSelect = ({
         fullWidth
         error={required && language === null}
       >
-        <InputLabel htmlFor={`${itemReferringTo}-language`}>
+        <InputLabel htmlFor={labelText}>
           <LanguageIcon style={{ verticalAlign: 'middle' }} />
-          <Translate>{`${itemReferringTo} Language`}</Translate>
+          <Translate>{labelText}</Translate>
         </InputLabel>
 
         <Select
           value={language === null ? -1 : language.id}
           onChange={handleChange}
           inputProps={{
-            name: `${itemReferringTo}-language`,
-            id: `${itemReferringTo}-language`,
+            name: `${labelText}`,
+            id: `${labelText}`,
           }}
         >
           <MenuItem key={-1} value={-1} disabled>
@@ -61,8 +56,8 @@ const LanguageSelect = ({
             </i>
           </MenuItem>
           {allLanguages.map((l) => (
-            <MenuItem key={l.id} value={l.id}>
-              <Translate>{l.name}</Translate>
+            <MenuItem key={l.id} value={l.id} refName={l.refName}>
+              <Translate>{l.refName}</Translate>
             </MenuItem>
           ))}
         </Select>
@@ -81,12 +76,16 @@ LanguageSelect.propTypes = {
   allLanguages: PropTypes.arrayOf(
     PropTypes.shape({
       id: PropTypes.string.isRequired,
-      name: PropTypes.string.isRequired,
+      refName: PropTypes.string.isRequired,
     }),
-  ).isRequired,
-  contextValueNameToUpdate: PropTypes.string.isRequired,
+  ),
+  handleLanguageChange: PropTypes.func.isRequired,
   helperText: PropTypes.string.isRequired,
-  itemReferringTo: PropTypes.string.isRequired,
+  labelText: PropTypes.string.isRequired,
+  language: PropTypes.shape({
+    id: PropTypes.number.isRequired,
+    refName: PropTypes.string.isRequired,
+  }),
   required: PropTypes.bool,
 };
 

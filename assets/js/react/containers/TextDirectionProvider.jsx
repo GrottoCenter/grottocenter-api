@@ -41,7 +41,7 @@ TextDirectionProvider.childContextTypes = {
 
 const mapStateToProps = (state) => ({
   direction:
-    state.currentLanguage === 'ar' || state.currentLanguage === 'he'
+    state.language === 'ar' || state.language === 'he'
       ? RIGHT_TO_LEFT
       : LEFT_TO_RIGHT,
 });

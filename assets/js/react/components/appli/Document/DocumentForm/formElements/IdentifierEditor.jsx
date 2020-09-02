@@ -16,7 +16,7 @@ import { pathOr } from 'ramda';
 
 import Translate from '../../../../common/Translate';
 
-import { isImage } from '../DocumentTypesHelper';
+import { isOther } from '../DocumentTypesHelper';
 import StringInput from '../../../../common/Form/StringInput';
 
 // ===================================
@@ -76,9 +76,9 @@ const IdentifierEditor = ({
               <IdentifierTypeContainer>
                 <FormControl
                   variant="filled"
-                  required={!isImage(documentType) && identifier !== ''}
+                  required={!isOther(documentType) && identifier !== ''}
                   fullWidth
-                  error={!isImage(documentType) && !identifierType} // TODO
+                  error={!isOther(documentType) && !identifierType}
                 >
                   <InputLabel htmlFor="identifier-type">
                     <Translate>Identifier Type</Translate>

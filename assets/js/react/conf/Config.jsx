@@ -153,6 +153,7 @@ export const subjectsSearchUrl = `/api/${apiVersion}/documents/subjects/search/l
 export const getDocumentTypesUrl = `/api/${apiVersion}/documents/types`;
 export const getEntryUrl = `/api/${apiVersion}/entrances/`;
 export const getCaveUrl = `/api/${apiVersion}/caves/`;
+export const getLanguagesUrl = `/api/${apiVersion}/languages`;
 export const postDocumentUrl = `/api/${apiVersion}/documents`;
 export const regionsSearchUrl = `/api/${apiVersion}/regions/search/logical/or`;
 export const identifierTypesUrl = `/api/${apiVersion}/documents/identifierTypes`;

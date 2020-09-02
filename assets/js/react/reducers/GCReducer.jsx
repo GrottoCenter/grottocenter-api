@@ -2,7 +2,7 @@ import { combineReducers } from 'redux';
 import advancedsearch from './AdvancedsearchReducer';
 import quicksearch from './QuicksearchReducer';
 import map from './MapReducer';
-import currentLanguage from './LanguageReducer';
+import language from './LanguageReducer';
 import latestBlogNews from './LatestBlogNewsReducer';
 import dynamicNumber from './DynamicNumberReducer';
 import sideMenu from './SideMenuReducer';
@@ -28,7 +28,7 @@ import documentType from './DocumentTypeReducer';
 //
 
 const GCReducer = combineReducers({
-  currentLanguage,
+  language,
   advancedsearch,
   quicksearch,
   map,

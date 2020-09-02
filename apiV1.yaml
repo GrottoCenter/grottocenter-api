@@ -96,7 +96,15 @@ paths:
     get:
       tags:
         - languages
-      description: Get all languages supported by Grottocenter
+      description: Get all languages supported by Grottocenter.
+      parameters:
+      - name: isPrefered
+        in: query
+        description: Languages prefered or not.
+        required: false
+        schema:
+          type: boolean
+          default: true
       responses:
         '200':
           description: Successful operation
@@ -1021,4 +1029,3 @@ components:
         - entrances
         - grottos
         - massifs
-

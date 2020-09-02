@@ -62,5 +62,12 @@ module.exports = {
       columnName: 'comment',
       maxLength: 150,
     },
+
+    isPrefered: {
+      type: 'boolean',
+      columnName: 'is_prefered',
+      allowNull: false,
+      defaultsTo: false,
+    },
   },
 };
