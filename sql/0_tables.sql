@@ -23,7 +23,7 @@ CREATE TABLE t_country(
 	it_name       VARCHAR (50) NOT NULL ,
 	ca_name       VARCHAR (50) NOT NULL ,
 	nl_name       VARCHAR (50) NOT NULL ,
-	rs_name       VARCHAR (50) NOT NULL
+	rs_name       VARCHAR (50) NOT NULL ,
 	CONSTRAINT t_country_PK PRIMARY KEY (Iso)
 );
 
