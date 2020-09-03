@@ -20,13 +20,13 @@ const DescriptionContainer = styled.div`
 
 // ===================================
 
-const DescriptionEditor = ({ allLanguages, required = false }) => {
+const DescriptionEditor = ({ required = false }) => {
   const {
     docAttributes: { description },
     updateAttribute,
   } = useContext(DocumentFormContext);
 
-  const memoizedValues = [allLanguages, description];
+  const memoizedValues = [description];
   return useMemo(
     () => (
       <InlineWrapper>
@@ -49,12 +49,6 @@ const DescriptionEditor = ({ allLanguages, required = false }) => {
 };
 
 DescriptionEditor.propTypes = {
-  allLanguages: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      name: PropTypes.string.isRequired,
-    }),
-  ).isRequired,
   required: PropTypes.bool,
 };
 

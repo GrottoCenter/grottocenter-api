@@ -127,7 +127,7 @@ const PagesEditor = () => {
         </InlineWrapper>
       </>
     ),
-    [memoizedValues],
+    memoizedValues,
   );
 };
 

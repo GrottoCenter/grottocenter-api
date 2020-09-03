@@ -7,30 +7,13 @@ import { loadIdentifierTypes } from '../actions/IdentifierType';
 
 const DocIdentifierEditor = ({
   documentType,
-  identifier,
-  identifierType,
-  setIdentifier,
-  setIdentifierType,
+  contextIdentifierValueName,
+  contextIdentifierTypeValueName,
 }) => {
   const dispatch = useDispatch();
   const { identifierTypes: allIdentifierTypes } = useSelector(
     (state) => state.identifierType,
   );
-
-  const handleIdentifierChange = (newIdentifier) => {
-    if (newIdentifier === '') {
-      setIdentifier(null);
-      setIdentifierType(null);
-    }
-    setIdentifier(newIdentifier);
-  };
-
-  const handleIdentifierTypeChange = (newIdentifierTypeCode) => {
-    const newIdType = allIdentifierTypes.find(
-      (idType) => idType.code === newIdentifierTypeCode,
-    );
-    setIdentifierType(newIdType);
-  };
 
   useEffect(() => {
     dispatch(loadIdentifierTypes());
@@ -39,11 +22,9 @@ const DocIdentifierEditor = ({
   return (
     <IdentifierEditor
       allIdentifierTypes={allIdentifierTypes}
+      contextIdentifierValueName={contextIdentifierValueName}
+      contextIdentifierTypeValueName={contextIdentifierTypeValueName}
       documentType={documentType}
-      identifier={identifier}
-      identifierType={identifierType}
-      handleIdentifierChange={handleIdentifierChange}
-      handleIdentifierTypeChange={handleIdentifierTypeChange}
     />
   );
 };
@@ -53,14 +34,8 @@ DocIdentifierEditor.propTypes = {
     id: PropTypes.number.isRequired,
     name: PropTypes.string.isRequired,
   }).isRequired,
-  identifier: PropTypes.string,
-  identifierType: PropTypes.shape({
-    code: PropTypes.string.isRequired,
-    text: PropTypes.string.isRequired,
-    regexp: PropTypes.string.isRequired,
-  }),
-  setIdentifier: PropTypes.func.isRequired,
-  setIdentifierType: PropTypes.func.isRequired,
+  contextIdentifierValueName: PropTypes.string.isRequired,
+  contextIdentifierTypeValueName: PropTypes.string.isRequired,
 };
 
 export default DocIdentifierEditor;

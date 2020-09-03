@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { useIntl } from 'react-intl';
 import PropTypes from 'prop-types';
 import Autocomplete from '@material-ui/lab/Autocomplete';
@@ -55,63 +55,60 @@ const MultipleSelect = ({
   }, [debouncedInput]);
 
   const hasError = computeHasError(value);
-  const memoizedValues = [searchResults, hasError, value];
-  return useMemo(
-    () => (
-      <>
-        <Autocomplete
-          multiple
-          value={value}
-          id={labelName}
-          options={searchResults}
-          onChange={handleOnChange}
-          onInputChange={handleInputChange}
-          inputValue={inputValue}
-          loading={isLoading}
-          getOptionLabel={getOptionLabel}
-          renderOption={renderOption}
-          getOptionSelected={getOptionSelected}
-          filterSelectedOptions
-          noOptionsText={
-            inputValue.length >= nbCharactersNeededToLaunchSearch ? (
-              noOptionsText
-            ) : (
-              <span>
-                {formatMessage(
-                  {
-                    id: 'Type at least {nbOfChars} character(s)',
-                    defaultMessage: 'Type at least {nbOfChars} character(s)',
-                  },
-                  {
-                    nbOfChars: (
-                      <span key="notEnoughCharsEntered">
-                        {nbCharactersNeededToLaunchSearch}
-                      </span>
-                    ),
-                  },
-                )}
-              </span>
-            )
-          }
-          required={required}
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              variant="filled"
-              label={<Translate>{labelName}</Translate>}
-              required={required}
-              error={hasError || searchErrors}
-            />
-          )}
-        />
-        {helperText && (
-          <FormHelperText variant="filled" error={hasError || searchErrors}>
-            <Translate>{helperText}</Translate>
-          </FormHelperText>
+  // const memoizedValues = [searchResults, hasError, inputValue, value];
+  return (
+    <>
+      <Autocomplete
+        multiple
+        value={value}
+        id={labelName}
+        options={searchResults}
+        onChange={handleOnChange}
+        onInputChange={handleInputChange}
+        inputValue={inputValue}
+        loading={isLoading}
+        getOptionLabel={getOptionLabel}
+        renderOption={renderOption}
+        getOptionSelected={getOptionSelected}
+        filterSelectedOptions
+        noOptionsText={
+          inputValue.length >= nbCharactersNeededToLaunchSearch ? (
+            noOptionsText
+          ) : (
+            <span>
+              {formatMessage(
+                {
+                  id: 'Type at least {nbOfChars} character(s)',
+                  defaultMessage: 'Type at least {nbOfChars} character(s)',
+                },
+                {
+                  nbOfChars: (
+                    <span key="notEnoughCharsEntered">
+                      {nbCharactersNeededToLaunchSearch}
+                    </span>
+                  ),
+                },
+              )}
+            </span>
+          )
+        }
+        required={required}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            variant="filled"
+            label={<Translate>{labelName}</Translate>}
+            required={required}
+            error={hasError || searchErrors}
+          />
         )}
-      </>
-    ),
-    [memoizedValues],
+      />
+      {helperText && (
+        <FormHelperText variant="filled" error={hasError || searchErrors}>
+          <Translate>{helperText}</Translate>
+        </FormHelperText>
+      )}
+    </>
   );
 };
 

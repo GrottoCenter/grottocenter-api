@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import {
@@ -34,40 +34,36 @@ const FormAutoComplete = ({
   resultEndAdornment,
   value,
 }) => {
-  const memoizedValues = [autoCompleteSearch, value, hasError];
-  return useMemo(
-    () => (
-      <>
-        <FormControl
-          variant="filled"
-          required={required}
-          error={hasError}
-          fullWidth
-        >
-          <InputLabel>
-            <Translate>{label}</Translate>
-          </InputLabel>
-          <StyledInput
-            disabled
-            value={value !== null ? getValueName(value) : ''}
-            endAdornment={resultEndAdornment}
-          />
+  return (
+    <>
+      <FormControl
+        variant="filled"
+        required={required}
+        error={hasError}
+        fullWidth
+      >
+        <InputLabel>
+          <Translate>{label}</Translate>
+        </InputLabel>
+        <StyledInput
+          disabled
+          value={value !== null ? getValueName(value) : ''}
+          endAdornment={resultEndAdornment}
+        />
 
-          {autoCompleteSearch && (
-            <StyledFormControl
-              variant="filled"
-              required={required}
-              error={hasError}
-            >
-              {autoCompleteSearch}
-            </StyledFormControl>
-          )}
+        {autoCompleteSearch && (
+          <StyledFormControl
+            variant="filled"
+            required={required}
+            error={hasError}
+          >
+            {autoCompleteSearch}
+          </StyledFormControl>
+        )}
 
-          {helperContent && <FormHelperText>{helperContent}</FormHelperText>}
-        </FormControl>
-      </>
-    ),
-    [memoizedValues],
+        {helperContent && <FormHelperText>{helperContent}</FormHelperText>}
+      </FormControl>
+    </>
   );
 };
 

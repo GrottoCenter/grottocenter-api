@@ -1,18 +1,21 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useIntl } from 'react-intl';
 import PropTypes from 'prop-types';
-import { isNil, length } from 'ramda';
+import { isNil } from 'ramda';
 import { InputAdornment } from '@material-ui/core';
 
 import {
   fetchQuicksearchResult,
   resetQuicksearch,
 } from '../actions/Quicksearch';
-import { useDebounce } from '../hooks';
 
 import { entityOptionForSelector } from '../helpers/Entity';
-import AutoCompleteSearch from '../components/common/AutoCompleteSearch';
-import FormAutoComplete from '../components/common/Form/FormAutoComplete';
+
+import { isCollection } from '../components/appli/Document/DocumentForm/DocumentTypesHelper';
+
+import SearchBar from '../components/appli/Document/DocumentForm/formElements/SearchBar';
+import FormAutoComplete from '../components/appli/Document/DocumentForm/formElements/FormAutoComplete';
 
 // ===================================
 
@@ -28,115 +31,102 @@ const resultEndAdornment = (
 
 // ===================================
 
-const getDocumentToString = (document) => {
-  return `#${document.id} - ${document.name} [${document.documentType.name}]`;
-};
-
-const SearchBar = ({ isValueForced, searchLabelText, setValue, value }) => {
-  const [inputValue, setInputValue] = React.useState('');
+const DocumentAutoComplete = ({
+  contextValueName,
+  helperContent,
+  helperContentIfValueIsForced,
+  labelText,
+  required = false,
+  searchLabelText,
+}) => {
   const dispatch = useDispatch();
   const { errors, isLoading, results: suggestions } = useSelector(
     (state) => state.quicksearch,
   );
-  const debouncedInput = useDebounce(inputValue);
 
-  const handleInputChange = (newValue) => {
-    if (value && getDocumentToString(value) === newValue) {
-      setInputValue('');
-    } else {
-      setInputValue(newValue);
+  const { formatMessage } = useIntl();
+
+  /**
+   * Recursive function to build the complete name of a "part" element
+   * from all its parents and children.
+   * @param part : element to build the name
+   * @param childPart : previously child part name computed
+   *
+   * Ex:
+   * If myArticle is from a Spelunca issue,
+   * getPartOfName(myArticle, '') will return:
+   * Spelunca [COLLECTION] > Spelunca n°142 > "the title of myArticle"
+   */
+  const getPartOfName = (part, childPart = '') => {
+    const conditionalChildPart = childPart === '' ? '' : `> ${childPart}`;
+
+    // If the item is a Collection without child, display [COLLECTION] indicator
+    const conditionalNamePart =
+      isCollection(part.documentType) && childPart === ''
+        ? `${part.name} [${formatMessage({ id: 'COLLECTION' })}]`
+        : part.name;
+
+    if (!part.partOf) {
+      return `${conditionalNamePart} ${
+        part.issue ? part.issue : ''
+      } ${conditionalChildPart}`;
     }
+    return getPartOfName(
+      part.partOf,
+      `${conditionalNamePart} ${part.issue} ${conditionalChildPart}`,
+    );
   };
 
-  const handleSelection = (newValue) => {
-    // Defensive programming because the selection is triggerred
-    // when the input is emptied.
-    if (newValue !== null) {
-      setValue(newValue);
-    }
-    setInputValue('');
+  const fetchSearchResults = (debouncedInput) => {
+    const criterias = {
+      query: debouncedInput.trim(),
+      complete: false,
+      resourceType: 'documents',
+    };
+    dispatch(fetchQuicksearchResult(criterias));
   };
 
-  React.useEffect(() => {
-    if (length(debouncedInput) > 2) {
-      const criterias = {
-        query: debouncedInput.trim(),
-        complete: false,
-        resourceType: 'documents',
-      };
-      dispatch(fetchQuicksearchResult(criterias));
-    } else {
-      dispatch(resetQuicksearch());
-    }
-  }, [debouncedInput]);
+  const resetSearchResults = () => {
+    dispatch(resetQuicksearch());
+  };
 
-  return (
-    <AutoCompleteSearch
-      onInputChange={handleInputChange}
-      inputValue={inputValue}
-      onSelection={handleSelection}
-      label={searchLabelText}
-      suggestions={suggestions}
-      renderOption={entityOptionForSelector}
-      getOptionLabel={getDocumentToString}
-      hasError={!isNil(errors)}
-      isLoading={isLoading}
-      disabled={isValueForced}
-    />
-  );
-};
-
-const DocumentAutoComplete = ({
-  helperContent,
-  helperContentIfValueIsForced,
-  isValueForced,
-  labelText,
-  required = false,
-  searchLabelText,
-  setValue,
-  value,
-}) => {
   return (
     <FormAutoComplete
       autoCompleteSearch={
         <SearchBar
-          isValueForced={isValueForced}
+          fetchSearchResults={fetchSearchResults}
+          getOptionLabel={getPartOfName}
+          getValueName={getPartOfName}
+          hasError={!isNil(errors)}
+          isLoading={isLoading}
+          label={searchLabelText}
+          renderOption={entityOptionForSelector}
+          resetSearchResults={resetSearchResults}
           searchLabelText={searchLabelText}
-          setValue={setValue}
-          value={value}
+          suggestions={suggestions}
+          contextValueName={contextValueName}
+          resourceSearchedType="massifs"
         />
       }
-      getValueName={getDocumentToString}
+      contextValueName={contextValueName}
+      getValueName={getPartOfName}
       hasError={false} // How to check for errors ?
-      helperContent={
-        isValueForced ? helperContentIfValueIsForced : helperContent
-      }
+      helperContent={helperContent}
+      helperContentIfValueIsForced={helperContentIfValueIsForced}
       label={labelText}
       required={required}
       resultEndAdornment={resultEndAdornment}
-      value={value}
     />
   );
 };
 
-SearchBar.propTypes = {
-  isValueForced: PropTypes.bool.isRequired,
-  searchLabelText: PropTypes.string.isRequired,
-  setValue: PropTypes.func.isRequired,
-  value: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    name: PropTypes.string.isRequired,
-  }),
-};
 DocumentAutoComplete.propTypes = {
-  isValueForced: PropTypes.bool.isRequired,
+  contextValueName: PropTypes.string.isRequired,
   helperContent: PropTypes.node,
   helperContentIfValueIsForced: PropTypes.node,
   labelText: PropTypes.string.isRequired,
   required: PropTypes.bool,
   searchLabelText: PropTypes.string.isRequired,
-  setValue: PropTypes.func.isRequired,
-  value: PropTypes.shape({}),
 };
 
 export default DocumentAutoComplete;

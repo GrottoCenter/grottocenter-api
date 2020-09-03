@@ -6,21 +6,13 @@ import LanguageSelect from '../components/appli/Document/DocumentForm/formElemen
 import { loadLanguages } from '../actions/Language';
 
 const DocumentLanguageSelect = ({
+  contextValueName,
   helperText,
   labelText,
-  language,
   required,
-  setLanguage,
 }) => {
   const dispatch = useDispatch();
   const { languages: allLanguages } = useSelector((state) => state.language);
-
-  const handleLanguageChange = (newLanguage) => {
-    if (newLanguage === null) {
-      setLanguage(null);
-    }
-    setLanguage(newLanguage);
-  };
 
   useEffect(() => {
     dispatch(loadLanguages(true));
@@ -29,8 +21,7 @@ const DocumentLanguageSelect = ({
   return (
     <LanguageSelect
       allLanguages={allLanguages}
-      language={language}
-      handleLanguageChange={handleLanguageChange}
+      contextValueName={contextValueName}
       helperText={helperText}
       labelText={labelText}
       required={required}
@@ -39,11 +30,10 @@ const DocumentLanguageSelect = ({
 };
 
 DocumentLanguageSelect.propTypes = {
+  contextValueName: PropTypes.string.isRequired,
   helperText: PropTypes.string,
   labelText: PropTypes.string,
-  language: PropTypes.string,
   required: PropTypes.bool.isRequired,
-  setLanguage: PropTypes.func.isRequired,
 };
 
 export default DocumentLanguageSelect;

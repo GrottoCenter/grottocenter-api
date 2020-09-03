@@ -4,10 +4,10 @@ import styled from 'styled-components';
 
 import { includes } from 'ramda';
 import PagesEditor from '../formElements/PagesEditor';
-import StringInput from '../../../../common/Form/StringInput';
 
 import DocIdentifierEditor from '../../../../../features/DocIdentifierEditor';
 
+import IssueEditor from '../formElements/IssueEditor';
 import { DocumentFormContext } from '../Provider';
 import { isArticle, isIssue } from '../DocumentTypesHelper';
 
@@ -25,8 +25,7 @@ const FlexItemWrapper = styled.div`
 
 const Step3 = ({ stepId }) => {
   const {
-    docAttributes: { documentType, identifier, identifierType, issue },
-    updateAttribute,
+    docAttributes: { documentType },
     validatedSteps,
   } = useContext(DocumentFormContext);
 
@@ -42,13 +41,10 @@ const Step3 = ({ stepId }) => {
           )}
           {isIssue(documentType) && (
             <FlexItemWrapper>
-              <StringInput
-                hasError={false}
+              <IssueEditor
                 helperText="Can be a volume (vol.2) or a magazine issue (n°38) for example. Use what is written on the cover of the document."
                 valueName="Issue"
-                onValueChange={(value) => updateAttribute('issue', value)}
                 required={false}
-                value={issue}
               />
             </FlexItemWrapper>
           )}
@@ -56,16 +52,12 @@ const Step3 = ({ stepId }) => {
 
         <DocIdentifierEditor
           documentType={documentType}
-          identifier={identifier}
-          identifierType={identifierType}
-          setIdentifier={(value) => updateAttribute('identifier', value)}
-          setIdentifierType={(value) =>
-            updateAttribute('identifierType', value)
-          }
+          contextIdentifierValueName="identifier"
+          contextIdentifierTypeValueName="identifierType"
         />
       </>
     ),
-    [memoizedValues],
+    memoizedValues,
   );
 };
 

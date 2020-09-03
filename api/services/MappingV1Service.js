@@ -371,6 +371,26 @@ module.exports = {
             delete data['type id'];
             delete data['type name'];
 
+            // Construct editor
+            data.editor =
+              ramda.pathOr(null, ['_source', 'editor id'], item) === null
+                ? null
+                : {
+                    id: ramda.pathOr(null, ['_source', 'editor id'], item),
+                    name: ramda.pathOr(null, ['_source', 'editor name'], item),
+                  };
+
+            // Construct library
+            data.library =
+              ramda.pathOr(null, ['_source', 'library id'], item) === null
+                ? null
+                : {
+                    id: ramda.pathOr(null, ['_source', 'library id'], item),
+                    name: ramda.pathOr(null, ['_source', 'library name'], item),
+                  };
+            delete data['library id'];
+            delete data['library name'];
+
             break;
 
           case 'caver':

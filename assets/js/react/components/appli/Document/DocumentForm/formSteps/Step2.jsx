@@ -1,7 +1,7 @@
 import React, { useContext, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
-import { includes, pathOr } from 'ramda';
+import { includes } from 'ramda';
 
 import Translate from '../../../../common/Translate';
 
@@ -35,25 +35,12 @@ const FlexItemWrapper = styled.div`
 
 const Step2 = ({ stepId }) => {
   const {
-    docAttributes: {
-      authors,
-      editor,
-      documentType,
-      library,
-      massif,
-      partOf,
-      regions,
-      subjects,
-    },
-    updateAttribute,
+    docAttributes: { documentType },
     validatedSteps,
   } = useContext(DocumentFormContext);
 
-  const memoizedValues = [
-    documentType,
-    includes(stepId, validatedSteps),
-    partOf,
-  ];
+  const memoizedValues = [documentType, includes(stepId, validatedSteps)];
+
   return useMemo(
     () => (
       <>
@@ -62,27 +49,25 @@ const Step2 = ({ stepId }) => {
             (isOther(documentType) || isArticle(documentType)) &&
             newAuthors.length === 0
           }
+          contextValueName="authors"
           helperText="Use this search bar to find existing authors. In a next version of the website, if the author is not in the Grottocenter database, you will be able to add it."
           labelName="Authors"
           required={isOther(documentType) || isArticle(documentType)}
-          setValue={(newValue) => updateAttribute('authors', newValue)}
-          value={authors}
         />
 
         <MultipleSubjectsSelect
           computeHasError={(newSubjects) =>
             isArticle(documentType) && newSubjects.length === 0
           }
+          contextValueName="subjects"
           helperText="Use this search bar to find subjects. Be precise about the subjects discussed in the document: there are plenty of subject choices in Grottocenter."
           labelName="Subjects"
           required={isArticle(documentType)}
-          setValue={(newValue) => updateAttribute('subjects', newValue)}
-          value={subjects}
         />
 
         {(isArticle(documentType) || isIssue(documentType)) && (
           <DocumentAutoComplete
-            isValueForced={false}
+            contextValueName="partOf"
             helperContent={
               <Translate>
                 Use the search bar to search for an existing document.
@@ -91,8 +76,6 @@ const Step2 = ({ stepId }) => {
             labelText="Document Parent"
             required={false}
             searchLabelText="Search for a document..."
-            setValue={(newValue) => updateAttribute('partOf', newValue)}
-            value={partOf}
           />
         )}
 
@@ -102,7 +85,7 @@ const Step2 = ({ stepId }) => {
             isArticle(documentType)) && (
             <FlexItemWrapper>
               <OrganizationAutoComplete
-                isValueForced={pathOr(null, ['editor'], partOf) !== null}
+                contextValueName="editor"
                 helperContent={
                   <Translate>
                     Use the search bar above to find an existing editor.
@@ -116,8 +99,6 @@ const Step2 = ({ stepId }) => {
                 labelText="Editor"
                 required={isCollection(documentType) || isIssue(documentType)}
                 searchLabelText="Search for an editor..."
-                setValue={(newValue) => updateAttribute('editor', newValue)}
-                value={editor}
               />
             </FlexItemWrapper>
           )}
@@ -125,7 +106,7 @@ const Step2 = ({ stepId }) => {
           {(isIssue(documentType) || isArticle(documentType)) && (
             <FlexItemWrapper>
               <OrganizationAutoComplete
-                isValueForced={pathOr(null, ['library'], partOf) !== null}
+                contextValueName="library"
                 helperContent={
                   <>
                     <Translate>
@@ -151,8 +132,6 @@ const Step2 = ({ stepId }) => {
                 labelText="Library"
                 required={false}
                 searchLabelText="Search for a library..."
-                setValue={(newValue) => updateAttribute('library', newValue)}
-                value={library}
               />
             </FlexItemWrapper>
           )}
@@ -163,18 +142,17 @@ const Step2 = ({ stepId }) => {
             <FlexItemWrapper>
               <MultipleBBSRegionsSelect
                 computeHasError={() => false}
+                contextValueName="regions"
                 helperText="If the document is related to one or many regions, you can link it to them."
                 labelName="Regions"
                 required={false}
-                setValue={(newValue) => updateAttribute('regions', newValue)}
-                value={regions}
               />
             </FlexItemWrapper>
           )}
           {(isArticle(documentType) || isOther(documentType)) && (
             <FlexItemWrapper>
               <MassifAutoComplete
-                isValueForced={pathOr(null, ['massif'], partOf) !== null}
+                contextValueName="massif"
                 helperContent={
                   <Translate>
                     If the document is related to a massif, you can link it to
@@ -184,15 +162,13 @@ const Step2 = ({ stepId }) => {
                 labelText="Massif"
                 required={false}
                 searchLabelText="Search for a massif..."
-                setValue={(newValue) => updateAttribute('massif', newValue)}
-                value={massif}
               />
             </FlexItemWrapper>
           )}
         </FlexWrapper>
       </>
     ),
-    [memoizedValues],
+    memoizedValues,
   );
 };
 

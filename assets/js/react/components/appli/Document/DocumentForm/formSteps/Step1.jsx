@@ -47,12 +47,7 @@ const PublicationDateWrapper = styled.div`
 
 const Step1 = ({ stepId }) => {
   const {
-    docAttributes: {
-      documentType,
-      documentMainLanguage,
-      titleAndDescriptionLanguage,
-    },
-    updateAttribute,
+    docAttributes: { documentType },
     validatedSteps,
   } = useContext(DocumentFormContext);
 
@@ -77,13 +72,10 @@ const Step1 = ({ stepId }) => {
           <Fade in={!isUnknown(documentType)}>
             <FlexItemWrapper>
               <DocumentLanguageSelect
-                helperText="Language in which the document is written"
+                helperText="Language in which the document is written."
                 labelText="Document main language"
-                language={documentMainLanguage}
+                contextValueName="documentMainLanguage"
                 required
-                setLanguage={(newValue) =>
-                  updateAttribute('documentMainLanguage', newValue)
-                }
               />
             </FlexItemWrapper>
           </Fade>
@@ -101,11 +93,8 @@ const Step1 = ({ stepId }) => {
                     <DocumentLanguageSelect
                       helperText="Language used for the title and the description you provide."
                       labelText="Title and description language"
-                      language={titleAndDescriptionLanguage}
+                      contextValueName="titleAndDescriptionLanguage"
                       required
-                      setLanguage={(newValue) =>
-                        updateAttribute('titleAndDescriptionLanguage', newValue)
-                      }
                     />
                   </FlexItemWrapper>
                 </TitleAndLanguageWrapper>
@@ -128,7 +117,7 @@ const Step1 = ({ stepId }) => {
         </Fade>
       </>
     ),
-    [memoizedValues],
+    memoizedValues,
   );
 };
 
