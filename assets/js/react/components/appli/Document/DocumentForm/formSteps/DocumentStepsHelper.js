@@ -8,6 +8,7 @@ const isStep1Valid = (stepData, documentType) => {
   const {
     title,
     titleAndDescriptionLanguage,
+    documentMainLanguage,
     description,
     publicationDate,
   } = stepData;
@@ -18,10 +19,14 @@ const isStep1Valid = (stepData, documentType) => {
     case DocumentTypes.UNKNOWN:
       return false;
     case DocumentTypes.ISSUE:
-      return isValid && publicationDate !== null;
-    case DocumentTypes.IMAGE:
+      return (
+        isValid && publicationDate !== null && documentMainLanguage !== null
+      );
     case DocumentTypes.ARTICLE:
+      return isValid && documentMainLanguage !== null;
     case DocumentTypes.COLLECTION:
+      return isValid && documentMainLanguage !== null;
+    case DocumentTypes.IMAGE:
     default:
       return isValid;
   }

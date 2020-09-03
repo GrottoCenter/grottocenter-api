@@ -16,6 +16,7 @@ import {
   allDocumentTypes,
   isCollection,
   isIssue,
+  isOther,
   isUnknown,
 } from '../DocumentTypesHelper';
 
@@ -75,7 +76,7 @@ const Step1 = ({ stepId }) => {
                 helperText="Language in which the document is written."
                 labelText="Document main language"
                 contextValueName="documentMainLanguage"
-                required
+                required={isOther(documentType)}
               />
             </FlexItemWrapper>
           </Fade>

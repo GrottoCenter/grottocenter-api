@@ -74,7 +74,7 @@ const Step2 = ({ stepId }) => {
               </Translate>
             }
             labelText="Document Parent"
-            required={false}
+            required={isIssue(documentType)}
             searchLabelText="Search for a document..."
           />
         )}

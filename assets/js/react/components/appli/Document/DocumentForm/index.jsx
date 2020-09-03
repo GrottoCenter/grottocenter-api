@@ -83,16 +83,7 @@ const BbsInfoText = styled(Typography)`
   margin-left: ${({ theme }) => theme.spacing(3)}px;
 `;
 
-const DocumentForm = ({
-  allAuthors,
-  allIdentifierTypes,
-  allLanguages,
-  allPartOf,
-  allRegions,
-  allSubjects,
-  isLoading,
-  onSubmit,
-}) => {
+const DocumentForm = ({ isLoading, onSubmit }) => {
   const {
     docAttributes,
     isFormValid,
@@ -159,16 +150,7 @@ const DocumentForm = ({
         <StyledDivider />
 
         <FormWrapper onSubmit={handleSubmit}>
-          <FormBody
-            allAuthors={allAuthors}
-            allIdentifierTypes={allIdentifierTypes}
-            allLanguages={allLanguages}
-            allPartOf={allPartOf}
-            allRegions={allRegions}
-            allSubjects={allSubjects}
-            formSteps={formSteps}
-            currentFormStepId={currentFormStep}
-          />
+          <FormBody formSteps={formSteps} currentFormStepId={currentFormStep} />
 
           {isMobileOnly && (
             <ChangeStepWrapper>
