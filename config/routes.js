@@ -365,7 +365,7 @@ module.exports.routes = {
     },
   },
 
-  'POST /api/v1/documents/:id/validate': {
+  'PUT /api/v1/documents/:id/validate': {
     controller: 'v1/Document',
     action: 'validate',
   },

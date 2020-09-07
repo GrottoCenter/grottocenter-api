@@ -86,7 +86,7 @@ paths:
                       $ref: '#/components/schemas/Document'
 
   '/documents/{id}/validate':
-    post:
+    put:
       tags: 
       - documents
       description: Validate or not a document, with or without a comment.
