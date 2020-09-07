@@ -92,6 +92,32 @@ module.exports = {
       });
   },
 
+  validate: (req, res, next) => {
+    const isValidated = req.param('isValidated').toLowerCase() === 'true';
+    const validationComment = req.param('validationComment', null);
+    const id = req.param('id');
+
+    if (isValidated === false && !validationComment) {
+      return res.badRequest(
+        'If the document is refused, a comment must be provided.',
+      );
+    }
+
+    TDocument.updateOne({ id: id })
+      .set({
+        isValidated: isValidated,
+        validationComment: validationComment,
+      })
+      .then((updatedDocument) => {
+        const params = {
+          controllerMethod: 'DocumentController.validate',
+          notFoundMessage: `Document of id ${id} not found`,
+          searchedItem: `Document of id ${id}`,
+        };
+        return ControllerService.treat(req, null, updatedDocument, params, res);
+      });
+  },
+
   findAll: (
     req,
     res,

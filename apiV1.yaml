@@ -85,6 +85,36 @@ paths:
                     items:
                       $ref: '#/components/schemas/Document'
 
+  '/documents/{id}/validate':
+    post:
+      tags: 
+      - documents
+      description: Validate or not a document, with or without a comment.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: isValidated
+          in: query
+          required: true
+          schema:
+            type: boolean
+        - name: validationComment
+          in: query
+          description: Comment about why the document has been validated or refused. Mandatory when isValidated param is true.
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation, the document has been updated.
+        '404':
+          description: Document to update not found.
+        '400':
+          description: Bad request.
+
   '/documents/identifierTypes':
     get:
       tags:
