@@ -1,38 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { Link } from 'react-router-dom';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import styled from 'styled-components';
-import PropTypes from 'prop-types';
-
+import { List } from '@material-ui/core';
+import Item, { DocumentItems } from './Items';
+import { Icon } from './styles';
 import isAuth from '../../../helpers/AuthHelper';
-import Translate from '../Translate';
-
-const Icon = styled.img`
-  width: 20px;
-  height: 20px;
-`;
-
-const StyledLink = styled(Link)`
-  color: inherit;
-  text-decoration: inherit;
-`;
-
-const Item = ({ ItemIcon, label, href }) => (
-  <StyledLink to={href}>
-    <ListItem button href={href}>
-      <ListItemIcon>
-        <ItemIcon />
-      </ListItemIcon>
-      <ListItemText>
-        <Translate>{label}</Translate>
-      </ListItemText>
-    </ListItem>
-  </StyledLink>
-);
 
 const MenuLinks = () => {
   const [isUserAuth, setIsUserAuth] = useState(false);
@@ -78,24 +49,9 @@ const MenuLinks = () => {
         label="Toolbox"
         href="#"
       />
-      <Item
-        ItemIcon={() => (
-          <Icon
-            src="/images/sidemenu/add-document.png"
-            alt="add document icon"
-          />
-        )}
-        label="Add document"
-        href="/ui/documents/add"
-      />
+      <DocumentItems isAdmin={isUserAuth} />
     </List>
   );
-};
-
-Item.propTypes = {
-  ItemIcon: PropTypes.func.isRequired,
-  label: PropTypes.string.isRequired,
-  href: PropTypes.string.isRequired,
 };
 
 export default MenuLinks;
