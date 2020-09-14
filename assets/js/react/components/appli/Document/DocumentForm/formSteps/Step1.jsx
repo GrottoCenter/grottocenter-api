@@ -76,7 +76,7 @@ const Step1 = ({ stepId }) => {
                 helperText="Language in which the document is written."
                 labelText="Document main language"
                 contextValueName="documentMainLanguage"
-                required={isOther(documentType)}
+                required={!isOther(documentType)}
               />
             </FlexItemWrapper>
           </Fade>

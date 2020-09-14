@@ -3,6 +3,9 @@ import PropTypes from 'prop-types';
 
 import { DocumentFormContext } from '../Provider';
 import MultipleSelectComponent from '../../../../common/Form/MultipleSelect';
+import { MultipleSelectTypes } from '../../../../common/Form/types';
+
+// ======================
 
 const MultipleSelect = (props) => {
   const { contextValueName } = props;
@@ -33,7 +36,7 @@ const MultipleSelect = (props) => {
   );
 };
 
-const SelectInheritedProps = MultipleSelectComponent.propTypes; // eslint-disable-line react/forbid-foreign-prop-types
+const SelectInheritedProps = MultipleSelectTypes;
 delete SelectInheritedProps.value;
 delete SelectInheritedProps.handleOnChange;
 

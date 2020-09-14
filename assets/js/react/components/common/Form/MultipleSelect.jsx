@@ -1,12 +1,13 @@
 import React from 'react';
 import { useIntl } from 'react-intl';
-import PropTypes from 'prop-types';
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import { FormHelperText, TextField } from '@material-ui/core';
 import { length } from 'ramda';
 
 import { useDebounce } from '../../../hooks';
 import Translate from '../Translate';
+
+import { MultipleSelectTypes } from './types';
 
 const MultipleSelect = ({
   computeHasError,
@@ -113,22 +114,7 @@ const MultipleSelect = ({
 };
 
 MultipleSelect.propTypes = {
-  computeHasError: PropTypes.func.isRequired,
-  getOptionLabel: PropTypes.func.isRequired,
-  getOptionSelected: PropTypes.func.isRequired,
-  handleOnChange: PropTypes.func.isRequired, // handleOnChange(event: object, value: T | T[], reason: string)
-  helperText: PropTypes.string.isRequired,
-  isLoading: PropTypes.bool,
-  labelName: PropTypes.string.isRequired,
-  loadSearchResults: PropTypes.func.isRequired, // should load new search results according to the search string entered by the user
-  nbCharactersNeededToLaunchSearch: PropTypes.number,
-  noOptionsText: PropTypes.node,
-  renderOption: PropTypes.func,
-  required: PropTypes.bool,
-  resetSearchResults: PropTypes.func.isRequired, // should reset all the search results
-  searchErrors: PropTypes.arrayOf(PropTypes.any),
-  searchResults: PropTypes.arrayOf(PropTypes.any).isRequired,
-  value: PropTypes.arrayOf(PropTypes.any).isRequired,
+  ...MultipleSelectTypes,
 };
 
 export default MultipleSelect;

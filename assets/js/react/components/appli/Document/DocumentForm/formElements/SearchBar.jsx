@@ -7,6 +7,7 @@ import { useDebounce } from '../../../../../hooks';
 import { DocumentFormContext } from '../Provider';
 
 import AutoCompleteSearchComponent from '../../../../common/AutoCompleteSearch';
+import { AutoCompleteSearchTypes } from '../../../../common/AutoCompleteSearch/types';
 
 // ===================================
 
@@ -68,7 +69,7 @@ const SearchBar = (props) => {
   );
 };
 
-const SearchBarInheritedProps = AutoCompleteSearchComponent.propTypes; // eslint-disable-line react/forbid-foreign-prop-types
+const SearchBarInheritedProps = AutoCompleteSearchTypes;
 delete SearchBarInheritedProps.disabled;
 delete SearchBarInheritedProps.inputValue;
 delete SearchBarInheritedProps.isValueForced;

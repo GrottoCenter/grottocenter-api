@@ -9,9 +9,9 @@ import {
 import { fade } from '@material-ui/core/styles';
 import SearchIcon from '@material-ui/icons/Search';
 import ErrorIcon from '@material-ui/icons/Error';
-import PropTypes from 'prop-types';
 import styled from 'styled-components';
 
+import { AutoCompleteSearchTypes } from './types';
 import Translate from '../Translate';
 import DisabledTooltip from '../DisabledTooltip';
 
@@ -162,18 +162,7 @@ const AutoCompleteSearch = ({
 };
 
 AutoCompleteSearch.propTypes = {
-  suggestions: PropTypes.arrayOf(PropTypes.object).isRequired,
-  onSelection: PropTypes.func.isRequired,
-  inputValue: PropTypes.string.isRequired,
-  onInputChange: PropTypes.func.isRequired,
-  renderOption: PropTypes.func.isRequired,
-  getOptionLabel: PropTypes.func.isRequired,
-  label: PropTypes.string,
-  hasError: PropTypes.bool,
-  // errorMessage: PropTypes.string,
-  isLoading: PropTypes.bool,
-  disabled: PropTypes.bool,
-  hasFixWidth: PropTypes.bool,
+  ...AutoCompleteSearchTypes,
 };
 
 export default AutoCompleteSearch;

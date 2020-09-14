@@ -5,6 +5,7 @@ import { pathOr } from 'ramda';
 import { DocumentFormContext } from '../Provider';
 
 import FormAutoCompleteComponent from '../../../../common/Form/FormAutoComplete';
+import { FormAutoCompleteTypes } from '../../../../common/Form/types';
 // ===================================
 
 const FormAutoComplete = (props) => {
@@ -31,7 +32,7 @@ const FormAutoComplete = (props) => {
   );
 };
 
-const FormAutoCompleteInheritedProps = FormAutoCompleteComponent.propTypes; // eslint-disable-line react/forbid-foreign-prop-types
+const FormAutoCompleteInheritedProps = FormAutoCompleteTypes;
 delete FormAutoCompleteInheritedProps.value;
 delete FormAutoCompleteInheritedProps.isValueForced;
 
