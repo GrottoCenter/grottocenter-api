@@ -42,7 +42,7 @@ const FormAutoComplete = ({
         error={hasError}
         fullWidth
       >
-        <InputLabel>
+        <InputLabel error={required && value === null}>
           <Translate>{label}</Translate>
         </InputLabel>
         <StyledInput
