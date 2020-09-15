@@ -78,6 +78,7 @@ export const overridings = {
     blackShadow: fade('#000000', 0.117647),
     backgroundButton: '#FFFFFF',
     errorColor: '#ff493b',
+    successColor: '#49dd3b',
   },
   shape: {
     borderRadius: '4px',

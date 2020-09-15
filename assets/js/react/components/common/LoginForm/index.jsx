@@ -7,7 +7,6 @@ import {
   FilledInput,
   InputAdornment,
   IconButton,
-  Typography,
   Fade,
 } from '@material-ui/core';
 
@@ -16,21 +15,12 @@ import VisibilityOff from '@material-ui/icons/VisibilityOff';
 import styled from 'styled-components';
 
 import Translate from '../Translate';
+import ErrorMessage from '../StatusMessage/ErrorMessage';
 
 const FormWrapper = styled.form`
   display: flex;
   flex-direction: column;
   margin-bottom: 0;
-`;
-
-const ErrorText = styled(Typography)`
-  ${({ theme }) => `
-  background-color: ${theme.palette.errorColor};
-  border-radius: ${theme.shape.borderRadius};
-  color: ${theme.palette.common.white};
-  margin: ${theme.spacing(0)}px 0;
-  padding: ${theme.spacing(2)}px;
-  `}
 `;
 
 const LoginForm = ({
@@ -101,9 +91,9 @@ const LoginForm = ({
           <FormControl>
             {authErrors.map((error) => (
               <Fade in={authErrors.length > 0} key={error}>
-                <ErrorText>
+                <ErrorMessage>
                   <Translate>{error}</Translate>
-                </ErrorText>
+                </ErrorMessage>
               </Fade>
             ))}
           </FormControl>

@@ -57,17 +57,20 @@ module.exports = {
     // Clean the data
     const cleanedData = {
       ...req.body,
+      author: req.token.id,
+      authors: req.body.authors ? req.body.authors.map((a) => a.id) : undefined,
+      dateInscription: new Date(),
       editor: ramda.pathOr(undefined, ['editor', 'id'], req.body),
-      library: ramda.pathOr(undefined, ['library', 'id'], req.body),
       identifierType: ramda.pathOr(
         undefined,
         ['identifierType', 'code'],
         req.body,
       ),
-      authors: req.body.authors ? req.body.authors.map((a) => a.id) : undefined,
+      library: ramda.pathOr(undefined, ['library', 'id'], req.body),
       license: 1,
-      dateInscription: new Date(),
-      author: req.token.id,
+      subjects: req.body.subjects
+        ? req.body.subjects.map((s) => s.code)
+        : undefined,
       type: ramda.pathOr(undefined, ['documentType', 'id'], req.body),
     };
 

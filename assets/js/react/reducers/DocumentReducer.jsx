@@ -13,6 +13,7 @@ import {
 const initialState = {
   errorMessages: [],
   isLoading: false,
+  latestHttpCode: undefined,
 };
 
 //
@@ -23,18 +24,25 @@ const initialState = {
 const document = (state = initialState, action) => {
   switch (action.type) {
     case POST_DOCUMENT:
-      return { ...state, isLoading: true, errorMessages: [] };
+      return {
+        ...state,
+        isLoading: true,
+        errorMessages: [],
+        latestHttpCode: undefined,
+      };
     case POST_DOCUMENT_SUCCESS:
       return {
         ...state,
         isLoading: false,
         errorMessages: [],
+        latestHttpCode: action.httpCode,
       };
     case POST_DOCUMENT_FAILURE:
       return {
         ...state,
         isLoading: false,
         errorMessages: action.errorMessages,
+        latestHttpCode: action.httpCode,
       };
     default:
       return state;
