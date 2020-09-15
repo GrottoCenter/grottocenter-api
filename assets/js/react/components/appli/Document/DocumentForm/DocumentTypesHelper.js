@@ -53,6 +53,10 @@ export const isIssue = (documentType) => {
 export const isArticle = (documentType) => {
   return documentType.id === DocumentTypes.ARTICLE;
 };
+// Image is also included in "Other" type.
+export const isImage = (documentType) => {
+  return documentType.id === DocumentTypes.IMAGE;
+};
 export const isOther = (documentType) => {
   return (
     !isUnknown(documentType) &&

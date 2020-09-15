@@ -15,6 +15,7 @@ import DocumentLanguageSelect from '../../../../../features/DocumentLanguageSele
 import {
   allDocumentTypes,
   isCollection,
+  isImage,
   isIssue,
   isOther,
   isUnknown,
@@ -70,7 +71,7 @@ const Step1 = ({ stepId }) => {
               required
             />
           </FlexItemWrapper>
-          <Fade in={!isUnknown(documentType)}>
+          <Fade in={!isUnknown(documentType) && !isImage(documentType)}>
             <FlexItemWrapper>
               <DocumentLanguageSelect
                 helperText="Language in which the document is written."
