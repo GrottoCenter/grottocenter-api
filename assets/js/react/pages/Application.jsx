@@ -5,7 +5,7 @@ import { Redirect, Route, Switch } from 'react-router-dom';
 import MapContainer from '../containers/MapContainer';
 
 import Api from '../components/appli/Api';
-import Dashboard from '../components/appli/Dashboard';
+import Dashboard from './Dashboard';
 import Swagger from './Swagger';
 import HomePage from './HomePage';
 import Admin from './Admin';
@@ -47,6 +47,7 @@ const Application = () => {
       <Switch>
         <Route exact path="/" component={HomePage} />
         <Route path="/admin" component={Admin} />
+        <Route exact path="/ui" component={Dashboard} />
         <Route exact path="/ui/" component={Dashboard} />
         <Route path="/ui/search" component={AdvancedSearchPage} />
         <Route path="/ui/api" component={Api} />

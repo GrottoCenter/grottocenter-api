@@ -41,6 +41,12 @@ module.exports.routes = {
     csrf: true,
   },
 
+  '/ui': {
+    controller: 'Index',
+    action: 'index',
+    csrf: true,
+  },
+
   '/ui/*': {
     controller: 'Index',
     action: 'index',

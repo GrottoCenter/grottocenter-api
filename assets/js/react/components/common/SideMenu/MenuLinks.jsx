@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
@@ -6,6 +7,8 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
+
+import isAuth from '../../../helpers/AuthHelper';
 import Translate from '../Translate';
 
 const Icon = styled.img`
@@ -31,41 +34,63 @@ const Item = ({ ItemIcon, label, href }) => (
   </StyledLink>
 );
 
-const MenuLinks = () => (
-  <List component="nav" aria-label="main mailbox folders">
-    <Item
-      ItemIcon={() => <Icon src="/images/sidemenu/home.png" alt="home icon" />}
-      label="Home page"
-      href="/"
-    />
-    <Item
-      ItemIcon={() => (
-        <Icon src="/images/sidemenu/search.png" alt="search icon" />
+const MenuLinks = () => {
+  const [isUserAuth, setIsUserAuth] = useState(false);
+  const authState = useSelector((state) => state.auth);
+  useEffect(() => {
+    setIsUserAuth(isAuth());
+  }, [isUserAuth, authState]);
+
+  return (
+    <List component="nav" aria-label="main mailbox folders">
+      <Item
+        ItemIcon={() => (
+          <Icon src="/images/sidemenu/home.png" alt="home icon" />
+        )}
+        label="Home page"
+        href="/"
+      />
+      {isUserAuth && (
+        <Item
+          ItemIcon={() => (
+            <Icon src="/images/sidemenu/dashboard.png" alt="dashboard icon" />
+          )}
+          label="Dashboard"
+          href="/ui"
+        />
       )}
-      label="Advanced search"
-      href="/ui/search"
-    />
-    <Item
-      ItemIcon={() => <Icon src="/images/sidemenu/loc.png" alt="map icon" />}
-      label="Map"
-      href="/ui/map"
-    />
-    <Item
-      ItemIcon={() => (
-        <Icon src="/images/sidemenu/wrench.png" alt="wrench icon" />
-      )}
-      label="Toolbox"
-      href="#"
-    />
-    <Item
-      ItemIcon={() => (
-        <Icon src="/images/sidemenu/add-document.png" alt="add document icon" />
-      )}
-      label="Add document"
-      href="/ui/documents/add"
-    />
-  </List>
-);
+      <Item
+        ItemIcon={() => (
+          <Icon src="/images/sidemenu/search.png" alt="search icon" />
+        )}
+        label="Advanced search"
+        href="/ui/search"
+      />
+      <Item
+        ItemIcon={() => <Icon src="/images/sidemenu/loc.png" alt="map icon" />}
+        label="Map"
+        href="/ui/map"
+      />
+      <Item
+        ItemIcon={() => (
+          <Icon src="/images/sidemenu/wrench.png" alt="wrench icon" />
+        )}
+        label="Toolbox"
+        href="#"
+      />
+      <Item
+        ItemIcon={() => (
+          <Icon
+            src="/images/sidemenu/add-document.png"
+            alt="add document icon"
+          />
+        )}
+        label="Add document"
+        href="/ui/documents/add"
+      />
+    </List>
+  );
+};
 
 Item.propTypes = {
   ItemIcon: PropTypes.func.isRequired,
