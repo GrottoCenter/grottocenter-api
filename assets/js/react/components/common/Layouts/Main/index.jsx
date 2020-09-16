@@ -5,6 +5,7 @@ import styled from 'styled-components';
 import ErrorBoundary from 'react-error-boundary';
 
 import SideMenu from '../../SideMenu';
+import Breadcrump from '../../../appli/Breadcrump';
 
 const MainWrapper = styled.main`
   flex-grow: 1;
@@ -37,6 +38,7 @@ const Layout = ({
       AutoCompleteSearch={SideBarQuickSearch}
     />
     <MainWrapper isSideMenuOpen={isSideMenuOpen}>
+      <Breadcrump />
       <ErrorBoundary>{children}</ErrorBoundary>
     </MainWrapper>
   </>

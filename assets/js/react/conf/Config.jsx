@@ -166,18 +166,18 @@ export const DYNAMIC_NUMBER_RELOAD_INTERVAL = 900000;
 export const DYNAMIC_NEWS_RELOAD_INTERVAL = 3600000;
 
 export const breadcrumpKeys = {
-  ui: 'Dashboard',
-  faq: 'FAQ',
-  map: 'Map',
-  api: 'API',
-  admin: 'Administration',
-  entries: 'Entries',
-  search: 'Search',
   add: 'Add',
-  swagger: 'Browse API',
-  massifs: 'Massifs',
-  groups: 'Groups',
+  admin: 'Administration',
+  api: 'API',
   bbs: 'BBS',
+  documents: 'Documents',
+  entries: 'Entries',
+  faq: 'FAQ',
+  groups: 'Groups',
+  map: 'Map',
+  massifs: 'Massifs',
+  search: 'Search',
+  swagger: 'Browse API',
 };
 
 export const defaultCoord = { lat: 0, lng: 0 };
