@@ -604,9 +604,9 @@ module.exports = {
 
   convertToSubjectModel: (source) => {
     const result = { ...SubjectModel };
-    result.code = source.id;
+    result.code = source.id.trim(); // there are some spaces at the end of the id in the DB
     result.subject = source.subject;
-    result.parent = source.parent;
+    result.parent = source.parent ? source.parent.trim() : null;
     return result;
   },
 

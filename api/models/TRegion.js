@@ -10,10 +10,10 @@ module.exports = {
 
   attributes: {
     id: {
-      type: 'string',
-      allowNull: false,
+      type: 'number',
+      autoIncrement: true,
       columnName: 'id',
-      required: true,
+      unique: true,
     },
 
     code: {

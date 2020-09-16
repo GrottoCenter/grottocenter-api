@@ -68,6 +68,8 @@ module.exports = {
       ),
       library: ramda.pathOr(undefined, ['library', 'id'], req.body),
       license: 1,
+      massif: ramda.pathOr(undefined, ['massif', 'id'], req.body),
+      regions: req.body.regions ? req.body.regions.map((r) => r.id) : undefined,
       subjects: req.body.subjects
         ? req.body.subjects.map((s) => s.code)
         : undefined,
