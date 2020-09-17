@@ -156,8 +156,9 @@ const self = (module.exports = {
                   'identifier^1.5',
 
                   // ==== Cavers
-                  'surname^5',
+                  'surname^4',
                   'nickname^3',
+                  'mail^5',
                 ],
               },
             },

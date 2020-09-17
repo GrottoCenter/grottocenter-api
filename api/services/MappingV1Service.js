@@ -396,6 +396,7 @@ module.exports = {
           case 'caver':
             data.surname = item['_source'].surname;
             data.nickname = item['_source'].nickname;
+            data.mail = item['_source'].mail;
 
           default:
         }
