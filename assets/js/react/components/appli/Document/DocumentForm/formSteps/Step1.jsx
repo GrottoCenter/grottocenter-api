@@ -74,7 +74,7 @@ const Step1 = ({ stepId }) => {
           <Fade in={!isUnknown(documentType) && !isImage(documentType)}>
             <FlexItemWrapper>
               <DocumentLanguageSelect
-                helperText="Language in which the document is written."
+                helperText="Language used in the document."
                 labelText="Document main language"
                 contextValueName="documentMainLanguage"
                 required={!isOther(documentType)}
@@ -93,7 +93,7 @@ const Step1 = ({ stepId }) => {
                   </BigFlexItemWrapper>
                   <FlexItemWrapper style={{ minWidth: '300px' }}>
                     <DocumentLanguageSelect
-                      helperText="Language used for the title and the description you provide."
+                      helperText="Language used for the title and the description you are writing."
                       labelText="Title and description language"
                       contextValueName="titleAndDescriptionLanguage"
                       required
