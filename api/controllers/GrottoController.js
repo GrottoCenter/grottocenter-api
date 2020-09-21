@@ -68,12 +68,9 @@ module.exports = {
   },
 
   getOfficialPartnersNumber: (req, res) => {
-    GrottoService.getOfficialPartnersNumber()
-      .then((count) => {
-        if (!count) {
-          return res.notFound();
-        }
-        return res.json(count);
+    TGrotto.count({ isOfficialPartner: true })
+      .then((total) => {
+        return res.json(total);
       })
       .catch((err) => {
         sails.log.error(err);

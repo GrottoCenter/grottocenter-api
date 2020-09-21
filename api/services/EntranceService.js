@@ -12,10 +12,6 @@ const INTEREST_ENTRANCES_QUERY =
 // query to get a random entrance of interest
 const RANDOM_ENTRANCE_QUERY = `${INTEREST_ENTRANCES_QUERY} ORDER BY RANDOM() LIMIT 1`;
 
-// query to count public entrances
-const PUBLIC_ENTRANCES_COUNT_QUERY =
-  'SELECT COUNT(id) AS count FROM t_entrance WHERE Is_public=true';
-
 module.exports = {
   /**
    * @returns {Promise} which resolves to the succesfully findRandom
@@ -60,13 +56,5 @@ module.exports = {
 
     await Promise.all(mapEntrances);
     return allEntrances;
-  },
-
-  /**
-   * @returns {Promise} which resolves to the succesfully query of the number of public entrances
-   */
-  getPublicEntrancesNumber: async () => {
-    const result = await CommonService.query(PUBLIC_ENTRANCES_COUNT_QUERY, []);
-    return result.rows[0];
   },
 };

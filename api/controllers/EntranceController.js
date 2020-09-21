@@ -76,14 +76,9 @@ module.exports = {
   },
 
   getPublicEntrancesNumber: (req, res, converter) => {
-    EntranceService.getPublicEntrancesNumber()
-      .then((count) => {
-        if (!count) {
-          return res.status(404).json({
-            error: 'Problem while getting number of public entrances',
-          });
-        }
-        return res.json(converter(count));
+    TEntrance.count({ isPublic: true })
+      .then((total) => {
+        return res.json(converter({ count: total }));
       })
       .catch((err) => {
         const errorMessage =
