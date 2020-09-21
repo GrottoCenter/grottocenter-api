@@ -14,7 +14,7 @@
     "@material-ui/pickers": "^3.2.10",
     "async": "3.2.0",
     "browserify-css": "^0.15.0",
-    "date-fns": "^2.12.0",
+    "date-fns": "^2.15.0",
     "dotenv": "^7.0.0",
     "ejs": "~3.1.2",
     "elasticsearch": "^16.7.1",
