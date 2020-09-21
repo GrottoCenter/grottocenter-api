@@ -58,13 +58,7 @@ const DocFormProviderDecorator = (
 storiesOf('DocumentForm', module)
   .add(
     'DescriptionEditor',
-    () => (
-      <DescriptionEditor
-        allLanguages={allLanguages}
-        languageHelperText="Some helper text for the DescriptionEditor component."
-        languageItemReferringTo="Description"
-      />
-    ),
+    () => <DescriptionEditor allLanguages={allLanguages} />,
     {
       decorators: [(storyFn) => DocFormProviderDecorator(storyFn)],
     },
@@ -74,7 +68,7 @@ storiesOf('DocumentForm', module)
     () => (
       <DocumentTypeSelect
         allDocumentTypes={allDocumentTypes}
-        helperText="For examples, a magazine is a Collection, an article from a magazine is a Collection Element."
+        helperText="For example, a magazine published regularly is an Issue, an article from a magazine is an Article."
       />
     ),
     {
@@ -93,7 +87,7 @@ storiesOf('DocumentForm', module)
     () => (
       <LanguageSelect
         allLanguages={allLanguages}
-        contextValueNameToUpdate="descriptionLanguage"
+        contextValueNameToUpdate="titleAndDescriptionLanguage"
         helperText="Some helper text for the LanguageSelect component"
         itemReferringTo=""
       />
@@ -114,7 +108,7 @@ storiesOf('DocumentForm', module)
       <TitleEditor
         allLanguages={allLanguages}
         languageHelperText="Language of the title. You will be able to add more translations of the title later."
-        languageItemReferringTo="Title"
+        languageItemReferringTo="Title and Description"
       />
     ),
     {

@@ -53,11 +53,13 @@ const DocumentTypeSelect = ({
               <Translate>Select a document type</Translate>
             </i>
           </MenuItem>
-          {allDocumentTypes.map((t) => (
-            <MenuItem key={t.id} value={t.id} name={t.name}>
-              <Translate>{t.name}</Translate>
-            </MenuItem>
-          ))}
+          {allDocumentTypes
+            .sort((dt1, dt2) => dt1.id > dt2.id)
+            .map((t) => (
+              <MenuItem key={t.id} value={t.id} name={t.name}>
+                #{t.id} <Translate>{t.name}</Translate>
+              </MenuItem>
+            ))}
         </Select>
         {helperText && (
           <FormHelperText>

@@ -13,7 +13,6 @@ module.exports = {
       type: 'string',
       allowNull: false,
       columnName: 'code',
-      maxLength: 5,
       required: true,
     },
 
@@ -33,6 +32,12 @@ module.exports = {
     children: {
       collection: 'TSubject',
       via: 'parent',
+    },
+
+    documents: {
+      collection: 'TDocument',
+      via: 'subject',
+      through: 'JDocumentSubject',
     },
   },
 };

@@ -7,14 +7,17 @@ import { includes } from 'ramda';
 import { DocumentFormContext } from '../Provider';
 import DescriptionEditor from '../formElements/DescriptionEditor';
 import DocumentTypeSelect from '../formElements/DocumentTypeSelect';
-import LanguageSelect from '../formElements/LanguageSelect';
 import PublicationDatePicker from '../formElements/PublicationDatePicker';
 import TitleEditor from '../formElements/TitleEditor';
+
+import DocumentLanguageSelect from '../../../../../features/DocumentLanguageSelect';
 
 import {
   allDocumentTypes,
   isCollection,
-  isCollectionElement,
+  isImage,
+  isIssue,
+  isOther,
   isUnknown,
 } from '../DocumentTypesHelper';
 
@@ -28,9 +31,15 @@ const FlexItemWrapper = styled.div`
   flex: 1;
 `;
 
-const TitleEditorWrapper = styled.div`
-  flex: 8;
+const BigFlexItemWrapper = styled.div`
+  flex: 2;
+`;
+
+const TitleAndLanguageWrapper = styled.div`
+  display: flex;
+  flex: 1;
   flex-basis: 600px;
+  flex-wrap: wrap;
 `;
 
 const PublicationDateWrapper = styled.div`
@@ -38,7 +47,7 @@ const PublicationDateWrapper = styled.div`
   flex-basis: 350px;
 `;
 
-const DocumentForm = ({ allLanguages, stepId }) => {
+const Step1 = ({ stepId }) => {
   const {
     docAttributes: { documentType },
     validatedSteps,
@@ -58,48 +67,52 @@ const DocumentForm = ({ allLanguages, stepId }) => {
           <FlexItemWrapper>
             <DocumentTypeSelect
               allDocumentTypes={allDocumentTypes}
-              helperText="For example, a magazine is a Collection, an article from a magazine is a Collection Element."
+              helperText="For example, a magazine issue is an Issue, an article from a magazine is an Article."
               required
             />
           </FlexItemWrapper>
-          <FlexItemWrapper>
-            <LanguageSelect
-              allLanguages={allLanguages}
-              itemReferringTo="Document Main"
-              helperText="Main language of the document"
-              contextValueNameToUpdate="documentMainLanguage"
-            />
-          </FlexItemWrapper>
+          <Fade in={!isUnknown(documentType) && !isImage(documentType)}>
+            <FlexItemWrapper>
+              <DocumentLanguageSelect
+                helperText="Language used in the document."
+                labelText="Document main language"
+                contextValueName="documentMainLanguage"
+                required={!isOther(documentType)}
+              />
+            </FlexItemWrapper>
+          </Fade>
         </FlexWrapper>
 
         <Fade in={!isUnknown(documentType)}>
           <div>
             {!isUnknown(isUnknown) && (
               <>
-                <FlexWrapper>
-                  <TitleEditorWrapper>
-                    <TitleEditor
-                      allLanguages={allLanguages}
-                      languageHelperText="Language of the title. You will be able to add more translations of the title later."
-                      languageItemReferringTo="Title"
+                <TitleAndLanguageWrapper>
+                  <BigFlexItemWrapper>
+                    <TitleEditor required />
+                  </BigFlexItemWrapper>
+                  <FlexItemWrapper style={{ minWidth: '300px' }}>
+                    <DocumentLanguageSelect
+                      helperText="Language used for the title and the description you are writing."
+                      labelText="Title and description language"
+                      contextValueName="titleAndDescriptionLanguage"
                       required
                     />
-                  </TitleEditorWrapper>
-                  {!isCollection(documentType) && (
-                    <PublicationDateWrapper>
-                      <PublicationDatePicker
-                        required={isCollectionElement(documentType)}
-                      />
-                    </PublicationDateWrapper>
-                  )}
-                </FlexWrapper>
+                  </FlexItemWrapper>
+                </TitleAndLanguageWrapper>
 
-                <DescriptionEditor
-                  allLanguages={allLanguages}
-                  languageHelperText="Language of the description you provided."
-                  languageItemReferringTo="Description"
-                  required
-                />
+                <FlexWrapper>
+                  <FlexItemWrapper>
+                    <DescriptionEditor required />
+                    {!isCollection(documentType) && (
+                      <PublicationDateWrapper>
+                        <PublicationDatePicker
+                          required={isIssue(documentType)}
+                        />
+                      </PublicationDateWrapper>
+                    )}
+                  </FlexItemWrapper>
+                </FlexWrapper>
               </>
             )}
           </div>
@@ -110,14 +123,8 @@ const DocumentForm = ({ allLanguages, stepId }) => {
   );
 };
 
-DocumentForm.propTypes = {
-  allLanguages: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      name: PropTypes.string.isRequired,
-    }),
-  ).isRequired,
+Step1.propTypes = {
   stepId: PropTypes.number.isRequired,
 };
 
-export default DocumentForm;
+export default Step1;

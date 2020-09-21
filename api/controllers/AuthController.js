@@ -24,6 +24,7 @@ module.exports = {
         req.session.authenticated = true;
         const token = TokenAuthService.issue({
           id: user.id,
+          groups: user.groups,
         });
         return res.json({ token });
       });

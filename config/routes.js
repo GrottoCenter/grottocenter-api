@@ -311,10 +311,36 @@ module.exports.routes = {
     action: 'count',
   },
 
+  'POST /api/v1/documents': {
+    controller: 'v1/Document',
+    action: 'create',
+  },
+
+  'GET /api/v1/documents/types/:id': {
+    controller: 'v1/DocumentType',
+    action: 'find',
+  },
+
+  'GET /api/v1/documents/types': {
+    controller: 'v1/DocumentType',
+    action: 'findAll',
+  },
+
   'GET /api/v1/documents/subjects/:code': {
     controller: 'v1/Subject',
     action: 'find',
     skipAssets: false, // Disable this parameter to allow a dot in the url (for the code)
+    api: {
+      entity: 'subject',
+    },
+    cors: {
+      allowOrigins: '*',
+    },
+  },
+
+  'POST /api/v1/documents/subjects/search/logical/or': {
+    controller: 'v1/Subject',
+    action: 'search',
     api: {
       entity: 'subject',
     },
@@ -328,6 +354,30 @@ module.exports.routes = {
     action: 'findAll',
     api: {
       entity: 'subject',
+    },
+    cors: {
+      allowOrigins: '*',
+    },
+  },
+
+  /* REST API for Document Identifier Types controller */
+  'GET /api/v1/documents/identifierTypes': {
+    controller: 'v1/IdentifierType',
+    action: 'findAll',
+    api: {
+      entity: 'identifierType',
+    },
+    cors: {
+      allowOrigins: '*',
+    },
+  },
+
+  /* REST API for Region controller */
+  'POST /api/v1/regions/search/logical/or': {
+    controller: 'v1/Region',
+    action: 'search',
+    api: {
+      entity: 'region',
     },
     cors: {
       allowOrigins: '*',
@@ -364,7 +414,7 @@ module.exports.routes = {
   },
 
   /* Search */
-  'GET /api/v1/search': {
+  'POST /api/v1/search': {
     controller: 'v1/Search',
     action: 'search',
     cors: {
@@ -372,9 +422,32 @@ module.exports.routes = {
     },
   },
 
-  'GET /api/v1/advanced-search': {
+  'POST /api/v1/advanced-search': {
     controller: 'v1/Search',
     action: 'advancedSearch',
+    cors: {
+      allowOrigins: '*',
+    },
+  },
+
+  /* Languages */
+  'GET /api/v1/languages/:id': {
+    controller: 'v1/Language',
+    action: 'find',
+    api: {
+      entity: 'language',
+    },
+    cors: {
+      allowOrigins: '*',
+    },
+  },
+
+  'GET /api/v1/languages': {
+    controller: 'v1/Language',
+    action: 'findAll',
+    api: {
+      entity: 'language',
+    },
     cors: {
       allowOrigins: '*',
     },

@@ -54,11 +54,11 @@ passport.use(
       usernameField: 'email', // which property to search on the JSON login request?
     },
     (email, password, done) => {
-      TCaver.findOne(
-        {
-          mail: email,
-        },
-        (err, user) => {
+      TCaver.findOne({
+        mail: email,
+      })
+        .populate('groups')
+        .exec((err, user) => {
           if (err) {
             return done(err);
           }
@@ -69,8 +69,7 @@ passport.use(
             return done(null, false);
           }
           return done(null, user);
-        },
-      );
+        });
     },
   ),
 );

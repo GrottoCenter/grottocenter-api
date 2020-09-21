@@ -1,5 +1,4 @@
-import React, { useMemo } from 'react';
-import PropTypes from 'prop-types';
+import React from 'react';
 import styled from 'styled-components';
 import {
   FilledInput,
@@ -9,6 +8,7 @@ import {
 } from '@material-ui/core';
 
 import Translate from '../Translate';
+import { FormAutoCompleteTypes } from './types';
 
 // ===================================
 const StyledInput = styled(FilledInput)`
@@ -34,52 +34,41 @@ const FormAutoComplete = ({
   resultEndAdornment,
   value,
 }) => {
-  const memoizedValues = [autoCompleteSearch, value, hasError];
-  return useMemo(
-    () => (
-      <>
-        <FormControl
-          variant="filled"
-          required={required}
-          error={hasError}
-          fullWidth
-        >
-          <InputLabel>
-            <Translate>{label}</Translate>
-          </InputLabel>
-          <StyledInput
-            disabled
-            value={value !== null ? getValueName(value) : ''}
-            endAdornment={resultEndAdornment}
-          />
+  return (
+    <>
+      <FormControl
+        variant="filled"
+        required={required}
+        error={hasError}
+        fullWidth
+      >
+        <InputLabel error={required && value === null}>
+          <Translate>{label}</Translate>
+        </InputLabel>
+        <StyledInput
+          disabled
+          value={value !== null ? getValueName(value) : ''}
+          endAdornment={resultEndAdornment}
+        />
 
-          {autoCompleteSearch && (
-            <StyledFormControl
-              variant="filled"
-              required={required}
-              error={hasError}
-            >
-              {autoCompleteSearch}
-            </StyledFormControl>
-          )}
+        {autoCompleteSearch && (
+          <StyledFormControl
+            variant="filled"
+            required={required}
+            error={hasError}
+          >
+            {autoCompleteSearch}
+          </StyledFormControl>
+        )}
 
-          {helperContent && <FormHelperText>{helperContent}</FormHelperText>}
-        </FormControl>
-      </>
-    ),
-    [memoizedValues],
+        {helperContent && <FormHelperText>{helperContent}</FormHelperText>}
+      </FormControl>
+    </>
   );
 };
 
 FormAutoComplete.propTypes = {
-  autoCompleteSearch: PropTypes.node,
-  getValueName: PropTypes.func.isRequired,
-  hasError: PropTypes.bool.isRequired,
-  helperContent: PropTypes.node,
-  label: PropTypes.string.isRequired,
-  required: PropTypes.bool.isRequired,
-  resultEndAdornment: PropTypes.node,
-  value: PropTypes.shape({}),
+  ...FormAutoCompleteTypes,
 };
 
 export default FormAutoComplete;

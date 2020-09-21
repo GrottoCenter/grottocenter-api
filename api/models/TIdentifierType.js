@@ -8,13 +8,11 @@
 module.exports = {
   tableName: 't_identifier_type',
 
-  primaryKey: 'code',
-
   attributes: {
-    code: {
+    id: {
       type: 'string',
+      allowNull: false,
       columnName: 'code',
-      maxLength: 5,
       required: true,
     },
 

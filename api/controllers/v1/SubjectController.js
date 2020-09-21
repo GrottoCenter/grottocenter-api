@@ -19,4 +19,12 @@ module.exports = {
       next,
       MappingV1Service.convertToSubjectList,
     ),
+
+  search: (req, res, next) =>
+    subjectController.search(
+      req,
+      res,
+      next,
+      MappingV1Service.convertToSubjectList,
+    ),
 };

@@ -3,7 +3,13 @@
 
 const client = require('../../config/elasticsearch').elasticsearchCli;
 
-const resourcesToUpdate = ['grottos', 'massifs', 'entrances', 'documents'];
+const resourcesToUpdate = [
+  'grottos',
+  'massifs',
+  'entrances',
+  'documents',
+  'cavers',
+];
 const advancedSearchMetaParams = [
   'resourceType',
   'complete',
@@ -88,14 +94,30 @@ const self = (module.exports = {
   /**
    * Retrieve data from elasticsearch on all index according to a string
    * Params should contain an attribute query
-   * @param {*} params : list of params of the request
+   * @param {*} params  list of params of the request including :
+   *    @param {string}         query keyword(s) to use for the search
+   *    @param {integer}        from (optional, default = 0) number of first results to skip
+   *    @param {integer}        size (optional, default = 10) number of first results to return
+   *    @param {string}         resourceType (optional) resource type to search on.
+   *            Must be one of ['grottos', 'entrances', 'massifs', 'documents', 'cavers']
+   *    @param {Array(string)}  resourceTypes (optional) resource types to search on.
+   *            Must be an array containing some of the following string ['grottos', 'entrances', 'massifs', 'documents', 'cavers']
    */
   searchQuery: (params) =>
     new Promise((resolve, reject) => {
+      let indexToSearchOn = '_all';
+      if (params.resourceTypes instanceof Array) {
+        indexToSearchOn = params.resourceTypes.map(
+          (resType) => `${resType}-index`,
+        );
+      } else if (params.resourceType) {
+        indexToSearchOn = `${params.resourceType}-index`;
+      }
+
       client
         .search({
           /* eslint-disable camelcase */
-          index: params.resourceType ? `${params.resourceType}-index` : '_all',
+          index: indexToSearchOn,
           body: {
             from: params.from ? params.from : 0,
             size: params.size ? params.size : 10,
@@ -132,6 +154,11 @@ const self = (module.exports = {
                   'ref_bbs',
                   'subjects',
                   'identifier^1.5',
+
+                  // ==== Cavers
+                  'surname^4',
+                  'nickname^3',
+                  'mail^5',
                 ],
               },
             },

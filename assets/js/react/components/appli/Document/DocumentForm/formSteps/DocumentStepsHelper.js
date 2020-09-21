@@ -7,25 +7,26 @@ const isStep1Valid = (stepData, documentType) => {
   }
   const {
     title,
-    titleLanguage,
+    titleAndDescriptionLanguage,
+    documentMainLanguage,
     description,
-    descriptionLanguage,
     publicationDate,
   } = stepData;
   const isValid =
-    title !== '' &&
-    titleLanguage !== null &&
-    description !== '' &&
-    descriptionLanguage !== null;
+    title !== '' && titleAndDescriptionLanguage !== null && description !== '';
 
   switch (documentType.id) {
     case DocumentTypes.UNKNOWN:
       return false;
-    case DocumentTypes.COLLECTION_ELEMENT:
-      return isValid && publicationDate !== null;
-    case DocumentTypes.IMAGE:
-    case DocumentTypes.TEXT:
+    case DocumentTypes.ISSUE:
+      return (
+        isValid && publicationDate !== null && documentMainLanguage !== null
+      );
+    case DocumentTypes.ARTICLE:
+      return isValid && documentMainLanguage !== null;
     case DocumentTypes.COLLECTION:
+      return isValid && documentMainLanguage !== null;
+    case DocumentTypes.IMAGE:
     default:
       return isValid;
   }
@@ -42,14 +43,13 @@ const isStep2Valid = (stepData, documentType) => {
       return false;
     case DocumentTypes.COLLECTION:
       return editor !== null;
-    case DocumentTypes.COLLECTION_ELEMENT:
+    case DocumentTypes.ISSUE:
       return editor !== null && partOf !== null;
-    case DocumentTypes.IMAGE:
-      return authors.length > 0;
-    case DocumentTypes.TEXT:
+    case DocumentTypes.ARTICLE:
       return authors.length > 0 && subjects.length > 0;
+    case DocumentTypes.IMAGE:
     default:
-      return true;
+      return authors.length > 0;
   }
 };
 
@@ -58,8 +58,15 @@ const isStep3Valid = (stepData) => {
     return false;
   }
   const { identifier, identifierType } = stepData;
-
-  return identifier === '' || (identifier !== '' && identifierType !== null);
+  let regexpValidation = false;
+  if (identifierType !== null) {
+    const regexp = new RegExp(identifierType.regexp);
+    regexpValidation = regexp.test(identifier);
+  }
+  return (
+    identifier === '' ||
+    (identifier !== '' && identifierType !== null && regexpValidation)
+  );
 };
 
 // currentStep must be the index +1

@@ -1,4 +1,4 @@
-import React, { useContext, useMemo } from 'react';
+import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 
@@ -9,12 +9,15 @@ import {
   InputLabel,
   MenuItem,
   Select,
+  Typography,
 } from '@material-ui/core';
+
+import { pathOr } from 'ramda';
 
 import Translate from '../../../../common/Translate';
 
+import { isOther } from '../DocumentTypesHelper';
 import { DocumentFormContext } from '../Provider';
-import { isImage } from '../DocumentTypesHelper';
 import StringInput from '../../../../common/Form/StringInput';
 
 // ===================================
@@ -35,32 +38,47 @@ const IdentifierTypeContainer = styled.div`
 `;
 // ===================================
 
-const IdentifierEditor = ({ allIdentifierTypes }) => {
+const IdentifierEditor = ({
+  allIdentifierTypes,
+  contextIdentifierValueName,
+  contextIdentifierTypeValueName,
+  documentType,
+}) => {
   const {
-    docAttributes: { identifier, identifierType, documentType },
+    docAttributes: {
+      [contextIdentifierValueName]: identifier,
+      [contextIdentifierTypeValueName]: identifierType,
+    },
     updateAttribute,
   } = useContext(DocumentFormContext);
+  const regexp = pathOr(null, ['regexp'], identifierType);
+  const validationRegexp =
+    regexp === null ? null : new RegExp(regexp).test(identifier);
 
   const handleIdentifierChange = (newIdentifier) => {
     if (newIdentifier === '') {
-      updateAttribute('identifierType', null);
+      updateAttribute(contextIdentifierValueName, null);
+      updateAttribute(contextIdentifierTypeValueName, null);
     }
-    updateAttribute('identifier', newIdentifier);
+    updateAttribute(contextIdentifierValueName, newIdentifier);
   };
 
-  const handleIdentifierTypeChange = (event) => {
-    const idType = allIdentifierTypes.find(
-      (idT) => idT.id === event.target.value,
+  const handleIdentifierTypeChange = (newIdentifierTypeCode) => {
+    const newIdType = allIdentifierTypes.find(
+      (idType) => idType.code === newIdentifierTypeCode,
     );
-    updateAttribute('identifierType', {
-      id: idType.id,
-      text: idType.text,
-    });
+    updateAttribute(contextIdentifierTypeValueName, newIdType);
   };
 
-  const memoizedValues = [documentType, identifier, identifierType];
-  return useMemo(
-    () => (
+  return (
+    <>
+      {validationRegexp === false && (
+        <Typography align="center" color="error">
+          <Translate>
+            The identifier must match the identifier type format.
+          </Translate>
+        </Typography>
+      )}
       <InlineWrapper>
         <IdentifierContainer>
           <StringInput
@@ -69,7 +87,7 @@ const IdentifierEditor = ({ allIdentifierTypes }) => {
             value={identifier}
             valueName="Identifier"
             required={false}
-            hasError={false}
+            hasError={!validationRegexp}
           />
         </IdentifierContainer>
 
@@ -78,18 +96,20 @@ const IdentifierEditor = ({ allIdentifierTypes }) => {
             <IdentifierTypeContainer>
               <FormControl
                 variant="filled"
-                required={!isImage(documentType) && identifier !== ''}
+                required={!isOther(documentType) && identifier !== ''}
                 fullWidth
-                error={!isImage(documentType) && !identifierType} // TODO
+                error={!isOther(documentType) && !identifierType}
               >
                 <InputLabel htmlFor="identifier-type">
                   <Translate>Identifier Type</Translate>
                 </InputLabel>
                 <Select
-                  value={identifierType ? identifierType.id : -1}
-                  onChange={handleIdentifierTypeChange}
+                  value={identifierType ? identifierType.code : -1}
+                  onChange={(event) =>
+                    handleIdentifierTypeChange(event.target.value)
+                  }
                   inputProps={{
-                    id: `identifier-type`,
+                    code: `identifier-type`,
                     name: `identifier-type`,
                   }}
                 >
@@ -98,9 +118,9 @@ const IdentifierEditor = ({ allIdentifierTypes }) => {
                       <Translate>Select an identifier type</Translate>
                     </i>
                   </MenuItem>
-                  {allIdentifierTypes.map((l) => (
-                    <MenuItem key={l.id} value={l.id}>
-                      {l.text}
+                  {allIdentifierTypes.map((idType) => (
+                    <MenuItem key={idType.code} value={idType.code}>
+                      {idType.code.toUpperCase()}
                     </MenuItem>
                   ))}
                 </Select>
@@ -115,18 +135,23 @@ const IdentifierEditor = ({ allIdentifierTypes }) => {
           </Fade>
         )}
       </InlineWrapper>
-    ),
-    [memoizedValues],
+    </>
   );
 };
 
 IdentifierEditor.propTypes = {
   allIdentifierTypes: PropTypes.arrayOf(
     PropTypes.shape({
-      id: PropTypes.string.isRequired,
+      code: PropTypes.string.isRequired,
       text: PropTypes.string.isRequired,
     }),
   ),
+  contextIdentifierValueName: PropTypes.string.isRequired,
+  contextIdentifierTypeValueName: PropTypes.string.isRequired,
+  documentType: PropTypes.shape({
+    id: PropTypes.number.isRequired,
+    name: PropTypes.string.isRequired,
+  }).isRequired,
 };
 
 export default IdentifierEditor;

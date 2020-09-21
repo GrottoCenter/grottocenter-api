@@ -12,9 +12,9 @@ module.exports = {
 
   attributes: {
     id: {
-      type: 'number',
-      autoIncrement: true,
+      type: 'string',
       columnName: 'id',
+      required: true,
       unique: true,
     },
 
@@ -61,6 +61,13 @@ module.exports = {
       type: 'string',
       columnName: 'comment',
       maxLength: 150,
+    },
+
+    isPrefered: {
+      type: 'boolean',
+      columnName: 'is_prefered',
+      allowNull: false,
+      defaultsTo: false,
     },
   },
 };

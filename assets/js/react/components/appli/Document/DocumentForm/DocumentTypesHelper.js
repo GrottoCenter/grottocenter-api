@@ -1,27 +1,43 @@
 export const DocumentTypes = {
   UNKNOWN: 0,
   COLLECTION: 1,
-  COLLECTION_ELEMENT: 2,
-  IMAGE: 3,
-  TEXT: 4,
+  IMAGE: 4,
+  TEXT: 12,
+  BOOK: 16,
+  ISSUE: 17,
+  ARTICLE: 18,
 };
 
 export const allDocumentTypes = [
   {
     id: DocumentTypes.COLLECTION,
     name: 'Collection',
-  },
-  {
-    id: DocumentTypes.COLLECTION_ELEMENT,
-    name: 'Collection Element',
+    parentId: null,
   },
   {
     id: DocumentTypes.IMAGE,
     name: 'Image',
+    parentId: null,
   },
   {
     id: DocumentTypes.TEXT,
-    name: 'Text / Article',
+    name: 'Text',
+    parentId: null,
+  },
+  {
+    id: DocumentTypes.BOOK,
+    name: 'Article',
+    parentId: DocumentTypes.TEXT,
+  },
+  {
+    id: DocumentTypes.ISSUE,
+    name: 'Issue',
+    parentId: DocumentTypes.TEXT,
+  },
+  {
+    id: DocumentTypes.ARTICLE,
+    name: 'Book',
+    parentId: DocumentTypes.TEXT,
   },
 ];
 
@@ -31,12 +47,21 @@ export const isUnknown = (documentType) => {
 export const isCollection = (documentType) => {
   return documentType.id === DocumentTypes.COLLECTION;
 };
-export const isCollectionElement = (documentType) => {
-  return documentType.id === DocumentTypes.COLLECTION_ELEMENT;
+export const isIssue = (documentType) => {
+  return documentType.id === DocumentTypes.ISSUE;
 };
+export const isArticle = (documentType) => {
+  return documentType.id === DocumentTypes.ARTICLE;
+};
+// Image is also included in "Other" type.
 export const isImage = (documentType) => {
   return documentType.id === DocumentTypes.IMAGE;
 };
-export const isText = (documentType) => {
-  return documentType.id === DocumentTypes.TEXT;
+export const isOther = (documentType) => {
+  return (
+    !isUnknown(documentType) &&
+    !isCollection(documentType) &&
+    !isIssue(documentType) &&
+    !isArticle(documentType)
+  );
 };

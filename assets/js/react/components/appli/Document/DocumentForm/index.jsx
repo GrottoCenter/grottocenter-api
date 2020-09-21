@@ -6,6 +6,7 @@ import {
   Divider,
   FormControl,
   LinearProgress as MuiLinearProgress,
+  Typography,
 } from '@material-ui/core';
 import { includes } from 'ramda';
 import NavigateNextIcon from '@material-ui/icons/NavigateNext';
@@ -14,7 +15,9 @@ import NavigateBeforeIcon from '@material-ui/icons/NavigateBefore';
 import DocumentFormProvider, { DocumentFormContext } from './Provider';
 import { DocumentFormTypes } from './types';
 
+import { wikiBBSLinks } from '../../../../conf/Config';
 import Translate from '../../../common/Translate';
+import InternationalizedLink from '../../../common/InternationalizedLink';
 import Stepper from '../../../common/Form/Stepper';
 
 import FormBody from './FormBody';
@@ -63,18 +66,24 @@ const LinearProgress = styled(MuiLinearProgress)`
   visibility: ${({ $isLoading }) => ($isLoading ? 'visible' : 'hidden')};
 `;
 
-const DocumentForm = ({
-  allAuthors,
-  allIdentifierTypes,
-  allLanguages,
-  allLibraries,
-  allMassifs,
-  allPartOf,
-  allRegions,
-  allSubjects,
-  isLoading,
-  onSubmit,
-}) => {
+const BbsHeader = styled.div`
+  display: flex;
+  align-items: center;
+`;
+
+const BbsIcon = styled.img`
+  height: 60px;
+  width: 60px;
+`;
+
+const BbsInfoText = styled(Typography)`
+  flex: 1;
+  font-style: italic;
+  margin-bottom: 0;
+  margin-left: ${({ theme }) => theme.spacing(3)}px;
+`;
+
+const DocumentForm = ({ isLoading, onSubmit }) => {
   const {
     docAttributes,
     isFormValid,
@@ -107,7 +116,27 @@ const DocumentForm = ({
 
   return (
     <>
+      <BbsHeader>
+        <BbsIcon src="/images/bbs_logo.png" alt="BBS logo" />
+        <BbsInfoText variant="body1" paragraph>
+          <Translate>
+            The documents entered via this form are compatible with the BBS. The
+            BBS is now directly integrated in Grottocenter.
+          </Translate>
+          <br />
+          <InternationalizedLink links={wikiBBSLinks}>
+            <Translate>
+              You can find more info about the BBS on the dedicated
+              Grottocenter-wiki page.
+            </Translate>
+          </InternationalizedLink>
+        </BbsInfoText>
+      </BbsHeader>
+
+      <hr />
+
       <LinearProgress $isLoading={isLoading} />
+
       <div style={isLoading ? { opacity: '0.6' } : {}}>
         <Stepper
           currentFormStepId={currentFormStep}
@@ -121,18 +150,7 @@ const DocumentForm = ({
         <StyledDivider />
 
         <FormWrapper onSubmit={handleSubmit}>
-          <FormBody
-            allAuthors={allAuthors}
-            allIdentifierTypes={allIdentifierTypes}
-            allLanguages={allLanguages}
-            allLibraries={allLibraries}
-            allMassifs={allMassifs}
-            allPartOf={allPartOf}
-            allRegions={allRegions}
-            allSubjects={allSubjects}
-            formSteps={formSteps}
-            currentFormStepId={currentFormStep}
-          />
+          <FormBody formSteps={formSteps} currentFormStepId={currentFormStep} />
 
           {isMobileOnly && (
             <ChangeStepWrapper>
@@ -164,7 +182,6 @@ const DocumentForm = ({
         </FormWrapper>
       </div>
     </>
-    // </DocumentFormProvider>
   );
 };
 

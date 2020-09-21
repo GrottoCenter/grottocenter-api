@@ -1,22 +1,24 @@
 import React, { useContext, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
-import { includes, pathOr } from 'ramda';
+import { includes } from 'ramda';
 
 import Translate from '../../../../common/Translate';
 
 import { DocumentFormContext } from '../Provider';
-import MassifAutoComplete from '../formElements/MassifAutoComplete';
-import MultipleSelect from '../formElements/MultipleSelect';
-import PartOfAutoComplete from '../formElements/PartOfAutoComplete';
 
+import DocumentAutoComplete from '../../../../../features/DocumentAutoComplete';
+import MassifAutoComplete from '../../../../../features/MassifAutoComplete';
+import MultipleBBSRegionsSelect from '../../../../../features/MultipleBBSRegionsSelect';
+import MultipleCaversSelect from '../../../../../features/MultipleCaversSelect';
+import MultipleSubjectsSelect from '../../../../../features/MultipleSubjectsSelect';
 import OrganizationAutoComplete from '../../../../../features/OrganizationAutoComplete';
 
 import {
-  isImage,
-  isCollectionElement,
-  isText,
+  isIssue,
+  isArticle,
   isCollection,
+  isOther,
 } from '../DocumentTypesHelper';
 
 // ===================================
@@ -31,67 +33,59 @@ const FlexItemWrapper = styled.div`
 `;
 // ===================================
 
-const Step2 = ({
-  allAuthors,
-  allMassifs,
-  allPartOf,
-  allRegions,
-  allSubjects,
-  stepId,
-}) => {
+const Step2 = ({ stepId }) => {
   const {
-    docAttributes: { editor, documentType, library, partOf },
-    updateAttribute,
+    docAttributes: { documentType },
     validatedSteps,
   } = useContext(DocumentFormContext);
 
-  const memoizedValues = [
-    documentType,
-    includes(stepId, validatedSteps),
-    partOf,
-  ];
+  const memoizedValues = [documentType, includes(stepId, validatedSteps)];
+
   return useMemo(
     () => (
       <>
-        <MultipleSelect
-          allPossibleValues={allAuthors}
-          contextValueNameToUpdate="authors"
-          getOptionLabel={(option) => `${option.name} ${option.surname}`}
+        <MultipleCaversSelect
           computeHasError={(newAuthors) =>
-            (isImage(documentType) || isText(documentType)) &&
+            (isOther(documentType) || isArticle(documentType)) &&
             newAuthors.length === 0
           }
-          helperText="Use authors' full name, no abreviation. In a next version of the website, if the author is not in the Grottocenter database, you will be able to add it."
+          contextValueName="authors"
+          helperText="Use this search bar to find existing authors. In a next version of the website, if the author is not in the Grottocenter database, you will be able to add it."
           labelName="Authors"
-          required={isImage(documentType) || isText(documentType)}
+          required={isOther(documentType) || isArticle(documentType)}
         />
 
-        <MultipleSelect
-          allPossibleValues={allSubjects}
-          contextValueNameToUpdate="subjects"
-          getOptionLabel={(option) => `${option.id} ${option.subject}`}
+        <MultipleSubjectsSelect
           computeHasError={(newSubjects) =>
-            isText(documentType) && newSubjects.length === 0
+            isArticle(documentType) && newSubjects.length === 0
           }
-          helperText="Be precise about the subjects discussed in the document: there are plenty of subject choices in Grottocenter."
+          contextValueName="subjects"
+          helperText="Use this search bar to find subjects. Be precise about the subjects discussed in the document: there are plenty of subject choices in Grottocenter."
           labelName="Subjects"
-          required={isText(documentType)}
+          required={isArticle(documentType)}
         />
-        {(isText(documentType) || isCollectionElement(documentType)) && (
-          <PartOfAutoComplete
-            hasError={isCollectionElement(documentType) && !partOf}
-            partOfSuggestions={allPartOf}
-            required={isCollectionElement(documentType)}
+
+        {(isArticle(documentType) || isIssue(documentType)) && (
+          <DocumentAutoComplete
+            contextValueName="partOf"
+            helperContent={
+              <Translate>
+                Use the search bar to search for an existing document.
+              </Translate>
+            }
+            labelText="Document Parent"
+            required={isIssue(documentType)}
+            searchLabelText="Search for a document..."
           />
         )}
 
         <FlexWrapper>
           {(isCollection(documentType) ||
-            isCollectionElement(documentType) ||
-            isText(documentType)) && (
+            isIssue(documentType) ||
+            isArticle(documentType)) && (
             <FlexItemWrapper>
               <OrganizationAutoComplete
-                isValueForced={pathOr(null, ['editor'], partOf) !== null}
+                contextValueName="editor"
                 helperContent={
                   <Translate>
                     Use the search bar above to find an existing editor.
@@ -103,21 +97,16 @@ const Step2 = ({
                   </Translate>
                 }
                 labelText="Editor"
-                required={
-                  isCollection(documentType) ||
-                  isCollectionElement(documentType)
-                }
+                required={isCollection(documentType) || isIssue(documentType)}
                 searchLabelText="Search for an editor..."
-                setValue={(newValue) => updateAttribute('editor', newValue)}
-                value={editor}
               />
             </FlexItemWrapper>
           )}
 
-          {(isCollectionElement(documentType) || isText(documentType)) && (
+          {(isIssue(documentType) || isArticle(documentType)) && (
             <FlexItemWrapper>
               <OrganizationAutoComplete
-                isValueForced={pathOr(null, ['library'], partOf) !== null}
+                contextValueName="library"
                 helperContent={
                   <>
                     <Translate>
@@ -143,81 +132,47 @@ const Step2 = ({
                 labelText="Library"
                 required={false}
                 searchLabelText="Search for a library..."
-                setValue={(newValue) => updateAttribute('library', newValue)}
-                value={library}
               />
             </FlexItemWrapper>
           )}
         </FlexWrapper>
 
         <FlexWrapper>
-          {(isText(documentType) || isImage(documentType)) && (
+          {(isArticle(documentType) || isOther(documentType)) && (
             <FlexItemWrapper>
-              <MultipleSelect
-                allPossibleValues={allRegions}
-                contextValueNameToUpdate="regions"
-                getOptionLabel={(option) => `${option.name}`}
+              <MultipleBBSRegionsSelect
                 computeHasError={() => false}
+                contextValueName="regions"
                 helperText="If the document is related to one or many regions, you can link it to them."
                 labelName="Regions"
                 required={false}
               />
             </FlexItemWrapper>
           )}
-          {(isText(documentType) || isImage(documentType)) && (
+          {(isArticle(documentType) || isOther(documentType)) && (
             <FlexItemWrapper>
               <MassifAutoComplete
-                hasError={false}
-                massifSuggestions={allMassifs}
+                contextValueName="massif"
+                helperContent={
+                  <Translate>
+                    If the document is related to a massif, you can link it to
+                    it. Use the search bar above to find an existing massif.
+                  </Translate>
+                }
+                labelText="Massif"
                 required={false}
+                searchLabelText="Search for a massif..."
               />
             </FlexItemWrapper>
           )}
         </FlexWrapper>
       </>
     ),
-    [memoizedValues],
+    memoizedValues,
   );
 };
 
 Step2.propTypes = {
-  allAuthors: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      name: PropTypes.string.isRequired,
-      surname: PropTypes.string.isRequired,
-    }),
-  ).isRequired,
-  allMassifs: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      name: PropTypes.string.isRequired,
-    }),
-  ),
-  allPartOf: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      name: PropTypes.string.isRequired,
-      issue: PropTypes.string,
-      documenType: PropTypes.shape({
-        id: PropTypes.string.isRequired,
-        name: PropTypes.string.isRequired,
-      }),
-      partOf: PropTypes.shape({}),
-    }),
-  ),
-  allRegions: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      name: PropTypes.string.isRequired,
-    }),
-  ),
-  allSubjects: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      subject: PropTypes.string.isRequired,
-    }),
-  ).isRequired,
   stepId: PropTypes.number.isRequired,
 };
 

@@ -129,7 +129,24 @@ module.exports.policies = {
     '*': true,
   },
 
+  'v1/LanguageController': {
+    '*': true,
+  },
+
   'v1/DocumentController': {
+    '*': true,
+    create: 'tokenAuth',
+  },
+
+  'v1/DocumentTypeController': {
+    '*': true,
+  },
+
+  'v1/IdentifierTypeController': {
+    '*': true,
+  },
+
+  'v1/RegionController': {
     '*': true,
   },
 

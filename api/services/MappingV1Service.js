@@ -193,6 +193,16 @@ module.exports = {
     return result;
   },
 
+  convertToCaverList: (source) => {
+    const cavers = [];
+    source.forEach((item) =>
+      cavers.push(MappingV1Service.convertToCaverModel(item)),
+    );
+    return {
+      cavers,
+    };
+  },
+
   convertToCaverModel: (source) => {
     const result = { ...CaverModel };
     result.id = source.id;
@@ -353,7 +363,40 @@ module.exports = {
               data[key] = item['_source'][key];
             }
 
+            // Construct document type
+            data.documentType = {
+              id: ramda.pathOr(null, ['_source', 'type id'], item),
+              name: ramda.pathOr(null, ['_source', 'type name'], item),
+            };
+            delete data['type id'];
+            delete data['type name'];
+
+            // Construct editor
+            data.editor =
+              ramda.pathOr(null, ['_source', 'editor id'], item) === null
+                ? null
+                : {
+                    id: ramda.pathOr(null, ['_source', 'editor id'], item),
+                    name: ramda.pathOr(null, ['_source', 'editor name'], item),
+                  };
+
+            // Construct library
+            data.library =
+              ramda.pathOr(null, ['_source', 'library id'], item) === null
+                ? null
+                : {
+                    id: ramda.pathOr(null, ['_source', 'library id'], item),
+                    name: ramda.pathOr(null, ['_source', 'library name'], item),
+                  };
+            delete data['library id'];
+            delete data['library name'];
+
             break;
+
+          case 'caver':
+            data.surname = item['_source'].surname;
+            data.nickname = item['_source'].nickname;
+            data.mail = item['_source'].mail;
 
           default:
         }
@@ -476,8 +519,13 @@ module.exports = {
     result.title = source.title;
     result.publicationDate = source.date_publication;
 
-    // TODO: handle authors as a string (ES)
-    result.authors = source.authors;
+    if (source.authors instanceof Array) {
+      result.authors = MappingV1Service.convertToCaverList(
+        source.authors,
+      ).cavers;
+    } else {
+      result.authors = source.authors;
+    }
 
     // TODO: handle publication (old bbs & parent)
     result.publication = source.publication_other_bbs_old
@@ -533,6 +581,17 @@ module.exports = {
       };
     }
 
+    // Build type
+    if (source.type) {
+      result.type = source.type;
+    } else if (source['type id']) {
+      // ES
+      result.type = {
+        id: source['type id'],
+        name: source['type name'],
+      };
+    }
+
     return result;
   },
 
@@ -546,9 +605,9 @@ module.exports = {
 
   convertToSubjectModel: (source) => {
     const result = { ...SubjectModel };
-    result.code = source.id;
+    result.code = source.id.trim(); // there are some spaces at the end of the id in the DB
     result.subject = source.subject;
-    result.parent = source.parent;
+    result.parent = source.parent ? source.parent.trim() : null;
     return result;
   },
 
@@ -557,6 +616,8 @@ module.exports = {
     source.forEach((item) =>
       subjects.push(MappingV1Service.convertToSubjectModel(item)),
     );
-    return subjects;
+    return {
+      subjects,
+    };
   },
 };

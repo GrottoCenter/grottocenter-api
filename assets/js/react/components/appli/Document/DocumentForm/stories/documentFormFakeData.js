@@ -173,7 +173,7 @@ export const allPartOf = [
     library: allLibraries[1],
     documentType: {
       id: 2,
-      name: 'Collection Element',
+      name: 'Issue',
     },
   },
   {
@@ -204,7 +204,7 @@ export const allPartOf = [
     },
     documentType: {
       id: 2,
-      name: 'Collection Element',
+      name: 'Issue',
     },
   },
   {
@@ -221,7 +221,7 @@ export const allPartOf = [
     },
     documentType: {
       id: 2,
-      name: 'Collection Element',
+      name: 'Issue',
     },
   },
 ];

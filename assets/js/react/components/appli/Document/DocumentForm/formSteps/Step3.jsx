@@ -3,12 +3,13 @@ import PropTypes from 'prop-types';
 import styled from 'styled-components';
 
 import { includes } from 'ramda';
-import IdentifierEditor from '../formElements/IdentifierEditor';
 import PagesEditor from '../formElements/PagesEditor';
-import StringInput from '../../../../common/Form/StringInput';
 
+import DocIdentifierEditor from '../../../../../features/DocIdentifierEditor';
+
+import IssueEditor from '../formElements/IssueEditor';
 import { DocumentFormContext } from '../Provider';
-import { isText, isCollectionElement } from '../DocumentTypesHelper';
+import { isArticle, isIssue } from '../DocumentTypesHelper';
 
 // ===================================
 const FlexWrapper = styled.div`
@@ -22,10 +23,9 @@ const FlexItemWrapper = styled.div`
 `;
 // ===================================
 
-const Step3 = ({ allIdentifierTypes, stepId }) => {
+const Step3 = ({ stepId }) => {
   const {
-    docAttributes: { documentType, issue },
-    updateAttribute,
+    docAttributes: { documentType },
     validatedSteps,
   } = useContext(DocumentFormContext);
 
@@ -34,39 +34,34 @@ const Step3 = ({ allIdentifierTypes, stepId }) => {
     () => (
       <>
         <FlexWrapper>
-          {isText(documentType) && (
+          {isArticle(documentType) && (
             <FlexItemWrapper>
               <PagesEditor />
             </FlexItemWrapper>
           )}
-          {isCollectionElement(documentType) && (
+          {isIssue(documentType) && (
             <FlexItemWrapper>
-              <StringInput
-                hasError={false}
+              <IssueEditor
                 helperText="Can be a volume (vol.2) or a magazine issue (n°38) for example. Use what is written on the cover of the document."
                 valueName="Issue"
-                onValueChange={(value) => updateAttribute('issue', value)}
                 required={false}
-                value={issue}
               />
             </FlexItemWrapper>
           )}
         </FlexWrapper>
 
-        <IdentifierEditor allIdentifierTypes={allIdentifierTypes} />
+        <DocIdentifierEditor
+          documentType={documentType}
+          contextIdentifierValueName="identifier"
+          contextIdentifierTypeValueName="identifierType"
+        />
       </>
     ),
-    [memoizedValues],
+    memoizedValues,
   );
 };
 
 Step3.propTypes = {
-  allIdentifierTypes: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      text: PropTypes.string.isRequired,
-    }),
-  ),
   stepId: PropTypes.number.isRequired,
 };
 

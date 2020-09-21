@@ -13,7 +13,7 @@ deploy:
       # deploy only if tag is push on "rc" git branch
       repo: GrottoCenter/Grottocenter3
       tags: true
-      branch: rc
+      branch: feature/doc_submission
     bucket: appgrottocenter3
     region: eu-central-1
   - provider: codedeploy

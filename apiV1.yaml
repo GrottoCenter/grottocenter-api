@@ -21,33 +21,119 @@ tags:
 - name: documents
 - name: entrances
 - name: geoloc
+- name: languages
 - name: massifs
 - name: organizations
+- name: regions
 - name: search
 - name: subjects
+- name: identifierTypes
 
 paths:
 
-  '/caves/{id}':
+  '/documents/identifierTypes':
     get:
       tags:
-        - caves
-      description: Get a cave by its id.
-      parameters:
-        - name: id
-          in: path
-          description: id of the cave
-          required: true
-          schema:
-            type: string
+      - documents
+      - identifierTypes
+      description: Get all the document identifier types.
       responses:
         '200':
           description: Successful operation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Cave'
+                type: object
+                properties:
+                  identifierTypes:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Document-identifierType"
+        '500':
+          description: Internal error
     
+
+  '/regions/search/logical/or':
+    post:
+      tags:
+      - regions
+      description: Get a region according to the parameters given, applying a logical OR. The search is case insensitive and autocompleted (i.e. it search for the parameters being contained in the actual field).
+      parameters:
+      - name: name
+        in: query
+        description: Region name (case insensitive)
+        required: false
+        schema:
+          type: string
+      - name: code
+        in: query
+        description: Region code (case insensitive)
+        required: false
+        schema:
+          type: string
+      - name: isDeprecated
+        in: query
+        description: Region deprecated or not (currently, the deprecated ones are the ones from the BBS)
+        required: false
+        schema:
+          type: boolean
+      responses:
+        '200':
+          description: Successful login
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  regions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Region'
+        '500':
+          description: Internal error
+
+  '/languages':
+    get:
+      tags:
+        - languages
+      description: Get all languages supported by Grottocenter.
+      parameters:
+      - name: isPrefered
+        in: query
+        description: Languages prefered or not.
+        required: false
+        schema:
+          type: boolean
+          default: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Language-list'
+    
+  '/languages/{id}':
+    get:
+      tags:
+        - languages
+      description: Get a language by its id.
+      parameters:
+        - name: id
+          in: path
+          description: id of the language (generally, three letters)
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful login
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Language'
+    
+
   '/auth/login':
     post:
       tags:
@@ -96,9 +182,12 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Document-subject"
+                type: object
+                properties:
+                  subjects:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Document-subject"
         '500':
           description: Internal error
 
@@ -124,6 +213,40 @@ paths:
                 $ref: '#/components/schemas/Document-subject'
         '404':
           description: Subject not found
+        '500':
+          description: Internal error
+  
+  '/documents/subjects/search/logical/or':
+    post:
+      tags:
+      - documents
+      - subjects
+      description: Get a subject according to the parameters given, applying a logical OR. The search is case insensitive and autocompleted (i.e. it search for the parameters being contained in the actual field).
+      parameters:
+      - name: name
+        in: query
+        description: Subject name (case insensitive)
+        required: false
+        schema:
+          type: string
+      - name: code
+        in: query
+        description: Subject code (case insensitive)
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  subjects:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Document-subject'
         '500':
           description: Internal error
 
@@ -184,25 +307,33 @@ paths:
           description: Internal error
           
   '/search':
-    get:
+    post:
       tags:
       - search
-      summary: Search for resources (documents, entrances, massifs & organizations)
-      description: Search for resources (entrances, massifs & organizations & documents). Case insensitive. Search over a lots of resource properties (not only name).
-      parameters:
-      - name: query
-        in: query
-        description: Resource property (or part of property)
-        required: true
-        schema:
-          type: string
-      - name: complete
-        in: query
-        description: Does the query need to send every information about the results? If it's set to false, the id and the name of each result will be returned.
-        required: false
-        schema:
-          type: boolean
-          default: true
+      summary: Search for resources (cavers, documents, entrances, massifs & organizations)
+      description: Search for resources (cavers, documents, entrances, massifs & organizations). Case insensitive. Search over a lots of resource properties (not only name).
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - query
+              properties:
+                query:
+                  type: string
+                  description: Resource property (or part of property) to search.
+                resourceTypes:
+                  type: array
+                  description: Resource types to search on. If not specified, it will search on all resources.
+                  items:
+                    $ref: '#/components/schemas/Search-type'
+                complete:
+                  type: boolean
+                  description: Does the query need to send every information about the results? If it's set to false, the id and the name of each result only will be returned.
+
+                
+                
       responses:
         '200':
           description: Successful operation
@@ -216,7 +347,7 @@ paths:
           description: Internal error
   
   '/advanced-search':
-    get:
+    post:
       tags:
       - search
       summary: Advanced search for resources (documents, entrances, massifs & organizations)
@@ -279,7 +410,6 @@ paths:
           description: Resource not found
         '500':
           description: Internal error
-
 
   '/geoloc/countEntries':
     get:
@@ -447,34 +577,42 @@ components:
         id: 
           type: integer
           format: int64
-        author:
-          $ref: '#/components/schemas/Caver'
+        locked: 
+          type: boolean
+        idReviewer: 
+          type: integer
+          format: int64
+        idLocker: 
+          type: integer
+          format: int64
         name: 
           type: string
-        names:
-          type: array
-          items:
-            $ref: '#/components/schemas/Name'
+        minDepth: 
+          type: integer
+          format: int64
+        maxDepth: 
+          type: integer
+          format: int64
         depth: 
           type: integer
+          format: int64
         length: 
           type: integer
+          format: int64
         isDiving: 
           type: boolean
         temperature: 
           type: integer
-        descriptions: 
-          type: array
-          items: 
-            type: object
-        entrances:
-          type: array
-          items:
-            $ref: '#/components/schemas/Entrance'
-        documents:
-          type: array
-          items: 
-            $ref: '#/components/schemas/Document'
+          format: int64
+        dateInscription: 
+          type: string
+        dateReviewed: 
+          type: string
+        dateLocked: 
+          type: string
+        author: 
+          type: integer
+          format: int64
 
     Caver:
       type: object
@@ -532,16 +670,6 @@ components:
         count:
           type: integer
           format: int64
-       
-    Document-subject:
-      type: object
-      properties:
-        code: 
-          type: string
-        subject: 
-          type: string
-        parent: 
-          type: string
     
     Document:
       type: object
@@ -592,6 +720,26 @@ components:
           $ref: '#/components/schemas/Organization'
         parent:
           $ref: '#/components/schemas/Document'
+    
+    Document-identifierType:
+      type: object
+      properties:
+        code: 
+          type: string
+        text: 
+          type: string
+        regexp: 
+          type: string
+    
+    Document-subject:
+      type: object
+      properties:
+        code: 
+          type: string
+        subject: 
+          type: string
+        parent: 
+          type: string
 
     Entrance:
       type: object
@@ -642,7 +790,7 @@ components:
           items:
             $ref: '#/components/schemas/Comment'
 
-    Entrance-group:
+    Entrance-list:
       type: object
       properties:
         id:
@@ -675,7 +823,33 @@ components:
           items:
             anyOf:
             - $ref: '#/components/schemas/Entrance'
-            - $ref: '#/components/schemas/Entrance-group'
+            - $ref: '#/components/schemas/Entrance-list'
+    
+    Language:
+      properties:
+        id:
+          type: string
+        part2b:
+          type: string
+        part2t:
+          type: string
+        part1:
+          type: string
+        scope:
+          type: string
+        type:
+          type: string
+        ref_name:
+          type: string
+        comment:
+          type: string
+        
+    Language-list:
+      properties:
+        languages:
+          type: array
+          items:
+            $ref: '#/components/schemas/Language'
     
     Location:
       type: object
@@ -823,6 +997,19 @@ components:
           $ref: '#/components/schemas/Point'
         language:
           type: string
+          
+    Region:
+      properties:
+        id: 
+          type: integer
+        name:
+          type: string
+        code:
+          type: string
+        isDeprecated:
+          type: boolean
+        country:
+          type: string
 
     Search:
       properties:
@@ -833,4 +1020,12 @@ components:
               - $ref: '#/components/schemas/Entrance'
               - $ref: '#/components/schemas/Massif'
               - $ref: '#/components/schemas/Organization'
-
+    
+    Search-type:
+      type: string
+      enum:
+        - cavers
+        - documents
+        - entrances
+        - grottos
+        - massifs

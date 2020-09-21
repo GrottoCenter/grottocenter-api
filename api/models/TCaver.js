@@ -151,6 +151,18 @@ module.exports = {
       via: 'caver',
       through: 'JGrottoCaver',
     },
+
+    documents: {
+      collection: 'TDocument',
+      via: 'caver',
+      through: 'JDocumentCaverAuthor',
+    },
+
+    groups: {
+      collection: 'TGroup',
+      via: 'caver',
+      through: 'JCaverGroup',
+    },
   },
 
   customToJSON: () => {
