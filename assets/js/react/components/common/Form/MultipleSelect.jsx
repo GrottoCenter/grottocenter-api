@@ -56,7 +56,7 @@ const MultipleSelect = ({
   }, [debouncedInput]);
 
   const hasError = computeHasError(value);
-  // const memoizedValues = [searchResults, hasError, inputValue, value];
+
   return (
     <>
       <Autocomplete
@@ -72,6 +72,7 @@ const MultipleSelect = ({
         renderOption={renderOption}
         getOptionSelected={getOptionSelected}
         filterSelectedOptions
+        filterOptions={(options) => options} // This fixes a bug: without it, the autocomplete hides some results...
         noOptionsText={
           inputValue.length >= nbCharactersNeededToLaunchSearch ? (
             noOptionsText
