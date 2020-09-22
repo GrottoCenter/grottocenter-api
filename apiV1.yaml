@@ -18,18 +18,81 @@ servers:
 
 tags:
 - name: authentication
+- name: cavers
 - name: documents
 - name: entrances
 - name: geoloc
+- name: groups
+- name: identifierTypes
 - name: languages
 - name: massifs
 - name: organizations
 - name: regions
 - name: search
 - name: subjects
-- name: identifierTypes
 
 paths:
+  '/cavers/{caverId}/groups/{groupId}':
+    put:
+      tags:
+      - cavers
+      - groups
+      description: Add a caver to a group.
+      parameters:
+      - name: caverId
+        in: path
+        description: Caver id to be added to the group.
+        required: true
+        schema:
+          type: string
+      - name: groupId
+        in: path
+        description: Group id to add the caver to.
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+        '400':
+          description: "Bad request. Either the caverId and groupId parameters should exist in the database. Also, you can't add a caver if he / she is already in the group you specified."
+        '500':
+          description: Internal error
+
+    delete:
+      tags:
+      - cavers
+      - groups
+      description: Add a caver to a group.
+      parameters:
+      - name: caverId
+        in: path
+        description: Caver id to be removed from the group.
+        required: true
+        schema:
+          type: string
+      - name: groupId
+        in: path
+        description: Group id to remove the caver from.
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+        '400':
+          description: "Bad request. Either the caverId and groupId parameters should exist in the database."
+        '500':
+          description: Internal error
+  
 
   '/documents/identifierTypes':
     get:

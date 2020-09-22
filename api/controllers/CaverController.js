@@ -5,68 +5,9 @@
  * @help        :: See http://links.sailsjs.org/docs/controllers
  */
 
+const esClient = require('../../config/elasticsearch').elasticsearchCli;
+
 module.exports = {
-  create: (req, res) => {
-    return res.badRequest('CaverController.create not yet implemented!');
-    // TCaver.create(req.params.all()).exec(function (err, created) {
-    //      if (err) {
-    //          return res.json({success: false, message: err});
-    //          //return res.view(500, {layout: false});
-    //      }
-    //      return res.json({success: true, message: ""});
-    //  });
-  },
-
-  /*
-    update: function(req, res) {
-        TCaver.findOneById(req.params.id).exec(function (err, foundCaver) {
-            if (err) {
-                console.log(err);
-                return res.view(404, {layout: false});
-            }
-            if (!foundCaver) {
-                console.log("User of id " + req.params.id + " not found.");
-                return res.redirect('/caver/');
-            }
-            return res.view({
-                caver: foundCaver
-            });
-        });
-    },
-	*/
-
-  update: (req, res) => {
-    return res.badRequest('CaverController.update not yet implemented!');
-    // TCaver.update(req.param('id'), req.params.all(), function (err) {
-    //     if (err) {
-    //         console.log(err);
-    //         return res.json({success: false, message: err});
-    //     }
-    //     return res.json({success: true, message: "Caver " + req.param('id') + " updated"});
-    // });
-  },
-
-  destroy: (req, res) => {
-    return res.badRequest('CaverController.destroy not yet implemented!');
-    // TCaver.findOneById(req.params.id).exec(function (err, foundCaver) {
-    //     if (err) {
-    //         console.log(err);
-    //         return res.redirect('/caver/');
-    //     }
-    //     if (err) {
-    //         console.log("Caver not found");
-    //         return res.redirect('/caver/');
-    //     }
-    //     TCaver.destroy(foundCaver.id, function(err) {
-    //         if (err) {
-    //             console.log(err);
-    //             return res.redirect('/caver/');
-    //         }
-    //         return res.redirect('/caver/');
-    //     });
-    // });
-  },
-
   find: (req, res) => {
     TCaver.findOneById(req.params.id).exec((err, found) => {
       const params = {};
@@ -106,5 +47,169 @@ module.exports = {
       count.count = found;
       return ControllerService.treat(req, err, count, params, res);
     });
+  },
+
+  putOnGroup: async (req, res) => {
+    // Check right
+    const hasRight = await sails.helpers.checkRight
+      .with({
+        groups: req.token.groups,
+        rightEntity: RightService.RightEntities.CAVER,
+        rightAction: RightService.RightActions.EDIT_ALL,
+      })
+      .intercept('rightNotFound', (err) => {
+        return res.serverError(
+          'A server error occured when checking your right to add a caver to a group.',
+        );
+      });
+    if (!hasRight) {
+      return res.forbidden('You are not authorized to add a caver to a group.');
+    }
+
+    // Check params
+    if (!(await CaverService.checkIfExists(req.param('caverId')))) {
+      return res.badRequest(
+        `Could not found caver with id ${req.param('caverId')}.`,
+      );
+    }
+    if (!(await GroupService.checkIfExists(req.param('groupId')))) {
+      return res.badRequest(
+        `Could not found group with id ${req.param('groupId')}.`,
+      );
+    }
+
+    // Update caver
+    TCaver.addToCollection(req.param('caverId'), 'groups', req.param('groupId'))
+      .then(() => {
+        const params = {};
+        params.controllerMethod = 'CaverController.addToGroup';
+        return ControllerService.treat(req, null, {}, params, res);
+      })
+      .catch({ name: 'UsageError' }, (err) => {
+        return res.badRequest(err.cause.message);
+      })
+      .catch({ name: 'AdapterError' }, (err) => {
+        return res.badRequest(err.cause.message);
+      })
+      .catch((err) => {
+        return res.serverError(err.cause.message);
+      });
+  },
+
+  removeFromGroup: async (req, res) => {
+    // Check right
+    const hasRight = await sails.helpers.checkRight
+      .with({
+        groups: req.token.groups,
+        rightEntity: RightService.RightEntities.CAVER,
+        rightAction: RightService.RightActions.EDIT_ALL,
+      })
+      .intercept('rightNotFound', (err) => {
+        return res.serverError(
+          'A server error occured when checking your right to remove a caver from a group.',
+        );
+      });
+    if (!hasRight) {
+      return res.forbidden(
+        'You are not authorized to remove a caver from a group.',
+      );
+    }
+
+    // Check params
+    if (!(await CaverService.checkIfExists(req.param('caverId')))) {
+      return res.badRequest(
+        `Could not found caver with id ${req.param('caverId')}.`,
+      );
+    }
+    if (!(await GroupService.checkIfExists(req.param('groupId')))) {
+      return res.badRequest(
+        `Could not found group with id ${req.param('groupId')}.`,
+      );
+    }
+
+    // Update caver
+    TCaver.removeFromCollection(
+      req.param('caverId'),
+      'groups',
+      req.param('groupId'),
+    )
+      .then(() => {
+        const params = {};
+        params.controllerMethod = 'CaverController.removeFromGroup';
+        return ControllerService.treat(req, null, {}, params, res);
+      })
+      .catch({ name: 'UsageError' }, (err) => {
+        return res.badRequest(err.cause.message);
+      })
+      .catch({ name: 'AdapterError' }, (err) => {
+        return res.badRequest(err.cause.message);
+      })
+      .catch((err) => {
+        return res.serverError(err.cause.message);
+      });
+  },
+
+  setGroups: async (req, res) => {
+    // Check right
+    const hasRight = await sails.helpers.checkRight
+      .with({
+        groups: req.token.groups,
+        rightEntity: RightService.RightEntities.CAVER,
+        rightAction: RightService.RightActions.EDIT_ALL,
+      })
+      .intercept('rightNotFound', (err) => {
+        return res.serverError(
+          'A server error occured when checking your right to set a caver groups.',
+        );
+      });
+    if (!hasRight) {
+      return res.forbidden('You are not authorized to set a caver groups.');
+    }
+
+    // Check params
+    if (!(await CaverService.checkIfExists(req.param('caverId')))) {
+      return res.badRequest(
+        `Could not found caver with id ${req.param('caverId')}.`,
+      );
+    }
+
+    const newGroups = req.param('groups');
+    newGroups.map(async (g) => {
+      if (!(await GroupService.checkIfExists(g.id))) {
+        return res.badRequest(`Could not found group with id ${g.id}.`);
+      }
+    });
+
+    // Update caver
+    TCaver.replaceCollection(
+      req.param('caverId'),
+      'groups',
+      newGroups.map((g) => g.id),
+    )
+      .then(() => {
+        esClient.update({
+          index: `cavers-index`,
+          type: 'data',
+          id: req.param('caverId'),
+          body: {
+            doc: {
+              groups: newGroups.map((g) => g.id).join(','),
+            },
+          },
+        });
+
+        const params = {};
+        params.controllerMethod = 'CaverController.addToGroup';
+        return ControllerService.treat(req, null, {}, params, res);
+      })
+      .catch({ name: 'UsageError' }, (err) => {
+        return res.badRequest(err.cause.message);
+      })
+      .catch({ name: 'AdapterError' }, (err) => {
+        return res.badRequest(err.cause.message);
+      })
+      .catch((err) => {
+        return res.serverError(err.cause.message);
+      });
   },
 };
