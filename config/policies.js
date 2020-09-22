@@ -39,8 +39,9 @@ module.exports.policies = {
   CaverController: {
     '*': false,
     getCaversNumber: true,
-    update: 'tokenAuth',
-    destroy: 'tokenAuth',
+    putOnGroup: 'tokenAuth',
+    removeFromGroup: 'tokenAuth',
+    setGroups: 'tokenAuth',
   },
 
   EntranceController: {
