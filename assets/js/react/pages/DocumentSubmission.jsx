@@ -7,6 +7,7 @@ import styled from 'styled-components';
 
 import isAuth from '../helpers/AuthHelper';
 import { postDocument } from '../actions/Document';
+import { displayLoginDialog } from '../actions/Auth';
 
 import DocumentForm from '../components/appli/Document/DocumentForm';
 import Layout from '../components/common/Layouts/Fixed/FixedContent';
@@ -31,26 +32,41 @@ const CenteredBlock = styled.div`
 const DocumentSubmission = () => {
   const history = useHistory();
   const dispatch = useDispatch();
+  const { formatMessage } = useIntl();
+
   const [isDocSubmittedWithSuccess, setDocSubmittedWithSuccess] = useState(
     false,
   );
   const [isDocSubmitted, setDocSubmitted] = useState(false);
+  const [isUserAuth, setIsUserAuth] = useState(false);
 
   const documentState = useSelector((state) => state.document);
+  const authState = useSelector((state) => state.auth);
 
-  const { formatMessage } = useIntl();
+  const onLoginClick = () => {
+    dispatch(displayLoginDialog());
+  };
   const submitForm = (formData) => {
     dispatch(postDocument(formData));
     setDocSubmitted(true);
   };
 
   useEffect(() => {
+    // Handle User Auth
+    setIsUserAuth(isAuth());
+
+    // Handle Doc Submission
     if (documentState.latestHttpCode === 200 && isDocSubmitted) {
       setDocSubmittedWithSuccess(true);
     } else {
       setDocSubmittedWithSuccess(false);
     }
-  }, [isDocSubmittedWithSuccess, documentState.latestHttpCode, isDocSubmitted]);
+  }, [
+    isDocSubmittedWithSuccess,
+    documentState.latestHttpCode,
+    isDocSubmitted,
+    authState,
+  ]);
 
   return (
     <Layout
@@ -77,7 +93,7 @@ const DocumentSubmission = () => {
               </SpacedButton>
             </CenteredBlock>
           )}
-          {isAuth() && !isDocSubmittedWithSuccess && (
+          {isUserAuth && !isDocSubmittedWithSuccess && (
             <>
               <DocumentForm
                 isLoading={documentState.isLoading}
@@ -99,7 +115,7 @@ const DocumentSubmission = () => {
               )}
             </>
           )}
-          {!isAuth() && (
+          {!isUserAuth && (
             <CenteredBlock>
               <ErrorMessage>
                 <Translate>
@@ -107,10 +123,7 @@ const DocumentSubmission = () => {
                   Grottocenter.
                 </Translate>
               </ErrorMessage>
-              <SpacedButton
-                onClick={() => history.push('/ui/login')}
-                variant="contained"
-              >
+              <SpacedButton onClick={onLoginClick} variant="contained">
                 <Translate>Log in</Translate>
               </SpacedButton>
               <SpacedButton

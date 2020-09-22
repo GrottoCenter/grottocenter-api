@@ -55,8 +55,7 @@ export function setAuthErrorMessages(errorMessages) {
 
 export function postLogout() {
   return (dispatch) => {
-    dispatch(logout);
-    window.localStorage.removeItem(identificationTokenName);
+    dispatch(logout());
   };
 }
 

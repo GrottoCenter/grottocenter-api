@@ -8,7 +8,7 @@ import {
   SET_AUTH_ERROR_MESSAGES,
 } from '../actions/Auth';
 
-import { identificationTokenName } from '../conf/Config';
+import { removeAuthToken } from '../helpers/AuthHelper';
 
 //
 //
@@ -18,7 +18,6 @@ import { identificationTokenName } from '../conf/Config';
 
 const initialState = {
   userAccount: undefined,
-  isAuthenticated: window.localStorage.getItem(identificationTokenName) != null,
   isFetching: false,
   isLoginDialogDisplayed: false,
   errorMessages: [],
@@ -37,7 +36,6 @@ const auth = (state = initialState, action) => {
       return {
         ...state,
         userAccount: action.account,
-        isAuthenticated: true,
         isFetching: false,
         errorMessages: [],
       };
@@ -52,7 +50,8 @@ const auth = (state = initialState, action) => {
     case HIDE_LOGIN_DIALOG:
       return { ...state, isLoginDialogDisplayed: false };
     case LOGOUT:
-      return { ...state, isAuthenticated: false };
+      removeAuthToken();
+      return { ...state, userAccount: undefined };
     case SET_AUTH_ERROR_MESSAGES:
       return { ...state, errorMessages: action.errorMessages };
     default:

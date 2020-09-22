@@ -2,7 +2,6 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Fade } from '@material-ui/core';
 import { useDispatch, useSelector } from 'react-redux';
-import { useHistory } from 'react-router-dom';
 
 import {
   displayLoginDialog,
@@ -24,7 +23,6 @@ const HeaderAutoCompleteSearch = ({ isSideMenuOpen, HeaderQuickSearch }) => (
 const AppBar = ({ toggleSideMenu, isSideMenuOpen, HeaderQuickSearch }) => {
   const dispatch = useDispatch();
   const authState = useSelector((state) => state.auth);
-  const history = useHistory();
 
   const onLoginClick = () =>
     authState.isLoginDialogDisplayed
@@ -33,7 +31,6 @@ const AppBar = ({ toggleSideMenu, isSideMenuOpen, HeaderQuickSearch }) => {
 
   const onLogoutClick = () => {
     dispatch(postLogout());
-    history.go(); // refresh the current page
   };
 
   return (
