@@ -1,5 +1,5 @@
 import fetch from 'isomorphic-fetch';
-import { loginUrl, identificationTokenName } from '../conf/Config';
+import { loginUrl } from '../conf/Config';
 
 // ==========
 export const FETCH_LOGIN = 'FETCH_LOGIN';
@@ -86,7 +86,6 @@ export function postLogin(email, password) {
         }
       })
       .then((json) => {
-        window.localStorage.setItem(identificationTokenName, json.token);
         dispatch(fetchLoginSuccess(json.user, json.token));
         dispatch(hideLoginDialog());
       })

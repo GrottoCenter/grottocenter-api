@@ -8,7 +8,7 @@ import {
   SET_AUTH_ERROR_MESSAGES,
 } from '../actions/Auth';
 
-import { removeAuthToken } from '../helpers/AuthHelper';
+import { removeAuthToken, setAuthToken } from '../helpers/AuthHelper';
 
 //
 //
@@ -33,6 +33,7 @@ const auth = (state = initialState, action) => {
     case FETCH_LOGIN:
       return { ...state, isFetching: true, errorMessages: [] };
     case FETCH_LOGIN_SUCCESS:
+      setAuthToken(action.token);
       return {
         ...state,
         userAccount: action.account,
