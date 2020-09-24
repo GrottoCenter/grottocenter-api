@@ -3,6 +3,10 @@ import { identificationTokenName } from '../conf/Config';
 
 // =========================================
 
+export const setAuthToken = (token) => {
+  window.localStorage.setItem(identificationTokenName, token);
+};
+
 export const getAuthToken = () => {
   return window.localStorage.getItem(identificationTokenName);
 };
