@@ -70,7 +70,7 @@
     "sails-mysql": "^1.0.1",
     "sails-postgresql": "^1.0.2",
     "snyk": "^1.389.0",
-    "styled-components": "^5.1.0",
+    "styled-components": "^5.2.0",
     "swagger-ui-dist": "^3.32.1",
     "underscore.date": "^0.6.1",
     "underscore.string": "^3.3.4"
