@@ -24,7 +24,7 @@
     "grunt-transifex": "^0.1.1",
     "history": "^4.10.1",
     "include-all": "~4.0.3",
-    "isomorphic-fetch": "^2.2.1",
+    "isomorphic-fetch": "^3.0.0",
     "jsonwebtoken": "^8.4.0",
     "leaflet": "^1.6.0",
     "leaflet-geosearch": "^2.7.0",
