@@ -158,6 +158,7 @@ export const postDocumentUrl = `/api/${apiVersion}/documents`;
 export const regionsSearchUrl = `/api/${apiVersion}/regions/search/logical/or`;
 export const identifierTypesUrl = `/api/${apiVersion}/documents/identifierTypes`;
 export const postCaverGroupsUrl = (userId) => `/api/cavers/${userId}/groups`;
+export const getAdminsUrl = `/api/cavers/admins`;
 
 // ===== Auth url
 export const loginUrl = `/api/${apiVersion}/login`;
