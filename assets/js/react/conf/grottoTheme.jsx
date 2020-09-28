@@ -38,6 +38,7 @@ export const overridings = {
   appBarHeight,
   palette: {
     primary: {
+      veryLight: brown['100'],
       light: brown['500'],
       main: brown['700'],
       dark: brown['900'],
