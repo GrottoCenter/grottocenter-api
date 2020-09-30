@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { FormattedMessage } from 'react-intl';
+import { useIntl } from 'react-intl';
 import {
   FormControl,
   InputLabel,
@@ -14,7 +14,6 @@ import Visibility from '@material-ui/icons/Visibility';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
 import styled from 'styled-components';
 
-import Translate from '../Translate';
 import ErrorMessage from '../StatusMessage/ErrorMessage';
 
 const FormWrapper = styled.form`
@@ -31,6 +30,7 @@ const LoginForm = ({
   authErrors,
 }) => {
   const [isPasswordVisible, setIsPasswordVisible] = React.useState(false);
+  const { formatMessage } = useIntl();
 
   const toggleIsPasswordVisible = () => {
     setIsPasswordVisible(!isPasswordVisible);
@@ -51,7 +51,7 @@ const LoginForm = ({
       <FormWrapper>
         <FormControl variant="filled">
           <InputLabel htmlFor="input-with-icon-adornment">
-            <FormattedMessage id="Email" />
+            {formatMessage({ id: 'Email' })}
           </InputLabel>
           <FilledInput
             name="email"
@@ -64,7 +64,7 @@ const LoginForm = ({
 
         <FormControl variant="filled">
           <InputLabel htmlFor="filled-adornment-password">
-            <FormattedMessage id="Password" />
+            {formatMessage({ id: 'Password' })}
           </InputLabel>
           <FilledInput
             name="password"
@@ -91,9 +91,7 @@ const LoginForm = ({
           <FormControl>
             {authErrors.map((error) => (
               <Fade in={authErrors.length > 0} key={error}>
-                <ErrorMessage>
-                  <Translate>{error}</Translate>
-                </ErrorMessage>
+                <ErrorMessage message={formatMessage({ id: error })} />
               </Fade>
             ))}
           </FormControl>

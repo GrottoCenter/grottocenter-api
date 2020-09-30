@@ -18,7 +18,6 @@ import { useDebounce } from '../../../hooks';
 import AutoCompleteSearch from '../../common/AutoCompleteSearch';
 import ErrorMessage from '../../common/StatusMessage/ErrorMessage';
 import SuccessMessage from '../../common/StatusMessage/SuccessMessage';
-import Translate from '../../common/Translate';
 
 import UserProperties from './UserProperties';
 import UserGroups from './UserGroups';
@@ -146,15 +145,16 @@ const ManageUserGroups = ({
 
           {caverState.errorMessages.length > 0 &&
             caverState.errorMessages.map((error) => (
-              <ErrorMessage key={error}>
-                <Translate>{error}</Translate>
-              </ErrorMessage>
+              <ErrorMessage
+                key={error}
+                message={formatMessage({ id: error })}
+              />
             ))}
 
           {areGroupsSubmittedWithSuccess && (
-            <SuccessMessage>
-              <Translate>Groups updated with success!</Translate>
-            </SuccessMessage>
+            <SuccessMessage
+              message={formatMessage({ id: 'Groups updated with success!' })}
+            />
           )}
         </FeedbackBlock>
       )}

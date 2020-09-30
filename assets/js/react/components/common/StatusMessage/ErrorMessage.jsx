@@ -1,24 +1,15 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import styled from 'styled-components';
-import StyledMessage from './style';
+import StatusMessage from './index';
 
 // ==========
 
-const StyledErrorMessage = styled(StyledMessage)`
-  ${({ theme }) => `
-    background-color: ${theme.palette.errorColor};
-  `}
-`;
-
-// ==========
-
-const ErrorMessage = ({ children }) => (
-  <StyledErrorMessage>{children}</StyledErrorMessage>
+const ErrorMessage = ({ message }) => (
+  <StatusMessage message={message} severity="error" />
 );
 
 ErrorMessage.propTypes = {
-  children: PropTypes.node.isRequired,
+  message: PropTypes.node.isRequired,
 };
 
 export default ErrorMessage;

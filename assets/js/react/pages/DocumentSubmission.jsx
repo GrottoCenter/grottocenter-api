@@ -106,9 +106,7 @@ const DocumentSubmission = () => {
                       in={documentState.errorMessages.length > 0}
                       key={error}
                     >
-                      <ErrorMessage>
-                        <Translate>{error}</Translate>
-                      </ErrorMessage>
+                      <ErrorMessage message={formatMessage({ id: error })} />
                     </Fade>
                   ))}
                 </CenteredBlock>
@@ -117,12 +115,12 @@ const DocumentSubmission = () => {
           )}
           {!isUserAuth && (
             <CenteredBlock>
-              <ErrorMessage>
-                <Translate>
-                  You must be authenticated to submit a document to
-                  Grottocenter.
-                </Translate>
-              </ErrorMessage>
+              <ErrorMessage
+                message={formatMessage({
+                  id:
+                    'You must be authenticated to submit a document to Grottocenter.',
+                })}
+              />
               <SpacedButton onClick={onLoginClick} variant="contained">
                 <Translate>Log in</Translate>
               </SpacedButton>
