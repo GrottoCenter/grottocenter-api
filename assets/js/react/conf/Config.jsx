@@ -157,6 +157,7 @@ export const getLanguagesUrl = `/api/${apiVersion}/languages`;
 export const postDocumentUrl = `/api/${apiVersion}/documents`;
 export const regionsSearchUrl = `/api/${apiVersion}/regions/search/logical/or`;
 export const identifierTypesUrl = `/api/${apiVersion}/documents/identifierTypes`;
+export const postCaverGroupsUrl = (userId) => `/api/cavers/${userId}/groups`;
 
 // ===== Auth url
 export const loginUrl = `/api/${apiVersion}/login`;
@@ -179,10 +180,12 @@ export const breadcrumpKeys = {
   entries: 'Entries',
   faq: 'FAQ',
   groups: 'Groups',
+  manage: 'Manage',
   map: 'Map',
   massifs: 'Massifs',
   search: 'Search',
   swagger: 'Browse API',
+  users: 'Users',
 };
 
 export const defaultCoord = { lat: 0, lng: 0 };

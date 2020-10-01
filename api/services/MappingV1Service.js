@@ -84,6 +84,7 @@ const CaverModel = {
   surname: undefined,
   name: undefined,
   mail: undefined,
+  groups: [],
 };
 
 const CaveModel = {
@@ -209,6 +210,19 @@ module.exports = {
     result.nickname = source.nickname;
     result.surname = source.surname;
     result.name = source.name;
+    result.mail = source.mail;
+
+    if (source.groups) {
+      if (source.groups instanceof Array) {
+        result.groups = source.groups;
+      } else {
+        result.groups = source.groups.split(',').map((groupId) => {
+          return {
+            id: parseInt(groupId, 10),
+          };
+        });
+      }
+    }
     return result;
   },
 
@@ -278,6 +292,9 @@ module.exports = {
           break;
         case 'document':
           data = MappingV1Service.convertToDocumentModel(item['_source']);
+          break;
+        case 'caver':
+          data = MappingV1Service.convertToCaverModel(item['_source']);
           break;
         default:
       }

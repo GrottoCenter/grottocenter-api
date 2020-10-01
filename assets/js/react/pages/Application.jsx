@@ -24,6 +24,7 @@ import GroupPage from './Group';
 import BbsPage from './Bbs';
 import MassifPage from './Massif';
 import CaveSystemPage from './CaveSystem';
+import ManageUsers from './Admin/ManageUsers';
 
 const Application = () => {
   const dispatch = useDispatch();
@@ -48,7 +49,7 @@ const Application = () => {
         <Route exact path="/" component={HomePage} />
         <Route path="/admin" component={Admin} />
         <Route exact path="/ui" component={Dashboard} />
-        <Route exact path="/ui/" component={Dashboard} />
+        <Route path="/ui/admin/users" component={ManageUsers} />
         <Route path="/ui/search" component={AdvancedSearchPage} />
         <Route path="/ui/api" component={Api} />
         <Route path="/ui/entries/:id?" component={EntryPage} />

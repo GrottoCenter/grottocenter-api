@@ -66,9 +66,7 @@ const Dashboard = () => {
                 <StyledListItem
                   button
                   key="manage-users-admin-tile-key"
-                  onClick={() =>
-                    handleOnListItemClick('/ui/admin/users/manage')
-                  }
+                  onClick={() => handleOnListItemClick('/ui/admin/users')}
                 >
                   <PeopleIcon fontSize="large" color="primary" />
                   <Typography variant="h4" align="center">
