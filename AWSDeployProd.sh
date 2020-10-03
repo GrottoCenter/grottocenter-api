@@ -29,7 +29,8 @@ cd /home/ec2-user/GrottoCenter3
 #
 #   $ nvm install 10.15.2
 #   $ sudo amazon-linux-extras install nginx1.12
-#   $ npm install forever -g
+#   $ npm install pm2 -g
+#   $ pm2 install pm2-logrotate
 #
 #  ======================================================
 
@@ -48,5 +49,5 @@ aws s3 cp  s3://appgrottocenter3/env /home/ec2-user/GrottoCenter3/.env
 aws s3 cp  s3://appgrottocenter3/transifexrc /home/ec2-user/GrottoCenter3/.transifexrc
 
 echo "# ========== Lancement de l'application"
-NODE_ENV=production sails_hooks__grunt=false nohup node app.js --production > gc3.log 2>&1 &
+NODE_ENV=production sails_hooks__grunt=false pm2 start app.js -l gc3.log --time -- --prod --production
 echo "# ========== Lancement terminé"
