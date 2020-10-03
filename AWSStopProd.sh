@@ -6,14 +6,4 @@
 
 #nvm use 10.4.1
 
-NAME="app.js" # nodejs script's name here
-RUN=`pgrep -f $NAME`
-
-if [ "$RUN" == "" ]; then
- echo "Script is not running"
- exit 0
-else
- echo "Script is running"
- killall node
- exit 0
-fi
+pm2 delete all
