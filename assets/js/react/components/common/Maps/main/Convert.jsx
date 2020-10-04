@@ -125,7 +125,7 @@ class Convert extends React.Component {
     if (tmp.length > 1) {
       res = tmp[0] + tmp[1];
     } else {
-      res = tmp[0];
+      [res] = tmp;
     }
     return res;
   }
@@ -174,8 +174,8 @@ class Convert extends React.Component {
   getDef(keyGps) {
     const { projectionsList } = this.state;
     for (let i = 0; i < projectionsList.length; i += 1) {
-      if (projectionsList[i].Code == keyGps) {
-        return projectionsList[i].Definition;
+      if (projectionsList[i].code === keyGps) {
+        return projectionsList[i].definition;
       }
     }
     return null;
@@ -185,7 +185,7 @@ class Convert extends React.Component {
     let units;
     const { projectionsList } = this.state;
     for (let i = 0; i < projectionsList.length; i += 1) {
-      if (projectionsList[i].Code == keyGps) {
+      if (projectionsList[i].code === keyGps) {
         units = projectionsList[i].units;
         break;
       }
@@ -193,41 +193,11 @@ class Convert extends React.Component {
     return units;
   }
 
-  isUtm(keyGps) {
-    const { projectionsList } = this.state;
-    for (let i = 0; i < projectionsList.length; i += 1) {
-      if (projectionsList[i].Code == keyGps) {
-        return projectionsList[i].proj == 'utm';
-      }
-    }
-    return null;
-  }
+  handleStateChange = (stateKey, newValue) => {
+    this.setState({ [stateKey]: newValue });
+  };
 
-  handleChangeXValue(event) {
-    this.setState({ valueXInput: event.target.value });
-  }
-
-  handleChangeYValue(event) {
-    this.setState({ valueYInput: event.target.value });
-  }
-
-  handleChangeHemiInput(event) {
-    this.setState({ hemiInput: event.target.value });
-  }
-
-  handleChangeHemiOutput(event) {
-    this.setState({ hemiOutput: event.target.value });
-  }
-
-  handleChangeZoneInput(event) {
-    this.setState({ zoneInput: event.target.value });
-  }
-
-  handleChangeZoneOutput(event) {
-    this.setState({ zoneOutput: event.target.value });
-  }
-
-  handleChangeGPSInput(event) {
+  handleChangeGPSInput = (event) => {
     this.setState({ keyGPSInput: event.target.value });
     this.setState({
       xNameInput: unitsTab[this.getUnits(event.target.value)].xName,
@@ -242,9 +212,9 @@ class Convert extends React.Component {
       yUnitInput: unitsTab[this.getUnits(event.target.value)].yUnit,
     });
     this.setState({ utmInput: this.isUtm(event.target.value) });
-  }
+  };
 
-  handleChangeGPSOutput(event) {
+  handleChangeGPSOutput = (event) => {
     this.setState({ keyGPSOutput: event.target.value });
     this.setState({
       xNameOutput: unitsTab[this.getUnits(event.target.value)].xName,
@@ -259,9 +229,9 @@ class Convert extends React.Component {
       yUnitOutput: unitsTab[this.getUnits(event.target.value)].yUnit,
     });
     this.setState({ utmOutput: this.isUtm(event.target.value) });
-  }
+  };
 
-  handleConvert(event) {
+  handleConvert = (event) => {
     const {
       keyGPSInput,
       keyGPSOutput,
@@ -311,6 +281,16 @@ class Convert extends React.Component {
     }
 
     event.preventDefault();
+  };
+
+  isUtm(keyGps) {
+    const { projectionsList } = this.state;
+    for (let i = 0; i < projectionsList.length; i += 1) {
+      if (projectionsList[i].code === keyGps) {
+        return projectionsList[i].proj === 'utm';
+      }
+    }
+    return null;
   }
 
   render() {
@@ -340,19 +320,20 @@ class Convert extends React.Component {
     options.push(<MenuItemGroup disabled>World</MenuItemGroup>);
 
     projectionsList.forEach((projection) => {
-      if (projection.Fr_name && actualCountry !== projection.Fr_name) {
-        actualCountry = projection.Fr_name;
+      if (projection.fr_name && actualCountry !== projection.fr_name) {
+        actualCountry = projection.fr_name;
         options.push(
-          <MenuItemGroup key={projection.Code} disabled>
+          <MenuItemGroup key={projection.code} disabled>
             {actualCountry}
           </MenuItemGroup>,
         );
+      } else {
+        options.push(
+          <StyledMenuItem key={projection.code} value={projection.code}>
+            {projection.title}
+          </StyledMenuItem>,
+        );
       }
-      options.push(
-        <StyledMenuItem key={projection.Code} value={projection.Code}>
-          {projection.title}
-        </StyledMenuItem>,
-      );
     });
 
     return (
@@ -373,7 +354,7 @@ class Convert extends React.Component {
             <FormControl>
               <StyledSelect
                 value={keyGPSInput}
-                onChange={this.handleChangeGPSInput.bind(this)}
+                onChange={this.handleChangeGPSInput}
               >
                 {options}
               </StyledSelect>
@@ -387,7 +368,9 @@ class Convert extends React.Component {
               <FormControl>
                 <StyledSelect
                   value={hemiInput}
-                  onChange={this.handleChangeHemiInput.bind(this)}
+                  onChange={(event) =>
+                    this.handleStateChange('hemiInput', event.target.value)
+                  }
                 >
                   <StyledMenuItem value="North">North</StyledMenuItem>
                   <StyledMenuItem value="South">South</StyledMenuItem>
@@ -399,7 +382,9 @@ class Convert extends React.Component {
               <StyledInput
                 type="number"
                 placeholder="0"
-                onChange={this.handleChangeZoneInput.bind(this)}
+                onChange={(event) =>
+                  this.handleStateChange('zoneInput', event.target.value)
+                }
               />
             </div>,
           ]}
@@ -411,7 +396,9 @@ class Convert extends React.Component {
             <StyledInput
               type="number"
               placeholder="0"
-              onChange={this.handleChangeXValue.bind(this)}
+              onChange={(event) =>
+                this.handleStateChange('valueXInput', event.target.value)
+              }
             />
             {xUnitInput}
           </div>
@@ -423,13 +410,15 @@ class Convert extends React.Component {
               type="number"
               placeholder="0"
               style={{ marginLeft: '5px' }}
-              onChange={this.handleChangeYValue.bind(this)}
+              onChange={(event) =>
+                this.handleStateChange('valueYInput', event.target.value)
+              }
             />
             {yUnitInput}
           </div>
 
           {/* BUTTON SECTION */}
-          <ConvertButton onClick={this.handleConvert.bind(this)}>
+          <ConvertButton onClick={this.handleConvert}>
             <Translate>Convert</Translate>
           </ConvertButton>
         </div>
@@ -450,7 +439,7 @@ class Convert extends React.Component {
             <FormControl>
               <StyledSelect
                 value={keyGPSOutput}
-                onChange={this.handleChangeGPSOutput.bind(this)}
+                onChange={this.handleChangeGPSOutput}
               >
                 {options}
               </StyledSelect>
@@ -464,7 +453,9 @@ class Convert extends React.Component {
               <FormControl>
                 <StyledSelect
                   value={hemiOutput}
-                  onChange={this.handleChangeHemiOutput.bind(this)}
+                  onChange={(event) =>
+                    this.handleStateChange('hemiOutput', event.target.value)
+                  }
                 >
                   <StyledMenuItem value="North">North</StyledMenuItem>
                   <StyledMenuItem value="South">South</StyledMenuItem>
@@ -476,7 +467,9 @@ class Convert extends React.Component {
               <StyledInput
                 type="number"
                 placeholder="0"
-                onChange={this.handleChangeZoneOutput.bind(this)}
+                onChange={(event) =>
+                  this.handleStateChange('zoneOutput', event.target.value)
+                }
               />
             </div>,
           ]}
@@ -518,7 +511,14 @@ class Convert extends React.Component {
 }
 
 Convert.propTypes = {
-  classes: PropTypes.shape({}).isRequired,
+  classes: PropTypes.shape({
+    bottomContainer: PropTypes.any,
+    element: PropTypes.any,
+    mainContainer: PropTypes.any,
+    subContainer: PropTypes.any,
+    subElement: PropTypes.any,
+  }).isRequired,
+  list: PropTypes.arrayOf(PropTypes.any).isRequired,
 };
 
 export default withStyles(styles)(Convert);
