@@ -12,7 +12,7 @@ module.exports = {
       lng: req.param('ne_lng'),
     };
 
-    GeoLocService.countEntries(southWestBound, northEastBound)
+    GeoLocService.countEntrances(southWestBound, northEastBound)
       .then((result) => {
         if (!result) {
           return res.json({ count: 0 });
@@ -38,17 +38,19 @@ module.exports = {
 
     const zoom = req.param('zoom');
 
-    GeoLocService.getEntriesMap(southWestBound, northEastBound, zoom, 20)
+    GeoLocService.getEntrancesMap(southWestBound, northEastBound, zoom, 20)
       .then((result) => {
         sails.log.debug('entriesMap sent');
-        sails.log.debug(result.qualityEntriesMap.length);
+        sails.log.debug(result.qualityEntrancesMap.length);
         sails.log.debug('Cluster sent');
-        sails.log.debug(result.groupEntriesMap.length);
+        sails.log.debug(result.groupEntrancesMap.length);
         return res.json(result);
       })
       .catch((err) => {
         sails.log.error(err);
-        return res.serverError(`Call to getEntries raised an error : ${err}`);
+        return res.serverError(
+          `Call to getEntrancesMap raised an error : ${err}`,
+        );
       });
   },
 };

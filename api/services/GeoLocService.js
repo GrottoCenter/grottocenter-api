@@ -42,9 +42,9 @@ const PUBLIC_ENTRANCES_AVG_COORDS_WITHOUT_QUALITY_ENTRANCE = `
 
 module.exports = {
   /**
-   * @returns {Promise} which resolves to the succesfully countEntries
+   * @returns {Promise} which resolves to the succesfully countEntrances
    */
-  countEntries: (southWestBound, northEastBound) =>
+  countEntrances: (southWestBound, northEastBound) =>
     new Promise((resolve, reject) => {
       const parameters = {
         latitude: {
@@ -99,12 +99,12 @@ module.exports = {
     }),
 
   /**
-   * Return all the entries in the bounds
+   * Return all the entrances in the bounds
    * @param southWestBound
    * @param northEastBound
    * @returns {Promise<any>}
    */
-  getEntriesBetweenCoords: (southWestBound, northEastBound) =>
+  getEntrancesBetweenCoords: (southWestBound, northEastBound) =>
     new Promise((resolve, reject) => {
       CommonService.query(PUBLIC_ENTRANCES_IN_BOUNDS, [
         southWestBound.lat,
@@ -130,14 +130,14 @@ module.exports = {
     }),
 
   /**
-   * Return the Quality entries in the bounds
-   * Quality entry stand for an entry that won't be clustered
+   * Return the quality entrances in the bounds
+   * Quality entrance stand for an entrance that won't be clustered
    * @param southWestBound
    * @param northEastBound
    * @param qualityLimit
    * @returns {Promise<any>}
    */
-  getQualityEntriesBetweenCoords: (
+  getQualityEntrancesBetweenCoords: (
     southWestBound,
     northEastBound,
     qualityLimit,
@@ -320,7 +320,7 @@ module.exports = {
             resolve(results);
           })
           .catch((err) => {
-            sails.log.debug('no entry found in the sub Partition');
+            sails.log.debug('No entrance found in the sub partition');
             reject(err);
           });
       });
@@ -335,9 +335,9 @@ module.exports = {
     qualityLimit,
   ) =>
     new Promise((resolve, reject) => {
-      GeoLocService.countEntries(southWestBound, northEastBound).then(
+      GeoLocService.countEntrances(southWestBound, northEastBound).then(
         () => {
-          // count doesn't take count of the quality entries that are removed
+          // count doesn't take count of the quality entrances that are removed
           GeoLocService.getGroupedItem(
             southWestGlobalBound,
             northEastGlobalBound,
@@ -360,43 +360,43 @@ module.exports = {
     }),
 
   /**
-   * format the quality entries in a light version of the entries
-   * Quality entry stand for an entry that won't be clustered
-   * @param entries
+   * Format the quality entrances in a lighter version
+   * Quality entrance stand for an entrance that won't be clustered
+   * @param entrances
    * @returns {Promise<any>}
    */
-  formatQualityEntriesMap: (entries) =>
-    entries.map((entry) => {
-      let entryCave;
+  formatQualityEntrancesMap: (entrances) =>
+    entrances.map((entrance) => {
+      let entranceCave;
 
-      if (entry.idCave) {
-        entryCave = {
-          id: entry.idCave,
-          name: entry.nameCave,
-          depth: entry.depthCave,
-          length: entry.lengthCave,
+      if (entrance.idCave) {
+        entranceCave = {
+          id: entrance.idCave,
+          name: entrance.nameCave,
+          depth: entrance.depthCave,
+          length: entrance.lengthCave,
         };
       } else {
-        entryCave = {
-          depth: entry.depthSE,
-          length: entry.lengthSE,
+        entranceCave = {
+          depth: entrance.depthSE,
+          length: entrance.lengthSE,
         };
       }
 
       return {
-        id: entry.id,
-        name: entry.name,
-        city: entry.city,
-        region: entry.region,
-        cave: entryCave,
-        longitude: parseFloat(entry.longitude),
-        latitude: parseFloat(entry.latitude),
-        quality: entry.size_coef,
+        id: entrance.id,
+        name: entrance.name,
+        city: entrance.city,
+        region: entrance.region,
+        cave: entranceCave,
+        longitude: parseFloat(entrance.longitude),
+        latitude: parseFloat(entrance.latitude),
+        quality: entrance.size_coef,
       };
     }),
 
   /**
-   * return a light version of the grottos
+   * Return a lighter version of the grottos
    * @param grottos
    */
   formatGrottos: (grottos) => {
@@ -412,20 +412,20 @@ module.exports = {
   },
 
   /**
-   * format the quality entries with the groups of entries and the grotto
-   * @param formattedQualityEntries
-   * @param formattedGroupEntry
+   * Format the quality entrances with the groups of entrances and the grottos
+   * @param formattedQualityEntrances
+   * @param formattedGroupEntrance
    * @param formattedGrottos
    */
-  formatEntriesMap: (
-    formattedQualityEntries,
-    formattedGroupEntry,
+  formatEntrancesMap: (
+    formattedQualityEntrances,
+    formattedGroupEntrance,
     formattedGrottos,
     formattedCaves,
   ) => {
     return {
-      qualityEntriesMap: formattedQualityEntries,
-      groupEntriesMap: formattedGroupEntry,
+      qualityEntrancesMap: formattedQualityEntrances,
+      groupEntrancesMap: formattedGroupEntrance,
       grottos: formattedGrottos,
       caves: formattedCaves,
     };
@@ -447,29 +447,32 @@ module.exports = {
   },
 
   /**
-   * Return the entries, the caves, the groups and the clusters of entries in certain bounds and at specific level of zoom,
+   * Return the entrances, the caves, the groups and the clusters of entrances in certain bounds and at specific level of zoom,
    * Depending of the zoom level, the clustering behaviour will change.
    * @param southWestBound
    * @param northEastBound
    * @param zoom : Zoom of the leaflet Map
-   * @param limitEntries : Maximum number of entries that will be showed at a certain level of zoom
+   * @param limitEntrances : Maximum number of entrances that will be showed at a certain level of zoom
    * @returns {Promise<any>}
    */
-  getEntriesMap: (southWestBound, northEastBound, zoom, limitEntries) =>
+  getEntrancesMap: (southWestBound, northEastBound, zoom, limitEntrances) =>
     new Promise((resolve, reject) => {
-      let qualityEntriesMap = [];
-      let groupEntriesMap = [];
+      let qualityEntrancesMap = [];
+      let groupEntrancesMap = [];
       let grottoMap = [];
       let caveMap = [];
-      const getEntriesPromiseList = [];
+      const getEntrancesPromiseList = [];
 
       if (zoom > 11) {
         // no clustering
-        getEntriesPromiseList.push(
-          GeoLocService.getEntriesBetweenCoords(southWestBound, northEastBound)
-            .then((entries) => {
-              qualityEntriesMap = GeoLocService.formatQualityEntriesMap(
-                entries,
+        getEntrancesPromiseList.push(
+          GeoLocService.getEntrancesBetweenCoords(
+            southWestBound,
+            northEastBound,
+          )
+            .then((entrances) => {
+              qualityEntrancesMap = GeoLocService.formatQualityEntrancesMap(
+                entrances,
               );
             })
             .catch((err) => {
@@ -477,15 +480,15 @@ module.exports = {
             }),
         );
       } else if (zoom > 9) {
-        getEntriesPromiseList.push(
-          GeoLocService.getQualityEntriesBetweenCoords(
+        getEntrancesPromiseList.push(
+          GeoLocService.getQualityEntrancesBetweenCoords(
             southWestBound,
             northEastBound,
-            limitEntries,
+            limitEntrances,
           )
-            .then((entries) => {
-              qualityEntriesMap = GeoLocService.formatQualityEntriesMap(
-                entries,
+            .then((entrances) => {
+              qualityEntrancesMap = GeoLocService.formatQualityEntrancesMap(
+                entrances,
               );
             })
             .catch((err) => {
@@ -493,28 +496,28 @@ module.exports = {
             }),
         );
 
-        getEntriesPromiseList.push(
+        getEntrancesPromiseList.push(
           GeoLocService.findByBoundsPartitioned(
             southWestBound,
             northEastBound,
-            limitEntries,
+            limitEntrances,
           )
             .then((partResult) => {
-              groupEntriesMap = partResult;
+              groupEntrancesMap = partResult;
             })
             .catch((err) => {
               sails.log.error(err);
             }),
         );
       } else {
-        getEntriesPromiseList.push(
+        getEntrancesPromiseList.push(
           GeoLocService.findByBoundsPartitioned(
             southWestBound,
             northEastBound,
             0,
           )
             .then((partResult) => {
-              groupEntriesMap = partResult;
+              groupEntrancesMap = partResult;
             })
             .catch((err) => {
               sails.log.error(err);
@@ -522,7 +525,7 @@ module.exports = {
         );
       }
 
-      getEntriesPromiseList.push(
+      getEntrancesPromiseList.push(
         GeoLocService.getGrottoBetweenCoords(southWestBound, northEastBound)
           .then((grottos) => {
             grottoMap = GeoLocService.formatGrottos(grottos);
@@ -532,7 +535,7 @@ module.exports = {
           }),
       );
 
-      getEntriesPromiseList.push(
+      getEntrancesPromiseList.push(
         GeoLocService.getCaves(southWestBound, northEastBound)
           .then((caves) => {
             caveMap = GeoLocService.formatCaves(caves);
@@ -542,11 +545,11 @@ module.exports = {
           }),
       );
 
-      Promise.all(getEntriesPromiseList).then(() => {
+      Promise.all(getEntrancesPromiseList).then(() => {
         resolve(
-          GeoLocService.formatEntriesMap(
-            qualityEntriesMap,
-            groupEntriesMap,
+          GeoLocService.formatEntrancesMap(
+            qualityEntrancesMap,
+            groupEntrancesMap,
             grottoMap,
             caveMap,
           ),
