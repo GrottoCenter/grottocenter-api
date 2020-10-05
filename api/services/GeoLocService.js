@@ -1,35 +1,44 @@
 /**
  */
 
-const PUBLIC_ENTRIES_IN_BOUNDS =
-  'SELECT e.Id as id, e.Name as name, e.City as city, ' +
-  'e.Region as region, e.Longitude as longitude, e.Latitude as latitude, ' +
-  'e.Quality as quality, e.Id_cave as idCave, c.Name as nameCave, c.Depth as dephtCave, ' +
-  'c.Length as lengthCave, se.Depth as depthSE, se.Length as lengthSE ' +
-  'from t_entry as e ' +
-  'inner join t_single_entry as se on se.Id=e.Id ' +
-  'LEFT JOIN t_cave as c ON c.Id = e.Id_cave ' +
-  "WHERE e.Latitude > $1 AND e.Latitude < $2 AND e.Longitude > $3 AND e.Longitude < $4 AND e.Is_public='YES' " +
-  'ORDER BY Quality DESC ' +
-  'LIMIT $5; ';
+const PUBLIC_ENTRANCES_IN_BOUNDS = `
+  SELECT e.id as id, ne.name as name, e.city as city,  
+  e.region as region, e.longitude as longitude, e.latitude as latitude,  
+  c.size_coef as size_coef, e.id_cave as idCave, nc.name as nameCave, c.depth as depthCave,  
+  c.length as lengthCave
+  FROM t_entrance as e  
+  LEFT JOIN t_name as ne ON ne.id_entrance = e.id
+  LEFT JOIN t_name as nc ON nc.id_cave = e.id
+  LEFT JOIN t_cave as c ON c.Id = e.Id_cave  
+  WHERE e.latitude > $1 AND e.latitude < $2 AND e.longitude > $3 AND e.longitude < $4 
+  AND e.is_public=true
+  ORDER BY size_coef DESC  
+  LIMIT $5;
+`;
 
-const CAVES_IN_BOUNDS =
-  'SELECT c.Id as id, c.Name as name, avg(en.Longitude) as longitude, avg(en.Latitude) as latitude ' +
-  'FROM t_entry as en ' +
-  'INNER JOIN t_cave c on c.Id = en.Id_cave ' +
-  "WHERE en.Latitude > $1 AND en.Latitude < $2 AND en.Longitude > $3 AND en.Longitude < $4 AND en.Is_public='YES' " +
-  'GROUP BY c.Id, c.Name;';
+const CAVES_IN_BOUNDS = `
+  SELECT c.id as id, nc.name as name, avg(en.longitude) as longitude, avg(en.latitude) as latitude  
+  FROM t_entrance as en  
+  INNER JOIN t_cave c ON c.id = en.id_cave 
+  LEFT JOIN t_name AS nc ON nc.id_cave = c.id
+  WHERE en.latitude > $1 AND en.latitude < $2 AND en.longitude > $3 AND en.longitude < $4 AND en.is_public=true
+  GROUP BY c.id, nc.name
+`;
 
-const PUBLIC_ENTRIES_AVG_COORDS_WITHOUT_QUALITY_ENTRY =
-  'SELECT count(t1.Id) as count, avg(t1.Latitude) as latitude, avg(t1.Longitude) as longitude ' +
-  'FROM t_entry as t1 ' +
-  'LEFT JOIN (SELECT * ' +
-  'FROM t_entry ' +
-  "WHERE Latitude > $5 AND Latitude < $6 AND Longitude > $7 AND Longitude < $8 AND Is_public='YES' " +
-  'ORDER BY Quality DESC ' +
-  'LIMIT $9) as t2 on t1.Id = t2.Id ' +
-  "WHERE t1.Latitude > $1 AND t1.Latitude < $2 AND t1.Longitude > $3 AND t1.Longitude < $4 AND t1.Is_public='YES' " +
-  'AND t2.Id IS NULL; ';
+const PUBLIC_ENTRANCES_AVG_COORDS_WITHOUT_QUALITY_ENTRANCE = `
+  SELECT count(t1.Id) as count, avg(t1.latitude) as latitude, avg(t1.longitude) as longitude  
+  FROM t_entrance as t1  
+  LEFT JOIN (
+    SELECT e.*
+    FROM t_entrance AS e
+    LEFT JOIN t_cave AS c ON c.id = e.id_cave
+    WHERE e.latitude > $5 AND e.latitude < $6 AND e.longitude > $7 AND e.longitude < $8 AND e.is_public=true
+    ORDER BY size_coef DESC  
+    LIMIT $9
+  ) as t2 on t1.id = t2.id 
+  WHERE t1.latitude > $1 AND t1.latitude < $2 AND t1.longitude > $3 AND t1.longitude < $4 AND t1.is_public=true
+  AND t2.id IS NULL; 
+`;
 
 module.exports = {
   /**
@@ -49,7 +58,7 @@ module.exports = {
       }; // TODO add controls on parameters
 
       // TODO : to adapt when authentication will be implemented
-      parameters.isPublic = 'YES';
+      parameters.isPublic = true;
 
       TEntrance.count(parameters).exec((err, result) => {
         if (err) {
@@ -97,7 +106,7 @@ module.exports = {
    */
   getEntriesBetweenCoords: (southWestBound, northEastBound) =>
     new Promise((resolve, reject) => {
-      CommonService.query(PUBLIC_ENTRIES_IN_BOUNDS, [
+      CommonService.query(PUBLIC_ENTRANCES_IN_BOUNDS, [
         southWestBound.lat,
         northEastBound.lat,
         southWestBound.lng,
@@ -134,7 +143,7 @@ module.exports = {
     qualityLimit,
   ) =>
     new Promise((resolve, reject) => {
-      CommonService.query(PUBLIC_ENTRIES_IN_BOUNDS, [
+      CommonService.query(PUBLIC_ENTRANCES_IN_BOUNDS, [
         southWestBound.lat,
         northEastBound.lat,
         southWestBound.lng,
@@ -201,17 +210,20 @@ module.exports = {
     qualityLimit,
   ) =>
     new Promise((resolve, reject) => {
-      CommonService.query(PUBLIC_ENTRIES_AVG_COORDS_WITHOUT_QUALITY_ENTRY, [
-        southWestBound.lat,
-        northEastBound.lat,
-        southWestBound.lng,
-        northEastBound.lng,
-        southWestGlobalBound.lat,
-        northEastGlobalBound.lat,
-        southWestGlobalBound.lng,
-        northEastGlobalBound.lng,
-        qualityLimit,
-      ]).then(
+      CommonService.query(
+        PUBLIC_ENTRANCES_AVG_COORDS_WITHOUT_QUALITY_ENTRANCE,
+        [
+          southWestBound.lat,
+          northEastBound.lat,
+          southWestBound.lng,
+          northEastBound.lng,
+          southWestGlobalBound.lat,
+          northEastGlobalBound.lat,
+          southWestGlobalBound.lng,
+          northEastGlobalBound.lng,
+          qualityLimit,
+        ],
+      ).then(
         (results) => {
           if (
             !results ||
@@ -377,9 +389,9 @@ module.exports = {
         city: entry.city,
         region: entry.region,
         cave: entryCave,
-        longitude: entry.longitude,
-        latitude: entry.latitude,
-        quality: entry.quality,
+        longitude: parseFloat(entry.longitude),
+        latitude: parseFloat(entry.latitude),
+        quality: entry.size_coef,
       };
     }),
 
@@ -393,8 +405,8 @@ module.exports = {
         id: grotto.id,
         name: grotto.name,
         address: grotto.address,
-        longitude: grotto.longitude,
-        latitude: grotto.latitude,
+        longitude: parseFloat(grotto.longitude),
+        latitude: parseFloat(grotto.latitude),
       };
     });
   },
