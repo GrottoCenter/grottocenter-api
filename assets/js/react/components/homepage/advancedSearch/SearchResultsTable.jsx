@@ -269,7 +269,9 @@ class SearchResultsTable extends React.Component {
         urlToRedirectTo = `/ui/massifs/${id}`;
         break;
       case 'documents':
-        urlToRedirectTo = `/ui/bbs/${id}`;
+        // C. ROIG 05/10/2020
+        // Temporarly disabled, document page in progress...
+        // urlToRedirectTo = `/ui/bbs/${id}`;
         break;
       default:
         break;
