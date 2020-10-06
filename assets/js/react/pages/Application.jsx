@@ -21,6 +21,7 @@ import AppBar from '../features/AppBar';
 import isAuth from '../helpers/AuthHelper';
 
 import DocumentSubmission from './DocumentSubmission';
+import DocumentValidation from './DocumentValidation';
 import EntryPage from './Entry';
 import GroupPage from './Group';
 import BbsPage from './Bbs';
@@ -72,6 +73,7 @@ const Application = () => {
         <Route path="/ui/bbs/:bbsId" component={BbsPage} />
         <Route path="/ui/login" component={HomePage} />
         <Route path="/ui/documents/add" component={DocumentSubmission} />
+        <Route path="/ui/documents/validation" component={DocumentValidation} />
         <Redirect path="/ui/*" to="/ui" />
       </Switch>
     </Layout>
