@@ -7,13 +7,16 @@
  *
  */
 module.exports = (req, res, next) => {
-  const token =
-    (req.body && req.body.token) ||
-    req.query.token ||
-    req.headers['x-access-token'];
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res
+      .status(401)
+      .send(
+        'Bearer token not found: you need to be authenticated to perform this action.',
+      );
+  }
 
-  // We delete the token from param to not mess with blueprints
-  delete req.query.token;
+  const token = authHeader.substring(7, authHeader.length);
 
   if (token) {
     TokenAuthService.verify(token, (err, responseToken) => {

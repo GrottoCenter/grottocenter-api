@@ -11,6 +11,12 @@ export const getAuthToken = () => {
   return window.localStorage.getItem(identificationTokenName);
 };
 
+export const getAuthHTTPHeader = () => {
+  return {
+    Authorization: `Bearer ${getAuthToken()}`,
+  };
+};
+
 /**
  * True if the user has a group with the name "Administrator", else false.
  */
