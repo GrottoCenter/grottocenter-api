@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useIntl } from 'react-intl';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
-import { Button, CircularProgress, Typography } from '@material-ui/core';
+import { Button, Typography } from '@material-ui/core';
 import ClearIcon from '@material-ui/icons/Clear';
 import { isNil, length } from 'ramda';
 
@@ -141,8 +141,6 @@ const ManageUserGroups = ({
         caverState.errorMessages.length > 0 ||
         areGroupsSubmittedWithSuccess) && (
         <FeedbackBlock>
-          {caverState.isLoading && <CircularProgress />}
-
           {caverState.errorMessages.length > 0 &&
             caverState.errorMessages.map((error) => (
               <ErrorMessage

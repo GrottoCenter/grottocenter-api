@@ -4,6 +4,7 @@ import { useIntl } from 'react-intl';
 import styled from 'styled-components';
 import {
   Button,
+  CircularProgress,
   FormControlLabel,
   Switch,
   Typography,
@@ -87,10 +88,14 @@ const UserGroups = ({
 
       <SpacedButton
         onClick={onSaveGroups}
-        color="primary"
+        color={isLoading ? 'default' : 'primary'}
         disabled={!userGroupsHaveChanged || isLoading}
       >
-        {formatMessage({ id: 'Save' })}
+        {isLoading ? (
+          <CircularProgress size={20} color="primary" />
+        ) : (
+          formatMessage({ id: 'Save' })
+        )}
       </SpacedButton>
     </>
   );
