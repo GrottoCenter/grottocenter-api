@@ -40,7 +40,16 @@ const MultipleSubjectsSelect = ({
           id: option.code,
           defaultMessage: option.subject,
         });
-        return `${code} ${subjectName}`;
+        let parentText = '';
+        if (option.parent) {
+          const parentCode = option.parent ? option.parent.code : '';
+          const parentSubjectName = formatMessage({
+            id: option.parent.code,
+            defaultMessage: option.parent.subject,
+          });
+          parentText = `${parentCode} ${parentSubjectName} -`;
+        }
+        return `${parentText} ${code} ${subjectName}`;
       }}
       getOptionSelected={(optionToTest, valueToTest) =>
         optionToTest.code === valueToTest.code
