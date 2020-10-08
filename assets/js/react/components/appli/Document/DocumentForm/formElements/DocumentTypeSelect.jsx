@@ -57,7 +57,7 @@ const DocumentTypeSelect = ({
             .sort((dt1, dt2) => dt1.id > dt2.id)
             .map((t) => (
               <MenuItem key={t.id} value={t.id} name={t.name}>
-                #{t.id} <Translate>{t.name}</Translate>
+                <Translate>{t.name}</Translate>
               </MenuItem>
             ))}
         </Select>
