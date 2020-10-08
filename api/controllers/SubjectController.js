@@ -25,20 +25,22 @@ module.exports = {
   },
 
   findAll: (req, res, next, converter) => {
-    TSubject.find().exec((err, found) => {
-      const params = {
-        controllerMethod: 'TSubjectController.findAll',
-        searchedItem: 'All Subjects',
-      };
-      return ControllerService.treatAndConvert(
-        req,
-        err,
-        found,
-        params,
-        res,
-        converter,
-      );
-    });
+    TSubject.find()
+      .populate('parent')
+      .exec((err, found) => {
+        const params = {
+          controllerMethod: 'TSubjectController.findAll',
+          searchedItem: 'All Subjects',
+        };
+        return ControllerService.treatAndConvert(
+          req,
+          err,
+          found,
+          params,
+          res,
+          converter,
+        );
+      });
   },
 
   search: (req, res, next, converter) => {
@@ -73,6 +75,7 @@ module.exports = {
       .where({
         or: orSearchArray,
       })
+      .populate('parent')
       .exec((err, found) => {
         const params = {};
         params.controllerMethod = 'TSubjectController.search';
