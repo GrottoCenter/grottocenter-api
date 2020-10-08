@@ -84,11 +84,11 @@ const AuthChecker = ({ errorMessageComponent, componentToDisplay }) => {
         <CenteredBlock>
           {errorMessageComponent || (
             <>
-              <ErrorMessage>
-                {formatMessage({
+              <ErrorMessage
+                message={formatMessage({
                   id: 'You must be authenticated in order to use this feature.',
                 })}
-              </ErrorMessage>
+              />
               <SpacedButton onClick={onLoginClick} variant="contained">
                 {formatMessage({ id: 'Log in' })}
               </SpacedButton>

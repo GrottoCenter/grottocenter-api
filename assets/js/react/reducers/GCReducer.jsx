@@ -20,6 +20,7 @@ import document from './DocumentReducer';
 import region from './RegionReducer';
 import identifierType from './IdentifierTypesReducer';
 import documentType from './DocumentTypeReducer';
+import caver from './CaverReducer';
 
 //
 //
@@ -49,6 +50,7 @@ const GCReducer = combineReducers({
   region,
   identifierType,
   documentType,
+  caver,
 });
 
 export default GCReducer;

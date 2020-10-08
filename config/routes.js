@@ -41,6 +41,12 @@ module.exports.routes = {
     csrf: true,
   },
 
+  '/ui': {
+    controller: 'Index',
+    action: 'index',
+    csrf: true,
+  },
+
   '/ui/*': {
     controller: 'Index',
     action: 'index',
@@ -125,14 +131,19 @@ module.exports.routes = {
     action: 'find',
   },
 
-  'PUT /api/cavers/:id': {
+  'PUT /api/cavers/:caverId/groups/:groupId': {
     controller: 'Caver',
-    action: 'update',
+    action: 'putOnGroup',
   },
 
-  'DELETE /api/cavers/:id': {
+  'DELETE /api/cavers/:caverId/groups/:groupId': {
     controller: 'Caver',
-    action: 'destroy',
+    action: 'removeFromGroup',
+  },
+
+  'POST /api/cavers/:caverId/groups': {
+    controller: 'Caver',
+    action: 'setGroups',
   },
 
   /* Entrance controller */
