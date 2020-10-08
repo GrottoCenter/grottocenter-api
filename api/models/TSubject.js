@@ -25,13 +25,7 @@ module.exports = {
 
     parent: {
       model: 'TSubject',
-      via: 'children',
       columnName: 'code_parent',
-    },
-
-    children: {
-      collection: 'TSubject',
-      via: 'parent',
     },
 
     documents: {

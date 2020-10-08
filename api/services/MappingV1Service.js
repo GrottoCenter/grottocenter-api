@@ -624,7 +624,10 @@ module.exports = {
     const result = { ...SubjectModel };
     result.code = source.id.trim(); // there are some spaces at the end of the id in the DB
     result.subject = source.subject;
-    result.parent = source.parent ? source.parent.trim() : null;
+    result.parent =
+      source.parent && source.parent.id && source.parent.subject
+        ? MappingV1Service.convertToSubjectModel(source.parent)
+        : null;
     return result;
   },
 
