@@ -25,7 +25,7 @@ export const allDocumentTypes = [
     parentId: null,
   },
   {
-    id: DocumentTypes.BOOK,
+    id: DocumentTypes.ARTICLE,
     name: 'Article',
     parentId: DocumentTypes.TEXT,
   },
@@ -35,7 +35,7 @@ export const allDocumentTypes = [
     parentId: DocumentTypes.TEXT,
   },
   {
-    id: DocumentTypes.ARTICLE,
+    id: DocumentTypes.BOOK,
     name: 'Book',
     parentId: DocumentTypes.TEXT,
   },
