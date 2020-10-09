@@ -1,4 +1,5 @@
 import React, { useContext, useMemo } from 'react';
+import { useIntl } from 'react-intl';
 import PropTypes from 'prop-types';
 import {
   FormControl,
@@ -6,6 +7,7 @@ import {
   InputLabel,
   MenuItem,
   Select,
+  Tooltip,
 } from '@material-ui/core';
 import Translate from '../../../../common/Translate';
 
@@ -23,7 +25,7 @@ const DocumentTypeSelect = ({
     docAttributes: { documentType },
     updateAttribute,
   } = useContext(DocumentFormContext);
-
+  const { formatMessage } = useIntl();
   const handleChange = (event, child) => {
     const newDocType = {
       id: event.target.value,
@@ -56,9 +58,15 @@ const DocumentTypeSelect = ({
           {allDocumentTypes
             .sort((dt1, dt2) => dt1.id > dt2.id)
             .map((t) => (
-              <MenuItem key={t.id} value={t.id} name={t.name}>
-                <Translate>{t.name}</Translate>
-              </MenuItem>
+              <Tooltip
+                name={t.name}
+                value={t.id}
+                key={t.id}
+                title={t.comment}
+                aria-label={t.comment}
+              >
+                <MenuItem>{formatMessage({ id: t.name })}</MenuItem>
+              </Tooltip>
             ))}
         </Select>
         {helperText && (
