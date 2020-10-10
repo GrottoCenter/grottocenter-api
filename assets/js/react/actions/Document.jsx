@@ -7,6 +7,8 @@ export const POST_DOCUMENT = 'POST_DOCUMENT';
 export const POST_DOCUMENT_SUCCESS = 'POST_DOCUMENT_SUCCESS';
 export const POST_DOCUMENT_FAILURE = 'POST_DOCUMENT_FAILURE';
 
+export const RESET_API_MESSAGES = 'RESET_API_MESSAGES';
+
 // ==========
 
 export const postDocumentAction = () => ({
@@ -22,6 +24,10 @@ export const postDocumentFailure = (errorMessages, httpCode) => ({
   type: POST_DOCUMENT_FAILURE,
   errorMessages,
   httpCode,
+});
+
+export const resetApiMessages = () => ({
+  type: RESET_API_MESSAGES,
 });
 
 export function postDocument(docAttributes) {

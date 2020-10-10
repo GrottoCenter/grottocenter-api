@@ -36,6 +36,7 @@ export const defaultContext = {
   currentStep: 1,
 
   updateAttribute: (attributeName, newValue) => {}, // eslint-disable-line no-unused-vars
+  resetContext: () => {},
 };
 
 export const DocumentFormContext = createContext(defaultContext);
@@ -58,6 +59,10 @@ const Provider = ({ children }) => {
     [setState],
   );
 
+  const resetContext = useCallback(() => {
+    setState(defaultContext);
+  });
+
   useEffect(() => {
     const invalidateSteps = without(__, validatedSteps);
     const validateStep = pipe(append(__, validatedSteps), uniq);
@@ -77,13 +82,14 @@ const Provider = ({ children }) => {
   return (
     <DocumentFormContext.Provider
       value={{
-        docAttributes: docFormState,
         action: {},
-        updateAttribute,
         currentStep,
-        validatedSteps,
-        updateCurrentStep: setCurrentStep,
+        docAttributes: docFormState,
         isFormValid,
+        resetContext,
+        updateAttribute,
+        updateCurrentStep: setCurrentStep,
+        validatedSteps,
       }}
     >
       {children}

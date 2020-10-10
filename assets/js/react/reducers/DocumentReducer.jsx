@@ -2,6 +2,7 @@ import {
   POST_DOCUMENT,
   POST_DOCUMENT_FAILURE,
   POST_DOCUMENT_SUCCESS,
+  RESET_API_MESSAGES,
 } from '../actions/Document';
 
 //
@@ -43,6 +44,12 @@ const document = (state = initialState, action) => {
         isLoading: false,
         errorMessages: action.errorMessages,
         latestHttpCode: action.httpCode,
+      };
+    case RESET_API_MESSAGES:
+      return {
+        ...state,
+        errorMessages: [],
+        latestHttpCode: undefined,
       };
     default:
       return state;
