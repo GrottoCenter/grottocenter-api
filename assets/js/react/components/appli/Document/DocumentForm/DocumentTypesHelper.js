@@ -11,31 +11,37 @@ export const DocumentTypes = {
 export const allDocumentTypes = [
   {
     id: DocumentTypes.COLLECTION,
+    comment: 'An aggregation of resources',
     name: 'Collection',
     parentId: null,
   },
   {
     id: DocumentTypes.IMAGE,
+    comment: 'A visual representation other than text',
     name: 'Image',
     parentId: null,
   },
   {
     id: DocumentTypes.TEXT,
+    comment: 'A resource consisting primarily of words for reading',
     name: 'Text',
     parentId: null,
   },
   {
     id: DocumentTypes.ARTICLE,
+    comment: 'An article from a source',
     name: 'Article',
     parentId: DocumentTypes.TEXT,
   },
   {
     id: DocumentTypes.ISSUE,
+    comment: 'An issue of a periodic publication',
     name: 'Issue',
     parentId: DocumentTypes.TEXT,
   },
   {
     id: DocumentTypes.BOOK,
+    comment: '',
     name: 'Book',
     parentId: DocumentTypes.TEXT,
   },

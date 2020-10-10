@@ -1,4 +1,5 @@
 import React, { useContext, useMemo } from 'react';
+import { useIntl } from 'react-intl';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import { includes } from 'ramda';
@@ -34,6 +35,7 @@ const FlexItemWrapper = styled.div`
 // ===================================
 
 const Step2 = ({ stepId }) => {
+  const { formatMessage } = useIntl();
   const {
     docAttributes: { documentType },
     validatedSteps,
@@ -75,7 +77,7 @@ const Step2 = ({ stepId }) => {
             }
             labelText="Document Parent"
             required={isIssue(documentType)}
-            searchLabelText="Search for a document..."
+            searchLabelText={formatMessage({ id: 'Search for a document...' })}
           />
         )}
 
@@ -98,7 +100,9 @@ const Step2 = ({ stepId }) => {
                 }
                 labelText="Editor"
                 required={isCollection(documentType) || isIssue(documentType)}
-                searchLabelText="Search for an editor..."
+                searchLabelText={formatMessage({
+                  id: 'Search for an editor...',
+                })}
               />
             </FlexItemWrapper>
           )}
@@ -131,7 +135,9 @@ const Step2 = ({ stepId }) => {
                 }
                 labelText="Library"
                 required={false}
-                searchLabelText="Search for a library..."
+                searchLabelText={formatMessage({
+                  id: 'Search for a library...',
+                })}
               />
             </FlexItemWrapper>
           )}
@@ -161,7 +167,9 @@ const Step2 = ({ stepId }) => {
                 }
                 labelText="Massif"
                 required={false}
-                searchLabelText="Search for a massif..."
+                searchLabelText={formatMessage({
+                  id: 'Search for a massif...',
+                })}
               />
             </FlexItemWrapper>
           )}
