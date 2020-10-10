@@ -76,15 +76,14 @@ const DocumentSubmission = () => {
         <>
           {isDocSubmittedWithSuccess && (
             <CenteredBlock>
-              <SuccessMessage>
-                <Translate>
-                  Your document has been successfully submitted, thank you!
-                </Translate>
-                <br />
-                <Translate>
-                  It will be verified by one of ours moderators.
-                </Translate>
-              </SuccessMessage>
+              <SuccessMessage
+                message={`${formatMessage({
+                  id:
+                    'Your document has been successfully submitted, thank you!',
+                })} ${formatMessage({
+                  id: 'It will be verified by one of ours moderators.',
+                })}`}
+              />
               <SpacedButton
                 onClick={() => history.push('')}
                 variant="contained"
