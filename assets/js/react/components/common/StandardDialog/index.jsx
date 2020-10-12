@@ -16,7 +16,7 @@ const CustomDialogTitle = styled(DialogTitle)`
 
 const DialogContent = styled(MuiDialogContent)`
   && {
-    overflow: visible;
+    overflow: ${({ $scrollable }) => ($scrollable ? 'auto' : 'visible')};
   }
 `;
 
@@ -28,6 +28,7 @@ const CloseButton = styled(IconButton)`
 const StandardDialog = ({
   fullScreen = false,
   fullWidth = false,
+  scrollable = false,
   maxWidth = 'sm',
   open = false,
   onClose = () => {},
@@ -49,7 +50,9 @@ const StandardDialog = ({
       </CloseButton>
     )}
     <CustomDialogTitle>{title}</CustomDialogTitle>
-    {children && <DialogContent>{children}</DialogContent>}
+    {children && (
+      <DialogContent $scrollable={scrollable}>{children}</DialogContent>
+    )}
     <DialogActions>{actions || null}</DialogActions>
   </Dialog>
 );
@@ -60,10 +63,11 @@ StandardDialog.propTypes = {
   // eslint-disable-next-line react/require-default-props
   fullScreen: PropTypes.bool,
   fullWidth: PropTypes.bool,
-  maxWidth: PropTypes.oneOf(['xs', 'sm', 'md', 'lg']),
+  maxWidth: PropTypes.oneOf(['xs', 'sm', 'md', 'lg', 'xl']),
   open: PropTypes.bool,
   onClose: PropTypes.func,
   title: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
   actions: PropTypes.arrayOf(PropTypes.node),
   children: PropTypes.node,
+  scrollable: PropTypes.bool,
 };
