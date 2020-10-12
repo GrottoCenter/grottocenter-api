@@ -4,9 +4,9 @@ import { useIntl } from 'react-intl';
 import PropTypes from 'prop-types';
 
 import Translate from '../components/common/Translate';
-import { loadSubjectsSearch, resetSubjectsSearch } from '../actions/Subject';
+import { loadSubjects } from '../actions/Subject';
 
-import MultipleSelectComponent from '../components/appli/Document/DocumentForm/formElements/MultipleSelect';
+import MultipleSelectWithOptionsComponent from '../components/appli/Document/DocumentForm/formElements/MultipleSelectWithOptions';
 
 const MultipleSubjectsSelect = ({
   computeHasError,
@@ -17,21 +17,14 @@ const MultipleSubjectsSelect = ({
 }) => {
   const dispatch = useDispatch();
   const { formatMessage } = useIntl();
-  const {
-    errors: searchErrors,
-    isFetching,
-    searchedSubjects: searchResults,
-  } = useSelector((state) => state.subject);
+  const { isFetching, subjects } = useSelector((state) => state.subject);
 
-  const loadSearchResults = (inputValue) => {
-    dispatch(loadSubjectsSearch(inputValue, inputValue));
-  };
-  const resetSearchResults = () => {
-    dispatch(resetSubjectsSearch());
-  };
+  React.useEffect(() => {
+    dispatch(loadSubjects());
+  }, []);
 
   return (
-    <MultipleSelectComponent
+    <MultipleSelectWithOptionsComponent
       computeHasError={computeHasError}
       contextValueName={contextValueName}
       getOptionLabel={(option) => {
@@ -42,12 +35,8 @@ const MultipleSubjectsSelect = ({
         });
         let parentText = '';
         if (option.parent) {
-          const parentCode = option.parent ? option.parent.code : '';
-          const parentSubjectName = formatMessage({
-            id: option.parent.code,
-            defaultMessage: option.parent.subject,
-          });
-          parentText = `${parentCode} ${parentSubjectName} -`;
+          // Indent if there is a parent.
+          parentText = '\u00a0\u00a0\u00a0\u00a0';
         }
         return `${parentText} ${code} ${subjectName}`;
       }}
@@ -57,15 +46,11 @@ const MultipleSubjectsSelect = ({
       helperText={helperText}
       isLoading={isFetching}
       labelName={labelName}
-      loadSearchResults={loadSearchResults}
-      nbCharactersNeededToLaunchSearch={3}
       noOptionsText={
         <Translate>No subject matches you search criteria</Translate>
       }
+      options={subjects}
       required={required}
-      resetSearchResults={resetSearchResults}
-      searchErrors={searchErrors}
-      searchResults={searchResults}
     />
   );
 };

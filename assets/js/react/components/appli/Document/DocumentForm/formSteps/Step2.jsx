@@ -75,7 +75,7 @@ const Step2 = ({ stepId }) => {
                 Use the search bar to search for an existing document.
               </Translate>
             }
-            labelText="Document Parent"
+            labelText="Parent Document"
             required={isIssue(documentType)}
             searchLabelText={formatMessage({ id: 'Search for a document...' })}
           />
