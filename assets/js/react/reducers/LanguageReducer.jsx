@@ -28,7 +28,7 @@ const initialState = {
 const language = (state = initialState, action) => {
   switch (action.type) {
     case CHANGE_LANGUAGE:
-      return action.lang;
+      return { ...state, lang: action.lang };
 
     case FETCH_LANGUAGES:
       return { ...state, isFetching: true };
