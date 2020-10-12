@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
 import { Button, Fade } from '@material-ui/core';
 import { useIntl } from 'react-intl';
@@ -6,8 +6,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
 import isAuth from '../helpers/AuthHelper';
-import { postDocument } from '../actions/Document';
+import { postDocument, resetApiMessages } from '../actions/Document';
 import { displayLoginDialog } from '../actions/Auth';
+import { DocumentFormContext } from '../components/appli/Document/DocumentForm/Provider';
 
 import DocumentForm from '../components/appli/Document/DocumentForm';
 import Layout from '../components/common/Layouts/Fixed/FixedContent';
@@ -33,6 +34,7 @@ const DocumentSubmission = () => {
   const history = useHistory();
   const dispatch = useDispatch();
   const { formatMessage } = useIntl();
+  const { resetContext } = useContext(DocumentFormContext);
 
   const [isDocSubmittedWithSuccess, setDocSubmittedWithSuccess] = useState(
     false,
@@ -49,6 +51,11 @@ const DocumentSubmission = () => {
   const submitForm = (formData) => {
     dispatch(postDocument(formData));
     setDocSubmitted(true);
+  };
+
+  const onSubmitAnotherDocument = () => {
+    dispatch(resetApiMessages());
+    resetContext();
   };
 
   useEffect(() => {
@@ -76,15 +83,20 @@ const DocumentSubmission = () => {
         <>
           {isDocSubmittedWithSuccess && (
             <CenteredBlock>
-              <SuccessMessage>
-                <Translate>
-                  Your document has been successfully submitted, thank you!
-                </Translate>
-                <br />
-                <Translate>
-                  It will be verified by one of ours moderators.
-                </Translate>
-              </SuccessMessage>
+              <SuccessMessage
+                message={`${formatMessage({
+                  id:
+                    'Your document has been successfully submitted, thank you!',
+                })} ${formatMessage({
+                  id: 'It will be verified by one of ours moderators.',
+                })}`}
+              />
+              <SpacedButton
+                onClick={onSubmitAnotherDocument}
+                variant="contained"
+              >
+                <Translate>Submit another document</Translate>
+              </SpacedButton>
               <SpacedButton
                 onClick={() => history.push('')}
                 variant="contained"
