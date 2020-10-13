@@ -122,6 +122,7 @@ const DocumentModel = {
   identifierType: undefined,
   descriptions: [],
   languages: [],
+  mainLanguage: undefined,
   massif: undefined,
   entrance: undefined,
   cave: undefined,
@@ -560,6 +561,7 @@ module.exports = {
     result.parent = source.parent;
     result.descriptions = source.descriptions;
     result.languages = source.languages;
+    result.mainLanguage = source.mainLanguage;
     result.massif = source.massif;
     result.cave = source.cave;
     result.entrance = source.entrance;

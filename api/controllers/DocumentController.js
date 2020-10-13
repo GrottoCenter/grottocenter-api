@@ -77,24 +77,31 @@ module.exports = {
     };
 
     // Launch creation request
-    TDocument.create(cleanedData)
-      .then(() => {
-        const params = {};
-        params.controllerMethod = 'DocumentController.create';
-        return ControllerService.treat(req, null, {}, params, res);
-      })
-      .catch({ code: 'E_UNIQUE' }, (err) => {
-        return res.sendStatus(409);
-      })
-      .catch({ name: 'UsageError' }, (err) => {
-        return res.badRequest(err.cause.message);
-      })
-      .catch({ name: 'AdapterError' }, (err) => {
-        return res.badRequest(err.cause.message);
-      })
-      .catch((err) => {
-        return res.serverError(err.cause.message);
+    try {
+      const documentCreated = await TDocument.create(cleanedData).fetch();
+
+      // Create main language manually (not handled automatically)
+      await JDocumentLanguage.create({
+        document: documentCreated.id,
+        language: req.body.documentMainLanguage.id,
+        isMain: true,
       });
+
+      const params = {};
+      params.controllerMethod = 'DocumentController.create';
+      return ControllerService.treat(req, null, documentCreated, params, res);
+    } catch (e) {
+      if (e.code === 'E_UNIQUE') {
+        return res.sendStatus(409);
+      }
+      if (e.name === 'UsageError') {
+        return res.badRequest(e.cause.message);
+      }
+      if (e.name === 'AdapterError') {
+        return res.badRequest(e.cause.message);
+      }
+      return res.serverError(e.cause.message);
+    }
   },
 
   findAll: (
@@ -103,12 +110,30 @@ module.exports = {
     next,
     converter = MappingV1Service.convertToDocumentList,
   ) => {
+    // By default get only the validated ones
+    const isValidated = req.param('isValidated')
+      ? !(req.param('isValidated').toLowerCase() === 'false')
+      : true;
+
     const sort = `${req.param('sortBy', 'dateInscription')} ${req.param(
       'orderBy',
       'ASC',
     )}`;
+
+    /* 
+      4 possible cases : isValidated (true or false) AND validation (null or not)
+      If the document is not validated and has a dateValidatoin, it means that it has been refused.
+      We don't want to retrieve these documents refused. 
+      So when isValidated is false, we need to retrieve only the document with a dateValidatoin set to null 
+      (= submitted documents which need to be reviewed).
+    */
+    const whereClause = {
+      and: [{ isValidated: isValidated }],
+    };
+    !isValidated ? whereClause.and.push({ dateValidation: null }) : '';
+
     TDocument.find()
-      .where({ isValidated: req.param('isValidated') === 'true' })
+      .where(whereClause)
       .skip(req.param('skip', 0))
       .limit(req.param('limit', 50))
       .sort(sort)
@@ -129,7 +154,7 @@ module.exports = {
       .populate('type')
       .exec((err, found) => {
         TDocument.count()
-          .where({ isValidated: req.param('isValidated') === 'true' })
+          .where(whereClause)
           .exec((err, countFound) => {
             const params = {
               controllerMethod: 'DocumentController.findAll',
@@ -188,27 +213,34 @@ module.exports = {
           return res.json({ error: notFoundMessage });
         }
 
+        const promises = [];
         // Get name of cave, entrance and massif
-        const namePromises = [];
-        namePromises.push(
+        promises.push(
           ramda.isNil(found.entrance)
             ? ''
             : NameService.setNames([found.entrance], 'entrance'),
         );
-        namePromises.push(
+        promises.push(
           ramda.isNil(found.cave)
             ? ''
             : NameService.setNames([found.cave], 'cave'),
         );
-        namePromises.push(
+        promises.push(
           ramda.isNil(found.massif)
             ? ''
             : NameService.setNames([found.massif], 'massif'),
         );
-        Promise.all(namePromises).then((results) => {
+
+        // Get main language
+        promises.push(DocumentService.getMainLanguage(found.id));
+
+        Promise.all(promises).then((results) => {
+          // Names
           results[0] !== '' ? (found.entrance = results[0][0]) : '';
           results[1] !== '' ? (found.cave = results[1][0]) : '';
           results[2] !== '' ? (found.massif = results[2][0]) : '';
+          // Main language
+          found.mainLanguage = results[3];
           return ControllerService.treatAndConvert(
             req,
             err,

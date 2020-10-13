@@ -104,6 +104,7 @@ paths:
         description: If the documents must be validated or not.
         required: false
         schema:
+          default: true
           type: boolean
       - name: skip
         in: query
