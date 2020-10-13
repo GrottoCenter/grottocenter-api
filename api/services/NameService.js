@@ -21,6 +21,10 @@ module.exports = {
             });
           }
         }
+        const mainName = entity.names.find((n) => n.isMain);
+        if (mainName) {
+          entity.name = mainName.name;
+        }
         return entity;
       }),
     );

@@ -69,5 +69,11 @@ module.exports = {
       allowNull: false,
       defaultsTo: false,
     },
+
+    documents: {
+      collection: 'TDocument',
+      via: 'language',
+      through: 'JDocumentLanguage',
+    },
   },
 };

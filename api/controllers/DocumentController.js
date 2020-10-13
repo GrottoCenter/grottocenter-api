@@ -151,6 +151,76 @@ module.exports = {
       });
   },
 
+  find: (
+    req,
+    res,
+    next,
+    converter = MappingV1Service.convertToDocumentModel,
+  ) => {
+    TDocument.findOne()
+      .where({ id: req.param('id') })
+      .populate('author')
+      .populate('authors')
+      .populate('cave')
+      .populate('descriptions')
+      .populate('editor')
+      .populate('entrance')
+      .populate('identifierType')
+      .populate('languages')
+      .populate('library')
+      .populate('license')
+      .populate('massif')
+      .populate('parent')
+      .populate('regions')
+      .populate('reviewer')
+      .populate('subjects')
+      .populate('type')
+      .exec((err, found) => {
+        const params = {
+          controllerMethod: 'DocumentController.find',
+          searchedItem: 'Document of id ' + req.param('id'),
+        };
+
+        if (!found) {
+          const notFoundMessage = `${params.searchedItem} not found`;
+          sails.log.debug(notFoundMessage);
+          res.status(404);
+          return res.json({ error: notFoundMessage });
+        }
+
+        // Get name of cave, entrance and massif
+        const namePromises = [];
+        namePromises.push(
+          ramda.isNil(found.entrance)
+            ? ''
+            : NameService.setNames([found.entrance], 'entrance'),
+        );
+        namePromises.push(
+          ramda.isNil(found.cave)
+            ? ''
+            : NameService.setNames([found.cave], 'cave'),
+        );
+        namePromises.push(
+          ramda.isNil(found.massif)
+            ? ''
+            : NameService.setNames([found.massif], 'massif'),
+        );
+        Promise.all(namePromises).then((results) => {
+          results[0] !== '' ? (found.entrance = results[0][0]) : '';
+          results[1] !== '' ? (found.cave = results[1][0]) : '';
+          results[2] !== '' ? (found.massif = results[2][0]) : '';
+          return ControllerService.treatAndConvert(
+            req,
+            err,
+            found,
+            params,
+            res,
+            converter,
+          );
+        });
+      });
+  },
+
   validate: (req, res, next) => {
     const isValidated = req.param('isValidated')
       ? !(req.param('isValidated').toLowerCase() === 'false')
