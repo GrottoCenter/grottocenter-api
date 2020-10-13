@@ -79,6 +79,8 @@ export const isStepValid = (currentStep, stepData, documentType) => {
       return isStep2Valid(stepData, documentType);
     case 3:
       return isStep3Valid(stepData);
+    case 4: // case 4 is whole submission recap => it's always valid
+      return true;
     default:
       return false;
   }
