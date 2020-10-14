@@ -25,6 +25,7 @@ const MainWrapper = styled.main`
 
 const Layout = ({
   children,
+  isAuth = false,
   isSideMenuOpen,
   toggleSideMenu,
   SideBarQuickSearch,
@@ -33,6 +34,7 @@ const Layout = ({
   <>
     <AppBar toggleSideMenu={toggleSideMenu} isSideMenuOpen={isSideMenuOpen} />
     <SideMenu
+      isAuth={isAuth}
       isOpen={isSideMenuOpen}
       toggle={toggleSideMenu}
       AutoCompleteSearch={SideBarQuickSearch}
@@ -51,6 +53,7 @@ Layout.propTypes = {
     PropTypes.func,
   ]).isRequired,
   children: PropTypes.node,
+  isAuth: PropTypes.bool,
   isSideMenuOpen: PropTypes.bool.isRequired,
   toggleSideMenu: PropTypes.func.isRequired,
   SideBarQuickSearch: PropTypes.oneOfType([
