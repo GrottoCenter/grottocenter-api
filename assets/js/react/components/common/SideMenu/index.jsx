@@ -8,17 +8,12 @@ import Footer from './Footer';
 
 const UserIcon = styled.img`
   width: 40px;
-  src: url('/images/sidemenu/user.png');
+  margin: auto;
 `;
 
-const SideMenu = ({
-  isOpen,
-  toggle,
-  isConnected = false,
-  AutoCompleteSearch,
-}) => (
+const SideMenu = ({ isOpen, toggle, isAuth = false, AutoCompleteSearch }) => (
   <Drawer variant="persistent" anchor="left" open={isOpen} onClose={toggle}>
-    <UserInformation isConnected={isConnected} />
+    <UserInformation isAuth={isAuth} />
     {!!AutoCompleteSearch && <AutoCompleteSearch />}
     <Divider />
     <MenuLinks />
@@ -32,14 +27,13 @@ const UserContainer = styled.div`
   align-self: center;
 `;
 
-const UserInformation = ({ isConnected = false }) => (
+const UserInformation = ({ isAuth = false }) => (
   <UserContainer>
-    {isConnected ? (
+    {isAuth ? (
       <>
         <UserIcon src="/images/sidemenu/user.png" alt="user icon" />
         <Typography>
-          <Translate>Hello</Translate>
-          User
+          <Translate>You are connected</Translate>
         </Typography>
       </>
     ) : (
@@ -58,7 +52,7 @@ const UserInformation = ({ isConnected = false }) => (
 SideMenu.propTypes = {
   isOpen: PropTypes.bool.isRequired,
   toggle: PropTypes.func.isRequired,
-  isConnected: PropTypes.bool,
+  isAuth: PropTypes.bool,
   AutoCompleteSearch: PropTypes.oneOfType([
     PropTypes.node,
     PropTypes.element,
@@ -67,7 +61,7 @@ SideMenu.propTypes = {
 };
 
 UserInformation.propTypes = {
-  isConnected: PropTypes.bool,
+  isAuth: PropTypes.bool,
 };
 
 export default SideMenu;
