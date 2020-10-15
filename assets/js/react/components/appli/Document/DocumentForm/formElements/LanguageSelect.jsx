@@ -1,4 +1,5 @@
 import React, { useContext, useMemo } from 'react';
+import { useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
 import {
   FormControl,
@@ -26,6 +27,14 @@ const LanguageSelect = ({
     docAttributes: { [contextValueName]: language },
     updateAttribute,
   } = useContext(DocumentFormContext);
+
+  // Find user language in languages from the DB
+  const languageState = useSelector((state) => state.language);
+  const { lang: userLanguage, languages } = languageState;
+  const defaultUserLanguage = languages.find((l) => l.part1 === userLanguage);
+  if (defaultUserLanguage && !language) {
+    updateAttribute(contextValueName, defaultUserLanguage);
+  }
 
   const handleChange = (event, child) => {
     const newLanguage = {

@@ -192,6 +192,9 @@ export const overridings = {
       },
     },
     MuiTableCell: {
+      root: {
+        borderBottom: `1px solid ${brown['100']}`,
+      },
       head: {
         backgroundColor: brown['500'],
         color: grey['100'],

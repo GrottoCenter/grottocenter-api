@@ -31,3 +31,18 @@ export const MultipleSelectTypes = {
   searchResults: PropTypes.arrayOf(PropTypes.any).isRequired,
   value: PropTypes.arrayOf(PropTypes.any).isRequired,
 };
+
+// eslint-disable-next-line import/prefer-default-export
+export const MultipleSelectWithOptionsTypes = {
+  computeHasError: PropTypes.func.isRequired,
+  getOptionLabel: PropTypes.func.isRequired,
+  getOptionSelected: PropTypes.func.isRequired,
+  handleOnChange: PropTypes.func.isRequired, // handleOnChange(event: object, value: T | T[], reason: string)
+  helperText: PropTypes.string.isRequired,
+  labelName: PropTypes.string.isRequired,
+  noOptionsText: PropTypes.node,
+  options: PropTypes.arrayOf(PropTypes.any),
+  renderOption: PropTypes.func,
+  required: PropTypes.bool,
+  value: PropTypes.arrayOf(PropTypes.any).isRequired,
+};

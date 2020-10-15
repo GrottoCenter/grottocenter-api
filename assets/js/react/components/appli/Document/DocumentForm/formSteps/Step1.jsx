@@ -35,7 +35,7 @@ const BigFlexItemWrapper = styled.div`
   flex: 2;
 `;
 
-const TitleAndLanguageWrapper = styled.div`
+const TitleAndDescriptionLanguageWrapper = styled.div`
   display: flex;
   flex: 1;
   flex-basis: 600px;
@@ -73,21 +73,23 @@ const Step1 = ({ stepId }) => {
           </FlexItemWrapper>
           <Fade in={!isUnknown(documentType) && !isImage(documentType)}>
             <FlexItemWrapper>
-              <DocumentLanguageSelect
-                helperText="Language used in the document."
-                labelText="Document main language"
-                contextValueName="documentMainLanguage"
-                required={!isOther(documentType)}
-              />
+              {!isUnknown(documentType) && !isImage(documentType) && (
+                <DocumentLanguageSelect
+                  helperText="Language used in the document."
+                  labelText="Document main language"
+                  contextValueName="documentMainLanguage"
+                  required={!isOther(documentType)}
+                />
+              )}
             </FlexItemWrapper>
           </Fade>
         </FlexWrapper>
 
         <Fade in={!isUnknown(documentType)}>
           <div>
-            {!isUnknown(isUnknown) && (
+            {!isUnknown(documentType) && (
               <>
-                <TitleAndLanguageWrapper>
+                <TitleAndDescriptionLanguageWrapper>
                   <BigFlexItemWrapper>
                     <TitleEditor required />
                   </BigFlexItemWrapper>
@@ -99,7 +101,7 @@ const Step1 = ({ stepId }) => {
                       required
                     />
                   </FlexItemWrapper>
-                </TitleAndLanguageWrapper>
+                </TitleAndDescriptionLanguageWrapper>
 
                 <FlexWrapper>
                   <FlexItemWrapper>
