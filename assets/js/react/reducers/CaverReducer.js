@@ -2,6 +2,9 @@ import {
   POST_CAVER_GROUPS,
   POST_CAVER_GROUPS_FAILURE,
   POST_CAVER_GROUPS_SUCCESS,
+  GET_ADMINS,
+  GET_ADMINS_FAILURE,
+  GET_ADMINS_SUCCESS,
 } from '../actions/Caver';
 
 //
@@ -14,6 +17,7 @@ const initialState = {
   errorMessages: [],
   isLoading: false,
   latestHttpCode: undefined,
+  admins: [],
 };
 
 //
@@ -43,6 +47,27 @@ const caver = (state = initialState, action) => {
         isLoading: false,
         errorMessages: action.errorMessages,
         latestHttpCode: action.httpCode,
+      };
+
+    case GET_ADMINS:
+      return {
+        ...state,
+        isLoading: true,
+        errorMessages: [],
+        latestHttpCode: undefined,
+      };
+    case GET_ADMINS_FAILURE:
+      return {
+        ...state,
+        isLoading: false,
+        errorMessages: [action.errorMessage],
+      };
+    case GET_ADMINS_SUCCESS:
+      return {
+        ...state,
+        isLoading: false,
+        errorMessages: [],
+        admins: action.admins,
       };
     default:
       return state;

@@ -1,11 +1,15 @@
 import fetch from 'isomorphic-fetch';
-import { postCaverGroupsUrl } from '../conf/Config';
+import { getAdminsUrl, postCaverGroupsUrl } from '../conf/Config';
 import { getAuthHTTPHeader } from '../helpers/AuthHelper';
 
 // ==========
 export const POST_CAVER_GROUPS = 'POST_CAVER_GROUPS';
 export const POST_CAVER_GROUPS_SUCCESS = 'POST_CAVER_GROUPS_SUCCESS';
 export const POST_CAVER_GROUPS_FAILURE = 'POST_CAVER_GROUPS_FAILURE';
+
+export const GET_ADMINS = 'GET_ADMINS';
+export const GET_ADMINS_SUCCESS = 'GET_ADMINS_SUCCESS';
+export const GET_ADMINS_FAILURE = 'GET_ADMINS_FAILURE';
 
 // ==========
 
@@ -84,5 +88,43 @@ export function postCaverGroups(caverId, groups) {
         });
       },
     );
+  };
+}
+
+export const getAdminsAction = () => ({
+  type: GET_ADMINS,
+});
+
+export const getAdminsActionSuccess = (admins) => ({
+  type: GET_ADMINS_SUCCESS,
+  admins,
+});
+
+export const getAdminsActionFailure = (errorMessage) => ({
+  type: GET_ADMINS_FAILURE,
+  errorMessage,
+});
+
+export function getAdmins() {
+  return (dispatch) => {
+    dispatch(getAdminsAction());
+
+    const requestOptions = {
+      method: 'GET',
+      headers: getAuthHTTPHeader(),
+    };
+
+    return fetch(getAdminsUrl, requestOptions)
+      .then((response) => {
+        if (response.status >= 400) {
+          const errorMessage = `Fetching ${getAdminsUrl} status: ${response.status}`;
+          dispatch(getAdminsActionFailure(errorMessage));
+          throw new Error(errorMessage);
+        }
+        return response.text();
+      })
+      .then((text) =>
+        dispatch(getAdminsActionSuccess(JSON.parse(text).cavers)),
+      );
   };
 }

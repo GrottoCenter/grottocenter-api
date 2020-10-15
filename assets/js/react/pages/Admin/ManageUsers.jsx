@@ -2,12 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useIntl } from 'react-intl';
 
-import { postCaverGroups } from '../../actions/Caver';
+import { getAdmins, postCaverGroups } from '../../actions/Caver';
 
 import AuthChecker from '../../features/AuthChecker';
 
 import Layout from '../../components/common/Layouts/Fixed/FixedContent';
 import ManageUserGroups from '../../components/appli/ManageUserGroups';
+
+import UserList from '../../components/common/UserList';
 
 // ==========
 
@@ -24,7 +26,9 @@ const ManageUsers = () => {
   ] = useState(false);
   const [areGroupsSubmitted, setAreGroupsSubmitted] = useState(false);
 
+  // Redux store
   const caverState = useSelector((state) => state.caver);
+  const { admins, isLoading } = useSelector((state) => state.caver);
 
   const onSaveGroups = () => {
     dispatch(postCaverGroups(selectedUser.id, selectedUser.groups));
@@ -54,6 +58,10 @@ const ManageUsers = () => {
     caverState.latestHttpCode,
   ]);
 
+  useEffect(() => {
+    dispatch(getAdmins());
+  }, []);
+
   return (
     <Layout
       footer=""
@@ -61,14 +69,23 @@ const ManageUsers = () => {
       content={
         <AuthChecker
           componentToDisplay={
-            <ManageUserGroups
-              areGroupsSubmittedWithSuccess={areGroupsSubmittedWithSuccess}
-              initialUser={initialUser}
-              onSaveGroups={onSaveGroups}
-              onSelection={onSelection}
-              selectedUser={selectedUser}
-              setSelectedUser={setSelectedUser}
-            />
+            <>
+              <ManageUserGroups
+                areGroupsSubmittedWithSuccess={areGroupsSubmittedWithSuccess}
+                initialUser={initialUser}
+                onSaveGroups={onSaveGroups}
+                onSelection={onSelection}
+                selectedUser={selectedUser}
+                setSelectedUser={setSelectedUser}
+              />
+              <hr />
+
+              <UserList
+                isLoading={isLoading}
+                userList={admins}
+                title={formatMessage({ id: 'Administrators' })}
+              />
+            </>
           }
         />
       }
