@@ -1,5 +1,9 @@
 import fetch from 'isomorphic-fetch';
-import { getAdminsUrl, postCaverGroupsUrl } from '../conf/Config';
+import {
+  getAdminsUrl,
+  getModeratorsUrl,
+  postCaverGroupsUrl,
+} from '../conf/Config';
 import { getAuthHTTPHeader } from '../helpers/AuthHelper';
 
 // ==========
@@ -10,6 +14,10 @@ export const POST_CAVER_GROUPS_FAILURE = 'POST_CAVER_GROUPS_FAILURE';
 export const GET_ADMINS = 'GET_ADMINS';
 export const GET_ADMINS_SUCCESS = 'GET_ADMINS_SUCCESS';
 export const GET_ADMINS_FAILURE = 'GET_ADMINS_FAILURE';
+
+export const GET_MODERATORS = 'GET_MODERATORS';
+export const GET_MODERATORS_SUCCESS = 'GET_MODERATORS_SUCCESS';
+export const GET_MODERATORS_FAILURE = 'GET_MODERATORS_FAILURE';
 
 // ==========
 
@@ -125,6 +133,44 @@ export function getAdmins() {
       })
       .then((text) =>
         dispatch(getAdminsActionSuccess(JSON.parse(text).cavers)),
+      );
+  };
+}
+
+export const getModeratorsAction = () => ({
+  type: GET_MODERATORS,
+});
+
+export const getModeratorsActionSuccess = (moderators) => ({
+  type: GET_MODERATORS_SUCCESS,
+  moderators,
+});
+
+export const getModeratorsActionFailure = (errorMessage) => ({
+  type: GET_MODERATORS_FAILURE,
+  errorMessage,
+});
+
+export function getModerators() {
+  return (dispatch) => {
+    dispatch(getModeratorsAction());
+
+    const requestOptions = {
+      method: 'GET',
+      headers: getAuthHTTPHeader(),
+    };
+
+    return fetch(getModeratorsUrl, requestOptions)
+      .then((response) => {
+        if (response.status >= 400) {
+          const errorMessage = `Fetching ${getModeratorsUrl} status: ${response.status}`;
+          dispatch(getModeratorsActionFailure(errorMessage));
+          throw new Error(errorMessage);
+        }
+        return response.text();
+      })
+      .then((text) =>
+        dispatch(getModeratorsActionSuccess(JSON.parse(text).cavers)),
       );
   };
 }

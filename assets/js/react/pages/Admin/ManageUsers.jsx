@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useIntl } from 'react-intl';
 
-import { getAdmins, postCaverGroups } from '../../actions/Caver';
+import { getAdmins, getModerators, postCaverGroups } from '../../actions/Caver';
 
 import AuthChecker from '../../features/AuthChecker';
 
@@ -28,7 +28,7 @@ const ManageUsers = () => {
 
   // Redux store
   const caverState = useSelector((state) => state.caver);
-  const { admins, isLoading } = useSelector((state) => state.caver);
+  const { admins, isLoading, moderators } = useSelector((state) => state.caver);
 
   const onSaveGroups = () => {
     dispatch(postCaverGroups(selectedUser.id, selectedUser.groups));
@@ -60,6 +60,7 @@ const ManageUsers = () => {
 
   useEffect(() => {
     dispatch(getAdmins());
+    dispatch(getModerators());
   }, []);
 
   return (
@@ -84,6 +85,12 @@ const ManageUsers = () => {
                 isLoading={isLoading}
                 userList={admins}
                 title={formatMessage({ id: 'Administrators' })}
+              />
+
+              <UserList
+                isLoading={isLoading}
+                userList={moderators}
+                title={formatMessage({ id: 'Moderators' })}
               />
             </>
           }
