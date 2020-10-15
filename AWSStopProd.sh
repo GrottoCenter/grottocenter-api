@@ -4,6 +4,5 @@
 
 #cd /home/ec2-user/GrottoCenter3
 
-#nvm use 10.4.1
-
+nvm use 10.15.2
 pm2 delete all
