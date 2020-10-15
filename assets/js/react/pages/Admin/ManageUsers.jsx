@@ -49,6 +49,8 @@ const ManageUsers = () => {
     if (caverState.latestHttpCode === 200 && areGroupsSubmitted) {
       setAreGroupsSubmittedWithSuccess(true);
       setInitialUser(selectedUser);
+      dispatch(getAdmins());
+      dispatch(getModerators());
     } else {
       setAreGroupsSubmittedWithSuccess(false);
     }
