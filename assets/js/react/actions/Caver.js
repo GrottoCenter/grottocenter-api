@@ -1,6 +1,6 @@
 import fetch from 'isomorphic-fetch';
 import { postCaverGroupsUrl } from '../conf/Config';
-import { getAuthToken } from '../helpers/AuthHelper';
+import { getAuthHTTPHeader } from '../helpers/AuthHelper';
 
 // ==========
 export const POST_CAVER_GROUPS = 'POST_CAVER_GROUPS';
@@ -28,13 +28,12 @@ export function postCaverGroups(caverId, groups) {
   return (dispatch) => {
     dispatch(postCaverGroupsAction());
 
-    const authToken = getAuthToken();
     const requestOptions = {
       method: 'POST',
       body: JSON.stringify({
-        token: authToken,
         groups,
       }),
+      headers: getAuthHTTPHeader(),
     };
 
     return fetch(postCaverGroupsUrl(caverId), requestOptions).then(
