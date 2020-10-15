@@ -146,6 +146,11 @@ module.exports.routes = {
     action: 'setGroups',
   },
 
+  'GET /api/cavers/admins': {
+    controller: 'Caver',
+    action: 'getAdmins',
+  },
+
   /* Entrance controller */
   'GET /api/entrances/findRandom': {
     controller: 'Entrance',

@@ -32,6 +32,26 @@ tags:
 - name: subjects
 
 paths:
+  '/cavers/admins':
+    get:
+      tags:
+      - cavers
+      description: Get all the administrators of Grottocenter.
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cavers:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Caver"
+        '500':
+          description: Internal error
+
   '/cavers/{caverId}/groups/{groupId}':
     put:
       tags:
@@ -798,6 +818,12 @@ components:
           type: integer
           format: int64
         nickname: 
+          type: string
+        surname:
+          type: string
+        name:
+          type: string
+        mail:
           type: string
     
     Comment:
