@@ -105,13 +105,27 @@ const CaveModel = {
 const DocumentModel = {
   refBbs: undefined,
   title: undefined,
-  publicationDate: undefined,
+  datePublication: undefined,
+  dateValidation: undefined,
+  dateInscription: undefined,
+  pages: undefined,
+  reviewer: undefined,
+  author: undefined,
   subjects: undefined,
   theme: undefined,
   country: undefined,
   library: undefined,
   editor: undefined,
   regions: undefined,
+  license: undefined,
+  type: undefined,
+  identifierType: undefined,
+  descriptions: [],
+  languages: [],
+  mainLanguage: undefined,
+  massif: undefined,
+  entrance: undefined,
+  cave: undefined,
 };
 
 const SubjectModel = {
@@ -527,14 +541,30 @@ module.exports = {
   convertToDocumentModel: (source) => {
     const result = { ...DocumentModel };
 
-    // Don't return the abstract from Elasticsearch ('bbs abstract') = too big and useless as a search results
-    result.description = source.description;
-
     // Conversion (from Elasticsearch or not)
     result.id = source.id;
     result.refBbs = source.ref_bbs ? source.ref_bbs : source.refBbs;
     result.title = source.title;
-    result.publicationDate = source.date_publication;
+    result.datePublication = source.date_publication
+      ? source.date_publication
+      : source.datePublication;
+    result.dateValidation = source.dateValidation;
+    result.dateInscription = source.dateInscription;
+    result.pages = source.pages;
+    result.author = source.author;
+    result.reviewer = source.reviewer;
+    result.license = source.license;
+    result.type = source.type;
+    result.identifierType = source.identifierType;
+    result.identifier = source.identifier;
+    result.publicationFasciculeBBSOld = source.publicationFasciculeBBSOld;
+    result.parent = source.parent;
+    result.descriptions = source.descriptions;
+    result.languages = source.languages;
+    result.mainLanguage = source.mainLanguage;
+    result.massif = source.massif;
+    result.cave = source.cave;
+    result.entrance = source.entrance;
 
     if (source.authors instanceof Array) {
       result.authors = MappingV1Service.convertToCaverList(
@@ -562,51 +592,52 @@ module.exports = {
         });
       }
     }
+
     // Build subjects
-    if (source.subjects) {
-      if (source.subjects instanceof Array) {
-        result.subjects = source.subjects;
-      } else {
-        // ES
-        result.subjects = source.subjects.split(', ').map((s) => {
-          return {
-            code: s,
-          };
-        });
-      }
+    if (source.subjects instanceof Array) {
+      result.subjects = MappingV1Service.convertToSubjectList(
+        source.subjects,
+      ).subjects;
+    } else {
+      // ES
+      result.subjects = source.subjects.split(', ').map((s) => {
+        return {
+          code: s,
+        };
+      });
     }
 
     // Build library
-    if (source.library) {
-      result.library = source.library;
-    } else if (source['library id']) {
+    if (source['library id']) {
       // ES
       result.library = {
         id: source['library id'],
         name: source['library name'],
       };
+    } else {
+      result.library = source.library;
     }
 
     // Build editor
-    if (source.editor) {
-      result.editor = source.editor;
-    } else if (source['editor id']) {
+    if (source['editor id']) {
       // ES
       result.editor = {
         id: source['editor id'],
         name: source['editor name'],
       };
+    } else {
+      result.editor = source.editor;
     }
 
     // Build type
-    if (source.type) {
-      result.type = source.type;
-    } else if (source['type id']) {
+    if (source['type id']) {
       // ES
       result.type = {
         id: source['type id'],
         name: source['type name'],
       };
+    } else {
+      result.type = source.type;
     }
 
     return result;
@@ -617,7 +648,9 @@ module.exports = {
     source.forEach((item) =>
       documents.push(MappingV1Service.convertToDocumentModel(item)),
     );
-    return documents;
+    return {
+      documents,
+    };
   },
 
   convertToSubjectModel: (source) => {

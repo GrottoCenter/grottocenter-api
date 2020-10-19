@@ -77,23 +77,244 @@ module.exports = {
     };
 
     // Launch creation request
-    TDocument.create(cleanedData)
-      .then(() => {
-        const params = {};
-        params.controllerMethod = 'DocumentController.create';
-        return ControllerService.treat(req, null, {}, params, res);
-      })
-      .catch({ code: 'E_UNIQUE' }, (err) => {
-        return res.sendStatus(409);
-      })
-      .catch({ name: 'UsageError' }, (err) => {
-        return res.badRequest(err.cause.message);
-      })
-      .catch({ name: 'AdapterError' }, (err) => {
-        return res.badRequest(err.cause.message);
-      })
-      .catch((err) => {
-        return res.serverError(err.cause.message);
+    try {
+      const documentCreated = await TDocument.create(cleanedData).fetch();
+
+      // Create main language manually (not handled automatically)
+      await JDocumentLanguage.create({
+        document: documentCreated.id,
+        language: req.body.documentMainLanguage.id,
+        isMain: true,
       });
+
+      const params = {};
+      params.controllerMethod = 'DocumentController.create';
+      return ControllerService.treat(req, null, documentCreated, params, res);
+    } catch (e) {
+      if (e.code === 'E_UNIQUE') {
+        return res.sendStatus(409);
+      }
+      if (e.name === 'UsageError') {
+        return res.badRequest(e.cause.message);
+      }
+      if (e.name === 'AdapterError') {
+        return res.badRequest(e.cause.message);
+      }
+      return res.serverError(e.cause.message);
+    }
+  },
+
+  findAll: (
+    req,
+    res,
+    next,
+    converter = MappingV1Service.convertToDocumentList,
+  ) => {
+    // By default get only the validated ones
+    const isValidated = req.param('isValidated')
+      ? !(req.param('isValidated').toLowerCase() === 'false')
+      : true;
+
+    const sort = `${req.param('sortBy', 'dateInscription')} ${req.param(
+      'orderBy',
+      'ASC',
+    )}`;
+
+    /* 
+      4 possible cases : isValidated (true or false) AND validation (null or not)
+      If the document is not validated and has a dateValidatoin, it means that it has been refused.
+      We don't want to retrieve these documents refused. 
+      So when isValidated is false, we need to retrieve only the document with a dateValidatoin set to null 
+      (= submitted documents which need to be reviewed).
+    */
+    const whereClause = {
+      and: [{ isValidated: isValidated }],
+    };
+    !isValidated ? whereClause.and.push({ dateValidation: null }) : '';
+
+    TDocument.find()
+      .where(whereClause)
+      .skip(req.param('skip', 0))
+      .limit(req.param('limit', 50))
+      .sort(sort)
+      .populate('author')
+      .populate('authors')
+      .populate('cave')
+      .populate('descriptions')
+      .populate('editor')
+      .populate('entrance')
+      .populate('identifierType')
+      .populate('library')
+      .populate('license')
+      .populate('massif')
+      .populate('parent')
+      .populate('regions')
+      .populate('reviewer')
+      .populate('subjects')
+      .populate('type')
+      .exec((err, found) => {
+        TDocument.count()
+          .where(whereClause)
+          .exec((err, countFound) => {
+            const params = {
+              controllerMethod: 'DocumentController.findAll',
+              limit: req.param('limit', 50),
+              searchedItem: 'All documents',
+              skip: req.param('skip', 0),
+              total: countFound,
+              url: req.originalUrl,
+            };
+            return ControllerService.treatAndConvert(
+              req,
+              err,
+              found,
+              params,
+              res,
+              converter,
+            );
+          });
+      });
+  },
+
+  find: (
+    req,
+    res,
+    next,
+    converter = MappingV1Service.convertToDocumentModel,
+  ) => {
+    TDocument.findOne()
+      .where({ id: req.param('id') })
+      .populate('author')
+      .populate('authors')
+      .populate('cave')
+      .populate('descriptions')
+      .populate('editor')
+      .populate('entrance')
+      .populate('identifierType')
+      .populate('languages')
+      .populate('library')
+      .populate('license')
+      .populate('massif')
+      .populate('parent')
+      .populate('regions')
+      .populate('reviewer')
+      .populate('subjects')
+      .populate('type')
+      .exec((err, found) => {
+        const params = {
+          controllerMethod: 'DocumentController.find',
+          searchedItem: 'Document of id ' + req.param('id'),
+        };
+
+        if (!found) {
+          const notFoundMessage = `${params.searchedItem} not found`;
+          sails.log.debug(notFoundMessage);
+          res.status(404);
+          return res.json({ error: notFoundMessage });
+        }
+
+        const promises = [];
+        // Get name of cave, entrance and massif
+        promises.push(
+          ramda.isNil(found.entrance)
+            ? ''
+            : NameService.setNames([found.entrance], 'entrance'),
+        );
+        promises.push(
+          ramda.isNil(found.cave)
+            ? ''
+            : NameService.setNames([found.cave], 'cave'),
+        );
+        promises.push(
+          ramda.isNil(found.massif)
+            ? ''
+            : NameService.setNames([found.massif], 'massif'),
+        );
+
+        // Get main language
+        promises.push(DocumentService.getMainLanguage(found.id));
+
+        Promise.all(promises).then((results) => {
+          // Names
+          results[0] !== '' ? (found.entrance = results[0][0]) : '';
+          results[1] !== '' ? (found.cave = results[1][0]) : '';
+          results[2] !== '' ? (found.massif = results[2][0]) : '';
+          // Main language
+          found.mainLanguage = results[3];
+          return ControllerService.treatAndConvert(
+            req,
+            err,
+            found,
+            params,
+            res,
+            converter,
+          );
+        });
+      });
+  },
+
+  validate: (req, res, next) => {
+    const isValidated = req.param('isValidated')
+      ? !(req.param('isValidated').toLowerCase() === 'false')
+      : true;
+    const validationComment = req.param('validationComment', null);
+    const id = req.param('id');
+
+    if (isValidated === false && !validationComment) {
+      return res.badRequest(
+        `If the document with id ${req.param(
+          'id',
+        )} is refused, a comment must be provided.`,
+      );
+    }
+
+    TDocument.updateOne({ id: id })
+      .set({
+        isValidated: isValidated,
+        validationComment: validationComment,
+        dateValidation: new Date(),
+      })
+      .then((updatedDocument) => {
+        const params = {
+          controllerMethod: 'DocumentController.validate',
+          notFoundMessage: `Document of id ${id} not found`,
+          searchedItem: `Document of id ${id}`,
+        };
+        return ControllerService.treat(req, null, updatedDocument, params, res);
+      });
+  },
+
+  multipleValidate: (req, res, next) => {
+    const documents = req.param('documents');
+    if (!documents) {
+      return res.ok();
+    }
+    const updatePromises = [];
+    documents.map((doc) => {
+      const isValidated = doc.isValidated
+        ? !(doc.isValidated.toLowerCase() === 'false')
+        : true;
+      const { validationComment } = doc;
+      const { id } = doc;
+
+      if (isValidated === false && !validationComment) {
+        return res.badRequest(
+          `If the document with id ${req.param(
+            'id',
+          )} is refused, a comment must be provided.`,
+        );
+      }
+
+      updatePromises.push(
+        TDocument.updateOne({ id: id }).set({
+          isValidated: isValidated,
+          validationComment: validationComment,
+          dateValidation: new Date(),
+        }),
+      );
+      Promise.all(updatePromises).then((results) => {
+        res.ok();
+      });
+    });
   },
 };

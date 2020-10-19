@@ -201,5 +201,16 @@ module.exports = {
       via: 'document',
       through: 'JDocumentSubject',
     },
+
+    descriptions: {
+      collection: 'TDescription',
+      via: 'document',
+    },
+
+    languages: {
+      collection: 'TLanguage',
+      via: 'document',
+      through: 'JDocumentLanguage',
+    },
   },
 };

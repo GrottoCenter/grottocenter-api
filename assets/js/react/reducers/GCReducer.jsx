@@ -1,26 +1,29 @@
 import { combineReducers } from 'redux';
 import advancedsearch from './AdvancedsearchReducer';
-import quicksearch from './QuicksearchReducer';
-import map from './MapReducer';
+import auth from './AuthReducer';
+import bbs from './BbsReducer';
+import cave from './CaveReducer';
+import caver from './CaverReducer';
+import document from './DocumentReducer';
+import documentDetails from './DetailsDocumentReducer';
+import documents from './DocumentsReducer';
+import documentType from './DocumentTypeReducer';
+import dynamicNumber from './DynamicNumberReducer';
+import entry from './EntryReducer';
+import group from './GroupReducer';
+import identifierType from './IdentifierTypesReducer';
 import language from './LanguageReducer';
 import latestBlogNews from './LatestBlogNewsReducer';
-import dynamicNumber from './DynamicNumberReducer';
-import sideMenu from './SideMenuReducer';
-import randomEntry from './RandomEntryReducer';
-import partnersCarousel from './PartnersCarouselReducer';
-import group from './GroupReducer';
+import map from './MapReducer';
 import massif from './MassifReducer';
-import bbs from './BbsReducer';
-import subject from './SubjectReducer';
 import pageTitle from './PageTitleReducer';
-import entry from './EntryReducer';
-import cave from './CaveReducer';
-import auth from './AuthReducer';
-import document from './DocumentReducer';
+import partnersCarousel from './PartnersCarouselReducer';
+import processDocument from './ProcessDocumentReducer';
+import quicksearch from './QuicksearchReducer';
+import randomEntry from './RandomEntryReducer';
 import region from './RegionReducer';
-import identifierType from './IdentifierTypesReducer';
-import documentType from './DocumentTypeReducer';
-import caver from './CaverReducer';
+import sideMenu from './SideMenuReducer';
+import subject from './SubjectReducer';
 
 //
 //
@@ -29,28 +32,31 @@ import caver from './CaverReducer';
 //
 
 const GCReducer = combineReducers({
-  language,
   advancedsearch,
-  quicksearch,
-  map,
-  latestBlogNews,
-  dynamicNumber,
-  sideMenu,
-  randomEntry,
-  partnersCarousel,
-  group,
-  massif,
-  bbs,
-  subject,
-  pageTitle,
   auth,
-  entry,
+  bbs,
   cave,
-  document,
-  region,
-  identifierType,
-  documentType,
   caver,
+  document,
+  documentDetails,
+  documents,
+  documentType,
+  dynamicNumber,
+  entry,
+  group,
+  identifierType,
+  language,
+  latestBlogNews,
+  map,
+  massif,
+  pageTitle,
+  partnersCarousel,
+  processDocument,
+  quicksearch,
+  randomEntry,
+  region,
+  sideMenu,
+  subject,
 });
 
 export default GCReducer;

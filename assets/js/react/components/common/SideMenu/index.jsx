@@ -16,7 +16,7 @@ const SideMenu = ({ isOpen, toggle, isAuth = false, AutoCompleteSearch }) => (
     <UserInformation isAuth={isAuth} />
     {!!AutoCompleteSearch && <AutoCompleteSearch />}
     <Divider />
-    <MenuLinks />
+    <MenuLinks isAuth={isAuth} />
     <Footer />
   </Drawer>
 );

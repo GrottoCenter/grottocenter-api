@@ -26,7 +26,13 @@ const CustomIcon = ({ type, size = 35, margin = '0px 4px 0px 0px' }) => (
 );
 
 CustomIcon.propTypes = {
-  type: PropTypes.oneOf(['entry', 'depth', 'length', 'cave_system']).isRequired,
+  type: PropTypes.oneOf([
+    'entry',
+    'depth',
+    'length',
+    'cave_system',
+    'bibliography',
+  ]).isRequired,
   size: PropTypes.number,
   margin: PropTypes.number,
 };

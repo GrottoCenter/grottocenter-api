@@ -92,7 +92,122 @@ paths:
           description: "Bad request. Either the caverId and groupId parameters should exist in the database."
         '500':
           description: Internal error
+
+  '/documents':
+    get:
+      tags:
+        - documents
+      description: Get all documents.
+      parameters:
+      - name: isValidated
+        in: query
+        description: If the documents must be validated or not.
+        required: false
+        schema:
+          default: true
+          type: boolean
+      - name: skip
+        in: query
+        description: Number of documents to skip.
+        required: false
+        schema:
+          type: integer
+          default: 0
+      - name: limit
+        in: query
+        description: Maximum number of documents.
+        required: false
+        schema:
+          type: integer
+          default: 50
+      - name: sortBy
+        in: query
+        description: Attribute to sort the documents by.
+        required: false
+        schema:
+          type: string
+          default: dateInscription
+      - name: orderBy
+        in: query
+        description: Order used by the sortBy attribute
+        required: false
+        schema:
+          type: string
+          enum: [ASC, DESC]
+          default: ASC
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  documents:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Document'
+
+  '/documents/{id}/validate':
+    put:
+      tags: 
+      - documents
+      description: Validate or not a document, with or without a comment.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: isValidated
+          in: query
+          required: false
+          description: Specify if the document is validated or refused.
+          schema:
+            type: boolean
+            default: true
+        - name: validationComment
+          in: query
+          description: Comment about why the document has been validated or refused. Mandatory when isValidated param is false.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation, the document has been updated.
+        '404':
+          description: Document to update not found.
+        '400':
+          description: Bad request.
   
+  '/documents/validate':
+    put:
+      tags: 
+      - documents
+      description: Validate or not multiple documents, with or without a comment.
+      parameters:
+        - name: documents
+          description: Document(s) to validate / refuse with their optionnal validation comment.
+          in: query
+          required: true
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  type: number
+                isValidated:
+                  type: boolean
+                validationComment:
+                  type: string
+
+      responses:
+        '200':
+          description: Successful operation, the documents have been updated.
+        '404':
+          description: Document(s) to update not found.
+        '400':
+          description: Bad request.
 
   '/documents/identifierTypes':
     get:

@@ -349,6 +349,16 @@ module.exports.routes = {
     },
   },
 
+  'GET /api/v1/documents': {
+    controller: 'v1/Document',
+    action: 'findAll',
+  },
+
+  'GET /api/v1/documents/:id': {
+    controller: 'v1/Document',
+    action: 'find',
+  },
+
   'POST /api/v1/documents/subjects/search/logical/or': {
     controller: 'v1/Subject',
     action: 'search',
@@ -369,6 +379,16 @@ module.exports.routes = {
     cors: {
       allowOrigins: '*',
     },
+  },
+
+  'PUT /api/v1/documents/:id/validate': {
+    controller: 'v1/Document',
+    action: 'validate',
+  },
+
+  'PUT /api/v1/documents/validate': {
+    controller: 'v1/Document',
+    action: 'multipleValidate',
   },
 
   /* REST API for Document Identifier Types controller */
