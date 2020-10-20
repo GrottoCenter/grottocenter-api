@@ -41,12 +41,12 @@ module.exports = {
           }
 
           // recuperation du nom
-          const words = response[i].Definition.split('+title=');
+          const words = response[i].definition.split('+title=');
           response[i].title = words[1].split('+', 1)[0];
 
           // recuperation de l'unité
           response[i].units = 'degrees';
-          const words2 = response[i].Definition.split(' ');
+          const words2 = response[i].definition.split(' ');
           for (let j = 0; j < words2.length; j += 1) {
             if (words2[j].startsWith('+units')) {
               response[i].units = words2[j].split('=')[1];
@@ -56,7 +56,7 @@ module.exports = {
             }
           }
           if (response[i].proj === 'utm') {
-            sails.log.debug(response[i].Definition);
+            sails.log.debug(response[i].definition);
           }
         }
 
