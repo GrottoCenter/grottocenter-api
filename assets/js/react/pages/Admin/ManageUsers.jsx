@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useIntl } from 'react-intl';
+import styled from 'styled-components';
 
 import { getAdmins, getModerators, postCaverGroups } from '../../actions/Caver';
 
@@ -10,6 +11,12 @@ import Layout from '../../components/common/Layouts/Fixed/FixedContent';
 import ManageUserGroups from '../../components/appli/ManageUserGroups';
 
 import UserList from '../../components/common/UserList';
+
+// ==========
+
+const MarginBottomBlock = styled.div`
+  margin-bottom: ${({ theme }) => theme.spacing(4)}px;
+`;
 
 // ==========
 
@@ -81,13 +88,16 @@ const ManageUsers = () => {
                 selectedUser={selectedUser}
                 setSelectedUser={setSelectedUser}
               />
+
               <hr />
 
-              <UserList
-                isLoading={isLoading}
-                userList={admins}
-                title={formatMessage({ id: 'Administrators' })}
-              />
+              <MarginBottomBlock>
+                <UserList
+                  isLoading={isLoading}
+                  userList={admins}
+                  title={formatMessage({ id: 'Administrators' })}
+                />
+              </MarginBottomBlock>
 
               <UserList
                 isLoading={isLoading}
