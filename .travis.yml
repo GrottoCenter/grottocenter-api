@@ -20,7 +20,7 @@ deploy:
     access_key_id: $AWS_ACCESS_KEY
     secret_access_key: $AWS_SECRET_KEY
     bucket: appgrottocenter3
-    key: latest.tar
+    key: latest$TRAVIS_TAG.tar
     bundle_type: tar
     application: GrottoCenter3
     deployment_group: GrottoCenter3App
@@ -32,5 +32,5 @@ script:
 - npm run-script build
 - tar -cf latest.tar --exclude=*.tar .
 - mkdir -p grotto_center_tar
-- mv latest.tar grotto_center_tar
+- mv latest.tar grotto_center_tar/latest$TRAVIS_TAG.tar
 after_deploy: echo  'finished'
