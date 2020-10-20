@@ -1,12 +1,8 @@
-/* eslint-disable no-underscore-dangle */
-
-/**
- * TODO Add comment
- */
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { IntlProvider } from 'react-intl';
 import createDebounce from 'redux-debounced';
+import { SnackbarProvider } from 'notistack';
 import { Provider } from 'react-redux';
 import ErrorBoundary from 'react-error-boundary';
 import { createStore, applyMiddleware, compose } from 'redux';
@@ -34,9 +30,9 @@ gcStore.dispatch(changeLanguage(locale));
 const theme = createMuiTheme(grottoTheme);
 
 const customOnIntlError = (err) => {
-  /* 
-      Custom handler for missing translation. 
-      By default, it shows the stacktrace which is very annoying. 
+  /*
+      Custom handler for missing translation.
+      By default, it shows the stacktrace which is very annoying.
       This handler wrap everything in a collapsed group.
       */
   if (err.code === 'MISSING_TRANSLATION') {
@@ -64,9 +60,11 @@ ReactDOM.render(
             <TextDirectionProvider>
               <BrowserRouter>
                 <div>
-                  <ErrorBoundary>
-                    <Application />
-                  </ErrorBoundary>
+                  <SnackbarProvider maxSnack={3}>
+                    <ErrorBoundary>
+                      <Application />
+                    </ErrorBoundary>
+                  </SnackbarProvider>
                 </div>
               </BrowserRouter>
             </TextDirectionProvider>
