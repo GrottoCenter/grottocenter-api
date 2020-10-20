@@ -32,6 +32,7 @@
     "lodash": "^4.17.20",
     "moment": "^2.25.3",
     "nodent": "^3.0.14",
+    "notistack": "^1.0.1",
     "passport": "^0.4.0",
     "passport-local": "^1.0.0",
     "proj4": "^2.6.2",
