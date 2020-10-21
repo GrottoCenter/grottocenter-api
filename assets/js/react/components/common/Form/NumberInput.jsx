@@ -19,7 +19,7 @@ const NumberInput = ({
   valueName,
 }) => {
   const [localStringValue, setLocalStringValue] = React.useState(
-    value.toString(),
+    value ? value.toString() : '',
   );
   const [formatErrorText, setFormatErrorText] = React.useState('');
   const hasFormatError = formatErrorText !== '';
@@ -27,7 +27,10 @@ const NumberInput = ({
   const handleValueChange = (event) => {
     setLocalStringValue(event.target.value);
     const numberValue = Number(event.target.value);
-    if (Number.isNaN(numberValue)) {
+    if (event.target.value === '') {
+      onValueChange(null);
+      setFormatErrorText('');
+    } else if (Number.isNaN(numberValue)) {
       setFormatErrorText('Enter a number.');
     } else {
       onValueChange(numberValue);
@@ -77,7 +80,7 @@ NumberInput.propTypes = {
   multiline: PropTypes.bool,
   onValueChange: PropTypes.func.isRequired,
   required: PropTypes.bool,
-  value: PropTypes.number.isRequired,
+  value: PropTypes.number,
   valueName: PropTypes.string.isRequired,
   hasError: PropTypes.bool,
 };
