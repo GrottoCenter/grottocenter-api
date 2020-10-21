@@ -21,6 +21,7 @@ import GCReducer from './reducers/GCReducer';
 import { changeLanguage } from './actions/Language';
 import TextDirectionProvider from './containers/TextDirectionProvider';
 import Application from './pages/Application';
+import ErrorHandler from './features/ErrorHandler';
 
 const middlewares = applyMiddleware(createDebounce(), thunkMiddleware);
 const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
@@ -61,6 +62,7 @@ ReactDOM.render(
               <BrowserRouter>
                 <div>
                   <SnackbarProvider maxSnack={3}>
+                    <ErrorHandler />
                     <ErrorBoundary>
                       <Application />
                     </ErrorBoundary>
