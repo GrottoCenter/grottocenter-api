@@ -7,28 +7,6 @@ import { createColumns } from '../Table/TableHead';
 
 // ==========
 const defaultHiddenColumns = ['groups'];
-const customCellRenders = [
-  {
-    id: 'id',
-    customRender: (id) => id,
-  },
-  {
-    id: 'nickname',
-    customRender: (nickname) => nickname,
-  },
-  {
-    id: 'surname',
-    customRender: (surname) => surname,
-  },
-  {
-    id: 'name',
-    customRender: (name) => name,
-  },
-  {
-    id: 'mail',
-    customRender: (mail) => mail,
-  },
-];
 
 // =====
 
@@ -65,7 +43,6 @@ const UserList = ({ isLoading, title, userList }) => {
   return (
     <Table
       columns={columns}
-      customCellRenders={customCellRenders}
       data={userListOrdered || []}
       hiddenColumns={hiddenColumns}
       loading={isLoading}
@@ -73,7 +50,6 @@ const UserList = ({ isLoading, title, userList }) => {
       orderBy={orderBy}
       rowsCount={userListOrdered.length}
       rowsPerPage={userListOrdered.length}
-      selection={[]}
       title={title}
       updateHiddenColumns={setHiddenColumns}
       updateOrder={setOrder}
