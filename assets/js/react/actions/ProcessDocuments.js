@@ -2,6 +2,7 @@ import fetch from 'isomorphic-fetch';
 import { pipe, defaultTo, map } from 'ramda';
 import { processDocumentIds } from '../conf/Config';
 import { getAuthHTTPHeader } from '../helpers/AuthHelper';
+import makeErrorMessage from '../helpers/makeErrorMessage';
 
 export const POST_PROCESS_DOCUMENTS = 'POST_PROCESS_DOCUMENTS';
 export const POST_PROCESS_DOCUMENTS_SUCCESS = 'POST_PROCESS_DOCUMENTS_SUCCESS';
@@ -15,9 +16,9 @@ export const postProcessDocumentsSuccess = () => ({
   type: POST_PROCESS_DOCUMENTS_SUCCESS,
 });
 
-export const postProcessDocumentsFailure = (errorMessages) => ({
+export const postProcessDocumentsFailure = (error) => ({
   type: POST_PROCESS_DOCUMENTS_FAILURE,
-  errorMessages,
+  error,
 });
 
 export const postProcessDocuments = (ids, isValidated, comment) => (
@@ -42,14 +43,16 @@ export const postProcessDocuments = (ids, isValidated, comment) => (
   return fetch(processDocumentIds, requestOptions)
     .then((response) => {
       if (response.status >= 400) {
-        throw new Error(
-          `Post ${processDocumentIds} status: ${response.status}`,
-        );
+        throw new Error(response.status);
       } else {
         dispatch(postProcessDocumentsSuccess());
       }
     })
-    .catch((errorMessage) => {
-      dispatch(postProcessDocumentsFailure(errorMessage));
+    .catch((error) => {
+      dispatch(
+        postProcessDocumentsFailure(
+          makeErrorMessage(error.message, `Process document ids ${ids}`),
+        ),
+      );
     });
 };

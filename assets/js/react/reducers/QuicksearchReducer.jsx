@@ -8,7 +8,7 @@ import {
 
 const initialState = {
   results: [], // search results
-  errors: undefined, // fetch errors
+  error: null, // fetch errors
   isLoading: false,
   entry: undefined, // marker entry
 };
@@ -31,7 +31,7 @@ const reducer = (state = initialState, action) => {
     case FETCH_QUICKSEARCH_FAILURE:
       return {
         ...state,
-        errors: action.error,
+        error: action.error,
         isLoading: false,
       };
     case SET_CURRENT_ENTRY:

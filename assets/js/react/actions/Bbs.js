@@ -1,5 +1,6 @@
 import fetch from 'isomorphic-fetch';
 import { findBbsUrl } from '../conf/Config';
+import makeErrorMessage from '../helpers/makeErrorMessage';
 
 export const FETCH_BBS = 'FETCH_BBS';
 export const FETCH_BBS_SUCCESS = 'FETCH_BBS_SUCCESS';
@@ -26,12 +27,17 @@ export function loadBbs(bbsId) {
     return fetch(findBbsUrl + encodeURIComponent(bbsId))
       .then((response) => {
         if (response.status >= 400) {
-          const errorMessage = `Fetching ${findBbsUrl} status: ${response.status}`;
-          dispatch(fetchBbsFailure(errorMessage));
-          throw new Error(errorMessage);
+          throw new Error(response.status);
         }
         return response.text();
       })
-      .then((text) => dispatch(fetchBbsSuccess(JSON.parse(text))));
+      .then((text) => dispatch(fetchBbsSuccess(JSON.parse(text))))
+      .catch((error) =>
+        dispatch(
+          fetchBbsFailure(
+            makeErrorMessage(error.message, `Fetching bbs id ${bbsId}`),
+          ),
+        ),
+      );
   };
 }

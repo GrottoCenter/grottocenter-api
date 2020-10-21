@@ -1,5 +1,6 @@
 import fetch from 'isomorphic-fetch';
 import { identifierTypesUrl } from '../conf/Config';
+import makeErrorMessage from '../helpers/makeErrorMessage';
 
 export const FETCH_IDENTIFIER_TYPES = 'FETCH_IDENTIFIER_TYPES';
 export const FETCH_IDENTIFIER_TYPES_SUCCESS = 'FETCH_IDENTIFIER_TYPES_SUCCESS';
@@ -26,14 +27,19 @@ export function loadIdentifierTypes() {
     return fetch(identifierTypesUrl)
       .then((response) => {
         if (response.status >= 400) {
-          const errorMessage = `Fetching ${identifierTypesUrl} status: ${response.status}`;
-          dispatch(fetchIdentifierTypesFailure(errorMessage));
-          throw new Error(errorMessage);
+          throw new Error(response.status);
         }
         return response.text();
       })
       .then((text) =>
         dispatch(fetchIdentifierTypesSuccess(JSON.parse(text).identifierTypes)),
+      )
+      .catch((error) =>
+        dispatch(
+          fetchIdentifierTypesFailure(
+            makeErrorMessage(error.message, `Fetching identifier types`),
+          ),
+        ),
       );
   };
 }

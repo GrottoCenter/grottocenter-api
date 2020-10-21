@@ -1,5 +1,6 @@
 import fetch from 'isomorphic-fetch';
 import { findForCarouselUrl } from '../conf/Config';
+import makeErrorMessage from '../helpers/makeErrorMessage';
 
 //
 //
@@ -45,15 +46,19 @@ export function loadPartnersForCarousel() {
     return fetch(findForCarouselUrl)
       .then((response) => {
         if (response.status >= 400) {
-          const errorMessage = `Fetching ${findForCarouselUrl} status: ${response.status}`;
-          dispatch(fetchPartnersForCarouselFailure(errorMessage));
-          throw new Error(errorMessage);
+          throw new Error(response.status);
         }
         return response.text();
       })
       .then((text) =>
         dispatch(fetchPartnersForCarouselSuccess(JSON.parse(text))),
-      ) /*
-    .catch(error => dispatch(fetchPartnersForCarouselFailure(error))) */;
+      )
+      .catch((error) =>
+        dispatch(
+          fetchPartnersForCarouselFailure(
+            makeErrorMessage(error.message, `Fetching partners carousel`),
+          ),
+        ),
+      );
   };
 }

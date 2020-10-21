@@ -117,7 +117,9 @@ const DocumentPage = ({
 
 const HydratedDocumentPage = ({ id }) => {
   const dispatch = useDispatch();
-  const { isLoading, details } = useSelector((state) => state.documentDetails);
+  const { isLoading, details, error } = useSelector(
+    (state) => state.documentDetails,
+  );
 
   useEffect(() => {
     if (!isNil(id)) {
@@ -131,7 +133,7 @@ const HydratedDocumentPage = ({ id }) => {
       organizations={makeOrganizations(details || {})}
       details={makeDetails(details || {})}
       entities={makeEntities(details || {})}
-      loading={isNil(id) || isLoading}
+      loading={isNil(id) || isLoading || !isNil(error)}
     />
   );
 };

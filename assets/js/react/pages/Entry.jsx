@@ -37,7 +37,7 @@ const Content = ({ title, children }) => {
 const EntryPage = () => {
   const { id } = useParams();
   const dispatch = useDispatch();
-  const { loading, data } = useSelector((state) => state.entry);
+  const { loading, data, error } = useSelector((state) => state.entry);
   const { formatMessage } = useIntl();
 
   useEffect(() => {
@@ -70,7 +70,7 @@ const EntryPage = () => {
   }&category=entry&id=${id}`;
 
   return (
-    <Entry loading={loading} details={details}>
+    <Entry loading={loading || !isNil(error)} details={details}>
       <Content title="Description">
         <Typography>
           {formatMessage({ id: 'For more details please visit ' })}

@@ -1,5 +1,6 @@
 import fetch from 'isomorphic-fetch';
 import { getLanguagesUrl } from '../conf/Config';
+import makeErrorMessage from '../helpers/makeErrorMessage';
 //
 //
 // A C T I O N S
@@ -32,21 +33,26 @@ export const fetchLanguagesFailure = (error) => ({
   error,
 });
 
-export function loadLanguages(isPreferedLanguage) {
+export function loadLanguages(isPreferredLanguage) {
   return (dispatch) => {
     dispatch(fetchLanguages());
 
-    return fetch(`${getLanguagesUrl}?isPreferedLanguage=${isPreferedLanguage}`)
+    return fetch(`${getLanguagesUrl}?isPreferedLanguage=${isPreferredLanguage}`)
       .then((response) => {
         if (response.status >= 400) {
-          const errorMessage = `Fetching ${getLanguagesUrl} status: ${response.status}`;
-          dispatch(fetchLanguagesFailure(errorMessage));
-          throw new Error(errorMessage);
+          throw new Error(response.status);
         }
         return response.text();
       })
       .then((text) =>
         dispatch(fetchLanguagesSuccess(JSON.parse(text).languages)),
+      )
+      .catch((error) =>
+        dispatch(
+          fetchLanguagesFailure(
+            makeErrorMessage(error.message, `Fetching languages`),
+          ),
+        ),
       );
   };
 }

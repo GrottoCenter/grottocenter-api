@@ -19,12 +19,13 @@ import map from './MapReducer';
 import massif from './MassifReducer';
 import pageTitle from './PageTitleReducer';
 import partnersCarousel from './PartnersCarouselReducer';
-import processDocument from './ProcessDocumentReducer';
+import processDocuments from './ProcessDocumentsReducer';
 import quicksearch from './QuicksearchReducer';
 import randomEntry from './RandomEntryReducer';
 import region from './RegionReducer';
 import sideMenu from './SideMenuReducer';
 import subject from './SubjectReducer';
+import error from './ErrorReducer';
 
 //
 //
@@ -45,6 +46,7 @@ const GCReducer = combineReducers({
   documentType,
   dynamicNumber,
   entry,
+  error,
   group,
   identifierType,
   language,
@@ -53,7 +55,7 @@ const GCReducer = combineReducers({
   massif,
   pageTitle,
   partnersCarousel,
-  processDocument,
+  processDocuments,
   quicksearch,
   randomEntry,
   region,

@@ -1,5 +1,6 @@
 import fetch from 'isomorphic-fetch';
 import { regionsSearchUrl } from '../conf/Config';
+import makeErrorMessage from '../helpers/makeErrorMessage';
 
 export const REGIONS_SEARCH = 'REGIONS_SEARCH';
 export const REGIONS_SEARCH_SUCCESS = 'REGIONS_SEARCH_SUCCESS';
@@ -38,12 +39,20 @@ export function loadRegionsSearch(regionCode, regionName, isDeprecated) {
     })
       .then((response) => {
         if (response.status >= 400) {
-          const errorMessage = `Fetching ${regionsSearchUrl} status: ${response.status}`;
-          dispatch(searchRegionsFailure(errorMessage));
-          throw new Error(errorMessage);
+          throw new Error(response.status);
         }
         return response.text();
       })
-      .then((text) => dispatch(searchRegionsSuccess(JSON.parse(text).regions)));
+      .then((text) => dispatch(searchRegionsSuccess(JSON.parse(text).regions)))
+      .catch((error) =>
+        dispatch(
+          searchRegionsFailure(
+            makeErrorMessage(
+              error.message,
+              `Fetching region ${regionCode} ${regionName}`,
+            ),
+          ),
+        ),
+      );
   };
 }

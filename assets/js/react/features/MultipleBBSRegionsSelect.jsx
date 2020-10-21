@@ -1,6 +1,7 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
+import { pathOr } from 'ramda';
 
 import Translate from '../components/common/Translate';
 import MultipleSelectComponent from '../components/appli/Document/DocumentForm/formElements/MultipleSelect';
@@ -14,11 +15,9 @@ const MultipleBBSRegionsSelect = ({
   required = false,
 }) => {
   const dispatch = useDispatch();
-  const {
-    errors: searchErrors,
-    isFetching,
-    bbsRegionsByName: searchResults,
-  } = useSelector((state) => state.region);
+  const { error, isFetching, bbsRegionsByName: searchResults } = useSelector(
+    (state) => state.region,
+  );
 
   const loadSearchResults = (inputValue) => {
     dispatch(loadRegionsSearch(inputValue, inputValue, true));
@@ -50,7 +49,7 @@ const MultipleBBSRegionsSelect = ({
       }
       required={required}
       resetSearchResults={resetSearchResults}
-      searchErrors={searchErrors}
+      searchError={pathOr(null, ['message'], error)}
       searchResults={searchResults}
     />
   );

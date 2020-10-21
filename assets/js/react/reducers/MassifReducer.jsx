@@ -1,4 +1,8 @@
-import { FETCH_MASSIF, FETCH_MASSIF_FAILURE, FETCH_MASSIF_SUCCESS } from '../actions/Massif';
+import {
+  FETCH_MASSIF,
+  FETCH_MASSIF_FAILURE,
+  FETCH_MASSIF_SUCCESS,
+} from '../actions/Massif';
 
 //
 //
@@ -9,7 +13,7 @@ import { FETCH_MASSIF, FETCH_MASSIF_FAILURE, FETCH_MASSIF_SUCCESS } from '../act
 const initialState = {
   massif: undefined, // massif fetched
   isFetching: false, // show loading spinner
-  errors: undefined, // fetch errors
+  error: null, // fetch errors
 };
 
 //
@@ -20,20 +24,11 @@ const initialState = {
 const massif = (state = initialState, action) => {
   switch (action.type) {
     case FETCH_MASSIF:
-      return Object.assign({}, state, {
-        massif: action.massif,
-        isFetching: true,
-      });
+      return { ...state, massif: action.massif, isFetching: true };
     case FETCH_MASSIF_SUCCESS:
-      return Object.assign({}, state, {
-        massif: action.massif,
-        isFetching: false,
-      });
+      return { ...state, massif: action.massif, isFetching: false };
     case FETCH_MASSIF_FAILURE:
-      return Object.assign({}, state, {
-        error: action.error,
-        isFetching: false,
-      });
+      return { ...state, error: action.error, isFetching: false };
     default:
       return state;
   }

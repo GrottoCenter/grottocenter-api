@@ -5,12 +5,12 @@ import {
 } from '../actions/ProcessDocuments';
 
 const initialState = {
-  errorMessage: '',
+  error: null,
   isLoading: false,
   success: null,
 };
 
-const processDocument = (state = initialState, action) => {
+const processDocuments = (state = initialState, action) => {
   switch (action.type) {
     case POST_PROCESS_DOCUMENTS:
       return {
@@ -20,18 +20,17 @@ const processDocument = (state = initialState, action) => {
     case POST_PROCESS_DOCUMENTS_SUCCESS:
       return {
         ...initialState,
-        isLoading: false,
         success: true,
       };
     case POST_PROCESS_DOCUMENTS_FAILURE:
       return {
         ...initialState,
         success: false,
-        errorMessages: action.errorMessage,
+        error: action.error,
       };
     default:
       return state;
   }
 };
 
-export default processDocument;
+export default processDocuments;

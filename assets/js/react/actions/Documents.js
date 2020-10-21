@@ -15,6 +15,7 @@ import {
   equals,
 } from 'ramda';
 import { getDocuments as queryDocuments } from '../conf/Config';
+import makeErrorMessage from '../helpers/makeErrorMessage';
 
 export const FETCH_DOCUMENTS = 'FETCH_DOCUMENTS';
 export const FETCH_DOCUMENTS_SUCCESS = 'FETCH_DOCUMENTS_SUCCESS';
@@ -49,7 +50,12 @@ export function getDocuments(criteria) {
     try {
       const res = await fetch(
         isNil(criteria) ? queryDocuments : makeUrl(criteria),
-      );
+      ).then((response) => {
+        if (response.status >= 400) {
+          throw new Error(response.status);
+        }
+        return response;
+      });
       const data = await res.text();
       const header = await res.headers.get('Content-Range');
       const makeNumber = ifElse(identity, Number, always(1));
@@ -69,10 +75,12 @@ export function getDocuments(criteria) {
           totalCount: getTotalCount(parsedData.documents.length),
         }),
       );
-    } catch (err) {
-      const errorMessage = `Fetching ${getDocuments} status: ${err.status}`;
-      dispatch(fetchDocumentsFailure(errorMessage));
-      throw new Error(errorMessage);
+    } catch (error) {
+      return dispatch(
+        fetchDocumentsFailure(
+          makeErrorMessage(error.message, `Fetching documents`),
+        ),
+      );
     }
   };
 }

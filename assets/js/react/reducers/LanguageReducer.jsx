@@ -16,7 +16,7 @@ const initialState = {
   lang: DEFAULT_LANGUAGE,
   languages: [],
   isFetching: false,
-  errors: undefined,
+  error: null,
 };
 
 //

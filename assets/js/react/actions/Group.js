@@ -1,5 +1,6 @@
 import fetch from 'isomorphic-fetch';
 import { findGroupUrl } from '../conf/Config';
+import makeErrorMessage from '../helpers/makeErrorMessage';
 
 export const FETCH_GROUP = 'FETCH_GROUP';
 export const FETCH_GROUP_SUCCESS = 'FETCH_GROUP_SUCCESS';
@@ -27,12 +28,17 @@ export function loadGroup(groupId) {
     return fetch(`${findGroupUrl}${groupId}`)
       .then((response) => {
         if (response.status >= 400) {
-          const errorMessage = `Fetching ${findGroupUrl} status: ${response.status}`;
-          dispatch(fetchGroupFailure(errorMessage));
-          throw new Error(errorMessage);
+          throw new Error(response.status);
         }
         return response.text();
       })
-      .then((text) => dispatch(fetchGroupSuccess(JSON.parse(text))));
+      .then((text) => dispatch(fetchGroupSuccess(JSON.parse(text))))
+      .catch((error) =>
+        dispatch(
+          fetchGroupFailure(
+            makeErrorMessage(error.message, `Fetching group id ${groupId}`),
+          ),
+        ),
+      );
   };
 }

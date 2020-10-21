@@ -1,4 +1,5 @@
 import fetch from 'isomorphic-fetch';
+import makeErrorMessage from '../helpers/makeErrorMessage';
 
 //
 //
@@ -54,13 +55,18 @@ export function loadLatestBlogNews(blog, url) {
     return fetch(url)
       .then((response) => {
         if (response.status >= 400) {
-          throw new Error('Bad response from server'); // TODO Add better error management
+          throw new Error(response.status);
         }
         return response.text();
       })
       .then((text) => dispatch(fetchLatestBlogNewsSuccess(blog, text)))
       .catch((error) => {
-        dispatch(fetchLatestBlogNewsFailure(blog, error));
+        dispatch(
+          fetchLatestBlogNewsFailure(
+            blog,
+            makeErrorMessage(error.message, 'Fetching blog news'),
+          ),
+        );
       });
   };
 }

@@ -37,7 +37,7 @@ const MassifAutoComplete = ({
   searchLabelText,
 }) => {
   const dispatch = useDispatch();
-  const { errors, isLoading, results: suggestions } = useSelector(
+  const { error, isLoading, results: suggestions } = useSelector(
     (state) => state.quicksearch,
   );
 
@@ -61,7 +61,7 @@ const MassifAutoComplete = ({
           fetchSearchResults={fetchSearchResults}
           getOptionLabel={getMassifToString}
           getValueName={getMassifToString}
-          hasError={!isNil(errors)}
+          hasError={!isNil(error)}
           isLoading={isLoading}
           label={searchLabelText}
           renderOption={entityOptionForSelector}

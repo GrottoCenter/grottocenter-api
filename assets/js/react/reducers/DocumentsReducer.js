@@ -5,7 +5,7 @@ import {
 } from '../actions/Documents';
 
 const initialState = {
-  errorMessages: [],
+  error: null,
   isLoading: false,
   data: {
     documents: [],
@@ -19,7 +19,7 @@ const documents = (state = initialState, action) => {
       return {
         ...state,
         isLoading: true,
-        errorMessages: [],
+        error: null,
       };
     case FETCH_DOCUMENTS_SUCCESS:
       return {
@@ -31,7 +31,7 @@ const documents = (state = initialState, action) => {
       return {
         ...state,
         isLoading: false,
-        errorMessages: action.errorMessages,
+        error: action.error,
       };
     default:
       return state;

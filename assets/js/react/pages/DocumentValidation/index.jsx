@@ -24,13 +24,13 @@ const DocumentValidationPage = () => {
   const dispatch = useDispatch();
   // TODO handle errors
   // eslint-disable-next-line no-unused-vars
-  const { isLoading, data, totalCount, errorMessages } = useSelector(
+  const { isLoading, data, totalCount, error } = useSelector(
     (state) => state.documents,
   );
   // TODO handle errors
   // eslint-disable-next-line no-unused-vars
-  const { errorMessage: actionError, success: isActionSuccess } = useSelector(
-    (state) => state.processDocument,
+  const { error: actionError, success: isActionSuccess } = useSelector(
+    (state) => state.processDocuments,
   );
   const [selected, setSelected] = React.useState([]);
   const [page, setPage] = React.useState(0);

@@ -27,7 +27,7 @@ export const MultipleSelectTypes = {
   renderOption: PropTypes.func,
   required: PropTypes.bool,
   resetSearchResults: PropTypes.func.isRequired, // should reset all the search results
-  searchErrors: PropTypes.arrayOf(PropTypes.any),
+  searchError: PropTypes.string,
   searchResults: PropTypes.arrayOf(PropTypes.any).isRequired,
   value: PropTypes.arrayOf(PropTypes.any).isRequired,
 };
