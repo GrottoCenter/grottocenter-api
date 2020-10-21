@@ -127,7 +127,6 @@ export function getAdmins() {
         if (response.status >= 400) {
           const errorMessage = `Fetching ${getAdminsUrl} status: ${response.status}`;
           dispatch(getAdminsActionFailure(errorMessage));
-          throw new Error(errorMessage);
         }
         return response.text();
       })
@@ -165,7 +164,6 @@ export function getModerators() {
         if (response.status >= 400) {
           const errorMessage = `Fetching ${getModeratorsUrl} status: ${response.status}`;
           dispatch(getModeratorsActionFailure(errorMessage));
-          throw new Error(errorMessage);
         }
         return response.text();
       })
