@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useIntl } from 'react-intl';
 import makeCustomCellRenders from './customCellRenders';
+import makeCustomHeaderCellRenders from './customHeaderCellRenders';
 import Table from '../../components/common/Table';
 import { createColumns } from '../../components/common/Table/TableHead';
 
@@ -62,6 +63,7 @@ const DocumentsTable = ({
       columns={columns}
       currentPage={currentPage}
       customCellRenders={makeCustomCellRenders()}
+      customHeaderCellRenders={makeCustomHeaderCellRenders()}
       data={documents || []}
       hiddenColumns={hiddenColumns}
       loading={loading}
