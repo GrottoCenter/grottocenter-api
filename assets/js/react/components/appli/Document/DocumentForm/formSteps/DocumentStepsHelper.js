@@ -57,15 +57,25 @@ const isStep3Valid = (stepData) => {
   if (isNil(stepData)) {
     return false;
   }
-  const { identifier, identifierType } = stepData;
+  const { identifier, identifierType, startPage, endPage } = stepData;
+
+  let pagesAreOk = true;
+  if (startPage || endPage) {
+    pagesAreOk =
+      (startPage > 0 && endPage > 0 && endPage > startPage) ||
+      (!startPage && endPage > 0);
+  }
+
   let regexpValidation = false;
   if (identifierType !== null) {
     const regexp = new RegExp(identifierType.regexp);
     regexpValidation = regexp.test(identifier);
   }
+
   return (
-    identifier === '' ||
-    (identifier !== '' && identifierType !== null && regexpValidation)
+    pagesAreOk &&
+    (identifier === '' ||
+      (identifier !== '' && identifierType !== null && regexpValidation))
   );
 };
 

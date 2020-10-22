@@ -34,9 +34,23 @@ export function postDocument(docAttributes) {
   return (dispatch) => {
     dispatch(postDocumentAction());
 
+    // Merge startPage and endPage in one attribute 'pages'
+    const { startPage, endPage } = docAttributes;
+    let pages = null;
+
+    // A page can be 0 so check for 'if(startPage)' only will not work.
+    // That's why we use 'if(startPage === null)' here.
+    if (startPage === null && endPage !== null) {
+      pages = endPage;
+    } else if (startPage !== null && endPage === null) {
+      pages = `${startPage},`;
+    } else if (startPage !== null && endPage !== null) {
+      pages = `${startPage}-${endPage}`;
+    }
+
     const requestOptions = {
       method: 'POST',
-      body: JSON.stringify({ ...docAttributes }),
+      body: JSON.stringify({ ...docAttributes, pages }),
       headers: getAuthHTTPHeader(),
     };
 

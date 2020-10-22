@@ -60,6 +60,7 @@ module.exports = {
       author: req.token.id,
       authors: req.body.authors ? req.body.authors.map((a) => a.id) : undefined,
       dateInscription: new Date(),
+      datePublication: req.body.publicationDate,
       editor: ramda.pathOr(undefined, ['editor', 'id'], req.body),
       identifierType: ramda.pathOr(
         undefined,
@@ -69,6 +70,7 @@ module.exports = {
       library: ramda.pathOr(undefined, ['library', 'id'], req.body),
       license: 1,
       massif: ramda.pathOr(undefined, ['massif', 'id'], req.body),
+      parent: ramda.pathOr(undefined, ['partOf', 'id'], req.body),
       regions: req.body.regions ? req.body.regions.map((r) => r.id) : undefined,
       subjects: req.body.subjects
         ? req.body.subjects.map((s) => s.code)
@@ -76,32 +78,38 @@ module.exports = {
       type: ramda.pathOr(undefined, ['documentType', 'id'], req.body),
     };
 
-    // Launch creation request
-    try {
-      const documentCreated = await TDocument.create(cleanedData).fetch();
+    // Launch creation request using transaction: it performs a rollback if an error occurs
+    await sails
+      .getDatastore()
+      .transaction(async (db) => {
+        const documentCreated = await TDocument.create(cleanedData)
+          .fetch()
+          .usingConnection(db);
 
-      // Create main language manually (not handled automatically)
-      await JDocumentLanguage.create({
-        document: documentCreated.id,
-        language: req.body.documentMainLanguage.id,
-        isMain: true,
-      });
+        // Create associated data not handled by TDocument manually
+        await JDocumentLanguage.create({
+          document: documentCreated.id,
+          language: req.body.documentMainLanguage.id,
+          isMain: true,
+        }).usingConnection(db);
 
-      const params = {};
-      params.controllerMethod = 'DocumentController.create';
-      return ControllerService.treat(req, null, documentCreated, params, res);
-    } catch (e) {
-      if (e.code === 'E_UNIQUE') {
-        return res.sendStatus(409);
-      }
-      if (e.name === 'UsageError') {
-        return res.badRequest(e.cause.message);
-      }
-      if (e.name === 'AdapterError') {
-        return res.badRequest(e.cause.message);
-      }
-      return res.serverError(e.cause.message);
-    }
+        await TDescription.create({
+          author: req.token.id,
+          body: req.body.description,
+          dateInscription: new Date(),
+          document: documentCreated.id,
+          language: req.body.titleAndDescriptionLanguage.id,
+          title: req.body.title,
+        }).usingConnection(db);
+
+        const params = {};
+        params.controllerMethod = 'DocumentController.create';
+        return ControllerService.treat(req, null, documentCreated, params, res);
+      })
+      .intercept('E_UNIQUE', () => res.sendStatus(409))
+      .intercept('UsageError', (e) => res.badRequest(e.cause.message))
+      .intercept('AdapterError', (e) => res.badRequest(e.cause.message))
+      .intercept((e) => res.serverError(e.message));
   },
 
   findAll: (

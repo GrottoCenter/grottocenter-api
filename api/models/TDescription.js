@@ -47,6 +47,7 @@ module.exports = {
       type: 'number',
       allowNull: false,
       columnName: 'relevance',
+      defaultsTo: 0,
     },
 
     title: {

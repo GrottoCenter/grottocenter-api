@@ -2,6 +2,7 @@ import React, { useContext, useMemo } from 'react';
 import styled from 'styled-components';
 
 import { Typography } from '@material-ui/core';
+import { isNil } from 'ramda';
 import Translate from '../../../../common/Translate';
 
 import { DocumentFormContext } from '../Provider';
@@ -41,8 +42,8 @@ const PagesEditor = () => {
 
   React.useEffect(() => {
     const newEndGreater =
-      startPage > endPage
-        ? 'The end page must be greater or equal to the start page.'
+      !isNil(startPage) && !isNil(endPage) && startPage >= endPage
+        ? 'The end page must be greater than the start page.'
         : '';
     if (newEndGreater !== intervalError) setIntervalError(newEndGreater);
 
