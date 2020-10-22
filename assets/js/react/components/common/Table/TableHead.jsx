@@ -1,28 +1,10 @@
-import {
-  TableCell,
-  TableHead as MuiTableHead,
-  TableRow,
-  TableSortLabel,
-} from '@material-ui/core';
-import {
-  defaultTo,
-  head,
-  includes,
-  isNil,
-  keys,
-  map,
-  pipe,
-  values,
-} from 'ramda';
+import { TableHead as MuiTableHead, TableRow } from '@material-ui/core';
+import { defaultTo, head, isNil, keys, map, pipe } from 'ramda';
 import React from 'react';
 import PropTypes from 'prop-types';
 
 import { InitialHead } from './InitialTable';
-
-export const ActionColumnIds = {
-  selection: 'selection',
-  detailedView: 'detailedView',
-};
+import CustomHeaderCell from './CustomHeaderCell';
 
 export const createColumns = (rawData, makeTranslation) => {
   const makeColumn = (key) => ({
@@ -35,10 +17,9 @@ export const createColumns = (rawData, makeTranslation) => {
 
 const TableHead = ({
   visibleColumns,
-  onSort,
-  orderBy,
-  order,
   isInitializing,
+  customHeaderCellRenders,
+  ...orderProps
 }) => (
   <MuiTableHead>
     <TableRow>
@@ -46,19 +27,17 @@ const TableHead = ({
         <InitialHead />
       ) : (
         visibleColumns.map(({ id, label }) => (
-          <TableCell key={id} align="right">
-            {!isNil(onSort) && !includes(id, values(ActionColumnIds)) ? (
-              <TableSortLabel
-                active={orderBy === id}
-                direction={orderBy === id ? order : 'asc'}
-                onClick={onSort(id)}
-              >
-                {label || ''}
-              </TableSortLabel>
-            ) : (
-              label
-            )}
-          </TableCell>
+          <CustomHeaderCell
+            key={id}
+            value={label}
+            id={id}
+            customRenders={
+              !isNil(customHeaderCellRenders)
+                ? customHeaderCellRenders
+                : undefined
+            }
+            {...orderProps}
+          />
         ))
       )}
     </TableRow>
@@ -79,6 +58,7 @@ TableHead.propTypes = {
   orderBy: PropTypes.string,
   order: PropTypes.oneOf(['asc', 'desc']),
   isInitializing: PropTypes.bool,
+  customHeaderCellRenders: PropTypes.func,
 };
 
 export default TableHead;
