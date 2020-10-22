@@ -2,19 +2,22 @@ import { useIntl } from 'react-intl';
 import { propOr, map, pipe, join, head, isNil, reject, isEmpty } from 'ramda';
 
 const makeCustomCellRenders = () => {
-  const { formatDate, formatMessage } = useIntl();
+  const { formatDate, formatMessage, formatTime } = useIntl();
   return [
     {
       id: 'dateInscription',
-      customRender: (date) => formatDate(new Date(date)),
+      customRender: (date) =>
+        date
+          ? `${formatDate(new Date(date))} ${formatTime(new Date(date))}`
+          : null,
     },
     {
       id: 'datePublication',
-      customRender: (date) => formatDate(new Date(date)),
+      customRender: (date) => (date ? formatDate(new Date(date)) : null),
     },
     {
       id: 'dateValidation',
-      customRender: (date) => formatDate(new Date(date)),
+      customRender: (date) => (date ? formatDate(new Date(date)) : null),
     },
     {
       id: 'authors',
@@ -26,7 +29,7 @@ const makeCustomCellRenders = () => {
     },
     {
       id: 'author',
-      customRender: propOr('', 'name'),
+      customRender: propOr('', 'nickname'),
     },
     {
       id: 'identifierType',
