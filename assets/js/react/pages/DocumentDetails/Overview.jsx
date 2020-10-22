@@ -77,7 +77,9 @@ const Overview = ({
             <>
               <CreatedBy name={createdBy} />
               <Typography color="textSecondary" variant="caption" gutterBottom>
-                {`${formatMessage({ id: 'Document language' })}: ${language}`}
+                {`${formatMessage({
+                  id: 'Document language',
+                })}: ${formatMessage({ id: language })}`}
               </Typography>
             </>
           )}

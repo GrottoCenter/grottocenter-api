@@ -62,7 +62,11 @@ const makeCustomCellRenders = () => {
     },
     {
       id: 'descriptions',
-      customRender: pipe(head, propOr('', 'title')),
+      customRender: pipe(head, propOr('', 'text')),
+    },
+    {
+      id: 'titles',
+      customRender: pipe(head, propOr('', 'text')),
     },
     {
       id: 'parent',
