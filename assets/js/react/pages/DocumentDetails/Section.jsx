@@ -57,7 +57,7 @@ const Item = ({ Icon, label, value, type }) => (
         <TreeItem nodeId="1" label="test" />
       </TreeView>
     )}
-    {type === 'area' && isArray(value) && (
+    {type === 'list' && isArray(value) && (
       <List>
         {value.map((item) => (
           <ListItem key={item} primary={item} />

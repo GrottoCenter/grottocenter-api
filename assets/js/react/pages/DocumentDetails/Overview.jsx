@@ -94,7 +94,9 @@ const Overview = ({
             <SubTitle variant="subtitle1" color="textSecondary">
               {formatMessage({ id: 'Summary' })}
             </SubTitle>
-            <Typography variant="body1">{summary}</Typography>
+            <Typography variant="body1" style={{ whiteSpace: 'pre-wrap' }}>
+              {summary}
+            </Typography>
             <SubTitle variant="subtitle1" color="textSecondary">
               {formatMessage({ id: 'Authors' })}
             </SubTitle>

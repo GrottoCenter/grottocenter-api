@@ -4,7 +4,7 @@
       "id": 1,
       "title": "Spelunca 142",
       "subject": "7.1, 2.5",
-      "document_father": "Spelunca [COLLECTION]",
+      "parent_document": "Spelunca [COLLECTION]",
       "area_code": "SCH",
       "submit_date": "2009-01-27T19:43:24.000Z"
     },
@@ -12,7 +12,7 @@
       "id": 2,
       "title": "title 2 Compte-rendu d'expédition dans la grotte",
       "subject": "5.0",
-      "document_father": "",
+      "parent_document": "",
       "area_code": "FR03",
       "submit_date": "2009-01-28T22:06:43.000Z"
     },
@@ -20,7 +20,7 @@
       "id": 3,
       "title": "title 3",
       "subject": "-",
-      "document_father": "-",
+      "parent_document": "-",
       "area_code": "FR01",
       "submit_date": "20/05/2020"
     },
@@ -28,7 +28,7 @@
       "id": 4,
       "title": "title 3",
       "subject": "this is a subject",
-      "document_father": "-",
+      "parent_document": "-",
       "area_code": "FR02",
       "submit_date": "02/05/2020"
     },
@@ -36,7 +36,7 @@
       "id": 5,
       "title": "title 4",
       "subject": "",
-      "document_father": "Spelunca n 123",
+      "parent_document": "Spelunca n 123",
       "area_code": "FR01",
       "submit_date": "20/05/2019"
     },
@@ -44,7 +44,7 @@
       "id": 6,
       "title": "title 5",
       "subject": "",
-      "document_father": "Spelunca n 123",
+      "parent_document": "Spelunca n 123",
       "area_code": "FR01",
       "submit_date": "2020-08-30T16:40:15.041Z"
     },
@@ -52,7 +52,7 @@
       "id": 7,
       "title": "title 6",
       "subject": "",
-      "document_father": "Spelunca n 123",
+      "parent_document": "Spelunca n 123",
       "area_code": "FR01",
       "submit_date": "20/05/2019"
     },
@@ -60,7 +60,7 @@
       "id": 8,
       "title": "title 7",
       "subject": "",
-      "document_father": "Spelunca n 123",
+      "parent_document": "Spelunca n 123",
       "area_code": "FR01",
       "submit_date": "20/05/2019"
     },
@@ -68,7 +68,7 @@
       "id": 5,
       "title": "title 8",
       "subject": "",
-      "document_father": "Spelunca n 123",
+      "parent_document": "Spelunca n 123",
       "area_code": "FR01",
       "submit_date": "20/05/2019"
     },
@@ -76,7 +76,7 @@
       "id": 9,
       "title": "title 9",
       "subject": "",
-      "document_father": "Spelunca n 123",
+      "parent_document": "Spelunca n 123",
       "area_code": "FR01",
       "submit_date": "20/05/2019"
     },
@@ -84,7 +84,7 @@
       "id": 10,
       "title": "title 10",
       "subject": "",
-      "document_father": "Spelunca n 123",
+      "parent_document": "Spelunca n 123",
       "area_code": "FR01",
       "submit_date": "20/05/2019"
     }

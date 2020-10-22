@@ -20,8 +20,12 @@ export const makeOverview = (data) => ({
     defaultTo([]),
   )(data),
   language: pathOr('unknown', ['mainLanguage', 'refName'], data),
-  title: pipe(propOr([], 'descriptions'), head, propOr('Title', 'title'))(data),
-  summary: pipe(propOr([], 'descriptions'), head, propOr('', 'body'))(data),
+  title: pipe(
+    propOr([], 'titles'),
+    head,
+    propOr('No title provided', 'text'),
+  )(data),
+  summary: pipe(propOr([], 'descriptions'), head, propOr('', 'text'))(data),
 });
 
 // eslint-disable-next-line no-unused-vars
@@ -34,16 +38,21 @@ export const makeDetails = (data) => ({
   identifier: propOr('', 'identifier', data),
   bbsReference: propOr('', 'refBbs', data),
   documentType: pathOr('', ['type', 'name'], data),
-  publishedIn: propOr('', 'datePublication', data),
-  documentFather: '',
+  publicationDate: propOr('', 'datePublication', data),
+  parentDocument: propOr('', ['parent', 'name'], data),
   pages: propOr('', 'pages', data),
   subjects: pipe(
     propOr([], 'subjects'),
+    map(propOr('', 'subject')),
+    reject(isEmpty),
+    join(' // '),
+  )(data),
+  area: pipe(
+    propOr([], 'regions'),
     map(propOr('', 'name')),
     reject(isEmpty),
-    join(' - '),
+    join(' // '),
   )(data),
-  area: pathOr('', ['entrance', 'region'], data),
 });
 
 export const makeEntities = (data) => ({
