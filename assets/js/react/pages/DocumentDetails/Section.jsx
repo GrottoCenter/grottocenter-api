@@ -3,7 +3,7 @@ import {
   CardContent as MuiCardContent,
   Typography,
   List,
-  ListItem,
+  ListItemText,
 } from '@material-ui/core';
 import React from 'react';
 import PropTypes from 'prop-types';
@@ -12,6 +12,8 @@ import { isEmpty, isNil, is } from 'ramda';
 import { Skeleton, TreeItem, TreeView } from '@material-ui/lab';
 import { ExpandMore, ChevronRight } from '@material-ui/icons';
 import { isMobileOnly } from 'react-device-detect';
+
+// ==========
 
 const Wrapper = styled.div`
   display: flex;
@@ -32,6 +34,15 @@ const Text = styled(Typography)`
   text-align: justify;
 `;
 
+const ToRightList = styled(List)`
+  margin-left: auto;
+  margin-right: 20%;
+`;
+
+const ToRightListItemText = styled(ListItemText)`
+  text-align: right;
+`;
+
 const Label = styled(Typography)`
   margin-right: ${({ theme }) => theme.spacing(2)}px;
   text-transform: uppercase;
@@ -45,6 +56,8 @@ const IconContainer = styled.div`
 
 const isArray = is(Array);
 const isString = is(String);
+
+// ==========
 
 const Item = ({ Icon, label, value, type }) => (
   <Wrapper>
@@ -61,11 +74,11 @@ const Item = ({ Icon, label, value, type }) => (
       </TreeView>
     )}
     {type === 'list' && isArray(value) && (
-      <List>
+      <ToRightList>
         {value.map((item) => (
-          <ListItem key={item} primary={item} />
+          <ToRightListItemText key={item} primary={item} />
         ))}
-      </List>
+      </ToRightList>
     )}
     {isString(value) && <Text>{value}</Text>}
   </Wrapper>
@@ -87,6 +100,7 @@ const Section = ({ title, content, loading }) => {
                 key={item.label}
                 Icon={item.Icon}
                 label={item.label}
+                type={item.type}
                 value={item.value}
               />
             ) : (

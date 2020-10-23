@@ -81,10 +81,12 @@ const DocumentPage = ({
           {
             label: formatMessage({ id: 'Subjects' }),
             value: details.subjects,
+            type: 'list',
           },
           {
             label: formatMessage({ id: 'Regions' }),
-            value: details.area,
+            value: details.regions,
+            type: 'list',
           },
         ]}
       />
@@ -156,14 +158,13 @@ DocumentPage.propTypes = {
     publicationDate: PropTypes.string,
     parentDocument: PropTypes.string,
     pages: PropTypes.string,
-    subjects: PropTypes.string,
-    area: PropTypes.string,
+    subjects: PropTypes.arrayOf(PropTypes.string),
+    regions: PropTypes.arrayOf(PropTypes.string),
   }),
   entities: PropTypes.shape({
     massif: PropTypes.string,
     cave: PropTypes.string,
     entry: PropTypes.string,
-    area: PropTypes.string,
   }),
 };
 

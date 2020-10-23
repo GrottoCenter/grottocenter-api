@@ -112,7 +112,7 @@ const DocumentValidationPage = () => {
         scrollable
         open={!isNil(detailedView)}
         onClose={closeDetailedView}
-        title={formatMessage({ id: 'Detailed view' })}
+        title={formatMessage({ id: 'Detailed document view' })}
       >
         <DocumentDetails id={detailedView} />
       </StandardDialog>

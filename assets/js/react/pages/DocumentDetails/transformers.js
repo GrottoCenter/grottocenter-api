@@ -7,7 +7,6 @@ import {
   reject,
   isEmpty,
   head,
-  join,
 } from 'ramda';
 
 // eslint-disable-next-line import/prefer-default-export
@@ -44,13 +43,11 @@ export const makeDetails = (data) => ({
     propOr([], 'subjects'),
     map(propOr('', 'subject')),
     reject(isEmpty),
-    join(' // '),
   )(data),
-  area: pipe(
+  regions: pipe(
     propOr([], 'regions'),
     map(propOr('', 'name')),
     reject(isEmpty),
-    join(' // '),
   )(data),
 });
 
