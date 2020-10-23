@@ -8,7 +8,7 @@ import {
 import React from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
-import { isNil, is } from 'ramda';
+import { isEmpty, isNil, is } from 'ramda';
 import { Skeleton, TreeItem, TreeView } from '@material-ui/lab';
 import { ExpandMore, ChevronRight } from '@material-ui/icons';
 import { isMobileOnly } from 'react-device-detect';
@@ -78,14 +78,18 @@ const Section = ({ title, content, loading }) => {
         {loading ? (
           <Skeleton variant="rect" height={100} />
         ) : (
-          content.map((item) => (
-            <Item
-              key={item.label}
-              Icon={item.Icon}
-              label={item.label}
-              value={item.value}
-            />
-          ))
+          content.map((item) =>
+            !isEmpty(item.value) ? (
+              <Item
+                key={item.label}
+                Icon={item.Icon}
+                label={item.label}
+                value={item.value}
+              />
+            ) : (
+              ''
+            ),
+          )
         )}
       </CardContent>
     </Card>
