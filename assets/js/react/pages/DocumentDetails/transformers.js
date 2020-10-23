@@ -9,9 +9,9 @@ import {
   head,
 } from 'ramda';
 
-// eslint-disable-next-line import/prefer-default-export
 export const makeOverview = (data) => ({
-  createdBy: pathOr('', ['author', 'name'], data),
+  createdBy: pathOr('', ['author', 'nickname'], data),
+  creationDate: pathOr('', ['dateInscription'], data),
   authors: pipe(
     propOr([], 'authors'),
     map(propOr('', 'nickname')),
