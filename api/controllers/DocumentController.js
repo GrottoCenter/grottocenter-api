@@ -222,7 +222,7 @@ module.exports = {
         }
 
         const promises = [];
-        // Get name of cave, entrance and massif
+        // Get name of cave, entrance, massif, editor and library
         promises.push(
           ramda.isNil(found.entrance)
             ? ''
@@ -238,6 +238,16 @@ module.exports = {
             ? ''
             : NameService.setNames([found.massif], 'massif'),
         );
+        promises.push(
+          ramda.isNil(found.editor)
+            ? ''
+            : NameService.setNames([found.editor], 'grotto'),
+        );
+        promises.push(
+          ramda.isNil(found.library)
+            ? ''
+            : NameService.setNames([found.library], 'grotto'),
+        );
 
         // Get main language
         promises.push(DocumentService.getMainLanguage(found.id));
@@ -247,8 +257,12 @@ module.exports = {
           results[0] !== '' ? (found.entrance = results[0][0]) : '';
           results[1] !== '' ? (found.cave = results[1][0]) : '';
           results[2] !== '' ? (found.massif = results[2][0]) : '';
+          results[3] !== '' ? (found.editor = results[3][0]) : '';
+          results[4] !== '' ? (found.library = results[4][0]) : '';
+
           // Main language
-          found.mainLanguage = results[3];
+          found.mainLanguage = results[5];
+
           return ControllerService.treatAndConvert(
             req,
             err,

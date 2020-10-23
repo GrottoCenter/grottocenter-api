@@ -28,10 +28,9 @@ export const makeOverview = (data) => ({
   summary: pipe(propOr([], 'descriptions'), head, propOr('', 'text'))(data),
 });
 
-// eslint-disable-next-line no-unused-vars
 export const makeOrganizations = (data) => ({
-  editor: '',
-  library: '',
+  editor: pathOr('', ['editor', 'name'], data),
+  library: pathOr('', ['library', 'name'], data),
 });
 
 export const makeDetails = (data) => ({
