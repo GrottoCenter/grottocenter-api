@@ -28,9 +28,12 @@ const CardContent = styled(MuiCardContent)`
 
 const Text = styled(Typography)`
   margin-left: auto;
+  margin-right: ${isMobileOnly ? '5%' : '20%'};
+  text-align: justify;
 `;
 
 const Label = styled(Typography)`
+  margin-right: ${({ theme }) => theme.spacing(2)}px;
   text-transform: uppercase;
 `;
 

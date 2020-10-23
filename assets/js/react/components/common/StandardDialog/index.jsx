@@ -60,14 +60,13 @@ const StandardDialog = ({
 export default StandardDialog;
 
 StandardDialog.propTypes = {
-  // eslint-disable-next-line react/require-default-props
+  actions: PropTypes.arrayOf(PropTypes.node),
+  children: PropTypes.node,
   fullScreen: PropTypes.bool,
   fullWidth: PropTypes.bool,
   maxWidth: PropTypes.oneOf(['xs', 'sm', 'md', 'lg', 'xl']),
   open: PropTypes.bool,
   onClose: PropTypes.func,
-  title: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
-  actions: PropTypes.arrayOf(PropTypes.node),
-  children: PropTypes.node,
   scrollable: PropTypes.bool,
+  title: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
 };

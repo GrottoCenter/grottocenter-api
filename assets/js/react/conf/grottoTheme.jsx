@@ -148,6 +148,11 @@ export const overridings = {
         color: '#fff',
       },
     },
+    MuiDialog: {
+      paper: {
+        backgroundColor: grey['200'],
+      },
+    },
     MuiDrawer: {
       root: {
         width: sideMenuWidth,
