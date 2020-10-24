@@ -29,26 +29,15 @@ const initialState = {
 const map = (state = initialState, action) => {
   switch (action.type) {
     case FETCH_MAP_ITEMS_SUCCESS:
-      return Object.assign({}, state, {
-        entriesMap: action.results,
-      });
+      return { ...state, entriesMap: action.results };
     case FETCH_MAP_ITEMS_FAILURE:
-      return Object.assign({}, state, {
-        error: action.error,
-      });
+      return { ...state, error: action.error };
     case CHANGE_LOCATION:
-      return Object.assign({}, state, {
-        location: action.location,
-      });
+      return { ...state, location: action.location };
     case CHANGE_ZOOM:
-      return Object.assign({}, state, {
-        zoom: action.zoom,
-      });
+      return { ...state, zoom: action.zoom };
     case FOCUS_ON_LOCATION:
-      return Object.assign({}, state, {
-        location: action.location,
-        zoom: focusZoom,
-      });
+      return { ...state, location: action.location, zoom: focusZoom };
     default:
       return state;
   }

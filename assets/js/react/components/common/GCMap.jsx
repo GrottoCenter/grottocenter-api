@@ -28,13 +28,13 @@ import { withTheme } from '@material-ui/core/styles';
 import PopPop from 'react-poppop';
 import fetch from 'isomorphic-fetch';
 import { isMobileOnly, isMobile } from 'react-device-detect';
-import MapEntryMarker from './Maps/main/MapEntryMarker';
-import MapSelectedEntryMarker from './Maps/main/MapSelectedEntryMarker';
+import MapEntranceMarker from './Maps/main/MapEntranceMarker';
+import MapSelectedEntranceMarker from './Maps/main/MapSelectedEntranceMarker';
 import MapGrottoMarker from './Maps/main/MapGrottoMarker';
 import MapSelectedGrottoMarker from './Maps/main/MapSelectedGrottoMarker';
 import { focusZoom } from '../../conf/Config';
 import { layers } from '../../conf/MapLayersConfig';
-import { markers } from '../../conf/MapMarkersConfig';
+import markers from '../../conf/MapMarkersConfig';
 import Spinner from './Spinner';
 import MapGroupIcon from './MapGroupIcon';
 import Convert from './Maps/main/Convert';
@@ -51,14 +51,16 @@ import MapCaveMarker from './Maps/main/MapCaveMarker';
 // isSideMenuOpen ? theme.sideMenuWidth : 0}px);
 
 const Map = styled(LeafletMap)`
- width: calc(100% - ${({ isSideMenuOpen, theme }) =>
-   isSideMenuOpen ? theme.sideMenuWidth : 0}px);
-   //height: 1000px;
-  height: calc(100vh - ${({ theme }) => theme.appBarHeight}px);
-  // height: ${isMobileOnly ? 'calc(100% - 60px)' : 'calc(100% - 110px)'};
+  width: calc(
+    100% -
+      ${({ isSideMenuOpen, theme }) =>
+        isSideMenuOpen ? theme.sideMenuWidth : 0}px
+  );
+  height: calc(
+    100vh - ${({ theme }) => theme.appBarHeight}px -
+      ${({ theme }) => theme.breadcrumpHeight}px
+  );
   position: fixed;
-  //margin-left: -20px;
-  //margin-top: -20px;
 `;
 
 const StyledMapGroupIcon = styled(MapGroupIcon)`
@@ -162,33 +164,6 @@ const ImageMarkerLegend = styled.img`
 //
 
 class GCMap extends Component {
-  static propTypes = {
-    className: PropTypes.string,
-    selectedEntry: PropTypes.object,
-    entriesMap: PropTypes.object,
-    searchBounds: PropTypes.func,
-    mapCenter: PropTypes.object.isRequired,
-    mapZoom: PropTypes.number.isRequired,
-    setLocation: PropTypes.func.isRequired,
-    setZoom: PropTypes.func.isRequired,
-    history: PropTypes.object.isRequired,
-    match: PropTypes.object,
-    isSideMenuOpen: PropTypes.bool.isRequired,
-  };
-
-  static defaultProps = {
-    className: '',
-    selectedEntry: null,
-    entriesMap: {
-      qualityEntriesMap: [],
-      groupEntriesMap: [],
-      grottos: [],
-      caves: [],
-    },
-    searchBounds: () => {},
-    match: {},
-  };
-
   constructor(props) {
     super(props);
     this.state = {
@@ -198,7 +173,7 @@ class GCMap extends Component {
       initZoom: props.mapZoom,
       showSpinner: false,
       showListMarkers: true,
-      markersChecked: [markers[0]],
+      markersChecked: [markers.find((m) => m.name === 'Entrances')],
       showConvertPopup: false,
       currentLayer: layers[0],
       currentLayersAvailable: layers,
@@ -211,17 +186,19 @@ class GCMap extends Component {
     if (encodedParam && encodedParam.length > 0) {
       const decoded = Buffer.from(encodedParam, 'base64').toString();
       const params = decoded.split('&').reduce((prev, curr) => {
+        const newPrev = prev;
         const p = curr.split('=');
-        prev[decodeURIComponent(p[0])] = decodeURIComponent(p[1]);
-        return prev;
+        newPrev[decodeURIComponent(p[0])] = decodeURIComponent(p[1]);
+        return newPrev;
       }, {});
-      this.setState({
+      this.state = {
+        ...this.state,
         initCenter: {
           lat: Number(params.lat),
           lng: Number(params.lng),
         },
         initZoom: Number(params.zoom),
-      });
+      };
       this.updateReduxMapData(
         {
           lat: Number(params.lat),
@@ -254,7 +231,6 @@ class GCMap extends Component {
     fetch('/api/convert')
       .then((response) => response.json())
       .then((responseJson) => {
-        console.log(responseJson);
         this.setState({ projectionsList: responseJson });
       })
       .catch((error) => {
@@ -345,10 +321,11 @@ class GCMap extends Component {
     this.searchEntriesInBounds();
 
     // Set the layers available depending on the map bounds
+    const { currentLayer } = this.state;
     const layersAvailableForMap = [];
 
     layers.forEach((layer) => {
-      if (layer === this.state.currentLayer) {
+      if (layer === currentLayer) {
         layersAvailableForMap.push(layer);
       } else if (leafletMap.getBounds().intersects(layer.bounds)) {
         layersAvailableForMap.push(layer);
@@ -376,14 +353,17 @@ class GCMap extends Component {
   };
 
   toggleShowMarkers = () => {
-    this.setState({ showListMarkers: !this.state.showListMarkers });
+    this.setState((prevState) => ({
+      showListMarkers: !prevState.showListMarkers,
+    }));
   };
 
   onMarkerLayerChanged = (e) => {
+    const { markersChecked } = this.state;
     const m = markers.find((marker) => marker.name === e.currentTarget.value);
-    const listMarkersChecked = this.state.markersChecked;
+    const listMarkersChecked = markersChecked;
 
-    if (this.state.markersChecked.includes(m)) {
+    if (markersChecked.includes(m)) {
       // if the marker is checked
       this.setState({
         markersChecked: listMarkersChecked.filter((marker) => marker !== m),
@@ -424,7 +404,9 @@ class GCMap extends Component {
   };
 
   toggleShowLayers = () => {
-    this.setState({ showListLayers: !this.state.showListLayers });
+    this.setState((prevState) => ({
+      showListLayers: !prevState.showListLayers,
+    }));
   };
 
   onLayerChanged = (e) => {
@@ -437,13 +419,27 @@ class GCMap extends Component {
     });
   };
 
-  toggleShowLayerBound = (layer) => {
-    this.setState({ layerBoundsToDisplay: layer });
-  };
-
   render() {
-    const { selectedEntry, entriesMap, className } = this.props;
-    const { initZoom, initCenter, showSpinner, mapRef } = this.state;
+    const { selectedEntry, entriesMap, className, isSideMenuOpen } = this.props;
+
+    const {
+      currentLayer,
+      currentLayersAvailable,
+      initZoom,
+      initCenter,
+      layerBoundsToDisplay,
+      mapRef,
+      markersChecked,
+      projectionsList,
+      showConvertPopup,
+      showListLayers,
+      showListMarkers,
+      showSpinner,
+    } = this.state;
+
+    const toggleShowLayerBound = (layer) => {
+      this.setState({ layerBoundsToDisplay: layer });
+    };
 
     let zoom = initZoom;
     let center = initCenter;
@@ -463,19 +459,19 @@ class GCMap extends Component {
           marker = <MapSelectedGrottoMarker grotto={selectedEntry} />;
           break;
         default:
-          marker = <MapSelectedEntryMarker selectedEntry={selectedEntry} />;
+          marker = <MapSelectedEntranceMarker selectedEntry={selectedEntry} />;
       }
     }
 
     const entriesMarkersLayer = [];
     if (
       entriesMap &&
-      entriesMap.qualityEntriesMap &&
-      entriesMap.qualityEntriesMap.length > 0
+      entriesMap.qualityEntrancesMap &&
+      entriesMap.qualityEntrancesMap.length > 0
     ) {
-      entriesMap.qualityEntriesMap.forEach((entry) => {
+      entriesMap.qualityEntrancesMap.forEach((entry) => {
         if (!selectedEntry || entry.id !== selectedEntry.id) {
-          entriesMarkersLayer.push(<MapEntryMarker entry={entry} />);
+          entriesMarkersLayer.push(<MapEntranceMarker entry={entry} />);
         }
       });
     }
@@ -487,28 +483,28 @@ class GCMap extends Component {
       });
     }
 
-    const grottosMarkersLayer = [];
+    const organizationsMarkersLayer = [];
     if (entriesMap && entriesMap.grottos && entriesMap.grottos.length > 0) {
       entriesMap.grottos.forEach((grotto) => {
         if (!selectedEntry || grotto.id !== selectedEntry.id) {
-          grottosMarkersLayer.push(<MapGrottoMarker grotto={grotto} />);
+          organizationsMarkersLayer.push(<MapGrottoMarker grotto={grotto} />);
         }
       });
     }
 
-    const groupsMarkersLayer = [];
+    const entranceGroupsMarkersLayer = [];
     if (
       entriesMap &&
-      entriesMap.groupEntriesMap &&
-      entriesMap.groupEntriesMap.length > 0
+      entriesMap.groupEntrancesMap &&
+      entriesMap.groupEntrancesMap.length > 0
     ) {
-      entriesMap.groupEntriesMap.forEach((group, index) => {
-        groupsMarkersLayer.push(
+      entriesMap.groupEntrancesMap.forEach((group, index) => {
+        entranceGroupsMarkersLayer.push(
           <StyledMapGroupIcon
-            key={`group_${index}`}
+            key={`group-${index}`} // eslint-disable-line react/no-array-index-key
             position={{
-              lat: group.latitude,
-              lng: group.longitude,
+              lat: Number(group.latitude),
+              lng: Number(group.longitude),
             }}
             text={`${group.number}`}
             handleOnClick={this.handleOnClickGroup}
@@ -523,47 +519,46 @@ class GCMap extends Component {
         control={
           <Checkbox
             value={m.name}
-            checked={this.state.markersChecked.includes(m)}
+            checked={markersChecked.includes(m)}
             onChange={this.onMarkerLayerChanged}
           />
         }
         label={
-          <React.Fragment>
+          <>
             <ImageMarkerLegend src={m.url} alt="" />
             <StyledLegendText>
               <Translate>{m.name}</Translate>
             </StyledLegendText>
-          </React.Fragment>
+          </>
         }
       />
     ));
 
-    const showConvertPopup = this.state.showConvertPopup;
-
-    const layersInput = this.state.currentLayersAvailable.map((layer) => (
+    const layersInput = currentLayersAvailable.map((layer) => (
       <FormControlLabel
         key={layer.name}
         value={layer.name}
         control={<Radio />}
         label={
-          <React.Fragment>
+          <>
             <StyledLegendText>{layer.name}</StyledLegendText>
-          </React.Fragment>
+          </>
         }
-        onMouseOver={this.toggleShowLayerBound.bind(this, layer)}
-        onMouseLeave={this.toggleShowLayerBound.bind(this, 0)}
+        onMouseOver={() => toggleShowLayerBound(layer)}
+        onFocus={() => toggleShowLayerBound(layer)}
+        onMouseLeave={() => toggleShowLayerBound(0)}
       />
     ));
 
     return (
       <Map
-        isSideMenuOpen={this.props.isSideMenuOpen}
+        isSideMenuOpen={isSideMenuOpen}
         className={className}
         ref={mapRef}
         center={center}
         zoom={zoom}
         length={4}
-        // onClick={() => this.handleMove()}
+        // onClick={() => this.œ()}
         // onFocus={() => this.handleMove()}
         // onAutoPanStart={() => this.handleMove()}
         // onZoomStart={() => this.handleMove()}
@@ -577,8 +572,11 @@ class GCMap extends Component {
         {showSpinner && <Spinner size={100} text="Localization" />}
 
         <Control position="topright">
-          {this.state.showListMarkers ? (
-            <MarkersButton onMouseOver={() => this.toggleShowMarkers()}>
+          {showListMarkers ? (
+            <MarkersButton
+              onMouseOver={() => this.toggleShowMarkers()}
+              onFocus={() => this.toggleShowMarkers()}
+            >
               <MenuIcon />
             </MarkersButton>
           ) : (
@@ -591,14 +589,17 @@ class GCMap extends Component {
         <ScaleControl position="bottomright" />
 
         <Control position="topleft">
-          {this.state.showListLayers ? (
-            <LayerButton onMouseOver={() => this.toggleShowLayers()}>
+          {showListLayers ? (
+            <LayerButton
+              onMouseOver={() => this.toggleShowLayers()}
+              onFocus={() => this.toggleShowLayers()}
+            >
               <LayersIcon />
             </LayerButton>
           ) : (
             <LayersForm onMouseLeave={() => this.toggleShowLayers()}>
               <RadioGroup
-                value={this.state.currentLayer.name}
+                value={currentLayer.name}
                 onChange={this.onLayerChanged}
               >
                 {layersInput}
@@ -607,20 +608,20 @@ class GCMap extends Component {
           )}
         </Control>
 
-        {!isMobile && this.state.layerBoundsToDisplay && (
+        {!isMobile && layerBoundsToDisplay && (
           <Rectangle
-            bounds={this.state.layerBoundsToDisplay.bounds}
+            bounds={layerBoundsToDisplay.bounds}
             onAdd={(e) => {
               e.target.openTooltip();
             }}
           >
-            <Tooltip>{`Zone d'application du fond de carte ${this.state.layerBoundsToDisplay.name}`}</Tooltip>
+            <Tooltip>{`Zone d'application du fond de carte ${layerBoundsToDisplay.name}`}</Tooltip>
           </Rectangle>
         )}
 
         <TileLayer
-          attribution={this.state.currentLayer.attribution}
-          url={this.state.currentLayer.url}
+          attribution={currentLayer.attribution}
+          url={currentLayer.url}
         />
 
         {!isMobileOnly && (
@@ -647,18 +648,67 @@ class GCMap extends Component {
             <h1>
               <Translate>Converter</Translate>
             </h1>
-            <Convert list={this.state.projectionsList} />
+            <Convert list={projectionsList} />
           </PopPop>
         </Control>
 
         {marker}
-        {this.state.markersChecked.includes(markers[0]) && entriesMarkersLayer}
-        {this.state.markersChecked.includes(markers[0]) && groupsMarkersLayer}
-        {this.state.markersChecked.includes(markers[1]) && cavesMarkersLayer}
-        {this.state.markersChecked.includes(markers[3]) && grottosMarkersLayer}
+        {markersChecked.includes(markers.find((m) => m.name === 'Entrances')) &&
+          entriesMarkersLayer}
+        {markersChecked.includes(markers.find((m) => m.name === 'Entrances')) &&
+          entranceGroupsMarkersLayer}
+        {markersChecked.includes(
+          markers.find((m) => m.name === 'Organizations'),
+        ) && organizationsMarkersLayer}
+        {markersChecked.includes(markers.find((m) => m.name === 'Caves')) &&
+          cavesMarkersLayer}
       </Map>
     );
   }
 }
+
+GCMap.propTypes = {
+  className: PropTypes.string,
+  entriesMap: PropTypes.shape({
+    caves: PropTypes.arrayOf(PropTypes.any),
+    grottos: PropTypes.arrayOf(PropTypes.any),
+    groupEntrancesMap: PropTypes.arrayOf(PropTypes.any),
+    qualityEntrancesMap: PropTypes.arrayOf(PropTypes.any),
+  }),
+  isSideMenuOpen: PropTypes.bool.isRequired,
+  mapCenter: PropTypes.shape({
+    lat: PropTypes.number,
+    lng: PropTypes.number,
+  }).isRequired,
+  history: PropTypes.shape({
+    push: PropTypes.func,
+  }).isRequired,
+  mapZoom: PropTypes.number.isRequired,
+  match: PropTypes.shape({
+    params: PropTypes.any,
+  }),
+  searchBounds: PropTypes.func,
+  selectedEntry: PropTypes.shape({
+    id: PropTypes.number,
+    latitude: PropTypes.string,
+    longitude: PropTypes.string,
+    type: PropTypes.any,
+  }),
+  setLocation: PropTypes.func.isRequired,
+  setZoom: PropTypes.func.isRequired,
+};
+
+GCMap.defaultProps = {
+  className: '',
+  selectedEntry: null,
+  entriesMap: {
+    qualityEntrancesMap: [],
+    groupEntrancesMap: [],
+    grottos: [],
+    caves: [],
+  },
+  searchBounds: () => {},
+  match: {},
+};
 
 export default GCMap;

@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { CircleMarker, Tooltip } from 'react-leaflet';
-import MapEntryPopup from './MapEntryPopup';
+import MapEntrancePopup from './MapEntrancePopup';
 
 //
 //
@@ -9,7 +9,7 @@ import MapEntryPopup from './MapEntryPopup';
 //
 //
 
-const MapEntryMarker = ({ entry }) => (
+const MapEntranceMarker = ({ entry }) => (
   <CircleMarker
     key={`entry_${entry.id}`}
     center={{
@@ -28,13 +28,18 @@ const MapEntryMarker = ({ entry }) => (
       e.target.bringToBack();
     }}
   >
-    <MapEntryPopup entry={entry} />
+    <MapEntrancePopup entry={entry} />
     <Tooltip direction="top">{entry.name}</Tooltip>
   </CircleMarker>
 );
 
-MapEntryMarker.propTypes = {
-  entry: PropTypes.object.isRequired,
+MapEntranceMarker.propTypes = {
+  entry: PropTypes.shape({
+    id: PropTypes.number.isRequired,
+    latitude: PropTypes.number,
+    longitude: PropTypes.number,
+    name: PropTypes.string,
+  }).isRequired,
 };
 
-export default MapEntryMarker;
+export default MapEntranceMarker;

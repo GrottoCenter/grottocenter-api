@@ -7,7 +7,6 @@ import LocationCityIcon from '@material-ui/icons/LocationCity';
 import PlaceIcon from '@material-ui/icons/Place';
 import { withTheme } from '@material-ui/core/styles';
 import GCLink from '../../GCLink';
-import { detailPageV2Links } from '../../../../conf/Config';
 import withContext from '../../../../helpers/Routing';
 import Translate from '../../Translate';
 
@@ -62,12 +61,12 @@ const StyledLocationCityIcon = withTheme(styled(LocationCityIcon)`
 //
 //
 
-const MapEntryPopup = ({ entry }, context) => {
+const MapEntrancePopup = ({ entry }, context) => {
   const GCLinkWithContext = withContext(GCLink, context);
 
   return (
     <Popup autoPan={false}>
-      <React.Fragment>
+      <>
         <div>
           <GCLinkWithContext
             internal={false}
@@ -141,18 +140,30 @@ const MapEntryPopup = ({ entry }, context) => {
             </div>
           )}
         </div>
-      </React.Fragment>
+      </>
     </Popup>
   );
 };
 
 // This make sure you have router in you this.context
-MapEntryPopup.contextTypes = {
-  router: PropTypes.object.isRequired,
+MapEntrancePopup.contextTypes = {
+  router: PropTypes.shape({}).isRequired,
 };
 
-MapEntryPopup.propTypes = {
-  entry: PropTypes.object.isRequired,
+MapEntrancePopup.propTypes = {
+  entry: PropTypes.shape({
+    id: PropTypes.number.isRequired,
+    name: PropTypes.string,
+    region: PropTypes.string,
+    city: PropTypes.string,
+    longitude: PropTypes.number,
+    latitude: PropTypes.number,
+    cave: PropTypes.shape({
+      name: PropTypes.string,
+      depth: PropTypes.number,
+      length: PropTypes.number,
+    }),
+  }).isRequired,
 };
 
-export default MapEntryPopup;
+export default MapEntrancePopup;
