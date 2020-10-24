@@ -7,7 +7,6 @@ import DocumentFormProvider, { defaultContext } from '../Provider';
 import DescriptionEditor from '../formElements/DescriptionEditor';
 import DocumentTypeSelect from '../formElements/DocumentTypeSelect';
 import IdentifierEditor from '../formElements/IdentifierEditor';
-import LanguageSelect from '../formElements/LanguageSelect';
 import PagesEditor from '../formElements/PagesEditor';
 import PublicationDatePicker from '../formElements/PublicationDatePicker';
 import TitleEditor from '../formElements/TitleEditor';
@@ -81,20 +80,6 @@ storiesOf('DocumentForm', module)
       <IdentifierEditor
         allIdentifierTypes={allIdentifierTypes}
         documentType={allDocumentTypes[0]}
-      />
-    ),
-    {
-      decorators: [(storyFn) => DocFormProviderDecorator(storyFn)],
-    },
-  )
-  .add(
-    'LanguageSelect',
-    () => (
-      <LanguageSelect
-        allLanguages={allLanguages}
-        contextValueNameToUpdate="titleAndDescriptionLanguage"
-        helperText="Some helper text for the LanguageSelect component"
-        itemReferringTo=""
       />
     ),
     {
