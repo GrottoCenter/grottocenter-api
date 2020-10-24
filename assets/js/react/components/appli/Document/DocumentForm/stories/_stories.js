@@ -77,7 +77,12 @@ storiesOf('DocumentForm', module)
   )
   .add(
     'IdentifierEditor',
-    () => <IdentifierEditor allIdentifierTypes={allIdentifierTypes} />,
+    () => (
+      <IdentifierEditor
+        allIdentifierTypes={allIdentifierTypes}
+        documentType={allDocumentTypes[0]}
+      />
+    ),
     {
       decorators: [(storyFn) => DocFormProviderDecorator(storyFn)],
     },

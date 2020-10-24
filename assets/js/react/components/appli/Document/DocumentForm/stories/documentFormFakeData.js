@@ -251,19 +251,19 @@ export const allMassifs = [
 
 export const allIdentifierTypes = [
   {
-    id: '1',
+    code: '1',
     text: 'DOI',
   },
   {
-    id: '2',
+    code: '2',
     text: 'ISBN',
   },
   {
-    id: '3',
+    code: '3',
     text: 'ISSN',
   },
   {
-    id: '4',
+    code: '4',
     text: 'URL',
   },
 ];
