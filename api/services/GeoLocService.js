@@ -185,10 +185,11 @@ module.exports = {
         },
       }; // TODO add controls on parameters
 
-      TGrotto.find(parameters).exec((err, result) => {
+      TGrotto.find(parameters).exec(async (err, result) => {
         if (err) {
           reject(err);
         }
+        await NameService.setNames(result, 'grotto');
         resolve(result);
       });
     }),
@@ -399,17 +400,14 @@ module.exports = {
    * Return a lighter version of the grottos
    * @param grottos
    */
-  formatGrottos: (grottos) => {
-    grottos.map((grotto) => {
-      return {
-        id: grotto.id,
-        name: grotto.name,
-        address: grotto.address,
-        longitude: parseFloat(grotto.longitude),
-        latitude: parseFloat(grotto.latitude),
-      };
-    });
-  },
+  formatGrottos: (grottos) =>
+    grottos.map((grotto) => ({
+      id: grotto.id,
+      name: grotto.name,
+      address: grotto.address,
+      longitude: parseFloat(grotto.longitude),
+      latitude: parseFloat(grotto.latitude),
+    })),
 
   /**
    * Format the quality entrances with the groups of entrances and the grottos
