@@ -14,31 +14,37 @@ module.exports = {
       .populate('cavers')
       .populate('exploredCaves')
       .populate('partneredCaves')
-      .exec((err, found) => {
+      .exec(async (err, found) => {
+        if (!found) {
+          const message = `Grotto of id ${req.params.id} not found.`;
+          sails.log.error(message);
+          return res.status(404).send({ message });
+        }
+        if (err) {
+          const message = `An internal server error occurred when trying to get grotto of id ${req.params.id}`;
+          sails.log.error(message + ': ' + err);
+          return res.status(500).send({ message });
+        }
         const params = {};
         params.searchedItem = `Grotto of id ${req.params.id}`;
-        const expCavesPromise = NameService.setNames(
-          found.exploredCaves,
-          'cave',
+        try {
+          await CaveService.setEntrances(found.exploredCaves);
+          await CaveService.setEntrances(found.partneredCaves);
+          await NameService.setNames(found.exploredCaves, 'cave');
+          await NameService.setNames(found.partneredCaves, 'cave');
+        } catch (e) {
+          const message = `An internal server error occurred when trying to get information about grotto of id ${req.params.id}`;
+          sails.log.error(message + ': ' + e.message);
+          return res.status(500).send({ message });
+        }
+        return ControllerService.treatAndConvert(
+          req,
+          err,
+          found,
+          params,
+          res,
+          converter,
         );
-        expCavesPromise.then((expCavesPopulated) => {
-          found.exploredCaves = expCavesPopulated;
-          const partnCavesPromise = NameService.setNames(
-            found.partneredCaves,
-            'cave',
-          );
-          partnCavesPromise.then((partnCavesPopulated) => {
-            found.partneredCaves = partnCavesPopulated;
-            return ControllerService.treatAndConvert(
-              req,
-              err,
-              found,
-              params,
-              res,
-              converter,
-            );
-          });
-        });
       });
   },
 
