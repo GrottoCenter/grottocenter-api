@@ -7,7 +7,6 @@ import LocationCityIcon from '@material-ui/icons/LocationCity';
 import PlaceIcon from '@material-ui/icons/Place';
 import { withTheme } from '@material-ui/core';
 import GCLink from '../../GCLink';
-import { detailPageV2Links } from '../../../../conf/Config';
 
 const StyledTitle = styled.h5`
   text-align: center;
@@ -38,17 +37,17 @@ const StyledLocationCityIcon = withTheme(styled(LocationCityIcon)`
 `);
 
 const MapGrottosPopup = ({ grotto }) => {
-  const externalLinkEntrance = `${
-    detailPageV2Links[locale] !== undefined
-      ? detailPageV2Links[locale]
-      : detailPageV2Links['*']
-  }&category=grotto&id=${grotto.id}}`;
+  const grottoDetailedPageLink = `/ui/groups/${grotto.id}`;
 
   return (
     <Popup autoPan={false}>
       <>
         <div>
-          <GCLink internal={false} href={externalLinkEntrance} target="_blank">
+          <GCLink
+            internal={false}
+            href={grottoDetailedPageLink}
+            target="_blank"
+          >
             <StyledTitle>
               {grotto.name}
               <StyledDescriptionIcon />
