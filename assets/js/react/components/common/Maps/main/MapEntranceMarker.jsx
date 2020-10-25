@@ -9,12 +9,12 @@ import MapEntrancePopup from './MapEntrancePopup';
 //
 //
 
-const MapEntranceMarker = ({ entry }) => (
+const MapEntranceMarker = ({ entrance }) => (
   <CircleMarker
-    key={`entry_${entry.id}`}
+    key={`entrance_${entrance.id}`}
     center={{
-      lat: entry.latitude,
-      lng: entry.longitude,
+      lat: entrance.latitude,
+      lng: entrance.longitude,
     }}
     color="white"
     fillColor="red"
@@ -28,13 +28,13 @@ const MapEntranceMarker = ({ entry }) => (
       e.target.bringToBack();
     }}
   >
-    <MapEntrancePopup entry={entry} />
-    <Tooltip direction="top">{entry.name}</Tooltip>
+    <MapEntrancePopup entrance={entrance} />
+    <Tooltip direction="top">{entrance.name}</Tooltip>
   </CircleMarker>
 );
 
 MapEntranceMarker.propTypes = {
-  entry: PropTypes.shape({
+  entrance: PropTypes.shape({
     id: PropTypes.number.isRequired,
     latitude: PropTypes.number,
     longitude: PropTypes.number,

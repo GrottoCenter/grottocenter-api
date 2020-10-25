@@ -1,5 +1,9 @@
 import { connect } from 'react-redux';
-import { fetchMapItemsResult, changeZoom, changeLocation } from '../actions/Map';
+import {
+  fetchMapItemsResult,
+  changeZoom,
+  changeLocation,
+} from '../actions/Map';
 import GCMap from '../components/common/GCMap';
 
 //
@@ -17,8 +21,8 @@ const mapDispatchToProps = (dispatch) => ({
 const mapStateToProps = (state) => ({
   mapCenter: state.map.location,
   mapZoom: state.map.zoom,
-  selectedEntry: state.quicksearch.entry,
-  entriesMap: state.map.entriesMap,
+  selectedEntrance: state.quicksearch.entry,
+  mapData: state.map.mapData,
   isSideMenuOpen: state.sideMenu.open,
 });
 

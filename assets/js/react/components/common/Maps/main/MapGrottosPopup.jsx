@@ -38,7 +38,7 @@ const StyledLocationCityIcon = withTheme(styled(LocationCityIcon)`
 `);
 
 const MapGrottosPopup = ({ grotto }) => {
-  const externalLinkEntry = `${
+  const externalLinkEntrance = `${
     detailPageV2Links[locale] !== undefined
       ? detailPageV2Links[locale]
       : detailPageV2Links['*']
@@ -48,7 +48,7 @@ const MapGrottosPopup = ({ grotto }) => {
     <Popup autoPan={false}>
       <>
         <div>
-          <GCLink internal={false} href={externalLinkEntry} target="_blank">
+          <GCLink internal={false} href={externalLinkEntrance} target="_blank">
             <StyledTitle>
               {grotto.name}
               <StyledDescriptionIcon />

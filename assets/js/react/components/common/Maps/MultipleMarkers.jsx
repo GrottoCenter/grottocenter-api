@@ -29,21 +29,21 @@ import { divIcon, Point } from 'leaflet';
 
 import PropTypes from 'prop-types';
 
-const EntryIconMap = () => (
+const EntranceIconMap = () => (
   <Icon
     color="inherit"
     style={{ textAlign: 'center', height: '100%', width: '100%' }}
   >
     <img
-      alt="entryIcon"
+      alt="entranceIcon"
       style={{ height: '100%' }}
       src="../../../../../images/iconsV3/map/entry.svg"
     />
   </Icon>
 );
 
-const leafletEntryIcon = divIcon({
-  html: renderToString(<EntryIconMap />),
+const leafletEntranceIcon = divIcon({
+  html: renderToString(<EntranceIconMap />),
   iconSize: new Point(25, 50),
   iconAnchor: [12.5, 50],
   className: '',
@@ -118,7 +118,7 @@ const MultipleMarkers = ({ positions, loading }) => {
             {positions.map((position) => (
               <Marker
                 position={position}
-                icon={leafletEntryIcon}
+                icon={leafletEntranceIcon}
                 key={`${position[0]}${position[1]}`}
               />
             ))}

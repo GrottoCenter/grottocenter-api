@@ -8,7 +8,7 @@ import {
 import { defaultCoord, defaultZoom, focusZoom } from '../conf/Config';
 
 const initialState = {
-  entriesMap: undefined,
+  mapData: undefined,
   location: defaultCoord,
   zoom: defaultZoom,
   errors: undefined,
@@ -29,7 +29,7 @@ const initialState = {
 const map = (state = initialState, action) => {
   switch (action.type) {
     case FETCH_MAP_ITEMS_SUCCESS:
-      return { ...state, entriesMap: action.results };
+      return { ...state, mapData: action.results };
     case FETCH_MAP_ITEMS_FAILURE:
       return { ...state, error: action.error };
     case CHANGE_LOCATION:

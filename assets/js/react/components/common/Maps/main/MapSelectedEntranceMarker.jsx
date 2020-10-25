@@ -11,7 +11,7 @@ import MapEntrancePopup from './MapEntrancePopup';
 
 const MapSelectedEntranceMarker = ({ selectedEntrance }) => (
   <CircleMarker
-    key={`entry_${selectedEntrance.id}`}
+    key={`entrance_${selectedEntrance.id}`}
     center={{
       lat: selectedEntrance.latitude,
       lng: selectedEntrance.longitude,
@@ -25,7 +25,7 @@ const MapSelectedEntranceMarker = ({ selectedEntrance }) => (
       e.target.openPopup();
     }}
   >
-    <MapEntrancePopup entry={selectedEntrance} />
+    <MapEntrancePopup entrance={selectedEntrance} />
   </CircleMarker>
 );
 

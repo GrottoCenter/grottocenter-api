@@ -210,10 +210,10 @@ class GCMap extends Component {
   }
 
   componentDidMount() {
-    const { selectedEntry } = this.props;
+    const { selectedEntrance } = this.props;
     const { localize, mapRef } = this.state;
 
-    if (localize && !selectedEntry && !this.getTarget()) {
+    if (localize && !selectedEntrance && !this.getTarget()) {
       this.setState({
         localize: false,
       });
@@ -420,7 +420,7 @@ class GCMap extends Component {
   };
 
   render() {
-    const { selectedEntry, entriesMap, className, isSideMenuOpen } = this.props;
+    const { selectedEntrance, mapData, className, isSideMenuOpen } = this.props;
 
     const {
       currentLayer,
@@ -443,50 +443,52 @@ class GCMap extends Component {
 
     let zoom = initZoom;
     let center = initCenter;
-    if (selectedEntry) {
+    if (selectedEntrance) {
       center = {
-        lat: selectedEntry.latitude,
-        lng: selectedEntry.longitude,
+        lat: selectedEntrance.latitude,
+        lng: selectedEntrance.longitude,
       };
       zoom = focusZoom;
     }
 
     let marker = null;
 
-    if (selectedEntry) {
-      switch (selectedEntry.type) {
+    if (selectedEntrance) {
+      switch (selectedEntrance.type) {
         case 'grotto':
-          marker = <MapSelectedGrottoMarker grotto={selectedEntry} />;
+          marker = <MapSelectedGrottoMarker grotto={selectedEntrance} />;
           break;
         default:
-          marker = <MapSelectedEntranceMarker selectedEntry={selectedEntry} />;
+          marker = (
+            <MapSelectedEntranceMarker selectedEntrance={selectedEntrance} />
+          );
       }
     }
 
     const entriesMarkersLayer = [];
     if (
-      entriesMap &&
-      entriesMap.qualityEntrancesMap &&
-      entriesMap.qualityEntrancesMap.length > 0
+      mapData &&
+      mapData.qualityEntrancesMap &&
+      mapData.qualityEntrancesMap.length > 0
     ) {
-      entriesMap.qualityEntrancesMap.forEach((entry) => {
-        if (!selectedEntry || entry.id !== selectedEntry.id) {
-          entriesMarkersLayer.push(<MapEntranceMarker entry={entry} />);
+      mapData.qualityEntrancesMap.forEach((entrance) => {
+        if (!selectedEntrance || entrance.id !== selectedEntrance.id) {
+          entriesMarkersLayer.push(<MapEntranceMarker entrance={entrance} />);
         }
       });
     }
 
     const cavesMarkersLayer = [];
-    if (entriesMap && entriesMap.caves && entriesMap.caves.length > 0) {
-      entriesMap.caves.forEach((cave) => {
+    if (mapData && mapData.caves && mapData.caves.length > 0) {
+      mapData.caves.forEach((cave) => {
         cavesMarkersLayer.push(<MapCaveMarker cave={cave} />);
       });
     }
 
     const organizationsMarkersLayer = [];
-    if (entriesMap && entriesMap.grottos && entriesMap.grottos.length > 0) {
-      entriesMap.grottos.forEach((grotto) => {
-        if (!selectedEntry || grotto.id !== selectedEntry.id) {
+    if (mapData && mapData.grottos && mapData.grottos.length > 0) {
+      mapData.grottos.forEach((grotto) => {
+        if (!selectedEntrance || grotto.id !== selectedEntrance.id) {
           organizationsMarkersLayer.push(<MapGrottoMarker grotto={grotto} />);
         }
       });
@@ -494,11 +496,11 @@ class GCMap extends Component {
 
     const entranceGroupsMarkersLayer = [];
     if (
-      entriesMap &&
-      entriesMap.groupEntrancesMap &&
-      entriesMap.groupEntrancesMap.length > 0
+      mapData &&
+      mapData.groupEntrancesMap &&
+      mapData.groupEntrancesMap.length > 0
     ) {
-      entriesMap.groupEntrancesMap.forEach((group, index) => {
+      mapData.groupEntrancesMap.forEach((group, index) => {
         entranceGroupsMarkersLayer.push(
           <StyledMapGroupIcon
             key={`group-${index}`} // eslint-disable-line react/no-array-index-key
@@ -669,7 +671,7 @@ class GCMap extends Component {
 
 GCMap.propTypes = {
   className: PropTypes.string,
-  entriesMap: PropTypes.shape({
+  mapData: PropTypes.shape({
     caves: PropTypes.arrayOf(PropTypes.any),
     grottos: PropTypes.arrayOf(PropTypes.any),
     groupEntrancesMap: PropTypes.arrayOf(PropTypes.any),
@@ -688,7 +690,7 @@ GCMap.propTypes = {
     params: PropTypes.any,
   }),
   searchBounds: PropTypes.func,
-  selectedEntry: PropTypes.shape({
+  selectedEntrance: PropTypes.shape({
     id: PropTypes.number,
     latitude: PropTypes.string,
     longitude: PropTypes.string,
@@ -700,8 +702,8 @@ GCMap.propTypes = {
 
 GCMap.defaultProps = {
   className: '',
-  selectedEntry: null,
-  entriesMap: {
+  selectedEntrance: null,
+  mapData: {
     qualityEntrancesMap: [],
     groupEntrancesMap: [],
     grottos: [],
