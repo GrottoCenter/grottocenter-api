@@ -3,12 +3,14 @@
 
 const client = require('../../config/elasticsearch').elasticsearchCli;
 
-const resourcesToUpdate = [
+const indexNames = [
   'grottos',
   'massifs',
   'entrances',
   'documents',
   'cavers',
+  'document-collections',
+  'document-issues',
 ];
 const advancedSearchMetaParams = [
   'resourceType',
@@ -59,7 +61,7 @@ const self = (module.exports = {
 
     const resourceName = urlPieces[resourceIndex];
     // Update index resources appropriately
-    if (resourcesToUpdate.includes(resourceName)) {
+    if (indexNames.includes(resourceName)) {
       if (verb === 'PUT') {
         // Asynchronous operation, no callback
         client.update({
@@ -92,20 +94,27 @@ const self = (module.exports = {
   },
 
   /**
-   * Retrieve data from elasticsearch on all index according to a string
-   * Params should contain an attribute query
+   * Retrieve data from elasticsearch on various index according to a string.
+   * The indexes used are: ['grottos', 'entrances', 'massifs', 'documents', 'cavers'] (document-collections and document-issues are excluded by default)
+   * Params should contain an attribute 'query': others params are facultative.
    * @param {*} params  list of params of the request including :
    *    @param {string}         query keyword(s) to use for the search
    *    @param {integer}        from (optional, default = 0) number of first results to skip
    *    @param {integer}        size (optional, default = 10) number of first results to return
    *    @param {string}         resourceType (optional) resource type to search on.
-   *            Must be one of ['grottos', 'entrances', 'massifs', 'documents', 'cavers']
+   *            Must be one of ['grottos', 'entrances', 'massifs', 'documents', 'cavers', 'document-collections', 'document-issues']
    *    @param {Array(string)}  resourceTypes (optional) resource types to search on.
-   *            Must be an array containing some of the following string ['grottos', 'entrances', 'massifs', 'documents', 'cavers']
+   *            Must be an array containing some of the following string ['grottos', 'entrances', 'massifs', 'documents', 'cavers', 'document-collections', 'document-issues']
    */
   searchQuery: (params) =>
     new Promise((resolve, reject) => {
-      let indexToSearchOn = '_all';
+      let indexToSearchOn = [
+        'cavers',
+        'documents',
+        'entrances',
+        'grottos',
+        'massifs',
+      ];
       if (params.resourceTypes instanceof Array) {
         indexToSearchOn = params.resourceTypes.map(
           (resType) => `${resType}-index`,

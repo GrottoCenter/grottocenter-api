@@ -488,8 +488,8 @@ paths:
     post:
       tags:
       - search
-      summary: Search for resources (cavers, documents, entrances, massifs & organizations)
-      description: Search for resources (cavers, documents, entrances, massifs & organizations). Case insensitive. Search over a lots of resource properties (not only name).
+      summary: Search for resources (cavers, documents, document collections, entrances, massifs & organizations)
+      description: Search for resources (cavers, documents, document collections, entrances, massifs & organizations). Case insensitive. Search over a lots of resource properties (not only name).
       requestBody:
         content:
           application/json:
@@ -503,14 +503,12 @@ paths:
                   description: Resource property (or part of property) to search.
                 resourceTypes:
                   type: array
-                  description: Resource types to search on. If not specified, it will search on all resources.
+                  description: Resource types to search on. If not specified, it will search on all resources except document-collections and document-issues (already indexed by documents index)
                   items:
-                    $ref: '#/components/schemas/Search-type'
+                    $ref: '#/components/schemas/Quicksearch-type'
                 complete:
                   type: boolean
                   description: Does the query need to send every information about the results? If it's set to false, the id and the name of each result only will be returned.
-
-                
                 
       responses:
         '200':
@@ -528,8 +526,8 @@ paths:
     post:
       tags:
       - search
-      summary: Advanced search for resources (documents, entrances, massifs & organizations)
-      description: Search for resources (entrances, massifs, organizations & documents) in the criterias mentionned in the request. It's case insensitive.
+      summary: Advanced search for resources (caves, documents, document-collections, document-issues, entrances, massifs & organizations).
+      description: Search for resources (caves, documents, document-collections, document-issues, entrances, massifs, organizations) in the criterias mentionned in the request. It's case insensitive. In the following parameters, paramX, paramY or paramZ must be replaced by the name of the parameter you want to search on (for example, if you want to search on a document title, use title=your_query).
       parameters:
       - name: query
         in: query
@@ -543,7 +541,8 @@ paths:
         required: true
         schema:
           type: string
-          enum: [documents, entrances, massifs, organizations]
+          oneOf:
+            - $ref: '#/components/schemas/Search-type'
       - name: complete
         in: query
         description: Does the query need to send every information about the results? If it's set to false, the id and the name of each result will be returned.
@@ -1199,11 +1198,22 @@ components:
               - $ref: '#/components/schemas/Massif'
               - $ref: '#/components/schemas/Organization'
     
+    Quicksearch-type:
+      type: string
+      enum:
+        - cavers
+        - documents
+        - entrances
+        - grottos
+        - massifs
+
     Search-type:
       type: string
       enum:
         - cavers
         - documents
+        - document-collections
+        - document-issues
         - entrances
         - grottos
         - massifs

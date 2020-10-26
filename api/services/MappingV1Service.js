@@ -384,6 +384,8 @@ module.exports = {
             break;
 
           case 'document':
+          case 'document-collection':
+          case 'document-issue':
             // Rename keys of source and highlights
             // 08/2020 - C. ROIG - Not needed at the moment but keep in case
             // renameKeys(item['_source'], replacementKeys);
