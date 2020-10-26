@@ -73,6 +73,8 @@ export const entityOptionForSelector = (option) => {
 
       iconPath += 'caver.svg';
       break;
+    case 'document-collection':
+    case 'document-issue':
     case 'document':
       textToDisplay = `${option.name} [${option.documentType.name}]`;
       iconPath += 'bibliography.svg';

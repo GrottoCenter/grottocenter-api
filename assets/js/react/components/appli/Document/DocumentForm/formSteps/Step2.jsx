@@ -41,6 +41,21 @@ const Step2 = ({ stepId }) => {
     validatedSteps,
   } = useContext(DocumentFormContext);
 
+  /*
+    The user must not search all the documents everytime:
+      - if he creates an article, he's searching for an issue
+      - if he creates an issue, he's searching for a collection
+      - else he's searching for any document.
+  */
+  const docSearchedTypes = [
+    // eslint-disable-next-line no-nested-ternary
+    isArticle(documentType)
+      ? 'document-issues'
+      : isIssue(documentType)
+      ? 'document-collections'
+      : 'documents',
+  ];
+
   const memoizedValues = [documentType, includes(stepId, validatedSteps)];
 
   return useMemo(
@@ -77,6 +92,7 @@ const Step2 = ({ stepId }) => {
             }
             labelText="Parent Document"
             required={isIssue(documentType)}
+            resourceTypes={docSearchedTypes}
             searchLabelText={formatMessage({ id: 'Search for a document...' })}
           />
         )}
