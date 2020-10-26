@@ -127,9 +127,10 @@ DocumentAutoComplete.propTypes = {
   helperContentIfValueIsForced: PropTypes.node,
   labelText: PropTypes.string.isRequired,
   required: PropTypes.bool,
-  // Array containing one or multiple values
-  // from ['documents', 'document-collections', 'document-issues']
-  resourceTypes: PropTypes.arrayOf(PropTypes.string),
+  resourceTypes: PropTypes.arrayOf(
+    PropTypes.oneOf(['documents', 'document-collections', 'document-issues']),
+  ),
+
   searchLabelText: PropTypes.string.isRequired,
 };
 
