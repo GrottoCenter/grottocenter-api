@@ -37,6 +37,7 @@ const DocumentAutoComplete = ({
   helperContentIfValueIsForced,
   labelText,
   required = false,
+  resourceTypes = ['documents'],
   searchLabelText,
 }) => {
   const dispatch = useDispatch();
@@ -81,7 +82,7 @@ const DocumentAutoComplete = ({
     const criterias = {
       query: debouncedInput.trim(),
       complete: false,
-      resourceType: 'documents',
+      resourceTypes,
     };
     dispatch(fetchQuicksearchResult(criterias));
   };
@@ -126,6 +127,9 @@ DocumentAutoComplete.propTypes = {
   helperContentIfValueIsForced: PropTypes.node,
   labelText: PropTypes.string.isRequired,
   required: PropTypes.bool,
+  // Array containing one or multiple values
+  // from ['documents', 'document-collections', 'document-issues']
+  resourceTypes: PropTypes.arrayOf(PropTypes.string),
   searchLabelText: PropTypes.string.isRequired,
 };
 

@@ -41,6 +41,15 @@ const Step2 = ({ stepId }) => {
     validatedSteps,
   } = useContext(DocumentFormContext);
 
+  const resourceTypes = [
+    // eslint-disable-next-line no-nested-ternary
+    isArticle(documentType)
+      ? 'document-issues'
+      : isIssue(documentType)
+      ? 'document-collections'
+      : 'documents',
+  ];
+
   const memoizedValues = [documentType, includes(stepId, validatedSteps)];
 
   return useMemo(
@@ -77,6 +86,7 @@ const Step2 = ({ stepId }) => {
             }
             labelText="Parent Document"
             required={isIssue(documentType)}
+            resourceTypes={resourceTypes}
             searchLabelText={formatMessage({ id: 'Search for a document...' })}
           />
         )}
