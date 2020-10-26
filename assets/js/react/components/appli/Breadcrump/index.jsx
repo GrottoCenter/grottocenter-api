@@ -18,7 +18,7 @@ const BreadcrumpBar = withTheme(styled.div`
   color: ${(props) => props.theme.palette.primary1Color} !important;
   background-color: ${(props) => props.theme.palette.primary3Color} !important;
   padding: 0px !important;
-  height: 24px;
+  height: ${({ theme }) => theme.breadcrumpHeight}px;
 
   & > a,
   & > a:visited {

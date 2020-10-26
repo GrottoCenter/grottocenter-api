@@ -45,6 +45,6 @@ storiesOf('Maps', module)
   .add('Multiple markers', () => (
     <MultipleMarkersMap
       loading={boolean('Loading', false)}
-      selection={select('Entry markers', positions, [[43.35266, 5.81689]])}
+      selection={select('Entrance markers', positions, [[43.35266, 5.81689]])}
     />
   ));

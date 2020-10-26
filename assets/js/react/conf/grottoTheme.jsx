@@ -21,6 +21,7 @@ const fontFamily = [
 
 const sideMenuWidth = 240;
 const appBarHeight = 56;
+const breadcrumpHeight = 24; // eslint-disable-line no-unused-vars
 const paddingUnit = 8;
 
 export const overridings = {
@@ -36,6 +37,7 @@ export const overridings = {
   ],
   sideMenuWidth,
   appBarHeight,
+  breadcrumpHeight,
   palette: {
     primary: {
       veryLight: brown['100'],

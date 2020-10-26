@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Marker } from 'react-leaflet';
 import MapGrottosPopup from './MapGrottosPopup';
-import { markers } from '../../../../conf/MapMarkersConfig';
+import markers from '../../../../conf/MapMarkersConfig';
 
 //
 //
@@ -11,7 +11,7 @@ import { markers } from '../../../../conf/MapMarkersConfig';
 //
 
 const mainMarkerIcon = L.icon({
-  iconUrl: markers[3].url,
+  iconUrl: markers.find((m) => m.name === 'Organizations').url,
   iconSize: [24, 24],
   iconAnchor: [12, 24],
   popupAnchor: [0, -24],
@@ -31,7 +31,11 @@ const MapGrottoMarker = ({ grotto }) => (
 );
 
 MapGrottoMarker.propTypes = {
-  grotto: PropTypes.object.isRequired,
+  grotto: PropTypes.shape({
+    id: PropTypes.number,
+    latitude: PropTypes.number,
+    longitude: PropTypes.number,
+  }).isRequired,
 };
 
 export default MapGrottoMarker;
