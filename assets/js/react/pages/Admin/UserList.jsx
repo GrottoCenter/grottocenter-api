@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useIntl } from 'react-intl';
 
-import Table from '../Table';
-import { createColumns } from '../Table/TableHead';
+import Table from '../../components/common/Table';
+import { createColumns } from '../../components/common/Table/TableHead';
 
 // ==========
 const defaultHiddenColumns = ['groups'];

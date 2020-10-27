@@ -10,7 +10,7 @@ import AuthChecker from '../../features/AuthChecker';
 import Layout from '../../components/common/Layouts/Fixed/FixedContent';
 import ManageUserGroups from '../../components/appli/ManageUserGroups';
 
-import UserList from '../../components/common/UserList';
+import UserList from './UserList';
 
 // ==========
 
@@ -27,45 +27,33 @@ const ManageUsers = () => {
   // State
   const [selectedUser, setSelectedUser] = useState(null);
   const [initialUser, setInitialUser] = useState(null);
-  const [
-    areGroupsSubmittedWithSuccess,
-    setAreGroupsSubmittedWithSuccess,
-  ] = useState(false);
-  const [areGroupsSubmitted, setAreGroupsSubmitted] = useState(false);
 
   // Redux store
-  const caverState = useSelector((state) => state.caver);
   const { admins, isLoading, moderators } = useSelector((state) => state.caver);
+  const {
+    isLoading: isCaverGroupsLoading,
+    latestHttpCode: caverUserGroupsLatestHttpCode,
+  } = useSelector((state) => state.caverGroups);
 
   const onSaveGroups = () => {
     dispatch(postCaverGroups(selectedUser.id, selectedUser.groups));
-    setAreGroupsSubmitted(true);
   };
 
   const onSelection = (selection) => {
     if (selection !== null) {
       setSelectedUser(selection);
       setInitialUser(selection);
-      setAreGroupsSubmitted(false);
-      setAreGroupsSubmittedWithSuccess(false);
     }
   };
 
   useEffect(() => {
     // Check if submission is ok
-    if (caverState.latestHttpCode === 200 && areGroupsSubmitted) {
-      setAreGroupsSubmittedWithSuccess(true);
+    if (caverUserGroupsLatestHttpCode === 200 && !isCaverGroupsLoading) {
       setInitialUser(selectedUser);
       dispatch(getAdmins());
       dispatch(getModerators());
-    } else {
-      setAreGroupsSubmittedWithSuccess(false);
     }
-  }, [
-    areGroupsSubmitted,
-    areGroupsSubmittedWithSuccess,
-    caverState.latestHttpCode,
-  ]);
+  }, [isCaverGroupsLoading, caverUserGroupsLatestHttpCode]);
 
   useEffect(() => {
     dispatch(getAdmins());
@@ -81,7 +69,9 @@ const ManageUsers = () => {
           componentToDisplay={
             <>
               <ManageUserGroups
-                areGroupsSubmittedWithSuccess={areGroupsSubmittedWithSuccess}
+                areGroupsSubmittedWithSuccess={
+                  caverUserGroupsLatestHttpCode === 200 && !isCaverGroupsLoading
+                }
                 initialUser={initialUser}
                 onSaveGroups={onSaveGroups}
                 onSelection={onSelection}
