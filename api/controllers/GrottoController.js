@@ -5,6 +5,8 @@
  * @help        :: See http://links.sailsjs.org/docs/controllers
  */
 
+const esClient = require('../../config/elasticsearch').elasticsearchCli;
+
 module.exports = {
   find: (req, res, next, converter = MappingV1Service.convertToGrottoModel) => {
     TGrotto.findOne({
@@ -156,6 +158,23 @@ module.exports = {
       .intercept('UsageError', (e) => res.badRequest(e.cause.message))
       .intercept('AdapterError', (e) => res.badRequest(e.cause.message))
       .intercept((e) => res.serverError(e.message));
+
+    try {
+      esClient.create({
+        index: `grottos-index`,
+        type: 'data',
+        id: newOrganization.id,
+        body: {
+          ...newOrganization,
+          name: req.param('name'),
+          names: req.param('name'),
+          ['nb cavers']: 0,
+          type: 'grotto',
+        },
+      });
+    } catch (error) {
+      sails.log.error(error);
+    }
 
     await NameService.setNames([newOrganization], 'grotto');
 

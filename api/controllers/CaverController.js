@@ -342,6 +342,25 @@ module.exports = {
       .intercept('AdapterError', (e) => res.badRequest(e.cause.message))
       .intercept((e) => res.serverError(e.message));
 
+    try {
+      esClient.create({
+        index: `cavers-index`,
+        type: 'data',
+        id: newCaver.id,
+        body: {
+          id: newCaver.id,
+          groups: '',
+          mail: newCaver.mail,
+          name: newCaver.name,
+          nickname: newCaver.nickname,
+          surname: newCaver.surname,
+          type: 'caver',
+        },
+      });
+    } catch (error) {
+      sails.log.error(error);
+    }
+
     const params = {};
     params.controllerMethod = 'CaverController.create';
     return ControllerService.treatAndConvert(
