@@ -112,7 +112,7 @@ module.exports = {
       .intercept((e) => res.serverError(e.message));
   },
 
-  findAll: (
+  findAll: async (
     req,
     res,
     next,
@@ -163,7 +163,24 @@ module.exports = {
       .exec((err, found) => {
         TDocument.count()
           .where(whereClause)
-          .exec((err, countFound) => {
+          .exec(async (err, countFound) => {
+            if (err) {
+              sails.log.error(err);
+              return res.serverError('An unexpected server error occured.');
+            }
+
+            await Promise.all(
+              await found.map(async (doc) => {
+                await NameService.setNames(
+                  [
+                    ...(doc.library ? [doc.library] : []),
+                    ...(doc.editor ? [doc.editor] : []),
+                  ],
+                  'grotto',
+                );
+              }),
+            );
+
             const params = {
               controllerMethod: 'DocumentController.findAll',
               limit: req.param('limit', 50),
