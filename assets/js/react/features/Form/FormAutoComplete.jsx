@@ -2,10 +2,10 @@ import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import { pathOr } from 'ramda';
 
-import { DocumentFormContext } from '../Provider';
+import { DocumentFormContext } from '../../components/appli/Document/DocumentForm/Provider';
 
-import FormAutoCompleteComponent from '../../../../common/Form/FormAutoComplete';
-import { FormAutoCompleteTypes } from '../../../../common/Form/types';
+import FormAutoCompleteComponent from '../../components/common/Form/FormAutoComplete';
+import { FormAutoCompleteTypes } from '../../components/common/Form/types';
 // ===================================
 
 const FormAutoComplete = (props) => {

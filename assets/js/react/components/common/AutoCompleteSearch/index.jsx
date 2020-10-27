@@ -17,12 +17,13 @@ import DisabledTooltip from '../DisabledTooltip';
 
 const StyledAutocomplete = styled(Autocomplete)`
   min-width: 200px;
+  width: 100%;
 `;
 
 const InputWrapper = styled.div`
   display: flex;
   margin-left: auto;
-  width: ${({ hasFixWidth }) => (hasFixWidth ? 100 : 80)}%;
+  width: ${({ $hasFixWidth }) => ($hasFixWidth ? 100 : 80)}%;
   border-radius: ${({ theme }) => theme.shape.borderRadius};
   background-color: ${({ theme }) => fade(theme.palette.common.white, 0.15)};
   transition: 0.5s;
@@ -53,7 +54,7 @@ const ResultsPopper = styled(Popper)`
     width: fit-content;
     min-width: 100%;
     max-width: 50vw;
-    ${({ hasFixWidth }) => !hasFixWidth && 'float: right'};
+    ${({ $hasFixWidth }) => !$hasFixWidth && 'float: right'};
   }
 `;
 
@@ -67,7 +68,7 @@ const InputAdornments = ({ isLoading, hasError }) =>
   ) : null;
 
 const StyledPopper = (hasFixWidth) => (props) => (
-  <ResultsPopper {...props} hasFixWidth={hasFixWidth} placement="bottom-end" />
+  <ResultsPopper {...props} $hasFixWidth={hasFixWidth} placement="bottom-end" />
 );
 const AutoCompleteSearch = ({
   suggestions,
@@ -115,7 +116,7 @@ const AutoCompleteSearch = ({
   return (
     <StyledAutocomplete
       disabled={disabled}
-      id={`AutoCompleteSearch${hasFixWidth}`}
+      id={`AutoCompleteSearch${hasFixWidth}${label}`}
       inputValue={inputValue}
       onInputChange={handleInputChange}
       onChange={handleSelectionChange}
@@ -136,7 +137,7 @@ const AutoCompleteSearch = ({
       }
       renderInput={(params) => (
         <DisabledTooltip disabled={disabled}>
-          <InputWrapper hasFixWidth={hasFixWidth} disabled={disabled}>
+          <InputWrapper $hasFixWidth={hasFixWidth} disabled={disabled}>
             <SearchIconWrapper>
               <SearchIcon color={disabled ? 'disabled' : 'inherit'} />
             </SearchIconWrapper>
