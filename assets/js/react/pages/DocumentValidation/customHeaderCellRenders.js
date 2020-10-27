@@ -12,6 +12,10 @@ const makeCustomHeaderCellRenders = () => {
       id: 'descriptions',
       customRender: () => formatMessage({ id: 'Description' }),
     },
+    {
+      id: 'dateInscription',
+      customRender: () => formatMessage({ id: 'Creation date' }),
+    },
   ];
 };
 

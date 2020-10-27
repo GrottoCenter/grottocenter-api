@@ -49,7 +49,11 @@ const makeCustomCellRenders = () => {
     },
     {
       id: 'library',
-      customRender: propOr('', 'address'),
+      customRender: propOr('', 'name'),
+    },
+    {
+      id: 'editor',
+      customRender: propOr('', 'name'),
     },
     {
       id: 'type',
