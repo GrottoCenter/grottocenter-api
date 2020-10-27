@@ -60,12 +60,12 @@ const DocumentsTable = ({
 
   return (
     <Table
-      columns={columns}
+      columns={columns.sort((c1, c2) => c1.label > c2.label)}
       currentPage={currentPage}
       customCellRenders={makeCustomCellRenders()}
       customHeaderCellRenders={makeCustomHeaderCellRenders()}
       data={documents || []}
-      hiddenColumns={hiddenColumns}
+      hiddenColumns={hiddenColumns.sort((c1, c2) => c1.label > c2.label)}
       loading={loading}
       openDetailedView={openDetailedView}
       order={order}
