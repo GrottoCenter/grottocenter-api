@@ -157,6 +157,7 @@ module.exports.policies = {
 
   'v1/GrottoController': {
     find: ['apiKeyAuth', 'paginate'],
+    create: 'tokenAuth',
   },
 
   'v1/MassifController': {

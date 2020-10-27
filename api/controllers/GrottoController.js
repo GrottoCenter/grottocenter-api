@@ -97,4 +97,77 @@ module.exports = {
       return ControllerService.treat(req, err, count, params, res);
     });
   },
+
+  create: async (req, res, next, converter) => {
+    // Check right
+    const hasRight = await sails.helpers.checkRight
+      .with({
+        groups: req.token.groups,
+        rightEntity: RightService.RightEntities.GROTTO,
+        rightAction: RightService.RightActions.EDIT_ALL,
+      })
+      .intercept('rightNotFound', (err) => {
+        return res.serverError(
+          'A server error occured when checking your right to create an organization.',
+        );
+      });
+    if (!hasRight) {
+      return res.forbidden('You are not authorized to create an organization.');
+    }
+
+    // Check params
+    if (!req.param('name')) {
+      return res.badRequest(
+        `You must provide a name to create a new organization.`,
+      );
+    }
+
+    // Launch creation request using transaction: it performs a rollback if an error occurs
+    const newOrganization = await sails
+      .getDatastore()
+      .transaction(async (db) => {
+        const caver = await TCaver.findOne({
+          id: req.token.id,
+        }).usingConnection(db);
+        const name = await TName.create({
+          author: req.token.id,
+          dateInscription: new Date(),
+          isMain: true,
+          language: caver.language,
+          name: req.param('name'),
+        })
+          .fetch()
+          .usingConnection(db);
+
+        const newOrganization = await TGrotto.create({
+          author: req.token.id,
+          dateInscription: new Date(),
+        })
+          .fetch()
+          .usingConnection(db);
+
+        await TGrotto.addToCollection(newOrganization.id, 'names')
+          .members(name.id)
+          .usingConnection(db);
+
+        return newOrganization;
+      })
+      .intercept('E_UNIQUE', () => res.sendStatus(409))
+      .intercept('UsageError', (e) => res.badRequest(e.cause.message))
+      .intercept('AdapterError', (e) => res.badRequest(e.cause.message))
+      .intercept((e) => res.serverError(e.message));
+
+    await NameService.setNames([newOrganization], 'grotto');
+
+    const params = {};
+    params.controllerMethod = 'GrottoController.create';
+    return ControllerService.treatAndConvert(
+      req,
+      null,
+      newOrganization,
+      params,
+      res,
+      converter,
+    );
+  },
 };

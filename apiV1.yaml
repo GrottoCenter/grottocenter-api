@@ -691,6 +691,7 @@ paths:
           description: Resource not found
         '500':
           description: Internal error
+  
   '/massifs/{id}':
     get:
       tags:
@@ -714,6 +715,34 @@ paths:
                   $ref: "#/components/schemas/Massif"
         '404':
           description: Resource not found
+        '500':
+          description: Internal error
+
+  '/organizations':
+    post:
+      tags:
+      - organizations
+      description: Create an organization (currently using only a name)
+      parameters:
+      - name: name
+        in: query
+        description: Organization main name
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Organization"
+        '401':
+          description: You must be authenticated to create an organization.
+        '403':
+          description: You are not allowed to create an organization
         '500':
           description: Internal error
 

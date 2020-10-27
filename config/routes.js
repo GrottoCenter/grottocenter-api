@@ -282,7 +282,12 @@ module.exports.routes = {
     action: 'getEntryTimeInfos',
   },
 
-  /* REST API for Grotto controller */
+  /* REST API for Organization controller */
+  'POST /api/v1/organizations': {
+    controller: 'v1/Grotto',
+    action: 'create',
+  },
+
   'GET /api/organizations/findAll': {
     controller: 'Grotto',
     action: 'findAll',
