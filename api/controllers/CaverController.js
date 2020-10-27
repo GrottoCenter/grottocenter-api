@@ -294,4 +294,58 @@ module.exports = {
         return res.serverError(err.cause.message);
       });
   },
+
+  create: async (req, res, next, converter) => {
+    // Check right
+    const hasRight = await sails.helpers.checkRight
+      .with({
+        groups: req.token.groups,
+        rightEntity: RightService.RightEntities.CAVER,
+        rightAction: RightService.RightActions.EDIT_ALL,
+      })
+      .intercept('rightNotFound', (err) => {
+        return res.serverError(
+          'A server error occured when checking your right to create a caver.',
+        );
+      });
+    if (!hasRight) {
+      return res.forbidden('You are not authorized to create a caver.');
+    }
+
+    // Check params
+    if (!req.param('name')) {
+      return res.badRequest(`You must provide a name to create a new caver.`);
+    }
+    if (!req.param('surname')) {
+      return res.badRequest(
+        `You must provide a surname to create a new caver.`,
+      );
+    }
+
+    // Launch creation request using transaction: it performs a rollback if an error occurs
+    const newCaver = await TCaver.create({
+      dateInscription: new Date(),
+      mail: 'no@mail.no', // default mail for non-user caver
+      name: req.param('name'),
+      nickname: `${req.param('name')} ${req.param('surname')}`,
+      surname: req.param('surname'),
+    })
+      .fetch()
+      .usingConnection(db)
+      .intercept('E_UNIQUE', () => res.sendStatus(409))
+      .intercept('UsageError', (e) => res.badRequest(e.cause.message))
+      .intercept('AdapterError', (e) => res.badRequest(e.cause.message))
+      .intercept((e) => res.serverError(e.message));
+
+    const params = {};
+    params.controllerMethod = 'CaverController.create';
+    return ControllerService.treatAndConvert(
+      req,
+      null,
+      newCaver,
+      params,
+      res,
+      converter,
+    );
+  },
 };

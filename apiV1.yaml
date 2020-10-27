@@ -32,6 +32,40 @@ tags:
 - name: subjects
 
 paths:
+  '/cavers':
+    post:
+      tags:
+      - cavers
+      description: Create a caver (currently using only a name & surname)
+      parameters:
+      - name: name
+        in: query
+        description: Caver name
+        required: true
+        schema:
+          type: string
+      - name: surname
+        in: query
+        description: Caver surname
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Caver"
+        '401':
+          description: You must be authenticated to create a caver.
+        '403':
+          description: You are not allowed to create a caver
+        '500':
+          description: Internal error
+
   '/cavers/admins':
     get:
       tags:
@@ -170,7 +204,7 @@ paths:
 
   '/documents/{id}/validate':
     put:
-      tags: 
+      tags:
       - documents
       description: Validate or not a document, with or without a comment.
       parameters:
@@ -198,10 +232,10 @@ paths:
           description: Document to update not found.
         '400':
           description: Bad request.
-  
+
   '/documents/validate':
     put:
-      tags: 
+      tags:
       - documents
       description: Validate or not multiple documents, with or without a comment.
       parameters:
@@ -249,7 +283,7 @@ paths:
                       $ref: "#/components/schemas/Document-identifierType"
         '500':
           description: Internal error
-    
+
 
   '/regions/search/logical/or':
     post:
@@ -310,7 +344,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Language-list'
-    
+
   '/languages/{id}':
     get:
       tags:
@@ -330,7 +364,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Language'
-    
+
 
   '/auth/login':
     post:
@@ -350,14 +384,14 @@ paths:
           required: true
           schema:
             type: string
-      responses: 
+      responses:
         '200':
           description: Successful login
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Auth-success"
-        
+
         '401':
           description: Invalid credentials
           content:
@@ -413,7 +447,7 @@ paths:
           description: Subject not found
         '500':
           description: Internal error
-  
+
   '/documents/subjects/search/logical/or':
     post:
       tags:
@@ -487,7 +521,7 @@ paths:
                 $ref: '#/components/schemas/Count'
         '500':
           description: Internal error
-  
+
   '/entrances/count':
     get:
       tags:
@@ -503,7 +537,7 @@ paths:
                 $ref: '#/components/schemas/Count'
         '500':
           description: Internal error
-          
+
   '/search':
     post:
       tags:
@@ -529,7 +563,7 @@ paths:
                 complete:
                   type: boolean
                   description: Does the query need to send every information about the results? If it's set to false, the id and the name of each result only will be returned.
-                
+
       responses:
         '200':
           description: Successful operation
@@ -541,7 +575,7 @@ paths:
           description: Resource not found
         '500':
           description: Internal error
-  
+
   '/advanced-search':
     post:
       tags:
@@ -595,7 +629,7 @@ paths:
         schema:
           type: boolean
           default: true
-          
+
       responses:
         '200':
           description: Successful operation
@@ -691,7 +725,7 @@ paths:
           description: Resource not found
         '500':
           description: Internal error
-  
+
   '/massifs/{id}':
     get:
       tags:
@@ -771,7 +805,7 @@ paths:
           description: Resource not found
         '500':
           description: Internal error
-  
+
   '/organizations/count':
     get:
       tags:
@@ -791,62 +825,62 @@ paths:
 components:
   schemas:
 
-    Auth-success: 
+    Auth-success:
       type: object
       properties:
         token:
           type: string
-    
+
     Cave:
       type: object
       properties:
-        id: 
+        id:
           type: integer
           format: int64
-        locked: 
+        locked:
           type: boolean
-        idReviewer: 
+        idReviewer:
           type: integer
           format: int64
-        idLocker: 
+        idLocker:
           type: integer
           format: int64
-        name: 
+        name:
           type: string
-        minDepth: 
+        minDepth:
           type: integer
           format: int64
-        maxDepth: 
+        maxDepth:
           type: integer
           format: int64
-        depth: 
+        depth:
           type: integer
           format: int64
-        length: 
+        length:
           type: integer
           format: int64
-        isDiving: 
+        isDiving:
           type: boolean
-        temperature: 
+        temperature:
           type: integer
           format: int64
-        dateInscription: 
+        dateInscription:
           type: string
-        dateReviewed: 
+        dateReviewed:
           type: string
-        dateLocked: 
+        dateLocked:
           type: string
-        author: 
+        author:
           type: integer
           format: int64
 
     Caver:
       type: object
       properties:
-        id: 
+        id:
           type: integer
           format: int64
-        nickname: 
+        nickname:
           type: string
         surname:
           type: string
@@ -854,11 +888,11 @@ components:
           type: string
         mail:
           type: string
-    
+
     Comment:
       type: object
       properties:
-        id: 
+        id:
           type: integer
         dateInscription:
           type: string
@@ -894,19 +928,19 @@ components:
           $ref: '#/components/schemas/Entrance'
         language:
           type: string
-        
-          
+
+
     Count:
       type: object
       properties:
         count:
           type: integer
           format: int64
-    
+
     Document:
       type: object
       properties:
-        id: 
+        id:
           type: integer
         dateInscription:
           type: string
@@ -952,25 +986,25 @@ components:
           $ref: '#/components/schemas/Organization'
         parent:
           $ref: '#/components/schemas/Document'
-    
+
     Document-identifierType:
       type: object
       properties:
-        code: 
+        code:
           type: string
-        text: 
+        text:
           type: string
-        regexp: 
+        regexp:
           type: string
-    
+
     Document-subject:
       type: object
       properties:
-        code: 
+        code:
           type: string
-        subject: 
+        subject:
           type: string
-        parent: 
+        parent:
           type: string
 
     Entrance:
@@ -1001,9 +1035,9 @@ components:
           type: number
         longitude:
           type: number
-        stats: 
+        stats:
           $ref: '#/components/schemas/Entrance-stats'
-        cave: 
+        cave:
           $ref: '#/components/schemas/Cave'
         documents:
           type: array
@@ -1034,7 +1068,7 @@ components:
           type: number
         longitude:
           type: number
-    
+
     Entrance-stats:
       type: object
       properties:
@@ -1047,7 +1081,7 @@ components:
         approach:
           type: number
           format: float
-    
+
     Geoloc:
       properties:
         entries:
@@ -1056,7 +1090,7 @@ components:
             anyOf:
             - $ref: '#/components/schemas/Entrance'
             - $ref: '#/components/schemas/Entrance-list'
-    
+
     Language:
       properties:
         id:
@@ -1075,24 +1109,24 @@ components:
           type: string
         comment:
           type: string
-        
+
     Language-list:
       properties:
         languages:
           type: array
           items:
             $ref: '#/components/schemas/Language'
-    
+
     Location:
       type: object
-        
+
     Massif:
       type: object
       properties:
         id:
           type: integer
           format: int64
-        author: 
+        author:
           $ref: '#/components/schemas/Caver'
         reviewer:
           $ref: '#/components/schemas/Caver'
@@ -1104,12 +1138,12 @@ components:
           type: string
         caves:
           type: array
-          items: 
+          items:
             $ref: '#/components/schemas/Cave'
-       
+
     Name:
       properties:
-        id: 
+        id:
           type: integer
         name:
           type: string
@@ -1135,22 +1169,22 @@ components:
           $ref: '#/components/schemas/Massif'
         organization:
           $ref: '#/components/schemas/Organization'
-  
+
     Organization:
       type: object
       properties:
-        id: 
+        id:
           type: integer
           format: int64
-        author: 
+        author:
           $ref: '#/components/schemas/Caver'
-        reviewer: 
+        reviewer:
           $ref: '#/components/schemas/Caver'
-        name: 
+        name:
           type: 'string'
         address:
           type: 'string'
-        city: 
+        city:
           type: 'string'
         village:
           type: 'string'
@@ -1158,7 +1192,7 @@ components:
           type: 'string'
         county:
           type: 'string'
-        region: 
+        region:
           type: 'string'
         country:
           type: 'string'
@@ -1166,40 +1200,40 @@ components:
           type: 'string'
         yearBirth:
           type: 'string'
-        dateInscription: 
+        dateInscription:
           type: 'string'
-        dateReviewed: 
+        dateReviewed:
           type: 'string'
-        latitude: 
+        latitude:
           type: number
-        longitude: 
+        longitude:
           type: number
-        customMessage: 
+        customMessage:
           type: 'string'
-        pictureFileName: 
+        pictureFileName:
           type: 'string'
-        isOfficialPartner: 
+        isOfficialPartner:
           type: 'boolean'
-        cavers: 
+        cavers:
           type: array
-          items: 
+          items:
             $ref: '#/components/schemas/Caver'
-        exploredCaves: 
+        exploredCaves:
           type: array
-          items: 
+          items:
             $ref: '#/components/schemas/Cave'
-        partneredCaves: 
+        partneredCaves:
           type: array
-          items: 
+          items:
             $ref: '#/components/schemas/Cave'
-    
+
     Point:
       type: object
-    
+
     Rigging:
       type: object
       properties:
-        id: 
+        id:
           type: integer
         name:
           type: string
@@ -1215,11 +1249,11 @@ components:
           type: number
         title:
           type: string
-        obstacles: 
+        obstacles:
           type: string
         ropes:
           type: string
-        anchors: 
+        anchors:
           type: string
         observations:
           type: string
@@ -1229,10 +1263,10 @@ components:
           $ref: '#/components/schemas/Point'
         language:
           type: string
-          
+
     Region:
       properties:
-        id: 
+        id:
           type: integer
         name:
           type: string
@@ -1247,12 +1281,12 @@ components:
       properties:
         results:
           type: array
-          items: 
+          items:
             oneOf:
               - $ref: '#/components/schemas/Entrance'
               - $ref: '#/components/schemas/Massif'
               - $ref: '#/components/schemas/Organization'
-    
+
     Quicksearch-type:
       type: string
       enum:
