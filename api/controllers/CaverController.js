@@ -295,7 +295,12 @@ module.exports = {
       });
   },
 
-  create: async (req, res, next, converter) => {
+  create: async (
+    req,
+    res,
+    next,
+    converter = MappingV1Service.convertToCaverModel,
+  ) => {
     // Check right
     const hasRight = await sails.helpers.checkRight
       .with({
@@ -329,9 +334,9 @@ module.exports = {
       name: req.param('name'),
       nickname: `${req.param('name')} ${req.param('surname')}`,
       surname: req.param('surname'),
+      language: '000', // default null language id
     })
       .fetch()
-      .usingConnection(db)
       .intercept('E_UNIQUE', () => res.sendStatus(409))
       .intercept('UsageError', (e) => res.badRequest(e.cause.message))
       .intercept('AdapterError', (e) => res.badRequest(e.cause.message))
