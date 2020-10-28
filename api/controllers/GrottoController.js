@@ -74,16 +74,16 @@ module.exports = {
   },
 
   getOfficialPartnersNumber: (req, res) => {
-    TGrotto.count({ isOfficialPartner: true })
-      .then((total) => {
-        return res.json(total);
-      })
-      .catch((err) => {
-        sails.log.error(err);
-        return res.serverError(
-          `GrottoController.getOfficialPartnersNumber error : ${err}`,
-        );
-      });
+    TGrotto.count({ isOfficialPartner: true }).exec((err, found) => {
+      const params = {
+        controllerMethod: 'GrottoController.getOfficialPartnersNumber',
+        notFoundMessage: 'Problem while getting number of official partners.',
+      };
+      const count = {
+        count: found,
+      };
+      return ControllerService.treat(req, err, count, params, res);
+    });
   },
 
   getPartnersNumber: (req, res) => {
