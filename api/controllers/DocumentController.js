@@ -5,7 +5,90 @@
  * @help        :: See https://sailsjs.com/docs/concepts/actions
  */
 
+const esClient = require('../../config/elasticsearch').elasticsearchCli;
 const ramda = require('ramda');
+
+// Tool methods
+// Set name of cave, entrance, massif, editor and library if present
+const setNamesOfPopulatedDocument = async (document) => {
+  !ramda.isNil(document.entrance) &&
+    (await NameService.setNames([document.entrance], 'entrance'));
+  !ramda.isNil(document.cave) &&
+    (await NameService.setNames([document.cave], 'cave'));
+  !ramda.isNil(document.massif) &&
+    (await NameService.setNames([document.massif], 'massif'));
+  !ramda.isNil(document.library) &&
+    (await NameService.setNames([document.library], 'grotto'));
+  !ramda.isNil(document.editor) &&
+    (await NameService.setNames([document.editor], 'grotto'));
+  return document;
+};
+
+/**
+ * Based on the logstash.conf file.
+ * The document must be fully populated and with all its names set (@see setNamesOfPopulatedDocument).
+ */
+const addDocumentToElasticSearchIndexes = (document) => {
+  const esBody = {
+    ...document,
+    authors: document.authors
+      ? document.authors.map((a) => a.nickname).join(', ')
+      : null,
+    date_part: document.datePublication // eslint-disable-line camelcase
+      ? new Date(document.datePublication).getYear()
+      : null,
+    description: document.descriptions[0].body,
+    'editor id': ramda.propOr(null, ['editor', 'id'], document),
+    'editor name': ramda.propOr(null, ['editor', 'name'], document),
+    'library id': ramda.propOr(null, ['library', 'id'], document),
+    'library name': ramda.propOr(null, ['library', 'name'], document),
+    regions: document.regions
+      ? document.regions.map((r) => r.name).join(', ')
+      : null,
+    subjects: document.subjects
+      ? document.subjects.map((s) => s.subject).join(', ')
+      : null,
+    title: document.descriptions[0].title,
+    'type id': ramda.propOr(null, ['type', 'id'], document),
+    'type name': ramda.propOr(null, ['type', 'name'], document),
+  };
+
+  // Update ES documents-index
+  try {
+    esClient.create({
+      index: `documents-index`,
+      type: 'data',
+      id: document.id,
+      body: {
+        esBody,
+      },
+    });
+  } catch (error) {
+    sails.log.error(error);
+  }
+
+  // Update ES document-collections-index or document-issues-index
+  const esIndexToUpdate =
+    document.type.name === 'Issue'
+      ? 'document-issues-index'
+      : document.type.name === 'Collection'
+      ? 'document-collections-index'
+      : '';
+  if (esIndexToUpdate !== '') {
+    try {
+      esClient.update({
+        index: esIndexToUpdate,
+        type: 'data',
+        id: document.id,
+        body: {
+          esBody,
+        },
+      });
+    } catch (error) {
+      sails.log.error(error);
+    }
+  }
+};
 
 module.exports = {
   count: (req, res) => {
@@ -201,7 +284,7 @@ module.exports = {
       });
   },
 
-  find: (
+  find: async (
     req,
     res,
     next,
@@ -225,7 +308,7 @@ module.exports = {
       .populate('reviewer')
       .populate('subjects')
       .populate('type')
-      .exec((err, found) => {
+      .exec(async (err, found) => {
         const params = {
           controllerMethod: 'DocumentController.find',
           searchedItem: 'Document of id ' + req.param('id'),
@@ -238,57 +321,17 @@ module.exports = {
           return res.json({ error: notFoundMessage });
         }
 
-        const promises = [];
-        // Get name of cave, entrance, massif, editor and library
-        promises.push(
-          ramda.isNil(found.entrance)
-            ? ''
-            : NameService.setNames([found.entrance], 'entrance'),
-        );
-        promises.push(
-          ramda.isNil(found.cave)
-            ? ''
-            : NameService.setNames([found.cave], 'cave'),
-        );
-        promises.push(
-          ramda.isNil(found.massif)
-            ? ''
-            : NameService.setNames([found.massif], 'massif'),
-        );
-        promises.push(
-          ramda.isNil(found.editor)
-            ? ''
-            : NameService.setNames([found.editor], 'grotto'),
-        );
-        promises.push(
-          ramda.isNil(found.library)
-            ? ''
-            : NameService.setNames([found.library], 'grotto'),
-        );
+        await setNamesOfPopulatedDocument(found);
+        found.mainLanguage = await DocumentService.getMainLanguage(found.id);
 
-        // Get main language
-        promises.push(DocumentService.getMainLanguage(found.id));
-
-        Promise.all(promises).then((results) => {
-          // Names
-          results[0] !== '' ? (found.entrance = results[0][0]) : '';
-          results[1] !== '' ? (found.cave = results[1][0]) : '';
-          results[2] !== '' ? (found.massif = results[2][0]) : '';
-          results[3] !== '' ? (found.editor = results[3][0]) : '';
-          results[4] !== '' ? (found.library = results[4][0]) : '';
-
-          // Main language
-          found.mainLanguage = results[5];
-
-          return ControllerService.treatAndConvert(
-            req,
-            err,
-            found,
-            params,
-            res,
-            converter,
-          );
-        });
+        return ControllerService.treatAndConvert(
+          req,
+          err,
+          found,
+          params,
+          res,
+          converter,
+        );
       });
   },
 
@@ -313,7 +356,31 @@ module.exports = {
         validationComment: validationComment,
         dateValidation: new Date(),
       })
-      .then((updatedDocument) => {
+      .then(async (updatedDocument) => {
+        if (isValidated) {
+          const populatedDoc = await Tdocument.findOne({
+            id: updatedDocument.id,
+          })
+            .populate('author')
+            .populate('authors')
+            .populate('cave')
+            .populate('descriptions')
+            .populate('editor')
+            .populate('entrance')
+            .populate('identifierType')
+            .populate('languages')
+            .populate('library')
+            .populate('license')
+            .populate('massif')
+            .populate('parent')
+            .populate('regions')
+            .populate('reviewer')
+            .populate('subjects')
+            .populate('type');
+          await setNamesOfPopulatedDocument(populatedDoc);
+          await addDocumentToElasticSearchIndexes(updatedDocument);
+        }
+
         const params = {
           controllerMethod: 'DocumentController.validate',
           notFoundMessage: `Document of id ${id} not found`,
@@ -352,6 +419,36 @@ module.exports = {
         }),
       );
       Promise.all(updatePromises).then((results) => {
+        results.map((doc) => {
+          if (doc.isValidated) {
+            TDocument.findOne({ id: doc.id })
+              .populate('author')
+              .populate('authors')
+              .populate('cave')
+              .populate('descriptions')
+              .populate('editor')
+              .populate('entrance')
+              .populate('identifierType')
+              .populate('languages')
+              .populate('library')
+              .populate('license')
+              .populate('massif')
+              .populate('parent')
+              .populate('regions')
+              .populate('reviewer')
+              .populate('subjects')
+              .populate('type')
+              .exec(async (err, found) => {
+                if (err) {
+                  return res.serverError(
+                    'An error occured when trying to get all information about the document.',
+                  );
+                }
+                await setNamesOfPopulatedDocument(found);
+                await addDocumentToElasticSearchIndexes(found);
+              });
+          }
+        });
         res.ok();
       });
     });
