@@ -106,43 +106,43 @@ module.exports.routes = {
   },
 
   /* Caver controller */
-  'GET /api/cavers/': {
-    controller: 'Caver',
+  'GET /api/v1/cavers/': {
+    controller: 'v1/Caver',
     action: 'find',
   },
 
-  'POST /api/cavers/': {
-    controller: 'Caver',
+  'POST /api/v1/cavers/': {
+    controller: 'v1/Caver',
     action: 'create',
   },
 
-  'GET /api/cavers/findAll': {
-    controller: 'Caver',
+  'GET /api/v1/cavers/findAll': {
+    controller: 'v1/Caver',
     action: 'findAll',
   },
 
-  'GET /api/cavers/count': {
-    controller: 'Caver',
+  'GET /api/v1/cavers/count': {
+    controller: 'v1/Caver',
     action: 'getCaversNumber',
   },
 
-  'GET /api/cavers/:id': {
-    controller: 'Caver',
+  'GET /api/v1/cavers/:id': {
+    controller: 'v1/Caver',
     action: 'find',
   },
 
-  'PUT /api/cavers/:caverId/groups/:groupId': {
-    controller: 'Caver',
+  'PUT /api/v1/cavers/:caverId/groups/:groupId': {
+    controller: 'v1/Caver',
     action: 'putOnGroup',
   },
 
-  'DELETE /api/cavers/:caverId/groups/:groupId': {
-    controller: 'Caver',
+  'DELETE /api/v1/cavers/:caverId/groups/:groupId': {
+    controller: 'v1/Caver',
     action: 'removeFromGroup',
   },
 
-  'POST /api/cavers/:caverId/groups': {
-    controller: 'Caver',
+  'POST /api/v1/cavers/:caverId/groups': {
+    controller: 'v1/Caver',
     action: 'setGroups',
   },
 
