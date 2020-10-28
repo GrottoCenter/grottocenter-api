@@ -65,10 +65,12 @@ const ManageUserGroups = ({
   const dispatch = useDispatch();
   const { formatMessage } = useIntl();
   const debouncedInput = useDebounce(inputValue);
-  const { results, errors, isLoading } = useSelector(
+  const { results, errors, isLoading: searchIsLoading } = useSelector(
     (state) => state.quicksearch,
   );
-  const caverState = useSelector((state) => state.caver);
+  const { errorMessages, isLoading, latestHttpCode } = useSelector(
+    (state) => state.caverGroups,
+  );
 
   // Functions
   const renderOption = (option) => entityOptionForSelector(option);
@@ -91,7 +93,7 @@ const ManageUserGroups = ({
     } else {
       dispatch(resetQuicksearch());
     }
-  }, [debouncedInput, caverState.latestHttpCode]);
+  }, [debouncedInput, latestHttpCode]);
 
   return (
     <>
@@ -110,7 +112,7 @@ const ManageUserGroups = ({
           getOptionLabel={getOptionLabel}
           errorMessage="Unexpected error"
           hasError={!isNil(errors)}
-          isLoading={isLoading}
+          isLoading={searchIsLoading}
         />
       </SearchBarBackground>
       {selectedUser && (
@@ -128,7 +130,7 @@ const ManageUserGroups = ({
             <FlexBlock style={{ flexBasis: '200px' }}>
               <UserGroups
                 initialUser={initialUser}
-                isLoading={caverState.isLoading}
+                isLoading={isLoading}
                 onSaveGroups={onSaveGroups}
                 selectedUser={selectedUser}
                 setSelectedUser={setSelectedUser}
@@ -137,12 +139,12 @@ const ManageUserGroups = ({
           </UserBlock>
         </>
       )}
-      {(caverState.isLoading ||
-        caverState.errorMessages.length > 0 ||
+      {(isLoading ||
+        errorMessages.length > 0 ||
         areGroupsSubmittedWithSuccess) && (
         <FeedbackBlock>
-          {caverState.errorMessages.length > 0 &&
-            caverState.errorMessages.map((error) => (
+          {errorMessages.length > 0 &&
+            errorMessages.map((error) => (
               <ErrorMessage
                 key={error}
                 message={formatMessage({ id: error })}

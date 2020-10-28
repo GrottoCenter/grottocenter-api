@@ -14,7 +14,6 @@ import Layout from '../components/common/Layouts/Fixed/FixedContent';
 const StyledList = styled(List)`
   display: flex;
   flex-wrap: wrap;
-  margin-bottom: ${(props) => props.theme.spacing(3)}px;
 `;
 
 const StyledListItem = styled(ListItem)`
@@ -63,7 +62,7 @@ const Dashboard = () => {
               <Typography variant="h2" gutterBottom>
                 {formatMessage({ id: 'Administrator Dashboard' })}
               </Typography>
-              <StyledList cols={3} disablePadding>
+              <StyledList cols={3}>
                 <StyledListItem
                   button
                   key="manage-users-admin-tile-key"

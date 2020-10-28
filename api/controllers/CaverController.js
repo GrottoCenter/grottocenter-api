@@ -212,4 +212,86 @@ module.exports = {
         return res.serverError(err.cause.message);
       });
   },
+
+  getAdmins: async (
+    req,
+    res,
+    next,
+    converter = MappingV1Service.convertToCaverList,
+  ) => {
+    // Check right
+    const hasRight = await sails.helpers.checkRight
+      .with({
+        groups: req.token.groups,
+        rightEntity: RightService.RightEntities.CAVER,
+        rightAction: RightService.RightActions.VIEW_ALL,
+      })
+      .intercept('rightNotFound', (err) => {
+        return res.serverError(
+          'A server error occured when checking your right to view admins.',
+        );
+      });
+    if (!hasRight) {
+      return res.forbidden('You are not authorized to view admins.');
+    }
+
+    // Get Admins
+    CaverService.getAdmins()
+      .then((found) => {
+        const params = {};
+        params.controllerMethod = 'CaverController.getAdmins';
+        return ControllerService.treatAndConvert(
+          req,
+          null,
+          found,
+          params,
+          res,
+          converter,
+        );
+      })
+      .catch((err) => {
+        return res.serverError(err.cause.message);
+      });
+  },
+
+  getModerators: async (
+    req,
+    res,
+    next,
+    converter = MappingV1Service.convertToCaverList,
+  ) => {
+    // Check right
+    const hasRight = await sails.helpers.checkRight
+      .with({
+        groups: req.token.groups,
+        rightEntity: RightService.RightEntities.CAVER,
+        rightAction: RightService.RightActions.VIEW_ALL,
+      })
+      .intercept('rightNotFound', (err) => {
+        return res.serverError(
+          'A server error occured when checking your right to view moderators.',
+        );
+      });
+    if (!hasRight) {
+      return res.forbidden('You are not authorized to view moderators.');
+    }
+
+    // Get Moderators
+    CaverService.getModerators()
+      .then((found) => {
+        const params = {};
+        params.controllerMethod = 'CaverController.getModerators';
+        return ControllerService.treatAndConvert(
+          req,
+          null,
+          found,
+          params,
+          res,
+          converter,
+        );
+      })
+      .catch((err) => {
+        return res.serverError(err.cause.message);
+      });
+  },
 };
