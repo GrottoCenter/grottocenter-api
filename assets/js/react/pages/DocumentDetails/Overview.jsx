@@ -9,6 +9,7 @@ import { useIntl } from 'react-intl';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import { Skeleton } from '@material-ui/lab';
+import { isEmpty } from 'ramda';
 
 const Header = styled.div`
   display: flex;
@@ -100,14 +101,19 @@ const Overview = ({
             <Typography variant="body1" style={{ whiteSpace: 'pre-wrap' }}>
               {summary}
             </Typography>
-            <SubTitle variant="subtitle1" color="textSecondary">
-              {formatMessage({ id: 'Authors' })}
-            </SubTitle>
-            <Typography variant="body1">
-              {authors.map(
-                (auth, i) => `${auth} ${i < authors.length - 1 ? ' - ' : ''}`,
-              )}
-            </Typography>
+            {!isEmpty(authors) && (
+              <>
+                <SubTitle variant="subtitle1" color="textSecondary">
+                  {formatMessage({ id: 'Authors' })}
+                </SubTitle>
+                <Typography variant="body1">
+                  {authors.map(
+                    (auth, i) =>
+                      `${auth} ${i < authors.length - 1 ? ' - ' : ''}`,
+                  )}
+                </Typography>
+              </>
+            )}
           </>
         )}
       </CardContent>

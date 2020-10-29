@@ -68,7 +68,9 @@ const DocumentPage = ({
           },
           {
             label: formatMessage({ id: 'Publication date' }),
-            value: formatDate(details.publicationDate),
+            value: details.publicationDate
+              ? formatDate(details.publicationDate)
+              : null,
           },
           {
             label: formatMessage({ id: 'Document parent' }),
