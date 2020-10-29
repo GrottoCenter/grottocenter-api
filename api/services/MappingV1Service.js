@@ -570,20 +570,22 @@ module.exports = {
 
     // source.descriptions contains both title and descriptions (in .title and .body)
     // Split them in 2 different attributes
-    result.descriptions = source.descriptions.map((d) => {
-      const newDescription = {
-        ...ramda.omit(['title', 'body'], d),
-        text: d.body,
-      };
-      return newDescription;
-    });
-    result.titles = source.descriptions.map((d) => {
-      const newDescription = {
-        ...ramda.omit(['title', 'body'], d),
-        text: d.title,
-      };
-      return newDescription;
-    });
+    if (source.descriptions) {
+      result.descriptions = source.descriptions.map((d) => {
+        const newDescription = {
+          ...ramda.omit(['title', 'body'], d),
+          text: d.body,
+        };
+        return newDescription;
+      });
+      result.titles = source.descriptions.map((d) => {
+        const newDescription = {
+          ...ramda.omit(['title', 'body'], d),
+          text: d.title,
+        };
+        return newDescription;
+      });
+    }
 
     if (source.authors instanceof Array) {
       result.authors = MappingV1Service.convertToCaverList(
@@ -604,11 +606,13 @@ module.exports = {
         result.regions = source.regions;
       } else {
         // ES
-        result.regions = source.regions.split(', ').map((r) => {
-          return {
-            name: r,
-          };
-        });
+        result.regions = source.regions
+          ? source.regions.split(', ').map((r) => {
+              return {
+                name: r,
+              };
+            })
+          : null;
       }
     }
 
@@ -619,11 +623,13 @@ module.exports = {
       ).subjects;
     } else {
       // ES
-      result.subjects = source.subjects.split(', ').map((s) => {
-        return {
-          code: s,
-        };
-      });
+      result.subjects = source.subjects
+        ? source.subjects.split(', ').map((s) => {
+            return {
+              code: s,
+            };
+          })
+        : null;
     }
 
     // Build library
