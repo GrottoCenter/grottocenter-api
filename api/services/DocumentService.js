@@ -14,6 +14,19 @@ module.exports = {
   getMainLanguage: async (id) => {
     const result = await CommonService.query(MAIN_LANGUAGE_QUERY, [id]);
     const language = result.rows[0];
+
+    // Case conversion
+    if (language) {
+      const formattedLanguage = {
+        ...language,
+        isPrefered: language.is_prefered,
+        refName: language.ref_name,
+      };
+      delete formattedLanguage.is_prefered;
+      delete formattedLanguage.ref_name;
+
+      return formattedLanguage;
+    }
     return language;
   },
 };

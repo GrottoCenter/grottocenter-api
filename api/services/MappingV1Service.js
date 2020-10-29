@@ -103,29 +103,30 @@ const CaveModel = {
 };
 
 const DocumentModel = {
-  refBbs: undefined,
-  title: undefined,
+  author: undefined,
+  cave: undefined,
+  country: undefined,
+  dateInscription: undefined,
   datePublication: undefined,
   dateValidation: undefined,
-  dateInscription: undefined,
-  pages: undefined,
-  reviewer: undefined,
-  author: undefined,
-  subjects: undefined,
-  theme: undefined,
-  country: undefined,
-  library: undefined,
-  editor: undefined,
-  regions: undefined,
-  license: undefined,
-  type: undefined,
-  identifierType: undefined,
   descriptions: [],
+  editor: undefined,
+  entrance: undefined,
+  identifierType: undefined,
   languages: [],
+  library: undefined,
+  license: undefined,
   mainLanguage: undefined,
   massif: undefined,
-  entrance: undefined,
-  cave: undefined,
+  pages: undefined,
+  refBbs: undefined,
+  regions: undefined,
+  reviewer: undefined,
+  subjects: undefined,
+  theme: undefined,
+  title: undefined,
+  titles: [],
+  type: undefined,
 };
 
 const SubjectModel = {
@@ -545,28 +546,44 @@ module.exports = {
 
     // Conversion (from Elasticsearch or not)
     result.id = source.id;
-    result.refBbs = source.ref_bbs ? source.ref_bbs : source.refBbs;
-    result.title = source.title;
+    result.author = source.author;
+    result.cave = source.cave;
+    result.dateInscription = source.dateInscription;
     result.datePublication = source.date_publication
       ? source.date_publication
       : source.datePublication;
     result.dateValidation = source.dateValidation;
-    result.dateInscription = source.dateInscription;
-    result.pages = source.pages;
-    result.author = source.author;
-    result.reviewer = source.reviewer;
-    result.license = source.license;
-    result.type = source.type;
-    result.identifierType = source.identifierType;
+    result.entrance = source.entrance;
     result.identifier = source.identifier;
-    result.publicationFasciculeBBSOld = source.publicationFasciculeBBSOld;
-    result.parent = source.parent;
-    result.descriptions = source.descriptions;
+    result.identifierType = source.identifierType;
     result.languages = source.languages;
+    result.license = source.license;
     result.mainLanguage = source.mainLanguage;
     result.massif = source.massif;
-    result.cave = source.cave;
-    result.entrance = source.entrance;
+    result.pages = source.pages;
+    result.parent = source.parent;
+    result.publicationFasciculeBBSOld = source.publicationFasciculeBBSOld;
+    result.refBbs = source.ref_bbs ? source.ref_bbs : source.refBbs;
+    result.reviewer = source.reviewer;
+    result.title = source.title;
+    result.type = source.type;
+
+    // source.descriptions contains both title and descriptions (in .title and .body)
+    // Split them in 2 different attributes
+    result.descriptions = source.descriptions.map((d) => {
+      const newDescription = {
+        ...ramda.omit(['title', 'body'], d),
+        text: d.body,
+      };
+      return newDescription;
+    });
+    result.titles = source.descriptions.map((d) => {
+      const newDescription = {
+        ...ramda.omit(['title', 'body'], d),
+        text: d.title,
+      };
+      return newDescription;
+    });
 
     if (source.authors instanceof Array) {
       result.authors = MappingV1Service.convertToCaverList(

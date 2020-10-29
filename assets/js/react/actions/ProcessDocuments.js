@@ -1,6 +1,7 @@
 import fetch from 'isomorphic-fetch';
 import { pipe, defaultTo, map } from 'ramda';
-import { identificationTokenName, processDocumentIds } from '../conf/Config';
+import { processDocumentIds } from '../conf/Config';
+import { getAuthHTTPHeader } from '../helpers/AuthHelper';
 
 export const POST_PROCESS_DOCUMENTS = 'POST_PROCESS_DOCUMENTS';
 export const POST_PROCESS_DOCUMENTS_SUCCESS = 'POST_PROCESS_DOCUMENTS_SUCCESS';
@@ -24,7 +25,6 @@ export const postProcessDocuments = (ids, isValidated, comment) => (
 ) => {
   dispatch(postProcessDocumentsAction());
 
-  const authToken = window.localStorage.getItem(identificationTokenName);
   const documentsBody = pipe(
     defaultTo([]),
     map((id) => ({
@@ -35,7 +35,8 @@ export const postProcessDocuments = (ids, isValidated, comment) => (
   )(ids);
   const requestOptions = {
     method: 'PUT',
-    body: JSON.stringify({ documents: documentsBody, token: authToken }),
+    body: JSON.stringify({ documents: documentsBody }),
+    headers: getAuthHTTPHeader(),
   };
 
   return fetch(processDocumentIds, requestOptions)

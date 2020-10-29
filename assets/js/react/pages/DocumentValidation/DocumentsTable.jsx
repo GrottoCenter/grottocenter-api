@@ -2,30 +2,32 @@ import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useIntl } from 'react-intl';
 import makeCustomCellRenders from './customCellRenders';
+import makeCustomHeaderCellRenders from './customHeaderCellRenders';
 import Table from '../../components/common/Table';
 import { createColumns } from '../../components/common/Table/TableHead';
 
 const defaultHiddenColumns = [
-  'id',
-  'refBbs',
-  'publicationFasciculeBBSOld',
-  'parent',
-  'dateValidation',
-  'pages',
-  'reviewer',
-  'identifier',
-  'publication',
-  'cave',
   'authors',
-  'entrance',
-  'massif',
-  'dateInscription',
+  'cave',
+  'datePublication',
   'dateValidation',
-  'license',
-  'identifierType',
-  'author',
-  'library',
+  'descriptions',
   'editor',
+  'entrance',
+  'id',
+  'identifier',
+  'identifierType',
+  'library',
+  'license',
+  'massif',
+  'pages',
+  'parent',
+  'publication',
+  'publicationFasciculeBBSOld',
+  'refBbs',
+  'regions',
+  'reviewer',
+  'subjects',
 ];
 
 const DocumentsTable = ({
@@ -58,11 +60,12 @@ const DocumentsTable = ({
 
   return (
     <Table
-      columns={columns}
+      columns={columns.sort((c1, c2) => c1.label > c2.label)}
       currentPage={currentPage}
       customCellRenders={makeCustomCellRenders()}
+      customHeaderCellRenders={makeCustomHeaderCellRenders()}
       data={documents || []}
-      hiddenColumns={hiddenColumns}
+      hiddenColumns={hiddenColumns.sort((c1, c2) => c1.label > c2.label)}
       loading={loading}
       openDetailedView={openDetailedView}
       order={order}

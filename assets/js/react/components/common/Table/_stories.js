@@ -11,6 +11,17 @@ import StandardDialog from '../StandardDialog';
 import Table from './index';
 import { createColumns } from './TableHead';
 
+// memoize
+const makeCustomHeaderRenders = () => {
+  return [
+    {
+      id: 'title',
+      customRender: () => 'Custom title',
+    },
+  ];
+};
+
+// memoize
 const makeCustomRenders = () => {
   const { formatDate } = useIntl();
   return [
@@ -43,6 +54,7 @@ const HydratedTable = ({
   hasUpdateRowsPerPage,
   hasPagination,
   hasOrder,
+  hasCustomHeaderRenders,
   hasCustomRenders,
   hasEmptyData,
 }) => {
@@ -102,6 +114,9 @@ const HydratedTable = ({
         columns={hasEmptyData ? [] : columns}
         currentPage={currentPage}
         customCellRenders={hasCustomRenders ? makeCustomRenders() : undefined}
+        customHeaderCellRenders={
+          hasCustomHeaderRenders ? makeCustomHeaderRenders() : undefined
+        }
         data={hasEmptyData ? [] : currentData}
         hiddenColumns={hiddenColumns}
         loading={loading}
@@ -143,6 +158,7 @@ storiesOf('Table', module).add('Default', () => (
     hasSelection={boolean('Has selection', true)}
     hasOrder={boolean('Has order', true)}
     hasCustomRenders={boolean('Has custom renders', true)}
+    hasCustomHeaderRenders={boolean('Has custom header renders', true)}
   />
 ));
 
@@ -154,5 +170,6 @@ HydratedTable.propTypes = {
   hasSelection: PropTypes.bool.isRequired,
   hasOrder: PropTypes.bool.isRequired,
   hasCustomRenders: PropTypes.bool.isRequired,
+  hasCustomHeaderRenders: PropTypes.bool.isRequired,
   hasEmptyData: PropTypes.bool.isRequired,
 };

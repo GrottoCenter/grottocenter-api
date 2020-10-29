@@ -36,8 +36,8 @@ const CreatedByTypography = styled(Typography)`
   flex-direction: row;
 `;
 
-const CreatedBy = ({ name }) => {
-  const { formatMessage } = useIntl();
+const CreatedBy = ({ name, creationDate }) => {
+  const { formatMessage, formatDate, formatTime } = useIntl();
 
   return (
     <CreatedByTypography
@@ -49,13 +49,16 @@ const CreatedBy = ({ name }) => {
       <Box fontWeight="fontWeightLight">
         {`${formatMessage({ id: 'Created by' })}:`}&nbsp;
       </Box>
-      <Box fontWeight="fontWeightBold">{`${name}`}</Box>
+      <Box fontWeight="fontWeightBold">{`${name} (${formatDate(
+        creationDate,
+      )} - ${formatTime(creationDate)})`}</Box>
     </CreatedByTypography>
   );
 };
 
 const Overview = ({
   createdBy,
+  creationDate,
   authors,
   language,
   title,
@@ -75,9 +78,11 @@ const Overview = ({
             </>
           ) : (
             <>
-              <CreatedBy name={createdBy} />
+              <CreatedBy name={createdBy} creationDate={creationDate} />
               <Typography color="textSecondary" variant="caption" gutterBottom>
-                {`${formatMessage({ id: 'Document language' })}: ${language}`}
+                {`${formatMessage({
+                  id: 'Document language',
+                })}: ${formatMessage({ id: language })}`}
               </Typography>
             </>
           )}
@@ -92,7 +97,9 @@ const Overview = ({
             <SubTitle variant="subtitle1" color="textSecondary">
               {formatMessage({ id: 'Summary' })}
             </SubTitle>
-            <Typography variant="body1">{summary}</Typography>
+            <Typography variant="body1" style={{ whiteSpace: 'pre-wrap' }}>
+              {summary}
+            </Typography>
             <SubTitle variant="subtitle1" color="textSecondary">
               {formatMessage({ id: 'Authors' })}
             </SubTitle>
@@ -112,11 +119,13 @@ export default Overview;
 
 CreatedBy.propTypes = {
   name: PropTypes.string.isRequired,
+  creationDate: PropTypes.string.isRequired,
 };
 
 Overview.propTypes = {
   loading: PropTypes.bool.isRequired,
   createdBy: PropTypes.string.isRequired,
+  creationDate: PropTypes.string.isRequired,
   authors: PropTypes.arrayOf(PropTypes.string).isRequired,
   language: PropTypes.string.isRequired,
   title: PropTypes.string.isRequired,

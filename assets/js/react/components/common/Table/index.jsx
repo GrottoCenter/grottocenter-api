@@ -30,7 +30,8 @@ import {
 } from '@material-ui/core';
 import { useIntl } from 'react-intl';
 
-import TableHead, { ActionColumnIds } from './TableHead';
+import TableHead from './TableHead';
+import { ActionColumnIds } from './CustomHeaderCell';
 import VisibleColumnsMenu from './VisibleColumnsMenu';
 import Row from './CustomRow';
 import InitialTable from './InitialTable';
@@ -87,6 +88,7 @@ const Table = ({
   updateRowsPerPage,
   rowsCount,
   loading,
+  customHeaderCellRenders,
   customCellRenders,
 }) => {
   const { formatMessage } = useIntl();
@@ -119,7 +121,18 @@ const Table = ({
         prop('customRender'),
         defaultTo(undefined),
       )(customCellRenders),
-    [],
+    [customCellRenders],
+  );
+
+  const getCustomHeaderCellRenders = useCallback(
+    (id) =>
+      pipe(
+        defaultTo([]),
+        find(propEq('id', id)),
+        prop('customRender'),
+        defaultTo(undefined),
+      )(customHeaderCellRenders),
+    [customHeaderCellRenders],
   );
 
   // eslint-disable-next-line no-unused-vars
@@ -185,6 +198,7 @@ const Table = ({
             orderBy={orderBy}
             order={order}
             isInitializing={isFirstLoad}
+            customHeaderCellRenders={getCustomHeaderCellRenders}
           />
           <TableBody $loading={loading}>
             {isFirstLoad ? (
@@ -276,6 +290,15 @@ Table.propTypes = {
   updateOrderBy: PropTypes.func,
   updateRowsPerPage: PropTypes.func,
   updateSelection: PropTypes.func,
+  customHeaderCellRenders: PropTypes.arrayOf(
+    PropTypes.shape({
+      customRender: PropTypes.func.isRequired,
+      id: PropTypes.oneOfType([
+        PropTypes.string.isRequired,
+        PropTypes.number.isRequired,
+      ]),
+    }),
+  ),
   customCellRenders: PropTypes.arrayOf(
     PropTypes.shape({
       customRender: PropTypes.func.isRequired,

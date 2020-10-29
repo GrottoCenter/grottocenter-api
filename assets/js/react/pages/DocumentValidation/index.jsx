@@ -3,6 +3,8 @@ import styled from 'styled-components';
 import { useDispatch, useSelector } from 'react-redux';
 import { useIntl } from 'react-intl';
 import { reject, isNil, propOr } from 'ramda';
+import { isMobileOnly } from 'react-device-detect';
+
 import Actions from './Actions';
 import DocumentDetails from '../DocumentDetails';
 import DocumentsTable from './DocumentsTable';
@@ -105,11 +107,12 @@ const DocumentValidationPage = () => {
       />
       <StandardDialog
         maxWidth="lg"
+        fullScreen={isMobileOnly}
         fullWidth
         scrollable
         open={!isNil(detailedView)}
         onClose={closeDetailedView}
-        title={formatMessage({ id: 'Detailed view' })}
+        title={formatMessage({ id: 'Detailed document view' })}
       >
         <DocumentDetails id={detailedView} />
       </StandardDialog>

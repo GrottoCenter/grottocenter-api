@@ -30,7 +30,7 @@ const DocumentPage = ({
   details,
   entities,
 }) => {
-  const { formatMessage } = useIntl();
+  const { formatMessage, formatDate } = useIntl();
   return (
     <Wrapper>
       <Overview {...overview} loading={loading} />
@@ -67,12 +67,12 @@ const DocumentPage = ({
             value: details.documentType,
           },
           {
-            label: formatMessage({ id: 'Published in' }),
-            value: details.publishedIn,
+            label: formatMessage({ id: 'Publication date' }),
+            value: formatDate(details.publicationDate),
           },
           {
-            label: formatMessage({ id: 'Document father' }),
-            value: details.documentFather,
+            label: formatMessage({ id: 'Document parent' }),
+            value: details.parentDocument,
           },
           {
             label: formatMessage({ id: 'Pages' }),
@@ -81,10 +81,12 @@ const DocumentPage = ({
           {
             label: formatMessage({ id: 'Subjects' }),
             value: details.subjects,
+            type: 'list',
           },
           {
-            label: formatMessage({ id: 'Area' }),
-            value: details.area,
+            label: formatMessage({ id: 'Regions' }),
+            value: details.regions,
+            type: 'list',
           },
         ]}
       />
@@ -123,8 +125,6 @@ const HydratedDocumentPage = ({ id }) => {
     }
   }, [id]);
 
-  console.log('isLoading', isLoading);
-
   return (
     <DocumentPage
       overview={makeOverview(details || {})}
@@ -155,17 +155,16 @@ DocumentPage.propTypes = {
     identifier: PropTypes.string,
     bbsReference: PropTypes.string,
     documentType: PropTypes.string,
-    publishedIn: PropTypes.string,
-    documentFather: PropTypes.string,
+    publicationDate: PropTypes.string,
+    parentDocument: PropTypes.string,
     pages: PropTypes.string,
-    subjects: PropTypes.string,
-    area: PropTypes.string,
+    subjects: PropTypes.arrayOf(PropTypes.string),
+    regions: PropTypes.arrayOf(PropTypes.string),
   }),
   entities: PropTypes.shape({
     massif: PropTypes.string,
     cave: PropTypes.string,
     entry: PropTypes.string,
-    area: PropTypes.string,
   }),
 };
 
