@@ -1,5 +1,6 @@
 import fetch from 'isomorphic-fetch';
 import { subjectsUrl, subjectsSearchUrl } from '../conf/Config';
+import makeErrorMessage from '../helpers/makeErrorMessage';
 
 export const FETCH_SUBJECTS = 'FETCH_SUBJECTS';
 export const FETCH_SUBJECTS_SUCCESS = 'FETCH_SUBJECTS_SUCCESS';
@@ -49,14 +50,17 @@ export function loadSubjects() {
     return fetch(subjectsUrl)
       .then((response) => {
         if (response.status >= 400) {
-          const errorMessage = `Fetching ${subjectsUrl} status: ${response.status}`;
-          dispatch(fetchSubjectsFailure(errorMessage));
-          throw new Error(errorMessage);
+          throw new Error(response.status);
         }
         return response.text();
       })
-      .then((text) =>
-        dispatch(fetchSubjectsSuccess(JSON.parse(text).subjects)),
+      .then((text) => dispatch(fetchSubjectsSuccess(JSON.parse(text).subjects)))
+      .catch((error) =>
+        dispatch(
+          fetchSubjectsFailure(
+            makeErrorMessage(error.message, `Fetching subjects`),
+          ),
+        ),
       );
   };
 }
@@ -73,14 +77,22 @@ export function loadSubjectsSearch(subjectCode, subjectName) {
     })
       .then((response) => {
         if (response.status >= 400) {
-          const errorMessage = `Fetching ${subjectsSearchUrl} status: ${response.status}`;
-          dispatch(subjectsSearchFailure(errorMessage));
-          throw new Error(errorMessage);
+          throw new Error(response.status);
         }
         return response.text();
       })
       .then((text) =>
         dispatch(subjectsSearchSuccess(JSON.parse(text).subjects)),
+      )
+      .catch((error) =>
+        dispatch(
+          subjectsSearchFailure(
+            makeErrorMessage(
+              error.message,
+              `Fetching subjects search ${subjectName}`,
+            ),
+          ),
+        ),
       );
   };
 }

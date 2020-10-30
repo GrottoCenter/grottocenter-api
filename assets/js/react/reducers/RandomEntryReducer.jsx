@@ -13,6 +13,7 @@ import {
 const initialState = {
   isFetching: false, // show loading spinner
   entry: undefined, // random entry
+  error: null,
 };
 
 //
@@ -24,19 +25,11 @@ const initialState = {
 const randomEntry = (state = initialState, action) => {
   switch (action.type) {
     case FETCH_RANDOMENTRY:
-      return Object.assign({}, state, {
-        isFetching: true,
-      });
+      return { ...initialState, isFetching: true };
     case FETCH_RANDOMENTRY_SUCCESS:
-      return Object.assign({}, state, {
-        isFetching: false,
-        entry: action.entry,
-      });
+      return { ...initialState, entry: action.entry };
     case FETCH_RANDOMENTRY_FAILURE:
-      return Object.assign({}, state, {
-        isFetching: false,
-        error: action.error,
-      });
+      return { ...initialState, error: action.error };
     default:
       return state;
   }

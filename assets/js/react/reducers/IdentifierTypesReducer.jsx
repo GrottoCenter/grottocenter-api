@@ -13,7 +13,7 @@ import {
 const initialState = {
   identifierTypes: [],
   isFetching: false,
-  errors: undefined,
+  error: null,
 };
 
 //

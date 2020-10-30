@@ -41,7 +41,7 @@ const OrganizationAutoComplete = ({
   searchLabelText,
 }) => {
   const dispatch = useDispatch();
-  const { errors, isLoading, results: suggestions } = useSelector(
+  const { error, isLoading, results: suggestions } = useSelector(
     (state) => state.quicksearch,
   );
 
@@ -65,7 +65,7 @@ const OrganizationAutoComplete = ({
           fetchSearchResults={fetchSearchResults}
           getOptionLabel={getOrganizationToString}
           getValueName={getOrganizationToString}
-          hasError={!isNil(errors)}
+          hasError={!isNil(error)}
           isLoading={isLoading}
           label={searchLabelText}
           renderOption={entityOptionForSelector}

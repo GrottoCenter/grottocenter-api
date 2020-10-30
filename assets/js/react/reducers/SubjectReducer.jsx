@@ -18,7 +18,7 @@ const initialState = {
   subjects: [],
   searchedSubjects: [],
   isFetching: false,
-  errors: undefined,
+  error: null,
 };
 
 //

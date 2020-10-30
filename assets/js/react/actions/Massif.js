@@ -1,5 +1,6 @@
 import fetch from 'isomorphic-fetch';
 import { findMassifUrl } from '../conf/Config';
+import makeErrorMessage from '../helpers/makeErrorMessage';
 
 export const FETCH_MASSIF = 'FETCH_MASSIF';
 export const FETCH_MASSIF_SUCCESS = 'FETCH_MASSIF_SUCCESS';
@@ -26,12 +27,17 @@ export function loadMassif(massifId) {
     return fetch(findMassifUrl + massifId)
       .then((response) => {
         if (response.status >= 400) {
-          const errorMessage = `Fetching ${findMassifUrl} status: ${response.status}`;
-          dispatch(fetchMassifFailure(errorMessage));
-          throw new Error(errorMessage);
+          throw new Error(response.status);
         }
         return response.text();
       })
-      .then((text) => dispatch(fetchMassifSuccess(JSON.parse(text))));
+      .then((text) => dispatch(fetchMassifSuccess(JSON.parse(text))))
+      .catch((error) =>
+        dispatch(
+          fetchMassifFailure(
+            makeErrorMessage(error.message, `Fetching massif id ${massifId}`),
+          ),
+        ),
+      );
   };
 }

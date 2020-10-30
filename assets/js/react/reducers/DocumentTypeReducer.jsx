@@ -12,7 +12,7 @@ import {
 
 const initialState = {
   documentTypes: undefined,
-  error: undefined,
+  error: null,
   isLoading: false,
 };
 
@@ -29,7 +29,7 @@ const documentType = (state = initialState, action) => {
       return {
         ...state,
         isLoading: false,
-        error: undefined,
+        error: null,
         documentTypes: action.documentTypes,
       };
     case FETCH_DOCUMENT_TYPES_FAILURE:

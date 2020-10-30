@@ -11,6 +11,7 @@ import {
 //
 
 const initialState = {
+  error: null,
   isFetching: false, // show loading spinner
   partners: undefined, // partners list
 };
@@ -24,19 +25,11 @@ const initialState = {
 const partnersCarousel = (state = initialState, action) => {
   switch (action.type) {
     case FETCH_PARTNERS_FC:
-      return Object.assign({}, state, {
-        isFetching: true,
-      });
+      return { ...state, isFetching: true };
     case FETCH_PARTNERS_FC_SUCCESS:
-      return Object.assign({}, state, {
-        isFetching: false,
-        partners: action.entry,
-      });
+      return { ...state, isFetching: false, partners: action.entry };
     case FETCH_PARTNERS_FC_FAILURE:
-      return Object.assign({}, state, {
-        isFetching: false,
-        error: action.error,
-      });
+      return { ...state, isFetching: false, error: action.error };
     default:
       return state;
   }

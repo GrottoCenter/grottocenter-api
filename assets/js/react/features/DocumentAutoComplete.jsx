@@ -41,7 +41,7 @@ const DocumentAutoComplete = ({
   searchLabelText,
 }) => {
   const dispatch = useDispatch();
-  const { errors, isLoading, results: suggestions } = useSelector(
+  const { error, isLoading, results: suggestions } = useSelector(
     (state) => state.quicksearch,
   );
 
@@ -98,7 +98,7 @@ const DocumentAutoComplete = ({
           fetchSearchResults={fetchSearchResults}
           getOptionLabel={getPartOfName}
           getValueName={getPartOfName}
-          hasError={!isNil(errors)}
+          hasError={!isNil(error)}
           isLoading={isLoading}
           label={searchLabelText}
           renderOption={entityOptionForSelector}

@@ -1,5 +1,6 @@
 import fetch from 'isomorphic-fetch';
 import { getDocumentTypesUrl } from '../conf/Config';
+import makeErrorMessage from '../helpers/makeErrorMessage';
 
 export const FETCH_DOCUMENT_TYPES = 'FETCH_DOCUMENT_TYPES';
 export const FETCH_DOCUMENT_TYPES_SUCCESS = 'FETCH_DOCUMENT_TYPES_SUCCESS';
@@ -26,14 +27,19 @@ export function loadDocumentTypes() {
     return fetch(getDocumentTypesUrl)
       .then((response) => {
         if (response.status >= 400) {
-          const errorMessage = `Fetching all document types status: ${response.status}`;
-          dispatch(fetchDocumentTypesFailure(errorMessage));
-          throw new Error(errorMessage);
+          throw new Error(response.status);
         }
         return response.text();
       })
       .then((text) =>
         dispatch(fetchDocumentTypesSuccess(JSON.parse(text).documentTypes)),
+      )
+      .catch((error) =>
+        dispatch(
+          fetchDocumentTypesFailure(
+            makeErrorMessage(error.message, `Fetching document types`),
+          ),
+        ),
       );
   };
 }

@@ -1,5 +1,6 @@
 import fetch from 'isomorphic-fetch';
 import { findRandomEntryUrl } from '../conf/Config';
+import makeErrorMessage from '../helpers/makeErrorMessage';
 
 //
 //
@@ -44,12 +45,16 @@ export const loadRandomEntry = () => (dispatch) => {
   return fetch(findRandomEntryUrl)
     .then((response) => {
       if (response.status >= 400) {
-        const errorMessage = `Fetching ${findRandomEntryUrl} status: ${response.status}`;
-        dispatch(fetchRandomEntryFailure(errorMessage));
-        throw new Error(errorMessage);
+        throw new Error(response.status);
       }
       return response.text();
     })
     .then((text) => dispatch(fetchRandomEntrySuccess(JSON.parse(text))))
-    .catch((error) => dispatch(fetchRandomEntryFailure(error)));
+    .catch((error) =>
+      dispatch(
+        fetchRandomEntryFailure(
+          makeErrorMessage(error.message, `Fetching random entrance`),
+        ),
+      ),
+    );
 };

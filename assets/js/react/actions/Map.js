@@ -1,5 +1,6 @@
 import fetch from 'isomorphic-fetch';
 import { findMapBoundsUrl } from '../conf/Config';
+import makeErrorMessage from '../helpers/makeErrorMessage';
 
 //
 //
@@ -52,16 +53,15 @@ export function fetchMapItemsResult(criteria) {
     return fetch(completeUrl)
       .then((response) => {
         if (response.status >= 400) {
-          const errorMessage = `Fetching ${completeUrl} status: ${response.status}`;
-          dispatch(fetchMapItemsFailure(errorMessage));
-          throw new Error(errorMessage);
+          throw new Error(response.status);
         }
         return response.text();
       })
       .then((text) => dispatch(fetchMapItemsSuccess(JSON.parse(text))))
       .catch((error) => {
-        // dispatch(fetchRandomEntryFailure(error)
-        console.log(error);
+        dispatch(
+          fetchMapItemsFailure(makeErrorMessage(error.message, `Fetching map`)),
+        );
       });
   };
 

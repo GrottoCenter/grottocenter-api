@@ -1,5 +1,6 @@
 import fetch from 'isomorphic-fetch';
 import { dynamicNumbersUrl } from '../conf/Config';
+import makeErrorMessage from '../helpers/makeErrorMessage';
 
 //
 //
@@ -56,13 +57,21 @@ export function loadDynamicNumber(numberType) {
     return fetch(url)
       .then((response) => {
         if (response.status >= 400) {
-          throw new Error('Bad response from server'); // TODO Add better error management
+          throw new Error(response.status);
         }
         return response.text();
       })
       .then((text) => dispatch(fetchDynamicNumberSuccess(numberType, text)))
       .catch((error) => {
-        dispatch(fetchDynamicNumberFailure(numberType, error));
+        dispatch(
+          fetchDynamicNumberFailure(
+            numberType,
+            makeErrorMessage(
+              error.message,
+              `Fetching number type ${numberType}`,
+            ),
+          ),
+        );
       });
   };
 }

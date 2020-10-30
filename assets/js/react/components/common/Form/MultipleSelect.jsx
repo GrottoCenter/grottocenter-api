@@ -23,7 +23,7 @@ const MultipleSelect = ({
   renderOption,
   required = false,
   resetSearchResults,
-  searchErrors,
+  searchError,
   searchResults,
   value,
 }) => {
@@ -101,12 +101,12 @@ const MultipleSelect = ({
             variant="filled"
             label={<Translate>{labelName}</Translate>}
             required={required}
-            error={hasError || searchErrors}
+            error={hasError || searchError}
           />
         )}
       />
       {helperText && (
-        <FormHelperText variant="filled" error={hasError || searchErrors}>
+        <FormHelperText variant="filled" error={hasError || searchError}>
           <Translate>{helperText}</Translate>
         </FormHelperText>
       )}

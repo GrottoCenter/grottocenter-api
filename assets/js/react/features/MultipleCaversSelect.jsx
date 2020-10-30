@@ -21,11 +21,9 @@ const MultipleCaversSelect = ({
   required = false,
 }) => {
   const dispatch = useDispatch();
-  const {
-    errors: searchErrors,
-    isLoading,
-    results: searchResults,
-  } = useSelector((state) => state.quicksearch);
+  const { error: searchError, isLoading, results: searchResults } = useSelector(
+    (state) => state.quicksearch,
+  );
 
   const loadSearchResults = (inputValue) => {
     dispatch(
@@ -63,7 +61,7 @@ const MultipleCaversSelect = ({
       required={required}
       renderOption={entityOptionForSelector}
       resetSearchResults={resetSearchResults}
-      searchErrors={searchErrors}
+      searchError={searchError}
       searchResults={searchResults}
     />
   );

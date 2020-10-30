@@ -29,7 +29,7 @@ const isNilOrEmpty = anyPass([isNil, isEmpty]);
 
 const Actions = ({ selected }) => {
   const dispatch = useDispatch();
-  const { isLoading, success } = useSelector((state) => state.processDocument);
+  const { isLoading, success } = useSelector((state) => state.processDocuments);
   const confirmationDialog = useBoolean(false);
   const [actionType, setActionType] = useState('');
   const { formatMessage } = useIntl();

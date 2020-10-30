@@ -14,7 +14,7 @@ import {
 const initialState = {
   bbsRegionsByName: [],
   isFetching: false,
-  errors: undefined,
+  error: null,
 };
 
 //

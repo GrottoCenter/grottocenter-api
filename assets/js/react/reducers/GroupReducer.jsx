@@ -7,7 +7,7 @@ import {
 const initialState = {
   group: undefined, // group fetched
   isFetching: false, // show loading spinner
-  errors: undefined, // fetch errors
+  error: null, // fetch errors
 };
 
 const group = (state = initialState, action) => {

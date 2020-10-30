@@ -1,5 +1,6 @@
 import fetch from 'isomorphic-fetch';
 import { quicksearchUrl } from '../conf/Config';
+import makeErrorMessage from '../helpers/makeErrorMessage';
 
 // A C T I O N S
 export const RESET_QUICKSEARCH = 'RESET_QUICKSEARCH';
@@ -35,23 +36,28 @@ export const fetchLoading = () => ({
 });
 
 // THUNKS
-export const fetchQuicksearchResult = (criterias) => (dispatch) => {
+export const fetchQuicksearchResult = (criteria) => (dispatch) => {
   dispatch(resetQuicksearch());
   dispatch(fetchLoading());
 
   return fetch(quicksearchUrl, {
     method: 'POST',
-    body: JSON.stringify(criterias),
+    body: JSON.stringify(criteria),
   })
     .then((response) => {
       if (response.status >= 400) {
-        const errorMessage = `Fetching ${quicksearchUrl} status: ${response.status}`;
-        dispatch(fetchQuicksearchFailure(errorMessage));
-        throw new Error(errorMessage);
+        throw new Error(response.status);
       }
       return response.text();
     })
     .then((text) => {
       dispatch(fetchQuicksearchSuccess(JSON.parse(text).results));
-    });
+    })
+    .catch((error) =>
+      dispatch(
+        fetchQuicksearchFailure(
+          makeErrorMessage(error.message, `Fetching quicksearch`),
+        ),
+      ),
+    );
 };

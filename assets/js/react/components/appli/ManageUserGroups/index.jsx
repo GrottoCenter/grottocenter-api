@@ -65,7 +65,7 @@ const ManageUserGroups = ({
   const dispatch = useDispatch();
   const { formatMessage } = useIntl();
   const debouncedInput = useDebounce(inputValue);
-  const { results, errors, isLoading: searchIsLoading } = useSelector(
+  const { results, error: quickSearchError, isLoading: searchIsLoading } = useSelector(
     (state) => state.quicksearch,
   );
   const { errorMessages, isLoading, latestHttpCode } = useSelector(
@@ -84,12 +84,12 @@ const ManageUserGroups = ({
   useEffect(() => {
     // Check search input value and launch / reset search
     if (length(debouncedInput) > 2) {
-      const criterias = {
+      const criteria = {
         query: debouncedInput.trim(),
         complete: true,
         resourceType: 'cavers',
       };
-      dispatch(fetchQuicksearchResult(criterias));
+      dispatch(fetchQuicksearchResult(criteria));
     } else {
       dispatch(resetQuicksearch());
     }
@@ -111,7 +111,7 @@ const ManageUserGroups = ({
           renderOption={renderOption}
           getOptionLabel={getOptionLabel}
           errorMessage="Unexpected error"
-          hasError={!isNil(errors)}
+          hasError={!isNil(quickSearchError)}
           isLoading={searchIsLoading}
         />
       </SearchBarBackground>

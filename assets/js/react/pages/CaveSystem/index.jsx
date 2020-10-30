@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { useIntl } from 'react-intl';
+import { isNil } from 'ramda';
 import DescriptionIcon from '@material-ui/icons/Description';
 import DocumentIcon from '@material-ui/icons/Filter';
 import CaveSystem from '../../components/appli/CaveSystem';
@@ -13,7 +14,7 @@ import { getSafeData } from './transformer';
 const CaveSystemPage = () => {
   const { id } = useParams();
   const dispatch = useDispatch();
-  const { loading, data } = useSelector((state) => state.cave);
+  const { loading, data, error } = useSelector((state) => state.cave);
   const { formatMessage } = useIntl();
 
   useEffect(() => {
@@ -21,7 +22,7 @@ const CaveSystemPage = () => {
   }, [id]);
 
   return (
-    <CaveSystem loading={loading} data={getSafeData(data)}>
+    <CaveSystem loading={loading || !isNil(error)} data={getSafeData(data)}>
       <>
         <EntriesList />
         <Content
