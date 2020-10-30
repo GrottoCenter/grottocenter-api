@@ -32,16 +32,22 @@ const EntryData = ({ entry }) => {
   if (!entry) {
     return <div />;
   }
-  const { entryInfo, stats, timeInfo } = entry;
+  const { documents, cave, stats, timeInfo } = entry;
+
+  // TODO: improve get of the topo
+  // 13 is the id of the type "TopographicData"
+  const topo = documents
+    ? documents.find((d) => d.type === 13 && d.pathOld !== null)
+    : null;
   const imageElement =
-    entryInfo && entryInfo.path ? <EntryImage src={entryInfo.path} /> : '';
+    topo && topo.pathOld ? <EntryImage src={topo.pathOld} /> : '';
 
   return (
     <FlexWrapper>
       <FlexItemWrapper>
         <EntryTitle entry={entry} />
         <EntryStat stat={stats} />
-        <EntryInfos timeInfo={timeInfo} entryInfo={entryInfo} />
+        <EntryInfos timeInfo={timeInfo} cave={cave} />
       </FlexItemWrapper>
       <FlexItemWrapper>{imageElement}</FlexItemWrapper>
     </FlexWrapper>
@@ -50,8 +56,10 @@ const EntryData = ({ entry }) => {
 
 EntryData.propTypes = {
   entry: PropTypes.shape({
-    entryInfo: PropTypes.shape({
-      path: PropTypes.string,
+    documents: PropTypes.arrayOf(PropTypes.any),
+    cave: PropTypes.shape({
+      depth: PropTypes.number,
+      length: PropTypes.number,
     }),
     stats: PropTypes.shape({}),
     timeInfo: PropTypes.any,
@@ -191,7 +199,7 @@ EntryStatItem.propTypes = {
   itemLabel: PropTypes.string.isRequired,
 };
 
-const EntryInfos = ({ timeInfo, entryInfo }) => (
+const EntryInfos = ({ timeInfo, cave }) => (
   <div className="infos">
     {timeInfo && (
       <EntryInfoItem
@@ -211,21 +219,21 @@ const EntryInfos = ({ timeInfo, entryInfo }) => (
         itemValue={timeInfo.eTUnderground}
       />
     )}
-    {entryInfo && (
+    {cave && (
       <EntryInfoItem
         key="eiik3"
         itemImg="length.svg"
         itemLabel="length"
-        itemValue={entryInfo.length}
+        itemValue={cave.length}
         itemUnit="m"
       />
     )}
-    {entryInfo && (
+    {cave && (
       <EntryInfoItem
         key="eiik4"
         itemImg="depth.svg"
         itemLabel="depth"
-        itemValue={entryInfo.depth}
+        itemValue={cave.depth}
         itemUnit="m"
       />
     )}
@@ -237,7 +245,7 @@ EntryInfos.propTypes = {
     eTTrail: PropTypes.any,
     eTUnderground: PropTypes.any,
   }).isRequired,
-  entryInfo: PropTypes.shape({
+  cave: PropTypes.shape({
     depth: PropTypes.number,
     length: PropTypes.number,
   }).isRequired,
