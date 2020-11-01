@@ -119,6 +119,7 @@ const DocumentModel = {
   mainLanguage: undefined,
   massif: undefined,
   pages: undefined,
+  pathOld: undefined,
   refBbs: undefined,
   regions: undefined,
   reviewer: undefined,
@@ -561,6 +562,7 @@ module.exports = {
     result.mainLanguage = source.mainLanguage;
     result.massif = source.massif;
     result.pages = source.pages;
+    result.pathOld = source.pathOld;
     result.parent = source.parent;
     result.publicationFasciculeBBSOld = source.publicationFasciculeBBSOld;
     result.refBbs = source.ref_bbs ? source.ref_bbs : source.refBbs;
