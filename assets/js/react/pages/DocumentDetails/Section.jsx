@@ -95,7 +95,7 @@ const Section = ({ title, content, loading }) => {
           <Skeleton variant="rect" height={100} />
         ) : (
           content.map((item) =>
-            !isEmpty(item.value) ? (
+            !isEmpty(item.value) && !isNil(item.value) ? (
               <Item
                 key={item.label}
                 Icon={item.Icon}
