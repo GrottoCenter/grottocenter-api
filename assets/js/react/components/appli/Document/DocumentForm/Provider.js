@@ -61,8 +61,10 @@ const Provider = ({ children }) => {
   );
 
   const resetContext = useCallback(() => {
-    setState(defaultContext);
-  });
+    setState(defaultContext.docAttributes);
+    setCurrentStep(pathOr(null, [0, 'id'], defaultFormSteps));
+    setValidatedSteps([]);
+  }, [setState, setCurrentStep, setValidatedSteps]);
 
   useEffect(() => {
     const invalidateSteps = without(__, validatedSteps);
