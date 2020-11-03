@@ -3,10 +3,10 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useIntl } from 'react-intl';
 import PropTypes from 'prop-types';
 
-import Translate from '../components/common/Translate';
-import { loadSubjects } from '../actions/Subject';
+import Translate from '../../components/common/Translate';
+import { loadSubjects } from '../../actions/Subject';
 
-import MultipleSelectWithOptionsComponent from '../components/appli/Document/DocumentForm/formElements/MultipleSelectWithOptions';
+import MultipleSelectWithOptionsComponent from '../../components/appli/Document/DocumentForm/formElements/MultipleSelectWithOptions';
 
 const MultipleSubjectsSelect = ({
   computeHasError,

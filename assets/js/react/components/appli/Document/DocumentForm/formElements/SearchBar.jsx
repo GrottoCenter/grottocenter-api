@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { length, pathOr } from 'ramda';
 
@@ -17,14 +17,14 @@ const SearchBar = (props) => {
     fetchSearchResults,
     getValueName,
     resetSearchResults,
+    inputValue: defaultInputValue = '',
   } = props;
   const {
     docAttributes: { [contextValueName]: value, partOf },
     updateAttribute,
   } = useContext(DocumentFormContext);
-  const [inputValue, setInputValue] = React.useState('');
+  const [inputValue, setInputValue] = React.useState(defaultInputValue);
   const debouncedInput = useDebounce(inputValue);
-
   const handleInputChange = (newValue) => {
     if (value && getValueName(value) === newValue) {
       setInputValue('');
@@ -49,7 +49,11 @@ const SearchBar = (props) => {
     setInputValue('');
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
+    setInputValue(defaultInputValue);
+  }, [defaultInputValue]);
+
+  useEffect(() => {
     if (length(debouncedInput) > 2) {
       fetchSearchResults(debouncedInput);
     } else {
@@ -60,18 +64,17 @@ const SearchBar = (props) => {
   return (
     <AutoCompleteSearchComponent
       disabled={isValueForced}
-      inputValue={inputValue}
       isValueForce={isValueForced}
       onInputChange={handleInputChange}
       onSelection={handleSelection}
       {...props}
+      inputValue={inputValue}
     />
   );
 };
 
 const SearchBarInheritedProps = AutoCompleteSearchTypes;
 delete SearchBarInheritedProps.disabled;
-delete SearchBarInheritedProps.inputValue;
 delete SearchBarInheritedProps.isValueForced;
 delete SearchBarInheritedProps.onInputChange;
 delete SearchBarInheritedProps.onSelection;
@@ -82,6 +85,7 @@ SearchBar.propTypes = {
   getValueName: PropTypes.func.isRequired,
   resetSearchResults: PropTypes.func.isRequired,
   ...SearchBarInheritedProps,
+  inputValue: PropTypes.string,
 };
 
 export default SearchBar;

@@ -37,8 +37,13 @@ module.exports.policies = {
   },
 
   CaverController: {
+    '*': true,
+  },
+
+  'v1/CaverController': {
     '*': false,
     getCaversNumber: true,
+    create: 'tokenAuth',
     putOnGroup: ['tokenAuth', 'adminAuth'],
     removeFromGroup: ['tokenAuth', 'adminAuth'],
     setGroups: ['tokenAuth', 'adminAuth'],
@@ -157,6 +162,7 @@ module.exports.policies = {
 
   'v1/GrottoController': {
     find: ['apiKeyAuth', 'paginate'],
+    create: 'tokenAuth',
   },
 
   'v1/MassifController': {

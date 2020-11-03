@@ -1,17 +1,19 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
 
 import {
   fetchQuicksearchResult,
   resetQuicksearch,
-} from '../actions/Quicksearch';
+} from '../../../actions/Quicksearch';
 
-import Translate from '../components/common/Translate';
+import Translate from '../../../components/common/Translate';
 
-import MultipleSelectComponent from '../components/appli/Document/DocumentForm/formElements/MultipleSelect';
+import MultipleSelectComponent from '../../../components/appli/Document/DocumentForm/formElements/MultipleSelect';
 
-import { entityOptionForSelector } from '../helpers/Entity';
+import { entityOptionForSelector } from '../../../helpers/Entity';
+import CreateNewCaver from './CreateNewCaver';
+import { useBoolean } from '../../../hooks';
 
 const MultipleCaversSelect = ({
   computeHasError,
@@ -25,6 +27,10 @@ const MultipleCaversSelect = ({
     (state) => state.quicksearch,
   );
 
+  const { isTrue: actionEnabled, true: enableAction } = useBoolean();
+  const { isOpen: isCreateCaverOpen, toggle: toggleCreateCaver } = useBoolean();
+  const [defaultNewName, setDefaultNewName] = useState('');
+
   const loadSearchResults = (inputValue) => {
     dispatch(
       fetchQuicksearchResult({
@@ -33,9 +39,20 @@ const MultipleCaversSelect = ({
         complete: false,
       }),
     );
+    setDefaultNewName(inputValue);
   };
   const resetSearchResults = () => {
     dispatch(resetQuicksearch());
+  };
+
+  useEffect(() => {
+    if (isLoading) {
+      enableAction();
+    }
+  }, [isLoading]);
+
+  const handleOpenSideAction = () => {
+    toggleCreateCaver();
   };
 
   return (
@@ -63,7 +80,18 @@ const MultipleCaversSelect = ({
       resetSearchResults={resetSearchResults}
       searchError={searchError}
       searchResults={searchResults}
-    />
+      sideActionDisabled={!actionEnabled}
+      isSideActionOpen={isCreateCaverOpen}
+      onSideAction={handleOpenSideAction}
+    >
+      <CreateNewCaver
+        contextValueName={contextValueName}
+        enabled={isCreateCaverOpen}
+        onCreateSuccess={toggleCreateCaver}
+        defaultName={defaultNewName}
+        defaultSurname=""
+      />
+    </MultipleSelectComponent>
   );
 };
 

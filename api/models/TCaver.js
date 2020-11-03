@@ -24,6 +24,7 @@ module.exports = {
     login: {
       type: 'string',
       columnName: 'login',
+      allowNull: true,
       maxLength: 20,
       unique: true,
     },
@@ -31,6 +32,7 @@ module.exports = {
     password: {
       type: 'string',
       columnName: 'password',
+      allowNull: true,
       maxLength: 64,
     },
 
@@ -42,7 +44,7 @@ module.exports = {
 
     activationCode: {
       type: 'string',
-      allowNull: false,
+      allowNull: true,
       columnName: 'activation_code',
       maxLength: 64,
     },

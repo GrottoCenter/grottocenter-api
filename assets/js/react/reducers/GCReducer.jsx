@@ -4,6 +4,8 @@ import auth from './AuthReducer';
 import bbs from './BbsReducer';
 import cave from './CaveReducer';
 import caver from './CaverReducer';
+import createCaver from './CreateCaver';
+import createOrganization from './CreateOrganization';
 import caverGroups from './CaverGroupsReducer';
 import document from './DocumentReducer';
 import documentDetails from './DetailsDocumentReducer';
@@ -40,6 +42,8 @@ const GCReducer = combineReducers({
   cave,
   caver,
   caverGroups,
+  createCaver,
+  createOrganization,
   document,
   documentDetails,
   documents,

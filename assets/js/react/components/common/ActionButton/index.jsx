@@ -9,6 +9,7 @@ const ActionButton = ({
   disabled,
   color = 'primary',
   icon,
+  ...buttonProps
 }) => {
   return (
     <Button
@@ -16,6 +17,7 @@ const ActionButton = ({
       disabled={disabled || loading}
       onClick={onClick}
       endIcon={icon}
+      {...buttonProps}
     >
       {loading && (
         <CircularProgress

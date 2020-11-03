@@ -3,9 +3,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
 import { pathOr } from 'ramda';
 
-import Translate from '../components/common/Translate';
-import MultipleSelectComponent from '../components/appli/Document/DocumentForm/formElements/MultipleSelect';
-import { loadRegionsSearch, resetRegionsSearch } from '../actions/Region';
+import Translate from '../../components/common/Translate';
+import MultipleSelectComponent from '../../components/appli/Document/DocumentForm/formElements/MultipleSelect';
+import { loadRegionsSearch, resetRegionsSearch } from '../../actions/Region';
 
 const MultipleBBSRegionsSelect = ({
   computeHasError,

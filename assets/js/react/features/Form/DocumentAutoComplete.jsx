@@ -1,5 +1,6 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useIntl } from 'react-intl';
 import PropTypes from 'prop-types';
 import { isNil } from 'ramda';
 import { InputAdornment } from '@material-ui/core';
@@ -7,33 +8,36 @@ import { InputAdornment } from '@material-ui/core';
 import {
   fetchQuicksearchResult,
   resetQuicksearch,
-} from '../actions/Quicksearch';
+} from '../../actions/Quicksearch';
 
-import { entityOptionForSelector } from '../helpers/Entity';
+import { entityOptionForSelector } from '../../helpers/Entity';
 
-import SearchBar from '../components/appli/Document/DocumentForm/formElements/SearchBar';
-import FormAutoComplete from '../components/appli/Document/DocumentForm/formElements/FormAutoComplete';
+import { isCollection } from '../../components/appli/Document/DocumentForm/DocumentTypesHelper';
+
+import SearchBar from '../../components/appli/Document/DocumentForm/formElements/SearchBar';
+import FormAutoComplete from './FormAutoComplete';
 
 // ===================================
 
 const resultEndAdornment = (
   <InputAdornment position="end">
-    <img src="/images/massif.svg" alt="Massif icon" style={{ width: '40px' }} />
+    <img
+      src="/images/bibliography.svg"
+      alt="Document icon"
+      style={{ width: '40px' }}
+    />
   </InputAdornment>
 );
 
 // ===================================
 
-const getMassifToString = (massif) => {
-  return `#${massif.id} - ${massif.name}`;
-};
-
-const MassifAutoComplete = ({
+const DocumentAutoComplete = ({
   contextValueName,
   helperContent,
   helperContentIfValueIsForced,
   labelText,
   required = false,
+  resourceTypes = ['documents'],
   searchLabelText,
 }) => {
   const dispatch = useDispatch();
@@ -41,11 +45,44 @@ const MassifAutoComplete = ({
     (state) => state.quicksearch,
   );
 
+  const { formatMessage } = useIntl();
+
+  /**
+   * Recursive function to build the complete name of a "part" element
+   * from all its parents and children.
+   * @param part : element to build the name
+   * @param childPart : previously child part name computed
+   *
+   * Ex:
+   * If myArticle is from a Spelunca issue,
+   * getPartOfName(myArticle, '') will return:
+   * Spelunca [COLLECTION] > Spelunca n°142 > "the title of myArticle"
+   */
+  const getPartOfName = (part, childPart = '') => {
+    const conditionalChildPart = childPart === '' ? '' : `> ${childPart}`;
+
+    // If the item is a Collection without child, display [COLLECTION] indicator
+    const conditionalNamePart =
+      isCollection(part.documentType) && childPart === ''
+        ? `${part.name} [${formatMessage({ id: 'COLLECTION' })}]`
+        : part.name;
+
+    if (!part.partOf) {
+      return `${conditionalNamePart} ${
+        part.issue ? part.issue : ''
+      } ${conditionalChildPart}`;
+    }
+    return getPartOfName(
+      part.partOf,
+      `${conditionalNamePart} ${part.issue} ${conditionalChildPart}`,
+    );
+  };
+
   const fetchSearchResults = (debouncedInput) => {
     const criterias = {
       query: debouncedInput.trim(),
       complete: false,
-      resourceType: 'massifs',
+      resourceTypes,
     };
     dispatch(fetchQuicksearchResult(criterias));
   };
@@ -59,8 +96,8 @@ const MassifAutoComplete = ({
       autoCompleteSearch={
         <SearchBar
           fetchSearchResults={fetchSearchResults}
-          getOptionLabel={getMassifToString}
-          getValueName={getMassifToString}
+          getOptionLabel={getPartOfName}
+          getValueName={getPartOfName}
           hasError={!isNil(error)}
           isLoading={isLoading}
           label={searchLabelText}
@@ -73,7 +110,7 @@ const MassifAutoComplete = ({
         />
       }
       contextValueName={contextValueName}
-      getValueName={getMassifToString}
+      getValueName={getPartOfName}
       hasError={false} // How to check for errors ?
       helperContent={helperContent}
       helperContentIfValueIsForced={helperContentIfValueIsForced}
@@ -84,13 +121,17 @@ const MassifAutoComplete = ({
   );
 };
 
-MassifAutoComplete.propTypes = {
+DocumentAutoComplete.propTypes = {
   contextValueName: PropTypes.string.isRequired,
   helperContent: PropTypes.node,
   helperContentIfValueIsForced: PropTypes.node,
   labelText: PropTypes.string.isRequired,
   required: PropTypes.bool,
+  resourceTypes: PropTypes.arrayOf(
+    PropTypes.oneOf(['documents', 'document-collections', 'document-issues']),
+  ),
+
   searchLabelText: PropTypes.string.isRequired,
 };
 
-export default MassifAutoComplete;
+export default DocumentAutoComplete;

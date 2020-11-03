@@ -11,4 +11,11 @@ module.exports = {
       next,
       MappingV1Service.convertToGrottoModel,
     ),
+  create: (req, res, next) =>
+    grottoController.create(
+      req,
+      res,
+      next,
+      MappingV1Service.convertToGrottoModel,
+    ),
 };

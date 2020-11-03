@@ -7,32 +7,28 @@ import { InputAdornment } from '@material-ui/core';
 import {
   fetchQuicksearchResult,
   resetQuicksearch,
-} from '../actions/Quicksearch';
+} from '../../actions/Quicksearch';
 
-import { entityOptionForSelector } from '../helpers/Entity';
+import { entityOptionForSelector } from '../../helpers/Entity';
 
-import SearchBar from '../components/appli/Document/DocumentForm/formElements/SearchBar';
-import FormAutoComplete from '../components/appli/Document/DocumentForm/formElements/FormAutoComplete';
+import SearchBar from '../../components/appli/Document/DocumentForm/formElements/SearchBar';
+import FormAutoComplete from './FormAutoComplete';
 
 // ===================================
 
 const resultEndAdornment = (
   <InputAdornment position="end">
-    <img
-      src="/images/club.svg"
-      alt="Organization icon"
-      style={{ width: '40px' }}
-    />
+    <img src="/images/massif.svg" alt="Massif icon" style={{ width: '40px' }} />
   </InputAdornment>
 );
 
 // ===================================
 
-const getOrganizationToString = (organization) => {
-  return `#${organization.id} - ${organization.name}`;
+const getMassifToString = (massif) => {
+  return `#${massif.id} - ${massif.name}`;
 };
 
-const OrganizationAutoComplete = ({
+const MassifAutoComplete = ({
   contextValueName,
   helperContent,
   helperContentIfValueIsForced,
@@ -49,7 +45,7 @@ const OrganizationAutoComplete = ({
     const criterias = {
       query: debouncedInput.trim(),
       complete: false,
-      resourceType: 'grottos',
+      resourceType: 'massifs',
     };
     dispatch(fetchQuicksearchResult(criterias));
   };
@@ -63,8 +59,8 @@ const OrganizationAutoComplete = ({
       autoCompleteSearch={
         <SearchBar
           fetchSearchResults={fetchSearchResults}
-          getOptionLabel={getOrganizationToString}
-          getValueName={getOrganizationToString}
+          getOptionLabel={getMassifToString}
+          getValueName={getMassifToString}
           hasError={!isNil(error)}
           isLoading={isLoading}
           label={searchLabelText}
@@ -73,11 +69,11 @@ const OrganizationAutoComplete = ({
           searchLabelText={searchLabelText}
           suggestions={suggestions}
           contextValueName={contextValueName}
-          resourceSearchedType="grottos"
+          resourceSearchedType="massifs"
         />
       }
       contextValueName={contextValueName}
-      getValueName={getOrganizationToString}
+      getValueName={getMassifToString}
       hasError={false} // How to check for errors ?
       helperContent={helperContent}
       helperContentIfValueIsForced={helperContentIfValueIsForced}
@@ -88,7 +84,7 @@ const OrganizationAutoComplete = ({
   );
 };
 
-OrganizationAutoComplete.propTypes = {
+MassifAutoComplete.propTypes = {
   contextValueName: PropTypes.string.isRequired,
   helperContent: PropTypes.node,
   helperContentIfValueIsForced: PropTypes.node,
@@ -97,4 +93,4 @@ OrganizationAutoComplete.propTypes = {
   searchLabelText: PropTypes.string.isRequired,
 };
 
-export default OrganizationAutoComplete;
+export default MassifAutoComplete;

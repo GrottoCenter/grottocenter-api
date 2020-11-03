@@ -8,12 +8,12 @@ import Translate from '../../../../common/Translate';
 
 import { DocumentFormContext } from '../Provider';
 
-import DocumentAutoComplete from '../../../../../features/DocumentAutoComplete';
-import MassifAutoComplete from '../../../../../features/MassifAutoComplete';
-import MultipleBBSRegionsSelect from '../../../../../features/MultipleBBSRegionsSelect';
-import MultipleCaversSelect from '../../../../../features/MultipleCaversSelect';
-import MultipleSubjectsSelect from '../../../../../features/MultipleSubjectsSelect';
-import OrganizationAutoComplete from '../../../../../features/OrganizationAutoComplete';
+import DocumentAutoComplete from '../../../../../features/Form/DocumentAutoComplete';
+import MassifAutoComplete from '../../../../../features/Form/MassifAutoComplete';
+import MultipleBBSRegionsSelect from '../../../../../features/Form/MultipleBBSRegionsSelect';
+import MultipleCaversSelect from '../../../../../features/Form/MultipleCaversSelect';
+import MultipleSubjectsSelect from '../../../../../features/Form/MultipleSubjectsSelect';
+import OrganizationAutoComplete from '../../../../../features/Form/OrganizationAutoComplete';
 
 import {
   isIssue,
@@ -67,7 +67,7 @@ const Step2 = ({ stepId }) => {
             newAuthors.length === 0
           }
           contextValueName="authors"
-          helperText="Use this search bar to find existing authors. In a next version of the website, if the author is not in the Grottocenter database, you will be able to add it."
+          helperText="Use this search bar to find existing authors. If not found, you can create a new author by using the right menu."
           labelName="Authors"
           required={isOther(documentType) || isArticle(documentType)}
         />
@@ -106,7 +106,8 @@ const Step2 = ({ stepId }) => {
                 contextValueName="editor"
                 helperContent={
                   <Translate>
-                    Use the search bar above to find an existing editor.
+                    Use the search bar above to find an existing editor. If not
+                    found, you can create a new author by using the right menu.
                   </Translate>
                 }
                 helperContentIfValueIsForced={
@@ -130,7 +131,9 @@ const Step2 = ({ stepId }) => {
                 helperContent={
                   <>
                     <Translate>
-                      Use the search bar above to find an existing library.
+                      Use the search bar above to find an existing library. If
+                      not found, you can create a new author by using the right
+                      menu.
                     </Translate>
                     <br />
                     <Translate>
