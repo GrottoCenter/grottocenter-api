@@ -170,11 +170,13 @@ module.exports = {
           .usingConnection(db);
 
         // Create associated data not handled by TDocument manually
-        await JDocumentLanguage.create({
-          document: documentCreated.id,
-          language: req.body.documentMainLanguage.id,
-          isMain: true,
-        }).usingConnection(db);
+        if (ramda.propOr(null, ['documentMainLanguage', 'id'], req.body)) {
+          await JDocumentLanguage.create({
+            document: documentCreated.id,
+            language: req.body.documentMainLanguage.id,
+            isMain: true,
+          }).usingConnection(db);
+        }
 
         await TDescription.create({
           author: req.token.id,

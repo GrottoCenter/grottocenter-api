@@ -1,5 +1,6 @@
 import React, { useContext, useMemo } from 'react';
 import PropTypes from 'prop-types';
+import { useIntl } from 'react-intl';
 import styled from 'styled-components';
 import DateFnsUtils from '@date-io/date-fns';
 import { Button, FormHelperText } from '@material-ui/core';
@@ -29,6 +30,7 @@ const DateButton = styled(Button)`
 // ===================================
 
 const PublicationDatePicker = ({ required = false }) => {
+  const { formatMessage } = useIntl();
   const [dateTypes, setDateTypes] = React.useState(['year', 'month', 'date']);
   const [isDatePickerOpen, setIsDatePickerOpen] = React.useState(false);
   const handleDateTypesChanges = (newTypes) => {
@@ -111,6 +113,8 @@ const PublicationDatePicker = ({ required = false }) => {
             open={isDatePickerOpen}
             onClose={() => setIsDatePickerOpen(false)}
             onOpen={() => setIsDatePickerOpen(true)}
+            cancelLabel={formatMessage({ id: 'Cancel' })}
+            okLabel={formatMessage({ id: 'Ok' })}
           />
           <ButtonsFlexWrapper>
             <DateButton
