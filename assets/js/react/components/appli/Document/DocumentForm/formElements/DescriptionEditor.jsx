@@ -1,6 +1,7 @@
 import React, { useContext, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
+import { useIntl } from 'react-intl';
 
 import { DocumentFormContext } from '../Provider';
 
@@ -21,6 +22,7 @@ const DescriptionContainer = styled.div`
 // ===================================
 
 const DescriptionEditor = ({ required = false }) => {
+  const { formatMessage } = useIntl();
   const {
     docAttributes: { description },
     updateAttribute,
@@ -32,14 +34,15 @@ const DescriptionEditor = ({ required = false }) => {
       <InlineWrapper>
         <DescriptionContainer>
           <StringInput
-            helperText={
-              'Try to go straight to the point, mention keywords and be precise. Don\'t start with "this document is about...".'
-            }
+            helperText={formatMessage({
+              id:
+                'Try to go straight to the point, mention keywords and be precise. Don\'t start with "this document is about...".',
+            })}
             multiline
             onValueChange={(value) => updateAttribute('description', value)}
             required={required}
             value={description}
-            valueName="Description"
+            valueName={formatMessage({ id: 'Description' })}
           />
         </DescriptionContainer>
       </InlineWrapper>

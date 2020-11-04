@@ -1,7 +1,6 @@
 import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
-
 import {
   Fade,
   FormControl,
@@ -11,7 +10,7 @@ import {
   Select,
   Typography,
 } from '@material-ui/core';
-
+import { useIntl } from 'react-intl';
 import { pathOr } from 'ramda';
 
 import Translate from '../../../../common/Translate';
@@ -44,6 +43,7 @@ const IdentifierEditor = ({
   contextIdentifierTypeValueName,
   documentType,
 }) => {
+  const { formatMessage } = useIntl();
   const {
     docAttributes: {
       [contextIdentifierValueName]: identifier,
@@ -82,10 +82,13 @@ const IdentifierEditor = ({
       <InlineWrapper>
         <IdentifierContainer>
           <StringInput
-            helperText="Unique identifier of the document. It can be a DOI, an URL, an ISBN or an ISSN."
+            helperText={formatMessage({
+              id:
+                'Unique identifier of the document. It can be a DOI, an URL, an ISBN or an ISSN.',
+            })}
             onValueChange={handleIdentifierChange}
             value={identifier}
-            valueName="Identifier"
+            valueName={formatMessage({ id: 'Identifier' })}
             required={false}
             hasError={!validationRegexp}
           />
