@@ -10,6 +10,7 @@ import { postProcessDocuments } from '../../actions/ProcessDocuments';
 import ActionButton from '../../components/common/ActionButton';
 import StandardDialog from '../../components/common/StandardDialog';
 import { useBoolean } from '../../hooks';
+import StringInput from '../../components/common/Form/StringInput';
 
 const ActionTypes = {
   decline: 'Decline',
@@ -28,18 +29,19 @@ const Wrapper = styled.div`
 const isNilOrEmpty = anyPass([isNil, isEmpty]);
 
 const Actions = ({ selected }) => {
+  const { formatMessage } = useIntl();
   const dispatch = useDispatch();
   const { isLoading, success } = useSelector((state) => state.processDocuments);
   const confirmationDialog = useBoolean(false);
   const [actionType, setActionType] = useState('');
-  const { formatMessage } = useIntl();
+  const [comment, setComment] = useState('');
 
   const handleAction = () => {
     dispatch(
       postProcessDocuments(
         selected,
         actionType === ActionTypes.validate,
-        actionType,
+        isEmpty(comment) ? actionType : comment,
       ),
     );
   };
@@ -52,6 +54,7 @@ const Actions = ({ selected }) => {
   useEffect(() => {
     if (success) {
       confirmationDialog.close();
+      setComment('');
     }
   }, [success]);
 
@@ -80,29 +83,35 @@ const Actions = ({ selected }) => {
         onClose={confirmationDialog.close}
         title={formatMessage({ id: 'Confirmation' })}
         actions={[
-          actionType === ActionTypes.validate ? (
-            <ActionButton
-              key={0}
-              label={formatMessage({ id: ActionTypes.validate })}
-              onClick={handleAction}
-              icon={<SendIcon />}
-              loading={isLoading}
-            />
-          ) : (
-            <ActionButton
-              key={0}
-              label={formatMessage({ id: ActionTypes.decline })}
-              color="secondary"
-              onClick={handleAction}
-              icon={<DeclineIcon />}
-              loading={isLoading}
-            />
-          ),
+          <ActionButton
+            key={0}
+            label={`${formatMessage({
+              id: actionType || ActionTypes.validate,
+            })} ${selected.length} ${formatMessage({ id: 'document(s)' })}`}
+            color={
+              actionType === ActionTypes.validate ? 'primary' : 'secondary'
+            }
+            onClick={handleAction}
+            icon={
+              actionType === ActionTypes.validate ? (
+                <SendIcon />
+              ) : (
+                <DeclineIcon />
+              )
+            }
+            loading={isLoading}
+          />,
         ]}
       >
-        {`${formatMessage({ id: actionType || ActionTypes.validate })} ${
-          selected.length
-        } ${formatMessage({ id: 'document(s)' })}`}
+        <StringInput
+          helperText={`${formatMessage({
+            id: 'Add a comment on why the selection has to be',
+          })} ${formatMessage({ id: actionType || ActionTypes.validate })}`}
+          multiline
+          onValueChange={setComment}
+          value={comment}
+          valueName={formatMessage({ id: 'Comment' })}
+        />
       </StandardDialog>
     </>
   );
