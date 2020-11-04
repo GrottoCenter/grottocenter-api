@@ -22,6 +22,7 @@ const defaultHiddenColumns = [
   'massif',
   'pages',
   'parent',
+  'pathOld',
   'publication',
   'publicationFasciculeBBSOld',
   'refBbs',
