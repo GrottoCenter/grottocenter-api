@@ -21,6 +21,7 @@ const setNamesOfPopulatedDocument = async (document) => {
     (await NameService.setNames([document.library], 'grotto'));
   !ramda.isNil(document.editor) &&
     (await NameService.setNames([document.editor], 'grotto'));
+  await DescriptionService.setDocumentDescriptions(document);
   return document;
 };
 

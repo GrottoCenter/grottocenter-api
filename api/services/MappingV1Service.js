@@ -563,7 +563,9 @@ module.exports = {
     result.massif = source.massif;
     result.pages = source.pages;
     result.pathOld = source.pathOld;
-    result.parent = source.parent;
+    result.parent = source.parent
+      ? module.exports.convertToDocumentModel(source.parent)
+      : null;
     result.publicationFasciculeBBSOld = source.publicationFasciculeBBSOld;
     result.refBbs = source.ref_bbs ? source.ref_bbs : source.refBbs;
     result.reviewer = source.reviewer;

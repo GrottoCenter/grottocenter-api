@@ -37,7 +37,11 @@ export const makeDetails = (data) => ({
   bbsReference: propOr('', 'refBbs', data),
   documentType: pathOr('', ['type', 'name'], data),
   publicationDate: propOr('', 'datePublication', data),
-  parentDocument: propOr('', ['parent', 'name'], data),
+  parentDocument: pipe(
+    pathOr([], ['parent', 'titles']),
+    head,
+    propOr('No title provided', 'text'),
+  )(data),
   pages: propOr('', 'pages', data),
   subjects: pipe(
     propOr([], 'subjects'),
