@@ -38,10 +38,10 @@ const addDocumentToElasticSearchIndexes = (document) => {
       ? new Date(document.datePublication).getYear()
       : null,
     description: document.descriptions[0].body,
-    'editor id': ramda.propOr(null, ['editor', 'id'], document),
-    'editor name': ramda.propOr(null, ['editor', 'name'], document),
-    'library id': ramda.propOr(null, ['library', 'id'], document),
-    'library name': ramda.propOr(null, ['library', 'name'], document),
+    'editor id': ramda.pathOr(null, ['editor', 'id'], document),
+    'editor name': ramda.pathOr(null, ['editor', 'name'], document),
+    'library id': ramda.pathOr(null, ['library', 'id'], document),
+    'library name': ramda.pathOr(null, ['library', 'name'], document),
     regions: document.regions
       ? document.regions.map((r) => r.name).join(', ')
       : null,
@@ -49,8 +49,8 @@ const addDocumentToElasticSearchIndexes = (document) => {
       ? document.subjects.map((s) => s.subject).join(', ')
       : null,
     title: document.descriptions[0].title,
-    'type id': ramda.propOr(null, ['type', 'id'], document),
-    'type name': ramda.propOr(null, ['type', 'name'], document),
+    'type id': ramda.pathOr(null, ['type', 'id'], document),
+    'type name': ramda.pathOr(null, ['type', 'name'], document),
   };
 
   // Update ES documents-index
@@ -170,7 +170,7 @@ module.exports = {
           .usingConnection(db);
 
         // Create associated data not handled by TDocument manually
-        if (ramda.propOr(null, ['documentMainLanguage', 'id'], req.body)) {
+        if (ramda.pathOr(null, ['documentMainLanguage', 'id'], req.body)) {
           await JDocumentLanguage.create({
             document: documentCreated.id,
             language: req.body.documentMainLanguage.id,
