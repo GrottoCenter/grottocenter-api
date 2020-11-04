@@ -22,14 +22,10 @@ const Wrapper = styled.div`
 const DocumentValidationPage = () => {
   const { formatMessage } = useIntl();
   const dispatch = useDispatch();
-  // TODO handle errors
-  // eslint-disable-next-line no-unused-vars
-  const { isLoading, data, totalCount, error } = useSelector(
+  const { isLoading, data, totalCount } = useSelector(
     (state) => state.documents,
   );
-  // TODO handle errors
-  // eslint-disable-next-line no-unused-vars
-  const { error: actionError, success: isActionSuccess } = useSelector(
+  const { success: isActionSuccess } = useSelector(
     (state) => state.processDocuments,
   );
   const [selected, setSelected] = React.useState([]);

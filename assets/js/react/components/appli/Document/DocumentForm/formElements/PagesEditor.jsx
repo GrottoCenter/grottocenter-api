@@ -3,6 +3,7 @@ import styled from 'styled-components';
 
 import { Typography } from '@material-ui/core';
 import { isNil } from 'ramda';
+import { useIntl } from 'react-intl';
 import Translate from '../../../../common/Translate';
 
 import { DocumentFormContext } from '../Provider';
@@ -39,6 +40,7 @@ const PagesEditor = () => {
     docAttributes: { endPage, pageComment, startPage },
     updateAttribute,
   } = useContext(DocumentFormContext);
+  const { formatMessage } = useIntl();
 
   React.useEffect(() => {
     const newEndGreater =
@@ -117,12 +119,15 @@ const PagesEditor = () => {
           <InputWrapper>
             <StringInput
               hasError={false}
-              helperText='Additional information about the pages where the document is located (example with an article from pages 10 to 15: "There are ads from page 12 to 14.").'
+              helperText={formatMessage({
+                id:
+                  'Additional information about the pages where the document is located (example with an article from pages 10 to 15: "There are ads from page 12 to 14.").',
+              })}
               onValueChange={(newValue) =>
                 handleValueChange('pageComment', newValue)
               }
               value={pageComment}
-              valueName="Page Comment"
+              valueName={formatMessage({ id: 'Page Comment' })}
             />
           </InputWrapper>
         </InlineWrapper>

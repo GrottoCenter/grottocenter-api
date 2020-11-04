@@ -1,6 +1,7 @@
 import React, { useContext, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
+import { useIntl } from 'react-intl';
 
 import { DocumentFormContext } from '../Provider';
 
@@ -20,16 +21,20 @@ const TitleEditor = ({ required = false }) => {
     docAttributes: { title },
     updateAttribute,
   } = useContext(DocumentFormContext);
+  const { formatMessage } = useIntl();
 
   const memoizedValues = [title];
   return useMemo(
     () => (
       <TitleContainer>
         <StringInput
-          helperText="Main title of the document. Don't enter the issue number here if you are submitting a magazine for example: it will be asked later in the form."
+          helperText={formatMessage({
+            id:
+              "Main title of the document. Don't enter the issue number here if you are submitting a magazine for example: it will be asked later in the form.",
+          })}
           onValueChange={(value) => updateAttribute('title', value)}
           value={title}
-          valueName="Title"
+          valueName={formatMessage({ id: 'Title' })}
           required={required}
         />
       </TitleContainer>

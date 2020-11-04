@@ -6,7 +6,6 @@ import {
   FormHelperText,
   InputLabel,
 } from '@material-ui/core';
-import Translate from '../Translate';
 
 const StringInput = ({
   fullWidth = true,
@@ -28,9 +27,7 @@ const StringInput = ({
       required={required}
       error={required && value === ''}
     >
-      <InputLabel>
-        <Translate>{valueName}</Translate>
-      </InputLabel>
+      <InputLabel>{valueName}</InputLabel>
       <FilledInput
         multiline={multiline}
         name={valueName}
@@ -40,11 +37,7 @@ const StringInput = ({
         value={value}
         error={required && value === ''}
       />
-      {helperText && (
-        <FormHelperText>
-          <Translate>{helperText}</Translate>
-        </FormHelperText>
-      )}
+      {helperText && <FormHelperText>{helperText}</FormHelperText>}
     </FormControl>
   );
 };
