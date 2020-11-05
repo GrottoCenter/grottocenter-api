@@ -8,20 +8,18 @@ import styled from 'styled-components';
 
 import isAuth from '../helpers/AuthHelper';
 import { isArticle } from '../components/appli/Document/DocumentForm/DocumentTypesHelper';
-
 import { postDocument, resetApiMessages } from '../actions/Document';
 import { displayLoginDialog } from '../actions/Auth';
 import DocumentFormProvider, {
   DocumentFormContext,
 } from '../components/appli/Document/DocumentForm/Provider';
+import { defaultValuesTypes } from '../components/appli/Document/DocumentForm/types';
 
 import DocumentForm from '../components/appli/Document/DocumentForm';
 import Layout from '../components/common/Layouts/Fixed/FixedContent';
 import Translate from '../components/common/Translate';
 import ErrorMessage from '../components/common/StatusMessage/ErrorMessage';
 import SuccessMessage from '../components/common/StatusMessage/SuccessMessage';
-
-// ====================
 
 const SpacedButton = styled(Button)`
   ${({ theme }) => `
@@ -32,8 +30,6 @@ const SpacedButton = styled(Button)`
 const CenteredBlock = styled.div`
   text-align: center;
 `;
-
-// ====================
 
 const DocumentSubmission = () => {
   const history = useHistory();
@@ -199,12 +195,14 @@ const DocumentSubmission = () => {
   );
 };
 
-const HydratedDocumentSubmission = (props) => (
-  <DocumentFormProvider>
+const HydratedDocumentSubmission = ({ defaultValues, ...props }) => (
+  <DocumentFormProvider defaultValues={defaultValues}>
     <DocumentSubmission {...props} />
   </DocumentFormProvider>
 );
 
-HydratedDocumentSubmission.propTypes = {};
+HydratedDocumentSubmission.propTypes = {
+  defaultValues: defaultValuesTypes,
+};
 
 export default HydratedDocumentSubmission;

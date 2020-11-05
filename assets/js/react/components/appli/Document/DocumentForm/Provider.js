@@ -1,8 +1,18 @@
 import React, { useState, createContext, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
-import { pathOr, isNil, without, append, uniq, pipe, __ } from 'ramda';
+import {
+  pathOr,
+  isNil,
+  without,
+  append,
+  uniq,
+  pipe,
+  mergeRight,
+  __,
+} from 'ramda';
 import { isStepValid } from './formSteps/DocumentStepsHelper';
 import { DocumentTypes } from './DocumentTypesHelper';
+import { defaultValuesTypes } from './types';
 
 const defaultFormSteps = [
   { id: 1, name: 'General Information', isValid: false },
@@ -42,14 +52,15 @@ export const defaultContext = {
 
 export const DocumentFormContext = createContext(defaultContext);
 
-const Provider = ({ children }) => {
-  const [docFormState, setState] = useState(defaultContext.docAttributes);
+const Provider = ({ children, defaultValues = {} }) => {
+  const [docFormState, setState] = useState(
+    mergeRight(defaultContext.docAttributes, defaultValues),
+  );
   const [validatedSteps, setValidatedSteps] = useState([]);
   const [currentStep, setCurrentStep] = useState(
     pathOr(null, [0, 'id'], defaultFormSteps),
   );
   const [isFormValid, setIsFormValid] = useState(false);
-
   const updateAttribute = useCallback(
     (attributeName, newValue) => {
       setState((prevState) => ({
@@ -102,6 +113,7 @@ const Provider = ({ children }) => {
 
 Provider.propTypes = {
   children: PropTypes.node.isRequired,
+  defaultValues: defaultValuesTypes,
 };
 
 export default Provider;
