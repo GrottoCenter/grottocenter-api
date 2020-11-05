@@ -12,6 +12,7 @@ import Layout from '../../components/common/Layouts/Fixed/FixedContent';
 import StandardDialog from '../../components/common/StandardDialog';
 import { getDocuments } from '../../actions/Documents';
 import { useDebounce } from '../../hooks';
+import DocumentEdit from '../DocumentEdit';
 
 const Wrapper = styled.div`
   display: flex;
@@ -34,6 +35,7 @@ const DocumentValidationPage = () => {
   const [orderBy, setOrderBy] = React.useState();
   const [rowsPerPage, setRowsPerPage] = React.useState(50);
   const [detailedView, setDetailedView] = useState(null);
+  const [editView, setEditView] = useState(null);
   const [refreshPage, setRefreshPage] = useState(false);
   const debouncedOrder = useDebounce(order);
   const debouncedPage = useDebounce(page);
@@ -42,6 +44,10 @@ const DocumentValidationPage = () => {
 
   const closeDetailedView = () => {
     setDetailedView(null);
+  };
+
+  const closeEditView = () => {
+    setEditView(null);
   };
 
   const loadDocuments = useCallback(() => {
@@ -97,7 +103,7 @@ const DocumentValidationPage = () => {
               updateRowsPerPage={setRowsPerPage}
               updateSelected={setSelected}
             />
-            <Actions selected={selected} />
+            <Actions selected={selected} onEdit={setEditView} />
           </Wrapper>
         }
       />
@@ -111,6 +117,17 @@ const DocumentValidationPage = () => {
         title={formatMessage({ id: 'Detailed document view' })}
       >
         <DocumentDetails id={detailedView} />
+      </StandardDialog>
+      <StandardDialog
+        maxWidth="lg"
+        fullScreen={isMobileOnly}
+        fullWidth
+        scrollable
+        open={!isNil(editView)}
+        onClose={closeEditView}
+        title={formatMessage({ id: 'Edit document' })}
+      >
+        <DocumentEdit id={editView} />
       </StandardDialog>
     </>
   );
