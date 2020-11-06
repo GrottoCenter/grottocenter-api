@@ -342,6 +342,11 @@ module.exports.routes = {
     action: 'create',
   },
 
+  'PUT /api/v1/documents/:id': {
+    controller: 'v1/Document',
+    action: 'update',
+  },
+
   'GET /api/v1/documents/types/:id': {
     controller: 'v1/DocumentType',
     action: 'find',
