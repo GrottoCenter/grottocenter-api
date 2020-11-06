@@ -12,14 +12,13 @@ module.exports = {
         controllerMethod: 'TIdentifierType.findAll',
         searchedItem: 'All document identifier types',
       };
-      const formattedFound = {
-        identifierTypes: found.map((idType) => ({
-          code: idType.id,
-          text: idType.text,
-          regexp: idType.regexp,
-        })),
-      };
-      return ControllerService.treat(req, err, formattedFound, params, res);
+      return ControllerService.treat(
+        req,
+        err,
+        { identifierTypes: found },
+        params,
+        res,
+      );
     });
   },
 };

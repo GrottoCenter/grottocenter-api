@@ -148,7 +148,7 @@ module.exports = {
       editor: ramda.pathOr(undefined, ['editor', 'id'], req.body),
       identifierType: ramda.pathOr(
         undefined,
-        ['identifierType', 'code'],
+        ['identifierType', 'id'],
         req.body,
       ),
       library: ramda.pathOr(undefined, ['library', 'id'], req.body),

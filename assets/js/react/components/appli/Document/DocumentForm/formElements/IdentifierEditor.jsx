@@ -63,9 +63,9 @@ const IdentifierEditor = ({
     updateAttribute(contextIdentifierValueName, newIdentifier);
   };
 
-  const handleIdentifierTypeChange = (newIdentifierTypeCode) => {
+  const handleIdentifierTypeChange = (newIdentifierTypeId) => {
     const newIdType = allIdentifierTypes.find(
-      (idType) => idType.code === newIdentifierTypeCode,
+      (idType) => idType.id === newIdentifierTypeId,
     );
     updateAttribute(contextIdentifierTypeValueName, newIdType);
   };
@@ -107,7 +107,7 @@ const IdentifierEditor = ({
                   <Translate>Identifier Type</Translate>
                 </InputLabel>
                 <Select
-                  value={identifierType ? identifierType.code : -1}
+                  value={identifierType ? identifierType.id : -1}
                   onChange={(event) =>
                     handleIdentifierTypeChange(event.target.value)
                   }
@@ -122,8 +122,8 @@ const IdentifierEditor = ({
                     </i>
                   </MenuItem>
                   {allIdentifierTypes.map((idType) => (
-                    <MenuItem key={idType.code} value={idType.code}>
-                      {idType.code.toUpperCase()}
+                    <MenuItem key={idType.id} value={idType.id}>
+                      {idType.id.toUpperCase()}
                     </MenuItem>
                   ))}
                 </Select>
@@ -145,7 +145,7 @@ const IdentifierEditor = ({
 IdentifierEditor.propTypes = {
   allIdentifierTypes: PropTypes.arrayOf(
     PropTypes.shape({
-      code: PropTypes.string.isRequired,
+      id: PropTypes.string.isRequired,
       text: PropTypes.string.isRequired,
     }),
   ),
