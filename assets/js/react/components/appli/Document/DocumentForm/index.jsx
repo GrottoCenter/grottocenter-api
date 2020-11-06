@@ -12,7 +12,7 @@ import { includes } from 'ramda';
 import NavigateNextIcon from '@material-ui/icons/NavigateNext';
 import NavigateBeforeIcon from '@material-ui/icons/NavigateBefore';
 
-import DocumentFormProvider, { DocumentFormContext } from './Provider';
+import { DocumentFormContext } from './Provider';
 import { DocumentFormTypes } from './types';
 
 import { wikiBBSLinks } from '../../../../conf/Config';
@@ -185,18 +185,8 @@ const DocumentForm = ({ isLoading, onSubmit }) => {
   );
 };
 
-const HydratedDocumentForm = (props) => (
-  <DocumentFormProvider>
-    <DocumentForm {...props} />
-  </DocumentFormProvider>
-);
-
 DocumentForm.propTypes = {
   ...DocumentFormTypes,
 };
 
-HydratedDocumentForm.propTypes = {
-  ...DocumentFormTypes,
-};
-
-export default HydratedDocumentForm;
+export default DocumentForm;

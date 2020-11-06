@@ -1,14 +1,19 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
-import { Button, Fade } from '@material-ui/core';
+import { Button, Fade, Typography } from '@material-ui/core';
+import ReplayIcon from '@material-ui/icons/Replay';
 import { useIntl } from 'react-intl';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
 import isAuth from '../helpers/AuthHelper';
+import { isArticle } from '../components/appli/Document/DocumentForm/DocumentTypesHelper';
+
 import { postDocument, resetApiMessages } from '../actions/Document';
 import { displayLoginDialog } from '../actions/Auth';
-import { DocumentFormContext } from '../components/appli/Document/DocumentForm/Provider';
+import DocumentFormProvider, {
+  DocumentFormContext,
+} from '../components/appli/Document/DocumentForm/Provider';
 
 import DocumentForm from '../components/appli/Document/DocumentForm';
 import Layout from '../components/common/Layouts/Fixed/FixedContent';
@@ -34,7 +39,19 @@ const DocumentSubmission = () => {
   const history = useHistory();
   const dispatch = useDispatch();
   const { formatMessage } = useIntl();
-  const { resetContext } = useContext(DocumentFormContext);
+  const {
+    docAttributes: {
+      documentMainLanguage,
+      documentType,
+      editor,
+      library,
+      partOf,
+      publicationDate,
+      titleAndDescriptionLanguage,
+    },
+    resetContext,
+    updateAttribute,
+  } = useContext(DocumentFormContext);
 
   const [isDocSubmittedWithSuccess, setDocSubmittedWithSuccess] = useState(
     false,
@@ -56,6 +73,19 @@ const DocumentSubmission = () => {
   const onSubmitAnotherDocument = () => {
     dispatch(resetApiMessages());
     resetContext();
+  };
+
+  const onSubmitAnotherArticle = () => {
+    dispatch(resetApiMessages());
+    resetContext();
+    // Keep some values to resubmit an article
+    updateAttribute('documentMainLanguage', documentMainLanguage);
+    updateAttribute('documentType', documentType);
+    updateAttribute('editor', editor);
+    updateAttribute('library', library);
+    updateAttribute('partOf', partOf);
+    updateAttribute('publicationDate', publicationDate);
+    updateAttribute('titleAndDescriptionLanguage', titleAndDescriptionLanguage);
   };
 
   useEffect(() => {
@@ -91,6 +121,25 @@ const DocumentSubmission = () => {
                   id: 'It will be verified by one of ours moderators.',
                 })}`}
               />
+              {isArticle(documentType) && (
+                <>
+                  <SpacedButton
+                    color="primary"
+                    onClick={onSubmitAnotherArticle}
+                    startIcon={<ReplayIcon />}
+                    variant="contained"
+                  >
+                    <Translate>Submit another article</Translate>
+                  </SpacedButton>
+                  <Typography variant="body1">
+                    {formatMessage({
+                      id:
+                        'By clicking this button, you will be able to submit another article without re-typing some values (publication date, parent document etc.).',
+                    })}
+                  </Typography>
+                  <br />
+                </>
+              )}
               <SpacedButton
                 onClick={onSubmitAnotherDocument}
                 variant="contained"
@@ -150,6 +199,12 @@ const DocumentSubmission = () => {
   );
 };
 
-DocumentSubmission.propTypes = {};
+const HydratedDocumentSubmission = (props) => (
+  <DocumentFormProvider>
+    <DocumentSubmission {...props} />
+  </DocumentFormProvider>
+);
 
-export default DocumentSubmission;
+HydratedDocumentSubmission.propTypes = {};
+
+export default HydratedDocumentSubmission;
