@@ -41,11 +41,11 @@ const makeCustomCellRenders = () => {
     },
     {
       id: 'regions',
-      customRender: pipe(map(propOr('', 'name')), reject(isEmpty), join(' - ')),
+      customRender: pipe(map(propOr('', 'code')), reject(isEmpty), join('; ')),
     },
     {
       id: 'subjects',
-      customRender: pipe(map(propOr('', 'name')), reject(isEmpty), join(' - ')),
+      customRender: pipe(map(propOr('', 'code')), reject(isEmpty), join('; ')),
     },
     {
       id: 'library',
