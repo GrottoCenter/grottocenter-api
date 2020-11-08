@@ -71,7 +71,7 @@
     "sails-postgresql": "^1.0.2",
     "snyk": "^1.415.0",
     "styled-components": "^5.2.0",
-    "swagger-ui-dist": "^3.32.5",
+    "swagger-ui-dist": "^3.35.2",
     "underscore.date": "^0.6.1",
     "underscore.string": "^3.3.4"
   },
