@@ -64,6 +64,11 @@ const DocumentValidationPage = () => {
     dispatch(getDocuments(reject(isNil, criteria)));
   }, [debouncedRowsPerPage, debouncedOrderBy, debouncedOrder, debouncedPage]);
 
+  const handleSuccessfulUpdate = () => {
+    closeEditView();
+    loadDocuments();
+  };
+
   useEffect(() => {
     loadDocuments();
   }, [loadDocuments]);
@@ -83,7 +88,7 @@ const DocumentValidationPage = () => {
   return (
     <>
       <Layout
-        title={formatMessage({ id: 'Awaiting for document validation' })}
+        title={formatMessage({ id: 'Documents awaiting validation' })}
         footer=""
         content={
           <Wrapper>
@@ -127,7 +132,10 @@ const DocumentValidationPage = () => {
         onClose={closeEditView}
         title={formatMessage({ id: 'Edit document' })}
       >
-        <DocumentEdit id={editView} />
+        <DocumentEdit
+          onSuccessfulUpdate={handleSuccessfulUpdate}
+          id={editView}
+        />
       </StandardDialog>
     </>
   );

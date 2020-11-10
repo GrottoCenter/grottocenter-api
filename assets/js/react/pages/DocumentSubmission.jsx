@@ -8,8 +8,13 @@ import styled from 'styled-components';
 
 import isAuth from '../helpers/AuthHelper';
 import { isArticle } from '../components/appli/Document/DocumentForm/DocumentTypesHelper';
-import { postDocument, resetApiMessages } from '../actions/Document';
+import {
+  postDocument,
+  resetApiMessages,
+  updateDocument,
+} from '../actions/Document';
 import { displayLoginDialog } from '../actions/Auth';
+
 import DocumentFormProvider, {
   DocumentFormContext,
 } from '../components/appli/Document/DocumentForm/Provider';
@@ -40,6 +45,7 @@ const DocumentSubmission = () => {
       documentMainLanguage,
       documentType,
       editor,
+      isNewDocument,
       library,
       partOf,
       publicationDate,
@@ -61,8 +67,14 @@ const DocumentSubmission = () => {
   const onLoginClick = () => {
     dispatch(displayLoginDialog());
   };
+
   const submitForm = (formData) => {
     dispatch(postDocument(formData));
+    setDocSubmitted(true);
+  };
+
+  const submitUpdateForm = (formData) => {
+    dispatch(updateDocument(formData));
     setDocSubmitted(true);
   };
 
@@ -110,12 +122,18 @@ const DocumentSubmission = () => {
           {isDocSubmittedWithSuccess && (
             <CenteredBlock>
               <SuccessMessage
-                message={`${formatMessage({
-                  id:
-                    'Your document has been successfully submitted, thank you!',
-                })} ${formatMessage({
-                  id: 'It will be verified by one of ours moderators.',
-                })}`}
+                message={
+                  isNewDocument
+                    ? `${formatMessage({
+                        id:
+                          'Your document has been successfully submitted, thank you!',
+                      })} ${formatMessage({
+                        id: 'It will be verified by one of ours moderators.',
+                      })}`
+                    : `${formatMessage({
+                        id: 'Document sucessfully updated.',
+                      })}`
+                }
               />
               {isArticle(documentType) && (
                 <>
@@ -136,18 +154,22 @@ const DocumentSubmission = () => {
                   <br />
                 </>
               )}
-              <SpacedButton
-                onClick={onSubmitAnotherDocument}
-                variant="contained"
-              >
-                <Translate>Submit another document</Translate>
-              </SpacedButton>
-              <SpacedButton
-                onClick={() => history.push('')}
-                variant="contained"
-              >
-                <Translate>Go to home page</Translate>
-              </SpacedButton>
+              {isNewDocument && (
+                <>
+                  <SpacedButton
+                    onClick={onSubmitAnotherDocument}
+                    variant="contained"
+                  >
+                    <Translate>Submit another document</Translate>
+                  </SpacedButton>
+                  <SpacedButton
+                    onClick={() => history.push('')}
+                    variant="contained"
+                  >
+                    <Translate>Go to home page</Translate>
+                  </SpacedButton>
+                </>
+              )}
             </CenteredBlock>
           )}
           {isUserAuth && !isDocSubmittedWithSuccess && (
@@ -155,6 +177,7 @@ const DocumentSubmission = () => {
               <DocumentForm
                 isLoading={documentState.isLoading}
                 onSubmit={submitForm}
+                onUpdate={submitUpdateForm}
               />
               {documentState.errorMessages.length > 0 && (
                 <CenteredBlock>

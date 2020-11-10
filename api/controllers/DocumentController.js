@@ -26,8 +26,9 @@ const setNamesOfPopulatedDocument = async (document) => {
 };
 
 const getConvertedDataFromClient = (req) => {
+  const { id, ...reqBodyWithoutId } = req.body; // remove id if present to avoid null id (and an error)
   return {
-    ...req.body,
+    ...reqBodyWithoutId,
     author: req.token.id,
     authors: req.body.authors ? req.body.authors.map((a) => a.id) : undefined,
     dateInscription: new Date(),
@@ -218,7 +219,10 @@ module.exports = {
       return res.forbidden('You are not authorized to update a document.');
     }
 
-    const cleanedData = getConvertedDataFromClient(req);
+    const cleanedData = {
+      ...getConvertedDataFromClient(req),
+      id: req.param('id'),
+    };
 
     // Launch update request using transaction: it performs a rollback if an error occurs
     await sails
@@ -228,7 +232,6 @@ module.exports = {
           id: req.param('id'),
         })
           .set(cleanedData)
-          .fetch()
           .usingConnection(db);
         if (!updatedDocument) {
           return res.status(404);

@@ -7,6 +7,7 @@ import { DocumentTypes } from './DocumentTypesHelper';
 export const DocumentFormTypes = {
   isLoading: PropTypes.bool.isRequired,
   onSubmit: PropTypes.func.isRequired,
+  onUpdate: PropTypes.func.isRequired,
 };
 
 // eslint-disable-next-line import/prefer-default-export
