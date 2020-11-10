@@ -17,14 +17,19 @@ export const getAuthHTTPHeader = () => {
   };
 };
 
-/**
- * True if the user has a group with the name "Administrator", else false.
- */
-export const isAdmin = () => {
+const hasRole = (roleName) => {
   const authToken = getAuthToken();
   if (authToken === null) return false;
   const decodedToken = decode(authToken);
-  return decodedToken.groups.some((g) => g.name === 'Administrator');
+  return decodedToken.groups.some((g) => g.name === roleName);
+};
+
+export const isAdmin = () => {
+  return hasRole('Administrator');
+};
+
+export const isModerator = () => {
+  return hasRole('Moderator');
 };
 
 export const isTokenExpired = () => {
