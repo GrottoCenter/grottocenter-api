@@ -5,6 +5,7 @@ import { Terrain, Home } from '@material-ui/icons';
 import { isNil } from 'ramda';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
+import { useParams } from 'react-router-dom';
 
 import Overview from './Overview';
 import Section from './Section';
@@ -118,16 +119,18 @@ const DocumentPage = ({
 };
 
 const HydratedDocumentPage = ({ id }) => {
+  const { documentId: documentIdFromRoute } = useParams();
+  const documentId = documentIdFromRoute || id;
   const dispatch = useDispatch();
   const { isLoading, details, error } = useSelector(
     (state) => state.documentDetails,
   );
 
   useEffect(() => {
-    if (!isNil(id)) {
-      dispatch(fetchDocumentDetails(id));
+    if (!isNil(documentId)) {
+      dispatch(fetchDocumentDetails(documentId));
     }
-  }, [id]);
+  }, [documentId]);
 
   return (
     <DocumentPage
@@ -135,7 +138,7 @@ const HydratedDocumentPage = ({ id }) => {
       organizations={makeOrganizations(details || {})}
       details={makeDetails(details || {})}
       entities={makeEntities(details || {})}
-      loading={isNil(id) || isLoading || !isNil(error)}
+      loading={isNil(documentId) || isLoading || !isNil(error)}
     />
   );
 };

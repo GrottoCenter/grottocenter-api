@@ -15,11 +15,11 @@ import { useDebounce } from '../hooks';
 // ========================
 
 export const searchableTypes = {
-  bbs: 'bbs',
+  cavers: 'cavers',
+  documents: 'documents',
   entries: 'entries',
   groups: 'grottos',
   massifs: 'massifs',
-  cavers: 'cavers',
 };
 
 const renderOption = (option) => entityOptionForSelector(option);
@@ -47,8 +47,8 @@ const QuickSearch = ({
         case 'massif':
           history.push(`/ui/massifs/${encodeURIComponent(selection.id)}`);
           break;
-        case 'documents':
-          history.push(`/ui/bbs/${encodeURIComponent(selection.id)}`);
+        case 'document':
+          history.push(`/ui/documents/${encodeURIComponent(selection.id)}`);
           break;
         case 'grotto':
           history.push(`/ui/groups/${encodeURIComponent(selection.id)}`);
