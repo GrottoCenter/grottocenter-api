@@ -22,18 +22,28 @@ const languageTypes = PropTypes.shape({
   isPrefered: PropTypes.bool,
 });
 const organizationTypes = PropTypes.shape({
-  id: PropTypes.string,
+  id: PropTypes.number,
   address: PropTypes.string,
   highlights: PropTypes.shape({}),
-  latitude: PropTypes.number,
-  longitude: PropTypes.number,
+  latitude: PropTypes.string,
+  longitude: PropTypes.string,
   name: PropTypes.string,
-  names: PropTypes.string,
+  names: PropTypes.oneOfType([
+    PropTypes.arrayOf(
+      PropTypes.shape({
+        id: PropTypes.number,
+        isMain: PropTypes.bool,
+        language: PropTypes.string,
+        text: PropTypes.string,
+      }),
+    ),
+    PropTypes.string,
+  ]),
   type: PropTypes.string,
 });
 export const authorsTypes = PropTypes.arrayOf(
   PropTypes.shape({
-    id: PropTypes.string,
+    id: PropTypes.number,
     mail: PropTypes.string,
     name: PropTypes.string,
     nickname: PropTypes.string,
@@ -50,7 +60,7 @@ export const documentTypeTypes = PropTypes.shape({
 export const editorTypes = organizationTypes;
 export const libraryTypes = organizationTypes;
 export const identifierTypeTypes = PropTypes.shape({});
-export const massifTypes = PropTypes.shape({ id: PropTypes.string });
+export const massifTypes = PropTypes.shape({ id: PropTypes.number });
 export const partOfTypes = PropTypes.shape({});
 export const publicationDateTypes = PropTypes.instanceOf(Date);
 export const regionsTypes = PropTypes.arrayOf(
