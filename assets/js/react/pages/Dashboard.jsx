@@ -4,9 +4,10 @@ import { useIntl } from 'react-intl';
 import { useHistory } from 'react-router-dom';
 import { List, ListItem, Typography } from '@material-ui/core';
 import PeopleIcon from '@material-ui/icons/People';
+import DocumentListIcon from '@material-ui/icons/PlaylistAddCheck';
 import styled from 'styled-components';
 
-import isAuth, { isAdmin } from '../helpers/AuthHelper';
+import isAuth, { isAdmin, isModerator } from '../helpers/AuthHelper';
 import Layout from '../components/common/Layouts/Fixed/FixedContent';
 
 // ==========
@@ -23,6 +24,10 @@ const StyledListItem = styled(ListItem)`
   margin: ${(props) => props.theme.spacing(2)}px;
 `;
 
+const DashboardBlock = styled.div`
+  margin-bottom: ${(props) => props.theme.spacing(4)}px;
+`;
+
 // ==========
 
 //
@@ -35,6 +40,7 @@ const Dashboard = () => {
   const { formatMessage } = useIntl();
   const history = useHistory();
   const [isUserAdmin, setIsUserAdmin] = useState(false);
+  const [isUserModerator, setIsUserModerator] = useState(false);
   const [isUserAuth, setIsUserAuth] = useState(false);
 
   const authState = useSelector((state) => state.auth);
@@ -48,8 +54,9 @@ const Dashboard = () => {
       history.push('');
     }
     setIsUserAdmin(isAdmin());
+    setIsUserModerator(isModerator());
     setIsUserAuth(isAuth());
-  }, [isUserAdmin, isUserAuth, authState]);
+  }, [isUserAdmin, isUserModerator, isUserAuth, authState]);
 
   return (
     <Layout
@@ -58,8 +65,8 @@ const Dashboard = () => {
       content={
         <>
           {isUserAdmin && (
-            <>
-              <Typography variant="h2" gutterBottom>
+            <DashboardBlock>
+              <Typography variant="h2">
                 {formatMessage({ id: 'Administrator Dashboard' })}
               </Typography>
               <StyledList cols={3}>
@@ -74,17 +81,38 @@ const Dashboard = () => {
                   </Typography>
                 </StyledListItem>
               </StyledList>
-            </>
+            </DashboardBlock>
+          )}
+          {isUserModerator && (
+            <DashboardBlock>
+              <Typography variant="h2">
+                {formatMessage({ id: 'Moderator Dashboard' })}
+              </Typography>
+              <StyledList cols={3}>
+                <StyledListItem
+                  button
+                  key="document-validation-admin-tile-key"
+                  onClick={() =>
+                    handleOnListItemClick('/ui/documents/validation')
+                  }
+                >
+                  <DocumentListIcon fontSize="large" color="primary" />
+                  <Typography variant="h4" align="center">
+                    {formatMessage({ id: 'Document validation' })}
+                  </Typography>
+                </StyledListItem>
+              </StyledList>
+            </DashboardBlock>
           )}
           {isUserAuth && (
-            <>
-              <Typography variant="h2" gutterBottom>
+            <DashboardBlock>
+              <Typography variant="h2">
                 {formatMessage({ id: 'User Dashboard' })}
               </Typography>
               <Typography variant="body1">
                 <i>{formatMessage({ id: 'Section under development' })}</i>
               </Typography>
-            </>
+            </DashboardBlock>
           )}
         </>
       }
