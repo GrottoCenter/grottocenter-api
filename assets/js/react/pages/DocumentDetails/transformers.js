@@ -32,28 +32,37 @@ export const makeOrganizations = (data) => ({
   library: pathOr('', ['library', 'name'], data),
 });
 
-export const makeDetails = (data) => ({
-  identifier: propOr('', 'identifier', data),
-  bbsReference: propOr('', 'refBbs', data),
-  documentType: pathOr('', ['type', 'name'], data),
-  publicationDate: propOr('', 'datePublication', data),
-  parentDocument: pipe(
-    pathOr([], ['parent', 'titles']),
-    head,
-    propOr('No title provided', 'text'),
-  )(data),
-  pages: propOr('', 'pages', data),
-  subjects: pipe(
-    propOr([], 'subjects'),
-    map(propOr('', 'subject')),
-    reject(isEmpty),
-  )(data),
-  regions: pipe(
-    propOr([], 'regions'),
-    map(propOr('', 'name')),
-    reject(isEmpty),
-  )(data),
-});
+export const makeDetails = (data) => {
+  const formatedIdentfier = pathOr(null, ['identifierType', 'id'], data)
+    ? `${propOr(
+        '',
+        'identifier',
+        data,
+      )} (${data.identifierType.id.toUppercase()})`
+    : propOr('', 'identifier', data);
+  return {
+    identifier: formatedIdentfier,
+    bbsReference: propOr('', 'refBbs', data),
+    documentType: pathOr('', ['type', 'name'], data),
+    publicationDate: propOr('', 'datePublication', data),
+    parentDocument: pipe(
+      pathOr([], ['parent', 'titles']),
+      head,
+      propOr('No title provided', 'text'),
+    )(data),
+    pages: propOr('', 'pages', data),
+    subjects: pipe(
+      propOr([], 'subjects'),
+      map(propOr('', 'subject')),
+      reject(isEmpty),
+    )(data),
+    regions: pipe(
+      propOr([], 'regions'),
+      map(propOr('', 'name')),
+      reject(isEmpty),
+    )(data),
+  };
+};
 
 export const makeEntities = (data) => ({
   massif: pipe(

@@ -7,6 +7,7 @@ import Table from '../../components/common/Table';
 import { createColumns } from '../../components/common/Table/TableHead';
 
 const defaultHiddenColumns = [
+  'author',
   'authors',
   'cave',
   'datePublication',
@@ -26,9 +27,7 @@ const defaultHiddenColumns = [
   'publication',
   'publicationFasciculeBBSOld',
   'refBbs',
-  'regions',
   'reviewer',
-  'subjects',
 ];
 
 const DocumentsTable = ({
