@@ -38,7 +38,7 @@ export const makeDetails = (data) => {
         '',
         'identifier',
         data,
-      )} (${data.identifierType.id.toUppercase()})`
+      )} (${data.identifierType.id.toUpperCase()})`
     : propOr('', 'identifier', data);
   return {
     identifier: formatedIdentfier,
