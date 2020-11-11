@@ -556,7 +556,12 @@ module.exports = {
     result.dateValidation = source.dateValidation;
     result.entrance = source.entrance;
     result.identifier = source.identifier;
-    result.identifierType = source.identifierType;
+    result.identifierType = {
+      ...source.identifierType,
+      id: ramda.pipe(ramda.pathOr(undefined, ['identifierType', 'id']), (id) =>
+        id ? id.trim() : id,
+      )(source),
+    };
     result.languages = source.languages;
     result.license = source.license;
     result.mainLanguage = source.mainLanguage;
