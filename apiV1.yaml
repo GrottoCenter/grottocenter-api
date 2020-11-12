@@ -146,8 +146,44 @@ paths:
           description: "Bad request. Either the caverId and groupId parameters should exist in the database."
         '500':
           description: Internal error
+  
+  '/documents/{id}':
+    put:
+      tags:
+        - documents
+      description: Update a document.
+      parameters:
+      - name: id
+        in: path
+        description: Document id to be updated.
+        required: true
+        schema:
+          type: string
+      responses: 
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+        403:
+          description: You are not authorized to update a document.
 
   '/documents':
+    post:
+      tags:
+        - documents
+      description: Create a document.
+      responses: 
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+        403:
+          description: You are not authorized to create a document.
+     
     get:
       tags:
         - documents

@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { isNil, anyPass, isEmpty } from 'ramda';
+import { isNil, anyPass, isEmpty, head } from 'ramda';
 import PropTypes from 'prop-types';
 import { useIntl } from 'react-intl';
 import styled from 'styled-components';
 import { useDispatch, useSelector } from 'react-redux';
 import SendIcon from '@material-ui/icons/Send';
 import DeclineIcon from '@material-ui/icons/NotInterested';
+import EditIcon from '@material-ui/icons/Edit';
 import { postProcessDocuments } from '../../actions/ProcessDocuments';
 import ActionButton from '../../components/common/ActionButton';
 import StandardDialog from '../../components/common/StandardDialog';
@@ -15,6 +16,7 @@ import StringInput from '../../components/common/Form/StringInput';
 const ActionTypes = {
   decline: 'Decline',
   validate: 'Validate',
+  edit: 'Edit',
 };
 
 const Wrapper = styled.div`
@@ -28,7 +30,7 @@ const Wrapper = styled.div`
 
 const isNilOrEmpty = anyPass([isNil, isEmpty]);
 
-const Actions = ({ selected }) => {
+const Actions = ({ selected, onEdit }) => {
   const { formatMessage } = useIntl();
   const dispatch = useDispatch();
   const { isLoading, success } = useSelector((state) => state.processDocuments);
@@ -51,6 +53,12 @@ const Actions = ({ selected }) => {
     confirmationDialog.open();
   };
 
+  const handleEdit = () => {
+    if (!isEmpty(selected)) {
+      onEdit(head(selected));
+    }
+  };
+
   useEffect(() => {
     if (success) {
       confirmationDialog.close();
@@ -61,6 +69,12 @@ const Actions = ({ selected }) => {
   return (
     <>
       <Wrapper>
+        <ActionButton
+          label={formatMessage({ id: ActionTypes.edit })}
+          disabled={isNilOrEmpty(selected) || isLoading || selected.length > 1}
+          onClick={handleEdit}
+          icon={<EditIcon />}
+        />
         <ActionButton
           label={formatMessage({ id: ActionTypes.validate })}
           disabled={isNilOrEmpty(selected) || isLoading}
@@ -126,4 +140,5 @@ Actions.propTypes = {
       PropTypes.string.isRequired,
     ]),
   ).isRequired,
+  onEdit: PropTypes.func.isRequired,
 };

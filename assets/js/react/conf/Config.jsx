@@ -158,6 +158,8 @@ export const getCaveUrl = `/api/${apiVersion}/caves/`;
 export const getLanguagesUrl = `/api/${apiVersion}/languages`;
 export const postCaverUrl = `/api/${apiVersion}/cavers`;
 export const postDocumentUrl = `/api/${apiVersion}/documents`;
+export const putDocumentUrl = (documentId) =>
+  `/api/${apiVersion}/documents/${documentId}`;
 export const postOrganizationUrl = `/api/${apiVersion}/organizations`;
 export const regionsSearchUrl = `/api/${apiVersion}/regions/search/logical/or`;
 export const identifierTypesUrl = `/api/${apiVersion}/documents/identifierTypes`;

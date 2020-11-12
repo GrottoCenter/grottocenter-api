@@ -575,7 +575,6 @@ module.exports = {
     result.refBbs = source.ref_bbs ? source.ref_bbs : source.refBbs;
     result.reviewer = source.reviewer;
     result.title = source.title;
-    result.type = source.type;
 
     // source.descriptions contains both title and descriptions (in .title and .body)
     // Split them in 2 different attributes
@@ -671,7 +670,15 @@ module.exports = {
         name: source['type name'],
       };
     } else {
-      result.type = source.type;
+      // Build document type
+      // source.type can be the id of the type only or the full type object
+      if (source.type) {
+        if (ramda.propOr(null, 'id', source.type)) {
+          result.type = source.type;
+        } else {
+          result.type = { id: source.type };
+        }
+      }
     }
 
     return result;

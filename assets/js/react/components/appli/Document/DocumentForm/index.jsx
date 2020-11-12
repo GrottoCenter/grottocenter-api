@@ -83,20 +83,25 @@ const BbsInfoText = styled(Typography)`
   margin-left: ${({ theme }) => theme.spacing(3)}px;
 `;
 
-const DocumentForm = ({ isLoading, onSubmit }) => {
+const DocumentForm = ({ isLoading, onSubmit, onUpdate }) => {
   const {
     docAttributes,
     isFormValid,
     currentStep: currentFormStep,
     validatedSteps,
     updateCurrentStep,
-    docAttributes: { formSteps },
+    docAttributes: { formSteps, isNewDocument },
   } = useContext(DocumentFormContext);
   const [isNextStepDisabled, setIsNextStepDisabled] = React.useState(true);
 
   const handleSubmit = (event) => {
     event.preventDefault();
     onSubmit(docAttributes);
+  };
+
+  const handleUpdate = (event) => {
+    event.preventDefault();
+    onUpdate(docAttributes);
   };
 
   useEffect(() => {
@@ -149,7 +154,7 @@ const DocumentForm = ({ isLoading, onSubmit }) => {
 
         <StyledDivider />
 
-        <FormWrapper onSubmit={handleSubmit}>
+        <FormWrapper onSubmit={isNewDocument ? handleSubmit : handleUpdate}>
           <FormBody formSteps={formSteps} currentFormStepId={currentFormStep} />
 
           {isMobileOnly && (
@@ -175,7 +180,11 @@ const DocumentForm = ({ isLoading, onSubmit }) => {
                 size="large"
                 disabled={!isFormValid}
               >
-                <Translate>Submit</Translate>
+                {isNewDocument ? (
+                  <Translate>Submit</Translate>
+                ) : (
+                  <Translate>Update</Translate>
+                )}
               </SubmitButton>
             </FormControl>
           )}

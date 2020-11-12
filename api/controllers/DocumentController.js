@@ -25,6 +25,32 @@ const setNamesOfPopulatedDocument = async (document) => {
   return document;
 };
 
+const getConvertedDataFromClient = (req) => {
+  const { id, ...reqBodyWithoutId } = req.body; // remove id if present to avoid null id (and an error)
+  return {
+    ...reqBodyWithoutId,
+    author: req.token.id,
+    authors: req.body.authors ? req.body.authors.map((a) => a.id) : undefined,
+    dateInscription: new Date(),
+    datePublication: req.body.publicationDate,
+    editor: ramda.pathOr(undefined, ['editor', 'id'], req.body),
+    identifierType: ramda.pathOr(
+      undefined,
+      ['identifierType', 'code'],
+      req.body,
+    ),
+    library: ramda.pathOr(undefined, ['library', 'id'], req.body),
+    license: 1,
+    massif: ramda.pathOr(undefined, ['massif', 'id'], req.body),
+    parent: ramda.pathOr(undefined, ['partOf', 'id'], req.body),
+    regions: req.body.regions ? req.body.regions.map((r) => r.id) : undefined,
+    subjects: req.body.subjects
+      ? req.body.subjects.map((s) => s.code)
+      : undefined,
+    type: ramda.pathOr(undefined, ['documentType', 'id'], req.body),
+  };
+};
+
 /**
  * Based on the logstash.conf file.
  * The document must be fully populated and with all its names set (@see setNamesOfPopulatedDocument).
@@ -138,29 +164,7 @@ module.exports = {
       return res.forbidden('You are not authorized to create a document.');
     }
 
-    // Clean the data
-    const cleanedData = {
-      ...req.body,
-      author: req.token.id,
-      authors: req.body.authors ? req.body.authors.map((a) => a.id) : undefined,
-      dateInscription: new Date(),
-      datePublication: req.body.publicationDate,
-      editor: ramda.pathOr(undefined, ['editor', 'id'], req.body),
-      identifierType: ramda.pathOr(
-        undefined,
-        ['identifierType', 'code'],
-        req.body,
-      ),
-      library: ramda.pathOr(undefined, ['library', 'id'], req.body),
-      license: 1,
-      massif: ramda.pathOr(undefined, ['massif', 'id'], req.body),
-      parent: ramda.pathOr(undefined, ['partOf', 'id'], req.body),
-      regions: req.body.regions ? req.body.regions.map((r) => r.id) : undefined,
-      subjects: req.body.subjects
-        ? req.body.subjects.map((s) => s.code)
-        : undefined,
-      type: ramda.pathOr(undefined, ['documentType', 'id'], req.body),
-    };
+    const cleanedData = getConvertedDataFromClient(req);
 
     // Launch creation request using transaction: it performs a rollback if an error occurs
     await sails
@@ -191,6 +195,72 @@ module.exports = {
         const params = {};
         params.controllerMethod = 'DocumentController.create';
         return ControllerService.treat(req, null, documentCreated, params, res);
+      })
+      .intercept('E_UNIQUE', () => res.sendStatus(409))
+      .intercept('UsageError', (e) => res.badRequest(e.cause.message))
+      .intercept('AdapterError', (e) => res.badRequest(e.cause.message))
+      .intercept((e) => res.serverError(e.message));
+  },
+
+  update: async (req, res) => {
+    // Check right
+    const hasRight = await sails.helpers.checkRight
+      .with({
+        groups: req.token.groups,
+        rightEntity: RightService.RightEntities.BIBLIOGRAPHY,
+        rightAction: RightService.RightActions.EDIT_ALL,
+      })
+      .intercept('rightNotFound', (err) => {
+        return res.serverError(
+          'A server error occured when checking your right to update a document.',
+        );
+      });
+    if (!hasRight) {
+      return res.forbidden('You are not authorized to update a document.');
+    }
+
+    const cleanedData = {
+      ...getConvertedDataFromClient(req),
+      id: req.param('id'),
+    };
+
+    // Launch update request using transaction: it performs a rollback if an error occurs
+    await sails
+      .getDatastore()
+      .transaction(async (db) => {
+        const updatedDocument = await TDocument.updateOne({
+          id: req.param('id'),
+        })
+          .set(cleanedData)
+          .usingConnection(db);
+        if (!updatedDocument) {
+          return res.status(404);
+        }
+
+        // Update associated data not handled by TDocument manually
+        if (ramda.pathOr(null, ['documentMainLanguage', 'id'], req.body)) {
+          await JDocumentLanguage.updateOne({ document: updatedDocument.id })
+            .set({
+              document: updatedDocument.id,
+              language: req.body.documentMainLanguage.id,
+              isMain: true,
+            })
+            .usingConnection(db);
+        }
+
+        await TDescription.updateOne({ document: updatedDocument.id })
+          .set({
+            author: req.token.id,
+            body: req.body.description,
+            document: updatedDocument.id,
+            language: req.body.titleAndDescriptionLanguage.id,
+            title: req.body.title,
+          })
+          .usingConnection(db);
+
+        const params = {};
+        params.controllerMethod = 'DocumentController.update';
+        return ControllerService.treat(req, null, updatedDocument, params, res);
       })
       .intercept('E_UNIQUE', () => res.sendStatus(409))
       .intercept('UsageError', (e) => res.badRequest(e.cause.message))
