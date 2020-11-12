@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import AddCircle from '@material-ui/icons/AddCircle';
 import PropTypes from 'prop-types';
 
 import {
@@ -81,6 +82,7 @@ const MultipleCaversSelect = ({
       searchError={searchError}
       searchResults={searchResults}
       sideActionDisabled={!actionEnabled}
+      sideActionIcon={<AddCircle fontSize="large" />}
       isSideActionOpen={isCreateCaverOpen}
       onSideAction={handleOpenSideAction}
     >
