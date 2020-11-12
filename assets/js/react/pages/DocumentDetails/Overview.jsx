@@ -17,7 +17,6 @@ const Header = styled.div`
 `;
 
 const Title = styled(Typography)`
-  text-transform: uppercase;
   align-self: center;
   color: ${({ theme }) => theme.palette.secondary.main};
 `;
