@@ -25,6 +25,10 @@ function generateLinks(link, defaultLang) {
 }
 
 // ===== Misc links
+export const bbsLink = {
+  '*': 'https://www.ssslib.ch/bbs/',
+};
+
 export const wikicavesLink = {
   '*': 'http://www.wikicaves.org/',
 };
