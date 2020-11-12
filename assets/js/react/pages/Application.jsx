@@ -10,6 +10,7 @@ import Swagger from './Swagger';
 import HomePage from './HomePage';
 import Admin from './Admin';
 import AdvancedSearchPage from './AdvancedSearchPage';
+import DocumentDetailsPage from './DocumentDetails';
 import Faq from '../components/appli/Faq';
 import LatestBlogNewsSection from '../components/homepage/LatestBlogNewsSection';
 import Layout from '../components/common/Layouts/Main';
@@ -24,7 +25,6 @@ import DocumentSubmission from './DocumentSubmission';
 import DocumentValidation from './DocumentValidation';
 import EntryPage from './Entry';
 import GroupPage from './Group';
-import BbsPage from './Bbs';
 import MassifPage from './Massif';
 import CaveSystemPage from './CaveSystem';
 import ManageUsers from './Admin/ManageUsers';
@@ -70,10 +70,13 @@ const Application = () => {
         <Route path="/ui/test" component={LatestBlogNewsSection} />
         <Route path="/ui/groups/:groupId" component={GroupPage} />
         <Route path="/ui/massifs/:massifId" component={MassifPage} />
-        <Route path="/ui/bbs/:bbsId" component={BbsPage} />
         <Route path="/ui/login" component={HomePage} />
         <Route path="/ui/documents/add" component={DocumentSubmission} />
         <Route path="/ui/documents/validation" component={DocumentValidation} />
+        <Route
+          path="/ui/documents/:documentId"
+          component={DocumentDetailsPage}
+        />
         <Redirect path="/ui/*" to="/ui" />
       </Switch>
     </Layout>

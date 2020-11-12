@@ -1,7 +1,6 @@
 import { combineReducers } from 'redux';
 import advancedsearch from './AdvancedsearchReducer';
 import auth from './AuthReducer';
-import bbs from './BbsReducer';
 import cave from './CaveReducer';
 import caver from './CaverReducer';
 import createCaver from './CreateCaver';
@@ -38,7 +37,6 @@ import error from './ErrorReducer';
 const GCReducer = combineReducers({
   advancedsearch,
   auth,
-  bbs,
   cave,
   caver,
   caverGroups,

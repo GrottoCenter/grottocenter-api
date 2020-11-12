@@ -145,7 +145,6 @@ export const findForCarouselUrl = '/api/partners/findForCarousel';
 export const findMapBoundsUrl = `/api/${apiVersion}/geoloc/findByBounds`;
 export const findMassifUrl = `/api/${apiVersion}/massifs/`;
 export const findGroupUrl = `/api/${apiVersion}/organizations/`;
-export const findBbsUrl = `/api/${apiVersion}/bbs/`;
 export const advancedsearchUrl = `/api/${apiVersion}/advanced-search`;
 export const quicksearchUrl = `/api/${apiVersion}/search`;
 export const subjectsUrl = `/api/${apiVersion}/documents/subjects`;

@@ -121,7 +121,7 @@ Item.propTypes = {
   value: PropTypes.oneOfType([
     PropTypes.string.isRequired,
     PropTypes.arrayOf(PropTypes.string).isRequired,
-  ]).isRequired,
+  ]),
   type: PropTypes.oneOf(['list', 'tree']),
 };
 
