@@ -10,6 +10,8 @@ const caverController = require('../CaverController');
 module.exports = {
   find: (req, res) => caverController.find(req, res),
   findAll: (req, res) => caverController.findAll(req, res),
+  getModerators: (req, res) => caverController.getModerators(req, res),
+  getAdmins: (req, res) => caverController.getAdmins(req, res),
   getCaversNumber: (req, res) => caverController.getCaversNumber(req, res),
 
   putOnGroup: async (req, res) => caverController.putOnGroup(req, res),
