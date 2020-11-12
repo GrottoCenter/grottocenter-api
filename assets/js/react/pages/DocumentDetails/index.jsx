@@ -64,7 +64,7 @@ const DocumentPage = ({
             value: details.bbsReference,
           },
           {
-            label: formatMessage({ id: 'Document Type' }),
+            label: formatMessage({ id: 'Document type' }),
             value: details.documentType,
           },
           {
@@ -74,7 +74,7 @@ const DocumentPage = ({
               : null,
           },
           {
-            label: formatMessage({ id: 'Document parent' }),
+            label: formatMessage({ id: 'Parent document' }),
             value: details.parentDocument,
           },
           {
@@ -104,8 +104,8 @@ const DocumentPage = ({
           },
           {
             Icon: () => <CustomIcon type="entry" />,
-            label: formatMessage({ id: 'Entry' }),
-            value: entities.entry,
+            label: formatMessage({ id: 'Entrance' }),
+            value: entities.entrance,
           },
           {
             Icon: () => <CustomIcon type="cave_system" />,
@@ -171,7 +171,7 @@ DocumentPage.propTypes = {
   entities: PropTypes.shape({
     massif: PropTypes.string,
     cave: PropTypes.string,
-    entry: PropTypes.string,
+    entrance: PropTypes.string,
   }),
 };
 
