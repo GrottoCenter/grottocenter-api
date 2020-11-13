@@ -14,7 +14,7 @@ const makeCustomHeaderCellRenders = () => {
     },
     {
       id: 'dateInscription',
-      customRender: () => formatMessage({ id: 'Creation date' }),
+      customRender: () => formatMessage({ id: 'Submission date' }),
     },
   ];
 };

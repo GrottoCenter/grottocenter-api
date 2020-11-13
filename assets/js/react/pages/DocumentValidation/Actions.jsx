@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { isNil, anyPass, isEmpty, head } from 'ramda';
+import { isNil, anyPass, isEmpty, head, propOr } from 'ramda';
 import PropTypes from 'prop-types';
 import { useIntl } from 'react-intl';
 import styled from 'styled-components';
@@ -14,9 +14,18 @@ import { useBoolean } from '../../hooks';
 import StringInput from '../../components/common/Form/StringInput';
 
 const ActionTypes = {
-  decline: 'Decline',
-  validate: 'Validate',
-  edit: 'Edit',
+  decline: {
+    name: 'Decline',
+    verb: 'declined',
+  },
+  validate: {
+    name: 'Validate',
+    verb: 'validated',
+  },
+  edit: {
+    name: 'Edit',
+    verb: 'edited',
+  },
 };
 
 const Wrapper = styled.div`
@@ -35,7 +44,7 @@ const Actions = ({ selected, onEdit }) => {
   const dispatch = useDispatch();
   const { isLoading, success } = useSelector((state) => state.processDocuments);
   const confirmationDialog = useBoolean(false);
-  const [actionType, setActionType] = useState('');
+  const [actionType, setActionType] = useState(null);
   const [comment, setComment] = useState('');
 
   const handleAction = () => {
@@ -70,19 +79,19 @@ const Actions = ({ selected, onEdit }) => {
     <>
       <Wrapper>
         <ActionButton
-          label={formatMessage({ id: ActionTypes.edit })}
+          label={formatMessage({ id: ActionTypes.edit.name })}
           disabled={isNilOrEmpty(selected) || isLoading || selected.length > 1}
           onClick={handleEdit}
           icon={<EditIcon />}
         />
         <ActionButton
-          label={formatMessage({ id: ActionTypes.validate })}
+          label={formatMessage({ id: ActionTypes.validate.name })}
           disabled={isNilOrEmpty(selected) || isLoading}
           onClick={handleActionConfirmation(ActionTypes.validate)}
           icon={<SendIcon />}
         />
         <ActionButton
-          label={formatMessage({ id: ActionTypes.decline })}
+          label={formatMessage({ id: ActionTypes.decline.name })}
           color="secondary"
           disabled={isNilOrEmpty(selected) || isLoading}
           onClick={handleActionConfirmation(ActionTypes.decline)}
@@ -100,7 +109,7 @@ const Actions = ({ selected, onEdit }) => {
           <ActionButton
             key={0}
             label={`${formatMessage({
-              id: actionType || ActionTypes.validate,
+              id: propOr(ActionTypes.validate.name, 'name', actionType),
             })} ${selected.length} ${formatMessage({ id: 'document(s)' })}`}
             color={
               actionType === ActionTypes.validate ? 'primary' : 'secondary'
@@ -118,9 +127,13 @@ const Actions = ({ selected, onEdit }) => {
         ]}
       >
         <StringInput
-          helperText={`${formatMessage({
-            id: 'Add a comment on why the selection has to be',
-          })} ${formatMessage({ id: actionType || ActionTypes.validate })}`}
+          helperText={formatMessage({
+            id: `Add a comment on why the selected documents have to be ${propOr(
+              ActionTypes.validate.verb,
+              ['verb'],
+              actionType,
+            )}.`,
+          })}
           multiline
           onValueChange={setComment}
           value={comment}

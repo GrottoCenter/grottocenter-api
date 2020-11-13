@@ -75,5 +75,5 @@ export const makeEntities = (data) => ({
     head,
     pathOr('', ['cave', 'name']),
   )(data),
-  entry: pathOr('', ['entrance', 'name'], data),
+  entrance: pathOr('', ['entrance', 'name'], data),
 });

@@ -71,10 +71,7 @@ const VisibleColumnsMenu = ({
                 name={column.id}
               />
             </ListItemIcon>
-            <ListItemText
-              id={column.id}
-              primary={formatMessage({ id: column.label })}
-            />
+            <ListItemText id={column.id} primary={column.label} />
           </MenuItem>
         ))}
       </Menu>
