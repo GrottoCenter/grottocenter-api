@@ -5,13 +5,14 @@ import { useIntl } from 'react-intl';
 import { reject, isNil, propOr } from 'ramda';
 import { isMobileOnly } from 'react-device-detect';
 
+import { getDocuments } from '../../actions/Documents';
+import { resetApiMessages } from '../../actions/Document';
+import Layout from '../../components/common/Layouts/Fixed/FixedContent';
+import StandardDialog from '../../components/common/StandardDialog';
+import { useDebounce } from '../../hooks';
 import Actions from './Actions';
 import DocumentDetails from '../DocumentDetails';
 import DocumentsTable from './DocumentsTable';
-import Layout from '../../components/common/Layouts/Fixed/FixedContent';
-import StandardDialog from '../../components/common/StandardDialog';
-import { getDocuments } from '../../actions/Documents';
-import { useDebounce } from '../../hooks';
 import DocumentEdit from '../DocumentEdit';
 
 const Wrapper = styled.div`
@@ -65,6 +66,7 @@ const DocumentValidationPage = () => {
   }, [debouncedRowsPerPage, debouncedOrderBy, debouncedOrder, debouncedPage]);
 
   const handleSuccessfulUpdate = () => {
+    dispatch(resetApiMessages());
     closeEditView();
     loadDocuments();
   };
