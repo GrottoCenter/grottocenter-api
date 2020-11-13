@@ -25,13 +25,13 @@ const setNamesOfPopulatedDocument = async (document) => {
   return document;
 };
 
+// Extract everything from the request body except id and dateInscription
 const getConvertedDataFromClient = (req) => {
   const { id, ...reqBodyWithoutId } = req.body; // remove id if present to avoid null id (and an error)
   return {
     ...reqBodyWithoutId,
     author: req.token.id,
     authors: req.body.authors ? req.body.authors.map((a) => a.id) : undefined,
-    dateInscription: new Date(),
     datePublication: req.body.publicationDate,
     editor: ramda.pathOr(undefined, ['editor', 'id'], req.body),
     identifierType: ramda.pathOr(
@@ -164,7 +164,10 @@ module.exports = {
       return res.forbidden('You are not authorized to create a document.');
     }
 
-    const cleanedData = getConvertedDataFromClient(req);
+    const cleanedData = {
+      ...getConvertedDataFromClient(req),
+      dateInscription: new Date(),
+    };
 
     // Launch creation request using transaction: it performs a rollback if an error occurs
     await sails
