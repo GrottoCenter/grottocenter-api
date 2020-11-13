@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
 import { isEmpty, isNil } from 'ramda';
 import { InputAdornment } from '@material-ui/core';
+import AddCircle from '@material-ui/icons/AddCircle';
 
 import {
   fetchQuicksearchResult,
@@ -110,6 +111,7 @@ const OrganizationAutoComplete = ({
       required={required}
       resultEndAdornment={resultEndAdornment}
       sideActionDisabled={!actionEnabled}
+      sideActionIcon={<AddCircle fontSize="large" />}
       onSideAction={handleOpenSideAction}
       isSideActionOpen={isCreateOrganizationOpen}
     >
