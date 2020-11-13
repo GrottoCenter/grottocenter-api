@@ -167,8 +167,8 @@ export const putDocumentUrl = (documentId) =>
 export const postOrganizationUrl = `/api/${apiVersion}/organizations`;
 export const regionsSearchUrl = `/api/${apiVersion}/regions/search/logical/or`;
 export const identifierTypesUrl = `/api/${apiVersion}/documents/identifierTypes`;
-export const getAdminsUrl = `/api/cavers/admins`;
-export const getModeratorsUrl = `/api/cavers/moderators`;
+export const getAdminsUrl = `/api/${apiVersion}/cavers/admins`;
+export const getModeratorsUrl = `/api/${apiVersion}/cavers/moderators`;
 export const postCaverGroupsUrl = (userId) =>
   `/api/${apiVersion}/cavers/${userId}/groups`;
 

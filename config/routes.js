@@ -146,13 +146,13 @@ module.exports.routes = {
     action: 'setGroups',
   },
 
-  'GET /api/cavers/admins': {
-    controller: 'Caver',
+  'GET /api/v1/cavers/admins': {
+    controller: 'v1/Caver',
     action: 'getAdmins',
   },
 
-  'GET /api/cavers/moderators': {
-    controller: 'Caver',
+  'GET /api/v1/cavers/moderators': {
+    controller: 'v1/Caver',
     action: 'getModerators',
   },
 
