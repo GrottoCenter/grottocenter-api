@@ -15,7 +15,7 @@ import NavigateBeforeIcon from '@material-ui/icons/NavigateBefore';
 import { DocumentFormContext } from './Provider';
 import { DocumentFormTypes } from './types';
 
-import { wikiBBSLinks } from '../../../../conf/Config';
+import { bbsLink, wikiBBSLinks } from '../../../../conf/Config';
 import Translate from '../../../common/Translate';
 import InternationalizedLink from '../../../common/InternationalizedLink';
 import Stepper from '../../../common/Form/Stepper';
@@ -134,6 +134,10 @@ const DocumentForm = ({ isLoading, onSubmit, onUpdate }) => {
               You can find more info about the BBS on the dedicated
               Grottocenter-wiki page.
             </Translate>
+          </InternationalizedLink>
+          <br />
+          <InternationalizedLink links={bbsLink}>
+            <Translate>Or directly on the BBS website.</Translate>
           </InternationalizedLink>
         </BbsInfoText>
       </BbsHeader>
