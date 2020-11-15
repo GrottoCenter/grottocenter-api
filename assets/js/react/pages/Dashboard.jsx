@@ -7,7 +7,7 @@ import PeopleIcon from '@material-ui/icons/People';
 import DocumentListIcon from '@material-ui/icons/PlaylistAddCheck';
 import styled from 'styled-components';
 
-import isAuth, { isAdmin, isModerator } from '../helpers/AuthHelper';
+import { isAuth, isAdmin, isModerator } from '../helpers/AuthHelper';
 import Layout from '../components/common/Layouts/Fixed/FixedContent';
 
 // ==========

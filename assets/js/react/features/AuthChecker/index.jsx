@@ -7,7 +7,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
 import { displayLoginDialog } from '../../actions/Auth';
-import isAuth from '../../helpers/AuthHelper';
+import { isAuth } from '../../helpers/AuthHelper';
 
 import ErrorMessage from '../../components/common/StatusMessage/ErrorMessage';
 

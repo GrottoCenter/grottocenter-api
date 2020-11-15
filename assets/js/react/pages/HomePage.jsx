@@ -13,7 +13,7 @@ import RandomEntry from '../components/homepage/RandomEntry';
 import PartnersSection from '../components/homepage/PartnersSection';
 import Footer from '../components/homepage/Footer';
 
-import isAuth from '../helpers/AuthHelper';
+import { isAuth } from '../helpers/AuthHelper';
 
 const HomePage = () => {
   const location = useLocation();

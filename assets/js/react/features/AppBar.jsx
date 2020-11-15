@@ -10,7 +10,7 @@ import {
   postLogout,
 } from '../actions/Auth';
 import AppBarComponent from '../components/common/AppBar';
-import isAuth from '../helpers/AuthHelper';
+import { isAuth } from '../helpers/AuthHelper';
 
 // eslint-disable-next-line react/prop-types
 const HeaderAutoCompleteSearch = ({ isSideMenuOpen, HeaderQuickSearch }) => (
