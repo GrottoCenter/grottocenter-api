@@ -1,3 +1,4 @@
+import { decode } from 'jsonwebtoken';
 import {
   FETCH_LOGIN,
   FETCH_LOGIN_FAILURE,
@@ -8,7 +9,11 @@ import {
   SET_AUTH_ERROR_MESSAGES,
 } from '../actions/Auth';
 
-import { removeAuthToken, setAuthToken } from '../helpers/AuthHelper';
+import {
+  getAuthToken,
+  removeAuthToken,
+  setAuthToken,
+} from '../helpers/AuthHelper';
 
 //
 //
@@ -17,7 +22,7 @@ import { removeAuthToken, setAuthToken } from '../helpers/AuthHelper';
 //
 
 const initialState = {
-  userAccount: undefined,
+  userAccount: decode(getAuthToken()),
   isFetching: false,
   isLoginDialogDisplayed: false,
   errorMessages: [],
