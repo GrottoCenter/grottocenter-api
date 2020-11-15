@@ -20,9 +20,9 @@ export const fetchLogin = () => ({
   type: FETCH_LOGIN,
 });
 
-export const fetchLoginSuccess = (account, token) => ({
+export const fetchLoginSuccess = (tokenDecoded, token) => ({
   type: FETCH_LOGIN_SUCCESS,
-  account,
+  tokenDecoded,
   token,
 });
 

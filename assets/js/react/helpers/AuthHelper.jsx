@@ -1,27 +1,19 @@
-import { decode } from 'jsonwebtoken';
-import { identificationTokenName } from '../conf/Config';
+import { pathOr } from 'ramda';
 
 // =========================================
 
-export const setAuthToken = (token) => {
-  window.localStorage.setItem(identificationTokenName, token);
+const hasRole = (authState, roleName) => {
+  const groups = pathOr(null, ['authTokenDecoded', 'groups'], authState);
+  if (groups === null) return false;
+  return groups.some((g) => g.name === roleName);
 };
 
-export const getAuthToken = () => {
-  return window.localStorage.getItem(identificationTokenName);
+export const isUserAdmin = (authState) => {
+  return hasRole(authState, 'Administrator');
 };
 
-export const getAuthHTTPHeader = () => {
-  return {
-    Authorization: `Bearer ${getAuthToken()}`,
-  };
-};
-
-const hasRole = (roleName) => {
-  const authToken = getAuthToken();
-  if (authToken === null) return false;
-  const decodedToken = decode(authToken);
-  return decodedToken.groups.some((g) => g.name === roleName);
+export const isUserModerator = (authState) => {
+  return hasRole(authState, 'Moderator');
 };
 
 export const isUser = () => {
@@ -36,10 +28,9 @@ export const isModerator = () => {
   return hasRole('Moderator');
 };
 
-export const isTokenExpired = () => {
+export const isTokenExpired = (authState) => {
   try {
-    const decoded = decode(getAuthToken());
-    if (decoded.exp < Date.now() / 1000) {
+    if (authState.authTokenDecoded.exp < Date.now() / 1000) {
       return true;
     }
     return false;
@@ -48,10 +39,6 @@ export const isTokenExpired = () => {
   }
 };
 
-export const removeAuthToken = () => {
-  window.localStorage.removeItem(identificationTokenName);
-};
-
-export const isAuth = () => {
-  return getAuthToken() != null;
+export const isUserAuth = (authState) => {
+  return authState.authTokenDecoded !== null;
 };

@@ -1,6 +1,5 @@
 import fetch from 'isomorphic-fetch';
 import { postCaverUrl } from '../conf/Config';
-import { getAuthHTTPHeader } from '../helpers/AuthHelper';
 
 export const POST_CAVER = 'POST_CAVER';
 export const POST_CAVER_SUCCESS = 'POST_CAVER_SUCCESS';
@@ -20,13 +19,13 @@ export const postCaverFailure = (error) => ({
   error,
 });
 
-export const postCaver = ({ name, surname }) => (dispatch) => {
+export const postCaver = ({ name, surname }) => (dispatch, getState) => {
   dispatch(postCaverAction());
 
   const requestOptions = {
     method: 'POST',
     body: JSON.stringify({ name, surname }),
-    headers: getAuthHTTPHeader(),
+    headers: getState().auth.authorizationHeader,
   };
 
   return fetch(postCaverUrl, requestOptions)

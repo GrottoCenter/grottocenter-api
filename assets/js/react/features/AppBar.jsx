@@ -10,7 +10,7 @@ import {
   postLogout,
 } from '../actions/Auth';
 import AppBarComponent from '../components/common/AppBar';
-import { isAuth } from '../helpers/AuthHelper';
+import { isUserAuth } from '../helpers/AuthHelper';
 
 // eslint-disable-next-line react/prop-types
 const HeaderAutoCompleteSearch = ({ isSideMenuOpen, HeaderQuickSearch }) => (
@@ -42,11 +42,11 @@ const AppBar = ({ toggleSideMenu, isSideMenuOpen, HeaderQuickSearch }) => {
           HeaderQuickSearch={HeaderQuickSearch}
         />
       )}
-      isAuth={isAuth()}
+      isAuth={isUserAuth(authState)}
       onLoginClick={onLoginClick}
       onLogoutClick={onLogoutClick}
       toggleMenu={toggleSideMenu}
-      userNickname={pathOr(null, ['userAccount', 'nickname'], authState)}
+      userNickname={pathOr(null, ['authTokenDecoded', 'nickname'], authState)}
     />
   );
 };

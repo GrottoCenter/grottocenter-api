@@ -1,7 +1,6 @@
 import fetch from 'isomorphic-fetch';
 import { pipe, defaultTo, map } from 'ramda';
 import { processDocumentIds } from '../conf/Config';
-import { getAuthHTTPHeader } from '../helpers/AuthHelper';
 import makeErrorMessage from '../helpers/makeErrorMessage';
 
 export const POST_PROCESS_DOCUMENTS = 'POST_PROCESS_DOCUMENTS';
@@ -23,6 +22,7 @@ export const postProcessDocumentsFailure = (error) => ({
 
 export const postProcessDocuments = (ids, isValidated, comment) => (
   dispatch,
+  getState,
 ) => {
   dispatch(postProcessDocumentsAction());
 
@@ -37,7 +37,7 @@ export const postProcessDocuments = (ids, isValidated, comment) => (
   const requestOptions = {
     method: 'PUT',
     body: JSON.stringify({ documents: documentsBody }),
-    headers: getAuthHTTPHeader(),
+    headers: getState().auth.authorizationHeader,
   };
 
   return fetch(processDocumentIds, requestOptions)

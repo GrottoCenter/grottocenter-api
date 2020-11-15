@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useHistory } from 'react-router-dom';
 import PropTypes from 'prop-types';
-import { Button, CircularProgress, Fade, Typography } from '@material-ui/core';
+import { Button } from '@material-ui/core';
 import { useIntl } from 'react-intl';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
 import { displayLoginDialog } from '../../actions/Auth';
-import { isAuth } from '../../helpers/AuthHelper';
+import { isUserAuth } from '../../helpers/AuthHelper';
 
 import ErrorMessage from '../../components/common/StatusMessage/ErrorMessage';
 
@@ -40,47 +40,17 @@ const AuthChecker = ({ errorMessageComponent, componentToDisplay }) => {
   const dispatch = useDispatch();
   const { formatMessage } = useIntl();
 
-  const [isUserAuth, setIsUserAuth] = useState(undefined);
-
   const authState = useSelector((state) => state.auth);
 
   const onLoginClick = () => {
     dispatch(displayLoginDialog());
   };
 
-  useEffect(() => {
-    /**
-     * UX purpose only.
-     * - if we don't know if the user is authenticated, we must check his rights
-     *    to display the component.
-     *    To avoid a blinking screen displaying the CircularProgress
-     *    less than 0.1 second, we delay it to 0.8 second.
-     * - If the user is auth or not, just refresh the state:
-     *    the component is already displayed or not, we can change it quickly.
-     */
-    if (isUserAuth === undefined) {
-      setTimeout(() => {
-        setIsUserAuth(isAuth());
-      }, 800);
-    } else {
-      setIsUserAuth(isAuth());
-    }
-  }, [authState]);
-
   return (
     <>
-      {isUserAuth === undefined && (
-        <Fade in={isUserAuth === undefined}>
-          <CenteredBlock>
-            <CircularProgress />
-            <Typography variant="body1">
-              {formatMessage({ id: 'Checking your rights...' })}
-            </Typography>
-          </CenteredBlock>
-        </Fade>
-      )}
-      {isUserAuth === true && componentToDisplay}
-      {isUserAuth === false && (
+      {isUserAuth(authState) ? (
+        componentToDisplay
+      ) : (
         <CenteredBlock>
           {errorMessageComponent || (
             <>

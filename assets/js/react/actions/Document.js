@@ -1,6 +1,5 @@
 import fetch from 'isomorphic-fetch';
 import { postDocumentUrl, putDocumentUrl } from '../conf/Config';
-import { getAuthHTTPHeader } from '../helpers/AuthHelper';
 
 // ==========
 export const POST_DOCUMENT = 'POST_DOCUMENT';
@@ -50,7 +49,7 @@ export const resetApiMessages = () => ({
 });
 
 export function postDocument(docAttributes) {
-  return (dispatch) => {
+  return (dispatch, getState) => {
     dispatch(postDocumentAction());
 
     // Merge startPage and endPage in one attribute 'pages'
@@ -70,7 +69,7 @@ export function postDocument(docAttributes) {
     const requestOptions = {
       method: 'POST',
       body: JSON.stringify({ ...docAttributes, pages }),
-      headers: getAuthHTTPHeader(),
+      headers: getState().auth.authorizationHeader,
     };
 
     return fetch(postDocumentUrl, requestOptions).then((response) => {
@@ -119,7 +118,7 @@ export function postDocument(docAttributes) {
 }
 
 export function updateDocument(docAttributes) {
-  return (dispatch) => {
+  return (dispatch, getState) => {
     dispatch(updateDocumentAction());
 
     // Merge startPage and endPage in one attribute 'pages'
@@ -139,7 +138,7 @@ export function updateDocument(docAttributes) {
     const requestOptions = {
       method: 'PUT',
       body: JSON.stringify({ ...docAttributes, pages }),
-      headers: getAuthHTTPHeader(),
+      headers: getState().auth.authorizationHeader,
     };
 
     return fetch(putDocumentUrl(docAttributes.id), requestOptions).then(

@@ -1,6 +1,5 @@
 import fetch from 'isomorphic-fetch';
 import { postOrganizationUrl } from '../conf/Config';
-import { getAuthHTTPHeader } from '../helpers/AuthHelper';
 
 export const POST_ORGANIZATION = 'POST_ORGANIZATION';
 export const POST_ORGANIZATION_SUCCESS = 'POST_ORGANIZATION_SUCCESS';
@@ -20,13 +19,13 @@ export const postOrganizationFailure = (error) => ({
   error,
 });
 
-export const postOrganization = (name) => (dispatch) => {
+export const postOrganization = (name) => (dispatch, getState) => {
   dispatch(postOrganizationAction());
 
   const requestOptions = {
     method: 'POST',
     body: JSON.stringify({ name }),
-    headers: getAuthHTTPHeader(),
+    headers: getState().auth.authorizationHeader,
   };
 
   return fetch(postOrganizationUrl, requestOptions)

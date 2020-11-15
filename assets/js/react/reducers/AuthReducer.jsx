@@ -8,12 +8,7 @@ import {
   LOGOUT,
   SET_AUTH_ERROR_MESSAGES,
 } from '../actions/Auth';
-
-import {
-  getAuthToken,
-  removeAuthToken,
-  setAuthToken,
-} from '../helpers/AuthHelper';
+import { authTokenName } from '../conf/Config';
 
 //
 //
@@ -22,10 +17,14 @@ import {
 //
 
 const initialState = {
-  userAccount: decode(getAuthToken()),
+  authToken: undefined,
+  authTokenDecoded: decode(window.localStorage.getItem(authTokenName)),
+  authorizationHeader: {
+    Authorization: `Bearer ${window.localStorage.getItem(authTokenName)}`,
+  },
+  errorMessages: [],
   isFetching: false,
   isLoginDialogDisplayed: false,
-  errorMessages: [],
 };
 
 //
@@ -36,14 +35,22 @@ const initialState = {
 const auth = (state = initialState, action) => {
   switch (action.type) {
     case FETCH_LOGIN:
-      return { ...state, isFetching: true, errorMessages: [] };
-    case FETCH_LOGIN_SUCCESS:
-      setAuthToken(action.token);
       return {
         ...state,
-        userAccount: action.account,
-        isFetching: false,
+        authToken: undefined,
+        authorizationHeader: undefined,
+        isFetching: true,
         errorMessages: [],
+      };
+    case FETCH_LOGIN_SUCCESS:
+      window.localStorage.setItem(authTokenName, action.token);
+      return {
+        ...state,
+        authToken: action.token,
+        authorizationHeader: { Authorization: `Bearer ${action.token}` },
+        errorMessages: [],
+        isFetching: false,
+        authTokenDecoded: action.tokenDecoded,
       };
     case FETCH_LOGIN_FAILURE:
       return {
@@ -56,8 +63,13 @@ const auth = (state = initialState, action) => {
     case HIDE_LOGIN_DIALOG:
       return { ...state, isLoginDialogDisplayed: false };
     case LOGOUT:
-      removeAuthToken();
-      return { ...state, userAccount: undefined };
+      window.localStorage.removeItem(authTokenName);
+      return {
+        ...state,
+        authToken: undefined,
+        authorizationHeader: undefined,
+        authTokenDecoded: null,
+      };
     case SET_AUTH_ERROR_MESSAGES:
       return { ...state, errorMessages: action.errorMessages };
     default:
