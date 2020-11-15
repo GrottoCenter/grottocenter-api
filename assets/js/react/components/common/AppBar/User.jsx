@@ -1,14 +1,16 @@
 import { Button, IconButton, Menu, MenuItem } from '@material-ui/core';
 import AccountCircle from '@material-ui/icons/AccountCircle';
 import React from 'react';
+import { useIntl } from 'react-intl';
 import { isMobileOnly } from 'react-device-detect';
 import PropTypes from 'prop-types';
 
 import Translate from '../Translate';
 
-const UserMenu = ({ onLoginClick, onLogoutClick, isAuth }) => {
+const UserMenu = ({ isAuth, userNickname, onLoginClick, onLogoutClick }) => {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
+  const { formatMessage } = useIntl();
 
   const handleMenu = (event) => {
     setAnchorEl(event.currentTarget);
@@ -62,10 +64,22 @@ const UserMenu = ({ onLoginClick, onLogoutClick, isAuth }) => {
             open={open}
             onClose={handleClose}
           >
-            <MenuItem onClick={handleClose} disabled>
-              <Translate>Profile</Translate>
+            <MenuItem divider disabled>
+              {formatMessage(
+                {
+                  id: 'Logged as {userNickname}',
+                  defaultMessage: 'Logged as {userNickname}',
+                },
+                {
+                  userNickname: (
+                    <span>
+                      &nbsp;<b>{userNickname}</b>
+                    </span>
+                  ),
+                },
+              )}
             </MenuItem>
-            <MenuItem onClick={handleClose} disabled>
+            <MenuItem disabled>
               <Translate>My Account</Translate>
             </MenuItem>
             <MenuItem onClick={handleLogoutClick}>
@@ -79,9 +93,10 @@ const UserMenu = ({ onLoginClick, onLogoutClick, isAuth }) => {
 };
 
 UserMenu.propTypes = {
+  userNickname: PropTypes.string,
+  isAuth: PropTypes.bool.isRequired,
   onLoginClick: PropTypes.func.isRequired,
   onLogoutClick: PropTypes.func.isRequired,
-  isAuth: PropTypes.bool.isRequired,
 };
 
 export default UserMenu;

@@ -51,11 +51,12 @@ const RightWrapper = styled.div`
 `;
 
 const AppBar = ({
-  toggleMenu,
+  AutoCompleteSearch,
   isAuth,
   onLoginClick,
   onLogoutClick,
-  AutoCompleteSearch,
+  toggleMenu,
+  userNickname,
 }) => (
   <>
     <StyledMuiAppBar>
@@ -92,6 +93,7 @@ const AppBar = ({
           isAuth={isAuth}
           onLoginClick={onLoginClick}
           onLogoutClick={onLogoutClick}
+          userNickname={userNickname}
         />
       </Toolbar>
     </StyledMuiAppBar>
@@ -109,6 +111,7 @@ AppBar.propTypes = {
   isAuth: PropTypes.bool.isRequired,
   onLoginClick: PropTypes.func.isRequired,
   onLogoutClick: PropTypes.func.isRequired,
+  userNickname: PropTypes.string,
 };
 
 export default AppBar;

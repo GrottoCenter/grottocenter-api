@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Fade } from '@material-ui/core';
 import { useDispatch, useSelector } from 'react-redux';
+import { pathOr } from 'ramda';
 
 import {
   displayLoginDialog,
@@ -35,16 +36,17 @@ const AppBar = ({ toggleSideMenu, isSideMenuOpen, HeaderQuickSearch }) => {
 
   return (
     <AppBarComponent
-      toggleMenu={toggleSideMenu}
-      isAuth={isAuth()}
-      onLoginClick={onLoginClick}
-      onLogoutClick={onLogoutClick}
       AutoCompleteSearch={() => (
         <HeaderAutoCompleteSearch
           isSideMenuOpen={isSideMenuOpen}
           HeaderQuickSearch={HeaderQuickSearch}
         />
       )}
+      isAuth={isAuth()}
+      onLoginClick={onLoginClick}
+      onLogoutClick={onLogoutClick}
+      toggleMenu={toggleSideMenu}
+      userNickname={pathOr(null, ['userAccount', 'nickname'], authState)}
     />
   );
 };
