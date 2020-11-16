@@ -64,7 +64,7 @@ Property.propTypes = {
 // ===================================
 
 const Step4 = ({ stepId }) => {
-  const { formatMessage } = useIntl();
+  const { formatMessage, formatDate } = useIntl();
   const { docAttributes, validatedSteps } = useContext(DocumentFormContext);
 
   const memoizedValues = [includes(stepId, validatedSteps)];
@@ -122,7 +122,7 @@ const Step4 = ({ stepId }) => {
               name={formatMessage({ id: 'Publication Date' })}
               value={
                 docAttributes.publicationDate &&
-                docAttributes.publicationDate.toString()
+                formatDate(docAttributes.publicationDate)
               }
             />
             <Property
