@@ -131,7 +131,7 @@ const DocumentSubmission = () => {
                         id: 'It will be verified by one of ours moderators.',
                       })}`
                     : `${formatMessage({
-                        id: 'Document sucessfully updated.',
+                        id: 'Document successfully updated.',
                       })}`
                 }
               />
