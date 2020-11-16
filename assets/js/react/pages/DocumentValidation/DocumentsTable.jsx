@@ -55,17 +55,21 @@ const DocumentsTable = ({
   );
 
   useEffect(() => {
-    setColumns(createColumns(documents, makeTranslation));
+    setColumns(
+      createColumns(documents, makeTranslation).sort(
+        (c1, c2) => c1.label.localeCompare(c2.label) > 0,
+      ),
+    );
   }, [documents]);
 
   return (
     <Table
-      columns={columns.sort((c1, c2) => c1.label > c2.label)}
+      columns={columns}
       currentPage={currentPage}
       customCellRenders={makeCustomCellRenders()}
       customHeaderCellRenders={makeCustomHeaderCellRenders()}
       data={documents || []}
-      hiddenColumns={hiddenColumns.sort((c1, c2) => c1.label > c2.label)}
+      hiddenColumns={hiddenColumns}
       loading={loading}
       openDetailedView={openDetailedView}
       order={order}
