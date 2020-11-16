@@ -56,8 +56,9 @@ const getConvertedDataFromClient = (req) => {
  * The document must be fully populated and with all its names set (@see setNamesOfPopulatedDocument).
  */
 const addDocumentToElasticSearchIndexes = (document) => {
+  const { type, ...documentWithoutType } = document; // "type" property is already used by ES, don't spread it.
   const esBody = {
-    ...document,
+    ...documentWithoutType,
     authors: document.authors
       ? document.authors.map((a) => a.nickname).join(', ')
       : null,
@@ -76,44 +77,52 @@ const addDocumentToElasticSearchIndexes = (document) => {
       ? document.subjects.map((s) => s.subject).join(', ')
       : null,
     title: document.descriptions[0].title,
-    'type id': ramda.pathOr(null, ['type', 'id'], document),
-    'type name': ramda.pathOr(null, ['type', 'name'], document),
+    'type id': ramda.propOr(null, 'id', type),
+    'type name': ramda.propOr(null, 'name', type),
   };
 
-  // Update ES documents-index
-  try {
-    esClient.create({
-      index: `documents-index`,
+  // Create in documents-index
+  esClient.create(
+    {
+      index: 'documents-index',
       type: 'data',
       id: document.id,
       body: {
-        esBody,
+        ...esBody,
+        type: 'document',
       },
-    });
-  } catch (error) {
-    sails.log.error(error);
-  }
+    },
+    (error) => {
+      if (error) {
+        sails.log.error(error);
+      }
+    },
+  );
 
-  // Update ES document-collections-index or document-issues-index
-  const esIndexToUpdate =
+  // Create in document-collections-index or document-issues-index
+  const additionalIndex =
     document.type.name === 'Issue'
       ? 'document-issues-index'
       : document.type.name === 'Collection'
       ? 'document-collections-index'
       : '';
-  if (esIndexToUpdate !== '') {
-    try {
-      esClient.update({
-        index: esIndexToUpdate,
+  if (additionalIndex !== '') {
+    esClient.create(
+      {
+        index: additionalIndex,
         type: 'data',
         id: document.id,
         body: {
-          esBody,
+          ...esBody,
+          type: `document-${document.type.name.toLowerCase()}`,
         },
-      });
-    } catch (error) {
-      sails.log.error(error);
-    }
+      },
+      (error) => {
+        if (error) {
+          sails.log.error(error);
+        }
+      },
+    );
   }
 };
 

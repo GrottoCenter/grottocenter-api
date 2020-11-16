@@ -52,7 +52,7 @@ const Actions = ({ selected, onEdit }) => {
       postProcessDocuments(
         selected,
         actionType === ActionTypes.validate,
-        isEmpty(comment) ? actionType : comment,
+        comment,
       ),
     );
   };
@@ -123,6 +123,7 @@ const Actions = ({ selected, onEdit }) => {
               )
             }
             loading={isLoading}
+            disabled={actionType === ActionTypes.decline && isEmpty(comment)}
           />,
         ]}
       >
@@ -138,6 +139,7 @@ const Actions = ({ selected, onEdit }) => {
           onValueChange={setComment}
           value={comment}
           valueName={formatMessage({ id: 'Comment' })}
+          required={actionType === ActionTypes.decline}
         />
       </StandardDialog>
     </>
