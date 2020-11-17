@@ -34,11 +34,7 @@ const getConvertedDataFromClient = (req) => {
     authors: req.body.authors ? req.body.authors.map((a) => a.id) : undefined,
     datePublication: req.body.publicationDate,
     editor: ramda.pathOr(undefined, ['editor', 'id'], req.body),
-    identifierType: ramda.pathOr(
-      undefined,
-      ['identifierType', 'code'],
-      req.body,
-    ),
+    identifierType: ramda.pathOr(undefined, ['identifierType', 'id'], req.body),
     library: ramda.pathOr(undefined, ['library', 'id'], req.body),
     license: 1,
     massif: ramda.pathOr(undefined, ['massif', 'id'], req.body),
