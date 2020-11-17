@@ -6,6 +6,8 @@ import HalfStarIcon from '@material-ui/icons/StarHalf';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import styled from 'styled-components';
 import { withStyles } from '@material-ui/core';
+import { isNil } from 'ramda';
+
 import GCLink from '../GCLink';
 import { detailPageV2Links } from '../../../conf/Config';
 import Translate from '../Translate';
@@ -205,7 +207,7 @@ const EntryInfos = ({ timeInfo, cave }) => (
       <EntryInfoItem
         key="eiik1"
         itemImg="time-to-go.svg"
-        itemLabel="time to go"
+        itemLabel="Time to go"
         itemType="time"
         itemValue={timeInfo.eTTrail}
       />
@@ -214,7 +216,7 @@ const EntryInfos = ({ timeInfo, cave }) => (
       <EntryInfoItem
         key="eiik2"
         itemImg="underground_time.svg"
-        itemLabel="underground time"
+        itemLabel="Underground time"
         itemType="time"
         itemValue={timeInfo.eTUnderground}
       />
@@ -223,7 +225,7 @@ const EntryInfos = ({ timeInfo, cave }) => (
       <EntryInfoItem
         key="eiik3"
         itemImg="length.svg"
-        itemLabel="length"
+        itemLabel="Length"
         itemValue={cave.length}
         itemUnit="m"
       />
@@ -232,7 +234,7 @@ const EntryInfos = ({ timeInfo, cave }) => (
       <EntryInfoItem
         key="eiik4"
         itemImg="depth.svg"
-        itemLabel="depth"
+        itemLabel="Depth"
         itemValue={cave.depth}
         itemUnit="m"
       />
@@ -281,34 +283,20 @@ const EntryInfoItem = ({
   itemUnit,
   itemValue,
 }) => {
-  let displayValue = itemValue;
-  if (displayValue === undefined || displayValue === null) {
+  if (isNil(itemValue)) {
     return <span />;
   }
 
+  let valueToDisplay = itemValue;
   if (itemType === 'time') {
-    const splitTime = displayValue.split(':');
-    const curHours = parseInt(splitTime[0], 10);
-    const curMinutes = parseInt(splitTime[1], 10);
-    if (curHours === 0) {
-      const toTranslate = `${curMinutes} min`;
-      displayValue = <Translate>{toTranslate}</Translate>;
-    } else if (curMinutes === 0) {
-      const toTranslate = `${curHours} hour${curHours > 1 ? 's' : ''}`;
-      displayValue = <Translate>{toTranslate}</Translate>;
-    } else {
-      displayValue = (
-        <Translate>
-          {curHours} h {curMinutes}
-        </Translate>
-      );
-    }
+    const splittedTime = itemValue.split(':');
+    valueToDisplay = `${splittedTime[0]}h ${splittedTime[1]}m`;
   }
 
   return (
     <EntryInfoWrapper>
       <InfoImage src={`images/${itemImg}`} title={itemLabel} alt={itemLabel} />
-      <InfoValue>{displayValue}</InfoValue>
+      <InfoValue>{valueToDisplay}</InfoValue>
       <InfoUnit>{itemUnit}</InfoUnit>
     </EntryInfoWrapper>
   );
