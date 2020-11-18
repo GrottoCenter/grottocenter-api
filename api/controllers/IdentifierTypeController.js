@@ -15,7 +15,12 @@ module.exports = {
       return ControllerService.treat(
         req,
         err,
-        { identifierTypes: found },
+        {
+          identifierTypes: found.map((idType) => ({
+            ...idType,
+            id: idType.id.trim(), // remove trailling space
+          })),
+        },
         params,
         res,
       );

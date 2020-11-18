@@ -188,7 +188,11 @@ const Step4 = ({ stepId }) => {
             />
             <Property
               name={formatMessage({ id: 'Identifier Type' })}
-              value={pathOr(null, ['identifierType', 'name'], docAttributes)}
+              value={
+                docAttributes.identifierType
+                  ? docAttributes.identifierType.id.toUpperCase()
+                  : null
+              }
             />
           </TableBody>
         </Table>
