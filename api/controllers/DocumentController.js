@@ -333,6 +333,13 @@ module.exports = {
               return res.serverError('An unexpected server error occured.');
             }
 
+            if (!found) {
+              res.status(404);
+              return res.json({
+                error: `There is no document matching your criterias. It can be because sorting by ${sort} is not supported.`,
+              });
+            }
+
             await Promise.all(
               await found.map(async (doc) => {
                 await NameService.setNames(
