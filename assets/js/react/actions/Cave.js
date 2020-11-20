@@ -9,12 +9,12 @@ export const LOAD_CAVE_ERROR = 'LOAD_CAVE_ERROR';
 export const fetchCave = (caveId) => (dispatch) => {
   dispatch({ type: LOAD_CAVE_LOADING });
 
-  fetch(getCaveUrl + caveId)
+  return fetch(getCaveUrl + caveId)
     .then((response) => {
       if (response.status >= 400) {
         throw new Error(response.status);
       }
-      response.json();
+      return response.json();
     })
     .then((data) => dispatch({ type: LOAD_CAVE_SUCCESS, data }))
     .catch((error) =>
