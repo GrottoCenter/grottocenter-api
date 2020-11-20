@@ -3,13 +3,15 @@ import { useSelector } from 'react-redux';
 import { List } from '@material-ui/core';
 import Item, { DocumentItems } from './Items';
 import { Icon } from './styles';
-import isAuth from '../../../helpers/AuthHelper';
+import { isModerator, isUser } from '../../../helpers/AuthHelper';
 
 const MenuLinks = () => {
   const [isUserAuth, setIsUserAuth] = useState(false);
+  const [isUserModerator, setIsUserModerator] = useState(false);
   const authState = useSelector((state) => state.auth);
   useEffect(() => {
-    setIsUserAuth(isAuth());
+    setIsUserAuth(isUser());
+    setIsUserModerator(isModerator());
   }, [isUserAuth, authState]);
 
   return (
@@ -49,7 +51,7 @@ const MenuLinks = () => {
         label="Toolbox"
         href="#"
       />
-      <DocumentItems isAdmin={isUserAuth} />
+      <DocumentItems isModerator={isUserModerator} isUser={isUserAuth} />
     </List>
   );
 };
