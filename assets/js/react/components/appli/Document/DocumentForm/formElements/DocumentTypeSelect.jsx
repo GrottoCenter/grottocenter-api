@@ -39,7 +39,7 @@ const DocumentTypeSelect = ({
     () => (
       <FormControl variant="filled" required={required} fullWidth>
         <InputLabel htmlFor="document-type">
-          <Translate>Document Type</Translate>
+          <Translate>Document type</Translate>
         </InputLabel>
         <Select
           defaultValue={-1}

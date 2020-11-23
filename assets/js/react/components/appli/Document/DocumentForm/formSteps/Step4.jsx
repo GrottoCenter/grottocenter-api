@@ -83,7 +83,7 @@ const Step4 = ({ stepId }) => {
           </TableHead>
           <TableBody>
             <Property
-              name={formatMessage({ id: 'Document Type' })}
+              name={formatMessage({ id: 'Document type' })}
               value={pathOr(null, ['documentType', 'name'], docAttributes)}
             />
 
