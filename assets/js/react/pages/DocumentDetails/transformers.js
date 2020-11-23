@@ -48,19 +48,11 @@ export const makeDetails = (data) => {
     parentDocument: pipe(
       pathOr([], ['parent', 'titles']),
       head,
-      propOr('No title provided', 'text'),
+      propOr('', 'text'),
     )(data),
     pages: propOr('', 'pages', data),
-    subjects: pipe(
-      propOr([], 'subjects'),
-      map(propOr('', 'subject')),
-      reject(isEmpty),
-    )(data),
-    regions: pipe(
-      propOr([], 'regions'),
-      map(propOr('', 'name')),
-      reject(isEmpty),
-    )(data),
+    subjects: pipe(propOr([], 'subjects'), reject(isEmpty))(data),
+    regions: pipe(propOr([], 'regions'), reject(isEmpty))(data),
   };
 };
 
