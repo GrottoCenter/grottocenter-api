@@ -9,14 +9,16 @@ export const LOAD_ENTRY_ERROR = 'LOAD_ENTRY_ERROR';
 export const fetchEntry = (entranceId) => (dispatch) => {
   dispatch({ type: LOAD_ENTRY_LOADING });
 
-  fetch(getEntryUrl + entranceId)
+  return fetch(getEntryUrl + entranceId)
     .then((response) => {
       if (response.status >= 400) {
         throw new Error(response.status);
       }
-      response.json();
+      return response.json();
     })
-    .then((data) => dispatch({ type: LOAD_ENTRY_SUCCESS, data }))
+    .then((data) => {
+      dispatch({ type: LOAD_ENTRY_SUCCESS, data });
+    })
     .catch((error) =>
       dispatch({
         type: LOAD_ENTRY_ERROR,
