@@ -10,6 +10,10 @@ const ramda = require('ramda');
 /* Models */
 
 const EntranceModel = {
+  // See this issue for more info: https://github.com/GrottoCenter/Grottocenter3/issues/416
+  '@base': 'entrances/',
+  '@id': undefined,
+  '@type': 'https://ontology.uis-speleo.org/ontology/#UndergroundCavity',
   id: undefined,
   name: undefined,
   names: undefined,
@@ -42,6 +46,10 @@ const CountResult = {
 };
 
 const MassifModel = {
+  // See this issue for more info: https://github.com/GrottoCenter/Grottocenter3/issues/416
+  '@context': 'https://ontology.uis-speleo.org/grottocenter.org_context.jsonld',
+  '@id': undefined,
+  '@type': 'http://purl.org/dc/terms/Location',
   id: undefined,
   author: undefined,
   reviewer: undefined,
@@ -174,6 +182,7 @@ module.exports = {
     }
 
     result.id = source.id;
+    result['@id'] = source.id;
     result.descriptions = source.descriptions;
     result.country = source.country;
     result.countryCode = source['country code'];
@@ -471,6 +480,7 @@ module.exports = {
     }
 
     result.id = source.id;
+    result['@id'] = source.id;
     result.descriptions = source.descriptions;
     result.reviewer = source.reviewer;
     result.name = mainName;
