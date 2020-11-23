@@ -65,7 +65,9 @@ const DocumentPage = ({
           },
           {
             label: formatMessage({ id: 'Document type' }),
-            value: details.documentType,
+            value:
+              details.documentType &&
+              formatMessage({ id: details.documentType }),
           },
           {
             label: formatMessage({ id: 'Publication date' }),
@@ -83,12 +85,22 @@ const DocumentPage = ({
           },
           {
             label: formatMessage({ id: 'Subjects' }),
-            value: details.subjects,
+            value: details.subjects.map((s) =>
+              formatMessage({
+                id: s.code,
+                defaultMessage: s.subject,
+              }),
+            ),
             type: 'list',
           },
           {
             label: formatMessage({ id: 'Regions' }),
-            value: details.regions,
+            value: details.regions.map((r) =>
+              formatMessage({
+                id: r.code,
+                defaultMessage: r.name,
+              }),
+            ),
             type: 'list',
           },
         ]}
@@ -165,8 +177,18 @@ DocumentPage.propTypes = {
     publicationDate: PropTypes.string,
     parentDocument: PropTypes.string,
     pages: PropTypes.string,
-    subjects: PropTypes.arrayOf(PropTypes.string),
-    regions: PropTypes.arrayOf(PropTypes.string),
+    subjects: PropTypes.arrayOf(
+      PropTypes.shape({
+        code: PropTypes.string,
+        subject: PropTypes.string,
+      }),
+    ),
+    regions: PropTypes.arrayOf(
+      PropTypes.shape({
+        code: PropTypes.string,
+        name: PropTypes.string,
+      }),
+    ),
   }),
   entities: PropTypes.shape({
     massif: PropTypes.string,
