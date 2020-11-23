@@ -96,6 +96,8 @@ const CaverModel = {
 };
 
 const CaveModel = {
+  // See this issue for more info: https://github.com/GrottoCenter/Grottocenter3/issues/416
+  '@id': undefined,
   id: undefined,
   name: undefined,
   names: [],
@@ -148,7 +150,9 @@ const SubjectModel = {
 
 module.exports = {
   convertToEntranceModel: (source) => {
-    const result = { ...EntranceModel };
+    const result = {
+      ...EntranceModel,
+    };
 
     // Build the result
     // In ES, the name is already set. When coming from the DB, it's not.
@@ -182,7 +186,7 @@ module.exports = {
     }
 
     result.id = source.id;
-    result['@id'] = source.id;
+    result['@id'] = String(source.id);
     result.descriptions = source.descriptions;
     result.country = source.country;
     result.countryCode = source['country code'];
@@ -214,7 +218,9 @@ module.exports = {
   },
 
   convertToCountResult: (source) => {
-    const result = { ...CountResult };
+    const result = {
+      ...CountResult,
+    };
     result.count = source.count;
     return result;
   },
@@ -230,7 +236,9 @@ module.exports = {
   },
 
   convertToCaverModel: (source) => {
-    const result = { ...CaverModel };
+    const result = {
+      ...CaverModel,
+    };
     result.id = source.id;
     result.nickname = source.nickname;
     result.surname = source.surname;
@@ -252,8 +260,11 @@ module.exports = {
   },
 
   convertToCaveModel: (source) => {
-    const result = { ...CaveModel };
+    const result = {
+      ...CaveModel,
+    };
     result.id = source.id;
+    result['@id'] = String(source.id);
 
     let mainName = source.names.find((name) => name.isMain);
     mainName = mainName === undefined ? undefined : mainName.name;
@@ -456,7 +467,9 @@ module.exports = {
   // ---------------- Massif Function ------------------------------
 
   convertToMassifModel: (source) => {
-    const result = { ...MassifModel };
+    const result = {
+      ...MassifModel,
+    };
 
     if (source.author) {
       result.author = MappingV1Service.convertToCaverModel(source.author);
@@ -480,7 +493,7 @@ module.exports = {
     }
 
     result.id = source.id;
-    result['@id'] = source.id;
+    result['@id'] = String(source.id);
     result.descriptions = source.descriptions;
     result.reviewer = source.reviewer;
     result.name = mainName;
@@ -494,7 +507,9 @@ module.exports = {
   // ---------------- Grotto Function ---------------------------
 
   convertToGrottoModel: (source) => {
-    const result = { ...GrottoModel };
+    const result = {
+      ...GrottoModel,
+    };
 
     // Convert cavers
     if (source.cavers instanceof Array) {
@@ -553,7 +568,9 @@ module.exports = {
   // ---------------- Document Function ---------------------------
 
   convertToDocumentModel: (source) => {
-    const result = { ...DocumentModel };
+    const result = {
+      ...DocumentModel,
+    };
 
     // Conversion (from Elasticsearch or not)
     result.id = source.id;
@@ -686,7 +703,9 @@ module.exports = {
         if (ramda.propOr(null, 'id', source.type)) {
           result.type = source.type;
         } else {
-          result.type = { id: source.type };
+          result.type = {
+            id: source.type,
+          };
         }
       }
     }
@@ -705,7 +724,9 @@ module.exports = {
   },
 
   convertToSubjectModel: (source) => {
-    const result = { ...SubjectModel };
+    const result = {
+      ...SubjectModel,
+    };
     result.code = source.id.trim(); // there are some spaces at the end of the id in the DB
     result.subject = source.subject;
     result.parent =
