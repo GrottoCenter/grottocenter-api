@@ -25,7 +25,8 @@ module.exports = {
       .populate('descriptions')
       .populate('documents')
       .populate('names')
-      .exec((err, found) => {
+      .exec(async (err, found) => {
+        await NameService.setNames([found], 'cave');
         const params = {};
         params.controllerMethod = 'CaveController.find';
         params.searchedItem = `Cave of id ${req.params.id}`;
