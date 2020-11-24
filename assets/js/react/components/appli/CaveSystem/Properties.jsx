@@ -12,7 +12,7 @@ import {
 
 import CustomIcon from '../../common/CustomIcon';
 import Rating from '../../common/Properties/Rating';
-import { isValidPositions } from '../../common/Maps/MultipleMarkers';
+import { isValidPositions } from '../../common/Maps/MapMultipleMarkers';
 import { Property } from '../../common/Properties';
 import EntriesSelection from './EntriesSelection';
 import { CaveContext } from './Provider';

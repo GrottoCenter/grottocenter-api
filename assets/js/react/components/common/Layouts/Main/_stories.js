@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { Map, Marker, Popup, TileLayer } from 'react-leaflet';
+import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet';
 import { storiesOf } from '@storybook/react';
 import { action } from '@storybook/addon-actions';
 import { Typography } from '@material-ui/core';
@@ -179,7 +179,7 @@ const WithContent = () => (
   </Default>
 );
 
-const StyledMap = styled(Map)`
+const StyledMap = styled(MapContainer)`
   width: 100%;
   height: 100vh;
 `;

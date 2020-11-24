@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import { isNil, isEmpty, pipe, filter, includes } from 'ramda';
 
-import Map from '../../common/Maps/MultipleMarkers';
+import Map from '../../common/Maps/MapMultipleMarkers';
 import { CaveContext, getPositions } from './Provider';
 
 const isSelected = (selection) => (entry) => includes(entry.id, selection);
