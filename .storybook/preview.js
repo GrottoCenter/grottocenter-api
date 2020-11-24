@@ -1,4 +1,4 @@
-import { addDecorator, configure } from '@storybook/react';
+import { addDecorator } from '@storybook/react';
 import { setIntlConfig, withIntl } from 'storybook-addon-intl';
 import StoryRouter from 'storybook-react-router';
 import { withKnobs } from '@storybook/addon-knobs';
@@ -21,9 +21,3 @@ setIntlConfig({
 addDecorator(withIntl);
 addDecorator(StylesDecorator);
 addDecorator(StoryRouter());
-addDecorator(withKnobs);
-// Run storybook
-configure(
-  require.context('../assets/js/react/', true, /^.*?\b_stories\b.*?\.js\b.*?$/),
-  module,
-);
