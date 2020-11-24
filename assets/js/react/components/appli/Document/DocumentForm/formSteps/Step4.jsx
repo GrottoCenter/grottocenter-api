@@ -179,8 +179,8 @@ const Step4 = ({ stepId }) => {
               </>
             )}
             <Property
-              name={formatMessage({ id: 'Page Comment' })}
-              value={docAttributes.pageComment}
+              name={formatMessage({ id: 'Comment' })}
+              value={docAttributes.authorComment}
             />
             <Property
               name={formatMessage({ id: 'Identifier' })}

@@ -3,12 +3,10 @@ import styled from 'styled-components';
 
 import { Typography } from '@material-ui/core';
 import { isNil } from 'ramda';
-import { useIntl } from 'react-intl';
 import Translate from '../../../../common/Translate';
 
 import { DocumentFormContext } from '../Provider';
 import NumberInput from '../../../../common/Form/NumberInput';
-import StringInput from '../../../../common/Form/StringInput';
 
 // ===================================
 const InlineWrapper = styled.div`
@@ -37,10 +35,9 @@ const PagesEditor = () => {
   const [positiveEndError, setPositiveEndError] = React.useState('');
   const [positiveStartError, setPositiveStartError] = React.useState('');
   const {
-    docAttributes: { endPage, pageComment, startPage },
+    docAttributes: { endPage, authorComment, startPage },
     updateAttribute,
   } = useContext(DocumentFormContext);
-  const { formatMessage } = useIntl();
 
   React.useEffect(() => {
     const newEndGreater =
@@ -65,7 +62,7 @@ const PagesEditor = () => {
 
   const memoizedValues = [
     endPage,
-    pageComment,
+    authorComment,
     startPage,
     intervalError,
     positiveEndError,
@@ -116,20 +113,6 @@ const PagesEditor = () => {
               />
             </InputWrapper>
           </PageIntervalWrapper>
-          <InputWrapper>
-            <StringInput
-              hasError={false}
-              helperText={formatMessage({
-                id:
-                  'Additional information about the pages where the document is located (example with an article from pages 10 to 15: "There are ads from page 12 to 14.").',
-              })}
-              onValueChange={(newValue) =>
-                handleValueChange('pageComment', newValue)
-              }
-              value={pageComment}
-              valueName={formatMessage({ id: 'Page Comment' })}
-            />
-          </InputWrapper>
         </InlineWrapper>
       </>
     ),

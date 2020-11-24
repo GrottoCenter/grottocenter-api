@@ -93,7 +93,7 @@ export const defaultValuesTypes = PropTypes.shape({
   issue: PropTypes.string,
   library: libraryTypes,
   massif: massifTypes,
-  pageComment: PropTypes.string,
+  authorComment: PropTypes.string,
   partOf: partOfTypes,
   publicationDate: publicationDateTypes,
   regions: regionsTypes,

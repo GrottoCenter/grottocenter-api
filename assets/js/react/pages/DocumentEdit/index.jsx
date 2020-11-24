@@ -43,6 +43,7 @@ const DocumentEdit = ({ onSuccessfulUpdate, id }) => {
   ) : (
     <DocumentSubmission
       defaultValues={reject(isNil, {
+        authorComment: propOr(null, 'authorComment', details),
         authors: pathOr(null, ['authors'], details),
         description: pipe(
           propOr([], ['descriptions']),
@@ -61,8 +62,6 @@ const DocumentEdit = ({ onSuccessfulUpdate, id }) => {
         issue: pathOr(null, ['issue'], details),
         library: pathOr(null, ['library'], details),
         massif: pathOr(null, ['massif'], details),
-        // doesn't exist at the moment in the db, TODO
-        pageComment: null,
         partOf: docInfoGetters.getAndConvertParentDocument(details),
         publicationDate: pipe(
           pathOr(null, ['datePublication']),

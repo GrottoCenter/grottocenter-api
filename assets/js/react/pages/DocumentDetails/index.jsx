@@ -103,6 +103,10 @@ const DocumentPage = ({
             ),
             type: 'list',
           },
+          {
+            label: formatMessage({ id: 'Author comment' }),
+            value: details.authorComment,
+          },
         ]}
       />
       <Section
@@ -171,6 +175,7 @@ DocumentPage.propTypes = {
     library: PropTypes.string,
   }),
   details: PropTypes.shape({
+    authorComment: PropTypes.string,
     identifier: PropTypes.string,
     bbsReference: PropTypes.string,
     documentType: PropTypes.string,
