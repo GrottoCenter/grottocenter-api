@@ -38,6 +38,13 @@ module.exports = {
       columnName: 'filename',
     },
 
+    pathOld: {
+      type: 'string',
+      allowNull: true,
+      columnName: 'path_old',
+      maxLength: 1000,
+    },
+
     fileFormat: {
       allowNull: false,
       columnName: 'id_file_format',

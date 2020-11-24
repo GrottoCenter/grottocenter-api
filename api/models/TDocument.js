@@ -144,13 +144,6 @@ module.exports = {
       model: 'TLicense',
     },
 
-    pathOld: {
-      type: 'string',
-      allowNull: true,
-      columnName: 'path_old',
-      maxLength: 1000,
-    },
-
     pagesBBSOld: {
       type: 'string',
       allowNull: true,

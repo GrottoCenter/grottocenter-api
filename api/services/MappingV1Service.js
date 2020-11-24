@@ -122,6 +122,7 @@ const DocumentModel = {
   descriptions: [],
   editor: undefined,
   entrance: undefined,
+  files: [],
   identifierType: undefined,
   languages: [],
   library: undefined,
@@ -129,7 +130,6 @@ const DocumentModel = {
   mainLanguage: undefined,
   massif: undefined,
   pages: undefined,
-  pathOld: undefined,
   refBbs: undefined,
   regions: undefined,
   reviewer: undefined,
@@ -582,6 +582,7 @@ module.exports = {
       : source.datePublication;
     result.dateValidation = source.dateValidation;
     result.entrance = source.entrance;
+    result.files = source.files;
     result.identifier = source.identifier;
     result.identifierType = {
       ...source.identifierType,
@@ -594,7 +595,6 @@ module.exports = {
     result.mainLanguage = source.mainLanguage;
     result.massif = source.massif;
     result.pages = source.pages;
-    result.pathOld = source.pathOld;
     result.parent = source.parent
       ? module.exports.convertToDocumentModel(source.parent)
       : null;
