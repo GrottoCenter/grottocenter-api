@@ -114,6 +114,7 @@ const CaveModel = {
 
 const DocumentModel = {
   author: undefined,
+  authorComment: undefined,
   cave: undefined,
   country: undefined,
   dateInscription: undefined,
@@ -575,6 +576,7 @@ module.exports = {
     // Conversion (from Elasticsearch or not)
     result.id = source.id;
     result.author = source.author;
+    result.authorComment = source.authorComment;
     result.cave = source.cave;
     result.dateInscription = source.dateInscription;
     result.datePublication = source.date_publication

@@ -66,6 +66,13 @@ module.exports = {
       columnName: 'validation_comment',
     },
 
+    authorComment: {
+      type: 'string',
+      allowNull: true,
+      maxLength: 300,
+      columnName: 'author_comment',
+    },
+
     pages: {
       type: 'string',
       allowNull: true,
