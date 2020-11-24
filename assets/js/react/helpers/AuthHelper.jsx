@@ -24,6 +24,10 @@ const hasRole = (roleName) => {
   return decodedToken.groups.some((g) => g.name === roleName);
 };
 
+export const isUser = () => {
+  return hasRole('User');
+};
+
 export const isAdmin = () => {
   return hasRole('Administrator');
 };

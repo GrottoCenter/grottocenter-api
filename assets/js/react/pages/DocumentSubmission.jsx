@@ -6,7 +6,7 @@ import { useIntl } from 'react-intl';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import isAuth from '../helpers/AuthHelper';
+import { isUser } from '../helpers/AuthHelper';
 import { isArticle } from '../components/appli/Document/DocumentForm/DocumentTypesHelper';
 import {
   postDocument,
@@ -98,7 +98,7 @@ const DocumentSubmission = () => {
 
   useEffect(() => {
     // Handle User Auth
-    setIsUserAuth(isAuth());
+    setIsUserAuth(isUser());
 
     // Handle Doc Submission
     if (documentState.latestHttpCode === 200 && isDocSubmitted) {
@@ -198,7 +198,7 @@ const DocumentSubmission = () => {
               <ErrorMessage
                 message={formatMessage({
                   id:
-                    'You must be authenticated to submit a document to Grottocenter.',
+                    'You must be authenticated and an user to submit a document to Grottocenter.',
                 })}
               />
               <SpacedButton onClick={onLoginClick} variant="contained">

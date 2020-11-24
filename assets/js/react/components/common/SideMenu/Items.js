@@ -45,36 +45,38 @@ const AddDocument = () => (
   />
 );
 
-export const DocumentItems = ({ isAdmin = true }) => {
+export const DocumentItems = ({ isModerator = true, isUser = true }) => {
   const [isDocumentCollapsed, setIsDocumentCollapsed] = useState(false);
 
   const toggleIsDocumentCollapsed = () => {
     setIsDocumentCollapsed(!isDocumentCollapsed);
   };
 
-  return isAdmin ? (
-    <>
-      <Item
-        onClick={toggleIsDocumentCollapsed}
-        ItemIcon={() => <DescriptionIcon color="primary" />}
-        label="Document"
-      >
-        {isDocumentCollapsed ? <ExpandLess /> : <ExpandMore />}
-      </Item>
-      <Collapse in={isDocumentCollapsed} timeout="auto" unmountOnExit>
-        <List component="div" disablePadding>
-          <AddDocument />
-          <LinkedItem
-            ItemIcon={() => <DocumentList color="primary" />}
-            label="Document validation"
-            href="/ui/documents/validation"
-            nested
-          />
-        </List>
-      </Collapse>
-    </>
-  ) : (
-    <AddDocument />
+  return (
+    (isUser || isModerator) && (
+      <>
+        <Item
+          onClick={toggleIsDocumentCollapsed}
+          ItemIcon={() => <DescriptionIcon color="primary" />}
+          label="Document"
+        >
+          {isDocumentCollapsed ? <ExpandLess /> : <ExpandMore />}
+        </Item>
+        <Collapse in={isDocumentCollapsed} timeout="auto" unmountOnExit>
+          <List component="div" disablePadding>
+            {isUser && <AddDocument />}
+            {isModerator && (
+              <LinkedItem
+                ItemIcon={() => <DocumentList color="primary" />}
+                label="Document validation"
+                href="/ui/documents/validation"
+                nested
+              />
+            )}
+          </List>
+        </Collapse>
+      </>
+    )
   );
 };
 
@@ -93,7 +95,8 @@ LinkedItem.propTypes = {
 };
 
 DocumentItems.propTypes = {
-  isAdmin: PropTypes.bool,
+  isModerator: PropTypes.bool,
+  isUser: PropTypes.bool,
 };
 
 export default LinkedItem;
