@@ -146,7 +146,7 @@ paths:
           description: "Bad request. Either the caverId and groupId parameters should exist in the database."
         '500':
           description: Internal error
-  
+
   '/documents/{id}':
     put:
       tags:
@@ -159,7 +159,7 @@ paths:
         required: true
         schema:
           type: string
-      responses: 
+      responses:
         200:
           description: Successful operation
           content:
@@ -174,7 +174,7 @@ paths:
       tags:
         - documents
       description: Create a document.
-      responses: 
+      responses:
         200:
           description: Successful operation
           content:
@@ -183,7 +183,7 @@ paths:
                 $ref: '#/components/schemas/Document'
         403:
           description: You are not authorized to create a document.
-     
+
     get:
       tags:
         - documents
@@ -720,11 +720,11 @@ paths:
         '500':
           description: Internal error
 
-  '/geoloc/findByBounds':
+  '/geoloc/caves':
     get:
       tags:
       - geoloc
-      description: Find entries contained inside the given coords
+      description: Find caves contained inside the given coords
       parameters:
       - name: sw_lat
         in: query
@@ -750,6 +750,174 @@ paths:
         required: true
         schema:
           type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Geoloc'
+        '404':
+          description: Resource not found
+        '500':
+          description: Internal error
+
+  '/geoloc/cavesCoordinates':
+    get:
+      tags:
+        - geoloc
+      description: Find caves coordinates contained inside the given coords
+      parameters:
+        - name: sw_lat
+          in: query
+          description: South West latitude
+          required: true
+          schema:
+            type: string
+        - name: sw_lng
+          in: query
+          description: South West longitude
+          required: true
+          schema:
+            type: string
+        - name: ne_lat
+          in: query
+          description: North East latitude
+          required: true
+          schema:
+            type: string
+        - name: ne_lng
+          in: query
+          description: North East longitude
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Geoloc'
+        '404':
+          description: Resource not found
+        '500':
+          description: Internal error
+
+  '/geoloc/grottos':
+    get:
+      tags:
+        - geoloc
+      description: Find grottos contained inside the given coords
+      parameters:
+        - name: sw_lat
+          in: query
+          description: South West latitude
+          required: true
+          schema:
+            type: string
+        - name: sw_lng
+          in: query
+          description: South West longitude
+          required: true
+          schema:
+            type: string
+        - name: ne_lat
+          in: query
+          description: North East latitude
+          required: true
+          schema:
+            type: string
+        - name: ne_lng
+          in: query
+          description: North East longitude
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Geoloc'
+        '404':
+          description: Resource not found
+        '500':
+          description: Internal error
+
+  '/geoloc/entrances':
+    get:
+      tags:
+        - geoloc
+      description: Find entrances contained inside the given coords
+      parameters:
+        - name: sw_lat
+          in: query
+          description: South West latitude
+          required: true
+          schema:
+            type: string
+        - name: sw_lng
+          in: query
+          description: South West longitude
+          required: true
+          schema:
+            type: string
+        - name: ne_lat
+          in: query
+          description: North East latitude
+          required: true
+          schema:
+            type: string
+        - name: ne_lng
+          in: query
+          description: North East longitude
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Geoloc'
+        '404':
+          description: Resource not found
+        '500':
+          description: Internal error
+
+  '/geoloc/entrancesCoordinates':
+    get:
+      tags:
+        - geoloc
+      description: Find entrances coordinates contained inside the given coords
+      parameters:
+        - name: sw_lat
+          in: query
+          description: South West latitude
+          required: true
+          schema:
+            type: string
+        - name: sw_lng
+          in: query
+          description: South West longitude
+          required: true
+          schema:
+            type: string
+        - name: ne_lat
+          in: query
+          description: North East latitude
+          required: true
+          schema:
+            type: string
+        - name: ne_lng
+          in: query
+          description: North East longitude
+          required: true
+          schema:
+            type: string
       responses:
         '200':
           description: Successful operation

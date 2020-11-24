@@ -456,9 +456,37 @@ module.exports.routes = {
     },
   },
 
-  'GET /api/v1/geoloc/findByBounds': {
+  'GET /api/v1/geoloc/caves': {
     controller: 'v1/GeoLoc',
-    action: 'findByBounds',
+    action: 'findCaves',
+    cors: {
+      allowOrigins: '*',
+    },
+  },
+  'GET /api/v1/geoloc/cavesCoordinates': {
+    controller: 'v1/GeoLoc',
+    action: 'findCavesCoordinates',
+    cors: {
+      allowOrigins: '*',
+    },
+  },
+  'GET /api/v1/geoloc/grottos': {
+    controller: 'v1/GeoLoc',
+    action: 'findGrottos',
+    cors: {
+      allowOrigins: '*',
+    },
+  },
+  'GET /api/v1/geoloc/entrances': {
+    controller: 'v1/GeoLoc',
+    action: 'findEntrances',
+    cors: {
+      allowOrigins: '*',
+    },
+  },
+  'GET /api/v1/geoloc/entrancesCoordinates': {
+    controller: 'v1/GeoLoc',
+    action: 'findEntrancesCoordinates',
     cors: {
       allowOrigins: '*',
     },
