@@ -24,6 +24,7 @@ const defaultFormSteps = [
 export const defaultContext = {
   docAttributes: {
     authors: [],
+    authorComment: '',
     description: '',
     documentMainLanguage: null,
     documentType: { id: DocumentTypes.UNKNOWN },
@@ -36,7 +37,6 @@ export const defaultContext = {
     issue: '',
     library: null,
     massif: null,
-    pageComment: '',
     partOf: null,
     publicationDate: null,
     regions: [],

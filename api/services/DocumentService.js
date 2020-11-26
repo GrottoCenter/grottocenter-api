@@ -7,6 +7,8 @@ const MAIN_LANGUAGE_QUERY = `
     AND jdl.is_main = true
 `;
 
+const oldTopoFilesUrl = 'https://www.grottocenter.org/upload/topos/';
+
 module.exports = {
   /**
    * @returns {Promise} which resolves to the succesfully findRandom
@@ -28,5 +30,14 @@ module.exports = {
       return formattedLanguage;
     }
     return language;
+  },
+
+  getTopoFiles: async (docId) => {
+    const files = await TFile.find({ document: docId });
+    // Build path old
+    return files.map((f) => ({
+      ...f,
+      pathOld: oldTopoFilesUrl + f.pathOld,
+    }));
   },
 };

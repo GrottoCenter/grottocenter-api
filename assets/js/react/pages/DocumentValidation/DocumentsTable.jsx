@@ -8,6 +8,7 @@ import { createColumns } from '../../components/common/Table/TableHead';
 
 const defaultHiddenColumns = [
   'author',
+  'authorComment',
   'authors',
   'cave',
   'datePublication',
@@ -15,6 +16,7 @@ const defaultHiddenColumns = [
   'descriptions',
   'editor',
   'entrance',
+  'files',
   'id',
   'identifier',
   'identifierType',

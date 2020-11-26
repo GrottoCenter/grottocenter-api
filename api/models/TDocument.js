@@ -66,6 +66,13 @@ module.exports = {
       columnName: 'validation_comment',
     },
 
+    authorComment: {
+      type: 'string',
+      allowNull: true,
+      maxLength: 300,
+      columnName: 'author_comment',
+    },
+
     pages: {
       type: 'string',
       allowNull: true,
@@ -142,13 +149,6 @@ module.exports = {
       allowNull: false,
       columnName: 'id_license',
       model: 'TLicense',
-    },
-
-    pathOld: {
-      type: 'string',
-      allowNull: true,
-      columnName: 'path_old',
-      maxLength: 1000,
     },
 
     pagesBBSOld: {

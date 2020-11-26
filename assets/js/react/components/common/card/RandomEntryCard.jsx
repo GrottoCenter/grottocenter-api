@@ -34,15 +34,17 @@ const EntryData = ({ entry }) => {
   if (!entry) {
     return <div />;
   }
+  let imageElement = null;
   const { documents, cave, stats, timeInfo } = entry;
 
   // TODO: improve get of the topo
   // 13 is the id of the type "TopographicData"
-  const topo = documents
-    ? documents.find((d) => d.type === 13 && d.pathOld !== null)
-    : null;
-  const imageElement =
-    topo && topo.pathOld ? <EntryImage src={topo.pathOld} /> : '';
+  const topoDoc = documents ? documents.find((d) => d.type === 13) : null;
+  if (!isNil(topoDoc)) {
+    const topo = topoDoc.files.find((f) => f.pathOld !== null);
+    imageElement =
+      topo && topo.pathOld ? <EntryImage src={topo.pathOld} /> : null;
+  }
 
   return (
     <FlexWrapper>
@@ -51,7 +53,7 @@ const EntryData = ({ entry }) => {
         <EntryStat stat={stats} />
         <EntryInfos timeInfo={timeInfo} cave={cave} />
       </FlexItemWrapper>
-      <FlexItemWrapper>{imageElement}</FlexItemWrapper>
+      {imageElement && <FlexItemWrapper>{imageElement}</FlexItemWrapper>}
     </FlexWrapper>
   );
 };

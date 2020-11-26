@@ -1,5 +1,4 @@
-/**
- */
+const ramda = require('ramda');
 
 // valid image formats
 const FOUR_LETTERS_VALID_IMG_FORMATS = "'.jpg','.png','.gif','.svg'";
@@ -22,24 +21,30 @@ module.exports = {
     return EntranceService.completeRandomEntrance(entranceId);
   },
 
-  findEntrance: async (entranceId) =>
-    TEntrance.find({ id: entranceId })
-      .populate('names')
+  findEntrance: async (entranceId) => {
+    let entrance = await TEntrance.findOne({ id: entranceId })
       .populate('cave')
       .populate('documents')
-      .limit(1),
+      .populate('names');
+    if (!ramda.isNil(entrance.documents)) {
+      entrance.documents = await Promise.all(
+        entrance.documents.map(async (doc) => ({
+          ...doc,
+          files: await DocumentService.getTopoFiles(doc.id),
+        })),
+      );
+    }
+    return entrance;
+  },
 
   /**
    * @returns {Promise} which resolves to the succesfully completeRandomEntrance
    */
   completeRandomEntrance: async (entranceId) => {
     const entranceData = await EntranceService.findEntrance(entranceId);
-    const completeEntrance = { ...entranceData[0] };
-
-    completeEntrance.stats = await CommentService.getStats(entranceId);
-    completeEntrance.timeInfo = await CommentService.getTimeInfos(entranceId);
-
-    return completeEntrance;
+    entranceData.stats = await CommentService.getStats(entranceId);
+    entranceData.timeInfo = await CommentService.getTimeInfos(entranceId);
+    return entranceData;
   },
 
   /**

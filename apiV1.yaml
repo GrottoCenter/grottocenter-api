@@ -996,8 +996,6 @@ components:
           type: object
         refBbs:
           type: string
-        pathOld:
-          type: string
         pagesBBSOld:
           type: string
         commentsBBSOld:

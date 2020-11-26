@@ -41,6 +41,7 @@ export const makeDetails = (data) => {
       )} (${data.identifierType.id.toUpperCase()})`
     : propOr('', 'identifier', data);
   return {
+    authorComment: propOr('', 'authorComment', data),
     identifier: formatedIdentfier,
     bbsReference: propOr('', 'refBbs', data),
     documentType: pathOr('', ['type', 'name'], data),

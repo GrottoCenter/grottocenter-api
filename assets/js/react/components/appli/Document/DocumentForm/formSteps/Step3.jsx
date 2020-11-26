@@ -8,6 +8,7 @@ import PagesEditor from '../formElements/PagesEditor';
 
 import DocIdentifierEditor from '../../../../../features/DocIdentifierEditor';
 
+import StringInput from '../../../../common/Form/StringInput';
 import IssueEditor from '../formElements/IssueEditor';
 import { DocumentFormContext } from '../Provider';
 import { isArticle, isIssue } from '../DocumentTypesHelper';
@@ -28,11 +29,16 @@ const Step3 = ({ stepId }) => {
   const { formatMessage } = useIntl();
 
   const {
-    docAttributes: { documentType },
+    docAttributes: { authorComment, documentType },
     validatedSteps,
+    updateAttribute,
   } = useContext(DocumentFormContext);
 
-  const memoizedValues = [documentType, includes(stepId, validatedSteps)];
+  const memoizedValues = [
+    authorComment,
+    documentType,
+    includes(stepId, validatedSteps),
+  ];
   return useMemo(
     () => (
       <>
@@ -55,6 +61,18 @@ const Step3 = ({ stepId }) => {
             </FlexItemWrapper>
           )}
         </FlexWrapper>
+
+        <StringInput
+          hasError={false}
+          helperText={formatMessage({
+            id: 'Additional information about your submission.',
+          })}
+          onValueChange={(newValue) =>
+            updateAttribute('authorComment', newValue)
+          }
+          value={authorComment}
+          valueName={formatMessage({ id: 'Comment' })}
+        />
 
         <DocIdentifierEditor
           documentType={documentType}

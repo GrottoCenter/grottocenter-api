@@ -114,6 +114,7 @@ const CaveModel = {
 
 const DocumentModel = {
   author: undefined,
+  authorComment: undefined,
   cave: undefined,
   country: undefined,
   dateInscription: undefined,
@@ -122,6 +123,7 @@ const DocumentModel = {
   descriptions: [],
   editor: undefined,
   entrance: undefined,
+  files: [],
   identifierType: undefined,
   languages: [],
   library: undefined,
@@ -129,7 +131,6 @@ const DocumentModel = {
   mainLanguage: undefined,
   massif: undefined,
   pages: undefined,
-  pathOld: undefined,
   refBbs: undefined,
   regions: undefined,
   reviewer: undefined,
@@ -575,6 +576,7 @@ module.exports = {
     // Conversion (from Elasticsearch or not)
     result.id = source.id;
     result.author = source.author;
+    result.authorComment = source.authorComment;
     result.cave = source.cave;
     result.dateInscription = source.dateInscription;
     result.datePublication = source.date_publication
@@ -582,6 +584,7 @@ module.exports = {
       : source.datePublication;
     result.dateValidation = source.dateValidation;
     result.entrance = source.entrance;
+    result.files = source.files;
     result.identifier = source.identifier;
     result.identifierType = {
       ...source.identifierType,
@@ -594,7 +597,6 @@ module.exports = {
     result.mainLanguage = source.mainLanguage;
     result.massif = source.massif;
     result.pages = source.pages;
-    result.pathOld = source.pathOld;
     result.parent = source.parent
       ? module.exports.convertToDocumentModel(source.parent)
       : null;
