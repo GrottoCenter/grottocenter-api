@@ -172,7 +172,11 @@ module.exports.policies = {
 
   'v1/GeoLocController': {
     countEntries: true,
-    findByBounds: true,
+    findCaves: true,
+    findCavesCoordinates: true,
+    findGrottos: true,
+    findEntrances: true,
+    findEntrancesCoordinates: true,
   },
 
   /***************************************************************************

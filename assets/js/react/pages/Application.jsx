@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Redirect, Route, Switch } from 'react-router-dom';
 
-import MapContainer from '../containers/MapContainer';
-
 import Api from '../components/appli/Api';
 import Dashboard from './Dashboard';
 import Swagger from './Swagger';
@@ -28,6 +26,7 @@ import GroupPage from './Group';
 import MassifPage from './Massif';
 import CaveSystemPage from './CaveSystem';
 import ManageUsers from './Admin/ManageUsers';
+import Map from './Map';
 
 const Application = () => {
   const dispatch = useDispatch();
@@ -65,7 +64,7 @@ const Application = () => {
         <Route path="/ui/entries/:id?" component={EntryPage} />
         <Route path="/ui/caves/:id?" component={CaveSystemPage} />
         <Route path="/ui/faq" component={Faq} />
-        <Route path="/ui/map/:target?" component={MapContainer} />
+        <Route path="/ui/map/:target?" component={Map} />
         <Route path="/ui/swagger/:version" component={Swagger} />
         <Route path="/ui/test" component={LatestBlogNewsSection} />
         <Route path="/ui/groups/:groupId" component={GroupPage} />

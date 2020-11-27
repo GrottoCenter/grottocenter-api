@@ -144,9 +144,18 @@ export const dynamicNumbersUrl = {
   officialPartners: '/api/organizations/officialCount',
 };
 
+export const fetchConvert = '/api/convert';
 export const findRandomEntryUrl = '/api/entrances/findRandom';
 export const findForCarouselUrl = '/api/partners/findForCarousel';
-export const findMapBoundsUrl = `/api/${apiVersion}/geoloc/findByBounds`;
+export const getMapCavesUrl = `/api/${apiVersion}/geoloc/caves`;
+export const getMapCavesCoordinatesUrl = `/api/${apiVersion}/geoloc/cavesCoordinates`;
+export const getMapEntrancesUrl = `/api/${apiVersion}/geoloc/entrances`;
+export const getMapEntrancesCoordinatesUrl = `/api/${apiVersion}/geoloc/entrancesCoordinates`;
+export const getMapGrottosUrl = `/api/${apiVersion}/geoloc/grottos`;
+/**
+ * @deprecated
+ */
+export const findMapBoundsUrl = `/api/${apiVersion}/geoloc/TO_REMOVE`;
 export const findMassifUrl = `/api/${apiVersion}/massifs/`;
 export const findGroupUrl = `/api/${apiVersion}/organizations/`;
 export const advancedsearchUrl = `/api/${apiVersion}/advanced-search`;
@@ -202,7 +211,7 @@ export const breadcrumpKeys = {
 };
 
 export const defaultCoord = { lat: 0, lng: 0 };
-export const defaultZoom = 2;
+export const defaultZoom = 3;
 export const focusZoom = 13;
 export const sideMenuWidth = '215px';
 export const logoGC = '/images/logo.svg';
