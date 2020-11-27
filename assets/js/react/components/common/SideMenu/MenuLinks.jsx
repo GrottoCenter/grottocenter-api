@@ -3,16 +3,21 @@ import { useSelector } from 'react-redux';
 import { List } from '@material-ui/core';
 import Item, { DocumentItems } from './Items';
 import { Icon } from './styles';
-import { isModerator, isUser } from '../../../helpers/AuthHelper';
+import isAuth, {
+  isModerator,
+  isUser as hasUserRole,
+} from '../../../helpers/AuthHelper';
 
 const MenuLinks = () => {
   const [isUserAuth, setIsUserAuth] = useState(false);
+  const [isUser, setIsUser] = useState(false);
   const [isUserModerator, setIsUserModerator] = useState(false);
   const authState = useSelector((state) => state.auth);
   useEffect(() => {
-    setIsUserAuth(isUser());
+    setIsUserAuth(isAuth());
+    setIsUser(hasUserRole());
     setIsUserModerator(isModerator());
-  }, [isUserAuth, authState]);
+  }, [isUserAuth, isUser, isUserModerator, authState]);
 
   return (
     <List component="nav" aria-label="main mailbox folders">
@@ -51,7 +56,7 @@ const MenuLinks = () => {
         label="Toolbox"
         href="#"
       />
-      <DocumentItems isModerator={isUserModerator} isUser={isUserAuth} />
+      <DocumentItems isModerator={isUserModerator} isUser={isUser} />
     </List>
   );
 };
