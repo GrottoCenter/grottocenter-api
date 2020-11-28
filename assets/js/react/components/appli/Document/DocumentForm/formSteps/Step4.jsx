@@ -202,7 +202,7 @@ const Step4 = ({ stepId }) => {
               key="identifier_type"
               name={formatMessage({ id: 'Identifier Type' })}
               value={
-                docAttributes.identifierType
+                pathOr(null, ['identifierType', 'id'], docAttributes)
                   ? docAttributes.identifierType.id.toUpperCase()
                   : null
               }
