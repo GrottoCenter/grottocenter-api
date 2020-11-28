@@ -19,9 +19,7 @@ const isStep1Valid = (stepData, documentType) => {
     case DocumentTypes.UNKNOWN:
       return false;
     case DocumentTypes.ISSUE:
-      return (
-        isValid && publicationDate !== null && documentMainLanguage !== null
-      );
+      return isValid && publicationDate !== '' && documentMainLanguage !== null;
     case DocumentTypes.ARTICLE:
       return isValid && documentMainLanguage !== null;
     case DocumentTypes.COLLECTION:

@@ -38,7 +38,7 @@ export const defaultContext = {
     library: null,
     massif: null,
     partOf: null,
-    publicationDate: null,
+    publicationDate: '',
     regions: [],
     startPage: null,
     subjects: [],

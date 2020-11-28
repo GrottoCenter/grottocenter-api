@@ -2,16 +2,7 @@ import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { CircularProgress } from '@material-ui/core';
 import { useDispatch, useSelector } from 'react-redux';
-import {
-  isEmpty,
-  isNil,
-  head,
-  pathOr,
-  propOr,
-  reject,
-  pipe,
-  unless,
-} from 'ramda';
+import { isEmpty, isNil, head, pathOr, propOr, reject, pipe } from 'ramda';
 import DocumentSubmission from '../DocumentSubmission';
 import { fetchDocumentDetails } from '../../actions/DocumentDetails';
 import docInfoGetters from './docInfoGetters';
@@ -63,10 +54,7 @@ const DocumentEdit = ({ onSuccessfulUpdate, id }) => {
         library: pathOr(null, ['library'], details),
         massif: pathOr(null, ['massif'], details),
         partOf: docInfoGetters.getAndConvertParentDocument(details),
-        publicationDate: pipe(
-          pathOr(null, ['datePublication']),
-          unless(isNil, (date) => new Date(date)),
-        )(details),
+        publicationDate: propOr('', 'datePublication', details),
         regions: pathOr(null, ['regions'], details),
         startPage: docInfoGetters.getStartPage(details),
         subjects: pathOr(null, ['subjects'], details),

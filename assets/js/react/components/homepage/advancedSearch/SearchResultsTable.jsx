@@ -571,7 +571,7 @@ class SearchResultsTable extends React.Component {
                         </TableCell>
                         <TableCell>
                           {result.publicationDate
-                            ? new Date(result.publicationDate).getFullYear()
+                            ? result.publicationDate
                             : '-'}
                         </TableCell>
                       </>
