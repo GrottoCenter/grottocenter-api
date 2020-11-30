@@ -41,7 +41,7 @@ const QuickSearch = ({
   const handleSelection = (selection) => {
     if (selection.id) {
       switch (selection.type) {
-        case 'entry':
+        case 'entrance':
           history.push(`/ui/entries/${encodeURIComponent(selection.id)}`);
           break;
         case 'massif':
