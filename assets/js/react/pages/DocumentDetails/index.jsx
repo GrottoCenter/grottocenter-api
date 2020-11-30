@@ -31,7 +31,7 @@ const DocumentPage = ({
   details,
   entities,
 }) => {
-  const { formatMessage, formatDate } = useIntl();
+  const { formatMessage } = useIntl();
   return (
     <Wrapper>
       <Overview {...overview} loading={loading} />
@@ -71,9 +71,7 @@ const DocumentPage = ({
           },
           {
             label: formatMessage({ id: 'Publication date' }),
-            value: details.publicationDate
-              ? formatDate(details.publicationDate)
-              : null,
+            value: details.publicationDate,
           },
           {
             label: formatMessage({ id: 'Parent document' }),

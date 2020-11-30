@@ -8,6 +8,7 @@ import {
   KeyboardDatePicker,
   MuiPickersUtilsProvider,
 } from '@material-ui/pickers';
+import { set as setDate } from 'date-fns';
 import Translate from '../../../../common/Translate';
 
 import { DocumentFormContext } from '../Provider';
@@ -29,9 +30,24 @@ const DateButton = styled(Button)`
 `;
 // ===================================
 
+const dateTypeFormats = {
+  YEAR: 'yyyy',
+  YEAR_MONTH: 'MM/yyyy',
+  YEAR_MONTH_DAY: 'dd/MM/yyyy',
+};
+
 const PublicationDatePicker = ({ required = false }) => {
   const { formatMessage } = useIntl();
-  const [dateTypes, setDateTypes] = React.useState(['year', 'month', 'date']);
+  const {
+    docAttributes: { publicationDate },
+    updateAttribute,
+  } = useContext(DocumentFormContext);
+  const [dateTypes, setDateTypes] = React.useState(
+    // Default date format type is deduced from the publicationDate
+    publicationDate === ''
+      ? ['year', 'month', 'date']
+      : ['year', 'month', 'date'].slice(0, publicationDate.split('-').length),
+  );
   const [isDatePickerOpen, setIsDatePickerOpen] = React.useState(false);
   const handleDateTypesChanges = (newTypes) => {
     if (newTypes !== dateTypes) {
@@ -40,19 +56,47 @@ const PublicationDatePicker = ({ required = false }) => {
     }
   };
 
-  const {
-    docAttributes: { publicationDate },
-    updateAttribute,
-  } = useContext(DocumentFormContext);
-
   const getDisplayedDateFormat = () => {
     if (dateTypes.includes('month')) {
       if (dateTypes.includes('date')) {
-        return 'dd/MM/yyyy';
+        return dateTypeFormats.YEAR_MONTH_DAY;
       }
-      return 'MM/yyyy';
+      return dateTypeFormats.YEAR_MONTH;
     }
-    return 'yyyy';
+    return dateTypeFormats.YEAR;
+  };
+
+  /**
+   * Cast the new Date picked from a Date object to a string
+   * (according to the date format selected) and update it in the Provider.
+   * The string format used is yyyy-MM-dd.
+   * For month and day < 10, we should add a 0 before it.
+   * EXAMPLE :
+   *      - 5/3/1996 and YEAR_MONTH_DAY format => '1996-03-05'
+   *      - 5/3/1996 and YEAR_MONTH format => '1996-03'
+   *      - 5/3/1996 and YEAR format => '1996'
+   *
+   * @param {Date} newDate
+   */
+  const handleDateChange = (newDate) => {
+    const year = newDate.getFullYear();
+    const month = newDate.getMonth() + 1;
+    const day = newDate.getDate();
+    if (getDisplayedDateFormat() === dateTypeFormats.YEAR) {
+      updateAttribute('publicationDate', String(year));
+    } else if (getDisplayedDateFormat() === dateTypeFormats.YEAR_MONTH) {
+      updateAttribute(
+        'publicationDate',
+        `${year}-${month < 10 ? `0${month}` : month}`,
+      );
+    } else {
+      updateAttribute(
+        'publicationDate',
+        `${year}-${month < 10 ? `0${month}` : month}-${
+          day < 10 ? `0${day}` : day
+        }`,
+      );
+    }
   };
 
   const formHelperProps = {
@@ -72,21 +116,29 @@ const PublicationDatePicker = ({ required = false }) => {
     },
   };
 
+  /**
+   * From a given date string with format 'yyyy-MM-dd' with
+   * MM and dd optional, return a JS Date.
+   * MM is getMonth() JS Date API month + 1.
+   * If the string is empty, return null.
+   * @param {String} dateString
+   */
+  const getDateObjFromDateString = (dateString) => {
+    if (dateString === '') return null;
+    const splittedDate = dateString.split('-');
+    return setDate(new Date(), {
+      year: splittedDate[0],
+      month: splittedDate.length > 1 ? splittedDate[1] - 1 : undefined,
+      date: splittedDate.length > 2 ? splittedDate[2] : undefined,
+    });
+  };
+
   const memoizedValues = [
     dateTypes,
     isDatePickerOpen,
     publicationDate,
     required,
   ];
-
-  const isAValidDate = (d) => {
-    return d !== null && d instanceof Date && !Number.isNaN(d.getTime());
-  };
-
-  const hasError =
-    (required &&
-      (publicationDate === null || !isAValidDate(publicationDate))) ||
-    (!required && publicationDate !== null && !isAValidDate(publicationDate));
 
   return useMemo(
     () => (
@@ -98,8 +150,8 @@ const PublicationDatePicker = ({ required = false }) => {
             id="date-picker-dialog"
             label={<Translate>Publication Date</Translate>}
             format={getDisplayedDateFormat()}
-            value={publicationDate}
-            onChange={(date) => updateAttribute('publicationDate', date)}
+            value={getDateObjFromDateString(publicationDate)}
+            onChange={(date) => handleDateChange(date)}
             KeyboardButtonProps={{
               'aria-label': 'change date',
             }}
@@ -108,7 +160,7 @@ const PublicationDatePicker = ({ required = false }) => {
             disableFuture
             FormHelperTextProps={formHelperProps}
             required={required}
-            error={hasError}
+            error={required && publicationDate === ''}
             views={dateTypes}
             open={isDatePickerOpen}
             onClose={() => setIsDatePickerOpen(false)}

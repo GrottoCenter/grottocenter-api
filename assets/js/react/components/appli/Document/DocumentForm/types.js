@@ -62,7 +62,6 @@ export const libraryTypes = organizationTypes;
 export const identifierTypeTypes = PropTypes.shape({});
 export const massifTypes = PropTypes.shape({ id: PropTypes.number });
 export const partOfTypes = PropTypes.shape({});
-export const publicationDateTypes = PropTypes.instanceOf(Date);
 export const regionsTypes = PropTypes.arrayOf(
   PropTypes.shape({
     id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
@@ -95,7 +94,7 @@ export const defaultValuesTypes = PropTypes.shape({
   massif: massifTypes,
   authorComment: PropTypes.string,
   partOf: partOfTypes,
-  publicationDate: publicationDateTypes,
+  publicationDate: PropTypes.string,
   regions: regionsTypes,
   startPage: PropTypes.number,
   subjects: subjectsTypes,

@@ -12,10 +12,6 @@ const makeCustomCellRenders = () => {
           : null,
     },
     {
-      id: 'datePublication',
-      customRender: (date) => (date ? formatDate(new Date(date)) : null),
-    },
-    {
       id: 'dateValidation',
       customRender: (date) => (date ? formatDate(new Date(date)) : null),
     },

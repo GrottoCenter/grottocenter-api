@@ -47,9 +47,10 @@ module.exports = {
     },
 
     datePublication: {
-      type: 'ref',
+      type: 'string',
       columnName: 'date_publication',
-      columnType: 'datetime',
+      allowNull: true,
+      maxLength: 10,
     },
 
     isValidated: {

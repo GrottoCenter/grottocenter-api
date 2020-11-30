@@ -64,7 +64,7 @@ Property.propTypes = {
 // ===================================
 
 const Step4 = ({ stepId }) => {
-  const { formatMessage, formatDate } = useIntl();
+  const { formatMessage } = useIntl();
   const { docAttributes, validatedSteps } = useContext(DocumentFormContext);
 
   const memoizedValues = [includes(stepId, validatedSteps)];
@@ -125,10 +125,7 @@ const Step4 = ({ stepId }) => {
             <Property
               key="publication_date"
               name={formatMessage({ id: 'Publication Date' })}
-              value={
-                docAttributes.publicationDate &&
-                formatDate(docAttributes.publicationDate)
-              }
+              value={docAttributes.publicationDate}
             />
             <Property
               key="authors"
@@ -205,7 +202,7 @@ const Step4 = ({ stepId }) => {
               key="identifier_type"
               name={formatMessage({ id: 'Identifier Type' })}
               value={
-                docAttributes.identifierType
+                pathOr(null, ['identifierType', 'id'], docAttributes)
                   ? docAttributes.identifierType.id.toUpperCase()
                   : null
               }
