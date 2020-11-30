@@ -83,6 +83,7 @@ const Step4 = ({ stepId }) => {
           </TableHead>
           <TableBody>
             <Property
+              key="doc_type"
               name={formatMessage({ id: 'Document type' })}
               value={pathOr(null, ['documentType', 'name'], docAttributes)}
             />
@@ -90,6 +91,7 @@ const Step4 = ({ stepId }) => {
             {pathOr('', ['documentMainLanguage', 'refName'], docAttributes) !==
               '' && (
               <Property
+                key="main_language"
                 name={formatMessage({ id: 'Document main language' })}
                 value={formatMessage({
                   id: docAttributes.documentMainLanguage.refName,
@@ -111,14 +113,17 @@ const Step4 = ({ stepId }) => {
             )}
 
             <Property
+              key="title"
               name={formatMessage({ id: 'Title' })}
               value={docAttributes.title}
             />
             <Property
+              key="description"
               name={formatMessage({ id: 'Description' })}
               value={docAttributes.description}
             />
             <Property
+              key="publication_date"
               name={formatMessage({ id: 'Publication Date' })}
               value={
                 docAttributes.publicationDate &&
@@ -126,6 +131,7 @@ const Step4 = ({ stepId }) => {
               }
             />
             <Property
+              key="authors"
               name={formatMessage({ id: 'Authors' })}
               value={docAttributes.authors}
               customToString={(author) =>
@@ -135,6 +141,7 @@ const Step4 = ({ stepId }) => {
               }
             />
             <Property
+              key="subjects"
               name={formatMessage({ id: 'Subjects' })}
               value={docAttributes.subjects}
               customToString={(subject) =>
@@ -142,27 +149,33 @@ const Step4 = ({ stepId }) => {
               }
             />
             <Property
+              key="parent_document"
               name={formatMessage({ id: 'Parent document' })}
               value={pathOr(null, ['partOf', 'name'], docAttributes)}
             />
             <Property
+              key="editor"
               name={formatMessage({ id: 'Editor' })}
               value={pathOr(null, ['editor', 'name'], docAttributes)}
             />
             <Property
+              key="library"
               name={formatMessage({ id: 'Library' })}
               value={pathOr(null, ['library', 'name'], docAttributes)}
             />
             <Property
+              key="regions"
               name={formatMessage({ id: 'Regions' })}
               value={docAttributes.regions}
               customToString={(region) => region.name}
             />
             <Property
+              key="massif"
               name={formatMessage({ id: 'Massif' })}
               value={pathOr(null, ['massif', 'name'], docAttributes)}
             />
             <Property
+              key="issue"
               name={formatMessage({ id: 'Issue' })}
               value={docAttributes.issue}
             />
@@ -179,14 +192,17 @@ const Step4 = ({ stepId }) => {
               </>
             )}
             <Property
+              key="comment"
               name={formatMessage({ id: 'Comment' })}
               value={docAttributes.authorComment}
             />
             <Property
+              key="identifier"
               name={formatMessage({ id: 'Identifier' })}
               value={docAttributes.identifier}
             />
             <Property
+              key="identifier_type"
               name={formatMessage({ id: 'Identifier Type' })}
               value={
                 docAttributes.identifierType
