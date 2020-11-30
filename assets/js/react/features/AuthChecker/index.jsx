@@ -3,13 +3,12 @@ import { useHistory } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { Button } from '@material-ui/core';
 import { useIntl } from 'react-intl';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
 import { displayLoginDialog } from '../../actions/Auth';
-import { isUserAuth } from '../../helpers/AuthHelper';
-
 import ErrorMessage from '../../components/common/StatusMessage/ErrorMessage';
+import { usePermissions } from '../../hooks';
 
 // ====================
 
@@ -39,8 +38,7 @@ const AuthChecker = ({ errorMessageComponent, componentToDisplay }) => {
   const history = useHistory();
   const dispatch = useDispatch();
   const { formatMessage } = useIntl();
-
-  const authState = useSelector((state) => state.auth);
+  const permissions = usePermissions();
 
   const onLoginClick = () => {
     dispatch(displayLoginDialog());
@@ -48,7 +46,7 @@ const AuthChecker = ({ errorMessageComponent, componentToDisplay }) => {
 
   return (
     <>
-      {isUserAuth(authState) ? (
+      {permissions.isAuth ? (
         componentToDisplay
       ) : (
         <CenteredBlock>

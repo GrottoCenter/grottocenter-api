@@ -1,6 +1,6 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 
 import { displayLoginDialog } from '../actions/Auth';
 
@@ -13,15 +13,15 @@ import RandomEntry from '../components/homepage/RandomEntry';
 import PartnersSection from '../components/homepage/PartnersSection';
 import Footer from '../components/homepage/Footer';
 
-import { isUserAuth } from '../helpers/AuthHelper';
+import { usePermissions } from '../hooks';
 
 const HomePage = () => {
   const location = useLocation();
   const dispatch = useDispatch();
-  const authState = useSelector((state) => state.auth);
+  const permissions = usePermissions();
 
   if (
-    !isUserAuth(authState) &&
+    !permissions.isAuth &&
     (location.pathname === '/ui/login' || location.pathname === '/ui/login/')
   ) {
     dispatch(displayLoginDialog());

@@ -17,7 +17,7 @@ import LoginDialog from '../features/Login';
 import QuickSearch from '../features/QuickSearch';
 import AppBar from '../features/AppBar';
 
-import { isUserAuth } from '../helpers/AuthHelper';
+import { usePermissions } from '../hooks';
 
 import DocumentSubmission from './DocumentSubmission';
 import DocumentValidation from './DocumentValidation';
@@ -31,7 +31,7 @@ import Map from './Map';
 const Application = () => {
   const dispatch = useDispatch();
   const isSideMenuOpen = useSelector((state) => state.sideMenu.open);
-  const authState = useSelector((state) => state.auth);
+  const permissions = usePermissions();
   const toggleSideMenu = () => dispatch({ type: 'TOGGLE_SIDEMENU' });
 
   return (
@@ -43,7 +43,7 @@ const Application = () => {
           HeaderQuickSearch={() => <QuickSearch hasFixWidth={false} />}
         />
       )}
-      isAuth={isUserAuth(authState)}
+      isAuth={permissions.isAuth}
       isSideMenuOpen={isSideMenuOpen}
       toggleSideMenu={toggleSideMenu}
       SideBarQuickSearch={() => <QuickSearch />}

@@ -10,7 +10,7 @@ import {
   postLogout,
 } from '../actions/Auth';
 import AppBarComponent from '../components/common/AppBar';
-import { isUserAuth } from '../helpers/AuthHelper';
+import { usePermissions } from '../hooks';
 
 // eslint-disable-next-line react/prop-types
 const HeaderAutoCompleteSearch = ({ isSideMenuOpen, HeaderQuickSearch }) => (
@@ -24,6 +24,7 @@ const HeaderAutoCompleteSearch = ({ isSideMenuOpen, HeaderQuickSearch }) => (
 const AppBar = ({ toggleSideMenu, isSideMenuOpen, HeaderQuickSearch }) => {
   const dispatch = useDispatch();
   const authState = useSelector((state) => state.auth);
+  const permissions = usePermissions();
 
   const onLoginClick = () =>
     authState.isLoginDialogDisplayed
@@ -42,7 +43,7 @@ const AppBar = ({ toggleSideMenu, isSideMenuOpen, HeaderQuickSearch }) => {
           HeaderQuickSearch={HeaderQuickSearch}
         />
       )}
-      isAuth={isUserAuth(authState)}
+      isAuth={permissions.isAuth}
       onLoginClick={onLoginClick}
       onLogoutClick={onLogoutClick}
       toggleMenu={toggleSideMenu}

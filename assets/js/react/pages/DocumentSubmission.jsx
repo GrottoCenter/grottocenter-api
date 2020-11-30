@@ -6,7 +6,7 @@ import { useIntl } from 'react-intl';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { isUserAuth } from '../helpers/AuthHelper';
+import { usePermissions } from '../hooks';
 import { isArticle } from '../components/appli/Document/DocumentForm/DocumentTypesHelper';
 import {
   postDocument,
@@ -39,6 +39,7 @@ const CenteredBlock = styled.div`
 const DocumentSubmission = () => {
   const history = useHistory();
   const dispatch = useDispatch();
+  const permissions = usePermissions();
   const { formatMessage } = useIntl();
   const {
     docAttributes: {
@@ -61,7 +62,6 @@ const DocumentSubmission = () => {
   const [isDocSubmitted, setDocSubmitted] = useState(false);
 
   const documentState = useSelector((state) => state.document);
-  const authState = useSelector((state) => state.auth);
 
   const onLoginClick = () => {
     dispatch(displayLoginDialog());
@@ -163,7 +163,7 @@ const DocumentSubmission = () => {
               )}
             </CenteredBlock>
           )}
-          {isUserAuth(authState) && !isDocSubmittedWithSuccess && (
+          {permissions.isAuth && !isDocSubmittedWithSuccess && (
             <>
               <DocumentForm
                 isLoading={documentState.isLoading}
@@ -184,7 +184,7 @@ const DocumentSubmission = () => {
               )}
             </>
           )}
-          {!isUserAuth(authState) && (
+          {!permissions.isAuth && (
             <CenteredBlock>
               <ErrorMessage
                 message={formatMessage({

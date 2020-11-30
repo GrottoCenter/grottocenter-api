@@ -1,13 +1,12 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
 import { List } from '@material-ui/core';
 import Item, { DocumentItems } from './Items';
 import { Icon } from './styles';
 
-import { isModerator, isUser, isUserAuth } from '../../../helpers/AuthHelper';
+import { usePermissions } from '../../../hooks';
 
 const MenuLinks = () => {
-  const authState = useSelector((state) => state.auth);
+  const permissions = usePermissions();
   return (
     <List component="nav" aria-label="main mailbox folders">
       <Item
@@ -17,7 +16,7 @@ const MenuLinks = () => {
         label="Home page"
         href="/"
       />
-      {isUserAuth(authState) && (
+      {permissions.isAuth && (
         <Item
           ItemIcon={() => (
             <Icon src="/images/sidemenu/dashboard.png" alt="dashboard icon" />
@@ -46,8 +45,8 @@ const MenuLinks = () => {
         href="#"
       />
       <DocumentItems
-        isModerator={isModerator(authState)}
-        isUser={isUser(authState)}
+        isModerator={permissions.isModerator}
+        isUser={permissions.isUser}
       />
     </List>
   );
