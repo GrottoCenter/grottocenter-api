@@ -115,7 +115,7 @@ const DocumentSubmission = () => {
 
   return (
     <Layout
-      title={formatMessage({ id: 'Document Submission Form' })}
+      title={formatMessage({ id: 'BBS document submission form' })}
       footer=""
       content={
         <>

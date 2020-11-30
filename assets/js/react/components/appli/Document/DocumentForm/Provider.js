@@ -16,9 +16,9 @@ import { defaultValuesTypes } from './types';
 
 const defaultFormSteps = [
   { id: 1, name: 'General Information', isValid: false },
-  { id: 2, name: 'Linked Information', isValid: false },
-  { id: 3, name: 'Meta Information', isValid: false },
-  { id: 4, name: 'Summary', isValid: true },
+  { id: 2, name: 'Classification', isValid: false },
+  { id: 3, name: 'Additional information', isValid: false },
+  { id: 4, name: 'Synthesis', isValid: true },
 ];
 
 export const defaultContext = {

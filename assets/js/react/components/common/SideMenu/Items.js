@@ -39,7 +39,7 @@ const AddDocument = () => (
     ItemIcon={() => (
       <Icon src="/images/sidemenu/add-document.png" alt="add document icon" />
     )}
-    label="New document"
+    label="Add a BBS document"
     href="/ui/documents/add"
     nested
   />

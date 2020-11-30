@@ -125,8 +125,8 @@ const DocumentForm = ({ isLoading, onSubmit, onUpdate }) => {
         <BbsIcon src="/images/bbs_logo.png" alt="BBS logo" />
         <BbsInfoText variant="body1" paragraph>
           <Translate>
-            The documents entered via this form are compatible with the BBS. The
-            BBS is now directly integrated in Grottocenter.
+            The BBS is now directly integrated in Grottocenter and provides a
+            summary of any document published on paper or online.
           </Translate>
           <br />
           <InternationalizedLink links={wikiBBSLinks}>

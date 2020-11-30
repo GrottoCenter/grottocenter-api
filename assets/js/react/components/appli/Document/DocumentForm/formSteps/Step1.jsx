@@ -67,7 +67,7 @@ const Step1 = ({ stepId }) => {
           <FlexItemWrapper>
             <DocumentTypeSelect
               allDocumentTypes={allDocumentTypes}
-              helperText="For example, a magazine issue is an Issue, an article from a magazine is an Article."
+              helperText="Choose from the types of documents available."
               required
             />
           </FlexItemWrapper>

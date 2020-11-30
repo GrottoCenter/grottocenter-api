@@ -84,7 +84,7 @@ const IdentifierEditor = ({
           <StringInput
             helperText={formatMessage({
               id:
-                'Unique identifier of the document. It can be a DOI, an URL, an ISBN or an ISSN.',
+                'Code for designating a document in a unique way. This can be a DOI, URL, ISBN or ISSN.',
             })}
             onValueChange={handleIdentifierChange}
             value={identifier}

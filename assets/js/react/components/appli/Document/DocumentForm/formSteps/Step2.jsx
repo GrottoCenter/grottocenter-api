@@ -67,7 +67,7 @@ const Step2 = ({ stepId }) => {
             newAuthors.length === 0
           }
           contextValueName="authors"
-          helperText="Use this search bar to find existing authors. If not found, you can create a new author by using the right menu."
+          helperText="Choose one or more authors among those already registered. If the author you are looking for does not exist in Grottocenter, it is possible to add him/her using the “+” button on the right."
           labelName="Authors"
           required={isOther(documentType) || isArticle(documentType)}
         />
@@ -77,8 +77,8 @@ const Step2 = ({ stepId }) => {
             isArticle(documentType) && newSubjects.length === 0
           }
           contextValueName="subjects"
-          helperText="Use this search bar to find subjects. Be precise about the subjects discussed in the document: there are plenty of subject choices in Grottocenter."
-          labelName="Subjects"
+          helperText="Choose one or more subjects from those defined by the BBS. The list of subjects and their description is available here => https://www.ssslib.ch/bbs/wp-content/uploads/2017/03/chapter_and_geo_1_2008.pdf."
+          labelName="BBS subjects"
           required={isArticle(documentType)}
         />
 
@@ -87,10 +87,13 @@ const Step2 = ({ stepId }) => {
             contextValueName="partOf"
             helperContent={
               <Translate>
-                Use the search bar to search for an existing document.
+                The parent document is the document that contains the document
+                you are submitting (an article has a periodical issue as its
+                parent document, a periodical issue has a periodical as its
+                parent document).
               </Translate>
             }
-            labelText="Parent Document"
+            labelText="Parent document"
             required={isIssue(documentType)}
             resourceTypes={docSearchedTypes}
             searchLabelText={formatMessage({ id: 'Search for a document...' })}
@@ -106,8 +109,11 @@ const Step2 = ({ stepId }) => {
                 contextValueName="editor"
                 helperContent={
                   <Translate>
-                    Use the search bar above to find an existing editor. If not
-                    found, you can create a new author by using the right menu.
+                    The editor is the organization that ensures the publication
+                    of the document. Choose one or more organizations from those
+                    already registered. If the organization you are looking for
+                    does not exist in Grottocenter, you can add it by using the
+                    “+” button on the right.
                   </Translate>
                 }
                 helperContentIfValueIsForced={
@@ -129,17 +135,13 @@ const Step2 = ({ stepId }) => {
               <OrganizationAutoComplete
                 contextValueName="library"
                 helperContent={
-                  <>
-                    <Translate>
-                      Use the search bar above to find an existing library. If
-                      not found, you can create a new author by using the right
-                      menu.
-                    </Translate>
-                    <br />
-                    <Translate>
-                      The library is where the document is physically stored.
-                    </Translate>
-                  </>
+                  <Translate>
+                    The library is the place where the document can be
+                    consulted. Choose an organization from those already
+                    registered at Grottocenter. If the organization you are
+                    looking for does not exist in Grottocenter, you can add it
+                    by using the “+” button on the right.
+                  </Translate>
                 }
                 helperContentIfValueIsForced={
                   <>
@@ -148,7 +150,11 @@ const Step2 = ({ stepId }) => {
                     </Translate>
                     <br />
                     <Translate>
-                      The library is where the document is physically stored.
+                      The library is the place where the document can be
+                      consulted. Choose an organization from those already
+                      registered at Grottocenter. If the organization you are
+                      looking for does not exist in Grottocenter, you can add it
+                      by using the “+” button on the right.
                     </Translate>
                   </>
                 }
@@ -168,8 +174,8 @@ const Step2 = ({ stepId }) => {
               <MultipleBBSRegionsSelect
                 computeHasError={() => false}
                 contextValueName="regions"
-                helperText="If the document is related to one or many regions, you can link it to them."
-                labelName="Regions"
+                helperText="If the document relates to one or more regions, choose from those defined by the BBS."
+                labelName="BBS regions"
                 required={false}
               />
             </FlexItemWrapper>
@@ -180,8 +186,8 @@ const Step2 = ({ stepId }) => {
                 contextValueName="massif"
                 helperContent={
                   <Translate>
-                    If the document is related to a massif, you can link it to
-                    it. Use the search bar above to find an existing massif.
+                    If the document relates to a massif, choose from those
+                    already registered in Grottocenter.
                   </Translate>
                 }
                 labelText="Massif"
