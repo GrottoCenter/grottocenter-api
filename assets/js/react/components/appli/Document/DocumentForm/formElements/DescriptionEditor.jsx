@@ -36,13 +36,13 @@ const DescriptionEditor = ({ required = false }) => {
           <StringInput
             helperText={formatMessage({
               id:
-                'Try to go straight to the point, mention keywords and be precise. Don\'t start with "this document is about...".',
+                'Make a precise sentence that is pleasant to read and uses keywords.',
             })}
             multiline
             onValueChange={(value) => updateAttribute('description', value)}
             required={required}
             value={description}
-            valueName={formatMessage({ id: 'Description' })}
+            valueName={formatMessage({ id: 'Summary of document content' })}
           />
         </DescriptionContainer>
       </InlineWrapper>

@@ -30,7 +30,7 @@ const TitleEditor = ({ required = false }) => {
         <StringInput
           helperText={formatMessage({
             id:
-              "Main title of the document. Don't enter the issue number here if you are submitting a magazine for example: it will be asked later in the form.",
+              'Copy the title of the text as it is. In its absence, put a fictitious title between [].',
           })}
           onValueChange={(value) => updateAttribute('title', value)}
           value={title}

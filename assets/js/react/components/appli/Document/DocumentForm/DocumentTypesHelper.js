@@ -11,40 +11,41 @@ export const DocumentTypes = {
 export const allDocumentTypes = [
   {
     id: DocumentTypes.COLLECTION,
-    comment: 'An aggregation of resources',
+    comment: 'Example: Stalactite - organ of the Swiss Speleological Society',
     name: 'Collection',
     parentId: null,
   },
-  {
-    id: DocumentTypes.IMAGE,
-    comment: 'A visual representation other than text',
-    name: 'Image',
-    parentId: null,
-  },
+  // {
+  //   id: DocumentTypes.IMAGE,
+  //   comment: 'A visual representation other than text',
+  //   name: 'Image',
+  //   parentId: null,
+  // },
   {
     id: DocumentTypes.TEXT,
-    comment: 'A resource consisting primarily of words for reading',
+    comment: 'All other documents that have already been published',
     name: 'Text',
     parentId: null,
   },
   {
     id: DocumentTypes.ARTICLE,
-    comment: 'An article from a source',
+    comment:
+      'Example: “10th International Congress of Speleology” in UIS Bulletin n°33',
     name: 'Article',
     parentId: DocumentTypes.TEXT,
   },
   {
     id: DocumentTypes.ISSUE,
-    comment: 'An issue of a periodic publication',
+    comment: 'Example: Spelunca n°155 (September 2009)',
     name: 'Issue',
     parentId: DocumentTypes.TEXT,
   },
-  {
-    id: DocumentTypes.BOOK,
-    comment: '',
-    name: 'Book',
-    parentId: DocumentTypes.TEXT,
-  },
+  // {
+  //   id: DocumentTypes.BOOK,
+  //   comment: '',
+  //   name: 'Book',
+  //   parentId: DocumentTypes.TEXT,
+  // },
 ];
 
 export const isUnknown = (documentType) => {

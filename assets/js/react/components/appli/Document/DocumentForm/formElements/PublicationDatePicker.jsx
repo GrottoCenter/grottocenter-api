@@ -142,8 +142,8 @@ const PublicationDatePicker = ({ required = false }) => {
           </ButtonsFlexWrapper>
           <FormHelperText>
             <Translate>
-              Publication date of the document, i.e., when it was publicily
-              available. You can refer to the printed date on the document.
+              Date on which the document you submit was made public. You can
+              refer to the date indicated on the document.
             </Translate>
           </FormHelperText>
         </MuiPickersUtilsProvider>

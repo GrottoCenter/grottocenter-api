@@ -85,14 +85,14 @@ const ManageUsers = () => {
                 <UserList
                   isLoading={isLoading}
                   userList={admins}
-                  title={formatMessage({ id: 'Administrators' })}
+                  title={formatMessage({ id: 'List of administrators' })}
                 />
               </MarginBottomBlock>
 
               <UserList
                 isLoading={isLoading}
                 userList={moderators}
-                title={formatMessage({ id: 'Moderators' })}
+                title={formatMessage({ id: 'List of moderators' })}
               />
             </>
           }

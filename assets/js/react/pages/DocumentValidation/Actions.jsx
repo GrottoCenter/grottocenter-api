@@ -14,17 +14,22 @@ import { useBoolean } from '../../hooks';
 import StringInput from '../../components/common/Form/StringInput';
 
 const ActionTypes = {
+  edit: {
+    confirmationText: '',
+    helperText: '',
+    name: 'Edit',
+  },
   decline: {
+    confirmationText: 'Confirmation of document refusal',
+    helperText:
+      'Indicate to the contributor(s) why you decline the document(s) he / she / they submitted.',
     name: 'Decline',
-    verb: 'declined',
   },
   validate: {
+    confirmationText: 'Confirmation of document approval',
+    helperText:
+      'Indicate to the contributor(s) why you validate the document(s) he / she / they submitted.',
     name: 'Validate',
-    verb: 'validated',
-  },
-  edit: {
-    name: 'Edit',
-    verb: 'edited',
   },
 };
 
@@ -104,7 +109,7 @@ const Actions = ({ selected, onEdit }) => {
         scrollable
         open={confirmationDialog.isOpen}
         onClose={confirmationDialog.close}
-        title={formatMessage({ id: 'Confirmation' })}
+        title={actionType && formatMessage({ id: actionType.confirmationText })}
         actions={[
           <ActionButton
             key={0}
@@ -128,13 +133,13 @@ const Actions = ({ selected, onEdit }) => {
         ]}
       >
         <StringInput
-          helperText={formatMessage({
-            id: `Add a comment on why the selected documents have to be ${propOr(
-              ActionTypes.validate.verb,
-              ['verb'],
-              actionType,
-            )}.`,
-          })}
+          helperText={
+            !isNil(actionType)
+              ? formatMessage({
+                  id: actionType.helperText,
+                })
+              : ''
+          }
           multiline
           onValueChange={setComment}
           value={comment}

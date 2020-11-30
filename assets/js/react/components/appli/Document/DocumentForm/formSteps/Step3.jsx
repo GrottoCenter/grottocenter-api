@@ -53,9 +53,9 @@ const Step3 = ({ stepId }) => {
               <IssueEditor
                 helperText={formatMessage({
                   id:
-                    'Can be a volume (vol.2) or a magazine issue (n°38) for example. Use what is written on the cover of the document.',
+                    'Use the same wording that is used on the document: Vol.12, Number 15, No.158...',
                 })}
-                valueName={formatMessage({ id: 'Issue' })}
+                valueName={formatMessage({ id: 'Periodical issue' })}
                 required={false}
               />
             </FlexItemWrapper>
@@ -65,7 +65,7 @@ const Step3 = ({ stepId }) => {
         <StringInput
           hasError={false}
           helperText={formatMessage({
-            id: 'Additional information about your submission.',
+            id: 'Additional information about the document.',
           })}
           onValueChange={(newValue) =>
             updateAttribute('authorComment', newValue)

@@ -65,9 +65,11 @@ const ManageUserGroups = ({
   const dispatch = useDispatch();
   const { formatMessage } = useIntl();
   const debouncedInput = useDebounce(inputValue);
-  const { results, error: quickSearchError, isLoading: searchIsLoading } = useSelector(
-    (state) => state.quicksearch,
-  );
+  const {
+    results,
+    error: quickSearchError,
+    isLoading: searchIsLoading,
+  } = useSelector((state) => state.quicksearch);
   const { errorMessages, isLoading, latestHttpCode } = useSelector(
     (state) => state.caverGroups,
   );
@@ -104,7 +106,7 @@ const ManageUserGroups = ({
         <AutoCompleteSearch
           disabled={false}
           onSelection={handleOnSelection}
-          label="Search a caver"
+          label="Search among Grottocenter users..."
           inputValue={inputValue}
           onInputChange={setInputValue}
           suggestions={results}
