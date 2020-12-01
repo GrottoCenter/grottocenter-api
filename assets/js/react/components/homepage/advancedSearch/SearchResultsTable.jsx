@@ -356,8 +356,8 @@ class SearchResultsTable extends React.Component {
         // Flatten cave and massif
         cleanedResults = fullResults.map((result) => {
           const cleanedResult = result;
-          cleanedResult.cave = result.cave.name;
-          cleanedResult.massif = result.massif.name;
+          cleanedResult.cave = pathOr(null, ['cave', 'name'], result);
+          cleanedResult.massif = pathOr(null, ['massif', 'name'], result);
           delete cleanedResult.type;
           delete cleanedResult.highlights;
           return cleanedResult;

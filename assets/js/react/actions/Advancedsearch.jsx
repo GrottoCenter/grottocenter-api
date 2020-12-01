@@ -174,7 +174,7 @@ export const fetchFullAdvancedsearchResults = () => (dispatch, getState) => {
       .join('&')}`;
   }
 
-  return fetch(completeUrl)
+  return fetch(completeUrl, { method: 'POST' })
     .then((response) => {
       if (response.status >= 400) {
         const errorMessage = `Fetching ${completeUrl} status: ${response.status}`;
