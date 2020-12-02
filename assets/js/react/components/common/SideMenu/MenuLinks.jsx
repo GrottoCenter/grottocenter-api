@@ -1,24 +1,12 @@
-import React, { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
+import React from 'react';
 import { List } from '@material-ui/core';
 import Item, { DocumentItems } from './Items';
 import { Icon } from './styles';
-import isAuth, {
-  isModerator,
-  isUser as hasUserRole,
-} from '../../../helpers/AuthHelper';
+
+import { usePermissions } from '../../../hooks';
 
 const MenuLinks = () => {
-  const [isUserAuth, setIsUserAuth] = useState(false);
-  const [isUser, setIsUser] = useState(false);
-  const [isUserModerator, setIsUserModerator] = useState(false);
-  const authState = useSelector((state) => state.auth);
-  useEffect(() => {
-    setIsUserAuth(isAuth());
-    setIsUser(hasUserRole());
-    setIsUserModerator(isModerator());
-  }, [isUserAuth, isUser, isUserModerator, authState]);
-
+  const permissions = usePermissions();
   return (
     <List component="nav" aria-label="main mailbox folders">
       <Item
@@ -28,7 +16,7 @@ const MenuLinks = () => {
         label="Home page"
         href="/"
       />
-      {isUserAuth && (
+      {permissions.isAuth && (
         <Item
           ItemIcon={() => (
             <Icon src="/images/sidemenu/dashboard.png" alt="dashboard icon" />
@@ -56,7 +44,10 @@ const MenuLinks = () => {
         label="Toolbox"
         href="#"
       />
-      <DocumentItems isModerator={isUserModerator} isUser={isUser} />
+      <DocumentItems
+        isModerator={permissions.isModerator}
+        isUser={permissions.isUser}
+      />
     </List>
   );
 };

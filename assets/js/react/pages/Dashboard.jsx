@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
+import React, { useEffect } from 'react';
 import { useIntl } from 'react-intl';
 import { useHistory } from 'react-router-dom';
 import { List, ListItem, Typography } from '@material-ui/core';
@@ -7,7 +6,7 @@ import PeopleIcon from '@material-ui/icons/People';
 import DocumentListIcon from '@material-ui/icons/PlaylistAddCheck';
 import styled from 'styled-components';
 
-import isAuth, { isAdmin, isModerator } from '../helpers/AuthHelper';
+import { usePermissions } from '../hooks';
 import Layout from '../components/common/Layouts/Fixed/FixedContent';
 
 // ==========
@@ -39,24 +38,17 @@ const DashboardBlock = styled.div`
 const Dashboard = () => {
   const { formatMessage } = useIntl();
   const history = useHistory();
-  const [isUserAdmin, setIsUserAdmin] = useState(false);
-  const [isUserModerator, setIsUserModerator] = useState(false);
-  const [isUserAuth, setIsUserAuth] = useState(false);
-
-  const authState = useSelector((state) => state.auth);
+  const permissions = usePermissions();
 
   const handleOnListItemClick = (url) => {
     history.push(url);
   };
 
   useEffect(() => {
-    if (!isAuth()) {
+    if (!permissions.isAuth) {
       history.push('');
     }
-    setIsUserAdmin(isAdmin());
-    setIsUserModerator(isModerator());
-    setIsUserAuth(isAuth());
-  }, [isUserAdmin, isUserModerator, isUserAuth, authState]);
+  }, [permissions]);
 
   return (
     <Layout
@@ -64,7 +56,7 @@ const Dashboard = () => {
       title={formatMessage({ id: 'Dashboard' })}
       content={
         <>
-          {isUserAdmin && (
+          {permissions.isAdmin && (
             <DashboardBlock>
               <Typography variant="h2">
                 {formatMessage({ id: 'Administrator Dashboard' })}
@@ -83,7 +75,7 @@ const Dashboard = () => {
               </StyledList>
             </DashboardBlock>
           )}
-          {isUserModerator && (
+          {permissions.isModerator && (
             <DashboardBlock>
               <Typography variant="h2">
                 {formatMessage({ id: 'Moderator Dashboard' })}
@@ -104,7 +96,7 @@ const Dashboard = () => {
               </StyledList>
             </DashboardBlock>
           )}
-          {isUserAuth && (
+          {permissions.isUser && (
             <DashboardBlock>
               <Typography variant="h2">
                 {formatMessage({ id: 'User Dashboard' })}

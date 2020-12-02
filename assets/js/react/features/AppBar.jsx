@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Fade } from '@material-ui/core';
 import { useDispatch, useSelector } from 'react-redux';
+import { pathOr } from 'ramda';
 
 import {
   displayLoginDialog,
@@ -9,7 +10,7 @@ import {
   postLogout,
 } from '../actions/Auth';
 import AppBarComponent from '../components/common/AppBar';
-import isAuth from '../helpers/AuthHelper';
+import { usePermissions } from '../hooks';
 
 // eslint-disable-next-line react/prop-types
 const HeaderAutoCompleteSearch = ({ isSideMenuOpen, HeaderQuickSearch }) => (
@@ -23,6 +24,7 @@ const HeaderAutoCompleteSearch = ({ isSideMenuOpen, HeaderQuickSearch }) => (
 const AppBar = ({ toggleSideMenu, isSideMenuOpen, HeaderQuickSearch }) => {
   const dispatch = useDispatch();
   const authState = useSelector((state) => state.auth);
+  const permissions = usePermissions();
 
   const onLoginClick = () =>
     authState.isLoginDialogDisplayed
@@ -35,16 +37,17 @@ const AppBar = ({ toggleSideMenu, isSideMenuOpen, HeaderQuickSearch }) => {
 
   return (
     <AppBarComponent
-      toggleMenu={toggleSideMenu}
-      isAuth={isAuth()}
-      onLoginClick={onLoginClick}
-      onLogoutClick={onLogoutClick}
       AutoCompleteSearch={() => (
         <HeaderAutoCompleteSearch
           isSideMenuOpen={isSideMenuOpen}
           HeaderQuickSearch={HeaderQuickSearch}
         />
       )}
+      isAuth={permissions.isAuth}
+      onLoginClick={onLoginClick}
+      onLogoutClick={onLogoutClick}
+      toggleMenu={toggleSideMenu}
+      userNickname={pathOr(null, ['authTokenDecoded', 'nickname'], authState)}
     />
   );
 };

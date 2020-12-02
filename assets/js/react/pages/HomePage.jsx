@@ -13,14 +13,15 @@ import RandomEntry from '../components/homepage/RandomEntry';
 import PartnersSection from '../components/homepage/PartnersSection';
 import Footer from '../components/homepage/Footer';
 
-import isAuth from '../helpers/AuthHelper';
+import { usePermissions } from '../hooks';
 
 const HomePage = () => {
   const location = useLocation();
   const dispatch = useDispatch();
+  const permissions = usePermissions();
 
   if (
-    !isAuth() &&
+    !permissions.isAuth &&
     (location.pathname === '/ui/login' || location.pathname === '/ui/login/')
   ) {
     dispatch(displayLoginDialog());

@@ -25,6 +25,7 @@ module.exports = {
         const token = TokenAuthService.issue({
           id: user.id,
           groups: user.groups,
+          nickname: user.nickname,
         });
         return res.json({ token });
       });

@@ -1,4 +1,5 @@
 import fetch from 'isomorphic-fetch';
+import { decode } from 'jsonwebtoken';
 import { loginUrl } from '../conf/Config';
 
 // ==========
@@ -19,9 +20,9 @@ export const fetchLogin = () => ({
   type: FETCH_LOGIN,
 });
 
-export const fetchLoginSuccess = (account, token) => ({
+export const fetchLoginSuccess = (tokenDecoded, token) => ({
   type: FETCH_LOGIN_SUCCESS,
-  account,
+  tokenDecoded,
   token,
 });
 
@@ -86,7 +87,7 @@ export function postLogin(email, password) {
         }
       })
       .then((json) => {
-        dispatch(fetchLoginSuccess(json.user, json.token));
+        dispatch(fetchLoginSuccess(decode(json.token), json.token));
         dispatch(hideLoginDialog());
       })
       .catch((authError) => {

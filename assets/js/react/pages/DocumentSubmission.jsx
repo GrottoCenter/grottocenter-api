@@ -6,7 +6,7 @@ import { useIntl } from 'react-intl';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { isUser } from '../helpers/AuthHelper';
+import { usePermissions } from '../hooks';
 import { isArticle } from '../components/appli/Document/DocumentForm/DocumentTypesHelper';
 import {
   postDocument,
@@ -39,6 +39,7 @@ const CenteredBlock = styled.div`
 const DocumentSubmission = () => {
   const history = useHistory();
   const dispatch = useDispatch();
+  const permissions = usePermissions();
   const { formatMessage } = useIntl();
   const {
     docAttributes: {
@@ -59,10 +60,8 @@ const DocumentSubmission = () => {
     false,
   );
   const [isDocSubmitted, setDocSubmitted] = useState(false);
-  const [isUserAuth, setIsUserAuth] = useState(false);
 
   const documentState = useSelector((state) => state.document);
-  const authState = useSelector((state) => state.auth);
 
   const onLoginClick = () => {
     dispatch(displayLoginDialog());
@@ -97,21 +96,13 @@ const DocumentSubmission = () => {
   };
 
   useEffect(() => {
-    // Handle User Auth
-    setIsUserAuth(isUser());
-
     // Handle Doc Submission
     if (documentState.latestHttpCode === 200 && isDocSubmitted) {
       setDocSubmittedWithSuccess(true);
     } else {
       setDocSubmittedWithSuccess(false);
     }
-  }, [
-    isDocSubmittedWithSuccess,
-    documentState.latestHttpCode,
-    isDocSubmitted,
-    authState,
-  ]);
+  }, [isDocSubmittedWithSuccess, documentState.latestHttpCode, isDocSubmitted]);
 
   return (
     <Layout
@@ -172,7 +163,7 @@ const DocumentSubmission = () => {
               )}
             </CenteredBlock>
           )}
-          {isUserAuth && !isDocSubmittedWithSuccess && (
+          {permissions.isAuth && !isDocSubmittedWithSuccess && (
             <>
               <DocumentForm
                 isLoading={documentState.isLoading}
@@ -193,7 +184,7 @@ const DocumentSubmission = () => {
               )}
             </>
           )}
-          {!isUserAuth && (
+          {!permissions.isAuth && (
             <CenteredBlock>
               <ErrorMessage
                 message={formatMessage({

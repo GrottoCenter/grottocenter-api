@@ -4,7 +4,6 @@ import {
   getModeratorsUrl,
   postCaverGroupsUrl,
 } from '../conf/Config';
-import { getAuthHTTPHeader } from '../helpers/AuthHelper';
 
 // ==========
 export const POST_CAVER_GROUPS = 'POST_CAVER_GROUPS';
@@ -37,7 +36,7 @@ export const postCaverGroupsActionFailure = (errorMessages, httpCode) => ({
 });
 
 export function postCaverGroups(caverId, groups) {
-  return (dispatch) => {
+  return (dispatch, getState) => {
     dispatch(postCaverGroupsAction());
 
     const requestOptions = {
@@ -45,7 +44,7 @@ export function postCaverGroups(caverId, groups) {
       body: JSON.stringify({
         groups,
       }),
-      headers: getAuthHTTPHeader(),
+      headers: getState().auth.authorizationHeader,
     };
 
     return fetch(postCaverGroupsUrl(caverId), requestOptions).then(
@@ -114,12 +113,12 @@ export const getAdminsActionFailure = (errorMessage) => ({
 });
 
 export function getAdmins() {
-  return (dispatch) => {
+  return (dispatch, getState) => {
     dispatch(getAdminsAction());
 
     const requestOptions = {
       method: 'GET',
-      headers: getAuthHTTPHeader(),
+      headers: getState().auth.authorizationHeader,
     };
 
     return fetch(getAdminsUrl, requestOptions)
@@ -151,12 +150,11 @@ export const getModeratorsActionFailure = (errorMessage) => ({
 });
 
 export function getModerators() {
-  return (dispatch) => {
+  return (dispatch, getState) => {
     dispatch(getModeratorsAction());
-
     const requestOptions = {
       method: 'GET',
-      headers: getAuthHTTPHeader(),
+      headers: getState().auth.authorizationHeader,
     };
 
     return fetch(getModeratorsUrl, requestOptions)
