@@ -18,13 +18,7 @@ const layers = [
     bounds: new L.LatLngBounds(new L.LatLng(-90, -200), new L.LatLng(90, 200)),
   },
   {
-    name: 'OpenStreetMap BlackAndWhite',
-    attribution: 'http://osm.org/copyright',
-    url: 'https://{s}.tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png',
-    bounds: new L.LatLngBounds(new L.LatLng(-90, -200), new L.LatLng(90, 200)),
-  },
-  {
-    name: 'Satellite',
+    name: 'Esri Satellite',
     attribution:
       'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
     url:
