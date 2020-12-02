@@ -1,49 +1,46 @@
 import React, { useEffect, useState, useRef } from 'react';
 import PropTypes from 'prop-types';
+import 'd3';
+import 'd3-hexbin';
 import 'leaflet.fullscreen';
 import { useMapEvent } from 'react-leaflet';
-import { without, pipe, append, uniq } from 'ramda';
+import { without, pipe, append, uniq, isNil, isEmpty } from 'ramda';
 import '@asymmetrik/leaflet-d3';
 
 import DataControl, { heatmapTypes } from './DataControl';
 import ConverterControl from '../common/Converter';
-import useHeatLayer, {
-  ENTRANCE_HEAT_COLORS,
-  NETWORK_HEAT_COLORS,
-  HexGlobalCss,
-} from './useHeatLayer';
+import useHeatLayer, { HexGlobalCss } from './useHeatLayer';
 import Markers from './Markers';
 import CustomMapContainer from '../common/MapContainer';
+import { LocationMarker } from '../common/Markers/Components';
+import { MARKERS_LIMIT } from './constants';
 
-const MARKERS_LIMIT = 13;
 const ZOOM_STATE = {
   MARKERS: 1,
   HEAT: 2,
 };
 
-// const usePosition = () => {
-//   const map = useMapEvent('locationfound', (e) => {
-//     console.log('locationfound!!', e);
-//     // setPosition(e.latlng);
-//     map.flyTo(e.latlng, map.getZoom());
-//   });
-//
-//   useEffect(() => {
-//     map.locate();
-//     // const location = new Locate();
-//     // location.addTo(map);
-//   }, []);
-// };
+const useCurrentPosition = (defaultPosition) => {
+  const [position, setPosition] = useState(null);
+  const map = useMapEvent('locationfound', (e) => {
+    setPosition(e.latlng);
+    // TODO currently defaultPosition is not set. Sharing a map url will not work and it will always inter this condition
+    if (isNil(defaultPosition) || isEmpty(defaultPosition)) {
+      map.flyTo(e.latlng, map.getZoom());
+    }
+  });
+
+  useEffect(() => {
+    map.locate();
+  }, []);
+
+  return position;
+};
 
 const useMapEventUpdateData = (initialZoom, updateData) => {
   const prevZoom = useRef(initialZoom);
 
-  // TODO handle user location
-  const map = useMapEvent('locationFound', () => {
-    // console.log('locationFound');
-    // handleUpdate();
-  });
-  useMapEvent('zoomend', () => {
+  const map = useMapEvent('zoomend', () => {
     const isZoomingIn = prevZoom.current < map.getZoom();
     if (!isZoomingIn) {
       updateData();
@@ -64,6 +61,7 @@ const HydratedMap = ({
   projectionsList,
   zoom,
   onUpdate,
+  center,
 }) => {
   const { updateHeatData } = useHeatLayer(entrances);
   const [selectedHeat, setSelectedHeat] = useState('entrances');
@@ -72,6 +70,7 @@ const HydratedMap = ({
   const [visibleMarkers, setVisibleMarkers] = useState(selectedMarkers);
   const zoomState = useRef(ZOOM_STATE.HEAT);
   const prevZoom = useRef(zoom);
+  const currentPosition = useCurrentPosition(center);
 
   const handleUpdateMarkers = (newSelection) => {
     setSelectedMarkers(newSelection);
@@ -138,10 +137,10 @@ const HydratedMap = ({
   useEffect(() => {
     switch (visibleHeat) {
       case heatmapTypes.ENTRANCES:
-        updateHeatData(entrances, ENTRANCE_HEAT_COLORS);
+        updateHeatData(entrances, heatmapTypes.ENTRANCES);
         break;
       case heatmapTypes.NETWORKS:
-        updateHeatData(networks, NETWORK_HEAT_COLORS);
+        updateHeatData(networks, heatmapTypes.NETWORKS);
         break;
       default:
         updateHeatData([]);
@@ -162,6 +161,7 @@ const HydratedMap = ({
         networks={networkMarkers}
         entrances={entranceMarkers}
       />
+      {!isNil(currentPosition) && <LocationMarker position={currentPosition} />}
     </>
   );
 };
@@ -192,11 +192,11 @@ HydratedMap.propTypes = {
   projectionsList: PropTypes.arrayOf(PropTypes.any),
   zoom: PropTypes.number.isRequired,
   onUpdate: PropTypes.func,
+  center: PropTypes.arrayOf(PropTypes.number).isRequired,
 };
 
 Index.propTypes = {
   isSideMenuOpen: PropTypes.bool,
-  center: PropTypes.arrayOf(PropTypes.number).isRequired,
   ...HydratedMap.propTypes,
 };
 

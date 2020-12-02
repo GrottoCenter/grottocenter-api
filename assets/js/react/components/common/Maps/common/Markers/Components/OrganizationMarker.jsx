@@ -7,7 +7,11 @@ import markers from '../../../../../../conf/MapMarkersConfig';
 const OrganizationIcon = () => (
   <Icon
     color="inherit"
-    style={{ textAlign: 'center', height: '100%', width: '100%' }}
+    style={{
+      textAlign: 'center',
+      height: '100%',
+      width: '100%',
+    }}
   >
     <img
       alt="organizationIcon"
@@ -21,7 +25,7 @@ export const OrganizationMarker = L.divIcon({
   html: renderToString(<OrganizationIcon />),
   iconSize: [24, 24],
   iconAnchor: [12, 24],
-  className: '',
+  className: 'fade-in-markers',
 });
 
 export default OrganizationMarker;

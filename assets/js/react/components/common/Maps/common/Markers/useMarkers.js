@@ -3,10 +3,25 @@ import { useMap } from 'react-leaflet';
 import * as L from 'leaflet';
 import { anyPass, forEach, isEmpty, isNil, map as rMap } from 'ramda';
 import { renderToString } from 'react-dom/server';
+import { createGlobalStyle, keyframes } from 'styled-components';
 
 const isNilOrEmpty = anyPass([isNil, isEmpty]);
 
-const useMarkers = (icon, popupContent = null) => {
+const fadeIn = keyframes`
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+`;
+export const MarkerGlobalCss = createGlobalStyle`
+  & .fade-in-markers {
+   animation: 0.3s ${fadeIn} ease-out;
+  }
+`;
+
+const useMarkers = (icon, popupContent = null, tooltipContent = null) => {
   const map = useMap();
   const [canvas] = useState(L.canvas());
   const [markers, setMarkers] = useState();
@@ -15,6 +30,11 @@ const useMarkers = (icon, popupContent = null) => {
   const makeMarkers = rMap((marker) => {
     const { latitude, longitude } = marker;
     if (!isNil(popupContent)) {
+      if (!isNil(tooltipContent)) {
+        return L.marker([latitude, longitude], options)
+          .bindPopup(renderToString(popupContent(marker)))
+          .bindTooltip(tooltipContent(marker), { direction: 'bottom' });
+      }
       return L.marker([latitude, longitude], options).bindPopup(
         renderToString(popupContent(marker)),
       );

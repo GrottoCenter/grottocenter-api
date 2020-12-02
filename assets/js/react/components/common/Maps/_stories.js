@@ -73,6 +73,7 @@ const ClustersMap = () => {
     latitude: org[1],
     longitude: org[0],
     id: i,
+    name: 'organization name',
   }));
   return (
     <Clusters
