@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useMap } from 'react-leaflet';
 import * as L from 'leaflet';
 import { anyPass, forEach, isEmpty, isNil, map as rMap } from 'ramda';
@@ -8,7 +8,9 @@ import {
   keyframes,
   ThemeProvider as StyledThemeProvider,
 } from 'styled-components';
+import { BrowserRouter } from 'react-router-dom';
 import { MuiThemeProvider } from '@material-ui/core/styles';
+import { IntlProvider } from 'react-intl';
 import theme from '../../../../../conf/grottoTheme';
 
 const isNilOrEmpty = anyPass([isNil, isEmpty]);
@@ -30,7 +32,7 @@ export const MarkerGlobalCss = createGlobalStyle`
 const useMarkers = (icon, popupContent = null, tooltipContent = null) => {
   const map = useMap();
   const [canvas] = useState(L.canvas());
-  const [markers, setMarkers] = useState();
+  const [markers, setMarkers] = useState(null);
   const options = { icon, renderer: canvas };
 
   const makeMarkers = rMap((marker) => {
@@ -43,11 +45,15 @@ const useMarkers = (icon, popupContent = null, tooltipContent = null) => {
               // Without theme provider the CSS doesn't work properly
               // It's makes the map slower when there is a lot of markers
               // One way to optimize it would be to not use MUI for the markers
-              <StyledThemeProvider theme={theme}>
-                <MuiThemeProvider theme={theme}>
-                  {popupContent(marker)}
-                </MuiThemeProvider>
-              </StyledThemeProvider>,
+              <IntlProvider locale={locale} messages={window.catalog}>
+                <BrowserRouter>
+                  <StyledThemeProvider theme={theme}>
+                    <MuiThemeProvider theme={theme}>
+                      {popupContent(marker)}
+                    </MuiThemeProvider>
+                  </StyledThemeProvider>
+                </BrowserRouter>
+              </IntlProvider>,
             ),
           )
           .bindTooltip(tooltipContent(marker), { direction: 'bottom' });
@@ -68,12 +74,15 @@ const useMarkers = (icon, popupContent = null, tooltipContent = null) => {
     }
   }, [markers]);
 
-  const handleUpdateMarkers = (newMarkers) => {
-    if (!isNilOrEmpty(markers)) {
-      deleteMarkers(markers);
-    }
-    setMarkers(isNilOrEmpty(newMarkers) ? null : makeMarkers(newMarkers));
-  };
+  const handleUpdateMarkers = useCallback(
+    (newMarkers) => {
+      if (!isNilOrEmpty(markers)) {
+        deleteMarkers(markers);
+      }
+      setMarkers(isNilOrEmpty(newMarkers) ? null : makeMarkers(newMarkers));
+    },
+    [deleteMarkers],
+  );
 
   return handleUpdateMarkers;
 };
