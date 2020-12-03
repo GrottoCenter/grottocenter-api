@@ -47,6 +47,7 @@ const HydratedMultipleMarkers = (props) => (
     dragging={false}
     viewport={null}
     scrollWheelZoom={false}
+    zoom={14}
   >
     <MultipleMarkers {...props} />
   </CustomMapContainer>
