@@ -67,12 +67,12 @@ module.exports = {
     }
 
     // Check params
-    if (!(await CaverService.checkIfExists(req.param('caverId')))) {
+    if (!(await CaverService.checkIfExists('id', req.param('caverId')))) {
       return res.badRequest(
         `Could not found caver with id ${req.param('caverId')}.`,
       );
     }
-    if (!(await GroupService.checkIfExists(req.param('groupId')))) {
+    if (!(await GroupService.checkIfExists('id', req.param('groupId')))) {
       return res.badRequest(
         `Could not found group with id ${req.param('groupId')}.`,
       );
@@ -116,12 +116,12 @@ module.exports = {
     }
 
     // Check params
-    if (!(await CaverService.checkIfExists(req.param('caverId')))) {
+    if (!(await CaverService.checkIfExists('id', req.param('caverId')))) {
       return res.badRequest(
         `Could not found caver with id ${req.param('caverId')}.`,
       );
     }
-    if (!(await GroupService.checkIfExists(req.param('groupId')))) {
+    if (!(await GroupService.checkIfExists('id', req.param('groupId')))) {
       return res.badRequest(
         `Could not found group with id ${req.param('groupId')}.`,
       );
@@ -167,7 +167,7 @@ module.exports = {
     }
 
     // Check params
-    if (!(await CaverService.checkIfExists(req.param('caverId')))) {
+    if (!(await CaverService.checkIfExists('id', req.param('caverId')))) {
       return res.badRequest(
         `Could not found caver with id ${req.param('caverId')}.`,
       );
@@ -175,7 +175,7 @@ module.exports = {
 
     const newGroups = req.param('groups');
     newGroups.map(async (g) => {
-      if (!(await GroupService.checkIfExists(g.id))) {
+      if (!(await GroupService.checkIfExists('id', g.id))) {
         return res.badRequest(`Could not found group with id ${g.id}.`);
       }
     });

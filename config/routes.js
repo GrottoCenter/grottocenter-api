@@ -100,6 +100,11 @@ module.exports.routes = {
     action: 'login',
   },
 
+  'POST /api/v1/signup': {
+    controller: 'v1/Auth',
+    action: 'signUp',
+  },
+
   'GET /api/v1/logout': {
     controller: 'v1/Auth',
     action: 'logout',

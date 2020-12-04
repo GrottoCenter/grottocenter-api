@@ -16,12 +16,17 @@ const GET_MODERATORS_QUERY = `
 
 module.exports = {
   /**
-   * @param {String} caverId caver to search for
+   * @param {String} attributeName caver attribute to search for
+   * @param {String} attributeValue value to search for
    *
-   * @returns {Boolean} true if the caver exists in the DB, else false
+   * @returns {Boolean} true if there is a caver with the attributeName equals to attributeValue in the DB, else false.
+   *
+   * @example checkIfExists('nickname', 'Alice Bob') will return true if there is at least one user with nickname 'Alice Bob'
    */
-  checkIfExists: async (caverId) => {
-    const caverFound = await TCaver.findOne({ id: caverId });
+  checkIfExists: async (attributeName, attributeValue) => {
+    const caverFound = await TCaver.findOne({
+      [attributeName]: attributeValue,
+    });
     return caverFound !== undefined;
   },
 
