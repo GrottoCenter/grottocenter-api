@@ -1,14 +1,22 @@
 import { useMap } from 'react-leaflet';
 import { useCallback, useEffect, useState } from 'react';
-import { isNil } from 'ramda';
+import { isNil, pipe, pluck, map as rMap, reverse } from 'ramda';
+import * as d3 from 'd3';
+import 'd3-hexbin';
 import * as L from 'leaflet';
 // after L import
 import '@asymmetrik/leaflet-d3';
-import { brown, blue } from '@material-ui/core/colors';
 import { createGlobalStyle } from 'styled-components';
-
-export const ENTRANCE_HEAT_COLORS = ['white', brown['900']];
-export const NETWORK_HEAT_COLORS = ['white', blue['900']];
+import { useIntl } from 'react-intl';
+import { heatmapTypes } from './DataControl';
+import {
+  MARKERS_LIMIT,
+  ENTRANCE_HEAT_COLORS,
+  NETWORK_HEAT_COLORS,
+  HEX_FLY_TO_DURATION,
+  HEX_RADIUS_RANGE,
+  HEX_LAYER_OPTIONS,
+} from './constants';
 
 export const HexGlobalCss = createGlobalStyle`
    & .hexbin-hexagon {
@@ -20,56 +28,85 @@ export const HexGlobalCss = createGlobalStyle`
   stroke-width: 1.5px;
   stroke-opacity: 1;
   }
+  & .hexbin-tooltip {
+   padding: 8px;
+   background: #616161e6;
+   color: white;
+   border-radius: 2px;
+   font-size: 12px;
+   font-weight: 400;
+  }
 `;
 
-const hexbinLayerOptions = {
-  radius: 10,
-  opacity: 0.7,
-  duration: 600,
-  colorScaleExtent: [1, undefined],
-  radiusScaleExtent: [1, undefined],
-  colorDomain: null,
-  radiusDomain: null,
-  colorRange: ['white', 'blue'],
-  radiusRange: [5, 12],
-  pointerEvents: 'all',
-};
+// For more customization see https://github.com/Asymmetrik/leaflet-d3 documentation
 
-const useHeatLayer = (data = [], options = hexbinLayerOptions) => {
+const convertD3Position = pipe(pluck('o'), rMap(reverse));
+
+const useHeatLayer = (data = [], type = heatmapTypes.ENTRANCES) => {
+  const { formatMessage } = useIntl();
   const map = useMap();
   const [hexLayer, setHexLayer] = useState();
 
   const updateHeatData = useCallback(
-    (newData, colorRange = ENTRANCE_HEAT_COLORS) => {
+    (newData, newType = heatmapTypes.ENTRANCES) => {
       if (!isNil(hexLayer)) {
-        hexLayer.colorRange(colorRange).data(newData);
+        // Remove previous tooltip (avoid some bug)
+        d3.selectAll('.hexbin-tooltip').remove();
+
+        hexLayer
+          .colorRange(
+            newType === heatmapTypes.NETWORKS
+              ? NETWORK_HEAT_COLORS
+              : ENTRANCE_HEAT_COLORS,
+          )
+          .hoverHandler(
+            L.HexbinHoverHandler.compound({
+              handlers: [
+                L.HexbinHoverHandler.resizeFill(),
+                L.HexbinHoverHandler.tooltip({
+                  tooltipContent: (nbr) =>
+                    `${nbr.length} ${formatMessage({ id: type })}`,
+                }),
+              ],
+            }),
+          )
+          .data(newData);
       }
     },
     [hexLayer],
   );
+
+  const flyToHex = (hex) => {
+    d3.selectAll('.hexbin-tooltip').attr('opacity', 0);
+    const bounds = new L.LatLngBounds(convertD3Position(hex));
+    map.flyToBounds(bounds, {
+      maxZoom: MARKERS_LIMIT,
+      duration: HEX_FLY_TO_DURATION,
+    });
+  };
+
   useEffect(() => {
     // Add hex layer to the map
-    setHexLayer(L.hexbinLayer(options).addTo(map));
+    setHexLayer(L.hexbinLayer(HEX_LAYER_OPTIONS).addTo(map));
+    return () => {
+      // Remove tooltip
+      d3.selectAll('.hexbin-tooltip').remove();
+    };
   }, []);
 
   useEffect(() => {
     if (!isNil(hexLayer)) {
+      // Initialize Hex scaling
       hexLayer.colorScale();
 
       hexLayer
-        .radiusRange([6, 11])
+        .radiusRange(HEX_RADIUS_RANGE)
         .lng((d) => d[0])
         .lat((d) => d[1])
         .colorValue((d) => d.length)
-        .radiusValue((d) => d.length)
-        .hoverHandler(
-          L.HexbinHoverHandler.compound({
-            handlers: [
-              L.HexbinHoverHandler.resizeFill(),
-              // L.HexbinHoverHandler.tooltip(),
-            ],
-          }),
-        );
+        .radiusValue((d) => d.length);
+
+      hexLayer.dispatch().on('click', flyToHex);
 
       updateHeatData(data);
     }

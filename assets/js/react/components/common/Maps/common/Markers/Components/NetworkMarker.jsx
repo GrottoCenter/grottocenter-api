@@ -21,7 +21,7 @@ export const NetworkMarker = L.divIcon({
   html: renderToString(<NetworkIcon />),
   iconSize: [24, 24],
   iconAnchor: [12, 24],
-  className: '',
+  className: 'fade-in-markers',
 });
 
 export default NetworkMarker;

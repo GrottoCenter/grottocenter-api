@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react';
-import { includes, values } from 'ramda';
+import { includes, propOr, values } from 'ramda';
 import PropTypes from 'prop-types';
 
 import { heatmapTypes } from './DataControl';
-import useMarkers from '../common/Markers/useMarkers';
+import useMarkers, { MarkerGlobalCss } from '../common/Markers/useMarkers';
 import {
   OrganizationMarker,
   OrganizationPopup,
@@ -28,15 +28,20 @@ const Markers = ({
   entrances = [],
   networks = [],
 }) => {
-  const updateEntranceMarkers = useMarkers(EntranceMarker, (entrance) => (
-    <EntrancePopup entrance={entrance} />
-  ));
-  const updateNetworkMarkers = useMarkers(NetworkMarker, (network) => (
-    <NetworkPopup network={network} />
-  ));
+  const updateEntranceMarkers = useMarkers(
+    EntranceMarker,
+    (entrance) => <EntrancePopup entrance={entrance} />,
+    (entrance) => propOr(null, 'name', entrance),
+  );
+  const updateNetworkMarkers = useMarkers(
+    NetworkMarker,
+    (network) => <NetworkPopup network={network} />,
+    (network) => propOr(null, 'name', network),
+  );
   const updateOrganizationMarkers = useMarkers(
     OrganizationMarker,
     (organization) => <OrganizationPopup organization={organization} />,
+    (organization) => propOr(null, 'name', organization),
   );
 
   useEffect(() => {
@@ -63,7 +68,7 @@ const Markers = ({
     }
   }, [organizations, visibleMarkers]);
 
-  return null;
+  return <MarkerGlobalCss />;
 };
 
 const MemoizedMarkers = React.memo(Markers);
