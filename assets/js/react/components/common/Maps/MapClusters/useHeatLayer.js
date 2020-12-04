@@ -1,4 +1,4 @@
-import { useMap } from 'react-leaflet';
+import { useMapEvent } from 'react-leaflet';
 import { useCallback, useEffect, useState } from 'react';
 import { isNil, pipe, pluck, map as rMap, reverse } from 'ramda';
 import * as d3 from 'd3';
@@ -16,6 +16,10 @@ import {
   HEX_FLY_TO_DURATION,
   HEX_RADIUS_RANGE,
   HEX_LAYER_OPTIONS,
+  HEX_DETAILS_RADIUS_RANGE,
+  HEX_DETAILS_ZOOM,
+  HEX_DETAILS_OPACITY,
+  HEX_OPACITY,
 } from './constants';
 
 export const HexGlobalCss = createGlobalStyle`
@@ -44,8 +48,18 @@ const convertD3Position = pipe(pluck('o'), rMap(reverse));
 
 const useHeatLayer = (data = [], type = heatmapTypes.ENTRANCES) => {
   const { formatMessage } = useIntl();
-  const map = useMap();
   const [hexLayer, setHexLayer] = useState();
+
+  // On zoom lvl, hex opacity and size can change
+  const map = useMapEvent('zoomend', () => {
+    if (!isNil(hexLayer) && map.getZoom() > HEX_DETAILS_ZOOM) {
+      hexLayer
+        .radiusRange(HEX_DETAILS_RADIUS_RANGE)
+        .opacity(HEX_DETAILS_OPACITY);
+    } else {
+      hexLayer.radiusRange(HEX_RADIUS_RANGE).opacity(HEX_OPACITY);
+    }
+  });
 
   const updateHeatData = useCallback(
     (newData, newType = heatmapTypes.ENTRANCES) => {

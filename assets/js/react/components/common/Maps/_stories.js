@@ -57,7 +57,8 @@ const generateRandomCoord = function(intensity = 1000) {
   }
   return data;
 };
-
+// Warning: markers are slow because we display all of them without
+// calculating the visible one in the bounds (done by the API)
 const ClustersMap = () => {
   const entrances = generateRandomCoord(3000);
   const entrancesMarkers = entrances.map((entrance, i) => ({
