@@ -5,7 +5,7 @@ import { createStore } from 'redux';
 import { Provider, useDispatch } from 'react-redux';
 import GCReducer from '../../reducers/GCReducer';
 
-import { fetchLoginSuccess, logout } from '../../actions/Auth';
+import { fetchLoginSuccess, logout } from '../../actions/Login';
 import AuthChecker from './index';
 
 // ==========

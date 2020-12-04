@@ -2,7 +2,7 @@ import React from 'react';
 import { Button, CircularProgress } from '@material-ui/core';
 import { useDispatch, useSelector } from 'react-redux';
 import { isEmpty, match } from 'ramda';
-import { hideLoginDialog, postLogin } from '../actions/Auth';
+import { hideLoginDialog, postLogin } from '../actions/Login';
 
 import Translate from '../components/common/Translate';
 import StandardDialog from '../components/common/StandardDialog';

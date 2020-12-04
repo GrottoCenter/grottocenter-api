@@ -6,7 +6,7 @@ import {
   DISPLAY_LOGIN_DIALOG,
   HIDE_LOGIN_DIALOG,
   LOGOUT,
-} from '../actions/Auth';
+} from '../actions/Login';
 import { authTokenName } from '../conf/Config';
 
 //

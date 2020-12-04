@@ -6,7 +6,7 @@ import { useIntl } from 'react-intl';
 import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
-import { displayLoginDialog } from '../../actions/Auth';
+import { displayLoginDialog } from '../../actions/Login';
 import ErrorMessage from '../../components/common/StatusMessage/ErrorMessage';
 import { usePermissions } from '../../hooks';
 

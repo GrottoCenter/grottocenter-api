@@ -1,6 +1,5 @@
 import { combineReducers } from 'redux';
 import advancedsearch from './AdvancedsearchReducer';
-import auth from './AuthReducer';
 import cave from './CaveReducer';
 import caver from './CaverReducer';
 import caverGroups from './CaverGroupsReducer';
@@ -17,6 +16,7 @@ import group from './GroupReducer';
 import identifierType from './IdentifierTypesReducer';
 import language from './LanguageReducer';
 import latestBlogNews from './LatestBlogNewsReducer';
+import login from './LoginReducer';
 import map from './Map';
 import massif from './MassifReducer';
 import pageTitle from './PageTitleReducer';
@@ -37,7 +37,6 @@ import subject from './SubjectReducer';
 
 const GCReducer = combineReducers({
   advancedsearch,
-  auth,
   cave,
   caver,
   caverGroups,
@@ -54,6 +53,7 @@ const GCReducer = combineReducers({
   identifierType,
   language,
   latestBlogNews,
+  login,
   map,
   massif,
   pageTitle,
