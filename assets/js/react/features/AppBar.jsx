@@ -8,7 +8,7 @@ import {
   displayLoginDialog,
   hideLoginDialog,
   postLogout,
-} from '../actions/Auth';
+} from '../actions/Login';
 import AppBarComponent from '../components/common/AppBar';
 import { usePermissions } from '../hooks';
 

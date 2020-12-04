@@ -2,7 +2,7 @@ import React from 'react';
 import { useLocation } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 
-import { displayLoginDialog } from '../actions/Auth';
+import { displayLoginDialog } from '../actions/Login';
 
 import Header from '../components/homepage/Header';
 import Welcome from '../components/homepage/Welcome';

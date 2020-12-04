@@ -13,7 +13,7 @@ import {
   resetApiMessages,
   updateDocument,
 } from '../actions/Document';
-import { displayLoginDialog } from '../actions/Auth';
+import { displayLoginDialog } from '../actions/Login';
 
 import DocumentFormProvider, {
   DocumentFormContext,

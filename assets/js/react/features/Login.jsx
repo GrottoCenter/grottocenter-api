@@ -2,11 +2,8 @@ import React from 'react';
 import { Button, CircularProgress } from '@material-ui/core';
 import { useDispatch, useSelector } from 'react-redux';
 import { isEmpty, match } from 'ramda';
-import {
-  hideLoginDialog,
-  postLogin,
-  setAuthErrorMessages,
-} from '../actions/Auth';
+import { hideLoginDialog, postLogin } from '../actions/Login';
+
 import Translate from '../components/common/Translate';
 import StandardDialog from '../components/common/StandardDialog';
 import LoginForm from '../components/common/LoginForm';
@@ -23,11 +20,12 @@ const Login = () => {
   const authState = useSelector((state) => state.auth);
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
+  const [authErrorMessages, setAuthErrorMessages] = React.useState([]);
 
   const onLogin = (event) => {
     event.preventDefault();
 
-    const authErrorMessages = [
+    const newAuthErrorMessages = [
       ...(isEmpty(email) ? ['You must provide an email.'] : []),
       ...(!isEmailValid(email) && !isEmpty(email)
         ? ['You must provide a valid email.']
@@ -35,9 +33,8 @@ const Login = () => {
       ...(isEmpty(password) ? ['You must provide a password.'] : []),
     ];
 
-    if (authErrorMessages.length > 0) {
-      dispatch(setAuthErrorMessages(authErrorMessages));
-    } else {
+    setAuthErrorMessages(newAuthErrorMessages);
+    if (newAuthErrorMessages.length === 0) {
       dispatch(postLogin(email, password));
     }
   };
@@ -66,7 +63,7 @@ const Login = () => {
       actions={[LoginButton]}
     >
       <LoginForm
-        authErrors={authState.errorMessages}
+        authErrors={authErrorMessages}
         email={email}
         isFetching={authState.isFetching}
         onEmailChange={setEmail}
