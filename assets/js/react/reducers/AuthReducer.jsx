@@ -6,7 +6,6 @@ import {
   DISPLAY_LOGIN_DIALOG,
   HIDE_LOGIN_DIALOG,
   LOGOUT,
-  SET_AUTH_ERROR_MESSAGES,
 } from '../actions/Auth';
 import { authTokenName } from '../conf/Config';
 
@@ -22,7 +21,7 @@ const initialState = {
   authorizationHeader: {
     Authorization: `Bearer ${window.localStorage.getItem(authTokenName)}`,
   },
-  errorMessages: [],
+  error: null,
   isFetching: false,
   isLoginDialogDisplayed: false,
 };
@@ -40,7 +39,7 @@ const auth = (state = initialState, action) => {
         authToken: undefined,
         authorizationHeader: undefined,
         isFetching: true,
-        errorMessages: [],
+        error: null,
       };
     case FETCH_LOGIN_SUCCESS:
       window.localStorage.setItem(authTokenName, action.token);
@@ -48,7 +47,7 @@ const auth = (state = initialState, action) => {
         ...state,
         authToken: action.token,
         authorizationHeader: { Authorization: `Bearer ${action.token}` },
-        errorMessages: [],
+        error: null,
         isFetching: false,
         authTokenDecoded: action.tokenDecoded,
       };
@@ -56,7 +55,7 @@ const auth = (state = initialState, action) => {
       return {
         ...state,
         isFetching: false,
-        errorMessages: action.errorMessages,
+        error: action.error,
       };
     case DISPLAY_LOGIN_DIALOG:
       return { ...state, isLoginDialogDisplayed: true };
@@ -70,8 +69,6 @@ const auth = (state = initialState, action) => {
         authorizationHeader: undefined,
         authTokenDecoded: null,
       };
-    case SET_AUTH_ERROR_MESSAGES:
-      return { ...state, errorMessages: action.errorMessages };
     default:
       return state;
   }

@@ -1,6 +1,7 @@
 import fetch from 'isomorphic-fetch';
 import { decode } from 'jsonwebtoken';
 import { loginUrl } from '../conf/Config';
+import makeErrorMessage from '../helpers/makeErrorMessage';
 
 // ==========
 export const FETCH_LOGIN = 'FETCH_LOGIN';
@@ -9,8 +10,6 @@ export const FETCH_LOGIN_FAILURE = 'FETCH_LOGIN_FAILURE';
 
 export const DISPLAY_LOGIN_DIALOG = 'DISPLAY_LOGIN_DIALOG';
 export const HIDE_LOGIN_DIALOG = 'HIDE_LOGIN_DIALOG';
-
-export const SET_AUTH_ERROR_MESSAGES = 'SET_AUTH_ERROR_MESSAGES';
 
 export const LOGOUT = 'LOGOUT';
 
@@ -26,9 +25,9 @@ export const fetchLoginSuccess = (tokenDecoded, token) => ({
   token,
 });
 
-export const fetchLoginFailure = (errorMessages) => ({
+export const fetchLoginFailure = (error) => ({
   type: FETCH_LOGIN_FAILURE,
-  errorMessages,
+  error,
 });
 
 export const displayLoginDialog = () => ({
@@ -42,17 +41,6 @@ export const hideLoginDialog = () => ({
 export const logout = () => ({
   type: LOGOUT,
 });
-
-export const setAuthErrorMessagesAction = (errorMessages) => ({
-  type: SET_AUTH_ERROR_MESSAGES,
-  errorMessages,
-});
-
-export function setAuthErrorMessages(errorMessages) {
-  return (dispatch) => {
-    dispatch(setAuthErrorMessagesAction(errorMessages));
-  };
-}
 
 export function postLogout() {
   return (dispatch) => {
@@ -72,16 +60,7 @@ export function postLogin(email, password) {
     return fetch(loginUrl, requestOptions)
       .then((response) => {
         if (response.status >= 400) {
-          let errorMessage = '';
-          if (response.status === 401) {
-            errorMessage = 'Invalid email or password.';
-          } else if (response.status === 500) {
-            errorMessage =
-              'A server error occurred, please try again later or contact Wikicaves for more information.';
-          } else {
-            errorMessage = 'An unknown error occurred.';
-          }
-          throw new Error(errorMessage);
+          throw new Error(response.status);
         } else {
           return response.json();
         }
@@ -90,8 +69,20 @@ export function postLogin(email, password) {
         dispatch(fetchLoginSuccess(decode(json.token), json.token));
         dispatch(hideLoginDialog());
       })
-      .catch((authError) => {
-        dispatch(fetchLoginFailure([authError.message]));
+      .catch((error) => {
+        const errorCode = Number(error.message);
+        let errorMessage = 'An unknown error occurred.';
+        if (errorCode === 401) {
+          errorMessage = 'Invalid email or password.';
+        } else if (errorCode === 500) {
+          errorMessage =
+            'A server error occurred, please try again later or contact Wikicaves for more information.';
+        }
+        dispatch(
+          fetchLoginFailure(
+            makeErrorMessage(errorCode, `Login - ${errorMessage}`),
+          ),
+        );
       });
   };
 }
