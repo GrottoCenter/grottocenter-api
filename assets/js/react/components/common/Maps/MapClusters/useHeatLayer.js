@@ -52,17 +52,19 @@ const useHeatLayer = (data = [], type = heatmapTypes.ENTRANCES) => {
 
   // On zoom lvl, hex opacity and size can change
   const map = useMapEvent('zoomend', () => {
-    if (!isNil(hexLayer) && map.getZoom() > HEX_DETAILS_ZOOM) {
-      hexLayer
-        .radiusRange(HEX_DETAILS_RADIUS_RANGE)
-        .opacity(HEX_DETAILS_OPACITY);
-    } else {
-      hexLayer.radiusRange(HEX_RADIUS_RANGE).opacity(HEX_OPACITY);
+    if (!isNil(hexLayer)) {
+      if (map.getZoom() > HEX_DETAILS_ZOOM) {
+        hexLayer
+          .radiusRange(HEX_DETAILS_RADIUS_RANGE)
+          .opacity(HEX_DETAILS_OPACITY);
+      } else {
+        hexLayer.radiusRange(HEX_RADIUS_RANGE).opacity(HEX_OPACITY);
+      }
     }
   });
 
   const updateHeatData = useCallback(
-    (newData, newType = heatmapTypes.ENTRANCES) => {
+    (newData, newType = type) => {
       if (!isNil(hexLayer)) {
         // Remove previous tooltip (avoid some bug)
         d3.selectAll('.hexbin-tooltip').remove();
@@ -79,7 +81,7 @@ const useHeatLayer = (data = [], type = heatmapTypes.ENTRANCES) => {
                 L.HexbinHoverHandler.resizeFill(),
                 L.HexbinHoverHandler.tooltip({
                   tooltipContent: (nbr) =>
-                    `${nbr.length} ${formatMessage({ id: type })}`,
+                    `${nbr.length} ${formatMessage({ id: newType })}`,
                 }),
               ],
             }),
