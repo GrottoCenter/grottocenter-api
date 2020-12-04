@@ -17,7 +17,7 @@ const isEmailValid = (email) => {
 
 const Login = () => {
   const dispatch = useDispatch();
-  const authState = useSelector((state) => state.auth);
+  const authState = useSelector((state) => state.login);
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [authErrorMessages, setAuthErrorMessages] = React.useState([]);

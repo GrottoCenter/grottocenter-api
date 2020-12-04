@@ -23,7 +23,7 @@ const hasRole = (authState, roleName) => {
 
 // eslint-disable-next-line import/prefer-default-export
 export function usePermissions() {
-  const authState = useSelector((state) => state.auth);
+  const authState = useSelector((state) => state.login);
   return {
     isAdmin: hasRole(authState, 'Administrator'),
     isAuth: authState.authTokenDecoded !== null && !isTokenExpired(),

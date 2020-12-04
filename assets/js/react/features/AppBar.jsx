@@ -23,7 +23,7 @@ const HeaderAutoCompleteSearch = ({ isSideMenuOpen, HeaderQuickSearch }) => (
 
 const AppBar = ({ toggleSideMenu, isSideMenuOpen, HeaderQuickSearch }) => {
   const dispatch = useDispatch();
-  const authState = useSelector((state) => state.auth);
+  const authState = useSelector((state) => state.login);
   const permissions = usePermissions();
 
   const onLoginClick = () =>
