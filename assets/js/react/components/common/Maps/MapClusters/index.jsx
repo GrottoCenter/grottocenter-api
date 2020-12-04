@@ -4,12 +4,13 @@ import 'd3';
 import 'd3-hexbin';
 import 'leaflet.fullscreen';
 import { useMapEvent } from 'react-leaflet';
-import { without, pipe, append, uniq, isNil, isEmpty } from 'ramda';
+import { without, pipe, append, uniq, isNil } from 'ramda';
 import '@asymmetrik/leaflet-d3';
 
 import DataControl, { heatmapTypes } from './DataControl';
 import ConverterControl from '../common/Converter';
 import useHeatLayer, { HexGlobalCss } from './useHeatLayer';
+import useCurrentPosition from './useCurrentPosition';
 import Markers from './Markers';
 import CustomMapContainer from '../common/MapContainer';
 import { LocationMarker } from '../common/Markers/Components';
@@ -18,38 +19,6 @@ import { MARKERS_LIMIT } from './constants';
 const ZOOM_STATE = {
   MARKERS: 1,
   HEAT: 2,
-};
-
-const useCurrentPosition = (defaultPosition) => {
-  const [position, setPosition] = useState(null);
-  const map = useMapEvent('locationfound', (e) => {
-    setPosition(e.latlng);
-    // TODO currently defaultPosition is not set. Sharing a map url will not work and it will always inter this condition
-    if (isNil(defaultPosition) || isEmpty(defaultPosition)) {
-      map.flyTo(e.latlng, map.getZoom());
-    }
-  });
-
-  useEffect(() => {
-    map.locate();
-  }, []);
-
-  return position;
-};
-
-const useMapEventUpdateData = (initialZoom, updateData) => {
-  const prevZoom = useRef(initialZoom);
-
-  const map = useMapEvent('zoomend', () => {
-    const isZoomingIn = prevZoom.current < map.getZoom();
-    if (!isZoomingIn) {
-      updateData();
-    }
-    prevZoom.current = map.getZoom();
-  });
-  useMapEvent('dragend', () => {
-    updateData();
-  });
 };
 
 const HydratedMap = ({
@@ -128,7 +97,12 @@ const HydratedMap = ({
   };
 
   // Update data on leaflet events or user events
-  useMapEventUpdateData(zoom, handleUpdate);
+  useMapEvent('zoomend', () => {
+    handleUpdate();
+  });
+  useMapEvent('dragend', () => {
+    handleUpdate();
+  });
   useEffect(() => {
     handleUpdate();
   }, [visibleMarkers, visibleHeat]);
@@ -192,7 +166,7 @@ HydratedMap.propTypes = {
   projectionsList: PropTypes.arrayOf(PropTypes.any),
   zoom: PropTypes.number.isRequired,
   onUpdate: PropTypes.func,
-  center: PropTypes.arrayOf(PropTypes.number).isRequired,
+  center: PropTypes.arrayOf(PropTypes.number),
 };
 
 Index.propTypes = {
