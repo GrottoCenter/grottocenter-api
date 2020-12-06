@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 
@@ -20,12 +20,14 @@ const HomePage = () => {
   const dispatch = useDispatch();
   const permissions = usePermissions();
 
-  if (
-    !permissions.isAuth &&
-    (location.pathname === '/ui/login' || location.pathname === '/ui/login/')
-  ) {
-    dispatch(displayLoginDialog());
-  }
+  useEffect(() => {
+    if (
+      !permissions.isAuth &&
+      (location.pathname === '/ui/login' || location.pathname === '/ui/login/')
+    ) {
+      dispatch(displayLoginDialog());
+    }
+  }, []);
 
   return (
     <>
