@@ -366,7 +366,7 @@ class EntrancesSearch extends React.Component {
                     id: 'Depth',
                   })}
                   helperText={intl.formatMessage({
-                    id: 'In meter',
+                    id: 'In meters',
                   })}
                   disabled={!caveDepthRange.isEditable}
                   onDisable={this.handleCheckedChange('cave depth-range')}
@@ -388,7 +388,7 @@ class EntrancesSearch extends React.Component {
                     id: 'Length',
                   })}
                   helperText={intl.formatMessage({
-                    id: 'In meter',
+                    id: 'In meters',
                   })}
                   disabled={!caveLengthRange.isEditable}
                   onDisable={this.handleCheckedChange('cave length-range')}
