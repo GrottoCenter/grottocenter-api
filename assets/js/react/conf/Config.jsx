@@ -157,7 +157,7 @@ export const getMapGrottosUrl = `/api/${apiVersion}/geoloc/grottos`;
  */
 export const findMapBoundsUrl = `/api/${apiVersion}/geoloc/TO_REMOVE`;
 export const findMassifUrl = `/api/${apiVersion}/massifs/`;
-export const findGroupUrl = `/api/${apiVersion}/organizations/`;
+export const findOrganizationUrl = `/api/${apiVersion}/organizations/`;
 export const advancedsearchUrl = `/api/${apiVersion}/advanced-search`;
 export const quicksearchUrl = `/api/${apiVersion}/search`;
 export const subjectsUrl = `/api/${apiVersion}/documents/subjects`;
@@ -205,7 +205,7 @@ export const breadcrumpKeys = {
   documents: 'Documents',
   entries: 'Entries',
   faq: 'FAQ',
-  groups: 'Groups',
+  organizations: 'Organizations',
   manage: 'Manage',
   map: 'Map',
   massifs: 'Massifs',

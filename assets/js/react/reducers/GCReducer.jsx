@@ -12,13 +12,13 @@ import documentType from './DocumentTypeReducer';
 import dynamicNumber from './DynamicNumberReducer';
 import entry from './EntryReducer';
 import error from './ErrorReducer';
-import group from './GroupReducer';
 import identifierType from './IdentifierTypesReducer';
 import language from './LanguageReducer';
 import latestBlogNews from './LatestBlogNewsReducer';
 import login from './LoginReducer';
 import map from './Map';
 import massif from './MassifReducer';
+import organization from './OrganizationReducer';
 import pageTitle from './PageTitleReducer';
 import partnersCarousel from './PartnersCarouselReducer';
 import processDocuments from './ProcessDocumentsReducer';
@@ -50,13 +50,13 @@ const GCReducer = combineReducers({
   dynamicNumber,
   entry,
   error,
-  group,
   identifierType,
   language,
   latestBlogNews,
   login,
   map,
   massif,
+  organization,
   pageTitle,
   partnersCarousel,
   processDocuments,

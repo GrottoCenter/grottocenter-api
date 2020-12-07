@@ -4,16 +4,21 @@ import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import styled from 'styled-components';
 
-import EntrancesSearch from './EntrancesSearch';
-import GroupsSearch from './GroupsSearch';
-import MassifsSearch from './MassifsSearch';
 import DocumentSearch from './DocumentSearch';
+import EntrancesSearch from './EntrancesSearch';
+import MassifsSearch from './MassifsSearch';
+import OrganizationsSearch from './OrganizationsSearch';
 
 import Translate from '../../common/Translate';
 
 import SearchResultsContainer from '../../../containers/SearchResultsContainer';
 
-const advancedSearchTypes = ['entrances', 'grottos', 'massifs', 'documents'];
+const advancedSearchTypes = {
+  ENTRANCES: 'entrances',
+  ORGANIZATIONS: 'grottos',
+  MASSIFS: 'massifs',
+  DOCUMENTS: 'documents',
+};
 
 const TabIcon = styled.img`
   height: 2rem;
@@ -56,8 +61,8 @@ const AdvancedSearch = ({
         <Tab
           label={
             <>
-              <TabIcon src="/images/club.svg" alt="Group icon" />
-              <Translate>Groups</Translate>
+              <TabIcon src="/images/club.svg" alt="Organization icon" />
+              <Translate>Organizations</Translate>
             </>
           }
         />
@@ -85,16 +90,16 @@ const AdvancedSearch = ({
             startAdvancedsearch={(state, resourceType) => {
               startAdvancedsearch(state, resourceType);
             }}
-            resourceType={advancedSearchTypes[0]}
+            resourceType={advancedSearchTypes.ENTRANCES}
             resetResults={resetAdvancedSearch}
           />
         )}
         {selectedType === 1 && (
-          <GroupsSearch
+          <OrganizationsSearch
             startAdvancedsearch={(state, resourceType) => {
               startAdvancedsearch(state, resourceType);
             }}
-            resourceType={advancedSearchTypes[1]}
+            resourceType={advancedSearchTypes.ORGANIZATIONS}
             resetResults={resetAdvancedSearch}
           />
         )}
@@ -103,7 +108,7 @@ const AdvancedSearch = ({
             startAdvancedsearch={(state, resourceType) => {
               startAdvancedsearch(state, resourceType);
             }}
-            resourceType={advancedSearchTypes[2]}
+            resourceType={advancedSearchTypes.MASSIFS}
             resetResults={resetAdvancedSearch}
           />
         )}
@@ -112,7 +117,7 @@ const AdvancedSearch = ({
             startAdvancedsearch={(state, resourceType) => {
               startAdvancedsearch(state, resourceType);
             }}
-            resourceType={advancedSearchTypes[3]}
+            resourceType={advancedSearchTypes.DOCUMENTS}
             resetResults={resetAdvancedSearch}
             getAllSubjects={getSubjects}
             allSubjects={subjects}

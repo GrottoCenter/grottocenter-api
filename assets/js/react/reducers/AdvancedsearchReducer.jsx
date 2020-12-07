@@ -28,7 +28,7 @@ const initialState = {
   searchCriterias: {
     from: 0,
     size: 10,
-    resourceType: '', // results type (one of: entrances, groups, massifs or documents)
+    resourceType: '', // results type (one of: entrances, grottos, massifs or documents)
   },
 };
 

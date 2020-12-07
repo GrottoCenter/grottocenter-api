@@ -20,14 +20,14 @@ import SignUp from '../features/SignUp';
 
 import { usePermissions } from '../hooks';
 
+import CaveSystemPage from './CaveSystem';
 import DocumentSubmission from './DocumentSubmission';
 import DocumentValidation from './DocumentValidation';
 import EntryPage from './Entry';
-import GroupPage from './Group';
-import MassifPage from './Massif';
-import CaveSystemPage from './CaveSystem';
 import ManageUsers from './Admin/ManageUsers';
 import Map from './Map';
+import MassifPage from './Massif';
+import OrganizationPage from './Organization';
 
 const Application = () => {
   const dispatch = useDispatch();
@@ -63,7 +63,10 @@ const Application = () => {
         <Route path="/ui/map/:target?" component={Map} />
         <Route path="/ui/swagger/:version" component={Swagger} />
         <Route path="/ui/test" component={LatestBlogNewsSection} />
-        <Route path="/ui/groups/:groupId" component={GroupPage} />
+        <Route
+          path="/ui/organizations/:organizationId"
+          component={OrganizationPage}
+        />
         <Route path="/ui/massifs/:massifId" component={MassifPage} />
         <Route path="/ui/login" component={HomePage} />
         <Route path="/ui/signup" component={SignUp} />

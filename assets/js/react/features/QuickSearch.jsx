@@ -18,8 +18,8 @@ export const searchableTypes = {
   cavers: 'cavers',
   documents: 'documents',
   entries: 'entries',
-  groups: 'grottos',
   massifs: 'massifs',
+  organizations: 'grottos',
 };
 
 const renderOption = (option) => entityOptionForSelector(option);
@@ -51,7 +51,7 @@ const QuickSearch = ({
           history.push(`/ui/documents/${encodeURIComponent(selection.id)}`);
           break;
         case 'grotto':
-          history.push(`/ui/groups/${encodeURIComponent(selection.id)}`);
+          history.push(`/ui/organizations/${encodeURIComponent(selection.id)}`);
           break;
         case 'caver':
           history.push(`/ui/cavers/${encodeURIComponent(selection.id)}`);

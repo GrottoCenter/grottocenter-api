@@ -76,7 +76,7 @@ class SearchResultsTable extends React.Component {
       size: DEFAULT_SIZE,
     };
     this.entrancesTableHead = this.entrancesTableHead.bind(this);
-    this.groupsTableHead = this.groupsTableHead.bind(this);
+    this.organizationsTableHead = this.organizationsTableHead.bind(this);
     this.massifsTableHead = this.massifsTableHead.bind(this);
     this.documentsTableHead = this.documentsTableHead.bind(this);
     this.handleRowClick = this.handleRowClick.bind(this);
@@ -157,7 +157,7 @@ class SearchResultsTable extends React.Component {
     );
   };
 
-  groupsTableHead = () => {
+  organizationsTableHead = () => {
     const { intl } = this.props;
     return (
       <TableHead>
@@ -263,7 +263,7 @@ class SearchResultsTable extends React.Component {
         urlToRedirectTo = `/ui/entries/${id}`;
         break;
       case 'grottos':
-        urlToRedirectTo = `/ui/groups/${id}`;
+        urlToRedirectTo = `/ui/organizations/${id}`;
         break;
       case 'massifs':
         urlToRedirectTo = `/ui/massifs/${id}`;
@@ -423,7 +423,8 @@ class SearchResultsTable extends React.Component {
     let ResultsTableHead;
     if (resourceType === 'entrances')
       ResultsTableHead = this.entrancesTableHead;
-    if (resourceType === 'grottos') ResultsTableHead = this.groupsTableHead;
+    if (resourceType === 'grottos')
+      ResultsTableHead = this.organizationsTableHead;
     if (resourceType === 'massifs') ResultsTableHead = this.massifsTableHead;
     if (resourceType === 'documents')
       ResultsTableHead = this.documentsTableHead;
