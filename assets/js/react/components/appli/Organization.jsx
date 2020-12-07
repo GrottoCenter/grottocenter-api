@@ -50,14 +50,14 @@ const StyledEmailIcon = styled(EmailIcon)`
   margin-right: ${({ theme }) => theme.spacing(1)}px;
 `;
 
-const Group = ({ isFetching, group }) => {
-  const safeGet = pathOr('N/A', __, group || {});
+const Organization = ({ isFetching, organization }) => {
+  const safeGet = pathOr('N/A', __, organization || {});
   const { formatMessage } = useIntl();
 
-  if (isNil(group) && !isFetching) {
+  if (isNil(organization) && !isFetching) {
     return (
       <Translate>
-        Error, the group data you are looking for is not available.
+        Error, the organization data you are looking for is not available.
       </Translate>
     );
   }
@@ -73,14 +73,16 @@ const Group = ({ isFetching, group }) => {
               <>
                 <StyledBadge
                   color="primary"
-                  badgeContent={!isNil(group.cavers) ? group.cavers.length : 0}
+                  badgeContent={
+                    !isNil(organization.cavers) ? organization.cavers.length : 0
+                  }
                 >
                   <CaverIcon src="/images/caver.svg" alt="Caver icon" />
                 </StyledBadge>
 
                 <StyledBadge
                   color="primary"
-                  badgeContent={group.exploredCaves.length}
+                  badgeContent={organization.exploredCaves.length}
                 >
                   <EntryIcon src="/images/entry-cluster.svg" alt="Cave icon" />
                 </StyledBadge>
@@ -93,10 +95,12 @@ const Group = ({ isFetching, group }) => {
             }
             subheader={
               <>
-                {group.yearBirth &&
-                  `${formatMessage({ id: 'Since' })} ${group.yearBirth}`}
-                {group.yearBirth && group.isOfficialPartner && ` - `}
-                {group.isOfficialPartner && (
+                {organization.yearBirth &&
+                  `${formatMessage({ id: 'Since' })} ${organization.yearBirth}`}
+                {organization.yearBirth &&
+                  organization.isOfficialPartner &&
+                  ` - `}
+                {organization.isOfficialPartner && (
                   <>{formatMessage({ id: 'Official partner' })}</>
                 )}
               </>
@@ -109,27 +113,28 @@ const Group = ({ isFetching, group }) => {
                 {`${safeGet(['country'])} - ${safeGet(['region'])} - ${safeGet([
                   'county',
                 ])}`}
-                {!isNil(group.city) && ` - ${group.city}`}
-                {!isNil(group.village) && ` - ${group.village}`}
-                {!isNil(group.postalCode) && ` - ${group.postalCode}`}
-                {!isNil(group.address) && ` - ${group.address}`}
+                {!isNil(organization.city) && ` - ${organization.city}`}
+                {!isNil(organization.village) && ` - ${organization.village}`}
+                {!isNil(organization.postalCode) &&
+                  ` - ${organization.postalCode}`}
+                {!isNil(organization.address) && ` - ${organization.address}`}
               </Typography>
             </ContentWrapper>
 
-            {group.mail && (
+            {organization.mail && (
               <ContentWrapper>
                 <StyledEmailIcon color="primary" />
-                <Typography>{group.mail}</Typography>
+                <Typography>{organization.mail}</Typography>
               </ContentWrapper>
             )}
 
             <ContentWrapper>
-              <Typography>{group.customMessage}</Typography>
+              <Typography>{organization.customMessage}</Typography>
             </ContentWrapper>
 
             <hr />
             <CavesList
-              caves={group.exploredCaves}
+              caves={organization.exploredCaves}
               title={
                 <strong>
                   <Translate>Explored caves</Translate>
@@ -141,7 +146,7 @@ const Group = ({ isFetching, group }) => {
             />
             <hr />
             <CavesList
-              caves={group.partneredCaves}
+              caves={organization.partneredCaves}
               title={
                 <strong>
                   <Translate>Partnered caves</Translate>
@@ -158,14 +163,14 @@ const Group = ({ isFetching, group }) => {
   );
 };
 
-Group.propTypes = {
+Organization.propTypes = {
   // TODO : mark some properties as required + add details for the "any""
   classes: PropTypes.shape({
     root: PropTypes.any,
     badge: PropTypes.any,
   }).isRequired,
   isFetching: PropTypes.bool.isRequired,
-  group: PropTypes.shape({
+  organization: PropTypes.shape({
     address: PropTypes.string,
     mail: PropTypes.string,
     customMessage: PropTypes.string,
@@ -184,8 +189,8 @@ Group.propTypes = {
   }),
 };
 
-Group.defaultProps = {
-  group: undefined,
+Organization.defaultProps = {
+  organization: undefined,
 };
 
-export default Group;
+export default Organization;

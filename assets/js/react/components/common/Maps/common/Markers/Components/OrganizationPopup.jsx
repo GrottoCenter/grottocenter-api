@@ -36,7 +36,7 @@ const StyledLocationCityIcon = withTheme(styled(LocationCityIcon)`
 `);
 
 export const OrganizationPopup = ({ organization }) => {
-  const grottoDetailedPageLink = `/ui/groups/${organization.id}`;
+  const grottoDetailedPageLink = `/ui/organizations/${organization.id}`;
 
   return (
     <>

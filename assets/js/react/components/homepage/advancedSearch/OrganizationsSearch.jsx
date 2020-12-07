@@ -20,7 +20,7 @@ import Translate from '../../common/Translate';
 import SearchBottomActionButtons from './SearchBottomActionButtons';
 import styles from './styles';
 
-class GroupsSearch extends React.Component {
+class OrganizationsSearch extends React.Component {
   // TODO: Handle the max of number of cavers dynamically
 
   constructor(props) {
@@ -143,7 +143,7 @@ class GroupsSearch extends React.Component {
             className={classes.formContainer}
           >
             <Typography variant="h6">
-              <Translate>Group properties</Translate>
+              <Translate>Organization properties</Translate>
             </Typography>
             <div
               className={classes.formPartContainer}
@@ -153,7 +153,7 @@ class GroupsSearch extends React.Component {
                 className={classes.formElement}
                 label={
                   <span>
-                    <Translate>Group name</Translate>
+                    <Translate>Organization name</Translate>
                   </span>
                 }
                 onChange={(event) => this.handleValueChange('name', event)}
@@ -283,7 +283,7 @@ class GroupsSearch extends React.Component {
   }
 }
 
-GroupsSearch.propTypes = {
+OrganizationsSearch.propTypes = {
   classes: PropTypes.shape(PropTypes.any).isRequired,
   startAdvancedsearch: PropTypes.func.isRequired,
   resetResults: PropTypes.func.isRequired,
@@ -296,9 +296,9 @@ GroupsSearch.propTypes = {
   intl: PropTypes.shape(intlShape).isRequired,
 };
 
-GroupsSearch.defaultProps = {
+OrganizationsSearch.defaultProps = {
   numberOfCaversMinValue: 0,
   numberOfCaversMaxValue: 100,
 };
 
-export default injectIntl(withStyles(styles)(GroupsSearch));
+export default injectIntl(withStyles(styles)(OrganizationsSearch));
