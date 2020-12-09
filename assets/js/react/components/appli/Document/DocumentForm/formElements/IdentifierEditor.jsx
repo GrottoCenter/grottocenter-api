@@ -52,8 +52,8 @@ const IdentifierEditor = ({
     updateAttribute,
   } = useContext(DocumentFormContext);
   const regexp = pathOr(null, ['regexp'], identifierType);
-  const validationRegexp =
-    regexp === null ? null : new RegExp(regexp).test(identifier);
+  const isRegexpValid =
+    regexp === null ? true : new RegExp(regexp).test(identifier);
 
   const handleIdentifierChange = (newIdentifier) => {
     if (newIdentifier === '') {
@@ -72,7 +72,7 @@ const IdentifierEditor = ({
 
   return (
     <>
-      {validationRegexp === false && (
+      {!isRegexpValid && (
         <Typography align="center" color="error">
           <Translate>
             The identifier must match the identifier type format.
@@ -89,8 +89,8 @@ const IdentifierEditor = ({
             onValueChange={handleIdentifierChange}
             value={identifier}
             valueName={formatMessage({ id: 'Identifier' })}
-            required={false}
-            hasError={!validationRegexp}
+            required={identifierType !== null}
+            hasError={identifierType !== null && !isRegexpValid}
           />
         </IdentifierContainer>
 
