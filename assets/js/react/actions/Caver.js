@@ -44,7 +44,7 @@ export function postCaverGroups(caverId, groups) {
       body: JSON.stringify({
         groups,
       }),
-      headers: getState().auth.authorizationHeader,
+      headers: getState().login.authorizationHeader,
     };
 
     return fetch(postCaverGroupsUrl(caverId), requestOptions).then(
@@ -118,7 +118,7 @@ export function getAdmins() {
 
     const requestOptions = {
       method: 'GET',
-      headers: getState().auth.authorizationHeader,
+      headers: getState().login.authorizationHeader,
     };
 
     return fetch(getAdminsUrl, requestOptions)
@@ -154,7 +154,7 @@ export function getModerators() {
     dispatch(getModeratorsAction());
     const requestOptions = {
       method: 'GET',
-      headers: getState().auth.authorizationHeader,
+      headers: getState().login.authorizationHeader,
     };
 
     return fetch(getModeratorsUrl, requestOptions)

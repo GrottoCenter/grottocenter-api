@@ -69,7 +69,7 @@ export function postDocument(docAttributes) {
     const requestOptions = {
       method: 'POST',
       body: JSON.stringify({ ...docAttributes, pages }),
-      headers: getState().auth.authorizationHeader,
+      headers: getState().login.authorizationHeader,
     };
 
     return fetch(postDocumentUrl, requestOptions).then((response) => {
@@ -138,7 +138,7 @@ export function updateDocument(docAttributes) {
     const requestOptions = {
       method: 'PUT',
       body: JSON.stringify({ ...docAttributes, pages }),
-      headers: getState().auth.authorizationHeader,
+      headers: getState().login.authorizationHeader,
     };
 
     return fetch(putDocumentUrl(docAttributes.id), requestOptions).then(

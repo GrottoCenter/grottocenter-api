@@ -25,7 +25,7 @@ export const postOrganization = (name) => (dispatch, getState) => {
   const requestOptions = {
     method: 'POST',
     body: JSON.stringify({ name }),
-    headers: getState().auth.authorizationHeader,
+    headers: getState().login.authorizationHeader,
   };
 
   return fetch(postOrganizationUrl, requestOptions)

@@ -25,7 +25,7 @@ export const postCaver = ({ name, surname }) => (dispatch, getState) => {
   const requestOptions = {
     method: 'POST',
     body: JSON.stringify({ name, surname }),
-    headers: getState().auth.authorizationHeader,
+    headers: getState().login.authorizationHeader,
   };
 
   return fetch(postCaverUrl, requestOptions)
