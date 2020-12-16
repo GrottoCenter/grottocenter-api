@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
+import { useIntl } from 'react-intl';
 import { withTheme } from '@material-ui/core/styles';
 import LandingSection from './LandingSection';
 import {
@@ -52,49 +53,79 @@ const WelcomeSection = styled(LandingSection)`
 //
 //
 
-const Welcome = ({ theme }) => (
-  <WelcomeSection
-    bgColor={theme.palette.primary1Color}
-    fgColor={theme.palette.secondaryBlocTitle}
-  >
-    <GridRow>
-      <GridOneThirdColumn>
-        <WelcomeAvatar src="/images/caves/draperie_small.jpg" />
-      </GridOneThirdColumn>
+const Welcome = ({ theme }) => {
+  const { formatMessage } = useIntl();
+  return (
+    <WelcomeSection
+      bgColor={theme.palette.primary1Color}
+      fgColor={theme.palette.secondaryBlocTitle}
+    >
+      <GridRow>
+        <GridOneThirdColumn>
+          <WelcomeAvatar src="/images/caves/draperie_small.jpg" />
+        </GridOneThirdColumn>
 
-      <GridTwoThirdColumn>
-        <WelcomeTitle color={theme.palette.accent1Color}>
-          <Translate>Welcome to Grottocenter!</Translate>
-        </WelcomeTitle>
-        <WelcomeParagraph>
-          <Translate
-            id="This {0} version of the site is improving gradually to allow a simpler navigation from
-            all your peripherals"
-            values={{
-              0: <span>3.4.9</span>,
-            }}
-          />
-        </WelcomeParagraph>
-        <WelcomeParagraph>
-          <Translate>
-            The application is faster, and benefits from a code of higher
-            quality which is also easier to maintain: data processing specialist
-            may join the development team and easily contribute.
-          </Translate>
-        </WelcomeParagraph>
-        <WelcomeParagraph>
-          <Translate>
-            As of today, you can access updated information on caving, an
-            effective module for quick search and quality information on caves.
-            Regularly log in to discover new features and keep on using
-            Grottocenter to take part and use information already added by the
-            community.
-          </Translate>
-        </WelcomeParagraph>
-      </GridTwoThirdColumn>
-    </GridRow>
-  </WelcomeSection>
-);
+        <GridTwoThirdColumn>
+          <WelcomeTitle color={theme.palette.accent1Color}>
+            <Translate>Welcome to Grottocenter!</Translate>
+          </WelcomeTitle>
+          <WelcomeParagraph>
+            <Translate>Grottocenter 3 is totally evolving!</Translate>
+          </WelcomeParagraph>
+          <WelcomeParagraph>
+            {formatMessage({
+              id:
+                'This newer, faster and more up-to-date version of the site also aims to provide you with new functions. Some are already up and running: a fast and efficient search module, suggestions for document analyzes to people connected to their account, etc.',
+            })}
+          </WelcomeParagraph>
+          <WelcomeParagraph>
+            {formatMessage({
+              id:
+                'Many more features are still in the works and we aim to get Grottocenter 3 fully operational in the coming months.',
+            })}
+            &nbsp;
+            {formatMessage({
+              id: 'In order to be able to do this, we need your help.',
+            })}
+            &nbsp;
+            {formatMessage(
+              {
+                id:
+                  'Therefore, for a few weeks, you will have the opportunity to respond to our <fundRaisingOperationUrl>fund-raising operation</fundRaisingOperationUrl>.',
+                defaultMessage:
+                  'Therefore, for a few weeks, you will have the opportunity to respond to our <fundRaisingOperationUrl>fund-raising operation</fundRaisingOperationUrl>.',
+              },
+              {
+                fundRaisingOperationUrl: (text) => (
+                  <a href="https://www.kisskissbankbank.com/en/projects/grottocenter-v3">
+                    {text}
+                  </a>
+                ),
+              },
+            )}
+            &nbsp;
+            {formatMessage({
+              id:
+                'Every contribution is important and to thank you, we will offer you some nice little rewards.',
+            })}
+          </WelcomeParagraph>
+          <WelcomeParagraph>
+            <b>
+              {formatMessage({
+                id: 'PLEASE NOTE:',
+              })}
+            </b>
+            &nbsp;
+            {formatMessage({
+              id:
+                'for a few weeks (during the database switching), you will not be able to add or edit the Grottocenter cave files. This maintenance delay is unfortunately necessary, we apologize for the inconvenience. We will inform you here as soon as the functions for editing cave files are available again.',
+            })}
+          </WelcomeParagraph>
+        </GridTwoThirdColumn>
+      </GridRow>
+    </WelcomeSection>
+  );
+};
 
 Welcome.propTypes = {
   // eslint-disable-next-line react/forbid-prop-types
