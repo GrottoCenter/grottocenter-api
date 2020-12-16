@@ -4,16 +4,12 @@ import { useDispatch, useSelector } from 'react-redux';
 import { isEmpty, match } from 'ramda';
 import { hideLoginDialog, postLogin } from '../actions/Login';
 
+import { emailRegexp } from '../conf/Config';
 import Translate from '../components/common/Translate';
 import StandardDialog from '../components/common/StandardDialog';
 import LoginForm from '../components/common/LoginForm';
 
 // ===========================
-
-const isEmailValid = (email) => {
-  const emailRegexp = /\S+@\S+/; // simple regexp: it's enough for a login.
-  return !isEmpty(match(emailRegexp, email));
-};
 
 const Login = () => {
   const dispatch = useDispatch();
@@ -27,7 +23,7 @@ const Login = () => {
 
     const newAuthErrorMessages = [
       ...(isEmpty(email) ? ['You must provide an email.'] : []),
-      ...(!isEmailValid(email) && !isEmpty(email)
+      ...(!!isEmpty(match(emailRegexp, email)) && !isEmpty(email)
         ? ['You must provide a valid email.']
         : []),
       ...(isEmpty(password) ? ['You must provide a password.'] : []),

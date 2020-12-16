@@ -27,6 +27,7 @@ import quicksearch from './QuicksearchReducer';
 import randomEntry from './RandomEntryReducer';
 import region from './RegionReducer';
 import sideMenu from './SideMenuReducer';
+import signUp from './SignUpReducer';
 import subject from './SubjectReducer';
 
 //
@@ -64,6 +65,7 @@ const GCReducer = combineReducers({
   randomEntry,
   region,
   sideMenu,
+  signUp,
   subject,
 });
 

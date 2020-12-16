@@ -32,6 +32,13 @@ const ErrorHandler = () => {
             })} - ${errorMessage}`,
           );
           break;
+        case 409:
+          onError(
+            `${formatMessage({
+              id: 'Conflict',
+            })} - ${errorMessage}`,
+          );
+          break;
         case 500:
           onError(
             `${formatMessage({

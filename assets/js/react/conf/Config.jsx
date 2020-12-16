@@ -184,12 +184,16 @@ export const postCaverGroupsUrl = (userId) =>
 // ===== Auth url
 export const loginUrl = `/api/${apiVersion}/login`;
 export const logoutUrl = `/api/${apiVersion}/logout`;
+export const signUpUrl = `/api/${apiVersion}/signup`;
 
 // ===== Grottocenter Client routes
 export const swaggerLinkV1 = '/ui/swagger/1';
 export const entryDetailPath = `/api/${apiVersion}/entrances/`;
 
 // ===== Misc config values
+export const emailRegexp = /\S+@\S+/; // simple regexp TODO: use another one more robust
+export const PASSWORD_MIN_LENGTH = 8;
+
 export const DYNAMIC_NUMBER_RELOAD_INTERVAL = 900000;
 export const DYNAMIC_NEWS_RELOAD_INTERVAL = 3600000;
 

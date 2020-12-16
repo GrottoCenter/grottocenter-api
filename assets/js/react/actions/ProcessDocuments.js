@@ -37,7 +37,7 @@ export const postProcessDocuments = (ids, isValidated, comment) => (
   const requestOptions = {
     method: 'PUT',
     body: JSON.stringify({ documents: documentsBody }),
-    headers: getState().auth.authorizationHeader,
+    headers: getState().login.authorizationHeader,
   };
 
   return fetch(processDocumentIds, requestOptions)

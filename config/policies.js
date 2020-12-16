@@ -34,6 +34,7 @@ module.exports.policies = {
   AuthController: {
     login: true,
     logout: 'tokenAuth',
+    signUp: true,
   },
 
   CaverController: {
