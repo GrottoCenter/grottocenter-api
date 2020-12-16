@@ -31,7 +31,7 @@ const initialState = {
 // R E D U C E R
 //
 //
-const auth = (state = initialState, action) => {
+const login = (state = initialState, action) => {
   switch (action.type) {
     case FETCH_LOGIN:
       return {
@@ -74,4 +74,4 @@ const auth = (state = initialState, action) => {
   }
 };
 
-export default auth;
+export default login;

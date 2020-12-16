@@ -13,9 +13,10 @@ import Faq from '../components/appli/Faq';
 import LatestBlogNewsSection from '../components/homepage/LatestBlogNewsSection';
 import Layout from '../components/common/Layouts/Main';
 
+import AppBar from '../features/AppBar';
 import LoginDialog from '../features/Login';
 import QuickSearch from '../features/QuickSearch';
-import AppBar from '../features/AppBar';
+import SignUp from '../features/SignUp';
 
 import { usePermissions } from '../hooks';
 
@@ -65,6 +66,7 @@ const Application = () => {
         <Route path="/ui/groups/:groupId" component={GroupPage} />
         <Route path="/ui/massifs/:massifId" component={MassifPage} />
         <Route path="/ui/login" component={HomePage} />
+        <Route path="/ui/signup" component={SignUp} />
         <Route path="/ui/documents/add" component={DocumentSubmission} />
         <Route path="/ui/documents/validation" component={DocumentValidation} />
         <Route

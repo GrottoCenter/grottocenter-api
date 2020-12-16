@@ -8,12 +8,15 @@ import {
 } from '@material-ui/core';
 
 const StringInput = ({
+  endAdornment,
   fullWidth = true,
+  hasError = false,
   helperText,
   multiline = false,
-  required = false,
-  value,
   onValueChange,
+  required = false,
+  type = 'text',
+  value,
   valueName,
 }) => {
   const handleValueChange = (event) => {
@@ -25,17 +28,18 @@ const StringInput = ({
       variant="filled"
       fullWidth={fullWidth}
       required={required}
-      error={required && value === ''}
+      error={(required && value === '') || hasError}
     >
       <InputLabel>{valueName}</InputLabel>
       <FilledInput
+        endAdornment={endAdornment}
         multiline={multiline}
         name={valueName}
         onChange={handleValueChange}
         required={required}
-        type="text"
+        type={type}
         value={value}
-        error={required && value === ''}
+        error={(required && value === '') || hasError}
       />
       {helperText && <FormHelperText>{helperText}</FormHelperText>}
     </FormControl>
@@ -43,11 +47,14 @@ const StringInput = ({
 };
 
 StringInput.propTypes = {
+  endAdornment: PropTypes.node,
   fullWidth: PropTypes.bool,
-  helperText: PropTypes.string.isRequired,
+  hasError: PropTypes.bool,
+  helperText: PropTypes.string,
   multiline: PropTypes.bool,
   onValueChange: PropTypes.func.isRequired,
   required: PropTypes.bool,
+  type: PropTypes.oneOf(['text', 'email', 'password']),
   value: PropTypes.string.isRequired,
   valueName: PropTypes.string.isRequired,
 };
