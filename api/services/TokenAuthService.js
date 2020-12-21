@@ -6,10 +6,8 @@
  */
 
 const jwt = require('jsonwebtoken');
-
-const tokenSalt = process.env.TOKEN_SALT
-  ? process.env.TOKEN_SALT
-  : 'aR4nd0mT0kenSalt';
+const AuthService = require('./AuthService');
+const { tokenSalt } = AuthService;
 
 // Generates a token from supplied payload
 module.exports.issue = (payload) =>
