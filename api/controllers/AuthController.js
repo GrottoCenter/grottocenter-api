@@ -73,11 +73,12 @@ module.exports = {
     // Create caver
     const newCaver = await TCaver.create({
       dateInscription: new Date(),
-      mail: req.param('email'),
-      name: req.param('name', null),
-      nickname: req.param('nickname'),
-      surname: req.param('surname', null),
       language: '000', // default null language id
+      mail: req.param('email'),
+      name: req.param('name') === '' ? null : req.param('name'),
+      nickname: req.param('nickname'),
+      password: AuthService.createHashedPassword(req.param('password')),
+      surname: req.param('surname') === '' ? null : req.param('surname'),
     })
       .fetch()
       .intercept('E_UNIQUE', () => res.sendStatus(409))
