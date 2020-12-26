@@ -11,6 +11,7 @@ const ramda = require('ramda');
 
 const EntranceModel = {
   // See this issue for more info: https://github.com/GrottoCenter/Grottocenter3/issues/416
+  '@context': 'https://ontology.uis-speleo.org/grottocenter.org_context.jsonld',
   '@base': 'entrances/',
   '@id': undefined,
   '@type': 'https://ontology.uis-speleo.org/ontology/#UndergroundCavity',
@@ -97,6 +98,7 @@ const CaverModel = {
 
 const CaveModel = {
   // See this issue for more info: https://github.com/GrottoCenter/Grottocenter3/issues/416
+  '@context': 'https://ontology.uis-speleo.org/grottocenter.org_context.jsonld',
   '@id': undefined,
   id: undefined,
   name: undefined,
