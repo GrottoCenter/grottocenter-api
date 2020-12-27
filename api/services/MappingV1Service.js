@@ -62,6 +62,10 @@ const MassifModel = {
 };
 
 const GrottoModel = {
+  // See this issue for more info: https://github.com/GrottoCenter/Grottocenter3/issues/429
+  '@context': 'https://ontology.uis-speleo.org/grottocenter.org_context.jsonld',
+  '@id': undefined,
+  '@type': 'http://purl.org/dc/terms/Location',
   id: undefined,
   name: undefined,
   country: undefined,
@@ -88,6 +92,10 @@ const GrottoModel = {
 };
 
 const CaverModel = {
+  // See this issue for more info: https://github.com/GrottoCenter/Grottocenter3/issues/429
+  '@context': 'https://ontology.uis-speleo.org/grottocenter.org_context.jsonld',
+  '@id': undefined,
+  '@type': 'http://xmlns.com/foaf/0.1/Person',
   id: undefined,
   nickname: undefined,
   surname: undefined,
@@ -100,6 +108,7 @@ const CaveModel = {
   // See this issue for more info: https://github.com/GrottoCenter/Grottocenter3/issues/416
   '@context': 'https://ontology.uis-speleo.org/grottocenter.org_context.jsonld',
   '@id': undefined,
+  '@type': 'https://ontology.uis-speleo.org/ontology/#UndergroundCavity',
   id: undefined,
   name: undefined,
   names: [],
@@ -115,6 +124,10 @@ const CaveModel = {
 };
 
 const DocumentModel = {
+  // See this issue for more info: https://github.com/GrottoCenter/Grottocenter3/issues/416
+  '@context': 'https://ontology.uis-speleo.org/grottocenter.org_context.jsonld',
+  '@id': undefined,
+  '@type': 'dct:BibliographicResource',
   author: undefined,
   authorComment: undefined,
   cave: undefined,
@@ -243,6 +256,7 @@ module.exports = {
       ...CaverModel,
     };
     result.id = source.id;
+    result['@id'] = String(source.id);
     result.nickname = source.nickname;
     result.surname = source.surname;
     result.name = source.name;
@@ -546,6 +560,7 @@ module.exports = {
     result.name = mainName;
     result.names = source.names;
     result.id = source.id;
+    result['@id'] = String(source.id);
     result.country = source.country;
     result.countryCode = source['country code'];
     result.county = source.county;
@@ -577,6 +592,7 @@ module.exports = {
 
     // Conversion (from Elasticsearch or not)
     result.id = source.id;
+    result['@id'] = String(source.id);
     result.author = source.author;
     result.authorComment = source.authorComment;
     result.cave = source.cave;
