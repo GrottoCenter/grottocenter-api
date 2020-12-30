@@ -138,7 +138,7 @@ export const paypalImgLink =
 export const dynamicNumbersUrl = {
   cavers: `/api/${apiVersion}/cavers/count`,
   documents: `/api/${apiVersion}/documents/count`,
-  entrances: '/api/entrances/count',
+  entrances: `/api/${apiVersion}/entrances/count`,
   publicEntrances: `/api/${apiVersion}/entrances/publicCount`,
   partners: '/api/organizations/count',
   officialPartners: '/api/organizations/officialCount',

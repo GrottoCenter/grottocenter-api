@@ -75,7 +75,7 @@ module.exports = {
       });
   },
 
-  getPublicEntrancesNumber: (req, res, converter) => {
+  publicCount: (req, res, converter) => {
     TEntrance.count({ isPublic: true })
       .then((total) => {
         return res.json(converter({ count: total }));
@@ -88,10 +88,10 @@ module.exports = {
       });
   },
 
-  getEntrancesNumber: (req, res) => {
+  count: (req, res) => {
     TEntrance.count().exec((err, found) => {
       const params = {};
-      params.controllerMethod = 'EntranceController.getEntrancesNumber';
+      params.controllerMethod = 'EntranceController.count';
       params.notFoundMessage = 'Problem while getting number of entrances.';
 
       const count = {};

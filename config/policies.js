@@ -54,18 +54,19 @@ module.exports.policies = {
 
   EntranceController: {
     '*': 'tokenAuth',
+    count: true,
     find: 'apiKeyAuth',
     findAll: true,
     findRandom: true,
-    getPublicEntrancesNumber: 'apiKeyAuth',
-    getEntrancesNumber: true,
+    publicCount: true,
   },
 
   'v1/EntranceController': {
     '*': false,
+    count: true,
     find: 'apiKeyAuth',
     findAll: ['apiKeyAuth', 'paginate'],
-    getPublicEntrancesNumber: 'apiKeyAuth',
+    publicCount: true,
   },
 
   SearchController: {
