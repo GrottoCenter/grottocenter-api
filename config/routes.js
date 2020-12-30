@@ -169,15 +169,15 @@ module.exports.routes = {
 
   'GET /api/v1/entrances/publicCount': {
     controller: 'v1/Entrance',
-    action: 'getPublicEntrancesNumber',
+    action: 'publicCount',
     cors: {
       allowOrigins: '*',
     },
   },
 
-  'GET /api/entrances/count': {
+  'GET /api/v1/entrances/count': {
     controller: 'Entrance',
-    action: 'getEntrancesNumber',
+    action: 'count',
   },
 
   'GET /api/v1/entrances/:id': {

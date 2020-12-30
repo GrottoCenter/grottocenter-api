@@ -21,23 +21,14 @@ module.exports = {
     );
   },
 
-  getPublicEntrancesNumber: (req, res) =>
-    entranceController.getPublicEntrancesNumber(
+  publicCount: (req, res) =>
+    entranceController.publicCount(
       req,
       res,
       MappingV1Service.convertToCountResult,
     ),
 
-  // TODO adapt
-  getEntrancesNumber: (req, res) => {
-    TEntrance.count().exec((err, found) => {
-      const params = {};
-      params.controllerMethod = 'EntranceController.getEntrancesNumber';
-      params.notFoundMessage = 'Problem while getting number of entries.';
-
-      const count = {};
-      count.count = found;
-      return ControllerService.treat(req, err, count, params, res);
-    });
+  count: (req, res) => {
+    EntranceController.count(req, res, MappingV1Service.convertToCountResult);
   },
 };
