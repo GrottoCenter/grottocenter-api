@@ -53,10 +53,7 @@ module.exports.routes = {
     csrf: true,
   },
 
-  '/admin/*': {
-    controller: 'Index',
-    action: 'index',
-  },
+  '/admin/*': 'Index.index',
 
   /***************************************************************************
    *                                                                          *
@@ -111,73 +108,26 @@ module.exports.routes = {
   },
 
   /* Caver controller */
-  'GET /api/v1/cavers/': {
-    controller: 'v1/Caver',
-    action: 'find',
-  },
-
-  'POST /api/v1/cavers/': {
-    controller: 'v1/Caver',
-    action: 'create',
-  },
-
-  'GET /api/v1/cavers/findAll': {
-    controller: 'v1/Caver',
-    action: 'findAll',
-  },
-
-  'GET /api/v1/cavers/count': {
-    controller: 'v1/Caver',
-    action: 'count',
-  },
-
-  'GET /api/v1/cavers/:id': {
-    controller: 'v1/Caver',
-    action: 'find',
-  },
-
-  'PUT /api/v1/cavers/:caverId/groups/:groupId': {
-    controller: 'v1/Caver',
-    action: 'putOnGroup',
-  },
-
-  'DELETE /api/v1/cavers/:caverId/groups/:groupId': {
-    controller: 'v1/Caver',
-    action: 'removeFromGroup',
-  },
-
-  'POST /api/v1/cavers/:caverId/groups': {
-    controller: 'v1/Caver',
-    action: 'setGroups',
-  },
-
-  'GET /api/v1/cavers/admins': {
-    controller: 'v1/Caver',
-    action: 'getAdmins',
-  },
-
-  'GET /api/v1/cavers/moderators': {
-    controller: 'v1/Caver',
-    action: 'getModerators',
-  },
+  'DELETE /api/v1/cavers/:caverId/groups/:groupId': 'v1/Caver.removeFromGroup',
+  'GET /api/v1/cavers/': 'v1/Caver.findAll',
+  'GET /api/v1/cavers/:id': 'v1/Caver.find',
+  'GET /api/v1/cavers/admins': 'v1/Caver.getAdmins',
+  'GET /api/v1/cavers/count': 'v1/Caver.count',
+  'GET /api/v1/cavers/findAll': 'v1/Caver.findAll',
+  'GET /api/v1/cavers/moderators': 'v1/Caver.getModerators',
+  'POST /api/v1/cavers/': 'v1/Caver.create',
+  'POST /api/v1/cavers/:caverId/groups': 'v1/Caver.setGroups',
+  'PUT /api/v1/cavers/:caverId/groups/:groupId': 'v1/Caver.putOnGroup',
 
   /* Entrance controller */
-  'GET /api/entrances/findRandom': {
-    controller: 'Entrance',
-    action: 'findRandom',
-  },
-
+  'GET /api/v1/entrances/count': 'Entrance.count',
+  'GET /api/entrances/findRandom': 'Entrance.findRandom',
   'GET /api/v1/entrances/publicCount': {
     controller: 'v1/Entrance',
     action: 'publicCount',
     cors: {
       allowOrigins: '*',
     },
-  },
-
-  'GET /api/v1/entrances/count': {
-    controller: 'Entrance',
-    action: 'count',
   },
 
   'GET /api/v1/entrances/:id': {
@@ -188,126 +138,37 @@ module.exports.routes = {
     },
   },
 
-  /* REST API for Cave controller */
-  'POST /api/caves/': {
-    controller: 'Cave',
-    action: 'create',
-  },
-
-  'GET /api/v1/caves/findAll': {
-    controller: 'Cave',
-    action: 'findAll',
-  },
-
-  'GET /api/v1/caves/:id': {
-    controller: 'Cave',
-    action: 'find',
-  },
-
-  'PUT /api/caves/:id': {
-    controller: 'Cave',
-    action: 'update',
-  },
-
-  'DELETE /api/caves/:id': {
-    controller: 'Cave',
-    action: 'delete',
-  },
+  /* Cave controller */
+  'DELETE /api/caves/:id': 'Cave.delete',
+  'GET /api/v1/caves/:id': 'Cave.find',
+  'GET /api/v1/caves/findAll': 'Cave.findAll',
+  'POST /api/caves/': 'Cave.create',
+  'PUT /api/caves/:id': 'Cave.update',
 
   /* Author controller */
-  'POST /api/authors/': {
-    controller: 'Author',
-    action: 'create',
-  },
+  'DELETE /api/authors/:id': 'Author.delete',
+  'GET /api/authors/:id': 'Author.find',
+  'GET /api/authors/findAll': 'Author.findAll',
+  'POST /api/authors/': 'Author.create',
+  'PUT /api/authors/:id': 'Author.update',
 
-  'GET /api/authors/:id': {
-    controller: 'Author',
-    action: 'find',
-  },
+  /* Partner controller */
+  'DELETE /api/partners/:id': 'Partner.delete',
+  'GET /api/partners/:id': 'Partner.find',
+  'GET /api/partners/findAll': 'Partner.findAll',
+  'GET /api/partners/findForCarousel': 'Partner.findForCarousel',
+  'GET /api/partners/findForCarousel/:skip/:limit': 'Partner.findForCarousel',
+  'POST /api/partners/': 'Partner.create',
+  'PUT /api/partners/:id': 'Partner.update',
 
-  'PUT /api/authors/:id': {
-    controller: 'Author',
-    action: 'update',
-  },
+  /* Comment controller */
+  'GET /api/comments/stats/:entry': 'Comments.getEntryStats',
+  'GET /api/comments/timeinfos/:entry': 'Comments.getEntryTimeInfos',
 
-  'DELETE /api/authors/:id': {
-    controller: 'Author',
-    action: 'delete',
-  },
-
-  'GET /api/authors/findAll': {
-    controller: 'Author',
-    action: 'findAll',
-  },
-
-  /* REST API for Partner controller */
-  'POST /api/partners/': {
-    controller: 'Partner',
-    action: 'create',
-  },
-
-  'GET /api/partners/findAll': {
-    controller: 'Partner',
-    action: 'findAll',
-  },
-
-  'GET /api/partners/findForCarousel/:skip/:limit': {
-    controller: 'Partner',
-    action: 'findForCarousel',
-  },
-
-  'GET /api/partners/findForCarousel': {
-    controller: 'Partner',
-    action: 'findForCarousel',
-  },
-
-  'GET /api/partners/:id': {
-    controller: 'Partner',
-    action: 'find',
-  },
-
-  'PUT /api/partners/:id': {
-    controller: 'Partner',
-    action: 'update',
-  },
-
-  'DELETE /api/partners/:id': {
-    controller: 'Partner',
-    action: 'delete',
-  },
-
-  /* REST API for Comment controller */
-  'GET /api/comments/stats/:entry': {
-    controller: 'Comment',
-    action: 'getEntryStats',
-  },
-
-  'GET /api/comments/timeinfos/:entry': {
-    controller: 'Comment',
-    action: 'getEntryTimeInfos',
-  },
-
-  /* REST API for Organization controller */
-  'POST /api/v1/organizations': {
-    controller: 'v1/Grotto',
-    action: 'create',
-  },
-
-  'GET /api/organizations/findAll': {
-    controller: 'Grotto',
-    action: 'findAll',
-  },
-
-  'GET /api/organizations/officialCount': {
-    controller: 'Grotto',
-    action: 'getOfficialPartnersNumber',
-  },
-
-  'GET /api/organizations/count': {
-    controller: 'Grotto',
-    action: 'getPartnersNumber',
-  },
-
+  /* Organization controller */
+  'GET /api/organizations/count': 'Grotto.getPartnersNumber',
+  'GET /api/organizations/findAll': 'Grotto.findAll',
+  'GET /api/organizations/officialCount': 'Grotto.getOfficialPartnersNumber',
   'GET /api/v1/organizations/:id': {
     controller: 'v1/Grotto',
     action: 'find',
@@ -318,13 +179,10 @@ module.exports.routes = {
       allowOrigins: '*',
     },
   },
+  'POST /api/v1/organizations': 'v1/Grotto.create',
 
-  /* REST API for Massif controller */
-  'GET /api/massifs/:id': {
-    controller: 'Massif',
-    action: 'find',
-  },
-
+  /* Massif controller */
+  'GET /api/massifs/:id': 'Massif.find',
   'GET /api/v1/massifs/:id': {
     controller: 'v1/Massif',
     action: 'find',
@@ -336,32 +194,30 @@ module.exports.routes = {
     },
   },
 
-  /* REST API for Documents controllers */
-  'GET /api/v1/documents/count': {
-    controller: 'v1/Document',
-    action: 'count',
-  },
+  /* Document controller */
+  'GET /api/v1/documents': 'v1/Document.findAll',
+  'GET /api/v1/documents/:id': 'v1/Document.find',
+  'GET /api/v1/documents/count': 'v1/Document.count',
+  'POST /api/v1/documents': 'v1/Document.create',
+  'PUT /api/v1/documents/:id': 'v1/Document.update',
+  'PUT /api/v1/documents/:id/validate': 'v1/Document.validate',
+  'PUT /api/v1/documents/validate': 'v1/Document.multipleValidate',
 
-  'POST /api/v1/documents': {
-    controller: 'v1/Document',
-    action: 'create',
-  },
+  /* Document Type controller */
+  'GET /api/v1/documents/types': 'v1/DocumentType.findAll',
+  'GET /api/v1/documents/types/:id': 'v1/DocumentType.find',
 
-  'PUT /api/v1/documents/:id': {
-    controller: 'v1/Document',
-    action: 'update',
-  },
-
-  'GET /api/v1/documents/types/:id': {
-    controller: 'v1/DocumentType',
-    action: 'find',
-  },
-
-  'GET /api/v1/documents/types': {
-    controller: 'v1/DocumentType',
+  /* Document Subject controller */
+  'GET /api/v1/documents/subjects': {
+    controller: 'v1/Subject',
     action: 'findAll',
+    api: {
+      entity: 'subject',
+    },
+    cors: {
+      allowOrigins: '*',
+    },
   },
-
   'GET /api/v1/documents/subjects/:code': {
     controller: 'v1/Subject',
     action: 'find',
@@ -373,17 +229,6 @@ module.exports.routes = {
       allowOrigins: '*',
     },
   },
-
-  'GET /api/v1/documents': {
-    controller: 'v1/Document',
-    action: 'findAll',
-  },
-
-  'GET /api/v1/documents/:id': {
-    controller: 'v1/Document',
-    action: 'find',
-  },
-
   'POST /api/v1/documents/subjects/search/logical/or': {
     controller: 'v1/Subject',
     action: 'search',
@@ -393,27 +238,6 @@ module.exports.routes = {
     cors: {
       allowOrigins: '*',
     },
-  },
-
-  'GET /api/v1/documents/subjects': {
-    controller: 'v1/Subject',
-    action: 'findAll',
-    api: {
-      entity: 'subject',
-    },
-    cors: {
-      allowOrigins: '*',
-    },
-  },
-
-  'PUT /api/v1/documents/:id/validate': {
-    controller: 'v1/Document',
-    action: 'validate',
-  },
-
-  'PUT /api/v1/documents/validate': {
-    controller: 'v1/Document',
-    action: 'multipleValidate',
   },
 
   /* REST API for Document Identifier Types controller */
@@ -428,7 +252,7 @@ module.exports.routes = {
     },
   },
 
-  /* REST API for Region controller */
+  /* Region controller */
   'POST /api/v1/regions/search/logical/or': {
     controller: 'v1/Region',
     action: 'search',
@@ -440,19 +264,13 @@ module.exports.routes = {
     },
   },
 
-  /* REST API for Admin controller */
-  'GET /api/admin/entrances/findAllOfInterest': {
-    controller: 'Admin',
-    action: 'findAllInterestEntries',
-  },
+  /* Admin controller */
+  'GET /api/admin/entrances/findAllOfInterest': 'Admin.findAllInterestEntries',
 
   /* Rss controller */
-  'GET /api/rss/:language': {
-    controller: 'Rss',
-    action: 'getFeed',
-  },
+  'GET /api/rss/:language': 'Rss.getFeed',
 
-  /* Geo localisation API */
+  /* Geo localisation controller */
   'GET /api/v1/geoloc/countEntries': {
     controller: 'v1/GeoLoc',
     action: 'countEntries',
@@ -460,7 +278,6 @@ module.exports.routes = {
       allowOrigins: '*',
     },
   },
-
   'GET /api/v1/geoloc/caves': {
     controller: 'v1/GeoLoc',
     action: 'findCaves',
@@ -497,7 +314,7 @@ module.exports.routes = {
     },
   },
 
-  /* Search */
+  /* Search controller*/
   'POST /api/v1/search': {
     controller: 'v1/Search',
     action: 'search',
@@ -514,7 +331,7 @@ module.exports.routes = {
     },
   },
 
-  /* Languages */
+  /* Language controller */
   'GET /api/v1/languages/:id': {
     controller: 'v1/Language',
     action: 'find',
@@ -537,7 +354,7 @@ module.exports.routes = {
     },
   },
 
-  /* Convert */
+  /* Convert controller */
   'GET /api/convert': {
     controller: 'ConvertController',
     action: 'convert',
