@@ -9,8 +9,6 @@ module.exports = {
   find: (req, res, converter) => {
     TEntrance.findOne({
       id: req.params.id,
-      // TODO : to adapt when authentication will be implemented
-      isPublic: true,
     })
       .populate('author')
       .populate('cave')
@@ -25,10 +23,23 @@ module.exports = {
         const params = {};
         params.searchedItem = `Entrance of id ${req.params.id}`;
 
+        if (!found) {
+          const notFoundMessage = `${params.searchedItem} not found`;
+          sails.log.debug(notFoundMessage);
+          res.status(404);
+          return res.json({ error: notFoundMessage });
+        }
+
         // Populate stats
         const statsPromise = CommentService.getStats(req.params.id);
         statsPromise.then((stats) => {
           found.stats = stats;
+          if (!found.isPublic) {
+            // TODO: Some people (admin ? use RightHelper with a right in DB ?) should be able to get the full data even for the "not public" entrances.
+            delete found.locations;
+            delete found.longitude;
+            delete found.latitude;
+          }
           return ControllerService.treatAndConvert(
             req,
             err,
