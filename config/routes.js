@@ -128,7 +128,7 @@ module.exports.routes = {
 
   'GET /api/v1/cavers/count': {
     controller: 'v1/Caver',
-    action: 'getCaversNumber',
+    action: 'count',
   },
 
   'GET /api/v1/cavers/:id': {

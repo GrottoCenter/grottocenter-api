@@ -37,10 +37,10 @@ module.exports = {
       });
   },
 
-  getCaversNumber: (req, res) => {
+  count: (req, res) => {
     TCaver.count().exec((err, found) => {
       const params = {};
-      params.controllerMethod = 'CaverController.getCaversNumber';
+      params.controllerMethod = 'CaverController.count';
       params.notFoundMessage = 'Problem while getting number of cavers.';
 
       const count = {};
