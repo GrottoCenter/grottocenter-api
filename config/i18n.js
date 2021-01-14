@@ -22,23 +22,38 @@ module.exports.i18n = {
    *                                                                          *
    ***************************************************************************/
 
-  locales: ['ar', 'bg', 'ca', 'de', 'el', 'en', 'es', 'fr', 'he', 'id', 'nl', 'pt'],
+  locales: [
+    'ar',
+    'bg',
+    'ca',
+    'de',
+    'el',
+    'en',
+    'es',
+    'fr',
+    'he',
+    'id',
+    'nl',
+    'pt',
+    'ro',
+  ],
 
   localesText: {
-    'ar': 'عربية',
-    'bg': 'Български',
-    'ca': 'Català',
-    'de': 'Deutsch',
-    'el': 'Ελληνικός',
-    'en': 'English',
-    'es': 'Español',
-    'fr': 'Français',
-    'he': 'עברי',
-    'id': 'Indonesia',
-    'it': 'Italiano',
-    'ja': '日本語',
-    'nl': 'Nederlands',
-    'pt': 'Português'
+    ar: 'عربية',
+    bg: 'Български',
+    ca: 'Català',
+    de: 'Deutsch',
+    el: 'Ελληνικός',
+    en: 'English',
+    es: 'Español',
+    fr: 'Français',
+    he: 'עברי',
+    id: 'Indonesia',
+    it: 'Italiano',
+    ja: '日本語',
+    nl: 'Nederlands',
+    pt: 'Português',
+    ro: 'Română',
   },
 
   /****************************************************************************
