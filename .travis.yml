@@ -29,7 +29,7 @@ deploy:
 
 script:
 - npm install grunt-cli
-- npm run-script build
+- npm run-script buildProd
 - tar -cf latest.tar --exclude=*.tar .
 - mkdir -p grotto_center_tar
 - mv latest.tar grotto_center_tar/latest$TRAVIS_TAG.tar
