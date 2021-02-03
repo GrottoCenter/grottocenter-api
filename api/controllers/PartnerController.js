@@ -48,7 +48,7 @@ module.exports = {
     if (req.param('skip')) {
       skip = req.param('skip');
     }
-    let limit = 20;
+    let limit = 30;
     if (req.param('limit')) {
       limit = req.param('limit');
     }
