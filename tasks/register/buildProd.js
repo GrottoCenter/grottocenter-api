@@ -7,6 +7,5 @@ module.exports = function(grunt) {
     'linkAssetsBuildProd',
     'clean:build',
     'copy:build',
-    'transifex:grottocenter',
   ]);
 };
