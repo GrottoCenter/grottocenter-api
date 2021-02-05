@@ -9,6 +9,5 @@ module.exports = function(grunt) {
     'sails-linker:prodJs',
     'sails-linker:prodStyles',
     // 'sails-linker:clientSideTemplates', // Templates are not used in Grottocenter currently
-    'transifex:grottocenter',
   ]);
 };
