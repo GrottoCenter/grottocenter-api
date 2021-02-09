@@ -433,7 +433,6 @@ module.exports = {
     result.village = source.village;
     result.documentary = source.documentary;
     result.URL = source.URL;
-    result.Facebook = source.Facebook;
 
     return result;
   },

@@ -4,9 +4,9 @@ module.exports = {
   '@id': undefined,
   '@type': 'http://xmlns.com/foaf/0.1/Person',
   id: undefined,
+  groups: [],
+  mail: undefined,
+  name: undefined,
   nickname: undefined,
   surname: undefined,
-  name: undefined,
-  mail: undefined,
-  groups: [],
 };
