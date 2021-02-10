@@ -41,6 +41,10 @@ module.exports.policies = {
     '*': true,
   },
 
+  'v1/CaveController': {
+    '*': true,
+  },
+
   'v1/CaverController': {
     '*': false,
     count: true,
@@ -52,20 +56,12 @@ module.exports.policies = {
     getModerators: 'tokenAuth',
   },
 
-  EntranceController: {
-    '*': 'tokenAuth',
-    count: true,
-    find: 'apiKeyAuth',
-    findAll: true,
-    findRandom: true,
-    publicCount: true,
-  },
-
   'v1/EntranceController': {
     '*': false,
     count: true,
     find: 'apiKeyAuth',
     findAll: ['apiKeyAuth', 'paginate'],
+    findRandom: true,
     publicCount: true,
   },
 
@@ -88,6 +84,10 @@ module.exports.policies = {
   },
 
   PartnerController: {
+    '*': true,
+  },
+
+  'v1/PartnerController': {
     '*': true,
   },
 
@@ -120,10 +120,6 @@ module.exports.policies = {
   },
 
   RssController: {
-    '*': true,
-  },
-
-  MassifController: {
     '*': true,
   },
 
@@ -164,12 +160,14 @@ module.exports.policies = {
   },
 
   'v1/GrottoController': {
-    find: ['apiKeyAuth', 'paginate'],
     create: 'tokenAuth',
+    count: true,
+    getOfficialPartnersNumber: true,
+    find: ['apiKeyAuth', 'paginate'],
   },
 
   'v1/MassifController': {
-    find: ['apiKeyAuth', 'paginate'],
+    find: true,
   },
 
   'v1/GeoLocController': {

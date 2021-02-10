@@ -69,12 +69,12 @@ module.exports = {
     // Check params
     if (!(await CaverService.checkIfExists('id', req.param('caverId')))) {
       return res.badRequest(
-        `Could not found caver with id ${req.param('caverId')}.`,
+        `Could not find caver with id ${req.param('caverId')}.`,
       );
     }
     if (!(await GroupService.checkIfExists('id', req.param('groupId')))) {
       return res.badRequest(
-        `Could not found group with id ${req.param('groupId')}.`,
+        `Could not find group with id ${req.param('groupId')}.`,
       );
     }
 
@@ -82,7 +82,7 @@ module.exports = {
     TCaver.addToCollection(req.param('caverId'), 'groups', req.param('groupId'))
       .then(() => {
         const params = {};
-        params.controllerMethod = 'CaverController.addToGroup';
+        params.controllerMethod = 'CaverController.putOnGroup';
         return ControllerService.treat(req, null, {}, params, res);
       })
       .catch({ name: 'UsageError' }, (err) => {
@@ -159,24 +159,24 @@ module.exports = {
       })
       .intercept('rightNotFound', (err) => {
         return res.serverError(
-          'A server error occured when checking your right to set a caver groups.',
+          'A server error occured when checking your right to set caver groups.',
         );
       });
     if (!hasRight) {
-      return res.forbidden('You are not authorized to set a caver groups.');
+      return res.forbidden('You are not authorized to set caver groups.');
     }
 
     // Check params
     if (!(await CaverService.checkIfExists('id', req.param('caverId')))) {
       return res.badRequest(
-        `Could not found caver with id ${req.param('caverId')}.`,
+        `Could not find caver with id ${req.param('caverId')}.`,
       );
     }
 
     const newGroups = req.param('groups');
     newGroups.map(async (g) => {
       if (!(await GroupService.checkIfExists('id', g.id))) {
-        return res.badRequest(`Could not found group with id ${g.id}.`);
+        return res.badRequest(`Could not find group with id ${g.id}.`);
       }
     });
 
@@ -327,7 +327,6 @@ module.exports = {
       );
     }
 
-    // Launch creation request using transaction: it performs a rollback if an error occurs
     const newCaver = await TCaver.create({
       dateInscription: new Date(),
       mail: 'no@mail.no', // default mail for non-user caver
