@@ -11,7 +11,6 @@ module.exports = {
   find: (req, res) =>
     entranceController.find(req, res, MappingV1Service.convertToEntranceModel),
 
-  // TODO adapt
   findRandom: (req, res, next) => {
     entranceController.findRandom(
       req,
@@ -29,7 +28,7 @@ module.exports = {
     ),
 
   count: (req, res) => {
-    EntranceController.count(
+    entranceController.count(
       req,
       res,
       MappingV1Service.convertToCountResultModel,

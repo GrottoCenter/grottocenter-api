@@ -139,14 +139,14 @@ export const dynamicNumbersUrl = {
   cavers: `/api/${apiVersion}/cavers/count`,
   documents: `/api/${apiVersion}/documents/count`,
   entrances: `/api/${apiVersion}/entrances/count`,
+  officialPartners: `/api/${apiVersion}/organizations/officialCount`,
+  organizations: `/api/${apiVersion}/organizations/count`,
   publicEntrances: `/api/${apiVersion}/entrances/publicCount`,
-  partners: '/api/organizations/count',
-  officialPartners: '/api/organizations/officialCount',
 };
 
 export const fetchConvert = '/api/convert';
-export const findRandomEntryUrl = '/api/entrances/findRandom';
-export const findForCarouselUrl = '/api/partners/findForCarousel';
+export const findRandomEntryUrl = `/api/${apiVersion}/entrances/findRandom`;
+export const findForCarouselUrl = `/api/${apiVersion}/partners/findForCarousel`;
 export const getMapCavesUrl = `/api/${apiVersion}/geoloc/caves`;
 export const getMapCavesCoordinatesUrl = `/api/${apiVersion}/geoloc/cavesCoordinates`;
 export const getMapEntrancesUrl = `/api/${apiVersion}/geoloc/entrances`;

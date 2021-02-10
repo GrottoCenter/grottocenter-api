@@ -93,11 +93,11 @@ module.exports = {
     });
   },
 
-  getPartnersNumber: (req, res) => {
+  count: (req, res) => {
     TGrotto.count().exec((err, found) => {
       const params = {};
-      params.controllerMethod = 'GrottoController.getPartnersNumber';
-      params.notFoundMessage = 'Problem while getting number of partners.';
+      params.controllerMethod = 'GrottoController.count';
+      params.notFoundMessage = 'Problem while getting number of organizations.';
 
       const count = {};
       count.count = found;

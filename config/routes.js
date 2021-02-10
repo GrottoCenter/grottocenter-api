@@ -120,8 +120,8 @@ module.exports.routes = {
   'PUT /api/v1/cavers/:caverId/groups/:groupId': 'v1/Caver.putOnGroup',
 
   /* Entrance controller */
-  'GET /api/v1/entrances/count': 'Entrance.count',
-  'GET /api/entrances/findRandom': 'Entrance.findRandom',
+  'GET /api/v1/entrances/count': 'v1/Entrance.count',
+  'GET /api/v1/entrances/findRandom': 'v1/Entrance.findRandom',
   'GET /api/v1/entrances/publicCount': {
     controller: 'v1/Entrance',
     action: 'publicCount',
@@ -140,7 +140,7 @@ module.exports.routes = {
 
   /* Cave controller */
   'DELETE /api/caves/:id': 'Cave.delete',
-  'GET /api/v1/caves/:id': 'Cave.find',
+  'GET /api/v1/caves/:id': 'v1/Cave.find',
   'GET /api/v1/caves/findAll': 'Cave.findAll',
   'POST /api/caves/': 'Cave.create',
   'PUT /api/caves/:id': 'Cave.update',
@@ -156,7 +156,7 @@ module.exports.routes = {
   'DELETE /api/partners/:id': 'Partner.delete',
   'GET /api/partners/:id': 'Partner.find',
   'GET /api/partners/findAll': 'Partner.findAll',
-  'GET /api/partners/findForCarousel': 'Partner.findForCarousel',
+  'GET /api/v1/partners/findForCarousel': 'Partner.findForCarousel',
   'GET /api/partners/findForCarousel/:skip/:limit': 'Partner.findForCarousel',
   'POST /api/partners/': 'Partner.create',
   'PUT /api/partners/:id': 'Partner.update',
@@ -166,9 +166,10 @@ module.exports.routes = {
   'GET /api/comments/timeinfos/:entry': 'Comments.getEntryTimeInfos',
 
   /* Organization controller */
-  'GET /api/organizations/count': 'Grotto.getPartnersNumber',
+  'GET /api/v1/organizations/count': 'v1/Grotto.count',
   'GET /api/organizations/findAll': 'Grotto.findAll',
-  'GET /api/organizations/officialCount': 'Grotto.getOfficialPartnersNumber',
+  'GET /api/v1/organizations/officialCount':
+    'v1/Grotto.getOfficialPartnersNumber',
   'GET /api/v1/organizations/:id': {
     controller: 'v1/Grotto',
     action: 'find',
@@ -182,7 +183,6 @@ module.exports.routes = {
   'POST /api/v1/organizations': 'v1/Grotto.create',
 
   /* Massif controller */
-  'GET /api/massifs/:id': 'Massif.find',
   'GET /api/v1/massifs/:id': {
     controller: 'v1/Massif',
     action: 'find',

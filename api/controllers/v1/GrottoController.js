@@ -4,12 +4,12 @@
 const grottoController = require('../GrottoController');
 
 module.exports = {
-  find: (req, res, next) =>
-    grottoController.find(
+  count: (req, res, next) =>
+    grottoController.count(
       req,
       res,
       next,
-      MappingV1Service.convertToOrganizationModel,
+      MappingV1Service.convertToCountResultModel,
     ),
   create: (req, res, next) =>
     grottoController.create(
@@ -18,4 +18,13 @@ module.exports = {
       next,
       MappingV1Service.convertToOrganizationModel,
     ),
+  find: (req, res, next) =>
+    grottoController.find(
+      req,
+      res,
+      next,
+      MappingV1Service.convertToOrganizationModel,
+    ),
+  getOfficialPartnersNumber: (req, res) =>
+    grottoController.getOfficialPartnersNumber(req, res),
 };

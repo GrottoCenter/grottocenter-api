@@ -133,7 +133,7 @@ const WhatIsIt = () => (
       </NumberBlockHalfWidth>
       <NumberBlockHalfWidth>
         <BlockIcon className="icon-gc-expe" />
-        <BigNumberText numberType="partners" />
+        <BigNumberText numberType="organizations" />
         <br />
         <Translate>organizations are registered on the site</Translate>
       </NumberBlockHalfWidth>
