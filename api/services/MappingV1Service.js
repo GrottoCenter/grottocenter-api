@@ -7,160 +7,15 @@
 
 const ramda = require('ramda');
 
-/* Models */
-
-const EntranceModel = {
-  // See this issue for more info: https://github.com/GrottoCenter/Grottocenter3/issues/416
-  '@context': 'https://ontology.uis-speleo.org/grottocenter.org_context.jsonld',
-  '@base': 'entrances/',
-  '@id': undefined,
-  '@type': 'https://ontology.uis-speleo.org/ontology/#UndergroundCavity',
-  id: undefined,
-  name: undefined,
-  names: undefined,
-  descriptions: [],
-  country: undefined,
-  countryCode: undefined,
-  county: undefined,
-  region: undefined,
-  city: undefined,
-  postalCode: undefined,
-  latitude: undefined,
-  longitude: undefined,
-  altitude: undefined,
-  cave: undefined,
-  massif: undefined,
-  aestheticism: undefined,
-  caving: undefined,
-  approach: undefined,
-  documents: [],
-  stats: undefined,
-  timeInfo: undefined,
-  locations: [],
-  documents: [],
-  riggings: [],
-  comments: [],
-};
-
-const CountResult = {
-  count: undefined,
-};
-
-const MassifModel = {
-  // See this issue for more info: https://github.com/GrottoCenter/Grottocenter3/issues/416
-  '@context': 'https://ontology.uis-speleo.org/grottocenter.org_context.jsonld',
-  '@id': undefined,
-  '@type': 'http://purl.org/dc/terms/Location',
-  id: undefined,
-  author: undefined,
-  reviewer: undefined,
-  name: undefined,
-  dateInscription: undefined,
-  dateReviewed: undefined,
-  caves: [],
-  descriptions: [],
-};
-
-const GrottoModel = {
-  // See this issue for more info: https://github.com/GrottoCenter/Grottocenter3/issues/429
-  '@context': 'https://ontology.uis-speleo.org/grottocenter.org_context.jsonld',
-  '@id': undefined,
-  '@type': 'http://purl.org/dc/terms/Location',
-  id: undefined,
-  name: undefined,
-  country: undefined,
-  countryCode: undefined,
-  region: undefined,
-  city: undefined,
-  postalCode: undefined,
-  address: undefined,
-  contact: undefined,
-  yearBirth: undefined,
-  latitude: undefined,
-  longitude: undefined,
-  customMessage: undefined,
-  pictureFileName: undefined,
-  isOfficialPartner: undefined,
-  village: undefined,
-  county: undefined,
-  documentary: undefined,
-  URL: undefined,
-  Facebook: undefined,
-  cavers: [],
-  exploredCaves: [],
-  partneredCaves: [],
-};
-
-const CaverModel = {
-  // See this issue for more info: https://github.com/GrottoCenter/Grottocenter3/issues/429
-  '@context': 'https://ontology.uis-speleo.org/grottocenter.org_context.jsonld',
-  '@id': undefined,
-  '@type': 'http://xmlns.com/foaf/0.1/Person',
-  id: undefined,
-  nickname: undefined,
-  surname: undefined,
-  name: undefined,
-  mail: undefined,
-  groups: [],
-};
-
-const CaveModel = {
-  // See this issue for more info: https://github.com/GrottoCenter/Grottocenter3/issues/416
-  '@context': 'https://ontology.uis-speleo.org/grottocenter.org_context.jsonld',
-  '@id': undefined,
-  '@type': 'https://ontology.uis-speleo.org/ontology/#UndergroundCavity',
-  id: undefined,
-  name: undefined,
-  names: [],
-  descriptions: [],
-  depth: undefined,
-  length: undefined,
-  isDiving: undefined,
-  temperature: undefined,
-  author: undefined,
-  massif: undefined,
-  entrances: [],
-  documents: [],
-};
-
-const DocumentModel = {
-  // See this issue for more info: https://github.com/GrottoCenter/Grottocenter3/issues/416
-  '@context': 'https://ontology.uis-speleo.org/grottocenter.org_context.jsonld',
-  '@id': undefined,
-  '@type': 'dct:BibliographicResource',
-  author: undefined,
-  authorComment: undefined,
-  cave: undefined,
-  country: undefined,
-  dateInscription: undefined,
-  datePublication: undefined,
-  dateValidation: undefined,
-  descriptions: [],
-  editor: undefined,
-  entrance: undefined,
-  files: [],
-  identifierType: undefined,
-  languages: [],
-  library: undefined,
-  license: undefined,
-  mainLanguage: undefined,
-  massif: undefined,
-  pages: undefined,
-  refBbs: undefined,
-  regions: undefined,
-  reviewer: undefined,
-  subjects: undefined,
-  theme: undefined,
-  title: undefined,
-  titles: [],
-  type: undefined,
-};
-
-const SubjectModel = {
-  code: undefined,
-  subject: undefined,
-  parent: undefined,
-};
+/* Load Models */
+const CaveModel = require('./mappingModels/CaveModel');
+const CaverModel = require('./mappingModels/CaverModel');
+const CountResultModel = require('./mappingModels/CountResultModel');
+const DocumentModel = require('./mappingModels/DocumentModel');
+const EntranceModel = require('./mappingModels/EntranceModel');
+const MassifModel = require('./mappingModels/MassifModel');
+const OrganizationModel = require('./mappingModels/OrganizationModel');
+const SubjectModel = require('./mappingModels/SubjectModel');
 
 /* Mappers */
 
@@ -233,9 +88,9 @@ module.exports = {
     return entrances;
   },
 
-  convertToCountResult: (source) => {
+  convertToCountResultModel: (source) => {
     const result = {
-      ...CountResult,
+      ...CountResultModel,
     };
     result.count = source.count;
     return result;
@@ -341,7 +196,7 @@ module.exports = {
           data = MappingV1Service.convertToMassifModel(item['_source']);
           break;
         case 'grotto':
-          data = MappingV1Service.convertToGrottoModel(item['_source']);
+          data = MappingV1Service.convertToOrganizationModel(item['_source']);
           break;
         case 'document':
           data = MappingV1Service.convertToDocumentModel(item['_source']);
@@ -523,9 +378,9 @@ module.exports = {
 
   // ---------------- Grotto Function ---------------------------
 
-  convertToGrottoModel: (source) => {
+  convertToOrganizationModel: (source) => {
     const result = {
-      ...GrottoModel,
+      ...OrganizationModel,
     };
 
     // Convert cavers

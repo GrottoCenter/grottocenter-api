@@ -9,13 +9,13 @@ module.exports = {
       req,
       res,
       next,
-      MappingV1Service.convertToGrottoModel,
+      MappingV1Service.convertToOrganizationModel,
     ),
   create: (req, res, next) =>
     grottoController.create(
       req,
       res,
       next,
-      MappingV1Service.convertToGrottoModel,
+      MappingV1Service.convertToOrganizationModel,
     ),
 };
