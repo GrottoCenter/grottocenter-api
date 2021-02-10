@@ -8,7 +8,12 @@
 const esClient = require('../../config/elasticsearch').elasticsearchCli;
 
 module.exports = {
-  find: (req, res, next, converter = MappingV1Service.convertToGrottoModel) => {
+  find: (
+    req,
+    res,
+    next,
+    converter = MappingV1Service.convertToOrganizationModel,
+  ) => {
     TGrotto.findOne({
       id: req.params.id,
     })

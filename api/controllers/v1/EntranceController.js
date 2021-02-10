@@ -25,10 +25,14 @@ module.exports = {
     entranceController.publicCount(
       req,
       res,
-      MappingV1Service.convertToCountResult,
+      MappingV1Service.convertToCountResultModel,
     ),
 
   count: (req, res) => {
-    EntranceController.count(req, res, MappingV1Service.convertToCountResult);
+    EntranceController.count(
+      req,
+      res,
+      MappingV1Service.convertToCountResultModel,
+    );
   },
 };
