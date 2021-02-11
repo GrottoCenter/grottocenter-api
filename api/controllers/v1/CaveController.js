@@ -8,7 +8,7 @@
 const caveController = require('../CaveController');
 
 module.exports = {
-  find: (req, res) =>
+  find: (req, res, next) =>
     caveController.find(req, res, next, MappingV1Service.convertToCaveModel),
 
   findAll: (req, res) =>
