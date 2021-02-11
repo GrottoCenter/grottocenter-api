@@ -143,10 +143,12 @@ module.exports = {
 
     result.name = mainName;
     result.names = source.names;
+    result.dateInscription = source.dateInscription;
+    result.dateReviewed = source.dateReviewed;
     result.descriptions = source.descriptions;
     result.depth = source.depth;
-    result.length = source.length;
     result.isDiving = source.isDiving;
+    result.length = source.length;
     result.temperature = source.temperature;
 
     if (source.author instanceof Object) {
@@ -163,7 +165,7 @@ module.exports = {
     if (source.documents instanceof Array) {
       result.documents = MappingV1Service.convertToDocumentList(
         source.documents,
-      );
+      ).documents;
     }
     return result;
   },
@@ -464,6 +466,7 @@ module.exports = {
         id ? id.trim() : id,
       )(source),
     };
+    result.isValidated = source.isValidated;
     result.languages = source.languages;
     result.license = source.license;
     result.mainLanguage = source.mainLanguage;
@@ -476,6 +479,8 @@ module.exports = {
     result.refBbs = source.ref_bbs ? source.ref_bbs : source.refBbs;
     result.reviewer = source.reviewer;
     result.title = source.title;
+    result.validationComment = source.validationComment;
+    result.validator = source.validator;
 
     // source.descriptions contains both title and descriptions (in .title and .body)
     // Split them in 2 different attributes
