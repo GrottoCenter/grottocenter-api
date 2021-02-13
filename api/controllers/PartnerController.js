@@ -16,7 +16,7 @@ module.exports = {
     res.badRequest('PartnerController.delete not yet implemented!'),
 
   find: (req) => {
-    TGrotto.findOneById(req.params.id).exec((err, found) => {
+    TGrotto.findOne(req.params.id).exec((err, found) => {
       const params = {};
       params.controllerMethod = 'PartnerController.find';
       params.notFoundMessage = `Partner of id ${req.params.id} not found.`;
