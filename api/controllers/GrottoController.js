@@ -78,19 +78,6 @@ module.exports = {
       });
   },
 
-  getOfficialPartnersNumber: (req, res) => {
-    TGrotto.count({ isOfficialPartner: true }).exec((err, found) => {
-      const params = {
-        controllerMethod: 'GrottoController.getOfficialPartnersNumber',
-        notFoundMessage: 'Problem while getting number of official partners.',
-      };
-      const count = {
-        count: found,
-      };
-      return ControllerService.treat(req, err, count, params, res);
-    });
-  },
-
   count: (req, res) => {
     TGrotto.count().exec((err, found) => {
       const params = {};

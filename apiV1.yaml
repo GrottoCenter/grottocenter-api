@@ -1138,7 +1138,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Count'
   
-  '/organizations/officialCount':
+  '/partners/count':
     get:
       tags:
       - organizations
