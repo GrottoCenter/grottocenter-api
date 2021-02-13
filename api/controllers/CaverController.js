@@ -9,7 +9,7 @@ const esClient = require('../../config/elasticsearch').elasticsearchCli;
 
 module.exports = {
   find: (req, res) => {
-    TCaver.findOneById(req.params.id).exec((err, found) => {
+    TCaver.findOne(req.params.id).exec((err, found) => {
       const params = {};
       params.controllerMethod = 'CaverController.find';
       params.notFoundMessage = `Caver of id ${req.params.id} not found.`;

@@ -14,7 +14,7 @@ module.exports = {
   },
 
   find: (req, res) => {
-    TEntrance.findOneById(req.params.id)
+    TEntrance.findOne(req.params.id)
       .populate('author')
       .populate('cave')
       .exec((err, found) => {
