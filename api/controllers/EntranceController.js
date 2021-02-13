@@ -7,9 +7,7 @@
 
 module.exports = {
   find: (req, res, converter) => {
-    TEntrance.findOne({
-      id: req.params.id,
-    })
+    TEntrance.findOne(req.params.id)
       .populate('author')
       .populate('cave')
       .populate('names')

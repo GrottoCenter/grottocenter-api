@@ -14,9 +14,7 @@ module.exports = {
     next,
     converter = MappingV1Service.convertToOrganizationModel,
   ) => {
-    TGrotto.findOne({
-      id: req.params.id,
-    })
+    TGrotto.findOne(req.params.id)
       .populate('names')
       .populate('cavers')
       .populate('exploredCaves')
@@ -133,9 +131,7 @@ module.exports = {
     const newOrganization = await sails
       .getDatastore()
       .transaction(async (db) => {
-        const caver = await TCaver.findOne({
-          id: req.token.id,
-        }).usingConnection(db);
+        const caver = await TCaver.findOne(req.token.id).usingConnection(db);
         const name = await TName.create({
           author: req.token.id,
           dateInscription: new Date(),
