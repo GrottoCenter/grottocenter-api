@@ -25,6 +25,4 @@ module.exports = {
       next,
       MappingV1Service.convertToOrganizationModel,
     ),
-  getOfficialPartnersNumber: (req, res) =>
-    grottoController.getOfficialPartnersNumber(req, res),
 };

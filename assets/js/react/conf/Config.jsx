@@ -139,7 +139,7 @@ export const dynamicNumbersUrl = {
   cavers: `/api/${apiVersion}/cavers/count`,
   documents: `/api/${apiVersion}/documents/count`,
   entrances: `/api/${apiVersion}/entrances/count`,
-  officialPartners: `/api/${apiVersion}/organizations/officialCount`,
+  officialPartners: `/api/${apiVersion}/partners/count`,
   organizations: `/api/${apiVersion}/organizations/count`,
   publicEntrances: `/api/${apiVersion}/entrances/publicCount`,
 };
