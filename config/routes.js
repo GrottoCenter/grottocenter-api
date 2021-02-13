@@ -155,9 +155,11 @@ module.exports.routes = {
   /* Partner controller */
   'DELETE /api/partners/:id': 'Partner.delete',
   'GET /api/partners/:id': 'Partner.find',
+  'GET /api/v1/partners/count': 'v1/Partner.count',
   'GET /api/partners/findAll': 'Partner.findAll',
-  'GET /api/v1/partners/findForCarousel': 'Partner.findForCarousel',
-  'GET /api/partners/findForCarousel/:skip/:limit': 'Partner.findForCarousel',
+  'GET /api/v1/partners/findForCarousel': 'v1/Partner.findForCarousel',
+  'GET /api/partners/findForCarousel/:skip/:limit':
+    'v1/Partner.findForCarousel',
   'POST /api/partners/': 'Partner.create',
   'PUT /api/partners/:id': 'Partner.update',
 
@@ -168,8 +170,6 @@ module.exports.routes = {
   /* Organization controller */
   'GET /api/v1/organizations/count': 'v1/Grotto.count',
   'GET /api/organizations/findAll': 'Grotto.findAll',
-  'GET /api/v1/organizations/officialCount':
-    'v1/Grotto.getOfficialPartnersNumber',
   'GET /api/v1/organizations/:id': {
     controller: 'v1/Grotto',
     action: 'find',
