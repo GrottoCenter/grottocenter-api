@@ -7,9 +7,7 @@
 
 module.exports = {
   find: (req, res, next, converter = MappingV1Service.convertToMassifModel) => {
-    TMassif.findOne({
-      id: req.params.id,
-    })
+    TMassif.findOne(req.params.id)
       .populate('author')
       .populate('caves')
       .populate('names')

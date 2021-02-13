@@ -22,7 +22,7 @@ module.exports = {
   },
 
   findEntrance: async (entranceId) => {
-    let entrance = await TEntrance.findOne({ id: entranceId })
+    let entrance = await TEntrance.findOne(entranceId)
       .populate('cave')
       .populate('documents')
       .populate('names');

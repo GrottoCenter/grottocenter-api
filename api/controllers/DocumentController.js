@@ -379,8 +379,7 @@ module.exports = {
     next,
     converter = MappingV1Service.convertToDocumentModel,
   ) => {
-    TDocument.findOne()
-      .where({ id: req.param('id') })
+    TDocument.findOne(req.param('id'))
       .populate('author')
       .populate('authors')
       .populate('cave')
@@ -448,9 +447,7 @@ module.exports = {
       })
       .then(async (updatedDocument) => {
         if (isValidated) {
-          const populatedDoc = await Tdocument.findOne({
-            id: updatedDocument.id,
-          })
+          const populatedDoc = await Tdocument.findOne(updatedDocument.id)
             .populate('author')
             .populate('authors')
             .populate('cave')
@@ -511,7 +508,7 @@ module.exports = {
       Promise.all(updatePromises).then((results) => {
         results.map((doc) => {
           if (doc.isValidated) {
-            TDocument.findOne({ id: doc.id })
+            TDocument.findOne(doc.id)
               .populate('author')
               .populate('authors')
               .populate('cave')
