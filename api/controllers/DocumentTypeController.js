@@ -7,9 +7,7 @@
 
 module.exports = {
   find: (req, res, next) => {
-    TType.findOne({
-      id: req.params.id,
-    }).exec((err, found) => {
+    TType.findOne(req.params.id).exec((err, found) => {
       const params = {};
       params.controllerMethod = 'DocumentTypeController.find';
       params.searchedItem = `Document type of id ${req.params.id}`;

@@ -7,9 +7,7 @@
 
 module.exports = {
   find: (req, res, next, converter) => {
-    TSubject.findOne({
-      id: req.param('code', null),
-    }).exec((err, found) => {
+    TSubject.findOne(req.param('code', null)).exec((err, found) => {
       const params = {};
       params.controllerMethod = 'TSubjectController.find';
       params.searchedItem = `Subject of code ${req.param('code', null)}`;
