@@ -42,6 +42,7 @@ services:
       - discovery.type=single-node
     volumes:
       - ../esdata:/usr/share/elasticsearch/data
+    restart: always
     ports:
       - ${ES_LOCAL_PORT}:9200
       - 9300:9300
