@@ -59,7 +59,7 @@
     "react-router": "^5.2.0",
     "react-router-dom": "^5.2.0",
     "react-socks": "^2.1.0",
-    "react-to-print": "^2.10.3",
+    "react-to-print": "^2.12.2",
     "redux": "^4.0.5",
     "redux-debounced": "^0.5.0",
     "redux-thunk": "^2.2.0",
