@@ -30,14 +30,15 @@ module.exports.datastores = {
    *                                                                          *
    ***************************************************************************/
 
+  /* /!\ this gets overridden when you launch the app using docker compose. */
   default: {
     adapter: require('sails-postgresql'),
-    url: 'postgres://root:root@dbserver/grottoce',
+    url: 'postgres://root:root@localhost:33060/grottoce',
   },
 
   mysql: {
     adapter: require('sails-mysql'),
-    url: 'mysql://root:root@dbserver/grottoce',
+    url: 'mysql://root:root@localhost:33060/grottoce',
   },
 
   test: {
