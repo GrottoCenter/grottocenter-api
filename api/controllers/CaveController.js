@@ -4,11 +4,9 @@
  * @description :: Server-side logic for managing Caves
  * @help        :: See http://sailsjs.org/#!/documentation/concepts/Controllers
  */
+const ramda = require('ramda');
 
 module.exports = {
-  create: (req, res) =>
-    res.badRequest('CaveController.create not yet implemented!'),
-
   update: (req, res) =>
     res.badRequest('CaveController.update not yet implemented!'),
 
@@ -51,6 +49,68 @@ module.exports = {
         params.notFoundMessage = 'No caves found.';
         return ControllerService.treat(req, err, found, params, res, converter);
       });
+  },
+
+  create: async (req, res) => {
+    // Check right
+    const hasRight = await sails.helpers.checkRight
+      .with({
+        groups: req.token.groups,
+        rightEntity: RightService.RightEntities.CAVE,
+        rightAction: RightService.RightActions.CREATE,
+      })
+      .intercept('rightNotFound', (err) => {
+        return res.serverError(
+          'A server error occured when checking your right to create a cave.',
+        );
+      });
+    if (!hasRight) {
+      return res.forbidden('You are not authorized to create a cave.');
+    }
+
+    const cleanedData = {
+      ...req.body,
+      author: req.token.id,
+      dateInscription: new Date(),
+      documents: req.body.documents
+        ? req.body.documents.map((d) => d.id)
+        : undefined,
+      massif: ramda.pathOr(undefined, ['massif', 'id'], req.body),
+    };
+
+    // Launch creation request using transaction: it performs a rollback if an error occurs
+    await sails
+      .getDatastore()
+      .transaction(async (db) => {
+        const caveCreated = await TCave.create(cleanedData)
+          .fetch()
+          .usingConnection(db);
+
+        await TName.create({
+          author: req.token.id,
+          cave: caveCreated.id,
+          dateInscription: new Date(),
+          isMain: true,
+          language: req.body.descriptionAndNameLanguage.id,
+        }).usingConnection(db);
+
+        await TDescription.create({
+          author: req.token.id,
+          body: req.body.description,
+          cave: caveCreated.id,
+          dateInscription: new Date(),
+          language: req.body.descriptionAndNameLanguage.id,
+          title: req.body.descriptionTitle,
+        }).usingConnection(db);
+
+        const params = {};
+        params.controllerMethod = 'CaveController.create';
+        return ControllerService.treat(req, null, caveCreated, params, res);
+      })
+      .intercept('E_UNIQUE', () => res.sendStatus(409))
+      .intercept('UsageError', (e) => res.badRequest(e.cause.message))
+      .intercept('AdapterError', (e) => res.badRequest(e.cause.message))
+      .intercept((e) => res.serverError(e.message));
   },
 
   delete: async (req, res) => {

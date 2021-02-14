@@ -34,6 +34,107 @@ tags:
 - name: subjects
 
 paths:
+  '/caves':
+    post:
+      tags:
+        - caves
+      description: "Create a Cave. When submitting a new cave, you must provide an authentification token (from the /login route) in the Authorization header. This token will be used to set the author of the submission."
+      parameters:
+        
+      - name: name
+        in: query
+        description: Main name of the cave, using the local language
+        required: true
+        schema:
+          type: string
+      
+      - name: description
+        in: query
+        description: Your description of the cave
+        schema:
+          type: string
+      
+      - name: descriptionTitle
+        in: query
+        description: Title of your description
+        schema:
+          type: string
+      
+      - name: descriptionAndNameLanguage
+        in: query
+        description: Language used for the description and the name. List of languages supported by Grottocenter is available using the /languages route.
+        schema:
+          type: object
+          properties:
+            id: 
+              type: string
+      
+      - name: depth
+        in: query
+        description: Depth of the cave
+        schema:
+          type: integer
+      
+      - name: length
+        in: query
+        description: Length of the cave
+        schema:
+          type: integer
+      
+      - name: isDiving
+        in: query
+        description: If the cave is flooded or not
+        schema:
+          type: boolean
+          default: false
+      
+      - name: temperature
+        in: query
+        description: Average temperature in the cave
+        schema:
+          type: number
+          format: double
+          
+      - name: longitude
+        in: query
+        schema:
+          type: number
+
+      - name: latitude
+        in: query
+        schema:
+          type: number
+
+      - name: massif
+        in: query
+        description: Massif to which the document refers to.
+        schema:
+          type: object
+          properties:
+            id:
+              type: string
+        
+      - name: documents
+        in: query
+        description: Documents related to the cave
+        schema:
+          type: array
+          items:
+            type: object
+            properties:
+              id: 
+                type: string
+  
+      responses: 
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cave'
+        403:
+          description: You are not authorized to create a cave.
+
   '/caves/{id}':
     get:
       tags:
