@@ -1,23 +1,23 @@
 const elasticsearch = require('elasticsearch');
 
-let client = {};
+let config;
 
-if(process.env.NODE_ENV === 'demo') {
-  client = new elasticsearch.Client({
+if (['demo', 'dev-docker'].includes(process.env.NODE_ENV)) {
+  config = {
     host: process.env.ES_HOST,
-    log: 'trace'
-  });
-} else if(process.env.NODE_ENV === 'production') {
-  client = new elasticsearch.Client({
+    log: 'trace',
+  };
+} else if (process.env.NODE_ENV === 'production') {
+  config = {
     host: process.env.ES_HOST,
-    log: 'error'
-  });
+    log: 'error',
+  };
 } else {
-  // In dev, we don't use a container for the server. So we don't have access to elasticsearchgrotto.
-  client = new elasticsearch.Client({
+  // In dev, when we don't use a container for the server. So we don't have access to elasticsearchgrotto.
+  config = {
     host: 'localhost:9200',
-    log: 'trace'
-  });
+    log: 'trace',
+  };
 }
 
-module.exports.elasticsearchCli = client;
+module.exports.elasticsearchCli = new elasticsearch.Client(config);

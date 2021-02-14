@@ -81,6 +81,8 @@ services:
       dockerfile: docker/node.Dockerfile
     environment:
       - sails_datastores__default__url=postgres://${DOCKER_DB_USER}:${DOCKER_DB_PASSWORD}@dbserver/${DOCKER_DB_DATABASE}
+      - NODE_ENV=dev-docker
+      - ES_HOST=${ES_TAGNAME}:${ES_LOCAL_PORT}
     command: npm run start-hot
     volumes:
       - ../:/app
