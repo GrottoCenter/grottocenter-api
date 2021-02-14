@@ -1,0 +1,85 @@
+version: "3.3"
+
+## Usage:
+# First copy sample.env to .env
+# Then run:
+# $ docker-compose --env-file .env up --remove-orphans
+#
+# If you get the error: `'/docker-entrypoint-initdb.d/': Permission denied`
+# make sure the sql files in /sql/ have reading access rights (a+r), including the sql directory itself.
+# Same goes with the .jar, it needs reading and execution rights (a+rx).
+#
+# Once you see that in the logs, you are good to go: (http://localhost:1337/)
+# : Grunt :: Running "watch" task
+# : Grunt :: Waiting...
+
+services:
+  dbserver:
+    container_name: ${DB_TAGNAME}
+    image: postgres
+    environment:
+      - POSTGRES_USER=${DOCKER_DB_USER}
+      - POSTGRES_PASSWORD=${DOCKER_DB_PASSWORD}
+    healthcheck:
+      test: pg_isready
+    volumes:
+      - ../sql:/docker-entrypoint-initdb.d
+    restart: always
+    ports:
+      - ${DB_LOCAL_PORT}:5432
+
+  elasticsearch:
+    container_name: ${ES_TAGNAME}
+    image: elasticsearch:${ES_AND_LS_VERSION}
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+    environment:
+      - discovery.type=single-node
+    volumes:
+      - ../esdata:/usr/share/elasticsearch/data
+    ports:
+      - ${ES_LOCAL_PORT}:9200
+      - 9300:9300
+    depends_on:
+      - dbserver
+
+  logstash:
+    container_name: ${LS_TAGNAME}
+    build:
+      context: ./
+      dockerfile: ls.Dockerfile
+      args:
+        - ES_AND_LS_VERSION=${ES_AND_LS_VERSION}
+    command: logstash -f /config-dir/logstash.conf
+    environment:
+      - XPACK.MONITORING.ELASTICSEARCH.URL=${ES_TAGNAME}
+      - CONFIG.SUPPORT_ESCAPES=true
+      - JDBC_POSTGRESQL=jdbc:postgresql://${DB_TAGNAME}/${DOCKER_DB_DATABASE}
+      - JDBC_USER=${DOCKER_DB_USER}
+      - JDBC_PASSWORD=${DOCKER_DB_PASSWORD}
+      - ES_HOSTS=${ES_TAGNAME}:${ES_LOCAL_PORT}
+    healthcheck:
+      test: curl -X GET "localhost:9600" --silent
+      retries: 5
+    volumes:
+      - ../:/config-dir
+    depends_on:
+      - elasticsearch
+
+  node:
+      container_name: nodegrotto
+      image: grottoce-front
+      build:
+        context: ../
+        dockerfile: docker/node.Dockerfile
+      command: npm run start-hot
+      volumes:
+        - ../:/app
+        - ../node_modules:/app/node_modules
+      depends_on:
+        - logstash
+      ports:
+        - 3337:1337
+
