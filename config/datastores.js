@@ -32,12 +32,12 @@ module.exports.datastores = {
 
   default: {
     adapter: require('sails-postgresql'),
-    url: 'postgres://root:root@localhost:33060/grottoce',
+    url: 'postgres://root:root@dbserver/grottoce',
   },
 
   mysql: {
     adapter: require('sails-mysql'),
-    url: 'mysql://root:root@localhost:33060/grottoce',
+    url: 'mysql://root:root@dbserver/grottoce',
   },
 
   test: {

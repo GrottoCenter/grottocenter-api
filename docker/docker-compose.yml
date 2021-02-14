@@ -85,4 +85,3 @@ services:
         - logstash
       ports:
         - 1337:1337
-
