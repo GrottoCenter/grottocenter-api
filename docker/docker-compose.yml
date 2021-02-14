@@ -1,4 +1,7 @@
 version: "3.3"
+# Author: Clément Ronzon - Wikicaves
+# Date: Feb 13 2021
+# Requirement: docker, docker-compose
 
 ## Usage:
 # First copy sample.env to .env
