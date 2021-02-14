@@ -1,5 +1,5 @@
 /* eslint-disable no-nested-ternary */
-import React from 'react';
+import React, { createRef } from 'react';
 import PropTypes from 'prop-types';
 import { injectIntl, intlShape } from 'react-intl';
 import { withStyles } from '@material-ui/core/styles';
@@ -82,6 +82,7 @@ class SearchResultsTable extends React.Component {
     this.handleRowClick = this.handleRowClick.bind(this);
     this.loadCSVData = this.loadCSVData.bind(this);
     this.getFullResultsAsCSV = this.getFullResultsAsCSV.bind(this);
+    this.cardRef = createRef();
   }
 
   // ============================== //
@@ -102,6 +103,10 @@ class SearchResultsTable extends React.Component {
         page: DEFAULT_PAGE,
         size: DEFAULT_SIZE,
       });
+    }
+
+    if (results) {
+      this.cardRef.current.scrollIntoView();
     }
   };
 
@@ -295,7 +300,7 @@ class SearchResultsTable extends React.Component {
     /* Load new results if not enough already loaded:
       - click next page
       - results.length < totalNbResults (not ALL results already loaded)
-      - results.length < newFrom + size (results on the asked page 
+      - results.length < newFrom + size (results on the asked page
           are not loaded)
     */
     if (
@@ -445,7 +450,7 @@ class SearchResultsTable extends React.Component {
       }
     }
 
-    /* 
+    /*
       For small screens, change the display property to allow horizontal scroll.
       Screen smaller than 1200px AND results type not "massif"
         => scrollable table (display: "block")
@@ -457,7 +462,7 @@ class SearchResultsTable extends React.Component {
         : 'table';
 
     return resultsSliced !== undefined && resourceType !== '' ? (
-      <Card className={classes.resultsContainer}>
+      <Card className={classes.resultsContainer} ref={this.cardRef}>
         {resultsSliced.length > 0 ? (
           <>
             <Table
