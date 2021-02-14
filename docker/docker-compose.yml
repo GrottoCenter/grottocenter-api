@@ -84,5 +84,5 @@ services:
       depends_on:
         - logstash
       ports:
-        - 3337:1337
+        - 1337:1337
 
