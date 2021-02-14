@@ -13,7 +13,6 @@ module.exports = {
   attributes: {
     id: {
       type: 'number',
-      allowNull: false,
       autoIncrement: true,
       columnName: 'id',
       unique: true,
@@ -23,14 +22,11 @@ module.exports = {
       allowNull: false,
       columnName: 'id_author',
       model: 'TCaver',
-      required: true,
     },
 
     reviewer: {
-      allowNull: false,
       columnName: 'id_reviewer',
       model: 'TCaver',
-      required: true,
     },
 
     names: {
