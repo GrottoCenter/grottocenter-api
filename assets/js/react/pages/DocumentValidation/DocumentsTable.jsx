@@ -4,7 +4,10 @@ import { useIntl } from 'react-intl';
 import makeCustomCellRenders from './customCellRenders';
 import makeCustomHeaderCellRenders from './customHeaderCellRenders';
 import Table from '../../components/common/Table';
-import { createColumns } from '../../components/common/Table/TableHead';
+import {
+  createColumns,
+  createDefaultHiddenColumns,
+} from '../../components/common/Table/TableHead';
 
 const defaultHiddenColumns = [
   'author',
@@ -63,6 +66,10 @@ const DocumentsTable = ({
       ),
     );
   }, [documents]);
+
+  useEffect(() => {
+    setHiddenColumns(createDefaultHiddenColumns(columns, defaultHiddenColumns));
+  }, [columns]);
 
   return (
     <Table
