@@ -3,7 +3,10 @@ import PropTypes from 'prop-types';
 import { useIntl } from 'react-intl';
 
 import Table from '../../components/common/Table';
-import { createColumns } from '../../components/common/Table/TableHead';
+import {
+  createColumns,
+  createDefaultHiddenColumns,
+} from '../../components/common/Table/TableHead';
 
 // ==========
 const defaultHiddenColumns = ['groups'];
@@ -32,6 +35,10 @@ const UserList = ({ isLoading, title, userList }) => {
   useEffect(() => {
     setColumns(createColumns(userList, makeTranslation));
   }, [userList]);
+
+  useEffect(() => {
+    setHiddenColumns(createDefaultHiddenColumns(columns, defaultHiddenColumns));
+  }, [columns]);
 
   const userListOrdered = userList.sort((u1, u2) => {
     if (order === 'asc') {
