@@ -23,6 +23,7 @@ const defaultHiddenColumns = [
   'id',
   'identifier',
   'identifierType',
+  'isValidated',
   'library',
   'license',
   'massif',
@@ -33,6 +34,8 @@ const defaultHiddenColumns = [
   'publicationFasciculeBBSOld',
   'refBbs',
   'reviewer',
+  'validationComment',
+  'validator',
 ];
 
 const DocumentsTable = ({
