@@ -89,6 +89,13 @@ module.exports = {
       columnType: 'datetime',
     },
 
+    isDeleted: {
+      type: 'boolean',
+      allowNull: false,
+      columnName: 'is_deleted',
+      defaultsTo: false,
+    },
+
     // Sails' ORM, Waterline, doesn't support large number: that's why we use the type 'string' for the latitude
     latitude: {
       type: 'string',
