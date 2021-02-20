@@ -106,7 +106,9 @@ class SearchResultsTable extends React.Component {
     }
 
     if (results) {
-      this.cardRef.current.scrollIntoView();
+      this.cardRef.current.scrollIntoView({
+        behavior: 'smooth',
+      });
     }
   };
 
