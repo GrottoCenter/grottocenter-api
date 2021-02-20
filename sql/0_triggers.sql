@@ -2,8 +2,9 @@
 -- Create trigger in Postgre
 -- Version v1.0 - 20210204 - B. Soufflet - V. Verdon
 ------------------------------------------------------------
+\c grottoce;
 
-CREATE OR REPLACE FUNCTION public.calcule_size_coef()
+CREATE OR REPLACE FUNCTION calcule_size_coef()
  RETURNS trigger
  LANGUAGE plpgsql
 AS $function$
@@ -48,7 +49,7 @@ $function$
 
 CREATE TRIGGER size_coef_insert_update
 BEFORE INSERT OR UPDATE
-ON public.t_cave for each row execute function calcule_size_coef();
+ON t_cave for each row execute function calcule_size_coef();
 
 --Procédure d'historisation suite à DELETE déclenchée par le trigger
 ----------------------------------------------------------------------

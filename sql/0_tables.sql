@@ -1,27 +1,11 @@
--- public.spatial_ref_sys definition
+\c grottoce;
+-- t_bbs definition
 
 -- Drop table
 
--- DROP TABLE public.spatial_ref_sys;
+-- DROP TABLE t_bbs;
 
-CREATE TABLE public.spatial_ref_sys (
-	srid int4 NOT NULL,
-	auth_name varchar(256) NULL,
-	auth_srid int4 NULL,
-	srtext varchar(2048) NULL,
-	proj4text varchar(2048) NULL,
-	CONSTRAINT spatial_ref_sys_pkey PRIMARY KEY (srid),
-	CONSTRAINT spatial_ref_sys_srid_check CHECK (((srid > 0) AND (srid <= 998999)))
-);
-
-
--- public.t_bbs definition
-
--- Drop table
-
--- DROP TABLE public.t_bbs;
-
-CREATE TABLE public.t_bbs (
+CREATE TABLE t_bbs (
 	id serial NOT NULL,
 	articleyear int2 NULL,
 	articletitle varchar(1000) NULL,
@@ -50,13 +34,13 @@ CREATE TABLE public.t_bbs (
 );
 
 
--- public.t_country definition
+-- t_country definition
 
 -- Drop table
 
--- DROP TABLE public.t_country;
+-- DROP TABLE t_country;
 
-CREATE TABLE public.t_country (
+CREATE TABLE t_country (
 	iso bpchar(2) NOT NULL,
 	iso3 bpchar(3) NOT NULL,
 	"numeric" int4 NOT NULL,
@@ -76,13 +60,13 @@ CREATE TABLE public.t_country (
 );
 
 
--- public.t_file_format definition
+-- t_file_format definition
 
 -- Drop table
 
--- DROP TABLE public.t_file_format;
+-- DROP TABLE t_file_format;
 
-CREATE TABLE public.t_file_format (
+CREATE TABLE t_file_format (
 	id smallserial NOT NULL,
 	"extension" bpchar(12) NULL,
 	"comment" varchar(250) NULL,
@@ -92,13 +76,13 @@ CREATE TABLE public.t_file_format (
 );
 
 
--- public.t_group definition
+-- t_group definition
 
 -- Drop table
 
--- DROP TABLE public.t_group;
+-- DROP TABLE t_group;
 
-CREATE TABLE public.t_group (
+CREATE TABLE t_group (
 	id smallserial NOT NULL,
 	"name" varchar(200) NOT NULL,
 	"comments" varchar(1000) NULL,
@@ -106,13 +90,13 @@ CREATE TABLE public.t_group (
 );
 
 
--- public.t_identifier_type definition
+-- t_identifier_type definition
 
 -- Drop table
 
--- DROP TABLE public.t_identifier_type;
+-- DROP TABLE t_identifier_type;
 
-CREATE TABLE public.t_identifier_type (
+CREATE TABLE t_identifier_type (
 	code bpchar(5) NOT NULL,
 	"text" varchar(250) NOT NULL,
 	regexp varchar(250) NOT NULL,
@@ -120,13 +104,13 @@ CREATE TABLE public.t_identifier_type (
 );
 
 
--- public.t_language definition
+-- t_language definition
 
 -- Drop table
 
--- DROP TABLE public.t_language;
+-- DROP TABLE t_language;
 
-CREATE TABLE public.t_language (
+CREATE TABLE t_language (
 	id bpchar(3) NOT NULL,
 	part2b bpchar(3) NULL,
 	part2t bpchar(3) NULL,
@@ -140,13 +124,13 @@ CREATE TABLE public.t_language (
 );
 
 
--- public.t_license definition
+-- t_license definition
 
 -- Drop table
 
--- DROP TABLE public.t_license;
+-- DROP TABLE t_license;
 
-CREATE TABLE public.t_license (
+CREATE TABLE t_license (
 	id int2 NOT NULL,
 	"name" varchar(30) NOT NULL,
 	"text" text NULL,
@@ -156,13 +140,13 @@ CREATE TABLE public.t_license (
 );
 
 
--- public.t_right definition
+-- t_right definition
 
 -- Drop table
 
--- DROP TABLE public.t_right;
+-- DROP TABLE t_right;
 
-CREATE TABLE public.t_right (
+CREATE TABLE t_right (
 	id smallserial NOT NULL,
 	"name" varchar(200) NOT NULL,
 	"comments" varchar(1000) NULL,
@@ -170,13 +154,13 @@ CREATE TABLE public.t_right (
 );
 
 
--- public.j_country_language definition
+-- j_country_language definition
 
 -- Drop table
 
--- DROP TABLE public.j_country_language;
+-- DROP TABLE j_country_language;
 
-CREATE TABLE public.j_country_language (
+CREATE TABLE j_country_language (
 	id_country bpchar(2) NOT NULL,
 	id_language bpchar(3) NOT NULL,
 	is_official bool NOT NULL,
@@ -187,13 +171,13 @@ CREATE TABLE public.j_country_language (
 );
 
 
--- public.j_group_right definition
+-- j_group_right definition
 
 -- Drop table
 
--- DROP TABLE public.j_group_right;
+-- DROP TABLE j_group_right;
 
-CREATE TABLE public.j_group_right (
+CREATE TABLE j_group_right (
 	id_group int2 NOT NULL,
 	id_right int2 NOT NULL,
 	CONSTRAINT j_group_right_pk PRIMARY KEY (id_group, id_right),
@@ -202,13 +186,13 @@ CREATE TABLE public.j_group_right (
 );
 
 
--- public.t_caver definition
+-- t_caver definition
 
 -- Drop table
 
--- DROP TABLE public.t_caver;
+-- DROP TABLE t_caver;
 
-CREATE TABLE public.t_caver (
+CREATE TABLE t_caver (
 	id serial NOT NULL,
 	login varchar(20) NULL,
 	"password" varchar(64) NULL,
@@ -233,16 +217,16 @@ CREATE TABLE public.t_caver (
 	CONSTRAINT t_caver_pk PRIMARY KEY (id),
 	CONSTRAINT t_caver_t_language0_fk FOREIGN KEY (id_language) REFERENCES t_language(id)
 );
-CREATE INDEX t_caver_idx ON public.t_caver USING btree (login);
+CREATE INDEX t_caver_idx ON t_caver USING btree (login);
 
 
--- public.t_crs definition
+-- t_crs definition
 
 -- Drop table
 
--- DROP TABLE public.t_crs;
+-- DROP TABLE t_crs;
 
-CREATE TABLE public.t_crs (
+CREATE TABLE t_crs (
 	id smallserial NOT NULL,
 	id_author int4 NOT NULL,
 	id_reviewer int4 NULL,
@@ -260,13 +244,13 @@ CREATE TABLE public.t_crs (
 );
 
 
--- public.t_geology definition
+-- t_geology definition
 
 -- Drop table
 
--- DROP TABLE public.t_geology;
+-- DROP TABLE t_geology;
 
-CREATE TABLE public.t_geology (
+CREATE TABLE t_geology (
 	id bpchar(10) NOT NULL,
 	"label" varchar(500) NOT NULL,
 	id_parent bpchar(10) NOT NULL,
@@ -275,13 +259,13 @@ CREATE TABLE public.t_geology (
 );
 
 
--- public.t_grotto definition
+-- t_grotto definition
 
 -- Drop table
 
--- DROP TABLE public.t_grotto;
+-- DROP TABLE t_grotto;
 
-CREATE TABLE public.t_grotto (
+CREATE TABLE t_grotto (
 	id serial NOT NULL,
 	id_author int4 NOT NULL,
 	id_reviewer int4 NULL,
@@ -311,13 +295,13 @@ CREATE TABLE public.t_grotto (
 	CONSTRAINT t_grotto_t_grotto_fk FOREIGN KEY (redirect_to) REFERENCES t_grotto(id)
 );
 
--- public.t_massif definition
+-- t_massif definition
 
 -- Drop table
 
--- DROP TABLE public.t_massif;
+-- DROP TABLE t_massif;
 
-CREATE TABLE public.t_massif (
+CREATE TABLE t_massif (
 	id serial NOT NULL,
 	id_author int4 NOT NULL,
 	id_reviewer int4 NULL,
@@ -332,13 +316,13 @@ CREATE TABLE public.t_massif (
 	CONSTRAINT t_massif_t_massif_fk FOREIGN KEY (redirect_to) REFERENCES t_massif(id)
 );
 
--- public.t_region definition
+-- t_region definition
 
 -- Drop table
 
--- DROP TABLE public.t_region;
+-- DROP TABLE t_region;
 
-CREATE TABLE public.t_region (
+CREATE TABLE t_region (
 	id serial NOT NULL,
 	code varchar(20) NOT NULL,
 	is_deprecated bool NOT NULL DEFAULT false,
@@ -349,13 +333,13 @@ CREATE TABLE public.t_region (
 );
 
 
--- public.t_subject definition
+-- t_subject definition
 
 -- Drop table
 
--- DROP TABLE public.t_subject;
+-- DROP TABLE t_subject;
 
-CREATE TABLE public.t_subject (
+CREATE TABLE t_subject (
 	code bpchar(5) NOT NULL,
 	subject varchar(300) NOT NULL,
 	code_parent bpchar(5) NULL,
@@ -364,13 +348,13 @@ CREATE TABLE public.t_subject (
 );
 
 
--- public.t_type definition
+-- t_type definition
 
 -- Drop table
 
--- DROP TABLE public.t_type;
+-- DROP TABLE t_type;
 
-CREATE TABLE public.t_type (
+CREATE TABLE t_type (
 	id int2 NOT NULL,
 	"name" varchar(30) NOT NULL,
 	"comment" varchar(500) NULL,
@@ -380,13 +364,13 @@ CREATE TABLE public.t_type (
 );
 
 
--- public.h_grotto definition
+-- h_grotto definition
 
 -- Drop table
 
--- DROP TABLE public.h_grotto;
+-- DROP TABLE h_grotto;
 
-CREATE TABLE public.h_grotto (
+CREATE TABLE h_grotto (
 	id serial NOT NULL,
 	id_author int4 NOT NULL,
 	id_reviewer int4 NULL,
@@ -415,13 +399,13 @@ CREATE TABLE public.h_grotto (
 );
 
 
--- public.h_massif definition
+-- h_massif definition
 
 -- Drop table
 
--- DROP TABLE public.h_massif;
+-- DROP TABLE h_massif;
 
-CREATE TABLE public.h_massif (
+CREATE TABLE h_massif (
 	id serial NOT NULL,
 	id_author int4 NOT NULL,
 	id_reviewer int4 NULL,
@@ -436,13 +420,13 @@ CREATE TABLE public.h_massif (
 );
 
 
--- public.j_caver_group definition
+-- j_caver_group definition
 
 -- Drop table
 
--- DROP TABLE public.j_caver_group;
+-- DROP TABLE j_caver_group;
 
-CREATE TABLE public.j_caver_group (
+CREATE TABLE j_caver_group (
 	id_caver int4 NOT NULL,
 	id_group int2 NOT NULL,
 	CONSTRAINT j_caver_group_pk PRIMARY KEY (id_caver, id_group),
@@ -451,13 +435,13 @@ CREATE TABLE public.j_caver_group (
 );
 
 
--- public.j_country_crs definition
+-- j_country_crs definition
 
 -- Drop table
 
--- DROP TABLE public.j_country_crs;
+-- DROP TABLE j_country_crs;
 
-CREATE TABLE public.j_country_crs (
+CREATE TABLE j_country_crs (
 	id_crs int2 NOT NULL,
 	id_country bpchar(2) NOT NULL,
 	CONSTRAINT j_country_crs_pk PRIMARY KEY (id_crs, id_country),
@@ -466,13 +450,13 @@ CREATE TABLE public.j_country_crs (
 );
 
 
--- public.j_grotto_caver definition
+-- j_grotto_caver definition
 
 -- Drop table
 
--- DROP TABLE public.j_grotto_caver;
+-- DROP TABLE j_grotto_caver;
 
-CREATE TABLE public.j_grotto_caver (
+CREATE TABLE j_grotto_caver (
 	id_caver int4 NOT NULL,
 	id_grotto int4 NOT NULL,
 	CONSTRAINT j_grotto_caver_pk PRIMARY KEY (id_caver, id_grotto),
@@ -481,13 +465,13 @@ CREATE TABLE public.j_grotto_caver (
 );
 
 
--- public.j_license_type definition
+-- j_license_type definition
 
 -- Drop table
 
--- DROP TABLE public.j_license_type;
+-- DROP TABLE j_license_type;
 
-CREATE TABLE public.j_license_type (
+CREATE TABLE j_license_type (
 	id_license int2 NOT NULL,
 	id_type int2 NOT NULL,
 	CONSTRAINT j_license_type_pk PRIMARY KEY (id_license, id_type),
@@ -496,13 +480,13 @@ CREATE TABLE public.j_license_type (
 );
 
 
--- public.t_cave definition
+-- t_cave definition
 
 -- Drop table
 
--- DROP TABLE public.t_cave;
+-- DROP TABLE t_cave;
 
-CREATE TABLE public.t_cave (
+CREATE TABLE t_cave (
 	id serial NOT NULL,
 	id_author int4 NOT NULL,
 	id_reviewer int4 NULL,
@@ -528,13 +512,13 @@ CREATE TABLE public.t_cave (
 );
 
 
--- public.t_entrance definition
+-- t_entrance definition
 
 -- Drop table
 
--- DROP TABLE public.t_entrance;
+-- DROP TABLE t_entrance;
 
-CREATE TABLE public.t_entrance (
+CREATE TABLE t_entrance (
 	id serial NOT NULL,
 	"type" bpchar(8) NOT NULL DEFAULT 'entrance'::bpchar,
 	id_author int4 NOT NULL,
@@ -572,13 +556,13 @@ CREATE TABLE public.t_entrance (
 	CONSTRAINT t_entrance_t_geology_fk FOREIGN KEY (id_geology) REFERENCES t_geology(id)
 );
 
--- public.t_location definition
+-- t_location definition
 
 -- Drop table
 
--- DROP TABLE public.t_location;
+-- DROP TABLE t_location;
 
-CREATE TABLE public.t_location (
+CREATE TABLE t_location (
 	id serial NOT NULL,
 	id_author int4 NOT NULL,
 	id_reviewer int4 NULL,
@@ -596,13 +580,13 @@ CREATE TABLE public.t_location (
 	CONSTRAINT t_location_t_language0_fk FOREIGN KEY (id_language) REFERENCES t_language(id)
 );
 
--- public.t_point definition
+-- t_point definition
 
 -- Drop table
 
--- DROP TABLE public.t_point;
+-- DROP TABLE t_point;
 
-CREATE TABLE public.t_point (
+CREATE TABLE t_point (
 	id serial NOT NULL,
 	"type" bpchar(8) NOT NULL DEFAULT 'a'::bpchar,
 	id_author int4 NOT NULL,
@@ -624,13 +608,13 @@ CREATE TABLE public.t_point (
 );
 
 
--- public.t_rigging definition
+-- t_rigging definition
 
 -- Drop table
 
--- DROP TABLE public.t_rigging;
+-- DROP TABLE t_rigging;
 
-CREATE TABLE public.t_rigging (
+CREATE TABLE t_rigging (
 	id serial NOT NULL,
 	id_author int4 NOT NULL,
 	id_reviewer int4 NULL,
@@ -656,13 +640,13 @@ CREATE TABLE public.t_rigging (
 	CONSTRAINT t_rigging_t_point_fk FOREIGN KEY (id_point) REFERENCES t_point(id)
 );
 
--- public.h_cave definition
+-- h_cave definition
 
 -- Drop table
 
--- DROP TABLE public.h_cave;
+-- DROP TABLE h_cave;
 
-CREATE TABLE public.h_cave (
+CREATE TABLE h_cave (
 	id serial NOT NULL,
 	id_author int4 NOT NULL,
 	id_reviewer int4 NULL,
@@ -686,13 +670,13 @@ CREATE TABLE public.h_cave (
 );
 
 
--- public.h_entrance definition
+-- h_entrance definition
 
 -- Drop table
 
--- DROP TABLE public.h_entrance;
+-- DROP TABLE h_entrance;
 
-CREATE TABLE public.h_entrance (
+CREATE TABLE h_entrance (
 	id serial NOT NULL,
 	"type" bpchar(8) NOT NULL DEFAULT 'entrance'::bpchar,
 	id_author int4 NOT NULL,
@@ -728,13 +712,13 @@ CREATE TABLE public.h_entrance (
 );
 
 
--- public.h_location definition
+-- h_location definition
 
 -- Drop table
 
--- DROP TABLE public.h_location;
+-- DROP TABLE h_location;
 
-CREATE TABLE public.h_location (
+CREATE TABLE h_location (
 	id serial NOT NULL,
 	id_author int4 NOT NULL,
 	id_reviewer int4 NULL,
@@ -753,13 +737,13 @@ CREATE TABLE public.h_location (
 );
 
 
--- public.h_rigging definition
+-- h_rigging definition
 
 -- Drop table
 
--- DROP TABLE public.h_rigging;
+-- DROP TABLE h_rigging;
 
-CREATE TABLE public.h_rigging (
+CREATE TABLE h_rigging (
 	id serial NOT NULL,
 	id_author int4 NOT NULL,
 	id_reviewer int4 NULL,
@@ -786,13 +770,13 @@ CREATE TABLE public.h_rigging (
 );
 
 
--- public.j_entrance_caver definition
+-- j_entrance_caver definition
 
 -- Drop table
 
--- DROP TABLE public.j_entrance_caver;
+-- DROP TABLE j_entrance_caver;
 
-CREATE TABLE public.j_entrance_caver (
+CREATE TABLE j_entrance_caver (
 	id_entrance int4 NOT NULL,
 	id_caver int4 NOT NULL,
 	CONSTRAINT j_entrance_caver_pk PRIMARY KEY (id_entrance, id_caver),
@@ -801,13 +785,13 @@ CREATE TABLE public.j_entrance_caver (
 );
 
 
--- public.j_grotto_cave_explorer definition
+-- j_grotto_cave_explorer definition
 
 -- Drop table
 
--- DROP TABLE public.j_grotto_cave_explorer;
+-- DROP TABLE j_grotto_cave_explorer;
 
-CREATE TABLE public.j_grotto_cave_explorer (
+CREATE TABLE j_grotto_cave_explorer (
 	id_cave int4 NOT NULL,
 	id_grotto int4 NOT NULL,
 	CONSTRAINT j_grotto_cave_explorer_pk PRIMARY KEY (id_cave, id_grotto),
@@ -816,13 +800,13 @@ CREATE TABLE public.j_grotto_cave_explorer (
 );
 
 
--- public.j_grotto_cave_partner definition
+-- j_grotto_cave_partner definition
 
 -- Drop table
 
--- DROP TABLE public.j_grotto_cave_partner;
+-- DROP TABLE j_grotto_cave_partner;
 
-CREATE TABLE public.j_grotto_cave_partner (
+CREATE TABLE j_grotto_cave_partner (
 	id_grotto int4 NOT NULL,
 	id_cave int4 NOT NULL,
 	CONSTRAINT j_grotto_cave_partner_pk PRIMARY KEY (id_grotto, id_cave),
@@ -831,13 +815,13 @@ CREATE TABLE public.j_grotto_cave_partner (
 );
 
 
--- public.t_comment definition
+-- t_comment definition
 
 -- Drop table
 
--- DROP TABLE public.t_comment;
+-- DROP TABLE t_comment;
 
-CREATE TABLE public.t_comment (
+CREATE TABLE t_comment (
 	id serial NOT NULL,
 	id_author int4 NOT NULL,
 	id_reviewer int4 NULL,
@@ -866,13 +850,13 @@ CREATE TABLE public.t_comment (
 	CONSTRAINT t_comment_t_language0_fk FOREIGN KEY (id_language) REFERENCES t_language(id)
 );
 
--- public.t_document definition
+-- t_document definition
 
 -- Drop table
 
--- DROP TABLE public.t_document;
+-- DROP TABLE t_document;
 
-CREATE TABLE public.t_document (
+CREATE TABLE t_document (
 	id serial NOT NULL,
 	id_author int4 NOT NULL,
 	id_reviewer int4 NULL,
@@ -924,13 +908,13 @@ CREATE TABLE public.t_document (
 	CONSTRAINT t_document_t_type_fk FOREIGN KEY (id_type) REFERENCES t_type(id)
 );
 
--- public.t_file definition
+-- t_file definition
 
 -- Drop table
 
--- DROP TABLE public.t_file;
+-- DROP TABLE t_file;
 
-CREATE TABLE public.t_file (
+CREATE TABLE t_file (
 	id serial NOT NULL,
 	date_inscription timestamp NOT NULL DEFAULT now(),
 	date_reviewed timestamp NULL,
@@ -944,13 +928,13 @@ CREATE TABLE public.t_file (
 );
 
 
--- public.t_history definition
+-- t_history definition
 
 -- Drop table
 
--- DROP TABLE public.t_history;
+-- DROP TABLE t_history;
 
-CREATE TABLE public.t_history (
+CREATE TABLE t_history (
 	id serial NOT NULL,
 	id_author int4 NOT NULL,
 	id_reviewer int4 NULL,
@@ -972,13 +956,13 @@ CREATE TABLE public.t_history (
 	CONSTRAINT t_history_t_point_fk FOREIGN KEY (id_point) REFERENCES t_point(id)
 );
 
--- public.t_junction definition
+-- t_junction definition
 
 -- Drop table
 
--- DROP TABLE public.t_junction;
+-- DROP TABLE t_junction;
 
-CREATE TABLE public.t_junction (
+CREATE TABLE t_junction (
 	id_cave_main int4 NOT NULL,
 	id_cave_add int4 NOT NULL,
 	id_point int4 NOT NULL,
@@ -989,13 +973,13 @@ CREATE TABLE public.t_junction (
 );
 
 
--- public.t_name definition
+-- t_name definition
 
 -- Drop table
 
--- DROP TABLE public.t_name;
+-- DROP TABLE t_name;
 
-CREATE TABLE public.t_name (
+CREATE TABLE t_name (
 	id serial NOT NULL,
 	"name" varchar(100) NULL,
 	is_main bool NOT NULL DEFAULT false,
@@ -1020,13 +1004,13 @@ CREATE TABLE public.t_name (
 	CONSTRAINT t_name_t_point_fk FOREIGN KEY (id_point) REFERENCES t_point(id)
 );
 
--- public.h_comment definition
+-- h_comment definition
 
 -- Drop table
 
--- DROP TABLE public.h_comment;
+-- DROP TABLE h_comment;
 
-CREATE TABLE public.h_comment (
+CREATE TABLE h_comment (
 	id serial NOT NULL,
 	id_author int4 NOT NULL,
 	id_reviewer int4 NULL,
@@ -1056,13 +1040,13 @@ CREATE TABLE public.h_comment (
 );
 
 
--- public.h_document definition
+-- h_document definition
 
 -- Drop table
 
--- DROP TABLE public.h_document;
+-- DROP TABLE h_document;
 
-CREATE TABLE public.h_document (
+CREATE TABLE h_document (
 	id serial NOT NULL,
 	id_author int4 NOT NULL,
 	id_reviewer int4 NULL,
@@ -1112,13 +1096,13 @@ CREATE TABLE public.h_document (
 );
 
 
--- public.h_history definition
+-- h_history definition
 
 -- Drop table
 
--- DROP TABLE public.h_history;
+-- DROP TABLE h_history;
 
-CREATE TABLE public.h_history (
+CREATE TABLE h_history (
 	id serial NOT NULL,
 	id_author int4 NOT NULL,
 	id_reviewer int4 NULL,
@@ -1141,13 +1125,13 @@ CREATE TABLE public.h_history (
 );
 
 
--- public.h_name definition
+-- h_name definition
 
 -- Drop table
 
--- DROP TABLE public.h_name;
+-- DROP TABLE h_name;
 
-CREATE TABLE public.h_name (
+CREATE TABLE h_name (
 	id serial NOT NULL,
 	"name" varchar(100) NULL,
 	is_main bool NOT NULL DEFAULT false,
@@ -1173,13 +1157,13 @@ CREATE TABLE public.h_name (
 );
 
 
--- public.j_document_caver_author definition
+-- j_document_caver_author definition
 
 -- Drop table
 
--- DROP TABLE public.j_document_caver_author;
+-- DROP TABLE j_document_caver_author;
 
-CREATE TABLE public.j_document_caver_author (
+CREATE TABLE j_document_caver_author (
 	id_document int4 NOT NULL,
 	id_caver int4 NOT NULL,
 	CONSTRAINT j_document_caver_author_pk PRIMARY KEY (id_document, id_caver),
@@ -1188,13 +1172,13 @@ CREATE TABLE public.j_document_caver_author (
 );
 
 
--- public.j_document_grotto_author definition
+-- j_document_grotto_author definition
 
 -- Drop table
 
--- DROP TABLE public.j_document_grotto_author;
+-- DROP TABLE j_document_grotto_author;
 
-CREATE TABLE public.j_document_grotto_author (
+CREATE TABLE j_document_grotto_author (
 	id_document int4 NOT NULL,
 	id_grotto int4 NOT NULL,
 	CONSTRAINT j_document_grotto_author_pk PRIMARY KEY (id_document, id_grotto),
@@ -1203,13 +1187,13 @@ CREATE TABLE public.j_document_grotto_author (
 );
 
 
--- public.j_document_language definition
+-- j_document_language definition
 
 -- Drop table
 
--- DROP TABLE public.j_document_language;
+-- DROP TABLE j_document_language;
 
-CREATE TABLE public.j_document_language (
+CREATE TABLE j_document_language (
 	id_document int4 NOT NULL,
 	id_language bpchar(3) NOT NULL,
 	is_main bool NOT NULL DEFAULT false,
@@ -1219,13 +1203,13 @@ CREATE TABLE public.j_document_language (
 );
 
 
--- public.j_document_region definition
+-- j_document_region definition
 
 -- Drop table
 
--- DROP TABLE public.j_document_region;
+-- DROP TABLE j_document_region;
 
-CREATE TABLE public.j_document_region (
+CREATE TABLE j_document_region (
 	id_document int4 NOT NULL,
 	id_region int4 NOT NULL,
 	CONSTRAINT j_document_region_pk PRIMARY KEY (id_document, id_region),
@@ -1234,13 +1218,13 @@ CREATE TABLE public.j_document_region (
 );
 
 
--- public.j_document_subject definition
+-- j_document_subject definition
 
 -- Drop table
 
--- DROP TABLE public.j_document_subject;
+-- DROP TABLE j_document_subject;
 
-CREATE TABLE public.j_document_subject (
+CREATE TABLE j_document_subject (
 	id_document int4 NOT NULL,
 	code_subject bpchar(5) NOT NULL,
 	CONSTRAINT j_document_subject_pk PRIMARY KEY (id_document, code_subject),
@@ -1249,13 +1233,13 @@ CREATE TABLE public.j_document_subject (
 );
 
 
--- public.t_description definition
+-- t_description definition
 
 -- Drop table
 
--- DROP TABLE public.t_description;
+-- DROP TABLE t_description;
 
-CREATE TABLE public.t_description (
+CREATE TABLE t_description (
 	id serial NOT NULL,
 	id_author int4 NOT NULL,
 	id_reviewer int4 NULL,
@@ -1284,13 +1268,13 @@ CREATE TABLE public.t_description (
 	CONSTRAINT t_description_t_point_fk FOREIGN KEY (id_point) REFERENCES t_point(id)
 );
 
--- public.h_description definition
+-- h_description definition
 
 -- Drop table
 
--- DROP TABLE public.h_description;
+-- DROP TABLE h_description;
 
-CREATE TABLE public.h_description (
+CREATE TABLE h_description (
 	id serial NOT NULL,
 	id_author int4 NOT NULL,
 	id_reviewer int4 NULL,
