@@ -55,6 +55,25 @@ paths:
                 $ref: '#/components/schemas/Cave'
         '404':
           description: Cave not found.
+  
+    delete:
+      tags:
+      - caves
+      description: Delete a cave.
+      parameters:
+      - name: id
+        in: path
+        description: Cave id
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Successful operation
+        '404':
+          description: Cave not found.
+        '410':
+          description: Cave already deleted.
           
   '/cavers':
     post:

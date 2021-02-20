@@ -47,6 +47,7 @@ module.exports.policies = {
 
   'v1/CaveController': {
     '*': true,
+    delete: ['tokenAuth', 'moderatorAuth'],
   },
 
   'v1/CaverController': {
