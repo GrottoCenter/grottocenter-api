@@ -77,7 +77,7 @@ docker run -d \
 -v "$PWD"/sql:/docker-entrypoint-initdb.d \
 -e POSTGRES_USER=${DOCKER_DB_USER} \
 -e POSTGRES_PASSWORD=${DOCKER_DB_PASSWORD} \
-postgres
+postgis/postgis
 
 # Wait the container to be running
 waitContainer ${DB_TAGNAME}
