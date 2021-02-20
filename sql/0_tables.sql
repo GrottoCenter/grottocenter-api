@@ -1,761 +1,1320 @@
------------------------------------------------------------
--- Create structure in Postgre 
--- Version v3.06 - 20200901 - V. Verdon
-------------------------------------------------------------
--- use before postgre_injection.sql
+-- public.spatial_ref_sys definition
 
+-- Drop table
 
-------------------------------------------------------------
--- Table: t_country
-------------------------------------------------------------
-CREATE TABLE t_country(
-	iso           CHAR (2) NOT NULL,
-	iso3          CHAR(3) NOT NULL,
-	numeric       INTEGER NOT NULL,
-	latitude      DECIMAL (24,20),
-	longitude     DECIMAL (24,20),
-	native_name   VARCHAR (50),
-	en_name       VARCHAR (50) NOT NULL ,
-	fr_name       VARCHAR (50) NOT NULL ,
-	es_name       VARCHAR (50) NOT NULL ,
-	de_name       VARCHAR (50) NOT NULL ,
-	bg_name       VARCHAR (50) NOT NULL ,
-	it_name       VARCHAR (50) NOT NULL ,
-	ca_name       VARCHAR (50) NOT NULL ,
-	nl_name       VARCHAR (50) NOT NULL ,
-	rs_name       VARCHAR (50) NOT NULL ,
-	CONSTRAINT t_country_PK PRIMARY KEY (Iso)
+-- DROP TABLE public.spatial_ref_sys;
+
+CREATE TABLE public.spatial_ref_sys (
+	srid int4 NOT NULL,
+	auth_name varchar(256) NULL,
+	auth_srid int4 NULL,
+	srtext varchar(2048) NULL,
+	proj4text varchar(2048) NULL,
+	CONSTRAINT spatial_ref_sys_pkey PRIMARY KEY (srid),
+	CONSTRAINT spatial_ref_sys_srid_check CHECK (((srid > 0) AND (srid <= 998999)))
 );
 
 
-------------------------------------------------------------
--- Table: t_language
-------------------------------------------------------------
-CREATE TABLE t_language(
-	id         CHAR (3)  NOT NULL ,
-	part2B     CHAR (3)   ,
-	part2T     CHAR (3)   ,
-	part1      CHAR (2)   ,
-	scope      CHAR (1)  NOT NULL ,
-	type       CHAR (1)  NOT NULL ,
-	ref_name   VARCHAR (150) NOT NULL ,
-	comment    VARCHAR (150)   ,
-    is_prefered   boolean not null default false,
-	CONSTRAINT t_language_PK PRIMARY KEY (id)
+-- public.t_bbs definition
+
+-- Drop table
+
+-- DROP TABLE public.t_bbs;
+
+CREATE TABLE public.t_bbs (
+	id serial NOT NULL,
+	articleyear int2 NULL,
+	articletitle varchar(1000) NULL,
+	librarycode varchar(50) NULL,
+	publicationother varchar(500) NULL,
+	publicationfascicule varchar(300) NULL,
+	publicationpages varchar(100) NULL,
+	"comments" varchar(500) NULL,
+	publication_url varchar(1000) NULL,
+	editor_address varchar(500) NULL,
+	editor_email varchar(100) NULL,
+	editor_url varchar(200) NULL,
+	abstract varchar(5000) NULL,
+	xauteurfull varchar(500) NULL,
+	chaptercode varchar(10) NULL,
+	countrycode varchar(30) NULL,
+	xrefsubjectfull varchar(100) NULL,
+	xcountrycodefull varchar(300) NULL,
+	"ref" varchar(10) NULL,
+	xrefnumeriquefinal bpchar(10) NULL,
+	identifier bpchar(250) NULL,
+	identifier_type bpchar(5) NULL,
+	id_parent int4 NULL,
+	pages varchar(100) NULL,
+	CONSTRAINT t_bbs_pkey PRIMARY KEY (id)
 );
 
 
-------------------------------------------------------------
--- Table: j_country_language
-------------------------------------------------------------
-CREATE TABLE j_country_language(
-	id_country          CHAR(2)  NOT NULL ,
-	id_language         CHAR (3)  NOT NULL ,
-	is_official         BOOL  NOT NULL  ,
-	is_main 			BOOL NOT NULL DEFAULT FALSE,
-	CONSTRAINT j_country_language_PK PRIMARY KEY (id_country,id_language)
-	,CONSTRAINT j_country_language0_FK FOREIGN KEY (id_country) REFERENCES t_country(Iso)
-	,CONSTRAINT j_country_language1_FK FOREIGN KEY (id_language) REFERENCES t_language(id)
+-- public.t_country definition
+
+-- Drop table
+
+-- DROP TABLE public.t_country;
+
+CREATE TABLE public.t_country (
+	iso bpchar(2) NOT NULL,
+	iso3 bpchar(3) NOT NULL,
+	"numeric" int4 NOT NULL,
+	latitude numeric(24,20) NULL,
+	longitude numeric(24,20) NULL,
+	native_name varchar(50) NULL,
+	en_name varchar(50) NOT NULL,
+	fr_name varchar(50) NOT NULL,
+	es_name varchar(50) NOT NULL,
+	de_name varchar(50) NOT NULL,
+	bg_name varchar(50) NOT NULL,
+	it_name varchar(50) NOT NULL,
+	ca_name varchar(50) NOT NULL,
+	nl_name varchar(50) NOT NULL,
+	rs_name varchar(50) NOT NULL,
+	CONSTRAINT t_country_pk PRIMARY KEY (iso)
 );
 
 
-------------------------------------------------------------
--- Table: t_type
-------------------------------------------------------------
-CREATE TABLE t_type(
-	id        INT2  NOT NULL,
-	name      VARCHAR (30) NOT NULL,
-	comment   VARCHAR (500),
-	id_parent INT2,
-	CONSTRAINT t_type_PK PRIMARY KEY (id),
-	CONSTRAINT t_type_FK FOREIGN KEY (id_parent) REFERENCES t_type(id)
-);
+-- public.t_file_format definition
 
-------------------------------------------------------------
--- Table: t_subject
-------------------------------------------------------------
-CREATE TABLE t_subject(
-	code         CHAR(5)  NOT NULL,
-	subject      VARCHAR (300) NOT NULL,
-	code_parent  CHAR(5),
-	CONSTRAINT t_subject_PK PRIMARY KEY (code),
-	CONSTRAINT t_subject_FK FOREIGN KEY (code_parent) REFERENCES t_subject(code)
+-- Drop table
+
+-- DROP TABLE public.t_file_format;
+
+CREATE TABLE public.t_file_format (
+	id smallserial NOT NULL,
+	"extension" bpchar(12) NULL,
+	"comment" varchar(250) NULL,
+	mime_type varchar(100) NULL,
+	softwares varchar(300) NULL,
+	CONSTRAINT t_file_format_pk PRIMARY KEY (id)
 );
 
 
-------------------------------------------------------------
--- Table: t_file_format
-------------------------------------------------------------
-CREATE TABLE t_file_format(
-	id serial2 not null,
-	extension      CHAR (12),
-	comment        VARCHAR (250),
-	mime_type      VARCHAR (100),
-	softwares   VARCHAR (300),
-	CONSTRAINT t_file_format_PK PRIMARY KEY (id)
+-- public.t_group definition
+
+-- Drop table
+
+-- DROP TABLE public.t_group;
+
+CREATE TABLE public.t_group (
+	id smallserial NOT NULL,
+	"name" varchar(200) NOT NULL,
+	"comments" varchar(1000) NULL,
+	CONSTRAINT t_group_pk PRIMARY KEY (id)
 );
 
 
-------------------------------------------------------------
--- Table: t_geology
-------------------------------------------------------------
-CREATE TABLE t_geology(
-	id        CHAR(10) NOT NULL ,
-	label     VARCHAR (500) NOT NULL ,
-	id_parent CHAR(10) NOT NULL ,
-	CONSTRAINT t_geology_PK PRIMARY KEY (id),
-	CONSTRAINT t_geology_FK FOREIGN KEY (id) REFERENCES t_geology(id)
+-- public.t_identifier_type definition
+
+-- Drop table
+
+-- DROP TABLE public.t_identifier_type;
+
+CREATE TABLE public.t_identifier_type (
+	code bpchar(5) NOT NULL,
+	"text" varchar(250) NOT NULL,
+	regexp varchar(250) NOT NULL,
+	CONSTRAINT t_identifier_type_pk PRIMARY KEY (code)
 );
 
 
-------------------------------------------------------------
--- Table: t_license
-------------------------------------------------------------
-CREATE TABLE t_license(
-	id		SERIAL2 NOT NULL,
-	name	VARCHAR (30) NOT NULL,
-	text	text,
-	CONSTRAINT t_license_PK PRIMARY KEY (id)
-);
+-- public.t_language definition
 
-------------------------------------------------------------
--- Table: j_license_type
-------------------------------------------------------------
-CREATE TABLE j_license_type(
-	id_license		INT2 NOT NULL,
-	id_type			INT2 NOT NULL,
-	CONSTRAINT j_license_type_PK PRIMARY KEY (id_license,id_type),
-	CONSTRAINT j_license_type_t_license_FK FOREIGN KEY (id_license) REFERENCES t_license(id),
-	CONSTRAINT j_license_type_t_type_FK FOREIGN KEY (id_type) REFERENCES t_type(id)
-);
+-- Drop table
 
-------------------------------------------------------------
--- Table: t_identifier_type
-------------------------------------------------------------
-CREATE TABLE t_identifier_type(
-	code		CHAR(5) NOT NULL,
-	text		VARCHAR (250) NOT NULL,
-	regexp		VARCHAR (250) NOT NULL,
-	CONSTRAINT t_identifier_type_PK PRIMARY KEY (code)
+-- DROP TABLE public.t_language;
+
+CREATE TABLE public.t_language (
+	id bpchar(3) NOT NULL,
+	part2b bpchar(3) NULL,
+	part2t bpchar(3) NULL,
+	part1 bpchar(2) NULL,
+	"scope" bpchar(1) NOT NULL,
+	"type" bpchar(1) NOT NULL,
+	ref_name varchar(150) NOT NULL,
+	"comment" varchar(150) NULL,
+	is_prefered bool NOT NULL DEFAULT false,
+	CONSTRAINT t_language_pk PRIMARY KEY (id)
 );
 
 
-------------------------------------------------------------
--- Table: t_region
-------------------------------------------------------------
-CREATE TABLE t_region(
-	id 				serial NOT NULL,
-	code 			varchar(20) not null,
-	is_deprecated	BOOLEAN NOT NULL DEFAULT false,
-	name varchar(300),
-	id_country CHAR(2) NOT NULL,
-	CONSTRAINT t_region_PK PRIMARY KEY (id),
-	CONSTRAINT t_region_t_country_FK FOREIGN KEY (id_country) REFERENCES t_country(iso)
+-- public.t_license definition
+
+-- Drop table
+
+-- DROP TABLE public.t_license;
+
+CREATE TABLE public.t_license (
+	id int2 NOT NULL,
+	"name" varchar(30) NOT NULL,
+	"text" text NULL,
+	is_copyrighted bool NOT NULL,
+	url varchar(100) NOT NULL,
+	CONSTRAINT t_license_pk PRIMARY KEY (id)
 );
 
 
-------------------------------------------------------------
--- Table: t_caver
-------------------------------------------------------------
-CREATE TABLE t_caver(
-	id                     serial  NOT NULL ,
-	login                  VARCHAR (20) unique ,
-	password               VARCHAR (64)  ,	
-	activated              bool not null default false ,
-	activation_code        VARCHAR (64),
-	banned                 bool not null default false  ,
-	connection_counter     INT  NOT NULL default 0,
-	relevance              INT2  NOT NULL default 0,
-	name                   VARCHAR (36)  ,
-	surname                VARCHAR (32)  ,
-	nickname               VARCHAR (68) NOT NULL ,
-	mail                   VARCHAR (50) NOT NULL ,	
-	mail_is_valid          bool not null default true ,
-	date_inscription       timestamp not null default now() ,
-	date_last_connection   timestamp   ,
-	alert_for_news         bool not null default false ,
-	show_links             bool not null default false  ,
-	detail_level           INT,
-	default_zoom           INT,
-	id_language            CHAR (3)  NOT NULL,
-	CONSTRAINT t_caver_PK PRIMARY KEY (id),
-	CONSTRAINT t_caver_t_language0_FK FOREIGN KEY (id_language) REFERENCES t_language(id)
-);
---index pour accélérer la recherche suivant le login
-CREATE INDEX t_caver_idx ON t_caver (Login);
+-- public.t_right definition
 
+-- Drop table
 
-------------------------------------------------------------
--- Table: t_group
-------------------------------------------------------------
-CREATE TABLE t_group(
-	id         serial2  NOT NULL ,
-	name       VARCHAR (200) NOT NULL ,
-	comments   VARCHAR (1000)  ,
-	CONSTRAINT t_group_PK PRIMARY KEY (id)
+-- DROP TABLE public.t_right;
+
+CREATE TABLE public.t_right (
+	id smallserial NOT NULL,
+	"name" varchar(200) NOT NULL,
+	"comments" varchar(1000) NULL,
+	CONSTRAINT t_right_pk PRIMARY KEY (id)
 );
 
 
-------------------------------------------------------------
--- Table: t_right
-------------------------------------------------------------
-CREATE TABLE t_right(
-	id         serial2  NOT NULL ,
-	name       VARCHAR (200) NOT NULL ,
-	comments   VARCHAR (1000)   ,
-	CONSTRAINT t_right_PK PRIMARY KEY (id)
+-- public.j_country_language definition
+
+-- Drop table
+
+-- DROP TABLE public.j_country_language;
+
+CREATE TABLE public.j_country_language (
+	id_country bpchar(2) NOT NULL,
+	id_language bpchar(3) NOT NULL,
+	is_official bool NOT NULL,
+	is_main bool NOT NULL DEFAULT false,
+	CONSTRAINT j_country_language_pk PRIMARY KEY (id_country, id_language),
+	CONSTRAINT j_country_language0_fk FOREIGN KEY (id_country) REFERENCES t_country(iso),
+	CONSTRAINT j_country_language1_fk FOREIGN KEY (id_language) REFERENCES t_language(id)
 );
 
 
-------------------------------------------------------------
--- Table: t_grotto
-------------------------------------------------------------
-CREATE TABLE t_grotto(
-	id                          serial  NOT NULL ,
-	id_author                   INT  NOT NULL ,
-	id_reviewer                 INT   ,
-	village                     VARCHAR (100)  ,
-	county                      VARCHAR (100)  ,
-	region                      VARCHAR (100)  ,
-	city                        VARCHAR (100)  ,
-	postal_code                 VARCHAR (5)  ,
-	address                     VARCHAR (200)  ,
-	mail                     	VARCHAR (50)  ,
-	year_birth                  int2  ,
-	date_inscription            timestamp  not null default now() ,
-	date_reviewed               timestamp   ,
-	latitude                    DECIMAL (24,20)   ,
-	longitude                   DECIMAL (24,20)   ,
-	custom_message              VARCHAR (2000)   ,
-	is_official_partner         BOOL  not null default false ,
-	url                         VARCHAR (200)  ,
-	id_country                  CHAR (2) NOT NULL ,
-	CONSTRAINT t_grotto_PK PRIMARY KEY (id),
-	CONSTRAINT t_grotto_t_country_FK FOREIGN KEY (id_country) REFERENCES t_country(iso),
-	CONSTRAINT t_grotto_t_caver4_FK FOREIGN KEY (id_author) REFERENCES t_caver(id),
-	CONSTRAINT t_grotto_t_caver5_FK FOREIGN KEY (id_reviewer) REFERENCES t_caver(id)
+-- public.j_group_right definition
+
+-- Drop table
+
+-- DROP TABLE public.j_group_right;
+
+CREATE TABLE public.j_group_right (
+	id_group int2 NOT NULL,
+	id_right int2 NOT NULL,
+	CONSTRAINT j_group_right_pk PRIMARY KEY (id_group, id_right),
+	CONSTRAINT j_group_right_t_group_fk FOREIGN KEY (id_group) REFERENCES t_group(id),
+	CONSTRAINT j_group_right_t_right0_fk FOREIGN KEY (id_right) REFERENCES t_right(id)
 );
 
 
-------------------------------------------------------------
--- Table: t_massif
-------------------------------------------------------------
-CREATE TABLE t_massif(
-	id                 serial  NOT NULL ,
-	id_author          INT  NOT NULL ,
-	id_reviewer        INT   ,
-	date_inscription   timestamp  not null default now() ,
-	date_reviewed      timestamp   ,
-	geometry_kml       VARCHAR (2000)    ,
-	CONSTRAINT t_massif_PK PRIMARY KEY (id),
-	CONSTRAINT t_massif_t_caver_FK FOREIGN KEY (id_author) REFERENCES t_caver(id),
-	CONSTRAINT t_massif_t_caver2_FK FOREIGN KEY (id_reviewer) REFERENCES t_caver(id)
+-- public.t_caver definition
+
+-- Drop table
+
+-- DROP TABLE public.t_caver;
+
+CREATE TABLE public.t_caver (
+	id serial NOT NULL,
+	login varchar(20) NULL,
+	"password" varchar(64) NULL,
+	activated bool NOT NULL DEFAULT false,
+	activation_code varchar(64) NULL,
+	banned bool NOT NULL DEFAULT false,
+	connection_counter int4 NOT NULL DEFAULT 0,
+	relevance int2 NOT NULL DEFAULT 0,
+	"name" varchar(36) NULL,
+	surname varchar(32) NULL,
+	nickname varchar(68) NOT NULL,
+	mail varchar(50) NOT NULL,
+	mail_is_valid bool NOT NULL DEFAULT true,
+	date_inscription timestamp NOT NULL DEFAULT now(),
+	date_last_connection timestamp NULL,
+	alert_for_news bool NOT NULL DEFAULT false,
+	show_links bool NOT NULL DEFAULT false,
+	detail_level int4 NULL,
+	default_zoom int4 NULL,
+	id_language bpchar(3) NOT NULL,
+	CONSTRAINT t_caver_login_key UNIQUE (login),
+	CONSTRAINT t_caver_pk PRIMARY KEY (id),
+	CONSTRAINT t_caver_t_language0_fk FOREIGN KEY (id_language) REFERENCES t_language(id)
+);
+CREATE INDEX t_caver_idx ON public.t_caver USING btree (login);
+
+
+-- public.t_crs definition
+
+-- Drop table
+
+-- DROP TABLE public.t_crs;
+
+CREATE TABLE public.t_crs (
+	id smallserial NOT NULL,
+	id_author int4 NOT NULL,
+	id_reviewer int4 NULL,
+	date_inscription timestamp NOT NULL DEFAULT now(),
+	date_reviewed timestamp NULL,
+	definition varchar(1000) NOT NULL,
+	bounds varchar(100) NULL,
+	url varchar(200) NULL,
+	enabled bool NOT NULL DEFAULT false,
+	code varchar(50) NOT NULL,
+	CONSTRAINT t_crs_code_key UNIQUE (code),
+	CONSTRAINT t_crs_pk PRIMARY KEY (id),
+	CONSTRAINT t_crs_t_caver2_fk FOREIGN KEY (id_reviewer) REFERENCES t_caver(id),
+	CONSTRAINT t_crs_t_caver_fk FOREIGN KEY (id_author) REFERENCES t_caver(id)
 );
 
 
-------------------------------------------------------------
--- Table: t_cave
-------------------------------------------------------------
-CREATE TABLE t_cave(
-	id                 serial  NOT NULL ,
-	id_author          INT  NOT NULL ,
-	id_reviewer        INT   ,
-	min_depth          int   ,
-	max_depth          int   ,
-	depth              int   ,
-	length             int   ,
-	is_diving          bool not null default false ,
-	temperature        FLOAT   ,
-	date_inscription   timestamp  not null default now() ,
-	date_reviewed      timestamp   ,
-	longitude          DECIMAL (24,20) ,
-	latitude           DECIMAL (24,20) ,
-	id_massif          INT  NOT NULL ,
-	CONSTRAINT t_cave_PK PRIMARY KEY (id),
-	CONSTRAINT t_cave_t_massif0_FK FOREIGN KEY (id_massif) REFERENCES t_massif(id),
-	CONSTRAINT t_cave_t_caver_FK FOREIGN KEY (id_author) REFERENCES t_caver(id),
-	CONSTRAINT t_cave_t_caver2_FK FOREIGN KEY (id_reviewer) REFERENCES t_caver(id)
+-- public.t_geology definition
+
+-- Drop table
+
+-- DROP TABLE public.t_geology;
+
+CREATE TABLE public.t_geology (
+	id bpchar(10) NOT NULL,
+	"label" varchar(500) NOT NULL,
+	id_parent bpchar(10) NOT NULL,
+	CONSTRAINT t_geology_pk PRIMARY KEY (id),
+	CONSTRAINT t_geology_fk FOREIGN KEY (id) REFERENCES t_geology(id)
 );
 
 
-------------------------------------------------------------
--- Table: t_entrance
-------------------------------------------------------------
-CREATE TABLE t_entrance(
-	id                  serial  NOT NULL ,
-	type                CHAR (8)  NOT NULL check(Type in ('entrance','loss','emerg','outcrop')) default 'entrance',
-	id_author           INT  NOT NULL ,
-	id_reviewer         INT   ,
-	region              VARCHAR (100)  ,
-	county              VARCHAR (100)  ,
-	village             VARCHAR (100)  ,
-	city                VARCHAR (100)  ,
-	address             VARCHAR (200)  ,
-	year_discovery      INT2   ,
-	external_url        VARCHAR (2000)   ,
-	date_inscription    timestamp  not null default now() ,
-	date_reviewed       timestamp   ,
-	is_public           bool ,
-	is_sensitive        bool not null default false ,
-	contact             VARCHAR (1000)  ,
-	modalities          VARCHAR (100) NOT NULL ,
-	has_contributions   bool not null default false ,
-	latitude            DECIMAL (24,20)  NOT NULL ,
-	longitude           DECIMAL (24,20)  NOT NULL ,
-	altitude            INT2   ,
-	is_of_interest      BOOL   ,
-	id_cave           	INT   ,
-	id_country          CHAR (2) NOT NULL  ,
-	id_geology          CHAR(10) NOT NULL default 'Q35758',
-	CONSTRAINT t_entrance_PK PRIMARY KEY (id),
-	CONSTRAINT t_entrance_t_cave_FK FOREIGN KEY (id_cave) REFERENCES t_cave(id),
-	CONSTRAINT t_entrance_t_country_FK FOREIGN KEY (id_country) REFERENCES t_country(Iso),
-	CONSTRAINT t_entrance_t_caver_FK FOREIGN KEY (id_author) REFERENCES t_caver(id),
-	CONSTRAINT t_entrance_t_caver2_FK FOREIGN KEY (id_reviewer) REFERENCES t_caver(id),
-	CONSTRAINT t_entrance_t_geology_FK FOREIGN KEY (id_geology) REFERENCES t_geology(id)
+-- public.t_grotto definition
+
+-- Drop table
+
+-- DROP TABLE public.t_grotto;
+
+CREATE TABLE public.t_grotto (
+	id serial NOT NULL,
+	id_author int4 NOT NULL,
+	id_reviewer int4 NULL,
+	village varchar(100) NULL,
+	county varchar(100) NULL,
+	region varchar(100) NULL,
+	city varchar(100) NULL,
+	postal_code varchar(5) NULL,
+	address varchar(200) NULL,
+	mail varchar(50) NULL,
+	year_birth int2 NULL,
+	date_inscription timestamp NOT NULL DEFAULT now(),
+	date_reviewed timestamp NULL,
+	latitude numeric(24,20) NULL,
+	longitude numeric(24,20) NULL,
+	custom_message varchar(2000) NULL,
+	is_official_partner bool NOT NULL DEFAULT false,
+	url varchar(200) NULL,
+	id_country bpchar(2) NULL,
+	picture_file_name varchar(100) NULL,
+	is_deleted bool NOT NULL DEFAULT false,
+	redirect_to int4 NULL,
+	CONSTRAINT t_grotto_pk PRIMARY KEY (id),
+	CONSTRAINT t_grotto_t_caver4_fk FOREIGN KEY (id_author) REFERENCES t_caver(id),
+	CONSTRAINT t_grotto_t_caver5_fk FOREIGN KEY (id_reviewer) REFERENCES t_caver(id),
+	CONSTRAINT t_grotto_t_country_fk FOREIGN KEY (id_country) REFERENCES t_country(iso),
+	CONSTRAINT t_grotto_t_grotto_fk FOREIGN KEY (redirect_to) REFERENCES t_grotto(id)
+);
+
+-- public.t_massif definition
+
+-- Drop table
+
+-- DROP TABLE public.t_massif;
+
+CREATE TABLE public.t_massif (
+	id serial NOT NULL,
+	id_author int4 NOT NULL,
+	id_reviewer int4 NULL,
+	date_inscription timestamp NOT NULL DEFAULT now(),
+	date_reviewed timestamp NULL,
+	geog_polygon geography NULL,
+	is_deleted bool NOT NULL DEFAULT false,
+	redirect_to int4 NULL,
+	CONSTRAINT t_massif_pk PRIMARY KEY (id),
+	CONSTRAINT t_massif_t_caver2_fk FOREIGN KEY (id_reviewer) REFERENCES t_caver(id),
+	CONSTRAINT t_massif_t_caver_fk FOREIGN KEY (id_author) REFERENCES t_caver(id),
+	CONSTRAINT t_massif_t_massif_fk FOREIGN KEY (redirect_to) REFERENCES t_massif(id)
+);
+
+-- public.t_region definition
+
+-- Drop table
+
+-- DROP TABLE public.t_region;
+
+CREATE TABLE public.t_region (
+	id serial NOT NULL,
+	code varchar(20) NOT NULL,
+	is_deprecated bool NOT NULL DEFAULT false,
+	"name" varchar(300) NULL,
+	id_country bpchar(2) NOT NULL,
+	CONSTRAINT t_region_pk PRIMARY KEY (id),
+	CONSTRAINT t_region_t_country_fk FOREIGN KEY (id_country) REFERENCES t_country(iso)
 );
 
 
-------------------------------------------------------------
--- Table: t_point
-------------------------------------------------------------
-CREATE TABLE t_point(
-	id                  serial  NOT NULL ,
-	type                CHAR (8)  NOT NULL check(Type in ('a','b','c')) default 'a',
-	id_author           INT  NOT NULL ,
-	id_reviewer         INT   ,
-	year_discovery      INT2   ,
-	date_inscription    timestamp  not null default now() ,
-	date_reviewed       timestamp   ,
-	rel_latitude            DECIMAL (24,20)  NOT NULL ,
-	rel_longitude           DECIMAL (24,20)  NOT NULL ,
-	rel_depth            INT2   ,
-	id_entrance           	INT   ,
-	id_geology          CHAR(10) NOT NULL default 'Q35758',
-	CONSTRAINT t_point_PK PRIMARY KEY (id),
-	CONSTRAINT t_point_t_entrance_FK FOREIGN KEY (id_entrance) REFERENCES t_entrance(id),
-	CONSTRAINT t_point_t_caver_FK FOREIGN KEY (id_author) REFERENCES t_caver(id),
-	CONSTRAINT t_point_t_caver2_FK FOREIGN KEY (id_reviewer) REFERENCES t_caver(id),
-	CONSTRAINT t_point_t_geology_FK FOREIGN KEY (id_geology) REFERENCES t_geology(id)
+-- public.t_subject definition
+
+-- Drop table
+
+-- DROP TABLE public.t_subject;
+
+CREATE TABLE public.t_subject (
+	code bpchar(5) NOT NULL,
+	subject varchar(300) NOT NULL,
+	code_parent bpchar(5) NULL,
+	CONSTRAINT t_subject_pk PRIMARY KEY (code),
+	CONSTRAINT t_subject_fk FOREIGN KEY (code_parent) REFERENCES t_subject(code)
 );
 
 
-------------------------------------------------------------
--- Table: t_junction
-------------------------------------------------------------
-CREATE TABLE t_junction(
-	id_cave_main	INT NOT NULL,
-	id_cave_add		INT NOT NULL,
-	id_point		INT NOT NULL,
-	CONSTRAINT t_junction_PK PRIMARY KEY (id_cave_main,id_cave_add,id_point),
-	CONSTRAINT t_junction_t_cave_FK FOREIGN KEY (id_cave_main) REFERENCES t_cave(id),
-	CONSTRAINT t_junction_t_cave2_FK FOREIGN KEY (id_cave_add) REFERENCES t_cave(id),	
-	CONSTRAINT t_junction_t_point_FK FOREIGN KEY (id_point) REFERENCES t_point(id)
+-- public.t_type definition
+
+-- Drop table
+
+-- DROP TABLE public.t_type;
+
+CREATE TABLE public.t_type (
+	id int2 NOT NULL,
+	"name" varchar(30) NOT NULL,
+	"comment" varchar(500) NULL,
+	id_parent int2 NULL,
+	CONSTRAINT t_type_pk PRIMARY KEY (id),
+	CONSTRAINT t_type_fk FOREIGN KEY (id_parent) REFERENCES t_type(id)
 );
 
 
-------------------------------------------------------------
--- Table: t_document
-------------------------------------------------------------
-CREATE TABLE t_document(
-	id                 SERIAL NOT NULL,
-	id_author          INT NOT NULL,
-	id_reviewer        INT,
-	id_validator       INT,
-	date_inscription   timestamp  not null default now(),
-	date_validation    timestamp,
-	date_publication   date,
-    is_validated       boolean not null default false,
-    validation_comment varchar(300),    
-	pages        	   VARCHAR(100),
-	identifier		   VARCHAR (250),
-    id_identifier_type CHAR(5),
-	ref_bbs			   CHAR(10),
-	id_entrance		   INT,
-	id_massif		   INT,
-	id_cave            INT,
-	id_author_caver    INT,
-	id_author_grotto   INT,
-	id_editor		   INT,
-	id_library		   INT,
-	id_type			   INT2 NOT NULL,
-	id_parent		   INT,
-	id_license		   INT2 NOT NULL DEFAULT 1,
-	CONSTRAINT t_document_PK PRIMARY KEY (id),
-	CONSTRAINT t_document_t_entrance_FK FOREIGN KEY (id_entrance) REFERENCES t_entrance(id),
-	CONSTRAINT t_document_t_massif_FK FOREIGN KEY (id_massif) REFERENCES t_massif(id),
-	CONSTRAINT t_document_t_cave_FK FOREIGN KEY (id_cave) REFERENCES t_cave(id),
-	CONSTRAINT t_document_t_caver4_FK FOREIGN KEY (id_author_caver) REFERENCES t_caver(id),
-	CONSTRAINT t_document_t_grotto_FK FOREIGN KEY (id_author_grotto) REFERENCES t_grotto(id),
-	CONSTRAINT t_document_t_grotto2_FK FOREIGN KEY (id_editor) REFERENCES t_grotto(id),
-	CONSTRAINT t_document_t_grotto3_FK FOREIGN KEY (id_library) REFERENCES t_grotto(id),
-	CONSTRAINT t_document_t_type_FK FOREIGN KEY (id_type) REFERENCES t_type(id),
-	CONSTRAINT t_document_t_document_FK FOREIGN KEY (id_parent) REFERENCES t_document(id),
-	CONSTRAINT t_document_t_identifier_type_FK FOREIGN KEY (id_identifier_type) REFERENCES t_identifier_type(code),
-	CONSTRAINT t_document_t_license_FK FOREIGN KEY (id_license) REFERENCES t_license(id),
-	CONSTRAINT t_document_t_caver_FK FOREIGN KEY (id_author) REFERENCES t_caver(id),
-	CONSTRAINT t_document_t_caver2_FK FOREIGN KEY (id_reviewer) REFERENCES t_caver(id),
-	CONSTRAINT t_document_t_caver3_FK FOREIGN KEY (id_validator) REFERENCES t_caver(id)
+-- public.h_grotto definition
+
+-- Drop table
+
+-- DROP TABLE public.h_grotto;
+
+CREATE TABLE public.h_grotto (
+	id serial NOT NULL,
+	id_author int4 NOT NULL,
+	id_reviewer int4 NULL,
+	village varchar(100) NULL,
+	county varchar(100) NULL,
+	region varchar(100) NULL,
+	city varchar(100) NULL,
+	postal_code varchar(5) NULL,
+	address varchar(200) NULL,
+	mail varchar(50) NULL,
+	year_birth int2 NULL,
+	date_inscription timestamp NOT NULL DEFAULT now(),
+	date_reviewed timestamp NOT NULL,
+	latitude numeric(24,20) NULL,
+	longitude numeric(24,20) NULL,
+	custom_message varchar(2000) NULL,
+	is_official_partner bool NOT NULL DEFAULT false,
+	url varchar(200) NULL,
+	id_country bpchar(2) NULL,
+	picture_file_name varchar(100) NULL,
+	CONSTRAINT h_grotto_pk PRIMARY KEY (id, date_reviewed),
+	CONSTRAINT h_grotto_t_caver4_fk FOREIGN KEY (id_author) REFERENCES t_caver(id),
+	CONSTRAINT h_grotto_t_caver5_fk FOREIGN KEY (id_reviewer) REFERENCES t_caver(id),
+	CONSTRAINT h_grotto_t_country_fk FOREIGN KEY (id_country) REFERENCES t_country(iso),
+	CONSTRAINT h_grotto_t_grotto FOREIGN KEY (id) REFERENCES t_grotto(id)
 );
 
 
-------------------------------------------------------------
--- Table: j_document_subject
-------------------------------------------------------------
-CREATE TABLE j_document_subject(
-	id_document		INT NOT NULL,
-	code_subject	CHAR(5) NOT NULL,
-	CONSTRAINT j_document_subject_PK PRIMARY KEY (id_document,code_subject),
-	CONSTRAINT j_document_subject_t_document_FK FOREIGN KEY (id_document) REFERENCES t_document(id),
-	CONSTRAINT j_document_subject_t_subject_FK FOREIGN KEY (code_subject) REFERENCES t_subject(code)
+-- public.h_massif definition
+
+-- Drop table
+
+-- DROP TABLE public.h_massif;
+
+CREATE TABLE public.h_massif (
+	id serial NOT NULL,
+	id_author int4 NOT NULL,
+	id_reviewer int4 NULL,
+	date_inscription timestamp NOT NULL DEFAULT now(),
+	date_reviewed timestamp NOT NULL,
+	geometry_kml varchar(2000) NULL,
+	geog_polygon geography NULL,
+	CONSTRAINT h_massif_pk PRIMARY KEY (id, date_reviewed),
+	CONSTRAINT h_massif_t_caver2_fk FOREIGN KEY (id_reviewer) REFERENCES t_caver(id),
+	CONSTRAINT h_massif_t_caver_fk FOREIGN KEY (id_author) REFERENCES t_caver(id),
+	CONSTRAINT h_massif_t_massif FOREIGN KEY (id) REFERENCES t_massif(id)
 );
 
 
-------------------------------------------------------------
--- Table: j_document_language
-------------------------------------------------------------
-CREATE TABLE j_document_language(
-	id_document		INT NOT NULL,
-	id_language		CHAR(3) NOT NULL,
-	is_main			BOOLEAN NOT NULL DEFAULT FALSE,
-	CONSTRAINT j_document_language_PK PRIMARY KEY (id_document,id_language),
-	CONSTRAINT j_document_language_t_document_FK FOREIGN KEY (id_document) REFERENCES t_document(id),
-	CONSTRAINT j_document_language_t_language_FK FOREIGN KEY (id_language) REFERENCES t_language(id)
+-- public.j_caver_group definition
+
+-- Drop table
+
+-- DROP TABLE public.j_caver_group;
+
+CREATE TABLE public.j_caver_group (
+	id_caver int4 NOT NULL,
+	id_group int2 NOT NULL,
+	CONSTRAINT j_caver_group_pk PRIMARY KEY (id_caver, id_group),
+	CONSTRAINT j_caver_group_t_caver_fk FOREIGN KEY (id_caver) REFERENCES t_caver(id),
+	CONSTRAINT j_caver_group_t_group0_fk FOREIGN KEY (id_group) REFERENCES t_group(id)
 );
 
 
-------------------------------------------------------------
--- Table: j_document_region
-------------------------------------------------------------
-CREATE TABLE j_document_region(
-	id_document		INT NOT NULL,
-	id_region		INT NOT NULL,
-	CONSTRAINT j_document_region_PK PRIMARY KEY (id_document,id_region),
-	CONSTRAINT j_document_region_t_document_FK FOREIGN KEY (id_document) REFERENCES t_document(id),
-	CONSTRAINT j_document_region_t_region_FK FOREIGN KEY (id_region) REFERENCES t_region(id)
+-- public.j_country_crs definition
+
+-- Drop table
+
+-- DROP TABLE public.j_country_crs;
+
+CREATE TABLE public.j_country_crs (
+	id_crs int2 NOT NULL,
+	id_country bpchar(2) NOT NULL,
+	CONSTRAINT j_country_crs_pk PRIMARY KEY (id_crs, id_country),
+	CONSTRAINT j_country_crs_t_country0_fk FOREIGN KEY (id_country) REFERENCES t_country(iso),
+	CONSTRAINT j_country_crs_t_crs_fk FOREIGN KEY (id_crs) REFERENCES t_crs(id)
 );
 
 
-------------------------------------------------------------
--- Table: j_document_caver_author
-------------------------------------------------------------
-CREATE TABLE j_document_caver_author(
-	id_document		INT NOT NULL,
-	id_caver		INT NOT NULL,
-	CONSTRAINT j_document_caver_author_PK PRIMARY KEY (id_document,id_caver),
-	CONSTRAINT j_document_caver_author_t_document_FK FOREIGN KEY (id_document) REFERENCES t_document(id),
-	CONSTRAINT j_document_caver_author_t_caver_FK FOREIGN KEY (id_caver) REFERENCES t_caver(id)
+-- public.j_grotto_caver definition
+
+-- Drop table
+
+-- DROP TABLE public.j_grotto_caver;
+
+CREATE TABLE public.j_grotto_caver (
+	id_caver int4 NOT NULL,
+	id_grotto int4 NOT NULL,
+	CONSTRAINT j_grotto_caver_pk PRIMARY KEY (id_caver, id_grotto),
+	CONSTRAINT j_grotto_caver_t_caver_fk FOREIGN KEY (id_caver) REFERENCES t_caver(id),
+	CONSTRAINT j_grotto_caver_t_grotto0_fk FOREIGN KEY (id_grotto) REFERENCES t_grotto(id)
 );
 
 
------------------------------------------------------------
--- Table: j_document_grotto_author
-------------------------------------------------------------
-CREATE TABLE j_document_grotto_author(
-	id_document		INT NOT NULL,
-	id_grotto		INT NOT NULL,
-	CONSTRAINT j_document_grotto_author_PK PRIMARY KEY (id_document,id_grotto),
-	CONSTRAINT j_document_grotto_author_t_document_FK FOREIGN KEY (id_document) REFERENCES t_document(id),
-	CONSTRAINT j_document_grotto_author_t_caver_FK FOREIGN KEY (id_grotto) REFERENCES t_grotto(id)
+-- public.j_license_type definition
+
+-- Drop table
+
+-- DROP TABLE public.j_license_type;
+
+CREATE TABLE public.j_license_type (
+	id_license int2 NOT NULL,
+	id_type int2 NOT NULL,
+	CONSTRAINT j_license_type_pk PRIMARY KEY (id_license, id_type),
+	CONSTRAINT j_license_type_t_license_fk FOREIGN KEY (id_license) REFERENCES t_license(id),
+	CONSTRAINT j_license_type_t_type_fk FOREIGN KEY (id_type) REFERENCES t_type(id)
 );
 
 
-------------------------------------------------------------
--- Table: t_history
-------------------------------------------------------------
-CREATE TABLE t_history(
-	id                 serial  NOT NULL ,
-	id_author          INT  NOT NULL ,
-	id_reviewer        INT   ,
-	date_inscription   timestamp not null default now()  ,
-	date_reviewed      timestamp   ,
-	relevance          INT2  NOT NULL ,
-	body               text  NOT NULL ,
-	id_cave          INT,
-	id_entrance		 INT,
-	id_point       INT,
-	id_language      CHAR (3)  NOT NULL ,
-	CONSTRAINT t_history_PK PRIMARY KEY (id),
-	CONSTRAINT t_history_t_cave_FK FOREIGN KEY (id_cave) REFERENCES t_cave(id),
-	CONSTRAINT t_history_t_entrance_FK FOREIGN KEY (id_entrance) REFERENCES t_entrance(id),
-	CONSTRAINT t_history_t_point_FK FOREIGN KEY (id_point) REFERENCES t_point(id),
-	CONSTRAINT t_history_t_language0_FK FOREIGN KEY (id_language) REFERENCES t_language(id),
-	CONSTRAINT t_history_t_caver_FK FOREIGN KEY (id_author) REFERENCES t_caver(id),
-	CONSTRAINT t_history_t_caver2_FK FOREIGN KEY (id_reviewer) REFERENCES t_caver(id)
+-- public.t_cave definition
+
+-- Drop table
+
+-- DROP TABLE public.t_cave;
+
+CREATE TABLE public.t_cave (
+	id serial NOT NULL,
+	id_author int4 NOT NULL,
+	id_reviewer int4 NULL,
+	min_depth int4 NULL,
+	max_depth int4 NULL,
+	"depth" int4 NULL,
+	length int4 NULL,
+	is_diving bool NOT NULL DEFAULT false,
+	temperature float8 NULL,
+	size_coef int2 NOT NULL DEFAULT 0,
+	date_inscription timestamp NOT NULL DEFAULT now(),
+	date_reviewed timestamp NULL,
+	longitude numeric(24,20) NULL,
+	latitude numeric(24,20) NULL,
+	id_massif int4 NOT NULL,
+	is_deleted bool NOT NULL DEFAULT false,
+	redirect_to int4 NULL,
+	CONSTRAINT t_cave_pk PRIMARY KEY (id),
+	CONSTRAINT t_cave_t_cave_fk FOREIGN KEY (redirect_to) REFERENCES t_cave(id),
+	CONSTRAINT t_cave_t_caver2_fk FOREIGN KEY (id_reviewer) REFERENCES t_caver(id),
+	CONSTRAINT t_cave_t_caver_fk FOREIGN KEY (id_author) REFERENCES t_caver(id),
+	CONSTRAINT t_cave_t_massif0_fk FOREIGN KEY (id_massif) REFERENCES t_massif(id)
 );
 
 
-------------------------------------------------------------
--- Table: t_location
-------------------------------------------------------------
-CREATE TABLE t_location(
-	id                 serial  NOT NULL ,
-	id_author          INT  NOT NULL ,
-	id_reviewer        INT   ,
-	date_inscription   timestamp not null default now()  ,
-	date_reviewed      timestamp   ,
-	relevance          INT2  NOT NULL ,
-	body               text  NOT NULL ,
-	id_entrance         INT  NOT NULL ,
-	id_language      CHAR (3)  NOT NULL  ,
-	CONSTRAINT t_location_PK PRIMARY KEY (id),
-	CONSTRAINT t_location_t_entrance_FK FOREIGN KEY (id_entrance) REFERENCES t_entrance(id),
-	CONSTRAINT t_location_t_language0_FK FOREIGN KEY (id_language) REFERENCES t_language(id),
-	CONSTRAINT t_location_t_caver_FK FOREIGN KEY (id_author) REFERENCES t_caver(id),
-	CONSTRAINT t_location_t_caver2_FK FOREIGN KEY (id_reviewer) REFERENCES t_caver(id)
+-- public.t_entrance definition
+
+-- Drop table
+
+-- DROP TABLE public.t_entrance;
+
+CREATE TABLE public.t_entrance (
+	id serial NOT NULL,
+	"type" bpchar(8) NOT NULL DEFAULT 'entrance'::bpchar,
+	id_author int4 NOT NULL,
+	id_reviewer int4 NULL,
+	region varchar(100) NULL,
+	county varchar(100) NULL,
+	village varchar(100) NULL,
+	city varchar(100) NULL,
+	address varchar(200) NULL,
+	year_discovery int2 NULL,
+	external_url varchar(2000) NULL,
+	date_inscription timestamp NOT NULL DEFAULT now(),
+	date_reviewed timestamp NULL,
+	is_public bool NULL,
+	is_sensitive bool NOT NULL DEFAULT false,
+	contact varchar(1000) NULL,
+	modalities varchar(100) NOT NULL,
+	has_contributions bool NOT NULL DEFAULT false,
+	latitude numeric(24,20) NOT NULL,
+	longitude numeric(24,20) NOT NULL,
+	altitude int2 NULL,
+	is_of_interest bool NULL,
+	id_cave int4 NULL,
+	id_country bpchar(2) NOT NULL,
+	id_geology bpchar(10) NOT NULL DEFAULT 'Q35758'::bpchar,
+	is_deleted bool NOT NULL DEFAULT false,
+	redirect_to int4 NULL,
+	CONSTRAINT t_entrance_pk PRIMARY KEY (id),
+	CONSTRAINT t_entrance_type_check CHECK ((type = ANY (ARRAY['entrance'::bpchar, 'loss'::bpchar, 'emerg'::bpchar, 'outcrop'::bpchar]))),
+	CONSTRAINT t_entrance_t_cave_fk FOREIGN KEY (id_cave) REFERENCES t_cave(id),
+	CONSTRAINT t_entrance_t_caver2_fk FOREIGN KEY (id_reviewer) REFERENCES t_caver(id),
+	CONSTRAINT t_entrance_t_caver_fk FOREIGN KEY (id_author) REFERENCES t_caver(id),
+	CONSTRAINT t_entrance_t_country_fk FOREIGN KEY (id_country) REFERENCES t_country(iso),
+	CONSTRAINT t_entrance_t_entrance_fk FOREIGN KEY (redirect_to) REFERENCES t_entrance(id),
+	CONSTRAINT t_entrance_t_geology_fk FOREIGN KEY (id_geology) REFERENCES t_geology(id)
+);
+
+-- public.t_location definition
+
+-- Drop table
+
+-- DROP TABLE public.t_location;
+
+CREATE TABLE public.t_location (
+	id serial NOT NULL,
+	id_author int4 NOT NULL,
+	id_reviewer int4 NULL,
+	date_inscription timestamp NOT NULL DEFAULT now(),
+	date_reviewed timestamp NULL,
+	relevance int2 NOT NULL,
+	body text NOT NULL,
+	id_entrance int4 NOT NULL,
+	id_language bpchar(3) NOT NULL,
+	is_deleted bool NOT NULL DEFAULT false,
+	CONSTRAINT t_location_pk PRIMARY KEY (id),
+	CONSTRAINT t_location_t_caver2_fk FOREIGN KEY (id_reviewer) REFERENCES t_caver(id),
+	CONSTRAINT t_location_t_caver_fk FOREIGN KEY (id_author) REFERENCES t_caver(id),
+	CONSTRAINT t_location_t_entrance_fk FOREIGN KEY (id_entrance) REFERENCES t_entrance(id),
+	CONSTRAINT t_location_t_language0_fk FOREIGN KEY (id_language) REFERENCES t_language(id)
+);
+
+-- public.t_point definition
+
+-- Drop table
+
+-- DROP TABLE public.t_point;
+
+CREATE TABLE public.t_point (
+	id serial NOT NULL,
+	"type" bpchar(8) NOT NULL DEFAULT 'a'::bpchar,
+	id_author int4 NOT NULL,
+	id_reviewer int4 NULL,
+	year_discovery int2 NULL,
+	date_inscription timestamp NOT NULL DEFAULT now(),
+	date_reviewed timestamp NULL,
+	rel_latitude numeric(24,20) NOT NULL,
+	rel_longitude numeric(24,20) NOT NULL,
+	rel_depth int2 NULL,
+	id_entrance int4 NULL,
+	id_geology bpchar(10) NOT NULL DEFAULT 'Q35758'::bpchar,
+	CONSTRAINT t_point_pk PRIMARY KEY (id),
+	CONSTRAINT t_point_type_check CHECK ((type = ANY (ARRAY['a'::bpchar, 'b'::bpchar, 'c'::bpchar]))),
+	CONSTRAINT t_point_t_caver2_fk FOREIGN KEY (id_reviewer) REFERENCES t_caver(id),
+	CONSTRAINT t_point_t_caver_fk FOREIGN KEY (id_author) REFERENCES t_caver(id),
+	CONSTRAINT t_point_t_entrance_fk FOREIGN KEY (id_entrance) REFERENCES t_entrance(id),
+	CONSTRAINT t_point_t_geology_fk FOREIGN KEY (id_geology) REFERENCES t_geology(id)
 );
 
 
-------------------------------------------------------------
--- Table: t_name
-------------------------------------------------------------
-CREATE TABLE t_name(
-	id                 SERIAL NOT NULL ,
-	Name               VARCHAR (100)  ,
-	is_main            BOOL  NOT NULL DEFAULT FALSE,
-	id_author          int NOT NULL ,
-	id_reviewer        int  ,
-	date_inscription   timestamp  NOT NULL default now() ,
-	date_reviewed      timestamp   ,
-	id_language        CHAR(3) NOT NULL,
-	id_entrance        INT,
-	id_cave            INT,
-	id_massif		   INT,
-	id_point		   INT,
-	id_grotto          INT,
-	CONSTRAINT t_name_PK PRIMARY KEY (id),
-	CONSTRAINT t_name_t_entrance_FK FOREIGN KEY (id_entrance) REFERENCES t_entrance(id),
-	CONSTRAINT t_name_t_language_FK FOREIGN KEY (id_language) REFERENCES t_language(id),
-	CONSTRAINT t_name_t_cave0_FK FOREIGN KEY (id_cave) REFERENCES t_cave(id),
-	CONSTRAINT t_name_t_point_FK FOREIGN KEY (id_point) REFERENCES t_point(id),
-	CONSTRAINT t_name_t_massif0_FK FOREIGN KEY (id_massif) REFERENCES t_massif(id),
-	CONSTRAINT t_name_t_grotto0_FK FOREIGN KEY (id_grotto) REFERENCES t_grotto(id),
-	CONSTRAINT t_name_t_caver2_FK FOREIGN KEY (id_reviewer) REFERENCES t_caver(id)
+-- public.t_rigging definition
+
+-- Drop table
+
+-- DROP TABLE public.t_rigging;
+
+CREATE TABLE public.t_rigging (
+	id serial NOT NULL,
+	id_author int4 NOT NULL,
+	id_reviewer int4 NULL,
+	date_inscription timestamp NOT NULL DEFAULT now(),
+	date_reviewed timestamp NULL,
+	relevance int2 NOT NULL,
+	title varchar(300) NOT NULL,
+	obstacles varchar(2000) NULL,
+	ropes varchar(2000) NULL,
+	anchors varchar(2000) NULL,
+	observations varchar(2000) NULL,
+	id_entrance int4 NULL,
+	id_exit int4 NULL,
+	id_point int4 NULL,
+	id_language bpchar(3) NOT NULL,
+	is_deleted bool NOT NULL DEFAULT false,
+	CONSTRAINT t_rigging_pk PRIMARY KEY (id),
+	CONSTRAINT t_rigging_t_caver2_fk FOREIGN KEY (id_reviewer) REFERENCES t_caver(id),
+	CONSTRAINT t_rigging_t_caver_fk FOREIGN KEY (id_author) REFERENCES t_caver(id),
+	CONSTRAINT t_rigging_t_entrance1_fk FOREIGN KEY (id_exit) REFERENCES t_entrance(id),
+	CONSTRAINT t_rigging_t_entrance_fk FOREIGN KEY (id_entrance) REFERENCES t_entrance(id),
+	CONSTRAINT t_rigging_t_language0_fk FOREIGN KEY (id_language) REFERENCES t_language(id),
+	CONSTRAINT t_rigging_t_point_fk FOREIGN KEY (id_point) REFERENCES t_point(id)
+);
+
+-- public.h_cave definition
+
+-- Drop table
+
+-- DROP TABLE public.h_cave;
+
+CREATE TABLE public.h_cave (
+	id serial NOT NULL,
+	id_author int4 NOT NULL,
+	id_reviewer int4 NULL,
+	min_depth int4 NULL,
+	max_depth int4 NULL,
+	"depth" int4 NULL,
+	length int4 NULL,
+	is_diving bool NOT NULL DEFAULT false,
+	temperature float8 NULL,
+	size_coef int2 NOT NULL DEFAULT 0,
+	date_inscription timestamp NOT NULL DEFAULT now(),
+	date_reviewed timestamp NOT NULL,
+	longitude numeric(24,20) NULL,
+	latitude numeric(24,20) NULL,
+	id_massif int4 NOT NULL,
+	CONSTRAINT h_cave_pk PRIMARY KEY (id, date_reviewed),
+	CONSTRAINT h_cave_t_cave FOREIGN KEY (id) REFERENCES t_cave(id),
+	CONSTRAINT h_cave_t_caver2_fk FOREIGN KEY (id_reviewer) REFERENCES t_caver(id),
+	CONSTRAINT h_cave_t_caver_fk FOREIGN KEY (id_author) REFERENCES t_caver(id),
+	CONSTRAINT h_cave_t_massif0_fk FOREIGN KEY (id_massif) REFERENCES t_massif(id)
 );
 
 
-------------------------------------------------------------
--- Table: t_comment
-------------------------------------------------------------
-CREATE TABLE t_comment(
-	id                   serial  NOT NULL ,
-	id_author            INT  NOT NULL ,
-	id_reviewer          INT   ,
-	date_inscription     timestamp  not null default now() ,
-	date_reviewed        timestamp   ,
-	relevance            INT2  NOT NULL ,
-	e_t_underground      interval   ,
-	e_t_trail            interval   ,
-	aestheticism         float  ,
-	caving               FLOAT   ,
-	approach             FLOAT   ,
-	title                VARCHAR (300) NOT NULL ,
-	body                 text  NOT NULL ,
-	alert                bool not null default false ,
-	id_cave              INT   ,
-	id_entrance          INT   ,
-	id_exit              INT,
-	id_language          CHAR (3)  NOT NULL,
-	CONSTRAINT t_comment_PK PRIMARY KEY (id),
-	CONSTRAINT t_comment_t_cave_FK FOREIGN KEY (id_cave) REFERENCES t_cave(id),
-	CONSTRAINT t_comment_t_language0_FK FOREIGN KEY (id_language) REFERENCES t_language(id),
-	CONSTRAINT t_comment_t_entrance1_FK FOREIGN KEY (id_entrance) REFERENCES t_entrance(id),
-	CONSTRAINT t_comment_t_entrance2_FK FOREIGN KEY (id_exit) REFERENCES t_entrance(id),
-	CONSTRAINT t_comment_t_caver_FK FOREIGN KEY (id_author) REFERENCES t_caver(id),
-	CONSTRAINT t_comment_t_caver2_FK FOREIGN KEY (id_reviewer) REFERENCES t_caver(id)
+-- public.h_entrance definition
+
+-- Drop table
+
+-- DROP TABLE public.h_entrance;
+
+CREATE TABLE public.h_entrance (
+	id serial NOT NULL,
+	"type" bpchar(8) NOT NULL DEFAULT 'entrance'::bpchar,
+	id_author int4 NOT NULL,
+	id_reviewer int4 NULL,
+	region varchar(100) NULL,
+	county varchar(100) NULL,
+	village varchar(100) NULL,
+	city varchar(100) NULL,
+	address varchar(200) NULL,
+	year_discovery int2 NULL,
+	external_url varchar(2000) NULL,
+	date_inscription timestamp NOT NULL DEFAULT now(),
+	date_reviewed timestamp NOT NULL,
+	is_public bool NULL,
+	is_sensitive bool NOT NULL DEFAULT false,
+	contact varchar(1000) NULL,
+	modalities varchar(100) NOT NULL,
+	has_contributions bool NOT NULL DEFAULT false,
+	latitude numeric(24,20) NOT NULL,
+	longitude numeric(24,20) NOT NULL,
+	altitude int2 NULL,
+	is_of_interest bool NULL,
+	id_cave int4 NULL,
+	id_country bpchar(2) NOT NULL,
+	id_geology bpchar(10) NOT NULL DEFAULT 'Q35758'::bpchar,
+	CONSTRAINT h_entrance_pk PRIMARY KEY (id, date_reviewed),
+	CONSTRAINT h_entrance_t_cave_fk FOREIGN KEY (id_cave) REFERENCES t_cave(id),
+	CONSTRAINT h_entrance_t_caver2_fk FOREIGN KEY (id_reviewer) REFERENCES t_caver(id),
+	CONSTRAINT h_entrance_t_caver_fk FOREIGN KEY (id_author) REFERENCES t_caver(id),
+	CONSTRAINT h_entrance_t_country_fk FOREIGN KEY (id_country) REFERENCES t_country(iso),
+	CONSTRAINT h_entrance_t_entrance FOREIGN KEY (id) REFERENCES t_entrance(id),
+	CONSTRAINT h_entrance_t_geology_fk FOREIGN KEY (id_geology) REFERENCES t_geology(id)
 );
 
 
-------------------------------------------------------------
--- Table: t_description
-------------------------------------------------------------
-CREATE TABLE t_description(
-	id                   serial  NOT NULL,
-	id_author            INT  NOT NULL,
-	id_reviewer          INT,
-	date_inscription     timestamp  not null default now(),
-	date_reviewed        timestamp,
-	relevance            INT2  NOT NULL default 0,
-	title                VARCHAR (300) NOT NULL,
-	body                 text  ,
-	id_cave              INT,
-	id_entrance          INT,
-	id_exit              INT,
-	id_massif            INT,
-	id_point             INT,
-	id_document			 INT,
-	id_language          CHAR (3)  NOT NULL ,
-	CONSTRAINT t_description_PK PRIMARY KEY (id),
-	CONSTRAINT t_description_t_cave_FK FOREIGN KEY (id_cave) REFERENCES t_cave(id),
-	CONSTRAINT t_description_t_language0_FK FOREIGN KEY (id_language) REFERENCES t_language(id),
-	CONSTRAINT t_description_t_entrance1_FK FOREIGN KEY (id_entrance) REFERENCES t_entrance(id),
-	CONSTRAINT t_description_t_entrance2_FK FOREIGN KEY (id_exit) REFERENCES t_entrance(id),
-	CONSTRAINT t_description_t_massif3_FK FOREIGN KEY (id_massif) REFERENCES t_massif(id),
-	CONSTRAINT t_description_t_point_FK FOREIGN KEY (id_point) REFERENCES t_point(id),
-	CONSTRAINT t_description_t_document_FK FOREIGN KEY (id_document) REFERENCES t_document(id),
-	CONSTRAINT t_description_t_caver_FK FOREIGN KEY (id_author) REFERENCES t_caver(id),
-	CONSTRAINT t_description_t_caver2_FK FOREIGN KEY (id_reviewer) REFERENCES t_caver(id)
+-- public.h_location definition
+
+-- Drop table
+
+-- DROP TABLE public.h_location;
+
+CREATE TABLE public.h_location (
+	id serial NOT NULL,
+	id_author int4 NOT NULL,
+	id_reviewer int4 NULL,
+	date_inscription timestamp NOT NULL DEFAULT now(),
+	date_reviewed timestamp NOT NULL,
+	relevance int2 NOT NULL,
+	body text NOT NULL,
+	id_entrance int4 NOT NULL,
+	id_language bpchar(3) NOT NULL,
+	CONSTRAINT h_location_pk PRIMARY KEY (id, date_reviewed),
+	CONSTRAINT h_location_t_caver2_fk FOREIGN KEY (id_reviewer) REFERENCES t_caver(id),
+	CONSTRAINT h_location_t_caver_fk FOREIGN KEY (id_author) REFERENCES t_caver(id),
+	CONSTRAINT h_location_t_entrance_fk FOREIGN KEY (id_entrance) REFERENCES t_entrance(id),
+	CONSTRAINT h_location_t_language0_fk FOREIGN KEY (id_language) REFERENCES t_language(id),
+	CONSTRAINT h_location_t_location FOREIGN KEY (id) REFERENCES t_location(id)
 );
 
 
-------------------------------------------------------------
--- Table: t_rigging
-------------------------------------------------------------
-CREATE TABLE t_rigging(
-	id                   serial  NOT NULL ,
-	id_author            INT  NOT NULL ,
-	id_reviewer          INT   ,
-	date_inscription     timestamp not null default now()  ,
-	date_reviewed        timestamp   ,
-	relevance            INT2  NOT NULL ,
-	title                VARCHAR (300) NOT NULL ,
-	obstacles            VARCHAR (2000)   ,
-	ropes                VARCHAR (2000)   ,
-	anchors              VARCHAR (2000)   ,
-	observations         VARCHAR (2000)   ,
-	id_entrance          INT   ,
-	id_exit              INT   ,
-	id_point             INT   ,
-	id_language        CHAR (3)  NOT NULL ,
-	CONSTRAINT t_rigging_PK PRIMARY KEY (id),
-	CONSTRAINT t_rigging_t_entrance_FK FOREIGN KEY (id_entrance) REFERENCES t_entrance(id),
-	CONSTRAINT t_rigging_t_entrance1_FK FOREIGN KEY (id_exit) REFERENCES t_entrance(id),
-	CONSTRAINT t_rigging_t_point_FK FOREIGN KEY (id_point) REFERENCES t_point(id),
-	CONSTRAINT t_rigging_t_language0_FK FOREIGN KEY (id_language) REFERENCES t_language(id),
-	CONSTRAINT t_rigging_t_caver_FK FOREIGN KEY (id_author) REFERENCES t_caver(id),
-	CONSTRAINT t_rigging_t_caver2_FK FOREIGN KEY (id_reviewer) REFERENCES t_caver(id)
+-- public.h_rigging definition
+
+-- Drop table
+
+-- DROP TABLE public.h_rigging;
+
+CREATE TABLE public.h_rigging (
+	id serial NOT NULL,
+	id_author int4 NOT NULL,
+	id_reviewer int4 NULL,
+	date_inscription timestamp NOT NULL DEFAULT now(),
+	date_reviewed timestamp NOT NULL,
+	relevance int2 NOT NULL,
+	title varchar(300) NOT NULL,
+	obstacles varchar(2000) NULL,
+	ropes varchar(2000) NULL,
+	anchors varchar(2000) NULL,
+	observations varchar(2000) NULL,
+	id_entrance int4 NULL,
+	id_exit int4 NULL,
+	id_point int4 NULL,
+	id_language bpchar(3) NOT NULL,
+	CONSTRAINT h_rigging_pk PRIMARY KEY (id, date_reviewed),
+	CONSTRAINT h_rigging_t_caver2_fk FOREIGN KEY (id_reviewer) REFERENCES t_caver(id),
+	CONSTRAINT h_rigging_t_caver_fk FOREIGN KEY (id_author) REFERENCES t_caver(id),
+	CONSTRAINT h_rigging_t_entrance1_fk FOREIGN KEY (id_exit) REFERENCES t_entrance(id),
+	CONSTRAINT h_rigging_t_entrance_fk FOREIGN KEY (id_entrance) REFERENCES t_entrance(id),
+	CONSTRAINT h_rigging_t_language0_fk FOREIGN KEY (id_language) REFERENCES t_language(id),
+	CONSTRAINT h_rigging_t_point_fk FOREIGN KEY (id_point) REFERENCES t_point(id),
+	CONSTRAINT h_rigging_t_rigging FOREIGN KEY (id) REFERENCES t_rigging(id)
 );
 
 
-------------------------------------------------------------
--- Table: t_file
-------------------------------------------------------------
-CREATE TABLE t_file(
-	id                   SERIAL NOT NULL ,
-	date_inscription     timestamp  not null default now()  ,
-	date_reviewed        timestamp   ,
-	filename             varchar(200) NOT NULL,
-	id_file_format       INT  NOT NULL ,
-	id_document          INT  NOT NULL ,
-	CONSTRAINT t_file_PK PRIMARY KEY (id),
-	CONSTRAINT t_file_t_file_format_FK FOREIGN KEY (id_file_format) REFERENCES t_file_format(id),
-	CONSTRAINT t_file_t_document_FK FOREIGN KEY (id_document) REFERENCES t_document(id)
+-- public.j_entrance_caver definition
+
+-- Drop table
+
+-- DROP TABLE public.j_entrance_caver;
+
+CREATE TABLE public.j_entrance_caver (
+	id_entrance int4 NOT NULL,
+	id_caver int4 NOT NULL,
+	CONSTRAINT j_entrance_caver_pk PRIMARY KEY (id_entrance, id_caver),
+	CONSTRAINT j_entrance_caver_t_caver0_fk FOREIGN KEY (id_caver) REFERENCES t_caver(id),
+	CONSTRAINT j_entrance_caver_t_entrance_fk FOREIGN KEY (id_entrance) REFERENCES t_entrance(id)
 );
 
 
-------------------------------------------------------------
--- Table: j_grotto_caver
-------------------------------------------------------------
-CREATE TABLE j_grotto_caver(
-	id_caver		INT  NOT NULL ,
-	id_grotto		INT  NOT NULL  ,
-	CONSTRAINT j_grotto_caver_PK PRIMARY KEY (id_caver,id_grotto),
-	CONSTRAINT j_grotto_caver_t_caver_FK FOREIGN KEY (id_caver) REFERENCES t_caver(id),
-	CONSTRAINT j_grotto_caver_t_grotto0_FK FOREIGN KEY (id_grotto) REFERENCES t_grotto(id)
+-- public.j_grotto_cave_explorer definition
+
+-- Drop table
+
+-- DROP TABLE public.j_grotto_cave_explorer;
+
+CREATE TABLE public.j_grotto_cave_explorer (
+	id_cave int4 NOT NULL,
+	id_grotto int4 NOT NULL,
+	CONSTRAINT j_grotto_cave_explorer_pk PRIMARY KEY (id_cave, id_grotto),
+	CONSTRAINT j_grotto_cave_explorer_t_cave_fk FOREIGN KEY (id_cave) REFERENCES t_cave(id),
+	CONSTRAINT j_grotto_cave_explorer_t_grotto0_fk FOREIGN KEY (id_grotto) REFERENCES t_grotto(id)
 );
 
 
-------------------------------------------------------------
--- Table: j_grotto_cave_explorer
-------------------------------------------------------------
-CREATE TABLE j_grotto_cave_explorer(
-	id_cave		INT  NOT NULL ,
-	id_grotto   INT  NOT NULL  ,
-	CONSTRAINT j_grotto_cave_explorer_PK PRIMARY KEY (id_cave,id_grotto),
-	CONSTRAINT j_grotto_cave_explorer_t_cave_FK FOREIGN KEY (id_cave) REFERENCES t_cave(id),
-	CONSTRAINT j_grotto_cave_explorer_t_grotto0_FK FOREIGN KEY (id_grotto) REFERENCES t_grotto(id)
+-- public.j_grotto_cave_partner definition
+
+-- Drop table
+
+-- DROP TABLE public.j_grotto_cave_partner;
+
+CREATE TABLE public.j_grotto_cave_partner (
+	id_grotto int4 NOT NULL,
+	id_cave int4 NOT NULL,
+	CONSTRAINT j_grotto_cave_partner_pk PRIMARY KEY (id_grotto, id_cave),
+	CONSTRAINT j_grotto_cave_partner_t_cave0_fk FOREIGN KEY (id_cave) REFERENCES t_cave(id),
+	CONSTRAINT j_grotto_cave_partner_t_grotto_fk FOREIGN KEY (id_grotto) REFERENCES t_grotto(id)
 );
 
 
-------------------------------------------------------------
--- Table: j_group_right
-------------------------------------------------------------
-CREATE TABLE j_group_right(
-	id_group   	INT2  NOT NULL ,
-	id_right   	INT2  NOT NULL  ,
-	CONSTRAINT j_group_right_PK PRIMARY KEY (id_group,id_right),
-	CONSTRAINT j_group_right_t_group_FK FOREIGN KEY (id_group) REFERENCES t_group(id),
-	CONSTRAINT j_group_right_t_right0_FK FOREIGN KEY (id_right) REFERENCES t_right(id)
+-- public.t_comment definition
+
+-- Drop table
+
+-- DROP TABLE public.t_comment;
+
+CREATE TABLE public.t_comment (
+	id serial NOT NULL,
+	id_author int4 NOT NULL,
+	id_reviewer int4 NULL,
+	date_inscription timestamp NOT NULL DEFAULT now(),
+	date_reviewed timestamp NULL,
+	relevance int2 NOT NULL,
+	e_t_underground interval(6) NULL,
+	e_t_trail interval(6) NULL,
+	aestheticism float8 NULL,
+	caving float8 NULL,
+	approach float8 NULL,
+	title varchar(300) NOT NULL,
+	body text NOT NULL,
+	alert bool NOT NULL DEFAULT false,
+	id_cave int4 NULL,
+	id_entrance int4 NULL,
+	id_exit int4 NULL,
+	id_language bpchar(3) NOT NULL,
+	is_deleted bool NOT NULL DEFAULT false,
+	CONSTRAINT t_comment_pk PRIMARY KEY (id),
+	CONSTRAINT t_comment_t_cave_fk FOREIGN KEY (id_cave) REFERENCES t_cave(id),
+	CONSTRAINT t_comment_t_caver2_fk FOREIGN KEY (id_reviewer) REFERENCES t_caver(id),
+	CONSTRAINT t_comment_t_caver_fk FOREIGN KEY (id_author) REFERENCES t_caver(id),
+	CONSTRAINT t_comment_t_entrance1_fk FOREIGN KEY (id_entrance) REFERENCES t_entrance(id),
+	CONSTRAINT t_comment_t_entrance2_fk FOREIGN KEY (id_exit) REFERENCES t_entrance(id),
+	CONSTRAINT t_comment_t_language0_fk FOREIGN KEY (id_language) REFERENCES t_language(id)
+);
+
+-- public.t_document definition
+
+-- Drop table
+
+-- DROP TABLE public.t_document;
+
+CREATE TABLE public.t_document (
+	id serial NOT NULL,
+	id_author int4 NOT NULL,
+	id_reviewer int4 NULL,
+	id_validator int4 NULL,
+	date_inscription timestamp NOT NULL DEFAULT now(),
+	date_validation timestamp NULL,
+	date_publication varchar(10) NULL,
+	is_validated bool NOT NULL DEFAULT false,
+	validation_comment varchar(300) NULL,
+	pages varchar(100) NULL,
+	identifier varchar(250) NULL,
+	issue varchar(100) NULL,
+	id_identifier_type bpchar(5) NULL,
+	ref_bbs bpchar(10) NULL,
+	id_entrance int4 NULL,
+	id_massif int4 NULL,
+	id_cave int4 NULL,
+	id_author_caver int4 NULL,
+	id_author_grotto int4 NULL,
+	id_editor int4 NULL,
+	id_library int4 NULL,
+	id_type int2 NOT NULL,
+	id_parent int4 NULL,
+	id_license int2 NOT NULL DEFAULT 1,
+	pages_bbs_old varchar(100) NULL,
+	comments_bbs_old varchar(500) NULL,
+	publication_other_bbs_old varchar(500) NULL,
+	publication_fascicule_bbs_old varchar(300) NULL,
+	author_comment varchar(300) NULL,
+	date_reviewed timestamp NULL,
+	is_deleted bool NOT NULL DEFAULT false,
+	redirect_to int4 NULL,
+	CONSTRAINT t_document_check CHECK (((id_type = ANY (ARRAY[16, 17])) OR (issue IS NULL))),
+	CONSTRAINT t_document_pk PRIMARY KEY (id),
+	CONSTRAINT t_document_t_cave_fk FOREIGN KEY (id_cave) REFERENCES t_cave(id),
+	CONSTRAINT t_document_t_caver2_fk FOREIGN KEY (id_reviewer) REFERENCES t_caver(id),
+	CONSTRAINT t_document_t_caver3_fk FOREIGN KEY (id_validator) REFERENCES t_caver(id),
+	CONSTRAINT t_document_t_caver4_fk FOREIGN KEY (id_author_caver) REFERENCES t_caver(id),
+	CONSTRAINT t_document_t_caver_fk FOREIGN KEY (id_author) REFERENCES t_caver(id),
+	CONSTRAINT t_document_t_document2_fk FOREIGN KEY (redirect_to) REFERENCES t_document(id),
+	CONSTRAINT t_document_t_document_fk FOREIGN KEY (id_parent) REFERENCES t_document(id),
+	CONSTRAINT t_document_t_entrance_fk FOREIGN KEY (id_entrance) REFERENCES t_entrance(id),
+	CONSTRAINT t_document_t_grotto2_fk FOREIGN KEY (id_editor) REFERENCES t_grotto(id),
+	CONSTRAINT t_document_t_grotto3_fk FOREIGN KEY (id_library) REFERENCES t_grotto(id),
+	CONSTRAINT t_document_t_grotto_fk FOREIGN KEY (id_author_grotto) REFERENCES t_grotto(id),
+	CONSTRAINT t_document_t_identifier_type_fk FOREIGN KEY (id_identifier_type) REFERENCES t_identifier_type(code),
+	CONSTRAINT t_document_t_license_fk FOREIGN KEY (id_license) REFERENCES t_license(id),
+	CONSTRAINT t_document_t_massif_fk FOREIGN KEY (id_massif) REFERENCES t_massif(id),
+	CONSTRAINT t_document_t_type_fk FOREIGN KEY (id_type) REFERENCES t_type(id)
+);
+
+-- public.t_file definition
+
+-- Drop table
+
+-- DROP TABLE public.t_file;
+
+CREATE TABLE public.t_file (
+	id serial NOT NULL,
+	date_inscription timestamp NOT NULL DEFAULT now(),
+	date_reviewed timestamp NULL,
+	filename varchar(200) NOT NULL,
+	id_file_format int4 NOT NULL,
+	id_document int4 NOT NULL,
+	path_old varchar(1000) NULL,
+	CONSTRAINT t_file_pk PRIMARY KEY (id),
+	CONSTRAINT t_file_t_document_fk FOREIGN KEY (id_document) REFERENCES t_document(id),
+	CONSTRAINT t_file_t_file_format_fk FOREIGN KEY (id_file_format) REFERENCES t_file_format(id)
 );
 
 
-------------------------------------------------------------
--- Table: j_caver_group
-------------------------------------------------------------
-CREATE TABLE j_caver_group(
-	id_caver	INT  NOT NULL ,
-	id_group	INT2  NOT NULL  ,
-	CONSTRAINT j_caver_group_PK PRIMARY KEY (id_caver,id_group),
-	CONSTRAINT j_caver_group_t_caver_FK FOREIGN KEY (id_caver) REFERENCES t_caver(id),
-	CONSTRAINT j_caver_group_t_group0_FK FOREIGN KEY (id_group) REFERENCES t_group(id)
+-- public.t_history definition
+
+-- Drop table
+
+-- DROP TABLE public.t_history;
+
+CREATE TABLE public.t_history (
+	id serial NOT NULL,
+	id_author int4 NOT NULL,
+	id_reviewer int4 NULL,
+	date_inscription timestamp NOT NULL DEFAULT now(),
+	date_reviewed timestamp NULL,
+	relevance int2 NOT NULL,
+	body text NOT NULL,
+	id_cave int4 NULL,
+	id_entrance int4 NULL,
+	id_point int4 NULL,
+	id_language bpchar(3) NOT NULL,
+	is_deleted bool NOT NULL DEFAULT false,
+	CONSTRAINT t_history_pk PRIMARY KEY (id),
+	CONSTRAINT t_history_t_cave_fk FOREIGN KEY (id_cave) REFERENCES t_cave(id),
+	CONSTRAINT t_history_t_caver2_fk FOREIGN KEY (id_reviewer) REFERENCES t_caver(id),
+	CONSTRAINT t_history_t_caver_fk FOREIGN KEY (id_author) REFERENCES t_caver(id),
+	CONSTRAINT t_history_t_entrance_fk FOREIGN KEY (id_entrance) REFERENCES t_entrance(id),
+	CONSTRAINT t_history_t_language0_fk FOREIGN KEY (id_language) REFERENCES t_language(id),
+	CONSTRAINT t_history_t_point_fk FOREIGN KEY (id_point) REFERENCES t_point(id)
+);
+
+-- public.t_junction definition
+
+-- Drop table
+
+-- DROP TABLE public.t_junction;
+
+CREATE TABLE public.t_junction (
+	id_cave_main int4 NOT NULL,
+	id_cave_add int4 NOT NULL,
+	id_point int4 NOT NULL,
+	CONSTRAINT t_junction_pk PRIMARY KEY (id_cave_main, id_cave_add, id_point),
+	CONSTRAINT t_junction_t_cave2_fk FOREIGN KEY (id_cave_add) REFERENCES t_cave(id),
+	CONSTRAINT t_junction_t_cave_fk FOREIGN KEY (id_cave_main) REFERENCES t_cave(id),
+	CONSTRAINT t_junction_t_point_fk FOREIGN KEY (id_point) REFERENCES t_point(id)
 );
 
 
-------------------------------------------------------------
--- Table: t_crs
-------------------------------------------------------------
-CREATE TABLE t_crs(
-	id                 SERIAL2 NOT NULL ,
-	id_author          INT NOT NULL ,
-	id_reviewer        INT   ,
-	date_inscription   timestamp  not null default now(),
-	date_reviewed      timestamp   ,
-	definition         VARCHAR (1000) NOT NULL ,
-	bounds             VARCHAR (100)  ,
-	url                VARCHAR (200)  ,
-	enabled            bool not null default false ,
-	code               VARCHAR (50) unique NOT NULL  ,
-	CONSTRAINT t_crs_PK PRIMARY KEY (id),
-	CONSTRAINT t_crs_t_caver_FK FOREIGN KEY (id_author) REFERENCES t_caver(id),
-	CONSTRAINT t_crs_t_caver2_FK FOREIGN KEY (id_reviewer) REFERENCES t_caver(id)
+-- public.t_name definition
+
+-- Drop table
+
+-- DROP TABLE public.t_name;
+
+CREATE TABLE public.t_name (
+	id serial NOT NULL,
+	"name" varchar(100) NULL,
+	is_main bool NOT NULL DEFAULT false,
+	id_author int4 NOT NULL,
+	id_reviewer int4 NULL,
+	date_inscription timestamp NOT NULL DEFAULT now(),
+	date_reviewed timestamp NULL,
+	id_language bpchar(3) NOT NULL,
+	id_entrance int4 NULL,
+	id_cave int4 NULL,
+	id_massif int4 NULL,
+	id_point int4 NULL,
+	id_grotto int4 NULL,
+	is_deleted bool NOT NULL DEFAULT false,
+	CONSTRAINT t_name_pk PRIMARY KEY (id),
+	CONSTRAINT t_name_t_cave0_fk FOREIGN KEY (id_cave) REFERENCES t_cave(id),
+	CONSTRAINT t_name_t_caver2_fk FOREIGN KEY (id_reviewer) REFERENCES t_caver(id),
+	CONSTRAINT t_name_t_entrance_fk FOREIGN KEY (id_entrance) REFERENCES t_entrance(id),
+	CONSTRAINT t_name_t_grotto0_fk FOREIGN KEY (id_grotto) REFERENCES t_grotto(id),
+	CONSTRAINT t_name_t_language_fk FOREIGN KEY (id_language) REFERENCES t_language(id),
+	CONSTRAINT t_name_t_massif0_fk FOREIGN KEY (id_massif) REFERENCES t_massif(id),
+	CONSTRAINT t_name_t_point_fk FOREIGN KEY (id_point) REFERENCES t_point(id)
+);
+
+-- public.h_comment definition
+
+-- Drop table
+
+-- DROP TABLE public.h_comment;
+
+CREATE TABLE public.h_comment (
+	id serial NOT NULL,
+	id_author int4 NOT NULL,
+	id_reviewer int4 NULL,
+	date_inscription timestamp NOT NULL DEFAULT now(),
+	date_reviewed timestamp NOT NULL,
+	relevance int2 NOT NULL,
+	e_t_underground interval(6) NULL,
+	e_t_trail interval(6) NULL,
+	aestheticism float8 NULL,
+	caving float8 NULL,
+	approach float8 NULL,
+	title varchar(300) NOT NULL,
+	body text NOT NULL,
+	alert bool NOT NULL DEFAULT false,
+	id_cave int4 NULL,
+	id_entrance int4 NULL,
+	id_exit int4 NULL,
+	id_language bpchar(3) NOT NULL,
+	CONSTRAINT h_comment_pk PRIMARY KEY (id, date_reviewed),
+	CONSTRAINT h_comment_t_cave_fk FOREIGN KEY (id_cave) REFERENCES t_cave(id),
+	CONSTRAINT h_comment_t_caver2_fk FOREIGN KEY (id_reviewer) REFERENCES t_caver(id),
+	CONSTRAINT h_comment_t_caver_fk FOREIGN KEY (id_author) REFERENCES t_caver(id),
+	CONSTRAINT h_comment_t_comment FOREIGN KEY (id) REFERENCES t_comment(id),
+	CONSTRAINT h_comment_t_entrance1_fk FOREIGN KEY (id_entrance) REFERENCES t_entrance(id),
+	CONSTRAINT h_comment_t_entrance2_fk FOREIGN KEY (id_exit) REFERENCES t_entrance(id),
+	CONSTRAINT h_comment_t_language0_fk FOREIGN KEY (id_language) REFERENCES t_language(id)
 );
 
 
-------------------------------------------------------------
--- Table: j_country_crs
-------------------------------------------------------------
-CREATE TABLE j_country_crs(
-	id_crs    	INT2  NOT NULL ,
-	id_country	CHAR(2) NOT NULL  ,
-	CONSTRAINT j_country_crs_PK PRIMARY KEY (id_crs,id_country),
-	CONSTRAINT j_country_crs_t_crs_FK FOREIGN KEY (id_crs) REFERENCES t_crs(id),
-	CONSTRAINT j_country_crs_t_country0_FK FOREIGN KEY (id_country) REFERENCES t_country(Iso)
+-- public.h_document definition
+
+-- Drop table
+
+-- DROP TABLE public.h_document;
+
+CREATE TABLE public.h_document (
+	id serial NOT NULL,
+	id_author int4 NOT NULL,
+	id_reviewer int4 NULL,
+	id_validator int4 NULL,
+	date_inscription timestamp NOT NULL DEFAULT now(),
+	date_validation timestamp NULL,
+	date_publication varchar(10) NULL,
+	is_validated bool NOT NULL DEFAULT false,
+	validation_comment varchar(300) NULL,
+	pages varchar(100) NULL,
+	identifier varchar(250) NULL,
+	issue varchar(100) NULL,
+	id_identifier_type bpchar(5) NULL,
+	ref_bbs bpchar(10) NULL,
+	id_entrance int4 NULL,
+	id_massif int4 NULL,
+	id_cave int4 NULL,
+	id_author_caver int4 NULL,
+	id_author_grotto int4 NULL,
+	id_editor int4 NULL,
+	id_library int4 NULL,
+	id_type int2 NOT NULL,
+	id_parent int4 NULL,
+	id_license int2 NOT NULL DEFAULT 1,
+	pages_bbs_old varchar(100) NULL,
+	comments_bbs_old varchar(500) NULL,
+	publication_other_bbs_old varchar(500) NULL,
+	publication_fascicule_bbs_old varchar(300) NULL,
+	author_comment varchar(300) NULL,
+	date_reviewed timestamp NOT NULL,
+	CONSTRAINT h_document_pk PRIMARY KEY (id, date_reviewed),
+	CONSTRAINT h_document_t_cave_fk FOREIGN KEY (id_cave) REFERENCES t_cave(id),
+	CONSTRAINT h_document_t_caver2_fk FOREIGN KEY (id_reviewer) REFERENCES t_caver(id),
+	CONSTRAINT h_document_t_caver3_fk FOREIGN KEY (id_validator) REFERENCES t_caver(id),
+	CONSTRAINT h_document_t_caver4_fk FOREIGN KEY (id_author_caver) REFERENCES t_caver(id),
+	CONSTRAINT h_document_t_caver_fk FOREIGN KEY (id_author) REFERENCES t_caver(id),
+	CONSTRAINT h_document_t_document FOREIGN KEY (id) REFERENCES t_document(id),
+	CONSTRAINT h_document_t_document_fk FOREIGN KEY (id_parent) REFERENCES t_document(id),
+	CONSTRAINT h_document_t_entrance_fk FOREIGN KEY (id_entrance) REFERENCES t_entrance(id),
+	CONSTRAINT h_document_t_grotto2_fk FOREIGN KEY (id_editor) REFERENCES t_grotto(id),
+	CONSTRAINT h_document_t_grotto3_fk FOREIGN KEY (id_library) REFERENCES t_grotto(id),
+	CONSTRAINT h_document_t_grotto_fk FOREIGN KEY (id_author_grotto) REFERENCES t_grotto(id),
+	CONSTRAINT h_document_t_identifier_type_fk FOREIGN KEY (id_identifier_type) REFERENCES t_identifier_type(code),
+	CONSTRAINT h_document_t_license_fk FOREIGN KEY (id_license) REFERENCES t_license(id),
+	CONSTRAINT h_document_t_massif_fk FOREIGN KEY (id_massif) REFERENCES t_massif(id),
+	CONSTRAINT h_document_t_type_fk FOREIGN KEY (id_type) REFERENCES t_type(id)
 );
 
 
-------------------------------------------------------------
--- Table: j_entrance_caver
-------------------------------------------------------------
-CREATE TABLE j_entrance_caver(
-	id_entrance		INT NOT NULL ,
-	id_caver		INT NOT NULL  ,
-	CONSTRAINT j_entrance_caver_PK PRIMARY KEY (id_entrance,id_caver),
-	CONSTRAINT j_entrance_caver_t_entrance_FK FOREIGN KEY (id_entrance) REFERENCES t_entrance(id),
-	CONSTRAINT j_entrance_caver_t_caver0_FK FOREIGN KEY (id_caver) REFERENCES t_caver(id)
+-- public.h_history definition
+
+-- Drop table
+
+-- DROP TABLE public.h_history;
+
+CREATE TABLE public.h_history (
+	id serial NOT NULL,
+	id_author int4 NOT NULL,
+	id_reviewer int4 NULL,
+	date_inscription timestamp NOT NULL DEFAULT now(),
+	date_reviewed timestamp NOT NULL,
+	relevance int2 NOT NULL,
+	body text NOT NULL,
+	id_cave int4 NULL,
+	id_entrance int4 NULL,
+	id_point int4 NULL,
+	id_language bpchar(3) NOT NULL,
+	CONSTRAINT h_history_pk PRIMARY KEY (id, date_reviewed),
+	CONSTRAINT h_history_t_cave_fk FOREIGN KEY (id_cave) REFERENCES t_cave(id),
+	CONSTRAINT h_history_t_caver2_fk FOREIGN KEY (id_reviewer) REFERENCES t_caver(id),
+	CONSTRAINT h_history_t_caver_fk FOREIGN KEY (id_author) REFERENCES t_caver(id),
+	CONSTRAINT h_history_t_entrance_fk FOREIGN KEY (id_entrance) REFERENCES t_entrance(id),
+	CONSTRAINT h_history_t_history FOREIGN KEY (id) REFERENCES t_history(id),
+	CONSTRAINT h_history_t_language0_fk FOREIGN KEY (id_language) REFERENCES t_language(id),
+	CONSTRAINT h_history_t_point_fk FOREIGN KEY (id_point) REFERENCES t_point(id)
 );
 
 
-------------------------------------------------------------
--- Table: j_grotto_cave_partner
-------------------------------------------------------------
-CREATE TABLE j_grotto_cave_partner(
-	id_grotto 		INT NOT NULL ,
-	id_cave			INT NOT NULL  ,
-	CONSTRAINT j_grotto_cave_partner_PK PRIMARY KEY (id_grotto,id_cave),
-	CONSTRAINT j_grotto_cave_partner_t_grotto_FK FOREIGN KEY (id_grotto) REFERENCES t_grotto(id),
-	CONSTRAINT j_grotto_cave_partner_t_cave0_FK FOREIGN KEY (id_cave) REFERENCES t_cave(id)
+-- public.h_name definition
+
+-- Drop table
+
+-- DROP TABLE public.h_name;
+
+CREATE TABLE public.h_name (
+	id serial NOT NULL,
+	"name" varchar(100) NULL,
+	is_main bool NOT NULL DEFAULT false,
+	id_author int4 NOT NULL,
+	id_reviewer int4 NULL,
+	date_inscription timestamp NOT NULL DEFAULT now(),
+	date_reviewed timestamp NOT NULL,
+	id_language bpchar(3) NOT NULL,
+	id_entrance int4 NULL,
+	id_cave int4 NULL,
+	id_massif int4 NULL,
+	id_point int4 NULL,
+	id_grotto int4 NULL,
+	CONSTRAINT h_name_pk PRIMARY KEY (id, date_reviewed),
+	CONSTRAINT h_name_t_cave0_fk FOREIGN KEY (id_cave) REFERENCES t_cave(id),
+	CONSTRAINT h_name_t_caver2_fk FOREIGN KEY (id_reviewer) REFERENCES t_caver(id),
+	CONSTRAINT h_name_t_entrance_fk FOREIGN KEY (id_entrance) REFERENCES t_entrance(id),
+	CONSTRAINT h_name_t_grotto0_fk FOREIGN KEY (id_grotto) REFERENCES t_grotto(id),
+	CONSTRAINT h_name_t_language_fk FOREIGN KEY (id_language) REFERENCES t_language(id),
+	CONSTRAINT h_name_t_massif0_fk FOREIGN KEY (id_massif) REFERENCES t_massif(id),
+	CONSTRAINT h_name_t_name FOREIGN KEY (id) REFERENCES t_name(id),
+	CONSTRAINT h_name_t_point_fk FOREIGN KEY (id_point) REFERENCES t_point(id)
 );
 
 
-------------------------------------------------------------
--- Table: t_coloration
-------------------------------------------------------------
+-- public.j_document_caver_author definition
 
-------------------------------------------------------------
--- Table: j_coloration_entrance
-------------------------------------------------------------
+-- Drop table
 
-------------------------------------------------------------
--- Table: j_coloration_point
-------------------------------------------------------------
+-- DROP TABLE public.j_document_caver_author;
 
+CREATE TABLE public.j_document_caver_author (
+	id_document int4 NOT NULL,
+	id_caver int4 NOT NULL,
+	CONSTRAINT j_document_caver_author_pk PRIMARY KEY (id_document, id_caver),
+	CONSTRAINT j_document_caver_author_t_caver_fk FOREIGN KEY (id_caver) REFERENCES t_caver(id),
+	CONSTRAINT j_document_caver_author_t_document_fk FOREIGN KEY (id_document) REFERENCES t_document(id)
+);
+
+
+-- public.j_document_grotto_author definition
+
+-- Drop table
+
+-- DROP TABLE public.j_document_grotto_author;
+
+CREATE TABLE public.j_document_grotto_author (
+	id_document int4 NOT NULL,
+	id_grotto int4 NOT NULL,
+	CONSTRAINT j_document_grotto_author_pk PRIMARY KEY (id_document, id_grotto),
+	CONSTRAINT j_document_grotto_author_t_caver_fk FOREIGN KEY (id_grotto) REFERENCES t_grotto(id),
+	CONSTRAINT j_document_grotto_author_t_document_fk FOREIGN KEY (id_document) REFERENCES t_document(id)
+);
+
+
+-- public.j_document_language definition
+
+-- Drop table
+
+-- DROP TABLE public.j_document_language;
+
+CREATE TABLE public.j_document_language (
+	id_document int4 NOT NULL,
+	id_language bpchar(3) NOT NULL,
+	is_main bool NOT NULL DEFAULT false,
+	CONSTRAINT j_document_language_pk PRIMARY KEY (id_document, id_language),
+	CONSTRAINT j_document_language_t_document_fk FOREIGN KEY (id_document) REFERENCES t_document(id),
+	CONSTRAINT j_document_language_t_language_fk FOREIGN KEY (id_language) REFERENCES t_language(id)
+);
+
+
+-- public.j_document_region definition
+
+-- Drop table
+
+-- DROP TABLE public.j_document_region;
+
+CREATE TABLE public.j_document_region (
+	id_document int4 NOT NULL,
+	id_region int4 NOT NULL,
+	CONSTRAINT j_document_region_pk PRIMARY KEY (id_document, id_region),
+	CONSTRAINT j_document_region_t_document_fk FOREIGN KEY (id_document) REFERENCES t_document(id),
+	CONSTRAINT j_document_region_t_region_fk FOREIGN KEY (id_region) REFERENCES t_region(id)
+);
+
+
+-- public.j_document_subject definition
+
+-- Drop table
+
+-- DROP TABLE public.j_document_subject;
+
+CREATE TABLE public.j_document_subject (
+	id_document int4 NOT NULL,
+	code_subject bpchar(5) NOT NULL,
+	CONSTRAINT j_document_subject_pk PRIMARY KEY (id_document, code_subject),
+	CONSTRAINT j_document_subject_t_document_fk FOREIGN KEY (id_document) REFERENCES t_document(id),
+	CONSTRAINT j_document_subject_t_subject_fk FOREIGN KEY (code_subject) REFERENCES t_subject(code)
+);
+
+
+-- public.t_description definition
+
+-- Drop table
+
+-- DROP TABLE public.t_description;
+
+CREATE TABLE public.t_description (
+	id serial NOT NULL,
+	id_author int4 NOT NULL,
+	id_reviewer int4 NULL,
+	date_inscription timestamp NOT NULL DEFAULT now(),
+	date_reviewed timestamp NULL,
+	relevance int2 NOT NULL DEFAULT 0,
+	title varchar(300) NOT NULL,
+	body text NULL,
+	id_cave int4 NULL,
+	id_entrance int4 NULL,
+	id_exit int4 NULL,
+	id_massif int4 NULL,
+	id_point int4 NULL,
+	id_document int4 NULL,
+	id_language bpchar(3) NOT NULL,
+	is_deleted bool NOT NULL DEFAULT false,
+	CONSTRAINT t_description_pk PRIMARY KEY (id),
+	CONSTRAINT t_description_t_cave_fk FOREIGN KEY (id_cave) REFERENCES t_cave(id),
+	CONSTRAINT t_description_t_caver2_fk FOREIGN KEY (id_reviewer) REFERENCES t_caver(id),
+	CONSTRAINT t_description_t_caver_fk FOREIGN KEY (id_author) REFERENCES t_caver(id),
+	CONSTRAINT t_description_t_document_fk FOREIGN KEY (id_document) REFERENCES t_document(id),
+	CONSTRAINT t_description_t_entrance1_fk FOREIGN KEY (id_entrance) REFERENCES t_entrance(id),
+	CONSTRAINT t_description_t_entrance2_fk FOREIGN KEY (id_exit) REFERENCES t_entrance(id),
+	CONSTRAINT t_description_t_language0_fk FOREIGN KEY (id_language) REFERENCES t_language(id),
+	CONSTRAINT t_description_t_massif3_fk FOREIGN KEY (id_massif) REFERENCES t_massif(id),
+	CONSTRAINT t_description_t_point_fk FOREIGN KEY (id_point) REFERENCES t_point(id)
+);
+
+-- public.h_description definition
+
+-- Drop table
+
+-- DROP TABLE public.h_description;
+
+CREATE TABLE public.h_description (
+	id serial NOT NULL,
+	id_author int4 NOT NULL,
+	id_reviewer int4 NULL,
+	date_inscription timestamp NOT NULL DEFAULT now(),
+	date_reviewed timestamp NOT NULL,
+	relevance int2 NOT NULL DEFAULT 0,
+	title varchar(300) NOT NULL,
+	body text NULL,
+	id_cave int4 NULL,
+	id_entrance int4 NULL,
+	id_exit int4 NULL,
+	id_massif int4 NULL,
+	id_point int4 NULL,
+	id_document int4 NULL,
+	id_language bpchar(3) NOT NULL,
+	CONSTRAINT h_description_pk PRIMARY KEY (id, date_reviewed),
+	CONSTRAINT h_description_t_cave_fk FOREIGN KEY (id_cave) REFERENCES t_cave(id),
+	CONSTRAINT h_description_t_caver2_fk FOREIGN KEY (id_reviewer) REFERENCES t_caver(id),
+	CONSTRAINT h_description_t_caver_fk FOREIGN KEY (id_author) REFERENCES t_caver(id),
+	CONSTRAINT h_description_t_description FOREIGN KEY (id) REFERENCES t_description(id),
+	CONSTRAINT h_description_t_document_fk FOREIGN KEY (id_document) REFERENCES t_document(id),
+	CONSTRAINT h_description_t_entrance1_fk FOREIGN KEY (id_entrance) REFERENCES t_entrance(id),
+	CONSTRAINT h_description_t_entrance2_fk FOREIGN KEY (id_exit) REFERENCES t_entrance(id),
+	CONSTRAINT h_description_t_language0_fk FOREIGN KEY (id_language) REFERENCES t_language(id),
+	CONSTRAINT h_description_t_massif3_fk FOREIGN KEY (id_massif) REFERENCES t_massif(id),
+	CONSTRAINT h_description_t_point_fk FOREIGN KEY (id_point) REFERENCES t_point(id)
+);
