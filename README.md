@@ -14,7 +14,7 @@ Current production version is available [here](http://beta.grottocenter.org/)
 
 ## Contributors
 Thanks to their donations they made possible the developer of the V3 of Grottocenter:
-Spéléo Club des Mémises, Frédéric Urien, Christophe Bes, Georges Messina, Philippe Henry, Bernard Thomachot, Nathan Bartas, Benjamin Soufflet, Ferdinando Didonna, Jean Marc Mattlet, Jean-Jacques Veux, Etienne Fabre, Sandy De Wilde, Sylvain Bélet, Félix Nilius, 
+Spéléo Club des Mémises, Frédéric Urien, Christophe Bes, Georges Messina, Philippe Henry, Bernard Thomachot, Nathan Bartas, Benjamin Soufflet, Ferdinando Didonna, Jean Marc Mattlet, Jean-Jacques Veux, Etienne Fabre, Sandy De Wilde, Sylvain Bélet, Félix Nilius,
 Didier Gignoux, Paul Guerin, Hervé Plaettner, Marius Carrière, Doc Carbur, Hard Gilles, Herman de Swart, Francesc Boix, Kai Getrost, Frederik Bauer, F K, Martin Andy, Suzanne Jiquel, Patrick Colinet, Association Wikicaves, Thierry Aubé, Jean Michel Faudrin, Michel Kaspruk, Yann Schneylin, Fabien Minana, Alain Gresse, Didier Borg, Ivan Herbots, Curtis Walter, Jan Matthesius, Stephane Jaillet, Thomas Cabotiau, Sylvain Pichot, Ayoub Nehili, CDS de l'Aude, Julio Serrano Banderas, Guillaume Cédille, Patrick Candéla, Léonard de Haro, Bruno Rouzeyre, Eric Madelaine, Christophe Alexandre, Pierre Mouriaux, Christophe Mergalet, Daniel Caron, Christian Feuvrier, Laurent Delbourg, Melanie Sanchez, Spéléo Club de Villeurbanne, Harold van Ingen, Jerome Fiquet, Joris Genisset, Gérald Huet AVENTURE VERTICALE, Alexandre Faucheux, Laval Subterra, Audrey Maingue, François Purson, Eric Gautier, Guillaume Cugno, Jean-François Foulche, Oskar Van Herreweghe, Guerard Marie, Christophe Evrard, Philippe Gerbier, Christopher Peeters, Speleo Club de Metz, Speleo Nederland, Erik De Groef, Christian Delaire, Flemish Caving Association, Denis Pailo, Timothée Chauviré, Claudie Serin, Eric de Valicourt, Christian Pauli, Eric Maljournal, Guilhem Navone, Laurent Blum, JM Dedieu, Estelle Grandsagne, Marie Merlin, Pierre-Antoine Mauro, Guillaume Pla, Groupe Spéléo du Club Alpin Nîmois, Sven Decharte, Dominique Lagrenee.
 
 ## Installation
@@ -47,29 +47,46 @@ Or access to [API documentation](http://localhost:1337/ui/api/) for example.
 
 ### Development deployment
 
-The development deployment aims to launch locally all the tools needed for the Grottocenter development.
+The development deployment aims to launch locally all the tools needed for the GrottoCenter development:
 
-Start the project:
-```
-> ./deployDev.sh
-> npm install
+First copy `/docker/sample.env` to  `/docker/.env`.
+
+Then launch the orchestrated containers:
+```shell
+$ cd docker
+$ docker-compose up --remove-orphans
 ```
 
-Finally, run the server with live-reloading using:
+If you get the error: `'/docker-entrypoint-initdb.d/': Permission denied`
+make sure the sql files in `/sql/` have reading access rights (a+r), including the sql directory itself.
+Same goes with `/docker/postgresql-*.jar`, it needs reading and execution rights (a+rx).
+
+Wait until you see the following lines in the logs:
 ```
-> npm run start-hot
+ : Grunt :: Running "watch" task
+ : Grunt :: Waiting...
 ```
+At this point you are good to go. The UI is available at http://localhost:1337/, and you can monitor the evolution of ES
+indices at http://localhost:9200/_cat/indices?v
+
+Each time you change a file in the source code, the code is recompiled automatically, you just need to refresh the page
+in your browser.
 
 ### Tests
 
-Run tests:
+Log in the node container:
+```shell
+$ docker exec -it nodegrotto bash -l
 ```
-> npm run test
+
+Run tests:
+```shell
+$ npm run test
 ```
 
 Check code coverage:
-```
-> npm run coverage
+```shell
+$ npm run coverage
 ```
 
 For more details, read [the installation guide](https://github.com/GrottoCenter/Grottocenter3/wiki/Installation-guide)

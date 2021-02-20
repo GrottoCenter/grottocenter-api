@@ -3,19 +3,6 @@ version: "3.3"
 # Date: Feb 13 2021
 # Requirement: docker, docker-compose
 
-## Usage:
-# First copy sample.env to .env
-# Then run:
-# $ docker-compose --env-file .env up --remove-orphans
-#
-# If you get the error: `'/docker-entrypoint-initdb.d/': Permission denied`
-# make sure the sql files in /sql/ have reading access rights (a+r), including the sql directory itself.
-# Same goes with the .jar, it needs reading and execution rights (a+rx).
-#
-# Once you see that in the logs, you are good to go: (http://localhost:1337/)
-# : Grunt :: Running "watch" task
-# : Grunt :: Waiting...
-
 services:
   dbserver:
     container_name: ${DB_TAGNAME}
