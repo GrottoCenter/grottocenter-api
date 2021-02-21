@@ -53,6 +53,12 @@ module.exports = {
       maxLength: 10,
     },
 
+    dateReviewed: {
+      type: 'ref',
+      columnName: 'date_reviewed',
+      columnType: 'datetime',
+    },
+
     isValidated: {
       type: 'boolean',
       allowNull: false,
