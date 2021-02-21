@@ -7,3 +7,4 @@
 . /home/ec2-user/.bashrc
 nvm use 10.15.2
 pm2 delete all
+exit 0
