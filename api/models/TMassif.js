@@ -52,10 +52,10 @@ module.exports = {
       via: 'massif',
     },
 
-    geometryKml: {
+    geogPolygon: {
       type: 'string',
       allowNull: true,
-      columnName: 'geometry_kml',
+      columnName: 'geog_polygon',
       maxLength: 2000,
     },
 
