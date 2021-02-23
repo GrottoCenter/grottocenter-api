@@ -12,7 +12,7 @@ const { tokenSalt } = AuthService;
 // Generates a token from supplied payload
 module.exports.issue = (payload) =>
   jwt.sign(payload, tokenSalt, {
-    expiresIn: 60 * 60 * 24 * 3, // 3 days
+    expiresIn: 60 * 60 * 24 * 90, // 90 days
   });
 
 // Verifies token on a request
