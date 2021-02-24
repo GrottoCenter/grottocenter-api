@@ -80,7 +80,7 @@ export const overridings = {
     secondaryBlocTitle: '#FFFFFF',
     blackShadow: fade('#000000', 0.117647),
     backgroundButton: '#FFFFFF',
-    errorColor: '#ff493b',
+    errorColor: '#ff2020',
     successColor: '#49dd3b',
   },
   shape: {

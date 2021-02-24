@@ -15,11 +15,27 @@ import { authTokenName } from '../conf/Config';
 //
 //
 
+const removeTokenFromLocalStorage = () => {
+  window.localStorage.removeItem(authTokenName);
+};
+
+const getTokenIfNotExpired = () => {
+  const token = decode(window.localStorage.getItem(authTokenName));
+  if (token === null) {
+    return null;
+  }
+  // JS uses miliseconds for Unix time while JWT uses seconds
+  if (new Date(token.exp * 1000) > Date.now()) {
+    return token;
+  }
+  removeTokenFromLocalStorage();
+  return null;
+};
+
 const initialState = {
-  authToken: undefined,
-  authTokenDecoded: decode(window.localStorage.getItem(authTokenName)),
+  authTokenDecoded: getTokenIfNotExpired(),
   authorizationHeader: {
-    Authorization: `Bearer ${window.localStorage.getItem(authTokenName)}`,
+    Authorization: `Bearer ${getTokenIfNotExpired()}`,
   },
   error: null,
   isFetching: false,
@@ -62,7 +78,7 @@ const login = (state = initialState, action) => {
     case HIDE_LOGIN_DIALOG:
       return { ...state, isLoginDialogDisplayed: false };
     case LOGOUT:
-      window.localStorage.removeItem(authTokenName);
+      removeTokenFromLocalStorage();
       return {
         ...state,
         authToken: undefined,
