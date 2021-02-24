@@ -35,8 +35,13 @@ const AppBar = ({ toggleSideMenu, isSideMenuOpen, HeaderQuickSearch }) => {
     dispatch(postLogout());
   };
 
+  const authTokenExpirationDate = new Date(
+    pathOr(0, ['authTokenDecoded', 'exp'], authState) * 1000,
+  ); // JS Date() uses miliseconds
+
   return (
     <AppBarComponent
+      authTokenExpirationDate={authTokenExpirationDate}
       AutoCompleteSearch={() => (
         <HeaderAutoCompleteSearch
           isSideMenuOpen={isSideMenuOpen}

@@ -51,6 +51,7 @@ const RightWrapper = styled.div`
 `;
 
 const AppBar = ({
+  authTokenExpirationDate,
   AutoCompleteSearch,
   isAuth,
   onLoginClick,
@@ -90,6 +91,7 @@ const AppBar = ({
           </LanguageWrapper>
         </RightWrapper>
         <UserMenu
+          authTokenExpirationDate={authTokenExpirationDate}
           isAuth={isAuth}
           onLoginClick={onLoginClick}
           onLogoutClick={onLogoutClick}
@@ -102,6 +104,7 @@ const AppBar = ({
 );
 
 AppBar.propTypes = {
+  authTokenExpirationDate: PropTypes.instanceOf(Date).isRequired,
   AutoCompleteSearch: PropTypes.oneOfType([
     PropTypes.node,
     PropTypes.element,

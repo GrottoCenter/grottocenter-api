@@ -2,15 +2,23 @@ import { Button, IconButton, Menu, MenuItem } from '@material-ui/core';
 import AccountCircle from '@material-ui/icons/AccountCircle';
 import React from 'react';
 import { useIntl } from 'react-intl';
+import { useTheme } from '@material-ui/core/styles';
 import { isMobileOnly } from 'react-device-detect';
 import PropTypes from 'prop-types';
 
 import Translate from '../Translate';
 
-const UserMenu = ({ isAuth, userNickname, onLoginClick, onLogoutClick }) => {
+const UserMenu = ({
+  authTokenExpirationDate,
+  isAuth,
+  userNickname,
+  onLoginClick,
+  onLogoutClick,
+}) => {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
-  const { formatMessage } = useIntl();
+  const { formatDate, formatMessage, formatTime } = useIntl();
+  const theme = useTheme();
 
   const handleMenu = (event) => {
     setAnchorEl(event.currentTarget);
@@ -26,6 +34,8 @@ const UserMenu = ({ isAuth, userNickname, onLoginClick, onLogoutClick }) => {
     handleClose();
     onLogoutClick();
   };
+
+  const isSessionExpired = authTokenExpirationDate < Date.now();
 
   return (
     <>
@@ -64,7 +74,7 @@ const UserMenu = ({ isAuth, userNickname, onLoginClick, onLogoutClick }) => {
             open={open}
             onClose={handleClose}
           >
-            <MenuItem divider disabled>
+            <MenuItem disabled>
               {formatMessage(
                 {
                   id: 'Logged as {userNickname}',
@@ -77,6 +87,40 @@ const UserMenu = ({ isAuth, userNickname, onLoginClick, onLogoutClick }) => {
                     </span>
                   ),
                 },
+              )}
+            </MenuItem>
+            <MenuItem
+              divider
+              disabled
+              style={isSessionExpired ? { opacity: 1 } : {}}
+            >
+              {isSessionExpired ? (
+                <span style={{ color: theme.palette.errorColor }}>
+                  {formatMessage({
+                    id: 'Your session has expired: please log in again.',
+                  })}
+                </span>
+              ) : (
+                <>
+                  {formatMessage(
+                    {
+                      id:
+                        'Expiration Date: {expirationDate} at {expirationHourAndMinutes}',
+                      defaultMessage:
+                        'Expiration Date: {expirationDate} at {expirationHourAndMinutes}',
+                    },
+                    {
+                      expirationDate: (
+                        <span>
+                          &nbsp;{formatDate(authTokenExpirationDate)}&nbsp;
+                        </span>
+                      ),
+                      expirationHourAndMinutes: (
+                        <span>&nbsp;{formatTime(authTokenExpirationDate)}</span>
+                      ),
+                    },
+                  )}
+                </>
               )}
             </MenuItem>
             <MenuItem disabled>
@@ -93,6 +137,7 @@ const UserMenu = ({ isAuth, userNickname, onLoginClick, onLogoutClick }) => {
 };
 
 UserMenu.propTypes = {
+  authTokenExpirationDate: PropTypes.instanceOf(Date),
   userNickname: PropTypes.string,
   isAuth: PropTypes.bool.isRequired,
   onLoginClick: PropTypes.func.isRequired,
