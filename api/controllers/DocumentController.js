@@ -441,9 +441,10 @@ module.exports = {
 
     TDocument.updateOne({ id: id })
       .set({
+        dateValidation: new Date(),
         isValidated: isValidated,
         validationComment: validationComment,
-        dateValidation: new Date(),
+        validator: req.token.id,
       })
       .then(async (updatedDocument) => {
         if (isValidated) {
@@ -500,9 +501,10 @@ module.exports = {
 
       updatePromises.push(
         TDocument.updateOne({ id: id }).set({
+          dateValidation: new Date(),
           isValidated: isValidated,
           validationComment: validationComment,
-          dateValidation: new Date(),
+          validator: req.token.id,
         }),
       );
       Promise.all(updatePromises).then((results) => {
