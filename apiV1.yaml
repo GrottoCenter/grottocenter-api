@@ -659,6 +659,38 @@ paths:
               schema:
                 $ref: '#/components/schemas/Language'
 
+  '/forgotPassword':
+    post:
+      tags:
+        - authentication
+      description: >-
+        Launch the procedure of password change. This will send an email to the email adress you provided if it exists as a Grottocenter user's email. This email contains a password reset link expiring after 24 hours using the Grottocenter application.
+      
+        
+        __IMPORTANT NOTICE__
+        
+        
+        This feature uses the Grottocenter's AWS SES (Simple Email Service) of Amazon. To ️use it properly, you must have access to the service. This access is granted by the Grottocenter's developer team to developers only.Once you have the access, set your __AWS_ACCESS_KEY__ & __AWS_SECRET_KEY__ environment variables.
+        
+        
+        Otherwise, the email will not be sent and its content will be simply logged in your console.
+        
+      parameters:
+        - name: email
+          in: query
+          description: Email of the account you want to change the password
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Successful operation
+
+        '400':
+          description: You must provide an email in the body of your request.
+        
+        '404':
+          description: The email is not used by any Grottocenter's caver.
 
   '/login':
     post:
