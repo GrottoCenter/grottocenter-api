@@ -113,4 +113,46 @@ module.exports = {
 
     return res.sendStatus(204);
   },
+
+  forgotPassword: async (req, res) => {
+    const emailProvided = req.param('email');
+    if (!emailProvided) {
+      return res.badRequest(`You must provide an email.`);
+    }
+
+    // Get info about the user
+    const userFound = await TCaver.findOne({ mail: emailProvided });
+    if (!userFound) {
+      return res.status(404).send({
+        message: 'Caver with email ' + emailProvided + ' not found.',
+      });
+    }
+
+    // Generate reset password token
+    const token = TokenService.issue(
+      {
+        action: 'Reset password',
+        userId: userFound.id,
+      },
+      24, // Expires after 1 day (24h)
+    );
+
+    const result = await sails.helpers.sendEmail
+      .with({
+        emailSubject: 'Grottocenter - Password Reset',
+        recipientEmail: emailProvided,
+        viewName: 'forgotPassword',
+        viewValues: {
+          recipientName: userFound.nickname,
+          resetLink:
+            'https://beta.grottocenter.org/ui/changePassword?token=' + token,
+        },
+      })
+      .intercept('sendSESEmailError', () => {
+        return res.serverError(
+          'The email service has encountered an error. Please try again later or contact Wikicaves for more information.',
+        );
+      });
+    return res.sendStatus(204);
+  },
 };
