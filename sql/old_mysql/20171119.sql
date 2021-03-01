@@ -1,3 +1,0 @@
-SET SQL_SAFE_UPDATES = 0;
-UPDATE t_entry SET Is_public='YES' WHERE Is_sensitive='NO';
-SET SQL_SAFE_UPDATES = 1;
