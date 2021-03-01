@@ -138,3 +138,4 @@ postgresql-connector.jar
 # Path to the Grottocenter anonymized sql data file.
 ################################################
 sql/*grottoce_anonymize*.sql
+esdata
