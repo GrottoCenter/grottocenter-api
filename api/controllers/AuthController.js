@@ -24,11 +24,14 @@ module.exports = {
       req.logIn(user, (err) => {
         if (err) return res.json({ message: err });
         req.session.authenticated = true;
-        const token = TokenAuthService.issue({
-          id: user.id,
-          groups: user.groups,
-          nickname: user.nickname,
-        });
+        const token = TokenService.issue(
+          {
+            id: user.id,
+            groups: user.groups,
+            nickname: user.nickname,
+          },
+          24 * 90, // Expires after 90 days
+        );
         return res.json({ token });
       });
     })(req, res);
