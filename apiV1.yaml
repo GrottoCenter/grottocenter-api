@@ -658,6 +658,37 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Language'
+  
+  '/account/password':
+    patch:
+      tags:
+        - authentication
+      description: Update the user password by using a reset password token issued by the /forgotPassword route.
+      parameters:
+        - name: password
+          in: query
+          description: New password of the account, must be at least 8 characters long
+          required: true
+          schema:
+            type: string
+        - name: token
+          in: query
+          description: Reset password token issued by the /forgotPassword route.
+          required: true
+          schema:
+            $ref: '#/components/schemas/ResetPasswordToken'
+      responses:
+        '204':
+          description: Successful operation
+
+        '400':
+          description: You must provide a password and a reset password token in the body of your request. The password must be at least 8 characters long.
+        
+        '403':
+          description: The password reset token has expired or is invalid.
+        
+        '404':
+          description: User in the password reset token not found.
 
   '/forgotPassword':
     post:
@@ -1740,6 +1771,32 @@ components:
         - grottos
         - massifs
 
+    Region:
+      properties:
+        code:
+          type: string
+        country:
+          type: string
+        id:
+          type: integer
+        isDeprecated:
+          type: boolean
+        name:
+          type: string
+          
+    ResetPasswordToken:
+      properties:
+        action:
+          type: string
+        userId:
+          type: integer
+        iat:
+          type: string
+          description: Creation date (Unix time)
+        exp:
+          type: string
+          description: Expiration date (Unix time)
+    
     Rigging:
       type: object
       properties:
@@ -1772,19 +1829,6 @@ components:
         ropes:
           type: string
         title:
-          type: string
-
-    Region:
-      properties:
-        code:
-          type: string
-        country:
-          type: string
-        id:
-          type: integer
-        isDeprecated:
-          type: boolean
-        name:
           type: string
 
     Search:

@@ -32,6 +32,7 @@ module.exports.policies = {
   },
 
   AuthController: {
+    changePassword: true,
     forgotPassword: true,
     login: true,
     logout: 'tokenAuth',
