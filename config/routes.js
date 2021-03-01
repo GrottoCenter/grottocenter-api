@@ -93,6 +93,7 @@ module.exports.routes = {
 
   /* Auth controller */
   'GET /api/v1/logout': 'v1/Auth.logout',
+  'PATCH /api/v1/account/password': 'v1/Auth.changePassword',
   'POST /api/v1/forgotPassword': 'v1/Auth.forgotPassword',
   'POST /api/v1/login': 'v1/Auth.login',
   'POST /api/v1/signup': 'v1/Auth.signUp',

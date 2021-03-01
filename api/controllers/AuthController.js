@@ -61,7 +61,9 @@ module.exports = {
       req.param('password').length < PASSWORD_MIN_LENGTH
     ) {
       return res.badRequest(
-        'Your password must be ' + PASSWORD_MIN_LENGTH + ' characters.',
+        'Your password must be at least ' +
+          PASSWORD_MIN_LENGTH +
+          ' characters long.',
       );
     }
     if (!req.param('nickname')) {
@@ -154,5 +156,47 @@ module.exports = {
         );
       });
     return res.sendStatus(204);
+  },
+
+  changePassword: async (req, res) => {
+    // Check params
+    const password = req.param('password');
+    const token = req.param('token');
+    if (!password) {
+      return res.badRequest(`You must provide a password.`);
+    }
+    if (password.length < PASSWORD_MIN_LENGTH) {
+      return res.badRequest(
+        'Your password must be at least ' +
+          PASSWORD_MIN_LENGTH +
+          ' characters long.',
+      );
+    }
+    if (!token) {
+      return res.badRequest(`You must provide a reset password token.`);
+    }
+
+    // Check token
+    TokenService.verify(token, async (err, decodedToken) => {
+      if (err && err.name === 'TokenExpiredError') {
+        return res.forbidden('The password reset token has expired.');
+      }
+      if (decodedToken.action !== 'Reset password') {
+        return res.forbidden('The password reset token action is invalid.');
+      }
+      // Update password request
+      const updatedCaver = await TCaver.updateOne({
+        id: decodedToken.userId,
+      }).set({
+        password: AuthService.createHashedPassword(password),
+      });
+
+      if (!updatedCaver) {
+        return res.status(404).send({
+          message: 'User with id ' + decodedToken.userId + ' not found.',
+        });
+      }
+      return res.sendStatus(204);
+    });
   },
 };
