@@ -58,8 +58,8 @@ $ docker-compose up --remove-orphans
 ```
 
 If you get the error: `'/docker-entrypoint-initdb.d/': Permission denied`
-make sure the sql files in `/sql/` have reading access rights (a+r), including the sql directory itself.
-Same goes with `/docker/postgresql-*.jar`, it needs reading and execution rights (a+rx).
+make sure the sql files in `/sql/` have reading and execution access rights (a+rx), including the sql directory itself.
+Same goes with `/docker/postgresql-*.jar`.
 
 Wait until you see the following lines in the logs:
 ```
