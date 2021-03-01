@@ -1,5 +1,5 @@
 /**
- * TokenAuthService
+ * TokenService
  *
  * @description :: JSON Webtoken Service for sails
  * @help        :: See https://github.com/auth0/node-jsonwebtoken & http://sailsjs.org/#!/documentation/concepts/Services
@@ -10,9 +10,9 @@ const AuthService = require('./AuthService');
 const { tokenSalt } = AuthService;
 
 // Generates a token from supplied payload
-module.exports.issue = (payload) =>
+module.exports.issue = (payload, expiresInHours) =>
   jwt.sign(payload, tokenSalt, {
-    expiresIn: 60 * 60 * 24 * 90, // 90 days
+    expiresIn: 60 * 60 * expiresInHours,
   });
 
 // Verifies token on a request

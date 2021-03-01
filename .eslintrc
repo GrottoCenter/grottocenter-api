@@ -52,7 +52,7 @@
     "TCaver": true,
     "TTopography": true,
     "TMassif": true,
-    "TokenAuthService": true,
+    "TokenService": true,
     "ControllerService": true,
     "MappingV1Service": true,
     "L": true,
