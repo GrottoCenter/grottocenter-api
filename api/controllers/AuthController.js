@@ -6,7 +6,9 @@
  */
 
 const passport = require('passport');
+const jwt = require('jsonwebtoken');
 const esClient = require('../../config/elasticsearch').elasticsearchCli;
+const { tokenSalt } = AuthService;
 const PASSWORD_MIN_LENGTH = 8;
 
 module.exports = {
@@ -30,7 +32,9 @@ module.exports = {
             groups: user.groups,
             nickname: user.nickname,
           },
+          tokenSalt,
           24 * 90, // Expires after 90 days
+          'Authentication',
         );
         return res.json({ token });
       });
@@ -133,10 +137,11 @@ module.exports = {
     // Generate reset password token
     const token = TokenService.issue(
       {
-        action: 'Reset password',
         userId: userFound.id,
       },
+      userFound.password + userFound.id + userFound.dateInscription + tokenSalt, // custom salt used for more security
       24, // Expires after 1 day (24h)
+      'Reset password',
     );
 
     const result = await sails.helpers.sendEmail
@@ -176,26 +181,40 @@ module.exports = {
       return res.badRequest(`You must provide a reset password token.`);
     }
 
+    // Get user
+    const decodedToken = jwt.decode(token);
+    const userFound = await TCaver.findOne(decodedToken.userId);
+    if (!userFound) {
+      return res.status(404).send({
+        message: 'User with id ' + decodedToken.userId + ' not found.',
+      });
+    }
+
     // Check token
-    TokenService.verify(token, async (err, decodedToken) => {
-      if (err && err.name === 'TokenExpiredError') {
-        return res.forbidden('The password reset token has expired.');
-      }
-      if (decodedToken.action !== 'Reset password') {
-        return res.forbidden('The password reset token action is invalid.');
+    const resetPasswordSalt =
+      userFound.password + userFound.id + userFound.dateInscription + tokenSalt;
+    TokenService.verify(token, resetPasswordSalt, async (err, decodedToken) => {
+      if (err) {
+        switch (err.name) {
+          case 'TokenExpiredError':
+            return res.forbidden('The password reset token has expired.');
+          case 'JsonWebTokenError':
+            return res.forbidden(
+              'The password reset token signature is invalid.',
+            );
+          default:
+            return res.serverError(
+              'An unexpected error occured when verifying the password reset token.',
+            );
+        }
       }
       // Update password request
-      const updatedCaver = await TCaver.updateOne({
+      await TCaver.updateOne({
         id: decodedToken.userId,
       }).set({
         password: AuthService.createHashedPassword(password),
       });
 
-      if (!updatedCaver) {
-        return res.status(404).send({
-          message: 'User with id ' + decodedToken.userId + ' not found.',
-        });
-      }
       return res.sendStatus(204);
     });
   },

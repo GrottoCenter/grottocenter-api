@@ -10,16 +10,22 @@ const AuthService = require('./AuthService');
 const { tokenSalt } = AuthService;
 
 // Generates a token from supplied payload
-module.exports.issue = (payload, expiresInHours) =>
-  jwt.sign(payload, tokenSalt, {
+module.exports.issue = (
+  payload,
+  customTokenSalt = tokenSalt,
+  expiresInHours,
+  subject,
+) =>
+  jwt.sign(payload, customTokenSalt, {
     expiresIn: 60 * 60 * expiresInHours,
+    subject: subject,
   });
 
 // Verifies token on a request
-module.exports.verify = (token, callback) =>
+module.exports.verify = (token, customTokenSalt = tokenSalt, callback) =>
   jwt.verify(
     token, // The token to be verified
-    tokenSalt, // Salt used to sign the token
+    customTokenSalt, // Salt used to sign the token
     {}, // No Option, for more see https://github.com/auth0/node-jsonwebtoken#jwtverifytoken-secretorpublickey-options-callback
     callback, // Pass errors or decoded token to callback
   );
