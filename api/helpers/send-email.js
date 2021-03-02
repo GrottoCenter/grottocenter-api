@@ -28,6 +28,11 @@ module.exports = {
       example: 'Welcome to Grottocenter!',
       required: true,
     },
+    i18n: {
+      type: 'ref',
+      defaultsTo: sails.hooks.i18n,
+      description: 'Locale module to use to translate the email content.',
+    },
     recipientEmail: {
       type: 'string',
       description: 'Recipient of the email',
@@ -66,14 +71,20 @@ module.exports = {
   fn: async function(inputs, exits) {
     const {
       allowResponse,
-      recipientEmail,
       emailSubject,
+      i18n,
+      recipientEmail,
       viewName,
       viewValues,
     } = inputs;
+
+    // TODO: set locale temporarily
     const emailHtml = await ejs.renderFile(
       './views/emailTemplates/' + viewName + '.ejs',
-      viewValues,
+      {
+        ...viewValues,
+        i18n: i18n,
+      },
     );
 
     // Create sendEmail params
@@ -95,7 +106,7 @@ module.exports = {
         },
         Subject: {
           Charset: 'UTF-8',
-          Data: emailSubject,
+          Data: 'Grottocenter - ' + i18n.__(emailSubject),
         },
       },
       Source: allowResponse
