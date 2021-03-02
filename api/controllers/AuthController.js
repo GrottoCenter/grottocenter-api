@@ -130,7 +130,9 @@ module.exports = {
     }
 
     // Get info about the user
-    const userFound = await TCaver.findOne({ mail: emailProvided });
+    const userFound = await TCaver.findOne({ mail: emailProvided }).populate(
+      'language',
+    );
     if (!userFound) {
       return res.status(404).send({
         message: 'Caver with email ' + emailProvided + ' not found.',
@@ -147,9 +149,14 @@ module.exports = {
       'Reset password',
     );
 
-    const result = await sails.helpers.sendEmail
+    // Change locale to the user's one to translate the mail
+    req.setLocale(userFound.language.part1);
+
+    await sails.helpers.sendEmail
       .with({
-        emailSubject: 'Grottocenter - Password Reset',
+        allowResponse: false,
+        emailSubject: 'Password Reset',
+        i18n: req.i18n,
         recipientEmail: emailProvided,
         viewName: 'forgotPassword',
         viewValues: {
