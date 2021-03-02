@@ -108,6 +108,11 @@ module.exports = {
       const command = new SendEmailCommand(params);
       try {
         await awsSesCli.send(command);
+        sails.log(`An email has been sent using AWS SES service.
+          FROM: ${params.Source}
+          TO: ${params.Destination.ToAddresses.join(',')}
+          SUBJECT: ${params.Message.Subject.Data}
+        `);
         return exits.success();
       } catch (error) {
         sails.log.error(error);
