@@ -9,7 +9,10 @@ const passport = require('passport');
 const jwt = require('jsonwebtoken');
 const esClient = require('../../config/elasticsearch').elasticsearchCli;
 const { tokenSalt } = AuthService;
+
 const PASSWORD_MIN_LENGTH = 8;
+const RESET_PASSWORD_LINK =
+  'https://beta.grottocenter.org/ui/changePassword?token=';
 
 module.exports = {
   login: (req, res) => {
@@ -151,8 +154,7 @@ module.exports = {
         viewName: 'forgotPassword',
         viewValues: {
           recipientName: userFound.nickname,
-          resetLink:
-            'https://beta.grottocenter.org/ui/changePassword?token=' + token,
+          resetLink: RESET_PASSWORD_LINK + token,
         },
       })
       .intercept('sendSESEmailError', () => {
