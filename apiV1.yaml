@@ -17,6 +17,7 @@ servers:
 - url: https://beta.grottocenter.org/api/v1
 
 tags:
+- name: account
 - name: authentication
 - name: caves
 - name: cavers
@@ -662,6 +663,7 @@ paths:
   '/account/password':
     patch:
       tags:
+        - account
         - authentication
       description: Update the user password by using a reset password token issued by the /forgotPassword route.
       parameters:
@@ -693,6 +695,7 @@ paths:
   '/forgotPassword':
     post:
       tags:
+        - account
         - authentication
       description: >-
         Launch the procedure of password change. This will send an email to the email adress you provided if it exists as a Grottocenter user's email. This email contains a password reset link expiring after 24 hours using the Grottocenter application.

@@ -22,7 +22,7 @@ module.exports.issue = (
   });
 
 // Verifies token on a request
-module.exports.verify = (token, customTokenSalt = tokenSalt, callback) =>
+module.exports.verify = (token, callback, customTokenSalt = tokenSalt) =>
   jwt.verify(
     token, // The token to be verified
     customTokenSalt, // Salt used to sign the token
