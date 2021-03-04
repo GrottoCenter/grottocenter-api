@@ -16,6 +16,34 @@ const getResetPasswordTokenSalt = (user) => {
 };
 
 module.exports = {
+  changeEmail: async (req, res) => {
+    // Check params
+    const emailProvided = req.param('email');
+    if (!emailProvided) {
+      return res.badRequest(`You must provide an email.`);
+    }
+    if (req.token.id !== Number(req.params.id)) {
+      return res.forbidden(
+        'You cannot change the e-mail address of an account other than yours.',
+      );
+    }
+
+    // Perform update
+    await TCaver.updateOne({
+      id: req.token.id,
+    })
+      .set({
+        mail: req.param('email'),
+      })
+      .intercept({ name: 'UsageError' }, () => {
+        return res.badRequest(
+          'The email you are trying to set for your account is not a valid email.',
+        );
+      });
+
+    return res.sendStatus(204);
+  },
+
   forgotPassword: async (req, res) => {
     const emailProvided = req.param('email');
     if (!emailProvided) {

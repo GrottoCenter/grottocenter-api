@@ -93,6 +93,7 @@ module.exports = {
       type: 'string',
       allowNull: false,
       columnName: 'mail',
+      isEmail: true,
       maxLength: 50,
     },
 

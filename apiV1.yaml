@@ -660,6 +660,30 @@ paths:
               schema:
                 $ref: '#/components/schemas/Language'
   
+  '/account/:id/email':
+    patch:
+      tags:
+        - account
+        - authentication
+      description: Update the user email. You can only change the email of your account, using your authentication token.
+      parameters:
+        - name: email
+          in: query
+          description: New email of the account.
+          required: true
+          schema:
+            type: string
+      
+      responses:
+        '204':
+          description: Successful operation
+
+        '400':
+          description: You must provide a (valid) email.
+        
+        '403':
+          description: You cannot change the e-mail address of an account other than yours.
+        
   '/account/password':
     patch:
       tags:
