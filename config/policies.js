@@ -184,6 +184,7 @@ module.exports.policies = {
   },
 
   'v1/AccountController': {
+    changeEmail: 'tokenAuth',
     changePassword: true,
     forgotPassword: true,
   },
