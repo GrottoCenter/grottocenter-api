@@ -31,9 +31,11 @@ module.exports.policies = {
     index: 'localize',
   },
 
+  AccountController: {
+    '*': true,
+  },
+
   AuthController: {
-    changePassword: true,
-    forgotPassword: true,
     login: true,
     logout: 'tokenAuth',
     signUp: true,
@@ -179,6 +181,11 @@ module.exports.policies = {
     findGrottos: true,
     findEntrances: true,
     findEntrancesCoordinates: true,
+  },
+
+  'v1/AccountController': {
+    changePassword: true,
+    forgotPassword: true,
   },
 
   /***************************************************************************
