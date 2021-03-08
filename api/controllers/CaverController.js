@@ -55,7 +55,7 @@ module.exports = {
       .with({
         groups: req.token.groups,
         rightEntity: RightService.RightEntities.CAVER,
-        rightAction: RightService.RightActions.EDIT_ALL,
+        rightAction: RightService.RightActions.EDIT_ANY,
       })
       .intercept('rightNotFound', (err) => {
         return res.serverError(
@@ -102,7 +102,7 @@ module.exports = {
       .with({
         groups: req.token.groups,
         rightEntity: RightService.RightEntities.CAVER,
-        rightAction: RightService.RightActions.EDIT_ALL,
+        rightAction: RightService.RightActions.EDIT_ANY,
       })
       .intercept('rightNotFound', (err) => {
         return res.serverError(
@@ -155,7 +155,7 @@ module.exports = {
       .with({
         groups: req.token.groups,
         rightEntity: RightService.RightEntities.CAVER,
-        rightAction: RightService.RightActions.EDIT_ALL,
+        rightAction: RightService.RightActions.EDIT_ANY,
       })
       .intercept('rightNotFound', (err) => {
         return res.serverError(
@@ -224,7 +224,7 @@ module.exports = {
       .with({
         groups: req.token.groups,
         rightEntity: RightService.RightEntities.CAVER,
-        rightAction: RightService.RightActions.VIEW_ALL,
+        rightAction: RightService.RightActions.VIEW_ANY,
       })
       .intercept('rightNotFound', (err) => {
         return res.serverError(
@@ -265,7 +265,7 @@ module.exports = {
       .with({
         groups: req.token.groups,
         rightEntity: RightService.RightEntities.CAVER,
-        rightAction: RightService.RightActions.VIEW_ALL,
+        rightAction: RightService.RightActions.VIEW_ANY,
       })
       .intercept('rightNotFound', (err) => {
         return res.serverError(
@@ -306,7 +306,7 @@ module.exports = {
       .with({
         groups: req.token.groups,
         rightEntity: RightService.RightEntities.CAVER,
-        rightAction: RightService.RightActions.EDIT_ALL,
+        rightAction: RightService.RightActions.EDIT_ANY,
       })
       .intercept('rightNotFound', (err) => {
         return res.serverError(
