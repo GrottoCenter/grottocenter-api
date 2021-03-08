@@ -157,8 +157,8 @@ module.exports = {
     const hasRight = await sails.helpers.checkRight
       .with({
         groups: req.token.groups,
-        rightEntity: RightService.RightEntities.BIBLIOGRAPHY,
-        rightAction: RightService.RightActions.EDIT_ALL,
+        rightEntity: RightService.RightEntities.DOCUMENT,
+        rightAction: RightService.RightActions.EDIT_ANY,
       })
       .intercept('rightNotFound', (err) => {
         return res.serverError(
@@ -215,8 +215,8 @@ module.exports = {
     const hasRight = await sails.helpers.checkRight
       .with({
         groups: req.token.groups,
-        rightEntity: RightService.RightEntities.BIBLIOGRAPHY,
-        rightAction: RightService.RightActions.EDIT_ALL,
+        rightEntity: RightService.RightEntities.DOCUMENT,
+        rightAction: RightService.RightActions.EDIT_ANY,
       })
       .intercept('rightNotFound', (err) => {
         return res.serverError(
