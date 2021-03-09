@@ -13,11 +13,11 @@ const { tokenSalt } = AuthService;
 module.exports.issue = (
   payload,
   customTokenSalt = tokenSalt,
-  expiresInHours,
+  expiresInSeconds,
   subject,
 ) =>
   jwt.sign(payload, customTokenSalt, {
-    expiresIn: 60 * 60 * expiresInHours,
+    expiresIn: expiresInSeconds,
     subject: subject,
   });
 
