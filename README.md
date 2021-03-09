@@ -6,15 +6,22 @@ Current production version is available [here](http://beta.grottocenter.org/)
 
 ## Project overview
 
-[![Travis Status](https://travis-ci.org/GrottoCenter/Grottocenter3.svg?branch=rc)](https://travis-ci.org/GrottoCenter/Grottocenter3?branch=rc)
-[![Coverage Status](https://coveralls.io/repos/github/GrottoCenter/Grottocenter3/badge.svg?branch=rc)](https://coveralls.io/github/GrottoCenter/Grottocenter3?branch=rc)
+### Master
+[![Travis Status](https://travis-ci.org/GrottoCenter/Grottocenter3.svg?branch=master)](https://travis-ci.org/GrottoCenter/Grottocenter3?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/GrottoCenter/Grottocenter3/badge.svg?branch=master)](https://coveralls.io/github/GrottoCenter/Grottocenter3?branch=master)
+
+### Develop
+[![Travis Status](https://travis-ci.org/GrottoCenter/Grottocenter3.svg?branch=develop)](https://travis-ci.org/GrottoCenter/Grottocenter3?branch=develop)
+[![Coverage Status](https://coveralls.io/repos/github/GrottoCenter/Grottocenter3/badge.svg?branch=develop)](https://coveralls.io/github/GrottoCenter/Grottocenter3?branch=develop)
+
+
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
 
 ![GC flyer](https://rawgit.com/wiki/GrottoCenter/Grottocenter3/images/afficheGC3.svg)
 
 ## Contributors
 Thanks to their donations they made possible the developer of the V3 of Grottocenter:
-Spéléo Club des Mémises, Frédéric Urien, Christophe Bes, Georges Messina, Philippe Henry, Bernard Thomachot, Nathan Bartas, Benjamin Soufflet, Ferdinando Didonna, Jean Marc Mattlet, Jean-Jacques Veux, Etienne Fabre, Sandy De Wilde, Sylvain Bélet, Félix Nilius, 
+Spéléo Club des Mémises, Frédéric Urien, Christophe Bes, Georges Messina, Philippe Henry, Bernard Thomachot, Nathan Bartas, Benjamin Soufflet, Ferdinando Didonna, Jean Marc Mattlet, Jean-Jacques Veux, Etienne Fabre, Sandy De Wilde, Sylvain Bélet, Félix Nilius,
 Didier Gignoux, Paul Guerin, Hervé Plaettner, Marius Carrière, Doc Carbur, Hard Gilles, Herman de Swart, Francesc Boix, Kai Getrost, Frederik Bauer, F K, Martin Andy, Suzanne Jiquel, Patrick Colinet, Association Wikicaves, Thierry Aubé, Jean Michel Faudrin, Michel Kaspruk, Yann Schneylin, Fabien Minana, Alain Gresse, Didier Borg, Ivan Herbots, Curtis Walter, Jan Matthesius, Stephane Jaillet, Thomas Cabotiau, Sylvain Pichot, Ayoub Nehili, CDS de l'Aude, Julio Serrano Banderas, Guillaume Cédille, Patrick Candéla, Léonard de Haro, Bruno Rouzeyre, Eric Madelaine, Christophe Alexandre, Pierre Mouriaux, Christophe Mergalet, Daniel Caron, Christian Feuvrier, Laurent Delbourg, Melanie Sanchez, Spéléo Club de Villeurbanne, Harold van Ingen, Jerome Fiquet, Joris Genisset, Gérald Huet AVENTURE VERTICALE, Alexandre Faucheux, Laval Subterra, Audrey Maingue, François Purson, Eric Gautier, Guillaume Cugno, Jean-François Foulche, Oskar Van Herreweghe, Guerard Marie, Christophe Evrard, Philippe Gerbier, Christopher Peeters, Speleo Club de Metz, Speleo Nederland, Erik De Groef, Christian Delaire, Flemish Caving Association, Denis Pailo, Timothée Chauviré, Claudie Serin, Eric de Valicourt, Christian Pauli, Eric Maljournal, Guilhem Navone, Laurent Blum, JM Dedieu, Estelle Grandsagne, Marie Merlin, Pierre-Antoine Mauro, Guillaume Pla, Groupe Spéléo du Club Alpin Nîmois, Sven Decharte, Dominique Lagrenee.
 
 ## Installation
@@ -98,14 +105,31 @@ https://docs.google.com/document/d/1hRB9sJ6gXm2nrepli0ipBozq4agg36qQaQCSicxkxQk/
 [Storybook](https://storybook.js.org/) is used to develop in isolation UI component.
 It can be start independently with `npm run storybook`
 
-### Git-rules
+### Git
+#### Workflow
+This project is using the **Git Flow** workflow.
+
+More info here : https://danielkummer.github.io/git-flow-cheatsheet/index.html
+
+You install the git-flow CLI to help you properly use the Git Flow Workflow.
+
+When running the `git flow init` command you should keep all the default configuration.
+
+You should use the proper type when creating a new branch with the workflow (`feature`, `bugfix`, `hotfix`, ...).
+
+Before pushing your branch always de a `git rebase -i` to merge unecessary commit together.
+
+#### Merging
+- Merging a simple feature / bugfix should always be done using a **rebase fast-forward**.
+- Complex features requiring multiple commits should be merge with a regular merge commit.
+
 #### Overview
 This project follows the conventional commit specification. It uses commitlint to enforce conventional commit messages.
 
 ##### Hooks
 To prevent bad commit and push, we use the Git hooks [Husky](https://github.com/typicode/husky)
 
-Husky is used to:
+**Husky** is used to:
 - Verify if the commit name use the [conventional commit specification](https://www.conventionalcommits.org/)
 - Do a [lint-staged](https://github.com/okonet/lint-staged)
 
