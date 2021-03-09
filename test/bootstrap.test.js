@@ -8,7 +8,7 @@ before(function(done) {
 
   sails.lift({
     log: {
-      level: 'verbose'
+      level: 'silly'
     },
     models: {
       connection: 'test',
@@ -20,15 +20,16 @@ before(function(done) {
     // here you can load fixtures, etc.
 
     // Load fixtures
-    let barrels = new Barrels();
+    //let barrels = new Barrels();
 
     // Save original objects in `fixtures` variable
     //fixtures = barrels.data;
 
     // Populate the DB
-    barrels.populate(function(err) {
+    /*barrels.populate(function(err) {
       done(err, sails);
-    });
+    });*/
+    return done();
   });
 });
 

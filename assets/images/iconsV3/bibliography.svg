@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="106.66666"
+   height="106.66666"
+   id="svg3052"
+   version="1.1"
+   inkscape:version="0.92.1 r15371"
+   sodipodi:docname="bibliography.svg"
+   inkscape:export-filename="C:\Users\urien\speleo\Wikicaves\_icons\_entry2_clust.png"
+   inkscape:export-xdpi="6.3911128"
+   inkscape:export-ydpi="6.3911128">
+  <defs
+     id="defs3054">
+    <linearGradient
+       inkscape:collect="always"
+       id="linearGradient4853">
+      <stop
+         style="stop-color:#666666;stop-opacity:1;"
+         offset="0"
+         id="stop4855" />
+      <stop
+         style="stop-color:#666666;stop-opacity:0;"
+         offset="1"
+         id="stop4857" />
+    </linearGradient>
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient4853"
+       id="radialGradient4859"
+       cx="-1380.014"
+       cy="14.257986"
+       fx="-1380.014"
+       fy="14.257986"
+       r="286.18933"
+       gradientTransform="matrix(-0.01240631,1.4162376,-1.5085276,-0.01321477,-604.36314,2011.0321)"
+       gradientUnits="userSpaceOnUse" />
+    <filter
+       inkscape:collect="always"
+       style="color-interpolation-filters:sRGB"
+       id="filter4885"
+       x="-0.011990105"
+       width="1.0239801"
+       y="-0.012009912"
+       height="1.0240198">
+      <feGaussianBlur
+         inkscape:collect="always"
+         stdDeviation="2.8595334"
+         id="feGaussianBlur4887" />
+    </filter>
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="4.24"
+     inkscape:cx="21.277734"
+     inkscape:cy="44.884375"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1-1"
+     showgrid="false"
+     inkscape:window-width="1920"
+     inkscape:window-height="1017"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     units="px"
+     showborder="false" />
+  <metadata
+     id="metadata3057">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Calque 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(0,-1015.853)">
+    <g
+       id="g4327"
+       transform="translate(259.38337,-144.61836)"
+       inkscape:export-filename="C:\Users\urien\Desktop\entry2_clust.png"
+       inkscape:export-xdpi="15.216935"
+       inkscape:export-ydpi="15.216935"
+       style="stroke:#ffffff;stroke-width:20;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+    <path
+       style="fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:#ffffff;stroke-width:60.95238113;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d=""
+       id="path3876"
+       inkscape:connector-curvature="0" />
+    <g
+       id="g4927">
+      <path
+         inkscape:export-ydpi="2.1303709"
+         inkscape:export-xdpi="2.1303709"
+         inkscape:export-filename="C:\Users\urien\speleo\Wikicaves\_icons\_bullet_entry.png"
+         inkscape:connector-curvature="0"
+         id="path3093-5"
+         d="m -853.53064,340.16145 c -11.2971,-4.00843 -26.8238,-17.4746 -33.733,-29.25628 l -7.6575,-13.05766 -0.019,-239.999992 c -0.01,-132.000003 0.9638,-243.512148 2.1651,-247.804748 3.0309,-10.83038 18.0213,-27.16938 31.003,-33.79216 10.5068,-5.3602 18.9495,-5.54596 252.0645,-5.54596 265.0726,0 252.0181,-0.85447 269.4056,17.63382 17.736,18.85882 16.6976,4.73361 17.6066,239.509048 0.4594,118.642852 -0.303,230.206902 -1.6942,247.920132 -2.3172,29.50455 -3.2399,33.09923 -11.0008,42.85715 -4.6593,5.8582 -14.1336,13.54414 -21.0541,17.07985 l -12.5826,6.42857 -240.1089,-0.22542 c -132.0599,-0.1242 -242.0375,-0.91 -244.3947,-1.74635 z"
+         style="opacity:0.93000034;fill:url(#radialGradient4859);fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:20;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;filter:url(#filter4885)"
+         transform="matrix(0.17111273,0,0,0.17231984,160.68166,1062.3858)" />
+      <path
+         inkscape:export-ydpi="2.1303709"
+         inkscape:export-xdpi="2.1303709"
+         inkscape:export-filename="C:\Users\urien\speleo\Wikicaves\_icons\_bullet_entry.png"
+         inkscape:connector-curvature="0"
+         id="path3093"
+         d="m 8.8019251,1115.7013 c -1.9330775,-0.6906 -4.5899038,-3.0112 -5.7721524,-5.0414 l -1.3102923,-2.2501 -0.00325,-41.3567 c -0.00179,-22.7462 0.164927,-41.962 0.3704796,-42.7017 0.5186186,-1.8663 3.0836634,-4.6818 5.3049992,-5.8231 1.7978592,-0.9236 3.2425108,-0.9556 43.1314358,-0.9556 45.357295,0 43.123507,-0.1473 46.098731,3.0386 3.034851,3.2498 2.857171,0.8157 3.012718,41.2722 0.0786,20.4445 -0.05185,39.6692 -0.289899,42.7215 -0.396511,5.0843 -0.5544,5.7037 -1.882386,7.3852 -0.797259,1.0095 -2.418438,2.3339 -3.602617,2.9431 l -2.153048,1.1079 -41.085686,-0.038 c -22.597127,-0.021 -41.4156882,-0.1569 -41.8190267,-0.301 z"
+         style="fill:#34558a;fill-opacity:1;fill-rule:nonzero;stroke:#ffffff;stroke-width:3.43430448;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+    </g>
+    <g
+       inkscape:label="Layer 1"
+       id="layer1-1"
+       transform="matrix(0.12369833,0,0,0.13823343,25.485132,987.68242)"
+       style="stroke-width:0.80098355;stroke-miterlimit:4;stroke-dasharray:none">
+      <g
+         id="g5767"
+         transform="translate(39.426999,25.402643)">
+        <path
+           inkscape:connector-curvature="0"
+           id="path2830"
+           sodipodi:nodetypes="ccccc"
+           style="fill:#e6e6e6;stroke:#34558a;stroke-width:5.39138889;stroke-miterlimit:4;stroke-dasharray:none"
+           d="M 363.92,374.18 89.41,415.64 C 35.915,412.22 -2.857,344.05 0.843,332.09 l 267.08,-35.68 95.993,77.772 z" />
+        <path
+           inkscape:connector-curvature="0"
+           id="path2832"
+           sodipodi:nodetypes="ccccccc"
+           style="fill:#ffff00;stroke:#34558a;stroke-width:10.74454117;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+           d="M 372.86,372.36 371.43,788.08 90,836.65 C 40.569,823.41 5.874,801.57 3.021,761.16 l -4.4754,-428.7 c 6.6138,29.82 51.521,83.29 91.454,82.76 l 282.86,-42.857 z" />
+        <path
+           inkscape:connector-curvature="0"
+           id="path2834"
+           sodipodi:nodetypes="cccccc"
+           style="fill:#ffff00;stroke:#34558a;stroke-width:2.44388652;stroke-miterlimit:4;stroke-dasharray:none"
+           d="m -0.72435,332.26116 280.71,-44.58394 2.1429,17.83131 -11.429,-8.91577 -270.84,41.30114 -0.58781,-5.63784 z" />
+        <path
+           inkscape:connector-curvature="0"
+           id="path2836"
+           sodipodi:nodetypes="cc"
+           style="fill:none;stroke:#34558a;stroke-width:9.97980499;stroke-miterlimit:4;stroke-dasharray:none"
+           d="M 90,416.65 89.286,837.36" />
+      </g>
+    </g>
+  </g>
+</svg>

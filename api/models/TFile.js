@@ -1,52 +1,60 @@
 /**
  * TFile.js
  *
- * @description :: tFile model imported from localhost MySql server at 4/3/2016 23:47:21.
+ * @description :: tFile model
  * @docs        :: http://sailsjs.org/#!documentation/models
  */
-'use strict';
 
 module.exports = {
-
   tableName: 't_file',
+
+  primaryKey: 'id',
 
   attributes: {
     id: {
-      type: 'integer',
-      unique: true,
-      primaryKey: true,
+      type: 'number',
       autoIncrement: true,
-      columnName: 'Id'
-    },
-
-    fileauthor: {
-      type: 'integer',
-      columnName: 'Id_author',
-      model: 'TAuthor',
-      via: 'id'
+      columnName: 'id',
+      unique: true,
     },
 
     dateInscription: {
-      type: 'datetime',
-      columnName: 'Date_inscription'
+      type: 'ref',
+      allowNull: false,
+      columnName: 'date_inscription',
+      columnType: 'datetime',
     },
 
-    name: {
+    dateReviewed: {
+      type: 'ref',
+      columnName: 'date_reviewed',
+      columnType: 'datetime',
+    },
+
+    fileName: {
       type: 'string',
-      size: 100,
-      columnName: 'Name'
+      allowNull: false,
+      maxLength: 200,
+      columnName: 'filename',
     },
 
-    path: {
+    pathOld: {
       type: 'string',
-      size: 1000,
-      columnName: 'Path'
+      allowNull: true,
+      columnName: 'path_old',
+      maxLength: 1000,
     },
 
-    topographies: {
-      collection: 'TTopography',
-      via: 'idTopography',
-      through: 'jtopofile'
-    }
-  }
+    fileFormat: {
+      allowNull: false,
+      columnName: 'id_file_format',
+      model: 'TFileFormat',
+    },
+
+    document: {
+      allowNull: false,
+      columnName: 'id_document',
+      model: 'TDocument',
+    },
+  },
 };

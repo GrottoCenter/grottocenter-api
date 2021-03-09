@@ -1,134 +1,176 @@
 /**
  * TGrotto.js
  *
- * @description :: tGrotto model imported from localhost MySql server at 31/3/2016 12:7:32.
+ * @description :: tGrotto model
  * @docs        :: http://sailsjs.org/#!documentation/models
  */
-'use strict';
-module.exports = {
 
+module.exports = {
   tableName: 't_grotto',
+
+  primaryKey: 'id',
 
   attributes: {
     id: {
-      type: 'integer',
-      unique: true,
-      primaryKey: true,
+      type: 'number',
       autoIncrement: true,
-      columnName: 'Id'
+      columnName: 'id',
+      unique: true,
     },
-    locked: {
-      type: 'text',
-      required: true,
-      defaultsTo: 'NO',
-      columnName: 'Locked'
-    },
+
     author: {
-      columnName: 'Id_author',
-      model: 'TCaver'
+      allowNull: false,
+      columnName: 'id_author',
+      model: 'TCaver',
     },
-    idReviewer: {
-      type: 'integer',
-      index: true,
-      columnName: 'Id_reviewer'
+
+    reviewer: {
+      columnName: 'id_reviewer',
+      model: 'TCaver',
     },
-    idLocker: {
+
+    village: {
       type: 'string',
-      size: 5,
-      columnName: 'Id_locker'
+      allowNull: true,
+      maxLength: 100,
+      columnName: 'village',
     },
-    name: {
+
+    county: {
       type: 'string',
-      size: 36,
-      columnName: 'Name'
+      allowNull: true,
+      maxLength: 100,
+      columnName: 'county',
     },
-    country: {
-      type: 'string',
-      size: 3,
-      columnName: 'Country'
-    },
+
     region: {
       type: 'string',
-      size: 32,
-      columnName: 'Region'
+      allowNull: true,
+      maxLength: 100,
+      columnName: 'region',
     },
+
     city: {
       type: 'string',
-      size: 32,
-      columnName: 'City'
+      allowNull: true,
+      maxLength: 100,
+      columnName: 'city',
     },
+
     postalCode: {
       type: 'string',
-      size: 5,
-      columnName: 'Postal_code'
+      allowNull: true,
+      columnName: 'postal_code',
+      maxLength: 5,
     },
+
     address: {
       type: 'string',
-      size: 128,
-      columnName: 'Address'
+      allowNull: true,
+      columnName: 'address',
+      maxLength: 200,
     },
-    contact: {
+
+    mail: {
       type: 'string',
-      size: 40,
-      columnName: 'Contact'
+      allowNull: true,
+      columnName: 'mail',
+      maxLength: 50,
     },
+
     yearBirth: {
-      type: 'string',
-      size: 4,
-      columnName: 'Year_birth'
+      type: 'number',
+      allowNull: true,
+      columnName: 'year_birth',
     },
+
     dateInscription: {
-      type: 'datetime',
-      columnName: 'Date_inscription'
+      type: 'ref',
+      allowNull: false,
+      columnType: 'datetime',
+      columnName: 'date_inscription',
     },
+
     dateReviewed: {
-      type: 'datetime',
-      columnName: 'Date_reviewed'
+      type: 'ref',
+      columnType: 'datetime',
+      columnName: 'date_reviewed',
     },
-    dateLocked: {
-      type: 'datetime',
-      columnName: 'Date_locked'
+
+    names: {
+      collection: 'TName',
+      via: 'grotto',
     },
-    idPresident: {
-      type: 'integer',
-      index: true,
-      columnName: 'Id_president'
-    },
-    idVicePresident: {
-      type: 'integer',
-      index: true,
-      columnName: 'Id_vice_president'
-    },
-    idTreasurer: {
-      type: 'integer',
-      index: true,
-      columnName: 'Id_treasurer'
-    },
-    idSecretary: {
-      type: 'integer',
-      index: true,
-      columnName: 'Id_secretary'
-    },
-    latitude: {
-      type: 'float',
-      columnName: 'Latitude'
-    },
-    longitude: {
-      type: 'float',
-      columnName: 'Longitude'
-    },
-    customMessage: {
-      type: 'text',
-      columnName: 'Custom_message'
-    },
-    pictureFileName: {
+
+    country: {
       type: 'string',
-      size: 100,
-      columnName: 'Picture_file_name'
+      maxLength: 3,
+      columnName: 'Country',
     },
+
+    // Sails' ORM, Waterline, doesn't support large number: that's why we use the type 'string' for the latitude
+    latitude: {
+      type: 'string',
+      allowNull: true,
+      columnName: 'latitude',
+      columnType: 'numeric(24,20)',
+    },
+
+    // Sails' ORM, Waterline, doesn't support large number: that's why we use the type 'string' for the longitude
+    longitude: {
+      type: 'string',
+      allowNull: true,
+      columnName: 'longitude',
+      columnType: 'numeric(24,20)',
+    },
+
+    customMessage: {
+      type: 'string',
+      columnName: 'custom_message',
+    },
+
     isOfficialPartner: {
       type: 'boolean',
-      columnName: 'Is_official_partner'
-    }
-  }
+      allowNull: false,
+      columnName: 'is_official_partner',
+      defaultsTo: false,
+    },
+
+    url: {
+      type: 'string',
+      allowNull: true,
+      columnName: 'url',
+      maxLength: 200,
+    },
+
+    country: {
+      columnName: 'id_country',
+      model: 'TCountry',
+    },
+
+    pictureFileName: {
+      type: 'string',
+      allowNull: true,
+      columnName: 'picture_file_name',
+      maxLength: 100,
+    },
+
+    cavers: {
+      collection: 'TCaver',
+      via: 'grotto',
+      through: 'JGrottoCaver',
+    },
+
+    exploredCaves: {
+      collection: 'TCave',
+      via: 'grotto',
+      through: 'JGrottoCaveExplorer',
+    },
+
+    partneredCaves: {
+      collection: 'TCave',
+      via: 'grotto',
+      through: 'JGrottoCavePartner',
+    },
+  },
 };

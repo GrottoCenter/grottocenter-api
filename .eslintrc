@@ -1,0 +1,75 @@
+{
+  "root": true,
+  "env": {
+    "es6": true,
+    "node": true,
+    "mocha": true,
+    "browser": false,
+    "jquery": false
+  },
+  "extends": [
+    "plugin:prettier/recommended"
+  ],
+  "plugins": [
+    "prettier"
+  ],
+  "rules": {
+    "linebreak-style": [
+      "error",
+      "unix"
+    ],
+    "eqeqeq": "error",
+    "camelcase": "error",
+    "curly": [
+      "error",
+      "multi-line"
+    ],
+    "brace-style": "error",
+    "radix": "error",
+    "yoda": "error",
+    "no-console": [
+      "error",
+      {
+        "allow": [
+          "warn",
+          "error"
+        ]
+      }
+    ],
+    "no-var": "error",
+    "require-yield": "off",
+    "prefer-destructuring": ["error", {"object": true, "array": false}]
+  },
+  "globals": {
+    "sails": true,
+    "TEntry": true,
+    "EntryService": true,
+    "TComment": true,
+    "CommonService": true,
+    "CommentService": true,
+    "TCave": true,
+    "TGrotto": true,
+    "TCaver": true,
+    "TTopography": true,
+    "TMassif": true,
+    "TokenAuthService": true,
+    "ControllerService": true,
+    "MappingV1Service": true,
+    "L": true,
+    "GrottoService": true,
+    "GeoLocService": true,
+    "SettingsService": true,
+    "ConvertService": true,
+    "I18nService": true,
+    "TBbs": true,
+    "TBbsGeo": true,
+    "TBbsChapter": true
+  },
+  "parser": "babel-eslint",
+  "parserOptions": {
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "globalReturn": false
+    }
+  }
+}

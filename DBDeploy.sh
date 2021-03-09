@@ -3,9 +3,17 @@
 # Date: Dec 29 2016
 #
 # Requirement: docker, gsutil, gcloud
+#
+# On Grottocenter V2 server :
 # The user GROTTOCENTER_V2_SSH_USER need to be created on the gc2 server with sudo rights :
 # /usr/sbin/usermod -a -G wheel GROTTOCENTER_V2_SSH_USER
-# The user GROTTOCENTER_V2_SSH_USER need to have a file .my.cnf in his home directory.
+# The user GROTTOCENTER_V2_SSH_USER need to have a file .my.cnf in his home directory with
+# MySQL user root and password set :
+# [client]
+#         user=root
+#         pass=XXXXX
+#
+# On Cloud SQL :
 # The cloud SQL V2 Mysql database server need to be created from the UI of Google Cloud.
 # A "sailsuser" user with password need to be added from the UI.
 # The "grottoce" database need to be created from the UI.
@@ -23,11 +31,13 @@
 # - Add to the created dump the modification SQL scripts from the sql folder of
 #   the project. Only the scripts starting with "20*" are used.
 # IF [OPTIONAL_PROD_DEPLOY]=true
+# - Personal data of the dump are preserved
 # - Send the dump file to Google Cloud Storage
 # - Import the dump file to the  GC3 Cloud SQL instance.
 # - Delete all dump files
 # ELSE
-# - Load dump file to local mysql container
+# - Personal data of the dump are anonymized
+# - Load dump file to local mysql docker container
 #
 # USAGE :
 # ./DBDeploy.sh [GROTTOCENTER_V2_SSH_USER] [GROTTOCENTER_V2_SSH_PORT] [OPTIONAL_PROD_DEPLOY]
@@ -35,7 +45,7 @@
 # ./DBDeploy.sh mysshuser 12345 true
 # OPTIONAL_PROD_DEPLOY can be skipped for local deployment and need to be set to 'true' for
 # production deployment.
-# The SSH password will be asked twice. This is normal.
+# -> The SSH password will be asked twice. This is normal.
 
 PROJECT_ID="grottocenter-beta"
 GROTTOCENTER_V2="37.59.123.105"
@@ -72,14 +82,13 @@ ssh -p ${GROTTOCENTER_V2_SSH_PORT} ${GROTTOCENTER_V2_SSH_USER}@${GROTTOCENTER_V2
  | sed 's/ENGINE=MyISAM/ENGINE=InnoDB/g' | gzip -3 -c" > ${DUMP_FILE_PATH}${DUMP_FILE_NAME}.gz
 # All tables are converted from MyISAM to InnoDB
 
-echo '### Concatenate all SQL changes to make to V2 database ###'
 gunzip -f ${DUMP_FILE_PATH}${DUMP_FILE_NAME}.gz
-cat sql/0_initDatabase.sql ${DUMP_FILE_PATH}${DUMP_FILE_NAME} sql/20*.sql | gzip > ${DUMP_FILE_PATH}${DUMP_FILE_NAME}.gz
-rm -f ${DUMP_FILE_PATH}${DUMP_FILE_NAME}
-
 if [ "${PRODUCTION_DEPLOY}" = "true" ]
 then
   echo '################ PRODUCTION DEPLOY ###################'
+  echo '### Concatenate all SQL changes to make to V2 database ###'
+  cat sql/0_initDatabase.sql ${DUMP_FILE_PATH}${DUMP_FILE_NAME} sql/20*.sql | gzip > ${DUMP_FILE_PATH}${DUMP_FILE_NAME}.gz
+  rm -f ${DUMP_FILE_PATH}${DUMP_FILE_NAME}
   echo '### Upload Dump file to the Cloud Storage bucket you created ###'
   gsutil cp ${DUMP_FILE_PATH}${DUMP_FILE_NAME}.gz gs://${CLOUD_STORAGE_BUCKET_NAME}
   rm -f ${DUMP_FILE_PATH}${DUMP_FILE_NAME}.gz
@@ -92,14 +101,18 @@ then
   gcloud config set project ${PROJECT_ID}
 
   echo '### Import dump file to the prod database ###'
-  gcloud sql instances import ${SQL_PROD_INSTANCE_NAME} gs://${CLOUD_STORAGE_BUCKET_NAME}/${DUMP_FILE_NAME}.gz
+  gcloud sql import sql ${SQL_PROD_INSTANCE_NAME} gs://${CLOUD_STORAGE_BUCKET_NAME}/${DUMP_FILE_NAME}.gz
 
   echo "### Remove dump file from Google Cloud Storage"
   gsutil acl ch -d ${CLOUDSQL_SERVICE_ACCOUNT_EMAIL_ADDRESS} gs://${CLOUD_STORAGE_BUCKET_NAME}
   gsutil rm gs://${CLOUD_STORAGE_BUCKET_NAME}/${DUMP_FILE_NAME}.gz
 else
   echo '################ LOCAL DEPLOY ###################'
+  echo '### Concatenate all SQL changes to make to V2 database + ANONYMIZE ###'
+  cat sql/0_initDatabase.sql ${DUMP_FILE_PATH}${DUMP_FILE_NAME} sql/20*.sql sql/1_anonymize.sql | gzip > ${DUMP_FILE_PATH}${DUMP_FILE_NAME}.gz
+  rm -f ${DUMP_FILE_PATH}${DUMP_FILE_NAME}
   echo '### Upload Dump file to the local Mysql Docker ###'
+  # cp ${DUMP_FILE_PATH}${DUMP_FILE_NAME}.gz ${DUMP_FILE_PATH}${DUMP_FILE_NAME}.gz.save
   gunzip -f ${DUMP_FILE_PATH}${DUMP_FILE_NAME}.gz
   docker exec -i ${MYSQL_LOCAL_TAGNAME} mysql --user=${LOCAL_DOCKER_MYSQL_USER} --password=${LOCAL_DOCKER_MYSQL_PASSWORD} ${LOCAL_DOCKER_MYSQL_DATABASE} < ${DUMP_FILE_PATH}${DUMP_FILE_NAME}
   rm -f ${DUMP_FILE_PATH}${DUMP_FILE_NAME}

@@ -1,7 +1,14 @@
-'use strict';
-module.exports = {
+/**
+ */
 
-  findAll: function(req, res) {
-    return sails.controllers.search.findAll(req, res, MappingV1Service.convertToSearchResult);
-  }
+const searchController = require('../SearchController');
+
+module.exports = {
+  search: (req, res) => {
+    searchController.search(req, res);
+  },
+
+  advancedSearch: (req, res) => {
+    searchController.advancedSearch(req, res);
+  },
 };

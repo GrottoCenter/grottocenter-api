@@ -1,0 +1,40 @@
+steps:
+
+- name: gcr.io/cloud-builders/gsutil
+  args: ['cp', 'gs://grottocenter3-private/production-test.js', 'config/env/production.js']
+- name: gcr.io/cloud-builders/gsutil
+  args: ['cp', 'gs://grottocenter3-private/.transifexrc', '.transifexrc']
+- name: gcr.io/cloud-builders/gsutil
+  args: ['cp', 'gs://grottocenter3-private/.env', '.env']
+
+- name: gcr.io/cloud-builders/npm
+  args: ['install']
+- name: gcr.io/cloud-builders/npm
+  args: ['install', 'grunt-cli']
+- name: gcr.io/cloud-builders/npm
+  args: ['run-script', 'build']
+
+# Build Docker image
+- name: gcr.io/cloud-builders/docker
+  args: ['build',
+    '-t', 'eu.gcr.io/$PROJECT_ID/grottocenter-3:$TAG_NAME',
+    '-t', 'eu.gcr.io/$PROJECT_ID/grottocenter-3:latest',
+    '.']
+
+# Push latest Docker image to registry (tag image will be pushed at the end of the build with "images:")
+- name: gcr.io/cloud-builders/docker
+  args: ['push', 'eu.gcr.io/$PROJECT_ID/grottocenter-3:latest']
+
+- name: gcr.io/cloud-builders/gcloud
+  args: ['compute', 'instances', 'delete', 'grottocenter-3', '--zone', 'us-east1-b', '--quiet']
+
+- name: gcr.io/cloud-builders/gcloud
+  args: ['compute', 'instances', 'create', 'grottocenter-3', '--address', '35.231.15.20',
+  '--image', 'cos-stable-64-10176-62-0', '--image-project', 'cos-cloud',
+  '--zone', 'us-east1-b', '--machine-type', 'f1-micro', '--tags', 'http-server',
+  '--metadata-from-file', 'user-data=cloudinit.yaml']
+
+timeout: 3600s
+
+images:
+- eu.gcr.io/$PROJECT_ID/grottocenter-3:$TAG_NAME

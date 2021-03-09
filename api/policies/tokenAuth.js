@@ -6,21 +6,27 @@
  * @docs        :: http://sailsjs.org/#!documentation/policies
  *
  */
-module.exports = function(req, res, next) {
-  const token = req.body.token || req.query.token || req.headers['x-access-token'];
+module.exports = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res
+      .status(401)
+      .send(
+        'Bearer token not found: you need to be authenticated to perform this action.',
+      );
+  }
 
-  // We delete the token from param to not mess with blueprints
-  delete req.query.token;
+  const token = authHeader.substring(7, authHeader.length);
 
   if (token) {
-    TokenAuthService.verify(token, function(err, token) {
+    TokenAuthService.verify(token, (err, responseToken) => {
       if (err) {
         return res.forbidden('Invalid Token');
       }
-      req.token = token; // This is the decrypted token or the payload you provided
-      next();
+      req.token = responseToken; // This is the decrypted token or the payload you provided
+      return next();
     });
+  } else {
+    return res.forbidden('You are not permitted to perform this action.');
   }
-
-  return res.forbidden('You are not permitted to perform this action.');
 };

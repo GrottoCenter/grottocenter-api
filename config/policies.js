@@ -1,20 +1,20 @@
 /**
-  * Policy Mappings
-  * (sails.config.policies)
-  *
-  * Policies are simple functions which run ** before ** your controllers.
-  * You can apply one or more policies to a given controller, or protect
-  * its actions individually.
-  *
-  * Any policy file(e.g. `api/policies/authenticated.js`) can be accessed
-  * below by its filename, minus the extension, (e.g. "authenticated")
-  *
-  * For more information on how policies work, see:
-  * http: //sailsjs.org/#/documentation/concepts/Policies
-  *
-  * For more information on configuring policies, check out:
-  * http: //sailsjs.org/#/documentation/reference/sails.config/sails.config.policies.html
-  */
+ * Policy Mappings
+ * (sails.config.policies)
+ *
+ * Policies are simple functions which run ** before ** your controllers.
+ * You can apply one or more policies to a given controller, or protect
+ * its actions individually.
+ *
+ * Any policy file(e.g. `api/policies/authenticated.js`) can be accessed
+ * below by its filename, minus the extension, (e.g. "authenticated")
+ *
+ * For more information on how policies work, see:
+ * http: //sailsjs.org/#/documentation/concepts/Policies
+ *
+ * For more information on configuring policies, check out:
+ * http: //sailsjs.org/#/documentation/reference/sails.config/sails.config.policies.html
+ */
 
 module.exports.policies = {
   /***************************************************************************
@@ -28,83 +28,156 @@ module.exports.policies = {
 
   IndexController: {
     '*': false,
-    'index': 'localize'
+    index: 'localize',
   },
 
   AuthController: {
-    'login': true,
-    'logout': 'tokenAuth'
+    login: true,
+    logout: 'tokenAuth',
+    signUp: true,
   },
 
   CaverController: {
-    '*': false,
-    'getCaversNumber': true,
-    'update': 'tokenAuth',
-    'destroy': 'tokenAuth'
+    '*': true,
   },
 
-  EntryController: {
-    '*': 'tokenAuth',
-    'find': 'apiKeyAuth',
-    'findAll': true,
-    'findRandom': true,
-    'getPublicEntriesNumber' : 'apiKeyAuth',
-    'getEntriesNumber' : true
+  'v1/CaveController': {
+    '*': true,
   },
 
-  'v1/EntryController': {
+  'v1/CaverController': {
     '*': false,
-    'find': 'apiKeyAuth',
-    'getPublicEntriesNumber' : 'apiKeyAuth',
+    count: true,
+    create: 'tokenAuth',
+    putOnGroup: ['tokenAuth', 'adminAuth'],
+    removeFromGroup: ['tokenAuth', 'adminAuth'],
+    setGroups: ['tokenAuth', 'adminAuth'],
+    getAdmins: 'tokenAuth',
+    getModerators: 'tokenAuth',
+  },
+
+  'v1/EntranceController': {
+    '*': false,
+    count: true,
+    find: 'apiKeyAuth',
+    findAll: ['apiKeyAuth', 'paginate'],
+    findRandom: true,
+    publicCount: true,
   },
 
   SearchController: {
-    'findAll': 'apiKeyAuth',
+    findAll: 'apiKeyAuth',
   },
 
   'v1/SearchController': {
-    'findAll': 'apiKeyAuth',
+    search: true,
+    advancedSearch: true,
+    findAll: ['apiKeyAuth', 'paginate'],
   },
 
   CaveController: {
-    '*': true
+    '*': true,
   },
 
   AuthorController: {
-    '*': false
+    '*': false,
   },
 
   PartnerController: {
-    '*': true
+    '*': true,
+  },
+
+  'v1/PartnerController': {
+    '*': true,
   },
 
   I18nController: {
-    '*': true
+    '*': true,
   },
 
   SwaggerController: {
-    '*': true
+    '*': true,
   },
 
   TopographyController: {
-    '*': false
+    '*': false,
+  },
+
+  ConvertController: {
+    '*': true,
   },
 
   CommentController: {
-    '*': false
+    '*': false,
   },
 
   GrottoController: {
-    '*': true
+    '*': true,
   },
 
   AdminController: {
-    '*': true
+    '*': true,
   },
 
   RssController: {
-    '*': true
-  }
+    '*': true,
+  },
+
+  'v1/AuthController': {
+    '*': true,
+  },
+
+  'v1/BbsGeoController': {
+    '*': true,
+  },
+
+  'v1/SubjectController': {
+    '*': true,
+  },
+
+  'v1/LanguageController': {
+    '*': true,
+  },
+
+  'v1/DocumentController': {
+    '*': true,
+    create: 'tokenAuth',
+    validate: ['tokenAuth', 'moderatorAuth'],
+    multipleValidate: ['tokenAuth', 'moderatorAuth'],
+    update: ['tokenAuth', 'moderatorAuth'],
+  },
+
+  'v1/DocumentTypeController': {
+    '*': true,
+  },
+
+  'v1/IdentifierTypeController': {
+    '*': true,
+  },
+
+  'v1/RegionController': {
+    '*': true,
+  },
+
+  'v1/GrottoController': {
+    create: 'tokenAuth',
+    count: true,
+    getOfficialPartnersNumber: true,
+    find: ['apiKeyAuth', 'paginate'],
+  },
+
+  'v1/MassifController': {
+    find: true,
+  },
+
+  'v1/GeoLocController': {
+    countEntries: true,
+    findCaves: true,
+    findCavesCoordinates: true,
+    findGrottos: true,
+    findEntrances: true,
+    findEntrancesCoordinates: true,
+  },
 
   /***************************************************************************
    *                                                                          *

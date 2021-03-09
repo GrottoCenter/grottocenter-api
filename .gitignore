@@ -41,7 +41,7 @@
 
 config/local.js
 config/env/production.js
-
+.env
 
 
 
@@ -100,9 +100,6 @@ lib-cov
 npm-debug.log
 
 
-
-
-
 ################################################
 # Miscellaneous
 #
@@ -117,5 +114,27 @@ npm-debug.log
 nbproject
 .idea
 .node_history
+.eslintcache
 www
 .transifexrc
+
+coverage
+.coveralls.yml
+.vscode
+
+################################################
+# Logstash
+#
+# Plugins downloaded to run logstash in the
+# docker container.
+################################################
+mysql-connector.tar.gz
+mysql-connector-java-5.1.47
+postgresql-connector.jar
+
+################################################
+# Anonymized data
+#
+# Path to the Grottocenter anonymized sql data file.
+################################################
+sql/*grottoce_anonymize*.sql

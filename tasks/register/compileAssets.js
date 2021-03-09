@@ -1,8 +1,9 @@
 module.exports = function(grunt) {
   grunt.registerTask('compileAssets', [
-    'jst:dev',
+    // 'jst:dev',
     'less:dev',
     'copy:dev',
-    'browserify:dev'
+    'copy:swaggercss',
+    'browserify:dev',
   ]);
 };

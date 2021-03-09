@@ -36,31 +36,25 @@
   <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5" />
   <meta name="theme-color" content="#ffffff" />
 
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+        integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+        crossorigin=""/>
   <!--STYLES-->
   <link rel="stylesheet" href="/styles/normalize.css">
   <link rel="stylesheet" href="/styles/skeleton.css">
+  <link rel="stylesheet" href="/styles/swagger-ui.css">
   <link rel="stylesheet" href="/styles/gc-icon.css">
   <link rel="stylesheet" href="/styles/importer.css">
-  <link rel="stylesheet" href="/styles/swagger-ui.css">
+  <link rel="stylesheet" href="/styles/index.css">
   <!--STYLES END-->
 
   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.2/dist/leaflet.css" />
   <script>
     <!-- i18n -->
-
-    locale = "<%= getLocale() %>";
-    localesList = [];
-    <% var locales = sails.config.i18n.locales;%>
-    <% var localesText = sails.config.i18n.localesText;%>
-    <% for(var i=0; i < locales.length; i++) {%>
-    localesList.push({
-      value: '<%= locales[i] %>',
-      primaryText: '<%= localesText[locales[i]] %>'
-    });
-    <% } %>
-    window.catalog = <%- JSON.stringify(getCatalog(getLocale())) %>;
+    locale = "<%- locale %>";
+    localesList = <%- localesList %>;
+    window.catalog = <%- catalog %>;
   </script>
 </head>
 
@@ -89,7 +83,7 @@
     -->
 
     <!--TEMPLATES-->
-    
+
     <!--TEMPLATES END-->
 
 
@@ -116,14 +110,10 @@
 
     -->
 
-    <script src="https://code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
-    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js" crossorigin="anonymous"></script>
     <!--SCRIPTS-->
     <script src="/js/dependencies/sails.io.js"></script>
-    <script src="/js/dependencies/animate.js"></script>
     <script src="/js/bundle.js"></script>
     <!--SCRIPTS END-->
-    <script src="https://unpkg.com/leaflet@1.0.2/dist/leaflet.js"></script>
 </body>
 
 </html>

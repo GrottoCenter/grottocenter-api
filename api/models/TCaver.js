@@ -1,266 +1,194 @@
 /**
  * TCaver.js
  *
- * @description :: TODO: You might write a short summary of how this model works and what it represents here.
+ * @description :: tCaver model
  * @docs        :: http://sailsjs.org/#!documentation/models
  */
-'use strict';
 
 const crypto = require('crypto');
 
+// 01/2018 C. ROIG : remove RGPD fields (see sql/20181231_del_fields.sql)
 module.exports = {
-
   tableName: 't_caver',
+
+  primaryKey: 'id',
 
   attributes: {
     id: {
-      type: 'integer',
-      unique: true,
-      primaryKey: true,
+      type: 'number',
       autoIncrement: true,
-      columnName: 'Id'
-    },
-
-    activated: {
-      type: 'text',
-      enum: ['YES', 'NO'],
-      required: true,
-      defaultsTo: 'NO',
-      columnName: 'Activated'
-    },
-
-    activationCode: {
-      type: 'string',
-      size: 32,
-      required: true,
-      defaultsTo: '0',
-      columnName: 'Activation_code'
-    },
-
-    banned: {
-      type: 'text',
-      enum: ['YES', 'NO'],
-      required: true,
-      defaultsTo: 'NO',
-      columnName: 'Banned'
-    },
-
-    ip: {
-      type: 'string',
-      size: 200,
-      columnName: 'Ip'
-    },
-
-    browser: {
-      type: 'string',
-      size: 1000,
-      columnName: 'Browser'
-    },
-
-    connectionCounter: {
-      type: 'integer',
-      required: true,
-      defaultsTo: '0',
-      columnName: 'Connection_counter'
-    },
-
-    relevance: {
-      type: 'float',
-      required: true,
-      defaultsTo: '1',
-      columnName: 'Relevance'
-    },
-
-    name: {
-      type: 'string',
-      size: 36,
-      columnName: 'Name'
-    },
-
-    surname: {
-      type: 'string',
-      size: 32,
-      columnName: 'Surname'
+      columnName: 'id',
+      unique: true,
     },
 
     login: {
       type: 'string',
-      size: 20,
-      columnName: 'Login'
-    },
-
-    nickname: {
-      type: 'string',
-      size: 68,
-      columnName: 'Nickname'
+      columnName: 'login',
+      allowNull: true,
+      maxLength: 20,
+      unique: true,
     },
 
     password: {
       type: 'string',
-      size: 32,
-      required: true,
-      defaultsTo: '0',
-      columnName: 'Password'
+      columnName: 'password',
+      allowNull: true,
+      maxLength: 64,
     },
 
-    country: {
+    activated: {
+      type: 'boolean',
+      columnName: 'activated',
+      defaultsTo: false,
+    },
+
+    activationCode: {
       type: 'string',
-      size: 3,
-      columnName: 'Country'
+      allowNull: true,
+      columnName: 'activation_code',
+      maxLength: 64,
     },
 
-    region: {
+    banned: {
+      type: 'boolean',
+      columnName: 'banned',
+      defaultsTo: false,
+    },
+
+    connectionCounter: {
+      type: 'number',
+      allowNull: false,
+      columnName: 'connection_counter',
+      defaultsTo: 0,
+    },
+
+    relevance: {
+      type: 'number',
+      allowNull: false,
+      columnName: 'relevance',
+      defaultsTo: 1,
+    },
+
+    name: {
       type: 'string',
-      size: 32,
-      columnName: 'Region'
+      allowNull: true,
+      maxLength: 36,
+      columnName: 'name',
     },
 
-    city: {
+    surname: {
       type: 'string',
-      size: 32,
-      columnName: 'City'
+      allowNull: true,
+      columnName: 'surname',
+      maxLength: 32,
     },
 
-    postalCode: {
+    nickname: {
       type: 'string',
-      size: 5,
-      columnName: 'Postal_code'
+      columnName: 'nickname',
+      maxLength: 68,
     },
 
-    address: {
+    mail: {
       type: 'string',
-      size: 128,
-      columnName: 'Address'
+      allowNull: false,
+      columnName: 'mail',
+      maxLength: 50,
     },
 
-    dateBirth: {
-      type: 'date',
-      columnName: 'Date_birth'
-    },
-
-    contact: {
-      type: 'string',
-      size: 50,
-      columnName: 'Contact'
-    },
-
-    yearInitiation: {
-      type: 'integer',
-      columnName: 'Year_initiation'
+    mailIsValid: {
+      type: 'boolean',
+      allowNull: false,
+      columnName: 'mail_is_valid',
+      defaultsTo: true,
     },
 
     dateInscription: {
-      type: 'datetime',
-      columnName: 'Date_inscription'
+      type: 'ref',
+      allowNull: false,
+      columnName: 'date_inscription',
+      columnType: 'datetime',
     },
 
     dateLastConnection: {
-      type: 'datetime',
-      columnName: 'Date_last_connection'
-    },
-
-    language: {
-      type: 'string',
-      size: 4,
-      columnName: 'Language'
-    },
-
-    contactIsPublic: {
-      type: 'integer',
-      required: true,
-      defaultsTo: '0',
-      columnName: 'Contact_is_public'
+      type: 'ref',
+      columnName: 'date_last_connection',
+      columnType: 'datetime',
     },
 
     alertForNews: {
-      type: 'text',
-      enum: ['YES', 'NO'],
-      required: true,
-      defaultsTo: 'NO',
-      columnName: 'Alert_for_news'
+      type: 'boolean',
+      allowNull: false,
+      columnName: 'alert_for_news',
+      defaultsTo: false,
     },
 
     showLinks: {
-      type: 'text',
-      enum: ['YES', 'NO'],
-      required: true,
-      defaultsTo: 'NO',
-      columnName: 'Show_links'
+      type: 'boolean',
+      allowNull: false,
+      columnName: 'show_links',
+      defaultsTo: false,
     },
 
     detailLevel: {
-      type: 'integer',
-      required: true,
-      defaultsTo: '30',
-      columnName: 'Detail_level'
-    },
-
-    latitude: {
-      type: 'float',
-      required: true,
-      defaultsTo: '0.00000000000000000000',
-      columnName: 'Latitude'
-    },
-
-    longitude: {
-      type: 'float',
-      required: true,
-      defaultsTo: '0.00000000000000000000',
-      columnName: 'Longitude'
-    },
-
-    defaultLatitude: {
-      type: 'float',
-      columnName: 'Default_latitude'
-    },
-
-    defaultLongitude: {
-      type: 'float',
-      columnName: 'Default_longitude'
+      type: 'number',
+      allowNull: true,
+      columnName: 'detail_level',
     },
 
     defaultZoom: {
-      type: 'integer',
-      columnName: 'Default_zoom'
+      type: 'number',
+      allowNull: true,
+      columnName: 'default_zoom',
     },
 
-    customMessage: {
-      type: 'text',
-      columnName: 'Custom_message'
+    language: {
+      allowNull: false,
+      columnName: 'id_language',
+      model: 'TLanguage',
     },
 
-    facebook: {
-      type: 'string',
-      size: 100,
-      columnName: 'Facebook'
+    grottos: {
+      collection: 'TGrotto',
+      via: 'caver',
+      through: 'JGrottoCaver',
     },
 
-    pictureFileName: {
-      type: 'string',
-      size: 100,
-      columnName: 'Picture_file_name'
+    documents: {
+      collection: 'TDocument',
+      via: 'caver',
+      through: 'JDocumentCaverAuthor',
     },
 
-    toJSON: function() {
-      let obj = this.toObject();
-      delete obj.password; // Removing password on JSON object
-      return obj;
-    }
+    groups: {
+      collection: 'TGroup',
+      via: 'caver',
+      through: 'JCaverGroup',
+    },
   },
 
-  beforeCreate: function(values, next) {
+  // Commented because it was taking some attributes away (ex: 'author' in the document model is deleted)
+  // + the MappingV1Service already ignores the password attribute
+  // customToJSON: () => {
+  //   return _.omit(this, ['password']); // Remove password when sending JSON
+  // },
+
+  beforeCreate: (values, next) => {
     // TODO commented to remove ESlint warning because hash is not defined.
-    //values.password = hash;
+    // values.password = hash;
     next();
   },
 
-  comparePassword: function(password, user, next) {
-    const hash = crypto.createHash('md5').update(password).digest('hex');
+  comparePassword: (password, user, next) => {
+    const hash = crypto
+      .createHash('md5')
+      .update(password)
+      .digest('hex');
 
     if (hash === user.password) {
       next(null, true);
     } else {
       next(null, false);
     }
-  }
+  },
 };

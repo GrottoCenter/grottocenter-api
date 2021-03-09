@@ -1,10 +1,7 @@
-module.exports = function (grunt) {
+module.exports = function(grunt) {
   grunt.registerTask('linkAssetsBuildProd', [
-    'sails-linker:prodJsRelative',
-    'sails-linker:prodStylesRelative',
-    'sails-linker:devTpl',
-    'sails-linker:prodJsRelativeJade',
-    'sails-linker:prodStylesRelativeJade',
-    'sails-linker:devTplJade'
+    'sails-linker:prodJsBuild',
+    'sails-linker:prodStylesBuild',
+    // 'sails-linker:clientSideTemplatesBuild', // Templates are not used in Grottocenter currently
   ]);
 };

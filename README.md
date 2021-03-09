@@ -1,238 +1,152 @@
 # Grottocenter 3
 
-The Wiki database made by cavers for cavers
-A [Sails](http://sailsjs.org) application
+The Wiki database made by cavers for cavers!
 
-## Installation :
+Current production version is available [here](http://beta.grottocenter.org/)
 
-### Install NodeJS
+## Project overview
 
-Min version: 6.9.4
+### Master
+[![Travis Status](https://travis-ci.org/GrottoCenter/Grottocenter3.svg?branch=master)](https://travis-ci.org/GrottoCenter/Grottocenter3?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/GrottoCenter/Grottocenter3/badge.svg?branch=master)](https://coveralls.io/github/GrottoCenter/Grottocenter3?branch=master)
 
-### Install NPM (package manager)
+### Develop
+[![Travis Status](https://travis-ci.org/GrottoCenter/Grottocenter3.svg?branch=develop)](https://travis-ci.org/GrottoCenter/Grottocenter3?branch=develop)
+[![Coverage Status](https://coveralls.io/repos/github/GrottoCenter/Grottocenter3/badge.svg?branch=develop)](https://coveralls.io/github/GrottoCenter/Grottocenter3?branch=develop)
 
-Min version: 4.1.2
 
-### Get source code
+[![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
 
-GitHub repository
-https://github.com/GrottoCenter/Grottocenter3.git
+![GC flyer](https://rawgit.com/wiki/GrottoCenter/Grottocenter3/images/afficheGC3.svg)
 
-### Install packages
+## Contributors
+Thanks to their donations they made possible the developer of the V3 of Grottocenter:
+Spéléo Club des Mémises, Frédéric Urien, Christophe Bes, Georges Messina, Philippe Henry, Bernard Thomachot, Nathan Bartas, Benjamin Soufflet, Ferdinando Didonna, Jean Marc Mattlet, Jean-Jacques Veux, Etienne Fabre, Sandy De Wilde, Sylvain Bélet, Félix Nilius,
+Didier Gignoux, Paul Guerin, Hervé Plaettner, Marius Carrière, Doc Carbur, Hard Gilles, Herman de Swart, Francesc Boix, Kai Getrost, Frederik Bauer, F K, Martin Andy, Suzanne Jiquel, Patrick Colinet, Association Wikicaves, Thierry Aubé, Jean Michel Faudrin, Michel Kaspruk, Yann Schneylin, Fabien Minana, Alain Gresse, Didier Borg, Ivan Herbots, Curtis Walter, Jan Matthesius, Stephane Jaillet, Thomas Cabotiau, Sylvain Pichot, Ayoub Nehili, CDS de l'Aude, Julio Serrano Banderas, Guillaume Cédille, Patrick Candéla, Léonard de Haro, Bruno Rouzeyre, Eric Madelaine, Christophe Alexandre, Pierre Mouriaux, Christophe Mergalet, Daniel Caron, Christian Feuvrier, Laurent Delbourg, Melanie Sanchez, Spéléo Club de Villeurbanne, Harold van Ingen, Jerome Fiquet, Joris Genisset, Gérald Huet AVENTURE VERTICALE, Alexandre Faucheux, Laval Subterra, Audrey Maingue, François Purson, Eric Gautier, Guillaume Cugno, Jean-François Foulche, Oskar Van Herreweghe, Guerard Marie, Christophe Evrard, Philippe Gerbier, Christopher Peeters, Speleo Club de Metz, Speleo Nederland, Erik De Groef, Christian Delaire, Flemish Caving Association, Denis Pailo, Timothée Chauviré, Claudie Serin, Eric de Valicourt, Christian Pauli, Eric Maljournal, Guilhem Navone, Laurent Blum, JM Dedieu, Estelle Grandsagne, Marie Merlin, Pierre-Antoine Mauro, Guillaume Pla, Groupe Spéléo du Club Alpin Nîmois, Sven Decharte, Dominique Lagrenee.
 
-`npm install`
+## Installation
 
-### Run the app locally
+Software requirement:
+- NodeJS (min v8)
+- NPM (min 4.1.2)
+- Git client (see Git usage for configuration)
+- Docker
+- SailsJS (min v1)
+- Grunt
 
-`cd <root of the project>`
-`sails lift`
-
-Go to [http://localhost:1337/] : homepage
-
-## Developer instructions
-### GIT configuration
+Clone the project on your computer:
 ```
-git config --global user.name "my-github-username"
-git config --global user.email "my@email.com"
-git config --global help.autocorrect -1
-git config --global color.ui auto
-git config --global alias.lg "log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit"
-git config --global diff.mnemonicprefix true
-git config --global rerere.enabled true
-git config --global push.default upstream
-git config --global rebase.autosquash true
-git config --global rebase.autostash true
-git config --global core.autocrlf false
-git config --local core.autocrlf false
-git config --global pull.rebase true
-```
-### GIT usage
-
-- All features commit must be done on a specific local branch. (Only urgent bug fix should be done directly on `master`)
-- `git rebase -i` need to be used to group multiple "work in progress" commits into a single commit.
-- When the feature is ready you need to create a `pull request` on Github (https://github.com/GrottoCenter/Grottocenter3/pulls)  : Let base: master and compare: the branch
-- After the code review (which can include follow-up commits), the branch can be merged on master with button "Merge pull request"
-In most cases, change the "Merge pull request" to "Rebase and merge" using the arrow on the right of the green button
-- Don't forget to remove the remote branch after the merge
-
-
-
-### IDE configuration
-
-Atom Editor is used for developments
-
-Following Atom modules should be installed :
-
-#### Recommanded modules :
-
-```
-apm install react
-apm install atom-react-autocomplete
+> git clone https://github.com/GrottoCenter/Grottocenter3.git
 ```
 
-#### Required modules :
+## Usage
 
+### Demonstration deployment
+
+The demonstration deployment aims to launch locally an instance of Grottocenter to demonstrate its features.
+
+Start the project:
 ```
-apm install editorconfig
-apm install linter
-apm install linter-eslint
-apm install atom-beautify
-apm install linter-lesshint
+> ./deployDemo.sh
+```
+Then go to [homepage](http://localhost:1337/)
+Or access to [API documentation](http://localhost:1337/ui/api/) for example.
+
+### Development deployment
+
+The development deployment aims to launch locally all the tools needed for the Grottocenter development.
+
+Start the project:
+```
+> ./deployDev.sh
+> npm install
 ```
 
-For atom-beautify, on settings, activate "Beautify on save" for JS, JSX, HTML and CSS
-
-## Production deployment
-
-Deployment to production has been tested with Compute Engine using a shell script with docker-machine and gcloud. 
-This solution was not reliable because of certificat issues between Google Cloud and docker-machine.
-
-Then the deployment to production has been tested with Google App Engine. This solution was easy and fast but expensive (40$/month). Indeed, it is not possible to choose a micro instance with App Engine.
-
-We are now deploying to production on a a compute Engine by using the Google Container builder (Continuous Integration tool).
-
-### Requirements
-
-The following tools need to be installed on the developer's computer to be able to deploy the app :
-
-- gcloud (optional)
-- docker (optional)
-
-#### install gcloud command (optional)
-
-- Follow https://cloud.google.com/sdk/docs/
-- `gcloud components update`
-- `gcloud components install beta`
-- `gcloud init`
-
-### Google Container Builder explanation
-
-The build and deployment of the Grottocenter 3 application is done automatically by Google Container Builder.
-A build trigger based on the tag of the github repository has been setup on Google Container Builder (https://console.cloud.google.com/gcr/triggers)
-This trigger will start the cloud build which is defined in the `cloudbuild.yaml` file.
-Sensitive files containing password are stored in a private cloud storage and are retrieved during the build.
-The build will create a docker image which will be stored in the Google Container Registry with the `latest` tag and the `{GIT TAG}` tag.
-The latest steps of the build delete the existing compute engine virtual server running Grottocenter3 and re-create it using the newly created docker image.
-The container deployment (`docker run` command, ...) on the compute engine is defined in the `cloudinit.yaml` file.
-The compute engine is using a permanent IP.
-
-### one time Google Cloud setup for Container Builder deployment
-- [1 time only] Create a static IP : `gcloud compute addresses create grottocenter-website --project grottocenter-beta --region us-east1` then use this static IP in `cloudbuild.yaml`
-- Grant `Compute Engine Admin` and `service account user` access to `cloudbuild` Google APIs service account from https://console.cloud.google.com/iam-admin/iam/project?project=grottocenter-beta
-- Create the Container builder Github Trigger
-- store `production.js` and `.transifexrc` files in the proper Cloud Storage bucket defined in `cloudbuild.yaml`.
-- Authorize the public IP of the compute Engine in Cloud SQL.
-
-### Steps to deploy with Google Container Builder
-
-- Commit and push your changes to the repo
-- [Optional] Run `./localDeploy.sh` and verify that everything is working correctly on the app deployed in your local docker.
-- [Optional] Run `./DBDeploy.sh [GC2_SSH_USER] [GC2_SSH_PORT] false` to deploy the grottocenter 2 database content to your local docker and test the app with real data.
-- Add a `tag` to the commit that you want to deploy with this naming convention `v3.2.1` and don't forget to push this `tag` to `origin`.
-- monitor the build and deploy on https://console.cloud.google.com/gcr/builds
-- Wait for the complete deployment and then verify online that everything works well on the production application.
-- [Optional] Run `./DBDeploy.sh [GC2_SSH_USER] [GC2_SSH_PORT] true` to deploy the grottocenter 2 database content to the cloud SQL production database (the previous GC3 database will be overwritten).
-
-If you want to deploy a previous version you can re-run a previous build from https://console.cloud.google.com/gcr/builds or you can push a tag to a previous commit.
-You can also use the `gcloud` command used in the `cloudbuild.yaml` from your own terminal.
-
-### [DEPRECATED] Steps to deploy on App Engine
-
-__Warning :__ The deployment script will deploy the app as it is currently in your local computer ! So, if you have local changes not committed yet or if you are in a custom branch, it is this code which will be deployed and not the latest commit from the `master` branch !
-
-- Cleanup your local version of the project
-- Open a terminal and `cd <projectRoot>`
-- Make sure that the app is correctly working in production mode on your local computer by doing `node app.js --prod`
-- Make sure that `config/env/production.js` is in your project. _Otherwise ask an other Wikicaves developer for this file which is not check'in to the project because it contains the database credentials._
-- Run `./localDeploy.sh` and verify that everything is working correctly on the app deployed in your local docker.
-- [Optional] Run `./DBDeploy.sh [GC2_SSH_USER] [GC2_SSH_PORT] false` to deploy the grottocenter 2 database content to your local docker and test the app with real data.
-- Deploy in production by doing `./appEngineDeploy.sh`
-- Wait for the complete deployment and then verify online that everything works well on the production application.
-- [Optional] Run `./DBDeploy.sh [GC2_SSH_USER] [GC2_SSH_PORT] true` to deploy the grottocenter 2 database content to the cloud SQL production database (the previous GC3 database will be overwritten).
-
-## Technical choices
-
-### Database
-
-MySQL v5.0
-
-`npm install sails-mysql --save`
-
-We use the built-in Waterline ORM
-
-### Front layer
-
-Babel
-
-`npm install grunt-babel babel-preset-es2015 babel-preset-react --save`
-
-Bootstrap v3
-
-HTML5 + CSS3
-
-### JSON Web Token authentication
-
-For API access control, JWT is used
-
-`npm install jsonwebtoken --save`
-
-### User authentication
-
-`npm install passport passport-local bcryptjs validator --save`
-
-Use sails-generate-auth (abandoned??) or sails-auth to manage the login process with passport.
-
-### Swagger (interface to our API)
-
+Finally, run the server with live-reloading using:
 ```
-npm install swagger-ui --save
+> npm run start-hot
 ```
-Disable /swagger in csrf.js
 
-Run automatically by grunt tasks :
+### Tests
 
-    - Copy node_modules/swagger-ui/dist/* in assets/swagger/
-    - Update assets/swagger/index.html with the url of the json generated by swagger for our API
+Run tests:
+```
+> npm run test
+```
+
+Check code coverage:
+```
+> npm run coverage
+```
+
+For more details, read [the installation guide](https://github.com/GrottoCenter/Grottocenter3/wiki/Installation-guide)
+
+## Development
+
+Caver's community needs YOU!
+
+Yon can also join us on Slack! (using the QR-code above)
+
+~~For more details, read [the development guide](https://github.com/GrottoCenter/Grottocenter3/wiki/Development-guide)
+
+## Deployment on AWS :
+Grottocenter is evolving, its deployment is now based on AWS services.
+To help the usage of deployed services, we have put in place the following documentation :
+- Deployment of the MySQL database on Amazon RDS : https://docs.google.com/document/d/1nmfGdScWYBWa91L0SRd7LrH5XK_DQKbkGMtVdDQlmgg/edit?usp=sharing
+- Deployment of the Grottocenter3 application on EC2 : https://docs.google.com/document/d/1h8cdmlkZJG5SANKLfQQpOR1kNjMQiSKqb-N-LhM1Zlk/edit?usp=sharing
+- Creation and configuration of the Lightsail server :
+https://docs.google.com/document/d/1hRB9sJ6gXm2nrepli0ipBozq4agg36qQaQCSicxkxQk/edit?usp=sharing
+- Deployment of ElasticSearch and Logstash on Lightsail : https://docs.google.com/document/d/1ZarlIOUUWfZvo3jOQ28w8NVA9q9GmK9dIUONhkUw7ZA/edit?usp=sharing
 
 
-Access to API list with :
-    http://localhost:1337/ui/api/
+### React tools
+##### storybook
 
+[Storybook](https://storybook.js.org/) is used to develop in isolation UI component.
+It can be start independently with `npm run storybook`
 
-### Testing
+### Git
+#### Workflow
+This project is using the **Git Flow** workflow.
 
-Mocha + Barrels
+More info here : https://danielkummer.github.io/git-flow-cheatsheet/index.html
 
-`npm install mocha supertest barrels sails-memory should`
+You install the git-flow CLI to help you properly use the Git Flow Workflow.
 
-## Useful sails commands
+When running the `git flow init` command you should keep all the default configuration.
 
-### Create Sails app from scratch
+You should use the proper type when creating a new branch with the workflow (`feature`, `bugfix`, `hotfix`, ...).
 
-Install nodeJS
+Before pushing your branch always de a `git rebase -i` to merge unecessary commit together.
 
-`npm -g install sails`
-`sails new <myApp>`
+#### Merging
+- Merging a simple feature / bugfix should always be done using a **rebase fast-forward**.
+- Complex features requiring multiple commits should be merge with a regular merge commit.
 
-### Add a module on package file
+#### Overview
+This project follows the conventional commit specification. It uses commitlint to enforce conventional commit messages.
 
-`cd /PATH/TO/<myApp>`
-`npm install sails-mysql --save`
+##### Hooks
+To prevent bad commit and push, we use the Git hooks [Husky](https://github.com/typicode/husky)
 
-### Generate model and controller
+**Husky** is used to:
+- Verify if the commit name use the [conventional commit specification](https://www.conventionalcommits.org/)
+- Do a [lint-staged](https://github.com/okonet/lint-staged)
 
-`sails generate api <model-name>`
+##### Commit types
+The commit linter accepts the following types:
 
-### Upgrade a component
+- feat: Adds a new feature to the application
+- tech: Adds a new technical feature to the application (ex: a new reusable component). Neither fixes a bug nor adds a feature
+- refactor: Refactor a current implementation without adding a new feature or fixing a bug
+- improvement: Improve a current implementation without adding a new feature or fixing a bug
+- fix: A bug fix
+- chore: Changes to the build process or auxiliary tools and libraries such as documentation generation
+- docs: Documentation only changes
+- style: Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc)
+- test: Adding missing or correcting existing tests
+- revert: Reverts a previous work
 
-SailsJS:
+## Licence
 
-`npm update -g sails`
-
-Any sails module:
-
-`npm update sails-mysql`
-
-### Run tests
-
-`npm test`
+GNU Affero General Public License v3.0

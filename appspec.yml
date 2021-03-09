@@ -1,0 +1,17 @@
+version: 0.0
+
+os: linux
+
+files:
+  - source: ./
+    destination: /home/ec2-user/GrottoCenter3/
+hooks:
+  ApplicationStop:
+    - location: AWSStopProd.sh
+      timeout: 10
+      runas: ec2-user
+
+  AfterInstall:
+    - location: AWSDeployProd.sh
+      runas: ec2-user
+      timeout: 100

@@ -1,0 +1,12 @@
+ALTER TABLE t_caver DROP COLUMN Village;
+ALTER TABLE t_caver DROP COLUMN County;
+ALTER TABLE t_caver DROP COLUMN Region;
+ALTER TABLE t_caver DROP COLUMN City;
+ALTER TABLE t_caver DROP COLUMN Postal_code;
+ALTER TABLE t_caver DROP COLUMN Address;
+ALTER TABLE t_caver DROP COLUMN Date_birth;
+ALTER TABLE t_caver DROP COLUMN Year_initiation;
+ALTER TABLE t_caver DROP COLUMN Latitude;
+ALTER TABLE t_caver DROP COLUMN Longitude;
+ALTER TABLE t_caver DROP COLUMN Custom_message;
+ALTER TABLE t_caver DROP COLUMN Facebook;

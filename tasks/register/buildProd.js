@@ -1,4 +1,4 @@
-module.exports = function (grunt) {
+module.exports = function(grunt) {
   grunt.registerTask('buildProd', [
     'compileAssets',
     'concat',
@@ -7,6 +7,5 @@ module.exports = function (grunt) {
     'linkAssetsBuildProd',
     'clean:build',
     'copy:build',
-    'transifex:grottocenter'
   ]);
 };

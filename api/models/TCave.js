@@ -1,109 +1,141 @@
 /**
  * TCave.js
  *
- * @description :: tCave model imported from localhost MySql server at 31/3/2016 12:7:32.
+ * @description :: tCave model
  * @docs        :: http://sailsjs.org/#!documentation/models
  */
-'use strict';
 
 module.exports = {
-
   tableName: 't_cave',
+
+  primaryKey: 'id',
 
   attributes: {
     id: {
-      type: 'integer',
-      unique: true,
-      primaryKey: true,
+      type: 'number',
+      allowNull: false,
       autoIncrement: true,
-      columnName: 'Id'
-    },
-
-    locked: {
-      type: 'text',
-      required: true,
-      defaultsTo: 'NO',
-      columnName: 'Locked'
+      columnName: 'id',
+      unique: true,
     },
 
     author: {
-      columnName: 'Id_author',
-      model: 'TCaver'
+      allowNull: false,
+      columnName: 'id_author',
+      model: 'TCaver',
+      required: true,
     },
 
-    idReviewer: {
-      type: 'integer',
-      index: true,
-      columnName: 'Id_reviewer'
+    reviewer: {
+      allowNull: false,
+      columnName: 'id_reviewer',
+      model: 'TCaver',
+      required: true,
     },
 
-    idLocker: {
-      type: 'integer',
-      columnName: 'Id_locker'
-    },
-
-    name: {
-      type: 'string',
-      size: 36,
-      columnName: 'Name'
+    names: {
+      collection: 'TName',
+      via: 'cave',
     },
 
     minDepth: {
-      type: 'float',
-      columnName: 'Min_depth'
+      type: 'number',
+      columnName: 'min_depth',
+      allowNull: true,
     },
 
     maxDepth: {
-      type: 'float',
-      columnName: 'Max_depth'
+      type: 'number',
+      columnName: 'max_depth',
+      allowNull: true,
     },
 
     depth: {
-      type: 'float',
-      columnName: 'Depth'
+      type: 'number',
+      columnName: 'depth',
+      allowNull: true,
     },
 
     length: {
-      type: 'float',
-      columnName: 'Length'
+      type: 'number',
+      columnName: 'length',
+      allowNull: true,
     },
 
     isDiving: {
-      type: 'text',
-      defaultsTo: 'NO',
-      columnName: 'Is_diving'
+      type: 'boolean',
+      allowNull: false,
+      columnName: 'is_diving',
+      defaultsTo: false,
     },
 
     temperature: {
-      type: 'float',
-      columnName: 'Temperature'
+      type: 'number',
+      allowNull: true,
+      columnName: 'temperature',
     },
 
     dateInscription: {
-      type: 'datetime',
-      columnName: 'Date_inscription'
+      type: 'ref',
+      allowNull: false,
+      columnName: 'date_inscription',
+      columnType: 'datetime',
     },
 
     dateReviewed: {
-      type: 'datetime',
-      columnName: 'Date_reviewed'
+      type: 'ref',
+      allowNull: false,
+      columnName: 'date_reviewed',
+      columnType: 'datetime',
     },
 
-    dateLocked: {
-      type: 'datetime',
-      columnName: 'Date_locked'
+    // Sails' ORM, Waterline, doesn't support large number: that's why we use the type 'string' for the latitude
+    latitude: {
+      type: 'string',
+      allowNull: true,
+      columnName: 'latitude',
+      columnType: 'numeric(24,20)',
     },
 
-    entries: {
-      collection: 'TEntry',
-      via: 'entries',
-      through: 'jcaveentry'
+    // Sails' ORM, Waterline, doesn't support large number: that's why we use the type 'string' for the longitude
+    longitude: {
+      type: 'string',
+      allowNull: true,
+      columnName: 'longitude',
+      columnType: 'numeric(24,20)',
     },
 
-    topographies: {
-      collection: 'TTopography',
-      via: 'idTopography',
-      through: 'jtopocave'
-    }
-  }
+    massif: {
+      allowNull: false,
+      columnName: 'id_massif',
+      model: 'TMassif',
+    },
+
+    exploringGrottos: {
+      collection: 'TGrotto',
+      via: 'cave',
+      through: 'JGrottoCaveExplorer',
+    },
+
+    partneringGrottos: {
+      collection: 'TGrotto',
+      via: 'cave',
+      through: 'JGrottoCavePartner',
+    },
+
+    entrances: {
+      collection: 'TEntrance',
+      via: 'cave',
+    },
+
+    descriptions: {
+      collection: 'TDescription',
+      via: 'cave',
+    },
+
+    documents: {
+      collection: 'TDocument',
+      via: 'cave',
+    },
+  },
 };
