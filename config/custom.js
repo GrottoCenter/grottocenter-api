@@ -9,7 +9,6 @@
  */
 
 module.exports.custom = {
-
   /**************************************************************************
    *                                                                         *
    * The base URL to use during development.                                 *
@@ -24,13 +23,13 @@ module.exports.custom = {
    **************************************************************************/
   baseUrl: 'http://localhost:1337',
 
-  /**************************************************************************
-   *                                                                         *
-   * The TTL (time-to-live) for various sorts of tokens before they expire.  *
-   *                                                                         *
-   **************************************************************************/
-  passwordResetTokenTTL: 24*60*60*1000,// 24 hours
-  emailProofTokenTTL:    24*60*60*1000,// 24 hours
+  /***************************************************************************************
+   *                                                                                      *
+   * The TTL (time-to-live) for various sorts of tokens before they expire (in seconds).  *
+   *                                                                                      *
+   ****************************************************************************************/
+  authTokenTTL: 90 * 24 * 60 * 60, // 90 days
+  passwordResetTokenTTL: 24 * 60 * 60, // 24 hours
 
   /**************************************************************************
    *                                                                         *
@@ -38,7 +37,7 @@ module.exports.custom = {
    * if "Remember Me" was checked while logging in.                          *
    *                                                                         *
    **************************************************************************/
-  rememberMeCookieMaxAge: 30*24*60*60*1000, // 30 days
+  // rememberMeCookieMaxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
 
   /**************************************************************************
    *                                                                         *
@@ -59,11 +58,10 @@ module.exports.custom = {
   //--------------------------------------------------------------------------
 
   // The sender that all outgoing emails will appear to come from.
-  fromEmailAddress: 'noreply@example.com',
-  fromName: 'The NEW_APP_NAME Team',
+  fromEmailAddress: 'Grottocenter <underground_bot@grottocenter.org>',
 
   // Email address for receiving support messages & other correspondences.
-  internalEmailAddress: 'support+development@example.com',
+  internalEmailAddress: 'Grottocenter <info@grottocenter.org>',
 
   // Whether to require proof of email address ownership any time a new user
   // signs up, or when an existing user attempts to change their email address.
@@ -89,5 +87,4 @@ module.exports.custom = {
    *                                                                          *
    ***************************************************************************/
   // …
-
 };

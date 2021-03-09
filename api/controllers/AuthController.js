@@ -32,7 +32,7 @@ module.exports = {
             nickname: user.nickname,
           },
           tokenSalt,
-          24 * 90, // Expires after 90 days
+          sails.config.custom.authTokenTTL,
           'Authentication',
         );
         return res.json({ token });

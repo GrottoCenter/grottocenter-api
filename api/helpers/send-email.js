@@ -2,12 +2,6 @@ const { awsSesCli } = require('../../config/awsSes');
 const { SendEmailCommand } = require('@aws-sdk/client-ses');
 const ejs = require('ejs');
 
-const NO_RESPONSE_GROTTOCENTER_EMAIL =
-  process.env.NO_RESPONSE_GROTTOCENTER_EMAIL ||
-  'Grottocenter <underground_bot@grottocenter.org>';
-const GROTTOCENTER_EMAIL =
-  process.env.GROTTOCENTER_EMAIL || 'Grottocenter <info@grottocenter.org>';
-
 module.exports = {
   friendlyName: 'Grottocenter single email sender',
 
@@ -110,8 +104,8 @@ module.exports = {
         },
       },
       Source: allowResponse
-        ? GROTTOCENTER_EMAIL
-        : NO_RESPONSE_GROTTOCENTER_EMAIL,
+        ? sails.config.custom.internalEmailAddress
+        : sails.config.custom.fromEmailAddress,
       ReplyToAddresses: [],
     };
 
