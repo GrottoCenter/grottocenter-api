@@ -8,6 +8,8 @@ import {
   createDefaultHiddenColumns,
 } from '../../components/common/Table/TableHead';
 
+import makeCustomCellRenders from './customCellRenders';
+
 // ==========
 const defaultHiddenColumns = ['groups'];
 
@@ -50,6 +52,7 @@ const UserList = ({ isLoading, title, userList }) => {
   return (
     <Table
       columns={columns}
+      customCellRenders={makeCustomCellRenders()}
       data={userListOrdered || []}
       hiddenColumns={hiddenColumns}
       loading={isLoading}
