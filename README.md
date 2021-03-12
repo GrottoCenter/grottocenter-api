@@ -31,11 +31,10 @@ Didier Gignoux, Paul Guerin, Hervé Plaettner, Marius Carrière, Doc Carbur, Har
 ## Installation
 
 Software requirement:
-- NodeJS (min v8)
+- NodeJS (min v10)
 - NPM (min 4.1.2)
 - Git client (see Git usage for configuration)
 - Docker
-- SailsJS (min v1)
 - Grunt
 
 Clone the project on your computer:
@@ -54,6 +53,9 @@ Start the project:
 > ./deployDev.sh
 > npm install
 ```
+
+| :warning: WARNING: If you have NPM v7+ you will need to run `npm install --legacy-peer-deps` instead of `npm install`  |
+| --- |
 
 Finally, run the server with live-reloading using:
 ```
