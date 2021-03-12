@@ -236,22 +236,29 @@ module.exports = {
     }
 
     // Get Admins
-    CaverService.getAdmins()
-      .then((found) => {
-        const params = {};
-        params.controllerMethod = 'CaverController.getAdmins';
-        return ControllerService.treatAndConvert(
-          req,
-          null,
-          found,
-          params,
-          res,
-          converter,
-        );
-      })
-      .catch((err) => {
-        return res.serverError(err.cause.message);
-      });
+    const adminGroup = await TGroup.find({
+      name: 'Administrator',
+    }).populate('cavers');
+    if (!adminGroup) {
+      return res.status(404).send({ message: 'No administrators found.' });
+    }
+    const params = {};
+    const admins = adminGroup[0].cavers;
+    const adminsWithGroups = await Promise.all(
+      admins.map(async (caver) => ({
+        ...caver,
+        groups: await CaverService.getGroups(caver.id),
+      })),
+    );
+    params.controllerMethod = 'CaverController.getAdmins';
+    return ControllerService.treatAndConvert(
+      req,
+      null,
+      adminsWithGroups,
+      params,
+      res,
+      converter,
+    );
   },
 
   getModerators: async (
@@ -277,22 +284,29 @@ module.exports = {
     }
 
     // Get Moderators
-    CaverService.getModerators()
-      .then((found) => {
-        const params = {};
-        params.controllerMethod = 'CaverController.getModerators';
-        return ControllerService.treatAndConvert(
-          req,
-          null,
-          found,
-          params,
-          res,
-          converter,
-        );
-      })
-      .catch((err) => {
-        return res.serverError(err.cause.message);
-      });
+    const moderatorGroup = await TGroup.find({
+      name: 'Moderator',
+    }).populate('cavers');
+    if (!moderatorGroup) {
+      return res.status(404).send({ message: 'No moderators found.' });
+    }
+    const params = {};
+    const moderators = moderatorGroup[0].cavers;
+    const moderatorsWithGroups = await Promise.all(
+      moderators.map(async (caver) => ({
+        ...caver,
+        groups: await CaverService.getGroups(caver.id),
+      })),
+    );
+    params.controllerMethod = 'CaverController.getModerators';
+    return ControllerService.treatAndConvert(
+      req,
+      null,
+      moderatorsWithGroups,
+      params,
+      res,
+      converter,
+    );
   },
 
   create: async (
