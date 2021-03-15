@@ -16,6 +16,7 @@ module.exports = {
   },
 
   RightActions: {
+    CREATE: 'create',
     DELETE_ANY: 'delete any',
     DELETE_OWN: 'delete own',
     EDIT_ANY: 'edit any',
