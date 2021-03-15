@@ -40,21 +40,14 @@ module.exports = {
   fn: async function(inputs, exits) {
     TRight.findOne()
       .where({
-        and: [
-          {
-            name: {
-              contains: inputs.rightEntity,
-            },
-          },
-          {
-            name: {
-              contains: inputs.rightAction,
-            },
-          },
-        ],
+        name: inputs.rightEntity + ' - ' + inputs.rightAction,
       })
       .populate('groups')
       .exec((err, rightFound) => {
+        if (err) {
+          sails.log.error(err.message);
+          return exits.success(false);
+        }
         if (!rightFound) {
           throw exits.rightNotFound();
         }
