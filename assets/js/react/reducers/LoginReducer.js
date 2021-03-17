@@ -19,23 +19,24 @@ const removeTokenFromLocalStorage = () => {
   window.localStorage.removeItem(authTokenName);
 };
 
-const getTokenIfNotExpired = () => {
-  const token = decode(window.localStorage.getItem(authTokenName));
+const getRawTokenIfNotExpired = () => {
+  const rawToken = window.localStorage.getItem(authTokenName);
+  const token = decode(rawToken);
   if (token === null) {
     return null;
   }
   // JS uses miliseconds for Unix time while JWT uses seconds
   if (new Date(token.exp * 1000) > Date.now()) {
-    return token;
+    return rawToken;
   }
   removeTokenFromLocalStorage();
   return null;
 };
 
 const initialState = {
-  authTokenDecoded: getTokenIfNotExpired(),
+  authTokenDecoded: decode(getRawTokenIfNotExpired()),
   authorizationHeader: {
-    Authorization: `Bearer ${getTokenIfNotExpired()}`,
+    Authorization: `Bearer ${getRawTokenIfNotExpired()}`,
   },
   error: null,
   isFetching: false,
