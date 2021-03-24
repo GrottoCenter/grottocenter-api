@@ -8,10 +8,8 @@
 module.exports = {
   tableName: 't_country',
 
-  primaryKey: 'iso',
-
   attributes: {
-    iso: {
+    id: {
       type: 'string',
       columnName: 'iso',
       maxLength: 2,
