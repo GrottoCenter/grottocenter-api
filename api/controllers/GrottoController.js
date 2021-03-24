@@ -142,10 +142,22 @@ module.exports = {
 
         return newOrganization;
       })
-      .intercept('E_UNIQUE', () => res.sendStatus(409))
-      .intercept('UsageError', (e) => res.badRequest(e.cause.message))
-      .intercept('AdapterError', (e) => res.badRequest(e.cause.message))
-      .intercept((e) => res.serverError(e.message));
+      .intercept('E_UNIQUE', (e) => {
+        sails.log.error(e.message);
+        return res.status(409).send(e.message);
+      })
+      .intercept({ name: 'UsageError' }, (e) => {
+        sails.log.error(e.message);
+        return res.badRequest(e.message);
+      })
+      .intercept({ name: 'AdapterError' }, (e) => {
+        sails.log.error(e.message);
+        return res.badRequest(e.message);
+      })
+      .intercept((e) => {
+        sails.log.error(e.message);
+        return res.serverError(e.message);
+      });
 
     try {
       esClient.create({
