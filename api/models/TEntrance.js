@@ -58,6 +58,7 @@ module.exports = {
       type: 'number',
       allowNull: true,
       columnName: 'year_discovery',
+      max: new Date().getFullYear(),
     },
 
     externalUrl: {

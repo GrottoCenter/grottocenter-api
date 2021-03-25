@@ -4,6 +4,20 @@
  * @description :: Server-side logic for managing entrances
  * @help        :: See http://links.sailsjs.org/docs/controllers
  */
+const ramda = require('ramda');
+const esClient = require('../../config/elasticsearch').elasticsearchCli;
+
+// Extract everything from the request body except id
+const getConvertedDataFromClientRequest = (req) => {
+  const { id, ...reqBodyWithoutId } = req.body; // remove id if present to avoid null id (and an error)
+  return {
+    ...reqBodyWithoutId,
+    author: req.token.id,
+    cave: ramda.pathOr(undefined, ['cave', 'id'], req.body),
+    country: ramda.pathOr(undefined, ['country', 'id'], req.body),
+    geology: ramda.pathOr(undefined, ['geology', 'id'], req.body),
+  };
+};
 
 module.exports = {
   find: (req, res, converter) => {
@@ -107,5 +121,152 @@ module.exports = {
       count.count = found;
       return ControllerService.treat(req, err, count, params, res);
     });
+  },
+
+  create: async (req, res) => {
+    // Check right
+    const hasRight = await sails.helpers.checkRight
+      .with({
+        groups: req.token.groups,
+        rightEntity: RightService.RightEntities.ENTRANCE,
+        rightAction: RightService.RightActions.CREATE,
+      })
+      .intercept('rightNotFound', (err) => {
+        return res.serverError(
+          'A server error occured when checking your right to create an entrance.',
+        );
+      });
+    if (!hasRight) {
+      return res.forbidden('You are not authorized to create an entrance.');
+    }
+
+    // Launch creation request using transaction: it performs a rollback if an error occurs
+    const newEntrancePopulated = await sails
+      .getDatastore()
+      .transaction(async (db) => {
+        const cleanedData = {
+          ...getConvertedDataFromClientRequest(req),
+          dateInscription: new Date(),
+          isOfInterest: false,
+        };
+
+        const newEntrance = await TEntrance.create(cleanedData)
+          .fetch()
+          .usingConnection(db);
+
+        // Name
+        const entranceName = await TName.create({
+          author: req.token.id,
+          dateInscription: new Date(),
+          entrance: newEntrance.id,
+          isMain: true,
+          language: req.param('name').language,
+          name: req.param('name').text,
+        })
+          .fetch()
+          .usingConnection(db);
+
+        // Description (if provided)
+        if (ramda.pathOr(null, ['description', 'body'], req.body)) {
+          await TDescription.create({
+            author: req.token.id,
+            body: req.body.description.body,
+            dateInscription: new Date(),
+            entrance: newEntrance.id,
+            language: req.body.description.language,
+            title: req.body.description.title,
+          }).usingConnection(db);
+        }
+
+        // Location (if provided)
+        if (ramda.pathOr(null, ['location', 'body'], req.body)) {
+          await TLocation.create({
+            author: req.token.id,
+            body: req.body.description.body,
+            dateInscription: new Date(),
+            entrance: newEntrance.id,
+            language: req.body.location.language,
+            title: req.body.description.title,
+          }).usingConnection(db);
+        }
+
+        // Prepare data for Elasticsearch indexation
+        const newEntrancePopulated = await TEntrance.findOne(newEntrance.id)
+          .populate('cave')
+          .populate('country')
+          .populate('descriptions')
+          .usingConnection(db);
+
+        return newEntrancePopulated;
+      })
+      .intercept('E_UNIQUE', (e) => {
+        sails.log.error(e.message);
+        return res.status(409).send(e.message);
+      })
+      .intercept({ name: 'UsageError' }, (e) => {
+        sails.log.error(e.message);
+        return res.badRequest(e.message);
+      })
+      .intercept({ name: 'AdapterError' }, (e) => {
+        sails.log.error(e.message);
+        return res.badRequest(e.message);
+      })
+      .intercept((e) => {
+        sails.log.error(e.message);
+        return res.serverError(e.message);
+      });
+
+    // Prepare data for Elasticsearch indexation
+    const description =
+      ramda.pathOr(null, ['description', 'title'], newEntrancePopulated) ===
+      null
+        ? null
+        : ramda.pathOr(null, ['description', 'title'], newEntrancePopulated) +
+          ' ' +
+          ramda.pathOr(null, ['description', 'body'], newEntrancePopulated);
+
+    // Format cave massif
+    newEntrancePopulated.cave.massif = {
+      id: newEntrancePopulated.cave.massif,
+    };
+    await CaveService.setEntrances([newEntrancePopulated.cave]);
+    await NameService.setNames([newEntrancePopulated], 'entrance');
+    await NameService.setNames([newEntrancePopulated.cave], 'cave');
+    await NameService.setNames([newEntrancePopulated.cave.massif], 'massif');
+
+    const { cave, name, names, ...newEntranceESData } = newEntrancePopulated;
+    try {
+      esClient.create({
+        index: `entrances-index`,
+        type: 'data',
+        id: newEntrancePopulated.id,
+        body: {
+          ...newEntranceESData,
+          name: newEntrancePopulated.name,
+          names: newEntrancePopulated.names.map((n) => n.name).join(', '),
+          descriptions: [description],
+          type: 'entrance',
+          'cave name': newEntrancePopulated.cave.name,
+          'cave length': newEntrancePopulated.cave.length,
+          'cave depth': newEntrancePopulated.cave.depth,
+          'cave is diving': newEntrancePopulated.cave.isDiving,
+          'massif name': newEntrancePopulated.cave.massif.name,
+          country: newEntrancePopulated.country.nativeName,
+          'country code': newEntrancePopulated.country.iso3,
+        },
+      });
+    } catch (error) {
+      sails.log.error(error);
+    }
+
+    const params = {};
+    params.controllerMethod = 'EntranceController.create';
+    return ControllerService.treat(
+      req,
+      null,
+      newEntrancePopulated,
+      params,
+      res,
+    );
   },
 };
