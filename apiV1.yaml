@@ -489,7 +489,7 @@ paths:
   '/documents/count':
     get:
       tags:
-      - entrances
+      - documents
       description: Get the number of documents.
       responses:
         '200':
@@ -899,6 +899,145 @@ paths:
                     items:
                       $ref: '#/components/schemas/Document-subject'
                       
+  '/entrances':
+    post:
+      tags:
+      - entrances
+      description: Create a cave entrance.
+      parameters:
+      - name: address
+        in: query
+        description: Address where the entrance is located
+        schema:
+          type: string
+      - name: altitude
+        in: query
+        schema:
+          type: number
+      - name: cave
+        in: query
+        required: true
+        description: Cave related to the entrance
+        schema:
+            type: object
+            properties:
+              id: 
+                type: number
+                description: Id of the cave
+      - name: city
+        in: query
+        description: City where the entrance is located
+        schema:
+          type: string
+      - name: contact
+        in: query
+        description: Email, telephone number or name of the person responsible of the entrance
+        schema:
+          type: string
+          example: "Michel DUPONT 06 99 98 97 96"
+      - name: country
+        in: query
+        description: Country where the entrance is located
+        schema:
+            type: object
+            properties:
+              id: 
+                type: string
+                description: Id of the country
+      - name: county
+        in: query
+        description: County where the entrance is located
+        schema:
+          type: string
+      - name: description
+        in: query
+        required: true
+        schema:
+            type: object
+            properties:
+              body: 
+                type: string
+              language: 
+                description: Must be a language supported by Grottocenter (see GET /languages route) using the 3-letters format.
+                type: string
+                example: 'eng'
+              title: 
+                type: string
+      - name: geology
+        in: query
+        description: Geology type of the entrance.
+        schema:
+            type: object
+            properties:
+              id: 
+                type: string
+                description: Id of the geology
+      - name: isPublic
+        in: query
+        schema:
+          type: boolean
+      - name: isSensitive
+        in: query
+        schema:
+          type: boolean
+      - name: latitude
+        in: query
+        schema:
+          type: number
+      - name: location
+        in: query
+        description: Explaination of the environment around the entrance.
+        schema:
+            type: object
+            properties:
+              body: 
+                type: string
+                example: "The entrance is located at the top of the hill, at the left of the big rock next to the path."
+              language: 
+                description: Must be a language supported by Grottocenter (see GET /languages route) using the 3-letters format.
+                type: string
+                example: 'eng'
+      - name: longitude
+        in: query
+        schema:
+          type: number
+      - name: modalities
+        in: query
+        schema:
+          type: string
+          example: "YES,NO,NO,YES"
+      - name: name
+        in: query
+        required: true
+        description: Name of the entrance including the language used
+        schema:
+            type: object
+            properties:
+              text: 
+                type: string
+                example: "The entrance of ABCDEFG"
+              language: 
+                description: Must be a language supported by Grottocenter (see GET /languages route) using the 3-letters format.
+                type: string
+                example: 'eng'
+      - name: region
+        in: query
+        description: Region where the entrance is located
+        schema:
+          type: string
+      - name: yearDiscovery
+        in: query
+        description: Year of the discovery of the entrance (must be inferior to the current year)
+        schema:
+          type: number
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Entrance'
+  
   '/entrances/findRandom':
     get:
       tags:
