@@ -91,21 +91,14 @@ module.exports.routes = {
   //  ╠═╣╠═╝║  ║╣ ║║║ ║║╠═╝║ ║║║║║ ║ ╚═╗
   //  ╩ ╩╩  ╩  ╚═╝╝╚╝═╩╝╩  ╚═╝╩╝╚╝ ╩ ╚═╝
 
+  /* Account controller */
+  'PATCH /api/v1/account/password': 'v1/Account.changePassword',
+  'POST /api/v1/forgotPassword': 'v1/Account.forgotPassword',
+
   /* Auth controller */
-  'POST /api/v1/login': {
-    controller: 'v1/Auth',
-    action: 'login',
-  },
-
-  'POST /api/v1/signup': {
-    controller: 'v1/Auth',
-    action: 'signUp',
-  },
-
-  'GET /api/v1/logout': {
-    controller: 'v1/Auth',
-    action: 'logout',
-  },
+  'GET /api/v1/logout': 'v1/Auth.logout',
+  'POST /api/v1/login': 'v1/Auth.login',
+  'POST /api/v1/signup': 'v1/Auth.signUp',
 
   /* Caver controller */
   'DELETE /api/v1/cavers/:caverId/groups/:groupId': 'v1/Caver.removeFromGroup',

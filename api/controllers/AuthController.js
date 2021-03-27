@@ -7,6 +7,7 @@
 
 const passport = require('passport');
 const esClient = require('../../config/elasticsearch').elasticsearchCli;
+const { tokenSalt } = AuthService;
 const PASSWORD_MIN_LENGTH = 8;
 
 module.exports = {
@@ -24,11 +25,16 @@ module.exports = {
       req.logIn(user, (err) => {
         if (err) return res.json({ message: err });
         req.session.authenticated = true;
-        const token = TokenAuthService.issue({
-          id: user.id,
-          groups: user.groups,
-          nickname: user.nickname,
-        });
+        const token = TokenService.issue(
+          {
+            id: user.id,
+            groups: user.groups,
+            nickname: user.nickname,
+          },
+          tokenSalt,
+          sails.config.custom.authTokenTTL,
+          'Authentication',
+        );
         return res.json({ token });
       });
     })(req, res);
@@ -58,7 +64,9 @@ module.exports = {
       req.param('password').length < PASSWORD_MIN_LENGTH
     ) {
       return res.badRequest(
-        'Your password must be ' + PASSWORD_MIN_LENGTH + ' characters.',
+        'Your password must be at least ' +
+          PASSWORD_MIN_LENGTH +
+          ' characters long.',
       );
     }
     if (!req.param('nickname')) {

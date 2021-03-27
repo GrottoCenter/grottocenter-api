@@ -19,7 +19,7 @@ module.exports = (req, res, next) => {
   const token = authHeader.substring(7, authHeader.length);
 
   if (token) {
-    TokenAuthService.verify(token, (err, responseToken) => {
+    TokenService.verify(token, (err, responseToken) => {
       if (err) {
         return res.forbidden('Invalid Token');
       }

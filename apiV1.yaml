@@ -17,6 +17,7 @@ servers:
 - url: https://beta.grottocenter.org/api/v1
 
 tags:
+- name: account
 - name: authentication
 - name: caves
 - name: cavers
@@ -658,7 +659,72 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Language'
+  
+  '/account/password':
+    patch:
+      tags:
+        - account
+        - authentication
+      description: Update the user password by using a reset password token issued by the /forgotPassword route.
+      parameters:
+        - name: password
+          in: query
+          description: New password of the account, must be at least 8 characters long
+          required: true
+          schema:
+            type: string
+        - name: token
+          in: query
+          description: Reset password token issued by the /forgotPassword route.
+          required: true
+          schema:
+            $ref: '#/components/schemas/ResetPasswordToken'
+      responses:
+        '204':
+          description: Successful operation
 
+        '400':
+          description: You must provide a password and a reset password token in the body of your request. The password must be at least 8 characters long.
+        
+        '403':
+          description: The password reset token has expired or is invalid.
+        
+        '404':
+          description: User in the password reset token not found.
+
+  '/forgotPassword':
+    post:
+      tags:
+        - account
+        - authentication
+      description: >-
+        Launch the procedure of password change. This will send an email to the email adress you provided if it exists as a Grottocenter user's email. This email contains a password reset link expiring after 24 hours using the Grottocenter application.
+      
+        
+        __IMPORTANT NOTICE__
+        
+        
+        This feature uses the Grottocenter's AWS SES (Simple Email Service) of Amazon. To ️use it properly, you must have access to the service. This access is granted by the Grottocenter's developer team to developers only.Once you have the access, set your __AWS_ACCESS_KEY__ & __AWS_SECRET_KEY__ environment variables.
+        
+        
+        Otherwise, the email will not be sent and its content will be simply logged in your console.
+        
+      parameters:
+        - name: email
+          in: query
+          description: Email of the account you want to change the password
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Successful operation
+
+        '400':
+          description: You must provide an email in the body of your request.
+        
+        '404':
+          description: The email is not used by any Grottocenter's caver.
 
   '/login':
     post:
@@ -1708,6 +1774,32 @@ components:
         - grottos
         - massifs
 
+    Region:
+      properties:
+        code:
+          type: string
+        country:
+          type: string
+        id:
+          type: integer
+        isDeprecated:
+          type: boolean
+        name:
+          type: string
+          
+    ResetPasswordToken:
+      properties:
+        action:
+          type: string
+        userId:
+          type: integer
+        iat:
+          type: string
+          description: Creation date (Unix time)
+        exp:
+          type: string
+          description: Expiration date (Unix time)
+    
     Rigging:
       type: object
       properties:
@@ -1740,19 +1832,6 @@ components:
         ropes:
           type: string
         title:
-          type: string
-
-    Region:
-      properties:
-        code:
-          type: string
-        country:
-          type: string
-        id:
-          type: integer
-        isDeprecated:
-          type: boolean
-        name:
           type: string
 
     Search:
