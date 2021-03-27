@@ -1,4 +1,4 @@
-name: Deploy AWS
+name: Prod deploy latest.tar.gz from S3 with CodeDeploy
 on: workflow_dispatch
 jobs:
   deploy:

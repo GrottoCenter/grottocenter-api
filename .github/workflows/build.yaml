@@ -24,24 +24,23 @@ jobs:
 
       - run: npm install
       - run: npm run-script build
-  s3:
-    if: github.ref == 'refs/heads/master'
-    needs: [build]
-    runs-on: ubuntu-latest
-    steps:
-      - run: tar --exclude-vcs -czf latest.tar.gz --exclude=*.tar --exclude=*.tar.gz .
-      - name: Archive code coverage results
+      - if: github.ref == 'refs/heads/master'
+        run: tar --exclude-vcs -czf latest.tar.gz --exclude=*.tar --exclude=*.tar.gz .
+      - name: store artifact for 1 day in github
+        if: github.ref == 'refs/heads/master'
         uses: actions/upload-artifact@v2
         with:
           name: latest.tar.gz
           path: latest.tar.gz
           retention-days: 1
       - name: Configure AWS credentials
+        if: github.ref == 'refs/heads/master'
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-central-1
       - name: Copy tar.gz to S3
+        if: github.ref == 'refs/heads/master'
         run: |
-          aws s3 sync ./latest.tar.gz s3://appgrottocenter3
+          aws s3 sync . s3://appgrottocenter3 --exclude='*' --include='*/latest.tar.gz'
