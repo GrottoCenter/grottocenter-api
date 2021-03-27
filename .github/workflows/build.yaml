@@ -25,13 +25,15 @@ jobs:
       - run: npm install
       - run: npm run-script build
       - if: github.ref == 'refs/heads/master'
-        run: tar --exclude-vcs --exclude=latest.tar.gz -czf latest.tar.gz .
+        run: |
+        mkdir artefact
+        tar --exclude-vcs --exclude=./artefact -czf artefact/latest.tar.gz .
       - name: store artifact for 1 day in github
         if: github.ref == 'refs/heads/master'
         uses: actions/upload-artifact@v2
         with:
           name: latest.tar.gz
-          path: latest.tar.gz
+          path: artefact/latest.tar.gz
           retention-days: 1
       - name: Configure AWS credentials
         if: github.ref == 'refs/heads/master'
@@ -43,4 +45,4 @@ jobs:
       - name: Copy tar.gz to S3
         if: github.ref == 'refs/heads/master'
         run: |
-          aws s3 sync . s3://appgrottocenter3 --exclude='*' --include='*/latest.tar.gz'
+          aws s3 sync . s3://appgrottocenter3 --exclude='*' --include='*/artefact/latest.tar.gz'
