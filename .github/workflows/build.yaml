@@ -25,7 +25,7 @@ jobs:
       - run: npm install
       - run: npm run-script build
       - if: github.ref == 'refs/heads/master'
-        run: tar --exclude-vcs -czf latest.tar.gz --exclude=*.tar --exclude=*.tar.gz .
+        run: tar --exclude-vcs --exclude=latest.tar.gz -czf latest.tar.gz .
       - name: store artifact for 1 day in github
         if: github.ref == 'refs/heads/master'
         uses: actions/upload-artifact@v2
