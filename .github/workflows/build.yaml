@@ -24,7 +24,8 @@ jobs:
 
       - run: npm install
       - run: npm run-script build
-      - if: github.ref == 'refs/heads/master'
+      - name: Create artefact latest.tar.gz file
+        if: github.ref == 'refs/heads/master'
         run: |
           mkdir artefact
           tar --exclude-vcs --exclude=./artefact -czf artefact/latest.tar.gz .
@@ -42,7 +43,6 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-central-1
-      - name: Copy tar.gz to S3
+      - name: Copy latest.tar.gz to S3
         if: github.ref == 'refs/heads/master'
-        run: |
-          aws s3 sync . s3://appgrottocenter3 --exclude='*' --include='*/artefact/latest.tar.gz'
+        run: aws s3 cp ./artefact/latest.tar.gz s3://appgrottocenter3
