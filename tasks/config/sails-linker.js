@@ -55,9 +55,7 @@ module.exports = function(grunt) {
         startTag: '<!--SCRIPTS-->',
         endTag: '<!--SCRIPTS END-->',
         fileTmpl:
-          '<script src="%s?v=' +
-          process.env.TRAVIS_BUILD_NUMBER +
-          '"></script>',
+          '<script src="%s?v=' + process.env.GITHUB_RUN_ID + '"></script>',
         appRoot: '.tmp/public',
       },
       files: {
@@ -129,7 +127,7 @@ module.exports = function(grunt) {
         endTag: '<!--STYLES END-->',
         fileTmpl:
           '<link rel="stylesheet" href="%s?v=' +
-          process.env.TRAVIS_BUILD_NUMBER +
+          process.env.GITHUB_RUN_ID +
           '">',
         appRoot: '.tmp/public',
       },

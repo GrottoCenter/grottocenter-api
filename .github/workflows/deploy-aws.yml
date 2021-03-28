@@ -1,8 +1,8 @@
-name: Prod deploy latest.tar.gz from S3 with CodeDeploy
+name: Deploy to beta.grottocenter.org
 on: workflow_dispatch
 jobs:
   deploy:
-    name: Deploy with CodeDeploy
+    name: Prod deploy latest.tar.gz from S3 with CodeDeploy
     runs-on: ubuntu-latest
     environment: aws-prod
     steps:
