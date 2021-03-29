@@ -7,14 +7,14 @@ Current production version is available [here](http://beta.grottocenter.org/)
 ## Project overview
 
 ### Master
-![Last Deployment](https://github.com/GrottoCenter/Grottocenter3/actions/workflows/deploy-aws.yml/badge.svg?branch=master)
+![Latest Deployment](https://github.com/GrottoCenter/Grottocenter3/actions/workflows/deploy-aws.yml/badge.svg?branch=master)
 
-![Last Build](https://github.com/GrottoCenter/Grottocenter3/actions/workflows/build.yml/badge.svg?branch=master)
+![Latest Build](https://github.com/GrottoCenter/Grottocenter3/actions/workflows/build.yml/badge.svg?branch=master)
 
 [![Coverage Status](https://coveralls.io/repos/github/GrottoCenter/Grottocenter3/badge.svg?branch=master)](https://coveralls.io/github/GrottoCenter/Grottocenter3?branch=master)
 
 ### Develop
-![Last Build](https://github.com/GrottoCenter/Grottocenter3/actions/workflows/build.yml/badge.svg?branch=develop)
+![Latest Build](https://github.com/GrottoCenter/Grottocenter3/actions/workflows/build.yml/badge.svg?branch=develop)
 
 [![Coverage Status](https://coveralls.io/repos/github/GrottoCenter/Grottocenter3/badge.svg?branch=develop)](https://coveralls.io/github/GrottoCenter/Grottocenter3?branch=develop)
 
