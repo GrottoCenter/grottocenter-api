@@ -13,7 +13,6 @@ module.exports = {
       sails.log.debug(parameters.notFoundMessage);
       return res.notFound();
     }
-    ElasticSearch.updateIndex(found, req);
     return res.json(found);
   },
 
@@ -85,11 +84,9 @@ module.exports = {
         `<${first}>; rel="first",  <${prev}>; rel="prev", <${next}>; rel="next",  <${last}>; rel="last"`,
       );
 
-      ElasticSearch.updateIndex(found, req);
       return res.json(206, converter(found));
     }
 
-    ElasticSearch.updateIndex(found, req);
     return res.json(converter(found));
   },
 };
