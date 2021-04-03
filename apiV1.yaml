@@ -715,6 +715,25 @@ paths:
         
         '404':
           description: User in the password reset token not found.
+          
+  '/account/alertForNews':
+    patch:
+      tags:
+        - account
+      description: Change the fact that the user wants to receive the Grottocenter news.
+      parameters:
+        - name: alertForNews
+          in: query
+          required: true
+          schema:
+            type: boolean
+      responses:
+        '204':
+          description: Successful operation
+        '400':
+          description: You must provide an alertForNews valid value ('true' or 'false')
+        '404':
+          description: User in the authentication token not found.
 
   '/forgotPassword':
     post:
