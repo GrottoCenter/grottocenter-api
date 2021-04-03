@@ -31,18 +31,21 @@ module.exports = {
 
     region: {
       type: 'string',
+      allowNull: true,
       columnName: 'region',
       maxLength: 100,
     },
 
     county: {
       type: 'string',
+      allowNull: true,
       columnName: 'county',
       maxLength: 100,
     },
 
     city: {
       type: 'string',
+      allowNull: true,
       columnName: 'city',
       maxLength: 100,
     },
@@ -150,6 +153,13 @@ module.exports = {
     isOfInterest: {
       type: 'boolean',
       columnName: 'is_of_interest',
+    },
+
+    isDeleted: {
+      type: 'boolean',
+      allowNull: false,
+      columnName: 'is_deleted',
+      defaultsTo: false,
     },
 
     cave: {

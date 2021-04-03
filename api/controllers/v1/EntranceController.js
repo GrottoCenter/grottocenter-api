@@ -36,4 +36,8 @@ module.exports = {
   },
 
   create: (req, res) => entranceController.create(req, res),
+
+  delete: (req, res) => {
+    entranceController.delete(req, res);
+  },
 };
