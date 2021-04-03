@@ -114,6 +114,7 @@ module.exports.routes = {
   'PUT /api/v1/cavers/:caverId/groups/:groupId': 'v1/Caver.putOnGroup',
 
   /* Entrance controller */
+  'DELETE /api/v1/entrances/:id': 'v1/Entrance.delete',
   'GET /api/v1/entrances/count': 'v1/Entrance.count',
   'GET /api/v1/entrances/findRandom': 'v1/Entrance.findRandom',
   'GET /api/v1/entrances/publicCount': {

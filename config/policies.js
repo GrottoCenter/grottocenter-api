@@ -64,6 +64,7 @@ module.exports.policies = {
     '*': false,
     count: true,
     create: 'tokenAuth',
+    delete: ['tokenAuth', 'moderatorAuth'],
     find: 'apiKeyAuth',
     findAll: ['apiKeyAuth', 'paginate'],
     findRandom: true,

@@ -32,6 +32,24 @@ const FUZZINESS = 1;
 // eslint-disable-next-line no-multi-assign
 const self = (module.exports = {
   /**
+   * Delete a resource indexed by Elasticsearch. No check performed on the parameters given.
+   * The action is asynchronous and if an error occurs, it will simply logged.
+   * @param {string} indexName  An Elasticsearch index (@see ElasticsearchService indexNames)
+   * @param {string} resourceId The id of the resource to delete.
+   */
+  deleteResource: (indexName, resourceId) => {
+    try {
+      client.delete({
+        // Asynchronous operation
+        index: indexName + '-index',
+        type: 'data',
+        id: resourceId,
+      });
+    } catch (error) {
+      sails.log.error(error);
+    }
+  },
+  /**
    * Retrieve data from elasticsearch on various index according to a string.
    * The indexes used are: ['grottos', 'entrances', 'massifs', 'documents', 'cavers'] (document-collections and document-issues are excluded by default)
    * Params should contain an attribute 'query': others params are facultative.
