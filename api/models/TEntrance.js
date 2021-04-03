@@ -151,6 +151,13 @@ module.exports = {
       columnName: 'is_of_interest',
     },
 
+    isDeleted: {
+      type: 'boolean',
+      allowNull: false,
+      columnName: 'is_deleted',
+      defaultsTo: false,
+    },
+
     cave: {
       columnName: 'id_cave',
       model: 'TCave',

@@ -63,6 +63,7 @@ module.exports.policies = {
   'v1/EntranceController': {
     '*': false,
     count: true,
+    delete: ['tokenAuth', 'moderatorAuth'],
     find: 'apiKeyAuth',
     findAll: ['apiKeyAuth', 'paginate'],
     findRandom: true,

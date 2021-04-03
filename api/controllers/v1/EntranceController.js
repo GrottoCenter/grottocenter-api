@@ -34,4 +34,8 @@ module.exports = {
       MappingV1Service.convertToCountResultModel,
     );
   },
+
+  delete: (req, res) => {
+    entranceController.delete(req, res);
+  },
 };
