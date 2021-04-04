@@ -28,7 +28,7 @@ services:
     environment:
       - discovery.type=single-node
     volumes:
-      - ../esdata:/usr/share/elasticsearch/data
+      - ./esdata:/usr/share/elasticsearch/data
     restart: always
     ports:
       - ${ES_LOCAL_PORT}:9200
@@ -78,3 +78,6 @@ services:
     ports:
       - 1337:1337
       - 6006:6006
+volumes:
+  esdata:
+    driver: local

@@ -1,5 +1,4 @@
-FROM node:10.23.3-stretch
-# current-alpine3.12
+FROM node:10.24.0-alpine
 
 # set working directory
 WORKDIR /app
@@ -10,6 +9,7 @@ ENV PATH /app/node_modules/.bin:$PATH
 # add the app
 COPY . ./
 
+RUN npm install -g nodemon
 # install app dependencies
 RUN npm install
 
