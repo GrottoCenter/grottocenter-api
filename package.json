@@ -154,7 +154,7 @@
     "supertest": "^4.0.0"
   },
   "engines": {
-    "node": ">=8.11"
+    "node": ">=10.15"
   },
   "browserify": {
     "transform": [

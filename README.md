@@ -50,6 +50,7 @@ Software requirement:
 - NPM (min 4.1.2)
 - Git client (see Git usage for configuration)
 - Docker
+- [docker-compose](https://docs.docker.com/compose/install/)
 - Grunt
 
 Clone the project on your computer:
@@ -67,14 +68,17 @@ Clone the project on your computer:
 
 The development deployment aims to launch locally all the tools needed for the GrottoCenter development:
 
-First copy `/docker/sample.env` to  `/docker/.env`.
+First copy `docker/sample.env` to  `docker/.env`.
 
 Then launch the orchestrated containers:
 
 ```shell
 $ cd docker
+$ sudo chown -R 1000:root esdata
 $ docker-compose up --remove-orphans
 ```
+(you might have to run the `docker-compose` command with `sudo`)
+
 
 If you get the error: `'/docker-entrypoint-initdb.d/': Permission denied`
 make sure the sql files in `/sql/` have reading and execution access rights (a+rx), including the sql directory itself.
@@ -92,6 +96,12 @@ indices at http://localhost:9200/_cat/indices?v
 
 Each time you change a file in the source code, the code is recompiled automatically, you just need to refresh the page
 in your browser.
+
+To stop and clear your docker compose you should run :
+
+```shell
+$ docker-compose down -v
+```
 
 ### Tests
 
