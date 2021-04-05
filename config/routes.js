@@ -177,6 +177,7 @@ module.exports.routes = {
   'POST /api/v1/organizations': 'v1/Grotto.create',
 
   /* Massif controller */
+  'DELETE /api/v1/massifs/:id': 'v1/Massif.delete',
   'GET /api/v1/massifs/:id': {
     controller: 'v1/Massif',
     action: 'find',

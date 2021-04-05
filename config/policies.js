@@ -172,6 +172,7 @@ module.exports.policies = {
   },
 
   'v1/MassifController': {
+    delete: ['tokenAuth', 'moderatorAuth'],
     find: true,
   },
 
