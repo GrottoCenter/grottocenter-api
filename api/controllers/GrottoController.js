@@ -6,6 +6,7 @@
  */
 
 const esClient = require('../../config/elasticsearch').elasticsearchCli;
+const ramda = require('ramda');
 
 module.exports = {
   find: (
@@ -96,7 +97,7 @@ module.exports = {
       .with({
         groups: req.token.groups,
         rightEntity: RightService.RightEntities.ORGANIZATION,
-        rightAction: RightService.RightActions.EDIT_ANY,
+        rightAction: RightService.RightActions.CREATE,
       })
       .intercept('rightNotFound', (err) => {
         return res.serverError(
@@ -115,32 +116,53 @@ module.exports = {
     }
 
     // Launch creation request using transaction: it performs a rollback if an error occurs
-    const newOrganization = await sails
+    const newOrganizationPopulated = await sails
       .getDatastore()
       .transaction(async (db) => {
         const caver = await TCaver.findOne(req.token.id).usingConnection(db);
+
+        const newOrganization = await TGrotto.create({
+          address: req.param('address'),
+          author: req.token.id,
+          city: req.param('city'),
+          country: ramda.pathOr(null, ['country', 'id'], req.body),
+          county: req.param('county'),
+          customMessage: req.param('customMessage'),
+          dateInscription: new Date(),
+          latitude: req.param('latitude'),
+          longitude: req.param('longitude'),
+          mail: req.param('mail'),
+          postalCode: req.param('postalCode'),
+          region: req.param('region'),
+          url: req.param('url'),
+          yearBirth: req.param('yearBirth'),
+        })
+          .fetch()
+          .usingConnection(db);
+
         const name = await TName.create({
           author: req.token.id,
           dateInscription: new Date(),
+          grotto: newOrganization.id,
           isMain: true,
-          language: caver.language,
-          name: req.param('name'),
+          language:
+            ramda.propOr(null, 'language', req.param('name')) !== null
+              ? req.param('name').language
+              : caver.language,
+          name: req.param('name').text,
         })
           .fetch()
           .usingConnection(db);
 
-        const newOrganization = await TGrotto.create({
-          author: req.token.id,
-          dateInscription: new Date(),
-        })
-          .fetch()
+        // Prepare data for Elasticsearch indexation
+        const newOrganizationPopulated = await TGrotto.findOne(
+          newOrganization.id,
+        )
+          .populate('country')
+          .populate('names')
           .usingConnection(db);
 
-        await TGrotto.addToCollection(newOrganization.id, 'names')
-          .members(name.id)
-          .usingConnection(db);
-
-        return newOrganization;
+        return newOrganizationPopulated;
       })
       .intercept('E_UNIQUE', (e) => {
         sails.log.error(e.message);
@@ -159,16 +181,32 @@ module.exports = {
         return res.serverError(e.message);
       });
 
+    const {
+      country,
+      names,
+      ...newOrganizationESData
+    } = newOrganizationPopulated;
+
     try {
       esClient.create({
         index: `grottos-index`,
         type: 'data',
-        id: newOrganization.id,
+        id: newOrganizationPopulated.id,
         body: {
-          ...newOrganization,
-          name: req.param('name'),
-          names: req.param('name'),
-          ['nb cavers']: 0,
+          ...newOrganizationESData,
+          country: ramda.pathOr(
+            null,
+            ['country', 'nativeName'],
+            newOrganizationPopulated,
+          ),
+          'country code': ramda.pathOr(
+            null,
+            ['country', 'id'],
+            newOrganizationPopulated,
+          ),
+          name: names[0].name, // There is only one name right after the creation
+          names: names.map((n) => n.name).join(', '),
+          'nb cavers': 0,
           type: 'grotto',
         },
       });
@@ -176,14 +214,12 @@ module.exports = {
       sails.log.error(error);
     }
 
-    await NameService.setNames([newOrganization], 'grotto');
-
     const params = {};
     params.controllerMethod = 'GrottoController.create';
     return ControllerService.treatAndConvert(
       req,
       null,
-      newOrganization,
+      newOrganizationPopulated,
       params,
       res,
       converter,

@@ -1347,14 +1347,70 @@ paths:
     post:
       tags:
       - organizations
-      description: Create an organization (currently using only a name).
+      description: Create an organization.
       parameters:
+      - name: address
+        in: query
+        schema:
+          type: string
+      - name: city
+        in: query
+        schema:
+          type: string
+      - name: county
+        in: query
+        schema:
+          type: string
+      - name: country
+        in: query
+        schema:
+          type: object
+          properties:
+            id: 
+              type: string
+      - name: customMessage
+        in: query
+        schema:
+          type: string
+      - name: latitude
+        in: query
+        schema:
+          type: number
+      - name: longitude
+        in: query
+        schema:
+          type: number
+      - name: mail
+        in: query
+        schema:
+          type: string
       - name: name
         in: query
         description: Organization main name
         required: true
         schema:
+          type: object
+          properties:
+            text: 
+              type: string
+            language:
+              type: string
+      - name: postalCode
+        in: query
+        schema:
+          type: number
+      - name: region
+        in: query
+        schema:
           type: string
+      - name: url
+        in: query
+        schema:
+          type: string
+      - name: yearBirth
+        in: query
+        schema:
+          type: number
       responses:
         '200':
           description: Successful operation
@@ -1364,8 +1420,10 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Organization"
+        '400':
+          description: You must provide at least a name to create an organization.
         '403':
-          description: You are not allowed to create an organization.
+          description: You are not authorized to create an organization.
         
 
   '/organizations/{id}':
