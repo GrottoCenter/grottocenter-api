@@ -1484,7 +1484,62 @@ paths:
         '404':
           description: Resource not found
         
-
+  '/massifs':
+    post:
+      tags:
+      - massifs
+      description: Create a massif.
+      parameters:
+      - name: description
+        in: query
+        required: true
+        description: Description of the massif
+        schema:
+          type: string
+      - name: descriptionTitle
+        in: query
+        required: true
+        description: Description title of the massif
+        schema:
+          type: string
+      - name: descriptionAndNameLanguage
+        in: query
+        required: true
+        description: Language of the description and name of the massif
+        schema:
+          type: object
+          properties:
+            id: 
+              type: string
+              description: Must be a language supported by Grottocenter (see GET /languages route) using the 3-letters format.
+      - name: name
+        in: query
+        required: true
+        description: Name of the massif
+        schema:
+          type: string
+      - name: caves
+        in: query
+        description: Caves related to the massif
+        schema:
+          type: array
+          items:
+            type: object
+            properties:
+              id: 
+                type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Massif'
+        '400':
+          description: Some required information are missing.
+        '403':
+          description: You are not authorized to create a massif.
+  
 
   '/massifs/{id}':
     get:

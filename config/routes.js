@@ -193,6 +193,7 @@ module.exports.routes = {
       allowOrigins: '*',
     },
   },
+  'POST /api/v1/massifs': 'v1/Massif.create',
 
   /* Document controller */
   'GET /api/v1/documents': 'v1/Document.findAll',
