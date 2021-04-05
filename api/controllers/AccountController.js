@@ -62,15 +62,28 @@ module.exports = {
     return res.sendStatus(204);
   },
   changeEmail: async (req, res) => {
+    // Check right
+    const hasRight = await sails.helpers.checkRight
+      .with({
+        groups: req.token.groups,
+        rightEntity: RightService.RightEntities.CAVER,
+        rightAction: RightService.RightActions.EDIT_OWN,
+      })
+      .intercept('rightNotFound', (err) => {
+        return res.serverError(
+          'A server error occured when checking your right to change your account information.',
+        );
+      });
+    if (!hasRight) {
+      return res.forbidden(
+        'You are not authorized to change your account information.',
+      );
+    }
+
     // Check params
     const emailProvided = req.param('email');
     if (!emailProvided) {
       return res.badRequest(`You must provide an email.`);
-    }
-    if (req.token.id !== Number(req.params.id)) {
-      return res.forbidden(
-        'You cannot change the e-mail address of an account other than yours.',
-      );
     }
 
     // Perform update

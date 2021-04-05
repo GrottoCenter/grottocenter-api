@@ -660,7 +660,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Language'
   
-  '/account/:id/email':
+  '/account/email':
     patch:
       tags:
         - account
@@ -680,9 +680,6 @@ paths:
 
         '400':
           description: You must provide a (valid) email.
-        
-        '403':
-          description: You cannot change the e-mail address of an account other than yours.
         
   '/account/password':
     patch:
