@@ -218,12 +218,12 @@ module.exports = {
 
     // Prepare data for Elasticsearch indexation
     const description =
-      ramda.pathOr(null, ['description', 'title'], newEntrancePopulated) ===
-      null
+      newEntrancePopulated.descriptions.length === 0
         ? null
-        : ramda.pathOr(null, ['description', 'title'], newEntrancePopulated) +
+        : // There is only one description at the moment
+          newEntrancePopulated.descriptions[0].title +
           ' ' +
-          ramda.pathOr(null, ['description', 'body'], newEntrancePopulated);
+          newEntrancePopulated.descriptions[0].body;
 
     // Format cave massif
     newEntrancePopulated.cave.massif = {
