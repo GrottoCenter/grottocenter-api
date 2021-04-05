@@ -94,7 +94,7 @@ module.exports.routes = {
   /* Account controller */
   'PATCH /api/v1/account/password': 'v1/Account.changePassword',
   'PATCH /api/v1/account/alertForNews': 'v1/Account.changeAlertForNews',
-  'PATCH /api/v1/account/:id/email': 'v1/Account.changeEmail',
+  'PATCH /api/v1/account/email': 'v1/Account.changeEmail',
   'POST /api/v1/forgotPassword': 'v1/Account.forgotPassword',
 
   /* Auth controller */
