@@ -12,8 +12,8 @@ module.exports = {
 
   find: (req, res, next, converter = MappingV1Service.convertToCaveModel) => {
     TCave.findOne(req.params.id)
-      .populate('author')
-      .populate('reviewer')
+      .populate('id_author')
+      .populate('id_reviewer')
       .populate('entrances')
       .populate('descriptions')
       .populate('documents')
@@ -39,7 +39,7 @@ module.exports = {
     const parameters = {};
 
     return TCave.find(parameters)
-      .populate('author')
+      .populate('id_author')
       .populate('entrances')
       .sort('id ASC')
       .limit(10)
@@ -69,13 +69,16 @@ module.exports = {
     }
 
     const cleanedData = {
+      // The TCave.create() function doesn't work with TCave field alias. See TCave.js Model
+      /* eslint-disable camelcase */
       ...req.body,
-      author: req.token.id,
-      dateInscription: new Date(),
+      id_author: req.token.id,
+      date_inscription: new Date(),
       documents: req.body.documents
         ? req.body.documents.map((d) => d.id)
         : undefined,
-      massif: ramda.pathOr(undefined, ['massif', 'id'], req.body),
+      id_massif: ramda.pathOr(undefined, ['massif', 'id'], req.body),
+      /* eslint-enable camelcase */
     };
 
     // Launch creation request using transaction: it performs a rollback if an error occurs
