@@ -5,6 +5,13 @@
  * @docs        :: http://sailsjs.org/#!documentation/models
  */
 
+// ===== 05/04/2021 - Note from Clément ROIG ===== //
+/**
+ * The TCave.create() function doesn't work with TCave field alias.
+ * See https://github.com/balderdashy/sails/issues/7106
+ */
+/* eslint-disable camelcase */
+
 module.exports = {
   tableName: 't_cave',
 
@@ -18,13 +25,13 @@ module.exports = {
       unique: true,
     },
 
-    author: {
+    id_author: {
       allowNull: false,
       columnName: 'id_author',
       model: 'TCaver',
     },
 
-    reviewer: {
+    id_reviewer: {
       columnName: 'id_reviewer',
       model: 'TCaver',
     },
@@ -34,13 +41,13 @@ module.exports = {
       via: 'cave',
     },
 
-    minDepth: {
+    min_depth: {
       type: 'number',
       columnName: 'min_depth',
       allowNull: true,
     },
 
-    maxDepth: {
+    max_depth: {
       type: 'number',
       columnName: 'max_depth',
       allowNull: true,
@@ -58,7 +65,7 @@ module.exports = {
       allowNull: true,
     },
 
-    isDiving: {
+    is_diving: {
       type: 'boolean',
       allowNull: false,
       columnName: 'is_diving',
@@ -71,14 +78,14 @@ module.exports = {
       columnName: 'temperature',
     },
 
-    dateInscription: {
+    date_inscription: {
       type: 'ref',
       allowNull: false,
       columnName: 'date_inscription',
       columnType: 'datetime',
     },
 
-    dateReviewed: {
+    date_reviewed: {
       type: 'ref',
       allowNull: false,
       columnName: 'date_reviewed',
@@ -108,7 +115,7 @@ module.exports = {
       columnType: 'numeric(24,20)',
     },
 
-    massif: {
+    id_massif: {
       allowNull: false,
       columnName: 'id_massif',
       model: 'TMassif',
@@ -142,3 +149,4 @@ module.exports = {
     },
   },
 };
+/* eslint-enable camelcase */
