@@ -165,4 +165,56 @@ module.exports = {
     );
     return res.sendStatus(204);
   },
+
+  addDocument: async (req, res) => {
+    // Check right
+    const hasRight = await sails.helpers.checkRight
+      .with({
+        groups: req.token.groups,
+        rightEntity: RightService.RightEntities.CAVE,
+        rightAction: RightService.RightActions.EDIT_ANY,
+      })
+      .intercept('rightNotFound', (err) => {
+        return res.serverError(
+          'A server error occured when checking your right to add a document to a cave.',
+        );
+      });
+    if (!hasRight) {
+      return res.forbidden(
+        'You are not authorized to add a document to a cave.',
+      );
+    }
+
+    // Check params
+    const caveId = req.param('caveId');
+    const currentCave = await TCave.findOne(caveId);
+    if (!currentCave) {
+      return res.status(404).send({
+        message: `Cave of id ${caveId} not found.`,
+      });
+    }
+
+    const documentId = req.param('documentId');
+    const currentDocument = await TDocument.findOne(documentId);
+    if (!currentDocument) {
+      return res.status(404).send({
+        message: `Document of id ${documentId} not found.`,
+      });
+    }
+
+    // Update cave
+    TCave.addToCollection(caveId, 'documents', documentId)
+      .then(() => {
+        return res.sendStatus(204);
+      })
+      .catch({ name: 'UsageError' }, (err) => {
+        return res.badRequest(err.cause.message);
+      })
+      .catch({ name: 'AdapterError' }, (err) => {
+        return res.badRequest(err.cause.message);
+      })
+      .catch((err) => {
+        return res.serverError(err.cause.message);
+      });
+  },
 };

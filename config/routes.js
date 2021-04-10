@@ -140,6 +140,7 @@ module.exports.routes = {
   'GET /api/v1/caves/findAll': 'v1/Cave.findAll',
   'POST /api/v1/caves': 'v1/Cave.create',
   'PUT /api/caves/:id': 'Cave.update',
+  'PUT /api/v1/caves/:caveId/documents/:documentId': 'v1/Cave.addDocument',
 
   /* Author controller */
   'DELETE /api/authors/:id': 'Author.delete',
