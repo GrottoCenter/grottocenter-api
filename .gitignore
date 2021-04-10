@@ -122,14 +122,5 @@ coverage
 .coveralls.yml
 .vscode
 
-################################################
-# Logstash
-#
-# Plugins downloaded to run logstash in the
-# docker container.
-################################################
-postgresql-connector.jar
-
-
 docker/esdata/*
 !docker/esdata/for-docker-compose

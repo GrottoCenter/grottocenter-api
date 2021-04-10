@@ -68,21 +68,18 @@ Clone the project on your computer:
 
 The development deployment aims to launch locally all the tools needed for the GrottoCenter development:
 
-First copy `docker/sample.env` to  `docker/.env`.
+First copy `/docker/sample.env` to  `/docker/.env`.
+
+Make sure the sql files in `/sql/` have reading and execution access rights (a+rx), including the sql directory itself.
+Same goes with `/postgresql-connector.jar`. `/docker/esdata` folder needs writing, reading and execution rights (
+a+wrx).
 
 Then launch the orchestrated containers:
 
 ```shell
 $ cd docker
-$ sudo chown -R 1000:root esdata
 $ docker-compose up --remove-orphans
 ```
-(you might have to run the `docker-compose` command with `sudo`)
-
-
-If you get the error: `'/docker-entrypoint-initdb.d/': Permission denied`
-make sure the sql files in `/sql/` have reading and execution access rights (a+rx), including the sql directory itself.
-Same goes with `/docker/postgresql-*.jar`.
 
 Wait until you see the following lines in the logs:
 
