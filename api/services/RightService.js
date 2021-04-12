@@ -25,6 +25,7 @@ module.exports = {
     MERGE_DUPLICATES: 'merge duplicates',
     UNLINK_RESOURCE: 'unlink resource',
     VIEW_ANY: 'view any',
+    VIEW_COMPLETE: 'view complete',
     VIEW_LIMITED: 'view limited',
   },
 };
