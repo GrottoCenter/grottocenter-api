@@ -73,6 +73,7 @@ module.exports.policies = {
     findRandom: true,
     publicCount: true,
     update: 'tokenAuth',
+    addDocument: 'tokenAuth',
   },
 
   SearchController: {
