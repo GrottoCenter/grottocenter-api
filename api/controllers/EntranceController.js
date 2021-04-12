@@ -20,7 +20,7 @@ const getConvertedDataFromClientRequest = (req) => {
 };
 
 module.exports = {
-  find: (req, res, converter) => {
+  find: async (req, res, converter) => {
     TEntrance.findOne(req.params.id)
       .populate('author')
       .populate('cave')
@@ -44,13 +44,48 @@ module.exports = {
 
         // Populate stats
         const statsPromise = CommentService.getStats(req.params.id);
-        statsPromise.then((stats) => {
+        statsPromise.then(async (stats) => {
           found.stats = stats;
-          if (!found.isPublic) {
-            // TODO: Some people (admin ? use RightHelper with a right in DB ?) should be able to get the full data even for the "not public" entrances.
-            delete found.locations;
-            delete found.longitude;
-            delete found.latitude;
+
+          // Sensitive entrance special treatment
+          if (found.isSensitive) {
+            const hasCompleteViewRight = req.token
+              ? await sails.helpers.checkRight
+                  .with({
+                    groups: req.token.groups,
+                    rightEntity: RightService.RightEntities.ENTRANCE,
+                    rightAction: RightService.RightActions.VIEW_COMPLETE,
+                  })
+                  .intercept('rightNotFound', (err) => {
+                    return res.serverError(
+                      'A server error occured when checking your right to entirely view an entrance.',
+                    );
+                  })
+              : false;
+
+            const hasLimitedViewRight = req.token
+              ? await sails.helpers.checkRight
+                  .with({
+                    groups: req.token.groups,
+                    rightEntity: RightService.RightEntities.ENTRANCE,
+                    rightAction: RightService.RightActions.VIEW_LIMITED,
+                  })
+                  .intercept('rightNotFound', (err) => {
+                    return res.serverError(
+                      'A server error occured when checking your right to have a limited view of a sensible entrance.',
+                    );
+                  })
+              : false;
+            if (!hasLimitedViewRight && !hasCompleteViewRight) {
+              return res.forbidden(
+                'You are not authorized to view this sensible entrance.',
+              );
+            }
+            if (!hasCompleteViewRight) {
+              delete found.locations;
+              delete found.longitude;
+              delete found.latitude;
+            }
           }
           return ControllerService.treatAndConvert(
             req,

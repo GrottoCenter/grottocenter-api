@@ -23,6 +23,7 @@ module.exports = {
     EDIT_OWN: 'edit own',
     MERGE_DUPLICATES: 'merge duplicates',
     VIEW_ANY: 'view any',
+    VIEW_COMPLETE: 'view complete',
     VIEW_LIMITED: 'view limited',
   },
 };

@@ -1220,7 +1220,11 @@ paths:
     get:
       tags:
       - entrances
-      description: Get an entrance by id. If the entrance is sensitive (i.e. not public), the locations, logintude and latitude attributes are not returned.
+      description: |
+        Get an entrance by id. If the entrance is sensitive (i.e. not public):
+        - if you are an unauthenticated visitor, you will not be able to get it.
+        - if you are an authenticated Grottocenter user, you will be able to get the entrance information but the fields "longitude", "latitude" and "locations" will be hidden.
+        - if you are an authenticated Grottocenter administrator, you will be able to get all the information.
       parameters:
       - name: id
         in: path
@@ -1235,6 +1239,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Entrance'
+        '403':
+          description: You are not authorized to view the entrance.
         '404':
           description: Entrance not found.
 
