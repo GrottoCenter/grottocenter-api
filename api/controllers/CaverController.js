@@ -199,7 +199,7 @@ module.exports = {
         });
 
         const params = {};
-        params.controllerMethod = 'CaverController.addToGroup';
+        params.controllerMethod = 'CaverController.setGroups';
         return ControllerService.treat(req, null, {}, params, res);
       })
       .catch({ name: 'UsageError' }, (err) => {
