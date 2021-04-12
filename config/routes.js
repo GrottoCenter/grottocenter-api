@@ -134,6 +134,8 @@ module.exports.routes = {
   },
   'POST /api/v1/entrances': 'v1/Entrance.create',
   'PUT /api/v1/entrances/:id': 'v1/Entrance.update',
+  'PUT /api/v1/entrances/:entranceId/documents/:documentId':
+    'v1/Entrance.addDocument',
 
   /* Cave controller */
   'DELETE /api/v1/caves/:id': 'v1/Cave.delete',

@@ -51,7 +51,9 @@ INSERT INTO public.t_right (id,"name","comments") VALUES
     (85, 'Massif - create', NULL),
     (86, 'Right - create', NULL),
     (87, 'Entrance - view limited', NULL),
-    (88, 'Application - merge duplicates', NULL);
+    (88, 'Application - merge duplicates', NULL),
+	(89, 'Entrance - link resource', NULL),
+	(90, 'Entrance - unlink resource', NULL);
 
 INSERT INTO public.j_group_right (id_group,id_right) VALUES
     (1, 2),
@@ -88,7 +90,9 @@ INSERT INTO public.j_group_right (id_group,id_right) VALUES
     (3, 51),
     (4, 4),
     (4, 10),
-    (2, 9);
+    (2, 9),
+	(3, 89),
+	(2, 90);
 
 INSERT INTO public.t_identifier_type (code,"text",regexp) VALUES
  ('doi  ','digital object identifier','^.+$'),
