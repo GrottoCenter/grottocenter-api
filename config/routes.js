@@ -165,6 +165,7 @@ module.exports.routes = {
   'GET /api/comments/timeinfos/:entry': 'Comments.getEntryTimeInfos',
 
   /* Organization controller */
+  'DELETE /api/v1/organizations/:id': 'v1/Grotto.delete',
   'GET /api/v1/organizations/count': 'v1/Grotto.count',
   'GET /api/organizations/findAll': 'Grotto.findAll',
   'GET /api/v1/organizations/:id': {
