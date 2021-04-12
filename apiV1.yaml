@@ -225,6 +225,31 @@ paths:
         '403':
           description: You are not authorized to add a document to a cave.
   
+        
+  '/caves/{caveId}/massif/{massifId}':
+    put:
+      tags:
+      - caves
+      - massifs
+      description: Set a cave massif.
+      parameters:
+      - name: caveId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: massifId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Successful operation
+        '400':
+          description: "Bad request. Both the caveId and massifId parameters must exist in the database."
+        '403':
+          description: You are not authorized to set the massif of a cave.
           
   '/cavers':
     post:

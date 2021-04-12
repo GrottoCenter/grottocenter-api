@@ -18,4 +18,5 @@ module.exports = {
   addDocument: async (req, res) => caveController.addDocument(req, res),
   update: (req, res) =>
     caveController.update(req, res, MappingV1Service.convertToCaveModel),
+  setMassif: (req, res) => caveController.setMassif(req, res),
 };
