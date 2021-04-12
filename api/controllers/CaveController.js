@@ -68,13 +68,18 @@ module.exports = {
       return res.forbidden('You are not authorized to create a cave.');
     }
 
+    // Check params
+    if (!req.param('name')) {
+      return res.badRequest(`You must provide a name to create a new cave.`);
+    }
+
     const cleanedData = {
       // The TCave.create() function doesn't work with TCave field alias. See TCave.js Model
       /* eslint-disable camelcase */
       ...req.body,
       id_author: req.token.id,
       date_inscription: new Date(),
-      documents: req.body.documents
+      documents: ramda.propOr(undefined, 'documents', req.body)
         ? req.body.documents.map((d) => d.id)
         : undefined,
       id_massif: ramda.pathOr(undefined, ['massif', 'id'], req.body),
@@ -95,16 +100,20 @@ module.exports = {
           dateInscription: new Date(),
           isMain: true,
           language: req.body.descriptionAndNameLanguage.id,
+          name: req.param('name'),
         }).usingConnection(db);
 
-        await TDescription.create({
-          author: req.token.id,
-          body: req.body.description,
-          cave: caveCreated.id,
-          dateInscription: new Date(),
-          language: req.body.descriptionAndNameLanguage.id,
-          title: req.body.descriptionTitle,
-        }).usingConnection(db);
+        // Description (if provided)
+        if (ramda.propOr(null, 'description', req.body) !== null) {
+          await TDescription.create({
+            author: req.token.id,
+            body: req.body.description,
+            cave: caveCreated.id,
+            dateInscription: new Date(),
+            language: req.body.descriptionAndNameLanguage.id,
+            title: req.body.descriptionTitle,
+          }).usingConnection(db);
+        }
 
         const params = {};
         params.controllerMethod = 'CaveController.create';
