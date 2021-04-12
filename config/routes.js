@@ -148,6 +148,7 @@ module.exports.routes = {
   'POST /api/v1/caves': 'v1/Cave.create',
   'PUT /api/v1/caves/:caveId/documents/:documentId': 'v1/Cave.addDocument',
   'PUT /api/v1/caves/:id': 'v1/Cave.update',
+  'PUT /api/v1/caves/:caveId/massif/:massifId': 'v1/Cave.setMassif',
 
   /* Author controller */
   'DELETE /api/authors/:id': 'Author.delete',

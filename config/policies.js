@@ -48,6 +48,7 @@ module.exports.policies = {
   'v1/CaveController': {
     '*': true,
     addDocument: 'tokenAuth',
+    setMassif: 'tokenAuth',
     create: 'tokenAuth',
     delete: ['tokenAuth', 'moderatorAuth'],
     update: 'tokenAuth',

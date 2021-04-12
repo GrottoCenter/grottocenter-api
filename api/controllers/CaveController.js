@@ -301,4 +301,43 @@ module.exports = {
         return res.serverError(e.message);
       });
   },
+
+  setMassif: async (req, res) => {
+    // Check right
+    const hasRight = await sails.helpers.checkRight
+      .with({
+        groups: req.token.groups,
+        rightEntity: RightService.RightEntities.CAVE,
+        rightAction: RightService.RightActions.EDIT_ANY,
+      })
+      .intercept('rightNotFound', (err) => {
+        return res.serverError(
+          'A server error occured when checking your right to add a cave to a massif.',
+        );
+      });
+    if (!hasRight) {
+      return res.forbidden('You are not authorized to add a cave to a massif.');
+    }
+
+    // Check params
+    const caveId = req.param('caveId');
+    const currentCave = await TCave.findOne(caveId);
+    if (!currentCave) {
+      return res.badRequest(`Could not find cave with id ${caveId}.`);
+    }
+
+    const massifId = req.param('massifId');
+    const currentMassif = await TMassif.findOne(massifId);
+    if (!currentMassif) {
+      return res.badRequest(`Could not find massif with id ${massifId}.`);
+    }
+
+    // Update cave
+    await TCave.updateOne({
+      id: caveId,
+    }).set({
+      massif: massifId,
+    });
+    return res.sendStatus(204);
+  },
 };
