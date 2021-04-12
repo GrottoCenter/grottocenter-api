@@ -170,6 +170,7 @@ module.exports.policies = {
   'v1/GrottoController': {
     create: 'tokenAuth',
     count: true,
+    delete: ['tokenAuth', 'moderatorAuth'],
     getOfficialPartnersNumber: true,
     find: ['apiKeyAuth', 'paginate'],
   },

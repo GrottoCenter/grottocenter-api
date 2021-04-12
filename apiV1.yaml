@@ -1208,25 +1208,6 @@ paths:
                 $ref: '#/components/schemas/Entrance'
         '404':
           description: Entrance not found.
-  
-    delete:
-      tags:
-      - entrances
-      description: Delete an entrance.
-      parameters:
-      - name: id
-        in: path
-        description: Entrance id
-        required: true
-        schema:
-          type: string
-      responses:
-        '204':
-          description: Successful operation
-        '404':
-          description: Entrance not found.
-        '410':
-          description: Entrance already deleted.
 
   '/entrances/publicCount':
     get:
@@ -1544,6 +1525,25 @@ paths:
         
 
   '/organizations/{id}':
+    delete:
+      tags:
+      - organizations
+      description: Delete an organization.
+      parameters:
+      - name: id
+        in: path
+        description: Organization id
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Successful operation
+        '404':
+          description: Organization not found.
+        '410':
+          description: Organization already deleted.
+
     get:
       tags:
       - organizations
