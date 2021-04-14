@@ -421,6 +421,30 @@ paths:
           description: "Bad request. Both the caverId and entranceId parameters must exist in the database. Also, you can't mark an entrance as as explored if it is already marked as explored for the caver."
         '403':
           description: You are not authorized to mark an entrance as explored by a caver or you can't mark an entrance as explored for someone else than you.
+    
+    delete:
+      tags:
+      - cavers
+      - entrances
+      description: Unmark an entrance as explored for a caver. Can only be used on self account.
+      parameters:
+      - name: caverId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: entranceId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Successful operation
+        '400':
+          description: Bad request. Both the caverId and entranceId parameters must exist in the database.
+        '403':
+          description: You are not authorized to mark an entrance as explored by a caver or you can't unmark an entrance as explored for someone else than you.
   
   '/descriptions/{id}':
     patch:

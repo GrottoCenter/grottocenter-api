@@ -103,6 +103,8 @@ module.exports.routes = {
   'POST /api/v1/signup': 'v1/Auth.signUp',
 
   /* Caver controller */
+  'DELETE /api/v1/cavers/:caverId/entrances/:entranceId':
+    'v1/Caver.removeExploredEntrance',
   'DELETE /api/v1/cavers/:caverId/groups/:groupId': 'v1/Caver.removeFromGroup',
   'GET /api/v1/cavers/': 'v1/Caver.findAll',
   'GET /api/v1/cavers/:id': 'v1/Caver.find',

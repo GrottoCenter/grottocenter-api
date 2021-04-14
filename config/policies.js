@@ -63,6 +63,7 @@ module.exports.policies = {
     setGroups: ['tokenAuth', 'adminAuth'],
     getAdmins: 'tokenAuth',
     getModerators: 'tokenAuth',
+    removeExploredEntrance: 'tokenAuth',
   },
 
   'v1/EntranceController': {
