@@ -27,6 +27,10 @@ services:
           cpus: '0.50'
     environment:
       - discovery.type=single-node
+      # prevent flood stage on disk with small free space
+      - cluster.routing.allocation.disk.watermark.low=3gb
+      - cluster.routing.allocation.disk.watermark.high=2gb
+      - cluster.routing.allocation.disk.watermark.flood_stage=1gb
     volumes:
       - ./esdata:/usr/share/elasticsearch/data
     restart: always
