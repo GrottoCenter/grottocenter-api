@@ -397,4 +397,54 @@ module.exports = {
       converter,
     );
   },
+
+  addExploredEntrance: async (req, res) => {
+    // Check right
+    const hasRight = await sails.helpers.checkRight
+      .with({
+        groups: req.token.groups,
+        rightEntity: RightService.RightEntities.CAVER,
+        rightAction: RightService.RightActions.EDIT_OWN,
+      })
+      .intercept('rightNotFound', (err) => {
+        return res.serverError(
+          'A server error occured when checking your right to mark an entrance as explored.',
+        );
+      });
+    if (!hasRight) {
+      return res.forbidden(
+        'You are not authorized to mark an entrance as explored.',
+      );
+    }
+
+    // Check params
+    const caverId = req.param('caverId');
+    const entranceId = req.param('entranceId');
+    if (!(await CaverService.checkIfExists('id', caverId))) {
+      return res.badRequest(`Could not find caver with id ${caverId}.`);
+    }
+    if (!(await EntranceService.checkIfExists('id', entranceId))) {
+      return res.badRequest(`Could not find entrance with id ${entranceId}.`);
+    }
+    if (Number(caverId) !== req.token.id) {
+      return res.forbidden(
+        'You can not mark an entrance as explored to another account than yours.',
+      );
+    }
+
+    // Update caver
+    TCaver.addToCollection(caverId, 'exploredEntrances', entranceId)
+      .then(() => {
+        return res.sendStatus(204);
+      })
+      .catch({ name: 'UsageError' }, (err) => {
+        return res.badRequest(err.cause.message);
+      })
+      .catch({ name: 'AdapterError' }, (err) => {
+        return res.badRequest(err.cause.message);
+      })
+      .catch((err) => {
+        return res.serverError(err.cause.message);
+      });
+  },
 };

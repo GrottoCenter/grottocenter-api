@@ -13,12 +13,10 @@ module.exports = {
   getModerators: (req, res) => caverController.getModerators(req, res),
   getAdmins: (req, res) => caverController.getAdmins(req, res),
   count: (req, res) => caverController.count(req, res),
-
   putOnGroup: async (req, res) => caverController.putOnGroup(req, res),
   removeFromGroup: async (req, res) =>
     caverController.removeFromGroup(req, res),
   setGroups: async (req, res) => caverController.setGroups(req, res),
-
   create: async (
     req,
     res,
@@ -31,4 +29,6 @@ module.exports = {
       next,
       (converter = MappingV1Service.convertToCaverModel),
     ),
+  addExploredEntrance: (req, res) =>
+    caverController.addExploredEntrance(req, res),
 };

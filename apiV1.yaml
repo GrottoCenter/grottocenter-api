@@ -370,7 +370,7 @@ paths:
           description: "Bad request. Both the caverId and groupId parameters must exist in the database. Also, you can't add a caver if he / she is already in the group you specified."
         '403':
           description: You are not authorized to add a caver to a group.
-
+  
     delete:
       tags:
       - cavers
@@ -397,6 +397,31 @@ paths:
         '403':
           description: You are not authorized to remove a caver from a group.
 
+  '/cavers/{caverId}/entrances/{entranceId}':
+    put:
+      tags:
+      - cavers
+      - entrances
+      description: Make an entrance as explored by a caver. Can only be used on self account.
+      parameters:
+      - name: caverId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: entranceId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Successful operation
+        '400':
+          description: "Bad request. Both the caverId and entranceId parameters must exist in the database. Also, you can't mark an entrance as as explored if it is already marked as explored for the caver."
+        '403':
+          description: You are not authorized to mark an entrance as explored by a caver or you can't mark an entrance as explored for someone else than you.
+  
   '/descriptions/{id}':
     patch:
       tags:

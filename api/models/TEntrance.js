@@ -208,5 +208,11 @@ module.exports = {
       collection: 'TComment',
       via: 'entrance',
     },
+
+    explorerCavers: {
+      collection: 'TCaver',
+      via: 'entrance',
+      through: 'JEntranceCaver',
+    },
   },
 };
