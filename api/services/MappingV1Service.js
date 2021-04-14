@@ -188,6 +188,18 @@ module.exports = {
         });
       }
     }
+
+    if (source.documents) {
+      if (source.documents instanceof Array) {
+        result.documents = source.documents;
+      } else {
+        result.documents = source.documents.split(',').map((documentId) => {
+          return {
+            id: parseInt(documentId, 10),
+          };
+        });
+      }
+    }
     return result;
   },
 

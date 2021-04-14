@@ -57,6 +57,7 @@ module.exports.policies = {
     '*': false,
     count: true,
     create: 'tokenAuth',
+    find: 'facultativeTokenAuth',
     putOnGroup: ['tokenAuth', 'adminAuth'],
     removeFromGroup: ['tokenAuth', 'adminAuth'],
     setGroups: ['tokenAuth', 'adminAuth'],

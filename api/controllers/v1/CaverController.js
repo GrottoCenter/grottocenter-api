@@ -8,7 +8,8 @@
 const caverController = require('../CaverController');
 
 module.exports = {
-  find: (req, res) => caverController.find(req, res),
+  find: (req, res, next, converter = MappingV1Service.convertToCaverModel) =>
+    caverController.find(req, res, next, converter),
   findAll: (req, res) => caverController.findAll(req, res),
   getModerators: (req, res) => caverController.getModerators(req, res),
   getAdmins: (req, res) => caverController.getAdmins(req, res),
