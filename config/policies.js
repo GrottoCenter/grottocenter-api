@@ -55,6 +55,7 @@ module.exports.policies = {
 
   'v1/CaverController': {
     '*': false,
+    addExploredEntrance: 'tokenAuth',
     count: true,
     create: 'tokenAuth',
     putOnGroup: ['tokenAuth', 'adminAuth'],

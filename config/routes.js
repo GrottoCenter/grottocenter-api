@@ -112,6 +112,8 @@ module.exports.routes = {
   'GET /api/v1/cavers/moderators': 'v1/Caver.getModerators',
   'POST /api/v1/cavers/': 'v1/Caver.create',
   'POST /api/v1/cavers/:caverId/groups': 'v1/Caver.setGroups',
+  'PUT /api/v1/cavers/:caverId/entrances/:entranceId':
+    'v1/Caver.addExploredEntrance',
   'PUT /api/v1/cavers/:caverId/groups/:groupId': 'v1/Caver.putOnGroup',
 
   /* Entrance controller */

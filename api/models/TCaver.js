@@ -166,6 +166,12 @@ module.exports = {
       via: 'caver',
       through: 'JCaverGroup',
     },
+
+    exploredEntrances: {
+      collection: 'TEntrance',
+      via: 'caver',
+      through: 'JEntranceCaver',
+    },
   },
 
   // Commented because it was taking some attributes away (ex: 'author' in the document model is deleted)
