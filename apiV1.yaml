@@ -258,6 +258,27 @@ paths:
           description: You must provide a surname and a name to create a new caver.
         '403':
           description: You are not authorized to create a caver.
+  
+  '/cavers/{id}':
+    get:
+      tags:
+      - cavers
+      description: Get information about a caver. Only administrators can access all the information about caver. If you are not an administrator, you will only get the documents submitted by the user, his/her name, surname and nickname.
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Caver"
+        '404':
+          description: Caver not found.
 
   '/cavers/admins':
     get:
@@ -1955,6 +1976,10 @@ components:
           type: string
         '@type':
           type: string
+        documents:
+          type: array
+          items: 
+            type: string
         groups:
           type: array
           items: 

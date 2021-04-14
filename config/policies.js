@@ -58,6 +58,7 @@ module.exports.policies = {
     addExploredEntrance: 'tokenAuth',
     count: true,
     create: 'tokenAuth',
+    find: 'facultativeTokenAuth',
     putOnGroup: ['tokenAuth', 'adminAuth'],
     removeFromGroup: ['tokenAuth', 'adminAuth'],
     setGroups: ['tokenAuth', 'adminAuth'],
