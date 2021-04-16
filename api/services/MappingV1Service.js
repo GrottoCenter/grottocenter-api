@@ -147,6 +147,7 @@ module.exports = {
     result.dateReviewed = source.date_reviewed;
     result.descriptions = source.descriptions;
     result.depth = source.depth;
+    result.isDeleted = source.is_deleted;
     result.isDiving = source.is_diving;
     result.length = source.length;
     result.temperature = source.temperature;
