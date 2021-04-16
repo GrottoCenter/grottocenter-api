@@ -35,26 +35,6 @@ module.exports.routes = {
    *                                                                          *
    ***************************************************************************/
 
-  '/': {
-    controller: 'Index',
-    action: 'index',
-    csrf: true,
-  },
-
-  '/ui': {
-    controller: 'Index',
-    action: 'index',
-    csrf: true,
-  },
-
-  '/ui/*': {
-    controller: 'Index',
-    action: 'index',
-    csrf: true,
-  },
-
-  '/admin/*': 'Index.index',
-
   /***************************************************************************
    *                                                                          *
    * Custom routes here...                                                    *
@@ -68,11 +48,6 @@ module.exports.routes = {
   /* CSRF */
   'GET /csrfToken': {
     action: 'security/grant-csrf-token',
-  },
-
-  /* For ReactRouter routes */
-  'GET /ui/swagger/': {
-    csrf: false,
   },
 
   //  ╔═╗╔═╗╦  ╔═╗╔╗╔╔╦╗╔═╗╔═╗╦╔╗╔╔╦╗╔═╗
