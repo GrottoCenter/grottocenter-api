@@ -17,9 +17,9 @@
 
 module.exports = function badRequest(data, options) {
   // Get access to `req`, `res`, & `sails`
-  var req = this.req;
-  var res = this.res;
-  var sails = req._sails;
+  let { req } = this;
+  let { res } = this;
+  let sails = req._sails;
 
   // Set status code
   res.status(400);
@@ -57,11 +57,9 @@ module.exports = function badRequest(data, options) {
     return res.view(options.view, {
       data: data,
     });
-  }
-
-  // If no second argument provided, try to serve the implied view,
-  // but fall back to sending JSON(P) if no view can be inferred.
-  else
+  } else {
+    // If no second argument provided, try to serve the implied view,
+    // but fall back to sending JSON(P) if no view can be inferred.
     return res.guessView(
       {
         data: data,
@@ -70,4 +68,5 @@ module.exports = function badRequest(data, options) {
         return res.json(data);
       },
     );
+  }
 };

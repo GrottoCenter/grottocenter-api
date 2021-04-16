@@ -6,9 +6,7 @@
     "dateInscription": "2017-04-19 11:38:39",
     "dateValidation": "2017-05-01 12:24:19",
     "isValidated": true,
-    "names": [
-      3
-    ],
+    "names": [3],
     "type": 1
   },
   {
@@ -22,9 +20,7 @@
     "issue": "n°1",
     "identifier": "1234-5678",
     "identifierType": 3,
-    "names": [
-      4
-    ],
+    "names": [4],
     "type": 17
   },
   {
@@ -38,10 +34,7 @@
     "issue": "n°2",
     "identifier": "1234-5679",
     "identifierType": 3,
-    "names": [
-      5
-    ],
+    "names": [5],
     "type": 17
   }
-  
 ]

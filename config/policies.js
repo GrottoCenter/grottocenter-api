@@ -26,11 +26,6 @@ module.exports.policies = {
 
   '*': false,
 
-  IndexController: {
-    '*': false,
-    index: 'localize',
-  },
-
   AccountController: {
     '*': true,
   },

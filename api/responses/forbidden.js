@@ -14,9 +14,9 @@
 
 module.exports = function forbidden(data, options) {
   // Get access to `req`, `res`, & `sails`
-  var req = this.req;
-  var res = this.res;
-  var sails = req._sails;
+  let { req } = this;
+  let { res } = this;
+  let sails = req._sails;
 
   // Set status code
   res.status(403);
@@ -54,11 +54,9 @@ module.exports = function forbidden(data, options) {
     return res.view(options.view, {
       data: data,
     });
-  }
-
-  // If no second argument provided, try to serve the default view,
-  // but fall back to sending JSON(P) if any errors occur.
-  else
+  } else {
+    // If no second argument provided, try to serve the default view,
+    // but fall back to sending JSON(P) if any errors occur.
     return res.view(
       '403',
       {
@@ -75,9 +73,8 @@ module.exports = function forbidden(data, options) {
               'res.forbidden() :: Could not locate view for error page (sending JSON instead).  Details: ',
               err,
             );
-          }
-          // Otherwise, if this was a more serious error, log to the console with the details.
-          else {
+          } else {
+            // Otherwise, if this was a more serious error, log to the console with the details.
             sails.log.warn(
               'res.forbidden() :: When attempting to render error page view, an error occured (sending JSON instead).  Details: ',
               err,
@@ -89,4 +86,5 @@ module.exports = function forbidden(data, options) {
         return res.send(html);
       },
     );
+  }
 };

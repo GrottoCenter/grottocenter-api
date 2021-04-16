@@ -14,9 +14,9 @@
 
 module.exports = function unauthorized(data, options) {
   // Get access to `req`, `res`, & `sails`
-  var req = this.req;
-  var res = this.res;
-  var sails = req._sails;
+  let { req } = this;
+  let { res } = this;
+  let sails = req._sails;
 
   // Set status code
   res.status(401);
@@ -54,13 +54,11 @@ module.exports = function unauthorized(data, options) {
     return res.view(options.view, {
       data: data,
     });
-  }
+  } else {
+    // TODO add WWW-Authenticate header field
 
-  // TODO add WWW-Authenticate header field
-
-  // If no second argument provided, try to serve the default view,
-  // but fall back to sending JSON(P) if any errors occur.
-  else
+    // If no second argument provided, try to serve the default view,
+    // but fall back to sending JSON(P) if any errors occur.
     return res.view(
       '401',
       {
@@ -77,9 +75,8 @@ module.exports = function unauthorized(data, options) {
               'res.unauthorized() :: Could not locate view for error page (sending JSON instead).  Details: ',
               err,
             );
-          }
-          // Otherwise, if this was a more serious error, log to the console with the details.
-          else {
+          } else {
+            // Otherwise, if this was a more serious error, log to the console with the details.
             sails.log.warn(
               'res.unauthorized() :: When attempting to render error page view, an error occured (sending JSON instead).  Details: ',
               err,
@@ -91,4 +88,5 @@ module.exports = function unauthorized(data, options) {
         return res.send(html);
       },
     );
+  }
 };

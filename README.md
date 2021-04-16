@@ -1,6 +1,10 @@
-# Grottocenter 3
+# Grottocenter 3 API
 
-The Wiki database made by cavers for cavers!
+**Grottocenter** is The Wiki database made by cavers for cavers!
+
+This github project is the backend application which provide the Grottocenter API to the grottocenter front app.
+
+For the Front-End See the [grottocenter-front project](https://github.com/GrottoCenter/grottocenter-front)
 
 Current production version is available [here](http://beta.grottocenter.org/)
 
@@ -8,8 +12,8 @@ Current production version is available [here](http://beta.grottocenter.org/)
 
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
 
-
 ### Master
+
 ![Latest Deployment](https://github.com/GrottoCenter/Grottocenter3/actions/workflows/deploy-aws.yml/badge.svg?branch=master)
 
 [![Coverage Status](https://coveralls.io/repos/github/GrottoCenter/Grottocenter3/badge.svg?branch=refs/heads/master)](https://coveralls.io/github/GrottoCenter/Grottocenter3?branch=refs/heads/master)
@@ -66,7 +70,7 @@ Clone the project on your computer:
 
 The development deployment aims to launch locally all the tools needed for the GrottoCenter development:
 
-First copy `/docker/sample.env` to  `/docker/.env`.
+First copy `/docker/sample.env` to `/docker/.env`.
 
 Make sure the sql files in `/sql/` have reading and execution access rights (a+rx), including the sql directory itself.
 Same goes with `/postgresql-connector.jar`. `/docker/esdata` folder needs writing, reading and execution rights (
@@ -86,7 +90,7 @@ Wait until you see the following lines in the logs:
  : Grunt :: Waiting...
 ```
 
-At this point you are good to go. The UI is available at http://localhost:1337/, and you can monitor the evolution of ES
+At this point you are good to go. The API is available at http://localhost:1337/, and you can monitor the evolution of ES
 indices at http://localhost:9200/_cat/indices?v
 
 Each time you change a file in the source code, the code is recompiled automatically, you just need to refresh the page
@@ -199,16 +203,9 @@ If you trigger the deployment workflow manually, the execution will be paused un
 
 For more information see the wiki page [Production deployment](https://github.com/GrottoCenter/Grottocenter3/wiki/Production-deployment)
 
-## React tools
-
-##### storybook
-
-[Storybook](https://storybook.js.org/) is used to develop in isolation UI component.
-It can be start independently with `npm run storybook`
-
 ## ElasticSearch
 
-See [ElasticSearch Wiki page](https://github.com/GrottoCenter/Grottocenter3/wiki/Elasticsearch-(quick-&-advanced-search))
+See [ElasticSearch Wiki page](<https://github.com/GrottoCenter/Grottocenter3/wiki/Elasticsearch-(quick-&-advanced-search)>)
 
 ## Licence
 

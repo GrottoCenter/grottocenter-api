@@ -65,11 +65,8 @@
     "TBbsGeo": true,
     "TBbsChapter": true
   },
-  "parser": "babel-eslint",
   "parserOptions": {
     "sourceType": "module",
-    "ecmaFeatures": {
-      "globalReturn": false
-    }
+    "ecmaVersion": 2018
   }
 }
