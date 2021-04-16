@@ -11,6 +11,7 @@ module.exports = {
   documents: [],
   entrances: [],
   id: undefined,
+  isDeleted: undefined,
   isDiving: undefined,
   length: undefined,
   massif: undefined,

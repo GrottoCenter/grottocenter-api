@@ -92,7 +92,7 @@ module.exports = {
       columnType: 'datetime',
     },
 
-    isDeleted: {
+    is_deleted: {
       type: 'boolean',
       allowNull: false,
       columnName: 'is_deleted',
