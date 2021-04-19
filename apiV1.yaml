@@ -176,8 +176,28 @@ paths:
         '404':
           description: Cave not found.
         '410':
-          description: Cave already deleted.
-  
+          description: Cave already deleted
+    
+    put:
+      tags:
+        - caves
+      description: Update a cave. See the POST /caves route explaination about the parameters you can use to update a cave.
+      parameters:
+      - name: id
+        in: path
+        description: id of the cave to be updated.
+        required: true
+        schema:
+          type: string
+      responses: 
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cave'
+        403:
+          description: You are not authorized to update a cave.
   '/caves/{caveId}/documents/{documentId}':
     put:
       tags:
@@ -204,6 +224,7 @@ paths:
           description: "Bad request. Both the caveId and documentId parameters must exist in the database. Also, you can't add a document if it is already associated to the cave you specified."
         '403':
           description: You are not authorized to add a document to a cave.
+  
           
   '/cavers':
     post:

@@ -16,4 +16,6 @@ module.exports = {
   create: (req, res) => caveController.create(req, res),
   delete: (req, res, next) => caveController.delete(req, res, next),
   addDocument: async (req, res) => caveController.addDocument(req, res),
+  update: (req, res) =>
+    caveController.update(req, res, MappingV1Service.convertToCaveModel),
 };
