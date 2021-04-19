@@ -198,6 +198,7 @@ paths:
                 $ref: '#/components/schemas/Cave'
         403:
           description: You are not authorized to update a cave.
+
   '/caves/{caveId}/documents/{documentId}':
     put:
       tags:
@@ -1778,6 +1779,27 @@ paths:
                   $ref: "#/components/schemas/Organization"
         '404':
           description: Resource not found
+    
+    put:
+      tags:
+        - organizations
+      description: Update an organization. See the POST /organization route explaination about the parameters you can use to update an organization.
+      parameters:
+      - name: id
+        in: path
+        description: id of the organization to be updated.
+        required: true
+        schema:
+          type: string
+      responses: 
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Organization'
+        403:
+          description: You are not authorized to update an organization.
 
   '/organizations/count':
     get:

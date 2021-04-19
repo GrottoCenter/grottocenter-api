@@ -182,6 +182,7 @@ module.exports.routes = {
     },
   },
   'POST /api/v1/organizations': 'v1/Grotto.create',
+  'PUT /api/v1/organizations/:id': 'v1/Grotto.update',
 
   /* Massif controller */
   'DELETE /api/v1/massifs/:id': 'v1/Massif.delete',

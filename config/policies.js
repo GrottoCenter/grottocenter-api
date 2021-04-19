@@ -181,6 +181,7 @@ module.exports.policies = {
     delete: ['tokenAuth', 'moderatorAuth'],
     getOfficialPartnersNumber: true,
     find: ['apiKeyAuth', 'paginate'],
+    update: 'tokenAuth',
   },
 
   'v1/MassifController': {
