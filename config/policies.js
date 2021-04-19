@@ -181,6 +181,7 @@ module.exports.policies = {
     create: 'tokenAuth',
     delete: ['tokenAuth', 'moderatorAuth'],
     find: true,
+    update: 'authToken',
   },
 
   'v1/GeoLocController': {

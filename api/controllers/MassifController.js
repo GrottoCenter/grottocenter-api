@@ -208,4 +208,84 @@ module.exports = {
     params.controllerMethod = 'MassifController.create';
     return ControllerService.treat(req, null, newMassifPopulated, params, res);
   },
+
+  update: async (req, res) => {
+    // Check right
+    const hasRight = await sails.helpers.checkRight
+      .with({
+        groups: req.token.groups,
+        rightEntity: RightService.RightEntities.MASSIF,
+        rightAction: RightService.RightActions.EDIT_ANY,
+      })
+      .intercept('rightNotFound', (err) => {
+        return res.serverError(
+          'A server error occured when checking your right to update a massif.',
+        );
+      });
+    if (!hasRight) {
+      return res.forbidden('You are not authorized to update a document.');
+    }
+
+    // ===== TODO (wip)
+
+    // const cleanedData = {
+    //   ...getConvertedDataFromClient(req),
+    //   id: req.param('id'),
+    // };
+
+    // // Launch update request using transaction: it performs a rollback if an error occurs
+    // await sails
+    //   .getDatastore()
+    //   .transaction(async (db) => {
+    //     const updatedDocument = await TDocument.updateOne({
+    //       id: req.param('id'),
+    //     })
+    //       .set(cleanedData)
+    //       .usingConnection(db);
+    //     if (!updatedDocument) {
+    //       return res.status(404);
+    //     }
+
+    //     // Update associated data not handled by TDocument manually
+    //     if (ramda.pathOr(null, ['documentMainLanguage', 'id'], req.body)) {
+    //       await JDocumentLanguage.updateOne({ document: updatedDocument.id })
+    //         .set({
+    //           document: updatedDocument.id,
+    //           language: req.body.documentMainLanguage.id,
+    //           isMain: true,
+    //         })
+    //         .usingConnection(db);
+    //     }
+
+    //     await TDescription.updateOne({ document: updatedDocument.id })
+    //       .set({
+    //         author: req.token.id,
+    //         body: req.body.description,
+    //         document: updatedDocument.id,
+    //         language: req.body.titleAndDescriptionLanguage.id,
+    //         title: req.body.title,
+    //       })
+    //       .usingConnection(db);
+
+    //     const params = {};
+    //     params.controllerMethod = 'DocumentController.update';
+    //     return ControllerService.treat(req, null, updatedDocument, params, res);
+    //   })
+    //   .intercept('E_UNIQUE', (e) => {
+    //     sails.log.error(e.message);
+    //     return res.status(409).send(e.message);
+    //   })
+    //   .intercept({ name: 'UsageError' }, (e) => {
+    //     sails.log.error(e.message);
+    //     return res.badRequest(e.message);
+    //   })
+    //   .intercept({ name: 'AdapterError' }, (e) => {
+    //     sails.log.error(e.message);
+    //     return res.badRequest(e.message);
+    //   })
+    //   .intercept((e) => {
+    //     sails.log.error(e.message);
+    //     return res.serverError(e.message);
+    //   });
+  },
 };

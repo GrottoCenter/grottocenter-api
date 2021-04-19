@@ -194,6 +194,7 @@ module.exports.routes = {
     },
   },
   'POST /api/v1/massifs': 'v1/Massif.create',
+  'PUT /api/v1/massifs/:id': 'v1/Massif.update',
 
   /* Document controller */
   'GET /api/v1/documents': 'v1/Document.findAll',

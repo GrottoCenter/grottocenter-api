@@ -13,4 +13,5 @@ module.exports = {
     ),
   delete: (req, res) => massifController.delete(req, res),
   create: (req, res) => massifController.create(req, res),
+  update: (req, res) => massifController.update(req, res),
 };
