@@ -313,4 +313,76 @@ module.exports = {
 
     return res.sendStatus(204);
   },
+
+  update: async (req, res, converter) => {
+    // Check right
+    const hasRight = await sails.helpers.checkRight
+      .with({
+        groups: req.token.groups,
+        rightEntity: RightService.RightEntities.ENTRANCE,
+        rightAction: RightService.RightActions.EDIT_ANY,
+      })
+      .intercept('rightNotFound', (err) => {
+        return res.serverError(
+          'A server error occured when checking your right to update an entrance.',
+        );
+      });
+    if (!hasRight) {
+      return res.forbidden('You are not authorized to update a entrance.');
+    }
+
+    // Check if entrance exists
+    const entranceId = req.param('id');
+    const currentEntrance = await TEntrance.findOne(entranceId);
+    if (!currentEntrance) {
+      return res.status(404).send({
+        message: `Entrance of id ${entranceId} not found.`,
+      });
+    }
+
+    const cleanedData = {
+      ...getConvertedDataFromClientRequest(req),
+      id: entranceId,
+    };
+
+    // Launch update request using transaction: it performs a rollback if an error occurs
+    await sails
+      .getDatastore()
+      .transaction(async (db) => {
+        const updatedEntrance = await TEntrance.updateOne({
+          id: entranceId,
+        })
+          .set(cleanedData)
+          .usingConnection(db);
+
+        await NameService.setNames([updatedEntrance], 'entrance');
+
+        const params = {};
+        params.controllerMethod = 'EntranceController.update';
+        return ControllerService.treatAndConvert(
+          req,
+          null,
+          updatedEntrance,
+          params,
+          res,
+          converter,
+        );
+      })
+      .intercept('E_UNIQUE', (e) => {
+        sails.log.error(e.message);
+        return res.status(409).send(e.message);
+      })
+      .intercept({ name: 'UsageError' }, (e) => {
+        sails.log.error(e.message);
+        return res.badRequest(e.message);
+      })
+      .intercept({ name: 'AdapterError' }, (e) => {
+        sails.log.error(e.message);
+        return res.badRequest(e.message);
+      })
+      .intercept((e) => {
+        sails.log.error(e.message);
+        return res.serverError(e.message);
+      });
+  },
 };

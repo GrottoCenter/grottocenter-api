@@ -72,6 +72,7 @@ module.exports.policies = {
     findAll: ['apiKeyAuth', 'paginate'],
     findRandom: true,
     publicCount: true,
+    update: 'tokenAuth',
   },
 
   SearchController: {
