@@ -28,4 +28,10 @@ module.exports = {
   delete: (req, res) => {
     grottoController.delete(req, res);
   },
+  update: (req, res) =>
+    grottoController.update(
+      req,
+      res,
+      MappingV1Service.convertToOrganizationModel,
+    ),
 };
