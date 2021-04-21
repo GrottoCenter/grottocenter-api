@@ -93,6 +93,8 @@ module.exports.routes = {
 
   /* Account controller */
   'PATCH /api/v1/account/password': 'v1/Account.changePassword',
+  'PATCH /api/v1/account/alertForNews': 'v1/Account.changeAlertForNews',
+  'PATCH /api/v1/account/email': 'v1/Account.changeEmail',
   'POST /api/v1/forgotPassword': 'v1/Account.forgotPassword',
 
   /* Auth controller */
@@ -113,6 +115,7 @@ module.exports.routes = {
   'PUT /api/v1/cavers/:caverId/groups/:groupId': 'v1/Caver.putOnGroup',
 
   /* Entrance controller */
+  'DELETE /api/v1/entrances/:id': 'v1/Entrance.delete',
   'GET /api/v1/entrances/count': 'v1/Entrance.count',
   'GET /api/v1/entrances/findRandom': 'v1/Entrance.findRandom',
   'GET /api/v1/entrances/publicCount': {
@@ -122,7 +125,6 @@ module.exports.routes = {
       allowOrigins: '*',
     },
   },
-
   'GET /api/v1/entrances/:id': {
     controller: 'v1/Entrance',
     action: 'find',
@@ -130,13 +132,15 @@ module.exports.routes = {
       allowOrigins: '*',
     },
   },
+  'POST /api/v1/entrances': 'v1/Entrance.create',
 
   /* Cave controller */
-  'DELETE /api/caves/:id': 'Cave.delete',
+  'DELETE /api/v1/caves/:id': 'v1/Cave.delete',
   'GET /api/v1/caves/:id': 'v1/Cave.find',
   'GET /api/v1/caves/findAll': 'v1/Cave.findAll',
-  'POST /api/caves/': 'Cave.create',
+  'POST /api/v1/caves': 'v1/Cave.create',
   'PUT /api/caves/:id': 'Cave.update',
+  'PUT /api/v1/caves/:caveId/documents/:documentId': 'v1/Cave.addDocument',
 
   /* Author controller */
   'DELETE /api/authors/:id': 'Author.delete',

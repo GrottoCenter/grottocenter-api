@@ -34,6 +34,107 @@ tags:
 - name: subjects
 
 paths:
+  '/caves':
+    post:
+      tags:
+        - caves
+      description: "Create a Cave. When submitting a new cave, you must provide an authentification token (from the /login route) in the Authorization header. This token will be used to set the author of the submission."
+      parameters:
+        
+      - name: name
+        in: query
+        description: Main name of the cave, using the local language
+        required: true
+        schema:
+          type: string
+      
+      - name: description
+        in: query
+        description: Your description of the cave
+        schema:
+          type: string
+      
+      - name: descriptionTitle
+        in: query
+        description: Title of your description
+        schema:
+          type: string
+      
+      - name: descriptionAndNameLanguage
+        in: query
+        description: Language used for the description and the name. List of languages supported by Grottocenter is available using the /languages route.
+        schema:
+          type: object
+          properties:
+            id: 
+              type: string
+      
+      - name: depth
+        in: query
+        description: Depth of the cave
+        schema:
+          type: integer
+      
+      - name: length
+        in: query
+        description: Length of the cave
+        schema:
+          type: integer
+      
+      - name: isDiving
+        in: query
+        description: If the cave is flooded or not
+        schema:
+          type: boolean
+          default: false
+      
+      - name: temperature
+        in: query
+        description: Average temperature in the cave
+        schema:
+          type: number
+          format: double
+          
+      - name: longitude
+        in: query
+        schema:
+          type: number
+
+      - name: latitude
+        in: query
+        schema:
+          type: number
+
+      - name: massif
+        in: query
+        description: Massif to which the document refers to.
+        schema:
+          type: object
+          properties:
+            id:
+              type: string
+        
+      - name: documents
+        in: query
+        description: Documents related to the cave
+        schema:
+          type: array
+          items:
+            type: object
+            properties:
+              id: 
+                type: string
+  
+      responses: 
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cave'
+        403:
+          description: You are not authorized to create a cave.
+
   '/caves/{id}':
     get:
       tags:
@@ -55,6 +156,52 @@ paths:
                 $ref: '#/components/schemas/Cave'
         '404':
           description: Cave not found.
+  
+    delete:
+      tags:
+      - caves
+      description: Delete a cave.
+      parameters:
+      - name: id
+        in: path
+        description: Cave id
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Successful operation
+        '404':
+          description: Cave not found.
+        '410':
+          description: Cave already deleted.
+  
+  '/caves/{caveId}/documents/{documentId}':
+    put:
+      tags:
+      - caves
+      - documents
+      description: Add a document to a cave.
+      parameters:
+      - name: caveId
+        in: path
+        description: Cave id to add the document to.
+        required: true
+        schema:
+          type: string
+      - name: documentId
+        in: path
+        description: Document id to be added to the cave.
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Successful operation
+        '400':
+          description: "Bad request. Both the caveId and documentId parameters must exist in the database. Also, you can't add a document if it is already associated to the cave you specified."
+        '403':
+          description: You are not authorized to add a document to a cave.
           
   '/cavers':
     post:
@@ -489,7 +636,7 @@ paths:
   '/documents/count':
     get:
       tags:
-      - entrances
+      - documents
       description: Get the number of documents.
       responses:
         '200':
@@ -660,6 +807,27 @@ paths:
               schema:
                 $ref: '#/components/schemas/Language'
   
+  '/account/email':
+    patch:
+      tags:
+        - account
+        - authentication
+      description: Update the user email. You can only change the email of your account, using your authentication token.
+      parameters:
+        - name: email
+          in: query
+          description: New email of the account.
+          required: true
+          schema:
+            type: string
+      
+      responses:
+        '204':
+          description: Successful operation
+
+        '400':
+          description: You must provide a (valid) email.
+        
   '/account/password':
     patch:
       tags:
@@ -691,6 +859,25 @@ paths:
         
         '404':
           description: User in the password reset token not found.
+          
+  '/account/alertForNews':
+    patch:
+      tags:
+        - account
+      description: Change the fact that the user wants to receive the Grottocenter news.
+      parameters:
+        - name: alertForNews
+          in: query
+          required: true
+          schema:
+            type: boolean
+      responses:
+        '204':
+          description: Successful operation
+        '400':
+          description: You must provide an alertForNews valid value ('true' or 'false')
+        '404':
+          description: User in the authentication token not found.
 
   '/forgotPassword':
     post:
@@ -875,6 +1062,145 @@ paths:
                     items:
                       $ref: '#/components/schemas/Document-subject'
                       
+  '/entrances':
+    post:
+      tags:
+      - entrances
+      description: Create a cave entrance.
+      parameters:
+      - name: address
+        in: query
+        description: Address where the entrance is located
+        schema:
+          type: string
+      - name: altitude
+        in: query
+        schema:
+          type: number
+      - name: cave
+        in: query
+        required: true
+        description: Cave related to the entrance
+        schema:
+            type: object
+            properties:
+              id: 
+                type: number
+                description: Id of the cave
+      - name: city
+        in: query
+        description: City where the entrance is located
+        schema:
+          type: string
+      - name: contact
+        in: query
+        description: Email, telephone number or name of the person responsible of the entrance
+        schema:
+          type: string
+          example: "Michel DUPONT 06 99 98 97 96"
+      - name: country
+        in: query
+        description: Country where the entrance is located
+        schema:
+            type: object
+            properties:
+              id: 
+                type: string
+                description: Id of the country
+      - name: county
+        in: query
+        description: County where the entrance is located
+        schema:
+          type: string
+      - name: description
+        in: query
+        required: true
+        schema:
+            type: object
+            properties:
+              body: 
+                type: string
+              language: 
+                description: Must be a language supported by Grottocenter (see GET /languages route) using the 3-letters format.
+                type: string
+                example: 'eng'
+              title: 
+                type: string
+      - name: geology
+        in: query
+        description: Geology type of the entrance.
+        schema:
+            type: object
+            properties:
+              id: 
+                type: string
+                description: Id of the geology
+      - name: isPublic
+        in: query
+        schema:
+          type: boolean
+      - name: isSensitive
+        in: query
+        schema:
+          type: boolean
+      - name: latitude
+        in: query
+        schema:
+          type: number
+      - name: location
+        in: query
+        description: Explaination of the environment around the entrance.
+        schema:
+            type: object
+            properties:
+              body: 
+                type: string
+                example: "The entrance is located at the top of the hill, at the left of the big rock next to the path."
+              language: 
+                description: Must be a language supported by Grottocenter (see GET /languages route) using the 3-letters format.
+                type: string
+                example: 'eng'
+      - name: longitude
+        in: query
+        schema:
+          type: number
+      - name: modalities
+        in: query
+        schema:
+          type: string
+          example: "YES,NO,NO,YES"
+      - name: name
+        in: query
+        required: true
+        description: Name of the entrance including the language used
+        schema:
+            type: object
+            properties:
+              text: 
+                type: string
+                example: "The entrance of ABCDEFG"
+              language: 
+                description: Must be a language supported by Grottocenter (see GET /languages route) using the 3-letters format.
+                type: string
+                example: 'eng'
+      - name: region
+        in: query
+        description: Region where the entrance is located
+        schema:
+          type: string
+      - name: yearDiscovery
+        in: query
+        description: Year of the discovery of the entrance (must be inferior to the current year)
+        schema:
+          type: number
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Entrance'
+  
   '/entrances/findRandom':
     get:
       tags:
@@ -1146,14 +1472,70 @@ paths:
     post:
       tags:
       - organizations
-      description: Create an organization (currently using only a name).
+      description: Create an organization.
       parameters:
+      - name: address
+        in: query
+        schema:
+          type: string
+      - name: city
+        in: query
+        schema:
+          type: string
+      - name: county
+        in: query
+        schema:
+          type: string
+      - name: country
+        in: query
+        schema:
+          type: object
+          properties:
+            id: 
+              type: string
+      - name: customMessage
+        in: query
+        schema:
+          type: string
+      - name: latitude
+        in: query
+        schema:
+          type: number
+      - name: longitude
+        in: query
+        schema:
+          type: number
+      - name: mail
+        in: query
+        schema:
+          type: string
       - name: name
         in: query
         description: Organization main name
         required: true
         schema:
+          type: object
+          properties:
+            text: 
+              type: string
+            language:
+              type: string
+      - name: postalCode
+        in: query
+        schema:
+          type: number
+      - name: region
+        in: query
+        schema:
           type: string
+      - name: url
+        in: query
+        schema:
+          type: string
+      - name: yearBirth
+        in: query
+        schema:
+          type: number
       responses:
         '200':
           description: Successful operation
@@ -1163,11 +1545,32 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Organization"
+        '400':
+          description: You must provide at least a name to create an organization.
         '403':
-          description: You are not allowed to create an organization.
+          description: You are not authorized to create an organization.
         
 
   '/organizations/{id}':
+    delete:
+      tags:
+      - organizations
+      description: Delete an organization.
+      parameters:
+      - name: id
+        in: path
+        description: Organization id
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Successful operation
+        '404':
+          description: Organization not found.
+        '410':
+          description: Organization already deleted.
+
     get:
       tags:
       - organizations

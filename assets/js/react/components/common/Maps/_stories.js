@@ -1,12 +1,17 @@
 import React from 'react';
 import { storiesOf } from '@storybook/react';
-import { Card as MuiCard } from '@material-ui/core';
+import { Card as MuiCard, Paper } from '@material-ui/core';
 import styled from 'styled-components';
 import { boolean, select } from '@storybook/addon-knobs';
 import * as d3 from 'd3';
 
 import MultipleMarkers from './MapMultipleMarkers';
 import Clusters from './MapClusters';
+import {
+  EntrancePopup,
+  NetworkPopup,
+  OrganizationPopup,
+} from './common/Markers/Components';
 
 const Card = styled(MuiCard)`
   margin: ${({ theme }) => theme.spacing(2)}px;
@@ -52,7 +57,8 @@ const generateRandomCoord = function(intensity = 1000) {
   }
   return data;
 };
-
+// Warning: markers are slow because we display all of them without
+// calculating the visible one in the bounds (done by the API)
 const ClustersMap = () => {
   const entrances = generateRandomCoord(3000);
   const entrancesMarkers = entrances.map((entrance, i) => ({
@@ -96,4 +102,47 @@ storiesOf('Maps', module)
       loading={boolean('Loading', false)}
       selection={select('Entrance markers', positions, [[43.35266, 5.81689]])}
     />
+  ))
+  .add('Popup Entrance', () => (
+    <Paper>
+      <EntrancePopup
+        entrance={{
+          id: 1,
+          name: 'entrance name',
+          region: 'region',
+          city: 'Montpellier (FR)',
+          longitude: 58.18188,
+          latitude: 7.1857,
+          cave: {
+            name: 'cave name',
+            depth: 500,
+            length: 5000,
+          },
+        }}
+      />
+    </Paper>
+  ))
+  .add('Popup Network', () => (
+    <Paper>
+      <NetworkPopup
+        network={{
+          id: 1,
+          name: 'network name',
+        }}
+      />
+    </Paper>
+  ))
+  .add('Popup Organization', () => (
+    <Paper>
+      <OrganizationPopup
+        organization={{
+          id: 1,
+          name: 'entrance name',
+          address: 'Montpellier (FR) adresse',
+          city: 'Montpellier (FR)',
+          longitude: 58.18188,
+          latitude: 7.1857,
+        }}
+      />
+    </Paper>
   ));

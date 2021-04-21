@@ -47,6 +47,9 @@ module.exports.policies = {
 
   'v1/CaveController': {
     '*': true,
+    addDocument: 'tokenAuth',
+    create: 'tokenAuth',
+    delete: ['tokenAuth', 'moderatorAuth'],
   },
 
   'v1/CaverController': {
@@ -63,6 +66,8 @@ module.exports.policies = {
   'v1/EntranceController': {
     '*': false,
     count: true,
+    create: 'tokenAuth',
+    delete: ['tokenAuth', 'moderatorAuth'],
     find: 'apiKeyAuth',
     findAll: ['apiKeyAuth', 'paginate'],
     findRandom: true,
@@ -184,6 +189,8 @@ module.exports.policies = {
   },
 
   'v1/AccountController': {
+    changeAlertForNews: 'tokenAuth',
+    changeEmail: 'tokenAuth',
     changePassword: true,
     forgotPassword: true,
   },

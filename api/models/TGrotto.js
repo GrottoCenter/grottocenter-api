@@ -82,6 +82,7 @@ module.exports = {
       type: 'number',
       allowNull: true,
       columnName: 'year_birth',
+      max: new Date().getFullYear(),
     },
 
     dateInscription: {
@@ -100,12 +101,6 @@ module.exports = {
     names: {
       collection: 'TName',
       via: 'grotto',
-    },
-
-    country: {
-      type: 'string',
-      maxLength: 3,
-      columnName: 'Country',
     },
 
     // Sails' ORM, Waterline, doesn't support large number: that's why we use the type 'string' for the latitude

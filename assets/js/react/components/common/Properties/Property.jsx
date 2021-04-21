@@ -19,6 +19,17 @@ export const PropertyWrapper = styled.div`
   }
 `;
 
+// Doesn't work properly with SRR (renderToString)
+const TooltipWrapper = ({ label, children }) => (
+  <div>
+    {label ? (
+      <Tooltip title={label}>{children}</Tooltip>
+    ) : (
+      <div>{children}</div>
+    )}
+  </div>
+);
+
 const Property = ({
   loading = false,
   label,
@@ -28,7 +39,7 @@ const Property = ({
 }) => (
   <PropertyWrapper>
     {!isNil(icon) && icon}
-    <Tooltip title={label}>
+    <TooltipWrapper title={label}>
       {loading ? (
         <Skeleton variant="text" width="100%" />
       ) : (
@@ -36,17 +47,21 @@ const Property = ({
           {value || ''}
         </StyledTypography>
       )}
-    </Tooltip>
+    </TooltipWrapper>
   </PropertyWrapper>
 );
 
+TooltipWrapper.propTypes = {
+  label: PropTypes.string,
+};
+
 Property.propTypes = {
   loading: PropTypes.bool,
-  label: PropTypes.string.isRequired,
   value: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   // eslint-disable-next-line react/forbid-prop-types
   icon: PropTypes.object,
   secondary: PropTypes.bool,
+  ...TooltipWrapper.propTypes,
 };
 
 export default Property;

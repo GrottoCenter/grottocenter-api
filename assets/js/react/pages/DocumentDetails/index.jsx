@@ -74,6 +74,14 @@ const DocumentPage = ({
             value: details.publicationDate,
           },
           {
+            label: formatMessage({ id: 'Publication (BBS legacy)' }),
+            value: details.oldPublication,
+          },
+          {
+            label: formatMessage({ id: 'Publication number (BBS legacy)' }),
+            value: details.oldPublicationFascicule,
+          },
+          {
             label: formatMessage({ id: 'Parent document' }),
             value: details.parentDocument,
           },
@@ -177,6 +185,8 @@ DocumentPage.propTypes = {
     identifier: PropTypes.string,
     bbsReference: PropTypes.string,
     documentType: PropTypes.string,
+    oldPublication: PropTypes.string,
+    oldPublicationFascicule: PropTypes.string,
     publicationDate: PropTypes.string,
     parentDocument: PropTypes.string,
     pages: PropTypes.string,

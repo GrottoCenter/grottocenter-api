@@ -1,19 +1,3 @@
-const GET_ADMINS_QUERY = `
-  SELECT c.*
-  FROM t_caver c
-  LEFT JOIN j_caver_group jcg ON jcg.id_caver = c.id
-  LEFT JOIN t_group g ON g.id = jcg.id_group
-  WHERE g.name = 'Administrator'
-`;
-
-const GET_MODERATORS_QUERY = `
-  SELECT c.*
-  FROM t_caver c
-  LEFT JOIN j_caver_group jcg ON jcg.id_caver = c.id
-  LEFT JOIN t_group g ON g.id = jcg.id_group
-  WHERE g.name = 'Moderator'
-`;
-
 module.exports = {
   /**
    * @param {String} attributeName caver attribute to search for
@@ -30,13 +14,13 @@ module.exports = {
     return caverFound !== undefined;
   },
 
-  getAdmins: async () => {
-    const result = await CommonService.query(GET_ADMINS_QUERY, []);
-    return result.rows;
-  },
-
-  getModerators: async () => {
-    const result = await CommonService.query(GET_MODERATORS_QUERY, []);
-    return result.rows;
+  /**
+   * @param {int} caverId
+   * @description Return the groups of the caver without checking if the caver exists.
+   * @returns {Array[TGroup]}
+   */
+  getGroups: async (caverId) => {
+    const caver = await TCaver.findOne(caverId).populate('groups');
+    return caver.groups;
   },
 };

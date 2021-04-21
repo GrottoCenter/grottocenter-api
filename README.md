@@ -7,11 +7,15 @@ Current production version is available [here](http://beta.grottocenter.org/)
 ## Project overview
 
 ### Master
-[![Travis Status](https://travis-ci.org/GrottoCenter/Grottocenter3.svg?branch=master)](https://travis-ci.org/GrottoCenter/Grottocenter3?branch=master)
+![Latest Deployment](https://github.com/GrottoCenter/Grottocenter3/actions/workflows/deploy-aws.yml/badge.svg?branch=master)
+
+![Latest Build](https://github.com/GrottoCenter/Grottocenter3/actions/workflows/build.yml/badge.svg?branch=master)
+
 [![Coverage Status](https://coveralls.io/repos/github/GrottoCenter/Grottocenter3/badge.svg?branch=master)](https://coveralls.io/github/GrottoCenter/Grottocenter3?branch=master)
 
 ### Develop
-[![Travis Status](https://travis-ci.org/GrottoCenter/Grottocenter3.svg?branch=develop)](https://travis-ci.org/GrottoCenter/Grottocenter3?branch=develop)
+![Latest Build](https://github.com/GrottoCenter/Grottocenter3/actions/workflows/build.yml/badge.svg?branch=develop)
+
 [![Coverage Status](https://coveralls.io/repos/github/GrottoCenter/Grottocenter3/badge.svg?branch=develop)](https://coveralls.io/github/GrottoCenter/Grottocenter3?branch=develop)
 
 
@@ -27,11 +31,10 @@ Didier Gignoux, Paul Guerin, Hervé Plaettner, Marius Carrière, Doc Carbur, Har
 ## Installation
 
 Software requirement:
-- NodeJS (min v8)
+- NodeJS (min v10)
 - NPM (min 4.1.2)
 - Git client (see Git usage for configuration)
 - Docker
-- SailsJS (min v1)
 - Grunt
 
 Clone the project on your computer:
@@ -40,17 +43,6 @@ Clone the project on your computer:
 ```
 
 ## Usage
-
-### Demonstration deployment
-
-The demonstration deployment aims to launch locally an instance of Grottocenter to demonstrate its features.
-
-Start the project:
-```
-> ./deployDemo.sh
-```
-Then go to [homepage](http://localhost:1337/)
-Or access to [API documentation](http://localhost:1337/ui/api/) for example.
 
 ### Development deployment
 
@@ -61,6 +53,9 @@ Start the project:
 > ./deployDev.sh
 > npm install
 ```
+
+| :warning: WARNING: If you have NPM v7+ you will need to run `npm install --legacy-peer-deps` instead of `npm install`  |
+| --- |
 
 Finally, run the server with live-reloading using:
 ```
@@ -101,17 +96,17 @@ When running the `git flow init` command you should keep all the default configu
 
 You should use the proper type when creating a new branch with the workflow (`feature`, `bugfix`, `hotfix`, ...).
 
-Before pushing your branch always de a `git rebase -i` to merge unecessary commit together.
+Before pushing your branch always de a `git rebase -i` to merge unnecessary commits together.
 
 #### Merging
 - Merging a simple feature / bugfix should always be done using a **rebase fast-forward**.
-- Complex features requiring multiple commits should be merge with a regular merge commit.
+- Complex features requiring multiple commits should be merged with a regular merge commit.
 
 #### Overview
 This project follows the conventional commit specification. It uses commitlint to enforce conventional commit messages.
 
 ##### Hooks
-To prevent bad commit and push, we use the Git hooks [Husky](https://github.com/typicode/husky)
+To prevent bad commits and push, we use the Git hooks [Husky](https://github.com/typicode/husky)
 
 **Husky** is used to:
 - Verify if the commit name use the [conventional commit specification](https://www.conventionalcommits.org/)
@@ -137,8 +132,19 @@ See the wiki article [translation workflow](https://github.com/GrottoCenter/Grot
 ## Data versioning
 See the wiki article [AUtomated data versioning](https://github.com/GrottoCenter/Grottocenter3/wiki/Automated-data-versioning)
 
+## Build
+Build is run by Github Actions on every push. See `build.yaml` to see what is run during the build workflow.
+
+If the build is triggered from a push on `master` then this workflow generates an artifact (`latest.tar.gz`) which is temporary stored on github for 1 day and permanently stored on AWS S3 for production deployment.
+
 ## Deployment in production
-See the wiki page [Production deployment](https://github.com/GrottoCenter/Grottocenter3/wiki/Production-deployment)
+Deployment done with Github Actions and AWS CodeDeploy.
+
+To Deploy you need to run manually the Actions workflow `Deploy to beta.grottocenter.org` on the `master` branch from the Github Actions page.
+
+If you trigger the deployment workflow manually, the execution will be paused until an administrator validate it.
+
+For more information see the wiki page [Production deployment](https://github.com/GrottoCenter/Grottocenter3/wiki/Production-deployment)
 
 ## React tools
 ##### storybook

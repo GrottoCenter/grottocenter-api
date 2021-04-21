@@ -24,7 +24,10 @@ export const LocationMarker = ({ position }) => (
 );
 
 LocationMarker.propTypes = {
-  position: PropTypes.arrayOf(PropTypes.number),
+  position: PropTypes.shape({
+    lat: PropTypes.number,
+    lng: PropTypes.number,
+  }),
 };
 
 export default LocationMarker;

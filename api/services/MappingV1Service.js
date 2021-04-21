@@ -143,11 +143,12 @@ module.exports = {
 
     result.name = mainName;
     result.names = source.names;
-    result.dateInscription = source.dateInscription;
-    result.dateReviewed = source.dateReviewed;
+    result.dateInscription = source.date_inscription;
+    result.dateReviewed = source.date_reviewed;
     result.descriptions = source.descriptions;
     result.depth = source.depth;
-    result.isDiving = source.isDiving;
+    result.isDeleted = source.is_deleted;
+    result.isDiving = source.is_diving;
     result.length = source.length;
     result.temperature = source.temperature;
 

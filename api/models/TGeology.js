@@ -12,7 +12,7 @@ module.exports = {
 
   attributes: {
     id: {
-      type: 'number',
+      type: 'string',
       autoIncrement: true,
       columnName: 'id',
       unique: true,
