@@ -40,11 +40,12 @@ const PagesEditor = () => {
   } = useContext(DocumentFormContext);
 
   React.useEffect(() => {
-    const newEndGreater =
-      !isNil(startPage) && !isNil(endPage) && startPage >= endPage
-        ? 'The end page must be greater than the start page.'
+    const newEndGreaterOrEqual =
+      !isNil(startPage) && !isNil(endPage) && startPage > endPage
+        ? 'The end page must be greater or equal to the start page.'
         : '';
-    if (newEndGreater !== intervalError) setIntervalError(newEndGreater);
+    if (newEndGreaterOrEqual !== intervalError)
+      setIntervalError(newEndGreaterOrEqual);
 
     const newPositiveEnd = endPage < 0 ? 'The end page must be positive.' : '';
     if (newPositiveEnd !== positiveEndError)
