@@ -79,6 +79,10 @@ const PublicationDatePicker = ({ required = false }) => {
    * @param {Date} newDate
    */
   const handleDateChange = (newDate) => {
+    if (newDate === null) {
+      updateAttribute('publicationDate', '');
+      return;
+    }
     const year = newDate.getFullYear();
     const month = newDate.getMonth() + 1;
     const day = newDate.getDate();
