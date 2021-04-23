@@ -19,6 +19,7 @@ module.exports = function(grunt) {
               compact: false,
               plugins: [
                 '@babel/plugin-proposal-class-properties',
+                '@babel/plugin-proposal-optional-chaining',
                 '@babel/plugin-transform-spread',
                 '@babel/plugin-transform-runtime',
                 'babel-plugin-styled-components',

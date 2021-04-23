@@ -1,9 +1,9 @@
 import { useMapEvent } from 'react-leaflet';
 import { useCallback, useEffect, useState } from 'react';
 import { isNil, pipe, pluck, map as rMap, reverse } from 'ramda';
+import * as L from 'leaflet';
 import * as d3 from 'd3';
 import 'd3-hexbin';
-import * as L from 'leaflet';
 // after L import
 import '@asymmetrik/leaflet-d3';
 import { createGlobalStyle } from 'styled-components';
@@ -76,10 +76,10 @@ const useHeatLayer = (data = [], type = heatmapTypes.ENTRANCES) => {
               : ENTRANCE_HEAT_COLORS,
           )
           .hoverHandler(
-            L.HexbinHoverHandler.compound({
+            L?.HexbinHoverHandler.compound({
               handlers: [
-                L.HexbinHoverHandler.resizeFill(),
-                L.HexbinHoverHandler.tooltip({
+                L?.HexbinHoverHandler.resizeFill(),
+                L?.HexbinHoverHandler.tooltip({
                   tooltipContent: (nbr) =>
                     `${nbr.length} ${formatMessage({ id: newType })}`,
                 }),
@@ -103,7 +103,9 @@ const useHeatLayer = (data = [], type = heatmapTypes.ENTRANCES) => {
 
   useEffect(() => {
     // Add hex layer to the map
-    setHexLayer(L.hexbinLayer(HEX_LAYER_OPTIONS).addTo(map));
+    if (!isNil(L?.hexbinLayer)) {
+      setHexLayer(L?.hexbinLayer(HEX_LAYER_OPTIONS)?.addTo(map));
+    }
     return () => {
       // Remove tooltip
       d3.selectAll('.hexbin-tooltip').remove();
