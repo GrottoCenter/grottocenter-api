@@ -58,6 +58,8 @@ const addDocumentToElasticSearchIndexes = (document) => {
     authors: document.authors
       ? document.authors.map((a) => a.nickname).join(', ')
       : null,
+    'contributor id': document.author.id,
+    'contributor nickname': document.author.nickname,
     date_part: document.datePublication // eslint-disable-line camelcase
       ? new Date(document.datePublication).getYear()
       : null,

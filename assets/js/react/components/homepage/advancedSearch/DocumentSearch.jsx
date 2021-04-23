@@ -54,6 +54,7 @@ class DocumentSearch extends React.Component {
         max: yearMaxValue,
       },
       authors: '',
+      'contributor nickname': '',
       description: '',
       publication_other_bbs_old: '',
       regions: '',
@@ -161,6 +162,7 @@ class DocumentSearch extends React.Component {
       ref_bbs,
       title,
       authors,
+      'contributor nickname': contributorNickname,
       description: abstract,
       'type name': documentTypeName,
       subjects, // TODO: currently, we select only one subject via a dropdown menu. It should be possible to search multiple subjects.
@@ -410,6 +412,19 @@ class DocumentSearch extends React.Component {
                       </FormControl>
                     </div>
                   </fieldset>
+
+                  <TextField
+                    className={classes.formElement}
+                    label={
+                      <span>
+                        <Translate>Contributor nickname</Translate>
+                      </span>
+                    }
+                    onChange={(event) =>
+                      this.handleValueChange('contributor nickname', event)
+                    }
+                    value={contributorNickname}
+                  />
 
                   <TextField
                     className={classes.formElement}
