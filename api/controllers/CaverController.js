@@ -103,6 +103,15 @@ module.exports = {
     });
   },
 
+  usersCount: async (req, res) => {
+    const countResult = await CaverService.countDistinctUsers();
+    const params = {};
+    params.controllerMethod = 'CaverController.usersCount';
+    const count = {};
+    count.count = countResult;
+    return ControllerService.treat(req, null, count, params, res);
+  },
+
   putOnGroup: async (req, res) => {
     // Check right
     const hasRight = await sails.helpers.checkRight
