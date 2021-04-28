@@ -110,6 +110,7 @@ module.exports.routes = {
   'GET /api/v1/cavers/:id': 'v1/Caver.find',
   'GET /api/v1/cavers/admins': 'v1/Caver.getAdmins',
   'GET /api/v1/cavers/count': 'v1/Caver.count',
+  'GET /api/v1/cavers/users/count': 'v1/Caver.usersCount',
   'GET /api/v1/cavers/findAll': 'v1/Caver.findAll',
   'GET /api/v1/cavers/moderators': 'v1/Caver.getModerators',
   'POST /api/v1/cavers/': 'v1/Caver.create',

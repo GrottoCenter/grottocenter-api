@@ -63,6 +63,7 @@ module.exports.policies = {
     putOnGroup: ['tokenAuth', 'adminAuth'],
     removeFromGroup: ['tokenAuth', 'adminAuth'],
     setGroups: ['tokenAuth', 'adminAuth'],
+    usersCount: true,
     getAdmins: 'tokenAuth',
     getModerators: 'tokenAuth',
     removeExploredEntrance: 'tokenAuth',
