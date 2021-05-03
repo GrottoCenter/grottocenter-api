@@ -63,6 +63,7 @@ paths:
       - name: descriptionAndNameLanguage
         in: query
         description: Language used for the description and the name. List of languages supported by Grottocenter is available using the /languages route.
+        required: true
         schema:
           type: object
           properties:
@@ -107,7 +108,8 @@ paths:
 
       - name: massif
         in: query
-        description: Massif to which the document refers to.
+        description: Massif in which the cave is located.
+        required: true
         schema:
           type: object
           properties:
