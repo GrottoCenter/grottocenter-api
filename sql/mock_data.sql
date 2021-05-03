@@ -121,15 +121,15 @@ INSERT INTO public.t_identifier_type (code,"text",regexp) VALUES
 
 INSERT INTO public.t_country (iso,iso3,"numeric",latitude,longitude,native_name,en_name,fr_name,es_name,de_name,bg_name,it_name,ca_name,nl_name,rs_name) VALUES
    ('00','000',250,46.22763800000000000000,2.21374900000000000000,'unknown','unknown','unknown','unknown','unknown','unknown','unknown','unknown','unknown','unknown'),
-	 ('FR','FRA',250,46.22763800000000000000,2.21374900000000000000,'France','France','France','Francia','Frankreich','Франция','Francia','França','Frankrijk','France'),
+   ('FR','FRA',250,46.22763800000000000000,2.21374900000000000000,'France','France','France','Francia','Frankreich','Франция','Francia','França','Frankrijk','France'),
    ('IT','ITA',380,41.87194000000000000000,12.56738000000000000000,'Italia','Italy','Italie','Italia','Italien','Италия','Italia','Itàlia','Italië','Italy'),
    ('US','USA',840,37.09024000000000000000,-95.71289100000000000000,'United States','United States','Etats-Unis','Estados Unidos','Vereinigte Staaten von Amerika','Съединените Американски Щати (САЩ)','Stati Uniti d''America','Estats Units d''Amèrica','Verenigde Staten van Amerika','United States');
 
 INSERT INTO public.t_language (id,part2b,part2t,part1,"scope","type",ref_name,"comment",is_prefered) VALUES
-	 ('000','000','000','00','I','L','-Undefined-','',false),
+   ('000','000','000','00','I','L','-Undefined-','',false),
    ('fra','fre','fra','fr','I','L','French','',true),
-	 ('ces','cze','ces','cs','I','L','Czech','',false),
-	 ('epo','epo','epo','eo','I','C','Esperanto','',false);
+   ('ces','cze','ces','cs','I','L','Czech','',false),
+   ('epo','epo','epo','eo','I','C','Esperanto','',false);
 
 INSERT INTO public.t_license (id,"name","text",is_copyrighted,url) VALUES (1,'CC-BY-SA',NULL,true,'https://creativecommons.org/licenses/by-sa/3.0/');
 
@@ -143,19 +143,24 @@ INSERT INTO public.t_caver (id,login,"password",activated,activation_code,banned
 	 (4,'user4','welcome1',true,'0',false,55,30,'user','name','My Name','user4@mail.no',true,'2008-07-28 15:02:08.000','2017-09-16 18:10:06.000',false,false,100,7,'fra'),
 	 (5,'user5','welcome1',true,'0',false,56,1457,'user','name','My Name','user5@mail.no',true,'2008-07-28 15:55:34.000','2011-05-24 14:32:24.000',true,true,10,15,'fra'),
 	 (6,'user6','welcome1',true,'0',false,404,406,'user',NULL,'My Name','user6@mail.no',true,'2008-07-28 16:18:16.000','2019-12-14 12:19:01.000',true,false,30,7,'fra');
+	 (7,NULL,'58f6f0d4c545c69f1bb86caf507d09e53e009dfd61dbbf834331cf0e45bce44c',false,'0',false,0,1,'Grottocenter','TEST','grottoUser','grottocenter.user@grotto.org',true,'2021-05-11 12:03:20.636000',NULL,false,false,NULL,NULL,'000'),
+     (8,NULL,'58f6f0d4c545c69f1bb86caf507d09e53e009dfd61dbbf834331cf0e45bce44c',false,'0',false,0,1,'Grottocenter','TEST','grottoModo','grottocenter.modo@grotto.org',true,'2021-05-11 12:05:20.636000',NULL,false,false,NULL,NULL,'000'),
+     (9,NULL,'58f6f0d4c545c69f1bb86caf507d09e53e009dfd61dbbf834331cf0e45bce44c',false,'0',false,0,1,'Grottocenter','TEST','grottoAdmin','grottocenter.admin@grotto.org',true,'2021-05-11 12:07:20.636000',NULL,false,false,NULL,NULL,'000');
 
 INSERT INTO public.j_caver_group (id_caver,id_group) VALUES
-	 (2,2),
-	 (2,3),
-	 (3,3),
-	 (4,2),
-	 (4,3),
-	 (5,3),
-	 (6,3),
 	 (1,1),
-	 (1,3),
-	 (1,5),
-	 (1,2);
+     (1,2),
+     (1,3),
+     (1,5),
+     (2,2),
+     (2,3),
+     (3,3),
+     (4,2),
+     (4,3),
+     (5,3),
+     (6,3),
+     (8,2),
+     (9,1);
 
 INSERT INTO public.t_massif (id,id_author,id_reviewer,date_inscription,date_reviewed,geog_polygon,is_deleted,redirect_to) VALUES
 	 (1,1,NULL,'2008-08-04 13:48:48.000',NULL,NULL,false,NULL),

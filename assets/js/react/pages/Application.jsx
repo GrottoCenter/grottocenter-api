@@ -2,6 +2,7 @@ import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Redirect, Route, Switch } from 'react-router-dom';
 
+import ImportContainer from './ImportCSV';
 import Api from '../components/appli/Api';
 import Dashboard from './Dashboard';
 import Swagger from './Swagger';
@@ -80,6 +81,7 @@ const Application = () => {
           path="/ui/documents/:documentId"
           component={DocumentDetailsPage}
         />
+        <Route path="/ui/import-csv" component={ImportContainer} />
         <Redirect path="/ui/*" to="/ui" />
       </Switch>
     </Layout>

@@ -30,7 +30,7 @@ export const bbsLink = {
 };
 
 export const wikicavesLink = {
-  '*': 'http://www.wikicaves.org/',
+  '*': 'https://www.wikicaves.org/',
 };
 
 export const contributorsLink = {
@@ -61,13 +61,13 @@ export const licenceLinks = {
 };
 
 export const contactLinks = {
-  fr: ' http://fr.wikicaves.org/contact',
-  '*': 'http://en.wikicaves.org/contact',
+  fr: ' https://fr.wikicaves.org/contact',
+  '*': 'https://en.wikicaves.org/contact',
 };
 
 export const fseLinks = {
-  fr: 'http://eurospeleo.eu/fr/',
-  '*': 'http://eurospeleo.eu/en/',
+  fr: 'https://eurospeleo.eu/fr/',
+  '*': 'https://eurospeleo.eu/en/',
 };
 
 export const wikiBatsLinks = generateLinks(
@@ -79,7 +79,7 @@ export const wikiBBSLinks = generateLinks(
   'en',
 );
 export const rssLinks = generateLinks(
-  'http://www.grottocenter.org/html/rss_%s.xml',
+  'https://www.grottocenter.org/html/rss_%s.xml',
   'en',
 );
 export const legalLinks = generateLinks(
@@ -88,22 +88,22 @@ export const legalLinks = generateLinks(
 );
 
 export const detailPageV2Links = {
-  fr: 'http://www.grottocenter.org/html/file_Fr.php?lang=Fr',
-  es: 'http://www.grottocenter.org/html/file_Es.php?lang=Es',
-  ca: 'http://www.grottocenter.org/html/file_Ca.php?lang=Ca',
-  de: 'http://www.grottocenter.org/html/file_De.php?lang=De',
-  bg: 'http://www.grottocenter.org/html/file_Bg.php?lang=Bg',
-  nl: 'http://www.grottocenter.org/html/file_Nl.php?lang=Nl',
-  it: 'http://www.grottocenter.org/html/file_It.php?lang=It',
-  '*': 'http://www.grottocenter.org/html/file_En.php?lang=En',
+  fr: 'https://www.grottocenter.org/html/file_Fr.php?lang=Fr',
+  es: 'https://www.grottocenter.org/html/file_Es.php?lang=Es',
+  ca: 'https://www.grottocenter.org/html/file_Ca.php?lang=Ca',
+  de: 'https://www.grottocenter.org/html/file_De.php?lang=De',
+  bg: 'https://www.grottocenter.org/html/file_Bg.php?lang=Bg',
+  nl: 'https://www.grottocenter.org/html/file_Nl.php?lang=Nl',
+  it: 'https://www.grottocenter.org/html/file_It.php?lang=It',
+  '*': 'https://www.grottocenter.org/html/file_En.php?lang=En',
 };
 
 export const pftGdLink =
   'https://docs.google.com/document/d/1SccuusPQcxrZJI3nvWcbUc2dgGyKc4ZJXqQzSPeE9Hg/edit?usp=sharing';
 
 export const contributeLinks = {
-  fr: 'http://fr.wikicaves.org/contribute-participer',
-  '*': 'http://en.wikicaves.org/contribute-participer',
+  fr: 'https://fr.wikicaves.org/contribute-participer',
+  '*': 'https://en.wikicaves.org/contribute-participer',
 };
 
 export const restApiLinks = {
@@ -118,8 +118,8 @@ export const wikiApiLinks = {
 
 // ===== Blogger
 export const bloggerLinks = {
-  fr: 'http://blog-fr.grottocenter.org/',
-  '*': 'http://blog-en.grottocenter.org/',
+  fr: 'https://blog-fr.grottocenter.org/',
+  '*': 'https://blog-en.grottocenter.org/',
 };
 
 export const bloggerIcons = {
@@ -170,9 +170,11 @@ export const processDocumentIds = `/api/${apiVersion}/documents/validate`;
 export const getDocumentDetailsUrl = `/api/${apiVersion}/documents/`;
 export const getEntryUrl = `/api/${apiVersion}/entrances/`;
 export const getCaveUrl = `/api/${apiVersion}/caves/`;
+export const postCaveUrl = `/api/${apiVersion}/caves/`;
 export const getLanguagesUrl = `/api/${apiVersion}/languages`;
 export const postCaverUrl = `/api/${apiVersion}/cavers`;
 export const postDocumentUrl = `/api/${apiVersion}/documents`;
+export const postEntryUrl = `/api/${apiVersion}/entrances`;
 export const putDocumentUrl = (documentId) =>
   `/api/${apiVersion}/documents/${documentId}`;
 export const postOrganizationUrl = `/api/${apiVersion}/organizations`;
@@ -207,10 +209,11 @@ export const breadcrumpKeys = {
   documents: 'Documents',
   entries: 'Entries',
   faq: 'FAQ',
-  organizations: 'Organizations',
+  'import-csv': 'Import',
   manage: 'Manage',
   map: 'Map',
   massifs: 'Massifs',
+  organizations: 'Organizations',
   search: 'Search',
   swagger: 'Browse API',
   users: 'Users',

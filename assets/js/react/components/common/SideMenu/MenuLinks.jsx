@@ -37,13 +37,6 @@ const MenuLinks = () => {
         label="Map"
         href="/ui/map"
       />
-      <Item
-        ItemIcon={() => (
-          <Icon src="/images/sidemenu/wrench.png" alt="wrench icon" />
-        )}
-        label="Toolbox"
-        href="#"
-      />
       <DocumentItems
         isModerator={permissions.isModerator}
         isUser={permissions.isUser}
