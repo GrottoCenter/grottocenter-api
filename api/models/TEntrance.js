@@ -162,6 +162,12 @@ module.exports = {
       defaultsTo: false,
     },
 
+    precision: {
+      type: 'number',
+      columnName: 'precision',
+      columnType: 'int2',
+    },
+
     cave: {
       columnName: 'id_cave',
       model: 'TCave',

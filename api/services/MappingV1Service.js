@@ -67,6 +67,7 @@ module.exports = {
     result.postalCode = source.postalCode;
     result.latitude = parseFloat(source.latitude);
     result.longitude = parseFloat(source.longitude);
+    result.precision = source.precision;
     result.aestheticism = source.aestheticism;
     result.approach = source.approach;
     result.caving = source.caving;

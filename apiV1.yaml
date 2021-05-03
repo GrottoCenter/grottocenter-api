@@ -1185,6 +1185,10 @@ paths:
                 description: Must be a language supported by Grottocenter (see GET /languages route) using the 3-letters format.
                 type: string
                 example: 'eng'
+      - name: precision
+        in: query
+        schema:
+          type: integer
       - name: region
         in: query
         description: Region where the entrance is located
@@ -1965,6 +1969,8 @@ components:
             $ref: '#/components/schemas/Location'
         longitude:
           type: number
+        precision:
+          type: integer
         name:
           type: string
         names:
