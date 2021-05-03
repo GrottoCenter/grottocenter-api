@@ -1,16 +1,19 @@
 import { combineReducers } from 'redux';
 import advancedsearch from './AdvancedsearchReducer';
 import cave from './CaveReducer';
+import createCave from './CreateCave';
 import caver from './CaverReducer';
 import caverGroups from './CaverGroupsReducer';
 import createCaver from './CreateCaver';
 import createOrganization from './CreateOrganization';
 import document from './DocumentReducer';
+import createDocument from './CreateDocument';
 import documentDetails from './DetailsDocumentReducer';
 import documents from './DocumentsReducer';
 import documentType from './DocumentTypeReducer';
 import dynamicNumber from './DynamicNumberReducer';
 import entry from './EntryReducer';
+import createEntry from './CreateEntry';
 import error from './ErrorReducer';
 import identifierType from './IdentifierTypesReducer';
 import language from './LanguageReducer';
@@ -39,16 +42,19 @@ import subject from './SubjectReducer';
 const GCReducer = combineReducers({
   advancedsearch,
   cave,
+  createCave,
   caver,
   caverGroups,
   createCaver,
   createOrganization,
   document,
+  createDocument,
   documentDetails,
   documents,
   documentType,
   dynamicNumber,
   entry,
+  createEntry,
   error,
   identifierType,
   language,
