@@ -182,11 +182,10 @@ module.exports = {
         if (ramda.pathOr(null, ['location', 'body'], req.body)) {
           await TLocation.create({
             author: req.token.id,
-            body: req.body.description.body,
+            body: req.body.location.body,
             dateInscription: new Date(),
             entrance: newEntrance.id,
             language: req.body.location.language,
-            title: req.body.description.title,
           }).usingConnection(db);
         }
 
