@@ -15,7 +15,7 @@ const getConvertedDataFromClientRequest = (req) => {
     author: req.token.id,
     cave: ramda.pathOr(undefined, ['cave', 'id'], req.body),
     country: ramda.pathOr(undefined, ['country', 'id'], req.body),
-    geology: ramda.pathOr(undefined, ['geology', 'id'], req.body),
+    geology: ramda.pathOr('Q35758', ['geology', 'id'], req.body),
   };
 };
 
