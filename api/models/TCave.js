@@ -116,7 +116,7 @@ module.exports = {
     },
 
     id_massif: {
-      allowNull: false,
+      allowNull: true,
       columnName: 'id_massif',
       model: 'TMassif',
     },
