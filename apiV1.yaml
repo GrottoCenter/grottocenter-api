@@ -109,7 +109,6 @@ paths:
       - name: massif
         in: query
         description: Massif in which the cave is located.
-        required: true
         schema:
           type: object
           properties:
