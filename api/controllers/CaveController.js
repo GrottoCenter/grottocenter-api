@@ -172,7 +172,7 @@ module.exports = {
       .with({
         groups: req.token.groups,
         rightEntity: RightService.RightEntities.CAVE,
-        rightAction: RightService.RightActions.EDIT_ANY,
+        rightAction: RightService.RightActions.LINK_RESOURCE,
       })
       .intercept('rightNotFound', (err) => {
         return res.serverError(
