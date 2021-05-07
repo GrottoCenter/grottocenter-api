@@ -77,6 +77,10 @@ module.exports.policies = {
     addDocument: 'tokenAuth',
   },
 
+  'v1/DescriptionController': {
+    update: 'tokenAuth',
+  },
+
   SearchController: {
     findAll: 'apiKeyAuth',
   },

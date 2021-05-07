@@ -11,6 +11,7 @@ const ramda = require('ramda');
 const CaveModel = require('./mappingModels/CaveModel');
 const CaverModel = require('./mappingModels/CaverModel');
 const CountResultModel = require('./mappingModels/CountResultModel');
+const DescriptionModel = require('./mappingModels/DescriptionModel');
 const DocumentModel = require('./mappingModels/DocumentModel');
 const EntranceModel = require('./mappingModels/EntranceModel');
 const MassifModel = require('./mappingModels/MassifModel');
@@ -20,6 +21,49 @@ const SubjectModel = require('./mappingModels/SubjectModel');
 /* Mappers */
 
 module.exports = {
+  convertToDescriptionModel: (source) => {
+    const result = {
+      ...DescriptionModel,
+    };
+
+    result.body = source.body;
+    result.dateInscription = source.dateInscription;
+    result.dateReviewed = source.dateReviewed;
+    result.id = source.id;
+    result.language = source.language;
+    result.point = source.point;
+    result.relevance = source.relevance;
+    result.title = source.title;
+
+    result.author = MappingV1Service.convertToCaverModel(source.author);
+    result.cave =
+      source.cave instanceof Object
+        ? MappingV1Service.convertToCaveModel(source.cave)
+        : undefined;
+    result.document =
+      source.document instanceof Object
+        ? MappingV1Service.convertToDocumentModel(source.document)
+        : undefined;
+    result.entrance =
+      source.entrance instanceof Object
+        ? MappingV1Service.convertToEntranceModel(source.entrance)
+        : undefined;
+    result.exit =
+      source.exit instanceof Object
+        ? MappingV1Service.convertToEntranceModel(source.exit)
+        : undefined;
+    result.massif =
+      source.massif instanceof Object
+        ? MappingV1Service.convertToMassifModel(source.massif)
+        : undefined;
+    result.reviewer =
+      source.reviewer instanceof Object
+        ? MappingV1Service.convertToCaverModel(source.reviewer)
+        : undefined;
+
+    return result;
+  },
+
   convertToEntranceModel: (source) => {
     const result = {
       ...EntranceModel,
@@ -58,7 +102,6 @@ module.exports = {
 
     result.id = source.id;
     result['@id'] = String(source.id);
-    result.descriptions = source.descriptions;
     result.country = source.country;
     result.countryCode = source['country code'];
     result.county = source.county;
@@ -77,7 +120,23 @@ module.exports = {
     result.riggings = source.riggings;
     result.comments = source.comments;
 
+    if (source.descriptions instanceof Array) {
+      result.descriptions = MappingV1Service.convertToDescriptionList(
+        source.descriptions,
+      ).descriptions;
+    } else {
+      result.descriptions = source.descriptions;
+    }
+
     return result;
+  },
+
+  convertToDescriptionList: (source) => {
+    const descriptions = [];
+    source.forEach((item) =>
+      descriptions.push(MappingV1Service.convertToDescriptionModel(item)),
+    );
+    return { descriptions };
   },
 
   convertToEntranceList: (source) => {
@@ -145,7 +204,6 @@ module.exports = {
     result.names = source.names;
     result.dateInscription = source.date_inscription;
     result.dateReviewed = source.date_reviewed;
-    result.descriptions = source.descriptions;
     result.depth = source.depth;
     result.isDeleted = source.is_deleted;
     result.isDiving = source.is_diving;
@@ -157,6 +215,11 @@ module.exports = {
     }
     if (source.reviewer instanceof Object) {
       result.reviewer = MappingV1Service.convertToCaverModel(source.reviewer);
+    }
+    if (source.descriptions instanceof Array) {
+      result.descriptions = MappingV1Service.convertToDescriptionList(
+        source.descriptions,
+      ).descriptions;
     }
     if (source.entrances instanceof Array) {
       result.entrances = MappingV1Service.convertToEntranceList(
@@ -369,12 +432,19 @@ module.exports = {
 
     result.id = source.id;
     result['@id'] = String(source.id);
-    result.descriptions = source.descriptions;
     result.reviewer = source.reviewer;
     result.name = mainName;
     result.names = source.names;
     result.dateInscription = source.dateInscription;
     result.dateReviewed = source.dateReviewed;
+
+    if (source.descriptions instanceof Array) {
+      result.descriptions = MappingV1Service.convertToDescriptionList(
+        source.descriptions,
+      ).descriptions;
+    } else {
+      result.descriptions = source.descriptions;
+    }
 
     return result;
   },
