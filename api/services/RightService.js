@@ -7,6 +7,7 @@ module.exports = {
     APPLICATION: 'Application',
     CAVE: 'Cave',
     CAVER: 'Caver',
+    DESCRIPTION: 'Description',
     DOCUMENT: 'Document',
     ENTRANCE: 'Entrance',
     ORGANIZATION: 'Organization',

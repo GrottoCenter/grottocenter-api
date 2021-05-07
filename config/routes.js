@@ -210,6 +210,9 @@ module.exports.routes = {
   'GET /api/v1/documents/types': 'v1/DocumentType.findAll',
   'GET /api/v1/documents/types/:id': 'v1/DocumentType.find',
 
+  /* Description controller */
+  'PATCH /api/v1/descriptions/:id': 'v1/Description.update',
+
   /* Document Subject controller */
   'GET /api/v1/documents/subjects': {
     controller: 'v1/Subject',

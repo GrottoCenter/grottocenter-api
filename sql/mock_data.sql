@@ -53,9 +53,11 @@ INSERT INTO public.t_right (id,"name","comments") VALUES
     (87, 'Entrance - view limited', NULL),
     (88, 'Application - merge duplicates', NULL),
 	(89, 'Entrance - link resource', NULL),
-	(90, 'Entrance - unlink resource', NULL)
+	(90, 'Entrance - unlink resource', NULL),
 	(91, 'Cave - link resource', NULL),
-	(92, 'Cave - unlink resource', NULL);
+	(92, 'Cave - unlink resource', NULL),
+	(93, 'Description - edit any', NULL),
+	(94, 'Description - edit own', NULL);
 
 INSERT INTO public.j_group_right (id_group,id_right) VALUES
     (1, 2),
@@ -94,9 +96,11 @@ INSERT INTO public.j_group_right (id_group,id_right) VALUES
     (4, 10),
     (2, 9),
 	(3, 89),
-	(2, 90)
+	(2, 90),
 	(3, 91),
-	(2, 92);
+	(2, 92),
+	(2, 93),
+    (3, 94);
 
 INSERT INTO public.t_identifier_type (code,"text",regexp) VALUES
  ('doi  ','digital object identifier','^.+$'),

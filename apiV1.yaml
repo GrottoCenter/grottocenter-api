@@ -21,6 +21,7 @@ tags:
 - name: authentication
 - name: caves
 - name: cavers
+- name: descriptions
 - name: documents
 - name: entrances
 - name: geoloc
@@ -396,6 +397,36 @@ paths:
         '403':
           description: You are not authorized to remove a caver from a group.
 
+  '/descriptions/{id}':
+    patch:
+      tags:
+        - descriptions
+      description: Update a description. You must provide a body and title values even if you are changing only one of the two. If you are an user, you can only update a description you previously created.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: body
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: title
+          in: query
+          required: true
+          schema:
+            type: string
+      
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Description'
+    
   '/documents/{id}':
     get:
       tags:
@@ -1916,12 +1947,26 @@ components:
           $ref: '#/components/schemas/Caver'
         body:
           type: string
+        cave:
+          $ref: '#/components/schemas/Cave'
         dateInscription:
           type: string
         dateReviewed:
           type: string
+        document:
+          $ref: '#/components/schemas/Document'
+        entrance:
+          $ref: '#/components/schemas/Entrance'
+        exit:
+          $ref: '#/components/schemas/Entrance'
         id:
           type: integer
+        language:
+          $ref: '#/components/schemas/Language'
+        massif:
+          $ref: '#/components/schemas/Massif'
+        point:
+          $ref: '#/components/schemas/Point'
         relevance:
           type: integer
         reviewer:

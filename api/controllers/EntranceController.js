@@ -363,7 +363,7 @@ module.exports = {
         );
       });
     if (!hasRight) {
-      return res.forbidden('You are not authorized to update a entrance.');
+      return res.forbidden('You are not authorized to update an entrance.');
     }
 
     // Check if entrance exists
