@@ -57,7 +57,9 @@ INSERT INTO public.t_right (id,"name","comments") VALUES
 	(91, 'Cave - link resource', NULL),
 	(92, 'Cave - unlink resource', NULL),
 	(93, 'Description - edit any', NULL),
-	(94, 'Description - edit own', NULL);
+	(94, 'Description - edit own', NULL),
+	(95, 'Name - edit any', NULL),
+	(96, 'Name - edit own', NULL);
 
 INSERT INTO public.j_group_right (id_group,id_right) VALUES
     (1, 2),
@@ -100,7 +102,9 @@ INSERT INTO public.j_group_right (id_group,id_right) VALUES
 	(3, 91),
 	(2, 92),
 	(2, 93),
-    (3, 94);
+    (3, 94),
+	(2, 95),
+    (3, 96);
 
 INSERT INTO public.t_identifier_type (code,"text",regexp) VALUES
  ('doi  ','digital object identifier','^.+$'),

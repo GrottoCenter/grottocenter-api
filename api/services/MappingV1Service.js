@@ -15,6 +15,7 @@ const DescriptionModel = require('./mappingModels/DescriptionModel');
 const DocumentModel = require('./mappingModels/DocumentModel');
 const EntranceModel = require('./mappingModels/EntranceModel');
 const MassifModel = require('./mappingModels/MassifModel');
+const NameModel = require('./mappingModels/NameModel');
 const OrganizationModel = require('./mappingModels/OrganizationModel');
 const SubjectModel = require('./mappingModels/SubjectModel');
 
@@ -55,6 +56,43 @@ module.exports = {
     result.massif =
       source.massif instanceof Object
         ? MappingV1Service.convertToMassifModel(source.massif)
+        : undefined;
+    result.reviewer =
+      source.reviewer instanceof Object
+        ? MappingV1Service.convertToCaverModel(source.reviewer)
+        : undefined;
+
+    return result;
+  },
+
+  convertToNameModel: (source) => {
+    const result = {
+      ...NameModel,
+    };
+
+    result.dateInscription = source.dateInscription;
+    result.dateReviewed = source.dateReviewed;
+    result.id = source.id;
+    result.language = source.language;
+    result.name = source.name;
+    result.point = source.point;
+
+    result.author = MappingV1Service.convertToCaverModel(source.author);
+    result.cave =
+      source.cave instanceof Object
+        ? MappingV1Service.convertToCaveModel(source.cave)
+        : undefined;
+    result.entrance =
+      source.entrance instanceof Object
+        ? MappingV1Service.convertToEntranceModel(source.entrance)
+        : undefined;
+    result.massif =
+      source.massif instanceof Object
+        ? MappingV1Service.convertToMassifModel(source.massif)
+        : undefined;
+    result.organization =
+      source.grotto instanceof Object
+        ? MappingV1Service.convertToOrganizationModel(source.grotto)
         : undefined;
     result.reviewer =
       source.reviewer instanceof Object

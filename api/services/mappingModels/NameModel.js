@@ -1,0 +1,15 @@
+module.exports = {
+  author: undefined,
+  cave: undefined,
+  dateInscription: undefined,
+  dateReviewed: undefined,
+  entrance: undefined,
+  id: undefined,
+  isMain: undefined,
+  language: undefined,
+  massif: undefined,
+  name: undefined,
+  organization: undefined,
+  point: undefined,
+  reviewer: undefined,
+};
