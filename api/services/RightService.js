@@ -13,6 +13,7 @@ module.exports = {
     ORGANIZATION: 'Organization',
     GROUP: 'Group',
     MASSIF: 'Massif',
+    NAME: 'Name',
     RIGHT: 'Right',
   },
 

@@ -219,6 +219,9 @@ module.exports.routes = {
   /* Description controller */
   'PATCH /api/v1/descriptions/:id': 'v1/Description.update',
 
+  /* Name controller */
+  'PATCH /api/v1/names/:id': 'v1/Name.update',
+
   /* Document Subject controller */
   'GET /api/v1/documents/subjects': {
     controller: 'v1/Subject',

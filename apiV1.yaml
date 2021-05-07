@@ -28,6 +28,7 @@ tags:
 - name: groups
 - name: identifierTypes
 - name: languages
+- name: names
 - name: massifs
 - name: organizations
 - name: regions
@@ -956,6 +957,36 @@ paths:
               schema:
                 $ref: '#/components/schemas/Language'
   
+  '/names/{id}':
+    patch:
+      tags:
+        - names
+      description: Update a name. You must provide a name and isMain values even if you are changing only one of the two. If you are an user, you can only update a name you previously created.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: name
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: isMain
+          in: query
+          required: true
+          schema:
+            type: boolean
+      
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Name'
+    
   '/account/email':
     patch:
       tags:
