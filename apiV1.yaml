@@ -1238,6 +1238,7 @@ paths:
                 example: 'eng'
       - name: precision
         in: query
+        description: GPS precision in meters
         schema:
           type: integer
       - name: region
@@ -2162,6 +2163,7 @@ components:
         longitude:
           type: number
         precision:
+          description: GPS precision in meters
           type: integer
         name:
           type: string
