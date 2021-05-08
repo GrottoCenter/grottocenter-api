@@ -29,9 +29,6 @@ const getConvertedDataFromClient = (req) => {
 };
 
 module.exports = {
-  update: (req, res) =>
-    res.badRequest('CaveController.update not yet implemented!'),
-
   find: (req, res, next, converter = MappingV1Service.convertToCaveModel) => {
     TCave.findOne(req.params.id)
       .populate('id_author')
