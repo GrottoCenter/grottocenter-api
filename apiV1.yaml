@@ -1018,6 +1018,32 @@ paths:
               schema:
                 $ref: '#/components/schemas/Language'
   
+  '/locations/{id}':
+    patch:
+      tags:
+        - locations
+      description: Update a location's body. If you are an user, you can only update a location you havepreviously created.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: body
+          in: query
+          required: true
+          schema:
+            type: string
+      
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Location'
+    
+  
   '/names/{id}':
     patch:
       tags:
@@ -2510,6 +2536,25 @@ components:
 
     Location:
       type: object
+      properties:
+        author:
+          $ref: '#/components/schemas/Caver'
+        body:
+          type: string
+        dateInscription:
+          type: string
+        dateReviewed:
+          type: string
+        entrance:
+          $ref: '#/components/schemas/Entrance'
+        id:
+          type: integer
+        language:
+          type: string
+        relevance:
+          type: integer
+        reviewer:
+          $ref: '#/components/schemas/Caver'
 
     Massif:
       type: object

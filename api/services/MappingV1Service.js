@@ -14,6 +14,7 @@ const CountResultModel = require('./mappingModels/CountResultModel');
 const DescriptionModel = require('./mappingModels/DescriptionModel');
 const DocumentModel = require('./mappingModels/DocumentModel');
 const EntranceModel = require('./mappingModels/EntranceModel');
+const LocationModel = require('./mappingModels/LocationModel');
 const MassifModel = require('./mappingModels/MassifModel');
 const NameModel = require('./mappingModels/NameModel');
 const OrganizationModel = require('./mappingModels/OrganizationModel');
@@ -22,6 +23,34 @@ const SubjectModel = require('./mappingModels/SubjectModel');
 /* Mappers */
 
 module.exports = {
+  convertToLocationModel: (source) => {
+    const result = {
+      ...LocationModel,
+    };
+
+    result.body = source.body;
+    result.dateInscription = source.dateInscription;
+    result.dateReviewed = source.dateReviewed;
+    result.id = source.id;
+    result.language = source.language;
+    result.relevance = source.relevance;
+
+    result.author =
+      source.author instanceof Object
+        ? MappingV1Service.convertToCaverModel(source.author)
+        : undefined;
+    result.entrance =
+      source.entrance instanceof Object
+        ? MappingV1Service.convertToEntranceModel(source.entrance)
+        : undefined;
+    result.reviewer =
+      source.reviewer instanceof Object
+        ? MappingV1Service.convertToCaverModel(source.reviewer)
+        : undefined;
+
+    return result;
+  },
+
   convertToDescriptionModel: (source) => {
     const result = {
       ...DescriptionModel,
