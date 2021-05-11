@@ -494,6 +494,69 @@ paths:
         '403':
           description: You are not authorized to mark an entrance as explored by a caver or you can't unmark an entrance as explored for someone else than you.
   
+  '/descriptions':
+    post:
+      tags:
+      - descriptions
+      description: Create a description. You must provide at least one entityId (caveId, documentId, entranceId, exitId, massifId or pointId) which your description is refering to. If you provide two or more of them, the first one will be used and the other ones will be ignored.
+      parameters:
+      - name: body
+        in: query
+        required: true
+        description: Content of the description
+        schema:
+          type: string
+      - name: language
+        in: query
+        required: true
+        description: Language used for the description. The list of languages supported by Grottocenter is available using the /languages route.
+        schema:
+          type: string
+      - name: title
+        in: query
+        required: true
+        description: Title of the description
+        schema:
+          type: string
+      - name: caveId
+        in: query
+        schema:
+          type: string
+      - name: documentId
+        in: query
+        schema:
+          type: string
+      - name: entranceId
+        in: query
+        schema:
+          type: string
+      - name: exitId
+        in: query
+        schema:
+          type: string
+      - name: massifId
+        in: query
+        schema:
+          type: string
+      - name: pointId
+        in: query
+        schema:
+          type: string
+  
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Description'
+        '400':
+          description: Some required information are missing (title, body, language or entityId).
+        '403':
+          description: You are not authorized to create a description.
+        '404':
+          description: The entity you want to link your new description to was not found.
+  
   '/descriptions/{id}':
     patch:
       tags:

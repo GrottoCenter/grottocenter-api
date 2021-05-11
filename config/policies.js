@@ -82,6 +82,7 @@ module.exports.policies = {
   },
 
   'v1/DescriptionController': {
+    create: 'tokenAuth',
     update: 'tokenAuth',
   },
 
