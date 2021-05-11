@@ -12,6 +12,7 @@ module.exports = {
     ENTRANCE: 'Entrance',
     ORGANIZATION: 'Organization',
     GROUP: 'Group',
+    LOCATION: 'Location',
     MASSIF: 'Massif',
     NAME: 'Name',
     RIGHT: 'Right',

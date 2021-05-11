@@ -227,6 +227,9 @@ module.exports.routes = {
   'PATCH /api/v1/names/:id': 'v1/Name.update',
   'POST /api/v1/names/:id/setAsMain': 'v1/Name.setAsMain',
 
+  /* Location controller */
+  'PATCH /api/v1/locations/:id': 'v1/Location.update',
+
   /* Document Subject controller */
   'GET /api/v1/documents/subjects': {
     controller: 'v1/Subject',
