@@ -11,21 +11,6 @@ const oldTopoFilesUrl = 'https://www.grottocenter.org/upload/topos/';
 
 module.exports = {
   /**
-   * @param {String} attributeName document attribute to search for
-   * @param {String} attributeValue value to search for
-   *
-   * @returns {Boolean} true if there is a document with the attributeName equals to attributeValue in the DB, else false.
-   *
-   * @example checkIfExists('id', 3) will return true if there is at least one document with id 3.
-   */
-  checkIfExists: async (attributeName, attributeValue) => {
-    const docFound = await TDocument.findOne({
-      [attributeName]: attributeValue,
-    });
-    return docFound !== undefined;
-  },
-
-  /**
    * @returns {Promise} which resolves to the succesfully findRandom
    */
   getMainLanguage: async (id) => {

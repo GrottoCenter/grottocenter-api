@@ -450,7 +450,9 @@ module.exports = {
     }
 
     const documentId = req.param('documentId');
-    if (!(await DocumentService.checkIfExists('id', documentId))) {
+    if (
+      !(await sails.helpers.checkIfExists.with('id', documentId, TDocument))
+    ) {
       return res
         .status(404)
         .send({ message: `Document of id ${documentId} not found.` });
