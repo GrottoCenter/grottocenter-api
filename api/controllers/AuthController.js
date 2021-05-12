@@ -51,7 +51,9 @@ module.exports = {
     if (!req.param('email')) {
       return res.badRequest(`You must provide an email.`);
     }
-    if (await CaverService.checkIfExists('mail', req.param('email'))) {
+    if (
+      await sails.helpers.checkIfExists.with('mail', req.param('email'), TCaver)
+    ) {
       return res
         .status(409)
         .send(`The email ${req.param('email')} is already used.`);
@@ -72,7 +74,13 @@ module.exports = {
     if (!req.param('nickname')) {
       return res.badRequest(`You must provide a nickname.`);
     }
-    if (await CaverService.checkIfExists('nickname', req.param('nickname'))) {
+    if (
+      await sails.helpers.checkIfExists.with(
+        'nickname',
+        req.param('nickname'),
+        TCaver,
+      )
+    ) {
       return res
         .status(409)
         .send(`The nickname ${req.param('nickname')} is already used.`);
