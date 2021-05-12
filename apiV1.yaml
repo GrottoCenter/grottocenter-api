@@ -986,7 +986,32 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Name'
-    
+  
+  '/names/{id}/isMain':
+    patch:
+      tags:
+        - names
+      description: Update a name isMain property. An entity can have multiples names, in different languages for example. But only one of them is the main one. If you set a name isMain attribute to true, all the other names of the entity isMain will be set to false.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: isMain
+          in: query
+          required: true
+          schema:
+            type: boolean
+      
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Name'
+                
   '/account/email':
     patch:
       tags:
