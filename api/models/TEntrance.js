@@ -164,6 +164,7 @@ module.exports = {
 
     precision: {
       type: 'number',
+      allowNull: true,
       columnName: 'precision',
       columnType: 'int2',
     },
