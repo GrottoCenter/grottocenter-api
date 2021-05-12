@@ -73,6 +73,7 @@ module.exports = {
     result.dateInscription = source.dateInscription;
     result.dateReviewed = source.dateReviewed;
     result.id = source.id;
+    result.isMain = source.isMain;
     result.language = source.language;
     result.name = source.name;
     result.point = source.point;
