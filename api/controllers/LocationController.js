@@ -8,7 +8,7 @@
 module.exports = {
   update: async (req, res, converter) => {
     // Check right
-    const hasRightOnAny = await sails.helpers.checkRight
+    const hasRight = await sails.helpers.checkRight
       .with({
         groups: req.token.groups,
         rightEntity: RightService.RightEntities.LOCATION,
@@ -19,18 +19,9 @@ module.exports = {
           'A server error occured when checking your right to update any location.',
         );
       });
-
-    const hasRightOnOwn = await sails.helpers.checkRight
-      .with({
-        groups: req.token.groups,
-        rightEntity: RightService.RightEntities.LOCATION,
-        rightAction: RightService.RightActions.EDIT_OWN,
-      })
-      .intercept('rightNotFound', (err) => {
-        return res.serverError(
-          'A server error occured when checking your right to update your locations.',
-        );
-      });
+    if (!hasRight) {
+      return res.forbidden('You are not authorized to update any location.');
+    }
 
     // Check if location exists
     const locationId = req.param('id');
@@ -44,19 +35,6 @@ module.exports = {
     const cleanedData = {
       body: req.param('body'),
     };
-
-    // Check right on this particular location
-    if (!hasRightOnAny) {
-      if (hasRightOnOwn) {
-        if (req.token.id !== currentLocation.author) {
-          return res.forbidden(
-            "You can not update a location you didn't created.",
-          );
-        }
-      } else {
-        return res.forbidden('You can not update a location.');
-      }
-    }
 
     // Launch update request
     const updatedLocation = await TLocation.updateOne({
