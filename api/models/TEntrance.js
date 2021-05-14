@@ -162,6 +162,12 @@ module.exports = {
       defaultsTo: false,
     },
 
+    precision: {
+      type: 'number',
+      columnName: 'precision',
+      columnType: 'int2',
+    },
+
     cave: {
       columnName: 'id_cave',
       model: 'TCave',
@@ -201,6 +207,12 @@ module.exports = {
     comments: {
       collection: 'TComment',
       via: 'entrance',
+    },
+
+    explorerCavers: {
+      collection: 'TCaver',
+      via: 'entrance',
+      through: 'JEntranceCaver',
     },
   },
 };

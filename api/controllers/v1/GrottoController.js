@@ -25,4 +25,13 @@ module.exports = {
       next,
       MappingV1Service.convertToOrganizationModel,
     ),
+  delete: (req, res) => {
+    grottoController.delete(req, res);
+  },
+  update: (req, res) =>
+    grottoController.update(
+      req,
+      res,
+      MappingV1Service.convertToOrganizationModel,
+    ),
 };

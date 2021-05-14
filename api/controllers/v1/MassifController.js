@@ -11,4 +11,6 @@ module.exports = {
       next,
       MappingV1Service.convertToMassifModel,
     ),
+  delete: (req, res) => massifController.delete(req, res),
+  create: (req, res) => massifController.create(req, res),
 };

@@ -103,6 +103,8 @@ module.exports.routes = {
   'POST /api/v1/signup': 'v1/Auth.signUp',
 
   /* Caver controller */
+  'DELETE /api/v1/cavers/:caverId/entrances/:entranceId':
+    'v1/Caver.removeExploredEntrance',
   'DELETE /api/v1/cavers/:caverId/groups/:groupId': 'v1/Caver.removeFromGroup',
   'GET /api/v1/cavers/': 'v1/Caver.findAll',
   'GET /api/v1/cavers/:id': 'v1/Caver.find',
@@ -112,6 +114,8 @@ module.exports.routes = {
   'GET /api/v1/cavers/moderators': 'v1/Caver.getModerators',
   'POST /api/v1/cavers/': 'v1/Caver.create',
   'POST /api/v1/cavers/:caverId/groups': 'v1/Caver.setGroups',
+  'PUT /api/v1/cavers/:caverId/entrances/:entranceId':
+    'v1/Caver.addExploredEntrance',
   'PUT /api/v1/cavers/:caverId/groups/:groupId': 'v1/Caver.putOnGroup',
 
   /* Entrance controller */
@@ -133,14 +137,18 @@ module.exports.routes = {
     },
   },
   'POST /api/v1/entrances': 'v1/Entrance.create',
+  'PUT /api/v1/entrances/:id': 'v1/Entrance.update',
+  'PUT /api/v1/entrances/:entranceId/documents/:documentId':
+    'v1/Entrance.addDocument',
 
   /* Cave controller */
   'DELETE /api/v1/caves/:id': 'v1/Cave.delete',
   'GET /api/v1/caves/:id': 'v1/Cave.find',
   'GET /api/v1/caves/findAll': 'v1/Cave.findAll',
   'POST /api/v1/caves': 'v1/Cave.create',
-  'PUT /api/caves/:id': 'Cave.update',
   'PUT /api/v1/caves/:caveId/documents/:documentId': 'v1/Cave.addDocument',
+  'PUT /api/v1/caves/:id': 'v1/Cave.update',
+  'PUT /api/v1/caves/:caveId/massif/:massifId': 'v1/Cave.setMassif',
 
   /* Author controller */
   'DELETE /api/authors/:id': 'Author.delete',
@@ -165,6 +173,7 @@ module.exports.routes = {
   'GET /api/comments/timeinfos/:entry': 'Comments.getEntryTimeInfos',
 
   /* Organization controller */
+  'DELETE /api/v1/organizations/:id': 'v1/Grotto.delete',
   'GET /api/v1/organizations/count': 'v1/Grotto.count',
   'GET /api/organizations/findAll': 'Grotto.findAll',
   'GET /api/v1/organizations/:id': {
@@ -178,8 +187,10 @@ module.exports.routes = {
     },
   },
   'POST /api/v1/organizations': 'v1/Grotto.create',
+  'PUT /api/v1/organizations/:id': 'v1/Grotto.update',
 
   /* Massif controller */
+  'DELETE /api/v1/massifs/:id': 'v1/Massif.delete',
   'GET /api/v1/massifs/:id': {
     controller: 'v1/Massif',
     action: 'find',
@@ -190,6 +201,7 @@ module.exports.routes = {
       allowOrigins: '*',
     },
   },
+  'POST /api/v1/massifs': 'v1/Massif.create',
 
   /* Document controller */
   'GET /api/v1/documents': 'v1/Document.findAll',
@@ -203,6 +215,12 @@ module.exports.routes = {
   /* Document Type controller */
   'GET /api/v1/documents/types': 'v1/DocumentType.findAll',
   'GET /api/v1/documents/types/:id': 'v1/DocumentType.find',
+
+  /* Description controller */
+  'PATCH /api/v1/descriptions/:id': 'v1/Description.update',
+
+  /* Name controller */
+  'PATCH /api/v1/names/:id': 'v1/Name.update',
 
   /* Document Subject controller */
   'GET /api/v1/documents/subjects': {

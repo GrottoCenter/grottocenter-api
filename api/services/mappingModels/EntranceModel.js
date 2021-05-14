@@ -24,6 +24,7 @@ module.exports = {
   name: undefined,
   names: undefined,
   postalCode: undefined,
+  precision: undefined,
   region: undefined,
   riggings: [],
   stats: undefined,

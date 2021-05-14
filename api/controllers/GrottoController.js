@@ -8,6 +8,24 @@
 const esClient = require('../../config/elasticsearch').elasticsearchCli;
 const ramda = require('ramda');
 
+// Extract everything from the request body except id
+const getConvertedDataFromClientRequest = (req) => {
+  return {
+    address: req.param('address'),
+    city: req.param('city'),
+    country: ramda.pathOr(null, ['country', 'id'], req.body),
+    county: req.param('county'),
+    customMessage: req.param('customMessage'),
+    latitude: req.param('latitude'),
+    longitude: req.param('longitude'),
+    mail: req.param('mail'),
+    postalCode: req.param('postalCode'),
+    region: req.param('region'),
+    url: req.param('url'),
+    yearBirth: req.param('yearBirth'),
+  };
+};
+
 module.exports = {
   find: (
     req,
@@ -121,22 +139,13 @@ module.exports = {
       .transaction(async (db) => {
         const caver = await TCaver.findOne(req.token.id).usingConnection(db);
 
-        const newOrganization = await TGrotto.create({
-          address: req.param('address'),
+        const cleanedData = {
+          ...getConvertedDataFromClientRequest(req),
           author: req.token.id,
-          city: req.param('city'),
-          country: ramda.pathOr(null, ['country', 'id'], req.body),
-          county: req.param('county'),
-          customMessage: req.param('customMessage'),
           dateInscription: new Date(),
-          latitude: req.param('latitude'),
-          longitude: req.param('longitude'),
-          mail: req.param('mail'),
-          postalCode: req.param('postalCode'),
-          region: req.param('region'),
-          url: req.param('url'),
-          yearBirth: req.param('yearBirth'),
-        })
+        };
+
+        const newOrganization = await TGrotto.create(cleanedData)
           .fetch()
           .usingConnection(db);
 
@@ -224,5 +233,122 @@ module.exports = {
       res,
       converter,
     );
+  },
+
+  delete: async (req, res) => {
+    const hasRight = await sails.helpers.checkRight
+      .with({
+        groups: req.token.groups,
+        rightEntity: RightService.RightEntities.ORGANIZATION,
+        rightAction: RightService.RightActions.DELETE_ANY,
+      })
+      .intercept('rightNotFound', (err) => {
+        return res.serverError(
+          'A server error occured when checking your right to delete an organization.',
+        );
+      });
+    if (!hasRight) {
+      return res.forbidden('You are not authorized to delete an organization.');
+    }
+
+    // Check if organization exists and if it's not already deleted
+    const organizationId = req.param('id');
+    const currentOrganization = await TGrotto.findOne(organizationId);
+    if (currentOrganization) {
+      if (currentOrganization.isDeleted) {
+        return res.status(410).send({
+          message: `The organization with id ${organizationId} has already been deleted.`,
+        });
+      }
+    } else {
+      return res.status(404).send({
+        message: `Organization of id ${organizationId} not found.`,
+      });
+    }
+
+    // Delete Organization
+    const updatedOrganization = await TGrotto.destroyOne({
+      id: organizationId,
+    }).intercept((err) => {
+      return res.serverError(
+        `An unexpected error occured when trying to delete organization with id ${organizationId}.`,
+      );
+    });
+
+    ElasticsearchService.deleteResource('grottos', organizationId);
+
+    return res.sendStatus(204);
+  },
+
+  update: async (req, res, converter) => {
+    // Check right
+    const hasRight = await sails.helpers.checkRight
+      .with({
+        groups: req.token.groups,
+        rightEntity: RightService.RightEntities.ORGANIZATION,
+        rightAction: RightService.RightActions.EDIT_ANY,
+      })
+      .intercept('rightNotFound', (err) => {
+        return res.serverError(
+          'A server error occured when checking your right to update an organization.',
+        );
+      });
+    if (!hasRight) {
+      return res.forbidden('You are not authorized to update an organization.');
+    }
+
+    // Check if organization exists
+    const organizationId = req.param('id');
+    const currentOrganization = await TGrotto.findOne(organizationId);
+    if (!currentOrganization) {
+      return res.status(404).send({
+        message: `Organization of id ${organizationId} not found.`,
+      });
+    }
+
+    const cleanedData = {
+      ...getConvertedDataFromClientRequest(req),
+      id: organizationId,
+    };
+
+    // Launch update request using transaction: it performs a rollback if an error occurs
+    await sails
+      .getDatastore()
+      .transaction(async (db) => {
+        const updatedOrganization = await TGrotto.updateOne({
+          id: organizationId,
+        })
+          .set(cleanedData)
+          .usingConnection(db);
+
+        await NameService.setNames([updatedOrganization], 'grotto');
+
+        const params = {};
+        params.controllerMethod = 'OrganizationController.update';
+        return ControllerService.treatAndConvert(
+          req,
+          null,
+          updatedOrganization,
+          params,
+          res,
+          converter,
+        );
+      })
+      .intercept('E_UNIQUE', (e) => {
+        sails.log.error(e.message);
+        return res.status(409).send(e.message);
+      })
+      .intercept({ name: 'UsageError' }, (e) => {
+        sails.log.error(e.message);
+        return res.badRequest(e.message);
+      })
+      .intercept({ name: 'AdapterError' }, (e) => {
+        sails.log.error(e.message);
+        return res.badRequest(e.message);
+      })
+      .intercept((e) => {
+        sails.log.error(e.message);
+        return res.serverError(e.message);
+      });
   },
 };

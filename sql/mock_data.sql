@@ -1,3 +1,6 @@
+
+\c grottoce;
+
 INSERT INTO public.t_group (id,"name","comments") VALUES
 	 (1,'Administrator','Technical responsible of the application.'),
 	 (2,'Moderator','Content reviewers.'),
@@ -48,7 +51,15 @@ INSERT INTO public.t_right (id,"name","comments") VALUES
     (85, 'Massif - create', NULL),
     (86, 'Right - create', NULL),
     (87, 'Entrance - view limited', NULL),
-    (88, 'Application - merge duplicates', NULL);
+    (88, 'Application - merge duplicates', NULL),
+	(89, 'Entrance - link resource', NULL),
+	(90, 'Entrance - unlink resource', NULL),
+	(91, 'Cave - link resource', NULL),
+	(92, 'Cave - unlink resource', NULL),
+	(93, 'Description - edit any', NULL),
+	(94, 'Description - edit own', NULL),
+	(95, 'Name - edit any', NULL),
+	(96, 'Name - edit own', NULL);
 
 INSERT INTO public.j_group_right (id_group,id_right) VALUES
     (1, 2),
@@ -85,7 +96,15 @@ INSERT INTO public.j_group_right (id_group,id_right) VALUES
     (3, 51),
     (4, 4),
     (4, 10),
-    (2, 9);
+    (2, 9),
+	(3, 89),
+	(2, 90),
+	(3, 91),
+	(2, 92),
+	(2, 93),
+    (3, 94),
+	(2, 95),
+    (3, 96);
 
 INSERT INTO public.t_identifier_type (code,"text",regexp) VALUES
  ('doi  ','digital object identifier','^.+$'),
@@ -151,14 +170,14 @@ INSERT INTO public.t_cave (id,id_author,id_reviewer,min_depth,max_depth,"depth",
 	 (14,2,NULL,NULL,NULL,680,18000,true,9.0,10,'2008-07-29 11:32:44.000',NULL,NULL,NULL,1,false,NULL),
 	 (15,2,NULL,NULL,NULL,NULL,NULL,false,NULL,0,'2008-07-29 11:40:13.000',NULL,NULL,NULL,1,false,NULL),
 	 (17,2,NULL,NULL,NULL,354,16530,true,14.0,10,'2008-07-29 15:28:11.000',NULL,NULL,NULL,8,false,NULL),
-	 (19,2,NULL,NULL,NULL,117,450,false,NULL,6,'2008-07-29 15:50:42.000',NULL,NULL,NULL,0,false,NULL),
-	 (75070,4,NULL,NULL,NULL,1625,24691,false,4.0,10,'2008-07-28 15:07:17.000',NULL,NULL,NULL,0,false,NULL),
+	 (19,2,NULL,NULL,NULL,117,450,false,NULL,6,'2008-07-29 15:50:42.000',NULL,NULL,NULL,NULL,false,NULL),
+	 (75070,4,NULL,NULL,NULL,1625,24691,false,4.0,10,'2008-07-28 15:07:17.000',NULL,NULL,NULL,NULL,false,NULL),
 	 (75071,4,NULL,NULL,NULL,870,53806,true,8.0,10,'2008-07-28 17:01:16.000',NULL,NULL,NULL,83,false,NULL),
 	 (75072,2,NULL,NULL,NULL,807,25045,false,7.0,10,'2008-07-29 11:13:17.000',NULL,NULL,NULL,4,false,NULL),
 	 (75073,2,NULL,NULL,NULL,733,8745,true,7.0,10,'2008-07-29 11:19:15.000',NULL,NULL,NULL,4,false,NULL),
 	 (75074,2,NULL,NULL,NULL,1408,80200,false,7.0,10,'2008-07-29 12:40:09.000',NULL,NULL,NULL,4,false,NULL),
 	 (75075,2,NULL,NULL,NULL,670,49300,true,NULL,10,'2008-07-29 17:19:23.000',NULL,NULL,NULL,1,false,NULL),
-	 (75084,4,NULL,NULL,NULL,149,28200,true,NULL,9,'2008-08-04 20:52:01.000',NULL,NULL,NULL,0,false,NULL),
+	 (75084,4,NULL,NULL,NULL,149,28200,true,NULL,9,'2008-08-04 20:52:01.000',NULL,NULL,NULL,NULL,false,NULL),
 	 (75101,6,NULL,NULL,NULL,156,3220,true,NULL,8,'2008-10-11 12:22:34.000',NULL,NULL,NULL,16,false,NULL),
 	 (75142,5,NULL,NULL,NULL,372,8404,false,3.0,10,'2009-07-01 15:00:17.000',NULL,NULL,NULL,112,false,NULL),
 	 (75277,6,NULL,NULL,NULL,307,10000,true,NULL,10,'2011-05-26 18:25:49.000',NULL,NULL,NULL,8,false,NULL),
@@ -557,6 +576,6 @@ INSERT INTO public.j_license_type (id_license,id_type) VALUES
 	 (1,4),
 	 (1,18);
 
-INSERT INTO public.spatial_ref_sys (srid,auth_name,auth_srid,srtext,proj4text) VALUES
-	 (2192,'EPSG',2192,'PROJCS["ED50 / France EuroLambert (deprecated)",GEOGCS["ED50",DATUM["European_Datum_1950",SPHEROID["International 1924",6378388,297,AUTHORITY["EPSG","7022"]],TOWGS84[-87,-98,-121,0,0,0,0],AUTHORITY["EPSG","6230"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.0174532925199433,AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4230"]],PROJECTION["Lambert_Conformal_Conic_1SP"],PARAMETER["latitude_of_origin",46.8],PARAMETER["central_meridian",2.337229166666667],PARAMETER["scale_factor",0.99987742],PARAMETER["false_easting",600000],PARAMETER["false_northing",2200000],UNIT["metre",1,AUTHORITY["EPSG","9001"]],AXIS["X",EAST],AXIS["Y",NORTH],AUTHORITY["EPSG","2192"]]','+proj=lcc +lat_1=46.8 +lat_0=46.8 +lon_0=2.337229166666667 +k_0=0.99987742 +x_0=600000 +y_0=2200000 +ellps=intl +towgs84=-87,-98,-121,0,0,0,0 +units=m +no_defs '),
-	 (2309,'EPSG',2309,'PROJCS["WGS 84 / TM 116 SE",GEOGCS["WGS 84",DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]],AUTHORITY["EPSG","6326"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.0174532925199433,AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]],PROJECTION["Transverse_Mercator"],PARAMETER["latitude_of_origin",0],PARAMETER["central_meridian",116],PARAMETER["scale_factor",0.9996],PARAMETER["false_easting",500000],PARAMETER["false_northing",10000000],UNIT["metre",1,AUTHORITY["EPSG","9001"]],AXIS["Easting",EAST],AXIS["Northing",NORTH],AUTHORITY["EPSG","2309"]]','+proj=tmerc +lat_0=0 +lon_0=116 +k=0.9996 +x_0=500000 +y_0=10000000 +datum=WGS84 +units=m +no_defs ');
+-- INSERT INTO public.spatial_ref_sys (srid,auth_name,auth_srid,srtext,proj4text) VALUES
+--	 (2192,'EPSG',2192,'PROJCS["ED50 / France EuroLambert (deprecated)",GEOGCS["ED50",DATUM["European_Datum_1950",SPHEROID["International 1924",6378388,297,AUTHORITY["EPSG","7022"]],TOWGS84[-87,-98,-121,0,0,0,0],AUTHORITY["EPSG","6230"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.0174532925199433,AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4230"]],PROJECTION["Lambert_Conformal_Conic_1SP"],PARAMETER["latitude_of_origin",46.8],PARAMETER["central_meridian",2.337229166666667],PARAMETER["scale_factor",0.99987742],PARAMETER["false_easting",600000],PARAMETER["false_northing",2200000],UNIT["metre",1,AUTHORITY["EPSG","9001"]],AXIS["X",EAST],AXIS["Y",NORTH],AUTHORITY["EPSG","2192"]]','+proj=lcc +lat_1=46.8 +lat_0=46.8 +lon_0=2.337229166666667 +k_0=0.99987742 +x_0=600000 +y_0=2200000 +ellps=intl +towgs84=-87,-98,-121,0,0,0,0 +units=m +no_defs '),
+--	 (2309,'EPSG',2309,'PROJCS["WGS 84 / TM 116 SE",GEOGCS["WGS 84",DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]],AUTHORITY["EPSG","6326"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.0174532925199433,AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]],PROJECTION["Transverse_Mercator"],PARAMETER["latitude_of_origin",0],PARAMETER["central_meridian",116],PARAMETER["scale_factor",0.9996],PARAMETER["false_easting",500000],PARAMETER["false_northing",10000000],UNIT["metre",1,AUTHORITY["EPSG","9001"]],AXIS["Easting",EAST],AXIS["Northing",NORTH],AUTHORITY["EPSG","2309"]]','+proj=tmerc +lat_0=0 +lon_0=116 +k=0.9996 +x_0=500000 +y_0=10000000 +datum=WGS84 +units=m +no_defs ');

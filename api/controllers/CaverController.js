@@ -8,13 +8,67 @@
 const esClient = require('../../config/elasticsearch').elasticsearchCli;
 
 module.exports = {
-  find: (req, res) => {
-    TCaver.findOne(req.params.id).exec((err, found) => {
-      const params = {};
-      params.controllerMethod = 'CaverController.find';
-      params.notFoundMessage = `Caver of id ${req.params.id} not found.`;
-      return ControllerService.treat(req, err, found, params, res);
-    });
+  find: async (req, res, next, converter) => {
+    const caverId = req.param('id');
+
+    TCaver.findOne(caverId)
+      .populate('documents')
+      .populate('grottos')
+      .populate('groups')
+      .then(async (caverFound) => {
+        const params = {};
+        params.searchedItem = `Caver of id ${caverId}`;
+        if (!caverFound) {
+          const notFoundMessage = `${params.searchedItem} not found`;
+          sails.log.debug(notFoundMessage);
+          res.status(404);
+          return res.json({ error: notFoundMessage });
+        }
+
+        // Check complete view right
+        const hasCompleteViewRight = req.token
+          ? await sails.helpers.checkRight
+              .with({
+                groups: req.token.groups,
+                rightEntity: RightService.RightEntities.CAVER,
+                rightAction: RightService.RightActions.VIEW_COMPLETE,
+              })
+              .intercept('rightNotFound', (err) => {
+                return res.serverError(
+                  'A server error occured when checking your right to entirely view a caver.',
+                );
+              })
+          : false;
+
+        // Delete sensitive data
+        delete caverFound.activationCode;
+        delete caverFound.password;
+
+        return ControllerService.treatAndConvert(
+          req,
+          null,
+          hasCompleteViewRight
+            ? caverFound
+            : {
+                documents: caverFound.documents,
+                name: caverFound.name,
+                nickname: caverFound.nickname,
+                surname: caverFound.surname,
+              },
+          params,
+          res,
+          converter,
+        );
+      })
+      .catch({ name: 'UsageError' }, (err) => {
+        return res.badRequest(err.cause.message);
+      })
+      .catch({ name: 'AdapterError' }, (err) => {
+        return res.badRequest(err.cause.message);
+      })
+      .catch((err) => {
+        return res.serverError(err.cause.message);
+      });
   },
 
   findAll: (req, res) => {
@@ -199,7 +253,7 @@ module.exports = {
         });
 
         const params = {};
-        params.controllerMethod = 'CaverController.addToGroup';
+        params.controllerMethod = 'CaverController.setGroups';
         return ControllerService.treat(req, null, {}, params, res);
       })
       .catch({ name: 'UsageError' }, (err) => {
@@ -396,5 +450,105 @@ module.exports = {
       res,
       converter,
     );
+  },
+
+  addExploredEntrance: async (req, res) => {
+    // Check right
+    const hasRight = await sails.helpers.checkRight
+      .with({
+        groups: req.token.groups,
+        rightEntity: RightService.RightEntities.CAVER,
+        rightAction: RightService.RightActions.EDIT_OWN,
+      })
+      .intercept('rightNotFound', (err) => {
+        return res.serverError(
+          'A server error occured when checking your right to mark an entrance as explored.',
+        );
+      });
+    if (!hasRight) {
+      return res.forbidden(
+        'You are not authorized to mark an entrance as explored.',
+      );
+    }
+
+    // Check params
+    const caverId = req.param('caverId');
+    const entranceId = req.param('entranceId');
+    if (!(await CaverService.checkIfExists('id', caverId))) {
+      return res.badRequest(`Could not find caver with id ${caverId}.`);
+    }
+    if (!(await EntranceService.checkIfExists('id', entranceId))) {
+      return res.badRequest(`Could not find entrance with id ${entranceId}.`);
+    }
+    if (Number(caverId) !== req.token.id) {
+      return res.forbidden(
+        'You can not mark an entrance as explored to another account than yours.',
+      );
+    }
+
+    // Update caver
+    TCaver.addToCollection(caverId, 'exploredEntrances', entranceId)
+      .then(() => {
+        return res.sendStatus(204);
+      })
+      .catch({ name: 'UsageError' }, (err) => {
+        return res.badRequest(err.cause.message);
+      })
+      .catch({ name: 'AdapterError' }, (err) => {
+        return res.badRequest(err.cause.message);
+      })
+      .catch((err) => {
+        return res.serverError(err.cause.message);
+      });
+  },
+
+  removeExploredEntrance: async (req, res) => {
+    // Check right
+    const hasRight = await sails.helpers.checkRight
+      .with({
+        groups: req.token.groups,
+        rightEntity: RightService.RightEntities.CAVER,
+        rightAction: RightService.RightActions.EDIT_OWN,
+      })
+      .intercept('rightNotFound', (err) => {
+        return res.serverError(
+          'A server error occured when checking your right to unmark an entrance as explored.',
+        );
+      });
+    if (!hasRight) {
+      return res.forbidden(
+        'You are not authorized to unmark an entrance as explored.',
+      );
+    }
+
+    // Check params
+    const caverId = req.param('caverId');
+    const entranceId = req.param('entranceId');
+    if (!(await CaverService.checkIfExists('id', caverId))) {
+      return res.badRequest(`Could not find caver with id ${caverId}.`);
+    }
+    if (!(await EntranceService.checkIfExists('id', entranceId))) {
+      return res.badRequest(`Could not find entrance with id ${entranceId}.`);
+    }
+    if (Number(caverId) !== req.token.id) {
+      return res.forbidden(
+        'You can not unmark an entrance as explored to another account than yours.',
+      );
+    }
+
+    // Update caver
+    TCaver.removeFromCollection(caverId, 'exploredEntrances', entranceId)
+      .then(() => {
+        return res.sendStatus(204);
+      })
+      .catch({ name: 'UsageError' }, (err) => {
+        return res.badRequest(err.cause.message);
+      })
+      .catch({ name: 'AdapterError' }, (err) => {
+        return res.badRequest(err.cause.message);
+      })
+      .catch((err) => {
+        return res.serverError(err.cause.message);
+      });
   },
 };

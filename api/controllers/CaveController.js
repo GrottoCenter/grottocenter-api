@@ -5,11 +5,30 @@
  * @help        :: See http://sailsjs.org/#!/documentation/concepts/Controllers
  */
 const ramda = require('ramda');
+const NameService = require('../services/NameService');
+
+// Extract everything from the request body except id and dateInscription
+const getConvertedDataFromClient = (req) => {
+  const {
+    id,
+    dateInscription,
+    ...reqBodyWithoutIdAndDateInscription
+  } = req.body; // remove id and dateInscription if present to avoid null id (and an error)
+  return {
+    ...reqBodyWithoutIdAndDateInscription,
+    // The TCave.create() function doesn't work with TCave field alias. See TCave.js Model
+    /* eslint-disable camelcase */
+    id_author: req.token.id,
+    date_inscription: new Date(),
+    documents: ramda.propOr(undefined, 'documents', req.body)
+      ? req.body.documents.map((d) => d.id)
+      : undefined,
+    id_massif: ramda.pathOr(undefined, ['massif', 'id'], req.body),
+    /* eslint-enable camelcase */
+  };
+};
 
 module.exports = {
-  update: (req, res) =>
-    res.badRequest('CaveController.update not yet implemented!'),
-
   find: (req, res, next, converter = MappingV1Service.convertToCaveModel) => {
     TCave.findOne(req.params.id)
       .populate('id_author')
@@ -74,16 +93,8 @@ module.exports = {
     }
 
     const cleanedData = {
-      // The TCave.create() function doesn't work with TCave field alias. See TCave.js Model
-      /* eslint-disable camelcase */
-      ...req.body,
-      id_author: req.token.id,
-      date_inscription: new Date(),
-      documents: ramda.propOr(undefined, 'documents', req.body)
-        ? req.body.documents.map((d) => d.id)
-        : undefined,
-      id_massif: ramda.pathOr(undefined, ['massif', 'id'], req.body),
-      /* eslint-enable camelcase */
+      ...getConvertedDataFromClient(req),
+      dateInscription: new Date(),
     };
 
     // Launch creation request using transaction: it performs a rollback if an error occurs
@@ -155,6 +166,7 @@ module.exports = {
         message: `Cave of id ${caveId} not found.`,
       });
     }
+
     // Delete cave
     const updatedCave = await TCave.destroyOne({ id: caveId }).intercept(
       (err) => {
@@ -172,7 +184,7 @@ module.exports = {
       .with({
         groups: req.token.groups,
         rightEntity: RightService.RightEntities.CAVE,
-        rightAction: RightService.RightActions.EDIT_ANY,
+        rightAction: RightService.RightActions.LINK_RESOURCE,
       })
       .intercept('rightNotFound', (err) => {
         return res.serverError(
@@ -216,5 +228,116 @@ module.exports = {
       .catch((err) => {
         return res.serverError(err.cause.message);
       });
+  },
+
+  update: async (req, res, converter) => {
+    // Check right
+    const hasRight = await sails.helpers.checkRight
+      .with({
+        groups: req.token.groups,
+        rightEntity: RightService.RightEntities.CAVE,
+        rightAction: RightService.RightActions.EDIT_ANY,
+      })
+      .intercept('rightNotFound', (err) => {
+        return res.serverError(
+          'A server error occured when checking your right to update a cave.',
+        );
+      });
+    if (!hasRight) {
+      return res.forbidden('You are not authorized to update a cave.');
+    }
+
+    // Check if cave exists
+    const caveId = req.param('id');
+    const currentCave = await TCave.findOne(caveId);
+    if (!currentCave) {
+      return res.status(404).send({
+        message: `Cave of id ${caveId} not found.`,
+      });
+    }
+
+    const cleanedData = {
+      ...getConvertedDataFromClient(req),
+      id: caveId,
+    };
+
+    // Launch update request using transaction: it performs a rollback if an error occurs
+    await sails
+      .getDatastore()
+      .transaction(async (db) => {
+        const updatedCave = await TCave.updateOne({
+          id: caveId,
+        })
+          .set(cleanedData)
+          .usingConnection(db);
+
+        await NameService.setNames([updatedCave], 'cave');
+
+        const params = {};
+        params.controllerMethod = 'CaveController.update';
+        return ControllerService.treatAndConvert(
+          req,
+          null,
+          updatedCave,
+          params,
+          res,
+          converter,
+        );
+      })
+      .intercept('E_UNIQUE', (e) => {
+        sails.log.error(e.message);
+        return res.status(409).send(e.message);
+      })
+      .intercept({ name: 'UsageError' }, (e) => {
+        sails.log.error(e.message);
+        return res.badRequest(e.message);
+      })
+      .intercept({ name: 'AdapterError' }, (e) => {
+        sails.log.error(e.message);
+        return res.badRequest(e.message);
+      })
+      .intercept((e) => {
+        sails.log.error(e.message);
+        return res.serverError(e.message);
+      });
+  },
+
+  setMassif: async (req, res) => {
+    // Check right
+    const hasRight = await sails.helpers.checkRight
+      .with({
+        groups: req.token.groups,
+        rightEntity: RightService.RightEntities.CAVE,
+        rightAction: RightService.RightActions.EDIT_ANY,
+      })
+      .intercept('rightNotFound', (err) => {
+        return res.serverError(
+          'A server error occured when checking your right to add a cave to a massif.',
+        );
+      });
+    if (!hasRight) {
+      return res.forbidden('You are not authorized to add a cave to a massif.');
+    }
+
+    // Check params
+    const caveId = req.param('caveId');
+    const currentCave = await TCave.findOne(caveId);
+    if (!currentCave) {
+      return res.badRequest(`Could not find cave with id ${caveId}.`);
+    }
+
+    const massifId = req.param('massifId');
+    const currentMassif = await TMassif.findOne(massifId);
+    if (!currentMassif) {
+      return res.badRequest(`Could not find massif with id ${massifId}.`);
+    }
+
+    // Update cave
+    await TCave.updateOne({
+      id: caveId,
+    }).set({
+      massif: massifId,
+    });
+    return res.sendStatus(204);
   },
 };

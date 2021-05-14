@@ -48,19 +48,24 @@ module.exports.policies = {
   'v1/CaveController': {
     '*': true,
     addDocument: 'tokenAuth',
+    setMassif: 'tokenAuth',
     create: 'tokenAuth',
     delete: ['tokenAuth', 'moderatorAuth'],
+    update: 'tokenAuth',
   },
 
   'v1/CaverController': {
     '*': false,
+    addExploredEntrance: 'tokenAuth',
     count: true,
     create: 'tokenAuth',
+    find: 'facultativeTokenAuth',
     putOnGroup: ['tokenAuth', 'adminAuth'],
     removeFromGroup: ['tokenAuth', 'adminAuth'],
     setGroups: ['tokenAuth', 'adminAuth'],
     getAdmins: 'tokenAuth',
     getModerators: 'tokenAuth',
+    removeExploredEntrance: 'tokenAuth',
   },
 
   'v1/EntranceController': {
@@ -68,10 +73,20 @@ module.exports.policies = {
     count: true,
     create: 'tokenAuth',
     delete: ['tokenAuth', 'moderatorAuth'],
-    find: 'apiKeyAuth',
+    find: 'facultativeTokenAuth',
     findAll: ['apiKeyAuth', 'paginate'],
     findRandom: true,
     publicCount: true,
+    update: 'tokenAuth',
+    addDocument: 'tokenAuth',
+  },
+
+  'v1/DescriptionController': {
+    update: 'tokenAuth',
+  },
+
+  'v1/NameController': {
+    update: 'tokenAuth',
   },
 
   SearchController: {
@@ -171,11 +186,15 @@ module.exports.policies = {
   'v1/GrottoController': {
     create: 'tokenAuth',
     count: true,
+    delete: ['tokenAuth', 'moderatorAuth'],
     getOfficialPartnersNumber: true,
     find: ['apiKeyAuth', 'paginate'],
+    update: 'tokenAuth',
   },
 
   'v1/MassifController': {
+    create: 'tokenAuth',
+    delete: ['tokenAuth', 'moderatorAuth'],
     find: true,
   },
 

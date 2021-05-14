@@ -138,6 +138,13 @@ module.exports = {
       maxLength: 200,
     },
 
+    isDeleted: {
+      type: 'boolean',
+      allowNull: false,
+      columnName: 'is_deleted',
+      defaultsTo: false,
+    },
+
     country: {
       columnName: 'id_country',
       model: 'TCountry',

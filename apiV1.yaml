@@ -21,12 +21,14 @@ tags:
 - name: authentication
 - name: caves
 - name: cavers
+- name: descriptions
 - name: documents
 - name: entrances
 - name: geoloc
 - name: groups
 - name: identifierTypes
 - name: languages
+- name: names
 - name: massifs
 - name: organizations
 - name: regions
@@ -63,6 +65,7 @@ paths:
       - name: descriptionAndNameLanguage
         in: query
         description: Language used for the description and the name. List of languages supported by Grottocenter is available using the /languages route.
+        required: true
         schema:
           type: object
           properties:
@@ -107,7 +110,7 @@ paths:
 
       - name: massif
         in: query
-        description: Massif to which the document refers to.
+        description: Massif in which the cave is located.
         schema:
           type: object
           properties:
@@ -174,8 +177,29 @@ paths:
         '404':
           description: Cave not found.
         '410':
-          description: Cave already deleted.
-  
+          description: Cave already deleted
+    
+    put:
+      tags:
+        - caves
+      description: Update a cave. See the POST /caves route explaination about the parameters you can use to update a cave.
+      parameters:
+      - name: id
+        in: path
+        description: id of the cave to be updated.
+        required: true
+        schema:
+          type: string
+      responses: 
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cave'
+        403:
+          description: You are not authorized to update a cave.
+
   '/caves/{caveId}/documents/{documentId}':
     put:
       tags:
@@ -202,6 +226,32 @@ paths:
           description: "Bad request. Both the caveId and documentId parameters must exist in the database. Also, you can't add a document if it is already associated to the cave you specified."
         '403':
           description: You are not authorized to add a document to a cave.
+  
+        
+  '/caves/{caveId}/massif/{massifId}':
+    put:
+      tags:
+      - caves
+      - massifs
+      description: Set a cave massif.
+      parameters:
+      - name: caveId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: massifId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Successful operation
+        '400':
+          description: "Bad request. Both the caveId and massifId parameters must exist in the database."
+        '403':
+          description: You are not authorized to set the massif of a cave.
           
   '/cavers':
     post:
@@ -234,6 +284,27 @@ paths:
           description: You must provide a surname and a name to create a new caver.
         '403':
           description: You are not authorized to create a caver.
+  
+  '/cavers/{id}':
+    get:
+      tags:
+      - cavers
+      description: Get information about a caver. Only administrators can access all the information about caver. If you are not an administrator, you will only get the documents submitted by the user, his/her name, surname and nickname.
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Caver"
+        '404':
+          description: Caver not found.
 
   '/cavers/admins':
     get:
@@ -347,7 +418,7 @@ paths:
           description: "Bad request. Both the caverId and groupId parameters must exist in the database. Also, you can't add a caver if he / she is already in the group you specified."
         '403':
           description: You are not authorized to add a caver to a group.
-
+  
     delete:
       tags:
       - cavers
@@ -374,6 +445,85 @@ paths:
         '403':
           description: You are not authorized to remove a caver from a group.
 
+  '/cavers/{caverId}/entrances/{entranceId}':
+    put:
+      tags:
+      - cavers
+      - entrances
+      description: Make an entrance as explored by a caver. Can only be used on self account.
+      parameters:
+      - name: caverId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: entranceId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Successful operation
+        '400':
+          description: "Bad request. Both the caverId and entranceId parameters must exist in the database. Also, you can't mark an entrance as as explored if it is already marked as explored for the caver."
+        '403':
+          description: You are not authorized to mark an entrance as explored by a caver or you can't mark an entrance as explored for someone else than you.
+    
+    delete:
+      tags:
+      - cavers
+      - entrances
+      description: Unmark an entrance as explored for a caver. Can only be used on self account.
+      parameters:
+      - name: caverId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: entranceId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Successful operation
+        '400':
+          description: Bad request. Both the caverId and entranceId parameters must exist in the database.
+        '403':
+          description: You are not authorized to mark an entrance as explored by a caver or you can't unmark an entrance as explored for someone else than you.
+  
+  '/descriptions/{id}':
+    patch:
+      tags:
+        - descriptions
+      description: Update a description. You must provide a body and title values even if you are changing only one of the two. If you are an user, you can only update a description you previously created.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: body
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: title
+          in: query
+          required: true
+          schema:
+            type: string
+      
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Description'
+    
   '/documents/{id}':
     get:
       tags:
@@ -807,6 +957,36 @@ paths:
               schema:
                 $ref: '#/components/schemas/Language'
   
+  '/names/{id}':
+    patch:
+      tags:
+        - names
+      description: Update a name. You must provide a name and isMain values even if you are changing only one of the two. If you are an user, you can only update a name you previously created.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: name
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: isMain
+          in: query
+          required: true
+          schema:
+            type: boolean
+      
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Name'
+    
   '/account/email':
     patch:
       tags:
@@ -1183,6 +1363,11 @@ paths:
                 description: Must be a language supported by Grottocenter (see GET /languages route) using the 3-letters format.
                 type: string
                 example: 'eng'
+      - name: precision
+        in: query
+        description: GPS precision in meters
+        schema:
+          type: integer
       - name: region
         in: query
         description: Region where the entrance is located
@@ -1201,6 +1386,32 @@ paths:
               schema:
                 $ref: '#/components/schemas/Entrance'
   
+  '/entrances/{entranceId}/documents/{documentId}':
+    put:
+      tags:
+      - entrances
+      - documents
+      description: Add a document to an entrance.
+      parameters:
+      - name: entranceId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: documentId
+        in: path
+        description: Document id to add to the entrance.
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Successful operation
+        '404':
+          description: Could not find entrance with the entrance id you provided or could not find the document with the document id you provided.
+        '403':
+          description: You are not authorized to add a document to an entrance.
+  
   '/entrances/findRandom':
     get:
       tags:
@@ -1218,7 +1429,11 @@ paths:
     get:
       tags:
       - entrances
-      description: Get an entrance by id. If the entrance is sensitive (i.e. not public), the locations, logintude and latitude attributes are not returned.
+      description: |
+        Get an entrance by id. If the entrance is sensitive (i.e. not public):
+        - if you are an unauthenticated visitor, you will not be able to get it.
+        - if you are an authenticated Grottocenter user, you will be able to get the entrance information but the fields "longitude", "latitude" and "locations" will be hidden.
+        - if you are an authenticated Grottocenter administrator, you will be able to get all the information.
       parameters:
       - name: id
         in: path
@@ -1233,8 +1448,50 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Entrance'
+        '403':
+          description: You are not authorized to view the entrance.
         '404':
           description: Entrance not found.
+  
+    delete:
+      tags:
+      - entrances
+      description: Delete an entrance.
+      parameters:
+      - name: id
+        in: path
+        description: Entrance id
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Successful operation
+        '404':
+          description: Entrance not found.
+        '410':
+          description: Entrance already deleted.
+          
+    put:
+      tags:
+        - entrances
+      description: Update an entrance. See the POST /entrances route explaination about the parameters you can use to update an entrance.
+      parameters:
+      - name: id
+        in: path
+        description: id of the entrance to be updated.
+        required: true
+        schema:
+          type: string
+      responses: 
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Entrance'
+        403:
+          description: You are not authorized to update an entrance.
 
   '/entrances/publicCount':
     get:
@@ -1442,7 +1699,62 @@ paths:
         '404':
           description: Resource not found
         
-
+  '/massifs':
+    post:
+      tags:
+      - massifs
+      description: Create a massif.
+      parameters:
+      - name: description
+        in: query
+        required: true
+        description: Description of the massif
+        schema:
+          type: string
+      - name: descriptionTitle
+        in: query
+        required: true
+        description: Description title of the massif
+        schema:
+          type: string
+      - name: descriptionAndNameLanguage
+        in: query
+        required: true
+        description: Language of the description and name of the massif
+        schema:
+          type: object
+          properties:
+            id: 
+              type: string
+              description: Must be a language supported by Grottocenter (see GET /languages route) using the 3-letters format.
+      - name: name
+        in: query
+        required: true
+        description: Name of the massif
+        schema:
+          type: string
+      - name: caves
+        in: query
+        description: Caves related to the massif
+        schema:
+          type: array
+          items:
+            type: object
+            properties:
+              id: 
+                type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Massif'
+        '400':
+          description: Some required information are missing.
+        '403':
+          description: You are not authorized to create a massif.
+  
 
   '/massifs/{id}':
     get:
@@ -1593,6 +1905,27 @@ paths:
                   $ref: "#/components/schemas/Organization"
         '404':
           description: Resource not found
+    
+    put:
+      tags:
+        - organizations
+      description: Update an organization. See the POST /organization route explaination about the parameters you can use to update an organization.
+      parameters:
+      - name: id
+        in: path
+        description: id of the organization to be updated.
+        required: true
+        schema:
+          type: string
+      responses: 
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Organization'
+        403:
+          description: You are not authorized to update an organization.
 
   '/organizations/count':
     get:
@@ -1699,6 +2032,10 @@ components:
           type: string
         '@type':
           type: string
+        documents:
+          type: array
+          items: 
+            type: string
         groups:
           type: array
           items: 
@@ -1767,12 +2104,26 @@ components:
           $ref: '#/components/schemas/Caver'
         body:
           type: string
+        cave:
+          $ref: '#/components/schemas/Cave'
         dateInscription:
           type: string
         dateReviewed:
           type: string
+        document:
+          $ref: '#/components/schemas/Document'
+        entrance:
+          $ref: '#/components/schemas/Entrance'
+        exit:
+          $ref: '#/components/schemas/Entrance'
         id:
           type: integer
+        language:
+          $ref: '#/components/schemas/Language'
+        massif:
+          $ref: '#/components/schemas/Massif'
+        point:
+          $ref: '#/components/schemas/Point'
         relevance:
           type: integer
         reviewer:
@@ -1963,6 +2314,9 @@ components:
             $ref: '#/components/schemas/Location'
         longitude:
           type: number
+        precision:
+          description: GPS precision in meters
+          type: integer
         name:
           type: string
         names:

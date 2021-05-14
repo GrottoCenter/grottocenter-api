@@ -122,19 +122,5 @@ coverage
 .coveralls.yml
 .vscode
 
-################################################
-# Logstash
-#
-# Plugins downloaded to run logstash in the
-# docker container.
-################################################
-mysql-connector.tar.gz
-mysql-connector-java-5.1.47
-postgresql-connector.jar
-
-################################################
-# Anonymized data
-#
-# Path to the Grottocenter anonymized sql data file.
-################################################
-sql/*grottoce_anonymize*.sql
+docker/esdata/*
+!docker/esdata/for-docker-compose

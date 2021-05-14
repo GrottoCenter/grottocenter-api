@@ -15,12 +15,12 @@ const getConvertedDataFromClientRequest = (req) => {
     author: req.token.id,
     cave: ramda.pathOr(undefined, ['cave', 'id'], req.body),
     country: ramda.pathOr(undefined, ['country', 'id'], req.body),
-    geology: ramda.pathOr(undefined, ['geology', 'id'], req.body),
+    geology: ramda.pathOr('Q35758', ['geology', 'id'], req.body),
   };
 };
 
 module.exports = {
-  find: (req, res, converter) => {
+  find: async (req, res, converter) => {
     TEntrance.findOne(req.params.id)
       .populate('author')
       .populate('cave')
@@ -44,13 +44,48 @@ module.exports = {
 
         // Populate stats
         const statsPromise = CommentService.getStats(req.params.id);
-        statsPromise.then((stats) => {
+        statsPromise.then(async (stats) => {
           found.stats = stats;
-          if (!found.isPublic) {
-            // TODO: Some people (admin ? use RightHelper with a right in DB ?) should be able to get the full data even for the "not public" entrances.
-            delete found.locations;
-            delete found.longitude;
-            delete found.latitude;
+
+          // Sensitive entrance special treatment
+          if (found.isSensitive) {
+            const hasCompleteViewRight = req.token
+              ? await sails.helpers.checkRight
+                  .with({
+                    groups: req.token.groups,
+                    rightEntity: RightService.RightEntities.ENTRANCE,
+                    rightAction: RightService.RightActions.VIEW_COMPLETE,
+                  })
+                  .intercept('rightNotFound', (err) => {
+                    return res.serverError(
+                      'A server error occured when checking your right to entirely view an entrance.',
+                    );
+                  })
+              : false;
+
+            const hasLimitedViewRight = req.token
+              ? await sails.helpers.checkRight
+                  .with({
+                    groups: req.token.groups,
+                    rightEntity: RightService.RightEntities.ENTRANCE,
+                    rightAction: RightService.RightActions.VIEW_LIMITED,
+                  })
+                  .intercept('rightNotFound', (err) => {
+                    return res.serverError(
+                      'A server error occured when checking your right to have a limited view of a sensible entrance.',
+                    );
+                  })
+              : false;
+            if (!hasLimitedViewRight && !hasCompleteViewRight) {
+              return res.forbidden(
+                'You are not authorized to view this sensible entrance.',
+              );
+            }
+            if (!hasCompleteViewRight) {
+              delete found.locations;
+              delete found.longitude;
+              delete found.latitude;
+            }
           }
           return ControllerService.treatAndConvert(
             req,
@@ -182,11 +217,10 @@ module.exports = {
         if (ramda.pathOr(null, ['location', 'body'], req.body)) {
           await TLocation.create({
             author: req.token.id,
-            body: req.body.description.body,
+            body: req.body.location.body,
             dateInscription: new Date(),
             entrance: newEntrance.id,
             language: req.body.location.language,
-            title: req.body.description.title,
           }).usingConnection(db);
         }
 
@@ -218,12 +252,12 @@ module.exports = {
 
     // Prepare data for Elasticsearch indexation
     const description =
-      ramda.pathOr(null, ['description', 'title'], newEntrancePopulated) ===
-      null
+      newEntrancePopulated.descriptions.length === 0
         ? null
-        : ramda.pathOr(null, ['description', 'title'], newEntrancePopulated) +
+        : // There is only one description at the moment
+          newEntrancePopulated.descriptions[0].title +
           ' ' +
-          ramda.pathOr(null, ['description', 'body'], newEntrancePopulated);
+          newEntrancePopulated.descriptions[0].body;
 
     // Format cave massif
     newEntrancePopulated.cave.massif = {
@@ -313,5 +347,128 @@ module.exports = {
     ElasticsearchService.deleteResource('entrances', entranceId);
 
     return res.sendStatus(204);
+  },
+
+  update: async (req, res, converter) => {
+    // Check right
+    const hasRight = await sails.helpers.checkRight
+      .with({
+        groups: req.token.groups,
+        rightEntity: RightService.RightEntities.ENTRANCE,
+        rightAction: RightService.RightActions.EDIT_ANY,
+      })
+      .intercept('rightNotFound', (err) => {
+        return res.serverError(
+          'A server error occured when checking your right to update an entrance.',
+        );
+      });
+    if (!hasRight) {
+      return res.forbidden('You are not authorized to update an entrance.');
+    }
+
+    // Check if entrance exists
+    const entranceId = req.param('id');
+    const currentEntrance = await TEntrance.findOne(entranceId);
+    if (!currentEntrance) {
+      return res.status(404).send({
+        message: `Entrance of id ${entranceId} not found.`,
+      });
+    }
+
+    const cleanedData = {
+      ...getConvertedDataFromClientRequest(req),
+      id: entranceId,
+    };
+
+    // Launch update request using transaction: it performs a rollback if an error occurs
+    await sails
+      .getDatastore()
+      .transaction(async (db) => {
+        const updatedEntrance = await TEntrance.updateOne({
+          id: entranceId,
+        })
+          .set(cleanedData)
+          .usingConnection(db);
+
+        await NameService.setNames([updatedEntrance], 'entrance');
+
+        const params = {};
+        params.controllerMethod = 'EntranceController.update';
+        return ControllerService.treatAndConvert(
+          req,
+          null,
+          updatedEntrance,
+          params,
+          res,
+          converter,
+        );
+      })
+      .intercept('E_UNIQUE', (e) => {
+        sails.log.error(e.message);
+        return res.status(409).send(e.message);
+      })
+      .intercept({ name: 'UsageError' }, (e) => {
+        sails.log.error(e.message);
+        return res.badRequest(e.message);
+      })
+      .intercept({ name: 'AdapterError' }, (e) => {
+        sails.log.error(e.message);
+        return res.badRequest(e.message);
+      })
+      .intercept((e) => {
+        sails.log.error(e.message);
+        return res.serverError(e.message);
+      });
+  },
+
+  addDocument: async (req, res) => {
+    // Check right
+    const hasRight = await sails.helpers.checkRight
+      .with({
+        groups: req.token.groups,
+        rightEntity: RightService.RightEntities.ENTRANCE,
+        rightAction: RightService.RightActions.LINK_RESOURCE,
+      })
+      .intercept('rightNotFound', (err) => {
+        return res.serverError(
+          'A server error occured when checking your right to add a document to an entrance.',
+        );
+      });
+    if (!hasRight) {
+      return res.forbidden(
+        'You are not authorized to add a document to an entrance.',
+      );
+    }
+
+    // Check params
+    const entranceId = req.param('entranceId');
+    const currentEntrance = await TEntrance.findOne(entranceId);
+    if (!currentEntrance) {
+      return res.status(404).send({
+        message: `Entrance of id ${entranceId} not found.`,
+      });
+    }
+
+    const documentId = req.param('documentId');
+    if (!(await DocumentService.checkIfExists('id', documentId))) {
+      return res
+        .status(404)
+        .send({ message: `Document of id ${documentId} not found.` });
+    }
+
+    // Update entrance
+    TEntrance.addToCollection(entranceId, 'documents', documentId)
+      .then(() => {
+        return res.sendStatus(204);
+      })
+      .catch({ name: 'UsageError' }, (err) => {
+        return res.badRequest(err.cause.message);
+      })
+      .catch({ name: 'AdapterError' }, (err) => {
+        return res.badRequest(err.cause.message);
+      })
+      .catch((err) => {
+        return res.serverError(err.cause.message);
+      });
   },
 };
