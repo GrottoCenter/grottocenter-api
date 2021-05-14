@@ -86,8 +86,8 @@ module.exports.policies = {
   },
 
   'v1/NameController': {
+    setAsMain: 'tokenAuth',
     update: 'tokenAuth',
-    updateIsMain: 'tokenAuth',
   },
 
   SearchController: {
