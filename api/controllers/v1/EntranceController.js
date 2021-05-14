@@ -45,4 +45,7 @@ module.exports = {
   addDocument: (req, res) => {
     entranceController.addDocument(req, res);
   },
+  unlinkDocument: (req, res) => {
+    entranceController.unlinkDocument(req, res);
+  },
 };
