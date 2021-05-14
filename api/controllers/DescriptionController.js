@@ -8,7 +8,7 @@
 module.exports = {
   update: async (req, res, converter) => {
     // Check right
-    const hasRightOnAny = await sails.helpers.checkRight
+    const hasRight = await sails.helpers.checkRight
       .with({
         groups: req.token.groups,
         rightEntity: RightService.RightEntities.DESCRIPTION,
@@ -19,18 +19,9 @@ module.exports = {
           'A server error occured when checking your right to update any description.',
         );
       });
-
-    const hasRightOnOwn = await sails.helpers.checkRight
-      .with({
-        groups: req.token.groups,
-        rightEntity: RightService.RightEntities.DESCRIPTION,
-        rightAction: RightService.RightActions.EDIT_OWN,
-      })
-      .intercept('rightNotFound', (err) => {
-        return res.serverError(
-          'A server error occured when checking your right to update your descriptions.',
-        );
-      });
+    if (!hasRight) {
+      return res.forbidden('You are not authorized to update any description.');
+    }
 
     // Check if description exists
     const descriptionId = req.param('id');
@@ -42,22 +33,9 @@ module.exports = {
     }
 
     const cleanedData = {
-      body: req.param('body'),
-      title: req.param('title'),
+      body: req.param('body') ? req.param('body') : currentDescription.body,
+      title: req.param('title') ? req.param('title') : currentDescription.title,
     };
-
-    // Check right on this particular description
-    if (!hasRightOnAny) {
-      if (hasRightOnOwn) {
-        if (req.token.id !== currentDescription.author) {
-          return res.forbidden(
-            "You can not update a description you didn't created.",
-          );
-        }
-      } else {
-        return res.forbidden('You can not update a description.');
-      }
-    }
 
     // Launch update request
     const updatedDescription = await TDescription.updateOne({
