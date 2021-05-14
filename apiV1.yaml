@@ -959,7 +959,7 @@ paths:
     patch:
       tags:
         - names
-      description: Update a name. You must provide a name and isMain values even if you are changing only one of the two. If you are an user, you can only update a name you previously created.
+      description: Update a name.
       parameters:
         - name: id
           in: path
@@ -971,11 +971,6 @@ paths:
           required: true
           schema:
             type: string
-        - name: isMain
-          in: query
-          required: true
-          schema:
-            type: boolean
       
       responses:
         '200':
@@ -985,22 +980,17 @@ paths:
               schema:
                 $ref: '#/components/schemas/Name'
   
-  '/names/{id}/isMain':
-    patch:
+  '/names/{id}/setAsMain':
+    post:
       tags:
         - names
-      description: Update a name isMain property. An entity can have multiples names, in different languages for example. But only one of them is the main one. If you set a name isMain attribute to true, all the other names of the entity isMain will be set to false.
+      description: Set a name to the main one. An entity can have multiples names, in different languages for example. But only one of them is the main one. If you set a name to main, all the other names of the entity isMain will be set to false.
       parameters:
         - name: id
           in: path
           required: true
           schema:
             type: string
-        - name: isMain
-          in: query
-          required: true
-          schema:
-            type: boolean
       
       responses:
         '200':
