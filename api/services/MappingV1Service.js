@@ -34,6 +34,7 @@ module.exports = {
     result.id = source.id;
     result.language = source.language;
     result.relevance = source.relevance;
+    result.title = source.title;
 
     result.author =
       source.author instanceof Object
