@@ -8,4 +8,5 @@ module.exports = {
   language: undefined,
   relevance: undefined,
   reviewer: undefined,
+  title: undefined,
 };

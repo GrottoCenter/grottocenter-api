@@ -33,7 +33,8 @@ module.exports = {
     }
 
     const cleanedData = {
-      body: req.param('body'),
+      body: req.param('body') ? req.param('body') : currentLocation.body,
+      title: req.param('title') ? req.param('title') : currentLocation.title,
     };
 
     // Launch update request
