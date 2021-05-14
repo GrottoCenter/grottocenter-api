@@ -498,7 +498,7 @@ paths:
     patch:
       tags:
         - descriptions
-      description: Update a description. You must provide a body and title values even if you are changing only one of the two. If you are an user, you can only update a description you previously created.
+      description: Update a description body and/or title (you can provide one or both).
       parameters:
         - name: id
           in: path
@@ -507,12 +507,10 @@ paths:
             type: string
         - name: body
           in: query
-          required: true
           schema:
             type: string
         - name: title
           in: query
-          required: true
           schema:
             type: string
       
