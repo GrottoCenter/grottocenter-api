@@ -70,6 +70,7 @@ module.exports.policies = {
 
   'v1/EntranceController': {
     '*': false,
+    addDocument: 'tokenAuth',
     count: true,
     create: 'tokenAuth',
     delete: ['tokenAuth', 'moderatorAuth'],
@@ -77,8 +78,8 @@ module.exports.policies = {
     findAll: ['apiKeyAuth', 'paginate'],
     findRandom: true,
     publicCount: true,
+    unlinkDocument: ['tokenAuth', 'moderatorAuth'],
     update: 'tokenAuth',
-    addDocument: 'tokenAuth',
   },
 
   'v1/DescriptionController': {

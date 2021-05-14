@@ -120,6 +120,8 @@ module.exports.routes = {
 
   /* Entrance controller */
   'DELETE /api/v1/entrances/:id': 'v1/Entrance.delete',
+  'DELETE /api/v1/entrances/:entranceId/documents/:documentId':
+    'v1/Entrance.unlinkDocument',
   'GET /api/v1/entrances/count': 'v1/Entrance.count',
   'GET /api/v1/entrances/findRandom': 'v1/Entrance.findRandom',
   'GET /api/v1/entrances/publicCount': {

@@ -1463,6 +1463,29 @@ paths:
                 $ref: '#/components/schemas/Entrance'
   
   '/entrances/{entranceId}/documents/{documentId}':
+    delete:
+      tags:
+      - entrances
+      - documents
+      description: Unlink a document from an entrance. Available only to the moderators.
+      parameters:
+      - name: entranceId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: documentId
+        in: path
+        description: Document id to unlink from the entrance.
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Successful operation
+        '404':
+          description: Could not find entrance with the entrance id you provided or could not find the document with the document id you provided.
+
     put:
       tags:
       - entrances
