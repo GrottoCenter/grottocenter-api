@@ -25,8 +25,13 @@ module.exports = {
 
     // Check if location exists
     const locationId = req.param('id');
-    const currentLocation = await TLocation.findOne(locationId);
-    if (!currentLocation) {
+    if (
+      !(await sails.helpers.checkIfExists.with({
+        attributeName: 'id',
+        attributeValue: locationId,
+        sailsModel: TLocation,
+      }))
+    ) {
       return res.status(404).send({
         message: `Location of id ${locationId} not found.`,
       });
