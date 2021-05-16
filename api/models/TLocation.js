@@ -50,7 +50,7 @@ module.exports = {
 
     title: {
       type: 'string',
-      allowNull: false,
+      allowNull: true,
       columnName: 'title',
     },
 
