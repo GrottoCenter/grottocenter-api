@@ -28,6 +28,7 @@ tags:
 - name: groups
 - name: identifierTypes
 - name: languages
+- name: locations
 - name: names
 - name: massifs
 - name: organizations
@@ -1017,6 +1018,48 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Language'
+                
+  '/locations':
+    post:
+      tags:
+      - locations
+      description: Create a location. You must provide an existing entrance id which your location is refering to.
+      parameters:
+      - name: body
+        in: query
+        required: true
+        description: Content of the location.
+        schema:
+          type: string
+      - name: language
+        in: query
+        required: true
+        description: Language id used for the description. The list of languages supported by Grottocenter is available using the /languages route.
+        schema:
+          type: string
+      - name: title
+        in: query
+        description: Title of the location.
+        schema:
+          type: string
+      - name: entrance
+        in: query
+        required: true
+        description: Entrance id which the location is refering to.
+        schema:
+          type: integer
+  
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Location'
+        '400':
+          description: Some required information are missing (body, language or entrance id).
+        '404':
+          description: The entrance which the location is refering to was not found.
   
   '/locations/{id}':
     patch:

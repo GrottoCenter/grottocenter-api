@@ -229,6 +229,7 @@ module.exports.routes = {
 
   /* Location controller */
   'PATCH /api/v1/locations/:id': 'v1/Location.update',
+  'POST /api/v1/locations': 'v1/Location.create',
 
   /* Document Subject controller */
   'GET /api/v1/documents/subjects': {

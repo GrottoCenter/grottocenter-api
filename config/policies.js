@@ -89,6 +89,7 @@ module.exports.policies = {
   },
 
   'v1/LocationController': {
+    create: 'tokenAuth',
     update: 'tokenAuth',
   },
 
