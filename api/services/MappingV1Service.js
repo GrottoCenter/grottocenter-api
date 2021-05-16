@@ -177,6 +177,7 @@ module.exports = {
     result.region = source.region;
     result.city = source.city;
     result.postalCode = source.postalCode;
+    result.altitude = source.altitude;
     result.latitude = parseFloat(source.latitude);
     result.longitude = parseFloat(source.longitude);
     result.precision = source.precision;
