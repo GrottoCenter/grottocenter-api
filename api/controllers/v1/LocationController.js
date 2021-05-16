@@ -10,4 +10,10 @@ module.exports = {
       res,
       MappingV1Service.convertToLocationModel,
     ),
+  create: (req, res) =>
+    locationController.create(
+      req,
+      res,
+      MappingV1Service.convertToLocationModel,
+    ),
 };

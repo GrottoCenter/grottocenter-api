@@ -44,7 +44,7 @@ INSERT INTO public.t_right (id,"name","comments") VALUES
     (78, 'File - create', NULL),
     (79, 'Document - create', NULL),
     (80, 'Cave - create', NULL),
-    (81, 'Cavzzzzer - create', NULL),
+    (81, 'Caver - create', NULL),
     (82, 'Entrance - create', NULL),
     (83, 'Organization - create', NULL),
     (84, 'Group - create', NULL),
@@ -59,7 +59,8 @@ INSERT INTO public.t_right (id,"name","comments") VALUES
 	(93, 'Description - edit any', NULL),
 	(95, 'Name - edit any', NULL),
 	(97, 'Description - create', NULL),
-	(98, 'Location - edit any', NULL);
+	(98, 'Location - edit any', NULL),
+	(99, 'Location - create', NULL);
 
 INSERT INTO public.j_group_right (id_group,id_right) VALUES
     (1, 2),
@@ -104,7 +105,8 @@ INSERT INTO public.j_group_right (id_group,id_right) VALUES
 	(3, 93),
 	(3, 95),
 	(3, 97),
-	(3, 98);
+	(3, 98),
+	(3, 99);
 
 INSERT INTO public.t_identifier_type (code,"text",regexp) VALUES
  ('doi  ','digital object identifier','^.+$'),
