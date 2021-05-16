@@ -58,7 +58,6 @@ INSERT INTO public.t_right (id,"name","comments") VALUES
 	(92, 'Cave - unlink resource', NULL),
 	(93, 'Description - edit any', NULL),
 	(95, 'Name - edit any', NULL),
-	(96, 'Name - edit own', NULL),
 	(97, 'Description - create', NULL),
 	(98, 'Location - edit any', NULL);
 
@@ -103,8 +102,7 @@ INSERT INTO public.j_group_right (id_group,id_right) VALUES
 	(3, 91),
 	(2, 92),
 	(3, 93),
-	(2, 95),
-    (3, 96),
+	(3, 95),
 	(3, 97),
 	(3, 98);
 
