@@ -103,6 +103,15 @@ module.exports = {
     });
   },
 
+  usersCount: async (req, res) => {
+    const countResult = await CaverService.countDistinctUsers();
+    const params = {};
+    params.controllerMethod = 'CaverController.usersCount';
+    const count = {};
+    count.count = countResult;
+    return ControllerService.treat(req, null, count, params, res);
+  },
+
   putOnGroup: async (req, res) => {
     // Check right
     const hasRight = await sails.helpers.checkRight
@@ -121,12 +130,19 @@ module.exports = {
     }
 
     // Check params
-    if (!(await CaverService.checkIfExists('id', req.param('caverId')))) {
+    if (
+      !(await sails.helpers.checkIfExists.with(
+        'id',
+        req.param('caverId'),
+        TCaver,
+      ))
+    ) {
       return res.badRequest(
         `Could not find caver with id ${req.param('caverId')}.`,
       );
     }
-    if (!(await GroupService.checkIfExists('id', req.param('groupId')))) {
+    const groupId = req.param('groupId');
+    if (!(await sails.helpers.checkIfExists.with('id', groupId, TGroup))) {
       return res.badRequest(
         `Could not find group with id ${req.param('groupId')}.`,
       );
@@ -170,12 +186,19 @@ module.exports = {
     }
 
     // Check params
-    if (!(await CaverService.checkIfExists('id', req.param('caverId')))) {
+    if (
+      !(await sails.helpers.checkIfExists.with(
+        'id',
+        req.param('caverId'),
+        TCaver,
+      ))
+    ) {
       return res.badRequest(
         `Could not found caver with id ${req.param('caverId')}.`,
       );
     }
-    if (!(await GroupService.checkIfExists('id', req.param('groupId')))) {
+    const groupId = req.param('groupId');
+    if (!(await sails.helpers.checkIfExists.with('id', groupId, TGroup))) {
       return res.badRequest(
         `Could not found group with id ${req.param('groupId')}.`,
       );
@@ -221,7 +244,13 @@ module.exports = {
     }
 
     // Check params
-    if (!(await CaverService.checkIfExists('id', req.param('caverId')))) {
+    if (
+      !(await sails.helpers.checkIfExists.with(
+        'id',
+        req.param('caverId'),
+        TCaver,
+      ))
+    ) {
       return res.badRequest(
         `Could not find caver with id ${req.param('caverId')}.`,
       );
@@ -229,7 +258,7 @@ module.exports = {
 
     const newGroups = req.param('groups');
     newGroups.map(async (g) => {
-      if (!(await GroupService.checkIfExists('id', g.id))) {
+      if (!(await sails.helpers.checkIfExists.with('id', g.id, TGroup))) {
         return res.badRequest(`Could not find group with id ${g.id}.`);
       }
     });
@@ -474,10 +503,12 @@ module.exports = {
     // Check params
     const caverId = req.param('caverId');
     const entranceId = req.param('entranceId');
-    if (!(await CaverService.checkIfExists('id', caverId))) {
+    if (!(await sails.helpers.checkIfExists.with('id', caverId, TCaver))) {
       return res.badRequest(`Could not find caver with id ${caverId}.`);
     }
-    if (!(await EntranceService.checkIfExists('id', entranceId))) {
+    if (
+      !(await sails.helpers.checkIfExists.with('id', entranceId, TEntrance))
+    ) {
       return res.badRequest(`Could not find entrance with id ${entranceId}.`);
     }
     if (Number(caverId) !== req.token.id) {
@@ -524,10 +555,12 @@ module.exports = {
     // Check params
     const caverId = req.param('caverId');
     const entranceId = req.param('entranceId');
-    if (!(await CaverService.checkIfExists('id', caverId))) {
+    if (!(await sails.helpers.checkIfExists.with('id', caverId, TCaver))) {
       return res.badRequest(`Could not find caver with id ${caverId}.`);
     }
-    if (!(await EntranceService.checkIfExists('id', entranceId))) {
+    if (
+      !(await sails.helpers.checkIfExists.with('id', entranceId, TEntrance))
+    ) {
       return res.badRequest(`Could not find entrance with id ${entranceId}.`);
     }
     if (Number(caverId) !== req.token.id) {

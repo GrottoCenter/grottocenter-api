@@ -28,6 +28,7 @@ tags:
 - name: groups
 - name: identifierTypes
 - name: languages
+- name: locations
 - name: names
 - name: massifs
 - name: organizations
@@ -494,11 +495,74 @@ paths:
         '403':
           description: You are not authorized to mark an entrance as explored by a caver or you can't unmark an entrance as explored for someone else than you.
   
+  '/descriptions':
+    post:
+      tags:
+      - descriptions
+      description: Create a description. You must provide at least one entityId (caveId, documentId, entranceId, exitId, massifId or pointId) which your description is refering to. If you provide two or more of them, the first one will be used and the other ones will be ignored.
+      parameters:
+      - name: body
+        in: query
+        required: true
+        description: Content of the description
+        schema:
+          type: string
+      - name: language
+        in: query
+        required: true
+        description: Language used for the description. The list of languages supported by Grottocenter is available using the /languages route.
+        schema:
+          type: string
+      - name: title
+        in: query
+        required: true
+        description: Title of the description
+        schema:
+          type: string
+      - name: caveId
+        in: query
+        schema:
+          type: string
+      - name: documentId
+        in: query
+        schema:
+          type: string
+      - name: entranceId
+        in: query
+        schema:
+          type: string
+      - name: exitId
+        in: query
+        schema:
+          type: string
+      - name: massifId
+        in: query
+        schema:
+          type: string
+      - name: pointId
+        in: query
+        schema:
+          type: string
+  
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Description'
+        '400':
+          description: Some required information are missing (title, body, language or entityId).
+        '403':
+          description: You are not authorized to create a description.
+        '404':
+          description: The entity you want to link your new description to was not found.
+  
   '/descriptions/{id}':
     patch:
       tags:
         - descriptions
-      description: Update a description. You must provide a body and title values even if you are changing only one of the two. If you are an user, you can only update a description you previously created.
+      description: Update a description body and/or title (you can provide one or both).
       parameters:
         - name: id
           in: path
@@ -507,12 +571,10 @@ paths:
             type: string
         - name: body
           in: query
-          required: true
           schema:
             type: string
         - name: title
           in: query
-          required: true
           schema:
             type: string
       
@@ -956,12 +1018,83 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Language'
+                
+  '/locations':
+    post:
+      tags:
+      - locations
+      description: Create a location. You must provide an existing entrance id which your location is refering to.
+      parameters:
+      - name: body
+        in: query
+        required: true
+        description: Content of the location.
+        schema:
+          type: string
+      - name: language
+        in: query
+        required: true
+        description: Language id used for the description. The list of languages supported by Grottocenter is available using the /languages route.
+        schema:
+          type: string
+      - name: title
+        in: query
+        description: Title of the location.
+        schema:
+          type: string
+      - name: entrance
+        in: query
+        required: true
+        description: Entrance id which the location is refering to.
+        schema:
+          type: integer
+  
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Location'
+        '400':
+          description: Some required information are missing (body, language or entrance id).
+        '404':
+          description: The entrance which the location is refering to was not found.
+  
+  '/locations/{id}':
+    patch:
+      tags:
+        - locations
+      description: Update a location's body and/or title (you can provide one or both).
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: body
+          in: query
+          schema:
+            type: string
+        - name: title
+          in: query
+          schema:
+            type: string
+      
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Location'
+    
   
   '/names/{id}':
     patch:
       tags:
         - names
-      description: Update a name. You must provide a name and isMain values even if you are changing only one of the two. If you are an user, you can only update a name you previously created.
+      description: Update a name.
       parameters:
         - name: id
           in: path
@@ -973,11 +1106,6 @@ paths:
           required: true
           schema:
             type: string
-        - name: isMain
-          in: query
-          required: true
-          schema:
-            type: boolean
       
       responses:
         '200':
@@ -986,7 +1114,27 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Name'
-    
+  
+  '/names/{id}/setAsMain':
+    post:
+      tags:
+        - names
+      description: Set a name to the main one. An entity can have multiples names, in different languages for example. But only one of them is the main one. If you set a name to main, all the other names of the entity isMain will be set to false.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Name'
+                
   '/account/email':
     patch:
       tags:
@@ -1387,6 +1535,29 @@ paths:
                 $ref: '#/components/schemas/Entrance'
   
   '/entrances/{entranceId}/documents/{documentId}':
+    delete:
+      tags:
+      - entrances
+      - documents
+      description: Unlink a document from an entrance. Available only to the moderators.
+      parameters:
+      - name: entranceId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: documentId
+        in: path
+        description: Document id to unlink from the entrance.
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Successful operation
+        '404':
+          description: Could not find entrance with the entrance id you provided or could not find the document with the document id you provided.
+
     put:
       tags:
       - entrances
@@ -2411,6 +2582,27 @@ components:
 
     Location:
       type: object
+      properties:
+        author:
+          $ref: '#/components/schemas/Caver'
+        body:
+          type: string
+        dateInscription:
+          type: string
+        dateReviewed:
+          type: string
+        entrance:
+          $ref: '#/components/schemas/Entrance'
+        id:
+          type: integer
+        language:
+          type: string
+        relevance:
+          type: integer
+        reviewer:
+          $ref: '#/components/schemas/Caver'
+        title:
+          type: string
 
     Massif:
       type: object

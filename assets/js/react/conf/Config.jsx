@@ -136,12 +136,12 @@ export const paypalImgLink =
 // ===== Grottocenter API routes
 
 export const dynamicNumbersUrl = {
-  cavers: `/api/${apiVersion}/cavers/count`,
   documents: `/api/${apiVersion}/documents/count`,
   entrances: `/api/${apiVersion}/entrances/count`,
   officialPartners: `/api/${apiVersion}/partners/count`,
   organizations: `/api/${apiVersion}/organizations/count`,
   publicEntrances: `/api/${apiVersion}/entrances/publicCount`,
+  users: `/api/${apiVersion}/cavers/users/count`,
 };
 
 export const fetchConvert = '/api/convert';

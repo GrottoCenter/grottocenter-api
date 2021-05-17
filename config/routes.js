@@ -110,6 +110,7 @@ module.exports.routes = {
   'GET /api/v1/cavers/:id': 'v1/Caver.find',
   'GET /api/v1/cavers/admins': 'v1/Caver.getAdmins',
   'GET /api/v1/cavers/count': 'v1/Caver.count',
+  'GET /api/v1/cavers/users/count': 'v1/Caver.usersCount',
   'GET /api/v1/cavers/findAll': 'v1/Caver.findAll',
   'GET /api/v1/cavers/moderators': 'v1/Caver.getModerators',
   'POST /api/v1/cavers/': 'v1/Caver.create',
@@ -120,6 +121,8 @@ module.exports.routes = {
 
   /* Entrance controller */
   'DELETE /api/v1/entrances/:id': 'v1/Entrance.delete',
+  'DELETE /api/v1/entrances/:entranceId/documents/:documentId':
+    'v1/Entrance.unlinkDocument',
   'GET /api/v1/entrances/count': 'v1/Entrance.count',
   'GET /api/v1/entrances/findRandom': 'v1/Entrance.findRandom',
   'GET /api/v1/entrances/publicCount': {
@@ -218,9 +221,15 @@ module.exports.routes = {
 
   /* Description controller */
   'PATCH /api/v1/descriptions/:id': 'v1/Description.update',
+  'POST /api/v1/descriptions': 'v1/Description.create',
 
   /* Name controller */
   'PATCH /api/v1/names/:id': 'v1/Name.update',
+  'POST /api/v1/names/:id/setAsMain': 'v1/Name.setAsMain',
+
+  /* Location controller */
+  'PATCH /api/v1/locations/:id': 'v1/Location.update',
+  'POST /api/v1/locations': 'v1/Location.create',
 
   /* Document Subject controller */
   'GET /api/v1/documents/subjects': {

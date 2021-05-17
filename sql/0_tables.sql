@@ -571,6 +571,7 @@ CREATE TABLE t_location (
 	date_reviewed timestamp NULL,
 	relevance int2 NOT NULL,
 	body text NOT NULL,
+	title varchar(300),
 	id_entrance int4 NOT NULL,
 	id_language bpchar(3) NOT NULL,
 	is_deleted bool NOT NULL DEFAULT false,

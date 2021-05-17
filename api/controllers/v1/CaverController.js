@@ -34,4 +34,5 @@ module.exports = {
     caverController.addExploredEntrance(req, res),
   removeExploredEntrance: (req, res) =>
     caverController.removeExploredEntrance(req, res),
+  usersCount: (req, res) => caverController.usersCount(req, res),
 };

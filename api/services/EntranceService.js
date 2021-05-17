@@ -62,19 +62,4 @@ module.exports = {
     await Promise.all(mapEntrances);
     return allEntrances;
   },
-
-  /**
-   * @param {String} attributeName entrance attribute to search for
-   * @param {String} attributeValue value to search for
-   *
-   * @returns {Boolean} true if there is an entrance with the attributeName equals to attributeValue in the DB, else false.
-   *
-   * @example checkIfExists('id', '12345') will return true if there is at least one entrance with id '12345'.
-   */
-  checkIfExists: async (attributeName, attributeValue) => {
-    const entranceFound = await TEntrance.findOne({
-      [attributeName]: attributeValue,
-    });
-    return entranceFound !== undefined;
-  },
 };

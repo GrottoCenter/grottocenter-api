@@ -124,7 +124,7 @@ const WhatIsIt = () => (
     <GridRow>
       <NumberBlockHalfWidth>
         <BlockIcon className="icon-gc-speleo" />
-        <BigNumberText numberType="cavers" />
+        <BigNumberText numberType="users" />
         <br />
         <Translate>
           cavers take part, day after day, in improving and expanding the

@@ -48,6 +48,12 @@ module.exports = {
       columnName: 'body',
     },
 
+    title: {
+      type: 'string',
+      allowNull: true,
+      columnName: 'title',
+    },
+
     entrance: {
       allowNull: false,
       columnName: 'id_entrance',
