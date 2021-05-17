@@ -11,7 +11,7 @@ const PUBLIC_ENTRANCES_IN_BOUNDS = `
   LEFT JOIN t_name as nc ON nc.id_cave = e.id
   LEFT JOIN t_cave as c ON c.Id = e.Id_cave
   WHERE e.latitude > $1 AND e.latitude < $2 AND e.longitude > $3 AND e.longitude < $4
-  AND e.is_public=true
+  AND e.is_sensitive=true
   ORDER BY size_coef DESC
   LIMIT $5;
 `;
@@ -19,7 +19,7 @@ const PUBLIC_ENTRANCES_COORDINATES_IN_BOUNDS = `
   SELECT e.longitude as longitude, e.latitude as latitude
   FROM t_entrance as e
   WHERE e.latitude > $1 AND e.latitude < $2 AND e.longitude > $3 AND e.longitude < $4
-  AND e.is_public=true
+  AND e.is_sensitive=true
   LIMIT $5;
 `;
 
@@ -29,7 +29,7 @@ const CAVES_IN_BOUNDS = `
   INNER JOIN t_cave c ON c.id = en.id_cave
   LEFT JOIN t_name AS nc ON nc.id_cave = c.id
   LEFT JOIN t_name as ne ON ne.id_entrance = en.id
-  WHERE en.latitude > $1 AND en.latitude < $2 AND en.longitude > $3 AND en.longitude < $4 AND en.is_public=true
+  WHERE en.latitude > $1 AND en.latitude < $2 AND en.longitude > $3 AND en.longitude < $4 AND en.is_sensitive=true
   GROUP BY c.id, nc.name, ne.name
 `;
 
@@ -37,7 +37,7 @@ const PUBLIC_CAVES_COORDINATES_IN_BOUNDS = `
   SELECT avg(en.longitude) as longitude, avg(en.latitude) as latitude
   FROM t_entrance as en
   INNER JOIN t_cave c ON c.id = en.id_cave
-  WHERE en.latitude > $1 AND en.latitude < $2 AND en.longitude > $3 AND en.longitude < $4 AND en.is_public=true
+  WHERE en.latitude > $1 AND en.latitude < $2 AND en.longitude > $3 AND en.longitude < $4 AND en.is_sensitive=true
   GROUP BY c.id
   LIMIT $5;
 `;
@@ -60,7 +60,7 @@ module.exports = {
       }; // TODO add controls on parameters
 
       // TODO : to adapt when authentication will be implemented
-      parameters.isPublic = true;
+      parameters.isSensitive = true;
 
       TEntrance.count(parameters).exec((err, result) => {
         if (err) {
