@@ -129,13 +129,15 @@ module.exports = {
       });
     }
 
+    const newBody = req.param('body');
+    const newTitle = req.param('title');
     const cleanedData = {
-      body: req.param('body') ? req.param('body') : currentLocation.body,
-      title: req.param('title') ? req.param('title') : currentLocation.title,
+      ...(newBody && { body: newBody }),
+      ...(newTitle && { title: newTitle }),
     };
 
     // Launch update request
-    const updatedLocation = await TLocation.updateOne({
+    await TLocation.updateOne({
       id: locationId,
     })
       .set(cleanedData)
@@ -156,7 +158,7 @@ module.exports = {
         return res.serverError(e.message);
       });
 
-    const newLocation = await TLocation.findOne(locationId)
+    const locationPopulated = await TLocation.findOne(locationId)
       .populate('author')
       .populate('entrance')
       .populate('language')
@@ -167,7 +169,7 @@ module.exports = {
     return ControllerService.treatAndConvert(
       req,
       null,
-      newLocation,
+      locationPopulated,
       params,
       res,
       converter,
