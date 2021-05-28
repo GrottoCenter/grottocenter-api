@@ -451,7 +451,11 @@ module.exports = {
 
     const documentId = req.param('documentId');
     if (
-      !(await sails.helpers.checkIfExists.with('id', documentId, TDocument))
+      !(await sails.helpers.checkIfExists.with({
+        attributeName: 'id',
+        attributeValue: documentId,
+        sailsModel: TDocument,
+      }))
     ) {
       return res
         .status(404)
