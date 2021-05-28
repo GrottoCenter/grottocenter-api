@@ -131,18 +131,24 @@ module.exports = {
 
     // Check params
     if (
-      !(await sails.helpers.checkIfExists.with(
-        'id',
-        req.param('caverId'),
-        TCaver,
-      ))
+      !(await sails.helpers.checkIfExists.with({
+        attributeName: 'id',
+        attributeValue: req.param('caverId'),
+        sailsModel: TCaver,
+      }))
     ) {
       return res.badRequest(
         `Could not find caver with id ${req.param('caverId')}.`,
       );
     }
     const groupId = req.param('groupId');
-    if (!(await sails.helpers.checkIfExists.with('id', groupId, TGroup))) {
+    if (
+      !(await sails.helpers.checkIfExists.with({
+        attributeName: 'id',
+        attributeValue: groupId,
+        sailsModel: TGroup,
+      }))
+    ) {
       return res.badRequest(
         `Could not find group with id ${req.param('groupId')}.`,
       );
@@ -187,18 +193,24 @@ module.exports = {
 
     // Check params
     if (
-      !(await sails.helpers.checkIfExists.with(
-        'id',
-        req.param('caverId'),
-        TCaver,
-      ))
+      !(await sails.helpers.checkIfExists.with({
+        attributeName: 'id',
+        attributeValue: req.param('caverId'),
+        sailsModel: TCaver,
+      }))
     ) {
       return res.badRequest(
         `Could not found caver with id ${req.param('caverId')}.`,
       );
     }
     const groupId = req.param('groupId');
-    if (!(await sails.helpers.checkIfExists.with('id', groupId, TGroup))) {
+    if (
+      !(await sails.helpers.checkIfExists.with({
+        attributeName: 'id',
+        attributeValue: groupId,
+        sailsModel: TGroup,
+      }))
+    ) {
       return res.badRequest(
         `Could not found group with id ${req.param('groupId')}.`,
       );
@@ -245,11 +257,11 @@ module.exports = {
 
     // Check params
     if (
-      !(await sails.helpers.checkIfExists.with(
-        'id',
-        req.param('caverId'),
-        TCaver,
-      ))
+      !(await sails.helpers.checkIfExists.with({
+        attributeName: 'id',
+        attributeValue: req.param('caverId'),
+        sailsModel: TCaver,
+      }))
     ) {
       return res.badRequest(
         `Could not find caver with id ${req.param('caverId')}.`,
@@ -258,7 +270,13 @@ module.exports = {
 
     const newGroups = req.param('groups');
     newGroups.map(async (g) => {
-      if (!(await sails.helpers.checkIfExists.with('id', g.id, TGroup))) {
+      if (
+        !(await sails.helpers.checkIfExists.with({
+          attributeName: 'id',
+          attributeValue: g.id,
+          sailsModel: TGroup,
+        }))
+      ) {
         return res.badRequest(`Could not find group with id ${g.id}.`);
       }
     });
@@ -503,11 +521,21 @@ module.exports = {
     // Check params
     const caverId = req.param('caverId');
     const entranceId = req.param('entranceId');
-    if (!(await sails.helpers.checkIfExists.with('id', caverId, TCaver))) {
+    if (
+      !(await sails.helpers.checkIfExists.with({
+        attributeName: 'id',
+        attributeValue: caverId,
+        sailsModel: TCaver,
+      }))
+    ) {
       return res.badRequest(`Could not find caver with id ${caverId}.`);
     }
     if (
-      !(await sails.helpers.checkIfExists.with('id', entranceId, TEntrance))
+      !(await sails.helpers.checkIfExists.with({
+        attributeName: 'id',
+        attributeValue: entranceId,
+        sailsModel: TEntrance,
+      }))
     ) {
       return res.badRequest(`Could not find entrance with id ${entranceId}.`);
     }
@@ -555,11 +583,21 @@ module.exports = {
     // Check params
     const caverId = req.param('caverId');
     const entranceId = req.param('entranceId');
-    if (!(await sails.helpers.checkIfExists.with('id', caverId, TCaver))) {
+    if (
+      !(await sails.helpers.checkIfExists.with({
+        attributeName: 'id',
+        attributeValue: caverId,
+        sailsModel: TCaver,
+      }))
+    ) {
       return res.badRequest(`Could not find caver with id ${caverId}.`);
     }
     if (
-      !(await sails.helpers.checkIfExists.with('id', entranceId, TEntrance))
+      !(await sails.helpers.checkIfExists.with({
+        attributeName: 'id',
+        attributeValue: entranceId,
+        sailsModel: TEntrance,
+      }))
     ) {
       return res.badRequest(`Could not find entrance with id ${entranceId}.`);
     }
