@@ -52,7 +52,11 @@ module.exports = {
       return res.badRequest(`You must provide an email.`);
     }
     if (
-      await sails.helpers.checkIfExists.with('mail', req.param('email'), TCaver)
+      await sails.helpers.checkIfExists.with({
+        attributeName: 'mail',
+        attributeValue: req.param('email'),
+        sailsModel: TCaver,
+      })
     ) {
       return res
         .status(409)
@@ -75,11 +79,11 @@ module.exports = {
       return res.badRequest(`You must provide a nickname.`);
     }
     if (
-      await sails.helpers.checkIfExists.with(
-        'nickname',
-        req.param('nickname'),
-        TCaver,
-      )
+      await sails.helpers.checkIfExists.with({
+        attributeName: 'nickname',
+        attributeValue: req.param('nickname'),
+        sailsModel: TCaver,
+      })
     ) {
       return res
         .status(409)
