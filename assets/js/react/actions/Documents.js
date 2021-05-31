@@ -14,7 +14,10 @@ import {
   defaultTo,
   equals,
 } from 'ramda';
-import { getDocuments as queryDocuments } from '../conf/Config';
+import {
+  getDocuments as queryDocuments,
+  getUsersDocumentsUrl
+} from '../conf/Config';
 import makeErrorMessage from '../helpers/makeErrorMessage';
 
 export const FETCH_DOCUMENTS = 'FETCH_DOCUMENTS';
@@ -36,12 +39,12 @@ export const fetchDocumentsFailure = (error) => ({
   error,
 });
 
-export function getDocuments(criteria) {
+const doGet = (url, criteria) => {
   const makeUrl = pipe(
     keys,
     map((c) => `${c}=${encodeURIComponent(criteria[c])}`),
     join('&'),
-    (urlCriteria) => `${queryDocuments}?${urlCriteria}`,
+    (urlCriteria) => `${url}?${urlCriteria}`,
   );
 
   return async (dispatch) => {
@@ -49,7 +52,7 @@ export function getDocuments(criteria) {
 
     try {
       const res = await fetch(
-        isNil(criteria) ? queryDocuments : makeUrl(criteria),
+        isNil(criteria) ? url : makeUrl(criteria),
       ).then((response) => {
         if (response.status >= 400) {
           throw new Error(response.status);
@@ -83,4 +86,8 @@ export function getDocuments(criteria) {
       );
     }
   };
-}
+};
+
+export const getDocuments = (criteria) => doGet(queryDocuments, criteria);
+
+export const getUsersDocuments = (userId, criteria) => doGet(getUsersDocumentsUrl(userId), criteria);

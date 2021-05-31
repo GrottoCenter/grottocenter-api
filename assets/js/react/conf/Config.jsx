@@ -152,6 +152,7 @@ export const getMapCavesCoordinatesUrl = `/api/${apiVersion}/geoloc/cavesCoordin
 export const getMapEntrancesUrl = `/api/${apiVersion}/geoloc/entrances`;
 export const getMapEntrancesCoordinatesUrl = `/api/${apiVersion}/geoloc/entrancesCoordinates`;
 export const getMapGrottosUrl = `/api/${apiVersion}/geoloc/grottos`;
+export const getUsersDocumentsUrl = (userId) =>`/api/${apiVersion}/users/${userId}/documents`
 /**
  * @deprecated
  */
