@@ -378,6 +378,9 @@ module.exports.routes = {
     },
   },
 
+  /* Users controller */
+  'GET /api/v1/users/:userId/documents': 'v1/Document.findByUserId',
+
   /* Convert controller */
   'GET /api/convert': {
     controller: 'ConvertController',

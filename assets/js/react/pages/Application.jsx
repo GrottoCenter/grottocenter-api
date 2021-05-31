@@ -21,6 +21,7 @@ import SignUp from '../features/SignUp';
 import { usePermissions } from '../hooks';
 
 import CaveSystemPage from './CaveSystem';
+import ContributionsPage from './Contributions';
 import DocumentSubmission from './DocumentSubmission';
 import DocumentValidation from './DocumentValidation';
 import EntryPage from './Entry';
@@ -59,6 +60,7 @@ const Application = () => {
         <Route path="/ui/api" component={Api} />
         <Route path="/ui/entries/:id?" component={EntryPage} />
         <Route path="/ui/caves/:id?" component={CaveSystemPage} />
+        <Route path="/ui/contributions" component={ContributionsPage} />
         <Route path="/ui/faq" component={Faq} />
         <Route path="/ui/map/:target?" component={Map} />
         <Route path="/ui/swagger/:version" component={Swagger} />

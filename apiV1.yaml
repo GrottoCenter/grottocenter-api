@@ -43,26 +43,26 @@ paths:
         - caves
       description: "Create a Cave. When submitting a new cave, you must provide an authentification token (from the /login route) in the Authorization header. This token will be used to set the author of the submission."
       parameters:
-        
+
       - name: name
         in: query
         description: Main name of the cave, using the local language
         required: true
         schema:
           type: string
-      
+
       - name: description
         in: query
         description: Your description of the cave
         schema:
           type: string
-      
+
       - name: descriptionTitle
         in: query
         description: Title of your description
         schema:
           type: string
-      
+
       - name: descriptionAndNameLanguage
         in: query
         description: Language used for the description and the name. List of languages supported by Grottocenter is available using the /languages route.
@@ -70,35 +70,35 @@ paths:
         schema:
           type: object
           properties:
-            id: 
+            id:
               type: string
-      
+
       - name: depth
         in: query
         description: Depth of the cave
         schema:
           type: integer
-      
+
       - name: length
         in: query
         description: Length of the cave
         schema:
           type: integer
-      
+
       - name: isDiving
         in: query
         description: If the cave is flooded or not
         schema:
           type: boolean
           default: false
-      
+
       - name: temperature
         in: query
         description: Average temperature in the cave
         schema:
           type: number
           format: double
-          
+
       - name: longitude
         in: query
         schema:
@@ -117,7 +117,7 @@ paths:
           properties:
             id:
               type: string
-        
+
       - name: documents
         in: query
         description: Documents related to the cave
@@ -126,10 +126,10 @@ paths:
           items:
             type: object
             properties:
-              id: 
+              id:
                 type: string
-  
-      responses: 
+
+      responses:
         200:
           description: Successful operation
           content:
@@ -160,7 +160,7 @@ paths:
                 $ref: '#/components/schemas/Cave'
         '404':
           description: Cave not found.
-  
+
     delete:
       tags:
       - caves
@@ -179,7 +179,7 @@ paths:
           description: Cave not found.
         '410':
           description: Cave already deleted
-    
+
     put:
       tags:
         - caves
@@ -191,7 +191,7 @@ paths:
         required: true
         schema:
           type: string
-      responses: 
+      responses:
         200:
           description: Successful operation
           content:
@@ -227,8 +227,8 @@ paths:
           description: "Bad request. Both the caveId and documentId parameters must exist in the database. Also, you can't add a document if it is already associated to the cave you specified."
         '403':
           description: You are not authorized to add a document to a cave.
-  
-        
+
+
   '/caves/{caveId}/massif/{massifId}':
     put:
       tags:
@@ -253,7 +253,7 @@ paths:
           description: "Bad request. Both the caveId and massifId parameters must exist in the database."
         '403':
           description: You are not authorized to set the massif of a cave.
-          
+
   '/cavers':
     post:
       tags:
@@ -285,7 +285,7 @@ paths:
           description: You must provide a surname and a name to create a new caver.
         '403':
           description: You are not authorized to create a caver.
-  
+
   '/cavers/{id}':
     get:
       tags:
@@ -326,7 +326,7 @@ paths:
                       $ref: "#/components/schemas/Caver"
         '404':
           description: No administrators found.
-  
+
   '/cavers/count':
     get:
       tags:
@@ -339,7 +339,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Count'
-  
+
   '/cavers/moderators':
     get:
       tags:
@@ -359,7 +359,7 @@ paths:
                       $ref: "#/components/schemas/Caver"
         '404':
           description: No moderators found.
-  
+
   '/cavers/{caverId}/groups':
     post:
       tags:
@@ -379,7 +379,7 @@ paths:
         required: true
         schema:
           type: array
-          items: 
+          items:
             type: string
       responses:
         '200':
@@ -419,7 +419,7 @@ paths:
           description: "Bad request. Both the caverId and groupId parameters must exist in the database. Also, you can't add a caver if he / she is already in the group you specified."
         '403':
           description: You are not authorized to add a caver to a group.
-  
+
     delete:
       tags:
       - cavers
@@ -470,7 +470,7 @@ paths:
           description: "Bad request. Both the caverId and entranceId parameters must exist in the database. Also, you can't mark an entrance as as explored if it is already marked as explored for the caver."
         '403':
           description: You are not authorized to mark an entrance as explored by a caver or you can't mark an entrance as explored for someone else than you.
-    
+
     delete:
       tags:
       - cavers
@@ -494,7 +494,7 @@ paths:
           description: Bad request. Both the caverId and entranceId parameters must exist in the database.
         '403':
           description: You are not authorized to mark an entrance as explored by a caver or you can't unmark an entrance as explored for someone else than you.
-  
+
   '/descriptions':
     post:
       tags:
@@ -543,7 +543,7 @@ paths:
         in: query
         schema:
           type: string
-  
+
       responses:
         '200':
           description: Successful operation
@@ -557,7 +557,7 @@ paths:
           description: You are not authorized to create a description.
         '404':
           description: The entity you want to link your new description to was not found.
-  
+
   '/descriptions/{id}':
     patch:
       tags:
@@ -577,7 +577,7 @@ paths:
           in: query
           schema:
             type: string
-      
+
       responses:
         '200':
           description: Successful operation
@@ -585,7 +585,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Description'
-    
+
   '/documents/{id}':
     get:
       tags:
@@ -619,7 +619,7 @@ paths:
         required: true
         schema:
           type: string
-      responses: 
+      responses:
         200:
           description: Successful operation
           content:
@@ -643,7 +643,7 @@ paths:
           items:
             type: object
             properties:
-              id: 
+              id:
                 type: string
 
       - name: datePublication
@@ -670,7 +670,7 @@ paths:
           properties:
             id:
               type: string
-              
+
       - name: identifier
         in: query
         description: Code for designating a document in a unique way. This can be a DOI, URL, ISBN or ISSN.
@@ -686,7 +686,7 @@ paths:
             id:
               type: string
               enum: ['DOI', 'ISBN', 'ISSN', 'URL']
-      
+
       - name: library
         in: query
         description: Place (= Organization) where the document can be consulted.
@@ -695,7 +695,7 @@ paths:
           properties:
             id:
               type: string
-      
+
       - name: massif
         in: query
         description: Massif to which the document refers to.
@@ -704,7 +704,7 @@ paths:
           properties:
             id:
               type: string
-      
+
       - name: partOf
         in: query
         description: Document that contains the document you are submitting (an article has a periodical issue as its parent document, a periodical issue has a periodical as its parent document).
@@ -713,7 +713,7 @@ paths:
           properties:
             id:
               type: string
-      
+
       - name: regions
         in: query
         description: BBS regions to which the document refers to.
@@ -722,9 +722,9 @@ paths:
           items:
             type: object
             properties:
-              id: 
+              id:
                 type: string
-      
+
       - name: subjects
         in: query
         description: List of subjects and their description is available using the /documents/subjects route or here => https://www.ssslib.ch/bbs/wp-content/uploads/2017/03/chapter_and_geo_1_2008.pdf
@@ -733,9 +733,9 @@ paths:
           items:
             type: object
             properties:
-              code: 
+              code:
                 type: string
-      
+
       - name: documentType
         in: query
         description: Type of the document (Collection, Issue, Article or Text).
@@ -744,21 +744,21 @@ paths:
           items:
             type: object
             properties:
-              id: 
+              id:
                 type: string
-                
+
       - name: description
         in: query
         description: Precise sentence pleasant to read with keywords.
         schema:
           type: string
-      
+
       - name: title
         in: query
         description: Title of the text as it is. In its absence, put a fictitious title between [].
         schema:
           type: string
-      
+
       - name: titleAndDescriptionLanguage
         in: query
         description: Language used for the title and the description you are providing. List of languages supported by Grottocenter is available using the /languages route.
@@ -767,9 +767,9 @@ paths:
           items:
             type: object
             properties:
-              id: 
+              id:
                 type: string
-      
+
       - name: documentMainLanguage
         in: query
         description: Language used in the document. List of languages supported by Grottocenter is available using the /languages route.
@@ -778,10 +778,10 @@ paths:
           items:
             type: object
             properties:
-              id: 
+              id:
                 type: string
-  
-      responses: 
+
+      responses:
         200:
           description: Successful operation
           content:
@@ -790,7 +790,7 @@ paths:
                 $ref: '#/components/schemas/Document'
         403:
           description: You are not authorized to create a document.
-     
+
     get:
       tags:
         - documents
@@ -844,7 +844,7 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/Document'
-  
+
   '/documents/count':
     get:
       tags:
@@ -1018,7 +1018,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Language'
-                
+
   '/locations':
     post:
       tags:
@@ -1048,7 +1048,7 @@ paths:
         description: Entrance id which the location is refering to.
         schema:
           type: integer
-  
+
       responses:
         '200':
           description: Successful operation
@@ -1060,7 +1060,7 @@ paths:
           description: Some required information are missing (body, language or entrance id).
         '404':
           description: The entrance which the location is refering to was not found.
-  
+
   '/locations/{id}':
     patch:
       tags:
@@ -1080,7 +1080,7 @@ paths:
           in: query
           schema:
             type: string
-      
+
       responses:
         '200':
           description: Successful operation
@@ -1088,8 +1088,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Location'
-    
-  
+
+
   '/names/{id}':
     patch:
       tags:
@@ -1106,7 +1106,7 @@ paths:
           required: true
           schema:
             type: string
-      
+
       responses:
         '200':
           description: Successful operation
@@ -1114,7 +1114,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Name'
-  
+
   '/names/{id}/setAsMain':
     post:
       tags:
@@ -1126,7 +1126,7 @@ paths:
           required: true
           schema:
             type: string
-      
+
       responses:
         '200':
           description: Successful operation
@@ -1134,7 +1134,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Name'
-                
+
   '/account/email':
     patch:
       tags:
@@ -1148,14 +1148,14 @@ paths:
           required: true
           schema:
             type: string
-      
+
       responses:
         '204':
           description: Successful operation
 
         '400':
           description: You must provide a (valid) email.
-        
+
   '/account/password':
     patch:
       tags:
@@ -1181,13 +1181,13 @@ paths:
 
         '400':
           description: You must provide a password and a reset password token in the body of your request. The password must be at least 8 characters long.
-        
+
         '403':
           description: The password reset token has expired or is invalid.
-        
+
         '404':
           description: User in the password reset token not found.
-          
+
   '/account/alertForNews':
     patch:
       tags:
@@ -1214,16 +1214,16 @@ paths:
         - authentication
       description: >-
         Launch the procedure of password change. This will send an email to the email adress you provided if it exists as a Grottocenter user's email. This email contains a password reset link expiring after 24 hours using the Grottocenter application.
-      
-        
+
+
         __IMPORTANT NOTICE__
-        
-        
+
+
         This feature uses the Grottocenter's AWS SES (Simple Email Service) of Amazon. To ️use it properly, you must have access to the service. This access is granted by the Grottocenter's developer team to developers only.Once you have the access, set your __AWS_ACCESS_KEY__ & __AWS_SECRET_KEY__ environment variables.
-        
-        
+
+
         Otherwise, the email will not be sent and its content will be simply logged in your console.
-        
+
       parameters:
         - name: email
           in: query
@@ -1237,7 +1237,7 @@ paths:
 
         '400':
           description: You must provide an email in the body of your request.
-        
+
         '404':
           description: The email is not used by any Grottocenter's caver.
 
@@ -1269,7 +1269,7 @@ paths:
 
         '401':
           description: Invalid email or password.
-  
+
   '/signup':
     post:
       tags:
@@ -1312,7 +1312,7 @@ paths:
 
         '400':
           description: Bad request (password too short, missing value(s)...).
-        
+
         '409':
           description: Email or nickname already used.
 
@@ -1389,7 +1389,7 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/Document-subject'
-                      
+
   '/entrances':
     post:
       tags:
@@ -1412,7 +1412,7 @@ paths:
         schema:
             type: object
             properties:
-              id: 
+              id:
                 type: number
                 description: Id of the cave
       - name: city
@@ -1432,7 +1432,7 @@ paths:
         schema:
             type: object
             properties:
-              id: 
+              id:
                 type: string
                 description: Id of the country
       - name: county
@@ -1446,13 +1446,13 @@ paths:
         schema:
             type: object
             properties:
-              body: 
+              body:
                 type: string
-              language: 
+              language:
                 description: Must be a language supported by Grottocenter (see GET /languages route) using the 3-letters format.
                 type: string
                 example: 'eng'
-              title: 
+              title:
                 type: string
       - name: geology
         in: query
@@ -1460,7 +1460,7 @@ paths:
         schema:
             type: object
             properties:
-              id: 
+              id:
                 type: string
                 description: Id of the geology
       - name: isPublic
@@ -1481,10 +1481,10 @@ paths:
         schema:
             type: object
             properties:
-              body: 
+              body:
                 type: string
                 example: "The entrance is located at the top of the hill, at the left of the big rock next to the path."
-              language: 
+              language:
                 description: Must be a language supported by Grottocenter (see GET /languages route) using the 3-letters format.
                 type: string
                 example: 'eng'
@@ -1504,10 +1504,10 @@ paths:
         schema:
             type: object
             properties:
-              text: 
+              text:
                 type: string
                 example: "The entrance of ABCDEFG"
-              language: 
+              language:
                 description: Must be a language supported by Grottocenter (see GET /languages route) using the 3-letters format.
                 type: string
                 example: 'eng'
@@ -1533,7 +1533,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Entrance'
-  
+
   '/entrances/{entranceId}/documents/{documentId}':
     delete:
       tags:
@@ -1582,7 +1582,7 @@ paths:
           description: Could not find entrance with the entrance id you provided or could not find the document with the document id you provided.
         '403':
           description: You are not authorized to add a document to an entrance.
-  
+
   '/entrances/findRandom':
     get:
       tags:
@@ -1623,7 +1623,7 @@ paths:
           description: You are not authorized to view the entrance.
         '404':
           description: Entrance not found.
-  
+
     delete:
       tags:
       - entrances
@@ -1642,7 +1642,7 @@ paths:
           description: Entrance not found.
         '410':
           description: Entrance already deleted.
-          
+
     put:
       tags:
         - entrances
@@ -1654,7 +1654,7 @@ paths:
         required: true
         schema:
           type: string
-      responses: 
+      responses:
         200:
           description: Successful operation
           content:
@@ -1676,7 +1676,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Count'
-  
+
   '/entrances/count':
     get:
       tags:
@@ -1787,7 +1787,7 @@ paths:
                 $ref: '#/components/schemas/Search'
         '404':
           description: Resource not found
-        
+
   '/geoloc/countEntries':
     get:
       tags:
@@ -1827,7 +1827,7 @@ paths:
                 $ref: '#/components/schemas/Count'
         '404':
           description: Resource not found
-        
+
 
 
   '/geoloc/findByBounds':
@@ -1869,7 +1869,7 @@ paths:
                 $ref: '#/components/schemas/Geoloc'
         '404':
           description: Resource not found
-        
+
   '/massifs':
     post:
       tags:
@@ -1895,7 +1895,7 @@ paths:
         schema:
           type: object
           properties:
-            id: 
+            id:
               type: string
               description: Must be a language supported by Grottocenter (see GET /languages route) using the 3-letters format.
       - name: name
@@ -1912,7 +1912,7 @@ paths:
           items:
             type: object
             properties:
-              id: 
+              id:
                 type: string
       responses:
         '200':
@@ -1925,7 +1925,7 @@ paths:
           description: Some required information are missing.
         '403':
           description: You are not authorized to create a massif.
-  
+
 
   '/massifs/{id}':
     get:
@@ -1950,7 +1950,7 @@ paths:
                   $ref: "#/components/schemas/Massif"
         '404':
           description: Resource not found
-        
+
   '/organizations':
     post:
       tags:
@@ -1974,7 +1974,7 @@ paths:
         schema:
           type: object
           properties:
-            id: 
+            id:
               type: string
       - name: customMessage
         in: query
@@ -1999,7 +1999,7 @@ paths:
         schema:
           type: object
           properties:
-            text: 
+            text:
               type: string
             language:
               type: string
@@ -2032,7 +2032,7 @@ paths:
           description: You must provide at least a name to create an organization.
         '403':
           description: You are not authorized to create an organization.
-        
+
 
   '/organizations/{id}':
     delete:
@@ -2076,7 +2076,7 @@ paths:
                   $ref: "#/components/schemas/Organization"
         '404':
           description: Resource not found
-    
+
     put:
       tags:
         - organizations
@@ -2088,7 +2088,7 @@ paths:
         required: true
         schema:
           type: string
-      responses: 
+      responses:
         200:
           description: Successful operation
           content:
@@ -2110,7 +2110,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Count'
-  
+
   '/partners/count':
     get:
       tags:
@@ -2123,7 +2123,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Count'
-                
+
   '/partners/findForCarousel':
     get:
       tags:
@@ -2138,6 +2138,60 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Language'
+
+  '/users/{id}/documents':
+    get:
+      tags:
+        - documents
+      description: Get all documents authored by the identified caver.
+      parameters:
+        - name: id
+          in: path
+          description: Caver id
+          required: true
+          schema:
+            type: string
+        - name: skip
+          in: query
+          description: Number of documents to skip.
+          required: false
+          schema:
+            type: integer
+            default: 0
+        - name: limit
+          in: query
+          description: Maximum number of documents.
+          required: false
+          schema:
+            type: integer
+            default: 50
+        - name: sortBy
+          in: query
+          description: Attribute to sort the documents by.
+          required: false
+          schema:
+            type: string
+            default: dateInscription
+        - name: orderBy
+          in: query
+          description: Order used by the sortBy attribute
+          required: false
+          schema:
+            type: string
+            enum: [ASC, DESC]
+            default: ASC
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  documents:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Document'
 
 components:
   schemas:
@@ -2155,7 +2209,7 @@ components:
           type: string
         '@id':
           type: string
-        '@type': 
+        '@type':
           type: string
         author:
           $ref: '#/components/schemas/Caver'
@@ -2187,7 +2241,7 @@ components:
           type: string
         names:
           type: array
-          items: 
+          items:
             $ref: '#/components/schemas/Name'
         reviewer:
           $ref: '#/components/schemas/Caver'
@@ -2205,11 +2259,11 @@ components:
           type: string
         documents:
           type: array
-          items: 
+          items:
             type: string
         groups:
           type: array
-          items: 
+          items:
             type: string
         id:
           type: integer
@@ -2299,9 +2353,9 @@ components:
           type: integer
         reviewer:
           $ref: '#/components/schemas/Caver'
-        title: 
+        title:
           type: string
-      
+
     Document:
       type: object
       properties:
@@ -2336,7 +2390,7 @@ components:
                 type: integer
               reviewer:
                 $ref: '#/components/schemas/Caver'
-              text: 
+              text:
                 type: string
         editor:
           $ref: '#/components/schemas/Organization'
@@ -2360,7 +2414,7 @@ components:
             $ref: '#/components/schemas/Language'
         library:
           $ref: '#/components/schemas/Organization'
-        license: 
+        license:
           $ref: '#/components/schemas/License'
         mainLanguage:
           $ref: '#/components/schemas/Language'
@@ -2403,7 +2457,7 @@ components:
                 type: integer
               reviewer:
                 $ref: '#/components/schemas/Caver'
-              text: 
+              text:
                 type: string
         type:
           $ref: '#/components/schemas/Document-type'
@@ -2431,7 +2485,7 @@ components:
           type: string
         parent:
           type: string
-    
+
     Document-type:
       type: object
       properties:
@@ -2453,7 +2507,7 @@ components:
           type: string
         '@id':
           type: string
-        '@type': 
+        '@type':
           type: string
         cave:
           $ref: '#/components/schemas/Cave'
@@ -2515,7 +2569,7 @@ components:
         approach:
           type: number
           format: float
-          
+
     File:
       type: object
       properties:
@@ -2529,7 +2583,7 @@ components:
           $ref: '#/components/schemas/File-format'
         fileName:
           type: string
-    
+
     File-format:
       type: object
       properties:
@@ -2569,15 +2623,15 @@ components:
           type: string
         comment:
           type: string
-    
+
     License:
       type: object
       properties:
-        id: 
+        id:
           type: integer
-        name: 
+        name:
           type: string
-        text: 
+        text:
           type: string
 
     Location:
@@ -2711,7 +2765,7 @@ components:
 
     Point:
       type: object
-    
+
     Quicksearch-type:
       type: string
       enum:
@@ -2735,7 +2789,7 @@ components:
           type: boolean
         name:
           type: string
-          
+
     ResetPasswordToken:
       properties:
         action:
@@ -2748,7 +2802,7 @@ components:
         exp:
           type: string
           description: Expiration date (Unix time)
-    
+
     Rigging:
       type: object
       properties:
