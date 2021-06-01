@@ -1,12 +1,12 @@
-import React, {useEffect} from 'react';
-import {useIntl} from 'react-intl';
-import {useHistory} from 'react-router-dom';
-import {List, ListItem, Typography} from '@material-ui/core';
+import React, { useEffect } from 'react';
+import { useIntl } from 'react-intl';
+import { useHistory } from 'react-router-dom';
+import { List, ListItem, Typography } from '@material-ui/core';
 import PeopleIcon from '@material-ui/icons/People';
 import DocumentListIcon from '@material-ui/icons/PlaylistAddCheck';
 import styled from 'styled-components';
 
-import {usePermissions} from '../hooks';
+import { usePermissions } from '../hooks';
 import Layout from '../components/common/Layouts/Fixed/FixedContent';
 
 // ==========
@@ -36,7 +36,7 @@ const DashboardBlock = styled.div`
 //
 
 const Dashboard = () => {
-  const {formatMessage} = useIntl();
+  const { formatMessage } = useIntl();
   const history = useHistory();
   const permissions = usePermissions();
 
@@ -53,13 +53,13 @@ const Dashboard = () => {
   return (
     <Layout
       footer=""
-      title={formatMessage({id: 'Dashboard'})}
+      title={formatMessage({ id: 'Dashboard' })}
       content={
         <>
           {permissions.isAdmin && (
             <DashboardBlock>
               <Typography variant="h2">
-                {formatMessage({id: 'Administrator Dashboard'})}
+                {formatMessage({ id: 'Administrator Dashboard' })}
               </Typography>
               <StyledList cols={3}>
                 <StyledListItem
@@ -67,9 +67,9 @@ const Dashboard = () => {
                   key="manage-users-admin-tile-key"
                   onClick={() => handleOnListItemClick('/ui/admin/users')}
                 >
-                  <PeopleIcon fontSize="large" color="primary"/>
+                  <PeopleIcon fontSize="large" color="primary" />
                   <Typography variant="h4" align="center">
-                    {formatMessage({id: 'Manage users'})}
+                    {formatMessage({ id: 'Manage users' })}
                   </Typography>
                 </StyledListItem>
               </StyledList>
@@ -78,7 +78,7 @@ const Dashboard = () => {
           {permissions.isModerator && (
             <DashboardBlock>
               <Typography variant="h2">
-                {formatMessage({id: 'Moderator Dashboard'})}
+                {formatMessage({ id: 'Moderator Dashboard' })}
               </Typography>
               <StyledList cols={3}>
                 <StyledListItem
@@ -88,9 +88,9 @@ const Dashboard = () => {
                     handleOnListItemClick('/ui/documents/validation')
                   }
                 >
-                  <DocumentListIcon fontSize="large" color="primary"/>
+                  <DocumentListIcon fontSize="large" color="primary" />
                   <Typography variant="h4" align="center">
-                    {formatMessage({id: 'Document validation'})}
+                    {formatMessage({ id: 'Document validation' })}
                   </Typography>
                 </StyledListItem>
               </StyledList>
@@ -99,19 +99,17 @@ const Dashboard = () => {
           {permissions.isUser && (
             <DashboardBlock>
               <Typography variant="h2">
-                {formatMessage({id: 'User Dashboard'})}
+                {formatMessage({ id: 'User Dashboard' })}
               </Typography>
               <StyledList cols={3}>
                 <StyledListItem
                   button
                   key="my-contributions-user-tile-key"
-                  onClick={() =>
-                    handleOnListItemClick('/ui/contributions')
-                  }
+                  onClick={() => handleOnListItemClick('/ui/contributions')}
                 >
-                  <DocumentListIcon fontSize="large" color="primary"/>
+                  <DocumentListIcon fontSize="large" color="primary" />
                   <Typography variant="h4" align="center">
-                    {formatMessage({id: 'My contributions'})}
+                    {formatMessage({ id: 'My contributions' })}
                   </Typography>
                 </StyledListItem>
               </StyledList>

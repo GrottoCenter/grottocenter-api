@@ -385,13 +385,13 @@ module.exports = {
       });
   },
 
-  findByUserId: async (
+  findByCaverId: async (
     req,
     res,
     next,
     converter = MappingV1Service.convertToDocumentList,
   ) => {
-    const userId = req.param('userId');
+    const caverId = req.param('caverId');
 
     const sort = `${req.param('sortBy', 'dateInscription')} ${req.param(
       'orderBy',
@@ -399,7 +399,7 @@ module.exports = {
     )}`;
 
     const whereClause = {
-      and: [{ author: userId }],
+      and: [{ author: caverId }],
     };
 
     TDocument.find()
@@ -452,7 +452,7 @@ module.exports = {
             );
 
             const params = {
-              controllerMethod: 'DocumentController.findByUserId',
+              controllerMethod: 'DocumentController.findByCaverId',
               limit: req.param('limit', 50),
               searchedItem: 'All documents',
               skip: req.param('skip', 0),

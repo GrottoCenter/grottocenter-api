@@ -37,7 +37,7 @@ module.exports = {
     },
   },
 
-  fn: async function (inputs, exits) {
+  fn: async function(inputs, exits) {
     TRight.findOne()
       .where({
         name: inputs.rightEntity + ' - ' + inputs.rightAction,

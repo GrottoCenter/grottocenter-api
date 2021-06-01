@@ -379,7 +379,7 @@ module.exports.routes = {
   },
 
   /* Users controller */
-  'GET /api/v1/users/:userId/documents': 'v1/Document.findByUserId',
+  'GET /api/v1/cavers/:caverId/documents': 'v1/Document.findByCaverId',
 
   /* Convert controller */
   'GET /api/convert': {

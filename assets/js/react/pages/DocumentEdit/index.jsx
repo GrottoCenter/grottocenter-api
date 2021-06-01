@@ -1,19 +1,19 @@
-import React, {useEffect} from 'react';
+import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
-import {CircularProgress} from '@material-ui/core';
-import {useDispatch, useSelector} from 'react-redux';
-import {isEmpty, isNil, head, pathOr, propOr, reject, pipe} from 'ramda';
+import { CircularProgress } from '@material-ui/core';
+import { useDispatch, useSelector } from 'react-redux';
+import { isEmpty, isNil, head, pathOr, propOr, reject, pipe } from 'ramda';
 import DocumentSubmission from '../DocumentSubmission';
-import {fetchDocumentDetails} from '../../actions/DocumentDetails';
+import { fetchDocumentDetails } from '../../actions/DocumentDetails';
 import docInfoGetters from './docInfoGetters';
 
-const DocumentEdit = ({onSuccessfulUpdate, id, resetIsValidated}) => {
+const DocumentEdit = ({ onSuccessfulUpdate, id, resetIsValidated }) => {
   const dispatch = useDispatch();
-  const {isLoading, details, error} = useSelector(
+  const { isLoading, details, error } = useSelector(
     (state) => state.documentDetails,
   );
 
-  const {latestHttpCode, errorMessages} = useSelector(
+  const { latestHttpCode, errorMessages } = useSelector(
     (state) => state.document,
   );
 
@@ -62,18 +62,18 @@ const DocumentEdit = ({onSuccessfulUpdate, id, resetIsValidated}) => {
         propOr(null, 'language'),
       )(details),
     }),
-    ...(resetIsValidated ? {
-      isValidated: false,
-      dateValidation: null,
-    } : {})
+    ...(resetIsValidated
+      ? {
+          isValidated: false,
+          dateValidation: null,
+        }
+      : {}),
   };
 
   return isLoading || !isNil(error) ? (
-    <CircularProgress/>
+    <CircularProgress />
   ) : (
-    <DocumentSubmission
-      defaultValues={defaultValues}
-    />
+    <DocumentSubmission defaultValues={defaultValues} />
   );
 };
 
