@@ -1,15 +1,15 @@
-import React, {useCallback, useEffect, useState} from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import styled from 'styled-components';
-import {useDispatch, useSelector} from 'react-redux';
-import {useIntl} from 'react-intl';
-import {reject, isNil, propOr, pathOr} from 'ramda';
-import {isMobileOnly} from 'react-device-detect';
+import { useDispatch, useSelector } from 'react-redux';
+import { useIntl } from 'react-intl';
+import { reject, isNil, propOr, pathOr } from 'ramda';
+import { isMobileOnly } from 'react-device-detect';
 
-import {getUsersDocuments} from '../../actions/Documents';
-import {resetApiMessages} from '../../actions/Document';
+import { getUsersDocuments } from '../../actions/Documents';
+import { resetApiMessages } from '../../actions/Document';
 import Layout from '../../components/common/Layouts/Fixed/FixedContent';
 import StandardDialog from '../../components/common/StandardDialog';
-import {useDebounce, useUserProperties} from '../../hooks';
+import { useDebounce, useUserProperties } from '../../hooks';
 import Actions from './Actions';
 import DocumentDetails from '../DocumentDetails';
 import DocumentsTable from './DocumentsTable';
@@ -19,17 +19,17 @@ import AuthChecker from '../../features/AuthChecker';
 const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
-  padding: ${({theme}) => theme.spacing(2)}px;
+  padding: ${({ theme }) => theme.spacing(2)}px;
 `;
 
 const ContributionsPage = () => {
   const userId = pathOr(null, ['id'], useUserProperties());
-  const {formatMessage} = useIntl();
+  const { formatMessage } = useIntl();
   const dispatch = useDispatch();
-  const {isLoading, data, totalCount} = useSelector(
+  const { isLoading, data, totalCount } = useSelector(
     (state) => state.documents,
   );
-  const {success: isActionSuccess} = useSelector(
+  const { success: isActionSuccess } = useSelector(
     (state) => state.processDocuments,
   );
   const [selected, setSelected] = React.useState([]);
@@ -91,7 +91,7 @@ const ContributionsPage = () => {
   return (
     <>
       <Layout
-        title={formatMessage({id: 'My documents'})}
+        title={formatMessage({ id: 'My documents' })}
         footer=""
         content={
           <AuthChecker
@@ -113,7 +113,7 @@ const ContributionsPage = () => {
                   updateRowsPerPage={setRowsPerPage}
                   updateSelected={setSelected}
                 />
-                <Actions selected={selected} onEdit={setEditView}/>
+                <Actions selected={selected} onEdit={setEditView} />
               </Wrapper>
             }
           />
@@ -126,9 +126,9 @@ const ContributionsPage = () => {
         scrollable
         open={!isNil(detailedView)}
         onClose={closeDetailedView}
-        title={formatMessage({id: 'Detailed document view'})}
+        title={formatMessage({ id: 'Detailed document view' })}
       >
-        <DocumentDetails id={detailedView}/>
+        <DocumentDetails id={detailedView} />
       </StandardDialog>
       <StandardDialog
         maxWidth="lg"
@@ -137,12 +137,12 @@ const ContributionsPage = () => {
         scrollable
         open={!isNil(editView)}
         onClose={closeEditView}
-        title={formatMessage({id: 'Edit document'})}
+        title={formatMessage({ id: 'Edit document' })}
       >
         <DocumentEdit
           onSuccessfulUpdate={handleSuccessfulUpdate}
           id={editView}
-          resetIsValidated={true}
+          resetIsValidated
         />
       </StandardDialog>
     </>

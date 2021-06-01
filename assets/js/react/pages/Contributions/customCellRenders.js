@@ -1,8 +1,8 @@
-import {useIntl} from 'react-intl';
-import {propOr, map, pipe, join, head, isNil, reject, isEmpty} from 'ramda';
+import { useIntl } from 'react-intl';
+import { propOr, map, pipe, join, head, isNil, reject, isEmpty } from 'ramda';
 
 const makeCustomCellRenders = () => {
-  const {formatDate, formatMessage, formatTime} = useIntl();
+  const { formatDate, formatMessage, formatTime } = useIntl();
   return [
     {
       id: 'dateInscription',
@@ -33,7 +33,8 @@ const makeCustomCellRenders = () => {
     },
     {
       id: 'isValidated',
-      customRender: (isValidated) => formatMessage({id: (isValidated ? 'Yes' : 'No')}),
+      customRender: (isValidated) =>
+        formatMessage({ id: (isValidated ? 'Yes' : 'No') }),
     },
     {
       id: 'license',
@@ -62,7 +63,7 @@ const makeCustomCellRenders = () => {
     {
       id: 'entrance',
       customRender: (entrance) =>
-        `${formatMessage({id: 'City'})}: ${propOr('', 'city', entrance)}`,
+        `${formatMessage({ id: 'City' })}: ${propOr('', 'city', entrance)}`,
     },
     {
       id: 'descriptions',
@@ -77,7 +78,7 @@ const makeCustomCellRenders = () => {
       customRender: (parent) =>
         !isNil(parent) &&
         !isNil(parent.refBbs) &&
-        `${formatMessage({id: 'BBS Reference'})}: ${propOr(
+        `${formatMessage({ id: 'BBS Reference' })}: ${propOr(
           '',
           'refBbs',
           parent,

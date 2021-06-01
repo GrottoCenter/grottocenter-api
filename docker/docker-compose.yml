@@ -14,7 +14,7 @@ services:
       test: pg_isready
     volumes:
       - ../sql:/docker-entrypoint-initdb.d
-      - postgis-data:/var/lib/postgresql
+      - gc-postgis-data:/var/lib/postgresql
     restart: always
     ports:
       - ${DB_LOCAL_PORT}:5432
@@ -33,7 +33,7 @@ services:
       - cluster.routing.allocation.disk.watermark.high=2gb
       - cluster.routing.allocation.disk.watermark.flood_stage=1gb
     volumes:
-      - es-data:/usr/share/elasticsearch/data
+      - gc-es-data:/usr/share/elasticsearch/data
     restart: always
     ports:
       - ${ES_LOCAL_PORT}:9200
@@ -85,5 +85,5 @@ services:
       - 6006:6006
 
 volumes:
-  postgis-data:
-  es-data:
+  gc-postgis-data:
+  gc-es-data:

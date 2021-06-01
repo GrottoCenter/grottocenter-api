@@ -16,7 +16,7 @@ import {
 } from 'ramda';
 import {
   getDocuments as queryDocuments,
-  getUsersDocumentsUrl
+  getCaversDocumentsUrl,
 } from '../conf/Config';
 import makeErrorMessage from '../helpers/makeErrorMessage';
 
@@ -51,14 +51,14 @@ const doGet = (url, criteria) => {
     dispatch(fetchDocuments());
 
     try {
-      const res = await fetch(
-        isNil(criteria) ? url : makeUrl(criteria),
-      ).then((response) => {
-        if (response.status >= 400) {
-          throw new Error(response.status);
-        }
-        return response;
-      });
+      const res = await fetch(isNil(criteria) ? url : makeUrl(criteria)).then(
+        (response) => {
+          if (response.status >= 400) {
+            throw new Error(response.status);
+          }
+          return response;
+        },
+      );
       const data = await res.text();
       const header = await res.headers.get('Content-Range');
       const makeNumber = ifElse(identity, Number, always(1));
@@ -90,4 +90,5 @@ const doGet = (url, criteria) => {
 
 export const getDocuments = (criteria) => doGet(queryDocuments, criteria);
 
-export const getUsersDocuments = (userId, criteria) => doGet(getUsersDocumentsUrl(userId), criteria);
+export const getUsersDocuments = (userId, criteria) =>
+  doGet(getCaversDocumentsUrl(userId), criteria);
