@@ -80,6 +80,7 @@ const DocumentEdit = ({ onSuccessfulUpdate, id, resetIsValidated }) => {
 DocumentEdit.propTypes = {
   onSuccessfulUpdate: PropTypes.func.isRequired,
   id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  resetIsValidated: PropTypes.bool,
 };
 
 export default DocumentEdit;
