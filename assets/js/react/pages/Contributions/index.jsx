@@ -91,7 +91,7 @@ const ContributionsPage = () => {
   return (
     <>
       <Layout
-        title={formatMessage({ id: 'My documents' })}
+        title={formatMessage({ id: 'My contributions' })}
         footer=""
         content={
           <AuthChecker
