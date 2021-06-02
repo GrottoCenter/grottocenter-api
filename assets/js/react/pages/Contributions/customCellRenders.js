@@ -34,7 +34,7 @@ const makeCustomCellRenders = () => {
     {
       id: 'isValidated',
       customRender: (isValidated) =>
-        formatMessage({ id: (isValidated ? 'Yes' : 'No') }),
+        formatMessage({ id: isValidated ? 'Yes' : 'No' }),
     },
     {
       id: 'license',
