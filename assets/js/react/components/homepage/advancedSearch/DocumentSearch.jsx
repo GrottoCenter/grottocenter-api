@@ -40,6 +40,7 @@ class DocumentSearch extends React.Component {
     this.state = this.getInitialState();
     this.handleValueChange = this.handleValueChange.bind(this);
     this.getSubjectObjFromCode = this.getSubjectObjFromCode.bind(this);
+    props.getAllDocumentTypes();
     props.getAllSubjects();
   }
 
@@ -59,6 +60,7 @@ class DocumentSearch extends React.Component {
       ref_bbs: '',
       subjects: '',
       title: '',
+      'type name': '',
       matchAllFields: true,
       allFieldsRequest: '',
       panelExpanded: 'all-fields-panel',
@@ -149,6 +151,7 @@ class DocumentSearch extends React.Component {
       startAdvancedsearch,
       yearMinValue,
       yearMaxValue,
+      allDocumentTypes,
       allSubjects,
       intl,
     } = this.props;
@@ -159,6 +162,7 @@ class DocumentSearch extends React.Component {
       title,
       authors,
       description: abstract,
+      'type name': documentTypeName,
       subjects, // TODO: currently, we select only one subject via a dropdown menu. It should be possible to search multiple subjects.
       regions,
       publication_other_bbs_old,
@@ -375,6 +379,35 @@ class DocumentSearch extends React.Component {
                           ))}
                         </Select>
                       </FormControl>
+
+                      <FormControl className={classes.formElement}>
+                        <InputLabel htmlFor="documentType">
+                          <Translate>Document type</Translate>
+                        </InputLabel>
+                        <Select
+                          value={documentTypeName}
+                          onChange={(event) =>
+                            this.handleValueChange('type name', event)
+                          }
+                          inputProps={{
+                            id: 'id',
+                            name: 'name',
+                          }}
+                        >
+                          <MenuItem key={-1} value="">
+                            <i>
+                              <Translate>All document types</Translate>
+                            </i>
+                          </MenuItem>
+                          {allDocumentTypes
+                            .filter((dt) => dt.isAvailable)
+                            .map((docType) => (
+                              <MenuItem key={docType.id} value={docType.name}>
+                                <Translate>{docType.name}</Translate>
+                              </MenuItem>
+                            ))}
+                        </Select>
+                      </FormControl>
                     </div>
                   </fieldset>
 
@@ -498,6 +531,16 @@ DocumentSearch.propTypes = {
   startAdvancedsearch: PropTypes.func.isRequired,
   resetResults: PropTypes.func.isRequired,
   resourceType: PropTypes.string.isRequired,
+
+  getAllDocumentTypes: PropTypes.func.isRequired,
+  allDocumentTypes: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.number.isRequired,
+      isAvailable: PropTypes.bool.isRequired,
+      name: PropTypes.string.isRequired,
+    }),
+  ).isRequired,
+
   getAllSubjects: PropTypes.func.isRequired,
   allSubjects: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
 

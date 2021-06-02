@@ -304,10 +304,10 @@ INSERT INTO public.t_comment (id,id_author,id_reviewer,date_inscription,date_rev
 	 (3391,3,NULL,'2019-07-01 10:52:57.000',NULL,1,'10:00:00'::interval,'00:20:00'::interval,7.0,5.0,8.0,'Une belle visite de près de 10h00 - Juin 2019','Une très belle visite jusque après la C12.\nNous nous sommes arrêté là, car la vire en fixe de la C12 est plus que pourrie ! Rongée à moitié contre une plaquette ! Pas sécuritaire du tout. \nPrévoyez votre propre corde pour passer et accéder à la grande barrière non loin de là. \nLa plupart des vires sont HS (arrachée). Certainement le débit important d''eau par période. \n\nVidéo de la sortie : https://www.youtube.com/watch?v=AGq0dB81Zzk ',false,NULL,14,NULL,'fra',false),
 	 (3427,5,NULL,'2019-09-07 17:42:51.000',NULL,4,NULL,NULL,NULL,NULL,NULL,'Recommandations du CDS 64','1 - ATTENTION AUX CRUES\n\nEn cas de forte crue, les deux derniers puits (P54 et P47) sont très arrosés et deviennent difficiles voir impossibles à remonter. \nDe même, la progression dans la rivière peut se révéler très dangereuse notamment le changement de rive avant la cascade de 8 m, la vasque juste avant l''embarcadère et les rapides. \nPour ces raisons, les périodes de fortes pluies et/ou de fonte des neiges sont à éviter.\n\n\n\n2 - PRÉCAUTIONS DE PROGRESSION\n\nPour la partie aquatique (depuis l''Embarcadère), deux choix s''offrent à vous /\n- néoprène complète \nou \n- pontonnière + canot + 25 mètres de drisse de rappel.\n\nLa progression horizontale n''est pas toujours évidente ; pensez à vous munir d''une corde de 15 à 20 mètres pour vous assurer dans certains passages ou pour remplacer une corde fixe abîmée.\n\n',false,NULL,10,NULL,'fra',false);
 
-INSERT INTO public.t_type (id,"name","comment",id_parent) VALUES
-	 (4,'Image','A visual representation other than text',NULL),
-	 (12,'Doc','Doc',NULL),
-	 (18,'Article','An article from a source',12);
+INSERT INTO public.t_type (id,"name","comment",is_available,id_parent) VALUES
+	 (4,'Image','A visual representation other than text',true,NULL),
+	 (12,'Doc','Doc',false,NULL),
+	 (18,'Article','An article from a source',true,12);
 
 INSERT INTO public.t_file_format (id,"extension","comment",mime_type,softwares) VALUES
 	 (871,'jpg         ',NULL,'image/jpeg',NULL);

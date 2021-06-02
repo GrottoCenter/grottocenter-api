@@ -11,7 +11,7 @@ import {
 //
 
 const initialState = {
-  documentTypes: undefined,
+  documentTypes: [],
   error: null,
   isLoading: false,
 };
