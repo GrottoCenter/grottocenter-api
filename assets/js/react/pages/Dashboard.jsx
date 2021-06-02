@@ -4,6 +4,7 @@ import { useHistory } from 'react-router-dom';
 import { List, ListItem, Typography } from '@material-ui/core';
 import PeopleIcon from '@material-ui/icons/People';
 import DocumentListIcon from '@material-ui/icons/PlaylistAddCheck';
+import ListAltIcon from '@material-ui/icons/ListAlt';
 import styled from 'styled-components';
 
 import { usePermissions } from '../hooks';
@@ -107,7 +108,7 @@ const Dashboard = () => {
                   key="my-contributions-user-tile-key"
                   onClick={() => handleOnListItemClick('/ui/contributions')}
                 >
-                  <DocumentListIcon fontSize="large" color="primary" />
+                  <ListAltIcon fontSize="large" color="primary" />
                   <Typography variant="h4" align="center">
                     {formatMessage({ id: 'My contributions' })}
                   </Typography>
