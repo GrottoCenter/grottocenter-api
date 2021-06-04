@@ -12,14 +12,44 @@ import StandardDialog from '../../components/common/StandardDialog';
 import { useDebounce } from '../../hooks';
 import Actions from './Actions';
 import DocumentDetails from '../DocumentDetails';
-import DocumentsTable from './DocumentsTable';
+import DocumentsTable from '../../components/common/DocumentsTable';
 import DocumentEdit from '../DocumentEdit';
+import AuthChecker from '../../features/AuthChecker';
 
 const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
   padding: ${({ theme }) => theme.spacing(2)}px;
 `;
+
+const defaultHiddenColumns = [
+  'author',
+  'authorComment',
+  'authors',
+  'cave',
+  'datePublication',
+  'dateValidation',
+  'descriptions',
+  'editor',
+  'entrance',
+  'files',
+  'id',
+  'identifier',
+  'identifierType',
+  'isValidated',
+  'library',
+  'license',
+  'massif',
+  'pages',
+  'parent',
+  'pathOld',
+  'publication',
+  'publicationFasciculeBBSOld',
+  'refBbs',
+  'reviewer',
+  'validationComment',
+  'validator',
+];
 
 const DocumentValidationPage = () => {
   const { formatMessage } = useIntl();
@@ -93,25 +123,30 @@ const DocumentValidationPage = () => {
         title={formatMessage({ id: 'Documents awaiting validation' })}
         footer=""
         content={
-          <Wrapper>
-            <DocumentsTable
-              currentPage={page}
-              documents={propOr([], 'documents', data)}
-              loading={isLoading}
-              openDetailedView={setDetailedView}
-              order={order}
-              orderBy={orderBy || undefined}
-              rowsCount={totalCount || 0}
-              rowsPerPage={rowsPerPage}
-              selected={selected}
-              updateOrder={setOrder}
-              updateOrderBy={setOrderBy}
-              updatePage={setPage}
-              updateRowsPerPage={setRowsPerPage}
-              updateSelected={setSelected}
-            />
-            <Actions selected={selected} onEdit={setEditView} />
-          </Wrapper>
+          <AuthChecker
+            componentToDisplay={
+              <Wrapper>
+                <DocumentsTable
+                  currentPage={page}
+                  documents={propOr([], 'documents', data)}
+                  defaultHiddenColumns={defaultHiddenColumns}
+                  loading={isLoading}
+                  openDetailedView={setDetailedView}
+                  order={order}
+                  orderBy={orderBy || undefined}
+                  rowsCount={totalCount || 0}
+                  rowsPerPage={rowsPerPage}
+                  selected={selected}
+                  updateOrder={setOrder}
+                  updateOrderBy={setOrderBy}
+                  updatePage={setPage}
+                  updateRowsPerPage={setRowsPerPage}
+                  updateSelected={setSelected}
+                />
+                <Actions selected={selected} onEdit={setEditView} />
+              </Wrapper>
+            }
+          />
         }
       />
       <StandardDialog

@@ -12,7 +12,7 @@ import StandardDialog from '../../components/common/StandardDialog';
 import { useDebounce, useUserProperties } from '../../hooks';
 import Actions from './Actions';
 import DocumentDetails from '../DocumentDetails';
-import DocumentsTable from './DocumentsTable';
+import DocumentsTable from '../../components/common/DocumentsTable';
 import DocumentEdit from '../DocumentEdit';
 import AuthChecker from '../../features/AuthChecker';
 
@@ -21,6 +21,33 @@ const Wrapper = styled.div`
   flex-direction: column;
   padding: ${({ theme }) => theme.spacing(2)}px;
 `;
+
+const defaultHiddenColumns = [
+  'author',
+  'authorComment',
+  'authors',
+  'cave',
+  'datePublication',
+  'descriptions',
+  'editor',
+  'entrance',
+  'files',
+  'id',
+  'identifier',
+  'identifierType',
+  'library',
+  'license',
+  'massif',
+  'pages',
+  'parent',
+  'pathOld',
+  'publication',
+  'publicationFasciculeBBSOld',
+  'refBbs',
+  'reviewer',
+  'validationComment',
+  'validator',
+];
 
 const ContributionsPage = () => {
   const userId = pathOr(null, ['id'], useUserProperties());
@@ -100,6 +127,7 @@ const ContributionsPage = () => {
                 <DocumentsTable
                   currentPage={page}
                   documents={propOr([], 'documents', data)}
+                  defaultHiddenColumns={defaultHiddenColumns}
                   loading={isLoading}
                   openDetailedView={setDetailedView}
                   order={order}

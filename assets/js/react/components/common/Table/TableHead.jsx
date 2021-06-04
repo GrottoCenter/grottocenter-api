@@ -9,6 +9,7 @@ import {
   keys,
   map,
   pipe,
+  prop,
 } from 'ramda';
 import React from 'react';
 import PropTypes from 'prop-types';
@@ -27,8 +28,8 @@ export const createColumns = (rawData, makeTranslation) => {
 
 export const createDefaultHiddenColumns = (columns, defaults) =>
   pipe(
-    filter((column) => column.id[0] === '@'),
-    map((column) => column.id),
+    map(prop('id')),
+    filter((id) => id[0] === '@'),
     concat(__, defaults),
   )(columns);
 
