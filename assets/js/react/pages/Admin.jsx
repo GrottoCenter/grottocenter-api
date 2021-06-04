@@ -50,7 +50,10 @@ const Admin = () => (
       <ArticleWrapper>
         <Switch>
           <Route exact path="/admin/" component={AvailableTools} />
-          <Route path="/admin/listEntriesOfInterest" component={EntriesOfInterest} />
+          <Route
+            path="/admin/listEntriesOfInterest"
+            component={EntriesOfInterest}
+          />
           <Route path="/admin/*" to="/admin/" />
         </Switch>
       </ArticleWrapper>

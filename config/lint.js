@@ -9,6 +9,6 @@ module.exports.lint = {
     '!tasks/**/*.js',
     '!Gruntfile.js',
     '!app.js',
-    '!api/responses/**/*.js'
-  ]
+    '!api/responses/**/*.js',
+  ],
 };

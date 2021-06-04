@@ -22,7 +22,6 @@ module.exports.session = {
    ***************************************************************************/
   secret: '8299eb971e93d8d68857e6ad5880c785',
 
-
   /***************************************************************************
    *                                                                          *
    * Set the session cookie expire time The maxAge is set by milliseconds,    *
@@ -57,7 +56,6 @@ module.exports.session = {
   // db: 0,
   // pass: <redis auth password>,
   // prefix: 'sess:',
-
 
   /***************************************************************************
    *                                                                          *

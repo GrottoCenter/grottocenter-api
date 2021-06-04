@@ -4,8 +4,8 @@ module.exports.swagger = {
    */
   pkg: require('../package'),
   ui: {
-    url: getSwaggerUrl
-  }
+    url: getSwaggerUrl,
+  },
 };
 
 function getSwaggerUrl(req, res) {

@@ -36,10 +36,10 @@ export const MultipleSelectTypes = {
   required: PropTypes.bool,
   resetSearchResults: PropTypes.func.isRequired, // should reset all the search results
   searchError: PropTypes.string,
-  searchResults: PropTypes.arrayOf(PropTypes.any).isRequired,
+  searchResults: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
   sideActionDisabled: PropTypes.bool,
   sideActionIcon: PropTypes.node,
-  value: PropTypes.arrayOf(PropTypes.any).isRequired,
+  value: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
 };
 
 // eslint-disable-next-line import/prefer-default-export
@@ -51,8 +51,8 @@ export const MultipleSelectWithOptionsTypes = {
   helperText: PropTypes.string.isRequired,
   labelName: PropTypes.string.isRequired,
   noOptionsText: PropTypes.node,
-  options: PropTypes.arrayOf(PropTypes.any),
+  options: PropTypes.arrayOf(PropTypes.shape({})),
   renderOption: PropTypes.func,
   required: PropTypes.bool,
-  value: PropTypes.arrayOf(PropTypes.any).isRequired,
+  value: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
 };

@@ -284,7 +284,14 @@ class OrganizationsSearch extends React.Component {
 }
 
 OrganizationsSearch.propTypes = {
-  classes: PropTypes.shape(PropTypes.any).isRequired,
+  classes: PropTypes.shape({
+    formContainer: PropTypes.string,
+    formPartContainer: PropTypes.string,
+    formElement: PropTypes.string,
+    fieldset: PropTypes.string,
+    legend: PropTypes.string,
+    formLabel: PropTypes.string,
+  }).isRequired,
   startAdvancedsearch: PropTypes.func.isRequired,
   resetResults: PropTypes.func.isRequired,
   resourceType: PropTypes.string.isRequired,

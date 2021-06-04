@@ -1,6 +1,9 @@
 import { connect } from 'react-redux';
 import NewsCard from '../components/common/card/NewsCard';
-import { initLatestBlogNewsFetcher, loadLatestBlogNews } from '../actions/LatestBlogNews';
+import {
+  initLatestBlogNewsFetcher,
+  loadLatestBlogNews,
+} from '../actions/LatestBlogNews';
 
 //
 //

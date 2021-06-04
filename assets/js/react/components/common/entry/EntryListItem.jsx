@@ -5,7 +5,6 @@ import ListItemText from '@material-ui/core/ListItemText';
 import { withStyles } from '@material-ui/core';
 import { withRouter } from 'react-router-dom';
 import GClink from '../GCLink';
-import { detailPageV2Links } from '../../../conf/Config';
 
 const styles = (theme) => ({
   entryItem: {
@@ -41,7 +40,7 @@ const EntryListItem = (props) => {
   return (
     <ListItem
       className={classes.entryItem}
-      button /*onClick={() => props.history.push(`/ui/entries/${entry.id}`)}*/
+      button /* onClick={() => props.history.push(`/ui/entries/${entry.id}`)} */
     >
       <GClink
         className={classes.entryLink}
@@ -61,8 +60,17 @@ const EntryListItem = (props) => {
 };
 
 EntryListItem.propTypes = {
-  classes: PropTypes.shape({}).isRequired,
-  entry: PropTypes.shape({}),
+  classes: PropTypes.shape({
+    entryItem: PropTypes.string,
+    entryLink: PropTypes.string,
+    entryText: PropTypes.string,
+  }).isRequired,
+  entry: PropTypes.shape({
+    id: PropTypes.number,
+    name: PropTypes.string,
+    country: PropTypes.string,
+    region: PropTypes.string,
+  }),
   history: PropTypes.shape({ push: PropTypes.func }).isRequired,
 };
 

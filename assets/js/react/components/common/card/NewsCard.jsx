@@ -120,7 +120,8 @@ class NewsCard extends Component {
   }
 
   componentDidMount() {
-    this.interval = setInterval(() => this.props.refresh(), DYNAMIC_NEWS_RELOAD_INTERVAL);
+    const { refresh } = this.props;
+    this.interval = setInterval(refresh, DYNAMIC_NEWS_RELOAD_INTERVAL);
   }
 
   componentWillUnmount() {
@@ -128,7 +129,9 @@ class NewsCard extends Component {
   }
 
   render() {
-    if (this.props.showSpinner && !this.props.text) {
+    const { showSpinner, text, day, month, title, linkMore } = this.props;
+
+    if (showSpinner && !text) {
       return (
         <StyledActionCard>
           <StyledSyncIcon />
@@ -136,7 +139,7 @@ class NewsCard extends Component {
       );
     }
 
-    if (!this.props.showSpinner && !this.props.text) {
+    if (!showSpinner && !text) {
       return (
         <StyledActionCard>
           <StyledSyncKOIcon />
@@ -147,19 +150,17 @@ class NewsCard extends Component {
     return (
       <StyledCard>
         <StyledCardMedia image="images/homepage/news.jpg" />
-        {this.props.day && this.props.month && (
-          <DateRibbon day={this.props.day} month={this.props.month} />
-        )}
+        {day && month && <DateRibbon day={day} month={month} />}
         <StyledCardContent>
           <StyledTitleTypography gutterBottom component="h3">
-            {this.props.title}
+            {title}
           </StyledTitleTypography>
-          <StyledBodyTypography component="p">{this.props.text}</StyledBodyTypography>
+          <StyledBodyTypography component="p">{text}</StyledBodyTypography>
         </StyledCardContent>
         <Divider />
-        {this.props.linkMore && (
+        {linkMore && (
           <StyledCardActions>
-            <GCLink href={this.props.linkMore}>
+            <GCLink href={linkMore}>
               <Button>
                 <StyledImageLoupe />
               </Button>
@@ -173,7 +174,7 @@ class NewsCard extends Component {
 
 NewsCard.propTypes = {
   showSpinner: PropTypes.bool,
-  day: PropTypes.any,
+  day: PropTypes.number,
   month: PropTypes.string,
   title: PropTypes.string,
   text: PropTypes.string,

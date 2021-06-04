@@ -30,7 +30,7 @@ import SliderForm from './SliderForm';
 
 class DocumentSearch extends React.Component {
   /*
-    The state is created with particular key names 
+    The state is created with particular key names
     because these names are directly linked to
     the names of these properties in Elasticsearch. Here we have a syntax that
     allow us to distinguish search range parameters from others parameters.
@@ -494,7 +494,15 @@ class DocumentSearch extends React.Component {
 }
 
 DocumentSearch.propTypes = {
-  classes: PropTypes.shape(PropTypes.any).isRequired,
+  classes: PropTypes.shape({
+    formLabel: PropTypes.string,
+    formElementFontSize: PropTypes.string,
+    formPartContainer: PropTypes.string,
+    formContainer: PropTypes.string,
+    formElement: PropTypes.string,
+    fieldset: PropTypes.string,
+    legend: PropTypes.string,
+  }).isRequired,
   startAdvancedsearch: PropTypes.func.isRequired,
   resetResults: PropTypes.func.isRequired,
   resourceType: PropTypes.string.isRequired,

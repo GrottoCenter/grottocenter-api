@@ -47,7 +47,8 @@ const FooterDisclamer = ({ className }) => (
   <FooterBar className={className}>
     <DisclamerText>
       <Translate>
-        Unless stated otherwise, all text and documents are available under the terms
+        Unless stated otherwise, all text and documents are available under the
+        terms
       </Translate>
     </DisclamerText>
     <LicenceLink>

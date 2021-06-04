@@ -31,8 +31,13 @@ export const OrganizationPopup = ({ organization }) => (
 );
 
 OrganizationPopup.propTypes = {
-  // eslint-disable-next-line react/forbid-prop-types
-  organization: PropTypes.object.isRequired,
+  organization: PropTypes.shape({
+    name: PropTypes.string,
+    id: PropTypes.number,
+    address: PropTypes.shape({}),
+    latitude: PropTypes.number,
+    longitude: PropTypes.number,
+  }).isRequired,
 };
 
 export default OrganizationPopup;

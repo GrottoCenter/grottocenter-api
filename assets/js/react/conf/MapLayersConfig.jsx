@@ -10,7 +10,7 @@ If the layer is available for the entire map, we should set its bounds to
 " new L.LatLngBounds(new L.LatLng(-90, -200), new L.LatLng(90, 200)) "
  */
 
-export const layers = [
+const layers = [
   {
     name: 'OpenStreetMap Basic',
     attribution: 'http://osm.org/copyright',
@@ -40,3 +40,5 @@ export const layers = [
     bounds: new L.LatLngBounds(new L.LatLng(-37, -75), new L.LatLng(-20, -40)),
   },
 ];
+
+export default layers;

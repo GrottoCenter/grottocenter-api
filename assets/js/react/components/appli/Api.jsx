@@ -4,7 +4,12 @@ import CheckIcon from '@material-ui/icons/Check';
 import styled from 'styled-components';
 import GCLink from '../common/GCLink';
 import InternationalizedLink from '../common/InternationalizedLink';
-import { swaggerLinkV1, restApiLinks, wikiApiLinks, contactLinks } from '../../conf/Config';
+import {
+  swaggerLinkV1,
+  restApiLinks,
+  wikiApiLinks,
+  contactLinks,
+} from '../../conf/Config';
 import Translate from '../common/Translate';
 
 //
@@ -53,7 +58,7 @@ const Api = () => {
 
   return (
     <div>
-      <div role="section">
+      <div>
         <div className="container">
           <div className="row">
             <div className="four columns">
@@ -71,7 +76,10 @@ const Api = () => {
                   id="We offer you a set of {0} that you can easily insert in your pages to access this data"
                   values={{
                     0: (
-                      <GCLink href={restApiLink} alt="Link to rest API documentation">
+                      <GCLink
+                        href={restApiLink}
+                        alt="Link to rest API documentation"
+                      >
                         <Translate id="Rest API endpoints" />
                       </GCLink>
                     ),
@@ -83,7 +91,10 @@ const Api = () => {
                   id="To use them, you just need an {0} key, and few lines of code!"
                   values={{
                     0: (
-                      <InternationalizedLink links={wikiApiLinks} alt="What is an API?">
+                      <InternationalizedLink
+                        links={wikiApiLinks}
+                        alt="What is an API?"
+                      >
                         <Translate id="API" />
                       </InternationalizedLink>
                     ),
@@ -94,7 +105,10 @@ const Api = () => {
                   id="And to get your own API key, send us an email using the {0}"
                   values={{
                     0: (
-                      <InternationalizedLink links={contactLinks} alt="Contact form">
+                      <InternationalizedLink
+                        links={contactLinks}
+                        alt="Contact form"
+                      >
                         <Translate id="contact form" />
                       </InternationalizedLink>
                     ),

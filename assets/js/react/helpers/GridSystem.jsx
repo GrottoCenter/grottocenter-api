@@ -14,7 +14,7 @@ export const GridContainer = ({ className, children }) => (
 );
 
 GridContainer.propTypes = {
-  children: PropTypes.any.isRequired,
+  children: PropTypes.node.isRequired,
   className: PropTypes.string,
 };
 
@@ -23,7 +23,7 @@ export const GridRow = ({ className, children }) => (
 );
 
 GridRow.propTypes = {
-  children: PropTypes.any.isRequired,
+  children: PropTypes.node.isRequired,
   className: PropTypes.string,
 };
 
@@ -32,7 +32,7 @@ export const GridOneThirdColumn = ({ className, children }) => (
 );
 
 GridOneThirdColumn.propTypes = {
-  children: PropTypes.any.isRequired,
+  children: PropTypes.node.isRequired,
   className: PropTypes.string,
 };
 
@@ -41,7 +41,7 @@ export const GridTwoThirdColumn = ({ className, children }) => (
 );
 
 GridTwoThirdColumn.propTypes = {
-  children: PropTypes.any.isRequired,
+  children: PropTypes.node.isRequired,
   className: PropTypes.string,
 };
 
@@ -50,7 +50,7 @@ export const GridOneHalfColumn = ({ className, children }) => (
 );
 
 GridOneHalfColumn.propTypes = {
-  children: PropTypes.any.isRequired,
+  children: PropTypes.node.isRequired,
   className: PropTypes.string,
 };
 
@@ -59,6 +59,6 @@ export const GridFullColumn = ({ className, children }) => (
 );
 
 GridFullColumn.propTypes = {
-  children: PropTypes.any.isRequired,
+  children: PropTypes.node.isRequired,
   className: PropTypes.string,
 };

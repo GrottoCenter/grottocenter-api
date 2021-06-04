@@ -164,11 +164,6 @@ const Organization = ({ isFetching, organization }) => {
 };
 
 Organization.propTypes = {
-  // TODO : mark some properties as required + add details for the "any""
-  classes: PropTypes.shape({
-    root: PropTypes.any,
-    badge: PropTypes.any,
-  }).isRequired,
   isFetching: PropTypes.bool.isRequired,
   organization: PropTypes.shape({
     address: PropTypes.string,
@@ -182,10 +177,10 @@ Organization.propTypes = {
     region: PropTypes.string,
     postalCode: PropTypes.string,
     village: PropTypes.string,
-    exploredCaves: PropTypes.arrayOf(PropTypes.any),
-    partneredCaves: PropTypes.arrayOf(PropTypes.any),
-    cavers: PropTypes.any,
-    yearBirth: PropTypes.any,
+    exploredCaves: PropTypes.arrayOf(PropTypes.shape({})),
+    partneredCaves: PropTypes.arrayOf(PropTypes.shape({})),
+    cavers: PropTypes.arrayOf(PropTypes.shape({})),
+    yearBirth: PropTypes.number,
   }),
 };
 
