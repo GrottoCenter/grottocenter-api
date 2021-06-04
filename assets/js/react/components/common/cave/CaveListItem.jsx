@@ -49,7 +49,9 @@ const styles = (theme) => ({
 const CaveListItem = (props) => {
   const { classes, cave } = props;
   const handleClick = () => {
-    cave.id && props.history.push(`/ui/caves/${cave.id}`);
+    if (cave.id) {
+      props.history.push(`/ui/caves/${cave.id}`);
+    }
   };
 
   return (
@@ -82,8 +84,16 @@ const CaveListItem = (props) => {
 };
 
 CaveListItem.propTypes = {
-  classes: PropTypes.shape({}).isRequired,
-  cave: PropTypes.shape({}),
+  classes: PropTypes.shape({
+    caveItem: PropTypes.string,
+    caveText: PropTypes.string,
+  }).isRequired,
+  cave: PropTypes.shape({
+    id: PropTypes.number,
+    name: PropTypes.string,
+    depth: PropTypes.number,
+    length: PropTypes.number,
+  }),
   history: PropTypes.shape({ push: PropTypes.func }).isRequired,
 };
 CaveListItem.defaultProps = {

@@ -95,7 +95,10 @@ const AppToolbar = (props) => {
       </StyledPageTitleText>
 
       {pageTitleTooltip ? (
-        <StyledTooltip title={<Translate>{pageTitleTooltip}</Translate>} placement="right">
+        <StyledTooltip
+          title={<Translate>{pageTitleTooltip}</Translate>}
+          placement="right"
+        >
           <StyledHelpIcon />
         </StyledTooltip>
       ) : (

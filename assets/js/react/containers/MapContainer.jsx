@@ -1,3 +1,4 @@
+/*
 import { connect } from 'react-redux';
 import {
   fetchMapItemsResult,
@@ -27,3 +28,5 @@ const mapStateToProps = (state) => ({
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(GCMap);
+
+* */

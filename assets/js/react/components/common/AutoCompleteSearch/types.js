@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 
 // eslint-disable-next-line import/prefer-default-export
 export const AutoCompleteSearchTypes = {
-  suggestions: PropTypes.arrayOf(PropTypes.object).isRequired,
+  suggestions: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
   onSelection: PropTypes.func.isRequired,
   inputValue: PropTypes.string.isRequired,
   onInputChange: PropTypes.func.isRequired,

@@ -60,13 +60,13 @@ const EntryData = ({ entry }) => {
 
 EntryData.propTypes = {
   entry: PropTypes.shape({
-    documents: PropTypes.arrayOf(PropTypes.any),
+    documents: PropTypes.arrayOf(PropTypes.shape({})),
     cave: PropTypes.shape({
       depth: PropTypes.number,
       length: PropTypes.number,
     }),
     stats: PropTypes.shape({}),
-    timeInfo: PropTypes.any,
+    timeInfo: PropTypes.shape({}),
   }).isRequired,
 };
 
@@ -246,8 +246,8 @@ const EntryInfos = ({ timeInfo, cave }) => (
 
 EntryInfos.propTypes = {
   timeInfo: PropTypes.shape({
-    eTTrail: PropTypes.any,
-    eTUnderground: PropTypes.any,
+    eTTrail: PropTypes.number,
+    eTUnderground: PropTypes.number,
   }).isRequired,
   cave: PropTypes.shape({
     depth: PropTypes.number,
@@ -391,7 +391,7 @@ RandomEntryCard.propTypes = {
   fetch: PropTypes.func.isRequired,
   isFetching: PropTypes.bool,
   entry: PropTypes.shape({
-    id: PropTypes.any,
+    id: PropTypes.number,
   }),
 };
 

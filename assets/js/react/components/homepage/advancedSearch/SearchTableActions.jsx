@@ -38,14 +38,22 @@ class TablePaginationActions extends React.Component {
           disabled={page === 0}
           aria-label="Previous Page"
         >
-          {theme.direction === 'rtl' ? <KeyboardArrowRight /> : <KeyboardArrowLeft />}
+          {theme.direction === 'rtl' ? (
+            <KeyboardArrowRight />
+          ) : (
+            <KeyboardArrowLeft />
+          )}
         </IconButton>
         <IconButton
           onClick={this.handleNextButtonClick}
           disabled={page * size + size >= count}
           aria-label="Next Page"
         >
-          {theme.direction === 'rtl' ? <KeyboardArrowLeft /> : <KeyboardArrowRight />}
+          {theme.direction === 'rtl' ? (
+            <KeyboardArrowLeft />
+          ) : (
+            <KeyboardArrowRight />
+          )}
         </IconButton>
       </div>
     );
@@ -53,12 +61,18 @@ class TablePaginationActions extends React.Component {
 }
 
 TablePaginationActions.propTypes = {
-  classes: PropTypes.shape({}).isRequired,
+  classes: PropTypes.shape({
+    root: PropTypes.string,
+  }).isRequired,
   count: PropTypes.number.isRequired,
   onChangePage: PropTypes.func.isRequired,
   page: PropTypes.number.isRequired,
   size: PropTypes.number.isRequired,
-  theme: PropTypes.shape({}).isRequired,
+  theme: PropTypes.shape({
+    direction: PropTypes.string,
+  }).isRequired,
 };
 
-export default withStyles(actionsStyles, { withTheme: true })(TablePaginationActions);
+export default withStyles(actionsStyles, { withTheme: true })(
+  TablePaginationActions,
+);

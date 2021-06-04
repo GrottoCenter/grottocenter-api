@@ -103,13 +103,13 @@ const UserGroups = ({
 
 UserGroups.propTypes = {
   initialUser: PropTypes.shape({
-    groups: PropTypes.arrayOf(PropTypes.any),
+    groups: PropTypes.arrayOf(PropTypes.shape({})),
   }),
   isLoading: PropTypes.bool.isRequired,
   onSaveGroups: PropTypes.func.isRequired,
   selectedUser: PropTypes.shape({
     id: PropTypes.number,
-    groups: PropTypes.arrayOf(PropTypes.any),
+    groups: PropTypes.arrayOf(PropTypes.shape({})),
   }),
   setSelectedUser: PropTypes.func.isRequired,
 };

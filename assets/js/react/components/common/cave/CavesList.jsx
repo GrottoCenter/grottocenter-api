@@ -41,7 +41,7 @@ const CavesList = (props) => {
 };
 
 CavesList.propTypes = {
-  caves: PropTypes.arrayOf(PropTypes.object),
+  caves: PropTypes.arrayOf(PropTypes.shape({})),
   title: PropTypes.node,
   emptyMessageComponent: PropTypes.node,
 };

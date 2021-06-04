@@ -129,7 +129,13 @@ const Welcome = ({ theme }) => {
 
 Welcome.propTypes = {
   // eslint-disable-next-line react/forbid-prop-types
-  theme: PropTypes.any.isRequired,
+  theme: PropTypes.shape({
+    palette: PropTypes.shape({
+      secondaryBlocTitle: PropTypes.string,
+      primary1Color: PropTypes.string,
+      accent1Color: PropTypes.string,
+    }),
+  }).isRequired,
 };
 
 export default withTheme(Welcome);

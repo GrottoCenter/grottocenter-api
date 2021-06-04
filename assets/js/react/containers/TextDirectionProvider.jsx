@@ -31,7 +31,7 @@ class TextDirectionProvider extends Component {
 }
 
 TextDirectionProvider.propTypes = {
-  children: PropTypes.element.isRequired,
+  children: PropTypes.node.isRequired,
   direction: PropTypes.string.isRequired,
 };
 

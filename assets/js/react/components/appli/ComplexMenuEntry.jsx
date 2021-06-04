@@ -36,37 +36,49 @@ const FirstLevelMenuItem = withTheme(styled(MenuItem)`
 class ComplexMenuEntry extends Component {
   constructor(props) {
     super(props);
-    this.props.register(this.props.identifier, this.props.open, this.props.target);
+    const { identifier, open, target, register } = props;
+    register(identifier, open, target);
   }
 
   render() {
-    const display = this.props.open ? 'inherit' : 'none';
+    const {
+      open,
+      children,
+      icon,
+      toggle,
+      identifier,
+      target,
+      toggleSideMenu,
+      text,
+    } = this.props;
+    const display = open ? 'inherit' : 'none';
 
-    let icon = this.props.open ? <ExpandLessIcon /> : <ExpandMoreIcon />;
-
-    if (!this.props.children) {
-      icon = this.props.icon;
+    let leftIcon;
+    if (children) {
+      leftIcon = icon;
+    } else {
+      leftIcon = open ? <ExpandLessIcon /> : <ExpandMoreIcon />;
     }
 
-    let callOnClick = () => this.props.toggle(this.props.identifier);
-    if (this.props.target) {
+    let callOnClick = () => toggle(identifier);
+    if (target) {
       callOnClick = () => {
-        BrowserRouter.push(this.props.target);
-        this.props.toggleSideMenu();
+        BrowserRouter.push(target);
+        toggleSideMenu();
       };
     }
 
     return (
       <div>
-        <FirstLevelMenuItem onClick={callOnClick} leftIcon={icon}>
-          {this.props.text}
+        <FirstLevelMenuItem onClick={callOnClick} leftIcon={leftIcon}>
+          {text}
         </FirstLevelMenuItem>
         <div
           style={{
             display,
           }}
         >
-          {this.props.children}
+          {children}
         </div>
       </div>
     );

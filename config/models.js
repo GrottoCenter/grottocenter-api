@@ -14,7 +14,6 @@
  */
 
 module.exports.models = {
-
   /***************************************************************************
    *                                                                          *
    * Whether the `.create()` and `.update()` model methods should ignore      *
@@ -36,7 +35,6 @@ module.exports.models = {
 
   schema: true,
 
-
   /***************************************************************************
    *                                                                          *
    * How and whether Sails will attempt to automatically rebuild the          *
@@ -53,7 +51,6 @@ module.exports.models = {
    ***************************************************************************/
 
   migrate: 'safe',
-
 
   /***************************************************************************
    *                                                                          *
@@ -82,7 +79,6 @@ module.exports.models = {
     //--------------------------------------------------------------------------
   },
 
-
   /******************************************************************************
    *                                                                             *
    * The set of DEKs (data encryption keys) for at-rest encryption.              *
@@ -98,9 +94,8 @@ module.exports.models = {
    ******************************************************************************/
 
   dataEncryptionKeys: {
-    default: '+jvVhHX8Blq01tgtPzsRcBbWv80i1yyJEvDnQaqg1/E='
+    default: '+jvVhHX8Blq01tgtPzsRcBbWv80i1yyJEvDnQaqg1/E=',
   },
-
 
   /***************************************************************************
    *                                                                          *
@@ -121,5 +116,5 @@ module.exports.models = {
 
   fetchRecordsOnCreate: true,
 
-  fetchRecordsOnCreateEach: true
+  fetchRecordsOnCreateEach: true,
 };

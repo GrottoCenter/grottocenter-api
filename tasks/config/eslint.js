@@ -9,6 +9,7 @@ module.exports = function(grunt) {
       options: {
         silent: true, // Do not stop grunt on error
         quiet: true, // Do not display warnings
+        fix: true,
       },
     },
   });

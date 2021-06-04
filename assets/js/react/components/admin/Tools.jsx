@@ -66,7 +66,29 @@ const EntriesOfInterestTableRow = (props) => {
 };
 
 EntriesOfInterestTableRow.propTypes = {
-  row: PropTypes.shape(PropTypes.any).isRequired,
+  row: PropTypes.shape({
+    id: PropTypes.number,
+    name: PropTypes.string,
+    country: PropTypes.string,
+    region: PropTypes.string,
+    isPublic: PropTypes.bool,
+    isSensitive: PropTypes.bool,
+    isOfInterest: PropTypes.bool,
+    entryInfo: PropTypes.shape({
+      depth: PropTypes.string,
+      length: PropTypes.number,
+      path: PropTypes.number,
+    }),
+    stats: PropTypes.shape({
+      aestheticism: PropTypes.number,
+      caving: PropTypes.number,
+      approach: PropTypes.number,
+    }),
+    timeInfo: PropTypes.shape({
+      eTUnderground: PropTypes.number,
+      eTTrail: PropTypes.number,
+    }),
+  }).isRequired,
 };
 
 export class EntriesOfInterest extends Component {
