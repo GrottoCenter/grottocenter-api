@@ -1,11 +1,11 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import { useIntl } from 'react-intl';
 import { Terrain, Home } from '@material-ui/icons';
 import { isNil } from 'ramda';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
-import { useParams } from 'react-router-dom';
+import { useHistory, useParams } from 'react-router-dom';
 
 import Overview from './Overview';
 import Section from './Section';
@@ -17,6 +17,7 @@ import {
   makeOrganizations,
   makeOverview,
 } from './transformers';
+import { usePermissions } from '../../hooks';
 
 const Wrapper = styled.div`
   & > div {
@@ -30,11 +31,12 @@ const DocumentPage = ({
   organizations,
   details,
   entities,
+  onEdit,
 }) => {
   const { formatMessage } = useIntl();
   return (
     <Wrapper>
-      <Overview {...overview} loading={loading} />
+      <Overview {...overview} loading={loading} onEdit={onEdit} />
       <Section
         loading={loading}
         title={formatMessage({ id: 'Organizations' })}
@@ -147,12 +149,24 @@ const HydratedDocumentPage = ({ id }) => {
   const { isLoading, details, error } = useSelector(
     (state) => state.documentDetails,
   );
-
+  const history = useHistory();
+  const editPath = useRef('/ui');
+  const permissions = usePermissions();
+  
   useEffect(() => {
     if (!isNil(documentId)) {
       dispatch(fetchDocumentDetails(documentId));
+      editPath.current = '/ui/documents/edit/'+documentId;
     }
   }, [documentId]);
+
+  const onEdit = () => {
+    if(permissions.isAuth){
+      history.push(editPath.current)
+    }else{
+      return undefined;
+    }
+  }
 
   return (
     <DocumentPage
@@ -161,6 +175,7 @@ const HydratedDocumentPage = ({ id }) => {
       details={makeDetails(details || {})}
       entities={makeEntities(details || {})}
       loading={isNil(documentId) || isLoading || !isNil(error)}
+      onEdit={onEdit}
     />
   );
 };
@@ -208,6 +223,7 @@ DocumentPage.propTypes = {
     cave: PropTypes.string,
     entrance: PropTypes.string,
   }),
+  onEdit: PropTypes.func.isRequired,
 };
 
 HydratedDocumentPage.propTypes = {

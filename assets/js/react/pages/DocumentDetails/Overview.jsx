@@ -1,6 +1,7 @@
 import {
   Card,
   CardContent as MuiCardContent,
+  IconButton as MuiIconButton,
   Typography,
   Box,
 } from '@material-ui/core';
@@ -10,6 +11,8 @@ import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import { Skeleton } from '@material-ui/lab';
 import { isEmpty } from 'ramda';
+import CreateIcon from '@material-ui/icons/Create';
+import { isNil } from 'ramda';
 
 const Header = styled.div`
   display: flex;
@@ -34,6 +37,10 @@ const CardContent = styled(MuiCardContent)`
 const CreatedByTypography = styled(Typography)`
   display: flex;
   flex-direction: row;
+`;
+
+const IconButton = styled(MuiIconButton)`
+  margin-left: auto;
 `;
 
 const CreatedBy = ({ name, creationDate }) => {
@@ -64,6 +71,7 @@ const Overview = ({
   title,
   summary,
   loading,
+  onEdit,
 }) => {
   const { formatMessage } = useIntl();
 
@@ -115,6 +123,14 @@ const Overview = ({
             )}
           </>
         )}
+        <IconButton
+          size="small"
+          aria-label="edit"
+          onClick={onEdit}
+          disabled={isNil(onEdit)}
+        >
+          <CreateIcon/>
+        </IconButton>
       </CardContent>
     </Card>
   );
@@ -135,4 +151,5 @@ Overview.propTypes = {
   language: PropTypes.string.isRequired,
   title: PropTypes.string.isRequired,
   summary: PropTypes.string.isRequired,
+  onEdit: PropTypes.func.isRequired,
 };
