@@ -241,19 +241,31 @@ module.exports = {
     if (!hasRight) {
       return res.forbidden('You are not authorized to update a document.');
     }
+    const hasRightEditNotValidated = await sails.helpers.checkRight.with({
+      groups: req.token.groups,
+      rightEntity: RightService.RightEntities.DOCUMENT,
+      rightAction: RightService.RightActions.EDIT_NOT_VALIDATED,
+    });
 
     const cleanedData = {
       ...getConvertedDataFromClient(req),
       id: req.param('id'),
+    };
+    const updateCriteria = hasRightEditNotValidated ?
+    {
+      id: req.param('id'),
+    }
+    :
+    {
+      id: req.param('id'),
+      isValidated: 'true',
     };
 
     // Launch update request using transaction: it performs a rollback if an error occurs
     await sails
       .getDatastore()
       .transaction(async (db) => {
-        const updatedDocument = await TDocument.updateOne({
-          id: req.param('id'),
-        })
+        const updatedDocument = await TDocument.updateOne(updateCriteria)
           .set(cleanedData)
           .usingConnection(db);
         if (!updatedDocument) {
@@ -281,6 +293,8 @@ module.exports = {
           })
           .usingConnection(db);
 
+        ElasticsearchService.deleteResource('documents', updatedDocument.id);
+        
         const params = {};
         params.controllerMethod = 'DocumentController.update';
         return ControllerService.treat(req, null, updatedDocument, params, res);
@@ -579,7 +593,7 @@ module.exports = {
       });
   },
 
-  multipleValidate: (req, res, next) => {
+  multipleValidate: async  (req, res, next) => {
     const documents = req.param('documents');
     if (!documents) {
       return res.ok();
@@ -608,10 +622,13 @@ module.exports = {
           validator: req.token.id,
         }),
       );
-      Promise.all(updatePromises).then((results) => {
-        results.map((doc) => {
+    });
+
+    Promise.all(updatePromises).then(async (results) => {
+    for(const doc of results){
           if (doc.isValidated) {
-            TDocument.findOne(doc.id)
+            try {
+            const found = await TDocument.findOne(doc.id)
               .populate('author')
               .populate('authors')
               .populate('cave')
@@ -628,19 +645,81 @@ module.exports = {
               .populate('reviewer')
               .populate('subjects')
               .populate('type')
-              .exec(async (err, found) => {
-                if (err) {
+
+            await setNamesOfPopulatedDocument(found);
+            await addDocumentToElasticSearchIndexes(found);
+            }
+            catch(err){
                   return res.serverError(
                     'An error occured when trying to get all information about the document.',
                   );
                 }
-                await setNamesOfPopulatedDocument(found);
-                await addDocumentToElasticSearchIndexes(found);
-              });
+          } else {
+            /*
+              If the document is not validated, check if the document has been recorded in h_document, which would mean that
+              it has been recently modified. If so, update the document with the old values.
+            */
+           const sortClause = [{dateReviewed: 'desc'}];
+            try {
+
+              //Take the 2nd entry from the result of HDocument because we updated the table at the beginning of this method which caused the creation of a new entry in h_document.
+              const foundHDocumentArray = await HDocument.find({id: doc.id})
+              .sort(sortClause)
+              .limit(2);
+              const foundHDescriptionArray = await HDescription.find({document: doc.id})
+              .sort(sortClause)
+              .limit(1);
+              const foundHDocument = foundHDocumentArray[1];
+              const foundHDescription = foundHDescriptionArray[0];
+
+              if(!ramda.isNil(foundHDocument) && !ramda.isNil(foundHDescription)){   
+                const {dateValidation, isValidated, validationComment, validator, ...foundHDocument} = foundHDocument;           
+                // Launch update request using transaction: it performs a rollback if an error occurs
+                await sails
+                .getDatastore()
+                .transaction(async (db) => {
+                  /*
+                    isValidated is set to true, because the document is back to state when it was validated.
+                    It it necessary so the users may still edit the document even after a modification has been recently refused.
+                  */
+                  await TDocument.updateOne({id: doc.id}).set({
+                    ...foundHDocument,
+                    isValidated: 'true',
+                  })
+                  await TDescription.updateOne({document: doc.id}).set({
+                    ...foundHDescription
+                  })
+                  const populatedDoc = await TDocument.findOne(doc.id)
+                      .populate('author')
+                      .populate('authors')
+                      .populate('cave')
+                      .populate('descriptions')
+                      .populate('editor')
+                      .populate('entrance')
+                      .populate('identifierType')
+                      .populate('languages')
+                      .populate('library')
+                      .populate('license')
+                      .populate('massif')
+                      .populate('parent')
+                      .populate('regions')
+                      .populate('reviewer')
+                      .populate('subjects')
+                      .populate('type')
+                  await setNamesOfPopulatedDocument(populatedDoc);
+                  await addDocumentToElasticSearchIndexes(populatedDoc);
+              })
+            }
           }
-        });
-        res.ok();
-      });
-    });
+            catch(err) {
+                return res.serverError(
+                  'An error occured when trying to retrieve the old information.',
+                );
+            }
+                                
+          }
+        };
+        return res.ok();
+      })
   },
 };
