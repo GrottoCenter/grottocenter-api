@@ -5,6 +5,10 @@ const makeCustomHeaderCellRenders = () => {
 
   return [
     {
+      id: 'modifiedDocJson',
+      customRender: () => '',
+    },
+    {
       id: 'titles',
       customRender: () => formatMessage({ id: 'Title' }),
     },

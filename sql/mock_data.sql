@@ -61,7 +61,8 @@ INSERT INTO public.t_right (id,"name","comments") VALUES
 	(97, 'Description - create', NULL),
 	(98, 'Location - edit any', NULL),
 	(99, 'Location - create', NULL),
-  (100, 'Application - no request limit', NULL);
+  	(100, 'Application - no request limit', NULL),
+	(101, 'Document - edit not validated', NULL);
 
 INSERT INTO public.j_group_right (id_group,id_right) VALUES
     (1, 2),
@@ -107,7 +108,8 @@ INSERT INTO public.j_group_right (id_group,id_right) VALUES
 	(3, 95),
 	(3, 97),
 	(3, 98),
-	(3, 99);
+	(3, 99),
+	(2, 100);
 
 INSERT INTO public.t_identifier_type (code,"text",regexp) VALUES
  ('doi  ','digital object identifier','^.+$'),

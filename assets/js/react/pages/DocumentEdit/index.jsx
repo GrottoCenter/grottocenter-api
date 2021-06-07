@@ -6,8 +6,18 @@ import { isEmpty, isNil, head, pathOr, propOr, reject, pipe } from 'ramda';
 import DocumentSubmission from '../DocumentSubmission';
 import { fetchDocumentDetails } from '../../actions/DocumentDetails';
 import docInfoGetters from './docInfoGetters';
+import { useHistory, useParams } from 'react-router-dom';
+import { resetApiMessages } from '../../actions/Document';
 
-const DocumentEdit = ({ onSuccessfulUpdate, id, resetIsValidated }) => {
+const DocumentEdit = ({
+  onSuccessfulUpdate,
+  id,
+  resetIsValidated,
+  requireUpdate = false,
+}) => {
+  const { documentId: documentIdFromRoute } = useParams();
+  const documentId = documentIdFromRoute || id;
+  const history = useHistory();
   const dispatch = useDispatch();
   const { isLoading, details, error } = useSelector(
     (state) => state.documentDetails,
@@ -17,15 +27,22 @@ const DocumentEdit = ({ onSuccessfulUpdate, id, resetIsValidated }) => {
     (state) => state.document,
   );
 
-  useEffect(() => {
-    if (!isNil(id)) {
-      dispatch(fetchDocumentDetails(id));
+  if(!onSuccessfulUpdate){
+    onSuccessfulUpdate = () => {
+      dispatch(resetApiMessages())
+      history.push('/ui/documents/'+documentId);
     }
-  }, [id]);
+  }
+
+  useEffect(() => {
+    if (!isNil(documentId)) {
+      dispatch(fetchDocumentDetails(documentId, requireUpdate));
+    }
+  }, [documentId]);
 
   useEffect(() => {
     if (latestHttpCode === 200 && isEmpty(errorMessages)) {
-      onSuccessfulUpdate();
+        onSuccessfulUpdate();
     }
   }, [latestHttpCode, errorMessages]);
 
@@ -78,7 +95,7 @@ const DocumentEdit = ({ onSuccessfulUpdate, id, resetIsValidated }) => {
 };
 
 DocumentEdit.propTypes = {
-  onSuccessfulUpdate: PropTypes.func.isRequired,
+  onSuccessfulUpdate: PropTypes.func,
   id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   resetIsValidated: PropTypes.bool,
 };

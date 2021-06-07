@@ -24,6 +24,7 @@ module.exports = {
     DELETE_OWN: 'delete own',
     EDIT_ANY: 'edit any',
     EDIT_OWN: 'edit own',
+    EDIT_NOT_VALIDATED: 'edit not validated',
     LINK_RESOURCE: 'link resource',
     MERGE_DUPLICATES: 'merge duplicates',
     NO_REQUEST_LIMIT: 'no request limit',
