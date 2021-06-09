@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { CircularProgress } from '@material-ui/core';
 import { useDispatch, useSelector } from 'react-redux';
@@ -7,6 +7,7 @@ import DocumentSubmission from '../DocumentSubmission';
 import { fetchDocumentDetails } from '../../actions/DocumentDetails';
 import docInfoGetters from './docInfoGetters';
 import { useHistory, useParams } from 'react-router-dom';
+import { resetApiMessages } from '../../actions/Document';
 
 const DocumentEdit = ({ onSuccessfulUpdate, id, resetIsValidated }) => {
   const { documentId: documentIdFromRoute } = useParams();
@@ -23,6 +24,7 @@ const DocumentEdit = ({ onSuccessfulUpdate, id, resetIsValidated }) => {
 
   if(!onSuccessfulUpdate){
     onSuccessfulUpdate = () => {
+      dispatch(resetApiMessages())
       history.push('/ui/documents/'+documentId);
     }
   }
