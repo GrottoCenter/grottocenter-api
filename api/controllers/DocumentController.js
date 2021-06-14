@@ -243,14 +243,25 @@ module.exports = {
       ...getConvertedDataFromClient(req),
       id: req.param('id'),
     };
+    
+    const groupsRight = ['Administrator', 'Moderator', 'User'];
+    let updateCriteria = {
+      id: req.param('id'),
+      isValidated: 'true',
+    }
+    for(const group of req.token.groups){
+      if(groupsRight.includes(group.name)){
+        updateCriteria = {
+          id: req.param('id'),
+        }
+      }
+    }
 
     // Launch update request using transaction: it performs a rollback if an error occurs
     await sails
       .getDatastore()
       .transaction(async (db) => {
-        const updatedDocument = await TDocument.updateOne({
-          id: req.param('id'),
-        })
+        const updatedDocument = await TDocument.updateOne(updateCriteria)
           .set(cleanedData)
           .usingConnection(db);
         if (!updatedDocument) {
