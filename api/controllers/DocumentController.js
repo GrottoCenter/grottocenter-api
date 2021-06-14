@@ -657,76 +657,74 @@ module.exports = {
               const foundHDocument = foundHDocumentArray[1];
               const foundHDescription = foundHDescriptionArray[0];
 
-              if(ramda.isNil(foundHDocument) || ramda.isNil(foundHDescription)){
-                throw 'Error when retrieving the old values of the document';
-              }
-              
-              // Launch update request using transaction: it performs a rollback if an error occurs
-              await sails
-              .getDatastore()
-              .transaction(async (db) => {
-                await TDocument.updateOne({id: doc.id}).set({
-                  author: foundHDocument.author,
-                  reviewer: foundHDocument.reviewer,
-                  dateInscription: foundHDocument.dateInscription,
-                  datePublication: foundHDocument.datePublication,
-                  dateReviewed: foundHDocument.dateReviewed,
-                  authorComment: foundHDocument.authorComment,
-                  pages: foundHDocument.pages,
-                  identifier: foundHDocument.identifier,
-                  identifierType: foundHDocument.identifierType,
-                  refBbs: foundHDocument.refBbs,
-                  entrance: foundHDocument.entrance,
-                  massif: foundHDocument.massif,
-                  cave: foundHDocument.cave,
-                  authorCaver: foundHDocument.authorCaver,
-                  authorGrotto: foundHDocument.authorGrotto,
-                  editor: foundHDocument.editor,
-                  library: foundHDocument.library,
-                  type: foundHDocument.type,
-                  parent: foundHDocument.parent,
-                  license: foundHDocument.license,
-                  pagesBBSOld: foundHDocument.pagesBBSOld,
-                  commentsBBSOld: foundHDocument.commentsBBSOld,
-                  publicationOtherBBSOld: foundHDocument.publicationOtherBBSOld,
-                  publicationFasciculeBBSOld: foundHDocument.publicationFasciculeBBSOld,
-                })
-                await TDescription.updateOne({document: doc.id}).set({
-                  author: foundHDescription.author,
-                  reviewer: foundHDescription.reviewer,
-                  dateInscription: foundHDescription.dateInscription,
-                  dateReviewed: foundHDescription.dateReviewed,
-                  relevance: foundHDescription.relevance,
-                  title: foundHDescription.title,
-                  body: foundHDescription.body,
-                  cave: foundHDescription.cave,
-                  entrance: foundHDescription.entrance,
-                  exit: foundHDescription.exit,
-                  massif: foundHDescription.massif,
-                  point: foundHDescription.point,
-                  language: foundHDescription.language,
-                })
-                const populatedDoc = await TDocument.findOne(doc.id)
-                    .populate('author')
-                    .populate('authors')
-                    .populate('cave')
-                    .populate('descriptions')
-                    .populate('editor')
-                    .populate('entrance')
-                    .populate('identifierType')
-                    .populate('languages')
-                    .populate('library')
-                    .populate('license')
-                    .populate('massif')
-                    .populate('parent')
-                    .populate('regions')
-                    .populate('reviewer')
-                    .populate('subjects')
-                    .populate('type')
-                await setNamesOfPopulatedDocument(populatedDoc);
-                await addDocumentToElasticSearchIndexes(populatedDoc);
-            })
+              if(!ramda.isNil(foundHDocument) && !ramda.isNil(foundHDescription)){              
+                // Launch update request using transaction: it performs a rollback if an error occurs
+                await sails
+                .getDatastore()
+                .transaction(async (db) => {
+                  await TDocument.updateOne({id: doc.id}).set({
+                    author: foundHDocument.author,
+                    reviewer: foundHDocument.reviewer,
+                    dateInscription: foundHDocument.dateInscription,
+                    datePublication: foundHDocument.datePublication,
+                    dateReviewed: foundHDocument.dateReviewed,
+                    authorComment: foundHDocument.authorComment,
+                    pages: foundHDocument.pages,
+                    identifier: foundHDocument.identifier,
+                    identifierType: foundHDocument.identifierType,
+                    refBbs: foundHDocument.refBbs,
+                    entrance: foundHDocument.entrance,
+                    massif: foundHDocument.massif,
+                    cave: foundHDocument.cave,
+                    authorCaver: foundHDocument.authorCaver,
+                    authorGrotto: foundHDocument.authorGrotto,
+                    editor: foundHDocument.editor,
+                    library: foundHDocument.library,
+                    type: foundHDocument.type,
+                    parent: foundHDocument.parent,
+                    license: foundHDocument.license,
+                    pagesBBSOld: foundHDocument.pagesBBSOld,
+                    commentsBBSOld: foundHDocument.commentsBBSOld,
+                    publicationOtherBBSOld: foundHDocument.publicationOtherBBSOld,
+                    publicationFasciculeBBSOld: foundHDocument.publicationFasciculeBBSOld,
+                  })
+                  await TDescription.updateOne({document: doc.id}).set({
+                    author: foundHDescription.author,
+                    reviewer: foundHDescription.reviewer,
+                    dateInscription: foundHDescription.dateInscription,
+                    dateReviewed: foundHDescription.dateReviewed,
+                    relevance: foundHDescription.relevance,
+                    title: foundHDescription.title,
+                    body: foundHDescription.body,
+                    cave: foundHDescription.cave,
+                    entrance: foundHDescription.entrance,
+                    exit: foundHDescription.exit,
+                    massif: foundHDescription.massif,
+                    point: foundHDescription.point,
+                    language: foundHDescription.language,
+                  })
+                  const populatedDoc = await TDocument.findOne(doc.id)
+                      .populate('author')
+                      .populate('authors')
+                      .populate('cave')
+                      .populate('descriptions')
+                      .populate('editor')
+                      .populate('entrance')
+                      .populate('identifierType')
+                      .populate('languages')
+                      .populate('library')
+                      .populate('license')
+                      .populate('massif')
+                      .populate('parent')
+                      .populate('regions')
+                      .populate('reviewer')
+                      .populate('subjects')
+                      .populate('type')
+                  await setNamesOfPopulatedDocument(populatedDoc);
+                  await addDocumentToElasticSearchIndexes(populatedDoc);
+              })
             }
+          }
             catch(err) {
                 return res.serverError(
                   'An error occured when trying to retrieve the old information.',
