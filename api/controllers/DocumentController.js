@@ -673,12 +673,17 @@ module.exports = {
                 await sails
                 .getDatastore()
                 .transaction(async (db) => {
+                  /*
+                    isValidated is set to true, because the document is back to state when it was validated.
+                    It it necessary so the users may still edit the document even after a modification has been recently refused.
+                  */
                   await TDocument.updateOne({id: doc.id}).set({
                     author: foundHDocument.author,
                     reviewer: foundHDocument.reviewer,
                     dateInscription: foundHDocument.dateInscription,
                     datePublication: foundHDocument.datePublication,
                     dateReviewed: foundHDocument.dateReviewed,
+                    isValidated: 'true',
                     authorComment: foundHDocument.authorComment,
                     pages: foundHDocument.pages,
                     identifier: foundHDocument.identifier,

@@ -31,12 +31,13 @@ const DocumentPage = ({
   organizations,
   details,
   entities,
+  isValidated,
   onEdit,
 }) => {
   const { formatMessage } = useIntl();
   return (
     <Wrapper>
-      <Overview {...overview} loading={loading} onEdit={onEdit} />
+      <Overview {...overview} loading={loading} isValidated={isValidated} onEdit={onEdit} />
       <Section
         loading={loading}
         title={formatMessage({ id: 'Organizations' })}
@@ -175,6 +176,7 @@ const HydratedDocumentPage = ({ id }) => {
       details={makeDetails(details || {})}
       entities={makeEntities(details || {})}
       loading={isNil(documentId) || isLoading || !isNil(error)}
+      isValidated={details.isValidated}
       onEdit={onEdit}
     />
   );
@@ -223,6 +225,7 @@ DocumentPage.propTypes = {
     cave: PropTypes.string,
     entrance: PropTypes.string,
   }),
+  isValidated: PropTypes.bool.isRequired,
   onEdit: PropTypes.func.isRequired,
 };
 

@@ -1,7 +1,7 @@
 import {
   Card,
   CardContent as MuiCardContent,
-  IconButton as MuiIconButton,
+  IconButton,
   Typography,
   Box,
 } from '@material-ui/core';
@@ -39,7 +39,7 @@ const CreatedByTypography = styled(Typography)`
   flex-direction: row;
 `;
 
-const IconButton = styled(MuiIconButton)`
+const EditButton = styled(Box)`
   margin-left: auto;
 `;
 
@@ -71,6 +71,7 @@ const Overview = ({
   title,
   summary,
   loading,
+  isValidated,
   onEdit,
 }) => {
   const { formatMessage } = useIntl();
@@ -123,14 +124,22 @@ const Overview = ({
             )}
           </>
         )}
-        <IconButton
-          size="small"
-          aria-label="edit"
-          onClick={onEdit}
-          disabled={isNil(onEdit)}
-        >
-          <CreateIcon/>
-        </IconButton>
+        <EditButton>
+          {isValidated ?
+          (
+          <IconButton
+            size="small"
+            aria-label="edit"
+            onClick={onEdit}
+            disabled={isNil(onEdit)}
+          >
+            <CreateIcon/>
+          </IconButton>
+          )
+          :
+            (<Typography variant="body1">{formatMessage({id : "A moderator needs to validate the last modification before being able to edit the document again."})}</Typography>)
+          }
+        </EditButton>
       </CardContent>
     </Card>
   );
@@ -151,5 +160,6 @@ Overview.propTypes = {
   language: PropTypes.string.isRequired,
   title: PropTypes.string.isRequired,
   summary: PropTypes.string.isRequired,
+  isValidated :PropTypes.bool.isRequired,
   onEdit: PropTypes.func.isRequired,
 };
