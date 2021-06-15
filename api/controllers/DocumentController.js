@@ -705,19 +705,7 @@ module.exports = {
                     publicationFasciculeBBSOld: foundHDocument.publicationFasciculeBBSOld,
                   })
                   await TDescription.updateOne({document: doc.id}).set({
-                    author: foundHDescription.author,
-                    reviewer: foundHDescription.reviewer,
-                    dateInscription: foundHDescription.dateInscription,
-                    dateReviewed: foundHDescription.dateReviewed,
-                    relevance: foundHDescription.relevance,
-                    title: foundHDescription.title,
-                    body: foundHDescription.body,
-                    cave: foundHDescription.cave,
-                    entrance: foundHDescription.entrance,
-                    exit: foundHDescription.exit,
-                    massif: foundHDescription.massif,
-                    point: foundHDescription.point,
-                    language: foundHDescription.language,
+                    ...foundHDescription
                   })
                   const populatedDoc = await TDocument.findOne(doc.id)
                       .populate('author')
