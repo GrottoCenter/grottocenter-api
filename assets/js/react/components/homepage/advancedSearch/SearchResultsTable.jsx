@@ -578,8 +578,8 @@ class SearchResultsTable extends React.Component {
                           {result.authors ? result.authors : '-'}
                         </TableCell>
                         <TableCell>
-                          {result.publicationDate
-                            ? result.publicationDate
+                          {result.datePublication
+                            ? result.datePublication.split('-')[0]
                             : '-'}
                         </TableCell>
                       </>
