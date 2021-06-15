@@ -48,7 +48,7 @@ class DocumentSearch extends React.Component {
     const { yearMinValue, yearMaxValue } = this.props;
 
     return {
-      'publication_year-range': {
+      'datePublication-range': {
         isEditable: false,
         min: yearMinValue,
         max: yearMaxValue,
@@ -158,7 +158,7 @@ class DocumentSearch extends React.Component {
     } = this.props;
 
     const {
-      'publication_year-range': yearRange,
+      'datePublication-range': yearRange,
       ref_bbs,
       title,
       authors,
@@ -484,13 +484,13 @@ class DocumentSearch extends React.Component {
                     })}
                     disabled={!yearRange.isEditable}
                     onDisable={this.handleCheckedChange(
-                      'publication_year-range',
+                      'datePublication-range',
                     )}
                     min={yearMinValue}
                     max={yearMaxValue}
                     onChange={(values) => {
                       this.handleRangeChange(
-                        'publication_year-range',
+                        'datePublication-range',
                         values,
                         yearMinValue,
                         yearMaxValue,
