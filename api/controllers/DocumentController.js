@@ -665,7 +665,7 @@ module.exports = {
               const foundHDescriptionArray = await HDescription.find({document: doc.id})
               .sort(sortClause)
               .limit(1);
-              const foundHDocument = foundHDocumentArray[1];
+              const {dateValidation, isValidated, validationComment, validator, ...foundHDocument} = foundHDocumentArray[1];
               const foundHDescription = foundHDescriptionArray[0];
 
               if(!ramda.isNil(foundHDocument) && !ramda.isNil(foundHDescription)){              
@@ -678,31 +678,8 @@ module.exports = {
                     It it necessary so the users may still edit the document even after a modification has been recently refused.
                   */
                   await TDocument.updateOne({id: doc.id}).set({
-                    author: foundHDocument.author,
-                    reviewer: foundHDocument.reviewer,
-                    dateInscription: foundHDocument.dateInscription,
-                    datePublication: foundHDocument.datePublication,
-                    dateReviewed: foundHDocument.dateReviewed,
+                    ...foundHDocument,
                     isValidated: 'true',
-                    authorComment: foundHDocument.authorComment,
-                    pages: foundHDocument.pages,
-                    identifier: foundHDocument.identifier,
-                    identifierType: foundHDocument.identifierType,
-                    refBbs: foundHDocument.refBbs,
-                    entrance: foundHDocument.entrance,
-                    massif: foundHDocument.massif,
-                    cave: foundHDocument.cave,
-                    authorCaver: foundHDocument.authorCaver,
-                    authorGrotto: foundHDocument.authorGrotto,
-                    editor: foundHDocument.editor,
-                    library: foundHDocument.library,
-                    type: foundHDocument.type,
-                    parent: foundHDocument.parent,
-                    license: foundHDocument.license,
-                    pagesBBSOld: foundHDocument.pagesBBSOld,
-                    commentsBBSOld: foundHDocument.commentsBBSOld,
-                    publicationOtherBBSOld: foundHDocument.publicationOtherBBSOld,
-                    publicationFasciculeBBSOld: foundHDocument.publicationFasciculeBBSOld,
                   })
                   await TDescription.updateOne({document: doc.id}).set({
                     ...foundHDescription
