@@ -238,24 +238,25 @@ module.exports = {
     if (!hasRight) {
       return res.forbidden('You are not authorized to update a document.');
     }
+    const hasRightEditNotValidated = await sails.helpers.checkRight.with({
+      groups: req.token.groups,
+      rightEntity: RightService.RightEntities.DOCUMENT,
+      rightAction: RightService.RightActions.EDIT_NOT_VALIDATED,
+    });
 
     const cleanedData = {
       ...getConvertedDataFromClient(req),
       id: req.param('id'),
     };
-    
-    const groupsRight = ['Administrator', 'Moderator', 'User'];
-    let updateCriteria = {
+    const updateCriteria = hasRightEditNotValidated ?
+    {
+      id: req.param('id'),
+    }
+    :
+    {
       id: req.param('id'),
       isValidated: 'true',
-    }
-    for(const group of req.token.groups){
-      if(groupsRight.includes(group.name)){
-        updateCriteria = {
-          id: req.param('id'),
-        }
-      }
-    }
+    };
 
     // Launch update request using transaction: it performs a rollback if an error occurs
     await sails
