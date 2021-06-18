@@ -59,7 +59,7 @@ const addDocumentToElasticSearchIndexes = (document) => {
       ? document.authors.map((a) => a.nickname).join(', ')
       : null,
     date_part: document.datePublication // eslint-disable-line camelcase
-      ? new Date(document.datePublication).getYear()
+      ? new Date(document.datePublication).getFullYear()
       : null,
     description: document.descriptions[0].body,
     'editor id': ramda.pathOr(null, ['editor', 'id'], document),
