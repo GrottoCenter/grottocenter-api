@@ -282,10 +282,8 @@ const self = (module.exports = {
    */
    sanitizeQuery: (sourceString) => {
     // eslint-disable-next-line no-useless-escape
-    sourceString.replace(/[`~!@#$%^&*()_|+\-=?;:",<>«»\{\}\[\]\/\\]/gi, ' ')
-    if(sourceString[sourceString.length-1] === '.'){
-      sourceString = sourceString.slice(0, -1);
-    }
+    sourceString.replace(/[`~!@#$%^&*()_|+\-=?;:",<>«»\{\}\[\]\/\\]/gi, ' ');
+    sourceString = sourceString[sourceString.length-1] === '.' ? sourceString.slice(0, -1) : sourceString;
     return sourceString;
    },
 });
