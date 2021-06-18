@@ -58,7 +58,7 @@ const getEsBody = (document) => {
     'contributor id': document.author.id,
     'contributor nickname': document.author.nickname,
     date_part: document.datePublication // eslint-disable-line camelcase
-      ? new Date(document.datePublication).getYear()
+      ? new Date(document.datePublication).getFullYear()
       : null,
     description: document.descriptions[0].body,
     'editor id': ramda.pathOr(null, ['editor', 'id'], document),
