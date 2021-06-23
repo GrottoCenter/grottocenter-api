@@ -62,4 +62,108 @@ module.exports = {
     await Promise.all(mapEntrances);
     return allEntrances;
   },
+
+  createEntrance : async (entranceData, nameDescLocData, errorHandler, esClient) => {
+    const newEntrancePopulated = await sails
+      .getDatastore()
+      .transaction(async (db) => {
+
+        const newEntrance = await TEntrance.create(entranceData)
+          .fetch()
+          .usingConnection(db);
+
+        // Name
+        if(ramda.pathOr(null, ['name', 'text'], nameDescLocData)){
+        await TName.create({
+          author: nameDescLocData.name.author,
+          dateInscription: ramda.propOr(new Date(), 'dateInscription', nameDescLocData.name),
+          dateReviewed: ramda.propOr(undefined, 'dateReviewed', nameDescLocData.name),
+          entrance: newEntrance.id,
+          isMain: true,
+          language: nameDescLocData.name.language,
+          name: nameDescLocData.name.text,
+        })
+          .fetch()
+          .usingConnection(db);
+        }
+        // Description (if provided)
+        if (ramda.pathOr(null, ['description', 'body'], nameDescLocData)) {
+          await TDescription.create({
+            author: nameDescLocData.description.author,
+            body: nameDescLocData.description.body,
+            dateInscription: ramda.propOr(new Date(), 'dateInscription', nameDescLocData.description),
+            dateReviewed: ramda.propOr(undefined, 'dateReviewed', nameDescLocData.description),
+            entrance: newEntrance.id,
+            language: nameDescLocData.description.language,
+            title: nameDescLocData.description.title,
+          }).usingConnection(db);
+        }
+
+        // Location (if provided)
+        if (ramda.pathOr(null, ['location', 'body'], nameDescLocData)) {
+          await TLocation.create({
+            author: nameDescLocData.location.author,
+            body: nameDescLocData.location.body,
+            dateInscription: ramda.propOr(new Date(), 'dateInscription', nameDescLocData.location),
+            dateReviewed: ramda.propOr(undefined, 'dateReviewed', nameDescLocData.location),
+            entrance: newEntrance.id,
+            language: nameDescLocData.location.language,
+          }).usingConnection(db);
+        }
+
+        // Prepare data for Elasticsearch indexation
+      const newEntrancePopulated = await TEntrance.findOne(newEntrance.id)
+      .populate('cave')
+      .populate('country')
+      .populate('descriptions')
+      .usingConnection(db);
+        return newEntrancePopulated;
+      })
+      .intercept(errorHandler);
+
+    // Prepare data for Elasticsearch indexation
+    const description =
+      newEntrancePopulated.descriptions.length === 0
+        ? null
+        : // There is only one description at the moment
+          newEntrancePopulated.descriptions[0].title +
+          ' ' +
+          newEntrancePopulated.descriptions[0].body;
+
+    // Format cave massif
+    newEntrancePopulated.cave.massif = {
+      id: newEntrancePopulated.cave.massif,
+    };
+    await CaveService.setEntrances([newEntrancePopulated.cave]);
+    await NameService.setNames([newEntrancePopulated], 'entrance');
+    await NameService.setNames([newEntrancePopulated.cave], 'cave');
+    await NameService.setNames([newEntrancePopulated.cave.massif], 'massif');
+
+    const { cave, name, names, ...newEntranceESData } = newEntrancePopulated;
+    try {
+      esClient.create({
+        index: `entrances-index`,
+        type: 'data',
+        id: newEntrancePopulated.id,
+        body: {
+          ...newEntranceESData,
+          name: newEntrancePopulated.name,
+          names: newEntrancePopulated.names.map((n) => n.name).join(', '),
+          descriptions: [description],
+          type: 'entrance',
+          'cave name': newEntrancePopulated.cave.name,
+          'cave length': newEntrancePopulated.cave.length,
+          'cave depth': newEntrancePopulated.cave.depth,
+          'cave is diving': newEntrancePopulated.cave.isDiving,
+          'massif name': newEntrancePopulated.cave.massif.name,
+          country: newEntrancePopulated.country.nativeName,
+          'country code': newEntrancePopulated.country.iso3,
+        },
+      });
+    } catch (error) {
+      sails.log.error(error);
+    }
+
+    return newEntrancePopulated;
+  }
 };

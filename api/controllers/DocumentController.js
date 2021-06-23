@@ -48,6 +48,28 @@ const getConvertedDataFromClient = (req) => {
   };
 };
 
+const getLangDescDataFromClient = (req) => {
+  let langDescData = {
+    author: req.token.id,
+    description: req.body.description,
+    title: req.body.title,
+    titleAndDescriptionLanguage: {
+      id: req.body.titleAndDescriptionLanguage.id,
+    },
+  };
+
+  if (ramda.pathOr(null, ['documentMainLanguage', 'id'], req.body)) {
+    langDescData = {
+      ...langDescData,
+      documentMainLanguage: {
+        id: req.body.documentMainLanguage.id,
+      },
+    };
+  }
+
+  return langDescData;
+};
+
 const getEsBody = (document) => {
   const { type, modifiedDocJson, ...docWithoutJsonAndType } = document;
   return {
@@ -181,58 +203,38 @@ module.exports = {
     if (!hasRight) {
       return res.forbidden('You are not authorized to create a document.');
     }
-
     const cleanedData = {
       ...getConvertedDataFromClient(req),
       dateInscription: new Date(),
     };
 
-    // Launch creation request using transaction: it performs a rollback if an error occurs
-    await sails
-      .getDatastore()
-      .transaction(async (db) => {
-        const documentCreated = await TDocument.create(cleanedData)
-          .fetch()
-          .usingConnection(db);
+    const langDescData = getLangDescDataFromClient(req);
 
-        // Create associated data not handled by TDocument manually
-        if (ramda.pathOr(null, ['documentMainLanguage', 'id'], req.body)) {
-          await JDocumentLanguage.create({
-            document: documentCreated.id,
-            language: req.body.documentMainLanguage.id,
-            isMain: true,
-          }).usingConnection(db);
+    const handleError = (error) => {
+      if (error.code && error.code === 'E_UNIQUE') {
+        return res.sendStatus(409);
+      } else {
+        switch (error.name) {
+          case 'UsageError':
+            return res.badRequest(error.message);
+          case 'AdapterError':
+            return res.badRequest(error.message);
+          default:
+            return res.serverError(error.message);
         }
+      }
+    };
 
-        await TDescription.create({
-          author: req.token.id,
-          body: req.body.description,
-          dateInscription: new Date(),
-          document: documentCreated.id,
-          language: req.body.titleAndDescriptionLanguage.id,
-          title: req.body.title,
-        }).usingConnection(db);
+    // Launch creation request using transaction: it performs a rollback if an error occurs
+    const documentCreated = await DocumentService.createDocument(
+      cleanedData,
+      langDescData,
+      handleError,
+    );
 
-        const params = {};
-        params.controllerMethod = 'DocumentController.create';
-        return ControllerService.treat(req, null, documentCreated, params, res);
-      })
-      .intercept('E_UNIQUE', (e) => {
-        sails.log.error(e.message);
-        return res.status(409).send(e.message);
-      })
-      .intercept({ name: 'UsageError' }, (e) => {
-        sails.log.error(e.message);
-        return res.badRequest(e.message);
-      })
-      .intercept({ name: 'AdapterError' }, (e) => {
-        sails.log.error(e.message);
-        return res.badRequest(e.message);
-      })
-      .intercept((e) => {
-        sails.log.error(e.message);
-        return res.serverError(e.message);
-      });
+    const params = {};
+    params.controllerMethod = 'DocumentController.create';
+    return ControllerService.treat(req, null, documentCreated, params, res);
   },
 
   update: async (req, res) => {

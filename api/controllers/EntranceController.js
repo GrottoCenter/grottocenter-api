@@ -19,6 +19,40 @@ const getConvertedDataFromClientRequest = (req) => {
   };
 };
 
+const getConvertedNameDescLocFromClientRequest = (req) => {
+  let result = {
+    name: {
+      author: req.token.id,
+      text: req.param('name').text,
+      language: req.param('name').language,
+    },
+  };
+  if (ramda.pathOr(null, ['description', 'body'], req.body)) {
+    result = {
+      ...result,
+      description: {
+        author: req.token.id,
+        body: req.body.description.body,
+        language: req.body.description.language,
+        title: req.body.description.title,
+      },
+    };
+  }
+
+  if (ramda.pathOr(null, ['location', 'body'], req.body)) {
+    result = {
+      ...result,
+      location: {
+        author: req.token.id,
+        body: req.body.location.body,
+        language: req.body.location.language,
+      },
+    };
+  }
+
+  return result;
+};
+
 module.exports = {
   find: async (req, res, converter) => {
     TEntrance.findOne(req.params.id)
@@ -189,123 +223,32 @@ module.exports = {
       return res.forbidden('You are not authorized to create an entrance.');
     }
 
-    // Launch creation request using transaction: it performs a rollback if an error occurs
-    const newEntrancePopulated = await sails
-      .getDatastore()
-      .transaction(async (db) => {
-        const cleanedData = {
-          ...getConvertedDataFromClientRequest(req),
-          dateInscription: new Date(),
-          isOfInterest: false,
-        };
-
-        const newEntrance = await TEntrance.create(cleanedData)
-          .fetch()
-          .usingConnection(db);
-
-        // Name
-        const entranceName = await TName.create({
-          author: req.token.id,
-          dateInscription: new Date(),
-          entrance: newEntrance.id,
-          isMain: true,
-          language: req.param('name').language,
-          name: req.param('name').text,
-        })
-          .fetch()
-          .usingConnection(db);
-
-        // Description (if provided)
-        if (ramda.pathOr(null, ['description', 'body'], req.body)) {
-          await TDescription.create({
-            author: req.token.id,
-            body: req.body.description.body,
-            dateInscription: new Date(),
-            entrance: newEntrance.id,
-            language: req.body.description.language,
-            title: req.body.description.title,
-          }).usingConnection(db);
-        }
-
-        // Location (if provided)
-        if (ramda.pathOr(null, ['location', 'body'], req.body)) {
-          await TLocation.create({
-            author: req.token.id,
-            body: req.body.location.body,
-            dateInscription: new Date(),
-            entrance: newEntrance.id,
-            language: req.body.location.language,
-          }).usingConnection(db);
-        }
-
-        // Prepare data for Elasticsearch indexation
-        const newEntrancePopulated = await TEntrance.findOne(newEntrance.id)
-          .populate('cave')
-          .populate('country')
-          .populate('descriptions')
-          .usingConnection(db);
-
-        return newEntrancePopulated;
-      })
-      .intercept('E_UNIQUE', (e) => {
-        sails.log.error(e.message);
-        return res.status(409).send(e.message);
-      })
-      .intercept({ name: 'UsageError' }, (e) => {
-        sails.log.error(e.message);
-        return res.badRequest(e.message);
-      })
-      .intercept({ name: 'AdapterError' }, (e) => {
-        sails.log.error(e.message);
-        return res.badRequest(e.message);
-      })
-      .intercept((e) => {
-        sails.log.error(e.message);
-        return res.serverError(e.message);
-      });
-
-    // Prepare data for Elasticsearch indexation
-    const description =
-      newEntrancePopulated.descriptions.length === 0
-        ? null
-        : // There is only one description at the moment
-          newEntrancePopulated.descriptions[0].title +
-          ' ' +
-          newEntrancePopulated.descriptions[0].body;
-
-    // Format cave massif
-    newEntrancePopulated.cave.massif = {
-      id: newEntrancePopulated.cave.massif,
+    const cleanedData = {
+      ...getConvertedDataFromClientRequest(req),
+      dateInscription: new Date(),
+      isOfInterest: false,
     };
-    await CaveService.setEntrances([newEntrancePopulated.cave]);
-    await NameService.setNames([newEntrancePopulated], 'entrance');
-    await NameService.setNames([newEntrancePopulated.cave], 'cave');
-    await NameService.setNames([newEntrancePopulated.cave.massif], 'massif');
 
-    const { cave, name, names, ...newEntranceESData } = newEntrancePopulated;
-    try {
-      esClient.create({
-        index: `entrances-index`,
-        type: 'data',
-        id: newEntrancePopulated.id,
-        body: {
-          ...newEntranceESData,
-          name: newEntrancePopulated.name,
-          names: newEntrancePopulated.names.map((n) => n.name).join(', '),
-          descriptions: [description],
-          type: 'entrance',
-          'cave name': newEntrancePopulated.cave.name,
-          'cave length': newEntrancePopulated.cave.length,
-          'cave depth': newEntrancePopulated.cave.depth,
-          'cave is diving': newEntrancePopulated.cave.isDiving,
-          'massif name': newEntrancePopulated.cave.massif.name,
-          country: newEntrancePopulated.country.nativeName,
-          'country code': newEntrancePopulated.country.iso3,
-        },
-      });
-    } catch (error) {
-      sails.log.error(error);
-    }
+    const nameDescLocData = getConvertedNameDescLocFromClientRequest(req);
+
+    const handleError = (error) => {
+      if(error.code && error.code === 'E_UNIQUE'){
+        return res.sendStatus(409);
+      } else {
+        switch(error.name){
+          case 'UsageError':
+            return res.badRequest(error);
+          case 'AdapterError':
+            return res.badRequest(error);
+          default:
+            return res.serverError(error);
+        }
+      }
+    };
+
+    // Launch creation request using transaction: it performs a rollback if an error occurs
+    const newEntrancePopulated = await EntranceService.createEntrance(cleanedData, nameDescLocData, handleError, esClient);
+      
 
     const params = {};
     params.controllerMethod = 'EntranceController.create';
