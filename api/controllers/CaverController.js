@@ -442,50 +442,27 @@ module.exports = {
       );
     }
 
-    const newCaver = await TCaver.create({
-      dateInscription: new Date(),
-      mail: 'no@mail.no', // default mail for non-user caver
-      name: req.param('name'),
-      nickname: `${req.param('name')} ${req.param('surname')}`,
-      surname: req.param('surname'),
-      language: '000', // default null language id
-    })
-      .fetch()
-      .intercept('E_UNIQUE', (e) => {
-        sails.log.error(e.message);
-        return res.status(409).send(e.message);
-      })
-      .intercept({ name: 'UsageError' }, (e) => {
-        sails.log.error(e.message);
-        return res.badRequest(e.message);
-      })
-      .intercept({ name: 'AdapterError' }, (e) => {
-        sails.log.error(e.message);
-        return res.badRequest(e.message);
-      })
-      .intercept((e) => {
-        sails.log.error(e.message);
-        return res.serverError(e.message);
-      });
+    const paramsCaver = {
+      name : req.param('name'),
+      surname : req.param('surname'),
+    };
 
-    try {
-      esClient.create({
-        index: `cavers-index`,
-        type: 'data',
-        id: newCaver.id,
-        body: {
-          id: newCaver.id,
-          groups: '',
-          mail: newCaver.mail,
-          name: newCaver.name,
-          nickname: newCaver.nickname,
-          surname: newCaver.surname,
-          type: 'caver',
-        },
-      });
-    } catch (error) {
-      sails.log.error(error);
-    }
+    const handleError = (error) => {
+      if(error.code && error.code === 'E_UNIQUE'){
+        return res.sendStatus(409).send(error.message);
+      } else {
+        switch(error.name){
+          case 'UsageError':
+            return res.badRequest(error);
+          case 'AdapterError':
+            return res.badRequest(error);
+          default:
+            return res.serverError(error);
+        }
+      }
+    };
+
+    const newCaver = await CaverService.createNonUserCaver(paramsCaver, handleError, esClient);
 
     const params = {};
     params.controllerMethod = 'CaverController.create';
