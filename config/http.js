@@ -9,6 +9,7 @@
  * http://sailsjs.org/#/documentation/reference/sails.config/sails.config.http.html
  */
 const passport = require('passport');
+const rateLimit = require('express-rate-limit');
 
 module.exports.http = {
   /****************************************************************************
@@ -24,6 +25,13 @@ module.exports.http = {
   middleware: {
     passportInit: passport.initialize(),
     passportSession: passport.session(),
+    // Requests limiter configuration
+    rateLimit: rateLimit({
+      windowMs: 1 * 60 * 1000, // 1 minute
+      max: 50, // limit each IP to 50 requests per windowMs
+      message: 'Too many requests with the same IP, try again later.',
+      statusCode: 429,
+    }),
 
     /***************************************************************************
      *                                                                          *
@@ -33,6 +41,7 @@ module.exports.http = {
      ***************************************************************************/
 
     order: [
+      'rateLimit',
       'cookieParser',
       'session',
       'passportInit',
