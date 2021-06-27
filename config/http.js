@@ -46,6 +46,7 @@ module.exports.http = {
       'session',
       'passportInit',
       'passportSession',
+      'parseAuthToken',
       'bodyParser',
       'compress',
       'poweredBy',
@@ -67,6 +68,25 @@ module.exports.http = {
 
     poweredBy: function(req, res, next) {
       res.removeHeader('x-powered-by');
+      return next();
+    },
+
+    // If a bearer token is present & valid, put it in req.token.
+    parseAuthToken: (req, res, next) => {
+      const authHeader = req.headers.authorization;
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return next();
+      }
+
+      const token = authHeader.substring(7, authHeader.length);
+
+      if (token) {
+        TokenService.verify(token, (err, responseToken) => {
+          if (!err) {
+            req.token = responseToken; // This is the decrypted token or the payload you provided
+          }
+        });
+      }
       return next();
     },
 
