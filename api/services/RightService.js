@@ -26,6 +26,7 @@ module.exports = {
     EDIT_OWN: 'edit own',
     LINK_RESOURCE: 'link resource',
     MERGE_DUPLICATES: 'merge duplicates',
+    NO_REQUEST_LIMIT: 'no request limit',
     UNLINK_RESOURCE: 'unlink resource',
     VIEW_ANY: 'view any',
     VIEW_COMPLETE: 'view complete',
