@@ -39,26 +39,29 @@ const latestBlogNews = (state = {}, action) => {
 
   switch (action.type) {
     case INIT_LBNEW_FETCHER:
-      return Object.assign({}, state, {
+      return {
+        ...state,
         [action.blog]: {
           url: action.url,
           isFetching: false,
           news: {},
           revoked: true,
         },
-      });
+      };
 
     case FETCH_LBNEWS:
-      return Object.assign({}, state, {
+      return {
+        ...state,
         [action.blog]: {
           isFetching: true,
           news: {},
         },
-      });
+      };
 
     case FETCH_LBNEWS_SUCCESS:
       jNews = JSON.parse(action.news);
-      return Object.assign({}, state, {
+      return {
+        ...state,
         [action.blog]: {
           isFetching: false,
           news: {
@@ -69,16 +72,17 @@ const latestBlogNews = (state = {}, action) => {
             month: jNews.month,
           },
         },
-      });
+      };
 
     case FETCH_LBNEWS_FAILURE:
-      return Object.assign({}, state, {
+      return {
+        ...state,
         [action.blog]: {
           isFetching: false,
           news: {},
           error: action.error,
         },
-      });
+      };
 
     default:
       return state;

@@ -71,6 +71,6 @@ const UserList = ({ isLoading, title, userList }) => {
 UserList.propTypes = {
   isLoading: PropTypes.bool.isRequired,
   title: PropTypes.string.isRequired,
-  userList: PropTypes.arrayOf(PropTypes.any).isRequired,
+  userList: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
 };
 export default UserList;

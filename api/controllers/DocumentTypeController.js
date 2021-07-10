@@ -16,7 +16,11 @@ module.exports = {
   },
 
   findAll: (req, res, next) => {
-    TType.find().exec((err, found) => {
+    TType.find({
+      ...(req.param('isAvailable', undefined) !== undefined && {
+        isAvailable: req.param('isAvailable'),
+      }),
+    }).exec((err, found) => {
       const params = {
         controllerMethod: 'DocumentTypeController.findAll',
         searchedItem: 'All document types',

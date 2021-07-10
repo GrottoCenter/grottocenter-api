@@ -1,5 +1,5 @@
 import React from 'react';
-import PropTypes from 'prop-types';
+// import PropTypes from 'prop-types';
 import { Select, MenuItem, Input } from '@material-ui/core';
 import { withStyles } from '@material-ui/core/styles';
 import LanguageIcon from '@material-ui/icons/Translate';
@@ -50,14 +50,14 @@ const Wrapper = styled.div`
   align-items: center;
 `;
 
-const LanguageSelector = ({ dispatch = () => {} }) => {
+const LanguageSelector = () => {
   const handleChange = (event) => {
     const { value } = event.target;
     if (value === locale) {
       return;
     }
 
-    // To be uncommented when we will be able to retrieve catalog without page relaod
+    // To be uncommented when we will be able to retrieve catalog without page reload
     // props.dispatch(changeLanguage(value));
     window.location = `?lang=${value}`;
   };
@@ -71,16 +71,20 @@ const LanguageSelector = ({ dispatch = () => {} }) => {
   return (
     <Wrapper>
       <LanguageIcon />
-      <StyledSelect value={locale} onChange={handleChange} input={<LanguageInput />}>
+      <StyledSelect
+        value={locale}
+        onChange={handleChange}
+        input={<LanguageInput />}
+      >
         {items}
       </StyledSelect>
     </Wrapper>
   );
 };
-
+/*
 LanguageSelector.propTypes = {
   // eslint-disable-next-line react/require-default-props
   dispatch: PropTypes.func,
 };
-
+*/
 export default LanguageSelector;

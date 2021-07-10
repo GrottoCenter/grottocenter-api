@@ -2,35 +2,37 @@ let sails = require('sails');
 let Barrels = require('barrels');
 
 before(function(done) {
-
   // Increase the Mocha timeout so that Sails has enough time to lift.
   this.timeout(5000);
 
-  sails.lift({
-    log: {
-      level: 'silly'
+  sails.lift(
+    {
+      log: {
+        level: 'silly',
+      },
+      models: {
+        connection: 'test',
+        migrate: 'drop',
+      },
+      csrf: false,
     },
-    models: {
-      connection: 'test',
-      migrate: 'drop'
-    },
-    csrf: false,
-  }, function(err) {
-    if (err) return done(err);
-    // here you can load fixtures, etc.
+    function(err) {
+      if (err) return done(err);
+      // here you can load fixtures, etc.
 
-    // Load fixtures
-    //let barrels = new Barrels();
+      // Load fixtures
+      //let barrels = new Barrels();
 
-    // Save original objects in `fixtures` variable
-    //fixtures = barrels.data;
+      // Save original objects in `fixtures` variable
+      //fixtures = barrels.data;
 
-    // Populate the DB
-    /*barrels.populate(function(err) {
+      // Populate the DB
+      /*barrels.populate(function(err) {
       done(err, sails);
     });*/
-    return done();
-  });
+      return done();
+    },
+  );
 });
 
 after(function(done) {

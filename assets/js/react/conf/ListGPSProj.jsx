@@ -1,4 +1,4 @@
-export const unitsTab = {
+const unitsTab = {
   degrees: {
     xName: 'Lat',
     xUnit: '°N',
@@ -12,3 +12,5 @@ export const unitsTab = {
     yUnit: 'm',
   },
 };
+
+export { unitsTab as default };

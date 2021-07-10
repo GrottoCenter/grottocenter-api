@@ -37,18 +37,21 @@ const SecondLevelMenuItem = withTheme(styled(MenuItem)`
 class SimpleMenuEntry extends Component {
   constructor(props) {
     super(props);
-    this.props.register(this.props.identifier, this.props.open, this.props.target);
+    const { identifier, open, target, register } = props;
+    register(identifier, open, target);
   }
 
   render() {
+    const { target, toggleSideMenu, icon, text } = this.props;
+
     const callOnClick = () => {
-      BrowserRouter.push(this.props.target);
-      this.props.toggleSideMenu();
+      BrowserRouter.push(target);
+      toggleSideMenu();
     };
 
     return (
-      <SecondLevelMenuItem leftIcon={this.props.icon} onClick={callOnClick}>
-        {this.props.text}
+      <SecondLevelMenuItem leftIcon={icon} onClick={callOnClick}>
+        {text}
       </SecondLevelMenuItem>
     );
   }

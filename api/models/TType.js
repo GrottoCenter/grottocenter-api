@@ -32,6 +32,13 @@ module.exports = {
       maxLength: 500,
     },
 
+    isAvailable: {
+      type: 'boolean',
+      allowNull: false,
+      columnName: 'is_available',
+      defaultsTo: false,
+    },
+
     parent: {
       columnName: 'id_parent',
       model: 'TType',

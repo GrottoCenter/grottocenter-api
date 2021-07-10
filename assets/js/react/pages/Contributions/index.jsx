@@ -2,14 +2,14 @@ import React, { useCallback, useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { useDispatch, useSelector } from 'react-redux';
 import { useIntl } from 'react-intl';
-import { reject, isNil, propOr } from 'ramda';
+import { reject, isNil, propOr, pathOr } from 'ramda';
 import { isMobileOnly } from 'react-device-detect';
 
-import { getDocuments } from '../../actions/Documents';
+import { getUsersDocuments } from '../../actions/Documents';
 import { resetApiMessages } from '../../actions/Document';
 import Layout from '../../components/common/Layouts/Fixed/FixedContent';
 import StandardDialog from '../../components/common/StandardDialog';
-import { useDebounce } from '../../hooks';
+import { useDebounce, useUserProperties } from '../../hooks';
 import Actions from './Actions';
 import DocumentDetails from '../DocumentDetails';
 import DocumentsTable from '../../components/common/DocumentsTable';
@@ -28,7 +28,6 @@ const defaultHiddenColumns = [
   'authors',
   'cave',
   'datePublication',
-  'dateValidation',
   'descriptions',
   'editor',
   'entrance',
@@ -36,7 +35,6 @@ const defaultHiddenColumns = [
   'id',
   'identifier',
   'identifierType',
-  'isValidated',
   'library',
   'license',
   'massif',
@@ -51,7 +49,8 @@ const defaultHiddenColumns = [
   'validator',
 ];
 
-const DocumentValidationPage = () => {
+const ContributionsPage = () => {
+  const userId = pathOr(null, ['id'], useUserProperties());
   const { formatMessage } = useIntl();
   const dispatch = useDispatch();
   const { isLoading, data, totalCount } = useSelector(
@@ -86,13 +85,12 @@ const DocumentValidationPage = () => {
     setSelected([]);
     closeDetailedView();
     const criteria = {
-      isValidated: false,
       limit: debouncedRowsPerPage,
       skip: debouncedPage * debouncedRowsPerPage,
       sortBy: debouncedOrderBy,
       orderBy: debouncedOrder,
     };
-    dispatch(getDocuments(reject(isNil, criteria)));
+    dispatch(getUsersDocuments(userId, reject(isNil, criteria)));
   }, [debouncedRowsPerPage, debouncedOrderBy, debouncedOrder, debouncedPage]);
 
   const handleSuccessfulUpdate = () => {
@@ -120,7 +118,7 @@ const DocumentValidationPage = () => {
   return (
     <>
       <Layout
-        title={formatMessage({ id: 'Documents awaiting validation' })}
+        title={formatMessage({ id: 'My contributions' })}
         footer=""
         content={
           <AuthChecker
@@ -172,10 +170,11 @@ const DocumentValidationPage = () => {
         <DocumentEdit
           onSuccessfulUpdate={handleSuccessfulUpdate}
           id={editView}
+          resetIsValidated
         />
       </StandardDialog>
     </>
   );
 };
 
-export default DocumentValidationPage;
+export default ContributionsPage;

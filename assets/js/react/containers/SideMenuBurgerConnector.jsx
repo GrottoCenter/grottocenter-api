@@ -16,6 +16,9 @@ const mapStateToProps = (state) => ({
   visible: state.sideMenu.visible,
 });
 
-const SideMenuBurgerConnector = connect(mapStateToProps, mapDispatchToProps)(SideMenuBurger);
+const SideMenuBurgerConnector = connect(
+  mapStateToProps,
+  mapDispatchToProps,
+)(SideMenuBurger);
 
 export default SideMenuBurgerConnector;

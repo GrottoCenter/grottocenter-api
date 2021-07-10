@@ -24,7 +24,7 @@ class EntrancesSearch extends React.Component {
   // TODO: Handle the max of depth and length dynamically
 
   /*
-    The state is created with particular key names because, 
+    The state is created with particular key names because,
     these names are directly linked to
     the names of these properties in Elasticsearch.
    */
@@ -445,7 +445,14 @@ class EntrancesSearch extends React.Component {
 }
 
 EntrancesSearch.propTypes = {
-  classes: PropTypes.shape(PropTypes.any).isRequired,
+  classes: PropTypes.shape({
+    formContainer: PropTypes.string,
+    formPartContainer: PropTypes.string,
+    formElement: PropTypes.string,
+    fieldset: PropTypes.string,
+    legend: PropTypes.string,
+    formLabel: PropTypes.string,
+  }),
   startAdvancedsearch: PropTypes.func.isRequired,
   resetResults: PropTypes.func.isRequired,
   resourceType: PropTypes.string.isRequired,

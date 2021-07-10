@@ -52,22 +52,17 @@ module.exports = {
           throw exits.rightNotFound();
         }
 
-        let isAllowed = false;
-        inputs.groups.map((userGroup) => {
+        for (let i = 0; i < inputs.groups.length; i++) {
           if (
             rightFound.groups.some(
-              (rightGroup) => rightGroup.id === userGroup.id,
+              (rightGroup) => rightGroup.id === inputs.groups[i].id,
             )
           ) {
-            isAllowed = true;
+            return exits.success(true);
           }
-        });
-
-        if (isAllowed) {
-          return exits.success(true);
-        } else {
-          return exits.success(false);
         }
+
+        return exits.success(false);
       });
   },
 };

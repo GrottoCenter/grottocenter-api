@@ -280,7 +280,10 @@ const self = (module.exports = {
    * Replace all special characters from a source string by a space.
    * @param {*} sourceString
    */
-  sanitizeQuery: (sourceString) =>
+   sanitizeQuery: (sourceString) => {
     // eslint-disable-next-line no-useless-escape
-    sourceString.replace(/[`~!@#$%^&*()_|+\-=?;:",<>\{\}\[\]\/]/gi, ' '),
+    sourceString.replace(/[`~!@#$%^&*()_|+\-=?;:",<>«»\{\}\[\]\/\\]/gi, ' ');
+    sourceString = sourceString[sourceString.length-1] === '.' ? sourceString.slice(0, -1) : sourceString;
+    return sourceString;
+   },
 });

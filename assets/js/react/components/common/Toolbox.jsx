@@ -3,10 +3,10 @@ import PropTypes from 'prop-types';
 
 export const Loading = () => <div className="loading_anim">Loading...</div>;
 
-export const DateRibbon = (props) => (
+export const DateRibbon = ({ month, day }) => (
   <div className="ribbon date">
-    <div className="top ribbon-piece">{props.month}</div>
-    <div className="bottom ribbon-piece">{props.day}</div>
+    <div className="top ribbon-piece">{month}</div>
+    <div className="bottom ribbon-piece">{day}</div>
     <div className="tail">
       <div className="left ribbon-piece" />
       <div className="right ribbon-piece" />
@@ -16,5 +16,5 @@ export const DateRibbon = (props) => (
 
 DateRibbon.propTypes = {
   month: PropTypes.string,
-  day: PropTypes.any,
+  day: PropTypes.number,
 };

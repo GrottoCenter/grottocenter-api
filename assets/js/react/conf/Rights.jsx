@@ -1,2 +1,4 @@
 /* Side menu */
-export const VIEW_SIDEMENU = 'VIEW_SIDEMENU';
+const VIEW_SIDEMENU = 'VIEW_SIDEMENU';
+
+export { VIEW_SIDEMENU as default };

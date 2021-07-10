@@ -10,7 +10,6 @@
  */
 
 module.exports.blueprints = {
-
   /***************************************************************************
    *                                                                          *
    * Automatically expose implicit routes for every action in your app?       *
@@ -18,7 +17,6 @@ module.exports.blueprints = {
    ***************************************************************************/
 
   actions: false,
-
 
   /***************************************************************************
    *                                                                          *
@@ -28,7 +26,6 @@ module.exports.blueprints = {
 
   rest: false,
 
-
   /***************************************************************************
    *                                                                          *
    * Automatically expose CRUD "shortcut" routes to GET requests?             *
@@ -37,6 +34,4 @@ module.exports.blueprints = {
    ***************************************************************************/
 
   shortcuts: false,
-
 };
-

@@ -14,7 +14,10 @@ import {
   defaultTo,
   equals,
 } from 'ramda';
-import { getDocuments as queryDocuments } from '../conf/Config';
+import {
+  getDocuments as queryDocuments,
+  getCaversDocumentsUrl,
+} from '../conf/Config';
 import makeErrorMessage from '../helpers/makeErrorMessage';
 
 export const FETCH_DOCUMENTS = 'FETCH_DOCUMENTS';
@@ -36,26 +39,26 @@ export const fetchDocumentsFailure = (error) => ({
   error,
 });
 
-export function getDocuments(criteria) {
+const doGet = (url, criteria) => {
   const makeUrl = pipe(
     keys,
     map((c) => `${c}=${encodeURIComponent(criteria[c])}`),
     join('&'),
-    (urlCriteria) => `${queryDocuments}?${urlCriteria}`,
+    (urlCriteria) => `${url}?${urlCriteria}`,
   );
 
   return async (dispatch) => {
     dispatch(fetchDocuments());
 
     try {
-      const res = await fetch(
-        isNil(criteria) ? queryDocuments : makeUrl(criteria),
-      ).then((response) => {
-        if (response.status >= 400) {
-          throw new Error(response.status);
-        }
-        return response;
-      });
+      const res = await fetch(isNil(criteria) ? url : makeUrl(criteria)).then(
+        (response) => {
+          if (response.status >= 400) {
+            throw new Error(response.status);
+          }
+          return response;
+        },
+      );
       const data = await res.text();
       const header = await res.headers.get('Content-Range');
       const makeNumber = ifElse(identity, Number, always(1));
@@ -83,4 +86,9 @@ export function getDocuments(criteria) {
       );
     }
   };
-}
+};
+
+export const getDocuments = (criteria) => doGet(queryDocuments, criteria);
+
+export const getUsersDocuments = (userId, criteria) =>
+  doGet(getCaversDocumentsUrl(userId), criteria);

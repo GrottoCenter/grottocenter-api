@@ -32,6 +32,11 @@ const makeCustomCellRenders = () => {
       customRender: propOr('', 'text'),
     },
     {
+      id: 'isValidated',
+      customRender: (isValidated) =>
+        formatMessage({ id: isValidated ? 'Yes' : 'No' }),
+    },
+    {
       id: 'license',
       customRender: propOr('', 'text'),
     },

@@ -358,6 +358,7 @@ CREATE TABLE t_type (
 	id int2 NOT NULL,
 	"name" varchar(30) NOT NULL,
 	"comment" varchar(500) NULL,
+	is_available bool NOT NULL default false,
 	id_parent int2 NULL,
 	CONSTRAINT t_type_pk PRIMARY KEY (id),
 	CONSTRAINT t_type_fk FOREIGN KEY (id_parent) REFERENCES t_type(id)

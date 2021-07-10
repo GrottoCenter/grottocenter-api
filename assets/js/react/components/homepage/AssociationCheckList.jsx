@@ -106,10 +106,9 @@ const StyledListIcon = withStyles(
 const AssociationCheckList = ({ title, entries }) => (
   <CheckListWrapper>
     <ListTitle>{title}</ListTitle>
-
     <CheckList>
-      {entries.map((entry, i) => (
-        <ListItem key={i}>
+      {entries.map((entry) => (
+        <ListItem key={entry.word.props.children}>
           <StyledListIcon />
           {entry.description}
         </ListItem>
@@ -119,7 +118,12 @@ const AssociationCheckList = ({ title, entries }) => (
 );
 
 AssociationCheckList.propTypes = {
-  entries: PropTypes.array.isRequired,
+  entries: PropTypes.arrayOf(
+    PropTypes.shape({
+      description: PropTypes.node,
+      word: PropTypes.node,
+    }),
+  ).isRequired,
   title: PropTypes.element.isRequired,
 };
 

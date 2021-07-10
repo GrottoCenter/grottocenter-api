@@ -86,7 +86,7 @@ Item.propTypes = {
   onClick: PropTypes.func,
   nested: PropTypes.bool,
   // eslint-disable-next-line react/forbid-prop-types
-  children: PropTypes.any,
+  children: PropTypes.node,
 };
 
 LinkedItem.propTypes = {

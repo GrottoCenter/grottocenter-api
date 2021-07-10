@@ -10,14 +10,14 @@ import { GridContainer } from '../../helpers/GridSystem';
 //
 
 const Section = ({ className, children }) => (
-  <div role="section" className={className}>
+  <div className={className}>
     <GridContainer>{children}</GridContainer>
   </div>
 );
 
 Section.propTypes = {
   className: PropTypes.string,
-  children: PropTypes.any.isRequired,
+  children: PropTypes.node.isRequired,
 };
 
 //

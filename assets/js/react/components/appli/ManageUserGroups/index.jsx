@@ -166,15 +166,10 @@ const ManageUserGroups = ({
 
 ManageUserGroups.propTypes = {
   areGroupsSubmittedWithSuccess: PropTypes.bool.isRequired,
-  initialUser: PropTypes.shape({
-    groups: PropTypes.arrayOf(PropTypes.any),
-  }),
+  initialUser: PropTypes.shape({}),
   onSaveGroups: PropTypes.func.isRequired,
   onSelection: PropTypes.func.isRequired,
-  selectedUser: PropTypes.shape({
-    id: PropTypes.number,
-    groups: PropTypes.arrayOf(PropTypes.any),
-  }),
+  selectedUser: PropTypes.shape({}),
   setSelectedUser: PropTypes.func.isRequired,
 };
 

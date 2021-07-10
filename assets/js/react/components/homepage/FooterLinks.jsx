@@ -34,7 +34,9 @@ const SocialLink = styled.div`
 
 const SocialGCLink = withTheme(SocialLink.withComponent(GCLink));
 
-const SocialIntlLink = withTheme(SocialLink.withComponent(InternationalizedLink));
+const SocialIntlLink = withTheme(
+  SocialLink.withComponent(InternationalizedLink),
+);
 
 //
 //

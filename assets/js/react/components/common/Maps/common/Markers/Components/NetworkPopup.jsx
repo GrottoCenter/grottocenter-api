@@ -10,8 +10,10 @@ export const NetworkPopup = ({ network }) => (
 );
 
 NetworkPopup.propTypes = {
-  // eslint-disable-next-line react/forbid-prop-types
-  network: PropTypes.object.isRequired,
+  network: PropTypes.shape({
+    name: PropTypes.string,
+    id: PropTypes.number,
+  }).isRequired,
 };
 
 export default NetworkPopup;

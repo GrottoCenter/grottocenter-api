@@ -41,7 +41,7 @@ const EntriesList = (props) => {
 };
 
 EntriesList.propTypes = {
-  entries: PropTypes.arrayOf(PropTypes.object),
+  entries: PropTypes.arrayOf(PropTypes.shape({})),
   title: PropTypes.node,
   emptyMessageComponent: PropTypes.node,
 };

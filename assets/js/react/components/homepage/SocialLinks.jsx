@@ -73,12 +73,18 @@ const SocialLinks = () => (
     </SocialLinksListItem>
     <SocialLinksListItem>
       <InternationalizedLink links={rssLinks}>
-        <SocialImage src="/images/icons8/icons8-rss-filled-100.png" alt="RSS feed" />
+        <SocialImage
+          src="/images/icons8/icons8-rss-filled-100.png"
+          alt="RSS feed"
+        />
       </InternationalizedLink>
     </SocialLinksListItem>
     <SocialLinksListItem>
       <InternationalizedLink links={bloggerLinks}>
-        <SocialImage src="/images/icons8/icons8-blogger-filled-100.png" alt="Grottocenter blog" />
+        <SocialImage
+          src="/images/icons8/icons8-blogger-filled-100.png"
+          alt="Grottocenter blog"
+        />
       </InternationalizedLink>
     </SocialLinksListItem>
     <SocialLinksListItem>

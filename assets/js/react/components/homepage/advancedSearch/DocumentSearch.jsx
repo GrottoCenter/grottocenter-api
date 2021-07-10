@@ -30,7 +30,7 @@ import SliderForm from './SliderForm';
 
 class DocumentSearch extends React.Component {
   /*
-    The state is created with particular key names 
+    The state is created with particular key names
     because these names are directly linked to
     the names of these properties in Elasticsearch. Here we have a syntax that
     allow us to distinguish search range parameters from others parameters.
@@ -40,6 +40,7 @@ class DocumentSearch extends React.Component {
     this.state = this.getInitialState();
     this.handleValueChange = this.handleValueChange.bind(this);
     this.getSubjectObjFromCode = this.getSubjectObjFromCode.bind(this);
+    props.getAllDocumentTypes();
     props.getAllSubjects();
   }
 
@@ -53,12 +54,14 @@ class DocumentSearch extends React.Component {
         max: yearMaxValue,
       },
       authors: '',
+      'contributor nickname': '',
       description: '',
       publication_other_bbs_old: '',
       regions: '',
       ref_bbs: '',
       subjects: '',
       title: '',
+      'type name': '',
       matchAllFields: true,
       allFieldsRequest: '',
       panelExpanded: 'all-fields-panel',
@@ -149,6 +152,7 @@ class DocumentSearch extends React.Component {
       startAdvancedsearch,
       yearMinValue,
       yearMaxValue,
+      allDocumentTypes,
       allSubjects,
       intl,
     } = this.props;
@@ -158,7 +162,9 @@ class DocumentSearch extends React.Component {
       ref_bbs,
       title,
       authors,
+      'contributor nickname': contributorNickname,
       description: abstract,
+      'type name': documentTypeName,
       subjects, // TODO: currently, we select only one subject via a dropdown menu. It should be possible to search multiple subjects.
       regions,
       publication_other_bbs_old,
@@ -375,8 +381,50 @@ class DocumentSearch extends React.Component {
                           ))}
                         </Select>
                       </FormControl>
+
+                      <FormControl className={classes.formElement}>
+                        <InputLabel htmlFor="documentType">
+                          <Translate>Document type</Translate>
+                        </InputLabel>
+                        <Select
+                          value={documentTypeName}
+                          onChange={(event) =>
+                            this.handleValueChange('type name', event)
+                          }
+                          inputProps={{
+                            id: 'id',
+                            name: 'name',
+                          }}
+                        >
+                          <MenuItem key={-1} value="">
+                            <i>
+                              <Translate>All document types</Translate>
+                            </i>
+                          </MenuItem>
+                          {allDocumentTypes
+                            .filter((dt) => dt.isAvailable)
+                            .map((docType) => (
+                              <MenuItem key={docType.id} value={docType.name}>
+                                <Translate>{docType.name}</Translate>
+                              </MenuItem>
+                            ))}
+                        </Select>
+                      </FormControl>
                     </div>
                   </fieldset>
+
+                  <TextField
+                    className={classes.formElement}
+                    label={
+                      <span>
+                        <Translate>Contributor nickname</Translate>
+                      </span>
+                    }
+                    onChange={(event) =>
+                      this.handleValueChange('contributor nickname', event)
+                    }
+                    value={contributorNickname}
+                  />
 
                   <TextField
                     className={classes.formElement}
@@ -494,10 +542,28 @@ class DocumentSearch extends React.Component {
 }
 
 DocumentSearch.propTypes = {
-  classes: PropTypes.shape(PropTypes.any).isRequired,
+  classes: PropTypes.shape({
+    formLabel: PropTypes.string,
+    formElementFontSize: PropTypes.string,
+    formPartContainer: PropTypes.string,
+    formContainer: PropTypes.string,
+    formElement: PropTypes.string,
+    fieldset: PropTypes.string,
+    legend: PropTypes.string,
+  }).isRequired,
   startAdvancedsearch: PropTypes.func.isRequired,
   resetResults: PropTypes.func.isRequired,
   resourceType: PropTypes.string.isRequired,
+
+  getAllDocumentTypes: PropTypes.func.isRequired,
+  allDocumentTypes: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.number.isRequired,
+      isAvailable: PropTypes.bool.isRequired,
+      name: PropTypes.string.isRequired,
+    }),
+  ).isRequired,
+
   getAllSubjects: PropTypes.func.isRequired,
   allSubjects: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
 

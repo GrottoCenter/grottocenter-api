@@ -91,8 +91,10 @@ ActionButton.propTypes = {
 };
 
 ActionBar.propTypes = {
-  // eslint-disable-next-line react/forbid-prop-types
-  printRef: PropTypes.any.isRequired,
+  printRef: PropTypes.shape({
+    // eslint-disable-next-line react/forbid-prop-types
+    current: PropTypes.any,
+  }).isRequired,
 };
 
 export default ActionBar;

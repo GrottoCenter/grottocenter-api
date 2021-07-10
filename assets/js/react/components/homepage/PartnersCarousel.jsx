@@ -99,7 +99,8 @@ const PartnersCarousel = ({ fetch, partners, isFetching }) => {
 
   if (isFetching) {
     return <CircularProgress />;
-  } else if (rows.length > 0) {
+  }
+  if (rows.length > 0) {
     return (
       <CarouselDiv>
         <AliceCarousel
@@ -107,7 +108,11 @@ const PartnersCarousel = ({ fetch, partners, isFetching }) => {
           buttonsDisabled
           autoPlayInterval={5000}
           autoPlay
-          responsive={{ 0: { items: 3 }, 520: { items: 4 }, 1024: { items: 5 } }}
+          responsive={{
+            0: { items: 3 },
+            520: { items: 4 },
+            1024: { items: 5 },
+          }}
           items={rows}
         />
       </CarouselDiv>
@@ -119,7 +124,7 @@ const PartnersCarousel = ({ fetch, partners, isFetching }) => {
 PartnersCarousel.propTypes = {
   fetch: PropTypes.func.isRequired,
   isFetching: PropTypes.bool,
-  partners: PropTypes.any,
+  partners: PropTypes.arrayOf(PropTypes.shape({})),
 };
 
 export default PartnersCarousel;

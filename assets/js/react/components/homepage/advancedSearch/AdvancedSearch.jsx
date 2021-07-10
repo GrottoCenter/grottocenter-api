@@ -30,6 +30,8 @@ const TabIcon = styled.img`
 const AdvancedSearch = ({
   resetAdvancedSearch,
   startAdvancedsearch,
+  getDocumentTypes,
+  documentTypes,
   getSubjects,
   subjects,
 }) => {
@@ -119,6 +121,8 @@ const AdvancedSearch = ({
             }}
             resourceType={advancedSearchTypes.DOCUMENTS}
             resetResults={resetAdvancedSearch}
+            getAllDocumentTypes={getDocumentTypes}
+            allDocumentTypes={documentTypes}
             getAllSubjects={getSubjects}
             allSubjects={subjects}
           />
@@ -133,6 +137,8 @@ const AdvancedSearch = ({
 AdvancedSearch.propTypes = {
   resetAdvancedSearch: PropTypes.func.isRequired,
   startAdvancedsearch: PropTypes.func.isRequired,
+  getDocumentTypes: PropTypes.func.isRequired,
+  documentTypes: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
   getSubjects: PropTypes.func.isRequired,
   subjects: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
 };

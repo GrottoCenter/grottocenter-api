@@ -18,7 +18,11 @@ const Swagger = (props) => {
 };
 
 Swagger.propTypes = {
-  match: PropTypes.object.isRequired,
+  match: PropTypes.shape({
+    params: PropTypes.shape({
+      version: PropTypes.string,
+    }),
+  }).isRequired,
 };
 
 export default Swagger;

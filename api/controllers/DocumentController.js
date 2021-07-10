@@ -32,7 +32,7 @@ const getConvertedDataFromClient = (req) => {
     ...reqBodyWithoutId,
     author: req.token.id,
     authors: req.body.authors ? req.body.authors.map((a) => a.id) : undefined,
-    datePublication: req.body.publicationDate,
+    datePublication: req.body.publicationDate === "" ? null : req.body.publicationDate,
     editor: ramda.pathOr(undefined, ['editor', 'id'], req.body),
     identifierType: ramda.pathOr(undefined, ['identifierType', 'id'], req.body),
     library: ramda.pathOr(undefined, ['library', 'id'], req.body),
@@ -58,6 +58,8 @@ const addDocumentToElasticSearchIndexes = (document) => {
     authors: document.authors
       ? document.authors.map((a) => a.nickname).join(', ')
       : null,
+    'contributor id': document.author.id,
+    'contributor nickname': document.author.nickname,
     date_part: document.datePublication // eslint-disable-line camelcase
       ? new Date(document.datePublication).getYear()
       : null,
@@ -304,11 +306,11 @@ module.exports = {
       'ASC',
     )}`;
 
-    /* 
+    /*
       4 possible cases : isValidated (true or false) AND validation (null or not)
       If the document is not validated and has a dateValidatoin, it means that it has been refused.
-      We don't want to retrieve these documents refused. 
-      So when isValidated is false, we need to retrieve only the document with a dateValidatoin set to null 
+      We don't want to retrieve these documents refused.
+      So when isValidated is false, we need to retrieve only the document with a dateValidatoin set to null
       (= submitted documents which need to be reviewed).
     */
     const whereClause = {
@@ -367,6 +369,92 @@ module.exports = {
 
             const params = {
               controllerMethod: 'DocumentController.findAll',
+              limit: req.param('limit', 50),
+              searchedItem: 'All documents',
+              skip: req.param('skip', 0),
+              total: countFound,
+              url: req.originalUrl,
+            };
+            return ControllerService.treatAndConvert(
+              req,
+              err,
+              found,
+              params,
+              res,
+              converter,
+            );
+          });
+      });
+  },
+
+  findByCaverId: async (
+    req,
+    res,
+    next,
+    converter = MappingV1Service.convertToDocumentList,
+  ) => {
+    const caverId = req.param('caverId');
+
+    const sort = `${req.param('sortBy', 'dateInscription')} ${req.param(
+      'orderBy',
+      'ASC',
+    )}`;
+
+    const whereClause = {
+      and: [{ author: caverId }],
+    };
+
+    TDocument.find()
+      .where(whereClause)
+      .skip(req.param('skip', 0))
+      .limit(req.param('limit', 50))
+      .sort(sort)
+      .populate('author')
+      .populate('authors')
+      .populate('cave')
+      .populate('descriptions')
+      .populate('editor')
+      .populate('entrance')
+      .populate('files')
+      .populate('identifierType')
+      .populate('library')
+      .populate('license')
+      .populate('massif')
+      .populate('parent')
+      .populate('regions')
+      .populate('reviewer')
+      .populate('subjects')
+      .populate('type')
+      .exec((err, found) => {
+        TDocument.count()
+          .where(whereClause)
+          .exec(async (err, countFound) => {
+            if (err) {
+              sails.log.error(err);
+              return res.serverError('An unexpected server error occured.');
+            }
+
+            if (!found) {
+              res.status(404);
+              return res.json({
+                error: `There is no document matching your criterias. It can be because sorting by ${sort} is not supported.`,
+              });
+            }
+
+            await Promise.all(
+              await found.map(async (doc) => {
+                await NameService.setNames(
+                  [
+                    ...(doc.library ? [doc.library] : []),
+                    ...(doc.editor ? [doc.editor] : []),
+                  ],
+                  'grotto',
+                );
+              }),
+            );
+
+            const params = {
+              controllerMethod: 'DocumentController.findByCaverId',
               limit: req.param('limit', 50),
               searchedItem: 'All documents',
               skip: req.param('skip', 0),

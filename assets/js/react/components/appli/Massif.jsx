@@ -55,7 +55,7 @@ Massif.propTypes = {
   isFetching: PropTypes.bool.isRequired,
   massif: PropTypes.shape({
     name: PropTypes.string,
-    caves: PropTypes.arrayOf(PropTypes.object),
+    caves: PropTypes.arrayOf(PropTypes.shape({})),
   }),
 };
 Massif.defaultProps = {

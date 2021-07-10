@@ -11,7 +11,8 @@ const currentLocale = locale; // eslint-disable-line no-undef
 //
 
 const InternationalizedLink = ({ links, className, children }) => {
-  const linkUrl = links[currentLocale] !== undefined ? links[currentLocale] : links['*'];
+  const linkUrl =
+    links[currentLocale] !== undefined ? links[currentLocale] : links['*'];
   const linkText = children || linkUrl;
   return (
     <GCLink className={className} href={linkUrl}>
@@ -21,9 +22,11 @@ const InternationalizedLink = ({ links, className, children }) => {
 };
 
 InternationalizedLink.propTypes = {
-  links: PropTypes.any.isRequired,
+  links: PropTypes.shape({
+    '*': PropTypes.string,
+  }).isRequired,
   className: PropTypes.string,
-  children: PropTypes.any,
+  children: PropTypes.node,
 };
 
 export default InternationalizedLink;

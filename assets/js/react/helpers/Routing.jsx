@@ -23,6 +23,7 @@ const withContext = (WrappedComponent, context) => {
   ContextProvider.childContextTypes = {};
 
   Object.keys(context).forEach((key) => {
+    // eslint-disable-next-line react/forbid-prop-types
     ContextProvider.childContextTypes[key] = PropTypes.any.isRequired;
   });
 

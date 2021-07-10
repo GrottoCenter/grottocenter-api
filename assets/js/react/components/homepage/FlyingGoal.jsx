@@ -46,28 +46,29 @@ const StyledSyncIcon = withStyles(
 //
 
 class Goal extends Component {
-  constructor(props) {
-    super(props);
-  }
-
   handleMouseOver() {
-    this.props.updateTargetZone(this.props.entry.description);
+    const { updateTargetZone, entry } = this.props;
+    updateTargetZone(entry.description);
   }
 
   handleMouseOut() {
-    this.props.updateTargetZone(this.props.title);
+    const { updateTargetZone, title } = this.props;
+    updateTargetZone(title);
   }
 
   render() {
+    const { className, textColor, entry } = this.props;
     return (
       <div
-        className={this.props.className}
+        className={className}
         onMouseOver={(event) => this.handleMouseOver(event)}
         onMouseOut={(event) => this.handleMouseOut(event)}
+        onFocus={(event) => this.handleMouseOver(event)}
+        onBlur={(event) => this.handleMouseOut(event)}
       >
-        <span style={{ color: this.props.textColor }}>{this.props.entry.word}</span>
+        <span style={{ color: textColor }}>{entry.word}</span>
         <StyledSyncIcon />
-        <GoalText>{this.props.entry.description}</GoalText>
+        <GoalText>{entry.description}</GoalText>
       </div>
     );
   }
@@ -76,10 +77,11 @@ class Goal extends Component {
 Goal.propTypes = {
   className: PropTypes.string.isRequired,
   title: PropTypes.element.isRequired,
-  entry: PropTypes.object.isRequired,
+  entry: PropTypes.shape({
+    description: PropTypes.shape({}),
+    word: PropTypes.shape({}),
+  }).isRequired,
   textColor: PropTypes.string.isRequired,
-  iconColor: PropTypes.string.isRequired,
-  iconHoverColor: PropTypes.string.isRequired,
   updateTargetZone: PropTypes.func.isRequired,
 };
 

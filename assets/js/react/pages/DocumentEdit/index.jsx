@@ -7,7 +7,7 @@ import DocumentSubmission from '../DocumentSubmission';
 import { fetchDocumentDetails } from '../../actions/DocumentDetails';
 import docInfoGetters from './docInfoGetters';
 
-const DocumentEdit = ({ onSuccessfulUpdate, id }) => {
+const DocumentEdit = ({ onSuccessfulUpdate, id, resetIsValidated }) => {
   const dispatch = useDispatch();
   const { isLoading, details, error } = useSelector(
     (state) => state.documentDetails,
@@ -29,49 +29,58 @@ const DocumentEdit = ({ onSuccessfulUpdate, id }) => {
     }
   }, [latestHttpCode, errorMessages]);
 
+  const defaultValues = {
+    ...reject(isNil, {
+      authorComment: propOr(null, 'authorComment', details),
+      authors: pathOr(null, ['authors'], details),
+      description: pipe(
+        propOr([], ['descriptions']),
+        head,
+        propOr(null, ['text']),
+      )(details),
+      documentMainLanguage: propOr(null, 'mainLanguage', details),
+      documentType: pathOr(null, ['type'], details),
+      editor: pathOr(null, ['editor'], details),
+      endPage: docInfoGetters.getEndPage(details),
+      id: details.id,
+      identifier: pathOr(null, ['identifier'], details),
+      identifierType: pathOr(null, ['identifierType'], details),
+      isNewDocument: false,
+      // doesn't exist at the moment in the db, TODO
+      issue: pathOr(null, ['issue'], details),
+      library: pathOr(null, ['library'], details),
+      massif: pathOr(null, ['massif'], details),
+      partOf: docInfoGetters.getAndConvertParentDocument(details),
+      publicationDate: propOr('', 'datePublication', details),
+      regions: pathOr(null, ['regions'], details),
+      startPage: docInfoGetters.getStartPage(details),
+      subjects: pathOr(null, ['subjects'], details),
+      title: pipe(propOr([], 'titles'), head, propOr(null, 'text'))(details),
+      titleAndDescriptionLanguage: pipe(
+        propOr([], 'titles'),
+        head,
+        propOr(null, 'language'),
+      )(details),
+    }),
+    ...(resetIsValidated
+      ? {
+          isValidated: false,
+          dateValidation: null,
+        }
+      : {}),
+  };
+
   return isLoading || !isNil(error) ? (
     <CircularProgress />
   ) : (
-    <DocumentSubmission
-      defaultValues={reject(isNil, {
-        authorComment: propOr(null, 'authorComment', details),
-        authors: pathOr(null, ['authors'], details),
-        description: pipe(
-          propOr([], ['descriptions']),
-          head,
-          propOr(null, ['text']),
-        )(details),
-        documentMainLanguage: propOr(null, 'mainLanguage', details),
-        documentType: pathOr(null, ['type'], details),
-        editor: pathOr(null, ['editor'], details),
-        endPage: docInfoGetters.getEndPage(details),
-        id: details.id,
-        identifier: pathOr(null, ['identifier'], details),
-        identifierType: pathOr(null, ['identifierType'], details),
-        isNewDocument: false,
-        // doesn't exist at the moment in the db, TODO
-        issue: pathOr(null, ['issue'], details),
-        library: pathOr(null, ['library'], details),
-        massif: pathOr(null, ['massif'], details),
-        partOf: docInfoGetters.getAndConvertParentDocument(details),
-        publicationDate: propOr('', 'datePublication', details),
-        regions: pathOr(null, ['regions'], details),
-        startPage: docInfoGetters.getStartPage(details),
-        subjects: pathOr(null, ['subjects'], details),
-        title: pipe(propOr([], 'titles'), head, propOr(null, 'text'))(details),
-        titleAndDescriptionLanguage: pipe(
-          propOr([], 'titles'),
-          head,
-          propOr(null, 'language'),
-        )(details),
-      })}
-    />
+    <DocumentSubmission defaultValues={defaultValues} />
   );
 };
 
 DocumentEdit.propTypes = {
   onSuccessfulUpdate: PropTypes.func.isRequired,
   id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  resetIsValidated: PropTypes.bool,
 };
 
 export default DocumentEdit;

@@ -1,13 +1,17 @@
 import React from 'react';
 import { withTheme } from '@material-ui/core/styles';
 import styled from 'styled-components';
+import Divider from '@material-ui/core/Divider';
 import DonateForm from './DonateForm';
 import FooterDisclamer from '../common/FooterDisclamer';
 import Publisher from './Publisher';
 import SocialLinks from './SocialLinks';
 import FooterLinks from './FooterLinks';
-import Divider from '@material-ui/core/Divider';
-import { GridContainer, GridRow, GridOneHalfColumn } from '../../helpers/GridSystem';
+import {
+  GridContainer,
+  GridRow,
+  GridOneHalfColumn,
+} from '../../helpers/GridSystem';
 
 //
 //
