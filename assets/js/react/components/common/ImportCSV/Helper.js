@@ -270,7 +270,8 @@ const documentValidator = {
 };
 
 const errorsDictionary = {
-  DATE_BEFORE_CREATED: 'the modification date is earlier than the creation date',
+  DATE_BEFORE_CREATED:
+    'the modification date is earlier than the creation date',
   DATE_IN_FUTURE: 'the date entered is later than the current date',
   DELIMITER_ERROR: 'DELIMITER_ERROR',
   FIELD_NULL: 'field is not filled',

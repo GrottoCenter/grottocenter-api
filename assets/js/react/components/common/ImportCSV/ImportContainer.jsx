@@ -1,13 +1,19 @@
 import React, { useContext, useEffect } from 'react';
 import { includes } from 'ramda';
-import { Card, CardContent, makeStyles, Typography, LinearProgress as MuiLinearProgress, } from '@material-ui/core';
+import {
+  Card,
+  CardContent,
+  makeStyles,
+  Typography,
+  LinearProgress as MuiLinearProgress,
+} from '@material-ui/core';
+import styled from 'styled-components';
+import { useSelector } from 'react-redux';
 import ImportTabs from './ImportTabs';
 import Stepper from '../Form/Stepper';
 import Provider, { ImportPageContentContext } from './Provider';
 import ImportPageContent from './ImportPageContent';
 import Translate from '../Translate';
-import styled from 'styled-components';
-import { useSelector } from 'react-redux';
 
 const useStyles = makeStyles({
   root: {
@@ -22,7 +28,7 @@ const useStyles = makeStyles({
 const ImportContainer = () => {
   const classes = useStyles();
   const [isNextStepDisabled, setIsNextStepDisabled] = React.useState(true);
-  const { isLoading } = useSelector((state) => state.importCsv)
+  const { isLoading } = useSelector((state) => state.importCsv);
 
   const {
     currentStep: currentFormStep,
@@ -48,8 +54,8 @@ const ImportContainer = () => {
   }, [validatedSteps, currentFormStep, formSteps, setIsNextStepDisabled]);
 
   const LinearProgress = styled(MuiLinearProgress)`
-  visibility: ${({ $isLoading }) => ($isLoading ? 'visible' : 'hidden')};
-`;
+    visibility: ${({ $isLoading }) => ($isLoading ? 'visible' : 'hidden')};
+  `;
 
   return (
     <>

@@ -4,10 +4,14 @@ import { Button, makeStyles, Typography } from '@material-ui/core';
 import ImportExportIcon from '@material-ui/icons/ImportExport';
 import { useDispatch, useSelector } from 'react-redux';
 import { useIntl } from 'react-intl';
+import styled from 'styled-components';
 import Translate from '../../Translate';
 import { ImportPageContentContext } from '../Provider';
-import { checkRowsInBdd, importRows, resetImportState } from '../../../../actions/ImportCsv';
-import styled from 'styled-components';
+import {
+  checkRowsInBdd,
+  importRows,
+  resetImportState,
+} from '../../../../actions/ImportCsv';
 
 const useStyles = makeStyles({
   cardBottomButtons: {
@@ -60,124 +64,170 @@ const Step4 = () => {
     dispatch(checkRowsInBdd(selectedType, importData));
     return () => {
       dispatch(resetImportState());
-    }
-  },[])
+    };
+  }, []);
 
   const errorMessages = () => {
-    const resultImport = importCsv.resultImport;
+    const { resultImport } = importCsv;
     const errorsArray = [];
     if (resultImport && resultImport.failureImport.length > 0) {
       resultImport.failureImport.forEach((row) => {
-        errorsArray.push(<RedTypography>{formatMessage(
-          {id: 'failure import csv message', defaultMessage: 'Line {line} : {errorMessage}.'},
-          {line : row.line, errorMessage: row.message }
-        )}</RedTypography>);
-      })
+        errorsArray.push(
+          <RedTypography>
+            {formatMessage(
+              {
+                id: 'failure import csv message',
+                defaultMessage: 'Line {line} : {errorMessage}.',
+              },
+              { line: row.line, errorMessage: row.message },
+            )}
+          </RedTypography>,
+        );
+      });
     }
     return errorsArray;
-  }
-  
+  };
+
   const wontBeCreatedData = () => {
-    const resultCheck = importCsv.resultCheck;
+    const { resultCheck } = importCsv;
     const linesArray = [];
-    if(resultCheck && resultCheck.wontBeCreated.length > 0){
+    if (resultCheck && resultCheck.wontBeCreated.length > 0) {
       resultCheck.wontBeCreated.forEach((row) => {
         linesArray.push(row.line);
       });
     }
 
-    return <RedTypography>{formatMessage(
-      {id: 'duplicates found import csv', defaultMessage: 'Lines concerned : {lines}.'}, 
-      {lines: linesArray.toString()}
-      )}
-      </RedTypography>;
-  }
-
-
     return (
-      <>
-        <Title>
-          {formatMessage({id: 'The functionality to check for duplicates has not been fully implemented. Please be careful not to import any documents or entrances which are already present in Grottocenter.'})}
-        </Title>
-        {importCsv.isLoading && <Typography>{formatMessage({id: 'Processing, this may take some time...'})}</Typography>}
-        
-        {importCsv.error && <Typography>{importCsv.error}</Typography>}
+      <RedTypography>
+        {formatMessage(
+          {
+            id: 'duplicates found import csv',
+            defaultMessage: 'Lines concerned : {lines}.',
+          },
+          { lines: linesArray.toString() },
+        )}
+      </RedTypography>
+    );
+  };
 
-        {importCsv.resultCheck.wontBeCreated && importCsv.resultCheck.wontBeCreated.length > 0 && 
-        (<>
-          <RedTypography>
-            {formatMessage(
-              {id: 'importCsv not imported', defaultMessage: '{nbDouble} {typeData} are already present in Grottocenter and won\'t be imported.'},
-              {nbDouble: importCsv.resultCheck.wontBeCreated.length, typeData: selectedType == 0 ? 'entrances' : 'documents'}
-            )}
-          </RedTypography>
-          {wontBeCreatedData()}
-          </>)
-      }
-        
-        {importCsv.resultCheck.willBeCreated && importCsv.resultCheck.willBeCreated.length > 0 &&
-        (<>
+  return (
+    <>
+      <Title>
+        {formatMessage({
+          id:
+            'The functionality to check for duplicates has not been fully implemented. Please be careful not to import any documents or entrances which are already present in Grottocenter.',
+        })}
+      </Title>
+      {importCsv.isLoading && (
+        <Typography>
+          {formatMessage({ id: 'Processing, this may take some time...' })}
+        </Typography>
+      )}
+
+      {importCsv.error && <Typography>{importCsv.error}</Typography>}
+
+      {importCsv.resultCheck.wontBeCreated &&
+        importCsv.resultCheck.wontBeCreated.length > 0 && (
+          <>
+            <RedTypography>
+              {formatMessage(
+                {
+                  id: 'importCsv not imported',
+                  defaultMessage:
+                    "{nbDouble} {typeData} are already present in Grottocenter and won't be imported.",
+                },
+                {
+                  nbDouble: importCsv.resultCheck.wontBeCreated.length,
+                  typeData: selectedType == 0 ? 'entrances' : 'documents',
+                },
+              )}
+            </RedTypography>
+            {wontBeCreatedData()}
+          </>
+        )}
+
+      {importCsv.resultCheck.willBeCreated &&
+        importCsv.resultCheck.willBeCreated.length > 0 && (
+          <>
+            <GreenTypography>
+              {formatMessage(
+                {
+                  id: 'importCsv imported',
+                  defaultMessage: '{nbNew} {typeData} will be imported.',
+                },
+                {
+                  nbNew: importCsv.resultCheck.willBeCreated.length,
+                  typeData: selectedType == 0 ? 'entrances' : 'documents',
+                },
+              )}
+            </GreenTypography>
+            <div className={classes.cardBottomButtons}>
+              <Breakpoint customQuery="(max-width: 450px)">
+                <Button
+                  className={classes.bottomButtonSmallScreen}
+                  type="submit"
+                  variant="contained"
+                  size="large"
+                  onClick={handleOnClick}
+                  disabled={importCsv.isLoading}
+                >
+                  <ImportExportIcon />
+                  <Translate>Import</Translate>
+                </Button>
+              </Breakpoint>
+
+              <Breakpoint customQuery="(min-width: 451px)">
+                <Button
+                  className={classes.bottomButton}
+                  type="submit"
+                  variant="contained"
+                  size="large"
+                  onClick={handleOnClick}
+                  disabled={importCsv.isLoading}
+                >
+                  <ImportExportIcon />
+                  <Translate>Import</Translate>
+                </Button>
+              </Breakpoint>
+            </div>
+          </>
+        )}
+
+      {importCsv.resultImport && importCsv.resultImport.total.success > 0 && (
+        <>
           <GreenTypography>
             {formatMessage(
-              {id: 'importCsv imported', defaultMessage: '{nbNew} {typeData} will be imported.'},
-              {nbNew : importCsv.resultCheck.willBeCreated.length, typeData: selectedType == 0 ? 'entrances' : 'documents'}
+              {
+                id: 'success import csv',
+                defaultMessage: '{nbNew} {typeData} were imported',
+              },
+              {
+                nbNew: importCsv.resultImport.total.success,
+                typeData: selectedType == 0 ? 'entrances' : 'documents',
+              },
             )}
           </GreenTypography>
-          <div className={classes.cardBottomButtons}>
-          <Breakpoint customQuery="(max-width: 450px)">
-            <Button
-              className={classes.bottomButtonSmallScreen}
-              type="submit"
-              variant="contained"
-              size="large"
-              onClick={handleOnClick}
-              disabled={importCsv.isLoading}
-            >
-              <ImportExportIcon />
-              <Translate>Import</Translate>
-            </Button>
-          </Breakpoint>
-
-          <Breakpoint customQuery="(min-width: 451px)">
-            <Button
-              className={classes.bottomButton}
-              type="submit"
-              variant="contained"
-              size="large"
-              onClick={handleOnClick}
-              disabled={importCsv.isLoading}
-            >
-              <ImportExportIcon />
-              <Translate>Import</Translate>
-            </Button>
-          </Breakpoint>
-        </div>
-      </>)
-      }
-
-      {importCsv.resultImport && importCsv.resultImport.total.success > 0 &&
-      (<>
-        <GreenTypography>
-            {formatMessage(
-              {id: 'success import csv', defaultMessage: '{nbNew} {typeData} has been imported'},
-              {nbNew : importCsv.resultImport.total.success, typeData: selectedType == 0 ? 'entrances' : 'documents'}
-            )}
-        </GreenTypography>
-      </>)
-      }
-      {importCsv.resultImport && importCsv.resultImport.total.failure > 0 &&
-      (<>
+        </>
+      )}
+      {importCsv.resultImport && importCsv.resultImport.total.failure > 0 && (
+        <>
           <RedTypography>
             {formatMessage(
-              {id: 'failure import csv', defaultMessage: '{nb} {typeData} has not been imported'},
-              {nb : importCsv.resultImport.total.failure, typeData: selectedType == 0 ? 'entrances' : 'documents'}
+              {
+                id: 'failure import csv',
+                defaultMessage: '{nb} {typeData} were not imported',
+              },
+              {
+                nb: importCsv.resultImport.total.failure,
+                typeData: selectedType == 0 ? 'entrances' : 'documents',
+              },
             )}
           </RedTypography>
           {errorMessages()}
-      </>)
-      }
-      </>
-    );
+        </>
+      )}
+    </>
+  );
 };
 
 Step4.propTypes = {};

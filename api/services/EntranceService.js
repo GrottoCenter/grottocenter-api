@@ -63,36 +63,56 @@ module.exports = {
     return allEntrances;
   },
 
-  createEntrance : async (entranceData, nameDescLocData, errorHandler, esClient) => {
+  createEntrance: async (
+    entranceData,
+    nameDescLocData,
+    errorHandler,
+    esClient,
+  ) => {
     const newEntrancePopulated = await sails
       .getDatastore()
       .transaction(async (db) => {
-
         const newEntrance = await TEntrance.create(entranceData)
           .fetch()
           .usingConnection(db);
 
         // Name
-        if(ramda.pathOr(null, ['name', 'text'], nameDescLocData)){
-        await TName.create({
-          author: nameDescLocData.name.author,
-          dateInscription: ramda.propOr(new Date(), 'dateInscription', nameDescLocData.name),
-          dateReviewed: ramda.propOr(undefined, 'dateReviewed', nameDescLocData.name),
-          entrance: newEntrance.id,
-          isMain: true,
-          language: nameDescLocData.name.language,
-          name: nameDescLocData.name.text,
-        })
-          .fetch()
-          .usingConnection(db);
+        if (ramda.pathOr(null, ['name', 'text'], nameDescLocData)) {
+          await TName.create({
+            author: nameDescLocData.name.author,
+            dateInscription: ramda.propOr(
+              new Date(),
+              'dateInscription',
+              nameDescLocData.name,
+            ),
+            dateReviewed: ramda.propOr(
+              undefined,
+              'dateReviewed',
+              nameDescLocData.name,
+            ),
+            entrance: newEntrance.id,
+            isMain: true,
+            language: nameDescLocData.name.language,
+            name: nameDescLocData.name.text,
+          })
+            .fetch()
+            .usingConnection(db);
         }
         // Description (if provided)
         if (ramda.pathOr(null, ['description', 'body'], nameDescLocData)) {
           await TDescription.create({
             author: nameDescLocData.description.author,
             body: nameDescLocData.description.body,
-            dateInscription: ramda.propOr(new Date(), 'dateInscription', nameDescLocData.description),
-            dateReviewed: ramda.propOr(undefined, 'dateReviewed', nameDescLocData.description),
+            dateInscription: ramda.propOr(
+              new Date(),
+              'dateInscription',
+              nameDescLocData.description,
+            ),
+            dateReviewed: ramda.propOr(
+              undefined,
+              'dateReviewed',
+              nameDescLocData.description,
+            ),
             entrance: newEntrance.id,
             language: nameDescLocData.description.language,
             title: nameDescLocData.description.title,
@@ -104,19 +124,27 @@ module.exports = {
           await TLocation.create({
             author: nameDescLocData.location.author,
             body: nameDescLocData.location.body,
-            dateInscription: ramda.propOr(new Date(), 'dateInscription', nameDescLocData.location),
-            dateReviewed: ramda.propOr(undefined, 'dateReviewed', nameDescLocData.location),
+            dateInscription: ramda.propOr(
+              new Date(),
+              'dateInscription',
+              nameDescLocData.location,
+            ),
+            dateReviewed: ramda.propOr(
+              undefined,
+              'dateReviewed',
+              nameDescLocData.location,
+            ),
             entrance: newEntrance.id,
             language: nameDescLocData.location.language,
           }).usingConnection(db);
         }
 
         // Prepare data for Elasticsearch indexation
-      const newEntrancePopulated = await TEntrance.findOne(newEntrance.id)
-      .populate('cave')
-      .populate('country')
-      .populate('descriptions')
-      .usingConnection(db);
+        const newEntrancePopulated = await TEntrance.findOne(newEntrance.id)
+          .populate('cave')
+          .populate('country')
+          .populate('descriptions')
+          .usingConnection(db);
         return newEntrancePopulated;
       })
       .intercept(errorHandler);
@@ -165,5 +193,5 @@ module.exports = {
     }
 
     return newEntrancePopulated;
-  }
+  },
 };

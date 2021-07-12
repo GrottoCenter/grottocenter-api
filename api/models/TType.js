@@ -47,6 +47,6 @@ module.exports = {
     url: {
       type: 'string',
       columnName: 'url',
-    }
+    },
   },
 };

@@ -23,16 +23,16 @@ module.exports = {
     let nickname = ramda.propOr('', 'nickname', caverData);
     const name = ramda.propOr(undefined, 'name', caverData);
     const surname = ramda.propOr(undefined, 'surname', caverData);
-    if(nickname === ''){
-      if(name){
+    if (nickname === '') {
+      if (name) {
         nickname += name;
       }
-      if(surname){
+      if (surname) {
         const space = name ? ' ' : '';
-        nickname += space+surname;
+        nickname += space + surname;
       }
     }
-    
+
     const newCaver = await TCaver.create({
       dateInscription: new Date(),
       mail: 'no@mail.no', // default mail for non-user caver
