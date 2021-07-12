@@ -390,6 +390,10 @@ module.exports.routes = {
     },
   },
 
+  /* ImportCSV controller */
+  'POST /api/v1/importCsv/checkRows': 'v1/ImportCsv.checkAll',
+  'POST /api/v1/importCsv/importRows': 'v1/ImportCsv.importAll',
+
   //  ╦ ╦╔═╗╔╗ ╦ ╦╔═╗╔═╗╦╔═╔═╗
   //  ║║║║╣ ╠╩╗╠═╣║ ║║ ║╠╩╗╚═╗
   //  ╚╩╝╚═╝╚═╝╩ ╩╚═╝╚═╝╩ ╩╚═╝
