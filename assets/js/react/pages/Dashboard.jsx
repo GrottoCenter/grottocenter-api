@@ -4,6 +4,7 @@ import { useHistory } from 'react-router-dom';
 import { List, ListItem, Typography } from '@material-ui/core';
 import PeopleIcon from '@material-ui/icons/People';
 import DocumentListIcon from '@material-ui/icons/PlaylistAddCheck';
+import ImportExportIcon from '@material-ui/icons/ImportExport';
 import ListAltIcon from '@material-ui/icons/ListAlt';
 import styled from 'styled-components';
 
@@ -102,7 +103,7 @@ const Dashboard = () => {
               <Typography variant="h2">
                 {formatMessage({ id: 'User Dashboard' })}
               </Typography>
-              <StyledList cols={3}>
+              <StyledList cols={6}>
                 <StyledListItem
                   button
                   key="my-contributions-user-tile-key"
@@ -111,6 +112,16 @@ const Dashboard = () => {
                   <ListAltIcon fontSize="large" color="primary" />
                   <Typography variant="h4" align="center">
                     {formatMessage({ id: 'My contributions' })}
+                  </Typography>
+                </StyledListItem>
+                <StyledListItem
+                  button
+                  key="import-csv-user-tile-key"
+                  onClick={() => handleOnListItemClick('/ui/import-csv')}
+                >
+                  <ImportExportIcon fontSize="large" color="primary" />
+                  <Typography variant="h4" align="center">
+                    {formatMessage({ id: 'Import CSV' })}
                   </Typography>
                 </StyledListItem>
               </StyledList>
