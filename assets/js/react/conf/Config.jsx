@@ -185,6 +185,10 @@ export const getModeratorsUrl = `/api/${apiVersion}/cavers/moderators`;
 export const postCaverGroupsUrl = (userId) =>
   `/api/${apiVersion}/cavers/${userId}/groups`;
 
+// ===== ImportCSV url
+export const checkRowsBddUrl = `/api/${apiVersion}/importCsv/checkRows`;
+export const importRowsUrl = `/api/${apiVersion}/importCsv/importRows`;
+
 // ===== Auth url
 export const loginUrl = `/api/${apiVersion}/login`;
 export const logoutUrl = `/api/${apiVersion}/logout`;

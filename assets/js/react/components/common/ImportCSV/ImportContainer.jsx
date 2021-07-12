@@ -1,11 +1,13 @@
 import React, { useContext, useEffect } from 'react';
 import { includes } from 'ramda';
-import { Card, CardContent, makeStyles, Typography } from '@material-ui/core';
+import { Card, CardContent, makeStyles, Typography, LinearProgress as MuiLinearProgress, } from '@material-ui/core';
 import ImportTabs from './ImportTabs';
 import Stepper from '../Form/Stepper';
 import Provider, { ImportPageContentContext } from './Provider';
 import ImportPageContent from './ImportPageContent';
 import Translate from '../Translate';
+import styled from 'styled-components';
+import { useSelector } from 'react-redux';
 
 const useStyles = makeStyles({
   root: {
@@ -20,6 +22,7 @@ const useStyles = makeStyles({
 const ImportContainer = () => {
   const classes = useStyles();
   const [isNextStepDisabled, setIsNextStepDisabled] = React.useState(true);
+  const { isLoading } = useSelector((state) => state.importCsv)
 
   const {
     currentStep: currentFormStep,
@@ -44,6 +47,10 @@ const ImportContainer = () => {
     );
   }, [validatedSteps, currentFormStep, formSteps, setIsNextStepDisabled]);
 
+  const LinearProgress = styled(MuiLinearProgress)`
+  visibility: ${({ $isLoading }) => ($isLoading ? 'visible' : 'hidden')};
+`;
+
   return (
     <>
       <ImportTabs />
@@ -56,16 +63,20 @@ const ImportContainer = () => {
               <Translate>Documents import</Translate>
             )}
           </Typography>
-          <Stepper
-            className={classes.stepper}
-            currentFormStepId={currentFormStep}
-            completedSteps={validatedSteps}
-            formSteps={formSteps}
-            isNextStepButtonDisabled={isNextStepDisabled}
-            handleStepBack={handleStepBack}
-            handleStepNext={handleStepNext}
-          />
-          <ImportPageContent currentFormStepId={currentFormStep} />
+          <LinearProgress $isLoading={isLoading} />
+
+          <div style={isLoading ? { opacity: '0.6' } : {}}>
+            <Stepper
+              className={classes.stepper}
+              currentFormStepId={currentFormStep}
+              completedSteps={validatedSteps}
+              formSteps={formSteps}
+              isNextStepButtonDisabled={isNextStepDisabled}
+              handleStepBack={handleStepBack}
+              handleStepNext={handleStepNext}
+            />
+            <ImportPageContent currentFormStepId={currentFormStep} />
+          </div>
         </CardContent>
       </Card>
     </>

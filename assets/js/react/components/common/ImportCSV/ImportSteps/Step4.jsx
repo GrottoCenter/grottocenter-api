@@ -1,17 +1,13 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { Breakpoint } from 'react-socks';
-import { Button, makeStyles, Snackbar } from '@material-ui/core';
+import { Button, makeStyles, Typography } from '@material-ui/core';
 import ImportExportIcon from '@material-ui/icons/ImportExport';
 import { useDispatch, useSelector } from 'react-redux';
-import getCountryISO3 from 'country-iso-2-to-3';
-import { Alert } from '@material-ui/lab';
 import { useIntl } from 'react-intl';
 import Translate from '../../Translate';
-import { postEntry } from '../../../../actions/CreateEntry';
-import { postCave } from '../../../../actions/CreateCave';
-import { postDocument } from '../../../../actions/CreateDocument';
-import { fetchQuicksearchResult } from '../../../../actions/Quicksearch';
 import { ImportPageContentContext } from '../Provider';
+import { checkRowsInBdd, importRows, resetImportState } from '../../../../actions/ImportCsv';
+import styled from 'styled-components';
 
 const useStyles = makeStyles({
   cardBottomButtons: {
@@ -37,210 +33,151 @@ const useStyles = makeStyles({
   },
 });
 
+const Title = styled.div`
+  font-size: 2rem;
+`;
+
+const GreenTypography = styled.div`
+  color: green;
+`;
+
+const RedTypography = styled.div`
+  color: red;
+`;
+
 const Step4 = () => {
   const classes = useStyles();
   const dispatch = useDispatch();
   const { formatMessage } = useIntl();
-  const { cave } = useSelector((state) => state.createCave);
-  const { results } = useSelector((state) => state.quicksearch);
+  const importCsv = useSelector((state) => state.importCsv);
   const { importData, selectedType } = useContext(ImportPageContentContext);
 
-  const [currentRow, setCurrentRow] = useState([]);
-  const [errors, setErrors] = useState([]);
-  const [openToast, setOpenToast] = useState(false);
-  const [buttonDisabled, setButtonDisabled] = useState(false);
-
-  const getDocumentType = (url) => {
-    if (url.includes('art', 'article')) return 18;
-    if (url.includes('doc', 'document')) return 12;
-    if (url.includes('img', 'image')) return 4;
-    return 18;
-  };
-
-  const iso2ToIso3 = (iso) => {
-    if (iso !== undefined) {
-      if (iso === 'EN') return 'eng';
-      return getCountryISO3(iso).toLowerCase();
-    }
-    return null;
-  };
-
-  const getURIValue = (string) => {
-    return string.split('#')[1].replace('_', ' ');
-  };
-
-  const importEntranceRow = (row) => {
-    dispatch(
-      postCave({
-        name: row['rdfs:label'],
-        language: iso2ToIso3(
-          row['karstlink:hasDescriptionDocument/dc:language'],
-        ),
-        latitude: row['w3geo:latitude'],
-        longitude: row['w3geo:longitude'],
-        length: row['karstlink:length'],
-        depth:
-          row['karstlink:verticalExtend'] !== ''
-            ? parseInt(row['karstlink:verticalExtend'], 10)
-            : parseInt(row['karstlink:extendBelowEntrance'], 10) +
-              parseInt(row['karstlink:extendAboveEntrance'], 10),
-      }),
-    );
-  };
-
-  const importDocumentRow = (row) => {
-    dispatch(
-      fetchQuicksearchResult({
-        query: getURIValue(row['dct:creator']),
-        resourceTypes: ['cavers'],
-      }),
-    );
-  };
-
-  const handleClose = (event, reason) => {
-    if (reason === 'clickaway') {
-      return;
-    }
-
-    setOpenToast(false);
-  };
-
   const handleOnClick = () => {
-    importData.forEach((row) => {
-      setCurrentRow(row);
-      if (selectedType === 0) {
-        importEntranceRow(row);
-      } else {
-        importDocumentRow(row);
-      }
-    });
-    setOpenToast(true);
-    setButtonDisabled(true);
+    dispatch(importRows(importCsv.resultCheck.willBeCreated, selectedType));
   };
 
   useEffect(() => {
-    if (results.length === 0 && currentRow.length !== 0) {
-      setErrors([...errors, 'Author not found']);
+    dispatch(checkRowsInBdd(selectedType, importData));
+    return () => {
+      dispatch(resetImportState());
+    }
+  },[])
+
+  const errorMessages = () => {
+    const resultImport = importCsv.resultImport;
+    const errorsArray = [];
+    if (resultImport && resultImport.failureImport.length > 0) {
+      resultImport.failureImport.forEach((row) => {
+        errorsArray.push(<RedTypography>{formatMessage(
+          {id: 'failure import csv message', defaultMessage: 'Line {line} : {errorMessage}.'},
+          {line : row.line, errorMessage: row.message }
+        )}</RedTypography>);
+      })
+    }
+    return errorsArray;
+  }
+  
+  const wontBeCreatedData = () => {
+    const resultCheck = importCsv.resultCheck;
+    const linesArray = [];
+    if(resultCheck && resultCheck.wontBeCreated.length > 0){
+      resultCheck.wontBeCreated.forEach((row) => {
+        linesArray.push(row.line);
+      });
     }
 
-    if (
-      results.length !== 0 &&
-      results[0].type === 'caver' &&
-      currentRow.length !== 0
-    ) {
-      dispatch(
-        postDocument({
-          document: currentRow,
-          titleAndDescriptionLanguage: {
-            id: iso2ToIso3(
-              currentRow['karstlink:hasDescriptionDocument/dc:language'],
-            ),
-          },
-          language: iso2ToIso3(currentRow['dc:language']),
-          description:
-            currentRow['karstlink:hasDescriptionDocument/dct:description'],
-          type: getDocumentType(currentRow['karstlink:documentType']),
-          author: { id: results[0].id },
-        }),
-      );
-    }
-  }, [results]);
-
-  useEffect(() => {
-    if (cave !== null && selectedType === 0 && currentRow.length !== 0) {
-      dispatch(
-        postEntry({
-          cave,
-          description: {
-            body:
-              currentRow['karstlink:hasDescriptionDocument/dct:description'],
-            language: iso2ToIso3(
-              currentRow['karstlink:hasDescriptionDocument/dc:language'],
-            ),
-            title: currentRow['karstlink:hasDescriptionDocument/dct:title'],
-          },
-          name: {
-            text: currentRow['rdfs:label'],
-            language: iso2ToIso3(currentRow['gn:countryCode']),
-          },
-          location: {
-            body: currentRow['karstlink:hasAccessDocument/dct:description'],
-            language: iso2ToIso3(
-              currentRow['karstlink:hasAccessDocument/dc:language'],
-            ),
-          },
-          country: {
-            id: currentRow['gn:countryCode'],
-          },
-          precision: parseInt(currentRow['dwc:coordinatePrecision'], 10),
-          altitude: parseInt(currentRow['w3geo:altitude'], 10),
-        }),
-      );
-    }
-  }, [cave]);
-
-  return (
-    <>
-      {errors.length !== 0
-        ? errors.map((error) => {
-            return (
-              <Alert
-                key={Math.random()}
-                className={classes.alertError}
-                severity="error"
-              >
-                {formatMessage({
-                  id: error,
-                })}
-              </Alert>
-            );
-          })
-        : null}
-      {errors.length === 0 && (
-        <Snackbar
-          open={openToast}
-          autoHideDuration={6000}
-          onClose={handleClose}
-        >
-          <Alert onClose={handleClose} variant="filled" severity="success">
-            {importData.length}
-            {formatMessage({
-              id: ' rows imported, thanks for the contribution.',
-            })}
-          </Alert>
-        </Snackbar>
+    return <RedTypography>{formatMessage(
+      {id: 'duplicates found import csv', defaultMessage: 'Lines concerned : {lines}.'}, 
+      {lines: linesArray.toString()}
       )}
-      <div className={classes.cardBottomButtons}>
-        <Breakpoint customQuery="(max-width: 450px)">
-          <Button
-            className={classes.bottomButtonSmallScreen}
-            type="submit"
-            variant="contained"
-            size="large"
-            onClick={handleOnClick}
-            disabled={buttonDisabled}
-          >
-            <ImportExportIcon />
-            <Translate>Import</Translate>
-          </Button>
-        </Breakpoint>
+      </RedTypography>;
+  }
 
-        <Breakpoint customQuery="(min-width: 451px)">
-          <Button
-            className={classes.bottomButton}
-            type="submit"
-            variant="contained"
-            size="large"
-            onClick={handleOnClick}
-            disabled={buttonDisabled}
-          >
-            <ImportExportIcon />
-            <Translate>Import</Translate>
-          </Button>
-        </Breakpoint>
-      </div>
-    </>
-  );
+
+    return (
+      <>
+        <Title>
+          {formatMessage({id: 'The functionality to check for duplicates has not been fully implemented. Please be careful not to import any documents or entrances which are already present in Grottocenter.'})}
+        </Title>
+        {importCsv.isLoading && <Typography>{formatMessage({id: 'Processing, this may take some time...'})}</Typography>}
+        
+        {importCsv.error && <Typography>{importCsv.error}</Typography>}
+
+        {importCsv.resultCheck.wontBeCreated && importCsv.resultCheck.wontBeCreated.length > 0 && 
+        (<>
+          <RedTypography>
+            {formatMessage(
+              {id: 'importCsv not imported', defaultMessage: '{nbDouble} {typeData} are already present in Grottocenter and won\'t be imported.'},
+              {nbDouble: importCsv.resultCheck.wontBeCreated.length, typeData: selectedType == 0 ? 'entrances' : 'documents'}
+            )}
+          </RedTypography>
+          {wontBeCreatedData()}
+          </>)
+      }
+        
+        {importCsv.resultCheck.willBeCreated && importCsv.resultCheck.willBeCreated.length > 0 &&
+        (<>
+          <GreenTypography>
+            {formatMessage(
+              {id: 'importCsv imported', defaultMessage: '{nbNew} {typeData} will be imported.'},
+              {nbNew : importCsv.resultCheck.willBeCreated.length, typeData: selectedType == 0 ? 'entrances' : 'documents'}
+            )}
+          </GreenTypography>
+          <div className={classes.cardBottomButtons}>
+          <Breakpoint customQuery="(max-width: 450px)">
+            <Button
+              className={classes.bottomButtonSmallScreen}
+              type="submit"
+              variant="contained"
+              size="large"
+              onClick={handleOnClick}
+              disabled={importCsv.isLoading}
+            >
+              <ImportExportIcon />
+              <Translate>Import</Translate>
+            </Button>
+          </Breakpoint>
+
+          <Breakpoint customQuery="(min-width: 451px)">
+            <Button
+              className={classes.bottomButton}
+              type="submit"
+              variant="contained"
+              size="large"
+              onClick={handleOnClick}
+              disabled={importCsv.isLoading}
+            >
+              <ImportExportIcon />
+              <Translate>Import</Translate>
+            </Button>
+          </Breakpoint>
+        </div>
+      </>)
+      }
+
+      {importCsv.resultImport && importCsv.resultImport.total.success > 0 &&
+      (<>
+        <GreenTypography>
+            {formatMessage(
+              {id: 'success import csv', defaultMessage: '{nbNew} {typeData} has been imported'},
+              {nbNew : importCsv.resultImport.total.success, typeData: selectedType == 0 ? 'entrances' : 'documents'}
+            )}
+        </GreenTypography>
+      </>)
+      }
+      {importCsv.resultImport && importCsv.resultImport.total.failure > 0 &&
+      (<>
+          <RedTypography>
+            {formatMessage(
+              {id: 'failure import csv', defaultMessage: '{nb} {typeData} has not been imported'},
+              {nb : importCsv.resultImport.total.failure, typeData: selectedType == 0 ? 'entrances' : 'documents'}
+            )}
+          </RedTypography>
+          {errorMessages()}
+      </>)
+      }
+      </>
+    );
 };
 
 Step4.propTypes = {};
