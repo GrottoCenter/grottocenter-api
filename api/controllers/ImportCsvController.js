@@ -405,19 +405,40 @@ const getConvertedLangDescDocumentFromClient = (rawData, authorId) => {
 
  module.exports = {
     checkAll: async (req, res) => {
+      let model;
       switch(req.body.typeRow){
         case 'document':
+          model = TDocument;
           break;
         case 'entrance':
+          model = TEntrance;
           break;
         default:
           return res.serverError()
       }
       const willBeCreated = [];
       const wontBeCreated = [];
-      req.body.data.forEach((row) => {
-        willBeCreated.push(row);
-      })
+      for(const [index, row] of req.body.data.entries()){
+        const idDb = doubleCheck(row, 'id', undefined);
+        const nameDb = doubleCheck(row, 'dct:rights/cc:attributionName', undefined);
+        if(!(idDb && nameDb)){
+          wontBeCreated.push({
+            line: index+2,
+          })
+        } else {
+          const result = await model.find({
+            idDbImport: idDb,
+            nameDbImport: nameDb,
+          });
+          if(result.length > 0){
+            wontBeCreated.push({
+              line: index+2,
+            });
+          } else {
+            willBeCreated.push(row);
+          }
+        }
+      }
 
       const requestResult = {
         willBeCreated,
@@ -521,14 +542,14 @@ const getConvertedLangDescDocumentFromClient = (rawData, authorId) => {
             requestResponse.successfulImport.push(result);
           }catch(err){
             requestResponse.failureImport.push({
-              line: index+1,
+              line: index+2,
               message: err.toString(),
             });
           }
         } else {
           requestResponse.failureImport.push({
-            line: index+1,
-            missingColumns: missingColumns,
+            line: index+2,
+            message: "Columns missing : "+missingColumns.toString(),
           });
         }
       };
