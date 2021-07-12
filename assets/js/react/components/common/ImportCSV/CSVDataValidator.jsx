@@ -137,7 +137,7 @@ const CSVDataValidator = ({ selectedFile, errorHandler }) => {
                     )
                       importErrors[columnName] = 'MODIFIED_BEFORE_CREATED';
                   }
-                } else importErrors[columnName] = 'FIELD_NULL';
+                }
               }
             }
           }

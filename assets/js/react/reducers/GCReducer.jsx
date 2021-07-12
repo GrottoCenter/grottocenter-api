@@ -16,6 +16,7 @@ import entry from './EntryReducer';
 import createEntry from './CreateEntry';
 import error from './ErrorReducer';
 import identifierType from './IdentifierTypesReducer';
+import importCsv from './ImportCsvReducer';
 import language from './LanguageReducer';
 import latestBlogNews from './LatestBlogNewsReducer';
 import login from './LoginReducer';
@@ -57,6 +58,7 @@ const GCReducer = combineReducers({
   createEntry,
   error,
   identifierType,
+  importCsv,
   language,
   latestBlogNews,
   login,

@@ -14,7 +14,7 @@ const entranceValidator = {
     required: true,
     accepted: '',
   },
-  'dct:rights/karstlink:licenceType': {
+  'dct:rights/karstlink:licenseType': {
     type: 'string',
     required: true,
     accepted: '',
@@ -157,7 +157,7 @@ const documentValidator = {
     required: true,
     accepted: '',
   },
-  'dct:rights/karstlink:licenceType': {
+  'dct:rights/karstlink:licenseType': {
     type: 'string',
     required: true,
     accepted: '',
