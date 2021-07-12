@@ -87,7 +87,6 @@ module.exports = {
       return res.forbidden('You are not authorized to create a cave.');
     }
 
-
     // Check params
     if (!req.param('name')) {
       return res.badRequest(`You must provide a name to create a new cave.`);
@@ -105,18 +104,18 @@ module.exports = {
         id: req.body.descriptionAndNameLanguage.id,
       },
     };
-    if(ramda.propOr(null, 'description', req.body)){
+    if (ramda.propOr(null, 'description', req.body)) {
       nameAndDescData = {
         ...nameAndDescData,
         description: req.body.description,
         descriptionTitle: req.body.title,
       };
-    };
+    }
     const handleError = (error) => {
-      if(error.code && error.code === 'E_UNIQUE'){
+      if (error.code && error.code === 'E_UNIQUE') {
         return res.sendStatus(409);
       } else {
-        switch(error.name){
+        switch (error.name) {
           case 'UsageError':
             return res.badRequest(error.message);
           case 'AdapterError':
@@ -126,11 +125,14 @@ module.exports = {
         }
       }
     };
-    
+
     // Launch creation request using transaction: it performs a rollback if an error occurs
-    const caveCreated = await CaveService.createCave(cleanedData, nameAndDescData, handleError)
-    
-    
+    const caveCreated = await CaveService.createCave(
+      cleanedData,
+      nameAndDescData,
+      handleError,
+    );
+
     const params = {};
     params.controllerMethod = 'CaveController.create';
     return ControllerService.treat(req, null, caveCreated, params, res);

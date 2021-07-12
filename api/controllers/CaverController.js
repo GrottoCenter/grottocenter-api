@@ -443,15 +443,15 @@ module.exports = {
     }
 
     const paramsCaver = {
-      name : req.param('name'),
-      surname : req.param('surname'),
+      name: req.param('name'),
+      surname: req.param('surname'),
     };
 
     const handleError = (error) => {
-      if(error.code && error.code === 'E_UNIQUE'){
+      if (error.code && error.code === 'E_UNIQUE') {
         return res.sendStatus(409).send(error.message);
       } else {
-        switch(error.name){
+        switch (error.name) {
           case 'UsageError':
             return res.badRequest(error);
           case 'AdapterError':
@@ -462,7 +462,11 @@ module.exports = {
       }
     };
 
-    const newCaver = await CaverService.createNonUserCaver(paramsCaver, handleError, esClient);
+    const newCaver = await CaverService.createNonUserCaver(
+      paramsCaver,
+      handleError,
+      esClient,
+    );
 
     const params = {};
     params.controllerMethod = 'CaverController.create';

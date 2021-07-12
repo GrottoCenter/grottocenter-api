@@ -135,10 +135,10 @@ module.exports = {
 
     // Launch creation request using transaction: it performs a rollback if an error occurs
     const handleError = (error) => {
-      if(error.code && error.code === 'E_UNIQUE'){
+      if (error.code && error.code === 'E_UNIQUE') {
         return res.sendStatus(409).send(error.message);
       } else {
-        switch(error.name){
+        switch (error.name) {
           case 'UsageError':
             return res.badRequest(error);
           case 'AdapterError':
@@ -159,9 +159,14 @@ module.exports = {
       author: req.token.id,
       language: ramda.propOr(undefined, 'language', req.param('name')),
       text: req.param('name').text,
-    }
+    };
 
-    const newOrganizationPopulated = await GrottoService.createGrotto(cleanedData, nameData, handleError, esClient);
+    const newOrganizationPopulated = await GrottoService.createGrotto(
+      cleanedData,
+      nameData,
+      handleError,
+      esClient,
+    );
 
     const params = {};
     params.controllerMethod = 'GrottoController.create';

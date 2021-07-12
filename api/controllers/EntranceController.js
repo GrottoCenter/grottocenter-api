@@ -232,10 +232,10 @@ module.exports = {
     const nameDescLocData = getConvertedNameDescLocFromClientRequest(req);
 
     const handleError = (error) => {
-      if(error.code && error.code === 'E_UNIQUE'){
+      if (error.code && error.code === 'E_UNIQUE') {
         return res.sendStatus(409);
       } else {
-        switch(error.name){
+        switch (error.name) {
           case 'UsageError':
             return res.badRequest(error);
           case 'AdapterError':
@@ -247,8 +247,12 @@ module.exports = {
     };
 
     // Launch creation request using transaction: it performs a rollback if an error occurs
-    const newEntrancePopulated = await EntranceService.createEntrance(cleanedData, nameDescLocData, handleError, esClient);
-      
+    const newEntrancePopulated = await EntranceService.createEntrance(
+      cleanedData,
+      nameDescLocData,
+      handleError,
+      esClient,
+    );
 
     const params = {};
     params.controllerMethod = 'EntranceController.create';
