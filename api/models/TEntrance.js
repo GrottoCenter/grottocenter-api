@@ -179,6 +179,16 @@ module.exports = {
       model: 'TCountry',
     },
 
+    idDbImport: {
+      type: 'number',
+      columnName: 'id_db_import',
+    },
+
+    nameDbImport: {
+      type: 'string',
+      columnName: 'name_db_import',
+    },
+
     geology: {
       columnName: 'id_geology',
       allowNull: false,

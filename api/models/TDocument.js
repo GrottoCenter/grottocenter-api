@@ -136,6 +136,12 @@ module.exports = {
       model: 'TGrotto',
     },
 
+    authorsGrotto: {
+      collection: 'TGrotto',
+      via: 'document',
+      through: 'JDocumentGrottoAuthor',
+    },
+
     library: {
       columnName: 'id_library',
       model: 'TGrotto',
@@ -161,6 +167,16 @@ module.exports = {
     modifiedDocJson: {
       columnName: 'modified_doc_json',
       type: 'json',
+    },
+
+    idDbImport: {
+      type: 'number',
+      columnName: 'id_db_import',
+    },
+
+    nameDbImport: {
+      type: 'string',
+      columnName: 'name_db_import',
     },
 
     pagesBBSOld: {

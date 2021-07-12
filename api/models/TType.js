@@ -43,5 +43,10 @@ module.exports = {
       columnName: 'id_parent',
       model: 'TType',
     },
+
+    url: {
+      type: 'string',
+      columnName: 'url',
+    }
   },
 };
