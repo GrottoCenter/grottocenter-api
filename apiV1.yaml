@@ -35,6 +35,7 @@ tags:
 - name: regions
 - name: search
 - name: subjects
+- name: import csv
 
 paths:
   '/caves':
@@ -2199,6 +2200,98 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Language'
+                  
+  '/importCsv/checkRows':
+    post:
+      tags:
+      - import csv
+      description: Check if the data sent are already present in Grottocenter (incomplete).
+      requestBody:
+        description: Check https://ontology.uis-speleo.org/howto/ to learn the mandatories properties. It must be an array of object containing the properties mentioned.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Import-csv'
+      responses:
+        '200':
+          description: Successful operation. Returns the data which are not duplicates. For those which are indeed dupicates, returns the line concerned in the csv.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  willBeCreated:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Import-csv'
+                      
+                  wontBeCreated:
+                    type: array
+                    items:
+                      properties:
+                        line:
+                          type: integer
+                      
+  '/importCsv/importRows':
+    post:
+      tags:
+      - import csv
+      description: Import the data in the database.
+      requestBody:
+        description: Check https://ontology.uis-speleo.org/howto/ to learn the mandatories properties. It must be an array of object containing the properties mentioned.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Import-csv'
+      responses:
+        '200':
+            description: Successful operation. Returns the id of the cave/entrance or document (depending on what you imported). In case of failure, returns the line concerned and an error message.
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    total:
+                      type: object
+                      properties:
+                        success:
+                          type: integer
+                        failure:
+                          type: integer
+                    successfulImport:
+                      type: array
+                      items:
+                        oneOf:
+                          - type: object
+                            properties:
+                              caveId:
+                                type: integer
+                              entranceId:
+                                type: integer
+                          - type: object
+                            properties:
+                              documentId:
+                                type: integer
+                        
+                    failureImport:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          line:
+                            type: integer
+                          message:
+                            type: string
+                          
+                          
+        '403':
+          description: You are not authorized to create a document (or entrance).
 
 components:
   schemas:
@@ -2868,3 +2961,27 @@ components:
         - entrances
         - grottos
         - massifs
+        
+    Import-csv:
+      type: object
+      properties:
+        id:
+          type: integer
+        rdf-type:
+          type: string
+        'dct:rights/karstlink:licenceType':
+          type: string
+        'dct:rights/cc:attributionURL':
+          type: string
+        'dct:rights/cc:attributionName':
+          type: string
+        'karstlink:documentType':
+          type: string
+        'rdfs:label':
+          type: string
+        'dct:creator':
+          type: string
+        
+        
+        
+        
