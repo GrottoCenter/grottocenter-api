@@ -158,6 +158,11 @@ module.exports = {
       model: 'TLicense',
     },
 
+    modifiedDocJson: {
+      columnName: 'modified_doc_json',
+      type: 'json',
+    },
+
     pagesBBSOld: {
       type: 'string',
       allowNull: true,

@@ -37,7 +37,12 @@ const DocumentPage = ({
   const { formatMessage } = useIntl();
   return (
     <Wrapper>
-      <Overview {...overview} loading={loading} isValidated={isValidated} onEdit={onEdit} />
+      <Overview
+        {...overview}
+        loading={loading}
+        isValidated={isValidated}
+        onEdit={onEdit}
+      />
       <Section
         loading={loading}
         title={formatMessage({ id: 'Organizations' })}
@@ -153,21 +158,21 @@ const HydratedDocumentPage = ({ id }) => {
   const history = useHistory();
   const editPath = useRef('/ui');
   const permissions = usePermissions();
-  
+
   useEffect(() => {
     if (!isNil(documentId)) {
       dispatch(fetchDocumentDetails(documentId));
-      editPath.current = '/ui/documents/edit/'+documentId;
+      editPath.current = `/ui/documents/edit/${documentId}`;
     }
   }, [documentId]);
 
   const onEdit = () => {
-    if(permissions.isAuth){
-      history.push(editPath.current)
-    }else{
+    if (permissions.isAuth) {
+      history.push(editPath.current);
+    } else {
       return undefined;
     }
-  }
+  };
 
   return (
     <DocumentPage
