@@ -9,7 +9,8 @@ const makeCustomCellRenders = () => {
   return [
     {
       id: 'modifiedDocJson',
-      customRender: (json) => (isNil(json) ? <NewReleasesOutlinedIcon/> : <UpdateIcon/>),
+      customRender: (json) =>
+        isNil(json) ? <NewReleasesOutlinedIcon /> : <UpdateIcon />,
     },
     {
       id: 'dateInscription',

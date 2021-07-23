@@ -3,10 +3,10 @@ import PropTypes from 'prop-types';
 import { CircularProgress } from '@material-ui/core';
 import { useDispatch, useSelector } from 'react-redux';
 import { isEmpty, isNil, head, pathOr, propOr, reject, pipe } from 'ramda';
+import { useHistory, useParams } from 'react-router-dom';
 import DocumentSubmission from '../DocumentSubmission';
 import { fetchDocumentDetails } from '../../actions/DocumentDetails';
 import docInfoGetters from './docInfoGetters';
-import { useHistory, useParams } from 'react-router-dom';
 import { resetApiMessages } from '../../actions/Document';
 
 const DocumentEdit = ({
@@ -27,11 +27,11 @@ const DocumentEdit = ({
     (state) => state.document,
   );
 
-  if(!onSuccessfulUpdate){
+  if (!onSuccessfulUpdate) {
     onSuccessfulUpdate = () => {
-      dispatch(resetApiMessages())
-      history.push('/ui/documents/'+documentId);
-    }
+      dispatch(resetApiMessages());
+      history.push(`/ui/documents/${documentId}`);
+    };
   }
 
   useEffect(() => {
@@ -42,7 +42,7 @@ const DocumentEdit = ({
 
   useEffect(() => {
     if (latestHttpCode === 200 && isEmpty(errorMessages)) {
-        onSuccessfulUpdate();
+      onSuccessfulUpdate();
     }
   }, [latestHttpCode, errorMessages]);
 

@@ -33,4 +33,5 @@ module.exports = {
   type: undefined,
   validationComment: undefined,
   validator: undefined,
+  modifiedDocJson: undefined,
 };

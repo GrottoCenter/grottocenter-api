@@ -24,7 +24,7 @@ import CaveSystemPage from './CaveSystem';
 import ContributionsPage from './Contributions';
 import DocumentSubmission from './DocumentSubmission';
 import DocumentValidation from './DocumentValidation';
-import DocumentEdit from './DocumentEdit'
+import DocumentEdit from './DocumentEdit';
 import EntryPage from './Entry';
 import ManageUsers from './Admin/ManageUsers';
 import Map from './Map';
@@ -75,7 +75,7 @@ const Application = () => {
         <Route path="/ui/signup" component={SignUp} />
         <Route path="/ui/documents/add" component={DocumentSubmission} />
         <Route path="/ui/documents/validation" component={DocumentValidation} />
-        <Route path="/ui/documents/edit/:documentId" component={DocumentEdit}/>
+        <Route path="/ui/documents/edit/:documentId" component={DocumentEdit} />
         <Route
           path="/ui/documents/:documentId"
           component={DocumentDetailsPage}
