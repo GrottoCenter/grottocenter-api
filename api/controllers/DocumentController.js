@@ -32,7 +32,8 @@ const getConvertedDataFromClient = (req) => {
     ...reqBodyWithoutId,
     author: req.token.id,
     authors: req.body.authors ? req.body.authors.map((a) => a.id) : undefined,
-    datePublication: req.body.publicationDate === "" ? null : req.body.publicationDate,
+    datePublication:
+      req.body.publicationDate === '' ? null : req.body.publicationDate,
     editor: ramda.pathOr(undefined, ['editor', 'id'], req.body),
     identifierType: ramda.pathOr(undefined, ['identifierType', 'id'], req.body),
     library: ramda.pathOr(undefined, ['library', 'id'], req.body),
