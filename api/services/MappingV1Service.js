@@ -552,24 +552,25 @@ module.exports = {
 
     result.id = source.id;
     result['@id'] = String(source.id);
+    result.address = source.address;
+    result.city = source.city;
+    result.customMessage = source.customMessage;
     result.country = source.country;
     result.countryCode = source['country code'];
     result.county = source.county;
-    result.region = source.region;
-    result.city = source.city;
-    result.postalCode = source.postalCode;
+    result.documentary = source.documentary;
+    result.isOfficialPartner = source.isOfficialPartner;
     result.latitude = parseFloat(source.latitude);
     result.longitude = parseFloat(source.longitude);
-    result.address = source.address;
+    result.name = MappingV1Service.getMainName(source);
     result.names = source.names;
     result.mail = source.mail;
-    result.yearBirth = source.yearBirth;
-    result.customMessage = source.customMessage;
     result.pictureFileName = source.pictureFileName;
-    result.isOfficialPartner = source.isOfficialPartner;
-    result.village = source.village;
-    result.documentary = source.documentary;
+    result.postalCode = source.postalCode;
+    result.region = source.region;
     result.URL = source.URL;
+    result.village = source.village;
+    result.yearBirth = source.yearBirth;
 
     return result;
   },
