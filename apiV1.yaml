@@ -2556,6 +2556,8 @@ components:
             $ref: '#/components/schemas/Rigging'
         stats:
           $ref: '#/components/schemas/Entrance-stats'
+        discoveryYear:
+          type: integer
 
     Entrance-stats:
       type: object
