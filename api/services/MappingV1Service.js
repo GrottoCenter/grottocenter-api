@@ -148,8 +148,8 @@ module.exports = {
     };
 
     // Cave (DB or ES)
-    if (source.cave) {
-      result.cave = source.cave;
+    if (source.cave instanceof Object) {
+      result.cave = MappingV1Service.convertToCaveModel(source.cave);
     } else if (source['cave name']) {
       result.cave = {
         depth: source['cave depth'],
@@ -159,10 +159,13 @@ module.exports = {
       };
     }
 
-    // Massif  (DB or ES)
-    if (source.massif) {
-      result.massif = source.massif;
-    } else if (source['massif name']) {
+    // Author
+    if (source.author instanceof Object) {
+      result.author = MappingV1Service.convertToCaverModel(source.author);
+    }
+
+    // From ESearch
+    if (source['massif name']) {
       result.massif = {
         name: source['massif name'],
       };
@@ -170,27 +173,29 @@ module.exports = {
 
     result.id = source.id;
     result['@id'] = String(source.id);
+    result.aestheticism = source.aestheticism;
+    result.altitude = source.altitude;
+    result.approach = source.approach;
+    result.caving = source.caving;
+    result.comments = source.comments;
     result.country = source.country;
     result.countryCode = source['country code'];
     result.county = source.county;
-    result.region = source.region;
     result.city = source.city;
-    result.postalCode = source.postalCode;
-    result.altitude = source.altitude;
+    result.discoveryYear = source.yearDiscovery;
+    result.documents = source.documents;
     result.latitude = parseFloat(source.latitude);
+    result.locations = source.locations;
     result.longitude = parseFloat(source.longitude);
+    result.massif = ramda.pathOr(undefined, ['cave', 'massif'], source); // put the massif at the root of the entrance (more convenient for the client)
     result.name = MappingV1Service.getMainName(source);
     result.names = source.names;
+    result.postalCode = source.postalCode;
     result.precision = source.precision;
-    result.aestheticism = source.aestheticism;
-    result.approach = source.approach;
-    result.caving = source.caving;
-    result.documents = source.documents;
+    result.region = source.region;
+    result.riggings = source.riggings;
     result.stats = source.stats;
     result.timeInfo = source.timeInfo;
-    result.locations = source.locations;
-    result.riggings = source.riggings;
-    result.comments = source.comments;
 
     if (source.descriptions instanceof Array) {
       result.descriptions = MappingV1Service.convertToDescriptionList(
@@ -311,6 +316,9 @@ module.exports = {
       result.documents = MappingV1Service.convertToDocumentList(
         source.documents,
       ).documents;
+    }
+    if (source.id_massif instanceof Object) {
+      result.massif = MappingV1Service.convertToMassifModel(source.id_massif);
     }
     return result;
   },

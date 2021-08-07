@@ -2509,6 +2509,8 @@ components:
           type: string
         '@type':
           type: string
+        author:
+          $ref: '#/components/schemas/Caver'
         cave:
           $ref: '#/components/schemas/Cave'
         city:
