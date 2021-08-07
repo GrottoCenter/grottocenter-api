@@ -23,6 +23,15 @@ const SubjectModel = require('./mappingModels/SubjectModel');
 /* Mappers */
 
 module.exports = {
+  getMainName: (source) => {
+    let mainName = ramda.pathOr(null, ['name'], source); // from ES, name is the mainName
+    if (mainName === null && source.names instanceof Array) {
+      mainName = source.names.find((name) => name.isMain);
+      mainName = mainName === undefined ? null : mainName.name;
+    }
+    return mainName;
+  },
+
   convertToLocationModel: (source) => {
     const result = {
       ...LocationModel,
@@ -138,16 +147,6 @@ module.exports = {
       ...EntranceModel,
     };
 
-    // Build the result
-    // In ES, the name is already set. When coming from the DB, it's not.
-    let mainName = ramda.pathOr(null, ['name'], source);
-    if (mainName === null && source.names instanceof Array) {
-      mainName = source.names.find((name) => name.isMain);
-      mainName = mainName === undefined ? null : mainName.name;
-    }
-    result.name = mainName;
-    result.names = source.names;
-
     // Cave (DB or ES)
     if (source.cave) {
       result.cave = source.cave;
@@ -180,6 +179,8 @@ module.exports = {
     result.altitude = source.altitude;
     result.latitude = parseFloat(source.latitude);
     result.longitude = parseFloat(source.longitude);
+    result.name = MappingV1Service.getMainName(source);
+    result.names = source.names;
     result.precision = source.precision;
     result.aestheticism = source.aestheticism;
     result.approach = source.approach;
@@ -280,17 +281,14 @@ module.exports = {
     result.id = source.id;
     result['@id'] = String(source.id);
 
-    let mainName = source.names.find((name) => name.isMain);
-    mainName = mainName === undefined ? undefined : mainName.name;
-
-    result.name = mainName;
-    result.names = source.names;
     result.dateInscription = source.date_inscription;
     result.dateReviewed = source.date_reviewed;
     result.depth = source.depth;
     result.isDeleted = source.is_deleted;
     result.isDiving = source.is_diving;
     result.length = source.length;
+    result.name = MappingV1Service.getMainName(source);
+    result.names = source.names;
     result.temperature = source.temperature;
 
     if (source.author instanceof Object) {
@@ -505,21 +503,13 @@ module.exports = {
     result.nbCaves = ramda.pathOr(undefined, ['nb caves'], source);
     result.nbEntrances = ramda.pathOr(undefined, ['nb entrances'], source);
 
-    // Build the result
-    // In ES, the name is already set. When coming from the DB, it's not.
-    let mainName = ramda.pathOr(null, ['name'], source);
-    if (mainName === null && source.names instanceof Array) {
-      mainName = source.names.find((name) => name.isMain);
-      mainName = mainName === undefined ? null : mainName.name;
-    }
-
     result.id = source.id;
     result['@id'] = String(source.id);
-    result.reviewer = source.reviewer;
-    result.name = mainName;
+    result.name = MappingV1Service.getMainName(source);
     result.names = source.names;
     result.dateInscription = source.dateInscription;
     result.dateReviewed = source.dateReviewed;
+    result.reviewer = source.reviewer;
 
     if (source.descriptions instanceof Array) {
       result.descriptions = MappingV1Service.convertToDescriptionList(
@@ -560,16 +550,6 @@ module.exports = {
       );
     }
 
-    // Build the result
-    // In ES, the name is already set. When coming from the DB, it's not.
-    let mainName = ramda.pathOr(null, ['name'], source);
-    if (mainName === null && source.names instanceof Array) {
-      mainName = source.names.find((name) => name.isMain);
-      mainName = mainName === undefined ? null : mainName.name;
-    }
-
-    result.name = mainName;
-    result.names = source.names;
     result.id = source.id;
     result['@id'] = String(source.id);
     result.country = source.country;
@@ -581,6 +561,7 @@ module.exports = {
     result.latitude = parseFloat(source.latitude);
     result.longitude = parseFloat(source.longitude);
     result.address = source.address;
+    result.names = source.names;
     result.mail = source.mail;
     result.yearBirth = source.yearBirth;
     result.customMessage = source.customMessage;
