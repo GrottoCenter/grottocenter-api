@@ -1,8 +1,9 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useCallback } from 'react';
 import { includes } from 'ramda';
 import {
   Card,
   CardContent,
+  Divider,
   makeStyles,
   Typography,
   LinearProgress as MuiLinearProgress,
@@ -10,10 +11,12 @@ import {
 import styled from 'styled-components';
 import { useSelector } from 'react-redux';
 import ImportTabs from './ImportTabs';
-import Stepper from '../Form/Stepper';
+import Stepper from '../../common/Form/Stepper';
 import Provider, { ImportPageContentContext } from './Provider';
 import ImportPageContent from './ImportPageContent';
-import Translate from '../Translate';
+import Translate from '../../common/Translate';
+import { useBoolean } from '../../../hooks';
+import { ENTRANCE } from './constants';
 
 const useStyles = makeStyles({
   root: {
@@ -25,9 +28,21 @@ const useStyles = makeStyles({
   },
 });
 
+const LinearProgress = styled(MuiLinearProgress)`
+  visibility: ${({ $isLoading }) => ($isLoading ? 'visible' : 'hidden')};
+`;
+
+const StyledDivider = styled(Divider)`
+  margin: ${({ theme }) => theme.spacing(3)}px;
+`;
+
 const ImportContainer = () => {
   const classes = useStyles();
-  const [isNextStepDisabled, setIsNextStepDisabled] = React.useState(true);
+  const {
+    isTrue: isNextStepDisabled,
+    true: enableNextStep,
+    false: disableNextStep,
+  } = useBoolean(true);
   const { isLoading } = useSelector((state) => state.importCsv);
 
   const {
@@ -38,32 +53,29 @@ const ImportContainer = () => {
     importAttributes: { formSteps },
   } = useContext(ImportPageContentContext);
 
-  const handleStepNext = () => {
+  const handleStepNext = useCallback(() => {
     updateCurrentStep((prevFormStep) => prevFormStep + 1);
-  };
+  }, [updateCurrentStep]);
 
-  const handleStepBack = () => {
+  const handleStepBack = useCallback(() => {
     updateCurrentStep((prevFormStep) => prevFormStep - 1);
-  };
+  }, [updateCurrentStep]);
 
   useEffect(() => {
-    setIsNextStepDisabled(
-      currentFormStep === formSteps.length ||
-        !includes(currentFormStep, validatedSteps),
-    );
-  }, [validatedSteps, currentFormStep, formSteps, setIsNextStepDisabled]);
-
-  const LinearProgress = styled(MuiLinearProgress)`
-    visibility: ${({ $isLoading }) => ($isLoading ? 'visible' : 'hidden')};
-  `;
+    // eslint-disable-next-line no-unused-expressions
+    currentFormStep === formSteps.length ||
+    !includes(currentFormStep, validatedSteps)
+      ? enableNextStep()
+      : disableNextStep();
+  }, [validatedSteps, currentFormStep, formSteps]);
 
   return (
     <>
       <ImportTabs />
       <Card className={classes.root}>
         <CardContent>
-          <Typography variant="h6">
-            {selectedType === 0 ? (
+          <Typography color="secondary" variant="h1">
+            {selectedType === ENTRANCE ? (
               <Translate>Entrances import</Translate>
             ) : (
               <Translate>Documents import</Translate>
@@ -81,6 +93,7 @@ const ImportContainer = () => {
               handleStepBack={handleStepBack}
               handleStepNext={handleStepNext}
             />
+            <StyledDivider />
             <ImportPageContent currentFormStepId={currentFormStep} />
           </div>
         </CardContent>

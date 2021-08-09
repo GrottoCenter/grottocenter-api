@@ -140,7 +140,7 @@ INSERT INTO public.t_caver (id,login,"password",activated,activation_code,banned
 	 (3,'user3','welcome1',true,'0',false,5,1,'user','name','My Name','user3@mail.no',true,'2008-07-28 14:47:13.000','2011-03-02 13:43:59.000',false,false,30,8,'fra'),
 	 (4,'user4','welcome1',true,'0',false,55,30,'user','name','My Name','user4@mail.no',true,'2008-07-28 15:02:08.000','2017-09-16 18:10:06.000',false,false,100,7,'fra'),
 	 (5,'user5','welcome1',true,'0',false,56,1457,'user','name','My Name','user5@mail.no',true,'2008-07-28 15:55:34.000','2011-05-24 14:32:24.000',true,true,10,15,'fra'),
-	 (6,'user6','welcome1',true,'0',false,404,406,'user',NULL,'My Name','user6@mail.no',true,'2008-07-28 16:18:16.000','2019-12-14 12:19:01.000',true,false,30,7,'fra');
+	 (6,'user6','welcome1',true,'0',false,404,406,'user',NULL,'My Name','user6@mail.no',true,'2008-07-28 16:18:16.000','2019-12-14 12:19:01.000',true,false,30,7,'fra'),
 	 (7,NULL,'58f6f0d4c545c69f1bb86caf507d09e53e009dfd61dbbf834331cf0e45bce44c',false,'0',false,0,1,'Grottocenter','TEST','grottoUser','grottocenter.user@grotto.org',true,'2021-05-11 12:03:20.636000',NULL,false,false,NULL,NULL,'000'),
      (8,NULL,'58f6f0d4c545c69f1bb86caf507d09e53e009dfd61dbbf834331cf0e45bce44c',false,'0',false,0,1,'Grottocenter','TEST','grottoModo','grottocenter.modo@grotto.org',true,'2021-05-11 12:05:20.636000',NULL,false,false,NULL,NULL,'000'),
      (9,NULL,'58f6f0d4c545c69f1bb86caf507d09e53e009dfd61dbbf834331cf0e45bce44c',false,'0',false,0,1,'Grottocenter','TEST','grottoAdmin','grottocenter.admin@grotto.org',true,'2021-05-11 12:07:20.636000',NULL,false,false,NULL,NULL,'000');

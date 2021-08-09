@@ -21,7 +21,6 @@ module.exports = {
    *
    * @param {Object} cleanedData the struct that contains the necessary data to create a cave
    * @param {Object} nameAndDescData the struct that contains the necessary data to create a name and a description (if there is any)
-   * @param {Object} authorId the id of the author
    * @param {Function} errorHandler callback that is called whenever an error occured. Take an Error as parameter. See https://sailsjs.com/documentation/concepts/models-and-orm/errors for mor information.
    *
    * @returns {Promise} the created cave

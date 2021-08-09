@@ -1,5 +1,10 @@
 import fetch from 'isomorphic-fetch';
-import { checkRowsBddUrl, importRowsUrl } from '../conf/Config';
+import {
+  checkRowsEntrancesUrl,
+  checkRowsDocumentsUrl,
+  importRowsEntrancesUrl,
+  importRowsDocumentsUrl,
+} from '../conf/Config';
 
 export const CHECK_ROWS_START = 'CHECK_ROWS_START';
 export const CHECK_ROWS_SUCCESS = 'CHECK_ROWS_SUCCESS';
@@ -51,26 +56,29 @@ const checkStatus = (response) => {
   throw errorMessage;
 };
 
+const makeBody = (rows) => {
+  return rows.map((row) => row.data);
+};
+
 export const checkRowsInBdd = (typeRow, rowsData) => (dispatch, getState) => {
   dispatch(checkRowsStart());
-  let typeRowString;
+  let url;
   switch (typeRow) {
     case 0:
-      typeRowString = 'entrance';
+      url = checkRowsEntrancesUrl;
       break;
     case 1:
-      typeRowString = 'document';
+      url = checkRowsDocumentsUrl;
       break;
     default:
-      dispatch(
-        checkRowsFailure(formatMessage({ id: 'Invalid type of rows.' })),
-      );
+      dispatch(checkRowsFailure('Invalid type of rows.'));
       return;
   }
 
+  const body = makeBody(rowsData);
+
   const requestBody = JSON.stringify({
-    typeRow: typeRowString,
-    data: rowsData,
+    data: body,
   });
 
   const requestOptions = {
@@ -79,7 +87,7 @@ export const checkRowsInBdd = (typeRow, rowsData) => (dispatch, getState) => {
     headers: getState().login.authorizationHeader,
   };
 
-  return fetch(checkRowsBddUrl, requestOptions)
+  return fetch(url, requestOptions)
     .then(checkStatus)
     .then((response) => {
       dispatch(checkRowsSuccess(response));
@@ -91,13 +99,13 @@ export const checkRowsInBdd = (typeRow, rowsData) => (dispatch, getState) => {
 
 export const importRows = (data, typeRow) => (dispatch, getState) => {
   dispatch(importRowsStart());
-  let typeRowString;
+  let url;
   switch (typeRow) {
     case 0:
-      typeRowString = 'entrance';
+      url = importRowsEntrancesUrl;
       break;
     case 1:
-      typeRowString = 'document';
+      url = importRowsDocumentsUrl;
       break;
     default:
       dispatch(
@@ -107,7 +115,6 @@ export const importRows = (data, typeRow) => (dispatch, getState) => {
   }
 
   const requestBody = JSON.stringify({
-    typeRow: typeRowString,
     data,
   });
 
@@ -117,7 +124,7 @@ export const importRows = (data, typeRow) => (dispatch, getState) => {
     headers: getState().login.authorizationHeader,
   };
 
-  return fetch(importRowsUrl, requestOptions)
+  return fetch(url, requestOptions)
     .then(checkStatus)
     .then((response) => {
       dispatch(importRowsSuccess(response));

@@ -186,8 +186,10 @@ export const postCaverGroupsUrl = (userId) =>
   `/api/${apiVersion}/cavers/${userId}/groups`;
 
 // ===== ImportCSV url
-export const checkRowsBddUrl = `/api/${apiVersion}/importCsv/checkRows`;
-export const importRowsUrl = `/api/${apiVersion}/importCsv/importRows`;
+export const checkRowsEntrancesUrl = `/api/${apiVersion}/entrances/check-rows`;
+export const checkRowsDocumentsUrl = `/api/${apiVersion}/documents/check-rows`;
+export const importRowsEntrancesUrl = `/api/${apiVersion}/entrances/import-rows`;
+export const importRowsDocumentsUrl = `/api/${apiVersion}/documents/import-rows`;
 
 // ===== Auth url
 export const loginUrl = `/api/${apiVersion}/login`;

@@ -1,8 +1,9 @@
 import React, { useContext } from 'react';
 import styled from 'styled-components';
 import { Tab, Tabs } from '@material-ui/core';
-import Translate from '../Translate';
+import Translate from '../../common/Translate';
 import { ImportPageContentContext } from './Provider';
+import { DOCUMENT, ENTRANCE } from './constants';
 
 const TabIcon = styled.img`
   height: 2rem;
@@ -31,7 +32,7 @@ const ImportTabs = () => {
             <Translate>Entrances</Translate>
           </>
         }
-        disabled={currentStep > 1 && selectedType === 1}
+        disabled={currentStep > 1 && selectedType === DOCUMENT}
       />
       <Tab
         label={
@@ -40,7 +41,7 @@ const ImportTabs = () => {
             <Translate>Documents</Translate>
           </>
         }
-        disabled={currentStep > 1 && selectedType === 0}
+        disabled={currentStep > 1 && selectedType === ENTRANCE}
       />
     </Tabs>
   );
