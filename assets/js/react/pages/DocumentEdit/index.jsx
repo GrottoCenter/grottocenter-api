@@ -27,13 +27,6 @@ const DocumentEdit = ({
     (state) => state.document,
   );
 
-  if (!onSuccessfulUpdate) {
-    onSuccessfulUpdate = () => {
-      dispatch(resetApiMessages());
-      history.push(`/ui/documents/${documentId}`);
-    };
-  }
-
   useEffect(() => {
     if (!isNil(documentId)) {
       dispatch(fetchDocumentDetails(documentId, requireUpdate));
@@ -42,7 +35,12 @@ const DocumentEdit = ({
 
   useEffect(() => {
     if (latestHttpCode === 200 && isEmpty(errorMessages)) {
-      onSuccessfulUpdate();
+      if (onSuccessfulUpdate) {
+        onSuccessfulUpdate();
+      } else {
+        dispatch(resetApiMessages());
+        history.push(`/ui/documents/${documentId}`);
+      }
     }
   }, [latestHttpCode, errorMessages]);
 
