@@ -167,11 +167,7 @@ const HydratedDocumentPage = ({ id }) => {
   }, [documentId]);
 
   const onEdit = () => {
-    if (permissions.isAuth) {
-      history.push(editPath.current);
-    } else {
-      return undefined;
-    }
+    history.push(editPath.current);
   };
 
   return (
@@ -182,7 +178,7 @@ const HydratedDocumentPage = ({ id }) => {
       entities={makeEntities(details || {})}
       loading={isNil(documentId) || isLoading || !isNil(error)}
       isValidated={details.modifiedDocJson === null}
-      onEdit={onEdit}
+      onEdit={permissions.isAuth ? onEdit : undefined}
     />
   );
 };

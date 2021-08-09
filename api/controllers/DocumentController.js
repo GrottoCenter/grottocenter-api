@@ -562,7 +562,9 @@ module.exports = {
         //found.languages = languages ? await Promise.all(languages.map(async (language) => { return await TLanguage.findOne(language)})) : [];
 
         found.mainLanguage = await TLanguage.findOne(documentMainLanguage);
-        await NameService.setNames([found.editor], 'grotto');
+        if (found.editor) {
+          await NameService.setNames([found.editor], 'grotto');
+        }
 
         //We handle the description because even if it has been modified, the entry in TDescription stayed intact.
         const descLang = await TLanguage.findOne(titleAndDescriptionLanguage);
