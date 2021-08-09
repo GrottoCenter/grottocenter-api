@@ -12,6 +12,8 @@ import {
 } from 'ramda';
 import isStepValid from './ImportSteps/ImportStepsHelper';
 import { defaultValuesTypes } from './types';
+import { useBoolean } from '../../../hooks/useBoolean';
+import { ENTRANCE } from './constants';
 
 const defaultFormSteps = [
   { id: 1, name: 'General Information', isValid: false },
@@ -22,13 +24,13 @@ const defaultFormSteps = [
 
 export const defaultContext = {
   importAttributes: {
-    selectedType: 0,
+    selectedType: ENTRANCE,
     baseErrors: {},
     fileImported: false,
     formSteps: defaultFormSteps,
   },
   importData: [],
-  selectedType: 0,
+  selectedType: ENTRANCE,
   currentStep: 1,
 
   updateAttribute: (attributeName, newValue) => {}, // eslint-disable-line no-unused-vars
@@ -47,7 +49,11 @@ const Provider = ({ children, defaultValues = {} }) => {
   const [currentStep, setCurrentStep] = useState(
     pathOr(null, [0, 'id'], defaultFormSteps),
   );
-  const [isFormValid, setIsFormValid] = useState(false);
+  const {
+    isTrue: isFormValid,
+    true: setFormValid,
+    false: setFormInvalid,
+  } = useBoolean(false);
   const updateAttribute = useCallback((attributeName, newValue) => {
     switch (attributeName) {
       case 'selectedType':
@@ -87,7 +93,10 @@ const Provider = ({ children, defaultValues = {} }) => {
   }, [importFormState, currentStep]);
 
   useEffect(() => {
-    setIsFormValid(defaultFormSteps.length === validatedSteps.length);
+    // eslint-disable-next-line no-unused-expressions
+    defaultFormSteps.length === validatedSteps.length
+      ? setFormValid()
+      : setFormInvalid();
   }, [validatedSteps]);
 
   return (

@@ -48,4 +48,6 @@ module.exports = {
   unlinkDocument: (req, res) => {
     entranceController.unlinkDocument(req, res);
   },
+  checkRows: (req, res) => entranceController.checkRows(req, res),
+  importRows: (req, res) => entranceController.importRows(req, res),
 };

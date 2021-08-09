@@ -2201,10 +2201,10 @@ paths:
                 items:
                   $ref: '#/components/schemas/Language'
                   
-  '/importCsv/checkRows':
+  '/documents/check-rows':
     post:
       tags:
-      - import csv
+      - documents
       description: Check if the data sent are already present in Grottocenter (incomplete).
       requestBody:
         description: Check https://ontology.uis-speleo.org/howto/ to learn the mandatories properties. It must be an array of object containing the properties mentioned.
@@ -2217,7 +2217,7 @@ paths:
                 $ref: '#/components/schemas/Import-csv'
       responses:
         '200':
-          description: Successful operation. Returns the data which are not duplicates. For those which are indeed dupicates, returns the line concerned in the csv.
+          description: Successful operation. Returns the data which are not duplicates. For those which are indeed duplicates, returns the line concerned in the csv.
           content:
             application/json:
               schema:
@@ -2235,7 +2235,7 @@ paths:
                         line:
                           type: integer
                       
-  '/importCsv/importRows':
+  '/documents/import-rows':
     post:
       tags:
       - import csv

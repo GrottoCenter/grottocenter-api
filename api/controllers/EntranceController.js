@@ -6,6 +6,7 @@
  */
 const ramda = require('ramda');
 const esClient = require('../../config/elasticsearch').elasticsearchCli;
+const getCountryISO3 = require('country-iso-2-to-3');
 
 // Extract everything from the request body except id
 const getConvertedDataFromClientRequest = (req) => {
@@ -51,6 +52,288 @@ const getConvertedNameDescLocFromClientRequest = (req) => {
   }
 
   return result;
+};
+
+const iso2ToIso3 = (iso) => {
+  if (iso !== undefined) {
+    if (iso === 'EN') {
+      return 'eng';
+    }
+    const res = getCountryISO3(iso);
+    if (res) {
+      return res.toLowerCase();
+    } else {
+      throw Error('This iso code is incorrect : ' + iso);
+    }
+  }
+  return null;
+};
+
+/* _______________________________________
+
+  The following functions are used to extract the relevant information from the import csv module.
+  ________________________________________
+*/
+
+const getConvertedEntranceFromCsv = (rawData, idAuthor, cave) => {
+  const doubleCheck = sails.helpers.csvhelpers.doubleCheck.with;
+  return {
+    author: idAuthor,
+    country: doubleCheck({
+      data: rawData,
+      key: 'gn:countryCode',
+      defaultValue: undefined,
+    }),
+    precision: doubleCheck({
+      data: rawData,
+      key: 'dwc:coordinatePrecision',
+      defaultValue: undefined,
+    }),
+    altitude: doubleCheck({
+      data: rawData,
+      key: 'w3geo:altitude',
+      defaultValue: undefined,
+    }),
+    latitude: cave.latitude,
+    longitude: cave.longitude,
+    cave: cave.id,
+    dateInscription: doubleCheck({
+      data: rawData,
+      key: 'dct:rights/dct:created',
+      defaultValue: new Date(),
+    }),
+    dateReviewed: doubleCheck({
+      data: rawData,
+      key: 'dct:rights/dct:modified',
+      defaultValue: undefined,
+    }),
+    isOfInterest: false,
+    idDbImport: doubleCheck({
+      data: rawData,
+      key: 'id',
+      defaultValue: undefined,
+    }),
+    nameDbImport: doubleCheck({
+      data: rawData,
+      key: 'dct:rights/cc:attributionName',
+      defaultValue: undefined,
+    }),
+    //Default value, never provided by csv import
+    geology: 'Q35758',
+  };
+};
+
+const getConvertedNameDescLocEntranceFromCsv = async (rawData, authorId) => {
+  const doubleCheck = sails.helpers.csvhelpers.doubleCheck.with;
+  let result = {};
+  if (
+    doubleCheck({
+      data: rawData,
+      key: 'karstlink:hasDescriptionDocument/dct:title',
+      defaultValue: undefined,
+    })
+  ) {
+    result = {
+      description: {
+        body: doubleCheck({
+          data: rawData,
+          key: 'karstlink:hasDescriptionDocument/dct:description',
+          defaultValue: undefined,
+        }),
+        language: doubleCheck({
+          data: rawData,
+          key: 'karstlink:hasDescriptionDocument/dc:language',
+          defaultValue: undefined,
+          func: iso2ToIso3,
+        }),
+        title: doubleCheck({
+          data: rawData,
+          key: 'karstlink:hasDescriptionDocument/dct:title',
+          defaultValue: undefined,
+        }),
+        author: authorId,
+        dateInscription: doubleCheck({
+          data: rawData,
+          key: 'dct:rights/dct:created',
+          defaultValue: new Date(),
+        }),
+        dateReviewed: doubleCheck({
+          data: rawData,
+          key: 'dct:rights/dct:modified',
+          defaultValue: undefined,
+        }),
+      },
+    };
+  }
+
+  if (
+    doubleCheck({ data: rawData, key: 'rdfs:label', defaultValue: undefined })
+  ) {
+    result = {
+      ...result,
+      name: {
+        author: authorId,
+        text: rawData['rdfs:label'],
+        language: doubleCheck({
+          data: rawData,
+          key: 'gn:countryCode',
+          defaultValue: undefined,
+          func: iso2ToIso3,
+        }),
+        dateInscription: doubleCheck({
+          data: rawData,
+          key: 'dct:rights/dct:created',
+          defaultValue: new Date(),
+        }),
+        dateReviewed: doubleCheck({
+          data: rawData,
+          key: 'dct:rights/dct:modified',
+          defaultValue: undefined,
+        }),
+      },
+    };
+  }
+  if (
+    doubleCheck({
+      data: rawData,
+      key: 'karstlink:hasAccessDocument/dct:description',
+      defaultValue: undefined,
+    })
+  ) {
+    let authorLoc = authorId;
+    const authorFromCsv = doubleCheck({
+      data: rawData,
+      key: 'karstlink:hasAccessDocument/dct:creator',
+      defaultValue: undefined,
+    });
+    if (authorFromCsv) {
+      const auth = await sails.helpers.csvhelpers.getCreator.with({
+        creator: authorFromCsv,
+      });
+      authorLoc = auth.id;
+    }
+    result = {
+      ...result,
+      location: {
+        body: rawData['karstlink:hasAccessDocument/dct:description'],
+        title: doubleCheck({
+          data: rawData,
+          key: 'karstlink:hasAccessDocument/dct:description',
+          defaultValue: undefined,
+        }),
+        language: doubleCheck({
+          data: rawData,
+          key: 'karstlink:hasAccessDocument/dc:language',
+          defaultValue: undefined,
+          func: iso2ToIso3,
+        }),
+        author: authorLoc,
+        dateInscription: doubleCheck({
+          data: rawData,
+          key: 'dct:rights/dct:created',
+          defaultValue: new Date(),
+        }),
+        dateReviewed: doubleCheck({
+          data: rawData,
+          key: 'dct:rights/dct:modified',
+          defaultValue: undefined,
+        }),
+      },
+    };
+  }
+  return result;
+};
+
+const getConvertedCaveFromCsv = (rawData, idAuthor) => {
+  const doubleCheck = sails.helpers.csvhelpers.doubleCheck.with;
+
+  let depth = doubleCheck({
+    data: rawData,
+    key: 'karstlink:verticalExtend',
+    defaultValue: undefined,
+  });
+  if (!depth) {
+    depth =
+      parseInt(
+        doubleCheck({
+          data: rawData,
+          key: 'karstlink:extendBelowEntrance',
+          defaultValue: 0,
+        }),
+        10,
+      ) +
+      parseInt(
+        doubleCheck({
+          data: rawData,
+          key: 'karstlink:extendAboveEntrance',
+          defaultValue: 0,
+        }),
+        10,
+      );
+  }
+  return {
+    // The TCave.create() function doesn't work with TCave field alias. See TCave.js Model
+    /* eslint-disable camelcase */
+    id_author: idAuthor,
+    latitude: doubleCheck({
+      data: rawData,
+      key: 'w3geo:latitude',
+      defaultValue: undefined,
+    }),
+    longitude: doubleCheck({
+      data: rawData,
+      key: 'w3geo:longitude',
+      defaultValue: undefined,
+    }),
+    length: doubleCheck({
+      data: rawData,
+      key: 'karstlink:length',
+      defaultValue: undefined,
+    }),
+    depth: depth,
+    date_inscription: doubleCheck({
+      data: rawData,
+      key: 'dct:rights/dct:created',
+      defaultValue: new Date(),
+    }),
+    date_reviewed: doubleCheck({
+      data: rawData,
+      key: 'dct:rights/dct:modified',
+      defaultValue: undefined,
+    }),
+  };
+};
+
+const getConvertedNameAndDescCaveFromCsv = (rawData, authorId) => {
+  const doubleCheck = sails.helpers.csvhelpers.doubleCheck.with;
+
+  return {
+    author: authorId,
+    name: doubleCheck({
+      data: rawData,
+      key: 'rdfs:label',
+      defaultValue: undefined,
+    }),
+    descriptionAndNameLanguage: {
+      id: doubleCheck({
+        data: rawData,
+        key: 'karstlink:hasDescriptionDocument/dc:language',
+        defaultValue: undefined,
+        func: iso2ToIso3,
+      }),
+    },
+    dateInscription: doubleCheck({
+      data: rawData,
+      key: 'dct:rights/dct:created',
+      defaultValue: new Date(),
+    }),
+    dateReviewed: doubleCheck({
+      data: rawData,
+      key: 'dct:rights/dct:modified',
+      defaultValue: undefined,
+    }),
+  };
+  //No description provided by the csv
 };
 
 module.exports = {
@@ -245,12 +528,11 @@ module.exports = {
         }
       }
     };
-
     // Launch creation request using transaction: it performs a rollback if an error occurs
     const newEntrancePopulated = await EntranceService.createEntrance(
       cleanedData,
       nameDescLocData,
-      handleError,
+      handleError(res),
       esClient,
     );
 
@@ -488,5 +770,162 @@ module.exports = {
       .catch((err) => {
         return res.serverError(err.cause.message);
       });
+  },
+
+  checkRows: async (req, res) => {
+    const doubleCheck = sails.helpers.csvhelpers.doubleCheck.with;
+    const willBeCreated = [];
+    const wontBeCreated = [];
+    for (const [index, row] of req.body.data.entries()) {
+      const idDb = doubleCheck({
+        data: row,
+        key: 'id',
+        defaultValue: undefined,
+      });
+      const nameDb = doubleCheck({
+        data: row,
+        key: 'dct:rights/cc:attributionName',
+        defaultValue: undefined,
+      });
+      if (!(idDb && nameDb)) {
+        wontBeCreated.push({
+          line: index + 2,
+        });
+      } else {
+        const result = await TEntrance.find({
+          idDbImport: idDb,
+          nameDbImport: nameDb,
+        });
+        if (result.length > 0) {
+          wontBeCreated.push({
+            line: index + 2,
+          });
+        } else {
+          willBeCreated.push(row);
+        }
+      }
+    }
+
+    const requestResult = {
+      willBeCreated,
+      wontBeCreated,
+    };
+    return res.ok(requestResult);
+  },
+
+  importRows: async (req, res) => {
+    const hasRight = await sails.helpers.checkRight
+      .with({
+        groups: req.token.groups,
+        rightEntity: RightService.RightEntities.ENTRANCE,
+        rightAction: RightService.RightActions.CREATE,
+      })
+      .intercept('rightNotFound', (err) => {
+        return res.serverError(
+          'A server error occured when checking your right to create an entrance.',
+        );
+      });
+    if (!hasRight) {
+      return res.forbidden('You are not authorized to create an entrance.');
+    }
+
+    const requestResponse = {
+      type: 'entrance',
+      total: {
+        success: 0,
+        failure: 0,
+      },
+      successfulImport: [],
+      failureImport: [],
+    };
+
+    /*
+    For now any error thrown by the database is sent to the user as it is.
+    */
+    const handleError = (err) => err;
+
+    const doubleCheck = sails.helpers.csvhelpers.doubleCheck.with;
+
+    for (const [index, data] of req.body.data.entries()) {
+      const missingColumns = await sails.helpers.csvhelpers.checkColumns.with({
+        data: data,
+        additionalColumns: ['w3geo:latitude', 'w3geo:longitude'],
+      });
+
+      if (missingColumns.length > 0) {
+        requestResponse.failureImport.push({
+          line: index + 2,
+          message: 'Columns missing : ' + missingColumns.toString(),
+        });
+      } else {
+        try {
+          //Author retrieval : create one if not present in db
+          const authorId = await sails.helpers.csvhelpers.getAuthor(data);
+          //Cave creation
+          const dataCave = getConvertedCaveFromCsv(data, authorId);
+          const dataNameAndDesc = getConvertedNameAndDescCaveFromCsv(
+            data,
+            authorId,
+          );
+          const caveCreated = await CaveService.createCave(
+            dataCave,
+            dataNameAndDesc,
+            handleError,
+          );
+
+          //Entrance creation
+          const dataEntrance = getConvertedEntranceFromCsv(
+            data,
+            authorId,
+            caveCreated,
+          );
+          const { dateInscription } = dataEntrance;
+          const { dateReviewed } = dataEntrance;
+          const dataNameDescLoc = await getConvertedNameDescLocEntranceFromCsv(
+            data,
+            authorId,
+          );
+          const entranceCreated = await EntranceService.createEntrance(
+            dataEntrance,
+            dataNameDescLoc,
+            handleError,
+            esClient,
+          );
+          if (
+            doubleCheck({
+              data: data,
+              key: 'gn:alternateName',
+              defaultValue: null,
+            })
+          ) {
+            await TName.create({
+              author: authorId,
+              entrance: entranceCreated.id,
+              dateInscription: dateInscription,
+              dateReviewed: dateReviewed,
+              isMain: false,
+              language: dataNameDescLoc.name.language,
+              name: data['gn:alternateName'].name,
+            });
+          }
+
+          requestResponse.successfulImport.push({
+            caveId: caveCreated.id,
+            entranceId: entranceCreated.id,
+            latitude: entranceCreated.latitude,
+            longitude: entranceCreated.longitude,
+          });
+        } catch (err) {
+          requestResponse.failureImport.push({
+            line: index + 2,
+            message: err.toString(),
+          });
+        }
+      }
+    }
+
+    requestResponse.total.success = requestResponse.successfulImport.length;
+    requestResponse.total.failure = requestResponse.failureImport.length;
+    return res.ok(requestResponse);
   },
 };

@@ -140,6 +140,8 @@ module.exports.routes = {
     },
   },
   'POST /api/v1/entrances': 'v1/Entrance.create',
+  'POST /api/v1/entrances/check-rows': 'v1/Entrance.checkRows',
+  'POST /api/v1/entrances/import-rows': 'v1/Entrance.importRows',
   'PUT /api/v1/entrances/:id': 'v1/Entrance.update',
   'PUT /api/v1/entrances/:entranceId/documents/:documentId':
     'v1/Entrance.addDocument',
@@ -211,6 +213,8 @@ module.exports.routes = {
   'GET /api/v1/documents/:id': 'v1/Document.find',
   'GET /api/v1/documents/count': 'v1/Document.count',
   'POST /api/v1/documents': 'v1/Document.create',
+  'POST /api/v1/documents/check-rows': 'v1/Document.checkRows',
+  'POST /api/v1/documents/import-rows': 'v1/Document.importRows',
   'PUT /api/v1/documents/:id': 'v1/Document.update',
   'PUT /api/v1/documents/:id/validate': 'v1/Document.validate',
   'PUT /api/v1/documents/validate': 'v1/Document.multipleValidate',
@@ -389,10 +393,6 @@ module.exports.routes = {
       allowOrigins: '*',
     },
   },
-
-  /* ImportCSV controller */
-  'POST /api/v1/importCsv/checkRows': 'v1/ImportCsv.checkAll',
-  'POST /api/v1/importCsv/importRows': 'v1/ImportCsv.importAll',
 
   //  ╦ ╦╔═╗╔╗ ╦ ╦╔═╗╔═╗╦╔═╔═╗
   //  ║║║║╣ ╠╩╗╠═╣║ ║║ ║╠╩╗╚═╗
