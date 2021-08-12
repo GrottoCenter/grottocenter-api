@@ -60,7 +60,8 @@ INSERT INTO public.t_right (id,"name","comments") VALUES
 	(95, 'Name - edit any', NULL),
 	(97, 'Description - create', NULL),
 	(98, 'Location - edit any', NULL),
-	(99, 'Location - create', NULL);
+	(99, 'Location - create', NULL),
+  (100, 'Application - no request limit', NULL);
 
 INSERT INTO public.j_group_right (id_group,id_right) VALUES
     (1, 2),
