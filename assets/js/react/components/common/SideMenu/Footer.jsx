@@ -30,7 +30,7 @@ const Footer = () => {
     <Container>
       <div>
         <LogoFooter />
-        <Typography variant="caption"> v 21.0.5 </Typography>
+        <Typography variant="caption"> v 21.0.6 </Typography>
       </div>
       <InternationalizedLink links={licenceLinks}>
         <LicenceImage src="/images/CC-BY-SA.png" alt="CC-BY-SA licence" />
