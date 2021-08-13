@@ -2509,6 +2509,8 @@ components:
           type: string
         '@type':
           type: string
+        author:
+          $ref: '#/components/schemas/Caver'
         cave:
           $ref: '#/components/schemas/Cave'
         city:
@@ -2556,6 +2558,8 @@ components:
             $ref: '#/components/schemas/Rigging'
         stats:
           $ref: '#/components/schemas/Entrance-stats'
+        discoveryYear:
+          type: integer
 
     Entrance-stats:
       type: object

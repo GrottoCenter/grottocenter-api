@@ -31,7 +31,7 @@ module.exports = {
       .populate('documents')
       .populate('riggings')
       .populate('comments')
-      .exec((err, found) => {
+      .exec(async (err, found) => {
         const params = {};
         params.searchedItem = `Entrance of id ${req.params.id}`;
 
@@ -41,6 +41,17 @@ module.exports = {
           res.status(404);
           return res.json({ error: notFoundMessage });
         }
+
+        // eslint-disable-next-line camelcase
+        found.cave.id_massif = await TMassif.findOne(found.cave.id_massif)
+          .populate('names')
+          .populate('descriptions');
+
+        await CaveService.setEntrances([found.cave]);
+        await NameService.setNames([found.cave], 'cave');
+        found.cave &&
+          found.cave.id_massif &&
+          (await NameService.setNames([found.cave.id_massif], 'massif'));
 
         // Populate stats
         const statsPromise = CommentService.getStats(req.params.id);
