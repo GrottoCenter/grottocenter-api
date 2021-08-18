@@ -172,6 +172,7 @@ const DocumentValidationPage = () => {
         <DocumentEdit
           onSuccessfulUpdate={handleSuccessfulUpdate}
           id={editView}
+          requireUpdate
         />
       </StandardDialog>
     </>

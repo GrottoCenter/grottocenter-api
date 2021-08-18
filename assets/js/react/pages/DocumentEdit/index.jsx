@@ -3,11 +3,21 @@ import PropTypes from 'prop-types';
 import { CircularProgress } from '@material-ui/core';
 import { useDispatch, useSelector } from 'react-redux';
 import { isEmpty, isNil, head, pathOr, propOr, reject, pipe } from 'ramda';
+import { useHistory, useParams } from 'react-router-dom';
 import DocumentSubmission from '../DocumentSubmission';
 import { fetchDocumentDetails } from '../../actions/DocumentDetails';
 import docInfoGetters from './docInfoGetters';
+import { resetApiMessages } from '../../actions/Document';
 
-const DocumentEdit = ({ onSuccessfulUpdate, id, resetIsValidated }) => {
+const DocumentEdit = ({
+  onSuccessfulUpdate,
+  id,
+  resetIsValidated,
+  requireUpdate = false,
+}) => {
+  const { documentId: documentIdFromRoute } = useParams();
+  const documentId = documentIdFromRoute || id;
+  const history = useHistory();
   const dispatch = useDispatch();
   const { isLoading, details, error } = useSelector(
     (state) => state.documentDetails,
@@ -18,14 +28,19 @@ const DocumentEdit = ({ onSuccessfulUpdate, id, resetIsValidated }) => {
   );
 
   useEffect(() => {
-    if (!isNil(id)) {
-      dispatch(fetchDocumentDetails(id));
+    if (!isNil(documentId)) {
+      dispatch(fetchDocumentDetails(documentId, requireUpdate));
     }
-  }, [id]);
+  }, [documentId]);
 
   useEffect(() => {
     if (latestHttpCode === 200 && isEmpty(errorMessages)) {
-      onSuccessfulUpdate();
+      if (onSuccessfulUpdate) {
+        onSuccessfulUpdate();
+      } else {
+        dispatch(resetApiMessages());
+        history.push(`/ui/documents/${documentId}`);
+      }
     }
   }, [latestHttpCode, errorMessages]);
 
@@ -78,7 +93,7 @@ const DocumentEdit = ({ onSuccessfulUpdate, id, resetIsValidated }) => {
 };
 
 DocumentEdit.propTypes = {
-  onSuccessfulUpdate: PropTypes.func.isRequired,
+  onSuccessfulUpdate: PropTypes.func,
   id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   resetIsValidated: PropTypes.bool,
 };

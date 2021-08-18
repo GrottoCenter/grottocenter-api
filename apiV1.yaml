@@ -652,6 +652,13 @@ paths:
         required: true
         schema:
           type: string
+      - name: requireUpdate
+        in: query
+        description: Specify if you want to retrieve the current update (not validated) of the document
+        required: false
+        schema:
+          type: boolean
+          default: false
       responses:
         '200':
           description: Successful operation

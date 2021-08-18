@@ -1,9 +1,17 @@
 import { useIntl } from 'react-intl';
+import React from 'react';
 import { propOr, map, pipe, join, head, isNil, reject, isEmpty } from 'ramda';
+import UpdateIcon from '@material-ui/icons/Update';
+import NewReleasesOutlinedIcon from '@material-ui/icons/NewReleasesOutlined';
 
 const makeCustomCellRenders = () => {
   const { formatDate, formatMessage, formatTime } = useIntl();
   return [
+    {
+      id: 'modifiedDocJson',
+      customRender: (json) =>
+        isNil(json) ? <NewReleasesOutlinedIcon /> : <UpdateIcon />,
+    },
     {
       id: 'dateInscription',
       customRender: (date) =>

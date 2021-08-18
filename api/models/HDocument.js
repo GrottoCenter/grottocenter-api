@@ -1,12 +1,12 @@
 /**
- * TDocument.js
+ * HDocument.js
  *
- * @description :: tDocument model
+ * @description :: HDocument model
  * @docs        :: http://sailsjs.org/#!documentation/models
  */
 
 module.exports = {
-  tableName: 't_document',
+  tableName: 'h_document',
 
   primaryKey: 'id',
 
@@ -158,11 +158,6 @@ module.exports = {
       model: 'TLicense',
     },
 
-    modifiedDocJson: {
-      columnName: 'modified_doc_json',
-      type: 'json',
-    },
-
     pagesBBSOld: {
       type: 'string',
       allowNull: true,
@@ -189,40 +184,6 @@ module.exports = {
       allowNull: true,
       columnName: 'publication_fascicule_bbs_old',
       maxLength: 300,
-    },
-
-    files: {
-      collection: 'TFile',
-      via: 'document',
-    },
-
-    authors: {
-      collection: 'TCaver',
-      via: 'document',
-      through: 'JDocumentCaverAuthor',
-    },
-
-    regions: {
-      collection: 'TRegion',
-      via: 'document',
-      through: 'JDocumentRegion',
-    },
-
-    subjects: {
-      collection: 'TSubject',
-      via: 'document',
-      through: 'JDocumentSubject',
-    },
-
-    descriptions: {
-      collection: 'TDescription',
-      via: 'document',
-    },
-
-    languages: {
-      collection: 'TLanguage',
-      via: 'document',
-      through: 'JDocumentLanguage',
     },
   },
 };

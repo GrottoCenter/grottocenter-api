@@ -625,6 +625,7 @@ module.exports = {
     result.title = source.title;
     result.validationComment = source.validationComment;
     result.validator = source.validator;
+    result.modifiedDocJson = source.modifiedDocJson;
 
     // source.descriptions contains both title and descriptions (in .title and .body)
     // Split them in 2 different attributes

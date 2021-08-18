@@ -16,9 +16,14 @@ module.exports = {
         //    the name of the cave is the same as its entrance.
         if (Array.isArray(entity.names) && entity.names.length === 0) {
           if (entitiesType === 'cave') {
-            entity.names = await TName.find().where({
-              entrance: entity.entrances[0].id,
-            });
+            const relatedEntrance = await TEntrance.find({
+              cave: entity.id,
+            }).limit(1);
+            entity.names = relatedEntrance[0]
+              ? await TName.find().where({
+                  entrance: relatedEntrance[0].id,
+                })
+              : [];
           }
         }
         const mainName = entity.names.find((n) => n.isMain);

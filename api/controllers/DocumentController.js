@@ -48,21 +48,17 @@ const getConvertedDataFromClient = (req) => {
   };
 };
 
-/**
- * Based on the logstash.conf file.
- * The document must be fully populated and with all its names set (@see setNamesOfPopulatedDocument).
- */
-const addDocumentToElasticSearchIndexes = (document) => {
-  const { type, ...documentWithoutType } = document; // "type" property is already used by ES, don't spread it.
-  const esBody = {
-    ...documentWithoutType,
+const getEsBody = (document) => {
+  const { type, modifiedDocJson, ...docWithoutJsonAndType } = document;
+  return {
+    ...docWithoutJsonAndType,
     authors: document.authors
       ? document.authors.map((a) => a.nickname).join(', ')
       : null,
     'contributor id': document.author.id,
     'contributor nickname': document.author.nickname,
     date_part: document.datePublication // eslint-disable-line camelcase
-      ? new Date(document.datePublication).getYear()
+      ? new Date(document.datePublication).getFullYear()
       : null,
     description: document.descriptions[0].body,
     'editor id': ramda.pathOr(null, ['editor', 'id'], document),
@@ -79,7 +75,15 @@ const addDocumentToElasticSearchIndexes = (document) => {
     'type id': ramda.propOr(null, 'id', type),
     'type name': ramda.propOr(null, 'name', type),
   };
+};
 
+/**
+ * Based on the logstash.conf file.
+ * The document must be fully populated and with all its names set (@see setNamesOfPopulatedDocument).
+ */
+const addDocumentToElasticSearchIndexes = (document) => {
+  // const { type, ...documentWithoutType } = document; // "type" property is already used by ES, don't spread it.
+  const esBody = getEsBody(document);
   // Create in documents-index
   esClient.create(
     {
@@ -123,6 +127,12 @@ const addDocumentToElasticSearchIndexes = (document) => {
       },
     );
   }
+};
+
+//TO DO: proper update
+const updateDocumentInElasticSearchIndexes = (document) => {
+  ElasticsearchService.deleteResource('documents', document.id);
+  addDocumentToElasticSearchIndexes(document);
 };
 
 module.exports = {
@@ -226,69 +236,59 @@ module.exports = {
   },
 
   update: async (req, res) => {
-    // Check right
+    const docWithModif = await TDocument.findOne({
+      id: req.param('id'),
+      modifiedDocJson: { '!=': null },
+    });
+
+    let rightAction;
+
+    if (docWithModif) {
+      rightAction = RightService.RightActions.EDIT_NOT_VALIDATED;
+    } else {
+      rightAction = RightService.RightActions.EDIT_ANY;
+    }
     const hasRight = await sails.helpers.checkRight
       .with({
         groups: req.token.groups,
         rightEntity: RightService.RightEntities.DOCUMENT,
-        rightAction: RightService.RightActions.EDIT_ANY,
+        rightAction: rightAction,
       })
       .intercept('rightNotFound', (err) => {
         return res.serverError(
           'A server error occured when checking your right to update a document.',
         );
       });
+
     if (!hasRight) {
       return res.forbidden('You are not authorized to update a document.');
     }
 
-    const cleanedData = {
+    const jsonData = {
       ...getConvertedDataFromClient(req),
       id: req.param('id'),
+      documentMainLanguage: req.body.documentMainLanguage.id,
+      author: req.token.id,
+      description: req.body.description,
+      titleAndDescriptionLanguage: req.body.titleAndDescriptionLanguage.id,
+      title: req.body.title,
     };
 
-    // Launch update request using transaction: it performs a rollback if an error occurs
-    await sails
-      .getDatastore()
-      .transaction(async (db) => {
-        const updatedDocument = await TDocument.updateOne({
-          id: req.param('id'),
-        })
-          .set(cleanedData)
-          .usingConnection(db);
-        if (!updatedDocument) {
-          return res.status(404);
-        }
+    const updatedDocument = await TDocument.updateOne({
+      id: req.param('id'),
+    }).set({
+      isValidated: false,
+      dateValidation: null,
+      modifiedDocJson: jsonData,
+    });
 
-        // Update associated data not handled by TDocument manually
-        if (ramda.pathOr(null, ['documentMainLanguage', 'id'], req.body)) {
-          await JDocumentLanguage.updateOne({ document: updatedDocument.id })
-            .set({
-              document: updatedDocument.id,
-              language: req.body.documentMainLanguage.id,
-              isMain: true,
-            })
-            .usingConnection(db);
-        }
+    if (!updatedDocument) {
+      return res.status(404);
+    }
 
-        await TDescription.updateOne({ document: updatedDocument.id })
-          .set({
-            author: req.token.id,
-            body: req.body.description,
-            document: updatedDocument.id,
-            language: req.body.titleAndDescriptionLanguage.id,
-            title: req.body.title,
-          })
-          .usingConnection(db);
-
-        const params = {};
-        params.controllerMethod = 'DocumentController.update';
-        return ControllerService.treat(req, null, updatedDocument, params, res);
-      })
-      .intercept('E_UNIQUE', () => res.sendStatus(409))
-      .intercept('UsageError', (e) => res.badRequest(e.cause.message))
-      .intercept('AdapterError', (e) => res.badRequest(e.cause.message))
-      .intercept((e) => res.serverError(e.message));
+    const params = {};
+    params.controllerMethod = 'DocumentController.update';
+    return ControllerService.treat(req, null, updatedDocument, params, res);
   },
 
   findAll: async (
@@ -309,9 +309,9 @@ module.exports = {
 
     /*
       4 possible cases : isValidated (true or false) AND validation (null or not)
-      If the document is not validated and has a dateValidatoin, it means that it has been refused.
+      If the document is not validated and has a dateValidation, it means that it has been refused.
       We don't want to retrieve these documents refused.
-      So when isValidated is false, we need to retrieve only the document with a dateValidatoin set to null
+      So when isValidated is false, we need to retrieve only the document with a dateValidation set to null
       (= submitted documents which need to be reviewed).
     */
     const whereClause = {
@@ -480,49 +480,148 @@ module.exports = {
     next,
     converter = MappingV1Service.convertToDocumentModel,
   ) => {
-    TDocument.findOne(req.param('id'))
-      .populate('author')
-      .populate('authors')
-      .populate('cave')
-      .populate('descriptions')
-      .populate('editor')
-      .populate('entrance')
-      .populate('files')
-      .populate('identifierType')
-      .populate('languages')
-      .populate('library')
-      .populate('license')
-      .populate('massif')
-      .populate('parent')
-      .populate('regions')
-      .populate('reviewer')
-      .populate('subjects')
-      .populate('type')
-      .exec(async (err, found) => {
-        const params = {
-          controllerMethod: 'DocumentController.find',
-          searchedItem: 'Document of id ' + req.param('id'),
-        };
+    let found;
+    let err;
+    if (req.param('requireUpdate') === 'true') {
+      const { id, modifiedDocJson } = await TDocument.findOne(req.param('id'));
+      if (modifiedDocJson === null) {
+        return res.serverError('This document has not been updated.');
+      }
+      try {
+        const {
+          title,
+          description,
+          titleAndDescriptionLanguage,
+          documentMainLanguage,
+          author,
+          authors,
+          cave,
+          descriptions,
+          editor,
+          entrance,
+          files,
+          identifierType,
+          languages,
+          library,
+          license,
+          massif,
+          parent,
+          regions,
+          reviewer,
+          subjects,
+          type,
+          ...cleanedData
+        } = modifiedDocJson;
 
-        if (!found) {
-          const notFoundMessage = `${params.searchedItem} not found`;
-          sails.log.debug(notFoundMessage);
-          res.status(404);
-          return res.json({ error: notFoundMessage });
+        //We join the tables
+        found = { ...cleanedData, id };
+        found.author = author ? await TCaver.findOne(author) : null;
+        found.cave = cave ? await TCave.findOne(cave) : null;
+        found.entrance = entrance ? await TEntrance.findOne(entrance) : null;
+        found.massif = massif ? await TMassif.findOne(massif) : null;
+        found.editor = editor ? await TGrotto.findOne(editor) : null;
+        found.identifierType = identifierType
+          ? await TIdentifierType.findOne(identifierType)
+          : null;
+        found.library = library ? await TGrotto.findOne(library) : null;
+        found.parent = parent ? await TDocument.findOne(parent) : null;
+        found.reviewer = reviewer ? await TCaver.findOne(reviewer) : null;
+        found.type = type ? await TType.findOne(type) : null;
+        found.license = license ? await TLicense.findOne(license) : null;
+
+        found.subjects = subjects
+          ? await Promise.all(
+              subjects.map(async (subject) => {
+                return await TSubject.findOne(subject);
+              }),
+            )
+          : [];
+        found.authors = authors
+          ? await Promise.all(
+              authors.map(async (author) => {
+                return await TCaver.findOne(author);
+              }),
+            )
+          : [];
+        found.files = files
+          ? await Promise.all(
+              files.map(async (file) => {
+                return await TFile.findOne(file);
+              }),
+            )
+          : [];
+        found.regions = regions
+          ? await Promise.all(
+              regions.map(async (region) => {
+                return await TRegion.findOne(region);
+              }),
+            )
+          : [];
+
+        //We can only modify the main language, so we don't have a "languages" attribute stored in the json. Uncomment if the possibility to add language is implemented.
+        //found.languages = languages ? await Promise.all(languages.map(async (language) => { return await TLanguage.findOne(language)})) : [];
+
+        found.mainLanguage = await TLanguage.findOne(documentMainLanguage);
+        if (found.editor) {
+          await NameService.setNames([found.editor], 'grotto');
         }
 
-        await setNamesOfPopulatedDocument(found);
-        found.mainLanguage = await DocumentService.getMainLanguage(found.id);
+        //We handle the description because even if it has been modified, the entry in TDescription stayed intact.
+        const descLang = await TLanguage.findOne(titleAndDescriptionLanguage);
+        found.descriptions = [];
+        found.descriptions.push({
+          author: author,
+          title: title,
+          body: description,
+          document: id,
+          language: descLang,
+        });
+      } catch (err) {
+        return res.serverError(err.toString());
+      }
+    } else {
+      found = await TDocument.findOne(req.param('id'))
+        .populate('author')
+        .populate('authors')
+        .populate('cave')
+        .populate('descriptions')
+        .populate('editor')
+        .populate('entrance')
+        .populate('files')
+        .populate('identifierType')
+        .populate('languages')
+        .populate('library')
+        .populate('license')
+        .populate('massif')
+        .populate('parent')
+        .populate('regions')
+        .populate('reviewer')
+        .populate('subjects')
+        .populate('type');
+      found.mainLanguage = await DocumentService.getMainLanguage(found.id);
+      await setNamesOfPopulatedDocument(found);
+    }
 
-        return ControllerService.treatAndConvert(
-          req,
-          err,
-          found,
-          params,
-          res,
-          converter,
-        );
-      });
+    const params = {
+      controllerMethod: 'DocumentController.find',
+      searchedItem: 'Document of id ' + req.param('id'),
+    };
+
+    if (!found) {
+      const notFoundMessage = `${params.searchedItem} not found`;
+      sails.log.debug(notFoundMessage);
+      res.status(404);
+      return res.json({ error: notFoundMessage });
+    }
+
+    return ControllerService.treatAndConvert(
+      req,
+      err,
+      found,
+      params,
+      res,
+      converter,
+    );
   },
 
   validate: (req, res, next) => {
@@ -579,7 +678,7 @@ module.exports = {
       });
   },
 
-  multipleValidate: (req, res, next) => {
+  multipleValidate: async (req, res, next) => {
     const documents = req.param('documents');
     if (!documents) {
       return res.ok();
@@ -608,39 +707,122 @@ module.exports = {
           validator: req.token.id,
         }),
       );
-      Promise.all(updatePromises).then((results) => {
-        results.map((doc) => {
-          if (doc.isValidated) {
-            TDocument.findOne(doc.id)
-              .populate('author')
-              .populate('authors')
-              .populate('cave')
-              .populate('descriptions')
-              .populate('editor')
-              .populate('entrance')
-              .populate('identifierType')
-              .populate('languages')
-              .populate('library')
-              .populate('license')
-              .populate('massif')
-              .populate('parent')
-              .populate('regions')
-              .populate('reviewer')
-              .populate('subjects')
-              .populate('type')
-              .exec(async (err, found) => {
-                if (err) {
-                  return res.serverError(
-                    'An error occured when trying to get all information about the document.',
-                  );
-                }
-                await setNamesOfPopulatedDocument(found);
-                await addDocumentToElasticSearchIndexes(found);
-              });
+    });
+
+    Promise.all(updatePromises).then(async (results) => {
+      for (const doc of results) {
+        if (doc.isValidated) {
+          try {
+            //If there is modified doc stored in the json column, we update the document with the data contained in it. Then we remove the json.
+            if (doc.modifiedDocJson) {
+              // Launch update request using transaction: it performs a rollback if an error occurs
+              await sails
+                .getDatastore()
+                .transaction(async (db) => {
+                  const {
+                    documentMainLanguage,
+                    author,
+                    description,
+                    titleAndDescriptionLanguage,
+                    title,
+                    ...cleanedData
+                  } = doc.modifiedDocJson;
+                  cleanedData.modifiedDocJson = null;
+                  const updatedDocument = await TDocument.updateOne(doc.id)
+                    .set(cleanedData)
+                    .usingConnection(db);
+                  if (!updatedDocument) {
+                    return res.status(404);
+                  }
+
+                  // Update associated data not handled by TDocument manually
+                  if (documentMainLanguage) {
+                    await JDocumentLanguage.updateOne({
+                      document: updatedDocument.id,
+                    })
+                      .set({
+                        document: updatedDocument.id,
+                        language: documentMainLanguage,
+                        isMain: true,
+                      })
+                      .usingConnection(db);
+                  }
+
+                  await TDescription.updateOne({ document: updatedDocument.id })
+                    .set({
+                      author: author,
+                      body: description,
+                      document: updatedDocument.id,
+                      language: titleAndDescriptionLanguage,
+                      title: title,
+                    })
+                    .usingConnection(db);
+                })
+                .intercept('E_UNIQUE', () => res.sendStatus(409))
+                .intercept('UsageError', (e) => res.badRequest(e.cause.message))
+                .intercept('AdapterError', (e) =>
+                  res.badRequest(e.cause.message),
+                )
+                .intercept((e) => res.serverError(e.message));
+
+              const found = await TDocument.findOne(doc.id)
+                .populate('author')
+                .populate('authors')
+                .populate('cave')
+                .populate('descriptions')
+                .populate('editor')
+                .populate('entrance')
+                .populate('identifierType')
+                .populate('languages')
+                .populate('library')
+                .populate('license')
+                .populate('massif')
+                .populate('parent')
+                .populate('regions')
+                .populate('reviewer')
+                .populate('subjects')
+                .populate('type');
+              await setNamesOfPopulatedDocument(found);
+              await updateDocumentInElasticSearchIndexes(found);
+            } else {
+              const found = await TDocument.findOne(doc.id)
+                .populate('author')
+                .populate('authors')
+                .populate('cave')
+                .populate('descriptions')
+                .populate('editor')
+                .populate('entrance')
+                .populate('identifierType')
+                .populate('languages')
+                .populate('library')
+                .populate('license')
+                .populate('massif')
+                .populate('parent')
+                .populate('regions')
+                .populate('reviewer')
+                .populate('subjects')
+                .populate('type');
+              await setNamesOfPopulatedDocument(found);
+              await addDocumentToElasticSearchIndexes(found);
+            }
+          } catch (err) {
+            return res.serverError(
+              'An error occured when trying to get all information about the document.',
+            );
           }
-        });
-        res.ok();
-      });
+        } else {
+          /*
+              If the document is not validated, check if there is a json document. If true we remove it, and we put isValidated to true (because the document kept the same values as when it was validated).
+            */
+          if (doc.modifiedDocJson) {
+            await TDocument.updateOne(doc.id).set({
+              isValidated: true,
+              modifiedDocJson: null,
+            });
+          }
+        }
+      }
+      return res.ok();
     });
   },
 };
