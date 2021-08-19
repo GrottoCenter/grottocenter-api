@@ -483,9 +483,7 @@ class DocumentSearch extends React.Component {
                       id: 'Year',
                     })}
                     disabled={!yearRange.isEditable}
-                    onDisable={this.handleCheckedChange(
-                      'date_part-range',
-                    )}
+                    onDisable={this.handleCheckedChange('date_part-range')}
                     min={yearMinValue}
                     max={yearMaxValue}
                     onChange={(values) => {

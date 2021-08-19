@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { useDispatch, useSelector } from 'react-redux';
 import { useIntl } from 'react-intl';
-import { reject, isNil, propOr } from 'ramda';
+import { reject, isNil, propOr, isEmpty } from 'ramda';
 import { isMobileOnly } from 'react-device-detect';
 
 import { getDocuments } from '../../actions/Documents';
@@ -101,6 +101,16 @@ const DocumentValidationPage = () => {
     loadDocuments();
   };
 
+  const isUpdatedDocRequired = () => {
+    // We fetch the updated doc only if the doc has been modified
+    if (isNil(editView) || isEmpty(data.documents)) {
+      return false;
+    }
+    return (
+      data.documents.find((doc) => doc.id === editView).modifiedDocJson !== null
+    );
+  };
+
   useEffect(() => {
     loadDocuments();
   }, [loadDocuments]);
@@ -172,7 +182,7 @@ const DocumentValidationPage = () => {
         <DocumentEdit
           onSuccessfulUpdate={handleSuccessfulUpdate}
           id={editView}
-          requireUpdate
+          requireUpdate={isUpdatedDocRequired()}
         />
       </StandardDialog>
     </>
