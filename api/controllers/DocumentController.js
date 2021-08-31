@@ -22,12 +22,20 @@ const setNamesOfPopulatedDocument = async (document) => {
   !ramda.isNil(document.editor) &&
     (await NameService.setNames([document.editor], 'grotto'));
   await DescriptionService.setDocumentDescriptions(document);
+  !ramda.isNil(document.authorizationDocument) &&
+    (await DescriptionService.setDocumentDescriptions(
+      document.authorizationDocument,
+    ));
   return document;
 };
 
 // Extract everything from the request body except id and dateInscription
-const getConvertedDataFromClient = (req) => {
-  const { id, ...reqBodyWithoutId } = req.body; // remove id if present to avoid null id (and an error)
+const getConvertedDataFromClient = async (req) => {
+  const { id, option, ...reqBodyWithoutId } = req.body; // remove id if present to avoid null id (and an error)
+
+  const optionFound = option
+    ? await TOption.findOne({ name: option })
+    : undefined;
   return {
     ...reqBodyWithoutId,
     author: req.token.id,
@@ -38,7 +46,7 @@ const getConvertedDataFromClient = (req) => {
     identifierType: ramda.pathOr(undefined, ['identifierType', 'id'], req.body),
     issue: req.body.issue && req.body.issue !== '' ? req.body.issue : undefined,
     library: ramda.pathOr(undefined, ['library', 'id'], req.body),
-    license: 1,
+    license: ramda.pathOr(1, ['license', 'id'], req.body),
     massif: ramda.pathOr(undefined, ['massif', 'id'], req.body),
     parent: ramda.pathOr(undefined, ['partOf', 'id'], req.body),
     regions: req.body.regions ? req.body.regions.map((r) => r.id) : undefined,
@@ -46,6 +54,12 @@ const getConvertedDataFromClient = (req) => {
       ? req.body.subjects.map((s) => s.code)
       : undefined,
     type: ramda.pathOr(undefined, ['documentType', 'id'], req.body),
+    option: optionFound.id,
+    authorizationDocument: ramda.pathOr(
+      undefined,
+      ['authorizationDocument', 'id'],
+      req.body,
+    ),
   };
 };
 
@@ -444,8 +458,11 @@ module.exports = {
     if (!hasRight) {
       return res.forbidden('You are not authorized to create a document.');
     }
+
+    const resultConversion = await getConvertedDataFromClient(req);
+
     const cleanedData = {
-      ...getConvertedDataFromClient(req),
+      ...resultConversion,
       dateInscription: new Date(),
     };
 
@@ -472,6 +489,17 @@ module.exports = {
       langDescData,
       handleError,
     );
+
+    const { files } = req.files;
+    if (files) {
+      for (const file of files) {
+        try {
+          await FileService.create(file, documentCreated.id);
+        } catch (err) {
+          sails.log.error();
+        }
+      }
+    }
 
     const params = {};
     params.controllerMethod = 'DocumentController.create';
@@ -507,14 +535,36 @@ module.exports = {
       return res.forbidden('You are not authorized to update a document.');
     }
 
+    const resultConversion = await getConvertedDataFromClient(req);
+
+    // Add new files
+    const { files } = req.files;
+    const newFileArray = [];
+    if (files) {
+      for (const file of files) {
+        try {
+          const createdFile = await FileService.create(
+            file,
+            req.param('id'),
+            true,
+            false,
+          );
+          newFileArray.push(createdFile);
+        } catch (err) {
+          return res.serverError(err);
+        }
+      }
+    }
+
     const jsonData = {
-      ...getConvertedDataFromClient(req),
+      ...resultConversion,
       id: req.param('id'),
       documentMainLanguage: req.body.documentMainLanguage.id,
       author: req.token.id,
       description: req.body.description,
       titleAndDescriptionLanguage: req.body.titleAndDescriptionLanguage.id,
       title: req.body.title,
+      newFiles: ramda.isEmpty(newFileArray) ? undefined : newFileArray,
     };
 
     const updatedDocument = await TDocument.updateOne({
@@ -560,7 +610,11 @@ module.exports = {
     const whereClause = {
       and: [{ isValidated: isValidated }],
     };
-    !isValidated ? whereClause.and.push({ dateValidation: null }) : '';
+    !isValidated && whereClause.and.push({ dateValidation: null });
+
+    const type = req.param('documentType');
+    const foundType = type ? await TType.findOne({ name: type }) : null;
+    foundType && whereClause.and.push({ type: foundType.id });
 
     TDocument.find()
       .where(whereClause)
@@ -583,6 +637,8 @@ module.exports = {
       .populate('reviewer')
       .populate('subjects')
       .populate('type')
+      .populate('option')
+      .populate('authorizationDocument')
       .exec((err, found) => {
         TDocument.count()
           .where(whereClause)
@@ -601,6 +657,20 @@ module.exports = {
 
             found.mainLanguage = await DocumentService.getMainLanguage(
               found.id,
+            await Promise.all(
+              found.map(async (doc) => {
+                await NameService.setNames(
+                  [
+                    ...(doc.library ? [doc.library] : []),
+                    ...(doc.editor ? [doc.editor] : []),
+                  ],
+                  'grotto',
+                );
+                doc.authorizationDocument &&
+                  (await DescriptionService.setDocumentDescriptions(
+                    doc.authorizationDocument,
+                  ));
+              }),
             );
             await setNamesOfPopulatedDocument(found);
             found.children &&
@@ -741,7 +811,6 @@ module.exports = {
           descriptions,
           editor,
           entrance,
-          files,
           identifierType,
           languages,
           library,
@@ -752,6 +821,11 @@ module.exports = {
           reviewer,
           subjects,
           type,
+          option,
+          authorizationDocument,
+          newFiles,
+          modifiedFiles,
+          deletedFiles,
           ...cleanedData
         } = modifiedDocJson;
 
@@ -770,6 +844,10 @@ module.exports = {
         found.reviewer = reviewer ? await TCaver.findOne(reviewer) : null;
         found.type = type ? await TType.findOne(type) : null;
         found.license = license ? await TLicense.findOne(license) : null;
+        found.option = option ? await TOption.findOne(option) : null;
+        found.authorizationDocument = authorizationDocument
+          ? await TDocument.findOne(authorizationDocument)
+          : null;
 
         found.subjects = subjects
           ? await Promise.all(
@@ -785,13 +863,6 @@ module.exports = {
               }),
             )
           : [];
-        found.files = files
-          ? await Promise.all(
-              files.map(async (file) => {
-                return await TFile.findOne(file);
-              }),
-            )
-          : [];
         found.regions = regions
           ? await Promise.all(
               regions.map(async (region) => {
@@ -799,6 +870,33 @@ module.exports = {
               }),
             )
           : [];
+
+        let criteria = {
+          document: id,
+          isValidated: true,
+        };
+        // We don't want to retrieve files which are modified, new or deleted (because we already have them).
+        // New are those which have isValidated = false
+        let filesToIgnore = modifiedFiles || [];
+        filesToIgnore =
+          (deletedFiles && ramda.concat(filesToIgnore, deletedFiles)) ||
+          filesToIgnore;
+
+        const filesToIgnoreId = filesToIgnore.map((file) => file.id);
+        if (!ramda.isEmpty(filesToIgnoreId)) {
+          criteria = {
+            document: id,
+            id: { '!=': filesToIgnoreId },
+            isValidated: true,
+          };
+        }
+
+        const files = await TFile.find(criteria);
+
+        found.files = files;
+        found.newFiles = newFiles;
+        found.deletedFiles = deletedFiles;
+        found.modifiedFiles = modifiedFiles;
 
         //We can only modify the main language, so we don't have a "languages" attribute stored in the json. Uncomment if the possibility to add language is implemented.
         //found.languages = languages ? await Promise.all(languages.map(async (language) => { return await TLanguage.findOne(language)})) : [];
@@ -830,7 +928,11 @@ module.exports = {
         .populate('descriptions')
         .populate('editor')
         .populate('entrance')
-        .populate('files')
+        .populate('files', {
+          where: {
+            isValidated: true,
+          },
+        })
         .populate('identifierType')
         .populate('languages')
         .populate('library')
@@ -840,7 +942,9 @@ module.exports = {
         .populate('regions')
         .populate('reviewer')
         .populate('subjects')
-        .populate('type');
+        .populate('type')
+        .populate('option')
+        .populate('authorizationDocument');
       found.mainLanguage = await DocumentService.getMainLanguage(found.id);
       await setNamesOfPopulatedDocument(found);
       await DescriptionService.setDocumentDescriptions(found);
@@ -977,6 +1081,9 @@ module.exports = {
                     description,
                     titleAndDescriptionLanguage,
                     title,
+                    modifiedFiles,
+                    deletedFiles,
+                    newFiles,
                     ...cleanedData
                   } = doc.modifiedDocJson;
                   cleanedData.modifiedDocJson = null;
@@ -1009,6 +1116,31 @@ module.exports = {
                       title: title,
                     })
                     .usingConnection(db);
+
+                  // New files have already been created, they just need to be linked to the document.
+                  if (newFiles) {
+                    const newPromises = newFiles.map(async (file) => {
+                      return await TFile.updateOne(file.id).set({
+                        isValidated: true,
+                      });
+                    });
+                    await Promise.all(newPromises);
+                  }
+                  if (modifiedFiles) {
+                    const modificationPromises = modifiedFiles.map(
+                      async (file) => {
+                        return await FileService.update(file);
+                      },
+                    );
+                    await Promise.all(modificationPromises);
+                  }
+
+                  if (deletedFiles) {
+                    const deletionPromises = deletedFiles.map(async (file) => {
+                      return await FileService.delete(file);
+                    });
+                    await Promise.all(deletionPromises);
+                  }
                 })
                 .intercept('E_UNIQUE', () => res.sendStatus(409))
                 .intercept('UsageError', (e) => res.badRequest(e.cause.message))
@@ -1033,7 +1165,9 @@ module.exports = {
                 .populate('regions')
                 .populate('reviewer')
                 .populate('subjects')
-                .populate('type');
+                .populate('type')
+                .populate('option')
+                .populate('authorizationDocument');
               await setNamesOfPopulatedDocument(found);
               await updateDocumentInElasticSearchIndexes(found);
             } else {
@@ -1053,7 +1187,9 @@ module.exports = {
                 .populate('regions')
                 .populate('reviewer')
                 .populate('subjects')
-                .populate('type');
+                .populate('type')
+                .populate('option')
+                .populate('authorizationDocument');
               await setNamesOfPopulatedDocument(found);
               await addDocumentToElasticSearchIndexes(found);
             }

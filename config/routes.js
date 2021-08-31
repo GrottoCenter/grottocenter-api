@@ -357,6 +357,11 @@ module.exports.routes = {
     },
   },
 
+  /* License controller */
+  'GET /api/v1/licenses': 'v1/License.findAll',
+
+  /* Option controller */
+  'GET /api/v1/file-formats': 'v1/FileFormat.findAll',
   //  ╦ ╦╔═╗╔╗ ╦ ╦╔═╗╔═╗╦╔═╔═╗
   //  ║║║║╣ ╠╩╗╠═╣║ ║║ ║╠╩╗╚═╗
   //  ╚╩╝╚═╝╚═╝╩ ╩╚═╝╚═╝╩ ╩╚═╝

@@ -6,6 +6,7 @@
  */
 
 const ramda = require('ramda');
+const FileService = require('./FileService');
 
 /* Load Models */
 const CaveModel = require('./mappingModels/CaveModel');
@@ -589,6 +590,14 @@ module.exports = {
 
   // ---------------- Document Function ---------------------------
 
+  convertToFileModel: (source) => {
+    const { container, linkAccount } = FileService.getAzureData();
+    return {
+      ...source,
+      completePath: `${linkAccount}/${container}/${source.path}`,
+    };
+  },
+
   convertToDocumentModel: (source) => {
     const result = {
       ...DocumentModel,
@@ -606,7 +615,12 @@ module.exports = {
       : source.datePublication;
     result.dateValidation = source.dateValidation;
     result.entrance = source.entrance;
-    result.files = source.files;
+    result.files =
+      source.files &&
+      source.files.map((file) => MappingV1Service.convertToFileModel(file));
+    result.newFiles = source.newFiles;
+    result.modifiedFiles = source.modifiedFiles;
+    result.deletedFiles = source.deletedFiles;
     result.identifier = source.identifier;
     result.issue = source.issue;
     result.isValidated = source.isValidated;
@@ -625,6 +639,10 @@ module.exports = {
     result.validationComment = source.validationComment;
     result.validator = source.validator;
     result.modifiedDocJson = source.modifiedDocJson;
+    result.option = source.option;
+    result.authorizationDocument = source.authorizationDocument
+      ? module.exports.convertToDocumentModel(source.authorizationDocument)
+      : null;
 
     // source.descriptions contains both title and descriptions (in .title and .body)
     // Split them in 2 different attributes

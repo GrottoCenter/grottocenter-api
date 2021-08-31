@@ -222,6 +222,14 @@ module.exports.policies = {
     forgotPassword: true,
   },
 
+  'v1/LicenseController': {
+    '*': true,
+  },
+
+  'v1/FileFormatController': {
+    '*': true,
+  },
+
   /***************************************************************************
    *                                                                          *
    * Here's an example of mapping some policies to run before a controller    *

@@ -38,10 +38,10 @@ module.exports = {
       columnName: 'filename',
     },
 
-    pathOld: {
+    path: {
       type: 'string',
       allowNull: true,
-      columnName: 'path_old',
+      columnName: 'path',
       maxLength: 1000,
     },
 
@@ -49,6 +49,12 @@ module.exports = {
       allowNull: false,
       columnName: 'id_file_format',
       model: 'TFileFormat',
+    },
+
+    isValidated: {
+      type: 'boolean',
+      columnName: 'is_validated',
+      allowNull: false,
     },
 
     document: {
