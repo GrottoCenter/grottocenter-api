@@ -24,10 +24,12 @@ tags:
 - name: descriptions
 - name: documents
 - name: entrances
+- name: file formats
 - name: geoloc
 - name: groups
 - name: identifierTypes
 - name: languages
+- name: licenses
 - name: locations
 - name: names
 - name: massifs
@@ -37,7 +39,37 @@ tags:
 - name: subjects
 - name: import csv
 
+
 paths:
+  '/licenses':
+    get:
+      tags:
+        - licenses
+      description: "Get all the licenses present in Grottocenter."
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/License'
+                  
+  '/file-formats':
+    get:
+      tags:
+        - file formats
+      description: "Get all the file formats present in Grottocenter."
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/File-format'
   '/caves':
     post:
       tags:
@@ -695,7 +727,7 @@ paths:
     post:
       tags:
         - documents
-      description: "Create a document. When submitting a new document, you must provide an authentification token (from the /login route) in the Authorization header. This token will be used to set the author of the submission. A lot of parameters are required but it depends a lot on the document type you are submitting (example: there is no publication date for a Collection but it's mandatory for an Issue."
+      description: "Create a document. When submitting a new document, you must provide an authentification token (from the /login route) in the Authorization header. This token will be used to set the author of the submission. A lot of parameters are required but it depends a lot on the document type you are submitting (example: there is no publication date for a Collection but it's mandatory for an Issue. The type of the request must be a multipart/form-data if some files are uploaded."
       parameters:
       - name: authors
         in: query
@@ -842,6 +874,15 @@ paths:
             properties:
               id:
                 type: string
+        
+      - name: files
+        in: query
+        description: The files linked to the document.
+        schema:
+          type: array
+          items:
+            type: string
+            format: binary
 
       responses:
         200:
@@ -894,6 +935,12 @@ paths:
           type: string
           enum: [ASC, DESC]
           default: ASC
+      - name: documentType
+        in: query
+        description: The type of document which must be retrieved.
+        required: false
+        schema:
+          type: string
       responses:
         '200':
           description: Successful operation
@@ -2461,6 +2508,8 @@ components:
       properties:
         author:
           $ref: '#/components/schemas/Caver'
+        authorizationDocument:
+          $ref: '#/components/schemas/Document'
         authorComment:
           type: string
         cave:
@@ -2473,6 +2522,10 @@ components:
           type: string
         dateReviewed:
           type: string
+        deletedFiles:
+          type: array
+          items:
+            $ref: '#/components/schemas/File'
         descriptions:
           type: array
           items:
@@ -2520,6 +2573,16 @@ components:
           $ref: '#/components/schemas/Language'
         massif:
           $ref: '#/components/schemas/Massif'
+        modifiedFiles:
+          type: array
+          items:
+            $ref: '#/components/schemas/File'
+        newFiles:
+          type: array
+          items:
+            $ref: '#/components/schemas/File'
+        option:
+          $ref: '#/components/schemas/Option'
         pages:
           type: string
         parent:
@@ -2687,6 +2750,8 @@ components:
           $ref: '#/components/schemas/File-format'
         fileName:
           type: string
+        path:
+          type: string
 
     File-format:
       type: object
@@ -2736,6 +2801,10 @@ components:
         name:
           type: string
         text:
+          type: string
+        is_copyrighted:
+          type: boolean
+        url:
           type: string
 
     Location:
