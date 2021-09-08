@@ -42,16 +42,19 @@ module.exports = {
           return res.json({ error: notFoundMessage });
         }
 
-        // eslint-disable-next-line camelcase
-        found.cave.id_massif = await TMassif.findOne(found.cave.id_massif)
-          .populate('names')
-          .populate('descriptions');
+        // Populate massif
+        if (found.cave.id_massif) {
+          // eslint-disable-next-line camelcase
+          found.cave.id_massif = await TMassif.findOne({
+            id: found.cave.id_massif, // eslint-disable-line camelcase
+          })
+            .populate('names')
+            .populate('descriptions');
+          await NameService.setNames([found.cave.id_massif], 'massif');
+        }
 
         await CaveService.setEntrances([found.cave]);
         await NameService.setNames([found.cave], 'cave');
-        found.cave &&
-          found.cave.id_massif &&
-          (await NameService.setNames([found.cave.id_massif], 'massif'));
 
         // Populate stats
         const statsPromise = CommentService.getStats(req.params.id);
