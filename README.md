@@ -26,6 +26,7 @@ Current production version is available [here](http://beta.grottocenter.org/)
 ## Contributors
 
 Thanks to their donations they made possible the developer of the V3 of Grottocenter:
+
 Spéléo Club des Mémises, Frédéric Urien, Christophe Bes, Georges Messina, Philippe Henry, Bernard Thomachot, Nathan
 Bartas, Benjamin Soufflet, Ferdinando Didonna, Jean Marc Mattlet, Jean-Jacques Veux, Etienne Fabre, Sandy De Wilde,
 Sylvain Bélet, Félix Nilius, Didier Gignoux, Paul Guerin, Hervé Plaettner, Marius Carrière, Doc Carbur, Hard Gilles,
@@ -48,19 +49,15 @@ Software requirement:
 
 - NodeJS (min v10)
 - NPM (min 4.1.2)
-- Git client (see Git usage for configuration)
+- Git client (see [Git usage](#git) for configuration)
 - Docker
 - [docker-compose](https://docs.docker.com/compose/install/)
-- Grunt
 
 Clone the project on your computer:
 
 ```
 > git clone https://github.com/GrottoCenter/Grottocenter3.git
 ```
-
-| :warning: WARNING: If you have NPM v7+ you will need to run `npm install --legacy-peer-deps` instead of `npm install`  |
-| --- |
 
 ## Usage
 
@@ -151,11 +148,9 @@ Before pushing your branch always de a `git rebase -i` to merge unnecessary comm
 - Merging a simple feature / bugfix should always be done using a **rebase fast-forward**.
 - Complex features requiring multiple commits should be merged with a regular merge commit.
 
-#### Overview
+#### Commits
 
 This project follows the conventional commit specification. It uses commitlint to enforce conventional commit messages.
-
-##### Hooks
 
 To prevent bad commits and push, we use the Git hooks [Husky](https://github.com/typicode/husky)
 
@@ -212,7 +207,7 @@ It can be start independently with `npm run storybook`
 
 ## ElasticSearch
 
-See [ElastiSearch Wiki page](https://github.com/GrottoCenter/Grottocenter3/wiki/Elasticsearch-(quick-&-advanced-search))
+See [ElasticSearch Wiki page](https://github.com/GrottoCenter/Grottocenter3/wiki/Elasticsearch-(quick-&-advanced-search))
 
 ## Licence
 
