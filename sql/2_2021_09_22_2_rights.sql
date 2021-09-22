@@ -1,4 +1,4 @@
-\ c grottoce;
+\c grottoce;
 INSERT INTO public.t_right (id, "name", "comments")
 VALUES (1, 'Application - view any', NULL),
     (2, 'Application - edit any', NULL),
