@@ -1,4 +1,4 @@
-\ c grottoce;
+\c grottoce;
 INSERT INTO public.t_group (id, "name", "comments")
 VALUES (
 		1,

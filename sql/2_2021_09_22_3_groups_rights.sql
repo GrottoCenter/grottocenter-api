@@ -1,4 +1,4 @@
-\ c grottoce;
+\c grottoce;
 INSERT INTO public.j_group_right (id_group, id_right)
 VALUES (1, 2),
     (1, 3),

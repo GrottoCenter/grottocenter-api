@@ -1,4 +1,4 @@
-\ c grottoce;
+\c grottoce;
 INSERT INTO public.t_license (id, "name", "text", is_copyrighted, url)
 VALUES (
         1,

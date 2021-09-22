@@ -1,4 +1,4 @@
-\ c grottoce;
+\c grottoce;
 INSERT INTO public.t_caver (
 		id,
 		login,
