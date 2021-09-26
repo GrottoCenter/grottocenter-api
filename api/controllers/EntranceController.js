@@ -370,63 +370,77 @@ module.exports = {
           await NameService.setNames([found.cave.id_massif], 'massif');
         }
 
+        // ===== Populate all authors
+        // eslint-disable-next-line camelcase
+        found.cave.id_author = await CaverService.getCaver(
+          found.cave.id_author,
+          req,
+        ); // using id_author because of a bug in Sails ORM... See TCave() file for explaination
+        found.comments.map(
+          async (c) => (c.author = await CaverService.getCaver(c.author, req)),
+        );
+        found.locations.map(
+          async (l) => (l.author = await CaverService.getCaver(l.author, req)),
+        );
+        found.riggings.map(
+          async (r) => (r.author = await CaverService.getCaver(r.author, req)),
+        );
+
+        // Populate cave
         await CaveService.setEntrances([found.cave]);
         await NameService.setNames([found.cave], 'cave');
 
         // Populate stats
-        const statsPromise = CommentService.getStats(req.params.id);
-        statsPromise.then(async (stats) => {
-          found.stats = stats;
+        found.stats = await CommentService.getStats(req.params.id);
 
-          // Sensitive entrance special treatment
-          if (found.isSensitive) {
-            const hasCompleteViewRight = req.token
-              ? await sails.helpers.checkRight
-                  .with({
-                    groups: req.token.groups,
-                    rightEntity: RightService.RightEntities.ENTRANCE,
-                    rightAction: RightService.RightActions.VIEW_COMPLETE,
-                  })
-                  .intercept('rightNotFound', (err) => {
-                    return res.serverError(
-                      'A server error occured when checking your right to entirely view an entrance.',
-                    );
-                  })
-              : false;
+        // Sensitive entrance special treatment
+        if (found.isSensitive) {
+          const hasCompleteViewRight = req.token
+            ? await sails.helpers.checkRight
+                .with({
+                  groups: req.token.groups,
+                  rightEntity: RightService.RightEntities.ENTRANCE,
+                  rightAction: RightService.RightActions.VIEW_COMPLETE,
+                })
+                .intercept('rightNotFound', (err) => {
+                  return res.serverError(
+                    'A server error occured when checking your right to entirely view an entrance.',
+                  );
+                })
+            : false;
 
-            const hasLimitedViewRight = req.token
-              ? await sails.helpers.checkRight
-                  .with({
-                    groups: req.token.groups,
-                    rightEntity: RightService.RightEntities.ENTRANCE,
-                    rightAction: RightService.RightActions.VIEW_LIMITED,
-                  })
-                  .intercept('rightNotFound', (err) => {
-                    return res.serverError(
-                      'A server error occured when checking your right to have a limited view of a sensible entrance.',
-                    );
-                  })
-              : false;
-            if (!hasLimitedViewRight && !hasCompleteViewRight) {
-              return res.forbidden(
-                'You are not authorized to view this sensible entrance.',
-              );
-            }
-            if (!hasCompleteViewRight) {
-              delete found.locations;
-              delete found.longitude;
-              delete found.latitude;
-            }
+          const hasLimitedViewRight = req.token
+            ? await sails.helpers.checkRight
+                .with({
+                  groups: req.token.groups,
+                  rightEntity: RightService.RightEntities.ENTRANCE,
+                  rightAction: RightService.RightActions.VIEW_LIMITED,
+                })
+                .intercept('rightNotFound', (err) => {
+                  return res.serverError(
+                    'A server error occured when checking your right to have a limited view of a sensible entrance.',
+                  );
+                })
+            : false;
+          if (!hasLimitedViewRight && !hasCompleteViewRight) {
+            return res.forbidden(
+              'You are not authorized to view this sensible entrance.',
+            );
           }
-          return ControllerService.treatAndConvert(
-            req,
-            err,
-            found,
-            params,
-            res,
-            converter,
-          );
-        });
+          if (!hasCompleteViewRight) {
+            delete found.locations;
+            delete found.longitude;
+            delete found.latitude;
+          }
+        }
+        return ControllerService.treatAndConvert(
+          req,
+          err,
+          found,
+          params,
+          res,
+          converter,
+        );
       });
   },
 
