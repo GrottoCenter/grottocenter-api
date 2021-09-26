@@ -64,4 +64,55 @@ module.exports = {
     }
     return newCaver;
   },
+
+  /**
+   * @param {Integer} caverId
+   * @param {Object} req
+   * @param {Function} ormErrorHandler callback that is called whenever an error occured. Take an Error as parameter. See https://sailsjs.com/documentation/concepts/models-and-orm/errors for more information.
+   * @description Get a caver by his id and populate it according to the user rights (using req).
+   * @returns {Object}
+   */
+  getCaver: async (
+    caverId,
+    req,
+    ormErrorHandler = ErrorService.getDefaultOrmErrorHandler(),
+  ) => {
+    const caver = await TCaver.findOne(caverId)
+      .populate('documents')
+      .populate('grottos')
+      .populate('groups')
+      .intercept(ormErrorHandler);
+
+    if (!caver) return caver; // not found return
+
+    // Check complete view right
+    const hasCompleteViewRight = req.token
+      ? await sails.helpers.checkRight
+          .with({
+            groups: req.token.groups,
+            rightEntity: RightService.RightEntities.CAVER,
+            rightAction: RightService.RightActions.VIEW_COMPLETE,
+          })
+          .tolerate('rightNotFound', (error) => {
+            // Silently fail
+            sails.log.warn('Right Caver - view complete not found');
+            return false;
+          })
+      : false;
+
+    // Delete sensitive data
+    delete caver.activationCode;
+    delete caver.password;
+
+    if (hasCompleteViewRight) {
+      return caver;
+    } else {
+      return {
+        documents: caver.documents,
+        name: caver.name,
+        nickname: caver.nickname,
+        surname: caver.surname,
+      };
+    }
+  },
 };
