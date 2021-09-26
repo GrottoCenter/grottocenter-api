@@ -296,8 +296,8 @@ module.exports = {
     result.names = source.names;
     result.temperature = source.temperature;
 
-    if (source.author instanceof Object) {
-      result.author = MappingV1Service.convertToCaverModel(source.author);
+    if (source.id_author instanceof Object) {
+      result.author = MappingV1Service.convertToCaverModel(source.id_author);
     }
     if (source.reviewer instanceof Object) {
       result.reviewer = MappingV1Service.convertToCaverModel(source.reviewer);
