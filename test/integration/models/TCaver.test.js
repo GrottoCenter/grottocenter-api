@@ -1,5 +1,4 @@
 let should = require('should');
-let Barrels = require('barrels');
 
 /*describe('TCaverModel', function() {
 
