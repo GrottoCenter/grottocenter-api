@@ -21,12 +21,12 @@ module.exports = {
       unique: true,
     },
 
+    // deprecated attribute: mail is prefered for login
     login: {
       type: 'string',
       columnName: 'login',
       allowNull: true,
       maxLength: 20,
-      unique: true,
     },
 
     password: {
