@@ -1,14 +1,14 @@
 [
   {
-	"id": 1,
-	"login": "test",
-    "contact": "test@test.com",
-    "password": "098f6bcd4621d373cade4e832627b4f6"
+    "id": 1,
+    "login": "test",
+    "mail": "test@test.com",
+    "password": "d4baeedef5db4a9424b2c340323d2ee2c374cbd05196a7c108faf080a1dc4c26"
   },
   {
     "id": 2,
     "login": "test2",
-    "contact": "test2@test.com",
-    "password": "098f6bcd4621d373cade4e832627b4f6"
+    "mail": "test2@test.com",
+    "password": "d4baeedef5db4a9424b2c340323d2ee2c374cbd05196a7c108faf080a1dc4c26"
   }
 ]

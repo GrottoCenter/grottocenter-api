@@ -1,11 +1,10 @@
 let supertest = require('supertest');
 
-/*describe('AuthController', function() {
-
+describe('AuthController', function() {
   describe('Login missing', function() {
-    it('should return code 401', function (done) {
+    it('should return code 401', function(done) {
       supertest(sails.hooks.http.app)
-        .post('/api/auth/login')
+        .post('/api/v1/login')
         .send({ password: 'test' })
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json')
@@ -15,10 +14,10 @@ let supertest = require('supertest');
   });
 
   describe('Password missing', function() {
-    it('should return code 401', function (done) {
+    it('should return code 401', function(done) {
       supertest(sails.hooks.http.app)
-        .post('/api/auth/login')
-        .send({ contact: 'unknown@test.com' })
+        .post('/api/v1/login')
+        .send({ email: 'unknown@test.com' })
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json')
         .expect(401)
@@ -26,11 +25,11 @@ let supertest = require('supertest');
     });
   });
 
-  describe('Bad login', function() {
-    it('should return code 401', function (done) {
+  describe('Bad email', function() {
+    it('should return code 401', function(done) {
       supertest(sails.hooks.http.app)
-        .post('/api/auth/login')
-        .send({ contact: 'bad_login', password: 'test' })
+        .post('/api/v1/login')
+        .send({ email: 'bad_email', password: 'test' })
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json')
         .expect(401)
@@ -39,10 +38,10 @@ let supertest = require('supertest');
   });
 
   describe('Bad password', function() {
-    it('should return code 401', function (done) {
+    it('should return code 401', function(done) {
       supertest(sails.hooks.http.app)
-        .post('/api/auth/login')
-        .send({ contact: 'test@test.com', password: 'bad_password' })
+        .post('/api/v1/login')
+        .send({ email: 'test@test.com', password: 'bad_password' })
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json')
         .expect(401)
@@ -50,16 +49,15 @@ let supertest = require('supertest');
     });
   });
 
-  describe('Good credential', function() {
-    it('should return code 200', function (done) {
+  describe('Good credentials', function() {
+    it('should return code 200', function(done) {
       supertest(sails.hooks.http.app)
-        .post('/api/auth/login')
-        .send({ contact: 'test@test.com', password: 'test' })
+        .post('/api/v1/login')
+        .send({ email: 'test@test.com', password: 'testtest' })
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json')
         .expect(200)
         .end(done);
     });
   });
-
-});*/
+});
