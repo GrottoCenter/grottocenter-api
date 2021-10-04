@@ -484,6 +484,14 @@ module.exports = {
             data.nickname = item['_source'].nickname;
             data.mail = item['_source'].mail;
 
+          case 'language':
+            data.ref_name = item['_source'].ref_name; // eslint-disable-line camelcase
+            data.isPrefered = item['_source'].is_prefered;
+            data.part1 = item['_source'].part1;
+            data.part2b = item['_source'].part2b;
+            data.part2t = item['_source'].part2t;
+            data.scope = item['_source'].scope;
+
           default:
         }
         values.push(data);
