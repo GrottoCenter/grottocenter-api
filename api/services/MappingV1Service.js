@@ -342,8 +342,8 @@ module.exports = {
     // For each result of the research, convert the item and add it to the json to send
     source.hits.hits.forEach((item) => {
       let data = '';
-      // Convert the data according to its type
-      switch (item['_source'].type) {
+      // Convert the data according to its first tag
+      switch (item['_source'].tags[0]) {
         case 'entrance':
           data = MappingV1Service.convertToEntranceModel(item['_source']);
           break;
@@ -362,7 +362,7 @@ module.exports = {
         default:
       }
       // Add the type and hightlight of the data
-      data.type = item['_source'].type;
+      data.type = item['_source'].tags[0];
       data.highlights = item.highlight;
 
       values.push(data);
@@ -388,7 +388,7 @@ module.exports = {
           name: item['_source'].name
             ? item['_source'].name
             : item['_source']['title'], // Handle title for documents (instead of name)
-          type: item['_source'].type,
+          type: item['_source'].tags[0],
           highlights: item.highlight,
         };
 
@@ -408,7 +408,7 @@ module.exports = {
         //   });
         // };
 
-        switch (item['_source'].type) {
+        switch (item['_source'].tags[0]) {
           case 'entrance':
             data.cave = {
               id: item['_source'].id_cave,
