@@ -60,19 +60,23 @@ module.exports = {
           }).usingConnection(db);
         }
 
-        await TDescription.create({
-          author: dataLangDesc.author,
-          body: dataLangDesc.description,
-          dateInscription: ramda.propOr(
-            new Date(),
-            'dateInscription',
-            dataLangDesc,
-          ),
-          dateReviewed: ramda.propOr(undefined, 'dateReviewed', dataLangDesc),
-          document: documentCreated.id,
-          language: dataLangDesc.titleAndDescriptionLanguage.id,
-          title: dataLangDesc.title,
-        }).usingConnection(db);
+        try {
+          await TDescription.create({
+            author: dataLangDesc.author,
+            body: dataLangDesc.description,
+            dateInscription: ramda.propOr(
+              new Date(),
+              'dateInscription',
+              dataLangDesc,
+            ),
+            dateReviewed: ramda.propOr(undefined, 'dateReviewed', dataLangDesc),
+            document: documentCreated.id,
+            language: dataLangDesc.titleAndDescriptionLanguage.id,
+            title: dataLangDesc.title,
+          }).usingConnection(db);
+        } catch (e) {
+          sails.log.error(e);
+        }
 
         return documentCreated;
       })
