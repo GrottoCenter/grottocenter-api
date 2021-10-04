@@ -3,7 +3,7 @@
 
 const client = require('../../config/elasticsearch').elasticsearchCli;
 
-const indexNames = [
+const INDEX_NAMES = [
   'grottos',
   'massifs',
   'entrances',
@@ -11,8 +11,9 @@ const indexNames = [
   'cavers',
   'document-collections',
   'document-issues',
+  'languages',
 ];
-const advancedSearchMetaParams = [
+const SEARCH_META_PARAMS = [
   'resourceType',
   'complete',
   'matchAllFields',
@@ -34,7 +35,7 @@ const self = (module.exports = {
   /**
    * Delete a resource indexed by Elasticsearch. No check performed on the parameters given.
    * The action is asynchronous and if an error occurs, it will simply logged.
-   * @param {string} indexName  An Elasticsearch index (@see ElasticsearchService indexNames)
+   * @param {string} indexName  An Elasticsearch index (@see INDEX_NAMES)
    * @param {string} resourceId The id of the resource to delete.
    */
   deleteResource: (indexName, resourceId) => {
@@ -124,6 +125,9 @@ const self = (module.exports = {
                   'surname^4',
                   'nickname^3',
                   'mail^5',
+
+                  // ==== Languages
+                  'ref_name^2',
                 ],
               },
             },
@@ -148,7 +152,7 @@ const self = (module.exports = {
 
   /**
    * Retrieve data from elasticsearch on all index according to the given params.
-   * The results must match all the params in the url which are not metaParams (@see advancedSearchMetaParams).
+   * The results must match all the params in the url which are not metaParams (@see SEARCH_META_PARAMS).
    * Each value can be prefix or suffix.
    *
    * For more info, see ES 6.5 documentation:
@@ -171,7 +175,7 @@ const self = (module.exports = {
       // ==== Construct the params
       Object.keys(params).forEach((key) => {
         // Meta params ?
-        if (!advancedSearchMetaParams.includes(key)) {
+        if (!SEARCH_META_PARAMS.includes(key)) {
           // min / max (range) param ? boolean param ? field param ?
           const isMinParam = key.split('-min').length > 1;
           const isMaxParam = key.split('-max').length > 1;
