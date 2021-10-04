@@ -1756,7 +1756,7 @@ paths:
     post:
       tags:
       - search
-      description: Search for resources (cavers, documents, document collections, entrances, massifs & organizations). Case insensitive. Search over a lots of resource properties (not only name).
+      description: Search for resources (cavers, documents, document collections, entrances, languages, massifs & organizations). Case insensitive. Search over a lots of resource properties (not only name).
       requestBody:
         content:
           application/json:
@@ -2879,6 +2879,7 @@ components:
         - document-issues
         - entrances
         - grottos
+        - languages
         - massifs
 
     Region:
@@ -2960,6 +2961,7 @@ components:
         - document-issues
         - entrances
         - grottos
+        - languages
         - massifs
         
     Import-csv:
@@ -2981,7 +2983,3 @@ components:
           type: string
         'dct:creator':
           type: string
-        
-        
-        
-        
