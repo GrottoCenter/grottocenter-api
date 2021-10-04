@@ -124,7 +124,6 @@ module.exports = {
     try {
       esClient.create({
         index: `cavers-index`,
-        type: 'data',
         id: newCaver.id,
         body: {
           id: newCaver.id,

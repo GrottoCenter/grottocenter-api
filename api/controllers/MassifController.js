@@ -185,7 +185,6 @@ module.exports = {
     try {
       esClient.create({
         index: `massifs-index`,
-        type: 'data',
         id: newMassifPopulated.id,
         body: {
           ...newMassifESData,

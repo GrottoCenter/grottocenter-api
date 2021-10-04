@@ -171,7 +171,6 @@ module.exports = {
     try {
       esClient.create({
         index: `entrances-index`,
-        type: 'data',
         id: newEntrancePopulated.id,
         body: {
           ...newEntranceESData,

@@ -45,7 +45,6 @@ module.exports = {
     try {
       esClient.create({
         index: `grottos-index`,
-        type: 'data',
         id: newOrganizationPopulated.id,
         body: {
           ...newOrganizationESData,

@@ -43,7 +43,6 @@ const self = (module.exports = {
       client.delete({
         // Asynchronous operation
         index: indexName + '-index',
-        type: 'data',
         id: resourceId,
       });
     } catch (error) {
