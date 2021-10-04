@@ -392,8 +392,12 @@ module.exports = {
           highlights: item.highlight,
         };
 
-        data.longitude = parseFloat(item['_source'].longitude);
-        data.latitude = parseFloat(item['_source'].latitude);
+        if (item['_source'].longitude) {
+          data.longitude = parseFloat(item['_source'].longitude);
+        }
+        if (item['_source'].latitude) {
+          data.latitude = parseFloat(item['_source'].latitude);
+        }
 
         // 08/2020 - C. ROIG - Not needed at the moment but keep in case
         // const replacementKeys = {};
