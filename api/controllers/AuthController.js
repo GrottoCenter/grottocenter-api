@@ -124,16 +124,15 @@ module.exports = {
     try {
       esClient.create({
         index: `cavers-index`,
-        type: 'data',
         id: newCaver.id,
         body: {
+          tags: ['caver'],
           id: newCaver.id,
           groups: String(userGroup.id),
           mail: newCaver.mail,
           name: newCaver.name,
           nickname: newCaver.nickname,
           surname: newCaver.surname,
-          type: 'caver',
         },
       });
     } catch (error) {

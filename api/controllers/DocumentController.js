@@ -111,11 +111,10 @@ const addDocumentToElasticSearchIndexes = (document) => {
   esClient.create(
     {
       index: 'documents-index',
-      type: 'data',
       id: document.id,
       body: {
         ...esBody,
-        type: 'document',
+        tags: ['document'],
       },
     },
     (error) => {
@@ -136,11 +135,10 @@ const addDocumentToElasticSearchIndexes = (document) => {
     esClient.create(
       {
         index: additionalIndex,
-        type: 'data',
         id: document.id,
         body: {
           ...esBody,
-          type: `document-${document.type.name.toLowerCase()}`,
+          tags: [`document-${document.type.name.toLowerCase()}`],
         },
       },
       (error) => {

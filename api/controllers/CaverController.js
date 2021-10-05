@@ -290,7 +290,6 @@ module.exports = {
       .then(() => {
         esClient.update({
           index: `cavers-index`,
-          type: 'data',
           id: req.param('caverId'),
           body: {
             doc: {

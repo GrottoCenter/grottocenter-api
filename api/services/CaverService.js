@@ -47,7 +47,6 @@ module.exports = {
     try {
       esClient.create({
         index: `cavers-index`,
-        type: 'data',
         id: newCaver.id,
         body: {
           id: newCaver.id,
@@ -56,7 +55,7 @@ module.exports = {
           name: newCaver.name,
           nickname: newCaver.nickname,
           surname: newCaver.surname,
-          type: 'caver',
+          tags: ['caver'],
         },
       });
     } catch (error) {

@@ -45,7 +45,6 @@ module.exports = {
     try {
       esClient.create({
         index: `grottos-index`,
-        type: 'data',
         id: newOrganizationPopulated.id,
         body: {
           ...newOrganizationESData,
@@ -62,7 +61,7 @@ module.exports = {
           name: names[0].name, // There is only one name right after the creation
           names: names.map((n) => n.name).join(', '),
           'nb cavers': 0,
-          type: 'grotto',
+          tags: ['grotto'],
         },
       });
     } catch (error) {

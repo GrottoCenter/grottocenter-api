@@ -171,21 +171,20 @@ module.exports = {
     try {
       esClient.create({
         index: `entrances-index`,
-        type: 'data',
         id: newEntrancePopulated.id,
         body: {
           ...newEntranceESData,
-          name: newEntrancePopulated.name,
-          names: newEntrancePopulated.names.map((n) => n.name).join(', '),
-          descriptions: [description],
-          type: 'entrance',
           'cave name': newEntrancePopulated.cave.name,
           'cave length': newEntrancePopulated.cave.length,
           'cave depth': newEntrancePopulated.cave.depth,
           'cave is diving': newEntrancePopulated.cave.isDiving,
-          'massif name': newEntrancePopulated.cave.massif.name,
           country: newEntrancePopulated.country.nativeName,
           'country code': newEntrancePopulated.country.iso3,
+          descriptions: [description],
+          'massif name': newEntrancePopulated.cave.massif.name,
+          name: newEntrancePopulated.name,
+          names: newEntrancePopulated.names.map((n) => n.name).join(', '),
+          tags: ['entrance'],
         },
       });
     } catch (error) {
