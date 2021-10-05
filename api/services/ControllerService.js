@@ -1,8 +1,6 @@
 /**
  */
 
-const ElasticSearch = require('./ElasticsearchService');
-
 module.exports = {
   treat: (req, err, found, parameters, res) => {
     if (err) {

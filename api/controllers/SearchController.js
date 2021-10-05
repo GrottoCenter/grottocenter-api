@@ -1,8 +1,6 @@
 /**
  */
 
-const ElasticSearch = require('../services/ElasticsearchService');
-
 const indexNames = [
   'massifs',
   'entrances',
@@ -49,8 +47,7 @@ module.exports = {
       resourceTypes: req.param('resourceTypes'),
     };
 
-    // Use the Elasticsearch Service to do the search according to the parameters of the URL
-    return ElasticSearch.searchQuery(searchParams)
+    return ElasticsearchService.searchQuery(searchParams)
       .then((results) => {
         if (complete) {
           return ControllerService.treatAndConvert(
@@ -115,8 +112,7 @@ module.exports = {
 
     const params = {};
 
-    // Use the Elasticsearch Service to do the search according to the parameters of the URL
-    return ElasticSearch.advancedSearchQuery(paramsURL)
+    return ElasticsearchService.advancedSearchQuery(paramsURL)
       .then((results) => {
         if (complete) {
           return ControllerService.treatAndConvert(
