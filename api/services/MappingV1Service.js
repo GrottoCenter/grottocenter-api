@@ -608,12 +608,6 @@ module.exports = {
     result.entrance = source.entrance;
     result.files = source.files;
     result.identifier = source.identifier;
-    result.identifierType = {
-      ...source.identifierType,
-      id: ramda.pipe(ramda.pathOr(undefined, ['identifierType', 'id']), (id) =>
-        id ? id.trim() : id,
-      )(source),
-    };
     result.isValidated = source.isValidated;
     result.languages = source.languages;
     result.license = source.license;
@@ -650,6 +644,20 @@ module.exports = {
       });
     }
 
+    // Convert identifier type
+    if (source.identifierType instanceof Object) {
+      result.identifierType = {
+        ...source.identifierType,
+        id: ramda.pipe(
+          ramda.pathOr(undefined, ['identifierType', 'id']),
+          (id) => (id ? id.trim() : id),
+        )(source),
+      };
+    } else {
+      result.identifierType = source.identifierType;
+    }
+
+    // Convert authors
     if (source.authors instanceof Array) {
       result.authors = MappingV1Service.convertToCaverList(
         source.authors,
@@ -688,7 +696,7 @@ module.exports = {
       }
     }
 
-    // Build subjects
+    // Convert subjects
     if (source.subjects instanceof Array) {
       result.subjects = MappingV1Service.convertToSubjectList(
         source.subjects,
@@ -704,7 +712,7 @@ module.exports = {
         : null;
     }
 
-    // Build library
+    // Convert library
     if (source['library id']) {
       // ES
       result.library = {
@@ -715,7 +723,7 @@ module.exports = {
       result.library = source.library;
     }
 
-    // Build editor
+    // Convert editor
     if (source['editor id']) {
       // ES
       result.editor = {
@@ -726,7 +734,7 @@ module.exports = {
       result.editor = source.editor;
     }
 
-    // Build type
+    // Convert type
     if (source['type id']) {
       // ES
       result.type = {
