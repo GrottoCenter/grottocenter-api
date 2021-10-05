@@ -619,17 +619,14 @@ module.exports = {
               });
             }
 
-            await Promise.all(
-              await found.map(async (doc) => {
-                await NameService.setNames(
-                  [
-                    ...(doc.library ? [doc.library] : []),
-                    ...(doc.editor ? [doc.editor] : []),
-                  ],
-                  'grotto',
-                );
-              }),
+            found.mainLanguage = await DocumentService.getMainLanguage(
+              found.id,
             );
+            await setNamesOfPopulatedDocument(found);
+            found.children &&
+              found.children.map(async (childDoc) => {
+                await DescriptionService.setDocumentDescriptions(childDoc);
+              });
 
             const params = {
               controllerMethod: 'DocumentController.findAll',
@@ -676,6 +673,7 @@ module.exports = {
       .populate('author')
       .populate('authors')
       .populate('cave')
+      .populate('children')
       .populate('descriptions')
       .populate('editor')
       .populate('entrance')
@@ -705,17 +703,14 @@ module.exports = {
               });
             }
 
-            await Promise.all(
-              await found.map(async (doc) => {
-                await NameService.setNames(
-                  [
-                    ...(doc.library ? [doc.library] : []),
-                    ...(doc.editor ? [doc.editor] : []),
-                  ],
-                  'grotto',
-                );
-              }),
+            found.mainLanguage = await DocumentService.getMainLanguage(
+              found.id,
             );
+            await setNamesOfPopulatedDocument(found);
+            found.children &&
+              found.children.map(async (childDoc) => {
+                await DescriptionService.setDocumentDescriptions(childDoc);
+              });
 
             const params = {
               controllerMethod: 'DocumentController.findByCaverId',
@@ -847,6 +842,7 @@ module.exports = {
         .populate('author')
         .populate('authors')
         .populate('cave')
+        .populate('children')
         .populate('descriptions')
         .populate('editor')
         .populate('entrance')
@@ -863,6 +859,10 @@ module.exports = {
         .populate('type');
       found.mainLanguage = await DocumentService.getMainLanguage(found.id);
       await setNamesOfPopulatedDocument(found);
+      found.children &&
+        found.children.map(async (childDoc) => {
+          await DescriptionService.setDocumentDescriptions(childDoc);
+        });
     }
 
     const params = {
