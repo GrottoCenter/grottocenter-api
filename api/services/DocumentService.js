@@ -12,6 +12,22 @@ const oldTopoFilesUrl = 'https://www.grottocenter.org/upload/topos/';
 const ramda = require('ramda');
 
 module.exports = {
+  deepPopulateChildren: async (doc) => {
+    doc = await TDocument.findOne(doc.id)
+      .populate('children')
+      .populate('descriptions');
+    await DescriptionService.setDocumentDescriptions(doc);
+    if (doc.children.length > 0) {
+      doc.children = await Promise.all(
+        doc.children.map(
+          async (childDoc) =>
+            await DocumentService.deepPopulateChildren(childDoc),
+        ),
+      );
+    }
+    return doc;
+  },
+
   /**
    * @returns {Promise} which resolves to the succesfully findRandom
    */
