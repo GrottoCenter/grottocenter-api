@@ -158,6 +158,11 @@ module.exports = {
       model: 'TDocument',
     },
 
+    children: {
+      collection: 'TDocument',
+      via: 'parent',
+    },
+
     license: {
       allowNull: false,
       columnName: 'id_license',

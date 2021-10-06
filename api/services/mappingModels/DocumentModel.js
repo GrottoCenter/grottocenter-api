@@ -6,6 +6,7 @@ module.exports = {
   author: undefined,
   authorComment: undefined,
   cave: undefined,
+  children: [],
   dateInscription: undefined,
   datePublication: undefined,
   dateValidation: undefined,

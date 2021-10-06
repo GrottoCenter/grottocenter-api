@@ -658,12 +658,21 @@ module.exports = {
       result.authors = source.authors;
     }
 
+    // Convert children document
+    if (source.children instanceof Array) {
+      result.children = MappingV1Service.convertToDocumentList(
+        source.children,
+      ).documents;
+    } else {
+      result.children = source.children;
+    }
+
     // TODO: handle publication (old bbs & parent)
     result.publication = source.publication_other_bbs_old
       ? source.publication_other_bbs_old
       : source.publicationOtherBBSOld;
 
-    // Build regions
+    // Convert regions
     if (source.regions) {
       if (source.regions instanceof Array) {
         result.regions = source.regions;
