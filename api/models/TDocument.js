@@ -66,6 +66,12 @@ module.exports = {
       defaultsTo: false,
     },
 
+    issue: {
+      type: 'string',
+      allowNull: true,
+      maxLength: 100,
+    },
+
     validationComment: {
       type: 'string',
       allowNull: true,

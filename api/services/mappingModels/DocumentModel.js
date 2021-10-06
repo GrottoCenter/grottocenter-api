@@ -16,6 +16,7 @@ module.exports = {
   files: [],
   identifier: undefined,
   identifierType: undefined,
+  issue: undefined,
   isValidated: undefined,
   languages: [],
   library: undefined,

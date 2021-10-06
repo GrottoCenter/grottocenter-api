@@ -608,6 +608,7 @@ module.exports = {
     result.entrance = source.entrance;
     result.files = source.files;
     result.identifier = source.identifier;
+    result.issue = source.issue;
     result.isValidated = source.isValidated;
     result.languages = source.languages;
     result.license = source.license;
