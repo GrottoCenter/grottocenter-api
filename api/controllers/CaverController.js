@@ -50,6 +50,7 @@ module.exports = {
           hasCompleteViewRight
             ? caverFound
             : {
+                id: caverFound.id,
                 documents: caverFound.documents,
                 name: caverFound.name,
                 nickname: caverFound.nickname,
