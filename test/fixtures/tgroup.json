@@ -1,0 +1,22 @@
+[
+  {
+    "name": "Administrator",
+    "comments": "Technical responsible of the application."
+  },
+  {
+    "name": "Moderator",
+    "comments": "Content reviewers."
+  },
+  {
+    "name": "User",
+    "comments": "Default users group"
+  },
+  {
+    "name": "Visitor",
+    "comments": "Non connected people"
+  },
+  {
+    "name": "Leader",
+    "comments": "Contributors can refer to those people for any questions."
+  }
+]
