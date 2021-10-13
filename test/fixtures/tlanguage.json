@@ -1,0 +1,20 @@
+[
+  {
+    "id": "fra",
+    "part2b": "fre",
+    "part2t": "fra",
+    "part1": "fr",
+    "scope": "I",
+    "type": "L",
+    "refName": "French"
+  },
+  {
+    "id": "eng",
+    "part2b": "eng",
+    "part2t": "eng",
+    "part1": "en",
+    "scope": "I",
+    "type": "L",
+    "refName": "English"
+  }
+]

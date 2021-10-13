@@ -1,0 +1,55 @@
+[
+  {
+    "_comment0": "// ======================================= //",
+    "_comment1": "// ========== ORGANIZATION NAMES ========== //",
+    "_comment2": "// Name ids to use: 1, 2 //",
+    "_comment3": "// ======================================= //",
+    "idAuthor": 1,
+    "idReviewer": 2,
+    "dateInscription": "2008-05-28 14:47:44",
+    "dateReviewed": "2008-06-28 14:47:45",
+    "name": "Organization 1",
+    "isMain": true,
+    "language": "fra"
+  },
+  {
+    "idAuthor": 1,
+    "idReviewer": 2,
+    "dateInscription": "2009-05-28 14:47:44",
+    "dateReviewed": "2009-06-28 14:47:45",
+    "name": "Organization 2",
+    "isMain": true,
+    "language": "fra"
+  },
+  {
+    "_comment0": "// =================================== //",
+    "_comment1": "// ========== DOCUMENT NAMES ========== //",
+    "_comment2": "// Name ids to use: 3, 4 //",
+    "_comment3": "// =================================== //",
+    "idAuthor": 1,
+    "idReviewer": 2,
+    "dateInscription": "2007-05-28 14:47:44",
+    "dateReviewed": "2007-06-22 14:47:45",
+    "name": "Spelunca",
+    "isMain": true,
+    "language": "fra"
+  }, 
+  {
+    "idAuthor": 1,
+    "idReviewer": 2,
+    "dateInscription": "2008-05-28 14:47:44",
+    "dateReviewed": "2009-06-22 14:47:45",
+    "name": "Spelunca n°1",
+    "isMain": true,
+    "language": "fra"
+  }, 
+  {
+    "idAuthor": 2,
+    "idReviewer": 1,
+    "dateInscription": "2016-05-28 14:47:44",
+    "dateReviewed": "2017-06-22 14:47:45",
+    "name": "Spelunca n°2",
+    "isMain": true,
+    "language": "fra"
+  }
+]

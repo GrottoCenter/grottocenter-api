@@ -1,0 +1,170 @@
+[
+  {
+    "name": "Application - view any"
+  },
+  {
+    "name": "Application - edit any"
+  },
+  {
+    "name": "Application - delete any"
+  },
+  {
+    "name": "Document - view any"
+  },
+  {
+    "name": "Document - edit any"
+  },
+  {
+    "name": "Document - delete any"
+  },
+  {
+    "name": "Cave - view any"
+  },
+  {
+    "name": "Cave - edit any"
+  },
+  {
+    "name": "Cave - delete any"
+  },
+  {
+    "name": "Caver - view any"
+  },
+  {
+    "name": "Caver - edit any"
+  },
+  {
+    "name": "Caver - delete any"
+  },
+  {
+    "name": "Entrance - view complete"
+  },
+  {
+    "name": "Caver - view complete"
+  },
+  {
+    "name": "Entrance - view any"
+  },
+  {
+    "name": "Entrance - edit any"
+  },
+  {
+    "name": "Entrance - delete any"
+  },
+  {
+    "name": "Organization - view any"
+  },
+  {
+    "name": "Organization - edit any"
+  },
+  {
+    "name": "Organization - delete any"
+  },
+  {
+    "name": "Group - view any"
+  },
+  {
+    "name": "Group - edit any"
+  },
+  {
+    "name": "Group - delete any"
+  },
+  {
+    "name": "Massif - view any"
+  },
+  {
+    "name": "Massif - edit any"
+  },
+  {
+    "name": "Massif - delete any"
+  },
+  {
+    "name": "Right - view any"
+  },
+  {
+    "name": "Right - edit any"
+  },
+  {
+    "name": "Right - delete any"
+  },
+  {
+    "name": "Caver - edit own"
+  },
+  {
+    "name": "Caver - delete own"
+  },
+  {
+    "name": "File - view any"
+  },
+  {
+    "name": "File - edit any"
+  },
+  {
+    "name": "File - delete any"
+  },
+  {
+    "name": "File - create"
+  },
+  {
+    "name": "Document - create"
+  },
+  {
+    "name": "Cave - create"
+  },
+  {
+    "name": "Caver - create"
+  },
+  {
+    "name": "Entrance - create"
+  },
+  {
+    "name": "Organization - create"
+  },
+  {
+    "name": "Group - create"
+  },
+  {
+    "name": "Massif - create"
+  },
+  {
+    "name": "Right - create"
+  },
+  {
+    "name": "Entrance - view limited"
+  },
+  {
+    "name": "Application - merge duplicates"
+  },
+  {
+    "name": "Entrance - link resource"
+  },
+  {
+    "name": "Entrance - unlink resource"
+  },
+  {
+    "name": "Cave - link resource"
+  },
+  {
+    "name": "Cave - unlink resource"
+  },
+  {
+    "name": "Description - edit any"
+  },
+  {
+    "name": "Name - edit any"
+  },
+  {
+    "name": "Description - create"
+  },
+  {
+    "name": "Location - edit any"
+  },
+  {
+    "name": "Location - create"
+  },
+  {
+    "name": "Application - no request limit"
+  },
+  {
+    "name": "Document - edit not validated"
+  }
+]
