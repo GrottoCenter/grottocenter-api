@@ -44,8 +44,8 @@ module.exports = {
       .fetch()
       .intercept(errorHandler);
 
-    try {
-      esClient.create({
+    esClient.create(
+      {
         index: `cavers-index`,
         id: newCaver.id,
         body: {
@@ -57,11 +57,11 @@ module.exports = {
           surname: newCaver.surname,
           tags: ['caver'],
         },
-      });
-    } catch (error) {
-      sails.log.error(error);
-    }
-    return newCaver;
+      },
+      (error) => {
+        error && sails.log.error(error);
+      },
+    );
   },
 
   /**

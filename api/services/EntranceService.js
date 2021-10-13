@@ -168,8 +168,8 @@ module.exports = {
     await NameService.setNames([newEntrancePopulated.cave.massif], 'massif');
 
     const { cave, name, names, ...newEntranceESData } = newEntrancePopulated;
-    try {
-      esClient.create({
+    esClient.create(
+      {
         index: `entrances-index`,
         id: newEntrancePopulated.id,
         body: {
@@ -186,10 +186,11 @@ module.exports = {
           names: newEntrancePopulated.names.map((n) => n.name).join(', '),
           tags: ['entrance'],
         },
-      });
-    } catch (error) {
-      sails.log.error(error);
-    }
+      },
+      (error) => {
+        error && sails.log.error(error);
+      },
+    );
 
     return newEntrancePopulated;
   },

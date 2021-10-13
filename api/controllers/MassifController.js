@@ -182,8 +182,8 @@ module.exports = {
 
     // Format data
     const { cave, name, names, ...newMassifESData } = newMassifPopulated;
-    try {
-      esClient.create({
+    esClient.create(
+      {
         index: `massifs-index`,
         id: newMassifPopulated.id,
         body: {
@@ -198,10 +198,11 @@ module.exports = {
           descriptions: [description],
           tags: ['massif'],
         },
-      });
-    } catch (error) {
-      sails.log.error(error);
-    }
+      },
+      (error) => {
+        error && sails.log.error(error);
+      },
+    );
 
     const params = {};
     params.controllerMethod = 'MassifController.create';
