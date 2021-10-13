@@ -42,8 +42,8 @@ module.exports = {
       ...newOrganizationESData
     } = newOrganizationPopulated;
 
-    try {
-      esClient.create({
+    esClient.create(
+      {
         index: `grottos-index`,
         id: newOrganizationPopulated.id,
         body: {
@@ -63,10 +63,12 @@ module.exports = {
           'nb cavers': 0,
           tags: ['grotto'],
         },
-      });
-    } catch (error) {
-      sails.log.error(error);
-    }
+      },
+      (error) => {
+        error && sails.log.error(error);
+      },
+    );
+
     return newOrganizationPopulated;
   },
 };
