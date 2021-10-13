@@ -1,22 +1,29 @@
 [
   {
     "name": "Administrator",
-    "comments": "Technical responsible of the application."
+    "comments": "Technical responsible of the application.",
+    "rights": []
   },
   {
     "name": "Moderator",
-    "comments": "Content reviewers."
+    "comments": "Content reviewers.",
+    "rights": []
   },
   {
     "name": "User",
-    "comments": "Default users group"
+    "comments": "Default users group",
+    "rights": [
+      36
+    ]
   },
   {
     "name": "Visitor",
-    "comments": "Non connected people"
+    "comments": "Non connected people",
+    "rights": []
   },
   {
     "name": "Leader",
-    "comments": "Contributors can refer to those people for any questions."
+    "comments": "Contributors can refer to those people for any questions.",
+    "rights": []
   }
 ]
