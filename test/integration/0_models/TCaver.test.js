@@ -21,7 +21,7 @@ describe('TCaverModel', () => {
 
   describe('ORM -> find by good login', () => {
     it('should check find function', (done) => {
-      TCaver.find({ login: 'test2' })
+      TCaver.find({ login: 'admin1' })
         .then(function(results) {
           results.length.should.be.equal(1);
           done();
