@@ -3,9 +3,9 @@ const Fixted = require('fixted');
 const fixted = new Fixted();
 const fixtures = fixted.data;
 
-describe('TCaverModel', function() {
-  describe('ORM -> find all', function() {
-    it('should check find all function', function(done) {
+describe('TCaverModel', () => {
+  describe('ORM -> find all', () => {
+    it('should check find all function', (done) => {
       TCaver.find()
         .then(function(results) {
           this.should.equal(
@@ -19,8 +19,8 @@ describe('TCaverModel', function() {
     });
   });
 
-  describe('ORM -> find by good login', function() {
-    it('should check find function', function(done) {
+  describe('ORM -> find by good login', () => {
+    it('should check find function', (done) => {
       TCaver.find({ login: 'test2' })
         .then(function(results) {
           results.length.should.be.equal(1);
@@ -30,8 +30,8 @@ describe('TCaverModel', function() {
     });
   });
 
-  describe('ORM -> find by bad login', function() {
-    it('should check find function', function(done) {
+  describe('ORM -> find by bad login', () => {
+    it('should check find function', (done) => {
       TCaver.find({ login: 'bad_login' })
         .then(function(results) {
           results.length.should.be.equal(0);
