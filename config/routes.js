@@ -71,18 +71,6 @@ module.exports.routes = {
   },
 
   /* For ReactRouter routes */
-  'GET /auth/*': {
-    view: 'grottocenter',
-  },
-
-  'GET /auth/signin': {
-    view: 'grottocenter',
-  },
-
-  'GET /auth/signup': {
-    view: 'grottocenter',
-  },
-
   'GET /ui/swagger/': {
     csrf: false,
   },
