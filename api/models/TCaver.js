@@ -185,17 +185,4 @@ module.exports = {
     // values.password = hash;
     next();
   },
-
-  comparePassword: (password, user, next) => {
-    const hash = crypto
-      .createHash('md5')
-      .update(password)
-      .digest('hex');
-
-    if (hash === user.password) {
-      next(null, true);
-    } else {
-      next(null, false);
-    }
-  },
 };
