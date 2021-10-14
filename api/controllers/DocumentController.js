@@ -104,56 +104,34 @@ const getEsBody = (document) => {
  * Based on the logstash.conf file.
  * The document must be fully populated and with all its names set (@see setNamesOfPopulatedDocument).
  */
-const addDocumentToElasticSearchIndexes = (document) => {
+const addDocumentToElasticSearchIndexes = async (document) => {
   // const { type, ...documentWithoutType } = document; // "type" property is already used by ES, don't spread it.
   const esBody = getEsBody(document);
-  // Create in documents-index
-  esClient.create(
-    {
-      index: 'documents-index',
-      id: document.id,
-      body: {
-        ...esBody,
-        tags: ['document'],
-      },
-    },
-    (error) => {
-      if (error) {
-        sails.log.error(error);
-      }
-    },
-  );
+
+  await ElasticsearchService.create('documents', document.id, {
+    ...esBody,
+    tags: ['document'],
+  });
 
   // Create in document-collections-index or document-issues-index
   const additionalIndex =
     document.type.name === 'Issue'
-      ? 'document-issues-index'
+      ? 'document-issues'
       : document.type.name === 'Collection'
-      ? 'document-collections-index'
+      ? 'document-collections'
       : '';
   if (additionalIndex !== '') {
-    esClient.create(
-      {
-        index: additionalIndex,
-        id: document.id,
-        body: {
-          ...esBody,
-          tags: [`document-${document.type.name.toLowerCase()}`],
-        },
-      },
-      (error) => {
-        if (error) {
-          sails.log.error(error);
-        }
-      },
-    );
+    await ElasticsearchService.create(additionalIndex, document.id, {
+      ...esBody,
+      tags: [`document-${document.type.name.toLowerCase()}`],
+    });
   }
 };
 
 //TO DO: proper update
-const updateDocumentInElasticSearchIndexes = (document) => {
-  ElasticsearchService.deleteResource('documents', document.id);
-  addDocumentToElasticSearchIndexes(document);
+const updateDocumentInElasticSearchIndexes = async (document) => {
+  await ElasticsearchService.deleteResource('documents', document.id);
+  await addDocumentToElasticSearchIndexes(document);
 };
 /* _______________________________________
 

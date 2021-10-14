@@ -37,9 +37,9 @@ const self = (module.exports = {
    * @param {string} indexName  An Elasticsearch index (@see ElasticsearchService indexNames)
    * @param {string} resourceId The id of the resource to delete.
    */
-  deleteResource: (indexName, resourceId) => {
+  deleteResource: async (indexName, resourceId) => {
     try {
-      client.delete({
+      await client.delete({
         // Asynchronous operation
         index: indexName + '-index',
         id: resourceId,
@@ -276,6 +276,33 @@ const self = (module.exports = {
   },
 
   /**
+   * Custom GC wrapper for the Elasticsearch client create method to make it fail silently if needed.
+   * Check if the connection is alive before creating the document in ES. If it's not, return false.
+   * If the creation fails, log the error and return false.
+   *
+   * @param {String} indexName
+   * @param {number} id data id (must be unique)
+   * @param {Object} body data to index, including the tags value
+   * @returns
+   */
+  create: async (indexName, id, body) => {
+    if (!(await self.isConnectionAlive())) {
+      return false;
+    }
+    try {
+      await client.create({
+        index: `${indexName}-index`,
+        id: id,
+        body: body,
+      });
+    } catch (error) {
+      sails.log.error(error);
+      return false;
+    }
+    return true;
+  },
+
+  /**
    * Replace all special characters from a source string by a space.
    * @param {*} sourceString
    */
@@ -287,5 +314,18 @@ const self = (module.exports = {
         ? sourceString.slice(0, -1)
         : sourceString;
     return sourceString;
+  },
+
+  isConnectionAlive: async () => {
+    try {
+      await client.ping({
+        requestTimeout: 1000, // ping usually has a 3000ms timeout
+      });
+    } catch (error) {
+      sails.log.error(error);
+      client.close();
+      return false;
+    }
+    return true;
   },
 });
