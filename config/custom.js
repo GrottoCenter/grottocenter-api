@@ -87,4 +87,6 @@ module.exports.custom = {
    *                                                                          *
    ***************************************************************************/
   // …
+
+  clientBaseURL: process.env.CLIENT_BASE_URL || 'localhost:3000',
 };

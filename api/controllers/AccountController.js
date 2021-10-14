@@ -9,7 +9,7 @@ const jwt = require('jsonwebtoken');
 const { createHashedPassword, tokenSalt } = AuthService;
 
 const PASSWORD_MIN_LENGTH = 8;
-const RESET_PASSWORD_LINK = `${sails.config.custom.baseUrl}/ui/changePassword?token=`;
+const RESET_PASSWORD_LINK = `${sails.config.custom.clientBaseURL}/ui/changePassword?token=`;
 
 const getResetPasswordTokenSalt = (user) => {
   return user.password + user.id + user.dateInscription + tokenSalt;

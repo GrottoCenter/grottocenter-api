@@ -9,6 +9,6 @@ module.exports.swagger = {
 };
 
 function getSwaggerUrl(req, res) {
-  res.set(sails.config.appUrl + '/swagger/');
+  res.set(sails.config.clientBaseURL + '/swagger/');
   res.end();
 }
