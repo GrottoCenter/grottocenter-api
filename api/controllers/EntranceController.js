@@ -393,6 +393,9 @@ module.exports = {
         // Populate stats
         found.stats = await CommentService.getStats(req.params.id);
 
+        // Format rigging obstacle
+        await RiggingService.formatRiggings(found.riggings);
+
         // Sensitive entrance special treatment
         if (found.isSensitive) {
           const hasCompleteViewRight = req.token
