@@ -182,27 +182,18 @@ module.exports = {
 
     // Format data
     const { cave, name, names, ...newMassifESData } = newMassifPopulated;
-    esClient.create(
-      {
-        index: `massifs-index`,
-        id: newMassifPopulated.id,
-        body: {
-          ...newMassifESData,
-          name: newMassifPopulated.names[0].name, // There is only one name at the creation time
-          names: newMassifPopulated.names.map((n) => n.name).join(', '),
-          'nb caves': newMassifPopulated.caves.length,
-          'nb entrances': newMassifPopulated.caves.reduce(
-            (total, cave) => total + cave.entrances.length,
-            0,
-          ),
-          descriptions: [description],
-          tags: ['massif'],
-        },
-      },
-      (error) => {
-        error && sails.log.error(error);
-      },
-    );
+    await ElasticsearchService.create('massifs', newMassifPopulated.id, {
+      ...newMassifESData,
+      name: newMassifPopulated.names[0].name, // There is only one name at the creation time
+      names: newMassifPopulated.names.map((n) => n.name).join(', '),
+      'nb caves': newMassifPopulated.caves.length,
+      'nb entrances': newMassifPopulated.caves.reduce(
+        (total, cave) => total + cave.entrances.length,
+        0,
+      ),
+      descriptions: [description],
+      tags: ['massif'],
+    });
 
     const params = {};
     params.controllerMethod = 'MassifController.create';

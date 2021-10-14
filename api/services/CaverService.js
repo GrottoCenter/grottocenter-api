@@ -44,24 +44,15 @@ module.exports = {
       .fetch()
       .intercept(errorHandler);
 
-    esClient.create(
-      {
-        index: `cavers-index`,
-        id: newCaver.id,
-        body: {
-          id: newCaver.id,
-          groups: '',
-          mail: newCaver.mail,
-          name: newCaver.name,
-          nickname: newCaver.nickname,
-          surname: newCaver.surname,
-          tags: ['caver'],
-        },
-      },
-      (error) => {
-        error && sails.log.error(error);
-      },
-    );
+    await ElasticsearchService.create('cavers', newCaver.id, {
+      id: newCaver.id,
+      groups: '',
+      mail: newCaver.mail,
+      name: newCaver.name,
+      nickname: newCaver.nickname,
+      surname: newCaver.surname,
+      tags: ['caver'],
+    });
   },
 
   /**

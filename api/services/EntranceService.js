@@ -168,29 +168,20 @@ module.exports = {
     await NameService.setNames([newEntrancePopulated.cave.massif], 'massif');
 
     const { cave, name, names, ...newEntranceESData } = newEntrancePopulated;
-    esClient.create(
-      {
-        index: `entrances-index`,
-        id: newEntrancePopulated.id,
-        body: {
-          ...newEntranceESData,
-          'cave name': newEntrancePopulated.cave.name,
-          'cave length': newEntrancePopulated.cave.length,
-          'cave depth': newEntrancePopulated.cave.depth,
-          'cave is diving': newEntrancePopulated.cave.isDiving,
-          country: newEntrancePopulated.country.nativeName,
-          'country code': newEntrancePopulated.country.iso3,
-          descriptions: [description],
-          'massif name': newEntrancePopulated.cave.massif.name,
-          name: newEntrancePopulated.name,
-          names: newEntrancePopulated.names.map((n) => n.name).join(', '),
-          tags: ['entrance'],
-        },
-      },
-      (error) => {
-        error && sails.log.error(error);
-      },
-    );
+    await ElasticsearchService.create('entrances', newEntrancePopulated.id, {
+      ...newEntranceESData,
+      'cave name': newEntrancePopulated.cave.name,
+      'cave length': newEntrancePopulated.cave.length,
+      'cave depth': newEntrancePopulated.cave.depth,
+      'cave is diving': newEntrancePopulated.cave.isDiving,
+      country: newEntrancePopulated.country.nativeName,
+      'country code': newEntrancePopulated.country.iso3,
+      descriptions: [description],
+      'massif name': newEntrancePopulated.cave.massif.name,
+      name: newEntrancePopulated.name,
+      names: newEntrancePopulated.names.map((n) => n.name).join(', '),
+      tags: ['entrance'],
+    });
 
     return newEntrancePopulated;
   },
