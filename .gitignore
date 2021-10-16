@@ -118,8 +118,11 @@ nbproject
 www
 .transifexrc
 
+# Istanbul & coveralls reports
+.nyc_output
 coverage
 .coveralls.yml
+
 .vscode
 
 docker/esdata/*
