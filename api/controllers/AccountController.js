@@ -171,6 +171,10 @@ module.exports = {
 
     // Get user
     const decodedToken = jwt.decode(token);
+    if (!decodedToken || decodedToken.userId === undefined) {
+      return res.badRequest("Invalid token, can't decode it.");
+    }
+
     const userFound = await TCaver.findOne(decodedToken.userId);
     if (!userFound) {
       return res.status(404).send({

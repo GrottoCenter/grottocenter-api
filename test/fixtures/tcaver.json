@@ -5,6 +5,8 @@
     "nickname": "Admin1",
     "password": "d4baeedef5db4a9424b2c340323d2ee2c374cbd05196a7c108faf080a1dc4c26",
     "_comment": "The password is 'testtest'",
+    "alertForNews": "false",
+    "language": 1,
     "groups": [
       1
     ]
@@ -14,6 +16,8 @@
     "mail": "moderator1@moderator1.com",
     "nickname": "Moderator1",
     "password": "d4baeedef5db4a9424b2c340323d2ee2c374cbd05196a7c108faf080a1dc4c26",
+    "alertForNews": "false",
+    "language": 1,
     "groups": [
       2
     ]
@@ -23,6 +27,8 @@
     "mail": "user1@user1.com",
     "nickname": "User1",
     "password": "d4baeedef5db4a9424b2c340323d2ee2c374cbd05196a7c108faf080a1dc4c26",
+    "alertForNews": "false",
+    "language": 1,
     "groups": [
       3
     ]
@@ -32,6 +38,8 @@
     "mail": "all1@all1.com",
     "nickname": "All1",
     "password": "d4baeedef5db4a9424b2c340323d2ee2c374cbd05196a7c108faf080a1dc4c26",
+    "alertForNews": "false",
+    "language": 1,
     "groups": [
       1,
       2,
