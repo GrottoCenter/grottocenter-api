@@ -36,6 +36,7 @@ const getConvertedDataFromClient = async (req) => {
   const optionFound = option
     ? await TOption.findOne({ name: option })
     : undefined;
+
   return {
     ...reqBodyWithoutId,
     author: req.token.id,
@@ -54,7 +55,7 @@ const getConvertedDataFromClient = async (req) => {
       ? req.body.subjects.map((s) => s.code)
       : undefined,
     type: ramda.pathOr(undefined, ['documentType', 'id'], req.body),
-    option: optionFound.id,
+    option: optionFound ? optionFound.id : undefined,
     authorizationDocument: ramda.pathOr(
       undefined,
       ['authorizationDocument', 'id'],

@@ -277,6 +277,16 @@ CREATE TABLE t_type (
 	CONSTRAINT t_type_pk PRIMARY KEY (id),
 	CONSTRAINT t_type_fk FOREIGN KEY (id_parent) REFERENCES t_type(id)
 );
+
+-- t_option definition
+-- Drop table
+-- DROP TABLE t_option
+CREATE TABLE t_option (
+	id serial NOT NULL,
+	name varchar(200) NOT NULL,
+	CONSTRAINT t_option_pk PRIMARY KEY (id)
+);
+
 -- h_grotto definition
 -- Drop table
 -- DROP TABLE h_grotto;

@@ -1,8 +1,4 @@
-CREATE TABLE t_option (
-	id serial NOT NULL,
-	name varchar(200) NOT NULL,
-	CONSTRAINT t_option_pk PRIMARY KEY (id)
-);
+\c grottoce;
 
 ALTER TABLE t_document
 	ADD COLUMN id_authorization_document int4 NULL,
