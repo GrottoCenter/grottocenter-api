@@ -360,7 +360,7 @@ module.exports.routes = {
   /* License controller */
   'GET /api/v1/licenses': 'v1/License.findAll',
 
-  /* Option controller */
+  /* File formats controller */
   'GET /api/v1/file-formats': 'v1/FileFormat.findAll',
   //  ╦ ╦╔═╗╔╗ ╦ ╦╔═╗╔═╗╦╔═╔═╗
   //  ║║║║╣ ╠╩╗╠═╣║ ║║ ║╠╩╗╚═╗

@@ -1079,7 +1079,9 @@ INSERT INTO public.t_document (
 		author_comment,
 		date_reviewed,
 		is_deleted,
-		redirect_to
+		redirect_to,
+		id_authorization_document,
+		id_option
 	)
 VALUES (
 		6068,
@@ -1113,6 +1115,8 @@ VALUES (
 		NULL,
 		NULL,
 		false,
+		NULL, 
+		NULL,
 		NULL
 	),
 	(
@@ -1147,6 +1151,8 @@ VALUES (
 		NULL,
 		NULL,
 		false,
+		NULL,
+		NULL,
 		NULL
 	),
 	(
@@ -1181,6 +1187,8 @@ VALUES (
 		NULL,
 		NULL,
 		false,
+		NULL,
+		NULL,
 		NULL
 	),
 	(
@@ -1215,6 +1223,8 @@ VALUES (
 		NULL,
 		NULL,
 		false,
+		NULL,
+		NULL,
 		NULL
 	),
 	(
@@ -1249,6 +1259,8 @@ VALUES (
 		NULL,
 		NULL,
 		false,
+		NULL,
+		NULL,
 		NULL
 	),
 	(
@@ -1283,6 +1295,8 @@ VALUES (
 		NULL,
 		NULL,
 		false,
+		NULL,
+		NULL,
 		NULL
 	),
 	(
@@ -1317,6 +1331,8 @@ VALUES (
 		NULL,
 		NULL,
 		false,
+		NULL,
+		NULL,
 		NULL
 	),
 	(
@@ -1351,6 +1367,8 @@ VALUES (
 		NULL,
 		NULL,
 		false,
+		NULL,
+		NULL,
 		NULL
 	),
 	(
@@ -1385,6 +1403,8 @@ VALUES (
 		NULL,
 		NULL,
 		false,
+		NULL,
+		NULL,
 		NULL
 	),
 	(
@@ -1419,6 +1439,8 @@ VALUES (
 		NULL,
 		NULL,
 		false,
+		NULL,
+		NULL,
 		NULL
 	),
 	(
@@ -1453,6 +1475,8 @@ VALUES (
 		NULL,
 		NULL,
 		false,
+		NULL,
+		NULL,
 		NULL
 	),
 	(
@@ -1487,7 +1511,9 @@ VALUES (
 		NULL,
 		NULL,
 		false,
-		NULL
+		NULL,
+		NULL,
+		1
 	),
 	(
 		161,
@@ -1521,6 +1547,8 @@ VALUES (
 		NULL,
 		NULL,
 		false,
+		NULL,
+		NULL,
 		NULL
 	),
 	(
@@ -1555,6 +1583,8 @@ VALUES (
 		NULL,
 		NULL,
 		false,
+		NULL,
+		NULL,
 		NULL
 	),
 	(
@@ -1589,6 +1619,8 @@ VALUES (
 		NULL,
 		NULL,
 		false,
+		NULL,
+		NULL,
 		NULL
 	),
 	(
@@ -1623,6 +1655,8 @@ VALUES (
 		NULL,
 		NULL,
 		false,
+		NULL,
+		NULL,
 		NULL
 	);
 INSERT INTO public.t_description (
@@ -2388,7 +2422,8 @@ INSERT INTO public.t_file (
 		filename,
 		id_file_format,
 		id_document,
-		path_old
+		path,
+		is_validated
 	)
 VALUES (
 		1629,
@@ -2397,7 +2432,8 @@ VALUES (
 		'photo-lac-gournier.jpg',
 		871,
 		16746,
-		'u427-t1579-r5275a16b5129b338f0339d5727010c0e-photo-lac-gournier.JPG'
+		'u427-t1579-r5275a16b5129b338f0339d5727010c0e-photo-lac-gournier.JPG',
+		true
 	);
 INSERT INTO public.t_grotto (
 		id,
