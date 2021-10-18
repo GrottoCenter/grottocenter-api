@@ -194,6 +194,9 @@ const getConvertedDocumentFromCsv = async (rawData, authorId) => {
         name: await retrieveFromLink({ stringArg: creatorRaw }),
         grotto: { '!=': null },
       }).limit(1);
+
+      // If a grotto is found, a name object is returned.
+      // If it as a caver which is found, it returns a caver object
       if (authorGrotto.length === 0) {
         return {
           type: 'caver',
@@ -307,7 +310,7 @@ const getConvertedDocumentFromCsv = async (rawData, authorId) => {
           creatorsCaverId.push(creator.value.id);
           break;
         case 'grotto':
-          creatorsGrottoId.push(creator.value.id);
+          creatorsGrottoId.push(creator.value.grotto);
           break;
       }
     }
@@ -1159,6 +1162,7 @@ module.exports = {
     for (const [index, data] of req.body.data.entries()) {
       const missingColumns = await sails.helpers.csvhelpers.checkColumns.with({
         data: data,
+        additionalColumns: ['dct:creator'],
       });
 
       if (missingColumns.length > 0) {
