@@ -63,12 +63,7 @@ module.exports = {
     return allEntrances;
   },
 
-  createEntrance: async (
-    entranceData,
-    nameDescLocData,
-    errorHandler,
-    esClient,
-  ) => {
+  createEntrance: async (entranceData, nameDescLocData, errorHandler) => {
     const newEntrancePopulated = await sails
       .getDatastore()
       .transaction(async (db) => {
