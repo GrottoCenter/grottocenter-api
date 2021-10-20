@@ -7,6 +7,7 @@
 
 const esClient = require('../../config/elasticsearch').elasticsearchCli;
 const ramda = require('ramda');
+const getCountryISO3 = require('country-iso-2-to-3');
 
 // Tool methods
 // Set name of cave, entrance, massif, editor and library if present
@@ -48,6 +49,28 @@ const getConvertedDataFromClient = (req) => {
   };
 };
 
+const getLangDescDataFromClient = (req) => {
+  let langDescData = {
+    author: req.token.id,
+    description: req.body.description,
+    title: req.body.title,
+    titleAndDescriptionLanguage: {
+      id: req.body.titleAndDescriptionLanguage.id,
+    },
+  };
+
+  if (ramda.pathOr(null, ['documentMainLanguage', 'id'], req.body)) {
+    langDescData = {
+      ...langDescData,
+      documentMainLanguage: {
+        id: req.body.documentMainLanguage.id,
+      },
+    };
+  }
+
+  return langDescData;
+};
+
 const getEsBody = (document) => {
   const { type, modifiedDocJson, ...docWithoutJsonAndType } = document;
   return {
@@ -81,58 +104,299 @@ const getEsBody = (document) => {
  * Based on the logstash.conf file.
  * The document must be fully populated and with all its names set (@see setNamesOfPopulatedDocument).
  */
-const addDocumentToElasticSearchIndexes = (document) => {
+const addDocumentToElasticSearchIndexes = async (document) => {
   // const { type, ...documentWithoutType } = document; // "type" property is already used by ES, don't spread it.
   const esBody = getEsBody(document);
-  // Create in documents-index
-  esClient.create(
-    {
-      index: 'documents-index',
-      type: 'data',
-      id: document.id,
-      body: {
-        ...esBody,
-        type: 'document',
-      },
-    },
-    (error) => {
-      if (error) {
-        sails.log.error(error);
-      }
-    },
-  );
+
+  await ElasticsearchService.create('documents', document.id, {
+    ...esBody,
+    tags: ['document'],
+  });
 
   // Create in document-collections-index or document-issues-index
   const additionalIndex =
     document.type.name === 'Issue'
-      ? 'document-issues-index'
+      ? 'document-issues'
       : document.type.name === 'Collection'
-      ? 'document-collections-index'
+      ? 'document-collections'
       : '';
   if (additionalIndex !== '') {
-    esClient.create(
-      {
-        index: additionalIndex,
-        type: 'data',
-        id: document.id,
-        body: {
-          ...esBody,
-          type: `document-${document.type.name.toLowerCase()}`,
-        },
-      },
-      (error) => {
-        if (error) {
-          sails.log.error(error);
-        }
-      },
-    );
+    await ElasticsearchService.create(additionalIndex, document.id, {
+      ...esBody,
+      tags: [`document-${document.type.name.toLowerCase()}`],
+    });
   }
 };
 
 //TO DO: proper update
-const updateDocumentInElasticSearchIndexes = (document) => {
-  ElasticsearchService.deleteResource('documents', document.id);
-  addDocumentToElasticSearchIndexes(document);
+const updateDocumentInElasticSearchIndexes = async (document) => {
+  await ElasticsearchService.deleteResource('documents', document.id);
+  await addDocumentToElasticSearchIndexes(document);
+};
+/* _______________________________________
+
+  The following functions are used to extract the relevant information from the import csv module.
+  ________________________________________
+*/
+
+const iso2ToIso3 = (iso) => {
+  if (iso !== undefined) {
+    if (iso === 'EN') {
+      return 'eng';
+    }
+    const res = getCountryISO3(iso);
+    if (res) {
+      return res.toLowerCase();
+    } else {
+      throw Error('This iso code is incorrect : ' + iso);
+    }
+  }
+  return null;
+};
+
+const getConvertedDocumentFromCsv = async (rawData, authorId) => {
+  const doubleCheck = sails.helpers.csvhelpers.doubleCheck.with;
+  const retrieveFromLink = sails.helpers.csvhelpers.retrieveFromLink.with;
+  const rawLicence = doubleCheck({
+    data: rawData,
+    key: 'dct:rights/karstlink:licenseType',
+    defaultValue: undefined,
+  });
+  const licence = await retrieveFromLink({ stringArg: rawLicence });
+  const licenceDb = await TLicense.findOne({ name: licence });
+  if (licenceDb) {
+    const creatorsRaw = rawData['dct:creator'].split('|');
+    //For each creator, we first check if there is a grotto of this name. If not, check for a caver. If not, create a caver.
+    const creatorsPromises = creatorsRaw.map(async (creatorRaw) => {
+      const authorGrotto = await TName.find({
+        name: await retrieveFromLink({ stringArg: creatorRaw }),
+        grotto: { '!=': null },
+      }).limit(1);
+
+      // If a grotto is found, a name object is returned.
+      // If it as a caver which is found, it returns a caver object
+      if (authorGrotto.length === 0) {
+        return {
+          type: 'caver',
+          value: await sails.helpers.csvhelpers.getCreator.with({
+            creator: creatorRaw,
+          }),
+        };
+      } else {
+        return { type: 'grotto', value: authorGrotto[0] };
+      }
+    });
+
+    const editorsRaw = doubleCheck({
+      data: rawData,
+      key: 'dct:publisher',
+      defaultValue: null,
+    });
+    let editorId = undefined;
+    if (editorsRaw) {
+      const editorsRawArray = editorsRaw.split('|');
+      let editorName = '';
+      for (const editorRaw of editorsRawArray) {
+        const editorNameRaw = await retrieveFromLink({ stringArg: editorRaw });
+        editorName += editorNameRaw.replace('_', ' ') + ', ';
+      }
+      editorName = editorName.slice(0, -2);
+      const namesArray = await TName.find({
+        name: editorName,
+        grotto: { '!=': null },
+      }).limit(1);
+      switch (namesArray.length) {
+        case 0:
+          const paramsGrotto = {
+            author: authorId,
+            dateInscription: new Date(),
+          };
+          const nameGrotto = {
+            text: editorName,
+            language: doubleCheck({
+              data: rawData,
+              key: 'gn:countryCode',
+              defaultValue: 'ENG',
+              func: iso2ToIso3,
+            }),
+            author: authorId,
+          };
+          const editorGrotto = await GrottoService.createGrotto(
+            paramsGrotto,
+            nameGrotto,
+            (err) => err,
+            esClient,
+          );
+          editorId = editorGrotto.id;
+          break;
+        default:
+          const name = namesArray[0];
+          editorId = name.grotto;
+          break;
+      }
+    }
+
+    const typeData = doubleCheck({
+      data: rawData,
+      key: 'karstlink:documentType',
+      defaultValue: undefined,
+    });
+    let typeId = undefined;
+    if (typeData) {
+      const typeCriteria = typeData.startsWith('http')
+        ? { url: typeData }
+        : { name: typeData };
+      const type = await TType.findOne(typeCriteria);
+      if (!type) {
+        throw Error('This document type is incorrect : ' + typeData);
+      }
+      typeId = type.id;
+    }
+
+    const parentData = doubleCheck({
+      data: rawData,
+      key: 'dct:isPartOf',
+      defaultValue: undefined,
+    });
+    let parent = undefined;
+    if (parentData) {
+      const descArray = await TDescription.find({
+        title: parentData,
+        document: { '!=': null },
+      }).limit(1);
+      if (descArray.length > 0) {
+        parent = descArray[0].document;
+      }
+    }
+
+    const subjectsData = doubleCheck({
+      data: rawData,
+      key: 'dct:subject',
+      defaultValue: undefined,
+    });
+    let subjects = undefined;
+    if (subjectsData) {
+      subjects = subjectsData.split('|');
+    }
+
+    const creators = await Promise.all(creatorsPromises);
+    const creatorsCaverId = [];
+    const creatorsGrottoId = [];
+    for (const creator of creators) {
+      switch (creator.type) {
+        case 'caver':
+          creatorsCaverId.push(creator.value.id);
+          break;
+        case 'grotto':
+          creatorsGrottoId.push(creator.value.grotto);
+          break;
+      }
+    }
+
+    return {
+      author: authorId,
+      datePublication: doubleCheck({
+        data: rawData,
+        key: 'dct:date',
+        defaultValue: undefined,
+      }),
+      identifierType: doubleCheck({
+        data: rawData,
+        key: 'dct:identifier',
+        defaultValue: undefined,
+      }),
+      identifier: doubleCheck({
+        data: rawData,
+        key: 'dct:source',
+        defaultValue: undefined,
+      }),
+      license: licenceDb.id,
+      dateInscription: doubleCheck({
+        data: rawData,
+        key: 'dct:rights/dct:created',
+        defaultValue: new Date(),
+      }),
+      dateReviewed: doubleCheck({
+        data: rawData,
+        key: 'dct:rights/dct:modified',
+        defaultValue: undefined,
+      }),
+      authors: creatorsCaverId,
+      authorsGrotto: creatorsGrottoId,
+      editor: editorId,
+      type: typeId,
+      parent: parent,
+      subjects: subjects,
+      idDbImport: doubleCheck({
+        data: rawData,
+        key: 'id',
+        defaultValue: undefined,
+      }),
+      nameDbImport: doubleCheck({
+        data: rawData,
+        key: 'dct:rights/cc:attributionName',
+        defaultValue: undefined,
+      }),
+    };
+  } else {
+    throw Error('This kind of license cannot be imported.');
+  }
+};
+
+const getConvertedLangDescDocumentFromCsv = (rawData, authorId) => {
+  const doubleCheck = sails.helpers.csvhelpers.doubleCheck.with;
+  const desc = doubleCheck({
+    data: rawData,
+    key: 'karstlink:hasDescriptionDocument/dct:description',
+    defaultValue: undefined,
+  });
+  const langDesc = desc
+    ? doubleCheck({
+        data: rawData,
+        key: 'karstlink:hasDescriptionDocument/dc:language',
+        defaultValue: undefined,
+        func: iso2ToIso3,
+      })
+    : doubleCheck({
+        data: rawData,
+        key: 'dc:language',
+        defaultValue: undefined,
+        func: iso2ToIso3,
+      });
+  return {
+    author: authorId,
+    title: doubleCheck({
+      data: rawData,
+      key: 'rdfs:label',
+      defaultValue: undefined,
+    }),
+    description: doubleCheck({
+      data: rawData,
+      key: 'karstlink:hasDescriptionDocument/dct:description',
+      defaultValue: undefined,
+    }),
+    dateInscription: doubleCheck({
+      data: rawData,
+      key: 'dct:rights/dct:created',
+      defaultValue: new Date(),
+    }),
+    dateReviewed: doubleCheck({
+      data: rawData,
+      key: 'dct:rights/dct:modified',
+      defaultValue: undefined,
+    }),
+    documentMainLanguage: {
+      id: doubleCheck({
+        data: rawData,
+        key: 'dc:language',
+        defaultValue: undefined,
+        func: iso2ToIso3,
+      }),
+    },
+    titleAndDescriptionLanguage: {
+      id: langDesc,
+    },
+  };
 };
 
 module.exports = {
@@ -181,58 +445,38 @@ module.exports = {
     if (!hasRight) {
       return res.forbidden('You are not authorized to create a document.');
     }
-
     const cleanedData = {
       ...getConvertedDataFromClient(req),
       dateInscription: new Date(),
     };
 
-    // Launch creation request using transaction: it performs a rollback if an error occurs
-    await sails
-      .getDatastore()
-      .transaction(async (db) => {
-        const documentCreated = await TDocument.create(cleanedData)
-          .fetch()
-          .usingConnection(db);
+    const langDescData = getLangDescDataFromClient(req);
 
-        // Create associated data not handled by TDocument manually
-        if (ramda.pathOr(null, ['documentMainLanguage', 'id'], req.body)) {
-          await JDocumentLanguage.create({
-            document: documentCreated.id,
-            language: req.body.documentMainLanguage.id,
-            isMain: true,
-          }).usingConnection(db);
+    const handleError = (error) => {
+      if (error.code && error.code === 'E_UNIQUE') {
+        return res.sendStatus(409);
+      } else {
+        switch (error.name) {
+          case 'UsageError':
+            return res.badRequest(error.message);
+          case 'AdapterError':
+            return res.badRequest(error.message);
+          default:
+            return res.serverError(error.message);
         }
+      }
+    };
 
-        await TDescription.create({
-          author: req.token.id,
-          body: req.body.description,
-          dateInscription: new Date(),
-          document: documentCreated.id,
-          language: req.body.titleAndDescriptionLanguage.id,
-          title: req.body.title,
-        }).usingConnection(db);
+    // Launch creation request using transaction: it performs a rollback if an error occurs
+    const documentCreated = await DocumentService.createDocument(
+      cleanedData,
+      langDescData,
+      handleError,
+    );
 
-        const params = {};
-        params.controllerMethod = 'DocumentController.create';
-        return ControllerService.treat(req, null, documentCreated, params, res);
-      })
-      .intercept('E_UNIQUE', (e) => {
-        sails.log.error(e.message);
-        return res.status(409).send(e.message);
-      })
-      .intercept({ name: 'UsageError' }, (e) => {
-        sails.log.error(e.message);
-        return res.badRequest(e.message);
-      })
-      .intercept({ name: 'AdapterError' }, (e) => {
-        sails.log.error(e.message);
-        return res.badRequest(e.message);
-      })
-      .intercept((e) => {
-        sails.log.error(e.message);
-        return res.serverError(e.message);
-      });
+    const params = {};
+    params.controllerMethod = 'DocumentController.create';
+    return ControllerService.treat(req, null, documentCreated, params, res);
   },
 
   update: async (req, res) => {
@@ -356,17 +600,16 @@ module.exports = {
               });
             }
 
-            await Promise.all(
-              await found.map(async (doc) => {
-                await NameService.setNames(
-                  [
-                    ...(doc.library ? [doc.library] : []),
-                    ...(doc.editor ? [doc.editor] : []),
-                  ],
-                  'grotto',
-                );
-              }),
+            found.mainLanguage = await DocumentService.getMainLanguage(
+              found.id,
             );
+            await setNamesOfPopulatedDocument(found);
+            found.children &&
+              (await Promise.all(
+                found.children.map(async (childDoc) => {
+                  await DescriptionService.setDocumentDescriptions(childDoc);
+                }),
+              ));
 
             const params = {
               controllerMethod: 'DocumentController.findAll',
@@ -413,6 +656,7 @@ module.exports = {
       .populate('author')
       .populate('authors')
       .populate('cave')
+      .populate('children')
       .populate('descriptions')
       .populate('editor')
       .populate('entrance')
@@ -442,17 +686,16 @@ module.exports = {
               });
             }
 
-            await Promise.all(
-              await found.map(async (doc) => {
-                await NameService.setNames(
-                  [
-                    ...(doc.library ? [doc.library] : []),
-                    ...(doc.editor ? [doc.editor] : []),
-                  ],
-                  'grotto',
-                );
-              }),
+            found.mainLanguage = await DocumentService.getMainLanguage(
+              found.id,
             );
+            await setNamesOfPopulatedDocument(found);
+            found.children &&
+              (await Promise.all(
+                found.children.map(async (childDoc) => {
+                  await DescriptionService.setDocumentDescriptions(childDoc);
+                }),
+              ));
 
             const params = {
               controllerMethod: 'DocumentController.findByCaverId',
@@ -584,6 +827,7 @@ module.exports = {
         .populate('author')
         .populate('authors')
         .populate('cave')
+        .populate('children')
         .populate('descriptions')
         .populate('editor')
         .populate('entrance')
@@ -600,6 +844,15 @@ module.exports = {
         .populate('type');
       found.mainLanguage = await DocumentService.getMainLanguage(found.id);
       await setNamesOfPopulatedDocument(found);
+      await DescriptionService.setDocumentDescriptions(found);
+      if (found.children.length > 0) {
+        found.children = await Promise.all(
+          found.children.map(
+            async (childDoc) =>
+              await DocumentService.deepPopulateChildren(childDoc),
+          ),
+        );
+      }
     }
 
     const params = {
@@ -824,5 +1077,120 @@ module.exports = {
       }
       return res.ok();
     });
+  },
+
+  checkRows: async (req, res) => {
+    const doubleCheck = sails.helpers.csvhelpers.doubleCheck.with;
+    const willBeCreated = [];
+    const wontBeCreated = [];
+    for (const [index, row] of req.body.data.entries()) {
+      const idDb = doubleCheck({
+        data: row,
+        key: 'id',
+        defaultValue: undefined,
+      });
+      const nameDb = doubleCheck({
+        data: row,
+        key: 'dct:rights/cc:attributionName',
+        defaultValue: undefined,
+      });
+      if (!(idDb && nameDb)) {
+        wontBeCreated.push({
+          line: index + 2,
+        });
+      } else {
+        const result = await TDocument.find({
+          idDbImport: idDb,
+          nameDbImport: nameDb,
+        });
+        if (result.length > 0) {
+          wontBeCreated.push({
+            line: index + 2,
+          });
+        } else {
+          willBeCreated.push(row);
+        }
+      }
+    }
+
+    const requestResult = {
+      willBeCreated,
+      wontBeCreated,
+    };
+    return res.ok(requestResult);
+  },
+
+  importRows: async (req, res) => {
+    const hasRight = await sails.helpers.checkRight
+      .with({
+        groups: req.token.groups,
+        rightEntity: RightService.RightEntities.DOCUMENT,
+        rightAction: RightService.RightActions.EDIT_ANY,
+      })
+      .intercept('rightNotFound', (err) => {
+        return res.serverError(
+          'A server error occured when checking your right to create a document.',
+        );
+      });
+    if (!hasRight) {
+      return res.forbidden('You are not authorized to create a document.');
+    }
+
+    const requestResponse = {
+      type: 'document',
+      total: {
+        success: 0,
+        failure: 0,
+      },
+      successfulImport: [],
+      failureImport: [],
+    };
+
+    for (const [index, data] of req.body.data.entries()) {
+      const missingColumns = await sails.helpers.csvhelpers.checkColumns.with({
+        data: data,
+        additionalColumns: ['dct:creator'],
+      });
+
+      if (missingColumns.length > 0) {
+        requestResponse.failureImport.push({
+          line: index + 2,
+          message: 'Columns missing : ' + missingColumns.toString(),
+        });
+      } else {
+        try {
+          const authorId = await sails.helpers.csvhelpers.getAuthor.with({
+            data: data,
+          });
+          const dataDocument = await getConvertedDocumentFromCsv(
+            data,
+            authorId,
+          );
+          const dataLangDesc = getConvertedLangDescDocumentFromCsv(
+            data,
+            authorId,
+          );
+          const documentCreated = await DocumentService.createDocument(
+            dataDocument,
+            dataLangDesc,
+            (err) => err,
+          );
+
+          requestResponse.successfulImport.push({
+            documentId: documentCreated.id,
+            title: dataLangDesc.title,
+          });
+        } catch (err) {
+          requestResponse.failureImport.push({
+            line: index + 2,
+            message: err.toString(),
+          });
+        }
+      }
+    }
+
+    requestResponse.total.success = requestResponse.successfulImport.length;
+    requestResponse.total.failure = requestResponse.failureImport.length;
+    return res.ok(requestResponse);
   },
 };

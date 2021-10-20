@@ -134,94 +134,39 @@ module.exports = {
     }
 
     // Launch creation request using transaction: it performs a rollback if an error occurs
-    const newOrganizationPopulated = await sails
-      .getDatastore()
-      .transaction(async (db) => {
-        const caver = await TCaver.findOne(req.token.id).usingConnection(db);
+    const handleError = (error) => {
+      if (error.code && error.code === 'E_UNIQUE') {
+        return res.sendStatus(409).send(error.message);
+      } else {
+        switch (error.name) {
+          case 'UsageError':
+            return res.badRequest(error);
+          case 'AdapterError':
+            return res.badRequest(error);
+          default:
+            return res.serverError(error);
+        }
+      }
+    };
 
-        const cleanedData = {
-          ...getConvertedDataFromClientRequest(req),
-          author: req.token.id,
-          dateInscription: new Date(),
-        };
+    const cleanedData = {
+      ...getConvertedDataFromClientRequest(req),
+      author: req.token.id,
+      dateInscription: new Date(),
+    };
 
-        const newOrganization = await TGrotto.create(cleanedData)
-          .fetch()
-          .usingConnection(db);
+    const nameData = {
+      author: req.token.id,
+      language: ramda.propOr(undefined, 'language', req.param('name')),
+      text: req.param('name').text,
+    };
 
-        const name = await TName.create({
-          author: req.token.id,
-          dateInscription: new Date(),
-          grotto: newOrganization.id,
-          isMain: true,
-          language:
-            ramda.propOr(null, 'language', req.param('name')) !== null
-              ? req.param('name').language
-              : caver.language,
-          name: req.param('name').text,
-        })
-          .fetch()
-          .usingConnection(db);
-
-        // Prepare data for Elasticsearch indexation
-        const newOrganizationPopulated = await TGrotto.findOne(
-          newOrganization.id,
-        )
-          .populate('country')
-          .populate('names')
-          .usingConnection(db);
-
-        return newOrganizationPopulated;
-      })
-      .intercept('E_UNIQUE', (e) => {
-        sails.log.error(e.message);
-        return res.status(409).send(e.message);
-      })
-      .intercept({ name: 'UsageError' }, (e) => {
-        sails.log.error(e.message);
-        return res.badRequest(e.message);
-      })
-      .intercept({ name: 'AdapterError' }, (e) => {
-        sails.log.error(e.message);
-        return res.badRequest(e.message);
-      })
-      .intercept((e) => {
-        sails.log.error(e.message);
-        return res.serverError(e.message);
-      });
-
-    const {
-      country,
-      names,
-      ...newOrganizationESData
-    } = newOrganizationPopulated;
-
-    try {
-      esClient.create({
-        index: `grottos-index`,
-        type: 'data',
-        id: newOrganizationPopulated.id,
-        body: {
-          ...newOrganizationESData,
-          country: ramda.pathOr(
-            null,
-            ['country', 'nativeName'],
-            newOrganizationPopulated,
-          ),
-          'country code': ramda.pathOr(
-            null,
-            ['country', 'id'],
-            newOrganizationPopulated,
-          ),
-          name: names[0].name, // There is only one name right after the creation
-          names: names.map((n) => n.name).join(', '),
-          'nb cavers': 0,
-          type: 'grotto',
-        },
-      });
-    } catch (error) {
-      sails.log.error(error);
-    }
+    const newOrganizationPopulated = await GrottoService.createGrotto(
+      cleanedData,
+      nameData,
+      handleError,
+      esClient,
+    );
 
     const params = {};
     params.controllerMethod = 'GrottoController.create';

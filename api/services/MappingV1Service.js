@@ -296,8 +296,8 @@ module.exports = {
     result.names = source.names;
     result.temperature = source.temperature;
 
-    if (source.author instanceof Object) {
-      result.author = MappingV1Service.convertToCaverModel(source.author);
+    if (source.id_author instanceof Object) {
+      result.author = MappingV1Service.convertToCaverModel(source.id_author);
     }
     if (source.reviewer instanceof Object) {
       result.reviewer = MappingV1Service.convertToCaverModel(source.reviewer);
@@ -342,8 +342,8 @@ module.exports = {
     // For each result of the research, convert the item and add it to the json to send
     source.hits.hits.forEach((item) => {
       let data = '';
-      // Convert the data according to its type
-      switch (item['_source'].type) {
+      // Convert the data according to its first tag
+      switch (item['_source'].tags[0]) {
         case 'entrance':
           data = MappingV1Service.convertToEntranceModel(item['_source']);
           break;
@@ -362,7 +362,7 @@ module.exports = {
         default:
       }
       // Add the type and hightlight of the data
-      data.type = item['_source'].type;
+      data.type = item['_source'].tags[0];
       data.highlights = item.highlight;
 
       values.push(data);
@@ -388,12 +388,16 @@ module.exports = {
           name: item['_source'].name
             ? item['_source'].name
             : item['_source']['title'], // Handle title for documents (instead of name)
-          type: item['_source'].type,
+          type: item['_source'].tags[0],
           highlights: item.highlight,
         };
 
-        data.longitude = parseFloat(item['_source'].longitude);
-        data.latitude = parseFloat(item['_source'].latitude);
+        if (item['_source'].longitude) {
+          data.longitude = parseFloat(item['_source'].longitude);
+        }
+        if (item['_source'].latitude) {
+          data.latitude = parseFloat(item['_source'].latitude);
+        }
 
         // 08/2020 - C. ROIG - Not needed at the moment but keep in case
         // const replacementKeys = {};
@@ -408,7 +412,7 @@ module.exports = {
         //   });
         // };
 
-        switch (item['_source'].type) {
+        switch (item['_source'].tags[0]) {
           case 'entrance':
             data.cave = {
               id: item['_source'].id_cave,
@@ -604,12 +608,7 @@ module.exports = {
     result.entrance = source.entrance;
     result.files = source.files;
     result.identifier = source.identifier;
-    result.identifierType = {
-      ...source.identifierType,
-      id: ramda.pipe(ramda.pathOr(undefined, ['identifierType', 'id']), (id) =>
-        id ? id.trim() : id,
-      )(source),
-    };
+    result.issue = source.issue;
     result.isValidated = source.isValidated;
     result.languages = source.languages;
     result.license = source.license;
@@ -646,6 +645,20 @@ module.exports = {
       });
     }
 
+    // Convert identifier type
+    if (source.identifierType instanceof Object) {
+      result.identifierType = {
+        ...source.identifierType,
+        id: ramda.pipe(
+          ramda.pathOr(undefined, ['identifierType', 'id']),
+          (id) => (id ? id.trim() : id),
+        )(source),
+      };
+    } else {
+      result.identifierType = source.identifierType;
+    }
+
+    // Convert authors
     if (source.authors instanceof Array) {
       result.authors = MappingV1Service.convertToCaverList(
         source.authors,
@@ -654,12 +667,21 @@ module.exports = {
       result.authors = source.authors;
     }
 
+    // Convert children document
+    if (source.children instanceof Array) {
+      result.children = MappingV1Service.convertToDocumentList(
+        source.children,
+      ).documents;
+    } else {
+      result.children = source.children;
+    }
+
     // TODO: handle publication (old bbs & parent)
     result.publication = source.publication_other_bbs_old
       ? source.publication_other_bbs_old
       : source.publicationOtherBBSOld;
 
-    // Build regions
+    // Convert regions
     if (source.regions) {
       if (source.regions instanceof Array) {
         result.regions = source.regions;
@@ -675,7 +697,7 @@ module.exports = {
       }
     }
 
-    // Build subjects
+    // Convert subjects
     if (source.subjects instanceof Array) {
       result.subjects = MappingV1Service.convertToSubjectList(
         source.subjects,
@@ -691,7 +713,7 @@ module.exports = {
         : null;
     }
 
-    // Build library
+    // Convert library
     if (source['library id']) {
       // ES
       result.library = {
@@ -702,7 +724,7 @@ module.exports = {
       result.library = source.library;
     }
 
-    // Build editor
+    // Convert editor
     if (source['editor id']) {
       // ES
       result.editor = {
@@ -713,7 +735,7 @@ module.exports = {
       result.editor = source.editor;
     }
 
-    // Build type
+    // Convert type
     if (source['type id']) {
       // ES
       result.type = {

@@ -1,0 +1,29 @@
+[
+  {
+    "name": "Administrator",
+    "comments": "Technical responsible of the application.",
+    "rights": []
+  },
+  {
+    "name": "Moderator",
+    "comments": "Content reviewers.",
+    "rights": []
+  },
+  {
+    "name": "User",
+    "comments": "Default users group",
+    "rights": [
+      30, 29
+    ]
+  },
+  {
+    "name": "Visitor",
+    "comments": "Non connected people",
+    "rights": []
+  },
+  {
+    "name": "Leader",
+    "comments": "Contributors can refer to those people for any questions.",
+    "rights": []
+  }
+]

@@ -121,24 +121,15 @@ module.exports = {
     const userGroup = await TGroup.findOne({ name: 'User' });
     await TCaver.addToCollection(newCaver.id, 'groups', userGroup.id);
 
-    try {
-      esClient.create({
-        index: `cavers-index`,
-        type: 'data',
-        id: newCaver.id,
-        body: {
-          id: newCaver.id,
-          groups: String(userGroup.id),
-          mail: newCaver.mail,
-          name: newCaver.name,
-          nickname: newCaver.nickname,
-          surname: newCaver.surname,
-          type: 'caver',
-        },
-      });
-    } catch (error) {
-      sails.log.error(error);
-    }
+    ElasticsearchService.create('cavers', newCaver.id, {
+      tags: ['caver'],
+      id: newCaver.id,
+      groups: String(userGroup.id),
+      mail: newCaver.mail,
+      name: newCaver.name,
+      nickname: newCaver.nickname,
+      surname: newCaver.surname,
+    });
 
     return res.sendStatus(204);
   },

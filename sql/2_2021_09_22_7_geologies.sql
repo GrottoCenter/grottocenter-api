@@ -1,0 +1,32 @@
+\c grottoce;
+INSERT INTO public.t_geology (id, "label", id_parent)
+VALUES('Q35758    ', 'matter', 'Q35758    '),
+    ('Q82480    ', 'sedimentary rock', 'Q35758    '),
+    ('Q27919    ', 'lava tube', 'Q35758    '),
+    ('Q23392    ', 'ice', 'Q35758    '),
+    ('Q491689   ', 'evaporite', 'Q501108   '),
+    ('Q23757    ', 'limestone', 'Q82480    '),
+    ('Q41177    ', 'granite', 'Q35758    '),
+    ('Q237883   ', 'quartzite', 'Q35758    '),
+    ('Q622845   ', 'laterite', 'Q35758    '),
+    ('Q40861    ', 'marble', 'Q23757    '),
+    ('Q82337    ', 'Portland limestone', 'Q23757    '),
+    ('Q183670   ', 'chalk', 'Q23757    '),
+    ('Q187156   ', 'travertine', 'Q23757    '),
+    ('Q193685   ', 'tufa', 'Q23757    '),
+    ('Q810781   ', 'Bath Stone', 'Q23757    '),
+    ('Q1543962  ', 'shell limestone', 'Q23757    '),
+    ('Q2933645  ', 'shelly limestone', 'Q23757    '),
+    ('Q3073804  ', 'calcilutite', 'Q23757    '),
+    ('Q3373742  ', 'Ruin marble', 'Q23757    '),
+    ('Q3387427  ', 'Euville stone', 'Q23757    '),
+    ('Q5169526  ', 'coral rag', 'Q23757    '),
+    ('Q6392040  ', 'Kentish ragstone', 'Q23757    '),
+    (
+        'Q7231865  ',
+        'Portland Admiralty Roach',
+        'Q23757    '
+    ),
+    ('Q1398981  ', 'faxe kalk', 'Q23757    '),
+    ('Q43704003 ', 'packstone', 'Q23757    '),
+    ('Q59141442 ', 'Hornton stone', 'Q23757    ');

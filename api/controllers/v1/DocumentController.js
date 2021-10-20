@@ -14,4 +14,6 @@ module.exports = {
   validate: (req, res, next) => documentController.validate(req, res, next),
   multipleValidate: (req, res, next) =>
     documentController.multipleValidate(req, res, next),
+  checkRows: (req, res) => documentController.checkRows(req, res),
+  importRows: (req, res) => documentController.importRows(req, res),
 };

@@ -1,14 +1,51 @@
 [
   {
-	"id": 1,
-	"login": "test",
-    "contact": "test@test.com",
-    "password": "098f6bcd4621d373cade4e832627b4f6"
+    "login": "admin1",
+    "mail": "admin1@admin1.com",
+    "nickname": "Admin1",
+    "password": "d4baeedef5db4a9424b2c340323d2ee2c374cbd05196a7c108faf080a1dc4c26",
+    "_comment": "The password is 'testtest'",
+    "alertForNews": "false",
+    "language": 1,
+    "groups": [
+      1
+    ]
   },
   {
-    "id": 2,
-    "login": "test2",
-    "contact": "test2@test.com",
-    "password": "098f6bcd4621d373cade4e832627b4f6"
+    "login": "moderator1",
+    "mail": "moderator1@moderator1.com",
+    "nickname": "Moderator1",
+    "password": "d4baeedef5db4a9424b2c340323d2ee2c374cbd05196a7c108faf080a1dc4c26",
+    "alertForNews": "false",
+    "language": 1,
+    "groups": [
+      2
+    ]
+  },
+  {
+    "login": "user1",
+    "mail": "user1@user1.com",
+    "nickname": "User1",
+    "password": "d4baeedef5db4a9424b2c340323d2ee2c374cbd05196a7c108faf080a1dc4c26",
+    "alertForNews": "false",
+    "language": 1,
+    "groups": [
+      3
+    ]
+  },
+  {
+    "login": "All1",
+    "mail": "all1@all1.com",
+    "nickname": "All1",
+    "password": "d4baeedef5db4a9424b2c340323d2ee2c374cbd05196a7c108faf080a1dc4c26",
+    "alertForNews": "false",
+    "language": 1,
+    "groups": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ]
   }
 ]

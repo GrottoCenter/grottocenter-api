@@ -11,64 +11,26 @@ module.exports = {
   find: async (req, res, next, converter) => {
     const caverId = req.param('id');
 
-    TCaver.findOne(caverId)
-      .populate('documents')
-      .populate('grottos')
-      .populate('groups')
-      .then(async (caverFound) => {
-        const params = {};
-        params.searchedItem = `Caver of id ${caverId}`;
-        if (!caverFound) {
-          const notFoundMessage = `${params.searchedItem} not found`;
-          sails.log.debug(notFoundMessage);
-          res.status(404);
-          return res.json({ error: notFoundMessage });
-        }
+    const params = {};
+    params.searchedItem = `Caver of id ${caverId}`;
 
-        // Check complete view right
-        const hasCompleteViewRight = req.token
-          ? await sails.helpers.checkRight
-              .with({
-                groups: req.token.groups,
-                rightEntity: RightService.RightEntities.CAVER,
-                rightAction: RightService.RightActions.VIEW_COMPLETE,
-              })
-              .intercept('rightNotFound', (err) => {
-                return res.serverError(
-                  'A server error occured when checking your right to entirely view a caver.',
-                );
-              })
-          : false;
+    const caverFound = await CaverService.getCaver(caverId);
 
-        // Delete sensitive data
-        delete caverFound.activationCode;
-        delete caverFound.password;
+    if (!caverFound) {
+      const notFoundMessage = `${params.searchedItem} not found`;
+      sails.log.debug(notFoundMessage);
+      res.status(404);
+      return res.json({ error: notFoundMessage });
+    }
 
-        return ControllerService.treatAndConvert(
-          req,
-          null,
-          hasCompleteViewRight
-            ? caverFound
-            : {
-                documents: caverFound.documents,
-                name: caverFound.name,
-                nickname: caverFound.nickname,
-                surname: caverFound.surname,
-              },
-          params,
-          res,
-          converter,
-        );
-      })
-      .catch({ name: 'UsageError' }, (err) => {
-        return res.badRequest(err.cause.message);
-      })
-      .catch({ name: 'AdapterError' }, (err) => {
-        return res.badRequest(err.cause.message);
-      })
-      .catch((err) => {
-        return res.serverError(err.cause.message);
-      });
+    return ControllerService.treatAndConvert(
+      req,
+      null,
+      caverFound,
+      params,
+      res,
+      converter,
+    );
   },
 
   findAll: (req, res) => {
@@ -290,7 +252,6 @@ module.exports = {
       .then(() => {
         esClient.update({
           index: `cavers-index`,
-          type: 'data',
           id: req.param('caverId'),
           body: {
             doc: {
@@ -442,50 +403,31 @@ module.exports = {
       );
     }
 
-    const newCaver = await TCaver.create({
-      dateInscription: new Date(),
-      mail: 'no@mail.no', // default mail for non-user caver
+    const paramsCaver = {
       name: req.param('name'),
-      nickname: `${req.param('name')} ${req.param('surname')}`,
       surname: req.param('surname'),
-      language: '000', // default null language id
-    })
-      .fetch()
-      .intercept('E_UNIQUE', (e) => {
-        sails.log.error(e.message);
-        return res.status(409).send(e.message);
-      })
-      .intercept({ name: 'UsageError' }, (e) => {
-        sails.log.error(e.message);
-        return res.badRequest(e.message);
-      })
-      .intercept({ name: 'AdapterError' }, (e) => {
-        sails.log.error(e.message);
-        return res.badRequest(e.message);
-      })
-      .intercept((e) => {
-        sails.log.error(e.message);
-        return res.serverError(e.message);
-      });
+    };
 
-    try {
-      esClient.create({
-        index: `cavers-index`,
-        type: 'data',
-        id: newCaver.id,
-        body: {
-          id: newCaver.id,
-          groups: '',
-          mail: newCaver.mail,
-          name: newCaver.name,
-          nickname: newCaver.nickname,
-          surname: newCaver.surname,
-          type: 'caver',
-        },
-      });
-    } catch (error) {
-      sails.log.error(error);
-    }
+    const handleError = (error) => {
+      if (error.code && error.code === 'E_UNIQUE') {
+        return res.sendStatus(409).send(error.message);
+      } else {
+        switch (error.name) {
+          case 'UsageError':
+            return res.badRequest(error);
+          case 'AdapterError':
+            return res.badRequest(error);
+          default:
+            return res.serverError(error);
+        }
+      }
+    };
+
+    const newCaver = await CaverService.createNonUserCaver(
+      paramsCaver,
+      handleError,
+      esClient,
+    );
 
     const params = {};
     params.controllerMethod = 'CaverController.create';

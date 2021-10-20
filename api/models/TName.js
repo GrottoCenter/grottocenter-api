@@ -20,7 +20,7 @@ module.exports = {
 
     name: {
       type: 'string',
-      maxLength: 100,
+      maxLength: 200,
       columnName: 'name',
     },
 

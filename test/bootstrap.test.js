@@ -1,9 +1,8 @@
 let sails = require('sails');
-let Barrels = require('barrels');
+const Fixted = require('fixted');
 
 before(function(done) {
-  // Increase the Mocha timeout so that Sails has enough time to lift.
-  this.timeout(5000);
+  this.timeout(10000);
 
   sails.lift(
     {
@@ -16,21 +15,18 @@ before(function(done) {
       },
       csrf: false,
     },
+
     function(err) {
       if (err) return done(err);
-      // here you can load fixtures, etc.
-
-      // Load fixtures
-      //let barrels = new Barrels();
-
-      // Save original objects in `fixtures` variable
-      //fixtures = barrels.data;
-
-      // Populate the DB
-      /*barrels.populate(function(err) {
-      done(err, sails);
-    });*/
-      return done();
+      // Here you can load fixtures, etc.
+      const fixted = new Fixted();
+      fixted.populate(function(err) {
+        if (err) {
+          return done(err);
+        }
+        // Do your thing...
+        done();
+      });
     },
   );
 });

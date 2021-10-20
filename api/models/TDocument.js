@@ -66,6 +66,12 @@ module.exports = {
       defaultsTo: false,
     },
 
+    issue: {
+      type: 'string',
+      allowNull: true,
+      maxLength: 100,
+    },
+
     validationComment: {
       type: 'string',
       allowNull: true,
@@ -136,6 +142,12 @@ module.exports = {
       model: 'TGrotto',
     },
 
+    authorsGrotto: {
+      collection: 'TGrotto',
+      via: 'document',
+      through: 'JDocumentGrottoAuthor',
+    },
+
     library: {
       columnName: 'id_library',
       model: 'TGrotto',
@@ -152,6 +164,11 @@ module.exports = {
       model: 'TDocument',
     },
 
+    children: {
+      collection: 'TDocument',
+      via: 'parent',
+    },
+
     license: {
       allowNull: false,
       columnName: 'id_license',
@@ -161,6 +178,16 @@ module.exports = {
     modifiedDocJson: {
       columnName: 'modified_doc_json',
       type: 'json',
+    },
+
+    idDbImport: {
+      type: 'number',
+      columnName: 'id_db_import',
+    },
+
+    nameDbImport: {
+      type: 'string',
+      columnName: 'name_db_import',
     },
 
     pagesBBSOld: {

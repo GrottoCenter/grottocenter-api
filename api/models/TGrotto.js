@@ -174,5 +174,11 @@ module.exports = {
       via: 'grotto',
       through: 'JGrottoCavePartner',
     },
+
+    documents: {
+      collection: 'TDocument',
+      via: 'grotto',
+      through: 'JDocumentGrottoAuthor',
+    },
   },
 };

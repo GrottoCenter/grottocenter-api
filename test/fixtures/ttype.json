@@ -1,0 +1,128 @@
+[
+  {
+    "name": "Collection",
+    "comment": "An aggregation of resources",
+    "isAvailable": true,
+    "parent": null,
+    "url": "http://purl.org/dc/dcmitype/Collection"
+  },
+  {
+    "name": "Dataset",
+    "comment": "Data encoded in a defined structure",
+    "isAvailable": false,
+    "parent": null,
+    "url": "http://purl.org/dc/dcmitype/Dataset"
+  },
+  {
+    "name": "Event",
+    "comment": "A non-persistent, time-based occurrence",
+    "isAvailable": false,
+    "parent": null,
+    "url": "http://purl.org/dc/dcmitype/Event"
+  },
+  {
+    "name": "Image",
+    "comment": "A visual representation other than text",
+    "isAvailable": true,
+    "parent": null,
+    "url": "http://purl.org/dc/dcmitype/Image"
+  },
+  {
+    "name": "InteractiveResource",
+    "comment": "A resource requiring interaction from the user to be understood, executed, or experienced",
+    "isAvailable": false,
+    "parent": null,
+    "url": "http://purl.org/dc/dcmitype/InteractiveResource"
+  },
+  {
+    "name": "MovingImage",
+    "comment": "A series of visual representations imparting an impression of motion when shown in succession",
+    "isAvailable": false,
+    "parent": null,
+    "url": "http://purl.org/dc/dcmitype/MovingImage"
+  },
+  {
+    "name": "PhysicalObject",
+    "comment": "An inanimate, three-dimensional object or substance",
+    "isAvailable": false,
+    "parent": null,
+    "url": "http://purl.org/dc/dcmitype/PhysicalObject"
+  },
+  {
+    "name": "Service",
+    "comment": "A system that provides one or more functions",
+    "isAvailable": false,
+    "parent": null,
+    "url": "http://purl.org/dc/dcmitype/Service"
+  },
+  {
+    "name": "Software",
+    "comment": "A computer program in source or compiled form",
+    "isAvailable": false,
+    "parent": null,
+    "url": "http://purl.org/dc/dcmitype/Software"
+  },
+  {
+    "name": "Sound",
+    "comment": "A resource primarily intended to be heard",
+    "isAvailable": false,
+    "parent": null,
+    "url": "http://purl.org/dc/dcmitype/Sound"
+  },
+  {
+    "name": "StillImage",
+    "comment": "A static visual representation including paintings, drawings, graphic designs, plans and maps",
+    "isAvailable": false,
+    "parent": 4,
+    "url": "http://purl.org/dc/dcmitype/StillImage"
+  },
+  {
+    "name": "Text",
+    "comment": "A resource consisting primarily of words for reading",
+    "isAvailable": true,
+    "parent": null,
+    "url": "http://purl.org/dc/dcmitype/Text"
+  },
+  {
+    "name": "TopographicDrawing",
+    "comment": "A visual representation of a topography",
+    "isAvailable": false,
+    "parent": 11,
+    "url": "https://ontology.uis-speleo.org/ontology/#topography"
+  },
+  {
+    "name": "TopographicData",
+    "comment": "Topographic data encoded in a defined structure",
+    "isAvailable": true,
+    "parent": 2,
+    "url": "https://ontology.uis-speleo.org/ontology/#topographicData"
+  },
+  {
+    "name": "Book",
+    "comment": "A book",
+    "isAvailable": false,
+    "parent": 12,
+    "url": "http://id.loc.gov/vocabulary/marcgt/boo"
+  },
+  {
+    "name": "Issue",
+    "comment": "An issue of a periodic publication",
+    "isAvailable": true,
+    "parent": 12,
+    "url": "http://id.loc.gov/vocabulary/marcgt/iss"
+  },
+  {
+    "name": "Article",
+    "comment": "An article from a source",
+    "isAvailable": true,
+    "parent": 12,
+    "url": "http://id.loc.gov/vocabulary/marcgt/art"
+  },
+  {
+    "name": "Map",
+    "comment": "A geographical map",
+    "isAvailable": false,
+    "parent": 11,
+    "url": "http://id.loc.gov/vocabulary/marcgt/map"
+  }
+]

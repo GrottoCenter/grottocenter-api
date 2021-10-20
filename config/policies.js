@@ -81,6 +81,8 @@ module.exports.policies = {
     publicCount: true,
     unlinkDocument: ['tokenAuth', 'moderatorAuth'],
     update: 'tokenAuth',
+    checkRows: 'tokenAuth',
+    importRows: 'tokenAuth',
   },
 
   'v1/DescriptionController': {
@@ -178,6 +180,8 @@ module.exports.policies = {
     validate: ['tokenAuth', 'moderatorAuth'],
     multipleValidate: ['tokenAuth', 'moderatorAuth'],
     update: 'tokenAuth',
+    checkRows: 'tokenAuth',
+    importRows: 'tokenAuth',
   },
 
   'v1/DocumentTypeController': {

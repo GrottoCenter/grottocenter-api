@@ -21,12 +21,12 @@ module.exports = {
       unique: true,
     },
 
+    // deprecated attribute: mail is prefered for login
     login: {
       type: 'string',
       columnName: 'login',
       allowNull: true,
       maxLength: 20,
-      unique: true,
     },
 
     password: {
@@ -184,18 +184,5 @@ module.exports = {
     // TODO commented to remove ESlint warning because hash is not defined.
     // values.password = hash;
     next();
-  },
-
-  comparePassword: (password, user, next) => {
-    const hash = crypto
-      .createHash('md5')
-      .update(password)
-      .digest('hex');
-
-    if (hash === user.password) {
-      next(null, true);
-    } else {
-      next(null, false);
-    }
   },
 };

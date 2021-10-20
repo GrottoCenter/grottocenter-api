@@ -9,7 +9,25 @@ const MAIN_LANGUAGE_QUERY = `
 
 const oldTopoFilesUrl = 'https://www.grottocenter.org/upload/topos/';
 
+const ramda = require('ramda');
+
 module.exports = {
+  deepPopulateChildren: async (doc) => {
+    doc = await TDocument.findOne(doc.id)
+      .populate('children')
+      .populate('descriptions');
+    await DescriptionService.setDocumentDescriptions(doc);
+    if (doc.children.length > 0) {
+      doc.children = await Promise.all(
+        doc.children.map(
+          async (childDoc) =>
+            await DocumentService.deepPopulateChildren(childDoc),
+        ),
+      );
+    }
+    return doc;
+  },
+
   /**
    * @returns {Promise} which resolves to the succesfully findRandom
    */
@@ -39,5 +57,41 @@ module.exports = {
       ...f,
       pathOld: oldTopoFilesUrl + f.pathOld,
     }));
+  },
+
+  createDocument: async (dataDocument, dataLangDesc, errorHandler) => {
+    return await sails
+      .getDatastore()
+      .transaction(async (db) => {
+        const documentCreated = await TDocument.create(dataDocument)
+          .fetch()
+          .usingConnection(db);
+
+        // Create associated data not handled by TDocument manually
+        if (ramda.pathOr(null, ['documentMainLanguage', 'id'], dataLangDesc)) {
+          await JDocumentLanguage.create({
+            document: documentCreated.id,
+            language: dataLangDesc.documentMainLanguage.id,
+            isMain: true,
+          }).usingConnection(db);
+        }
+
+        await TDescription.create({
+          author: dataLangDesc.author,
+          body: dataLangDesc.description,
+          dateInscription: ramda.propOr(
+            new Date(),
+            'dateInscription',
+            dataLangDesc,
+          ),
+          dateReviewed: ramda.propOr(undefined, 'dateReviewed', dataLangDesc),
+          document: documentCreated.id,
+          language: dataLangDesc.titleAndDescriptionLanguage.id,
+          title: dataLangDesc.title,
+        }).usingConnection(db);
+
+        return documentCreated;
+      })
+      .intercept(errorHandler);
   },
 };
