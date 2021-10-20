@@ -19,7 +19,7 @@ module.exports = {
     return Number(result.rows[0]['?column?']);
   },
 
-  createNonUserCaver: async (caverData, errorHandler, esClient) => {
+  createNonUserCaver: async (caverData, errorHandler) => {
     let nickname = ramda.propOr('', 'nickname', caverData);
     const name = ramda.propOr(undefined, 'name', caverData);
     const surname = ramda.propOr(undefined, 'surname', caverData);

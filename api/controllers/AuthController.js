@@ -6,7 +6,6 @@
  */
 
 const passport = require('passport');
-const esClient = require('../../config/elasticsearch').elasticsearchCli;
 const { tokenSalt } = AuthService;
 const PASSWORD_MIN_LENGTH = 8;
 

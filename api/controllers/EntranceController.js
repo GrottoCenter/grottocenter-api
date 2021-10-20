@@ -5,7 +5,6 @@
  * @help        :: See http://links.sailsjs.org/docs/controllers
  */
 const ramda = require('ramda');
-const esClient = require('../../config/elasticsearch').elasticsearchCli;
 const getCountryISO3 = require('country-iso-2-to-3');
 
 // Extract everything from the request body except id
@@ -547,7 +546,6 @@ module.exports = {
       cleanedData,
       nameDescLocData,
       handleError(res),
-      esClient,
     );
 
     const params = {};
@@ -903,7 +901,6 @@ module.exports = {
             dataEntrance,
             dataNameDescLoc,
             handleError,
-            esClient,
           );
           if (
             doubleCheck({

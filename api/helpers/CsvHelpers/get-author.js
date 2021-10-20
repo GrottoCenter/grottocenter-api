@@ -1,5 +1,3 @@
-const esClient = require('../../../config/elasticsearch').elasticsearchCli;
-
 module.exports = {
   friendlyName: 'Author getter',
 
@@ -59,7 +57,6 @@ module.exports = {
       const newCaver = await CaverService.createNonUserCaver(
         caverParams,
         (error) => error,
-        esClient,
       );
       authorId = newCaver.id;
     } else {

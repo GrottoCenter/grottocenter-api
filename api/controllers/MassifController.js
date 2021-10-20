@@ -5,7 +5,6 @@
  * @help        :: See http://links.sailsjs.org/docs/controllers
  */
 const ramda = require('ramda');
-const esClient = require('../../config/elasticsearch').elasticsearchCli;
 
 module.exports = {
   find: (req, res, next, converter = MappingV1Service.convertToMassifModel) => {

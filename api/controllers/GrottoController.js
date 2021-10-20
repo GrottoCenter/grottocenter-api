@@ -5,7 +5,6 @@
  * @help        :: See http://links.sailsjs.org/docs/controllers
  */
 
-const esClient = require('../../config/elasticsearch').elasticsearchCli;
 const ramda = require('ramda');
 
 // Extract everything from the request body except id
@@ -165,7 +164,6 @@ module.exports = {
       cleanedData,
       nameData,
       handleError,
-      esClient,
     );
 
     const params = {};
