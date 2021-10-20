@@ -14,7 +14,7 @@ module.exports = {
     const params = {};
     params.searchedItem = `Caver of id ${caverId}`;
 
-    const caverFound = await CaverService.getCaver(caverId);
+    const caverFound = await CaverService.getCaver(caverId, req);
 
     if (!caverFound) {
       const notFoundMessage = `${params.searchedItem} not found`;
