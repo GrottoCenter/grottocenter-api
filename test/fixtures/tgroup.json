@@ -12,7 +12,9 @@
   {
     "name": "User",
     "comments": "Default users group",
-    "rights": [30, 29]
+    "rights": [
+      13, 29, 30
+    ]
   },
   {
     "name": "Visitor",
