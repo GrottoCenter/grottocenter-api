@@ -960,6 +960,15 @@ module.exports = {
         .populate('reviewer')
         .populate('subjects')
         .populate('type');
+      const params = {
+        controllerMethod: 'DocumentController.find',
+        searchedItem: 'Document of id ' + req.param('id'),
+      };
+      if (!found) {
+        const notFoundMessage = `${params.searchedItem} not found`;
+        sails.log.debug(notFoundMessage);
+        return res.status(404).send(notFoundMessage);
+      }
       found.mainLanguage = await DocumentService.getMainLanguage(found.id);
       await setNamesOfPopulatedDocument(found);
       await DescriptionService.setDocumentDescriptions(found);
