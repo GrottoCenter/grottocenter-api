@@ -408,36 +408,21 @@ module.exports = {
       surname: req.param('surname'),
     };
 
-    const handleError = (error) => {
-      if (error.code && error.code === 'E_UNIQUE') {
-        return res.sendStatus(409).send(error.message);
-      } else {
-        switch (error.name) {
-          case 'UsageError':
-            return res.badRequest(error);
-          case 'AdapterError':
-            return res.badRequest(error);
-          default:
-            return res.serverError(error);
-        }
-      }
-    };
-
-    const newCaver = await CaverService.createNonUserCaver(
-      paramsCaver,
-      handleError,
-    );
-
-    const params = {};
-    params.controllerMethod = 'CaverController.create';
-    return ControllerService.treatAndConvert(
-      req,
-      null,
-      newCaver,
-      params,
-      res,
-      converter,
-    );
+    try {
+      const newCaver = await CaverService.createNonUserCaver(paramsCaver);
+      const params = {};
+      params.controllerMethod = 'CaverController.create';
+      return ControllerService.treatAndConvert(
+        req,
+        null,
+        newCaver,
+        params,
+        res,
+        converter,
+      );
+    } catch (e) {
+      ErrorService.getDefaultErrorHandler(res)(e);
+    }
   },
 
   addExploredEntrance: async (req, res) => {
