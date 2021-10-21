@@ -6,20 +6,21 @@ Current production version is available [here](http://beta.grottocenter.org/)
 
 ## Project overview
 
+[![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
+
+
 ### Master
 ![Latest Deployment](https://github.com/GrottoCenter/Grottocenter3/actions/workflows/deploy-aws.yml/badge.svg?branch=master)
 
+[![Coverage Status](https://coveralls.io/repos/github/GrottoCenter/Grottocenter3/badge.svg?branch=refs/heads/master)](https://coveralls.io/github/GrottoCenter/Grottocenter3?branch=refs/heads/master)
+
 ![Latest Build](https://github.com/GrottoCenter/Grottocenter3/actions/workflows/build.yml/badge.svg?branch=master)
 
-[![Coverage Status](https://coveralls.io/repos/github/GrottoCenter/Grottocenter3/badge.svg?branch=master)](https://coveralls.io/github/GrottoCenter/Grottocenter3?branch=master)
-
 ### Develop
+
+[![Coverage Status](https://coveralls.io/repos/github/GrottoCenter/Grottocenter3/badge.svg?branch=refs/heads/develop)](https://coveralls.io/github/GrottoCenter/Grottocenter3?branch=refs/heads/develop)
+
 ![Latest Build](https://github.com/GrottoCenter/Grottocenter3/actions/workflows/build.yml/badge.svg?branch=develop)
-
-[![Coverage Status](https://coveralls.io/repos/github/GrottoCenter/Grottocenter3/badge.svg?branch=develop)](https://coveralls.io/github/GrottoCenter/Grottocenter3?branch=develop)
-
-
-[![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
 
 ![GC flyer](https://rawgit.com/wiki/GrottoCenter/Grottocenter3/images/afficheGC3.svg)
 
