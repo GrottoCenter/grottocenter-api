@@ -239,7 +239,6 @@ const getConvertedDocumentFromCsv = async (rawData, authorId) => {
           const editorGrotto = await GrottoService.createGrotto(
             paramsGrotto,
             nameGrotto,
-            (err) => err,
           );
           editorId = editorGrotto.id;
           break;

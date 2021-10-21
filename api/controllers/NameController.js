@@ -37,48 +37,33 @@ module.exports = {
       name: req.param('name'),
     };
 
-    // Launch update request
-    const updatedName = await TName.updateOne({
-      id: nameId,
-    })
-      .set(cleanedData)
-      .intercept('E_UNIQUE', (e) => {
-        sails.log.error(e.message);
-        return res.status(409).send(e.message);
-      })
-      .intercept({ name: 'UsageError' }, (e) => {
-        sails.log.error(e.message);
-        return res.badRequest(e.message);
-      })
-      .intercept({ name: 'AdapterError' }, (e) => {
-        sails.log.error(e.message);
-        return res.badRequest(e.message);
-      })
-      .intercept((e) => {
-        sails.log.error(e.message);
-        return res.serverError(e.message);
-      });
+    try {
+      await TName.updateOne({
+        id: nameId,
+      }).set(cleanedData);
+      const newName = await TName.findOne(nameId)
+        .populate('author')
+        .populate('cave')
+        .populate('entrance')
+        .populate('grotto')
+        .populate('language')
+        .populate('massif')
+        .populate('point')
+        .populate('reviewer');
 
-    const newName = await TName.findOne(nameId)
-      .populate('author')
-      .populate('cave')
-      .populate('entrance')
-      .populate('grotto')
-      .populate('language')
-      .populate('massif')
-      .populate('point')
-      .populate('reviewer');
-
-    const params = {};
-    params.controllerMethod = 'NameController.update';
-    return ControllerService.treatAndConvert(
-      req,
-      null,
-      newName,
-      params,
-      res,
-      converter,
-    );
+      const params = {};
+      params.controllerMethod = 'NameController.update';
+      return ControllerService.treatAndConvert(
+        req,
+        null,
+        newName,
+        params,
+        res,
+        converter,
+      );
+    } catch (e) {
+      ErrorService.getDefaultErrorHandler(res)(e);
+    }
   },
 
   setAsMain: async (req, res, converter) => {
@@ -121,79 +106,48 @@ module.exports = {
       );
     }
 
-    // Launch update request
-    const updatedName = await TName.updateOne({
-      id: nameId,
-    })
-      .set({ isMain: true })
-      .intercept('E_UNIQUE', (e) => {
-        sails.log.error(e.message);
-        return res.status(409).send(e.message);
-      })
-      .intercept({ name: 'UsageError' }, (e) => {
-        sails.log.error(e.message);
-        return res.badRequest(e.message);
-      })
-      .intercept({ name: 'AdapterError' }, (e) => {
-        sails.log.error(e.message);
-        return res.badRequest(e.message);
-      })
-      .intercept((e) => {
-        sails.log.error(e.message);
-        return res.serverError(e.message);
-      });
+    try {
+      const updatedName = await TName.updateOne({
+        id: nameId,
+      }).set({ isMain: true });
 
-    // Update other names of the entity to isMain = false
-    const possibleEntites = [
-      { id: updatedName.cave, type: 'cave' },
-      { id: updatedName.entrance, type: 'entrance' },
-      { id: updatedName.grotto, type: 'grotto' },
-      { id: updatedName.massif, type: 'massif' },
-      { id: updatedName.point, type: 'point' },
-    ];
-    const entity = possibleEntites.find((e) => e.id !== null);
-    await TName.update({
-      [entity.type]: entity.id,
-      id: { '!=': updatedName.id },
-    })
-      .set({ isMain: false })
-      .intercept('E_UNIQUE', (e) => {
-        sails.log.error(e.message);
-        return res.status(409).send(e.message);
-      })
-      .intercept({ name: 'UsageError' }, (e) => {
-        sails.log.error(e.message);
-        return res.badRequest(e.message);
-      })
-      .intercept({ name: 'AdapterError' }, (e) => {
-        sails.log.error(e.message);
-        return res.badRequest(e.message);
-      })
-      .intercept((e) => {
-        sails.log.error(e.message);
-        return res.serverError(e.message);
-      });
+      // Update other names of the entity to isMain = false
+      const possibleEntites = [
+        { id: updatedName.cave, type: 'cave' },
+        { id: updatedName.entrance, type: 'entrance' },
+        { id: updatedName.grotto, type: 'grotto' },
+        { id: updatedName.massif, type: 'massif' },
+        { id: updatedName.point, type: 'point' },
+      ];
+      const entity = possibleEntites.find((e) => e.id !== null);
+      await TName.update({
+        [entity.type]: entity.id,
+        id: { '!=': updatedName.id },
+      }).set({ isMain: false });
 
-    // Return name updated and populated
-    const newName = await TName.findOne(nameId)
-      .populate('author')
-      .populate('cave')
-      .populate('entrance')
-      .populate('grotto')
-      .populate('language')
-      .populate('massif')
-      .populate('point')
-      .populate('reviewer');
+      // Return name updated and populated
+      const newName = await TName.findOne(nameId)
+        .populate('author')
+        .populate('cave')
+        .populate('entrance')
+        .populate('grotto')
+        .populate('language')
+        .populate('massif')
+        .populate('point')
+        .populate('reviewer');
 
-    const params = {};
-    params.controllerMethod = 'NameController.setAsMain';
-    return ControllerService.treatAndConvert(
-      req,
-      null,
-      newName,
-      params,
-      res,
-      converter,
-    );
+      const params = {};
+      params.controllerMethod = 'NameController.setAsMain';
+      return ControllerService.treatAndConvert(
+        req,
+        null,
+        newName,
+        params,
+        res,
+        converter,
+      );
+    } catch (e) {
+      ErrorService.getDefaultErrorHandler(res)(e);
+    }
   },
 };

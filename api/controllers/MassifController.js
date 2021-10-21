@@ -105,97 +105,89 @@ module.exports = {
     }
 
     // Launch creation request using transaction: it performs a rollback if an error occurs
-    const newMassifPopulated = await sails
-      .getDatastore()
-      .transaction(async (db) => {
-        const cleanedData = {
-          author: req.token.id,
-          caves: req.body.caves ? req.body.caves.map((c) => c.id) : [],
-          dateInscription: new Date(),
-        };
-
-        const newMassif = await TMassif.create(cleanedData)
-          .fetch()
-          .usingConnection(db);
-
-        // Name
-        const massifName = await TName.create({
-          author: req.token.id,
-          dateInscription: new Date(),
-          isMain: true,
-          language: req.body.descriptionAndNameLanguage.id,
-          massif: newMassif.id,
-          name: req.body.name,
-        })
-          .fetch()
-          .usingConnection(db);
-
-        // Description (if provided)
-        if (ramda.propOr(null, 'description', req.body)) {
-          await TDescription.create({
+    try {
+      const newMassifPopulated = await sails
+        .getDatastore()
+        .transaction(async (db) => {
+          const cleanedData = {
             author: req.token.id,
-            body: req.body.description,
+            caves: req.body.caves ? req.body.caves.map((c) => c.id) : [],
             dateInscription: new Date(),
-            massif: newMassif.id,
+          };
+
+          const newMassif = await TMassif.create(cleanedData)
+            .fetch()
+            .usingConnection(db);
+
+          // Name
+          await TName.create({
+            author: req.token.id,
+            dateInscription: new Date(),
+            isMain: true,
             language: req.body.descriptionAndNameLanguage.id,
-            title: req.body.descriptionTitle,
-          }).usingConnection(db);
-        }
+            massif: newMassif.id,
+            name: req.body.name,
+          })
+            .fetch()
+            .usingConnection(db);
 
-        // Prepare data for Elasticsearch indexation
-        const newMassifPopulated = await TMassif.findOne(newMassif.id)
-          .populate('caves')
-          .populate('descriptions')
-          .populate('names')
-          .usingConnection(db);
+          // Description (if provided)
+          if (ramda.propOr(null, 'description', req.body)) {
+            await TDescription.create({
+              author: req.token.id,
+              body: req.body.description,
+              dateInscription: new Date(),
+              massif: newMassif.id,
+              language: req.body.descriptionAndNameLanguage.id,
+              title: req.body.descriptionTitle,
+            }).usingConnection(db);
+          }
 
-        return newMassifPopulated;
-      })
-      .intercept('E_UNIQUE', (e) => {
-        sails.log.error(e.message);
-        return res.status(409).send(e.message);
-      })
-      .intercept({ name: 'UsageError' }, (e) => {
-        sails.log.error(e.message);
-        return res.badRequest(e.message);
-      })
-      .intercept({ name: 'AdapterError' }, (e) => {
-        sails.log.error(e.message);
-        return res.badRequest(e.message);
-      })
-      .intercept((e) => {
-        sails.log.error(e.message);
-        return res.serverError(e.message);
-      });
+          // Prepare data for Elasticsearch indexation
+          const newMassifPopulated = await TMassif.findOne(newMassif.id)
+            .populate('caves')
+            .populate('descriptions')
+            .populate('names')
+            .usingConnection(db);
 
-    // Prepare data for Elasticsearch indexation
-    const description =
-      newMassifPopulated.descriptions.length === 0
-        ? null
-        : // There is only one description at the moment
-          newMassifPopulated.descriptions[0].title +
-          ' ' +
-          newMassifPopulated.descriptions[0].body;
+          // Prepare data for Elasticsearch indexation
+          const description =
+            newMassifPopulated.descriptions.length === 0
+              ? null
+              : // There is only one description at the moment
+                newMassifPopulated.descriptions[0].title +
+                ' ' +
+                newMassifPopulated.descriptions[0].body;
 
-    await CaveService.setEntrances(newMassifPopulated.caves);
+          await CaveService.setEntrances(newMassifPopulated.caves);
 
-    // Format data
-    const { cave, name, names, ...newMassifESData } = newMassifPopulated;
-    await ElasticsearchService.create('massifs', newMassifPopulated.id, {
-      ...newMassifESData,
-      name: newMassifPopulated.names[0].name, // There is only one name at the creation time
-      names: newMassifPopulated.names.map((n) => n.name).join(', '),
-      'nb caves': newMassifPopulated.caves.length,
-      'nb entrances': newMassifPopulated.caves.reduce(
-        (total, cave) => total + cave.entrances.length,
-        0,
-      ),
-      descriptions: [description],
-      tags: ['massif'],
-    });
+          // Format data
+          const { cave, name, names, ...newMassifESData } = newMassifPopulated;
+          await ElasticsearchService.create('massifs', newMassifPopulated.id, {
+            ...newMassifESData,
+            name: newMassifPopulated.names[0].name, // There is only one name at the creation time
+            names: newMassifPopulated.names.map((n) => n.name).join(', '),
+            'nb caves': newMassifPopulated.caves.length,
+            'nb entrances': newMassifPopulated.caves.reduce(
+              (total, cave) => total + cave.entrances.length,
+              0,
+            ),
+            descriptions: [description],
+            tags: ['massif'],
+          });
 
-    const params = {};
-    params.controllerMethod = 'MassifController.create';
-    return ControllerService.treat(req, null, newMassifPopulated, params, res);
+          const params = {};
+          params.controllerMethod = 'MassifController.create';
+          return ControllerService.treat(
+            req,
+            null,
+            newMassifPopulated,
+            params,
+            res,
+          );
+        });
+    } catch (e) {
+      ErrorService.getDefaultErrorHandler(res)(e);
+    }
   },
 };
