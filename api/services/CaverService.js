@@ -53,6 +53,8 @@ module.exports = {
       surname: newCaver.surname,
       tags: ['caver'],
     });
+
+    return newCaver;
   },
 
   /**
