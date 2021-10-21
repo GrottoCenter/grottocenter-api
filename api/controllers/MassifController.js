@@ -16,6 +16,11 @@ module.exports = {
       .exec((err, found) => {
         const params = {};
         params.searchedItem = `Massif of id ${req.params.id}`;
+        if (!found) {
+          const notFoundMessage = `${params.searchedItem} not found`;
+          sails.log.debug(notFoundMessage);
+          return res.status(404).send(notFoundMessage);
+        }
         CaveService.setEntrances(found.caves).then(
           (cavesEntrancesPopulated) => {
             NameService.setNames(cavesEntrancesPopulated, 'cave').then(
