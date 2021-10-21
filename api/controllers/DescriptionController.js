@@ -98,53 +98,39 @@ module.exports = {
       });
     }
 
-    const newDescription = await TDescription.create({
-      author: req.token.id,
-      dateInscription: new Date(),
-      body: req.param('body'),
-      title: req.param('title'),
-      language: req.param('language'),
-      [describedEntity.type]: describedEntity.id,
-    })
-      .fetch()
-      .intercept('E_UNIQUE', (e) => {
-        sails.log.error(e.message);
-        return res.status(409).send(e.message);
-      })
-      .intercept({ name: 'UsageError' }, (e) => {
-        sails.log.error(e.message);
-        return res.badRequest(e.message);
-      })
-      .intercept({ name: 'AdapterError' }, (e) => {
-        sails.log.error(e.message);
-        return res.badRequest(e.message);
-      })
-      .intercept((e) => {
-        sails.log.error(e.message);
-        return res.serverError(e.message);
-      });
+    try {
+      const newDescription = await TDescription.create({
+        author: req.token.id,
+        dateInscription: new Date(),
+        body: req.param('body'),
+        title: req.param('title'),
+        language: req.param('language'),
+        [describedEntity.type]: describedEntity.id,
+      }).fetch();
+      const newDescriptionPopulated = await TDescription.findOne(
+        newDescription.id,
+      )
+        .populate('author')
+        .populate('cave')
+        .populate('document')
+        .populate('entrance')
+        .populate('exit')
+        .populate('language')
+        .populate('massif');
 
-    const newDescriptionPopulated = await TDescription.findOne(
-      newDescription.id,
-    )
-      .populate('author')
-      .populate('cave')
-      .populate('document')
-      .populate('entrance')
-      .populate('exit')
-      .populate('language')
-      .populate('massif');
-
-    const params = {};
-    params.controllerMethod = 'DescriptionController.create';
-    return ControllerService.treatAndConvert(
-      req,
-      null,
-      newDescriptionPopulated,
-      params,
-      res,
-      converter,
-    );
+      const params = {};
+      params.controllerMethod = 'DescriptionController.create';
+      return ControllerService.treatAndConvert(
+        req,
+        null,
+        newDescriptionPopulated,
+        params,
+        res,
+        converter,
+      );
+    } catch (e) {
+      ErrorService.getDefaultErrorHandler(res)(e);
+    }
   },
   update: async (req, res, converter) => {
     // Check right
@@ -178,46 +164,32 @@ module.exports = {
     };
 
     // Launch update request
-    const updatedDescription = await TDescription.updateOne({
-      id: descriptionId,
-    })
-      .set(cleanedData)
-      .intercept('E_UNIQUE', (e) => {
-        sails.log.error(e.message);
-        return res.status(409).send(e.message);
-      })
-      .intercept({ name: 'UsageError' }, (e) => {
-        sails.log.error(e.message);
-        return res.badRequest(e.message);
-      })
-      .intercept({ name: 'AdapterError' }, (e) => {
-        sails.log.error(e.message);
-        return res.badRequest(e.message);
-      })
-      .intercept((e) => {
-        sails.log.error(e.message);
-        return res.serverError(e.message);
-      });
+    try {
+      await TDescription.updateOne({
+        id: descriptionId,
+      }).set(cleanedData);
+      const newDescription = await TDescription.findOne(descriptionId)
+        .populate('author')
+        .populate('cave')
+        .populate('document')
+        .populate('entrance')
+        .populate('exit')
+        .populate('language')
+        .populate('massif')
+        .populate('reviewer');
 
-    const newDescription = await TDescription.findOne(descriptionId)
-      .populate('author')
-      .populate('cave')
-      .populate('document')
-      .populate('entrance')
-      .populate('exit')
-      .populate('language')
-      .populate('massif')
-      .populate('reviewer');
-
-    const params = {};
-    params.controllerMethod = 'DescriptionController.update';
-    return ControllerService.treatAndConvert(
-      req,
-      null,
-      newDescription,
-      params,
-      res,
-      converter,
-    );
+      const params = {};
+      params.controllerMethod = 'DescriptionController.update';
+      return ControllerService.treatAndConvert(
+        req,
+        null,
+        newDescription,
+        params,
+        res,
+        converter,
+      );
+    } catch (e) {
+      ErrorService.getDefaultErrorHandler(res)(e);
+    }
   },
 };

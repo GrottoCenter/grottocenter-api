@@ -132,22 +132,6 @@ module.exports = {
       );
     }
 
-    // Launch creation request using transaction: it performs a rollback if an error occurs
-    const handleError = (error) => {
-      if (error.code && error.code === 'E_UNIQUE') {
-        return res.sendStatus(409).send(error.message);
-      } else {
-        switch (error.name) {
-          case 'UsageError':
-            return res.badRequest(error);
-          case 'AdapterError':
-            return res.badRequest(error);
-          default:
-            return res.serverError(error);
-        }
-      }
-    };
-
     const cleanedData = {
       ...getConvertedDataFromClientRequest(req),
       author: req.token.id,
@@ -160,22 +144,24 @@ module.exports = {
       text: req.param('name').text,
     };
 
-    const newOrganizationPopulated = await GrottoService.createGrotto(
-      cleanedData,
-      nameData,
-      handleError,
-    );
-
-    const params = {};
-    params.controllerMethod = 'GrottoController.create';
-    return ControllerService.treatAndConvert(
-      req,
-      null,
-      newOrganizationPopulated,
-      params,
-      res,
-      converter,
-    );
+    try {
+      const newOrganizationPopulated = await GrottoService.createGrotto(
+        cleanedData,
+        nameData,
+      );
+      const params = {};
+      params.controllerMethod = 'GrottoController.create';
+      return ControllerService.treatAndConvert(
+        req,
+        null,
+        newOrganizationPopulated,
+        params,
+        res,
+        converter,
+      );
+    } catch (e) {
+      ErrorService.getDefaultErrorHandler(res)(e);
+    }
   },
 
   delete: async (req, res) => {
@@ -255,9 +241,8 @@ module.exports = {
     };
 
     // Launch update request using transaction: it performs a rollback if an error occurs
-    await sails
-      .getDatastore()
-      .transaction(async (db) => {
+    try {
+      await sails.getDatastore().transaction(async (db) => {
         const updatedOrganization = await TGrotto.updateOne({
           id: organizationId,
         })
@@ -276,22 +261,9 @@ module.exports = {
           res,
           converter,
         );
-      })
-      .intercept('E_UNIQUE', (e) => {
-        sails.log.error(e.message);
-        return res.status(409).send(e.message);
-      })
-      .intercept({ name: 'UsageError' }, (e) => {
-        sails.log.error(e.message);
-        return res.badRequest(e.message);
-      })
-      .intercept({ name: 'AdapterError' }, (e) => {
-        sails.log.error(e.message);
-        return res.badRequest(e.message);
-      })
-      .intercept((e) => {
-        sails.log.error(e.message);
-        return res.serverError(e.message);
       });
+    } catch (e) {
+      ErrorService.getDefaultErrorHandler(res)(e);
+    }
   },
 };

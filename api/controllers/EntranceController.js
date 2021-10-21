@@ -530,36 +530,23 @@ module.exports = {
 
     const nameDescLocData = getConvertedNameDescLocFromClientRequest(req);
 
-    const handleError = (error) => {
-      if (error.code && error.code === 'E_UNIQUE') {
-        return res.sendStatus(409);
-      } else {
-        switch (error.name) {
-          case 'UsageError':
-            return res.badRequest(error);
-          case 'AdapterError':
-            return res.badRequest(error);
-          default:
-            return res.serverError(error);
-        }
-      }
-    };
-    // Launch creation request using transaction: it performs a rollback if an error occurs
-    const newEntrancePopulated = await EntranceService.createEntrance(
-      cleanedData,
-      nameDescLocData,
-      handleError(res),
-    );
-
-    const params = {};
-    params.controllerMethod = 'EntranceController.create';
-    return ControllerService.treat(
-      req,
-      null,
-      newEntrancePopulated,
-      params,
-      res,
-    );
+    try {
+      const newEntrancePopulated = await EntranceService.createEntrance(
+        cleanedData,
+        nameDescLocData,
+      );
+      const params = {};
+      params.controllerMethod = 'EntranceController.create';
+      return ControllerService.treat(
+        req,
+        null,
+        newEntrancePopulated,
+        params,
+        res,
+      );
+    } catch (e) {
+      ErrorService.getDefaultErrorHandler(res)(e);
+    }
   },
 
   delete: async (req, res) => {
@@ -639,9 +626,8 @@ module.exports = {
     };
 
     // Launch update request using transaction: it performs a rollback if an error occurs
-    await sails
-      .getDatastore()
-      .transaction(async (db) => {
+    try {
+      await sails.getDatastore().transaction(async (db) => {
         const updatedEntrance = await TEntrance.updateOne({
           id: entranceId,
         })
@@ -660,23 +646,10 @@ module.exports = {
           res,
           converter,
         );
-      })
-      .intercept('E_UNIQUE', (e) => {
-        sails.log.error(e.message);
-        return res.status(409).send(e.message);
-      })
-      .intercept({ name: 'UsageError' }, (e) => {
-        sails.log.error(e.message);
-        return res.badRequest(e.message);
-      })
-      .intercept({ name: 'AdapterError' }, (e) => {
-        sails.log.error(e.message);
-        return res.badRequest(e.message);
-      })
-      .intercept((e) => {
-        sails.log.error(e.message);
-        return res.serverError(e.message);
       });
+    } catch (e) {
+      ErrorService.getDefaultErrorHandler(res)(e);
+    }
   },
 
   addDocument: async (req, res) => {
@@ -854,11 +827,6 @@ module.exports = {
       failureImport: [],
     };
 
-    /*
-    For now any error thrown by the database is sent to the user as it is.
-    */
-    const handleError = (err) => err;
-
     const doubleCheck = sails.helpers.csvhelpers.doubleCheck.with;
 
     for (const [index, data] of req.body.data.entries()) {
@@ -885,7 +853,6 @@ module.exports = {
           const caveCreated = await CaveService.createCave(
             dataCave,
             dataNameAndDesc,
-            handleError,
           );
 
           //Entrance creation
@@ -903,7 +870,6 @@ module.exports = {
           const entranceCreated = await EntranceService.createEntrance(
             dataEntrance,
             dataNameDescLoc,
-            handleError,
           );
           if (
             doubleCheck({

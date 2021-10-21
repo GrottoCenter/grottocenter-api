@@ -111,30 +111,18 @@ module.exports = {
         descriptionTitle: req.body.title,
       };
     }
-    const handleError = (error) => {
-      if (error.code && error.code === 'E_UNIQUE') {
-        return res.sendStatus(409);
-      } else {
-        switch (error.name) {
-          case 'UsageError':
-            return res.badRequest(error.message);
-          case 'AdapterError':
-            return res.badRequest(error.message);
-          default:
-            return res.serverError(error.message);
-        }
-      }
-    };
 
-    const caveCreated = await CaveService.createCave(
-      cleanedData,
-      nameAndDescData,
-      handleError,
-    );
-
-    const params = {};
-    params.controllerMethod = 'CaveController.create';
-    return ControllerService.treat(req, null, caveCreated, params, res);
+    try {
+      const caveCreated = await CaveService.createCave(
+        cleanedData,
+        nameAndDescData,
+      );
+      const params = {};
+      params.controllerMethod = 'CaveController.create';
+      return ControllerService.treat(req, null, caveCreated, params, res);
+    } catch (e) {
+      ErrorService.getDefaultErrorHandler(res)(e);
+    }
   },
 
   delete: async (req, res) => {
@@ -263,9 +251,8 @@ module.exports = {
     };
 
     // Launch update request using transaction: it performs a rollback if an error occurs
-    await sails
-      .getDatastore()
-      .transaction(async (db) => {
+    await sails.getDatastore().transaction(async (db) => {
+      try {
         const updatedCave = await TCave.updateOne({
           id: caveId,
         })
@@ -284,23 +271,10 @@ module.exports = {
           res,
           converter,
         );
-      })
-      .intercept('E_UNIQUE', (e) => {
-        sails.log.error(e.message);
-        return res.status(409).send(e.message);
-      })
-      .intercept({ name: 'UsageError' }, (e) => {
-        sails.log.error(e.message);
-        return res.badRequest(e.message);
-      })
-      .intercept({ name: 'AdapterError' }, (e) => {
-        sails.log.error(e.message);
-        return res.badRequest(e.message);
-      })
-      .intercept((e) => {
-        sails.log.error(e.message);
-        return res.serverError(e.message);
-      });
+      } catch (e) {
+        ErrorService.getDefaultErrorHandler(res)(e);
+      }
+    });
   },
 
   setMassif: async (req, res) => {

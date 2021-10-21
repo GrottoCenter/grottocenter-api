@@ -90,46 +90,32 @@ module.exports = {
     }
 
     // Create caver
-    const newCaver = await TCaver.create({
-      dateInscription: new Date(),
-      language: '000', // default null language id
-      mail: req.param('email'),
-      name: req.param('name') === '' ? null : req.param('name'),
-      nickname: req.param('nickname'),
-      password: AuthService.createHashedPassword(req.param('password')),
-      surname: req.param('surname') === '' ? null : req.param('surname'),
-    })
-      .fetch()
-      .intercept('E_UNIQUE', (e) => {
-        sails.log.error(e.message);
-        return res.status(409).send(e.message);
-      })
-      .intercept({ name: 'UsageError' }, (e) => {
-        sails.log.error(e.message);
-        return res.badRequest(e.message);
-      })
-      .intercept({ name: 'AdapterError' }, (e) => {
-        sails.log.error(e.message);
-        return res.badRequest(e.message);
-      })
-      .intercept((e) => {
-        sails.log.error(e.message);
-        return res.serverError(e.message);
+    try {
+      const newCaver = await TCaver.create({
+        dateInscription: new Date(),
+        language: '000', // default null language id
+        mail: req.param('email'),
+        name: req.param('name') === '' ? null : req.param('name'),
+        nickname: req.param('nickname'),
+        password: AuthService.createHashedPassword(req.param('password')),
+        surname: req.param('surname') === '' ? null : req.param('surname'),
+      }).fetch();
+      const userGroup = await TGroup.findOne({ name: 'User' });
+      await TCaver.addToCollection(newCaver.id, 'groups', userGroup.id);
+
+      ElasticsearchService.create('cavers', newCaver.id, {
+        tags: ['caver'],
+        id: newCaver.id,
+        groups: String(userGroup.id),
+        mail: newCaver.mail,
+        name: newCaver.name,
+        nickname: newCaver.nickname,
+        surname: newCaver.surname,
       });
 
-    const userGroup = await TGroup.findOne({ name: 'User' });
-    await TCaver.addToCollection(newCaver.id, 'groups', userGroup.id);
-
-    ElasticsearchService.create('cavers', newCaver.id, {
-      tags: ['caver'],
-      id: newCaver.id,
-      groups: String(userGroup.id),
-      mail: newCaver.mail,
-      name: newCaver.name,
-      nickname: newCaver.nickname,
-      surname: newCaver.surname,
-    });
-
-    return res.sendStatus(204);
+      return res.sendStatus(204);
+    } catch (e) {
+      ErrorService.getDefaultErrorHandler(res)(e);
+    }
   },
 };
