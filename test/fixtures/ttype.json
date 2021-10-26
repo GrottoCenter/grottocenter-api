@@ -1,5 +1,6 @@
 [
   {
+    "id": 1,
     "name": "Collection",
     "comment": "An aggregation of resources",
     "isAvailable": true,
@@ -7,6 +8,7 @@
     "url": "http://purl.org/dc/dcmitype/Collection"
   },
   {
+    "id": 2,
     "name": "Dataset",
     "comment": "Data encoded in a defined structure",
     "isAvailable": false,
@@ -14,6 +16,7 @@
     "url": "http://purl.org/dc/dcmitype/Dataset"
   },
   {
+    "id": 3,
     "name": "Event",
     "comment": "A non-persistent, time-based occurrence",
     "isAvailable": false,
@@ -21,6 +24,7 @@
     "url": "http://purl.org/dc/dcmitype/Event"
   },
   {
+    "id": 4,
     "name": "Image",
     "comment": "A visual representation other than text",
     "isAvailable": true,
@@ -28,6 +32,7 @@
     "url": "http://purl.org/dc/dcmitype/Image"
   },
   {
+    "id": 5,
     "name": "InteractiveResource",
     "comment": "A resource requiring interaction from the user to be understood, executed, or experienced",
     "isAvailable": false,
@@ -35,6 +40,7 @@
     "url": "http://purl.org/dc/dcmitype/InteractiveResource"
   },
   {
+    "id": 6,
     "name": "MovingImage",
     "comment": "A series of visual representations imparting an impression of motion when shown in succession",
     "isAvailable": false,
@@ -42,6 +48,7 @@
     "url": "http://purl.org/dc/dcmitype/MovingImage"
   },
   {
+    "id": 7,
     "name": "PhysicalObject",
     "comment": "An inanimate, three-dimensional object or substance",
     "isAvailable": false,
@@ -49,6 +56,7 @@
     "url": "http://purl.org/dc/dcmitype/PhysicalObject"
   },
   {
+    "id": 8,
     "name": "Service",
     "comment": "A system that provides one or more functions",
     "isAvailable": false,
@@ -56,6 +64,7 @@
     "url": "http://purl.org/dc/dcmitype/Service"
   },
   {
+    "id": 9,
     "name": "Software",
     "comment": "A computer program in source or compiled form",
     "isAvailable": false,
@@ -63,6 +72,7 @@
     "url": "http://purl.org/dc/dcmitype/Software"
   },
   {
+    "id": 10,
     "name": "Sound",
     "comment": "A resource primarily intended to be heard",
     "isAvailable": false,
@@ -70,6 +80,7 @@
     "url": "http://purl.org/dc/dcmitype/Sound"
   },
   {
+    "id": 11,
     "name": "StillImage",
     "comment": "A static visual representation including paintings, drawings, graphic designs, plans and maps",
     "isAvailable": false,
@@ -77,6 +88,7 @@
     "url": "http://purl.org/dc/dcmitype/StillImage"
   },
   {
+    "id": 12,
     "name": "Text",
     "comment": "A resource consisting primarily of words for reading",
     "isAvailable": true,
@@ -84,6 +96,7 @@
     "url": "http://purl.org/dc/dcmitype/Text"
   },
   {
+    "id": 13,
     "name": "TopographicDrawing",
     "comment": "A visual representation of a topography",
     "isAvailable": false,
@@ -91,6 +104,7 @@
     "url": "https://ontology.uis-speleo.org/ontology/#topography"
   },
   {
+    "id": 14,
     "name": "TopographicData",
     "comment": "Topographic data encoded in a defined structure",
     "isAvailable": true,
@@ -98,6 +112,7 @@
     "url": "https://ontology.uis-speleo.org/ontology/#topographicData"
   },
   {
+    "id": 16,
     "name": "Book",
     "comment": "A book",
     "isAvailable": false,
@@ -105,6 +120,7 @@
     "url": "http://id.loc.gov/vocabulary/marcgt/boo"
   },
   {
+    "id": 17,
     "name": "Issue",
     "comment": "An issue of a periodic publication",
     "isAvailable": true,
@@ -112,6 +128,7 @@
     "url": "http://id.loc.gov/vocabulary/marcgt/iss"
   },
   {
+    "id": 18,
     "name": "Article",
     "comment": "An article from a source",
     "isAvailable": true,
@@ -119,6 +136,7 @@
     "url": "http://id.loc.gov/vocabulary/marcgt/art"
   },
   {
+    "id": 19,
     "name": "Map",
     "comment": "A geographical map",
     "isAvailable": false,

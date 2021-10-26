@@ -20,13 +20,28 @@ before(function(done) {
       if (err) return done(err);
       // Here you can load fixtures, etc.
       const fixted = new Fixted();
-      fixted.populate(function(err) {
-        if (err) {
-          return done(err);
-        }
-        // Do your thing...
-        done();
-      });
+      fixted.populate(
+        [
+          'tlanguage',
+          'tright',
+          'tidentifiertype',
+          'ttype',
+          'tgroup',
+          'tcaver',
+          'tgrotto',
+          'tname',
+          'tdocument',
+          'tdescription',
+        ],
+        function(err) {
+          if (err) {
+            return done(err);
+          }
+          // Do your thing...
+          done();
+        },
+        false,
+      );
     },
   );
 });
