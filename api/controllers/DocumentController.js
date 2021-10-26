@@ -658,6 +658,7 @@ module.exports = {
 
             found.mainLanguage = await DocumentService.getMainLanguage(
               found.id,
+            );
             await Promise.all(
               found.map(async (doc) => {
                 await NameService.setNames(
