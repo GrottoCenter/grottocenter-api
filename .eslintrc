@@ -58,7 +58,6 @@
     "L": true,
     "GrottoService": true,
     "GeoLocService": true,
-    "SettingsService": true,
     "ConvertService": true,
     "I18nService": true,
     "TBbs": true,
