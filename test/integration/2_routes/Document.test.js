@@ -18,7 +18,7 @@ describe('Document features', () => {
         .set('Accept', 'application/json')
         .expect(200)
         .then((res) => {
-          res.body.should.deepEqual({ count: 3 });
+          res.body.should.deepEqual({ count: 4 });
           done();
         });
     });

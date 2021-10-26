@@ -20,5 +20,16 @@
     "body": "C'est vraiment la meilleure collection de spéléologie qui soit !",
     "language": "fra",
     "document": 1
+  },
+  {
+    "id": 3,
+    "author": 1,
+    "reviewer": 2,
+    "dateInscription": "2018-04-19 01:38:39",
+    "dateReviewed": "2019-05-19 12:38:39",
+    "title": "Un numéro qui mérite d'être nuancé",
+    "body": "Ce numéro manque globalement de détails et n'éfleure que les sujets abordés, dommage.",
+    "language": "fra",
+    "document": 2
   }
 ]
