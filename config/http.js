@@ -30,10 +30,10 @@ module.exports.http = {
     rateLimit: rateLimit({
       windowMs: process.env.RATE_LIMIT_WINDOW
         ? process.env.RATE_LIMIT_WINDOWS
-        : 1 * 60 * 1000, // 1 minute
+        : 1 * 30 * 1000, // 30 seconds
       max: process.env.RATE_LIMIT_PER_WINDOW
         ? process.env.RATE_LIMIT_PER_WINDOW
-        : 50, // limit each IP to 50 requests per windowMs
+        : 100, // limit each IP to 100 requests per windowMs
       message: 'Too many requests with the same IP, try again later.',
       statusCode: 429,
       skip: (req, res) => {
