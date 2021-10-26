@@ -426,7 +426,6 @@ module.exports = {
     const newCaver = await CaverService.createNonUserCaver(
       paramsCaver,
       handleError,
-      esClient,
     );
 
     const params = {};

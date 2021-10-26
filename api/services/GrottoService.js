@@ -1,7 +1,7 @@
 const ramda = require('ramda');
 
 module.exports = {
-  createGrotto: async (cleanedData, nameData, errorHandler, esClient) => {
+  createGrotto: async (cleanedData, nameData, errorHandler) => {
     const newOrganizationPopulated = await sails
       .getDatastore()
       .transaction(async (db) => {

@@ -5,7 +5,6 @@
  * @help        :: See https://sailsjs.com/docs/concepts/actions
  */
 
-const esClient = require('../../config/elasticsearch').elasticsearchCli;
 const ramda = require('ramda');
 const getCountryISO3 = require('country-iso-2-to-3');
 
@@ -226,7 +225,6 @@ const getConvertedDocumentFromCsv = async (rawData, authorId) => {
             paramsGrotto,
             nameGrotto,
             (err) => err,
-            esClient,
           );
           editorId = editorGrotto.id;
           break;
