@@ -1,13 +1,14 @@
 [
   {
     "_comment": "Spelunca [COLLECTION]",
+    "id": 1,
     "author": 1,
     "reviewer": 2,
     "dateInscription": "2017-04-19 11:38:39",
     "dateValidation": "2017-05-01 12:24:19",
     "isValidated": true,
     "descriptions": [
-      1
+      1, 2
     ],
     "names": [
       3
@@ -16,6 +17,7 @@
   },
   {
     "_comment": "Spelunca n°1 [ISSUE]",
+    "id": 2,
     "author": 1,
     "reviewer": 2,
     "dateInscription": "2017-04-19 11:38:39",
@@ -25,13 +27,16 @@
     "issue": "n°1",
     "identifier": "1234-5678",
     "identifierType": "issn",
+    "descriptions": [3],
     "names": [
       4
     ],
+    "parent": 1,
     "type": 17
   },
   {
     "_comment": "Spelunca n°2 [ISSUE]",
+    "id": 3,
     "author": 2,
     "reviewer": 1,
     "dateInscription": "2016-04-19 11:38:39",
@@ -44,6 +49,24 @@
     "names": [
       5
     ],
+    "parent": 1,
     "type": 17
+  },
+  {
+    "_comment": "Best 2021 Equipement (from Spelunca n°2 [ISSUE])",
+    "id": 4,
+    "author": 1,
+    "reviewer": 2,
+    "dateInscription": "2018-04-19 11:38:39",
+    "dateValidation": "2019-11-01 12:24:19",
+    "isValidated": true,
+    "datePublication": "2010-02",
+    "identifier": "1234-5679",
+    "identifierType": "issn",
+    "names": [
+      6
+    ],
+    "parent": 3,
+    "type": 18
   }
 ]
