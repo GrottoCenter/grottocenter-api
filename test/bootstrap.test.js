@@ -32,6 +32,8 @@ before(function(done) {
           'tname',
           'tdocument',
           'tdescription',
+          'tcave',
+          'tentrance',
         ],
         function(err) {
           if (err) {
