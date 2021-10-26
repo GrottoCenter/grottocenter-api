@@ -13,14 +13,12 @@ Current production version is available [here](http://beta.grottocenter.org/)
 ![Latest Deployment](https://github.com/GrottoCenter/Grottocenter3/actions/workflows/deploy-aws.yml/badge.svg?branch=master)
 
 [![Coverage Status](https://coveralls.io/repos/github/GrottoCenter/Grottocenter3/badge.svg?branch=refs/heads/master)](https://coveralls.io/github/GrottoCenter/Grottocenter3?branch=refs/heads/master)
-
-![Latest Build](https://github.com/GrottoCenter/Grottocenter3/actions/workflows/build.yml/badge.svg?branch=master)
+[![Build](https://github.com/GrottoCenter/Grottocenter3/actions/workflows/build.yaml/badge.svg?branch=master)](https://github.com/GrottoCenter/Grottocenter3/actions/workflows/build.yaml)
 
 ### Develop
 
 [![Coverage Status](https://coveralls.io/repos/github/GrottoCenter/Grottocenter3/badge.svg?branch=refs/heads/develop)](https://coveralls.io/github/GrottoCenter/Grottocenter3?branch=refs/heads/develop)
-
-![Latest Build](https://github.com/GrottoCenter/Grottocenter3/actions/workflows/build.yml/badge.svg?branch=develop)
+[![Build](https://github.com/GrottoCenter/Grottocenter3/actions/workflows/build.yaml/badge.svg?branch=develop)](https://github.com/GrottoCenter/Grottocenter3/actions/workflows/build.yaml)
 
 ![GC flyer](https://rawgit.com/wiki/GrottoCenter/Grottocenter3/images/afficheGC3.svg)
 
