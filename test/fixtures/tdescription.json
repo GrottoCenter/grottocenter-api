@@ -1,0 +1,24 @@
+[
+  {
+    "id": 1,
+    "author": 1,
+    "reviewer": 2,
+    "dateInscription": "2017-04-19 11:38:39",
+    "dateReviewed": "2017-05-19 11:38:39",
+    "title": "An awesome collection",
+    "body": "I think this is a really helpful collection, covering a large variety of subjects.",
+    "language": "eng",
+    "document": 1
+  },
+  {
+    "id": 2,
+    "author": 1,
+    "reviewer": 2,
+    "dateInscription": "2017-04-19 01:38:39",
+    "dateReviewed": "2017-05-19 12:38:39",
+    "title": "Une superbe collection",
+    "body": "C'est vraiment la meilleure collection de spéléologie qui soit !",
+    "language": "fra",
+    "document": 1
+  }
+]

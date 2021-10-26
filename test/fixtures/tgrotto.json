@@ -1,6 +1,6 @@
 [
   {
-    "id_author": 1,
+    "author": 1,
     "county": "Hauts-de-Seine",
     "region": "Île-de-France",
     "city": "Issy-les-Moulineaux",
@@ -18,7 +18,7 @@
     "names": [1]
   },
   {
-    "id_author": 1,
+    "author": 1,
     "county": "Rhône",
     "region": "Auvergne-Rhône-Alpes",
     "city": "Lyon",

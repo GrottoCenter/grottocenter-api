@@ -1,40 +1,49 @@
 [
   {
     "_comment": "Spelunca [COLLECTION]",
-    "idAuthor": 1,
-    "idReviewer": 2,
+    "author": 1,
+    "reviewer": 2,
     "dateInscription": "2017-04-19 11:38:39",
     "dateValidation": "2017-05-01 12:24:19",
     "isValidated": true,
-    "names": [3],
+    "descriptions": [
+      1
+    ],
+    "names": [
+      3
+    ],
     "type": 1
   },
   {
     "_comment": "Spelunca n°1 [ISSUE]",
-    "idAuthor": 1,
-    "idReviewer": 2,
+    "author": 1,
+    "reviewer": 2,
     "dateInscription": "2017-04-19 11:38:39",
     "dateValidation": "2017-05-01 12:24:19",
     "isValidated": true,
     "datePublication": "2010-01",
     "issue": "n°1",
     "identifier": "1234-5678",
-    "identifierType": 3,
-    "names": [4],
+    "identifierType": "issn",
+    "names": [
+      4
+    ],
     "type": 17
   },
   {
     "_comment": "Spelunca n°2 [ISSUE]",
-    "idAuthor": 2,
-    "idReviewer": 1,
+    "author": 2,
+    "reviewer": 1,
     "dateInscription": "2016-04-19 11:38:39",
     "dateValidation": "2016-11-01 12:24:19",
     "isValidated": true,
     "datePublication": "2010-02",
     "issue": "n°2",
     "identifier": "1234-5679",
-    "identifierType": 3,
-    "names": [5],
+    "identifierType": "issn",
+    "names": [
+      5
+    ],
     "type": 17
   }
 ]
