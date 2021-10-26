@@ -37,6 +37,7 @@ const getConvertedDataFromClient = (req) => {
       req.body.publicationDate === '' ? null : req.body.publicationDate,
     editor: ramda.pathOr(undefined, ['editor', 'id'], req.body),
     identifierType: ramda.pathOr(undefined, ['identifierType', 'id'], req.body),
+    issue: req.body.issue && req.body.issue !== '' ? req.body.issue : undefined,
     library: ramda.pathOr(undefined, ['library', 'id'], req.body),
     license: 1,
     massif: ramda.pathOr(undefined, ['massif', 'id'], req.body),
