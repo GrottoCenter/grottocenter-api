@@ -8,7 +8,7 @@
   "keywords": [],
   "dependencies": {
     "@aws-sdk/client-ses": "^3.7.0",
-    "@azure/storage-blob": "^12.7.0",
+    "@azure/storage-blob": "^12.8.0",
     "@date-io/date-fns": "^1.3.13",
     "@material-ui/core": "^4.11.3",
     "@material-ui/icons": "^4.11.2",
@@ -37,8 +37,11 @@
     "sails-hook-sockets": "^2.0.1",
     "sails-postgresql": "^2.0.0",
     "snyk": "^1.685.0",
+    "streamsearch": "^0.1.2",
     "underscore.date": "^0.6.1",
-    "underscore.string": "^3.3.4"
+    "underscore.string": "^3.3.4",
+    "xlsx": "^0.17.0",
+    "xml2js": "^0.4.23"
   },
   "scripts": {
     "start": "node app.js",
