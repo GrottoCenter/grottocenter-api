@@ -40,6 +40,11 @@ const getConvertedDataFromClient = async (req) => {
   return {
     ...reqBodyWithoutId,
     author: req.token.id,
+    authorizationDocument: ramda.pathOr(
+      undefined,
+      ['authorizationDocument', 'id'],
+      req.body,
+    ),
     authors: req.body.authors ? req.body.authors.map((a) => a.id) : undefined,
     datePublication:
       req.body.publicationDate === '' ? null : req.body.publicationDate,
@@ -49,18 +54,13 @@ const getConvertedDataFromClient = async (req) => {
     library: ramda.pathOr(undefined, ['library', 'id'], req.body),
     license: ramda.pathOr(1, ['license', 'id'], req.body),
     massif: ramda.pathOr(undefined, ['massif', 'id'], req.body),
+    option: optionFound ? optionFound.id : undefined,
     parent: ramda.pathOr(undefined, ['partOf', 'id'], req.body),
     regions: req.body.regions ? req.body.regions.map((r) => r.id) : undefined,
     subjects: req.body.subjects
       ? req.body.subjects.map((s) => s.code)
       : undefined,
     type: ramda.pathOr(undefined, ['documentType', 'id'], req.body),
-    option: optionFound ? optionFound.id : undefined,
-    authorizationDocument: ramda.pathOr(
-      undefined,
-      ['authorizationDocument', 'id'],
-      req.body,
-    ),
   };
 };
 
@@ -490,21 +490,35 @@ module.exports = {
       langDescData,
       handleError,
     );
-
-    const { files } = req.files;
-    if (files) {
+    const errorFiles = [];
+    if (req.files && req.files.files) {
+      const { files } = req.files;
       for (const file of files) {
         try {
           await FileService.create(file, documentCreated.id);
         } catch (err) {
-          sails.log.error();
+          errorFiles.push({
+            fileName: file.originalname,
+            error: err.toString(),
+          });
         }
       }
     }
 
+    const requestResponse = {
+      document: documentCreated,
+      status: !ramda.isEmpty(errorFiles)
+        ? {
+            errorCode: 'FileNotImported',
+            errorString: 'Some files were not imported.',
+            content: errorFiles,
+          }
+        : undefined,
+    };
+
     const params = {};
     params.controllerMethod = 'DocumentController.create';
-    return ControllerService.treat(req, null, documentCreated, params, res);
+    return ControllerService.treat(req, null, requestResponse, params, res);
   },
 
   update: async (req, res) => {
@@ -539,9 +553,9 @@ module.exports = {
     const resultConversion = await getConvertedDataFromClient(req);
 
     // Add new files
-    const { files } = req.files;
     const newFileArray = [];
-    if (files) {
+    if (req.files && req.files.files) {
+      const { files } = req.files;
       for (const file of files) {
         try {
           const createdFile = await FileService.create(
@@ -623,6 +637,7 @@ module.exports = {
       .limit(req.param('limit', 50))
       .sort(sort)
       .populate('author')
+      .populate('authorizationDocument')
       .populate('authors')
       .populate('cave')
       .populate('descriptions')
@@ -633,13 +648,12 @@ module.exports = {
       .populate('library')
       .populate('license')
       .populate('massif')
+      .populate('option')
       .populate('parent')
       .populate('regions')
       .populate('reviewer')
       .populate('subjects')
       .populate('type')
-      .populate('option')
-      .populate('authorizationDocument')
       .exec((err, found) => {
         TDocument.count()
           .where(whereClause)
@@ -924,6 +938,7 @@ module.exports = {
     } else {
       found = await TDocument.findOne(req.param('id'))
         .populate('author')
+        .populate('authorizationDocument')
         .populate('authors')
         .populate('cave')
         .populate('children')
@@ -940,13 +955,12 @@ module.exports = {
         .populate('library')
         .populate('license')
         .populate('massif')
+        .populate('option')
         .populate('parent')
         .populate('regions')
         .populate('reviewer')
         .populate('subjects')
-        .populate('type')
-        .populate('option')
-        .populate('authorizationDocument');
+        .populate('type');
       found.mainLanguage = await DocumentService.getMainLanguage(found.id);
       await setNamesOfPopulatedDocument(found);
       await DescriptionService.setDocumentDescriptions(found);
@@ -1153,6 +1167,7 @@ module.exports = {
 
               const found = await TDocument.findOne(doc.id)
                 .populate('author')
+                .populate('authorizationDocument')
                 .populate('authors')
                 .populate('cave')
                 .populate('descriptions')
@@ -1163,18 +1178,18 @@ module.exports = {
                 .populate('library')
                 .populate('license')
                 .populate('massif')
+                .populate('option')
                 .populate('parent')
                 .populate('regions')
                 .populate('reviewer')
                 .populate('subjects')
-                .populate('type')
-                .populate('option')
-                .populate('authorizationDocument');
+                .populate('type');
               await setNamesOfPopulatedDocument(found);
               await updateDocumentInElasticSearchIndexes(found);
             } else {
               const found = await TDocument.findOne(doc.id)
                 .populate('author')
+                .populate('authorizationDocument')
                 .populate('authors')
                 .populate('cave')
                 .populate('descriptions')
@@ -1185,13 +1200,12 @@ module.exports = {
                 .populate('library')
                 .populate('license')
                 .populate('massif')
+                .populate('option')
                 .populate('parent')
                 .populate('regions')
                 .populate('reviewer')
                 .populate('subjects')
-                .populate('type')
-                .populate('option')
-                .populate('authorizationDocument');
+                .populate('type');
               await setNamesOfPopulatedDocument(found);
               await addDocumentToElasticSearchIndexes(found);
             }
