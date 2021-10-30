@@ -26,11 +26,6 @@ module.exports.policies = {
 
   '*': false,
 
-  IndexController: {
-    '*': false,
-    index: 'localize',
-  },
-
   AccountController: {
     '*': true,
   },
@@ -225,6 +220,14 @@ module.exports.policies = {
     changeEmail: 'tokenAuth',
     changePassword: true,
     forgotPassword: true,
+  },
+
+  'v1/LicenseController': {
+    '*': true,
+  },
+
+  'v1/FileFormatController': {
+    '*': true,
   },
 
   /***************************************************************************

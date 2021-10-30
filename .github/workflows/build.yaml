@@ -24,13 +24,12 @@ jobs:
             ${{ runner.os }}-
 
       - run: npm install
-      - run: npm run-script build
-      - run: npm test  
-      - run: npm run-script coverage  
+      - run: npm test
+      - run: npm run-script coverage
       - run: npm run-script coveralls
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-          COVERALLS_SERVICE_NAME: "Github Actions" 
+          COVERALLS_SERVICE_NAME: "Github Actions"
           COVERALLS_GIT_BRANCH: ${{ github.ref }}
       - name: Create artefact latest.tar.gz file
         if: github.ref == 'refs/heads/master'

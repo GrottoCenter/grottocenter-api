@@ -15,9 +15,7 @@
     "is_official_partner": true,
     "url": "https://organization1.com",
     "id_country": "FR",
-    "names": [
-      1
-    ]
+    "names": [1]
   },
   {
     "id_author": 1,
@@ -35,8 +33,6 @@
     "is_official_partner": true,
     "url": "https://organization2.fr",
     "id_country": "FR",
-    "names": [
-      2
-    ]
+    "names": [2]
   }
 ]

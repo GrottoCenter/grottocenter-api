@@ -189,6 +189,15 @@ module.exports = {
       type: 'string',
       columnName: 'name_db_import',
     },
+    authorizationDocument: {
+      columnName: 'id_authorization_document',
+      model: 'TDocument',
+    },
+
+    option: {
+      columnName: 'id_option',
+      model: 'Toption',
+    },
 
     pagesBBSOld: {
       type: 'string',

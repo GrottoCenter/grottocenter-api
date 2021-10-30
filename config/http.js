@@ -74,12 +74,12 @@ module.exports.http = {
       'passportSession',
       'parseAuthToken',
       'rateLimit',
+      'fileMiddleware',
       'bodyParser',
       'compress',
       'poweredBy',
       'router',
       'www',
-      'favicon',
     ],
 
     /****************************************************************************
@@ -130,6 +130,14 @@ module.exports.http = {
     //   var middlewareFn = skipper({ strict: true });
     //   return middlewareFn;
     // })(),
+
+    fileMiddleware: (function() {
+      const multer = require('multer');
+      const inMemoryStorage = multer.memoryStorage();
+      // File size is 100 Mo (Mb)
+      const upload = multer({ storage: inMemoryStorage, fileSize: 100000000 });
+      return upload.fields([{ name: 'files' }]);
+    })(),
   },
 
   /***************************************************************************

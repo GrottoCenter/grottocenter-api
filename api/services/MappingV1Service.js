@@ -589,6 +589,14 @@ module.exports = {
 
   // ---------------- Document Function ---------------------------
 
+  convertToFileModel: (source) => {
+    const { container, linkAccount } = FileService.getAzureData();
+    return {
+      ...source,
+      completePath: `${linkAccount}/${container}/${source.path}`,
+    };
+  },
+
   convertToDocumentModel: (source) => {
     const result = {
       ...DocumentModel,
@@ -599,14 +607,20 @@ module.exports = {
     result['@id'] = String(source.id);
     result.author = source.author;
     result.authorComment = source.authorComment;
+    result.authorizationDocument = source.authorizationDocument
+      ? module.exports.convertToDocumentModel(source.authorizationDocument)
+      : null;
     result.cave = source.cave;
     result.dateInscription = source.dateInscription;
     result.datePublication = source.date_publication
       ? source.date_publication
       : source.datePublication;
     result.dateValidation = source.dateValidation;
+    result.deletedFiles = source.deletedFiles;
     result.entrance = source.entrance;
-    result.files = source.files;
+    result.files =
+      source.files &&
+      source.files.map((file) => MappingV1Service.convertToFileModel(file));
     result.identifier = source.identifier;
     result.issue = source.issue;
     result.isValidated = source.isValidated;
@@ -614,6 +628,10 @@ module.exports = {
     result.license = source.license;
     result.mainLanguage = source.mainLanguage;
     result.massif = source.massif;
+    result.modifiedDocJson = source.modifiedDocJson;
+    result.modifiedFiles = source.modifiedFiles;
+    result.newFiles = source.newFiles;
+    result.option = source.option;
     result.pages = source.pages;
     result.parent = source.parent
       ? module.exports.convertToDocumentModel(source.parent)
@@ -624,7 +642,6 @@ module.exports = {
     result.title = source.title;
     result.validationComment = source.validationComment;
     result.validator = source.validator;
-    result.modifiedDocJson = source.modifiedDocJson;
 
     // source.descriptions contains both title and descriptions (in .title and .body)
     // Split them in 2 different attributes

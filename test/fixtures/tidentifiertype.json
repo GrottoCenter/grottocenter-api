@@ -17,6 +17,6 @@
   {
     "id": "url",
     "text": "uniform resource locator",
-    "regexp": "^[a-z]{2,5}:\/\/.+\\..+$"
+    "regexp": "^[a-z]{2,5}://.+\\..+$"
   }
 ]

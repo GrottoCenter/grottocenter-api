@@ -21,12 +21,14 @@ module.exports = {
     extension: {
       type: 'string',
       columnName: 'extension',
+      allowNull: true,
       maxLength: 12,
     },
 
     comment: {
       type: 'string',
       columnName: 'comment',
+      allowNull: true,
       maxLength: 250,
     },
 
@@ -39,6 +41,7 @@ module.exports = {
     softwares: {
       type: 'string',
       columnName: 'softwares',
+      allowNull: true,
       maxLength: 300,
     },
   },
