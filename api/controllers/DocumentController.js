@@ -940,7 +940,6 @@ module.exports = {
         .populate('authorizationDocument')
         .populate('authors')
         .populate('cave')
-        .populate('children')
         .populate('descriptions')
         .populate('editor')
         .populate('entrance')
@@ -972,14 +971,7 @@ module.exports = {
       found.mainLanguage = await DocumentService.getMainLanguage(found.id);
       await setNamesOfPopulatedDocument(found);
       await DescriptionService.setDocumentDescriptions(found);
-      if (found.children.length > 0) {
-        found.children = await Promise.all(
-          found.children.map(
-            async (childDoc) =>
-              await DocumentService.deepPopulateChildren(childDoc),
-          ),
-        );
-      }
+      await DocumentService.deepPopulateChildren(found);
     }
 
     const params = {

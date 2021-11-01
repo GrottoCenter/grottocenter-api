@@ -7,24 +7,60 @@ const MAIN_LANGUAGE_QUERY = `
     AND jdl.is_main = true
 `;
 
+const RECURSIVE_GET_CHILD_DOC = `
+  WITH RECURSIVE recursiveChildren AS  (
+    SELECT *
+    FROM t_document
+    WHERE id_parent = $1
+  UNION ALL
+      SELECT td.*
+      FROM t_document td
+      INNER JOIN recursiveChildren
+      ON td.id_parent = recursiveChildren.id
+  )
+  SELECT * FROM recursiveChildren
+`;
+
 const oldTopoFilesUrl = 'https://www.grottocenter.org/upload/topos/';
 
 const ramda = require('ramda');
 
 module.exports = {
+  /**
+   * Deep populate children and sub-children only (not recursive currently)
+   * @param {*} doc
+   * @returns {*} the doc with its children and sub-children populated
+   */
   deepPopulateChildren: async (doc) => {
-    doc = await TDocument.findOne(doc.id)
-      .populate('children')
-      .populate('descriptions');
-    await DescriptionService.setDocumentDescriptions(doc);
-    if (doc.children.length > 0) {
-      doc.children = await Promise.all(
-        doc.children.map(
-          async (childDoc) =>
-            await DocumentService.deepPopulateChildren(childDoc),
-        ),
+    const result = await CommonService.query(RECURSIVE_GET_CHILD_DOC, [doc.id]);
+    const childIds = result.rows.map((d) => d.id);
+
+    // Populate
+    const children = await TDocument.find({ id: { in: childIds } }).populate(
+      'descriptions',
+    );
+
+    // Format children
+    let formattedChildren = [];
+    for (const childDoc of children) {
+      // Is a direct child ?
+      if (childDoc.parent === doc.id) {
+        formattedChildren.push(childDoc);
+      }
+      // Is a sub-child ?
+      const childIdx = formattedChildren.findIndex(
+        (c) => c.id === childDoc.parent,
       );
+      if (childIdx !== -1) {
+        const alreadyPickedChild = formattedChildren[childIdx];
+        if (alreadyPickedChild.children) {
+          alreadyPickedChild.children.push(childDoc);
+        } else {
+          alreadyPickedChild.children = [childDoc];
+        }
+      }
     }
+    doc.children = formattedChildren;
     return doc;
   },
 
