@@ -10,6 +10,7 @@ module.exports = {
   findByCaverId: (req, res, next) =>
     documentController.findByCaverId(req, res, next),
   find: (req, res, next) => documentController.find(req, res, next),
+  findChildren: (req, res) => documentController.findChildren(req, res),
   update: (req, res, next) => documentController.update(req, res, next),
   validate: (req, res, next) => documentController.validate(req, res, next),
   multipleValidate: (req, res, next) =>
