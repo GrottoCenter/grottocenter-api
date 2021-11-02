@@ -3,7 +3,9 @@
     "id": 1,
     "name": "Administrator",
     "comments": "Technical responsible of the application.",
-    "rights": []
+    "rights": [
+      14
+    ]
   },
   {
     "id": 2,
