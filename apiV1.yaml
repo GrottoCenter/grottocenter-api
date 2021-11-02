@@ -966,6 +966,28 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Count'
+  
+  '/documents/{id}/children':
+    get:
+      tags:
+      - documents
+      description: Get a document children.
+      parameters:
+      - name: id
+        in: path
+        description: Document id
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+        '400':
+          description: Document not found.
 
   '/documents/{id}/validate':
     put:
@@ -3050,7 +3072,3 @@ components:
           type: string
         'dct:creator':
           type: string
-        
-        
-        
-        

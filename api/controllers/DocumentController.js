@@ -7,6 +7,7 @@
 
 const ramda = require('ramda');
 const getCountryISO3 = require('country-iso-2-to-3');
+const DocumentService = require('../services/DocumentService');
 
 // Tool methods
 // Set name of cave, entrance, massif, editor and library if present
@@ -971,7 +972,6 @@ module.exports = {
       found.mainLanguage = await DocumentService.getMainLanguage(found.id);
       await setNamesOfPopulatedDocument(found);
       await DescriptionService.setDocumentDescriptions(found);
-      await DocumentService.deepPopulateChildren(found);
     }
 
     const params = {
@@ -1343,5 +1343,40 @@ module.exports = {
     requestResponse.total.success = requestResponse.successfulImport.length;
     requestResponse.total.failure = requestResponse.failureImport.length;
     return res.ok(requestResponse);
+  },
+
+  findChildren: async (
+    req,
+    res,
+    converter = MappingV1Service.convertToDocumentList,
+  ) => {
+    // Check param
+    if (
+      !(await sails.helpers.checkIfExists.with({
+        attributeName: 'id',
+        attributeValue: req.param('id'),
+        sailsModel: TDocument,
+      }))
+    ) {
+      return res.badRequest(
+        `Could not find document with id ${req.param('id')}.`,
+      );
+    }
+
+    const doc = { id: Number(req.param('id')) };
+    await DocumentService.deepPopulateChildren(doc);
+
+    const params = {
+      controllerMethod: 'DocumentController.findChildren',
+      searchedItem: 'Children of document with id ' + req.param('id'),
+    };
+    return ControllerService.treatAndConvert(
+      req,
+      null,
+      doc.children,
+      params,
+      res,
+      converter,
+    );
   },
 };
