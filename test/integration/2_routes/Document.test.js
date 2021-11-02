@@ -6,7 +6,7 @@ describe('Document features', () => {
   let userToken;
   before(async () => {
     sails.log.info('Asking for user auth token...');
-    userToken = await AuthTokenService.getUserAuthToken();
+    userToken = await AuthTokenService.getRawBearerUserToken();
     sails.log.info('Got: ' + userToken + '\n');
   });
 
