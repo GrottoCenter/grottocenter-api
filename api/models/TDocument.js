@@ -183,12 +183,15 @@ module.exports = {
     idDbImport: {
       type: 'number',
       columnName: 'id_db_import',
+      allowNull: true,
     },
 
     nameDbImport: {
       type: 'string',
       columnName: 'name_db_import',
+      allowNull: true,
     },
+
     authorizationDocument: {
       columnName: 'id_authorization_document',
       model: 'TDocument',
