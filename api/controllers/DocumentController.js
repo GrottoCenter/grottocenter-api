@@ -663,10 +663,10 @@ module.exports = {
               return res.serverError('An unexpected server error occured.');
             }
 
-            if (!found) {
-              res.status(404);
-              return res.json({
-                error: `There is no document matching your criterias. It can be because sorting by ${sort} is not supported.`,
+            if (found.length === 0) {
+              return res.status(200).send({
+                documents: [],
+                message: `There is no document matching your criterias. It can be because sorting by ${sort} is not supported.`,
               });
             }
 
@@ -764,10 +764,10 @@ module.exports = {
               return res.serverError('An unexpected server error occured.');
             }
 
-            if (!found) {
-              res.status(404);
-              return res.json({
-                error: `There is no document matching your criterias. It can be because sorting by ${sort} is not supported.`,
+            if (found.length === 0) {
+              return res.status(200).send({
+                documents: [],
+                message: `There is no document matching your criterias. It can be because sorting by ${sort} is not supported.`,
               });
             }
 
