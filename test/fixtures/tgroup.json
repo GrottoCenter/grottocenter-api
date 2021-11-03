@@ -1,25 +1,34 @@
 [
   {
+    "id": 1,
     "name": "Administrator",
     "comments": "Technical responsible of the application.",
-    "rights": []
+    "rights": [
+      14
+    ]
   },
   {
+    "id": 2,
     "name": "Moderator",
     "comments": "Content reviewers.",
     "rights": []
   },
   {
+    "id": 3,
     "name": "User",
     "comments": "Default users group",
-    "rights": [30, 29]
+    "rights": [
+      13, 29, 30, 50
+    ]
   },
   {
+    "id": 4,
     "name": "Visitor",
     "comments": "Non connected people",
     "rights": []
   },
   {
+    "id": 5,
     "name": "Leader",
     "comments": "Contributors can refer to those people for any questions.",
     "rights": []

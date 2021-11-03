@@ -6,7 +6,7 @@ describe('Document features', () => {
   let userToken;
   before(async () => {
     sails.log.info('Asking for user auth token...');
-    userToken = await AuthTokenService.getUserAuthToken();
+    userToken = await AuthTokenService.getRawBearerUserToken();
     sails.log.info('Got: ' + userToken + '\n');
   });
 
@@ -18,7 +18,7 @@ describe('Document features', () => {
         .set('Accept', 'application/json')
         .expect(200)
         .then((res) => {
-          res.body.should.deepEqual({ count: 3 });
+          res.body.should.deepEqual({ count: 4 });
           done();
         });
     });

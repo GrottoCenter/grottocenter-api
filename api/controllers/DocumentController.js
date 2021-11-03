@@ -7,6 +7,7 @@
 
 const ramda = require('ramda');
 const getCountryISO3 = require('country-iso-2-to-3');
+const DocumentService = require('../services/DocumentService');
 
 // Tool methods
 // Set name of cave, entrance, massif, editor and library if present
@@ -239,7 +240,6 @@ const getConvertedDocumentFromCsv = async (rawData, authorId) => {
           const editorGrotto = await GrottoService.createGrotto(
             paramsGrotto,
             nameGrotto,
-            (err) => err,
           );
           editorId = editorGrotto.id;
           break;
@@ -941,7 +941,6 @@ module.exports = {
         .populate('authorizationDocument')
         .populate('authors')
         .populate('cave')
-        .populate('children')
         .populate('descriptions')
         .populate('editor')
         .populate('entrance')
@@ -961,17 +960,18 @@ module.exports = {
         .populate('reviewer')
         .populate('subjects')
         .populate('type');
+      const params = {
+        controllerMethod: 'DocumentController.find',
+        searchedItem: 'Document of id ' + req.param('id'),
+      };
+      if (!found) {
+        const notFoundMessage = `${params.searchedItem} not found`;
+        sails.log.debug(notFoundMessage);
+        return res.status(404).send(notFoundMessage);
+      }
       found.mainLanguage = await DocumentService.getMainLanguage(found.id);
       await setNamesOfPopulatedDocument(found);
       await DescriptionService.setDocumentDescriptions(found);
-      if (found.children.length > 0) {
-        found.children = await Promise.all(
-          found.children.map(
-            async (childDoc) =>
-              await DocumentService.deepPopulateChildren(childDoc),
-          ),
-        );
-      }
     }
 
     const params = {
@@ -1343,5 +1343,40 @@ module.exports = {
     requestResponse.total.success = requestResponse.successfulImport.length;
     requestResponse.total.failure = requestResponse.failureImport.length;
     return res.ok(requestResponse);
+  },
+
+  findChildren: async (
+    req,
+    res,
+    converter = MappingV1Service.convertToDocumentList,
+  ) => {
+    // Check param
+    if (
+      !(await sails.helpers.checkIfExists.with({
+        attributeName: 'id',
+        attributeValue: req.param('id'),
+        sailsModel: TDocument,
+      }))
+    ) {
+      return res.badRequest(
+        `Could not find document with id ${req.param('id')}.`,
+      );
+    }
+
+    const doc = { id: Number(req.param('id')) };
+    await DocumentService.deepPopulateChildren(doc);
+
+    const params = {
+      controllerMethod: 'DocumentController.findChildren',
+      searchedItem: 'Children of document with id ' + req.param('id'),
+    };
+    return ControllerService.treatAndConvert(
+      req,
+      null,
+      doc.children,
+      params,
+      res,
+      converter,
+    );
   },
 };

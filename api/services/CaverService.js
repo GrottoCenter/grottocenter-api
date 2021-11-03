@@ -5,8 +5,9 @@ const DISTINCT_USERS_QUERY = 'SELECT count(DISTINCT mail) - 1 FROM t_caver';
 
 module.exports = {
   /**
+   * Return the groups of the caver without checking if the caver exists.
    * @param {int} caverId
-   * @description Return the groups of the caver without checking if the caver exists.
+   * @throws Sails ORM errors (see https://sailsjs.com/documentation/concepts/models-and-orm/errors)
    * @returns {Array[TGroup]}
    */
   getGroups: async (caverId) => {
@@ -14,12 +15,23 @@ module.exports = {
     return caver.groups;
   },
 
+  /**
+   * Count the "real" users by using the mail attribute
+   */
   countDistinctUsers: async () => {
     const result = await CommonService.query(DISTINCT_USERS_QUERY);
     return Number(result.rows[0]['?column?']);
   },
 
-  createNonUserCaver: async (caverData, errorHandler) => {
+  /**
+   * @param {Object} caverData
+   * @param {string} caverData.nickname
+   * @param {string} [caverData.name]
+   * @param {string} [caverData.surname]
+   * @throws Sails ORM errors (see https://sailsjs.com/documentation/concepts/models-and-orm/errors)
+   * @returns {TCaver} the created caver
+   */
+  createNonUserCaver: async (caverData) => {
     let nickname = ramda.propOr('', 'nickname', caverData);
     const name = ramda.propOr(undefined, 'name', caverData);
     const surname = ramda.propOr(undefined, 'surname', caverData);
@@ -40,9 +52,7 @@ module.exports = {
       nickname: nickname,
       surname: surname,
       language: '000', // default null language id
-    })
-      .fetch()
-      .intercept(errorHandler);
+    }).fetch();
 
     await ElasticsearchService.create('cavers', newCaver.id, {
       id: newCaver.id,
@@ -60,20 +70,15 @@ module.exports = {
   /**
    * @param {Integer} caverId
    * @param {Object} req
-   * @param {Function} ormErrorHandler callback that is called whenever an error occured. Take an Error as parameter. See https://sailsjs.com/documentation/concepts/models-and-orm/errors for more information.
+   * @throws Sails ORM errors (see https://sailsjs.com/documentation/concepts/models-and-orm/errors)
    * @description Get a caver by his id and populate it according to the user rights (using req).
    * @returns {Object}
    */
-  getCaver: async (
-    caverId,
-    req,
-    ormErrorHandler = ErrorService.getDefaultOrmErrorHandler(),
-  ) => {
+  getCaver: async (caverId, req) => {
     const caver = await TCaver.findOne(caverId)
       .populate('documents')
       .populate('grottos')
-      .populate('groups')
-      .intercept(ormErrorHandler);
+      .populate('groups');
 
     if (!caver) return caver; // not found return
 

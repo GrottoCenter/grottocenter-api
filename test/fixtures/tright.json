@@ -1,170 +1,226 @@
 [
   {
+    "id": 1,
     "name": "Application - view any"
   },
   {
+    "id": 2,
     "name": "Application - edit any"
   },
   {
+    "id": 3,
     "name": "Application - delete any"
   },
   {
+    "id": 4,
     "name": "Document - view any"
   },
   {
+    "id": 5,
     "name": "Document - edit any"
   },
   {
+    "id": 6,
     "name": "Document - delete any"
   },
   {
+    "id": 7,
     "name": "Cave - view any"
   },
   {
+    "id": 8,
     "name": "Cave - edit any"
   },
   {
+    "id": 9,
     "name": "Cave - delete any"
   },
   {
+    "id": 10,
     "name": "Caver - view any"
   },
   {
+    "id": 11,
     "name": "Caver - edit any"
   },
   {
+    "id": 12,
     "name": "Caver - delete any"
   },
   {
+    "id": 13,
     "name": "Entrance - view complete"
   },
   {
+    "id": 14,
     "name": "Caver - view complete"
   },
   {
+    "id": 19,
     "name": "Entrance - view any"
   },
   {
+    "id": 20,
     "name": "Entrance - edit any"
   },
   {
+    "id": 21,
     "name": "Entrance - delete any"
   },
   {
+    "id": 22,
     "name": "Organization - view any"
   },
   {
+    "id": 23,
     "name": "Organization - edit any"
   },
   {
+    "id": 24,
     "name": "Organization - delete any"
   },
   {
+    "id": 25,
     "name": "Group - view any"
   },
   {
+    "id": 26,
     "name": "Group - edit any"
   },
   {
+    "id": 27,
     "name": "Group - delete any"
   },
   {
+    "id": 34,
     "name": "Massif - view any"
   },
   {
+    "id": 35,
     "name": "Massif - edit any"
   },
   {
+    "id": 36,
     "name": "Massif - delete any"
   },
   {
+    "id": 40,
     "name": "Right - view any"
   },
   {
+    "id": 41,
     "name": "Right - edit any"
   },
   {
+    "id": 42,
     "name": "Right - delete any"
   },
   {
+    "id": 50,
     "name": "Caver - edit own"
   },
   {
+    "id": 51,
     "name": "Caver - delete own"
   },
   {
+    "id": 75,
     "name": "File - view any"
   },
   {
+    "id": 76,
     "name": "File - edit any"
   },
   {
+    "id": 77,
     "name": "File - delete any"
   },
   {
+    "id": 78,
     "name": "File - create"
   },
   {
+    "id": 79,
     "name": "Document - create"
   },
   {
+    "id": 80,
     "name": "Cave - create"
   },
   {
+    "id": 81,
     "name": "Caver - create"
   },
   {
+    "id": 82,
     "name": "Entrance - create"
   },
   {
+    "id": 83,
     "name": "Organization - create"
   },
   {
+    "id": 84,
     "name": "Group - create"
   },
   {
+    "id": 85,
     "name": "Massif - create"
   },
   {
+    "id": 86,
     "name": "Right - create"
   },
   {
+    "id": 87,
     "name": "Entrance - view limited"
   },
   {
+    "id": 88,
     "name": "Application - merge duplicates"
   },
   {
+    "id": 89,
     "name": "Entrance - link resource"
   },
   {
+    "id": 90,
     "name": "Entrance - unlink resource"
   },
   {
+    "id": 91,
     "name": "Cave - link resource"
   },
   {
+    "id": 92,
     "name": "Cave - unlink resource"
   },
   {
+    "id": 93,
     "name": "Description - edit any"
   },
   {
+    "id": 95,
     "name": "Name - edit any"
   },
   {
+    "id": 97,
     "name": "Description - create"
   },
   {
+    "id": 98,
     "name": "Location - edit any"
   },
   {
+    "id": 99,
     "name": "Location - create"
   },
   {
+    "id": 100,
     "name": "Application - no request limit"
   },
   {
+    "id": 101,
     "name": "Document - edit not validated"
   }
 ]

@@ -1,8 +1,8 @@
 {
-  "name": "grottocenter",
+  "name": "grottocenter-api",
   "private": true,
-  "version": "21.1.0",
-  "description": "Grottocenter 3 - API",
+  "version": "21.1.1",
+  "description": "Grottocenter - API",
   "author": "Wikicaves",
   "license": "CC-BY-SA-3.0",
   "keywords": [],

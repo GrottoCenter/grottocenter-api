@@ -1,7 +1,14 @@
 const ramda = require('ramda');
 
 module.exports = {
-  createGrotto: async (cleanedData, nameData, errorHandler) => {
+  /**
+   *
+   * @param {*} cleanedData
+   * @param {*} nameData
+   * @throws Sails ORM errors (see https://sailsjs.com/documentation/concepts/models-and-orm/errors)
+   * @returns
+   */
+  createGrotto: async (cleanedData, nameData) => {
     const newOrganizationPopulated = await sails
       .getDatastore()
       .transaction(async (db) => {
@@ -33,8 +40,7 @@ module.exports = {
           .usingConnection(db);
 
         return newOrganizationPopulated;
-      })
-      .intercept(errorHandler);
+      });
 
     const {
       country,

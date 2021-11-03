@@ -63,7 +63,7 @@ module.exports = {
     return allEntrances;
   },
 
-  createEntrance: async (entranceData, nameDescLocData, errorHandler) => {
+  createEntrance: async (entranceData, nameDescLocData) => {
     const newEntrancePopulated = await sails
       .getDatastore()
       .transaction(async (db) => {
@@ -141,8 +141,7 @@ module.exports = {
           .populate('descriptions')
           .usingConnection(db);
         return newEntrancePopulated;
-      })
-      .intercept(errorHandler);
+      });
 
     // Prepare data for Elasticsearch indexation
     const description =

@@ -1,12 +1,18 @@
 module.exports = {
   /**
-   * @returns {Function} default Grottocenter ORM error handler
+   * @returns {Function} default Grottocenter error handler
    */
-  getDefaultOrmErrorHandler: () => {
+  getDefaultErrorHandler: (res) => {
     return (error) => {
       if (error.code && error.code === 'E_UNIQUE') {
-        return res.sendStatus(409);
+        const message =
+          'A resource already exists with conflicting attribute value(s): ' +
+          error.attrNames.join(',') +
+          '.';
+        sails.log.error(message);
+        return res.status(409).send(message);
       } else {
+        sails.log.error(error.message);
         switch (error.name) {
           case 'UsageError':
             return res.badRequest(error.message);

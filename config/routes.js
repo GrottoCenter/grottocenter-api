@@ -174,6 +174,7 @@ module.exports.routes = {
   /* Document controller */
   'GET /api/v1/documents': 'v1/Document.findAll',
   'GET /api/v1/documents/:id': 'v1/Document.find',
+  'GET /api/v1/documents/:id/children': 'v1/Document.findChildren',
   'GET /api/v1/documents/count': 'v1/Document.count',
   'POST /api/v1/documents': 'v1/Document.create',
   'POST /api/v1/documents/check-rows': 'v1/Document.checkRows',
