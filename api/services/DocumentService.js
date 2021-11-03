@@ -91,7 +91,7 @@ module.exports = {
     // Build path old
     return files.map((f) => ({
       ...f,
-      pathOld: oldTopoFilesUrl + f.pathOld,
+      pathOld: oldTopoFilesUrl + f.path,
     }));
   },
 

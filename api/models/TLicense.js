@@ -26,6 +26,7 @@ module.exports = {
 
     text: {
       type: 'string',
+      allowNull: true,
       columnName: 'text',
     },
   },
