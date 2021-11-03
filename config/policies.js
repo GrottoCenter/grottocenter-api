@@ -26,16 +26,6 @@ module.exports.policies = {
 
   '*': false,
 
-  AccountController: {
-    '*': true,
-  },
-
-  AuthController: {
-    login: true,
-    logout: 'tokenAuth',
-    signUp: true,
-  },
-
   CaverController: {
     '*': true,
   },
@@ -109,28 +99,12 @@ module.exports.policies = {
     '*': true,
   },
 
-  AuthorController: {
-    '*': false,
-  },
-
   PartnerController: {
     '*': true,
   },
 
   'v1/PartnerController': {
     '*': true,
-  },
-
-  I18nController: {
-    '*': true,
-  },
-
-  SwaggerController: {
-    '*': true,
-  },
-
-  TopographyController: {
-    '*': false,
   },
 
   ConvertController: {
@@ -154,7 +128,9 @@ module.exports.policies = {
   },
 
   'v1/AuthController': {
-    '*': true,
+    login: true,
+    logout: true,
+    signUp: true,
   },
 
   'v1/BbsGeoController': {
