@@ -28,12 +28,13 @@ before(function(done) {
           'ttype',
           'tgroup',
           'tcaver',
-          'tgrotto',
           'tname',
+          'tgrotto',
           'tdocument',
           'tdescription',
           'tcave',
           'tentrance',
+          'tmassif',
         ],
         function(err) {
           if (err) {
