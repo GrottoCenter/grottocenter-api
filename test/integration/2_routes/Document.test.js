@@ -17,9 +17,10 @@ describe('Document features', () => {
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json')
         .expect(200)
-        .then((res) => {
+        .end((err, res) => {
+          if (err) return done(err);
           res.body.should.deepEqual({ count: 4 });
-          done();
+          return done();
         });
     });
   });

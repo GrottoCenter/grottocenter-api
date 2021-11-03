@@ -517,6 +517,7 @@ module.exports = {
 
     result.id = source.id;
     result['@id'] = String(source.id);
+    result.author = source.author;
     result.name = MappingV1Service.getMainName(source);
     result.names = source.names;
     result.dateInscription = source.dateInscription;
@@ -570,7 +571,7 @@ module.exports = {
     result.country = source.country;
     result.countryCode = source['country code'];
     result.county = source.county;
-    result.documentary = source.documentary;
+    result.dateInscription = source.dateInscription;
     result.isOfficialPartner = source.isOfficialPartner;
     result.latitude = parseFloat(source.latitude);
     result.longitude = parseFloat(source.longitude);
@@ -580,7 +581,7 @@ module.exports = {
     result.pictureFileName = source.pictureFileName;
     result.postalCode = source.postalCode;
     result.region = source.region;
-    result.URL = source.URL;
+    result.url = source.url;
     result.village = source.village;
     result.yearBirth = source.yearBirth;
 

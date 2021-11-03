@@ -55,6 +55,7 @@ module.exports = {
           await CaveService.setEntrances(found.partneredCaves);
           await NameService.setNames(found.exploredCaves, 'cave');
           await NameService.setNames(found.partneredCaves, 'cave');
+          await NameService.setNames([found], 'grotto');
         } catch (e) {
           const message = `An internal server error occurred when trying to get information about grotto of id ${req.params.id}`;
           sails.log.error(message + ': ' + e.message);

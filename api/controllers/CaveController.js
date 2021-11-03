@@ -38,11 +38,21 @@ module.exports = {
       .populate('documents')
       .populate('names')
       .exec(async (err, found) => {
-        await NameService.setNames([found], 'cave');
         const params = {};
         params.controllerMethod = 'CaveController.find';
         params.searchedItem = `Cave of id ${req.params.id}`;
-        params.notFoundMessage = `Cave of id ${req.params.id} not found.`;
+        params.notFoundMessage = `${params.searchedItem} not found.`;
+        if (err) {
+          sails.log.error(err);
+          return res.serverError(
+            'An unexpected server error occured when trying to get ' +
+              params.searchedItem,
+          );
+        }
+        if (found) {
+          await NameService.setNames([found], 'cave');
+        }
+
         return ControllerService.treatAndConvert(
           req,
           err,
