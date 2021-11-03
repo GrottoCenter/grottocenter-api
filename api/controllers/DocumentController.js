@@ -687,14 +687,16 @@ module.exports = {
                     doc.authorizationDocument,
                   ));
                 await setNamesOfPopulatedDocument(doc);
+                doc.children &&
+                  (await Promise.all(
+                    doc.children.map(async (childDoc) => {
+                      await DescriptionService.setDocumentDescriptions(
+                        childDoc,
+                      );
+                    }),
+                  ));
               }),
             );
-            found.children &&
-              (await Promise.all(
-                found.children.map(async (childDoc) => {
-                  await DescriptionService.setDocumentDescriptions(childDoc);
-                }),
-              ));
 
             const params = {
               controllerMethod: 'DocumentController.findAll',
