@@ -670,11 +670,11 @@ module.exports = {
               });
             }
 
-            found.mainLanguage = await DocumentService.getMainLanguage(
-              found.id,
-            );
             await Promise.all(
               found.map(async (doc) => {
+                doc.mainLanguage = await DocumentService.getMainLanguage(
+                  doc.id,
+                );
                 await NameService.setNames(
                   [
                     ...(doc.library ? [doc.library] : []),
@@ -686,9 +686,9 @@ module.exports = {
                   (await DescriptionService.setDocumentDescriptions(
                     doc.authorizationDocument,
                   ));
+                await setNamesOfPopulatedDocument(doc);
               }),
             );
-            await setNamesOfPopulatedDocument(found);
             found.children &&
               (await Promise.all(
                 found.children.map(async (childDoc) => {
