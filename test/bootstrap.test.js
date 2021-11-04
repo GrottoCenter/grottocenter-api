@@ -25,6 +25,7 @@ before(function(done) {
           'tlanguage',
           'tright',
           'tidentifiertype',
+          'tsubject',
           'ttype',
           'tgroup',
           'tcaver',
