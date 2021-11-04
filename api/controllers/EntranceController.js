@@ -13,9 +13,7 @@ const getConvertedDataFromClientRequest = (req) => {
   return {
     ...reqBodyWithoutId,
     author: req.token.id,
-    cave: ramda.pathOr(undefined, ['cave', 'id'], req.body),
-    country: ramda.pathOr(undefined, ['country', 'id'], req.body),
-    geology: ramda.pathOr('Q35758', ['geology', 'id'], req.body),
+    geology: ramda.propOr('Q35758', 'geology', req.body),
   };
 };
 
@@ -522,6 +520,34 @@ module.exports = {
       return res.forbidden('You are not authorized to create an entrance.');
     }
 
+    // Check params
+    // name
+    if (
+      !ramda.propOr(null, 'text', req.param('name')) ||
+      !ramda.propOr(null, 'language', req.param('name'))
+    ) {
+      return res.badRequest(
+        'You must provide a name (with a language) for the new entrance',
+      );
+    }
+
+    // cave
+    if (!req.param('cave')) {
+      return res.badRequest('You must provide a cave id for the new entrance');
+    }
+    if (
+      !(await sails.helpers.checkIfExists.with({
+        attributeName: 'id',
+        attributeValue: req.param('cave'),
+        sailsModel: TCave,
+      }))
+    ) {
+      return res.badRequest(
+        `The cave with id ${req.param('cave')} does not exist.`,
+      );
+    }
+
+    // Get data & create entrance
     const cleanedData = {
       ...getConvertedDataFromClientRequest(req),
       dateInscription: new Date(),
