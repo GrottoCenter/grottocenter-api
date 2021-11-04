@@ -1541,11 +1541,8 @@ paths:
         required: true
         description: Cave related to the entrance
         schema:
-            type: object
-            properties:
-              id:
-                type: number
-                description: Id of the cave
+          type: number
+          description: Id of the cave
       - name: city
         in: query
         description: City where the entrance is located
@@ -1561,11 +1558,8 @@ paths:
         in: query
         description: Country where the entrance is located
         schema:
-            type: object
-            properties:
-              id:
-                type: string
-                description: Id of the country
+          type: string
+          description: ISO 3166-1 alpha-2 code of the country where the entrance is located
       - name: county
         in: query
         description: County where the entrance is located
@@ -1573,7 +1567,6 @@ paths:
           type: string
       - name: description
         in: query
-        required: true
         schema:
             type: object
             properties:
@@ -2902,6 +2895,14 @@ components:
         reviewer:
           $ref: '#/components/schemas/Caver'
 
+    Option:
+      type: object
+      properties:
+        id:
+          type: 'number'
+        name:
+          type: 'string'
+      
     Organization:
       type: object
       properties:
