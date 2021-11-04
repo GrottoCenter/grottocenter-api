@@ -344,6 +344,12 @@ module.exports = {
       let data = '';
       // Convert the data according to its first tag
       switch (item['_source'].tags[0]) {
+        case 'cave':
+          data = MappingV1Service.convertToCaveModel(item['_source']);
+          break;
+        case 'caver':
+          data = MappingV1Service.convertToCaverModel(item['_source']);
+          break;
         case 'entrance':
           data = MappingV1Service.convertToEntranceModel(item['_source']);
           break;
@@ -355,9 +361,6 @@ module.exports = {
           break;
         case 'document':
           data = MappingV1Service.convertToDocumentModel(item['_source']);
-          break;
-        case 'caver':
-          data = MappingV1Service.convertToCaverModel(item['_source']);
           break;
         default:
       }
@@ -484,6 +487,14 @@ module.exports = {
             data.nickname = item['_source'].nickname;
             data.mail = item['_source'].mail;
 
+          case 'cave':
+            data.depth = item['_source'].depth;
+            data.descriptions = item['_source'].descriptions;
+            data.isDiving = item['_source'].is_diving;
+            data.length = item['_source'].length;
+            data.names = item['_source'].names;
+            data.sizeCoef = item['_source'].size_coef;
+            data.temperature = item['_source'].temperature;
           default:
         }
         values.push(data);

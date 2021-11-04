@@ -6,6 +6,7 @@ const indexNames = [
   'entrances',
   'grottos',
   'documents',
+  'caves',
   'cavers',
   'document-collections',
   'document-issues',

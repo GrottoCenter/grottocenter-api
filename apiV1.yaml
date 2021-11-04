@@ -2964,6 +2964,7 @@ components:
     Quicksearch-type:
       type: string
       enum:
+        - caves
         - cavers
         - documents
         - document-collections
@@ -3045,6 +3046,7 @@ components:
     Search-type:
       type: string
       enum:
+        - caves
         - cavers
         - documents
         - document-collections
