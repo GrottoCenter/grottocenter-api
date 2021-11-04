@@ -8,6 +8,7 @@ const indexNames = [
   'massifs',
   'entrances',
   'documents',
+  'caves',
   'cavers',
   'document-collections',
   'document-issues',
