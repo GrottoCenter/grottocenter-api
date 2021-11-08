@@ -206,6 +206,10 @@ module.exports.policies = {
     '*': true,
   },
 
+  'v1/SwaggerController': {
+    '*': true,
+  },
+
   /***************************************************************************
    *                                                                          *
    * Here's an example of mapping some policies to run before a controller    *
