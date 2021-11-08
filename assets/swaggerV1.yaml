@@ -13,8 +13,7 @@ info:
     url: 'https://creativecommons.org/licenses/by-sa/3.0/'
 
 servers:
-- url: http://beta.grottocenter.org/api/v1
-- url: https://beta.grottocenter.org/api/v1
+- url: https://api.grottocenter.org
 
 tags:
 - name: account
