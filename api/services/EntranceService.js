@@ -170,7 +170,7 @@ module.exports = {
       'cave is diving': newEntrancePopulated.cave.isDiving,
       country: newEntrancePopulated.country.nativeName,
       'country code': newEntrancePopulated.country.iso3,
-      descriptions: [description],
+      descriptions: description,
       'massif name': newEntrancePopulated.cave.massif.name,
       name: newEntrancePopulated.name,
       names: newEntrancePopulated.names.map((n) => n.name).join(', '),
