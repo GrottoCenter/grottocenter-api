@@ -832,15 +832,17 @@ module.exports = {
       .with({
         groups: req.token.groups,
         rightEntity: RightService.RightEntities.ENTRANCE,
-        rightAction: RightService.RightActions.CREATE,
+        rightAction: RightService.RightActions.CSV_IMPORT,
       })
       .intercept('rightNotFound', (err) => {
         return res.serverError(
-          'A server error occured when checking your right to create an entrance.',
+          'A server error occured when checking your right to import entrances via CSV.',
         );
       });
     if (!hasRight) {
-      return res.forbidden('You are not authorized to create an entrance.');
+      return res.forbidden(
+        'You are not authorized to import entraces via CSV.',
+      );
     }
 
     const requestResponse = {
@@ -922,6 +924,7 @@ module.exports = {
             longitude: entranceCreated.longitude,
           });
         } catch (err) {
+          sails.log.error(err);
           requestResponse.failureImport.push({
             line: index + 2,
             message: err.toString(),
