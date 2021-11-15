@@ -22,6 +22,7 @@ module.exports = {
     CREATE: 'create',
     DELETE_ANY: 'delete any',
     DELETE_OWN: 'delete own',
+    CSV_IMPORT: 'csv import',
     EDIT_ANY: 'edit any',
     EDIT_OWN: 'edit own',
     EDIT_NOT_VALIDATED: 'edit not validated',
