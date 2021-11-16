@@ -173,6 +173,8 @@ const iso2ToIso3 = (iso) => {
 const getConvertedDocumentFromCsv = async (rawData, authorId) => {
   const doubleCheck = sails.helpers.csvhelpers.doubleCheck.with;
   const retrieveFromLink = sails.helpers.csvhelpers.retrieveFromLink.with;
+
+  // License
   const rawLicence = doubleCheck({
     data: rawData,
     key: 'dct:rights/karstlink:licenseType',
@@ -180,181 +182,185 @@ const getConvertedDocumentFromCsv = async (rawData, authorId) => {
   });
   const licence = await retrieveFromLink({ stringArg: rawLicence });
   const licenceDb = await TLicense.findOne({ name: licence });
-  if (licenceDb) {
-    const creatorsRaw = rawData['dct:creator'].split('|');
-    //For each creator, we first check if there is a grotto of this name. If not, check for a caver. If not, create a caver.
-    const creatorsPromises = creatorsRaw.map(async (creatorRaw) => {
-      const authorGrotto = await TName.find({
-        name: await retrieveFromLink({ stringArg: creatorRaw }),
-        grotto: { '!=': null },
-      }).limit(1);
-
-      // If a grotto is found, a name object is returned.
-      // If it as a caver which is found, it returns a caver object
-      if (authorGrotto.length === 0) {
-        return {
-          type: 'caver',
-          value: await sails.helpers.csvhelpers.getCreator.with({
-            creator: creatorRaw,
-          }),
-        };
-      } else {
-        return { type: 'grotto', value: authorGrotto[0] };
-      }
-    });
-
-    const editorsRaw = doubleCheck({
-      data: rawData,
-      key: 'dct:publisher',
-      defaultValue: null,
-    });
-    let editorId = undefined;
-    if (editorsRaw) {
-      const editorsRawArray = editorsRaw.split('|');
-      let editorName = '';
-      for (const editorRaw of editorsRawArray) {
-        const editorNameRaw = await retrieveFromLink({ stringArg: editorRaw });
-        editorName += editorNameRaw.replace('_', ' ') + ', ';
-      }
-      editorName = editorName.slice(0, -2);
-      const namesArray = await TName.find({
-        name: editorName,
-        grotto: { '!=': null },
-      }).limit(1);
-      switch (namesArray.length) {
-        case 0:
-          const paramsGrotto = {
-            author: authorId,
-            dateInscription: new Date(),
-          };
-          const nameGrotto = {
-            text: editorName,
-            language: doubleCheck({
-              data: rawData,
-              key: 'gn:countryCode',
-              defaultValue: 'ENG',
-              func: iso2ToIso3,
-            }),
-            author: authorId,
-          };
-          const editorGrotto = await GrottoService.createGrotto(
-            paramsGrotto,
-            nameGrotto,
-          );
-          editorId = editorGrotto.id;
-          break;
-        default:
-          const name = namesArray[0];
-          editorId = name.grotto;
-          break;
-      }
-    }
-
-    const typeData = doubleCheck({
-      data: rawData,
-      key: 'karstlink:documentType',
-      defaultValue: undefined,
-    });
-    let typeId = undefined;
-    if (typeData) {
-      const typeCriteria = typeData.startsWith('http')
-        ? { url: typeData }
-        : { name: typeData };
-      const type = await TType.findOne(typeCriteria);
-      if (!type) {
-        throw Error('This document type is incorrect : ' + typeData);
-      }
-      typeId = type.id;
-    }
-
-    const parentData = doubleCheck({
-      data: rawData,
-      key: 'dct:isPartOf',
-      defaultValue: undefined,
-    });
-    let parent = undefined;
-    if (parentData) {
-      const descArray = await TDescription.find({
-        title: parentData,
-        document: { '!=': null },
-      }).limit(1);
-      if (descArray.length > 0) {
-        parent = descArray[0].document;
-      }
-    }
-
-    const subjectsData = doubleCheck({
-      data: rawData,
-      key: 'dct:subject',
-      defaultValue: undefined,
-    });
-    let subjects = undefined;
-    if (subjectsData) {
-      subjects = subjectsData.split('|');
-    }
-
-    const creators = await Promise.all(creatorsPromises);
-    const creatorsCaverId = [];
-    const creatorsGrottoId = [];
-    for (const creator of creators) {
-      switch (creator.type) {
-        case 'caver':
-          creatorsCaverId.push(creator.value.id);
-          break;
-        case 'grotto':
-          creatorsGrottoId.push(creator.value.grotto);
-          break;
-      }
-    }
-
-    return {
-      author: authorId,
-      datePublication: doubleCheck({
-        data: rawData,
-        key: 'dct:date',
-        defaultValue: undefined,
-      }),
-      identifierType: doubleCheck({
-        data: rawData,
-        key: 'dct:identifier',
-        defaultValue: undefined,
-      }),
-      identifier: doubleCheck({
-        data: rawData,
-        key: 'dct:source',
-        defaultValue: undefined,
-      }),
-      license: licenceDb.id,
-      dateInscription: doubleCheck({
-        data: rawData,
-        key: 'dct:rights/dct:created',
-        defaultValue: new Date(),
-      }),
-      dateReviewed: doubleCheck({
-        data: rawData,
-        key: 'dct:rights/dct:modified',
-        defaultValue: undefined,
-      }),
-      authors: creatorsCaverId,
-      authorsGrotto: creatorsGrottoId,
-      editor: editorId,
-      type: typeId,
-      parent: parent,
-      subjects: subjects,
-      idDbImport: doubleCheck({
-        data: rawData,
-        key: 'id',
-        defaultValue: undefined,
-      }),
-      nameDbImport: doubleCheck({
-        data: rawData,
-        key: 'dct:rights/cc:attributionName',
-        defaultValue: undefined,
-      }),
-    };
-  } else {
-    throw Error('This kind of license cannot be imported.');
+  if (!licenceDb) {
+    throw Error('This kind of license (' + licence + ') cannot be imported.');
   }
+
+  // Creator
+  const creatorsRaw = rawData['dct:creator'].split('|');
+  // For each creator, first check if there is a grotto of this name. If not, check for a caver. If not, create a caver.
+  const creatorsPromises = creatorsRaw.map(async (creatorRaw) => {
+    const authorGrotto = await TName.find({
+      name: await retrieveFromLink({ stringArg: creatorRaw }),
+      grotto: { '!=': null },
+    }).limit(1);
+    // If a grotto is found, a name object is returned.
+    // If it as a caver which is found, it returns a caver object
+    if (authorGrotto.length === 0) {
+      return {
+        type: 'caver',
+        value: await sails.helpers.csvhelpers.getCreator.with({
+          creator: creatorRaw,
+        }),
+      };
+    } else {
+      return { type: 'grotto', value: authorGrotto[0] };
+    }
+  });
+  const creators = await Promise.all(creatorsPromises);
+
+  // Editor
+  const editorsRaw = doubleCheck({
+    data: rawData,
+    key: 'dct:publisher',
+    defaultValue: null,
+  });
+  let editorId = undefined;
+  if (editorsRaw) {
+    const editorsRawArray = editorsRaw.split('|');
+    let editorName = '';
+    for (const editorRaw of editorsRawArray) {
+      const editorNameRaw = await retrieveFromLink({ stringArg: editorRaw });
+      editorName += editorNameRaw.replace('_', ' ') + ', ';
+    }
+    editorName = editorName.slice(0, -2);
+    const namesArray = await TName.find({
+      name: editorName,
+      grotto: { '!=': null },
+    }).limit(1);
+    switch (namesArray.length) {
+      case 0:
+        const paramsGrotto = {
+          author: authorId,
+          dateInscription: new Date(),
+        };
+        const nameGrotto = {
+          text: editorName,
+          language: doubleCheck({
+            data: rawData,
+            key: 'gn:countryCode',
+            defaultValue: 'ENG',
+            func: iso2ToIso3,
+          }),
+          author: authorId,
+        };
+        const editorGrotto = await GrottoService.createGrotto(
+          paramsGrotto,
+          nameGrotto,
+        );
+        editorId = editorGrotto.id;
+        break;
+      default:
+        const name = namesArray[0];
+        editorId = name.grotto;
+        break;
+    }
+  }
+
+  // Doc type
+  const typeData = doubleCheck({
+    data: rawData,
+    key: 'karstlink:documentType',
+    defaultValue: undefined,
+  });
+  let typeId = undefined;
+  if (typeData) {
+    const typeCriteria = typeData.startsWith('http')
+      ? { url: typeData }
+      : { name: typeData };
+    const type = await TType.findOne(typeCriteria);
+    if (!type) {
+      throw Error("The document type '" + typeDate + "' is incorrect.");
+    }
+    typeId = type.id;
+  }
+
+  // Parent / partOf
+  const parentData = doubleCheck({
+    data: rawData,
+    key: 'dct:isPartOf',
+    defaultValue: undefined,
+  });
+  let parent = undefined;
+  if (parentData) {
+    const descArray = await TDescription.find({
+      title: parentData,
+      document: { '!=': null },
+    }).limit(1);
+    if (descArray.length > 0) {
+      parent = descArray[0].document;
+    }
+  }
+
+  // Subjects
+  const subjectsData = doubleCheck({
+    data: rawData,
+    key: 'dct:subject',
+    defaultValue: undefined,
+  });
+  let subjects = undefined;
+  if (subjectsData) {
+    subjects = subjectsData.split('|');
+  }
+
+  const creatorsCaverId = [];
+  const creatorsGrottoId = [];
+  for (const creator of creators) {
+    switch (creator.type) {
+      case 'caver':
+        creatorsCaverId.push(creator.value.id);
+        break;
+      case 'grotto':
+        creatorsGrottoId.push(creator.value.grotto);
+        break;
+    }
+  }
+
+  return {
+    author: authorId,
+    datePublication: doubleCheck({
+      data: rawData,
+      key: 'dct:date',
+      defaultValue: undefined,
+    }),
+    identifierType: doubleCheck({
+      data: rawData,
+      key: 'dct:identifier',
+      defaultValue: undefined,
+    }),
+    identifier: doubleCheck({
+      data: rawData,
+      key: 'dct:source',
+      defaultValue: undefined,
+    }),
+    license: licenceDb.id,
+    dateInscription: doubleCheck({
+      data: rawData,
+      key: 'dct:rights/dct:created',
+      defaultValue: new Date(),
+    }),
+    dateReviewed: doubleCheck({
+      data: rawData,
+      key: 'dct:rights/dct:modified',
+      defaultValue: undefined,
+    }),
+    authors: creatorsCaverId,
+    authorsGrotto: creatorsGrottoId,
+    editor: editorId,
+    type: typeId,
+    parent: parent,
+    subjects: subjects,
+    idDbImport: doubleCheck({
+      data: rawData,
+      key: 'id',
+      defaultValue: undefined,
+    }),
+    nameDbImport: doubleCheck({
+      data: rawData,
+      key: 'dct:rights/cc:attributionName',
+      defaultValue: undefined,
+    }),
+  };
 };
 
 const getConvertedLangDescDocumentFromCsv = (rawData, authorId) => {
