@@ -309,12 +309,15 @@ const self = (module.exports = {
    */
   sanitizeQuery: (sourceString) => {
     // eslint-disable-next-line no-useless-escape
-    sourceString.replace(/[`~!@#$%^&*()_|+\-=?;:",<>«»\{\}\[\]\/\\]/gi, ' ');
-    sourceString =
-      sourceString[sourceString.length - 1] === '.'
-        ? sourceString.slice(0, -1)
-        : sourceString;
-    return sourceString;
+    let sanitizedString = sourceString.replace(
+      /[`~!@#$%^&*()_|+\-=?;:",<>«»\{\}\[\]\/\\]/gi,
+      ' ',
+    );
+    sanitizedString =
+      sanitizedString[sanitizedString.length - 1] === '.'
+        ? sanitizedString.slice(0, -1)
+        : sanitizedString;
+    return sanitizedString.trim();
   },
 
   isConnectionAlive: async () => {
