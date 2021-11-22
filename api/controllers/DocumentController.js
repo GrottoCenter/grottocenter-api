@@ -155,7 +155,7 @@ const updateDocumentInElasticSearchIndexes = async (document) => {
   ________________________________________
 */
 
-const iso2ToIso3 = (iso) => {
+const countryIso2ToIso3 = (iso) => {
   if (iso !== undefined) {
     if (iso === 'EN') {
       return 'eng';
@@ -238,9 +238,9 @@ const getConvertedDocumentFromCsv = async (rawData, authorId) => {
           text: editorName,
           language: doubleCheck({
             data: rawData,
-            key: 'gn:countryCode',
-            defaultValue: 'ENG',
-            func: iso2ToIso3,
+            key: 'dc:language',
+            defaultValue: 'eng',
+            func: (value) => value.toLowerCase(),
           }),
           author: authorId,
         };
@@ -327,6 +327,7 @@ const getConvertedDocumentFromCsv = async (rawData, authorId) => {
       data: rawData,
       key: 'dct:identifier',
       defaultValue: undefined,
+      func: (value) => value.trim().toLowerCase(),
     }),
     identifier: doubleCheck({
       data: rawData,
@@ -375,13 +376,13 @@ const getConvertedLangDescDocumentFromCsv = (rawData, authorId) => {
         data: rawData,
         key: 'karstlink:hasDescriptionDocument/dc:language',
         defaultValue: undefined,
-        func: iso2ToIso3,
+        func: (value) => value.toLowerCase(),
       })
     : doubleCheck({
         data: rawData,
         key: 'dc:language',
         defaultValue: undefined,
-        func: iso2ToIso3,
+        func: (value) => value.toLowerCase(),
       });
   return {
     author: authorId,
@@ -410,7 +411,7 @@ const getConvertedLangDescDocumentFromCsv = (rawData, authorId) => {
         data: rawData,
         key: 'dc:language',
         defaultValue: undefined,
-        func: iso2ToIso3,
+        func: (value) => value.toLowerCase(),
       }),
     },
     titleAndDescriptionLanguage: {
@@ -1260,6 +1261,7 @@ module.exports = {
         const result = await TDocument.find({
           idDbImport: idDb,
           nameDbImport: nameDb,
+          isDeleted: false,
         });
         if (result.length > 0) {
           wontBeCreated.push({
