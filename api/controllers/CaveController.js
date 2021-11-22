@@ -70,13 +70,21 @@ module.exports = {
     return TCave.find(parameters)
       .populate('id_author')
       .populate('entrances')
+      .populate('names')
       .sort('id ASC')
       .limit(10)
       .exec((err, found) => {
         const params = {};
         params.controllerMethod = 'CaveController.findAll';
         params.notFoundMessage = 'No caves found.';
-        return ControllerService.treat(req, err, found, params, res, converter);
+        return ControllerService.treatAndConvert(
+          req,
+          err,
+          found,
+          params,
+          res,
+          converter,
+        );
       });
   },
 
