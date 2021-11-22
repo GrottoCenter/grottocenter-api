@@ -59,7 +59,6 @@ describe('Cave features', () => {
           const { body: caves } = res;
           sails.log.info(caves);
           caves.forEach((cave) => {
-            sails.log.debug(cave);
             should(cave).have.properties(CAVE_PROPERTIES);
             should(cave.name).not.be.empty();
             should(cave.names).not.be.empty();
