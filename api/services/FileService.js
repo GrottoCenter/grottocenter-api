@@ -57,6 +57,7 @@ module.exports = {
       );
       const blockBlobClient = containerClient.getBlockBlobClient(pathName);
 
+      sails.log.info('Uploading ' + name + ' to Azure Blob...');
       await blockBlobClient.uploadData(file.buffer, {
         blobHTTPHeaders: {
           blobContentType: mimeType,
