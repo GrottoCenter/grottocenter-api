@@ -81,10 +81,6 @@ bower_components
 .tmp
 dump.rdb
 
-### added by Benjamin for swagger-ui
-assets/styles/swagger-ui.css
-assets/swagger/api*.yaml
-
 
 ################################################
 # Node.js / NPM
