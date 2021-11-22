@@ -490,7 +490,6 @@ module.exports = {
       }
     };
 
-    // Launch creation request using transaction: it performs a rollback if an error occurs
     const documentCreated = await DocumentService.createDocument(
       cleanedData,
       langDescData,
