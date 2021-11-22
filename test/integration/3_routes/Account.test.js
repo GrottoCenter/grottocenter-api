@@ -8,7 +8,6 @@ describe('Account features', () => {
   before(async () => {
     sails.log.info('Asking for user auth token...');
     userToken = await AuthTokenService.getRawBearerUserToken();
-    sails.log.info('Got: ' + userToken + '\n');
   });
 
   describe('Change email', () => {

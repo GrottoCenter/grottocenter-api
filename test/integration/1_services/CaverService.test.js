@@ -7,10 +7,8 @@ describe('CaverService', () => {
   before(async () => {
     sails.log.info('Asking for user token...');
     userReq.token = await AuthTokenService.getUserToken();
-    sails.log.info('Got: ' + userReq.token + '\n');
     sails.log.info('Asking for admin token...');
     adminReq.token = await AuthTokenService.getAdminToken();
-    sails.log.info('Got: ' + adminReq.token + '\n');
   });
 
   describe('getGroups()', () => {
