@@ -95,36 +95,62 @@ module.exports = {
     }));
   },
 
-  createDocument: async (dataDocument, dataLangDesc) => {
-    return await sails.getDatastore().transaction(async (db) => {
-      const documentCreated = await TDocument.create(dataDocument)
-        .fetch()
-        .usingConnection(db);
+  createDocument: async (documentData, langDescData) => {
+    const createdDocument = await sails
+      .getDatastore()
+      .transaction(async (db) => {
+        const createdDocument = await TDocument.create(documentData)
+          .fetch()
+          .usingConnection(db);
 
-      // Create associated data not handled by TDocument manually
-      if (ramda.pathOr(null, ['documentMainLanguage', 'id'], dataLangDesc)) {
-        await JDocumentLanguage.create({
-          document: documentCreated.id,
-          language: dataLangDesc.documentMainLanguage.id,
-          isMain: true,
+        // Create associated data not handled by TDocument manually
+        if (ramda.pathOr(null, ['documentMainLanguage', 'id'], langDescData)) {
+          await JDocumentLanguage.create({
+            document: createdDocument.id,
+            language: langDescData.documentMainLanguage.id,
+            isMain: true,
+          }).usingConnection(db);
+        }
+
+        await TDescription.create({
+          author: langDescData.author,
+          body: langDescData.description,
+          dateInscription: ramda.propOr(
+            new Date(),
+            'dateInscription',
+            langDescData,
+          ),
+          dateReviewed: ramda.propOr(undefined, 'dateReviewed', langDescData),
+          document: createdDocument.id,
+          language: langDescData.titleAndDescriptionLanguage.id,
+          title: langDescData.title,
         }).usingConnection(db);
-      }
 
-      await TDescription.create({
-        author: dataLangDesc.author,
-        body: dataLangDesc.description,
-        dateInscription: ramda.propOr(
-          new Date(),
-          'dateInscription',
-          dataLangDesc,
-        ),
-        dateReviewed: ramda.propOr(undefined, 'dateReviewed', dataLangDesc),
-        document: documentCreated.id,
-        language: dataLangDesc.titleAndDescriptionLanguage.id,
-        title: dataLangDesc.title,
-      }).usingConnection(db);
+        return createdDocument;
+      });
 
-      return documentCreated;
-    });
+    // Get full doc
+    const populatedDocument = await TDocument.findOne(
+      createdDocument.id,
+    ).populate('identifierType');
+
+    if (
+      populatedDocument.identifier &&
+      ramda.pathOr('', ['identifierType', 'id'], populatedDocument).trim() ===
+        'url'
+    ) {
+      sails.log.info('Downloading ' + populatedDocument.identifier + '...');
+      const acceptedFileFormats = await TFileFormat.find();
+      // Download distant file
+      const file = await sails.helpers.distantFileDownload.with({
+        url: populatedDocument.identifier,
+        acceptedFileFormats: acceptedFileFormats.map((f) => f.extension.trim()),
+        refusedFileFormats: ['html'], // don't download html page, they are not a valid file for GC
+      });
+
+      await FileService.create(file, createdDocument.id);
+    }
+
+    return populatedDocument;
   },
 };
