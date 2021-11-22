@@ -59,7 +59,6 @@
     "GrottoService": true,
     "GeoLocService": true,
     "ConvertService": true,
-    "I18nService": true,
     "TBbs": true,
     "TBbsGeo": true,
     "TBbsChapter": true
