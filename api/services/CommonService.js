@@ -20,7 +20,4 @@ module.exports = {
    */
   convertHtmlToText: (html, length) =>
     _.prune(_.unescapeHTML(_.stripTags(html)), length),
-
-  // TODO review this method and add unit test
-  difference: (num1, num2) => (num1 > num2 ? num1 - num2 : num2 - num1),
 };
