@@ -112,6 +112,13 @@ module.exports = {
       columnName: 'ref_bbs',
     },
 
+    isDeleted: {
+      type: 'boolean',
+      allowNull: false,
+      columnName: 'is_deleted',
+      defaultsTo: false,
+    },
+
     entrance: {
       columnName: 'id_entrance',
       model: 'TEntrance',
