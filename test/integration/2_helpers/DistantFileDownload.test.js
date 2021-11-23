@@ -2,11 +2,21 @@ let should = require('should');
 
 describe('DistantFileDownload helper', () => {
   it('should download the grottocenter logo', async () => {
-    const result = await sails.helpers.distantFileDownload.with({
+    const resultHttp = await sails.helpers.distantFileDownload.with({
+      url: 'http://beta.grottocenter.org/images/logo.svg',
+    });
+    const resultHttps = await sails.helpers.distantFileDownload.with({
       url: 'https://beta.grottocenter.org/images/logo.svg',
     });
-    should(result).not.be.empty();
-    should(result).have.properties([
+    should(resultHttp).not.be.empty();
+    should(resultHttp).have.properties([
+      'buffer',
+      'mimetype',
+      'originalname',
+      'size',
+    ]);
+    should(resultHttps).not.be.empty();
+    should(resultHttps).have.properties([
       'buffer',
       'mimetype',
       'originalname',

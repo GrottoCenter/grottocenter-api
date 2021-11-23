@@ -1,3 +1,4 @@
+const http = require('http');
 const https = require('https');
 const mime = require('mime-types');
 
@@ -55,12 +56,15 @@ module.exports = {
     } catch (_) {
       return exits.invalidUrl();
     }
+
     if (fileUrl.protocol !== 'http:' && fileUrl.protocol !== 'https:') {
       return exits.invalidUrl();
     }
 
+    const client = fileUrl.protocol === 'https:' ? https : http;
+
     // Download it
-    https
+    client
       .get(fileUrl, (res) => {
         const { acceptedFileFormats, refusedFileFormats } = inputs;
         const contentType = res.headers['content-type'];
