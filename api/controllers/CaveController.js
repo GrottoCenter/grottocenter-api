@@ -38,11 +38,21 @@ module.exports = {
       .populate('documents')
       .populate('names')
       .exec(async (err, found) => {
-        await NameService.setNames([found], 'cave');
         const params = {};
         params.controllerMethod = 'CaveController.find';
         params.searchedItem = `Cave of id ${req.params.id}`;
-        params.notFoundMessage = `Cave of id ${req.params.id} not found.`;
+        params.notFoundMessage = `${params.searchedItem} not found.`;
+        if (err) {
+          sails.log.error(err);
+          return res.serverError(
+            'An unexpected server error occured when trying to get ' +
+              params.searchedItem,
+          );
+        }
+        if (found) {
+          await NameService.setNames([found], 'cave');
+        }
+
         return ControllerService.treatAndConvert(
           req,
           err,
@@ -60,13 +70,21 @@ module.exports = {
     return TCave.find(parameters)
       .populate('id_author')
       .populate('entrances')
+      .populate('names')
       .sort('id ASC')
       .limit(10)
       .exec((err, found) => {
         const params = {};
         params.controllerMethod = 'CaveController.findAll';
         params.notFoundMessage = 'No caves found.';
-        return ControllerService.treat(req, err, found, params, res, converter);
+        return ControllerService.treatAndConvert(
+          req,
+          err,
+          found,
+          params,
+          res,
+          converter,
+        );
       });
   },
 

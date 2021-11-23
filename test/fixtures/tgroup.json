@@ -11,7 +11,7 @@
     "id": 2,
     "name": "Moderator",
     "comments": "Content reviewers.",
-    "rights": []
+    "rights": [101,102,103]
   },
   {
     "id": 3,

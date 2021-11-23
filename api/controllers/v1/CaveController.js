@@ -12,7 +12,7 @@ module.exports = {
     caveController.find(req, res, next, MappingV1Service.convertToCaveModel),
 
   findAll: (req, res) =>
-    caveController.findAll(req, res, MappingV1Service.convertToCaveModel),
+    caveController.findAll(req, res, MappingV1Service.convertToCaveList),
   create: (req, res) => caveController.create(req, res),
   delete: (req, res, next) => caveController.delete(req, res, next),
   addDocument: async (req, res) => caveController.addDocument(req, res),

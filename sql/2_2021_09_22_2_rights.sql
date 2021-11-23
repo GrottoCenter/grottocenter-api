@@ -55,4 +55,6 @@ VALUES (1, 'Application - view any', NULL),
     (98, 'Location - edit any', NULL),
     (99, 'Location - create', NULL),
     (100, 'Application - no request limit', NULL),
-    (101, 'Document - edit not validated', NULL);
+    (101, 'Document - edit not validated', NULL),
+    (102, 'Document - csv import', NULL),
+    (103, 'Entrance - csv import', NULL);

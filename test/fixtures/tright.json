@@ -222,5 +222,13 @@
   {
     "id": 101,
     "name": "Document - edit not validated"
+  },
+  {
+    "id": 102,
+    "name": "Document - csv import"
+  },
+  {
+    "id": 103,
+    "name": "Entrance - csv import"
   }
 ]

@@ -25,15 +25,17 @@ before(function(done) {
           'tlanguage',
           'tright',
           'tidentifiertype',
+          'tsubject',
           'ttype',
           'tgroup',
           'tcaver',
-          'tgrotto',
           'tname',
+          'tgrotto',
           'tdocument',
           'tdescription',
           'tcave',
           'tentrance',
+          'tmassif',
         ],
         function(err) {
           if (err) {

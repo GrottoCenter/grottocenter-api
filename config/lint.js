@@ -5,7 +5,6 @@ module.exports.lint = {
   // pattern that starts with '!' are ignored by linting.
   src: [
     '.',
-    '!assets/swagger/**/*.js',
     '!tasks/**/*.js',
     '!Gruntfile.js',
     '!app.js',

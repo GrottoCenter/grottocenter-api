@@ -1,23 +1,21 @@
 [
   {
     "id": 1,
-    "id_author": 1,
-    "entrances": [
+    "id_author": 2,
+    "caves": [
       1,
       2
     ],
     "names": [
-      7
+      9
     ]
   },
   {
     "id": 2,
-    "id_author": 2,
-    "entrances": [
-      3
-    ],
+    "id_author": 3,
+    "caves": [],
     "names": [
-      8
+      10
     ]
   }
 ]

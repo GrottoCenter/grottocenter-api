@@ -7,10 +7,8 @@ describe('CaverService', () => {
   before(async () => {
     sails.log.info('Asking for user token...');
     userReq.token = await AuthTokenService.getUserToken();
-    sails.log.info('Got: ' + userReq.token + '\n');
     sails.log.info('Asking for admin token...');
     adminReq.token = await AuthTokenService.getAdminToken();
-    sails.log.info('Got: ' + adminReq.token + '\n');
   });
 
   describe('getGroups()', () => {
@@ -107,7 +105,6 @@ describe('CaverService', () => {
     });
     it('should return a complete view of the caver', async () => {
       const caver = await CaverService.getCaver(1, adminReq);
-      sails.log.debug(caver);
       should(caver.name).equal('Adrien');
       should(caver.nickname).equal('Admin1');
       should(caver.surname).equal('Admo');

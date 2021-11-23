@@ -1,0 +1,192 @@
+[
+  {
+    "id": "1.0",
+    "subject": "Geospeleology and Karstology",
+    "parent": null
+  },
+  {
+    "id": "1.11",
+    "subject": "KARST MORPHOLOGY AND MORPHOGENESIS : Exokarst of carbonatic rocks (limestones, dolomites, chalk, marbles); Geochemistry; Soil - CO2; Corrosion; Karst types (holo-, mero-, fluvio-, glacio-, volcano- karst; Tropical karst)",
+    "parent": "1.0"
+  },
+  {
+    "id": "1.12",
+    "subject": "HYDROLOGY : Water chemistry and physics; Springs and sinks; Karstic groundwater; Water tracings, hydrogeology",
+    "parent": "1.0"
+  },
+  {
+    "id": "1.13",
+    "subject": "GEOLOGY AND PEDOLOGY : Petrography; Tectonics; Bauxite; Glaciations",
+    "parent": "1.0"
+  },
+  {
+    "id": "1.21",
+    "subject": "MORPHOLOGY AND SPELEOGENESIS IN CARBONATIC ROCKS : Caves, potholes; Corrosion and erosion; Small and large hollow forms; Sumps",
+    "parent": "1.0"
+  },
+  {
+    "id": "1.22",
+    "subject": "PARA-, PSEUDO- AND HYPOKARST",
+    "parent": "1.0"
+  },
+  {
+    "id": "1.23",
+    "subject": "SUBTERRANEAN DEPOSITS AND FILLINGS : Chemistry and mineralogy; Sinter morphology; Clay and alluvial sediments; Collapses",
+    "parent": "1.0"
+  },
+  {
+    "id": "2.0",
+    "subject": "Regional speleology",
+    "parent": null
+  },
+  {
+    "id": "2.11",
+    "subject": "WESTERN & CENTRAL EUROPE",
+    "parent": "2.0"
+  },
+  {
+    "id": "2.12",
+    "subject": "EASTERN EUROPE",
+    "parent": "2.0"
+  },
+  {
+    "id": "2.21",
+    "subject": "NORTHERN AMERICA",
+    "parent": "2.0"
+  },
+  {
+    "id": "2.22",
+    "subject": "CENTRAL AND SOUTHERN AMERICA",
+    "parent": "2.0"
+  },
+  {
+    "id": "3.0",
+    "subject": "Biospeleology",
+    "parent": null
+  },
+  {
+    "id": "3.11",
+    "subject": "CRUSTACEA",
+    "parent": "3.0"
+  },
+  {
+    "id": "3.12",
+    "subject": "HEXAPODA",
+    "parent": "3.0"
+  },
+  {
+    "id": "3.13",
+    "subject": "ARACHNIDA, PALPIGRADA, PSEUDOSCORPIONES, MYRIAPODA, ONYCHOPHORA",
+    "parent": "3.0"
+  },
+  {
+    "id": "3.14",
+    "subject": "MOLLUSCA, VERMES, OTHER INVERTEBRATA",
+    "parent": "3.0"
+  },
+  {
+    "id": "3.15",
+    "subject": "VERTEBRATA",
+    "parent": "3.0"
+  },
+  {
+    "id": "3.16",
+    "subject": "MICROBIOLOGY SOIL- AIR- WATER",
+    "parent": "3.0"
+  },
+  {
+    "id": "3.17",
+    "subject": "HYPOGEAN FLORA, FUNGI, ALGAE",
+    "parent": "3.0"
+  },
+  {
+    "id": "3.2",
+    "subject": "GENERAL BIOLOGY",
+    "parent": "3.0"
+  },
+  {
+    "id": "4.0",
+    "subject": "Anthropospeleology",
+    "parent": null
+  },
+  {
+    "id": "4.1",
+    "subject": "ARCHAEOLOGY; PREHISTORICAL AND HISTORICAL CULTURES",
+    "parent": "4.0"
+  },
+  {
+    "id": "4.11",
+    "subject": "EUROPE",
+    "parent": "4.1"
+  },
+  {
+    "id": "4.12",
+    "subject": "AMERICA",
+    "parent": "4.1"
+  },
+  {
+    "id": "4.2",
+    "subject": "HISTORY OF SPELEOLOGY",
+    "parent": "4.0"
+  },
+  {
+    "id": "5.0",
+    "subject": "Paleontospeleology",
+    "parent": null
+  },
+  {
+    "id": "5.1",
+    "subject": "FOSSIL AND SUBFOSSIL FAUNAS AND FLORAS (QUATERNARY) :",
+    "parent": "5.0"
+  },
+  {
+    "id": "5.11",
+    "subject": "EUROPE",
+    "parent": "5.1"
+  },
+  {
+    "id": "5.2",
+    "subject": "FOSSIL AND SUBFOSSIL FAUNAS AND FLORAS (QUATERNARY) : VARIA",
+    "parent": "5.0"
+  },
+  {
+    "id": "6.0",
+    "subject": "Applied speleology",
+    "parent": null
+  },
+  {
+    "id": "6.1",
+    "subject": "ENVIRONMENT and HYGIENE : Drinking waters; Pollution; Cleaning. Geosystem",
+    "parent": "6.0"
+  },
+  {
+    "id": "7.0",
+    "subject": "Technical speleology",
+    "parent": null
+  },
+  {
+    "id": "7.1",
+    "subject": "EXPLORATION TECHNIQUES AND MATERIALS : Personal equipement, Exploration techniques, explosives, logistics",
+    "parent": "7.0"
+  },
+  {
+    "id": "7.7",
+    "subject": "ACTIVITIES",
+    "parent": "7.0"
+  },
+  {
+    "id": "8.0",
+    "subject": "Documentary speleology",
+    "parent": null
+  },
+  {
+    "id": "9.0",
+    "subject": "No speleo",
+    "parent": null
+  },
+  {
+    "id": "9.1",
+    "subject": "canyon",
+    "parent": "9.0"
+  }
+]

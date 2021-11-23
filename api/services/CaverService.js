@@ -105,6 +105,7 @@ module.exports = {
       return caver;
     } else {
       return {
+        id: caver.id,
         documents: caver.documents,
         name: caver.name,
         nickname: caver.nickname,
