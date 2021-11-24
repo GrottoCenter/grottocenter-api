@@ -1333,12 +1333,13 @@ module.exports = {
           const documentCreated = await DocumentService.createDocument(
             dataDocument,
             dataLangDesc,
-            (err) => sails.log.error(err),
           );
+          const docFiles = await TFile.find({ document: documentCreated.id });
 
           requestResponse.successfulImport.push({
             documentId: documentCreated.id,
             title: dataLangDesc.title,
+            filesImported: docFiles.map((f) => f.fileName).join(','),
           });
         } catch (err) {
           sails.log.error(err);
