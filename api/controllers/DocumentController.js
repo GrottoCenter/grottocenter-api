@@ -8,6 +8,7 @@
 const ramda = require('ramda');
 const getCountryISO3 = require('country-iso-2-to-3');
 const DocumentService = require('../services/DocumentService');
+const ErrorService = require('../services/ErrorService');
 
 // Tool methods
 // Set name of cave, entrance, massif, editor and library if present
@@ -276,20 +277,18 @@ const getConvertedDocumentFromCsv = async (rawData, authorId) => {
   }
 
   // Parent / partOf
-  const parentData = doubleCheck({
+  const parentId = doubleCheck({
     data: rawData,
     key: 'dct:isPartOf',
     defaultValue: undefined,
   });
-  let parent = undefined;
-  if (parentData) {
-    const descArray = await TDescription.find({
-      title: parentData,
-      document: { '!=': null },
-    }).limit(1);
-    if (descArray.length > 0) {
-      parent = descArray[0].document;
-    }
+  const doesParentExist = await sails.helpers.checkIfExists.with({
+    attributeName: 'id',
+    attributeValue: parentId,
+    sailsModel: TDocument,
+  });
+  if (parentId && !doesParentExist) {
+    throw Error('Document parent with id ' + parentId + ' not found.');
   }
 
   // Subjects
@@ -318,9 +317,32 @@ const getConvertedDocumentFromCsv = async (rawData, authorId) => {
 
   return {
     author: authorId,
+    authors: creatorsCaverId,
+    authorsGrotto: creatorsGrottoId,
+    dateInscription: doubleCheck({
+      data: rawData,
+      key: 'dct:rights/dct:created',
+      defaultValue: new Date(),
+    }),
     datePublication: doubleCheck({
       data: rawData,
       key: 'dct:date',
+      defaultValue: undefined,
+    }),
+    dateReviewed: doubleCheck({
+      data: rawData,
+      key: 'dct:rights/dct:modified',
+      defaultValue: undefined,
+    }),
+    editor: editorId,
+    idDbImport: doubleCheck({
+      data: rawData,
+      key: 'id',
+      defaultValue: undefined,
+    }),
+    identifier: doubleCheck({
+      data: rawData,
+      key: 'dct:source',
       defaultValue: undefined,
     }),
     identifierType: doubleCheck({
@@ -329,38 +351,15 @@ const getConvertedDocumentFromCsv = async (rawData, authorId) => {
       defaultValue: undefined,
       func: (value) => value.trim().toLowerCase(),
     }),
-    identifier: doubleCheck({
-      data: rawData,
-      key: 'dct:source',
-      defaultValue: undefined,
-    }),
     license: licenceDb.id,
-    dateInscription: doubleCheck({
-      data: rawData,
-      key: 'dct:rights/dct:created',
-      defaultValue: new Date(),
-    }),
-    dateReviewed: doubleCheck({
-      data: rawData,
-      key: 'dct:rights/dct:modified',
-      defaultValue: undefined,
-    }),
-    authors: creatorsCaverId,
-    authorsGrotto: creatorsGrottoId,
-    editor: editorId,
-    type: typeId,
-    parent: parent,
-    subjects: subjects,
-    idDbImport: doubleCheck({
-      data: rawData,
-      key: 'id',
-      defaultValue: undefined,
-    }),
     nameDbImport: doubleCheck({
       data: rawData,
       key: 'dct:rights/cc:attributionName',
       defaultValue: undefined,
     }),
+    parent: parentId,
+    subjects: subjects,
+    type: typeId,
   };
 };
 
@@ -556,8 +555,6 @@ module.exports = {
       return res.forbidden('You are not authorized to update a document.');
     }
 
-    const resultConversion = await getConvertedDataFromClient(req);
-
     // Add new files
     const newFileArray = [];
     if (req.files && req.files.files) {
@@ -577,6 +574,7 @@ module.exports = {
       }
     }
 
+    const resultConversion = await getConvertedDataFromClient(req);
     const jsonData = {
       ...resultConversion,
       id: req.param('id'),
@@ -588,21 +586,25 @@ module.exports = {
       newFiles: ramda.isEmpty(newFileArray) ? undefined : newFileArray,
     };
 
-    const updatedDocument = await TDocument.updateOne({
-      id: req.param('id'),
-    }).set({
-      isValidated: false,
-      dateValidation: null,
-      modifiedDocJson: jsonData,
-    });
+    try {
+      const updatedDocument = await TDocument.updateOne({
+        id: req.param('id'),
+      }).set({
+        isValidated: false,
+        dateValidation: null,
+        dateReviewed: new Date(),
+        modifiedDocJson: jsonData,
+      });
+      if (!updatedDocument) {
+        return res.status(404);
+      }
 
-    if (!updatedDocument) {
-      return res.status(404);
+      const params = {};
+      params.controllerMethod = 'DocumentController.update';
+      return ControllerService.treat(req, null, updatedDocument, params, res);
+    } catch (e) {
+      ErrorService.getDefaultErrorHandler(res)(e);
     }
-
-    const params = {};
-    params.controllerMethod = 'DocumentController.update';
-    return ControllerService.treat(req, null, updatedDocument, params, res);
   },
 
   findAll: async (
@@ -1335,12 +1337,13 @@ module.exports = {
           const documentCreated = await DocumentService.createDocument(
             dataDocument,
             dataLangDesc,
-            (err) => err,
           );
+          const docFiles = await TFile.find({ document: documentCreated.id });
 
           requestResponse.successfulImport.push({
             documentId: documentCreated.id,
             title: dataLangDesc.title,
+            filesImported: docFiles.map((f) => f.fileName).join(','),
           });
         } catch (err) {
           sails.log.error(err);
