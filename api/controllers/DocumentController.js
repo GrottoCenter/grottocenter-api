@@ -8,6 +8,7 @@
 const ramda = require('ramda');
 const getCountryISO3 = require('country-iso-2-to-3');
 const DocumentService = require('../services/DocumentService');
+const ErrorService = require('../services/ErrorService');
 
 // Tool methods
 // Set name of cave, entrance, massif, editor and library if present
@@ -554,8 +555,6 @@ module.exports = {
       return res.forbidden('You are not authorized to update a document.');
     }
 
-    const resultConversion = await getConvertedDataFromClient(req);
-
     // Add new files
     const newFileArray = [];
     if (req.files && req.files.files) {
@@ -575,6 +574,7 @@ module.exports = {
       }
     }
 
+    const resultConversion = await getConvertedDataFromClient(req);
     const jsonData = {
       ...resultConversion,
       id: req.param('id'),
@@ -586,21 +586,25 @@ module.exports = {
       newFiles: ramda.isEmpty(newFileArray) ? undefined : newFileArray,
     };
 
-    const updatedDocument = await TDocument.updateOne({
-      id: req.param('id'),
-    }).set({
-      isValidated: false,
-      dateValidation: null,
-      modifiedDocJson: jsonData,
-    });
+    try {
+      const updatedDocument = await TDocument.updateOne({
+        id: req.param('id'),
+      }).set({
+        isValidated: false,
+        dateValidation: null,
+        dateReviewed: new Date(),
+        modifiedDocJson: jsonData,
+      });
+      if (!updatedDocument) {
+        return res.status(404);
+      }
 
-    if (!updatedDocument) {
-      return res.status(404);
+      const params = {};
+      params.controllerMethod = 'DocumentController.update';
+      return ControllerService.treat(req, null, updatedDocument, params, res);
+    } catch (e) {
+      ErrorService.getDefaultErrorHandler(res)(e);
     }
-
-    const params = {};
-    params.controllerMethod = 'DocumentController.update';
-    return ControllerService.treat(req, null, updatedDocument, params, res);
   },
 
   findAll: async (
