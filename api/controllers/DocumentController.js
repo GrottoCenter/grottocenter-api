@@ -276,20 +276,18 @@ const getConvertedDocumentFromCsv = async (rawData, authorId) => {
   }
 
   // Parent / partOf
-  const parentData = doubleCheck({
+  const parentId = doubleCheck({
     data: rawData,
     key: 'dct:isPartOf',
     defaultValue: undefined,
   });
-  let parent = undefined;
-  if (parentData) {
-    const descArray = await TDescription.find({
-      title: parentData,
-      document: { '!=': null },
-    }).limit(1);
-    if (descArray.length > 0) {
-      parent = descArray[0].document;
-    }
+  const doesParentExist = await sails.helpers.checkIfExists.with({
+    attributeName: 'id',
+    attributeValue: parentId,
+    sailsModel: TDocument,
+  });
+  if (parentId && !doesParentExist) {
+    throw Error('Document parent with id ' + parentId + ' not found.');
   }
 
   // Subjects
@@ -318,9 +316,32 @@ const getConvertedDocumentFromCsv = async (rawData, authorId) => {
 
   return {
     author: authorId,
+    authors: creatorsCaverId,
+    authorsGrotto: creatorsGrottoId,
+    dateInscription: doubleCheck({
+      data: rawData,
+      key: 'dct:rights/dct:created',
+      defaultValue: new Date(),
+    }),
     datePublication: doubleCheck({
       data: rawData,
       key: 'dct:date',
+      defaultValue: undefined,
+    }),
+    dateReviewed: doubleCheck({
+      data: rawData,
+      key: 'dct:rights/dct:modified',
+      defaultValue: undefined,
+    }),
+    editor: editorId,
+    idDbImport: doubleCheck({
+      data: rawData,
+      key: 'id',
+      defaultValue: undefined,
+    }),
+    identifier: doubleCheck({
+      data: rawData,
+      key: 'dct:source',
       defaultValue: undefined,
     }),
     identifierType: doubleCheck({
@@ -329,38 +350,15 @@ const getConvertedDocumentFromCsv = async (rawData, authorId) => {
       defaultValue: undefined,
       func: (value) => value.trim().toLowerCase(),
     }),
-    identifier: doubleCheck({
-      data: rawData,
-      key: 'dct:source',
-      defaultValue: undefined,
-    }),
     license: licenceDb.id,
-    dateInscription: doubleCheck({
-      data: rawData,
-      key: 'dct:rights/dct:created',
-      defaultValue: new Date(),
-    }),
-    dateReviewed: doubleCheck({
-      data: rawData,
-      key: 'dct:rights/dct:modified',
-      defaultValue: undefined,
-    }),
-    authors: creatorsCaverId,
-    authorsGrotto: creatorsGrottoId,
-    editor: editorId,
-    type: typeId,
-    parent: parent,
-    subjects: subjects,
-    idDbImport: doubleCheck({
-      data: rawData,
-      key: 'id',
-      defaultValue: undefined,
-    }),
     nameDbImport: doubleCheck({
       data: rawData,
       key: 'dct:rights/cc:attributionName',
       defaultValue: undefined,
     }),
+    parent: parentId,
+    subjects: subjects,
+    type: typeId,
   };
 };
 
@@ -1335,7 +1333,7 @@ module.exports = {
           const documentCreated = await DocumentService.createDocument(
             dataDocument,
             dataLangDesc,
-            (err) => err,
+            (err) => sails.log.error(err),
           );
 
           requestResponse.successfulImport.push({
