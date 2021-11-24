@@ -10,6 +10,7 @@
  */
 const passport = require('passport');
 const rateLimit = require('express-rate-limit');
+const { version: packageVersion } = require('../package.json'); // Be careful not sending the whole file to the client (security concerns)
 
 module.exports.http = {
   /****************************************************************************
@@ -78,6 +79,7 @@ module.exports.http = {
       'bodyParser',
       'compress',
       'poweredBy',
+      'addPackageVersionHeader',
       'router',
       'www',
     ],
@@ -88,10 +90,11 @@ module.exports.http = {
      *                                                                           *
      ****************************************************************************/
 
-    // myRequestLogger: function (req, res, next) {
-    //     console.log("Requested :: ", req.method, req.url);
-    //     return next();
-    // }
+    // TODO: when various API versions are used (v1, v2 etc.), this needs to be changed.
+    addPackageVersionHeader: function(req, res, next) {
+      res.set('X-Api-Version', packageVersion);
+      return next();
+    },
 
     poweredBy: function(req, res, next) {
       res.removeHeader('x-powered-by');
