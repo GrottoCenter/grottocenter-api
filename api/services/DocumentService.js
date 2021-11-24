@@ -129,7 +129,7 @@ module.exports = {
         return createdDocument;
       });
 
-    // Get full doc
+    // Get doc with id type
     const populatedDocument = await TDocument.findOne(
       createdDocument.id,
     ).populate('identifierType');
@@ -141,14 +141,25 @@ module.exports = {
     ) {
       sails.log.info('Downloading ' + populatedDocument.identifier + '...');
       const acceptedFileFormats = await TFileFormat.find();
-      // Download distant file
-      const file = await sails.helpers.distantFileDownload.with({
-        url: populatedDocument.identifier,
-        acceptedFileFormats: acceptedFileFormats.map((f) => f.extension.trim()),
-        refusedFileFormats: ['html'], // don't download html page, they are not a valid file for GC
-      });
+      // Download distant file & tolerate error
 
-      await FileService.create(file, createdDocument.id);
+      const file = await sails.helpers.distantFileDownload
+        .with({
+          url: populatedDocument.identifier,
+          acceptedFileFormats: acceptedFileFormats.map((f) =>
+            f.extension.trim(),
+          ),
+          refusedFileFormats: ['html'], // don't download html page, they are not a valid file for GC
+        })
+        .tolerate((error) =>
+          sails.log.error(
+            'Failed to download ' +
+              populatedDocument.identifier +
+              ': ' +
+              error.message,
+          ),
+        );
+      file ? await FileService.create(file, createdDocument.id) : '';
     }
 
     return populatedDocument;
