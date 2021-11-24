@@ -708,50 +708,49 @@ module.exports = {
       .populate('reviewer')
       .populate('subjects')
       .populate('type')
-      .exec((err, found) => {
-        TDocument.count()
-          .where(whereClause)
-          .exec(async (err, countFound) => {
-            if (err) {
-              sails.log.error(err);
-              return res.serverError('An unexpected server error occured.');
-            }
+      .exec(async (err, found) => {
+        if (err) {
+          sails.log.error(err);
+          return res.serverError('An unexpected server error occured.');
+        }
 
-            if (found.length === 0) {
-              return res.status(200).send({
-                documents: [],
-                message: `There is no document matching your criterias. It can be because sorting by ${sort} is not supported.`,
-              });
-            }
-
-            found.mainLanguage = await DocumentService.getMainLanguage(
-              found.id,
-            );
-            await setNamesOfPopulatedDocument(found);
-            found.children &&
-              (await Promise.all(
-                found.children.map(async (childDoc) => {
-                  await DescriptionService.setDocumentDescriptions(childDoc);
-                }),
-              ));
-
-            const params = {
-              controllerMethod: 'DocumentController.findByCaverId',
-              limit: req.param('limit', 50),
-              searchedItem: 'All documents',
-              skip: req.param('skip', 0),
-              total: countFound,
-              url: req.originalUrl,
-            };
-            return ControllerService.treatAndConvert(
-              req,
-              err,
-              found,
-              params,
-              res,
-              converter,
-            );
+        if (found.length === 0) {
+          return res.status(200).send({
+            documents: [],
+            message: `There is no document matching your criterias. It can be because sorting by ${sort} is not supported.`,
           });
+        }
+
+        found.mainLanguage = await DocumentService.getMainLanguage(found.id);
+        await setNamesOfPopulatedDocument(found);
+        found.children &&
+          (await Promise.all(
+            found.children.map(async (childDoc) => {
+              await DescriptionService.setDocumentDescriptions(childDoc);
+            }),
+          ));
+
+        try {
+          const totalNb = await TDocument.count().where(whereClause);
+          const params = {
+            controllerMethod: 'DocumentController.findByCaverId',
+            limit: req.param('limit', 50),
+            searchedItem: 'All documents',
+            skip: req.param('skip', 0),
+            total: totalNb,
+            url: req.originalUrl,
+          };
+          return ControllerService.treatAndConvert(
+            req,
+            err,
+            found,
+            params,
+            res,
+            converter,
+          );
+        } catch (e) {
+          ErrorService.getDefaultErrorHandler(res)(e);
+        }
       });
   },
 
@@ -798,7 +797,7 @@ module.exports = {
           ...cleanedData
         } = modifiedDocJson;
 
-        //We join the tables
+        // Join the tables
         found = { ...cleanedData, id };
         found.author = author ? await TCaver.findOne(author) : null;
         found.cave = cave ? await TCave.findOne(cave) : null;
@@ -844,7 +843,7 @@ module.exports = {
           document: id,
           isValidated: true,
         };
-        // We don't want to retrieve files which are modified, new or deleted (because we already have them).
+        // Don't retrieve files which are modified, new or deleted (because we already have them).
         // New are those which have isValidated = false
         let filesToIgnore = modifiedFiles || [];
         filesToIgnore =
@@ -875,7 +874,7 @@ module.exports = {
           await NameService.setNames([found.editor], 'grotto');
         }
 
-        //We handle the description because even if it has been modified, the entry in TDescription stayed intact.
+        // Handle the description because even if it has been modified, the entry in TDescription stayed intact.
         const descLang = await TLanguage.findOne(titleAndDescriptionLanguage);
         found.descriptions = [];
         found.descriptions.push({
@@ -1168,9 +1167,10 @@ module.exports = {
             );
           }
         } else {
-          /*
-              If the document is not validated, check if there is a json document. If true we remove it, and we put isValidated to true (because the document kept the same values as when it was validated).
-            */
+          /* 
+          If the document is not validated, check if there is a json document. 
+          If true remove it and put isValidated to true (because the document kept the same values as when it was validated).
+          */
           if (doc.modifiedDocJson) {
             await TDocument.updateOne(doc.id).set({
               isValidated: true,
