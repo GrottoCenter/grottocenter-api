@@ -2,7 +2,7 @@ module.exports = {
   friendlyName: 'Usable value checker',
 
   description:
-    "Returns the default value if data doesn't contain the key, or if the value associated is an empty string. Else returns the value.",
+    "Returns the default value (undefined) if data doesn't contain the key, or if the value associated is an empty string. Else returns the value.",
 
   sync: true,
 
@@ -21,6 +21,7 @@ module.exports = {
       type: 'ref',
       description: 'Default value if no value found.',
       required: false,
+      defaultsTo: undefined,
     },
     func: {
       type: 'ref',

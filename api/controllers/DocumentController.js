@@ -6,7 +6,6 @@
  */
 
 const ramda = require('ramda');
-const getCountryISO3 = require('country-iso-2-to-3');
 const DocumentService = require('../services/DocumentService');
 const ErrorService = require('../services/ErrorService');
 
@@ -156,30 +155,14 @@ const updateDocumentInElasticSearchIndexes = async (document) => {
   ________________________________________
 */
 
-const countryIso2ToIso3 = (iso) => {
-  if (iso !== undefined) {
-    if (iso === 'EN') {
-      return 'eng';
-    }
-    const res = getCountryISO3(iso);
-    if (res) {
-      return res.toLowerCase();
-    } else {
-      throw Error('This iso code is incorrect : ' + iso);
-    }
-  }
-  return null;
-};
-
 const getConvertedDocumentFromCsv = async (rawData, authorId) => {
-  const doubleCheck = sails.helpers.csvhelpers.doubleCheck.with;
+  const doubleCheck = (args) =>
+    sails.helpers.csvhelpers.doubleCheck.with({ data: rawData, ...args });
   const retrieveFromLink = sails.helpers.csvhelpers.retrieveFromLink.with;
 
   // License
   const rawLicence = doubleCheck({
-    data: rawData,
     key: 'dct:rights/karstlink:licenseType',
-    defaultValue: undefined,
   });
   const licence = await retrieveFromLink({ stringArg: rawLicence });
   const licenceDb = await TLicense.findOne({ name: licence });
@@ -212,7 +195,6 @@ const getConvertedDocumentFromCsv = async (rawData, authorId) => {
 
   // Editor
   const editorsRaw = doubleCheck({
-    data: rawData,
     key: 'dct:publisher',
     defaultValue: null,
   });
@@ -238,7 +220,6 @@ const getConvertedDocumentFromCsv = async (rawData, authorId) => {
         const nameGrotto = {
           text: editorName,
           language: doubleCheck({
-            data: rawData,
             key: 'dc:language',
             defaultValue: 'eng',
             func: (value) => value.toLowerCase(),
@@ -260,9 +241,7 @@ const getConvertedDocumentFromCsv = async (rawData, authorId) => {
 
   // Doc type
   const typeData = doubleCheck({
-    data: rawData,
     key: 'karstlink:documentType',
-    defaultValue: undefined,
   });
   let typeId = undefined;
   if (typeData) {
@@ -278,9 +257,7 @@ const getConvertedDocumentFromCsv = async (rawData, authorId) => {
 
   // Parent / partOf
   const parentId = doubleCheck({
-    data: rawData,
     key: 'dct:isPartOf',
-    defaultValue: undefined,
   });
   const doesParentExist = await sails.helpers.checkIfExists.with({
     attributeName: 'id',
@@ -293,14 +270,9 @@ const getConvertedDocumentFromCsv = async (rawData, authorId) => {
 
   // Subjects
   const subjectsData = doubleCheck({
-    data: rawData,
     key: 'dct:subject',
-    defaultValue: undefined,
   });
-  let subjects = undefined;
-  if (subjectsData) {
-    subjects = subjectsData.split('|');
-  }
+  let subjects = subjectsData ? subjectsData.split('|') : undefined;
 
   const creatorsCaverId = [];
   const creatorsGrottoId = [];
@@ -320,42 +292,29 @@ const getConvertedDocumentFromCsv = async (rawData, authorId) => {
     authors: creatorsCaverId,
     authorsGrotto: creatorsGrottoId,
     dateInscription: doubleCheck({
-      data: rawData,
       key: 'dct:rights/dct:created',
       defaultValue: new Date(),
     }),
     datePublication: doubleCheck({
-      data: rawData,
       key: 'dct:date',
-      defaultValue: undefined,
     }),
     dateReviewed: doubleCheck({
-      data: rawData,
       key: 'dct:rights/dct:modified',
-      defaultValue: undefined,
     }),
     editor: editorId,
     idDbImport: doubleCheck({
-      data: rawData,
       key: 'id',
-      defaultValue: undefined,
     }),
     identifier: doubleCheck({
-      data: rawData,
       key: 'dct:source',
-      defaultValue: undefined,
     }),
     identifierType: doubleCheck({
-      data: rawData,
       key: 'dct:identifier',
-      defaultValue: undefined,
       func: (value) => value.trim().toLowerCase(),
     }),
     license: licenceDb.id,
     nameDbImport: doubleCheck({
-      data: rawData,
       key: 'dct:rights/cc:attributionName',
-      defaultValue: undefined,
     }),
     parent: parentId,
     subjects: subjects,
@@ -364,52 +323,36 @@ const getConvertedDocumentFromCsv = async (rawData, authorId) => {
 };
 
 const getConvertedLangDescDocumentFromCsv = (rawData, authorId) => {
-  const doubleCheck = sails.helpers.csvhelpers.doubleCheck.with;
-  const desc = doubleCheck({
-    data: rawData,
+  const doubleCheck = (args) =>
+    sails.helpers.csvhelpers.doubleCheck.with({ data: rawData, ...args });
+  const description = doubleCheck({
     key: 'karstlink:hasDescriptionDocument/dct:description',
-    defaultValue: undefined,
   });
-  const langDesc = desc
+  const langDesc = description
     ? doubleCheck({
-        data: rawData,
         key: 'karstlink:hasDescriptionDocument/dc:language',
-        defaultValue: undefined,
         func: (value) => value.toLowerCase(),
       })
     : doubleCheck({
-        data: rawData,
         key: 'dc:language',
-        defaultValue: undefined,
         func: (value) => value.toLowerCase(),
       });
   return {
     author: authorId,
     title: doubleCheck({
-      data: rawData,
       key: 'rdfs:label',
-      defaultValue: undefined,
     }),
-    description: doubleCheck({
-      data: rawData,
-      key: 'karstlink:hasDescriptionDocument/dct:description',
-      defaultValue: undefined,
-    }),
+    description: description,
     dateInscription: doubleCheck({
-      data: rawData,
       key: 'dct:rights/dct:created',
       defaultValue: new Date(),
     }),
     dateReviewed: doubleCheck({
-      data: rawData,
       key: 'dct:rights/dct:modified',
-      defaultValue: undefined,
     }),
     documentMainLanguage: {
       id: doubleCheck({
-        data: rawData,
         key: 'dc:language',
-        defaultValue: undefined,
         func: (value) => value.toLowerCase(),
       }),
     },
@@ -1248,12 +1191,10 @@ module.exports = {
       const idDb = doubleCheck({
         data: row,
         key: 'id',
-        defaultValue: undefined,
       });
       const nameDb = doubleCheck({
         data: row,
         key: 'dct:rights/cc:attributionName',
-        defaultValue: undefined,
       });
       if (!(idDb && nameDb)) {
         wontBeCreated.push({
