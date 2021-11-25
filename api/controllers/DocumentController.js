@@ -409,10 +409,10 @@ module.exports = {
       return res.forbidden('You are not authorized to create a document.');
     }
 
-    const resultConversion = await getConvertedDataFromClient(req);
+    const dataFromClient = await getConvertedDataFromClient(req);
 
     const cleanedData = {
-      ...resultConversion,
+      ...dataFromClient,
       dateInscription: new Date(),
     };
 
@@ -474,14 +474,9 @@ module.exports = {
       id: req.param('id'),
       modifiedDocJson: { '!=': null },
     });
-
-    let rightAction;
-
-    if (docWithModif) {
-      rightAction = RightService.RightActions.EDIT_NOT_VALIDATED;
-    } else {
-      rightAction = RightService.RightActions.EDIT_ANY;
-    }
+    const rightAction = docWithModif
+      ? RightService.RightActions.EDIT_NOT_VALIDATED
+      : RightService.RightActions.EDIT_ANY;
     const hasRight = await sails.helpers.checkRight
       .with({
         groups: req.token.groups,
@@ -499,7 +494,7 @@ module.exports = {
     }
 
     // Add new files
-    const newFileArray = [];
+    const newFilesArray = [];
     if (req.files && req.files.files) {
       const { files } = req.files;
       for (const file of files) {
@@ -510,29 +505,28 @@ module.exports = {
             true,
             false,
           );
-          newFileArray.push(createdFile);
+          newFilesArray.push(createdFile);
         } catch (err) {
           return res.serverError(err);
         }
       }
     }
 
-    const resultConversion = await getConvertedDataFromClient(req);
+    // Update json data (upcoming modifications which need to be validated)
+    const dataFromClient = await getConvertedDataFromClient(req);
     const jsonData = {
-      ...resultConversion,
+      ...dataFromClient,
       id: req.param('id'),
       documentMainLanguage: req.body.documentMainLanguage.id,
       author: req.token.id,
       description: req.body.description,
       titleAndDescriptionLanguage: req.body.titleAndDescriptionLanguage.id,
       title: req.body.title,
-      newFiles: ramda.isEmpty(newFileArray) ? undefined : newFileArray,
+      newFiles: ramda.isEmpty(newFilesArray) ? undefined : newFilesArray,
     };
 
     try {
-      const updatedDocument = await TDocument.updateOne({
-        id: req.param('id'),
-      }).set({
+      const updatedDocument = await TDocument.updateOne(req.param('id')).set({
         isValidated: false,
         dateValidation: null,
         dateReviewed: new Date(),
