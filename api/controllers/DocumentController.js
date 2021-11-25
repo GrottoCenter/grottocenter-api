@@ -116,6 +116,14 @@ const getEsBody = (document) => {
   };
 };
 
+const getAdditionalESIndexFromDocumentType = (document) => {
+  return document.type.name === 'Issue'
+    ? 'document-issues'
+    : document.type.name === 'Collection'
+    ? 'document-collections'
+    : '';
+};
+
 /**
  * Based on the logstash.conf file.
  * The document must be fully populated and with all its names set (@see setNamesOfPopulatedDocument).
@@ -130,12 +138,8 @@ const addDocumentToElasticSearchIndexes = async (document) => {
   });
 
   // Create in document-collections-index or document-issues-index
-  const additionalIndex =
-    document.type.name === 'Issue'
-      ? 'document-issues'
-      : document.type.name === 'Collection'
-      ? 'document-collections'
-      : '';
+  const additionalIndex = getAdditionalESIndexFromDocumentType(document);
+
   if (additionalIndex !== '') {
     await ElasticsearchService.create(additionalIndex, document.id, {
       ...esBody,
@@ -144,9 +148,19 @@ const addDocumentToElasticSearchIndexes = async (document) => {
   }
 };
 
+const deleteDocumentFromElasticsearchIndexes = async (document) => {
+  await ElasticsearchService.deleteResource('documents', document.id);
+  const additionalIndex = getAdditionalESIndexFromDocumentType(document);
+
+  // Delete in document-collections-index or document-issues-index
+  if (additionalIndex !== '') {
+    await ElasticsearchService.deleteResource(additionalIndex, document.id);
+  }
+};
+
 //TO DO: proper update
 const updateDocumentInElasticSearchIndexes = async (document) => {
-  await ElasticsearchService.deleteResource('documents', document.id);
+  await deleteDocumentFromElasticsearchIndexes(document);
   await addDocumentToElasticSearchIndexes(document);
 };
 /* _______________________________________
