@@ -716,29 +716,31 @@ module.exports = {
       .populate('reviewer')
       .populate('subjects')
       .populate('type')
-      .exec(async (err, found) => {
+      .exec(async (err, documents) => {
         if (err) {
           sails.log.error(err);
           return res.serverError('An unexpected server error occured.');
         }
 
-        if (found.length === 0) {
+        if (documents.length === 0) {
           return res.status(200).send({
             documents: [],
-            message: `There is no document matching your criterias. It can be because sorting by ${sort} is not supported.`,
+            message: `There is no document matching your criterias.`,
           });
         }
 
-        found.mainLanguage = await DocumentService.getMainLanguage(found.id);
-        await setNamesOfPopulatedDocument(found);
-        found.children &&
-          (await Promise.all(
-            found.children.map(async (childDoc) => {
-              await DescriptionService.setDocumentDescriptions(childDoc);
-            }),
-          ));
-
         try {
+          for (doc of documents) {
+            doc.mainLanguage = await DocumentService.getMainLanguage(doc.id);
+            await setNamesOfPopulatedDocument(doc);
+            doc.children &&
+              (await Promise.all(
+                doc.children.map(async (childDoc) => {
+                  await DescriptionService.setDocumentDescriptions(childDoc);
+                }),
+              ));
+          }
+
           const totalNb = await TDocument.count().where(whereClause);
           const params = {
             controllerMethod: 'DocumentController.findByCaverId',
@@ -751,7 +753,7 @@ module.exports = {
           return ControllerService.treatAndConvert(
             req,
             err,
-            found,
+            documents,
             params,
             res,
             converter,
