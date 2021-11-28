@@ -9,21 +9,20 @@ const NameService = require('../services/NameService');
 
 // Extract everything from the request body except id and dateInscription
 const getConvertedDataFromClient = (req) => {
-  const {
-    id,
-    dateInscription,
-    ...reqBodyWithoutIdAndDateInscription
-  } = req.body; // remove id and dateInscription if present to avoid null id (and an error)
   return {
-    ...reqBodyWithoutIdAndDateInscription,
     // The TCave.create() function doesn't work with TCave field alias. See TCave.js Model
     /* eslint-disable camelcase */
-    id_author: req.token.id,
     date_inscription: new Date(),
-    documents: ramda.propOr(undefined, 'documents', req.body)
-      ? req.body.documents.map((d) => d.id)
-      : undefined,
-    id_massif: ramda.pathOr(undefined, ['massif', 'id'], req.body),
+    depth: req.param('depth'),
+    documents: req.param('documents'),
+    id_author: req.token.id,
+    id_massif: req.param('massif'),
+    is_diving: req.param('isDiving'),
+    latitude: req.param('latitude'),
+    longitude: req.param('longitude'),
+    length: req.param('length'),
+    massif: req.param('massif'),
+    temperature: req.param('temperature'),
     /* eslint-enable camelcase */
   };
 };
@@ -88,7 +87,7 @@ module.exports = {
       });
   },
 
-  create: async (req, res) => {
+  create: async (req, res, converter) => {
     // Check right
     const hasRight = await sails.helpers.checkRight
       .with({
@@ -105,39 +104,70 @@ module.exports = {
       return res.forbidden('You are not authorized to create a cave.');
     }
 
+    const rawDescriptionsData = req.param('descriptions');
+    const rawNameData = req.param('name');
+
     // Check params
-    if (!req.param('name')) {
-      return res.badRequest(`You must provide a name to create a new cave.`);
-    }
-
-    const cleanedData = {
-      ...getConvertedDataFromClient(req),
-      dateInscription: new Date(),
-    };
-
-    let nameAndDescData = {
-      author: req.token.id,
-      name: req.param('name'),
-      descriptionAndNameLanguage: {
-        id: req.body.descriptionAndNameLanguage.id,
-      },
-    };
-    if (ramda.propOr(null, 'description', req.body)) {
-      nameAndDescData = {
-        ...nameAndDescData,
-        description: req.body.description,
-        descriptionTitle: req.body.title,
-      };
-    }
-
-    try {
-      const caveCreated = await CaveService.createCave(
-        cleanedData,
-        nameAndDescData,
+    if (
+      !rawNameData || // name is mandatory
+      !rawNameData.text ||
+      !rawNameData.language
+    ) {
+      return res.badRequest(
+        `You must provide a complete name object (with attributes "text" and "language").`,
       );
+    }
+
+    if (
+      rawDescriptionsData // description is optional
+    ) {
+      for (description of rawDescriptionsData) {
+        if (!description.body || !description.language || !description.title) {
+          return res.badRequest(
+            `For each description, you must provide a complete description object (with attributes "body", "language" and "title").`,
+          );
+        }
+      }
+    }
+
+    // Format data
+    const cleanedData = getConvertedDataFromClient(req);
+    const nameData = {
+      ...rawNameData,
+      author: req.token.id,
+      name: rawNameData.text,
+    };
+    const descriptionsData = rawDescriptionsData
+      ? rawDescriptionsData.map((d) => {
+          return {
+            ...d,
+            author: req.token.id,
+          };
+        })
+      : undefined;
+
+    // Create cave
+    try {
+      const createdCave = await CaveService.createCave(
+        cleanedData,
+        nameData,
+        descriptionsData,
+      );
+
+      const populatedCave = await TCave.findOne(createdCave.id)
+        .populate('descriptions')
+        .populate('names')
+        .populate('documents');
       const params = {};
       params.controllerMethod = 'CaveController.create';
-      return ControllerService.treat(req, null, caveCreated, params, res);
+      return ControllerService.treatAndConvert(
+        req,
+        null,
+        populatedCave,
+        params,
+        res,
+        converter,
+      );
     } catch (e) {
       ErrorService.getDefaultErrorHandler(res)(e);
     }
