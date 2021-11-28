@@ -3,7 +3,7 @@ openapi: '3.0.0'
 info:
   description: "This page documents the available Grottocenter's API."
   title: 'Grottocenter 3 - REST API'
-  version: 'v.1'
+  version: 'v1 - 21.1.4'
   termsOfService: 'https://wiki.grottocenter.org/wiki/GrottoCenter:En/API'
   contact:
     name: 'Slack space'
@@ -76,47 +76,37 @@ paths:
       description: "Create a Cave. When submitting a new cave, you must provide an authentification token (from the /login route) in the Authorization header. This token will be used to set the author of the submission."
       parameters:
 
-      - name: name
-        in: query
-        description: Main name of the cave, using the local language
-        required: true
-        schema:
-          type: string
-
-      - name: description
-        in: query
-        description: Your description of the cave
-        schema:
-          type: string
-
-      - name: descriptionTitle
-        in: query
-        description: Title of your description
-        schema:
-          type: string
-
-      - name: descriptionAndNameLanguage
-        in: query
-        description: Language used for the description and the name. List of languages supported by Grottocenter is available using the /languages route.
-        required: true
-        schema:
-          type: object
-          properties:
-            id:
-              type: string
-
       - name: depth
         in: query
         description: Depth of the cave
         schema:
           type: integer
-
-      - name: length
+  
+      - name: descriptions
         in: query
-        description: Length of the cave
+        description: Description objects array
+        required: true
         schema:
-          type: integer
-
+          type: array
+          items:
+            type: object
+            properties:
+              body:
+                type: string
+              language: 
+                type: string
+                description: Language used for the description. The list of languages supported by Grottocenter is available using the /languages route.
+              title:
+                type: string
+      
+      - name: documents
+        in: query
+        description: Document ids related to the cave
+        schema:
+          type: array
+          items:
+            type: integer
+      
       - name: isDiving
         in: query
         description: If the cave is flooded or not
@@ -124,42 +114,48 @@ paths:
           type: boolean
           default: false
 
-      - name: temperature
-        in: query
-        description: Average temperature in the cave
-        schema:
-          type: number
-          format: double
-
-      - name: longitude
-        in: query
-        schema:
-          type: number
-
       - name: latitude
+        in: query
+        schema:
+          type: number
+      
+      - name: length
+        in: query
+        description: Length of the cave
+        schema:
+          type: integer
+          
+      - name: longitude
         in: query
         schema:
           type: number
 
       - name: massif
         in: query
-        description: Massif in which the cave is located.
+        description: Massif id in which the cave is located.
+        schema:
+          type: integer
+
+      - name: name
+        in: query
+        description: Name object
+        required: true
         schema:
           type: object
           properties:
-            id:
+            text:
               type: string
-
-      - name: documents
+              description: Main name of the cave, using the local language.
+            language: 
+              type: string
+              description: Language used for the name. The list of languages supported by Grottocenter is available using the /languages route.
+      
+      - name: temperature
         in: query
-        description: Documents related to the cave
+        description: Average temperature in the cave
         schema:
-          type: array
-          items:
-            type: object
-            properties:
-              id:
-                type: string
+          type: number
+          format: double
 
       responses:
         200:
