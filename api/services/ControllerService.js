@@ -82,7 +82,7 @@ module.exports = {
         `<${first}>; rel="first",  <${prev}>; rel="prev", <${next}>; rel="next",  <${last}>; rel="last"`,
       );
 
-      return res.json(206, converter(found));
+      return res.status(206).json(converter(found));
     }
 
     return res.json(converter(found));

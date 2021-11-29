@@ -73,47 +73,35 @@ const iso2ToIso3 = (iso) => {
 */
 
 const getConvertedEntranceFromCsv = (rawData, idAuthor, cave) => {
-  const doubleCheck = sails.helpers.csvhelpers.doubleCheck.with;
+  const doubleCheck = (args) =>
+    sails.helpers.csvhelpers.doubleCheck.with({ data: rawData, ...args });
   return {
     author: idAuthor,
     country: doubleCheck({
-      data: rawData,
       key: 'gn:countryCode',
-      defaultValue: undefined,
     }),
     precision: doubleCheck({
-      data: rawData,
       key: 'dwc:coordinatePrecision',
-      defaultValue: undefined,
     }),
     altitude: doubleCheck({
-      data: rawData,
       key: 'w3geo:altitude',
-      defaultValue: undefined,
     }),
     latitude: cave.latitude,
     longitude: cave.longitude,
     cave: cave.id,
     dateInscription: doubleCheck({
-      data: rawData,
       key: 'dct:rights/dct:created',
       defaultValue: new Date(),
     }),
     dateReviewed: doubleCheck({
-      data: rawData,
       key: 'dct:rights/dct:modified',
-      defaultValue: undefined,
     }),
     isOfInterest: false,
     idDbImport: doubleCheck({
-      data: rawData,
       key: 'id',
-      defaultValue: undefined,
     }),
     nameDbImport: doubleCheck({
-      data: rawData,
       key: 'dct:rights/cc:attributionName',
-      defaultValue: undefined,
     }),
     //Default value, never provided by csv import
     geology: 'Q35758',
@@ -121,87 +109,65 @@ const getConvertedEntranceFromCsv = (rawData, idAuthor, cave) => {
 };
 
 const getConvertedNameDescLocEntranceFromCsv = async (rawData, authorId) => {
-  const doubleCheck = sails.helpers.csvhelpers.doubleCheck.with;
+  const doubleCheck = (args) =>
+    sails.helpers.csvhelpers.doubleCheck.with({ data: rawData, ...args });
   let result = {};
   if (
     doubleCheck({
-      data: rawData,
       key: 'karstlink:hasDescriptionDocument/dct:title',
-      defaultValue: undefined,
     })
   ) {
     result = {
       description: {
         body: doubleCheck({
-          data: rawData,
           key: 'karstlink:hasDescriptionDocument/dct:description',
-          defaultValue: undefined,
         }),
         language: doubleCheck({
-          data: rawData,
           key: 'karstlink:hasDescriptionDocument/dc:language',
-          defaultValue: undefined,
-          func: iso2ToIso3,
+          func: (value) => value.toLowerCase(),
         }),
         title: doubleCheck({
-          data: rawData,
           key: 'karstlink:hasDescriptionDocument/dct:title',
-          defaultValue: undefined,
         }),
         author: authorId,
         dateInscription: doubleCheck({
-          data: rawData,
           key: 'dct:rights/dct:created',
           defaultValue: new Date(),
         }),
         dateReviewed: doubleCheck({
-          data: rawData,
           key: 'dct:rights/dct:modified',
-          defaultValue: undefined,
         }),
       },
     };
   }
 
-  if (
-    doubleCheck({ data: rawData, key: 'rdfs:label', defaultValue: undefined })
-  ) {
+  if (doubleCheck({ key: 'rdfs:label' })) {
     result = {
       ...result,
       name: {
         author: authorId,
         text: rawData['rdfs:label'],
         language: doubleCheck({
-          data: rawData,
           key: 'gn:countryCode',
-          defaultValue: undefined,
           func: iso2ToIso3,
         }),
         dateInscription: doubleCheck({
-          data: rawData,
-          key: 'dct:rights/dct:created',
           defaultValue: new Date(),
         }),
         dateReviewed: doubleCheck({
-          data: rawData,
           key: 'dct:rights/dct:modified',
-          defaultValue: undefined,
         }),
       },
     };
   }
   if (
     doubleCheck({
-      data: rawData,
       key: 'karstlink:hasAccessDocument/dct:description',
-      defaultValue: undefined,
     })
   ) {
     let authorLoc = authorId;
     const authorFromCsv = doubleCheck({
-      data: rawData,
       key: 'karstlink:hasAccessDocument/dct:creator',
-      defaultValue: undefined,
     });
     if (authorFromCsv) {
       const auth = await sails.helpers.csvhelpers.getCreator.with({
@@ -214,24 +180,18 @@ const getConvertedNameDescLocEntranceFromCsv = async (rawData, authorId) => {
       location: {
         body: rawData['karstlink:hasAccessDocument/dct:description'],
         title: doubleCheck({
-          data: rawData,
           key: 'karstlink:hasAccessDocument/dct:description',
-          defaultValue: undefined,
         }),
         language: doubleCheck({
-          data: rawData,
           key: 'karstlink:hasAccessDocument/dc:language',
-          defaultValue: undefined,
-          func: iso2ToIso3,
+          func: (value) => value.toLowerCase(),
         }),
         author: authorLoc,
         dateInscription: doubleCheck({
-          data: rawData,
           key: 'dct:rights/dct:created',
           defaultValue: new Date(),
         }),
         dateReviewed: doubleCheck({
-          data: rawData,
           key: 'dct:rights/dct:modified',
           defaultValue: undefined,
         }),
@@ -242,18 +202,16 @@ const getConvertedNameDescLocEntranceFromCsv = async (rawData, authorId) => {
 };
 
 const getConvertedCaveFromCsv = (rawData, idAuthor) => {
-  const doubleCheck = sails.helpers.csvhelpers.doubleCheck.with;
+  const doubleCheck = (args) =>
+    sails.helpers.csvhelpers.doubleCheck.with({ data: rawData, ...args });
 
   let depth = doubleCheck({
-    data: rawData,
     key: 'karstlink:verticalExtend',
-    defaultValue: undefined,
   });
   if (!depth) {
     depth =
       parseInt(
         doubleCheck({
-          data: rawData,
           key: 'karstlink:extendBelowEntrance',
           defaultValue: 0,
         }),
@@ -261,7 +219,6 @@ const getConvertedCaveFromCsv = (rawData, idAuthor) => {
       ) +
       parseInt(
         doubleCheck({
-          data: rawData,
           key: 'karstlink:extendAboveEntrance',
           defaultValue: 0,
         }),
@@ -273,61 +230,46 @@ const getConvertedCaveFromCsv = (rawData, idAuthor) => {
     /* eslint-disable camelcase */
     id_author: idAuthor,
     latitude: doubleCheck({
-      data: rawData,
       key: 'w3geo:latitude',
-      defaultValue: undefined,
     }),
     longitude: doubleCheck({
-      data: rawData,
       key: 'w3geo:longitude',
-      defaultValue: undefined,
     }),
     length: doubleCheck({
-      data: rawData,
       key: 'karstlink:length',
-      defaultValue: undefined,
     }),
     depth: depth,
     date_inscription: doubleCheck({
-      data: rawData,
       key: 'dct:rights/dct:created',
       defaultValue: new Date(),
     }),
     date_reviewed: doubleCheck({
-      data: rawData,
       key: 'dct:rights/dct:modified',
-      defaultValue: undefined,
     }),
   };
 };
 
 const getConvertedNameAndDescCaveFromCsv = (rawData, authorId) => {
-  const doubleCheck = sails.helpers.csvhelpers.doubleCheck.with;
+  const doubleCheck = (args) =>
+    sails.helpers.csvhelpers.doubleCheck.with({ data: rawData, ...args });
 
   return {
     author: authorId,
     name: doubleCheck({
-      data: rawData,
       key: 'rdfs:label',
-      defaultValue: undefined,
     }),
     descriptionAndNameLanguage: {
       id: doubleCheck({
-        data: rawData,
         key: 'karstlink:hasDescriptionDocument/dc:language',
-        defaultValue: undefined,
-        func: iso2ToIso3,
+        func: (value) => value.toLowerCase(),
       }),
     },
     dateInscription: doubleCheck({
-      data: rawData,
       key: 'dct:rights/dct:created',
       defaultValue: new Date(),
     }),
     dateReviewed: doubleCheck({
-      data: rawData,
       key: 'dct:rights/dct:modified',
-      defaultValue: undefined,
     }),
   };
   //No description provided by the csv
@@ -855,8 +797,6 @@ module.exports = {
       failureImport: [],
     };
 
-    const doubleCheck = sails.helpers.csvhelpers.doubleCheck.with;
-
     for (const [index, data] of req.body.data.entries()) {
       const missingColumns = await sails.helpers.csvhelpers.checkColumns.with({
         data: data,
@@ -899,6 +839,7 @@ module.exports = {
             dataEntrance,
             dataNameDescLoc,
           );
+          const doubleCheck = sails.helpers.csvhelpers.doubleCheck.with;
           if (
             doubleCheck({
               data: data,

@@ -108,10 +108,18 @@ Log in the node container:
 $ docker exec -it nodegrotto bash -l
 ```
 
-Run tests:
+Run all tests:
 
 ```shell
 $ npm run test
+```
+
+Run (a) specific test(s) matching a String:
+
+```shell
+$ npm run test -- --grep "<your_partial_name_tests>"
+# Example
+$ npm run test -- --grep "Auth features"
 ```
 
 Check code coverage:

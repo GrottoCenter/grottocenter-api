@@ -1,5 +1,3 @@
-const ramda = require('ramda');
-
 module.exports = {
   /**
    * @param {Object} caves caves to set
@@ -19,59 +17,43 @@ module.exports = {
 
   /**
    *
-   * @param {Object} cleanedData the struct that contains the necessary data to create a cave
-   * @param {Object} nameAndDescData the struct that contains the necessary data to create a name and a description (if there is any)
+   * @param {Object} cleanedData cave-only related data
+   * @param {Object} nameData name data (should contain an author, text and language attributes)
+   * @param {Array[Object]} [descriptionsData] descriptions data (for each description, should contain an author, title, text and language attributes)
    * @throws Sails ORM errors (see https://sailsjs.com/documentation/concepts/models-and-orm/errors)
    *
    * @returns {Promise} the created cave
    */
-  createCave: async (cleanedData, nameAndDescData) => {
+  createCave: async (caveData, nameData, descriptionsData) => {
     return await sails.getDatastore().transaction(async (db) => {
-      const caveCreated = await TCave.create(cleanedData)
+      // Create cave
+      const createdCave = await TCave.create({
+        ...caveData,
+      })
         .fetch()
         .usingConnection(db);
-      if (ramda.propOr(null, 'name', nameAndDescData)) {
-        await TName.create({
-          author: nameAndDescData.author,
-          cave: caveCreated.id,
-          dateInscription: ramda.propOr(
-            new Date(),
-            'dateInscription',
-            nameAndDescData,
-          ),
-          dateReviewed: ramda.propOr(
-            undefined,
-            'dateReviewed',
-            nameAndDescData,
-          ),
-          isMain: true,
-          language: nameAndDescData.descriptionAndNameLanguage.id,
-          name: nameAndDescData.name,
-        }).usingConnection(db);
-      }
 
-      // Description (if provided)
-      if (ramda.propOr(null, 'description', nameAndDescData) !== null) {
-        await TDescription.create({
-          author: nameAndDescData.author,
-          body: nameAndDescData.description,
-          cave: caveCreated.id,
-          dateInscription: ramda.propOr(
-            new Date(),
-            'dateInscription',
-            nameAndDescData,
-          ),
-          dateReviewed: ramda.propOr(
-            undefined,
-            'dateReviewed',
-            nameAndDescData,
-          ),
-          language: nameAndDescData.descriptionAndNameLanguage.id,
-          title: nameAndDescData.descriptionTitle,
-        }).usingConnection(db);
-      }
+      // Format & create name
+      await TName.create({
+        ...nameData,
+        cave: createdCave.id,
+        dateInscription: new Date(),
+        isMain: true,
+      }).usingConnection(db);
 
-      return caveCreated;
+      // Format & create descriptions
+      descriptionsData
+        ? descriptionsData.map(
+            async (d) =>
+              await TDescription.create({
+                ...d,
+                cave: createdCave.id,
+                dateInscription: new Date(),
+              }).usingConnection(db),
+          )
+        : undefined;
+
+      return createdCave;
     });
   },
 };

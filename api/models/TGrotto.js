@@ -122,6 +122,7 @@ module.exports = {
     customMessage: {
       type: 'string',
       columnName: 'custom_message',
+      allowNull: true,
     },
 
     isOfficialPartner: {
