@@ -184,10 +184,11 @@ const getConvertedDocumentFromCsv = async (rawData, authorId) => {
     throw Error('This kind of license (' + licence + ') cannot be imported.');
   }
 
-  // Creator
-  const creatorsRaw = rawData['dct:creator'].split('|');
+  // Creator(s)
+  const rawCreators = rawData['dct:creator'].split('|');
+  let checkedRawCreators = rawCreators[0] === '' ? [] : rawCreators; // Empty the first array value if it's an empty string to avoid iterating through it
   // For each creator, first check if there is a grotto of this name. If not, check for a caver. If not, create a caver.
-  const creatorsPromises = creatorsRaw.map(async (creatorRaw) => {
+  const creatorsPromises = checkedRawCreators.map(async (creatorRaw) => {
     const authorGrotto = await TName.find({
       name: await retrieveFromLink({ stringArg: creatorRaw }),
       grotto: { '!=': null },
@@ -1241,7 +1242,6 @@ module.exports = {
     for (const [index, data] of req.body.data.entries()) {
       const missingColumns = await sails.helpers.csvhelpers.checkColumns.with({
         data: data,
-        additionalColumns: ['dct:creator'],
       });
 
       if (missingColumns.length > 0) {
