@@ -274,11 +274,13 @@ const getConvertedDocumentFromCsv = async (rawData, authorId) => {
   const parentId = doubleCheck({
     key: 'dct:isPartOf',
   });
-  const doesParentExist = await sails.helpers.checkIfExists.with({
-    attributeName: 'id',
-    attributeValue: parentId,
-    sailsModel: TDocument,
-  });
+  const doesParentExist = parentId
+    ? await sails.helpers.checkIfExists.with({
+        attributeName: 'id',
+        attributeValue: parentId,
+        sailsModel: TDocument,
+      })
+    : false;
   if (parentId && !doesParentExist) {
     throw Error('Document parent with id ' + parentId + ' not found.');
   }
