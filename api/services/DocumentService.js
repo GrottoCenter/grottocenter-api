@@ -21,6 +21,9 @@ const RECURSIVE_GET_CHILD_DOC = `
   SELECT * FROM recursiveChildren
 `;
 
+// Doc types needing a parent in order to be created (ex; an issue needs a collection, an article needs an issue)
+const MANDATORY_PARENT_TYPES = ['article', 'issue'];
+
 const oldTopoFilesUrl = 'https://www.grottocenter.org/upload/topos/';
 
 const ramda = require('ramda');
@@ -99,6 +102,24 @@ module.exports = {
     const createdDocument = await sails
       .getDatastore()
       .transaction(async (db) => {
+        // Perform some checks
+        const docType =
+          documentData.type && (await TType.findOne(documentData.type));
+        if (docType) {
+          const docTypeName = docType.name.toLowerCase();
+          // Parent doc is mandatory for articles and issues
+          if (
+            MANDATORY_PARENT_TYPES.includes(docTypeName) &&
+            !documentData.parent
+          ) {
+            throw Error(
+              'Your document being an ' +
+                docType.name.toLowerCase() +
+                ', you must provide a document parent.',
+            );
+          }
+        }
+
         const createdDocument = await TDocument.create(documentData)
           .fetch()
           .usingConnection(db);
