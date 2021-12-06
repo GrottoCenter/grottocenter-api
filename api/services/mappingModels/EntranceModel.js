@@ -16,6 +16,7 @@ module.exports = {
   county: undefined,
   descriptions: [],
   documents: [],
+  histories: [],
   id: undefined,
   latitude: undefined,
   locations: [],
