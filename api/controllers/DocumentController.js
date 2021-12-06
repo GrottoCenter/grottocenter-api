@@ -1189,14 +1189,15 @@ module.exports = {
           line: index + 2,
         });
       } else {
-        const result = await TDocument.find({
+        const result = await TDocument.findOne({
           idDbImport: idDb,
           nameDbImport: nameDb,
           isDeleted: false,
         });
-        if (result.length > 0) {
+        if (result) {
           wontBeCreated.push({
             line: index + 2,
+            id: idDb,
           });
         } else {
           willBeCreated.push(row);
