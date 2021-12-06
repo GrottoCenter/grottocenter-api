@@ -280,17 +280,25 @@ module.exports = {
     TEntrance.findOne(req.params.id)
       .populate('author')
       .populate('cave')
-      .populate('names')
-      .populate('descriptions')
-      .populate('geology')
-      .populate('locations')
-      .populate('documents')
-      .populate('riggings')
       .populate('comments')
+      .populate('descriptions')
+      .populate('documents')
+      .populate('geology')
+      .populate('histories')
+      .populate('locations')
+      .populate('names')
+      .populate('riggings')
       .exec(async (err, found) => {
         const params = {};
         params.searchedItem = `Entrance of id ${req.params.id}`;
 
+        if (err) {
+          sails.log.error(err);
+          return res.serverError(
+            'An unexpected server error occured when trying to get ' +
+              params.searchedItem,
+          );
+        }
         if (!found) {
           const notFoundMessage = `${params.searchedItem} not found`;
           sails.log.debug(notFoundMessage);
@@ -317,6 +325,9 @@ module.exports = {
         ); // using id_author because of a bug in Sails ORM... See TCave() file for explaination
         found.comments.map(
           async (c) => (c.author = await CaverService.getCaver(c.author, req)),
+        );
+        found.histories.map(
+          async (h) => (h.author = await CaverService.getCaver(h.author, req)),
         );
         found.locations.map(
           async (l) => (l.author = await CaverService.getCaver(l.author, req)),

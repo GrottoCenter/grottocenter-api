@@ -10,6 +10,7 @@ module.exports = {
   descriptions: [],
   documents: [],
   entrances: [],
+  histories: [],
   id: undefined,
   isDeleted: undefined,
   isDiving: undefined,

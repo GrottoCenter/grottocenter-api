@@ -147,6 +147,33 @@ module.exports = {
       ...EntranceModel,
     };
 
+    result['@id'] = String(source.id);
+    result.aestheticism = source.aestheticism;
+    result.altitude = source.altitude;
+    result.approach = source.approach;
+    result.caving = source.caving;
+    result.comments = source.comments;
+    result.country = source.country;
+    result.countryCode = source['country code'];
+    result.county = source.county;
+    result.city = source.city;
+    result.discoveryYear = source.yearDiscovery;
+    result.documents = source.documents;
+    result.histories = source.histories;
+    result.id = source.id;
+    result.latitude = parseFloat(source.latitude);
+    result.locations = source.locations;
+    result.longitude = parseFloat(source.longitude);
+    result.massif = ramda.pathOr(undefined, ['cave', 'massif'], source); // put the massif at the root of the entrance (more convenient for the client)
+    result.name = MappingV1Service.getMainName(source);
+    result.names = source.names;
+    result.postalCode = source.postalCode;
+    result.precision = source.precision;
+    result.region = source.region;
+    result.riggings = source.riggings;
+    result.stats = source.stats;
+    result.timeInfo = source.timeInfo;
+
     // Cave (DB or ES)
     if (source.cave instanceof Object) {
       result.cave = MappingV1Service.convertToCaveModel(source.cave);
@@ -170,32 +197,6 @@ module.exports = {
         name: source['massif name'],
       };
     }
-
-    result.id = source.id;
-    result['@id'] = String(source.id);
-    result.aestheticism = source.aestheticism;
-    result.altitude = source.altitude;
-    result.approach = source.approach;
-    result.caving = source.caving;
-    result.comments = source.comments;
-    result.country = source.country;
-    result.countryCode = source['country code'];
-    result.county = source.county;
-    result.city = source.city;
-    result.discoveryYear = source.yearDiscovery;
-    result.documents = source.documents;
-    result.latitude = parseFloat(source.latitude);
-    result.locations = source.locations;
-    result.longitude = parseFloat(source.longitude);
-    result.massif = ramda.pathOr(undefined, ['cave', 'massif'], source); // put the massif at the root of the entrance (more convenient for the client)
-    result.name = MappingV1Service.getMainName(source);
-    result.names = source.names;
-    result.postalCode = source.postalCode;
-    result.precision = source.precision;
-    result.region = source.region;
-    result.riggings = source.riggings;
-    result.stats = source.stats;
-    result.timeInfo = source.timeInfo;
 
     if (source.descriptions instanceof Array) {
       result.descriptions = MappingV1Service.convertToDescriptionList(
@@ -289,6 +290,7 @@ module.exports = {
     result.dateInscription = source.date_inscription;
     result.dateReviewed = source.date_reviewed;
     result.depth = source.depth;
+    result.histories = source.histories;
     result.isDeleted = source.is_deleted;
     result.isDiving = source.is_diving;
     result.length = source.length;

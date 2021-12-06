@@ -36,6 +36,7 @@ before(function(done) {
           'tcave',
           'tentrance',
           'tmassif',
+          'thistory',
         ],
         function(err) {
           if (err) {

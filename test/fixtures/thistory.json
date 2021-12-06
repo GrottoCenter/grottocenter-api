@@ -1,0 +1,14 @@
+[
+  {
+    "id": 1,
+    "author": 1,
+    "body": "This is the part 1 of the history of the cave.",
+    "id_cave": 1
+  },
+  {
+    "id": 2,
+    "author": 1,
+    "body": "This is the part 2 of the history of the cave.",
+    "id_cave": 1
+  }
+]
