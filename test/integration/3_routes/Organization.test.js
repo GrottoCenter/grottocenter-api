@@ -1,6 +1,31 @@
 let supertest = require('supertest');
 let should = require('should');
 
+const ORGANIZATION_PROPERTIES = [
+  '@context',
+  '@id',
+  '@type',
+  'id',
+  'address',
+  'city',
+  'country',
+  'county',
+  'county',
+  'customMessage',
+  'exploredCaves',
+  'isOfficialPartner',
+  'latitude',
+  'longitude',
+  'name',
+  'partneredCaves',
+  'pictureFileName',
+  'postalCode',
+  'region',
+  'url',
+  'village',
+  'yearBirth',
+];
+
 describe('Grotto features', () => {
   describe('find()', () => {
     it('should return code 404', (done) => {
@@ -19,30 +44,7 @@ describe('Grotto features', () => {
         .end((err, res) => {
           if (err) return done(err);
           const { body: organization } = res;
-          should(organization).have.properties([
-            '@context',
-            '@id',
-            '@type',
-            'id',
-            'address',
-            'city',
-            'country',
-            'county',
-            'county',
-            'customMessage',
-            'exploredCaves',
-            'isOfficialPartner',
-            'latitude',
-            'longitude',
-            'name',
-            'partneredCaves',
-            'pictureFileName',
-            'postalCode',
-            'region',
-            'url',
-            'village',
-            'yearBirth',
-          ]);
+          should(organization).have.properties(ORGANIZATION_PROPERTIES);
           should(organization.name).not.be.empty();
           should(organization.names).not.be.empty();
           should(organization.dateInscription).not.be.empty();

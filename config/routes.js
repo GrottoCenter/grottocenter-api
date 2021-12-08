@@ -364,6 +364,10 @@ module.exports.routes = {
 
   /* File formats controller */
   'GET /api/v1/file-formats': 'v1/FileFormat.findAll',
+
+  /* Option controller */
+  'GET /api/v1/options': 'v1/Option.findAll',
+
   //  ╦ ╦╔═╗╔╗ ╦ ╦╔═╗╔═╗╦╔═╔═╗
   //  ║║║║╣ ╠╩╗╠═╣║ ║║ ║╠╩╗╚═╗
   //  ╚╩╝╚═╝╚═╝╩ ╩╚═╝╚═╝╩ ╩╚═╝

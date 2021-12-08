@@ -17,6 +17,12 @@ module.exports = {
       required: true,
     },
 
+    isCopyrighted: {
+      type: 'boolean',
+      allowNull: false,
+      columnName: 'is_copyrighted',
+    },
+
     name: {
       type: 'string',
       allowNull: false,
@@ -28,6 +34,13 @@ module.exports = {
       type: 'string',
       allowNull: true,
       columnName: 'text',
+    },
+
+    url: {
+      type: 'string',
+      allowNull: false,
+      columnName: 'url',
+      maxLength: 100,
     },
   },
 };
