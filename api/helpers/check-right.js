@@ -33,7 +33,6 @@ module.exports = {
     rightNotFound: {
       description:
         "The rightEntity and rightAction didn't match an existing right",
-      responseType: 'rightNotFound',
     },
   },
 

@@ -121,16 +121,9 @@ module.exports.routes = {
   'PUT /api/v1/caves/:id': 'v1/Cave.update',
   'PUT /api/v1/caves/:caveId/massif/:massifId': 'v1/Cave.setMassif',
   /**
-   * @deprecated
+   * @deprecated use api/v1/caves instead
    */
   'GET /api/v1/caves/findAll': 'v1/Cave.findAll',
-
-  /* Author controller */
-  'DELETE /api/authors/:id': 'Author.delete',
-  'GET /api/authors/:id': 'Author.find',
-  'GET /api/authors/findAll': 'Author.findAll',
-  'POST /api/authors/': 'Author.create',
-  'PUT /api/authors/:id': 'Author.update',
 
   /* Partner controller */
   'DELETE /api/partners/:id': 'Partner.delete',
@@ -144,8 +137,8 @@ module.exports.routes = {
   'PUT /api/partners/:id': 'Partner.update',
 
   /* Comment controller */
-  'GET /api/comments/stats/:entry': 'Comments.getEntryStats',
-  'GET /api/comments/timeinfos/:entry': 'Comments.getEntryTimeInfos',
+  'GET /api/comments/stats/:entry': 'Comment.getEntryStats',
+  'GET /api/comments/timeinfos/:entry': 'Comment.getEntryTimeInfos',
 
   /* Organization controller */
   'DELETE /api/v1/organizations/:id': 'v1/Grotto.delete',
@@ -264,7 +257,8 @@ module.exports.routes = {
   },
 
   /* Admin controller */
-  'GET /api/admin/entrances/findAllOfInterest': 'Admin.findAllInterestEntries',
+  'GET /api/admin/entrances/findAllOfInterest':
+    'Admin.findAllInterestEntrances',
 
   /* Rss controller */
   'GET /api/rss/:language': 'Rss.getFeed',
