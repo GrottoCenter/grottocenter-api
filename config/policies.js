@@ -195,6 +195,10 @@ module.exports.policies = {
     '*': true,
   },
 
+  'v1/OptionController': {
+    '*': true,
+  },
+
   'v1/SwaggerController': {
     '*': true,
   },

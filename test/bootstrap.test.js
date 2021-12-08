@@ -37,6 +37,9 @@ before(function(done) {
           'tentrance',
           'tmassif',
           'thistory',
+          'tfileformat',
+          'tlicense',
+          'toption',
         ],
         function(err) {
           if (err) {
