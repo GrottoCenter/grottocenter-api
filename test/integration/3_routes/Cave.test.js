@@ -13,6 +13,7 @@ const CAVE_PROPERTIES = [
   'descriptions',
   'documents',
   'entrances',
+  'histories',
   'isDeleted',
   'isDiving',
   'length',
@@ -57,7 +58,6 @@ describe('Cave features', () => {
         .end((err, res) => {
           if (err) return done(err);
           const { body: caves } = res;
-          sails.log.info(caves);
           caves.forEach((cave) => {
             should(cave).have.properties(CAVE_PROPERTIES);
             should(cave.name).not.be.empty();

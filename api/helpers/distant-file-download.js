@@ -36,15 +36,12 @@ module.exports = {
     downloadError: {
       description:
         'An error occured when downloading the file located at the given url.',
-      responseType: 'downloadError',
     },
     invalidUrl: {
       description: 'The url provided is not valid.',
-      responseType: 'invalidUrl',
     },
     formatRefused: {
       description: 'The file format is in the refusedFileFormats list.',
-      responseType: 'formatRefused',
     },
   },
 

@@ -34,6 +34,7 @@ module.exports = {
       .populate('id_reviewer')
       .populate('entrances')
       .populate('descriptions')
+      .populate('histories')
       .populate('documents')
       .populate('names')
       .exec(async (err, found) => {
@@ -50,6 +51,10 @@ module.exports = {
         }
         if (found) {
           await NameService.setNames([found], 'cave');
+          found.histories.map(
+            async (h) =>
+              (h.author = await CaverService.getCaver(h.author, req)),
+          );
         }
 
         return ControllerService.treatAndConvert(
@@ -69,13 +74,30 @@ module.exports = {
     return TCave.find(parameters)
       .populate('id_author')
       .populate('entrances')
+      .populate('histories')
       .populate('names')
       .sort('id ASC')
       .limit(10)
-      .exec((err, found) => {
+      .exec(async (err, found) => {
         const params = {};
         params.controllerMethod = 'CaveController.findAll';
+        params.searchedItem = 'all caves';
         params.notFoundMessage = 'No caves found.';
+        if (err) {
+          sails.log.error(err);
+          return res.serverError(
+            'An unexpected server error occured when trying to get ' +
+              params.searchedItem,
+          );
+        }
+        await NameService.setNames(found, 'cave');
+        const populatePromise = found.map((cave) => {
+          cave.histories.map(
+            async (h) =>
+              (h.author = await CaverService.getCaver(h.author, req)),
+          );
+        });
+        Promise.all(populatePromise);
         return ControllerService.treatAndConvert(
           req,
           err,

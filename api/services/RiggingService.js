@@ -7,7 +7,7 @@ module.exports = {
    * @param {string} document to document to set names including its parent if present
    */
   formatRiggings: async (riggings) => {
-    const separator = riggings.map((rigging) => {
+    riggings.map((rigging) => {
       const splitRiggingData = (dataName) =>
         R.pipe(R.propOr('', dataName), R.split(SEPARATOR))(rigging);
 

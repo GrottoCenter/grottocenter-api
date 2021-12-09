@@ -61,7 +61,6 @@ module.exports.policies = {
     create: 'tokenAuth',
     delete: ['tokenAuth', 'moderatorAuth'],
     find: true,
-    findAll: ['apiKeyAuth', 'paginate'],
     findRandom: true,
     publicCount: true,
     unlinkDocument: ['tokenAuth', 'moderatorAuth'],
@@ -85,14 +84,9 @@ module.exports.policies = {
     update: 'tokenAuth',
   },
 
-  SearchController: {
-    findAll: 'apiKeyAuth',
-  },
-
   'v1/SearchController': {
     search: true,
     advancedSearch: true,
-    findAll: ['apiKeyAuth', 'paginate'],
   },
 
   CaveController: {
@@ -133,10 +127,6 @@ module.exports.policies = {
     signUp: true,
   },
 
-  'v1/BbsGeoController': {
-    '*': true,
-  },
-
   'v1/SubjectController': {
     '*': true,
   },
@@ -171,7 +161,6 @@ module.exports.policies = {
     create: 'tokenAuth',
     count: true,
     delete: ['tokenAuth', 'moderatorAuth'],
-    getOfficialPartnersNumber: true,
     find: ['apiKeyAuth', 'paginate'],
     update: 'tokenAuth',
   },
@@ -203,6 +192,10 @@ module.exports.policies = {
   },
 
   'v1/FileFormatController': {
+    '*': true,
+  },
+
+  'v1/OptionController': {
     '*': true,
   },
 

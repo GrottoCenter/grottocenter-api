@@ -1,0 +1,47 @@
+[
+  {
+    "id": 2,
+    "extension": "ez",
+    "mimeType": "application\/andrew-inset"
+  },
+  {
+    "id": 3,
+    "extension": "anx",
+    "mimeType": "application\/annodex"
+  },
+  {
+    "id": 5,
+    "extension": "atom",
+    "mimeType": "application\/atom+xml"
+  },
+  {
+    "id": 8,
+    "extension": "lin",
+    "mimeType": "application\/bbolin"
+  },
+  {
+    "id": 12,
+    "extension": "cu",
+    "mimeType": "application\/cu-seeme"
+  },
+  {
+    "id": 16,
+    "extension": "dcm",
+    "mimeType": "application\/dicom"
+  },
+  {
+    "id": 18,
+    "extension": "tsp",
+    "mimeType": "application\/dsptype"
+  },
+  {
+    "id": 20,
+    "extension": "es",
+    "mimeType": "application\/ecmascript"
+  },
+  {
+    "id": 24,
+    "extension": "epub",
+    "mimeType": "application\/epub+zip"
+  }
+]

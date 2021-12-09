@@ -36,6 +36,10 @@ before(function(done) {
           'tcave',
           'tentrance',
           'tmassif',
+          'thistory',
+          'tfileformat',
+          'tlicense',
+          'toption',
         ],
         function(err) {
           if (err) {

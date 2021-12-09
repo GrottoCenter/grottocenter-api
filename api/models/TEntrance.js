@@ -227,5 +227,10 @@ module.exports = {
       via: 'entrance',
       through: 'JEntranceCaver',
     },
+
+    histories: {
+      collection: 'THistory',
+      via: 'entrance',
+    },
   },
 };

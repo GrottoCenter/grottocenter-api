@@ -184,10 +184,11 @@ const getConvertedDocumentFromCsv = async (rawData, authorId) => {
     throw Error('This kind of license (' + licence + ') cannot be imported.');
   }
 
-  // Creator
-  const creatorsRaw = rawData['dct:creator'].split('|');
+  // Creator(s)
+  const rawCreators = rawData['dct:creator'].split('|');
+  let checkedRawCreators = rawCreators[0] === '' ? [] : rawCreators; // Empty the first array value if it's an empty string to avoid iterating through it
   // For each creator, first check if there is a grotto of this name. If not, check for a caver. If not, create a caver.
-  const creatorsPromises = creatorsRaw.map(async (creatorRaw) => {
+  const creatorsPromises = checkedRawCreators.map(async (creatorRaw) => {
     const authorGrotto = await TName.find({
       name: await retrieveFromLink({ stringArg: creatorRaw }),
       grotto: { '!=': null },
@@ -273,11 +274,13 @@ const getConvertedDocumentFromCsv = async (rawData, authorId) => {
   const parentId = doubleCheck({
     key: 'dct:isPartOf',
   });
-  const doesParentExist = await sails.helpers.checkIfExists.with({
-    attributeName: 'id',
-    attributeValue: parentId,
-    sailsModel: TDocument,
-  });
+  const doesParentExist = parentId
+    ? await sails.helpers.checkIfExists.with({
+        attributeName: 'id',
+        attributeValue: parentId,
+        sailsModel: TDocument,
+      })
+    : false;
   if (parentId && !doesParentExist) {
     throw Error('Document parent with id ' + parentId + ' not found.');
   }
@@ -1188,14 +1191,15 @@ module.exports = {
           line: index + 2,
         });
       } else {
-        const result = await TDocument.find({
+        const result = await TDocument.findOne({
           idDbImport: idDb,
           nameDbImport: nameDb,
           isDeleted: false,
         });
-        if (result.length > 0) {
+        if (result) {
           wontBeCreated.push({
             line: index + 2,
+            id: idDb,
           });
         } else {
           willBeCreated.push(row);
@@ -1241,7 +1245,6 @@ module.exports = {
     for (const [index, data] of req.body.data.entries()) {
       const missingColumns = await sails.helpers.csvhelpers.checkColumns.with({
         data: data,
-        additionalColumns: ['dct:creator'],
       });
 
       if (missingColumns.length > 0) {

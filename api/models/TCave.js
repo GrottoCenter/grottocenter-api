@@ -146,6 +146,11 @@ module.exports = {
       collection: 'TDocument',
       via: 'cave',
     },
+
+    histories: {
+      collection: 'THistory',
+      via: 'cave',
+    },
   },
 };
 /* eslint-enable camelcase */
