@@ -141,6 +141,7 @@ module.exports = {
         viewValues: {
           recipientName: userFound.nickname,
           resetLink: RESET_PASSWORD_LINK + token,
+          token: token,
         },
       })
       .intercept('sendSESEmailError', () => {
