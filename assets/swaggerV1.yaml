@@ -2696,6 +2696,10 @@ components:
           type: string
         county:
           type: string
+        dateInscription:
+          type: string
+        dateReviewed:
+          type: string
         descriptions:
           type: array
           items:
