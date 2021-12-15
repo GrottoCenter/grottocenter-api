@@ -166,7 +166,6 @@ module.exports = {
     result.latitude = parseFloat(source.latitude);
     result.locations = source.locations;
     result.longitude = parseFloat(source.longitude);
-    result.massif = ramda.pathOr(undefined, ['cave', 'massif'], source); // put the massif at the root of the entrance (more convenient for the client)
     result.name = MappingV1Service.getMainName(source);
     result.names = source.names;
     result.postalCode = source.postalCode;
@@ -187,6 +186,8 @@ module.exports = {
         isDiving: source['cave is diving'],
       };
     }
+    // Once cave is populated, put the massif at the root of the entrance (more convenient for the client)
+    result.massif = ramda.pathOr(undefined, ['cave', 'massif'], result);
 
     // Author
     if (source.author instanceof Object) {
