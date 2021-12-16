@@ -265,7 +265,7 @@ const getConvertedDocumentFromCsv = async (rawData, authorId) => {
       : { name: typeData };
     const type = await TType.findOne(typeCriteria);
     if (!type) {
-      throw Error("The document type '" + typeDate + "' is incorrect.");
+      throw Error("The document type '" + typeData + "' is incorrect.");
     }
     typeId = type.id;
   }
