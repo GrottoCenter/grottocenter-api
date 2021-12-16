@@ -2,14 +2,15 @@
  */
 
 const indexNames = [
-  'massifs',
-  'entrances',
-  'grottos',
-  'documents',
   'caves',
   'cavers',
+  'documents',
   'document-collections',
   'document-issues',
+  'entrances',
+  'grottos',
+  'massifs',
+  'networks',
 ];
 
 module.exports = {
