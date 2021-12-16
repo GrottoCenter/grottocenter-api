@@ -355,17 +355,20 @@ module.exports = {
         case 'caver':
           data = MappingV1Service.convertToCaverModel(item['_source']);
           break;
+        case 'document':
+          data = MappingV1Service.convertToDocumentModel(item['_source']);
+          break;
         case 'entrance':
           data = MappingV1Service.convertToEntranceModel(item['_source']);
-          break;
-        case 'massif':
-          data = MappingV1Service.convertToMassifModel(item['_source']);
           break;
         case 'grotto':
           data = MappingV1Service.convertToOrganizationModel(item['_source']);
           break;
-        case 'document':
-          data = MappingV1Service.convertToDocumentModel(item['_source']);
+        case 'massif':
+          data = MappingV1Service.convertToMassifModel(item['_source']);
+          break;
+        case 'network':
+          data = MappingV1Service.convertToCaveModel(item['_source']);
           break;
         default:
       }
@@ -493,6 +496,7 @@ module.exports = {
             data.mail = item['_source'].mail;
 
           case 'cave':
+          case 'network':
             data.depth = item['_source'].depth;
             data.descriptions = item['_source'].descriptions;
             data.isDiving = item['_source'].is_diving;
