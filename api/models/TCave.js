@@ -151,6 +151,11 @@ module.exports = {
       collection: 'THistory',
       via: 'cave',
     },
+
+    riggings: {
+      collection: 'TRigging',
+      via: 'cave',
+    },
   },
 };
 /* eslint-enable camelcase */

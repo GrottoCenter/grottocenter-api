@@ -77,6 +77,11 @@ module.exports = {
       maxLength: 2000,
     },
 
+    cave: {
+      columnName: 'id_cave',
+      model: 'TCave',
+    },
+
     entrance: {
       columnName: 'id_entrance',
       model: 'TEntrance',
