@@ -65,25 +65,25 @@ services:
     depends_on:
       - elasticsearch
 
-  # node:
-  #   container_name: nodegrotto
-  #   image: grottoce-front
-  #   build:
-  #     context: ../
-  #     dockerfile: docker/node.Dockerfile
-  #   environment:
-  #     - sails_datastores__default__url=postgres://${DOCKER_DB_USER}:${DOCKER_DB_PASSWORD}@dbserver/${DOCKER_DB_DATABASE}
-  #     - NODE_ENV=dev-docker
-  #     - ES_HOST=${ES_TAGNAME}:${ES_LOCAL_PORT}
-  #   command: npm run start-hot
-  #   volumes:
-  #     - ../:/app
-  #     - ../node_modules:/app/node_modules
-  #   depends_on:
-  #     - elasticsearch
-  #   ports:
-  #     - 1337:1337
-  #     - 6006:6006
+  node:
+    container_name: nodegrotto
+    image: grottoce-front
+    build:
+      context: ../
+      dockerfile: docker/node.Dockerfile
+    environment:
+      - sails_datastores__default__url=postgres://${DOCKER_DB_USER}:${DOCKER_DB_PASSWORD}@dbserver/${DOCKER_DB_DATABASE}
+      - NODE_ENV=dev-docker
+      - ES_HOST=${ES_TAGNAME}:${ES_LOCAL_PORT}
+    command: npm run start-hot
+    volumes:
+      - ../:/app
+      - ../node_modules:/app/node_modules
+    depends_on:
+      - elasticsearch
+    ports:
+      - 1337:1337
+      - 6006:6006
 
 volumes:
   gc-postgis-data:
