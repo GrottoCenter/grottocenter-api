@@ -4,14 +4,15 @@
 const client = require('../../config/elasticsearch').elasticsearchCli;
 
 const indexNames = [
-  'grottos',
-  'massifs',
-  'entrances',
-  'documents',
   'caves',
   'cavers',
+  'documents',
   'document-collections',
   'document-issues',
+  'entrances',
+  'grottos',
+  'massifs',
+  'networks',
 ];
 const advancedSearchMetaParams = [
   'resourceType',
