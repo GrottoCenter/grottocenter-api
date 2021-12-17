@@ -51,26 +51,31 @@ module.exports = {
 
     eTUnderground: {
       type: 'string',
+      allowNull: true,
       columnName: 'e_t_underground',
     },
 
     eTTrail: {
       type: 'string',
+      allowNull: true,
       columnName: 'e_t_trail',
     },
 
     aestheticism: {
       type: 'number',
+      allowNull: true,
       columnName: 'aestheticism',
     },
 
     caving: {
       type: 'number',
+      allowNull: true,
       columnName: 'caving',
     },
 
     approach: {
       type: 'number',
+      allowNull: true,
       columnName: 'approach',
     },
 

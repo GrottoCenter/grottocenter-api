@@ -37,6 +37,7 @@ module.exports.policies = {
     create: 'tokenAuth',
     delete: ['tokenAuth', 'moderatorAuth'],
     update: 'tokenAuth',
+    merge: 'tokenAuth',
   },
 
   'v1/CaverController': {

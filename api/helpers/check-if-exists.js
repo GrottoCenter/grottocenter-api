@@ -22,6 +22,12 @@ module.exports = {
       description: 'Sails model to use',
       required: true,
     },
+    additionalAttributes: {
+      type: 'ref',
+      description:
+        'An additional Sails criteria (see https://sailsjs.com/documentation/concepts/models-and-orm/query-language)',
+      required: false,
+    },
   },
 
   exits: {
@@ -32,9 +38,15 @@ module.exports = {
   },
 
   fn: async function(inputs, exits) {
-    const { sailsModel, attributeName, attributeValue } = inputs;
+    const {
+      sailsModel,
+      attributeName,
+      attributeValue,
+      additionalAttributes,
+    } = inputs;
     const entityFound = await sailsModel.findOne({
       [attributeName]: attributeValue,
+      ...additionalAttributes,
     });
     return exits.success(entityFound !== undefined);
   },

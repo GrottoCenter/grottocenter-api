@@ -20,4 +20,5 @@ module.exports = {
   update: (req, res) =>
     caveController.update(req, res, MappingV1Service.convertToCaveModel),
   setMassif: (req, res) => caveController.setMassif(req, res),
+  merge: (req, res) => caveController.merge(req, res),
 };

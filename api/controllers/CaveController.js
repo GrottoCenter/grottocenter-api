@@ -385,4 +385,141 @@ module.exports = {
     });
     return res.sendStatus(204);
   },
+
+  merge: async (req, res) => {
+    // Check right
+    const hasRight = await sails.helpers.checkRight
+      .with({
+        groups: req.token.groups,
+        rightEntity: RightService.RightEntities.CAVE,
+        rightAction: RightService.RightActions.MERGE,
+      })
+      .intercept('rightNotFound', (err) => {
+        return res.serverError(
+          'A server error occured when checking your right to merge a cave into another one.',
+        );
+      });
+    if (!hasRight) {
+      return res.forbidden(
+        'You are not authorized to merge a cave into another one.',
+      );
+    }
+
+    // Check if both caves exist and are not deleted
+    const sourceCaveId = req.param('sourceCaveId');
+    const destinationCaveId = req.param('destinationCaveId');
+    const checkIfCaveExists = async (args) =>
+      await sails.helpers.checkIfExists.with({
+        attributeName: 'id',
+        sailsModel: TCave,
+        additionalAttributes: { is_deleted: false }, // eslint-disable-line camelcase
+        ...args,
+      });
+
+    if (!(await checkIfCaveExists({ attributeValue: sourceCaveId }))) {
+      return res.badRequest(
+        'Source cave with id ' + sourceCaveId + ' not found.',
+      );
+    }
+    if (!(await checkIfCaveExists({ attributeValue: destinationCaveId }))) {
+      return res.badRequest(
+        'Destination cave with id ' + destinationCaveId + ' not found.',
+      );
+    }
+
+    // Move source cave data to destination cave
+    try {
+      await sails.getDatastore().transaction(async (db) => {
+        // Move associated data
+        await TComment.update({ cave: sourceCaveId })
+          .set({ cave: destinationCaveId })
+          .usingConnection(db);
+        await TDescription.update({ cave: sourceCaveId })
+          .set({ cave: destinationCaveId })
+          .usingConnection(db);
+        await TDocument.update({ cave: sourceCaveId })
+          .set({ cave: destinationCaveId })
+          .usingConnection(db);
+        await TEntrance.update({ cave: sourceCaveId })
+          .set({ cave: destinationCaveId })
+          .usingConnection(db);
+        await THistory.update({ cave: sourceCaveId })
+          .set({ cave: destinationCaveId })
+          .usingConnection(db);
+
+        // Delete sourceCave names
+        await TName.destroy({ cave: sourceCaveId }).usingConnection(db);
+
+        // Handle many-to-many relationships
+        const sourceCave = await TCave.findOne(sourceCaveId)
+          .populate('exploringGrottos')
+          .populate('partneringGrottos')
+          .usingConnection(db);
+        const destinationCave = await TCave.findOne(destinationCaveId)
+          .populate('exploringGrottos')
+          .populate('partneringGrottos')
+          .usingConnection(db);
+
+        const {
+          exploringGrottos: sourceExplorers,
+          partneringGrottos: sourcePartners,
+        } = sourceCave;
+        const {
+          exploringGrottos: destinationExplorers,
+          partneringGrottos: destinationPartners,
+        } = destinationCave;
+
+        // Update explored / partnered caves only if not already explored / partnered by the destination cave.
+        for (const sourceExp of sourceExplorers) {
+          if (!destinationExplorers.some((g) => g.id === sourceExp.id)) {
+            await TCave.addToCollection(
+              destinationCaveId,
+              'exploringGrottos',
+              sourceExp.id,
+            ).usingConnection(db);
+          }
+        }
+        for (const sourcePartn of sourcePartners) {
+          if (!destinationPartners.some((g) => g.id === sourcePartn.id)) {
+            await TCave.addToCollection(
+              destinationCaveId,
+              'partneringGrottos',
+              sourcePartn.id,
+            ).usingConnection(db);
+          }
+        }
+
+        // Destroy remaining source data
+        await TCave.removeFromCollection(sourceCaveId, 'exploringGrottos')
+          .members(sourceExplorers.map((e) => e.id))
+          .usingConnection(db);
+        await TCave.removeFromCollection(sourceCaveId, 'partneringGrottos')
+          .members(sourcePartners.map((p) => p.id))
+          .usingConnection(db);
+
+        // Update cave data with destination data being prioritised
+        const mergedData = ramda.mergeWith(
+          (a, b) => (b === null ? a : b),
+          sourceCave,
+          destinationCave,
+        );
+
+        const {
+          id,
+          exploringGrottos,
+          partneringGrottos,
+          ...cleanedMergedData
+        } = mergedData;
+        await TCave.update(destinationCaveId)
+          .set(cleanedMergedData)
+          .usingConnection(db);
+
+        await TCave.destroy(sourceCaveId).usingConnection(db);
+      });
+    } catch (e) {
+      ErrorService.getDefaultErrorHandler(res)(e);
+    }
+
+    return res.status(204);
+  },
 };
