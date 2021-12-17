@@ -117,6 +117,8 @@ module.exports.routes = {
   'GET /api/v1/caves/:id': 'v1/Cave.find',
   'GET /api/v1/caves': 'v1/Cave.findAll',
   'POST /api/v1/caves': 'v1/Cave.create',
+  'POST /api/v1/caves/:sourceCaveId/merge-into/:destinationCaveId':
+    'v1/Cave.merge',
   'PUT /api/v1/caves/:caveId/documents/:documentId': 'v1/Cave.addDocument',
   'PUT /api/v1/caves/:id': 'v1/Cave.update',
   'PUT /api/v1/caves/:caveId/massif/:massifId': 'v1/Cave.setMassif',
