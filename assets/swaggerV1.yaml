@@ -13,7 +13,8 @@ info:
     url: 'https://creativecommons.org/licenses/by-sa/3.0/'
 
 servers:
-- url: https://api.grottocenter.org
+- url: https://api.grottocenter.org/api/v1/
+- url: http://localhost:1337/api/v1/
 
 tags:
 - name: account
@@ -192,7 +193,7 @@ paths:
     delete:
       tags:
       - caves
-      description: Delete a cave.
+      description: Delete a cave. If a destinationCaveForOrphan parameter is provided, all the data related to the cave are transfered to the destination cave before it's deleted. If a value is set in both caves, the destination cave value is retained.
       parameters:
       - name: id
         in: path
@@ -200,11 +201,17 @@ paths:
         required: true
         schema:
           type: string
+      - name: destinationCaveForOrphan
+        in: query
+        description: Destination cave id in which the cave data will be merged before being deleted.
+        required: false
+        schema:
+          type: string
       responses:
         '204':
           description: Successful operation
-        '404':
-          description: Cave not found.
+        '400':
+          description: Cave(s) not found
         '410':
           description: Cave already deleted
 
@@ -281,30 +288,6 @@ paths:
           description: "Bad request. Both the caveId and massifId parameters must exist in the database."
         '403':
           description: You are not authorized to set the massif of a cave.
-  
-  '/caves/{sourceCaveId}/merge-into/{destinationCaveId}':
-    post:
-      tags:
-      - caves
-      description: Merge a source cave into a destination cave. All the data related to the source cave are transfered to the destination cave. If a value is set in both caves, the destination cave value is retained.
-      parameters:
-      - name: sourceCaveId
-        in: path
-        required: true
-        schema:
-          type: string
-      - name: destinationCaveId
-        in: path
-        required: true
-        schema:
-          type: string
-      responses:
-        '204':
-          description: Successful operation
-        '400':
-          description: "Bad request. Both sourceCaveId and destinationCaveId parameters must exist in the database."
-        '403':
-          description: You are not authorized to merge two caves.
 
   '/cavers':
     post:
