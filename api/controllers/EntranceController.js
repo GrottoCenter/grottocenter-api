@@ -327,6 +327,9 @@ module.exports = {
         found.comments.map(
           async (c) => (c.author = await CaverService.getCaver(c.author, req)),
         );
+        found.descriptions.map(
+          async (d) => (d.author = await CaverService.getCaver(d.author, req)),
+        );
         found.histories.map(
           async (h) => (h.author = await CaverService.getCaver(h.author, req)),
         );
