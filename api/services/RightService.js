@@ -30,6 +30,8 @@ module.exports = {
     MERGE: 'merge',
     MERGE_DUPLICATES: 'merge duplicates',
     NO_REQUEST_LIMIT: 'no request limit',
+    NO_MODERATOR_DELETE_REQUEST_LIMIT: 'no moderator delete request limit',
+    NO_USER_DELETE_REQUEST_LIMIT: 'no user delete request limit',
     UNLINK_RESOURCE: 'unlink resource',
     VIEW_ANY: 'view any',
     VIEW_COMPLETE: 'view complete',
