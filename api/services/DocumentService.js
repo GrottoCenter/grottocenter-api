@@ -185,4 +185,16 @@ module.exports = {
 
     return populatedDocument;
   },
+
+  setDocumentType: async (document) => {
+    document.type = await TType.findOne(document.type);
+  },
+
+  setDocumentLicense: async (document) => {
+    document.license = await TLicense.findOne(document.license);
+  },
+
+  setDocumentFiles: async (document) => {
+    document.files = await TFile.find({ document: document.id });
+  },
 };

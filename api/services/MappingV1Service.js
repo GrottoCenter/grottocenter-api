@@ -160,7 +160,6 @@ module.exports = {
     result.dateInscription = source.dateInscription;
     result.dateReviewed = source.dateReviewed;
     result.discoveryYear = source.yearDiscovery;
-    result.documents = source.documents;
     result.histories = source.histories;
     result.id = source.id;
     result.latitude = parseFloat(source.latitude);
@@ -194,19 +193,29 @@ module.exports = {
       result.author = MappingV1Service.convertToCaverModel(source.author);
     }
 
-    // From ESearch
-    if (source['massif name']) {
-      result.massif = {
-        name: source['massif name'],
-      };
-    }
-
+    // Descriptions
     if (source.descriptions instanceof Array) {
       result.descriptions = MappingV1Service.convertToDescriptionList(
         source.descriptions,
       ).descriptions;
     } else {
       result.descriptions = source.descriptions;
+    }
+
+    // Documents
+    if (source.documents instanceof Array) {
+      result.documents = MappingV1Service.convertToDocumentList(
+        source.documents,
+      ).documents;
+    } else {
+      result.documents = source.documents;
+    }
+
+    // Massif from ESearch
+    if (source['massif name']) {
+      result.massif = {
+        name: source['massif name'],
+      };
     }
 
     return result;
@@ -618,6 +627,16 @@ module.exports = {
     };
   },
 
+  convertToFileList: (source) => {
+    const files = [];
+    source.forEach((item) =>
+      files.push(MappingV1Service.convertToFileModel(item)),
+    );
+    return {
+      files,
+    };
+  },
+
   convertToDocumentModel: (source) => {
     const result = {
       ...DocumentModel,
@@ -640,8 +659,7 @@ module.exports = {
     result.deletedFiles = source.deletedFiles;
     result.entrance = source.entrance;
     result.files =
-      source.files &&
-      source.files.map((file) => MappingV1Service.convertToFileModel(file));
+      source.files && MappingV1Service.convertToFileList(source.files).files;
     result.identifier = source.identifier;
     result.issue = source.issue;
     result.isValidated = source.isValidated;
