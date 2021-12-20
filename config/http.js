@@ -9,8 +9,8 @@
  * http://sailsjs.org/#/documentation/reference/sails.config/sails.config.http.html
  */
 const passport = require('passport');
-const rateLimit = require('express-rate-limit');
-const { version: packageVersion } = require('../package.json'); // Be careful not sending the whole file to the client (security concerns)
+const rateLimiter = require('./rateLimit/rateLimiter');
+const { version: packageVersion } = require('../package.json');
 
 module.exports.http = {
   /****************************************************************************
@@ -28,38 +28,9 @@ module.exports.http = {
     passportSession: passport.session(),
 
     // Requests limiter configuration
-    rateLimit: rateLimit({
-      windowMs: process.env.RATE_LIMIT_WINDOW
-        ? process.env.RATE_LIMIT_WINDOWS
-        : 1 * 30 * 1000, // 30 seconds
-      max: process.env.RATE_LIMIT_PER_WINDOW
-        ? process.env.RATE_LIMIT_PER_WINDOW
-        : 100, // limit each IP to 100 requests per windowMs
-      message: 'Too many requests with the same IP, try again later.',
-      statusCode: 429,
-      skip: (req, res) => {
-        // Ignore OPTIONS request
-        if (req.method.toUpperCase() === 'OPTIONS') {
-          return true;
-        }
-        // If you are not authenticated, you are limited
-        if (!req.token) {
-          return false;
-        }
-        const hasNoRequestLimitPromise = sails.helpers.checkRight
-          .with({
-            groups: req.token.groups,
-            rightEntity: RightService.RightEntities.APPLICATION,
-            rightAction: RightService.RightActions.NO_REQUEST_LIMIT,
-          })
-          .intercept('rightNotFound', (err) => {
-            return res.serverError(
-              'A server error occured when checking your right to not having a request limit.',
-            );
-          });
-        return hasNoRequestLimitPromise;
-      },
-    }),
+    generalRateLimit: rateLimiter.generalRateLimit,
+    userDeleteRateLimit: rateLimiter.userDeleteRateLimit,
+    moderatorDeleteRateLimit: rateLimiter.moderatorDeleteRateLimit,
 
     /***************************************************************************
      *                                                                          *
@@ -74,7 +45,9 @@ module.exports.http = {
       'passportInit',
       'passportSession',
       'parseAuthToken',
-      'rateLimit',
+      'generalRateLimit',
+      'userDeleteRateLimit',
+      'moderatorDeleteRateLimit',
       'fileMiddleware',
       'bodyParser',
       'compress',

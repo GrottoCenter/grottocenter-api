@@ -58,4 +58,6 @@ VALUES (1, 'Application - view any', NULL),
     (101, 'Document - edit not validated', NULL),
     (102, 'Document - csv import', NULL),
     (103, 'Entrance - csv import', NULL),
-    (104, 'Cave - merge', NULL);
+    (104, 'Cave - merge', NULL),
+    (105, 'Application - no moderator delete request limit', NULL),
+    (106, 'Application - no user delete request limit', NULL);
