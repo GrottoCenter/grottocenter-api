@@ -1,7 +1,7 @@
 /**
- * EntranceController
+ * FileFormatController
  *
- * @description :: Server-side logic for managing entrances
+ * @description :: Server-side logic for managing file formats
  * @help        :: See http://links.sailsjs.org/docs/controllers
  */
 

@@ -172,12 +172,12 @@ module.exports.policies = {
   },
 
   'v1/GeoLocController': {
-    countEntries: true,
-    findCaves: true,
-    findCavesCoordinates: true,
-    findGrottos: true,
+    countEntrances: true,
     findEntrances: true,
     findEntrancesCoordinates: true,
+    findGrottos: true,
+    findNetworks: true,
+    findNetworksCoordinates: true,
   },
 
   'v1/AccountController': {
