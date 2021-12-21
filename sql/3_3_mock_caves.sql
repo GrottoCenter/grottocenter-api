@@ -21,13 +21,13 @@ INSERT INTO public.t_cave (
 VALUES (
         5,
         4,
-        NULL,
+        3,
         NULL,
         NULL,
         120,
         5000,
         false,
-        NULL,
+        5,
         8,
         '2008-07-28 17:02:54.000',
         NULL,
@@ -393,6 +393,29 @@ INSERT INTO public.t_name (
         is_deleted
     )
 VALUES (
+        6666,
+        'La cavité 6',
+        true,
+        2,
+        NULL,
+        '2020-07-29 11:20:17.000',
+        NULL,
+        'fra',
+        6,
+        false
+    ), (
+        5555,
+        'La cavité 5',
+        true,
+        2,
+        NULL,
+        '2020-07-29 11:13:17.000',
+        NULL,
+        'fra',
+        5,
+        false
+    ), 
+    (
         3469,
         'Arres Planères (réseau des)',
         true,

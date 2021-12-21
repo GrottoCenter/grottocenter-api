@@ -4,7 +4,6 @@
  * @description :: Server-side logic for managing Caves
  * @help        :: See http://sailsjs.org/#!/documentation/concepts/Controllers
  */
-const ramda = require('ramda');
 const NameService = require('../services/NameService');
 
 // Extract everything from the request body except id and dateInscription
@@ -211,30 +210,61 @@ module.exports = {
       return res.forbidden('You are not authorized to delete a cave.');
     }
 
-    // Check if cave exists and if it's not already deleted
+    // Check if cave exists and is not deleted
     const caveId = req.param('id');
-    const currentCave = await TCave.findOne(caveId);
-    if (currentCave) {
-      if (currentCave.isDeleted) {
-        return res.status(410).send({
-          message: `The cave with id ${caveId} has already been deleted.`,
-        });
-      }
-    } else {
-      return res.status(404).send({
-        message: `Cave of id ${caveId} not found.`,
+    const checkIfCaveExists = async (args) =>
+      await sails.helpers.checkIfExists.with({
+        attributeName: 'id',
+        sailsModel: TCave,
+        additionalAttributes: { is_deleted: false }, // eslint-disable-line camelcase
+        ...args,
       });
+
+    if (!(await checkIfCaveExists({ attributeValue: caveId }))) {
+      return res.badRequest('Cave with id ' + caveId + ' not found.');
+    }
+
+    // Merge cave with another one before deleting it
+    if (req.param('destinationCaveForOrphan')) {
+      const destinationCaveId = req.param('destinationCaveForOrphan');
+      if (!(await checkIfCaveExists({ attributeValue: destinationCaveId }))) {
+        return res.badRequest(
+          'Destination cave with id ' + destinationCaveId + ' not found.',
+        );
+      }
+
+      // Check right
+      const hasRight = await sails.helpers.checkRight
+        .with({
+          groups: req.token.groups,
+          rightEntity: RightService.RightEntities.CAVE,
+          rightAction: RightService.RightActions.MERGE,
+        })
+        .intercept('rightNotFound', (err) => {
+          return res.serverError(
+            'A server error occured when checking your right to merge a cave into another one.',
+          );
+        });
+      if (!hasRight) {
+        return res.forbidden(
+          'You are not authorized to merge a cave into another one.',
+        );
+      }
+      try {
+        await CaveService.mergeCaves(caveId, destinationCaveId);
+      } catch (e) {
+        ErrorService.getDefaultErrorHandler(res)(e);
+      }
     }
 
     // Delete cave
-    const updatedCave = await TCave.destroyOne({ id: caveId }).intercept(
-      (err) => {
-        return res.serverError(
-          `An unexpected error occured when trying to delete cave with id ${caveId}.`,
-        );
-      },
-    );
-    return res.sendStatus(204);
+    try {
+      sails.log.info('Deleting cave with id ' + caveId);
+      await TCave.destroyOne(caveId);
+      return res.sendStatus(204);
+    } catch (e) {
+      ErrorService.getDefaultErrorHandler(res)(e);
+    }
   },
 
   addDocument: async (req, res) => {

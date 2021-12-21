@@ -6,6 +6,7 @@
  */
 const ramda = require('ramda');
 const getCountryISO3 = require('country-iso-2-to-3');
+const DescriptionService = require('../services/DescriptionService');
 
 // Extract everything from the request body except id
 const getConvertedDataFromClientRequest = (req) => {
@@ -326,6 +327,9 @@ module.exports = {
         found.comments.map(
           async (c) => (c.author = await CaverService.getCaver(c.author, req)),
         );
+        found.descriptions.map(
+          async (d) => (d.author = await CaverService.getCaver(d.author, req)),
+        );
         found.histories.map(
           async (h) => (h.author = await CaverService.getCaver(h.author, req)),
         );
@@ -339,6 +343,14 @@ module.exports = {
         // Populate cave
         await CaveService.setEntrances([found.cave]);
         await NameService.setNames([found.cave], 'cave');
+
+        // Populate document type, descriptions, files & license
+        found.documents.map(async (d) => {
+          await DescriptionService.setDocumentDescriptions(d, false);
+          await DocumentService.setDocumentType(d);
+          await DocumentService.setDocumentLicense(d);
+          await DocumentService.setDocumentFiles(d);
+        });
 
         // Populate stats
         found.stats = await CommentService.getStats(req.params.id);

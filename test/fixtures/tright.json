@@ -230,5 +230,17 @@
   {
     "id": 103,
     "name": "Entrance - csv import"
+  },
+  {
+    "id": 104,
+    "name": "Cave - merge"
+  },
+  {
+    "id": 105,
+    "name": "Application - no moderator delete request limit"
+  },
+  {
+    "id": 106,
+    "name": "Application - no user delete request limit"
   }
 ]

@@ -35,7 +35,7 @@ module.exports.policies = {
     addDocument: 'tokenAuth',
     setMassif: 'tokenAuth',
     create: 'tokenAuth',
-    delete: ['tokenAuth', 'moderatorAuth'],
+    delete: 'tokenAuth',
     update: 'tokenAuth',
   },
 
