@@ -42,6 +42,229 @@ const PUBLIC_CAVES_COORDINATES_IN_BOUNDS = `
   LIMIT $5;
 `;
 
+/**
+ * Return the cave in the bounds
+ * @param southWestBound
+ * @param northEastBound
+ * @returns {Promise<any>}
+ */
+const getCaves = (southWestBound, northEastBound) =>
+  new Promise((resolve, reject) => {
+    CommonService.query(CAVES_IN_BOUNDS, [
+      southWestBound.lat,
+      northEastBound.lat,
+      southWestBound.lng,
+      northEastBound.lng,
+    ]).then(
+      (results) => {
+        if (
+          !results ||
+          results.rows.length <= 0 ||
+          results.rows[0].count === 0
+        ) {
+          resolve([]);
+        }
+        resolve(results.rows);
+      },
+      (err) => {
+        reject(err);
+      },
+    );
+  });
+
+/**
+ * Return all the entrances coordinates in the bounds
+ * @param southWestBound
+ * @param northEastBound
+ * @returns {Promise<any>}
+ */
+const getCavesCoordinatesInExtend = (southWestBound, northEastBound, limit) =>
+  new Promise((resolve, reject) => {
+    CommonService.query(PUBLIC_CAVES_COORDINATES_IN_BOUNDS, [
+      southWestBound.lat,
+      northEastBound.lat,
+      southWestBound.lng,
+      northEastBound.lng,
+      limit,
+    ]).then(
+      (results) => {
+        if (
+          !results ||
+          results.rows.length <= 0 ||
+          results.rows[0].count === 0
+        ) {
+          resolve([]);
+        }
+        resolve(results.rows);
+      },
+      (err) => {
+        reject(err);
+      },
+    );
+  });
+
+/**
+ * Return all the entrances coordinates in the bounds
+ * @param southWestBound
+ * @param northEastBound
+ * @param limit
+ * @returns {Promise<any>}
+ */
+const getEntrancesCoordinatesInExtend = (
+  southWestBound,
+  northEastBound,
+  limit,
+) =>
+  new Promise((resolve, reject) => {
+    CommonService.query(PUBLIC_ENTRANCES_COORDINATES_IN_BOUNDS, [
+      southWestBound.lat,
+      northEastBound.lat,
+      southWestBound.lng,
+      northEastBound.lng,
+      limit,
+    ]).then(
+      (results) => {
+        if (
+          !results ||
+          results.rows.length <= 0 ||
+          results.rows[0].count === 0
+        ) {
+          resolve([]);
+        }
+        resolve(results.rows);
+      },
+      (err) => {
+        reject(err);
+      },
+    );
+  });
+
+/**
+ * Return all the entrances in the bounds
+ * @param southWestBound
+ * @param northEastBound
+ * @param limit
+ * @returns {Promise<any>}
+ */
+const getEntrancesBetweenCoords = (southWestBound, northEastBound, limit) =>
+  new Promise((resolve, reject) => {
+    CommonService.query(PUBLIC_ENTRANCES_IN_BOUNDS, [
+      southWestBound.lat,
+      northEastBound.lat,
+      southWestBound.lng,
+      northEastBound.lng,
+      limit,
+    ]).then(
+      (results) => {
+        if (
+          !results ||
+          results.rows.length <= 0 ||
+          results.rows[0].count === 0
+        ) {
+          resolve([]);
+        }
+        resolve(results.rows);
+      },
+      (err) => {
+        reject(err);
+      },
+    );
+  });
+
+/**
+ * return a light version of the caves
+ * @param caves
+ */
+const formatCaves = (caves) => {
+  return caves.map((cave) => {
+    return {
+      id: cave.id,
+      name: cave.name,
+      longitude: Number(cave.longitude),
+      latitude: Number(cave.latitude),
+    };
+  });
+};
+
+/**
+ * Format the quality entrances in a lighter version
+ * Quality entrance stand for an entrance that won't be clustered
+ * @param entrances
+ * @returns {Promise<any>}
+ */
+const formatEntrances = (entrances) =>
+  entrances.map((entrance) => {
+    let entranceCave;
+
+    if (entrance.idCave) {
+      entranceCave = {
+        id: entrance.idCave,
+        name: entrance.nameCave,
+        depth: entrance.depthCave,
+        length: entrance.lengthCave,
+      };
+    } else {
+      entranceCave = {
+        depth: entrance.depthSE,
+        length: entrance.lengthSE,
+      };
+    }
+
+    return {
+      id: entrance.id,
+      name: entrance.name,
+      city: entrance.city,
+      region: entrance.region,
+      cave: entranceCave,
+      longitude: parseFloat(entrance.longitude),
+      latitude: parseFloat(entrance.latitude),
+      quality: entrance.size_coef,
+    };
+  });
+
+/**
+ * Return a lighter version of the grottos
+ * @param grottos
+ */
+const formatGrottos = (grottos) =>
+  grottos.map((grotto) => ({
+    id: grotto.id,
+    name: grotto.name,
+    address: grotto.address,
+    longitude: parseFloat(grotto.longitude),
+    latitude: parseFloat(grotto.latitude),
+  }));
+
+/**
+ * Return the speleological group in the bounds
+ * @param southWestBound
+ * @param northEastBound
+ * @returns {Promise<any>}
+ */
+const getGrottoBetweenCoords = (southWestBound, northEastBound) =>
+  new Promise((resolve, reject) => {
+    const parameters = {
+      latitude: {
+        '>': southWestBound.lat,
+        '<': northEastBound.lat,
+      },
+      longitude: {
+        '>': southWestBound.lng,
+        '<': northEastBound.lng,
+      },
+    }; // TODO add controls on parameters
+
+    TGrotto.find(parameters).exec(async (err, result) => {
+      if (err) {
+        reject(err);
+      }
+      await NameService.setNames(result, 'grotto');
+      resolve(result);
+    });
+  });
+
+// ====================================
+
 module.exports = {
   /**
    * @returns {Promise} which resolves to the succesfully countEntrances
@@ -70,226 +293,9 @@ module.exports = {
       });
     }),
 
-  /**
-   * Return the cave in the bounds
-   * @param southWestBound
-   * @param northEastBound
-   * @returns {Promise<any>}
-   */
-  getCaves: (southWestBound, northEastBound) =>
-    new Promise((resolve, reject) => {
-      CommonService.query(CAVES_IN_BOUNDS, [
-        southWestBound.lat,
-        northEastBound.lat,
-        southWestBound.lng,
-        northEastBound.lng,
-      ]).then(
-        (results) => {
-          if (
-            !results ||
-            results.rows.length <= 0 ||
-            results.rows[0].count === 0
-          ) {
-            resolve([]);
-          }
-          resolve(results.rows);
-        },
-        (err) => {
-          reject(err);
-        },
-      );
-    }),
-
-  /**
-   * Return all the entrances in the bounds
-   * @param southWestBound
-   * @param northEastBound
-   * @param limit
-   * @returns {Promise<any>}
-   */
-  getEntrancesBetweenCoords: (southWestBound, northEastBound, limit) =>
-    new Promise((resolve, reject) => {
-      CommonService.query(PUBLIC_ENTRANCES_IN_BOUNDS, [
-        southWestBound.lat,
-        northEastBound.lat,
-        southWestBound.lng,
-        northEastBound.lng,
-        limit,
-      ]).then(
-        (results) => {
-          if (
-            !results ||
-            results.rows.length <= 0 ||
-            results.rows[0].count === 0
-          ) {
-            resolve([]);
-          }
-          resolve(results.rows);
-        },
-        (err) => {
-          reject(err);
-        },
-      );
-    }),
-
-  /**
-   * Return all the entrances coordinates in the bounds
-   * @param southWestBound
-   * @param northEastBound
-   * @param limit
-   * @returns {Promise<any>}
-   */
-  getEntrancesCoordinatesInExtend: (southWestBound, northEastBound, limit) =>
-    new Promise((resolve, reject) => {
-      CommonService.query(PUBLIC_ENTRANCES_COORDINATES_IN_BOUNDS, [
-        southWestBound.lat,
-        northEastBound.lat,
-        southWestBound.lng,
-        northEastBound.lng,
-        limit,
-      ]).then(
-        (results) => {
-          if (
-            !results ||
-            results.rows.length <= 0 ||
-            results.rows[0].count === 0
-          ) {
-            resolve([]);
-          }
-          resolve(results.rows);
-        },
-        (err) => {
-          reject(err);
-        },
-      );
-    }),
-
-  /**
-   * Return all the entrances coordinates in the bounds
-   * @param southWestBound
-   * @param northEastBound
-   * @returns {Promise<any>}
-   */
-  getCavesCoordinatesInExtend: (southWestBound, northEastBound, limit) =>
-    new Promise((resolve, reject) => {
-      CommonService.query(PUBLIC_CAVES_COORDINATES_IN_BOUNDS, [
-        southWestBound.lat,
-        northEastBound.lat,
-        southWestBound.lng,
-        northEastBound.lng,
-        limit,
-      ]).then(
-        (results) => {
-          if (
-            !results ||
-            results.rows.length <= 0 ||
-            results.rows[0].count === 0
-          ) {
-            resolve([]);
-          }
-          resolve(results.rows);
-        },
-        (err) => {
-          reject(err);
-        },
-      );
-    }),
-
-  /**
-   * Return the speleological group in the bounds
-   * @param southWestBound
-   * @param northEastBound
-   * @returns {Promise<any>}
-   */
-  getGrottoBetweenCoords: (southWestBound, northEastBound) =>
-    new Promise((resolve, reject) => {
-      const parameters = {
-        latitude: {
-          '>': southWestBound.lat,
-          '<': northEastBound.lat,
-        },
-        longitude: {
-          '>': southWestBound.lng,
-          '<': northEastBound.lng,
-        },
-      }; // TODO add controls on parameters
-
-      TGrotto.find(parameters).exec(async (err, result) => {
-        if (err) {
-          reject(err);
-        }
-        await NameService.setNames(result, 'grotto');
-        resolve(result);
-      });
-    }),
-
-  /**
-   * Format the quality entrances in a lighter version
-   * Quality entrance stand for an entrance that won't be clustered
-   * @param entrances
-   * @returns {Promise<any>}
-   */
-  formatEntrances: (entrances) =>
-    entrances.map((entrance) => {
-      let entranceCave;
-
-      if (entrance.idCave) {
-        entranceCave = {
-          id: entrance.idCave,
-          name: entrance.nameCave,
-          depth: entrance.depthCave,
-          length: entrance.lengthCave,
-        };
-      } else {
-        entranceCave = {
-          depth: entrance.depthSE,
-          length: entrance.lengthSE,
-        };
-      }
-
-      return {
-        id: entrance.id,
-        name: entrance.name,
-        city: entrance.city,
-        region: entrance.region,
-        cave: entranceCave,
-        longitude: parseFloat(entrance.longitude),
-        latitude: parseFloat(entrance.latitude),
-        quality: entrance.size_coef,
-      };
-    }),
-
-  /**
-   * Return a lighter version of the grottos
-   * @param grottos
-   */
-  formatGrottos: (grottos) =>
-    grottos.map((grotto) => ({
-      id: grotto.id,
-      name: grotto.name,
-      address: grotto.address,
-      longitude: parseFloat(grotto.longitude),
-      latitude: parseFloat(grotto.latitude),
-    })),
-
-  /**
-   * return a light version of the caves
-   * @param caves
-   */
-  formatCaves: (caves) => {
-    return caves.map((cave) => {
-      return {
-        id: cave.id,
-        name: cave.name,
-        longitude: Number(cave.longitude),
-        latitude: Number(cave.latitude),
-      };
-    });
-  },
-
   getEntrancesCoordinates: (southWestBound, northEastBound, limitEntrances) =>
     new Promise((resolve, reject) => {
-      GeoLocService.getEntrancesCoordinatesInExtend(
+      getEntrancesCoordinatesInExtend(
         southWestBound,
         northEastBound,
         limitEntrances,
@@ -308,11 +314,7 @@ module.exports = {
 
   getCavesCoordinates: (southWestBound, northEastBound, limitCaves) =>
     new Promise((resolve, reject) => {
-      GeoLocService.getCavesCoordinatesInExtend(
-        southWestBound,
-        northEastBound,
-        limitCaves,
-      )
+      getCavesCoordinatesInExtend(southWestBound, northEastBound, limitCaves)
         .then((coordinates) => {
           resolve(
             coordinates.map((coord) => {
@@ -333,13 +335,9 @@ module.exports = {
    */
   getEntrancesMap: (southWestBound, northEastBound, limitEntrances) =>
     new Promise((resolve, reject) => {
-      GeoLocService.getEntrancesBetweenCoords(
-        southWestBound,
-        northEastBound,
-        limitEntrances,
-      )
+      getEntrancesBetweenCoords(southWestBound, northEastBound, limitEntrances)
         .then((entrances) => {
-          resolve(GeoLocService.formatEntrances(entrances));
+          resolve(formatEntrances(entrances));
         })
         .catch((err) => {
           reject(err);
@@ -353,9 +351,9 @@ module.exports = {
    */
   getGrottosMap: (southWestBound, northEastBound) =>
     new Promise((resolve, reject) => {
-      GeoLocService.getGrottoBetweenCoords(southWestBound, northEastBound)
+      getGrottoBetweenCoords(southWestBound, northEastBound)
         .then((grottos) => {
-          resolve(GeoLocService.formatGrottos(grottos));
+          resolve(formatGrottos(grottos));
         })
         .catch((err) => {
           reject(err);
@@ -369,9 +367,9 @@ module.exports = {
    */
   getCavesMap: (southWestBound, northEastBound) =>
     new Promise((resolve, reject) => {
-      GeoLocService.getCaves(southWestBound, northEastBound)
+      getCaves(southWestBound, northEastBound)
         .then((caves) => {
-          resolve(GeoLocService.formatCaves(caves));
+          resolve(formatCaves(caves));
         })
         .catch((err) => {
           reject(err);
