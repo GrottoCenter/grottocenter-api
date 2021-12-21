@@ -345,12 +345,14 @@ module.exports = {
         await NameService.setNames([found.cave], 'cave');
 
         // Populate document type, descriptions, files & license
-        found.documents.map(async (d) => {
-          await DescriptionService.setDocumentDescriptions(d, false);
-          await DocumentService.setDocumentType(d);
-          await DocumentService.setDocumentLicense(d);
-          await DocumentService.setDocumentFiles(d);
-        });
+        await Promise.all(
+          found.documents.map(async (d) => {
+            await DescriptionService.setDocumentDescriptions(d, false);
+            await DocumentService.setDocumentType(d);
+            await DocumentService.setDocumentLicense(d);
+            await DocumentService.setDocumentFiles(d);
+          }),
+        );
 
         // Populate stats
         found.stats = await CommentService.getStats(req.params.id);
