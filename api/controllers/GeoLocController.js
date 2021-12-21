@@ -170,7 +170,7 @@ module.exports = {
     if (errorMessage !== '') return res.badRequest(errorMessage);
 
     try {
-      const result = await GeoLocService.getCavesCoordinates(
+      const result = await GeoLocService.getNetworksCoordinates(
         southWestBound,
         northEastBound,
         100000,
@@ -191,7 +191,7 @@ module.exports = {
     if (errorMessage !== '') return res.badRequest(errorMessage);
 
     try {
-      const result = await GeoLocService.getCavesMap(
+      const result = await GeoLocService.getNetworksMap(
         southWestBound,
         northEastBound,
       );
