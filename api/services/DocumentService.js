@@ -19,6 +19,8 @@ const RECURSIVE_GET_CHILD_DOC = `
       ON td.id_parent = recursiveChildren.id
   )
   SELECT * FROM recursiveChildren
+  WHERE is_validated = true
+  AND is_deleted = false;
 `;
 
 // Doc types needing a parent in order to be created (ex; an issue needs a collection, an article needs an issue)
@@ -39,27 +41,35 @@ module.exports = {
     const childIds = result.rows.map((d) => d.id);
 
     // Populate
-    const children = await TDocument.find({ id: { in: childIds } }).populate(
-      'descriptions',
+    const childrenAndGrandChildren = await TDocument.find({
+      id: { in: childIds },
+    }).populate('descriptions');
+    const children = childrenAndGrandChildren.filter(
+      (c) => c.parent === doc.id,
+    );
+    const grandChildren = childrenAndGrandChildren.filter(
+      (c) => c.parent !== doc.id,
     );
 
-    // Format children
     let formattedChildren = [];
+    // Format children
     for (const childDoc of children) {
       // Is a direct child ?
       if (childDoc.parent === doc.id) {
         formattedChildren.push(childDoc);
       }
-      // Is a sub-child ?
+    }
+    // Format grand children
+    for (const grandChildDoc of grandChildren) {
       const childIdx = formattedChildren.findIndex(
-        (c) => c.id === childDoc.parent,
+        (c) => c.id === grandChildDoc.parent,
       );
       if (childIdx !== -1) {
         const alreadyPickedChild = formattedChildren[childIdx];
         if (alreadyPickedChild.children) {
-          alreadyPickedChild.children.push(childDoc);
+          alreadyPickedChild.children.push(grandChildDoc);
         } else {
-          alreadyPickedChild.children = [childDoc];
+          alreadyPickedChild.children = [grandChildDoc];
         }
       }
     }
