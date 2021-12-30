@@ -153,6 +153,7 @@ const getConvertedNameDescLocEntranceFromCsv = async (rawData, authorId) => {
           func: iso2ToIso3,
         }),
         dateInscription: doubleCheck({
+          key: 'dct:rights/dct:created',
           defaultValue: new Date(),
         }),
         dateReviewed: doubleCheck({
@@ -259,12 +260,10 @@ const getConvertedNameAndDescCaveFromCsv = (rawData, authorId) => {
     name: doubleCheck({
       key: 'rdfs:label',
     }),
-    descriptionAndNameLanguage: {
-      id: doubleCheck({
-        key: 'karstlink:hasDescriptionDocument/dc:language',
-        func: (value) => value.toLowerCase(),
-      }),
-    },
+    language: doubleCheck({
+      key: 'karstlink:hasDescriptionDocument/dc:language',
+      func: (value) => iso2ToIso3(value).toLowerCase(),
+    }),
     dateInscription: doubleCheck({
       key: 'dct:rights/dct:created',
       defaultValue: new Date(),
@@ -808,7 +807,7 @@ module.exports = {
       });
     if (!hasRight) {
       return res.forbidden(
-        'You are not authorized to import entraces via CSV.',
+        'You are not authorized to import entrances via CSV.',
       );
     }
 
@@ -839,14 +838,8 @@ module.exports = {
           const authorId = await sails.helpers.csvhelpers.getAuthor(data);
           //Cave creation
           const dataCave = getConvertedCaveFromCsv(data, authorId);
-          const dataNameAndDesc = getConvertedNameAndDescCaveFromCsv(
-            data,
-            authorId,
-          );
-          const caveCreated = await CaveService.createCave(
-            dataCave,
-            dataNameAndDesc,
-          );
+          const nameData = getConvertedNameAndDescCaveFromCsv(data, authorId);
+          const caveCreated = await CaveService.createCave(dataCave, nameData);
 
           //Entrance creation
           const dataEntrance = getConvertedEntranceFromCsv(
