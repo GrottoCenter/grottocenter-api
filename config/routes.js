@@ -91,20 +91,8 @@ module.exports.routes = {
     'v1/Entrance.unlinkDocument',
   'GET /api/v1/entrances/count': 'v1/Entrance.count',
   'GET /api/v1/entrances/findRandom': 'v1/Entrance.findRandom',
-  'GET /api/v1/entrances/publicCount': {
-    controller: 'v1/Entrance',
-    action: 'publicCount',
-    cors: {
-      allowOrigins: '*',
-    },
-  },
-  'GET /api/v1/entrances/:id': {
-    controller: 'v1/Entrance',
-    action: 'find',
-    cors: {
-      allowOrigins: '*',
-    },
-  },
+  'GET /api/v1/entrances/publicCount': 'v1/Entrance.publicCount',
+  'GET /api/v1/entrances/:id': 'v1/Entrance.find',
   'POST /api/v1/entrances': 'v1/Entrance.create',
   'POST /api/v1/entrances/check-rows': 'v1/Entrance.checkRows',
   'POST /api/v1/entrances/import-rows': 'v1/Entrance.importRows',
@@ -150,9 +138,6 @@ module.exports.routes = {
     api: {
       entity: 'grotto',
     },
-    cors: {
-      allowOrigins: '*',
-    },
   },
   'POST /api/v1/organizations': 'v1/Grotto.create',
   'PUT /api/v1/organizations/:id': 'v1/Grotto.update',
@@ -164,9 +149,6 @@ module.exports.routes = {
     action: 'find',
     api: {
       entity: 'massif',
-    },
-    cors: {
-      allowOrigins: '*',
     },
   },
   'POST /api/v1/massifs': 'v1/Massif.create',
@@ -206,9 +188,6 @@ module.exports.routes = {
     api: {
       entity: 'subject',
     },
-    cors: {
-      allowOrigins: '*',
-    },
   },
   'GET /api/v1/documents/subjects/:code': {
     controller: 'v1/Subject',
@@ -217,18 +196,12 @@ module.exports.routes = {
     api: {
       entity: 'subject',
     },
-    cors: {
-      allowOrigins: '*',
-    },
   },
   'POST /api/v1/documents/subjects/search/logical/or': {
     controller: 'v1/Subject',
     action: 'search',
     api: {
       entity: 'subject',
-    },
-    cors: {
-      allowOrigins: '*',
     },
   },
 
@@ -239,9 +212,6 @@ module.exports.routes = {
     api: {
       entity: 'identifierType',
     },
-    cors: {
-      allowOrigins: '*',
-    },
   },
 
   /* Region controller */
@@ -250,9 +220,6 @@ module.exports.routes = {
     action: 'search',
     api: {
       entity: 'region',
-    },
-    cors: {
-      allowOrigins: '*',
     },
   },
 
@@ -264,65 +231,34 @@ module.exports.routes = {
   'GET /api/rss/:language': 'Rss.getFeed',
 
   /* Geo localisation controller */
-  'GET /api/v1/geoloc/countEntries': {
-    controller: 'v1/GeoLoc',
-    action: 'countEntries',
-    cors: {
-      allowOrigins: '*',
-    },
-  },
-  'GET /api/v1/geoloc/caves': {
-    controller: 'v1/GeoLoc',
-    action: 'findCaves',
-    cors: {
-      allowOrigins: '*',
-    },
-  },
-  'GET /api/v1/geoloc/cavesCoordinates': {
-    controller: 'v1/GeoLoc',
-    action: 'findCavesCoordinates',
-    cors: {
-      allowOrigins: '*',
-    },
-  },
-  'GET /api/v1/geoloc/grottos': {
-    controller: 'v1/GeoLoc',
-    action: 'findGrottos',
-    cors: {
-      allowOrigins: '*',
-    },
-  },
-  'GET /api/v1/geoloc/entrances': {
-    controller: 'v1/GeoLoc',
-    action: 'findEntrances',
-    cors: {
-      allowOrigins: '*',
-    },
-  },
-  'GET /api/v1/geoloc/entrancesCoordinates': {
-    controller: 'v1/GeoLoc',
-    action: 'findEntrancesCoordinates',
-    cors: {
-      allowOrigins: '*',
-    },
-  },
+  'GET /api/v1/geoloc/countEntrances': 'v1/GeoLoc.countEntrances',
+  'GET /api/v1/geoloc/entrances': 'v1/GeoLoc.findEntrances',
+  'GET /api/v1/geoloc/entrancesCoordinates':
+    'v1/GeoLoc.findEntrancesCoordinates',
+  'GET /api/v1/geoloc/networks': 'v1/GeoLoc.findNetworks',
+  'GET /api/v1/geoloc/networksCoordinates': 'v1/GeoLoc.findNetworksCoordinates',
+  'GET /api/v1/geoloc/organizations': 'v1/GeoLoc.findGrottos',
+
+  /**
+   * @deprecated use geoloc/countEntrances instead
+   */
+  'GET /api/v1/geoloc/countEntries': 'v1/GeoLoc.countEntrances',
+  /**
+   * @deprecated use geoloc/organizations instead
+   */
+  'GET /api/v1/geoloc/grottos': 'v1/GeoLoc.findGrottos',
+  /**
+   * @deprecated use geoloc/networks instead
+   */
+  'GET /api/v1/geoloc/caves': 'v1/GeoLoc.findNetworks',
+  /**
+   * @deprecated use geoloc/networksCoordinates instead
+   */
+  'GET /api/v1/geoloc/cavesCoordinates': 'v1/GeoLoc.findNetworksCoordinates',
 
   /* Search controller*/
-  'POST /api/v1/search': {
-    controller: 'v1/Search',
-    action: 'search',
-    cors: {
-      allowOrigins: '*',
-    },
-  },
-
-  'POST /api/v1/advanced-search': {
-    controller: 'v1/Search',
-    action: 'advancedSearch',
-    cors: {
-      allowOrigins: '*',
-    },
-  },
+  'POST /api/v1/search': 'v1/Search.search',
+  'POST /api/v1/advanced-search': 'v1/Search.advancedSearch',
 
   /* Language controller */
   'GET /api/v1/languages/:id': {
@@ -330,9 +266,6 @@ module.exports.routes = {
     action: 'find',
     api: {
       entity: 'language',
-    },
-    cors: {
-      allowOrigins: '*',
     },
   },
 
@@ -342,22 +275,13 @@ module.exports.routes = {
     api: {
       entity: 'language',
     },
-    cors: {
-      allowOrigins: '*',
-    },
   },
 
   /* Users controller */
   'GET /api/v1/cavers/:caverId/documents': 'v1/Document.findByCaverId',
 
   /* Convert controller */
-  'GET /api/convert': {
-    controller: 'ConvertController',
-    action: 'convert',
-    cors: {
-      allowOrigins: '*',
-    },
-  },
+  'GET /api/convert': 'ConvertController.convert',
 
   /* License controller */
   'GET /api/v1/licenses': 'v1/License.findAll',

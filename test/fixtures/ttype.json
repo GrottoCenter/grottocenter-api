@@ -33,7 +33,7 @@
   },
   {
     "id": 5,
-    "name": "InteractiveResource",
+    "name": "Interactive Resource",
     "comment": "A resource requiring interaction from the user to be understood, executed, or experienced",
     "isAvailable": false,
     "parent": null,
@@ -41,7 +41,7 @@
   },
   {
     "id": 6,
-    "name": "MovingImage",
+    "name": "Moving Image",
     "comment": "A series of visual representations imparting an impression of motion when shown in succession",
     "isAvailable": false,
     "parent": null,
@@ -49,7 +49,7 @@
   },
   {
     "id": 7,
-    "name": "PhysicalObject",
+    "name": "Physical Object",
     "comment": "An inanimate, three-dimensional object or substance",
     "isAvailable": false,
     "parent": null,
@@ -81,7 +81,7 @@
   },
   {
     "id": 11,
-    "name": "StillImage",
+    "name": "Still Image",
     "comment": "A static visual representation including paintings, drawings, graphic designs, plans and maps",
     "isAvailable": false,
     "parent": 4,
@@ -97,7 +97,7 @@
   },
   {
     "id": 13,
-    "name": "TopographicDrawing",
+    "name": "Topographic Drawing",
     "comment": "A visual representation of a topography",
     "isAvailable": false,
     "parent": 11,
@@ -105,7 +105,7 @@
   },
   {
     "id": 14,
-    "name": "TopographicData",
+    "name": "Topographic Data",
     "comment": "Topographic data encoded in a defined structure",
     "isAvailable": true,
     "parent": 2,
@@ -142,5 +142,13 @@
     "isAvailable": false,
     "parent": 11,
     "url": "http://id.loc.gov/vocabulary/marcgt/map"
+  },
+  {
+    "id": 20,
+    "name": "Authorization To Publish",
+    "comment": "Document attesting to the authorization to publish other documents under a defined licence",
+    "isAvailable": true,
+    "parent": null,
+    "url": "https://ontology.uis-speleo.org/ontology/#AutorizationToPublish"
   }
 ]
