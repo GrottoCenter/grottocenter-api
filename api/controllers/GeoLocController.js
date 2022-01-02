@@ -89,9 +89,6 @@ module.exports = {
         southWestBound,
         northEastBound,
       );
-      if (!result) {
-        return res.json({ count: 0 });
-      }
       return res.json({ count: result });
     } catch (e) {
       ErrorService.getDefaultErrorHandler(res)(e);
