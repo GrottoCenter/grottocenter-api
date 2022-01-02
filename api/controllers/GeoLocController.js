@@ -47,7 +47,7 @@ const checkAndGetCoordinatesParams = (req) => {
       }
       if (
         param.key.endsWith('lng') &&
-        (param.value < -180 || param.value > 80)
+        (param.value < -180 || param.value > 180)
       ) {
         errors.push(
           param.name +
