@@ -41,6 +41,7 @@ before(function(done) {
           'tlicense',
           'toption',
           'tcomment',
+          'tfile',
         ],
         function(err) {
           if (err) {
