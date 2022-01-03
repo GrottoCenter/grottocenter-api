@@ -40,6 +40,7 @@ before(function(done) {
           'tfileformat',
           'tlicense',
           'toption',
+          'tcomment',
         ],
         function(err) {
           if (err) {
