@@ -1,5 +1,4 @@
 let should = require('should');
-const ElasticSearchService = require('../../../api/services/ElasticsearchService');
 
 describe('ElasticsearchService', () => {
   describe('sanitizeQuery()', () => {
