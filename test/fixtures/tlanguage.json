@@ -1,6 +1,7 @@
 [
   {
     "id": "fra",
+    "isPrefered": true,
     "part2b": "fre",
     "part2t": "fra",
     "part1": "fr",
@@ -10,11 +11,22 @@
   },
   {
     "id": "eng",
+    "isPrefered": true,
     "part2b": "eng",
     "part2t": "eng",
     "part1": "en",
     "scope": "I",
     "type": "L",
     "refName": "English"
+  },
+  {
+    "id": "bod",
+    "isPrefered": false,
+    "part2b": "tib",
+    "part2t": "bod",
+    "part1": "bo",
+    "scope": "I",
+    "type": "L",
+    "refName": "Tibetan"
   }
 ]
