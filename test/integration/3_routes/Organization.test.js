@@ -52,4 +52,19 @@ describe('Grotto features', () => {
         });
     });
   });
+  describe('count', () => {
+    it('should return code 200', (done) => {
+      supertest(sails.hooks.http.app)
+        .get('/api/v1/organizations/count')
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(200)
+        .end((err, res) => {
+          if (err) return done(err);
+          const { body } = res;
+          should(body.count).equal(2);
+          return done();
+        });
+    });
+  });
 });
