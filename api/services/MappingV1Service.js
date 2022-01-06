@@ -524,34 +524,40 @@ module.exports = {
     return res;
   },
 
-  // ---------------- Massif Function ------------------------------
+  // ---------------- Massif Mapping ------------------------------
 
   convertToMassifModel: (source) => {
     const result = {
       ...MassifModel,
     };
 
+    result.id = source.id;
+    result['@id'] = String(source.id);
+    result.author = source.author;
+    result.dateInscription = source.dateInscription;
+    result.dateReviewed = source.dateReviewed;
+    result.name = MappingV1Service.getMainName(source);
+    result.names = source.names;
+    result.reviewer = source.reviewer;
+
     if (source.author) {
       result.author = MappingV1Service.convertToCaverModel(source.author);
     }
 
-    // Caves (from DB)
+    // Entrances from caves (from DB)
     if (source.caves) {
-      result.caves = MappingV1Service.convertToCaveList(source.caves);
+      let entrances = [];
+      for (const cave of source.caves) {
+        entrances = entrances.concat(
+          MappingV1Service.convertToEntranceList(cave.entrances),
+        );
+      }
+      result.entrances = entrances;
     }
 
     // Nb caves & entrances (from ES)
     result.nbCaves = ramda.pathOr(undefined, ['nb caves'], source);
     result.nbEntrances = ramda.pathOr(undefined, ['nb entrances'], source);
-
-    result.id = source.id;
-    result['@id'] = String(source.id);
-    result.author = source.author;
-    result.name = MappingV1Service.getMainName(source);
-    result.names = source.names;
-    result.dateInscription = source.dateInscription;
-    result.dateReviewed = source.dateReviewed;
-    result.reviewer = source.reviewer;
 
     if (source.descriptions instanceof Array) {
       result.descriptions = MappingV1Service.convertToDescriptionList(
@@ -564,7 +570,7 @@ module.exports = {
     return result;
   },
 
-  // ---------------- Grotto Function ---------------------------
+  // ---------------- Organization Mapping ---------------------------
 
   convertToOrganizationModel: (source) => {
     const result = {
@@ -617,7 +623,7 @@ module.exports = {
     return result;
   },
 
-  // ---------------- Document Function ---------------------------
+  // ---------------- Document Mapping ---------------------------
 
   convertToFileModel: (source) => {
     const { container, linkAccount } = FileService.getAzureData();

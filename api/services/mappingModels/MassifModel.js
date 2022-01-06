@@ -4,7 +4,7 @@ module.exports = {
   '@id': undefined,
   '@type': 'http://purl.org/dc/terms/Massif',
   author: undefined,
-  caves: [],
+  entrances: [],
   dateInscription: undefined,
   dateReviewed: undefined,
   descriptions: [],
