@@ -555,6 +555,11 @@ module.exports = {
       result.entrances = entrances;
     }
 
+    // Networks (from DB)
+    if (source.networks) {
+      result.networks = MappingV1Service.convertToCaveList(source.networks);
+    }
+
     // Nb caves & entrances (from ES)
     result.nbCaves = ramda.pathOr(undefined, ['nb caves'], source);
     result.nbEntrances = ramda.pathOr(undefined, ['nb entrances'], source);
