@@ -7,38 +7,47 @@
 const ramda = require('ramda');
 
 module.exports = {
-  find: (req, res, next, converter = MappingV1Service.convertToMassifModel) => {
-    TMassif.findOne(req.params.id)
-      .populate('author')
-      .populate('caves')
-      .populate('names')
-      .populate('descriptions')
-      .exec((err, found) => {
-        const params = {};
-        params.searchedItem = `Massif of id ${req.params.id}`;
-        if (!found) {
-          const notFoundMessage = `${params.searchedItem} not found`;
-          sails.log.debug(notFoundMessage);
-          return res.status(404).send(notFoundMessage);
-        }
-        CaveService.setEntrances(found.caves).then(
-          (cavesEntrancesPopulated) => {
-            NameService.setNames(cavesEntrancesPopulated, 'cave').then(
-              (cavesPopulated) => {
-                found.caves = cavesPopulated;
-                return ControllerService.treatAndConvert(
-                  req,
-                  err,
-                  found,
-                  params,
-                  res,
-                  converter,
-                );
-              },
-            );
-          },
-        );
-      });
+  find: async (
+    req,
+    res,
+    next,
+    converter = MappingV1Service.convertToMassifModel,
+  ) => {
+    try {
+      const massif = await TMassif.findOne(req.params.id)
+        .populate('author')
+        .populate('caves')
+        .populate('names')
+        .populate('descriptions');
+      const params = {};
+      params.searchedItem = `Massif of id ${req.params.id}`;
+      if (!massif) {
+        const notFoundMessage = `${params.searchedItem} not found`;
+        sails.log.debug(notFoundMessage);
+        return res.status(404).send(notFoundMessage);
+      }
+
+      // Populate caves entrances
+      await CaveService.setEntrances(massif.caves);
+      for (const cave of massif.caves) {
+        await NameService.setNames(cave.entrances, 'entrance');
+      }
+
+      // Populate networks
+      await MassifService.setNetworks(massif);
+      await NameService.setNames(massif.networks, 'cave');
+
+      return ControllerService.treatAndConvert(
+        req,
+        null,
+        massif,
+        params,
+        res,
+        converter,
+      );
+    } catch (e) {
+      ErrorService.getDefaultErrorHandler(res)(e);
+    }
   },
 
   delete: async (req, res) => {
