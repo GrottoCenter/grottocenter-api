@@ -7,14 +7,14 @@ module.exports = {
    * @returns {Promise} the caves with their attribute "entrances" completed
    */
   setEntrances: async (caves) => {
-    return Promise.all(
-      caves.map(async (cave) => {
-        cave.entrances = await TEntrance.find().where({
-          cave: cave.id,
-        });
-        return cave;
-      }),
-    );
+    const entrances = await TEntrance.find().where({
+      cave: {
+        in: caves.map((c) => c.id),
+      },
+    });
+    for (const cave of caves) {
+      cave.entrances = entrances.filter((e) => e.cave === cave.id);
+    }
   },
 
   /**

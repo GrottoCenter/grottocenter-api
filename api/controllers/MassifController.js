@@ -26,8 +26,13 @@ module.exports = {
         sails.log.debug(notFoundMessage);
         return res.status(404).send(notFoundMessage);
       }
+
+      // Populate entrances
       await CaveService.setEntrances(massif.caves);
-      await NameService.setNames(massif.caves, 'cave');
+      for (const cave of massif.caves) {
+        await NameService.setNames(cave.entrances, 'entrance');
+      }
+
       return ControllerService.treatAndConvert(
         req,
         null,
