@@ -27,11 +27,15 @@ module.exports = {
         return res.status(404).send(notFoundMessage);
       }
 
-      // Populate entrances
+      // Populate caves entrances
       await CaveService.setEntrances(massif.caves);
       for (const cave of massif.caves) {
         await NameService.setNames(cave.entrances, 'entrance');
       }
+
+      // Populate networks
+      await MassifService.setNetworks(massif);
+      await NameService.setNames(massif.networks, 'cave');
 
       return ControllerService.treatAndConvert(
         req,

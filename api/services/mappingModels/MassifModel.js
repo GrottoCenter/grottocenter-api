@@ -10,5 +10,6 @@ module.exports = {
   descriptions: [],
   id: undefined,
   name: undefined,
+  networks: [],
   reviewer: undefined,
 };
