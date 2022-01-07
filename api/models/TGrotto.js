@@ -170,7 +170,7 @@ module.exports = {
       through: 'JGrottoCaveExplorer',
     },
 
-    partneredCaves: {
+    partnerCaves: {
       collection: 'TCave',
       via: 'grotto',
       through: 'JGrottoCavePartner',

@@ -37,7 +37,7 @@ module.exports = {
         .populate('names')
         .populate('cavers')
         .populate('exploredCaves')
-        .populate('partneredCaves');
+        .populate('partnerCaves');
       if (!organization) {
         const message = `Organization of id ${req.params.id} not found.`;
         sails.log.error(message);

@@ -3,16 +3,16 @@ const ramda = require('ramda');
 module.exports = {
   populateOrganization: async (organization) => {
     await CaveService.setEntrances(organization.exploredCaves);
-    await CaveService.setEntrances(organization.partneredCaves);
+    await CaveService.setEntrances(organization.partnerCaves);
     await NameService.setNames(organization.exploredCaves, 'cave');
-    await NameService.setNames(organization.partneredCaves, 'cave');
+    await NameService.setNames(organization.partnerCaves, 'cave');
     await NameService.setNames([organization], 'grotto');
 
     // Split caves between entrances and networks
     const exploredEntrances = [];
     const exploredNetworks = [];
-    const partneredEntrances = [];
-    const partneredNetworks = [];
+    const partnerEntrances = [];
+    const partnerNetworks = [];
     for (const cave of organization.exploredCaves) {
       if (cave.entrances.length > 1) {
         exploredNetworks.push(cave);
@@ -21,26 +21,26 @@ module.exports = {
         exploredEntrances.push(cave.entrances.pop());
       }
     }
-    for (const cave of organization.partneredCaves) {
+    for (const cave of organization.partnerCaves) {
       if (cave.entrances.length > 1) {
-        partneredNetworks.push(cave);
+        partnerNetworks.push(cave);
       }
       if (cave.entrances.length === 1) {
-        partneredEntrances.push(cave.entrances.pop());
+        partnerEntrances.push(cave.entrances.pop());
       }
     }
 
     // Set Entrances names
     await NameService.setNames([exploredEntrances], 'entrance');
-    await NameService.setNames([partneredEntrances], 'entrance');
+    await NameService.setNames([partnerEntrances], 'entrance');
 
     // Format organization
     delete organization.exploredCaves;
-    delete organization.partneredCaves;
+    delete organization.partnerCaves;
     organization.exploredEntrances = exploredEntrances;
     organization.exploredNetworks = exploredNetworks;
-    organization.partneredEntrances = partneredEntrances;
-    organization.partneredNetworks = partneredNetworks;
+    organization.partnerEntrances = partnerEntrances;
+    organization.partnerNetworks = partnerNetworks;
   },
   /**
    *
