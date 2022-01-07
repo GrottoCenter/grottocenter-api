@@ -27,7 +27,7 @@ const ORGANIZATION_PROPERTIES = [
 ];
 
 describe('Grotto features', () => {
-  describe('find()', () => {
+  describe('Find', () => {
     it('should return code 404', (done) => {
       supertest(sails.hooks.http.app)
         .get('/api/v1/organizations/987654321')
@@ -52,7 +52,8 @@ describe('Grotto features', () => {
         });
     });
   });
-  describe('count', () => {
+
+  describe('Count', () => {
     it('should return code 200', (done) => {
       supertest(sails.hooks.http.app)
         .get('/api/v1/organizations/count')
@@ -61,8 +62,7 @@ describe('Grotto features', () => {
         .expect(200)
         .end((err, res) => {
           if (err) return done(err);
-          const { body } = res;
-          should(body.count).equal(2);
+          res.body.should.deepEqual({ count: 2 });
           return done();
         });
     });
