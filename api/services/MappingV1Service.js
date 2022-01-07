@@ -613,7 +613,7 @@ module.exports = {
       result.nbCavers = ramda.pathOr(undefined, ['nb cavers'], source);
     }
 
-    // Convert explored / partnered entrances and networks
+    // Convert explored / partner entrances and networks
     if (source.exploredEntrances instanceof Array) {
       result.exploredEntrances = MappingV1Service.convertToEntranceList(
         source.exploredEntrances,
@@ -624,14 +624,14 @@ module.exports = {
         source.exploredNetworks,
       );
     }
-    if (source.partneredEntrances instanceof Array) {
-      result.partneredEntrances = MappingV1Service.convertToEntranceList(
-        source.partneredEntrances,
+    if (source.partnerEntrances instanceof Array) {
+      result.partnerEntrances = MappingV1Service.convertToEntranceList(
+        source.partnerEntrances,
       );
     }
-    if (source.partneredNetworks instanceof Array) {
-      result.partneredNetworks = MappingV1Service.convertToCaveList(
-        source.partneredNetworks,
+    if (source.partnerNetworks instanceof Array) {
+      result.partnerNetworks = MappingV1Service.convertToCaveList(
+        source.partnerNetworks,
       );
     }
 

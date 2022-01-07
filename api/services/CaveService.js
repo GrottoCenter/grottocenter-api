@@ -110,7 +110,7 @@ module.exports = {
         partneringGrottos: destinationPartners,
       } = destinationCave;
 
-      // Update explored / partnered caves only if not already explored / partnered by the destination cave.
+      // Update explored / partner caves only if not already explored / partner by the destination cave.
       for (const sourceExp of sourceExplorers) {
         if (!destinationExplorers.some((g) => g.id === sourceExp.id)) {
           await TCave.addToCollection(
