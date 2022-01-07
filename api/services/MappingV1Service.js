@@ -582,27 +582,6 @@ module.exports = {
       ...OrganizationModel,
     };
 
-    // Convert cavers
-    if (source.cavers instanceof Array) {
-      result.cavers = source.cavers.map((caver) =>
-        MappingV1Service.convertToCaverModel(caver),
-      );
-    } else {
-      result.nbCavers = ramda.pathOr(undefined, ['nb cavers'], source);
-    }
-
-    // Convert caves
-    if (source.exploredCaves instanceof Array) {
-      result.exploredCaves = MappingV1Service.convertToCaveList(
-        source.exploredCaves,
-      );
-    }
-    if (source.partneredCaves instanceof Array) {
-      result.partneredCaves = MappingV1Service.convertToCaveList(
-        source.partneredCaves,
-      );
-    }
-
     result.id = source.id;
     result['@id'] = String(source.id);
     result.address = source.address;
@@ -624,6 +603,37 @@ module.exports = {
     result.url = source.url;
     result.village = source.village;
     result.yearBirth = source.yearBirth;
+
+    // Convert cavers
+    if (source.cavers instanceof Array) {
+      result.cavers = source.cavers.map((caver) =>
+        MappingV1Service.convertToCaverModel(caver),
+      );
+    } else {
+      result.nbCavers = ramda.pathOr(undefined, ['nb cavers'], source);
+    }
+
+    // Convert explored / partnered entrances and networks
+    if (source.exploredEntrances instanceof Array) {
+      result.exploredEntrances = MappingV1Service.convertToEntranceList(
+        source.exploredEntrances,
+      );
+    }
+    if (source.exploredNetworks instanceof Array) {
+      result.exploredNetworks = MappingV1Service.convertToCaveList(
+        source.exploredNetworks,
+      );
+    }
+    if (source.partneredEntrances instanceof Array) {
+      result.partneredEntrances = MappingV1Service.convertToEntranceList(
+        source.partneredEntrances,
+      );
+    }
+    if (source.partneredNetworks instanceof Array) {
+      result.partneredNetworks = MappingV1Service.convertToCaveList(
+        source.partneredNetworks,
+      );
+    }
 
     return result;
   },
