@@ -45,17 +45,7 @@ module.exports = {
       }
       const params = {};
       params.searchedItem = `Organization of id ${req.params.id}`;
-      try {
-        await CaveService.setEntrances(organization.exploredCaves);
-        await CaveService.setEntrances(organization.partneredCaves);
-        await NameService.setNames(organization.exploredCaves, 'cave');
-        await NameService.setNames(organization.partneredCaves, 'cave');
-        await NameService.setNames([organization], 'grotto');
-      } catch (e) {
-        const message = `An internal server error occurred when trying to get information about organization of id ${req.params.id}`;
-        sails.log.error(message + ': ' + e.message);
-        return res.status(500).send({ message });
-      }
+      await GrottoService.populateOrganization(organization);
       return ControllerService.treatAndConvert(
         req,
         null,
