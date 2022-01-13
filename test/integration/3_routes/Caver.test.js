@@ -14,8 +14,6 @@ const CAVER_PROPERTIES = [
   'surname',
 ];
 
-const COMPLETE_CAVER_PROPERTIES = ['mail'];
-
 describe('Caver features', () => {
   let userToken, adminToken;
   before(async () => {
@@ -60,10 +58,7 @@ describe('Caver features', () => {
           if (err) return done(err);
           const { body: caver } = res;
           sails.log.error(caver);
-          should(caver).have.properties([
-            ...CAVER_PROPERTIES,
-            ...COMPLETE_CAVER_PROPERTIES,
-          ]);
+          should(caver).have.properties(CAVER_PROPERTIES);
           should(caver.nickname).not.be.empty();
           return done();
         });
