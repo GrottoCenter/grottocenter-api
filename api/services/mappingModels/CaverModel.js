@@ -5,8 +5,10 @@ module.exports = {
   '@type': 'http://xmlns.com/foaf/0.1/Person',
   id: undefined,
   groups: [],
-  mail: undefined,
   name: undefined,
   nickname: undefined,
   surname: undefined,
+  // Mail and password should not be returned (RGPD)
+  // mail: undefined,
+  // password: undefined,
 };
