@@ -264,7 +264,6 @@ module.exports = {
     result.nickname = source.nickname;
     result.surname = source.surname;
     result.name = source.name;
-    result.mail = source.mail;
 
     if (source.groups) {
       if (source.groups instanceof Array) {
@@ -502,7 +501,8 @@ module.exports = {
           case 'caver':
             data.surname = item['_source'].surname;
             data.nickname = item['_source'].nickname;
-            data.mail = item['_source'].mail;
+          // Don't return mail (RGPD)
+          // data.mail = item['_source'].mail;
 
           case 'cave':
           case 'network':
@@ -656,7 +656,6 @@ module.exports = {
     // Conversion (from Elasticsearch or not)
     result.id = source.id;
     result['@id'] = String(source.id);
-    result.author = source.author;
     result.authorComment = source.authorComment;
     result.authorizationDocument = source.authorizationDocument
       ? module.exports.convertToDocumentModel(source.authorizationDocument)
@@ -692,6 +691,11 @@ module.exports = {
     result.title = source.title;
     result.validationComment = source.validationComment;
     result.validator = source.validator;
+
+    result.author =
+      source.author instanceof Object
+        ? MappingV1Service.convertToCaverModel(source.author)
+        : undefined;
 
     // source.descriptions contains both title and descriptions (in .title and .body)
     // Split them in 2 different attributes
