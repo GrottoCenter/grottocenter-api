@@ -777,6 +777,28 @@ module.exports = {
           nameDbImport: nameDb,
         });
         if (result.length > 0) {
+          // Create a duplicate in table TDuplicateEntrance
+
+          //Author retrieval : create one if not present in db
+          const authorId = await sails.helpers.csvhelpers.getAuthor(row);
+          const cave = await TCave.findOne(result[0].cave);
+          const entrance = getConvertedEntranceFromCsv(row, authorId, cave);
+          const dataNameDescLoc = await getConvertedNameDescLocEntranceFromCsv(
+            row,
+            authorId,
+          );
+
+          const duplicateContent = {
+            entrance: entrance,
+            nameDescLoc: dataNameDescLoc,
+          };
+
+          await DuplicateEntranceService.create(
+            req.token.id,
+            duplicateContent,
+            result[0].id,
+          );
+
           wontBeCreated.push({
             line: index + 2,
           });
