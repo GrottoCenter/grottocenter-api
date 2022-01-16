@@ -644,6 +644,147 @@ module.exports = {
     }
   },
 
+  updateWithNewEntities: async (req, res, converter) => {
+    // Check right
+    const hasRight = await sails.helpers.checkRight
+      .with({
+        groups: req.token.groups,
+        rightEntity: RightService.RightEntities.ENTRANCE,
+        rightAction: RightService.RightActions.EDIT_ANY,
+      })
+      .intercept('rightNotFound', (err) => {
+        return res.serverError(
+          'A server error occured when checking your right to update an entrance.',
+        );
+      });
+    if (!hasRight) {
+      return res.forbidden('You are not authorized to update an entrance.');
+    }
+
+    // Check if entrance exists
+    const entranceId = req.param('id');
+    const currentEntrance = await TEntrance.findOne(entranceId);
+    if (!currentEntrance) {
+      return res.status(404).send({
+        message: `Entrance of id ${entranceId} not found.`,
+      });
+    }
+
+    const {
+      entrance,
+      newNames,
+      newDescriptions,
+      newLocations,
+      newRiggings,
+      newComments,
+    } = req.body;
+
+    const cleanedData = {
+      ...entrance,
+      id: entranceId,
+    };
+
+    const checkForEmptiness = (value) => value && !ramda.isEmpty(value);
+
+    if (checkForEmptiness(newNames)) {
+      const createdNames = await Promise.all(
+        newNames.map((name) =>
+          TName.create({
+            ...name,
+            entrance: entranceId,
+          }),
+        ),
+      );
+      const createdNamesIds = createdNames.map((name) => name.id);
+      cleanedData.names = ramda.concat(cleanedData.names, createdNamesIds);
+    }
+
+    if (checkForEmptiness(newDescriptions)) {
+      const createdDescriptions = await Promise.all(
+        newDescriptions.map((desc) =>
+          TDescription.create({
+            ...desc,
+            entrance: entranceId,
+          }),
+        ),
+      );
+      const createdDescriptionsIds = createdDescriptions.map((desc) => desc.id);
+      cleanedData.descriptions = ramda.concat(
+        cleanedData.descriptions,
+        createdDescriptionsIds,
+      );
+    }
+
+    if (checkForEmptiness(newLocations)) {
+      const createdLoc = await Promise.all(
+        newLocations.map((loc) =>
+          TLocation.create({
+            ...loc,
+            entrance: entranceId,
+          }),
+        ),
+      );
+      const createdLocIds = createdLoc.map((loc) => loc.id);
+      cleanedData.locations = ramda.concat(
+        cleanedData.locations,
+        createdLocIds,
+      );
+    }
+
+    if (checkForEmptiness(newRiggings)) {
+      const createdRiggings = await Promise.all(
+        newRiggings.map((rig) =>
+          TRigging.create({
+            ...rig,
+            entrance: entranceId,
+          }),
+        ),
+      );
+      const createdRiggingsIds = createdRiggings.map((rig) => rig.id);
+      cleanedData.riggings = ramda.concat(
+        cleanedData.riggings,
+        createdRiggingsIds,
+      );
+    }
+
+    if (checkForEmptiness(newComments)) {
+      const createdComments = await Promise.all(
+        newComments.map((comment) => TComment.create(comment)),
+      );
+      const createdCommentIds = createdComments.map((comment) => comment.id);
+      cleanedData.comments = ramda.concat(
+        cleanedData.comments,
+        createdCommentIds,
+      );
+    }
+
+    // Launch update request using transaction: it performs a rollback if an error occurs
+    try {
+      await sails.getDatastore().transaction(async (db) => {
+        const updatedEntrance = await TEntrance.updateOne({
+          id: entranceId,
+        })
+          .set(cleanedData)
+          .usingConnection(db);
+
+        await NameService.setNames([updatedEntrance], 'entrance');
+
+        const params = {};
+        params.controllerMethod = 'EntranceController.update';
+        return ControllerService.treatAndConvert(
+          req,
+          null,
+          updatedEntrance,
+          params,
+          res,
+          converter,
+        );
+      });
+    } catch (e) {
+      ErrorService.getDefaultErrorHandler(res)(e);
+    }
+  },
+
   addDocument: async (req, res) => {
     // Check right
     const hasRight = await sails.helpers.checkRight

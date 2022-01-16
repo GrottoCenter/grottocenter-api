@@ -9,6 +9,7 @@ const getCountryISO3 = require('country-iso-2-to-3');
 const ramda = require('ramda');
 const DescriptionService = require('../services/DescriptionService');
 const DocumentService = require('../services/DocumentService');
+const DuplicateDocumentService = require('../services/DuplicateDocumentService');
 const ErrorService = require('../services/ErrorService');
 
 // Tool methods
@@ -391,7 +392,7 @@ const getConvertedLangDescDocumentFromCsv = (rawData, authorId) => {
     documentMainLanguage: {
       id: doubleCheck({
         key: 'dc:language',
-        func: (value) => value.toLowerCase(),
+        func: (value) => iso2ToIso3(value).toLowerCase(),
       }),
     },
     titleAndDescriptionLanguage: {
@@ -573,6 +574,79 @@ module.exports = {
     } catch (e) {
       ErrorService.getDefaultErrorHandler(res)(e);
     }
+  },
+
+  updateWithNewEntities: async (req, res) => {
+    const hasRight = await sails.helpers.checkRight
+      .with({
+        groups: req.token.groups,
+        rightEntity: RightService.RightEntities.DOCUMENT,
+        rightAction: RightService.RightActions.EDIT_ANY,
+      })
+      .intercept('rightNotFound', (err) => {
+        return res.serverError(
+          'A server error occured when checking your right to update a document.',
+        );
+      });
+
+    if (!hasRight) {
+      return res.forbidden('You are not authorized to update a document.');
+    }
+
+    // Check if entrance exists
+    const documentId = req.param('id');
+    const currentDocument = await TDocument.findOne(documentId);
+    if (!currentDocument) {
+      return res.status(404).send({
+        message: `Entrance of id ${documentId} not found.`,
+      });
+    }
+
+    const { document, newAuthors, newDescriptions } = req.body;
+
+    const cleanedData = {
+      ...document,
+      id: documentId,
+    };
+
+    const checkForEmptiness = (value) => value && !ramda.isEmpty(value);
+
+    if (checkForEmptiness(newAuthors)) {
+      const createdAuthors = await Promise.all(
+        newAuthors.map((author) =>
+          TCaver.create({
+            ...author,
+            documents: [documentId],
+          }),
+        ),
+      );
+      const createdAuthorsIds = createdAuthors.map((author) => author.id);
+      cleanedData.authors = ramda.concat(
+        cleanedData.authors,
+        createdAuthorsIds,
+      );
+    }
+
+    if (checkForEmptiness(newDescriptions)) {
+      const createdDescriptions = await Promise.all(
+        newDescriptions.map((desc) =>
+          TDescription.create({
+            ...desc,
+            document: documentId,
+          }),
+        ),
+      );
+      const createdDescriptionsIds = createdDescriptions.map((desc) => desc.id);
+      cleanedData.descriptions = ramda.concat(
+        cleanedData.descriptions,
+        createdDescriptionsIds,
+      );
+    }
+    const updatedDocument = await TDocument.updateOne(documentId).set(
+      cleanedData,
+    );
+
+    return res.ok(updatedDocument);
   },
 
   findAll: async (
@@ -799,30 +873,17 @@ module.exports = {
           title,
           description,
           titleAndDescriptionLanguage,
-          documentMainLanguage,
-          author,
-          authors,
-          cave,
           descriptions,
-          editor,
-          entrance,
-          identifierType,
-          languages,
-          library,
-          license,
-          massif,
-          parent,
-          regions,
-          reviewer,
-          subjects,
-          type,
-          option,
-          authorizationDocument,
+          documentMainLanguage,
           newFiles,
           modifiedFiles,
           deletedFiles,
           ...otherData
         } = modifiedDocJson;
+        const populatedDoc = await DocumentService.populateTable(
+          cleanedDocument,
+        );
+        found = { ...populatedDoc, id };
 
         // Join the tables
         found = { ...otherData, id };
