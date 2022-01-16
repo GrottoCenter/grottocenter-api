@@ -41,6 +41,12 @@ module.exports = {
       res,
       MappingV1Service.convertToEntranceModel,
     ),
+  updateWithNewEntities: (req, res) =>
+    entranceController.updateWithNewEntities(
+      req,
+      res,
+      MappingV1Service.convertToEntranceModel,
+    ),
 
   addDocument: (req, res) => {
     entranceController.addDocument(req, res);

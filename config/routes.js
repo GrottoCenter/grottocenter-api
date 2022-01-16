@@ -97,6 +97,7 @@ module.exports.routes = {
   'POST /api/v1/entrances/check-rows': 'v1/Entrance.checkRows',
   'POST /api/v1/entrances/import-rows': 'v1/Entrance.importRows',
   'PUT /api/v1/entrances/:id': 'v1/Entrance.update',
+  'PUT /api/v1/entrances/:id/new-entities': 'v1/Entrance.updateWithNewEntities',
   'PUT /api/v1/entrances/:entranceId/documents/:documentId':
     'v1/Entrance.addDocument',
 
@@ -162,6 +163,7 @@ module.exports.routes = {
   'POST /api/v1/documents/check-rows': 'v1/Document.checkRows',
   'POST /api/v1/documents/import-rows': 'v1/Document.importRows',
   'PUT /api/v1/documents/:id': 'v1/Document.update',
+  'PUT /api/v1/documents/:id/new-entities': 'v1/Document.updateWithNewEntities',
   'PUT /api/v1/documents/:id/validate': 'v1/Document.validate',
   'PUT /api/v1/documents/validate': 'v1/Document.multipleValidate',
 

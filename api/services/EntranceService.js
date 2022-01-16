@@ -179,4 +179,79 @@ module.exports = {
 
     return newEntrancePopulated;
   },
+
+  populateTable: async (entrance) => {
+    const {
+      author,
+      cave,
+      names,
+      descriptions,
+      geology,
+      locations,
+      documents,
+      riggings,
+      comments,
+      ...cleanedData
+    } = entrance;
+
+    const populatedEntrance = { ...cleanedData };
+
+    // Join one to many
+    populatedEntrance.author = author ? await TCaver.findOne(author) : null;
+    populatedEntrance.cave = cave ? await TCave.findOne(cave) : null;
+    populatedEntrance.geology = geology
+      ? await TGeology.findOne(geology)
+      : null;
+
+    // Join many to many
+    populatedEntrance.names = names
+      ? await Promise.all(
+          names.map(async (name) => {
+            return await TName.findOne(name);
+          }),
+        )
+      : [];
+
+    populatedEntrance.descriptions = descriptions
+      ? await Promise.all(
+          descriptions.map(async (desc) => {
+            return await TDescription.findOne(desc);
+          }),
+        )
+      : [];
+
+    populatedEntrance.locations = locations
+      ? await Promise.all(
+          locations.map(async (loc) => {
+            return await TLocation.findOne(loc);
+          }),
+        )
+      : [];
+
+    populatedEntrance.documents = documents
+      ? await Promise.all(
+          documents.map(async (doc) => {
+            return await TDocument.findOne(doc);
+          }),
+        )
+      : [];
+
+    populatedEntrance.riggings = riggings
+      ? await Promise.all(
+          riggings.map(async (rig) => {
+            return await TRigging.findOne(rig);
+          }),
+        )
+      : [];
+
+    populatedEntrance.comments = comments
+      ? await Promise.all(
+          comments.map(async (comment) => {
+            return await TComment.findOne(comment);
+          }),
+        )
+      : [];
+
+    return populatedEntrance;
+  },
 };
