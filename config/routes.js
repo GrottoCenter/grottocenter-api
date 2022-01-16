@@ -288,6 +288,22 @@ module.exports.routes = {
   /* Option controller */
   'GET /api/v1/options': 'v1/Option.findAll',
 
+  /* DuplicatesDocument controller */
+  'GET /api/create-from-duplicates-document/:id':
+    'DuplicatesDocument.createNewEntityFromDuplicate',
+  'GET /api/duplicates-document/:id': 'DuplicatesDocument.find',
+  'GET /api/duplicates-document': 'DuplicatesDocument.findAll',
+  'DELETE /api/duplicates-document': 'DuplicatesDocument.deleteMany',
+  'DELETE /api/duplicates-document/:id': 'DuplicatesDocument.delete',
+
+  /* DuplicatesEntrance controller */
+  'GET /api/create-from-duplicates-entrance/:id':
+    'DuplicatesEntrance.createNewEntityFromDuplicate',
+  'GET /api/duplicates-entrance/:id': 'DuplicatesEntrance.find',
+  'GET /api/duplicates-entrance': 'DuplicatesEntrance.findAll',
+  'DELETE /api/duplicates-entrance': 'DuplicatesEntrance.deleteMany',
+  'DELETE /api/duplicates-entrance/:id': 'DuplicatesEntrance.delete',
+
   //  ╦ ╦╔═╗╔╗ ╦ ╦╔═╗╔═╗╦╔═╔═╗
   //  ║║║║╣ ╠╩╗╠═╣║ ║║ ║╠╩╗╚═╗
   //  ╚╩╝╚═╝╚═╝╩ ╩╚═╝╚═╝╩ ╩╚═╝

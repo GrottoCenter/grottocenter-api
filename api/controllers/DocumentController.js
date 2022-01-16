@@ -1215,6 +1215,26 @@ module.exports = {
           isDeleted: false,
         });
         if (result) {
+          // Create a duplicate in table TDuplicateEntrance
+
+          //Author retrieval : create one if not present in db
+          const authorId = await sails.helpers.csvhelpers.getAuthor(row);
+          const document = await getConvertedDocumentFromCsv(row, authorId);
+          const dataLangDesc = getConvertedLangDescDocumentFromCsv(
+            row,
+            authorId,
+          );
+
+          const duplicateContent = {
+            document: document,
+            description: dataLangDesc,
+          };
+
+          await DuplicateDocumentService.create(
+            req.token.id,
+            duplicateContent,
+            result.id,
+          );
           wontBeCreated.push({
             line: index + 2,
             id: idDb,
