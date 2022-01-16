@@ -125,7 +125,7 @@ const getConvertedNameDescLocEntranceFromCsv = async (rawData, authorId) => {
         }),
         language: doubleCheck({
           key: 'karstlink:hasDescriptionDocument/dc:language',
-          func: (value) => value.toLowerCase(),
+          func: (value) => iso2ToIso3(value).toLowerCase(),
         }),
         title: doubleCheck({
           key: 'karstlink:hasDescriptionDocument/dct:title',
@@ -186,7 +186,7 @@ const getConvertedNameDescLocEntranceFromCsv = async (rawData, authorId) => {
         }),
         language: doubleCheck({
           key: 'karstlink:hasAccessDocument/dc:language',
-          func: (value) => value.toLowerCase(),
+          func: (value) => iso2ToIso3(value).toLowerCase(),
         }),
         author: authorLoc,
         dateInscription: doubleCheck({
