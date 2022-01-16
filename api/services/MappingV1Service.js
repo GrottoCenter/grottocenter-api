@@ -685,12 +685,14 @@ module.exports = {
     result.datePublication = source.date_publication
       ? source.date_publication
       : source.datePublication;
+    result.dateReviewed = source.dateReviewed;
     result.dateValidation = source.dateValidation;
     result.deletedFiles = source.deletedFiles;
     result.entrance = source.entrance;
     result.files =
       source.files && MappingV1Service.convertToFileList(source.files).files;
     result.identifier = source.identifier;
+    result.intactDescriptions = source.descriptions;
     result.issue = source.issue;
     result.isValidated = source.isValidated;
     result.languages = source.languages;
