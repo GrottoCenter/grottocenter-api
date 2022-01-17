@@ -26,7 +26,7 @@
     "passport": "^0.4.0",
     "passport-local": "^1.0.0",
     "prop-types": "^15.7.2",
-    "ramda": "^0.27.0",
+    "ramda": "^0.27.2",
     "rc": "~1.2.8",
     "sails": "^1.4.0",
     "sails-hook-orm": "^3.0.2",
