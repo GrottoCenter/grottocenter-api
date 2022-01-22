@@ -18,6 +18,22 @@ services:
     restart: always
     ports:
       - ${DB_LOCAL_PORT}:5432
+  
+  testdbserver:
+    container_name: ${TEST_DB_TAGNAME}
+    image: postgis/postgis
+    environment:
+      - POSTGRES_USER=${DOCKER_DB_USER}
+      - POSTGRES_PASSWORD=${DOCKER_DB_PASSWORD}
+    healthcheck:
+      test: pg_isready
+    volumes:
+      # Juste use initDatabase sql request. The tests will populate it by themselves.
+      - ../sql/0_initDatabase.sql:/docker-entrypoint-initdb.d/init.sql
+      - gc-postgis-data:/var/lib/postgresql
+    restart: always
+    ports:
+      - ${TEST_DB_LOCAL_PORT}:5432
 
   elasticsearch:
     container_name: ${ES_TAGNAME}

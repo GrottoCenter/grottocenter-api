@@ -9,8 +9,13 @@ before(function(done) {
       log: {
         level: 'silly',
       },
+      datastores: {
+        default: {
+          adapter: require('sails-postgresql'),
+          url: 'postgres://root:root@localhost:5432/grottoce',
+        },
+      },
       models: {
-        connection: 'test',
         migrate: 'drop',
       },
       csrf: false,
