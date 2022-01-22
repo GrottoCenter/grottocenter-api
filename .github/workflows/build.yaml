@@ -1,9 +1,26 @@
-name: Build
+name: Build test deploy
 on: [push]
 jobs:
-  build:
-    runs-on: ubuntu-latest
+
+
+  # ===== Build & test API
+  build-and-test:
     environment: build
+    runs-on: ubuntu-latest
+
+    # PostGreSQL test database init
+    services:
+      postgres:
+          image: postgres:latest
+          env:
+            POSTGRES_USER: root
+            POSTGRES_PASSWORD: root
+            POSTGRES_DB: grottoce
+          ports:
+            - 5432:5432
+          # needed because the postgres container does not provide a healthcheck
+          options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
     steps:
       - uses: actions/checkout@v2
       - name: Use Node.js
@@ -24,6 +41,8 @@ jobs:
             ${{ runner.os }}-
 
       - run: npm install
+
+      # ===== Test
       - run: npm test
       - run: npm run-script coverage
       - run: npm run-script coveralls
@@ -31,6 +50,13 @@ jobs:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
           COVERALLS_SERVICE_NAME: "Github Actions"
           COVERALLS_GIT_BRANCH: ${{ github.ref }}
+  
+  # ===== Create .tar and send it to AWS S3
+  deploy:
+    environment: build
+    needs: [build-and-test]
+    runs-on: ubuntu-latest
+    steps:
       - name: Create artefact latest.tar.gz file
         if: github.ref == 'refs/heads/master'
         run: |
