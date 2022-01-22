@@ -14,10 +14,10 @@ describe('DescriptionService', () => {
 
       // Test Spelunca [COLLECTION]
       should(document.parent.descriptions.length).equal(2);
-      should(document.parent.descriptions[0].title).equal(
+      should(document.parent.descriptions.find((d) => d.id === 1).title).equal(
         'An awesome collection',
       );
-      should(document.parent.descriptions[1].title).equal(
+      should(document.parent.descriptions.find((d) => d.id === 2).title).equal(
         'Une superbe collection',
       );
     });
