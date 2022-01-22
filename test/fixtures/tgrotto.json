@@ -1,5 +1,6 @@
 [
   {
+    "id": 1,
     "author": 1,
     "county": "Hauts-de-Seine",
     "region": "Île-de-France",
@@ -18,6 +19,7 @@
     "names": [1]
   },
   {
+    "id": 2,
     "author": 1,
     "county": "Rhône",
     "region": "Auvergne-Rhône-Alpes",
