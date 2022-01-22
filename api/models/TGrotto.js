@@ -88,13 +88,13 @@ module.exports = {
     dateInscription: {
       type: 'ref',
       allowNull: false,
-      columnType: 'datetime',
+      columnType: 'timestamp',
       columnName: 'date_inscription',
     },
 
     dateReviewed: {
       type: 'ref',
-      columnType: 'datetime',
+      columnType: 'timestamp',
       columnName: 'date_reviewed',
     },
 

@@ -108,13 +108,13 @@ module.exports = {
       type: 'ref',
       allowNull: false,
       columnName: 'date_inscription',
-      columnType: 'datetime',
+      columnType: 'timestamp',
     },
 
     dateLastConnection: {
       type: 'ref',
       columnName: 'date_last_connection',
-      columnType: 'datetime',
+      columnType: 'timestamp',
     },
 
     alertForNews: {

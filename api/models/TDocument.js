@@ -15,7 +15,6 @@ module.exports = {
       type: 'number',
       autoIncrement: true,
       columnName: 'id',
-      unique: true,
     },
 
     author: {
@@ -37,13 +36,13 @@ module.exports = {
     dateInscription: {
       type: 'ref',
       columnName: 'date_inscription',
-      columnType: 'datetime',
+      columnType: 'timestamp',
     },
 
     dateValidation: {
       type: 'ref',
       columnName: 'date_validation',
-      columnType: 'datetime',
+      columnType: 'timestamp',
     },
 
     datePublication: {
@@ -56,7 +55,7 @@ module.exports = {
     dateReviewed: {
       type: 'ref',
       columnName: 'date_reviewed',
-      columnType: 'datetime',
+      columnType: 'timestamp',
     },
 
     isValidated: {
