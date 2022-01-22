@@ -34,13 +34,13 @@ module.exports = {
       type: 'ref',
       allowNull: false,
       columnName: 'date_inscription',
-      columnType: 'datetime',
+      columnType: 'timestamp',
     },
 
     dateReviewed: {
       type: 'ref',
       columnName: 'date_reviewed',
-      columnType: 'datetime',
+      columnType: 'timestamp',
     },
 
     relevance: {
