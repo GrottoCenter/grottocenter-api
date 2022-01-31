@@ -1,4 +1,5 @@
 let sails = require('sails');
+const UPDATE_SEQUENCES_QUERY = require('./update_sequences');
 const Fixted = require('fixted');
 
 before(function(done) {
@@ -48,12 +49,17 @@ before(function(done) {
           'tcomment',
           'tfile',
         ],
-        function(err) {
+        (err) => {
           if (err) {
             return done(err);
           }
-          // Do your thing...
-          done();
+          CommonService.query(UPDATE_SEQUENCES_QUERY)
+            .then(() => {
+              return done();
+            })
+            .catch((err) => {
+              return done(err);
+            });
         },
         false,
       );
