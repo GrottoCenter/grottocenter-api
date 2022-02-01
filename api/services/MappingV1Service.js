@@ -313,9 +313,15 @@ module.exports = {
 
     if (source.id_author instanceof Object) {
       result.author = MappingV1Service.convertToCaverModel(source.id_author);
+    } else {
+      result.author = source.id_author;
     }
     if (source.reviewer instanceof Object) {
-      result.reviewer = MappingV1Service.convertToCaverModel(source.reviewer);
+      result.reviewer = MappingV1Service.convertToCaverModel(
+        source.id_reviewer,
+      );
+    } else {
+      result.reviewer = source.id_reviewer;
     }
     if (source.descriptions instanceof Array) {
       result.descriptions = MappingV1Service.convertToDescriptionList(
@@ -334,6 +340,8 @@ module.exports = {
     }
     if (source.id_massif instanceof Object) {
       result.massif = MappingV1Service.convertToMassifModel(source.id_massif);
+    } else {
+      result.massif = source.id_massif;
     }
     return result;
   },
