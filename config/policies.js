@@ -113,10 +113,6 @@ module.exports.policies = {
     '*': true,
   },
 
-  AdminController: {
-    '*': true,
-  },
-
   RssController: {
     '*': true,
   },
