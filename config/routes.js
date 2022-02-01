@@ -223,10 +223,6 @@ module.exports.routes = {
     },
   },
 
-  /* Admin controller */
-  'GET /api/admin/entrances/findAllOfInterest':
-    'Admin.findAllInterestEntrances',
-
   /* Rss controller */
   'GET /api/rss/:language': 'Rss.getFeed',
 
