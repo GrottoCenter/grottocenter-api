@@ -18,7 +18,7 @@
     "name": "User",
     "comments": "Default users group",
     "rights": [
-      13, 29, 30, 50, 79
+      13, 29, 30, 50, 79, 80
     ]
   },
   {

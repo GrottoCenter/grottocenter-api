@@ -177,8 +177,10 @@ module.exports = {
 
       const populatedCave = await TCave.findOne(createdCave.id)
         .populate('descriptions')
-        .populate('names')
-        .populate('documents');
+        .populate('documents')
+        .populate('histories')
+        .populate('names');
+
       const params = {};
       params.controllerMethod = 'CaveController.create';
       return ControllerService.treatAndConvert(
