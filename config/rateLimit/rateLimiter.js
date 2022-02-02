@@ -48,8 +48,11 @@ module.exports = {
       if (req.method.toUpperCase() !== 'DELETE') {
         return true;
       }
-      // If the request doesn't come from our main client, you are limited
-      if (req.headers['origin'] !== sails.config.custom.baseUrl) {
+      // If the request doesn't come from our main client and the app is not in test phase, you are limited
+      if (
+        req.headers['origin'] !== sails.config.custom.baseUrl &&
+        process.env.NODE_ENV !== 'test'
+      ) {
         return false;
       }
       // If you are not authenticated, you are limited
