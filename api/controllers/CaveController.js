@@ -290,35 +290,26 @@ module.exports = {
 
     // Check params
     const caveId = req.param('caveId');
-    const currentCave = await TCave.findOne(caveId);
-    if (!currentCave) {
+    if (!(await sails.helpers.checkIfExists('id', caveId, TCave))) {
       return res.status(404).send({
-        message: `Cave of id ${caveId} not found.`,
+        message: `Cave with id ${caveId} not found.`,
       });
     }
 
     const documentId = req.param('documentId');
-    const currentDocument = await TDocument.findOne(documentId);
-    if (!currentDocument) {
+    if (!(await sails.helpers.checkIfExists('id', documentId, TDocument))) {
       return res.status(404).send({
-        message: `Document of id ${documentId} not found.`,
+        message: `Document with id ${documentId} not found.`,
       });
     }
 
     // Update cave
-    TCave.addToCollection(caveId, 'documents', documentId)
-      .then(() => {
-        return res.sendStatus(204);
-      })
-      .catch({ name: 'UsageError' }, (err) => {
-        return res.badRequest(err.cause.message);
-      })
-      .catch({ name: 'AdapterError' }, (err) => {
-        return res.badRequest(err.cause.message);
-      })
-      .catch((err) => {
-        return res.serverError(err.cause.message);
-      });
+    try {
+      await TCave.addToCollection(caveId, 'documents', documentId);
+      return res.sendStatus(204);
+    } catch (e) {
+      ErrorService.getDefaultErrorHandler(res)(e);
+    }
   },
 
   update: async (req, res, converter) => {
@@ -343,7 +334,7 @@ module.exports = {
     const currentCave = await TCave.findOne(caveId);
     if (!currentCave) {
       return res.status(404).send({
-        message: `Cave of id ${caveId} not found.`,
+        message: `Cave with id ${caveId} not found.`,
       });
     }
 
@@ -398,15 +389,17 @@ module.exports = {
 
     // Check params
     const caveId = req.param('caveId');
-    const currentCave = await TCave.findOne(caveId);
-    if (!currentCave) {
-      return res.badRequest(`Could not find cave with id ${caveId}.`);
+    if (!(await sails.helpers.checkIfExists('id', caveId, TCave))) {
+      return res
+        .status(404)
+        .send({ message: `Cave with id ${caveId} not found.` });
     }
 
     const massifId = req.param('massifId');
-    const currentMassif = await TMassif.findOne(massifId);
-    if (!currentMassif) {
-      return res.badRequest(`Could not find massif with id ${massifId}.`);
+    if (!(await sails.helpers.checkIfExists('id', massifId, TMassif))) {
+      return res
+        .status(404)
+        .send({ message: `Massif with id ${massifId} not found.` });
     }
 
     // Update cave
