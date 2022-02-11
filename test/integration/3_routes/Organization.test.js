@@ -64,7 +64,7 @@ describe('Grotto features', () => {
         .expect(200)
         .end((err, res) => {
           if (err) return done(err);
-          res.body.should.deepEqual({ count: 2 });
+          res.body.should.deepEqual({ count: 3 });
           return done();
         });
     });

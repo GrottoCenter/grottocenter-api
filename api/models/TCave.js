@@ -156,6 +156,11 @@ module.exports = {
       collection: 'TRigging',
       via: 'cave',
     },
+
+    comments: {
+      collection: 'TComment',
+      via: 'cave',
+    },
   },
 };
 /* eslint-enable camelcase */

@@ -31,10 +31,29 @@
     "dateInscription": "2005-05-28 14:47:45",
     "latitude": "48.72489600000000000000",
     "longitude": "2.26658199999998160000",
-    "custom_message": "Hello Grottocenter :)",
+    "customMessage": "Hello Grottocenter :)",
     "isOfficialPartner": true,
     "url": "https://organization2.fr",
-    "id_country": "FR",
+    "country": "FR",
     "names": [2]
-  }
+  },
+  {
+		"id" : 3,
+		"author" : 30,
+		"county" : "Namur",
+		"region" : "Wallonie",
+		"city" : "Philippeville",
+		"postalCode" : "5600",
+		"address" : "5 rue des pétunias",
+		"mail" : "organization3@organization3.com",
+		"yearBirth" : 1983,
+		"dateInscription" : "2010-07-30T08:20:41.000Z",
+		"latitude" : 56.19217668220050000000,
+		"longitude" : 2.53306198120117200000,
+		"customMessage" : "We are a cool organization",
+		"isOfficialPartner" : false,
+		"url" : "http://organization3.be",
+		"country" : "BE",
+    "names": [11]
+	}
 ]
