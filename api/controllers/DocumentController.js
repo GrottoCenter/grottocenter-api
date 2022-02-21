@@ -611,15 +611,17 @@ module.exports = {
 
     const checkForEmptiness = (value) => value && !ramda.isEmpty(value);
 
+    // For each associated entites :
+    // - check if there are new values
+    // - create the corresponding values
+    // - add the newly created values to the array of cleanedData
+    //   otherwise, when the update will be done based on cleanedData, the relation will be deleted
     if (checkForEmptiness(newAuthors)) {
-      const createdAuthors = await Promise.all(
-        newAuthors.map((author) =>
-          TCaver.create({
-            ...author,
-            documents: [documentId],
-          }),
-        ),
-      );
+      const authorParams = newAuthors.map((author) => ({
+        ...author,
+        documents: [documentId],
+      }));
+      const createdAuthors = await TCaver.createEach(authorParams).fetch();
       const createdAuthorsIds = createdAuthors.map((author) => author.id);
       cleanedData.authors = ramda.concat(
         cleanedData.authors,
@@ -628,14 +630,13 @@ module.exports = {
     }
 
     if (checkForEmptiness(newDescriptions)) {
-      const createdDescriptions = await Promise.all(
-        newDescriptions.map((desc) =>
-          TDescription.create({
-            ...desc,
-            document: documentId,
-          }),
-        ),
-      );
+      const descParams = newDescriptions.map((desc) => ({
+        ...desc,
+        document: documentId,
+      }));
+      const createdDescriptions = await TDescription.createEach(
+        descParams,
+      ).fetch();
       const createdDescriptionsIds = createdDescriptions.map((desc) => desc.id);
       cleanedData.descriptions = ramda.concat(
         cleanedData.descriptions,
@@ -880,7 +881,7 @@ module.exports = {
           deletedFiles,
           ...otherData
         } = modifiedDocJson;
-        const populatedDoc = await DocumentService.populateTable(
+        const populatedDoc = await DocumentService.populateJSON(
           cleanedDocument,
         );
         found = { ...populatedDoc, id };

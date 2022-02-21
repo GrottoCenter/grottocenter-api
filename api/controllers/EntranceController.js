@@ -7,6 +7,7 @@
 const ramda = require('ramda');
 const getCountryISO3 = require('country-iso-2-to-3');
 const DescriptionService = require('../services/DescriptionService');
+const TComment = require('../models/TComment');
 
 // Extract everything from the request body except id
 const getConvertedDataFromClientRequest = (req) => {
@@ -687,27 +688,23 @@ module.exports = {
     const checkForEmptiness = (value) => value && !ramda.isEmpty(value);
 
     if (checkForEmptiness(newNames)) {
-      const createdNames = await Promise.all(
-        newNames.map((name) =>
-          TName.create({
-            ...name,
-            entrance: entranceId,
-          }),
-        ),
-      );
+      const nameParams = newNames.map((name) => ({
+        ...name,
+        entrance: entranceId,
+      }));
+      const createdNames = await TName.createEach(nameParams).fetch();
       const createdNamesIds = createdNames.map((name) => name.id);
       cleanedData.names = ramda.concat(cleanedData.names, createdNamesIds);
     }
 
     if (checkForEmptiness(newDescriptions)) {
-      const createdDescriptions = await Promise.all(
-        newDescriptions.map((desc) =>
-          TDescription.create({
-            ...desc,
-            entrance: entranceId,
-          }),
-        ),
-      );
+      const descParams = newDescriptions.map((desc) => ({
+        ...desc,
+        entrance: entranceId,
+      }));
+      const createdDescriptions = await TDescription.createEach(
+        descParams,
+      ).fetch();
       const createdDescriptionsIds = createdDescriptions.map((desc) => desc.id);
       cleanedData.descriptions = ramda.concat(
         cleanedData.descriptions,
@@ -716,14 +713,11 @@ module.exports = {
     }
 
     if (checkForEmptiness(newLocations)) {
-      const createdLoc = await Promise.all(
-        newLocations.map((loc) =>
-          TLocation.create({
-            ...loc,
-            entrance: entranceId,
-          }),
-        ),
-      );
+      const locParams = newLocations.map((loc) => ({
+        ...loc,
+        entrance: entranceId,
+      }));
+      const createdLoc = await TLocation.createEach(locParams).fetch();
       const createdLocIds = createdLoc.map((loc) => loc.id);
       cleanedData.locations = ramda.concat(
         cleanedData.locations,
@@ -732,14 +726,11 @@ module.exports = {
     }
 
     if (checkForEmptiness(newRiggings)) {
-      const createdRiggings = await Promise.all(
-        newRiggings.map((rig) =>
-          TRigging.create({
-            ...rig,
-            entrance: entranceId,
-          }),
-        ),
-      );
+      const riggingParams = newRiggings.map((rig) => ({
+        ...rig,
+        entrance: entranceId,
+      }));
+      const createdRiggings = await TRigging(riggingParams).fetch();
       const createdRiggingsIds = createdRiggings.map((rig) => rig.id);
       cleanedData.riggings = ramda.concat(
         cleanedData.riggings,
@@ -748,9 +739,11 @@ module.exports = {
     }
 
     if (checkForEmptiness(newComments)) {
-      const createdComments = await Promise.all(
-        newComments.map((comment) => TComment.create(comment)),
-      );
+      const commentParams = newComments.map((comment) => ({
+        ...comment,
+        entrance: entranceId,
+      }));
+      const createdComments = await TComment.createEach(commentParams).fetch();
       const createdCommentIds = createdComments.map((comment) => comment.id);
       cleanedData.comments = ramda.concat(
         cleanedData.comments,

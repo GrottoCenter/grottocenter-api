@@ -197,11 +197,12 @@ module.exports = {
   },
 
   /**
-   * Populate any document-like object
+   * Populate any document-like object.
+   * Avoid using when possible. Mainly used for json column that cannot be populated using waterline query language.
    * @param {*} document
    * @returns populated document
    */
-  populateTable: async (document) => {
+  populateJSON: async (document) => {
     const {
       author,
       authors,

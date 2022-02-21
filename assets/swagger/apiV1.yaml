@@ -1,0 +1,2870 @@
+openapi: '3.0.0'
+
+info:
+  description: "This page documents the available Grottocenter's API."
+  title: 'Grottocenter 3 - REST API'
+  version: 'v.1'
+  termsOfService: 'https://wiki.grottocenter.org/wiki/GrottoCenter:En/API'
+  contact:
+    name: 'Slack space'
+    url: 'https://grottocenter.slack.com/messages/C858CHARY/'
+  license:
+    name: 'CC BY-SA 3.0'
+    url: 'https://creativecommons.org/licenses/by-sa/3.0/'
+
+servers:
+- url: http://localhost:1337/api/v1
+- url: https://localhost:1337/api/v1
+
+tags:
+- name: account
+- name: authentication
+- name: caves
+- name: cavers
+- name: descriptions
+- name: documents
+- name: entrances
+- name: geoloc
+- name: groups
+- name: identifierTypes
+- name: languages
+- name: locations
+- name: names
+- name: massifs
+- name: organizations
+- name: regions
+- name: search
+- name: subjects
+
+paths:
+  '/caves':
+    post:
+      tags:
+        - caves
+      description: "Create a Cave. When submitting a new cave, you must provide an authentification token (from the /login route) in the Authorization header. This token will be used to set the author of the submission."
+      parameters:
+
+      - name: name
+        in: query
+        description: Main name of the cave, using the local language
+        required: true
+        schema:
+          type: string
+
+      - name: description
+        in: query
+        description: Your description of the cave
+        schema:
+          type: string
+
+      - name: descriptionTitle
+        in: query
+        description: Title of your description
+        schema:
+          type: string
+
+      - name: descriptionAndNameLanguage
+        in: query
+        description: Language used for the description and the name. List of languages supported by Grottocenter is available using the /languages route.
+        required: true
+        schema:
+          type: object
+          properties:
+            id:
+              type: string
+
+      - name: depth
+        in: query
+        description: Depth of the cave
+        schema:
+          type: integer
+
+      - name: length
+        in: query
+        description: Length of the cave
+        schema:
+          type: integer
+
+      - name: isDiving
+        in: query
+        description: If the cave is flooded or not
+        schema:
+          type: boolean
+          default: false
+
+      - name: temperature
+        in: query
+        description: Average temperature in the cave
+        schema:
+          type: number
+          format: double
+
+      - name: longitude
+        in: query
+        schema:
+          type: number
+
+      - name: latitude
+        in: query
+        schema:
+          type: number
+
+      - name: massif
+        in: query
+        description: Massif in which the cave is located.
+        schema:
+          type: object
+          properties:
+            id:
+              type: string
+
+      - name: documents
+        in: query
+        description: Documents related to the cave
+        schema:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cave'
+        403:
+          description: You are not authorized to create a cave.
+
+  '/caves/{id}':
+    get:
+      tags:
+      - caves
+      description: Get a cave by id.
+      parameters:
+      - name: id
+        in: path
+        description: Cave id
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cave'
+        '404':
+          description: Cave not found.
+
+    delete:
+      tags:
+      - caves
+      description: Delete a cave.
+      parameters:
+      - name: id
+        in: path
+        description: Cave id
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Successful operation
+        '404':
+          description: Cave not found.
+        '410':
+          description: Cave already deleted
+
+    put:
+      tags:
+        - caves
+      description: Update a cave. See the POST /caves route explaination about the parameters you can use to update a cave.
+      parameters:
+      - name: id
+        in: path
+        description: id of the cave to be updated.
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cave'
+        403:
+          description: You are not authorized to update a cave.
+
+  '/caves/{caveId}/documents/{documentId}':
+    put:
+      tags:
+      - caves
+      - documents
+      description: Add a document to a cave.
+      parameters:
+      - name: caveId
+        in: path
+        description: Cave id to add the document to.
+        required: true
+        schema:
+          type: string
+      - name: documentId
+        in: path
+        description: Document id to be added to the cave.
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Successful operation
+        '400':
+          description: "Bad request. Both the caveId and documentId parameters must exist in the database. Also, you can't add a document if it is already associated to the cave you specified."
+        '403':
+          description: You are not authorized to add a document to a cave.
+
+
+  '/caves/{caveId}/massif/{massifId}':
+    put:
+      tags:
+      - caves
+      - massifs
+      description: Set a cave massif.
+      parameters:
+      - name: caveId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: massifId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Successful operation
+        '400':
+          description: "Bad request. Both the caveId and massifId parameters must exist in the database."
+        '403':
+          description: You are not authorized to set the massif of a cave.
+
+  '/cavers':
+    post:
+      tags:
+      - cavers
+      description: Create a caver (currently using only a name & surname)
+      parameters:
+      - name: name
+        in: query
+        description: Caver name
+        required: true
+        schema:
+          type: string
+      - name: surname
+        in: query
+        description: Caver surname
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Caver"
+        '400':
+          description: You must provide a surname and a name to create a new caver.
+        '403':
+          description: You are not authorized to create a caver.
+
+  '/cavers/{id}':
+    get:
+      tags:
+      - cavers
+      description: Get information about a caver. Only administrators can access all the information about caver. If you are not an administrator, you will only get the documents submitted by the user, his/her name, surname and nickname.
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Caver"
+        '404':
+          description: Caver not found.
+
+  '/cavers/admins':
+    get:
+      tags:
+      - cavers
+      description: Get all the administrators of Grottocenter.
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cavers:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Caver"
+        '404':
+          description: No administrators found.
+
+  '/cavers/count':
+    get:
+      tags:
+      - cavers
+      description: Get the number of cavers (both users and document authors) of the application
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Count'
+
+  '/cavers/moderators':
+    get:
+      tags:
+      - cavers
+      description: Get all the moderators of Grottocenter.
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cavers:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Caver"
+        '404':
+          description: No moderators found.
+
+  '/cavers/{caverId}/groups':
+    post:
+      tags:
+      - cavers
+      - groups
+      description: Set caver groups.
+      parameters:
+      - name: caverId
+        in: path
+        description: Caver id whose groups you want to define.
+        required: true
+        schema:
+          type: string
+      - name: groups
+        in: query
+        description: Group ids to set for the caver.
+        required: true
+        schema:
+          type: array
+          items:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+        '400':
+          description: Bad request, could not find caver with the caver id you provided or could not find one or multiple groups with group ids you provided.
+        '403':
+          description: You are not authorized to set caver groups.
+
+  '/cavers/{caverId}/groups/{groupId}':
+    put:
+      tags:
+      - cavers
+      - groups
+      description: Add a caver to a group.
+      parameters:
+      - name: caverId
+        in: path
+        description: Caver id to be added to the group.
+        required: true
+        schema:
+          type: string
+      - name: groupId
+        in: path
+        description: Group id to add the caver to.
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+        '400':
+          description: "Bad request. Both the caverId and groupId parameters must exist in the database. Also, you can't add a caver if he / she is already in the group you specified."
+        '403':
+          description: You are not authorized to add a caver to a group.
+
+    delete:
+      tags:
+      - cavers
+      - groups
+      description: Remove a caver from a group.
+      parameters:
+      - name: caverId
+        in: path
+        description: Caver id to be removed from the group.
+        required: true
+        schema:
+          type: string
+      - name: groupId
+        in: path
+        description: Group id to remove the caver from.
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Successful operation
+        '400':
+          description: Bad request. Both the caverId and groupId parameters must exist in the database.
+        '403':
+          description: You are not authorized to remove a caver from a group.
+
+  '/cavers/{caverId}/entrances/{entranceId}':
+    put:
+      tags:
+      - cavers
+      - entrances
+      description: Make an entrance as explored by a caver. Can only be used on self account.
+      parameters:
+      - name: caverId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: entranceId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Successful operation
+        '400':
+          description: "Bad request. Both the caverId and entranceId parameters must exist in the database. Also, you can't mark an entrance as as explored if it is already marked as explored for the caver."
+        '403':
+          description: You are not authorized to mark an entrance as explored by a caver or you can't mark an entrance as explored for someone else than you.
+
+    delete:
+      tags:
+      - cavers
+      - entrances
+      description: Unmark an entrance as explored for a caver. Can only be used on self account.
+      parameters:
+      - name: caverId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: entranceId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Successful operation
+        '400':
+          description: Bad request. Both the caverId and entranceId parameters must exist in the database.
+        '403':
+          description: You are not authorized to mark an entrance as explored by a caver or you can't unmark an entrance as explored for someone else than you.
+
+  '/cavers/{id}/documents':
+    get:
+      tags:
+        - documents
+      description: Get all documents authored by the identified caver.
+      parameters:
+        - name: id
+          in: path
+          description: Caver id
+          required: true
+          schema:
+            type: string
+        - name: skip
+          in: query
+          description: Number of documents to skip.
+          required: false
+          schema:
+            type: integer
+            default: 0
+        - name: limit
+          in: query
+          description: Maximum number of documents.
+          required: false
+          schema:
+            type: integer
+            default: 50
+        - name: sortBy
+          in: query
+          description: Attribute to sort the documents by.
+          required: false
+          schema:
+            type: string
+            default: dateInscription
+        - name: orderBy
+          in: query
+          description: Order used by the sortBy attribute
+          required: false
+          schema:
+            type: string
+            enum: [ASC, DESC]
+            default: ASC
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  documents:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Document'
+
+  '/descriptions':
+    post:
+      tags:
+      - descriptions
+      description: Create a description. You must provide at least one entityId (caveId, documentId, entranceId, exitId, massifId or pointId) which your description is refering to. If you provide two or more of them, the first one will be used and the other ones will be ignored.
+      parameters:
+      - name: body
+        in: query
+        required: true
+        description: Content of the description
+        schema:
+          type: string
+      - name: language
+        in: query
+        required: true
+        description: Language used for the description. The list of languages supported by Grottocenter is available using the /languages route.
+        schema:
+          type: string
+      - name: title
+        in: query
+        required: true
+        description: Title of the description
+        schema:
+          type: string
+      - name: caveId
+        in: query
+        schema:
+          type: string
+      - name: documentId
+        in: query
+        schema:
+          type: string
+      - name: entranceId
+        in: query
+        schema:
+          type: string
+      - name: exitId
+        in: query
+        schema:
+          type: string
+      - name: massifId
+        in: query
+        schema:
+          type: string
+      - name: pointId
+        in: query
+        schema:
+          type: string
+
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Description'
+        '400':
+          description: Some required information are missing (title, body, language or entityId).
+        '403':
+          description: You are not authorized to create a description.
+        '404':
+          description: The entity you want to link your new description to was not found.
+
+  '/descriptions/{id}':
+    patch:
+      tags:
+        - descriptions
+      description: Update a description body and/or title (you can provide one or both).
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: body
+          in: query
+          schema:
+            type: string
+        - name: title
+          in: query
+          schema:
+            type: string
+
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Description'
+
+  '/documents/{id}':
+    get:
+      tags:
+      - documents
+      description: Get a document by id.
+      parameters:
+      - name: id
+        in: path
+        description: Document id
+        required: true
+        schema:
+          type: string
+      - name: requireUpdate
+        in: query
+        description: Specify if you want to retrieve the current update (not validated) of the document
+        required: false
+        schema:
+          type: boolean
+          default: false
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+        '404':
+          description: Document not found.
+
+    put:
+      tags:
+        - documents
+      description: Update a document. See the POST /documents route explaination about the parameters you can use to update a document.
+      parameters:
+      - name: id
+        in: path
+        description: id of the document to be updated.
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+        403:
+          description: You are not authorized to update a document.
+
+  '/documents':
+    post:
+      tags:
+        - documents
+      description: "Create a document. When submitting a new document, you must provide an authentification token (from the /login route) in the Authorization header. This token will be used to set the author of the submission. A lot of parameters are required but it depends a lot on the document type you are submitting (example: there is no publication date for a Collection but it's mandatory for an Issue."
+      parameters:
+      - name: authors
+        in: query
+        description: Author(s) id(s) of the document, the one(s) who wrote it.
+        schema:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+
+      - name: datePublication
+        in: query
+        description: Date on which the document you submit was made public. You can refer to the date indicated on the document.
+        schema:
+          type: string
+        examples:
+          year:
+            value: '2014'
+            summary: Year only
+          year and month:
+            value: '2014-06'
+            summary: Year and month
+          full date:
+            value: '2014-06-21'
+            summary: Full date
+
+      - name: editor
+        in: query
+        description: Organization that ensures the publication of the document.
+        schema:
+          type: object
+          properties:
+            id:
+              type: string
+
+      - name: identifier
+        in: query
+        description: Code for designating a document in a unique way. This can be a DOI, URL, ISBN or ISSN.
+        schema:
+          type: string
+
+      - name: identifierType
+        in: query
+        description: Type of the identifier provided.
+        schema:
+          type: object
+          properties:
+            id:
+              type: string
+              enum: ['DOI', 'ISBN', 'ISSN', 'URL']
+
+      - name: library
+        in: query
+        description: Place (= Organization) where the document can be consulted.
+        schema:
+          type: object
+          properties:
+            id:
+              type: string
+
+      - name: massif
+        in: query
+        description: Massif to which the document refers to.
+        schema:
+          type: object
+          properties:
+            id:
+              type: string
+
+      - name: partOf
+        in: query
+        description: Document that contains the document you are submitting (an article has a periodical issue as its parent document, a periodical issue has a periodical as its parent document).
+        schema:
+          type: object
+          properties:
+            id:
+              type: string
+
+      - name: regions
+        in: query
+        description: BBS regions to which the document refers to.
+        schema:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+
+      - name: subjects
+        in: query
+        description: List of subjects and their description is available using the /documents/subjects route or here => https://www.ssslib.ch/bbs/wp-content/uploads/2017/03/chapter_and_geo_1_2008.pdf
+        schema:
+          type: array
+          items:
+            type: object
+            properties:
+              code:
+                type: string
+
+      - name: documentType
+        in: query
+        description: Type of the document (Collection, Issue, Article or Text).
+        schema:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+
+      - name: description
+        in: query
+        description: Precise sentence pleasant to read with keywords.
+        schema:
+          type: string
+
+      - name: title
+        in: query
+        description: Title of the text as it is. In its absence, put a fictitious title between [].
+        schema:
+          type: string
+
+      - name: titleAndDescriptionLanguage
+        in: query
+        description: Language used for the title and the description you are providing. List of languages supported by Grottocenter is available using the /languages route.
+        schema:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+
+      - name: documentMainLanguage
+        in: query
+        description: Language used in the document. List of languages supported by Grottocenter is available using the /languages route.
+        schema:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+        403:
+          description: You are not authorized to create a document.
+
+    get:
+      tags:
+        - documents
+      description: Get all documents.
+      parameters:
+      - name: isValidated
+        in: query
+        description: If the documents must be validated or not.
+        required: false
+        schema:
+          default: true
+          type: boolean
+      - name: skip
+        in: query
+        description: Number of documents to skip.
+        required: false
+        schema:
+          type: integer
+          default: 0
+      - name: limit
+        in: query
+        description: Maximum number of documents.
+        required: false
+        schema:
+          type: integer
+          default: 50
+      - name: sortBy
+        in: query
+        description: Attribute to sort the documents by.
+        required: false
+        schema:
+          type: string
+          default: dateInscription
+      - name: orderBy
+        in: query
+        description: Order used by the sortBy attribute
+        required: false
+        schema:
+          type: string
+          enum: [ASC, DESC]
+          default: ASC
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  documents:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Document'
+
+  '/documents/count':
+    get:
+      tags:
+      - documents
+      description: Get the number of documents.
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Count'
+
+  '/documents/{id}/validate':
+    put:
+      tags:
+      - documents
+      description: Validate or not a document, with or without a comment.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: isValidated
+          in: query
+          required: false
+          description: Specify if the document is validated or refused.
+          schema:
+            type: boolean
+            default: true
+        - name: validationComment
+          in: query
+          description: Comment about why the document has been validated or refused. Mandatory when isValidated param is false.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+        '400':
+          description: Bad request. If you are refusing a document, you must provide a validationComment.
+        '404':
+          description: Document to update not found.
+
+  '/documents/validate':
+    put:
+      tags:
+      - documents
+      description: Validate or not multiple documents, with or without a comment.
+      parameters:
+        - name: documents
+          description: Document(s) to validate / refuse with their optionnal validation comment.
+          in: query
+          required: true
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  type: number
+                isValidated:
+                  type: boolean
+                validationComment:
+                  type: string
+
+      responses:
+        '200':
+          description: Successful operation
+        '404':
+          description: Document(s) to update not found.
+        '400':
+          description: Bad request. If you are refusing a document, you must provide a validationComment.
+
+  '/documents/identifierTypes':
+    get:
+      tags:
+      - documents
+      - identifierTypes
+      description: Get all the document identifier types.
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  identifierTypes:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Document-identifierType"
+
+
+  '/regions/search/logical/or':
+    post:
+      tags:
+      - regions
+      description: Get a region according to the parameters given, applying a logical OR. The search is case insensitive and autocompleted (i.e. it search for the parameters being contained in the actual field).
+      parameters:
+      - name: name
+        in: query
+        description: Region name (case insensitive)
+        required: false
+        schema:
+          type: string
+      - name: code
+        in: query
+        description: Region code (case insensitive)
+        required: false
+        schema:
+          type: string
+      - name: isDeprecated
+        in: query
+        description: Region deprecated or not (currently, the deprecated ones are the ones from the BBS)
+        required: false
+        schema:
+          type: boolean
+      responses:
+        '200':
+          description: Successful login
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  regions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Region'
+
+  '/languages':
+    get:
+      tags:
+        - languages
+      description: Get all languages supported by Grottocenter.
+      parameters:
+      - name: isPrefered
+        in: query
+        description: Languages prefered or not.
+        required: false
+        schema:
+          type: boolean
+          default: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Language'
+
+  '/languages/{id}':
+    get:
+      tags:
+        - languages
+      description: Get a language by its id.
+      parameters:
+        - name: id
+          in: path
+          description: id of the language (generally, three letters)
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful login
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Language'
+
+  '/locations':
+    post:
+      tags:
+      - locations
+      description: Create a location. You must provide an existing entrance id which your location is refering to.
+      parameters:
+      - name: body
+        in: query
+        required: true
+        description: Content of the location.
+        schema:
+          type: string
+      - name: language
+        in: query
+        required: true
+        description: Language id used for the description. The list of languages supported by Grottocenter is available using the /languages route.
+        schema:
+          type: string
+      - name: title
+        in: query
+        description: Title of the location.
+        schema:
+          type: string
+      - name: entrance
+        in: query
+        required: true
+        description: Entrance id which the location is refering to.
+        schema:
+          type: integer
+
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Location'
+        '400':
+          description: Some required information are missing (body, language or entrance id).
+        '404':
+          description: The entrance which the location is refering to was not found.
+
+  '/locations/{id}':
+    patch:
+      tags:
+        - locations
+      description: Update a location's body and/or title (you can provide one or both).
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: body
+          in: query
+          schema:
+            type: string
+        - name: title
+          in: query
+          schema:
+            type: string
+
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Location'
+
+
+  '/names/{id}':
+    patch:
+      tags:
+        - names
+      description: Update a name.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: name
+          in: query
+          required: true
+          schema:
+            type: string
+
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Name'
+
+  '/names/{id}/setAsMain':
+    post:
+      tags:
+        - names
+      description: Set a name to the main one. An entity can have multiples names, in different languages for example. But only one of them is the main one. If you set a name to main, all the other names of the entity isMain will be set to false.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Name'
+
+  '/account/email':
+    patch:
+      tags:
+        - account
+        - authentication
+      description: Update the user email. You can only change the email of your account, using your authentication token.
+      parameters:
+        - name: email
+          in: query
+          description: New email of the account.
+          required: true
+          schema:
+            type: string
+
+      responses:
+        '204':
+          description: Successful operation
+
+        '400':
+          description: You must provide a (valid) email.
+
+  '/account/password':
+    patch:
+      tags:
+        - account
+        - authentication
+      description: Update the user password by using a reset password token issued by the /forgotPassword route.
+      parameters:
+        - name: password
+          in: query
+          description: New password of the account, must be at least 8 characters long
+          required: true
+          schema:
+            type: string
+        - name: token
+          in: query
+          description: Reset password token issued by the /forgotPassword route.
+          required: true
+          schema:
+            $ref: '#/components/schemas/ResetPasswordToken'
+      responses:
+        '204':
+          description: Successful operation
+
+        '400':
+          description: You must provide a password and a reset password token in the body of your request. The password must be at least 8 characters long.
+
+        '403':
+          description: The password reset token has expired or is invalid.
+
+        '404':
+          description: User in the password reset token not found.
+
+  '/account/alertForNews':
+    patch:
+      tags:
+        - account
+      description: Change the fact that the user wants to receive the Grottocenter news.
+      parameters:
+        - name: alertForNews
+          in: query
+          required: true
+          schema:
+            type: boolean
+      responses:
+        '204':
+          description: Successful operation
+        '400':
+          description: You must provide an alertForNews valid value ('true' or 'false')
+        '404':
+          description: User in the authentication token not found.
+
+  '/forgotPassword':
+    post:
+      tags:
+        - account
+        - authentication
+      description: >-
+        Launch the procedure of password change. This will send an email to the email adress you provided if it exists as a Grottocenter user's email. This email contains a password reset link expiring after 24 hours using the Grottocenter application.
+
+
+        __IMPORTANT NOTICE__
+
+
+        This feature uses the Grottocenter's AWS SES (Simple Email Service) of Amazon. To ️use it properly, you must have access to the service. This access is granted by the Grottocenter's developer team to developers only.Once you have the access, set your __AWS_ACCESS_KEY__ & __AWS_SECRET_KEY__ environment variables.
+
+
+        Otherwise, the email will not be sent and its content will be simply logged in your console.
+
+      parameters:
+        - name: email
+          in: query
+          description: Email of the account you want to change the password
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Successful operation
+
+        '400':
+          description: You must provide an email in the body of your request.
+
+        '404':
+          description: The email is not used by any Grottocenter's caver.
+
+  '/login':
+    post:
+      tags:
+        - authentication
+      description: Login to Grottocenter
+      parameters:
+        - name: email
+          in: query
+          description: Email of the account you want to connect to
+          required: true
+          schema:
+            type: string
+        - name: password
+          in: query
+          description: Password of the account you want to connect to
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful login
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Auth-success"
+
+        '401':
+          description: Invalid email or password.
+
+  '/signup':
+    post:
+      tags:
+        - authentication
+      description: Create an account on Grottocenter
+      parameters:
+        - name: email
+          in: query
+          description: Email of the account
+          required: true
+          schema:
+            type: string
+        - name: nickname
+          in: query
+          description: Nickname (how the user is displayed in the application)
+          required: true
+          schema:
+            type: string
+        - name: name
+          in: query
+          description: Real name of the user
+          required: false
+          schema:
+            type: string
+        - name: surname
+          in: query
+          description: Real surname of the user
+          required: false
+          schema:
+            type: string
+        - name: password
+          in: query
+          description: Password of the account
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Successful sign up.
+
+        '400':
+          description: Bad request (password too short, missing value(s)...).
+
+        '409':
+          description: Email or nickname already used.
+
+  '/documents/subjects':
+    get:
+      tags:
+      - documents
+      - subjects
+      description: Get all the document subjects.
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  subjects:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Document-subject"
+
+  '/documents/subjects/{code}':
+    get:
+      tags:
+      - documents
+      - subjects
+      description: Get a subject by its code.
+      parameters:
+      - name: code
+        in: path
+        description: Subject code
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document-subject'
+        '404':
+          description: Subject not found
+
+  '/documents/subjects/search/logical/or':
+    post:
+      tags:
+      - documents
+      - subjects
+      description: Get a subject according to the parameters given, applying a logical OR. The search is case insensitive and autocompleted (i.e. it search for the parameters being contained in the actual field).
+      parameters:
+      - name: name
+        in: query
+        description: Subject name (case insensitive)
+        required: false
+        schema:
+          type: string
+      - name: code
+        in: query
+        description: Subject code (case insensitive)
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  subjects:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Document-subject'
+
+  '/entrances':
+    post:
+      tags:
+      - entrances
+      description: Create a cave entrance.
+      parameters:
+      - name: address
+        in: query
+        description: Address where the entrance is located
+        schema:
+          type: string
+      - name: altitude
+        in: query
+        schema:
+          type: number
+      - name: cave
+        in: query
+        required: true
+        description: Cave related to the entrance
+        schema:
+            type: object
+            properties:
+              id:
+                type: number
+                description: Id of the cave
+      - name: city
+        in: query
+        description: City where the entrance is located
+        schema:
+          type: string
+      - name: contact
+        in: query
+        description: Email, telephone number or name of the person responsible of the entrance
+        schema:
+          type: string
+          example: "Michel DUPONT 06 99 98 97 96"
+      - name: country
+        in: query
+        description: Country where the entrance is located
+        schema:
+            type: object
+            properties:
+              id:
+                type: string
+                description: Id of the country
+      - name: county
+        in: query
+        description: County where the entrance is located
+        schema:
+          type: string
+      - name: description
+        in: query
+        required: true
+        schema:
+            type: object
+            properties:
+              body:
+                type: string
+              language:
+                description: Must be a language supported by Grottocenter (see GET /languages route) using the 3-letters format.
+                type: string
+                example: 'eng'
+              title:
+                type: string
+      - name: geology
+        in: query
+        description: Geology type of the entrance.
+        schema:
+            type: object
+            properties:
+              id:
+                type: string
+                description: Id of the geology
+      - name: isPublic
+        in: query
+        schema:
+          type: boolean
+      - name: isSensitive
+        in: query
+        schema:
+          type: boolean
+      - name: latitude
+        in: query
+        schema:
+          type: number
+      - name: location
+        in: query
+        description: Explaination of the environment around the entrance.
+        schema:
+            type: object
+            properties:
+              body:
+                type: string
+                example: "The entrance is located at the top of the hill, at the left of the big rock next to the path."
+              language:
+                description: Must be a language supported by Grottocenter (see GET /languages route) using the 3-letters format.
+                type: string
+                example: 'eng'
+      - name: longitude
+        in: query
+        schema:
+          type: number
+      - name: modalities
+        in: query
+        schema:
+          type: string
+          example: "YES,NO,NO,YES"
+      - name: name
+        in: query
+        required: true
+        description: Name of the entrance including the language used
+        schema:
+            type: object
+            properties:
+              text:
+                type: string
+                example: "The entrance of ABCDEFG"
+              language:
+                description: Must be a language supported by Grottocenter (see GET /languages route) using the 3-letters format.
+                type: string
+                example: 'eng'
+      - name: precision
+        in: query
+        description: GPS precision in meters
+        schema:
+          type: integer
+      - name: region
+        in: query
+        description: Region where the entrance is located
+        schema:
+          type: string
+      - name: yearDiscovery
+        in: query
+        description: Year of the discovery of the entrance (must be inferior to the current year)
+        schema:
+          type: number
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Entrance'
+
+  '/entrances/{entranceId}/documents/{documentId}':
+    delete:
+      tags:
+      - entrances
+      - documents
+      description: Unlink a document from an entrance. Available only to the moderators.
+      parameters:
+      - name: entranceId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: documentId
+        in: path
+        description: Document id to unlink from the entrance.
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Successful operation
+        '404':
+          description: Could not find entrance with the entrance id you provided or could not find the document with the document id you provided.
+
+    put:
+      tags:
+      - entrances
+      - documents
+      description: Add a document to an entrance.
+      parameters:
+      - name: entranceId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: documentId
+        in: path
+        description: Document id to add to the entrance.
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Successful operation
+        '404':
+          description: Could not find entrance with the entrance id you provided or could not find the document with the document id you provided.
+        '403':
+          description: You are not authorized to add a document to an entrance.
+
+  '/entrances/findRandom':
+    get:
+      tags:
+      - entrances
+      description: Get a random entrance.
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Entrance'
+
+  '/entrances/{id}':
+    get:
+      tags:
+      - entrances
+      description: |
+        Get an entrance by id. If the entrance is sensitive (i.e. not public):
+        - if you are an unauthenticated visitor, you will not be able to get it.
+        - if you are an authenticated Grottocenter user, you will be able to get the entrance information but the fields "longitude", "latitude" and "locations" will be hidden.
+        - if you are an authenticated Grottocenter administrator, you will be able to get all the information.
+      parameters:
+      - name: id
+        in: path
+        description: Entrance id
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Entrance'
+        '403':
+          description: You are not authorized to view the entrance.
+        '404':
+          description: Entrance not found.
+
+    delete:
+      tags:
+      - entrances
+      description: Delete an entrance.
+      parameters:
+      - name: id
+        in: path
+        description: Entrance id
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Successful operation
+        '404':
+          description: Entrance not found.
+        '410':
+          description: Entrance already deleted.
+
+    put:
+      tags:
+        - entrances
+      description: Update an entrance. See the POST /entrances route explaination about the parameters you can use to update an entrance.
+      parameters:
+      - name: id
+        in: path
+        description: id of the entrance to be updated.
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Entrance'
+        403:
+          description: You are not authorized to update an entrance.
+
+  '/entrances/publicCount':
+    get:
+      tags:
+      - entrances
+      description: Get the number of public entrances.
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Count'
+
+  '/entrances/count':
+    get:
+      tags:
+      - entrances
+      description: Get the number of entrances.
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Count'
+
+  '/search':
+    post:
+      tags:
+      - search
+      description: Search for resources (cavers, documents, document collections, entrances, massifs & organizations). Case insensitive. Search over a lots of resource properties (not only name).
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - query
+              properties:
+                query:
+                  type: string
+                  description: Resource property (or part of property) to search.
+                resourceTypes:
+                  type: array
+                  description: Resource types to search on. If not specified, it will search on all resources except document-collections and document-issues (already indexed by documents index)
+                  items:
+                    $ref: '#/components/schemas/Quicksearch-type'
+                complete:
+                  type: boolean
+                  description: Does the query need to send every information about the results? If it's set to false, the id and the name of each result only will be returned.
+
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Search'
+        '404':
+          description: Resource not found
+
+  '/advanced-search':
+    post:
+      tags:
+      - search
+      description: Search for resources (caves, documents, document-collections, document-issues, entrances, massifs, organizations) in the criterias mentionned in the request. It's case insensitive. In the following parameters, paramX, paramY or paramZ must be replaced by the name of the parameter you want to search on (for example, if you want to search on a document title, use title=your_query).
+      parameters:
+      - name: query
+        in: query
+        description: Resource property (or part of property)
+        required: true
+        schema:
+          type: string
+      - name: resourceType
+        in: query
+        description: Resource type to be searched
+        required: true
+        schema:
+          type: string
+          oneOf:
+            - $ref: '#/components/schemas/Search-type'
+      - name: complete
+        in: query
+        description: Does the query need to send every information about the results? If it's set to false, the id and the name of each result will be returned.
+        required: false
+        schema:
+          type: boolean
+          default: true
+      - name: paramX
+        in: query
+        description: String property of the resource you want to search on. The resource property will be matched exactly (no auto-complete, no fuzziness etc.). You can specify as much properties as you want.
+        required: false
+        schema:
+          type: string
+      - name: paramY-min
+        in: query
+        description: Range number property of the resource you want to search on. The resource property will be superior or equal to this value. You can specify as much properties as you want.
+        required: false
+        schema:
+          type: number
+      - name: paramY-max
+        in: query
+        description: Range number property of the resource you want to search on. The resource property will be inferior or equal to this value. You can specify as much properties as you want.
+        required: false
+        schema:
+          type: number
+      - name: paramZ-bool
+        in: query
+        description: Boolean property of the resource you want to search on. You can specify as much properties as you want.
+        required: false
+        schema:
+          type: boolean
+          default: true
+
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Search'
+        '404':
+          description: Resource not found
+
+  '/geoloc/countEntries':
+    get:
+      tags:
+      - geoloc
+      description: Count entries contained inside the given coords
+      parameters:
+      - name: sw_lat
+        in: query
+        description: South West latitude
+        required: true
+        schema:
+          type: string
+      - name: sw_lng
+        in: query
+        description: South West longitude
+        required: true
+        schema:
+          type: string
+      - name: ne_lat
+        in: query
+        description: North East latitude
+        required: true
+        schema:
+          type: string
+      - name: ne_lng
+        in: query
+        description: North East longitude
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Count'
+        '404':
+          description: Resource not found
+
+
+
+  '/geoloc/findByBounds':
+    get:
+      tags:
+      - geoloc
+      description: Find entries contained inside the given coords
+      parameters:
+      - name: sw_lat
+        in: query
+        description: South West latitude
+        required: true
+        schema:
+          type: string
+      - name: sw_lng
+        in: query
+        description: South West longitude
+        required: true
+        schema:
+          type: string
+      - name: ne_lat
+        in: query
+        description: North East latitude
+        required: true
+        schema:
+          type: string
+      - name: ne_lng
+        in: query
+        description: North East longitude
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Geoloc'
+        '404':
+          description: Resource not found
+
+  '/massifs':
+    post:
+      tags:
+      - massifs
+      description: Create a massif.
+      parameters:
+      - name: description
+        in: query
+        required: true
+        description: Description of the massif
+        schema:
+          type: string
+      - name: descriptionTitle
+        in: query
+        required: true
+        description: Description title of the massif
+        schema:
+          type: string
+      - name: descriptionAndNameLanguage
+        in: query
+        required: true
+        description: Language of the description and name of the massif
+        schema:
+          type: object
+          properties:
+            id:
+              type: string
+              description: Must be a language supported by Grottocenter (see GET /languages route) using the 3-letters format.
+      - name: name
+        in: query
+        required: true
+        description: Name of the massif
+        schema:
+          type: string
+      - name: caves
+        in: query
+        description: Caves related to the massif
+        schema:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Massif'
+        '400':
+          description: Some required information are missing.
+        '403':
+          description: You are not authorized to create a massif.
+
+
+  '/massifs/{id}':
+    get:
+      tags:
+      - massifs
+      description: Get a massif, its authors, names, descriptions and caves.
+      parameters:
+      - name: id
+        in: path
+        description: Massif id
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Massif"
+        '404':
+          description: Resource not found
+
+  '/organizations':
+    post:
+      tags:
+      - organizations
+      description: Create an organization.
+      parameters:
+      - name: address
+        in: query
+        schema:
+          type: string
+      - name: city
+        in: query
+        schema:
+          type: string
+      - name: county
+        in: query
+        schema:
+          type: string
+      - name: country
+        in: query
+        schema:
+          type: object
+          properties:
+            id:
+              type: string
+      - name: customMessage
+        in: query
+        schema:
+          type: string
+      - name: latitude
+        in: query
+        schema:
+          type: number
+      - name: longitude
+        in: query
+        schema:
+          type: number
+      - name: mail
+        in: query
+        schema:
+          type: string
+      - name: name
+        in: query
+        description: Organization main name
+        required: true
+        schema:
+          type: object
+          properties:
+            text:
+              type: string
+            language:
+              type: string
+      - name: postalCode
+        in: query
+        schema:
+          type: number
+      - name: region
+        in: query
+        schema:
+          type: string
+      - name: url
+        in: query
+        schema:
+          type: string
+      - name: yearBirth
+        in: query
+        schema:
+          type: number
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Organization"
+        '400':
+          description: You must provide at least a name to create an organization.
+        '403':
+          description: You are not authorized to create an organization.
+
+
+  '/organizations/{id}':
+    delete:
+      tags:
+      - organizations
+      description: Delete an organization.
+      parameters:
+      - name: id
+        in: path
+        description: Organization id
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Successful operation
+        '404':
+          description: Organization not found.
+        '410':
+          description: Organization already deleted.
+
+    get:
+      tags:
+      - organizations
+      description: Get an organization (speleo club, association, library, editor etc.) by its id.
+      parameters:
+      - name: id
+        in: path
+        description: Organization id
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Organization"
+        '404':
+          description: Resource not found
+
+    put:
+      tags:
+        - organizations
+      description: Update an organization. See the POST /organization route explaination about the parameters you can use to update an organization.
+      parameters:
+      - name: id
+        in: path
+        description: id of the organization to be updated.
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Organization'
+        403:
+          description: You are not authorized to update an organization.
+
+  '/organizations/count':
+    get:
+      tags:
+      - organizations
+      description: Get the number of organizations.
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Count'
+
+  '/partners/count':
+    get:
+      tags:
+      - organizations
+      description: Get the number of Grottocenter official partners.
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Count'
+
+  '/partners/findForCarousel':
+    get:
+      tags:
+        - organizations
+      description: "Get all Grottocenter's partners which can be displayed in a carousel: it must have a picture and a custom message."
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Language'
+
+components:
+  schemas:
+
+    Auth-success:
+      type: object
+      properties:
+        token:
+          type: string
+
+    Cave:
+      type: object
+      properties:
+        '@context':
+          type: string
+        '@id':
+          type: string
+        '@type':
+          type: string
+        author:
+          $ref: '#/components/schemas/Caver'
+        dateInscription:
+          type: string
+        dateReviewed:
+          type: string
+        depth:
+          type: integer
+        descriptions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Description'
+        documents:
+          type: array
+          items:
+            $ref: '#/components/schemas/Document'
+        entrances:
+          type: array
+          items:
+            $ref: '#/components/schemas/Entrance'
+        id:
+          type: integer
+        isDiving:
+          type: boolean
+        length:
+          type: integer
+        name:
+          type: string
+        names:
+          type: array
+          items:
+            $ref: '#/components/schemas/Name'
+        reviewer:
+          $ref: '#/components/schemas/Caver'
+        temperature:
+          type: integer
+
+    Caver:
+      type: object
+      properties:
+        '@context':
+          type: string
+        '@id':
+          type: string
+        '@type':
+          type: string
+        documents:
+          type: array
+          items:
+            type: string
+        groups:
+          type: array
+          items:
+            type: string
+        id:
+          type: integer
+        mail:
+          type: string
+        name:
+          type: string
+        nickname:
+          type: string
+        surname:
+          type: string
+
+    Comment:
+      type: object
+      properties:
+        aestheticism:
+          type: number
+        alert:
+          type: boolean
+        approach:
+          type: number
+        author:
+          $ref: '#/components/schemas/Caver'
+        body:
+          type: string
+        cave:
+          $ref: '#/components/schemas/Cave'
+        caving:
+          type: number
+        dateInscription:
+          type: string
+        dateReviewed:
+          type: string
+        entrance:
+          $ref: '#/components/schemas/Entrance'
+        exit:
+          $ref: '#/components/schemas/Entrance'
+        eTTrail:
+          type: object
+        eTUnderground:
+          type: object
+        id:
+          type: integer
+        language:
+          type: string
+        relevance:
+          type: number
+        reviewer:
+          $ref: '#/components/schemas/Caver'
+        title:
+          type: string
+
+    Count:
+      type: object
+      properties:
+        count:
+          type: integer
+
+    Description:
+      type: object
+      properties:
+        author:
+          $ref: '#/components/schemas/Caver'
+        body:
+          type: string
+        cave:
+          $ref: '#/components/schemas/Cave'
+        dateInscription:
+          type: string
+        dateReviewed:
+          type: string
+        document:
+          $ref: '#/components/schemas/Document'
+        entrance:
+          $ref: '#/components/schemas/Entrance'
+        exit:
+          $ref: '#/components/schemas/Entrance'
+        id:
+          type: integer
+        language:
+          $ref: '#/components/schemas/Language'
+        massif:
+          $ref: '#/components/schemas/Massif'
+        point:
+          $ref: '#/components/schemas/Point'
+        relevance:
+          type: integer
+        reviewer:
+          $ref: '#/components/schemas/Caver'
+        title:
+          type: string
+
+    Document:
+      type: object
+      properties:
+        author:
+          $ref: '#/components/schemas/Caver'
+        authorComment:
+          type: string
+        cave:
+          $ref: '#/components/schemas/Cave'
+        commentsBBSOld:
+          type: string
+        dateInscription:
+          type: string
+        datePublication:
+          type: string
+        dateReviewed:
+          type: string
+        descriptions:
+          type: array
+          items:
+            type: object
+            properties:
+              author:
+                $ref: '#/components/schemas/Caver'
+              dateInscription:
+                type: string
+              dateReviewed:
+                type: string
+              id:
+                type: integer
+              relevance:
+                type: integer
+              reviewer:
+                $ref: '#/components/schemas/Caver'
+              text:
+                type: string
+        editor:
+          $ref: '#/components/schemas/Organization'
+        entrance:
+          $ref: '#/components/schemas/Entrance'
+        files:
+          type: array
+          items:
+            $ref: '#/components/schemas/File'
+        id:
+          type: integer
+        identifier:
+          type: string
+        identifierType:
+          $ref: '#/components/schemas/Document-identifierType'
+        isValidated:
+          type: boolean
+        languages:
+          type: array
+          items:
+            $ref: '#/components/schemas/Language'
+        library:
+          $ref: '#/components/schemas/Organization'
+        license:
+          $ref: '#/components/schemas/License'
+        mainLanguage:
+          $ref: '#/components/schemas/Language'
+        massif:
+          $ref: '#/components/schemas/Massif'
+        pages:
+          type: string
+        parent:
+          $ref: '#/components/schemas/Document'
+        publication:
+          type: string
+        publicationFasciculeBBSOld:
+          type: string
+        refBbs:
+          type: string
+        regions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Region'
+        reviewer:
+          $ref: '#/components/schemas/Caver'
+        subjects:
+          type: array
+          items:
+            $ref: '#/components/schemas/Document-subject'
+        titles:
+          type: array
+          items:
+            type: object
+            properties:
+              author:
+                $ref: '#/components/schemas/Caver'
+              dateInscription:
+                type: string
+              dateReviewed:
+                type: string
+              id:
+                type: integer
+              relevance:
+                type: integer
+              reviewer:
+                $ref: '#/components/schemas/Caver'
+              text:
+                type: string
+        type:
+          $ref: '#/components/schemas/Document-type'
+        validationComment:
+          type: string
+        validator:
+          $ref: '#/components/schemas/Caver'
+
+    Document-identifierType:
+      type: object
+      properties:
+        code:
+          type: string
+        text:
+          type: string
+        regexp:
+          type: string
+
+    Document-subject:
+      type: object
+      properties:
+        code:
+          type: string
+        subject:
+          type: string
+        parent:
+          type: string
+
+    Document-type:
+      type: object
+      properties:
+        comment:
+          type: string
+        id:
+          type: integer
+        name:
+          type: string
+        parent:
+          $ref: '#/components/schemas/Document-type'
+
+    Entrance:
+      type: object
+      properties:
+        '@base':
+          type: string
+        '@context':
+          type: string
+        '@id':
+          type: string
+        '@type':
+          type: string
+        author:
+          $ref: '#/components/schemas/Caver'
+        cave:
+          $ref: '#/components/schemas/Cave'
+        city:
+          type: string
+        comments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Comment'
+        country:
+          type: string
+        county:
+          type: string
+        descriptions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Description'
+        documents:
+          type: array
+          items:
+            $ref: '#/components/schemas/Document'
+        id:
+          type: integer
+        latitude:
+          type: number
+        locations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Location'
+        longitude:
+          type: number
+        precision:
+          description: GPS precision in meters
+          type: integer
+        name:
+          type: string
+        names:
+          type: array
+          items:
+            $ref: '#/components/schemas/Name'
+        region:
+          type: string
+        riggings:
+          type: array
+          items:
+            $ref: '#/components/schemas/Rigging'
+        stats:
+          $ref: '#/components/schemas/Entrance-stats'
+        discoveryYear:
+          type: integer
+
+    Entrance-stats:
+      type: object
+      properties:
+        aestheticism:
+          type: number
+          format: float
+        caving:
+          type: number
+          format: float
+        approach:
+          type: number
+          format: float
+
+    File:
+      type: object
+      properties:
+        dateInscription:
+          type: string
+        dateReviewed:
+          type: string
+        document:
+          $ref: '#/components/schemas/Document'
+        fileFormat:
+          $ref: '#/components/schemas/File-format'
+        fileName:
+          type: string
+
+    File-format:
+      type: object
+      properties:
+        comment:
+          type: string
+        extension:
+          type: string
+        id:
+          type: integer
+        mimeType:
+          type: string
+        softwares:
+          type: string
+
+    Geoloc:
+      properties:
+        entries:
+          type: array
+          items:
+            $ref: '#/components/schemas/Entrance'
+
+    Language:
+      properties:
+        id:
+          type: string
+        part2b:
+          type: string
+        part2t:
+          type: string
+        part1:
+          type: string
+        scope:
+          type: string
+        type:
+          type: string
+        ref_name:
+          type: string
+        comment:
+          type: string
+
+    License:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        text:
+          type: string
+
+    Location:
+      type: object
+      properties:
+        author:
+          $ref: '#/components/schemas/Caver'
+        body:
+          type: string
+        dateInscription:
+          type: string
+        dateReviewed:
+          type: string
+        entrance:
+          $ref: '#/components/schemas/Entrance'
+        id:
+          type: integer
+        language:
+          type: string
+        relevance:
+          type: integer
+        reviewer:
+          $ref: '#/components/schemas/Caver'
+        title:
+          type: string
+
+    Massif:
+      type: object
+      properties:
+        author:
+          $ref: '#/components/schemas/Caver'
+        caves:
+          type: array
+          items:
+            $ref: '#/components/schemas/Cave'
+        dateInscription:
+          type: string
+        dateReviewed:
+          type: string
+        id:
+          type: integer
+        name:
+          type: string
+        reviewer:
+          $ref: '#/components/schemas/Caver'
+
+    Name:
+      properties:
+        author:
+          $ref: '#/components/schemas/Caver'
+        cave:
+          $ref: '#/components/schemas/Cave'
+        dateInscription:
+          type: string
+        dateReviewed:
+          type: string
+        entrance:
+          $ref: '#/components/schemas/Entrance'
+        id:
+          type: integer
+        isMain:
+          type: boolean
+        language:
+          type: string
+        massif:
+          $ref: '#/components/schemas/Massif'
+        name:
+          type: string
+        organization:
+          $ref: '#/components/schemas/Organization'
+        point:
+          type: object
+        reviewer:
+          $ref: '#/components/schemas/Caver'
+
+    Organization:
+      type: object
+      properties:
+        address:
+          type: 'string'
+        author:
+          $ref: '#/components/schemas/Caver'
+        cavers:
+          type: array
+          items:
+            $ref: '#/components/schemas/Caver'
+        city:
+          type: 'string'
+        country:
+          type: 'string'
+        county:
+          type: 'string'
+        customMessage:
+          type: 'string'
+        dateInscription:
+          type: 'string'
+        dateReviewed:
+          type: 'string'
+        exploredCaves:
+          type: array
+          items:
+            $ref: '#/components/schemas/Cave'
+        id:
+          type: integer
+        isOfficialPartner:
+          type: 'boolean'
+        latitude:
+          type: number
+        longitude:
+          type: number
+        mail:
+          type: 'string'
+        name:
+          type: 'string'
+        partneredCaves:
+          type: array
+          items:
+            $ref: '#/components/schemas/Cave'
+        pictureFileName:
+          type: 'string'
+        postalCode:
+          type: 'string'
+        region:
+          type: 'string'
+        reviewer:
+          $ref: '#/components/schemas/Caver'
+        village:
+          type: 'string'
+        yearBirth:
+          type: 'string'
+
+    Point:
+      type: object
+
+    Quicksearch-type:
+      type: string
+      enum:
+        - cavers
+        - documents
+        - document-collections
+        - document-issues
+        - entrances
+        - grottos
+        - massifs
+
+    Region:
+      properties:
+        code:
+          type: string
+        country:
+          type: string
+        id:
+          type: integer
+        isDeprecated:
+          type: boolean
+        name:
+          type: string
+
+    ResetPasswordToken:
+      properties:
+        action:
+          type: string
+        userId:
+          type: integer
+        iat:
+          type: string
+          description: Creation date (Unix time)
+        exp:
+          type: string
+          description: Expiration date (Unix time)
+
+    Rigging:
+      type: object
+      properties:
+        anchors:
+          type: string
+        author:
+          $ref: '#/components/schemas/Caver'
+        dateInscription:
+          type: string
+        dateReviewed:
+          type: string
+        exit:
+          $ref: '#/components/schemas/Entrance'
+        id:
+          type: integer
+        language:
+          type: string
+        name:
+          type: string
+        observations:
+          type: string
+        obstacles:
+          type: string
+        point:
+          $ref: '#/components/schemas/Point'
+        relevance:
+          type: number
+        reviewer:
+          $ref: '#/components/schemas/Caver'
+        ropes:
+          type: string
+        title:
+          type: string
+
+    Search:
+      properties:
+        results:
+          type: array
+          items:
+            oneOf:
+              - $ref: '#/components/schemas/Entrance'
+              - $ref: '#/components/schemas/Massif'
+              - $ref: '#/components/schemas/Organization'
+
+    Search-type:
+      type: string
+      enum:
+        - cavers
+        - documents
+        - document-collections
+        - document-issues
+        - entrances
+        - grottos
+        - massifs

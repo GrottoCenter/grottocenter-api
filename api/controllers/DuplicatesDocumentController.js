@@ -5,6 +5,8 @@
  * @help        :: See https://sailsjs.com/docs/concepts/actions
  */
 
+const ErrorService = require('../services/ErrorService');
+
 module.exports = {
   createMany: async (req, res) => {
     //Same right as document, because a duplicate may only exist if a document is created.
@@ -25,17 +27,15 @@ module.exports = {
       );
     }
 
-    const dateCreation = req.param('data', new Date());
+    const dateCreation = req.param('date', new Date());
 
-    const createPromises = req.body.data.map((content) => {
-      return TDuplicateDocument.create({
-        date: dateCreation,
-        content: content,
-        document: content.document,
-      });
-    });
+    const duplicateParams = req.body.data.map((content) => ({
+      date: dateCreation,
+      content: content,
+      document: content.document,
+    }));
 
-    await Promise.all(createPromises);
+    await TDuplicateDocument.createEach(duplicateParams);
     return res.ok();
   },
 
@@ -58,33 +58,45 @@ module.exports = {
       );
     }
 
-    const id = req.param('id');
-    const duplicate = await TDuplicateDocument.findOne(id);
-    if (!duplicate) {
-      return res.notFound();
+    if (
+      !(await sails.helpers.checkIfExists.with({
+        attributeName: 'id',
+        attributeValue: req.param('id'),
+        sailsModel: TDuplicateDocument,
+      }))
+    ) {
+      return res.badRequest(
+        `Could not find duplicate with id ${req.param('id')}.`,
+      );
     }
 
+    const duplicate = await TDuplicateDocument.findOne(id);
+
     const { document, description } = duplicate.content;
-    await DocumentService.createDocument(document, description);
-    await TDuplicateDocument.destroyOne(id);
-    return res.ok();
+    try {
+      await DocumentService.createDocument(document, description);
+      await TDuplicateDocument.destroyOne(id);
+      return res.ok();
+    } catch (e) {
+      ErrorService.getDefaultErrorHandler(res)(e);
+    }
   },
 
   delete: async (req, res) => {
     const hasRight = await sails.helpers.checkRight
       .with({
         groups: req.token.groups,
-        rightEntity: RightService.RightEntities.ENTRANCE,
+        rightEntity: RightService.RightEntities.DOCUMENT,
         rightAction: RightService.RightActions.DELETE_ANY,
       })
       .intercept('rightNotFound', (err) => {
         return res.serverError(
-          'A server error occured when checking your right to delete an entrance duplicate.',
+          'A server error occured when checking your right to delete an document duplicate.',
         );
       });
     if (!hasRight) {
       return res.forbidden(
-        'You are not authorized to delete a entrance duplicate.',
+        'You are not authorized to delete a document duplicate.',
       );
     }
     const id = req.param('id');
@@ -92,9 +104,16 @@ module.exports = {
       return res.badRequest('You must provide the id of the duplicate.');
     }
 
-    const duplicate = await TDuplicateDocument.findOne(id);
-    if (!duplicate) {
-      return res.notFound();
+    if (
+      !(await sails.helpers.checkIfExists.with({
+        attributeName: 'id',
+        attributeValue: req.param('id'),
+        sailsModel: TDuplicateDocument,
+      }))
+    ) {
+      return res.badRequest(
+        `Could not find duplicate with id ${req.param('id')}.`,
+      );
     }
 
     await TDuplicateDocument.destroyOne(id);
@@ -130,20 +149,25 @@ module.exports = {
       });
       return res.ok();
     } catch (err) {
-      return res.serverError(
-        'An error occured while trying to delete the duplicates.',
-      );
+      ErrorService.getDefaultErrorHandler(res)(err);
     }
   },
 
   find: async (req, res) => {
+    if (
+      !(await sails.helpers.checkIfExists.with({
+        attributeName: 'id',
+        attributeValue: req.param('id'),
+        sailsModel: TDuplicateDocument,
+      }))
+    ) {
+      return res.badRequest(
+        `Could not find duplicate with id ${req.param('id')}.`,
+      );
+    }
     const duplicate = await TDuplicateDocument.findOne(
       req.param('id'),
     ).populate('author');
-
-    if (!duplicate) {
-      return res.notFound();
-    }
 
     // Populate the document
     const found = await TDocument.findOne(duplicate.document)
@@ -166,7 +190,7 @@ module.exports = {
       .populate('subjects')
       .populate('type');
     await DescriptionService.setDocumentDescriptions(found);
-    duplicate.document = MappingV1Service.convertToDocumentModel(found);
+    duplicate.document = found;
 
     // Populate the duplicate
     const duplicateDoc = duplicate.content.document;
@@ -181,7 +205,7 @@ module.exports = {
       duplicateDesc.titleAndDescriptionLanguage = undefined;
     }
 
-    const popDuplicate = await DocumentService.populateTable(duplicateDoc);
+    const popDuplicate = await DocumentService.populateJSON(duplicateDoc);
     const descLangTable = descLang
       ? await TLanguage.findOne(descLang)
       : undefined;
@@ -191,17 +215,35 @@ module.exports = {
         language: descLangTable,
       },
     ];
-    duplicate.content = MappingV1Service.convertToDocumentModel(popDuplicate);
+    duplicate.content = popDuplicate;
 
-    return res.ok(duplicate);
+    return ControllerService.treatAndConvert(
+      req,
+      null,
+      duplicate,
+      null,
+      res,
+      MappingV1Service.convertToDocumentDuplicateModel,
+    );
   },
 
   findAll: async (req, res) => {
-    const duplicates = await TDuplicateDocument.find()
-      .skip(req.param('skip', 0))
-      .limit(req.param('limit', 50))
-      .populate('author');
+    try {
+      const duplicates = await TDuplicateDocument.find()
+        .skip(req.param('skip', 0))
+        .limit(req.param('limit', 50))
+        .populate('author');
 
-    return res.ok(duplicates);
+      return ControllerService.treatAndConvert(
+        req,
+        null,
+        duplicates,
+        null,
+        res,
+        MappingV1Service.convertToDocumentDuplicateList,
+      );
+    } catch (err) {
+      ErrorService.getDefaultErrorHandler(res)(err);
+    }
   },
 };

@@ -180,7 +180,13 @@ module.exports = {
     return newEntrancePopulated;
   },
 
-  populateTable: async (entrance) => {
+  /**
+   * Populate any entrance-like object.
+   * Avoid using when possible. Mainly used for json column that cannot be populated using waterline query language.
+   * @param {*} entrance
+   * @returns populated entrance
+   */
+  populateJSON: async (entrance) => {
     const {
       author,
       cave,

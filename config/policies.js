@@ -201,19 +201,11 @@ module.exports.policies = {
     '*': true,
   },
   DuplicatesDocumentController: {
-    createNewEntityFromDuplicate: ['tokenAuth', 'moderatorAuth'],
-    find: ['tokenAuth', 'moderatorAuth'],
-    findAll: ['tokenAuth', 'moderatorAuth'],
-    delete: ['tokenAuth', 'moderatorAuth'],
-    deleteMany: ['tokenAuth', 'moderatorAuth'],
+    '*': ['tokenAuth', 'moderatorAuth'],
   },
 
   DuplicatesEntranceController: {
-    createNewEntityFromDuplicate: ['tokenAuth', 'moderatorAuth'],
-    find: ['tokenAuth', 'moderatorAuth'],
-    findAll: ['tokenAuth', 'moderatorAuth'],
-    delete: ['tokenAuth', 'moderatorAuth'],
-    deleteMany: ['tokenAuth', 'moderatorAuth'],
+    '*': ['tokenAuth', 'moderatorAuth'],
   },
 
   /***************************************************************************

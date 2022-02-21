@@ -9,6 +9,7 @@ module.exports = {
   children: [],
   dateInscription: undefined,
   datePublication: undefined,
+  dateReviewed: undefined,
   dateValidation: undefined,
   descriptions: [],
   editor: undefined,
