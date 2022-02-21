@@ -12,7 +12,9 @@ const CaveModel = require('./mappingModels/CaveModel');
 const CaverModel = require('./mappingModels/CaverModel');
 const CountResultModel = require('./mappingModels/CountResultModel');
 const DescriptionModel = require('./mappingModels/DescriptionModel');
+const DocumentDuplicateModel = require('./mappingModels/DocumentDuplicateModel');
 const DocumentModel = require('./mappingModels/DocumentModel');
+const EntranceDuplicateModel = require('./mappingModels/EntranceDuplicateModel');
 const EntranceModel = require('./mappingModels/EntranceModel');
 const LocationModel = require('./mappingModels/LocationModel');
 const MassifModel = require('./mappingModels/MassifModel');
@@ -883,5 +885,65 @@ module.exports = {
     return {
       subjects,
     };
+  },
+
+  // ---------------- Duplicate Mapping ---------------------------
+
+  convertToDocumentDuplicateModel: (source) => {
+    const result = {
+      ...DocumentDuplicateModel,
+    };
+
+    result.id = source.id;
+    result.author =
+      source.author instanceof Object
+        ? MappingV1Service.convertToCaverModel(source.author)
+        : undefined;
+    result.content =
+      source.content instanceof Object
+        ? MappingV1Service.convertToDocumentModel(source.content)
+        : source.content;
+    result.date = source.date;
+    result.document =
+      source.document instanceof Object
+        ? MappingV1Service.convertToDocumentModel(source.document)
+        : source.document;
+
+    return result;
+  },
+
+  convertToDocumentDuplicateList: (source) => {
+    return source.map((duplicate) =>
+      MappingV1Service.convertToDocumentDuplicateModel(duplicate),
+    );
+  },
+
+  convertToEntranceDuplicateModel: (source) => {
+    const result = {
+      ...EntranceDuplicateModel,
+    };
+
+    result.id = source.id;
+    result.author =
+      source.author instanceof Object
+        ? MappingV1Service.convertToCaverModel(source.author)
+        : undefined;
+    result.content =
+      source.content instanceof Object
+        ? MappingV1Service.convertToEntranceModel(source.content)
+        : source.content;
+    result.date = source.date;
+    result.entrance =
+      source.entrance instanceof Object
+        ? MappingV1Service.convertToEntranceModel(source.entrance)
+        : source.entrance;
+
+    return result;
+  },
+
+  convertToEntranceDuplicateList: (source) => {
+    return source.map((duplicate) =>
+      MappingV1Service.convertToEntranceDuplicateModel(duplicate),
+    );
   },
 };

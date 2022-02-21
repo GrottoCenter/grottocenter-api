@@ -25,17 +25,15 @@ module.exports = {
       );
     }
 
-    const dateCreation = req.param('data', new Date());
+    const dateCreation = req.param('date', new Date());
 
-    const createPromises = req.body.data.map((content) => {
-      return TDuplicateEntrance.create({
-        date: dateCreation,
-        content: content,
-        document: content.document,
-      });
-    });
+    const duplicateParams = req.body.data.map((content) => ({
+      date: dateCreation,
+      content: content,
+      document: content.document,
+    }));
 
-    await Promise.all(createPromises);
+    await TDuplicateEntrance.createEach(duplicateParams);
     return res.ok();
   },
 
@@ -57,16 +55,28 @@ module.exports = {
         'You are not authorized to create a document duplicate.',
       );
     }
-    const id = req.param('id');
-    const duplicate = await TDuplicateEntrance.findOne(id);
-    if (!duplicate) {
-      return res.notFound();
+    if (
+      !(await sails.helpers.checkIfExists.with({
+        attributeName: 'id',
+        attributeValue: req.param('id'),
+        sailsModel: TDuplicateEntrance,
+      }))
+    ) {
+      return res.badRequest(
+        `Could not find duplicate with id ${req.param('id')}.`,
+      );
     }
 
+    const duplicate = await TDuplicateEntrance.findOne(id);
+
     const { entrance, nameDescLoc } = duplicate.content;
-    const a = await EntranceService.createEntrance(entrance, nameDescLoc);
-    await TDuplicateEntrance.destroyOne(id);
-    return res.ok();
+    try {
+      await EntranceService.createEntrance(entrance, nameDescLoc);
+      await TDuplicateEntrance.destroyOne(id);
+      return res.ok();
+    } catch (e) {
+      ErrorService.getDefaultErrorHandler(res)(e);
+    }
   },
 
   delete: async (req, res) => {
@@ -78,12 +88,12 @@ module.exports = {
       })
       .intercept('rightNotFound', (err) => {
         return res.serverError(
-          'A server error occured when checking your right to delete a document duplicate.',
+          'A server error occured when checking your right to delete an entrance duplicate.',
         );
       });
     if (!hasRight) {
       return res.forbidden(
-        'You are not authorized to delete a document duplicate.',
+        'You are not authorized to delete a entrance duplicate.',
       );
     }
     const id = req.param('id');
@@ -91,9 +101,16 @@ module.exports = {
       return res.badRequest('You must provide the id of the duplicate.');
     }
 
-    const duplicate = await TDuplicateEntrance.findOne(id);
-    if (!duplicate) {
-      return res.notFound();
+    if (
+      !(await sails.helpers.checkIfExists.with({
+        attributeName: 'id',
+        attributeValue: req.param('id'),
+        sailsModel: TDuplicateEntrance,
+      }))
+    ) {
+      return res.badRequest(
+        `Could not find duplicate with id ${req.param('id')}.`,
+      );
     }
 
     await TDuplicateEntrance.destroyOne(id);
@@ -109,12 +126,12 @@ module.exports = {
       })
       .intercept('rightNotFound', (err) => {
         return res.serverError(
-          'A server error occured when checking your right to delete a document duplicate.',
+          'A server error occured when checking your right to delete a entrance duplicate.',
         );
       });
     if (!hasRight) {
       return res.forbidden(
-        'You are not authorized to delete a document duplicate.',
+        'You are not authorized to delete a entrance duplicate.',
       );
     }
     const idArray = req.param('id');
@@ -128,23 +145,29 @@ module.exports = {
       });
       return res.ok();
     } catch (err) {
-      return res.serverError(
-        'An error occured while trying to delete the duplicates.',
-      );
+      ErrorService.getDefaultErrorHandler(res)(err);
     }
   },
 
   find: async (req, res) => {
+    if (
+      !(await sails.helpers.checkIfExists.with({
+        attributeName: 'id',
+        attributeValue: req.param('id'),
+        sailsModel: TDuplicateEntrance,
+      }))
+    ) {
+      return res.badRequest(
+        `Could not find duplicate with id ${req.param('id')}.`,
+      );
+    }
+
     // Populate the entrance
     const duplicateFound = await TDuplicateEntrance.findOne(
       req.param('id'),
     ).populate('author');
 
-    if (!duplicateFound) {
-      return res.notFound();
-    }
-
-    const entranceFound = await TEntrance.findOne(duplicateFound.entrance)
+    duplicateFound.entrance = await TEntrance.findOne(duplicateFound.entrance)
       .populate('author')
       .populate('cave')
       .populate('names')
@@ -155,14 +178,10 @@ module.exports = {
       .populate('riggings')
       .populate('comments');
 
-    duplicateFound.entrance = MappingV1Service.convertToEntranceModel(
-      entranceFound,
-    );
-
     // Populate the duplicate
     const duplicateEntrance = duplicateFound.content.entrance;
     const { description, location, name } = duplicateFound.content.nameDescLoc;
-    const popDuplicate = await EntranceService.populateTable(duplicateEntrance);
+    const popDuplicate = await EntranceService.populateJSON(duplicateEntrance);
     if (description) {
       description.author = await TCaver.findOne(description.author);
       popDuplicate.descriptions = [description];
@@ -175,18 +194,35 @@ module.exports = {
       popDuplicate.names = [name];
     }
 
-    duplicateFound.content = MappingV1Service.convertToEntranceModel(
-      popDuplicate,
+    duplicateFound.content = popDuplicate;
+
+    return ControllerService.treatAndConvert(
+      req,
+      null,
+      duplicateFound,
+      null,
+      res,
+      MappingV1Service.convertToEntranceDuplicateModel,
     );
-    return res.ok(duplicateFound);
   },
 
   findAll: async (req, res) => {
-    const duplicates = await TDuplicateEntrance.find()
-      .skip(req.param('skip', 0))
-      .limit(req.param('limit', 50))
-      .populate('author');
+    try {
+      const duplicates = await TDuplicateEntrance.find()
+        .skip(req.param('skip', 0))
+        .limit(req.param('limit', 50))
+        .populate('author');
 
-    return res.ok(duplicates);
+      return ControllerService.treatAndConvert(
+        req,
+        null,
+        duplicates,
+        null,
+        res,
+        MappingV1Service.convertToEntranceDuplicateList,
+      );
+    } catch (err) {
+      ErrorService.getDefaultErrorHandler(res)(err);
+    }
   },
 };
