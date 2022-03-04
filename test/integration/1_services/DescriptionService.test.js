@@ -21,7 +21,7 @@ describe('DescriptionService', () => {
         'Une superbe collection',
       );
     });
-    it('should do nothing and don\t throw an error if a document is not provided', async () => {
+    it('should do nothing and not throw an error if a document is not provided', async () => {
       await DescriptionService.setDocumentDescriptions(null);
     });
   });
