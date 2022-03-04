@@ -6,6 +6,7 @@
  */
 
 const ramda = require('ramda');
+const DescriptionService = require('../services/DescriptionService');
 const DocumentService = require('../services/DocumentService');
 const ErrorService = require('../services/ErrorService');
 
@@ -805,29 +806,30 @@ module.exports = {
           newFiles,
           modifiedFiles,
           deletedFiles,
-          ...cleanedData
+          ...otherData
         } = modifiedDocJson;
 
         // Join the tables
-        found = { ...cleanedData, id };
+        found = { ...otherData, id };
         found.author = author ? await TCaver.findOne(author) : null;
+        found.authorizationDocument = authorizationDocument
+          ? await TDocument.findOne(authorizationDocument)
+          : null;
         found.cave = cave ? await TCave.findOne(cave) : null;
-        found.entrance = entrance ? await TEntrance.findOne(entrance) : null;
-        found.massif = massif ? await TMassif.findOne(massif) : null;
         found.editor = editor ? await TGrotto.findOne(editor) : null;
+        found.entrance = entrance ? await TEntrance.findOne(entrance) : null;
         found.identifierType = identifierType
           ? await TIdentifierType.findOne(identifierType)
           : null;
         found.library = library ? await TGrotto.findOne(library) : null;
+        found.license = license ? await TLicense.findOne(license) : null;
+        found.massif = massif ? await TMassif.findOne(massif) : null;
+        found.option = option ? await TOption.findOne(option) : null;
         found.parent = parent ? await TDocument.findOne(parent) : null;
         found.reviewer = reviewer ? await TCaver.findOne(reviewer) : null;
         found.type = type ? await TType.findOne(type) : null;
-        found.license = license ? await TLicense.findOne(license) : null;
-        found.option = option ? await TOption.findOne(option) : null;
-        found.authorizationDocument = authorizationDocument
-          ? await TDocument.findOne(authorizationDocument)
-          : null;
 
+        // Collections
         found.subjects = subjects
           ? await Promise.all(
               subjects.map(async (subject) => {
@@ -850,7 +852,9 @@ module.exports = {
             )
           : [];
 
-        let criteria = {
+        // Files retrieval
+
+        let filesCriterias = {
           document: id,
           isValidated: true,
         };
@@ -860,30 +864,27 @@ module.exports = {
         filesToIgnore =
           (deletedFiles && ramda.concat(filesToIgnore, deletedFiles)) ||
           filesToIgnore;
-
         const filesToIgnoreId = filesToIgnore.map((file) => file.id);
+
         if (!ramda.isEmpty(filesToIgnoreId)) {
-          criteria = {
+          filesCriterias = {
             document: id,
             id: { '!=': filesToIgnoreId },
             isValidated: true,
           };
         }
-
-        const files = await TFile.find(criteria);
-
+        const files = await TFile.find(filesCriterias);
         found.files = files;
         found.newFiles = newFiles;
         found.deletedFiles = deletedFiles;
         found.modifiedFiles = modifiedFiles;
 
-        //We can only modify the main language, so we don't have a "languages" attribute stored in the json. Uncomment if the possibility to add language is implemented.
-        //found.languages = languages ? await Promise.all(languages.map(async (language) => { return await TLanguage.findOne(language)})) : [];
-
+        // We can only modify the main language, so we don't have a "languages" attribute stored in the json. Uncomment if the possibility to add language is implemented.
+        // found.languages = languages ? await Promise.all(languages.map(async (language) => { return await TLanguage.findOne(language)})) : [];
         found.mainLanguage = await TLanguage.findOne(documentMainLanguage);
-        if (found.editor) {
+
           await NameService.setNames([found.editor], 'grotto');
-        }
+        await NameService.setNames([found.editor], 'grotto');
 
         // Handle the description because even if it has been modified, the entry in TDescription stayed intact.
         const descLang = await TLanguage.findOne(titleAndDescriptionLanguage);
@@ -895,8 +896,8 @@ module.exports = {
           document: id,
           language: descLang,
         });
-      } catch (err) {
-        return res.serverError(err.toString());
+      } catch (e) {
+        ErrorService.getDefaultErrorHandler(res)(e);
       }
     } else {
       found = await TDocument.findOne(req.param('id'))
