@@ -435,55 +435,43 @@ module.exports = {
 
     const langDescData = getLangDescDataFromClient(req);
 
-    const handleError = (error) => {
-      if (error.code && error.code === 'E_UNIQUE') {
-        return res.sendStatus(409);
-      } else {
-        switch (error.name) {
-          case 'UsageError':
-            return res.badRequest(error.message);
-          case 'AdapterError':
-            return res.badRequest(error.message);
-          default:
-            return res.serverError(error.message);
-        }
-      }
-    };
-
-    const documentCreated = await DocumentService.createDocument(
-      cleanedData,
-      langDescData,
-      handleError,
-    );
-    const errorFiles = [];
-    if (req.files && req.files.files) {
-      const { files } = req.files;
-      for (const file of files) {
-        try {
-          await FileService.create(file, documentCreated.id);
-        } catch (err) {
-          errorFiles.push({
-            fileName: file.originalname,
-            error: err.toString(),
-          });
-        }
-      }
-    }
-
-    const requestResponse = {
-      document: documentCreated,
-      status: !ramda.isEmpty(errorFiles)
-        ? {
-            errorCode: 'FileNotImported',
-            errorString: 'Some files were not imported.',
-            content: errorFiles,
+    try {
+      const documentCreated = await DocumentService.createDocument(
+        cleanedData,
+        langDescData,
+      );
+      const errorFiles = [];
+      if (req.files && req.files.files) {
+        const { files } = req.files;
+        for (const file of files) {
+          try {
+            await FileService.create(file, documentCreated.id);
+          } catch (err) {
+            errorFiles.push({
+              fileName: file.originalname,
+              error: err.toString(),
+            });
           }
-        : undefined,
-    };
+        }
+      }
 
-    const params = {};
-    params.controllerMethod = 'DocumentController.create';
-    return ControllerService.treat(req, null, requestResponse, params, res);
+      const requestResponse = {
+        document: documentCreated,
+        status: !ramda.isEmpty(errorFiles)
+          ? {
+              errorCode: 'FileNotImported',
+              errorString: 'Some files were not imported.',
+              content: errorFiles,
+            }
+          : undefined,
+      };
+
+      const params = {};
+      params.controllerMethod = 'DocumentController.create';
+      return ControllerService.treat(req, null, requestResponse, params, res);
+    } catch (e) {
+      ErrorService.getDefaultErrorHandler(res)(e);
+    }
   },
 
   update: async (req, res) => {
