@@ -543,9 +543,17 @@ module.exports = {
         return res.status(404);
       }
 
+      await DescriptionService.setDocumentDescriptions(updatedDocument, false);
       const params = {};
       params.controllerMethod = 'DocumentController.update';
-      return ControllerService.treat(req, null, updatedDocument, params, res);
+      return ControllerService.treatAndConvert(
+        req,
+        null,
+        updatedDocument,
+        params,
+        res,
+        MappingV1Service.convertToDocumentModel,
+      );
     } catch (e) {
       ErrorService.getDefaultErrorHandler(res)(e);
     }
