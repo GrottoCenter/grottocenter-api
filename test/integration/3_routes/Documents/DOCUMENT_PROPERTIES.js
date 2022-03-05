@@ -1,0 +1,28 @@
+const DOCUMENT_PROPERTIES = [
+  '@context',
+  '@id',
+  '@type',
+  'id',
+  'authorComment',
+  'authorizationDocument',
+  'children',
+  'dateInscription',
+  'datePublication',
+  'dateValidation',
+  'descriptions',
+  'editor',
+  'issue',
+  'identifier',
+  'identifierType',
+  'isValidated',
+  'library',
+  'license',
+  'modifiedDocJson',
+  'option',
+  'pages',
+  'type',
+  'validationComment',
+  'validator',
+];
+
+module.exports = DOCUMENT_PROPERTIES;
