@@ -70,16 +70,21 @@ const getLangDescDataFromClient = (req) => {
     author: req.token.id,
     description: req.body.description,
     title: req.body.title,
-    titleAndDescriptionLanguage: {
-      id: req.body.titleAndDescriptionLanguage.id,
-    },
   };
 
-  if (ramda.pathOr(null, ['documentMainLanguage', 'id'], req.body)) {
+  if (ramda.pathOr(false, ['documentMainLanguage', 'id'], req.body)) {
     langDescData = {
       ...langDescData,
       documentMainLanguage: {
         id: req.body.documentMainLanguage.id,
+      },
+    };
+  }
+  if (ramda.pathOr(false, ['titleAndDescriptionLanguage', 'id'], req.body)) {
+    langDescData = {
+      ...langDescData,
+      titleAndDescriptionLanguage: {
+        id: req.body.titleAndDescriptionLanguage.id,
       },
     };
   }
@@ -519,17 +524,14 @@ module.exports = {
 
     // Update json data (upcoming modifications which need to be validated)
     const dataFromClient = await getConvertedDataFromClient(req);
+    const descriptionData = await getLangDescDataFromClient(req);
     const jsonData = {
       ...dataFromClient,
+      ...descriptionData,
       id: req.param('id'),
-      documentMainLanguage: req.body.documentMainLanguage.id,
       author: req.token.id,
-      description: req.body.description,
-      titleAndDescriptionLanguage: req.body.titleAndDescriptionLanguage.id,
-      title: req.body.title,
       newFiles: ramda.isEmpty(newFilesArray) ? undefined : newFilesArray,
     };
-
     try {
       const updatedDocument = await TDocument.updateOne(req.param('id')).set({
         isValidated: false,
