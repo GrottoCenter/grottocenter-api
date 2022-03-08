@@ -23,55 +23,12 @@
     "language": "fra"
   },
   {
-    "id": 11,
+    "id": 3,
     "author": 1,
     "reviewer": 2,
     "dateInscription": "2010-05-28 14:47:44",
     "dateReviewed": "2011-06-28 14:47:45",
     "name": "Organization 3",
-    "isMain": true,
-    "language": "fra"
-  },
-  {
-    "_comment0": "// =================================== //",
-    "_comment1": "// ========== DOCUMENT NAMES ========== //",
-    "_comment3": "// =================================== //",
-    "id": 3,
-    "author": 1,
-    "reviewer": 2,
-    "dateInscription": "2007-05-28 14:47:44",
-    "dateReviewed": "2007-06-22 14:47:45",
-    "name": "Spelunca",
-    "isMain": true,
-    "language": "fra"
-  },
-  {
-    "id": 4,
-    "author": 1,
-    "reviewer": 2,
-    "dateInscription": "2008-05-28 14:47:44",
-    "dateReviewed": "2009-06-22 14:47:45",
-    "name": "Spelunca n°1",
-    "isMain": true,
-    "language": "fra"
-  },
-  {
-    "id": 5,
-    "author": 2,
-    "reviewer": 1,
-    "dateInscription": "2016-05-28 14:47:44",
-    "dateReviewed": "2017-06-22 14:47:45",
-    "name": "Spelunca n°2",
-    "isMain": true,
-    "language": "fra"
-  },
-  {
-    "id": 6,
-    "author": 1,
-    "reviewer": 2,
-    "dateInscription": "2016-05-28 14:47:44",
-    "dateReviewed": "2017-06-22 14:47:45",
-    "name": "Best 2021 Equipement",
     "isMain": true,
     "language": "fra"
   },

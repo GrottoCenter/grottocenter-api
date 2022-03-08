@@ -9,7 +9,6 @@
     "isValidated": true,
     "descriptions": [1, 2],
     "license": 1,
-    "names": [3],
     "type": 1
   },
   {
@@ -26,7 +25,6 @@
     "identifierType": "issn",
     "descriptions": [3],
     "license": 1,
-    "names": [4],
     "parent": 1,
     "type": 17
   },
@@ -43,7 +41,6 @@
     "identifier": "1234-5679",
     "identifierType": "issn",
     "license": 1,
-    "names": [5],
     "parent": 1,
     "type": 17
   },
@@ -54,12 +51,12 @@
     "reviewer": 2,
     "dateInscription": "2018-04-19 11:38:39",
     "dateValidation": "2019-11-01 12:24:19",
+    "descriptions": [4],
     "isValidated": true,
     "datePublication": "2010-02",
     "identifier": "1234-5679",
     "identifierType": "issn",
     "license": 1,
-    "names": [6],
     "parent": 3,
     "type": 18
   }
