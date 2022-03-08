@@ -19,6 +19,7 @@ const blobServiceClient =
 
 const INVALID_FORMAT = 'INVALID_FORMAT';
 const INVALID_NAME = 'INVALID_NAME';
+const ERROR_DURING_UPLOAD_TO_AZURE = 'ERROR_DURING_UPLOAD_TO_AZURE';
 
 const generateName = (fileName) => {
   const identifier = Math.random()
@@ -58,11 +59,15 @@ module.exports = {
       const blockBlobClient = containerClient.getBlockBlobClient(pathName);
 
       sails.log.info('Uploading ' + name + ' to Azure Blob...');
-      await blockBlobClient.uploadData(file.buffer, {
-        blobHTTPHeaders: {
-          blobContentType: mimeType,
-        },
-      });
+      try {
+        await blockBlobClient.uploadData(file.buffer, {
+          blobHTTPHeaders: {
+            blobContentType: mimeType,
+          },
+        });
+      } catch (err) {
+        throw Error(ERROR_DURING_UPLOAD_TO_AZURE);
+      }
 
       const param = {
         dateInscription: new Date(),
