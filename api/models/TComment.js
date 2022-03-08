@@ -50,15 +50,15 @@ module.exports = {
     },
 
     eTUnderground: {
-      type: 'string',
-      allowNull: true,
+      type: 'ref',
       columnName: 'e_t_underground',
+      columnType: 'timestamp',
     },
 
     eTTrail: {
-      type: 'string',
-      allowNull: true,
+      type: 'ref',
       columnName: 'e_t_trail',
+      columnType: 'timestamp',
     },
 
     aestheticism: {
