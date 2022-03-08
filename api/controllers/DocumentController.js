@@ -1031,134 +1031,137 @@ module.exports = {
       );
     });
 
-    await Promise.all(updatePromises).then(async (results) => {
-      for (const doc of results) {
-        const isAModifiedDoc = doc.modifiedDocJson ? true : false;
-        if (doc.isValidated) {
-          // If there is modified doc stored in the json column, we update the document with the data contained in it. Then we remove the json.
-          if (isAModifiedDoc) {
-            // Launch update request using transaction: it performs a rollback if an error occurs
-            await sails
-              .getDatastore()
-              .transaction(async (db) => {
-                const {
-                  documentMainLanguage,
-                  author,
-                  description,
-                  titleAndDescriptionLanguage,
-                  title,
-                  modifiedFiles,
-                  deletedFiles,
-                  newFiles,
-                  ...cleanedData
-                } = doc.modifiedDocJson;
-                cleanedData.modifiedDocJson = null;
-                const updatedDocument = await TDocument.updateOne(doc.id)
-                  .set(cleanedData)
-                  .usingConnection(db);
-                if (!updatedDocument) {
-                  return res.status(404);
-                }
+    try {
+      await Promise.all(updatePromises).then(async (results) => {
+        for (const doc of results) {
+          const isAModifiedDoc = doc.modifiedDocJson ? true : false;
+          if (doc.isValidated) {
+            // If there is modified doc stored in the json column, we update the document with the data contained in it. Then we remove the json.
+            if (isAModifiedDoc) {
+              // Launch update request using transaction: it performs a rollback if an error occurs
+              await sails
+                .getDatastore()
+                .transaction(async (db) => {
+                  const {
+                    documentMainLanguage,
+                    author,
+                    description,
+                    titleAndDescriptionLanguage,
+                    title,
+                    modifiedFiles,
+                    deletedFiles,
+                    newFiles,
+                    ...cleanedData
+                  } = doc.modifiedDocJson;
+                  cleanedData.modifiedDocJson = null;
+                  const updatedDocument = await TDocument.updateOne(doc.id)
+                    .set(cleanedData)
+                    .usingConnection(db);
+                  if (!updatedDocument) {
+                    return res.status(404);
+                  }
 
-                // Update associated data not handled by TDocument manually
-                if (documentMainLanguage) {
-                  await JDocumentLanguage.updateOne({
-                    document: updatedDocument.id,
-                  })
-                    .set({
+                  // Update associated data not handled by TDocument manually
+                  if (documentMainLanguage) {
+                    await JDocumentLanguage.updateOne({
                       document: updatedDocument.id,
-                      language: documentMainLanguage,
-                      isMain: true,
+                    })
+                      .set({
+                        document: updatedDocument.id,
+                        language: documentMainLanguage,
+                        isMain: true,
+                      })
+                      .usingConnection(db);
+                  }
+
+                  await TDescription.updateOne({ document: updatedDocument.id })
+                    .set({
+                      author: author,
+                      body: description,
+                      document: updatedDocument.id,
+                      language: titleAndDescriptionLanguage,
+                      title: title,
                     })
                     .usingConnection(db);
-                }
 
-                await TDescription.updateOne({ document: updatedDocument.id })
-                  .set({
-                    author: author,
-                    body: description,
-                    document: updatedDocument.id,
-                    language: titleAndDescriptionLanguage,
-                    title: title,
-                  })
-                  .usingConnection(db);
-
-                // New files have already been created, they just need to be linked to the document.
-                if (newFiles) {
-                  const newPromises = newFiles.map(async (file) => {
-                    return await TFile.updateOne(file.id).set({
-                      isValidated: true,
+                  // New files have already been created, they just need to be linked to the document.
+                  if (newFiles) {
+                    const newPromises = newFiles.map(async (file) => {
+                      return await TFile.updateOne(file.id).set({
+                        isValidated: true,
+                      });
                     });
-                  });
-                  await Promise.all(newPromises);
-                }
-                if (modifiedFiles) {
-                  const modificationPromises = modifiedFiles.map(
-                    async (file) => {
-                      return await FileService.update(file);
-                    },
-                  );
-                  await Promise.all(modificationPromises);
-                }
+                    await Promise.all(newPromises);
+                  }
+                  if (modifiedFiles) {
+                    const modificationPromises = modifiedFiles.map(
+                      async (file) => {
+                        return await FileService.update(file);
+                      },
+                    );
+                    await Promise.all(modificationPromises);
+                  }
 
-                if (deletedFiles) {
-                  const deletionPromises = deletedFiles.map(async (file) => {
-                    return await FileService.delete(file);
-                  });
-                  await Promise.all(deletionPromises);
-                }
-              })
-              .intercept('E_UNIQUE', () => res.sendStatus(409))
-              .intercept('UsageError', (e) => res.badRequest(e.cause.message))
-              .intercept('AdapterError', (e) => res.badRequest(e.cause.message))
-              .intercept((e) => res.serverError(e.message));
-          }
-          // Get full document an index it in Elasticsearch
-          try {
-            const found = await TDocument.findOne(doc.id)
-              .populate('author')
-              .populate('authorizationDocument')
-              .populate('authors')
-              .populate('cave')
-              .populate('descriptions')
-              .populate('editor')
-              .populate('entrance')
-              .populate('identifierType')
-              .populate('languages')
-              .populate('library')
-              .populate('license')
-              .populate('massif')
-              .populate('option')
-              .populate('parent')
-              .populate('regions')
-              .populate('reviewer')
-              .populate('subjects')
-              .populate('type');
-            await setNamesOfPopulatedDocument(found);
-            isAModifiedDoc
-              ? updateDocumentInElasticSearchIndexes(found)
-              : addDocumentToElasticSearchIndexes(found);
-          } catch (err) {
-            return res.serverError(
-              'An error occured when trying to get all information about the document.',
-            );
-          }
-        } else {
-          /* 
+                  if (deletedFiles) {
+                    const deletionPromises = deletedFiles.map(async (file) => {
+                      return await FileService.delete(file);
+                    });
+                    await Promise.all(deletionPromises);
+                  }
+                })
+                .intercept((err) =>
+                  ErrorService.getDefaultErrorHandler(res)(err),
+                );
+            }
+            // Get full document an index it in Elasticsearch
+            try {
+              const found = await TDocument.findOne(doc.id)
+                .populate('author')
+                .populate('authorizationDocument')
+                .populate('authors')
+                .populate('cave')
+                .populate('descriptions')
+                .populate('editor')
+                .populate('entrance')
+                .populate('identifierType')
+                .populate('languages')
+                .populate('library')
+                .populate('license')
+                .populate('massif')
+                .populate('option')
+                .populate('parent')
+                .populate('regions')
+                .populate('reviewer')
+                .populate('subjects')
+                .populate('type');
+              await setNamesOfPopulatedDocument(found);
+              isAModifiedDoc
+                ? updateDocumentInElasticSearchIndexes(found)
+                : addDocumentToElasticSearchIndexes(found);
+            } catch (err) {
+              return res.serverError(
+                'An error occured when trying to get all information about the document.',
+              );
+            }
+          } else {
+            /* 
           If the document refused, check if there is a json document. 
           If there is one, remove it and validate the document 
           because the document kept the same values as when it was validated (the modified data was in the json).
           */
-          if (isAModifiedDoc) {
-            await TDocument.updateOne(doc.id).set({
-              isValidated: true,
-              modifiedDocJson: null,
-            });
+            if (isAModifiedDoc) {
+              await TDocument.updateOne(doc.id).set({
+                isValidated: true,
+                modifiedDocJson: null,
+              });
+            }
           }
         }
-      }
-    });
-    return res.ok();
+      });
+      return res.ok();
+    } catch (e) {
+      ErrorService.getDefaultErrorHandler(res)(e);
+    }
   },
 
   checkRows: async (req, res) => {
