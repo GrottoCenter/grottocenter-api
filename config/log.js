@@ -23,5 +23,6 @@ module.exports.log = {
    *                                                                          *
    ***************************************************************************/
 
-  level: 'verbose',
+  level: process.env.NODE_ENV === 'production' ? 'error' : 'verbose',
+  noShip: true, // don't display "fancy" Sails ship when starting the app
 };
