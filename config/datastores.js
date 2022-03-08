@@ -35,11 +35,6 @@ module.exports.datastores = {
     url: 'postgres://root:root@localhost:33060/grottoce',
   },
 
-  test: {
-    adapter: require('sails-disk'),
-    inMemoryOnly: true,
-  },
-
   /***************************************************************************
    *                                                                          *
    * MongoDB is the leading NoSQL database.                                   *

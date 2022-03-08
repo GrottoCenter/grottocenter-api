@@ -304,16 +304,24 @@ module.exports = {
     result.histories = source.histories;
     result.isDeleted = source.is_deleted;
     result.isDiving = source.is_diving;
+    result.latitude = parseFloat(source.latitude);
     result.length = source.length;
+    result.longitude = parseFloat(source.longitude);
     result.name = MappingV1Service.getMainName(source);
     result.names = source.names;
     result.temperature = source.temperature;
 
     if (source.id_author instanceof Object) {
       result.author = MappingV1Service.convertToCaverModel(source.id_author);
+    } else {
+      result.author = source.id_author;
     }
     if (source.reviewer instanceof Object) {
-      result.reviewer = MappingV1Service.convertToCaverModel(source.reviewer);
+      result.reviewer = MappingV1Service.convertToCaverModel(
+        source.id_reviewer,
+      );
+    } else {
+      result.reviewer = source.id_reviewer;
     }
     if (source.descriptions instanceof Array) {
       result.descriptions = MappingV1Service.convertToDescriptionList(
@@ -332,6 +340,8 @@ module.exports = {
     }
     if (source.id_massif instanceof Object) {
       result.massif = MappingV1Service.convertToMassifModel(source.id_massif);
+    } else {
+      result.massif = source.id_massif;
     }
     return result;
   },
@@ -582,27 +592,6 @@ module.exports = {
       ...OrganizationModel,
     };
 
-    // Convert cavers
-    if (source.cavers instanceof Array) {
-      result.cavers = source.cavers.map((caver) =>
-        MappingV1Service.convertToCaverModel(caver),
-      );
-    } else {
-      result.nbCavers = ramda.pathOr(undefined, ['nb cavers'], source);
-    }
-
-    // Convert caves
-    if (source.exploredCaves instanceof Array) {
-      result.exploredCaves = MappingV1Service.convertToCaveList(
-        source.exploredCaves,
-      );
-    }
-    if (source.partneredCaves instanceof Array) {
-      result.partneredCaves = MappingV1Service.convertToCaveList(
-        source.partneredCaves,
-      );
-    }
-
     result.id = source.id;
     result['@id'] = String(source.id);
     result.address = source.address;
@@ -624,6 +613,37 @@ module.exports = {
     result.url = source.url;
     result.village = source.village;
     result.yearBirth = source.yearBirth;
+
+    // Convert cavers
+    if (source.cavers instanceof Array) {
+      result.cavers = source.cavers.map((caver) =>
+        MappingV1Service.convertToCaverModel(caver),
+      );
+    } else {
+      result.nbCavers = ramda.pathOr(undefined, ['nb cavers'], source);
+    }
+
+    // Convert explored / partner entrances and networks
+    if (source.exploredEntrances instanceof Array) {
+      result.exploredEntrances = MappingV1Service.convertToEntranceList(
+        source.exploredEntrances,
+      );
+    }
+    if (source.exploredNetworks instanceof Array) {
+      result.exploredNetworks = MappingV1Service.convertToCaveList(
+        source.exploredNetworks,
+      );
+    }
+    if (source.partnerEntrances instanceof Array) {
+      result.partnerEntrances = MappingV1Service.convertToEntranceList(
+        source.partnerEntrances,
+      );
+    }
+    if (source.partnerNetworks instanceof Array) {
+      result.partnerNetworks = MappingV1Service.convertToCaveList(
+        source.partnerNetworks,
+      );
+    }
 
     return result;
   },

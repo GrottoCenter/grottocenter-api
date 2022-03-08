@@ -12,12 +12,14 @@ const ORGANIZATION_PROPERTIES = [
   'county',
   'county',
   'customMessage',
-  'exploredCaves',
+  'exploredEntrances',
+  'exploredNetworks',
   'isOfficialPartner',
   'latitude',
   'longitude',
   'name',
-  'partneredCaves',
+  'partnerEntrances',
+  'partnerNetworks',
   'pictureFileName',
   'postalCode',
   'region',
@@ -27,7 +29,7 @@ const ORGANIZATION_PROPERTIES = [
 ];
 
 describe('Grotto features', () => {
-  describe('find()', () => {
+  describe('Find', () => {
     it('should return code 404', (done) => {
       supertest(sails.hooks.http.app)
         .get('/api/v1/organizations/987654321')
@@ -48,6 +50,21 @@ describe('Grotto features', () => {
           should(organization.name).not.be.empty();
           should(organization.names).not.be.empty();
           should(organization.dateInscription).not.be.empty();
+          return done();
+        });
+    });
+  });
+
+  describe('Count', () => {
+    it('should return code 200', (done) => {
+      supertest(sails.hooks.http.app)
+        .get('/api/v1/organizations/count')
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(200)
+        .end((err, res) => {
+          if (err) return done(err);
+          res.body.should.deepEqual({ count: 3 });
           return done();
         });
     });

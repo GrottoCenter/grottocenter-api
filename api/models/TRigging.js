@@ -33,7 +33,7 @@ module.exports = {
       type: 'ref',
       allowNull: false,
       columnName: 'date_inscription',
-      columnType: 'datetime',
+      columnType: 'timestamp',
     },
 
     relevance: {

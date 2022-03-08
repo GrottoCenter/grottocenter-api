@@ -1,0 +1,52 @@
+[
+	{
+		"id" : 1,
+		"dateInscription" : "2021-11-03T16:00:31.720Z",
+		"dateReviewed": "2021-11-05T16:00:31.720Z",
+		"filename" : "file1.mp4",
+		"fileFormat" : 6,
+		"document": 1,
+		"path" : "12345678.mp4",
+		"isValidated" : true
+	},
+	{
+		"id" : 2,
+		"dateInscription" : "2021-11-23T16:16:49.351Z",
+		"dateReviewed": "2021-11-05T16:00:31.720Z",
+		"filename" : "file2.pdf",
+		"fileFormat" : 1,
+		"document" : 1,
+		"path" : "515679844298701.pdf",
+		"isValidated" : true
+	},
+	{
+		"id" : 3,
+		"dateInscription" : "2021-11-23T16:16:49.761Z",
+		"dateReviewed": "2021-11-05T16:00:31.720Z",
+		"filename" : "file3.pdf",
+		"fileFormat" : 1,
+		"document" : 1,
+		"path" : "98765432.pdf",
+		"isValidated" : true
+	},
+	{
+		"id" : 4,
+		"dateInscription" : "2021-11-23T16:16:50.120Z",
+		"dateReviewed": "2021-11-05T16:00:31.720Z",
+		"filename" : "file4.pdf",
+		"fileFormat" : 1,
+		"document" : 2,
+		"path" : "728917156.pdf",
+		"isValidated" : true
+	},
+	{
+		"id" : 5,
+		"dateInscription" : "2021-11-23T16:16:50.431Z",
+		"dateReviewed": "2021-11-05T16:00:31.720Z",
+		"filename" : "file5.pdf",
+		"fileFormat" : 1,
+		"document" : 2,
+		"path" : "567891011.pdf",
+		"isValidated" : true
+	}
+]

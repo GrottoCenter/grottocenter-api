@@ -1,5 +1,10 @@
 [
   {
+    "id": 1,
+    "extension": "pdf",
+    "mimeType": "application\/pdf"
+  },
+  {
     "id": 2,
     "extension": "ez",
     "mimeType": "application\/andrew-inset"
@@ -13,6 +18,11 @@
     "id": 5,
     "extension": "atom",
     "mimeType": "application\/atom+xml"
+  },
+  {
+    "id": 6,
+    "extension": "mp4",
+    "mimeType": "video\/mp4"
   },
   {
     "id": 8,

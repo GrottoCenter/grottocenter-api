@@ -82,14 +82,14 @@ module.exports = {
       type: 'ref',
       allowNull: false,
       columnName: 'date_inscription',
-      columnType: 'datetime',
+      columnType: 'timestamp',
     },
 
     date_reviewed: {
       type: 'ref',
       allowNull: false,
       columnName: 'date_reviewed',
-      columnType: 'datetime',
+      columnType: 'timestamp',
     },
 
     is_deleted: {
@@ -154,6 +154,11 @@ module.exports = {
 
     riggings: {
       collection: 'TRigging',
+      via: 'cave',
+    },
+
+    comments: {
+      collection: 'TComment',
       via: 'cave',
     },
   },

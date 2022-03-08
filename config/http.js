@@ -8,7 +8,6 @@
  * For more information on configuration, check out:
  * http://sailsjs.org/#/documentation/reference/sails.config/sails.config.http.html
  */
-const passport = require('passport');
 const rateLimiter = require('./rateLimit/rateLimiter');
 const { version: packageVersion } = require('../package.json');
 
@@ -24,8 +23,7 @@ module.exports.http = {
    ****************************************************************************/
 
   middleware: {
-    passportInit: passport.initialize(),
-    passportSession: passport.session(),
+    passportInit: require('passport').initialize(),
 
     // Requests limiter configuration
     generalRateLimit: rateLimiter.generalRateLimit,
@@ -43,7 +41,6 @@ module.exports.http = {
       'cookieParser',
       'session',
       'passportInit',
-      'passportSession',
       'parseAuthToken',
       'generalRateLimit',
       'userDeleteRateLimit',

@@ -7,12 +7,9 @@
     "dateInscription": "2017-04-19 11:38:39",
     "dateValidation": "2017-05-01 12:24:19",
     "isValidated": true,
-    "descriptions": [
-      1, 2
-    ],
-    "names": [
-      3
-    ],
+    "descriptions": [1, 2],
+    "license": 1,
+    "names": [3],
     "type": 1
   },
   {
@@ -28,9 +25,8 @@
     "identifier": "1234-5678",
     "identifierType": "issn",
     "descriptions": [3],
-    "names": [
-      4
-    ],
+    "license": 1,
+    "names": [4],
     "parent": 1,
     "type": 17
   },
@@ -46,9 +42,8 @@
     "issue": "n°2",
     "identifier": "1234-5679",
     "identifierType": "issn",
-    "names": [
-      5
-    ],
+    "license": 1,
+    "names": [5],
     "parent": 1,
     "type": 17
   },
@@ -63,9 +58,8 @@
     "datePublication": "2010-02",
     "identifier": "1234-5679",
     "identifierType": "issn",
-    "names": [
-      6
-    ],
+    "license": 1,
+    "names": [6],
     "parent": 3,
     "type": 18
   }

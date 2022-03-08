@@ -7,11 +7,13 @@ module.exports = {
    * @returns {Promise} the caves with their attribute "entrances" completed
    */
   setEntrances: async (caves) => {
-    const entrances = await TEntrance.find().where({
-      cave: {
-        in: caves.map((c) => c.id),
-      },
-    });
+    const entrances = await TEntrance.find()
+      .where({
+        cave: {
+          in: caves.map((c) => c.id),
+        },
+      })
+      .populate('names');
     for (const cave of caves) {
       cave.entrances = entrances.filter((e) => e.cave === cave.id);
     }
@@ -108,7 +110,7 @@ module.exports = {
         partneringGrottos: destinationPartners,
       } = destinationCave;
 
-      // Update explored / partnered caves only if not already explored / partnered by the destination cave.
+      // Update explored / partner caves only if not already explored / partner by the destination cave.
       for (const sourceExp of sourceExplorers) {
         if (!destinationExplorers.some((g) => g.id === sourceExp.id)) {
           await TCave.addToCollection(

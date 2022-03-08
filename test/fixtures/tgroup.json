@@ -3,23 +3,19 @@
     "id": 1,
     "name": "Administrator",
     "comments": "Technical responsible of the application.",
-    "rights": [
-      14
-    ]
+    "rights": [9,14,100,104,105,106,107]
   },
   {
     "id": 2,
     "name": "Moderator",
     "comments": "Content reviewers.",
-    "rights": [101,102,103]
+    "rights": [9,101,102,103,105,107]
   },
   {
     "id": 3,
     "name": "User",
     "comments": "Default users group",
-    "rights": [
-      13, 29, 30, 50
-    ]
+    "rights": [8,13,29,30,50,79,80,91,106,107]
   },
   {
     "id": 4,

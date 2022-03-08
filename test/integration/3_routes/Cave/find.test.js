@@ -1,29 +1,9 @@
 let supertest = require('supertest');
 let should = require('should');
-
-const CAVE_PROPERTIES = [
-  '@context',
-  '@id',
-  '@type',
-  'id',
-  'author',
-  'dateInscription',
-  'dateReviewed',
-  'depth',
-  'descriptions',
-  'documents',
-  'entrances',
-  'histories',
-  'isDeleted',
-  'isDiving',
-  'length',
-  'name',
-  'names',
-  'temperature',
-];
+const CAVE_PROPERTIES = require('./CAVE_PROPERTIES.js');
 
 describe('Cave features', () => {
-  describe('find()', () => {
+  describe('find', () => {
     it('should return code 404', (done) => {
       supertest(sails.hooks.http.app)
         .get('/api/v1/caves/987654321')
@@ -48,7 +28,7 @@ describe('Cave features', () => {
         });
     });
   });
-  describe('findAll()', () => {
+  describe('findAll', () => {
     it('should return code 200', (done) => {
       supertest(sails.hooks.http.app)
         .get('/api/v1/caves')

@@ -75,12 +75,12 @@ module.exports = {
       type: 'ref',
       allowNull: false,
       columnName: 'date_inscription',
-      columnType: 'datetime',
+      columnType: 'timestamp',
     },
 
     dateReviewed: {
       type: 'ref',
-      columnType: 'datetime',
+      columnType: 'timestamp',
       columnName: 'date_reviewed',
     },
 

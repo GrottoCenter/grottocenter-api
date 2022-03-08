@@ -26,53 +26,40 @@ const getConvertedDataFromClientRequest = (req) => {
 };
 
 module.exports = {
-  find: (
+  find: async (
     req,
     res,
     next,
     converter = MappingV1Service.convertToOrganizationModel,
   ) => {
-    TGrotto.findOne(req.params.id)
-      .populate('names')
-      .populate('cavers')
-      .populate('exploredCaves')
-      .populate('partneredCaves')
-      .exec(async (err, found) => {
-        if (!found) {
-          const message = `Grotto of id ${req.params.id} not found.`;
-          sails.log.error(message);
-          return res.status(404).send({ message });
-        }
-        if (err) {
-          const message = `An internal server error occurred when trying to get grotto of id ${req.params.id}`;
-          sails.log.error(message + ': ' + err);
-          return res.status(500).send({ message });
-        }
-        const params = {};
-        params.searchedItem = `Grotto of id ${req.params.id}`;
-        try {
-          await CaveService.setEntrances(found.exploredCaves);
-          await CaveService.setEntrances(found.partneredCaves);
-          await NameService.setNames(found.exploredCaves, 'cave');
-          await NameService.setNames(found.partneredCaves, 'cave');
-          await NameService.setNames([found], 'grotto');
-        } catch (e) {
-          const message = `An internal server error occurred when trying to get information about grotto of id ${req.params.id}`;
-          sails.log.error(message + ': ' + e.message);
-          return res.status(500).send({ message });
-        }
-        return ControllerService.treatAndConvert(
-          req,
-          err,
-          found,
-          params,
-          res,
-          converter,
-        );
-      });
+    try {
+      const organization = await TGrotto.findOne(req.params.id)
+        .populate('names')
+        .populate('cavers')
+        .populate('exploredCaves')
+        .populate('partnerCaves');
+      if (!organization) {
+        const message = `Organization of id ${req.params.id} not found.`;
+        sails.log.error(message);
+        return res.status(404).send({ message });
+      }
+      const params = {};
+      params.searchedItem = `Organization of id ${req.params.id}`;
+      await GrottoService.populateOrganization(organization);
+      return ControllerService.treatAndConvert(
+        req,
+        null,
+        organization,
+        params,
+        res,
+        converter,
+      );
+    } catch (e) {
+      ErrorService.getDefaultErrorHandler(res)(e);
+    }
   },
 
-  findAll: (req, res) => {
+  findAll: async (req, res) => {
     const parameters = {};
     if (req.param('name')) {
       parameters.name = {
@@ -85,28 +72,32 @@ module.exports = {
       };
     }
 
-    TGrotto.find(parameters)
-      .populate('author')
-      .sort('id ASC')
-      .limit(10)
-      .exec((err, found) => {
-        const params = {};
-        params.controllerMethod = 'GrottoController.findAll';
-        params.notFoundMessage = 'No grottos found.';
-        return ControllerService.treat(req, err, found, params, res);
-      });
+    try {
+      const organizations = await TGrotto.find(parameters)
+        .populate('author')
+        .sort('id ASC')
+        .limit(10);
+      const params = {};
+      params.controllerMethod = 'GrottoController.findAll';
+      params.notFoundMessage = 'No organizations found.';
+      return ControllerService.treat(req, err, organizations, params, res);
+    } catch (e) {
+      ErrorService.getDefaultErrorHandler(res)(e);
+    }
   },
 
-  count: (req, res) => {
-    TGrotto.count().exec((err, found) => {
+  count: async (req, res) => {
+    try {
+      const countResult = await TGrotto.count();
       const params = {};
       params.controllerMethod = 'GrottoController.count';
       params.notFoundMessage = 'Problem while getting number of organizations.';
 
-      const count = {};
-      count.count = found;
-      return ControllerService.treat(req, err, count, params, res);
-    });
+      const count = { count: countResult };
+      return ControllerService.treat(req, null, count, params, res);
+    } catch (e) {
+      ErrorService.getDefaultErrorHandler(res)(e);
+    }
   },
 
   create: async (req, res, next, converter) => {

@@ -1,4 +1,5 @@
 let sails = require('sails');
+const UPDATE_SEQUENCES_QUERY = require('./update_sequences');
 const Fixted = require('fixted');
 
 before(function(done) {
@@ -9,8 +10,13 @@ before(function(done) {
       log: {
         level: 'silly',
       },
+      datastores: {
+        default: {
+          adapter: require('sails-postgresql'),
+          url: 'postgres://root:root@localhost:5432/grottoce',
+        },
+      },
       models: {
-        connection: 'test',
         migrate: 'drop',
       },
       csrf: false,
@@ -40,13 +46,20 @@ before(function(done) {
           'tfileformat',
           'tlicense',
           'toption',
+          'tcomment',
+          'tfile',
         ],
-        function(err) {
+        (err) => {
           if (err) {
             return done(err);
           }
-          // Do your thing...
-          done();
+          CommonService.query(UPDATE_SEQUENCES_QUERY)
+            .then(() => {
+              return done();
+            })
+            .catch((err) => {
+              return done(err);
+            });
         },
         false,
       );

@@ -2932,10 +2932,14 @@ components:
           type: 'string'
         dateReviewed:
           type: 'string'
-        exploredCaves:
+        exploredEntrances:
           type: array
           items:
-            $ref: '#/components/schemas/Cave'
+            $ref: '#/components/schemas/Entrance'
+        exploredNetworks:
+          type: array
+          items:
+            $ref: '#/components/schemas/Cave'    
         id:
           type: integer
         isOfficialPartner:
@@ -2948,10 +2952,14 @@ components:
           type: 'string'
         name:
           type: 'string'
-        partneredCaves:
+        partneredEntrances:
           type: array
           items:
-            $ref: '#/components/schemas/Cave'
+            $ref: '#/components/schemas/Entrance'
+        partneredNetworks:
+          type: array
+          items:
+            $ref: '#/components/schemas/Cave'    
         pictureFileName:
           type: 'string'
         postalCode:

@@ -1,6 +1,47 @@
 const ramda = require('ramda');
 
 module.exports = {
+  populateOrganization: async (organization) => {
+    await CaveService.setEntrances(organization.exploredCaves);
+    await CaveService.setEntrances(organization.partnerCaves);
+    await NameService.setNames(organization.exploredCaves, 'cave');
+    await NameService.setNames(organization.partnerCaves, 'cave');
+    await NameService.setNames([organization], 'grotto');
+
+    // Split caves between entrances and networks
+    const exploredEntrances = [];
+    const exploredNetworks = [];
+    const partnerEntrances = [];
+    const partnerNetworks = [];
+    for (const cave of organization.exploredCaves) {
+      if (cave.entrances.length > 1) {
+        exploredNetworks.push(cave);
+      }
+      if (cave.entrances.length === 1) {
+        exploredEntrances.push(cave.entrances.pop());
+      }
+    }
+    for (const cave of organization.partnerCaves) {
+      if (cave.entrances.length > 1) {
+        partnerNetworks.push(cave);
+      }
+      if (cave.entrances.length === 1) {
+        partnerEntrances.push(cave.entrances.pop());
+      }
+    }
+
+    // Set Entrances names
+    await NameService.setNames([exploredEntrances], 'entrance');
+    await NameService.setNames([partnerEntrances], 'entrance');
+
+    // Format organization
+    delete organization.exploredCaves;
+    delete organization.partnerCaves;
+    organization.exploredEntrances = exploredEntrances;
+    organization.exploredNetworks = exploredNetworks;
+    organization.partnerEntrances = partnerEntrances;
+    organization.partnerNetworks = partnerNetworks;
+  },
   /**
    *
    * @param {*} cleanedData
