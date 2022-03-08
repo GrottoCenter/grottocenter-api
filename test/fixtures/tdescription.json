@@ -31,5 +31,15 @@
     "body": "Ce numéro manque globalement de détails et n'éfleure que les sujets abordés, dommage.",
     "language": "fra",
     "document": 2
+  },
+  {
+    "id": 4,
+    "author": 1,
+    "reviewer": 2,
+    "dateInscription": "2017-04-19 01:38:39",
+    "dateReviewed": "2018-05-19 12:38:39",
+    "title": "Best 2021 Equipement",
+    "language": "eng",
+    "document": 4
   }
 ]
