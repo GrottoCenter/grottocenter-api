@@ -24,7 +24,8 @@ const ERROR_DURING_UPLOAD_TO_AZURE = 'ERROR_DURING_UPLOAD_TO_AZURE';
 const generateName = (fileName) => {
   const identifier = Math.random()
     .toString()
-    .replace(/0\./, '');
+    .replace(/0\./, '')
+    .replace(/ /, '_');
   return `${identifier}-${fileName}`;
 };
 
