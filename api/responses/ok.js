@@ -24,7 +24,12 @@ module.exports = function sendOK(data, options) {
 
   // If appropriate, serve data as JSON(P)
   if (req.wantsJSON) {
-    return res.json(data);
+    // If data is a plain string, cast it to json with a message key
+    if (typeof data === 'string') {
+      return res.json({ message: data });
+    } else {
+      return res.json(data);
+    }
   }
 
   // If second argument is a string, we take that to mean it refers to a view.
