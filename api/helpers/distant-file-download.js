@@ -87,7 +87,7 @@ module.exports = {
             return exits.success({
               buffer: fileBuffer,
               mimetype: contentType,
-              originalname: fileUrl.href.split('/').pop(),
+              originalname: decodeURI(fileUrl.href.split('/').pop()),
               size: Buffer.byteLength(fileBuffer),
             });
           });
