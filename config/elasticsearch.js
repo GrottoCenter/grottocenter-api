@@ -10,7 +10,7 @@ if (process.env.NODE_ENV === 'production') {
 } else {
   client = new elasticsearch.Client({
     host: process.env.ES_HOST,
-    log: 'debug',
+    log: 'warning',
   });
 }
 
