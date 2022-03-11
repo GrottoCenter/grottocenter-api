@@ -1078,7 +1078,7 @@ module.exports = {
                     })
                       .set({
                         document: updatedDocument.id,
-                        language: documentMainLanguage,
+                        language: documentMainLanguage.id,
                         isMain: true,
                       })
                       .usingConnection(db);
@@ -1089,7 +1089,7 @@ module.exports = {
                       author: author,
                       body: description,
                       document: updatedDocument.id,
-                      language: titleAndDescriptionLanguage,
+                      language: titleAndDescriptionLanguage.id,
                       title: title,
                     })
                     .usingConnection(db);
