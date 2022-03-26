@@ -901,44 +901,26 @@ module.exports = {
         key: 'dct:rights/cc:attributionName',
         defaultValue: undefined,
       });
+
+      // Stop if no id and name provided
       if (!(idDb && nameDb)) {
         wontBeCreated.push({
           line: index + 2,
         });
+        continue;
+      }
+
+      // Check for duplicates
+      const result = await TEntrance.findOne({
+        idDbImport: idDb,
+        nameDbImport: nameDb,
+      });
+      if (result) {
+        willBeCreated.push(row);
       } else {
-        const result = await TEntrance.find({
-          idDbImport: idDb,
-          nameDbImport: nameDb,
+        wontBeCreated.push({
+          line: index + 2,
         });
-        if (result.length > 0) {
-          // Create a duplicate in table TDuplicateEntrance
-
-          //Author retrieval : create one if not present in db
-          const authorId = await sails.helpers.csvhelpers.getAuthor(row);
-          const cave = await TCave.findOne(result[0].cave);
-          const entrance = getConvertedEntranceFromCsv(row, authorId, cave);
-          const dataNameDescLoc = await getConvertedNameDescLocEntranceFromCsv(
-            row,
-            authorId,
-          );
-
-          const duplicateContent = {
-            entrance: entrance,
-            nameDescLoc: dataNameDescLoc,
-          };
-
-          await DuplicateEntranceService.create(
-            req.token.id,
-            duplicateContent,
-            result[0].id,
-          );
-
-          wontBeCreated.push({
-            line: index + 2,
-          });
-        } else {
-          willBeCreated.push(row);
-        }
       }
     }
 
@@ -967,6 +949,7 @@ module.exports = {
       );
     }
 
+    const doubleCheck = sails.helpers.csvhelpers.doubleCheck.with;
     const requestResponse = {
       type: 'entrance',
       total: {
@@ -983,68 +966,112 @@ module.exports = {
         additionalColumns: ['w3geo:latitude', 'w3geo:longitude'],
       });
 
+      // Stop if missing columnes
       if (missingColumns.length > 0) {
         requestResponse.failureImport.push({
           line: index + 2,
           message: 'Columns missing : ' + missingColumns.toString(),
         });
-      } else {
-        try {
-          //Author retrieval : create one if not present in db
-          const authorId = await sails.helpers.csvhelpers.getAuthor(data);
-          //Cave creation
-          const dataCave = getConvertedCaveFromCsv(data, authorId);
-          const nameData = getConvertedNameAndDescCaveFromCsv(data, authorId);
-          const caveCreated = await CaveService.createCave(dataCave, nameData);
+        continue;
+      }
 
-          //Entrance creation
-          const dataEntrance = getConvertedEntranceFromCsv(
-            data,
-            authorId,
-            caveCreated,
-          );
-          const { dateInscription } = dataEntrance;
-          const { dateReviewed } = dataEntrance;
-          const dataNameDescLoc = await getConvertedNameDescLocEntranceFromCsv(
-            data,
-            authorId,
-          );
-          const entranceCreated = await EntranceService.createEntrance(
-            dataEntrance,
-            dataNameDescLoc,
-          );
-          const doubleCheck = sails.helpers.csvhelpers.doubleCheck.with;
-          if (
-            doubleCheck({
-              data: data,
-              key: 'gn:alternateName',
-              defaultValue: null,
-            })
-          ) {
-            await TName.create({
-              author: authorId,
-              entrance: entranceCreated.id,
-              dateInscription: dateInscription,
-              dateReviewed: dateReviewed,
-              isMain: false,
-              language: dataNameDescLoc.name.language,
-              name: data['gn:alternateName'].name,
-            });
-          }
+      // Check for duplicates
+      const idDb = doubleCheck({
+        data: data,
+        key: 'id',
+        defaultValue: undefined,
+      });
+      const nameDb = doubleCheck({
+        data: data,
+        key: 'dct:rights/cc:attributionName',
+        defaultValue: undefined,
+      });
 
-          requestResponse.successfulImport.push({
-            caveId: caveCreated.id,
-            entranceId: entranceCreated.id,
-            latitude: entranceCreated.latitude,
-            longitude: entranceCreated.longitude,
-          });
-        } catch (err) {
-          sails.log.error(err);
+      try {
+        // Get data
+        // Author retrieval: create one if not present in db
+        const authorId = await sails.helpers.csvhelpers.getAuthor(data);
+        const dataNameDescLoc = await getConvertedNameDescLocEntranceFromCsv(
+          data,
+          authorId,
+        );
+
+        const result = await TEntrance.findOne({
+          idDbImport: idDb,
+          nameDbImport: nameDb,
+        });
+        if (result) {
+          // Create a duplicate in table TDuplicateEntrance
+          const cave = await TCave.findOne(result[0].cave);
+          const entrance = getConvertedEntranceFromCsv(data, authorId, cave);
+
+          const duplicateContent = {
+            entrance: entrance,
+            nameDescLoc: dataNameDescLoc,
+          };
+
+          await DuplicateEntranceService.create(
+            req.token.id,
+            duplicateContent,
+            result[0].id,
+          );
+
           requestResponse.failureImport.push({
             line: index + 2,
-            message: err.toString(),
+            message: `Entrance with id ${idDb} is an entrance duplicate.`,
+          });
+          continue;
+        }
+
+        // Cave creation
+        const dataCave = getConvertedCaveFromCsv(data, authorId);
+        const nameData = getConvertedNameAndDescCaveFromCsv(data, authorId);
+        const createdCave = await CaveService.createCave(dataCave, nameData);
+
+        // Entrance creation
+        const dataEntrance = getConvertedEntranceFromCsv(
+          data,
+          authorId,
+          createdCave,
+        );
+        const { dateInscription } = dataEntrance;
+        const { dateReviewed } = dataEntrance;
+
+        const createdEntrance = await EntranceService.createEntrance(
+          dataEntrance,
+          dataNameDescLoc,
+        );
+        const doubleCheck = sails.helpers.csvhelpers.doubleCheck.with;
+        if (
+          doubleCheck({
+            data: data,
+            key: 'gn:alternateName',
+            defaultValue: null,
+          })
+        ) {
+          await TName.create({
+            author: authorId,
+            entrance: createdEntrance.id,
+            dateInscription: dateInscription,
+            dateReviewed: dateReviewed,
+            isMain: false,
+            language: dataNameDescLoc.name.language,
+            name: data['gn:alternateName'].name,
           });
         }
+
+        requestResponse.successfulImport.push({
+          caveId: createdCave.id,
+          entranceId: createdEntrance.id,
+          latitude: createdEntrance.latitude,
+          longitude: createdEntrance.longitude,
+        });
+      } catch (err) {
+        sails.log.error(err);
+        requestResponse.failureImport.push({
+          line: index + 2,
+          message: err.toString(),
+        });
       }
     }
 
