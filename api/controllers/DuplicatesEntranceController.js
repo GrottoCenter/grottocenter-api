@@ -208,9 +208,14 @@ module.exports = {
 
   findAll: async (req, res) => {
     try {
+      const sort = `${req.param('sortBy', 'datePublication')} ${req.param(
+        'orderBy',
+        'ASC',
+      )}`;
       const duplicates = await TDuplicateEntrance.find()
         .skip(req.param('skip', 0))
         .limit(req.param('limit', 50))
+        .sort(sort)
         .populate('author');
 
       return ControllerService.treatAndConvert(
