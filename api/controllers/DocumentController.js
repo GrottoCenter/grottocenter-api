@@ -458,7 +458,7 @@ module.exports = {
     const langDescData = getLangDescDataFromClient(req);
 
     try {
-      const documentCreated = await DocumentService.createDocument(
+      const createdDocument = await DocumentService.createDocument(
         cleanedData,
         langDescData,
       );
@@ -467,7 +467,7 @@ module.exports = {
         const { files } = req.files;
         for (const file of files) {
           try {
-            await FileService.create(file, documentCreated.id);
+            await FileService.create(file, createdDocument.id);
           } catch (err) {
             errorFiles.push({
               fileName: file.originalname,
@@ -478,7 +478,7 @@ module.exports = {
       }
 
       const requestResponse = {
-        document: documentCreated,
+        document: createdDocument,
         status: !ramda.isEmpty(errorFiles)
           ? {
               errorCode: 'FileNotImported',
@@ -1266,44 +1266,28 @@ module.exports = {
         data: row,
         key: 'dct:rights/cc:attributionName',
       });
+
+      // Stop if no id and name provided
       if (!(idDb && nameDb)) {
         wontBeCreated.push({
           line: index + 2,
         });
+        continue;
+      }
+
+      // Check for duplicates
+      const result = await TDocument.findOne({
+        idDbImport: idDb,
+        nameDbImport: nameDb,
+        isDeleted: false,
+      });
+      if (!result) {
+        willBeCreated.push(row);
       } else {
-        const result = await TDocument.findOne({
-          idDbImport: idDb,
-          nameDbImport: nameDb,
-          isDeleted: false,
+        wontBeCreated.push({
+          line: index + 2,
+          id: idDb,
         });
-        if (result) {
-          // Create a duplicate in table TDuplicateEntrance
-
-          //Author retrieval : create one if not present in db
-          const authorId = await sails.helpers.csvhelpers.getAuthor(row);
-          const document = await getConvertedDocumentFromCsv(row, authorId);
-          const dataLangDesc = getConvertedLangDescDocumentFromCsv(
-            row,
-            authorId,
-          );
-
-          const duplicateContent = {
-            document: document,
-            description: dataLangDesc,
-          };
-
-          await DuplicateDocumentService.create(
-            req.token.id,
-            duplicateContent,
-            result.id,
-          );
-          wontBeCreated.push({
-            line: index + 2,
-            id: idDb,
-          });
-        } else {
-          willBeCreated.push(row);
-        }
       }
     }
 
@@ -1332,6 +1316,7 @@ module.exports = {
       );
     }
 
+    const doubleCheck = sails.helpers.csvhelpers.doubleCheck.with;
     const requestResponse = {
       type: 'document',
       total: {
@@ -1346,43 +1331,75 @@ module.exports = {
       const missingColumns = await sails.helpers.csvhelpers.checkColumns.with({
         data: data,
       });
-
+      // Stop if missing columnes
       if (missingColumns.length > 0) {
         requestResponse.failureImport.push({
           line: index + 2,
           message: 'Columns missing : ' + missingColumns.toString(),
         });
-      } else {
-        try {
-          const authorId = await sails.helpers.csvhelpers.getAuthor.with({
-            data: data,
-          });
-          const dataDocument = await getConvertedDocumentFromCsv(
-            data,
-            authorId,
-          );
-          const dataLangDesc = getConvertedLangDescDocumentFromCsv(
-            data,
-            authorId,
-          );
-          const documentCreated = await DocumentService.createDocument(
-            dataDocument,
-            dataLangDesc,
-          );
-          const docFiles = await TFile.find({ document: documentCreated.id });
+        continue;
+      }
 
-          requestResponse.successfulImport.push({
-            documentId: documentCreated.id,
-            title: dataLangDesc.title,
-            filesImported: docFiles.map((f) => f.fileName).join(','),
-          });
-        } catch (err) {
-          sails.log.error(err);
-          requestResponse.failureImport.push({
-            line: index + 2,
-            message: err.toString(),
-          });
-        }
+      // Check for duplicates
+      const idDb = doubleCheck({
+        data: data,
+        key: 'id',
+      });
+      const nameDb = doubleCheck({
+        data: data,
+        key: 'dct:rights/cc:attributionName',
+      });
+
+      const result = await TDocument.findOne({
+        idDbImport: idDb,
+        nameDbImport: nameDb,
+        isDeleted: false,
+      });
+
+      // Data formatting
+      // Author retrieval : create one if not present in db
+      const authorId = await sails.helpers.csvhelpers.getAuthor.with({
+        data: data,
+      });
+      const dataDocument = await getConvertedDocumentFromCsv(data, authorId);
+      const dataLangDesc = getConvertedLangDescDocumentFromCsv(data, authorId);
+
+      if (result) {
+        // Create a duplicate in table TDuplicateEntrance
+
+        const duplicateContent = {
+          document: document,
+          description: dataLangDesc,
+        };
+        await DuplicateDocumentService.create(
+          req.token.id,
+          duplicateContent,
+          result.id,
+        );
+        requestResponse.failureImport.push({
+          line: index + 2,
+          message: `Document with id ${idDb} is a document duplicate.`,
+        });
+        continue;
+      }
+
+      try {
+        const createdDocument = await DocumentService.createDocument(
+          dataDocument,
+          dataLangDesc,
+        );
+        const docFiles = await TFile.find({ document: createdDocument.id });
+        requestResponse.successfulImport.push({
+          documentId: createdDocument.id,
+          title: dataLangDesc.title,
+          filesImported: docFiles.map((f) => f.fileName).join(','),
+        });
+      } catch (err) {
+        sails.log.error(err);
+        requestResponse.failureImport.push({
+          line: index + 2,
+          message: err.toString(),
+        });
       }
     }
 
