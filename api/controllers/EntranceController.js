@@ -5,7 +5,6 @@
  * @help        :: See http://links.sailsjs.org/docs/controllers
  */
 const ramda = require('ramda');
-const getCountryISO3 = require('country-iso-2-to-3');
 const DescriptionService = require('../services/DescriptionService');
 const TComment = require('../models/TComment');
 
@@ -51,21 +50,6 @@ const getConvertedNameDescLocFromClientRequest = (req) => {
   }
 
   return result;
-};
-
-const iso2ToIso3 = (iso) => {
-  if (iso !== undefined) {
-    if (iso === 'EN') {
-      return 'eng';
-    }
-    const res = getCountryISO3(iso);
-    if (res) {
-      return res.toLowerCase();
-    } else {
-      throw Error('This iso code is incorrect : ' + iso);
-    }
-  }
-  return null;
 };
 
 /* _______________________________________
@@ -126,7 +110,7 @@ const getConvertedNameDescLocEntranceFromCsv = async (rawData, authorId) => {
         }),
         language: doubleCheck({
           key: 'karstlink:hasDescriptionDocument/dc:language',
-          func: (value) => iso2ToIso3(value).toLowerCase(),
+          func: (value) => value.toLowerCase(),
         }),
         title: doubleCheck({
           key: 'karstlink:hasDescriptionDocument/dct:title',
@@ -151,7 +135,7 @@ const getConvertedNameDescLocEntranceFromCsv = async (rawData, authorId) => {
         text: rawData['rdfs:label'],
         language: doubleCheck({
           key: 'gn:countryCode',
-          func: iso2ToIso3,
+          func: value.toLowerCase(),
         }),
         dateInscription: doubleCheck({
           key: 'dct:rights/dct:created',
@@ -187,7 +171,7 @@ const getConvertedNameDescLocEntranceFromCsv = async (rawData, authorId) => {
         }),
         language: doubleCheck({
           key: 'karstlink:hasAccessDocument/dc:language',
-          func: (value) => iso2ToIso3(value).toLowerCase(),
+          func: (value) => value.toLowerCase(),
         }),
         author: authorLoc,
         dateInscription: doubleCheck({
@@ -263,7 +247,7 @@ const getConvertedNameAndDescCaveFromCsv = (rawData, authorId) => {
     }),
     language: doubleCheck({
       key: 'karstlink:hasDescriptionDocument/dc:language',
-      func: (value) => iso2ToIso3(value).toLowerCase(),
+      func: (value) => value.toLowerCase(),
     }),
     dateInscription: doubleCheck({
       key: 'dct:rights/dct:created',

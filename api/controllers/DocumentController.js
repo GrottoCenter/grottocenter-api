@@ -5,7 +5,6 @@
  * @help        :: See https://sailsjs.com/docs/concepts/actions
  */
 
-const getCountryISO3 = require('country-iso-2-to-3');
 const ramda = require('ramda');
 const DescriptionService = require('../services/DescriptionService');
 const DocumentService = require('../services/DocumentService');
@@ -176,20 +175,6 @@ const updateDocumentInElasticSearchIndexes = async (document) => {
   The following functions are used to extract the relevant information from the import csv module.
   ________________________________________
 */
-const iso2ToIso3 = (iso) => {
-  if (iso !== undefined) {
-    if (iso === 'EN') {
-      return 'eng';
-    }
-    const res = getCountryISO3(iso);
-    if (res) {
-      return res.toLowerCase();
-    } else {
-      throw Error('This iso code is incorrect : ' + iso);
-    }
-  }
-  return null;
-};
 
 const getConvertedDocumentFromCsv = async (rawData, authorId) => {
   const doubleCheck = (args) =>
@@ -259,7 +244,7 @@ const getConvertedDocumentFromCsv = async (rawData, authorId) => {
           language: doubleCheck({
             key: 'dc:language',
             defaultValue: 'eng',
-            func: (value) => iso2ToIso3(value).toLowerCase(),
+            func: (value) => value.toLowerCase(),
           }),
           author: authorId,
         };
@@ -370,11 +355,11 @@ const getConvertedLangDescDocumentFromCsv = (rawData, authorId) => {
   const langDesc = description
     ? doubleCheck({
         key: 'karstlink:hasDescriptionDocument/dc:language',
-        func: (value) => iso2ToIso3(value).toLowerCase(),
+        func: (value) => value.toLowerCase(),
       })
     : doubleCheck({
         key: 'dc:language',
-        func: (value) => iso2ToIso3(value).toLowerCase(),
+        func: (value) => value.toLowerCase(),
       });
   return {
     author: authorId,
@@ -392,7 +377,7 @@ const getConvertedLangDescDocumentFromCsv = (rawData, authorId) => {
     documentMainLanguage: {
       id: doubleCheck({
         key: 'dc:language',
-        func: (value) => iso2ToIso3(value).toLowerCase(),
+        func: (value) => value.toLowerCase(),
       }),
     },
     titleAndDescriptionLanguage: {
