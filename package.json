@@ -81,7 +81,7 @@
     "supertest": "^6.2.2"
   },
   "engines": {
-    "node": ">=13"
+    "node": ">=16"
   },
   "lint-staged": {
     "*.js": "eslint --cache --fix"

@@ -8,7 +8,7 @@
 . /home/ec2-user/.nvm/nvm.sh
 . /home/ec2-user/.bashrc
 
-nvm use 10.15.2
+nvm use 16.14.2
 
 cd /home/ec2-user/GrottoCenter3
 
@@ -27,7 +27,7 @@ cd /home/ec2-user/GrottoCenter3
 #   ulimit -Sn 65536
 #   === End of ulimit ===
 #
-#   $ nvm install 10.15.2
+#   $ nvm install 16.14.2
 #   $ sudo amazon-linux-extras install nginx1.12
 #   $ npm install pm2 -g
 #   $ pm2 install pm2-logrotate
