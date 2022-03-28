@@ -903,7 +903,7 @@ module.exports = {
       source.content instanceof Object
         ? MappingV1Service.convertToDocumentModel(source.content)
         : source.content;
-    result.date = source.date;
+    result.datePublication = source.datePublication;
     result.document =
       source.document instanceof Object
         ? MappingV1Service.convertToDocumentModel(source.document)
@@ -932,7 +932,7 @@ module.exports = {
       source.content instanceof Object
         ? MappingV1Service.convertToEntranceModel(source.content)
         : source.content;
-    result.date = source.date;
+    result.datePublication = source.datePublication;
     result.entrance =
       source.entrance instanceof Object
         ? MappingV1Service.convertToEntranceModel(source.entrance)

@@ -1,9 +1,9 @@
 module.exports = {
-  create: async (authorId, content, entranceId, date = null) => {
+  create: async (authorId, content, entranceId, datePublication = null) => {
     await TDuplicateEntrance.create({
       author: authorId,
       content: content,
-      date: date ? date : new Date(),
+      datePublication: datePublication ? datePublication : new Date(),
       entrance: entranceId,
     });
   },
