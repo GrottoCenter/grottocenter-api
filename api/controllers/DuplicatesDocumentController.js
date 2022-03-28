@@ -9,12 +9,11 @@ const ErrorService = require('../services/ErrorService');
 
 module.exports = {
   createMany: async (req, res) => {
-    //Same right as document, because a duplicate may only exist if a document is created.
     const hasRight = await sails.helpers.checkRight
       .with({
         groups: req.token.groups,
-        rightEntity: RightService.RightEntities.DOCUMENT,
-        rightAction: RightService.RightActions.EDIT_ANY,
+        rightEntity: RightService.RightEntities.DOCUMENT_DUPLICATE,
+        rightAction: RightService.RightActions.CREATE,
       })
       .intercept('rightNotFound', (err) => {
         return res.serverError(
@@ -40,12 +39,11 @@ module.exports = {
   },
 
   createNewEntityFromDuplicate: async (req, res) => {
-    //Same right as document, because a duplicate may only exist if a document is created.
     const hasRight = await sails.helpers.checkRight
       .with({
         groups: req.token.groups,
-        rightEntity: RightService.RightEntities.DOCUMENT,
-        rightAction: RightService.RightActions.EDIT_ANY,
+        rightEntity: RightService.RightEntities.DOCUMENT_DUPLICATE,
+        rightAction: RightService.RightActions.CREATE,
       })
       .intercept('rightNotFound', (err) => {
         return res.serverError(
@@ -86,7 +84,7 @@ module.exports = {
     const hasRight = await sails.helpers.checkRight
       .with({
         groups: req.token.groups,
-        rightEntity: RightService.RightEntities.DOCUMENT,
+        rightEntity: RightService.RightEntities.DOCUMENT_DUPLICATE,
         rightAction: RightService.RightActions.DELETE_ANY,
       })
       .intercept('rightNotFound', (err) => {
@@ -124,7 +122,7 @@ module.exports = {
     const hasRight = await sails.helpers.checkRight
       .with({
         groups: req.token.groups,
-        rightEntity: RightService.RightEntities.DOCUMENT,
+        rightEntity: RightService.RightEntities.DOCUMENT_DUPLICATE,
         rightAction: RightService.RightActions.DELETE_ANY,
       })
       .intercept('rightNotFound', (err) => {

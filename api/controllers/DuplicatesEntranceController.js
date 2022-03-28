@@ -7,21 +7,20 @@
 
 module.exports = {
   createMany: async (req, res) => {
-    //Same right as entrance, because a duplicate may only exist if a entrance is created.
     const hasRight = await sails.helpers.checkRight
       .with({
         groups: req.token.groups,
-        rightEntity: RightService.RightEntities.DOCUMENT,
-        rightAction: RightService.RightActions.EDIT_ANY,
+        rightEntity: RightService.RightEntities.ENTRANCE_DUPLICATE,
+        rightAction: RightService.RightActions.CREATE,
       })
       .intercept('rightNotFound', (err) => {
         return res.serverError(
-          'A server error occured when checking your right to create a document duplicate.',
+          'A server error occured when checking your right to create an entrance duplicate.',
         );
       });
     if (!hasRight) {
       return res.forbidden(
-        'You are not authorized to create a document duplicate.',
+        'You are not authorized to create an entrance duplicate.',
       );
     }
 
@@ -38,21 +37,20 @@ module.exports = {
   },
 
   createNewEntityFromDuplicate: async (req, res) => {
-    //Same right as document, because a duplicate may only exist if a document is created.
     const hasRight = await sails.helpers.checkRight
       .with({
         groups: req.token.groups,
-        rightEntity: RightService.RightEntities.DOCUMENT,
-        rightAction: RightService.RightActions.EDIT_ANY,
+        rightEntity: RightService.RightEntities.ENTRANCE_DUPLICATE,
+        rightAction: RightService.RightActions.CREATE,
       })
       .intercept('rightNotFound', (err) => {
         return res.serverError(
-          'A server error occured when checking your right to create a document duplicate.',
+          'A server error occured when checking your right to create an entrance duplicate.',
         );
       });
     if (!hasRight) {
       return res.forbidden(
-        'You are not authorized to create a document duplicate.',
+        'You are not authorized to create an entrance duplicate.',
       );
     }
     if (
@@ -83,7 +81,7 @@ module.exports = {
     const hasRight = await sails.helpers.checkRight
       .with({
         groups: req.token.groups,
-        rightEntity: RightService.RightEntities.ENTRANCE,
+        rightEntity: RightService.RightEntities.ENTRANCE_DUPLICATE,
         rightAction: RightService.RightActions.DELETE_ANY,
       })
       .intercept('rightNotFound', (err) => {
@@ -93,7 +91,7 @@ module.exports = {
       });
     if (!hasRight) {
       return res.forbidden(
-        'You are not authorized to delete a entrance duplicate.',
+        'You are not authorized to delete an entrance duplicate.',
       );
     }
     const id = req.param('id');
@@ -121,17 +119,17 @@ module.exports = {
     const hasRight = await sails.helpers.checkRight
       .with({
         groups: req.token.groups,
-        rightEntity: RightService.RightEntities.ENTRANCE,
+        rightEntity: RightService.RightEntities.ENTRANCE_DUPLICATE,
         rightAction: RightService.RightActions.DELETE_ANY,
       })
       .intercept('rightNotFound', (err) => {
         return res.serverError(
-          'A server error occured when checking your right to delete a entrance duplicate.',
+          'A server error occured when checking your right to delete an entrance duplicate.',
         );
       });
     if (!hasRight) {
       return res.forbidden(
-        'You are not authorized to delete a entrance duplicate.',
+        'You are not authorized to delete an entrance duplicate.',
       );
     }
     const idArray = req.param('id');
