@@ -25,10 +25,10 @@ module.exports = {
       );
     }
 
-    const dateCreation = req.param('date', new Date());
+    const dateCreation = req.param('datePublication', new Date());
 
     const duplicateParams = req.body.data.map((content) => ({
-      date: dateCreation,
+      datePublication: dateCreation,
       content: content,
       document: content.document,
     }));

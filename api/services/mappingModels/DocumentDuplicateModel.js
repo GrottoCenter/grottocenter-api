@@ -2,6 +2,6 @@ module.exports = {
   id: undefined,
   author: undefined,
   content: undefined,
-  date: undefined,
+  datePublication: undefined,
   document: undefined,
 };

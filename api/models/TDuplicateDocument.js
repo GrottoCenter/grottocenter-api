@@ -26,10 +26,10 @@ module.exports = {
       allowNull: false,
       columnName: 'content',
     },
-    date: {
+    datePublication: {
       type: 'ref',
-      columnName: 'date',
-      columnType: 'datetime',
+      columnName: 'date_publication',
+      columnType: 'timestamp',
     },
     document: {
       model: 'TDocument',
