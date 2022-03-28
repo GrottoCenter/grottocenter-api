@@ -242,5 +242,21 @@
   {
     "id": 106,
     "name": "Application - no user delete request limit"
+  },
+  {
+    "id": 107,
+    "name": "Document Duplicate - create"
+  },
+  {
+    "id": 108,
+    "name": "Entrance Duplicate - create"
+  },
+  {
+    "id": 109,
+    "name": "Document Duplicate - delete any"
+  },
+  {
+    "id": 110,
+    "name": "Entrance Duplicate - delete any"
   }
 ]
