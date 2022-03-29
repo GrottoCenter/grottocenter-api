@@ -7,6 +7,7 @@
 const ramda = require('ramda');
 const DescriptionService = require('../services/DescriptionService');
 const TComment = require('../models/TComment');
+const EntranceDuplicateService = require('../services/EntranceDuplicateService');
 
 // Extract everything from the request body except id
 const getConvertedDataFromClientRequest = (req) => {
@@ -998,7 +999,7 @@ module.exports = {
             nameDescLoc: dataNameDescLoc,
           };
 
-          await DuplicateEntranceService.create(
+          await EntranceDuplicateService.create(
             req.token.id,
             duplicateContent,
             result[0].id,
