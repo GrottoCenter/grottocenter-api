@@ -1,9 +1,14 @@
 module.exports = {
-  create: async (authorId, content, documentId, datePublication = null) => {
+  create: async (
+    authorId,
+    content,
+    documentId,
+    datePublication = new Date(),
+  ) => {
     await TDuplicateDocument.create({
       author: authorId,
       content: content,
-      datePublication: datePublication ? datePublication : new Date(),
+      datePublication: datePublication,
       document: documentId,
     });
   },
