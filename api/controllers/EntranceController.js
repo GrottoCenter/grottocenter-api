@@ -671,72 +671,75 @@ module.exports = {
 
     const checkForEmptiness = (value) => value && !ramda.isEmpty(value);
 
-    if (checkForEmptiness(newNames)) {
-      const nameParams = newNames.map((name) => ({
-        ...name,
-        entrance: entranceId,
-      }));
-      const createdNames = await TName.createEach(nameParams).fetch();
-      const createdNamesIds = createdNames.map((name) => name.id);
-      cleanedData.names = ramda.concat(cleanedData.names, createdNamesIds);
-    }
-
-    if (checkForEmptiness(newDescriptions)) {
-      const descParams = newDescriptions.map((desc) => ({
-        ...desc,
-        entrance: entranceId,
-      }));
-      const createdDescriptions = await TDescription.createEach(
-        descParams,
-      ).fetch();
-      const createdDescriptionsIds = createdDescriptions.map((desc) => desc.id);
-      cleanedData.descriptions = ramda.concat(
-        cleanedData.descriptions,
-        createdDescriptionsIds,
-      );
-    }
-
-    if (checkForEmptiness(newLocations)) {
-      const locParams = newLocations.map((loc) => ({
-        ...loc,
-        entrance: entranceId,
-      }));
-      const createdLoc = await TLocation.createEach(locParams).fetch();
-      const createdLocIds = createdLoc.map((loc) => loc.id);
-      cleanedData.locations = ramda.concat(
-        cleanedData.locations,
-        createdLocIds,
-      );
-    }
-
-    if (checkForEmptiness(newRiggings)) {
-      const riggingParams = newRiggings.map((rig) => ({
-        ...rig,
-        entrance: entranceId,
-      }));
-      const createdRiggings = await TRigging(riggingParams).fetch();
-      const createdRiggingsIds = createdRiggings.map((rig) => rig.id);
-      cleanedData.riggings = ramda.concat(
-        cleanedData.riggings,
-        createdRiggingsIds,
-      );
-    }
-
-    if (checkForEmptiness(newComments)) {
-      const commentParams = newComments.map((comment) => ({
-        ...comment,
-        entrance: entranceId,
-      }));
-      const createdComments = await TComment.createEach(commentParams).fetch();
-      const createdCommentIds = createdComments.map((comment) => comment.id);
-      cleanedData.comments = ramda.concat(
-        cleanedData.comments,
-        createdCommentIds,
-      );
-    }
-
-    // Launch update request using transaction: it performs a rollback if an error occurs
     try {
+      if (checkForEmptiness(newNames)) {
+        const nameParams = newNames.map((name) => ({
+          ...name,
+          entrance: entranceId,
+        }));
+        const createdNames = await TName.createEach(nameParams).fetch();
+        const createdNamesIds = createdNames.map((name) => name.id);
+        cleanedData.names = ramda.concat(cleanedData.names, createdNamesIds);
+      }
+
+      if (checkForEmptiness(newDescriptions)) {
+        const descParams = newDescriptions.map((desc) => ({
+          ...desc,
+          entrance: entranceId,
+        }));
+        const createdDescriptions = await TDescription.createEach(
+          descParams,
+        ).fetch();
+        const createdDescriptionsIds = createdDescriptions.map(
+          (desc) => desc.id,
+        );
+        cleanedData.descriptions = ramda.concat(
+          cleanedData.descriptions,
+          createdDescriptionsIds,
+        );
+      }
+
+      if (checkForEmptiness(newLocations)) {
+        const locParams = newLocations.map((loc) => ({
+          ...loc,
+          entrance: entranceId,
+        }));
+        const createdLoc = await TLocation.createEach(locParams).fetch();
+        const createdLocIds = createdLoc.map((loc) => loc.id);
+        cleanedData.locations = ramda.concat(
+          cleanedData.locations,
+          createdLocIds,
+        );
+      }
+
+      if (checkForEmptiness(newRiggings)) {
+        const riggingParams = newRiggings.map((rig) => ({
+          ...rig,
+          entrance: entranceId,
+        }));
+        const createdRiggings = await TRigging(riggingParams).fetch();
+        const createdRiggingsIds = createdRiggings.map((rig) => rig.id);
+        cleanedData.riggings = ramda.concat(
+          cleanedData.riggings,
+          createdRiggingsIds,
+        );
+      }
+
+      if (checkForEmptiness(newComments)) {
+        const commentParams = newComments.map((comment) => ({
+          ...comment,
+          entrance: entranceId,
+        }));
+        const createdComments = await TComment.createEach(
+          commentParams,
+        ).fetch();
+        const createdCommentIds = createdComments.map((comment) => comment.id);
+        cleanedData.comments = ramda.concat(
+          cleanedData.comments,
+          createdCommentIds,
+        );
+      }
+
       await sails.getDatastore().transaction(async (db) => {
         const updatedEntrance = await TEntrance.updateOne({
           id: entranceId,

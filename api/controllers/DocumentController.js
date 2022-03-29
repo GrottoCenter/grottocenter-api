@@ -601,38 +601,44 @@ module.exports = {
     // - create the corresponding values
     // - add the newly created values to the array of cleanedData
     //   otherwise, when the update will be done based on cleanedData, the relation will be deleted
-    if (checkForEmptiness(newAuthors)) {
-      const authorParams = newAuthors.map((author) => ({
-        ...author,
-        documents: [documentId],
-      }));
-      const createdAuthors = await TCaver.createEach(authorParams).fetch();
-      const createdAuthorsIds = createdAuthors.map((author) => author.id);
-      cleanedData.authors = ramda.concat(
-        cleanedData.authors,
-        createdAuthorsIds,
-      );
-    }
+    try {
+      if (checkForEmptiness(newAuthors)) {
+        const authorParams = newAuthors.map((author) => ({
+          ...author,
+          documents: [documentId],
+        }));
+        const createdAuthors = await TCaver.createEach(authorParams).fetch();
+        const createdAuthorsIds = createdAuthors.map((author) => author.id);
+        cleanedData.authors = ramda.concat(
+          cleanedData.authors,
+          createdAuthorsIds,
+        );
+      }
 
-    if (checkForEmptiness(newDescriptions)) {
-      const descParams = newDescriptions.map((desc) => ({
-        ...desc,
-        document: documentId,
-      }));
-      const createdDescriptions = await TDescription.createEach(
-        descParams,
-      ).fetch();
-      const createdDescriptionsIds = createdDescriptions.map((desc) => desc.id);
-      cleanedData.descriptions = ramda.concat(
-        cleanedData.descriptions,
-        createdDescriptionsIds,
+      if (checkForEmptiness(newDescriptions)) {
+        const descParams = newDescriptions.map((desc) => ({
+          ...desc,
+          document: documentId,
+        }));
+        const createdDescriptions = await TDescription.createEach(
+          descParams,
+        ).fetch();
+        const createdDescriptionsIds = createdDescriptions.map(
+          (desc) => desc.id,
+        );
+        cleanedData.descriptions = ramda.concat(
+          cleanedData.descriptions,
+          createdDescriptionsIds,
+        );
+      }
+      const updatedDocument = await TDocument.updateOne(documentId).set(
+        cleanedData,
       );
-    }
-    const updatedDocument = await TDocument.updateOne(documentId).set(
-      cleanedData,
-    );
 
-    return res.ok(updatedDocument);
+      return res.ok(updatedDocument);
+    } catch (e) {
+      ErrorService.getDefaultErrorHandler(res)(e);
+    }
   },
 
   findAll: async (
