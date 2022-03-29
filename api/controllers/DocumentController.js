@@ -8,7 +8,7 @@
 const ramda = require('ramda');
 const DescriptionService = require('../services/DescriptionService');
 const DocumentService = require('../services/DocumentService');
-const DuplicateDocumentService = require('../services/DuplicateDocumentService');
+const DocumentDuplicateService = require('../services/DocumentDuplicateService');
 const ErrorService = require('../services/ErrorService');
 
 // Tool methods
@@ -1361,7 +1361,7 @@ module.exports = {
           document: dataDocument,
           description: dataLangDesc,
         };
-        await DuplicateDocumentService.create(
+        await DocumentDuplicateService.create(
           req.token.id,
           duplicateContent,
           result.id,
