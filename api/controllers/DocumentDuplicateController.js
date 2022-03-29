@@ -67,6 +67,7 @@ module.exports = {
         `Could not find duplicate with id ${req.param('id')}.`,
       );
     }
+    const id = req.param('id');
 
     const duplicate = await TDuplicateDocument.findOne(id);
 

@@ -65,6 +65,8 @@ module.exports = {
       );
     }
 
+    const id = req.param('id');
+
     const duplicate = await TDuplicateEntrance.findOne(id);
 
     const { entrance, nameDescLoc } = duplicate.content;
