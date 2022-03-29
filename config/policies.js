@@ -200,11 +200,11 @@ module.exports.policies = {
   'v1/SwaggerController': {
     '*': true,
   },
-  DuplicatesDocumentController: {
+  'v1/DocumentDuplicateController': {
     '*': ['tokenAuth', 'moderatorAuth'],
   },
 
-  DuplicatesEntranceController: {
+  'v1/EntranceDuplicateController': {
     '*': ['tokenAuth', 'moderatorAuth'],
   },
 
