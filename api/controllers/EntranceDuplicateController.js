@@ -193,12 +193,15 @@ module.exports = {
     }
 
     duplicateFound.content = popDuplicate;
+    const params = {
+      searchedItem: `Entrance Duplicate of id ${duplicateFound.id}`,
+    };
 
     return ControllerService.treatAndConvert(
       req,
       null,
       duplicateFound,
-      null,
+      params,
       res,
       MappingV1Service.convertToEntranceDuplicateModel,
     );

@@ -215,11 +215,15 @@ module.exports = {
     ];
     duplicate.content = popDuplicate;
 
+    const params = {
+      searchedItem: `Document Duplicate of id ${duplicate.id}`,
+    };
+
     return ControllerService.treatAndConvert(
       req,
       null,
       duplicate,
-      null,
+      params,
       res,
       MappingV1Service.convertToDocumentDuplicateModel,
     );
