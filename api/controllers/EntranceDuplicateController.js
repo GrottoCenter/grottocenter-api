@@ -205,22 +205,34 @@ module.exports = {
   },
 
   findAll: async (req, res) => {
+    const sort = `${req.param('sortBy', 'datePublication')} ${req.param(
+      'orderBy',
+      'ASC',
+    )}`;
+    const limit = req.param('limit', 50);
+    const skip = req.param('skip', 0);
     try {
-      const sort = `${req.param('sortBy', 'datePublication')} ${req.param(
-        'orderBy',
-        'ASC',
-      )}`;
       const duplicates = await TDuplicateEntrance.find()
-        .skip(req.param('skip', 0))
-        .limit(req.param('limit', 50))
+        .skip(skip)
+        .limit(limit)
         .sort(sort)
         .populate('author');
+      const totalNb = await TDuplicateEntrance.count();
+
+      const params = {
+        controllerMethod: 'EntranceDuplicateController.findAll',
+        limit: limit,
+        searchedItem: 'Entrance duplicates',
+        skip: skip,
+        total: totalNb,
+        url: req.originalUrl,
+      };
 
       return ControllerService.treatAndConvert(
         req,
         null,
         duplicates,
-        null,
+        params,
         res,
         MappingV1Service.convertToEntranceDuplicateList,
       );
