@@ -1268,12 +1268,12 @@ module.exports = {
       }
 
       // Check for duplicates
-      const result = await TDocument.findOne({
+      const result = await TDocument.find({
         idDbImport: idDb,
         nameDbImport: nameDb,
         isDeleted: false,
       });
-      if (!result) {
+      if (result.length === 0) {
         willBeCreated.push(row);
       } else {
         willBeCreatedAsDuplicates.push(row);
@@ -1341,7 +1341,7 @@ module.exports = {
         key: 'dct:rights/cc:attributionName',
       });
 
-      const result = await TDocument.findOne({
+      const result = await TDocument.find({
         idDbImport: idDb,
         nameDbImport: nameDb,
         isDeleted: false,
@@ -1355,7 +1355,7 @@ module.exports = {
       const dataDocument = await getConvertedDocumentFromCsv(data, authorId);
       const dataLangDesc = getConvertedLangDescDocumentFromCsv(data, authorId);
 
-      if (result) {
+      if (result.length !== 0) {
         // Create a duplicate in DB
         const duplicateContent = {
           document: dataDocument,
@@ -1364,7 +1364,7 @@ module.exports = {
         await DocumentDuplicateService.create(
           req.token.id,
           duplicateContent,
-          result.id,
+          result[0].id,
         );
         requestResponse.successfulImportAsDuplicates.push({
           line: index + 2,

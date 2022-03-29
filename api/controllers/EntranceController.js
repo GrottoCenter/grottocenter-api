@@ -900,11 +900,11 @@ module.exports = {
       }
 
       // Check for duplicates
-      const result = await TEntrance.findOne({
+      const result = await TEntrance.find({
         idDbImport: idDb,
         nameDbImport: nameDb,
       });
-      if (result) {
+      if (result.length === 0) {
         willBeCreated.push(row);
       } else {
         willBeCreatedAsDuplicates.push(row);
@@ -985,11 +985,11 @@ module.exports = {
           authorId,
         );
 
-        const result = await TEntrance.findOne({
+        const result = await TEntrance.find({
           idDbImport: idDb,
           nameDbImport: nameDb,
         });
-        if (result) {
+        if (result.length !== 0) {
           // Create a duplicate in DB
           const cave = await TCave.findOne(result[0].cave);
           const entrance = getConvertedEntranceFromCsv(data, authorId, cave);
