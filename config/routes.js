@@ -290,21 +290,21 @@ module.exports.routes = {
   /* Option controller */
   'GET /api/v1/options': 'v1/Option.findAll',
 
-  /* DuplicatesDocument controller */
-  'GET /api/create-from-duplicates-document/:id':
-    'DuplicatesDocument.createNewEntityFromDuplicate',
-  'GET /api/duplicates-document/:id': 'DuplicatesDocument.find',
-  'GET /api/duplicates-document': 'DuplicatesDocument.findAll',
-  'DELETE /api/duplicates-document': 'DuplicatesDocument.deleteMany',
-  'DELETE /api/duplicates-document/:id': 'DuplicatesDocument.delete',
+  /* DocumentDuplicate controller */
+  'POST /api/v1/documents/from-duplicate/:id':
+    'v1/DocumentDuplicate.createFromDuplicate',
+  'GET /api/v1/document-duplicates/:id': 'v1/DocumentDuplicate.find',
+  'GET /api/v1/document-duplicates': 'v1/DocumentDuplicate.findAll',
+  'DELETE /api/v1/document-duplicates': 'v1/DocumentDuplicate.deleteMany',
+  'DELETE /api/v1/document-duplicates/:id': 'v1/DocumentDuplicate.delete',
 
-  /* DuplicatesEntrance controller */
-  'GET /api/create-from-duplicates-entrance/:id':
-    'DuplicatesEntrance.createNewEntityFromDuplicate',
-  'GET /api/duplicates-entrance/:id': 'DuplicatesEntrance.find',
-  'GET /api/duplicates-entrance': 'DuplicatesEntrance.findAll',
-  'DELETE /api/duplicates-entrance': 'DuplicatesEntrance.deleteMany',
-  'DELETE /api/duplicates-entrance/:id': 'DuplicatesEntrance.delete',
+  /* EntranceDuplicate controller */
+  'POST /api/v1/entrances/from-duplicate/:id':
+    'v1/EntranceDuplicate.createFromDuplicate',
+  'GET /api/v1/entrance-duplicates/:id': 'v1/EntranceDuplicate.find',
+  'GET /api/v1/entrance-duplicates': 'v1/EntranceDuplicate.findAll',
+  'DELETE /api/v1/entrance-duplicates': 'v1/EntranceDuplicate.deleteMany',
+  'DELETE /api/v1/entrance-duplicates/:id': 'v1/EntranceDuplicate.delete',
 
   //  ╦ ╦╔═╗╔╗ ╦ ╦╔═╗╔═╗╦╔═╔═╗
   //  ║║║║╣ ╠╩╗╠═╣║ ║║ ║╠╩╗╚═╗

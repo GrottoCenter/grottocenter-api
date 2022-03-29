@@ -1,28 +1,26 @@
 /**
- * DuplicatesDocumentController
+ * EntranceDuplicateController
  *
  * @description :: Server-side actions for handling incoming requests.
  * @help        :: See https://sailsjs.com/docs/concepts/actions
  */
-
-const ErrorService = require('../services/ErrorService');
 
 module.exports = {
   createMany: async (req, res) => {
     const hasRight = await sails.helpers.checkRight
       .with({
         groups: req.token.groups,
-        rightEntity: RightService.RightEntities.DOCUMENT_DUPLICATE,
+        rightEntity: RightService.RightEntities.ENTRANCE_DUPLICATE,
         rightAction: RightService.RightActions.CREATE,
       })
       .intercept('rightNotFound', (err) => {
         return res.serverError(
-          'A server error occured when checking your right to create a document duplicate.',
+          'A server error occured when checking your right to create an entrance duplicate.',
         );
       });
     if (!hasRight) {
       return res.forbidden(
-        'You are not authorized to create a document duplicate.',
+        'You are not authorized to create an entrance duplicate.',
       );
     }
 
@@ -34,33 +32,32 @@ module.exports = {
       document: content.document,
     }));
 
-    await TDuplicateDocument.createEach(duplicateParams);
+    await TDuplicateEntrance.createEach(duplicateParams);
     return res.ok();
   },
 
-  createNewEntityFromDuplicate: async (req, res) => {
+  createFromDuplicate: async (req, res) => {
     const hasRight = await sails.helpers.checkRight
       .with({
         groups: req.token.groups,
-        rightEntity: RightService.RightEntities.DOCUMENT_DUPLICATE,
+        rightEntity: RightService.RightEntities.ENTRANCE_DUPLICATE,
         rightAction: RightService.RightActions.CREATE,
       })
       .intercept('rightNotFound', (err) => {
         return res.serverError(
-          'A server error occured when checking your right to create a document duplicate.',
+          'A server error occured when checking your right to create an entrance duplicate.',
         );
       });
     if (!hasRight) {
       return res.forbidden(
-        'You are not authorized to create a document duplicate.',
+        'You are not authorized to create an entrance duplicate.',
       );
     }
-
     if (
       !(await sails.helpers.checkIfExists.with({
         attributeName: 'id',
         attributeValue: req.param('id'),
-        sailsModel: TDuplicateDocument,
+        sailsModel: TDuplicateEntrance,
       }))
     ) {
       return res.badRequest(
@@ -68,12 +65,12 @@ module.exports = {
       );
     }
 
-    const duplicate = await TDuplicateDocument.findOne(id);
+    const duplicate = await TDuplicateEntrance.findOne(id);
 
-    const { document, description } = duplicate.content;
+    const { entrance, nameDescLoc } = duplicate.content;
     try {
-      await DocumentService.createDocument(document, description);
-      await TDuplicateDocument.destroyOne(id);
+      await EntranceService.createEntrance(entrance, nameDescLoc);
+      await TDuplicateEntrance.destroyOne(id);
       return res.ok();
     } catch (e) {
       ErrorService.getDefaultErrorHandler(res)(e);
@@ -84,17 +81,17 @@ module.exports = {
     const hasRight = await sails.helpers.checkRight
       .with({
         groups: req.token.groups,
-        rightEntity: RightService.RightEntities.DOCUMENT_DUPLICATE,
+        rightEntity: RightService.RightEntities.ENTRANCE_DUPLICATE,
         rightAction: RightService.RightActions.DELETE_ANY,
       })
       .intercept('rightNotFound', (err) => {
         return res.serverError(
-          'A server error occured when checking your right to delete an document duplicate.',
+          'A server error occured when checking your right to delete an entrance duplicate.',
         );
       });
     if (!hasRight) {
       return res.forbidden(
-        'You are not authorized to delete a document duplicate.',
+        'You are not authorized to delete an entrance duplicate.',
       );
     }
     const id = req.param('id');
@@ -106,7 +103,7 @@ module.exports = {
       !(await sails.helpers.checkIfExists.with({
         attributeName: 'id',
         attributeValue: req.param('id'),
-        sailsModel: TDuplicateDocument,
+        sailsModel: TDuplicateEntrance,
       }))
     ) {
       return res.badRequest(
@@ -114,7 +111,7 @@ module.exports = {
       );
     }
 
-    await TDuplicateDocument.destroyOne(id);
+    await TDuplicateEntrance.destroyOne(id);
     return res.ok();
   },
 
@@ -122,27 +119,26 @@ module.exports = {
     const hasRight = await sails.helpers.checkRight
       .with({
         groups: req.token.groups,
-        rightEntity: RightService.RightEntities.DOCUMENT_DUPLICATE,
+        rightEntity: RightService.RightEntities.ENTRANCE_DUPLICATE,
         rightAction: RightService.RightActions.DELETE_ANY,
       })
       .intercept('rightNotFound', (err) => {
         return res.serverError(
-          'A server error occured when checking your right to create a document duplicate.',
+          'A server error occured when checking your right to delete an entrance duplicate.',
         );
       });
     if (!hasRight) {
       return res.forbidden(
-        'You are not authorized to create a document duplicate.',
+        'You are not authorized to delete an entrance duplicate.',
       );
     }
-
     const idArray = req.param('id');
     if (!idArray) {
       return res.badRequest('You must provide the id of the duplicates.');
     }
 
     try {
-      await TDuplicateDocument.destroy({
+      await TDuplicateEntrance.destroy({
         id: idArray,
       });
       return res.ok();
@@ -156,72 +152,55 @@ module.exports = {
       !(await sails.helpers.checkIfExists.with({
         attributeName: 'id',
         attributeValue: req.param('id'),
-        sailsModel: TDuplicateDocument,
+        sailsModel: TDuplicateEntrance,
       }))
     ) {
       return res.badRequest(
         `Could not find duplicate with id ${req.param('id')}.`,
       );
     }
-    const duplicate = await TDuplicateDocument.findOne(
+
+    // Populate the entrance
+    const duplicateFound = await TDuplicateEntrance.findOne(
       req.param('id'),
     ).populate('author');
 
-    // Populate the document
-    const found = await TDocument.findOne(duplicate.document)
+    duplicateFound.entrance = await TEntrance.findOne(duplicateFound.entrance)
       .populate('author')
-      .populate('authorizationDocument')
-      .populate('authors')
       .populate('cave')
-      .populate('editor')
-      .populate('entrance')
-      .populate('files')
-      .populate('identifierType')
-      .populate('languages')
-      .populate('library')
-      .populate('license')
-      .populate('massif')
-      .populate('option')
-      .populate('parent')
-      .populate('regions')
-      .populate('reviewer')
-      .populate('subjects')
-      .populate('type');
-    await DescriptionService.setDocumentDescriptions(found);
-    duplicate.document = found;
+      .populate('names')
+      .populate('descriptions')
+      .populate('geology')
+      .populate('locations')
+      .populate('documents')
+      .populate('riggings')
+      .populate('comments');
 
     // Populate the duplicate
-    const duplicateDoc = duplicate.content.document;
-    const duplicateDesc = duplicate.content.description;
-    let descLang;
-    if (duplicateDesc.documentMainLanguage) {
-      duplicateDoc.languages = [duplicateDesc.documentMainLanguage.id];
-      duplicateDesc.documentMainLanguage = undefined;
+    const duplicateEntrance = duplicateFound.content.entrance;
+    const { description, location, name } = duplicateFound.content.nameDescLoc;
+    const popDuplicate = await EntranceService.populateJSON(duplicateEntrance);
+    if (description) {
+      description.author = await TCaver.findOne(description.author);
+      popDuplicate.descriptions = [description];
     }
-    if (duplicateDesc.titleAndDescriptionLanguage) {
-      descLang = duplicateDesc.titleAndDescriptionLanguage.id;
-      duplicateDesc.titleAndDescriptionLanguage = undefined;
+    if (location) {
+      popDuplicate.locations = [location];
+    }
+    if (name) {
+      name.name = name.text;
+      popDuplicate.names = [name];
     }
 
-    const popDuplicate = await DocumentService.populateJSON(duplicateDoc);
-    const descLangTable = descLang
-      ? await TLanguage.findOne(descLang)
-      : undefined;
-    popDuplicate.descriptions = [
-      {
-        ...duplicateDesc,
-        language: descLangTable,
-      },
-    ];
-    duplicate.content = popDuplicate;
+    duplicateFound.content = popDuplicate;
 
     return ControllerService.treatAndConvert(
       req,
       null,
-      duplicate,
+      duplicateFound,
       null,
       res,
-      MappingV1Service.convertToDocumentDuplicateModel,
+      MappingV1Service.convertToEntranceDuplicateModel,
     );
   },
 
@@ -231,7 +210,7 @@ module.exports = {
         'orderBy',
         'ASC',
       )}`;
-      const duplicates = await TDuplicateDocument.find()
+      const duplicates = await TDuplicateEntrance.find()
         .skip(req.param('skip', 0))
         .limit(req.param('limit', 50))
         .sort(sort)
@@ -243,7 +222,7 @@ module.exports = {
         duplicates,
         null,
         res,
-        MappingV1Service.convertToDocumentDuplicateList,
+        MappingV1Service.convertToEntranceDuplicateList,
       );
     } catch (err) {
       ErrorService.getDefaultErrorHandler(res)(err);
