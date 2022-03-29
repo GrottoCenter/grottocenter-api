@@ -1241,6 +1241,7 @@ module.exports = {
   checkRows: async (req, res) => {
     const doubleCheck = sails.helpers.csvhelpers.doubleCheck.with;
     const willBeCreated = [];
+    const willBeCreatedAsDuplicates = [];
     const wontBeCreated = [];
     for (const [index, row] of req.body.data.entries()) {
       const idDb = doubleCheck({
@@ -1269,15 +1270,13 @@ module.exports = {
       if (!result) {
         willBeCreated.push(row);
       } else {
-        wontBeCreated.push({
-          line: index + 2,
-          id: idDb,
-        });
+        willBeCreatedAsDuplicates.push(row);
       }
     }
 
     const requestResult = {
       willBeCreated,
+      willBeCreatedAsDuplicates,
       wontBeCreated,
     };
     return res.ok(requestResult);
@@ -1309,6 +1308,7 @@ module.exports = {
         failure: 0,
       },
       successfulImport: [],
+      successfulImportAsDuplicates: [],
       failureImport: [],
     };
 
@@ -1350,10 +1350,9 @@ module.exports = {
       const dataLangDesc = getConvertedLangDescDocumentFromCsv(data, authorId);
 
       if (result) {
-        // Create a duplicate in table TDuplicateEntrance
-
+        // Create a duplicate in DB
         const duplicateContent = {
-          document: document,
+          document: dataDocument,
           description: dataLangDesc,
         };
         await DuplicateDocumentService.create(
@@ -1361,9 +1360,9 @@ module.exports = {
           duplicateContent,
           result.id,
         );
-        requestResponse.failureImport.push({
+        requestResponse.successfulImportAsDuplicates.push({
           line: index + 2,
-          message: `Document with id ${idDb} is a document duplicate.`,
+          message: `Document with id ${idDb} has been created as a document duplicate.`,
         });
         continue;
       }
@@ -1389,6 +1388,8 @@ module.exports = {
     }
 
     requestResponse.total.success = requestResponse.successfulImport.length;
+    requestResponse.total.successfulImportAsDuplicates =
+      requestResponse.successfulImportAsDuplicates.length;
     requestResponse.total.failure = requestResponse.failureImport.length;
     return res.ok(requestResponse);
   },
