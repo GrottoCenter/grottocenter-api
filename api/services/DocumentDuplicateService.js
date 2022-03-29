@@ -3,12 +3,12 @@ module.exports = {
     authorId,
     content,
     documentId,
-    datePublication = new Date(),
+    dateInscription = new Date(),
   ) => {
     await TDuplicateDocument.create({
       author: authorId,
       content: content,
-      datePublication: datePublication,
+      dateInscription: dateInscription,
       document: documentId,
     });
   },

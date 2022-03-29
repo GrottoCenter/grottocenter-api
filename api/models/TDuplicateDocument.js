@@ -26,9 +26,9 @@ module.exports = {
       allowNull: false,
       columnName: 'content',
     },
-    datePublication: {
+    dateInscription: {
       type: 'ref',
-      columnName: 'date_publication',
+      columnName: 'date_inscription',
       columnType: 'timestamp',
     },
     document: {

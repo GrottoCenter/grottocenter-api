@@ -24,10 +24,10 @@ module.exports = {
       );
     }
 
-    const dateCreation = req.param('datePublication', new Date());
+    const dateInscription = req.param('dateInscription', new Date());
 
     const duplicateParams = req.body.data.map((content) => ({
-      datePublication: dateCreation,
+      dateInscription: dateInscription,
       content: content,
       document: content.document,
     }));
@@ -208,7 +208,7 @@ module.exports = {
   },
 
   findAll: async (req, res) => {
-    const sort = `${req.param('sortBy', 'datePublication')} ${req.param(
+    const sort = `${req.param('sortBy', 'dateInscription')} ${req.param(
       'orderBy',
       'ASC',
     )}`;
