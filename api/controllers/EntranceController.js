@@ -873,6 +873,7 @@ module.exports = {
   checkRows: async (req, res) => {
     const doubleCheck = sails.helpers.csvhelpers.doubleCheck.with;
     const willBeCreated = [];
+    const willBeCreatedAsDuplicates = [];
     const wontBeCreated = [];
     for (const [index, row] of req.body.data.entries()) {
       const idDb = doubleCheck({
@@ -902,14 +903,13 @@ module.exports = {
       if (result) {
         willBeCreated.push(row);
       } else {
-        wontBeCreated.push({
-          line: index + 2,
-        });
+        willBeCreatedAsDuplicates.push(row);
       }
     }
 
     const requestResult = {
       willBeCreated,
+      willBeCreatedAsDuplicates,
       wontBeCreated,
     };
     return res.ok(requestResult);
@@ -941,6 +941,7 @@ module.exports = {
         failure: 0,
       },
       successfulImport: [],
+      successfulImportAsDuplicates: [],
       failureImport: [],
     };
 
@@ -985,7 +986,7 @@ module.exports = {
           nameDbImport: nameDb,
         });
         if (result) {
-          // Create a duplicate in table TDuplicateEntrance
+          // Create a duplicate in DB
           const cave = await TCave.findOne(result[0].cave);
           const entrance = getConvertedEntranceFromCsv(data, authorId, cave);
 
@@ -1000,9 +1001,9 @@ module.exports = {
             result[0].id,
           );
 
-          requestResponse.failureImport.push({
+          requestResponse.successfulImportAsDuplicates.push({
             line: index + 2,
-            message: `Entrance with id ${idDb} is an entrance duplicate.`,
+            message: `Entrance with id ${idDb} has been created as an entrance duplicate.`,
           });
           continue;
         }
@@ -1060,6 +1061,8 @@ module.exports = {
     }
 
     requestResponse.total.success = requestResponse.successfulImport.length;
+    requestResponse.total.successfulImportAsDuplicates =
+      requestResponse.successfulImportAsDuplicates.length;
     requestResponse.total.failure = requestResponse.failureImport.length;
     return res.ok(requestResponse);
   },
