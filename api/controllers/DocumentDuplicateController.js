@@ -34,7 +34,7 @@ module.exports = {
       document: content.document,
     }));
 
-    await TDuplicateDocument.createEach(duplicateParams);
+    await TDocumentDuplicate.createEach(duplicateParams);
     return res.ok();
   },
 
@@ -60,7 +60,7 @@ module.exports = {
       !(await sails.helpers.checkIfExists.with({
         attributeName: 'id',
         attributeValue: req.param('id'),
-        sailsModel: TDuplicateDocument,
+        sailsModel: TDocumentDuplicate,
       }))
     ) {
       return res.badRequest(
@@ -69,12 +69,12 @@ module.exports = {
     }
     const id = req.param('id');
 
-    const duplicate = await TDuplicateDocument.findOne(id);
+    const duplicate = await TDocumentDuplicate.findOne(id);
 
     const { document, description } = duplicate.content;
     try {
       await DocumentService.createDocument(document, description);
-      await TDuplicateDocument.destroyOne(id);
+      await TDocumentDuplicate.destroyOne(id);
       return res.ok();
     } catch (e) {
       ErrorService.getDefaultErrorHandler(res)(e);
@@ -107,7 +107,7 @@ module.exports = {
       !(await sails.helpers.checkIfExists.with({
         attributeName: 'id',
         attributeValue: req.param('id'),
-        sailsModel: TDuplicateDocument,
+        sailsModel: TDocumentDuplicate,
       }))
     ) {
       return res.badRequest(
@@ -115,7 +115,7 @@ module.exports = {
       );
     }
 
-    await TDuplicateDocument.destroyOne(id);
+    await TDocumentDuplicate.destroyOne(id);
     return res.ok();
   },
 
@@ -143,7 +143,7 @@ module.exports = {
     }
 
     try {
-      await TDuplicateDocument.destroy({
+      await TDocumentDuplicate.destroy({
         id: idArray,
       });
       return res.ok();
@@ -157,14 +157,14 @@ module.exports = {
       !(await sails.helpers.checkIfExists.with({
         attributeName: 'id',
         attributeValue: req.param('id'),
-        sailsModel: TDuplicateDocument,
+        sailsModel: TDocumentDuplicate,
       }))
     ) {
       return res.badRequest(
         `Could not find duplicate with id ${req.param('id')}.`,
       );
     }
-    const duplicate = await TDuplicateDocument.findOne(
+    const duplicate = await TDocumentDuplicate.findOne(
       req.param('id'),
     ).populate('author');
 
@@ -238,12 +238,12 @@ module.exports = {
     const limit = req.param('limit', 50);
     const skip = req.param('skip', 0);
     try {
-      const duplicates = await TDuplicateDocument.find()
+      const duplicates = await TDocumentDuplicate.find()
         .skip(skip)
         .limit(limit)
         .sort(sort)
         .populate('author');
-      const totalNb = await TDuplicateDocument.count();
+      const totalNb = await TDocumentDuplicate.count();
 
       const params = {
         controllerMethod: 'DocumentDuplicateController.findAll',

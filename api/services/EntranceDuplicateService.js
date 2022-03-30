@@ -5,7 +5,7 @@ module.exports = {
     entranceId,
     dateInscription = new Date(),
   ) => {
-    await TDuplicateEntrance.create({
+    await TEntranceDuplicate.create({
       author: authorId,
       content: content,
       dateInscription: dateInscription,

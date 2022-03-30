@@ -32,7 +32,7 @@ module.exports = {
       document: content.document,
     }));
 
-    await TDuplicateEntrance.createEach(duplicateParams);
+    await TEntranceDuplicate.createEach(duplicateParams);
     return res.ok();
   },
 
@@ -57,7 +57,7 @@ module.exports = {
       !(await sails.helpers.checkIfExists.with({
         attributeName: 'id',
         attributeValue: req.param('id'),
-        sailsModel: TDuplicateEntrance,
+        sailsModel: TEntranceDuplicate,
       }))
     ) {
       return res.badRequest(
@@ -67,12 +67,12 @@ module.exports = {
 
     const id = req.param('id');
 
-    const duplicate = await TDuplicateEntrance.findOne(id);
+    const duplicate = await TEntranceDuplicate.findOne(id);
 
     const { entrance, nameDescLoc } = duplicate.content;
     try {
       await EntranceService.createEntrance(entrance, nameDescLoc);
-      await TDuplicateEntrance.destroyOne(id);
+      await TEntranceDuplicate.destroyOne(id);
       return res.ok();
     } catch (e) {
       ErrorService.getDefaultErrorHandler(res)(e);
@@ -105,7 +105,7 @@ module.exports = {
       !(await sails.helpers.checkIfExists.with({
         attributeName: 'id',
         attributeValue: req.param('id'),
-        sailsModel: TDuplicateEntrance,
+        sailsModel: TEntranceDuplicate,
       }))
     ) {
       return res.badRequest(
@@ -113,7 +113,7 @@ module.exports = {
       );
     }
 
-    await TDuplicateEntrance.destroyOne(id);
+    await TEntranceDuplicate.destroyOne(id);
     return res.ok();
   },
 
@@ -140,7 +140,7 @@ module.exports = {
     }
 
     try {
-      await TDuplicateEntrance.destroy({
+      await TEntranceDuplicate.destroy({
         id: idArray,
       });
       return res.ok();
@@ -154,7 +154,7 @@ module.exports = {
       !(await sails.helpers.checkIfExists.with({
         attributeName: 'id',
         attributeValue: req.param('id'),
-        sailsModel: TDuplicateEntrance,
+        sailsModel: TEntranceDuplicate,
       }))
     ) {
       return res.badRequest(
@@ -163,7 +163,7 @@ module.exports = {
     }
 
     // Populate the entrance
-    const duplicateFound = await TDuplicateEntrance.findOne(
+    const duplicateFound = await TEntranceDuplicate.findOne(
       req.param('id'),
     ).populate('author');
 
@@ -217,12 +217,12 @@ module.exports = {
     const limit = req.param('limit', 50);
     const skip = req.param('skip', 0);
     try {
-      const duplicates = await TDuplicateEntrance.find()
+      const duplicates = await TEntranceDuplicate.find()
         .skip(skip)
         .limit(limit)
         .sort(sort)
         .populate('author');
-      const totalNb = await TDuplicateEntrance.count();
+      const totalNb = await TEntranceDuplicate.count();
 
       const params = {
         controllerMethod: 'EntranceDuplicateController.findAll',
