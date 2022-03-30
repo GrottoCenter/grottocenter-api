@@ -754,10 +754,10 @@ CREATE TABLE t_document (
 	CONSTRAINT t_document_t_massif_fk FOREIGN KEY (id_massif) REFERENCES t_massif(id),
 	CONSTRAINT t_document_t_type_fk FOREIGN KEY (id_type) REFERENCES t_type(id)
 );
--- t_duplicate_document definition
+-- t_document_duplicate definition
 -- Drop table
--- DROP TABLE t_duplicate_document;
-CREATE TABLE t_duplicate_document (
+-- DROP TABLE t_document_duplicate;
+CREATE TABLE t_document_duplicate (
 	id serial NOT NULL,
 	id_author int4 NOT NULL,
 	content json NOT NULL,
@@ -767,10 +767,10 @@ CREATE TABLE t_duplicate_document (
 	CONSTRAINT t_duplicates_document_t_document_fk FOREIGN KEY (id_document) REFERENCES t_document(id),
 	CONSTRAINT t_duplicates_document_t_caver_fk FOREIGN KEY (id_author) REFERENCES t_caver(id)
 );
--- t_duplicate_entrance definition
+-- t_entrance_duplicate definition
 -- Drop table
--- DROP TABLE t_duplicate_entrance;
-CREATE TABLE t_duplicate_entrance (
+-- DROP TABLE t_entrance_duplicate;
+CREATE TABLE t_entrance_duplicate (
 	id serial NOT NULL,
 	id_author int4 NOT NULL,
 	content json NOT NULL,

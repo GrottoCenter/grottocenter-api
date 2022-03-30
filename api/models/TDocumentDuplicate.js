@@ -1,12 +1,12 @@
 /**
- * TDuplicateDocument.js
+ * TDocumentDuplicate.js
  *
- * @description :: tDuplicateDocument model
+ * @description :: tDocumentDuplicate model
  * @docs        :: http://sailsjs.org/#!documentation/models
  */
 
 module.exports = {
-  tableName: 't_duplicate_document',
+  tableName: 't_document_duplicate',
 
   primaryKey: 'id',
 
