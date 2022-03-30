@@ -1,12 +1,12 @@
 /**
- * TDuplicateEntrance.js
+ * TEntranceDuplicate.js
  *
- * @description :: tDuplicateEntrance model
+ * @description :: tEntranceDuplicate model
  * @docs        :: http://sailsjs.org/#!documentation/models
  */
 
 module.exports = {
-  tableName: 't_duplicate_entrance',
+  tableName: 't_entrance_duplicate',
 
   primaryKey: 'id',
 
