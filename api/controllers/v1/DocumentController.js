@@ -12,6 +12,8 @@ module.exports = {
   find: (req, res, next) => documentController.find(req, res, next),
   findChildren: (req, res) => documentController.findChildren(req, res),
   update: (req, res, next) => documentController.update(req, res, next),
+  updateWithNewEntities: (req, res) =>
+    documentController.updateWithNewEntities(req, res),
   validate: (req, res, next) => documentController.validate(req, res, next),
   multipleValidate: (req, res, next) =>
     documentController.multipleValidate(req, res, next),

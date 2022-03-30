@@ -65,6 +65,7 @@ module.exports.policies = {
     publicCount: true,
     unlinkDocument: ['tokenAuth', 'moderatorAuth'],
     update: 'tokenAuth',
+    updateWithNewEntities: 'tokenAuth',
     checkRows: 'tokenAuth',
     importRows: 'tokenAuth',
   },
@@ -137,6 +138,7 @@ module.exports.policies = {
     validate: ['tokenAuth', 'moderatorAuth'],
     multipleValidate: ['tokenAuth', 'moderatorAuth'],
     update: 'tokenAuth',
+    updateWithNewEntities: 'tokenAuth',
     checkRows: 'tokenAuth',
     importRows: 'tokenAuth',
   },
@@ -197,6 +199,13 @@ module.exports.policies = {
 
   'v1/SwaggerController': {
     '*': true,
+  },
+  'v1/DocumentDuplicateController': {
+    '*': ['tokenAuth', 'moderatorAuth'],
+  },
+
+  'v1/EntranceDuplicateController': {
+    '*': ['tokenAuth', 'moderatorAuth'],
   },
 
   /***************************************************************************

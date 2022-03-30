@@ -196,6 +196,84 @@ module.exports = {
     return populatedDocument;
   },
 
+  /**
+   * Populate any document-like object.
+   * Avoid using when possible. Mainly used for json column that cannot be populated using waterline query language.
+   * @param {*} document
+   * @returns populated document
+   */
+  populateJSON: async (document) => {
+    const {
+      author,
+      authors,
+      cave,
+      editor,
+      entrance,
+      identifierType,
+      languages,
+      library,
+      license,
+      massif,
+      parent,
+      regions,
+      reviewer,
+      subjects,
+      type,
+      option,
+      authorizationDocument,
+      ...cleanedData
+    } = document;
+
+    // Join the tables
+    const doc = { ...cleanedData };
+    doc.authorizationDocument = authorizationDocument
+      ? await TDocument.findOne(authorizationDocument)
+      : null;
+    doc.cave = cave ? await TCave.findOne(cave) : null;
+    doc.editor = editor ? await TGrotto.findOne(editor) : null;
+    doc.entrance = entrance ? await TEntrance.findOne(entrance) : null;
+    doc.identifierType = identifierType
+      ? await TIdentifierType.findOne(identifierType)
+      : null;
+    doc.library = library ? await TGrotto.findOne(library) : null;
+    doc.license = license ? await TLicense.findOne(license) : null;
+    doc.massif = massif ? await TMassif.findOne(massif) : null;
+    doc.option = option ? await TOption.findOne(option) : null;
+    doc.parent = parent ? await TDocument.findOne(parent) : null;
+    doc.reviewer = reviewer ? await TCaver.findOne(reviewer) : null;
+    doc.type = type ? await TType.findOne(type) : null;
+
+    doc.authors = authors
+      ? await Promise.all(
+          authors.map(async (author) => {
+            return await TCaver.findOne(author);
+          }),
+        )
+      : [];
+    doc.languages = languages
+      ? await Promise.all(
+          languages.map(async (lang) => {
+            return await TLanguage.findOne(lang);
+          }),
+        )
+      : [];
+    doc.regions = regions
+      ? await Promise.all(
+          regions.map(async (region) => {
+            return await TRegion.findOne(region);
+          }),
+        )
+      : [];
+    doc.subjects = subjects
+      ? await Promise.all(
+          subjects.map(async (subject) => {
+            return await TSubject.findOne(subject);
+          }),
+        )
+      : [];
+    return doc;
+  },
+
   setDocumentType: async (document) => {
     document.type = await TType.findOne(document.type);
   },

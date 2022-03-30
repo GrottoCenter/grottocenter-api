@@ -5,8 +5,9 @@
  * @help        :: See http://links.sailsjs.org/docs/controllers
  */
 const ramda = require('ramda');
-const getCountryISO3 = require('country-iso-2-to-3');
 const DescriptionService = require('../services/DescriptionService');
+const TComment = require('../models/TComment');
+const EntranceDuplicateService = require('../services/EntranceDuplicateService');
 
 // Extract everything from the request body except id
 const getConvertedDataFromClientRequest = (req) => {
@@ -50,21 +51,6 @@ const getConvertedNameDescLocFromClientRequest = (req) => {
   }
 
   return result;
-};
-
-const iso2ToIso3 = (iso) => {
-  if (iso !== undefined) {
-    if (iso === 'EN') {
-      return 'eng';
-    }
-    const res = getCountryISO3(iso);
-    if (res) {
-      return res.toLowerCase();
-    } else {
-      throw Error('This iso code is incorrect : ' + iso);
-    }
-  }
-  return null;
 };
 
 /* _______________________________________
@@ -150,9 +136,10 @@ const getConvertedNameDescLocEntranceFromCsv = async (rawData, authorId) => {
         text: rawData['rdfs:label'],
         language: doubleCheck({
           key: 'gn:countryCode',
-          func: iso2ToIso3,
+          func: value.toLowerCase(),
         }),
         dateInscription: doubleCheck({
+          key: 'dct:rights/dct:created',
           defaultValue: new Date(),
         }),
         dateReviewed: doubleCheck({
@@ -259,12 +246,10 @@ const getConvertedNameAndDescCaveFromCsv = (rawData, authorId) => {
     name: doubleCheck({
       key: 'rdfs:label',
     }),
-    descriptionAndNameLanguage: {
-      id: doubleCheck({
-        key: 'karstlink:hasDescriptionDocument/dc:language',
-        func: (value) => value.toLowerCase(),
-      }),
-    },
+    language: doubleCheck({
+      key: 'karstlink:hasDescriptionDocument/dc:language',
+      func: (value) => value.toLowerCase(),
+    }),
     dateInscription: doubleCheck({
       key: 'dct:rights/dct:created',
       defaultValue: new Date(),
@@ -645,6 +630,142 @@ module.exports = {
     }
   },
 
+  updateWithNewEntities: async (req, res, converter) => {
+    // Check right
+    const hasRight = await sails.helpers.checkRight
+      .with({
+        groups: req.token.groups,
+        rightEntity: RightService.RightEntities.ENTRANCE,
+        rightAction: RightService.RightActions.EDIT_ANY,
+      })
+      .intercept('rightNotFound', (err) => {
+        return res.serverError(
+          'A server error occured when checking your right to update an entrance.',
+        );
+      });
+    if (!hasRight) {
+      return res.forbidden('You are not authorized to update an entrance.');
+    }
+
+    // Check if entrance exists
+    const entranceId = req.param('id');
+    const currentEntrance = await TEntrance.findOne(entranceId);
+    if (!currentEntrance) {
+      return res.status(404).send({
+        message: `Entrance of id ${entranceId} not found.`,
+      });
+    }
+
+    const {
+      entrance,
+      newNames,
+      newDescriptions,
+      newLocations,
+      newRiggings,
+      newComments,
+    } = req.body;
+
+    const cleanedData = {
+      ...entrance,
+      id: entranceId,
+    };
+
+    const checkForEmptiness = (value) => value && !ramda.isEmpty(value);
+
+    try {
+      if (checkForEmptiness(newNames)) {
+        const nameParams = newNames.map((name) => ({
+          ...name,
+          entrance: entranceId,
+        }));
+        const createdNames = await TName.createEach(nameParams).fetch();
+        const createdNamesIds = createdNames.map((name) => name.id);
+        cleanedData.names = ramda.concat(cleanedData.names, createdNamesIds);
+      }
+
+      if (checkForEmptiness(newDescriptions)) {
+        const descParams = newDescriptions.map((desc) => ({
+          ...desc,
+          entrance: entranceId,
+        }));
+        const createdDescriptions = await TDescription.createEach(
+          descParams,
+        ).fetch();
+        const createdDescriptionsIds = createdDescriptions.map(
+          (desc) => desc.id,
+        );
+        cleanedData.descriptions = ramda.concat(
+          cleanedData.descriptions,
+          createdDescriptionsIds,
+        );
+      }
+
+      if (checkForEmptiness(newLocations)) {
+        const locParams = newLocations.map((loc) => ({
+          ...loc,
+          entrance: entranceId,
+        }));
+        const createdLoc = await TLocation.createEach(locParams).fetch();
+        const createdLocIds = createdLoc.map((loc) => loc.id);
+        cleanedData.locations = ramda.concat(
+          cleanedData.locations,
+          createdLocIds,
+        );
+      }
+
+      if (checkForEmptiness(newRiggings)) {
+        const riggingParams = newRiggings.map((rig) => ({
+          ...rig,
+          entrance: entranceId,
+        }));
+        const createdRiggings = await TRigging(riggingParams).fetch();
+        const createdRiggingsIds = createdRiggings.map((rig) => rig.id);
+        cleanedData.riggings = ramda.concat(
+          cleanedData.riggings,
+          createdRiggingsIds,
+        );
+      }
+
+      if (checkForEmptiness(newComments)) {
+        const commentParams = newComments.map((comment) => ({
+          ...comment,
+          entrance: entranceId,
+        }));
+        const createdComments = await TComment.createEach(
+          commentParams,
+        ).fetch();
+        const createdCommentIds = createdComments.map((comment) => comment.id);
+        cleanedData.comments = ramda.concat(
+          cleanedData.comments,
+          createdCommentIds,
+        );
+      }
+
+      await sails.getDatastore().transaction(async (db) => {
+        const updatedEntrance = await TEntrance.updateOne({
+          id: entranceId,
+        })
+          .set(cleanedData)
+          .usingConnection(db);
+
+        await NameService.setNames([updatedEntrance], 'entrance');
+
+        const params = {};
+        params.controllerMethod = 'EntranceController.update';
+        return ControllerService.treatAndConvert(
+          req,
+          null,
+          updatedEntrance,
+          params,
+          res,
+          converter,
+        );
+      });
+    } catch (e) {
+      ErrorService.getDefaultErrorHandler(res)(e);
+    }
+  },
+
   addDocument: async (req, res) => {
     // Check right
     const hasRight = await sails.helpers.checkRight
@@ -756,6 +877,7 @@ module.exports = {
   checkRows: async (req, res) => {
     const doubleCheck = sails.helpers.csvhelpers.doubleCheck.with;
     const willBeCreated = [];
+    const willBeCreatedAsDuplicates = [];
     const wontBeCreated = [];
     for (const [index, row] of req.body.data.entries()) {
       const idDb = doubleCheck({
@@ -768,27 +890,30 @@ module.exports = {
         key: 'dct:rights/cc:attributionName',
         defaultValue: undefined,
       });
+
+      // Stop if no id and name provided
       if (!(idDb && nameDb)) {
         wontBeCreated.push({
           line: index + 2,
         });
+        continue;
+      }
+
+      // Check for duplicates
+      const result = await TEntrance.find({
+        idDbImport: idDb,
+        nameDbImport: nameDb,
+      });
+      if (result.length === 0) {
+        willBeCreated.push(row);
       } else {
-        const result = await TEntrance.find({
-          idDbImport: idDb,
-          nameDbImport: nameDb,
-        });
-        if (result.length > 0) {
-          wontBeCreated.push({
-            line: index + 2,
-          });
-        } else {
-          willBeCreated.push(row);
-        }
+        willBeCreatedAsDuplicates.push(row);
       }
     }
 
     const requestResult = {
       willBeCreated,
+      willBeCreatedAsDuplicates,
       wontBeCreated,
     };
     return res.ok(requestResult);
@@ -808,10 +933,11 @@ module.exports = {
       });
     if (!hasRight) {
       return res.forbidden(
-        'You are not authorized to import entraces via CSV.',
+        'You are not authorized to import entrances via CSV.',
       );
     }
 
+    const doubleCheck = sails.helpers.csvhelpers.doubleCheck.with;
     const requestResponse = {
       type: 'entrance',
       total: {
@@ -819,6 +945,7 @@ module.exports = {
         failure: 0,
       },
       successfulImport: [],
+      successfulImportAsDuplicates: [],
       failureImport: [],
     };
 
@@ -828,78 +955,118 @@ module.exports = {
         additionalColumns: ['w3geo:latitude', 'w3geo:longitude'],
       });
 
+      // Stop if missing columnes
       if (missingColumns.length > 0) {
         requestResponse.failureImport.push({
           line: index + 2,
           message: 'Columns missing : ' + missingColumns.toString(),
         });
-      } else {
-        try {
-          //Author retrieval : create one if not present in db
-          const authorId = await sails.helpers.csvhelpers.getAuthor(data);
-          //Cave creation
-          const dataCave = getConvertedCaveFromCsv(data, authorId);
-          const dataNameAndDesc = getConvertedNameAndDescCaveFromCsv(
-            data,
-            authorId,
-          );
-          const caveCreated = await CaveService.createCave(
-            dataCave,
-            dataNameAndDesc,
+        continue;
+      }
+
+      // Check for duplicates
+      const idDb = doubleCheck({
+        data: data,
+        key: 'id',
+        defaultValue: undefined,
+      });
+      const nameDb = doubleCheck({
+        data: data,
+        key: 'dct:rights/cc:attributionName',
+        defaultValue: undefined,
+      });
+
+      try {
+        // Get data
+        // Author retrieval: create one if not present in db
+        const authorId = await sails.helpers.csvhelpers.getAuthor(data);
+        const dataNameDescLoc = await getConvertedNameDescLocEntranceFromCsv(
+          data,
+          authorId,
+        );
+
+        const result = await TEntrance.find({
+          idDbImport: idDb,
+          nameDbImport: nameDb,
+        });
+        if (result.length !== 0) {
+          // Create a duplicate in DB
+          const cave = await TCave.findOne(result[0].cave);
+          const entrance = getConvertedEntranceFromCsv(data, authorId, cave);
+
+          const duplicateContent = {
+            entrance: entrance,
+            nameDescLoc: dataNameDescLoc,
+          };
+
+          await EntranceDuplicateService.create(
+            req.token.id,
+            duplicateContent,
+            result[0].id,
           );
 
-          //Entrance creation
-          const dataEntrance = getConvertedEntranceFromCsv(
-            data,
-            authorId,
-            caveCreated,
-          );
-          const { dateInscription } = dataEntrance;
-          const { dateReviewed } = dataEntrance;
-          const dataNameDescLoc = await getConvertedNameDescLocEntranceFromCsv(
-            data,
-            authorId,
-          );
-          const entranceCreated = await EntranceService.createEntrance(
-            dataEntrance,
-            dataNameDescLoc,
-          );
-          const doubleCheck = sails.helpers.csvhelpers.doubleCheck.with;
-          if (
-            doubleCheck({
-              data: data,
-              key: 'gn:alternateName',
-              defaultValue: null,
-            })
-          ) {
-            await TName.create({
-              author: authorId,
-              entrance: entranceCreated.id,
-              dateInscription: dateInscription,
-              dateReviewed: dateReviewed,
-              isMain: false,
-              language: dataNameDescLoc.name.language,
-              name: data['gn:alternateName'].name,
-            });
-          }
-
-          requestResponse.successfulImport.push({
-            caveId: caveCreated.id,
-            entranceId: entranceCreated.id,
-            latitude: entranceCreated.latitude,
-            longitude: entranceCreated.longitude,
-          });
-        } catch (err) {
-          sails.log.error(err);
-          requestResponse.failureImport.push({
+          requestResponse.successfulImportAsDuplicates.push({
             line: index + 2,
-            message: err.toString(),
+            message: `Entrance with id ${idDb} has been created as an entrance duplicate.`,
+          });
+          continue;
+        }
+
+        // Cave creation
+        const dataCave = getConvertedCaveFromCsv(data, authorId);
+        const nameData = getConvertedNameAndDescCaveFromCsv(data, authorId);
+        const createdCave = await CaveService.createCave(dataCave, nameData);
+
+        // Entrance creation
+        const dataEntrance = getConvertedEntranceFromCsv(
+          data,
+          authorId,
+          createdCave,
+        );
+        const { dateInscription } = dataEntrance;
+        const { dateReviewed } = dataEntrance;
+
+        const createdEntrance = await EntranceService.createEntrance(
+          dataEntrance,
+          dataNameDescLoc,
+        );
+        const doubleCheck = sails.helpers.csvhelpers.doubleCheck.with;
+        if (
+          doubleCheck({
+            data: data,
+            key: 'gn:alternateName',
+            defaultValue: null,
+          })
+        ) {
+          await TName.create({
+            author: authorId,
+            entrance: createdEntrance.id,
+            dateInscription: dateInscription,
+            dateReviewed: dateReviewed,
+            isMain: false,
+            language: dataNameDescLoc.name.language,
+            name: data['gn:alternateName'].name,
           });
         }
+
+        requestResponse.successfulImport.push({
+          caveId: createdCave.id,
+          entranceId: createdEntrance.id,
+          latitude: createdEntrance.latitude,
+          longitude: createdEntrance.longitude,
+        });
+      } catch (err) {
+        sails.log.error(err);
+        requestResponse.failureImport.push({
+          line: index + 2,
+          message: err.toString(),
+        });
       }
     }
 
     requestResponse.total.success = requestResponse.successfulImport.length;
+    requestResponse.total.successfulImportAsDuplicates =
+      requestResponse.successfulImportAsDuplicates.length;
     requestResponse.total.failure = requestResponse.failureImport.length;
     return res.ok(requestResponse);
   },

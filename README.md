@@ -50,8 +50,8 @@ Decharte, Dominique Lagrenee.
 
 Software requirement:
 
-- NodeJS (min v10)
-- NPM (min 4.1.2)
+- NodeJS (v16.x.x recommended, you can also use the .nvmrc file with nvm)
+- NPM (v8.x.x recommended)
 - Git client (see [Git usage](#git) for configuration)
 - Docker
 - [docker-compose](https://docs.docker.com/compose/install/)

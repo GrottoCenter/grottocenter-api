@@ -6,7 +6,9 @@
  */
 
 const ramda = require('ramda');
+const DescriptionService = require('../services/DescriptionService');
 const DocumentService = require('../services/DocumentService');
+const DocumentDuplicateService = require('../services/DocumentDuplicateService');
 const ErrorService = require('../services/ErrorService');
 
 // Tool methods
@@ -441,7 +443,7 @@ module.exports = {
     const langDescData = getLangDescDataFromClient(req);
 
     try {
-      const documentCreated = await DocumentService.createDocument(
+      const createdDocument = await DocumentService.createDocument(
         cleanedData,
         langDescData,
       );
@@ -450,7 +452,7 @@ module.exports = {
         const { files } = req.files;
         for (const file of files) {
           try {
-            await FileService.create(file, documentCreated.id);
+            await FileService.create(file, createdDocument.id);
           } catch (err) {
             errorFiles.push({
               fileName: file.originalname,
@@ -461,7 +463,7 @@ module.exports = {
       }
 
       const requestResponse = {
-        document: documentCreated,
+        document: createdDocument,
         status: !ramda.isEmpty(errorFiles)
           ? {
               errorCode: 'FileNotImported',
@@ -554,6 +556,86 @@ module.exports = {
         res,
         MappingV1Service.convertToDocumentModel,
       );
+    } catch (e) {
+      ErrorService.getDefaultErrorHandler(res)(e);
+    }
+  },
+
+  updateWithNewEntities: async (req, res) => {
+    const hasRight = await sails.helpers.checkRight
+      .with({
+        groups: req.token.groups,
+        rightEntity: RightService.RightEntities.DOCUMENT,
+        rightAction: RightService.RightActions.EDIT_ANY,
+      })
+      .intercept('rightNotFound', (err) => {
+        return res.serverError(
+          'A server error occured when checking your right to update a document.',
+        );
+      });
+
+    if (!hasRight) {
+      return res.forbidden('You are not authorized to update a document.');
+    }
+
+    // Check if entrance exists
+    const documentId = req.param('id');
+    const currentDocument = await TDocument.findOne(documentId);
+    if (!currentDocument) {
+      return res.status(404).send({
+        message: `Entrance of id ${documentId} not found.`,
+      });
+    }
+
+    const { document, newAuthors, newDescriptions } = req.body;
+
+    const cleanedData = {
+      ...document,
+      id: documentId,
+    };
+
+    const checkForEmptiness = (value) => value && !ramda.isEmpty(value);
+
+    // For each associated entites :
+    // - check if there are new values
+    // - create the corresponding values
+    // - add the newly created values to the array of cleanedData
+    //   otherwise, when the update will be done based on cleanedData, the relation will be deleted
+    try {
+      if (checkForEmptiness(newAuthors)) {
+        const authorParams = newAuthors.map((author) => ({
+          ...author,
+          documents: [documentId],
+        }));
+        const createdAuthors = await TCaver.createEach(authorParams).fetch();
+        const createdAuthorsIds = createdAuthors.map((author) => author.id);
+        cleanedData.authors = ramda.concat(
+          cleanedData.authors,
+          createdAuthorsIds,
+        );
+      }
+
+      if (checkForEmptiness(newDescriptions)) {
+        const descParams = newDescriptions.map((desc) => ({
+          ...desc,
+          document: documentId,
+        }));
+        const createdDescriptions = await TDescription.createEach(
+          descParams,
+        ).fetch();
+        const createdDescriptionsIds = createdDescriptions.map(
+          (desc) => desc.id,
+        );
+        cleanedData.descriptions = ramda.concat(
+          cleanedData.descriptions,
+          createdDescriptionsIds,
+        );
+      }
+      const updatedDocument = await TDocument.updateOne(documentId).set(
+        cleanedData,
+      );
+
+      return res.ok(updatedDocument);
     } catch (e) {
       ErrorService.getDefaultErrorHandler(res)(e);
     }
@@ -783,74 +865,20 @@ module.exports = {
           title,
           description,
           titleAndDescriptionLanguage,
-          documentMainLanguage,
-          author,
-          authors,
-          cave,
           descriptions,
-          editor,
-          entrance,
-          identifierType,
-          languages,
-          library,
-          license,
-          massif,
-          parent,
-          regions,
-          reviewer,
-          subjects,
-          type,
-          option,
-          authorizationDocument,
+          documentMainLanguage,
           newFiles,
           modifiedFiles,
           deletedFiles,
-          ...cleanedData
+          ...otherData
         } = modifiedDocJson;
+        const populatedDoc = await DocumentService.populateJSON(
+          cleanedDocument,
+        );
+        found = { ...populatedDoc, id };
 
-        // Join the tables
-        found = { ...cleanedData, id };
-        found.author = author ? await TCaver.findOne(author) : null;
-        found.cave = cave ? await TCave.findOne(cave) : null;
-        found.entrance = entrance ? await TEntrance.findOne(entrance) : null;
-        found.massif = massif ? await TMassif.findOne(massif) : null;
-        found.editor = editor ? await TGrotto.findOne(editor) : null;
-        found.identifierType = identifierType
-          ? await TIdentifierType.findOne(identifierType)
-          : null;
-        found.library = library ? await TGrotto.findOne(library) : null;
-        found.parent = parent ? await TDocument.findOne(parent) : null;
-        found.reviewer = reviewer ? await TCaver.findOne(reviewer) : null;
-        found.type = type ? await TType.findOne(type) : null;
-        found.license = license ? await TLicense.findOne(license) : null;
-        found.option = option ? await TOption.findOne(option) : null;
-        found.authorizationDocument = authorizationDocument
-          ? await TDocument.findOne(authorizationDocument)
-          : null;
-
-        found.subjects = subjects
-          ? await Promise.all(
-              subjects.map(async (subject) => {
-                return await TSubject.findOne(subject);
-              }),
-            )
-          : [];
-        found.authors = authors
-          ? await Promise.all(
-              authors.map(async (author) => {
-                return await TCaver.findOne(author);
-              }),
-            )
-          : [];
-        found.regions = regions
-          ? await Promise.all(
-              regions.map(async (region) => {
-                return await TRegion.findOne(region);
-              }),
-            )
-          : [];
-
-        let criteria = {
+        // Files retrieval
+        let filesCriterias = {
           document: id,
           isValidated: true,
         };
@@ -860,30 +888,28 @@ module.exports = {
         filesToIgnore =
           (deletedFiles && ramda.concat(filesToIgnore, deletedFiles)) ||
           filesToIgnore;
-
         const filesToIgnoreId = filesToIgnore.map((file) => file.id);
+
         if (!ramda.isEmpty(filesToIgnoreId)) {
-          criteria = {
+          filesCriterias = {
             document: id,
             id: { '!=': filesToIgnoreId },
             isValidated: true,
           };
         }
-
-        const files = await TFile.find(criteria);
-
+        const files = await TFile.find(filesCriterias);
         found.files = files;
         found.newFiles = newFiles;
         found.deletedFiles = deletedFiles;
         found.modifiedFiles = modifiedFiles;
 
-        //We can only modify the main language, so we don't have a "languages" attribute stored in the json. Uncomment if the possibility to add language is implemented.
-        //found.languages = languages ? await Promise.all(languages.map(async (language) => { return await TLanguage.findOne(language)})) : [];
-
+        // We can only modify the main language, so we don't have a "languages" attribute stored in the json. Uncomment if the possibility to add language is implemented.
+        // found.languages = languages ? await Promise.all(languages.map(async (language) => { return await TLanguage.findOne(language)})) : [];
         found.mainLanguage = await TLanguage.findOne(documentMainLanguage);
-        if (found.editor) {
-          await NameService.setNames([found.editor], 'grotto');
-        }
+
+        // Populate names & descriptions
+        await NameService.setNames([found.editor], 'grotto');
+        await DescriptionService.setDocumentDescriptions(found.parent, false);
 
         // Handle the description because even if it has been modified, the entry in TDescription stayed intact.
         const descLang = await TLanguage.findOne(titleAndDescriptionLanguage);
@@ -895,8 +921,8 @@ module.exports = {
           document: id,
           language: descLang,
         });
-      } catch (err) {
-        return res.serverError(err.toString());
+      } catch (e) {
+        ErrorService.getDefaultErrorHandler(res)(e);
       }
     } else {
       found = await TDocument.findOne(req.param('id'))
@@ -1177,6 +1203,7 @@ module.exports = {
   checkRows: async (req, res) => {
     const doubleCheck = sails.helpers.csvhelpers.doubleCheck.with;
     const willBeCreated = [];
+    const willBeCreatedAsDuplicates = [];
     const wontBeCreated = [];
     for (const [index, row] of req.body.data.entries()) {
       const idDb = doubleCheck({
@@ -1187,29 +1214,31 @@ module.exports = {
         data: row,
         key: 'dct:rights/cc:attributionName',
       });
+
+      // Stop if no id and name provided
       if (!(idDb && nameDb)) {
         wontBeCreated.push({
           line: index + 2,
         });
+        continue;
+      }
+
+      // Check for duplicates
+      const result = await TDocument.find({
+        idDbImport: idDb,
+        nameDbImport: nameDb,
+        isDeleted: false,
+      });
+      if (result.length === 0) {
+        willBeCreated.push(row);
       } else {
-        const result = await TDocument.findOne({
-          idDbImport: idDb,
-          nameDbImport: nameDb,
-          isDeleted: false,
-        });
-        if (result) {
-          wontBeCreated.push({
-            line: index + 2,
-            id: idDb,
-          });
-        } else {
-          willBeCreated.push(row);
-        }
+        willBeCreatedAsDuplicates.push(row);
       }
     }
 
     const requestResult = {
       willBeCreated,
+      willBeCreatedAsDuplicates,
       wontBeCreated,
     };
     return res.ok(requestResult);
@@ -1233,6 +1262,7 @@ module.exports = {
       );
     }
 
+    const doubleCheck = sails.helpers.csvhelpers.doubleCheck.with;
     const requestResponse = {
       type: 'document',
       total: {
@@ -1240,6 +1270,7 @@ module.exports = {
         failure: 0,
       },
       successfulImport: [],
+      successfulImportAsDuplicates: [],
       failureImport: [],
     };
 
@@ -1247,47 +1278,80 @@ module.exports = {
       const missingColumns = await sails.helpers.csvhelpers.checkColumns.with({
         data: data,
       });
-
+      // Stop if missing columnes
       if (missingColumns.length > 0) {
         requestResponse.failureImport.push({
           line: index + 2,
           message: 'Columns missing : ' + missingColumns.toString(),
         });
-      } else {
-        try {
-          const authorId = await sails.helpers.csvhelpers.getAuthor.with({
-            data: data,
-          });
-          const dataDocument = await getConvertedDocumentFromCsv(
-            data,
-            authorId,
-          );
-          const dataLangDesc = getConvertedLangDescDocumentFromCsv(
-            data,
-            authorId,
-          );
-          const documentCreated = await DocumentService.createDocument(
-            dataDocument,
-            dataLangDesc,
-          );
-          const docFiles = await TFile.find({ document: documentCreated.id });
+        continue;
+      }
 
-          requestResponse.successfulImport.push({
-            documentId: documentCreated.id,
-            title: dataLangDesc.title,
-            filesImported: docFiles.map((f) => f.fileName).join(','),
-          });
-        } catch (err) {
-          sails.log.error(err);
-          requestResponse.failureImport.push({
-            line: index + 2,
-            message: err.toString(),
-          });
-        }
+      // Check for duplicates
+      const idDb = doubleCheck({
+        data: data,
+        key: 'id',
+      });
+      const nameDb = doubleCheck({
+        data: data,
+        key: 'dct:rights/cc:attributionName',
+      });
+
+      const result = await TDocument.find({
+        idDbImport: idDb,
+        nameDbImport: nameDb,
+        isDeleted: false,
+      });
+
+      // Data formatting
+      // Author retrieval : create one if not present in db
+      const authorId = await sails.helpers.csvhelpers.getAuthor.with({
+        data: data,
+      });
+      const dataDocument = await getConvertedDocumentFromCsv(data, authorId);
+      const dataLangDesc = getConvertedLangDescDocumentFromCsv(data, authorId);
+
+      if (result.length !== 0) {
+        // Create a duplicate in DB
+        const duplicateContent = {
+          document: dataDocument,
+          description: dataLangDesc,
+        };
+        await DocumentDuplicateService.create(
+          req.token.id,
+          duplicateContent,
+          result[0].id,
+        );
+        requestResponse.successfulImportAsDuplicates.push({
+          line: index + 2,
+          message: `Document with id ${idDb} has been created as a document duplicate.`,
+        });
+        continue;
+      }
+
+      try {
+        const createdDocument = await DocumentService.createDocument(
+          dataDocument,
+          dataLangDesc,
+        );
+        const docFiles = await TFile.find({ document: createdDocument.id });
+        requestResponse.successfulImport.push({
+          documentId: createdDocument.id,
+          title: dataLangDesc.title,
+          filesImported: docFiles.map((f) => f.fileName).join(','),
+        });
+      } catch (err) {
+        sails.log.error(err);
+        requestResponse.failureImport.push({
+          line: index + 2,
+          message: err.toString(),
+        });
       }
     }
 
     requestResponse.total.success = requestResponse.successfulImport.length;
+    requestResponse.total.successfulImportAsDuplicates =
+      requestResponse.successfulImportAsDuplicates.length;
     requestResponse.total.failure = requestResponse.failureImport.length;
     return res.ok(requestResponse);
   },
