@@ -45,7 +45,7 @@ module.exports = {
     },
   },
 
-  fn: async function(inputs, exits) {
+  async fn(inputs, exits) {
     // Check if URL is valid
     let fileUrl;
     try {
@@ -71,8 +71,8 @@ module.exports = {
           return exits.formatRefused(extension);
         }
         if (
-          acceptedFileFormats !== undefined &&
-          !acceptedFileFormats.includes(extension)
+          acceptedFileFormats !== undefined
+          && !acceptedFileFormats.includes(extension)
         ) {
           return exits.formatRefused(extension);
         }
@@ -92,8 +92,6 @@ module.exports = {
             });
           });
       })
-      .on('error', (err) => {
-        return exits.downloadError('download error:', err);
-      });
+      .on('error', (err) => exits.downloadError('download error:', err));
   },
 };

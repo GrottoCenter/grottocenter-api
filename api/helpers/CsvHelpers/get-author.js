@@ -20,7 +20,7 @@ module.exports = {
     },
   },
 
-  fn: async function(inputs, exits) {
+  async fn(inputs, exits) {
     const doubleCheck = sails.helpers.csvhelpers.doubleCheck.with;
     let authorId;
     let author = doubleCheck({
@@ -28,7 +28,8 @@ module.exports = {
       key: 'karstlink:hasDescriptionDocument/dct:creator',
       defaultValue: null,
     });
-    let authorName, authorSurname;
+    let authorName; let
+      authorSurname;
     if (!author) {
       author = doubleCheck({
         data: inputs.data,

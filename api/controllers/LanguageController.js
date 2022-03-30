@@ -22,7 +22,7 @@ module.exports = {
         const params = {
           controllerMethod: 'LanguageController.findAll',
           searchedItem:
-            'All Languages' + (req.param('isPrefered') ? ' prefered' : ''),
+            `All Languages${req.param('isPrefered') ? ' prefered' : ''}`,
         };
         const formattedFound = {
           languages: found,

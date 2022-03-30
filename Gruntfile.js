@@ -12,8 +12,8 @@
  * For more information see:
  *   https://sailsjs.com/anatomy/Gruntfile.js
  */
-module.exports = function(grunt) {
-  let loadGruntTasks = require('sails-hook-grunt/accessible/load-grunt-tasks');
+module.exports = function (grunt) {
+  const loadGruntTasks = require('sails-hook-grunt/accessible/load-grunt-tasks');
 
   // Load Grunt task configurations (from `tasks/config/`) and Grunt
   // task registrations (from `tasks/register/`).

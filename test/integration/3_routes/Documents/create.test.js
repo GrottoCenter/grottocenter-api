@@ -1,4 +1,4 @@
-let supertest = require('supertest');
+const supertest = require('supertest');
 const AuthTokenService = require('../../AuthTokenService');
 
 describe('Document features', () => {

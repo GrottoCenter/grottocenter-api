@@ -13,4 +13,6 @@ import ja from './ja';
 import nl from './nl';
 import pt from './pt';
 
-export default { ar, bg, ca, de, el, en, es, fr, he, id, it, ja, nl, pt };
+export default {
+  ar, bg, ca, de, el, en, es, fr, he, id, it, ja, nl, pt,
+};

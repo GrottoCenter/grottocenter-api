@@ -51,7 +51,7 @@ module.exports = {
       (c) => c.parent !== doc.id,
     );
 
-    let formattedChildren = [];
+    const formattedChildren = [];
     // Format children
     for (const childDoc of children) {
       // Is a direct child ?
@@ -113,19 +113,18 @@ module.exports = {
       .getDatastore()
       .transaction(async (db) => {
         // Perform some checks
-        const docType =
-          documentData.type && (await TType.findOne(documentData.type));
+        const docType = documentData.type && (await TType.findOne(documentData.type));
         if (docType) {
           const docTypeName = docType.name.toLowerCase();
           // Parent doc is mandatory for articles and issues
           if (
-            MANDATORY_PARENT_TYPES.includes(docTypeName) &&
-            !documentData.parent
+            MANDATORY_PARENT_TYPES.includes(docTypeName)
+            && !documentData.parent
           ) {
             throw Error(
-              'Your document being an ' +
-                docType.name.toLowerCase() +
-                ', you must provide a document parent.',
+              `Your document being an ${
+                docType.name.toLowerCase()
+              }, you must provide a document parent.`,
             );
           }
         }
@@ -166,30 +165,26 @@ module.exports = {
     ).populate('identifierType');
 
     if (
-      populatedDocument.identifier &&
-      ramda.pathOr('', ['identifierType', 'id'], populatedDocument).trim() ===
-        'url'
+      populatedDocument.identifier
+      && ramda.pathOr('', ['identifierType', 'id'], populatedDocument).trim()
+        === 'url'
     ) {
-      sails.log.info('Downloading ' + populatedDocument.identifier + '...');
+      sails.log.info(`Downloading ${populatedDocument.identifier}...`);
       const acceptedFileFormats = await TFileFormat.find();
       // Download distant file & tolerate error
 
       const file = await sails.helpers.distantFileDownload
         .with({
           url: populatedDocument.identifier,
-          acceptedFileFormats: acceptedFileFormats.map((f) =>
-            f.extension.trim(),
-          ),
+          acceptedFileFormats: acceptedFileFormats.map((f) => f.extension.trim()),
           refusedFileFormats: ['html'], // don't download html page, they are not a valid file for GC
         })
-        .tolerate((error) =>
-          sails.log.error(
-            'Failed to download ' +
-              populatedDocument.identifier +
-              ': ' +
-              error.message,
-          ),
-        );
+        .tolerate((error) => sails.log.error(
+          `Failed to download ${
+            populatedDocument.identifier
+          }: ${
+            error.message}`,
+        ));
       file ? await FileService.create(file, createdDocument.id) : '';
     }
 
@@ -245,31 +240,23 @@ module.exports = {
 
     doc.authors = authors
       ? await Promise.all(
-          authors.map(async (author) => {
-            return await TCaver.findOne(author);
-          }),
-        )
+        authors.map(async (author) => await TCaver.findOne(author)),
+      )
       : [];
     doc.languages = languages
       ? await Promise.all(
-          languages.map(async (lang) => {
-            return await TLanguage.findOne(lang);
-          }),
-        )
+        languages.map(async (lang) => await TLanguage.findOne(lang)),
+      )
       : [];
     doc.regions = regions
       ? await Promise.all(
-          regions.map(async (region) => {
-            return await TRegion.findOne(region);
-          }),
-        )
+        regions.map(async (region) => await TRegion.findOne(region)),
+      )
       : [];
     doc.subjects = subjects
       ? await Promise.all(
-          subjects.map(async (subject) => {
-            return await TSubject.findOne(subject);
-          }),
-        )
+        subjects.map(async (subject) => await TSubject.findOne(subject)),
+      )
       : [];
     return doc;
   },

@@ -8,8 +8,7 @@ module.exports = {
    */
   formatRiggings: async (riggings) => {
     riggings.map((rigging) => {
-      const splitRiggingData = (dataName) =>
-        R.pipe(R.propOr('', dataName), R.split(SEPARATOR))(rigging);
+      const splitRiggingData = (dataName) => R.pipe(R.propOr('', dataName), R.split(SEPARATOR))(rigging);
 
       const obstacles = splitRiggingData('obstacles');
       const ropes = splitRiggingData('ropes');

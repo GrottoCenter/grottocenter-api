@@ -37,7 +37,7 @@ module.exports = {
     },
   },
 
-  fn: async function(inputs, exits) {
+  async fn(inputs, exits) {
     const {
       sailsModel,
       attributeName,

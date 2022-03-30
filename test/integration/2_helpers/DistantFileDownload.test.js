@@ -1,4 +1,4 @@
-let should = require('should');
+const should = require('should');
 
 describe('DistantFileDownload helper', () => {
   it('should download the grottocenter logo', async () => {

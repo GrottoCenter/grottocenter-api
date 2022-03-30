@@ -82,11 +82,9 @@ module.exports = {
         rightEntity: RightService.RightEntities.CAVER,
         rightAction: RightService.RightActions.EDIT_ANY,
       })
-      .intercept('rightNotFound', (err) => {
-        return res.serverError(
-          'A server error occured when checking your right to add a caver to a group.',
-        );
-      });
+      .intercept('rightNotFound', (err) => res.serverError(
+        'A server error occured when checking your right to add a caver to a group.',
+      ));
     if (!hasRight) {
       return res.forbidden('You are not authorized to add a caver to a group.');
     }
@@ -123,15 +121,9 @@ module.exports = {
         params.controllerMethod = 'CaverController.putOnGroup';
         return ControllerService.treat(req, null, {}, params, res);
       })
-      .catch({ name: 'UsageError' }, (err) => {
-        return res.badRequest(err.cause.message);
-      })
-      .catch({ name: 'AdapterError' }, (err) => {
-        return res.badRequest(err.cause.message);
-      })
-      .catch((err) => {
-        return res.serverError(err.cause.message);
-      });
+      .catch({ name: 'UsageError' }, (err) => res.badRequest(err.cause.message))
+      .catch({ name: 'AdapterError' }, (err) => res.badRequest(err.cause.message))
+      .catch((err) => res.serverError(err.cause.message));
   },
 
   removeFromGroup: async (req, res) => {
@@ -142,11 +134,9 @@ module.exports = {
         rightEntity: RightService.RightEntities.CAVER,
         rightAction: RightService.RightActions.EDIT_ANY,
       })
-      .intercept('rightNotFound', (err) => {
-        return res.serverError(
-          'A server error occured when checking your right to remove a caver from a group.',
-        );
-      });
+      .intercept('rightNotFound', (err) => res.serverError(
+        'A server error occured when checking your right to remove a caver from a group.',
+      ));
     if (!hasRight) {
       return res.forbidden(
         'You are not authorized to remove a caver from a group.',
@@ -189,15 +179,9 @@ module.exports = {
         params.controllerMethod = 'CaverController.removeFromGroup';
         return ControllerService.treat(req, null, {}, params, res);
       })
-      .catch({ name: 'UsageError' }, (err) => {
-        return res.badRequest(err.cause.message);
-      })
-      .catch({ name: 'AdapterError' }, (err) => {
-        return res.badRequest(err.cause.message);
-      })
-      .catch((err) => {
-        return res.serverError(err.cause.message);
-      });
+      .catch({ name: 'UsageError' }, (err) => res.badRequest(err.cause.message))
+      .catch({ name: 'AdapterError' }, (err) => res.badRequest(err.cause.message))
+      .catch((err) => res.serverError(err.cause.message));
   },
 
   setGroups: async (req, res) => {
@@ -208,11 +192,9 @@ module.exports = {
         rightEntity: RightService.RightEntities.CAVER,
         rightAction: RightService.RightActions.EDIT_ANY,
       })
-      .intercept('rightNotFound', (err) => {
-        return res.serverError(
-          'A server error occured when checking your right to set caver groups.',
-        );
-      });
+      .intercept('rightNotFound', (err) => res.serverError(
+        'A server error occured when checking your right to set caver groups.',
+      ));
     if (!hasRight) {
       return res.forbidden('You are not authorized to set caver groups.');
     }
@@ -251,7 +233,7 @@ module.exports = {
     )
       .then(() => {
         esClient.update({
-          index: `cavers-index`,
+          index: 'cavers-index',
           id: req.param('caverId'),
           body: {
             doc: {
@@ -264,15 +246,9 @@ module.exports = {
         params.controllerMethod = 'CaverController.setGroups';
         return ControllerService.treat(req, null, {}, params, res);
       })
-      .catch({ name: 'UsageError' }, (err) => {
-        return res.badRequest(err.cause.message);
-      })
-      .catch({ name: 'AdapterError' }, (err) => {
-        return res.badRequest(err.cause.message);
-      })
-      .catch((err) => {
-        return res.serverError(err.cause.message);
-      });
+      .catch({ name: 'UsageError' }, (err) => res.badRequest(err.cause.message))
+      .catch({ name: 'AdapterError' }, (err) => res.badRequest(err.cause.message))
+      .catch((err) => res.serverError(err.cause.message));
   },
 
   getAdmins: async (
@@ -288,11 +264,9 @@ module.exports = {
         rightEntity: RightService.RightEntities.CAVER,
         rightAction: RightService.RightActions.VIEW_ANY,
       })
-      .intercept('rightNotFound', (err) => {
-        return res.serverError(
-          'A server error occured when checking your right to view admins.',
-        );
-      });
+      .intercept('rightNotFound', (err) => res.serverError(
+        'A server error occured when checking your right to view admins.',
+      ));
     if (!hasRight) {
       return res.forbidden('You are not authorized to view admins.');
     }
@@ -336,11 +310,9 @@ module.exports = {
         rightEntity: RightService.RightEntities.CAVER,
         rightAction: RightService.RightActions.VIEW_ANY,
       })
-      .intercept('rightNotFound', (err) => {
-        return res.serverError(
-          'A server error occured when checking your right to view moderators.',
-        );
-      });
+      .intercept('rightNotFound', (err) => res.serverError(
+        'A server error occured when checking your right to view moderators.',
+      ));
     if (!hasRight) {
       return res.forbidden('You are not authorized to view moderators.');
     }
@@ -384,22 +356,20 @@ module.exports = {
         rightEntity: RightService.RightEntities.CAVER,
         rightAction: RightService.RightActions.CREATE,
       })
-      .intercept('rightNotFound', (err) => {
-        return res.serverError(
-          'A server error occured when checking your right to create a caver.',
-        );
-      });
+      .intercept('rightNotFound', (err) => res.serverError(
+        'A server error occured when checking your right to create a caver.',
+      ));
     if (!hasRight) {
       return res.forbidden('You are not authorized to create a caver.');
     }
 
     // Check params
     if (!req.param('name')) {
-      return res.badRequest(`You must provide a name to create a new caver.`);
+      return res.badRequest('You must provide a name to create a new caver.');
     }
     if (!req.param('surname')) {
       return res.badRequest(
-        `You must provide a surname to create a new caver.`,
+        'You must provide a surname to create a new caver.',
       );
     }
 
@@ -433,11 +403,9 @@ module.exports = {
         rightEntity: RightService.RightEntities.CAVER,
         rightAction: RightService.RightActions.EDIT_OWN,
       })
-      .intercept('rightNotFound', (err) => {
-        return res.serverError(
-          'A server error occured when checking your right to mark an entrance as explored.',
-        );
-      });
+      .intercept('rightNotFound', (err) => res.serverError(
+        'A server error occured when checking your right to mark an entrance as explored.',
+      ));
     if (!hasRight) {
       return res.forbidden(
         'You are not authorized to mark an entrance as explored.',
@@ -473,18 +441,10 @@ module.exports = {
 
     // Update caver
     TCaver.addToCollection(caverId, 'exploredEntrances', entranceId)
-      .then(() => {
-        return res.sendStatus(204);
-      })
-      .catch({ name: 'UsageError' }, (err) => {
-        return res.badRequest(err.cause.message);
-      })
-      .catch({ name: 'AdapterError' }, (err) => {
-        return res.badRequest(err.cause.message);
-      })
-      .catch((err) => {
-        return res.serverError(err.cause.message);
-      });
+      .then(() => res.sendStatus(204))
+      .catch({ name: 'UsageError' }, (err) => res.badRequest(err.cause.message))
+      .catch({ name: 'AdapterError' }, (err) => res.badRequest(err.cause.message))
+      .catch((err) => res.serverError(err.cause.message));
   },
 
   removeExploredEntrance: async (req, res) => {
@@ -495,11 +455,9 @@ module.exports = {
         rightEntity: RightService.RightEntities.CAVER,
         rightAction: RightService.RightActions.EDIT_OWN,
       })
-      .intercept('rightNotFound', (err) => {
-        return res.serverError(
-          'A server error occured when checking your right to unmark an entrance as explored.',
-        );
-      });
+      .intercept('rightNotFound', (err) => res.serverError(
+        'A server error occured when checking your right to unmark an entrance as explored.',
+      ));
     if (!hasRight) {
       return res.forbidden(
         'You are not authorized to unmark an entrance as explored.',
@@ -535,17 +493,9 @@ module.exports = {
 
     // Update caver
     TCaver.removeFromCollection(caverId, 'exploredEntrances', entranceId)
-      .then(() => {
-        return res.sendStatus(204);
-      })
-      .catch({ name: 'UsageError' }, (err) => {
-        return res.badRequest(err.cause.message);
-      })
-      .catch({ name: 'AdapterError' }, (err) => {
-        return res.badRequest(err.cause.message);
-      })
-      .catch((err) => {
-        return res.serverError(err.cause.message);
-      });
+      .then(() => res.sendStatus(204))
+      .catch({ name: 'UsageError' }, (err) => res.badRequest(err.cause.message))
+      .catch({ name: 'AdapterError' }, (err) => res.badRequest(err.cause.message))
+      .catch((err) => res.serverError(err.cause.message));
   },
 };

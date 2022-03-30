@@ -19,19 +19,18 @@ module.exports = {
     },
   },
 
-  fn: async function(inputs, exits) {
+  async fn(inputs, exits) {
     const { fullName } = inputs;
     const creatorArray = fullName.split(' ');
     if (creatorArray.length <= 3) {
       const creatorName = creatorArray[0];
       let creatorSurname = '';
       for (let i = 1; i < creatorArray.length; i++) {
-        creatorSurname += creatorArray[i] + ' ';
+        creatorSurname += `${creatorArray[i]} `;
       }
       creatorSurname = creatorSurname.slice(0, -1);
       return exits.success([fullName, creatorName, creatorSurname]);
-    } else {
-      return exits.success([fullName, undefined, undefined]);
     }
+    return exits.success([fullName, undefined, undefined]);
   },
 };

@@ -1,4 +1,4 @@
-let should = require('should');
+const should = require('should');
 
 describe('RiggingService', () => {
   describe('Complete and correct rigging', () => {

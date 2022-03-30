@@ -14,11 +14,9 @@ module.exports = {
         rightEntity: RightService.RightEntities.NAME,
         rightAction: RightService.RightActions.EDIT_ANY,
       })
-      .intercept('rightNotFound', (err) => {
-        return res.serverError(
-          'A server error occured when checking your right to update any name.',
-        );
-      });
+      .intercept('rightNotFound', (err) => res.serverError(
+        'A server error occured when checking your right to update any name.',
+      ));
 
     if (!hasRight) {
       return res.forbidden('You are not authorized to update any name.');
@@ -74,11 +72,9 @@ module.exports = {
         rightEntity: RightService.RightEntities.NAME,
         rightAction: RightService.RightActions.EDIT_ANY,
       })
-      .intercept('rightNotFound', (err) => {
-        return res.serverError(
-          'A server error occured when checking your right to update any name.',
-        );
-      });
+      .intercept('rightNotFound', (err) => res.serverError(
+        'A server error occured when checking your right to update any name.',
+      ));
     if (!hasRight) {
       return res.forbidden('You are not authorized to update any name.');
     }

@@ -13,11 +13,9 @@ module.exports = {
         rightEntity: RightService.RightEntities.ENTRANCE_DUPLICATE,
         rightAction: RightService.RightActions.CREATE,
       })
-      .intercept('rightNotFound', (err) => {
-        return res.serverError(
-          'A server error occured when checking your right to create an entrance duplicate.',
-        );
-      });
+      .intercept('rightNotFound', (err) => res.serverError(
+        'A server error occured when checking your right to create an entrance duplicate.',
+      ));
     if (!hasRight) {
       return res.forbidden(
         'You are not authorized to create an entrance duplicate.',
@@ -27,8 +25,8 @@ module.exports = {
     const dateInscription = req.param('dateInscription', new Date());
 
     const duplicateParams = req.body.data.map((content) => ({
-      dateInscription: dateInscription,
-      content: content,
+      dateInscription,
+      content,
       document: content.document,
     }));
 
@@ -43,11 +41,9 @@ module.exports = {
         rightEntity: RightService.RightEntities.ENTRANCE_DUPLICATE,
         rightAction: RightService.RightActions.CREATE,
       })
-      .intercept('rightNotFound', (err) => {
-        return res.serverError(
-          'A server error occured when checking your right to create an entrance duplicate.',
-        );
-      });
+      .intercept('rightNotFound', (err) => res.serverError(
+        'A server error occured when checking your right to create an entrance duplicate.',
+      ));
     if (!hasRight) {
       return res.forbidden(
         'You are not authorized to create an entrance duplicate.',
@@ -86,11 +82,9 @@ module.exports = {
         rightEntity: RightService.RightEntities.ENTRANCE_DUPLICATE,
         rightAction: RightService.RightActions.DELETE_ANY,
       })
-      .intercept('rightNotFound', (err) => {
-        return res.serverError(
-          'A server error occured when checking your right to delete an entrance duplicate.',
-        );
-      });
+      .intercept('rightNotFound', (err) => res.serverError(
+        'A server error occured when checking your right to delete an entrance duplicate.',
+      ));
     if (!hasRight) {
       return res.forbidden(
         'You are not authorized to delete an entrance duplicate.',
@@ -124,11 +118,9 @@ module.exports = {
         rightEntity: RightService.RightEntities.ENTRANCE_DUPLICATE,
         rightAction: RightService.RightActions.DELETE_ANY,
       })
-      .intercept('rightNotFound', (err) => {
-        return res.serverError(
-          'A server error occured when checking your right to delete an entrance duplicate.',
-        );
-      });
+      .intercept('rightNotFound', (err) => res.serverError(
+        'A server error occured when checking your right to delete an entrance duplicate.',
+      ));
     if (!hasRight) {
       return res.forbidden(
         'You are not authorized to delete an entrance duplicate.',
@@ -226,9 +218,9 @@ module.exports = {
 
       const params = {
         controllerMethod: 'EntranceDuplicateController.findAll',
-        limit: limit,
+        limit,
         searchedItem: 'Entrance duplicates',
-        skip: skip,
+        skip,
         total: totalNb,
         url: req.originalUrl,
       };

@@ -14,20 +14,16 @@ module.exports = {
         rightEntity: RightService.RightEntities.LOCATION,
         rightAction: RightService.RightActions.CREATE,
       })
-      .intercept('rightNotFound', (err) => {
-        return res.serverError(
-          'A server error occured when checking your right to create a location.',
-        );
-      });
+      .intercept('rightNotFound', (err) => res.serverError(
+        'A server error occured when checking your right to create a location.',
+      ));
     if (!hasRight) {
       return res.forbidden('You are not authorized to create a location.');
     }
 
     // Check mandatory params
     const mandatoryParams = ['body', 'entrance', 'language'];
-    const paramsNameAndValue = mandatoryParams.map((p) => {
-      return { name: p, value: req.param(p) };
-    });
+    const paramsNameAndValue = mandatoryParams.map((p) => ({ name: p, value: req.param(p) }));
     const missingParam = paramsNameAndValue.find((p) => !p.value);
     if (missingParam) {
       return res.badRequest(
@@ -59,10 +55,10 @@ module.exports = {
     try {
       const newLocation = await TLocation.create({
         author: req.token.id,
-        body: body,
+        body,
         dateInscription: new Date(),
         entrance: entranceId,
-        language: language,
+        language,
         title: req.param('title', null),
       }).fetch();
       const newLocationPopulated = await TLocation.findOne(newLocation.id)
@@ -92,11 +88,9 @@ module.exports = {
         rightEntity: RightService.RightEntities.LOCATION,
         rightAction: RightService.RightActions.EDIT_ANY,
       })
-      .intercept('rightNotFound', (err) => {
-        return res.serverError(
-          'A server error occured when checking your right to update any location.',
-        );
-      });
+      .intercept('rightNotFound', (err) => res.serverError(
+        'A server error occured when checking your right to update any location.',
+      ));
     if (!hasRight) {
       return res.forbidden('You are not authorized to update any location.');
     }

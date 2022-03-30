@@ -27,8 +27,7 @@ module.exports = (req, res, next) => {
       }
 
       const splitRange = askedRange.split('-');
-      const diffRange =
-        parseInt(splitRange[1], 10) - parseInt(splitRange[0], 10);
+      const diffRange = parseInt(splitRange[1], 10) - parseInt(splitRange[0], 10);
 
       if (diffRange < 0 || diffRange > apiControl.limit) {
         throw new Error('Invalid range');

@@ -15,11 +15,9 @@ module.exports = {
         rightEntity: RightService.RightEntities.DOCUMENT_DUPLICATE,
         rightAction: RightService.RightActions.CREATE,
       })
-      .intercept('rightNotFound', (err) => {
-        return res.serverError(
-          'A server error occured when checking your right to create a document duplicate.',
-        );
-      });
+      .intercept('rightNotFound', (err) => res.serverError(
+        'A server error occured when checking your right to create a document duplicate.',
+      ));
     if (!hasRight) {
       return res.forbidden(
         'You are not authorized to create a document duplicate.',
@@ -29,8 +27,8 @@ module.exports = {
     const dateInscription = req.param('dateInscription', new Date());
 
     const duplicateParams = req.body.data.map((content) => ({
-      dateInscription: dateInscription,
-      content: content,
+      dateInscription,
+      content,
       document: content.document,
     }));
 
@@ -45,11 +43,9 @@ module.exports = {
         rightEntity: RightService.RightEntities.DOCUMENT_DUPLICATE,
         rightAction: RightService.RightActions.CREATE,
       })
-      .intercept('rightNotFound', (err) => {
-        return res.serverError(
-          'A server error occured when checking your right to create a document duplicate.',
-        );
-      });
+      .intercept('rightNotFound', (err) => res.serverError(
+        'A server error occured when checking your right to create a document duplicate.',
+      ));
     if (!hasRight) {
       return res.forbidden(
         'You are not authorized to create a document duplicate.',
@@ -88,11 +84,9 @@ module.exports = {
         rightEntity: RightService.RightEntities.DOCUMENT_DUPLICATE,
         rightAction: RightService.RightActions.DELETE_ANY,
       })
-      .intercept('rightNotFound', (err) => {
-        return res.serverError(
-          'A server error occured when checking your right to delete an document duplicate.',
-        );
-      });
+      .intercept('rightNotFound', (err) => res.serverError(
+        'A server error occured when checking your right to delete an document duplicate.',
+      ));
     if (!hasRight) {
       return res.forbidden(
         'You are not authorized to delete a document duplicate.',
@@ -126,11 +120,9 @@ module.exports = {
         rightEntity: RightService.RightEntities.DOCUMENT_DUPLICATE,
         rightAction: RightService.RightActions.DELETE_ANY,
       })
-      .intercept('rightNotFound', (err) => {
-        return res.serverError(
-          'A server error occured when checking your right to create a document duplicate.',
-        );
-      });
+      .intercept('rightNotFound', (err) => res.serverError(
+        'A server error occured when checking your right to create a document duplicate.',
+      ));
     if (!hasRight) {
       return res.forbidden(
         'You are not authorized to create a document duplicate.',
@@ -247,9 +239,9 @@ module.exports = {
 
       const params = {
         controllerMethod: 'DocumentDuplicateController.findAll',
-        limit: limit,
+        limit,
         searchedItem: 'Document duplicates',
-        skip: skip,
+        skip,
         total: totalNb,
         url: req.originalUrl,
       };

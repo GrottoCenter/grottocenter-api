@@ -3,8 +3,8 @@ module.exports = (req, res, next) => {
     req.session.languagePreference = req.param('lang');
   }
   if (
-    req.getLocale() !== undefined &&
-    req.session.languagePreference === undefined
+    req.getLocale() !== undefined
+    && req.session.languagePreference === undefined
   ) {
     req.session.languagePreference = req.getLocale();
   }

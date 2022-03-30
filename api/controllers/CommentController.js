@@ -16,8 +16,7 @@ module.exports = {
     // get stats
     return CommentService.getStats(entryId).then(
       (result) => res.json(result),
-      (err) =>
-        res.serverError(`CommentController.getEntryStats error : ${err}`),
+      (err) => res.serverError(`CommentController.getEntryStats error : ${err}`),
     );
   },
 
@@ -31,8 +30,7 @@ module.exports = {
     // get stats
     return CommentService.getTimeInfos(entryId).then(
       (result) => res.json(result),
-      (err) =>
-        res.serverError(`CommentController.getEntryTimeInfos error : ${err}`),
+      (err) => res.serverError(`CommentController.getEntryTimeInfos error : ${err}`),
     );
   },
 };

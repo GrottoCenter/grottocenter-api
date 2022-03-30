@@ -1,4 +1,4 @@
-let supertest = require('supertest');
+const supertest = require('supertest');
 
 describe('Document features', () => {
   describe('Count', () => {

@@ -6,6 +6,7 @@
  */
 
 const passport = require('passport');
+
 const { tokenSalt } = AuthService;
 const PASSWORD_MIN_LENGTH = 8;
 
@@ -16,7 +17,7 @@ module.exports = {
         return res.unauthorized({ message: 'Invalid email or password.' });
       }
       if (err) {
-        sails.log.error('Error while trying to log in: ' + err);
+        sails.log.error(`Error while trying to log in: ${err}`);
         return res
           .status(500)
           .send({ message: 'An internal server error occurred.' });
@@ -39,16 +40,13 @@ module.exports = {
     })(req, res);
   },
 
-  logout: (req, res) => {
-    return res.badRequest('AuthController.logout not yet implemented!');
-    // req.session.authenticated = false;
-    // return res.json(200, {"Logout succeeded"});
-  },
+  logout: (req, res) => res.badRequest('AuthController.logout not yet implemented!'), // req.session.authenticated = false;
+  // return res.json(200, {"Logout succeeded"});
 
   signUp: async (req, res) => {
     // Check params
     if (!req.param('email')) {
-      return res.badRequest(`You must provide an email.`);
+      return res.badRequest('You must provide an email.');
     }
     if (
       await sails.helpers.checkIfExists.with({
@@ -62,20 +60,20 @@ module.exports = {
         .send(`The email ${req.param('email')} is already used.`);
     }
     if (!req.param('password')) {
-      return res.badRequest(`You must provide a password.`);
+      return res.badRequest('You must provide a password.');
     }
     if (
-      req.param('password') &&
-      req.param('password').length < PASSWORD_MIN_LENGTH
+      req.param('password')
+      && req.param('password').length < PASSWORD_MIN_LENGTH
     ) {
       return res.badRequest(
-        'Your password must be at least ' +
-          PASSWORD_MIN_LENGTH +
-          ' characters long.',
+        `Your password must be at least ${
+          PASSWORD_MIN_LENGTH
+        } characters long.`,
       );
     }
     if (!req.param('nickname')) {
-      return res.badRequest(`You must provide a nickname.`);
+      return res.badRequest('You must provide a nickname.');
     }
     if (
       await sails.helpers.checkIfExists.with({

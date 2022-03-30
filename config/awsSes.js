@@ -1,4 +1,5 @@
 const { SESClient } = require('@aws-sdk/client-ses');
+
 const client = new SESClient({
   credentials: {
     accessKeyId: process.env.AWS_ACCESS_KEY,
@@ -11,8 +12,8 @@ const client = new SESClient({
 client.areAwsCredentialsSet = async () => {
   const credentials = await client.config.credentials();
   return (
-    credentials.accessKeyId !== undefined &&
-    credentials.secretAccessKey !== undefined
+    credentials.accessKeyId !== undefined
+    && credentials.secretAccessKey !== undefined
   );
 };
 

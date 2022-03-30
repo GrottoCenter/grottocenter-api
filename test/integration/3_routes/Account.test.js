@@ -1,5 +1,5 @@
 const should = require('should');
-let supertest = require('supertest');
+const supertest = require('supertest');
 const Fixted = require('fixted');
 const AuthTokenService = require('../AuthTokenService');
 

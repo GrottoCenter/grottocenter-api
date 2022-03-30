@@ -10,7 +10,7 @@ module.exports = {
     },
   },
 
-  fn: async function(inputs, exits) {
+  async fn(inputs, exits) {
     const string = inputs.stringArg.trim();
     return exits.success(
       string.startsWith('http') ? string.split('#')[1] : string,

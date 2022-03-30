@@ -1,8 +1,8 @@
-let sails = require('sails');
-const UPDATE_SEQUENCES_QUERY = require('./update_sequences');
+const sails = require('sails');
 const Fixted = require('fixted');
+const UPDATE_SEQUENCES_QUERY = require('./update_sequences');
 
-before(function(done) {
+before(function (done) {
   this.timeout(20000);
 
   sails.lift(
@@ -22,7 +22,7 @@ before(function(done) {
       csrf: false,
     },
 
-    function(err) {
+    (err) => {
       if (err) return done(err);
       // Here you can load fixtures, etc.
       const fixted = new Fixted();
@@ -54,12 +54,8 @@ before(function(done) {
             return done(err);
           }
           CommonService.query(UPDATE_SEQUENCES_QUERY)
-            .then(() => {
-              return done();
-            })
-            .catch((err) => {
-              return done(err);
-            });
+            .then(() => done())
+            .catch((err) => done(err));
         },
         false,
       );
@@ -67,7 +63,7 @@ before(function(done) {
   );
 });
 
-after(function(done) {
+after((done) => {
   // here you can clear fixtures, etc.
   sails.lower(done);
 });

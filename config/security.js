@@ -14,7 +14,7 @@
  */
 
 module.exports.security = {
-  /***************************************************************************
+  /** *************************************************************************
    *                                                                          *
    * CORS is like a more modern version of JSONP-- it allows your application *
    * to circumvent browsers' same-origin policy, so that the responses from   *
@@ -25,20 +25,20 @@ module.exports.security = {
    * For additional options and more information, see:                        *
    * https://sailsjs.com/docs/concepts/security/cors                          *
    *                                                                          *
-   ***************************************************************************/
+   ************************************************************************** */
   cors: {
     allRoutes: true,
     allowOrigins: '*',
     allowCredentials: false,
     allowRequestHeaders: 'content-type, authorization',
   },
-  /****************************************************************************
+  /** **************************************************************************
    *                                                                           *
    * CSRF protection should be enabled for this application.                   *
    *                                                                           *
    * For more information, see:                                                *
    * https://sailsjs.com/docs/concepts/security/csrf                           *
    *                                                                           *
-   ****************************************************************************/
+   *************************************************************************** */
   // csrf: true
 };

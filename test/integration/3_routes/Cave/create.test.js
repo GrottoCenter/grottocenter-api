@@ -1,5 +1,5 @@
-let supertest = require('supertest');
-let should = require('should');
+const supertest = require('supertest');
+const should = require('should');
 const AuthTokenService = require('../../AuthTokenService');
 const CAVE_PROPERTIES = require('./CAVE_PROPERTIES.js');
 const caveCreationData = require('./FAKE_DATA');

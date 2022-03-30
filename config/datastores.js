@@ -14,7 +14,7 @@
  */
 
 module.exports.datastores = {
-  /***************************************************************************
+  /** *************************************************************************
    *                                                                          *
    * Your app's default datastore.                                            *
    *                                                                          *
@@ -28,27 +28,27 @@ module.exports.datastores = {
    *                                                                          *
    * (For production configuration, see `config/env/production.js`.)          *
    *                                                                          *
-   ***************************************************************************/
+   ************************************************************************** */
 
   default: {
     adapter: require('sails-postgresql'),
     url: 'postgres://root:root@localhost:33060/grottoce',
   },
 
-  /***************************************************************************
+  /** *************************************************************************
    *                                                                          *
    * MongoDB is the leading NoSQL database.                                   *
    * http://en.wikipedia.org/wiki/MongoDB                                     *
    *                                                                          *
    * Run: npm install sails-mongo                                             *
    *                                                                          *
-   ***************************************************************************/
-  //'someMongodbServer': {
+   ************************************************************************** */
+  // 'someMongodbServer': {
   //  adapter: 'sails-mongo',
   //  host: 'localhost',
   //  port: 27017,
   // user: 'username',
   // password: 'password',
   // database: 'your_mongo_db_name_here'
-  //},
+  // },
 };

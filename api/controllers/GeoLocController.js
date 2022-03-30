@@ -17,49 +17,47 @@ const checkAndGetCoordinatesParams = (req) => {
     { key: 'ne_lng', name: 'North east longitude', value: null },
   ];
 
-  const result = neededParams.map((param) => {
-    return {
-      ...param,
-      value: req.param(param.key, null),
-    };
-  });
+  const result = neededParams.map((param) => ({
+    ...param,
+    value: req.param(param.key, null),
+  }));
 
   // Check null values
   const missingParams = result.filter((p) => p.value === null);
   if (missingParams.length > 0) {
     errorMessage = 'You must provide the following parameter(s): ';
     for (const missingParam of missingParams) {
-      errors.push(missingParam.name + ' value on key ' + missingParam.key);
+      errors.push(`${missingParam.name} value on key ${missingParam.key}`);
     }
   } else {
     // Check valid values
     for (const param of result) {
       if (
-        param.key.endsWith('lat') &&
-        (param.value < -90 || param.value > 90)
+        param.key.endsWith('lat')
+        && (param.value < -90 || param.value > 90)
       ) {
         errors.push(
-          param.name +
-            ' value must be between -90 & 90 (value found: ' +
-            param.value +
-            ')',
+          `${param.name
+          } value must be between -90 & 90 (value found: ${
+            param.value
+          })`,
         );
       }
       if (
-        param.key.endsWith('lng') &&
-        (param.value < -180 || param.value > 180)
+        param.key.endsWith('lng')
+        && (param.value < -180 || param.value > 180)
       ) {
         errors.push(
-          param.name +
-            ' value must be between -180 & 80 (value found: ' +
-            param.value +
-            ')',
+          `${param.name
+          } value must be between -180 & 80 (value found: ${
+            param.value
+          })`,
         );
       }
     }
   }
 
-  if (errors.length > 0) errorMessage += errors.join(', ') + '.';
+  if (errors.length > 0) errorMessage += `${errors.join(', ')}.`;
 
   return {
     errorMessage,

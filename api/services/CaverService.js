@@ -48,9 +48,9 @@ module.exports = {
     const newCaver = await TCaver.create({
       dateInscription: new Date(),
       mail: 'no@mail.no', // default mail for non-user caver
-      name: name,
-      nickname: nickname,
-      surname: surname,
+      name,
+      nickname,
+      surname,
       language: '000', // default null language id
     }).fetch();
 
@@ -85,16 +85,16 @@ module.exports = {
     // Check complete view right
     const hasCompleteViewRight = req.token
       ? await sails.helpers.checkRight
-          .with({
-            groups: req.token.groups,
-            rightEntity: RightService.RightEntities.CAVER,
-            rightAction: RightService.RightActions.VIEW_COMPLETE,
-          })
-          .tolerate('rightNotFound', (error) => {
-            // Silently fail
-            sails.log.warn('Right Caver - view complete not found');
-            return false;
-          })
+        .with({
+          groups: req.token.groups,
+          rightEntity: RightService.RightEntities.CAVER,
+          rightAction: RightService.RightActions.VIEW_COMPLETE,
+        })
+        .tolerate('rightNotFound', (error) => {
+          // Silently fail
+          sails.log.warn('Right Caver - view complete not found');
+          return false;
+        })
       : false;
 
     // Delete sensitive data
@@ -103,14 +103,13 @@ module.exports = {
 
     if (hasCompleteViewRight) {
       return caver;
-    } else {
-      return {
-        id: caver.id,
-        documents: caver.documents,
-        name: caver.name,
-        nickname: caver.nickname,
-        surname: caver.surname,
-      };
     }
+    return {
+      id: caver.id,
+      documents: caver.documents,
+      name: caver.name,
+      nickname: caver.nickname,
+      surname: caver.surname,
+    };
   },
 };

@@ -14,9 +14,9 @@
 
 module.exports = function serverError(data, options) {
   // Get access to `req`, `res`, & `sails`
-  let { req } = this;
-  let { res } = this;
-  let sails = req._sails;
+  const { req } = this;
+  const { res } = this;
+  const sails = req._sails;
 
   // Set status code
   res.status(500);
@@ -38,58 +38,55 @@ module.exports = function serverError(data, options) {
     // If data is a plain string, cast it to json with a message key
     if (typeof data === 'string') {
       return res.json({ message: data });
-    } else {
-      return res.json(data);
     }
+    return res.json(data);
   }
 
   // If second argument is a string, we take that to mean it refers to a view.
   // If it was omitted, use an empty object (`{}`)
-  options =
-    typeof options === 'string'
-      ? {
-          view: options,
-        }
-      : options || {};
+  options = typeof options === 'string'
+    ? {
+      view: options,
+    }
+    : options || {};
 
   // If a view was provided in options, serve it.
   // Otherwise try to guess an appropriate view, or if that doesn't
   // work, just send JSON.
   if (options.view) {
     return res.view(options.view, {
-      data: data,
+      data,
     });
-  } else {
-    // If no second argument provided, try to serve the default view,
-    // but fall back to sending JSON(P) if any errors occur.
-    return res.view(
-      '500',
-      {
-        data: data,
-      },
-      function(err, html) {
-        // If a view error occured, fall back to JSON(P).
-        if (err) {
-          //
-          // Additionally:
-          // • If the view was missing, ignore the error but provide a verbose log.
-          if (err.code === 'E_VIEW_FAILED') {
-            sails.log.verbose(
-              'res.serverError() :: Could not locate view for error page (sending JSON instead).  Details: ',
-              err,
-            );
-          } else {
-            // Otherwise, if this was a more serious error, log to the console with the details.
-            sails.log.warn(
-              'res.serverError() :: When attempting to render error page view, an error occured (sending JSON instead).  Details: ',
-              err,
-            );
-          }
-          return res.json(data);
-        }
-
-        return res.send(html);
-      },
-    );
   }
+  // If no second argument provided, try to serve the default view,
+  // but fall back to sending JSON(P) if any errors occur.
+  return res.view(
+    '500',
+    {
+      data,
+    },
+    (err, html) => {
+      // If a view error occured, fall back to JSON(P).
+      if (err) {
+        //
+        // Additionally:
+        // • If the view was missing, ignore the error but provide a verbose log.
+        if (err.code === 'E_VIEW_FAILED') {
+          sails.log.verbose(
+            'res.serverError() :: Could not locate view for error page (sending JSON instead).  Details: ',
+            err,
+          );
+        } else {
+          // Otherwise, if this was a more serious error, log to the console with the details.
+          sails.log.warn(
+            'res.serverError() :: When attempting to render error page view, an error occured (sending JSON instead).  Details: ',
+            err,
+          );
+        }
+        return res.json(data);
+      }
+
+      return res.send(html);
+    },
+  );
 };

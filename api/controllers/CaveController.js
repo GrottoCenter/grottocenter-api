@@ -7,24 +7,22 @@
 const NameService = require('../services/NameService');
 
 // Extract everything from the request body except id and dateInscription
-const getConvertedDataFromClient = (req) => {
-  return {
-    // The TCave.create() function doesn't work with TCave field alias. See TCave.js Model
-    /* eslint-disable camelcase */
-    date_inscription: new Date(),
-    depth: req.param('depth'),
-    documents: req.param('documents'),
-    id_author: req.token.id,
-    id_massif: req.param('massif'),
-    is_diving: req.param('isDiving'),
-    latitude: req.param('latitude'),
-    longitude: req.param('longitude'),
-    length: req.param('length'),
-    massif: req.param('massif'),
-    temperature: req.param('temperature'),
-    /* eslint-enable camelcase */
-  };
-};
+const getConvertedDataFromClient = (req) => ({
+  // The TCave.create() function doesn't work with TCave field alias. See TCave.js Model
+  /* eslint-disable camelcase */
+  date_inscription: new Date(),
+  depth: req.param('depth'),
+  documents: req.param('documents'),
+  id_author: req.token.id,
+  id_massif: req.param('massif'),
+  is_diving: req.param('isDiving'),
+  latitude: req.param('latitude'),
+  longitude: req.param('longitude'),
+  length: req.param('length'),
+  massif: req.param('massif'),
+  temperature: req.param('temperature'),
+  /* eslint-enable camelcase */
+});
 
 module.exports = {
   find: (req, res, next, converter = MappingV1Service.convertToCaveModel) => {
@@ -44,15 +42,14 @@ module.exports = {
         if (err) {
           sails.log.error(err);
           return res.serverError(
-            'An unexpected server error occured when trying to get ' +
-              params.searchedItem,
+            `An unexpected server error occured when trying to get ${
+              params.searchedItem}`,
           );
         }
         if (found) {
           await NameService.setNames([found], 'cave');
           found.histories.map(
-            async (h) =>
-              (h.author = await CaverService.getCaver(h.author, req)),
+            async (h) => (h.author = await CaverService.getCaver(h.author, req)),
           );
         }
 
@@ -85,15 +82,14 @@ module.exports = {
         if (err) {
           sails.log.error(err);
           return res.serverError(
-            'An unexpected server error occured when trying to get ' +
-              params.searchedItem,
+            `An unexpected server error occured when trying to get ${
+              params.searchedItem}`,
           );
         }
         await NameService.setNames(found, 'cave');
         const populatePromise = found.map((cave) => {
           cave.histories.map(
-            async (h) =>
-              (h.author = await CaverService.getCaver(h.author, req)),
+            async (h) => (h.author = await CaverService.getCaver(h.author, req)),
           );
         });
         Promise.all(populatePromise);
@@ -116,11 +112,9 @@ module.exports = {
         rightEntity: RightService.RightEntities.CAVE,
         rightAction: RightService.RightActions.CREATE,
       })
-      .intercept('rightNotFound', (err) => {
-        return res.serverError(
-          'A server error occured when checking your right to create a cave.',
-        );
-      });
+      .intercept('rightNotFound', (err) => res.serverError(
+        'A server error occured when checking your right to create a cave.',
+      ));
     if (!hasRight) {
       return res.forbidden('You are not authorized to create a cave.');
     }
@@ -130,12 +124,12 @@ module.exports = {
 
     // Check params
     if (
-      !rawNameData || // name is mandatory
-      !rawNameData.text ||
-      !rawNameData.language
+      !rawNameData // name is mandatory
+      || !rawNameData.text
+      || !rawNameData.language
     ) {
       return res.badRequest(
-        `You must provide a complete name object (with attributes "text" and "language").`,
+        'You must provide a complete name object (with attributes "text" and "language").',
       );
     }
 
@@ -145,7 +139,7 @@ module.exports = {
       for (description of rawDescriptionsData) {
         if (!description.body || !description.language || !description.title) {
           return res.badRequest(
-            `For each description, you must provide a complete description object (with attributes "body", "language" and "title").`,
+            'For each description, you must provide a complete description object (with attributes "body", "language" and "title").',
           );
         }
       }
@@ -159,12 +153,10 @@ module.exports = {
       name: rawNameData.text,
     };
     const descriptionsData = rawDescriptionsData
-      ? rawDescriptionsData.map((d) => {
-          return {
-            ...d,
-            author: req.token.id,
-          };
-        })
+      ? rawDescriptionsData.map((d) => ({
+        ...d,
+        author: req.token.id,
+      }))
       : undefined;
 
     // Create cave
@@ -203,27 +195,24 @@ module.exports = {
         rightEntity: RightService.RightEntities.CAVE,
         rightAction: RightService.RightActions.DELETE_ANY,
       })
-      .intercept('rightNotFound', (err) => {
-        return res.serverError(
-          'A server error occured when checking your right to delete a cave.',
-        );
-      });
+      .intercept('rightNotFound', (err) => res.serverError(
+        'A server error occured when checking your right to delete a cave.',
+      ));
     if (!hasRight) {
       return res.forbidden('You are not authorized to delete a cave.');
     }
 
     // Check if cave exists and is not deleted
     const caveId = req.param('id');
-    const checkIfCaveExists = async (args) =>
-      await sails.helpers.checkIfExists.with({
-        attributeName: 'id',
-        sailsModel: TCave,
-        additionalAttributes: { is_deleted: false }, // eslint-disable-line camelcase
-        ...args,
-      });
+    const checkIfCaveExists = async (args) => await sails.helpers.checkIfExists.with({
+      attributeName: 'id',
+      sailsModel: TCave,
+      additionalAttributes: { is_deleted: false }, // eslint-disable-line camelcase
+      ...args,
+    });
 
     if (!(await checkIfCaveExists({ attributeValue: caveId }))) {
-      return res.badRequest('Cave with id ' + caveId + ' not found.');
+      return res.badRequest(`Cave with id ${caveId} not found.`);
     }
 
     // Merge cave with another one before deleting it
@@ -231,7 +220,7 @@ module.exports = {
       const destinationCaveId = req.param('destinationCaveForOrphan');
       if (!(await checkIfCaveExists({ attributeValue: destinationCaveId }))) {
         return res.badRequest(
-          'Destination cave with id ' + destinationCaveId + ' not found.',
+          `Destination cave with id ${destinationCaveId} not found.`,
         );
       }
 
@@ -242,11 +231,9 @@ module.exports = {
           rightEntity: RightService.RightEntities.CAVE,
           rightAction: RightService.RightActions.MERGE,
         })
-        .intercept('rightNotFound', (err) => {
-          return res.serverError(
-            'A server error occured when checking your right to merge a cave into another one.',
-          );
-        });
+        .intercept('rightNotFound', (err) => res.serverError(
+          'A server error occured when checking your right to merge a cave into another one.',
+        ));
       if (!hasRight) {
         return res.forbidden(
           'You are not authorized to merge a cave into another one.',
@@ -261,7 +248,7 @@ module.exports = {
 
     // Delete cave
     try {
-      sails.log.info('Deleting cave with id ' + caveId);
+      sails.log.info(`Deleting cave with id ${caveId}`);
       await TCave.destroyOne(caveId);
       return res.sendStatus(204);
     } catch (e) {
@@ -277,11 +264,9 @@ module.exports = {
         rightEntity: RightService.RightEntities.CAVE,
         rightAction: RightService.RightActions.LINK_RESOURCE,
       })
-      .intercept('rightNotFound', (err) => {
-        return res.serverError(
-          'A server error occured when checking your right to add a document to a cave.',
-        );
-      });
+      .intercept('rightNotFound', (err) => res.serverError(
+        'A server error occured when checking your right to add a document to a cave.',
+      ));
     if (!hasRight) {
       return res.forbidden(
         'You are not authorized to add a document to a cave.',
@@ -320,11 +305,9 @@ module.exports = {
         rightEntity: RightService.RightEntities.CAVE,
         rightAction: RightService.RightActions.EDIT_ANY,
       })
-      .intercept('rightNotFound', (err) => {
-        return res.serverError(
-          'A server error occured when checking your right to update a cave.',
-        );
-      });
+      .intercept('rightNotFound', (err) => res.serverError(
+        'A server error occured when checking your right to update a cave.',
+      ));
     if (!hasRight) {
       return res.forbidden('You are not authorized to update a cave.');
     }
@@ -378,11 +361,9 @@ module.exports = {
         rightEntity: RightService.RightEntities.CAVE,
         rightAction: RightService.RightActions.EDIT_ANY,
       })
-      .intercept('rightNotFound', (err) => {
-        return res.serverError(
-          'A server error occured when checking your right to add a cave to a massif.',
-        );
-      });
+      .intercept('rightNotFound', (err) => res.serverError(
+        'A server error occured when checking your right to add a cave to a massif.',
+      ));
     if (!hasRight) {
       return res.forbidden('You are not authorized to add a cave to a massif.');
     }

@@ -1,16 +1,15 @@
-let should = require('should');
+const should = require('should');
 const CaveService = require('../../../api/services/CaveService');
 
-const findAndPopulateCave = async (caveId) =>
-  await TCave.findOne(caveId)
-    .populate('comments')
-    .populate('descriptions')
-    .populate('documents')
-    .populate('entrances')
-    .populate('exploringGrottos')
-    .populate('histories')
-    .populate('names')
-    .populate('partneringGrottos');
+const findAndPopulateCave = async (caveId) => await TCave.findOne(caveId)
+  .populate('comments')
+  .populate('descriptions')
+  .populate('documents')
+  .populate('entrances')
+  .populate('exploringGrottos')
+  .populate('histories')
+  .populate('names')
+  .populate('partneringGrottos');
 
 describe('CaveService', () => {
   describe('setEntrances()', () => {
@@ -38,11 +37,16 @@ describe('CaveService', () => {
     /* eslint-enable camelcase */
     const nameData = { name: 'TestCave1', language: 'eng' };
     const descriptionsData = [
-      { author: 1, body: 'desc1', language: 'eng', title: 'titleDesc1' },
-      { author: 1, body: 'desc2', language: 'fra', title: 'titreDesc2' },
+      {
+        author: 1, body: 'desc1', language: 'eng', title: 'titleDesc1',
+      },
+      {
+        author: 1, body: 'desc2', language: 'fra', title: 'titreDesc2',
+      },
     ];
 
-    let nbCavesBefore, nbCavesAfter;
+    let nbCavesBefore; let
+      nbCavesAfter;
 
     before(async () => {
       nbCavesBefore = (await TCave.find()).length;
@@ -216,8 +220,7 @@ describe('CaveService', () => {
           oldCave2[collectionName],
         );
         const oldUniqueValues = oldValuesConcateneted.filter(
-          (value, idx, array) =>
-            array.findIndex((t) => t.id === value.id) === idx,
+          (value, idx, array) => array.findIndex((t) => t.id === value.id) === idx,
         );
         should(resultCave[collectionName]).deepEqual(oldUniqueValues);
       }

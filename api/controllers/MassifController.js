@@ -57,11 +57,9 @@ module.exports = {
         rightEntity: RightService.RightEntities.MASSIF,
         rightAction: RightService.RightActions.DELETE_ANY,
       })
-      .intercept('rightNotFound', (err) => {
-        return res.serverError(
-          'A server error occured when checking your right to delete a massif.',
-        );
-      });
+      .intercept('rightNotFound', (err) => res.serverError(
+        'A server error occured when checking your right to delete a massif.',
+      ));
     if (!hasRight) {
       return res.forbidden('You are not authorized to delete a massif.');
     }
@@ -82,11 +80,9 @@ module.exports = {
     }
     // Delete massif
     const updatedMassif = await TMassif.destroyOne({ id: massifId }).intercept(
-      (err) => {
-        return res.serverError(
-          `An unexpected error occured when trying to delete massif with id ${massifId}.`,
-        );
-      },
+      (err) => res.serverError(
+        `An unexpected error occured when trying to delete massif with id ${massifId}.`,
+      ),
     );
     return res.sendStatus(204);
   },
@@ -99,22 +95,20 @@ module.exports = {
         rightEntity: RightService.RightEntities.MASSIF,
         rightAction: RightService.RightActions.CREATE,
       })
-      .intercept('rightNotFound', (err) => {
-        return res.serverError(
-          'A server error occured when checking your right to create a massif.',
-        );
-      });
+      .intercept('rightNotFound', (err) => res.serverError(
+        'A server error occured when checking your right to create a massif.',
+      ));
     if (!hasRight) {
       return res.forbidden('You are not authorized to create a massif.');
     }
 
     // Check params
     if (req.param('name') === null) {
-      return res.badRequest(`You must provide a name.`);
+      return res.badRequest('You must provide a name.');
     }
     if (req.param('descriptionAndNameLanguage') === null) {
       return res.badRequest(
-        `You must provide a description and name language.`,
+        'You must provide a description and name language.',
       );
     }
 
@@ -165,18 +159,19 @@ module.exports = {
             .usingConnection(db);
 
           // Prepare data for Elasticsearch indexation
-          const description =
-            newMassifPopulated.descriptions.length === 0
-              ? null
-              : // There is only one description at the moment
-                newMassifPopulated.descriptions[0].title +
-                ' ' +
-                newMassifPopulated.descriptions[0].body;
+          const description = newMassifPopulated.descriptions.length === 0
+            ? null
+            : // There is only one description at the moment
+            `${newMassifPopulated.descriptions[0].title
+            } ${
+              newMassifPopulated.descriptions[0].body}`;
 
           await CaveService.setEntrances(newMassifPopulated.caves);
 
           // Format data
-          const { cave, name, names, ...newMassifESData } = newMassifPopulated;
+          const {
+            cave, name, names, ...newMassifESData
+          } = newMassifPopulated;
           await ElasticsearchService.create('massifs', newMassifPopulated.id, {
             ...newMassifESData,
             name: newMassifPopulated.names[0].name, // There is only one name at the creation time

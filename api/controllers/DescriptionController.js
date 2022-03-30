@@ -14,27 +14,25 @@ module.exports = {
         rightEntity: RightService.RightEntities.DESCRIPTION,
         rightAction: RightService.RightActions.CREATE,
       })
-      .intercept('rightNotFound', (err) => {
-        return res.serverError(
-          'A server error occured when checking your right to create a description.',
-        );
-      });
+      .intercept('rightNotFound', (err) => res.serverError(
+        'A server error occured when checking your right to create a description.',
+      ));
     if (!hasRight) {
       return res.forbidden('You are not authorized to create a description.');
     }
 
     // Check params
     if (!req.param('body')) {
-      return res.badRequest(`You must provide a body to create a description.`);
+      return res.badRequest('You must provide a body to create a description.');
     }
     if (!req.param('language')) {
       return res.badRequest(
-        `You must provide a language id to create a description.`,
+        'You must provide a language id to create a description.',
       );
     }
     if (!req.param('title')) {
       return res.badRequest(
-        `You must provide a title to create a description.`,
+        'You must provide a title to create a description.',
       );
     }
 
@@ -140,11 +138,9 @@ module.exports = {
         rightEntity: RightService.RightEntities.DESCRIPTION,
         rightAction: RightService.RightActions.EDIT_ANY,
       })
-      .intercept('rightNotFound', (err) => {
-        return res.serverError(
-          'A server error occured when checking your right to update any description.',
-        );
-      });
+      .intercept('rightNotFound', (err) => res.serverError(
+        'A server error occured when checking your right to update any description.',
+      ));
     if (!hasRight) {
       return res.forbidden('You are not authorized to update any description.');
     }
