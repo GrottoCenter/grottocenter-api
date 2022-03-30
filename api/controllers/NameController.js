@@ -5,6 +5,10 @@
  * @help        :: See https://sailsjs.com/docs/concepts/actions
  */
 
+const ControllerService = require('../services/ControllerService');
+const ErrorService = require('../services/ErrorService');
+const RightService = require('../services/RightService');
+
 module.exports = {
   update: async (req, res, converter) => {
     // Check right
@@ -14,7 +18,7 @@ module.exports = {
         rightEntity: RightService.RightEntities.NAME,
         rightAction: RightService.RightActions.EDIT_ANY,
       })
-      .intercept('rightNotFound', (err) => res.serverError(
+      .intercept('rightNotFound', () => res.serverError(
         'A server error occured when checking your right to update any name.',
       ));
 
@@ -61,6 +65,7 @@ module.exports = {
       );
     } catch (e) {
       ErrorService.getDefaultErrorHandler(res)(e);
+      return false;
     }
   },
 
@@ -72,7 +77,7 @@ module.exports = {
         rightEntity: RightService.RightEntities.NAME,
         rightAction: RightService.RightActions.EDIT_ANY,
       })
-      .intercept('rightNotFound', (err) => res.serverError(
+      .intercept('rightNotFound', () => res.serverError(
         'A server error occured when checking your right to update any name.',
       ));
     if (!hasRight) {
@@ -144,6 +149,7 @@ module.exports = {
       );
     } catch (e) {
       ErrorService.getDefaultErrorHandler(res)(e);
+      return false;
     }
   },
 };

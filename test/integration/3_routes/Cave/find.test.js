@@ -1,6 +1,6 @@
 const supertest = require('supertest');
 const should = require('should');
-const CAVE_PROPERTIES = require('./CAVE_PROPERTIES.js');
+const CAVE_PROPERTIES = require('./CAVE_PROPERTIES');
 
 describe('Cave features', () => {
   describe('find', () => {

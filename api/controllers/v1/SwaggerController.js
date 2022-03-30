@@ -6,6 +6,7 @@
  */
 
 module.exports = {
+  // eslint-disable-next-line consistent-return
   sendYaml: async (req, res) => res.sendFile('swaggerV1.yaml', { root: './assets' }, (err) => {
     if (err) {
       sails.log.error(err);

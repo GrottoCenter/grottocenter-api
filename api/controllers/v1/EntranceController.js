@@ -6,6 +6,7 @@
  */
 
 const entranceController = require('../EntranceController');
+const MappingV1Service = require('../../services/MappingV1Service');
 
 module.exports = {
   find: (req, res) => entranceController.find(req, res, MappingV1Service.convertToEntranceModel),

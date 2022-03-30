@@ -1,3 +1,4 @@
+/* eslint-disable global-require */
 /**
  * HTTP Server Settings
  * (sails.config.http)
@@ -10,6 +11,7 @@
  */
 const rateLimiter = require('./rateLimit/rateLimiter');
 const { version: packageVersion } = require('../package.json');
+const TokenService = require('../api/services/TokenService');
 
 module.exports.http = {
   /** **************************************************************************
@@ -104,6 +106,7 @@ module.exports.http = {
     //   return middlewareFn;
     // })(),
 
+    // eslint-disable-next-line func-names
     fileMiddleware: (function () {
       const multer = require('multer');
       const inMemoryStorage = multer.memoryStorage();

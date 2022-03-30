@@ -1,6 +1,3 @@
-/**
- */
-
 const indexNames = [
   'caves',
   'cavers',
@@ -12,6 +9,10 @@ const indexNames = [
   'massifs',
   'networks',
 ];
+
+const ControllerService = require('../services/ControllerService');
+const MappingV1Service = require('../services/MappingV1Service');
+const ElasticsearchService = require('../services/ElasticsearchService');
 
 module.exports = {
   /**
@@ -83,8 +84,10 @@ module.exports = {
   /**
    * Perform an advanced search using multiple URL parameters :
    * - resourceType: string, entity type to search for (@see indexNames) (MANDATORY)
-   * - complete: bool, determine if the results must be returned in their entirely or just their id and name (default = false) (FACULTATIVE)
-   * - matchAllFields: bool, determine if the results need to match all the fields (logic AND) or at least one of them (logic OR) (default = true) (FACULTATIVE)
+   * - complete: bool, determine if the results must be returned in their
+   *      entirely or just their id and name (default = false) (FACULTATIVE)
+   * - matchAllFields: bool, determine if the results need to match all the fields (logic AND)
+   *      or at least one of them (logic OR) (default = true) (FACULTATIVE)
    */
   advancedSearch: (req, res) => {
     // Store every params in the url and check if there is the type parameter

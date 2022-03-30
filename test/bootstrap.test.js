@@ -1,7 +1,11 @@
 const sails = require('sails');
 const Fixted = require('fixted');
+const sailsPostGreAdapter = require('sails-postgresql');
 const UPDATE_SEQUENCES_QUERY = require('./update_sequences');
+const CommonService = require('../api/services/CommonService');
 
+// this.timeout() is not accessible with an arrow function
+// eslint-disable-next-line func-names
 before(function (done) {
   this.timeout(20000);
 
@@ -12,7 +16,7 @@ before(function (done) {
       },
       datastores: {
         default: {
-          adapter: require('sails-postgresql'),
+          adapter: sailsPostGreAdapter,
           url: 'postgres://root:root@localhost:5432/grottoce',
         },
       },
@@ -22,6 +26,7 @@ before(function (done) {
       csrf: false,
     },
 
+    // eslint-disable-next-line consistent-return
     (err) => {
       if (err) return done(err);
       // Here you can load fixtures, etc.
@@ -49,13 +54,14 @@ before(function (done) {
           'tcomment',
           'tfile',
         ],
-        (err) => {
-          if (err) {
-            return done(err);
+        // eslint-disable-next-line consistent-return
+        (fixtedError) => {
+          if (fixtedError) {
+            return done(fixtedError);
           }
           CommonService.query(UPDATE_SEQUENCES_QUERY)
             .then(() => done())
-            .catch((err) => done(err));
+            .catch((commonServiceError) => done(commonServiceError));
         },
         false,
       );

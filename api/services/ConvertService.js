@@ -7,6 +7,8 @@ const ALL_PROJ = 'Select * \n'
   + 'LEFT OUTER JOIN t_country co ON co.iso = cc.id_country \n'
   + 'ORDER BY Fr_name, Definition ;';
 
+const CommonService = require('./CommonService');
+
 module.exports = {
   findAllProj: async () => CommonService.query(ALL_PROJ, []),
 };

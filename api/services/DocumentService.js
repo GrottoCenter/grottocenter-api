@@ -23,12 +23,13 @@ const RECURSIVE_GET_CHILD_DOC = `
   AND is_deleted = false;
 `;
 
-// Doc types needing a parent in order to be created (ex; an issue needs a collection, an article needs an issue)
+// Doc types needing a parent in order to be created
+// (ex; an issue needs a collection, an article needs an issue)
 const MANDATORY_PARENT_TYPES = ['article', 'issue'];
-
 const oldTopoFilesUrl = 'https://www.grottocenter.org/upload/topos/';
-
 const ramda = require('ramda');
+const CommonService = require('./CommonService');
+const FileService = require('./FileService');
 
 module.exports = {
   /**
@@ -73,7 +74,7 @@ module.exports = {
         }
       }
     }
-    doc.children = formattedChildren;
+    doc.children = formattedChildren; // eslint-disable-line no-param-reassign
     return doc;
   },
 
@@ -109,7 +110,7 @@ module.exports = {
   },
 
   createDocument: async (documentData, langDescData) => {
-    const createdDocument = await sails
+    const document = await sails
       .getDatastore()
       .transaction(async (db) => {
         // Perform some checks
@@ -161,7 +162,7 @@ module.exports = {
 
     // Get doc with id type
     const populatedDocument = await TDocument.findOne(
-      createdDocument.id,
+      document.id,
     ).populate('identifierType');
 
     if (
@@ -185,7 +186,9 @@ module.exports = {
           }: ${
             error.message}`,
         ));
-      file ? await FileService.create(file, createdDocument.id) : '';
+      if (file) {
+        await FileService.create(file, document.id);
+      }
     }
 
     return populatedDocument;
@@ -193,7 +196,8 @@ module.exports = {
 
   /**
    * Populate any document-like object.
-   * Avoid using when possible. Mainly used for json column that cannot be populated using waterline query language.
+   * Avoid using when possible. Mainly used for json column that cannot be populated
+   * using waterline query language.
    * @param {*} document
    * @returns populated document
    */
@@ -240,36 +244,51 @@ module.exports = {
 
     doc.authors = authors
       ? await Promise.all(
-        authors.map(async (author) => await TCaver.findOne(author)),
+        authors.map(async (a) => {
+          const res = await TCaver.findOne(a);
+          return res;
+        }),
       )
       : [];
     doc.languages = languages
       ? await Promise.all(
-        languages.map(async (lang) => await TLanguage.findOne(lang)),
+        languages.map(async (lang) => {
+          const res = await TLanguage.findOne(lang);
+          return res;
+        }),
       )
       : [];
     doc.regions = regions
       ? await Promise.all(
-        regions.map(async (region) => await TRegion.findOne(region)),
+        regions.map(async (region) => {
+          const res = await TRegion.findOne(region);
+          return res;
+        }),
       )
       : [];
     doc.subjects = subjects
       ? await Promise.all(
-        subjects.map(async (subject) => await TSubject.findOne(subject)),
+        subjects.map(async (subject) => {
+          const res = await TSubject.findOne(subject);
+          return res;
+        }),
       )
       : [];
     return doc;
   },
 
   setDocumentType: async (document) => {
+    // eslint-disable-next-line no-param-reassign
     document.type = await TType.findOne(document.type);
   },
 
   setDocumentLicense: async (document) => {
+    // eslint-disable-next-line no-param-reassign
     document.license = await TLicense.findOne(document.license);
   },
 
   setDocumentFiles: async (document) => {
+    // eslint-disable-next-line no-param-reassign
     document.files = await TFile.find({ document: document.id });
   },
 };

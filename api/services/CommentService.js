@@ -7,6 +7,8 @@ const TIME_INFO_QUERY = `
   SELECT avg(e_t_trail) AS avg_t_trail, avg(e_t_underground) AS avg_t_underground
   FROM t_comment WHERE id_entrance=$1`;
 
+const CommonService = require('./CommonService');
+
 module.exports = {
   /**
    * @param {integer} entranceId - id of the entrance for which stats are needed

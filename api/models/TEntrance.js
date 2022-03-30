@@ -128,7 +128,8 @@ module.exports = {
       defaultsTo: false,
     },
 
-    // Sails' ORM, Waterline, doesn't support large number: that's why we use the type 'string' for the latitude
+    // Sails' ORM, Waterline, doesn't support large number:
+    // that's why we use the type 'string' for the latitude
     latitude: {
       type: 'string',
       allowNull: false,
@@ -136,7 +137,8 @@ module.exports = {
       columnType: 'numeric(24,20)',
     },
 
-    // Sails' ORM, Waterline, doesn't support large number: that's why we use the type 'string' for the longitude
+    // Sails' ORM, Waterline, doesn't support large number:
+    // that's why we use the type 'string' for the longitude
     longitude: {
       type: 'string',
       allowNull: false,
@@ -204,11 +206,6 @@ module.exports = {
 
     locations: {
       collection: 'TLocation',
-      via: 'entrance',
-    },
-
-    documents: {
-      collection: 'TDocument',
       via: 'entrance',
     },
 

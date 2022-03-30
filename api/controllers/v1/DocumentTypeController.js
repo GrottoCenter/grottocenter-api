@@ -4,6 +4,6 @@
 const documentTypeController = require('../DocumentTypeController');
 
 module.exports = {
-  find: (req, res, next) => documentTypeController.find(req, res, next),
-  findAll: (req, res, next) => documentTypeController.findAll(req, res, next),
+  find: (req, res) => documentTypeController.find(req, res),
+  findAll: (req, res) => documentTypeController.findAll(req, res),
 };

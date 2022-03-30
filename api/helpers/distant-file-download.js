@@ -1,5 +1,8 @@
 const http = require('http');
 const https = require('https');
+// I don't know where mime-types comes from, it's not included in package.json...
+// But it works.
+// eslint-disable-next-line import/no-extraneous-dependencies
 const mime = require('mime-types');
 
 module.exports = {
@@ -45,6 +48,7 @@ module.exports = {
     },
   },
 
+  // eslint-disable-next-line consistent-return
   async fn(inputs, exits) {
     // Check if URL is valid
     let fileUrl;
@@ -62,6 +66,7 @@ module.exports = {
 
     // Download it
     client
+      // eslint-disable-next-line consistent-return
       .get(fileUrl, (res) => {
         const { acceptedFileFormats, refusedFileFormats } = inputs;
         const contentType = res.headers['content-type'];

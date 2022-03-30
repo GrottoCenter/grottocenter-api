@@ -8,13 +8,15 @@ module.exports = {
         error.attrNames.join(',')
       }.`;
       sails.log.error(message);
+      // Test purpose to see if sails.log are ignored in production, to be removed eventually
       // eslint-disable-next-line no-console
-      console.log(message); // Test purpose to see if sails.log are ignored in production, to be removed eventually
+      console.log(message);
       return res.status(409).send(message);
     }
     sails.log.error(error.message);
+    // Test purpose to see if sails.log are ignored in production, to be removed eventually
     // eslint-disable-next-line no-console
-    console.log(error.message); // Test purpose to see if sails.log are ignored in production, to be removed eventually
+    console.log(error.message);
     switch (error.name) {
       case 'UsageError':
         return res.badRequest(error.message);

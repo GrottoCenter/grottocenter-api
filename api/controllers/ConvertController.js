@@ -1,6 +1,8 @@
 /**
  */
 
+const ConvertService = require('../services/ConvertService');
+
 module.exports = {
   /*
   convert: function (req, res) {

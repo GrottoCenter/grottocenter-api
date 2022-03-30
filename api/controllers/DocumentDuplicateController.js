@@ -6,6 +6,11 @@
  */
 
 const ErrorService = require('../services/ErrorService');
+const ControllerService = require('../services/ControllerService');
+const DescriptionService = require('../services/DescriptionService');
+const DocumentService = require('../services/DocumentService');
+const MappingV1Service = require('../services/MappingV1Service');
+const RightService = require('../services/RightService');
 
 module.exports = {
   createMany: async (req, res) => {
@@ -15,7 +20,7 @@ module.exports = {
         rightEntity: RightService.RightEntities.DOCUMENT_DUPLICATE,
         rightAction: RightService.RightActions.CREATE,
       })
-      .intercept('rightNotFound', (err) => res.serverError(
+      .intercept('rightNotFound', () => res.serverError(
         'A server error occured when checking your right to create a document duplicate.',
       ));
     if (!hasRight) {
@@ -43,7 +48,7 @@ module.exports = {
         rightEntity: RightService.RightEntities.DOCUMENT_DUPLICATE,
         rightAction: RightService.RightActions.CREATE,
       })
-      .intercept('rightNotFound', (err) => res.serverError(
+      .intercept('rightNotFound', () => res.serverError(
         'A server error occured when checking your right to create a document duplicate.',
       ));
     if (!hasRight) {
@@ -74,6 +79,7 @@ module.exports = {
       return res.ok();
     } catch (e) {
       ErrorService.getDefaultErrorHandler(res)(e);
+      return false;
     }
   },
 
@@ -84,7 +90,7 @@ module.exports = {
         rightEntity: RightService.RightEntities.DOCUMENT_DUPLICATE,
         rightAction: RightService.RightActions.DELETE_ANY,
       })
-      .intercept('rightNotFound', (err) => res.serverError(
+      .intercept('rightNotFound', () => res.serverError(
         'A server error occured when checking your right to delete an document duplicate.',
       ));
     if (!hasRight) {
@@ -120,7 +126,7 @@ module.exports = {
         rightEntity: RightService.RightEntities.DOCUMENT_DUPLICATE,
         rightAction: RightService.RightActions.DELETE_ANY,
       })
-      .intercept('rightNotFound', (err) => res.serverError(
+      .intercept('rightNotFound', () => res.serverError(
         'A server error occured when checking your right to create a document duplicate.',
       ));
     if (!hasRight) {
@@ -141,6 +147,7 @@ module.exports = {
       return res.ok();
     } catch (err) {
       ErrorService.getDefaultErrorHandler(res)(err);
+      return false;
     }
   },
 
@@ -256,6 +263,7 @@ module.exports = {
       );
     } catch (err) {
       ErrorService.getDefaultErrorHandler(res)(err);
+      return false;
     }
   },
 };

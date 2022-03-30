@@ -51,7 +51,7 @@ module.exports = {
           throw exits.rightNotFound();
         }
 
-        for (let i = 0; i < inputs.groups.length; i++) {
+        for (let i = 0; i < inputs.groups.length; i += 1) {
           if (
             rightFound.groups.some(
               (rightGroup) => rightGroup.id === inputs.groups[i].id,

@@ -2,6 +2,7 @@
  */
 
 const massifController = require('../MassifController');
+const MappingV1Service = require('../../services/MappingV1Service');
 
 module.exports = {
   find: (req, res, next) => massifController.find(

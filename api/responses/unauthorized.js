@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 /**
  * 401 (Unauthorized) Handler
  *
@@ -16,7 +17,7 @@ module.exports = function unauthorized(data, options) {
   // Get access to `req`, `res`, & `sails`
   const { req } = this;
   const { res } = this;
-  const sails = req._sails;
+  const sails = req._sails; // eslint-disable-line no-underscore-dangle
 
   // Set status code
   res.status(401);

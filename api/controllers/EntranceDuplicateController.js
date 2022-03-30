@@ -5,6 +5,12 @@
  * @help        :: See https://sailsjs.com/docs/concepts/actions
  */
 
+const ControllerService = require('../services/ControllerService');
+const EntranceService = require('../services/EntranceService');
+const ErrorService = require('../services/ErrorService');
+const MappingV1Service = require('../services/MappingV1Service');
+const RightService = require('../services/RightService');
+
 module.exports = {
   createMany: async (req, res) => {
     const hasRight = await sails.helpers.checkRight
@@ -13,7 +19,7 @@ module.exports = {
         rightEntity: RightService.RightEntities.ENTRANCE_DUPLICATE,
         rightAction: RightService.RightActions.CREATE,
       })
-      .intercept('rightNotFound', (err) => res.serverError(
+      .intercept('rightNotFound', () => res.serverError(
         'A server error occured when checking your right to create an entrance duplicate.',
       ));
     if (!hasRight) {
@@ -41,7 +47,7 @@ module.exports = {
         rightEntity: RightService.RightEntities.ENTRANCE_DUPLICATE,
         rightAction: RightService.RightActions.CREATE,
       })
-      .intercept('rightNotFound', (err) => res.serverError(
+      .intercept('rightNotFound', () => res.serverError(
         'A server error occured when checking your right to create an entrance duplicate.',
       ));
     if (!hasRight) {
@@ -72,6 +78,7 @@ module.exports = {
       return res.ok();
     } catch (e) {
       ErrorService.getDefaultErrorHandler(res)(e);
+      return false;
     }
   },
 
@@ -82,7 +89,7 @@ module.exports = {
         rightEntity: RightService.RightEntities.ENTRANCE_DUPLICATE,
         rightAction: RightService.RightActions.DELETE_ANY,
       })
-      .intercept('rightNotFound', (err) => res.serverError(
+      .intercept('rightNotFound', () => res.serverError(
         'A server error occured when checking your right to delete an entrance duplicate.',
       ));
     if (!hasRight) {
@@ -118,7 +125,7 @@ module.exports = {
         rightEntity: RightService.RightEntities.ENTRANCE_DUPLICATE,
         rightAction: RightService.RightActions.DELETE_ANY,
       })
-      .intercept('rightNotFound', (err) => res.serverError(
+      .intercept('rightNotFound', () => res.serverError(
         'A server error occured when checking your right to delete an entrance duplicate.',
       ));
     if (!hasRight) {
@@ -138,6 +145,7 @@ module.exports = {
       return res.ok();
     } catch (err) {
       ErrorService.getDefaultErrorHandler(res)(err);
+      return false;
     }
   },
 
@@ -235,6 +243,7 @@ module.exports = {
       );
     } catch (err) {
       ErrorService.getDefaultErrorHandler(res)(err);
+      return false;
     }
   },
 };

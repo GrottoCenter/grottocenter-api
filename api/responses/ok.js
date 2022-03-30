@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 /**
  * 200 (OK) Response
  *
@@ -15,7 +16,7 @@ module.exports = function sendOK(data, options) {
   // Get access to `req`, `res`, & `sails`
   const { req } = this;
   const { res } = this;
-  const sails = req._sails;
+  const sails = req._sails; // eslint-disable-line no-underscore-dangle
 
   sails.log.silly('res.ok() :: Sending 200 ("OK") response');
 

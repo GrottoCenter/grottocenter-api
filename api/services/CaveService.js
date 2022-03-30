@@ -23,40 +23,46 @@ module.exports = {
    *
    * @param {Object} cleanedData cave-only related data
    * @param {Object} nameData name data (should contain an author, text and language attributes)
-   * @param {Array[Object]} [descriptionsData] descriptions data (for each description, should contain an author, title, text and language attributes)
+   * @param {Array[Object]} [descriptionsData] descriptions data (for each description,
+   *  should contain an author, title, text and language attributes)
    * @throws Sails ORM errors (see https://sailsjs.com/documentation/concepts/models-and-orm/errors)
    *
    * @returns {Promise} the created cave
    */
-  createCave: async (caveData, nameData, descriptionsData) => await sails.getDatastore().transaction(async (db) => {
-    // Create cave
-    const createdCave = await TCave.create({
-      ...caveData,
-    })
-      .fetch()
-      .usingConnection(db);
+  createCave: async (caveData, nameData, descriptionsData) => {
+    const res = await sails.getDatastore().transaction(async (db) => {
+      // Create cave
+      const createdCave = await TCave.create({
+        ...caveData,
+      })
+        .fetch()
+        .usingConnection(db);
 
-    // Format & create name
-    await TName.create({
-      ...nameData,
-      cave: createdCave.id,
-      dateInscription: new Date(),
-      isMain: true,
-    }).usingConnection(db);
+      // Format & create name
+      await TName.create({
+        ...nameData,
+        cave: createdCave.id,
+        dateInscription: new Date(),
+        isMain: true,
+      }).usingConnection(db);
 
-    // Format & create descriptions
-    descriptionsData
-      ? descriptionsData.map(
-        async (d) => await TDescription.create({
-          ...d,
-          cave: createdCave.id,
-          dateInscription: new Date(),
-        }).usingConnection(db),
-      )
-      : undefined;
-
-    return createdCave;
-  }),
+      // Format & create descriptions
+      if (descriptionsData) {
+        descriptionsData.map(
+          async (d) => {
+            const desc = await TDescription.create({
+              ...d,
+              cave: createdCave.id,
+              dateInscription: new Date(),
+            }).usingConnection(db);
+            return desc;
+          },
+        );
+      }
+      return createdCave;
+    });
+    return res;
+  },
 
   /**
    * Merge a source cave into a destination cave (no checks performed)
@@ -107,9 +113,11 @@ module.exports = {
         partneringGrottos: destinationPartners,
       } = destinationCave;
 
-      // Update explored / partner caves only if not already explored / partner by the destination cave.
+      // Update explored / partner caves only if not already explored / partner
+      // by the destination cave.
       for (const sourceExp of sourceExplorers) {
         if (!destinationExplorers.some((g) => g.id === sourceExp.id)) {
+          // eslint-disable-next-line no-await-in-loop
           await TCave.addToCollection(
             destinationCaveId,
             'exploringGrottos',
@@ -119,6 +127,7 @@ module.exports = {
       }
       for (const sourcePartn of sourcePartners) {
         if (!destinationPartners.some((g) => g.id === sourcePartn.id)) {
+          // eslint-disable-next-line no-await-in-loop
           await TCave.addToCollection(
             destinationCaveId,
             'partneringGrottos',

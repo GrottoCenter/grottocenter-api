@@ -5,8 +5,10 @@
  * @help        :: See https://sailsjs.com/docs/concepts/actions
  */
 
+const ControllerService = require('../services/ControllerService');
+
 module.exports = {
-  find: (req, res, next) => {
+  find: (req, res) => {
     TRegion.findOne(req.params.id).exec((err, found) => {
       const params = {};
       params.controllerMethod = 'TRegionController.find';
@@ -15,7 +17,7 @@ module.exports = {
     });
   },
 
-  findAll: (req, res, next) => {
+  findAll: (req, res) => {
     TRegion.find().exec((err, found) => {
       const params = {
         controllerMethod: 'TRegionController.findAll',
@@ -28,7 +30,7 @@ module.exports = {
     });
   },
 
-  search: (req, res, next, converter) => {
+  search: (req, res) => {
     const orSearchArray = [];
     if (req.param('name', null)) {
       const name = req.param('name');

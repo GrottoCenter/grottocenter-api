@@ -1,5 +1,6 @@
 const sails = require('sails');
 const supertest = require('supertest');
+const TokenService = require('../../api/services/TokenService');
 
 const getRawAuthToken = async (email) => {
   const res = await supertest(sails.hooks.http.app)

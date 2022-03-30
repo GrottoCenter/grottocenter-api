@@ -4,7 +4,13 @@
  * @description :: Server-side logic for managing Caves
  * @help        :: See http://sailsjs.org/#!/documentation/concepts/Controllers
  */
+const CaveService = require('../services/CaveService');
+const CaverService = require('../services/CaverService');
+const ControllerService = require('../services/ControllerService');
+const ErrorService = require('../services/ErrorService');
+const MappingV1Service = require('../services/MappingV1Service');
 const NameService = require('../services/NameService');
+const RightService = require('../services/RightService');
 
 // Extract everything from the request body except id and dateInscription
 const getConvertedDataFromClient = (req) => ({
@@ -49,7 +55,11 @@ module.exports = {
         if (found) {
           await NameService.setNames([found], 'cave');
           found.histories.map(
-            async (h) => (h.author = await CaverService.getCaver(h.author, req)),
+            async (h) => {
+              // eslint-disable-next-line no-param-reassign
+              h.author = await CaverService.getCaver(h.author, req);
+              return h;
+            },
           );
         }
 
@@ -89,8 +99,13 @@ module.exports = {
         await NameService.setNames(found, 'cave');
         const populatePromise = found.map((cave) => {
           cave.histories.map(
-            async (h) => (h.author = await CaverService.getCaver(h.author, req)),
+            async (h) => {
+              // eslint-disable-next-line no-param-reassign
+              h.author = await CaverService.getCaver(h.author, req);
+              return h;
+            },
           );
+          return cave;
         });
         Promise.all(populatePromise);
         return ControllerService.treatAndConvert(
@@ -104,6 +119,7 @@ module.exports = {
       });
   },
 
+  // eslint-disable-next-line consistent-return
   create: async (req, res, converter) => {
     // Check right
     const hasRight = await sails.helpers.checkRight
@@ -112,7 +128,7 @@ module.exports = {
         rightEntity: RightService.RightEntities.CAVE,
         rightAction: RightService.RightActions.CREATE,
       })
-      .intercept('rightNotFound', (err) => res.serverError(
+      .intercept('rightNotFound', () => res.serverError(
         'A server error occured when checking your right to create a cave.',
       ));
     if (!hasRight) {
@@ -136,7 +152,7 @@ module.exports = {
     if (
       rawDescriptionsData // description is optional
     ) {
-      for (description of rawDescriptionsData) {
+      for (const description of rawDescriptionsData) {
         if (!description.body || !description.language || !description.title) {
           return res.badRequest(
             'For each description, you must provide a complete description object (with attributes "body", "language" and "title").',
@@ -185,9 +201,11 @@ module.exports = {
       );
     } catch (e) {
       ErrorService.getDefaultErrorHandler(res)(e);
+      return false;
     }
   },
 
+  // eslint-disable-next-line consistent-return
   delete: async (req, res) => {
     const hasRight = await sails.helpers.checkRight
       .with({
@@ -195,7 +213,7 @@ module.exports = {
         rightEntity: RightService.RightEntities.CAVE,
         rightAction: RightService.RightActions.DELETE_ANY,
       })
-      .intercept('rightNotFound', (err) => res.serverError(
+      .intercept('rightNotFound', () => res.serverError(
         'A server error occured when checking your right to delete a cave.',
       ));
     if (!hasRight) {
@@ -204,10 +222,12 @@ module.exports = {
 
     // Check if cave exists and is not deleted
     const caveId = req.param('id');
-    const checkIfCaveExists = async (args) => await sails.helpers.checkIfExists.with({
+    const { checkIfExists } = sails.helpers;
+    // eslint-disable-next-line no-return-await
+    const checkIfCaveExists = async (args) => await checkIfExists.with({
       attributeName: 'id',
       sailsModel: TCave,
-      additionalAttributes: { is_deleted: false }, // eslint-disable-line camelcase
+      additionalAttributes: { is_deleted: false },
       ...args,
     });
 
@@ -225,16 +245,16 @@ module.exports = {
       }
 
       // Check right
-      const hasRight = await sails.helpers.checkRight
+      const hasMergeRight = await sails.helpers.checkRight
         .with({
           groups: req.token.groups,
           rightEntity: RightService.RightEntities.CAVE,
           rightAction: RightService.RightActions.MERGE,
         })
-        .intercept('rightNotFound', (err) => res.serverError(
+        .intercept('rightNotFound', () => res.serverError(
           'A server error occured when checking your right to merge a cave into another one.',
         ));
-      if (!hasRight) {
+      if (!hasMergeRight) {
         return res.forbidden(
           'You are not authorized to merge a cave into another one.',
         );
@@ -253,9 +273,11 @@ module.exports = {
       return res.sendStatus(204);
     } catch (e) {
       ErrorService.getDefaultErrorHandler(res)(e);
+      return false;
     }
   },
 
+  // eslint-disable-next-line consistent-return
   addDocument: async (req, res) => {
     // Check right
     const hasRight = await sails.helpers.checkRight
@@ -264,7 +286,7 @@ module.exports = {
         rightEntity: RightService.RightEntities.CAVE,
         rightAction: RightService.RightActions.LINK_RESOURCE,
       })
-      .intercept('rightNotFound', (err) => res.serverError(
+      .intercept('rightNotFound', () => res.serverError(
         'A server error occured when checking your right to add a document to a cave.',
       ));
     if (!hasRight) {
@@ -294,9 +316,11 @@ module.exports = {
       return res.sendStatus(204);
     } catch (e) {
       ErrorService.getDefaultErrorHandler(res)(e);
+      return false;
     }
   },
 
+  // eslint-disable-next-line consistent-return
   update: async (req, res, converter) => {
     // Check right
     const hasRight = await sails.helpers.checkRight
@@ -305,7 +329,7 @@ module.exports = {
         rightEntity: RightService.RightEntities.CAVE,
         rightAction: RightService.RightActions.EDIT_ANY,
       })
-      .intercept('rightNotFound', (err) => res.serverError(
+      .intercept('rightNotFound', () => res.serverError(
         'A server error occured when checking your right to update a cave.',
       ));
     if (!hasRight) {
@@ -327,6 +351,7 @@ module.exports = {
     };
 
     // Launch update request using transaction: it performs a rollback if an error occurs
+    // eslint-disable-next-line consistent-return
     await sails.getDatastore().transaction(async (db) => {
       try {
         const updatedCave = await TCave.updateOne({
@@ -361,7 +386,7 @@ module.exports = {
         rightEntity: RightService.RightEntities.CAVE,
         rightAction: RightService.RightActions.EDIT_ANY,
       })
-      .intercept('rightNotFound', (err) => res.serverError(
+      .intercept('rightNotFound', () => res.serverError(
         'A server error occured when checking your right to add a cave to a massif.',
       ));
     if (!hasRight) {

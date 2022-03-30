@@ -1,16 +1,10 @@
 const supertest = require('supertest');
 const should = require('should');
-const AuthTokenService = require('../../AuthTokenService');
+const sails = require('sails');
 
-const DOCUMENT_PROPERTIES = require('./DOCUMENT_PROPERTIES.js');
+const DOCUMENT_PROPERTIES = require('./DOCUMENT_PROPERTIES');
 
 describe('Document features', () => {
-  let userToken;
-  before(async () => {
-    sails.log.info('Asking for user auth token...');
-    userToken = await AuthTokenService.getRawBearerUserToken();
-  });
-
   describe('Find by caver id', () => {
     it('should return a list of user documents', (done) => {
       supertest(sails.hooks.http.app)
@@ -22,7 +16,7 @@ describe('Document features', () => {
           if (err) return done(err);
           const { documents } = res.body;
           should(documents.length).equals(3);
-          for (document of documents) {
+          for (const document of documents) {
             should(document).have.properties(DOCUMENT_PROPERTIES);
           }
           return done();
@@ -38,7 +32,7 @@ describe('Document features', () => {
           if (err) return done(err);
           const { documents } = res.body;
           should(documents.length).equals(2);
-          for (document of documents) {
+          for (const document of documents) {
             should(document).have.properties(DOCUMENT_PROPERTIES);
           }
           return done();
@@ -55,12 +49,11 @@ describe('Document features', () => {
           const { documents } = res.body;
           should(documents.length).equals(3);
           const ids = [];
-          for (document of documents) {
+          for (const document of documents) {
             should(document).have.properties(DOCUMENT_PROPERTIES);
             ids.push(document.id);
-            sails.log.info(ids);
           }
-          should(ids[0] > ids[1] && ids[1] < ids[2]).be.true;
+          should(ids[0] > ids[1] && ids[1] > ids[2]).be.true();
           return done();
         });
     });
