@@ -1,3 +1,5 @@
+/* eslint-disable global-require */
+/* eslint-disable no-console */
 /**
  * app.js
  *

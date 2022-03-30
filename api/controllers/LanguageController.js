@@ -5,8 +5,10 @@
  * @help        :: See https://sailsjs.com/docs/concepts/actions
  */
 
+const ControllerService = require('../services/ControllerService');
+
 module.exports = {
-  find: (req, res, next) => {
+  find: (req, res) => {
     TLanguage.findOne(req.params.id).exec((err, found) => {
       const params = {};
       params.controllerMethod = 'LanguageController.find';
@@ -15,7 +17,7 @@ module.exports = {
     });
   },
 
-  findAll: (req, res, next) => {
+  findAll: (req, res) => {
     TLanguage.find()
       .where({ isPrefered: req.param('isPrefered', true) })
       .exec((err, found) => {

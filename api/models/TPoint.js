@@ -54,14 +54,16 @@ module.exports = {
       columnName: 'date_reviewed',
     },
 
-    // Sails' ORM, Waterline, doesn't support large number: that's why we use the type 'string' for the latitude
+    // Sails' ORM, Waterline, doesn't support large number:
+    // that's why we use the type 'string' for the latitude
     relLatitude: {
       type: 'string',
       allowNull: false,
       columnName: 'rel_latitude',
     },
 
-    // Sails' ORM, Waterline, doesn't support large number: that's why we use the type 'string' for the longitude
+    // Sails' ORM, Waterline, doesn't support large number:
+    // that's why we use the type 'string' for the longitude
     relLongitude: {
       type: 'string',
       allowNull: false,

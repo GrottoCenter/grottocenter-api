@@ -1,7 +1,7 @@
 const supertest = require('supertest');
 const should = require('should');
 const AuthTokenService = require('../../AuthTokenService');
-const CAVE_PROPERTIES = require('./CAVE_PROPERTIES.js');
+const CAVE_PROPERTIES = require('./CAVE_PROPERTIES');
 const caveCreationData = require('./FAKE_DATA');
 
 describe('Cave features', () => {

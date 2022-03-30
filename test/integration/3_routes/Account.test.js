@@ -1,6 +1,4 @@
-const should = require('should');
 const supertest = require('supertest');
-const Fixted = require('fixted');
 const AuthTokenService = require('../AuthTokenService');
 
 describe('Account features', () => {

@@ -2,6 +2,7 @@
  */
 
 const grottoController = require('../GrottoController');
+const MappingV1Service = require('../../services/MappingV1Service');
 
 module.exports = {
   count: (req, res, next) => grottoController.count(

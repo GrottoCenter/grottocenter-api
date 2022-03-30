@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 const { SendEmailCommand } = require('@aws-sdk/client-ses');
 const ejs = require('ejs');
 const { awsSesCli } = require('../../config/awsSes');

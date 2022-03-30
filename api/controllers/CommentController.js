@@ -5,6 +5,8 @@
  * @docs        :: http://sailsjs.org/#!documentation/controllers
  */
 
+const CommentService = require('../services/CommentService');
+
 module.exports = {
   getEntryStats: (req, res) => {
     const entryId = req.param('entry');

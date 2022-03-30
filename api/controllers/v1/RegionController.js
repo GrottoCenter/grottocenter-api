@@ -4,7 +4,7 @@
 const regionController = require('../RegionController');
 
 module.exports = {
-  find: (req, res, next) => regionController.find(req, res, next),
-  findAll: (req, res, next) => regionController.findAll(req, res, next),
-  search: (req, res, next) => regionController.search(req, res, next),
+  find: (req, res) => regionController.find(req, res),
+  findAll: (req, res) => regionController.findAll(req, res),
+  search: (req, res) => regionController.search(req, res),
 };

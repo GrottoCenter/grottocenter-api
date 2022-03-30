@@ -1,3 +1,5 @@
+/* eslint-disable global-require */
+/* eslint-disable import/no-extraneous-dependencies */
 /**
  * Global Variable Configuration
  * (sails.config.globals)

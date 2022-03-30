@@ -25,7 +25,7 @@ module.exports = {
     if (creatorArray.length <= 3) {
       const creatorName = creatorArray[0];
       let creatorSurname = '';
-      for (let i = 1; i < creatorArray.length; i++) {
+      for (let i = 1; i < creatorArray.length; i += 1) {
         creatorSurname += `${creatorArray[i]} `;
       }
       creatorSurname = creatorSurname.slice(0, -1);

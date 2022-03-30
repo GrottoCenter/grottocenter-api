@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 /**
  * 400 (Bad Request) Handler
  *
@@ -19,7 +20,7 @@ module.exports = function badRequest(data, options) {
   // Get access to `req`, `res`, & `sails`
   const { req } = this;
   const { res } = this;
-  const sails = req._sails;
+  const sails = req._sails; // eslint-disable-line no-underscore-dangle
 
   // Set status code
   res.status(400);

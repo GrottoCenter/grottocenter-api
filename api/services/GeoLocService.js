@@ -49,6 +49,9 @@ const PUBLIC_NETWORKS_COORDINATES_IN_BOUNDS = `
   LIMIT $5;
 `;
 
+const CommonService = require('./CommonService');
+const NameService = require('./NameService');
+
 /**
  * return a light version of the networks
  * @param networks
@@ -124,7 +127,8 @@ module.exports = {
 
     // TODO : to adapt when authentication will be implemented
     parameters.isSensitive = false;
-    return await TEntrance.count(parameters);
+    const entrance = await TEntrance.count(parameters);
+    return entrance;
   },
 
   getEntrancesCoordinates: async (

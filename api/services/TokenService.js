@@ -13,9 +13,9 @@ const { tokenSalt } = AuthService;
 // Generates a token from supplied payload
 module.exports.issue = (
   payload,
-  customTokenSalt = tokenSalt,
   expiresInSeconds,
   subject,
+  customTokenSalt = tokenSalt,
 ) => jwt.sign(payload, customTokenSalt, {
   expiresIn: expiresInSeconds,
   subject,

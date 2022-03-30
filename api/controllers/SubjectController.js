@@ -5,6 +5,8 @@
  * @help        :: See https://sailsjs.com/docs/concepts/actions
  */
 
+const ControllerService = require('../services/ControllerService');
+
 module.exports = {
   find: (req, res, next, converter) => {
     TSubject.findOne(req.param('code'))

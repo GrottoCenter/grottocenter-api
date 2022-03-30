@@ -1,7 +1,7 @@
 const should = require('should');
 const CaveService = require('../../../api/services/CaveService');
 
-const findAndPopulateCave = async (caveId) => await TCave.findOne(caveId)
+const findAndPopulateCave = async (caveId) => TCave.findOne(caveId)
   .populate('comments')
   .populate('descriptions')
   .populate('documents')
@@ -184,7 +184,8 @@ describe('CaveService', () => {
       // Verifications (cave2 (destination) data overwrite cave1 data (source))
       const resultCave = await findAndPopulateCave(oldCave2.id);
 
-      // Only the destination cave data are preserved... except if not present initially (temperature here) !
+      // Only the destination cave data are preserved...
+      // ...except if not present initially (temperature here) !
       should(resultCave.author).equal(oldCave2.author);
       should(resultCave.depth).equal(oldCave2.depth);
       should(resultCave.isDiving).equal(oldCave2.isDiving);
@@ -197,7 +198,8 @@ describe('CaveService', () => {
       );
       should(resultCave.temperature).equal(oldCave1.temperature);
 
-      // Comment, descriptions and histories are merged, without dupplicate check because each of them are unique
+      // Comment, descriptions and histories are merged, without duplicate check
+      // because each of them are unique
       const collectionNamesToCheck = ['comments', 'descriptions', 'histories'];
       for (const collectionName of collectionNamesToCheck) {
         should(resultCave[collectionName].length).equal(
@@ -208,7 +210,8 @@ describe('CaveService', () => {
       // Only the destination cave names are preserved
       should(resultCave.names.length).equal(oldCave2.names.length);
 
-      // For documents, entrances, exploringGrottos, partneringGrottos, there are no duplicate (thus, the use of Set())
+      // For documents, entrances, exploringGrottos, partneringGrottos,
+      // there are no duplicate (thus, the use of Set())
       const collectionNamesWithoutDuplicates = [
         'documents',
         'entrances',

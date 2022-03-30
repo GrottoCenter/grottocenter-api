@@ -5,6 +5,7 @@
  * @help        :: See http://links.sailsjs.org/docs/controllers
  */
 
+const ErrorService = require('../services/ErrorService');
 const GeoLocService = require('../services/GeoLocService');
 
 const checkAndGetCoordinatesParams = (req) => {
@@ -90,6 +91,7 @@ module.exports = {
       return res.json({ count: result });
     } catch (e) {
       ErrorService.getDefaultErrorHandler(res)(e);
+      return false;
     }
   },
 
@@ -111,6 +113,7 @@ module.exports = {
       return res.json(result);
     } catch (e) {
       ErrorService.getDefaultErrorHandler(res)(e);
+      return false;
     }
   },
 
@@ -132,6 +135,7 @@ module.exports = {
       return res.json(result);
     } catch (e) {
       ErrorService.getDefaultErrorHandler(res)(e);
+      return false;
     }
   },
 
@@ -152,6 +156,7 @@ module.exports = {
       return res.json(result);
     } catch (e) {
       ErrorService.getDefaultErrorHandler(res)(e);
+      return false;
     }
   },
 
@@ -173,6 +178,7 @@ module.exports = {
       return res.json(result);
     } catch (e) {
       ErrorService.getDefaultErrorHandler(res)(e);
+      return false;
     }
   },
 
@@ -193,6 +199,7 @@ module.exports = {
       return res.json(result);
     } catch (e) {
       ErrorService.getDefaultErrorHandler(res)(e);
+      return false;
     }
   },
 };

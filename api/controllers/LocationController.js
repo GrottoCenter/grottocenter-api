@@ -5,6 +5,10 @@
  * @help        :: See https://sailsjs.com/docs/concepts/actions
  */
 
+const ControllerService = require('../services/ControllerService');
+const ErrorService = require('../services/ErrorService');
+const RightService = require('../services/RightService');
+
 module.exports = {
   create: async (req, res, converter) => {
     // Check right
@@ -14,7 +18,7 @@ module.exports = {
         rightEntity: RightService.RightEntities.LOCATION,
         rightAction: RightService.RightActions.CREATE,
       })
-      .intercept('rightNotFound', (err) => res.serverError(
+      .intercept('rightNotFound', () => res.serverError(
         'A server error occured when checking your right to create a location.',
       ));
     if (!hasRight) {
@@ -78,6 +82,7 @@ module.exports = {
       );
     } catch (e) {
       ErrorService.getDefaultErrorHandler(res)(e);
+      return false;
     }
   },
   update: async (req, res, converter) => {
@@ -88,7 +93,7 @@ module.exports = {
         rightEntity: RightService.RightEntities.LOCATION,
         rightAction: RightService.RightActions.EDIT_ANY,
       })
-      .intercept('rightNotFound', (err) => res.serverError(
+      .intercept('rightNotFound', () => res.serverError(
         'A server error occured when checking your right to update any location.',
       ));
     if (!hasRight) {
@@ -138,6 +143,7 @@ module.exports = {
       );
     } catch (e) {
       ErrorService.getDefaultErrorHandler(res)(e);
+      return false;
     }
   },
 };

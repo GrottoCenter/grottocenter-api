@@ -1,4 +1,5 @@
 const should = require('should');
+const DescriptionService = require('../../../api/services/DescriptionService');
 
 describe('DescriptionService', () => {
   describe('setDocumentDescriptions()', () => {

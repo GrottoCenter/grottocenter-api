@@ -1,4 +1,7 @@
 const ramda = require('ramda');
+const CaveService = require('./CaveService');
+const ElasticsearchService = require('./ElasticsearchService');
+const NameService = require('./NameService');
 
 module.exports = {
   populateOrganization: async (organization) => {
@@ -35,12 +38,14 @@ module.exports = {
     await NameService.setNames([partnerEntrances], 'entrance');
 
     // Format organization
+    /* eslint-disable no-param-reassign */
     delete organization.exploredCaves;
     delete organization.partnerCaves;
     organization.exploredEntrances = exploredEntrances;
     organization.exploredNetworks = exploredNetworks;
     organization.partnerEntrances = partnerEntrances;
     organization.partnerNetworks = partnerNetworks;
+    /* eslint-enable no-param-reassign */
   },
   /**
    *
@@ -58,7 +63,7 @@ module.exports = {
         const newOrganization = await TGrotto.create(cleanedData)
           .fetch()
           .usingConnection(db);
-        const name = await TName.create({
+        await TName.create({
           author: nameData.author,
           dateInscription: new Date(),
           grotto: newOrganization.id,
@@ -73,14 +78,14 @@ module.exports = {
           .usingConnection(db);
 
         // Prepare data for Elasticsearch indexation
-        const newOrganizationPopulated = await TGrotto.findOne(
+        const resPopulated = await TGrotto.findOne(
           newOrganization.id,
         )
           .populate('country')
           .populate('names')
           .usingConnection(db);
 
-        return newOrganizationPopulated;
+        return resPopulated;
       });
 
     const {

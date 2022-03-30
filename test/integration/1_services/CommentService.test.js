@@ -1,4 +1,5 @@
 const should = require('should');
+const CommentService = require('../../../api/services/CommentService');
 
 describe('CommentService', () => {
   describe('getStats()', () => {

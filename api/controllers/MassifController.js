@@ -5,6 +5,14 @@
  * @help        :: See http://links.sailsjs.org/docs/controllers
  */
 const ramda = require('ramda');
+const CaveService = require('../services/CaveService');
+const ControllerService = require('../services/ControllerService');
+const ElasticsearchService = require('../services/ElasticsearchService');
+const ErrorService = require('../services/ErrorService');
+const MappingV1Service = require('../services/MappingV1Service');
+const MassifService = require('../services/MassifService');
+const NameService = require('../services/NameService');
+const RightService = require('../services/RightService');
 
 module.exports = {
   find: async (
@@ -30,6 +38,7 @@ module.exports = {
       // Populate caves entrances
       await CaveService.setEntrances(massif.caves);
       for (const cave of massif.caves) {
+        // eslint-disable-next-line no-await-in-loop
         await NameService.setNames(cave.entrances, 'entrance');
       }
 
@@ -47,6 +56,7 @@ module.exports = {
       );
     } catch (e) {
       ErrorService.getDefaultErrorHandler(res)(e);
+      return false;
     }
   },
 
@@ -57,7 +67,7 @@ module.exports = {
         rightEntity: RightService.RightEntities.MASSIF,
         rightAction: RightService.RightActions.DELETE_ANY,
       })
-      .intercept('rightNotFound', (err) => res.serverError(
+      .intercept('rightNotFound', () => res.serverError(
         'A server error occured when checking your right to delete a massif.',
       ));
     if (!hasRight) {
@@ -79,14 +89,15 @@ module.exports = {
       });
     }
     // Delete massif
-    const updatedMassif = await TMassif.destroyOne({ id: massifId }).intercept(
-      (err) => res.serverError(
+    await TMassif.destroyOne({ id: massifId }).intercept(
+      () => res.serverError(
         `An unexpected error occured when trying to delete massif with id ${massifId}.`,
       ),
     );
     return res.sendStatus(204);
   },
 
+  // eslint-disable-next-line consistent-return
   create: async (req, res) => {
     // Check right
     const hasRight = await sails.helpers.checkRight
@@ -95,7 +106,7 @@ module.exports = {
         rightEntity: RightService.RightEntities.MASSIF,
         rightAction: RightService.RightActions.CREATE,
       })
-      .intercept('rightNotFound', (err) => res.serverError(
+      .intercept('rightNotFound', () => res.serverError(
         'A server error occured when checking your right to create a massif.',
       ));
     if (!hasRight) {
@@ -114,7 +125,7 @@ module.exports = {
 
     // Launch creation request using transaction: it performs a rollback if an error occurs
     try {
-      const newMassifPopulated = await sails
+      await sails
         .getDatastore()
         .transaction(async (db) => {
           const cleanedData = {
@@ -159,10 +170,8 @@ module.exports = {
             .usingConnection(db);
 
           // Prepare data for Elasticsearch indexation
-          const description = newMassifPopulated.descriptions.length === 0
-            ? null
-            : // There is only one description at the moment
-            `${newMassifPopulated.descriptions[0].title
+          const description = newMassifPopulated.descriptions.length === 0 ? null
+            : `${newMassifPopulated.descriptions[0].title
             } ${
               newMassifPopulated.descriptions[0].body}`;
 
@@ -178,7 +187,7 @@ module.exports = {
             names: newMassifPopulated.names.map((n) => n.name).join(', '),
             'nb caves': newMassifPopulated.caves.length,
             'nb entrances': newMassifPopulated.caves.reduce(
-              (total, cave) => total + cave.entrances.length,
+              (total, c) => total + c.entrances.length,
               0,
             ),
             descriptions: [description],

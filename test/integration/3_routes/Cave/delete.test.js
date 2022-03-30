@@ -1,7 +1,6 @@
 const supertest = require('supertest');
 const should = require('should');
 const AuthTokenService = require('../../AuthTokenService');
-const CAVE_PROPERTIES = require('./CAVE_PROPERTIES.js');
 
 describe('Cave features', () => {
   let adminToken;

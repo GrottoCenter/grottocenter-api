@@ -1,3 +1,5 @@
+const CaverService = require('../../services/CaverService');
+
 module.exports = {
   friendlyName: 'Author getter',
 
@@ -28,8 +30,6 @@ module.exports = {
       key: 'karstlink:hasDescriptionDocument/dct:creator',
       defaultValue: null,
     });
-    let authorName; let
-      authorSurname;
     if (!author) {
       author = doubleCheck({
         data: inputs.data,
@@ -44,8 +44,8 @@ module.exports = {
       surname,
     ] = await sails.helpers.csvhelpers.getPersonData.with({ fullName: author });
     author = authorFullName;
-    authorName = name;
-    authorSurname = surname;
+    const authorName = name;
+    const authorSurname = surname;
     const authorCaver = await TCaver.find({
       nickname: author,
     }).limit(1);

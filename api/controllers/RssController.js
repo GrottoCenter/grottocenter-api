@@ -8,6 +8,8 @@ const underscoreDate = require('underscore.date');
 const FR_RSS_FEED = 'http://blog-fr.grottocenter.org/feeds/posts/default?alt=rss&max-results=1';
 const EN_RSS_FEED = 'http://blog-en.grottocenter.org/feeds/posts/default?alt=rss&max-results=1';
 
+const CommonService = require('../services/CommonService');
+
 module.exports = {
   getFeed: (req, res) => {
     // TODO error when language is neither FR nor EN

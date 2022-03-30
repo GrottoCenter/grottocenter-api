@@ -35,6 +35,7 @@ module.exports = {
   }),
 
   // File is a multer object : https://github.com/expressjs/multer#file-information
+  // eslint-disable-next-line consistent-return
   create: async (file, idDocument, fetchResult = false, isValidated = true) => {
     const name = file.originalname;
     const mimeType = file.mimetype;
@@ -78,9 +79,10 @@ module.exports = {
         isValidated,
       };
       if (fetchResult) {
-        return await TFile.create(param).fetch();
+        const createdFile = await TFile.create(param).fetch();
+        return createdFile;
       }
-      return await TFile.create(param);
+      await TFile.create(param);
     }
     sails.log(
       `===== FILES UPLOAD AZURE - DEBUG =====
@@ -93,9 +95,12 @@ You are seing this message because you didn't configure your Azure credentials l
     );
   },
 
-  update: async (file) => await TFile.updateOne(file.id).set({
-    fileName: file.fileName,
-  }),
+  update: async (file) => {
+    const res = await TFile.updateOne(file.id).set({
+      fileName: file.fileName,
+    });
+    return res;
+  },
 
   delete: async (file) => {
     const pathName = file.path;
@@ -108,6 +113,7 @@ You are seing this message because you didn't configure your Azure credentials l
       deleteSnapshots: 'include',
     });
 
-    return await TFile.destroyOne(file.id);
+    const destroyedRecord = await TFile.destroyOne(file.id);
+    return destroyedRecord;
   },
 };

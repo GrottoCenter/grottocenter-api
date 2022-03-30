@@ -6,6 +6,11 @@
  */
 
 const esClient = require('../../config/elasticsearch').elasticsearchCli;
+const CaverService = require('../services/CaverService');
+const ControllerService = require('../services/ControllerService');
+const ErrorService = require('../services/ErrorService');
+const MappingV1Service = require('../services/MappingV1Service');
+const RightService = require('../services/RightService');
 
 module.exports = {
   find: async (req, res, next, converter) => {
@@ -82,7 +87,7 @@ module.exports = {
         rightEntity: RightService.RightEntities.CAVER,
         rightAction: RightService.RightActions.EDIT_ANY,
       })
-      .intercept('rightNotFound', (err) => res.serverError(
+      .intercept('rightNotFound', () => res.serverError(
         'A server error occured when checking your right to add a caver to a group.',
       ));
     if (!hasRight) {
@@ -115,15 +120,15 @@ module.exports = {
     }
 
     // Update caver
-    TCaver.addToCollection(req.param('caverId'), 'groups', req.param('groupId'))
-      .then(() => {
-        const params = {};
-        params.controllerMethod = 'CaverController.putOnGroup';
-        return ControllerService.treat(req, null, {}, params, res);
-      })
-      .catch({ name: 'UsageError' }, (err) => res.badRequest(err.cause.message))
-      .catch({ name: 'AdapterError' }, (err) => res.badRequest(err.cause.message))
-      .catch((err) => res.serverError(err.cause.message));
+    try {
+      await TCaver.addToCollection(req.param('caverId'), 'groups', req.param('groupId'));
+      const params = {};
+      params.controllerMethod = 'CaverController.putOnGroup';
+      return ControllerService.treat(req, null, {}, params, res);
+    } catch (e) {
+      ErrorService.getDefaultErrorHandler(res)(e);
+      return false;
+    }
   },
 
   removeFromGroup: async (req, res) => {
@@ -134,7 +139,7 @@ module.exports = {
         rightEntity: RightService.RightEntities.CAVER,
         rightAction: RightService.RightActions.EDIT_ANY,
       })
-      .intercept('rightNotFound', (err) => res.serverError(
+      .intercept('rightNotFound', () => res.serverError(
         'A server error occured when checking your right to remove a caver from a group.',
       ));
     if (!hasRight) {
@@ -169,19 +174,19 @@ module.exports = {
     }
 
     // Update caver
-    TCaver.removeFromCollection(
-      req.param('caverId'),
-      'groups',
-      req.param('groupId'),
-    )
-      .then(() => {
-        const params = {};
-        params.controllerMethod = 'CaverController.removeFromGroup';
-        return ControllerService.treat(req, null, {}, params, res);
-      })
-      .catch({ name: 'UsageError' }, (err) => res.badRequest(err.cause.message))
-      .catch({ name: 'AdapterError' }, (err) => res.badRequest(err.cause.message))
-      .catch((err) => res.serverError(err.cause.message));
+    try {
+      await TCaver.removeFromCollection(
+        req.param('caverId'),
+        'groups',
+        req.param('groupId'),
+      );
+      const params = {};
+      params.controllerMethod = 'CaverController.removeFromGroup';
+      return ControllerService.treat(req, null, {}, params, res);
+    } catch (e) {
+      ErrorService.getDefaultErrorHandler(res)(e);
+      return false;
+    }
   },
 
   setGroups: async (req, res) => {
@@ -192,7 +197,7 @@ module.exports = {
         rightEntity: RightService.RightEntities.CAVER,
         rightAction: RightService.RightActions.EDIT_ANY,
       })
-      .intercept('rightNotFound', (err) => res.serverError(
+      .intercept('rightNotFound', () => res.serverError(
         'A server error occured when checking your right to set caver groups.',
       ));
     if (!hasRight) {
@@ -213,42 +218,39 @@ module.exports = {
     }
 
     const newGroups = req.param('groups');
-    newGroups.map(async (g) => {
-      if (
-        !(await sails.helpers.checkIfExists.with({
-          attributeName: 'id',
-          attributeValue: g.id,
-          sailsModel: TGroup,
-        }))
-      ) {
-        return res.badRequest(`Could not find group with id ${g.id}.`);
-      }
-    });
+    const notFoundGroup = newGroups.find(async (g) => !(await sails.helpers.checkIfExists.with({
+      attributeName: 'id',
+      attributeValue: g.id,
+      sailsModel: TGroup,
+    })));
+    if (notFoundGroup.length > 0) {
+      return res.badRequest(`Could not find group with id ${notFoundGroup[0].id}.`);
+    }
 
     // Update caver
-    TCaver.replaceCollection(
-      req.param('caverId'),
-      'groups',
-      newGroups.map((g) => g.id),
-    )
-      .then(() => {
-        esClient.update({
-          index: 'cavers-index',
-          id: req.param('caverId'),
-          body: {
-            doc: {
-              groups: newGroups.map((g) => g.id).join(','),
-            },
+    try {
+      await TCaver.replaceCollection(
+        req.param('caverId'),
+        'groups',
+        newGroups.map((g) => g.id),
+      );
+      esClient.update({
+        index: 'cavers-index',
+        id: req.param('caverId'),
+        body: {
+          doc: {
+            groups: newGroups.map((g) => g.id).join(','),
           },
-        });
+        },
+      });
 
-        const params = {};
-        params.controllerMethod = 'CaverController.setGroups';
-        return ControllerService.treat(req, null, {}, params, res);
-      })
-      .catch({ name: 'UsageError' }, (err) => res.badRequest(err.cause.message))
-      .catch({ name: 'AdapterError' }, (err) => res.badRequest(err.cause.message))
-      .catch((err) => res.serverError(err.cause.message));
+      const params = {};
+      params.controllerMethod = 'CaverController.setGroups';
+      return ControllerService.treat(req, null, {}, params, res);
+    } catch (e) {
+      ErrorService.getDefaultErrorHandler(res)(e);
+      return false;
+    }
   },
 
   getAdmins: async (
@@ -264,7 +266,7 @@ module.exports = {
         rightEntity: RightService.RightEntities.CAVER,
         rightAction: RightService.RightActions.VIEW_ANY,
       })
-      .intercept('rightNotFound', (err) => res.serverError(
+      .intercept('rightNotFound', () => res.serverError(
         'A server error occured when checking your right to view admins.',
       ));
     if (!hasRight) {
@@ -310,7 +312,7 @@ module.exports = {
         rightEntity: RightService.RightEntities.CAVER,
         rightAction: RightService.RightActions.VIEW_ANY,
       })
-      .intercept('rightNotFound', (err) => res.serverError(
+      .intercept('rightNotFound', () => res.serverError(
         'A server error occured when checking your right to view moderators.',
       ));
     if (!hasRight) {
@@ -356,7 +358,7 @@ module.exports = {
         rightEntity: RightService.RightEntities.CAVER,
         rightAction: RightService.RightActions.CREATE,
       })
-      .intercept('rightNotFound', (err) => res.serverError(
+      .intercept('rightNotFound', () => res.serverError(
         'A server error occured when checking your right to create a caver.',
       ));
     if (!hasRight) {
@@ -392,6 +394,7 @@ module.exports = {
       );
     } catch (e) {
       ErrorService.getDefaultErrorHandler(res)(e);
+      return false;
     }
   },
 
@@ -403,7 +406,7 @@ module.exports = {
         rightEntity: RightService.RightEntities.CAVER,
         rightAction: RightService.RightActions.EDIT_OWN,
       })
-      .intercept('rightNotFound', (err) => res.serverError(
+      .intercept('rightNotFound', () => res.serverError(
         'A server error occured when checking your right to mark an entrance as explored.',
       ));
     if (!hasRight) {
@@ -440,11 +443,13 @@ module.exports = {
     }
 
     // Update caver
-    TCaver.addToCollection(caverId, 'exploredEntrances', entranceId)
-      .then(() => res.sendStatus(204))
-      .catch({ name: 'UsageError' }, (err) => res.badRequest(err.cause.message))
-      .catch({ name: 'AdapterError' }, (err) => res.badRequest(err.cause.message))
-      .catch((err) => res.serverError(err.cause.message));
+    try {
+      await TCaver.addToCollection(caverId, 'exploredEntrances', entranceId);
+      return res.sendStatus(204);
+    } catch (e) {
+      ErrorService.getDefaultErrorHandler(res)(e);
+      return false;
+    }
   },
 
   removeExploredEntrance: async (req, res) => {
@@ -455,7 +460,7 @@ module.exports = {
         rightEntity: RightService.RightEntities.CAVER,
         rightAction: RightService.RightActions.EDIT_OWN,
       })
-      .intercept('rightNotFound', (err) => res.serverError(
+      .intercept('rightNotFound', () => res.serverError(
         'A server error occured when checking your right to unmark an entrance as explored.',
       ));
     if (!hasRight) {
@@ -492,10 +497,12 @@ module.exports = {
     }
 
     // Update caver
-    TCaver.removeFromCollection(caverId, 'exploredEntrances', entranceId)
-      .then(() => res.sendStatus(204))
-      .catch({ name: 'UsageError' }, (err) => res.badRequest(err.cause.message))
-      .catch({ name: 'AdapterError' }, (err) => res.badRequest(err.cause.message))
-      .catch((err) => res.serverError(err.cause.message));
+    try {
+      await TCaver.removeFromCollection(caverId, 'exploredEntrances', entranceId);
+      return res.sendStatus(204);
+    } catch (e) {
+      ErrorService.getDefaultErrorHandler(res)(e);
+      return false;
+    }
   },
 };

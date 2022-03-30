@@ -1,5 +1,6 @@
 const should = require('should');
 const AuthTokenService = require('../AuthTokenService');
+const CaverService = require('../../../api/services/CaverService');
 
 describe('CaverService', () => {
   const userReq = {};

@@ -6,35 +6,41 @@
  */
 
 const ramda = require('ramda');
+const ControllerService = require('../services/ControllerService');
 const DescriptionService = require('../services/DescriptionService');
 const DocumentService = require('../services/DocumentService');
 const DocumentDuplicateService = require('../services/DocumentDuplicateService');
+const ElasticsearchService = require('../services/ElasticsearchService');
 const ErrorService = require('../services/ErrorService');
+const FileService = require('../services/FileService');
+const GrottoService = require('../services/GrottoService');
+const MappingV1Service = require('../services/MappingV1Service');
+const NameService = require('../services/NameService');
+const RightService = require('../services/RightService');
+
+const { doubleCheck } = sails.helpers.csvhelpers;
 
 // Tool methods
 // Set name of cave, entrance, massif, editor and library if present
 const setNamesOfPopulatedDocument = async (document) => {
-  !ramda.isNil(document.entrance)
-    && (await NameService.setNames([document.entrance], 'entrance'));
-  !ramda.isNil(document.cave)
-    && (await NameService.setNames([document.cave], 'cave'));
-  !ramda.isNil(document.massif)
-    && (await NameService.setNames([document.massif], 'massif'));
-  !ramda.isNil(document.library)
-    && (await NameService.setNames([document.library], 'grotto'));
-  !ramda.isNil(document.editor)
-    && (await NameService.setNames([document.editor], 'grotto'));
+  if (!ramda.isNil(document.entrance)) (await NameService.setNames([document.entrance], 'entrance'));
+  if (!ramda.isNil(document.cave)) { (await NameService.setNames([document.cave], 'cave')); }
+  if (!ramda.isNil(document.massif)) { (await NameService.setNames([document.massif], 'massif')); }
+  if (!ramda.isNil(document.library)) { (await NameService.setNames([document.library], 'grotto')); }
+  if (!ramda.isNil(document.editor)) { (await NameService.setNames([document.editor], 'grotto')); }
   await DescriptionService.setDocumentDescriptions(document);
-  !ramda.isNil(document.authorizationDocument)
-    && (await DescriptionService.setDocumentDescriptions(
+  if (!ramda.isNil(document.authorizationDocument)) {
+    (await DescriptionService.setDocumentDescriptions(
       document.authorizationDocument,
     ));
+  }
   return document;
 };
 
 // Extract everything from the request body except id and dateInscription
 const getConvertedDataFromClient = async (req) => {
-  const { id, option, ...reqBodyWithoutId } = req.body; // remove id if present to avoid null id (and an error)
+  // Remove id if present to avoid null id (and an error)
+  const { id, option, ...reqBodyWithoutId } = req.body;
 
   const optionFound = option
     ? await TOption.findOne({ name: option })
@@ -123,20 +129,23 @@ const getEsBody = (document) => {
   };
 };
 
-const getAdditionalESIndexFromDocumentType = (document) => (document.type.name === 'Issue'
-  ? 'document-issues'
-  : document.type.name === 'Collection'
-    ? 'document-collections'
-    : '');
+const getAdditionalESIndexFromDocumentType = (document) => {
+  if (document.type.name === 'Issue') {
+    return 'document-issues';
+  }
+  if (document.type.name === 'Collection') {
+    return 'document-collections';
+  }
+  return '';
+};
 
 /**
  * Based on the logstash.conf file.
- * The document must be fully populated and with all its names set (@see setNamesOfPopulatedDocument).
+ * The document must be fully populated and with all its names set
+ *    (@see setNamesOfPopulatedDocument).
  */
 const addDocumentToElasticSearchIndexes = async (document) => {
-  // const { type, ...documentWithoutType } = document; // "type" property is already used by ES, don't spread it.
   const esBody = getEsBody(document);
-
   await ElasticsearchService.create('documents', document.id, {
     ...esBody,
     tags: ['document'],
@@ -175,11 +184,11 @@ const updateDocumentInElasticSearchIndexes = async (document) => {
 */
 
 const getConvertedDocumentFromCsv = async (rawData, authorId) => {
-  const doubleCheck = (args) => sails.helpers.csvhelpers.doubleCheck.with({ data: rawData, ...args });
+  const doubleCheckWithData = (args) => doubleCheck.with({ data: rawData, ...args });
   const retrieveFromLink = sails.helpers.csvhelpers.retrieveFromLink.with;
 
   // License
-  const rawLicence = doubleCheck({
+  const rawLicence = doubleCheckWithData({
     key: 'dct:rights/karstlink:licenseType',
   });
   const licence = await retrieveFromLink({ stringArg: rawLicence });
@@ -191,7 +200,8 @@ const getConvertedDocumentFromCsv = async (rawData, authorId) => {
   // Creator(s)
   const rawCreators = rawData['dct:creator'].split('|');
   const checkedRawCreators = rawCreators[0] === '' ? [] : rawCreators; // Empty the first array value if it's an empty string to avoid iterating through it
-  // For each creator, first check if there is a grotto of this name. If not, check for a caver. If not, create a caver.
+  // For each creator, first check if there is a grotto of this name.
+  // If not, check for a caver. If not, create a caver.
   const creatorsPromises = checkedRawCreators.map(async (creatorRaw) => {
     const authorGrotto = await TName.find({
       name: await retrieveFromLink({ stringArg: creatorRaw }),
@@ -212,7 +222,7 @@ const getConvertedDocumentFromCsv = async (rawData, authorId) => {
   const creators = await Promise.all(creatorsPromises);
 
   // Editor
-  const editorsRaw = doubleCheck({
+  const editorsRaw = doubleCheckWithData({
     key: 'dct:publisher',
     defaultValue: null,
   });
@@ -221,6 +231,7 @@ const getConvertedDocumentFromCsv = async (rawData, authorId) => {
     const editorsRawArray = editorsRaw.split('|');
     let editorName = '';
     for (const editorRaw of editorsRawArray) {
+      // eslint-disable-next-line no-await-in-loop
       const editorNameRaw = await retrieveFromLink({ stringArg: editorRaw });
       editorName += `${editorNameRaw.replace('_', ' ')}, `;
     }
@@ -229,36 +240,33 @@ const getConvertedDocumentFromCsv = async (rawData, authorId) => {
       name: editorName,
       grotto: { '!=': null },
     }).limit(1);
-    switch (namesArray.length) {
-      case 0:
-        const paramsGrotto = {
-          author: authorId,
-          dateInscription: new Date(),
-        };
-        const nameGrotto = {
-          text: editorName,
-          language: doubleCheck({
-            key: 'dc:language',
-            defaultValue: 'eng',
-            func: (value) => value.toLowerCase(),
-          }),
-          author: authorId,
-        };
-        const editorGrotto = await GrottoService.createGrotto(
-          paramsGrotto,
-          nameGrotto,
-        );
-        editorId = editorGrotto.id;
-        break;
-      default:
-        const name = namesArray[0];
-        editorId = name.grotto;
-        break;
+    if (namesArray.length === 0) {
+      const paramsGrotto = {
+        author: authorId,
+        dateInscription: new Date(),
+      };
+      const nameGrotto = {
+        text: editorName,
+        language: doubleCheckWithData({
+          key: 'dc:language',
+          defaultValue: 'eng',
+          func: (value) => value.toLowerCase(),
+        }),
+        author: authorId,
+      };
+      const editorGrotto = await GrottoService.createGrotto(
+        paramsGrotto,
+        nameGrotto,
+      );
+      editorId = editorGrotto.id;
+    } else {
+      const name = namesArray[0];
+      editorId = name.grotto;
     }
   }
 
   // Doc type
-  const typeData = doubleCheck({
+  const typeData = doubleCheckWithData({
     key: 'karstlink:documentType',
   });
   let typeId;
@@ -274,7 +282,7 @@ const getConvertedDocumentFromCsv = async (rawData, authorId) => {
   }
 
   // Parent / partOf
-  const parentId = doubleCheck({
+  const parentId = doubleCheckWithData({
     key: 'dct:isPartOf',
   });
   const doesParentExist = parentId
@@ -289,7 +297,7 @@ const getConvertedDocumentFromCsv = async (rawData, authorId) => {
   }
 
   // Subjects
-  const subjectsData = doubleCheck({
+  const subjectsData = doubleCheckWithData({
     key: 'dct:subject',
   });
   const subjects = subjectsData ? subjectsData.split('|') : undefined;
@@ -304,6 +312,8 @@ const getConvertedDocumentFromCsv = async (rawData, authorId) => {
       case 'grotto':
         creatorsGrottoId.push(creator.value.grotto);
         break;
+      default:
+        break;
     }
   }
 
@@ -311,29 +321,29 @@ const getConvertedDocumentFromCsv = async (rawData, authorId) => {
     author: authorId,
     authors: creatorsCaverId,
     authorsGrotto: creatorsGrottoId,
-    dateInscription: doubleCheck({
+    dateInscription: doubleCheckWithData({
       key: 'dct:rights/dct:created',
       defaultValue: new Date(),
     }),
-    datePublication: doubleCheck({
+    datePublication: doubleCheckWithData({
       key: 'dct:date',
     }),
-    dateReviewed: doubleCheck({
+    dateReviewed: doubleCheckWithData({
       key: 'dct:rights/dct:modified',
     }),
     editor: editorId,
-    idDbImport: doubleCheck({
+    idDbImport: doubleCheckWithData({
       key: 'id',
     }),
-    identifier: doubleCheck({
+    identifier: doubleCheckWithData({
       key: 'dct:source',
     }),
-    identifierType: doubleCheck({
+    identifierType: doubleCheckWithData({
       key: 'dct:identifier',
       func: (value) => value.trim().toLowerCase(),
     }),
     license: licenceDb.id,
-    nameDbImport: doubleCheck({
+    nameDbImport: doubleCheckWithData({
       key: 'dct:rights/cc:attributionName',
     }),
     parent: parentId,
@@ -343,34 +353,35 @@ const getConvertedDocumentFromCsv = async (rawData, authorId) => {
 };
 
 const getConvertedLangDescDocumentFromCsv = (rawData, authorId) => {
-  const doubleCheck = (args) => sails.helpers.csvhelpers.doubleCheck.with({ data: rawData, ...args });
-  const description = doubleCheck({
+  const doubleCheckWithData = (args) => doubleCheck.with({ data: rawData, ...args });
+
+  const description = doubleCheckWithData({
     key: 'karstlink:hasDescriptionDocument/dct:description',
   });
   const langDesc = description
-    ? doubleCheck({
+    ? doubleCheckWithData({
       key: 'karstlink:hasDescriptionDocument/dc:language',
       func: (value) => value.toLowerCase(),
     })
-    : doubleCheck({
+    : doubleCheckWithData({
       key: 'dc:language',
       func: (value) => value.toLowerCase(),
     });
   return {
     author: authorId,
-    title: doubleCheck({
+    title: doubleCheckWithData({
       key: 'rdfs:label',
     }),
     description,
-    dateInscription: doubleCheck({
+    dateInscription: doubleCheckWithData({
       key: 'dct:rights/dct:created',
       defaultValue: new Date(),
     }),
-    dateReviewed: doubleCheck({
+    dateReviewed: doubleCheckWithData({
       key: 'dct:rights/dct:modified',
     }),
     documentMainLanguage: {
-      id: doubleCheck({
+      id: doubleCheckWithData({
         key: 'dc:language',
         func: (value) => value.toLowerCase(),
       }),
@@ -418,7 +429,7 @@ module.exports = {
         rightEntity: RightService.RightEntities.DOCUMENT,
         rightAction: RightService.RightActions.CREATE,
       })
-      .intercept('rightNotFound', (err) => res.serverError(
+      .intercept('rightNotFound', () => res.serverError(
         'A server error occured when checking your right to create a document.',
       ));
     if (!hasRight) {
@@ -444,6 +455,7 @@ module.exports = {
         const { files } = req.files;
         for (const file of files) {
           try {
+            // eslint-disable-next-line no-await-in-loop
             await FileService.create(file, createdDocument.id);
           } catch (err) {
             errorFiles.push({
@@ -470,6 +482,7 @@ module.exports = {
       return ControllerService.treat(req, null, requestResponse, params, res);
     } catch (e) {
       ErrorService.getDefaultErrorHandler(res)(e);
+      return false;
     }
   },
 
@@ -487,7 +500,7 @@ module.exports = {
         rightEntity: RightService.RightEntities.DOCUMENT,
         rightAction,
       })
-      .intercept('rightNotFound', (err) => res.serverError(
+      .intercept('rightNotFound', () => res.serverError(
         'A server error occured when checking your right to update a document.',
       ));
 
@@ -501,6 +514,7 @@ module.exports = {
       const { files } = req.files;
       for (const file of files) {
         try {
+          // eslint-disable-next-line no-await-in-loop
           const createdFile = await FileService.create(
             file,
             req.param('id'),
@@ -548,6 +562,7 @@ module.exports = {
       );
     } catch (e) {
       ErrorService.getDefaultErrorHandler(res)(e);
+      return false;
     }
   },
 
@@ -558,7 +573,7 @@ module.exports = {
         rightEntity: RightService.RightEntities.DOCUMENT,
         rightAction: RightService.RightActions.EDIT_ANY,
       })
-      .intercept('rightNotFound', (err) => res.serverError(
+      .intercept('rightNotFound', () => res.serverError(
         'A server error occured when checking your right to update a document.',
       ));
 
@@ -626,6 +641,7 @@ module.exports = {
       return res.ok(updatedDocument);
     } catch (e) {
       ErrorService.getDefaultErrorHandler(res)(e);
+      return false;
     }
   },
 
@@ -649,17 +665,18 @@ module.exports = {
       4 possible cases : isValidated (true or false) AND validation (null or not)
       If the document is not validated and has a dateValidation, it means that it has been refused.
       We don't want to retrieve these documents refused.
-      So when isValidated is false, we need to retrieve only the document with a dateValidation set to null
+      So when isValidated is false, we need to retrieve only the documents
+      with a dateValidation set to null
       (= submitted documents which need to be reviewed).
     */
     const whereClause = {
       and: [{ isValidated }],
     };
-    !isValidated && whereClause.and.push({ dateValidation: null });
+    if (!isValidated) whereClause.and.push({ dateValidation: null });
 
     const type = req.param('documentType');
     const foundType = type ? await TType.findOne({ name: type }) : null;
-    foundType && whereClause.and.push({ type: foundType.id });
+    if (foundType) whereClause.and.push({ type: foundType.id });
 
     TDocument.find()
       .where(whereClause)
@@ -687,9 +704,9 @@ module.exports = {
       .exec((err, found) => {
         TDocument.count()
           .where(whereClause)
-          .exec(async (err, countFound) => {
-            if (err) {
-              sails.log.error(err);
+          .exec(async (error, countFound) => {
+            if (error) {
+              sails.log.error(error);
               return res.serverError('An unexpected server error occured.');
             }
 
@@ -702,6 +719,7 @@ module.exports = {
 
             await Promise.all(
               found.map(async (doc) => {
+                /* eslint-disable no-param-reassign */
                 doc.mainLanguage = await DocumentService.getMainLanguage(
                   doc.id,
                 );
@@ -712,21 +730,24 @@ module.exports = {
                   ],
                   'grotto',
                 );
-                doc.authorizationDocument
-                  && (await DescriptionService.setDocumentDescriptions(
+                if (doc.authorizationDocument) {
+                  await DescriptionService.setDocumentDescriptions(
                     doc.authorizationDocument,
-                  ));
+                  );
+                }
                 await setNamesOfPopulatedDocument(doc);
-                doc.children
-                  && (await Promise.all(
+                if (doc.children) {
+                  await Promise.all(
                     doc.children.map(async (childDoc) => {
                       await DescriptionService.setDocumentDescriptions(
                         childDoc,
                       );
                     }),
-                  ));
+                  );
+                }
               }),
             );
+            /* eslint-enable no-param-reassign */
 
             const params = {
               controllerMethod: 'DocumentController.findAll',
@@ -787,6 +808,7 @@ module.exports = {
       .populate('reviewer')
       .populate('subjects')
       .populate('type')
+      // eslint-disable-next-line consistent-return
       .exec(async (err, documents) => {
         if (err) {
           sails.log.error(err);
@@ -801,15 +823,18 @@ module.exports = {
         }
 
         try {
-          for (doc of documents) {
+          for (const doc of documents) {
+            /* eslint-disable no-await-in-loop */
             doc.mainLanguage = await DocumentService.getMainLanguage(doc.id);
             await setNamesOfPopulatedDocument(doc);
-            doc.children
-              && (await Promise.all(
+            if (doc.children) {
+              await Promise.all(
                 doc.children.map(async (childDoc) => {
                   await DescriptionService.setDocumentDescriptions(childDoc);
                 }),
-              ));
+              );
+              /* eslint-enable no-await-in-loop */
+            }
           }
 
           const totalNb = await TDocument.count().where(whereClause);
@@ -850,6 +875,7 @@ module.exports = {
       }
       try {
         const {
+          author,
           title,
           description,
           titleAndDescriptionLanguage,
@@ -860,9 +886,9 @@ module.exports = {
           deletedFiles,
           ...otherData
         } = modifiedDocJson;
-        const populatedDoc = await DocumentService.populateJSON(
-          otherData,
-        );
+        const populatedDoc = await DocumentService.populateJSON({
+          author, ...otherData,
+        });
         found = { ...populatedDoc, id };
 
         // Files retrieval
@@ -890,15 +916,25 @@ module.exports = {
         found.deletedFiles = deletedFiles;
         found.modifiedFiles = modifiedFiles;
 
-        // We can only modify the main language, so we don't have a "languages" attribute stored in the json. Uncomment if the possibility to add language is implemented.
-        // found.languages = languages ? await Promise.all(languages.map(async (language) => { return await TLanguage.findOne(language)})) : [];
+        // We can only modify the main language, so we don't have a "languages" attribute
+        // stored in the json. Uncomment if the possibility to add language is implemented.
+        // if (languages) {
+        //   found.languages = await Promise.all(languages.map(async (language) => {
+        //     const completeLanguage = await TLanguage.findOne(language);
+        //     return completeLanguage;
+        //   }));
+        // } else {
+        //   found.languages = [];
+        // }
+
         found.mainLanguage = await TLanguage.findOne(documentMainLanguage);
 
         // Populate names & descriptions
         await NameService.setNames([found.editor], 'grotto');
         await DescriptionService.setDocumentDescriptions(found.parent, false);
 
-        // Handle the description because even if it has been modified, the entry in TDescription stayed intact.
+        // Handle the description because even if it has been modified,
+        // the entry in TDescription stayed intact.
         const descLang = await TLanguage.findOne(titleAndDescriptionLanguage);
         found.descriptions = [];
         found.descriptions.push({
@@ -972,7 +1008,8 @@ module.exports = {
     );
   },
 
-  validate: (req, res, next) => {
+  // eslint-disable-next-line consistent-return
+  validate: (req, res) => {
     const isValidated = req.param('isValidated')
       ? !(req.param('isValidated').toLowerCase() === 'false')
       : true;
@@ -996,7 +1033,7 @@ module.exports = {
       })
       .then(async (updatedDocument) => {
         if (isValidated) {
-          const populatedDoc = await Tdocument.findOne(updatedDocument.id)
+          const populatedDoc = await TDocument.findOne(updatedDocument.id)
             .populate('author')
             .populate('authors')
             .populate('cave')
@@ -1026,7 +1063,7 @@ module.exports = {
       });
   },
 
-  multipleValidate: async (req, res, next) => {
+  multipleValidate: async (req, res) => {
     const documents = req.param('documents');
     const updatePromises = [];
     documents.map((doc) => {
@@ -1052,18 +1089,22 @@ module.exports = {
           validator: req.token.id,
         }),
       );
+      return doc;
     });
 
     try {
+      // eslint-disable-next-line consistent-return
       await Promise.all(updatePromises).then(async (results) => {
         for (const doc of results) {
           const isAModifiedDoc = !!doc.modifiedDocJson;
           if (doc.isValidated) {
-            // If there is modified doc stored in the json column, we update the document with the data contained in it. Then we remove the json.
+            // If there is modified doc stored in the json column,
+            // update the document with the data contained in it. Then, remove the json.
             if (isAModifiedDoc) {
-              // Launch update request using transaction: it performs a rollback if an error occurs
+              // eslint-disable-next-line no-await-in-loop
               await sails
                 .getDatastore()
+                // eslint-disable-next-line consistent-return
                 .transaction(async (db) => {
                   const {
                     documentMainLanguage,
@@ -1107,22 +1148,26 @@ module.exports = {
                     })
                     .usingConnection(db);
 
-                  // New files have already been created, they just need to be linked to the document.
+                  // New files have already been created,
+                  // they just need to be linked to the document.
                   if (newFiles) {
-                    const newPromises = newFiles.map(async (file) => await TFile.updateOne(file.id).set({
+                    // eslint-disable-next-line no-return-await
+                    const newPromises = newFiles.map(async (file) => await TFile.updateOne(file.id).set({ // eslint-disable-line max-len
                       isValidated: true,
                     }));
                     await Promise.all(newPromises);
                   }
                   if (modifiedFiles) {
                     const modificationPromises = modifiedFiles.map(
+                      // eslint-disable-next-line no-return-await
                       async (file) => await FileService.update(file),
                     );
                     await Promise.all(modificationPromises);
                   }
 
                   if (deletedFiles) {
-                    const deletionPromises = deletedFiles.map(async (file) => await FileService.delete(file));
+                    // eslint-disable-next-line no-return-await
+                    const deletionPromises = deletedFiles.map(async (file) => await FileService.delete(file)); // eslint-disable-line max-len
                     await Promise.all(deletionPromises);
                   }
                 })
@@ -1130,6 +1175,7 @@ module.exports = {
             }
             // Get full document an index it in Elasticsearch
             try {
+              // eslint-disable-next-line no-await-in-loop
               const found = await TDocument.findOne(doc.id)
                 .populate('author')
                 .populate('authorizationDocument')
@@ -1149,38 +1195,41 @@ module.exports = {
                 .populate('reviewer')
                 .populate('subjects')
                 .populate('type');
+              // eslint-disable-next-line no-await-in-loop
               await setNamesOfPopulatedDocument(found);
-              isAModifiedDoc
-                ? updateDocumentInElasticSearchIndexes(found)
-                : addDocumentToElasticSearchIndexes(found);
+              if (isAModifiedDoc) {
+                updateDocumentInElasticSearchIndexes(found);
+              } else {
+                addDocumentToElasticSearchIndexes(found);
+              }
             } catch (err) {
               return res.serverError(
                 'An error occured when trying to get all information about the document.',
               );
             }
-          } else {
+          } else if (isAModifiedDoc) {
             /*
           If the document refused, check if there is a json document.
           If there is one, remove it and validate the document
-          because the document kept the same values as when it was validated (the modified data was in the json).
+          because the document kept the same values as when
+          it was validated (the modified data was in the json).
           */
-            if (isAModifiedDoc) {
-              await TDocument.updateOne(doc.id).set({
-                isValidated: true,
-                modifiedDocJson: null,
-              });
-            }
+            // eslint-disable-next-line no-await-in-loop
+            await TDocument.updateOne(doc.id).set({
+              isValidated: true,
+              modifiedDocJson: null,
+            });
           }
         }
       });
       return res.ok();
     } catch (e) {
       ErrorService.getDefaultErrorHandler(res)(e);
+      return false;
     }
   },
 
   checkRows: async (req, res) => {
-    const doubleCheck = sails.helpers.csvhelpers.doubleCheck.with;
     const willBeCreated = [];
     const willBeCreatedAsDuplicates = [];
     const wontBeCreated = [];
@@ -1199,10 +1248,11 @@ module.exports = {
         wontBeCreated.push({
           line: index + 2,
         });
-        continue;
+        continue; // eslint-disable-line no-continue
       }
 
       // Check for duplicates
+      // eslint-disable-next-line no-await-in-loop
       const result = await TDocument.find({
         idDbImport: idDb,
         nameDbImport: nameDb,
@@ -1230,7 +1280,7 @@ module.exports = {
         rightEntity: RightService.RightEntities.DOCUMENT,
         rightAction: RightService.RightActions.CSV_IMPORT,
       })
-      .intercept('rightNotFound', (err) => res.serverError(
+      .intercept('rightNotFound', () => res.serverError(
         'A server error occured when checking your right to import documents via CSV.',
       ));
     if (!hasRight) {
@@ -1239,7 +1289,6 @@ module.exports = {
       );
     }
 
-    const doubleCheck = sails.helpers.csvhelpers.doubleCheck.with;
     const requestResponse = {
       type: 'document',
       total: {
@@ -1252,6 +1301,7 @@ module.exports = {
     };
 
     for (const [index, data] of req.body.data.entries()) {
+      // eslint-disable-next-line no-await-in-loop
       const missingColumns = await sails.helpers.csvhelpers.checkColumns.with({
         data,
       });
@@ -1261,7 +1311,7 @@ module.exports = {
           line: index + 2,
           message: `Columns missing : ${missingColumns.toString()}`,
         });
-        continue;
+        continue; // eslint-disable-line no-continue
       }
 
       // Check for duplicates
@@ -1274,6 +1324,7 @@ module.exports = {
         key: 'dct:rights/cc:attributionName',
       });
 
+      // eslint-disable-next-line no-await-in-loop
       const result = await TDocument.find({
         idDbImport: idDb,
         nameDbImport: nameDb,
@@ -1282,9 +1333,11 @@ module.exports = {
 
       // Data formatting
       // Author retrieval : create one if not present in db
+      // eslint-disable-next-line no-await-in-loop
       const authorId = await sails.helpers.csvhelpers.getAuthor.with({
         data,
       });
+      // eslint-disable-next-line no-await-in-loop
       const dataDocument = await getConvertedDocumentFromCsv(data, authorId);
       const dataLangDesc = getConvertedLangDescDocumentFromCsv(data, authorId);
 
@@ -1294,6 +1347,7 @@ module.exports = {
           document: dataDocument,
           description: dataLangDesc,
         };
+        // eslint-disable-next-line no-await-in-loop
         await DocumentDuplicateService.create(
           req.token.id,
           duplicateContent,
@@ -1303,14 +1357,16 @@ module.exports = {
           line: index + 2,
           message: `Document with id ${idDb} has been created as a document duplicate.`,
         });
-        continue;
+        continue; // eslint-disable-line no-continue
       }
 
       try {
+        // eslint-disable-next-line no-await-in-loop
         const createdDocument = await DocumentService.createDocument(
           dataDocument,
           dataLangDesc,
         );
+        // eslint-disable-next-line no-await-in-loop
         const docFiles = await TFile.find({ document: createdDocument.id });
         requestResponse.successfulImport.push({
           documentId: createdDocument.id,
@@ -1327,7 +1383,7 @@ module.exports = {
     }
 
     requestResponse.total.success = requestResponse.successfulImport.length;
-    requestResponse.total.successfulImportAsDuplicates = requestResponse.successfulImportAsDuplicates.length;
+    requestResponse.total.successfulImportAsDuplicates = requestResponse.successfulImportAsDuplicates.length; // eslint-disable-line max-len
     requestResponse.total.failure = requestResponse.failureImport.length;
     return res.ok(requestResponse);
   },

@@ -7,12 +7,19 @@
 
 const jwt = require('jsonwebtoken');
 
+const AuthService = require('../services/AuthService');
+const RightService = require('../services/RightService');
+const TokenService = require('../services/TokenService');
+
 const { createHashedPassword, tokenSalt } = AuthService;
 
 const PASSWORD_MIN_LENGTH = 8;
 const RESET_PASSWORD_LINK = `${sails.config.custom.baseUrl}/ui/changePassword?token=`;
 
-const getResetPasswordTokenSalt = (user) => user.password + user.id + user.dateInscription + tokenSalt;
+const getResetPasswordTokenSalt = (user) => {
+  const { dateInscription, id, password } = user;
+  return password + id + dateInscription + tokenSalt;
+};
 
 module.exports = {
   changeAlertForNews: async (req, res) => {
@@ -23,7 +30,7 @@ module.exports = {
         rightEntity: RightService.RightEntities.CAVER,
         rightAction: RightService.RightActions.EDIT_OWN,
       })
-      .intercept('rightNotFound', (err) => res.serverError(
+      .intercept('rightNotFound', () => res.serverError(
         'A server error occured when checking your right to change your account information.',
       ));
     if (!hasRight) {
@@ -66,7 +73,7 @@ module.exports = {
         rightEntity: RightService.RightEntities.CAVER,
         rightAction: RightService.RightActions.EDIT_OWN,
       })
-      .intercept('rightNotFound', (err) => res.serverError(
+      .intercept('rightNotFound', () => res.serverError(
         'A server error occured when checking your right to change your account information.',
       ));
     if (!hasRight) {
@@ -116,9 +123,9 @@ module.exports = {
       {
         userId: userFound.id,
       },
-      getResetPasswordTokenSalt(userFound), // custom salt used for more security
       sails.config.custom.passwordResetTokenTTL,
       'Reset password',
+      getResetPasswordTokenSalt(userFound), // custom salt used for more security
     );
 
     // Change locale to the user's one to translate the mail
@@ -143,6 +150,7 @@ module.exports = {
     return res.sendStatus(204);
   },
 
+  // eslint-disable-next-line consistent-return
   changePassword: async (req, res) => {
     // Check params
     const password = req.param('password');
@@ -176,7 +184,7 @@ module.exports = {
 
     // Check token
     const resetPasswordSalt = getResetPasswordTokenSalt(userFound);
-    const verifyTokenCallback = async (err, decodedToken) => {
+    const verifyTokenCallback = async (err) => {
       if (err) {
         switch (err.name) {
           case 'TokenExpiredError':
