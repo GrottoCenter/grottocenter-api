@@ -3,7 +3,7 @@ const UPDATE_SEQUENCES_QUERY = require('./update_sequences');
 const Fixted = require('fixted');
 
 before(function(done) {
-  this.timeout(10000);
+  this.timeout(20000);
 
   sails.lift(
     {
