@@ -226,35 +226,34 @@ module.exports = {
 
     // Join the tables
     const doc = { ...cleanedData };
-    doc.author = author ? await TCaver.findOne(author) : null;
+    doc.authorizationDocument = authorizationDocument
+      ? await TDocument.findOne(authorizationDocument)
+      : null;
     doc.cave = cave ? await TCave.findOne(cave) : null;
-    doc.entrance = entrance ? await TEntrance.findOne(entrance) : null;
-    doc.massif = massif ? await TMassif.findOne(massif) : null;
     doc.editor = editor ? await TGrotto.findOne(editor) : null;
+    doc.entrance = entrance ? await TEntrance.findOne(entrance) : null;
     doc.identifierType = identifierType
       ? await TIdentifierType.findOne(identifierType)
       : null;
     doc.library = library ? await TGrotto.findOne(library) : null;
+    doc.license = license ? await TLicense.findOne(license) : null;
+    doc.massif = massif ? await TMassif.findOne(massif) : null;
+    doc.option = option ? await TOption.findOne(option) : null;
     doc.parent = parent ? await TDocument.findOne(parent) : null;
     doc.reviewer = reviewer ? await TCaver.findOne(reviewer) : null;
     doc.type = type ? await TType.findOne(type) : null;
-    doc.license = license ? await TLicense.findOne(license) : null;
-    doc.option = option ? await TOption.findOne(option) : null;
-    doc.authorizationDocument = authorizationDocument
-      ? await TDocument.findOne(authorizationDocument)
-      : null;
 
-    doc.subjects = subjects
-      ? await Promise.all(
-          subjects.map(async (subject) => {
-            return await TSubject.findOne(subject);
-          }),
-        )
-      : [];
     doc.authors = authors
       ? await Promise.all(
           authors.map(async (author) => {
             return await TCaver.findOne(author);
+          }),
+        )
+      : [];
+    doc.languages = languages
+      ? await Promise.all(
+          languages.map(async (lang) => {
+            return await TLanguage.findOne(lang);
           }),
         )
       : [];
@@ -265,15 +264,13 @@ module.exports = {
           }),
         )
       : [];
-
-    doc.languages = languages
+    doc.subjects = subjects
       ? await Promise.all(
-          languages.map(async (lang) => {
-            return await TLanguage.findOne(lang);
+          subjects.map(async (subject) => {
+            return await TSubject.findOne(subject);
           }),
         )
       : [];
-
     return doc;
   },
 

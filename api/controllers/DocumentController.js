@@ -877,51 +877,7 @@ module.exports = {
         );
         found = { ...populatedDoc, id };
 
-        // Join the tables
-        found = { ...otherData, id };
-        found.author = author ? await TCaver.findOne(author) : null;
-        found.authorizationDocument = authorizationDocument
-          ? await TDocument.findOne(authorizationDocument)
-          : null;
-        found.cave = cave ? await TCave.findOne(cave) : null;
-        found.editor = editor ? await TGrotto.findOne(editor) : null;
-        found.entrance = entrance ? await TEntrance.findOne(entrance) : null;
-        found.identifierType = identifierType
-          ? await TIdentifierType.findOne(identifierType)
-          : null;
-        found.library = library ? await TGrotto.findOne(library) : null;
-        found.license = license ? await TLicense.findOne(license) : null;
-        found.massif = massif ? await TMassif.findOne(massif) : null;
-        found.option = option ? await TOption.findOne(option) : null;
-        found.parent = parent ? await TDocument.findOne(parent) : null;
-        found.reviewer = reviewer ? await TCaver.findOne(reviewer) : null;
-        found.type = type ? await TType.findOne(type) : null;
-
-        // Collections
-        found.subjects = subjects
-          ? await Promise.all(
-              subjects.map(async (subject) => {
-                return await TSubject.findOne(subject);
-              }),
-            )
-          : [];
-        found.authors = authors
-          ? await Promise.all(
-              authors.map(async (author) => {
-                return await TCaver.findOne(author);
-              }),
-            )
-          : [];
-        found.regions = regions
-          ? await Promise.all(
-              regions.map(async (region) => {
-                return await TRegion.findOne(region);
-              }),
-            )
-          : [];
-
         // Files retrieval
-
         let filesCriterias = {
           document: id,
           isValidated: true,
