@@ -1,2 +1,4 @@
-# /node_modules/* and /bower_components/* ignored by default
 node_modules/*
+coverage/*
+.nyc_output/*
+.vscode/*
