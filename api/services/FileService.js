@@ -12,10 +12,9 @@ const sharedKeyCredential = new StorageSharedKeyCredential(
   AZURE_ACCOUNT,
   AZURE_KEY,
 );
-const blobServiceClient =
-  !ramda.isEmpty(AZURE_LINK) &&
-  !ramda.isEmpty(AZURE_KEY) &&
-  new BlobServiceClient(AZURE_LINK, sharedKeyCredential);
+const blobServiceClient = !ramda.isEmpty(AZURE_LINK)
+  && !ramda.isEmpty(AZURE_KEY)
+  && new BlobServiceClient(AZURE_LINK, sharedKeyCredential);
 
 const INVALID_FORMAT = 'INVALID_FORMAT';
 const INVALID_NAME = 'INVALID_NAME';
@@ -46,8 +45,8 @@ module.exports = {
     }
     const extension = nameSplit[1];
     const foundFormat = await TFileFormat.find({
-      mimeType: mimeType,
-      extension: extension,
+      mimeType,
+      extension,
     }).limit(1);
     if (ramda.isEmpty(foundFormat)) {
       throw Error(INVALID_FORMAT);
@@ -59,7 +58,7 @@ module.exports = {
       );
       const blockBlobClient = containerClient.getBlockBlobClient(pathName);
 
-      sails.log.info('Uploading ' + name + ' to Azure Blob...');
+      sails.log.info(`Uploading ${name} to Azure Blob...`);
       try {
         await blockBlobClient.uploadData(file.buffer, {
           blobHTTPHeaders: {
@@ -80,27 +79,23 @@ module.exports = {
       };
       if (fetchResult) {
         return await TFile.create(param).fetch();
-      } else {
-        return await TFile.create(param);
       }
-    } else {
-      sails.log(
-        `===== FILES UPLOAD AZURE - DEBUG =====
+      return await TFile.create(param);
+    }
+    sails.log(
+      `===== FILES UPLOAD AZURE - DEBUG =====
 You are seing this message because you didn't configure your Azure credentials locally. In production website, the following file whoud have been uploaded on the azure repository.
       
       FILE NAME : ${name}
       MIME TYPE : ${mimeType}
       SIZE : ${file.size} bytes
       `,
-      );
-    }
+    );
   },
 
-  update: async (file) => {
-    return await TFile.updateOne(file.id).set({
-      fileName: file.fileName,
-    });
-  },
+  update: async (file) => await TFile.updateOne(file.id).set({
+    fileName: file.fileName,
+  }),
 
   delete: async (file) => {
     const pathName = file.path;

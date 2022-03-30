@@ -28,38 +28,35 @@ module.exports = {
    *
    * @returns {Promise} the created cave
    */
-  createCave: async (caveData, nameData, descriptionsData) => {
-    return await sails.getDatastore().transaction(async (db) => {
-      // Create cave
-      const createdCave = await TCave.create({
-        ...caveData,
-      })
-        .fetch()
-        .usingConnection(db);
+  createCave: async (caveData, nameData, descriptionsData) => await sails.getDatastore().transaction(async (db) => {
+    // Create cave
+    const createdCave = await TCave.create({
+      ...caveData,
+    })
+      .fetch()
+      .usingConnection(db);
 
-      // Format & create name
-      await TName.create({
-        ...nameData,
-        cave: createdCave.id,
-        dateInscription: new Date(),
-        isMain: true,
-      }).usingConnection(db);
+    // Format & create name
+    await TName.create({
+      ...nameData,
+      cave: createdCave.id,
+      dateInscription: new Date(),
+      isMain: true,
+    }).usingConnection(db);
 
-      // Format & create descriptions
-      descriptionsData
-        ? descriptionsData.map(
-            async (d) =>
-              await TDescription.create({
-                ...d,
-                cave: createdCave.id,
-                dateInscription: new Date(),
-              }).usingConnection(db),
-          )
-        : undefined;
+    // Format & create descriptions
+    descriptionsData
+      ? descriptionsData.map(
+        async (d) => await TDescription.create({
+          ...d,
+          cave: createdCave.id,
+          dateInscription: new Date(),
+        }).usingConnection(db),
+      )
+      : undefined;
 
-      return createdCave;
-    });
-  },
+    return createdCave;
+  }),
 
   /**
    * Merge a source cave into a destination cave (no checks performed)

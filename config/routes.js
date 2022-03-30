@@ -25,7 +25,7 @@ module.exports.routes = {
   //  ║║║║╣ ╠╩╗╠═╝╠═╣║ ╦║╣ ╚═╗
   //  ╚╩╝╚═╝╚═╝╩  ╩ ╩╚═╝╚═╝╚═╝
 
-  /***************************************************************************
+  /** *************************************************************************
    *                                                                          *
    * Make the view located at `views/homepage.ejs` (or `views/homepage.jade`, *
    * etc. depending on your default view engine) your home page.              *
@@ -33,9 +33,9 @@ module.exports.routes = {
    * (Alternatively, remove this and add an `index.html` file in your         *
    * `assets` directory)                                                      *
    *                                                                          *
-   ***************************************************************************/
+   ************************************************************************** */
 
-  /***************************************************************************
+  /** *************************************************************************
    *                                                                          *
    * Custom routes here...                                                    *
    *                                                                          *
@@ -43,7 +43,7 @@ module.exports.routes = {
    * is matched against Sails route blueprints. See `config/blueprints.js`    *
    * for configuration options and examples.                                  *
    *                                                                          *
-   ***************************************************************************/
+   ************************************************************************** */
 
   /* CSRF */
   'GET /csrfToken': {
@@ -254,7 +254,7 @@ module.exports.routes = {
    */
   'GET /api/v1/geoloc/cavesCoordinates': 'v1/GeoLoc.findNetworksCoordinates',
 
-  /* Search controller*/
+  /* Search controller */
   'POST /api/v1/search': 'v1/Search.search',
   'POST /api/v1/advanced-search': 'v1/Search.advancedSearch',
 

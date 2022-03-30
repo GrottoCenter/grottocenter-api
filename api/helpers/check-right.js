@@ -36,10 +36,10 @@ module.exports = {
     },
   },
 
-  fn: async function(inputs, exits) {
+  async fn(inputs, exits) {
     TRight.findOne()
       .where({
-        name: inputs.rightEntity + ' - ' + inputs.rightAction,
+        name: `${inputs.rightEntity} - ${inputs.rightAction}`,
       })
       .populate('groups')
       .exec((err, rightFound) => {

@@ -6,14 +6,11 @@
  */
 
 module.exports = {
-  create: (req, res) =>
-    res.badRequest('PartnerController.create not yet implemented!'),
+  create: (req, res) => res.badRequest('PartnerController.create not yet implemented!'),
 
-  update: (req, res) =>
-    res.badRequest('PartnerController.update not yet implemented!'),
+  update: (req, res) => res.badRequest('PartnerController.update not yet implemented!'),
 
-  delete: (req, res) =>
-    res.badRequest('PartnerController.delete not yet implemented!'),
+  delete: (req, res) => res.badRequest('PartnerController.delete not yet implemented!'),
 
   find: (req) => {
     TGrotto.findOne(req.params.id).exec((err, found) => {

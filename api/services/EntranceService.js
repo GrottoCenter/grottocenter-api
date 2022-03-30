@@ -5,8 +5,7 @@ const FOUR_LETTERS_VALID_IMG_FORMATS = "'.jpg','.png','.gif','.svg'";
 const FIVE_LETTERS_VALID_IMG_FORMATS = "'.jpeg'";
 
 // query to get all entrances of interest
-const INTEREST_ENTRANCES_QUERY =
-  'SELECT id FROM t_entrance WHERE Is_of_interest=true';
+const INTEREST_ENTRANCES_QUERY = 'SELECT id FROM t_entrance WHERE Is_of_interest=true';
 
 // query to get a random entrance of interest
 const RANDOM_ENTRANCE_QUERY = `${INTEREST_ENTRANCES_QUERY} ORDER BY RANDOM() LIMIT 1`;
@@ -22,7 +21,7 @@ module.exports = {
   },
 
   findEntrance: async (entranceId) => {
-    let entrance = await TEntrance.findOne(entranceId)
+    const entrance = await TEntrance.findOne(entranceId)
       .populate('cave')
       .populate('documents')
       .populate('names');
@@ -144,13 +143,12 @@ module.exports = {
       });
 
     // Prepare data for Elasticsearch indexation
-    const description =
-      newEntrancePopulated.descriptions.length === 0
-        ? null
-        : // There is only one description at the moment
-          newEntrancePopulated.descriptions[0].title +
-          ' ' +
-          newEntrancePopulated.descriptions[0].body;
+    const description = newEntrancePopulated.descriptions.length === 0
+      ? null
+      : // There is only one description at the moment
+      `${newEntrancePopulated.descriptions[0].title
+      } ${
+        newEntrancePopulated.descriptions[0].body}`;
 
     // Format cave massif
     newEntrancePopulated.cave.massif = {
@@ -161,7 +159,9 @@ module.exports = {
     await NameService.setNames([newEntrancePopulated.cave], 'cave');
     await NameService.setNames([newEntrancePopulated.cave.massif], 'massif');
 
-    const { cave, name, names, ...newEntranceESData } = newEntrancePopulated;
+    const {
+      cave, name, names, ...newEntranceESData
+    } = newEntrancePopulated;
     await ElasticsearchService.create('entrances', newEntrancePopulated.id, {
       ...newEntranceESData,
       'cave name': newEntrancePopulated.cave.name,
@@ -212,50 +212,38 @@ module.exports = {
     // Join many to many
     populatedEntrance.names = names
       ? await Promise.all(
-          names.map(async (name) => {
-            return await TName.findOne(name);
-          }),
-        )
+        names.map(async (name) => await TName.findOne(name)),
+      )
       : [];
 
     populatedEntrance.descriptions = descriptions
       ? await Promise.all(
-          descriptions.map(async (desc) => {
-            return await TDescription.findOne(desc);
-          }),
-        )
+        descriptions.map(async (desc) => await TDescription.findOne(desc)),
+      )
       : [];
 
     populatedEntrance.locations = locations
       ? await Promise.all(
-          locations.map(async (loc) => {
-            return await TLocation.findOne(loc);
-          }),
-        )
+        locations.map(async (loc) => await TLocation.findOne(loc)),
+      )
       : [];
 
     populatedEntrance.documents = documents
       ? await Promise.all(
-          documents.map(async (doc) => {
-            return await TDocument.findOne(doc);
-          }),
-        )
+        documents.map(async (doc) => await TDocument.findOne(doc)),
+      )
       : [];
 
     populatedEntrance.riggings = riggings
       ? await Promise.all(
-          riggings.map(async (rig) => {
-            return await TRigging.findOne(rig);
-          }),
-        )
+        riggings.map(async (rig) => await TRigging.findOne(rig)),
+      )
       : [];
 
     populatedEntrance.comments = comments
       ? await Promise.all(
-          comments.map(async (comment) => {
-            return await TComment.findOne(comment);
-          }),
-        )
+        comments.map(async (comment) => await TComment.findOne(comment)),
+      )
       : [];
 
     return populatedEntrance;

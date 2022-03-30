@@ -22,8 +22,8 @@ module.exports = {
               }).limit(1);
               entity.names = relatedEntrance[0]
                 ? await TName.find().where({
-                    entrance: relatedEntrance[0].id,
-                  })
+                  entrance: relatedEntrance[0].id,
+                })
                 : [];
             }
           }

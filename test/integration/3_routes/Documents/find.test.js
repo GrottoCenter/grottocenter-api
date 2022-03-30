@@ -1,5 +1,5 @@
-let supertest = require('supertest');
-let should = require('should');
+const supertest = require('supertest');
+const should = require('should');
 const AuthTokenService = require('../../AuthTokenService');
 
 const DOCUMENT_PROPERTIES = require('./DOCUMENT_PROPERTIES.js');

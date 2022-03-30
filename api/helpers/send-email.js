@@ -1,6 +1,6 @@
-const { awsSesCli } = require('../../config/awsSes');
 const { SendEmailCommand } = require('@aws-sdk/client-ses');
 const ejs = require('ejs');
+const { awsSesCli } = require('../../config/awsSes');
 
 module.exports = {
   friendlyName: 'Grottocenter single email sender',
@@ -62,7 +62,7 @@ module.exports = {
     },
   },
 
-  fn: async function(inputs, exits) {
+  async fn(inputs, exits) {
     const {
       allowResponse,
       emailSubject,
@@ -74,10 +74,10 @@ module.exports = {
 
     // TODO: set locale temporarily
     const emailHtml = await ejs.renderFile(
-      './views/emailTemplates/' + viewName + '.ejs',
+      `./views/emailTemplates/${viewName}.ejs`,
       {
         ...viewValues,
-        i18n: i18n,
+        i18n,
       },
     );
 
@@ -100,7 +100,7 @@ module.exports = {
         },
         Subject: {
           Charset: 'UTF-8',
-          Data: 'Grottocenter - ' + i18n.__(emailSubject),
+          Data: `Grottocenter - ${i18n.__(emailSubject)}`,
         },
       },
       Source: allowResponse

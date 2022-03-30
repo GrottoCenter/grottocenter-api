@@ -19,7 +19,7 @@ module.exports = {
     },
   },
 
-  fn: async function(inputs, exits) {
+  async fn(inputs, exits) {
     const creatorNicknameRaw = await sails.helpers.csvhelpers.retrieveFromLink.with(
       { stringArg: inputs.creator },
     );

@@ -21,7 +21,7 @@ module.exports = {
    * - resourceType:  string, entity type to search for (@see indexNames) (FACULTATIVE).
    * - resourceTypes:  Array of string, entity types to search for (@see indexNames) (FACULTATIVE).
    * By default, search on all entities except document-collections.
-   **/
+   * */
   search: (req, res) => {
     if (!req.param('query')) {
       return res.badRequest();
@@ -70,16 +70,14 @@ module.exports = {
           MappingV1Service.convertEsToSearchResult,
         );
       })
-      .catch((err) => {
-        return ControllerService.treatAndConvert(
-          req,
-          err,
-          undefined,
-          params,
-          res,
-          MappingV1Service.convertEsToSearchResult,
-        );
-      });
+      .catch((err) => ControllerService.treatAndConvert(
+        req,
+        err,
+        undefined,
+        params,
+        res,
+        MappingV1Service.convertEsToSearchResult,
+      ));
   },
 
   /**
@@ -106,8 +104,8 @@ module.exports = {
     if (paramsURL.matchAllFields && paramsURL.matchAllFields === 'false') {
       paramsURL.matchAllFields = false;
     } else if (
-      paramsURL.matchAllFields &&
-      paramsURL.matchAllFields === 'true'
+      paramsURL.matchAllFields
+      && paramsURL.matchAllFields === 'true'
     ) {
       paramsURL.matchAllFields = true;
     }
@@ -135,15 +133,13 @@ module.exports = {
           MappingV1Service.convertEsToSearchResult,
         );
       })
-      .catch((err) => {
-        return ControllerService.treatAndConvert(
-          req,
-          err,
-          undefined,
-          params,
-          res,
-          MappingV1Service.convertEsToSearchResult,
-        );
-      });
+      .catch((err) => ControllerService.treatAndConvert(
+        req,
+        err,
+        undefined,
+        params,
+        res,
+        MappingV1Service.convertEsToSearchResult,
+      ));
   },
 };

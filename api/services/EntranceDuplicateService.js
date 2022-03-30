@@ -7,8 +7,8 @@ module.exports = {
   ) => {
     await TEntranceDuplicate.create({
       author: authorId,
-      content: content,
-      dateInscription: dateInscription,
+      content,
+      dateInscription,
       entrance: entranceId,
     });
   },

@@ -1,4 +1,4 @@
-let should = require('should');
+const should = require('should');
 const AuthTokenService = require('../AuthTokenService');
 
 describe('CaverService', () => {
@@ -73,7 +73,7 @@ describe('CaverService', () => {
 
       should(newCaver.name).equal(caverData.name);
       should(newCaver.surname).equal(caverData.surname);
-      should(newCaver.nickname).equal(caverData.name + ' ' + caverData.surname);
+      should(newCaver.nickname).equal(`${caverData.name} ${caverData.surname}`);
       should(newCaver.mail).equal('no@mail.no');
     });
   });

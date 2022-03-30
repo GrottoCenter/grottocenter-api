@@ -43,7 +43,7 @@ const self = (module.exports = {
     try {
       await client.delete({
         // Asynchronous operation
-        index: indexName + '-index',
+        index: `${indexName}-index`,
         id: resourceId,
       });
     } catch (error) {
@@ -63,89 +63,88 @@ const self = (module.exports = {
    *    @param {Array(string)}  resourceTypes (optional) resource types to search on.
    *            Must be an array containing some of the following string ['grottos', 'entrances', 'massifs', 'documents', 'cavers', 'document-collections', 'document-issues']
    */
-  searchQuery: (params) =>
-    new Promise((resolve, reject) => {
-      let indexToSearchOn = [
-        'cavers',
-        'documents',
-        'entrances',
-        'grottos',
-        'massifs',
-      ];
-      if (params.resourceTypes instanceof Array) {
-        indexToSearchOn = params.resourceTypes.map(
-          (resType) => `${resType}-index`,
-        );
-      } else if (params.resourceType) {
-        indexToSearchOn = `${params.resourceType}-index`;
-      }
+  searchQuery: (params) => new Promise((resolve, reject) => {
+    let indexToSearchOn = [
+      'cavers',
+      'documents',
+      'entrances',
+      'grottos',
+      'massifs',
+    ];
+    if (params.resourceTypes instanceof Array) {
+      indexToSearchOn = params.resourceTypes.map(
+        (resType) => `${resType}-index`,
+      );
+    } else if (params.resourceType) {
+      indexToSearchOn = `${params.resourceType}-index`;
+    }
 
-      client
-        .search({
-          /* eslint-disable camelcase */
-          index: indexToSearchOn,
-          body: {
-            from: params.from ? params.from : 0,
-            size: params.size ? params.size : 10,
-            query: {
-              query_string: {
-                query: `*${self.sanitizeQuery(
-                  params.query,
-                )}* + ${self.sanitizeQuery(params.query)}~${FUZZINESS}`,
-                fields: [
-                  // General useful fields
-                  'name^5',
-                  'names^1.5',
-                  'description^0.5',
-                  'descriptions^0.5',
-                  'city^2',
-                  'country',
-                  'county',
-                  'region',
+    client
+      .search({
+        /* eslint-disable camelcase */
+        index: indexToSearchOn,
+        body: {
+          from: params.from ? params.from : 0,
+          size: params.size ? params.size : 10,
+          query: {
+            query_string: {
+              query: `*${self.sanitizeQuery(
+                params.query,
+              )}* + ${self.sanitizeQuery(params.query)}~${FUZZINESS}`,
+              fields: [
+                // General useful fields
+                'name^5',
+                'names^1.5',
+                'description^0.5',
+                'descriptions^0.5',
+                'city^2',
+                'country',
+                'county',
+                'region',
 
-                  // ==== Entrances
-                  'caves',
-                  'riggings',
-                  'location^0.5',
-                  'bibliography^0.5',
+                // ==== Entrances
+                'caves',
+                'riggings',
+                'location^0.5',
+                'bibliography^0.5',
 
-                  // ==== Grottos
-                  'custom_message',
+                // ==== Grottos
+                'custom_message',
 
-                  // ==== Massifs
+                // ==== Massifs
 
-                  // ==== Document
-                  'title^2.7',
-                  'authors',
-                  'ref_bbs',
-                  'subjects',
-                  'identifier^1.5',
+                // ==== Document
+                'title^2.7',
+                'authors',
+                'ref_bbs',
+                'subjects',
+                'identifier^1.5',
 
-                  // ==== Cavers
-                  'surname^4',
-                  'nickname^3',
-                  'mail^5',
-                ],
-              },
-            },
-            highlight: {
-              number_of_fragments: 3,
-              fragment_size: 50,
-              fields: {
-                '*': {},
-              },
-              order: 'score',
+                // ==== Cavers
+                'surname^4',
+                'nickname^3',
+                'mail^5',
+              ],
             },
           },
-          /* eslint-enable camelcase */
-        })
-        .then((result) => {
-          resolve(result);
-        })
-        .catch((err) => {
-          reject(err);
-        });
-    }),
+          highlight: {
+            number_of_fragments: 3,
+            fragment_size: 50,
+            fields: {
+              '*': {},
+            },
+            order: 'score',
+          },
+        },
+        /* eslint-enable camelcase */
+      })
+      .then((result) => {
+        resolve(result);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  }),
 
   /**
    * Retrieve data from elasticsearch on all index according to the given params.
@@ -158,9 +157,9 @@ const self = (module.exports = {
    *
    * @param {*} params : list of params of the request
    */
-  advancedSearchQuery: (params) => {
+  advancedSearchQuery: (params) =>
     /* eslint-disable camelcase */
-    return new Promise((resolve, reject) => {
+    new Promise((resolve, reject) => {
       // Determine if the logic operator is OR (should) or AND (must) for the request.
       const queryVerb = params.matchAllFields === false ? 'should' : 'must';
 
@@ -273,9 +272,7 @@ const self = (module.exports = {
         .catch((err) => {
           reject(err);
         });
-    });
-    /* eslint-enable camelcase */
-  },
+    }), /* eslint-enable camelcase */
 
   /**
    * Custom GC wrapper for the Elasticsearch client create method to make it fail silently if needed.
@@ -294,8 +291,8 @@ const self = (module.exports = {
     try {
       await client.create({
         index: `${indexName}-index`,
-        id: id,
-        body: body,
+        id,
+        body,
       });
     } catch (error) {
       sails.log.error(error);
@@ -314,10 +311,9 @@ const self = (module.exports = {
       /[`~!@#$%^&*()_|+\-=?;:",<>«»\{\}\[\]\/\\]/gi,
       ' ',
     );
-    sanitizedString =
-      sanitizedString[sanitizedString.length - 1] === '.'
-        ? sanitizedString.slice(0, -1)
-        : sanitizedString;
+    sanitizedString = sanitizedString[sanitizedString.length - 1] === '.'
+      ? sanitizedString.slice(0, -1)
+      : sanitizedString;
     return sanitizedString.trim();
   },
 

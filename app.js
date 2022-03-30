@@ -25,6 +25,7 @@
 // > Note: This is not required in order to lift, but it is a convenient default.
 process.chdir(__dirname);
 const dotenv = require('dotenv');
+
 dotenv.config();
 
 // Attempt to import `sails` dependency, as well as `rc` (for loading `.sailsrc` files).
@@ -58,7 +59,7 @@ try {
     "(It even uses your app directory's local Sails install, if possible.)",
   );
   process.exit(1);
-} //-•
+} // -•
 
 // Start server
 sails.lift(rc('sails'));

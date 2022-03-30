@@ -45,22 +45,20 @@ module.exports = {
 
     if (timeInfos.avg_t_trail !== null) {
       const avgTTrail = timeInfos.avg_t_trail.toISOString();
-      avgTTrailFormatted =
-        moment.duration(avgTTrail).hours() +
-        ':' +
-        moment.duration(avgTTrail).minutes() +
-        ':' +
-        moment.duration(avgTTrail).seconds();
+      avgTTrailFormatted = `${moment.duration(avgTTrail).hours()
+      }:${
+        moment.duration(avgTTrail).minutes()
+      }:${
+        moment.duration(avgTTrail).seconds()}`;
     }
     if (timeInfos.avg_t_underground !== null) {
       const avgTUnderground = timeInfos.avg_t_underground.toISO();
 
-      avgTUndergroundFormatted =
-        moment.duration(avgTUnderground).hours() +
-        ':' +
-        moment.duration(avgTUnderground).minutes() +
-        ':' +
-        moment.duration(avgTUnderground).seconds();
+      avgTUndergroundFormatted = `${moment.duration(avgTUnderground).hours()
+      }:${
+        moment.duration(avgTUnderground).minutes()
+      }:${
+        moment.duration(avgTUnderground).seconds()}`;
     }
 
     return {

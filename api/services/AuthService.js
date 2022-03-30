@@ -58,9 +58,9 @@ function verifyPassword(user, password) {
   const oldHash = getOldGCpassword(user.login, password);
   const newHash = createHashedPassword(password);
   return (
-    user.password === password ||
-    user.password === oldHash ||
-    user.password === newHash
+    user.password === password
+    || user.password === oldHash
+    || user.password === newHash
   );
 }
 

@@ -8,22 +8,20 @@
 const ramda = require('ramda');
 
 // Extract everything from the request body except id
-const getConvertedDataFromClientRequest = (req) => {
-  return {
-    address: req.param('address'),
-    city: req.param('city'),
-    country: ramda.pathOr(null, ['country', 'id'], req.body),
-    county: req.param('county'),
-    customMessage: req.param('customMessage'),
-    latitude: req.param('latitude'),
-    longitude: req.param('longitude'),
-    mail: req.param('mail'),
-    postalCode: req.param('postalCode'),
-    region: req.param('region'),
-    url: req.param('url'),
-    yearBirth: req.param('yearBirth'),
-  };
-};
+const getConvertedDataFromClientRequest = (req) => ({
+  address: req.param('address'),
+  city: req.param('city'),
+  country: ramda.pathOr(null, ['country', 'id'], req.body),
+  county: req.param('county'),
+  customMessage: req.param('customMessage'),
+  latitude: req.param('latitude'),
+  longitude: req.param('longitude'),
+  mail: req.param('mail'),
+  postalCode: req.param('postalCode'),
+  region: req.param('region'),
+  url: req.param('url'),
+  yearBirth: req.param('yearBirth'),
+});
 
 module.exports = {
   find: async (
@@ -108,11 +106,9 @@ module.exports = {
         rightEntity: RightService.RightEntities.ORGANIZATION,
         rightAction: RightService.RightActions.CREATE,
       })
-      .intercept('rightNotFound', (err) => {
-        return res.serverError(
-          'A server error occured when checking your right to create an organization.',
-        );
-      });
+      .intercept('rightNotFound', (err) => res.serverError(
+        'A server error occured when checking your right to create an organization.',
+      ));
     if (!hasRight) {
       return res.forbidden('You are not authorized to create an organization.');
     }
@@ -120,7 +116,7 @@ module.exports = {
     // Check params
     if (!req.param('name')) {
       return res.badRequest(
-        `You must provide a name to create a new organization.`,
+        'You must provide a name to create a new organization.',
       );
     }
 
@@ -163,11 +159,9 @@ module.exports = {
         rightEntity: RightService.RightEntities.ORGANIZATION,
         rightAction: RightService.RightActions.DELETE_ANY,
       })
-      .intercept('rightNotFound', (err) => {
-        return res.serverError(
-          'A server error occured when checking your right to delete an organization.',
-        );
-      });
+      .intercept('rightNotFound', (err) => res.serverError(
+        'A server error occured when checking your right to delete an organization.',
+      ));
     if (!hasRight) {
       return res.forbidden('You are not authorized to delete an organization.');
     }
@@ -190,11 +184,9 @@ module.exports = {
     // Delete Organization
     const updatedOrganization = await TGrotto.destroyOne({
       id: organizationId,
-    }).intercept((err) => {
-      return res.serverError(
-        `An unexpected error occured when trying to delete organization with id ${organizationId}.`,
-      );
-    });
+    }).intercept((err) => res.serverError(
+      `An unexpected error occured when trying to delete organization with id ${organizationId}.`,
+    ));
 
     ElasticsearchService.deleteResource('grottos', organizationId);
 
@@ -209,11 +201,9 @@ module.exports = {
         rightEntity: RightService.RightEntities.ORGANIZATION,
         rightAction: RightService.RightActions.EDIT_ANY,
       })
-      .intercept('rightNotFound', (err) => {
-        return res.serverError(
-          'A server error occured when checking your right to update an organization.',
-        );
-      });
+      .intercept('rightNotFound', (err) => res.serverError(
+        'A server error occured when checking your right to update an organization.',
+      ));
     if (!hasRight) {
       return res.forbidden('You are not authorized to update an organization.');
     }

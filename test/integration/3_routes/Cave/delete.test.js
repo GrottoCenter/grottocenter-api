@@ -1,5 +1,5 @@
-let supertest = require('supertest');
-let should = require('should');
+const supertest = require('supertest');
+const should = require('should');
 const AuthTokenService = require('../../AuthTokenService');
 const CAVE_PROPERTIES = require('./CAVE_PROPERTIES.js');
 
@@ -14,7 +14,7 @@ describe('Cave features', () => {
     describe('Invalid parameter', () => {
       it('should return code 400 on inexisting cave', (done) => {
         supertest(sails.hooks.http.app)
-          .delete('/api/v1/caves/' + 987654321)
+          .delete(`/api/v1/caves/${987654321}`)
           .set('Authorization', adminToken)
           .set('Content-type', 'application/json')
           .set('Accept', 'application/json')
@@ -34,7 +34,7 @@ describe('Cave features', () => {
 
       it('should return code 204', (done) => {
         supertest(sails.hooks.http.app)
-          .delete('/api/v1/caves/' + caveToDeleteId)
+          .delete(`/api/v1/caves/${caveToDeleteId}`)
           .set('Authorization', adminToken)
           .set('Content-type', 'application/json')
           .set('Accept', 'application/json')
@@ -57,7 +57,7 @@ describe('Cave features', () => {
 
       it('should return code 400 on inexisting destination cave', (done) => {
         supertest(sails.hooks.http.app)
-          .delete('/api/v1/caves/' + caveToDeleteId)
+          .delete(`/api/v1/caves/${caveToDeleteId}`)
           .send({ destinationCaveForOrphan: 123456789 })
           .set('Authorization', adminToken)
           .set('Content-type', 'application/json')
@@ -103,7 +103,7 @@ describe('Cave features', () => {
 
       it('should return code 204 on successfull caves merge', (done) => {
         supertest(sails.hooks.http.app)
-          .delete('/api/v1/caves/' + sourceCaveId)
+          .delete(`/api/v1/caves/${sourceCaveId}`)
           .send({ destinationCaveForOrphan: destinationCaveId })
           .set('Authorization', adminToken)
           .set('Content-type', 'application/json')

@@ -47,18 +47,15 @@ module.exports = {
     result.relevance = source.relevance;
     result.title = source.title;
 
-    result.author =
-      source.author instanceof Object
-        ? MappingV1Service.convertToCaverModel(source.author)
-        : undefined;
-    result.entrance =
-      source.entrance instanceof Object
-        ? MappingV1Service.convertToEntranceModel(source.entrance)
-        : undefined;
-    result.reviewer =
-      source.reviewer instanceof Object
-        ? MappingV1Service.convertToCaverModel(source.reviewer)
-        : undefined;
+    result.author = source.author instanceof Object
+      ? MappingV1Service.convertToCaverModel(source.author)
+      : undefined;
+    result.entrance = source.entrance instanceof Object
+      ? MappingV1Service.convertToEntranceModel(source.entrance)
+      : undefined;
+    result.reviewer = source.reviewer instanceof Object
+      ? MappingV1Service.convertToCaverModel(source.reviewer)
+      : undefined;
 
     return result;
   },
@@ -78,30 +75,24 @@ module.exports = {
     result.title = source.title;
 
     result.author = MappingV1Service.convertToCaverModel(source.author);
-    result.cave =
-      source.cave instanceof Object
-        ? MappingV1Service.convertToCaveModel(source.cave)
-        : undefined;
-    result.document =
-      source.document instanceof Object
-        ? MappingV1Service.convertToDocumentModel(source.document)
-        : undefined;
-    result.entrance =
-      source.entrance instanceof Object
-        ? MappingV1Service.convertToEntranceModel(source.entrance)
-        : undefined;
-    result.exit =
-      source.exit instanceof Object
-        ? MappingV1Service.convertToEntranceModel(source.exit)
-        : undefined;
-    result.massif =
-      source.massif instanceof Object
-        ? MappingV1Service.convertToMassifModel(source.massif)
-        : undefined;
-    result.reviewer =
-      source.reviewer instanceof Object
-        ? MappingV1Service.convertToCaverModel(source.reviewer)
-        : undefined;
+    result.cave = source.cave instanceof Object
+      ? MappingV1Service.convertToCaveModel(source.cave)
+      : undefined;
+    result.document = source.document instanceof Object
+      ? MappingV1Service.convertToDocumentModel(source.document)
+      : undefined;
+    result.entrance = source.entrance instanceof Object
+      ? MappingV1Service.convertToEntranceModel(source.entrance)
+      : undefined;
+    result.exit = source.exit instanceof Object
+      ? MappingV1Service.convertToEntranceModel(source.exit)
+      : undefined;
+    result.massif = source.massif instanceof Object
+      ? MappingV1Service.convertToMassifModel(source.massif)
+      : undefined;
+    result.reviewer = source.reviewer instanceof Object
+      ? MappingV1Service.convertToCaverModel(source.reviewer)
+      : undefined;
 
     return result;
   },
@@ -120,26 +111,21 @@ module.exports = {
     result.point = source.point;
 
     result.author = MappingV1Service.convertToCaverModel(source.author);
-    result.cave =
-      source.cave instanceof Object
-        ? MappingV1Service.convertToCaveModel(source.cave)
-        : undefined;
-    result.entrance =
-      source.entrance instanceof Object
-        ? MappingV1Service.convertToEntranceModel(source.entrance)
-        : undefined;
-    result.massif =
-      source.massif instanceof Object
-        ? MappingV1Service.convertToMassifModel(source.massif)
-        : undefined;
-    result.organization =
-      source.grotto instanceof Object
-        ? MappingV1Service.convertToOrganizationModel(source.grotto)
-        : undefined;
-    result.reviewer =
-      source.reviewer instanceof Object
-        ? MappingV1Service.convertToCaverModel(source.reviewer)
-        : undefined;
+    result.cave = source.cave instanceof Object
+      ? MappingV1Service.convertToCaveModel(source.cave)
+      : undefined;
+    result.entrance = source.entrance instanceof Object
+      ? MappingV1Service.convertToEntranceModel(source.entrance)
+      : undefined;
+    result.massif = source.massif instanceof Object
+      ? MappingV1Service.convertToMassifModel(source.massif)
+      : undefined;
+    result.organization = source.grotto instanceof Object
+      ? MappingV1Service.convertToOrganizationModel(source.grotto)
+      : undefined;
+    result.reviewer = source.reviewer instanceof Object
+      ? MappingV1Service.convertToCaverModel(source.reviewer)
+      : undefined;
 
     return result;
   },
@@ -225,17 +211,13 @@ module.exports = {
 
   convertToDescriptionList: (source) => {
     const descriptions = [];
-    source.forEach((item) =>
-      descriptions.push(MappingV1Service.convertToDescriptionModel(item)),
-    );
+    source.forEach((item) => descriptions.push(MappingV1Service.convertToDescriptionModel(item)));
     return { descriptions };
   },
 
   convertToEntranceList: (source) => {
     const entrances = [];
-    source.forEach((item) =>
-      entrances.push(MappingV1Service.convertToEntranceModel(item)),
-    );
+    source.forEach((item) => entrances.push(MappingV1Service.convertToEntranceModel(item)));
     return entrances;
   },
 
@@ -249,9 +231,7 @@ module.exports = {
 
   convertToCaverList: (source) => {
     const cavers = [];
-    source.forEach((item) =>
-      cavers.push(MappingV1Service.convertToCaverModel(item)),
-    );
+    source.forEach((item) => cavers.push(MappingV1Service.convertToCaverModel(item)));
     return {
       cavers,
     };
@@ -271,11 +251,9 @@ module.exports = {
       if (source.groups instanceof Array) {
         result.groups = source.groups;
       } else {
-        result.groups = source.groups.split(',').map((groupId) => {
-          return {
-            id: parseInt(groupId, 10),
-          };
-        });
+        result.groups = source.groups.split(',').map((groupId) => ({
+          id: parseInt(groupId, 10),
+        }));
       }
     }
 
@@ -283,11 +261,9 @@ module.exports = {
       if (source.documents instanceof Array) {
         result.documents = source.documents;
       } else {
-        result.documents = source.documents.split(',').map((documentId) => {
-          return {
-            id: parseInt(documentId, 10),
-          };
-        });
+        result.documents = source.documents.split(',').map((documentId) => ({
+          id: parseInt(documentId, 10),
+        }));
       }
     }
     return result;
@@ -350,9 +326,7 @@ module.exports = {
 
   convertToCaveList: (source) => {
     const caves = [];
-    source.forEach((item) =>
-      caves.push(MappingV1Service.convertToCaveModel(item)),
-    );
+    source.forEach((item) => caves.push(MappingV1Service.convertToCaveModel(item)));
     return caves;
   },
 
@@ -476,7 +450,7 @@ module.exports = {
             // renameKeys(data.highlights, replacementKeys);
 
             // Fill data with appropriate keys
-            for (let key in item['_source']) {
+            for (const key in item['_source']) {
               data[key] = item['_source'][key];
             }
 
@@ -489,22 +463,20 @@ module.exports = {
             delete data['type name'];
 
             // Construct editor
-            data.editor =
-              ramda.pathOr(null, ['_source', 'editor id'], item) === null
-                ? null
-                : {
-                    id: ramda.pathOr(null, ['_source', 'editor id'], item),
-                    name: ramda.pathOr(null, ['_source', 'editor name'], item),
-                  };
+            data.editor = ramda.pathOr(null, ['_source', 'editor id'], item) === null
+              ? null
+              : {
+                id: ramda.pathOr(null, ['_source', 'editor id'], item),
+                name: ramda.pathOr(null, ['_source', 'editor name'], item),
+              };
 
             // Construct library
-            data.library =
-              ramda.pathOr(null, ['_source', 'library id'], item) === null
-                ? null
-                : {
-                    id: ramda.pathOr(null, ['_source', 'library id'], item),
-                    name: ramda.pathOr(null, ['_source', 'library name'], item),
-                  };
+            data.library = ramda.pathOr(null, ['_source', 'library id'], item) === null
+              ? null
+              : {
+                id: ramda.pathOr(null, ['_source', 'library id'], item),
+                name: ramda.pathOr(null, ['_source', 'library name'], item),
+              };
             delete data['library id'];
             delete data['library name'];
 
@@ -513,8 +485,8 @@ module.exports = {
           case 'caver':
             data.surname = item['_source'].surname;
             data.nickname = item['_source'].nickname;
-          // Don't return mail (RGPD)
-          // data.mail = item['_source'].mail;
+            // Don't return mail (RGPD)
+            // data.mail = item['_source'].mail;
 
           case 'cave':
           case 'network':
@@ -618,9 +590,7 @@ module.exports = {
 
     // Convert cavers
     if (source.cavers instanceof Array) {
-      result.cavers = source.cavers.map((caver) =>
-        MappingV1Service.convertToCaverModel(caver),
-      );
+      result.cavers = source.cavers.map((caver) => MappingV1Service.convertToCaverModel(caver));
     } else {
       result.nbCavers = ramda.pathOr(undefined, ['nb cavers'], source);
     }
@@ -662,9 +632,7 @@ module.exports = {
 
   convertToFileList: (source) => {
     const files = [];
-    source.forEach((item) =>
-      files.push(MappingV1Service.convertToFileModel(item)),
-    );
+    source.forEach((item) => files.push(MappingV1Service.convertToFileModel(item)));
     return {
       files,
     };
@@ -691,8 +659,7 @@ module.exports = {
     result.dateValidation = source.dateValidation;
     result.deletedFiles = source.deletedFiles;
     result.entrance = source.entrance;
-    result.files =
-      source.files && MappingV1Service.convertToFileList(source.files).files;
+    result.files = source.files && MappingV1Service.convertToFileList(source.files).files;
     result.identifier = source.identifier;
     result.intactDescriptions = source.descriptions;
     result.issue = source.issue;
@@ -716,10 +683,9 @@ module.exports = {
     result.validationComment = source.validationComment;
     result.validator = source.validator;
 
-    result.author =
-      source.author instanceof Object
-        ? MappingV1Service.convertToCaverModel(source.author)
-        : undefined;
+    result.author = source.author instanceof Object
+      ? MappingV1Service.convertToCaverModel(source.author)
+      : undefined;
 
     // source.descriptions contains both title and descriptions (in .title and .body)
     // Split them in 2 different attributes
@@ -783,11 +749,9 @@ module.exports = {
       } else {
         // ES
         result.regions = source.regions
-          ? source.regions.split(', ').map((r) => {
-              return {
-                name: r,
-              };
-            })
+          ? source.regions.split(', ').map((r) => ({
+            name: r,
+          }))
           : null;
       }
     }
@@ -800,11 +764,9 @@ module.exports = {
     } else {
       // ES
       result.subjects = source.subjects
-        ? source.subjects.split(', ').map((s) => {
-            return {
-              code: s,
-            };
-          })
+        ? source.subjects.split(', ').map((s) => ({
+          code: s,
+        }))
         : null;
     }
 
@@ -856,9 +818,7 @@ module.exports = {
 
   convertToDocumentList: (source) => {
     const documents = [];
-    source.forEach((item) =>
-      documents.push(MappingV1Service.convertToDocumentModel(item)),
-    );
+    source.forEach((item) => documents.push(MappingV1Service.convertToDocumentModel(item)));
     return {
       documents,
     };
@@ -870,18 +830,15 @@ module.exports = {
     };
     result.code = source.id.trim(); // there are some spaces at the end of the id in the DB
     result.subject = source.subject;
-    result.parent =
-      source.parent && source.parent.id && source.parent.subject
-        ? MappingV1Service.convertToSubjectModel(source.parent)
-        : null;
+    result.parent = source.parent && source.parent.id && source.parent.subject
+      ? MappingV1Service.convertToSubjectModel(source.parent)
+      : null;
     return result;
   },
 
   convertToSubjectList: (source) => {
     const subjects = [];
-    source.forEach((item) =>
-      subjects.push(MappingV1Service.convertToSubjectModel(item)),
-    );
+    source.forEach((item) => subjects.push(MappingV1Service.convertToSubjectModel(item)));
     return {
       subjects,
     };
@@ -895,28 +852,21 @@ module.exports = {
     };
 
     result.id = source.id;
-    result.author =
-      source.author instanceof Object
-        ? MappingV1Service.convertToCaverModel(source.author)
-        : undefined;
-    result.content =
-      source.content instanceof Object
-        ? MappingV1Service.convertToDocumentModel(source.content)
-        : source.content;
+    result.author = source.author instanceof Object
+      ? MappingV1Service.convertToCaverModel(source.author)
+      : undefined;
+    result.content = source.content instanceof Object
+      ? MappingV1Service.convertToDocumentModel(source.content)
+      : source.content;
     result.datePublication = source.datePublication;
-    result.document =
-      source.document instanceof Object
-        ? MappingV1Service.convertToDocumentModel(source.document)
-        : source.document;
+    result.document = source.document instanceof Object
+      ? MappingV1Service.convertToDocumentModel(source.document)
+      : source.document;
 
     return result;
   },
 
-  convertToDocumentDuplicateList: (source) => {
-    return source.map((duplicate) =>
-      MappingV1Service.convertToDocumentDuplicateModel(duplicate),
-    );
-  },
+  convertToDocumentDuplicateList: (source) => source.map((duplicate) => MappingV1Service.convertToDocumentDuplicateModel(duplicate)),
 
   convertToEntranceDuplicateModel: (source) => {
     const result = {
@@ -924,26 +874,19 @@ module.exports = {
     };
 
     result.id = source.id;
-    result.author =
-      source.author instanceof Object
-        ? MappingV1Service.convertToCaverModel(source.author)
-        : undefined;
-    result.content =
-      source.content instanceof Object
-        ? MappingV1Service.convertToEntranceModel(source.content)
-        : source.content;
+    result.author = source.author instanceof Object
+      ? MappingV1Service.convertToCaverModel(source.author)
+      : undefined;
+    result.content = source.content instanceof Object
+      ? MappingV1Service.convertToEntranceModel(source.content)
+      : source.content;
     result.datePublication = source.datePublication;
-    result.entrance =
-      source.entrance instanceof Object
-        ? MappingV1Service.convertToEntranceModel(source.entrance)
-        : source.entrance;
+    result.entrance = source.entrance instanceof Object
+      ? MappingV1Service.convertToEntranceModel(source.entrance)
+      : source.entrance;
 
     return result;
   },
 
-  convertToEntranceDuplicateList: (source) => {
-    return source.map((duplicate) =>
-      MappingV1Service.convertToEntranceDuplicateModel(duplicate),
-    );
-  },
+  convertToEntranceDuplicateList: (source) => source.map((duplicate) => MappingV1Service.convertToEntranceDuplicateModel(duplicate)),
 };
