@@ -873,7 +873,7 @@ module.exports = {
           ...otherData
         } = modifiedDocJson;
         const populatedDoc = await DocumentService.populateJSON(
-          cleanedDocument,
+          otherData,
         );
         found = { ...populatedDoc, id };
 
