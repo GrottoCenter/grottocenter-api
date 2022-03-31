@@ -6,7 +6,7 @@ This github project is the backend application which provide the Grottocenter AP
 
 For the Front-End See the [grottocenter-front project](https://github.com/GrottoCenter/grottocenter-front)
 
-Current production version is available [here](http://beta.grottocenter.org/)
+Current production version is available [here](https://api.grottocenter.org)
 
 ## Project overview
 
@@ -89,7 +89,7 @@ Wait until you see the following lines in the logs:
 ```
 
 At this point you are good to go. The API is available at http://localhost:1337/, and you can monitor the evolution of ES
-indices at http://localhost:9200/_cat/indices?v
+indices at http://localhost:9200/\_cat/indices?v
 
 Each time you change a file in the source code, the code is recompiled automatically, you just need to refresh the page
 in your browser.
@@ -203,7 +203,7 @@ If the build is triggered from a push on `master` then this workflow generates a
 
 Deployment done with Github Actions and AWS CodeDeploy.
 
-To Deploy you need to run manually the Actions workflow `Deploy to beta.grottocenter.org` on the `master` branch from the Github Actions page.
+To Deploy you need to run manually the Actions workflow `Deploy to api.grottocenter.org` on the `master` branch from the Github Actions page.
 
 If you trigger the deployment workflow manually, the execution will be paused until an administrator validate it.
 

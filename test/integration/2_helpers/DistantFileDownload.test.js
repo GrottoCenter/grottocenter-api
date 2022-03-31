@@ -3,10 +3,10 @@ let should = require('should');
 describe('DistantFileDownload helper', () => {
   it('should download the grottocenter logo', async () => {
     const resultHttp = await sails.helpers.distantFileDownload.with({
-      url: 'http://beta.grottocenter.org/images/logo.svg',
+      url: 'http://grottocenter.org/images/logo.svg',
     });
     const resultHttps = await sails.helpers.distantFileDownload.with({
-      url: 'https://beta.grottocenter.org/images/logo.svg',
+      url: 'https://grottocenter.org/images/logo.svg',
     });
     should(resultHttp).not.be.empty();
     should(resultHttp).have.properties([
@@ -27,7 +27,7 @@ describe('DistantFileDownload helper', () => {
   it('should raise exceptions on refused (or not accepted) file formats', async () => {
     await sails.helpers.distantFileDownload
       .with({
-        url: 'https://beta.grottocenter.org/images/logo.svg',
+        url: 'https://grottocenter.org/images/logo.svg',
         refusedFileFormats: ['svg'],
       })
       .should.be.rejectedWith({
@@ -36,7 +36,7 @@ describe('DistantFileDownload helper', () => {
       });
     await sails.helpers.distantFileDownload
       .with({
-        url: 'https://beta.grottocenter.org/images/logo.svg',
+        url: 'https://grottocenter.org/images/logo.svg',
         acceptedFileFormats: ['pdf', 'txt'],
       })
       .should.be.rejectedWith({
