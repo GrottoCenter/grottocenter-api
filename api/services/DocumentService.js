@@ -46,10 +46,10 @@ module.exports = {
       id: { in: childIds },
     }).populate('descriptions');
     const children = childrenAndGrandChildren.filter(
-      (c) => c.parent === doc.id,
+      (c) => c.parent === doc.id
     );
     const grandChildren = childrenAndGrandChildren.filter(
-      (c) => c.parent !== doc.id,
+      (c) => c.parent !== doc.id
     );
 
     const formattedChildren = [];
@@ -63,7 +63,7 @@ module.exports = {
     // Format grand children
     for (const grandChildDoc of grandChildren) {
       const childIdx = formattedChildren.findIndex(
-        (c) => c.id === grandChildDoc.parent,
+        (c) => c.id === grandChildDoc.parent
       );
       if (childIdx !== -1) {
         const alreadyPickedChild = formattedChildren[childIdx];
@@ -110,65 +110,62 @@ module.exports = {
   },
 
   createDocument: async (documentData, langDescData) => {
-    const document = await sails
-      .getDatastore()
-      .transaction(async (db) => {
-        // Perform some checks
-        const docType = documentData.type && (await TType.findOne(documentData.type));
-        if (docType) {
-          const docTypeName = docType.name.toLowerCase();
-          // Parent doc is mandatory for articles and issues
-          if (
-            MANDATORY_PARENT_TYPES.includes(docTypeName)
-            && !documentData.parent
-          ) {
-            throw Error(
-              `Your document being an ${
-                docType.name.toLowerCase()
-              }, you must provide a document parent.`,
-            );
-          }
+    const document = await sails.getDatastore().transaction(async (db) => {
+      // Perform some checks
+      const docType =
+        documentData.type && (await TType.findOne(documentData.type));
+      if (docType) {
+        const docTypeName = docType.name.toLowerCase();
+        // Parent doc is mandatory for articles and issues
+        if (
+          MANDATORY_PARENT_TYPES.includes(docTypeName) &&
+          !documentData.parent
+        ) {
+          throw Error(
+            `Your document being an ${docType.name.toLowerCase()}, you must provide a document parent.`
+          );
         }
+      }
 
-        const createdDocument = await TDocument.create(documentData)
-          .fetch()
-          .usingConnection(db);
+      const createdDocument = await TDocument.create(documentData)
+        .fetch()
+        .usingConnection(db);
 
-        // Create associated data not handled by TDocument manually
-        if (ramda.pathOr(null, ['documentMainLanguage', 'id'], langDescData)) {
-          await JDocumentLanguage.create({
-            document: createdDocument.id,
-            language: langDescData.documentMainLanguage.id,
-            isMain: true,
-          }).usingConnection(db);
-        }
-
-        await TDescription.create({
-          author: langDescData.author,
-          body: langDescData.description,
-          dateInscription: ramda.propOr(
-            new Date(),
-            'dateInscription',
-            langDescData,
-          ),
-          dateReviewed: ramda.propOr(undefined, 'dateReviewed', langDescData),
+      // Create associated data not handled by TDocument manually
+      if (ramda.pathOr(null, ['documentMainLanguage', 'id'], langDescData)) {
+        await JDocumentLanguage.create({
           document: createdDocument.id,
-          language: langDescData.titleAndDescriptionLanguage.id,
-          title: langDescData.title,
+          language: langDescData.documentMainLanguage.id,
+          isMain: true,
         }).usingConnection(db);
+      }
 
-        return createdDocument;
-      });
+      await TDescription.create({
+        author: langDescData.author,
+        body: langDescData.description,
+        dateInscription: ramda.propOr(
+          new Date(),
+          'dateInscription',
+          langDescData
+        ),
+        dateReviewed: ramda.propOr(undefined, 'dateReviewed', langDescData),
+        document: createdDocument.id,
+        language: langDescData.titleAndDescriptionLanguage.id,
+        title: langDescData.title,
+      }).usingConnection(db);
+
+      return createdDocument;
+    });
 
     // Get doc with id type
-    const populatedDocument = await TDocument.findOne(
-      document.id,
-    ).populate('identifierType');
+    const populatedDocument = await TDocument.findOne(document.id).populate(
+      'identifierType'
+    );
 
     if (
-      populatedDocument.identifier
-      && ramda.pathOr('', ['identifierType', 'id'], populatedDocument).trim()
-        === 'url'
+      populatedDocument.identifier &&
+      ramda.pathOr('', ['identifierType', 'id'], populatedDocument).trim() ===
+        'url'
     ) {
       sails.log.info(`Downloading ${populatedDocument.identifier}...`);
       const acceptedFileFormats = await TFileFormat.find();
@@ -177,15 +174,16 @@ module.exports = {
       const file = await sails.helpers.distantFileDownload
         .with({
           url: populatedDocument.identifier,
-          acceptedFileFormats: acceptedFileFormats.map((f) => f.extension.trim()),
+          acceptedFileFormats: acceptedFileFormats.map((f) =>
+            f.extension.trim()
+          ),
           refusedFileFormats: ['html'], // don't download html page, they are not a valid file for GC
         })
-        .tolerate((error) => sails.log.error(
-          `Failed to download ${
-            populatedDocument.identifier
-          }: ${
-            error.message}`,
-        ));
+        .tolerate((error) =>
+          sails.log.error(
+            `Failed to download ${populatedDocument.identifier}: ${error.message}`
+          )
+        );
       if (file) {
         await FileService.create(file, document.id);
       }
@@ -244,35 +242,35 @@ module.exports = {
 
     doc.authors = authors
       ? await Promise.all(
-        authors.map(async (a) => {
-          const res = await TCaver.findOne(a);
-          return res;
-        }),
-      )
+          authors.map(async (a) => {
+            const res = await TCaver.findOne(a);
+            return res;
+          })
+        )
       : [];
     doc.languages = languages
       ? await Promise.all(
-        languages.map(async (lang) => {
-          const res = await TLanguage.findOne(lang);
-          return res;
-        }),
-      )
+          languages.map(async (lang) => {
+            const res = await TLanguage.findOne(lang);
+            return res;
+          })
+        )
       : [];
     doc.regions = regions
       ? await Promise.all(
-        regions.map(async (region) => {
-          const res = await TRegion.findOne(region);
-          return res;
-        }),
-      )
+          regions.map(async (region) => {
+            const res = await TRegion.findOne(region);
+            return res;
+          })
+        )
       : [];
     doc.subjects = subjects
       ? await Promise.all(
-        subjects.map(async (subject) => {
-          const res = await TSubject.findOne(subject);
-          return res;
-        }),
-      )
+          subjects.map(async (subject) => {
+            const res = await TSubject.findOne(subject);
+            return res;
+          })
+        )
       : [];
     return doc;
   },

@@ -2,56 +2,56 @@
   {
     "id": 1,
     "extension": "pdf",
-    "mimeType": "application\/pdf"
+    "mimeType": "application/pdf"
   },
   {
     "id": 2,
     "extension": "ez",
-    "mimeType": "application\/andrew-inset"
+    "mimeType": "application/andrew-inset"
   },
   {
     "id": 3,
     "extension": "anx",
-    "mimeType": "application\/annodex"
+    "mimeType": "application/annodex"
   },
   {
     "id": 5,
     "extension": "atom",
-    "mimeType": "application\/atom+xml"
+    "mimeType": "application/atom+xml"
   },
   {
     "id": 6,
     "extension": "mp4",
-    "mimeType": "video\/mp4"
+    "mimeType": "video/mp4"
   },
   {
     "id": 8,
     "extension": "lin",
-    "mimeType": "application\/bbolin"
+    "mimeType": "application/bbolin"
   },
   {
     "id": 12,
     "extension": "cu",
-    "mimeType": "application\/cu-seeme"
+    "mimeType": "application/cu-seeme"
   },
   {
     "id": 16,
     "extension": "dcm",
-    "mimeType": "application\/dicom"
+    "mimeType": "application/dicom"
   },
   {
     "id": 18,
     "extension": "tsp",
-    "mimeType": "application\/dsptype"
+    "mimeType": "application/dsptype"
   },
   {
     "id": 20,
     "extension": "es",
-    "mimeType": "application\/ecmascript"
+    "mimeType": "application/ecmascript"
   },
   {
     "id": 24,
     "extension": "epub",
-    "mimeType": "application\/epub+zip"
+    "mimeType": "application/epub+zip"
   }
 ]

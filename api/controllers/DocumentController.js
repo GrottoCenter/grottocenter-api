@@ -23,16 +23,25 @@ const { doubleCheck } = sails.helpers.csvhelpers;
 // Tool methods
 // Set name of cave, entrance, massif, editor and library if present
 const setNamesOfPopulatedDocument = async (document) => {
-  if (!ramda.isNil(document.entrance)) (await NameService.setNames([document.entrance], 'entrance'));
-  if (!ramda.isNil(document.cave)) { (await NameService.setNames([document.cave], 'cave')); }
-  if (!ramda.isNil(document.massif)) { (await NameService.setNames([document.massif], 'massif')); }
-  if (!ramda.isNil(document.library)) { (await NameService.setNames([document.library], 'grotto')); }
-  if (!ramda.isNil(document.editor)) { (await NameService.setNames([document.editor], 'grotto')); }
+  if (!ramda.isNil(document.entrance))
+    await NameService.setNames([document.entrance], 'entrance');
+  if (!ramda.isNil(document.cave)) {
+    await NameService.setNames([document.cave], 'cave');
+  }
+  if (!ramda.isNil(document.massif)) {
+    await NameService.setNames([document.massif], 'massif');
+  }
+  if (!ramda.isNil(document.library)) {
+    await NameService.setNames([document.library], 'grotto');
+  }
+  if (!ramda.isNil(document.editor)) {
+    await NameService.setNames([document.editor], 'grotto');
+  }
   await DescriptionService.setDocumentDescriptions(document);
   if (!ramda.isNil(document.authorizationDocument)) {
-    (await DescriptionService.setDocumentDescriptions(
-      document.authorizationDocument,
-    ));
+    await DescriptionService.setDocumentDescriptions(
+      document.authorizationDocument
+    );
   }
   return document;
 };
@@ -52,7 +61,7 @@ const getConvertedDataFromClient = async (req) => {
     authorizationDocument: ramda.pathOr(
       undefined,
       ['authorizationDocument', 'id'],
-      req.body,
+      req.body
     ),
     authors: req.body.authors ? req.body.authors.map((a) => a.id) : undefined,
     datePublication:
@@ -109,7 +118,7 @@ const getEsBody = (document) => {
       : null,
     'contributor id': document.author.id,
     'contributor nickname': document.author.nickname,
-    date_part: document.datePublication // eslint-disable-line camelcase
+    date_part: document.datePublication
       ? new Date(document.datePublication).getFullYear()
       : null,
     description: document.descriptions[0].body,
@@ -184,7 +193,8 @@ const updateDocumentInElasticSearchIndexes = async (document) => {
 */
 
 const getConvertedDocumentFromCsv = async (rawData, authorId) => {
-  const doubleCheckWithData = (args) => doubleCheck.with({ data: rawData, ...args });
+  const doubleCheckWithData = (args) =>
+    doubleCheck.with({ data: rawData, ...args });
   const retrieveFromLink = sails.helpers.csvhelpers.retrieveFromLink.with;
 
   // License
@@ -256,7 +266,7 @@ const getConvertedDocumentFromCsv = async (rawData, authorId) => {
       };
       const editorGrotto = await GrottoService.createGrotto(
         paramsGrotto,
-        nameGrotto,
+        nameGrotto
       );
       editorId = editorGrotto.id;
     } else {
@@ -287,10 +297,10 @@ const getConvertedDocumentFromCsv = async (rawData, authorId) => {
   });
   const doesParentExist = parentId
     ? await sails.helpers.checkIfExists.with({
-      attributeName: 'id',
-      attributeValue: parentId,
-      sailsModel: TDocument,
-    })
+        attributeName: 'id',
+        attributeValue: parentId,
+        sailsModel: TDocument,
+      })
     : false;
   if (parentId && !doesParentExist) {
     throw Error(`Document parent with id ${parentId} not found.`);
@@ -353,20 +363,21 @@ const getConvertedDocumentFromCsv = async (rawData, authorId) => {
 };
 
 const getConvertedLangDescDocumentFromCsv = (rawData, authorId) => {
-  const doubleCheckWithData = (args) => doubleCheck.with({ data: rawData, ...args });
+  const doubleCheckWithData = (args) =>
+    doubleCheck.with({ data: rawData, ...args });
 
   const description = doubleCheckWithData({
     key: 'karstlink:hasDescriptionDocument/dct:description',
   });
   const langDesc = description
     ? doubleCheckWithData({
-      key: 'karstlink:hasDescriptionDocument/dc:language',
-      func: (value) => value.toLowerCase(),
-    })
+        key: 'karstlink:hasDescriptionDocument/dc:language',
+        func: (value) => value.toLowerCase(),
+      })
     : doubleCheckWithData({
-      key: 'dc:language',
-      func: (value) => value.toLowerCase(),
-    });
+        key: 'dc:language',
+        func: (value) => value.toLowerCase(),
+      });
   return {
     author: authorId,
     title: doubleCheckWithData({
@@ -413,7 +424,8 @@ module.exports = {
       .exec((err, found) => {
         const params = {};
         params.controllerMethod = 'DocumentController.countBBS';
-        params.notFoundMessage = 'Problem while getting number of BBS documents.';
+        params.notFoundMessage =
+          'Problem while getting number of BBS documents.';
 
         const count = {};
         count.count = found;
@@ -429,9 +441,11 @@ module.exports = {
         rightEntity: RightService.RightEntities.DOCUMENT,
         rightAction: RightService.RightActions.CREATE,
       })
-      .intercept('rightNotFound', () => res.serverError(
-        'A server error occured when checking your right to create a document.',
-      ));
+      .intercept('rightNotFound', () =>
+        res.serverError(
+          'A server error occured when checking your right to create a document.'
+        )
+      );
     if (!hasRight) {
       return res.forbidden('You are not authorized to create a document.');
     }
@@ -448,7 +462,7 @@ module.exports = {
     try {
       const createdDocument = await DocumentService.createDocument(
         cleanedData,
-        langDescData,
+        langDescData
       );
       const errorFiles = [];
       if (req.files && req.files.files) {
@@ -470,10 +484,10 @@ module.exports = {
         document: createdDocument,
         status: !ramda.isEmpty(errorFiles)
           ? {
-            errorCode: 'FileNotImported',
-            errorString: 'Some files were not imported.',
-            content: errorFiles,
-          }
+              errorCode: 'FileNotImported',
+              errorString: 'Some files were not imported.',
+              content: errorFiles,
+            }
           : undefined,
       };
 
@@ -500,9 +514,11 @@ module.exports = {
         rightEntity: RightService.RightEntities.DOCUMENT,
         rightAction,
       })
-      .intercept('rightNotFound', () => res.serverError(
-        'A server error occured when checking your right to update a document.',
-      ));
+      .intercept('rightNotFound', () =>
+        res.serverError(
+          'A server error occured when checking your right to update a document.'
+        )
+      );
 
     if (!hasRight) {
       return res.forbidden('You are not authorized to update a document.');
@@ -519,7 +535,7 @@ module.exports = {
             file,
             req.param('id'),
             true,
-            false,
+            false
           );
           newFilesArray.push(createdFile);
         } catch (err) {
@@ -558,7 +574,7 @@ module.exports = {
         updatedDocument,
         params,
         res,
-        MappingV1Service.convertToDocumentModel,
+        MappingV1Service.convertToDocumentModel
       );
     } catch (e) {
       ErrorService.getDefaultErrorHandler(res)(e);
@@ -573,9 +589,11 @@ module.exports = {
         rightEntity: RightService.RightEntities.DOCUMENT,
         rightAction: RightService.RightActions.EDIT_ANY,
       })
-      .intercept('rightNotFound', () => res.serverError(
-        'A server error occured when checking your right to update a document.',
-      ));
+      .intercept('rightNotFound', () =>
+        res.serverError(
+          'A server error occured when checking your right to update a document.'
+        )
+      );
 
     if (!hasRight) {
       return res.forbidden('You are not authorized to update a document.');
@@ -614,7 +632,7 @@ module.exports = {
         const createdAuthorsIds = createdAuthors.map((author) => author.id);
         cleanedData.authors = ramda.concat(
           cleanedData.authors,
-          createdAuthorsIds,
+          createdAuthorsIds
         );
       }
 
@@ -624,18 +642,18 @@ module.exports = {
           document: documentId,
         }));
         const createdDescriptions = await TDescription.createEach(
-          descParams,
+          descParams
         ).fetch();
         const createdDescriptionsIds = createdDescriptions.map(
-          (desc) => desc.id,
+          (desc) => desc.id
         );
         cleanedData.descriptions = ramda.concat(
           cleanedData.descriptions,
-          createdDescriptionsIds,
+          createdDescriptionsIds
         );
       }
       const updatedDocument = await TDocument.updateOne(documentId).set(
-        cleanedData,
+        cleanedData
       );
 
       return res.ok(updatedDocument);
@@ -649,7 +667,7 @@ module.exports = {
     req,
     res,
     next,
-    converter = MappingV1Service.convertToDocumentList,
+    converter = MappingV1Service.convertToDocumentList
   ) => {
     // By default get only the validated ones
     const isValidated = req.param('isValidated')
@@ -658,7 +676,7 @@ module.exports = {
 
     const sort = `${req.param('sortBy', 'dateInscription')} ${req.param(
       'orderBy',
-      'ASC',
+      'ASC'
     )}`;
 
     /*
@@ -721,18 +739,18 @@ module.exports = {
               found.map(async (doc) => {
                 /* eslint-disable no-param-reassign */
                 doc.mainLanguage = await DocumentService.getMainLanguage(
-                  doc.id,
+                  doc.id
                 );
                 await NameService.setNames(
                   [
                     ...(doc.library ? [doc.library] : []),
                     ...(doc.editor ? [doc.editor] : []),
                   ],
-                  'grotto',
+                  'grotto'
                 );
                 if (doc.authorizationDocument) {
                   await DescriptionService.setDocumentDescriptions(
-                    doc.authorizationDocument,
+                    doc.authorizationDocument
                   );
                 }
                 await setNamesOfPopulatedDocument(doc);
@@ -740,12 +758,12 @@ module.exports = {
                   await Promise.all(
                     doc.children.map(async (childDoc) => {
                       await DescriptionService.setDocumentDescriptions(
-                        childDoc,
+                        childDoc
                       );
-                    }),
+                    })
                   );
                 }
-              }),
+              })
             );
             /* eslint-enable no-param-reassign */
 
@@ -763,7 +781,7 @@ module.exports = {
               found,
               params,
               res,
-              converter,
+              converter
             );
           });
       });
@@ -773,13 +791,13 @@ module.exports = {
     req,
     res,
     next,
-    converter = MappingV1Service.convertToDocumentList,
+    converter = MappingV1Service.convertToDocumentList
   ) => {
     const caverId = req.param('caverId');
 
     const sort = `${req.param('sortBy', 'dateInscription')} ${req.param(
       'orderBy',
-      'ASC',
+      'ASC'
     )}`;
 
     const whereClause = {
@@ -831,7 +849,7 @@ module.exports = {
               await Promise.all(
                 doc.children.map(async (childDoc) => {
                   await DescriptionService.setDocumentDescriptions(childDoc);
-                }),
+                })
               );
               /* eslint-enable no-await-in-loop */
             }
@@ -852,7 +870,7 @@ module.exports = {
             documents,
             params,
             res,
-            converter,
+            converter
           );
         } catch (e) {
           ErrorService.getDefaultErrorHandler(res)(e);
@@ -864,7 +882,7 @@ module.exports = {
     req,
     res,
     next,
-    converter = MappingV1Service.convertToDocumentModel,
+    converter = MappingV1Service.convertToDocumentModel
   ) => {
     let found;
     let err;
@@ -887,7 +905,8 @@ module.exports = {
           ...otherData
         } = modifiedDocJson;
         const populatedDoc = await DocumentService.populateJSON({
-          author, ...otherData,
+          author,
+          ...otherData,
         });
         found = { ...populatedDoc, id };
 
@@ -899,8 +918,9 @@ module.exports = {
         // Don't retrieve files which are modified, new or deleted (because we already have them).
         // New are those which have isValidated = false
         let filesToIgnore = modifiedFiles || [];
-        filesToIgnore = (deletedFiles && ramda.concat(filesToIgnore, deletedFiles))
-          || filesToIgnore;
+        filesToIgnore =
+          (deletedFiles && ramda.concat(filesToIgnore, deletedFiles)) ||
+          filesToIgnore;
         const filesToIgnoreId = filesToIgnore.map((file) => file.id);
 
         if (!ramda.isEmpty(filesToIgnoreId)) {
@@ -1004,7 +1024,7 @@ module.exports = {
       found,
       params,
       res,
-      converter,
+      converter
     );
   },
 
@@ -1019,8 +1039,8 @@ module.exports = {
     if (isValidated === false && !validationComment) {
       return res.badRequest(
         `If the document with id ${req.param(
-          'id',
-        )} is refused, a comment must be provided.`,
+          'id'
+        )} is refused, a comment must be provided.`
       );
     }
 
@@ -1076,8 +1096,8 @@ module.exports = {
       if (isValidated === false && !validationComment) {
         return res.badRequest(
           `If the document with id ${req.param(
-            'id',
-          )} is refused, a comment must be provided.`,
+            'id'
+          )} is refused, a comment must be provided.`
         );
       }
 
@@ -1087,7 +1107,7 @@ module.exports = {
           isValidated,
           validationComment,
           validator: req.token.id,
-        }),
+        })
       );
       return doc;
     });
@@ -1151,27 +1171,34 @@ module.exports = {
                   // New files have already been created,
                   // they just need to be linked to the document.
                   if (newFiles) {
-                    // eslint-disable-next-line no-return-await
-                    const newPromises = newFiles.map(async (file) => await TFile.updateOne(file.id).set({ // eslint-disable-line max-len
-                      isValidated: true,
-                    }));
+                    const newPromises = newFiles.map(
+                      async (file) =>
+                        // eslint-disable-next-line no-return-await
+                        await TFile.updateOne(file.id).set({
+                          isValidated: true,
+                        })
+                    );
                     await Promise.all(newPromises);
                   }
                   if (modifiedFiles) {
                     const modificationPromises = modifiedFiles.map(
                       // eslint-disable-next-line no-return-await
-                      async (file) => await FileService.update(file),
+                      async (file) => await FileService.update(file)
                     );
                     await Promise.all(modificationPromises);
                   }
 
                   if (deletedFiles) {
-                    // eslint-disable-next-line no-return-await
-                    const deletionPromises = deletedFiles.map(async (file) => await FileService.delete(file)); // eslint-disable-line max-len
+                    const deletionPromises = deletedFiles.map(
+                      // eslint-disable-next-line no-return-await
+                      async (file) => await FileService.delete(file)
+                    );
                     await Promise.all(deletionPromises);
                   }
                 })
-                .intercept((err) => ErrorService.getDefaultErrorHandler(res)(err));
+                .intercept((err) =>
+                  ErrorService.getDefaultErrorHandler(res)(err)
+                );
             }
             // Get full document an index it in Elasticsearch
             try {
@@ -1204,7 +1231,7 @@ module.exports = {
               }
             } catch (err) {
               return res.serverError(
-                'An error occured when trying to get all information about the document.',
+                'An error occured when trying to get all information about the document.'
               );
             }
           } else if (isAModifiedDoc) {
@@ -1280,12 +1307,14 @@ module.exports = {
         rightEntity: RightService.RightEntities.DOCUMENT,
         rightAction: RightService.RightActions.CSV_IMPORT,
       })
-      .intercept('rightNotFound', () => res.serverError(
-        'A server error occured when checking your right to import documents via CSV.',
-      ));
+      .intercept('rightNotFound', () =>
+        res.serverError(
+          'A server error occured when checking your right to import documents via CSV.'
+        )
+      );
     if (!hasRight) {
       return res.forbidden(
-        'You are not authorized to import documents via CSV.',
+        'You are not authorized to import documents via CSV.'
       );
     }
 
@@ -1351,7 +1380,7 @@ module.exports = {
         await DocumentDuplicateService.create(
           req.token.id,
           duplicateContent,
-          result[0].id,
+          result[0].id
         );
         requestResponse.successfulImportAsDuplicates.push({
           line: index + 2,
@@ -1364,7 +1393,7 @@ module.exports = {
         // eslint-disable-next-line no-await-in-loop
         const createdDocument = await DocumentService.createDocument(
           dataDocument,
-          dataLangDesc,
+          dataLangDesc
         );
         // eslint-disable-next-line no-await-in-loop
         const docFiles = await TFile.find({ document: createdDocument.id });
@@ -1383,7 +1412,8 @@ module.exports = {
     }
 
     requestResponse.total.success = requestResponse.successfulImport.length;
-    requestResponse.total.successfulImportAsDuplicates = requestResponse.successfulImportAsDuplicates.length; // eslint-disable-line max-len
+    requestResponse.total.successfulImportAsDuplicates =
+      requestResponse.successfulImportAsDuplicates.length;
     requestResponse.total.failure = requestResponse.failureImport.length;
     return res.ok(requestResponse);
   },
@@ -1391,7 +1421,7 @@ module.exports = {
   findChildren: async (
     req,
     res,
-    converter = MappingV1Service.convertToDocumentList,
+    converter = MappingV1Service.convertToDocumentList
   ) => {
     // Check param
     if (
@@ -1402,7 +1432,7 @@ module.exports = {
       }))
     ) {
       return res.badRequest(
-        `Could not find document with id ${req.param('id')}.`,
+        `Could not find document with id ${req.param('id')}.`
       );
     }
 
@@ -1419,7 +1449,7 @@ module.exports = {
       doc.children,
       params,
       res,
-      converter,
+      converter
     );
   },
 };

@@ -12,7 +12,7 @@ module.exports = {
       return res.ok(options);
     } catch (err) {
       return res.serverError(
-        'There was a problem while retrieving the options.',
+        'There was a problem while retrieving the options.'
       );
     }
   },

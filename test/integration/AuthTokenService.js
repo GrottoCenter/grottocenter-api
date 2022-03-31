@@ -23,10 +23,14 @@ const getToken = async (email) => {
 
 module.exports = {
   // Raw Bearer token for HTTP request
-  getRawBearerAdminToken: async () => `Bearer ${await getRawAuthToken('admin1@admin1.com')}`,
-  getRawBearerModeratorToken: async () => `Bearer ${await getRawAuthToken('moderator1@moderator1.com')}`,
-  getRawBearerUserToken: async () => `Bearer ${await getRawAuthToken('user1@user1.com')}`,
-  getRawBearerAllGroupsToken: async () => `Bearer ${await getRawAuthToken('all1@all1.com')}`,
+  getRawBearerAdminToken: async () =>
+    `Bearer ${await getRawAuthToken('admin1@admin1.com')}`,
+  getRawBearerModeratorToken: async () =>
+    `Bearer ${await getRawAuthToken('moderator1@moderator1.com')}`,
+  getRawBearerUserToken: async () =>
+    `Bearer ${await getRawAuthToken('user1@user1.com')}`,
+  getRawBearerAllGroupsToken: async () =>
+    `Bearer ${await getRawAuthToken('all1@all1.com')}`,
 
   // Custom Grottocenter token to put in req object
   getAdminToken: async () => getToken('admin1@admin1.com'),

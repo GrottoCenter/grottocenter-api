@@ -34,25 +34,19 @@ const checkAndGetCoordinatesParams = (req) => {
     // Check valid values
     for (const param of result) {
       if (
-        param.key.endsWith('lat')
-        && (param.value < -90 || param.value > 90)
+        param.key.endsWith('lat') &&
+        (param.value < -90 || param.value > 90)
       ) {
         errors.push(
-          `${param.name
-          } value must be between -90 & 90 (value found: ${
-            param.value
-          })`,
+          `${param.name} value must be between -90 & 90 (value found: ${param.value})`
         );
       }
       if (
-        param.key.endsWith('lng')
-        && (param.value < -180 || param.value > 180)
+        param.key.endsWith('lng') &&
+        (param.value < -180 || param.value > 180)
       ) {
         errors.push(
-          `${param.name
-          } value must be between -180 & 80 (value found: ${
-            param.value
-          })`,
+          `${param.name} value must be between -180 & 80 (value found: ${param.value})`
         );
       }
     }
@@ -75,18 +69,15 @@ const checkAndGetCoordinatesParams = (req) => {
 
 module.exports = {
   countEntrances: async (req, res) => {
-    const {
-      southWestBound,
-      northEastBound,
-      errorMessage,
-    } = checkAndGetCoordinatesParams(req);
+    const { southWestBound, northEastBound, errorMessage } =
+      checkAndGetCoordinatesParams(req);
 
     if (errorMessage !== '') return res.badRequest(errorMessage);
 
     try {
       const result = await GeoLocService.countEntrances(
         southWestBound,
-        northEastBound,
+        northEastBound
       );
       return res.json({ count: result });
     } catch (e) {
@@ -96,11 +87,8 @@ module.exports = {
   },
 
   findEntrancesCoordinates: async (req, res) => {
-    const {
-      southWestBound,
-      northEastBound,
-      errorMessage,
-    } = checkAndGetCoordinatesParams(req);
+    const { southWestBound, northEastBound, errorMessage } =
+      checkAndGetCoordinatesParams(req);
 
     if (errorMessage !== '') return res.badRequest(errorMessage);
 
@@ -108,7 +96,7 @@ module.exports = {
       const result = await GeoLocService.getEntrancesCoordinates(
         southWestBound,
         northEastBound,
-        100000,
+        100000
       );
       return res.json(result);
     } catch (e) {
@@ -118,11 +106,8 @@ module.exports = {
   },
 
   findEntrances: async (req, res) => {
-    const {
-      southWestBound,
-      northEastBound,
-      errorMessage,
-    } = checkAndGetCoordinatesParams(req);
+    const { southWestBound, northEastBound, errorMessage } =
+      checkAndGetCoordinatesParams(req);
 
     if (errorMessage !== '') return res.badRequest(errorMessage);
 
@@ -130,7 +115,7 @@ module.exports = {
       const result = await GeoLocService.getEntrancesMap(
         southWestBound,
         northEastBound,
-        100000,
+        100000
       );
       return res.json(result);
     } catch (e) {
@@ -140,18 +125,15 @@ module.exports = {
   },
 
   findGrottos: async (req, res) => {
-    const {
-      southWestBound,
-      northEastBound,
-      errorMessage,
-    } = checkAndGetCoordinatesParams(req);
+    const { southWestBound, northEastBound, errorMessage } =
+      checkAndGetCoordinatesParams(req);
 
     if (errorMessage !== '') return res.badRequest(errorMessage);
 
     try {
       const result = await GeoLocService.getGrottosMap(
         southWestBound,
-        northEastBound,
+        northEastBound
       );
       return res.json(result);
     } catch (e) {
@@ -161,11 +143,8 @@ module.exports = {
   },
 
   findNetworksCoordinates: async (req, res) => {
-    const {
-      southWestBound,
-      northEastBound,
-      errorMessage,
-    } = checkAndGetCoordinatesParams(req);
+    const { southWestBound, northEastBound, errorMessage } =
+      checkAndGetCoordinatesParams(req);
 
     if (errorMessage !== '') return res.badRequest(errorMessage);
 
@@ -173,7 +152,7 @@ module.exports = {
       const result = await GeoLocService.getNetworksCoordinates(
         southWestBound,
         northEastBound,
-        100000,
+        100000
       );
       return res.json(result);
     } catch (e) {
@@ -183,18 +162,15 @@ module.exports = {
   },
 
   findNetworks: async (req, res) => {
-    const {
-      southWestBound,
-      northEastBound,
-      errorMessage,
-    } = checkAndGetCoordinatesParams(req);
+    const { southWestBound, northEastBound, errorMessage } =
+      checkAndGetCoordinatesParams(req);
 
     if (errorMessage !== '') return res.badRequest(errorMessage);
 
     try {
       const result = await GeoLocService.getNetworksMap(
         southWestBound,
-        northEastBound,
+        northEastBound
       );
       return res.json(result);
     } catch (e) {

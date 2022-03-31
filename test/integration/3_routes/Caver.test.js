@@ -15,8 +15,8 @@ const CAVER_PROPERTIES = [
 ];
 
 describe('Caver features', () => {
-  let userToken; let
-    adminToken;
+  let userToken;
+  let adminToken;
   before(async () => {
     sails.log.info('Asking for user auth token...');
     userToken = await AuthTokenService.getRawBearerUserToken();

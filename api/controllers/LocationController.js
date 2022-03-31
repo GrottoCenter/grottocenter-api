@@ -18,28 +18,34 @@ module.exports = {
         rightEntity: RightService.RightEntities.LOCATION,
         rightAction: RightService.RightActions.CREATE,
       })
-      .intercept('rightNotFound', () => res.serverError(
-        'A server error occured when checking your right to create a location.',
-      ));
+      .intercept('rightNotFound', () =>
+        res.serverError(
+          'A server error occured when checking your right to create a location.'
+        )
+      );
     if (!hasRight) {
       return res.forbidden('You are not authorized to create a location.');
     }
 
     // Check mandatory params
     const mandatoryParams = ['body', 'entrance', 'language'];
-    const paramsNameAndValue = mandatoryParams.map((p) => ({ name: p, value: req.param(p) }));
+    const paramsNameAndValue = mandatoryParams.map((p) => ({
+      name: p,
+      value: req.param(p),
+    }));
     const missingParam = paramsNameAndValue.find((p) => !p.value);
     if (missingParam) {
       return res.badRequest(
         `You must provide a${missingParam.name === 'entrance' ? 'n' : ''} ${
           missingParam.name
-        } to create a location.`,
+        } to create a location.`
       );
     }
 
     // Entrance not found check
-    const entranceId = paramsNameAndValue.find((p) => p.name === 'entrance')
-      .value;
+    const entranceId = paramsNameAndValue.find(
+      (p) => p.name === 'entrance'
+    ).value;
     const doesEntranceExists = await sails.helpers.checkIfExists.with({
       attributeName: 'id',
       attributeValue: entranceId,
@@ -53,8 +59,9 @@ module.exports = {
 
     // Unwrap values
     const body = paramsNameAndValue.find((p) => p.name === 'body').value;
-    const language = paramsNameAndValue.find((p) => p.name === 'language')
-      .value;
+    const language = paramsNameAndValue.find(
+      (p) => p.name === 'language'
+    ).value;
 
     try {
       const newLocation = await TLocation.create({
@@ -78,7 +85,7 @@ module.exports = {
         newLocationPopulated,
         params,
         res,
-        converter,
+        converter
       );
     } catch (e) {
       ErrorService.getDefaultErrorHandler(res)(e);
@@ -93,9 +100,11 @@ module.exports = {
         rightEntity: RightService.RightEntities.LOCATION,
         rightAction: RightService.RightActions.EDIT_ANY,
       })
-      .intercept('rightNotFound', () => res.serverError(
-        'A server error occured when checking your right to update any location.',
-      ));
+      .intercept('rightNotFound', () =>
+        res.serverError(
+          'A server error occured when checking your right to update any location.'
+        )
+      );
     if (!hasRight) {
       return res.forbidden('You are not authorized to update any location.');
     }
@@ -139,7 +148,7 @@ module.exports = {
         populatedLocation,
         params,
         res,
-        converter,
+        converter
       );
     } catch (e) {
       ErrorService.getDefaultErrorHandler(res)(e);

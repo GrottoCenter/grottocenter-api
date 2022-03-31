@@ -4,9 +4,9 @@ module.exports = {
    */
   getDefaultErrorHandler: (res) => (error) => {
     if (error.code && error.code === 'E_UNIQUE') {
-      const message = `A resource already exists with conflicting attribute value(s): ${
-        error.attrNames.join(',')
-      }.`;
+      const message = `A resource already exists with conflicting attribute value(s): ${error.attrNames.join(
+        ','
+      )}.`;
       sails.log.error(message);
       // Test purpose to see if sails.log are ignored in production, to be removed eventually
       // eslint-disable-next-line no-console

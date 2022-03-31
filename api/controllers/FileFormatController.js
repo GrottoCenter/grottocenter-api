@@ -12,7 +12,7 @@ module.exports = {
       return res.ok(fileFormats);
     } catch (err) {
       return res.serverError(
-        'There was a problem while retrieving the file formats.',
+        'There was a problem while retrieving the file formats.'
       );
     }
   },

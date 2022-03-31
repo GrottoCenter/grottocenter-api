@@ -79,7 +79,7 @@ module.exports = {
       {
         ...viewValues,
         i18n,
-      },
+      }
     );
 
     // Create sendEmail params
@@ -135,7 +135,7 @@ You are seing this message because you didn't configure your AWS credentials loc
       CONTENT:
 
 ${params.Message.Body.Html.Data}        
-      `,
+      `
       );
       return exits.success();
     }

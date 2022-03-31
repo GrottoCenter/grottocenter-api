@@ -26,7 +26,7 @@ module.exports = {
           found,
           params,
           res,
-          converter,
+          converter
         );
       });
   },
@@ -45,7 +45,7 @@ module.exports = {
           found,
           params,
           res,
-          converter,
+          converter
         );
       });
   },
@@ -87,7 +87,7 @@ module.exports = {
         const params = {};
         params.controllerMethod = 'TSubjectController.search';
         params.searchedItem = `Subject with name ${req.param(
-          'name',
+          'name'
         )} or code ${req.param('code')}.`;
         return ControllerService.treatAndConvert(
           req,
@@ -95,7 +95,7 @@ module.exports = {
           found,
           params,
           res,
-          converter,
+          converter
         );
       });
   },

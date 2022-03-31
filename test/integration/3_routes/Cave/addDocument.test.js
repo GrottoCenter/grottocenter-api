@@ -15,9 +15,7 @@ describe('Cave features', () => {
     describe('Invalid parameters', () => {
       it('should return code 404 on inexisting cave', (done) => {
         supertest(sails.hooks.http.app)
-          .put(
-            `/api/v1/caves/${987654321}/documents/${existingDocumentId}`,
-          )
+          .put(`/api/v1/caves/${987654321}/documents/${existingDocumentId}`)
           .set('Authorization', userToken)
           .set('Content-type', 'application/json')
           .set('Accept', 'application/json')
@@ -39,7 +37,7 @@ describe('Cave features', () => {
           existingDocumentId,
         ]);
         const existingCave = await TCave.findOne(existingCaveId).populate(
-          'documents',
+          'documents'
         );
         should(existingCave.documents.length).be.equal(0);
       });
@@ -47,10 +45,7 @@ describe('Cave features', () => {
       it('should return code 204', (done) => {
         supertest(sails.hooks.http.app)
           .put(
-            `/api/v1/caves/${
-              existingCaveId
-            }/documents/${
-              existingDocumentId}`,
+            `/api/v1/caves/${existingCaveId}/documents/${existingDocumentId}`
           )
           .set('Authorization', userToken)
           .set('Content-type', 'application/json')

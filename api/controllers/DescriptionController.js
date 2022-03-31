@@ -18,9 +18,11 @@ module.exports = {
         rightEntity: RightService.RightEntities.DESCRIPTION,
         rightAction: RightService.RightActions.CREATE,
       })
-      .intercept('rightNotFound', () => res.serverError(
-        'A server error occured when checking your right to create a description.',
-      ));
+      .intercept('rightNotFound', () =>
+        res.serverError(
+          'A server error occured when checking your right to create a description.'
+        )
+      );
     if (!hasRight) {
       return res.forbidden('You are not authorized to create a description.');
     }
@@ -31,12 +33,12 @@ module.exports = {
     }
     if (!req.param('language')) {
       return res.badRequest(
-        'You must provide a language id to create a description.',
+        'You must provide a language id to create a description.'
       );
     }
     if (!req.param('title')) {
       return res.badRequest(
-        'You must provide a title to create a description.',
+        'You must provide a title to create a description.'
       );
     }
 
@@ -74,7 +76,7 @@ module.exports = {
     ];
 
     const describedEntity = possibleEntities.find(
-      (possibleEntity) => possibleEntity.id !== undefined,
+      (possibleEntity) => possibleEntity.id !== undefined
     );
 
     // No entity id provided handling
@@ -83,7 +85,7 @@ module.exports = {
       return res.badRequest(
         `You must provide an existing entity id such as ${possibleEntities
           .map((e) => e.type)
-          .join('Id, ')} or ${lastItem.type}Id.`,
+          .join('Id, ')} or ${lastItem.type}Id.`
       );
     }
 
@@ -110,7 +112,7 @@ module.exports = {
         [describedEntity.type]: describedEntity.id,
       }).fetch();
       const newDescriptionPopulated = await TDescription.findOne(
-        newDescription.id,
+        newDescription.id
       )
         .populate('author')
         .populate('cave')
@@ -128,7 +130,7 @@ module.exports = {
         newDescriptionPopulated,
         params,
         res,
-        converter,
+        converter
       );
     } catch (e) {
       ErrorService.getDefaultErrorHandler(res)(e);
@@ -143,9 +145,11 @@ module.exports = {
         rightEntity: RightService.RightEntities.DESCRIPTION,
         rightAction: RightService.RightActions.EDIT_ANY,
       })
-      .intercept('rightNotFound', () => res.serverError(
-        'A server error occured when checking your right to update any description.',
-      ));
+      .intercept('rightNotFound', () =>
+        res.serverError(
+          'A server error occured when checking your right to update any description.'
+        )
+      );
     if (!hasRight) {
       return res.forbidden('You are not authorized to update any description.');
     }
@@ -187,7 +191,7 @@ module.exports = {
         newDescription,
         params,
         res,
-        converter,
+        converter
       );
     } catch (e) {
       ErrorService.getDefaultErrorHandler(res)(e);

@@ -49,9 +49,7 @@ module.exports = {
     const doubleCheck = sails.helpers.csvhelpers.doubleCheck.with;
 
     for (const requiredColumn of requiredColumns) {
-      if (
-        !doubleCheck({ data, key: requiredColumn, defaultValue: false })
-      ) {
+      if (!doubleCheck({ data, key: requiredColumn, defaultValue: false })) {
         missingColumns.push(requiredColumn);
       }
     }

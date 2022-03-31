@@ -3,8 +3,8 @@ const should = require('should');
 const AuthTokenService = require('../../AuthTokenService');
 
 describe('Document features', () => {
-  let userToken; let
-    moderatorToken;
+  let userToken;
+  let moderatorToken;
   before(async () => {
     sails.log.info('Asking for user auth token...');
     userToken = await AuthTokenService.getRawBearerUserToken();

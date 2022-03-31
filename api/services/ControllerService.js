@@ -30,37 +30,37 @@ module.exports = {
 
     res.set(
       'Accept-Range',
-      `${parameters.searchedItem} ${parameters.maxRange}`,
+      `${parameters.searchedItem} ${parameters.maxRange}`
     );
 
     if (parameters.total > found.length) {
       const rangeTo = Math.min(
         parseInt(parameters.skip, 10) + parseInt(parameters.limit, 10),
-        parameters.total,
+        parameters.total
       );
       const firstTo = Math.min(
         parseInt(parameters.limit, 10),
-        parameters.total,
+        parameters.total
       );
 
       const prevFrom = Math.max(
         parseInt(parameters.skip, 10) - parseInt(parameters.limit, 10),
-        0,
+        0
       );
       const prevTo = Math.max(prevFrom + parseInt(parameters.limit, 10), 0);
 
       const nextFrom = Math.min(
         parseInt(parameters.skip, 10) + parseInt(parameters.limit, 10),
-        parameters.total,
+        parameters.total
       );
       const nextTo = Math.min(
         nextFrom + parseInt(parameters.limit, 10),
-        parameters.total,
+        parameters.total
       );
 
       const lastFrom = Math.max(
         parameters.total - parseInt(parameters.limit, 10),
-        0,
+        0
       );
 
       const baseUrl = parameters.url;
@@ -70,16 +70,16 @@ module.exports = {
       const next = baseUrl.replace(rangeExpr, `range=${nextFrom}-${nextTo}`);
       const last = baseUrl.replace(
         rangeExpr,
-        `range=${lastFrom}-${parameters.total}`,
+        `range=${lastFrom}-${parameters.total}`
       );
 
       res.set(
         'Content-Range',
-        `${parameters.skip}-${rangeTo}/${parameters.total}`,
+        `${parameters.skip}-${rangeTo}/${parameters.total}`
       );
       res.set(
         'Link',
-        `<${first}>; rel="first",  <${prev}>; rel="prev", <${next}>; rel="next",  <${last}>; rel="last"`,
+        `<${first}>; rel="first",  <${prev}>; rel="prev", <${next}>; rel="next",  <${last}>; rel="last"`
       );
 
       return res.status(206).json(converter(found));

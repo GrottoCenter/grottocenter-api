@@ -5,8 +5,10 @@
 const feedRead = require('feed-read');
 const underscoreDate = require('underscore.date');
 
-const FR_RSS_FEED = 'http://blog-fr.grottocenter.org/feeds/posts/default?alt=rss&max-results=1';
-const EN_RSS_FEED = 'http://blog-en.grottocenter.org/feeds/posts/default?alt=rss&max-results=1';
+const FR_RSS_FEED =
+  'http://blog-fr.grottocenter.org/feeds/posts/default?alt=rss&max-results=1';
+const EN_RSS_FEED =
+  'http://blog-en.grottocenter.org/feeds/posts/default?alt=rss&max-results=1';
 
 const CommonService = require('../services/CommonService');
 
@@ -25,7 +27,8 @@ module.exports = {
       result.text = CommonService.convertHtmlToText(articles[0].content, 255);
       result.link = articles[0].link;
       result.day = articles[0].published.getDate();
-      result.month = underscoreDate.monthsShort[articles[0].published.getMonth()];
+      result.month =
+        underscoreDate.monthsShort[articles[0].published.getMonth()];
 
       return res.json(result);
     });

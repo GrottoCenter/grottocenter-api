@@ -65,7 +65,7 @@ module.exports = {
       (err) => {
         sails.log.error(err);
         return res.serverError(`ConvertController.findAllProjs error : ${err}`);
-      },
+      }
     );
   },
 };

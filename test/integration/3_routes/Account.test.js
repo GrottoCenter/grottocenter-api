@@ -40,7 +40,7 @@ describe('Account features', () => {
           .set('Accept', 'application/json')
           .expect(204);
         (await TCaver.findOne({ nickname: 'User1' })).mail.should.equal(
-          'newmail@newmail.com',
+          'newmail@newmail.com'
         );
       });
       // Restore previous email

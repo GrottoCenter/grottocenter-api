@@ -78,9 +78,7 @@ module.exports = {
           .usingConnection(db);
 
         // Prepare data for Elasticsearch indexation
-        const resPopulated = await TGrotto.findOne(
-          newOrganization.id,
-        )
+        const resPopulated = await TGrotto.findOne(newOrganization.id)
           .populate('country')
           .populate('names')
           .usingConnection(db);
@@ -88,23 +86,20 @@ module.exports = {
         return resPopulated;
       });
 
-    const {
-      country,
-      names,
-      ...newOrganizationESData
-    } = newOrganizationPopulated;
+    const { country, names, ...newOrganizationESData } =
+      newOrganizationPopulated;
 
     await ElasticsearchService.create('grottos', newOrganizationPopulated.id, {
       ...newOrganizationESData,
       country: ramda.pathOr(
         null,
         ['country', 'nativeName'],
-        newOrganizationPopulated,
+        newOrganizationPopulated
       ),
       'country code': ramda.pathOr(
         null,
         ['country', 'id'],
-        newOrganizationPopulated,
+        newOrganizationPopulated
       ),
       name: names[0].name, // There is only one name right after the creation
       names: names.map((n) => n.name).join(', '),

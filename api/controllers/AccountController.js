@@ -30,12 +30,14 @@ module.exports = {
         rightEntity: RightService.RightEntities.CAVER,
         rightAction: RightService.RightActions.EDIT_OWN,
       })
-      .intercept('rightNotFound', () => res.serverError(
-        'A server error occured when checking your right to change your account information.',
-      ));
+      .intercept('rightNotFound', () =>
+        res.serverError(
+          'A server error occured when checking your right to change your account information.'
+        )
+      );
     if (!hasRight) {
       return res.forbidden(
-        'You are not authorized to change your account information.',
+        'You are not authorized to change your account information.'
       );
     }
 
@@ -43,7 +45,7 @@ module.exports = {
     const newAlertForNewsValue = req.param('alertForNews');
     if (newAlertForNewsValue !== 'true' && newAlertForNewsValue !== 'false') {
       return res.badRequest(
-        'You must provide an alertForNews value (\'true\' or \'false\').',
+        "You must provide an alertForNews value ('true' or 'false')."
       );
     }
 
@@ -73,12 +75,14 @@ module.exports = {
         rightEntity: RightService.RightEntities.CAVER,
         rightAction: RightService.RightActions.EDIT_OWN,
       })
-      .intercept('rightNotFound', () => res.serverError(
-        'A server error occured when checking your right to change your account information.',
-      ));
+      .intercept('rightNotFound', () =>
+        res.serverError(
+          'A server error occured when checking your right to change your account information.'
+        )
+      );
     if (!hasRight) {
       return res.forbidden(
-        'You are not authorized to change your account information.',
+        'You are not authorized to change your account information.'
       );
     }
 
@@ -95,9 +99,11 @@ module.exports = {
       .set({
         mail: req.param('email'),
       })
-      .intercept({ name: 'UsageError' }, () => res.badRequest(
-        'The email you are trying to set for your account is not a valid email.',
-      ));
+      .intercept({ name: 'UsageError' }, () =>
+        res.badRequest(
+          'The email you are trying to set for your account is not a valid email.'
+        )
+      );
 
     return res.sendStatus(204);
   },
@@ -110,7 +116,7 @@ module.exports = {
 
     // Get info about the user
     const userFound = await TCaver.findOne({ mail: emailProvided }).populate(
-      'language',
+      'language'
     );
     if (!userFound) {
       return res.status(404).send({
@@ -125,7 +131,7 @@ module.exports = {
       },
       sails.config.custom.passwordResetTokenTTL,
       'Reset password',
-      getResetPasswordTokenSalt(userFound), // custom salt used for more security
+      getResetPasswordTokenSalt(userFound) // custom salt used for more security
     );
 
     // Change locale to the user's one to translate the mail
@@ -144,9 +150,11 @@ module.exports = {
           token,
         },
       })
-      .intercept('sendSESEmailError', () => res.serverError(
-        'The email service has encountered an error. Please try again later or contact Wikicaves for more information.',
-      ));
+      .intercept('sendSESEmailError', () =>
+        res.serverError(
+          'The email service has encountered an error. Please try again later or contact Wikicaves for more information.'
+        )
+      );
     return res.sendStatus(204);
   },
 
@@ -160,9 +168,7 @@ module.exports = {
     }
     if (password.length < PASSWORD_MIN_LENGTH) {
       return res.badRequest(
-        `Your password must be at least ${
-          PASSWORD_MIN_LENGTH
-        } characters long.`,
+        `Your password must be at least ${PASSWORD_MIN_LENGTH} characters long.`
       );
     }
     if (!token) {
@@ -191,11 +197,11 @@ module.exports = {
             return res.forbidden('The password reset token has expired.');
           case 'JsonWebTokenError':
             return res.forbidden(
-              'The password reset token signature is invalid.',
+              'The password reset token signature is invalid.'
             );
           default:
             return res.serverError(
-              'An unexpected error occured when verifying the password reset token.',
+              'An unexpected error occured when verifying the password reset token.'
             );
         }
       }

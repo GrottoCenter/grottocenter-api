@@ -1,8 +1,6 @@
 name: Build test deploy
 on: [push]
 jobs:
-
-
   # ===== Build & test API
   build-test-deploy:
     environment: build
@@ -11,15 +9,15 @@ jobs:
     # PostGreSQL test database init
     services:
       postgres:
-          image: postgres:latest
-          env:
-            POSTGRES_USER: root
-            POSTGRES_PASSWORD: root
-            POSTGRES_DB: grottoce
-          ports:
-            - 5432:5432
-          # needed because the postgres container does not provide a healthcheck
-          options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+        image: postgres:latest
+        env:
+          POSTGRES_USER: root
+          POSTGRES_PASSWORD: root
+          POSTGRES_DB: grottoce
+        ports:
+          - 5432:5432
+        # needed because the postgres container does not provide a healthcheck
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
 
     steps:
       - uses: actions/checkout@v2
@@ -48,7 +46,7 @@ jobs:
       - run: npm run-script coveralls
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-          COVERALLS_SERVICE_NAME: "Github Actions"
+          COVERALLS_SERVICE_NAME: 'Github Actions'
           COVERALLS_GIT_BRANCH: ${{ github.ref }}
 
       # ===== Create .tar and send it to AWS S3 if on branch master

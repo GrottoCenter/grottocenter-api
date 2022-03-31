@@ -42,9 +42,7 @@ describe('Cave features', () => {
 
       it('should return code 204', (done) => {
         supertest(sails.hooks.http.app)
-          .put(
-            `/api/v1/caves/${existingCaveId}/massif/${existingMassifId}`,
-          )
+          .put(`/api/v1/caves/${existingCaveId}/massif/${existingMassifId}`)
           .set('Authorization', userToken)
           .set('Content-type', 'application/json')
           .set('Accept', 'application/json')

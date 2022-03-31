@@ -19,12 +19,14 @@ module.exports = {
         rightEntity: RightService.RightEntities.ENTRANCE_DUPLICATE,
         rightAction: RightService.RightActions.CREATE,
       })
-      .intercept('rightNotFound', () => res.serverError(
-        'A server error occured when checking your right to create an entrance duplicate.',
-      ));
+      .intercept('rightNotFound', () =>
+        res.serverError(
+          'A server error occured when checking your right to create an entrance duplicate.'
+        )
+      );
     if (!hasRight) {
       return res.forbidden(
-        'You are not authorized to create an entrance duplicate.',
+        'You are not authorized to create an entrance duplicate.'
       );
     }
 
@@ -47,12 +49,14 @@ module.exports = {
         rightEntity: RightService.RightEntities.ENTRANCE_DUPLICATE,
         rightAction: RightService.RightActions.CREATE,
       })
-      .intercept('rightNotFound', () => res.serverError(
-        'A server error occured when checking your right to create an entrance duplicate.',
-      ));
+      .intercept('rightNotFound', () =>
+        res.serverError(
+          'A server error occured when checking your right to create an entrance duplicate.'
+        )
+      );
     if (!hasRight) {
       return res.forbidden(
-        'You are not authorized to create an entrance duplicate.',
+        'You are not authorized to create an entrance duplicate.'
       );
     }
     if (
@@ -63,7 +67,7 @@ module.exports = {
       }))
     ) {
       return res.badRequest(
-        `Could not find duplicate with id ${req.param('id')}.`,
+        `Could not find duplicate with id ${req.param('id')}.`
       );
     }
 
@@ -89,12 +93,14 @@ module.exports = {
         rightEntity: RightService.RightEntities.ENTRANCE_DUPLICATE,
         rightAction: RightService.RightActions.DELETE_ANY,
       })
-      .intercept('rightNotFound', () => res.serverError(
-        'A server error occured when checking your right to delete an entrance duplicate.',
-      ));
+      .intercept('rightNotFound', () =>
+        res.serverError(
+          'A server error occured when checking your right to delete an entrance duplicate.'
+        )
+      );
     if (!hasRight) {
       return res.forbidden(
-        'You are not authorized to delete an entrance duplicate.',
+        'You are not authorized to delete an entrance duplicate.'
       );
     }
     const id = req.param('id');
@@ -110,7 +116,7 @@ module.exports = {
       }))
     ) {
       return res.badRequest(
-        `Could not find duplicate with id ${req.param('id')}.`,
+        `Could not find duplicate with id ${req.param('id')}.`
       );
     }
 
@@ -125,12 +131,14 @@ module.exports = {
         rightEntity: RightService.RightEntities.ENTRANCE_DUPLICATE,
         rightAction: RightService.RightActions.DELETE_ANY,
       })
-      .intercept('rightNotFound', () => res.serverError(
-        'A server error occured when checking your right to delete an entrance duplicate.',
-      ));
+      .intercept('rightNotFound', () =>
+        res.serverError(
+          'A server error occured when checking your right to delete an entrance duplicate.'
+        )
+      );
     if (!hasRight) {
       return res.forbidden(
-        'You are not authorized to delete an entrance duplicate.',
+        'You are not authorized to delete an entrance duplicate.'
       );
     }
     const idArray = req.param('id');
@@ -158,13 +166,13 @@ module.exports = {
       }))
     ) {
       return res.badRequest(
-        `Could not find duplicate with id ${req.param('id')}.`,
+        `Could not find duplicate with id ${req.param('id')}.`
       );
     }
 
     // Populate the entrance
     const duplicateFound = await TEntranceDuplicate.findOne(
-      req.param('id'),
+      req.param('id')
     ).populate('author');
 
     duplicateFound.entrance = await TEntrance.findOne(duplicateFound.entrance)
@@ -205,14 +213,14 @@ module.exports = {
       duplicateFound,
       params,
       res,
-      MappingV1Service.convertToEntranceDuplicateModel,
+      MappingV1Service.convertToEntranceDuplicateModel
     );
   },
 
   findAll: async (req, res) => {
     const sort = `${req.param('sortBy', 'dateInscription')} ${req.param(
       'orderBy',
-      'ASC',
+      'ASC'
     )}`;
     const limit = req.param('limit', 50);
     const skip = req.param('skip', 0);
@@ -239,7 +247,7 @@ module.exports = {
         duplicates,
         params,
         res,
-        MappingV1Service.convertToEntranceDuplicateList,
+        MappingV1Service.convertToEntranceDuplicateList
       );
     } catch (err) {
       ErrorService.getDefaultErrorHandler(res)(err);

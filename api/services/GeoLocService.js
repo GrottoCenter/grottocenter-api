@@ -56,58 +56,61 @@ const NameService = require('./NameService');
  * return a light version of the networks
  * @param networks
  */
-const formatNetworks = (networks) => networks.map((network) => ({
-  id: network.id,
-  name: network.name,
-  longitude: Number(network.longitude),
-  latitude: Number(network.latitude),
-}));
+const formatNetworks = (networks) =>
+  networks.map((network) => ({
+    id: network.id,
+    name: network.name,
+    longitude: Number(network.longitude),
+    latitude: Number(network.latitude),
+  }));
 
 /**
  * Format the quality entrances in a lighter version
  * Quality entrance stand for an entrance that won't be clustered
  * @param entrances
  */
-const formatEntrances = (entrances) => entrances.map((entrance) => {
-  let entranceCave;
+const formatEntrances = (entrances) =>
+  entrances.map((entrance) => {
+    let entranceCave;
 
-  if (entrance.idCave) {
-    entranceCave = {
-      id: entrance.idCave,
-      name: entrance.nameCave,
-      depth: entrance.depthCave,
-      length: entrance.lengthCave,
-    };
-  } else {
-    entranceCave = {
-      depth: entrance.depthSE,
-      length: entrance.lengthSE,
-    };
-  }
+    if (entrance.idCave) {
+      entranceCave = {
+        id: entrance.idCave,
+        name: entrance.nameCave,
+        depth: entrance.depthCave,
+        length: entrance.lengthCave,
+      };
+    } else {
+      entranceCave = {
+        depth: entrance.depthSE,
+        length: entrance.lengthSE,
+      };
+    }
 
-  return {
-    id: entrance.id,
-    name: entrance.name,
-    city: entrance.city,
-    region: entrance.region,
-    cave: entranceCave,
-    longitude: parseFloat(entrance.longitude),
-    latitude: parseFloat(entrance.latitude),
-    quality: entrance.size_coef,
-  };
-});
+    return {
+      id: entrance.id,
+      name: entrance.name,
+      city: entrance.city,
+      region: entrance.region,
+      cave: entranceCave,
+      longitude: parseFloat(entrance.longitude),
+      latitude: parseFloat(entrance.latitude),
+      quality: entrance.size_coef,
+    };
+  });
 
 /**
  * Return a lighter version of the grottos
  * @param grottos
  */
-const formatGrottos = (grottos) => grottos.map((grotto) => ({
-  id: grotto.id,
-  name: grotto.name,
-  address: grotto.address,
-  longitude: parseFloat(grotto.longitude),
-  latitude: parseFloat(grotto.latitude),
-}));
+const formatGrottos = (grottos) =>
+  grottos.map((grotto) => ({
+    id: grotto.id,
+    name: grotto.name,
+    address: grotto.address,
+    longitude: parseFloat(grotto.longitude),
+    latitude: parseFloat(grotto.latitude),
+  }));
 
 // ====================================
 
@@ -134,7 +137,7 @@ module.exports = {
   getEntrancesCoordinates: async (
     southWestBound,
     northEastBound,
-    limitEntrances,
+    limitEntrances
   ) => {
     const results = await CommonService.query(
       PUBLIC_ENTRANCES_COORDINATES_IN_BOUNDS,
@@ -144,20 +147,23 @@ module.exports = {
         southWestBound.lng,
         northEastBound.lng,
         limitEntrances,
-      ],
+      ]
     );
     if (!results || results.rows.length <= 0 || results.rows[0].count === 0) {
       return [];
     }
     const coordinates = results.rows;
 
-    return coordinates.map((coord) => [Number(coord.longitude), Number(coord.latitude)]);
+    return coordinates.map((coord) => [
+      Number(coord.longitude),
+      Number(coord.latitude),
+    ]);
   },
 
   getNetworksCoordinates: async (
     southWestBound,
     northEastBound,
-    limitNetworks,
+    limitNetworks
   ) => {
     const results = await CommonService.query(
       PUBLIC_NETWORKS_COORDINATES_IN_BOUNDS,
@@ -167,13 +173,16 @@ module.exports = {
         southWestBound.lng,
         northEastBound.lng,
         limitNetworks,
-      ],
+      ]
     );
     if (!results || results.rows.length <= 0 || results.rows[0].count === 0) {
       return [];
     }
     const coordinates = results.rows;
-    return coordinates.map((coord) => [Number(coord.longitude), Number(coord.latitude)]);
+    return coordinates.map((coord) => [
+      Number(coord.longitude),
+      Number(coord.latitude),
+    ]);
   },
 
   /**

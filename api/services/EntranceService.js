@@ -1,7 +1,8 @@
 const ramda = require('ramda');
 
 // query to get all entrances of interest
-const INTEREST_ENTRANCES_QUERY = 'SELECT id FROM t_entrance WHERE Is_of_interest=true';
+const INTEREST_ENTRANCES_QUERY =
+  'SELECT id FROM t_entrance WHERE Is_of_interest=true';
 
 // query to get a random entrance of interest
 const RANDOM_ENTRANCE_QUERY = `${INTEREST_ENTRANCES_QUERY} ORDER BY RANDOM() LIMIT 1`;
@@ -33,7 +34,7 @@ module.exports = {
         entrance.documents.map(async (doc) => ({
           ...doc,
           files: await DocumentService.getTopoFiles(doc.id),
-        })),
+        }))
       );
     }
     return entrance;
@@ -80,12 +81,12 @@ module.exports = {
             dateInscription: ramda.propOr(
               new Date(),
               'dateInscription',
-              nameDescLocData.name,
+              nameDescLocData.name
             ),
             dateReviewed: ramda.propOr(
               undefined,
               'dateReviewed',
-              nameDescLocData.name,
+              nameDescLocData.name
             ),
             entrance: newEntrance.id,
             isMain: true,
@@ -103,12 +104,12 @@ module.exports = {
             dateInscription: ramda.propOr(
               new Date(),
               'dateInscription',
-              nameDescLocData.description,
+              nameDescLocData.description
             ),
             dateReviewed: ramda.propOr(
               undefined,
               'dateReviewed',
-              nameDescLocData.description,
+              nameDescLocData.description
             ),
             entrance: newEntrance.id,
             language: nameDescLocData.description.language,
@@ -124,12 +125,12 @@ module.exports = {
             dateInscription: ramda.propOr(
               new Date(),
               'dateInscription',
-              nameDescLocData.location,
+              nameDescLocData.location
             ),
             dateReviewed: ramda.propOr(
               undefined,
               'dateReviewed',
-              nameDescLocData.location,
+              nameDescLocData.location
             ),
             entrance: newEntrance.id,
             language: nameDescLocData.location.language,
@@ -146,11 +147,11 @@ module.exports = {
       });
 
     // Prepare data for Elasticsearch indexation
-    const description = newEntrancePopulated.descriptions.length === 0 ? null
-      // There is only one description at the moment
-      : `${newEntrancePopulated.descriptions[0].title
-      } ${
-        newEntrancePopulated.descriptions[0].body}`;
+    const description =
+      newEntrancePopulated.descriptions.length === 0
+        ? null
+        : // There is only one description at the moment
+          `${newEntrancePopulated.descriptions[0].title} ${newEntrancePopulated.descriptions[0].body}`;
 
     // Format cave massif
     newEntrancePopulated.cave.massif = {
@@ -161,9 +162,7 @@ module.exports = {
     await NameService.setNames([newEntrancePopulated.cave], 'cave');
     await NameService.setNames([newEntrancePopulated.cave.massif], 'massif');
 
-    const {
-      cave, name, names, ...newEntranceESData
-    } = newEntrancePopulated;
+    const { cave, name, names, ...newEntranceESData } = newEntrancePopulated;
     await ElasticsearchService.create('entrances', newEntrancePopulated.id, {
       ...newEntranceESData,
       'cave name': newEntrancePopulated.cave.name,
@@ -215,56 +214,56 @@ module.exports = {
     // Join many to many
     populatedEntrance.names = names
       ? await Promise.all(
-        names.map(async (name) => {
-          const res = await TName.findOne(name);
-          return res;
-        }),
-      )
+          names.map(async (name) => {
+            const res = await TName.findOne(name);
+            return res;
+          })
+        )
       : [];
 
     populatedEntrance.descriptions = descriptions
       ? await Promise.all(
-        descriptions.map(async (desc) => {
-          const res = await TDescription.findOne(desc);
-          return res;
-        }),
-      )
+          descriptions.map(async (desc) => {
+            const res = await TDescription.findOne(desc);
+            return res;
+          })
+        )
       : [];
 
     populatedEntrance.locations = locations
       ? await Promise.all(
-        locations.map(async (loc) => {
-          const res = await TLocation.findOne(loc);
-          return res;
-        }),
-      )
+          locations.map(async (loc) => {
+            const res = await TLocation.findOne(loc);
+            return res;
+          })
+        )
       : [];
 
     populatedEntrance.documents = documents
       ? await Promise.all(
-        documents.map(async (doc) => {
-          const res = await TDocument.findOne(doc);
-          return res;
-        }),
-      )
+          documents.map(async (doc) => {
+            const res = await TDocument.findOne(doc);
+            return res;
+          })
+        )
       : [];
 
     populatedEntrance.riggings = riggings
       ? await Promise.all(
-        riggings.map(async (rig) => {
-          const res = await TRigging.findOne(rig);
-          return res;
-        }),
-      )
+          riggings.map(async (rig) => {
+            const res = await TRigging.findOne(rig);
+            return res;
+          })
+        )
       : [];
 
     populatedEntrance.comments = comments
       ? await Promise.all(
-        comments.map(async (comment) => {
-          const res = await TComment.findOne(comment);
-          return res;
-        }),
-      )
+          comments.map(async (comment) => {
+            const res = await TComment.findOne(comment);
+            return res;
+          })
+        )
       : [];
 
     return populatedEntrance;
