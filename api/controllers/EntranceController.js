@@ -880,12 +880,12 @@ module.exports = {
     const willBeCreatedAsDuplicates = [];
     const wontBeCreated = [];
     for (const [index, row] of req.body.data.entries()) {
-      const idDb = doubleCheck({
+      const idDb = doubleCheck.with({
         data: row,
         key: 'id',
         defaultValue: undefined,
       });
-      const nameDb = doubleCheck({
+      const nameDb = doubleCheck.with({
         data: row,
         key: 'dct:rights/cc:attributionName',
         defaultValue: undefined,
@@ -965,13 +965,13 @@ module.exports = {
       }
 
       // Check for duplicates
-      const idDb = doubleCheck({
-        data: data,
+      const idDb = doubleCheck.with({
+        data,
         key: 'id',
         defaultValue: undefined,
       });
-      const nameDb = doubleCheck({
-        data: data,
+      const nameDb = doubleCheck.with({
+        data,
         key: 'dct:rights/cc:attributionName',
         defaultValue: undefined,
       });
@@ -1032,8 +1032,8 @@ module.exports = {
         );
         const doubleCheck = sails.helpers.csvhelpers.doubleCheck.with;
         if (
-          doubleCheck({
-            data: data,
+          doubleCheck.with({
+            data,
             key: 'gn:alternateName',
             defaultValue: null,
           })
