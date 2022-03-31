@@ -38,14 +38,15 @@ module.exports = {
           },
           sails.config.custom.authTokenTTL,
           'Authentication',
-          tokenSalt,
+          tokenSalt
         );
         return res.json({ token });
       });
     })(req, res);
   },
 
-  logout: (req, res) => res.badRequest('AuthController.logout not yet implemented!'), // req.session.authenticated = false;
+  logout: (req, res) =>
+    res.badRequest('AuthController.logout not yet implemented!'), // req.session.authenticated = false;
   // return res.json(200, {"Logout succeeded"});
 
   signUp: async (req, res) => {
@@ -68,13 +69,11 @@ module.exports = {
       return res.badRequest('You must provide a password.');
     }
     if (
-      req.param('password')
-      && req.param('password').length < PASSWORD_MIN_LENGTH
+      req.param('password') &&
+      req.param('password').length < PASSWORD_MIN_LENGTH
     ) {
       return res.badRequest(
-        `Your password must be at least ${
-          PASSWORD_MIN_LENGTH
-        } characters long.`,
+        `Your password must be at least ${PASSWORD_MIN_LENGTH} characters long.`
       );
     }
     if (!req.param('nickname')) {

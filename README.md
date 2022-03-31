@@ -89,7 +89,7 @@ Wait until you see the following lines in the logs:
 ```
 
 At this point you are good to go. The API is available at http://localhost:1337/, and you can monitor the evolution of ES
-indices at http://localhost:9200/_cat/indices?v
+indices at http://localhost:9200/\_cat/indices?v
 
 Each time you change a file in the source code, the code is recompiled automatically, you just need to refresh the page
 in your browser.

@@ -23,8 +23,9 @@ module.exports = {
       .exec((err, found) => {
         const params = {
           controllerMethod: 'LanguageController.findAll',
-          searchedItem:
-            `All Languages${req.param('isPrefered') ? ' prefered' : ''}`,
+          searchedItem: `All Languages${
+            req.param('isPrefered') ? ' prefered' : ''
+          }`,
         };
         const formattedFound = {
           languages: found,

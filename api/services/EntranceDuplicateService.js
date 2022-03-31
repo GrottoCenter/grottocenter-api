@@ -3,7 +3,7 @@ module.exports = {
     authorId,
     content,
     entranceId,
-    dateInscription = new Date(),
+    dateInscription = new Date()
   ) => {
     await TEntranceDuplicate.create({
       author: authorId,

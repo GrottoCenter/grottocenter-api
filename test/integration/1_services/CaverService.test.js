@@ -52,7 +52,7 @@ describe('CaverService', () => {
       const errorHandler = (e) => e;
       const newCaver = await CaverService.createNonUserCaver(
         caverData,
-        errorHandler,
+        errorHandler
       );
 
       should(newCaver.name).equal(caverData.name);
@@ -69,7 +69,7 @@ describe('CaverService', () => {
       const errorHandler = (e) => e;
       const newCaver = await CaverService.createNonUserCaver(
         caverData,
-        errorHandler,
+        errorHandler
       );
 
       should(newCaver.name).equal(caverData.name);

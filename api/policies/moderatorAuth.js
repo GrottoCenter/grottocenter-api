@@ -16,7 +16,7 @@ module.exports = (req, res, next) => {
     next();
   } else {
     return res.forbidden(
-      'You are not permitted to perform this action: you must be a moderator.',
+      'You are not permitted to perform this action: you must be a moderator.'
     );
   }
 };

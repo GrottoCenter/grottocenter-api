@@ -13,7 +13,7 @@ module.exports = (req, res, next) => {
 
   if (!apiControl) {
     sails.log.error(
-      `Asked route ${req.route.path} is not correctly configurated: missing block api: {...}`,
+      `Asked route ${req.route.path} is not correctly configurated: missing block api: {...}`
     );
     return res.serverError('Misconfigurated route'); // TODO
   }
@@ -27,7 +27,8 @@ module.exports = (req, res, next) => {
       }
 
       const splitRange = askedRange.split('-');
-      const diffRange = parseInt(splitRange[1], 10) - parseInt(splitRange[0], 10);
+      const diffRange =
+        parseInt(splitRange[1], 10) - parseInt(splitRange[0], 10);
 
       if (diffRange < 0 || diffRange > apiControl.limit) {
         throw new Error('Invalid range');
@@ -38,7 +39,7 @@ module.exports = (req, res, next) => {
   } catch (e) {
     res.set(
       'Accept-Range',
-      _.capitalize(apiControl.entity).concat(' ', apiControl.limit),
+      _.capitalize(apiControl.entity).concat(' ', apiControl.limit)
     );
     return res.badRequest('Requested range not allowed');
   }

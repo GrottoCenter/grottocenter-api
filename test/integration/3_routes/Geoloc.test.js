@@ -9,11 +9,9 @@ describe('Geoloc features', () => {
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json')
         .query({
-          /* eslint-disable camelcase */
           sw_lat: 0,
           sw_lng: 0,
           ne_lng: 5,
-          /* eslint-enable camelcase */
         })
         .expect(400, done);
     });
@@ -23,12 +21,10 @@ describe('Geoloc features', () => {
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json')
         .query({
-          /* eslint-disable camelcase */
           sw_lat: 0,
           sw_lng: -250,
           ne_lat: 100,
           ne_lng: 0,
-          /* eslint-enable camelcase */
         })
         .expect(400, done);
     });
@@ -38,12 +34,10 @@ describe('Geoloc features', () => {
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json')
         .query({
-          /* eslint-disable camelcase */
           sw_lat: 0,
           sw_lng: 0,
           ne_lat: 5,
           ne_lng: 5,
-          /* eslint-enable camelcase */
         })
         .expect(200)
         .end((err, res) => {
@@ -59,12 +53,10 @@ describe('Geoloc features', () => {
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json')
         .query({
-          /* eslint-disable camelcase */
           sw_lat: -80,
           sw_lng: -170,
           ne_lat: -79,
           ne_lng: -169,
-          /* eslint-enable camelcase */
         })
         .expect(200)
         .end((err, res) => {

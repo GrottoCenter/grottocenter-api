@@ -63,9 +63,9 @@ before(function (done) {
             .then(() => done())
             .catch((commonServiceError) => done(commonServiceError));
         },
-        false,
+        false
       );
-    },
+    }
   );
 });
 

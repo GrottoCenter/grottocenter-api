@@ -48,16 +48,14 @@ module.exports = {
 
       // Format & create descriptions
       if (descriptionsData) {
-        descriptionsData.map(
-          async (d) => {
-            const desc = await TDescription.create({
-              ...d,
-              cave: createdCave.id,
-              dateInscription: new Date(),
-            }).usingConnection(db);
-            return desc;
-          },
-        );
+        descriptionsData.map(async (d) => {
+          const desc = await TDescription.create({
+            ...d,
+            cave: createdCave.id,
+            dateInscription: new Date(),
+          }).usingConnection(db);
+          return desc;
+        });
       }
       return createdCave;
     });
@@ -121,7 +119,7 @@ module.exports = {
           await TCave.addToCollection(
             destinationCaveId,
             'exploringGrottos',
-            sourceExp.id,
+            sourceExp.id
           ).usingConnection(db);
         }
       }
@@ -131,7 +129,7 @@ module.exports = {
           await TCave.addToCollection(
             destinationCaveId,
             'partneringGrottos',
-            sourcePartn.id,
+            sourcePartn.id
           ).usingConnection(db);
         }
       }
@@ -140,15 +138,11 @@ module.exports = {
       const mergedData = ramda.mergeWith(
         (a, b) => (b === null ? a : b),
         sourceCave,
-        destinationCave,
+        destinationCave
       );
 
-      const {
-        id,
-        exploringGrottos,
-        partneringGrottos,
-        ...cleanedMergedData
-      } = mergedData;
+      const { id, exploringGrottos, partneringGrottos, ...cleanedMergedData } =
+        mergedData;
       await TCave.update(destinationCaveId)
         .set(cleanedMergedData)
         .usingConnection(db);

@@ -54,7 +54,7 @@ module.exports = {
         for (let i = 0; i < inputs.groups.length; i += 1) {
           if (
             rightFound.groups.some(
-              (rightGroup) => rightGroup.id === inputs.groups[i].id,
+              (rightGroup) => rightGroup.id === inputs.groups[i].id
             )
           ) {
             return exits.success(true);

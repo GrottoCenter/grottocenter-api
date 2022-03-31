@@ -1,29 +1,29 @@
 [
-    {
-        "id": 1,
-        "author": 3,
-        "reviewer": 1,
-        "isOfInterest": true,
-        "cave": 1,
-        "latitude": "3",
-        "longitude": "3"
-    },
-    {
-        "id": 2,
-        "author": 1,
-        "reviewer": 2,
-        "isOfInterest": false,
-        "cave": 1,
-        "latitude": "3",
-        "longitude": "3"
-    },
-    {
-        "id": 3,
-        "author": 1,
-        "reviewer": 2,
-        "isOfInterest": false,
-        "cave": 2,
-        "latitude": "-1",
-        "longitude": "-3"
-    }
+  {
+    "id": 1,
+    "author": 3,
+    "reviewer": 1,
+    "isOfInterest": true,
+    "cave": 1,
+    "latitude": "3",
+    "longitude": "3"
+  },
+  {
+    "id": 2,
+    "author": 1,
+    "reviewer": 2,
+    "isOfInterest": false,
+    "cave": 1,
+    "latitude": "3",
+    "longitude": "3"
+  },
+  {
+    "id": 3,
+    "author": 1,
+    "reviewer": 2,
+    "isOfInterest": false,
+    "cave": 2,
+    "latitude": "-1",
+    "longitude": "-3"
+  }
 ]

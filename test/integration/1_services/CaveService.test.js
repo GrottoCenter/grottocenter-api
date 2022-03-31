@@ -1,15 +1,16 @@
 const should = require('should');
 const CaveService = require('../../../api/services/CaveService');
 
-const findAndPopulateCave = async (caveId) => TCave.findOne(caveId)
-  .populate('comments')
-  .populate('descriptions')
-  .populate('documents')
-  .populate('entrances')
-  .populate('exploringGrottos')
-  .populate('histories')
-  .populate('names')
-  .populate('partneringGrottos');
+const findAndPopulateCave = async (caveId) =>
+  TCave.findOne(caveId)
+    .populate('comments')
+    .populate('descriptions')
+    .populate('documents')
+    .populate('entrances')
+    .populate('exploringGrottos')
+    .populate('histories')
+    .populate('names')
+    .populate('partneringGrottos');
 
 describe('CaveService', () => {
   describe('setEntrances()', () => {
@@ -24,7 +25,6 @@ describe('CaveService', () => {
   });
 
   describe('create()', () => {
-    /* eslint-disable camelcase */
     const caveData = {
       id_author: 1,
       is_diving: true,
@@ -34,19 +34,25 @@ describe('CaveService', () => {
       longitude: 6.345676,
       temperature: 42,
     };
-    /* eslint-enable camelcase */
+
     const nameData = { name: 'TestCave1', language: 'eng' };
     const descriptionsData = [
       {
-        author: 1, body: 'desc1', language: 'eng', title: 'titleDesc1',
+        author: 1,
+        body: 'desc1',
+        language: 'eng',
+        title: 'titleDesc1',
       },
       {
-        author: 1, body: 'desc2', language: 'fra', title: 'titreDesc2',
+        author: 1,
+        body: 'desc2',
+        language: 'fra',
+        title: 'titreDesc2',
       },
     ];
 
-    let nbCavesBefore; let
-      nbCavesAfter;
+    let nbCavesBefore;
+    let nbCavesAfter;
 
     before(async () => {
       nbCavesBefore = (await TCave.find()).length;
@@ -56,7 +62,7 @@ describe('CaveService', () => {
       const createdCave = await CaveService.createCave(
         caveData,
         nameData,
-        descriptionsData,
+        descriptionsData
       );
 
       // Cave data verifications
@@ -79,7 +85,7 @@ describe('CaveService', () => {
       should(descriptions.length).equal(2);
       for (const initialDesc of descriptionsData) {
         const createdDesc = descriptions.find(
-          (d) => d.title === initialDesc.title && d.body === initialDesc.body,
+          (d) => d.title === initialDesc.title && d.body === initialDesc.body
         );
         should(createdDesc.author).equal(initialDesc.author);
         should(createdDesc.body).equal(initialDesc.body);
@@ -107,7 +113,6 @@ describe('CaveService', () => {
   });
 
   describe('mergeCaves()', () => {
-    /* eslint-disable camelcase */
     const cave1Data = {
       id_author: 1,
       is_diving: false,
@@ -119,7 +124,7 @@ describe('CaveService', () => {
       longitude: 32.45688,
       temperature: 42,
     };
-    /* eslint-enable camelcase */
+
     const name1Data = { name: 'TestCave1', language: 'eng' };
     const descriptions1Data = [
       {
@@ -136,7 +141,6 @@ describe('CaveService', () => {
       },
     ];
 
-    /* eslint-disable camelcase */
     const cave2Data = {
       id_author: 2,
       is_diving: true,
@@ -148,7 +152,7 @@ describe('CaveService', () => {
       longitude: 45.658,
       temperature: null,
     };
-    /* eslint-enable camelcase */
+
     const name2Data = { name: 'TestCave2', language: 'eng' };
     const descriptions2Data = [
       {
@@ -169,12 +173,12 @@ describe('CaveService', () => {
       const cave1Tmp = await CaveService.createCave(
         cave1Data,
         name1Data,
-        descriptions1Data,
+        descriptions1Data
       );
       const cave2Tmp = await CaveService.createCave(
         cave2Data,
         name2Data,
-        descriptions2Data,
+        descriptions2Data
       );
       const oldCave1 = await findAndPopulateCave(cave1Tmp.id);
       const oldCave2 = await findAndPopulateCave(cave2Tmp.id);
@@ -190,11 +194,11 @@ describe('CaveService', () => {
       should(resultCave.depth).equal(oldCave2.depth);
       should(resultCave.isDiving).equal(oldCave2.isDiving);
       should(parseFloat(resultCave.latitude)).equal(
-        parseFloat(oldCave2.latitude),
+        parseFloat(oldCave2.latitude)
       );
       should(resultCave.length).equal(oldCave2.length);
       should(parseFloat(resultCave.longitude)).equal(
-        parseFloat(oldCave2.longitude),
+        parseFloat(oldCave2.longitude)
       );
       should(resultCave.temperature).equal(oldCave1.temperature);
 
@@ -203,7 +207,7 @@ describe('CaveService', () => {
       const collectionNamesToCheck = ['comments', 'descriptions', 'histories'];
       for (const collectionName of collectionNamesToCheck) {
         should(resultCave[collectionName].length).equal(
-          oldCave2[collectionName].length + oldCave1[collectionName].length,
+          oldCave2[collectionName].length + oldCave1[collectionName].length
         );
       }
 
@@ -220,10 +224,11 @@ describe('CaveService', () => {
       ];
       for (const collectionName of collectionNamesWithoutDuplicates) {
         const oldValuesConcateneted = oldCave1[collectionName].concat(
-          oldCave2[collectionName],
+          oldCave2[collectionName]
         );
         const oldUniqueValues = oldValuesConcateneted.filter(
-          (value, idx, array) => array.findIndex((t) => t.id === value.id) === idx,
+          (value, idx, array) =>
+            array.findIndex((t) => t.id === value.id) === idx
         );
         should(resultCave[collectionName]).deepEqual(oldUniqueValues);
       }

@@ -9,7 +9,10 @@
  * https://sailsjs.com/config/bootstrap
  */
 
-module.exports.bootstrap = async (done) => done();
+// eslint-disable-next-line func-names
+module.exports.bootstrap = async function (done) {
+  return done();
+};
 // By convention, this is a good place to set up fake data during development.
 //
 // For example:

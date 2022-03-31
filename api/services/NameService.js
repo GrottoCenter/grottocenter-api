@@ -24,8 +24,8 @@ module.exports = {
               // eslint-disable-next-line no-param-reassign
               entity.names = relatedEntrance[0]
                 ? await TName.find().where({
-                  entrance: relatedEntrance[0].id,
-                })
+                    entrance: relatedEntrance[0].id,
+                  })
                 : [];
             }
           }
@@ -35,7 +35,7 @@ module.exports = {
             entity.name = mainName.name;
           }
           return entity;
-        }),
+        })
       );
     }
     return null;

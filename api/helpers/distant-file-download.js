@@ -33,8 +33,7 @@ module.exports = {
 
   exits: {
     success: {
-      file:
-        'An object representing the downloaded file , including the attributes "buffer", "originalname", "size" & "mimetype" (like a multer object, see https://github.com/expressjs/multer#file-information).',
+      file: 'An object representing the downloaded file , including the attributes "buffer", "originalname", "size" & "mimetype" (like a multer object, see https://github.com/expressjs/multer#file-information).',
     },
     downloadError: {
       description:
@@ -76,8 +75,8 @@ module.exports = {
           return exits.formatRefused(extension);
         }
         if (
-          acceptedFileFormats !== undefined
-          && !acceptedFileFormats.includes(extension)
+          acceptedFileFormats !== undefined &&
+          !acceptedFileFormats.includes(extension)
         ) {
           return exits.formatRefused(extension);
         }

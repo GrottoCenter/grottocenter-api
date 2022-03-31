@@ -12,8 +12,8 @@ const client = new SESClient({
 client.areAwsCredentialsSet = async () => {
   const credentials = await client.config.credentials();
   return (
-    credentials.accessKeyId !== undefined
-    && credentials.secretAccessKey !== undefined
+    credentials.accessKeyId !== undefined &&
+    credentials.secretAccessKey !== undefined
   );
 };
 

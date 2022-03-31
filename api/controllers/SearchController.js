@@ -37,7 +37,7 @@ module.exports = {
 
     const params = {
       searchedItem: `Search entity with the following query ${req.param(
-        'query',
+        'query'
       )}`,
     };
 
@@ -59,7 +59,7 @@ module.exports = {
             results,
             params,
             res,
-            MappingV1Service.convertToCompleteSearchResult,
+            MappingV1Service.convertToCompleteSearchResult
           );
         }
         return ControllerService.treatAndConvert(
@@ -68,17 +68,19 @@ module.exports = {
           results,
           params,
           res,
-          MappingV1Service.convertEsToSearchResult,
+          MappingV1Service.convertEsToSearchResult
         );
       })
-      .catch((err) => ControllerService.treatAndConvert(
-        req,
-        err,
-        undefined,
-        params,
-        res,
-        MappingV1Service.convertEsToSearchResult,
-      ));
+      .catch((err) =>
+        ControllerService.treatAndConvert(
+          req,
+          err,
+          undefined,
+          params,
+          res,
+          MappingV1Service.convertEsToSearchResult
+        )
+      );
   },
 
   /**
@@ -107,8 +109,8 @@ module.exports = {
     if (paramsURL.matchAllFields && paramsURL.matchAllFields === 'false') {
       paramsURL.matchAllFields = false;
     } else if (
-      paramsURL.matchAllFields
-      && paramsURL.matchAllFields === 'true'
+      paramsURL.matchAllFields &&
+      paramsURL.matchAllFields === 'true'
     ) {
       paramsURL.matchAllFields = true;
     }
@@ -124,7 +126,7 @@ module.exports = {
             results,
             params,
             res,
-            MappingV1Service.convertToCompleteSearchResult,
+            MappingV1Service.convertToCompleteSearchResult
           );
         }
         return ControllerService.treatAndConvert(
@@ -133,16 +135,18 @@ module.exports = {
           results,
           params,
           res,
-          MappingV1Service.convertEsToSearchResult,
+          MappingV1Service.convertEsToSearchResult
         );
       })
-      .catch((err) => ControllerService.treatAndConvert(
-        req,
-        err,
-        undefined,
-        params,
-        res,
-        MappingV1Service.convertEsToSearchResult,
-      ));
+      .catch((err) =>
+        ControllerService.treatAndConvert(
+          req,
+          err,
+          undefined,
+          params,
+          res,
+          MappingV1Service.convertEsToSearchResult
+        )
+      );
   },
 };

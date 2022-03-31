@@ -14,5 +14,18 @@ import nl from './nl.json';
 import pt from './pt.json';
 
 export default {
-  ar, bg, ca, de, el, en, es, fr, he, id, it, ja, nl, pt,
+  ar,
+  bg,
+  ca,
+  de,
+  el,
+  en,
+  es,
+  fr,
+  he,
+  id,
+  it,
+  ja,
+  nl,
+  pt,
 };

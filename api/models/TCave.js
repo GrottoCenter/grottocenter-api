@@ -10,7 +10,6 @@
  * The TCave.create() function doesn't work with TCave field alias.
  * See https://github.com/balderdashy/sails/issues/7106
  */
-/* eslint-disable camelcase */
 
 module.exports = {
   tableName: 't_cave',
@@ -165,4 +164,3 @@ module.exports = {
     },
   },
 };
-/* eslint-enable camelcase */

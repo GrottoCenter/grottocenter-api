@@ -20,12 +20,14 @@ module.exports = {
         rightEntity: RightService.RightEntities.DOCUMENT_DUPLICATE,
         rightAction: RightService.RightActions.CREATE,
       })
-      .intercept('rightNotFound', () => res.serverError(
-        'A server error occured when checking your right to create a document duplicate.',
-      ));
+      .intercept('rightNotFound', () =>
+        res.serverError(
+          'A server error occured when checking your right to create a document duplicate.'
+        )
+      );
     if (!hasRight) {
       return res.forbidden(
-        'You are not authorized to create a document duplicate.',
+        'You are not authorized to create a document duplicate.'
       );
     }
 
@@ -48,12 +50,14 @@ module.exports = {
         rightEntity: RightService.RightEntities.DOCUMENT_DUPLICATE,
         rightAction: RightService.RightActions.CREATE,
       })
-      .intercept('rightNotFound', () => res.serverError(
-        'A server error occured when checking your right to create a document duplicate.',
-      ));
+      .intercept('rightNotFound', () =>
+        res.serverError(
+          'A server error occured when checking your right to create a document duplicate.'
+        )
+      );
     if (!hasRight) {
       return res.forbidden(
-        'You are not authorized to create a document duplicate.',
+        'You are not authorized to create a document duplicate.'
       );
     }
 
@@ -65,7 +69,7 @@ module.exports = {
       }))
     ) {
       return res.badRequest(
-        `Could not find duplicate with id ${req.param('id')}.`,
+        `Could not find duplicate with id ${req.param('id')}.`
       );
     }
     const id = req.param('id');
@@ -90,12 +94,14 @@ module.exports = {
         rightEntity: RightService.RightEntities.DOCUMENT_DUPLICATE,
         rightAction: RightService.RightActions.DELETE_ANY,
       })
-      .intercept('rightNotFound', () => res.serverError(
-        'A server error occured when checking your right to delete an document duplicate.',
-      ));
+      .intercept('rightNotFound', () =>
+        res.serverError(
+          'A server error occured when checking your right to delete an document duplicate.'
+        )
+      );
     if (!hasRight) {
       return res.forbidden(
-        'You are not authorized to delete a document duplicate.',
+        'You are not authorized to delete a document duplicate.'
       );
     }
     const id = req.param('id');
@@ -111,7 +117,7 @@ module.exports = {
       }))
     ) {
       return res.badRequest(
-        `Could not find duplicate with id ${req.param('id')}.`,
+        `Could not find duplicate with id ${req.param('id')}.`
       );
     }
 
@@ -126,12 +132,14 @@ module.exports = {
         rightEntity: RightService.RightEntities.DOCUMENT_DUPLICATE,
         rightAction: RightService.RightActions.DELETE_ANY,
       })
-      .intercept('rightNotFound', () => res.serverError(
-        'A server error occured when checking your right to create a document duplicate.',
-      ));
+      .intercept('rightNotFound', () =>
+        res.serverError(
+          'A server error occured when checking your right to create a document duplicate.'
+        )
+      );
     if (!hasRight) {
       return res.forbidden(
-        'You are not authorized to create a document duplicate.',
+        'You are not authorized to create a document duplicate.'
       );
     }
 
@@ -160,11 +168,11 @@ module.exports = {
       }))
     ) {
       return res.badRequest(
-        `Could not find duplicate with id ${req.param('id')}.`,
+        `Could not find duplicate with id ${req.param('id')}.`
       );
     }
     const duplicate = await TDocumentDuplicate.findOne(
-      req.param('id'),
+      req.param('id')
     ).populate('author');
 
     // Populate the document
@@ -225,14 +233,14 @@ module.exports = {
       duplicate,
       params,
       res,
-      MappingV1Service.convertToDocumentDuplicateModel,
+      MappingV1Service.convertToDocumentDuplicateModel
     );
   },
 
   findAll: async (req, res) => {
     const sort = `${req.param('sortBy', 'dateInscription')} ${req.param(
       'orderBy',
-      'ASC',
+      'ASC'
     )}`;
     const limit = req.param('limit', 50);
     const skip = req.param('skip', 0);
@@ -259,7 +267,7 @@ module.exports = {
         duplicates,
         params,
         res,
-        MappingV1Service.convertToDocumentDuplicateList,
+        MappingV1Service.convertToDocumentDuplicateList
       );
     } catch (err) {
       ErrorService.getDefaultErrorHandler(res)(err);

@@ -18,5 +18,6 @@ module.exports = {
    *
    * @returns {string} the converted html string
    */
-  convertHtmlToText: (html, length) => _.prune(_.unescapeHTML(_.stripTags(html)), length),
+  convertHtmlToText: (html, length) =>
+    _.prune(_.unescapeHTML(_.stripTags(html)), length),
 };

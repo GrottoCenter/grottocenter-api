@@ -32,11 +32,9 @@ module.exports = {
   },
 
   fn(inputs, exits) {
-    const {
-      data, key, defaultValue, func,
-    } = inputs;
+    const { data, key, defaultValue, func } = inputs;
     return exits.success(
-      data[key] && data[key] !== '' ? func(data[key]) : defaultValue,
+      data[key] && data[key] !== '' ? func(data[key]) : defaultValue
     );
   },
 };

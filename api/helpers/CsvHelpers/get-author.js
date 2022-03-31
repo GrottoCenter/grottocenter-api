@@ -38,11 +38,8 @@ module.exports = {
       });
     }
 
-    const [
-      authorFullName,
-      name,
-      surname,
-    ] = await sails.helpers.csvhelpers.getPersonData.with({ fullName: author });
+    const [authorFullName, name, surname] =
+      await sails.helpers.csvhelpers.getPersonData.with({ fullName: author });
     author = authorFullName;
     const authorName = name;
     const authorSurname = surname;
@@ -57,7 +54,7 @@ module.exports = {
       };
       const newCaver = await CaverService.createNonUserCaver(
         caverParams,
-        (error) => error,
+        (error) => error
       );
       authorId = newCaver.id;
     } else {

@@ -22,22 +22,20 @@ module.exports = {
   },
 
   async fn(inputs, exits) {
-    const creatorNicknameRaw = await sails.helpers.csvhelpers.retrieveFromLink.with(
-      { stringArg: inputs.creator },
-    );
+    const creatorNicknameRaw =
+      await sails.helpers.csvhelpers.retrieveFromLink.with({
+        stringArg: inputs.creator,
+      });
     const creatorNickname = creatorNicknameRaw.replace('_', ' ');
     const caversArray = await TCaver.find({
       nickname: creatorNickname,
     }).limit(1);
     let caver;
     if (caversArray.length === 0) {
-      const [
-        fullName,
-        creatorName,
-        creatorSurname,
-      ] = await sails.helpers.csvhelpers.getPersonData.with({
-        fullName: creatorNickname,
-      });
+      const [fullName, creatorName, creatorSurname] =
+        await sails.helpers.csvhelpers.getPersonData.with({
+          fullName: creatorNickname,
+        });
       const paramsCaver = {
         name: creatorName,
         surname: creatorSurname,
@@ -45,7 +43,7 @@ module.exports = {
       };
       caver = await CaverService.createNonUserCaver(
         paramsCaver,
-        (error) => error,
+        (error) => error
       );
     } else {
       caver = caversArray[0];

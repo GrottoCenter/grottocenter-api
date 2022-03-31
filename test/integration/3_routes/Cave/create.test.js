@@ -80,7 +80,7 @@ describe('Cave features', () => {
             should(cave).have.properties(CAVE_PROPERTIES);
             should(cave.depth).equal(caveCreationData.depth);
             should(cave.documents.length).equal(
-              caveCreationData.documents.length,
+              caveCreationData.documents.length
             );
             should(cave.latitude).equal(caveCreationData.latitude);
             should(cave.length).equal(caveCreationData.length);

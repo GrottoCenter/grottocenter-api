@@ -75,7 +75,8 @@ const getConvertedNameDescLocFromClientRequest = (req) => {
 */
 
 const getConvertedEntranceFromCsv = (rawData, idAuthor, cave) => {
-  const doubleCheckWithData = (args) => doubleCheck.with({ data: rawData, ...args }); // eslint-disable-line max-len
+  const doubleCheckWithData = (args) =>
+    doubleCheck.with({ data: rawData, ...args });
 
   return {
     author: idAuthor,
@@ -111,7 +112,8 @@ const getConvertedEntranceFromCsv = (rawData, idAuthor, cave) => {
 };
 
 const getConvertedNameDescLocEntranceFromCsv = async (rawData, authorId) => {
-  const doubleCheckWithData = (args) => sails.helpers.csvhelpers.doubleCheck.with({ data: rawData, ...args }); // eslint-disable-line max-len
+  const doubleCheckWithData = (args) =>
+    sails.helpers.csvhelpers.doubleCheck.with({ data: rawData, ...args });
   let result = {};
   if (
     doubleCheckWithData({
@@ -204,30 +206,32 @@ const getConvertedNameDescLocEntranceFromCsv = async (rawData, authorId) => {
 };
 
 const getConvertedCaveFromCsv = (rawData, idAuthor) => {
-  const doubleCheckWithData = (args) => doubleCheck.with({ data: rawData, ...args }); // eslint-disable-line max-len
+  const doubleCheckWithData = (args) =>
+    doubleCheck.with({ data: rawData, ...args });
 
   let depth = doubleCheckWithData({
     key: 'karstlink:verticalExtend',
   });
   if (!depth) {
-    depth = parseInt(
-      doubleCheckWithData({
-        key: 'karstlink:extendBelowEntrance',
-        defaultValue: 0,
-      }),
-      10,
-    )
-      + parseInt(
+    depth =
+      parseInt(
+        doubleCheckWithData({
+          key: 'karstlink:extendBelowEntrance',
+          defaultValue: 0,
+        }),
+        10
+      ) +
+      parseInt(
         doubleCheckWithData({
           key: 'karstlink:extendAboveEntrance',
           defaultValue: 0,
         }),
-        10,
+        10
       );
   }
   return {
     // The TCave.create() function doesn't work with TCave field alias. See TCave.js Model
-    /* eslint-disable camelcase */
+
     id_author: idAuthor,
     latitude: doubleCheckWithData({
       key: 'w3geo:latitude',
@@ -250,7 +254,8 @@ const getConvertedCaveFromCsv = (rawData, idAuthor) => {
 };
 
 const getConvertedNameAndDescCaveFromCsv = (rawData, authorId) => {
-  const doubleCheckWithData = (args) => doubleCheck.with({ data: rawData, ...args }); // eslint-disable-line max-len
+  const doubleCheckWithData = (args) =>
+    doubleCheck.with({ data: rawData, ...args });
 
   return {
     author: authorId,
@@ -292,8 +297,7 @@ module.exports = {
         if (err) {
           sails.log.error(err);
           return res.serverError(
-            `An unexpected server error occured when trying to get ${
-              params.searchedItem}`,
+            `An unexpected server error occured when trying to get ${params.searchedItem}`
           );
         }
         if (!found) {
@@ -318,25 +322,25 @@ module.exports = {
         // eslint-disable-next-line no-param-reassign
         found.cave.id_author = await CaverService.getCaver(
           found.cave.id_author,
-          req,
+          req
         ); // using id_author because of a bug in Sails ORM... See TCave() file for explaination
 
         /* eslint-disable no-return-assign */
         /* eslint-disable no-param-reassign */
         found.comments.map(
-          async (c) => (c.author = await CaverService.getCaver(c.author, req)),
+          async (c) => (c.author = await CaverService.getCaver(c.author, req))
         );
         found.descriptions.map(
-          async (d) => (d.author = await CaverService.getCaver(d.author, req)),
+          async (d) => (d.author = await CaverService.getCaver(d.author, req))
         );
         found.histories.map(
-          async (h) => (h.author = await CaverService.getCaver(h.author, req)),
+          async (h) => (h.author = await CaverService.getCaver(h.author, req))
         );
         found.locations.map(
-          async (l) => (l.author = await CaverService.getCaver(l.author, req)),
+          async (l) => (l.author = await CaverService.getCaver(l.author, req))
         );
         found.riggings.map(
-          async (r) => (r.author = await CaverService.getCaver(r.author, req)),
+          async (r) => (r.author = await CaverService.getCaver(r.author, req))
         );
         /* eslint-enable no-param-reassign */
         /* eslint-enable no-return-assign */
@@ -352,7 +356,7 @@ module.exports = {
             await DocumentService.setDocumentType(d);
             await DocumentService.setDocumentLicense(d);
             await DocumentService.setDocumentFiles(d);
-          }),
+          })
         );
 
         // Populate stats
@@ -366,30 +370,34 @@ module.exports = {
         if (found.isSensitive) {
           const hasCompleteViewRight = req.token
             ? await sails.helpers.checkRight
-              .with({
-                groups: req.token.groups,
-                rightEntity: RightService.RightEntities.ENTRANCE,
-                rightAction: RightService.RightActions.VIEW_COMPLETE,
-              })
-              .intercept('rightNotFound', () => res.serverError(
-                'A server error occured when checking your right to entirely view an entrance.',
-              ))
+                .with({
+                  groups: req.token.groups,
+                  rightEntity: RightService.RightEntities.ENTRANCE,
+                  rightAction: RightService.RightActions.VIEW_COMPLETE,
+                })
+                .intercept('rightNotFound', () =>
+                  res.serverError(
+                    'A server error occured when checking your right to entirely view an entrance.'
+                  )
+                )
             : false;
 
           const hasLimitedViewRight = req.token
             ? await sails.helpers.checkRight
-              .with({
-                groups: req.token.groups,
-                rightEntity: RightService.RightEntities.ENTRANCE,
-                rightAction: RightService.RightActions.VIEW_LIMITED,
-              })
-              .intercept('rightNotFound', () => res.serverError(
-                'A server error occured when checking your right to have a limited view of a sensible entrance.',
-              ))
+                .with({
+                  groups: req.token.groups,
+                  rightEntity: RightService.RightEntities.ENTRANCE,
+                  rightAction: RightService.RightActions.VIEW_LIMITED,
+                })
+                .intercept('rightNotFound', () =>
+                  res.serverError(
+                    'A server error occured when checking your right to have a limited view of a sensible entrance.'
+                  )
+                )
             : false;
           if (!hasLimitedViewRight && !hasCompleteViewRight) {
             return res.forbidden(
-              'You are not authorized to view this sensible entrance.',
+              'You are not authorized to view this sensible entrance.'
             );
           }
           if (!hasCompleteViewRight) {
@@ -404,7 +412,7 @@ module.exports = {
           found,
           params,
           res,
-          converter,
+          converter
         );
       });
   },
@@ -413,7 +421,7 @@ module.exports = {
     req,
     res,
     next,
-    converter = MappingV1Service.convertToEntranceModel,
+    converter = MappingV1Service.convertToEntranceModel
   ) => {
     const params = {};
     params.searchedItem = 'Random entrance';
@@ -428,24 +436,27 @@ module.exports = {
           result,
           params,
           res,
-          converter,
+          converter
         );
       })
-      .catch((err) => ControllerService.treatAndConvert(
-        req,
-        err,
-        undefined,
-        params,
-        res,
-        converter,
-      ));
+      .catch((err) =>
+        ControllerService.treatAndConvert(
+          req,
+          err,
+          undefined,
+          params,
+          res,
+          converter
+        )
+      );
   },
 
   publicCount: (req, res, converter) => {
     TEntrance.count({ isPublic: true })
       .then((total) => res.json(converter({ count: total })))
       .catch((err) => {
-        const errorMessage = 'An internal error occurred when getting number of public entrances';
+        const errorMessage =
+          'An internal error occurred when getting number of public entrances';
         sails.log.error(`${errorMessage}: ${err}`);
         return res.status(500).json({ error: errorMessage });
       });
@@ -472,9 +483,11 @@ module.exports = {
         rightEntity: RightService.RightEntities.ENTRANCE,
         rightAction: RightService.RightActions.CREATE,
       })
-      .intercept('rightNotFound', () => res.serverError(
-        'A server error occured when checking your right to create an entrance.',
-      ));
+      .intercept('rightNotFound', () =>
+        res.serverError(
+          'A server error occured when checking your right to create an entrance.'
+        )
+      );
     if (!hasRight) {
       return res.forbidden('You are not authorized to create an entrance.');
     }
@@ -482,11 +495,11 @@ module.exports = {
     // Check params
     // name
     if (
-      !ramda.propOr(null, 'text', req.param('name'))
-      || !ramda.propOr(null, 'language', req.param('name'))
+      !ramda.propOr(null, 'text', req.param('name')) ||
+      !ramda.propOr(null, 'language', req.param('name'))
     ) {
       return res.badRequest(
-        'You must provide a name (with a language) for the new entrance',
+        'You must provide a name (with a language) for the new entrance'
       );
     }
 
@@ -502,7 +515,7 @@ module.exports = {
       }))
     ) {
       return res.badRequest(
-        `The cave with id ${req.param('cave')} does not exist.`,
+        `The cave with id ${req.param('cave')} does not exist.`
       );
     }
 
@@ -518,7 +531,7 @@ module.exports = {
     try {
       const newEntrancePopulated = await EntranceService.createEntrance(
         cleanedData,
-        nameDescLocData,
+        nameDescLocData
       );
       const params = {};
       params.controllerMethod = 'EntranceController.create';
@@ -527,7 +540,7 @@ module.exports = {
         null,
         newEntrancePopulated,
         params,
-        res,
+        res
       );
     } catch (e) {
       ErrorService.getDefaultErrorHandler(res)(e);
@@ -542,9 +555,11 @@ module.exports = {
         rightEntity: RightService.RightEntities.ENTRANCE,
         rightAction: RightService.RightActions.DELETE_ANY,
       })
-      .intercept('rightNotFound', () => res.serverError(
-        'A server error occured when checking your right to delete an entrance.',
-      ));
+      .intercept('rightNotFound', () =>
+        res.serverError(
+          'A server error occured when checking your right to delete an entrance.'
+        )
+      );
     if (!hasRight) {
       return res.forbidden('You are not authorized to delete an entrance.');
     }
@@ -567,9 +582,11 @@ module.exports = {
     // Delete Entrance
     await TEntrance.destroyOne({
       id: entranceId,
-    }).intercept(() => res.serverError(
-      `An unexpected error occured when trying to delete entrance with id ${entranceId}.`,
-    ));
+    }).intercept(() =>
+      res.serverError(
+        `An unexpected error occured when trying to delete entrance with id ${entranceId}.`
+      )
+    );
 
     ElasticsearchService.deleteResource('entrances', entranceId);
 
@@ -585,9 +602,11 @@ module.exports = {
         rightEntity: RightService.RightEntities.ENTRANCE,
         rightAction: RightService.RightActions.EDIT_ANY,
       })
-      .intercept('rightNotFound', () => res.serverError(
-        'A server error occured when checking your right to update an entrance.',
-      ));
+      .intercept('rightNotFound', () =>
+        res.serverError(
+          'A server error occured when checking your right to update an entrance.'
+        )
+      );
     if (!hasRight) {
       return res.forbidden('You are not authorized to update an entrance.');
     }
@@ -625,7 +644,7 @@ module.exports = {
           updatedEntrance,
           params,
           res,
-          converter,
+          converter
         );
       });
     } catch (e) {
@@ -643,9 +662,11 @@ module.exports = {
         rightEntity: RightService.RightEntities.ENTRANCE,
         rightAction: RightService.RightActions.EDIT_ANY,
       })
-      .intercept('rightNotFound', () => res.serverError(
-        'A server error occured when checking your right to update an entrance.',
-      ));
+      .intercept('rightNotFound', () =>
+        res.serverError(
+          'A server error occured when checking your right to update an entrance.'
+        )
+      );
     if (!hasRight) {
       return res.forbidden('You are not authorized to update an entrance.');
     }
@@ -692,14 +713,14 @@ module.exports = {
           entrance: entranceId,
         }));
         const createdDescriptions = await TDescription.createEach(
-          descParams,
+          descParams
         ).fetch();
         const createdDescriptionsIds = createdDescriptions.map(
-          (desc) => desc.id,
+          (desc) => desc.id
         );
         cleanedData.descriptions = ramda.concat(
           cleanedData.descriptions,
-          createdDescriptionsIds,
+          createdDescriptionsIds
         );
       }
 
@@ -712,7 +733,7 @@ module.exports = {
         const createdLocIds = createdLoc.map((loc) => loc.id);
         cleanedData.locations = ramda.concat(
           cleanedData.locations,
-          createdLocIds,
+          createdLocIds
         );
       }
 
@@ -725,7 +746,7 @@ module.exports = {
         const createdRiggingsIds = createdRiggings.map((rig) => rig.id);
         cleanedData.riggings = ramda.concat(
           cleanedData.riggings,
-          createdRiggingsIds,
+          createdRiggingsIds
         );
       }
 
@@ -735,12 +756,12 @@ module.exports = {
           entrance: entranceId,
         }));
         const createdComments = await TComment.createEach(
-          commentParams,
+          commentParams
         ).fetch();
         const createdCommentIds = createdComments.map((comment) => comment.id);
         cleanedData.comments = ramda.concat(
           cleanedData.comments,
-          createdCommentIds,
+          createdCommentIds
         );
       }
 
@@ -761,7 +782,7 @@ module.exports = {
           updatedEntrance,
           params,
           res,
-          converter,
+          converter
         );
       });
     } catch (e) {
@@ -778,12 +799,14 @@ module.exports = {
         rightEntity: RightService.RightEntities.ENTRANCE,
         rightAction: RightService.RightActions.LINK_RESOURCE,
       })
-      .intercept('rightNotFound', () => res.serverError(
-        'A server error occured when checking your right to add a document to an entrance.',
-      ));
+      .intercept('rightNotFound', () =>
+        res.serverError(
+          'A server error occured when checking your right to add a document to an entrance.'
+        )
+      );
     if (!hasRight) {
       return res.forbidden(
-        'You are not authorized to add a document to an entrance.',
+        'You are not authorized to add a document to an entrance.'
       );
     }
 
@@ -813,7 +836,9 @@ module.exports = {
     TEntrance.addToCollection(entranceId, 'documents', documentId)
       .then(() => res.sendStatus(204))
       .catch({ name: 'UsageError' }, (err) => res.badRequest(err.cause.message))
-      .catch({ name: 'AdapterError' }, (err) => res.badRequest(err.cause.message))
+      .catch({ name: 'AdapterError' }, (err) =>
+        res.badRequest(err.cause.message)
+      )
       .catch((err) => res.serverError(err.cause.message));
     return res.status(204);
   },
@@ -826,12 +851,14 @@ module.exports = {
         rightEntity: RightService.RightEntities.ENTRANCE,
         rightAction: RightService.RightActions.UNLINK_RESOURCE,
       })
-      .intercept('rightNotFound', () => res.serverError(
-        'A server error occured when checking your right to remove a document from an entrance.',
-      ));
+      .intercept('rightNotFound', () =>
+        res.serverError(
+          'A server error occured when checking your right to remove a document from an entrance.'
+        )
+      );
     if (!hasRight) {
       return res.forbidden(
-        'You are not authorized to remove a document from an entrance.',
+        'You are not authorized to remove a document from an entrance.'
       );
     }
 
@@ -855,7 +882,9 @@ module.exports = {
     TEntrance.removeFromCollection(entranceId, 'documents', documentId)
       .then(() => res.sendStatus(204))
       .catch({ name: 'UsageError' }, (err) => res.badRequest(err.cause.message))
-      .catch({ name: 'AdapterError' }, (err) => res.badRequest(err.cause.message))
+      .catch({ name: 'AdapterError' }, (err) =>
+        res.badRequest(err.cause.message)
+      )
       .catch((err) => res.serverError(err.cause.message));
     return res.status(204);
   },
@@ -912,12 +941,14 @@ module.exports = {
         rightEntity: RightService.RightEntities.ENTRANCE,
         rightAction: RightService.RightActions.CSV_IMPORT,
       })
-      .intercept('rightNotFound', () => res.serverError(
-        'A server error occured when checking your right to import entrances via CSV.',
-      ));
+      .intercept('rightNotFound', () =>
+        res.serverError(
+          'A server error occured when checking your right to import entrances via CSV.'
+        )
+      );
     if (!hasRight) {
       return res.forbidden(
-        'You are not authorized to import entrances via CSV.',
+        'You are not authorized to import entrances via CSV.'
       );
     }
 
@@ -966,7 +997,7 @@ module.exports = {
         const authorId = await sails.helpers.csvhelpers.getAuthor(data);
         const dataNameDescLoc = await getConvertedNameDescLocEntranceFromCsv(
           data,
-          authorId,
+          authorId
         );
 
         const result = await TEntrance.find({
@@ -986,7 +1017,7 @@ module.exports = {
           await EntranceDuplicateService.create(
             req.token.id,
             duplicateContent,
-            result[0].id,
+            result[0].id
           );
 
           requestResponse.successfulImportAsDuplicates.push({
@@ -1005,14 +1036,14 @@ module.exports = {
         const dataEntrance = getConvertedEntranceFromCsv(
           data,
           authorId,
-          createdCave,
+          createdCave
         );
         const { dateInscription } = dataEntrance;
         const { dateReviewed } = dataEntrance;
 
         const createdEntrance = await EntranceService.createEntrance(
           dataEntrance,
-          dataNameDescLoc,
+          dataNameDescLoc
         );
         if (
           doubleCheck({
@@ -1049,7 +1080,8 @@ module.exports = {
     /* eslint-enable no-await-in-loop */
 
     requestResponse.total.success = requestResponse.successfulImport.length;
-    requestResponse.total.successfulImportAsDuplicates = requestResponse.successfulImportAsDuplicates.length; // eslint-disable-line max-len
+    requestResponse.total.successfulImportAsDuplicates =
+      requestResponse.successfulImportAsDuplicates.length;
     requestResponse.total.failure = requestResponse.failureImport.length;
     return res.ok(requestResponse);
   },

@@ -19,10 +19,7 @@ function findCaver(sessionUser, fn) {
 }
 
 function md5(string) {
-  return crypto
-    .createHash('md5')
-    .update(string)
-    .digest('hex');
+  return crypto.createHash('md5').update(string).digest('hex');
 }
 
 function addslashes(str) {
@@ -58,9 +55,9 @@ function verifyPassword(user, password) {
   const oldHash = getOldGCpassword(user.login, password);
   const newHash = createHashedPassword(password);
   return (
-    user.password === password
-    || user.password === oldHash
-    || user.password === newHash
+    user.password === password ||
+    user.password === oldHash ||
+    user.password === newHash
   );
 }
 
@@ -96,6 +93,6 @@ passport.use(
           }
           return done(null, user);
         });
-    },
-  ),
+    }
+  )
 );
