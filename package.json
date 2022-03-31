@@ -9,7 +9,7 @@
   "dependencies": {
     "@aws-sdk/client-ses": "^3.58.0",
     "@azure/storage-blob": "^12.9.0",
-    "@date-io/date-fns": "^2.11.0",
+    "@date-io/date-fns": "^2.13.1",
     "async": "^3.2.3",
     "dotenv": "^16.0.0",
     "ejs": "^3.1.6",
