@@ -1,4 +1,4 @@
-name: Deploy to beta.grottocenter.org
+name: Deploy to api.grottocenter.org
 on: workflow_dispatch
 jobs:
   deploy:
