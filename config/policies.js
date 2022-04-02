@@ -30,14 +30,13 @@ module.exports.policies = {
     '*': true,
   },
 
-  'v1/CaveController': {
-    '*': true,
-    addDocument: 'tokenAuth',
-    setMassif: 'tokenAuth',
-    create: 'tokenAuth',
-    delete: 'tokenAuth',
-    update: 'tokenAuth',
-  },
+  // Caves
+  'v1/cave/*': true,
+  'v1/cave/add-document': 'tokenAuth',
+  'v1/cave/set-massif': 'tokenAuth',
+  'v1/cave/create': 'tokenAuth',
+  'v1/cave/delete-one': 'tokenAuth',
+  'v1/cave/update': 'tokenAuth',
 
   'v1/CaverController': {
     '*': false,
@@ -88,10 +87,6 @@ module.exports.policies = {
   'v1/SearchController': {
     search: true,
     advancedSearch: true,
-  },
-
-  CaveController: {
-    '*': true,
   },
 
   PartnerController: {

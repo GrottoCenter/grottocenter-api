@@ -102,17 +102,17 @@ module.exports.routes = {
     'v1/Entrance.addDocument',
 
   /* Cave controller */
-  'DELETE /api/v1/caves/:id': 'v1/Cave.delete',
-  'GET /api/v1/caves/:id': 'v1/Cave.find',
-  'GET /api/v1/caves': 'v1/Cave.findAll',
-  'POST /api/v1/caves': 'v1/Cave.create',
-  'PUT /api/v1/caves/:caveId/documents/:documentId': 'v1/Cave.addDocument',
-  'PUT /api/v1/caves/:id': 'v1/Cave.update',
-  'PUT /api/v1/caves/:caveId/massif/:massifId': 'v1/Cave.setMassif',
+  'DELETE /api/v1/caves/:id': 'v1/cave/delete-one',
+  'GET /api/v1/caves/:id': 'v1/cave/find',
+  'GET /api/v1/caves': 'v1/cave/find-all',
+  'POST /api/v1/caves': 'v1/cave/create',
+  'PUT /api/v1/caves/:caveId/documents/:documentId': 'v1/cave/add-document',
+  'PUT /api/v1/caves/:id': 'v1/cave/update',
+  'PUT /api/v1/caves/:caveId/massif/:massifId': 'v1/cave/set-massif',
   /**
    * @deprecated use api/v1/caves instead
    */
-  'GET /api/v1/caves/findAll': 'v1/Cave.findAll',
+  'GET /api/v1/caves/findAll': 'v1/cave/find-all',
 
   /* Partner controller */
   'DELETE /api/partners/:id': 'Partner.delete',
