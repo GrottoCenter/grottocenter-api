@@ -64,9 +64,8 @@ module.exports.routes = {
   'POST /api/v1/forgotPassword': 'v1/account/forgot-password',
 
   /* Auth controller */
-  'GET /api/v1/logout': 'v1/Auth.logout',
-  'POST /api/v1/login': 'v1/Auth.login',
-  'POST /api/v1/signup': 'v1/Auth.signUp',
+  'POST /api/v1/login': 'v1/auth/login',
+  'POST /api/v1/signup': 'v1/auth/sign-up',
 
   /* Caver controller */
   'DELETE /api/v1/cavers/:caverId/entrances/:entranceId':
