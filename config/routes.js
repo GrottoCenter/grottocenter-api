@@ -192,8 +192,8 @@ module.exports.routes = {
   'POST /api/v1/descriptions': 'v1/description/create',
 
   /* Name controller */
-  'PATCH /api/v1/names/:id': 'v1/Name.update',
-  'POST /api/v1/names/:id/setAsMain': 'v1/Name.setAsMain',
+  'PATCH /api/v1/names/:id': 'v1/name/update',
+  'POST /api/v1/names/:id/setAsMain': 'v1/name/set-as-main',
 
   /* Location controller */
   'PATCH /api/v1/locations/:id': 'v1/location/update',
