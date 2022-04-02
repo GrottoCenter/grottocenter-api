@@ -172,9 +172,8 @@ module.exports.policies = {
   // File format
   'v1/file-format/find-all': true,
 
-  'v1/OptionController': {
-    '*': true,
-  },
+  // Option
+  'v1/option/find-all': true,
 
   // Swagger (API doc)
   'v1/swagger/get-yaml': true,
