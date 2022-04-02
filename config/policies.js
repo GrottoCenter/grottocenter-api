@@ -176,9 +176,9 @@ module.exports.policies = {
     '*': true,
   },
 
-  'v1/SwaggerController': {
-    '*': true,
-  },
+  // Swagger (API doc)
+  'v1/swagger/get-yaml': true,
+
   'v1/DocumentDuplicateController': {
     '*': ['tokenAuth', 'moderatorAuth'],
   },
