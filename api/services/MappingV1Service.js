@@ -886,10 +886,8 @@ module.exports = {
       source.author instanceof Object
         ? module.exports.convertToCaverModel(source.author)
         : undefined;
-    result.content =
-      source.content instanceof Object
-        ? module.exports.convertToDocumentModel(source.content)
-        : source.content;
+
+    result.content = source.content;
     result.datePublication = source.datePublication;
     result.document =
       source.document instanceof Object
@@ -915,10 +913,7 @@ module.exports = {
       source.author instanceof Object
         ? module.exports.convertToCaverModel(source.author)
         : undefined;
-    result.content =
-      source.content instanceof Object
-        ? module.exports.convertToEntranceModel(source.content)
-        : source.content;
+    result.content = source.content;
     result.datePublication = source.datePublication;
     result.entrance =
       source.entrance instanceof Object
