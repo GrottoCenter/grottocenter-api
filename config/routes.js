@@ -119,15 +119,20 @@ module.exports.routes = {
   'GET /api/v1/caves/findAll': 'v1/cave/find-all',
 
   /* Partner controller */
-  'DELETE /api/partners/:id': 'Partner.delete',
-  'GET /api/partners/:id': 'Partner.find',
-  'GET /api/v1/partners/count': 'v1/Partner.count',
-  'GET /api/partners/findAll': 'Partner.findAll',
-  'GET /api/v1/partners/findForCarousel': 'v1/Partner.findForCarousel',
+  'GET /api/v1/partners/:id': 'v1/partner/find',
+  'GET /api/v1/partners/count': 'v1/partner/count',
+  'GET /api/v1/partners/findAll': 'v1/partner/find-all',
+  'GET /api/v1/partners/findForCarousel': 'v1/partner/find-for-carousel',
+  'GET /api/v1/partners/findForCarousel/:skip/:limit':
+    'v1/partner/find-for-carousel',
+
+  /**
+   * @deprecated use api/v1/partners instead
+   */
+  'GET /api/partners/:id': 'v1/partner/find',
+  'GET /api/partners/findAll': 'v1/partner/find-all',
   'GET /api/partners/findForCarousel/:skip/:limit':
-    'v1/Partner.findForCarousel',
-  'POST /api/partners/': 'Partner.create',
-  'PUT /api/partners/:id': 'Partner.update',
+    'v1/partner/find-for-carousel',
 
   /* Comment controller */
   'GET /api/v1/comments/stats/:entranceId': 'v1/comment/get-entrance-stats',
