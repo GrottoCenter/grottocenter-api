@@ -106,9 +106,10 @@ module.exports.policies = {
   'v1/auth/login': true,
   'v1/auth/sign-up': true,
 
-  'v1/SubjectController': {
-    '*': true,
-  },
+  // Subject
+  'v1/subject/find': true,
+  'v1/subject/find-all': true,
+  'v1/subject/search': true,
 
   'v1/LanguageController': {
     '*': true,
