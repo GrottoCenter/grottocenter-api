@@ -68,10 +68,9 @@ module.exports.policies = {
   'v1/description/create': 'tokenAuth',
   'v1/description/update': 'tokenAuth',
 
-  'v1/LocationController': {
-    create: 'tokenAuth',
-    update: 'tokenAuth',
-  },
+  // Location
+  'v1/location/create': 'tokenAuth',
+  'v1/location/update': 'tokenAuth',
 
   'v1/NameController': {
     setAsMain: 'tokenAuth',
