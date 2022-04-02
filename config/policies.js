@@ -173,12 +173,11 @@ module.exports.policies = {
     findNetworksCoordinates: true,
   },
 
-  'v1/AccountController': {
-    changeAlertForNews: 'tokenAuth',
-    changeEmail: 'tokenAuth',
-    changePassword: true,
-    forgotPassword: true,
-  },
+  // Account
+  'v1/account/change-alert-for-news': 'tokenAuth',
+  'v1/account/change-email': 'tokenAuth',
+  'v1/account/change-password': true,
+  'v1/account/forgot-password': true,
 
   'v1/LicenseController': {
     '*': true,

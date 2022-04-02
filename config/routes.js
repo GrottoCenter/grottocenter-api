@@ -58,10 +58,10 @@ module.exports.routes = {
   'GET /api/v1/swagger.yaml': 'v1/Swagger.sendYaml',
 
   /* Account controller */
-  'PATCH /api/v1/account/password': 'v1/Account.changePassword',
-  'PATCH /api/v1/account/alertForNews': 'v1/Account.changeAlertForNews',
-  'PATCH /api/v1/account/email': 'v1/Account.changeEmail',
-  'POST /api/v1/forgotPassword': 'v1/Account.forgotPassword',
+  'PATCH /api/v1/account/password': 'v1/account/change-password',
+  'PATCH /api/v1/account/alertForNews': 'v1/account/change-alert-for-news',
+  'PATCH /api/v1/account/email': 'v1/account/change-email',
+  'POST /api/v1/forgotPassword': 'v1/account/forgot-password',
 
   /* Auth controller */
   'GET /api/v1/logout': 'v1/Auth.logout',
