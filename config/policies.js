@@ -111,9 +111,9 @@ module.exports.policies = {
   'v1/subject/find-all': true,
   'v1/subject/search': true,
 
-  'v1/LanguageController': {
-    '*': true,
-  },
+  // Languages
+  'v1/language/find': true,
+  'v1/language/find-all': true,
 
   'v1/DocumentController': {
     '*': true,
