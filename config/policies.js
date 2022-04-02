@@ -83,13 +83,11 @@ module.exports.policies = {
     advancedSearch: true,
   },
 
-  PartnerController: {
-    '*': true,
-  },
-
-  'v1/PartnerController': {
-    '*': true,
-  },
+  // Partner
+  'v1/partner/count': true,
+  'v1/partner/find': true,
+  'v1/partner/find-all': true,
+  'v1/partner/find-for-carousel': true,
 
   // Convert
   'v1/convert/convert': true,
