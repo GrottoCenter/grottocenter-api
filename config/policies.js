@@ -113,11 +113,9 @@ module.exports.policies = {
     '*': true,
   },
 
-  'v1/AuthController': {
-    login: true,
-    logout: true,
-    signUp: true,
-  },
+  // Auth
+  'v1/auth/login': true,
+  'v1/auth/sign-up': true,
 
   'v1/SubjectController': {
     '*': true,
