@@ -130,8 +130,15 @@ module.exports.routes = {
   'PUT /api/partners/:id': 'Partner.update',
 
   /* Comment controller */
-  'GET /api/comments/stats/:entry': 'Comment.getEntryStats',
-  'GET /api/comments/timeinfos/:entry': 'Comment.getEntryTimeInfos',
+  'GET /api/v1/comments/stats/:entranceId': 'v1/comment/get-entrance-stats',
+  'GET /api/v1/comments/timeinfos/:entranceId':
+    'v1/comment/get-entrance-time-infos',
+
+  /**
+   * @deprecated use /v1 routes above instead
+   */
+  'GET /api/comments/stats/:entry': 'v1/comment/get-entrance-stats',
+  'GET /api/comments/timeinfos/:entry': 'v1/comment/get-entrance-time-infos',
 
   /* Organization controller */
   'DELETE /api/v1/organizations/:id': 'v1/Grotto.delete',
