@@ -290,7 +290,11 @@ module.exports.routes = {
   'GET /api/v1/cavers/:caverId/documents': 'v1/Document.findByCaverId',
 
   /* Convert controller */
-  'GET /api/convert': 'ConvertController.convert',
+  'GET /api/v1/convert': 'v1/convert/convert',
+  /**
+   * @deprecated use /v1 route above instead
+   */
+  'GET /api/convert': 'v1/convert/convert',
 
   /* License controller */
   'GET /api/v1/licenses': 'v1/License.findAll',
