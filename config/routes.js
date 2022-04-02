@@ -195,28 +195,12 @@ module.exports.routes = {
   'POST /api/v1/locations': 'v1/Location.create',
 
   /* Document Subject controller */
-  'GET /api/v1/documents/subjects': {
-    controller: 'v1/Subject',
-    action: 'findAll',
-    api: {
-      entity: 'subject',
-    },
-  },
+  'GET /api/v1/documents/subjects': 'v1/subject/find-all',
   'GET /api/v1/documents/subjects/:code': {
-    controller: 'v1/Subject',
-    action: 'find',
+    action: 'v1/subject/find',
     skipAssets: false, // Disable this parameter to allow a dot in the url (for the code)
-    api: {
-      entity: 'subject',
-    },
   },
-  'POST /api/v1/documents/subjects/search/logical/or': {
-    controller: 'v1/Subject',
-    action: 'search',
-    api: {
-      entity: 'subject',
-    },
-  },
+  'POST /api/v1/documents/subjects/search/logical/or': 'v1/subject/search',
 
   /* Document Identifier Types */
   'GET /api/v1/documents/identifierTypes': 'v1/identifier-type/find-all',
