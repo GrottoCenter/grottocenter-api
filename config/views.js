@@ -12,7 +12,7 @@
  */
 
 module.exports.views = {
-  /****************************************************************************
+  /** **************************************************************************
    *                                                                           *
    * View engine (aka template language) to use for your app's *server-side*   *
    * views                                                                     *
@@ -27,11 +27,11 @@ module.exports.views = {
    * For more options, check out the docs:                                     *
    * https://github.com/balderdashy/sails-wiki/blob/0.9/config.views.md#engine *
    *                                                                           *
-   ****************************************************************************/
+   *************************************************************************** */
 
   extension: 'ejs',
 
-  /****************************************************************************
+  /** **************************************************************************
    *                                                                           *
    * Layouts are simply top-level HTML templates you can use as wrappers for   *
    * your server-side views. If you're using ejs or jade, you can take         *
@@ -53,9 +53,9 @@ module.exports.views = {
    * file from `views/` folder. (the file extension, ".ejs", should be         *
    * omitted)                                                                  *
    *                                                                           *
-   ****************************************************************************/
+   *************************************************************************** */
 
-  /****************************************************************************
+  /** **************************************************************************
    *                                                                           *
    * Using Multiple Layouts                                                    *
    *                                                                           *
@@ -71,11 +71,11 @@ module.exports.views = {
    * But you might override that in some of your controllers with:             *
    * layout: 'layouts/internal'                                                *
    *                                                                           *
-   ****************************************************************************/
+   *************************************************************************** */
 
   layout: 'layout',
 
-  /****************************************************************************
+  /** **************************************************************************
    *                                                                           *
    * Partials are simply top-level snippets you can leverage to reuse template *
    * for your server-side views. If you're using handlebars, you can take      *
@@ -85,7 +85,7 @@ module.exports.views = {
    * Otherwise, if a string is specified, it will be interpreted as the        *
    * relative path to your partial files from `views/` folder.                 *
    *                                                                           *
-   ****************************************************************************/
+   *************************************************************************** */
 
   partials: false,
 };

@@ -1,14 +1,12 @@
-module.exports = function(grunt) {
+module.exports = (grunt) => {
   grunt.config.set('eslint', {
     dev: {
-      src: ['**/*.js', '!node_modules/**/*'],
       options: {
-        silent: true, // Do not stop grunt on error
-        //quiet: true, // Do not display warnings
-        fix: true,
+        overrideConfigFile: '.eslintrc.js',
       },
+      src: ['**/*.js', '!node_modules/**'],
     },
   });
 
-  grunt.loadNpmTasks('gruntify-eslint');
+  grunt.loadNpmTasks('grunt-eslint');
 };

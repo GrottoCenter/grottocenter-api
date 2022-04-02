@@ -1,5 +1,6 @@
-let should = require('should');
+const should = require('should');
 const AuthTokenService = require('../AuthTokenService');
+const CaverService = require('../../../api/services/CaverService');
 
 describe('CaverService', () => {
   const userReq = {};
@@ -51,7 +52,7 @@ describe('CaverService', () => {
       const errorHandler = (e) => e;
       const newCaver = await CaverService.createNonUserCaver(
         caverData,
-        errorHandler,
+        errorHandler
       );
 
       should(newCaver.name).equal(caverData.name);
@@ -68,12 +69,12 @@ describe('CaverService', () => {
       const errorHandler = (e) => e;
       const newCaver = await CaverService.createNonUserCaver(
         caverData,
-        errorHandler,
+        errorHandler
       );
 
       should(newCaver.name).equal(caverData.name);
       should(newCaver.surname).equal(caverData.surname);
-      should(newCaver.nickname).equal(caverData.name + ' ' + caverData.surname);
+      should(newCaver.nickname).equal(`${caverData.name} ${caverData.surname}`);
       should(newCaver.mail).equal('no@mail.no');
     });
   });

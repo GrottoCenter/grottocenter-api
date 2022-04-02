@@ -1,4 +1,5 @@
-let should = require('should');
+const should = require('should');
+const DocumentService = require('../../../api/services/DocumentService');
 
 const DOCUMENT_TYPE_PROPERTIES = [
   'id',

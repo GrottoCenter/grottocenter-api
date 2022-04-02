@@ -6,8 +6,10 @@
  */
 
 const caveController = require('../CaveController');
+const MappingV1Service = require('../../services/MappingV1Service');
 
 module.exports = {
+  // eslint-disable-next-line max-len
   find: (req, res, next) =>
     caveController.find(req, res, next, MappingV1Service.convertToCaveModel),
 

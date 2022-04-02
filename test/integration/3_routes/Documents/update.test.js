@@ -1,9 +1,10 @@
-let supertest = require('supertest');
-let should = require('should');
+const supertest = require('supertest');
+const should = require('should');
 const AuthTokenService = require('../../AuthTokenService');
 
 describe('Document features', () => {
-  let userToken, moderatorToken;
+  let userToken;
+  let moderatorToken;
   before(async () => {
     sails.log.info('Asking for user auth token...');
     userToken = await AuthTokenService.getRawBearerUserToken();

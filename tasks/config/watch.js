@@ -9,7 +9,7 @@
  *   https://sailsjs.com/anatomy/tasks/config/watch.js
  *
  */
-module.exports = function(grunt) {
+module.exports = (grunt) => {
   grunt.config.set('watch', {
     api: {
       // API files to watch:

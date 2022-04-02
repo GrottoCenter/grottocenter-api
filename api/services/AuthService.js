@@ -19,10 +19,7 @@ function findCaver(sessionUser, fn) {
 }
 
 function md5(string) {
-  return crypto
-    .createHash('md5')
-    .update(string)
-    .digest('hex');
+  return crypto.createHash('md5').update(string).digest('hex');
 }
 
 function addslashes(str) {
@@ -96,6 +93,6 @@ passport.use(
           }
           return done(null, user);
         });
-    },
-  ),
+    }
+  )
 );

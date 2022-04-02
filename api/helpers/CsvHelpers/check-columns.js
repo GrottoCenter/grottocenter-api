@@ -21,7 +21,7 @@ module.exports = {
     },
   },
 
-  fn: async function(inputs, exits) {
+  async fn(inputs, exits) {
     const { data, additionalColumns } = inputs;
     let requiredColumns = [
       'id',
@@ -49,15 +49,13 @@ module.exports = {
     const doubleCheck = sails.helpers.csvhelpers.doubleCheck.with;
 
     for (const requiredColumn of requiredColumns) {
-      if (
-        !doubleCheck({ data: data, key: requiredColumn, defaultValue: false })
-      ) {
+      if (!doubleCheck({ data, key: requiredColumn, defaultValue: false })) {
         missingColumns.push(requiredColumn);
       }
     }
     if (
       doubleCheck({
-        data: data,
+        data,
         key: 'karstlink:hasDescriptionDocument/dct:title',
         defaultValue: false,
       })
@@ -65,7 +63,7 @@ module.exports = {
       for (const requiredDescColumn of requiredDescriptionColumns) {
         if (
           !doubleCheck({
-            data: data,
+            data,
             key: requiredDescColumn,
             defaultValue: false,
           })
@@ -76,7 +74,7 @@ module.exports = {
     }
     if (
       doubleCheck({
-        data: data,
+        data,
         key: 'karstlink:hasAccessDocument/dct:description',
         defaultValue: false,
       })
@@ -84,7 +82,7 @@ module.exports = {
       for (const requiredLocColumn of requiredLocationColumns) {
         if (
           !doubleCheck({
-            data: data,
+            data,
             key: requiredLocColumn,
             defaultValue: false,
           })

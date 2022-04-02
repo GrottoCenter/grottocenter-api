@@ -11,7 +11,7 @@
  */
 
 module.exports.log = {
-  /***************************************************************************
+  /** *************************************************************************
    *                                                                          *
    * Valid `level` configs: i.e. the minimum log level to capture with        *
    * sails.log.*()                                                            *
@@ -21,7 +21,7 @@ module.exports.log = {
    *                                                                          *
    * You may also set the level to "silent" to suppress all logs.             *
    *                                                                          *
-   ***************************************************************************/
+   ************************************************************************** */
 
   level: process.env.NODE_ENV === 'production' ? 'error' : 'verbose',
   noShip: true, // don't display "fancy" Sails ship when starting the app

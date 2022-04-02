@@ -5,6 +5,12 @@
  * @help        :: See https://sailsjs.com/docs/concepts/actions
  */
 
+const ControllerService = require('../services/ControllerService');
+const EntranceService = require('../services/EntranceService');
+const ErrorService = require('../services/ErrorService');
+const MappingV1Service = require('../services/MappingV1Service');
+const RightService = require('../services/RightService');
+
 module.exports = {
   createMany: async (req, res) => {
     const hasRight = await sails.helpers.checkRight
@@ -13,22 +19,22 @@ module.exports = {
         rightEntity: RightService.RightEntities.ENTRANCE_DUPLICATE,
         rightAction: RightService.RightActions.CREATE,
       })
-      .intercept('rightNotFound', (err) => {
-        return res.serverError(
-          'A server error occured when checking your right to create an entrance duplicate.',
-        );
-      });
+      .intercept('rightNotFound', () =>
+        res.serverError(
+          'A server error occured when checking your right to create an entrance duplicate.'
+        )
+      );
     if (!hasRight) {
       return res.forbidden(
-        'You are not authorized to create an entrance duplicate.',
+        'You are not authorized to create an entrance duplicate.'
       );
     }
 
     const dateInscription = req.param('dateInscription', new Date());
 
     const duplicateParams = req.body.data.map((content) => ({
-      dateInscription: dateInscription,
-      content: content,
+      dateInscription,
+      content,
       document: content.document,
     }));
 
@@ -43,14 +49,14 @@ module.exports = {
         rightEntity: RightService.RightEntities.ENTRANCE_DUPLICATE,
         rightAction: RightService.RightActions.CREATE,
       })
-      .intercept('rightNotFound', (err) => {
-        return res.serverError(
-          'A server error occured when checking your right to create an entrance duplicate.',
-        );
-      });
+      .intercept('rightNotFound', () =>
+        res.serverError(
+          'A server error occured when checking your right to create an entrance duplicate.'
+        )
+      );
     if (!hasRight) {
       return res.forbidden(
-        'You are not authorized to create an entrance duplicate.',
+        'You are not authorized to create an entrance duplicate.'
       );
     }
     if (
@@ -61,7 +67,7 @@ module.exports = {
       }))
     ) {
       return res.badRequest(
-        `Could not find duplicate with id ${req.param('id')}.`,
+        `Could not find duplicate with id ${req.param('id')}.`
       );
     }
 
@@ -76,6 +82,7 @@ module.exports = {
       return res.ok();
     } catch (e) {
       ErrorService.getDefaultErrorHandler(res)(e);
+      return false;
     }
   },
 
@@ -86,14 +93,14 @@ module.exports = {
         rightEntity: RightService.RightEntities.ENTRANCE_DUPLICATE,
         rightAction: RightService.RightActions.DELETE_ANY,
       })
-      .intercept('rightNotFound', (err) => {
-        return res.serverError(
-          'A server error occured when checking your right to delete an entrance duplicate.',
-        );
-      });
+      .intercept('rightNotFound', () =>
+        res.serverError(
+          'A server error occured when checking your right to delete an entrance duplicate.'
+        )
+      );
     if (!hasRight) {
       return res.forbidden(
-        'You are not authorized to delete an entrance duplicate.',
+        'You are not authorized to delete an entrance duplicate.'
       );
     }
     const id = req.param('id');
@@ -109,7 +116,7 @@ module.exports = {
       }))
     ) {
       return res.badRequest(
-        `Could not find duplicate with id ${req.param('id')}.`,
+        `Could not find duplicate with id ${req.param('id')}.`
       );
     }
 
@@ -124,14 +131,14 @@ module.exports = {
         rightEntity: RightService.RightEntities.ENTRANCE_DUPLICATE,
         rightAction: RightService.RightActions.DELETE_ANY,
       })
-      .intercept('rightNotFound', (err) => {
-        return res.serverError(
-          'A server error occured when checking your right to delete an entrance duplicate.',
-        );
-      });
+      .intercept('rightNotFound', () =>
+        res.serverError(
+          'A server error occured when checking your right to delete an entrance duplicate.'
+        )
+      );
     if (!hasRight) {
       return res.forbidden(
-        'You are not authorized to delete an entrance duplicate.',
+        'You are not authorized to delete an entrance duplicate.'
       );
     }
     const idArray = req.param('id');
@@ -146,6 +153,7 @@ module.exports = {
       return res.ok();
     } catch (err) {
       ErrorService.getDefaultErrorHandler(res)(err);
+      return false;
     }
   },
 
@@ -158,13 +166,13 @@ module.exports = {
       }))
     ) {
       return res.badRequest(
-        `Could not find duplicate with id ${req.param('id')}.`,
+        `Could not find duplicate with id ${req.param('id')}.`
       );
     }
 
     // Populate the entrance
     const duplicateFound = await TEntranceDuplicate.findOne(
-      req.param('id'),
+      req.param('id')
     ).populate('author');
 
     duplicateFound.entrance = await TEntrance.findOne(duplicateFound.entrance)
@@ -205,14 +213,14 @@ module.exports = {
       duplicateFound,
       params,
       res,
-      MappingV1Service.convertToEntranceDuplicateModel,
+      MappingV1Service.convertToEntranceDuplicateModel
     );
   },
 
   findAll: async (req, res) => {
     const sort = `${req.param('sortBy', 'dateInscription')} ${req.param(
       'orderBy',
-      'ASC',
+      'ASC'
     )}`;
     const limit = req.param('limit', 50);
     const skip = req.param('skip', 0);
@@ -226,9 +234,9 @@ module.exports = {
 
       const params = {
         controllerMethod: 'EntranceDuplicateController.findAll',
-        limit: limit,
+        limit,
         searchedItem: 'Entrance duplicates',
-        skip: skip,
+        skip,
         total: totalNb,
         url: req.originalUrl,
       };
@@ -239,10 +247,11 @@ module.exports = {
         duplicates,
         params,
         res,
-        MappingV1Service.convertToEntranceDuplicateList,
+        MappingV1Service.convertToEntranceDuplicateList
       );
     } catch (err) {
       ErrorService.getDefaultErrorHandler(res)(err);
+      return false;
     }
   },
 };

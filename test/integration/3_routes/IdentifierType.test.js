@@ -1,5 +1,5 @@
-let supertest = require('supertest');
-let should = require('should');
+const supertest = require('supertest');
+const should = require('should');
 
 const IDENTIFIER_TYPE_PROPERTIES = ['id', 'text', 'regexp'];
 

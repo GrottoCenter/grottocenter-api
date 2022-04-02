@@ -14,9 +14,8 @@ module.exports = {
   update: (req, res, next) => documentController.update(req, res, next),
   updateWithNewEntities: (req, res) =>
     documentController.updateWithNewEntities(req, res),
-  validate: (req, res, next) => documentController.validate(req, res, next),
-  multipleValidate: (req, res, next) =>
-    documentController.multipleValidate(req, res, next),
+  validate: (req, res) => documentController.validate(req, res),
+  multipleValidate: (req, res) => documentController.multipleValidate(req, res),
   checkRows: (req, res) => documentController.checkRows(req, res),
   importRows: (req, res) => documentController.importRows(req, res),
 };

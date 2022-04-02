@@ -1,5 +1,5 @@
-let supertest = require('supertest');
-let should = require('should');
+const supertest = require('supertest');
+const should = require('should');
 const AuthTokenService = require('../AuthTokenService');
 
 const CAVER_PROPERTIES = [
@@ -15,7 +15,8 @@ const CAVER_PROPERTIES = [
 ];
 
 describe('Caver features', () => {
-  let userToken, adminToken;
+  let userToken;
+  let adminToken;
   before(async () => {
     sails.log.info('Asking for user auth token...');
     userToken = await AuthTokenService.getRawBearerUserToken();

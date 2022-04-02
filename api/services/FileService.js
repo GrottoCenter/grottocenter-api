@@ -10,7 +10,7 @@ const { AZURE_KEY = '', AZURE_LINK = '' } = process.env;
 
 const sharedKeyCredential = new StorageSharedKeyCredential(
   AZURE_ACCOUNT,
-  AZURE_KEY,
+  AZURE_KEY
 );
 const blobServiceClient =
   !ramda.isEmpty(AZURE_LINK) &&
@@ -22,9 +22,7 @@ const INVALID_NAME = 'INVALID_NAME';
 const ERROR_DURING_UPLOAD_TO_AZURE = 'ERROR_DURING_UPLOAD_TO_AZURE';
 
 const generateName = (fileName) => {
-  const identifier = Math.random()
-    .toString()
-    .replace(/0\./, '');
+  const identifier = Math.random().toString().replace(/0\./, '');
   const newFileName = fileName.replace(/ /, '_');
   return `${identifier}-${newFileName}`;
 };
@@ -36,6 +34,7 @@ module.exports = {
   }),
 
   // File is a multer object : https://github.com/expressjs/multer#file-information
+  // eslint-disable-next-line consistent-return
   create: async (file, idDocument, fetchResult = false, isValidated = true) => {
     const name = file.originalname;
     const mimeType = file.mimetype;
@@ -46,20 +45,19 @@ module.exports = {
     }
     const extension = nameSplit[1];
     const foundFormat = await TFileFormat.find({
-      mimeType: mimeType,
-      extension: extension,
+      mimeType,
+      extension,
     }).limit(1);
     if (ramda.isEmpty(foundFormat)) {
       throw Error(INVALID_FORMAT);
     }
 
     if (blobServiceClient) {
-      const containerClient = blobServiceClient.getContainerClient(
-        AZURE_CONTAINER,
-      );
+      const containerClient =
+        blobServiceClient.getContainerClient(AZURE_CONTAINER);
       const blockBlobClient = containerClient.getBlockBlobClient(pathName);
 
-      sails.log.info('Uploading ' + name + ' to Azure Blob...');
+      sails.log.info(`Uploading ${name} to Azure Blob...`);
       try {
         await blockBlobClient.uploadData(file.buffer, {
           blobHTTPHeaders: {
@@ -79,40 +77,40 @@ module.exports = {
         isValidated,
       };
       if (fetchResult) {
-        return await TFile.create(param).fetch();
-      } else {
-        return await TFile.create(param);
+        const createdFile = await TFile.create(param).fetch();
+        return createdFile;
       }
-    } else {
-      sails.log(
-        `===== FILES UPLOAD AZURE - DEBUG =====
+      await TFile.create(param);
+    }
+    sails.log(
+      `===== FILES UPLOAD AZURE - DEBUG =====
 You are seing this message because you didn't configure your Azure credentials locally. In production website, the following file whoud have been uploaded on the azure repository.
       
       FILE NAME : ${name}
       MIME TYPE : ${mimeType}
       SIZE : ${file.size} bytes
-      `,
-      );
-    }
+      `
+    );
   },
 
   update: async (file) => {
-    return await TFile.updateOne(file.id).set({
+    const res = await TFile.updateOne(file.id).set({
       fileName: file.fileName,
     });
+    return res;
   },
 
   delete: async (file) => {
     const pathName = file.path;
 
-    const containerClient = blobServiceClient.getContainerClient(
-      AZURE_CONTAINER,
-    );
+    const containerClient =
+      blobServiceClient.getContainerClient(AZURE_CONTAINER);
     const blockBlobClient = containerClient.getBlockBlobClient(pathName);
     await blockBlobClient.delete({
       deleteSnapshots: 'include',
     });
 
-    return await TFile.destroyOne(file.id);
+    const destroyedRecord = await TFile.destroyOne(file.id);
+    return destroyedRecord;
   },
 };

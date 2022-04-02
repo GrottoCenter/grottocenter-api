@@ -1,3 +1,4 @@
+/* eslint-disable global-require */
 /**
  * HTTP Server Settings
  * (sails.config.http)
@@ -10,9 +11,10 @@
  */
 const rateLimiter = require('./rateLimit/rateLimiter');
 const { version: packageVersion } = require('../package.json');
+const TokenService = require('../api/services/TokenService');
 
 module.exports.http = {
-  /****************************************************************************
+  /** **************************************************************************
    *                                                                           *
    * Express middleware to use for every Sails request. To add custom          *
    * middleware to the mix, add a function to the middleware config object and *
@@ -20,7 +22,7 @@ module.exports.http = {
    * backwards-compatibility with Sails v0.9.x apps that use the               *
    * `customMiddleware` config option.                                         *
    *                                                                           *
-   ****************************************************************************/
+   *************************************************************************** */
 
   middleware: {
     passportInit: require('passport').initialize(),
@@ -30,12 +32,12 @@ module.exports.http = {
     userDeleteRateLimit: rateLimiter.userDeleteRateLimit,
     moderatorDeleteRateLimit: rateLimiter.moderatorDeleteRateLimit,
 
-    /***************************************************************************
+    /** *************************************************************************
      *                                                                          *
      * The order in which middleware should be run for HTTP requests.           *
      * (This Sails app's routes are handled by the "router" middleware below.)  *
      *                                                                          *
-     ***************************************************************************/
+     ************************************************************************** */
 
     order: [
       'cookieParser',
@@ -54,19 +56,19 @@ module.exports.http = {
       'www',
     ],
 
-    /****************************************************************************
+    /** **************************************************************************
      *                                                                           *
      * Example custom middleware; logs each request to the console.              *
      *                                                                           *
-     ****************************************************************************/
+     *************************************************************************** */
 
     // TODO: when various API versions are used (v1, v2 etc.), this needs to be changed.
-    addPackageVersionHeader: function(req, res, next) {
+    addPackageVersionHeader(req, res, next) {
       res.set('X-Api-Version', packageVersion);
       return next();
     },
 
-    poweredBy: function(req, res, next) {
+    poweredBy(req, res, next) {
       res.removeHeader('x-powered-by');
       return next();
     },
@@ -90,13 +92,13 @@ module.exports.http = {
       return next();
     },
 
-    /***************************************************************************
+    /** *************************************************************************
      *                                                                          *
      * The body parser that will handle incoming multipart HTTP requests.       *
      *                                                                          *
      * https://sailsjs.com/config/http#?customizing-the-body-parser             *
      *                                                                          *
-     ***************************************************************************/
+     ************************************************************************** */
 
     // bodyParser: (function _configureBodyParser(){
     //   var skipper = require('skipper');
@@ -104,7 +106,8 @@ module.exports.http = {
     //   return middlewareFn;
     // })(),
 
-    fileMiddleware: (function() {
+    // eslint-disable-next-line func-names
+    fileMiddleware: (function () {
       const multer = require('multer');
       const inMemoryStorage = multer.memoryStorage();
       // File size is 100 Mo (Mb)
@@ -113,7 +116,7 @@ module.exports.http = {
     })(),
   },
 
-  /***************************************************************************
+  /** *************************************************************************
    *                                                                          *
    * The number of seconds to cache flat files on disk being served by        *
    * Express static middleware (by default, these files are in `.tmp/public`) *
@@ -121,7 +124,7 @@ module.exports.http = {
    * The HTTP static cache is only active in a 'production' environment,      *
    * since that's the only time Express will cache flat-files.                *
    *                                                                          *
-   ***************************************************************************/
+   ************************************************************************** */
 
   // cache: 31557600000
 };

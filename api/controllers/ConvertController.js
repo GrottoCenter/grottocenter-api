@@ -1,6 +1,8 @@
 /**
  */
 
+const ConvertService = require('../services/ConvertService');
+
 module.exports = {
   /*
   convert: function (req, res) {
@@ -11,8 +13,6 @@ module.exports = {
     var y = req.param('y');
     var output = req.param('out');
     var input = req.param('in');
-
-
 
     request.get({
       url: `http://twcc.fr/en/ws/?fmt=json&x=${x}&y=${y}&in=${input}&out=${output}`
@@ -37,7 +37,7 @@ module.exports = {
         const response = results.rows;
         for (let i = 0; i < response.length; i += 1) {
           if (!response[i].Fr_name) {
-            response[i]['Fr_name'] = 'World';
+            response[i].Fr_name = 'World';
           }
 
           // recuperation du nom
@@ -65,7 +65,7 @@ module.exports = {
       (err) => {
         sails.log.error(err);
         return res.serverError(`ConvertController.findAllProjs error : ${err}`);
-      },
+      }
     );
   },
 };

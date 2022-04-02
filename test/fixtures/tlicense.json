@@ -1,65 +1,65 @@
 [
-	{
-		"id" : 1,
-		"name" : "CC-BY-SA",
-		"text" : "Attribution-ShareAlike",
-		"is_copyrighted" : true,
-		"url" : "https:\/\/creativecommons.org\/licenses\/by-sa\/3.0\/"
-	},
-	{
-		"id" : 2,
-		"name" : "CC-BY",
-		"text" : "Attribution",
-		"is_copyrighted" : true,
-		"url" : "https:\/\/creativecommons.org\/licenses\/by\/3.0\/"
-	},
-	{
-		"id" : 3,
-		"name" : "ODBL",
-		"text" : "Open Data Commons Open Database License",
-		"is_copyrighted" : false,
-		"url" : "https:\/\/opendatacommons.org\/licenses\/odbl\/"
-	},
-	{
-		"id" : 4,
-		"name" : "ODC-BY",
-		"text" : "Open Data Commons Attribution License",
-		"is_copyrighted" : false,
-		"url" : "https:\/\/opendatacommons.org\/licenses\/by\/"
-	},
-	{
-		"id" : 5,
-		"name" : "Licence Ouverte",
-		"text" : "Licence Ouverte",
-		"is_copyrighted" : false,
-		"url" : "https:\/\/www.etalab.gouv.fr\/licence-ouverte-open-licence"
-	},
-	{
-		"id" : 6,
-		"name" : "CC-BY-NC-ND",
-		"text" : "Attribution-NonCommercial-NoDerivs",
-		"is_copyrighted" : true,
-		"url" : "https:\/\/creativecommons.org\/licenses\/by-nc-nd\/2.0\/"
-	},
-	{
-		"id" : 7,
-		"name" : "CC BY NC",
-		"text" : "Attribution-NonCommercial",
-		"is_copyrighted" : false,
-		"url" : "https:\/\/creativecommons.org\/licenses\/by-nc\/4.0\/"
-	},
-	{
-		"id" : 8,
-		"name" : "CC BY ND",
-		"text" : "Attribution-NoDerivatives",
-		"is_copyrighted" : false,
-		"url" : "https:\/\/creativecommons.org\/licenses\/by-nd\/4.0\/"
-	},
-	{
-		"id" : 9,
-		"name" : "CC BY NC SA",
-		"text" : "Attribution-NonCommercial-ShareAlike",
-		"is_copyrighted" : false,
-		"url" : "https:\/\/creativecommons.org\/licenses\/by-nc-sa\/4.0\/"
-	}
+  {
+    "id": 1,
+    "name": "CC-BY-SA",
+    "text": "Attribution-ShareAlike",
+    "is_copyrighted": true,
+    "url": "https://creativecommons.org/licenses/by-sa/3.0/"
+  },
+  {
+    "id": 2,
+    "name": "CC-BY",
+    "text": "Attribution",
+    "is_copyrighted": true,
+    "url": "https://creativecommons.org/licenses/by/3.0/"
+  },
+  {
+    "id": 3,
+    "name": "ODBL",
+    "text": "Open Data Commons Open Database License",
+    "is_copyrighted": false,
+    "url": "https://opendatacommons.org/licenses/odbl/"
+  },
+  {
+    "id": 4,
+    "name": "ODC-BY",
+    "text": "Open Data Commons Attribution License",
+    "is_copyrighted": false,
+    "url": "https://opendatacommons.org/licenses/by/"
+  },
+  {
+    "id": 5,
+    "name": "Licence Ouverte",
+    "text": "Licence Ouverte",
+    "is_copyrighted": false,
+    "url": "https://www.etalab.gouv.fr/licence-ouverte-open-licence"
+  },
+  {
+    "id": 6,
+    "name": "CC-BY-NC-ND",
+    "text": "Attribution-NonCommercial-NoDerivs",
+    "is_copyrighted": true,
+    "url": "https://creativecommons.org/licenses/by-nc-nd/2.0/"
+  },
+  {
+    "id": 7,
+    "name": "CC BY NC",
+    "text": "Attribution-NonCommercial",
+    "is_copyrighted": false,
+    "url": "https://creativecommons.org/licenses/by-nc/4.0/"
+  },
+  {
+    "id": 8,
+    "name": "CC BY ND",
+    "text": "Attribution-NoDerivatives",
+    "is_copyrighted": false,
+    "url": "https://creativecommons.org/licenses/by-nd/4.0/"
+  },
+  {
+    "id": 9,
+    "name": "CC BY NC SA",
+    "text": "Attribution-NonCommercial-ShareAlike",
+    "is_copyrighted": false,
+    "url": "https://creativecommons.org/licenses/by-nc-sa/4.0/"
+  }
 ]

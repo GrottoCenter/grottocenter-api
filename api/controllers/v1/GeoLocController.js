@@ -2,6 +2,7 @@
  */
 
 const GeolocController = require('../GeoLocController');
+
 module.exports = {
   countEntrances: (req, res) => GeolocController.countEntrances(req, res),
 

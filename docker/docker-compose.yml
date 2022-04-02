@@ -1,4 +1,4 @@
-version: "3.3"
+version: '3.3'
 # Author: Clément Ronzon - Wikicaves
 # Date: Feb 13 2021
 # Requirement: docker, docker-compose
@@ -18,7 +18,7 @@ services:
     restart: always
     ports:
       - ${DB_LOCAL_PORT}:5432
-  
+
   testdbserver:
     container_name: ${TEST_DB_TAGNAME}
     image: postgis/postgis

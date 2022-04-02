@@ -5,8 +5,6 @@
  * @docs        :: http://sailsjs.org/#!documentation/models
  */
 
-const crypto = require('crypto');
-
 // 01/2018 C. ROIG : remove RGPD fields (see sql/20181231_del_fields.sql)
 module.exports = {
   tableName: 't_caver',
@@ -174,7 +172,8 @@ module.exports = {
     },
   },
 
-  // Commented because it was taking some attributes away (ex: 'author' in the document model is deleted)
+  // Commented because it was taking some attributes away
+  // (ex: 'author' in the document model is deleted)
   // + the MappingV1Service already ignores the password attribute
   // customToJSON: () => {
   //   return _.omit(this, ['password']); // Remove password when sending JSON

@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 /**
  * 400 (Bad Request) Handler
  *
@@ -17,9 +18,9 @@
 
 module.exports = function badRequest(data, options) {
   // Get access to `req`, `res`, & `sails`
-  let { req } = this;
-  let { res } = this;
-  let sails = req._sails;
+  const { req } = this;
+  const { res } = this;
+  const sails = req._sails; // eslint-disable-line no-underscore-dangle
 
   // Set status code
   res.status(400);
@@ -41,9 +42,8 @@ module.exports = function badRequest(data, options) {
     // If data is a plain string, cast it to json with a message key
     if (typeof data === 'string') {
       return res.json({ message: data });
-    } else {
-      return res.json(data);
     }
+    return res.json(data);
   }
 
   // If second argument is a string, we take that to mean it refers to a view.
@@ -60,18 +60,15 @@ module.exports = function badRequest(data, options) {
   // work, just send JSON.
   if (options.view) {
     return res.view(options.view, {
-      data: data,
+      data,
     });
-  } else {
-    // If no second argument provided, try to serve the implied view,
-    // but fall back to sending JSON(P) if no view can be inferred.
-    return res.guessView(
-      {
-        data: data,
-      },
-      function couldNotGuessView() {
-        return res.json(data);
-      },
-    );
   }
+  // If no second argument provided, try to serve the implied view,
+  // but fall back to sending JSON(P) if no view can be inferred.
+  return res.guessView(
+    {
+      data,
+    },
+    () => res.json(data)
+  );
 };

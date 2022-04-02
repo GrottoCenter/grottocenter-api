@@ -3,17 +3,17 @@
 
 const client = require('../../config/elasticsearch').elasticsearchCli;
 
-const indexNames = [
-  'caves',
-  'cavers',
-  'documents',
-  'document-collections',
-  'document-issues',
-  'entrances',
-  'grottos',
-  'massifs',
-  'networks',
-];
+// const INDEX_NAMES = [
+//   'caves',
+//   'cavers',
+//   'documents',
+//   'document-collections',
+//   'document-issues',
+//   'entrances',
+//   'grottos',
+//   'massifs',
+//   'networks',
+// ];
 const advancedSearchMetaParams = [
   'resourceType',
   'complete',
@@ -27,7 +27,8 @@ const advancedSearchMetaParams = [
 
     Examples:
     FUZZINESS=1 and query=clomb will also use the query 'climb' (change 'o' to 'i' => 1 operation)
-    FUZZINESS=2 and query=clomb will also use the query 'lamb' (delete 'c', change 'o' to 'a' => 2 operations)
+    FUZZINESS=2 and query=clomb will also use the query 'lamb'
+      (delete 'c', change 'o' to 'a' => 2 operations)
 */
 const FUZZINESS = 1;
 
@@ -36,14 +37,14 @@ const self = (module.exports = {
   /**
    * Delete a resource indexed by Elasticsearch. No check performed on the parameters given.
    * The action is asynchronous and if an error occurs, it will simply logged.
-   * @param {string} indexName  An Elasticsearch index (@see ElasticsearchService indexNames)
+   * @param {string} indexName  An Elasticsearch index (@see ElasticsearchService INDEX_NAMES)
    * @param {string} resourceId The id of the resource to delete.
    */
   deleteResource: async (indexName, resourceId) => {
     try {
       await client.delete({
         // Asynchronous operation
-        index: indexName + '-index',
+        index: `${indexName}-index`,
         id: resourceId,
       });
     } catch (error) {
@@ -52,16 +53,17 @@ const self = (module.exports = {
   },
   /**
    * Retrieve data from elasticsearch on various index according to a string.
-   * The indexes used are: ['grottos', 'entrances', 'massifs', 'documents', 'cavers'] (document-collections and document-issues are excluded by default)
+   * The indexes used are: ['grottos', 'entrances', 'massifs', 'documents', 'cavers']
+   * (document-collections and document-issues are excluded by default)
    * Params should contain an attribute 'query': others params are facultative.
    * @param {*} params  list of params of the request including :
    *    @param {string}         query keyword(s) to use for the search
    *    @param {integer}        from (optional, default = 0) number of first results to skip
    *    @param {integer}        size (optional, default = 10) number of first results to return
    *    @param {string}         resourceType (optional) resource type to search on.
-   *            Must be one of ['grottos', 'entrances', 'massifs', 'documents', 'cavers', 'document-collections', 'document-issues']
+   *            Must be one of INDEX_NAMES at the top of this file
    *    @param {Array(string)}  resourceTypes (optional) resource types to search on.
-   *            Must be an array containing some of the following string ['grottos', 'entrances', 'massifs', 'documents', 'cavers', 'document-collections', 'document-issues']
+   *            Must be an array containing some of the INDEX_NAMES at the top of this file
    */
   searchQuery: (params) =>
     new Promise((resolve, reject) => {
@@ -74,7 +76,7 @@ const self = (module.exports = {
       ];
       if (params.resourceTypes instanceof Array) {
         indexToSearchOn = params.resourceTypes.map(
-          (resType) => `${resType}-index`,
+          (resType) => `${resType}-index`
         );
       } else if (params.resourceType) {
         indexToSearchOn = `${params.resourceType}-index`;
@@ -82,7 +84,6 @@ const self = (module.exports = {
 
       client
         .search({
-          /* eslint-disable camelcase */
           index: indexToSearchOn,
           body: {
             from: params.from ? params.from : 0,
@@ -90,7 +91,7 @@ const self = (module.exports = {
             query: {
               query_string: {
                 query: `*${self.sanitizeQuery(
-                  params.query,
+                  params.query
                 )}* + ${self.sanitizeQuery(params.query)}~${FUZZINESS}`,
                 fields: [
                   // General useful fields
@@ -137,7 +138,6 @@ const self = (module.exports = {
               order: 'score',
             },
           },
-          /* eslint-enable camelcase */
         })
         .then((result) => {
           resolve(result);
@@ -149,8 +149,8 @@ const self = (module.exports = {
 
   /**
    * Retrieve data from elasticsearch on all index according to the given params.
-   * The results must match all the params in the url which are not metaParams (@see advancedSearchMetaParams).
-   * Each value can be prefix or suffix.
+   * The results must match all the params in the url which are not metaParams
+   * (@see advancedSearchMetaParams). Each value can be prefix or suffix.
    *
    * For more info, see ES 6.5 documentation:
    * - https://www.elastic.co/guide/en/elasticsearch/reference/6.5/query-dsl-wildcard-query.html
@@ -158,9 +158,8 @@ const self = (module.exports = {
    *
    * @param {*} params : list of params of the request
    */
-  advancedSearchQuery: (params) => {
-    /* eslint-disable camelcase */
-    return new Promise((resolve, reject) => {
+  advancedSearchQuery: (params) =>
+    new Promise((resolve, reject) => {
       // Determine if the logic operator is OR (should) or AND (must) for the request.
       const queryVerb = params.matchAllFields === false ? 'should' : 'must';
 
@@ -195,7 +194,7 @@ const self = (module.exports = {
                 The value is set to lower case because the data are indexed in lowercase.
                 We want a search not case sensitive.
 
-                Also, the character * is used for the first and the last word to (auto)complete the query.
+                The character * is used for the first and the last word to (auto)complete the query.
               */
               if (sanitizedWords.length === 1) {
                 matchObj.wildcard[key] = `*${word.toLowerCase()}*`;
@@ -273,12 +272,11 @@ const self = (module.exports = {
         .catch((err) => {
           reject(err);
         });
-    });
-    /* eslint-enable camelcase */
-  },
+    }),
 
   /**
-   * Custom GC wrapper for the Elasticsearch client create method to make it fail silently if needed.
+   * Custom GC wrapper for the Elasticsearch client create method
+   * to make it fail silently if needed.
    * Check if the connection is alive before creating the document in ES. If it's not, return false.
    * If the creation fails, log the error and return false.
    *
@@ -294,8 +292,8 @@ const self = (module.exports = {
     try {
       await client.create({
         index: `${indexName}-index`,
-        id: id,
-        body: body,
+        id,
+        body,
       });
     } catch (error) {
       sails.log.error(error);
@@ -311,8 +309,8 @@ const self = (module.exports = {
   sanitizeQuery: (sourceString) => {
     // eslint-disable-next-line no-useless-escape
     let sanitizedString = sourceString.replace(
-      /[`~!@#$%^&*()_|+\-=?;:",<>«»\{\}\[\]\/\\]/gi,
-      ' ',
+      /[`~!@#$%^&*()_|+\-=?;:",<>«»{}[\]/\\]/gi,
+      ' '
     );
     sanitizedString =
       sanitizedString[sanitizedString.length - 1] === '.'

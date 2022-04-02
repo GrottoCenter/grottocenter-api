@@ -1,4 +1,5 @@
 const rateLimit = require('express-rate-limit');
+const RightService = require('../../api/services/RightService');
 
 module.exports = {
   generalRateLimit: rateLimit({
@@ -25,11 +26,11 @@ module.exports = {
           rightEntity: RightService.RightEntities.APPLICATION,
           rightAction: RightService.RightActions.NO_REQUEST_LIMIT,
         })
-        .intercept('rightNotFound', (err) => {
-          return res.serverError(
-            'A server error occured when checking your right to not having a request limit.',
-          );
-        });
+        .intercept('rightNotFound', () =>
+          res.serverError(
+            'A server error occured when checking your right to not having a request limit.'
+          )
+        );
       return hasNoRequestLimitPromise;
     },
   }),
@@ -48,9 +49,10 @@ module.exports = {
       if (req.method.toUpperCase() !== 'DELETE') {
         return true;
       }
-      // If the request doesn't come from our main client and the app is not in test phase, you are limited
+      // If the request doesn't come from our main client and the app is not in test phase,
+      // you are limited
       if (
-        req.headers['origin'] !== sails.config.custom.baseUrl &&
+        req.headers.origin !== sails.config.custom.baseUrl &&
         process.env.NODE_ENV !== 'test'
       ) {
         return false;
@@ -66,11 +68,11 @@ module.exports = {
           rightEntity: RightService.RightEntities.APPLICATION,
           rightAction: RightService.RightActions.NO_USER_DELETE_REQUEST_LIMIT,
         })
-        .intercept('rightNotFound', (err) => {
-          return res.serverError(
-            'A server error occured when checking your right to not having a request limit on DELETE actions.',
-          );
-        });
+        .intercept('rightNotFound', () =>
+          res.serverError(
+            'A server error occured when checking your right to not having a request limit on DELETE actions.'
+          )
+        );
       return hasNoRequestLimitPromise;
     },
   }),
@@ -100,11 +102,11 @@ module.exports = {
           rightAction:
             RightService.RightActions.NO_MODERATOR_DELETE_REQUEST_LIMIT,
         })
-        .intercept('rightNotFound', (err) => {
-          return res.serverError(
-            'A server error occured when checking your right to not having a request limit on DELETE actions.',
-          );
-        });
+        .intercept('rightNotFound', () =>
+          res.serverError(
+            'A server error occured when checking your right to not having a request limit on DELETE actions.'
+          )
+        );
       return hasNoRequestLimitPromise;
     },
   }),

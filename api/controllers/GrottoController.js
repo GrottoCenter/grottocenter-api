@@ -6,31 +6,36 @@
  */
 
 const ramda = require('ramda');
+const ControllerService = require('../services/ControllerService');
+const ElasticsearchService = require('../services/ElasticsearchService');
+const ErrorService = require('../services/ErrorService');
+const GrottoService = require('../services/GrottoService');
+const MappingV1Service = require('../services/MappingV1Service');
+const NameService = require('../services/NameService');
+const RightService = require('../services/RightService');
 
 // Extract everything from the request body except id
-const getConvertedDataFromClientRequest = (req) => {
-  return {
-    address: req.param('address'),
-    city: req.param('city'),
-    country: ramda.pathOr(null, ['country', 'id'], req.body),
-    county: req.param('county'),
-    customMessage: req.param('customMessage'),
-    latitude: req.param('latitude'),
-    longitude: req.param('longitude'),
-    mail: req.param('mail'),
-    postalCode: req.param('postalCode'),
-    region: req.param('region'),
-    url: req.param('url'),
-    yearBirth: req.param('yearBirth'),
-  };
-};
+const getConvertedDataFromClientRequest = (req) => ({
+  address: req.param('address'),
+  city: req.param('city'),
+  country: ramda.pathOr(null, ['country', 'id'], req.body),
+  county: req.param('county'),
+  customMessage: req.param('customMessage'),
+  latitude: req.param('latitude'),
+  longitude: req.param('longitude'),
+  mail: req.param('mail'),
+  postalCode: req.param('postalCode'),
+  region: req.param('region'),
+  url: req.param('url'),
+  yearBirth: req.param('yearBirth'),
+});
 
 module.exports = {
   find: async (
     req,
     res,
     next,
-    converter = MappingV1Service.convertToOrganizationModel,
+    converter = MappingV1Service.convertToOrganizationModel
   ) => {
     try {
       const organization = await TGrotto.findOne(req.params.id)
@@ -52,10 +57,11 @@ module.exports = {
         organization,
         params,
         res,
-        converter,
+        converter
       );
     } catch (e) {
       ErrorService.getDefaultErrorHandler(res)(e);
+      return false;
     }
   },
 
@@ -80,9 +86,16 @@ module.exports = {
       const params = {};
       params.controllerMethod = 'GrottoController.findAll';
       params.notFoundMessage = 'No organizations found.';
-      return ControllerService.treat(req, err, organizations, params, res);
+      return ControllerService.treat(
+        req,
+        undefined,
+        organizations,
+        params,
+        res
+      );
     } catch (e) {
       ErrorService.getDefaultErrorHandler(res)(e);
+      return false;
     }
   },
 
@@ -97,6 +110,7 @@ module.exports = {
       return ControllerService.treat(req, null, count, params, res);
     } catch (e) {
       ErrorService.getDefaultErrorHandler(res)(e);
+      return false;
     }
   },
 
@@ -108,11 +122,11 @@ module.exports = {
         rightEntity: RightService.RightEntities.ORGANIZATION,
         rightAction: RightService.RightActions.CREATE,
       })
-      .intercept('rightNotFound', (err) => {
-        return res.serverError(
-          'A server error occured when checking your right to create an organization.',
-        );
-      });
+      .intercept('rightNotFound', () =>
+        res.serverError(
+          'A server error occured when checking your right to create an organization.'
+        )
+      );
     if (!hasRight) {
       return res.forbidden('You are not authorized to create an organization.');
     }
@@ -120,7 +134,7 @@ module.exports = {
     // Check params
     if (!req.param('name')) {
       return res.badRequest(
-        `You must provide a name to create a new organization.`,
+        'You must provide a name to create a new organization.'
       );
     }
 
@@ -139,7 +153,7 @@ module.exports = {
     try {
       const newOrganizationPopulated = await GrottoService.createGrotto(
         cleanedData,
-        nameData,
+        nameData
       );
       const params = {};
       params.controllerMethod = 'GrottoController.create';
@@ -149,10 +163,11 @@ module.exports = {
         newOrganizationPopulated,
         params,
         res,
-        converter,
+        converter
       );
     } catch (e) {
       ErrorService.getDefaultErrorHandler(res)(e);
+      return false;
     }
   },
 
@@ -163,11 +178,11 @@ module.exports = {
         rightEntity: RightService.RightEntities.ORGANIZATION,
         rightAction: RightService.RightActions.DELETE_ANY,
       })
-      .intercept('rightNotFound', (err) => {
-        return res.serverError(
-          'A server error occured when checking your right to delete an organization.',
-        );
-      });
+      .intercept('rightNotFound', () =>
+        res.serverError(
+          'A server error occured when checking your right to delete an organization.'
+        )
+      );
     if (!hasRight) {
       return res.forbidden('You are not authorized to delete an organization.');
     }
@@ -188,19 +203,20 @@ module.exports = {
     }
 
     // Delete Organization
-    const updatedOrganization = await TGrotto.destroyOne({
+    await TGrotto.destroyOne({
       id: organizationId,
-    }).intercept((err) => {
-      return res.serverError(
-        `An unexpected error occured when trying to delete organization with id ${organizationId}.`,
-      );
-    });
+    }).intercept(() =>
+      res.serverError(
+        `An unexpected error occured when trying to delete organization with id ${organizationId}.`
+      )
+    );
 
     ElasticsearchService.deleteResource('grottos', organizationId);
 
     return res.sendStatus(204);
   },
 
+  // eslint-disable-next-line consistent-return
   update: async (req, res, converter) => {
     // Check right
     const hasRight = await sails.helpers.checkRight
@@ -209,11 +225,11 @@ module.exports = {
         rightEntity: RightService.RightEntities.ORGANIZATION,
         rightAction: RightService.RightActions.EDIT_ANY,
       })
-      .intercept('rightNotFound', (err) => {
-        return res.serverError(
-          'A server error occured when checking your right to update an organization.',
-        );
-      });
+      .intercept('rightNotFound', () =>
+        res.serverError(
+          'A server error occured when checking your right to update an organization.'
+        )
+      );
     if (!hasRight) {
       return res.forbidden('You are not authorized to update an organization.');
     }
@@ -251,7 +267,7 @@ module.exports = {
           updatedOrganization,
           params,
           res,
-          converter,
+          converter
         );
       });
     } catch (e) {

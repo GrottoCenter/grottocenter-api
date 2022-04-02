@@ -6,23 +6,29 @@
  */
 
 const passport = require('passport');
+const AuthService = require('../services/AuthService');
+const ElasticsearchService = require('../services/ElasticsearchService');
+const ErrorService = require('../services/ErrorService');
+const TokenService = require('../services/TokenService');
+
 const { tokenSalt } = AuthService;
 const PASSWORD_MIN_LENGTH = 8;
 
 module.exports = {
   login: (req, res) => {
-    passport.authenticate('local', (err, user, info) => {
+    // eslint-disable-next-line consistent-return
+    passport.authenticate('local', (err, user) => {
       if (!err && !user) {
         return res.unauthorized({ message: 'Invalid email or password.' });
       }
       if (err) {
-        sails.log.error('Error while trying to log in: ' + err);
+        sails.log.error(`Error while trying to log in: ${err}`);
         return res
           .status(500)
           .send({ message: 'An internal server error occurred.' });
       }
-      req.logIn(user, (err) => {
-        if (err) return res.json({ message: err });
+      req.logIn(user, (loginErr) => {
+        if (loginErr) return res.json({ message: loginErr });
         req.session.authenticated = true;
         const token = TokenService.issue(
           {
@@ -30,25 +36,23 @@ module.exports = {
             groups: user.groups,
             nickname: user.nickname,
           },
-          tokenSalt,
           sails.config.custom.authTokenTTL,
           'Authentication',
+          tokenSalt
         );
         return res.json({ token });
       });
     })(req, res);
   },
 
-  logout: (req, res) => {
-    return res.badRequest('AuthController.logout not yet implemented!');
-    // req.session.authenticated = false;
-    // return res.json(200, {"Logout succeeded"});
-  },
+  logout: (req, res) =>
+    res.badRequest('AuthController.logout not yet implemented!'), // req.session.authenticated = false;
+  // return res.json(200, {"Logout succeeded"});
 
   signUp: async (req, res) => {
     // Check params
     if (!req.param('email')) {
-      return res.badRequest(`You must provide an email.`);
+      return res.badRequest('You must provide an email.');
     }
     if (
       await sails.helpers.checkIfExists.with({
@@ -62,20 +66,18 @@ module.exports = {
         .send(`The email ${req.param('email')} is already used.`);
     }
     if (!req.param('password')) {
-      return res.badRequest(`You must provide a password.`);
+      return res.badRequest('You must provide a password.');
     }
     if (
       req.param('password') &&
       req.param('password').length < PASSWORD_MIN_LENGTH
     ) {
       return res.badRequest(
-        'Your password must be at least ' +
-          PASSWORD_MIN_LENGTH +
-          ' characters long.',
+        `Your password must be at least ${PASSWORD_MIN_LENGTH} characters long.`
       );
     }
     if (!req.param('nickname')) {
-      return res.badRequest(`You must provide a nickname.`);
+      return res.badRequest('You must provide a nickname.');
     }
     if (
       await sails.helpers.checkIfExists.with({
@@ -116,6 +118,7 @@ module.exports = {
       return res.sendStatus(204);
     } catch (e) {
       ErrorService.getDefaultErrorHandler(res)(e);
+      return false;
     }
   },
 };

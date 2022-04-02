@@ -1,15 +1,18 @@
 const ramda = require('ramda');
 
-// valid image formats
-const FOUR_LETTERS_VALID_IMG_FORMATS = "'.jpg','.png','.gif','.svg'";
-const FIVE_LETTERS_VALID_IMG_FORMATS = "'.jpeg'";
-
 // query to get all entrances of interest
 const INTEREST_ENTRANCES_QUERY =
   'SELECT id FROM t_entrance WHERE Is_of_interest=true';
 
 // query to get a random entrance of interest
 const RANDOM_ENTRANCE_QUERY = `${INTEREST_ENTRANCES_QUERY} ORDER BY RANDOM() LIMIT 1`;
+
+const CaveService = require('./CaveService');
+const CommentService = require('./CommentService');
+const CommonService = require('./CommonService');
+const DocumentService = require('./DocumentService');
+const ElasticsearchService = require('./ElasticsearchService');
+const NameService = require('./NameService');
 
 module.exports = {
   /**
@@ -18,11 +21,11 @@ module.exports = {
   findRandom: async () => {
     const result = await CommonService.query(RANDOM_ENTRANCE_QUERY, []);
     const entranceId = result.rows[0].id;
-    return EntranceService.completeRandomEntrance(entranceId);
+    return module.exports.completeRandomEntrance(entranceId);
   },
 
   findEntrance: async (entranceId) => {
-    let entrance = await TEntrance.findOne(entranceId)
+    const entrance = await TEntrance.findOne(entranceId)
       .populate('cave')
       .populate('documents')
       .populate('names');
@@ -31,7 +34,7 @@ module.exports = {
         entrance.documents.map(async (doc) => ({
           ...doc,
           files: await DocumentService.getTopoFiles(doc.id),
-        })),
+        }))
       );
     }
     return entrance;
@@ -41,7 +44,7 @@ module.exports = {
    * @returns {Promise} which resolves to the succesfully completeRandomEntrance
    */
   completeRandomEntrance: async (entranceId) => {
-    const entranceData = await EntranceService.findEntrance(entranceId);
+    const entranceData = await module.exports.findEntrance(entranceId);
     entranceData.stats = await CommentService.getStats(entranceId);
     entranceData.timeInfo = await CommentService.getTimeInfos(entranceId);
     return entranceData;
@@ -55,7 +58,7 @@ module.exports = {
 
     const allEntrances = [];
     const mapEntrances = entrances.rows.map(async (item) => {
-      const entrance = await EntranceService.completeRandomEntrance(item.id);
+      const entrance = await module.exports.completeRandomEntrance(item.id);
       allEntrances.push(entrance);
     });
 
@@ -78,12 +81,12 @@ module.exports = {
             dateInscription: ramda.propOr(
               new Date(),
               'dateInscription',
-              nameDescLocData.name,
+              nameDescLocData.name
             ),
             dateReviewed: ramda.propOr(
               undefined,
               'dateReviewed',
-              nameDescLocData.name,
+              nameDescLocData.name
             ),
             entrance: newEntrance.id,
             isMain: true,
@@ -101,12 +104,12 @@ module.exports = {
             dateInscription: ramda.propOr(
               new Date(),
               'dateInscription',
-              nameDescLocData.description,
+              nameDescLocData.description
             ),
             dateReviewed: ramda.propOr(
               undefined,
               'dateReviewed',
-              nameDescLocData.description,
+              nameDescLocData.description
             ),
             entrance: newEntrance.id,
             language: nameDescLocData.description.language,
@@ -122,12 +125,12 @@ module.exports = {
             dateInscription: ramda.propOr(
               new Date(),
               'dateInscription',
-              nameDescLocData.location,
+              nameDescLocData.location
             ),
             dateReviewed: ramda.propOr(
               undefined,
               'dateReviewed',
-              nameDescLocData.location,
+              nameDescLocData.location
             ),
             entrance: newEntrance.id,
             language: nameDescLocData.location.language,
@@ -135,12 +138,12 @@ module.exports = {
         }
 
         // Prepare data for Elasticsearch indexation
-        const newEntrancePopulated = await TEntrance.findOne(newEntrance.id)
+        const res = await TEntrance.findOne(newEntrance.id)
           .populate('cave')
           .populate('country')
           .populate('descriptions')
           .usingConnection(db);
-        return newEntrancePopulated;
+        return res;
       });
 
     // Prepare data for Elasticsearch indexation
@@ -148,9 +151,7 @@ module.exports = {
       newEntrancePopulated.descriptions.length === 0
         ? null
         : // There is only one description at the moment
-          newEntrancePopulated.descriptions[0].title +
-          ' ' +
-          newEntrancePopulated.descriptions[0].body;
+          `${newEntrancePopulated.descriptions[0].title} ${newEntrancePopulated.descriptions[0].body}`;
 
     // Format cave massif
     newEntrancePopulated.cave.massif = {
@@ -182,7 +183,8 @@ module.exports = {
 
   /**
    * Populate any entrance-like object.
-   * Avoid using when possible. Mainly used for json column that cannot be populated using waterline query language.
+   * Avoid using when possible.
+   * Mainly used for json column that cannot be populated using waterline query language.
    * @param {*} entrance
    * @returns populated entrance
    */
@@ -213,48 +215,54 @@ module.exports = {
     populatedEntrance.names = names
       ? await Promise.all(
           names.map(async (name) => {
-            return await TName.findOne(name);
-          }),
+            const res = await TName.findOne(name);
+            return res;
+          })
         )
       : [];
 
     populatedEntrance.descriptions = descriptions
       ? await Promise.all(
           descriptions.map(async (desc) => {
-            return await TDescription.findOne(desc);
-          }),
+            const res = await TDescription.findOne(desc);
+            return res;
+          })
         )
       : [];
 
     populatedEntrance.locations = locations
       ? await Promise.all(
           locations.map(async (loc) => {
-            return await TLocation.findOne(loc);
-          }),
+            const res = await TLocation.findOne(loc);
+            return res;
+          })
         )
       : [];
 
     populatedEntrance.documents = documents
       ? await Promise.all(
           documents.map(async (doc) => {
-            return await TDocument.findOne(doc);
-          }),
+            const res = await TDocument.findOne(doc);
+            return res;
+          })
         )
       : [];
 
     populatedEntrance.riggings = riggings
       ? await Promise.all(
           riggings.map(async (rig) => {
-            return await TRigging.findOne(rig);
-          }),
+            const res = await TRigging.findOne(rig);
+            return res;
+          })
         )
       : [];
 
     populatedEntrance.comments = comments
       ? await Promise.all(
           comments.map(async (comment) => {
-            return await TComment.findOne(comment);
-          }),
+            const res = await TComment.findOne(comment);
+            return res;
+          })
         )
       : [];
 

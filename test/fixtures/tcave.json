@@ -2,24 +2,15 @@
   {
     "id": 1,
     "id_author": 1,
-    "entrances": [
-      1,
-      2
-    ],
-    "histories": [1,2],
-    "names": [
-      7
-    ]
+    "entrances": [1, 2],
+    "histories": [1, 2],
+    "names": [7]
   },
   {
     "id": 2,
     "id_author": 2,
-    "entrances": [
-      3
-    ],
+    "entrances": [3],
     "histories": [],
-    "names": [
-      8
-    ]
+    "names": [8]
   }
 ]

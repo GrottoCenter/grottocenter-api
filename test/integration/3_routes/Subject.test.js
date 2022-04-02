@@ -1,5 +1,5 @@
-let supertest = require('supertest');
-let should = require('should');
+const supertest = require('supertest');
+const should = require('should');
 
 describe('Subject features', () => {
   describe('find()', () => {
@@ -24,7 +24,7 @@ describe('Subject features', () => {
           should(subject.subject).equal('AMERICA');
           should(subject.parent.code).equal('4.1');
           should(subject.parent.subject).equal(
-            'ARCHAEOLOGY; PREHISTORICAL AND HISTORICAL CULTURES',
+            'ARCHAEOLOGY; PREHISTORICAL AND HISTORICAL CULTURES'
           );
           return done();
         });

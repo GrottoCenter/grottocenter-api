@@ -6,6 +6,7 @@
  */
 
 const entranceController = require('../EntranceController');
+const MappingV1Service = require('../../services/MappingV1Service');
 
 module.exports = {
   find: (req, res) =>
@@ -15,20 +16,20 @@ module.exports = {
       req,
       res,
       next,
-      MappingV1Service.convertToEntranceModel,
+      MappingV1Service.convertToEntranceModel
     );
   },
   publicCount: (req, res) =>
     entranceController.publicCount(
       req,
       res,
-      MappingV1Service.convertToCountResultModel,
+      MappingV1Service.convertToCountResultModel
     ),
   count: (req, res) => {
     entranceController.count(
       req,
       res,
-      MappingV1Service.convertToCountResultModel,
+      MappingV1Service.convertToCountResultModel
     );
   },
   create: (req, res) => entranceController.create(req, res),
@@ -39,13 +40,13 @@ module.exports = {
     entranceController.update(
       req,
       res,
-      MappingV1Service.convertToEntranceModel,
+      MappingV1Service.convertToEntranceModel
     ),
   updateWithNewEntities: (req, res) =>
     entranceController.updateWithNewEntities(
       req,
       res,
-      MappingV1Service.convertToEntranceModel,
+      MappingV1Service.convertToEntranceModel
     ),
 
   addDocument: (req, res) => {

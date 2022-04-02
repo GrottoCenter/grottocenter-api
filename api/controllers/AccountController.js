@@ -6,13 +6,19 @@
  */
 
 const jwt = require('jsonwebtoken');
+
+const AuthService = require('../services/AuthService');
+const RightService = require('../services/RightService');
+const TokenService = require('../services/TokenService');
+
 const { createHashedPassword, tokenSalt } = AuthService;
 
 const PASSWORD_MIN_LENGTH = 8;
 const RESET_PASSWORD_LINK = `${sails.config.custom.baseUrl}/ui/changePassword?token=`;
 
 const getResetPasswordTokenSalt = (user) => {
-  return user.password + user.id + user.dateInscription + tokenSalt;
+  const { dateInscription, id, password } = user;
+  return password + id + dateInscription + tokenSalt;
 };
 
 module.exports = {
@@ -24,14 +30,14 @@ module.exports = {
         rightEntity: RightService.RightEntities.CAVER,
         rightAction: RightService.RightActions.EDIT_OWN,
       })
-      .intercept('rightNotFound', (err) => {
-        return res.serverError(
-          'A server error occured when checking your right to change your account information.',
-        );
-      });
+      .intercept('rightNotFound', () =>
+        res.serverError(
+          'A server error occured when checking your right to change your account information.'
+        )
+      );
     if (!hasRight) {
       return res.forbidden(
-        'You are not authorized to change your account information.',
+        'You are not authorized to change your account information.'
       );
     }
 
@@ -39,7 +45,7 @@ module.exports = {
     const newAlertForNewsValue = req.param('alertForNews');
     if (newAlertForNewsValue !== 'true' && newAlertForNewsValue !== 'false') {
       return res.badRequest(
-        `You must provide an alertForNews value ('true' or 'false').`,
+        "You must provide an alertForNews value ('true' or 'false')."
       );
     }
 
@@ -48,11 +54,11 @@ module.exports = {
       const updatedCaver = await TCaver.updateOne({
         id: req.token.id,
       }).set({
-        alertForNews: newAlertForNewsValue === 'true' ? true : false,
+        alertForNews: newAlertForNewsValue === 'true',
       });
       if (!updatedCaver) {
         return res.status.send({
-          message: 'Caver with id ' + req.token.id + ' not found.',
+          message: `Caver with id ${req.token.id} not found.`,
         });
       }
     } catch (error) {
@@ -69,21 +75,21 @@ module.exports = {
         rightEntity: RightService.RightEntities.CAVER,
         rightAction: RightService.RightActions.EDIT_OWN,
       })
-      .intercept('rightNotFound', (err) => {
-        return res.serverError(
-          'A server error occured when checking your right to change your account information.',
-        );
-      });
+      .intercept('rightNotFound', () =>
+        res.serverError(
+          'A server error occured when checking your right to change your account information.'
+        )
+      );
     if (!hasRight) {
       return res.forbidden(
-        'You are not authorized to change your account information.',
+        'You are not authorized to change your account information.'
       );
     }
 
     // Check params
     const emailProvided = req.param('email');
     if (!emailProvided) {
-      return res.badRequest(`You must provide an email.`);
+      return res.badRequest('You must provide an email.');
     }
 
     // Perform update
@@ -93,11 +99,11 @@ module.exports = {
       .set({
         mail: req.param('email'),
       })
-      .intercept({ name: 'UsageError' }, () => {
-        return res.badRequest(
-          'The email you are trying to set for your account is not a valid email.',
-        );
-      });
+      .intercept({ name: 'UsageError' }, () =>
+        res.badRequest(
+          'The email you are trying to set for your account is not a valid email.'
+        )
+      );
 
     return res.sendStatus(204);
   },
@@ -105,16 +111,16 @@ module.exports = {
   forgotPassword: async (req, res) => {
     const emailProvided = req.param('email');
     if (!emailProvided) {
-      return res.badRequest(`You must provide an email.`);
+      return res.badRequest('You must provide an email.');
     }
 
     // Get info about the user
     const userFound = await TCaver.findOne({ mail: emailProvided }).populate(
-      'language',
+      'language'
     );
     if (!userFound) {
       return res.status(404).send({
-        message: 'Caver with email ' + emailProvided + ' not found.',
+        message: `Caver with email ${emailProvided} not found.`,
       });
     }
 
@@ -123,9 +129,9 @@ module.exports = {
       {
         userId: userFound.id,
       },
-      getResetPasswordTokenSalt(userFound), // custom salt used for more security
       sails.config.custom.passwordResetTokenTTL,
       'Reset password',
+      getResetPasswordTokenSalt(userFound) // custom salt used for more security
     );
 
     // Change locale to the user's one to translate the mail
@@ -141,33 +147,32 @@ module.exports = {
         viewValues: {
           recipientName: userFound.nickname,
           resetLink: RESET_PASSWORD_LINK + token,
-          token: token,
+          token,
         },
       })
-      .intercept('sendSESEmailError', () => {
-        return res.serverError(
-          'The email service has encountered an error. Please try again later or contact Wikicaves for more information.',
-        );
-      });
+      .intercept('sendSESEmailError', () =>
+        res.serverError(
+          'The email service has encountered an error. Please try again later or contact Wikicaves for more information.'
+        )
+      );
     return res.sendStatus(204);
   },
 
+  // eslint-disable-next-line consistent-return
   changePassword: async (req, res) => {
     // Check params
     const password = req.param('password');
     const token = req.param('token');
     if (!password) {
-      return res.badRequest(`You must provide a password.`);
+      return res.badRequest('You must provide a password.');
     }
     if (password.length < PASSWORD_MIN_LENGTH) {
       return res.badRequest(
-        'Your password must be at least ' +
-          PASSWORD_MIN_LENGTH +
-          ' characters long.',
+        `Your password must be at least ${PASSWORD_MIN_LENGTH} characters long.`
       );
     }
     if (!token) {
-      return res.badRequest(`You must provide a reset password token.`);
+      return res.badRequest('You must provide a reset password token.');
     }
 
     // Get user
@@ -179,24 +184,24 @@ module.exports = {
     const userFound = await TCaver.findOne(decodedToken.userId);
     if (!userFound) {
       return res.status(404).send({
-        message: 'User with id ' + decodedToken.userId + ' not found.',
+        message: `User with id ${decodedToken.userId} not found.`,
       });
     }
 
     // Check token
     const resetPasswordSalt = getResetPasswordTokenSalt(userFound);
-    const verifyTokenCallback = async (err, decodedToken) => {
+    const verifyTokenCallback = async (err) => {
       if (err) {
         switch (err.name) {
           case 'TokenExpiredError':
             return res.forbidden('The password reset token has expired.');
           case 'JsonWebTokenError':
             return res.forbidden(
-              'The password reset token signature is invalid.',
+              'The password reset token signature is invalid.'
             );
           default:
             return res.serverError(
-              'An unexpected error occured when verifying the password reset token.',
+              'An unexpected error occured when verifying the password reset token.'
             );
         }
       }

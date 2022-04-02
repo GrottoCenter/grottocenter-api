@@ -36,10 +36,10 @@ module.exports = {
     },
   },
 
-  fn: async function(inputs, exits) {
+  async fn(inputs, exits) {
     TRight.findOne()
       .where({
-        name: inputs.rightEntity + ' - ' + inputs.rightAction,
+        name: `${inputs.rightEntity} - ${inputs.rightAction}`,
       })
       .populate('groups')
       .exec((err, rightFound) => {
@@ -51,10 +51,10 @@ module.exports = {
           throw exits.rightNotFound();
         }
 
-        for (let i = 0; i < inputs.groups.length; i++) {
+        for (let i = 0; i < inputs.groups.length; i += 1) {
           if (
             rightFound.groups.some(
-              (rightGroup) => rightGroup.id === inputs.groups[i].id,
+              (rightGroup) => rightGroup.id === inputs.groups[i].id
             )
           ) {
             return exits.success(true);

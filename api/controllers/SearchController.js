@@ -1,6 +1,3 @@
-/**
- */
-
 const indexNames = [
   'caves',
   'cavers',
@@ -13,6 +10,10 @@ const indexNames = [
   'networks',
 ];
 
+const ControllerService = require('../services/ControllerService');
+const MappingV1Service = require('../services/MappingV1Service');
+const ElasticsearchService = require('../services/ElasticsearchService');
+
 module.exports = {
   /**
    * Perform a quick search using multiple URL parameters:
@@ -21,7 +22,7 @@ module.exports = {
    * - resourceType:  string, entity type to search for (@see indexNames) (FACULTATIVE).
    * - resourceTypes:  Array of string, entity types to search for (@see indexNames) (FACULTATIVE).
    * By default, search on all entities except document-collections.
-   **/
+   * */
   search: (req, res) => {
     if (!req.param('query')) {
       return res.badRequest();
@@ -36,7 +37,7 @@ module.exports = {
 
     const params = {
       searchedItem: `Search entity with the following query ${req.param(
-        'query',
+        'query'
       )}`,
     };
 
@@ -58,7 +59,7 @@ module.exports = {
             results,
             params,
             res,
-            MappingV1Service.convertToCompleteSearchResult,
+            MappingV1Service.convertToCompleteSearchResult
           );
         }
         return ControllerService.treatAndConvert(
@@ -67,26 +68,28 @@ module.exports = {
           results,
           params,
           res,
-          MappingV1Service.convertEsToSearchResult,
+          MappingV1Service.convertEsToSearchResult
         );
       })
-      .catch((err) => {
-        return ControllerService.treatAndConvert(
+      .catch((err) =>
+        ControllerService.treatAndConvert(
           req,
           err,
           undefined,
           params,
           res,
-          MappingV1Service.convertEsToSearchResult,
-        );
-      });
+          MappingV1Service.convertEsToSearchResult
+        )
+      );
   },
 
   /**
    * Perform an advanced search using multiple URL parameters :
    * - resourceType: string, entity type to search for (@see indexNames) (MANDATORY)
-   * - complete: bool, determine if the results must be returned in their entirely or just their id and name (default = false) (FACULTATIVE)
-   * - matchAllFields: bool, determine if the results need to match all the fields (logic AND) or at least one of them (logic OR) (default = true) (FACULTATIVE)
+   * - complete: bool, determine if the results must be returned in their
+   *      entirely or just their id and name (default = false) (FACULTATIVE)
+   * - matchAllFields: bool, determine if the results need to match all the fields (logic AND)
+   *      or at least one of them (logic OR) (default = true) (FACULTATIVE)
    */
   advancedSearch: (req, res) => {
     // Store every params in the url and check if there is the type parameter
@@ -123,7 +126,7 @@ module.exports = {
             results,
             params,
             res,
-            MappingV1Service.convertToCompleteSearchResult,
+            MappingV1Service.convertToCompleteSearchResult
           );
         }
         return ControllerService.treatAndConvert(
@@ -132,18 +135,18 @@ module.exports = {
           results,
           params,
           res,
-          MappingV1Service.convertEsToSearchResult,
+          MappingV1Service.convertEsToSearchResult
         );
       })
-      .catch((err) => {
-        return ControllerService.treatAndConvert(
+      .catch((err) =>
+        ControllerService.treatAndConvert(
           req,
           err,
           undefined,
           params,
           res,
-          MappingV1Service.convertEsToSearchResult,
-        );
-      });
+          MappingV1Service.convertEsToSearchResult
+        )
+      );
   },
 };

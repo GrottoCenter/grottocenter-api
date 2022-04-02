@@ -5,6 +5,8 @@
  * @help        :: See https://sailsjs.com/docs/concepts/actions
  */
 
+const ControllerService = require('../services/ControllerService');
+
 module.exports = {
   find: (req, res, next, converter) => {
     TSubject.findOne(req.param('code'))
@@ -24,7 +26,7 @@ module.exports = {
           found,
           params,
           res,
-          converter,
+          converter
         );
       });
   },
@@ -43,7 +45,7 @@ module.exports = {
           found,
           params,
           res,
-          converter,
+          converter
         );
       });
   },
@@ -85,7 +87,7 @@ module.exports = {
         const params = {};
         params.controllerMethod = 'TSubjectController.search';
         params.searchedItem = `Subject with name ${req.param(
-          'name',
+          'name'
         )} or code ${req.param('code')}.`;
         return ControllerService.treatAndConvert(
           req,
@@ -93,7 +95,7 @@ module.exports = {
           found,
           params,
           res,
-          converter,
+          converter
         );
       });
   },

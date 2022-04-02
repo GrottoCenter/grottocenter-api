@@ -1,5 +1,6 @@
-let supertest = require('supertest');
-let should = require('should');
+const supertest = require('supertest');
+const should = require('should');
+
 const AuthTokenService = require('../../AuthTokenService');
 
 describe('Cave features', () => {
@@ -15,7 +16,7 @@ describe('Cave features', () => {
     describe('Invalid parameters', () => {
       it('should return code 404 on inexisting cave', (done) => {
         supertest(sails.hooks.http.app)
-          .put('/api/v1/caves/' + 987654321 + '/massif/' + existingMassifId)
+          .put(`/api/v1/caves/${987654321}/massif/${existingMassifId}`)
           .set('Authorization', userToken)
           .set('Content-type', 'application/json')
           .set('Accept', 'application/json')
@@ -23,7 +24,7 @@ describe('Cave features', () => {
       });
       it('should return code 404 on inexisting massif', (done) => {
         supertest(sails.hooks.http.app)
-          .put('/api/v1/caves/' + existingCaveId + '/massif/' + 123456789)
+          .put(`/api/v1/caves/${existingCaveId}/massif/${123456789}`)
           .set('Authorization', userToken)
           .set('Content-type', 'application/json')
           .set('Accept', 'application/json')
@@ -41,9 +42,7 @@ describe('Cave features', () => {
 
       it('should return code 204', (done) => {
         supertest(sails.hooks.http.app)
-          .put(
-            '/api/v1/caves/' + existingCaveId + '/massif/' + existingMassifId,
-          )
+          .put(`/api/v1/caves/${existingCaveId}/massif/${existingMassifId}`)
           .set('Authorization', userToken)
           .set('Content-type', 'application/json')
           .set('Accept', 'application/json')

@@ -1,7 +1,7 @@
-let supertest = require('supertest');
-let should = require('should');
+const supertest = require('supertest');
+const should = require('should');
 const AuthTokenService = require('../../AuthTokenService');
-const CAVE_PROPERTIES = require('./CAVE_PROPERTIES.js');
+const CAVE_PROPERTIES = require('./CAVE_PROPERTIES');
 const caveCreationData = require('./FAKE_DATA');
 
 describe('Cave features', () => {
@@ -80,7 +80,7 @@ describe('Cave features', () => {
             should(cave).have.properties(CAVE_PROPERTIES);
             should(cave.depth).equal(caveCreationData.depth);
             should(cave.documents.length).equal(
-              caveCreationData.documents.length,
+              caveCreationData.documents.length
             );
             should(cave.latitude).equal(caveCreationData.latitude);
             should(cave.length).equal(caveCreationData.length);

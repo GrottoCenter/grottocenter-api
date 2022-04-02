@@ -2,6 +2,7 @@
  */
 
 const nameController = require('../NameController');
+const MappingV1Service = require('../../services/MappingV1Service');
 
 module.exports = {
   update: (req, res) =>

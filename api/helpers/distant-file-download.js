@@ -1,5 +1,8 @@
 const http = require('http');
 const https = require('https');
+// I don't know where mime-types comes from, it's not included in package.json...
+// But it works.
+// eslint-disable-next-line import/no-extraneous-dependencies
 const mime = require('mime-types');
 
 module.exports = {
@@ -30,8 +33,7 @@ module.exports = {
 
   exits: {
     success: {
-      file:
-        'An object representing the downloaded file , including the attributes "buffer", "originalname", "size" & "mimetype" (like a multer object, see https://github.com/expressjs/multer#file-information).',
+      file: 'An object representing the downloaded file , including the attributes "buffer", "originalname", "size" & "mimetype" (like a multer object, see https://github.com/expressjs/multer#file-information).',
     },
     downloadError: {
       description:
@@ -45,7 +47,8 @@ module.exports = {
     },
   },
 
-  fn: async function(inputs, exits) {
+  // eslint-disable-next-line consistent-return
+  async fn(inputs, exits) {
     // Check if URL is valid
     let fileUrl;
     try {
@@ -62,6 +65,7 @@ module.exports = {
 
     // Download it
     client
+      // eslint-disable-next-line consistent-return
       .get(fileUrl, (res) => {
         const { acceptedFileFormats, refusedFileFormats } = inputs;
         const contentType = res.headers['content-type'];
@@ -92,8 +96,6 @@ module.exports = {
             });
           });
       })
-      .on('error', (err) => {
-        return exits.downloadError('download error:', err);
-      });
+      .on('error', (err) => exits.downloadError('download error:', err));
   },
 };

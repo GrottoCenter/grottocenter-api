@@ -1,6 +1,4 @@
-const should = require('should');
-let supertest = require('supertest');
-const Fixted = require('fixted');
+const supertest = require('supertest');
 const AuthTokenService = require('../AuthTokenService');
 
 describe('Account features', () => {
@@ -42,7 +40,7 @@ describe('Account features', () => {
           .set('Accept', 'application/json')
           .expect(204);
         (await TCaver.findOne({ nickname: 'User1' })).mail.should.equal(
-          'newmail@newmail.com',
+          'newmail@newmail.com'
         );
       });
       // Restore previous email

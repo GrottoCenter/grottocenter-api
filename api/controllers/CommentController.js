@@ -5,19 +5,20 @@
  * @docs        :: http://sailsjs.org/#!documentation/controllers
  */
 
+const CommentService = require('../services/CommentService');
+
 module.exports = {
   getEntryStats: (req, res) => {
     const entryId = req.param('entry');
     if (!entryId) {
       return res.badRequest(
-        'CommentController.getEntryStats : entry is missing',
+        'CommentController.getEntryStats : entry is missing'
       );
     }
     // get stats
     return CommentService.getStats(entryId).then(
       (result) => res.json(result),
-      (err) =>
-        res.serverError(`CommentController.getEntryStats error : ${err}`),
+      (err) => res.serverError(`CommentController.getEntryStats error : ${err}`)
     );
   },
 
@@ -25,14 +26,14 @@ module.exports = {
     const entryId = req.param('entry');
     if (!entryId) {
       return res.badRequest(
-        'CommentController.getEntryTimeInfos : entry is missing',
+        'CommentController.getEntryTimeInfos : entry is missing'
       );
     }
     // get stats
     return CommentService.getTimeInfos(entryId).then(
       (result) => res.json(result),
       (err) =>
-        res.serverError(`CommentController.getEntryTimeInfos error : ${err}`),
+        res.serverError(`CommentController.getEntryTimeInfos error : ${err}`)
     );
   },
 };

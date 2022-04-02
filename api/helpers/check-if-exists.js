@@ -37,13 +37,9 @@ module.exports = {
     },
   },
 
-  fn: async function(inputs, exits) {
-    const {
-      sailsModel,
-      attributeName,
-      attributeValue,
-      additionalAttributes,
-    } = inputs;
+  async fn(inputs, exits) {
+    const { sailsModel, attributeName, attributeValue, additionalAttributes } =
+      inputs;
     const entityFound = await sailsModel.findOne({
       [attributeName]: attributeValue,
       ...additionalAttributes,

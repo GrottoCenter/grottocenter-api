@@ -1,8 +1,8 @@
-let should = require('should');
+const should = require('should');
 const CaveService = require('../../../api/services/CaveService');
 
 const findAndPopulateCave = async (caveId) =>
-  await TCave.findOne(caveId)
+  TCave.findOne(caveId)
     .populate('comments')
     .populate('descriptions')
     .populate('documents')
@@ -25,7 +25,6 @@ describe('CaveService', () => {
   });
 
   describe('create()', () => {
-    /* eslint-disable camelcase */
     const caveData = {
       id_author: 1,
       is_diving: true,
@@ -35,14 +34,25 @@ describe('CaveService', () => {
       longitude: 6.345676,
       temperature: 42,
     };
-    /* eslint-enable camelcase */
+
     const nameData = { name: 'TestCave1', language: 'eng' };
     const descriptionsData = [
-      { author: 1, body: 'desc1', language: 'eng', title: 'titleDesc1' },
-      { author: 1, body: 'desc2', language: 'fra', title: 'titreDesc2' },
+      {
+        author: 1,
+        body: 'desc1',
+        language: 'eng',
+        title: 'titleDesc1',
+      },
+      {
+        author: 1,
+        body: 'desc2',
+        language: 'fra',
+        title: 'titreDesc2',
+      },
     ];
 
-    let nbCavesBefore, nbCavesAfter;
+    let nbCavesBefore;
+    let nbCavesAfter;
 
     before(async () => {
       nbCavesBefore = (await TCave.find()).length;
@@ -52,7 +62,7 @@ describe('CaveService', () => {
       const createdCave = await CaveService.createCave(
         caveData,
         nameData,
-        descriptionsData,
+        descriptionsData
       );
 
       // Cave data verifications
@@ -75,7 +85,7 @@ describe('CaveService', () => {
       should(descriptions.length).equal(2);
       for (const initialDesc of descriptionsData) {
         const createdDesc = descriptions.find(
-          (d) => d.title === initialDesc.title && d.body === initialDesc.body,
+          (d) => d.title === initialDesc.title && d.body === initialDesc.body
         );
         should(createdDesc.author).equal(initialDesc.author);
         should(createdDesc.body).equal(initialDesc.body);
@@ -103,7 +113,6 @@ describe('CaveService', () => {
   });
 
   describe('mergeCaves()', () => {
-    /* eslint-disable camelcase */
     const cave1Data = {
       id_author: 1,
       is_diving: false,
@@ -115,7 +124,7 @@ describe('CaveService', () => {
       longitude: 32.45688,
       temperature: 42,
     };
-    /* eslint-enable camelcase */
+
     const name1Data = { name: 'TestCave1', language: 'eng' };
     const descriptions1Data = [
       {
@@ -132,7 +141,6 @@ describe('CaveService', () => {
       },
     ];
 
-    /* eslint-disable camelcase */
     const cave2Data = {
       id_author: 2,
       is_diving: true,
@@ -144,7 +152,7 @@ describe('CaveService', () => {
       longitude: 45.658,
       temperature: null,
     };
-    /* eslint-enable camelcase */
+
     const name2Data = { name: 'TestCave2', language: 'eng' };
     const descriptions2Data = [
       {
@@ -165,12 +173,12 @@ describe('CaveService', () => {
       const cave1Tmp = await CaveService.createCave(
         cave1Data,
         name1Data,
-        descriptions1Data,
+        descriptions1Data
       );
       const cave2Tmp = await CaveService.createCave(
         cave2Data,
         name2Data,
-        descriptions2Data,
+        descriptions2Data
       );
       const oldCave1 = await findAndPopulateCave(cave1Tmp.id);
       const oldCave2 = await findAndPopulateCave(cave2Tmp.id);
@@ -180,31 +188,34 @@ describe('CaveService', () => {
       // Verifications (cave2 (destination) data overwrite cave1 data (source))
       const resultCave = await findAndPopulateCave(oldCave2.id);
 
-      // Only the destination cave data are preserved... except if not present initially (temperature here) !
+      // Only the destination cave data are preserved...
+      // ...except if not present initially (temperature here) !
       should(resultCave.author).equal(oldCave2.author);
       should(resultCave.depth).equal(oldCave2.depth);
       should(resultCave.isDiving).equal(oldCave2.isDiving);
       should(parseFloat(resultCave.latitude)).equal(
-        parseFloat(oldCave2.latitude),
+        parseFloat(oldCave2.latitude)
       );
       should(resultCave.length).equal(oldCave2.length);
       should(parseFloat(resultCave.longitude)).equal(
-        parseFloat(oldCave2.longitude),
+        parseFloat(oldCave2.longitude)
       );
       should(resultCave.temperature).equal(oldCave1.temperature);
 
-      // Comment, descriptions and histories are merged, without dupplicate check because each of them are unique
+      // Comment, descriptions and histories are merged, without duplicate check
+      // because each of them are unique
       const collectionNamesToCheck = ['comments', 'descriptions', 'histories'];
       for (const collectionName of collectionNamesToCheck) {
         should(resultCave[collectionName].length).equal(
-          oldCave2[collectionName].length + oldCave1[collectionName].length,
+          oldCave2[collectionName].length + oldCave1[collectionName].length
         );
       }
 
       // Only the destination cave names are preserved
       should(resultCave.names.length).equal(oldCave2.names.length);
 
-      // For documents, entrances, exploringGrottos, partneringGrottos, there are no duplicate (thus, the use of Set())
+      // For documents, entrances, exploringGrottos, partneringGrottos,
+      // there are no duplicate (thus, the use of Set())
       const collectionNamesWithoutDuplicates = [
         'documents',
         'entrances',
@@ -213,11 +224,11 @@ describe('CaveService', () => {
       ];
       for (const collectionName of collectionNamesWithoutDuplicates) {
         const oldValuesConcateneted = oldCave1[collectionName].concat(
-          oldCave2[collectionName],
+          oldCave2[collectionName]
         );
         const oldUniqueValues = oldValuesConcateneted.filter(
           (value, idx, array) =>
-            array.findIndex((t) => t.id === value.id) === idx,
+            array.findIndex((t) => t.id === value.id) === idx
         );
         should(resultCave[collectionName]).deepEqual(oldUniqueValues);
       }

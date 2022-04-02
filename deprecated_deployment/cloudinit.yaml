@@ -1,26 +1,26 @@
 #cloud-config
 
 users:
-- name: cloudservice
-  uid: 2000
+  - name: cloudservice
+    uid: 2000
 
 write_files:
-- path: /etc/systemd/system/cloudservice.service
-  permissions: 0644
-  owner: root
-  content: |
-    [Unit]
-    Description=Start a simple docker grottocenter-3-container container
-    Wants=gcr-online.target
-    After=gcr-online.target
+  - path: /etc/systemd/system/cloudservice.service
+    permissions: 0644
+    owner: root
+    content: |
+      [Unit]
+      Description=Start a simple docker grottocenter-3-container container
+      Wants=gcr-online.target
+      After=gcr-online.target
 
-    [Service]
-    Environment="HOME=/home/cloudservice"
-    ExecStartPre=/usr/bin/docker-credential-gcr configure-docker
-    ExecStart=/usr/bin/docker run --restart=always -u 2000 -p 80:8080 --name=grottocenter-3-container eu.gcr.io/grottocenter-beta/grottocenter-3:latest
-    ExecStop=/usr/bin/docker stop grottocenter-3-container
-    ExecStopPost=/usr/bin/docker rm grottocenter-3-container
+      [Service]
+      Environment="HOME=/home/cloudservice"
+      ExecStartPre=/usr/bin/docker-credential-gcr configure-docker
+      ExecStart=/usr/bin/docker run --restart=always -u 2000 -p 80:8080 --name=grottocenter-3-container eu.gcr.io/grottocenter-beta/grottocenter-3:latest
+      ExecStop=/usr/bin/docker stop grottocenter-3-container
+      ExecStopPost=/usr/bin/docker rm grottocenter-3-container
 
 runcmd:
-- systemctl daemon-reload
-- systemctl start cloudservice.service
+  - systemctl daemon-reload
+  - systemctl start cloudservice.service

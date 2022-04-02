@@ -5,8 +5,10 @@
  * @help        :: See http://links.sailsjs.org/docs/controllers
  */
 
+const ControllerService = require('../services/ControllerService');
+
 module.exports = {
-  findAll: (req, res, next) => {
+  findAll: (req, res) => {
     TIdentifierType.find().exec((err, found) => {
       const params = {
         controllerMethod: 'TIdentifierType.findAll',
@@ -22,7 +24,7 @@ module.exports = {
           })),
         },
         params,
-        res,
+        res
       );
     });
   },

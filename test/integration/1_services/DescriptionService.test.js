@@ -1,4 +1,5 @@
-let should = require('should');
+const should = require('should');
+const DescriptionService = require('../../../api/services/DescriptionService');
 
 describe('DescriptionService', () => {
   describe('setDocumentDescriptions()', () => {
@@ -9,16 +10,16 @@ describe('DescriptionService', () => {
       // Test Spelunca n°2 [ISSUE]
       should(document.descriptions.length).equal(1);
       should(document.descriptions[0].title).equal(
-        "Un numéro qui mérite d'être nuancé",
+        "Un numéro qui mérite d'être nuancé"
       );
 
       // Test Spelunca [COLLECTION]
       should(document.parent.descriptions.length).equal(2);
       should(document.parent.descriptions.find((d) => d.id === 1).title).equal(
-        'An awesome collection',
+        'An awesome collection'
       );
       should(document.parent.descriptions.find((d) => d.id === 2).title).equal(
-        'Une superbe collection',
+        'Une superbe collection'
       );
     });
     it('should do nothing and not throw an error if a document is not provided', async () => {

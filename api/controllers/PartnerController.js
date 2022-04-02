@@ -5,6 +5,8 @@
  * @docs        :: http://sailsjs.org/#!documentation/controllers
  */
 
+const ControllerService = require('../services/ControllerService');
+
 module.exports = {
   create: (req, res) =>
     res.badRequest('PartnerController.create not yet implemented!'),

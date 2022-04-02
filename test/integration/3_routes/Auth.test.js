@@ -1,4 +1,4 @@
-let supertest = require('supertest');
+const supertest = require('supertest');
 
 describe('Auth features', () => {
   describe('Login', () => {

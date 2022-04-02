@@ -1,3 +1,5 @@
+const CaverService = require('../../services/CaverService');
+
 module.exports = {
   friendlyName: 'Creator getter',
 
@@ -19,38 +21,34 @@ module.exports = {
     },
   },
 
-  fn: async function(inputs, exits) {
-    const creatorNicknameRaw = await sails.helpers.csvhelpers.retrieveFromLink.with(
-      { stringArg: inputs.creator },
-    );
+  async fn(inputs, exits) {
+    const creatorNicknameRaw =
+      await sails.helpers.csvhelpers.retrieveFromLink.with({
+        stringArg: inputs.creator,
+      });
     const creatorNickname = creatorNicknameRaw.replace('_', ' ');
     const caversArray = await TCaver.find({
       nickname: creatorNickname,
     }).limit(1);
     let caver;
-    switch (caversArray.length) {
-      case 0:
-        const [
-          fullName,
-          creatorName,
-          creatorSurname,
-        ] = await sails.helpers.csvhelpers.getPersonData.with({
+    if (caversArray.length === 0) {
+      const [fullName, creatorName, creatorSurname] =
+        await sails.helpers.csvhelpers.getPersonData.with({
           fullName: creatorNickname,
         });
-        const paramsCaver = {
-          name: creatorName,
-          surname: creatorSurname,
-          nickname: fullName,
-        };
-        caver = await CaverService.createNonUserCaver(
-          paramsCaver,
-          (error) => error,
-        );
-        break;
-      default:
-        caver = caversArray[0];
-        break;
+      const paramsCaver = {
+        name: creatorName,
+        surname: creatorSurname,
+        nickname: fullName,
+      };
+      caver = await CaverService.createNonUserCaver(
+        paramsCaver,
+        (error) => error
+      );
+    } else {
+      caver = caversArray[0];
     }
+
     return exits.success(caver);
   },
 };

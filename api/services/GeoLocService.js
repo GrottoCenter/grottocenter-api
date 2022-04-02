@@ -49,20 +49,20 @@ const PUBLIC_NETWORKS_COORDINATES_IN_BOUNDS = `
   LIMIT $5;
 `;
 
+const CommonService = require('./CommonService');
+const NameService = require('./NameService');
+
 /**
  * return a light version of the networks
  * @param networks
  */
-const formatNetworks = (networks) => {
-  return networks.map((network) => {
-    return {
-      id: network.id,
-      name: network.name,
-      longitude: Number(network.longitude),
-      latitude: Number(network.latitude),
-    };
-  });
-};
+const formatNetworks = (networks) =>
+  networks.map((network) => ({
+    id: network.id,
+    name: network.name,
+    longitude: Number(network.longitude),
+    latitude: Number(network.latitude),
+  }));
 
 /**
  * Format the quality entrances in a lighter version
@@ -130,13 +130,14 @@ module.exports = {
 
     // TODO : to adapt when authentication will be implemented
     parameters.isSensitive = false;
-    return await TEntrance.count(parameters);
+    const entrance = await TEntrance.count(parameters);
+    return entrance;
   },
 
   getEntrancesCoordinates: async (
     southWestBound,
     northEastBound,
-    limitEntrances,
+    limitEntrances
   ) => {
     const results = await CommonService.query(
       PUBLIC_ENTRANCES_COORDINATES_IN_BOUNDS,
@@ -146,22 +147,23 @@ module.exports = {
         southWestBound.lng,
         northEastBound.lng,
         limitEntrances,
-      ],
+      ]
     );
     if (!results || results.rows.length <= 0 || results.rows[0].count === 0) {
       return [];
     }
     const coordinates = results.rows;
 
-    return coordinates.map((coord) => {
-      return [Number(coord.longitude), Number(coord.latitude)];
-    });
+    return coordinates.map((coord) => [
+      Number(coord.longitude),
+      Number(coord.latitude),
+    ]);
   },
 
   getNetworksCoordinates: async (
     southWestBound,
     northEastBound,
-    limitNetworks,
+    limitNetworks
   ) => {
     const results = await CommonService.query(
       PUBLIC_NETWORKS_COORDINATES_IN_BOUNDS,
@@ -171,15 +173,16 @@ module.exports = {
         southWestBound.lng,
         northEastBound.lng,
         limitNetworks,
-      ],
+      ]
     );
     if (!results || results.rows.length <= 0 || results.rows[0].count === 0) {
       return [];
     }
     const coordinates = results.rows;
-    return coordinates.map((coord) => {
-      return [Number(coord.longitude), Number(coord.latitude)];
-    });
+    return coordinates.map((coord) => [
+      Number(coord.longitude),
+      Number(coord.latitude),
+    ]);
   },
 
   /**

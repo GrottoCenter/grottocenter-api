@@ -13,12 +13,12 @@ module.exports = {
     descriptionController.update(
       req,
       res,
-      MappingV1Service.convertToDescriptionModel,
+      MappingV1Service.convertToDescriptionModel
     ),
   create: (req, res) =>
     descriptionController.create(
       req,
       res,
-      MappingV1Service.convertToDescriptionModel,
+      MappingV1Service.convertToDescriptionModel
     ),
 };

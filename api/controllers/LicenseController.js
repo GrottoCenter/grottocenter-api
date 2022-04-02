@@ -12,7 +12,7 @@ module.exports = {
       return res.ok(licenses);
     } catch (err) {
       return res.serverError(
-        'There was a problem while retrieving the licenses.',
+        'There was a problem while retrieving the licenses.'
       );
     }
   },
