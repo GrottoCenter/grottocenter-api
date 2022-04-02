@@ -176,8 +176,8 @@ module.exports.routes = {
   'GET /api/v1/documents/types/:id': 'v1/DocumentType.find',
 
   /* Description controller */
-  'PATCH /api/v1/descriptions/:id': 'v1/Description.update',
-  'POST /api/v1/descriptions': 'v1/Description.create',
+  'PATCH /api/v1/descriptions/:id': 'v1/description/update',
+  'POST /api/v1/descriptions': 'v1/description/create',
 
   /* Name controller */
   'PATCH /api/v1/names/:id': 'v1/Name.update',

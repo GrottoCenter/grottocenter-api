@@ -64,10 +64,9 @@ module.exports.policies = {
     importRows: 'tokenAuth',
   },
 
-  'v1/DescriptionController': {
-    create: 'tokenAuth',
-    update: 'tokenAuth',
-  },
+  // Description
+  'v1/description/create': 'tokenAuth',
+  'v1/description/update': 'tokenAuth',
 
   'v1/LocationController': {
     create: 'tokenAuth',
