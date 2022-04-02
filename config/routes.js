@@ -54,8 +54,8 @@ module.exports.routes = {
   //  ╠═╣╠═╝║  ║╣ ║║║ ║║╠═╝║ ║║║║║ ║ ╚═╗
   //  ╩ ╩╩  ╩  ╚═╝╝╚╝═╩╝╩  ╚═╝╩╝╚╝ ╩ ╚═╝
 
-  /* Swagger doc endpoint */
-  'GET /api/v1/swagger.yaml': 'v1/Swagger.sendYaml',
+  /* Swagger (API doc) */
+  'GET /api/v1/swagger.yaml': 'v1/swagger/get-yaml',
 
   /* Account controller */
   'PATCH /api/v1/account/password': 'v1/account/change-password',
