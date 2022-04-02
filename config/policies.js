@@ -95,10 +95,6 @@ module.exports.policies = {
     '*': true,
   },
 
-  CommentController: {
-    '*': false,
-  },
-
   GrottoController: {
     '*': true,
   },
