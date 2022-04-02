@@ -141,11 +141,10 @@ module.exports.policies = {
     update: 'tokenAuth',
   },
 
-  'v1/MassifController': {
-    create: 'tokenAuth',
-    delete: ['tokenAuth', 'moderatorAuth'],
-    find: true,
-  },
+  // Massif
+  'v1/massif/create': 'tokenAuth',
+  'v1/massif/delete-one': ['tokenAuth', 'moderatorAuth'],
+  'v1/massif/find': true,
 
   'v1/GeoLocController': {
     countEntrances: true,

@@ -160,15 +160,9 @@ module.exports.routes = {
   'PUT /api/v1/organizations/:id': 'v1/Grotto.update',
 
   /* Massif controller */
-  'DELETE /api/v1/massifs/:id': 'v1/Massif.delete',
-  'GET /api/v1/massifs/:id': {
-    controller: 'v1/Massif',
-    action: 'find',
-    api: {
-      entity: 'massif',
-    },
-  },
-  'POST /api/v1/massifs': 'v1/Massif.create',
+  'DELETE /api/v1/massifs/:id': 'v1/massif/delete-one',
+  'GET /api/v1/massifs/:id': 'v1/massif/find',
+  'POST /api/v1/massifs': 'v1/massif/create',
 
   /* Document controller */
   'GET /api/v1/documents': 'v1/Document.findAll',
