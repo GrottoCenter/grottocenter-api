@@ -214,7 +214,11 @@ module.exports.routes = {
   'POST /api/v1/regions/search/logical/or': 'v1/region/search',
 
   /* Rss controller */
-  'GET /api/rss/:language': 'Rss.getFeed',
+  'GET /api/v1/rss/:language': 'v1/rss/get-feed',
+  /**
+   * @deprecated use /v1 route above instead
+   */
+  'GET /api/rss/:language': 'v1/rss/get-feed',
 
   /* Geo localisation controller */
   'GET /api/v1/geoloc/countEntrances': 'v1/GeoLoc.countEntrances',

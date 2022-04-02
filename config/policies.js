@@ -96,9 +96,8 @@ module.exports.policies = {
     '*': true,
   },
 
-  RssController: {
-    '*': true,
-  },
+  // RSS
+  'v1/rss/get-feed': true,
 
   // Auth
   'v1/auth/login': true,
