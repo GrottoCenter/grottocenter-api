@@ -129,9 +129,8 @@ module.exports.policies = {
   'v1/document-type/find': true,
   'v1/document-type/find-all': true,
 
-  'v1/IdentifierTypeController': {
-    '*': true,
-  },
+  // IdentifierType
+  'v1/identifier-type/find-all': true,
 
   'v1/RegionController': {
     '*': true,
@@ -170,9 +169,8 @@ module.exports.policies = {
     '*': true,
   },
 
-  'v1/FileFormatController': {
-    '*': true,
-  },
+  // File format
+  'v1/file-format/find-all': true,
 
   'v1/OptionController': {
     '*': true,

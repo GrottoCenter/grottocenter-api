@@ -218,14 +218,8 @@ module.exports.routes = {
     },
   },
 
-  /* REST API for Document Identifier Types controller */
-  'GET /api/v1/documents/identifierTypes': {
-    controller: 'v1/IdentifierType',
-    action: 'findAll',
-    api: {
-      entity: 'identifierType',
-    },
-  },
+  /* Document Identifier Types */
+  'GET /api/v1/documents/identifierTypes': 'v1/identifier-type/find-all',
 
   /* Region controller */
   'POST /api/v1/regions/search/logical/or': {
@@ -300,7 +294,7 @@ module.exports.routes = {
   'GET /api/v1/licenses': 'v1/License.findAll',
 
   /* File formats controller */
-  'GET /api/v1/file-formats': 'v1/FileFormat.findAll',
+  'GET /api/v1/file-formats': 'v1/file-format/find-all',
 
   /* Option controller */
   'GET /api/v1/options': 'v1/Option.findAll',
