@@ -166,9 +166,8 @@ module.exports.policies = {
   'v1/account/change-password': true,
   'v1/account/forgot-password': true,
 
-  'v1/LicenseController': {
-    '*': true,
-  },
+  // License
+  'v1/license/find-all': true,
 
   // File format
   'v1/file-format/find-all': true,

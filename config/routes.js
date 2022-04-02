@@ -262,7 +262,7 @@ module.exports.routes = {
   'GET /api/convert': 'v1/convert/convert',
 
   /* License controller */
-  'GET /api/v1/licenses': 'v1/License.findAll',
+  'GET /api/v1/licenses': 'v1/license/find-all',
 
   /* File formats controller */
   'GET /api/v1/file-formats': 'v1/file-format/find-all',
