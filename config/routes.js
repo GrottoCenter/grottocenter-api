@@ -248,21 +248,8 @@ module.exports.routes = {
   'POST /api/v1/advanced-search': 'v1/Search.advancedSearch',
 
   /* Language controller */
-  'GET /api/v1/languages/:id': {
-    controller: 'v1/Language',
-    action: 'find',
-    api: {
-      entity: 'language',
-    },
-  },
-
-  'GET /api/v1/languages': {
-    controller: 'v1/Language',
-    action: 'findAll',
-    api: {
-      entity: 'language',
-    },
-  },
+  'GET /api/v1/languages/:id': 'v1/language/find',
+  'GET /api/v1/languages': 'v1/language/find-all',
 
   /* Users controller */
   'GET /api/v1/cavers/:caverId/documents': 'v1/Document.findByCaverId',
