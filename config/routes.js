@@ -179,8 +179,8 @@ module.exports.routes = {
   'PUT /api/v1/documents/validate': 'v1/Document.multipleValidate',
 
   /* Document Type controller */
-  'GET /api/v1/documents/types': 'v1/DocumentType.findAll',
-  'GET /api/v1/documents/types/:id': 'v1/DocumentType.find',
+  'GET /api/v1/documents/types': 'v1/document-type/find-all',
+  'GET /api/v1/documents/types/:id': 'v1/document-type/find',
 
   /* Description controller */
   'PATCH /api/v1/descriptions/:id': 'v1/description/update',

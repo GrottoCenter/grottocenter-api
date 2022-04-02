@@ -125,9 +125,9 @@ module.exports.policies = {
     importRows: 'tokenAuth',
   },
 
-  'v1/DocumentTypeController': {
-    '*': true,
-  },
+  // DocumentType
+  'v1/document-type/find': true,
+  'v1/document-type/find-all': true,
 
   'v1/IdentifierTypeController': {
     '*': true,
