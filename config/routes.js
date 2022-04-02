@@ -268,7 +268,7 @@ module.exports.routes = {
   'GET /api/v1/file-formats': 'v1/file-format/find-all',
 
   /* Option controller */
-  'GET /api/v1/options': 'v1/Option.findAll',
+  'GET /api/v1/options': 'v1/option/find-all',
 
   /* DocumentDuplicate controller */
   'POST /api/v1/documents/from-duplicate/:id':
