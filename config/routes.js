@@ -69,20 +69,25 @@ module.exports.routes = {
 
   /* Caver controller */
   'DELETE /api/v1/cavers/:caverId/entrances/:entranceId':
-    'v1/Caver.removeExploredEntrance',
-  'DELETE /api/v1/cavers/:caverId/groups/:groupId': 'v1/Caver.removeFromGroup',
-  'GET /api/v1/cavers/': 'v1/Caver.findAll',
-  'GET /api/v1/cavers/:id': 'v1/Caver.find',
-  'GET /api/v1/cavers/admins': 'v1/Caver.getAdmins',
-  'GET /api/v1/cavers/count': 'v1/Caver.count',
-  'GET /api/v1/cavers/users/count': 'v1/Caver.usersCount',
-  'GET /api/v1/cavers/findAll': 'v1/Caver.findAll',
-  'GET /api/v1/cavers/moderators': 'v1/Caver.getModerators',
-  'POST /api/v1/cavers/': 'v1/Caver.create',
-  'POST /api/v1/cavers/:caverId/groups': 'v1/Caver.setGroups',
+    'v1/caver/remove-explored-entrance',
+  'DELETE /api/v1/cavers/:caverId/groups/:groupId':
+    'v1/caver/remove-from-group',
+  'GET /api/v1/cavers': 'v1/caver/find-all',
+  'GET /api/v1/cavers/:id': 'v1/caver/find',
+  'GET /api/v1/cavers/admins': 'v1/caver/get-admins',
+  'GET /api/v1/cavers/count': 'v1/caver/count',
+  'GET /api/v1/cavers/moderators': 'v1/caver/get-moderators',
+  'GET /api/v1/cavers/users/count': 'v1/caver/users-count',
+  'POST /api/v1/cavers/': 'v1/caver/create',
+  'POST /api/v1/cavers/:caverId/groups': 'v1/caver/set-groups',
   'PUT /api/v1/cavers/:caverId/entrances/:entranceId':
-    'v1/Caver.addExploredEntrance',
-  'PUT /api/v1/cavers/:caverId/groups/:groupId': 'v1/Caver.putOnGroup',
+    'v1/caver/add-explored-entrance',
+  'PUT /api/v1/cavers/:caverId/groups/:groupId': 'v1/caver/put-on-group',
+
+  /**
+   * @deprecated use api/v1/cavers instead
+   */
+  'GET /api/v1/cavers/findAll': 'v1/caver/find-all',
 
   /* Entrance controller */
   'DELETE /api/v1/entrances/:id': 'v1/Entrance.delete',

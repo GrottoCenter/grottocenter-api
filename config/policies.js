@@ -26,10 +26,6 @@ module.exports.policies = {
 
   '*': false,
 
-  CaverController: {
-    '*': true,
-  },
-
   // Caves
   'v1/cave/*': true,
   'v1/cave/add-document': 'tokenAuth',
@@ -38,20 +34,19 @@ module.exports.policies = {
   'v1/cave/delete-one': 'tokenAuth',
   'v1/cave/update': 'tokenAuth',
 
-  'v1/CaverController': {
-    '*': false,
-    addExploredEntrance: 'tokenAuth',
-    count: true,
-    create: 'tokenAuth',
-    find: true,
-    putOnGroup: ['tokenAuth', 'adminAuth'],
-    removeFromGroup: ['tokenAuth', 'adminAuth'],
-    setGroups: ['tokenAuth', 'adminAuth'],
-    usersCount: true,
-    getAdmins: 'tokenAuth',
-    getModerators: 'tokenAuth',
-    removeExploredEntrance: 'tokenAuth',
-  },
+  // Caver
+  'v1/caver/add-explored-entrance': 'tokenAuth',
+  'v1/caver/count': true,
+  'v1/caver/create': 'tokenAuth',
+  'v1/caver/find': true,
+  'v1/caver/find-all': false,
+  'v1/caver/get-admins': 'tokenAuth',
+  'v1/caver/get-moderators': 'tokenAuth',
+  'v1/caver/put-on-group': ['tokenAuth', 'adminAuth'],
+  'v1/caver/remove-explored-entrance': 'tokenAuth',
+  'v1/caver/remove-from-group': ['tokenAuth', 'adminAuth'],
+  'v1/caver/set-groups': ['tokenAuth', 'adminAuth'],
+  'v1/caver/users-count': true,
 
   'v1/EntranceController': {
     '*': false,
