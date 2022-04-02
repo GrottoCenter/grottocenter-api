@@ -91,9 +91,8 @@ module.exports.policies = {
     '*': true,
   },
 
-  ConvertController: {
-    '*': true,
-  },
+  // Convert
+  'v1/convert/convert': true,
 
   GrottoController: {
     '*': true,
