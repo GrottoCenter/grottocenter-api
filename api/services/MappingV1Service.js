@@ -899,10 +899,8 @@ module.exports = {
       source.author instanceof Object
         ? MappingV1Service.convertToCaverModel(source.author)
         : undefined;
-    result.content =
-      source.content instanceof Object
-        ? MappingV1Service.convertToDocumentModel(source.content)
-        : source.content;
+
+    result.content = source.content;
     result.datePublication = source.datePublication;
     result.document =
       source.document instanceof Object
@@ -928,10 +926,7 @@ module.exports = {
       source.author instanceof Object
         ? MappingV1Service.convertToCaverModel(source.author)
         : undefined;
-    result.content =
-      source.content instanceof Object
-        ? MappingV1Service.convertToEntranceModel(source.content)
-        : source.content;
+    result.content = source.content;
     result.datePublication = source.datePublication;
     result.entrance =
       source.entrance instanceof Object
