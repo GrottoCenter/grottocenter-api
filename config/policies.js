@@ -133,9 +133,10 @@ module.exports.policies = {
   // IdentifierType
   'v1/identifier-type/find-all': true,
 
-  'v1/RegionController': {
-    '*': true,
-  },
+  // Region
+  'v1/region/find': true,
+  'v1/region/find-all': true,
+  'v1/region/search': true,
 
   'v1/GrottoController': {
     create: 'tokenAuth',

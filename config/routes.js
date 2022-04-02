@@ -206,13 +206,7 @@ module.exports.routes = {
   'GET /api/v1/documents/identifierTypes': 'v1/identifier-type/find-all',
 
   /* Region controller */
-  'POST /api/v1/regions/search/logical/or': {
-    controller: 'v1/Region',
-    action: 'search',
-    api: {
-      entity: 'region',
-    },
-  },
+  'POST /api/v1/regions/search/logical/or': 'v1/region/search',
 
   /* Rss controller */
   'GET /api/rss/:language': 'Rss.getFeed',
