@@ -28,7 +28,7 @@ const ORGANIZATION_PROPERTIES = [
   'yearBirth',
 ];
 
-describe('Grotto features', () => {
+describe('Organization features', () => {
   describe('Find', () => {
     it('should return code 404', (done) => {
       supertest(sails.hooks.http.app)

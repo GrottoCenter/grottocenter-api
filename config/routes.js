@@ -146,18 +146,17 @@ module.exports.routes = {
   'GET /api/comments/timeinfos/:entry': 'v1/comment/get-entrance-time-infos',
 
   /* Organization controller */
-  'DELETE /api/v1/organizations/:id': 'v1/Grotto.delete',
-  'GET /api/v1/organizations/count': 'v1/Grotto.count',
-  'GET /api/organizations/findAll': 'Grotto.findAll',
-  'GET /api/v1/organizations/:id': {
-    controller: 'v1/Grotto',
-    action: 'find',
-    api: {
-      entity: 'grotto',
-    },
-  },
-  'POST /api/v1/organizations': 'v1/Grotto.create',
-  'PUT /api/v1/organizations/:id': 'v1/Grotto.update',
+  'DELETE /api/v1/organizations/:id': 'v1/organization/delete-one',
+  'GET /api/v1/organizations/count': 'v1/organization/count',
+  'GET /api/v1/organizations/:id': 'v1/organization/find',
+  'GET /api/v1//organizations': 'v1/organization/find-all',
+  'POST /api/v1/organizations': 'v1/organization/create',
+  'PUT /api/v1/organizations/:id': 'v1/organization/update',
+
+  /**
+   * @deprecated use /v1/organizations route above instead
+   */
+  'GET /api/organizations/findAll': 'v1/organization/find-all',
 
   /* Massif controller */
   'DELETE /api/v1/massifs/:id': 'v1/massif/delete-one',

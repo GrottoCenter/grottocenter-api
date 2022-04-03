@@ -89,10 +89,6 @@ module.exports.policies = {
   // Convert
   'v1/convert/convert': true,
 
-  GrottoController: {
-    '*': true,
-  },
-
   // RSS
   'v1/rss/get-feed': true,
 
@@ -132,13 +128,13 @@ module.exports.policies = {
   'v1/region/find-all': true,
   'v1/region/search': true,
 
-  'v1/GrottoController': {
-    create: 'tokenAuth',
-    count: true,
-    delete: ['tokenAuth', 'moderatorAuth'],
-    find: ['apiKeyAuth', 'paginate'],
-    update: 'tokenAuth',
-  },
+  // Organizations
+  'v1/organization/count': true,
+  'v1/organization/create': 'tokenAuth',
+  'v1/organization/delete-one': ['tokenAuth', 'moderatorAuth'],
+  'v1/organization/find': true,
+  'v1/organization/find-all': ['apiKeyAuth', 'paginate'],
+  'v1/organization/update': 'tokenAuth',
 
   // Massif
   'v1/massif/create': 'tokenAuth',
