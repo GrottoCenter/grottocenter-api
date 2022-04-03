@@ -268,12 +268,12 @@ module.exports.routes = {
   'GET /api/v1/options': 'v1/option/find-all',
 
   // DocumentDuplicate
+  'DELETE /api/v1/document-duplicates': 'v1/document-duplicate/delete-many',
+  'DELETE /api/v1/document-duplicates/:id': 'v1/document-duplicate/delete-one',
+  'GET /api/v1/document-duplicates': 'v1/document-duplicate/find-all',
+  'GET /api/v1/document-duplicates/:id': 'v1/document-duplicate/find',
   'POST /api/v1/documents/from-duplicate/:id':
-    'v1/DocumentDuplicate.createFromDuplicate',
-  'GET /api/v1/document-duplicates/:id': 'v1/DocumentDuplicate.find',
-  'GET /api/v1/document-duplicates': 'v1/DocumentDuplicate.findAll',
-  'DELETE /api/v1/document-duplicates': 'v1/DocumentDuplicate.deleteMany',
-  'DELETE /api/v1/document-duplicates/:id': 'v1/DocumentDuplicate.delete',
+    'v1/document-duplicate/create-from-duplicate',
 
   // EntranceDuplicate
   'POST /api/v1/entrances/from-duplicate/:id':

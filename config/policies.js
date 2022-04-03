@@ -81,9 +81,12 @@ module.exports.policies = {
   'v1/document/validate': ['tokenAuth', 'moderatorAuth'],
 
   // DocumentDuplicate
-  'v1/DocumentDuplicateController': {
-    '*': ['tokenAuth', 'moderatorAuth'],
-  },
+  'v1/document-duplicate/create-from-duplicate': ['tokenAuth', 'moderatorAuth'],
+  'v1/document-duplicate/create-many': ['tokenAuth', 'moderatorAuth'],
+  'v1/document-duplicate/delete-many': ['tokenAuth', 'moderatorAuth'],
+  'v1/document-duplicate/delete-one': ['tokenAuth', 'moderatorAuth'],
+  'v1/document-duplicate/find': ['tokenAuth', 'moderatorAuth'],
+  'v1/document-duplicate/find-all': ['tokenAuth', 'moderatorAuth'],
 
   // DocumentType
   'v1/document-type/find': true,
