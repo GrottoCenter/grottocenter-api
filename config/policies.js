@@ -90,21 +90,18 @@ module.exports.policies = {
   'v1/document-type/find-all': true,
 
   // Entrance
-  'v1/EntranceController': {
-    '*': false,
-    addDocument: 'tokenAuth',
-    count: true,
-    create: 'tokenAuth',
-    delete: ['tokenAuth', 'moderatorAuth'],
-    find: true,
-    findRandom: true,
-    publicCount: true,
-    unlinkDocument: ['tokenAuth', 'moderatorAuth'],
-    update: 'tokenAuth',
-    updateWithNewEntities: 'tokenAuth',
-    checkRows: 'tokenAuth',
-    importRows: 'tokenAuth',
-  },
+  'v1/entrance/add-document': 'tokenAuth',
+  'v1/entrance/check-rows': 'tokenAuth',
+  'v1/entrance/count': true,
+  'v1/entrance/create': 'tokenAuth',
+  'v1/entrance/delete-one': ['tokenAuth', 'moderatorAuth'],
+  'v1/entrance/find': true,
+  'v1/entrance/find-random': true,
+  'v1/entrance/import-rows': 'tokenAuth',
+  'v1/entrance/public-count': true,
+  'v1/entrance/unlink-document': ['tokenAuth', 'moderatorAuth'],
+  'v1/entrance/update': 'tokenAuth',
+  'v1/entrance/update-with-new-entities': 'tokenAuth',
 
   // EntranceDuplicate
   'v1/EntranceDuplicateController': {
