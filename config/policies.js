@@ -141,14 +141,13 @@ module.exports.policies = {
   'v1/massif/delete-one': ['tokenAuth', 'moderatorAuth'],
   'v1/massif/find': true,
 
-  'v1/GeoLocController': {
-    countEntrances: true,
-    findEntrances: true,
-    findEntrancesCoordinates: true,
-    findGrottos: true,
-    findNetworks: true,
-    findNetworksCoordinates: true,
-  },
+  // GeoLoc
+  'v1/geoloc/count-entrances': true,
+  'v1/geoloc/find-entrances': true,
+  'v1/geoloc/find-entrances-coordinates': true,
+  'v1/geoloc/find-networks': true,
+  'v1/geoloc/find-networks-coordinates': true,
+  'v1/geoloc/find-organizations': true,
 
   // Account
   'v1/account/change-alert-for-news': 'tokenAuth',

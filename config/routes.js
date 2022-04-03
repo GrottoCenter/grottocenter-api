@@ -214,30 +214,31 @@ module.exports.routes = {
   'GET /api/rss/:language': 'v1/rss/get-feed',
 
   /* Geo localisation controller */
-  'GET /api/v1/geoloc/countEntrances': 'v1/GeoLoc.countEntrances',
-  'GET /api/v1/geoloc/entrances': 'v1/GeoLoc.findEntrances',
+  'GET /api/v1/geoloc/countEntrances': 'v1/geoloc/count-entrances',
+  'GET /api/v1/geoloc/entrances': 'v1/geoloc/find-entrances',
   'GET /api/v1/geoloc/entrancesCoordinates':
-    'v1/GeoLoc.findEntrancesCoordinates',
-  'GET /api/v1/geoloc/networks': 'v1/GeoLoc.findNetworks',
-  'GET /api/v1/geoloc/networksCoordinates': 'v1/GeoLoc.findNetworksCoordinates',
-  'GET /api/v1/geoloc/organizations': 'v1/GeoLoc.findGrottos',
+    'v1/geoloc/find-entrances-coordinates',
+  'GET /api/v1/geoloc/networks': 'v1/geoloc/find-networks',
+  'GET /api/v1/geoloc/networksCoordinates':
+    'v1/geoloc/find-networks-coordinates',
+  'GET /api/v1/geoloc/organizations': 'v1/geoloc/find-organizations',
 
   /**
    * @deprecated use geoloc/countEntrances instead
    */
-  'GET /api/v1/geoloc/countEntries': 'v1/GeoLoc.countEntrances',
+  'GET /api/v1/geoloc/countEntries': 'v1/geoloc/count-entrances',
   /**
    * @deprecated use geoloc/organizations instead
    */
-  'GET /api/v1/geoloc/grottos': 'v1/GeoLoc.findGrottos',
+  'GET /api/v1/geoloc/grottos': 'v1/geoloc/find-organizations',
   /**
    * @deprecated use geoloc/networks instead
    */
-  'GET /api/v1/geoloc/caves': 'v1/GeoLoc.findNetworks',
+  'GET /api/v1/geoloc/caves': 'v1/geoloc/find-networks',
   /**
    * @deprecated use geoloc/networksCoordinates instead
    */
-  'GET /api/v1/geoloc/cavesCoordinates': 'v1/GeoLoc.findNetworksCoordinates',
+  'GET /api/v1/geoloc/cavesCoordinates': 'v1/geoloc/find-networks-coordinates',
 
   /* Search controller */
   'POST /api/v1/search': 'v1/search/quick-search',
