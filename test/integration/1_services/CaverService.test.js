@@ -58,7 +58,7 @@ describe('CaverService', () => {
       should(newCaver.name).equal(caverData.name);
       should(newCaver.surname).equal(caverData.surname);
       should(newCaver.nickname).equal(caverData.nickname);
-      should(newCaver.mail).equal('no@mail.no');
+      should(newCaver.mail).containEql('@mail.no');
     });
     it('should create a non user caver and return it', async () => {
       const caverData = {
@@ -75,7 +75,7 @@ describe('CaverService', () => {
       should(newCaver.name).equal(caverData.name);
       should(newCaver.surname).equal(caverData.surname);
       should(newCaver.nickname).equal(`${caverData.name} ${caverData.surname}`);
-      should(newCaver.mail).equal('no@mail.no');
+      should(newCaver.mail).containEql('@mail.no');
     });
   });
 
