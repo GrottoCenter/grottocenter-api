@@ -74,6 +74,7 @@ module.exports.routes = {
     'v1/caver/remove-from-group',
   'GET /api/v1/cavers': 'v1/caver/find-all',
   'GET /api/v1/cavers/:id': 'v1/caver/find',
+  'GET /api/v1/cavers/:caverId/documents': 'v1/document/find-by-caver-id',
   'GET /api/v1/cavers/admins': 'v1/caver/get-admins',
   'GET /api/v1/cavers/count': 'v1/caver/count',
   'GET /api/v1/cavers/moderators': 'v1/caver/get-moderators',
@@ -164,17 +165,18 @@ module.exports.routes = {
   'POST /api/v1/massifs': 'v1/massif/create',
 
   // Document
-  'GET /api/v1/documents': 'v1/Document.findAll',
-  'GET /api/v1/documents/:id': 'v1/Document.find',
-  'GET /api/v1/documents/:id/children': 'v1/Document.findChildren',
-  'GET /api/v1/documents/count': 'v1/Document.count',
-  'POST /api/v1/documents': 'v1/Document.create',
-  'POST /api/v1/documents/check-rows': 'v1/Document.checkRows',
-  'POST /api/v1/documents/import-rows': 'v1/Document.importRows',
-  'PUT /api/v1/documents/:id': 'v1/Document.update',
-  'PUT /api/v1/documents/:id/new-entities': 'v1/Document.updateWithNewEntities',
-  'PUT /api/v1/documents/:id/validate': 'v1/Document.validate',
-  'PUT /api/v1/documents/validate': 'v1/Document.multipleValidate',
+  'GET /api/v1/documents': 'v1/document/find-all',
+  'GET /api/v1/documents/:id': 'v1/document/find',
+  'GET /api/v1/documents/:id/children': 'v1/document/find-children',
+  'GET /api/v1/documents/count': 'v1/document/count',
+  'POST /api/v1/documents': 'v1/document/create',
+  'POST /api/v1/documents/check-rows': 'v1/document/check-rows',
+  'POST /api/v1/documents/import-rows': 'v1/document/import-rows',
+  'PUT /api/v1/documents/:id': 'v1/document/update',
+  'PUT /api/v1/documents/:id/new-entities':
+    'v1/document/update-with-new-entities',
+  'PUT /api/v1/documents/:id/validate': 'v1/document/validate',
+  'PUT /api/v1/documents/validate': 'v1/document/multiple-validate',
 
   // Document Type
   'GET /api/v1/documents/types': 'v1/document-type/find-all',
@@ -247,9 +249,6 @@ module.exports.routes = {
   // Language
   'GET /api/v1/languages/:id': 'v1/language/find',
   'GET /api/v1/languages': 'v1/language/find-all',
-
-  // Users
-  'GET /api/v1/cavers/:caverId/documents': 'v1/Document.findByCaverId',
 
   // Convert
   'GET /api/v1/convert': 'v1/convert/convert',

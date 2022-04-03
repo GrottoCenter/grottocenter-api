@@ -66,16 +66,19 @@ module.exports.policies = {
   'v1/description/update': 'tokenAuth',
 
   // Document
-  'v1/DocumentController': {
-    '*': true,
-    create: 'tokenAuth',
-    validate: ['tokenAuth', 'moderatorAuth'],
-    multipleValidate: ['tokenAuth', 'moderatorAuth'],
-    update: 'tokenAuth',
-    updateWithNewEntities: 'tokenAuth',
-    checkRows: 'tokenAuth',
-    importRows: 'tokenAuth',
-  },
+  'v1/document/check-rows': 'tokenAuth',
+  'v1/document/count': true,
+  'v1/document/count-bbs': true,
+  'v1/document/create': 'tokenAuth',
+  'v1/document/find-all': true,
+  'v1/document/find-by-caver-id': true,
+  'v1/document/find-children': true,
+  'v1/document/find': true,
+  'v1/document/import-rows': 'tokenAuth',
+  'v1/document/multiple-validate': ['tokenAuth', 'moderatorAuth'],
+  'v1/document/update': 'tokenAuth',
+  'v1/document/update-with-new-entities': 'tokenAuth',
+  'v1/document/validate': ['tokenAuth', 'moderatorAuth'],
 
   // DocumentDuplicate
   'v1/DocumentDuplicateController': {
