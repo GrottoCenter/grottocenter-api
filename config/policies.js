@@ -107,9 +107,12 @@ module.exports.policies = {
   'v1/entrance/update-with-new-entities': 'tokenAuth',
 
   // EntranceDuplicate
-  'v1/EntranceDuplicateController': {
-    '*': ['tokenAuth', 'moderatorAuth'],
-  },
+  'v1/entrance-duplicate/create-from-duplicate': ['tokenAuth', 'moderatorAuth'],
+  'v1/entrance-duplicate/create-many': ['tokenAuth', 'moderatorAuth'],
+  'v1/entrance-duplicate/delete-many': ['tokenAuth', 'moderatorAuth'],
+  'v1/entrance-duplicate/delete-one': ['tokenAuth', 'moderatorAuth'],
+  'v1/entrance-duplicate/find': ['tokenAuth', 'moderatorAuth'],
+  'v1/entrance-duplicate/find-all': ['tokenAuth', 'moderatorAuth'],
 
   // File format
   'v1/file-format/find-all': true,

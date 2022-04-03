@@ -276,12 +276,12 @@ module.exports.routes = {
     'v1/document-duplicate/create-from-duplicate',
 
   // EntranceDuplicate
+  'DELETE /api/v1/entrance-duplicates': 'v1/entrance-duplicate/delete-many',
+  'DELETE /api/v1/entrance-duplicates/:id': 'v1/entrance-duplicate/delete',
+  'GET /api/v1/entrance-duplicates': 'v1/entrance-duplicate/find-all',
+  'GET /api/v1/entrance-duplicates/:id': 'v1/entrance-duplicate/find',
   'POST /api/v1/entrances/from-duplicate/:id':
-    'v1/EntranceDuplicate.createFromDuplicate',
-  'GET /api/v1/entrance-duplicates/:id': 'v1/EntranceDuplicate.find',
-  'GET /api/v1/entrance-duplicates': 'v1/EntranceDuplicate.findAll',
-  'DELETE /api/v1/entrance-duplicates': 'v1/EntranceDuplicate.deleteMany',
-  'DELETE /api/v1/entrance-duplicates/:id': 'v1/EntranceDuplicate.delete',
+    'v1/entrance-duplicate/create-from-duplicate',
 
   //  ╦ ╦╔═╗╔╗ ╦ ╦╔═╗╔═╗╦╔═╔═╗
   //  ║║║║╣ ╠╩╗╠═╣║ ║║ ║╠╩╗╚═╗
