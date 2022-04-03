@@ -76,10 +76,9 @@ module.exports.policies = {
   'v1/name/set-as-main': 'tokenAuth',
   'v1/name/update': 'tokenAuth',
 
-  'v1/SearchController': {
-    search: true,
-    advancedSearch: true,
-  },
+  // Search
+  'v1/search/quick-search': true,
+  'v1/search/advanced-search': true,
 
   // Partner
   'v1/partner/count': true,

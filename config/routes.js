@@ -241,8 +241,8 @@ module.exports.routes = {
   'GET /api/v1/geoloc/cavesCoordinates': 'v1/GeoLoc.findNetworksCoordinates',
 
   /* Search controller */
-  'POST /api/v1/search': 'v1/Search.search',
-  'POST /api/v1/advanced-search': 'v1/Search.advancedSearch',
+  'POST /api/v1/search': 'v1/search/quick-search',
+  'POST /api/v1/advanced-search': 'v1/search/advanced-search',
 
   /* Language controller */
   'GET /api/v1/languages/:id': 'v1/language/find',
