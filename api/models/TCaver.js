@@ -93,6 +93,7 @@ module.exports = {
       columnName: 'mail',
       isEmail: true,
       maxLength: 50,
+      unique: true,
     },
 
     mailIsValid: {
