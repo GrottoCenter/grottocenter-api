@@ -26,6 +26,16 @@ module.exports.policies = {
 
   '*': false,
 
+  // Account
+  'v1/account/change-alert-for-news': 'tokenAuth',
+  'v1/account/change-email': 'tokenAuth',
+  'v1/account/change-password': true,
+  'v1/account/forgot-password': true,
+
+  // Auth
+  'v1/auth/login': true,
+  'v1/auth/sign-up': true,
+
   // Caves
   'v1/cave/*': true,
   'v1/cave/add-document': 'tokenAuth',
@@ -48,6 +58,35 @@ module.exports.policies = {
   'v1/caver/set-groups': ['tokenAuth', 'adminAuth'],
   'v1/caver/users-count': true,
 
+  // Convert
+  'v1/convert/convert': true,
+
+  // Description
+  'v1/description/create': 'tokenAuth',
+  'v1/description/update': 'tokenAuth',
+
+  // Document
+  'v1/DocumentController': {
+    '*': true,
+    create: 'tokenAuth',
+    validate: ['tokenAuth', 'moderatorAuth'],
+    multipleValidate: ['tokenAuth', 'moderatorAuth'],
+    update: 'tokenAuth',
+    updateWithNewEntities: 'tokenAuth',
+    checkRows: 'tokenAuth',
+    importRows: 'tokenAuth',
+  },
+
+  // DocumentDuplicate
+  'v1/DocumentDuplicateController': {
+    '*': ['tokenAuth', 'moderatorAuth'],
+  },
+
+  // DocumentType
+  'v1/document-type/find': true,
+  'v1/document-type/find-all': true,
+
+  // Entrance
   'v1/EntranceController': {
     '*': false,
     addDocument: 'tokenAuth',
@@ -64,82 +103,13 @@ module.exports.policies = {
     importRows: 'tokenAuth',
   },
 
-  // Description
-  'v1/description/create': 'tokenAuth',
-  'v1/description/update': 'tokenAuth',
-
-  // Location
-  'v1/location/create': 'tokenAuth',
-  'v1/location/update': 'tokenAuth',
-
-  // Name
-  'v1/name/set-as-main': 'tokenAuth',
-  'v1/name/update': 'tokenAuth',
-
-  // Search
-  'v1/search/quick-search': true,
-  'v1/search/advanced-search': true,
-
-  // Partner
-  'v1/partner/count': true,
-  'v1/partner/find': true,
-  'v1/partner/find-all': true,
-  'v1/partner/find-for-carousel': true,
-
-  // Convert
-  'v1/convert/convert': true,
-
-  // RSS
-  'v1/rss/get-feed': true,
-
-  // Auth
-  'v1/auth/login': true,
-  'v1/auth/sign-up': true,
-
-  // Subject
-  'v1/subject/find': true,
-  'v1/subject/find-all': true,
-  'v1/subject/search': true,
-
-  // Languages
-  'v1/language/find': true,
-  'v1/language/find-all': true,
-
-  'v1/DocumentController': {
-    '*': true,
-    create: 'tokenAuth',
-    validate: ['tokenAuth', 'moderatorAuth'],
-    multipleValidate: ['tokenAuth', 'moderatorAuth'],
-    update: 'tokenAuth',
-    updateWithNewEntities: 'tokenAuth',
-    checkRows: 'tokenAuth',
-    importRows: 'tokenAuth',
+  // EntranceDuplicate
+  'v1/EntranceDuplicateController': {
+    '*': ['tokenAuth', 'moderatorAuth'],
   },
 
-  // DocumentType
-  'v1/document-type/find': true,
-  'v1/document-type/find-all': true,
-
-  // IdentifierType
-  'v1/identifier-type/find-all': true,
-
-  // Region
-  'v1/region/find': true,
-  'v1/region/find-all': true,
-  'v1/region/search': true,
-
-  // Organizations
-  'v1/organization/count': true,
-  'v1/organization/create': 'tokenAuth',
-  'v1/organization/delete-one': ['tokenAuth', 'moderatorAuth'],
-  'v1/organization/find': true,
-  'v1/organization/find-all': ['apiKeyAuth', 'paginate'],
-  'v1/organization/update': 'tokenAuth',
-
-  // Massif
-  'v1/massif/create': 'tokenAuth',
-  'v1/massif/delete-one': ['tokenAuth', 'moderatorAuth'],
-  'v1/massif/find': true,
+  // File format
+  'v1/file-format/find-all': true,
 
   // GeoLoc
   'v1/geoloc/count-entrances': true,
@@ -149,31 +119,65 @@ module.exports.policies = {
   'v1/geoloc/find-networks-coordinates': true,
   'v1/geoloc/find-organizations': true,
 
-  // Account
-  'v1/account/change-alert-for-news': 'tokenAuth',
-  'v1/account/change-email': 'tokenAuth',
-  'v1/account/change-password': true,
-  'v1/account/forgot-password': true,
+  // IdentifierType
+  'v1/identifier-type/find-all': true,
+
+  // Languages
+  'v1/language/find': true,
+  'v1/language/find-all': true,
 
   // License
   'v1/license/find-all': true,
 
-  // File format
-  'v1/file-format/find-all': true,
+  // Location
+  'v1/location/create': 'tokenAuth',
+  'v1/location/update': 'tokenAuth',
+
+  // Massif
+  'v1/massif/create': 'tokenAuth',
+  'v1/massif/delete-one': ['tokenAuth', 'moderatorAuth'],
+  'v1/massif/find': true,
+
+  // Name
+  'v1/name/set-as-main': 'tokenAuth',
+  'v1/name/update': 'tokenAuth',
 
   // Option
   'v1/option/find-all': true,
 
+  // Organizations
+  'v1/organization/count': true,
+  'v1/organization/create': 'tokenAuth',
+  'v1/organization/delete-one': ['tokenAuth', 'moderatorAuth'],
+  'v1/organization/find': true,
+  'v1/organization/find-all': ['apiKeyAuth', 'paginate'],
+  'v1/organization/update': 'tokenAuth',
+
+  // Partner
+  'v1/partner/count': true,
+  'v1/partner/find': true,
+  'v1/partner/find-all': true,
+  'v1/partner/find-for-carousel': true,
+
+  // Region
+  'v1/region/find': true,
+  'v1/region/find-all': true,
+  'v1/region/search': true,
+
+  // RSS
+  'v1/rss/get-feed': true,
+
+  // Search
+  'v1/search/quick-search': true,
+  'v1/search/advanced-search': true,
+
+  // Subject
+  'v1/subject/find': true,
+  'v1/subject/find-all': true,
+  'v1/subject/search': true,
+
   // Swagger (API doc)
   'v1/swagger/get-yaml': true,
-
-  'v1/DocumentDuplicateController': {
-    '*': ['tokenAuth', 'moderatorAuth'],
-  },
-
-  'v1/EntranceDuplicateController': {
-    '*': ['tokenAuth', 'moderatorAuth'],
-  },
 
   /** *************************************************************************
    *                                                                          *

@@ -45,7 +45,7 @@ module.exports.routes = {
    *                                                                          *
    ************************************************************************** */
 
-  /* CSRF */
+  // CSRF
   'GET /csrfToken': {
     action: 'security/grant-csrf-token',
   },
@@ -54,20 +54,20 @@ module.exports.routes = {
   //  ╠═╣╠═╝║  ║╣ ║║║ ║║╠═╝║ ║║║║║ ║ ╚═╗
   //  ╩ ╩╩  ╩  ╚═╝╝╚╝═╩╝╩  ╚═╝╩╝╚╝ ╩ ╚═╝
 
-  /* Swagger (API doc) */
+  // Swagger (API doc)
   'GET /api/v1/swagger.yaml': 'v1/swagger/get-yaml',
 
-  /* Account controller */
+  // Account
   'PATCH /api/v1/account/password': 'v1/account/change-password',
   'PATCH /api/v1/account/alertForNews': 'v1/account/change-alert-for-news',
   'PATCH /api/v1/account/email': 'v1/account/change-email',
   'POST /api/v1/forgotPassword': 'v1/account/forgot-password',
 
-  /* Auth controller */
+  // Auth
   'POST /api/v1/login': 'v1/auth/login',
   'POST /api/v1/signup': 'v1/auth/sign-up',
 
-  /* Caver controller */
+  // Caver
   'DELETE /api/v1/cavers/:caverId/entrances/:entranceId':
     'v1/caver/remove-explored-entrance',
   'DELETE /api/v1/cavers/:caverId/groups/:groupId':
@@ -89,7 +89,7 @@ module.exports.routes = {
    */
   'GET /api/v1/cavers/findAll': 'v1/caver/find-all',
 
-  /* Entrance controller */
+  // Entrance
   'DELETE /api/v1/entrances/:id': 'v1/Entrance.delete',
   'DELETE /api/v1/entrances/:entranceId/documents/:documentId':
     'v1/Entrance.unlinkDocument',
@@ -105,7 +105,7 @@ module.exports.routes = {
   'PUT /api/v1/entrances/:entranceId/documents/:documentId':
     'v1/Entrance.addDocument',
 
-  /* Cave controller */
+  // Cave
   'DELETE /api/v1/caves/:id': 'v1/cave/delete-one',
   'GET /api/v1/caves/:id': 'v1/cave/find',
   'GET /api/v1/caves': 'v1/cave/find-all',
@@ -118,7 +118,7 @@ module.exports.routes = {
    */
   'GET /api/v1/caves/findAll': 'v1/cave/find-all',
 
-  /* Partner controller */
+  // Partner
   'GET /api/v1/partners/:id': 'v1/partner/find',
   'GET /api/v1/partners/count': 'v1/partner/count',
   'GET /api/v1/partners/findAll': 'v1/partner/find-all',
@@ -134,7 +134,7 @@ module.exports.routes = {
   'GET /api/partners/findForCarousel/:skip/:limit':
     'v1/partner/find-for-carousel',
 
-  /* Comment controller */
+  // Comment
   'GET /api/v1/comments/stats/:entranceId': 'v1/comment/get-entrance-stats',
   'GET /api/v1/comments/timeinfos/:entranceId':
     'v1/comment/get-entrance-time-infos',
@@ -145,7 +145,7 @@ module.exports.routes = {
   'GET /api/comments/stats/:entry': 'v1/comment/get-entrance-stats',
   'GET /api/comments/timeinfos/:entry': 'v1/comment/get-entrance-time-infos',
 
-  /* Organization controller */
+  // Organization
   'DELETE /api/v1/organizations/:id': 'v1/organization/delete-one',
   'GET /api/v1/organizations/count': 'v1/organization/count',
   'GET /api/v1/organizations/:id': 'v1/organization/find',
@@ -158,12 +158,12 @@ module.exports.routes = {
    */
   'GET /api/organizations/findAll': 'v1/organization/find-all',
 
-  /* Massif controller */
+  // Massif
   'DELETE /api/v1/massifs/:id': 'v1/massif/delete-one',
   'GET /api/v1/massifs/:id': 'v1/massif/find',
   'POST /api/v1/massifs': 'v1/massif/create',
 
-  /* Document controller */
+  // Document
   'GET /api/v1/documents': 'v1/Document.findAll',
   'GET /api/v1/documents/:id': 'v1/Document.find',
   'GET /api/v1/documents/:id/children': 'v1/Document.findChildren',
@@ -176,23 +176,23 @@ module.exports.routes = {
   'PUT /api/v1/documents/:id/validate': 'v1/Document.validate',
   'PUT /api/v1/documents/validate': 'v1/Document.multipleValidate',
 
-  /* Document Type controller */
+  // Document Type
   'GET /api/v1/documents/types': 'v1/document-type/find-all',
   'GET /api/v1/documents/types/:id': 'v1/document-type/find',
 
-  /* Description controller */
+  // Description
   'PATCH /api/v1/descriptions/:id': 'v1/description/update',
   'POST /api/v1/descriptions': 'v1/description/create',
 
-  /* Name controller */
+  // Name
   'PATCH /api/v1/names/:id': 'v1/name/update',
   'POST /api/v1/names/:id/setAsMain': 'v1/name/set-as-main',
 
-  /* Location controller */
+  // Location
   'PATCH /api/v1/locations/:id': 'v1/location/update',
   'POST /api/v1/locations': 'v1/location/create',
 
-  /* Document Subject controller */
+  // Document Subject
   'GET /api/v1/documents/subjects': 'v1/subject/find-all',
   'GET /api/v1/documents/subjects/:code': {
     action: 'v1/subject/find',
@@ -200,20 +200,20 @@ module.exports.routes = {
   },
   'POST /api/v1/documents/subjects/search/logical/or': 'v1/subject/search',
 
-  /* Document Identifier Types */
+  // Document Identifier Types
   'GET /api/v1/documents/identifierTypes': 'v1/identifier-type/find-all',
 
-  /* Region controller */
+  // Region
   'POST /api/v1/regions/search/logical/or': 'v1/region/search',
 
-  /* Rss controller */
+  // Rss
   'GET /api/v1/rss/:language': 'v1/rss/get-feed',
   /**
    * @deprecated use /v1 route above instead
    */
   'GET /api/rss/:language': 'v1/rss/get-feed',
 
-  /* Geo localisation controller */
+  // Geo localisation
   'GET /api/v1/geoloc/countEntrances': 'v1/geoloc/count-entrances',
   'GET /api/v1/geoloc/entrances': 'v1/geoloc/find-entrances',
   'GET /api/v1/geoloc/entrancesCoordinates':
@@ -240,34 +240,34 @@ module.exports.routes = {
    */
   'GET /api/v1/geoloc/cavesCoordinates': 'v1/geoloc/find-networks-coordinates',
 
-  /* Search controller */
+  // Search
   'POST /api/v1/search': 'v1/search/quick-search',
   'POST /api/v1/advanced-search': 'v1/search/advanced-search',
 
-  /* Language controller */
+  // Language
   'GET /api/v1/languages/:id': 'v1/language/find',
   'GET /api/v1/languages': 'v1/language/find-all',
 
-  /* Users controller */
+  // Users
   'GET /api/v1/cavers/:caverId/documents': 'v1/Document.findByCaverId',
 
-  /* Convert controller */
+  // Convert
   'GET /api/v1/convert': 'v1/convert/convert',
   /**
    * @deprecated use /v1 route above instead
    */
   'GET /api/convert': 'v1/convert/convert',
 
-  /* License controller */
+  // License
   'GET /api/v1/licenses': 'v1/license/find-all',
 
-  /* File formats controller */
+  // File formats
   'GET /api/v1/file-formats': 'v1/file-format/find-all',
 
-  /* Option controller */
+  // Option
   'GET /api/v1/options': 'v1/option/find-all',
 
-  /* DocumentDuplicate controller */
+  // DocumentDuplicate
   'POST /api/v1/documents/from-duplicate/:id':
     'v1/DocumentDuplicate.createFromDuplicate',
   'GET /api/v1/document-duplicates/:id': 'v1/DocumentDuplicate.find',
@@ -275,7 +275,7 @@ module.exports.routes = {
   'DELETE /api/v1/document-duplicates': 'v1/DocumentDuplicate.deleteMany',
   'DELETE /api/v1/document-duplicates/:id': 'v1/DocumentDuplicate.delete',
 
-  /* EntranceDuplicate controller */
+  // EntranceDuplicate
   'POST /api/v1/entrances/from-duplicate/:id':
     'v1/EntranceDuplicate.createFromDuplicate',
   'GET /api/v1/entrance-duplicates/:id': 'v1/EntranceDuplicate.find',
