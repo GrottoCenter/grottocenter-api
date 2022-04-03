@@ -91,20 +91,21 @@ module.exports.routes = {
   'GET /api/v1/cavers/findAll': 'v1/caver/find-all',
 
   // Entrance
-  'DELETE /api/v1/entrances/:id': 'v1/Entrance.delete',
+  'DELETE /api/v1/entrances/:id': 'v1/entrance/delete-one',
   'DELETE /api/v1/entrances/:entranceId/documents/:documentId':
-    'v1/Entrance.unlinkDocument',
-  'GET /api/v1/entrances/count': 'v1/Entrance.count',
-  'GET /api/v1/entrances/findRandom': 'v1/Entrance.findRandom',
-  'GET /api/v1/entrances/publicCount': 'v1/Entrance.publicCount',
-  'GET /api/v1/entrances/:id': 'v1/Entrance.find',
-  'POST /api/v1/entrances': 'v1/Entrance.create',
-  'POST /api/v1/entrances/check-rows': 'v1/Entrance.checkRows',
-  'POST /api/v1/entrances/import-rows': 'v1/Entrance.importRows',
-  'PUT /api/v1/entrances/:id': 'v1/Entrance.update',
-  'PUT /api/v1/entrances/:id/new-entities': 'v1/Entrance.updateWithNewEntities',
+    'v1/entrance/unlink-document',
+  'GET /api/v1/entrances/count': 'v1/entrance/count',
+  'GET /api/v1/entrances/findRandom': 'v1/entrance/find-random',
+  'GET /api/v1/entrances/publicCount': 'v1/entrance/public-count',
+  'GET /api/v1/entrances/:id': 'v1/entrance/find',
+  'POST /api/v1/entrances': 'v1/entrance/create',
+  'POST /api/v1/entrances/check-rows': 'v1/entrance/check-rows',
+  'POST /api/v1/entrances/import-rows': 'v1/entrance/import-rows',
+  'PUT /api/v1/entrances/:id': 'v1/entrance/update',
+  'PUT /api/v1/entrances/:id/new-entities':
+    'v1/entrance/update-with-new-entities',
   'PUT /api/v1/entrances/:entranceId/documents/:documentId':
-    'v1/Entrance.addDocument',
+    'v1/entrance/add-document',
 
   // Cave
   'DELETE /api/v1/caves/:id': 'v1/cave/delete-one',
