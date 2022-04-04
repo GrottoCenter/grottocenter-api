@@ -1,22 +1,11 @@
-const indexNames = [
-  'caves',
-  'cavers',
-  'documents',
-  'document-collections',
-  'document-issues',
-  'entrances',
-  'grottos',
-  'massifs',
-  'networks',
-];
-
 const ControllerService = require('../../../services/ControllerService');
 const MappingV1Service = require('../../../services/MappingV1Service');
 const ElasticsearchService = require('../../../services/ElasticsearchService');
+const INDEX_NAMES = require('./INDEX_NAMES');
 
 /**
  * Perform an advanced search using multiple URL parameters :
- * - resourceType: string, entity type to search for (@see indexNames) (MANDATORY)
+ * - resourceType: string, entity type to search for (@see INDEX_NAMES) (MANDATORY)
  * - complete: bool, determine if the results must be returned in their
  *      entirely or just their id and name (default = false) (FACULTATIVE)
  * - matchAllFields: bool, determine if the results need to match all the fields (logic AND)
@@ -26,7 +15,7 @@ module.exports = (req, res) => {
   // Store every params in the url and check if there is the type parameter
   const paramsURL = req.query;
 
-  if (!indexNames.includes(paramsURL.resourceType)) {
+  if (!INDEX_NAMES.includes(paramsURL.resourceType)) {
     return res.badRequest();
   }
 

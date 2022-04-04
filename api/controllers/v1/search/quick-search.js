@@ -6,8 +6,8 @@ const ElasticsearchService = require('../../../services/ElasticsearchService');
  * Perform a quick search using multiple URL parameters:
  * - query: string to search for (MANDATORY)
  * - complete: boolean, specify if we must send all the information or just a summary
- * - resourceType:  string, entity type to search for (@see indexNames) (FACULTATIVE).
- * - resourceTypes:  Array of string, entity types to search for (@see indexNames) (FACULTATIVE).
+ * - resourceType:  string, entity type to search for (@see INDEX_NAMES) (FACULTATIVE).
+ * - resourceTypes:  Array of string, entity types to search for (@see INDEX_NAMES) (FACULTATIVE).
  * By default, search on all entities except document-collections.
  * */
 module.exports = (req, res) => {
