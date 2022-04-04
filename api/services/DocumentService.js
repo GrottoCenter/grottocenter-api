@@ -408,7 +408,9 @@ module.exports = {
     doc.license = license ? await TLicense.findOne(license) : null;
     doc.massif = massif ? await TMassif.findOne(massif) : null;
     doc.option = option ? await TOption.findOne(option) : null;
-    doc.parent = parent ? await TDocument.findOne(parent) : null;
+    doc.parent = parent
+      ? await TDocument.findOne(parent).populate('descriptions')
+      : null;
     doc.reviewer = reviewer ? await TCaver.findOne(reviewer) : null;
     doc.type = type ? await TType.findOne(type) : null;
 
