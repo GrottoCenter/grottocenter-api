@@ -3,19 +3,6 @@
 
 const client = require('../../config/elasticsearch').elasticsearchCli;
 
-// const INDEX_NAMES = [
-//   'caves',
-//   'cavers',
-//   'documents',
-//   'document-collections',
-//   'document-issues',
-//   'entrances',
-//   'grottos',
-//   'massifs',
-//    'languages',
-//   'networks',
-// ];
-
 const SEARCH_META_PARAMS = [
   'resourceType',
   'complete',
@@ -64,9 +51,9 @@ const self = (module.exports = {
    *    @param {integer}        from (optional, default = 0) number of first results to skip
    *    @param {integer}        size (optional, default = 10) number of first results to return
    *    @param {string}         resourceType (optional) resource type to search on.
-   *            Must be one of INDEX_NAMES at the top of this file
+   *            Must be one of INDEX_NAMES
    *    @param {Array(string)}  resourceTypes (optional) resource types to search on.
-   *            Must be an array containing some of the INDEX_NAMES at the top of this file
+   *            Must be an array containing some of the INDEX_NAMES
    */
   searchQuery: (params) =>
     new Promise((resolve, reject) => {
