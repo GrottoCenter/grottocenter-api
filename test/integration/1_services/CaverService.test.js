@@ -42,40 +42,47 @@ describe('CaverService', () => {
   });
 
   describe('createNonUserCaver()', () => {
-    it('should create a non user caver with a specified nickname and return it', async () => {
-      const caverData = {
-        name: 'Bob',
-        nickname: 'B0b_its_a_test',
-        surname: 'Test',
-      };
+    const caver1Data = {
+      name: 'Bob',
+      nickname: 'Test_B0b_1',
+      surname: 'Test1',
+    };
+    const caver2Data = {
+      name: 'Bobby',
+      surname: 'Test2',
+    };
 
+    it('should create a non user caver with a specified nickname and return it', async () => {
       const errorHandler = (e) => e;
       const newCaver = await CaverService.createNonUserCaver(
-        caverData,
+        caver1Data,
         errorHandler
       );
-
-      should(newCaver.name).equal(caverData.name);
-      should(newCaver.surname).equal(caverData.surname);
-      should(newCaver.nickname).equal(caverData.nickname);
+      should(newCaver.name).equal(caver1Data.name);
+      should(newCaver.surname).equal(caver1Data.surname);
+      should(newCaver.nickname).equal(caver1Data.nickname);
       should(newCaver.mail).containEql('@mail.no');
     });
-    it('should create a non user caver and return it', async () => {
-      const caverData = {
-        name: 'Bob',
-        surname: 'Test',
-      };
 
+    it('should create a non user caver and return it', async () => {
       const errorHandler = (e) => e;
       const newCaver = await CaverService.createNonUserCaver(
-        caverData,
+        caver2Data,
         errorHandler
       );
-
-      should(newCaver.name).equal(caverData.name);
-      should(newCaver.surname).equal(caverData.surname);
-      should(newCaver.nickname).equal(`${caverData.name} ${caverData.surname}`);
+      should(newCaver.name).equal(caver2Data.name);
+      should(newCaver.surname).equal(caver2Data.surname);
+      should(newCaver.nickname).equal(
+        `${caver2Data.name} ${caver2Data.surname}`
+      );
       should(newCaver.mail).containEql('@mail.no');
+    });
+
+    after(async () => {
+      const res1 = await TCaver.destroyOne(caver1Data);
+      const res2 = await TCaver.destroyOne(caver2Data);
+      should(res1).not.be.undefined();
+      should(res2).not.be.undefined();
     });
   });
 

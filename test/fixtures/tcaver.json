@@ -38,5 +38,12 @@
     "alertForNews": "false",
     "language": "fra",
     "groups": [1, 2, 3, 4, 5]
+  },
+  {
+    "mail": "4456@mail.no",
+    "nickname": "Author1",
+    "name": "AuthorName",
+    "surname": "AuthorSurname",
+    "groups": []
   }
 ]
