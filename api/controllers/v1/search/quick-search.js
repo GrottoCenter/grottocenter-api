@@ -23,9 +23,9 @@ module.exports = (req, res) => {
   }
 
   const params = {
-    searchedItem: `Search entity with the following query ${req.param(
+    searchedItem: `Search entity with the following query '${req.param(
       'query'
-    )}`,
+    )}'`,
   };
 
   // Extract search parameters
@@ -38,26 +38,18 @@ module.exports = (req, res) => {
   };
 
   return ElasticsearchService.searchQuery(searchParams)
-    .then((results) => {
-      if (complete) {
-        return ControllerService.treatAndConvert(
-          req,
-          undefined,
-          results,
-          params,
-          res,
-          MappingV1Service.convertToCompleteSearchResult
-        );
-      }
-      return ControllerService.treatAndConvert(
+    .then((results) =>
+      ControllerService.treatAndConvert(
         req,
         undefined,
         results,
         params,
         res,
-        MappingV1Service.convertEsToSearchResult
-      );
-    })
+        complete
+          ? MappingV1Service.convertToCompleteSearchResult
+          : MappingV1Service.convertEsToSearchResult
+      )
+    )
     .catch((err) =>
       ControllerService.treatAndConvert(
         req,
