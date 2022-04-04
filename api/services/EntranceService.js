@@ -15,6 +15,51 @@ const ElasticsearchService = require('./ElasticsearchService');
 const NameService = require('./NameService');
 
 module.exports = {
+  getConvertedNameDescLocFromClientRequest: (req) => {
+    let result = {
+      name: {
+        author: req.token.id,
+        text: req.param('name').text,
+        language: req.param('name').language,
+      },
+    };
+    if (ramda.pathOr(null, ['description', 'body'], req.body)) {
+      result = {
+        ...result,
+        description: {
+          author: req.token.id,
+          body: req.body.description.body,
+          language: req.body.description.language,
+          title: req.body.description.title,
+        },
+      };
+    }
+
+    if (ramda.pathOr(null, ['location', 'body'], req.body)) {
+      result = {
+        ...result,
+        location: {
+          author: req.token.id,
+          body: req.body.location.body,
+          language: req.body.location.language,
+        },
+      };
+    }
+
+    return result;
+  },
+
+  // Extract everything from the request body except id
+  getConvertedDataFromClientRequest: (req) => {
+    // remove id if present to avoid null id (and an error)
+    const { id, ...reqBodyWithoutId } = req.body;
+    return {
+      ...reqBodyWithoutId,
+      author: req.token.id,
+      geology: ramda.propOr('Q35758', 'geology', req.body),
+    };
+  },
+
   /**
    * @returns {Promise} which resolves to the succesfully findRandom
    */

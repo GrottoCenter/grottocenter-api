@@ -172,14 +172,4 @@ describe('Auth features', () => {
       });
     });
   });
-
-  describe('Log out', () => {
-    it('should return code 400', (done) => {
-      supertest(sails.hooks.http.app)
-        .get('/api/v1/logout')
-        .set('Content-type', 'application/json')
-        .set('Accept', 'application/json')
-        .expect(400, done);
-    });
-  });
 });

@@ -29,9 +29,181 @@ const MANDATORY_PARENT_TYPES = ['article', 'issue'];
 const oldTopoFilesUrl = 'https://www.grottocenter.org/upload/topos/';
 const ramda = require('ramda');
 const CommonService = require('./CommonService');
+const DescriptionService = require('./DescriptionService');
+const ElasticsearchService = require('./ElasticsearchService');
 const FileService = require('./FileService');
+const NameService = require('./NameService');
+
+const getAdditionalESIndexFromDocumentType = (document) => {
+  if (document.type.name === 'Issue') {
+    return 'document-issues';
+  }
+  if (document.type.name === 'Collection') {
+    return 'document-collections';
+  }
+  return '';
+};
 
 module.exports = {
+  // TO DO: proper update
+  updateDocumentInElasticSearchIndexes: async (document) => {
+    await module.exports.deleteDocumentFromElasticsearchIndexes(document);
+    await module.exports.addDocumentToElasticSearchIndexes(document);
+  },
+
+  deleteDocumentFromElasticsearchIndexes: async (document) => {
+    await ElasticsearchService.deleteResource('documents', document.id);
+    const additionalIndex = getAdditionalESIndexFromDocumentType(document);
+
+    // Delete in document-collections-index or document-issues-index
+    if (additionalIndex !== '') {
+      await ElasticsearchService.deleteResource(additionalIndex, document.id);
+    }
+  },
+
+  /**
+   * Based on the logstash.conf file.
+   * The document must be fully populated and with all its names set
+   *    (@see DocumentService.setNamesOfPopulatedDocument).
+   */
+  addDocumentToElasticSearchIndexes: async (document) => {
+    const esBody = module.exports.getElasticsearchBody(document);
+    await ElasticsearchService.create('documents', document.id, {
+      ...esBody,
+      tags: ['document'],
+    });
+    // Create in document-collections-index or document-issues-index
+    const additionalIndex = getAdditionalESIndexFromDocumentType(document);
+
+    if (additionalIndex !== '') {
+      await ElasticsearchService.create(additionalIndex, document.id, {
+        ...esBody,
+        tags: [`document-${document.type.name.toLowerCase()}`],
+      });
+    }
+  },
+
+  getElasticsearchBody: (document) => {
+    const { type, modifiedDocJson, ...docWithoutJsonAndType } = document;
+    return {
+      ...docWithoutJsonAndType,
+      authors: document.authors
+        ? document.authors.map((a) => a.nickname).join(', ')
+        : null,
+      'contributor id': document.author.id,
+      'contributor nickname': document.author.nickname,
+      date_part: document.datePublication
+        ? new Date(document.datePublication).getFullYear()
+        : null,
+      description: document.descriptions[0].body,
+      'editor id': ramda.pathOr(null, ['editor', 'id'], document),
+      'editor name': ramda.pathOr(null, ['editor', 'name'], document),
+      'library id': ramda.pathOr(null, ['library', 'id'], document),
+      'library name': ramda.pathOr(null, ['library', 'name'], document),
+      regions: document.regions
+        ? document.regions.map((r) => r.name).join(', ')
+        : null,
+      subjects: document.subjects
+        ? document.subjects.map((s) => s.subject).join(', ')
+        : null,
+      title: document.descriptions[0].title,
+      'type id': ramda.propOr(null, 'id', type),
+      'type name': ramda.propOr(null, 'name', type),
+    };
+  },
+
+  getLangDescDataFromClient: (req) => {
+    let langDescData = {
+      author: req.token.id,
+      description: req.body.description,
+      title: req.body.title,
+    };
+
+    if (ramda.pathOr(false, ['documentMainLanguage', 'id'], req.body)) {
+      langDescData = {
+        ...langDescData,
+        documentMainLanguage: {
+          id: req.body.documentMainLanguage.id,
+        },
+      };
+    }
+    if (ramda.pathOr(false, ['titleAndDescriptionLanguage', 'id'], req.body)) {
+      langDescData = {
+        ...langDescData,
+        titleAndDescriptionLanguage: {
+          id: req.body.titleAndDescriptionLanguage.id,
+        },
+      };
+    }
+
+    return langDescData;
+  },
+
+  // Extract everything from the request body except id and dateInscription
+  getConvertedDataFromClient: async (req) => {
+    // Remove id if present to avoid null id (and an error)
+    const { id, option, ...reqBodyWithoutId } = req.body;
+
+    const optionFound = option
+      ? await TOption.findOne({ name: option })
+      : undefined;
+
+    return {
+      ...reqBodyWithoutId,
+      author: req.token.id,
+      authorizationDocument: ramda.pathOr(
+        undefined,
+        ['authorizationDocument', 'id'],
+        req.body
+      ),
+      authors: req.body.authors ? req.body.authors.map((a) => a.id) : undefined,
+      datePublication:
+        req.body.publicationDate === '' ? null : req.body.publicationDate,
+      editor: ramda.pathOr(undefined, ['editor', 'id'], req.body),
+      identifierType: ramda.pathOr(
+        undefined,
+        ['identifierType', 'id'],
+        req.body
+      ),
+      issue:
+        req.body.issue && req.body.issue !== '' ? req.body.issue : undefined,
+      library: ramda.pathOr(undefined, ['library', 'id'], req.body),
+      license: ramda.pathOr(1, ['license', 'id'], req.body),
+      massif: ramda.pathOr(undefined, ['massif', 'id'], req.body),
+      option: optionFound ? optionFound.id : undefined,
+      parent: ramda.pathOr(undefined, ['partOf', 'id'], req.body),
+      regions: req.body.regions ? req.body.regions.map((r) => r.id) : undefined,
+      subjects: req.body.subjects
+        ? req.body.subjects.map((s) => s.code)
+        : undefined,
+      type: ramda.pathOr(undefined, ['documentType', 'id'], req.body),
+    };
+  },
+
+  // Set name of cave, entrance, massif, editor and library if present
+  setNamesOfPopulatedDocument: async (document) => {
+    if (!ramda.isNil(document.entrance))
+      await NameService.setNames([document.entrance], 'entrance');
+    if (!ramda.isNil(document.cave)) {
+      await NameService.setNames([document.cave], 'cave');
+    }
+    if (!ramda.isNil(document.massif)) {
+      await NameService.setNames([document.massif], 'massif');
+    }
+    if (!ramda.isNil(document.library)) {
+      await NameService.setNames([document.library], 'grotto');
+    }
+    if (!ramda.isNil(document.editor)) {
+      await NameService.setNames([document.editor], 'grotto');
+    }
+    await DescriptionService.setDocumentDescriptions(document);
+    if (!ramda.isNil(document.authorizationDocument)) {
+      await DescriptionService.setDocumentDescriptions(
+        document.authorizationDocument
+      );
+    }
+    return document;
+  },
   /**
    * Deep populate children and sub-children only (not recursive currently)
    * @param {*} doc
@@ -236,7 +408,9 @@ module.exports = {
     doc.license = license ? await TLicense.findOne(license) : null;
     doc.massif = massif ? await TMassif.findOne(massif) : null;
     doc.option = option ? await TOption.findOne(option) : null;
-    doc.parent = parent ? await TDocument.findOne(parent) : null;
+    doc.parent = parent
+      ? await TDocument.findOne(parent).populate('descriptions')
+      : null;
     doc.reviewer = reviewer ? await TCaver.findOne(reviewer) : null;
     doc.type = type ? await TType.findOne(type) : null;
 

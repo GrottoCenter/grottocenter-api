@@ -1,7 +1,7 @@
 const ramda = require('ramda');
 
-// Substract 1 to not count the no@mail.no mail used for the non-user cavers
-const DISTINCT_USERS_QUERY = 'SELECT count(DISTINCT mail) - 1 FROM t_caver';
+// non-users caver have no password set.
+const DISTINCT_USERS_QUERY = 'SELECT count(password) FROM t_caver';
 
 const CommonService = require('./CommonService');
 const ElasticsearchService = require('./ElasticsearchService');
@@ -51,7 +51,8 @@ module.exports = {
 
     const newCaver = await TCaver.create({
       dateInscription: new Date(),
-      mail: 'no@mail.no', // default mail for non-user caver
+      mail: `${+new Date}@mail.no`, // default mail for non-user caver
+      mailIsValid: false,
       name,
       nickname,
       surname,

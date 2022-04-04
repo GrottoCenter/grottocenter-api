@@ -887,7 +887,14 @@ module.exports = {
         ? module.exports.convertToCaverModel(source.author)
         : undefined;
 
-    result.content = source.content;
+    // When comming from a duplicate list, the content can't be casted to a full document model.
+    // Detect this "simple" content by checking the number of keys (2: document and description)
+    if (Object.keys(source.content).length === 2) {
+      result.content = source.content;
+    } else {
+      result.content = module.exports.convertToDocumentModel(source.content);
+    }
+
     result.datePublication = source.datePublication;
     result.document =
       source.document instanceof Object

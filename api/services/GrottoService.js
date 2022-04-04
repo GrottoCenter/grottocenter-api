@@ -4,6 +4,22 @@ const ElasticsearchService = require('./ElasticsearchService');
 const NameService = require('./NameService');
 
 module.exports = {
+  // Extract everything from a request body except id
+  getConvertedDataFromClientRequest: (req) => ({
+    address: req.param('address'),
+    city: req.param('city'),
+    country: ramda.pathOr(null, ['country', 'id'], req.body),
+    county: req.param('county'),
+    customMessage: req.param('customMessage'),
+    latitude: req.param('latitude'),
+    longitude: req.param('longitude'),
+    mail: req.param('mail'),
+    postalCode: req.param('postalCode'),
+    region: req.param('region'),
+    url: req.param('url'),
+    yearBirth: req.param('yearBirth'),
+  }),
+
   populateOrganization: async (organization) => {
     await CaveService.setEntrances(organization.exploredCaves);
     await CaveService.setEntrances(organization.partnerCaves);

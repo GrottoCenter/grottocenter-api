@@ -45,7 +45,7 @@ module.exports.routes = {
    *                                                                          *
    ************************************************************************** */
 
-  /* CSRF */
+  // CSRF
   'GET /csrfToken': {
     action: 'security/grant-csrf-token',
   },
@@ -54,257 +54,234 @@ module.exports.routes = {
   //  ╠═╣╠═╝║  ║╣ ║║║ ║║╠═╝║ ║║║║║ ║ ╚═╗
   //  ╩ ╩╩  ╩  ╚═╝╝╚╝═╩╝╩  ╚═╝╩╝╚╝ ╩ ╚═╝
 
-  /* Swagger doc endpoint */
-  'GET /api/v1/swagger.yaml': 'v1/Swagger.sendYaml',
+  // Swagger (API doc)
+  'GET /api/v1/swagger.yaml': 'v1/swagger/get-yaml',
 
-  /* Account controller */
-  'PATCH /api/v1/account/password': 'v1/Account.changePassword',
-  'PATCH /api/v1/account/alertForNews': 'v1/Account.changeAlertForNews',
-  'PATCH /api/v1/account/email': 'v1/Account.changeEmail',
-  'POST /api/v1/forgotPassword': 'v1/Account.forgotPassword',
+  // Account
+  'PATCH /api/v1/account/password': 'v1/account/change-password',
+  'PATCH /api/v1/account/alertForNews': 'v1/account/change-alert-for-news',
+  'PATCH /api/v1/account/email': 'v1/account/change-email',
+  'POST /api/v1/forgotPassword': 'v1/account/forgot-password',
 
-  /* Auth controller */
-  'GET /api/v1/logout': 'v1/Auth.logout',
-  'POST /api/v1/login': 'v1/Auth.login',
-  'POST /api/v1/signup': 'v1/Auth.signUp',
+  // Auth
+  'POST /api/v1/login': 'v1/auth/login',
+  'POST /api/v1/signup': 'v1/auth/sign-up',
 
-  /* Caver controller */
+  // Caver
   'DELETE /api/v1/cavers/:caverId/entrances/:entranceId':
-    'v1/Caver.removeExploredEntrance',
-  'DELETE /api/v1/cavers/:caverId/groups/:groupId': 'v1/Caver.removeFromGroup',
-  'GET /api/v1/cavers/': 'v1/Caver.findAll',
-  'GET /api/v1/cavers/:id': 'v1/Caver.find',
-  'GET /api/v1/cavers/admins': 'v1/Caver.getAdmins',
-  'GET /api/v1/cavers/count': 'v1/Caver.count',
-  'GET /api/v1/cavers/users/count': 'v1/Caver.usersCount',
-  'GET /api/v1/cavers/findAll': 'v1/Caver.findAll',
-  'GET /api/v1/cavers/moderators': 'v1/Caver.getModerators',
-  'POST /api/v1/cavers/': 'v1/Caver.create',
-  'POST /api/v1/cavers/:caverId/groups': 'v1/Caver.setGroups',
+    'v1/caver/remove-explored-entrance',
+  'DELETE /api/v1/cavers/:caverId/groups/:groupId':
+    'v1/caver/remove-from-group',
+  'GET /api/v1/cavers': 'v1/caver/find-all',
+  'GET /api/v1/cavers/:id': 'v1/caver/find',
+  'GET /api/v1/cavers/:caverId/documents': 'v1/document/find-by-caver-id',
+  'GET /api/v1/cavers/admins': 'v1/caver/get-admins',
+  'GET /api/v1/cavers/count': 'v1/caver/count',
+  'GET /api/v1/cavers/moderators': 'v1/caver/get-moderators',
+  'GET /api/v1/cavers/users/count': 'v1/caver/users-count',
+  'POST /api/v1/cavers/': 'v1/caver/create',
+  'POST /api/v1/cavers/:caverId/groups': 'v1/caver/set-groups',
   'PUT /api/v1/cavers/:caverId/entrances/:entranceId':
-    'v1/Caver.addExploredEntrance',
-  'PUT /api/v1/cavers/:caverId/groups/:groupId': 'v1/Caver.putOnGroup',
+    'v1/caver/add-explored-entrance',
+  'PUT /api/v1/cavers/:caverId/groups/:groupId': 'v1/caver/put-on-group',
 
-  /* Entrance controller */
-  'DELETE /api/v1/entrances/:id': 'v1/Entrance.delete',
+  /**
+   * @deprecated use api/v1/cavers instead
+   */
+  'GET /api/v1/cavers/findAll': 'v1/caver/find-all',
+
+  // Entrance
+  'DELETE /api/v1/entrances/:id': 'v1/entrance/delete-one',
   'DELETE /api/v1/entrances/:entranceId/documents/:documentId':
-    'v1/Entrance.unlinkDocument',
-  'GET /api/v1/entrances/count': 'v1/Entrance.count',
-  'GET /api/v1/entrances/findRandom': 'v1/Entrance.findRandom',
-  'GET /api/v1/entrances/publicCount': 'v1/Entrance.publicCount',
-  'GET /api/v1/entrances/:id': 'v1/Entrance.find',
-  'POST /api/v1/entrances': 'v1/Entrance.create',
-  'POST /api/v1/entrances/check-rows': 'v1/Entrance.checkRows',
-  'POST /api/v1/entrances/import-rows': 'v1/Entrance.importRows',
-  'PUT /api/v1/entrances/:id': 'v1/Entrance.update',
-  'PUT /api/v1/entrances/:id/new-entities': 'v1/Entrance.updateWithNewEntities',
+    'v1/entrance/unlink-document',
+  'GET /api/v1/entrances/count': 'v1/entrance/count',
+  'GET /api/v1/entrances/findRandom': 'v1/entrance/find-random',
+  'GET /api/v1/entrances/publicCount': 'v1/entrance/public-count',
+  'GET /api/v1/entrances/:id': 'v1/entrance/find',
+  'POST /api/v1/entrances': 'v1/entrance/create',
+  'POST /api/v1/entrances/check-rows': 'v1/entrance/check-rows',
+  'POST /api/v1/entrances/import-rows': 'v1/entrance/import-rows',
+  'PUT /api/v1/entrances/:id': 'v1/entrance/update',
+  'PUT /api/v1/entrances/:id/new-entities':
+    'v1/entrance/update-with-new-entities',
   'PUT /api/v1/entrances/:entranceId/documents/:documentId':
-    'v1/Entrance.addDocument',
+    'v1/entrance/add-document',
 
-  /* Cave controller */
-  'DELETE /api/v1/caves/:id': 'v1/Cave.delete',
-  'GET /api/v1/caves/:id': 'v1/Cave.find',
-  'GET /api/v1/caves': 'v1/Cave.findAll',
-  'POST /api/v1/caves': 'v1/Cave.create',
-  'PUT /api/v1/caves/:caveId/documents/:documentId': 'v1/Cave.addDocument',
-  'PUT /api/v1/caves/:id': 'v1/Cave.update',
-  'PUT /api/v1/caves/:caveId/massif/:massifId': 'v1/Cave.setMassif',
+  // Cave
+  'DELETE /api/v1/caves/:id': 'v1/cave/delete-one',
+  'GET /api/v1/caves/:id': 'v1/cave/find',
+  'GET /api/v1/caves': 'v1/cave/find-all',
+  'POST /api/v1/caves': 'v1/cave/create',
+  'PUT /api/v1/caves/:caveId/documents/:documentId': 'v1/cave/add-document',
+  'PUT /api/v1/caves/:id': 'v1/cave/update',
+  'PUT /api/v1/caves/:caveId/massif/:massifId': 'v1/cave/set-massif',
   /**
    * @deprecated use api/v1/caves instead
    */
-  'GET /api/v1/caves/findAll': 'v1/Cave.findAll',
+  'GET /api/v1/caves/findAll': 'v1/cave/find-all',
 
-  /* Partner controller */
-  'DELETE /api/partners/:id': 'Partner.delete',
-  'GET /api/partners/:id': 'Partner.find',
-  'GET /api/v1/partners/count': 'v1/Partner.count',
-  'GET /api/partners/findAll': 'Partner.findAll',
-  'GET /api/v1/partners/findForCarousel': 'v1/Partner.findForCarousel',
+  // Partner
+  'GET /api/v1/partners/:id': 'v1/partner/find',
+  'GET /api/v1/partners/count': 'v1/partner/count',
+  'GET /api/v1/partners/findAll': 'v1/partner/find-all',
+  'GET /api/v1/partners/findForCarousel': 'v1/partner/find-for-carousel',
+  'GET /api/v1/partners/findForCarousel/:skip/:limit':
+    'v1/partner/find-for-carousel',
+
+  /**
+   * @deprecated use api/v1/partners instead
+   */
+  'GET /api/partners/:id': 'v1/partner/find',
+  'GET /api/partners/findAll': 'v1/partner/find-all',
   'GET /api/partners/findForCarousel/:skip/:limit':
-    'v1/Partner.findForCarousel',
-  'POST /api/partners/': 'Partner.create',
-  'PUT /api/partners/:id': 'Partner.update',
+    'v1/partner/find-for-carousel',
 
-  /* Comment controller */
-  'GET /api/comments/stats/:entry': 'Comment.getEntryStats',
-  'GET /api/comments/timeinfos/:entry': 'Comment.getEntryTimeInfos',
+  // Comment
+  'GET /api/v1/comments/stats/:entranceId': 'v1/comment/get-entrance-stats',
+  'GET /api/v1/comments/timeinfos/:entranceId':
+    'v1/comment/get-entrance-time-infos',
 
-  /* Organization controller */
-  'DELETE /api/v1/organizations/:id': 'v1/Grotto.delete',
-  'GET /api/v1/organizations/count': 'v1/Grotto.count',
-  'GET /api/organizations/findAll': 'Grotto.findAll',
-  'GET /api/v1/organizations/:id': {
-    controller: 'v1/Grotto',
-    action: 'find',
-    api: {
-      entity: 'grotto',
-    },
-  },
-  'POST /api/v1/organizations': 'v1/Grotto.create',
-  'PUT /api/v1/organizations/:id': 'v1/Grotto.update',
+  /**
+   * @deprecated use /v1 routes above instead
+   */
+  'GET /api/comments/stats/:entry': 'v1/comment/get-entrance-stats',
+  'GET /api/comments/timeinfos/:entry': 'v1/comment/get-entrance-time-infos',
 
-  /* Massif controller */
-  'DELETE /api/v1/massifs/:id': 'v1/Massif.delete',
-  'GET /api/v1/massifs/:id': {
-    controller: 'v1/Massif',
-    action: 'find',
-    api: {
-      entity: 'massif',
-    },
-  },
-  'POST /api/v1/massifs': 'v1/Massif.create',
+  // Organization
+  'DELETE /api/v1/organizations/:id': 'v1/organization/delete-one',
+  'GET /api/v1/organizations/count': 'v1/organization/count',
+  'GET /api/v1/organizations/:id': 'v1/organization/find',
+  'GET /api/v1//organizations': 'v1/organization/find-all',
+  'POST /api/v1/organizations': 'v1/organization/create',
+  'PUT /api/v1/organizations/:id': 'v1/organization/update',
 
-  /* Document controller */
-  'GET /api/v1/documents': 'v1/Document.findAll',
-  'GET /api/v1/documents/:id': 'v1/Document.find',
-  'GET /api/v1/documents/:id/children': 'v1/Document.findChildren',
-  'GET /api/v1/documents/count': 'v1/Document.count',
-  'POST /api/v1/documents': 'v1/Document.create',
-  'POST /api/v1/documents/check-rows': 'v1/Document.checkRows',
-  'POST /api/v1/documents/import-rows': 'v1/Document.importRows',
-  'PUT /api/v1/documents/:id': 'v1/Document.update',
-  'PUT /api/v1/documents/:id/new-entities': 'v1/Document.updateWithNewEntities',
-  'PUT /api/v1/documents/:id/validate': 'v1/Document.validate',
-  'PUT /api/v1/documents/validate': 'v1/Document.multipleValidate',
+  /**
+   * @deprecated use /v1/organizations route above instead
+   */
+  'GET /api/organizations/findAll': 'v1/organization/find-all',
 
-  /* Document Type controller */
-  'GET /api/v1/documents/types': 'v1/DocumentType.findAll',
-  'GET /api/v1/documents/types/:id': 'v1/DocumentType.find',
+  // Massif
+  'DELETE /api/v1/massifs/:id': 'v1/massif/delete-one',
+  'GET /api/v1/massifs/:id': 'v1/massif/find',
+  'POST /api/v1/massifs': 'v1/massif/create',
 
-  /* Description controller */
-  'PATCH /api/v1/descriptions/:id': 'v1/Description.update',
-  'POST /api/v1/descriptions': 'v1/Description.create',
+  // Document
+  'GET /api/v1/documents': 'v1/document/find-all',
+  'GET /api/v1/documents/:id': 'v1/document/find',
+  'GET /api/v1/documents/:id/children': 'v1/document/find-children',
+  'GET /api/v1/documents/count': 'v1/document/count',
+  'POST /api/v1/documents': 'v1/document/create',
+  'POST /api/v1/documents/check-rows': 'v1/document/check-rows',
+  'POST /api/v1/documents/import-rows': 'v1/document/import-rows',
+  'PUT /api/v1/documents/:id': 'v1/document/update',
+  'PUT /api/v1/documents/:id/new-entities':
+    'v1/document/update-with-new-entities',
+  'PUT /api/v1/documents/:id/validate': 'v1/document/validate',
+  'PUT /api/v1/documents/validate': 'v1/document/multiple-validate',
 
-  /* Name controller */
-  'PATCH /api/v1/names/:id': 'v1/Name.update',
-  'POST /api/v1/names/:id/setAsMain': 'v1/Name.setAsMain',
+  // Document Type
+  'GET /api/v1/documents/types': 'v1/document-type/find-all',
+  'GET /api/v1/documents/types/:id': 'v1/document-type/find',
 
-  /* Location controller */
-  'PATCH /api/v1/locations/:id': 'v1/Location.update',
-  'POST /api/v1/locations': 'v1/Location.create',
+  // Description
+  'PATCH /api/v1/descriptions/:id': 'v1/description/update',
+  'POST /api/v1/descriptions': 'v1/description/create',
 
-  /* Document Subject controller */
-  'GET /api/v1/documents/subjects': {
-    controller: 'v1/Subject',
-    action: 'findAll',
-    api: {
-      entity: 'subject',
-    },
-  },
+  // Name
+  'PATCH /api/v1/names/:id': 'v1/name/update',
+  'POST /api/v1/names/:id/setAsMain': 'v1/name/set-as-main',
+
+  // Location
+  'PATCH /api/v1/locations/:id': 'v1/location/update',
+  'POST /api/v1/locations': 'v1/location/create',
+
+  // Document Subject
+  'GET /api/v1/documents/subjects': 'v1/subject/find-all',
   'GET /api/v1/documents/subjects/:code': {
-    controller: 'v1/Subject',
-    action: 'find',
+    action: 'v1/subject/find',
     skipAssets: false, // Disable this parameter to allow a dot in the url (for the code)
-    api: {
-      entity: 'subject',
-    },
   },
-  'POST /api/v1/documents/subjects/search/logical/or': {
-    controller: 'v1/Subject',
-    action: 'search',
-    api: {
-      entity: 'subject',
-    },
-  },
+  'POST /api/v1/documents/subjects/search/logical/or': 'v1/subject/search',
 
-  /* REST API for Document Identifier Types controller */
-  'GET /api/v1/documents/identifierTypes': {
-    controller: 'v1/IdentifierType',
-    action: 'findAll',
-    api: {
-      entity: 'identifierType',
-    },
-  },
+  // Document Identifier Types
+  'GET /api/v1/documents/identifierTypes': 'v1/identifier-type/find-all',
 
-  /* Region controller */
-  'POST /api/v1/regions/search/logical/or': {
-    controller: 'v1/Region',
-    action: 'search',
-    api: {
-      entity: 'region',
-    },
-  },
+  // Region
+  'POST /api/v1/regions/search/logical/or': 'v1/region/search',
 
-  /* Rss controller */
-  'GET /api/rss/:language': 'Rss.getFeed',
+  // Rss
+  'GET /api/v1/rss/:language': 'v1/rss/get-feed',
+  /**
+   * @deprecated use /v1 route above instead
+   */
+  'GET /api/rss/:language': 'v1/rss/get-feed',
 
-  /* Geo localisation controller */
-  'GET /api/v1/geoloc/countEntrances': 'v1/GeoLoc.countEntrances',
-  'GET /api/v1/geoloc/entrances': 'v1/GeoLoc.findEntrances',
+  // Geo localisation
+  'GET /api/v1/geoloc/countEntrances': 'v1/geoloc/count-entrances',
+  'GET /api/v1/geoloc/entrances': 'v1/geoloc/find-entrances',
   'GET /api/v1/geoloc/entrancesCoordinates':
-    'v1/GeoLoc.findEntrancesCoordinates',
-  'GET /api/v1/geoloc/networks': 'v1/GeoLoc.findNetworks',
-  'GET /api/v1/geoloc/networksCoordinates': 'v1/GeoLoc.findNetworksCoordinates',
-  'GET /api/v1/geoloc/organizations': 'v1/GeoLoc.findGrottos',
+    'v1/geoloc/find-entrances-coordinates',
+  'GET /api/v1/geoloc/networks': 'v1/geoloc/find-networks',
+  'GET /api/v1/geoloc/networksCoordinates':
+    'v1/geoloc/find-networks-coordinates',
+  'GET /api/v1/geoloc/organizations': 'v1/geoloc/find-organizations',
 
   /**
    * @deprecated use geoloc/countEntrances instead
    */
-  'GET /api/v1/geoloc/countEntries': 'v1/GeoLoc.countEntrances',
+  'GET /api/v1/geoloc/countEntries': 'v1/geoloc/count-entrances',
   /**
    * @deprecated use geoloc/organizations instead
    */
-  'GET /api/v1/geoloc/grottos': 'v1/GeoLoc.findGrottos',
+  'GET /api/v1/geoloc/grottos': 'v1/geoloc/find-organizations',
   /**
    * @deprecated use geoloc/networks instead
    */
-  'GET /api/v1/geoloc/caves': 'v1/GeoLoc.findNetworks',
+  'GET /api/v1/geoloc/caves': 'v1/geoloc/find-networks',
   /**
    * @deprecated use geoloc/networksCoordinates instead
    */
-  'GET /api/v1/geoloc/cavesCoordinates': 'v1/GeoLoc.findNetworksCoordinates',
+  'GET /api/v1/geoloc/cavesCoordinates': 'v1/geoloc/find-networks-coordinates',
 
-  /* Search controller */
-  'POST /api/v1/search': 'v1/Search.search',
-  'POST /api/v1/advanced-search': 'v1/Search.advancedSearch',
+  // Search
+  'POST /api/v1/search': 'v1/search/quick-search',
+  'POST /api/v1/advanced-search': 'v1/search/advanced-search',
 
-  /* Language controller */
-  'GET /api/v1/languages/:id': {
-    controller: 'v1/Language',
-    action: 'find',
-    api: {
-      entity: 'language',
-    },
-  },
+  // Language
+  'GET /api/v1/languages/:id': 'v1/language/find',
+  'GET /api/v1/languages': 'v1/language/find-all',
 
-  'GET /api/v1/languages': {
-    controller: 'v1/Language',
-    action: 'findAll',
-    api: {
-      entity: 'language',
-    },
-  },
+  // Convert
+  'GET /api/v1/convert': 'v1/convert/convert',
+  /**
+   * @deprecated use /v1 route above instead
+   */
+  'GET /api/convert': 'v1/convert/convert',
 
-  /* Users controller */
-  'GET /api/v1/cavers/:caverId/documents': 'v1/Document.findByCaverId',
+  // License
+  'GET /api/v1/licenses': 'v1/license/find-all',
 
-  /* Convert controller */
-  'GET /api/convert': 'ConvertController.convert',
+  // File formats
+  'GET /api/v1/file-formats': 'v1/file-format/find-all',
 
-  /* License controller */
-  'GET /api/v1/licenses': 'v1/License.findAll',
+  // Option
+  'GET /api/v1/options': 'v1/option/find-all',
 
-  /* File formats controller */
-  'GET /api/v1/file-formats': 'v1/FileFormat.findAll',
-
-  /* Option controller */
-  'GET /api/v1/options': 'v1/Option.findAll',
-
-  /* DocumentDuplicate controller */
+  // DocumentDuplicate
+  'DELETE /api/v1/document-duplicates': 'v1/document-duplicate/delete-many',
+  'DELETE /api/v1/document-duplicates/:id': 'v1/document-duplicate/delete-one',
+  'GET /api/v1/document-duplicates': 'v1/document-duplicate/find-all',
+  'GET /api/v1/document-duplicates/:id': 'v1/document-duplicate/find',
   'POST /api/v1/documents/from-duplicate/:id':
-    'v1/DocumentDuplicate.createFromDuplicate',
-  'GET /api/v1/document-duplicates/:id': 'v1/DocumentDuplicate.find',
-  'GET /api/v1/document-duplicates': 'v1/DocumentDuplicate.findAll',
-  'DELETE /api/v1/document-duplicates': 'v1/DocumentDuplicate.deleteMany',
-  'DELETE /api/v1/document-duplicates/:id': 'v1/DocumentDuplicate.delete',
+    'v1/document-duplicate/create-from-duplicate',
 
-  /* EntranceDuplicate controller */
+  // EntranceDuplicate
+  'DELETE /api/v1/entrance-duplicates': 'v1/entrance-duplicate/delete-many',
+  'DELETE /api/v1/entrance-duplicates/:id': 'v1/entrance-duplicate/delete',
+  'GET /api/v1/entrance-duplicates': 'v1/entrance-duplicate/find-all',
+  'GET /api/v1/entrance-duplicates/:id': 'v1/entrance-duplicate/find',
   'POST /api/v1/entrances/from-duplicate/:id':
-    'v1/EntranceDuplicate.createFromDuplicate',
-  'GET /api/v1/entrance-duplicates/:id': 'v1/EntranceDuplicate.find',
-  'GET /api/v1/entrance-duplicates': 'v1/EntranceDuplicate.findAll',
-  'DELETE /api/v1/entrance-duplicates': 'v1/EntranceDuplicate.deleteMany',
-  'DELETE /api/v1/entrance-duplicates/:id': 'v1/EntranceDuplicate.delete',
+    'v1/entrance-duplicate/create-from-duplicate',
 
   //  ╦ ╦╔═╗╔╗ ╦ ╦╔═╗╔═╗╦╔═╔═╗
   //  ║║║║╣ ╠╩╗╠═╣║ ║║ ║╠╩╗╚═╗

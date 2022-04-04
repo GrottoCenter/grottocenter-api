@@ -26,187 +26,164 @@ module.exports.policies = {
 
   '*': false,
 
-  CaverController: {
-    '*': true,
-  },
+  // Account
+  'v1/account/change-alert-for-news': 'tokenAuth',
+  'v1/account/change-email': 'tokenAuth',
+  'v1/account/change-password': true,
+  'v1/account/forgot-password': true,
 
-  'v1/CaveController': {
-    '*': true,
-    addDocument: 'tokenAuth',
-    setMassif: 'tokenAuth',
-    create: 'tokenAuth',
-    delete: 'tokenAuth',
-    update: 'tokenAuth',
-  },
+  // Auth
+  'v1/auth/login': true,
+  'v1/auth/sign-up': true,
 
-  'v1/CaverController': {
-    '*': false,
-    addExploredEntrance: 'tokenAuth',
-    count: true,
-    create: 'tokenAuth',
-    find: true,
-    putOnGroup: ['tokenAuth', 'adminAuth'],
-    removeFromGroup: ['tokenAuth', 'adminAuth'],
-    setGroups: ['tokenAuth', 'adminAuth'],
-    usersCount: true,
-    getAdmins: 'tokenAuth',
-    getModerators: 'tokenAuth',
-    removeExploredEntrance: 'tokenAuth',
-  },
+  // Caves
+  'v1/cave/*': true,
+  'v1/cave/add-document': 'tokenAuth',
+  'v1/cave/set-massif': 'tokenAuth',
+  'v1/cave/create': 'tokenAuth',
+  'v1/cave/delete-one': 'tokenAuth',
+  'v1/cave/update': 'tokenAuth',
 
-  'v1/EntranceController': {
-    '*': false,
-    addDocument: 'tokenAuth',
-    count: true,
-    create: 'tokenAuth',
-    delete: ['tokenAuth', 'moderatorAuth'],
-    find: true,
-    findRandom: true,
-    publicCount: true,
-    unlinkDocument: ['tokenAuth', 'moderatorAuth'],
-    update: 'tokenAuth',
-    updateWithNewEntities: 'tokenAuth',
-    checkRows: 'tokenAuth',
-    importRows: 'tokenAuth',
-  },
+  // Caver
+  'v1/caver/add-explored-entrance': 'tokenAuth',
+  'v1/caver/count': true,
+  'v1/caver/create': 'tokenAuth',
+  'v1/caver/find': true,
+  'v1/caver/find-all': false,
+  'v1/caver/get-admins': 'tokenAuth',
+  'v1/caver/get-moderators': 'tokenAuth',
+  'v1/caver/put-on-group': ['tokenAuth', 'adminAuth'],
+  'v1/caver/remove-explored-entrance': 'tokenAuth',
+  'v1/caver/remove-from-group': ['tokenAuth', 'adminAuth'],
+  'v1/caver/set-groups': ['tokenAuth', 'adminAuth'],
+  'v1/caver/users-count': true,
 
-  'v1/DescriptionController': {
-    create: 'tokenAuth',
-    update: 'tokenAuth',
-  },
+  // Convert
+  'v1/convert/convert': true,
 
-  'v1/LocationController': {
-    create: 'tokenAuth',
-    update: 'tokenAuth',
-  },
+  // Description
+  'v1/description/create': 'tokenAuth',
+  'v1/description/update': 'tokenAuth',
 
-  'v1/NameController': {
-    setAsMain: 'tokenAuth',
-    update: 'tokenAuth',
-  },
+  // Document
+  'v1/document/check-rows': 'tokenAuth',
+  'v1/document/count': true,
+  'v1/document/count-bbs': true,
+  'v1/document/create': 'tokenAuth',
+  'v1/document/find-all': true,
+  'v1/document/find-by-caver-id': true,
+  'v1/document/find-children': true,
+  'v1/document/find': true,
+  'v1/document/import-rows': 'tokenAuth',
+  'v1/document/multiple-validate': ['tokenAuth', 'moderatorAuth'],
+  'v1/document/update': 'tokenAuth',
+  'v1/document/update-with-new-entities': 'tokenAuth',
+  'v1/document/validate': ['tokenAuth', 'moderatorAuth'],
 
-  'v1/SearchController': {
-    search: true,
-    advancedSearch: true,
-  },
+  // DocumentDuplicate
+  'v1/document-duplicate/create-from-duplicate': ['tokenAuth', 'moderatorAuth'],
+  'v1/document-duplicate/create-many': ['tokenAuth', 'moderatorAuth'],
+  'v1/document-duplicate/delete-many': ['tokenAuth', 'moderatorAuth'],
+  'v1/document-duplicate/delete-one': ['tokenAuth', 'moderatorAuth'],
+  'v1/document-duplicate/find': ['tokenAuth', 'moderatorAuth'],
+  'v1/document-duplicate/find-all': ['tokenAuth', 'moderatorAuth'],
 
-  CaveController: {
-    '*': true,
-  },
+  // DocumentType
+  'v1/document-type/find': true,
+  'v1/document-type/find-all': true,
 
-  PartnerController: {
-    '*': true,
-  },
+  // Entrance
+  'v1/entrance/add-document': 'tokenAuth',
+  'v1/entrance/check-rows': 'tokenAuth',
+  'v1/entrance/count': true,
+  'v1/entrance/create': 'tokenAuth',
+  'v1/entrance/delete-one': ['tokenAuth', 'moderatorAuth'],
+  'v1/entrance/find': true,
+  'v1/entrance/find-random': true,
+  'v1/entrance/import-rows': 'tokenAuth',
+  'v1/entrance/public-count': true,
+  'v1/entrance/unlink-document': ['tokenAuth', 'moderatorAuth'],
+  'v1/entrance/update': 'tokenAuth',
+  'v1/entrance/update-with-new-entities': 'tokenAuth',
 
-  'v1/PartnerController': {
-    '*': true,
-  },
+  // EntranceDuplicate
+  'v1/entrance-duplicate/create-from-duplicate': ['tokenAuth', 'moderatorAuth'],
+  'v1/entrance-duplicate/create-many': ['tokenAuth', 'moderatorAuth'],
+  'v1/entrance-duplicate/delete-many': ['tokenAuth', 'moderatorAuth'],
+  'v1/entrance-duplicate/delete-one': ['tokenAuth', 'moderatorAuth'],
+  'v1/entrance-duplicate/find': ['tokenAuth', 'moderatorAuth'],
+  'v1/entrance-duplicate/find-all': ['tokenAuth', 'moderatorAuth'],
 
-  ConvertController: {
-    '*': true,
-  },
+  // File format
+  'v1/file-format/find-all': true,
 
-  CommentController: {
-    '*': false,
-  },
+  // GeoLoc
+  'v1/geoloc/count-entrances': true,
+  'v1/geoloc/find-entrances': true,
+  'v1/geoloc/find-entrances-coordinates': true,
+  'v1/geoloc/find-networks': true,
+  'v1/geoloc/find-networks-coordinates': true,
+  'v1/geoloc/find-organizations': true,
 
-  GrottoController: {
-    '*': true,
-  },
+  // IdentifierType
+  'v1/identifier-type/find-all': true,
 
-  RssController: {
-    '*': true,
-  },
+  // Languages
+  'v1/language/find': true,
+  'v1/language/find-all': true,
 
-  'v1/AuthController': {
-    login: true,
-    logout: true,
-    signUp: true,
-  },
+  // License
+  'v1/license/find-all': true,
 
-  'v1/SubjectController': {
-    '*': true,
-  },
+  // Location
+  'v1/location/create': 'tokenAuth',
+  'v1/location/update': 'tokenAuth',
 
-  'v1/LanguageController': {
-    '*': true,
-  },
+  // Massif
+  'v1/massif/create': 'tokenAuth',
+  'v1/massif/delete-one': ['tokenAuth', 'moderatorAuth'],
+  'v1/massif/find': true,
 
-  'v1/DocumentController': {
-    '*': true,
-    create: 'tokenAuth',
-    validate: ['tokenAuth', 'moderatorAuth'],
-    multipleValidate: ['tokenAuth', 'moderatorAuth'],
-    update: 'tokenAuth',
-    updateWithNewEntities: 'tokenAuth',
-    checkRows: 'tokenAuth',
-    importRows: 'tokenAuth',
-  },
+  // Name
+  'v1/name/set-as-main': 'tokenAuth',
+  'v1/name/update': 'tokenAuth',
 
-  'v1/DocumentTypeController': {
-    '*': true,
-  },
+  // Option
+  'v1/option/find-all': true,
 
-  'v1/IdentifierTypeController': {
-    '*': true,
-  },
+  // Organizations
+  'v1/organization/count': true,
+  'v1/organization/create': 'tokenAuth',
+  'v1/organization/delete-one': ['tokenAuth', 'moderatorAuth'],
+  'v1/organization/find': true,
+  'v1/organization/find-all': ['apiKeyAuth', 'paginate'],
+  'v1/organization/update': 'tokenAuth',
 
-  'v1/RegionController': {
-    '*': true,
-  },
+  // Partner
+  'v1/partner/count': true,
+  'v1/partner/find': true,
+  'v1/partner/find-all': true,
+  'v1/partner/find-for-carousel': true,
 
-  'v1/GrottoController': {
-    create: 'tokenAuth',
-    count: true,
-    delete: ['tokenAuth', 'moderatorAuth'],
-    find: ['apiKeyAuth', 'paginate'],
-    update: 'tokenAuth',
-  },
+  // Region
+  'v1/region/find': true,
+  'v1/region/find-all': true,
+  'v1/region/search': true,
 
-  'v1/MassifController': {
-    create: 'tokenAuth',
-    delete: ['tokenAuth', 'moderatorAuth'],
-    find: true,
-  },
+  // RSS
+  'v1/rss/get-feed': true,
 
-  'v1/GeoLocController': {
-    countEntrances: true,
-    findEntrances: true,
-    findEntrancesCoordinates: true,
-    findGrottos: true,
-    findNetworks: true,
-    findNetworksCoordinates: true,
-  },
+  // Search
+  'v1/search/quick-search': true,
+  'v1/search/advanced-search': true,
 
-  'v1/AccountController': {
-    changeAlertForNews: 'tokenAuth',
-    changeEmail: 'tokenAuth',
-    changePassword: true,
-    forgotPassword: true,
-  },
+  // Subject
+  'v1/subject/find': true,
+  'v1/subject/find-all': true,
+  'v1/subject/search': true,
 
-  'v1/LicenseController': {
-    '*': true,
-  },
-
-  'v1/FileFormatController': {
-    '*': true,
-  },
-
-  'v1/OptionController': {
-    '*': true,
-  },
-
-  'v1/SwaggerController': {
-    '*': true,
-  },
-  'v1/DocumentDuplicateController': {
-    '*': ['tokenAuth', 'moderatorAuth'],
-  },
-
-  'v1/EntranceDuplicateController': {
-    '*': ['tokenAuth', 'moderatorAuth'],
-  },
+  // Swagger (API doc)
+  'v1/swagger/get-yaml': true,
 
   /** *************************************************************************
    *                                                                          *
