@@ -1,3 +1,4 @@
+const should = require('should');
 const supertest = require('supertest');
 
 describe('Auth features', () => {
@@ -59,6 +60,18 @@ describe('Auth features', () => {
   });
 
   describe('Sign Up', () => {
+    const newAccount1 = {
+      email: 'newtest@newtest.com',
+      nickname: 'NewTest',
+      password: 'new_password',
+    };
+    const newAccount2 = {
+      email: 'newtest2@newtest2.com',
+      name: 'Bob',
+      nickname: 'NewTest2',
+      password: 'new_password',
+      surname: 'Testuser',
+    };
     describe('Email missing', () => {
       it('should return code 400', (done) => {
         supertest(sails.hooks.http.app)
@@ -117,11 +130,7 @@ describe('Auth features', () => {
       it('should return code 204', (done) => {
         supertest(sails.hooks.http.app)
           .post('/api/v1/signup')
-          .send({
-            email: 'newtest@newtest.com',
-            nickname: 'NewTest',
-            password: 'new_password',
-          })
+          .send(newAccount1)
           .set('Content-type', 'application/json')
           .set('Accept', 'application/json')
           .expect(204, done);
@@ -131,13 +140,7 @@ describe('Auth features', () => {
       it('should return code 204', (done) => {
         supertest(sails.hooks.http.app)
           .post('/api/v1/signup')
-          .send({
-            email: 'newtest2@newtest2.com',
-            name: 'Bob',
-            nickname: 'NewTest2',
-            password: 'new_password',
-            surname: 'Testuser',
-          })
+          .send(newAccount2)
           .set('Content-type', 'application/json')
           .set('Accept', 'application/json')
           .expect(204, done);
@@ -170,6 +173,13 @@ describe('Auth features', () => {
           .set('Accept', 'application/json')
           .expect(409, done);
       });
+    });
+
+    after(async () => {
+      const res1 = await TCaver.destroyOne({ mail: newAccount1.email });
+      const res2 = await TCaver.destroyOne({ mail: newAccount2.email });
+      should(res1).not.be.undefined();
+      should(res2).not.be.undefined();
     });
   });
 });

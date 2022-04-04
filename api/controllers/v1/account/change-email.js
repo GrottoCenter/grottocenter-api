@@ -3,7 +3,6 @@ const RightService = require('../../../services/RightService');
 
 module.exports = async (req, res) => {
   // Check right
-  sails.log.info('heeeloooo\nhiii');
   sails.log.error(req.token);
   const hasRight = await sails.helpers.checkRight
     .with({
