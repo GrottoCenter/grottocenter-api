@@ -1,7 +1,7 @@
 const ramda = require('ramda');
 
-// non-users caver have no password set.
-const DISTINCT_USERS_QUERY = 'SELECT count(password) FROM t_caver';
+// Non-users caver (like authors) have no password set.
+const REAL_USERS_QUERY = 'SELECT count(password) FROM t_caver';
 
 const CommonService = require('./CommonService');
 const ElasticsearchService = require('./ElasticsearchService');
@@ -20,11 +20,11 @@ module.exports = {
   },
 
   /**
-   * Count the "real" users by using the mail attribute
+   * Count the "real" users (@see REAL_USERS_QUERY)
    */
   countDistinctUsers: async () => {
-    const result = await CommonService.query(DISTINCT_USERS_QUERY);
-    return Number(result.rows[0]['?column?']);
+    const result = await CommonService.query(REAL_USERS_QUERY);
+    return Number(result.rows[0].count);
   },
 
   /**
@@ -51,7 +51,7 @@ module.exports = {
 
     const newCaver = await TCaver.create({
       dateInscription: new Date(),
-      mail: `${+new Date}@mail.no`, // default mail for non-user caver
+      mail: `${+new Date()}@mail.no`, // default mail for non-user caver
       mailIsValid: false,
       name,
       nickname,
