@@ -1,6 +1,6 @@
 const supertest = require('supertest');
 const should = require('should');
-const AuthTokenService = require('../AuthTokenService');
+const AuthTokenService = require('../../AuthTokenService');
 
 const CAVER_PROPERTIES = [
   '@context',

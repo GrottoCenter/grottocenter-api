@@ -2,8 +2,8 @@ const CaverService = require('../../../services/CaverService');
 const ControllerService = require('../../../services/ControllerService');
 
 module.exports = async (req, res) => {
-  const countResult = await CaverService.countDistinctUsers();
+  const nbUsers = await CaverService.countDistinctUsers();
   const params = { controllerMethod: 'CaverController.usersCount' };
-  const count = { count: countResult };
+  const count = { count: nbUsers };
   return ControllerService.treat(req, null, count, params, res);
 };
