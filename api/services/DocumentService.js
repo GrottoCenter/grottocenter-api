@@ -1,12 +1,3 @@
-// query to get all entrances of interest
-const MAIN_LANGUAGE_QUERY = `
-    SELECT l.* FROM t_language AS l
-    LEFT JOIN j_document_language jdl ON jdl.id_language = l.id
-    LEFT JOIN t_document d ON d.id = jdl.id_document
-    WHERE d.id = $1
-    AND jdl.is_main = true
-`;
-
 const RECURSIVE_GET_CHILD_DOC = `
   WITH RECURSIVE recursiveChildren AS  (
     SELECT *
@@ -251,25 +242,21 @@ module.exports = {
   },
 
   /**
-   * @returns {Promise} which resolves to the succesfully findRandom
+   * Depending on the number of languages, return the document main language.
+   * @param {TLanguage[]} languages
+   * @returns main language of the document
    */
-  getMainLanguage: async (id) => {
-    const result = await CommonService.query(MAIN_LANGUAGE_QUERY, [id]);
-    const language = result.rows[0];
-
-    // Case conversion
-    if (language) {
-      const formattedLanguage = {
-        ...language,
-        isPrefered: language.is_prefered,
-        refName: language.ref_name,
-      };
-      delete formattedLanguage.is_prefered;
-      delete formattedLanguage.ref_name;
-
-      return formattedLanguage;
+  getMainLanguage: (languages) => {
+    if (languages) {
+      if (languages.length === 0) {
+        return undefined;
+      }
+      if (languages.length === 1) {
+        return languages[0];
+      }
+      return languages.filter((l) => l.isMain);
     }
-    return language;
+    return undefined;
   },
 
   getTopoFiles: async (docId) => {

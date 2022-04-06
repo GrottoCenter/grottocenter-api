@@ -124,7 +124,7 @@ module.exports = async (req, res) => {
       sails.log.debug(notFoundMessage);
       return res.status(404).send(notFoundMessage);
     }
-    found.mainLanguage = await DocumentService.getMainLanguage(found.id);
+    found.mainLanguage = await DocumentService.getMainLanguage(found.languages);
     await DocumentService.setNamesOfPopulatedDocument(found);
     await DescriptionService.setDocumentDescriptions(found);
   }
