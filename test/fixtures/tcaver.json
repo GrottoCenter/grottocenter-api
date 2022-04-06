@@ -45,5 +45,19 @@
     "name": "AuthorName",
     "surname": "AuthorSurname",
     "groups": []
+  },
+  {
+    "login": "caver1",
+    "mail": "caver1@caver1.com",
+    "name": "Axel",
+    "nickname": "Caver1",
+    "surname": "Cavo",
+    "password": "password",
+    "activationCode" : "activationCode",
+    "alertForNews": "false",
+    "language": "fra",
+    "documents": [1, 2, 4],
+    "groups": [1],
+    "exploredEntrances" : [4,5]
   }
 ]

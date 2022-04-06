@@ -25,5 +25,27 @@
     "cave": 2,
     "latitude": "-1",
     "longitude": "-3"
+  },
+  {
+    "id": 4,
+    "author": 5,
+    "reviewer": 2,
+    "isOfInterest": false,
+    "cave": 2,
+    "latitude": "-1",
+    "longitude": "-3",
+    "isPublic" : true
+
+  },
+  {
+    "id": 5,
+    "author": 5,
+    "reviewer": 2,
+    "isOfInterest": false,
+    "cave": 2,
+    "latitude": "-1",
+    "longitude": "-3",
+    "isPublic" : false
+
   }
 ]
