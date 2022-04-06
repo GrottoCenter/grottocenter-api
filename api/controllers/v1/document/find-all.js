@@ -46,6 +46,7 @@ module.exports = async (req, res) => {
     .populate('entrance')
     .populate('files')
     .populate('identifierType')
+    .populate('languages')
     .populate('library')
     .populate('license')
     .populate('massif')
@@ -74,7 +75,9 @@ module.exports = async (req, res) => {
           await Promise.all(
             found.map(async (doc) => {
               /* eslint-disable no-param-reassign */
-              doc.mainLanguage = await DocumentService.getMainLanguage(doc.id);
+              doc.mainLanguage = await DocumentService.getMainLanguage(
+                doc.languages
+              );
               await NameService.setNames(
                 [
                   ...(doc.library ? [doc.library] : []),

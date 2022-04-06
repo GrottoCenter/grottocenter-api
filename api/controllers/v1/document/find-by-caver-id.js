@@ -30,6 +30,7 @@ module.exports = async (req, res) => {
     .populate('entrance')
     .populate('files')
     .populate('identifierType')
+    .populate('languages')
     .populate('library')
     .populate('license')
     .populate('massif')
@@ -55,7 +56,9 @@ module.exports = async (req, res) => {
       try {
         for (const doc of documents) {
           /* eslint-disable no-await-in-loop */
-          doc.mainLanguage = await DocumentService.getMainLanguage(doc.id);
+          doc.mainLanguage = await DocumentService.getMainLanguage(
+            doc.languages
+          );
           await DocumentService.setNamesOfPopulatedDocument(doc);
           if (doc.children) {
             await Promise.all(
