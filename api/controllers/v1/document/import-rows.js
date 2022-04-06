@@ -69,38 +69,38 @@ module.exports = async (req, res) => {
     const authorId = await sails.helpers.csvhelpers.getAuthor.with({
       data,
     });
-    const dataDocument =
-      // eslint-disable-next-line no-await-in-loop
-      await DocumentCSVImportService.getConvertedDocumentFromCsv(
-        data,
-        authorId
-      );
-    const dataLangDesc =
-      DocumentCSVImportService.getConvertedLangDescDocumentFromCsv(
-        data,
-        authorId
-      );
-
-    if (result.length !== 0) {
-      // Create a duplicate in DB
-      const duplicateContent = {
-        document: dataDocument,
-        description: dataLangDesc,
-      };
-      // eslint-disable-next-line no-await-in-loop
-      await DocumentDuplicateService.create(
-        req.token.id,
-        duplicateContent,
-        result[0].id
-      );
-      requestResponse.successfulImportAsDuplicates.push({
-        line: index + 2,
-        message: `Document with id ${idDb} has been created as a document duplicate.`,
-      });
-      continue; // eslint-disable-line no-continue
-    }
-
     try {
+      const dataDocument =
+        // eslint-disable-next-line no-await-in-loop
+        await DocumentCSVImportService.getConvertedDocumentFromCsv(
+          data,
+          authorId
+        );
+      const dataLangDesc =
+        DocumentCSVImportService.getConvertedLangDescDocumentFromCsv(
+          data,
+          authorId
+        );
+
+      if (result.length !== 0) {
+        // Create a duplicate in DB
+        const duplicateContent = {
+          document: dataDocument,
+          description: dataLangDesc,
+        };
+        // eslint-disable-next-line no-await-in-loop
+        await DocumentDuplicateService.create(
+          req.token.id,
+          duplicateContent,
+          result[0].id
+        );
+        requestResponse.successfulImportAsDuplicates.push({
+          line: index + 2,
+          message: `Document with id ${idDb} has been created as a document duplicate.`,
+        });
+        continue; // eslint-disable-line no-continue
+      }
+
       // eslint-disable-next-line no-await-in-loop
       const createdDocument = await DocumentService.createDocument(
         dataDocument,
