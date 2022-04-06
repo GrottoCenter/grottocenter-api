@@ -16,6 +16,7 @@ const DocumentDuplicateModel = require('./mappingModels/DocumentDuplicateModel')
 const DocumentModel = require('./mappingModels/DocumentModel');
 const EntranceDuplicateModel = require('./mappingModels/EntranceDuplicateModel');
 const EntranceModel = require('./mappingModels/EntranceModel');
+const LanguageModel = require('./mappingModels/LanguageModel');
 const LocationModel = require('./mappingModels/LocationModel');
 const MassifModel = require('./mappingModels/MassifModel');
 const NameModel = require('./mappingModels/NameModel');
@@ -377,6 +378,9 @@ module.exports = {
         case 'grotto':
           data = module.exports.convertToOrganizationModel(item['_source']);
           break;
+        case 'language':
+          data = module.exports.convertToLanguageModel(item['_source']);
+          break;
         case 'massif':
           data = module.exports.convertToMassifModel(item['_source']);
           break;
@@ -506,9 +510,17 @@ module.exports = {
           case 'caver':
             data.surname = item['_source'].surname;
             data.nickname = item['_source'].nickname;
-            // Don't return mail (RGPD)
-            // data.mail = item['_source'].mail;
-            break;
+          // Don't return mail (RGPD)
+          // data.mail = item['_source'].mail;
+
+          case 'language':
+            data.ref_name = item['_source'].ref_name; // eslint-disable-line camelcase
+            data.isPrefered = item['_source'].is_prefered;
+            data.part1 = item['_source'].part1;
+            data.part2b = item['_source'].part2b;
+            data.part2t = item['_source'].part2t;
+            data.scope = item['_source'].scope;
+
           case 'cave':
           case 'network':
             data.depth = item['_source'].depth;
@@ -935,4 +947,29 @@ module.exports = {
     source.map((duplicate) =>
       module.exports.convertToEntranceDuplicateModel(duplicate)
     ),
+
+  convertToLanguageModel: (source) => {
+    const result = {
+      ...LanguageModel,
+    };
+    result.id = source.id;
+    result.comment = source.comment;
+    result.isPrefered = source.isPrefered;
+    result.part2b = source.part2b;
+    result.part2t = source.part2t;
+    result.part1 = source.part1;
+    result.refName = source.refName;
+    result.scope = source.scope;
+    result.type = source.type;
+
+    if (source.documents instanceof Array) {
+      result.documents = module.exports.convertToDocumentList(
+        source.documents
+      ).documents;
+    } else {
+      result.documents = source.documents;
+    }
+
+    return result;
+  },
 };
