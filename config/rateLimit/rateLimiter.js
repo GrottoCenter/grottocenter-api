@@ -83,7 +83,7 @@ module.exports = {
       : 1 * 60 * 60 * 1000, // 1h
     max: process.env.MODERATOR_DELETE_RATE_LIMIT_PER_WINDOW
       ? process.env.MODERATOR_DELETE_RATE_LIMIT_PER_WINDOW
-      : 20, // limit each IP to 1 request per windowMs
+      : 20, // limit each IP to  request per windowMs
     message: 'Too many DELETE requests with the same IP, try again later.',
     statusCode: 429,
     skip: (req, res) => {
