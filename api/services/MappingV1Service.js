@@ -288,6 +288,16 @@ module.exports = {
         }));
       }
     }
+
+    if (source.exploredEntrances) {
+      if (source.exploredEntrances instanceof Array) {
+        result.exploredEntrances = source.exploredEntrances;
+      } else {
+        result.exploredEntrances = source.exploredEntrances.split(',').map((entranceId) => ({
+          id: parseInt(entranceId, 10),
+        }));
+      }
+    }
     return result;
   },
 

@@ -1,3 +1,4 @@
+
 const ramda = require('ramda');
 
 // Non-users caver (like authors) have no password set.
@@ -83,7 +84,8 @@ module.exports = {
     const caver = await TCaver.findOne(caverId)
       .populate('documents')
       .populate('grottos')
-      .populate('groups');
+      .populate('groups')
+      .populate('exploredEntrances');
 
     if (!caver) return caver; // not found return
 
@@ -105,6 +107,8 @@ module.exports = {
     // Delete sensitive data
     delete caver.activationCode;
     delete caver.password;
+    caver.exploredEntrances = caver.exploredEntrances.filter(entrance => entrance.isPublic);
+
 
     if (hasCompleteViewRight) {
       return caver;
@@ -115,6 +119,9 @@ module.exports = {
       name: caver.name,
       nickname: caver.nickname,
       surname: caver.surname,
+      language: caver.language,
+      groups: caver.groups,
+      exploredEntrances : caver.exploredEntrances
     };
   },
 };
