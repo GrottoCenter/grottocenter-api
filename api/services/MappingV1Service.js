@@ -268,6 +268,7 @@ module.exports = {
     result.nickname = source.nickname;
     result.surname = source.surname;
     result.name = source.name;
+    result.language = source.language;
 
     if (source.groups) {
       if (source.groups instanceof Array) {
