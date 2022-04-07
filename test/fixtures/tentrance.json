@@ -34,8 +34,7 @@
     "cave": 3,
     "latitude": "-1",
     "longitude": "-3",
-    "isPublic" : true
-
+    "isPublic": true
   },
   {
     "id": 5,
@@ -45,7 +44,6 @@
     "cave": 3,
     "latitude": "-1",
     "longitude": "-3",
-    "isPublic" : false
-
+    "isPublic": false
   }
 ]

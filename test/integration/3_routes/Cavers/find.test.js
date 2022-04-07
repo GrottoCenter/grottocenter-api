@@ -2,19 +2,18 @@ const supertest = require('supertest');
 const should = require('should');
 const AuthTokenService = require('../../AuthTokenService');
 
-
 const CAVER_PROPERTIES = [
   '@context',
   '@id',
   '@type',
   'id',
   'documents',
+  'exploredEntrances',
   'groups',
+  'language',
   'name',
   'nickname',
   'surname',
-  'language',
-  'exploredEntrances'
 ];
 
 describe('Caver features', () => {

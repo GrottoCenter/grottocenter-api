@@ -265,20 +265,10 @@ module.exports = {
     };
     result.id = source.id;
     result['@id'] = String(source.id);
-    result.nickname = source.nickname;
-    result.surname = source.surname;
-    result.name = source.name;
     result.language = source.language;
-
-    if (source.groups) {
-      if (source.groups instanceof Array) {
-        result.groups = source.groups;
-      } else {
-        result.groups = source.groups.split(',').map((groupId) => ({
-          id: parseInt(groupId, 10),
-        }));
-      }
-    }
+    result.nickname = source.nickname;
+    result.name = source.name;
+    result.surname = source.surname;
 
     if (source.documents) {
       if (source.documents instanceof Array) {
@@ -294,11 +284,24 @@ module.exports = {
       if (source.exploredEntrances instanceof Array) {
         result.exploredEntrances = source.exploredEntrances;
       } else {
-        result.exploredEntrances = source.exploredEntrances.split(',').map((entranceId) => ({
-          id: parseInt(entranceId, 10),
+        result.exploredEntrances = source.exploredEntrances
+          .split(',')
+          .map((entranceId) => ({
+            id: parseInt(entranceId, 10),
+          }));
+      }
+    }
+
+    if (source.groups) {
+      if (source.groups instanceof Array) {
+        result.groups = source.groups;
+      } else {
+        result.groups = source.groups.split(',').map((groupId) => ({
+          id: parseInt(groupId, 10),
         }));
       }
     }
+
     return result;
   },
 
