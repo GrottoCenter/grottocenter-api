@@ -31,7 +31,7 @@
     "author": 5,
     "reviewer": 2,
     "isOfInterest": false,
-    "cave": 2,
+    "cave": 3,
     "latitude": "-1",
     "longitude": "-3",
     "isPublic" : true
@@ -42,7 +42,7 @@
     "author": 5,
     "reviewer": 2,
     "isOfInterest": false,
-    "cave": 2,
+    "cave": 3,
     "latitude": "-1",
     "longitude": "-3",
     "isPublic" : false
