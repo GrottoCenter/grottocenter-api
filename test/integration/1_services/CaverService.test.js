@@ -108,7 +108,7 @@ describe('CaverService', () => {
 
     it('should return undefined for a not existing caver', async () => {
       const caver = await CaverService.getCaver(123456789, userReq);
-      should(caver).equal(undefined);
+      should(caver).be.undefined();
     });
 
     it('should return a partial view of the caver when providing an user token', async () => {
@@ -126,10 +126,10 @@ describe('CaverService', () => {
       testCaver(caver);
 
       // Additional data
-      should.exist(caver.relevance);
       should(caver.mail).equal('caver1@caver1.com');
       should.exist(caver.grottos);
       should.exist(caver.groups);
+      should.exist(caver.relevance);
     });
   });
 });
