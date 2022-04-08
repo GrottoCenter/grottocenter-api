@@ -32,9 +32,7 @@ module.exports = {
   createCave: async (caveData, nameData, descriptionsData) => {
     const res = await sails.getDatastore().transaction(async (db) => {
       // Create cave
-      const createdCave = await TCave.create({
-        ...caveData,
-      })
+      const createdCave = await TCave.create(caveData)
         .fetch()
         .usingConnection(db);
 
