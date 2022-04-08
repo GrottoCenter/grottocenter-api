@@ -1,4 +1,5 @@
 const { doubleCheck } = sails.helpers.csvhelpers;
+const { getDateFromKarstlink } = require('../../config/constants/karstlink');
 const GrottoService = require('./GrottoService');
 
 module.exports = {
@@ -27,9 +28,11 @@ module.exports = {
       dateInscription: doubleCheckWithData({
         key: 'dct:rights/dct:created',
         defaultValue: new Date(),
+        func: getDateFromKarstlink,
       }),
       dateReviewed: doubleCheckWithData({
         key: 'dct:rights/dct:modified',
+        func: getDateFromKarstlink,
       }),
       documentMainLanguage: {
         id: doubleCheckWithData({
@@ -185,12 +188,14 @@ module.exports = {
       dateInscription: doubleCheckWithData({
         key: 'dct:rights/dct:created',
         defaultValue: new Date(),
+        func: getDateFromKarstlink,
       }),
       datePublication: doubleCheckWithData({
         key: 'dct:date',
       }),
       dateReviewed: doubleCheckWithData({
         key: 'dct:rights/dct:modified',
+        func: getDateFromKarstlink,
       }),
       editor: editorId,
       idDbImport: doubleCheckWithData({
