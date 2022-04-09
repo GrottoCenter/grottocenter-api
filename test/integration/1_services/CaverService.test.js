@@ -87,45 +87,49 @@ describe('CaverService', () => {
   });
 
   describe('getCaver()', () => {
+    const testCaver = (caver) => {
+      should(caver.id).equal(6);
+      should(caver.name).equal('Axel');
+      should(caver.nickname).equal('Caver1');
+      should(caver.surname).equal('Cavo');
+      should(caver.documents.length).equal(3);
+      should(caver.documents).containDeep([{ id: 1 }, { id: 2 }, { id: 4 }]);
+      should(caver.groups.length).equal(1);
+      should(caver.groups).containDeep([{ id: 1 }]);
+      should(caver.exploredEntrances.length).equal(1);
+      should(caver.exploredEntrances).containDeep([{ id: 4 }]);
+      caver.exploredEntrances.forEach((entrance) => {
+        should(entrance.isPublic).equal(true);
+      });
+      should(caver.language).equal('fra');
+      should.not.exist(caver.password);
+      should.not.exist(caver.activationCode);
+    };
+
     it('should return undefined for a not existing caver', async () => {
       const caver = await CaverService.getCaver(123456789, userReq);
-      should(caver).equal(undefined);
+      should(caver).be.undefined();
     });
+
     it('should return a partial view of the caver when providing an user token', async () => {
-      const caver = await CaverService.getCaver(1, userReq);
-      should(caver.name).equal('Adrien');
-      should(caver.nickname).equal('Admin1');
-      should(caver.surname).equal('Admo');
-      should(caver.documents.length).equal(3);
-      should(caver.documents).containDeep([{ id: 1 }, { id: 2 }, { id: 4 }]);
-      should.not.exist(caver.password);
-      should.not.exist(caver.activationCode);
+      const caver = await CaverService.getCaver(6, userReq);
+      testCaver(caver);
     });
+
     it('should return a partial view of the caver when not providing a token', async () => {
-      const caver = await CaverService.getCaver(1, {});
-      should(caver.name).equal('Adrien');
-      should(caver.nickname).equal('Admin1');
-      should(caver.surname).equal('Admo');
-      should(caver.documents.length).equal(3);
-      should(caver.documents).containDeep([{ id: 1 }, { id: 2 }, { id: 4 }]);
-      should.not.exist(caver.password);
-      should.not.exist(caver.activationCode);
+      const caver = await CaverService.getCaver(6, {});
+      testCaver(caver);
     });
-    it('should return a complete view of the caver', async () => {
-      const caver = await CaverService.getCaver(1, adminReq);
-      should(caver.name).equal('Adrien');
-      should(caver.nickname).equal('Admin1');
-      should(caver.surname).equal('Admo');
-      should(caver.documents.length).equal(3);
-      should(caver.documents).containDeep([{ id: 1 }, { id: 2 }, { id: 4 }]);
-      should.not.exist(caver.password);
-      should.not.exist(caver.activationCode);
+
+    it('should return a complete view of the caver when providinf an admin token', async () => {
+      const caver = await CaverService.getCaver(6, adminReq);
+      testCaver(caver);
 
       // Additional data
-      should.exist(caver.relevance);
-      should(caver.mail).equal('admin1@admin1.com');
+      should(caver.mail).equal('caver1@caver1.com');
       should.exist(caver.grottos);
       should.exist(caver.groups);
+      should.exist(caver.relevance);
     });
   });
 });

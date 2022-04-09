@@ -1,3 +1,5 @@
+const { getDateFromKarstlink } = require('../../config/constants/karstlink');
+
 const doubleCheck = sails.helpers.csvhelpers.doubleCheck.with;
 
 module.exports = {
@@ -11,15 +13,17 @@ module.exports = {
         key: 'rdfs:label',
       }),
       language: doubleCheckWithData({
-        key: 'karstlink:hasDescriptionDocument/dc:language',
+        key: 'rdfs:label/dc:language',
         func: (value) => value.toLowerCase(),
       }),
       dateInscription: doubleCheckWithData({
         key: 'dct:rights/dct:created',
         defaultValue: new Date(),
+        func: getDateFromKarstlink,
       }),
       dateReviewed: doubleCheckWithData({
         key: 'dct:rights/dct:modified',
+        func: getDateFromKarstlink,
       }),
     };
   },
@@ -65,9 +69,11 @@ module.exports = {
       date_inscription: doubleCheckWithData({
         key: 'dct:rights/dct:created',
         defaultValue: new Date(),
+        func: getDateFromKarstlink,
       }),
       date_reviewed: doubleCheckWithData({
         key: 'dct:rights/dct:modified',
+        func: getDateFromKarstlink,
       }),
     };
   },
@@ -97,9 +103,11 @@ module.exports = {
           dateInscription: doubleCheckWithData({
             key: 'dct:rights/dct:created',
             defaultValue: new Date(),
+            func: getDateFromKarstlink,
           }),
           dateReviewed: doubleCheckWithData({
             key: 'dct:rights/dct:modified',
+            func: getDateFromKarstlink,
           }),
         },
       };
@@ -112,15 +120,17 @@ module.exports = {
           author: authorId,
           text: rawData['rdfs:label'],
           language: doubleCheckWithData({
-            key: 'gn:countryCode',
+            key: 'rdfs:label/dc:language',
             func: (value) => value.toLowerCase(),
           }),
           dateInscription: doubleCheckWithData({
             key: 'dct:rights/dct:created',
             defaultValue: new Date(),
+            func: getDateFromKarstlink,
           }),
           dateReviewed: doubleCheckWithData({
             key: 'dct:rights/dct:modified',
+            func: getDateFromKarstlink,
           }),
         },
       };
@@ -155,10 +165,12 @@ module.exports = {
           dateInscription: doubleCheckWithData({
             key: 'dct:rights/dct:created',
             defaultValue: new Date(),
+            func: getDateFromKarstlink,
           }),
           dateReviewed: doubleCheckWithData({
             key: 'dct:rights/dct:modified',
             defaultValue: undefined,
+            func: getDateFromKarstlink,
           }),
         },
       };
@@ -187,9 +199,11 @@ module.exports = {
       dateInscription: doubleCheckWithData({
         key: 'dct:rights/dct:created',
         defaultValue: new Date(),
+        func: getDateFromKarstlink,
       }),
       dateReviewed: doubleCheckWithData({
         key: 'dct:rights/dct:modified',
+        func: getDateFromKarstlink,
       }),
       isOfInterest: false,
       idDbImport: doubleCheckWithData({

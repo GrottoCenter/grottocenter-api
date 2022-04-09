@@ -6,6 +6,12 @@ const RightService = require('../../../services/RightService');
 
 const doubleCheck = sails.helpers.csvhelpers.doubleCheck.with;
 
+const ENTRANCE_MANDATORY_COLUMNS = [
+  'w3geo:latitude',
+  'w3geo:longitude',
+  'rdfs:label/dc:language',
+];
+
 module.exports = async (req, res) => {
   const hasRight = await sails.helpers.checkRight
     .with({
@@ -37,7 +43,7 @@ module.exports = async (req, res) => {
   for (const [index, data] of req.body.data.entries()) {
     const missingColumns = await sails.helpers.csvhelpers.checkColumns.with({
       data,
-      additionalColumns: ['w3geo:latitude', 'w3geo:longitude'],
+      additionalColumns: ENTRANCE_MANDATORY_COLUMNS,
     });
 
     // Stop if missing columnes

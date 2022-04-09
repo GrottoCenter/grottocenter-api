@@ -265,9 +265,32 @@ module.exports = {
     };
     result.id = source.id;
     result['@id'] = String(source.id);
+    result.language = source.language;
     result.nickname = source.nickname;
-    result.surname = source.surname;
     result.name = source.name;
+    result.surname = source.surname;
+
+    if (source.documents) {
+      if (source.documents instanceof Array) {
+        result.documents = source.documents;
+      } else {
+        result.documents = source.documents.split(',').map((documentId) => ({
+          id: parseInt(documentId, 10),
+        }));
+      }
+    }
+
+    if (source.exploredEntrances) {
+      if (source.exploredEntrances instanceof Array) {
+        result.exploredEntrances = source.exploredEntrances;
+      } else {
+        result.exploredEntrances = source.exploredEntrances
+          .split(',')
+          .map((entranceId) => ({
+            id: parseInt(entranceId, 10),
+          }));
+      }
+    }
 
     if (source.groups) {
       if (source.groups instanceof Array) {
@@ -279,15 +302,6 @@ module.exports = {
       }
     }
 
-    if (source.documents) {
-      if (source.documents instanceof Array) {
-        result.documents = source.documents;
-      } else {
-        result.documents = source.documents.split(',').map((documentId) => ({
-          id: parseInt(documentId, 10),
-        }));
-      }
-    }
     return result;
   },
 

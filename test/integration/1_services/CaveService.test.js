@@ -69,9 +69,13 @@ describe('CaveService', () => {
       should(createdCave.depth).equal(caveData.depth);
       should(createdCave.id_author).equal(caveData.id_author);
       should(createdCave.is_diving).equal(caveData.is_diving);
-      should(parseFloat(createdCave.latitude)).equal(caveData.latitude);
+      should(parseFloat(createdCave.latitude)).equal(
+        parseFloat(caveData.latitude)
+      );
       should(createdCave.length).equal(caveData.length);
-      should(parseFloat(createdCave.longitude)).equal(caveData.longitude);
+      should(parseFloat(createdCave.longitude)).equal(
+        parseFloat(caveData.longitude)
+      );
       should(createdCave.temperature).equal(caveData.temperature);
 
       const completeCreatedCave = await findAndPopulateCave(createdCave.id);

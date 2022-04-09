@@ -38,7 +38,11 @@ jobs:
             ${{ runner.os }}-build-
             ${{ runner.os }}-
 
-      - run: npm install
+      - run: npm ci
+      - name: Prettier
+        run: npm run prettier
+      - name: Lint
+        run: npm run lint
 
       # ===== Test
       - run: npm test
