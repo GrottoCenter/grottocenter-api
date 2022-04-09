@@ -528,7 +528,7 @@ module.exports = {
             break;
 
           case 'language':
-            data.ref_name = item['_source'].ref_name;
+            data.refName = item['_source'].ref_name;
             data.isPrefered = item['_source'].is_prefered;
             data.part1 = item['_source'].part1;
             data.part2b = item['_source'].part2b;
