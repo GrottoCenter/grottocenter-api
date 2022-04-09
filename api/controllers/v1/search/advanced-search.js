@@ -1,7 +1,9 @@
 const ControllerService = require('../../../services/ControllerService');
 const MappingV1Service = require('../../../services/MappingV1Service');
 const ElasticsearchService = require('../../../services/ElasticsearchService');
-const INDEX_NAMES = require('../../../../config/constants/elasticsearch-indexes');
+const {
+  INDEX_NAMES,
+} = require('../../../../config/constants/elasticsearch-indexes');
 
 /**
  * Perform an advanced search using multiple URL parameters :
