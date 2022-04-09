@@ -2621,7 +2621,7 @@ components:
           type: string
         type:
           type: string
-        ref_name:
+        refName:
           type: string
         comment:
           type: string
