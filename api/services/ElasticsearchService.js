@@ -90,6 +90,7 @@ const self = (module.exports = {
                   'county',
                   'description^0.5',
                   'descriptions^0.5',
+                  'id',
                   'name^5',
                   'names^1.5',
                   'region',
@@ -118,7 +119,7 @@ const self = (module.exports = {
                   'surname^4',
 
                   // ==== Languages
-                  'ref_name^2',
+                  'ref_name',
                 ],
               },
             },
