@@ -292,6 +292,16 @@ module.exports = {
       }
     }
 
+    if (source.grottos) {
+      if (source.grottos instanceof Array) {
+        result.grottos = source.grottos;
+      } else {
+        result.grottos = source.grottos.split(',').map((grottoId) => ({
+          id: parseInt(grottoId, 10),
+        }));
+      }
+    }
+
     if (source.groups) {
       if (source.groups instanceof Array) {
         result.groups = source.groups;
