@@ -85,20 +85,21 @@ const self = (module.exports = {
                 )}* + ${self.sanitizeQuery(params.query)}~${FUZZINESS}`,
                 fields: [
                   // General useful fields
-                  'name^5',
-                  'names^1.5',
-                  'description^0.5',
-                  'descriptions^0.5',
                   'city^2',
                   'country',
                   'county',
+                  'description^0.5',
+                  'descriptions^0.5',
+                  'id^2',
+                  'name^5',
+                  'names^1.5',
                   'region',
 
                   // ==== Entrances
-                  'caves',
-                  'riggings',
-                  'location^0.5',
                   'bibliography^0.5',
+                  'caves',
+                  'location^0.5',
+                  'riggings',
 
                   // ==== Grottos
                   'custom_message',
@@ -106,16 +107,16 @@ const self = (module.exports = {
                   // ==== Massifs
 
                   // ==== Document
-                  'title^2.7',
                   'authors',
+                  'identifier^1.5',
                   'ref_bbs',
                   'subjects',
-                  'identifier^1.5',
+                  'title^2.7',
 
                   // ==== Cavers
-                  'surname^4',
-                  'nickname^3',
                   'mail^5',
+                  'nickname^3',
+                  'surname^4',
 
                   // ==== Languages
                   'ref_name^2',
