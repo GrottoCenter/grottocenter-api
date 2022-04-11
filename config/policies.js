@@ -58,8 +58,6 @@ module.exports.policies = {
   'v1/caver/set-groups': ['tokenAuth', 'adminAuth'],
   'v1/caver/users-count': true,
   'v1/caver/update': ['tokenAuth', 'adminAuth'],
-
-  // Convert
   'v1/convert/convert': true,
 
   // Description

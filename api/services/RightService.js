@@ -26,6 +26,7 @@ module.exports = {
     DELETE_OWN: 'delete own',
     CSV_IMPORT: 'csv import',
     EDIT_ANY: 'edit any',
+    EDIT_CAVER: 'edit caver',
     EDIT_OWN: 'edit own',
     EDIT_NOT_VALIDATED: 'edit not validated',
     LINK_RESOURCE: 'link resource',
