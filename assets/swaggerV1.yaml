@@ -338,6 +338,24 @@ paths:
                 $ref: '#/components/schemas/Caver'
         '404':
           description: Caver not found.
+    put:
+      tags:
+        - cavers
+      description: Update an user. Only the user and admninistrator can update. Only the user can update password and mail adress.  
+      parameters:
+        - name: caverId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Successful operation
+        '400':
+          description: 'Bad request, caverId must exist in database'
+        '403':
+          description: You are not authorized to update the data of a caver.
+
 
   '/cavers/admins':
     get:
