@@ -117,6 +117,7 @@ module.exports = {
       id: caver.id,
       documents: caver.documents,
       exploredEntrances: caver.exploredEntrances,
+      grottos: caver.grottos,
       groups: caver.groups,
       language: caver.language,
       name: caver.name,
