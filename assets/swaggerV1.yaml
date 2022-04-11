@@ -340,7 +340,7 @@ paths:
           description: Caver not found.
  
 
-  '/caver/{caverId}':
+  '/cavers/{caverId}':
      put:
       tags:
         - cavers
@@ -359,8 +359,10 @@ paths:
                 $ref: '#/components/schemas/Caver'
         '400':
           description: 'Bad request, caverId must exist in database'
+          description : 'Could not update a property not updatable.'
         '403':
           description: You are not authorized to update the data of a caver.
+          description : 'Admin Could not update property mail or password of a caver'
 
   '/cavers/admins':
     get:
