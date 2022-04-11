@@ -90,7 +90,6 @@ const self = (module.exports = {
                   'county',
                   'description^0.5',
                   'descriptions^0.5',
-                  'id^2',
                   'name^5',
                   'names^1.5',
                   'region',
