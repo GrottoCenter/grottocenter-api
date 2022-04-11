@@ -58,6 +58,7 @@
     "alertForNews": "false",
     "language": "fra",
     "documents": [1, 2, 4],
+    "grottos": [1, 2],
     "groups": [1],
     "exploredEntrances": [4, 5]
   }
