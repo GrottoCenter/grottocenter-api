@@ -57,12 +57,14 @@ describe('Caver features2', () => {
     it('should modify the caver data execept email and password with AdminToken', (done) => {
       const newName = 'NewName2';
       const newNickname = 'NewNickname2';
-      const newsurname = 'newSurname2';
+      const newSurname = 'newSurname2';
+      const newOrganizations = [{ id: 1 }, { id: 3 }];
 
       const update = {
         name: newName,
         nickname: newNickname,
-        surname: newsurname,
+        surname: newSurname,
+        organizations: newOrganizations,
       };
       supertest(sails.hooks.http.app)
         .put('/api/v1/cavers/6')
@@ -77,6 +79,8 @@ describe('Caver features2', () => {
           should(caver.name).equal(update.name);
           should(caver.nickname).equal(update.nickname);
           should(caver.surname).equal(update.surname);
+          // should(caver.organizations.lenght).equal(2);
+          // should(caver.organizations).containDeep([{ id: 1 }, { id: 3 }]);
           return done();
         });
     });

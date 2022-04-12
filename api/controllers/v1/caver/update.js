@@ -12,6 +12,7 @@ module.exports = async (req, res) => {
     'mail',
     'password',
     'surname',
+    'organizations',
   ];
 
   // Check right (Admin can't edit mail and password)
@@ -77,10 +78,26 @@ module.exports = async (req, res) => {
   // Launch update request using transaction: it performs a rollback if an error occurs
   try {
     await sails.getDatastore().transaction(async (db) => {
-      //     const grottosToAdd =
-      //    const grottosToRemove =
-      /* const caver = await CaverService.getCaver(req.param('caverId'));
-      console.log(caver); */
+      /*      const organizationsList = await CaverService.getCaver(
+        req.param('caverId'),
+        req
+      ).organizations;
+
+      const organizationsToUpdate = req.body.organizations; */
+
+      /* organizationsList.forEach((organization) => {
+        if (!organizationsToUpdate.includes(organization)) {
+          TCaver.removeToCollection(caverId, 'grottos', organization.id);
+        }
+      });
+
+      organizationsToUpdate.forEach((organization) => {
+        if (!organizationsList.includes(organization)) {
+          TCaver.addToCollection(caverId, 'grottos', organization.id);
+        }
+      }); */
+
+      delete req.organizations;
       // await TCaver.addToCollection(caverId, 'grottos', entranceID);
       const updatedCaver = await TCaver.updateOne(caverId)
         .set(req.body)
