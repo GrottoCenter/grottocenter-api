@@ -16,6 +16,12 @@ module.exports = async (req, res) => {
   ];
 
   // Check right (Admin can't edit mail and password)
+  const caverId = req.param('caverId');
+
+  // check if user or author
+  // if is author (id )
+  //    Check rights author
+  // else check rights user
   const hasRightToEditAll = await sails.helpers.checkRight
     .with({
       groups: req.token.groups,
@@ -43,10 +49,13 @@ module.exports = async (req, res) => {
     if (!hasRightToEditAll) {
       return res.forbidden('You are not authorized to update a caver.');
     }
+    if (Number(caverId) !== req.token.id) {
+      return res.forbidden('You can not edit an other account than yours.');
+    }
   }
 
   // Check if caver exists
-  const caverId = req.param('caverId');
+
   if (
     !(await sails.helpers.checkIfExists.with({
       attributeName: 'id',
