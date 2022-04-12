@@ -302,15 +302,13 @@ module.exports = {
       }
     }
 
-    if (source.organizations) {
-      if (source.organizations instanceof Array) {
-        result.organizations = source.organizations;
+    if (source.grottos) {
+      if (source.grottos instanceof Array) {
+        result.organizations = source.grottos;
       } else {
-        result.organizations = source.organizations
-          .split(',')
-          .map((organizationsId) => ({
-            id: parseInt(organizationsId, 10),
-          }));
+        result.organizations = source.grottos.split(',').map((grottoId) => ({
+          id: parseInt(grottoId, 10),
+        }));
       }
     }
 

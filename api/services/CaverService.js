@@ -111,8 +111,6 @@ module.exports = {
     );
 
     if (hasCompleteViewRight) {
-      caver.organizations = caver.grottos;
-      delete caver.grottos;
       return caver;
     }
     return {
@@ -123,7 +121,7 @@ module.exports = {
       language: caver.language,
       name: caver.name,
       nickname: caver.nickname,
-      organizations: caver.grottos,
+      grottos: caver.grottos,
       surname: caver.surname,
     };
   },
