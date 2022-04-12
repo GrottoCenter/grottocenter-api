@@ -2413,19 +2413,29 @@ components:
         documents:
           type: array
           items:
-            type: string
+            $ref: '#/components/schemas/Document'
+        exploredEntrances:
+          type: array
+          items:
+            $ref: '#/components/schemas/Entrance'
         groups:
           type: array
           items:
-            type: string
+            $ref: '#/components/schemas/Group'
         id:
           type: integer
+        language:
+          type: string
         mail:
           type: string
         name:
           type: string
         nickname:
           type: string
+        organizations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Organization'
         surname:
           type: string
 
@@ -2775,6 +2785,16 @@ components:
         mimeType:
           type: string
         softwares:
+          type: string
+
+    Group:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        comment:
           type: string
 
     Geoloc:
