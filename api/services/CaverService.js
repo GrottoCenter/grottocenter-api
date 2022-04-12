@@ -111,17 +111,19 @@ module.exports = {
     );
 
     if (hasCompleteViewRight) {
+      caver.organizations = caver.grottos;
+      delete caver.grottos;
       return caver;
     }
     return {
       id: caver.id,
       documents: caver.documents,
       exploredEntrances: caver.exploredEntrances,
-      grottos: caver.grottos,
       groups: caver.groups,
       language: caver.language,
       name: caver.name,
       nickname: caver.nickname,
+      organizations: caver.grottos,
       surname: caver.surname,
     };
   },

@@ -94,9 +94,9 @@ describe('CaverService', () => {
       should(caver.surname).equal('Cavo');
       should(caver.documents.length).equal(3);
       should(caver.documents).containDeep([{ id: 1 }, { id: 2 }, { id: 4 }]);
-      should(caver.grottos.length).equal(2);
-      should(caver.grottos).containDeep([{ id: 1 }, { id: 2 }]);
       should(caver.groups.length).equal(1);
+      should(caver.organizations.length).equal(2);
+      should(caver.organizations).containDeep([{ id: 1 }, { id: 2 }]);
       should(caver.groups).containDeep([{ id: 1 }]);
       should(caver.exploredEntrances.length).equal(1);
       should(caver.exploredEntrances).containDeep([{ id: 4 }]);
@@ -123,13 +123,13 @@ describe('CaverService', () => {
       testCaver(caver);
     });
 
-    it('should return a complete view of the caver when providinf an admin token', async () => {
+    it('should return a complete view of the caver when providing an admin token', async () => {
       const caver = await CaverService.getCaver(6, adminReq);
       testCaver(caver);
 
       // Additional data
       should(caver.mail).equal('caver1@caver1.com');
-      should.exist(caver.grottos);
+      should.exist(caver.organizations);
       should.exist(caver.groups);
       should.exist(caver.relevance);
     });
