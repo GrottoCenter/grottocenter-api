@@ -26,6 +26,16 @@ describe('Caver features2', () => {
   });
 
   describe('Update the caver data using different token', () => {
+    it('should raise an error if the user token do not match with the caver to edit', (done) => {
+      supertest(sails.hooks.http.app)
+        .put('/api/v1/cavers/6')
+        .send({})
+        .set('Authorization', userToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(403, done);
+    });
+
     it('should modify the caver data with userToken', (done) => {
       const newName = 'NewName';
       const newNickname = 'NewNickname';
@@ -38,7 +48,7 @@ describe('Caver features2', () => {
         mail: 'test@mail.test',
       };
       supertest(sails.hooks.http.app)
-        .put('/api/v1/cavers/6')
+        .put('/api/v1/cavers/3')
         .send(update)
         .set('Authorization', userToken)
         .set('Content-type', 'application/json')
