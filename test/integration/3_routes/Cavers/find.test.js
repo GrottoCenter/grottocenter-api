@@ -9,7 +9,7 @@ const CAVER_PROPERTIES = [
   'id',
   'documents',
   'exploredEntrances',
-  'grottos',
+  'organizations',
   'groups',
   'language',
   'name',

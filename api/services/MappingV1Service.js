@@ -292,16 +292,6 @@ module.exports = {
       }
     }
 
-    if (source.grottos) {
-      if (source.grottos instanceof Array) {
-        result.grottos = source.grottos;
-      } else {
-        result.grottos = source.grottos.split(',').map((grottoId) => ({
-          id: parseInt(grottoId, 10),
-        }));
-      }
-    }
-
     if (source.groups) {
       if (source.groups instanceof Array) {
         result.groups = source.groups;
@@ -309,6 +299,18 @@ module.exports = {
         result.groups = source.groups.split(',').map((groupId) => ({
           id: parseInt(groupId, 10),
         }));
+      }
+    }
+
+    if (source.organizations) {
+      if (source.organizations instanceof Array) {
+        result.organizations = source.organizations;
+      } else {
+        result.organizations = source.organizations
+          .split(',')
+          .map((organizationsId) => ({
+            id: parseInt(organizationsId, 10),
+          }));
       }
     }
 
