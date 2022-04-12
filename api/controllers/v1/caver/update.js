@@ -2,7 +2,7 @@ const ControllerService = require('../../../services/ControllerService');
 const ErrorService = require('../../../services/ErrorService');
 const MappingV1Service = require('../../../services/MappingV1Service');
 const RightService = require('../../../services/RightService');
-// const CaverService = require('../../../services/CaverService');
+const CaverService = require('../../../services/CaverService');
 // eslint-disable-next-line consistent-return
 module.exports = async (req, res) => {
   // list of propreties to update
@@ -17,23 +17,39 @@ module.exports = async (req, res) => {
 
   // Check right (Admin can't edit mail and password)
   const caverId = req.param('caverId');
-
+  let hasRightOfUser = null;
+  // let hasRigthOfAuthor = null;
   // check if user or author
+  if (CaverService.isAuthor(caverId)) {
+    /* hasRigthOfAuthor = await sails.helpers.checkRight
+      .with({
+        groups: req.token.groups,
+        rightEntity: RightService.RightEntities.AUTHOR,
+        rightAction: RightService.RightActions.EDIT_ANY,
+      })
+      .intercept('rightNotFound', () =>
+        res.serverError(
+          'A server error occured when checking your right to update a caver.'
+        )
+      ); */
+  } else {
+    hasRightOfUser = await sails.helpers.checkRight
+      .with({
+        groups: req.token.groups,
+        rightEntity: RightService.RightEntities.CAVER,
+        rightAction: RightService.RightActions.EDIT_OWN,
+      })
+      .intercept('rightNotFound', () =>
+        res.serverError(
+          'A server error occured when checking your right to update a caver.'
+        )
+      );
+  }
   // if is author (id )
   //    Check rights author
   // else check rights user
-  const hasRightToEditAll = await sails.helpers.checkRight
-    .with({
-      groups: req.token.groups,
-      rightEntity: RightService.RightEntities.CAVER,
-      rightAction: RightService.RightActions.EDIT_OWN,
-    })
-    .intercept('rightNotFound', () =>
-      res.serverError(
-        'A server error occured when checking your right to update a caver.'
-      )
-    );
-  const hasRightToEditPartially = await sails.helpers.checkRight
+
+  const hasRightOfAdmin = await sails.helpers.checkRight
     .with({
       groups: req.token.groups,
       rightEntity: RightService.RightEntities.CAVER,
@@ -45,13 +61,16 @@ module.exports = async (req, res) => {
       )
     );
 
-  if (!hasRightToEditPartially) {
-    if (!hasRightToEditAll) {
+  if (!hasRightOfAdmin) {
+    //  if (!hasRigthOfAuthor) {
+    if (!hasRightOfUser) {
       return res.forbidden('You are not authorized to update a caver.');
     }
+
     if (Number(caverId) !== req.token.id) {
       return res.forbidden('You can not edit an other account than yours.');
     }
+    // }
   }
 
   // Check if caver exists
@@ -77,7 +96,7 @@ module.exports = async (req, res) => {
       );
     }
     if (prop === 'mail' || prop === 'password') {
-      if (hasRightToEditPartially) {
+      if (hasRightOfAdmin /* || hasRigthOfAuthor */) {
         res.status(403);
         return res.json({ error: `Admin can not update property ${prop}` });
       }
@@ -86,27 +105,25 @@ module.exports = async (req, res) => {
 
   // Launch update request using transaction: it performs a rollback if an error occurs
   try {
+    const caver = await CaverService.getCaver(req.param('caverId'), req);
+    console.log(caver);
+    /* organizationsList.forEach((organization) => {
+      if (!organizationsToUpdate.includes(organization)) {
+        TCaver.removeToCollection(caverId, 'grottos', organization.id);
+      }
+    }); */
+    console.log(caver.organizations);
+    /*     organizationsToUpdate.forEach((organization) => {
+      if (!organizationsList.includes(organization)) {
+        TCaver.addToCollection(caverId, 'grottos', organization.id);
+      }
+    }); */
+
+    delete req.organizations;
+
     await sails.getDatastore().transaction(async (db) => {
-      /*      const organizationsList = await CaverService.getCaver(
-        req.param('caverId'),
-        req
-      ).organizations;
+      //  const organizationsToUpdate = req.body.organizations;
 
-      const organizationsToUpdate = req.body.organizations; */
-
-      /* organizationsList.forEach((organization) => {
-        if (!organizationsToUpdate.includes(organization)) {
-          TCaver.removeToCollection(caverId, 'grottos', organization.id);
-        }
-      });
-
-      organizationsToUpdate.forEach((organization) => {
-        if (!organizationsList.includes(organization)) {
-          TCaver.addToCollection(caverId, 'grottos', organization.id);
-        }
-      }); */
-
-      delete req.organizations;
       // await TCaver.addToCollection(caverId, 'grottos', entranceID);
       const updatedCaver = await TCaver.updateOne(caverId)
         .set(req.body)
