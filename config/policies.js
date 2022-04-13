@@ -57,8 +57,7 @@ module.exports.policies = {
   'v1/caver/remove-from-group': ['tokenAuth', 'adminAuth'],
   'v1/caver/set-groups': ['tokenAuth', 'adminAuth'],
   'v1/caver/users-count': true,
-
-  // Convert
+  'v1/caver/update': 'tokenAuth',
   'v1/convert/convert': true,
 
   // Description

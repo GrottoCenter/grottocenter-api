@@ -81,6 +81,7 @@ module.exports.routes = {
   'GET /api/v1/cavers/users/count': 'v1/caver/users-count',
   'POST /api/v1/cavers/': 'v1/caver/create',
   'POST /api/v1/cavers/:caverId/groups': 'v1/caver/set-groups',
+  'PUT /api/v1/cavers/:caverId': 'v1/caver/update',
   'PUT /api/v1/cavers/:caverId/entrances/:entranceId':
     'v1/caver/add-explored-entrance',
   'PUT /api/v1/cavers/:caverId/groups/:groupId': 'v1/caver/put-on-group',
@@ -277,7 +278,7 @@ module.exports.routes = {
 
   // EntranceDuplicate
   'DELETE /api/v1/entrance-duplicates': 'v1/entrance-duplicate/delete-many',
-  'DELETE /api/v1/entrance-duplicates/:id': 'v1/entrance-duplicate/delete-one',
+  'DELETE /api/v1/entrance-duplicates/:id': 'v1/entrance-duplicate/delete',
   'GET /api/v1/entrance-duplicates': 'v1/entrance-duplicate/find-all',
   'GET /api/v1/entrance-duplicates/:id': 'v1/entrance-duplicate/find',
   'POST /api/v1/entrances/from-duplicate/:id':
