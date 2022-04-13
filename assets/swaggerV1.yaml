@@ -338,13 +338,12 @@ paths:
                 $ref: '#/components/schemas/Caver'
         '404':
           description: Caver not found.
- 
 
   '/cavers/{caverId}':
-     put:
+    put:
       tags:
         - cavers
-      description: Update a caver.See the POST /cavers route explaination about the parameters you can use to update a caver. Only the user and admninistrator can update. Only the user can update password and mail adress.  
+      description: Update a caver. See the POST /cavers route explaination about the parameters you can use to update a caver. Only the user and admninistrator can update. The user can update only his informations including his password and his mail adress. The administrator can't update mail and password but he can update every cavers.
       parameters:
         - name: caverId
           in: path
@@ -352,17 +351,18 @@ paths:
           schema:
             type: string
       responses:
-        '204':
+        '200':
           description: Successful operation
-           application/json:
+          content:
+            application/json:
               schema:
                 $ref: '#/components/schemas/Caver'
         '400':
-          description: 'Bad request, caverId must exist in database'
-          description : 'Could not update a property not updatable.'
+          description: 'Bad request, caverId must exist in database. Or invalid fields to update'
         '403':
-          description: You are not authorized to update the data of a caver.
-          description : 'Admin Could not update property mail or password of a caver'
+          description: 'You are not authorized to update a caver.'
+        '404':
+          description: 'Could not find caver with caverId.'
 
   '/cavers/admins':
     get:

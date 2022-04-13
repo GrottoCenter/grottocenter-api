@@ -114,7 +114,10 @@ module.exports = async (req, res) => {
         .usingConnection(db);
 
       const updatedCaverOrg = await CaverService.getCaver(updatedCaver.id, req);
+      updatedCaver.documents = updatedCaverOrg.documents;
+      updatedCaver.exploredEntrances = updatedCaverOrg.exploredEntrances;
       updatedCaver.grottos = updatedCaverOrg.grottos;
+      updatedCaver.groups = updatedCaverOrg.groups;
 
       const params = {};
       params.controllerMethod = 'CaverController.update';
