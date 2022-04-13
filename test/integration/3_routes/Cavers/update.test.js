@@ -2,7 +2,7 @@ const supertest = require('supertest');
 const should = require('should');
 const AuthTokenService = require('../../AuthTokenService');
 
-describe('Caver features2', () => {
+describe('Caver features', () => {
   let userToken;
   let adminToken;
   let moderatorToken;

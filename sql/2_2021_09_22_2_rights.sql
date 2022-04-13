@@ -65,4 +65,3 @@ VALUES (1, 'Application - view any', NULL),
     (108, 'Entrance Duplicate - create', NULL),
     (109, 'Document Duplicate - delete any', NULL),
     (110, 'Entrance Duplicate - delete any', NULL);
-    (111, 'Author - edit any', NULL);

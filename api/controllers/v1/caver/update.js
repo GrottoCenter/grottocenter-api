@@ -15,39 +15,20 @@ module.exports = async (req, res) => {
     'organizations',
   ];
 
-  // Check right (Admin can't edit mail and password)
+  // Check right (Admin can't edit mail and password, Caver can only edit itself)
   const caverId = req.param('caverId');
-  let hasRightOfUser = null;
-  // let hasRigthOfAuthor = null;
-  // check if user or author
-  if (CaverService.isAuthor(caverId)) {
-    /* hasRigthOfAuthor = await sails.helpers.checkRight
-      .with({
-        groups: req.token.groups,
-        rightEntity: RightService.RightEntities.AUTHOR,
-        rightAction: RightService.RightActions.EDIT_ANY,
-      })
-      .intercept('rightNotFound', () =>
-        res.serverError(
-          'A server error occured when checking your right to update a caver.'
-        )
-      ); */
-  } else {
-    hasRightOfUser = await sails.helpers.checkRight
-      .with({
-        groups: req.token.groups,
-        rightEntity: RightService.RightEntities.CAVER,
-        rightAction: RightService.RightActions.EDIT_OWN,
-      })
-      .intercept('rightNotFound', () =>
-        res.serverError(
-          'A server error occured when checking your right to update a caver.'
-        )
-      );
-  }
-  // if is author (id )
-  //    Check rights author
-  // else check rights user
+
+  const hasRightOfUser = await sails.helpers.checkRight
+    .with({
+      groups: req.token.groups,
+      rightEntity: RightService.RightEntities.CAVER,
+      rightAction: RightService.RightActions.EDIT_OWN,
+    })
+    .intercept('rightNotFound', () =>
+      res.serverError(
+        'A server error occured when checking your right to update a caver.'
+      )
+    );
 
   const hasRightOfAdmin = await sails.helpers.checkRight
     .with({
@@ -62,7 +43,6 @@ module.exports = async (req, res) => {
     );
 
   if (!hasRightOfAdmin) {
-    //  if (!hasRigthOfAuthor) {
     if (!hasRightOfUser) {
       return res.forbidden('You are not authorized to update a caver.');
     }
@@ -70,11 +50,9 @@ module.exports = async (req, res) => {
     if (Number(caverId) !== req.token.id) {
       return res.forbidden('You can not edit an other account than yours.');
     }
-    // }
   }
 
   // Check if caver exists
-
   if (
     !(await sails.helpers.checkIfExists.with({
       attributeName: 'id',
@@ -96,7 +74,7 @@ module.exports = async (req, res) => {
       );
     }
     if (prop === 'mail' || prop === 'password') {
-      if (hasRightOfAdmin /* || hasRigthOfAuthor */) {
+      if (hasRightOfAdmin) {
         res.status(403);
         return res.json({ error: `Admin can not update property ${prop}` });
       }
@@ -105,6 +83,7 @@ module.exports = async (req, res) => {
 
   // Launch update request using transaction: it performs a rollback if an error occurs
   try {
+    // update organizations linked to the caver if needed
     if (req.body.organizations) {
       const organizationsToUpdate = req.body.organizations;
       const caver = await CaverService.getCaver(req.param('caverId'), req);
@@ -128,6 +107,7 @@ module.exports = async (req, res) => {
 
       delete req.organizations;
     }
+    // update the other propreties
     await sails.getDatastore().transaction(async (db) => {
       const updatedCaver = await TCaver.updateOne(caverId)
         .set(req.body)
