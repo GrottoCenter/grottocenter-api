@@ -45,7 +45,6 @@ describe('Caver features', () => {
         name: newName,
         nickname: newNickname,
         surname: newsurname,
-        mail: 'test@mail.test',
       };
       supertest(sails.hooks.http.app)
         .put('/api/v1/cavers/3')
@@ -131,7 +130,7 @@ describe('Caver features', () => {
         .expect(400, done);
     });
     it('should raise an error if an admin try to edit the mail and password of a caver', (done) => {
-      const newMail = 'password';
+      const newMail = 'test@test.com';
       const update = {
         mail: newMail,
       };
