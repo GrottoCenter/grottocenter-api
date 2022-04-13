@@ -89,8 +89,9 @@ describe('Caver features2', () => {
           should(caver.name).equal(update.name);
           should(caver.nickname).equal(update.nickname);
           should(caver.surname).equal(update.surname);
-          // should(caver.organizations.lenght).equal(2);
-          // should(caver.organizations).containDeep([{ id: 1 }, { id: 3 }]);
+
+          should(caver.organizations.length).equal(2);
+          should(caver.organizations).containDeep([{ id: 1 }, { id: 3 }]);
           return done();
         });
     });

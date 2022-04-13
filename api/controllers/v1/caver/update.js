@@ -105,29 +105,36 @@ module.exports = async (req, res) => {
 
   // Launch update request using transaction: it performs a rollback if an error occurs
   try {
-    const caver = await CaverService.getCaver(req.param('caverId'), req);
-    console.log(caver);
-    /* organizationsList.forEach((organization) => {
-      if (!organizationsToUpdate.includes(organization)) {
-        TCaver.removeToCollection(caverId, 'grottos', organization.id);
-      }
-    }); */
-    console.log(caver.organizations);
-    /*     organizationsToUpdate.forEach((organization) => {
-      if (!organizationsList.includes(organization)) {
-        TCaver.addToCollection(caverId, 'grottos', organization.id);
-      }
-    }); */
+    if (req.body.organizations) {
+      const organizationsToUpdate = req.body.organizations;
+      const caver = await CaverService.getCaver(req.param('caverId'), req);
+      const organizationsList = caver.grottos;
 
-    delete req.organizations;
+      organizationsList.forEach(async (organization) => {
+        if (!organizationsToUpdate.includes(organization)) {
+          await TCaver.removeFromCollection(
+            caverId,
+            'grottos',
+            organization.id
+          );
+        }
+      });
 
+      organizationsToUpdate.forEach(async (organization) => {
+        if (!organizationsList.includes(organization)) {
+          await TCaver.addToCollection(caverId, 'grottos', organization.id);
+        }
+      });
+
+      delete req.organizations;
+    }
     await sails.getDatastore().transaction(async (db) => {
-      //  const organizationsToUpdate = req.body.organizations;
-
-      // await TCaver.addToCollection(caverId, 'grottos', entranceID);
       const updatedCaver = await TCaver.updateOne(caverId)
         .set(req.body)
         .usingConnection(db);
+
+      const updatedCaverOrg = await CaverService.getCaver(updatedCaver.id, req);
+      updatedCaver.grottos = updatedCaverOrg.grottos;
 
       const params = {};
       params.controllerMethod = 'CaverController.update';
