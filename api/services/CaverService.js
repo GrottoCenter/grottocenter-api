@@ -134,12 +134,9 @@ module.exports = {
    */
   isAuthor: async (caverId) => {
     const caver = await TCaver.findOne(caverId);
-    if (!caver) return false; // not found return
 
-    if (caver.mail) {
-      if (!(caver.mail.search(/@mail.no$/) === -1)) {
-        return true;
-      }
+    if (caver && caver.mail && caver.mail.endsWith('@mail.no')) {
+      if (caver.mail.endsWith('@mail.no')) return true;
     }
 
     return false;

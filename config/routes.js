@@ -278,7 +278,7 @@ module.exports.routes = {
 
   // EntranceDuplicate
   'DELETE /api/v1/entrance-duplicates': 'v1/entrance-duplicate/delete-many',
-  'DELETE /api/v1/entrance-duplicates/:id': 'v1/entrance-duplicate/delete',
+  'DELETE /api/v1/entrance-duplicates/:id': 'v1/entrance-duplicate/delete-one',
   'GET /api/v1/entrance-duplicates': 'v1/entrance-duplicate/find-all',
   'GET /api/v1/entrance-duplicates/:id': 'v1/entrance-duplicate/find',
   'POST /api/v1/entrances/from-duplicate/:id':

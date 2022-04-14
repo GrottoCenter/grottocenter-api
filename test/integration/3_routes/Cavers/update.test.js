@@ -45,7 +45,6 @@ describe('Caver features', () => {
         name: newName,
         nickname: newNickname,
         surname: newsurname,
-        mail: 'test@mail.test',
       };
       supertest(sails.hooks.http.app)
         .put('/api/v1/cavers/3')
@@ -83,15 +82,14 @@ describe('Caver features', () => {
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json')
         .expect(200)
-        .end((err, res) => {
+        .end(async (err) => {
           if (err) return done(err);
-          const caver = res.body;
+          const caver = await TCaver.findOne(6).populate('grottos');
           should(caver.name).equal(update.name);
           should(caver.nickname).equal(update.nickname);
           should(caver.surname).equal(update.surname);
-
-          should(caver.organizations.length).equal(2);
-          should(caver.organizations).containDeep([{ id: 1 }, { id: 3 }]);
+          should(caver.grottos.length).equal(2);
+          should(caver.grottos).containDeep([{ id: 1 }, { id: 3 }]);
           return done();
         });
     });
@@ -131,7 +129,7 @@ describe('Caver features', () => {
         .expect(400, done);
     });
     it('should raise an error if an admin try to edit the mail and password of a caver', (done) => {
-      const newMail = 'password';
+      const newMail = 'test@test.com';
       const update = {
         mail: newMail,
       };

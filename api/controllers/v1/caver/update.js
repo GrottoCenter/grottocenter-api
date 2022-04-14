@@ -2,7 +2,7 @@ const ControllerService = require('../../../services/ControllerService');
 const ErrorService = require('../../../services/ErrorService');
 const MappingV1Service = require('../../../services/MappingV1Service');
 const RightService = require('../../../services/RightService');
-const CaverService = require('../../../services/CaverService');
+
 // eslint-disable-next-line consistent-return
 module.exports = async (req, res) => {
   // list of propreties to update
@@ -15,7 +15,7 @@ module.exports = async (req, res) => {
     'organizations',
   ];
 
-  // Check right (Admin can't edit mail and password, Caver can only edit itself)
+  // Check right
   const caverId = req.param('caverId');
 
   const hasRightOfUser = await sails.helpers.checkRight
@@ -85,39 +85,15 @@ module.exports = async (req, res) => {
   try {
     // update organizations linked to the caver if needed
     if (req.body.organizations) {
-      const organizationsToUpdate = req.body.organizations;
-      const caver = await CaverService.getCaver(req.param('caverId'), req);
-      const organizationsList = caver.grottos;
-
-      organizationsList.forEach(async (organization) => {
-        if (!organizationsToUpdate.includes(organization)) {
-          await TCaver.removeFromCollection(
-            caverId,
-            'grottos',
-            organization.id
-          );
-        }
-      });
-
-      organizationsToUpdate.forEach(async (organization) => {
-        if (!organizationsList.includes(organization)) {
-          await TCaver.addToCollection(caverId, 'grottos', organization.id);
-        }
-      });
-
-      delete req.organizations;
+      await TCaver.replaceCollection(caverId, 'grottos').members(
+        req.body.organizations.map((organizations) => organizations.id)
+      );
     }
     // update the other propreties
     await sails.getDatastore().transaction(async (db) => {
       const updatedCaver = await TCaver.updateOne(caverId)
         .set(req.body)
         .usingConnection(db);
-
-      const updatedCaverOrg = await CaverService.getCaver(updatedCaver.id, req);
-      updatedCaver.documents = updatedCaverOrg.documents;
-      updatedCaver.exploredEntrances = updatedCaverOrg.exploredEntrances;
-      updatedCaver.grottos = updatedCaverOrg.grottos;
-      updatedCaver.groups = updatedCaverOrg.groups;
 
       const params = {};
       params.controllerMethod = 'CaverController.update';

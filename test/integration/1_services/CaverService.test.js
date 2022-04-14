@@ -140,7 +140,7 @@ describe('CaverService', () => {
       const res = await CaverService.isAuthor(5);
       should(res).equal(true);
     });
-    it('should return false with the id of a none-author', async () => {
+    it('should return false with the id of a non-author', async () => {
       const res = await CaverService.isAuthor(6);
       should(res).equal(false);
     });
