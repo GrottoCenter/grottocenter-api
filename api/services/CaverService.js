@@ -110,6 +110,12 @@ module.exports = {
       (entrance) => entrance.isPublic
     );
 
+    if (req.token) {
+      if (Number(caverId) === req.token.id) {
+        return caver;
+      }
+    }
+
     if (hasCompleteViewRight) {
       return caver;
     }

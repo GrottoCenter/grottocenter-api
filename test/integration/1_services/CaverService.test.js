@@ -115,24 +115,31 @@ describe('CaverService', () => {
 
     it('should return a partial view of the caver when providing an user token', async () => {
       const caver = await CaverService.getCaver(6, userReq);
+      should.not.exist(caver.mail);
       testCaver(caver);
     });
 
     it('should return a partial view of the caver when not providing a token', async () => {
       const caver = await CaverService.getCaver(6, {});
+      should.not.exist(caver.mail);
       testCaver(caver);
     });
 
     it('should return a complete view of the caver when providing an admin token', async () => {
       const caver = await CaverService.getCaver(6, adminReq);
       testCaver(caver);
-
-      // Additional data
       should(caver.mail).equal('caver1@caver1.com');
       should.exist(caver.grottos);
       should.exist(caver.groups);
       should.exist(caver.relevance);
     });
+
+    it('should return the mail if caver connected ask for his informations', async () => {
+      const caver = await CaverService.getCaver(3, userReq);
+      should(caver.mail).equal('user1@user1.com');
+      //   testCaver(caver);
+    });
+    // Additional data
   });
 
   describe('isAuthor()', () => {
