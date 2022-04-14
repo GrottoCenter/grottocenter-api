@@ -168,6 +168,7 @@ module.exports = {
     result.discoveryYear = source.yearDiscovery;
     result.histories = source.histories;
     result.id = source.id;
+    result.isDeleted = source.isDeleted;
     result.latitude = parseFloat(source.latitude);
     result.locations = source.locations;
     result.longitude = parseFloat(source.longitude);
