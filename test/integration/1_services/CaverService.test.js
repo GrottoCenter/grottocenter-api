@@ -134,4 +134,19 @@ describe('CaverService', () => {
       should.exist(caver.relevance);
     });
   });
+
+  describe('isAuthor()', () => {
+    it('should return true with the id of an author', async () => {
+      const res = await CaverService.isAuthor(5);
+      should(res).equal(true);
+    });
+    it('should return false with the id of a non-author', async () => {
+      const res = await CaverService.isAuthor(6);
+      should(res).equal(false);
+    });
+    it('should return false with an id which does not exist', async () => {
+      const res = await CaverService.isAuthor(123456789);
+      should(res).equal(false);
+    });
+  });
 });

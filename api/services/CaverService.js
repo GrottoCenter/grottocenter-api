@@ -125,4 +125,19 @@ module.exports = {
       surname: caver.surname,
     };
   },
+  /**
+   * @param {Integer} caverId
+   * @throws Sails ORM errors (see https://sailsjs.com/documentation/concepts/models-and-orm/errors)
+   * @description Check if a caver is an author by looking at his email. If caver not found return false.
+   * @returns {Boolean}
+   */
+  isAuthor: async (caverId) => {
+    const caver = await TCaver.findOne(caverId);
+
+    if (caver && caver.mail && caver.mail.endsWith('@mail.no')) {
+      if (caver.mail.endsWith('@mail.no')) return true;
+    }
+
+    return false;
+  },
 };
