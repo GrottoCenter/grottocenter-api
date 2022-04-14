@@ -269,6 +269,7 @@ module.exports = {
     result.nickname = source.nickname;
     result.name = source.name;
     result.surname = source.surname;
+    result.mail = source.mail;
 
     if (source.documents) {
       if (source.documents instanceof Array) {
