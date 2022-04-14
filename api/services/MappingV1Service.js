@@ -44,7 +44,6 @@ module.exports = {
     result.dateInscription = source.dateInscription;
     result.dateReviewed = source.dateReviewed;
     result.id = source.id;
-    result.language = source.language;
     result.relevance = source.relevance;
     result.title = source.title;
 
@@ -55,6 +54,10 @@ module.exports = {
     result.entrance =
       source.entrance instanceof Object
         ? module.exports.convertToEntranceModel(source.entrance)
+        : undefined;
+    result.language =
+      source.language instanceof Object
+        ? module.exports.convertToLanguageModel(source.language)
         : undefined;
     result.reviewer =
       source.reviewer instanceof Object

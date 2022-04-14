@@ -4,6 +4,7 @@ const CaverService = require('../../../services/CaverService');
 const CommentService = require('../../../services/CommentService');
 const ControllerService = require('../../../services/ControllerService');
 const DocumentService = require('../../../services/DocumentService');
+const LanguageService = require('../../../services/LanguageService');
 const MappingV1Service = require('../../../services/MappingV1Service');
 const NameService = require('../../../services/NameService');
 const RiggingService = require('../../../services/RiggingService');
@@ -87,6 +88,18 @@ module.exports = async (req, res) => {
           await DocumentService.setDocumentType(d);
           await DocumentService.setDocumentLicense(d);
           await DocumentService.setDocumentFiles(d);
+        })
+      );
+
+      // Populate locations
+      // eslint-disable-next-line no-param-reassign
+      found.locations = await Promise.all(
+        found.locations.map(async (l) => {
+          const language = await LanguageService.getLanguage(l.language);
+          return {
+            ...l,
+            language,
+          };
         })
       );
 
