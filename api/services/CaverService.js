@@ -113,6 +113,7 @@ module.exports = {
     if (hasCompleteViewRight) {
       return caver;
     }
+
     return {
       id: caver.id,
       documents: caver.documents,
