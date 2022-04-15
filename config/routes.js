@@ -192,8 +192,8 @@ module.exports.routes = {
   'POST /api/v1/names/:id/setAsMain': 'v1/name/set-as-main',
 
   // Location
-  'PATCH /api/v1/locations/:id': 'v1/location/update',
   'POST /api/v1/locations': 'v1/location/create',
+  'PUT /api/v1/locations/:id': 'v1/location/update',
 
   // Document Subject
   'GET /api/v1/documents/subjects': 'v1/subject/find-all',
