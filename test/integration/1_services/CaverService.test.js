@@ -137,9 +137,7 @@ describe('CaverService', () => {
     it('should return the mail if caver connected ask for his informations', async () => {
       const caver = await CaverService.getCaver(3, userReq);
       should(caver.mail).equal('user1@user1.com');
-      //   testCaver(caver);
     });
-    // Additional data
   });
 
   describe('isAuthor()', () => {

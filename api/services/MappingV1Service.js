@@ -266,10 +266,10 @@ module.exports = {
     result.id = source.id;
     result['@id'] = String(source.id);
     result.language = source.language;
+    result.mail = source.mail;
     result.nickname = source.nickname;
     result.name = source.name;
     result.surname = source.surname;
-    result.mail = source.mail;
 
     if (source.documents) {
       if (source.documents instanceof Array) {
