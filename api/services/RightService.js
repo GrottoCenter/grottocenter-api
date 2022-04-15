@@ -5,7 +5,6 @@ module.exports = {
    */
   RightEntities: {
     APPLICATION: 'Application',
-    AUTHOR: 'Author',
     CAVE: 'Cave',
     CAVER: 'Caver',
     DESCRIPTION: 'Description',
