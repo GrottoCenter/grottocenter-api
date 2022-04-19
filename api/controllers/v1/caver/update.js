@@ -1,6 +1,6 @@
 const ControllerService = require('../../../services/ControllerService');
 const ErrorService = require('../../../services/ErrorService');
-const MappingV1Service = require('../../../services/MappingV1Service');
+const MappingService = require('../../../services/MappingService');
 const RightService = require('../../../services/RightService');
 
 // eslint-disable-next-line consistent-return
@@ -103,7 +103,7 @@ module.exports = async (req, res) => {
         updatedCaver,
         params,
         res,
-        MappingV1Service.convertToCaverModel
+        MappingService.convertToCaverModel
       );
     });
   } catch (e) {

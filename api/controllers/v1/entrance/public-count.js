@@ -1,9 +1,9 @@
-const MappingV1Service = require('../../../services/MappingV1Service');
+const MappingService = require('../../../services/MappingService');
 
 module.exports = (req, res) => {
   TEntrance.count({ isPublic: true })
     .then((total) =>
-      res.json(MappingV1Service.convertToCountResultModel({ count: total }))
+      res.json(MappingService.convertToCountResultModel({ count: total }))
     )
     .catch((err) => {
       const errorMessage =

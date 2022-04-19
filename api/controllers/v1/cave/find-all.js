@@ -1,6 +1,6 @@
 const CaverService = require('../../../services/CaverService');
 const ControllerService = require('../../../services/ControllerService');
-const MappingV1Service = require('../../../services/MappingV1Service');
+const MappingService = require('../../../services/MappingService');
 const NameService = require('../../../services/NameService');
 
 module.exports = async (req, res) => {
@@ -40,7 +40,7 @@ module.exports = async (req, res) => {
         found,
         params,
         res,
-        MappingV1Service.convertToCaveList
+        MappingService.convertToCaveList
       );
     });
 };

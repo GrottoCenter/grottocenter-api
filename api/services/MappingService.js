@@ -1,8 +1,8 @@
-/* eslint-disable dot-notation */
+/* eslint-disable no-underscore-dangle */
 /**
- * Mapper for API V1 models
+ * Mapper for API models
  *
- * BE CAREFULL Any change here must be reported on file apiV1.yaml!
+ * BE CAREFULL Any change here must be reported to the file swaggerV1.yaml!
  */
 
 const ramda = require('ramda');
@@ -391,35 +391,35 @@ module.exports = {
     source.hits.hits.forEach((item) => {
       let data = '';
       // Convert the data according to its first tag
-      switch (item['_source'].tags[0]) {
+      switch (item._source.tags[0]) {
         case 'cave':
-          data = module.exports.convertToCaveModel(item['_source']);
+          data = module.exports.convertToCaveModel(item._source);
           break;
         case 'caver':
-          data = module.exports.convertToCaverModel(item['_source']);
+          data = module.exports.convertToCaverModel(item._source);
           break;
         case 'document':
-          data = module.exports.convertToDocumentModel(item['_source']);
+          data = module.exports.convertToDocumentModel(item._source);
           break;
         case 'entrance':
-          data = module.exports.convertToEntranceModel(item['_source']);
+          data = module.exports.convertToEntranceModel(item._source);
           break;
         case 'grotto':
-          data = module.exports.convertToOrganizationModel(item['_source']);
+          data = module.exports.convertToOrganizationModel(item._source);
           break;
         case 'language':
-          data = module.exports.convertToLanguageModel(item['_source']);
+          data = module.exports.convertToLanguageModel(item._source);
           break;
         case 'massif':
-          data = module.exports.convertToMassifModel(item['_source']);
+          data = module.exports.convertToMassifModel(item._source);
           break;
         case 'network':
-          data = module.exports.convertToCaveModel(item['_source']);
+          data = module.exports.convertToCaveModel(item._source);
           break;
         default:
       }
       // Add the type and hightlight of the data
-      data.type = item['_source'].tags[0];
+      data.type = item._source.tags[0];
       data.highlights = item.highlight;
 
       values.push(data);
@@ -441,19 +441,17 @@ module.exports = {
       source.hits.hits.forEach((item) => {
         // Common data
         const data = {
-          id: item['_id'],
-          name: item['_source'].name
-            ? item['_source'].name
-            : item['_source']['title'], // Handle title for documents (instead of name)
-          type: item['_source'].tags[0],
+          id: item._id,
+          name: item._source.name ? item._source.name : item._source.title, // Handle title for documents (instead of name)
+          type: item._source.tags[0],
           highlights: item.highlight,
         };
 
-        if (item['_source'].longitude) {
-          data.longitude = parseFloat(item['_source'].longitude);
+        if (item._source.longitude) {
+          data.longitude = parseFloat(item._source.longitude);
         }
-        if (item['_source'].latitude) {
-          data.latitude = parseFloat(item['_source'].latitude);
+        if (item._source.latitude) {
+          data.latitude = parseFloat(item._source.latitude);
         }
 
         // 08/2020 - C. ROIG - Not needed at the moment but keep in case
@@ -469,28 +467,28 @@ module.exports = {
         //   });
         // };
 
-        switch (item['_source'].tags[0]) {
+        switch (item._source.tags[0]) {
           case 'entrance':
             data.cave = {
-              id: item['_source'].id_cave,
-              name: item['_source']['cave name'],
-              depth: item['_source']['cave depth'],
-              length: item['_source']['cave length'],
+              id: item._source.id_cave,
+              name: item._source['cave name'],
+              depth: item._source['cave depth'],
+              length: item._source['cave length'],
             };
-            data.city = item['_source'].city;
-            data.region = item['_source'].region;
-            data.names = item['_source'].names;
-            data.descriptions = item['_source'].descriptions;
+            data.city = item._source.city;
+            data.region = item._source.region;
+            data.names = item._source.names;
+            data.descriptions = item._source.descriptions;
             break;
 
           case 'grotto':
-            data.names = item['_source'].names;
-            data.address = item['_source'].address;
+            data.names = item._source.names;
+            data.address = item._source.address;
             break;
 
           case 'massif':
-            data.names = item['_source'].names;
-            data.descriptions = item['_source'].descriptions;
+            data.names = item._source.names;
+            data.descriptions = item._source.descriptions;
             break;
 
           case 'document':
@@ -502,8 +500,8 @@ module.exports = {
             // renameKeys(data.highlights, replacementKeys);
 
             // Fill data with appropriate keys
-            Object.keys(item['_source']).forEach((key) => {
-              data[key] = item['_source'][key];
+            Object.keys(item._source).forEach((key) => {
+              data[key] = item._source[key];
             });
 
             // Construct document type
@@ -536,30 +534,30 @@ module.exports = {
             break;
 
           case 'caver':
-            data.surname = item['_source'].surname;
-            data.nickname = item['_source'].nickname;
+            data.surname = item._source.surname;
+            data.nickname = item._source.nickname;
             // Don't return mail (RGPD)
             // data.mail = item['_source'].mail;
             break;
 
           case 'language':
-            data.refName = item['_source'].ref_name;
-            data.isPrefered = item['_source'].is_prefered;
-            data.part1 = item['_source'].part1;
-            data.part2b = item['_source'].part2b;
-            data.part2t = item['_source'].part2t;
-            data.scope = item['_source'].scope;
+            data.refName = item._source.ref_name;
+            data.isPrefered = item._source.is_prefered;
+            data.part1 = item._source.part1;
+            data.part2b = item._source.part2b;
+            data.part2t = item._source.part2t;
+            data.scope = item._source.scope;
             break;
 
           case 'cave':
           case 'network':
-            data.depth = item['_source'].depth;
-            data.descriptions = item['_source'].descriptions;
-            data.isDiving = item['_source'].is_diving;
-            data.length = item['_source'].length;
-            data.names = item['_source'].names;
-            data.sizeCoef = item['_source'].size_coef;
-            data.temperature = item['_source'].temperature;
+            data.depth = item._source.depth;
+            data.descriptions = item._source.descriptions;
+            data.isDiving = item._source.is_diving;
+            data.length = item._source.length;
+            data.names = item._source.names;
+            data.sizeCoef = item._source.size_coef;
+            data.temperature = item._source.temperature;
             break;
           default:
         }

@@ -3,7 +3,7 @@ const ControllerService = require('../../../services/ControllerService');
 const DescriptionService = require('../../../services/DescriptionService');
 const DocumentService = require('../../../services/DocumentService');
 const ErrorService = require('../../../services/ErrorService');
-const MappingV1Service = require('../../../services/MappingV1Service');
+const MappingService = require('../../../services/MappingService');
 const NameService = require('../../../services/NameService');
 
 module.exports = async (req, res) => {
@@ -147,6 +147,6 @@ module.exports = async (req, res) => {
     found,
     params,
     res,
-    MappingV1Service.convertToDocumentModel
+    MappingService.convertToDocumentModel
   );
 };

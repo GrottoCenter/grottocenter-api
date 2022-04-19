@@ -1,5 +1,5 @@
 const ControllerService = require('../../../services/ControllerService');
-const MappingV1Service = require('../../../services/MappingV1Service');
+const MappingService = require('../../../services/MappingService');
 const ElasticsearchService = require('../../../services/ElasticsearchService');
 
 /**
@@ -46,8 +46,8 @@ module.exports = (req, res) => {
         params,
         res,
         complete
-          ? MappingV1Service.convertToCompleteSearchResult
-          : MappingV1Service.convertEsToSearchResult
+          ? MappingService.convertToCompleteSearchResult
+          : MappingService.convertEsToSearchResult
       )
     )
     .catch((err) =>
@@ -57,7 +57,7 @@ module.exports = (req, res) => {
         undefined,
         params,
         res,
-        MappingV1Service.convertEsToSearchResult
+        MappingService.convertEsToSearchResult
       )
     );
 };

@@ -2,7 +2,7 @@ const ramda = require('ramda');
 const ControllerService = require('../../../services/ControllerService');
 const ErrorService = require('../../../services/ErrorService');
 const GrottoService = require('../../../services/GrottoService');
-const MappingV1Service = require('../../../services/MappingV1Service');
+const MappingService = require('../../../services/MappingService');
 const RightService = require('../../../services/RightService');
 
 module.exports = async (req, res) => {
@@ -54,7 +54,7 @@ module.exports = async (req, res) => {
       newOrganizationPopulated,
       params,
       res,
-      MappingV1Service.convertToOrganizationModel
+      MappingService.convertToOrganizationModel
     );
   } catch (e) {
     ErrorService.getDefaultErrorHandler(res)(e);
