@@ -17,12 +17,21 @@ module.exports = {
       const observations = splitRiggingData('observations');
 
       // eslint-disable-next-line no-param-reassign
-      rigging.obstacles = obstacles.map((o, idx) => ({
-        obstacle: o,
-        rope: ropes[idx],
-        anchor: anchors[idx],
-        observation: observations[idx],
-      }));
+      rigging.obstacles = obstacles
+        .map((o, idx) => ({
+          obstacle: o,
+          rope: ropes[idx],
+          anchor: anchors[idx],
+          observation: observations[idx],
+        }))
+        // remove empty data (badly formatted data in the db)
+        .filter(
+          (o) =>
+            o.obstacle !== '' ||
+            o.rope !== '' ||
+            o.anchor !== '' ||
+            o.observation !== ''
+        );
       return rigging;
     });
   },

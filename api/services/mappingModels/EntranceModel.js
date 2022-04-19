@@ -22,6 +22,7 @@ module.exports = {
   documents: [],
   histories: [],
   id: undefined,
+  isDeleted: undefined,
   latitude: undefined,
   locations: [],
   longitude: undefined,

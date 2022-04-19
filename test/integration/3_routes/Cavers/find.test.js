@@ -9,6 +9,7 @@ const CAVER_PROPERTIES = [
   'id',
   'documents',
   'exploredEntrances',
+  'organizations',
   'groups',
   'language',
   'name',
@@ -52,6 +53,22 @@ describe('Caver features', () => {
     });
     it('should return code 200 and a caver complete view', (done) => {
       supertest(sails.hooks.http.app)
+        .get('/api/v1/cavers/3')
+        .set('Authorization', userToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(200)
+        .end((err, res) => {
+          if (err) return done(err);
+          const { body: caver } = res;
+          should(caver).have.properties(CAVER_PROPERTIES);
+          should(caver.mail).equal('user1@user1.com');
+          should(caver.nickname).not.be.empty();
+          return done();
+        });
+    });
+    it('should return code 200 and a caver complete view', (done) => {
+      supertest(sails.hooks.http.app)
         .get('/api/v1/cavers/1')
         .set('Authorization', adminToken)
         .set('Content-type', 'application/json')
@@ -62,6 +79,7 @@ describe('Caver features', () => {
           const { body: caver } = res;
           sails.log.error(caver);
           should(caver).have.properties(CAVER_PROPERTIES);
+          should(caver.mail).equal('admin1@admin1.com');
           should(caver.nickname).not.be.empty();
           return done();
         });

@@ -3,7 +3,7 @@ openapi: '3.0.0'
 info:
   description: "This page documents the available Grottocenter's API."
   title: 'Grottocenter 3 - REST API'
-  version: 'v1 - 21.1.4'
+  version: 'v1 - 22.0.9'
   termsOfService: 'https://wiki.grottocenter.org/wiki/GrottoCenter:En/API'
   contact:
     name: 'Slack space'
@@ -338,6 +338,31 @@ paths:
                 $ref: '#/components/schemas/Caver'
         '404':
           description: Caver not found.
+
+  '/cavers/{caverId}':
+    put:
+      tags:
+        - cavers
+      description: Update a caver. See the POST /cavers route explaination about the parameters you can use to update a caver. Only the user and admninistrator can update. The user can update only his informations including his password and his mail adress. The administrator can't update mail and password but he can update every cavers.
+      parameters:
+        - name: caverId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Caver'
+        '400':
+          description: 'Bad request, caverId must exist in database. Or invalid fields to update'
+        '403':
+          description: 'You are not authorized to update a caver.'
+        '404':
+          description: 'Could not find caver with caverId.'
 
   '/cavers/admins':
     get:
@@ -2413,19 +2438,29 @@ components:
         documents:
           type: array
           items:
-            type: string
+            $ref: '#/components/schemas/Document'
+        exploredEntrances:
+          type: array
+          items:
+            $ref: '#/components/schemas/Entrance'
         groups:
           type: array
           items:
-            type: string
+            $ref: '#/components/schemas/Group'
         id:
           type: integer
+        language:
+          type: string
         mail:
           type: string
         name:
           type: string
         nickname:
           type: string
+        organizations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Organization'
         surname:
           type: string
 
@@ -2775,6 +2810,16 @@ components:
         mimeType:
           type: string
         softwares:
+          type: string
+
+    Group:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        comment:
           type: string
 
     Geoloc:

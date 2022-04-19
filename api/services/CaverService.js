@@ -110,9 +110,14 @@ module.exports = {
       (entrance) => entrance.isPublic
     );
 
+    if (req.token && Number(caverId) === req.token.id) {
+      return caver;
+    }
+
     if (hasCompleteViewRight) {
       return caver;
     }
+
     return {
       id: caver.id,
       documents: caver.documents,
@@ -121,7 +126,23 @@ module.exports = {
       language: caver.language,
       name: caver.name,
       nickname: caver.nickname,
+      grottos: caver.grottos,
       surname: caver.surname,
     };
+  },
+  /**
+   * @param {Integer} caverId
+   * @throws Sails ORM errors (see https://sailsjs.com/documentation/concepts/models-and-orm/errors)
+   * @description Check if a caver is an author by looking at his email. If caver not found return false.
+   * @returns {Boolean}
+   */
+  isAuthor: async (caverId) => {
+    const caver = await TCaver.findOne(caverId);
+
+    if (caver && caver.mail && caver.mail.endsWith('@mail.no')) {
+      if (caver.mail.endsWith('@mail.no')) return true;
+    }
+
+    return false;
   },
 };

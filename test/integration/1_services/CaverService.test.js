@@ -95,6 +95,8 @@ describe('CaverService', () => {
       should(caver.documents.length).equal(3);
       should(caver.documents).containDeep([{ id: 1 }, { id: 2 }, { id: 4 }]);
       should(caver.groups.length).equal(1);
+      should(caver.grottos.length).equal(2);
+      should(caver.grottos).containDeep([{ id: 1 }, { id: 2 }]);
       should(caver.groups).containDeep([{ id: 1 }]);
       should(caver.exploredEntrances.length).equal(1);
       should(caver.exploredEntrances).containDeep([{ id: 4 }]);
@@ -113,23 +115,43 @@ describe('CaverService', () => {
 
     it('should return a partial view of the caver when providing an user token', async () => {
       const caver = await CaverService.getCaver(6, userReq);
+      should.not.exist(caver.mail);
       testCaver(caver);
     });
 
     it('should return a partial view of the caver when not providing a token', async () => {
       const caver = await CaverService.getCaver(6, {});
+      should.not.exist(caver.mail);
       testCaver(caver);
     });
 
-    it('should return a complete view of the caver when providinf an admin token', async () => {
+    it('should return a complete view of the caver when providing an admin token', async () => {
       const caver = await CaverService.getCaver(6, adminReq);
       testCaver(caver);
-
-      // Additional data
       should(caver.mail).equal('caver1@caver1.com');
       should.exist(caver.grottos);
       should.exist(caver.groups);
       should.exist(caver.relevance);
+    });
+
+    it('should return the mail if caver connected ask for his informations', async () => {
+      const caver = await CaverService.getCaver(3, userReq);
+      should(caver.mail).equal('user1@user1.com');
+    });
+  });
+
+  describe('isAuthor()', () => {
+    it('should return true with the id of an author', async () => {
+      const res = await CaverService.isAuthor(5);
+      should(res).equal(true);
+    });
+    it('should return false with the id of a non-author', async () => {
+      const res = await CaverService.isAuthor(6);
+      should(res).equal(false);
+    });
+    it('should return false with an id which does not exist', async () => {
+      const res = await CaverService.isAuthor(123456789);
+      should(res).equal(false);
     });
   });
 });

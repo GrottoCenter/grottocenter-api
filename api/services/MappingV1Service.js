@@ -44,7 +44,6 @@ module.exports = {
     result.dateInscription = source.dateInscription;
     result.dateReviewed = source.dateReviewed;
     result.id = source.id;
-    result.language = source.language;
     result.relevance = source.relevance;
     result.title = source.title;
 
@@ -55,6 +54,10 @@ module.exports = {
     result.entrance =
       source.entrance instanceof Object
         ? module.exports.convertToEntranceModel(source.entrance)
+        : undefined;
+    result.language =
+      source.language instanceof Object
+        ? module.exports.convertToLanguageModel(source.language)
         : undefined;
     result.reviewer =
       source.reviewer instanceof Object
@@ -165,6 +168,7 @@ module.exports = {
     result.discoveryYear = source.yearDiscovery;
     result.histories = source.histories;
     result.id = source.id;
+    result.isDeleted = source.isDeleted;
     result.latitude = parseFloat(source.latitude);
     result.locations = source.locations;
     result.longitude = parseFloat(source.longitude);
@@ -266,6 +270,7 @@ module.exports = {
     result.id = source.id;
     result['@id'] = String(source.id);
     result.language = source.language;
+    result.mail = source.mail;
     result.nickname = source.nickname;
     result.name = source.name;
     result.surname = source.surname;
@@ -298,6 +303,16 @@ module.exports = {
       } else {
         result.groups = source.groups.split(',').map((groupId) => ({
           id: parseInt(groupId, 10),
+        }));
+      }
+    }
+
+    if (source.grottos) {
+      if (source.grottos instanceof Array) {
+        result.organizations = source.grottos;
+      } else {
+        result.organizations = source.grottos.split(',').map((grottoId) => ({
+          id: parseInt(grottoId, 10),
         }));
       }
     }
