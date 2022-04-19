@@ -207,4 +207,15 @@ VALUES (
         'Esperanto',
         '',
         false
+    ), 
+    (
+        'haw',
+        'haw',
+        'haw',
+        '',
+        'I',
+        'L',
+        'Hawaiian',
+        '',
+        false
     );
