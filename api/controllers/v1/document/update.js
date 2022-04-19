@@ -4,7 +4,7 @@ const DescriptionService = require('../../../services/DescriptionService');
 const DocumentService = require('../../../services/DocumentService');
 const ErrorService = require('../../../services/ErrorService');
 const FileService = require('../../../services/FileService');
-const MappingV1Service = require('../../../services/MappingV1Service');
+const MappingService = require('../../../services/MappingService');
 const RightService = require('../../../services/RightService');
 
 module.exports = async (req, res) => {
@@ -81,7 +81,7 @@ module.exports = async (req, res) => {
       updatedDocument,
       params,
       res,
-      MappingV1Service.convertToDocumentModel
+      MappingService.convertToDocumentModel
     );
   } catch (e) {
     ErrorService.getDefaultErrorHandler(res)(e);

@@ -5,7 +5,7 @@ const CommentService = require('../../../services/CommentService');
 const ControllerService = require('../../../services/ControllerService');
 const DocumentService = require('../../../services/DocumentService');
 const LanguageService = require('../../../services/LanguageService');
-const MappingV1Service = require('../../../services/MappingV1Service');
+const MappingService = require('../../../services/MappingService');
 const NameService = require('../../../services/NameService');
 const RiggingService = require('../../../services/RiggingService');
 const RightService = require('../../../services/RightService');
@@ -156,7 +156,7 @@ module.exports = async (req, res) => {
         found,
         params,
         res,
-        MappingV1Service.convertToEntranceModel
+        MappingService.convertToEntranceModel
       );
     });
 };

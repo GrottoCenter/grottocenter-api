@@ -1,6 +1,6 @@
 const ControllerService = require('../../../services/ControllerService');
 const ErrorService = require('../../../services/ErrorService');
-const MappingV1Service = require('../../../services/MappingV1Service');
+const MappingService = require('../../../services/MappingService');
 const RightService = require('../../../services/RightService');
 
 module.exports = async (req, res) => {
@@ -56,7 +56,7 @@ module.exports = async (req, res) => {
       newName,
       params,
       res,
-      MappingV1Service.convertToNameModel
+      MappingService.convertToNameModel
     );
   } catch (e) {
     ErrorService.getDefaultErrorHandler(res)(e);

@@ -175,7 +175,7 @@ module.exports = {
 
   // Commented because it was taking some attributes away
   // (ex: 'author' in the document model is deleted)
-  // + the MappingV1Service already ignores the password attribute
+  // + the MappingService already ignores the password attribute
   // customToJSON: () => {
   //   return _.omit(this, ['password']); // Remove password when sending JSON
   // },

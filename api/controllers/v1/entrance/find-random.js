@@ -1,6 +1,6 @@
 const ControllerService = require('../../../services/ControllerService');
 const EntranceService = require('../../../services/EntranceService');
-const MappingV1Service = require('../../../services/MappingV1Service');
+const MappingService = require('../../../services/MappingService');
 
 module.exports = (req, res) => {
   const params = {};
@@ -16,7 +16,7 @@ module.exports = (req, res) => {
         result,
         params,
         res,
-        MappingV1Service.convertToEntranceModel
+        MappingService.convertToEntranceModel
       );
     })
     .catch((err) =>
@@ -26,7 +26,7 @@ module.exports = (req, res) => {
         undefined,
         params,
         res,
-        MappingV1Service.convertToEntranceModel
+        MappingService.convertToEntranceModel
       )
     );
 };

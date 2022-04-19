@@ -7,7 +7,7 @@
 const CaveService = require('../../../services/CaveService');
 const ControllerService = require('../../../services/ControllerService');
 const ErrorService = require('../../../services/ErrorService');
-const MappingV1Service = require('../../../services/MappingV1Service');
+const MappingService = require('../../../services/MappingService');
 const RightService = require('../../../services/RightService');
 
 const { checkRight } = sails.helpers;
@@ -91,7 +91,7 @@ module.exports = async (req, res) => {
       populatedCave,
       params,
       res,
-      MappingV1Service.convertToCaveModel
+      MappingService.convertToCaveModel
     );
   } catch (e) {
     ErrorService.getDefaultErrorHandler(res)(e);

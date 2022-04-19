@@ -1,7 +1,7 @@
 const ControllerService = require('../../../services/ControllerService');
 const ErrorService = require('../../../services/ErrorService');
 const GrottoService = require('../../../services/GrottoService');
-const MappingV1Service = require('../../../services/MappingV1Service');
+const MappingService = require('../../../services/MappingService');
 const NameService = require('../../../services/NameService');
 const RightService = require('../../../services/RightService');
 
@@ -56,7 +56,7 @@ module.exports = async (req, res) => {
         updatedOrganization,
         params,
         res,
-        MappingV1Service.convertToOrganizationModel
+        MappingService.convertToOrganizationModel
       );
     });
   } catch (e) {
