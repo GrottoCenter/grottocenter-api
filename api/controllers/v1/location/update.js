@@ -36,9 +36,11 @@ module.exports = async (req, res) => {
 
   const newBody = req.param('body');
   const newTitle = req.param('title');
+  const newLanguage = req.param('language');
   const cleanedData = {
     ...(newBody && { body: newBody }),
     ...(newTitle && { title: newTitle }),
+    ...(newLanguage && { language: newLanguage }),
   };
 
   try {
