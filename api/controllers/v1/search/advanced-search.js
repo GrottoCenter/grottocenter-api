@@ -1,5 +1,5 @@
 const ControllerService = require('../../../services/ControllerService');
-const MappingV1Service = require('../../../services/MappingV1Service');
+const MappingService = require('../../../services/MappingService');
 const ElasticsearchService = require('../../../services/ElasticsearchService');
 const {
   INDEX_NAMES,
@@ -45,7 +45,7 @@ module.exports = (req, res) => {
           results,
           params,
           res,
-          MappingV1Service.convertToCompleteSearchResult
+          MappingService.convertToCompleteSearchResult
         );
       }
       return ControllerService.treatAndConvert(
@@ -54,7 +54,7 @@ module.exports = (req, res) => {
         results,
         params,
         res,
-        MappingV1Service.convertEsToSearchResult
+        MappingService.convertEsToSearchResult
       );
     })
     .catch((err) =>
@@ -64,7 +64,7 @@ module.exports = (req, res) => {
         undefined,
         params,
         res,
-        MappingV1Service.convertEsToSearchResult
+        MappingService.convertEsToSearchResult
       )
     );
 };

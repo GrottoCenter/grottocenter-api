@@ -2,7 +2,7 @@ const ControllerService = require('../../../services/ControllerService');
 const DescriptionService = require('../../../services/DescriptionService');
 const DocumentService = require('../../../services/DocumentService');
 const ErrorService = require('../../../services/ErrorService');
-const MappingV1Service = require('../../../services/MappingV1Service');
+const MappingService = require('../../../services/MappingService');
 
 module.exports = async (req, res) => {
   const caverId = req.param('caverId');
@@ -85,7 +85,7 @@ module.exports = async (req, res) => {
           documents,
           params,
           res,
-          MappingV1Service.convertToDocumentList
+          MappingService.convertToDocumentList
         );
       } catch (e) {
         ErrorService.getDefaultErrorHandler(res)(e);
