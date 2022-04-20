@@ -601,15 +601,6 @@ module.exports = {
       result.entrances = entrances;
     }
 
-    // Networks (from DB)
-    if (source.networks) {
-      result.networks = module.exports.convertToCaveList(source.networks);
-    }
-
-    // Nb caves & entrances (from ES)
-    result.nbCaves = ramda.pathOr(undefined, ['nb caves'], source);
-    result.nbEntrances = ramda.pathOr(undefined, ['nb entrances'], source);
-
     if (source.descriptions instanceof Array) {
       result.descriptions = module.exports.convertToDescriptionList(
         source.descriptions
@@ -617,6 +608,29 @@ module.exports = {
     } else {
       result.descriptions = source.descriptions;
     }
+
+    if (source.documents) {
+      if (source.documents instanceof Array) {
+        result.documents = source.documents;
+      } else {
+        result.documents = source.documents.split(',').map((documentId) => ({
+          id: parseInt(documentId, 10),
+        }));
+      }
+    }
+
+    // Networks (from DB)
+    if (source.networks) {
+      result.networks = module.exports.convertToCaveList(source.networks);
+    }
+
+    if (source.geoJson) {
+      result.geogPolygon = source.geoJson;
+    }
+
+    // Nb caves & entrances (from ES)
+    result.nbCaves = ramda.pathOr(undefined, ['nb caves'], source);
+    result.nbEntrances = ramda.pathOr(undefined, ['nb entrances'], source);
 
     return result;
   },
