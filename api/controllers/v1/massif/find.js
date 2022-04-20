@@ -11,7 +11,8 @@ module.exports = async (req, res) => {
       .populate('author')
       .populate('caves')
       .populate('names')
-      .populate('descriptions');
+      .populate('descriptions')
+      .populate('documents');
     const params = {};
     params.searchedItem = `Massif of id ${req.params.id}`;
     if (!massif) {
@@ -30,6 +31,10 @@ module.exports = async (req, res) => {
     // Populate networks
     await MassifService.setNetworks(massif);
     await NameService.setNames(massif.networks, 'cave');
+
+    const QUERY = `SELECT ST_AsGeoJSON('${massif.geogPolygon}')`;
+    const resQuery = await sails.getDatastore().sendNativeQuery(QUERY, []);
+    massif.geoJson = resQuery.rows[0].st_asgeojson;
 
     return ControllerService.treatAndConvert(
       req,

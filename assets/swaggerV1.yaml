@@ -2042,12 +2042,29 @@ paths:
               id:
                 type: string
                 description: Must be a language supported by Grottocenter (see GET /languages route) using the 3-letters format.
+
+        - name: geogPolygon
+          in: query
+          required: true
+          description: Only the inside of the geometry attribute of a GeoJson
+          schema:
+            type: object
+            properties:
+              type:
+                type: string
+              coordinates:
+                description: See how to construct GeoJson to know what's inside coordinates
+                type: array
+                items:
+                  type: object
+
         - name: name
           in: query
           required: true
           description: Name of the massif
           schema:
             type: string
+
         - name: caves
           in: query
           description: Caves related to the massif
@@ -2058,6 +2075,13 @@ paths:
               properties:
                 id:
                   type: string
+        - name: documents
+          in: query
+          description: Documents related to the massif
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Document'
       responses:
         '200':
           description: Successful operation
@@ -2074,7 +2098,7 @@ paths:
     get:
       tags:
         - massifs
-      description: Get a massif, its authors, names, descriptions and caves.
+      description: Get a massif, its authors, names,geogPolygon, documents, descriptions and caves.
       parameters:
         - name: id
           in: path

@@ -24,20 +24,39 @@ module.exports = async (req, res) => {
   }
 
   // Check params
-  if (req.param('name') === null) {
-    return res.badRequest('You must provide a name.');
-  }
-  if (req.param('descriptionAndNameLanguage') === null) {
-    return res.badRequest('You must provide a description and name language.');
-  }
+
+  const requiredParams = [
+    'name',
+    'description',
+    'descriptionAndNameLanguage',
+    'descriptionTitle',
+    'geogPolygon',
+  ];
+
+  // eslint-disable-next-line consistent-return
+  requiredParams.forEach((requiredParam) => {
+    if (!req.param(requiredParam)) {
+      return res.badRequest(`${requiredParam} parameter must be provided`);
+    }
+  });
 
   // Launch creation request using transaction: it performs a rollback if an error occurs
   try {
     await sails.getDatastore().transaction(async (db) => {
+      const geomQuery = await sails
+        .getDatastore()
+        .sendNativeQuery(
+          `SELECT ST_AsText('${JSON.stringify(req.body.geogPolygon)}')`,
+          []
+        );
       const cleanedData = {
         author: req.token.id,
         caves: req.body.caves ? req.body.caves.map((c) => c.id) : [],
         dateInscription: new Date(),
+        documents: req.body.documents
+          ? req.body.documents.map((c) => c.id)
+          : [],
+        geogPolygon: geomQuery.rows[0].st_astext,
       };
 
       const newMassif = await TMassif.create(cleanedData)
@@ -56,7 +75,7 @@ module.exports = async (req, res) => {
         .fetch()
         .usingConnection(db);
 
-      // Description (if provided)
+      // Description
       if (ramda.propOr(null, 'description', req.body)) {
         await TDescription.create({
           author: req.token.id,
@@ -73,6 +92,7 @@ module.exports = async (req, res) => {
         .populate('caves')
         .populate('descriptions')
         .populate('names')
+        .populate('documents')
         .usingConnection(db);
 
       // Prepare data for Elasticsearch indexation
