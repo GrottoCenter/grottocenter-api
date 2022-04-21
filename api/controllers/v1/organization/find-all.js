@@ -24,7 +24,6 @@ module.exports = async (req, res) => {
     params.notFoundMessage = 'No organizations found.';
     return ControllerService.treat(req, undefined, organizations, params, res);
   } catch (e) {
-    ErrorService.getDefaultErrorHandler(res)(e);
-    return false;
+    return ErrorService.getDefaultErrorHandler(res)(e);
   }
 };

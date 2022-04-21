@@ -39,7 +39,6 @@ module.exports = async (req, res) => {
     .populate('reviewer')
     .populate('subjects')
     .populate('type')
-    // eslint-disable-next-line consistent-return
     .exec(async (err, documents) => {
       if (err) {
         sails.log.error(err);
@@ -88,7 +87,7 @@ module.exports = async (req, res) => {
           MappingService.convertToDocumentList
         );
       } catch (e) {
-        ErrorService.getDefaultErrorHandler(res)(e);
+        return ErrorService.getDefaultErrorHandler(res)(e);
       }
     });
 };

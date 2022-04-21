@@ -59,7 +59,6 @@ module.exports = async (req, res) => {
       MappingService.convertToNameModel
     );
   } catch (e) {
-    ErrorService.getDefaultErrorHandler(res)(e);
-    return false;
+    return ErrorService.getDefaultErrorHandler(res)(e);
   }
 };

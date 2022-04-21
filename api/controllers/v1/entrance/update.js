@@ -5,7 +5,6 @@ const MappingService = require('../../../services/MappingService');
 const NameService = require('../../../services/NameService');
 const RightService = require('../../../services/RightService');
 
-// eslint-disable-next-line consistent-return
 module.exports = async (req, res) => {
   // Check right
   const hasRight = await sails.helpers.checkRight
@@ -37,30 +36,24 @@ module.exports = async (req, res) => {
     id: entranceId,
   };
 
-  // Launch update request using transaction: it performs a rollback if an error occurs
   try {
-    await sails.getDatastore().transaction(async (db) => {
-      const updatedEntrance = await TEntrance.updateOne({
-        id: entranceId,
-      })
-        .set(cleanedData)
-        .usingConnection(db);
+    const updatedEntrance = await TEntrance.updateOne({
+      id: entranceId,
+    }).set(cleanedData);
 
-      await NameService.setNames([updatedEntrance], 'entrance');
+    await NameService.setNames([updatedEntrance], 'entrance');
 
-      const params = {};
-      params.controllerMethod = 'EntranceController.update';
-      return ControllerService.treatAndConvert(
-        req,
-        null,
-        updatedEntrance,
-        params,
-        res,
-        MappingService.convertToEntranceModel
-      );
-    });
+    const params = {};
+    params.controllerMethod = 'EntranceController.update';
+    return ControllerService.treatAndConvert(
+      req,
+      null,
+      updatedEntrance,
+      params,
+      res,
+      MappingService.convertToEntranceModel
+    );
   } catch (e) {
-    ErrorService.getDefaultErrorHandler(res)(e);
-    return false;
+    return ErrorService.getDefaultErrorHandler(res)(e);
   }
 };

@@ -7,7 +7,6 @@ const RightService = require('../../../services/RightService');
 
 const { checkRight } = sails.helpers;
 
-// eslint-disable-next-line consistent-return
 module.exports = async (req, res) => {
   // Check right
   const hasRight = await checkRight
@@ -39,30 +38,24 @@ module.exports = async (req, res) => {
     id: caveId,
   };
 
-  // Launch update request using transaction: it performs a rollback if an error occurs
-  // eslint-disable-next-line consistent-return
-  await sails.getDatastore().transaction(async (db) => {
-    try {
-      const updatedCave = await TCave.updateOne({
-        id: caveId,
-      })
-        .set(cleanedData)
-        .usingConnection(db);
+  try {
+    const updatedCave = await TCave.updateOne({
+      id: caveId,
+    }).set(cleanedData);
 
-      await NameService.setNames([updatedCave], 'cave');
+    await NameService.setNames([updatedCave], 'cave');
 
-      const params = {};
-      params.controllerMethod = 'CaveController.update';
-      return ControllerService.treatAndConvert(
-        req,
-        null,
-        updatedCave,
-        params,
-        res,
-        MappingService.convertToCaveModel
-      );
-    } catch (e) {
-      ErrorService.getDefaultErrorHandler(res)(e);
-    }
-  });
+    const params = {};
+    params.controllerMethod = 'CaveController.update';
+    return ControllerService.treatAndConvert(
+      req,
+      null,
+      updatedCave,
+      params,
+      res,
+      MappingService.convertToCaveModel
+    );
+  } catch (e) {
+    return ErrorService.getDefaultErrorHandler(res)(e);
+  }
 };

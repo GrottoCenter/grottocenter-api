@@ -75,7 +75,6 @@ module.exports = async (req, res) => {
     await TCave.destroyOne(caveId);
     return res.sendStatus(204);
   } catch (e) {
-    ErrorService.getDefaultErrorHandler(res)(e);
-    return false;
+    return ErrorService.getDefaultErrorHandler(res)(e);
   }
 };
