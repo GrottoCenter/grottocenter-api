@@ -76,7 +76,6 @@ module.exports = async (req, res) => {
 
     return res.ok(updatedDocument);
   } catch (e) {
-    ErrorService.getDefaultErrorHandler(res)(e);
-    return false;
+    return ErrorService.getDefaultErrorHandler(res)(e);
   }
 };

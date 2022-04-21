@@ -11,7 +11,6 @@ module.exports = async (req, res) => {
     const count = { count: countResult };
     return ControllerService.treat(req, null, count, params, res);
   } catch (e) {
-    ErrorService.getDefaultErrorHandler(res)(e);
-    return false;
+    return ErrorService.getDefaultErrorHandler(res)(e);
   }
 };

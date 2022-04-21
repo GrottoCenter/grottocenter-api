@@ -37,7 +37,6 @@ module.exports = async (req, res) => {
 
     return res.sendStatus(204);
   } catch (e) {
-    ErrorService.getDefaultErrorHandler(res)(e);
-    return false;
+    return ErrorService.getDefaultErrorHandler(res)(e);
   }
 };
