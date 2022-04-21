@@ -53,16 +53,19 @@ module.exports = {
       if (req.method.toUpperCase() !== 'DELETE') {
         return true;
       }
+      // If you are not authenticated, you are limited
+      if (!req.token) {
+        return false;
+      }
       // If the request doesn't come from our main client and the app is not in test phase,
       // you are limited
       if (
         req.headers.origin !== sails.config.custom.baseUrl &&
         process.env.NODE_ENV !== 'test'
       ) {
-        return false;
-      }
-      // If you are not authenticated, you are limited
-      if (!req.token) {
+        sails.log.error(
+          `User ${req.token.nickname} (id=${req.token.id} is being limited because the request doesn't come from our main client app.`
+        );
         return false;
       }
 
@@ -77,6 +80,11 @@ module.exports = {
             'A server error occured when checking your right to not having a request limit on DELETE actions.'
           )
         );
+      if (!hasNoRequestLimit) {
+        sails.log.error(
+          `User ${req.token.nickname} (id=${req.token.id} is being limited on DELETE requests as an user.`
+        );
+      }
 
       return hasNoRequestLimit;
     },
@@ -114,6 +122,12 @@ module.exports = {
             'A server error occured when checking your right to not having a request limit on DELETE actions.'
           )
         );
+
+      if (!hasNoRequestLimit) {
+        sails.log.error(
+          `User ${req.token.nickname} (id=${req.token.id} is being limited on DELETE requests as an user.`
+        );
+      }
 
       return hasNoRequestLimit;
     },
