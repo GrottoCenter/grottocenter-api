@@ -9,7 +9,7 @@ jobs:
     # PostGreSQL test database init
     services:
       postgres:
-        image: postgres:latest
+        image: postgis/postgis
         env:
           POSTGRES_USER: root
           POSTGRES_PASSWORD: root
