@@ -2117,6 +2117,72 @@ paths:
                   $ref: '#/components/schemas/Massif'
         '404':
           description: Resource not found
+    put:
+      tags:
+        - massifs
+      description: Update a massif, its list of caves, names, descriptions and documents and his geogPolygon.
+      parameters:
+        - name: id
+          in: path
+          description: Massif id
+          required: true
+          schema:
+            type: string
+        - name: geogPolygon
+          in: query
+          description: GeoJson which represent the massif on a map (see post method)
+          required: false
+          schema:
+            type: object
+        - name: caves
+          in: query
+          description: List of id wich represent the caves of the massif.
+          required: false
+          schema:
+            type: array
+            items:
+              type: object
+        - name: descriptions
+          in: query
+          description: List of id wich represent the descriptions of the massif.
+          required: false
+          schema:
+            type: array
+            items:
+              type: object
+        - name: documents
+          in: query
+          description: List of id wich represent the documents of the massif.
+          required: false
+          schema:
+            type: array
+            items:
+              type: object
+        - name: names
+          in: query
+          description: List of id wich represent the names of the massif.
+          required: false
+          schema:
+            type: array
+            items:
+              type: object
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Massif'
+
+        '400':
+          description: Bad request
+        '404':
+          description: Resource not found
+
+        '403':
+          description: Forbidden you don't have the rights to update massifs
 
   '/organizations':
     post:
