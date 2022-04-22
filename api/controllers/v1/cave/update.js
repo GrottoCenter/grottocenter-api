@@ -43,10 +43,20 @@ module.exports = async (req, res) => {
       id: caveId,
     }).set(cleanedData);
 
-    await NameService.setNames([updatedCave], 'cave');
+    // Handle name manually
+    // Currently, use only one name per cave (even if the model can handle multiple names)
+    await TName.updateOne({
+      cave: caveId,
+    }).set({
+      name: req.param('name')?.text,
+      language: req.param('name')?.language,
+    });
 
-    const params = {};
-    params.controllerMethod = 'CaveController.update';
+    // Populate and return
+    await NameService.setNames([updatedCave], 'cave');
+    const params = {
+      controllerMethod: 'CaveController.update',
+    };
     return ControllerService.treatAndConvert(
       req,
       null,
