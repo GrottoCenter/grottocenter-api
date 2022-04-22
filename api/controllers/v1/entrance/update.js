@@ -41,10 +41,20 @@ module.exports = async (req, res) => {
       id: entranceId,
     }).set(cleanedData);
 
-    await NameService.setNames([updatedEntrance], 'entrance');
+    // Handle name manually
+    // Currently, use only one name per entrance (even if the model can handle multiple names)
+    await TName.updateOne({
+      entrance: entranceId,
+    }).set({
+      name: req.param('name')?.text,
+      language: req.param('name')?.language,
+    });
 
-    const params = {};
-    params.controllerMethod = 'EntranceController.update';
+    // Populate and return
+    await NameService.setNames([updatedEntrance], 'entrance');
+    const params = {
+      controllerMethod: 'EntranceController.update',
+    };
     return ControllerService.treatAndConvert(
       req,
       null,

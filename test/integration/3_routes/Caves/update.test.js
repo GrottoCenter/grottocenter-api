@@ -104,6 +104,28 @@ describe('Cave features', () => {
             return done();
           });
       });
+
+      it('should return code 200 on name update', (done) => {
+        supertest(sails.hooks.http.app)
+          .put(`/api/v1/caves/${caveId}`)
+          .set('Authorization', userToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .send({
+            name: {
+              text: 'new cave name',
+              language: 'aut',
+            },
+          })
+          .expect(200)
+          .end(async (err) => {
+            if (err) return done(err);
+            const populatedCave = await TCave.findOne(caveId).populate('names');
+            should(populatedCave.names[0].name).equal('new cave name');
+            should(populatedCave.names[0].language).equal('aut');
+            return done();
+          });
+      });
     });
   });
 });
