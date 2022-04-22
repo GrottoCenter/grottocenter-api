@@ -154,6 +154,7 @@ module.exports = {
     };
 
     result['@id'] = String(source.id);
+    result.address = source.address;
     result.aestheticism = source.aestheticism;
     result.altitude = source.altitude;
     result.approach = source.approach;
@@ -166,6 +167,7 @@ module.exports = {
     result.dateInscription = source.dateInscription;
     result.dateReviewed = source.dateReviewed;
     result.discoveryYear = source.yearDiscovery;
+    result.externalUrl = source.externalUrl;
     result.histories = source.histories;
     result.id = source.id;
     result.isDeleted = source.isDeleted;

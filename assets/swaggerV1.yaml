@@ -2713,6 +2713,8 @@ components:
           type: string
         '@type':
           type: string
+        address:
+          type: string
         author:
           $ref: '#/components/schemas/Caver'
         cave:
@@ -2739,6 +2741,8 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Document'
+        externalUrl:
+          type: string
         id:
           type: integer
         latitude:
