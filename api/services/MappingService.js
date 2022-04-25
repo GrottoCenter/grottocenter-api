@@ -248,6 +248,14 @@ module.exports = {
     return entrances;
   },
 
+  convertToMassifList: (source) => {
+    const massifs = [];
+    source.forEach((item) =>
+      massifs.push(module.exports.convertToMassifModel(item))
+    );
+    return massifs;
+  },
+
   convertToCountResultModel: (source) => {
     const result = {
       ...CountResultModel,
@@ -366,10 +374,8 @@ module.exports = {
         source.documents
       ).documents;
     }
-    if (source.id_massif instanceof Object) {
-      result.massif = module.exports.convertToMassifModel(source.id_massif);
-    } else {
-      result.massif = source.id_massif;
+    if (source.massifs instanceof Array) {
+      result.massifs = module.exports.convertToMassifList(source.massifs);
     }
     return result;
   },

@@ -156,12 +156,11 @@ module.exports = {
     depth: req.param('depth'),
     documents: req.param('documents'),
     id_author: req.token.id,
-    id_massif: req.param('massif'),
     is_diving: req.param('isDiving'),
     latitude: req.param('latitude'),
     longitude: req.param('longitude'),
     length: req.param('length'),
-    massif: req.param('massif'),
+    massifs: req.param('massifs'),
     temperature: req.param('temperature'),
   }),
 };

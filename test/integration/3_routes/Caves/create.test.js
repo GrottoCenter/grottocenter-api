@@ -77,6 +77,7 @@ describe('Cave features', () => {
           .end((err, res) => {
             if (err) return done(err);
             const { body: cave } = res;
+            console.log(cave);
             should(cave).have.properties(CAVE_PROPERTIES);
             should(cave.depth).equal(caveCreationData.depth);
             should(cave.documents.length).equal(
@@ -85,7 +86,8 @@ describe('Cave features', () => {
             should(cave.latitude).equal(caveCreationData.latitude);
             should(cave.length).equal(caveCreationData.length);
             should(cave.longitude).equal(caveCreationData.longitude);
-            should(cave.massif).equal(caveCreationData.massif);
+            should(cave.massifs.length).equal(2);
+            should(cave.massifs).containDeep([{ id: 1 }, { id: 2 }]);
             should(cave.temperature).equal(caveCreationData.temperature);
 
             createdCave = cave;

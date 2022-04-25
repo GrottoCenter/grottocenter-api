@@ -243,6 +243,17 @@ CREATE TABLE t_massif (
 	CONSTRAINT t_massif_t_caver_fk FOREIGN KEY (id_author) REFERENCES t_caver(id),
 	CONSTRAINT t_massif_t_massif_fk FOREIGN KEY (redirect_to) REFERENCES t_massif(id)
 );
+
+-- j_massif_cave definition
+-- Drop table
+-- DROP TABLE j_massif_cave;
+CREATE TABLE j_massif_cave (
+	id_massif int4 NOT NULL,
+	id_cave int4 NOT NULL,
+	CONSTRAINT j_massif_cave_pk PRIMARY KEY (id_massif, id_cave),
+	CONSTRAINT j_massif_entrance_t_massif_fk FOREIGN KEY (id_massif) REFERENCES t_massif(id),
+	CONSTRAINT j_massif_cave_t_cavet_fk FOREIGN KEY (id_cave) REFERENCES t_cave(id)
+
 -- t_region definition
 -- Drop table
 -- DROP TABLE t_region;
@@ -391,7 +402,6 @@ CREATE TABLE t_cave (
 	date_reviewed timestamp NULL,
 	longitude numeric(24, 20) NULL,
 	latitude numeric(24, 20) NULL,
-	id_massif int4,
 	is_deleted bool NOT NULL DEFAULT false,
 	redirect_to int4 NULL,
 	CONSTRAINT t_cave_pk PRIMARY KEY (id),
@@ -1042,6 +1052,7 @@ CREATE TABLE j_document_subject (
 	CONSTRAINT j_document_subject_t_document_fk FOREIGN KEY (id_document) REFERENCES t_document(id),
 	CONSTRAINT j_document_subject_t_subject_fk FOREIGN KEY (code_subject) REFERENCES t_subject(code)
 );
+
 -- t_description definition
 -- Drop table
 -- DROP TABLE t_description;

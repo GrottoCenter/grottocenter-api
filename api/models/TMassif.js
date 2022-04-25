@@ -61,7 +61,8 @@ module.exports = {
 
     caves: {
       collection: 'TCave',
-      via: 'id_massif',
+      via: 'massif',
+      through: 'JMassifCave',
     },
   },
 };

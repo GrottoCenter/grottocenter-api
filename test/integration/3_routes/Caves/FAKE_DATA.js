@@ -18,7 +18,7 @@ const caveCreationData = {
   latitude: 22.440979208779,
   length: 530,
   longitude: -83.980479240417,
-  massif: 1,
+  massifs: [1, 2],
   name: { text: 'La Cavité XYZ', language: 'eng' },
   temperature: 8.36,
 };
