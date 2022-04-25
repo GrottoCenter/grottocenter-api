@@ -1,5 +1,5 @@
 const ramda = require('ramda');
-
+const NameService = require('./NameService');
 // Non-users caver (like authors) have no password set.
 const REAL_USERS_QUERY = 'SELECT count(password) FROM t_caver';
 
@@ -114,6 +114,11 @@ module.exports = {
       return caver;
     }
 
+    // complete name
+    await NameService.setNames(caver.exploredEntrances, 'entrance');
+    await NameService.setNames(caver.groups, 'grotto');
+
+    console.log(caver);
     if (hasCompleteViewRight) {
       return caver;
     }
