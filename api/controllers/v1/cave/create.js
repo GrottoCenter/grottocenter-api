@@ -81,7 +81,6 @@ module.exports = async (req, res) => {
       .populate('descriptions')
       .populate('documents')
       .populate('histories')
-      .populate('massifs')
       .populate('names');
 
     const params = {};

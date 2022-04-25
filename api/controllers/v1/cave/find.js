@@ -7,11 +7,10 @@ module.exports = async (req, res) => {
   TCave.findOne(req.params.id)
     .populate('id_author')
     .populate('id_reviewer')
-    .populate('descriptions')
-    .populate('documents')
     .populate('entrances')
+    .populate('descriptions')
     .populate('histories')
-    .populate('massifs')
+    .populate('documents')
     .populate('names')
     .exec(async (err, found) => {
       const params = {};

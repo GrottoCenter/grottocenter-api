@@ -22,7 +22,6 @@ module.exports = async (req, res) => {
 
     // Populate caves entrances
     await CaveService.setEntrances(massif.caves);
-
     for (const cave of massif.caves) {
       // eslint-disable-next-line no-await-in-loop
       await NameService.setNames(cave.entrances, 'entrance');
