@@ -1,5 +1,4 @@
 const ramda = require('ramda');
-const NameService = require('./NameService');
 // Non-users caver (like authors) have no password set.
 const REAL_USERS_QUERY = 'SELECT count(password) FROM t_caver';
 
@@ -109,26 +108,6 @@ module.exports = {
     caver.exploredEntrances = caver.exploredEntrances.filter(
       (entrance) => entrance.isPublic
     );
-
-    // complete names
-    await NameService.setNames(caver.exploredEntrances, 'entrance');
-    await NameService.setNames(caver.grottos, 'grotto');
-
-    // complete descriptions
-    if (caver.documents && caver.documents.length > 0) {
-      const descriptionsArray = [];
-      for (let i = 0; i < caver.documents.length; i += 1) {
-        const descriptions = TDescription.find().where({
-          document: caver.documents[i].id,
-        });
-        descriptionsArray.push(descriptions);
-      }
-      await Promise.all(descriptionsArray).then((descritpionsCompleted) => {
-        for (let i = 0; i < caver.documents.length > 0; i += 1) {
-          caver.documents[i].descriptions = descritpionsCompleted[i];
-        }
-      });
-    }
 
     if (req.token && Number(caverId) === req.token.id) {
       return caver;
