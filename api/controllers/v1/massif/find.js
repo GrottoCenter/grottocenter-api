@@ -4,6 +4,7 @@ const ErrorService = require('../../../services/ErrorService');
 const MappingService = require('../../../services/MappingService');
 const MassifService = require('../../../services/MassifService');
 const NameService = require('../../../services/NameService');
+const DescriptionService = require('../../../services/DescriptionService');
 
 module.exports = async (req, res) => {
   try {
@@ -31,6 +32,17 @@ module.exports = async (req, res) => {
     // Populate networks
     await MassifService.setNetworks(massif);
     await NameService.setNames(massif.networks, 'cave');
+
+    // complete documents descriptions
+    if (massif.documents && massif.documents.length > 0) {
+      const promisesArray = [];
+      for (let i = 0; i < massif.documents.length; i += 1) {
+        promisesArray.push(
+          DescriptionService.setDocumentDescriptions(massif.documents[i], false)
+        );
+      }
+      await Promise.all(promisesArray);
+    }
 
     const QUERY = `SELECT ST_AsGeoJSON('${massif.geogPolygon}')`;
     const resQuery = await sails.getDatastore().sendNativeQuery(QUERY, []);
