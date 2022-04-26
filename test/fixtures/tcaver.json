@@ -10,6 +10,7 @@
     "alertForNews": "false",
     "language": "fra",
     "documents": [1, 2, 4],
+    "exploredEntrances": [1],
     "groups": [1]
   },
   {
