@@ -60,6 +60,10 @@ module.exports = {
   },
 
   treatAndConvert: (req, err, found, parameters, res, converter) => {
+    res.set(
+      'Link',
+      '<https://ontology.uis-speleo.org/grottocenter.org_context.jsonld>; rel="http://www.w3.org/ns/json-ld#context"; type="application/ld+json"'
+    );
     if (err) {
       const errorMessage = `An internal error occurred when getting ${parameters.searchedItem}`;
       sails.log.error(`${errorMessage}: ${err}`);
