@@ -110,15 +110,30 @@ module.exports = {
       (entrance) => entrance.isPublic
     );
 
+    // complete names
+    await NameService.setNames(caver.exploredEntrances, 'entrance');
+    await NameService.setNames(caver.grottos, 'grotto');
+
+    // complete descriptions
+    if (caver.documents && caver.documents.length > 0) {
+      const descriptionsArray = [];
+      for (let i = 0; i < caver.documents.length; i += 1) {
+        const descriptions = TDescription.find().where({
+          document: caver.documents[i].id,
+        });
+        descriptionsArray.push(descriptions);
+      }
+      await Promise.all(descriptionsArray).then((descritpionsCompleted) => {
+        for (let i = 0; i < caver.documents.length > 0; i += 1) {
+          caver.documents[i].descriptions = descritpionsCompleted[i];
+        }
+      });
+    }
+
     if (req.token && Number(caverId) === req.token.id) {
       return caver;
     }
 
-    // complete name
-    await NameService.setNames(caver.exploredEntrances, 'entrance');
-    await NameService.setNames(caver.groups, 'grotto');
-
-    console.log(caver);
     if (hasCompleteViewRight) {
       return caver;
     }
