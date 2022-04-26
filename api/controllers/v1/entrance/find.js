@@ -1,4 +1,3 @@
-const DescriptionService = require('../../../services/DescriptionService');
 const CaveService = require('../../../services/CaveService');
 const CaverService = require('../../../services/CaverService');
 const CommentService = require('../../../services/CommentService');
@@ -83,12 +82,10 @@ module.exports = async (req, res) => {
 
       // Populate document type, descriptions, files & license
       await Promise.all(
-        found.documents.map(async (d) => {
-          await DescriptionService.setDocumentDescriptions(d, false);
-          await DocumentService.setDocumentType(d);
-          await DocumentService.setDocumentLicense(d);
-          await DocumentService.setDocumentFiles(d);
-        })
+        found.documents.map(
+          // eslint-disable-next-line no-return-await
+          async (d) => await DocumentService.getDocument(d.id)
+        )
       );
 
       // Populate locations
