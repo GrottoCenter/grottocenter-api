@@ -109,6 +109,6 @@ module.exports = async (req, res) => {
       );
     });
   } catch (e) {
-    ErrorService.getDefaultErrorHandler(res)(e);
+    return ErrorService.getDefaultErrorHandler(res)(e);
   }
 };

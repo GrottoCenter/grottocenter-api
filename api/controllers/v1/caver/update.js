@@ -3,7 +3,6 @@ const ErrorService = require('../../../services/ErrorService');
 const MappingService = require('../../../services/MappingService');
 const RightService = require('../../../services/RightService');
 
-// eslint-disable-next-line consistent-return
 module.exports = async (req, res) => {
   // list of propreties to update
   const propretiesUpdatable = [
@@ -81,7 +80,6 @@ module.exports = async (req, res) => {
     }
   });
 
-  // Launch update request using transaction: it performs a rollback if an error occurs
   try {
     // update organizations linked to the caver if needed
     if (req.body.organizations) {
@@ -89,25 +87,19 @@ module.exports = async (req, res) => {
         req.body.organizations.map((organizations) => organizations.id)
       );
     }
-    // update the other propreties
-    await sails.getDatastore().transaction(async (db) => {
-      const updatedCaver = await TCaver.updateOne(caverId)
-        .set(req.body)
-        .usingConnection(db);
+    const updatedCaver = await TCaver.updateOne(caverId).set(req.body);
 
-      const params = {};
-      params.controllerMethod = 'CaverController.update';
-      return ControllerService.treatAndConvert(
-        req,
-        null,
-        updatedCaver,
-        params,
-        res,
-        MappingService.convertToCaverModel
-      );
-    });
+    const params = {};
+    params.controllerMethod = 'CaverController.update';
+    return ControllerService.treatAndConvert(
+      req,
+      null,
+      updatedCaver,
+      params,
+      res,
+      MappingService.convertToCaverModel
+    );
   } catch (e) {
-    ErrorService.getDefaultErrorHandler(res)(e);
-    return false;
+    return ErrorService.getDefaultErrorHandler(res)(e);
   }
 };

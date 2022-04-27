@@ -39,7 +39,6 @@ module.exports = async (req, res) => {
     await TDocumentDuplicate.destroyOne(id);
     return res.ok();
   } catch (e) {
-    ErrorService.getDefaultErrorHandler(res)(e);
-    return false;
+    return ErrorService.getDefaultErrorHandler(res)(e);
   }
 };

@@ -124,7 +124,6 @@ module.exports = async (req, res) => {
       MappingService.convertToDescriptionModel
     );
   } catch (e) {
-    ErrorService.getDefaultErrorHandler(res)(e);
-    return false;
+    return ErrorService.getDefaultErrorHandler(res)(e);
   }
 };

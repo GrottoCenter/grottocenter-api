@@ -436,18 +436,16 @@ module.exports = {
     return doc;
   },
 
-  setDocumentType: async (document) => {
-    // eslint-disable-next-line no-param-reassign
-    document.type = await TType.findOne(document.type);
-  },
-
-  setDocumentLicense: async (document) => {
-    // eslint-disable-next-line no-param-reassign
-    document.license = await TLicense.findOne(document.license);
-  },
-
-  setDocumentFiles: async (document) => {
-    // eslint-disable-next-line no-param-reassign
-    document.files = await TFile.find({ document: document.id });
+  getDocument: async (documentId, setParentDescriptions = false) => {
+    // Simple function currently but will be extended depending on needs
+    const result = await TDocument.findOne(documentId)
+      .populate('files')
+      .populate('license')
+      .populate('type');
+    await DescriptionService.setDocumentDescriptions(
+      result,
+      setParentDescriptions
+    );
+    return result;
   },
 };

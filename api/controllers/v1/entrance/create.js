@@ -73,7 +73,6 @@ module.exports = async (req, res) => {
       res
     );
   } catch (e) {
-    ErrorService.getDefaultErrorHandler(res)(e);
-    return false;
+    return ErrorService.getDefaultErrorHandler(res)(e);
   }
 };
