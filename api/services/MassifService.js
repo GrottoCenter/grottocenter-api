@@ -3,7 +3,7 @@ const FIND_NETWORKS_IN_MASSIF = `
   FROM t_entrance AS e
   LEFT JOIN t_cave c ON c.id = e.id_cave
   WHERE c.is_deleted = false
-  AND c.id_massif = $1
+  AND ST_Contains((SELECT geog_polygon FROM t_massif WHERE id = $1 ), ST_MakePoint(c.longitude, c.latitude) )
   GROUP BY c.id
   HAVING count(e.id_cave) > 1
 `;

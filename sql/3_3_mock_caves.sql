@@ -14,7 +14,6 @@ INSERT INTO public.t_cave (
         date_reviewed,
         longitude,
         latitude,
-        id_massif,
         is_deleted,
         redirect_to
     )
@@ -33,7 +32,6 @@ VALUES (
         NULL,
         NULL,
         NULL,
-        17,
         false,
         NULL
     ),
@@ -52,7 +50,6 @@ VALUES (
         NULL,
         NULL,
         NULL,
-        21,
         false,
         NULL
     ),
@@ -71,7 +68,6 @@ VALUES (
         NULL,
         NULL,
         NULL,
-        17,
         false,
         NULL
     ),
@@ -90,7 +86,6 @@ VALUES (
         NULL,
         NULL,
         NULL,
-        1,
         false,
         NULL
     ),
@@ -109,7 +104,6 @@ VALUES (
         NULL,
         NULL,
         NULL,
-        1,
         false,
         NULL
     ),
@@ -128,7 +122,6 @@ VALUES (
         NULL,
         NULL,
         NULL,
-        1,
         false,
         NULL
     ),
@@ -147,7 +140,6 @@ VALUES (
         NULL,
         NULL,
         NULL,
-        8,
         false,
         NULL
     ),
@@ -163,7 +155,6 @@ VALUES (
         NULL,
         6,
         '2008-07-29 15:50:42.000',
-        NULL,
         NULL,
         NULL,
         NULL,
@@ -185,7 +176,6 @@ VALUES (
         NULL,
         NULL,
         NULL,
-        NULL,
         false,
         NULL
     ),
@@ -204,7 +194,6 @@ VALUES (
         NULL,
         NULL,
         NULL,
-        83,
         false,
         NULL
     ),
@@ -223,7 +212,6 @@ VALUES (
         NULL,
         NULL,
         NULL,
-        4,
         false,
         NULL
     ),
@@ -242,7 +230,6 @@ VALUES (
         NULL,
         NULL,
         NULL,
-        4,
         false,
         NULL
     ),
@@ -261,7 +248,6 @@ VALUES (
         NULL,
         NULL,
         NULL,
-        4,
         false,
         NULL
     ),
@@ -280,7 +266,6 @@ VALUES (
         NULL,
         NULL,
         NULL,
-        1,
         false,
         NULL
     ),
@@ -296,7 +281,6 @@ VALUES (
         NULL,
         9,
         '2008-08-04 20:52:01.000',
-        NULL,
         NULL,
         NULL,
         NULL,
@@ -318,7 +302,6 @@ VALUES (
         NULL,
         NULL,
         NULL,
-        16,
         false,
         NULL
     ),
@@ -337,7 +320,6 @@ VALUES (
         NULL,
         NULL,
         NULL,
-        112,
         false,
         NULL
     ),
@@ -356,7 +338,6 @@ VALUES (
         NULL,
         NULL,
         NULL,
-        8,
         false,
         NULL
     ),
@@ -375,7 +356,6 @@ VALUES (
         NULL,
         NULL,
         NULL,
-        20,
         false,
         NULL
     );

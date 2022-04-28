@@ -19,4 +19,13 @@ module.exports = {
       }
     }
   },
+
+  setMassifDescriptions: async (massif) => {
+    if (massif) {
+      // eslint-disable-next-line no-param-reassign
+      massif.descriptions = await TDescription.find()
+        .where({ massif: massif.id })
+        .populate('language');
+    }
+  },
 };

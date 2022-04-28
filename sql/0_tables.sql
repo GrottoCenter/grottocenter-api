@@ -540,12 +540,11 @@ CREATE TABLE h_cave (
 	date_reviewed timestamp NOT NULL,
 	longitude numeric(24, 20) NULL,
 	latitude numeric(24, 20) NULL,
-	id_massif int4,
 	CONSTRAINT h_cave_pk PRIMARY KEY (id, date_reviewed),
 	CONSTRAINT h_cave_t_cave FOREIGN KEY (id) REFERENCES t_cave(id),
 	CONSTRAINT h_cave_t_caver2_fk FOREIGN KEY (id_reviewer) REFERENCES t_caver(id),
 	CONSTRAINT h_cave_t_caver_fk FOREIGN KEY (id_author) REFERENCES t_caver(id),
-	CONSTRAINT h_cave_t_massif0_fk FOREIGN KEY (id_massif) REFERENCES t_massif(id)
+
 );
 -- h_entrance definition
 -- Drop table

@@ -39,14 +39,15 @@ module.exports = async (req, res) => {
       }
 
       // Populate massif
-      if (found.cave.id_massif) {
+      if (found.cave) {
         // eslint-disable-next-line no-param-reassign
-        found.cave.id_massif = await TMassif.findOne({
-          id: found.cave.id_massif,
-        })
-          .populate('names')
-          .populate('descriptions');
-        await NameService.setNames([found.cave.id_massif], 'massif');
+        found.cave.massifs = await CaveService.getMassifs(found.cave);
+        await NameService.setNames(found.cave.massifs, 'massif');
+        const promiseArray = [];
+        for (const massif of found.cave.massifs) {
+          promiseArray.push(DescriptionService.setMassifDescriptions(massif));
+        }
+        await Promise.all(promiseArray);
       }
 
       // ===== Populate all authors
