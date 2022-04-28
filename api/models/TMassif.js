@@ -58,10 +58,5 @@ module.exports = {
       columnName: 'geog_polygon',
       maxLength: 2000,
     },
-
-    caves: {
-      collection: 'TCave',
-      via: 'id_massif',
-    },
   },
 };

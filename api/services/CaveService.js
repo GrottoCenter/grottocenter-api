@@ -1,4 +1,5 @@
 const ramda = require('ramda');
+const CommonService = require('./CommonService');
 
 module.exports = {
   /**
@@ -164,4 +165,17 @@ module.exports = {
     massif: req.param('massif'),
     temperature: req.param('temperature'),
   }),
+
+  getMassifs: async (cave) => {
+    const query = `
+      SELECT m.*
+      FROM t_massif as m
+      JOIN  t_cave AS c
+      ON ST_Contains(m.geog_polygon, ST_MakePoint(c.longitude, c.latitude) )
+      WHERE c.id = $1 
+    `;
+
+    const queryResult = await CommonService.query(query, [cave.id]);
+    return queryResult.rows;
+  },
 };

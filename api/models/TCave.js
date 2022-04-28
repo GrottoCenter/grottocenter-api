@@ -116,11 +116,6 @@ module.exports = {
       columnType: 'numeric(24,20)',
     },
 
-    id_massif: {
-      columnName: 'id_massif',
-      model: 'TMassif',
-    },
-
     exploringGrottos: {
       collection: 'TGrotto',
       via: 'cave',
