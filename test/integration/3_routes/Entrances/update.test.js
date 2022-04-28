@@ -4,8 +4,10 @@ const should = require('should');
 const AuthTokenService = require('../../AuthTokenService');
 
 describe('Entrance features', () => {
+  let adminToken;
   let userToken;
   before(async () => {
+    adminToken = await AuthTokenService.getRawBearerAdminToken();
     userToken = await AuthTokenService.getRawBearerUserToken();
   });
 
@@ -21,11 +23,11 @@ describe('Entrance features', () => {
       });
     });
 
-    describe('Successfull updates', () => {
+    describe('Different updates', () => {
       const entranceId = 1;
       let initialEntrance = {};
 
-      after(async () => {
+      before(async () => {
         initialEntrance = await TEntrance.findOne(entranceId)
           .populate('author')
           .populate('cave')
@@ -56,12 +58,38 @@ describe('Entrance features', () => {
         await TEntrance.update(entranceId).set(cleanedData);
       });
 
+      describe('Unmark an entrance as sensitive', () => {
+        it('should return code 403 on unmarking sensitive entrance by an user', (done) => {
+          supertest(sails.hooks.http.app)
+            .put(`/api/v1/entrances/${entranceId}`)
+            .set('Authorization', userToken)
+            .set('Content-type', 'application/json')
+            .set('Accept', 'application/json')
+            .send({
+              isSensitive: false,
+            })
+            .expect(403, done);
+        });
+        it('should return code 200 on unmarking sensitive entrance by an admin', (done) => {
+          supertest(sails.hooks.http.app)
+            .put(`/api/v1/entrances/${entranceId}`)
+            .set('Authorization', adminToken)
+            .set('Content-type', 'application/json')
+            .set('Accept', 'application/json')
+            .send({
+              isSensitive: false,
+            })
+            .expect(403, done);
+        });
+      });
+
       it('should return code 200 on basic data update', (done) => {
         const newValues = {
           address: 'new address',
           city: 'new city',
           county: 'new county',
           externalUrl: 'https://new.entrance.com',
+          isSensitive: true,
           region: 'new region',
         };
         supertest(sails.hooks.http.app)

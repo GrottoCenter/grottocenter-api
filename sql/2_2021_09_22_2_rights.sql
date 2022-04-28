@@ -64,4 +64,6 @@ VALUES (1, 'Application - view any', NULL),
     (107, 'Document Duplicate - create', NULL),
     (108, 'Entrance Duplicate - create', NULL),
     (109, 'Document Duplicate - delete any', NULL),
-    (110, 'Entrance Duplicate - delete any', NULL);
+    (110, 'Entrance Duplicate - delete any', NULL),
+    (111, 'Entrance - mark as sensitive', NULL),
+    (112, 'Entrance - unmark as sensitive', NULL);
