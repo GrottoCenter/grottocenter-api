@@ -271,9 +271,9 @@ describe('CaveService', () => {
 
   describe('getMassif', () => {
     it('should get the caves inside the geogPolygon of a massif', async () => {
-      const caves = await CaveService.getMassifs({ id: 3 });
-      should(caves.length).equal(1);
-      should(caves).containDeep([{ id: 1 }]);
+      const massifs = await CaveService.getMassifs({ id: 3 });
+      should(massifs.length).equal(1);
+      should(massifs).containDeep([{ id: 1 }]);
     });
   });
 });
