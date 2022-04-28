@@ -8,6 +8,7 @@ const MappingService = require('../../../services/MappingService');
 const NameService = require('../../../services/NameService');
 const RiggingService = require('../../../services/RiggingService');
 const RightService = require('../../../services/RightService');
+const DescriptionService = require('../../../services/DescriptionService');
 
 module.exports = async (req, res) => {
   TEntrance.findOne(req.params.id)
