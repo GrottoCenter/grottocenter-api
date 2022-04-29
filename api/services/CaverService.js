@@ -1,5 +1,4 @@
 const ramda = require('ramda');
-
 // Non-users caver (like authors) have no password set.
 const REAL_USERS_QUERY = 'SELECT count(password) FROM t_caver';
 

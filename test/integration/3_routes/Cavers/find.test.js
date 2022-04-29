@@ -64,6 +64,15 @@ describe('Caver features', () => {
           should(caver).have.properties(CAVER_PROPERTIES);
           should(caver.mail).equal('user1@user1.com');
           should(caver.nickname).not.be.empty();
+          caver.documents.forEach((document) => {
+            should(document).have.properties('descriptions');
+          });
+          caver.exploredEntrances.forEach((entrance) => {
+            should(entrance).have.properties('names');
+          });
+          caver.organizations.forEach((organization) => {
+            should(organization).have.properties('names');
+          });
           return done();
         });
     });
@@ -77,10 +86,18 @@ describe('Caver features', () => {
         .end((err, res) => {
           if (err) return done(err);
           const { body: caver } = res;
-          sails.log.error(caver);
           should(caver).have.properties(CAVER_PROPERTIES);
           should(caver.mail).equal('admin1@admin1.com');
           should(caver.nickname).not.be.empty();
+          caver.documents.forEach((document) => {
+            should(document).have.properties('descriptions');
+          });
+          caver.exploredEntrances.forEach((entrance) => {
+            should(entrance).have.properties('names');
+          });
+          caver.organizations.forEach((organization) => {
+            should(organization).have.properties('names');
+          });
           return done();
         });
     });
