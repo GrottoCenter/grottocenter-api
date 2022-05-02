@@ -171,6 +171,7 @@ module.exports = {
     result.histories = source.histories;
     result.id = source.id;
     result.isDeleted = source.isDeleted;
+    result.isSensitive = source.isSensitive;
     result.latitude = parseFloat(source.latitude);
     result.locations = source.locations;
     result.longitude = parseFloat(source.longitude);

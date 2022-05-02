@@ -2745,6 +2745,8 @@ components:
           type: string
         id:
           type: integer
+        isSensitive:
+          type: boolean
         latitude:
           type: number
         locations:
