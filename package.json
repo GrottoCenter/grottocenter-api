@@ -67,7 +67,7 @@
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-import": "^2.26.0",
-    "fixted": "^3.0.2",
+    "fixted": "^3.0.4",
     "grunt": "^1.5.2",
     "grunt-eslint": "^24.0.0",
     "husky": "^7.0.0",
