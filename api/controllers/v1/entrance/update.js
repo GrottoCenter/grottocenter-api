@@ -5,19 +5,19 @@ const MappingService = require('../../../services/MappingService');
 const NameService = require('../../../services/NameService');
 const RightService = require('../../../services/RightService');
 
+const checkRight = sails.helpers.checkRight.with;
+
 module.exports = async (req, res) => {
   // Check right
-  const hasRight = await sails.helpers.checkRight
-    .with({
-      groups: req.token.groups,
-      rightEntity: RightService.RightEntities.ENTRANCE,
-      rightAction: RightService.RightActions.EDIT_ANY,
-    })
-    .intercept('rightNotFound', () =>
-      res.serverError(
-        'A server error occured when checking your right to update an entrance.'
-      )
-    );
+  const hasRight = await checkRight({
+    groups: req.token.groups,
+    rightEntity: RightService.RightEntities.ENTRANCE,
+    rightAction: RightService.RightActions.EDIT_ANY,
+  }).intercept('rightNotFound', () =>
+    res.serverError(
+      'A server error occured when checking your right to update an entrance.'
+    )
+  );
   if (!hasRight) {
     return res.forbidden('You are not authorized to update an entrance.');
   }
@@ -35,6 +35,32 @@ module.exports = async (req, res) => {
     ...EntranceService.getConvertedDataFromClientRequest(req),
     id: entranceId,
   };
+
+  // Check if sensitive change is permitted
+  const { isSensitive: newIsSensitiveValue } = cleanedData;
+
+  if (newIsSensitiveValue !== undefined) {
+    const hasSensitiveRight = await checkRight({
+      groups: req.token.groups,
+      rightEntity: RightService.RightEntities.ENTRANCE,
+      rightAction: newIsSensitiveValue
+        ? RightService.RightActions.MARK_AS_SENSITIVE
+        : RightService.RightActions.UNMARK_AS_SENSITIVE,
+    }).intercept('rightNotFound', () =>
+      res.serverError(
+        `A server error occured when checking your right to ${
+          newIsSensitiveValue ? 'un' : ''
+        }mark an entrance as sensitive.`
+      )
+    );
+    if (!hasSensitiveRight) {
+      return res.forbidden(
+        `You are not authorized to ${
+          newIsSensitiveValue ? 'un' : ''
+        }mark an entrance as sensitive.`
+      );
+    }
+  }
 
   try {
     const updatedEntrance = await TEntrance.updateOne({

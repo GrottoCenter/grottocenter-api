@@ -53,10 +53,16 @@ module.exports = {
   getConvertedDataFromClientRequest: (req) => {
     // remove id if present to avoid null id (and an error)
     const { id, ...reqBodyWithoutId } = req.body;
+    let isSensitive = req.param('isSensitive');
+    if (isSensitive !== undefined) {
+      isSensitive =
+        typeof isSensitive === 'string' ? isSensitive === 'true' : isSensitive; // handle string and bool value ('true', 'false', true or false)
+    }
     return {
       ...reqBodyWithoutId,
       author: req.token.id,
       geology: ramda.propOr('Q35758', 'geology', req.body),
+      isSensitive,
     };
   },
 
