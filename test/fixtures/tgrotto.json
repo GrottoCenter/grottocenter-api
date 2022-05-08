@@ -17,7 +17,8 @@
     "url": "https://organization1.com",
     "id_country": "FR",
     "names": [1],
-    "documents": [1]
+    "documents": [1],
+    "exploredCaves": [1]
   },
   {
     "id": 2,
