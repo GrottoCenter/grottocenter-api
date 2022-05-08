@@ -1,6 +1,7 @@
 const supertest = require('supertest');
 const should = require('should');
 const AuthTokenService = require('../../AuthTokenService');
+const massifPolygon = require('./FAKE_DATA');
 
 describe('Massif features', () => {
   describe('create', () => {
@@ -37,36 +38,12 @@ describe('Massif features', () => {
           .post('/api/v1/massifs')
           .send({
             name: 'Massif 1',
-            caves: [{ id: 1 }, { id: 2 }],
+            caves: [1, 2],
             description: 'description du massif',
             descriptionTitle: 'Titre',
             descriptionAndNameLanguage: { id: 'fra' },
-            documents: [{ id: 1 }, { id: 2 }],
-            geogPolygon: {
-              type: 'MultiPolygon',
-              coordinates: [
-                [
-                  [
-                    [86.66015625, 69.193799765],
-                    [52.3828125, 58.263287052],
-                    [92.28515625, 53.330872983],
-                    [86.66015625, 69.193799765],
-                  ],
-                ],
-                [
-                  [
-                    [89.82421875, 68.52823492],
-                    [107.2265625, 59.977005492],
-                    [107.490234375, 68.52823492],
-                    [99.31640625, 70.988349224],
-                    [98.0859375, 73.800318164],
-                    [87.626953125, 72.711903108],
-                    [86.396484375, 69.990534959],
-                    [89.82421875, 68.52823492],
-                  ],
-                ],
-              ],
-            },
+            documents: [1, 2],
+            geogPolygon: massifPolygon.geoJson1,
           })
           .set('Authorization', adminToken)
           .set('Content-type', 'application/json')
@@ -91,11 +68,8 @@ describe('Massif features', () => {
             should(massif.documents).containDeep([{ id: 1 }, { id: 2 }]);
             should(massif.caves.length).equal(2);
             should(massif.caves).containDeep([{ id: 1 }, { id: 2 }]);
-            should(massif.geogPolygon).equal(
-              'MULTIPOLYGON(((86.66015625 69.193799765,52.3828125 58.263287052,92.28515625 53.330872983,86.66015625 69.193799765)),((89.82421875 68.52823492,107.2265625 59.977005492,107.490234375 68.52823492,99.31640625 70.988349224,98.0859375 73.800318164,87.626953125 72.711903108,86.396484375 69.990534959,89.82421875 68.52823492)))'
-            );
+            should(massif.geogPolygon).equal(massifPolygon.geoJson1ToWKT);
             createdMassif = massif;
-
             return done();
           });
       });

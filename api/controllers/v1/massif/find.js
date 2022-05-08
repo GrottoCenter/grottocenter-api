@@ -36,17 +36,15 @@ module.exports = async (req, res) => {
     // complete documents descriptions
     if (massif.documents && massif.documents.length > 0) {
       const promisesArray = [];
-      for (let i = 0; i < massif.documents.length; i += 1) {
+      for (const document of massif.documents) {
         promisesArray.push(
-          DescriptionService.setDocumentDescriptions(massif.documents[i], false)
+          DescriptionService.setDocumentDescriptions(document, false)
         );
       }
       await Promise.all(promisesArray);
     }
 
-    const QUERY = `SELECT ST_AsGeoJSON('${massif.geogPolygon}')`;
-    const resQuery = await sails.getDatastore().sendNativeQuery(QUERY, []);
-    massif.geoJson = resQuery.rows[0].st_asgeojson;
+    massif.geoJson = await MassifService.wktToGeoJson(massif.geogPolygon);
 
     return ControllerService.treatAndConvert(
       req,

@@ -2046,7 +2046,7 @@ paths:
         - name: geogPolygon
           in: query
           required: true
-          description: Only the inside of the geometry attribute of a GeoJson
+          description: A geographical polygon representation of the massif stored as a GeoJson using EPSG 4326
           schema:
             type: object
             properties:
@@ -2067,7 +2067,7 @@ paths:
 
         - name: caves
           in: query
-          description: Caves related to the massif
+          description: List of caves ids related to the massif
           schema:
             type: array
             items:
@@ -2077,7 +2077,7 @@ paths:
                   type: string
         - name: documents
           in: query
-          description: Documents related to the massif
+          description: List of documents ids related to the massif
           schema:
             type: array
             items:
@@ -2098,7 +2098,7 @@ paths:
     get:
       tags:
         - massifs
-      description: Get a massif, its authors, names,geogPolygon, documents, descriptions and caves.
+      description: Get a massif, its authors, names, geogPolygon, documents, descriptions and caves.
       parameters:
         - name: id
           in: path
@@ -2120,7 +2120,7 @@ paths:
     put:
       tags:
         - massifs
-      description: Update a massif, its list of caves, names, descriptions and documents and his geogPolygon.
+      description: Update a massif, its list of caves, names, descriptions and documents and its geogPolygon.
       parameters:
         - name: id
           in: path
@@ -2130,13 +2130,13 @@ paths:
             type: string
         - name: geogPolygon
           in: query
-          description: GeoJson which represent the massif on a map (see post method)
+          description: GeoJson EPSG4326 which represent the massif on a map (see post method)
           required: false
           schema:
             type: object
         - name: caves
           in: query
-          description: List of id wich represent the caves of the massif.
+          description: List of caves ids
           required: false
           schema:
             type: array
@@ -2144,7 +2144,7 @@ paths:
               type: object
         - name: descriptions
           in: query
-          description: List of id wich represent the descriptions of the massif.
+          description: List of descriptions ids
           required: false
           schema:
             type: array
@@ -2152,7 +2152,7 @@ paths:
               type: object
         - name: documents
           in: query
-          description: List of id wich represent the documents of the massif.
+          description: List of documents ids
           required: false
           schema:
             type: array
@@ -2160,7 +2160,7 @@ paths:
               type: object
         - name: names
           in: query
-          description: List of id wich represent the names of the massif.
+          description: List of names ids
           required: false
           schema:
             type: array
@@ -2180,7 +2180,6 @@ paths:
           description: Bad request
         '404':
           description: Resource not found
-
         '403':
           description: Forbidden you don't have the rights to update massifs
 

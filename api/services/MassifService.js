@@ -25,4 +25,18 @@ module.exports = {
     massif.networks = networks; // eslint-disable-line no-param-reassign
     return massif;
   },
+
+  geoJsonToWKT: async (geoJson) => {
+    const query = `SELECT ST_AsText($1) `;
+    const queryResult = await CommonService.query(query, [
+      JSON.stringify(geoJson),
+    ]);
+    return queryResult.rows[0].st_astext;
+  },
+
+  wktToGeoJson: async (geometry) => {
+    const query = `SELECT ST_AsGeoJSON($1)`;
+    const queryResult = await CommonService.query(query, [geometry]);
+    return queryResult.rows[0].st_asgeojson;
+  },
 };
