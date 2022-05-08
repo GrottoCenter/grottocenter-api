@@ -2,6 +2,7 @@ const ramda = require('ramda');
 const CaveService = require('./CaveService');
 const ElasticsearchService = require('./ElasticsearchService');
 const NameService = require('./NameService');
+const DescriptionService = require('./DescriptionService');
 
 module.exports = {
   // Extract everything from a request body except id
@@ -62,6 +63,20 @@ module.exports = {
     organization.partnerEntrances = partnerEntrances;
     organization.partnerNetworks = partnerNetworks;
     /* eslint-enable no-param-reassign */
+
+    // complete descriptions
+    if (organization.documents && organization.documents.length > 0) {
+      const promisesArray = [];
+      for (let i = 0; i < organization.documents.length; i += 1) {
+        promisesArray.push(
+          DescriptionService.setDocumentDescriptions(
+            organization.documents[i],
+            false
+          )
+        );
+      }
+      await Promise.all(promisesArray);
+    }
   },
   /**
    *

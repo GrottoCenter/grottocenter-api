@@ -682,6 +682,11 @@ module.exports = {
         source.exploredNetworks
       );
     }
+    if (source.documents instanceof Array) {
+      result.documents = module.exports.convertToDocumentList(
+        source.documents
+      ).documents;
+    }
     if (source.partnerEntrances instanceof Array) {
       result.partnerEntrances = module.exports.convertToEntranceList(
         source.partnerEntrances
