@@ -1029,9 +1029,9 @@ CREATE TABLE j_document_language (
 CREATE TABLE j_document_massif (
 	id_document int4 NOT NULL,
 	id_massif int4 NOT NULL,
-	CONSTRAINT j_document_massif PRIMARY KEY (id_document, id_massif),
-	CONSTRAINT j_document_massif FOREIGN KEY (id_massif) REFERENCES t_massif(id),
-	CONSTRAINT j_document_massif FOREIGN KEY (id_document) REFERENCES t_document(id)
+	CONSTRAINT j_document_massif_pk PRIMARY KEY (id_document, id_massif),
+	CONSTRAINT j_document_massif_t_massif_fk FOREIGN KEY (id_massif) REFERENCES t_massif(id),
+	CONSTRAINT j_document_massif_t_document_fk FOREIGN KEY (id_document) REFERENCES t_document(id)
 
 -- j_document_region definition
 -- Drop table

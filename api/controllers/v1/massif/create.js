@@ -4,7 +4,7 @@ const ControllerService = require('../../../services/ControllerService');
 const ElasticsearchService = require('../../../services/ElasticsearchService');
 const ErrorService = require('../../../services/ErrorService');
 const RightService = require('../../../services/RightService');
-
+const MassifService = require('../../../services/MassifService');
 // eslint-disable-next-line consistent-return
 module.exports = async (req, res) => {
   // Check right
@@ -33,30 +33,27 @@ module.exports = async (req, res) => {
     'geogPolygon',
   ];
 
-  // eslint-disable-next-line consistent-return
-  requiredParams.forEach((requiredParam) => {
-    if (!req.param(requiredParam)) {
-      return res.badRequest(`${requiredParam} parameter must be provided`);
+  let i = 0;
+  const missingParamaters = [];
+  while (i < requiredParams.length) {
+    if (!req.param(requiredParams[i])) {
+      missingParamaters.push(requiredParams[i]);
     }
-  });
+    i += 1;
+  }
+  if (missingParamaters.length > 0) {
+    return res.badRequest(`${missingParamaters} parameter(s) must be provided`);
+  }
 
   // Launch creation request using transaction: it performs a rollback if an error occurs
   try {
     await sails.getDatastore().transaction(async (db) => {
-      const geomQuery = await sails
-        .getDatastore()
-        .sendNativeQuery(
-          `SELECT ST_AsText('${JSON.stringify(req.body.geogPolygon)}')`,
-          []
-        );
       const cleanedData = {
         author: req.token.id,
-        caves: req.body.caves ? req.body.caves.map((c) => c.id) : [],
+        caves: req.body.caves ? req.body.caves : [],
         dateInscription: new Date(),
-        documents: req.body.documents
-          ? req.body.documents.map((c) => c.id)
-          : [],
-        geogPolygon: geomQuery.rows[0].st_astext,
+        documents: req.body.documents ? req.body.documents : [],
+        geogPolygon: await MassifService.geoJsonToWKT(req.body.geogPolygon),
       };
 
       const newMassif = await TMassif.create(cleanedData)

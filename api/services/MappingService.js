@@ -585,6 +585,7 @@ module.exports = {
     result.author = source.author;
     result.dateInscription = source.dateInscription;
     result.dateReviewed = source.dateReviewed;
+    result.geogPolygon = source.geoJson;
     result.name = module.exports.getMainName(source);
     result.names = source.names;
     result.reviewer = source.reviewer;
@@ -612,23 +613,17 @@ module.exports = {
       result.descriptions = source.descriptions;
     }
 
-    if (source.documents) {
-      if (source.documents instanceof Array) {
-        result.documents = source.documents;
-      } else {
-        result.documents = source.documents.split(',').map((documentId) => ({
-          id: parseInt(documentId, 10),
-        }));
-      }
+    if (source.documents instanceof Array) {
+      result.documents = module.exports.convertToDocumentList(
+        source.documents
+      ).documents;
+    } else {
+      result.documents = source.documents;
     }
 
     // Networks (from DB)
     if (source.networks) {
       result.networks = module.exports.convertToCaveList(source.networks);
-    }
-
-    if (source.geoJson) {
-      result.geogPolygon = source.geoJson;
     }
 
     // Nb caves & entrances (from ES)

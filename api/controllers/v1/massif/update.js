@@ -1,12 +1,11 @@
 const ControllerService = require('../../../services/ControllerService');
 const ErrorService = require('../../../services/ErrorService');
-const MappingV1Service = require('../../../services/MappingService');
+const MappingService = require('../../../services/MappingService');
 const RightService = require('../../../services/RightService');
+const MassifService = require('../../../services/MassifService');
 
-// eslint-disable-next-line consistent-return
 module.exports = async (req, res) => {
   // Check right
-  const massifId = req.param('id');
 
   const hasRight = await sails.helpers.checkRight
     .with({
@@ -24,6 +23,7 @@ module.exports = async (req, res) => {
   }
 
   // Check if massif exists
+  const massifId = req.param('id');
   if (
     !(await sails.helpers.checkIfExists.with({
       attributeName: 'id',
@@ -45,45 +45,46 @@ module.exports = async (req, res) => {
   ];
   // Check if the changes requested are authorized (check propretiesUpdatable)
   const keys = Object.keys(req.body);
-  // eslint-disable-next-line consistent-return
-  keys.forEach((prop) => {
-    if (!propretiesUpdatable.includes(prop)) {
+
+  let c = 0;
+  const propretiesUnudapable = [];
+  while (c < keys.length) {
+    if (!propretiesUpdatable.includes(keys[c])) {
+      propretiesUnudapable.push(keys[c]);
+    }
+    c += 1;
+  }
+  if (propretiesUnudapable.length > 0) {
+    if (propretiesUnudapable.length === 1) {
       return res.badRequest(
-        `Could not update property ${prop}, it is not a property which is updatable.`
+        `Could not update property ${propretiesUnudapable[0]}, is not a property which is updatable.`
       );
     }
-  });
+    return res.badRequest(
+      `Could not update properties ${propretiesUnudapable}, they are not updatable propeties .`
+    );
+  }
 
-  // Launch update request using transaction: it performs a rollback if an error occurs
   try {
-    await sails.getDatastore().transaction(async (db) => {
-      // conversion of geoJson into PostGis Geom
-      if (req.body.geogPolygon) {
-        const resQuery = await sails
-          .getDatastore()
-          .sendNativeQuery(
-            `SELECT ST_AsText('${JSON.stringify(req.body.geogPolygon)}')`,
-            []
-          );
-        req.body.geogPolygon = resQuery.rows[0].st_astext;
-      }
-      const updatedMassif = await TMassif.updateOne(massifId)
-        .set(req.body)
-        .usingConnection(db);
-
-      const params = {};
-      params.controllerMethod = 'MassifController.update';
-      return ControllerService.treatAndConvert(
-        req,
-        null,
-        updatedMassif,
-        params,
-        res,
-        MappingV1Service.convertToMassifModel
+    // conversion of geoJson into PostGis Geom
+    if (req.body.geogPolygon) {
+      req.body.geogPolygon = await MassifService.geoJsonToWKT(
+        req.body.geogPolygon
       );
-    });
+    }
+    const updatedMassif = await TMassif.updateOne(massifId).set(req.body);
+
+    const params = {};
+    params.controllerMethod = 'MassifController.update';
+    return ControllerService.treatAndConvert(
+      req,
+      null,
+      updatedMassif,
+      params,
+      res,
+      MappingService.convertToMassifModel
+    );
   } catch (e) {
-    ErrorService.getDefaultErrorHandler(res)(e);
-    return false;
+    return ErrorService.getDefaultErrorHandler(res)(e);
   }
 };
