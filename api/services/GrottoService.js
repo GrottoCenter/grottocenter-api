@@ -67,12 +67,9 @@ module.exports = {
     // complete descriptions
     if (organization.documents && organization.documents.length > 0) {
       const promisesArray = [];
-      for (let i = 0; i < organization.documents.length; i += 1) {
+      for (const document of organization.documents) {
         promisesArray.push(
-          DescriptionService.setDocumentDescriptions(
-            organization.documents[i],
-            false
-          )
+          DescriptionService.setDocumentDescriptions(document, false)
         );
       }
       await Promise.all(promisesArray);
