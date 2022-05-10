@@ -42,13 +42,20 @@ module.exports = async (req, res) => {
       // Populate massif
       if (found.cave) {
         // eslint-disable-next-line no-param-reassign
-        found.cave.massifs = await CaveService.getMassifs(found.cave);
+        found.cave.massifs = await CaveService.getMassifs(5);
         await NameService.setNames(found.cave.massifs, 'massif');
         const promiseArray = [];
         for (const massif of found.cave.massifs) {
-          promiseArray.push(DescriptionService.setMassifDescriptions(massif));
+          promiseArray.push(
+            DescriptionService.setMassifDescriptions(massif.id)
+          );
         }
-        await Promise.all(promiseArray);
+        await Promise.all(promiseArray).then((descriptionsArray) => {
+          descriptionsArray.forEach((descriptions, index) => {
+            // eslint-disable-next-line no-param-reassign
+            found.cave.massifs[index].descriptions = descriptions;
+          });
+        });
       }
 
       // ===== Populate all authors

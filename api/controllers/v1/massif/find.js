@@ -20,7 +20,7 @@ module.exports = async (req, res) => {
     }
 
     // Populate caves
-    massif.caves = await MassifService.getCaves(massif);
+    massif.caves = await MassifService.getCaves(massif.id);
 
     // Populate caves entrances
     await CaveService.setEntrances(massif.caves);

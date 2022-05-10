@@ -26,7 +26,7 @@ module.exports = {
     return massif;
   },
 
-  getCaves: async (massif) => {
+  getCaves: async (massifId) => {
     const query = `
     SELECT c.*
     FROM t_cave AS c
@@ -35,7 +35,7 @@ module.exports = {
     WHERE m.id = $1 
   `;
 
-    const queryResult = await CommonService.query(query, [massif.id]);
+    const queryResult = await CommonService.query(query, [massifId]);
     return queryResult.rows;
   },
 };

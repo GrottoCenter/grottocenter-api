@@ -165,7 +165,7 @@ module.exports = {
     temperature: req.param('temperature'),
   }),
 
-  getMassifs: async (cave) => {
+  getMassifs: async (caveId) => {
     const query = `
       SELECT m.*
       FROM t_massif as m
@@ -173,7 +173,7 @@ module.exports = {
       ON ST_Contains(m.geog_polygon, ST_MakePoint(c.longitude, c.latitude) )
       WHERE c.id = $1 
     `;
-    const queryResult = await CommonService.query(query, [cave.id]);
+    const queryResult = await CommonService.query(query, [caveId]);
     return queryResult.rows;
   },
 };
