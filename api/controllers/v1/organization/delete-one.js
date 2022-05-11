@@ -41,6 +41,6 @@ module.exports = async (req, res) => {
     )
   );
 
-  ElasticsearchService.deleteResource('grottos', organizationId);
+  await ElasticsearchService.deleteResource('grottos', organizationId);
   return res.sendStatus(204);
 };
