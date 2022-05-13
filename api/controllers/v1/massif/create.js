@@ -4,7 +4,7 @@ const ControllerService = require('../../../services/ControllerService');
 const ElasticsearchService = require('../../../services/ElasticsearchService');
 const ErrorService = require('../../../services/ErrorService');
 const RightService = require('../../../services/RightService');
-
+const MassifService = require('../../../services/MassifService');
 // eslint-disable-next-line consistent-return
 module.exports = async (req, res) => {
   // Check right
@@ -24,11 +24,25 @@ module.exports = async (req, res) => {
   }
 
   // Check params
-  if (req.param('name') === null) {
-    return res.badRequest('You must provide a name.');
+
+  const requiredParams = [
+    'name',
+    'description',
+    'descriptionAndNameLanguage',
+    'descriptionTitle',
+    'geogPolygon',
+  ];
+
+  let i = 0;
+  const missingParamaters = [];
+  while (i < requiredParams.length) {
+    if (!req.param(requiredParams[i])) {
+      missingParamaters.push(requiredParams[i]);
+    }
+    i += 1;
   }
-  if (req.param('descriptionAndNameLanguage') === null) {
-    return res.badRequest('You must provide a description and name language.');
+  if (missingParamaters.length > 0) {
+    return res.badRequest(`${missingParamaters} parameter(s) must be provided`);
   }
 
   // Launch creation request using transaction: it performs a rollback if an error occurs
@@ -36,8 +50,10 @@ module.exports = async (req, res) => {
     await sails.getDatastore().transaction(async (db) => {
       const cleanedData = {
         author: req.token.id,
-        caves: req.body.caves ? req.body.caves.map((c) => c.id) : [],
+        caves: req.body.caves ? req.body.caves : [],
         dateInscription: new Date(),
+        documents: req.body.documents ? req.body.documents : [],
+        geogPolygon: await MassifService.geoJsonToWKT(req.body.geogPolygon),
       };
 
       const newMassif = await TMassif.create(cleanedData)
@@ -56,7 +72,7 @@ module.exports = async (req, res) => {
         .fetch()
         .usingConnection(db);
 
-      // Description (if provided)
+      // Description
       if (ramda.propOr(null, 'description', req.body)) {
         await TDescription.create({
           author: req.token.id,
@@ -73,6 +89,7 @@ module.exports = async (req, res) => {
         .populate('caves')
         .populate('descriptions')
         .populate('names')
+        .populate('documents')
         .usingConnection(db);
 
       // Prepare data for Elasticsearch indexation

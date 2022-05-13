@@ -144,6 +144,7 @@ module.exports.policies = {
   'v1/massif/create': 'tokenAuth',
   'v1/massif/delete-one': ['tokenAuth', 'moderatorAuth'],
   'v1/massif/find': true,
+  'v1/massif/update': 'tokenAuth',
 
   // Name
   'v1/name/set-as-main': 'tokenAuth',

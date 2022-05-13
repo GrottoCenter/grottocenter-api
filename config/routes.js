@@ -165,6 +165,7 @@ module.exports.routes = {
   'DELETE /api/v1/massifs/:id': 'v1/massif/delete-one',
   'GET /api/v1/massifs/:id': 'v1/massif/find',
   'POST /api/v1/massifs': 'v1/massif/create',
+  'PUT /api/v1/massifs/:id': 'v1/massif/update',
 
   // Document
   'GET /api/v1/documents': 'v1/document/find-all',

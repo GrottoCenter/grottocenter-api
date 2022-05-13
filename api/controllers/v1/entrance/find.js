@@ -3,7 +3,6 @@ const CaverService = require('../../../services/CaverService');
 const CommentService = require('../../../services/CommentService');
 const ControllerService = require('../../../services/ControllerService');
 const DocumentService = require('../../../services/DocumentService');
-const LanguageService = require('../../../services/LanguageService');
 const MappingService = require('../../../services/MappingService');
 const NameService = require('../../../services/NameService');
 const RiggingService = require('../../../services/RiggingService');
@@ -92,7 +91,7 @@ module.exports = async (req, res) => {
       // eslint-disable-next-line no-param-reassign
       found.locations = await Promise.all(
         found.locations.map(async (l) => {
-          const language = await LanguageService.getLanguage(l.language);
+          const language = await TLanguage.findOne(l.language);
           return {
             ...l,
             language,

@@ -585,6 +585,7 @@ module.exports = {
     result.author = source.author;
     result.dateInscription = source.dateInscription;
     result.dateReviewed = source.dateReviewed;
+    result.geogPolygon = source.geoJson;
     result.name = module.exports.getMainName(source);
     result.names = source.names;
     result.reviewer = source.reviewer;
@@ -604,6 +605,22 @@ module.exports = {
       result.entrances = entrances;
     }
 
+    if (source.descriptions instanceof Array) {
+      result.descriptions = module.exports.convertToDescriptionList(
+        source.descriptions
+      ).descriptions;
+    } else {
+      result.descriptions = source.descriptions;
+    }
+
+    if (source.documents instanceof Array) {
+      result.documents = module.exports.convertToDocumentList(
+        source.documents
+      ).documents;
+    } else {
+      result.documents = source.documents;
+    }
+
     // Networks (from DB)
     if (source.networks) {
       result.networks = module.exports.convertToCaveList(source.networks);
@@ -612,14 +629,6 @@ module.exports = {
     // Nb caves & entrances (from ES)
     result.nbCaves = ramda.pathOr(undefined, ['nb caves'], source);
     result.nbEntrances = ramda.pathOr(undefined, ['nb entrances'], source);
-
-    if (source.descriptions instanceof Array) {
-      result.descriptions = module.exports.convertToDescriptionList(
-        source.descriptions
-      ).descriptions;
-    } else {
-      result.descriptions = source.descriptions;
-    }
 
     return result;
   },
@@ -672,6 +681,11 @@ module.exports = {
       result.exploredNetworks = module.exports.convertToCaveList(
         source.exploredNetworks
       );
+    }
+    if (source.documents instanceof Array) {
+      result.documents = module.exports.convertToDocumentList(
+        source.documents
+      ).documents;
     }
     if (source.partnerEntrances instanceof Array) {
       result.partnerEntrances = module.exports.convertToEntranceList(

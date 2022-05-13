@@ -4,6 +4,7 @@ const ErrorService = require('../../../services/ErrorService');
 const MappingService = require('../../../services/MappingService');
 const MassifService = require('../../../services/MassifService');
 const NameService = require('../../../services/NameService');
+const DescriptionService = require('../../../services/DescriptionService');
 
 module.exports = async (req, res) => {
   try {
@@ -11,7 +12,8 @@ module.exports = async (req, res) => {
       .populate('author')
       .populate('caves')
       .populate('names')
-      .populate('descriptions');
+      .populate('descriptions')
+      .populate('documents');
     const params = {};
     params.searchedItem = `Massif of id ${req.params.id}`;
     if (!massif) {
@@ -30,6 +32,19 @@ module.exports = async (req, res) => {
     // Populate networks
     await MassifService.setNetworks(massif);
     await NameService.setNames(massif.networks, 'cave');
+
+    // complete documents descriptions
+    if (massif.documents && massif.documents.length > 0) {
+      const promisesArray = [];
+      for (const document of massif.documents) {
+        promisesArray.push(
+          DescriptionService.setDocumentDescriptions(document, false)
+        );
+      }
+      await Promise.all(promisesArray);
+    }
+
+    massif.geoJson = await MassifService.wktToGeoJson(massif.geogPolygon);
 
     return ControllerService.treatAndConvert(
       req,

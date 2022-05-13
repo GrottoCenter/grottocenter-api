@@ -1,4 +1,5 @@
 const CaveService = require('../../../services/CaveService');
+const ElasticsearchService = require('../../../services/ElasticsearchService');
 const ErrorService = require('../../../services/ErrorService');
 const RightService = require('../../../services/RightService');
 
@@ -73,6 +74,7 @@ module.exports = async (req, res) => {
   try {
     sails.log.info(`Deleting cave with id ${caveId}`);
     await TCave.destroyOne(caveId);
+    await ElasticsearchService.deleteResource('caves', caveId);
     return res.sendStatus(204);
   } catch (e) {
     return ErrorService.getDefaultErrorHandler(res)(e);

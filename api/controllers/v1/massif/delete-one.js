@@ -1,4 +1,5 @@
 const RightService = require('../../../services/RightService');
+const ElasticsearchService = require('../../../services/ElasticsearchService');
 
 module.exports = async (req, res) => {
   const hasRight = await sails.helpers.checkRight
@@ -36,5 +37,7 @@ module.exports = async (req, res) => {
       `An unexpected error occured when trying to delete massif with id ${massifId}.`
     )
   );
+  await ElasticsearchService.deleteResource('massifs', massifId);
+
   return res.sendStatus(204);
 };
