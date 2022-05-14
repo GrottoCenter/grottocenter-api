@@ -68,9 +68,7 @@ module.exports = async (req, res) => {
         language: req.body.descriptionAndNameLanguage.id,
         massif: newMassif.id,
         name: req.body.name,
-      })
-        .fetch()
-        .usingConnection(db);
+      }).usingConnection(db);
 
       // Description
       if (ramda.propOr(null, 'description', req.body)) {
