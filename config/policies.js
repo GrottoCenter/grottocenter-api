@@ -102,6 +102,7 @@ module.exports.policies = {
   'v1/entrance/find': true,
   'v1/entrance/find-random': true,
   'v1/entrance/import-rows': 'tokenAuth',
+  'v1/entrance/move-to-cave': 'tokenAuth',
   'v1/entrance/public-count': true,
   'v1/entrance/unlink-document': ['tokenAuth', 'moderatorAuth'],
   'v1/entrance/update': 'tokenAuth',
