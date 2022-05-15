@@ -1,4 +1,3 @@
-const ramda = require('ramda');
 const ControllerService = require('../../../services/ControllerService');
 const ErrorService = require('../../../services/ErrorService');
 const GrottoService = require('../../../services/GrottoService');
@@ -37,7 +36,7 @@ module.exports = async (req, res) => {
 
   const nameData = {
     author: req.token.id,
-    language: ramda.propOr(undefined, 'language', req.param('name')),
+    language: req.param('name').language,
     text: req.param('name').text,
   };
 
