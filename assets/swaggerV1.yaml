@@ -1729,6 +1729,36 @@ paths:
         '403':
           description: You are not authorized to add a document to an entrance.
 
+  '/entrances/{entranceId}/cave/{caveId}':
+    patch:
+      tags:
+        - entrances
+        - caves
+      description: Move an entrance from its case to another one. If the remaining cave is left without entrance, it's deleted.
+      parameters:
+        - name: entranceId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: caveId
+          in: path
+          description: Cave id to move the entrance to
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Entrance'
+        '404':
+          description: Could not find the entrance or the cave with the ids you provided.
+        '403':
+          description: You are not authorized to move an entrance from a cave to another one.
+
   '/entrances/findRandom':
     get:
       tags:

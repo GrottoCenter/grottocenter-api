@@ -1,4 +1,5 @@
 const ramda = require('ramda');
+const ElasticsearchService = require('./ElasticsearchService');
 
 module.exports = {
   /**
@@ -145,7 +146,9 @@ module.exports = {
         .set(cleanedMergedData)
         .usingConnection(db);
 
+      sails.log.info(`Deleting cave with id ${sourceCaveId}`);
       await TCave.destroy(sourceCaveId).usingConnection(db);
+      await ElasticsearchService.deleteResource('caves', sourceCaveId);
     });
   },
 
@@ -164,4 +167,10 @@ module.exports = {
     massif: req.param('massif'),
     temperature: req.param('temperature'),
   }),
+
+  deleteCave: async (caveId) => {
+    sails.log.info(`Deleting cave with id ${caveId}`);
+    await TCave.destroyOne(caveId);
+    await ElasticsearchService.deleteResource('caves', caveId);
+  },
 };
