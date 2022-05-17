@@ -22,6 +22,7 @@ describe('Massif features', () => {
 
     it('should return 200', (done) => {
       const update = {
+        id: 1,
         caves: [1, 2],
         descriptions: [3],
         documents: [2, 3],
@@ -51,22 +52,6 @@ describe('Massif features', () => {
           should(massifUpdated.names).containDeep([{ id: 3 }]);
           return done();
         });
-    });
-
-    describe('Only authorized field should be updated', () => {
-      it('should raise an error if changes are requested on unauthorized fields', (done) => {
-        const newRandomField = 'random';
-        const update = {
-          randomField: newRandomField,
-        };
-        supertest(sails.hooks.http.app)
-          .put('/api/v1/massifs/1')
-          .send(update)
-          .set('Authorization', userToken)
-          .set('Content-type', 'application/json')
-          .set('Accept', 'application/json')
-          .expect(400, done);
-      });
     });
   });
 });
