@@ -83,6 +83,7 @@ module.exports = {
 
     nickname: {
       type: 'string',
+      allowNull: false,
       columnName: 'nickname',
       maxLength: 68,
     },
