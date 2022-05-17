@@ -1,17 +1,20 @@
 const CaverService = require('../../../services/CaverService');
 const CaveService = require('../../../services/CaveService');
 const ControllerService = require('../../../services/ControllerService');
+const DescriptionService = require('../../../services/DescriptionService');
 const MappingService = require('../../../services/MappingService');
 const NameService = require('../../../services/NameService');
 
 module.exports = async (req, res) => {
   TCave.findOne(req.params.id)
-    .populate('id_author')
-    .populate('id_reviewer')
-    .populate('entrances')
     .populate('descriptions')
-    .populate('histories')
     .populate('documents')
+    .populate('descriptions')
+    .populate('entrances')
+    .populate('histories')
+    .populate('id_author')
+    .populate('id_massif')
+    .populate('id_reviewer')
     .populate('names')
     .exec(async (err, found) => {
       const params = {};
@@ -24,11 +27,20 @@ module.exports = async (req, res) => {
           `An unexpected server error occured when trying to get ${params.searchedItem}`
         );
       }
+      let caveResult;
       if (found) {
-        await NameService.setNames([found], 'cave');
-        await CaveService.setEntrances([found]);
-        await NameService.setNames([found?.entrances], 'entrance');
-        found.histories.map(async (h) => {
+        caveResult = found;
+        await CaveService.setEntrances([caveResult]);
+        await NameService.setNames([caveResult], 'cave');
+        await NameService.setNames(caveResult?.entrances, 'entrance');
+        await NameService.setNames(
+          caveResult.id_massif && [caveResult.id_massif],
+          'massif'
+        );
+        caveResult.descriptions = await DescriptionService.getCaveDescriptions(
+          caveResult.id
+        );
+        caveResult.histories.map(async (h) => {
           // eslint-disable-next-line no-param-reassign
           h.author = await CaverService.getCaver(h.author, req);
           return h;
@@ -38,7 +50,7 @@ module.exports = async (req, res) => {
       return ControllerService.treatAndConvert(
         req,
         err,
-        found,
+        caveResult,
         params,
         res,
         MappingService.convertToCaveModel
