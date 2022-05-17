@@ -14,6 +14,7 @@ const CAVE_PROPERTIES = [
   'isDeleted',
   'isDiving',
   'length',
+  'massif',
   'name',
   'names',
   'temperature',

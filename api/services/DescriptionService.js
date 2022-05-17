@@ -19,4 +19,17 @@ module.exports = {
       }
     }
   },
+
+  getCaveDescriptions: async (caveId) => {
+    let descriptions = [];
+    if (caveId) {
+      descriptions = await TDescription.find()
+        .where({
+          cave: caveId,
+        })
+        .populate('author')
+        .populate('language');
+    }
+    return descriptions;
+  },
 };
