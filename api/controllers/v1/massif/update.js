@@ -35,33 +35,34 @@ module.exports = async (req, res) => {
     return res.json({ error: `Could not find massif with id ${massifId}.` });
   }
 
-  // list of propreties to update
-  const propretiesUpdatable = [
+  // list of parameters authorized
+  const parametersAuthorized = [
+    'id',
     'caves',
     'descriptions',
     'documents',
     'geogPolygon',
     'names',
   ];
-  // Check if the changes requested are authorized (check propretiesUpdatable)
+  // Check if the changes requested are authorized (check parametersAuthorized)
   const keys = Object.keys(req.body);
 
   let c = 0;
-  const propretiesUnudapable = [];
+  const parametersUnauthorized = [];
   while (c < keys.length) {
-    if (!propretiesUpdatable.includes(keys[c])) {
-      propretiesUnudapable.push(keys[c]);
+    if (!parametersAuthorized.includes(keys[c])) {
+      parametersUnauthorized.push(keys[c]);
     }
     c += 1;
   }
-  if (propretiesUnudapable.length > 0) {
-    if (propretiesUnudapable.length === 1) {
+  if (parametersUnauthorized.length > 0) {
+    if (parametersUnauthorized.length === 1) {
       return res.badRequest(
-        `Could not update property ${propretiesUnudapable[0]}, is not a property which is updatable.`
+        `Could not update property ${parametersUnauthorized[0]}, is not a property which is updatable.`
       );
     }
     return res.badRequest(
-      `Could not update properties ${propretiesUnudapable}, they are not updatable propeties .`
+      `Could not update properties ${parametersUnauthorized}, they are not updatable propeties .`
     );
   }
 

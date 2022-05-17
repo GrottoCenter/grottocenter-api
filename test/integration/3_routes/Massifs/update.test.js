@@ -22,6 +22,7 @@ describe('Massif features', () => {
 
     it('should return 200', (done) => {
       const update = {
+        id: 1,
         caves: [1, 2],
         descriptions: [3],
         documents: [2, 3],
