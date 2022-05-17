@@ -1,4 +1,5 @@
 const CaverService = require('../../../services/CaverService');
+const CaveService = require('../../../services/CaveService');
 const ControllerService = require('../../../services/ControllerService');
 const MappingService = require('../../../services/MappingService');
 const NameService = require('../../../services/NameService');
@@ -25,6 +26,8 @@ module.exports = async (req, res) => {
       }
       if (found) {
         await NameService.setNames([found], 'cave');
+        await CaveService.setEntrances([found]);
+        await NameService.setNames([found?.entrances], 'entrance');
         found.histories.map(async (h) => {
           // eslint-disable-next-line no-param-reassign
           h.author = await CaverService.getCaver(h.author, req);

@@ -2,7 +2,7 @@ const ramda = require('ramda');
 
 module.exports = {
   /**
-   * @param {Object} caves caves to set
+   * @param {Array<Object>} caves caves to set
    *
    * @returns {Promise} the caves with their attribute "entrances" completed
    */

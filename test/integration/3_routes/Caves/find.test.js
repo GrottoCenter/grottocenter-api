@@ -24,6 +24,9 @@ describe('Cave features', () => {
           should(cave.name).not.be.empty();
           should(cave.names).not.be.empty();
           should(cave.author).not.be.empty();
+          cave.entrances.forEach((entrance) => {
+            should(entrance.names).not.be.empty();
+          });
           return done();
         });
     });
