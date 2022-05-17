@@ -2128,12 +2128,6 @@ paths:
           required: true
           schema:
             type: string
-        - name: id
-          in: query
-          description: Massif id
-          required: false
-          schema:
-            type: string
         - name: geogPolygon
           in: query
           description: GeoJson EPSG4326 which represent the massif on a map (see post method)
