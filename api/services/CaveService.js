@@ -152,7 +152,6 @@ module.exports = {
   // Extract everything from the request body except id and dateInscription
   getConvertedDataFromClient: (req) => ({
     // The TCave.create() function doesn't work with TCave field alias. See TCave.js Model
-    date_inscription: new Date(),
     depth: req.param('depth'),
     documents: req.param('documents'),
     id_author: req.token.id,

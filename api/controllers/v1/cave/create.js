@@ -56,7 +56,10 @@ module.exports = async (req, res) => {
   }
 
   // Format data
-  const cleanedData = CaveService.getConvertedDataFromClient(req);
+  const cleanedData = {
+    ...CaveService.getConvertedDataFromClient(req),
+    date_inscription: new Date(),
+  };
   const nameData = {
     ...rawNameData,
     author: req.token.id,

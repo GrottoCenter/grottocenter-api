@@ -33,10 +33,7 @@ module.exports = async (req, res) => {
     });
   }
 
-  const cleanedData = {
-    ...CaveService.getConvertedDataFromClient(req),
-    id: caveId,
-  };
+  const cleanedData = CaveService.getConvertedDataFromClient(req);
 
   try {
     const updatedCave = await TCave.updateOne({
