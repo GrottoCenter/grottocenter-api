@@ -35,44 +35,18 @@ module.exports = async (req, res) => {
     return res.json({ error: `Could not find massif with id ${massifId}.` });
   }
 
-  // list of propreties to update
-  const propretiesUpdatable = [
-    'caves',
-    'descriptions',
-    'documents',
-    'geogPolygon',
-    'names',
-  ];
-  // Check if the changes requested are authorized (check propretiesUpdatable)
-  const keys = Object.keys(req.body);
-
-  let c = 0;
-  const propretiesUnudapable = [];
-  while (c < keys.length) {
-    if (!propretiesUpdatable.includes(keys[c])) {
-      propretiesUnudapable.push(keys[c]);
-    }
-    c += 1;
-  }
-  if (propretiesUnudapable.length > 0) {
-    if (propretiesUnudapable.length === 1) {
-      return res.badRequest(
-        `Could not update property ${propretiesUnudapable[0]}, is not a property which is updatable.`
-      );
-    }
-    return res.badRequest(
-      `Could not update properties ${propretiesUnudapable}, they are not updatable propeties .`
-    );
-  }
+  const cleanedData = {
+    ...MassifService.getConvertedDataFromClientRequest(req),
+  };
 
   try {
     // conversion of geoJson into PostGis Geom
-    if (req.body.geogPolygon) {
-      req.body.geogPolygon = await MassifService.geoJsonToWKT(
-        req.body.geogPolygon
+    if (cleanedData.geogPolygon) {
+      cleanedData.geogPolygon = await MassifService.geoJsonToWKT(
+        cleanedData.geogPolygon
       );
     }
-    const updatedMassif = await TMassif.updateOne(massifId).set(req.body);
+    const updatedMassif = await TMassif.updateOne(massifId).set(cleanedData);
 
     const params = {};
     params.controllerMethod = 'MassifController.update';

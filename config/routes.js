@@ -99,6 +99,8 @@ module.exports.routes = {
   'GET /api/v1/entrances/findRandom': 'v1/entrance/find-random',
   'GET /api/v1/entrances/publicCount': 'v1/entrance/public-count',
   'GET /api/v1/entrances/:id': 'v1/entrance/find',
+  'PATCH /api/v1/entrances/:entranceId/cave/:caveId':
+    'v1/entrance/move-to-cave',
   'POST /api/v1/entrances': 'v1/entrance/create',
   'POST /api/v1/entrances/check-rows': 'v1/entrance/check-rows',
   'POST /api/v1/entrances/import-rows': 'v1/entrance/import-rows',
