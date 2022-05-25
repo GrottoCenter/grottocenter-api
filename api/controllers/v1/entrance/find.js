@@ -80,7 +80,8 @@ module.exports = async (req, res) => {
       await NameService.setNames([found.cave], 'cave');
 
       // Populate document type, descriptions, files & license
-      await Promise.all(
+      // eslint-disable-next-line no-param-reassign
+      found.documents = await Promise.all(
         found.documents.map(
           // eslint-disable-next-line no-return-await
           async (d) => await DocumentService.getDocument(d.id)
