@@ -1,5 +1,6 @@
 // Other http codes (like 200 or 204) are logged as "verbose" instead.
 const LOG_SEVERITY_INFO_FOR_CODES = [401, 403, 404, 409, 500];
+const LOG_SEVERITY_ERROR_FOR_CODES = [500];
 
 module.exports = {
   friendlyName: 'Log response',
@@ -54,9 +55,12 @@ module.exports = {
         responseType = 'UNKOWN';
     }
 
-    const logSeverity = LOG_SEVERITY_INFO_FOR_CODES.includes(httpCode)
-      ? 'info'
-      : 'verbose';
+    let logSeverity = 'verbose';
+    if (LOG_SEVERITY_INFO_FOR_CODES.includes(httpCode)) {
+      logSeverity = 'info';
+    } else if (LOG_SEVERITY_ERROR_FOR_CODES.includes(httpCode)) {
+      logSeverity = 'error';
+    }
 
     if (data !== undefined) {
       sails.log[logSeverity](
