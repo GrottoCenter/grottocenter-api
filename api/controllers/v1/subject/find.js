@@ -8,9 +8,7 @@ module.exports = (req, res) => {
       const params = {};
       params.searchedItem = `Subject of code ${req.param('code')}`;
       if (!found) {
-        const notFoundMessage = `${params.searchedItem} not found`;
-        sails.log.debug(notFoundMessage);
-        return res.status(404).send(notFoundMessage);
+        return res.notFound(`${params.searchedItem} not found`);
       }
       params.controllerMethod = 'TSubjectController.find';
       return ControllerService.treatAndConvert(

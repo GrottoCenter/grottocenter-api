@@ -11,7 +11,6 @@ describe('CommonService', () => {
     it('should escape html tags and truncate the html', () => {
       const truncateLength = 100;
       const res = CommonService.convertHtmlToText(html, truncateLength);
-      sails.log.info(res);
       should(
         res.includes('<div>') || res.includes('<h4>') || res.includes('<p>')
       ).be.false();

@@ -4,7 +4,6 @@ const AuthTokenService = require('../AuthTokenService');
 describe('Account features', () => {
   let userToken;
   before(async () => {
-    sails.log.info('Asking for user auth token...');
     userToken = await AuthTokenService.getRawBearerUserToken();
   });
 

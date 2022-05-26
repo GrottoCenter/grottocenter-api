@@ -5,10 +5,11 @@ module.exports = (req, res) => {
     .then((total) =>
       res.json(MappingService.convertToCountResultModel({ count: total }))
     )
-    .catch((err) => {
-      const errorMessage =
-        'An internal error occurred when getting number of public entrances';
-      sails.log.error(`${errorMessage}: ${err}`);
-      return res.status(500).json({ error: errorMessage });
-    });
+    .catch((err) =>
+      res.serverError({
+        error: err,
+        message:
+          'An internal error occurred when getting number of public entrances',
+      })
+    );
 };

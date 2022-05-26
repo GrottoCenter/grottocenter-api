@@ -7,11 +7,8 @@ describe('Caver features', () => {
   let adminToken;
   let moderatorToken;
   before(async () => {
-    sails.log.info('Asking for user auth token...');
-    userToken = await AuthTokenService.getRawBearerUserToken();
-    sails.log.info('Asking for admin auth token...');
     adminToken = await AuthTokenService.getRawBearerAdminToken();
-    sails.log.info('Asking for moderator auth token...');
+    userToken = await AuthTokenService.getRawBearerUserToken();
     moderatorToken = await AuthTokenService.getRawBearerModeratorToken();
   });
 

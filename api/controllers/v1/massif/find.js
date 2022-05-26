@@ -16,9 +16,7 @@ module.exports = async (req, res) => {
     const params = {};
     params.searchedItem = `Massif of id ${req.params.id}`;
     if (!massif) {
-      const notFoundMessage = `${params.searchedItem} not found`;
-      sails.log.debug(notFoundMessage);
-      return res.status(404).send(notFoundMessage);
+      return res.notFound(`${params.searchedItem} not found`);
     }
 
     // Populate caves

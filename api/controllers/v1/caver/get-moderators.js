@@ -25,7 +25,7 @@ module.exports = async (req, res) => {
     name: 'Moderator',
   }).populate('cavers');
   if (!moderatorGroup) {
-    return res.status(404).send({ message: 'No moderators found.' });
+    return res.notFound({ message: 'No moderators found.' });
   }
   const params = {};
   const moderators = moderatorGroup[0].cavers;

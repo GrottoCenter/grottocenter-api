@@ -69,7 +69,7 @@ module.exports = async (req, res) => {
       modifiedDocJson: jsonData,
     });
     if (!updatedDocument) {
-      return res.status(404);
+      return res.notFound();
     }
 
     await DescriptionService.setDocumentDescriptions(updatedDocument, false);

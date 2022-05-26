@@ -23,7 +23,7 @@ module.exports = async (req, res) => {
   const documentId = req.param('id');
   const currentDocument = await TDocument.findOne(documentId);
   if (!currentDocument) {
-    return res.status(404).send({
+    return res.notFound({
       message: `Document of id ${documentId} not found.`,
     });
   }

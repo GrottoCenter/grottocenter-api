@@ -12,9 +12,7 @@ module.exports = (req, res, next) => {
   if (req.token) {
     return next();
   }
-  return res
-    .status(401)
-    .send(
-      'Bearer token not found: you need to be authenticated to perform this action.'
-    );
+  return res.unauthorized(
+    'Bearer token not found: you need to be authenticated to perform this action.'
+  );
 };

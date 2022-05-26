@@ -24,14 +24,14 @@ module.exports = async (req, res) => {
   // Check params
   const caveId = req.param('caveId');
   if (!(await checkIfExists('id', caveId, TCave))) {
-    return res.status(404).send({
+    return res.notFound({
       message: `Cave with id ${caveId} not found.`,
     });
   }
 
   const documentId = req.param('documentId');
   if (!(await checkIfExists('id', documentId, TDocument))) {
-    return res.status(404).send({
+    return res.notFound({
       message: `Document with id ${documentId} not found.`,
     });
   }
@@ -39,7 +39,7 @@ module.exports = async (req, res) => {
   // Update cave
   try {
     await TCave.addToCollection(caveId, 'documents', documentId);
-    return res.sendStatus(204);
+    return res.ok();
   } catch (e) {
     return ErrorService.getDefaultErrorHandler(res)(e);
   }

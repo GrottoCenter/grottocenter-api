@@ -16,9 +16,7 @@ module.exports = async (req, res) => {
       sailsModel: TCaver,
     })
   ) {
-    return res
-      .status(409)
-      .send(`The email ${req.param('email')} is already used.`);
+    return res.conflict(`The email ${req.param('email')} is already used.`);
   }
   if (!req.param('password')) {
     return res.badRequest('You must provide a password.');
@@ -41,9 +39,9 @@ module.exports = async (req, res) => {
       sailsModel: TCaver,
     })
   ) {
-    return res
-      .status(409)
-      .send(`The nickname ${req.param('nickname')} is already used.`);
+    return res.conflict(
+      `The nickname ${req.param('nickname')} is already used.`
+    );
   }
 
   // Create caver
@@ -70,7 +68,7 @@ module.exports = async (req, res) => {
       surname: newCaver.surname,
     });
 
-    return res.sendStatus(204);
+    return res.ok();
   } catch (e) {
     return ErrorService.getDefaultErrorHandler(res)(e);
   }

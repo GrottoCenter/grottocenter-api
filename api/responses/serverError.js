@@ -2,6 +2,8 @@
 /**
  * 500 (Server Error) Response
  *
+ * Return always the same message ('An internal server error occurred.') whatever the data passed in.
+ *
  * Usage:
  * return res.serverError();
  * return res.serverError(err);
@@ -24,5 +26,9 @@ module.exports = function serverError(data) {
   const httpCode = 500;
   res.status(httpCode);
   logResponse.with({ httpCode, data });
-  return res.json(formatResponseData.with({ data }));
+  return res.json(
+    formatResponseData.with({
+      data: { message: 'An internal server error occurred.' },
+    })
+  );
 };

@@ -28,7 +28,7 @@ module.exports = async (req, res) => {
   const caveId = req.param('id');
   const currentCave = await TCave.findOne(caveId);
   if (!currentCave) {
-    return res.status(404).send({
+    return res.notFound({
       message: `Cave with id ${caveId} not found.`,
     });
   }

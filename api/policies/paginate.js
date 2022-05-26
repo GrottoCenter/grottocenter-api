@@ -12,10 +12,9 @@ module.exports = (req, res, next) => {
   const apiControl = req.options.api;
 
   if (!apiControl) {
-    sails.log.error(
+    return res.serverError(
       `Asked route ${req.route.path} is not correctly configurated: missing block api: {...}`
-    );
-    return res.serverError('Misconfigurated route'); // TODO
+    ); // TODO
   }
 
   try {

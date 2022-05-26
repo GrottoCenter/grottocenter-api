@@ -27,7 +27,7 @@ module.exports = async (req, res) => {
       });
     }
   } else {
-    return res.status(404).send({
+    return res.notFound({
       message: `Organization of id ${organizationId} not found.`,
     });
   }
@@ -42,5 +42,5 @@ module.exports = async (req, res) => {
   );
 
   await ElasticsearchService.deleteResource('grottos', organizationId);
-  return res.sendStatus(204);
+  return res.ok();
 };

@@ -49,12 +49,10 @@ const treatRange = (parameters, res, converter, found) => {
 module.exports = {
   treat: (req, err, found, parameters, res) => {
     if (err) {
-      sails.log.error(err);
       return res.badRequest(`${parameters.controllerMethod} error: ${err}`);
     }
     if (!found) {
-      sails.log.debug(parameters.notFoundMessage);
-      return res.notFound();
+      return res.notFound(parameters.notFoundMessage);
     }
     return res.ok(found);
   },
