@@ -32,10 +32,7 @@ module.exports = async (req, res) => {
         );
       }
       if (!found) {
-        const notFoundMessage = `${params.searchedItem} not found`;
-        sails.log.debug(notFoundMessage);
-        res.status(404);
-        return res.json({ error: notFoundMessage });
+        return res.notFound(`${params.searchedItem} not found`);
       }
 
       if (found.cave) {
