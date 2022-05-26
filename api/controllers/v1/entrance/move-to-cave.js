@@ -26,7 +26,7 @@ module.exports = async (req, res) => {
   // Check if entrance exists
   const entranceId = req.param('entranceId');
   if (!(await checkIfExists('id', entranceId, TEntrance))) {
-    return res.status(404).send({
+    return res.notFound({
       message: `Entrance of id ${entranceId} not found.`,
     });
   }
@@ -34,7 +34,7 @@ module.exports = async (req, res) => {
   // Check if cave exists
   const destinationCaveId = req.param('caveId');
   if (!(await checkIfExists('id', destinationCaveId, TCave))) {
-    return res.status(404).send({
+    return res.notFound({
       message: `Cave of id ${destinationCaveId} not found.`,
     });
   }

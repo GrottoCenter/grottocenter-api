@@ -21,7 +21,6 @@ module.exports = async (req, res) => {
       params.searchedItem = `Cave of id ${req.params.id}`;
       params.notFoundMessage = `${params.searchedItem} not found.`;
       if (err) {
-        sails.log.error(err);
         return res.serverError(
           `An unexpected server error occured when trying to get ${params.searchedItem}`
         );

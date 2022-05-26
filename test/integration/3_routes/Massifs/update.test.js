@@ -7,7 +7,6 @@ const MassifService = require('../../../../api/services/MassifService');
 describe('Massif features', () => {
   let userToken;
   before(async () => {
-    sails.log.info('Asking for user auth token...');
     userToken = await AuthTokenService.getRawBearerUserToken();
   });
   describe('update', () => {

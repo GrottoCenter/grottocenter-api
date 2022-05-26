@@ -27,7 +27,7 @@ module.exports = async (req, res) => {
   const entranceId = req.param('id');
   const currentEntrance = await TEntrance.findOne(entranceId);
   if (!currentEntrance) {
-    return res.status(404).send({
+    return res.notFound({
       message: `Entrance of id ${entranceId} not found.`,
     });
   }

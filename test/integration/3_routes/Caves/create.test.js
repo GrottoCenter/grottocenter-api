@@ -8,7 +8,6 @@ describe('Cave features', () => {
   describe('create', () => {
     let userToken;
     before(async () => {
-      sails.log.info('Asking for user auth token...');
       userToken = await AuthTokenService.getRawBearerUserToken();
     });
 

@@ -5,7 +5,6 @@ const AuthTokenService = require('../../AuthTokenService');
 describe('Cave features', () => {
   let userToken;
   before(async () => {
-    sails.log.info('Asking for user auth token...');
     userToken = await AuthTokenService.getRawBearerUserToken();
   });
 

@@ -120,9 +120,7 @@ module.exports = async (req, res) => {
       searchedItem: `Document of id ${req.param('id')}`,
     };
     if (!found) {
-      const notFoundMessage = `${params.searchedItem} not found`;
-      sails.log.debug(notFoundMessage);
-      return res.status(404).send(notFoundMessage);
+      return res.notFound(`${params.searchedItem} not found`);
     }
     found.mainLanguage = await DocumentService.getMainLanguage(found.languages);
     await DocumentService.setNamesOfPopulatedDocument(found);
@@ -135,10 +133,7 @@ module.exports = async (req, res) => {
   };
 
   if (!found) {
-    const notFoundMessage = `${params.searchedItem} not found`;
-    sails.log.debug(notFoundMessage);
-    res.status(404);
-    return res.json({ error: notFoundMessage });
+    return res.json({ error: `${params.searchedItem} not found` });
   }
 
   return ControllerService.treatAndConvert(

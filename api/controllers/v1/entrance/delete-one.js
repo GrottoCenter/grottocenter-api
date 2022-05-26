@@ -27,7 +27,7 @@ module.exports = async (req, res) => {
       });
     }
   } else {
-    return res.status(404).send({
+    return res.notFound({
       message: `Entrance of id ${entranceId} not found.`,
     });
   }
@@ -43,5 +43,5 @@ module.exports = async (req, res) => {
 
   await ElasticsearchService.deleteResource('entrances', entranceId);
 
-  return res.sendStatus(204);
+  return res.ok();
 };

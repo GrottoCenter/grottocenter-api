@@ -24,7 +24,7 @@ module.exports = async (req, res) => {
   const descriptionId = req.param('id');
   const currentDescription = await TDescription.findOne(descriptionId);
   if (!currentDescription) {
-    return res.status(404).send({
+    return res.notFound({
       message: `Description of id ${descriptionId} not found.`,
     });
   }

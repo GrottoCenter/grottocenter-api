@@ -12,9 +12,9 @@ module.exports = async (req, res) => {
       .populate('exploredCaves')
       .populate('partnerCaves');
     if (!organization) {
-      const message = `Organization of id ${req.params.id} not found.`;
-      sails.log.error(message);
-      return res.status(404).send({ message });
+      return res.notFound({
+        message: `Organization of id ${req.params.id} not found.`,
+      });
     }
     const params = {};
     params.searchedItem = `Organization of id ${req.params.id}`;

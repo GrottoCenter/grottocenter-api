@@ -26,10 +26,10 @@ module.exports = async (req, res) => {
       params.searchedItem = `Entrance of id ${req.params.id}`;
 
       if (err) {
-        sails.log.error(err);
-        return res.serverError(
-          `An unexpected server error occured when trying to get ${params.searchedItem}`
-        );
+        return res.serverError({
+          error: err,
+          message: `An unexpected server error occured when trying to get ${params.searchedItem}`,
+        });
       }
       if (!found) {
         return res.notFound(`${params.searchedItem} not found`);

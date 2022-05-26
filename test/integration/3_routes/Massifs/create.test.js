@@ -7,7 +7,6 @@ describe('Massif features', () => {
   describe('create', () => {
     let adminToken;
     before(async () => {
-      sails.log.info('Asking for user auth token...');
       adminToken = await AuthTokenService.getRawBearerAdminToken();
     });
 

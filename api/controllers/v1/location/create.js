@@ -45,7 +45,7 @@ module.exports = async (req, res) => {
     sailsModel: TEntrance,
   });
   if (!doesEntranceExists) {
-    return res.status(404).send({
+    return res.notFound({
       message: `The entrance with id ${entranceId} was not found.`,
     });
   }

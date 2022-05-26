@@ -13,10 +13,7 @@ module.exports = async (req, res) => {
   const caverFound = await CaverService.getCaver(caverId, req);
 
   if (!caverFound) {
-    const notFoundMessage = `${params.searchedItem} not found`;
-    sails.log.debug(notFoundMessage);
-    res.status(404);
-    return res.json({ error: notFoundMessage });
+    return res.notFound({ error: `${params.searchedItem} not found` });
   }
 
   // complete names
