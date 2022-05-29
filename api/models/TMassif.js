@@ -42,6 +42,12 @@ module.exports = {
       columnName: 'date_reviewed',
     },
 
+    documents: {
+      collection: 'TDocument',
+      via: 'massif',
+      through: 'JDocumentMassif',
+    },
+
     names: {
       collection: 'TName',
       via: 'massif',

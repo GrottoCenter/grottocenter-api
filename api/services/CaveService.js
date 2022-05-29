@@ -1,9 +1,10 @@
 const ramda = require('ramda');
 const CommonService = require('./CommonService');
+const ElasticsearchService = require('./ElasticsearchService');
 
 module.exports = {
   /**
-   * @param {Object} caves caves to set
+   * @param {Array<Object>} caves caves to set
    *
    * @returns {Promise} the caves with their attribute "entrances" completed
    */
@@ -146,14 +147,15 @@ module.exports = {
         .set(cleanedMergedData)
         .usingConnection(db);
 
+      sails.log.info(`Deleting cave with id ${sourceCaveId}`);
       await TCave.destroy(sourceCaveId).usingConnection(db);
+      await ElasticsearchService.deleteResource('caves', sourceCaveId);
     });
   },
 
   // Extract everything from the request body except id and dateInscription
   getConvertedDataFromClient: (req) => ({
     // The TCave.create() function doesn't work with TCave field alias. See TCave.js Model
-    date_inscription: new Date(),
     depth: req.param('depth'),
     documents: req.param('documents'),
     id_author: req.token.id,
@@ -175,5 +177,11 @@ module.exports = {
     `;
     const queryResult = await CommonService.query(query, [caveId]);
     return queryResult.rows;
+  },
+
+  deleteCave: async (caveId) => {
+    sails.log.info(`Deleting cave with id ${caveId}`);
+    await TCave.destroyOne(caveId);
+    await ElasticsearchService.deleteResource('caves', caveId);
   },
 };

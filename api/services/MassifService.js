@@ -11,6 +11,14 @@ const FIND_NETWORKS_IN_MASSIF = `
 const CommonService = require('./CommonService');
 
 module.exports = {
+  getConvertedDataFromClientRequest: (req) => ({
+    caves: req.param('caves'),
+    descriptions: req.param('descriptions'),
+    documents: req.param('documents'),
+    geogPolygon: req.param('geogPolygon'),
+    names: req.param('names'),
+  }),
+
   setNetworks: async (massif) => {
     const queryResult = await CommonService.query(FIND_NETWORKS_IN_MASSIF, [
       massif.id,
@@ -37,5 +45,19 @@ module.exports = {
 
     const queryResult = await CommonService.query(query, [massifId]);
     return queryResult.rows;
+  },
+
+  geoJsonToWKT: async (geoJson) => {
+    const query = `SELECT ST_AsText($1) `;
+    const queryResult = await CommonService.query(query, [
+      JSON.stringify(geoJson),
+    ]);
+    return queryResult.rows[0].st_astext;
+  },
+
+  wktToGeoJson: async (geometry) => {
+    const query = `SELECT ST_AsGeoJSON($1)`;
+    const queryResult = await CommonService.query(query, [geometry]);
+    return queryResult.rows[0].st_asgeojson;
   },
 };

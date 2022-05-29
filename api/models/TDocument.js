@@ -269,5 +269,11 @@ module.exports = {
       via: 'document',
       through: 'JDocumentLanguage',
     },
+
+    massifs: {
+      collection: 'TMassif',
+      via: 'document',
+      through: 'JDocumentMassif',
+    },
   },
 };

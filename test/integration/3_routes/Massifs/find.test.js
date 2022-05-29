@@ -1,5 +1,6 @@
 const supertest = require('supertest');
 const should = require('should');
+const massifPolygon = require('./FAKE_DATA');
 
 const MASSIF_PROPERTIES = [
   '@context',
@@ -9,7 +10,9 @@ const MASSIF_PROPERTIES = [
   'dateInscription',
   'dateReviewed',
   'descriptions',
+  'documents',
   'entrances',
+  'geogPolygon',
   'name',
   'names',
   'reviewer',
@@ -34,6 +37,7 @@ describe('Massif features', () => {
           if (err) return done(err);
           const { body: massif } = res;
           should(massif).have.properties(MASSIF_PROPERTIES);
+          should(massif.geogPolygon).equal(massifPolygon.geoJson1ToString);
           should(massif.name).not.be.empty();
           should(massif.names).not.be.empty();
           return done();

@@ -8,6 +8,7 @@ module.exports = async (req, res) => {
     const organization = await TGrotto.findOne(req.params.id)
       .populate('names')
       .populate('cavers')
+      .populate('documents')
       .populate('exploredCaves')
       .populate('partnerCaves');
     if (!organization) {

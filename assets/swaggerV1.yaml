@@ -3,7 +3,7 @@ openapi: '3.0.0'
 info:
   description: "This page documents the available Grottocenter's API."
   title: 'Grottocenter 3 - REST API'
-  version: 'v1 - 22.0.12'
+  version: 'v1 - 22.0.15'
   termsOfService: 'https://wiki.grottocenter.org/wiki/GrottoCenter:En/API'
   contact:
     name: 'Slack space'
@@ -1729,6 +1729,36 @@ paths:
         '403':
           description: You are not authorized to add a document to an entrance.
 
+  '/entrances/{entranceId}/cave/{caveId}':
+    patch:
+      tags:
+        - entrances
+        - caves
+      description: Move an entrance from its case to another one. If the remaining cave is left without entrance, it's deleted.
+      parameters:
+        - name: entranceId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: caveId
+          in: path
+          description: Cave id to move the entrance to
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Entrance'
+        '404':
+          description: Could not find the entrance or the cave with the ids you provided.
+        '403':
+          description: You are not authorized to move an entrance from a cave to another one.
+
   '/entrances/findRandom':
     get:
       tags:
@@ -2042,15 +2072,32 @@ paths:
               id:
                 type: string
                 description: Must be a language supported by Grottocenter (see GET /languages route) using the 3-letters format.
+
+        - name: geogPolygon
+          in: query
+          required: true
+          description: A geographical polygon representation of the massif stored as a GeoJson using EPSG 4326
+          schema:
+            type: object
+            properties:
+              type:
+                type: string
+              coordinates:
+                description: See how to construct GeoJson to know what's inside coordinates
+                type: array
+                items:
+                  type: object
+
         - name: name
           in: query
           required: true
           description: Name of the massif
           schema:
             type: string
+
         - name: caves
           in: query
-          description: Caves related to the massif
+          description: List of caves ids related to the massif
           schema:
             type: array
             items:
@@ -2058,6 +2105,13 @@ paths:
               properties:
                 id:
                   type: string
+        - name: documents
+          in: query
+          description: List of documents ids related to the massif
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Document'
       responses:
         '200':
           description: Successful operation
@@ -2074,7 +2128,7 @@ paths:
     get:
       tags:
         - massifs
-      description: Get a massif, its authors, names, descriptions and caves.
+      description: Get a massif, its authors, names, geogPolygon, documents, descriptions and caves.
       parameters:
         - name: id
           in: path
@@ -2093,6 +2147,71 @@ paths:
                   $ref: '#/components/schemas/Massif'
         '404':
           description: Resource not found
+    put:
+      tags:
+        - massifs
+      description: Update a massif, its list of caves, names, descriptions and documents and its geogPolygon.
+      parameters:
+        - name: id
+          in: path
+          description: Massif id
+          required: true
+          schema:
+            type: string
+        - name: geogPolygon
+          in: query
+          description: GeoJson EPSG4326 which represent the massif on a map (see post method)
+          required: false
+          schema:
+            type: object
+        - name: caves
+          in: query
+          description: List of caves ids
+          required: false
+          schema:
+            type: array
+            items:
+              type: object
+        - name: descriptions
+          in: query
+          description: List of descriptions ids
+          required: false
+          schema:
+            type: array
+            items:
+              type: object
+        - name: documents
+          in: query
+          description: List of documents ids
+          required: false
+          schema:
+            type: array
+            items:
+              type: object
+        - name: names
+          in: query
+          description: List of names ids
+          required: false
+          schema:
+            type: array
+            items:
+              type: object
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Massif'
+
+        '400':
+          description: Bad request
+        '404':
+          description: Resource not found
+        '403':
+          description: Forbidden you don't have the rights to update massifs
 
   '/organizations':
     post:
@@ -2415,6 +2534,8 @@ components:
           type: boolean
         length:
           type: integer
+        massif:
+          $ref: '#/components/schemas/Massif'
         name:
           type: string
         names:

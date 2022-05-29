@@ -102,6 +102,7 @@ module.exports.policies = {
   'v1/entrance/find': true,
   'v1/entrance/find-random': true,
   'v1/entrance/import-rows': 'tokenAuth',
+  'v1/entrance/move-to-cave': 'tokenAuth',
   'v1/entrance/public-count': true,
   'v1/entrance/unlink-document': ['tokenAuth', 'moderatorAuth'],
   'v1/entrance/update': 'tokenAuth',
@@ -144,6 +145,7 @@ module.exports.policies = {
   'v1/massif/create': 'tokenAuth',
   'v1/massif/delete-one': ['tokenAuth', 'moderatorAuth'],
   'v1/massif/find': true,
+  'v1/massif/update': 'tokenAuth',
 
   // Name
   'v1/name/set-as-main': 'tokenAuth',

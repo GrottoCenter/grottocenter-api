@@ -71,8 +71,7 @@ module.exports = async (req, res) => {
 
   // Delete cave
   try {
-    sails.log.info(`Deleting cave with id ${caveId}`);
-    await TCave.destroyOne(caveId);
+    await CaveService.deleteCave(caveId);
     return res.sendStatus(204);
   } catch (e) {
     return ErrorService.getDefaultErrorHandler(res)(e);
