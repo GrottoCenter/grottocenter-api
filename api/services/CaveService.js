@@ -167,16 +167,27 @@ module.exports = {
     temperature: req.param('temperature'),
   }),
 
+  /**
+   * Get the massifs in which the cave is contained.
+   * If there is none, return an empty array.
+   * @param {*} caveId
+   * @returns [Massif]
+   */
   getMassifs: async (caveId) => {
-    const query = `
+    try {
+      const query = `
       SELECT m.*
       FROM t_massif as m
       JOIN  t_cave AS c
       ON ST_Contains(m.geog_polygon, ST_MakePoint(c.longitude, c.latitude) )
       WHERE c.id = $1 
     `;
-    const queryResult = await CommonService.query(query, [caveId]);
-    return queryResult.rows;
+      const queryResult = await CommonService.query(query, [caveId]);
+      return queryResult.rows;
+    } catch (e) {
+      // Fail silently (happens when the longitude and latitude are null for example)
+      return [];
+    }
   },
 
   deleteCave: async (caveId) => {

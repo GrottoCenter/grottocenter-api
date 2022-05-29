@@ -38,23 +38,25 @@ module.exports = async (req, res) => {
         return res.json({ error: notFoundMessage });
       }
 
-      // Populate massif
       if (found.cave) {
+        // Populate massif
         // eslint-disable-next-line no-param-reassign
         found.cave.massifs = await CaveService.getMassifs(found.cave.id);
-        await NameService.setNames(found.cave.massifs, 'massif');
-        const promiseArray = [];
-        for (const massif of found.cave.massifs) {
-          promiseArray.push(
-            DescriptionService.getMassifDescriptions(massif.id)
-          );
-        }
-        await Promise.all(promiseArray).then((descriptionsArray) => {
-          descriptionsArray.forEach((descriptions, index) => {
-            // eslint-disable-next-line no-param-reassign
-            found.cave.massifs[index].descriptions = descriptions;
+        if (found.cave.massifs.length !== 0) {
+          await NameService.setNames(found.cave.massifs, 'massif');
+          const promiseArray = [];
+          for (const massif of found.cave.massifs) {
+            promiseArray.push(
+              DescriptionService.getMassifDescriptions(massif.id)
+            );
+          }
+          await Promise.all(promiseArray).then((descriptionsArray) => {
+            descriptionsArray.forEach((descriptions, index) => {
+              // eslint-disable-next-line no-param-reassign
+              found.cave.massifs[index].descriptions = descriptions;
+            });
           });
-        });
+        }
       }
 
       // ===== Populate all authors
