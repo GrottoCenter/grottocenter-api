@@ -396,8 +396,7 @@ CREATE TABLE t_cave (
 	CONSTRAINT t_cave_pk PRIMARY KEY (id),
 	CONSTRAINT t_cave_t_cave_fk FOREIGN KEY (redirect_to) REFERENCES t_cave(id),
 	CONSTRAINT t_cave_t_caver2_fk FOREIGN KEY (id_reviewer) REFERENCES t_caver(id),
-	CONSTRAINT t_cave_t_caver_fk FOREIGN KEY (id_author) REFERENCES t_caver(id),
-
+	CONSTRAINT t_cave_t_caver_fk FOREIGN KEY (id_author) REFERENCES t_caver(id)
 );
 -- t_entrance definition
 -- Drop table
@@ -543,8 +542,7 @@ CREATE TABLE h_cave (
 	CONSTRAINT h_cave_pk PRIMARY KEY (id, date_reviewed),
 	CONSTRAINT h_cave_t_cave FOREIGN KEY (id) REFERENCES t_cave(id),
 	CONSTRAINT h_cave_t_caver2_fk FOREIGN KEY (id_reviewer) REFERENCES t_caver(id),
-	CONSTRAINT h_cave_t_caver_fk FOREIGN KEY (id_author) REFERENCES t_caver(id),
-
+	CONSTRAINT h_cave_t_caver_fk FOREIGN KEY (id_author) REFERENCES t_caver(id)
 );
 -- h_entrance definition
 -- Drop table
