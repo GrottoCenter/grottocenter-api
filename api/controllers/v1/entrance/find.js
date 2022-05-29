@@ -41,12 +41,12 @@ module.exports = async (req, res) => {
       // Populate massif
       if (found.cave) {
         // eslint-disable-next-line no-param-reassign
-        found.cave.massifs = await CaveService.getMassifs(5);
+        found.cave.massifs = await CaveService.getMassifs(found.cave.id);
         await NameService.setNames(found.cave.massifs, 'massif');
         const promiseArray = [];
         for (const massif of found.cave.massifs) {
           promiseArray.push(
-            DescriptionService.setMassifDescriptions(massif.id)
+            DescriptionService.getMassifDescriptions(massif.id)
           );
         }
         await Promise.all(promiseArray).then((descriptionsArray) => {

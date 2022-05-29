@@ -20,8 +20,7 @@ module.exports = {
     }
   },
 
-  setMassifDescriptions: async (massifId) => {
-    // eslint-disable-next-line no-param-reassign
+  getMassifDescriptions: async (massifId) => {
     const descriptions = await TDescription.find()
       .where({ massif: massifId })
       .populate('language');
