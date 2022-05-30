@@ -13,7 +13,6 @@ module.exports = async (req, res) => {
     .populate('entrances')
     .populate('histories')
     .populate('id_author')
-    .populate('id_massif')
     .populate('id_reviewer')
     .populate('names')
     .exec(async (err, found) => {
@@ -33,10 +32,6 @@ module.exports = async (req, res) => {
         await CaveService.setEntrances([caveResult]);
         await NameService.setNames([caveResult], 'cave');
         await NameService.setNames(caveResult?.entrances, 'entrance');
-        await NameService.setNames(
-          caveResult.id_massif && [caveResult.id_massif],
-          'massif'
-        );
         caveResult.descriptions = await DescriptionService.getCaveDescriptions(
           caveResult.id
         );

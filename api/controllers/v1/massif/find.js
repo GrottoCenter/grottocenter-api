@@ -10,7 +10,6 @@ module.exports = async (req, res) => {
   try {
     const massif = await TMassif.findOne(req.params.id)
       .populate('author')
-      .populate('caves')
       .populate('names')
       .populate('descriptions')
       .populate('documents');
@@ -21,6 +20,9 @@ module.exports = async (req, res) => {
       sails.log.debug(notFoundMessage);
       return res.status(404).send(notFoundMessage);
     }
+
+    // Populate caves
+    massif.caves = await MassifService.getCaves(massif.id);
 
     // Populate caves entrances
     await CaveService.setEntrances(massif.caves);

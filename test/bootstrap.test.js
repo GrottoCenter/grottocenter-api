@@ -1,6 +1,7 @@
 const sails = require('sails');
 const Fixted = require('fixted');
 const sailsPostGreAdapter = require('sails-postgresql');
+const ALTER_GEOGRAPHY_QUERY = require('./alter_geography');
 const UPDATE_SEQUENCES_QUERY = require('./update_sequences');
 const CommonService = require('../api/services/CommonService');
 
@@ -60,7 +61,11 @@ before(function (done) {
             return done(fixtedError);
           }
           CommonService.query(UPDATE_SEQUENCES_QUERY)
-            .then(() => done())
+            .then(() => {
+              CommonService.query(ALTER_GEOGRAPHY_QUERY)
+                .then(() => done())
+                .catch((commonServiceError) => done(commonServiceError));
+            })
             .catch((commonServiceError) => done(commonServiceError));
         },
         false

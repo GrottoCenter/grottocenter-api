@@ -20,7 +20,7 @@ const ENTRANCE_PROPERTIES = [
   'locations',
   'latitude',
   'longitude',
-  'massif',
+  'massifs',
   'name',
   'names',
   'precision',

@@ -223,7 +223,7 @@ module.exports = {
       country: newEntrancePopulated.country.nativeName,
       'country code': newEntrancePopulated.country.iso3,
       descriptions: description,
-      'massif name': newEntrancePopulated.cave.massif.name,
+      'massifs names': newEntrancePopulated.cave.massifs.names,
       name: newEntrancePopulated.name,
       names: newEntrancePopulated.names.map((n) => n.name).join(', '),
       tags: ['entrance'],

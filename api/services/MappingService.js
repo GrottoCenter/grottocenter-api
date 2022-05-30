@@ -197,7 +197,7 @@ module.exports = {
     }
     // Once cave is populated, put the massif at the root of the entrance
     // (more convenient for the client)
-    result.massif = ramda.pathOr(undefined, ['cave', 'massif'], result);
+    result.massifs = ramda.pathOr(undefined, ['cave', 'massifs'], result);
 
     // Author
     if (source.author instanceof Object) {
@@ -223,9 +223,9 @@ module.exports = {
     }
 
     // Massif from ESearch
-    if (source['massif name']) {
-      result.massif = {
-        name: source['massif name'],
+    if (source['massifs names']) {
+      result.massifs = {
+        name: source['massifs names'],
       };
     }
 
@@ -264,6 +264,14 @@ module.exports = {
     return {
       cavers,
     };
+  },
+
+  convertToMassifList: (source) => {
+    const massifs = [];
+    source.forEach((item) => {
+      massifs.push(module.exports.convertToMassifModel(item));
+    });
+    return massifs;
   },
 
   convertToCaverModel: (source) => {
@@ -366,10 +374,8 @@ module.exports = {
         source.documents
       ).documents;
     }
-    if (source.id_massif instanceof Object) {
-      result.massif = module.exports.convertToMassifModel(source.id_massif);
-    } else {
-      result.massif = source.id_massif;
+    if (source.massifs instanceof Array) {
+      result.massifs = module.exports.convertToMassifList(source.massifs);
     }
     return result;
   },

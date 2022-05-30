@@ -7,6 +7,7 @@ const MappingService = require('../../../services/MappingService');
 const NameService = require('../../../services/NameService');
 const RiggingService = require('../../../services/RiggingService');
 const RightService = require('../../../services/RightService');
+const DescriptionService = require('../../../services/DescriptionService');
 
 module.exports = async (req, res) => {
   TEntrance.findOne(req.params.id)
@@ -37,15 +38,25 @@ module.exports = async (req, res) => {
         return res.json({ error: notFoundMessage });
       }
 
-      // Populate massif
-      if (found.cave.id_massif) {
+      if (found.cave) {
+        // Populate massif
         // eslint-disable-next-line no-param-reassign
-        found.cave.id_massif = await TMassif.findOne({
-          id: found.cave.id_massif,
-        })
-          .populate('names')
-          .populate('descriptions');
-        await NameService.setNames([found.cave.id_massif], 'massif');
+        found.cave.massifs = await CaveService.getMassifs(found.cave.id);
+        if (found.cave.massifs.length !== 0) {
+          await NameService.setNames(found.cave.massifs, 'massif');
+          const promiseArray = [];
+          for (const massif of found.cave.massifs) {
+            promiseArray.push(
+              DescriptionService.getMassifDescriptions(massif.id)
+            );
+          }
+          await Promise.all(promiseArray).then((descriptionsArray) => {
+            descriptionsArray.forEach((descriptions, index) => {
+              // eslint-disable-next-line no-param-reassign
+              found.cave.massifs[index].descriptions = descriptions;
+            });
+          });
+        }
       }
 
       // ===== Populate all authors

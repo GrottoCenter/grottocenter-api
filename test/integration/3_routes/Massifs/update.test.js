@@ -2,6 +2,7 @@ const supertest = require('supertest');
 const should = require('should');
 const AuthTokenService = require('../../AuthTokenService');
 const massifPolygon = require('./FAKE_DATA');
+const MassifService = require('../../../../api/services/MassifService');
 
 describe('Massif features', () => {
   let userToken;
@@ -23,7 +24,6 @@ describe('Massif features', () => {
     it('should return 200', (done) => {
       const update = {
         id: 1,
-        caves: [1, 2],
         descriptions: [3],
         documents: [2, 3],
         geogPolygon: massifPolygon.geoJson2,
@@ -40,15 +40,14 @@ describe('Massif features', () => {
           if (err) return done(err);
 
           const massifUpdated = await TMassif.findOne(1)
-            .populate('caves')
             .populate('names')
             .populate('descriptions')
             .populate('documents');
+          massifUpdated.caves = await MassifService.getCaves(1);
 
-          should(massifUpdated.caves).containDeep([{ id: 1 }, { id: 2 }]);
           should(massifUpdated.descriptions).containDeep([{ id: 3 }]);
           should(massifUpdated.documents).containDeep([{ id: 2 }, { id: 3 }]);
-          should(massifUpdated.geogPolygon).equal(massifPolygon.geoJson2ToWKT);
+          should(massifUpdated.geogPolygon).equal(massifPolygon.geoJson2ToWKB);
           should(massifUpdated.names).containDeep([{ id: 3 }]);
           return done();
         });
