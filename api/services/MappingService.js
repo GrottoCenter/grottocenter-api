@@ -195,7 +195,7 @@ module.exports = {
         isDiving: source['cave is diving'],
       };
     }
-    // Once cave is populated, put the massif at the root of the entrance
+    // Once cave is populated, put the massifs at the root of the entrance
     // (more convenient for the client)
     result.massifs = ramda.pathOr(undefined, ['cave', 'massifs'], result);
 
@@ -223,9 +223,9 @@ module.exports = {
     }
 
     // Massif from ESearch
-    if (source['massifs names']) {
+    if (source['massif name']) {
       result.massifs = {
-        name: source['massifs names'],
+        name: source['massif name'],
       };
     }
 

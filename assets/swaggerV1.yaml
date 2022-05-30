@@ -2534,8 +2534,10 @@ components:
           type: boolean
         length:
           type: integer
-        massif:
-          $ref: '#/components/schemas/Massif'
+        massifs:
+          type: array
+          items:
+            $ref: '#/components/schemas/Massif'
         name:
           type: string
         names:

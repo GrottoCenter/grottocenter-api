@@ -29,9 +29,11 @@ module.exports = async (req, res) => {
       let caveResult;
       if (found) {
         caveResult = found;
+        caveResult.massifs = await CaveService.getMassifs(caveResult.id);
         await CaveService.setEntrances([caveResult]);
         await NameService.setNames([caveResult], 'cave');
         await NameService.setNames(caveResult?.entrances, 'entrance');
+        await NameService.setNames(caveResult?.massifs, 'massif');
         caveResult.descriptions = await DescriptionService.getCaveDescriptions(
           caveResult.id
         );
