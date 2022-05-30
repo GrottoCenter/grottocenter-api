@@ -13,7 +13,6 @@ module.exports = async (req, res) => {
     .populate('entrances')
     .populate('histories')
     .populate('id_author')
-    .populate('id_massif')
     .populate('id_reviewer')
     .populate('names')
     .exec(async (err, found) => {
@@ -22,7 +21,6 @@ module.exports = async (req, res) => {
       params.searchedItem = `Cave of id ${req.params.id}`;
       params.notFoundMessage = `${params.searchedItem} not found.`;
       if (err) {
-        sails.log.error(err);
         return res.serverError(
           `An unexpected server error occured when trying to get ${params.searchedItem}`
         );
@@ -30,13 +28,11 @@ module.exports = async (req, res) => {
       let caveResult;
       if (found) {
         caveResult = found;
+        caveResult.massifs = await CaveService.getMassifs(caveResult.id);
         await CaveService.setEntrances([caveResult]);
         await NameService.setNames([caveResult], 'cave');
         await NameService.setNames(caveResult?.entrances, 'entrance');
-        await NameService.setNames(
-          caveResult.id_massif && [caveResult.id_massif],
-          'massif'
-        );
+        await NameService.setNames(caveResult?.massifs, 'massif');
         caveResult.descriptions = await DescriptionService.getCaveDescriptions(
           caveResult.id
         );

@@ -13,8 +13,10 @@ module.exports = (req, res) => {
   const rssFeed = req.params.language === 'FR' ? FR_RSS_FEED : EN_RSS_FEED;
   feedRead(rssFeed, (err, articles) => {
     if (err) {
-      sails.log.error(err);
-      return res.serverError(`RssController.getFeed error : ${err}`);
+      return res.serverError({
+        error: err,
+        message: 'An error occurred when getting the RSS feed',
+      });
     }
 
     const result = {};

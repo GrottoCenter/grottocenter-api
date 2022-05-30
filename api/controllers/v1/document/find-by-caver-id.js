@@ -41,12 +41,11 @@ module.exports = async (req, res) => {
     .populate('type')
     .exec(async (err, documents) => {
       if (err) {
-        sails.log.error(err);
         return res.serverError('An unexpected server error occured.');
       }
 
       if (documents.length === 0) {
-        return res.status(200).send({
+        return res.ok({
           documents: [],
           message: 'There is no document matching your criterias.',
         });

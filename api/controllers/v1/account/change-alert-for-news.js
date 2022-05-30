@@ -35,7 +35,7 @@ module.exports = async (req, res) => {
       alertForNews: newAlertForNewsValue === 'true',
     });
     if (!updatedCaver) {
-      return res.status.send({
+      return res.notFound({
         message: `Caver with id ${req.token.id} not found.`,
       });
     }
@@ -43,5 +43,5 @@ module.exports = async (req, res) => {
     sails.log.error(error);
   }
 
-  return res.sendStatus(204);
+  return res.ok();
 };

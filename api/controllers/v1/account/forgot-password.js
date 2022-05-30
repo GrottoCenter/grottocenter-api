@@ -14,7 +14,7 @@ module.exports = async (req, res) => {
     'language'
   );
   if (!userFound) {
-    return res.status(404).send({
+    return res.notFound({
       message: `Caver with email ${emailProvided} not found.`,
     });
   }
@@ -50,5 +50,5 @@ module.exports = async (req, res) => {
         'The email service has encountered an error. Please try again later or contact Wikicaves for more information.'
       )
     );
-  return res.sendStatus(204);
+  return res.ok();
 };

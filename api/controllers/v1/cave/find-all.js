@@ -19,7 +19,6 @@ module.exports = async (req, res) => {
       params.searchedItem = 'all caves';
       params.notFoundMessage = 'No caves found.';
       if (err) {
-        sails.log.error(err);
         return res.serverError(
           `An unexpected server error occured when trying to get ${params.searchedItem}`
         );

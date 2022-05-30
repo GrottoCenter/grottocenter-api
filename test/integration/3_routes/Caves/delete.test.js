@@ -5,7 +5,6 @@ const AuthTokenService = require('../../AuthTokenService');
 describe('Cave features', () => {
   let adminToken;
   before(async () => {
-    sails.log.info('Asking for admin auth token...');
     adminToken = await AuthTokenService.getRawBearerAdminToken();
   });
 

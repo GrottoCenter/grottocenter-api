@@ -72,7 +72,7 @@ module.exports = async (req, res) => {
   // Delete cave
   try {
     await CaveService.deleteCave(caveId);
-    return res.sendStatus(204);
+    return res.ok();
   } catch (e) {
     return ErrorService.getDefaultErrorHandler(res)(e);
   }

@@ -61,7 +61,7 @@ module.exports = async (req, res) => {
                   .set(cleanedData)
                   .usingConnection(db);
                 if (!updatedDocument) {
-                  return res.status(404);
+                  return res.notFound();
                 }
 
                 // Update associated data not handled by TDocument manually

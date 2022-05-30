@@ -11,10 +11,9 @@ module.exports = (req, res) => {
       return res.unauthorized({ message: 'Invalid email or password.' });
     }
     if (err) {
-      sails.log.error(`Error while trying to log in: ${err}`);
-      return res
-        .status(500)
-        .send({ message: 'An internal server error occurred.' });
+      return res.serverError({
+        message: `Error while trying to log in: ${err}`,
+      });
     }
     req.logIn(user, (loginErr) => {
       if (loginErr) return res.json({ message: loginErr });

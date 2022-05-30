@@ -2,7 +2,6 @@
   {
     "id": 1,
     "author": 2,
-    "caves": [1, 2],
     "documents": [1],
     "descriptions": [2],
     "names": [9],
@@ -11,7 +10,6 @@
   {
     "id": 2,
     "id_author": 3,
-    "caves": [],
     "names": [10]
   }
 ]

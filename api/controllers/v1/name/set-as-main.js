@@ -24,7 +24,7 @@ module.exports = async (req, res) => {
   const nameId = req.param('id');
   const currentName = await TName.findOne(nameId);
   if (!currentName) {
-    return res.status(404).send({
+    return res.notFound({
       message: `Name of id ${nameId} not found.`,
     });
   }

@@ -7,7 +7,6 @@ describe('Massif features', () => {
   describe('create', () => {
     let adminToken;
     before(async () => {
-      sails.log.info('Asking for user auth token...');
       adminToken = await AuthTokenService.getRawBearerAdminToken();
     });
 
@@ -38,7 +37,6 @@ describe('Massif features', () => {
           .post('/api/v1/massifs')
           .send({
             name: 'Massif 1',
-            caves: [1, 2],
             description: 'description du massif',
             descriptionTitle: 'Titre',
             descriptionAndNameLanguage: { id: 'fra' },
@@ -66,9 +64,7 @@ describe('Massif features', () => {
             ]);
             should(massif.documents.length).equal(2);
             should(massif.documents).containDeep([{ id: 1 }, { id: 2 }]);
-            should(massif.caves.length).equal(2);
-            should(massif.caves).containDeep([{ id: 1 }, { id: 2 }]);
-            should(massif.geogPolygon).equal(massifPolygon.geoJson1ToWKT);
+            should(massif.geogPolygon).equal(massifPolygon.geoJson1ToWKB);
             createdMassif = massif;
             return done();
           });

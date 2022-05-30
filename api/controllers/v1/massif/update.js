@@ -31,8 +31,9 @@ module.exports = async (req, res) => {
       sailsModel: TMassif,
     }))
   ) {
-    res.status(404);
-    return res.json({ error: `Could not find massif with id ${massifId}.` });
+    return res.notFound({
+      error: `Could not find massif with id ${massifId}.`,
+    });
   }
 
   const cleanedData = {

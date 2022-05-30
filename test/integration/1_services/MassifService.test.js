@@ -3,6 +3,13 @@ const MassifService = require('../../../api/services/MassifService');
 const massifPolygon = require('../3_routes/Massifs/FAKE_DATA');
 
 describe('MassifService', () => {
+  describe('getCaves', () => {
+    it('should get the caves inside the geogPolygon of a massif', async () => {
+      const caves = await MassifService.getCaves(1);
+      should(caves).containDeep([{ id: 3 }, { id: 5 }]);
+    });
+  });
+
   describe('geoJsonToWKT', () => {
     it('should convert a geoJson into WKT', async () => {
       const geogPolygon = massifPolygon.geoJson1;

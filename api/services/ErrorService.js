@@ -7,16 +7,8 @@ module.exports = {
       const message = `A resource already exists with conflicting attribute value(s): ${error.attrNames.join(
         ','
       )}.`;
-      sails.log.error(message);
-      // Test purpose to see if sails.log are ignored in production, to be removed eventually
-      // eslint-disable-next-line no-console
-      console.log(message);
-      return res.status(409).send(message);
+      return res.conflict(message);
     }
-    sails.log.error(error.message);
-    // Test purpose to see if sails.log are ignored in production, to be removed eventually
-    // eslint-disable-next-line no-console
-    console.log(error.message);
     switch (error.name) {
       case 'UsageError':
         return res.badRequest(error.message);

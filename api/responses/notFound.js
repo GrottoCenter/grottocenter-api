@@ -1,27 +1,27 @@
 /**
- * 401 (Unauthorized) Handler
+ * 404 (Not Found) Handler
  *
  * Usage:
- * return res.unauthorized();
- * return res.unauthorized(err);
+ * return res.notFound();
+ * return res.notFound(err);
  *
  * e.g.:
  * ```
- * return res.unauthorized('Unauthorized.');
+ * return res.notFound('Massif of id 1234 not found.');
  * ```
  *
  * @param  {Object | string | undefined} data
  */
 
-module.exports = function unauthorized(data) {
+module.exports = function notFound(data) {
   const { req } = this;
   const { res } = this;
   const sails = req._sails; // eslint-disable-line no-underscore-dangle
   const logResponse = sails.helpers.logResponse.with;
   const formatResponseData = sails.helpers.formatResponseData.with;
 
-  const httpCode = 401;
+  const httpCode = 404;
   res.status(httpCode);
-  logResponse.with({ httpCode, data });
-  return res.json(formatResponseData.with({ data }));
+  logResponse({ httpCode, data });
+  return res.json(formatResponseData({ data }));
 };

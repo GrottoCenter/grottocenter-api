@@ -27,7 +27,7 @@ module.exports = async (req, res) => {
       });
     }
   } else {
-    return res.status(404).send({
+    return res.notFound({
       message: `Massif of id ${massifId} not found.`,
     });
   }
@@ -39,5 +39,5 @@ module.exports = async (req, res) => {
   );
   await ElasticsearchService.deleteResource('massifs', massifId);
 
-  return res.sendStatus(204);
+  return res.ok();
 };

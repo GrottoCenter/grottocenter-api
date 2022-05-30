@@ -54,7 +54,7 @@ module.exports = async (req, res) => {
         password: createHashedPassword(password),
       });
 
-      return res.sendStatus(204);
+      return res.ok();
     } catch (e) {
       return ErrorService.getDefaultErrorHandler(res)(e);
     }
@@ -72,7 +72,7 @@ module.exports = async (req, res) => {
 
     const userFound = await TCaver.findOne(decodedToken.userId);
     if (!userFound) {
-      return res.status(404).send({
+      return res.notFound({
         message: `User with id ${decodedToken.userId} not found.`,
       });
     }
@@ -102,7 +102,7 @@ module.exports = async (req, res) => {
         password: createHashedPassword(password),
       });
 
-      return res.sendStatus(204);
+      return res.ok();
     };
     TokenService.verify(token, verifyTokenCallback, resetPasswordSalt);
   }

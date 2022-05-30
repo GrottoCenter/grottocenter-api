@@ -25,7 +25,7 @@ module.exports = async (req, res) => {
     name: 'Administrator',
   }).populate('cavers');
   if (!adminGroup) {
-    return res.status(404).send({ message: 'No administrators found.' });
+    return res.notFound({ message: 'No administrators found.' });
   }
   const params = {};
   const admins = adminGroup[0].cavers;
