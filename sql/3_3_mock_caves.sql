@@ -358,8 +358,29 @@ VALUES (
         NULL,
         false,
         NULL
+    ),
+    (
+        36774, 
+        2, 
+        NULL, 
+        NULL, 
+        NULL, 
+        20, 
+        20, 
+        false, 
+        NULL, 
+        5, 
+        '2014-07-11 19:55:52.000', 
+        NULL,
+        '6.58717096450891400000',
+        '46.30014341123712000000',
+        false,
+        NULL
     );
+
+--
 -- Cave names
+--
 INSERT INTO public.t_name (
         id,
         "name",
