@@ -1,4 +1,3 @@
-const CaveService = require('../../../services/CaveService');
 const ControllerService = require('../../../services/ControllerService');
 const ErrorService = require('../../../services/ErrorService');
 const MappingService = require('../../../services/MappingService');
@@ -19,21 +18,15 @@ module.exports = async (req, res) => {
       return res.notFound(`${params.searchedItem} not found`);
     }
 
-    // Populate caves
-    massif.caves = await MassifService.getCaves(massif.id);
-
-    // Populate caves entrances
-    await CaveService.setEntrances(massif.caves);
-    for (const cave of massif.caves) {
-      // eslint-disable-next-line no-await-in-loop
-      await NameService.setNames(cave.entrances, 'entrance');
-    }
+    // Populate entrances
+    massif.entrances = await MassifService.getEntrances(massif.id);
+    await NameService.setNames(massif.entrances, 'entrance');
 
     // Populate networks
-    await MassifService.setNetworks(massif);
+    massif.networks = await MassifService.getNetworks(massif.id);
     await NameService.setNames(massif.networks, 'cave');
 
-    // complete documents descriptions
+    // Complete documents descriptions
     if (massif.documents && massif.documents.length > 0) {
       const promisesArray = [];
       for (const document of massif.documents) {

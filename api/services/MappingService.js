@@ -245,7 +245,7 @@ module.exports = {
     source.forEach((item) =>
       entrances.push(module.exports.convertToEntranceModel(item))
     );
-    return entrances;
+    return { entrances };
   },
 
   convertToCountResultModel: (source) => {
@@ -367,7 +367,9 @@ module.exports = {
       ).descriptions;
     }
     if (source.entrances instanceof Array) {
-      result.entrances = module.exports.convertToEntranceList(source.entrances);
+      result.entrances = module.exports.convertToEntranceList(
+        source.entrances
+      ).entrances;
     }
     if (source.documents instanceof Array) {
       result.documents = module.exports.convertToDocumentList(
@@ -600,15 +602,12 @@ module.exports = {
       result.author = module.exports.convertToCaverModel(source.author);
     }
 
-    // Entrances from caves (from DB)
-    if (source.caves) {
-      let entrances = [];
-      for (const cave of source.caves) {
-        entrances = entrances.concat(
-          module.exports.convertToEntranceList(cave.entrances)
-        );
-      }
-      result.entrances = entrances;
+    if (source.entrances instanceof Array) {
+      result.entrances = module.exports.convertToEntranceList(
+        source.entrances
+      ).entrances;
+    } else {
+      result.entrances = source.entrances;
     }
 
     if (source.descriptions instanceof Array) {
@@ -681,7 +680,7 @@ module.exports = {
     if (source.exploredEntrances instanceof Array) {
       result.exploredEntrances = module.exports.convertToEntranceList(
         source.exploredEntrances
-      );
+      ).entrances;
     }
     if (source.exploredNetworks instanceof Array) {
       result.exploredNetworks = module.exports.convertToCaveList(
@@ -696,7 +695,7 @@ module.exports = {
     if (source.partnerEntrances instanceof Array) {
       result.partnerEntrances = module.exports.convertToEntranceList(
         source.partnerEntrances
-      );
+      ).entrances;
     }
     if (source.partnerNetworks instanceof Array) {
       result.partnerNetworks = module.exports.convertToCaveList(
