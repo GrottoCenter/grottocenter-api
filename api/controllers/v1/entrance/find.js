@@ -54,15 +54,17 @@ module.exports = async (req, res) => {
             });
           });
         }
+        // Populate cave
+        await CaveService.setEntrances([found.cave]);
+        await NameService.setNames([found.cave], 'cave');
+        // eslint-disable-next-line no-param-reassign
+        found.cave.id_author = await CaverService.getCaver(
+          found.cave.id_author,
+          req
+        ); // using id_author because of a bug in Sails ORM... See TCave() file for explaination
       }
 
       // ===== Populate all authors
-      // eslint-disable-next-line no-param-reassign
-      found.cave.id_author = await CaverService.getCaver(
-        found.cave.id_author,
-        req
-      ); // using id_author because of a bug in Sails ORM... See TCave() file for explaination
-
       /* eslint-disable no-return-assign */
       /* eslint-disable no-param-reassign */
       found.comments.map(
@@ -82,10 +84,6 @@ module.exports = async (req, res) => {
       );
       /* eslint-enable no-param-reassign */
       /* eslint-enable no-return-assign */
-
-      // Populate cave
-      await CaveService.setEntrances([found.cave]);
-      await NameService.setNames([found.cave], 'cave');
 
       // Populate document type, descriptions, files & license
       // eslint-disable-next-line no-param-reassign
