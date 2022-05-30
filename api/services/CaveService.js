@@ -179,8 +179,8 @@ module.exports = {
       SELECT m.*
       FROM t_massif as m
       JOIN  t_cave AS c
-      ON ST_Contains(m.geog_polygon, ST_MakePoint(c.longitude, c.latitude) )
-      WHERE c.id = $1 
+      ON ST_Contains(ST_SetSRID(m.geog_polygon::geometry, 4326), ST_SetSRID(ST_MakePoint(c.longitude, c.latitude), 4326))
+      WHERE c.id = $1
     `;
       const queryResult = await CommonService.query(query, [caveId]);
       return queryResult.rows;
