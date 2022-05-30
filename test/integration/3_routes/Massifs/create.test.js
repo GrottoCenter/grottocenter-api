@@ -65,7 +65,7 @@ describe('Massif features', () => {
             ]);
             should(massif.documents.length).equal(2);
             should(massif.documents).containDeep([{ id: 1 }, { id: 2 }]);
-            should(massif.geogPolygon).equal(massifPolygon.geoJson1ToWKT);
+            should(massif.geogPolygon).equal(massifPolygon.geoJson1ToWKB);
             createdMassif = massif;
             return done();
           });
