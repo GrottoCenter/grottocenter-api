@@ -138,13 +138,13 @@ module.exports = async (req, res) => {
               })
               .intercept('rightNotFound', () =>
                 res.serverError(
-                  'A server error occured when checking your right to have a limited view of a sensible entrance.'
+                  'A server error occured when checking your right to have a limited view of a sensitive entrance.'
                 )
               )
           : false;
         if (!hasLimitedViewRight && !hasCompleteViewRight) {
           return res.forbidden(
-            'You are not authorized to view this sensible entrance.'
+            'You are not authorized to view this sensitive entrance.'
           );
         }
         if (!hasCompleteViewRight) {

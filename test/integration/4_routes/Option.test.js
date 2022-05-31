@@ -13,7 +13,9 @@ describe('Option features', () => {
         .expect(200)
         .end((err, res) => {
           if (err) return done(err);
-          const { body: options } = res;
+          const {
+            body: { options },
+          } = res;
           for (const option of options) {
             should(option).have.properties(OPTION_PROPERTIES);
             should(option.id).not.be.undefined();

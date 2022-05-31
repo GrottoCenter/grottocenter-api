@@ -19,7 +19,9 @@ describe('FileFormat features', () => {
         .expect(200)
         .end((err, res) => {
           if (err) return done(err);
-          const { body: fileFormats } = res;
+          const {
+            body: { fileFormats },
+          } = res;
           for (const fileFormat of fileFormats) {
             should(fileFormat).have.properties(FILE_FORMAT_PROPERTIES);
             should(fileFormat.id).not.be.undefined();

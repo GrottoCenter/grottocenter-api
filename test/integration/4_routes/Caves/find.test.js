@@ -40,8 +40,9 @@ describe('Cave features', () => {
         .expect(200)
         .end((err, res) => {
           if (err) return done(err);
-          const { body: caves } = res;
-          sails.log(caves);
+          const {
+            body: { caves },
+          } = res;
           caves.forEach((cave) => {
             should(cave).have.properties(CAVE_PROPERTIES);
             should(cave.name).not.be.empty();

@@ -389,7 +389,7 @@ module.exports = {
     source.forEach((item) =>
       caves.push(module.exports.convertToCaveModel(item))
     );
-    return caves;
+    return { caves };
   },
 
   /**
@@ -630,7 +630,7 @@ module.exports = {
 
     // Networks (from DB)
     if (source.networks) {
-      result.networks = module.exports.convertToCaveList(source.networks);
+      result.networks = module.exports.convertToCaveList(source.networks).caves;
     }
 
     // Nb caves & entrances (from ES)
@@ -687,7 +687,7 @@ module.exports = {
     if (source.exploredNetworks instanceof Array) {
       result.exploredNetworks = module.exports.convertToCaveList(
         source.exploredNetworks
-      );
+      ).caves;
     }
     if (source.documents instanceof Array) {
       result.documents = module.exports.convertToDocumentList(
@@ -702,7 +702,7 @@ module.exports = {
     if (source.partnerNetworks instanceof Array) {
       result.partnerNetworks = module.exports.convertToCaveList(
         source.partnerNetworks
-      );
+      ).caves;
     }
 
     return result;
