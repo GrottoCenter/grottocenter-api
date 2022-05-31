@@ -13,7 +13,9 @@ describe('License features', () => {
         .expect(200)
         .end((err, res) => {
           if (err) return done(err);
-          const { body: licenses } = res;
+          const {
+            body: { licenses },
+          } = res;
           for (const license of licenses) {
             should(license).have.properties(LICENSE_PROPERTIES);
             should(license.id).not.be.undefined();
