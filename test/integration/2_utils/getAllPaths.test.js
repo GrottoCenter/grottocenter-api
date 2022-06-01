@@ -2,7 +2,7 @@ const should = require('should');
 const getAllPaths = require('../../../api/utils/getAllPaths');
 
 describe('getAllPaths util', () => {
-  it('should get all paths to the key "entrance"', async () => {
+  it('should get all paths to the key "entrances"', async () => {
     const testData = {
       name: 'test',
       entrances: [{ id: 1 }, { id: 2 }],
@@ -16,10 +16,12 @@ describe('getAllPaths util', () => {
         id: 42,
         exploredEntrances: [{ id: 1 }],
       },
+      entrance: {
+        id: 4,
+      },
     };
 
-    const res = getAllPaths(testData, 'entrance');
-    sails.log.info(res);
+    const res = getAllPaths(testData, 'entrances');
     should(res).deepEqual([
       'entrances',
       'caves.0.entrances',
