@@ -1,6 +1,6 @@
 const should = require('should');
 const MassifService = require('../../../api/services/MassifService');
-const massifPolygon = require('../3_routes/Massifs/FAKE_DATA');
+const massifPolygon = require('../4_routes/Massifs/FAKE_DATA');
 
 describe('MassifService', () => {
   describe('getCaves', () => {
