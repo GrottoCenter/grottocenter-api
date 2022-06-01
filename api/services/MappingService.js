@@ -298,7 +298,9 @@ module.exports = {
 
     if (source.exploredEntrances) {
       if (source.exploredEntrances instanceof Array) {
-        result.exploredEntrances = source.exploredEntrances;
+        result.exploredEntrances = module.exports.convertToEntranceList(
+          source.exploredEntrances
+        ).entrances;
       } else {
         result.exploredEntrances = source.exploredEntrances
           .split(',')
