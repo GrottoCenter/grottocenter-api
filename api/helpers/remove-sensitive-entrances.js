@@ -2,23 +2,13 @@ const ramda = require('ramda');
 const RightService = require('../services/RightService');
 const getAllPaths = require('../utils/getAllPaths');
 
-const cleanEntrance = (
-  entrance,
-  hasLimitedViewRight,
-  entrancePathsToDelete,
-  keys,
-  idx
-) => {
+const cleanEntrance = (entrance) => {
   if (entrance.isSensitive) {
-    if (hasLimitedViewRight) {
-      /* eslint-disable no-param-reassign */
-      delete entrance.locations;
-      delete entrance.longitude;
-      delete entrance.latitude;
-      /* eslint-enable no-param-reassign */
-    } else {
-      entrancePathsToDelete.push([...keys, idx]);
-    }
+    /* eslint-disable no-param-reassign */
+    delete entrance.locations;
+    delete entrance.longitude;
+    delete entrance.latitude;
+    /* eslint-enable no-param-reassign */
   }
 };
 
@@ -62,18 +52,6 @@ module.exports = {
         )
       : false;
 
-    const hasLimitedViewRight = req.token
-      ? await checkRight({
-          groups: req.token.groups,
-          rightEntity: RightService.RightEntities.ENTRANCE,
-          rightAction: RightService.RightActions.VIEW_LIMITED,
-        }).tolerate('rightNotFound', () =>
-          sails.log.error(
-            'A server error occured when checking your right to have a limited view of a sensitive entrance.'
-          )
-        )
-      : false;
-
     if (!hasCompleteViewRight) {
       const entrancePathsToDelete = [];
       // "entrances" values are array: we need to iterate on them
@@ -86,13 +64,7 @@ module.exports = {
         // Iterate over entrances in list
         for (let idx = 0; idx < entranceList.length; idx += 1) {
           const entrance = entranceList[idx];
-          cleanEntrance(
-            entrance,
-            hasLimitedViewRight,
-            entrancePathsToDelete,
-            keys,
-            idx
-          );
+          cleanEntrance(entrance);
         }
       }
 
@@ -102,12 +74,7 @@ module.exports = {
       for (const path of entrancePaths) {
         const keys = path.split('.');
         const entrance = ramda.pathOr({}, keys, resultData);
-        cleanEntrance(
-          entrance,
-          hasLimitedViewRight,
-          entrancePathsToDelete,
-          keys
-        );
+        cleanEntrance(entrance);
       }
 
       // Perform deletions

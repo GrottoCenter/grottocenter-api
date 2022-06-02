@@ -23,13 +23,17 @@ describe('RemoveSensitiveEntrances helper', () => {
     should(res).deepEqual(sensitiveEntrancesTestData);
   });
 
-  it('should remove coordinates of sensitive entrances for an user', async () => {
-    const res = await removeSensitiveEntrances({
+  it('should remove coordinates of sensitive entrances for an user and a visitor', async () => {
+    const resUser = await removeSensitiveEntrances({
       req: userReq,
       data: sensitiveEntrancesTestData,
     });
+    const resVisitor = await removeSensitiveEntrances({
+      req: visitorReq,
+      data: sensitiveEntrancesTestData,
+    });
 
-    should(res).deepEqual({
+    const expectedResult = {
       ...sensitiveEntrancesTestData,
       entrances: [{ id: 1, isSensitive: true }, { id: 2 }],
       caves: [
@@ -47,25 +51,9 @@ describe('RemoveSensitiveEntrances helper', () => {
         id: 4,
         isSensitive: true,
       },
-    });
-  });
+    };
 
-  it('should remove all sensitive entrances for a visitor', async () => {
-    const res = await removeSensitiveEntrances({
-      req: visitorReq,
-      data: sensitiveEntrancesTestData,
-    });
-
-    should(res).deepEqual({
-      ...sensitiveEntrancesTestData,
-      entrances: [{ id: 2 }],
-      caves: [
-        {
-          id: 1,
-          entrances: [{ id: 2 }],
-        },
-      ],
-      caver: { id: 42, exploredEntrances: [{ id: 2 }], entrance: { id: 1 } },
-    });
+    should(resUser).deepEqual(expectedResult);
+    should(resVisitor).deepEqual(expectedResult);
   });
 });
