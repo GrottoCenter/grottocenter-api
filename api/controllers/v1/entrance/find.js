@@ -6,7 +6,6 @@ const DocumentService = require('../../../services/DocumentService');
 const MappingService = require('../../../services/MappingService');
 const NameService = require('../../../services/NameService');
 const RiggingService = require('../../../services/RiggingService');
-const RightService = require('../../../services/RightService');
 const DescriptionService = require('../../../services/DescriptionService');
 
 module.exports = async (req, res) => {
@@ -23,6 +22,7 @@ module.exports = async (req, res) => {
     .populate('riggings')
     .exec(async (err, found) => {
       const params = {};
+      const entrance = found;
       params.searchedItem = `Entrance of id ${req.params.id}`;
 
       if (err) {
@@ -31,35 +31,32 @@ module.exports = async (req, res) => {
           message: `An unexpected server error occured when trying to get ${params.searchedItem}`,
         });
       }
-      if (!found) {
+      if (!entrance) {
         return res.notFound(`${params.searchedItem} not found`);
       }
 
-      if (found.cave) {
+      if (entrance.cave) {
         // Populate massif
-        // eslint-disable-next-line no-param-reassign
-        found.cave.massifs = await CaveService.getMassifs(found.cave.id);
-        if (found.cave.massifs.length !== 0) {
-          await NameService.setNames(found.cave.massifs, 'massif');
+        entrance.cave.massifs = await CaveService.getMassifs(entrance.cave.id);
+        if (entrance.cave.massifs.length !== 0) {
+          await NameService.setNames(entrance.cave.massifs, 'massif');
           const promiseArray = [];
-          for (const massif of found.cave.massifs) {
+          for (const massif of entrance.cave.massifs) {
             promiseArray.push(
               DescriptionService.getMassifDescriptions(massif.id)
             );
           }
           await Promise.all(promiseArray).then((descriptionsArray) => {
             descriptionsArray.forEach((descriptions, index) => {
-              // eslint-disable-next-line no-param-reassign
-              found.cave.massifs[index].descriptions = descriptions;
+              entrance.cave.massifs[index].descriptions = descriptions;
             });
           });
         }
         // Populate cave
-        await CaveService.setEntrances([found.cave]);
-        await NameService.setNames([found.cave], 'cave');
-        // eslint-disable-next-line no-param-reassign
-        found.cave.id_author = await CaverService.getCaver(
-          found.cave.id_author,
+        await CaveService.setEntrances([entrance.cave]);
+        await NameService.setNames([entrance.cave], 'cave');
+        entrance.cave.id_author = await CaverService.getCaver(
+          entrance.cave.id_author,
           req
         ); // using id_author because of a bug in Sails ORM... See TCave() file for explaination
       }
@@ -67,37 +64,35 @@ module.exports = async (req, res) => {
       // ===== Populate all authors
       /* eslint-disable no-return-assign */
       /* eslint-disable no-param-reassign */
-      found.comments.map(
+      entrance.comments.map(
         async (c) => (c.author = await CaverService.getCaver(c.author, req))
       );
-      found.descriptions.map(
+      entrance.descriptions.map(
         async (d) => (d.author = await CaverService.getCaver(d.author, req))
       );
-      found.histories.map(
+      entrance.histories.map(
         async (h) => (h.author = await CaverService.getCaver(h.author, req))
       );
-      found.locations.map(
+      entrance.locations.map(
         async (l) => (l.author = await CaverService.getCaver(l.author, req))
       );
-      found.riggings.map(
+      entrance.riggings.map(
         async (r) => (r.author = await CaverService.getCaver(r.author, req))
       );
       /* eslint-enable no-param-reassign */
       /* eslint-enable no-return-assign */
 
       // Populate document type, descriptions, files & license
-      // eslint-disable-next-line no-param-reassign
-      found.documents = await Promise.all(
-        found.documents.map(
+      entrance.documents = await Promise.all(
+        entrance.documents.map(
           // eslint-disable-next-line no-return-await
           async (d) => await DocumentService.getDocument(d.id)
         )
       );
 
       // Populate locations
-      // eslint-disable-next-line no-param-reassign
-      found.locations = await Promise.all(
-        found.locations.map(async (l) => {
+      entrance.locations = await Promise.all(
+        entrance.locations.map(async (l) => {
           const language = await TLanguage.findOne(l.language);
           return {
             ...l,
@@ -107,56 +102,15 @@ module.exports = async (req, res) => {
       );
 
       // Populate stats
-      // eslint-disable-next-line no-param-reassign
-      found.stats = await CommentService.getStats(req.params.id);
+      entrance.stats = await CommentService.getStats(req.params.id);
 
       // Format rigging obstacle
-      await RiggingService.formatRiggings(found.riggings);
+      await RiggingService.formatRiggings(entrance.riggings);
 
-      // Sensitive entrance special treatment
-      if (found.isSensitive) {
-        const hasCompleteViewRight = req.token
-          ? await sails.helpers.checkRight
-              .with({
-                groups: req.token.groups,
-                rightEntity: RightService.RightEntities.ENTRANCE,
-                rightAction: RightService.RightActions.VIEW_COMPLETE,
-              })
-              .intercept('rightNotFound', () =>
-                res.serverError(
-                  'A server error occured when checking your right to entirely view an entrance.'
-                )
-              )
-          : false;
-
-        const hasLimitedViewRight = req.token
-          ? await sails.helpers.checkRight
-              .with({
-                groups: req.token.groups,
-                rightEntity: RightService.RightEntities.ENTRANCE,
-                rightAction: RightService.RightActions.VIEW_LIMITED,
-              })
-              .intercept('rightNotFound', () =>
-                res.serverError(
-                  'A server error occured when checking your right to have a limited view of a sensitive entrance.'
-                )
-              )
-          : false;
-        if (!hasLimitedViewRight && !hasCompleteViewRight) {
-          return res.forbidden(
-            'You are not authorized to view this sensitive entrance.'
-          );
-        }
-        if (!hasCompleteViewRight) {
-          delete found.locations; // eslint-disable-line no-param-reassign
-          delete found.longitude; // eslint-disable-line no-param-reassign
-          delete found.latitude; // eslint-disable-line no-param-reassign
-        }
-      }
       return ControllerService.treatAndConvert(
         req,
         err,
-        found,
+        entrance,
         params,
         res,
         MappingService.convertToEntranceModel
