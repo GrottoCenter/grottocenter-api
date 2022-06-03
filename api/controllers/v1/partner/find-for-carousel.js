@@ -1,4 +1,5 @@
 const ControllerService = require('../../../services/ControllerService');
+const MappingService = require('../../../services/MappingService');
 
 module.exports = (req, res) => {
   let skip = 0;
@@ -28,6 +29,13 @@ module.exports = (req, res) => {
       const params = {};
       params.controllerMethod = 'PartnerController.findForCarousel';
       params.notFoundMessage = 'No partners found.';
-      return ControllerService.treat(req, err, found, params, res);
+      return ControllerService.treatAndConvert(
+        req,
+        err,
+        found,
+        params,
+        res,
+        MappingService.convertToOrganizationList
+      );
     });
 };

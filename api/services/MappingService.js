@@ -708,6 +708,16 @@ module.exports = {
     return result;
   },
 
+  convertToOrganizationList: (source) => {
+    const organizations = [];
+    source.forEach((item) =>
+      organizations.push(module.exports.convertToOrganizationModel(item))
+    );
+    return {
+      organizations,
+    };
+  },
+
   // ---------------- Document Mapping ---------------------------
 
   convertToFileModel: (source) => {
