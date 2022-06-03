@@ -20,6 +20,12 @@ module.exports = {
     }
   },
 
+  getMassifDescriptions: async (massifId) => {
+    const descriptions = await TDescription.find()
+      .where({ massif: massifId })
+      .populate('language');
+    return descriptions;
+  },
   getCaveDescriptions: async (caveId) => {
     let descriptions = [];
     if (caveId) {

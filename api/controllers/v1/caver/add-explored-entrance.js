@@ -50,7 +50,7 @@ module.exports = async (req, res) => {
   // Update caver
   try {
     await TCaver.addToCollection(caverId, 'exploredEntrances', entranceId);
-    return res.sendStatus(204);
+    return res.ok();
   } catch (e) {
     return ErrorService.getDefaultErrorHandler(res)(e);
   }

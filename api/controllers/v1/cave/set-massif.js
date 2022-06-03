@@ -23,16 +23,12 @@ module.exports = async (req, res) => {
   // Check params
   const caveId = req.param('caveId');
   if (!(await checkIfExists('id', caveId, TCave))) {
-    return res
-      .status(404)
-      .send({ message: `Cave with id ${caveId} not found.` });
+    return res.notFound({ message: `Cave with id ${caveId} not found.` });
   }
 
   const massifId = req.param('massifId');
   if (!(await checkIfExists('id', massifId, TMassif))) {
-    return res
-      .status(404)
-      .send({ message: `Massif with id ${massifId} not found.` });
+    return res.notFound({ message: `Massif with id ${massifId} not found.` });
   }
 
   // Update cave
@@ -41,5 +37,5 @@ module.exports = async (req, res) => {
   }).set({
     massif: massifId,
   });
-  return res.sendStatus(204);
+  return res.ok();
 };

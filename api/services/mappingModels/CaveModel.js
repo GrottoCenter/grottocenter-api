@@ -15,7 +15,7 @@ module.exports = {
   isDeleted: undefined,
   isDiving: undefined,
   length: undefined,
-  massif: undefined,
+  massifs: [],
   name: undefined,
   names: [],
   reviewer: undefined,

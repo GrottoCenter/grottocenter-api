@@ -28,16 +28,10 @@ module.exports = (req, res) => {
             response[i].proj = words2[j].split('=')[1];
           }
         }
-        if (response[i].proj === 'utm') {
-          sails.log.debug(response[i].definition);
-        }
       }
 
       return res.json(response);
     },
-    (err) => {
-      sails.log.error(err);
-      return res.serverError(`ConvertController.findAllProjs error : ${err}`);
-    }
+    (err) => res.serverError(`ConvertController.findAllProjs error : ${err}`)
   );
 };

@@ -22,7 +22,7 @@ module.exports = async (req, res) => {
   const entranceId = req.param('entranceId');
   const currentEntrance = await TEntrance.findOne(entranceId);
   if (!currentEntrance) {
-    return res.status(404).send({
+    return res.notFound({
       message: `Entrance of id ${entranceId} not found.`,
     });
   }
@@ -35,16 +35,14 @@ module.exports = async (req, res) => {
       sailsModel: TDocument,
     }))
   ) {
-    return res
-      .status(404)
-      .send({ message: `Document of id ${documentId} not found.` });
+    return res.notFound({ message: `Document of id ${documentId} not found.` });
   }
 
   // Update entrance
   TEntrance.addToCollection(entranceId, 'documents', documentId)
-    .then(() => res.sendStatus(204))
+    .then(() => res.ok())
     .catch({ name: 'UsageError' }, (err) => res.badRequest(err.cause.message))
     .catch({ name: 'AdapterError' }, (err) => res.badRequest(err.cause.message))
     .catch((err) => res.serverError(err.cause.message));
-  return res.status(204);
+  return res.ok();
 };

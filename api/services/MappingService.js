@@ -195,9 +195,9 @@ module.exports = {
         isDiving: source['cave is diving'],
       };
     }
-    // Once cave is populated, put the massif at the root of the entrance
+    // Once cave is populated, put the massifs at the root of the entrance
     // (more convenient for the client)
-    result.massif = ramda.pathOr(undefined, ['cave', 'massif'], result);
+    result.massifs = ramda.pathOr(undefined, ['cave', 'massifs'], result);
 
     // Author
     if (source.author instanceof Object) {
@@ -224,7 +224,7 @@ module.exports = {
 
     // Massif from ESearch
     if (source['massif name']) {
-      result.massif = {
+      result.massifs = {
         name: source['massif name'],
       };
     }
@@ -245,7 +245,7 @@ module.exports = {
     source.forEach((item) =>
       entrances.push(module.exports.convertToEntranceModel(item))
     );
-    return entrances;
+    return { entrances };
   },
 
   convertToCountResultModel: (source) => {
@@ -264,6 +264,14 @@ module.exports = {
     return {
       cavers,
     };
+  },
+
+  convertToMassifList: (source) => {
+    const massifs = [];
+    source.forEach((item) => {
+      massifs.push(module.exports.convertToMassifModel(item));
+    });
+    return massifs;
   },
 
   convertToCaverModel: (source) => {
@@ -290,7 +298,9 @@ module.exports = {
 
     if (source.exploredEntrances) {
       if (source.exploredEntrances instanceof Array) {
-        result.exploredEntrances = source.exploredEntrances;
+        result.exploredEntrances = module.exports.convertToEntranceList(
+          source.exploredEntrances
+        ).entrances;
       } else {
         result.exploredEntrances = source.exploredEntrances
           .split(',')
@@ -359,17 +369,17 @@ module.exports = {
       ).descriptions;
     }
     if (source.entrances instanceof Array) {
-      result.entrances = module.exports.convertToEntranceList(source.entrances);
+      result.entrances = module.exports.convertToEntranceList(
+        source.entrances
+      ).entrances;
     }
     if (source.documents instanceof Array) {
       result.documents = module.exports.convertToDocumentList(
         source.documents
       ).documents;
     }
-    if (source.id_massif instanceof Object) {
-      result.massif = module.exports.convertToMassifModel(source.id_massif);
-    } else {
-      result.massif = source.id_massif;
+    if (source.massifs instanceof Array) {
+      result.massifs = module.exports.convertToMassifList(source.massifs);
     }
     return result;
   },
@@ -379,7 +389,7 @@ module.exports = {
     source.forEach((item) =>
       caves.push(module.exports.convertToCaveModel(item))
     );
-    return caves;
+    return { caves };
   },
 
   /**
@@ -594,15 +604,12 @@ module.exports = {
       result.author = module.exports.convertToCaverModel(source.author);
     }
 
-    // Entrances from caves (from DB)
-    if (source.caves) {
-      let entrances = [];
-      for (const cave of source.caves) {
-        entrances = entrances.concat(
-          module.exports.convertToEntranceList(cave.entrances)
-        );
-      }
-      result.entrances = entrances;
+    if (source.entrances instanceof Array) {
+      result.entrances = module.exports.convertToEntranceList(
+        source.entrances
+      ).entrances;
+    } else {
+      result.entrances = source.entrances;
     }
 
     if (source.descriptions instanceof Array) {
@@ -623,7 +630,7 @@ module.exports = {
 
     // Networks (from DB)
     if (source.networks) {
-      result.networks = module.exports.convertToCaveList(source.networks);
+      result.networks = module.exports.convertToCaveList(source.networks).caves;
     }
 
     // Nb caves & entrances (from ES)
@@ -675,12 +682,12 @@ module.exports = {
     if (source.exploredEntrances instanceof Array) {
       result.exploredEntrances = module.exports.convertToEntranceList(
         source.exploredEntrances
-      );
+      ).entrances;
     }
     if (source.exploredNetworks instanceof Array) {
       result.exploredNetworks = module.exports.convertToCaveList(
         source.exploredNetworks
-      );
+      ).caves;
     }
     if (source.documents instanceof Array) {
       result.documents = module.exports.convertToDocumentList(
@@ -690,15 +697,25 @@ module.exports = {
     if (source.partnerEntrances instanceof Array) {
       result.partnerEntrances = module.exports.convertToEntranceList(
         source.partnerEntrances
-      );
+      ).entrances;
     }
     if (source.partnerNetworks instanceof Array) {
       result.partnerNetworks = module.exports.convertToCaveList(
         source.partnerNetworks
-      );
+      ).caves;
     }
 
     return result;
+  },
+
+  convertToOrganizationList: (source) => {
+    const organizations = [];
+    source.forEach((item) =>
+      organizations.push(module.exports.convertToOrganizationModel(item))
+    );
+    return {
+      organizations,
+    };
   },
 
   // ---------------- Document Mapping ---------------------------

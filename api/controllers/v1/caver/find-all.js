@@ -6,7 +6,6 @@ module.exports = (req, res) => {
     parameters.name = {
       like: `%${req.param('name')}%`,
     };
-    sails.log.debug(`parameters ${parameters.name.like}`);
   }
 
   TCaver.find(parameters)

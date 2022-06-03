@@ -1,10 +1,10 @@
 const ramda = require('ramda');
-const CaveService = require('../../../services/CaveService');
 const ControllerService = require('../../../services/ControllerService');
 const ElasticsearchService = require('../../../services/ElasticsearchService');
 const ErrorService = require('../../../services/ErrorService');
 const RightService = require('../../../services/RightService');
 const MassifService = require('../../../services/MassifService');
+
 // eslint-disable-next-line consistent-return
 module.exports = async (req, res) => {
   // Check right
@@ -50,7 +50,6 @@ module.exports = async (req, res) => {
     await sails.getDatastore().transaction(async (db) => {
       const cleanedData = {
         author: req.token.id,
-        caves: req.body.caves ? req.body.caves : [],
         dateInscription: new Date(),
         documents: req.body.documents ? req.body.documents : [],
         geogPolygon: await MassifService.geoJsonToWKT(req.body.geogPolygon),
@@ -84,19 +83,19 @@ module.exports = async (req, res) => {
 
       // Prepare data for Elasticsearch indexation
       const newMassifPopulated = await TMassif.findOne(newMassif.id)
-        .populate('caves')
         .populate('descriptions')
         .populate('names')
         .populate('documents')
         .usingConnection(db);
+      newMassifPopulated.caves = await MassifService.getCaves(newMassif.id);
+      newMassifPopulated.entrances = await MassifService.getEntrances(
+        newMassif.id
+      );
 
-      // Prepare data for Elasticsearch indexation
       const description =
         newMassifPopulated.descriptions.length === 0
           ? null
           : `${newMassifPopulated.descriptions[0].title} ${newMassifPopulated.descriptions[0].body}`;
-
-      await CaveService.setEntrances(newMassifPopulated.caves);
 
       // Format data
       const { cave, name, names, ...newMassifESData } = newMassifPopulated;
@@ -105,10 +104,7 @@ module.exports = async (req, res) => {
         name: newMassifPopulated.names[0].name, // There is only one name at the creation time
         names: newMassifPopulated.names.map((n) => n.name).join(', '),
         'nb caves': newMassifPopulated.caves.length,
-        'nb entrances': newMassifPopulated.caves.reduce(
-          (total, c) => total + c.entrances.length,
-          0
-        ),
+        'nb entrances': newMassifPopulated.entrances.length,
         descriptions: [description],
         tags: ['massif'],
       });

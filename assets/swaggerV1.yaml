@@ -3,7 +3,7 @@ openapi: '3.0.0'
 info:
   description: "This page documents the available Grottocenter's API."
   title: 'Grottocenter 3 - REST API'
-  version: 'v1 - 22.0.14'
+  version: 'v1 - 22.0.17'
   termsOfService: 'https://wiki.grottocenter.org/wiki/GrottoCenter:En/API'
   contact:
     name: 'Slack space'
@@ -2534,8 +2534,10 @@ components:
           type: boolean
         length:
           type: integer
-        massif:
-          $ref: '#/components/schemas/Massif'
+        massifs:
+          type: array
+          items:
+            $ref: '#/components/schemas/Massif'
         name:
           type: string
         names:

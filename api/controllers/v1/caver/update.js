@@ -59,8 +59,7 @@ module.exports = async (req, res) => {
       sailsModel: TCaver,
     }))
   ) {
-    res.status(404);
-    return res.json({ error: `Could not find caver with id ${caverId}.` });
+    return res.notFound({ error: `Could not find caver with id ${caverId}.` });
   }
 
   // Check if the changes requested are authorized (check propretiesUpdatable)
@@ -74,8 +73,9 @@ module.exports = async (req, res) => {
     }
     if (prop === 'mail' || prop === 'password') {
       if (hasRightOfAdmin) {
-        res.status(403);
-        return res.json({ error: `Admin can not update property ${prop}` });
+        return res.forbidden({
+          error: `Admin can not update property ${prop}`,
+        });
       }
     }
   });

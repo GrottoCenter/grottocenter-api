@@ -1,60 +1,32 @@
-/* eslint-disable no-param-reassign */
 /**
- * 200 (OK) Response
+ * 200 / 204 (OK) Response
+ *
+ * Before the request is sent back to the client, this response calls the "remove-sensitive-entrances" helper.
  *
  * Usage:
  * return res.ok();
  * return res.ok(data);
- * return res.ok(data, 'auth/login');
  *
- * @param  {Object} data
- * @param  {String|Object} options
- *          - pass string to render specified view
+ * @param  {Object | string | undefined} data
  */
 
-module.exports = function sendOK(data, options) {
-  // Get access to `req`, `res`, & `sails`
+module.exports = async function sendOK(data) {
   const { req } = this;
   const { res } = this;
   const sails = req._sails; // eslint-disable-line no-underscore-dangle
-
-  sails.log.silly('res.ok() :: Sending 200 ("OK") response');
+  const removeSensitiveEntrances = sails.helpers.removeSensitiveEntrances.with;
+  const formatResponseData = sails.helpers.formatResponseData.with;
+  const logResponse = sails.helpers.logResponse.with;
 
   // Set status code
-  res.status(200);
+  const httpCode = data ? 200 : 204;
+  res.status(httpCode);
 
-  // If appropriate, serve data as JSON(P)
-  if (req.wantsJSON) {
-    // If data is a plain string, cast it to json with a message key
-    if (typeof data === 'string') {
-      return res.json({ message: data });
-    }
-    return res.json(data);
-  }
+  // Filter data
+  const filteredData = data
+    ? await removeSensitiveEntrances({ req, data })
+    : data;
 
-  // If second argument is a string, we take that to mean it refers to a view.
-  // If it was omitted, use an empty object (`{}`)
-  options =
-    typeof options === 'string'
-      ? {
-          view: options,
-        }
-      : options || {};
-
-  // If a view was provided in options, serve it.
-  // Otherwise try to guess an appropriate view, or if that doesn't
-  // work, just send JSON.
-  if (options.view) {
-    return res.view(options.view, {
-      data,
-    });
-  }
-  // If no second argument provided, try to serve the implied view,
-  // but fall back to sending JSON(P) if no view can be inferred.
-  return res.guessView(
-    {
-      data,
-    },
-    () => res.json(data)
-  );
+  logResponse.with({ httpCode, data: filteredData });
+  return res.json(formatResponseData.with({ data: filteredData }));
 };

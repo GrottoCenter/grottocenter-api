@@ -1,4 +1,5 @@
 const ramda = require('ramda');
+const CommonService = require('./CommonService');
 const ElasticsearchService = require('./ElasticsearchService');
 
 module.exports = {
@@ -158,7 +159,6 @@ module.exports = {
     depth: req.param('depth'),
     documents: req.param('documents'),
     id_author: req.token.id,
-    id_massif: req.param('massif'),
     is_diving: req.param('isDiving'),
     latitude: req.param('latitude'),
     longitude: req.param('longitude'),
@@ -166,6 +166,29 @@ module.exports = {
     massif: req.param('massif'),
     temperature: req.param('temperature'),
   }),
+
+  /**
+   * Get the massifs in which the cave is contained.
+   * If there is none, return an empty array.
+   * @param {*} caveId
+   * @returns [Massif]
+   */
+  getMassifs: async (caveId) => {
+    try {
+      const query = `
+      SELECT m.*
+      FROM t_massif as m
+      JOIN  t_cave AS c
+      ON ST_Contains(ST_SetSRID(m.geog_polygon::geometry, 4326), ST_SetSRID(ST_MakePoint(c.longitude, c.latitude), 4326))
+      WHERE c.id = $1
+    `;
+      const queryResult = await CommonService.query(query, [caveId]);
+      return queryResult.rows;
+    } catch (e) {
+      // Fail silently (happens when the longitude and latitude are null for example)
+      return [];
+    }
+  },
 
   deleteCave: async (caveId) => {
     sails.log.info(`Deleting cave with id ${caveId}`);

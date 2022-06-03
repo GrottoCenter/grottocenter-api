@@ -43,20 +43,18 @@ const treatRange = (parameters, res, converter, found) => {
     `<${first}>; rel="first",  <${prev}>; rel="prev", <${next}>; rel="next",  <${last}>; rel="last"`
   );
 
-  return res.status(206).json(converter(found));
+  return res.partialContent(converter(found));
 };
 
 module.exports = {
   treat: (req, err, found, parameters, res) => {
     if (err) {
-      sails.log.error(err);
       return res.badRequest(`${parameters.controllerMethod} error: ${err}`);
     }
     if (!found) {
-      sails.log.debug(parameters.notFoundMessage);
-      return res.notFound();
+      return res.notFound(parameters.notFoundMessage);
     }
-    return res.json(found);
+    return res.ok(found);
   },
 
   treatAndConvert: (req, err, found, parameters, res, converter) => {
@@ -65,19 +63,16 @@ module.exports = {
       '<https://ontology.uis-speleo.org/grottocenter.org_context.jsonld>; rel="http://www.w3.org/ns/json-ld#context"; type="application/ld+json"'
     );
     if (err) {
-      const errorMessage = `An internal error occurred when getting ${parameters.searchedItem}`;
-      sails.log.error(`${errorMessage}: ${err}`);
-      return res.status(500).json({ error: errorMessage });
+      return res.serverError(
+        `An internal error occurred when getting ${parameters.searchedItem}`
+      );
     }
     if (!found) {
-      const notFoundMessage = `${parameters.searchedItem} not found`;
-      sails.log.debug(notFoundMessage);
-      res.status(404);
-      return res.status(404).json({ error: notFoundMessage });
+      return res.notFound(`${parameters.searchedItem} not found`);
     }
     if (parameters.total > found.length) {
       return treatRange(parameters, res, converter, found);
     }
-    return res.json(converter(found));
+    return res.ok(converter(found));
   },
 };

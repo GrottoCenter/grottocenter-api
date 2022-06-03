@@ -61,12 +61,11 @@ module.exports = async (req, res) => {
         .where(whereClause)
         .exec(async (error, countFound) => {
           if (error) {
-            sails.log.error(error);
             return res.serverError('An unexpected server error occured.');
           }
 
           if (found.length === 0) {
-            return res.status(200).send({
+            return res.ok({
               documents: [],
               message: `There is no document matching your criterias. It can be because sorting by ${sort} is not supported.`,
             });

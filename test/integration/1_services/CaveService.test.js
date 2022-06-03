@@ -268,4 +268,11 @@ describe('CaveService', () => {
       await TName.destroy({ name: name2Data.name });
     });
   });
+
+  describe('getMassif()', () => {
+    it('should get the caves inside the geogPolygon of a massif', async () => {
+      const massifs = await CaveService.getMassifs(3);
+      should(massifs).containDeep([{ id: 1 }]);
+    });
+  });
 });

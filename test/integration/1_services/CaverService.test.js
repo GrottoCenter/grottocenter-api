@@ -6,9 +6,7 @@ describe('CaverService', () => {
   const userReq = {};
   const adminReq = {};
   before(async () => {
-    sails.log.info('Asking for user token...');
     userReq.token = await AuthTokenService.getUserToken();
-    sails.log.info('Asking for admin token...');
     adminReq.token = await AuthTokenService.getAdminToken();
   });
 

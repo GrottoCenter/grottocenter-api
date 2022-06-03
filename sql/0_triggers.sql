@@ -190,8 +190,7 @@ INSERT INTO h_cave (
         date_inscription,
         date_reviewed,
         longitude,
-        latitude,
-        id_massif
+        latitude
     )
 VALUES (
         OLD.id,
@@ -207,8 +206,7 @@ VALUES (
         OLD.date_inscription,
         date_r,
         OLD.longitude,
-        OLD.latitude,
-        OLD.id_massif
+        OLD.latitude
     );
 end if;
 --on insert la valeur de la date de modification dans t_cave

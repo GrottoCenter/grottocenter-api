@@ -3,7 +3,6 @@ const RightService = require('../../../services/RightService');
 
 module.exports = async (req, res) => {
   // Check right
-  sails.log.error(req.token);
   const hasRight = await sails.helpers.checkRight
     .with({
       groups: req.token.groups,
@@ -35,7 +34,7 @@ module.exports = async (req, res) => {
       mail: req.param('email'),
     });
 
-    return res.sendStatus(204);
+    return res.ok();
   } catch (e) {
     return ErrorService.getDefaultErrorHandler(res)(e);
   }

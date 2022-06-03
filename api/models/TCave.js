@@ -122,11 +122,6 @@ module.exports = {
       columnName: 'redirect_to',
     },
 
-    id_massif: {
-      columnName: 'id_massif',
-      model: 'TMassif',
-    },
-
     exploringGrottos: {
       collection: 'TGrotto',
       via: 'cave',

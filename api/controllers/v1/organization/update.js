@@ -26,7 +26,7 @@ module.exports = async (req, res) => {
   const organizationId = req.param('id');
   const currentOrganization = await TGrotto.findOne(organizationId);
   if (!currentOrganization) {
-    return res.status(404).send({
+    return res.notFound({
       message: `Organization of id ${organizationId} not found.`,
     });
   }

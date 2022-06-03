@@ -88,7 +88,7 @@ module.exports = async (req, res) => {
 
   // Entity not found handling
   if (!doesEntityExists) {
-    return res.status(404).send({
+    return res.notFound({
       message: `The ${describedEntity.type} with id ${describedEntity.id} was not found.`,
     });
   }

@@ -607,8 +607,40 @@ VALUES (
         'Q82480    ',
         false,
         NULL
+    ), 
+    (
+        36774, 
+        'entrance', 
+        1, 
+        NULL, 
+        'Haute-Savoie (74), Auvergne-Rhône-Alpes (ARA)', 
+        'Haute-Savoie',
+        NULL, 
+        'Nancy-sur-Cluses', 
+        NULL, 
+        NULL, 
+        NULL, 
+        '2014-07-11 19:55:52.000', 
+        NULL, 
+        true, 
+        false, 
+        NULL, 
+        'NO,NO,NO,NO', 
+        false, 
+        46.30014341123712000000, 
+        6.58717096450891400000, 
+        1800, 
+        false, 
+        36774, 
+        'FR', 
+        'Q82480    ', 
+        false, 
+        NULL
     );
+
+--
 -- Entrance names
+--
 INSERT INTO public.t_name (
         id,
         "name",
@@ -860,4 +892,17 @@ VALUES (
         'fra',
         5,
         false
+    ),
+    (
+        101692,
+        'Pont de Pierre (Gouffre du) [C005] [C5]', 
+        true, 
+        427, 
+        NULL, 
+        '2014-07-11 19:55:52.000', 
+        NULL, 
+        'fra', 
+        36774, 
+        false
     );
+;

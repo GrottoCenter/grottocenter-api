@@ -29,7 +29,7 @@ module.exports = async (req, res) => {
       sailsModel: TLocation,
     }))
   ) {
-    return res.status(404).send({
+    return res.notFound({
       message: `Location of id ${locationId} not found.`,
     });
   }
