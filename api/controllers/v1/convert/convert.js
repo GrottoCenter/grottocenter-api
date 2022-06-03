@@ -28,9 +28,6 @@ module.exports = (req, res) => {
             response[i].proj = words2[j].split('=')[1];
           }
         }
-        if (response[i].proj === 'utm') {
-          sails.log.debug(response[i].definition);
-        }
       }
 
       return res.json(response);
