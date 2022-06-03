@@ -1,4 +1,13 @@
 module.exports = {
+  simpleEntranceData: {
+    '@base': 'entrances/',
+    id: 42,
+    longitude: 42.323232,
+    latitude: 5.654765,
+    locations: [{ id: 1 }, { id: 2 }],
+    isSensitive: true,
+    name: 'Test entrance',
+  },
   sensitiveEntrancesTestData: {
     name: 'test',
     entrances: [

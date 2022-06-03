@@ -53,7 +53,6 @@ module.exports = {
       : false;
 
     if (!hasCompleteViewRight) {
-      const entrancePathsToDelete = [];
       // "entrances" values are array: we need to iterate on them
       const entrancesPaths = getAllPaths(resultData, 'entrances');
 
@@ -77,17 +76,9 @@ module.exports = {
         cleanEntrance(entrance);
       }
 
-      // Perform deletions
-      for (const path of entrancePathsToDelete) {
-        sails.log.info('deleting ', path);
-        const keys = path.slice(0, -1);
-        const prop = path.slice(-1);
-        const parent = keys.reduce((obj, key) => obj[key], resultData);
-        if (Array.isArray(parent)) {
-          parent.splice(prop, 1);
-        } else {
-          delete parent[prop];
-        }
+      // Entrance object at the root of the data
+      if (resultData.isSensitive && resultData['@base'] === 'entrances/') {
+        cleanEntrance(resultData);
       }
     }
 

@@ -1,6 +1,9 @@
 const should = require('should');
 const AuthTokenService = require('../AuthTokenService');
-const { sensitiveEntrancesTestData } = require('./FAKE_DATA');
+const {
+  sensitiveEntrancesTestData,
+  simpleEntranceData,
+} = require('./FAKE_DATA');
 
 describe('RemoveSensitiveEntrances helper', () => {
   const adminReq = {};
@@ -15,25 +18,38 @@ describe('RemoveSensitiveEntrances helper', () => {
   });
 
   it('should not remove anything for an administrator', async () => {
-    const res = await removeSensitiveEntrances({
+    const multipleEntrancesRes = await removeSensitiveEntrances({
       req: adminReq,
       data: sensitiveEntrancesTestData,
     });
+    const simpleEntranceRes = await removeSensitiveEntrances({
+      req: adminReq,
+      data: simpleEntranceData,
+    });
 
-    should(res).deepEqual(sensitiveEntrancesTestData);
+    should(multipleEntrancesRes).deepEqual(sensitiveEntrancesTestData);
+    should(simpleEntranceRes).deepEqual(simpleEntranceData);
   });
 
   it('should remove coordinates of sensitive entrances for an user and a visitor', async () => {
-    const resUser = await removeSensitiveEntrances({
+    const multipleEntrancesResUser = await removeSensitiveEntrances({
       req: userReq,
       data: sensitiveEntrancesTestData,
     });
-    const resVisitor = await removeSensitiveEntrances({
+    const multipleEntrancesResVisitor = await removeSensitiveEntrances({
       req: visitorReq,
       data: sensitiveEntrancesTestData,
     });
+    const simpleEntranceResUser = await removeSensitiveEntrances({
+      req: userReq,
+      data: simpleEntranceData,
+    });
+    const simpleEntranceResVisitor = await removeSensitiveEntrances({
+      req: visitorReq,
+      data: simpleEntranceData,
+    });
 
-    const expectedResult = {
+    const expectedMultipleEntrancesResult = {
       ...sensitiveEntrancesTestData,
       entrances: [{ id: 1, isSensitive: true }, { id: 2 }],
       caves: [
@@ -53,7 +69,14 @@ describe('RemoveSensitiveEntrances helper', () => {
       },
     };
 
-    should(resUser).deepEqual(expectedResult);
-    should(resVisitor).deepEqual(expectedResult);
+    const { longitude, latitude, locations, ...expectedSimpleEntranceResult } =
+      simpleEntranceData;
+
+    should(multipleEntrancesResUser).deepEqual(expectedMultipleEntrancesResult);
+    should(multipleEntrancesResVisitor).deepEqual(
+      expectedMultipleEntrancesResult
+    );
+    should(simpleEntranceResUser).deepEqual(expectedSimpleEntranceResult);
+    should(simpleEntranceResVisitor).deepEqual(expectedSimpleEntranceResult);
   });
 });
