@@ -7,19 +7,16 @@ const MappingService = require('../../../services/MappingService');
 const NameService = require('../../../services/NameService');
 const RiggingService = require('../../../services/RiggingService');
 const DescriptionService = require('../../../services/DescriptionService');
+const HistoryService = require('../../../services/HistoryService');
+const LocationService = require('../../../services/LocationService');
 
 module.exports = async (req, res) => {
   TEntrance.findOne(req.params.id)
     .populate('author')
     .populate('cave')
-    .populate('comments')
-    .populate('descriptions')
     .populate('documents')
     .populate('geology')
-    .populate('histories')
-    .populate('locations')
     .populate('names')
-    .populate('riggings')
     .exec(async (err, found) => {
       const params = {};
       const entrance = found;
@@ -61,26 +58,18 @@ module.exports = async (req, res) => {
         ); // using id_author because of a bug in Sails ORM... See TCave() file for explaination
       }
 
-      // ===== Populate all authors
-      /* eslint-disable no-return-assign */
-      /* eslint-disable no-param-reassign */
-      entrance.comments.map(
-        async (c) => (c.author = await CaverService.getCaver(c.author, req))
+      entrance.descriptions = await DescriptionService.getEntranceDescriptions(
+        entrance.id
       );
-      entrance.descriptions.map(
-        async (d) => (d.author = await CaverService.getCaver(d.author, req))
+      entrance.histories = await HistoryService.getEntranceHistories(
+        entrance.id
       );
-      entrance.histories.map(
-        async (h) => (h.author = await CaverService.getCaver(h.author, req))
+      entrance.locations = await LocationService.getEntranceLocations(
+        entrance.id
       );
-      entrance.locations.map(
-        async (l) => (l.author = await CaverService.getCaver(l.author, req))
-      );
-      entrance.riggings.map(
-        async (r) => (r.author = await CaverService.getCaver(r.author, req))
-      );
-      /* eslint-enable no-param-reassign */
-      /* eslint-enable no-return-assign */
+      entrance.comments = await CommentService.getEntranceComments(entrance.id);
+
+      entrance.riggings = await RiggingService.getEntranceRiggings(entrance.id);
 
       // Populate document type, descriptions, files & license
       entrance.documents = await Promise.all(
@@ -88,17 +77,6 @@ module.exports = async (req, res) => {
           // eslint-disable-next-line no-return-await
           async (d) => await DocumentService.getDocument(d.id)
         )
-      );
-
-      // Populate locations
-      entrance.locations = await Promise.all(
-        entrance.locations.map(async (l) => {
-          const language = await TLanguage.findOne(l.language);
-          return {
-            ...l,
-            language,
-          };
-        })
       );
 
       // Populate stats

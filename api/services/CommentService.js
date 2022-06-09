@@ -66,4 +66,16 @@ module.exports = {
       eTUnderground: avgTUndergroundFormatted,
     };
   },
+  getEntranceComments: async (entranceId) => {
+    let comments = [];
+    if (entranceId) {
+      comments = await TComment.find()
+        .where({
+          entrance: entranceId,
+        })
+        .populate('author')
+        .populate('language');
+    }
+    return comments;
+  },
 };

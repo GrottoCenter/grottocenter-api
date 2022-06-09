@@ -45,6 +45,7 @@ before(function (done) {
           'tgrotto',
           'tdocument',
           'tdescription',
+          'tlocation',
           'tcave',
           'tentrance',
           'tmassif',

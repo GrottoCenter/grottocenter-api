@@ -262,5 +262,13 @@
   {
     "id": 112,
     "name": "Entrance - unmark as sensitive"
+  },
+  {
+    "id": 113,
+    "name": "History - edit any"
+  },
+  {
+    "id": 114,
+    "name": "History - create"
   }
 ]

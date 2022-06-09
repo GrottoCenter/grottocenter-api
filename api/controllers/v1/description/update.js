@@ -32,6 +32,9 @@ module.exports = async (req, res) => {
   const cleanedData = {
     body: req.param('body') ? req.param('body') : currentDescription.body,
     title: req.param('title') ? req.param('title') : currentDescription.title,
+    language: req.param('language')
+      ? req.param('language')
+      : currentDescription.language,
   };
 
   // Launch update request
