@@ -38,4 +38,16 @@ module.exports = {
     }
     return descriptions;
   },
+  getEntranceDescriptions: async (entranceId) => {
+    let descriptions = [];
+    if (entranceId) {
+      descriptions = await TDescription.find()
+        .where({
+          entrance: entranceId,
+        })
+        .populate('author')
+        .populate('language');
+    }
+    return descriptions;
+  },
 };

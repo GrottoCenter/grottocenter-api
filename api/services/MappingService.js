@@ -12,6 +12,7 @@ const CaveModel = require('./mappingModels/CaveModel');
 const CaverModel = require('./mappingModels/CaverModel');
 const CountResultModel = require('./mappingModels/CountResultModel');
 const DescriptionModel = require('./mappingModels/DescriptionModel');
+const HistoryModel = require('./mappingModels/HistoryModel');
 const DocumentDuplicateModel = require('./mappingModels/DocumentDuplicateModel');
 const DocumentModel = require('./mappingModels/DocumentModel');
 const EntranceDuplicateModel = require('./mappingModels/EntranceDuplicateModel');
@@ -76,7 +77,6 @@ module.exports = {
     result.dateInscription = source.dateInscription;
     result.dateReviewed = source.dateReviewed;
     result.id = source.id;
-    result.language = source.language;
     result.point = source.point;
     result.relevance = source.relevance;
     result.title = source.title;
@@ -106,7 +106,42 @@ module.exports = {
       source.reviewer instanceof Object
         ? module.exports.convertToCaverModel(source.reviewer)
         : undefined;
+    result.language =
+      source.language instanceof Object
+        ? module.exports.convertToLanguageModel(source.language)
+        : undefined;
+    return result;
+  },
 
+  convertToHistoryModel: (source) => {
+    const result = {
+      ...HistoryModel,
+    };
+
+    result.body = source.body;
+    result.dateInscription = source.dateInscription;
+    result.dateReviewed = source.dateReviewed;
+    result.id = source.id;
+    result.point = source.point;
+    result.relevance = source.relevance;
+
+    result.author = module.exports.convertToCaverModel(source.author);
+    result.cave =
+      source.cave instanceof Object
+        ? module.exports.convertToCaveModel(source.cave)
+        : undefined;
+    result.entrance =
+      source.entrance instanceof Object
+        ? module.exports.convertToEntranceModel(source.entrance)
+        : undefined;
+    result.reviewer =
+      source.reviewer instanceof Object
+        ? module.exports.convertToCaverModel(source.reviewer)
+        : undefined;
+    result.language =
+      source.language instanceof Object
+        ? module.exports.convertToLanguageModel(source.language)
+        : undefined;
     return result;
   },
 

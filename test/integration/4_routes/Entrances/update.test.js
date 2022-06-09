@@ -54,6 +54,7 @@ describe('Entrance features', () => {
           names: initialEntrance.names.map((x) => x.id),
           reviewer: initialEntrance.reviewer?.id,
           riggings: initialEntrance.riggings.map((x) => x.id),
+          locations: initialEntrance.locations.map((x) => x.id),
         };
         await TEntrance.update(entranceId).set(cleanedData);
       });

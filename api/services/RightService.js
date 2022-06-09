@@ -18,6 +18,7 @@ module.exports = {
     MASSIF: 'Massif',
     NAME: 'Name',
     RIGHT: 'Right',
+    HISTORY: 'History',
   },
 
   RightActions: {

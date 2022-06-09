@@ -673,7 +673,7 @@ paths:
     patch:
       tags:
         - descriptions
-      description: Update a description body and/or title (you can provide one or both).
+      description: Update a description body and/or title and/or language (you can provide one or multiple).
       parameters:
         - name: id
           in: path
@@ -685,6 +685,10 @@ paths:
           schema:
             type: string
         - name: title
+          in: query
+          schema:
+            type: string
+        - name: language
           in: query
           schema:
             type: string
@@ -1219,7 +1223,7 @@ paths:
     patch:
       tags:
         - locations
-      description: Update a location's body and/or title (you can provide one or both).
+      description: Update a location's body and/or title and/or language (you can provide one or multiple).
       parameters:
         - name: id
           in: path
@@ -1234,6 +1238,10 @@ paths:
           in: query
           schema:
             type: string
+        - name: language
+          in: query
+          schema:
+            type: string
 
       responses:
         '200':
@@ -1242,6 +1250,71 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Location'
+
+  '/histories':
+    post:
+      tags:
+        - histories
+      description: Create an history. You must provide an existing entrance id which your history is refering to.
+      parameters:
+        - name: body
+          in: query
+          required: true
+          description: Content of the history.
+          schema:
+            type: string
+        - name: language
+          in: query
+          required: true
+          description: Language id used for the body. The list of languages supported by Grottocenter is available using the /languages route.
+          schema:
+            type: string
+        - name: entrance
+          in: query
+          required: true
+          description: Entrance id which the history is referring to.
+          schema:
+            type: integer
+
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/History'
+        '400':
+          description: Some required information are missing (body, language or entrance id).
+        '404':
+          description: The entrance which the history is referring to was not found.
+
+  '/histories/{id}':
+    patch:
+      tags:
+        - histories
+      description: Update an history's body and/or language (you can provide one or multiple).
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: body
+          in: query
+          schema:
+            type: string
+        - name: language
+          in: query
+          schema:
+            type: string
+
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/History'
 
   '/names/{id}':
     patch:

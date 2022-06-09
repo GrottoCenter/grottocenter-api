@@ -10,5 +10,12 @@
     "author": 1,
     "body": "This is the part 2 of the history of the cave.",
     "id_cave": 1
+  },
+  {
+    "id": 3,
+    "author": 1,
+    "body": "old body",
+    "relevance": 11,
+    "entrance": 1
   }
 ]
