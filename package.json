@@ -10,7 +10,7 @@
     "@aws-sdk/client-ses": "^3.109.0",
     "@azure/storage-blob": "^12.10.0",
     "@date-io/date-fns": "^2.14.0",
-    "async": "^3.2.3",
+    "async": "^3.2.4",
     "dotenv": "^16.0.1",
     "ejs": "^3.1.8",
     "elasticsearch": "^16.7.3",
