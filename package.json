@@ -75,7 +75,7 @@
     "mocha": "^10.0.0",
     "nodemon": "^2.0.16",
     "nyc": "^15.1.0",
-    "prettier": "^2.6.2",
+    "prettier": "^2.7.1",
     "sails-disk": "^2.1.1",
     "sails-hook-grunt": "^5.0.0",
     "should": "^13.2.3",
