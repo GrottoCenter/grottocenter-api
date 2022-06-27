@@ -73,7 +73,7 @@
     "husky": "^8.0.1",
     "lint-staged": "^13.0.3",
     "mocha": "^10.0.0",
-    "nodemon": "^2.0.16",
+    "nodemon": "^2.0.18",
     "nyc": "^15.1.0",
     "prettier": "^2.7.1",
     "sails-disk": "^2.1.1",
