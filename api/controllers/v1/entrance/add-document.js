@@ -1,3 +1,4 @@
+const ErrorService = require('../../../services/ErrorService');
 const RightService = require('../../../services/RightService');
 
 module.exports = async (req, res) => {
@@ -39,10 +40,10 @@ module.exports = async (req, res) => {
   }
 
   // Update entrance
-  TEntrance.addToCollection(entranceId, 'documents', documentId)
-    .then(() => res.ok())
-    .catch({ name: 'UsageError' }, (err) => res.badRequest(err.cause.message))
-    .catch({ name: 'AdapterError' }, (err) => res.badRequest(err.cause.message))
-    .catch((err) => res.serverError(err.cause.message));
-  return res.ok();
+  try {
+    await TEntrance.addToCollection(entranceId, 'documents', documentId);
+    return res.ok();
+  } catch (e) {
+    return ErrorService.getDefaultErrorHandler(res)(e);
+  }
 };
