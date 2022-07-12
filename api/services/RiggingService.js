@@ -3,9 +3,6 @@ const R = require('ramda');
 const SEPARATOR = '|;|';
 
 module.exports = {
-  /**
-   * @param {string} document to document to set names including its parent if present
-   */
   formatRiggings: async (riggings) => {
     riggings.map((rigging) => {
       const splitRiggingData = (dataName) =>
@@ -34,5 +31,17 @@ module.exports = {
         );
       return rigging;
     });
+  },
+  getEntranceRiggings: async (entranceId) => {
+    let riggings = [];
+    if (entranceId) {
+      riggings = await TRigging.find()
+        .where({
+          entrance: entranceId,
+        })
+        .populate('author')
+        .populate('language');
+    }
+    return riggings;
   },
 };

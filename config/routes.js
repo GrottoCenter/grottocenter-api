@@ -199,6 +199,10 @@ module.exports.routes = {
   'POST /api/v1/locations': 'v1/location/create',
   'PUT /api/v1/locations/:id': 'v1/location/update',
 
+  // History
+  'POST /api/v1/histories': 'v1/history/create',
+  'PUT /api/v1/histories/:id': 'v1/history/update',
+
   // Document Subject
   'GET /api/v1/documents/subjects': 'v1/subject/find-all',
   'GET /api/v1/documents/subjects/:code': {
