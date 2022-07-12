@@ -38,7 +38,14 @@ module.exports = async (req, res) => {
 
   // Update cave
   try {
-    await TCave.addToCollection(caveId, 'documents', documentId);
+    /**
+     * TCave.addToCollection() is not used here because of the Grottocenter's historization process.
+     * To avoid an uniqueness error, the dateReviewed must be set at the same time the cave id is set, which can't be accomplished with addToCollection().
+     * */
+    await TDocument.updateOne(documentId).set({
+      dateReviewed: new Date(),
+      cave: caveId,
+    });
     return res.ok();
   } catch (e) {
     return ErrorService.getDefaultErrorHandler(res)(e);
