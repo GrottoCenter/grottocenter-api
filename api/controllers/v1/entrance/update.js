@@ -37,9 +37,13 @@ module.exports = async (req, res) => {
   };
 
   // Check if sensitive change is permitted
+  const entrance = await TEntrance.findOne(entranceId);
   const { isSensitive: newIsSensitiveValue } = cleanedData;
 
-  if (newIsSensitiveValue !== undefined) {
+  if (
+    newIsSensitiveValue !== undefined &&
+    newIsSensitiveValue !== entrance.isSensitive
+  ) {
     const hasSensitiveRight = await checkRight({
       groups: req.token.groups,
       rightEntity: RightService.RightEntities.ENTRANCE,

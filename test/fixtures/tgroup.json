@@ -3,7 +3,7 @@
     "id": 1,
     "name": "Administrator",
     "comments": "Technical responsible of the application.",
-    "rights": [9, 11, 13, 14, 85, 100, 104, 105, 106]
+    "rights": [9, 11, 13, 14, 85, 100, 104, 105, 106, 112]
   },
   {
     "id": 2,
