@@ -4,10 +4,10 @@ const should = require('should');
 const AuthTokenService = require('../../AuthTokenService');
 
 describe('Entrance features', () => {
-  let adminToken;
+  let allGroupsToken;
   let userToken;
   before(async () => {
-    adminToken = await AuthTokenService.getRawBearerAdminToken();
+    allGroupsToken = await AuthTokenService.getRawBearerAllGroupsToken();
     userToken = await AuthTokenService.getRawBearerUserToken();
   });
 
@@ -71,17 +71,28 @@ describe('Entrance features', () => {
             })
             .expect(403, done);
         });
-        it('should return code 200 on unmarking sensitive entrance by an admin', (done) => {
+        it('should return code 200 on unmarking sensitive entrance by an admin (which is user too)', (done) => {
           supertest(sails.hooks.http.app)
             .put(`/api/v1/entrances/${entranceId}`)
-            .set('Authorization', adminToken)
+            .set('Authorization', allGroupsToken)
             .set('Content-type', 'application/json')
             .set('Accept', 'application/json')
             .send({
               isSensitive: false,
             })
-            .expect(403, done);
+            .expect(200, done);
         });
+      });
+      it("should return code 200 on unmarking sensitive entrance (even if it's not sensitive already) by an user", (done) => {
+        supertest(sails.hooks.http.app)
+          .put(`/api/v1/entrances/${entranceId}`)
+          .set('Authorization', userToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .send({
+            isSensitive: false,
+          })
+          .expect(200, done);
       });
 
       it('should return code 200 on basic data update', (done) => {
