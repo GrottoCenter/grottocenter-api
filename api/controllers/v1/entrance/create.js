@@ -51,6 +51,7 @@ module.exports = async (req, res) => {
   // Get data & create entrance
   const cleanedData = {
     ...EntranceService.getConvertedDataFromClientRequest(req),
+    author: req.token.id,
     dateInscription: new Date(),
     isOfInterest: false,
   };
