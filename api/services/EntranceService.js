@@ -60,7 +60,6 @@ module.exports = {
     }
     return {
       ...reqBodyWithoutId,
-      author: req.token.id,
       geology: ramda.propOr('Q35758', 'geology', req.body),
       isSensitive,
     };
