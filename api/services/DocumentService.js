@@ -141,7 +141,6 @@ module.exports = {
 
     return {
       ...reqBodyWithoutId,
-      author: req.token.id,
       authorizationDocument: ramda.pathOr(
         undefined,
         ['authorizationDocument', 'id'],

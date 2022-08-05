@@ -158,7 +158,6 @@ module.exports = {
     // The TCave.create() function doesn't work with TCave field alias. See TCave.js Model
     depth: req.param('depth'),
     documents: req.param('documents'),
-    id_author: req.token.id,
     is_diving: req.param('isDiving'),
     latitude: req.param('latitude'),
     longitude: req.param('longitude'),
