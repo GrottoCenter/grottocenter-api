@@ -25,6 +25,7 @@ module.exports = async (req, res) => {
 
   const cleanedData = {
     ...dataFromClient,
+    author: req.token.id,
     dateInscription: new Date(),
   };
 
