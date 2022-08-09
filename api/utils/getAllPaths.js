@@ -14,7 +14,7 @@ const getAllPaths = (obj, searchedKey, prev = '') => {
       // use toLowerCase() to match property like "exploredEntrances" for the key "entrances"
       if (key.toLowerCase().endsWith(searchedKey)) {
         result.push(path);
-      } else if (typeof obj[key] === 'object') {
+      } else if (typeof obj[key] === 'object' && obj[key] !== null) {
         result.push(...getAllPaths(obj[key], searchedKey, path));
       }
     }
