@@ -67,18 +67,23 @@ module.exports = {
         }
       }
 
-      // "entrance" values are object
-      const entrancePaths = getAllPaths(resultData, 'entrance');
-      // Iterate over entrances
-      for (const path of entrancePaths) {
-        const keys = path.split('.');
-        const entrance = ramda.pathOr({}, keys, resultData);
-        cleanEntrance(entrance);
-      }
+      // getAllPaths can throw a "Maximum call stack size exceeded" error if the data is too big.
+      try {
+        // "entrance" values are object
+        const entrancePaths = getAllPaths(resultData, 'entrance');
+        // Iterate over entrances
+        for (const path of entrancePaths) {
+          const keys = path.split('.');
+          const entrance = ramda.pathOr({}, keys, resultData);
+          cleanEntrance(entrance);
+        }
 
-      // Entrance object at the root of the data
-      if (resultData.isSensitive && resultData['@base'] === 'entrances/') {
-        cleanEntrance(resultData);
+        // Entrance object at the root of the data
+        if (resultData.isSensitive && resultData['@base'] === 'entrances/') {
+          cleanEntrance(resultData);
+        }
+      } catch (err) {
+        sails.log.error(err);
       }
     }
 
