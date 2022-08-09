@@ -62,8 +62,6 @@ module.exports = {
       logSeverity = 'error';
     }
 
-    console.log(data);
-
     if (data !== undefined) {
       sails.log[logSeverity](
         `Sending ${httpCode} ("${responseType}") response: \n`,
