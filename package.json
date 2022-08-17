@@ -43,7 +43,7 @@
     "debug": "node debug app.js",
     "test": "cross-env NODE_ENV=test node ./node_modules/mocha/bin/mocha test/bootstrap.test.js \"test/integration/**/*.test.js\"",
     "coverage": "cross-env NODE_ENV=test nyc --reporter=html --reporter=text mocha test/bootstrap.test.js \"test/integration/**/*.test.js\"",
-    "coveralls": "cross-env NODE_ENV=test nyc report --reporter=text-lcov | coveralls",
+    "coveralls": "cross-env NODE_ENV=test nyc report --reporter=text-lcov | coveralls --service=github",
     "snyk-protect": "snyk-protect",
     "prepare": "npm run snyk-protect && husky install",
     "lint": "eslint '**/*.js'",
