@@ -52,6 +52,7 @@ jobs:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
           COVERALLS_SERVICE_NAME: 'Github Actions'
           COVERALLS_GIT_BRANCH: ${{ github.ref }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       # ===== Create .tar and send it to AWS S3 if on branch master
       - name: Create artefact latest.tar.gz file

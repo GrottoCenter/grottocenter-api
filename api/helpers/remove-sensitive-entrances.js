@@ -5,9 +5,9 @@ const getAllPaths = require('../utils/getAllPaths');
 const cleanEntrance = (entrance) => {
   if (entrance.isSensitive) {
     /* eslint-disable no-param-reassign */
-    delete entrance.locations;
-    delete entrance.longitude;
-    delete entrance.latitude;
+    entrance.locations = [];
+    entrance.longitude = null;
+    entrance.latitude = null;
     /* eslint-enable no-param-reassign */
   }
 };
