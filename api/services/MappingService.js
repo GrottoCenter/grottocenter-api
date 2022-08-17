@@ -13,6 +13,8 @@ const CaverModel = require('./mappingModels/CaverModel');
 const CountResultModel = require('./mappingModels/CountResultModel');
 const DescriptionModel = require('./mappingModels/DescriptionModel');
 const HistoryModel = require('./mappingModels/HistoryModel');
+const CommentModel = require('./mappingModels/CommentModel');
+const RiggingModel = require('./mappingModels/RiggingModel');
 const DocumentDuplicateModel = require('./mappingModels/DocumentDuplicateModel');
 const DocumentModel = require('./mappingModels/DocumentModel');
 const EntranceDuplicateModel = require('./mappingModels/EntranceDuplicateModel');
@@ -142,6 +144,80 @@ module.exports = {
       source.language instanceof Object
         ? module.exports.convertToLanguageModel(source.language)
         : undefined;
+    return result;
+  },
+
+  convertToCommentModel: (source) => {
+    const result = {
+      ...CommentModel,
+    };
+
+    result.aestheticism = source.aestheticism;
+    result.approach = source.approach;
+    result.author = module.exports.convertToCaverModel(source.author);
+    result.body = source.body;
+    result.cave =
+      source.cave instanceof Object
+        ? module.exports.convertToCaveModel(source.cave)
+        : undefined;
+    result.caving = source.caving;
+    result.dateInscription = source.dateInscription;
+    result.dateReviewed = source.dateReviewed;
+    result.entrance =
+      source.entrance instanceof Object
+        ? module.exports.convertToEntranceModel(source.entrance)
+        : undefined;
+    result.eTTrail = source.eTTrail;
+    result.eTUnderground = source.eTUnderground;
+    result.id = source.id;
+    result.isDeleted = source.isDeleted;
+    result.language =
+      source.language instanceof Object
+        ? module.exports.convertToLanguageModel(source.language)
+        : undefined;
+    result.point = source.point;
+    result.relevance = source.relevance;
+    result.reviewer =
+      source.reviewer instanceof Object
+        ? module.exports.convertToCaverModel(source.reviewer)
+        : undefined;
+    result.title = source.title;
+    return result;
+  },
+
+  convertToRiggingModel: (source) => {
+    const result = {
+      ...RiggingModel,
+    };
+    result.anchors = source.anchors;
+    result.author = module.exports.convertToCaverModel(source.author);
+    result.cave =
+      source.cave instanceof Object
+        ? module.exports.convertToCaveModel(source.cave)
+        : undefined;
+    result.dateInscription = source.dateInscription;
+    result.dateReviewed = source.dateReviewed;
+    result.entrance =
+      source.entrance instanceof Object
+        ? module.exports.convertToEntranceModel(source.entrance)
+        : undefined;
+    result.id = source.id;
+    result.isDeleted = source.isDeleted;
+    result.language =
+      source.language instanceof Object
+        ? module.exports.convertToLanguageModel(source.language)
+        : undefined;
+    result.observations = source.observations;
+    result.obstacles = source.obstacles;
+    result.point = source.point;
+    result.relevance = source.relevance;
+    result.reviewer =
+      source.reviewer instanceof Object
+        ? module.exports.convertToCaverModel(source.reviewer)
+        : undefined;
+    result.ropes = source.ropes;
+    result.title = source.title;
+
     return result;
   },
 

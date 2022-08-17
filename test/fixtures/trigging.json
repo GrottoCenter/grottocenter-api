@@ -1,0 +1,21 @@
+[
+  {
+    "id": 3,
+    "author": 1,
+    "reviewer": null,
+    "date_inscription": "2009-03-29T09:45:39.000Z",
+    "date_reviewed": "2022-08-09T08:17:05.135Z",
+    "relevance": 2,
+    "title": "Des Meulières aux galeries de la Nuit Blanche par l'ancien réseau de puits",
+    "obstacles": "R3|;|R8|;|P12|;|P10|;|P35",
+    "ropes": "|;|10 m|;|20 m|;|16 m|;|50 m",
+    "anchors": "|;|AN|;|3S + 1DEV|;|2S + 1S|;|2S (MC) + 2S + 1S (MC) + 2S",
+    "observations": "Etrier en place|;|Quitter avant le fond sur la gauche.|;||;||;|Equiper le méandre en MC au plafond.",
+    "entrance": 1,
+    "exit": null,
+    "point": null,
+    "language": "fra",
+    "is_deleted": false,
+    "cave": null
+  }
+]

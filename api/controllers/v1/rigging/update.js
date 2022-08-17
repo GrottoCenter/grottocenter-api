@@ -8,57 +8,66 @@ module.exports = async (req, res) => {
   const hasRight = await sails.helpers.checkRight
     .with({
       groups: req.token.groups,
-      rightEntity: RightService.RightEntities.HISTORY,
+      rightEntity: RightService.RightEntities.RIGGING,
       rightAction: RightService.RightActions.EDIT_ANY,
     })
     .intercept('rightNotFound', () =>
       res.serverError(
-        'A server error occured when checking your right to update any history.'
+        'A server error occured when checking your right to update any rigging.'
       )
     );
   if (!hasRight) {
-    return res.forbidden('You are not authorized to update any history.');
+    return res.forbidden('You are not authorized to update any rigging.');
   }
 
-  // Check if history exists
-  const historyId = req.param('id');
+  // Check if rigging exists
+  const riggingId = req.param('id');
   if (
     !(await sails.helpers.checkIfExists.with({
       attributeName: 'id',
-      attributeValue: historyId,
-      sailsModel: THistory,
+      attributeValue: riggingId,
+      sailsModel: TRigging,
     }))
   )
     return res.notFound({
-      message: `History of id ${historyId} not found.`,
+      message: `Rigging of id ${riggingId} not found.`,
     });
 
-  const newBody = req.param('body');
+  const newTitle = req.param('title');
+  const newObstacles = req.param('obstacles');
+  const newRopes = req.param('ropes');
+  const newAnchors = req.param('anchors');
+  const newObservations = req.param('observations');
   const newLanguage = req.param('language');
   const cleanedData = {
-    ...(newBody && { body: newBody }),
+    ...(newTitle && { title: newTitle }),
+    ...(newObstacles && { obstacles: newObstacles }),
+    ...(newRopes && { ropes: newRopes }),
+    ...(newAnchors && { anchors: newAnchors }),
+    ...(newObservations && { observations: newObservations }),
     ...(newLanguage && { language: newLanguage }),
   };
 
   try {
-    await THistory.updateOne({
-      id: historyId,
+    await TRigging.updateOne({
+      id: riggingId,
     }).set(cleanedData);
-    const populatedHistory = await THistory.findOne(historyId)
+    const populatedRigging = await TRigging.findOne(riggingId)
       .populate('author')
       .populate('entrance')
+      .populate('cave')
       .populate('language')
       .populate('reviewer');
 
     const params = {};
-    params.controllerMethod = 'HistoryController.update';
+    params.controllerMethod = 'RiggingController.update';
     return ControllerService.treatAndConvert(
       req,
       null,
-      populatedHistory,
+      populatedRigging,
       params,
       res,
-      MappingService.convertToHistoryModel
+      MappingService.convertToRiggingModel
     );
   } catch (e) {
     return ErrorService.getDefaultErrorHandler(res)(e);
