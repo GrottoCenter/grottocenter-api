@@ -49,5 +49,15 @@
     "latitude": "-1",
     "longitude": "-3",
     "isPublic": false
+  },
+  {
+    "id": 999,
+    "author": 3,
+    "reviewer": 1,
+    "isOfInterest": true,
+    "cave": 999,
+    "latitude": "30",
+    "longitude": "30",
+    "name": "The entrance for comment and rigging tests"
   }
 ]

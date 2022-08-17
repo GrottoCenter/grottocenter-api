@@ -55,6 +55,7 @@ before(function (done) {
           'toption',
           'tcomment',
           'tfile',
+          'trigging',
         ],
         // eslint-disable-next-line consistent-return
         (fixtedError) => {

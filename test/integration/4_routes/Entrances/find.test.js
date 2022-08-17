@@ -21,7 +21,7 @@ describe('Entrance features', () => {
           if (err) return done(err);
           const { body: entrance } = res;
           should(entrance).have.properties(ENTRANCE_PROPERTIES);
-          should(entrance.name).not.be.empty();
+          should(entrance.name).equal('The entrance with name 11');
           should(entrance.names).not.be.empty();
           should(entrance.author).not.be.empty();
           should(entrance.comments.length).equal(3);
