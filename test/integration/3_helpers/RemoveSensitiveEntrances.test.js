@@ -51,26 +51,60 @@ describe('RemoveSensitiveEntrances helper', () => {
 
     const expectedMultipleEntrancesResult = {
       ...sensitiveEntrancesTestData,
-      entrances: [{ id: 1, isSensitive: true }, { id: 2 }],
+      entrances: [
+        {
+          id: 1,
+          isSensitive: true,
+          latitude: null,
+          locations: [],
+          longitude: null,
+        },
+        { id: 2 },
+      ],
       caves: [
         {
           id: 1,
-          entrances: [{ id: 2 }, { id: 1, isSensitive: true }],
+          entrances: [
+            { id: 2 },
+            {
+              id: 1,
+              isSensitive: true,
+              latitude: null,
+              locations: [],
+              longitude: null,
+            },
+          ],
         },
       ],
       caver: {
         id: 42,
-        exploredEntrances: [{ id: 2 }, { id: 3, isSensitive: true }],
+        exploredEntrances: [
+          { id: 2 },
+          {
+            id: 3,
+            isSensitive: true,
+            latitude: null,
+            locations: [],
+            longitude: null,
+          },
+        ],
         entrance: { id: 1 },
       },
       entrance: {
         id: 4,
         isSensitive: true,
+        latitude: null,
+        locations: [],
+        longitude: null,
       },
     };
 
-    const { longitude, latitude, locations, ...expectedSimpleEntranceResult } =
-      simpleEntranceData;
+    const expectedSimpleEntranceResult = {
+      ...simpleEntranceData,
+      latitude: null,
+      locations: [],
+      longitude: null,
+    };
 
     should(multipleEntrancesResUser).deepEqual(expectedMultipleEntrancesResult);
     should(multipleEntrancesResVisitor).deepEqual(
