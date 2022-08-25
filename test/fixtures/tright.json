@@ -270,5 +270,21 @@
   {
     "id": 114,
     "name": "History - create"
+  },
+  {
+    "id": 118,
+    "name": "Comment - edit any"
+  },
+  {
+    "id": 119,
+    "name": "Comment - create"
+  },
+  {
+    "id": 120,
+    "name": "Rigging - edit any"
+  },
+  {
+    "id": 121,
+    "name": "Rigging - create"
   }
 ]

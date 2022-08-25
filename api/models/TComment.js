@@ -52,13 +52,13 @@ module.exports = {
     eTUnderground: {
       type: 'ref',
       columnName: 'e_t_underground',
-      columnType: 'timestamp',
+      columnType: 'interval',
     },
 
     eTTrail: {
       type: 'ref',
       columnName: 'e_t_trail',
-      columnType: 'timestamp',
+      columnType: 'interval',
     },
 
     aestheticism: {

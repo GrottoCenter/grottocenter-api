@@ -145,6 +145,14 @@ module.exports.policies = {
   'v1/history/create': 'tokenAuth',
   'v1/history/update': 'tokenAuth',
 
+  // Rigging
+  'v1/rigging/create': 'tokenAuth',
+  'v1/rigging/update': 'tokenAuth',
+
+  // Comment
+  'v1/comment/create': 'tokenAuth',
+  'v1/comment/update': 'tokenAuth',
+
   // Massif
   'v1/massif/create': 'tokenAuth',
   'v1/massif/delete-one': ['tokenAuth', 'moderatorAuth'],

@@ -21,6 +21,7 @@ module.exports = async (req, res) => {
   }
 
   // Check mandatory params
+  // TODO refactor with issue #717
   const mandatoryParams = ['body', 'entrance', 'language'];
   const paramsNameAndValue = mandatoryParams.map((p) => ({
     name: p,

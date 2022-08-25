@@ -203,6 +203,14 @@ module.exports.routes = {
   'POST /api/v1/histories': 'v1/history/create',
   'PUT /api/v1/histories/:id': 'v1/history/update',
 
+  // Comment
+  'POST /api/v1/comments': 'v1/comment/create',
+  'PATCH /api/v1/comments/:id': 'v1/comment/update',
+
+  // Rigging
+  'POST /api/v1/riggings': 'v1/rigging/create',
+  'PATCH /api/v1/riggings/:id': 'v1/rigging/update',
+
   // Document Subject
   'GET /api/v1/documents/subjects': 'v1/subject/find-all',
   'GET /api/v1/documents/subjects/:code': {

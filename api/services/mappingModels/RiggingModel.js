@@ -1,0 +1,18 @@
+module.exports = {
+  id: undefined,
+  author: undefined,
+  reviewer: undefined,
+  dateInscription: undefined,
+  dateReviewed: undefined,
+  relevance: undefined,
+  title: undefined,
+  obstacles: undefined,
+  ropes: undefined,
+  anchors: undefined,
+  observations: undefined,
+  cave: undefined,
+  entrance: undefined,
+  point: undefined,
+  language: undefined,
+  isDeleted: undefined,
+};

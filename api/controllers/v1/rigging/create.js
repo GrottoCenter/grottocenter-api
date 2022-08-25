@@ -8,60 +8,32 @@ module.exports = async (req, res) => {
   const hasRight = await sails.helpers.checkRight
     .with({
       groups: req.token.groups,
-      rightEntity: RightService.RightEntities.DESCRIPTION,
+      rightEntity: RightService.RightEntities.RIGGING,
       rightAction: RightService.RightActions.CREATE,
     })
     .intercept('rightNotFound', () =>
       res.serverError(
-        'A server error occured when checking your right to create a description.'
+        'A server error occurred when checking your right to create a rigging.'
       )
     );
   if (!hasRight) {
-    return res.forbidden('You are not authorized to create a description.');
-  }
-
-  // Check params
-  if (!req.param('body')) {
-    return res.badRequest('You must provide a body to create a description.');
-  }
-  if (!req.param('language')) {
-    return res.badRequest(
-      'You must provide a language id to create a description.'
-    );
-  }
-  if (!req.param('title')) {
-    return res.badRequest('You must provide a title to create a description.');
+    return res.forbidden('You are not authorized to create a rigging.');
   }
 
   // TODO refactor possibleEntities logic in a new RequestService
   const possibleEntities = [
     {
-      id: req.param('caveId'),
+      id: req.param('cave'),
       sailsModel: TCave,
       type: 'cave',
     },
     {
-      id: req.param('documentId'),
-      sailsModel: TDocument,
-      type: 'document',
-    },
-    {
-      id: req.param('entranceId'),
+      id: req.param('entrance'),
       sailsModel: TEntrance,
       type: 'entrance',
     },
     {
-      id: req.param('exitId'),
-      sailsModel: TEntrance,
-      type: 'exit',
-    },
-    {
-      id: req.param('massifId'),
-      sailsModel: TMassif,
-      type: 'massif',
-    },
-    {
-      id: req.param('pointId'),
+      id: req.param('point'),
       sailsModel: TPoint,
       type: 'point',
     },
@@ -94,35 +66,52 @@ module.exports = async (req, res) => {
     });
   }
 
+  // Check mandatory params
+  // TODO refactor with issue #717
+  const mandatoryParams = ['title', 'language'];
+  const paramsNameAndValue = mandatoryParams.map((p) => ({
+    name: p,
+    value: req.param(p),
+  }));
+  const missingParam = paramsNameAndValue.find((p) => !p.value);
+  if (missingParam) {
+    return res.badRequest(
+      `You must provide a ${missingParam.name} to create a rigging.`
+    );
+  }
+
+  // Unwrap values
+  const title = paramsNameAndValue.find((p) => p.name === 'title').value;
+  const language = paramsNameAndValue.find((p) => p.name === 'language').value;
+
   try {
-    const newDescription = await TDescription.create({
+    const newRigging = await TRigging.create({
       author: req.token.id,
+      title,
+      obstacles: req.param('obstacles', null),
+      ropes: req.param('ropes', null),
+      anchors: req.param('anchors', null),
+      observations: req.param('observations', null),
       dateInscription: new Date(),
-      body: req.param('body'),
-      title: req.param('title'),
-      language: req.param('language'),
       [describedEntity.type]: describedEntity.id,
+      language,
+      relevance: 0, // TODO handle relevance
     }).fetch();
-    const newDescriptionPopulated = await TDescription.findOne(
-      newDescription.id
-    )
+    const newRiggingPopulated = await TRigging.findOne(newRigging.id)
       .populate('author')
-      .populate('cave')
-      .populate('document')
       .populate('entrance')
-      .populate('exit')
-      .populate('language')
-      .populate('massif');
+      .populate('cave')
+      .populate('language');
 
     const params = {};
-    params.controllerMethod = 'DescriptionController.create';
+    params.controllerMethod = 'RiggingController.create';
     return ControllerService.treatAndConvert(
       req,
       null,
-      newDescriptionPopulated,
+      newRiggingPopulated,
       params,
       res,
-      MappingService.convertToDescriptionModel
+      MappingService.convertToRiggingModel
     );
   } catch (e) {
     return ErrorService.getDefaultErrorHandler(res)(e);

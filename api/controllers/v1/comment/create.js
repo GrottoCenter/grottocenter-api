@@ -8,62 +8,29 @@ module.exports = async (req, res) => {
   const hasRight = await sails.helpers.checkRight
     .with({
       groups: req.token.groups,
-      rightEntity: RightService.RightEntities.DESCRIPTION,
+      rightEntity: RightService.RightEntities.COMMENT,
       rightAction: RightService.RightActions.CREATE,
     })
     .intercept('rightNotFound', () =>
       res.serverError(
-        'A server error occured when checking your right to create a description.'
+        'A server error occurred when checking your right to create a comment.'
       )
     );
   if (!hasRight) {
-    return res.forbidden('You are not authorized to create a description.');
-  }
-
-  // Check params
-  if (!req.param('body')) {
-    return res.badRequest('You must provide a body to create a description.');
-  }
-  if (!req.param('language')) {
-    return res.badRequest(
-      'You must provide a language id to create a description.'
-    );
-  }
-  if (!req.param('title')) {
-    return res.badRequest('You must provide a title to create a description.');
+    return res.forbidden('You are not authorized to create a comment.');
   }
 
   // TODO refactor possibleEntities logic in a new RequestService
   const possibleEntities = [
     {
-      id: req.param('caveId'),
+      id: req.param('cave'),
       sailsModel: TCave,
       type: 'cave',
     },
     {
-      id: req.param('documentId'),
-      sailsModel: TDocument,
-      type: 'document',
-    },
-    {
-      id: req.param('entranceId'),
+      id: req.param('entrance'),
       sailsModel: TEntrance,
       type: 'entrance',
-    },
-    {
-      id: req.param('exitId'),
-      sailsModel: TEntrance,
-      type: 'exit',
-    },
-    {
-      id: req.param('massifId'),
-      sailsModel: TMassif,
-      type: 'massif',
-    },
-    {
-      id: req.param('pointId'),
-      sailsModel: TPoint,
-      type: 'point',
     },
   ];
 
@@ -77,7 +44,7 @@ module.exports = async (req, res) => {
     return res.badRequest(
       `You must provide an existing entity id such as ${possibleEntities
         .map((e) => e.type)
-        .join('Id, ')} or ${lastItem.type}Id.`
+        .join('Id, ')} or ${lastItem.type} Id.`
     );
   }
 
@@ -94,35 +61,54 @@ module.exports = async (req, res) => {
     });
   }
 
+  // Check mandatory params
+  // TODO refactor with issue #717
+  const mandatoryParams = ['body', 'title', 'language'];
+  const paramsNameAndValue = mandatoryParams.map((p) => ({
+    name: p,
+    value: req.param(p),
+  }));
+  const missingParam = paramsNameAndValue.find((p) => !p.value);
+  if (missingParam) {
+    return res.badRequest(
+      `You must provide a ${missingParam.name} to create a comment.`
+    );
+  }
+
+  // Unwrap values
+  const body = paramsNameAndValue.find((p) => p.name === 'body').value;
+  const title = paramsNameAndValue.find((p) => p.name === 'title').value;
+  const language = paramsNameAndValue.find((p) => p.name === 'language').value;
   try {
-    const newDescription = await TDescription.create({
+    const newComment = await TComment.create({
       author: req.token.id,
+      body,
+      title,
+      eTUnderground: req.param('eTUnderground', null),
+      eTTrail: req.param('eTTrail', null),
+      aestheticism: req.param('aestheticism', null),
+      caving: req.param('caving', null),
+      approach: req.param('approach', null),
       dateInscription: new Date(),
-      body: req.param('body'),
-      title: req.param('title'),
-      language: req.param('language'),
+      language,
       [describedEntity.type]: describedEntity.id,
+      relevance: 0, // TODO handle relevance
     }).fetch();
-    const newDescriptionPopulated = await TDescription.findOne(
-      newDescription.id
-    )
+    const newCommentPopulated = await TComment.findOne(newComment.id)
       .populate('author')
-      .populate('cave')
-      .populate('document')
       .populate('entrance')
-      .populate('exit')
-      .populate('language')
-      .populate('massif');
+      .populate('cave')
+      .populate('language');
 
     const params = {};
-    params.controllerMethod = 'DescriptionController.create';
+    params.controllerMethod = 'CommentController.create';
     return ControllerService.treatAndConvert(
       req,
       null,
-      newDescriptionPopulated,
+      newCommentPopulated,
       params,
       res,
-      MappingService.convertToDescriptionModel
+      MappingService.convertToCommentModel
     );
   } catch (e) {
     return ErrorService.getDefaultErrorHandler(res)(e);
