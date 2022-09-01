@@ -65,7 +65,7 @@ module.exports = {
     const extension = nameSplit[1];
     const foundFormat = await TFileFormat.find({
       mimeType,
-      extension,
+      extension: extension.toLowerCase(),
     }).limit(1);
     if (ramda.isEmpty(foundFormat)) {
       throw new FileError(INVALID_FORMAT, name);
