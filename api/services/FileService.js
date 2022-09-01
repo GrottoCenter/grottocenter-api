@@ -21,6 +21,13 @@ const INVALID_FORMAT = 'INVALID_FORMAT';
 const INVALID_NAME = 'INVALID_NAME';
 const ERROR_DURING_UPLOAD_TO_AZURE = 'ERROR_DURING_UPLOAD_TO_AZURE';
 
+class FileError extends Error {
+  constructor(message, fileName) {
+    super(message);
+    this.fileName = fileName;
+  }
+}
+
 const generateName = (fileName) => {
   const identifier = Math.random().toString().replace(/0\./, '');
   const newFileName = fileName.replace(/ /, '_');
@@ -28,12 +35,24 @@ const generateName = (fileName) => {
 };
 
 module.exports = {
+  INVALID_FORMAT,
+  INVALID_NAME,
+  ERROR_DURING_UPLOAD_TO_AZURE,
   getAzureData: () => ({
     linkAccount: AZURE_LINK,
     container: AZURE_CONTAINER,
   }),
 
   // File is a multer object : https://github.com/expressjs/multer#file-information
+  /**
+   *
+   * @param {*} file
+   * @param {*} idDocument
+   * @param {*} fetchResult
+   * @param {*} isValidated
+   * @throws {FileError}
+   * @returns
+   */
   // eslint-disable-next-line consistent-return
   create: async (file, idDocument, fetchResult = false, isValidated = true) => {
     const name = file.originalname;
@@ -41,15 +60,15 @@ module.exports = {
     const pathName = generateName(name);
     const nameSplit = name.split('.');
     if (nameSplit.length !== 2) {
-      throw Error(INVALID_NAME);
+      throw new FileError(INVALID_NAME, name);
     }
     const extension = nameSplit[1];
     const foundFormat = await TFileFormat.find({
       mimeType,
-      extension,
+      extension: extension.toLowerCase(),
     }).limit(1);
     if (ramda.isEmpty(foundFormat)) {
-      throw Error(INVALID_FORMAT);
+      throw new FileError(INVALID_FORMAT, name);
     }
 
     if (blobServiceClient) {
@@ -65,7 +84,7 @@ module.exports = {
           },
         });
       } catch (err) {
-        throw Error(ERROR_DURING_UPLOAD_TO_AZURE);
+        throw new FileError(ERROR_DURING_UPLOAD_TO_AZURE, name);
       }
 
       const param = {
@@ -85,7 +104,7 @@ module.exports = {
     sails.log(
       `===== FILES UPLOAD AZURE - DEBUG =====
 You are seing this message because you didn't configure your Azure credentials locally. In production website, the following file whoud have been uploaded on the azure repository.
-      
+
       FILE NAME : ${name}
       MIME TYPE : ${mimeType}
       SIZE : ${file.size} bytes

@@ -1,5 +1,5 @@
 // Other http codes (like 200 or 204) are logged as "verbose" instead.
-const LOG_SEVERITY_INFO_FOR_CODES = [401, 403, 404, 409, 500];
+const LOG_SEVERITY_INFO_FOR_CODES = [401, 403, 404, 409];
 const LOG_SEVERITY_ERROR_FOR_CODES = [500];
 
 module.exports = {

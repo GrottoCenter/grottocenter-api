@@ -39,16 +39,17 @@ module.exports = async (req, res) => {
     const errorFiles = [];
     if (req.files && req.files.files) {
       const { files } = req.files;
-      for (const file of files) {
-        try {
-          // eslint-disable-next-line no-await-in-loop
-          await FileService.create(file, createdDocument.id);
-        } catch (err) {
-          errorFiles.push({
-            fileName: file.originalname,
-            error: err.toString(),
-          });
-        }
+      try {
+        await Promise.all(
+          files.map(async (file) => {
+            await FileService.create(file, createdDocument.id);
+          })
+        );
+      } catch (err) {
+        errorFiles.push({
+          fileName: err.fileName,
+          error: err.message,
+        });
       }
     }
 
