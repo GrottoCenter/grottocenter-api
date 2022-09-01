@@ -70,11 +70,17 @@ module.exports = async (req, res) => {
       //   found.languages = [];
       // }
 
-      found.mainLanguage = await TLanguage.findOne(documentMainLanguage);
+      if (documentMainLanguage) {
+        found.mainLanguage = await TLanguage.findOne(documentMainLanguage);
+      }
 
       // Populate names & descriptions
-      await NameService.setNames([found.editor], 'grotto');
-      await DescriptionService.setDocumentDescriptions(found.parent, false);
+      if (found.editor) {
+        await NameService.setNames(found.editor, 'grotto');
+      }
+      if (found.parent) {
+        await DescriptionService.setDocumentDescriptions(found.parent, false);
+      }
 
       // Handle the description because even if it has been modified,
       // the entry in TDescription stayed intact.
@@ -88,7 +94,7 @@ module.exports = async (req, res) => {
         language: descLang,
       });
     } catch (e) {
-      ErrorService.getDefaultErrorHandler(res)(e);
+      return ErrorService.getDefaultErrorHandler(res)(e);
     }
   } else {
     found = await TDocument.findOne(req.param('id'))
