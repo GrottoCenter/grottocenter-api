@@ -7,23 +7,22 @@
 
 const ramda = require('ramda');
 
-/* Load Models */
 const CaveModel = require('./mappingModels/CaveModel');
 const CaverModel = require('./mappingModels/CaverModel');
+const CommentModel = require('./mappingModels/CommentModel');
 const CountResultModel = require('./mappingModels/CountResultModel');
 const DescriptionModel = require('./mappingModels/DescriptionModel');
-const HistoryModel = require('./mappingModels/HistoryModel');
-const CommentModel = require('./mappingModels/CommentModel');
-const RiggingModel = require('./mappingModels/RiggingModel');
 const DocumentDuplicateModel = require('./mappingModels/DocumentDuplicateModel');
 const DocumentModel = require('./mappingModels/DocumentModel');
 const EntranceDuplicateModel = require('./mappingModels/EntranceDuplicateModel');
 const EntranceModel = require('./mappingModels/EntranceModel');
+const HistoryModel = require('./mappingModels/HistoryModel');
 const LanguageModel = require('./mappingModels/LanguageModel');
 const LocationModel = require('./mappingModels/LocationModel');
 const MassifModel = require('./mappingModels/MassifModel');
 const NameModel = require('./mappingModels/NameModel');
 const OrganizationModel = require('./mappingModels/OrganizationModel');
+const RiggingModel = require('./mappingModels/RiggingModel');
 const SubjectModel = require('./mappingModels/SubjectModel');
 
 const FileService = require('./FileService');
