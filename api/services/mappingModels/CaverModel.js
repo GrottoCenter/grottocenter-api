@@ -7,6 +7,8 @@ module.exports = {
   groups: [],
   name: undefined,
   nickname: undefined,
+  subscribedToCountries: [],
+  subscribedToMassifs: [],
   surname: undefined,
   // Mail and password should not be returned (RGPD)
   // mail: undefined,

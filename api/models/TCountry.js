@@ -113,5 +113,11 @@ module.exports = {
       columnName: 'rs_name',
       maxLength: 50,
     },
+
+    subscribedCavers: {
+      collection: 'TCaver',
+      via: 'country',
+      through: 'JCaverCountrySubscription',
+    },
   },
 };

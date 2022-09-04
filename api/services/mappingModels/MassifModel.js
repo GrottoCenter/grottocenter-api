@@ -12,4 +12,5 @@ module.exports = {
   name: undefined,
   networks: [],
   reviewer: undefined,
+  subscribedCavers: [],
 };
