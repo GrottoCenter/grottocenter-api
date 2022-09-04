@@ -286,5 +286,13 @@
   {
     "id": 121,
     "name": "Rigging - create"
+  },
+  {
+    "id": 122,
+    "name": "Country - subscribe"
+  },
+  {
+    "id": 123,
+    "name": "Massif - subscribe"
   }
 ]

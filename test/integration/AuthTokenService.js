@@ -29,6 +29,8 @@ module.exports = {
     `Bearer ${await getRawAuthToken('moderator1@moderator1.com')}`,
   getRawBearerUserToken: async () =>
     `Bearer ${await getRawAuthToken('user1@user1.com')}`,
+  getRawBearerLeaderToken: async () =>
+    `Bearer ${await getRawAuthToken('leader1@leader1.com')}`,
   getRawBearerAllGroupsToken: async () =>
     `Bearer ${await getRawAuthToken('all1@all1.com')}`,
 
@@ -36,5 +38,6 @@ module.exports = {
   getAdminToken: async () => getToken('admin1@admin1.com'),
   getModeratorToken: async () => getToken('moderator1@moderator1.com'),
   getUserToken: async () => getToken('user1@user1.com'),
+  getLeaderToken: async () => getToken('leader1@leader1.com'),
   getAllGroupsToken: async () => getToken('all1@all1.com'),
 };

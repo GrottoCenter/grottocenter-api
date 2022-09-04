@@ -30,6 +30,6 @@
     "id": 5,
     "name": "Leader",
     "comments": "Contributors can refer to those people for any questions.",
-    "rights": []
+    "rights": [122, 123]
   }
 ]

@@ -72,4 +72,6 @@ INSERT INTO public.j_group_right (id_group,id_right) VALUES
    (3,118),
    (3,119),
    (3,120),
-   (3,121);
+   (3,121),
+   (5,122),
+   (5,123);

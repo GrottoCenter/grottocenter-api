@@ -72,4 +72,6 @@ INSERT INTO public.t_right (id,name,"comments") VALUES
 	 (118,'Comment - edit any',NULL),
 	 (119,'Comment - create',NULL),
    (120,'Rigging - edit any',NULL),
-   (121,'Rigging - create',NULL);
+   (121,'Rigging - create',NULL),
+   (122,'Country - subscribe',NULL),
+   (123,'Massif - subscribe',NULL);

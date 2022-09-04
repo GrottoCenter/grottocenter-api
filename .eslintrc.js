@@ -14,6 +14,7 @@ module.exports = {
     TCave: 'readonly',
     TCaver: 'readonly',
     TComment: 'readonly',
+    TCountry: 'readonly',
     TDescription: 'readonly',
     TDocument: 'readonly',
     TDocumentDuplicate: 'readonly',

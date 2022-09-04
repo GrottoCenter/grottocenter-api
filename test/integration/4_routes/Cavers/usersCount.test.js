@@ -10,7 +10,7 @@ describe('Caver features', () => {
         .expect(200)
         .end((err, res) => {
           if (err) return done(err);
-          res.body.should.deepEqual({ count: 5 });
+          res.body.should.deepEqual({ count: 6 });
           return done();
         });
     });
