@@ -52,6 +52,7 @@ module.exports.policies = {
   'v1/caver/find-all': false,
   'v1/caver/get-admins': 'tokenAuth',
   'v1/caver/get-moderators': 'tokenAuth',
+  'v1/caver/get-subscriptions': true,
   'v1/caver/put-on-group': ['tokenAuth', 'adminAuth'],
   'v1/caver/remove-explored-entrance': 'tokenAuth',
   'v1/caver/remove-from-group': ['tokenAuth', 'adminAuth'],

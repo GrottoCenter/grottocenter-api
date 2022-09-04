@@ -11,7 +11,9 @@
     "language": "fra",
     "documents": [1, 2, 4],
     "exploredEntrances": [1],
-    "groups": [1]
+    "groups": [1],
+    "subscribedToCountries": ["FR", "GB"],
+    "subscribedToMassifs": [1, 2]
   },
   {
     "login": "moderator1",
