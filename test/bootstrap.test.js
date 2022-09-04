@@ -39,6 +39,7 @@ before(function (done) {
           'tidentifiertype',
           'tsubject',
           'ttype',
+          'tcountry',
           'tgroup',
           'tcaver',
           'tname',
