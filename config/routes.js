@@ -151,6 +151,9 @@ module.exports.routes = {
   'GET /api/comments/stats/:entry': 'v1/comment/get-entrance-stats',
   'GET /api/comments/timeinfos/:entry': 'v1/comment/get-entrance-time-infos',
 
+  // Country
+  'POST /api/v1/countries/:id/subscribe': 'v1/country/subscribe',
+
   // Organization
   'DELETE /api/v1/organizations/:id': 'v1/organization/delete-one',
   'GET /api/v1/organizations/count': 'v1/organization/count',
@@ -168,6 +171,7 @@ module.exports.routes = {
   'DELETE /api/v1/massifs/:id': 'v1/massif/delete-one',
   'GET /api/v1/massifs/:id': 'v1/massif/find',
   'POST /api/v1/massifs': 'v1/massif/create',
+  'POST /api/v1/massifs/:id/subscribe': 'v1/massif/subscribe',
   'PUT /api/v1/massifs/:id': 'v1/massif/update',
 
   // Document
