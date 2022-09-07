@@ -153,6 +153,7 @@ module.exports.routes = {
 
   // Country
   'POST /api/v1/countries/:id/subscribe': 'v1/country/subscribe',
+  'POST /api/v1/countries/:id/unsubscribe': 'v1/country/unsubscribe',
 
   // Organization
   'DELETE /api/v1/organizations/:id': 'v1/organization/delete-one',
@@ -172,6 +173,7 @@ module.exports.routes = {
   'GET /api/v1/massifs/:id': 'v1/massif/find',
   'POST /api/v1/massifs': 'v1/massif/create',
   'POST /api/v1/massifs/:id/subscribe': 'v1/massif/subscribe',
+  'POST /api/v1/massifs/:id/unsubscribe': 'v1/massif/unsubscribe',
   'PUT /api/v1/massifs/:id': 'v1/massif/update',
 
   // Document

@@ -156,10 +156,12 @@ module.exports.policies = {
 
   // Country
   'v1/country/subscribe': ['tokenAuth', 'leaderAuth'],
+  'v1/country/unsubscribe': ['tokenAuth', 'leaderAuth'],
 
   // Massif
   'v1/massif/create': 'tokenAuth',
   'v1/massif/subscribe': ['tokenAuth', 'leaderAuth'],
+  'v1/massif/unsubscribe': ['tokenAuth', 'leaderAuth'],
   'v1/massif/delete-one': ['tokenAuth', 'moderatorAuth'],
   'v1/massif/find': true,
   'v1/massif/update': 'tokenAuth',
