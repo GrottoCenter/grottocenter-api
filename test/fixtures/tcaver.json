@@ -11,7 +11,9 @@
     "language": "fra",
     "documents": [1, 2, 4],
     "exploredEntrances": [1],
-    "groups": [1]
+    "groups": [1],
+    "subscribedToCountries": ["FR", "GB"],
+    "subscribedToMassifs": [1, 2]
   },
   {
     "login": "moderator1",
@@ -62,5 +64,15 @@
     "grottos": [1, 2],
     "groups": [1],
     "exploredEntrances": [4, 5]
+  },
+  {
+    "id": 7,
+    "login": "leader1",
+    "mail": "leader1@leader1.com",
+    "nickname": "Leader1",
+    "password": "d4baeedef5db4a9424b2c340323d2ee2c374cbd05196a7c108faf080a1dc4c26",
+    "alertForNews": "false",
+    "language": "fra",
+    "groups": [5]
   }
 ]

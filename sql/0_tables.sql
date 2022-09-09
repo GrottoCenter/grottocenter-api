@@ -1111,3 +1111,21 @@ CREATE TABLE h_description (
 	CONSTRAINT h_description_t_massif3_fk FOREIGN KEY (id_massif) REFERENCES t_massif(id),
 	CONSTRAINT h_description_t_point_fk FOREIGN KEY (id_point) REFERENCES t_point(id)
 );
+
+-- DROP TABLE j_caver_massif_subscription ;
+CREATE TABLE j_caver_massif_subscription (
+	id_massif int4 NOT NULL,
+	id_caver int4 NOT NULL,
+	CONSTRAINT j_caver_massif_subscription_pk PRIMARY KEY (id_massif, id_caver),
+	CONSTRAINT j_caver_massif_t_caver_fk FOREIGN KEY (id_caver) REFERENCES t_caver(id),
+  CONSTRAINT j_caver_massif_t_massif_fk FOREIGN KEY (id_massif) REFERENCES t_massif(id)
+);
+
+-- DROP TABLE j_caver_country_subscription ;
+CREATE TABLE j_caver_country_subscription (
+	iso bpchar(2) NOT NULL,
+	id_caver int4 NOT NULL,
+	CONSTRAINT j_caver_country_subscription_pk PRIMARY KEY (iso, id_caver),
+	CONSTRAINT j_caver_country_t_caver_fk FOREIGN KEY (id_caver) REFERENCES t_caver(id),
+  CONSTRAINT j_caver_country_t_country_fk FOREIGN KEY (iso) REFERENCES t_country(iso)
+);

@@ -5,7 +5,6 @@
  * @docs        :: http://sailsjs.org/#!documentation/models
  */
 
-// 01/2018 C. ROIG : remove RGPD fields (see sql/20181231_del_fields.sql)
 module.exports = {
   tableName: 't_caver',
 
@@ -171,6 +170,18 @@ module.exports = {
       collection: 'TEntrance',
       via: 'caver',
       through: 'JEntranceCaver',
+    },
+
+    subscribedToMassifs: {
+      collection: 'TMassif',
+      via: 'caver',
+      through: 'JCaverMassifSubscription',
+    },
+
+    subscribedToCountries: {
+      collection: 'TCountry',
+      via: 'caver',
+      through: 'JCaverCountrySubscription',
     },
   },
 

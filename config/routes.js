@@ -75,6 +75,7 @@ module.exports.routes = {
   'GET /api/v1/cavers': 'v1/caver/find-all',
   'GET /api/v1/cavers/:id': 'v1/caver/find',
   'GET /api/v1/cavers/:caverId/documents': 'v1/document/find-by-caver-id',
+  'GET /api/v1/cavers/:caverId/subscriptions': 'v1/caver/get-subscriptions',
   'GET /api/v1/cavers/admins': 'v1/caver/get-admins',
   'GET /api/v1/cavers/count': 'v1/caver/count',
   'GET /api/v1/cavers/moderators': 'v1/caver/get-moderators',
@@ -150,6 +151,10 @@ module.exports.routes = {
   'GET /api/comments/stats/:entry': 'v1/comment/get-entrance-stats',
   'GET /api/comments/timeinfos/:entry': 'v1/comment/get-entrance-time-infos',
 
+  // Country
+  'POST /api/v1/countries/:id/subscribe': 'v1/country/subscribe',
+  'POST /api/v1/countries/:id/unsubscribe': 'v1/country/unsubscribe',
+
   // Organization
   'DELETE /api/v1/organizations/:id': 'v1/organization/delete-one',
   'GET /api/v1/organizations/count': 'v1/organization/count',
@@ -167,6 +172,8 @@ module.exports.routes = {
   'DELETE /api/v1/massifs/:id': 'v1/massif/delete-one',
   'GET /api/v1/massifs/:id': 'v1/massif/find',
   'POST /api/v1/massifs': 'v1/massif/create',
+  'POST /api/v1/massifs/:id/subscribe': 'v1/massif/subscribe',
+  'POST /api/v1/massifs/:id/unsubscribe': 'v1/massif/unsubscribe',
   'PUT /api/v1/massifs/:id': 'v1/massif/update',
 
   // Document

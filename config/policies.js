@@ -52,6 +52,7 @@ module.exports.policies = {
   'v1/caver/find-all': false,
   'v1/caver/get-admins': 'tokenAuth',
   'v1/caver/get-moderators': 'tokenAuth',
+  'v1/caver/get-subscriptions': true,
   'v1/caver/put-on-group': ['tokenAuth', 'adminAuth'],
   'v1/caver/remove-explored-entrance': 'tokenAuth',
   'v1/caver/remove-from-group': ['tokenAuth', 'adminAuth'],
@@ -153,8 +154,14 @@ module.exports.policies = {
   'v1/comment/create': 'tokenAuth',
   'v1/comment/update': 'tokenAuth',
 
+  // Country
+  'v1/country/subscribe': ['tokenAuth', 'leaderAuth'],
+  'v1/country/unsubscribe': ['tokenAuth', 'leaderAuth'],
+
   // Massif
   'v1/massif/create': 'tokenAuth',
+  'v1/massif/subscribe': ['tokenAuth', 'leaderAuth'],
+  'v1/massif/unsubscribe': ['tokenAuth', 'leaderAuth'],
   'v1/massif/delete-one': ['tokenAuth', 'moderatorAuth'],
   'v1/massif/find': true,
   'v1/massif/update': 'tokenAuth',

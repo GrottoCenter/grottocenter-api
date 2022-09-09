@@ -21,7 +21,7 @@ describe('Massif features', () => {
     });
 
     it('should return 200', (done) => {
-      const update = {
+      const updateData = {
         id: 1,
         descriptions: [3],
         documents: [2, 3],
@@ -30,7 +30,7 @@ describe('Massif features', () => {
       };
       supertest(sails.hooks.http.app)
         .put('/api/v1/massifs/1')
-        .send(update)
+        .send(updateData)
         .set('Authorization', userToken)
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json')

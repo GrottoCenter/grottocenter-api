@@ -64,5 +64,11 @@ module.exports = {
       columnName: 'geog_polygon',
       maxLength: 2000,
     },
+
+    subscribedCavers: {
+      collection: 'TCaver',
+      via: 'massif',
+      through: 'JCaverMassifSubscription',
+    },
   },
 };

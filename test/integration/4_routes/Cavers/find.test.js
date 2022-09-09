@@ -14,6 +14,8 @@ const CAVER_PROPERTIES = [
   'language',
   'name',
   'nickname',
+  'subscribedToCountries',
+  'subscribedToMassifs',
   'surname',
 ];
 
