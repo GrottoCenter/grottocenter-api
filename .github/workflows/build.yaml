@@ -47,11 +47,9 @@ jobs:
       # ===== Test
       - run: npm test
       - run: npm run-script coverage
-      - run: npm run-script coveralls
-        env:
-          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-          COVERALLS_SERVICE_NAME: 'Github Actions'
-          COVERALLS_GIT_BRANCH: ${{ github.ref }}
+      - name: Coveralls GitHub Action
+        uses: coverallsapp/github-action@1.1.3
+        with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       # ===== Create .tar and send it to AWS S3 if on branch master
