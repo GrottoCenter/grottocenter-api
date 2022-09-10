@@ -21,6 +21,7 @@ tags:
   - name: authentication
   - name: caves
   - name: cavers
+  - name: countries
   - name: descriptions
   - name: documents
   - name: entrances
@@ -2783,6 +2784,31 @@ paths:
                 items:
                   $ref: '#/components/schemas/Language'
 
+  '/countries/{id}':
+    get:
+      tags:
+        - countries
+      description: Get a country by its id (iso 2).
+      parameters:
+        - name: id
+          in: path
+          description: Country id
+          example: FR, GB, IT
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Country'
+        '404':
+          description: Resource not found
+
   '/documents/check-rows':
     post:
       tags:
@@ -3028,6 +3054,18 @@ components:
       type: object
       properties:
         count:
+          type: integer
+
+    Country:
+      type: object
+      properties:
+        id:
+          type: string
+        iso3:
+          type: string
+        nativeName:
+          type: string
+        numeric:
           type: integer
 
     Description:

@@ -152,6 +152,7 @@ module.exports.routes = {
   'GET /api/comments/timeinfos/:entry': 'v1/comment/get-entrance-time-infos',
 
   // Country
+  'GET /api/v1/countries/:id': 'v1/country/find',
   'POST /api/v1/countries/:id/subscribe': 'v1/country/subscribe',
   'POST /api/v1/countries/:id/unsubscribe': 'v1/country/unsubscribe',
 

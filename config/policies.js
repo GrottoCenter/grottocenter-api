@@ -155,6 +155,7 @@ module.exports.policies = {
   'v1/comment/update': 'tokenAuth',
 
   // Country
+  'v1/country/find': true,
   'v1/country/subscribe': ['tokenAuth', 'leaderAuth'],
   'v1/country/unsubscribe': ['tokenAuth', 'leaderAuth'],
 
