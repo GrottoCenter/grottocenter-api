@@ -1088,11 +1088,15 @@ module.exports = {
     return result;
   },
 
-  // eslint-disable-next-line max-len
-  convertToDocumentDuplicateList: (source) =>
-    source.map((duplicate) =>
-      module.exports.convertToDocumentDuplicateModel(duplicate)
-    ),
+  convertToDocumentDuplicateList: (source) => {
+    const duplicates = [];
+    source.forEach((item) =>
+      duplicates.push(module.exports.convertToDocumentDuplicateModel(item))
+    );
+    return {
+      duplicates,
+    };
+  },
 
   convertToEntranceDuplicateModel: (source) => {
     const result = {
@@ -1114,11 +1118,15 @@ module.exports = {
     return result;
   },
 
-  // eslint-disable-next-line max-len
-  convertToEntranceDuplicateList: (source) =>
-    source.map((duplicate) =>
-      module.exports.convertToEntranceDuplicateModel(duplicate)
-    ),
+  convertToEntranceDuplicateList: (source) => {
+    const duplicates = [];
+    source.forEach((item) =>
+      duplicates.push(module.exports.convertToEntranceDuplicateModel(item))
+    );
+    return {
+      duplicates,
+    };
+  },
 
   convertToLanguageModel: (source) => {
     const result = {
