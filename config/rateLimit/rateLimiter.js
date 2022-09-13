@@ -17,6 +17,12 @@ module.exports = {
       if (req.method.toUpperCase() === 'OPTIONS') {
         return true;
       }
+
+      // Currently, ignore limiting when in test
+      if (process.env.NODE_ENV === 'test') {
+        return true;
+      }
+
       // If you are not authenticated, you are limited
       if (!req.token) {
         return false;
