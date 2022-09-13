@@ -174,6 +174,7 @@ module.exports.policies = {
   // Notification
   'v1/notification/count-unread': 'tokenAuth',
   'v1/notification/find-all': 'tokenAuth',
+  'v1/notification/mark-as-read': 'tokenAuth',
 
   // Option
   'v1/option/find-all': true,
