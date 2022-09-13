@@ -171,6 +171,9 @@ module.exports.policies = {
   'v1/name/set-as-main': 'tokenAuth',
   'v1/name/update': 'tokenAuth',
 
+  // Notification
+  'v1/notification/count-unread': 'tokenAuth',
+
   // Option
   'v1/option/find-all': true,
 

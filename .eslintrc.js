@@ -32,6 +32,8 @@ module.exports = {
     TLocation: 'readonly',
     TMassif: 'readonly',
     TName: 'readonly',
+    TNotification: 'readonly',
+    TNotificationType: 'readonly',
     TOption: 'readonly',
     TPoint: 'readonly',
     TRegion: 'readonly',

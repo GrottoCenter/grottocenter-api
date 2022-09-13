@@ -1,0 +1,14 @@
+[
+  {
+    "id": 1,
+    "name": "CREATE"
+  },
+  {
+    "id": 2,
+    "name": "UPDATE"
+  },
+  {
+    "id": 3,
+    "name": "DELETE"
+  }
+]

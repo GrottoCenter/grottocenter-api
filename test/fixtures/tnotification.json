@@ -1,0 +1,62 @@
+[
+  {
+    "id": 1,
+    "dateInscription": "2022-05-28 14:01:44",
+    "dateReadAt": null,
+    "cave": null,
+    "description": null,
+    "document": null,
+    "entrance": 1,
+    "grotto": null,
+    "location": null,
+    "massif": null,
+    "notificationType": 2,
+    "notifier": 3,
+    "notified": 1
+  },
+  {
+    "id": 2,
+    "dateInscription": "2022-09-28 11:01:44",
+    "dateReadAt": null,
+    "cave": null,
+    "description": null,
+    "document": null,
+    "entrance": null,
+    "grotto": null,
+    "location": null,
+    "massif": 1,
+    "notificationType": 2,
+    "notifier": 2,
+    "notified": 1
+  },
+  {
+    "id": 3,
+    "dateInscription": "2022-08-28 23:01:44",
+    "dateReadAt": "2022-09-01 12:05:52",
+    "cave": null,
+    "description": null,
+    "document": 3,
+    "entrance": null,
+    "grotto": null,
+    "location": null,
+    "massif": null,
+    "notificationType": 2,
+    "notifier": 2,
+    "notified": 1
+  },
+  {
+    "id": 4,
+    "dateInscription": "2022-09-01 08:25:25",
+    "dateReadAt": null,
+    "cave": null,
+    "description": 1,
+    "document": 1,
+    "entrance": null,
+    "grotto": null,
+    "location": null,
+    "massif": null,
+    "notificationType": 2,
+    "notifier": 1,
+    "notified": 2
+  }
+]
