@@ -111,6 +111,9 @@ module.exports.routes = {
   'PUT /api/v1/entrances/:entranceId/documents/:documentId':
     'v1/entrance/add-document',
 
+  // Notification
+  'GET /api/v1/notifications/unread/count': 'v1/notification/count-unread',
+
   // Cave
   'DELETE /api/v1/caves/:id': 'v1/cave/delete-one',
   'GET /api/v1/caves/:id': 'v1/cave/find',
