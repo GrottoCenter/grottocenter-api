@@ -113,6 +113,7 @@ module.exports.routes = {
 
   // Notification
   'GET /api/v1/notifications/unread/count': 'v1/notification/count-unread',
+  'GET /api/v1/notifications': 'v1/notification/find-all',
 
   // Cave
   'DELETE /api/v1/caves/:id': 'v1/cave/delete-one',
