@@ -21,6 +21,7 @@ const LanguageModel = require('./mappingModels/LanguageModel');
 const LocationModel = require('./mappingModels/LocationModel');
 const MassifModel = require('./mappingModels/MassifModel');
 const NameModel = require('./mappingModels/NameModel');
+const NotificationModel = require('./mappingModels/NotificationModel');
 const OrganizationModel = require('./mappingModels/OrganizationModel');
 const RiggingModel = require('./mappingModels/RiggingModel');
 const SubjectModel = require('./mappingModels/SubjectModel');
@@ -374,6 +375,14 @@ module.exports = {
     return {
       cavers,
     };
+  },
+
+  convertToNotificationList: (source) => {
+    const notifications = [];
+    source.forEach((item) =>
+      notifications.push(module.exports.convertToNotificationModel(item))
+    );
+    return { notifications };
   },
 
   convertToMassifList: (source) => {
@@ -1149,6 +1158,57 @@ module.exports = {
     } else {
       result.documents = source.documents;
     }
+
+    return result;
+  },
+
+  convertToNotificationModel: (source) => {
+    const result = {
+      ...NotificationModel,
+    };
+    result.id = source.id;
+    result.dateInscription = source.dateInscription;
+    result.dateReadAt = source.dateReadAt;
+    result.notificationType = source.notificationType;
+    result.notified = source.notified;
+    result.notifier = source.notifier;
+
+    result.cave =
+      source.cave instanceof Object
+        ? module.exports.convertToCaveModel(source.cave)
+        : undefined;
+    result.description =
+      source.description instanceof Object
+        ? module.exports.convertToDescriptionModel(source.description)
+        : undefined;
+    result.document =
+      source.document instanceof Object
+        ? module.exports.convertToDocumentModel(source.document)
+        : undefined;
+    result.entrance =
+      source.entrance instanceof Object
+        ? module.exports.convertToEntranceModel(source.entrance)
+        : undefined;
+    result.location =
+      source.location instanceof Object
+        ? module.exports.convertToLocationModel(source.location)
+        : undefined;
+    result.massif =
+      source.massif instanceof Object
+        ? module.exports.convertToMassifModel(source.massif)
+        : undefined;
+    result.notified =
+      source.notified instanceof Object
+        ? module.exports.convertToCaverModel(source.notified)
+        : undefined;
+    result.notifier =
+      source.notifier instanceof Object
+        ? module.exports.convertToCaverModel(source.notifier)
+        : undefined;
+    result.organization =
+      source.grotto instanceof Object
+        ? module.exports.convertToOrganizationModel(source.grotto)
+        : undefined;
 
     return result;
   },

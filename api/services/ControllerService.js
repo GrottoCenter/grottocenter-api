@@ -43,6 +43,7 @@ const treatRange = (parameters, res, converter, found) => {
     `<${first}>; rel="first",  <${prev}>; rel="prev", <${next}>; rel="next",  <${last}>; rel="last"`
   );
 
+  res.set('Access-Control-Expose-Headers', 'Content-Range');
   return res.partialContent(converter(found));
 };
 
