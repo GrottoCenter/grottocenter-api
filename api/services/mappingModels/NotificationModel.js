@@ -5,9 +5,13 @@ module.exports = {
   notified: undefined,
   notifier: undefined,
   cave: undefined,
+  comment: undefined,
   description: undefined,
   document: undefined,
   entrance: undefined,
+  history: undefined,
   location: undefined,
   massif: undefined,
+  organization: undefined,
+  rigging: undefined,
 };

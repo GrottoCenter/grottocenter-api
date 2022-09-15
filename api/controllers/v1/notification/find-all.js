@@ -27,15 +27,18 @@ module.exports = async (req, res) => {
       .limit(size)
       .sort(sort)
       .populate('cave')
+      .populate('comment')
       .populate('document')
       .populate('description')
       .populate('entrance')
       .populate('grotto')
+      .populate('history')
       .populate('location')
       .populate('massif')
       .populate('notificationType')
       .populate('notified')
-      .populate('notifier');
+      .populate('notifier')
+      .populate('rigging');
 
     const populatedNotifications = await Promise.all(
       notifications.map(async (n) => {
