@@ -7,6 +7,13 @@ module.exports = {
     if (populatedNotification.cave) {
       await NameService.setNames([populatedNotification.cave], 'cave');
     }
+    if (populatedNotification.comment) {
+      populatedNotification.comment = await TComment.findOne(
+        notification.comment.id
+      )
+        .populate('cave')
+        .populate('entrance');
+    }
     if (populatedNotification.description) {
       populatedNotification.description = await TDescription.findOne(
         notification.description.id
@@ -27,6 +34,13 @@ module.exports = {
     if (populatedNotification.grotto) {
       await NameService.setNames([populatedNotification.grotto], 'grotto');
     }
+    if (populatedNotification.history) {
+      populatedNotification.history = await THistory.findOne(
+        notification.history.id
+      )
+        .populate('cave')
+        .populate('entrance');
+    }
     if (populatedNotification.location) {
       populatedNotification.location = await TLocation.findOne(
         notification.location.id
@@ -34,6 +48,13 @@ module.exports = {
     }
     if (populatedNotification.massif) {
       await NameService.setNames([populatedNotification.massif], 'massif');
+    }
+    if (populatedNotification.rigging) {
+      populatedNotification.rigging = await TRigging.findOne(
+        notification.rigging.id
+      )
+        .populate('entrance')
+        .populate('cave');
     }
     return populatedNotification;
   },

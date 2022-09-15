@@ -1177,6 +1177,10 @@ module.exports = {
       source.cave instanceof Object
         ? module.exports.convertToCaveModel(source.cave)
         : undefined;
+    result.comment =
+      source.comment instanceof Object
+        ? module.exports.convertToCommentModel(source.comment)
+        : undefined;
     result.description =
       source.description instanceof Object
         ? module.exports.convertToDescriptionModel(source.description)
@@ -1188,6 +1192,10 @@ module.exports = {
     result.entrance =
       source.entrance instanceof Object
         ? module.exports.convertToEntranceModel(source.entrance)
+        : undefined;
+    result.history =
+      source.history instanceof Object
+        ? module.exports.convertToHistoryModel(source.history)
         : undefined;
     result.location =
       source.location instanceof Object
@@ -1208,6 +1216,10 @@ module.exports = {
     result.organization =
       source.grotto instanceof Object
         ? module.exports.convertToOrganizationModel(source.grotto)
+        : undefined;
+    result.rigging =
+      source.rigging instanceof Object
+        ? module.exports.convertToRiggingModel(source.rigging)
         : undefined;
 
     return result;

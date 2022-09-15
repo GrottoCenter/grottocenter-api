@@ -54,6 +54,11 @@ module.exports = {
       model: 'TCave',
     },
 
+    comment: {
+      columnName: 'id_comment',
+      model: 'TComment',
+    },
+
     description: {
       columnName: 'id_description',
       model: 'TDescription',
@@ -74,6 +79,11 @@ module.exports = {
       model: 'TGrotto',
     },
 
+    history: {
+      columnName: 'id_history',
+      model: 'THistory',
+    },
+
     location: {
       columnName: 'id_location',
       model: 'TLocation',
@@ -82,6 +92,11 @@ module.exports = {
     massif: {
       columnName: 'id_massif',
       model: 'TMassif',
+    },
+
+    rigging: {
+      columnName: 'id_rigging',
+      model: 'TRigging',
     },
   },
 };
