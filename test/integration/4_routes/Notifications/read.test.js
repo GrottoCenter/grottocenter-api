@@ -18,7 +18,6 @@ describe('Notifications features', () => {
         .set('Accept', 'application/json')
         .expect(404, done);
     });
-
     it('should return code 403 on trying to mark another user notification as read', (done) => {
       supertest(sails.hooks.http.app)
         .post(`/api/v1/notifications/${otherNotificationId}/read`)

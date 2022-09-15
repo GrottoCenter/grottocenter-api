@@ -16,6 +16,11 @@ module.exports = {
         .populate('entrance')
         .populate('massif');
     }
+    if (populatedNotification.document) {
+      populatedNotification.document = await DocumentService.getDocument(
+        populatedNotification.document.id
+      );
+    }
     if (populatedNotification.entrance) {
       await NameService.setNames([populatedNotification.entrance], 'entrance');
     }
@@ -29,11 +34,6 @@ module.exports = {
     }
     if (populatedNotification.massif) {
       await NameService.setNames([populatedNotification.massif], 'massif');
-    }
-    if (populatedNotification.document) {
-      populatedNotification.document = await DocumentService.getDocument(
-        populatedNotification.document.id
-      );
     }
     return populatedNotification;
   },
