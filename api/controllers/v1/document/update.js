@@ -8,6 +8,11 @@ const FileService = require('../../../services/FileService');
 const { INVALID_FORMAT, INVALID_NAME, ERROR_DURING_UPLOAD_TO_AZURE } =
   FileService;
 const MappingService = require('../../../services/MappingService');
+const {
+  NOTIFICATION_TYPES,
+  NOTIFICATION_ENTITIES,
+} = require('../../../services/NotificationService');
+const NotificationService = require('../../../services/NotificationService');
 const RightService = require('../../../services/RightService');
 
 module.exports = async (req, res) => {
@@ -90,6 +95,14 @@ module.exports = async (req, res) => {
     if (!updatedDocument) {
       return res.notFound();
     }
+
+    await NotificationService.notifySubscribers(
+      req,
+      updatedDocument,
+      req.token.id,
+      NOTIFICATION_TYPES.UPDATE,
+      NOTIFICATION_ENTITIES.DOCUMENT
+    );
 
     await DescriptionService.setDocumentDescriptions(updatedDocument, false);
     const params = {};

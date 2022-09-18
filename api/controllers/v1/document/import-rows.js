@@ -104,6 +104,7 @@ module.exports = async (req, res) => {
 
       // eslint-disable-next-line no-await-in-loop
       const createdDocument = await DocumentService.createDocument(
+        req,
         dataDocument,
         dataLangDesc
       );

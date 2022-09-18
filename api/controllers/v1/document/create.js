@@ -33,6 +33,7 @@ module.exports = async (req, res) => {
 
   try {
     const createdDocument = await DocumentService.createDocument(
+      req,
       cleanedData,
       langDescData
     );
