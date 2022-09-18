@@ -24,6 +24,11 @@ const DescriptionService = require('./DescriptionService');
 const ElasticsearchService = require('./ElasticsearchService');
 const FileService = require('./FileService');
 const NameService = require('./NameService');
+const NotificationService = require('./NotificationService');
+const {
+  NOTIFICATION_TYPES,
+  NOTIFICATION_ENTITIES,
+} = require('./NotificationService');
 
 const getAdditionalESIndexFromDocumentType = (document) => {
   if (document.type.name === 'Issue') {
@@ -267,7 +272,7 @@ module.exports = {
     }));
   },
 
-  createDocument: async (documentData, langDescData) => {
+  createDocument: async (req, documentData, langDescData) => {
     const document = await sails.getDatastore().transaction(async (db) => {
       // Perform some checks
       const docType =
@@ -315,9 +320,9 @@ module.exports = {
       return createdDocument;
     });
 
-    // Get doc with id type
-    const populatedDocument = await TDocument.findOne(document.id).populate(
-      'identifierType'
+    const populatedDocument = await module.exports.getDocument(
+      document.id,
+      false
     );
 
     if (
@@ -346,6 +351,14 @@ module.exports = {
         await FileService.create(file, document.id);
       }
     }
+
+    await NotificationService.notifySubscribers(
+      req,
+      populatedDocument,
+      req.token.id,
+      NOTIFICATION_TYPES.CREATE,
+      NOTIFICATION_ENTITIES.DOCUMENT
+    );
 
     return populatedDocument;
   },
@@ -439,6 +452,7 @@ module.exports = {
     // Simple function currently but will be extended depending on needs
     const result = await TDocument.findOne(documentId)
       .populate('files')
+      .populate('identifierType')
       .populate('license')
       .populate('type');
     await DescriptionService.setDocumentDescriptions(

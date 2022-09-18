@@ -1,5 +1,10 @@
 const ramda = require('ramda');
 const ErrorService = require('../../../services/ErrorService');
+const {
+  NOTIFICATION_TYPES,
+  NOTIFICATION_ENTITIES,
+} = require('../../../services/NotificationService');
+const NotificationService = require('../../../services/NotificationService');
 const RightService = require('../../../services/RightService');
 
 module.exports = async (req, res) => {
@@ -72,6 +77,14 @@ module.exports = async (req, res) => {
     }
     const updatedDocument = await TDocument.updateOne(documentId).set(
       cleanedData
+    );
+
+    await NotificationService.notifySubscribers(
+      req,
+      updatedDocument,
+      req.token.id,
+      NOTIFICATION_TYPES.UPDATE,
+      NOTIFICATION_ENTITIES.DOCUMENT
     );
 
     return res.ok(updatedDocument);
