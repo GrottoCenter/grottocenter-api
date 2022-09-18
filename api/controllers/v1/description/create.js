@@ -1,7 +1,12 @@
 const ControllerService = require('../../../services/ControllerService');
 const ErrorService = require('../../../services/ErrorService');
 const MappingService = require('../../../services/MappingService');
+const NotificationService = require('../../../services/NotificationService');
 const RightService = require('../../../services/RightService');
+const {
+  NOTIFICATION_TYPES,
+  NOTIFICATION_ENTITIES,
+} = require('../../../services/NotificationService');
 
 module.exports = async (req, res) => {
   // Check right
@@ -113,6 +118,14 @@ module.exports = async (req, res) => {
       .populate('exit')
       .populate('language')
       .populate('massif');
+
+    await NotificationService.notifySubscribers(
+      req,
+      newDescriptionPopulated,
+      req.token.id,
+      NOTIFICATION_TYPES.CREATE,
+      NOTIFICATION_ENTITIES.DESCRIPTION
+    );
 
     const params = {};
     params.controllerMethod = 'DescriptionController.create';
