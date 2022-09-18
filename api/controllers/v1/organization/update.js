@@ -3,7 +3,12 @@ const ErrorService = require('../../../services/ErrorService');
 const GrottoService = require('../../../services/GrottoService');
 const MappingService = require('../../../services/MappingService');
 const NameService = require('../../../services/NameService');
+const NotificationService = require('../../../services/NotificationService');
 const RightService = require('../../../services/RightService');
+const {
+  NOTIFICATION_TYPES,
+  NOTIFICATION_ENTITIES,
+} = require('../../../services/NotificationService');
 
 module.exports = async (req, res) => {
   // Check right
@@ -42,6 +47,14 @@ module.exports = async (req, res) => {
     }).set(cleanedData);
 
     await NameService.setNames([updatedOrganization], 'grotto');
+
+    await NotificationService.notifySubscribers(
+      req,
+      updatedOrganization,
+      req.token.id,
+      NOTIFICATION_TYPES.UPDATE,
+      NOTIFICATION_ENTITIES.ORGANIZATION
+    );
 
     const params = {};
     params.controllerMethod = 'OrganizationController.update';

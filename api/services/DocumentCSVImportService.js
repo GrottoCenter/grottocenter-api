@@ -46,7 +46,7 @@ module.exports = {
     };
   },
 
-  getConvertedDocumentFromCsv: async (rawData, authorId) => {
+  getConvertedDocumentFromCsv: async (req, rawData, authorId) => {
     const doubleCheckWithData = (args) =>
       doubleCheck.with({ data: rawData, ...args });
     const retrieveFromLink = sails.helpers.csvhelpers.retrieveFromLink.with;
@@ -119,6 +119,7 @@ module.exports = {
           author: authorId,
         };
         const editorGrotto = await GrottoService.createGrotto(
+          req,
           paramsGrotto,
           nameGrotto
         );
