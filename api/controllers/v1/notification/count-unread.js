@@ -3,10 +3,9 @@ const ErrorService = require('../../../services/ErrorService');
 
 module.exports = async (req, res) => {
   try {
-    const result = await TNotification.count({
-      notified: req.token.id,
-    }).where({
+    const result = await TNotification.count().where({
       dateReadAt: null,
+      notified: req.token.id,
     });
 
     const params = {
