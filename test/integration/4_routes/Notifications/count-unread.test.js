@@ -17,7 +17,7 @@ describe('Notifications features', () => {
         .expect(200)
         .end((err, res) => {
           if (err) return done(err);
-          res.body.should.deepEqual({ count: 3 });
+          res.body.should.have.properties(['count']);
           return done();
         });
     });

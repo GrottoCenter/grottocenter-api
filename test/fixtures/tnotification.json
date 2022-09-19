@@ -16,7 +16,7 @@
   },
   {
     "id": 2,
-    "dateInscription": "2022-09-28 11:01:44",
+    "dateInscription": "2022-06-28 11:01:44",
     "dateReadAt": null,
     "cave": null,
     "description": null,
@@ -50,7 +50,7 @@
     "dateReadAt": null,
     "cave": null,
     "description": 1,
-    "document": 1,
+    "document": null,
     "entrance": null,
     "grotto": null,
     "location": null,

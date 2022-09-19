@@ -10,5 +10,9 @@
   {
     "id": 3,
     "name": "DELETE"
+  },
+  {
+    "id": 4,
+    "name": "VALIDATE"
   }
 ]

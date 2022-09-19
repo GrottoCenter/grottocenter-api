@@ -1,0 +1,38 @@
+<%- include('emailHeader', { emailTitle: 'Grottocenter - Notification' }); %>
+  <!-- ===== EMAIL BODY ===== -->
+  <!--
+    Required values:
+        - i18n              Object      internationalization module
+        - actionVerb        String      The action performed on the entity
+        - entityLink        String      Entity concerned by the notification link
+        - entityName        String      Entity concerned by the notification name
+        - entityType        String      Entity concerned by the notification type
+        - recipientName     String      Full name or nickname of the recipient
+        - subscriptionName  String      The subscription name which generated this notification
+        - subscriptionTypeame  String   The subscription type which generated this notification
+-->
+
+  <p>
+    <%- i18n.__('Dear %s', '<b>' +recipientName+'</b>') %>
+  </p>
+
+  <p>
+    <%if (entityName && actionVerb) { %>
+      <%- i18n.__('%s (%s) has been %s on Grottocenter.', '<b>' + entityName +'</b>', i18n.__(entityType), '<b>' + i18n.__(actionVerb) +'</b>') %>
+    <% } %>
+    <%if (entityLink) { %>
+      <%- i18n.__('Click the link below to know more about this modification:') %>
+      <a href="<%= entityLink %>"><%= entityLink %></a>
+      <% } %>
+  </p>
+
+  <p>
+    <%if (subscriptionType === 'country') { %>
+      <%- i18n.__('You are receiving this email because of your subscription to the country %s.', '<b>' +subscriptionName+'</b>') %>
+    <% } %>
+    <%if (subscriptionType === 'massif') { %>
+      <%- i18n.__('You are receiving this email because of your subscription to the massif %s.', '<b>' +subscriptionName+'</b>') %>
+    <% } %>
+  </p>
+
+  <%- include('emailFooter', { i18n: i18n }); %>

@@ -27,7 +27,6 @@ describe('Notifications features', () => {
         .end((err, res) => {
           if (err) return done(err);
           const { notifications } = res.body;
-          should(notifications).have.length(3);
           for (const notification of notifications) {
             should(notification).have.properties(NOTIFICATION_PROPERTIES);
           }
