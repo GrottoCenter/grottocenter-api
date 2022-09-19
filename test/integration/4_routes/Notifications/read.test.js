@@ -3,14 +3,19 @@ const AuthTokenService = require('../../AuthTokenService');
 
 describe('Notifications features', () => {
   let adminToken;
+  const ownNotificationId = 1;
+  const otherNotificationId = 4;
   before(async () => {
     adminToken = await AuthTokenService.getRawBearerAdminToken();
   });
 
+  after(async () => {
+    // Unread read notification
+    await TNotification.updateOne(ownNotificationId).set({ dateReadAt: null });
+  });
+
   describe('Mark as read', () => {
-    const ownNotificationId = 1;
-    const otherNotificationId = 4;
-    it('should return code 404 on trying to mark an inexsiting notification as read', (done) => {
+    it('should return code 404 on trying to mark an inexisting notification as read', (done) => {
       supertest(sails.hooks.http.app)
         .post(`/api/v1/notifications/987654321/read`)
         .set('Authorization', adminToken)
