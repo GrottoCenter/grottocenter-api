@@ -26,5 +26,6 @@
   "validated": "validé(e)",
   "We received a request to reset the password for your account.": "Nous avons reçu une demande de réinitialisation du mot de passe de votre compte.",
   "You are receiving this email because of your subscription to the country %s.": "Vous recevez cet email car vous êtes abonné au pays %s.",
-  "You are receiving this email because of your subscription to the massif %s.": "Vous recevez cet email car vous êtes abonné au massif %s."
+  "You are receiving this email because of your subscription to the massif %s.": "Vous recevez cet email car vous êtes abonné au massif %s.",
+  "Password Reset": "Password Reset"
 }
