@@ -1,4 +1,5 @@
 const should = require('should');
+const AuthTokenService = require('../AuthTokenService');
 const CaveService = require('../../../api/services/CaveService');
 
 const findAndPopulateCave = async (caveId) =>
@@ -13,6 +14,11 @@ const findAndPopulateCave = async (caveId) =>
     .populate('partneringGrottos');
 
 describe('CaveService', () => {
+  const userReq = {};
+  before(async () => {
+    userReq.token = await AuthTokenService.getUserToken();
+  });
+
   describe('setEntrances()', () => {
     it('should set the cave entrances correctly', async () => {
       const cave1 = await TCave.findOne(1);
@@ -60,6 +66,7 @@ describe('CaveService', () => {
 
     it('should create a new cave', async () => {
       const createdCave = await CaveService.createCave(
+        userReq,
         caveData,
         nameData,
         descriptionsData
@@ -175,11 +182,13 @@ describe('CaveService', () => {
 
     it('should merge two caves into one', async () => {
       const cave1Tmp = await CaveService.createCave(
+        userReq,
         cave1Data,
         name1Data,
         descriptions1Data
       );
       const cave2Tmp = await CaveService.createCave(
+        userReq,
         cave2Data,
         name2Data,
         descriptions2Data

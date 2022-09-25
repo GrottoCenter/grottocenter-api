@@ -3,6 +3,11 @@ const ControllerService = require('../../../services/ControllerService');
 const ErrorService = require('../../../services/ErrorService');
 const MappingService = require('../../../services/MappingService');
 const NameService = require('../../../services/NameService');
+const {
+  NOTIFICATION_TYPES,
+  NOTIFICATION_ENTITIES,
+} = require('../../../services/NotificationService');
+const NotificationService = require('../../../services/NotificationService');
 const RightService = require('../../../services/RightService');
 
 const { checkRight } = sails.helpers;
@@ -49,8 +54,15 @@ module.exports = async (req, res) => {
       language: req.param('name')?.language,
     });
 
-    // Populate and return
     await NameService.setNames([updatedCave], 'cave');
+
+    await NotificationService.notifySubscribers(
+      req,
+      updatedCave,
+      req.token.id,
+      NOTIFICATION_TYPES.UPDATE,
+      NOTIFICATION_ENTITIES.CAVE
+    );
     const params = {
       controllerMethod: 'CaveController.update',
     };
