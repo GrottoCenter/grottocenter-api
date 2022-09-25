@@ -3,6 +3,11 @@ const ControllerService = require('../../../services/ControllerService');
 const ErrorService = require('../../../services/ErrorService');
 const MappingService = require('../../../services/MappingService');
 const NameService = require('../../../services/NameService');
+const {
+  NOTIFICATION_TYPES,
+  NOTIFICATION_ENTITIES,
+} = require('../../../services/NotificationService');
+const NotificationService = require('../../../services/NotificationService');
 const RightService = require('../../../services/RightService');
 
 // eslint-disable-next-line consistent-return
@@ -121,6 +126,14 @@ module.exports = async (req, res) => {
         .usingConnection(db);
 
       await NameService.setNames([updatedEntrance], 'entrance');
+
+      await NotificationService.notifySubscribers(
+        req,
+        updatedEntrance,
+        req.token.id,
+        NOTIFICATION_TYPES.UPDATE,
+        NOTIFICATION_ENTITIES.ENTRANCE
+      );
 
       const params = {};
       params.controllerMethod = 'EntranceController.update';

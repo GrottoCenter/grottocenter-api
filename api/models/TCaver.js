@@ -148,6 +148,12 @@ module.exports = {
       model: 'TLanguage',
     },
 
+    sendNotificationByEmail: {
+      type: 'boolean',
+      columnName: 'send_notification_by_email',
+      defaultsTo: false,
+    },
+
     grottos: {
       collection: 'TGrotto',
       via: 'caver',

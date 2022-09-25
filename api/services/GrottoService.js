@@ -2,7 +2,12 @@ const ramda = require('ramda');
 const CaveService = require('./CaveService');
 const ElasticsearchService = require('./ElasticsearchService');
 const NameService = require('./NameService');
+const NotificationService = require('./NotificationService');
 const DescriptionService = require('./DescriptionService');
+const {
+  NOTIFICATION_ENTITIES,
+  NOTIFICATION_TYPES,
+} = require('./NotificationService');
 
 module.exports = {
   // Extract everything from a request body except id
@@ -76,13 +81,13 @@ module.exports = {
     }
   },
   /**
-   *
+   * @param {*} req
    * @param {*} cleanedData
    * @param {*} nameData
    * @throws Sails ORM errors (see https://sailsjs.com/documentation/concepts/models-and-orm/errors)
    * @returns
    */
-  createGrotto: async (cleanedData, nameData) => {
+  createGrotto: async (req, cleanedData, nameData) => {
     const newOrganizationPopulated = await sails
       .getDatastore()
       .transaction(async (db) => {
@@ -134,6 +139,14 @@ module.exports = {
       'nb cavers': 0,
       tags: ['grotto'],
     });
+
+    await NotificationService.notifySubscribers(
+      req,
+      newOrganizationPopulated,
+      req.token.id,
+      NOTIFICATION_TYPES.CREATE,
+      NOTIFICATION_ENTITIES.ORGANIZATION
+    );
 
     return newOrganizationPopulated;
   },

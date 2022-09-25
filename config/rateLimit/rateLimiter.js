@@ -17,6 +17,12 @@ module.exports = {
       if (req.method.toUpperCase() === 'OPTIONS') {
         return true;
       }
+
+      // Currently, ignore limiting when in test
+      if (process.env.NODE_ENV === 'test') {
+        return true;
+      }
+
       // If you are not authenticated, you are limited
       if (!req.token) {
         return false;
@@ -64,7 +70,7 @@ module.exports = {
         process.env.NODE_ENV !== 'test'
       ) {
         sails.log.error(
-          `User ${req.token.nickname} (id=${req.token.id} is being limited because the request doesn't come from our main client app.`
+          `User ${req.token.nickname} (id=${req.token.id}) is being limited because the request doesn't come from our main client app.`
         );
         return false;
       }
@@ -82,7 +88,7 @@ module.exports = {
         );
       if (!hasNoRequestLimit) {
         sails.log.error(
-          `User ${req.token.nickname} (id=${req.token.id} is being limited on DELETE requests as an user.`
+          `User ${req.token.nickname} (id=${req.token.id}) is being limited on DELETE requests as an user.`
         );
       }
 
@@ -125,7 +131,7 @@ module.exports = {
 
       if (!hasNoRequestLimit) {
         sails.log.error(
-          `User ${req.token.nickname} (id=${req.token.id} is being limited on DELETE requests as an user.`
+          `User ${req.token.nickname} (id=${req.token.id}) is being limited on DELETE requests as an user.`
         );
       }
 

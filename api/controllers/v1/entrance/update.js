@@ -3,6 +3,11 @@ const EntranceService = require('../../../services/EntranceService');
 const ErrorService = require('../../../services/ErrorService');
 const MappingService = require('../../../services/MappingService');
 const NameService = require('../../../services/NameService');
+const {
+  NOTIFICATION_TYPES,
+  NOTIFICATION_ENTITIES,
+} = require('../../../services/NotificationService');
+const NotificationService = require('../../../services/NotificationService');
 const RightService = require('../../../services/RightService');
 
 const checkRight = sails.helpers.checkRight.with;
@@ -80,8 +85,16 @@ module.exports = async (req, res) => {
       language: req.param('name')?.language,
     });
 
-    // Populate and return
     await NameService.setNames([updatedEntrance], 'entrance');
+
+    await NotificationService.notifySubscribers(
+      req,
+      updatedEntrance,
+      req.token.id,
+      NOTIFICATION_TYPES.UPDATE,
+      NOTIFICATION_ENTITIES.ENTRANCE
+    );
+
     const params = {
       controllerMethod: 'EntranceController.update',
     };

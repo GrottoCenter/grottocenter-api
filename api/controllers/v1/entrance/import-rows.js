@@ -118,7 +118,7 @@ module.exports = async (req, res) => {
           data,
           authorId
         );
-      const createdCave = await CaveService.createCave(dataCave, nameData);
+      const createdCave = await CaveService.createCave(req, dataCave, nameData);
 
       // Entrance creation
       const dataEntrance = EntranceCSVImportService.getConvertedEntranceFromCsv(
@@ -130,6 +130,7 @@ module.exports = async (req, res) => {
       const { dateReviewed } = dataEntrance;
 
       const createdEntrance = await EntranceService.createEntrance(
+        req,
         dataEntrance,
         dataNameDescLoc
       );

@@ -35,7 +35,7 @@ module.exports = async (req, res) => {
   const duplicate = await TDocumentDuplicate.findOne(id);
   const { document, description } = duplicate.content;
   try {
-    await DocumentService.createDocument(document, description);
+    await DocumentService.createDocument(req, document, description);
     await TDocumentDuplicate.destroyOne(id);
     return res.ok();
   } catch (e) {

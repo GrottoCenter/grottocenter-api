@@ -3,6 +3,12 @@ const ErrorService = require('../../../services/ErrorService');
 const MappingService = require('../../../services/MappingService');
 const RightService = require('../../../services/RightService');
 const MassifService = require('../../../services/MassifService');
+const NameService = require('../../../services/NameService');
+const NotificationService = require('../../../services/NotificationService');
+const {
+  NOTIFICATION_TYPES,
+  NOTIFICATION_ENTITIES,
+} = require('../../../services/NotificationService');
 
 module.exports = async (req, res) => {
   // Check right
@@ -48,6 +54,14 @@ module.exports = async (req, res) => {
       );
     }
     const updatedMassif = await TMassif.updateOne(massifId).set(cleanedData);
+    await NameService.setNames([updatedMassif], 'massif');
+    await NotificationService.notifySubscribers(
+      req,
+      updatedMassif,
+      req.token.id,
+      NOTIFICATION_TYPES.UPDATE,
+      NOTIFICATION_ENTITIES.MASSIF
+    );
 
     const params = {};
     params.controllerMethod = 'MassifController.update';

@@ -42,6 +42,7 @@ module.exports = async (req, res) => {
 
   try {
     const newOrganizationPopulated = await GrottoService.createGrotto(
+      req,
       cleanedData,
       nameData
     );

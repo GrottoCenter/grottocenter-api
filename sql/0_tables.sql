@@ -1129,3 +1129,44 @@ CREATE TABLE j_caver_country_subscription (
 	CONSTRAINT j_caver_country_t_caver_fk FOREIGN KEY (id_caver) REFERENCES t_caver(id),
   CONSTRAINT j_caver_country_t_country_fk FOREIGN KEY (iso) REFERENCES t_country(iso)
 );
+
+-- DROP TABLE t_notification_type ;
+CREATE TABLE t_notification_type (
+	id serial NOT NULL,
+  name varchar(50) NULL,
+  CONSTRAINT t_notification_type_pk PRIMARY KEY (id)
+);
+
+-- DROP TABLE t_notification ;
+CREATE TABLE t_notification (
+  id serial NOT NULL,
+  date_inscription timestamp NOT NULL DEFAULT now(),
+  date_read_at timestamp NULL,
+  id_cave int4 NULL,
+  id_comment int4 NULL,
+  id_description int4 NULL,
+  id_document int4 NULL,
+  id_entrance int4 NULL,
+  id_grotto int4 NULL,
+  id_history int4 NULL,
+  id_location int4 NULL,
+  id_massif int4 NULL,
+  id_notification_type int4 NOT NULL,
+  id_notifier int4 NOT NULL,
+  id_notified int4 NOT NULL,
+  id_rigging int4 NULL,
+  CONSTRAINT t_notification_pk PRIMARY KEY (id),
+  CONSTRAINT t_notification_notifier_t_caver_fk FOREIGN KEY (id_notifier) REFERENCES t_caver(id),
+  CONSTRAINT t_notification_notified_t_caver_fk FOREIGN KEY (id_notified) REFERENCES t_caver(id),
+  CONSTRAINT t_notification_notification_type_t_notification_type_fk FOREIGN KEY (id_notification_type) REFERENCES t_notification_type(id),
+  CONSTRAINT t_notification_t_cave_fk FOREIGN KEY (id_cave) REFERENCES t_cave(id),
+  CONSTRAINT t_notification_t_comment_fk FOREIGN KEY (id_comment) REFERENCES t_comment(id),
+  CONSTRAINT t_notification_t_description_fk FOREIGN KEY (id_description) REFERENCES t_description(id),
+  CONSTRAINT t_notification_t_document_fk FOREIGN KEY (id_document) REFERENCES t_document(id),
+  CONSTRAINT t_notification_t_entrance_fk FOREIGN KEY (id_entrance) REFERENCES t_entrance(id),
+  CONSTRAINT t_notification_t_grotto_fk FOREIGN KEY (id_grotto) REFERENCES t_grotto(id),
+  CONSTRAINT t_notification_t_history_fk FOREIGN KEY (id_history) REFERENCES t_history(id),
+  CONSTRAINT t_notification_t_location_fk FOREIGN KEY (id_location) REFERENCES t_location(id),
+  CONSTRAINT t_notification_t_massif_fk FOREIGN KEY (id_massif) REFERENCES t_massif(id),
+  CONSTRAINT t_notification_t_rigging_fk FOREIGN KEY (id_rigging) REFERENCES t_rigging(id)
+);

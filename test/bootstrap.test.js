@@ -41,6 +41,7 @@ before(function (done) {
           'ttype',
           'tcountry',
           'tgroup',
+          'tnotificationtype',
           'tcaver',
           'tname',
           'tgrotto',
@@ -57,6 +58,7 @@ before(function (done) {
           'tcomment',
           'tfile',
           'trigging',
+          'tnotification',
         ],
         // eslint-disable-next-line consistent-return
         (fixtedError) => {

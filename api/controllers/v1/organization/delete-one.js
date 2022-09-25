@@ -1,5 +1,11 @@
 const ElasticsearchService = require('../../../services/ElasticsearchService');
+const NotificationService = require('../../../services/NotificationService');
 const RightService = require('../../../services/RightService');
+const {
+  NOTIFICATION_TYPES,
+  NOTIFICATION_ENTITIES,
+} = require('../../../services/NotificationService');
+const NameService = require('../../../services/NameService');
 
 module.exports = async (req, res) => {
   const hasRight = await sails.helpers.checkRight
@@ -20,6 +26,7 @@ module.exports = async (req, res) => {
   // Check if organization exists and if it's not already deleted
   const organizationId = req.param('id');
   const currentOrganization = await TGrotto.findOne(organizationId);
+  await NameService.setNames([currentOrganization], 'grotto');
   if (currentOrganization) {
     if (currentOrganization.isDeleted) {
       return res.status(410).send({
@@ -42,5 +49,13 @@ module.exports = async (req, res) => {
   );
 
   await ElasticsearchService.deleteResource('grottos', organizationId);
+
+  await NotificationService.notifySubscribers(
+    req,
+    currentOrganization,
+    req.token.id,
+    NOTIFICATION_TYPES.DELETE,
+    NOTIFICATION_ENTITIES.ORGANIZATION
+  );
   return res.ok();
 };

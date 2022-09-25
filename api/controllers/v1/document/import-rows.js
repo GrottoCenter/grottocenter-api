@@ -73,6 +73,7 @@ module.exports = async (req, res) => {
       const dataDocument =
         // eslint-disable-next-line no-await-in-loop
         await DocumentCSVImportService.getConvertedDocumentFromCsv(
+          req,
           data,
           authorId
         );
@@ -103,6 +104,7 @@ module.exports = async (req, res) => {
 
       // eslint-disable-next-line no-await-in-loop
       const createdDocument = await DocumentService.createDocument(
+        req,
         dataDocument,
         dataLangDesc
       );

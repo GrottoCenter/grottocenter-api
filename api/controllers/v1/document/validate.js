@@ -1,5 +1,10 @@
 const ControllerService = require('../../../services/ControllerService');
 const DocumentService = require('../../../services/DocumentService');
+const NotificationService = require('../../../services/NotificationService');
+const {
+  NOTIFICATION_TYPES,
+  NOTIFICATION_ENTITIES,
+} = require('../../../services/NotificationService');
 
 // eslint-disable-next-line consistent-return
 module.exports = (req, res) => {
@@ -46,6 +51,13 @@ module.exports = (req, res) => {
         await DocumentService.setNamesOfPopulatedDocument(populatedDoc);
         await DocumentService.addDocumentToElasticSearchIndexes(
           updatedDocument
+        );
+        await NotificationService.notifySubscribers(
+          req,
+          updatedDocument,
+          req.token.id,
+          NOTIFICATION_TYPES.VALIDATE,
+          NOTIFICATION_ENTITIES.DOCUMENT
         );
       }
 

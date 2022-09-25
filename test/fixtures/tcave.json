@@ -4,7 +4,10 @@
     "id_author": 1,
     "entrances": [1, 2],
     "histories": [1, 2],
-    "names": [7]
+    "names": [7],
+    "_comment_": "// Located in massif with id 1",
+    "longitude": "78.5377653268393",
+    "latitude": "62.798492610654286"
   },
   {
     "id": 2,

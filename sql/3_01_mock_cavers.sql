@@ -28,7 +28,8 @@ INSERT INTO public.t_caver (
 		show_links,
 		detail_level,
 		default_zoom,
-		id_language
+		id_language,
+    send_notification_by_email
 	)
 VALUES (
 		0,
@@ -50,7 +51,8 @@ VALUES (
 		false,
 		30,
 		NULL,
-		'fra'
+		'fra',
+    true
 	),
 	(
 		1,
@@ -72,7 +74,8 @@ VALUES (
 		false,
 		15,
 		8,
-		'fra'
+		'fra',
+    false
 	),
 	(
 		2,
@@ -94,7 +97,8 @@ VALUES (
 		true,
 		30,
 		13,
-		'fra'
+		'fra',
+    false
 	),
 	(
 		3,
@@ -116,7 +120,8 @@ VALUES (
 		false,
 		30,
 		8,
-		'fra'
+		'fra',
+    true
 	),
 	(
 		4,
@@ -138,7 +143,8 @@ VALUES (
 		false,
 		100,
 		7,
-		'fra'
+		'fra',
+    false
 	),
 	(
 		5,
@@ -160,7 +166,8 @@ VALUES (
 		true,
 		10,
 		15,
-		'fra'
+		'fra',
+    true
 	),
 	(
 		6,
@@ -182,7 +189,8 @@ VALUES (
 		false,
 		30,
 		7,
-		'fra'
+		'fra',
+    false
 	);
 INSERT INTO public.j_caver_group (id_caver, id_group)
 VALUES (1, 1),

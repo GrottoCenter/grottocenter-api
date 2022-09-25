@@ -1,6 +1,11 @@
 const DocumentService = require('../../../services/DocumentService');
 const ErrorService = require('../../../services/ErrorService');
 const FileService = require('../../../services/FileService');
+const {
+  NOTIFICATION_TYPES,
+  NOTIFICATION_ENTITIES,
+} = require('../../../services/NotificationService');
+const NotificationService = require('../../../services/NotificationService');
 
 module.exports = async (req, res) => {
   const documents = req.param('documents');
@@ -150,6 +155,14 @@ module.exports = async (req, res) => {
               // eslint-disable-next-line no-await-in-loop
               await DocumentService.addDocumentToElasticSearchIndexes(found);
             }
+            // eslint-disable-next-line no-await-in-loop
+            await NotificationService.notifySubscribers(
+              req,
+              found,
+              req.token.id,
+              NOTIFICATION_TYPES.VALIDATE,
+              NOTIFICATION_ENTITIES.DOCUMENT
+            );
           } catch (err) {
             return res.serverError(
               'An error occured when trying to get all information about the document.'

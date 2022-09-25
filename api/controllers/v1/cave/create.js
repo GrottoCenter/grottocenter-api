@@ -76,6 +76,7 @@ module.exports = async (req, res) => {
   // Create cave
   try {
     const createdCave = await CaveService.createCave(
+      req,
       cleanedData,
       nameData,
       descriptionsData

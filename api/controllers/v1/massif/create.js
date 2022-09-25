@@ -2,8 +2,13 @@ const ramda = require('ramda');
 const ControllerService = require('../../../services/ControllerService');
 const ElasticsearchService = require('../../../services/ElasticsearchService');
 const ErrorService = require('../../../services/ErrorService');
-const RightService = require('../../../services/RightService');
 const MassifService = require('../../../services/MassifService');
+const NotificationService = require('../../../services/NotificationService');
+const RightService = require('../../../services/RightService');
+const {
+  NOTIFICATION_TYPES,
+  NOTIFICATION_ENTITIES,
+} = require('../../../services/NotificationService');
 
 // eslint-disable-next-line consistent-return
 module.exports = async (req, res) => {
@@ -47,7 +52,7 @@ module.exports = async (req, res) => {
 
   // Launch creation request using transaction: it performs a rollback if an error occurs
   try {
-    await sails.getDatastore().transaction(async (db) => {
+    const newMassif = await sails.getDatastore().transaction(async (db) => {
       const cleanedData = {
         author: req.token.id,
         dateInscription: new Date(),
@@ -55,7 +60,7 @@ module.exports = async (req, res) => {
         geogPolygon: await MassifService.geoJsonToWKT(req.body.geogPolygon),
       };
 
-      const newMassif = await TMassif.create(cleanedData)
+      const massif = await TMassif.create(cleanedData)
         .fetch()
         .usingConnection(db);
 
@@ -65,7 +70,7 @@ module.exports = async (req, res) => {
         dateInscription: new Date(),
         isMain: true,
         language: req.body.descriptionAndNameLanguage.id,
-        massif: newMassif.id,
+        massif: massif.id,
         name: req.body.name,
       }).usingConnection(db);
 
@@ -75,21 +80,21 @@ module.exports = async (req, res) => {
           author: req.token.id,
           body: req.body.description,
           dateInscription: new Date(),
-          massif: newMassif.id,
+          massif: massif.id,
           language: req.body.descriptionAndNameLanguage.id,
           title: req.body.descriptionTitle,
         }).usingConnection(db);
       }
 
       // Prepare data for Elasticsearch indexation
-      const newMassifPopulated = await TMassif.findOne(newMassif.id)
+      const newMassifPopulated = await TMassif.findOne(massif.id)
         .populate('descriptions')
         .populate('names')
         .populate('documents')
         .usingConnection(db);
-      newMassifPopulated.caves = await MassifService.getCaves(newMassif.id);
+      newMassifPopulated.caves = await MassifService.getCaves(massif.id);
       newMassifPopulated.entrances = await MassifService.getEntrances(
-        newMassif.id
+        massif.id
       );
 
       const description =
@@ -109,16 +114,20 @@ module.exports = async (req, res) => {
         tags: ['massif'],
       });
 
-      const params = {};
-      params.controllerMethod = 'MassifController.create';
-      return ControllerService.treat(
-        req,
-        null,
-        newMassifPopulated,
-        params,
-        res
-      );
+      return newMassifPopulated;
     });
+
+    await NotificationService.notifySubscribers(
+      req,
+      newMassif,
+      req.token.id,
+      NOTIFICATION_TYPES.CREATE,
+      NOTIFICATION_ENTITIES.MASSIF
+    );
+
+    const params = {};
+    params.controllerMethod = 'MassifController.create';
+    return ControllerService.treat(req, null, newMassif, params, res);
   } catch (e) {
     return ErrorService.getDefaultErrorHandler(res)(e);
   }
