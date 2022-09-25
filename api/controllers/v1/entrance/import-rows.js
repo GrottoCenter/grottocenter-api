@@ -130,6 +130,7 @@ module.exports = async (req, res) => {
       const { dateReviewed } = dataEntrance;
 
       const createdEntrance = await EntranceService.createEntrance(
+        req,
         dataEntrance,
         dataNameDescLoc
       );

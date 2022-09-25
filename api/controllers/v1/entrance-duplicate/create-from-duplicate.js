@@ -37,7 +37,7 @@ module.exports = async (req, res) => {
 
   const { entrance, nameDescLoc } = duplicate.content;
   try {
-    await EntranceService.createEntrance(entrance, nameDescLoc);
+    await EntranceService.createEntrance(req, entrance, nameDescLoc);
     await TEntranceDuplicate.destroyOne(id);
     return res.ok();
   } catch (e) {
