@@ -1,6 +1,11 @@
 const ramda = require('ramda');
 const CommonService = require('./CommonService');
 const ElasticsearchService = require('./ElasticsearchService');
+const {
+  NOTIFICATION_TYPES,
+  NOTIFICATION_ENTITIES,
+} = require('./NotificationService');
+const NotificationService = require('./NotificationService');
 
 module.exports = {
   /**
@@ -23,6 +28,7 @@ module.exports = {
 
   /**
    *
+   * @param {Object} req
    * @param {Object} cleanedData cave-only related data
    * @param {Object} nameData name data (should contain an author, text and language attributes)
    * @param {Array[Object]} [descriptionsData] descriptions data (for each description,
@@ -31,7 +37,7 @@ module.exports = {
    *
    * @returns {Promise} the created cave
    */
-  createCave: async (caveData, nameData, descriptionsData) => {
+  createCave: async (req, caveData, nameData, descriptionsData) => {
     const res = await sails.getDatastore().transaction(async (db) => {
       // Create cave
       const createdCave = await TCave.create(caveData)
@@ -57,8 +63,20 @@ module.exports = {
           return desc;
         });
       }
+
       return createdCave;
     });
+
+    module.exports.setEntrances([res]);
+
+    await NotificationService.notifySubscribers(
+      req,
+      res,
+      req.token.id,
+      NOTIFICATION_TYPES.CREATE,
+      NOTIFICATION_ENTITIES.CAVE
+    );
+
     return res;
   },
 
@@ -189,9 +207,17 @@ module.exports = {
     }
   },
 
-  deleteCave: async (caveId) => {
+  deleteCave: async (req, caveId) => {
     sails.log.info(`Deleting cave with id ${caveId}`);
-    await TCave.destroyOne(caveId);
+    const cave = await TCave.findOne(caveId);
+    await TCave.destroyOne(Number(caveId));
     await ElasticsearchService.deleteResource('caves', caveId);
+    await NotificationService.notifySubscribers(
+      req,
+      cave,
+      req.token.id,
+      NOTIFICATION_TYPES.DELETE,
+      NOTIFICATION_ENTITIES.CAVE
+    );
   },
 };

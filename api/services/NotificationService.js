@@ -1,5 +1,3 @@
-const CaveService = require('./CaveService');
-const DocumentService = require('./DocumentService');
 const NameService = require('./NameService');
 
 const NOTIFICATION_ENTITIES = {
@@ -222,6 +220,10 @@ module.exports = {
     notificationType,
     notificationEntity
   ) => {
+    // Had to require in the function to avoid a circular dependency with notifySubscribers() in CaveService.createCave()
+    // eslint-disable-next-line global-require
+    const CaveService = require('./CaveService');
+
     // Check params and silently fail to avoid sending an error to the client
     if (!Object.values(NOTIFICATION_ENTITIES).includes(notificationEntity)) {
       throw new Error(`Invalid notification entity: ${notificationEntity}`);
@@ -244,7 +246,9 @@ module.exports = {
       const massifId = safeGetPropId('massif', entity);
       switch (notificationEntity) {
         case NOTIFICATION_ENTITIES.CAVE: {
-          entityCountryId = safeGetPropId('country', entity?.entrances[0]); // Get country from first entrance (not perfect but good enough)
+          if (entity.entrances && entity.entrances.length > 0) {
+            entityCountryId = safeGetPropId('country', entity?.entrances[0]); // Get country from first entrance (not perfect but good enough)
+          }
           entityMassifIds = (await CaveService.getMassifs(entity.id)).map(
             (m) => m.id
           );

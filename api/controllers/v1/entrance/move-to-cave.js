@@ -52,7 +52,7 @@ module.exports = async (req, res) => {
       await TCave.update(initialCave.id).set({
         redirect_to: destinationCaveId,
       });
-      await CaveService.deleteCave(initialCave.id);
+      await CaveService.deleteCave(req, initialCave.id);
     }
 
     // Add entrance to destination cave
