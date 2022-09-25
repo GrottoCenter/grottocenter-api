@@ -61,6 +61,7 @@ module.exports = async (req, res) => {
 
   try {
     const newEntrancePopulated = await EntranceService.createEntrance(
+      req,
       cleanedData,
       nameDescLocData
     );

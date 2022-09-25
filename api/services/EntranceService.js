@@ -13,6 +13,11 @@ const CommonService = require('./CommonService');
 const DocumentService = require('./DocumentService');
 const ElasticsearchService = require('./ElasticsearchService');
 const NameService = require('./NameService');
+const NotificationService = require('./NotificationService');
+const {
+  NOTIFICATION_ENTITIES,
+  NOTIFICATION_TYPES,
+} = require('./NotificationService');
 
 module.exports = {
   getConvertedNameDescLocFromClientRequest: (req) => {
@@ -116,7 +121,7 @@ module.exports = {
     return allEntrances;
   },
 
-  createEntrance: async (entranceData, nameDescLocData) => {
+  createEntrance: async (req, entranceData, nameDescLocData) => {
     const newEntrancePopulated = await sails
       .getDatastore()
       .transaction(async (db) => {
@@ -227,6 +232,14 @@ module.exports = {
       names: newEntrancePopulated.names.map((n) => n.name).join(', '),
       tags: ['entrance'],
     });
+
+    await NotificationService.notifySubscribers(
+      req,
+      newEntrancePopulated,
+      req.token.id,
+      NOTIFICATION_TYPES.CREATE,
+      NOTIFICATION_ENTITIES.ENTRANCE
+    );
 
     return newEntrancePopulated;
   },

@@ -1,4 +1,9 @@
 const ElasticsearchService = require('../../../services/ElasticsearchService');
+const {
+  NOTIFICATION_TYPES,
+  NOTIFICATION_ENTITIES,
+} = require('../../../services/NotificationService');
+const NotificationService = require('../../../services/NotificationService');
 const RightService = require('../../../services/RightService');
 
 module.exports = async (req, res) => {
@@ -39,6 +44,14 @@ module.exports = async (req, res) => {
     res.serverError(
       `An unexpected error occured when trying to delete entrance with id ${entranceId}.`
     )
+  );
+
+  await NotificationService.notifySubscribers(
+    req,
+    currentEntrance,
+    req.token.id,
+    NOTIFICATION_TYPES.DELETE,
+    NOTIFICATION_ENTITIES.ENTRANCE
   );
 
   await ElasticsearchService.deleteResource('entrances', entranceId);
