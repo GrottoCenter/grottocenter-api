@@ -150,6 +150,8 @@ module.exports.routes = {
   'GET /api/v1/comments/stats/:entranceId': 'v1/comment/get-entrance-stats',
   'GET /api/v1/comments/timeinfos/:entranceId':
     'v1/comment/get-entrance-time-infos',
+  'PATCH /api/v1/comments/:id': 'v1/comment/update',
+  'POST /api/v1/comments': 'v1/comment/create',
 
   /**
    * @deprecated use /v1 routes above instead
@@ -216,10 +218,6 @@ module.exports.routes = {
   // History
   'POST /api/v1/histories': 'v1/history/create',
   'PUT /api/v1/histories/:id': 'v1/history/update',
-
-  // Comment
-  'POST /api/v1/comments': 'v1/comment/create',
-  'PATCH /api/v1/comments/:id': 'v1/comment/update',
 
   // Rigging
   'POST /api/v1/riggings': 'v1/rigging/create',
