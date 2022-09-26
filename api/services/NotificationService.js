@@ -332,7 +332,9 @@ module.exports = {
         case NOTIFICATION_ENTITIES.ENTRANCE:
           entityCountryId = safeGetPropId('country', entity);
           if (entity?.cave?.id) {
-            entityMassifIds = await CaveService.getMassifs(entity.cave.id);
+            entityMassifIds = (
+              await CaveService.getMassifs(entity.cave.id)
+            ).map((m) => m.id);
           }
           break;
         case NOTIFICATION_ENTITIES.HISTORY: {
@@ -348,9 +350,13 @@ module.exports = {
             ).map((m) => m.id);
           } else if (entranceId) {
             entityCountryId = safeGetPropId('country', entity?.entrance);
-            entityMassifIds = (await CaveService.getMassifs(entity.id)).map(
-              (m) => m.id
-            );
+            if (entity?.entrance?.cave) {
+              entityMassifIds = (
+                await CaveService.getMassifs(
+                  safeGetPropId('cave', entity.entrance)
+                )
+              ).map((m) => m.id);
+            }
           } else {
             throw new Error(`Can't retrieve related cave or entrance id.`);
           }
