@@ -1,6 +1,11 @@
 const ControllerService = require('../../../services/ControllerService');
 const ErrorService = require('../../../services/ErrorService');
 const MappingService = require('../../../services/MappingService');
+const {
+  NOTIFICATION_TYPES,
+  NOTIFICATION_ENTITIES,
+} = require('../../../services/NotificationService');
+const NotificationService = require('../../../services/NotificationService');
 const RightService = require('../../../services/RightService');
 
 const { checkIfExists } = sails.helpers;
@@ -59,12 +64,32 @@ module.exports = async (req, res) => {
     await TComment.updateOne({
       id: commentId,
     }).set(cleanedData);
-    const populatedComment = await TComment.findOne(commentId)
+    const tempComment = await TComment.findOne(commentId)
       .populate('author')
       .populate('entrance')
       .populate('cave')
       .populate('language')
       .populate('reviewer');
+
+    // Populate nested entities too
+    const populatedComment = tempComment.entrance
+      ? {
+          ...tempComment,
+          entrance: {
+            ...(await TEntrance.findOne(tempComment.entrance.id).populate(
+              'cave'
+            )),
+          },
+        }
+      : tempComment;
+
+    await NotificationService.notifySubscribers(
+      req,
+      populatedComment,
+      req.token.id,
+      NOTIFICATION_TYPES.UPDATE,
+      NOTIFICATION_ENTITIES.COMMENT
+    );
 
     const params = {};
     params.controllerMethod = 'CommentController.update';
