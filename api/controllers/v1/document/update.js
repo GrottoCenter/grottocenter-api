@@ -36,7 +36,11 @@ module.exports = async (req, res) => {
     );
 
   if (!hasRight) {
-    return res.forbidden('You are not authorized to update a document.');
+    return res.forbidden(
+      `You are not authorized to update a document${
+        docWithModif && ' with modifications waiting a moderator approval'
+      }.`
+    );
   }
 
   // Add new files
