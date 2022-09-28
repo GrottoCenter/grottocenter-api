@@ -451,6 +451,8 @@ module.exports = {
   getDocument: async (documentId, setParentDescriptions = false) => {
     // Simple function currently but will be extended depending on needs
     const result = await TDocument.findOne(documentId)
+      .populate('cave')
+      .populate('entrance')
       .populate('files')
       .populate('identifierType')
       .populate('license')
