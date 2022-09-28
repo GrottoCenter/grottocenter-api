@@ -1,6 +1,7 @@
 <%- include('emailHeader', { emailTitle: 'Grottocenter - Notification' }); %>
-  <!-- ===== EMAIL BODY ===== -->
-  <!--
+  <% /*
+  ===== EMAIL BODY =====
+
     Required values:
         - i18n              Object      internationalization module
         - actionVerb        String      The action performed on the entity
@@ -10,7 +11,7 @@
         - recipientName     String      Full name or nickname of the recipient
         - subscriptionName  String      The subscription name which generated this notification
         - subscriptionTypeame  String   The subscription type which generated this notification
--->
+  */ %>
 
   <p>
     <%- i18n.__('Dear %s', '<b>' +recipientName+'</b>') %>
