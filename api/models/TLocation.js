@@ -36,6 +36,12 @@ module.exports = {
       columnType: 'timestamp',
     },
 
+    dateReviewed: {
+      type: 'ref',
+      columnName: 'date_reviewed',
+      columnType: 'timestamp',
+    },
+
     relevance: {
       type: 'number',
       allowNull: false,

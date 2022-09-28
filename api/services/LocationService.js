@@ -1,16 +1,4 @@
 module.exports = {
-  getCaveLocations: async (caveId) => {
-    let locations = [];
-    if (caveId) {
-      locations = await TLocation.find()
-        .where({
-          cave: caveId,
-        })
-        .populate('author')
-        .populate('language');
-    }
-    return locations;
-  },
   getEntranceLocations: async (entranceId) => {
     let locations = [];
     if (entranceId) {
