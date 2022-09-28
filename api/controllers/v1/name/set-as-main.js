@@ -57,10 +57,12 @@ module.exports = async (req, res) => {
       { id: updatedName.point, type: 'point' },
     ];
     const entity = possibleEntites.find((e) => e.id !== null);
-    await TName.update({
-      [entity.type]: entity.id,
-      id: { '!=': updatedName.id },
-    }).set({ isMain: false });
+    if (entity) {
+      await TName.update({
+        [entity.type]: entity.id,
+        id: { '!=': updatedName.id },
+      }).set({ isMain: false });
+    }
 
     // Return name updated and populated
     const newName = await TName.findOne(nameId)
