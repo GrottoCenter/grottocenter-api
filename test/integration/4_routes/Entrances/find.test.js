@@ -26,7 +26,7 @@ describe('Entrance features', () => {
           should(entrance.author).not.be.empty();
           should(entrance.comments.length).equal(3);
           should(entrance.descriptions.length).equal(1);
-          should(entrance.locations.length).equal(1);
+          should(entrance.locations.length).equal(2);
           should(entrance.histories.length).equal(1);
           return done();
         });
