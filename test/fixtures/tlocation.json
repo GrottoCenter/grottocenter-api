@@ -9,5 +9,16 @@
     "body": "body for entrance 1",
     "language": "eng",
     "entrance": 1
+  },
+  {
+    "id": 2,
+    "author": 2,
+    "reviewer": 1,
+    "dateInscription": "2019-04-19 01:38:39",
+    "dateReviewed": "2019-05-19 13:38:39",
+    "title": "Best location for entrance 2",
+    "body": "body for entrance location 2",
+    "language": "eng",
+    "entrance": 1
   }
 ]

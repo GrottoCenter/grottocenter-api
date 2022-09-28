@@ -1,6 +1,11 @@
 const ControllerService = require('../../../services/ControllerService');
 const ErrorService = require('../../../services/ErrorService');
 const MappingService = require('../../../services/MappingService');
+const {
+  NOTIFICATION_TYPES,
+  NOTIFICATION_ENTITIES,
+} = require('../../../services/NotificationService');
+const NotificationService = require('../../../services/NotificationService');
 const RightService = require('../../../services/RightService');
 
 module.exports = async (req, res) => {
@@ -49,6 +54,14 @@ module.exports = async (req, res) => {
       .populate('entrance')
       .populate('language')
       .populate('reviewer');
+
+    await NotificationService.notifySubscribers(
+      req,
+      populatedHistory,
+      req.token.id,
+      NOTIFICATION_TYPES.UPDATE,
+      NOTIFICATION_ENTITIES.HISTORY
+    );
 
     const params = {};
     params.controllerMethod = 'HistoryController.update';

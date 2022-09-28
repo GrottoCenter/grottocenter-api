@@ -18,8 +18,8 @@
     "cave": 1,
     "latitude": "3",
     "longitude": "3",
-    "name": "The entrance with name 12",
-    "names": [12]
+    "name": "The entrance with name 12 & 13",
+    "names": [12, 13]
   },
   {
     "id": 3,
