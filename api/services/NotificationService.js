@@ -21,7 +21,7 @@ const NOTIFICATION_TYPES = {
 };
 
 const safeGetPropId = (prop, data) => {
-  if (data[prop]) {
+  if (data && data[prop]) {
     if (data[prop] instanceof Object) {
       return data[prop].id;
     }
@@ -282,12 +282,19 @@ module.exports = {
 
         case NOTIFICATION_ENTITIES.COMMENT: {
           if (caveId) {
-            entityCountryId = getCountryId(populatedEntity?.cave.entrances[0]); // Get country from first entrance (not perfect but good enough)
+            if (
+              populatedEntity.cave.entrances &&
+              populatedEntity.cave.entrances.length > 0
+            ) {
+              entityCountryId = getCountryId(
+                populatedEntity?.cave.entrances[0]
+              ); // Get country from first entrance (not perfect but good enough)
+            }
             entityMassifIds = await getMassifIdsFromCave(caveId);
           } else if (entranceId) {
             entityCountryId = getCountryId(populatedEntity?.entrance);
             entityMassifIds = await getMassifIdsFromCave(
-              populatedEntity.entrance?.cave?.id
+              safeGetPropId('cave', populatedEntity.entrance)
             );
           } else {
             throw new Error(`Can't retrieve related cave or entrance id.`);
@@ -297,12 +304,19 @@ module.exports = {
 
         case NOTIFICATION_ENTITIES.DESCRIPTION: {
           if (caveId) {
-            entityCountryId = getCountryId(populatedEntity?.cave?.entrances[0]); // Get country from first entrance (not perfect but good enough)
+            if (
+              populatedEntity.cave.entrances &&
+              populatedEntity.cave.entrances.length > 0
+            ) {
+              entityCountryId = getCountryId(
+                populatedEntity?.cave?.entrances[0]
+              ); // Get country from first entrance (not perfect but good enough)
+            }
             entityMassifIds = await getMassifIdsFromCave(caveId);
           } else if (entranceId) {
             entityCountryId = getCountryId(populatedEntity?.entrance);
             entityMassifIds = await getMassifIdsFromCave(
-              populatedEntity.entrance?.cave?.id
+              safeGetPropId('cave', populatedEntity.entrance)
             );
           } else if (massifId) {
             entityMassifIds = [populatedEntity.massif];
@@ -315,13 +329,20 @@ module.exports = {
         }
         case NOTIFICATION_ENTITIES.DOCUMENT: {
           if (caveId) {
-            entityCountryId = getCountryId(populatedEntity?.cave.entrances[0]); // Get country from first entrance (not perfect but good enough)
+            if (
+              populatedEntity.cave.entrances &&
+              populatedEntity.cave.entrances.length > 0
+            ) {
+              entityCountryId = getCountryId(
+                populatedEntity?.cave.entrances[0]
+              ); // Get country from first entrance (not perfect but good enough)
+            }
             entityMassifIds = await getMassifIdsFromCave(caveId);
           } else if (entranceId) {
             entityCountryId = getCountryId(populatedEntity.entrance);
-            entityMassifIds = (
-              await CaveService.getMassifs(populatedEntity.entrance?.cave?.id)
-            ).map((m) => m.id);
+            entityMassifIds = await getMassifIdsFromCave(
+              safeGetPropId('cave', populatedEntity.entrance)
+            );
           } else if (massifId) {
             entityMassifIds = [safeGetPropId('massif', populatedEntity)];
           } else {
@@ -333,20 +354,27 @@ module.exports = {
         }
         case NOTIFICATION_ENTITIES.ENTRANCE:
           entityCountryId = getCountryId(populatedEntity);
-          if (populatedEntity?.cave?.id) {
+          if (populatedEntity?.cave) {
             entityMassifIds = await getMassifIdsFromCave(
-              populatedEntity.cave.id
+              safeGetPropId('cave', populatedEntity.entrance)
             );
           }
           break;
         case NOTIFICATION_ENTITIES.HISTORY: {
           if (caveId) {
-            entityCountryId = getCountryId(populatedEntity?.cave?.entrances[0]); // Get country from first entrance (not perfect but good enough)
+            if (
+              populatedEntity.cave.entrances &&
+              populatedEntity.cave.entrances.length > 0
+            ) {
+              entityCountryId = getCountryId(
+                populatedEntity?.cave?.entrances[0]
+              ); // Get country from first entrance (not perfect but good enough)
+            }
             entityMassifIds = await getMassifIdsFromCave(caveId);
           } else if (entranceId) {
             entityCountryId = getCountryId(populatedEntity.entrance);
             entityMassifIds = await getMassifIdsFromCave(
-              populatedEntity.entrance?.cave?.id
+              safeGetPropId('cave', populatedEntity.entrance)
             );
           } else {
             throw new Error(`Can't retrieve related cave or entrance id.`);
@@ -357,7 +385,7 @@ module.exports = {
           if (entranceId) {
             entityCountryId = getCountryId(populatedEntity.entrance);
             entityMassifIds = await getMassifIdsFromCave(
-              populatedEntity.entrance?.cave?.id
+              safeGetPropId('cave', populatedEntity.entrance)
             );
           } else {
             throw new Error(`Can't retrieve related entrance id.`);
@@ -373,12 +401,19 @@ module.exports = {
 
         case NOTIFICATION_ENTITIES.RIGGING: {
           if (caveId) {
-            entityCountryId = getCountryId(populatedEntity?.cave.entrances[0]); // Get country from first entrance (not perfect but good enough)
+            if (
+              populatedEntity.cave.entrances &&
+              populatedEntity.cave.entrances.length > 0
+            ) {
+              entityCountryId = getCountryId(
+                populatedEntity?.cave.entrances[0]
+              ); // Get country from first entrance (not perfect but good enough)
+            }
             entityMassifIds = await getMassifIdsFromCave(caveId);
           } else if (entranceId) {
             entityCountryId = getCountryId(populatedEntity.entrance);
             entityMassifIds = await getMassifIdsFromCave(
-              populatedEntity.entrance?.cave?.id
+              safeGetPropId('cave', populatedEntity.entrance)
             );
           } else {
             throw new Error(`Can't retrieve related cave or entrance id.`);
