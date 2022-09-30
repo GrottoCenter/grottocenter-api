@@ -144,6 +144,13 @@ module.exports = {
       ? await TOption.findOne({ name: option })
       : undefined;
 
+    // Massif will be deleted in the future (a document can be about many massifs and a massif can be the subject of many documents): use massifs
+    const massif = ramda.pathOr(undefined, ['massif', 'id'], req.body);
+    const massifs = [
+      ...ramda.propOr([], 'massifs', req.body),
+      ...(massif ? [massif] : []),
+    ];
+
     return {
       ...reqBodyWithoutId,
       authorizationDocument: ramda.pathOr(
@@ -164,12 +171,8 @@ module.exports = {
         req.body.issue && req.body.issue !== '' ? req.body.issue : undefined,
       library: ramda.pathOr(undefined, ['library', 'id'], req.body),
       license: ramda.pathOr(1, ['license', 'id'], req.body),
-      // Massif will be deleted in the future (a document can be about many massifs and a massif can be the subject of many documents): use massifs
-      massif: ramda.pathOr(undefined, ['massif', 'id'], req.body),
-      massifs: [
-        ...[ramda.pathOr(undefined, ['massif', 'id'], req.body)],
-        ...ramda.propOr([], 'massifs', req.body),
-      ],
+      massif,
+      massifs,
       option: optionFound ? optionFound.id : undefined,
       parent: ramda.pathOr(undefined, ['partOf', 'id'], req.body),
       regions: req.body.regions ? req.body.regions.map((r) => r.id) : undefined,
