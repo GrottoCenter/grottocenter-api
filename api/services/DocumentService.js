@@ -167,8 +167,8 @@ module.exports = {
       // Massif will be deleted in the future (a document can be about many massifs and a massif can be the subject of many documents): use massifs
       massif: ramda.pathOr(undefined, ['massif', 'id'], req.body),
       massifs: [
-        ...[ramda.pathOr([], ['massif', 'id'], req.body)],
-        ...(req.param('massifs') ? [req.param('massifs')] : []),
+        ...[ramda.pathOr(undefined, ['massif', 'id'], req.body)],
+        ...ramda.propOr([], 'massifs', req.body),
       ],
       option: optionFound ? optionFound.id : undefined,
       parent: ramda.pathOr(undefined, ['partOf', 'id'], req.body),
