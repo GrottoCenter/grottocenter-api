@@ -2,11 +2,15 @@
  */
 
 const moment = require('moment');
+const momentDurationFormatSetup = require('moment-duration-format');
+
+momentDurationFormatSetup(moment);
 // query to get time infos average
 const TIME_INFO_QUERY = `
   SELECT avg(e_t_trail) AS avg_t_trail, avg(e_t_underground) AS avg_t_underground
   FROM t_comment WHERE id_entrance=$1`;
 
+const { isNil } = require('ramda');
 const CommonService = require('./CommonService');
 
 module.exports = {
@@ -44,21 +48,15 @@ module.exports = {
 
     let avgTTrailFormatted = null;
     let avgTUndergroundFormatted = null;
-
     if (timeInfos.avg_t_trail !== null) {
-      const avgTTrail = timeInfos.avg_t_trail.toISOString();
-      avgTTrailFormatted = `${moment.duration(avgTTrail).hours()}:${moment
-        .duration(avgTTrail)
-        .minutes()}:${moment.duration(avgTTrail).seconds()}`;
+      avgTTrailFormatted = module.exports.postgreIntervalObjectToDbString(
+        timeInfos.avg_t_trail
+      );
     }
     if (timeInfos.avg_t_underground !== null) {
-      const avgTUnderground = timeInfos.avg_t_underground.toISO();
-
-      avgTUndergroundFormatted = `${moment
-        .duration(avgTUnderground)
-        .hours()}:${moment.duration(avgTUnderground).minutes()}:${moment
-        .duration(avgTUnderground)
-        .seconds()}`;
+      avgTUndergroundFormatted = module.exports.postgreIntervalObjectToDbString(
+        timeInfos.avg_t_underground
+      );
     }
 
     return {
@@ -74,8 +72,28 @@ module.exports = {
           entrance: entranceId,
         })
         .populate('author')
+        .populate('reviewer')
         .populate('language');
     }
     return comments;
+  },
+  /**
+   *
+   * @param pgInterval PostgresInterval Object {hours: ${number}, minutes: ${number}, seconds: ${number}}
+   * @returns string with format hh:mm:ss
+   */
+  postgreIntervalObjectToDbString: (pgInterval) => {
+    if (isNil(pgInterval)) return null;
+    const emptyDuration = {
+      days: 0,
+      hours: 0,
+      minutes: 0,
+      seconds: 0,
+    };
+    return moment
+      .duration(Object.assign(emptyDuration, pgInterval))
+      .format('hh:mm:ss', {
+        trim: false,
+      });
   },
 };

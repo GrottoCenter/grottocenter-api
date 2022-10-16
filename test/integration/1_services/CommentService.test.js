@@ -10,4 +10,13 @@ describe('CommentService', () => {
       should(stats.approach).equal(8);
     });
   });
+  describe('postgreIntervalObjectToDbString()', () => {
+    it('should convert a duration object into a DB string for API', async () => {
+      const duration = CommentService.postgreIntervalObjectToDbString({
+        hours: 2,
+        minutes: 15,
+      });
+      should(duration).equal('02:15:00');
+    });
+  });
 });

@@ -3022,23 +3022,11 @@ components:
         exit:
           $ref: '#/components/schemas/Entrance'
         eTTrail:
-          type: object
-          properties:
-            hours:
-              type: integer
-            minutes:
-              type: integer
-            seconds:
-              type: integer
+          type: string
+          example: 01:35:00
         eTUnderground:
-          type: object
-          properties:
-            hours:
-              type: integer
-            minutes:
-              type: integer
-            seconds:
-              type: integer
+          type: string
+          example: 01:35:00
         id:
           type: integer
         language:
