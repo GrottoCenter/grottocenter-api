@@ -27,6 +27,7 @@ const RiggingModel = require('./mappingModels/RiggingModel');
 const SubjectModel = require('./mappingModels/SubjectModel');
 
 const FileService = require('./FileService');
+const { postgreIntervalObjectToDbString } = require('./CommentService');
 
 module.exports = {
   getMainName: (source) => {
@@ -167,8 +168,10 @@ module.exports = {
       source.entrance instanceof Object
         ? module.exports.convertToEntranceModel(source.entrance)
         : undefined;
-    result.eTTrail = source.eTTrail;
-    result.eTUnderground = source.eTUnderground;
+    result.eTTrail = postgreIntervalObjectToDbString(source.eTTrail);
+    result.eTUnderground = postgreIntervalObjectToDbString(
+      source.eTUnderground
+    );
     result.id = source.id;
     result.isDeleted = source.isDeleted;
     result.language =
@@ -324,6 +327,15 @@ module.exports = {
       result.descriptions = source.descriptions;
     }
 
+    // Comments
+    if (source.comments instanceof Array) {
+      result.comments = module.exports.convertToCommentList(
+        source.comments
+      ).comments;
+    } else {
+      result.comments = source.comments;
+    }
+
     // Documents
     if (source.documents instanceof Array) {
       result.documents = module.exports.convertToDocumentList(
@@ -341,6 +353,14 @@ module.exports = {
     }
 
     return result;
+  },
+
+  convertToCommentList: (source) => {
+    const comments = [];
+    source.forEach((item) =>
+      comments.push(module.exports.convertToCommentModel(item))
+    );
+    return { comments };
   },
 
   convertToDescriptionList: (source) => {
@@ -911,20 +931,14 @@ module.exports = {
     // source.descriptions contains both title and descriptions (in .title and .body)
     // Split them in 2 different attributes
     if (source.descriptions) {
-      result.descriptions = source.descriptions.map((d) => {
-        const newDescription = {
-          ...ramda.omit(['title', 'body'], d),
-          text: d.body,
-        };
-        return newDescription;
-      });
-      result.titles = source.descriptions.map((d) => {
-        const newDescription = {
-          ...ramda.omit(['title', 'body'], d),
-          text: d.title,
-        };
-        return newDescription;
-      });
+      result.descriptions = source.descriptions.map((d) => ({
+        ...ramda.omit(['title', 'body'], d),
+        text: d.body,
+      }));
+      result.titles = source.descriptions.map((d) => ({
+        ...ramda.omit(['title', 'body'], d),
+        text: d.title,
+      }));
     }
 
     // Convert identifier type
