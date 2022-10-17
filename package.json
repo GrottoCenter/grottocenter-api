@@ -31,7 +31,7 @@
     "sails-hook-orm": "^4.0.1",
     "sails-hook-sockets": "^2.0.3",
     "sails-postgresql": "^5.0.1",
-    "@snyk/protect": "^1.1012.0",
+    "@snyk/protect": "^1.1032.0",
     "streamsearch": "^1.1.0",
     "underscore.date": "^0.6.1",
     "underscore.string": "^3.3.6",
