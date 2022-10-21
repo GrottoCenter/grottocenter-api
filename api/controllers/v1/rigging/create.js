@@ -7,6 +7,7 @@ const {
 } = require('../../../services/NotificationService');
 const NotificationService = require('../../../services/NotificationService');
 const RightService = require('../../../services/RightService');
+const RiggingService = require('../../../services/RiggingService');
 
 module.exports = async (req, res) => {
   // Check right
@@ -90,13 +91,16 @@ module.exports = async (req, res) => {
   const language = paramsNameAndValue.find((p) => p.name === 'language').value;
 
   try {
+    const parsedObstacles = await RiggingService.parseAPIObstaclesArrForDB(
+      req.param('obstacles', [])
+    );
     const newRigging = await TRigging.create({
       author: req.token.id,
       title,
-      obstacles: req.param('obstacles', null),
-      ropes: req.param('ropes', null),
-      anchors: req.param('anchors', null),
-      observations: req.param('observations', null),
+      obstacles: parsedObstacles.obstacles,
+      ropes: parsedObstacles.ropes,
+      anchors: parsedObstacles.anchors,
+      observations: parsedObstacles.observations,
       dateInscription: new Date(),
       [describedEntity.type]: describedEntity.id,
       language,

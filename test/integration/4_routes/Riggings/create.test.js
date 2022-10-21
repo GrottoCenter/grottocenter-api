@@ -27,10 +27,21 @@ describe('Rigging features', () => {
         title: 'new title',
         entrance: 999,
         language: 'fra',
-        obstacles: 'P5|;|P125',
-        ropes: 'C10|;|C50|;|C70',
-        anchors: '10 spits',
-        observations: 'test|;|ok',
+        obstacles: [
+          {
+            obstacle: 'P5',
+            rope: 'C10',
+            anchor: '10 spits',
+            observation: 'test',
+          },
+          {
+            obstacle: 'P125',
+            rope: 'C150',
+            anchor: '2 spits',
+            observation: 'test',
+          },
+          { obstacle: 'P5', rope: 'C10', anchor: '1 spits' },
+        ],
       };
       supertest(sails.hooks.http.app)
         .post('/api/v1/riggings')
@@ -45,7 +56,7 @@ describe('Rigging features', () => {
           should(riggingUpdated.body).equals(newRigging.body);
           should(riggingUpdated.entrance.latitude).equals(30);
           should(riggingUpdated.author.mail).equals('user1@user1.com');
-          should(riggingUpdated.ropes).equals(newRigging.ropes);
+          should(riggingUpdated.ropes).equals('C10|;|C150|;|C10');
           return done();
         });
     });
