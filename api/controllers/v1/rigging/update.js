@@ -7,6 +7,7 @@ const {
 } = require('../../../services/NotificationService');
 const NotificationService = require('../../../services/NotificationService');
 const RightService = require('../../../services/RightService');
+const RiggingService = require('../../../services/RiggingService');
 
 module.exports = async (req, res) => {
   // Check right
@@ -38,14 +39,18 @@ module.exports = async (req, res) => {
       message: `Rigging of id ${riggingId} not found.`,
     });
 
+  const parsedObstacles = await RiggingService.parseAPIObstaclesArrForDB(
+    req.param('obstacles', [])
+  );
   const newTitle = req.param('title');
-  const newObstacles = req.param('obstacles');
-  const newRopes = req.param('ropes');
-  const newAnchors = req.param('anchors');
-  const newObservations = req.param('observations');
+  const newObstacles = parsedObstacles.obstacles;
+  const newRopes = parsedObstacles.ropes;
+  const newAnchors = parsedObstacles.anchors;
+  const newObservations = parsedObstacles.observations;
   const newLanguage = req.param('language');
   const cleanedData = {
     ...(newTitle && { title: newTitle }),
+    reviewer: req.token.id,
     ...(newObstacles && { obstacles: newObstacles }),
     ...(newRopes && { ropes: newRopes }),
     ...(newAnchors && { anchors: newAnchors }),
