@@ -14,15 +14,15 @@ Current production version is available [here](https://api.grottocenter.org)
 
 ### Master
 
-![Latest Deployment](https://github.com/GrottoCenter/Grottocenter3/actions/workflows/deploy-aws.yml/badge.svg?branch=master)
+![Latest Deployment](https://github.com/GrottoCenter/grottocenter-api/actions/workflows/deploy-aws.yml/badge.svg?branch=master)
 
-[![Coverage Status](https://coveralls.io/repos/github/GrottoCenter/grottocenter-api/badge.svg?branch=master)](https://coveralls.io/github/GrottoCenter/Grottocenter3?branch=refs/heads/master)
-[![Build](https://github.com/GrottoCenter/grottocenter-api/actions/workflows/build.yaml/badge.svg?branch=master)](https://github.com/GrottoCenter/Grottocenter3/actions/workflows/build.yaml)
+[![Coverage Status](https://coveralls.io/repos/github/GrottoCenter/grottocenter-api/badge.svg?branch=master)](https://coveralls.io/github/GrottoCenter/grottocenter-api?branch=refs/heads/master)
+[![Build](https://github.com/GrottoCenter/grottocenter-api/actions/workflows/build.yaml/badge.svg?branch=master)](https://github.com/GrottoCenter/grottocenter-api/actions/workflows/build.yaml)
 
 ### Develop
 
-[![Coverage Status](https://coveralls.io/repos/github/GrottoCenter/grottocenter-api/badge.svg?branch=develop)](https://coveralls.io/github/GrottoCenter/Grottocenter3?branch=refs/heads/develop)
-[![Build](https://github.com/GrottoCenter/grottocenter-api/actions/workflows/build.yaml/badge.svg?branch=develop)](https://github.com/GrottoCenter/Grottocenter3/actions/workflows/build.yaml)
+[![Coverage Status](https://coveralls.io/repos/github/GrottoCenter/grottocenter-api/badge.svg?branch=develop)](https://coveralls.io/github/GrottoCenter/grottocenter-api?branch=refs/heads/develop)
+[![Build](https://github.com/GrottoCenter/grottocenter-api/actions/workflows/build.yaml/badge.svg?branch=develop)](https://github.com/GrottoCenter/grottocenter-api/actions/workflows/build.yaml)
 
 ![GC flyer](https://rawgit.com/wiki/GrottoCenter/Grottocenter3/images/afficheGC3.svg)
 
