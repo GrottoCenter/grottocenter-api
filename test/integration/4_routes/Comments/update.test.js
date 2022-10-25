@@ -23,6 +23,7 @@ describe('Comment features', () => {
         body: 'new body',
         language: 'fra',
         eTTrail: '01:54:04',
+        eTUnderground: '00:30:01',
         aestheticism: 5,
       };
       supertest(sails.hooks.http.app)
@@ -39,8 +40,8 @@ describe('Comment features', () => {
           should(commentUpdated.language.id).equals(update.language);
           should(commentUpdated.entrance.latitude).equals(3);
           should(commentUpdated.author.name).equals('Adrien');
-          should(commentUpdated.eTTrail.minutes).equals(54);
-
+          should(commentUpdated.eTTrail).equals('01:54:04');
+          should(commentUpdated.eTUnderground).equals('00:30:01');
           should(commentUpdated.aestheticism).equals(update.aestheticism);
           return done();
         });

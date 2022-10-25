@@ -3,7 +3,7 @@ const RiggingService = require('../../../api/services/RiggingService');
 
 describe('RiggingService', () => {
   describe('Complete and correct rigging', () => {
-    it('should return a complete array of rigging objects', async () => {
+    it('should return a complete array of rigging objects for API', async () => {
       const rigging1 = {
         title: 'Rigging 1',
         obstacles: 'R3|;|R8|;|P12',
@@ -20,7 +20,7 @@ describe('RiggingService', () => {
         observations: 'Etrier en place|;|Quitter avant le fond sur la gauche.',
       };
       const riggings = [rigging1, rigging2];
-      await RiggingService.formatRiggings(riggings);
+      await RiggingService.formatRiggingsForAPI(riggings);
 
       // Riggings length
       should(riggings.length).equal(2);
@@ -42,6 +42,32 @@ describe('RiggingService', () => {
         observation: 'Quitter avant le fond sur la gauche.',
       });
     });
+    it('should return a complete array of rigging strings for DB', async () => {
+      const obstacles = [
+        {
+          obstacle: 'R3',
+          rope: '50 m',
+          anchor: 'AN',
+          observation: 'Etrier en place',
+        },
+        {
+          obstacle: 'R7',
+          rope: '10 m',
+          anchor: '4S + 1DEV',
+          observation: 'Quitter avant le fond sur la gauche.',
+        },
+        {
+          obstacle: 'P70',
+          rope: '',
+          observation: 'manquant',
+        },
+      ];
+      const parsed = await RiggingService.parseAPIObstaclesArrForDB(obstacles);
+      // Riggings content
+      should(parsed.obstacles).equal('R3|;|R7|;|P70');
+      should(parsed.ropes).equal('50 m|;|10 m|;|');
+      should(parsed.anchors).equal('AN|;|4S + 1DEV|;|');
+    });
   });
 
   describe('Riggings with missing values', () => {
@@ -62,7 +88,7 @@ describe('RiggingService', () => {
         observations: 'Etrier en place|;|Quitter avant le fond sur la gauche.',
       };
       const riggings = [rigging1, rigging2];
-      await RiggingService.formatRiggings(riggings);
+      await RiggingService.formatRiggingsForAPI(riggings);
 
       // Riggings length
       should(riggings.length).equal(2);

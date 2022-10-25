@@ -22,7 +22,21 @@ describe('Rigging features', () => {
       const update = {
         title: 'new title',
         language: 'fra',
-        observations: '|;|Quitter avant le fond sur la gauche.|;||;||;|',
+        obstacles: [
+          {
+            obstacle: 'P5',
+            rope: 'C10',
+            anchor: '10 spits',
+            observation: 'Quitter avant le fond sur la gauche.',
+          },
+          {
+            obstacle: 'P125',
+            rope: 'C150',
+            anchor: '2 spits',
+            observation: 'test',
+          },
+          { obstacle: 'P5', rope: 'C10', anchor: '1 spits' },
+        ],
       };
       supertest(sails.hooks.http.app)
         .patch('/api/v1/riggings/3')
@@ -38,7 +52,10 @@ describe('Rigging features', () => {
           should(riggingUpdated.language.id).equals(update.language);
           should(riggingUpdated.entrance.latitude).equals(3);
           should(riggingUpdated.author.name).equals('Adrien');
-          should(riggingUpdated.observations).equals(update.observations);
+          should(riggingUpdated.reviewer.name).equals('NewName');
+          should(riggingUpdated.observations).equals(
+            'Quitter avant le fond sur la gauche.|;|test|;|'
+          );
           return done();
         });
     });

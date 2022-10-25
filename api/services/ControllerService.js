@@ -64,6 +64,7 @@ module.exports = {
       '<https://ontology.uis-speleo.org/grottocenter.org_context.jsonld>; rel="http://www.w3.org/ns/json-ld#context"; type="application/ld+json"'
     );
     if (err) {
+      sails.log.error(err);
       return res.serverError(
         `An internal error occurred when getting ${parameters.searchedItem}`
       );

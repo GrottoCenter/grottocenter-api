@@ -3,7 +3,7 @@ openapi: '3.0.0'
 info:
   description: "This page documents the available Grottocenter's API."
   title: 'Grottocenter 3 - REST API'
-  version: 'v1 - 22.0.25'
+  version: 'v1 - 22.0.26'
   termsOfService: 'https://wiki.grottocenter.org/wiki/GrottoCenter:En/API'
   contact:
     name: 'Slack space'
@@ -39,6 +39,8 @@ tags:
   - name: search
   - name: subjects
   - name: import csv
+  - name: comments
+  - name: riggings
 
 paths:
   '/licenses':
@@ -1323,69 +1325,11 @@ paths:
         - comments
       description: Create a comment. You must provide an existing entrance or cave id which your comment is referring to.
       parameters:
-        - name: title
-          in: query
-          required: true
-          description: Title of the comment.
+        - in: body
+          name: comment
+          description: The comment to create.
           schema:
-            type: string
-            maxLength: 300
-        - name: body
-          in: query
-          required: true
-          description: Content of the comment.
-          schema:
-            type: string
-        - name: eTUnderground
-          in: query
-          description: Time spend underground.
-          example: 04:15:00
-          schema:
-            type: string
-        - name: eTTrail
-          in: query
-          description: Time spend to access the entrance/cave from the parking.
-          example: 01:54:00
-          schema:
-            type: string
-        - name: aestheticism
-          in: query
-          description: aestheticism personal rating
-          schema:
-            type: integer
-            minimum: 0
-            maximum: 10
-        - name: caving
-          in: query
-          description: caving personal rating
-          schema:
-            type: integer
-            minimum: 0
-            maximum: 10
-        - name: approach
-          in: query
-          description: approach personal rating
-          schema:
-            type: integer
-            minimum: 0
-            maximum: 10
-        - name: language
-          in: query
-          required: true
-          description: Language id used for the body. The list of languages supported by Grottocenter is available using the /languages route.
-          schema:
-            type: string
-        - name: entrance
-          in: query
-          description: Entrance id which the comment is referring to.
-          schema:
-            type: integer
-        - name: cave
-          in: query
-          description: Cave id which the comment is referring to.
-          schema:
-            type: integer
-
+            $ref: '#/components/schemas/CommentRequest'
       responses:
         '200':
           description: Successful operation
@@ -1409,56 +1353,11 @@ paths:
           required: true
           schema:
             type: integer
-        - name: title
-          in: query
-          description: Title of the comment.
+        - in: body
+          name: comment
+          description: The comment to create.
           schema:
-            type: string
-            maxLength: 300
-        - name: body
-          in: query
-          description: Content of the comment.
-          schema:
-            type: string
-        - name: eTUnderground
-          in: query
-          description: Time spend underground.
-          example: 10:30:00
-          schema:
-            type: string
-        - name: eTTrail
-          in: query
-          description: Time spend to access the entrance/cave from the parking.
-          example: 00:30:00
-          schema:
-            type: string
-        - name: aestheticism
-          in: query
-          description: aestheticism personal rating
-          schema:
-            type: integer
-            minimum: 0
-            maximum: 10
-        - name: caving
-          in: query
-          description: caving personal rating
-          schema:
-            type: integer
-            minimum: 0
-            maximum: 10
-        - name: approach
-          in: query
-          description: approach personal rating
-          schema:
-            type: integer
-            minimum: 0
-            maximum: 10
-        - name: language
-          in: query
-          description: Language id used for the body. The list of languages supported by Grottocenter is available using the /languages route.
-          schema:
-            type: string
-
+            $ref: '#/components/schemas/CommentRequest'
       responses:
         '200':
           description: Successful operation
@@ -1473,53 +1372,11 @@ paths:
         - riggings
       description: Create a rigging. You must provide an existing entrance/cave id which your rigging is refering to.
       parameters:
-        - name: title
-          in: query
-          required: true
+        - in: body
+          name: riggings
+          description: The riggings to create.
           schema:
-            type: string
-            maxLength: 300
-        - name: obstacles
-          in: query
-          description: obstacles formatted as a string list with |;| as delimiter.
-          schema:
-            type: string
-            maxLength: 2000
-        - name: ropes
-          in: query
-          description: ropes formatted as a string list with |;| as delimiter.
-          schema:
-            type: string
-            maxLength: 2000
-        - name: anchors
-          in: query
-          description: anchors formatted as a string list with |;| as delimiter.
-          schema:
-            type: string
-            maxLength: 2000
-        - name: observations
-          in: query
-          description: observations formatted as a string list with |;| as delimiter.
-          schema:
-            type: string
-            maxLength: 2000
-        - name: language
-          in: query
-          required: true
-          description: Language id used for the body. The list of languages supported by Grottocenter is available using the /languages route.
-          schema:
-            type: string
-        - name: entrance
-          in: query
-          description: Entrance id which the rigging is referring to (Entrance or Cave ID required).
-          schema:
-            type: integer
-        - name: cave
-          in: query
-          description: Cave id which the rigging is referring to (Entrance or Cave ID required).
-          schema:
-            type: integer
-
+            $ref: '#/components/schemas/RiggingRequest'
       responses:
         '200':
           description: Successful operation
@@ -1543,41 +1400,11 @@ paths:
           required: true
           schema:
             type: integer
-        - name: title
-          in: query
+        - in: body
+          name: riggings
+          description: The riggings to create.
           schema:
-            type: string
-            maxLength: 300
-        - name: obstacles
-          in: query
-          description: obstacles formatted as a string list with |;| as delimiter.
-          schema:
-            type: string
-            maxLength: 2000
-        - name: ropes
-          in: query
-          description: ropes formatted as a string list with |;| as delimiter.
-          schema:
-            type: string
-            maxLength: 2000
-        - name: anchors
-          in: query
-          description: anchors formatted as a string list with |;| as delimiter.
-          schema:
-            type: string
-            maxLength: 2000
-        - name: observations
-          in: query
-          description: observations formatted as a string list with |;| as delimiter.
-          schema:
-            type: string
-            maxLength: 2000
-        - name: language
-          in: query
-          description: Language id used for the body. The list of languages supported by Grottocenter is available using the /languages route.
-          schema:
-            type: string
-
+            $ref: '#/components/schemas/RiggingRequest'
       responses:
         '200':
           description: Successful operation
@@ -2165,7 +1992,7 @@ paths:
     put:
       tags:
         - entrances
-      description: Update an entrance. See the POST /entrances route explaination about the parameters you can use to update an entrance.
+      description: Update an entrance. See the POST /entrances route explanation about the parameters you can use to update an entrance.
       parameters:
         - name: id
           in: path
@@ -2996,6 +2823,53 @@ components:
         surname:
           type: string
 
+    CommentRequest:
+      type: object
+      required:
+        - title
+        - body
+        - language
+      properties:
+        title:
+          description: Title of the comment.
+          type: string
+          maxLength: 300
+        body:
+          description: Content of the comment.
+          type: string
+        eTUnderground:
+          description: Time spend underground.
+          example: 04:15:00
+          type: string
+        eTTrail:
+          description: Time spend to access the entrance/cave from the parking.
+          example: 01:54:00
+          type: string
+        aestheticism:
+          description: aestheticism personal rating
+          type: integer
+          minimum: 0
+          maximum: 10
+        caving:
+          description: caving personal rating
+          type: integer
+          minimum: 0
+          maximum: 10
+        approach:
+          description: approach personal rating
+          type: integer
+          minimum: 0
+          maximum: 10
+        language:
+          description: Language id used for the body. The list of languages supported by Grottocenter is available using the /languages route.
+          type: string
+          example: fra
+        entrance:
+          description: Entrance id which the comment is referring to.
+          type: integer
+        cave:
+          description: Cave id which the comment is referring to.
+          type: integer
     Comment:
       type: object
       properties:
@@ -3022,23 +2896,11 @@ components:
         exit:
           $ref: '#/components/schemas/Entrance'
         eTTrail:
-          type: object
-          properties:
-            hours:
-              type: integer
-            minutes:
-              type: integer
-            seconds:
-              type: integer
+          type: string
+          example: 01:35:00
         eTUnderground:
-          type: object
-          properties:
-            hours:
-              type: integer
-            minutes:
-              type: integer
-            seconds:
-              type: integer
+          type: string
+          example: 01:35:00
         id:
           type: integer
         language:
@@ -3611,7 +3473,27 @@ components:
         exp:
           type: string
           description: Expiration date (Unix time)
-
+    RiggingRequest:
+      type: object
+      required:
+        - title
+        - language
+      properties:
+        title:
+          type: string
+          maxLength: 300
+        obstacles:
+          description: list of obstacles. 1 item per line. Each line contains the columns obstacle, rope, anchor, observation.
+          $ref: '#/components/schemas/Obstacles'
+        language:
+          description: Language id used for the body. The list of languages supported by Grottocenter is available using the /languages route.
+          type: string
+        entrance:
+          description: Entrance id which the rigging is referring to (Entrance or Cave ID required).
+          type: integer
+        cave:
+          description: Cave id which the rigging is referring to (Entrance or Cave ID required).
+          type: integer
     Rigging:
       type: object
       properties:
@@ -3627,24 +3509,9 @@ components:
           type: integer
         language:
           type: string
-        observations:
-          type: string
-          maxLength: 2000
         obstacles:
-          description: list of obstacles with |;| as delimiter.
-          type: string
-          maxLength: 2000
-          example: P40|;|E5|;|Tb4|;|P17
-        anchors:
-          description: list of anchors with |;| as delimiter.
-          type: string
-          maxLength: 2000
-          example: Arbre|;|2AN|;|10 spits
-        ropes:
-          description: list of ropes with |;| as delimiter.
-          type: string
-          maxLength: 2000
-          example: C40|;|C5|;|40 m|;|C10 (facultative)
+          description: list of obstacles. 1 item per line. Each line contains the columns obstacle, rope, anchor, observation.
+          $ref: '#/components/schemas/Obstacles'
         point:
           $ref: '#/components/schemas/Point'
         relevance:
@@ -3702,3 +3569,21 @@ components:
           type: string
         'dct:creator':
           type: string
+
+    Obstacles:
+      type: array
+      items:
+        type: object
+        properties:
+          obstacle:
+            type: string
+            example: P40
+          rope:
+            type: string
+            example: C25 + C40 + C3 (facultative)
+          anchor:
+            type: string
+            example: 2 AN et 10 spits
+          observation:
+            type: string
+            example: Les AN sont des arbres.
