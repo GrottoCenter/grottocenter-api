@@ -82,9 +82,6 @@ module.exports = async (req, res) => {
       // Populate stats
       entrance.stats = await CommentService.getStats(req.params.id);
 
-      // Format rigging obstacle
-      await RiggingService.formatRiggingsForAPI(entrance.riggings);
-
       return ControllerService.treatAndConvert(
         req,
         err,

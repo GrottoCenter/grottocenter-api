@@ -9,36 +9,34 @@ module.exports = {
    * line by line object.
    *
    * @see RiggingService.test.js for examples
-   * @param {Object[]} riggings
+   * @param {Object} rigging
    */
-  formatRiggingsForAPI: async (riggings) => {
-    riggings.map((rigging) => {
-      const splitRiggingData = (dataName) =>
-        R.pipe(R.propOr('', dataName), R.split(SEPARATOR))(rigging);
+  formatRiggingForAPI: async (rigging) => {
+    const splitRiggingData = (dataName) =>
+      R.pipe(R.propOr('', dataName), R.split(SEPARATOR))(rigging);
 
-      const obstacles = splitRiggingData('obstacles');
-      const ropes = splitRiggingData('ropes');
-      const anchors = splitRiggingData('anchors');
-      const observations = splitRiggingData('observations');
+    const obstacles = splitRiggingData('obstacles');
+    const ropes = splitRiggingData('ropes');
+    const anchors = splitRiggingData('anchors');
+    const observations = splitRiggingData('observations');
 
-      // eslint-disable-next-line no-param-reassign
-      rigging.obstacles = obstacles
-        .map((o, idx) => ({
-          obstacle: o,
-          rope: ropes[idx],
-          anchor: anchors[idx],
-          observation: observations[idx],
-        }))
-        // remove empty data (badly formatted data in the db)
-        .filter(
-          (o) =>
-            o.obstacle !== '' ||
-            o.rope !== '' ||
-            o.anchor !== '' ||
-            o.observation !== ''
-        );
-      return rigging;
-    });
+    // eslint-disable-next-line no-param-reassign
+    rigging.obstacles = obstacles
+      .map((o, idx) => ({
+        obstacle: o,
+        rope: ropes[idx],
+        anchor: anchors[idx],
+        observation: observations[idx],
+      }))
+      // remove empty data (badly formatted data in the db)
+      .filter(
+        (o) =>
+          o.obstacle !== '' ||
+          o.rope !== '' ||
+          o.anchor !== '' ||
+          o.observation !== ''
+      );
+    return rigging;
   },
   /**
    * Convert an obstacles array (usually coming from the API) into an object of
@@ -77,6 +75,7 @@ module.exports = {
         .populate('reviewer')
         .populate('language');
     }
+    riggings.map((rigging) => module.exports.formatRiggingForAPI(rigging));
     return riggings;
   },
 };

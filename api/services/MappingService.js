@@ -28,6 +28,7 @@ const SubjectModel = require('./mappingModels/SubjectModel');
 
 const FileService = require('./FileService');
 const { postgreIntervalObjectToDbString } = require('./CommentService');
+const RiggingService = require('./RiggingService');
 
 module.exports = {
   getMainName: (source) => {
@@ -220,7 +221,7 @@ module.exports = {
         : undefined;
     result.ropes = source.ropes;
     result.title = source.title;
-
+    RiggingService.formatRiggingForAPI(result);
     return result;
   },
 

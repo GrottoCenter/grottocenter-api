@@ -203,6 +203,12 @@ If the build is triggered from a push on `master` then this workflow generates a
 
 Deployment done with Github Actions and AWS CodeDeploy.
 
+You first need to merge your changes to `master` using if possible the `git flow release start vXX.X.X` command.
+
+Don't forget to update the version number on the swagger file and on the package.json file.
+
+when the merge on master is completed, you should create a release for the newly pushed tag.
+
 To Deploy you need to run manually the Actions workflow `Deploy to api.grottocenter.org` on the `master` branch from the Github Actions page.
 
 If you trigger the deployment workflow manually, the execution will be paused until an administrator validate it.

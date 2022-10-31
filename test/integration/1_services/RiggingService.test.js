@@ -20,7 +20,7 @@ describe('RiggingService', () => {
         observations: 'Etrier en place|;|Quitter avant le fond sur la gauche.',
       };
       const riggings = [rigging1, rigging2];
-      await RiggingService.formatRiggingsForAPI(riggings);
+      riggings.map((rig) => RiggingService.formatRiggingForAPI(rig));
 
       // Riggings length
       should(riggings.length).equal(2);
@@ -88,7 +88,7 @@ describe('RiggingService', () => {
         observations: 'Etrier en place|;|Quitter avant le fond sur la gauche.',
       };
       const riggings = [rigging1, rigging2];
-      await RiggingService.formatRiggingsForAPI(riggings);
+      riggings.map((rig) => RiggingService.formatRiggingForAPI(rig));
 
       // Riggings length
       should(riggings.length).equal(2);
