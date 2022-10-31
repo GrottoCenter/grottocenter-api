@@ -51,10 +51,10 @@ module.exports = async (req, res) => {
   const cleanedData = {
     ...(newTitle && { title: newTitle }),
     reviewer: req.token.id,
-    ...(newObstacles && { obstacles: newObstacles }),
-    ...(newRopes && { ropes: newRopes }),
-    ...(newAnchors && { anchors: newAnchors }),
-    ...(newObservations && { observations: newObservations }),
+    obstacles: newObstacles,
+    ropes: newRopes,
+    anchors: newAnchors,
+    observations: newObservations,
     ...(newLanguage && { language: newLanguage }),
   };
 

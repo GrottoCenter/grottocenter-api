@@ -22,10 +22,15 @@ module.exports = {
   getStats: async (entranceId) => {
     const aestheticism = await TComment.avg('aestheticism').where({
       entrance: entranceId,
+      aestheticism: { '>': 0 },
     });
-    const caving = await TComment.avg('caving').where({ entrance: entranceId });
+    const caving = await TComment.avg('caving').where({
+      entrance: entranceId,
+      caving: { '>': 0 },
+    });
     const approach = await TComment.avg('approach').where({
       entrance: entranceId,
+      approach: { '>': 0 },
     });
 
     return {
