@@ -1,14 +1,14 @@
 {
   "name": "grottocenter-api",
   "private": true,
-  "version": "22.0.26",
+  "version": "22.0.27",
   "description": "Grottocenter - API",
   "author": "Wikicaves",
   "license": "CC-BY-SA-3.0",
   "keywords": [],
   "dependencies": {
     "@aws-sdk/client-ses": "^3.179.0",
-    "@azure/storage-blob": "^12.11.0",
+    "@azure/storage-blob": "^12.12.0",
     "@date-io/date-fns": "^2.16.0",
     "async": "^3.2.4",
     "dotenv": "^16.0.3",
@@ -32,7 +32,7 @@
     "sails-hook-orm": "^4.0.1",
     "sails-hook-sockets": "^2.0.3",
     "sails-postgresql": "^5.0.1",
-    "@snyk/protect": "^1.1041.0",
+    "@snyk/protect": "^1.1054.0",
     "streamsearch": "^1.1.0",
     "underscore.date": "^0.6.1",
     "underscore.string": "^3.3.6",
@@ -58,12 +58,12 @@
     "url": "git://github.com/GrottoCenter/Grottocenter3.git"
   },
   "devDependencies": {
-    "@commitlint/config-conventional": "^17.1.0",
-    "@commitlint/cli": "^17.1.2",
+    "@commitlint/config-conventional": "^17.2.0",
+    "@commitlint/cli": "^17.2.0",
     "core-js": "^3.26.0",
     "coveralls": "^3.1.1",
     "cross-env": "^7.0.3",
-    "eslint": "^8.26.0",
+    "eslint": "^8.27.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-import": "^2.26.0",
@@ -79,7 +79,7 @@
     "sails-disk": "^2.1.2",
     "sails-hook-grunt": "^5.0.0",
     "should": "^13.2.3",
-    "supertest": "^6.2.4"
+    "supertest": "^6.3.1"
   },
   "engines": {
     "node": ">=16"
