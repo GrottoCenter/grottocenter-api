@@ -34,7 +34,7 @@ INSERT INTO public.t_caver (
 VALUES (
 		0,
 		'deleted',
-		'welcome1',
+		'cb8a695e838008d4a7d5968cd1cf6adc89292b539dfe502ca797d6066fb3f0d9', -- welcome1
 		false,
 		'0',
 		false,
@@ -57,7 +57,7 @@ VALUES (
 	(
 		1,
 		'AdrienAdmin',
-		'admin@admin.com',
+		'1ab6d1827c34fae5b90b8124cd04e45416100fda52a104d8b2748c777d09d3f4', -- admin@admin.com
 		true,
 		'0',
 		false,
@@ -80,7 +80,7 @@ VALUES (
 	(
 		2,
 		'MelvilMode',
-		'moderator@moderator.com',
+		'2e66bf3b2138aa4b870a023483301af16eddfd152a726675b04ba34f9f057d9d', -- moderator@moderator.com
 		true,
 		'0',
 		false,
@@ -103,7 +103,7 @@ VALUES (
 	(
 		3,
 		'UrsulleUse',
-		'user@user.com',
+		'8c28b6cb3780c511566cdd96ff3b7e1f57048996490ab6540297b8edfdd5e71a', -- user@user.com
 		true,
 		'0',
 		false,
@@ -126,7 +126,7 @@ VALUES (
 	(
 		4,
 		'LéaLead',
-		'leader@leader.com',
+		'0564c91382ac3cca0a2ca615084a19ecc1039bf47ea61dcc5e6571a4b9995b95', -- leader@leader.com
 		true,
 		'0',
 		false,
@@ -149,7 +149,7 @@ VALUES (
 	(
 		5,
 		'AlexAll',
-		'all@all.com',
+		'c2a258596a298372e3850819679408854dea1e7a327066052020fa5f542b9a6b', -- all@all.com
 		true,
 		'0',
 		false,
@@ -172,7 +172,7 @@ VALUES (
 	(
 		6,
 		'JohnDoe',
-		'john@doe.com',
+		'ac2960d3f8562a8e79be81db060f2ab8f7d1ad53850cda1d5c842ca8ae36b5b6', -- john@doe.com
 		true,
 		'0',
 		false,

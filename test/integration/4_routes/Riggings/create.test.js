@@ -55,7 +55,6 @@ describe('Rigging features', () => {
           const riggingUpdated = res.body;
           should(riggingUpdated.body).equals(newRigging.body);
           should(riggingUpdated.entrance.latitude).equals(30);
-          should(riggingUpdated.author.mail).equals('user1@user1.com');
           should(riggingUpdated.ropes).equals('C10|;|C150|;|C10');
           return done();
         });

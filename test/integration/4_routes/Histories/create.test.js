@@ -39,7 +39,6 @@ describe('History features', () => {
           const historyUpdated = res.body;
           should(historyUpdated.body).equals(newHistory.body);
           should(historyUpdated.entrance.latitude).equals(3);
-          should(historyUpdated.author.mail).equals('user1@user1.com');
           return done();
         });
     });
