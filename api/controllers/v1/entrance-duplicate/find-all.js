@@ -1,6 +1,11 @@
 const ControllerService = require('../../../services/ControllerService');
 const ErrorService = require('../../../services/ErrorService');
-const MappingService = require('../../../services/mapping/MappingService');
+const {
+  convertToEntranceDuplicateModel,
+} = require('../../../services/mapping/MappingService');
+const {
+  convertToListFromController,
+} = require('../../../services/mapping/utils');
 
 module.exports = async (req, res) => {
   const sort = `${req.param('sortBy', 'dateInscription')} ${req.param(
@@ -32,7 +37,12 @@ module.exports = async (req, res) => {
       duplicates,
       params,
       res,
-      MappingService.convertToEntranceDuplicateList
+      (data) =>
+        convertToListFromController(
+          'duplicates',
+          data,
+          convertToEntranceDuplicateModel
+        )
     );
   } catch (err) {
     ErrorService.getDefaultErrorHandler(res)(err);
