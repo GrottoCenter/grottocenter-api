@@ -1,7 +1,6 @@
 const ramda = require('ramda');
 const ControllerService = require('../../../services/ControllerService');
 const ErrorService = require('../../../services/ErrorService');
-const MappingService = require('../../../services/mapping/MappingService');
 const NameService = require('../../../services/NameService');
 const {
   NOTIFICATION_TYPES,
@@ -9,6 +8,7 @@ const {
 } = require('../../../services/NotificationService');
 const NotificationService = require('../../../services/NotificationService');
 const RightService = require('../../../services/RightService');
+const { toEntranceDuplicate } = require('../../../services/mapping/converters');
 
 // eslint-disable-next-line consistent-return
 module.exports = async (req, res) => {
@@ -143,7 +143,7 @@ module.exports = async (req, res) => {
         updatedEntrance,
         params,
         res,
-        MappingService.convertToEntranceDuplicateModel
+        toEntranceDuplicate
       );
     });
   } catch (e) {

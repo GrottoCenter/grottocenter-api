@@ -1,10 +1,10 @@
 const ControllerService = require('../../../services/ControllerService');
 const ErrorService = require('../../../services/ErrorService');
 const GrottoService = require('../../../services/GrottoService');
-const MappingService = require('../../../services/mapping/MappingService');
 const NameService = require('../../../services/NameService');
 const NotificationService = require('../../../services/NotificationService');
 const RightService = require('../../../services/RightService');
+const { toOrganization } = require('../../../services/mapping/converters');
 const {
   NOTIFICATION_TYPES,
   NOTIFICATION_ENTITIES,
@@ -64,7 +64,7 @@ module.exports = async (req, res) => {
       updatedOrganization,
       params,
       res,
-      MappingService.convertToOrganizationModel
+      toOrganization
     );
   } catch (e) {
     return ErrorService.getDefaultErrorHandler(res)(e);

@@ -1,9 +1,9 @@
 const ControllerService = require('../../../services/ControllerService');
 const ErrorService = require('../../../services/ErrorService');
-const MappingService = require('../../../services/mapping/MappingService');
 const MassifService = require('../../../services/MassifService');
 const NameService = require('../../../services/NameService');
 const DescriptionService = require('../../../services/DescriptionService');
+const { toMassif } = require('../../../services/mapping/converters');
 
 module.exports = async (req, res) => {
   try {
@@ -45,7 +45,7 @@ module.exports = async (req, res) => {
       massif,
       params,
       res,
-      MappingService.convertToMassifModel
+      toMassif
     );
   } catch (e) {
     return ErrorService.getDefaultErrorHandler(res)(e);

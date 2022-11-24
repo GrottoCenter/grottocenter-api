@@ -1,12 +1,12 @@
 const ControllerService = require('../../../services/ControllerService');
 const ErrorService = require('../../../services/ErrorService');
-const MappingService = require('../../../services/mapping/MappingService');
+const NotificationService = require('../../../services/NotificationService');
+const RightService = require('../../../services/RightService');
+const { toLocation } = require('../../../services/mapping/converters');
 const {
   NOTIFICATION_TYPES,
   NOTIFICATION_ENTITIES,
 } = require('../../../services/NotificationService');
-const NotificationService = require('../../../services/NotificationService');
-const RightService = require('../../../services/RightService');
 
 module.exports = async (req, res) => {
   // Check right
@@ -74,7 +74,7 @@ module.exports = async (req, res) => {
       populatedLocation,
       params,
       res,
-      MappingService.convertToLocationModel
+      toLocation
     );
   } catch (e) {
     return ErrorService.getDefaultErrorHandler(res)(e);

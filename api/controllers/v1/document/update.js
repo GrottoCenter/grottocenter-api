@@ -4,16 +4,16 @@ const DescriptionService = require('../../../services/DescriptionService');
 const DocumentService = require('../../../services/DocumentService');
 const ErrorService = require('../../../services/ErrorService');
 const FileService = require('../../../services/FileService');
+const NotificationService = require('../../../services/NotificationService');
+const RightService = require('../../../services/RightService');
+const { toDocument } = require('../../../services/mapping/converters');
 
 const { INVALID_FORMAT, INVALID_NAME, ERROR_DURING_UPLOAD_TO_AZURE } =
   FileService;
-const MappingService = require('../../../services/mapping/MappingService');
 const {
   NOTIFICATION_TYPES,
   NOTIFICATION_ENTITIES,
 } = require('../../../services/NotificationService');
-const NotificationService = require('../../../services/NotificationService');
-const RightService = require('../../../services/RightService');
 
 module.exports = async (req, res) => {
   const docWithModif = await TDocument.findOne({
@@ -117,7 +117,7 @@ module.exports = async (req, res) => {
       updatedDocument,
       params,
       res,
-      MappingService.convertToDocumentModel
+      toDocument
     );
   } catch (e) {
     return ErrorService.getDefaultErrorHandler(res)(e);

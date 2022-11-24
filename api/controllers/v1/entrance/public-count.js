@@ -1,10 +1,8 @@
-const MappingService = require('../../../services/mapping/MappingService');
+const { toCountResult } = require('../../../services/mapping/converters');
 
 module.exports = (req, res) => {
   TEntrance.count({ isPublic: true })
-    .then((total) =>
-      res.json(MappingService.convertToCountResultModel({ count: total }))
-    )
+    .then((total) => res.json(toCountResult({ count: total })))
     .catch((err) =>
       res.serverError({
         error: err,

@@ -1,10 +1,6 @@
 const ControllerService = require('../../../services/ControllerService');
-const {
-  convertToOrganizationModel,
-} = require('../../../services/mapping/MappingService');
-const {
-  convertToListFromController,
-} = require('../../../services/mapping/utils');
+const { toOrganization } = require('../../../services/mapping/converters');
+const { toListFromController } = require('../../../services/mapping/utils');
 
 module.exports = (req, res) => {
   let skip = 0;
@@ -40,12 +36,7 @@ module.exports = (req, res) => {
         found,
         params,
         res,
-        (data) =>
-          convertToListFromController(
-            'organization',
-            data,
-            convertToOrganizationModel
-          )
+        (data) => toListFromController('organization', data, toOrganization)
       );
     });
 };
