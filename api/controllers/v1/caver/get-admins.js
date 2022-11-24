@@ -1,6 +1,11 @@
 const CaverService = require('../../../services/CaverService');
 const ControllerService = require('../../../services/ControllerService');
-const MappingService = require('../../../services/MappingService');
+const {
+  convertToCaverModel,
+} = require('../../../services/mapping/MappingService');
+const {
+  convertToListFromController,
+} = require('../../../services/mapping/utils');
 const RightService = require('../../../services/RightService');
 
 module.exports = async (req, res) => {
@@ -42,6 +47,6 @@ module.exports = async (req, res) => {
     adminsWithGroups,
     params,
     res,
-    MappingService.convertToCaverList
+    (data) => convertToListFromController('cavers', data, convertToCaverModel)
   );
 };

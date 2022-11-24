@@ -1,7 +1,12 @@
 const ControllerService = require('../../../services/ControllerService');
 const DescriptionService = require('../../../services/DescriptionService');
 const DocumentService = require('../../../services/DocumentService');
-const MappingService = require('../../../services/MappingService');
+const {
+  convertToDocumentModel,
+} = require('../../../services/mapping/MappingService');
+const {
+  convertToListFromController,
+} = require('../../../services/mapping/utils');
 const NameService = require('../../../services/NameService');
 
 module.exports = async (req, res) => {
@@ -115,7 +120,12 @@ module.exports = async (req, res) => {
             found,
             params,
             res,
-            MappingService.convertToDocumentList
+            (data) =>
+              convertToListFromController(
+                'documents',
+                data,
+                convertToDocumentModel
+              )
           );
         });
     });

@@ -2,7 +2,7 @@ const NameService = require('../../../services/NameService');
 const DescriptionService = require('../../../services/DescriptionService');
 const CaverService = require('../../../services/CaverService');
 const ControllerService = require('../../../services/ControllerService');
-const MappingService = require('../../../services/MappingService');
+const MappingService = require('../../../services/mapping/MappingService');
 
 module.exports = async (req, res) => {
   const caverId = req.param('id');

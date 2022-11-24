@@ -7,7 +7,7 @@ const FileService = require('../../../services/FileService');
 
 const { INVALID_FORMAT, INVALID_NAME, ERROR_DURING_UPLOAD_TO_AZURE } =
   FileService;
-const MappingService = require('../../../services/MappingService');
+const MappingService = require('../../../services/mapping/MappingService');
 const {
   NOTIFICATION_TYPES,
   NOTIFICATION_ENTITIES,
