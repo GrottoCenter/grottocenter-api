@@ -274,7 +274,6 @@ module.exports = {
     result.altitude = source.altitude;
     result.approach = source.approach;
     result.caving = source.caving;
-    result.comments = source.comments;
     result.country = source.country;
     result.countryCode = source['country code'];
     result.county = source.county;
@@ -283,25 +282,23 @@ module.exports = {
     result.dateReviewed = source.dateReviewed;
     result.discoveryYear = source.yearDiscovery;
     result.externalUrl = source.externalUrl;
-    result.histories = source.histories;
     result.id = source.id;
     result.isDeleted = source.isDeleted;
     result.isSensitive = source.isSensitive;
     result.latitude = parseFloat(source.latitude);
-    result.locations = source.locations;
     result.longitude = parseFloat(source.longitude);
     result.name = module.exports.getMainName(source);
     result.names = source.names;
     result.postalCode = source.postalCode;
     result.precision = source.precision;
     result.region = source.region;
-    result.riggings = source.riggings;
     result.stats = source.stats;
     result.timeInfo = source.timeInfo;
 
-    // Cave (DB or ES)
+    // Cave
     if (source.cave instanceof Object) {
       result.cave = module.exports.convertToCaveModel(source.cave);
+      // from Elasticsearch
     } else if (source['cave name']) {
       result.cave = {
         depth: source['cave depth'],
@@ -309,6 +306,8 @@ module.exports = {
         name: source['cave name'],
         isDiving: source['cave is diving'],
       };
+    } else {
+      result.cave = source.cave;
     }
     // Once cave is populated, put the massifs at the root of the entrance
     // (more convenient for the client)
@@ -324,8 +323,6 @@ module.exports = {
       result.descriptions = module.exports.convertToDescriptionList(
         source.descriptions
       ).descriptions;
-    } else {
-      result.descriptions = source.descriptions;
     }
 
     // Comments
@@ -333,8 +330,6 @@ module.exports = {
       result.comments = module.exports.convertToCommentList(
         source.comments
       ).comments;
-    } else {
-      result.comments = source.comments;
     }
 
     // Documents
@@ -342,8 +337,27 @@ module.exports = {
       result.documents = module.exports.convertToDocumentList(
         source.documents
       ).documents;
-    } else {
-      result.documents = source.documents;
+    }
+
+    // Histories
+    if (source.histories instanceof Array) {
+      result.histories = module.exports.convertToHistoryList(
+        source.histories
+      ).histories;
+    }
+
+    // Locations
+    if (source.locations instanceof Array) {
+      result.locations = module.exports.convertToLocationList(
+        source.locations
+      ).locations;
+    }
+
+    // Riggings
+    if (source.riggings instanceof Array) {
+      result.riggings = module.exports.convertToRiggingList(
+        source.riggings
+      ).riggings;
     }
 
     // Massif from ESearch
@@ -362,6 +376,30 @@ module.exports = {
       comments.push(module.exports.convertToCommentModel(item))
     );
     return { comments };
+  },
+
+  convertToHistoryList: (source) => {
+    const histories = [];
+    source.forEach((item) =>
+      histories.push(module.exports.convertToHistoryModel(item))
+    );
+    return { histories };
+  },
+
+  convertToLocationList: (source) => {
+    const locations = [];
+    source.forEach((item) =>
+      locations.push(module.exports.convertToLocationModel(item))
+    );
+    return { locations };
+  },
+
+  convertToRiggingList: (source) => {
+    const riggings = [];
+    source.forEach((item) =>
+      riggings.push(module.exports.convertToRiggingModel(item))
+    );
+    return { riggings };
   },
 
   convertToDescriptionList: (source) => {
@@ -428,7 +466,9 @@ module.exports = {
 
     if (source.documents) {
       if (source.documents instanceof Array) {
-        result.documents = source.documents;
+        result.documents = module.exports.convertToDocumentList(
+          source.documents
+        ).documents;
       } else {
         result.documents = source.documents.split(',').map((documentId) => ({
           id: parseInt(documentId, 10),
@@ -462,7 +502,9 @@ module.exports = {
 
     if (source.grottos) {
       if (source.grottos instanceof Array) {
-        result.organizations = source.grottos;
+        result.organizations = module.exports.convertToOrganizationList(
+          source.grottos
+        ).organizations;
       } else {
         result.organizations = source.grottos.split(',').map((grottoId) => ({
           id: parseInt(grottoId, 10),
@@ -483,7 +525,6 @@ module.exports = {
     result.dateInscription = source.date_inscription;
     result.dateReviewed = source.date_reviewed;
     result.depth = source.depth;
-    result.histories = source.histories;
     result.isDeleted = source.is_deleted;
     result.isDiving = source.is_diving;
     result.latitude = parseFloat(source.latitude);
@@ -517,6 +558,11 @@ module.exports = {
       result.documents = module.exports.convertToDocumentList(
         source.documents
       ).documents;
+    }
+    if (source.histories instanceof Array) {
+      result.histories = module.exports.convertToHistoryList(
+        source.histories
+      ).histories;
     }
     if (source.massifs instanceof Array) {
       result.massifs = module.exports.convertToMassifList(source.massifs);
@@ -958,8 +1004,6 @@ module.exports = {
     // Convert authors
     if (source.authors instanceof Array) {
       result.authors = module.exports.convertToCaverList(source.authors).cavers;
-    } else {
-      result.authors = source.authors;
     }
 
     // Convert children document
@@ -967,8 +1011,6 @@ module.exports = {
       result.children = module.exports.convertToDocumentList(
         source.children
       ).documents;
-    } else {
-      result.children = source.children;
     }
 
     // TODO: handle publication (old bbs & parent)
