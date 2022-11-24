@@ -75,7 +75,6 @@ module.exports = {
         .populate('reviewer')
         .populate('language');
     }
-    riggings.map((rigging) => module.exports.formatRiggingForAPI(rigging));
     return riggings;
   },
 };
