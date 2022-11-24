@@ -359,7 +359,6 @@ module.exports = {
       }));
     }
 
-    // Convert identifier type
     if (source.identifierType instanceof Object) {
       result.identifierType = {
         ...source.identifierType,
@@ -372,7 +371,6 @@ module.exports = {
       result.identifierType = source.identifierType;
     }
 
-    // Library
     if (source['library id']) {
       // Elasticsearch
       result.library = {
@@ -386,7 +384,6 @@ module.exports = {
           : source.library;
     }
 
-    // Editor
     if (source['editor id']) {
       // Elasticsearch
       result.editor = {
@@ -400,17 +397,16 @@ module.exports = {
           : source.editor;
     }
 
-    // Type
     if (source['type id']) {
-      // ES
+      // Elasticsearch
       result.type = {
         id: source['type id'],
         name: source['type name'],
       };
     }
-    // Build document type
-    // source.type can be the id of the type only or the full type object
+
     if (source.type) {
+      // source.type can be the id of the type only or the full type object
       if (ramda.propOr(null, 'id', source.type)) {
         result.type = source.type;
       } else {
@@ -421,7 +417,6 @@ module.exports = {
     }
 
     // Convert collections
-
     result.authors = toList('authors', source, toCaver);
     result.children = toList('children', source, toDocument);
     result.files = toList('files', source, toFile);
@@ -525,7 +520,7 @@ module.exports = {
     } = module.exports;
 
     if (source['cave name']) {
-      // from Elasticsearch
+      // Elasticsearch
       result.cave = {
         depth: source['cave depth'],
         length: source['cave length'],
@@ -541,10 +536,8 @@ module.exports = {
     // (more convenient for the client)
     result.massifs = ramda.pathOr(undefined, ['cave', 'massifs'], result);
 
-    // Author
-    if (source.author instanceof Object) {
-      result.author = toCaver(source.author);
-    }
+    result.author =
+      source.author instanceof Object ? toCaver(source.author) : source.author;
 
     // Convert collections
     result.descriptions = toList('descriptions', source, toDescription);
@@ -697,18 +690,12 @@ module.exports = {
 
     // Convert objects
     const { toCave, toCaver, toDocument, toEntrance } = module.exports;
-    if (source.author) {
-      result.author =
-        source.author instanceof Object
-          ? toCaver(source.author)
-          : source.author;
-    }
-    if (source.reviewer) {
-      result.reviewer =
-        source.reviewer instanceof Object
-          ? toCaver(source.reviewer)
-          : source.reviewer;
-    }
+    result.author =
+      source.author instanceof Object ? toCaver(source.author) : source.author;
+    result.reviewer =
+      source.reviewer instanceof Object
+        ? toCaver(source.reviewer)
+        : source.reviewer;
 
     // Convert collections
     result.entrances = toList('entrances', source, toEntrance);
@@ -1055,7 +1042,7 @@ module.exports = {
     result.parent =
       source.parent && source.parent.id && source.parent.subject
         ? module.exports.toSubject(source.parent)
-        : null;
+        : source.parent;
     return result;
   },
 };
