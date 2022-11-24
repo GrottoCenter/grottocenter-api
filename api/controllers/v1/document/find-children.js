@@ -1,6 +1,7 @@
 const ControllerService = require('../../../services/ControllerService');
 const DocumentService = require('../../../services/DocumentService');
-const MappingService = require('../../../services/MappingService');
+const { toDocument } = require('../../../services/mapping/converters');
+const { toListFromController } = require('../../../services/mapping/utils');
 
 module.exports = async (req, res) => {
   // Check param
@@ -29,6 +30,6 @@ module.exports = async (req, res) => {
     doc.children,
     params,
     res,
-    MappingService.convertToDocumentList
+    (data) => toListFromController('documents', data, toDocument)
   );
 };

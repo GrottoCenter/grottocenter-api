@@ -17,7 +17,7 @@ module.exports = async (req, res) => {
       controllerMethod: 'Country.find',
       searchedItem: `Country of id ${countryId}`,
     };
-    // TODO: if needed elsewhere, refactor this in the MappingService, using a ConvertToCountryModel function
+    // TODO: if needed elsewhere, refactor this in the converters, using a toCountry function
     const formattedCountry = {
       ...country,
       latitude: parseFloat(country.latitude),

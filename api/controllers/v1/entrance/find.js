@@ -3,12 +3,12 @@ const CaverService = require('../../../services/CaverService');
 const CommentService = require('../../../services/CommentService');
 const ControllerService = require('../../../services/ControllerService');
 const DocumentService = require('../../../services/DocumentService');
-const MappingService = require('../../../services/MappingService');
 const NameService = require('../../../services/NameService');
 const RiggingService = require('../../../services/RiggingService');
 const DescriptionService = require('../../../services/DescriptionService');
 const HistoryService = require('../../../services/HistoryService');
 const LocationService = require('../../../services/LocationService');
+const { toEntrance } = require('../../../services/mapping/converters');
 
 module.exports = async (req, res) => {
   TEntrance.findOne(req.params.id)
@@ -88,7 +88,7 @@ module.exports = async (req, res) => {
         entrance,
         params,
         res,
-        MappingService.convertToEntranceModel
+        toEntrance
       );
     });
 };

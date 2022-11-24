@@ -1,7 +1,7 @@
 const ControllerService = require('../../../services/ControllerService');
 const ErrorService = require('../../../services/ErrorService');
-const MappingService = require('../../../services/MappingService');
 const RightService = require('../../../services/RightService');
+const { toName } = require('../../../services/mapping/converters');
 
 module.exports = async (req, res) => {
   // Check right
@@ -39,7 +39,7 @@ module.exports = async (req, res) => {
       currentName,
       params,
       res,
-      MappingService.convertToNameModel
+      toName
     );
   }
 
@@ -83,7 +83,7 @@ module.exports = async (req, res) => {
       newName,
       params,
       res,
-      MappingService.convertToNameModel
+      toName
     );
   } catch (e) {
     return ErrorService.getDefaultErrorHandler(res)(e);

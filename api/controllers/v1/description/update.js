@@ -1,12 +1,12 @@
 const ControllerService = require('../../../services/ControllerService');
 const ErrorService = require('../../../services/ErrorService');
-const MappingService = require('../../../services/MappingService');
 const NotificationService = require('../../../services/NotificationService');
 const RightService = require('../../../services/RightService');
 const {
   NOTIFICATION_TYPES,
   NOTIFICATION_ENTITIES,
 } = require('../../../services/NotificationService');
+const { toDescription } = require('../../../services/mapping/converters');
 
 module.exports = async (req, res) => {
   // Check right
@@ -73,7 +73,7 @@ module.exports = async (req, res) => {
       newDescription,
       params,
       res,
-      MappingService.convertToDescriptionModel
+      toDescription
     );
   } catch (e) {
     return ErrorService.getDefaultErrorHandler(res)(e);

@@ -1,7 +1,7 @@
 const ControllerService = require('../../../services/ControllerService');
 const ErrorService = require('../../../services/ErrorService');
 const GrottoService = require('../../../services/GrottoService');
-const MappingService = require('../../../services/MappingService');
+const { toOrganization } = require('../../../services/mapping/converters');
 
 module.exports = async (req, res) => {
   try {
@@ -25,7 +25,7 @@ module.exports = async (req, res) => {
       organization,
       params,
       res,
-      MappingService.convertToOrganizationModel
+      toOrganization
     );
   } catch (e) {
     return ErrorService.getDefaultErrorHandler(res)(e);

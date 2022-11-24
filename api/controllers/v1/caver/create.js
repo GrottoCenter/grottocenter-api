@@ -1,8 +1,8 @@
 const CaverService = require('../../../services/CaverService');
 const ControllerService = require('../../../services/ControllerService');
 const ErrorService = require('../../../services/ErrorService');
-const MappingService = require('../../../services/MappingService');
 const RightService = require('../../../services/RightService');
+const { toCaver } = require('../../../services/mapping/converters');
 
 module.exports = async (req, res) => {
   // Check right
@@ -44,7 +44,7 @@ module.exports = async (req, res) => {
       newCaver,
       params,
       res,
-      MappingService.convertToCaverModel
+      toCaver
     );
   } catch (e) {
     return ErrorService.getDefaultErrorHandler(res)(e);

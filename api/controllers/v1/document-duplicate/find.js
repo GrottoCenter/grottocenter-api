@@ -1,7 +1,7 @@
 const ControllerService = require('../../../services/ControllerService');
 const DescriptionService = require('../../../services/DescriptionService');
 const DocumentService = require('../../../services/DocumentService');
-const MappingService = require('../../../services/MappingService');
+const { toDocumentDuplicate } = require('../../../services/mapping/converters');
 
 module.exports = async (req, res) => {
   if (
@@ -77,6 +77,6 @@ module.exports = async (req, res) => {
     duplicate,
     params,
     res,
-    MappingService.convertToDocumentDuplicateModel
+    toDocumentDuplicate
   );
 };

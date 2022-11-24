@@ -62,7 +62,6 @@ describe('Caver features', () => {
           if (err) return done(err);
           const { body: caver } = res;
           should(caver).have.properties(CAVER_PROPERTIES);
-          should(caver.mail).equal('user1@user1.com');
           should(caver.nickname).not.be.empty();
           caver.documents.forEach((document) => {
             should(document).have.properties('descriptions');
@@ -87,7 +86,6 @@ describe('Caver features', () => {
           if (err) return done(err);
           const { body: caver } = res;
           should(caver).have.properties(CAVER_PROPERTIES);
-          should(caver.mail).equal('admin1@admin1.com');
           should(caver.nickname).not.be.empty();
           caver.documents.forEach((document) => {
             should(document).have.properties('descriptions');

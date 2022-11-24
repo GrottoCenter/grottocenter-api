@@ -2,7 +2,7 @@ const NameService = require('../../../services/NameService');
 const DescriptionService = require('../../../services/DescriptionService');
 const CaverService = require('../../../services/CaverService');
 const ControllerService = require('../../../services/ControllerService');
-const MappingService = require('../../../services/MappingService');
+const { toCaver } = require('../../../services/mapping/converters');
 
 module.exports = async (req, res) => {
   const caverId = req.param('id');
@@ -40,6 +40,6 @@ module.exports = async (req, res) => {
     caverFound,
     params,
     res,
-    MappingService.convertToCaverModel
+    toCaver
   );
 };

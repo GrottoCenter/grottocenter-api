@@ -1,6 +1,6 @@
 const ControllerService = require('../../../services/ControllerService');
 const EntranceService = require('../../../services/EntranceService');
-const MappingService = require('../../../services/MappingService');
+const { toEntranceDuplicate } = require('../../../services/mapping/converters');
 
 module.exports = async (req, res) => {
   if (
@@ -58,6 +58,6 @@ module.exports = async (req, res) => {
     duplicateFound,
     params,
     res,
-    MappingService.convertToEntranceDuplicateModel
+    toEntranceDuplicate
   );
 };

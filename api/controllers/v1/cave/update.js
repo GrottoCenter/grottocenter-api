@@ -1,7 +1,6 @@
 const CaveService = require('../../../services/CaveService');
 const ControllerService = require('../../../services/ControllerService');
 const ErrorService = require('../../../services/ErrorService');
-const MappingService = require('../../../services/MappingService');
 const NameService = require('../../../services/NameService');
 const {
   NOTIFICATION_TYPES,
@@ -9,6 +8,7 @@ const {
 } = require('../../../services/NotificationService');
 const NotificationService = require('../../../services/NotificationService');
 const RightService = require('../../../services/RightService');
+const { toCave } = require('../../../services/mapping/converters');
 
 const { checkRight } = sails.helpers;
 
@@ -72,7 +72,7 @@ module.exports = async (req, res) => {
       updatedCave,
       params,
       res,
-      MappingService.convertToCaveModel
+      toCave
     );
   } catch (e) {
     return ErrorService.getDefaultErrorHandler(res)(e);

@@ -1,12 +1,12 @@
 const ControllerService = require('../../../services/ControllerService');
 const ErrorService = require('../../../services/ErrorService');
-const MappingService = require('../../../services/MappingService');
 const {
   NOTIFICATION_TYPES,
   NOTIFICATION_ENTITIES,
 } = require('../../../services/NotificationService');
 const NotificationService = require('../../../services/NotificationService');
 const RightService = require('../../../services/RightService');
+const { toComment } = require('../../../services/mapping/converters');
 
 module.exports = async (req, res) => {
   // Check right
@@ -121,7 +121,7 @@ module.exports = async (req, res) => {
       newCommentPopulated,
       params,
       res,
-      MappingService.convertToCommentModel
+      toComment
     );
   } catch (e) {
     return ErrorService.getDefaultErrorHandler(res)(e);

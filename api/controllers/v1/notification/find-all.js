@@ -1,6 +1,7 @@
 const ControllerService = require('../../../services/ControllerService');
 const ErrorService = require('../../../services/ErrorService');
-const MappingService = require('../../../services/MappingService');
+const { toNotification } = require('../../../services/mapping/converters');
+const { toListFromController } = require('../../../services/mapping/utils');
 const NotificationService = require('../../../services/NotificationService');
 
 const MAX_SIZE = 50;
@@ -64,7 +65,7 @@ module.exports = async (req, res) => {
       populatedNotifications,
       params,
       res,
-      MappingService.convertToNotificationList
+      (data) => toListFromController('notifications', data, toNotification)
     );
   } catch (e) {
     return ErrorService.getDefaultErrorHandler(res)(e);

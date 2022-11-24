@@ -1,13 +1,13 @@
 const ControllerService = require('../../../services/ControllerService');
 const ErrorService = require('../../../services/ErrorService');
-const MappingService = require('../../../services/MappingService');
+const NotificationService = require('../../../services/NotificationService');
+const RightService = require('../../../services/RightService');
+const RiggingService = require('../../../services/RiggingService');
+const { toRigging } = require('../../../services/mapping/converters');
 const {
   NOTIFICATION_TYPES,
   NOTIFICATION_ENTITIES,
 } = require('../../../services/NotificationService');
-const NotificationService = require('../../../services/NotificationService');
-const RightService = require('../../../services/RightService');
-const RiggingService = require('../../../services/RiggingService');
 
 module.exports = async (req, res) => {
   // Check right
@@ -85,7 +85,7 @@ module.exports = async (req, res) => {
       populatedRigging,
       params,
       res,
-      MappingService.convertToRiggingModel
+      toRigging
     );
   } catch (e) {
     return ErrorService.getDefaultErrorHandler(res)(e);
