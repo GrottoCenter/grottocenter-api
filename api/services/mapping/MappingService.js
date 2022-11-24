@@ -1064,11 +1064,6 @@ module.exports = {
     };
 
     result.id = source.id;
-    result.author =
-      source.author instanceof Object
-        ? module.exports.convertToCaverModel(source.author)
-        : source.author;
-
     // When comming from a duplicate list, the content can't be casted to a full document model.
     // Detect this "simple" content by checking the number of keys (2: document and description)
     if (Object.keys(source.content).length === 2) {
@@ -1076,24 +1071,19 @@ module.exports = {
     } else {
       result.content = module.exports.convertToDocumentModel(source.content);
     }
-
     result.datePublication = source.datePublication;
+
+    // Convert objects
+    result.author =
+      source.author instanceof Object
+        ? module.exports.convertToCaverModel(source.author)
+        : source.author;
     result.document =
       source.document instanceof Object
         ? module.exports.convertToDocumentModel(source.document)
         : source.document;
 
     return result;
-  },
-
-  convertToDocumentDuplicateList: (source) => {
-    const duplicates = [];
-    source.forEach((item) =>
-      duplicates.push(module.exports.convertToDocumentDuplicateModel(item))
-    );
-    return {
-      duplicates,
-    };
   },
 
   convertToEntranceDuplicateModel: (source) => {
@@ -1116,16 +1106,6 @@ module.exports = {
         : source.entrance;
 
     return result;
-  },
-
-  convertToEntranceDuplicateList: (source) => {
-    const duplicates = [];
-    source.forEach((item) =>
-      duplicates.push(module.exports.convertToEntranceDuplicateModel(item))
-    );
-    return {
-      duplicates,
-    };
   },
 
   convertToLanguageModel: (source) => {
