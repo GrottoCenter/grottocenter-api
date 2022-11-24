@@ -1,5 +1,10 @@
 const ControllerService = require('../../../services/ControllerService');
-const MappingService = require('../../../services/MappingService');
+const {
+  convertToSubjectModel,
+} = require('../../../services/mapping/MappingService');
+const {
+  convertToListFromController,
+} = require('../../../services/mapping/utils');
 
 module.exports = (req, res) => {
   const orSearchArray = [];
@@ -46,7 +51,8 @@ module.exports = (req, res) => {
         found,
         params,
         res,
-        MappingService.convertToSubjectList
+        (data) =>
+          convertToListFromController('subjects', data, convertToSubjectModel)
       );
     });
 };

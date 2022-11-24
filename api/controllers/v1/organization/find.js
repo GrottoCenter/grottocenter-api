@@ -1,7 +1,7 @@
 const ControllerService = require('../../../services/ControllerService');
 const ErrorService = require('../../../services/ErrorService');
 const GrottoService = require('../../../services/GrottoService');
-const MappingService = require('../../../services/MappingService');
+const MappingService = require('../../../services/mapping/MappingService');
 
 module.exports = async (req, res) => {
   try {

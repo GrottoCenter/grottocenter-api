@@ -1,5 +1,5 @@
 const ControllerService = require('../../../services/ControllerService');
-const MappingService = require('../../../services/MappingService');
+const MappingService = require('../../../services/mapping/MappingService');
 
 module.exports = (req, res) => {
   TSubject.findOne(req.param('code'))

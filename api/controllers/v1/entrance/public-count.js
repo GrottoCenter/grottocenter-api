@@ -1,4 +1,4 @@
-const MappingService = require('../../../services/MappingService');
+const MappingService = require('../../../services/mapping/MappingService');
 
 module.exports = (req, res) => {
   TEntrance.count({ isPublic: true })

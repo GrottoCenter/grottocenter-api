@@ -1,7 +1,7 @@
 const CaveService = require('../../../services/CaveService');
 const ControllerService = require('../../../services/ControllerService');
 const ErrorService = require('../../../services/ErrorService');
-const MappingService = require('../../../services/MappingService');
+const MappingService = require('../../../services/mapping/MappingService');
 const NameService = require('../../../services/NameService');
 const {
   NOTIFICATION_TYPES,
