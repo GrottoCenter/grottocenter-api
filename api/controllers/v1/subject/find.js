@@ -1,5 +1,5 @@
 const ControllerService = require('../../../services/ControllerService');
-const MappingService = require('../../../services/mapping/MappingService');
+const { toSubject } = require('../../../services/mapping/converters');
 
 module.exports = (req, res) => {
   TSubject.findOne(req.param('code'))
@@ -17,7 +17,7 @@ module.exports = (req, res) => {
         found,
         params,
         res,
-        MappingService.convertToSubjectModel
+        toSubject
       );
     });
 };

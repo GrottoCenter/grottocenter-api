@@ -1,10 +1,6 @@
 const ControllerService = require('../../../services/ControllerService');
-const {
-  convertToSubjectModel,
-} = require('../../../services/mapping/MappingService');
-const {
-  convertToListFromController,
-} = require('../../../services/mapping/utils');
+const { toSubject } = require('../../../services/mapping/converters');
+const { toListFromController } = require('../../../services/mapping/utils');
 
 module.exports = (req, res) => {
   TSubject.find()
@@ -20,8 +16,7 @@ module.exports = (req, res) => {
         found,
         params,
         res,
-        (data) =>
-          convertToListFromController('subjects', data, convertToSubjectModel)
+        (data) => toListFromController('subjects', data, toSubject)
       );
     });
 };

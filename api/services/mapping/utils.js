@@ -1,3 +1,5 @@
+const ramda = require('ramda');
+
 module.exports = {
   /**
    * Apply a function to each item of an array of data. If data[key] is not an Array, return it as is.
@@ -6,7 +8,7 @@ module.exports = {
    * @param {(item) => Array} fn function to apply to each data item
    * @returns {Array | Object}
    */
-  convertToList: (key, data, fn) => {
+  toList: (key, data, fn) => {
     // Check arguments
     if (!data[key]) {
       return [];
@@ -28,7 +30,16 @@ module.exports = {
    * @param {*} fn
    * @returns {Object}
    */
-  convertToListFromController: (key, data, fn) => ({
-    [key]: module.exports.convertToList(key, { [key]: data }, fn),
+  toListFromController: (key, data, fn) => ({
+    [key]: module.exports.toList(key, { [key]: data }, fn),
   }),
+
+  getMainName: (source) => {
+    let mainName = ramda.pathOr(null, ['name'], source); // from Elasticsearch, name is the mainName
+    if (mainName === null && source.names instanceof Array) {
+      mainName = source.names.find((name) => name.isMain);
+      mainName = mainName === undefined ? null : mainName.name;
+    }
+    return mainName;
+  },
 };

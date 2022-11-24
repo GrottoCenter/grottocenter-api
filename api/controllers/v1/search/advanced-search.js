@@ -1,9 +1,12 @@
 const ControllerService = require('../../../services/ControllerService');
-const MappingService = require('../../../services/mapping/MappingService');
 const ElasticsearchService = require('../../../services/ElasticsearchService');
 const {
   INDEX_NAMES,
 } = require('../../../../config/constants/elasticsearch-indexes');
+const { toSearchResult } = require('../../../services/mapping/converters');
+const {
+  toCompleteSearchResult,
+} = require('../../../services/mapping/converters');
 
 /**
  * Perform an advanced search using multiple URL parameters :
@@ -45,7 +48,7 @@ module.exports = (req, res) => {
           results,
           params,
           res,
-          MappingService.convertToCompleteSearchResult
+          toCompleteSearchResult
         );
       }
       return ControllerService.treatAndConvert(
@@ -54,7 +57,7 @@ module.exports = (req, res) => {
         results,
         params,
         res,
-        MappingService.convertEsToSearchResult
+        toSearchResult
       );
     })
     .catch((err) =>
@@ -64,7 +67,7 @@ module.exports = (req, res) => {
         undefined,
         params,
         res,
-        MappingService.convertEsToSearchResult
+        toSearchResult
       )
     );
 };

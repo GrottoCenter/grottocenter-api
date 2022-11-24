@@ -1,6 +1,5 @@
 const ControllerService = require('../../../services/ControllerService');
 const ErrorService = require('../../../services/ErrorService');
-const MappingService = require('../../../services/mapping/MappingService');
 const RightService = require('../../../services/RightService');
 const MassifService = require('../../../services/MassifService');
 const NameService = require('../../../services/NameService');
@@ -9,6 +8,7 @@ const {
   NOTIFICATION_TYPES,
   NOTIFICATION_ENTITIES,
 } = require('../../../services/NotificationService');
+const { toMassif } = require('../../../services/mapping/converters');
 
 module.exports = async (req, res) => {
   // Check right
@@ -71,7 +71,7 @@ module.exports = async (req, res) => {
       updatedMassif,
       params,
       res,
-      MappingService.convertToMassifModel
+      toMassif
     );
   } catch (e) {
     return ErrorService.getDefaultErrorHandler(res)(e);

@@ -1,7 +1,9 @@
 const ControllerService = require('../../../services/ControllerService');
-const MappingService = require('../../../services/mapping/MappingService');
 const ElasticsearchService = require('../../../services/ElasticsearchService');
-
+const { toSearchResult } = require('../../../services/mapping/converters');
+const {
+  toCompleteSearchResult,
+} = require('../../../services/mapping/converters');
 /**
  * Perform a quick search using multiple URL parameters:
  * - query: string to search for (MANDATORY)
@@ -45,9 +47,7 @@ module.exports = (req, res) => {
         results,
         params,
         res,
-        complete
-          ? MappingService.convertToCompleteSearchResult
-          : MappingService.convertEsToSearchResult
+        complete ? toCompleteSearchResult : toSearchResult
       )
     )
     .catch((err) =>
@@ -57,7 +57,7 @@ module.exports = (req, res) => {
         undefined,
         params,
         res,
-        MappingService.convertEsToSearchResult
+        toSearchResult
       )
     );
 };
