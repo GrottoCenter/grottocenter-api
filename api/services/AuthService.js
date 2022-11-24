@@ -54,11 +54,7 @@ function getOldGCpassword(login, password) {
 function verifyPassword(user, password) {
   const oldHash = getOldGCpassword(user.login, password);
   const newHash = createHashedPassword(password);
-  return (
-    user.password === password ||
-    user.password === oldHash ||
-    user.password === newHash
-  );
+  return user.password === oldHash || user.password === newHash;
 }
 
 passport.serializeUser((user, done) => {

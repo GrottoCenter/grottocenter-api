@@ -27,7 +27,6 @@ describe('Organization features', () => {
           customMessage: 'Great city !',
           latitude: 43.62505,
           longitude: 3.862038,
-
           mail: 'organization@organization.com',
           name: { text: 'Organisation Montpellier', languge: 'fr' },
           postalCode: '84000',

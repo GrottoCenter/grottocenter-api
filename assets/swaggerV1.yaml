@@ -2810,8 +2810,6 @@ components:
           type: integer
         language:
           type: string
-        mail:
-          type: string
         name:
           type: string
         nickname:
