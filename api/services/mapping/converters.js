@@ -321,8 +321,14 @@ module.exports = {
     result.validationComment = source.validationComment;
 
     // Convert objects
-    const { toCaver, toDocument, toFile, toOrganization, toSubject } =
-      module.exports;
+    const {
+      toCaver,
+      toDescription,
+      toDocument,
+      toFile,
+      toOrganization,
+      toSubject,
+    } = module.exports;
     result.author =
       source.author instanceof Object ? toCaver(source.author) : source.author;
 
@@ -345,19 +351,6 @@ module.exports = {
       source.parent instanceof Object
         ? toDocument(source.parent)
         : source.parent;
-
-    // source.descriptions contains both title and descriptions (in .title and .body)
-    // Split them in 2 different attributes
-    if (source.descriptions) {
-      result.descriptions = source.descriptions.map((d) => ({
-        ...ramda.omit(['title', 'body'], d),
-        text: d.body,
-      }));
-      result.titles = source.descriptions.map((d) => ({
-        ...ramda.omit(['title', 'body'], d),
-        text: d.title,
-      }));
-    }
 
     if (source.identifierType instanceof Object) {
       result.identifierType = {
@@ -420,6 +413,18 @@ module.exports = {
     result.authors = toList('authors', source, toCaver);
     result.children = toList('children', source, toDocument);
     result.files = toList('files', source, toFile);
+    const formattedDescriptions = toList('descriptions', source, toDescription);
+
+    // source.descriptions contains both title and descriptions (in .title and .body)
+    // Split them in 2 different attributes
+    result.descriptions = formattedDescriptions.map((d) => ({
+      ...ramda.omit(['title', 'body'], d),
+      text: d.body,
+    }));
+    result.titles = formattedDescriptions.map((d) => ({
+      ...ramda.omit(['title', 'body'], d),
+      text: d.title,
+    }));
 
     if (source.subjects instanceof Array) {
       result.subjects = toList('subjects', source, toSubject);
