@@ -77,7 +77,7 @@ module.exports = async (req, res) => {
 
       // Populate names & descriptions
       if (found.editor) {
-        await NameService.setNames(found.editor, 'grotto');
+        await NameService.setNames([found.editor], 'grotto');
       }
       if (found.parent) {
         await DescriptionService.setDocumentDescriptions(found.parent, false);
