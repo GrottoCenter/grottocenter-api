@@ -1,6 +1,6 @@
 module.exports = {
   /**
-   * @param {string} entitiesToComplete collection of entities for which we want the names
+   * @param {[string]} entitiesToComplete collection of entities for which we want the names
    * @param {string} entitiesType should be one of: cave, entrance, grotto, massif, point
    *
    * @returns {Promise} the entities with their attribute "names" completed
