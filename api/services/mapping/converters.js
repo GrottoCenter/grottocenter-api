@@ -694,7 +694,8 @@ module.exports = {
     result.nbEntrances = source['nb entrances']; // from Elasticsearch
 
     // Convert objects
-    const { toCave, toCaver, toDocument, toEntrance } = module.exports;
+    const { toCave, toCaver, toDescription, toDocument, toEntrance } =
+      module.exports;
     result.author =
       source.author instanceof Object ? toCaver(source.author) : source.author;
     result.reviewer =
@@ -704,7 +705,7 @@ module.exports = {
 
     // Convert collections
     result.entrances = toList('entrances', source, toEntrance);
-    result.descriptions = toList('entrances', source, toEntrance);
+    result.descriptions = toList('descriptions', source, toDescription);
     result.documents = toList('documents', source, toDocument);
     result.networks = toList('networks', source, toCave);
 
