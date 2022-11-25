@@ -345,11 +345,8 @@ module.exports = {
             );
           } else if (massifId) {
             entityMassifIds = [safeGetPropId('massif', populatedEntity)];
-          } else {
-            throw new Error(
-              `Can't retrieve related cave, entrance or massif id.`
-            );
           }
+          // A document can relate to no massif / cave / entrance
           break;
         }
         case NOTIFICATION_ENTITIES.ENTRANCE:
