@@ -52,7 +52,7 @@ module.exports = async (req, res) => {
       mail: req.param('email'),
       name: req.param('name') === '' ? null : req.param('name'),
       nickname: req.param('nickname'),
-      password: AuthService.createHashedPassword(req.param('password')),
+      password: await AuthService.createHashedPassword(req.param('password')),
       surname: req.param('surname') === '' ? null : req.param('surname'),
     }).fetch();
     const userGroup = await TGroup.findOne({ name: 'User' });

@@ -34,7 +34,7 @@ INSERT INTO public.t_caver (
 VALUES (
 		0,
 		'deleted',
-		'cb8a695e838008d4a7d5968cd1cf6adc89292b539dfe502ca797d6066fb3f0d9', -- welcome1
+		'$argon2id$v=19$m=65536,t=3,p=4$uhUWVLfyiprNpi2kp7250Q$/h5Q3hfOOGse4w/3QGcacAQq2qUTzXc+dczYoCUEQEY', -- welcome1
 		false,
 		'0',
 		false,
@@ -57,7 +57,7 @@ VALUES (
 	(
 		1,
 		'AdrienAdmin',
-		'1ab6d1827c34fae5b90b8124cd04e45416100fda52a104d8b2748c777d09d3f4', -- admin@admin.com
+		'$argon2id$v=19$m=65536,t=3,p=4$2qvWZcXYTJgAkZ8ee7ku6A$P+R+rYEqD0kwyXpHLo8jHq7CarBWxqu5BYY2eMqe9kU', -- admin@admin.com
 		true,
 		'0',
 		false,
@@ -80,7 +80,7 @@ VALUES (
 	(
 		2,
 		'MelvilMode',
-		'2e66bf3b2138aa4b870a023483301af16eddfd152a726675b04ba34f9f057d9d', -- moderator@moderator.com
+		'$argon2id$v=19$m=65536,t=3,p=4$iP+UY7Kj4/YqzDk0x0Q9UQ$BwvXtzopaVFQKv4po3O+ssoPgqz41grt15XHFEWMYsI', -- moderator@moderator.com
 		true,
 		'0',
 		false,
@@ -103,7 +103,7 @@ VALUES (
 	(
 		3,
 		'UrsulleUse',
-		'8c28b6cb3780c511566cdd96ff3b7e1f57048996490ab6540297b8edfdd5e71a', -- user@user.com
+		'$argon2id$v=19$m=65536,t=3,p=4$HcA9eJYiIi4zOrh5vY61nw$SW/4XfLZ6vX/Ig9IA3WLeevWnurUFN/qgPyp4xJnoVI', -- user@user.com
 		true,
 		'0',
 		false,
@@ -126,7 +126,7 @@ VALUES (
 	(
 		4,
 		'LéaLead',
-		'0564c91382ac3cca0a2ca615084a19ecc1039bf47ea61dcc5e6571a4b9995b95', -- leader@leader.com
+		'$argon2id$v=19$m=65536,t=3,p=4$PjrfI1N70vZpWCV8Uiq2iQ$MIE+x7UC2zpclRZ6n63/7v9OGNJAKiM4lrt3Jx3wlnc', -- leader@leader.com
 		true,
 		'0',
 		false,
@@ -149,7 +149,7 @@ VALUES (
 	(
 		5,
 		'AlexAll',
-		'c2a258596a298372e3850819679408854dea1e7a327066052020fa5f542b9a6b', -- all@all.com
+		'$argon2id$v=19$m=65536,t=3,p=4$yIKg8kYOVGG/kAQGppE+Fg$TfGgkdL8MjYRrIDBc/vF9lcOapF9N0AS7MESdHd5UZw', -- all@all.com
 		true,
 		'0',
 		false,
@@ -172,7 +172,7 @@ VALUES (
 	(
 		6,
 		'JohnDoe',
-		'ac2960d3f8562a8e79be81db060f2ab8f7d1ad53850cda1d5c842ca8ae36b5b6', -- john@doe.com
+		'$argon2id$v=19$m=65536,t=3,p=4$7+koFbytXg3QSlsSbTS5Gw$/wha3q/nVjOztNKRsGnVNPXn5l+5uBoRELQ46VyLj5U', -- john@doe.com
 		true,
 		'0',
 		false,

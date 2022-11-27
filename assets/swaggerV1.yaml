@@ -1591,7 +1591,11 @@ paths:
                 $ref: '#/components/schemas/Auth-success'
 
         '401':
-          description: Invalid email or password.
+          description: Invalid email or password or the password must be reset first.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Auth-error'
 
   '/signup':
     post:
@@ -2732,9 +2736,20 @@ components:
     Auth-success:
       type: object
       properties:
+        status:
+          type: string
+          enum: [Success]
         token:
           type: string
 
+    Auth-error:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [Mismatch, MustReset]
+        message:
+          type: string
     Cave:
       type: object
       properties:

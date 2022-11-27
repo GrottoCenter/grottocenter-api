@@ -1,94 +1,44 @@
-/**
- */
-const tokenSalt = process.env.TOKEN_SALT
-  ? process.env.TOKEN_SALT
-  : 'aR4nd0mT0kenSalt';
-module.exports.tokenSalt = tokenSalt;
+const argon2 = require('argon2');
+const util = require('util');
 
-const passport = require('passport');
-const LocalStrategy = require('passport-local').Strategy;
-const crypto = require('crypto');
-
-function findCaver(sessionUser, fn) {
-  TCaver.findOne(sessionUser.id).exec((err, user) => {
-    if (err) {
-      return fn(null, null);
-    }
-    return fn(null, user);
-  });
-}
-
-function md5(string) {
-  return crypto.createHash('md5').update(string).digest('hex');
-}
-
-function addslashes(str) {
-  // From: http://phpjs.org/functions
-  // *     example 1: addslashes("kevin's birthday");
-  // *     returns 1: 'kevin\'s birthday'
-  // eslint-disable-next-line no-control-regex
-  return `${str}`.replace(/[\\"']/g, '\\$&').replace(/\u0000/g, '\\0');
-}
+const setTimeoutP = util.promisify(setTimeout);
 
 /**
- * GC3 hashing password algorithm
+ * GC3 hashing password algorithm (argon2id)
  * @param {String} password
  */
-const createHashedPassword = (password) => {
-  const hash = crypto.createHmac('sha256', tokenSalt);
-  hash.update(password);
-  const value = hash.digest('hex');
-  return value;
-};
+async function createHashedPassword(password) {
+  return argon2.hash(password);
+}
 module.exports.createHashedPassword = createHashedPassword;
 
+const authenticateResult = {
+  SUCCESS: 'SUCCESS',
+  MISMATCH: 'MISMATCH',
+  MUST_RESET: 'MUST_RESET',
+};
+module.exports.authenticateResult = authenticateResult;
+
 /**
- * GC2 hashing password algorithm (only used for old accounts)
- * @param {String} login
+ * Authenticate a caver on GC3
+ * @param {String} email
  * @param {String} password
  */
-function getOldGCpassword(login, password) {
-  return addslashes(md5(`${login}*${password}`));
+async function authenticate(email, password) {
+  await setTimeoutP(500); // Basic brute force prevention
+
+  if (!email || !password) return { status: authenticateResult.MISMATCH };
+
+  const user = await TCaver.findOne({ mail: email }).populate('groups');
+
+  if (!user) return { status: authenticateResult.MISMATCH };
+  if (!user.password?.startsWith('$argon2'))
+    return { status: authenticateResult.MUST_RESET };
+
+  const isHashMatch = await argon2.verify(user.password, password);
+  if (!isHashMatch) return { status: authenticateResult.MISMATCH };
+
+  return { status: authenticateResult.SUCCESS, user };
 }
+module.exports.authenticate = authenticate;
 
-function verifyPassword(user, password) {
-  const oldHash = getOldGCpassword(user.login, password);
-  const newHash = createHashedPassword(password);
-  return user.password === oldHash || user.password === newHash;
-}
-
-passport.serializeUser((user, done) => {
-  done(null, user);
-});
-
-passport.deserializeUser((user, done) => {
-  findCaver(user, (err, cbUser) => {
-    done(err, cbUser);
-  });
-});
-
-passport.use(
-  new LocalStrategy(
-    {
-      usernameField: 'email', // which property to search on the JSON login request?
-    },
-    (email, password, done) => {
-      TCaver.findOne({
-        mail: email,
-      })
-        .populate('groups')
-        .exec((err, user) => {
-          if (err) {
-            return done(err);
-          }
-          if (!user) {
-            return done(null, false);
-          }
-          if (!verifyPassword(user, password)) {
-            return done(null, false);
-          }
-          return done(null, user);
-        });
-    }
-  )
-);
