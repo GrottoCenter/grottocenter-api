@@ -142,7 +142,7 @@ CREATE TABLE j_group_right (
 CREATE TABLE t_caver (
 	id serial NOT NULL,
 	login varchar(20) NULL,
-	"password" varchar(64) NULL,
+	"password" varchar(100) NULL,
 	activated bool NOT NULL DEFAULT false,
 	activation_code varchar(64) NULL,
 	banned bool NOT NULL DEFAULT false,
