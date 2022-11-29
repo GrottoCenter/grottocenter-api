@@ -75,23 +75,32 @@ module.exports = {
    * @param {Integer} caverId
    * @param {Object} req
    * @throws Sails ORM errors (see https://sailsjs.com/documentation/concepts/models-and-orm/errors)
-   * @description Get a caver by his id and populate it according to the user rights (using req).
+   * @description Get a caver by his id and populate it according to the user rights.
    * @returns {Object}
    */
-  getCaver: async (caverId, req) => {
-    const caver = await TCaver.findOne(caverId)
-      .populate('documents')
-      .populate('exploredEntrances')
-      .populate('grottos')
-      .populate('groups');
+  getCaver: async (
+    caverId,
+    tokenData,
+    { shouldIncludesJoinTables = false } = {}
+  ) => {
+    let caver;
+    if (shouldIncludesJoinTables) {
+      caver = await TCaver.findOne(caverId)
+        .populate('documents')
+        .populate('exploredEntrances')
+        .populate('grottos')
+        .populate('groups');
+    } else {
+      caver = await TCaver.findOne(caverId);
+    }
 
     if (!caver) return caver; // not found return
 
     // Check complete view right
-    const hasCompleteViewRight = req.token
+    const hasCompleteViewRight = tokenData
       ? await sails.helpers.checkRight
           .with({
-            groups: req.token.groups,
+            groups: tokenData.groups,
             rightEntity: RightService.RightEntities.CAVER,
             rightAction: RightService.RightActions.VIEW_COMPLETE,
           })
@@ -105,11 +114,11 @@ module.exports = {
     // Delete sensitive data
     delete caver.activationCode;
     delete caver.password;
-    caver.exploredEntrances = caver.exploredEntrances.filter(
+    caver.exploredEntrances = caver.exploredEntrances?.filter(
       (entrance) => entrance.isPublic
     );
 
-    if (req.token && Number(caverId) === req.token.id) {
+    if (tokenData && Number(caverId) === tokenData.id) {
       return caver;
     }
 

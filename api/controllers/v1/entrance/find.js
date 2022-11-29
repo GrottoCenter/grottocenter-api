@@ -54,7 +54,7 @@ module.exports = async (req, res) => {
         await NameService.setNames([entrance.cave], 'cave');
         entrance.cave.id_author = await CaverService.getCaver(
           entrance.cave.id_author,
-          req
+          req.token
         ); // using id_author because of a bug in Sails ORM... See TCave() file for explaination
       }
 

@@ -10,7 +10,9 @@ module.exports = async (req, res) => {
   const params = {};
   params.searchedItem = `Caver of id ${caverId}`;
 
-  const caverFound = await CaverService.getCaver(caverId, req);
+  const caverFound = await CaverService.getCaver(caverId, req.token, {
+    shouldIncludesJoinTables: true,
+  });
 
   if (!caverFound) {
     return res.notFound({ error: `${params.searchedItem} not found` });

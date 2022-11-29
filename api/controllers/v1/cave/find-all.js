@@ -28,7 +28,7 @@ module.exports = async (req, res) => {
       const populatePromise = found.map((cave) => {
         cave.histories.map(async (h) => {
           // eslint-disable-next-line no-param-reassign
-          h.author = await CaverService.getCaver(h.author, req);
+          h.author = await CaverService.getCaver(h.author, req.token);
           return h;
         });
         return cave;
