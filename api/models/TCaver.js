@@ -30,7 +30,7 @@ module.exports = {
       type: 'string',
       columnName: 'password',
       allowNull: true,
-      maxLength: 64,
+      maxLength: 100,
     },
 
     activated: {

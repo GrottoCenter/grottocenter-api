@@ -5,7 +5,7 @@
     "name": "Adrien",
     "nickname": "Admin1",
     "surname": "Admo",
-    "password": "d4baeedef5db4a9424b2c340323d2ee2c374cbd05196a7c108faf080a1dc4c26",
+    "password": "$argon2id$v=19$m=4096,t=3,p=4$cXY0Z2ljNG41ejAwMDAwMA$pXwJA/uLYjE0XcXbLbL9GNrzztGZ9VBmOUosrXE6LAk",
     "_comment": "The password is 'testtest'",
     "alertForNews": "false",
     "language": "fra",
@@ -19,7 +19,7 @@
     "login": "moderator1",
     "mail": "moderator1@moderator1.com",
     "nickname": "Moderator1",
-    "password": "d4baeedef5db4a9424b2c340323d2ee2c374cbd05196a7c108faf080a1dc4c26",
+    "password": "$argon2id$v=19$m=4096,t=3,p=4$cXY0Z2ljNG41ejAwMDAwMA$pXwJA/uLYjE0XcXbLbL9GNrzztGZ9VBmOUosrXE6LAk",
     "alertForNews": "false",
     "language": "fra",
     "groups": [2]
@@ -28,7 +28,7 @@
     "login": "user1",
     "mail": "user1@user1.com",
     "nickname": "User1",
-    "password": "d4baeedef5db4a9424b2c340323d2ee2c374cbd05196a7c108faf080a1dc4c26",
+    "password": "$argon2id$v=19$m=4096,t=3,p=4$cXY0Z2ljNG41ejAwMDAwMA$pXwJA/uLYjE0XcXbLbL9GNrzztGZ9VBmOUosrXE6LAk",
     "alertForNews": "false",
     "language": "fra",
     "groups": [3]
@@ -37,7 +37,7 @@
     "login": "All1",
     "mail": "all1@all1.com",
     "nickname": "All1",
-    "password": "d4baeedef5db4a9424b2c340323d2ee2c374cbd05196a7c108faf080a1dc4c26",
+    "password": "$argon2id$v=19$m=4096,t=3,p=4$cXY0Z2ljNG41ejAwMDAwMA$pXwJA/uLYjE0XcXbLbL9GNrzztGZ9VBmOUosrXE6LAk",
     "alertForNews": "false",
     "language": "fra",
     "groups": [1, 2, 3, 4, 5]
@@ -56,7 +56,7 @@
     "name": "Axel",
     "nickname": "Caver1",
     "surname": "Cavo",
-    "password": "password",
+    "password": "$argon2id$v=19$m=4096,t=3,p=4$cXY0Z2ljNG41ejAwMDAwMA$pXwJA/uLYjE0XcXbLbL9GNrzztGZ9VBmOUosrXE6LAk",
     "activationCode": "activationCode",
     "alertForNews": "false",
     "language": "fra",
@@ -70,7 +70,7 @@
     "login": "leader1",
     "mail": "leader1@leader1.com",
     "nickname": "Leader1",
-    "password": "d4baeedef5db4a9424b2c340323d2ee2c374cbd05196a7c108faf080a1dc4c26",
+    "password": "$argon2id$v=19$m=4096,t=3,p=4$cXY0Z2ljNG41ejAwMDAwMA$pXwJA/uLYjE0XcXbLbL9GNrzztGZ9VBmOUosrXE6LAk",
     "alertForNews": "false",
     "language": "fra",
     "groups": [5]

@@ -25,8 +25,6 @@ module.exports.http = {
    *************************************************************************** */
 
   middleware: {
-    passportInit: require('passport').initialize(),
-
     // Requests limiter configuration
     generalRateLimit: rateLimiter.generalRateLimit,
     userDeleteRateLimit: rateLimiter.userDeleteRateLimit,
@@ -40,9 +38,6 @@ module.exports.http = {
      ************************************************************************** */
 
     order: [
-      'cookieParser',
-      'session',
-      'passportInit',
       'parseAuthToken',
       'generalRateLimit',
       'userDeleteRateLimit',

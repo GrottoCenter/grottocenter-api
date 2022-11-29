@@ -1,34 +1,34 @@
-const passport = require('passport');
 const AuthService = require('../../../services/AuthService');
 const TokenService = require('../../../services/TokenService');
 
-const { tokenSalt } = AuthService;
-
-module.exports = (req, res) => {
-  // eslint-disable-next-line consistent-return
-  passport.authenticate('local', (err, user) => {
-    if (!err && !user) {
-      return res.unauthorized({ message: 'Invalid email or password.' });
-    }
-    if (err) {
-      return res.serverError({
-        message: `Error while trying to log in: ${err}`,
+module.exports = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const result = await AuthService.authenticate(email, password);
+    if (result.status === AuthService.authenticateResult.MUST_RESET) {
+      return res.unauthorized({
+        status: 'MustReset',
+        message: 'Password needs to be reset',
       });
     }
-    req.logIn(user, (loginErr) => {
-      if (loginErr) return res.json({ message: loginErr });
-      req.session.authenticated = true;
-      const token = TokenService.issue(
-        {
-          id: user.id,
-          groups: user.groups,
-          nickname: user.nickname,
-        },
-        sails.config.custom.authTokenTTL,
-        'Authentication',
-        tokenSalt
-      );
-      return res.json({ token });
-    });
-  })(req, res);
+
+    if (result.status !== AuthService.authenticateResult.SUCCESS) {
+      return res.unauthorized({
+        status: 'Mismatch',
+        message: 'Invalid email or password.',
+      });
+    }
+    const token = TokenService.issue(
+      {
+        id: result.user.id,
+        groups: result.user.groups,
+        nickname: result.user.nickname,
+      },
+      sails.config.custom.authTokenTTL,
+      'Authentication'
+    );
+    return res.json({ status: 'Success', token });
+  } catch (err) {
+    return res.serverError({ message: `Error while trying to log in: ${err}` });
+  }
 };
