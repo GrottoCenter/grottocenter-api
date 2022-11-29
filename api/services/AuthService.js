@@ -41,4 +41,3 @@ async function authenticate(email, password) {
   return { status: authenticateResult.SUCCESS, user };
 }
 module.exports.authenticate = authenticate;
-
