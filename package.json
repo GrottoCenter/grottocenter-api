@@ -16,7 +16,7 @@
     "dotenv": "^16.0.3",
     "ejs": "^3.1.8",
     "elasticsearch": "^16.7.3",
-    "express-rate-limit": "^6.6.0",
+    "express-rate-limit": "^6.7.0",
     "feed-read": "^0.0.1",
     "isomorphic-fetch": "^3.0.0",
     "jsonwebtoken": "^8.5.1",
