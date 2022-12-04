@@ -3,27 +3,20 @@ const ramda = require('ramda');
 const { postgreIntervalObjectToDbString } = require('../CommentService');
 const CaveModel = require('./models/CaveModel');
 const CaverModel = require('./models/CaverModel');
-const CommentModel = require('./models/CommentModel');
-const CountResultModel = require('./models/CountResultModel');
-const DescriptionModel = require('./models/DescriptionModel');
 const DocumentModel = require('./models/DocumentModel');
 const EntranceModel = require('./models/EntranceModel');
 const DocumentDuplicateModel = require('./models/DocumentDuplicateModel');
 const EntranceDuplicateModel = require('./models/EntranceDuplicateModel');
-const HistoryModel = require('./models/HistoryModel');
 const LanguageModel = require('./models/LanguageModel');
-const LocationModel = require('./models/LocationModel');
 const MassifModel = require('./models/MassifModel');
-const NameModel = require('./models/NameModel');
 const NotificationModel = require('./models/NotificationModel');
 const OrganizationModel = require('./models/OrganizationModel');
-const RiggingModel = require('./models/RiggingModel');
 const SubjectModel = require('./models/SubjectModel');
-const { getMainName, toList } = require('./utils');
+const { getMainName, toList, convertIfObject } = require('./utils');
 const FileService = require('../FileService');
 const RiggingService = require('../RiggingService');
 
-module.exports = {
+const c = {
   toCave: (source) => {
     const result = {
       ...CaveModel,
@@ -40,32 +33,29 @@ module.exports = {
     result.length = source.length;
     result.longitude = parseFloat(source.longitude);
     result.name = getMainName(source);
-    result.names = source.names;
     result.temperature = source.temperature;
 
     // Convert objects
-    result.author =
-      source.id_author instanceof Object
-        ? module.exports.toCaver(source.id_author)
-        : source.id_author;
-
-    result.reviewer =
-      source.id_reviewer instanceof Object
-        ? module.exports.toCaver(source.id_reviewer)
-        : source.id_reviewer;
-
-    // Convert collections
-    const { toEntrance, toDescription, toDocument, toHistory, toMassif } =
-      module.exports;
-
-    result.descriptions = toList('descriptions', source, toDescription);
-    result.entrances = toList('entrances', source, toEntrance);
-    result.documents = toList('documents', source, toDocument);
-    result.histories = toList('histories', source, toHistory);
-    result.massifs = toList('massifs', source, toMassif);
+    result.author = convertIfObject(source.id_author, c.toCaverShort);
+    result.reviewer = convertIfObject(source.id_reviewer, c.toCaverShort);
+    result.names = toList('names', source, c.toName);
+    result.descriptions = toList('descriptions', source, c.toDescription);
+    result.entrances = toList('entrances', source, c.toEntranceShort);
+    result.documents = toList('documents', source, c.toDocument);
+    result.histories = toList('histories', source, c.toHistory);
+    result.massifs = toList('massifs', source, c.toMassif);
 
     return result;
   },
+  toCaveShort: (source) => ({
+    id: source.id,
+    name: getMainName(source),
+    length: source.length,
+    depth: source.depth,
+    temperature: source.temperature,
+    isDiving: source.is_diving,
+    entrances: toList('entrances', source, c.toEntranceShort),
+  }),
 
   toCaver: (source) => {
     const result = {
@@ -130,48 +120,29 @@ module.exports = {
     return result;
   },
 
-  toComment: (source) => {
-    const result = {
-      ...CommentModel,
-    };
+  toCaverShort: (source) => ({
+    id: source.id,
+    nickname: source.nickname,
+  }),
 
-    result.aestheticism = source.aestheticism;
-    result.approach = source.approach;
-    result.body = source.body;
-    result.caving = source.caving;
-    result.dateInscription = source.dateInscription;
-    result.dateReviewed = source.dateReviewed;
-    result.eTTrail = postgreIntervalObjectToDbString(source.eTTrail);
-    result.eTUnderground = postgreIntervalObjectToDbString(
-      source.eTUnderground
-    );
-    result.id = source.id;
-    result.isDeleted = source.isDeleted;
-    result.point = source.point;
-    result.relevance = source.relevance;
-    result.title = source.title;
-
-    // Convert objects
-    const { toCave, toCaver, toEntrance, toLanguage } = module.exports;
-    result.author =
-      source.author instanceof Object ? toCaver(source.author) : source.author;
-    result.cave =
-      source.cave instanceof Object ? toCave(source.cave) : source.cave;
-    result.entrance =
-      source.entrance instanceof Object
-        ? toEntrance(source.entrance)
-        : source.entrance;
-    result.language =
-      source.language instanceof Object
-        ? toLanguage(source.language)
-        : source.language;
-    result.reviewer =
-      source.reviewer instanceof Object
-        ? toCaver(source.reviewer)
-        : source.reviewer;
-
-    return result;
-  },
+  toComment: (source) => ({
+    id: source.id,
+    isDeleted: source.isDeleted,
+    language: source.language,
+    title: source.title,
+    body: source.body,
+    dateInscription: source.dateInscription,
+    dateReviewed: source.dateReviewed,
+    relevance: source.relevance,
+    aestheticism: source.aestheticism,
+    approach: source.approach,
+    caving: source.caving,
+    eTTrail: postgreIntervalObjectToDbString(source.eTTrail),
+    eTUnderground: postgreIntervalObjectToDbString(source.eTUnderground),
+    // alert: source.alert; // TODO ?
+    author: convertIfObject(source.author, c.toCaverShort),
+    reviewer: convertIfObject(source.reviewer, c.toCaverShort),
+  }),
 
   toCompleteSearchResult: (source) => {
     const res = {};
@@ -228,57 +199,18 @@ module.exports = {
     return res;
   },
 
-  toCountResult: (source) => {
-    const result = {
-      ...CountResultModel,
-    };
-    result.count = source.count;
-    return result;
-  },
-
-  toDescription: (source) => {
-    const result = {
-      ...DescriptionModel,
-    };
-
-    result.body = source.body;
-    result.dateInscription = source.dateInscription;
-    result.dateReviewed = source.dateReviewed;
-    result.id = source.id;
-    result.point = source.point;
-    result.relevance = source.relevance;
-    result.title = source.title;
-
-    // Convert objects
-    const { toCave, toCaver, toDocument, toEntrance, toLanguage, toMassif } =
-      module.exports;
-    result.author =
-      source.author instanceof Object ? toCaver(source.author) : source.author;
-    result.cave =
-      source.cave instanceof Object ? toCave(source.cave) : source.cave;
-    result.document =
-      source.document instanceof Object
-        ? toDocument(source.document)
-        : source.document;
-    result.entrance =
-      source.entrance instanceof Object
-        ? toEntrance(source.entrance)
-        : source.entrance;
-    result.exit =
-      source.exit instanceof Object ? toEntrance(source.exit) : source.exist;
-    result.massif =
-      source.massif instanceof Object ? toMassif(source.massif) : source.massif;
-    result.reviewer =
-      source.reviewer instanceof Object
-        ? toCaver(source.reviewer)
-        : source.reviewer;
-    result.language =
-      source.language instanceof Object
-        ? toLanguage(source.language)
-        : source.language;
-
-    return result;
-  },
+  toDescription: (source) => ({
+    id: source.id,
+    language: source.language,
+    title: source.title,
+    body: source.body,
+    dateInscription: source.dateInscription,
+    dateReviewed: source.dateReviewed,
+    relevance: source.relevance,
+    // point: source.point,
+    author: convertIfObject(source.author, c.toCaverShort),
+    reviewer: convertIfObject(source.reviewer, c.toCaverShort),
+  }),
 
   toDocument: (source) => {
     const result = {
@@ -291,9 +223,7 @@ module.exports = {
     result.authorComment = source.authorComment;
     result.cave = source.cave;
     result.dateInscription = source.dateInscription;
-    result.datePublication = source.date_publication
-      ? source.date_publication
-      : source.datePublication;
+    result.datePublication = source.date_publication ?? source.datePublication;
     result.dateReviewed = source.dateReviewed;
     result.dateValidation = source.dateValidation;
     result.deletedFiles = source.deletedFiles;
@@ -329,18 +259,10 @@ module.exports = {
       toOrganization,
       toSubject,
     } = module.exports;
-    result.author =
-      source.author instanceof Object ? toCaver(source.author) : source.author;
 
-    result.reviewer =
-      source.reviewer instanceof Object
-        ? toCaver(source.reviewer)
-        : source.reviewer;
-
-    result.validator =
-      source.validator instanceof Object
-        ? toCaver(source.validator)
-        : source.validator;
+    result.author = convertIfObject(source.author, c.toCaverShort);
+    result.reviewer = convertIfObject(source.reviewer, c.toCaverShort);
+    result.validator = convertIfObject(source.validator, c.toCaverShort);
 
     result.authorizationDocument =
       source.authorizationDocument instanceof Object
@@ -505,7 +427,6 @@ module.exports = {
     result.latitude = parseFloat(source.latitude);
     result.longitude = parseFloat(source.longitude);
     result.name = getMainName(source);
-    result.names = source.names;
     result.postalCode = source.postalCode;
     result.precision = source.precision;
     result.region = source.region;
@@ -513,17 +434,6 @@ module.exports = {
     result.timeInfo = source.timeInfo;
 
     // Convert objects
-    const {
-      toCave,
-      toCaver,
-      toComment,
-      toDescription,
-      toDocument,
-      toHistory,
-      toLocation,
-      toRigging,
-    } = module.exports;
-
     if (source['cave name']) {
       // Elasticsearch
       result.cave = {
@@ -533,24 +443,24 @@ module.exports = {
         isDiving: source['cave is diving'],
       };
     } else if (source.cave instanceof Object) {
-      result.cave = toCave(source.cave);
+      result.cave = c.toCave(source.cave);
     } else {
       result.cave = source.cave;
     }
     // Once cave is populated, put the massifs at the root of the entrance
     // (more convenient for the client)
     result.massifs = ramda.pathOr(undefined, ['cave', 'massifs'], result);
-
-    result.author =
-      source.author instanceof Object ? toCaver(source.author) : source.author;
+    result.author = convertIfObject(source.author, c.toCaverShort);
+    result.reviewer = convertIfObject(source.reviewer, c.toCaverShort);
 
     // Convert collections
-    result.descriptions = toList('descriptions', source, toDescription);
-    result.comments = toList('comments', source, toComment);
-    result.documents = toList('documents', source, toDocument);
-    result.histories = toList('histories', source, toHistory);
-    result.locations = toList('locations', source, toLocation);
-    result.riggings = toList('riggings', source, toRigging);
+    result.names = toList('names', source, c.toName);
+    result.descriptions = toList('descriptions', source, c.toDescription);
+    result.comments = toList('comments', source, c.toComment);
+    result.documents = toList('documents', source, c.toDocument);
+    result.histories = toList('histories', source, c.toHistory);
+    result.locations = toList('locations', source, c.toLocation);
+    result.riggings = toList('riggings', source, c.toRigging);
 
     // Massif from Elasticsearch
     if (source['massif name']) {
@@ -561,6 +471,16 @@ module.exports = {
 
     return result;
   },
+
+  toEntranceShort: (source) => ({
+    id: source.id,
+    name: getMainName(source),
+    city: source.city,
+    county: source.county,
+    country: source.country,
+    latitude: parseFloat(source.latitude),
+    longitude: parseFloat(source.longitude),
+  }),
 
   toEntranceDuplicate: (source) => {
     const result = {
@@ -591,38 +511,17 @@ module.exports = {
     };
   },
 
-  toHistory: (source) => {
-    const result = {
-      ...HistoryModel,
-    };
-
-    result.body = source.body;
-    result.dateInscription = source.dateInscription;
-    result.dateReviewed = source.dateReviewed;
-    result.id = source.id;
-    result.point = source.point;
-    result.relevance = source.relevance;
-
-    // Convert objects
-    const { toCave, toCaver, toEntrance, toLanguage } = module.exports;
-    result.author =
-      source.author instanceof Object ? toCaver(source.author) : source.author;
-    result.cave =
-      source.cave instanceof Object ? toCave(source.cave) : source.cave;
-    result.entrance =
-      source.entrance instanceof Object
-        ? toEntrance(source.entrance)
-        : source.entrance;
-    result.reviewer =
-      source.reviewer instanceof Object
-        ? toCaver(source.reviewer)
-        : source.reviewer;
-    result.language =
-      source.language instanceof Object
-        ? toLanguage(source.language)
-        : source.language;
-    return result;
-  },
+  toHistory: (source) => ({
+    id: source.id,
+    body: source.body,
+    dateInscription: source.dateInscription,
+    dateReviewed: source.dateReviewed,
+    relevance: source.relevance,
+    language: source.language,
+    isDeleted: source.isDeleted,
+    author: convertIfObject(source.author, c.toCaverShort),
+    reviewer: convertIfObject(source.reviewer, c.toCaverShort),
+  }),
 
   toLanguage: (source) => {
     const result = {
@@ -646,37 +545,18 @@ module.exports = {
     return result;
   },
 
-  toLocation: (source) => {
-    const result = {
-      ...LocationModel,
-    };
-
-    result.body = source.body;
-    result.dateInscription = source.dateInscription;
-    result.dateReviewed = source.dateReviewed;
-    result.id = source.id;
-    result.relevance = source.relevance;
-    result.title = source.title;
-
-    // Convert objects
-    const { toCaver, toEntrance, toLanguage } = module.exports;
-    result.author =
-      source.author instanceof Object ? toCaver(source.author) : source.author;
-    result.entrance =
-      source.entrance instanceof Object
-        ? toEntrance(source.entrance)
-        : source.entrance;
-    result.language =
-      source.language instanceof Object
-        ? toLanguage(source.language)
-        : source.language;
-    result.reviewer =
-      source.reviewer instanceof Object
-        ? toCaver(source.reviewer)
-        : source.reviewer;
-
-    return result;
-  },
+  toLocation: (source) => ({
+    id: source.id,
+    body: source.body,
+    dateInscription: source.dateInscription,
+    dateReviewed: source.dateReviewed,
+    language: source.language,
+    relevance: source.relevance,
+    title: source.title,
+    isDeleted: source.isDeleted,
+    author: convertIfObject(source.author, c.toCaverShort),
+    reviewer: convertIfObject(source.reviewer, c.toCaverShort),
+  }),
 
   toMassif: (source) => {
     const result = {
@@ -712,43 +592,17 @@ module.exports = {
     return result;
   },
 
-  toName: (source) => {
-    const result = {
-      ...NameModel,
-    };
-
-    result.dateInscription = source.dateInscription;
-    result.dateReviewed = source.dateReviewed;
-    result.id = source.id;
-    result.isMain = source.isMain;
-    result.language = source.language;
-    result.name = source.name;
-    result.point = source.point;
-
-    // Convert objects
-    const { toCave, toCaver, toEntrance, toMassif, toOrganization } =
-      module.exports;
-    result.author =
-      source.author instanceof Object ? toCaver(source.author) : source.author;
-    result.cave =
-      source.cave instanceof Object ? toCave(source.cave) : source.cave;
-    result.entrance =
-      source.entrance instanceof Object
-        ? toEntrance(source.entrance)
-        : source.entrance;
-    result.massif =
-      source.massif instanceof Object ? toMassif(source.massif) : source.massif;
-    result.organization =
-      source.grotto instanceof Object
-        ? toOrganization(source.grotto)
-        : source.grotto;
-    result.reviewer =
-      source.reviewer instanceof Object
-        ? toCaver(source.reviewer)
-        : source.reviewer;
-
-    return result;
-  },
+  toName: (source) => ({
+    id: source.id,
+    name: source.name,
+    isMain: source.isMain,
+    language: source.language,
+    dateInscription: source.dateInscription,
+    dateReviewed: source.dateReviewed,
+    isDeleted: source.isDeleted,
+    author: convertIfObject(source.author, c.toCaverShort),
+    reviewer: convertIfObject(source.reviewer, c.toCaverShort),
+  }),
 
   toNotification: (source) => {
     const result = {
@@ -863,44 +717,18 @@ module.exports = {
     return result;
   },
 
-  toRigging: (source) => {
-    const result = {
-      ...RiggingModel,
-    };
-    result.anchors = source.anchors;
-    result.dateInscription = source.dateInscription;
-    result.dateReviewed = source.dateReviewed;
-    result.id = source.id;
-    result.isDeleted = source.isDeleted;
-    result.observations = source.observations;
-    result.obstacles = source.obstacles;
-    result.point = source.point;
-    result.relevance = source.relevance;
-    result.ropes = source.ropes;
-    result.title = source.title;
-    RiggingService.formatRiggingForAPI(result);
-
-    // Convert objects
-    const { toCave, toCaver, toEntrance, toLanguage } = module.exports;
-    result.author =
-      source.author instanceof Object ? toCaver(source.author) : source.author;
-    result.cave =
-      source.cave instanceof Object ? toCave(source.cave) : source.cave;
-    result.entrance =
-      source.entrance instanceof Object
-        ? toEntrance(source.entrance)
-        : source.entrance;
-    result.language =
-      source.language instanceof Object
-        ? toLanguage(source.language)
-        : source.language;
-    result.reviewer =
-      source.reviewer instanceof Object
-        ? toCaver(source.reviewer)
-        : source.reviewer;
-
-    return result;
-  },
+  toRigging: (source) => ({
+    id: source.id,
+    isDeleted: source.isDeleted,
+    title: source.title,
+    language: source.language,
+    dateInscription: source.dateInscription,
+    dateReviewed: source.dateReviewed,
+    relevance: source.relevance,
+    obstacles: RiggingService.deserializeForAPI(source),
+    author: convertIfObject(source.author, c.toCaverShort),
+    reviewer: convertIfObject(source.reviewer, c.toCaverShort),
+  }),
 
   toSearchResult: (source) => {
     const res = {};
@@ -1052,3 +880,5 @@ module.exports = {
     return result;
   },
 };
+
+module.exports = c;

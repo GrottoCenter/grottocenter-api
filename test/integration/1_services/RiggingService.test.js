@@ -20,8 +20,8 @@ describe('RiggingService', () => {
         observations: 'Etrier en place|;|Quitter avant le fond sur la gauche.',
       };
       const riggings = [rigging1, rigging2];
-      riggings.map((rig) => RiggingService.formatRiggingForAPI(rig));
-
+      for (const rig of riggings)
+        rig.obstacles = RiggingService.deserializeForAPI(rig);
       // Riggings length
       should(riggings.length).equal(2);
       should(riggings[0].obstacles.length).equal(3);
@@ -62,7 +62,7 @@ describe('RiggingService', () => {
           observation: 'manquant',
         },
       ];
-      const parsed = await RiggingService.parseAPIObstaclesArrForDB(obstacles);
+      const parsed = await RiggingService.serializeObstaclesForDB(obstacles);
       // Riggings content
       should(parsed.obstacles).equal('R3|;|R7|;|P70');
       should(parsed.ropes).equal('50 m|;|10 m|;|');
@@ -88,8 +88,8 @@ describe('RiggingService', () => {
         observations: 'Etrier en place|;|Quitter avant le fond sur la gauche.',
       };
       const riggings = [rigging1, rigging2];
-      riggings.map((rig) => RiggingService.formatRiggingForAPI(rig));
-
+      for (const rig of riggings)
+        rig.obstacles = RiggingService.deserializeForAPI(rig);
       // Riggings length
       should(riggings.length).equal(2);
       should(riggings[0].obstacles.length).equal(3);

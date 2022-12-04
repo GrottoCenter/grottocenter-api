@@ -1,5 +1,3 @@
-const R = require('ramda');
-
 const SEPARATOR = '|;|';
 
 module.exports = {
@@ -11,32 +9,30 @@ module.exports = {
    * @see RiggingService.test.js for examples
    * @param {Object} rigging
    */
-  formatRiggingForAPI: async (rigging) => {
-    const splitRiggingData = (dataName) =>
-      R.pipe(R.propOr('', dataName), R.split(SEPARATOR))(rigging);
-
-    const obstacles = splitRiggingData('obstacles');
-    const ropes = splitRiggingData('ropes');
-    const anchors = splitRiggingData('anchors');
-    const observations = splitRiggingData('observations');
+  deserializeForAPI: (rigging) => {
+    const obstacles = (rigging.obstacles ?? '').split(SEPARATOR);
+    const ropes = (rigging.ropes ?? '').split(SEPARATOR);
+    const anchors = (rigging.anchors ?? '').split(SEPARATOR);
+    const observations = (rigging.observations ?? '').split(SEPARATOR);
 
     // eslint-disable-next-line no-param-reassign
-    rigging.obstacles = obstacles
-      .map((o, idx) => ({
-        obstacle: o,
-        rope: ropes[idx],
-        anchor: anchors[idx],
-        observation: observations[idx],
-      }))
-      // remove empty data (badly formatted data in the db)
-      .filter(
-        (o) =>
-          o.obstacle !== '' ||
-          o.rope !== '' ||
-          o.anchor !== '' ||
-          o.observation !== ''
-      );
-    return rigging;
+    return (
+      obstacles
+        .map((_, i) => ({
+          obstacle: obstacles[i] ?? '',
+          rope: ropes[i] ?? '',
+          anchor: anchors[i] ?? '',
+          observation: observations[i] ?? '',
+        }))
+        // remove empty data (badly formatted data in the db)
+        .filter(
+          (o) =>
+            o.obstacle !== '' ||
+            o.rope !== '' ||
+            o.anchor !== '' ||
+            o.observation !== ''
+        )
+    );
   },
   /**
    * Convert an obstacles array (usually coming from the API) into an object of
@@ -46,17 +42,17 @@ module.exports = {
    * @see RiggingService.test.js for examples
    * @param {Object[]} obstaclesArr
    */
-  parseAPIObstaclesArrForDB: async (obstaclesArr) => {
+  serializeObstaclesForDB: async (obstaclesArr) => {
     const obstacles = [];
     const ropes = [];
     const anchors = [];
     const observations = [];
-    obstaclesArr.forEach((line) => {
+    for (const line of obstaclesArr) {
       obstacles.push(line.obstacle ? line.obstacle : '');
       ropes.push(line.rope ? line.rope : '');
       anchors.push(line.anchor ? line.anchor : '');
       observations.push(line.observation ? line.observation : '');
-    });
+    }
     return {
       obstacles: obstacles.join(SEPARATOR),
       ropes: ropes.join(SEPARATOR),
@@ -64,17 +60,19 @@ module.exports = {
       observations: observations.join(SEPARATOR),
     };
   },
-  getEntranceRiggings: async (entranceId) => {
+  getEntranceRiggings: async (entranceId, { includeDeleted = false } = {}) => {
     let riggings = [];
     if (entranceId) {
       riggings = await TRigging.find()
-        .where({
-          entrance: entranceId,
-        })
+        .where({ entrance: entranceId, isDeleted: includeDeleted })
         .populate('author')
-        .populate('reviewer')
-        .populate('language');
+        .populate('reviewer');
     }
     return riggings;
   },
+
+  getRigging: async (riggingId, { includeDeleted = false } = {}) =>
+    TRigging.findOne({ id: riggingId, isDeleted: includeDeleted })
+      .populate('author')
+      .populate('reviewer'),
 };
