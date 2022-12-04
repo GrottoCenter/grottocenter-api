@@ -60,6 +60,13 @@ module.exports = {
       columnName: 'title',
     },
 
+    isDeleted: {
+      type: 'boolean',
+      allowNull: false,
+      columnName: 'is_deleted',
+      defaultsTo: false,
+    },
+
     entrance: {
       allowNull: false,
       columnName: 'id_entrance',

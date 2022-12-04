@@ -2,9 +2,9 @@ const should = require('should');
 const CommentService = require('../../../api/services/CommentService');
 
 describe('CommentService', () => {
-  describe('getStats()', () => {
+  describe('getStatsFromId()', () => {
     it('should get the entrance stats', async () => {
-      const stats = await CommentService.getStats(1);
+      const stats = await CommentService.getStatsFromId(1);
       should(stats.aestheticism).equal(2);
       should(stats.caving).equal(8);
       should(stats.approach).equal(8);
