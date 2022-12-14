@@ -18,4 +18,10 @@ module.exports = {
       .populate('author')
       .populate('reviewer');
   },
+  getIdHistoriesByEntranceId: async (entranceId) => {
+    if (!entranceId) return [];
+    return THistory.find({ where: { entrance: entranceId }, select: ['id'] });
+  },
+  getHHistoriesById: async (historyId) =>
+    HHistory.find({ t_id: historyId }).populate('reviewer').populate('author'),
 };

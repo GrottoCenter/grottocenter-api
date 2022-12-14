@@ -12,10 +12,17 @@ module.exports = {
 
   attributes: {
     id: {
-      type: 'number',
-      autoIncrement: true,
-      columnName: 'id',
+      type: 'string',
+      required: true,
+      columnName: 'date_reviewed',
+      columnType: 'timestamp',
       unique: true,
+    },
+
+    t_id: {
+      type: 'number',
+      columnName: 'id',
+      unique: false,
     },
 
     author: {
@@ -53,12 +60,6 @@ module.exports = {
       maxLength: 10,
     },
 
-    dateReviewed: {
-      type: 'ref',
-      columnName: 'date_reviewed',
-      columnType: 'timestamp',
-    },
-
     isValidated: {
       type: 'boolean',
       allowNull: false,
@@ -71,13 +72,6 @@ module.exports = {
       allowNull: true,
       maxLength: 300,
       columnName: 'validation_comment',
-    },
-
-    authorComment: {
-      type: 'string',
-      allowNull: true,
-      maxLength: 300,
-      columnName: 'author_comment',
     },
 
     pages: {
@@ -184,6 +178,13 @@ module.exports = {
       allowNull: true,
       columnName: 'publication_fascicule_bbs_old',
       maxLength: 300,
+    },
+
+    authorComment: {
+      type: 'string',
+      allowNull: true,
+      maxLength: 300,
+      columnName: 'author_comment',
     },
   },
 };

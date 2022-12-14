@@ -1,12 +1,12 @@
 /**
- * HDescription.js
+ * HRigging.js
  *
- * @description :: hDescription model
+ * @description :: hRigging model
  * @docs        :: http://sailsjs.org/#!documentation/models
  */
 
 module.exports = {
-  tableName: 'h_description',
+  tableName: 'h_rigging',
 
   primaryKey: 'id',
 
@@ -30,7 +30,6 @@ module.exports = {
       allowNull: false,
       columnName: 'id_author',
       model: 'TCaver',
-      required: true,
     },
 
     reviewer: {
@@ -49,7 +48,6 @@ module.exports = {
       type: 'number',
       allowNull: false,
       columnName: 'relevance',
-      defaultsTo: 0,
     },
 
     title: {
@@ -59,10 +57,32 @@ module.exports = {
       maxLength: 300,
     },
 
-    body: {
+    obstacles: {
       type: 'string',
       allowNull: true,
-      columnName: 'body',
+      columnName: 'obstacles',
+      maxLength: 2000,
+    },
+
+    ropes: {
+      type: 'string',
+      allowNull: true,
+      columnName: 'ropes',
+      maxLength: 2000,
+    },
+
+    anchors: {
+      type: 'string',
+      allowNull: true,
+      columnName: 'anchors',
+      maxLength: 2000,
+    },
+
+    observations: {
+      type: 'string',
+      allowNull: true,
+      columnName: 'observations',
+      maxLength: 2000,
     },
 
     cave: {
@@ -80,22 +100,13 @@ module.exports = {
       model: 'TEntrance',
     },
 
-    massif: {
-      columnName: 'id_massif',
-      model: 'TMassif',
-    },
-
     point: {
       columnName: 'id_point',
       model: 'TPoint',
     },
 
-    document: {
-      columnName: 'id_document',
-      model: 'TDocument',
-    },
-
     language: {
+      allowNull: false,
       columnName: 'id_language',
       model: 'TLanguage',
     },

@@ -1,0 +1,38 @@
+[
+  {
+    "id": "2008-07-28T13:08:37.000Z",
+    "t_id": 1,
+    "dateInscription": "2008-07-28T13:08:37.000Z",
+    "isPublic": true,
+    "isSensitive": false,
+    "latitude": "446.10222000000000000000",
+    "longitude": "62.77962000000000000000",
+    "author": 4,
+    "cave": 3,
+    "country": "FR"
+  },
+  {
+    "id": "20014-12-28T13:08:37.000Z",
+    "t_id": 2,
+    "dateInscription": "2008-07-28T13:08:37.000Z",
+    "isPublic": false,
+    "isSensitive": true,
+    "latitude": "34.10222000000000000000",
+    "longitude": "64.77962000000000000000",
+    "author": 4,
+    "cave": 3,
+    "country": "FR"
+  },
+  {
+    "id": "20016-12-28T13:08:37.000Z",
+    "t_id": 3,
+    "dateInscription": "2008-07-28T13:08:37.000Z",
+    "isPublic": true,
+    "isSensitive": false,
+    "latitude": "4.10222000000000000000",
+    "longitude": "1.77962000000000000000",
+    "author": 4,
+    "cave": 6,
+    "country": "FR"
+  }
+]

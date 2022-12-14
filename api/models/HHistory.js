@@ -1,12 +1,12 @@
 /**
- * HDescription.js
+ * HHistory.js
  *
- * @description :: hDescription model
+ * @description :: hHistory model
  * @docs        :: http://sailsjs.org/#!documentation/models
  */
 
 module.exports = {
-  tableName: 'h_description',
+  tableName: 'h_history',
 
   primaryKey: 'id',
 
@@ -52,16 +52,9 @@ module.exports = {
       defaultsTo: 0,
     },
 
-    title: {
-      type: 'string',
-      allowNull: false,
-      columnName: 'title',
-      maxLength: 300,
-    },
-
     body: {
       type: 'string',
-      allowNull: true,
+      allowNull: false,
       columnName: 'body',
     },
 
@@ -75,24 +68,9 @@ module.exports = {
       model: 'TEntrance',
     },
 
-    exit: {
-      columnName: 'id_exit',
-      model: 'TEntrance',
-    },
-
-    massif: {
-      columnName: 'id_massif',
-      model: 'TMassif',
-    },
-
     point: {
       columnName: 'id_point',
       model: 'TPoint',
-    },
-
-    document: {
-      columnName: 'id_document',
-      model: 'TDocument',
     },
 
     language: {

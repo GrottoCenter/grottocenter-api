@@ -162,7 +162,7 @@ module.exports.routes = {
   'DELETE /api/v1/organizations/:id': 'v1/organization/delete-one',
   'GET /api/v1/organizations/count': 'v1/organization/count',
   'GET /api/v1/organizations/:id': 'v1/organization/find',
-  'GET /api/v1//organizations': 'v1/organization/find-all',
+  'GET /api/v1/organizations': 'v1/organization/find-all',
   'POST /api/v1/organizations': 'v1/organization/create',
   'PUT /api/v1/organizations/:id': 'v1/organization/update',
 
@@ -305,6 +305,15 @@ module.exports.routes = {
   'GET /api/v1/entrance-duplicates/:id': 'v1/entrance-duplicate/find',
   'POST /api/v1/entrances/from-duplicate/:id':
     'v1/entrance-duplicate/create-from-duplicate',
+
+  // Snapshots
+  'GET /api/v1/comments/:id/snapshots': 'v1/comment/get-snapshots',
+  'GET /api/v1/descriptions/:id/snapshots': 'v1/description/get-snapshots',
+  'GET /api/v1/documents/:id/snapshots': 'v1/document/get-snapshots',
+  'GET /api/v1/entrances/:id/snapshots': 'v1/entrance/get-snapshots',
+  'GET /api/v1/histories/:id/snapshots': 'v1/history/get-snapshots',
+  'GET /api/v1/locations/:id/snapshots': 'v1/location/get-snapshots',
+  'GET /api/v1/riggings/:id/snapshots': 'v1/rigging/get-snapshots',
 
   //  ╦ ╦╔═╗╔╗ ╦ ╦╔═╗╔═╗╦╔═╔═╗
   //  ║║║║╣ ╠╩╗╠═╣║ ║║ ║╠╩╗╚═╗

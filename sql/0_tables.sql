@@ -593,6 +593,7 @@ CREATE TABLE h_location (
 	date_reviewed timestamp NOT NULL,
 	relevance int2 NOT NULL,
 	body text NOT NULL,
+	title varchar(300),
 	id_entrance int4 NOT NULL,
 	id_language bpchar(3) NOT NULL,
 	CONSTRAINT h_location_pk PRIMARY KEY (id, date_reviewed),

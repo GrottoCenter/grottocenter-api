@@ -10,6 +10,13 @@ module.exports = {
     ecmaVersion: 'latest',
   },
   globals: {
+    HComment: 'readonly',
+    HDescription: 'readonly',
+    HEntrance: 'readonly',
+    HHistory: 'readonly',
+    HLocation: 'readonly',
+    HRigging: 'readonly',
+    HDocument: 'readonly',
     JDocumentLanguage: 'readonly',
     TCave: 'readonly',
     TCaver: 'readonly',
