@@ -9,86 +9,71 @@ const DescriptionService = require('../../../services/DescriptionService');
 const HistoryService = require('../../../services/HistoryService');
 const LocationService = require('../../../services/LocationService');
 const { toEntrance } = require('../../../services/mapping/converters');
+const ErrorService = require('../../../services/ErrorService');
 
 module.exports = async (req, res) => {
-  TEntrance.findOne(req.params.id)
-    .populate('author')
-    .populate('cave')
-    .populate('documents')
-    .populate('geology')
-    .populate('names')
-    .exec(async (err, found) => {
-      const params = {};
-      const entrance = found;
-      params.searchedItem = `Entrance of id ${req.params.id}`;
+  try {
+    const entrance = await TEntrance.findOne(req.params.id)
+      .populate('author')
+      .populate('reviewer')
+      .populate('cave')
+      .populate('documents')
+      .populate('names');
 
-      if (err) {
-        return res.serverError({
-          error: err,
-          message: `An unexpected server error occured when trying to get ${params.searchedItem}`,
-        });
-      }
-      if (!entrance) {
-        return res.notFound(`${params.searchedItem} not found`);
-      }
+    const params = { searchedItem: `Entrance of id ${req.params.id}` };
+    // TODO How to delete/restore entity ?
+    if (!entrance || entrance.isDeleted)
+      return res.notFound(`${params.searchedItem} not found`);
 
-      if (entrance.cave) {
-        // Populate massif
-        entrance.cave.massifs = await CaveService.getMassifs(entrance.cave.id);
-        if (entrance.cave.massifs.length !== 0) {
-          await NameService.setNames(entrance.cave.massifs, 'massif');
-          const promiseArray = [];
-          for (const massif of entrance.cave.massifs) {
-            promiseArray.push(
-              DescriptionService.getMassifDescriptions(massif.id)
-            );
-          }
-          await Promise.all(promiseArray).then((descriptionsArray) => {
-            descriptionsArray.forEach((descriptions, index) => {
-              entrance.cave.massifs[index].descriptions = descriptions;
-            });
-          });
+    if (entrance.cave) {
+      // Populate massif
+      entrance.cave.massifs = await CaveService.getMassifs(entrance.cave.id);
+      if (entrance.cave.massifs.length !== 0) {
+        await NameService.setNames(entrance.cave.massifs, 'massif');
+        const promiseArray = entrance.cave.massifs.map((massif) =>
+          DescriptionService.getMassifDescriptions(massif.id)
+        );
+        const descriptions = await Promise.all(promiseArray);
+        for (let i = 0; i < descriptions.length; i += 1) {
+          entrance.cave.massifs[i] = descriptions[i];
         }
-        // Populate cave
-        await CaveService.setEntrances([entrance.cave]);
-        await NameService.setNames([entrance.cave], 'cave');
-        entrance.cave.id_author = await CaverService.getCaver(
-          entrance.cave.id_author,
-          req
-        ); // using id_author because of a bug in Sails ORM... See TCave() file for explaination
       }
+      // Populate cave
+      await CaveService.setEntrances([entrance.cave]);
+      await NameService.setNames([entrance.cave], 'cave');
+      entrance.cave.id_author = await CaverService.getCaver(
+        entrance.cave.id_author,
+        req
+      ); // using id_author because of a bug in Sails ORM... See TCave() file for explaination
+    }
 
-      entrance.descriptions = await DescriptionService.getEntranceDescriptions(
-        entrance.id
-      );
-      entrance.histories = await HistoryService.getEntranceHistories(
-        entrance.id
-      );
-      entrance.locations = await LocationService.getEntranceLocations(
-        entrance.id
-      );
-      entrance.comments = await CommentService.getEntranceComments(entrance.id);
+    [
+      entrance.descriptions,
+      entrance.locations,
+      entrance.riggings,
+      entrance.histories,
+      entrance.comments,
+      ...entrance.documents
+    ] = await Promise.all([
+      DescriptionService.getEntranceDescriptions(entrance.id),
+      LocationService.getEntranceLocations(entrance.id),
+      RiggingService.getEntranceRiggings(entrance.id),
+      HistoryService.getEntranceHistories(entrance.id),
+      CommentService.getEntranceComments(entrance.id),
+      ...entrance.documents.map((d) => DocumentService.getDocument(d.id)),
+    ]);
 
-      entrance.riggings = await RiggingService.getEntranceRiggings(entrance.id);
+    entrance.stats = CommentService.getStatsFromComments(entrance.comments);
 
-      // Populate document type, descriptions, files & license
-      entrance.documents = await Promise.all(
-        entrance.documents.map(
-          // eslint-disable-next-line no-return-await
-          async (d) => await DocumentService.getDocument(d.id)
-        )
-      );
-
-      // Populate stats
-      entrance.stats = await CommentService.getStats(req.params.id);
-
-      return ControllerService.treatAndConvert(
-        req,
-        err,
-        entrance,
-        params,
-        res,
-        toEntrance
-      );
-    });
+    return ControllerService.treatAndConvert(
+      req,
+      null,
+      entrance,
+      params,
+      res,
+      toEntrance
+    );
+  } catch (e) {
+    return ErrorService.getDefaultErrorHandler(res)(e);
+  }
 };

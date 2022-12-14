@@ -63,6 +63,13 @@ module.exports = {
       columnName: 'body',
     },
 
+    isDeleted: {
+      type: 'boolean',
+      allowNull: false,
+      columnName: 'is_deleted',
+      defaultsTo: false,
+    },
+
     cave: {
       columnName: 'id_cave',
       model: 'TCave',

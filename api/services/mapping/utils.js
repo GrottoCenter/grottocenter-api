@@ -34,6 +34,8 @@ module.exports = {
     [key]: module.exports.toList(key, { [key]: data }, fn),
   }),
 
+  convertIfObject: (data, fn) => (data instanceof Object ? fn(data) : data),
+
   getMainName: (source) => {
     let mainName = ramda.pathOr(null, ['name'], source); // from Elasticsearch, name is the mainName
     if (mainName === null && source.names instanceof Array) {

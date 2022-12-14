@@ -34,9 +34,8 @@ describe('History features', () => {
           if (err) return done(err);
           const historyUpdated = res.body;
           should(historyUpdated.body).equals(update.body);
-          should(historyUpdated.language.id).equals(update.language);
-          should(historyUpdated.entrance.latitude).equals(3);
-          should(historyUpdated.author.name).equals('Adrien');
+          should(historyUpdated.language).equals(update.language);
+          should(historyUpdated.author.nickname).equals('Admin1');
           return done();
         });
     });

@@ -38,7 +38,6 @@ describe('History features', () => {
           if (err) return done(err);
           const historyUpdated = res.body;
           should(historyUpdated.body).equals(newHistory.body);
-          should(historyUpdated.entrance.latitude).equals(3);
           return done();
         });
     });
