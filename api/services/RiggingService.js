@@ -70,6 +70,36 @@ module.exports = {
     }
     return riggings;
   },
+  getIdRiggingsByEntranceId: async (
+    entranceId,
+    { includeDeleted = false } = {}
+  ) => {
+    let riggingsId = [];
+    if (entranceId) {
+      riggingsId = await TRigging.find({
+        where: { entrance: entranceId, isDeleted: includeDeleted },
+        select: ['id'],
+      });
+    }
+    return riggingsId;
+  },
+
+  getHRiggingById: async (riggingId) => {
+    const hRiggings = await HRigging.find({ t_id: riggingId })
+      .populate('reviewer')
+      .populate('author');
+    hRiggings.forEach((rigging) => {
+      // eslint-disable-next-line no-param-reassign
+      rigging.obstacles = module.exports.deserializeForAPI(rigging);
+      // eslint-disable-next-line no-param-reassign
+      delete rigging.anchors;
+      // eslint-disable-next-line no-param-reassign
+      delete rigging.observations;
+      // eslint-disable-next-line no-param-reassign
+      delete rigging.ropes;
+    });
+    return hRiggings;
+  },
 
   getRigging: async (riggingId, { includeDeleted = false } = {}) =>
     TRigging.findOne({ id: riggingId, isDeleted: includeDeleted })

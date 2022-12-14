@@ -51,6 +51,16 @@
     "isPublic": false
   },
   {
+    "id": 6,
+    "author": 3,
+    "reviewer": 1,
+    "cave": 4,
+    "latitude": "30",
+    "longitude": "30",
+    "isSensitive": true,
+    "name": "A sensitive entrance"
+  },
+  {
     "id": 999,
     "author": 3,
     "reviewer": 1,

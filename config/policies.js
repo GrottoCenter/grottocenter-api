@@ -210,6 +210,15 @@ module.exports.policies = {
   'v1/subject/find-all': true,
   'v1/subject/search': true,
 
+  // Snapshots
+  'v1/comment/get-snapshots': true,
+  'v1/description/get-snapshots': true,
+  'v1/document/get-snapshots': true,
+  'v1/entrance/get-snapshots': true,
+  'v1/history/get-snapshots': true,
+  'v1/location/get-snapshots': true,
+  'v1/rigging/get-snapshots': true,
+
   // Swagger (API doc)
   'v1/swagger/get-yaml': true,
 

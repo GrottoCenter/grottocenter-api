@@ -48,6 +48,22 @@ module.exports = {
       .populate('reviewer');
   },
 
+  getIdDescriptionsByEntranceId: async (
+    entranceId,
+    { includeDeleted = false } = {}
+  ) => {
+    if (!entranceId) return [];
+    return TDescription.find({
+      where: { entrance: entranceId, isDeleted: includeDeleted },
+      select: ['id'],
+    });
+  },
+
+  getHDescriptionsById: async (descriptionId) =>
+    HDescription.find({ t_id: descriptionId })
+      .populate('reviewer')
+      .populate('author'),
+
   getDescription: async (descriptionId, { includeDeleted = false } = {}) =>
     TDescription.findOne({
       id: descriptionId,
@@ -55,4 +71,39 @@ module.exports = {
     })
       .populate('author')
       .populate('reviewer'),
+
+  getHDescriptionsOfDocument: async (documentId) => {
+    const hDescriptions = await HDescription.find()
+      .where({
+        document: documentId,
+      })
+      .sort('id DESC')
+      .populate('author')
+      .populate('language')
+      .populate('reviewer');
+    const tDescription = await TDescription.find()
+      .where({
+        document: documentId,
+      })
+      .populate('author')
+      .populate('language')
+      .populate('reviewer');
+    if (tDescription.length > 0) {
+      // Transform TDescritpion object to keep same model as HDescription
+      tDescription[0].t_id = tDescription[0].id;
+      tDescription[0].id = tDescription[0].dateReviewed;
+      hDescriptions.push(tDescription[0]);
+    }
+    return hDescriptions;
+  },
+
+  compareDescriptionDate(documentDate, newDescDate, oldDescDate) {
+    newDescDate.setMinutes(newDescDate.getMinutes() - 2);
+    if (documentDate.getTime() >= newDescDate.getTime()) {
+      if (newDescDate.getTime() > oldDescDate.getTime()) {
+        return true;
+      }
+    }
+    return false;
+  },
 };

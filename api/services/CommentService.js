@@ -92,6 +92,20 @@ module.exports = {
     }
     return comments;
   },
+
+  getIdCommentsByEntranceId: async (
+    entranceId,
+    { includeDeleted = false } = {}
+  ) => {
+    let commentsId = [];
+    if (entranceId) {
+      commentsId = await TComment.find({
+        where: { entrance: entranceId, isDeleted: includeDeleted },
+        select: ['id'],
+      });
+    }
+    return commentsId;
+  },
   /**
    *
    * @param pgInterval PostgresInterval Object {hours: ${number}, minutes: ${number}, seconds: ${number}}
@@ -111,6 +125,8 @@ module.exports = {
         trim: false,
       });
   },
+  getHCommentById: async (commentId) =>
+    HComment.find({ t_id: commentId }).populate('reviewer').populate('author'),
 
   getComment: async (commentId, { includeDeleted = false } = {}) =>
     TComment.findOne({ id: commentId, isDeleted: includeDeleted })

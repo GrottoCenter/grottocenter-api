@@ -704,6 +704,28 @@ paths:
               schema:
                 $ref: '#/components/schemas/Description'
 
+  '/descriptions/{id}/snapshots':
+    get:
+      tags:
+        - descriptions
+      description: Get snapshots of a description.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Description'
+        '404':
+          description: We don't find these description's snapshots.
+
   '/documents/{id}':
     get:
       tags:
@@ -1100,6 +1122,28 @@ paths:
                     items:
                       $ref: '#/components/schemas/Document-identifierType'
 
+  '/documents/{id}/snapshots':
+    get:
+      tags:
+        - documents
+      description: Get snapshots of a document.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+        '404':
+          description: We don't find these document's snapshots.
+
   '/regions/search/logical/or':
     post:
       tags:
@@ -1254,6 +1298,30 @@ paths:
               schema:
                 $ref: '#/components/schemas/Location'
 
+  '/locations/{id}/snapshots':
+    get:
+      tags:
+        - locations
+      description: Get snapshots of a location.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Location'
+        '403':
+          description: You are not authorized to get these location's snapshots.
+        '404':
+          description: We don't find these location's snapshots.
+
   '/histories':
     post:
       tags:
@@ -1319,6 +1387,28 @@ paths:
               schema:
                 $ref: '#/components/schemas/History'
 
+  '/histories/{id}/snapshots':
+    get:
+      tags:
+        - histories
+      description: Get snapshots of a history.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/History'
+        '404':
+          description: We don't find these history's snapshots.
+
   '/comments':
     post:
       tags:
@@ -1366,6 +1456,28 @@ paths:
               schema:
                 $ref: '#/components/schemas/Comment'
 
+  '/comments/{id}/snapshots':
+    get:
+      tags:
+        - comments
+      description: Get snapshots of a comment.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+        '404':
+          description: We don't find these comment's snapshots.
+
   '/riggings':
     post:
       tags:
@@ -1412,6 +1524,28 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Rigging'
+
+  '/riggings/{id}/snapshots':
+    get:
+      tags:
+        - riggings
+      description: Get snapshots of a rigging.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Rigging'
+        '404':
+          description: We don't find these rigging's snapshots.
 
   '/names/{id}':
     patch:
@@ -2042,6 +2176,28 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Count'
+
+  '/entrances/{id}/snapshots':
+    get:
+      tags:
+        - entrances
+      description: Get snapshots of an entrance.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Entrance'
+        '404':
+          description: We don't find these entrance's snapshots.
 
   '/search':
     post:
