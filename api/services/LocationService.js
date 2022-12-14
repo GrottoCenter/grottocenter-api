@@ -1,14 +1,14 @@
 module.exports = {
-  getEntranceLocations: async (entranceId) => {
-    let locations = [];
-    if (entranceId) {
-      locations = await TLocation.find()
-        .where({
-          entrance: entranceId,
-        })
-        .populate('author')
-        .populate('language');
-    }
-    return locations;
+  getLocation: async (locationId, { includeDeleted = false } = {}) =>
+    TLocation.findOne({ id: locationId, isDeleted: includeDeleted })
+      .populate('author')
+      .populate('reviewer'),
+
+  getEntranceLocations: async (entranceId, { includeDeleted = false } = {}) => {
+    if (!entranceId) return [];
+    return TLocation.find()
+      .where({ entrance: entranceId, isDeleted: includeDeleted })
+      .populate('author')
+      .populate('reviewer');
   },
 };

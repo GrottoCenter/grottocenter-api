@@ -35,7 +35,7 @@ describe('Rigging features', () => {
             anchor: '2 spits',
             observation: 'test',
           },
-          { obstacle: 'P5', rope: 'C10', anchor: '1 spits' },
+          { obstacle: 'P5', rope: 'C10', anchor: '1 spits', observation: '' },
         ],
       };
       supertest(sails.hooks.http.app)
@@ -49,13 +49,8 @@ describe('Rigging features', () => {
           if (err) return done(err);
           const riggingUpdated = res.body;
           should(riggingUpdated.title).equals(update.title);
-          should(riggingUpdated.language.id).equals(update.language);
-          should(riggingUpdated.entrance.latitude).equals(3);
-          should(riggingUpdated.author.name).equals('Adrien');
-          should(riggingUpdated.reviewer.name).equals('NewName');
-          should(riggingUpdated.observations).equals(
-            'Quitter avant le fond sur la gauche.|;|test|;|'
-          );
+          should(riggingUpdated.language).equals(update.language);
+          should(riggingUpdated.obstacles).deepEqual(update.obstacles);
           return done();
         });
     });

@@ -40,7 +40,7 @@ describe('Rigging features', () => {
             anchor: '2 spits',
             observation: 'test',
           },
-          { obstacle: 'P5', rope: 'C10', anchor: '1 spits' },
+          { obstacle: 'P5', rope: 'C10', anchor: '1 spits', observation: '' },
         ],
       };
       supertest(sails.hooks.http.app)
@@ -53,9 +53,7 @@ describe('Rigging features', () => {
         .end((err, res) => {
           if (err) return done(err);
           const riggingUpdated = res.body;
-          should(riggingUpdated.body).equals(newRigging.body);
-          should(riggingUpdated.entrance.latitude).equals(30);
-          should(riggingUpdated.ropes).equals('C10|;|C150|;|C10');
+          should(riggingUpdated.obstacles).deepEqual(newRigging.obstacles);
           return done();
         });
     });

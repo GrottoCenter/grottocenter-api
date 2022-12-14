@@ -92,6 +92,13 @@ module.exports = {
       columnName: 'body',
     },
 
+    isDeleted: {
+      type: 'boolean',
+      allowNull: false,
+      columnName: 'is_deleted',
+      defaultsTo: false,
+    },
+
     alert: {
       type: 'boolean',
       allowNull: false,

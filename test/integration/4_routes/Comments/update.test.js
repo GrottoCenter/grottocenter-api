@@ -37,9 +37,8 @@ describe('Comment features', () => {
           if (err) return done(err);
           const commentUpdated = res.body;
           should(commentUpdated.body).equals(update.body);
-          should(commentUpdated.language.id).equals(update.language);
-          should(commentUpdated.entrance.latitude).equals(3);
-          should(commentUpdated.author.name).equals('Adrien');
+          should(commentUpdated.language).equals(update.language);
+          should(commentUpdated.author.nickname).equals('Admin1');
           should(commentUpdated.eTTrail).equals('01:54:04');
           should(commentUpdated.eTUnderground).equals('00:30:01');
           should(commentUpdated.aestheticism).equals(update.aestheticism);

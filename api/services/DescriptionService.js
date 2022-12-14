@@ -20,34 +20,39 @@ module.exports = {
     }
   },
 
-  getMassifDescriptions: async (massifId) => {
+  getMassifDescriptions: async (massifId, { includeDeleted = false } = {}) => {
     const descriptions = await TDescription.find()
-      .where({ massif: massifId })
-      .populate('language');
+      .where({ massif: massifId, isDeleted: includeDeleted })
+      .populate('author')
+      .populate('reviewer');
     return descriptions;
   },
-  getCaveDescriptions: async (caveId) => {
+  getCaveDescriptions: async (caveId, { includeDeleted = false } = {}) => {
     let descriptions = [];
     if (caveId) {
       descriptions = await TDescription.find()
-        .where({
-          cave: caveId,
-        })
+        .where({ cave: caveId, isDeleted: includeDeleted })
         .populate('author')
-        .populate('language');
+        .populate('reviewer');
     }
     return descriptions;
   },
-  getEntranceDescriptions: async (entranceId) => {
-    let descriptions = [];
-    if (entranceId) {
-      descriptions = await TDescription.find()
-        .where({
-          entrance: entranceId,
-        })
-        .populate('author')
-        .populate('language');
-    }
-    return descriptions;
+  getEntranceDescriptions: async (
+    entranceId,
+    { includeDeleted = false } = {}
+  ) => {
+    if (!entranceId) return [];
+    return TDescription.find()
+      .where({ entrance: entranceId, isDeleted: includeDeleted })
+      .populate('author')
+      .populate('reviewer');
   },
+
+  getDescription: async (descriptionId, { includeDeleted = false } = {}) =>
+    TDescription.findOne({
+      id: descriptionId,
+      isDeleted: includeDeleted,
+    })
+      .populate('author')
+      .populate('reviewer'),
 };

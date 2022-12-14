@@ -45,7 +45,6 @@ describe('Comment features', () => {
           if (err) return done(err);
           const commentUpdated = res.body;
           should(commentUpdated.body).equals(newComment.body);
-          should(commentUpdated.entrance.latitude).equals(30);
           should(commentUpdated.aestheticism).equals(newComment.aestheticism);
           should(commentUpdated.eTUnderground).equals('04:05:06');
           return done();

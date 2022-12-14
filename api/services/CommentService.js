@@ -13,31 +13,44 @@ const TIME_INFO_QUERY = `
 const { isNil } = require('ramda');
 const CommonService = require('./CommonService');
 
+function average(arr) {
+  if (arr.length === 0) return 0;
+  return arr.reduce((a, b) => a + b, 0) / arr.length;
+}
+
 module.exports = {
   /**
    * @param {integer} entranceId - id of the entrance for which stats are needed
    *
    * @returns {Promise} which resolves to the succesfully getStats
    */
-  getStats: async (entranceId) => {
-    const aestheticism = await TComment.avg('aestheticism').where({
-      entrance: entranceId,
-      aestheticism: { '>': 0 },
-    });
-    const caving = await TComment.avg('caving').where({
-      entrance: entranceId,
-      caving: { '>': 0 },
-    });
-    const approach = await TComment.avg('approach').where({
-      entrance: entranceId,
-      approach: { '>': 0 },
-    });
-
+  getStatsFromComments: (comments) => {
+    const filterFn = (e) => e && e > 0;
     return {
-      aestheticism,
-      caving,
-      approach,
+      aestheticism: average(
+        comments.map((c) => c.aestheticism).filter(filterFn)
+      ),
+      caving: average(comments.map((c) => c.caving).filter(filterFn)),
+      approach: average(comments.map((c) => c.approach).filter(filterFn)),
     };
+  },
+  getStatsFromId: async (entranceId) => {
+    const [aestheticism, caving, approach] = await Promise.all([
+      TComment.avg('aestheticism').where({
+        entrance: entranceId,
+        aestheticism: { '>': 0 },
+      }),
+      TComment.avg('caving').where({
+        entrance: entranceId,
+        caving: { '>': 0 },
+      }),
+      TComment.avg('approach').where({
+        entrance: entranceId,
+        approach: { '>': 0 },
+      }),
+    ]);
+
+    return { aestheticism, caving, approach };
   },
 
   /**
@@ -69,16 +82,13 @@ module.exports = {
       eTUnderground: avgTUndergroundFormatted,
     };
   },
-  getEntranceComments: async (entranceId) => {
+  getEntranceComments: async (entranceId, { includeDeleted = false } = {}) => {
     let comments = [];
     if (entranceId) {
       comments = await TComment.find()
-        .where({
-          entrance: entranceId,
-        })
+        .where({ entrance: entranceId, isDeleted: includeDeleted })
         .populate('author')
-        .populate('reviewer')
-        .populate('language');
+        .populate('reviewer');
     }
     return comments;
   },
@@ -101,4 +111,9 @@ module.exports = {
         trim: false,
       });
   },
+
+  getComment: async (commentId, { includeDeleted = false } = {}) =>
+    TComment.findOne({ id: commentId, isDeleted: includeDeleted })
+      .populate('author')
+      .populate('reviewer'),
 };
