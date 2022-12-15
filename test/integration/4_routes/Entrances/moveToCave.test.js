@@ -102,9 +102,7 @@ describe('Entrance features', () => {
           },
         ]);
         await TCave.create({ id: initialNetworkId });
-        await TCave.create({
-          id: destinationNetworkId,
-        });
+        await TCave.create({ id: destinationNetworkId });
 
         // Populate networks
         await TCave.addToCollection(initialNetworkId, 'entrances', [

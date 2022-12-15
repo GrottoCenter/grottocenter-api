@@ -17,44 +17,41 @@ const FileService = require('../FileService');
 const RiggingService = require('../RiggingService');
 
 const c = {
-  toCave: (source) => {
-    const result = {
-      ...CaveModel,
-    };
-    result.id = source.id;
-    result['@id'] = String(source.id);
+  toCave: (source) => ({
+    ...CaveModel,
+    id: source.id,
+    '@id': String(source.id),
 
-    result.dateInscription = source.date_inscription;
-    result.dateReviewed = source.date_reviewed;
-    result.depth = source.depth;
-    result.isDeleted = source.is_deleted;
-    result.isDiving = source.is_diving;
-    result.latitude = parseFloat(source.latitude);
-    result.length = source.length;
-    result.longitude = parseFloat(source.longitude);
-    result.name = getMainName(source);
-    result.temperature = source.temperature;
+    author: convertIfObject(source.author, c.toSimpleCaver),
+    reviewer: convertIfObject(source.reviewer, c.toSimpleCaver),
+    dateInscription: source.dateInscription,
+    dateReviewed: source.dateReviewed,
+    name: getMainName(source),
+    depth: source.depth,
+    length: source.caveLength,
+    temperature: source.temperature,
+    isDeleted: source.isDeleted,
+    isDiving: source.isDiving,
+    latitude: parseFloat(source.latitude),
+    longitude: parseFloat(source.longitude),
 
-    // Convert objects
-    result.author = convertIfObject(source.id_author, c.toCaverShort);
-    result.reviewer = convertIfObject(source.id_reviewer, c.toCaverShort);
-    result.names = toList('names', source, c.toName);
-    result.descriptions = toList('descriptions', source, c.toDescription);
-    result.entrances = toList('entrances', source, c.toEntranceShort);
-    result.documents = toList('documents', source, c.toDocument);
-    result.histories = toList('histories', source, c.toHistory);
-    result.massifs = toList('massifs', source, c.toMassif);
+    names: toList('names', source, c.toName),
+    descriptions: toList('descriptions', source, c.toDescription),
+    entrances: toList('entrances', source, c.toSimpleEntrance),
+    documents: toList('documents', source, c.toDocument),
+    massifs: toList('massifs', source, c.toSimpleMassif),
+  }),
 
-    return result;
-  },
-  toCaveShort: (source) => ({
+  toSimpleCave: (source) => ({
     id: source.id,
     name: getMainName(source),
-    length: source.length,
+    latitude: parseFloat(source.latitude),
+    longitude: parseFloat(source.longitude),
+    length: source.caveLength,
     depth: source.depth,
     temperature: source.temperature,
-    isDiving: source.is_diving,
-    entrances: toList('entrances', source, c.toEntranceShort),
+    isDiving: source.isDiving,
+    entrances: source.entrances.map((e) => e.id),
   }),
 
   toCaver: (source) => {
@@ -120,7 +117,7 @@ const c = {
     return result;
   },
 
-  toCaverShort: (source) => ({
+  toSimpleCaver: (source) => ({
     id: source.id,
     nickname: source.nickname,
   }),
@@ -140,8 +137,8 @@ const c = {
     eTTrail: postgreIntervalObjectToDbString(source.eTTrail),
     eTUnderground: postgreIntervalObjectToDbString(source.eTUnderground),
     // alert: source.alert; // TODO ?
-    author: convertIfObject(source.author, c.toCaverShort),
-    reviewer: convertIfObject(source.reviewer, c.toCaverShort),
+    author: convertIfObject(source.author, c.toSimpleCaver),
+    reviewer: convertIfObject(source.reviewer, c.toSimpleCaver),
   }),
 
   toCompleteSearchResult: (source) => {
@@ -208,8 +205,8 @@ const c = {
     dateReviewed: source.dateReviewed,
     relevance: source.relevance,
     // point: source.point,
-    author: convertIfObject(source.author, c.toCaverShort),
-    reviewer: convertIfObject(source.reviewer, c.toCaverShort),
+    author: convertIfObject(source.author, c.toSimpleCaver),
+    reviewer: convertIfObject(source.reviewer, c.toSimpleCaver),
   }),
 
   toDocument: (source) => {
@@ -260,9 +257,9 @@ const c = {
       toSubject,
     } = module.exports;
 
-    result.author = convertIfObject(source.author, c.toCaverShort);
-    result.reviewer = convertIfObject(source.reviewer, c.toCaverShort);
-    result.validator = convertIfObject(source.validator, c.toCaverShort);
+    result.author = convertIfObject(source.author, c.toSimpleCaver);
+    result.reviewer = convertIfObject(source.reviewer, c.toSimpleCaver);
+    result.validator = convertIfObject(source.validator, c.toSimpleCaver);
 
     result.authorizationDocument =
       source.authorizationDocument instanceof Object
@@ -408,30 +405,30 @@ const c = {
     };
 
     result['@id'] = String(source.id);
+    result.id = source.id;
+    result.isDeleted = source.isDeleted;
+    result.isSensitive = source.isSensitive;
     result.address = source.address;
     result.aestheticism = source.aestheticism;
     result.altitude = source.altitude;
     result.approach = source.approach;
     result.caving = source.caving;
-    result.country = source.country;
-    result.countryCode = source['country code'];
-    result.county = source.county;
-    result.city = source.city;
     result.dateInscription = source.dateInscription;
     result.dateReviewed = source.dateReviewed;
     result.discoveryYear = source.yearDiscovery;
     result.externalUrl = source.externalUrl;
-    result.id = source.id;
-    result.isDeleted = source.isDeleted;
-    result.isSensitive = source.isSensitive;
     result.latitude = parseFloat(source.latitude);
     result.longitude = parseFloat(source.longitude);
     result.name = getMainName(source);
+    result.country = source.country;
+    result.countryCode = source['country code'];
+    result.county = source.county;
+    result.city = source.city;
     result.postalCode = source.postalCode;
     result.precision = source.precision;
     result.region = source.region;
     result.stats = source.stats;
-    result.timeInfo = source.timeInfo;
+    result.timeInfo = source.timeInfo; // Only used in random entrance
 
     // Convert objects
     if (source['cave name']) {
@@ -443,15 +440,15 @@ const c = {
         isDiving: source['cave is diving'],
       };
     } else if (source.cave instanceof Object) {
-      result.cave = c.toCave(source.cave);
+      result.cave = c.toSimpleCave(source.cave);
     } else {
       result.cave = source.cave;
     }
     // Once cave is populated, put the massifs at the root of the entrance
     // (more convenient for the client)
-    result.massifs = ramda.pathOr(undefined, ['cave', 'massifs'], result);
-    result.author = convertIfObject(source.author, c.toCaverShort);
-    result.reviewer = convertIfObject(source.reviewer, c.toCaverShort);
+    result.massifs = toList('massifs', source.cave ?? {}, c.toSimpleMassif);
+    result.author = convertIfObject(source.author, c.toSimpleCaver);
+    result.reviewer = convertIfObject(source.reviewer, c.toSimpleCaver);
 
     // Convert collections
     result.names = toList('names', source, c.toName);
@@ -472,7 +469,7 @@ const c = {
     return result;
   },
 
-  toEntranceShort: (source) => ({
+  toSimpleEntrance: (source) => ({
     id: source.id,
     name: getMainName(source),
     city: source.city,
@@ -519,8 +516,8 @@ const c = {
     relevance: source.relevance,
     language: source.language,
     isDeleted: source.isDeleted,
-    author: convertIfObject(source.author, c.toCaverShort),
-    reviewer: convertIfObject(source.reviewer, c.toCaverShort),
+    author: convertIfObject(source.author, c.toSimpleCaver),
+    reviewer: convertIfObject(source.reviewer, c.toSimpleCaver),
   }),
 
   toLanguage: (source) => {
@@ -554,8 +551,8 @@ const c = {
     relevance: source.relevance,
     title: source.title,
     isDeleted: source.isDeleted,
-    author: convertIfObject(source.author, c.toCaverShort),
-    reviewer: convertIfObject(source.reviewer, c.toCaverShort),
+    author: convertIfObject(source.author, c.toSimpleCaver),
+    reviewer: convertIfObject(source.reviewer, c.toSimpleCaver),
   }),
 
   toMassif: (source) => {
@@ -592,6 +589,11 @@ const c = {
     return result;
   },
 
+  toSimpleMassif: (source) => ({
+    id: source.id,
+    name: getMainName(source),
+  }),
+
   toName: (source) => ({
     id: source.id,
     name: source.name,
@@ -600,8 +602,8 @@ const c = {
     dateInscription: source.dateInscription,
     dateReviewed: source.dateReviewed,
     isDeleted: source.isDeleted,
-    author: convertIfObject(source.author, c.toCaverShort),
-    reviewer: convertIfObject(source.reviewer, c.toCaverShort),
+    author: convertIfObject(source.author, c.toSimpleCaver),
+    reviewer: convertIfObject(source.reviewer, c.toSimpleCaver),
   }),
 
   toNotification: (source) => {
@@ -726,8 +728,8 @@ const c = {
     dateReviewed: source.dateReviewed,
     relevance: source.relevance,
     obstacles: RiggingService.deserializeForAPI(source),
-    author: convertIfObject(source.author, c.toCaverShort),
-    reviewer: convertIfObject(source.reviewer, c.toCaverShort),
+    author: convertIfObject(source.author, c.toSimpleCaver),
+    reviewer: convertIfObject(source.reviewer, c.toSimpleCaver),
   }),
 
   toSearchResult: (source) => {

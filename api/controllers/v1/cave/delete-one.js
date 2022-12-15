@@ -28,7 +28,7 @@ module.exports = async (req, res) => {
     await checkIfExists.with({
       attributeName: 'id',
       sailsModel: TCave,
-      additionalAttributes: { is_deleted: false },
+      additionalAttributes: { isDeleted: false },
       ...args,
     });
 
