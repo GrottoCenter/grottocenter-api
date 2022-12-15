@@ -1,7 +1,7 @@
 {
   "name": "grottocenter-api",
   "private": true,
-  "version": "22.0.30",
+  "version": "22.0.31",
   "description": "Grottocenter - API",
   "author": "Wikicaves",
   "license": "CC-BY-SA-3.0",
@@ -30,6 +30,7 @@
     "prop-types": "^15.8.1",
     "ramda": "^0.28.0",
     "rc": "~1.2.8",
+    "response-time": "^2.3.2",
     "sails": "^1.5.3",
     "sails-hook-orm": "^4.0.1",
     "sails-hook-sockets": "^2.0.3",
