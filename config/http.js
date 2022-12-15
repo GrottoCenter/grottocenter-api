@@ -42,6 +42,7 @@ module.exports.http = {
       'generalRateLimit',
       'userDeleteRateLimit',
       'moderatorDeleteRateLimit',
+      'requestLogger',
       'fileMiddleware',
       'bodyParser',
       'compress',
@@ -109,6 +110,12 @@ module.exports.http = {
       const upload = multer({ storage: inMemoryStorage, fileSize: 100000000 });
       return upload.fields([{ name: 'files' }]);
     })(),
+
+    // Logs each request to the console
+    requestLogger(req, res, next) {
+      sails.log.info('Requested ::', req.method, req.url);
+      return next();
+    },
   },
 
   /** *************************************************************************
