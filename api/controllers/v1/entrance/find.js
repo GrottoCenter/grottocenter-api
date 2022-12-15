@@ -1,5 +1,4 @@
 const CaveService = require('../../../services/CaveService');
-const CaverService = require('../../../services/CaverService');
 const CommentService = require('../../../services/CommentService');
 const ControllerService = require('../../../services/ControllerService');
 const DocumentService = require('../../../services/DocumentService');
@@ -26,25 +25,15 @@ module.exports = async (req, res) => {
       return res.notFound(`${params.searchedItem} not found`);
 
     if (entrance.cave) {
-      // Populate massif
-      entrance.cave.massifs = await CaveService.getMassifs(entrance.cave.id);
-      if (entrance.cave.massifs.length !== 0) {
-        await NameService.setNames(entrance.cave.massifs, 'massif');
-        const promiseArray = entrance.cave.massifs.map((massif) =>
-          DescriptionService.getMassifDescriptions(massif.id)
-        );
-        const descriptions = await Promise.all(promiseArray);
-        for (let i = 0; i < descriptions.length; i += 1) {
-          entrance.cave.massifs[i] = descriptions[i];
-        }
-      }
-      // Populate cave
-      await CaveService.setEntrances([entrance.cave]);
-      await NameService.setNames([entrance.cave], 'cave');
-      entrance.cave.id_author = await CaverService.getCaver(
-        entrance.cave.id_author,
-        req
-      ); // using id_author because of a bug in Sails ORM... See TCave() file for explaination
+      [entrance.cave.massifs, entrance.cave.entrances] = await Promise.all([
+        CaveService.getMassifs(entrance.cave.id),
+        TEntrance.find().where({ cave: entrance.cave.id }),
+      ]);
+
+      await Promise.all([
+        NameService.setNames(entrance.cave.massifs, 'massif'),
+        NameService.setNames([entrance.cave], 'cave'),
+      ]);
     }
 
     [

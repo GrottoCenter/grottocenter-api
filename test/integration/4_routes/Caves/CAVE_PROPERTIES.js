@@ -10,7 +10,6 @@ const CAVE_PROPERTIES = [
   'descriptions',
   'documents',
   'entrances',
-  'histories',
   'isDeleted',
   'isDiving',
   'length',

@@ -84,6 +84,12 @@ module.exports = {
       .populate('cave')
       .populate('documents')
       .populate('names');
+
+    if (entrance.cave)
+      entrance.cave.entrances = await TEntrance.find().where({
+        cave: entrance.cave.id,
+      });
+
     if (!ramda.isNil(entrance.documents)) {
       entrance.documents = await Promise.all(
         entrance.documents.map(async (doc) => ({

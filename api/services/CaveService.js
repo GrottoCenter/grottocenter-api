@@ -15,11 +15,7 @@ module.exports = {
    */
   setEntrances: async (caves) => {
     const entrances = await TEntrance.find()
-      .where({
-        cave: {
-          in: caves.map((c) => c.id),
-        },
-      })
+      .where({ cave: { in: caves.map((c) => c.id) } })
       .populate('names');
     for (const cave of caves) {
       cave.entrances = entrances.filter((e) => e.cave === cave.id);
@@ -40,7 +36,7 @@ module.exports = {
   createCave: async (req, caveData, nameData, descriptionsData) => {
     const res = await sails.getDatastore().transaction(async (db) => {
       // Create cave
-      const createdCave = await TCave.create(caveData)
+      const createdCave = await TCave.create({ ...caveData })
         .fetch()
         .usingConnection(db);
 
@@ -176,10 +172,10 @@ module.exports = {
     // The TCave.create() function doesn't work with TCave field alias. See TCave.js Model
     depth: req.param('depth'),
     documents: req.param('documents'),
-    is_diving: req.param('isDiving'),
+    isDiving: req.param('isDiving'),
     latitude: req.param('latitude'),
     longitude: req.param('longitude'),
-    length: req.param('length'),
+    caveLength: req.param('length'),
     massif: req.param('massif'),
     temperature: req.param('temperature'),
   }),
@@ -192,11 +188,12 @@ module.exports = {
    */
   getMassifs: async (caveId) => {
     try {
+      const WGS84_SRID = 4326; // GPS
       const query = `
       SELECT m.*
       FROM t_massif as m
       JOIN  t_cave AS c
-      ON ST_Contains(ST_SetSRID(m.geog_polygon::geometry, 4326), ST_SetSRID(ST_MakePoint(c.longitude, c.latitude), 4326))
+      ON ST_Contains(ST_SetSRID(m.geog_polygon::geometry, ${WGS84_SRID}), ST_SetSRID(ST_MakePoint(c.longitude, c.latitude), ${WGS84_SRID}))
       WHERE c.id = $1
     `;
       const queryResult = await CommonService.query(query, [caveId]);

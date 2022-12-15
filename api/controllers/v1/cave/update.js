@@ -1,4 +1,3 @@
-const CaveService = require('../../../services/CaveService');
 const ControllerService = require('../../../services/ControllerService');
 const ErrorService = require('../../../services/ErrorService');
 const NameService = require('../../../services/NameService');
@@ -13,7 +12,6 @@ const { toCave } = require('../../../services/mapping/converters');
 const { checkRight } = sails.helpers;
 
 module.exports = async (req, res) => {
-  // Check right
   const hasRight = await checkRight
     .with({
       groups: req.token.groups,
@@ -29,21 +27,35 @@ module.exports = async (req, res) => {
     return res.forbidden('You are not authorized to update a cave.');
   }
 
-  // Check if cave exists
-  const caveId = req.param('id');
-  const currentCave = await TCave.findOne(caveId);
-  if (!currentCave) {
-    return res.notFound({
-      message: `Cave with id ${caveId} not found.`,
-    });
-  }
-
-  const cleanedData = CaveService.getConvertedDataFromClient(req);
-
   try {
-    const updatedCave = await TCave.updateOne({
-      id: caveId,
-    }).set(cleanedData);
+    const caveId = req.param('id');
+    const rawCave = await TCave.findOne(caveId);
+    if (!rawCave || rawCave.isDeleted) {
+      return res.notFound({
+        message: `Cave with id ${caveId} not found.`,
+      });
+    }
+
+    const newLatitude = req.param('latitude');
+    const newLongitude = req.param('longitude');
+    const newDepth = req.param('depth');
+    const newLength = req.param('length');
+    const newTemperature = req.param('temperature');
+    const newIsDiving = req.param('isDiving');
+
+    const updatedFields = {
+      reviewer: req.token.id,
+      // dateReviewed will be updated automaticly by the SQL historisation trigger
+    };
+
+    if (newLatitude) updatedFields.latitude = newLatitude;
+    if (newLongitude) updatedFields.longitude = newLongitude;
+    if (newDepth) updatedFields.depth = newDepth;
+    if (newLength) updatedFields.caveLength = newLength;
+    if (newTemperature) updatedFields.temperature = newTemperature;
+    if (newIsDiving) updatedFields.isDiving = newIsDiving;
+
+    await TCave.updateOne({ id: caveId }).set(updatedFields);
 
     // Handle name manually
     // Currently, use only one name per cave (even if the model can handle multiple names)
@@ -54,23 +66,24 @@ module.exports = async (req, res) => {
       language: req.param('name')?.language,
     });
 
-    await NameService.setNames([updatedCave], 'cave');
+    const populatedCave = await TCave.findOne(caveId)
+      .populate('author')
+      .populate('reviewer');
+    await NameService.setNames([populatedCave], 'cave');
 
     await NotificationService.notifySubscribers(
       req,
-      updatedCave,
+      populatedCave,
       req.token.id,
       NOTIFICATION_TYPES.UPDATE,
       NOTIFICATION_ENTITIES.CAVE
     );
-    const params = {
-      controllerMethod: 'CaveController.update',
-    };
+
     return ControllerService.treatAndConvert(
       req,
       null,
-      updatedCave,
-      params,
+      populatedCave,
+      { controllerMethod: 'CaveController.update' },
       res,
       toCave
     );
