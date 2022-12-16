@@ -408,6 +408,7 @@ const c = {
     result.id = source.id;
     result.isDeleted = source.isDeleted;
     result.isSensitive = source.isSensitive;
+    result.redirectTo = source.redirectTo;
     result.address = source.address;
     result.aestheticism = source.aestheticism;
     result.altitude = source.altitude;
@@ -465,7 +466,27 @@ const c = {
         name: source['massif name'],
       };
     }
+    return result;
+  },
 
+  toDeletedEntrance: (source) => {
+    const result = {
+      ...EntranceModel,
+    };
+    result['@id'] = String(source.id);
+    result.id = source.id;
+    result.isDeleted = source.isDeleted;
+    result.isSensitive = source.isSensitive;
+    result.redirectTo = source.redirectTo;
+    result.dateInscription = source.dateInscription;
+    result.dateReviewed = source.dateReviewed;
+    result.country = source.country;
+    result.county = source.county;
+    result.city = source.city;
+    result.region = source.region;
+    result.name = getMainName(source);
+    result.author = convertIfObject(source.author, c.toSimpleCaver);
+    result.reviewer = convertIfObject(source.reviewer, c.toSimpleCaver);
     return result;
   },
 

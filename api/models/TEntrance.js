@@ -229,5 +229,11 @@ module.exports = {
       collection: 'THistory',
       via: 'entrance',
     },
+
+    redirectTo: {
+      type: 'number',
+      allowNull: true,
+      columnName: 'redirect_to',
+    },
   },
 };

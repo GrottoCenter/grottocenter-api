@@ -13,12 +13,12 @@ const cleanEntrance = (entrance) => {
 };
 
 module.exports = {
-  friendlyName: 'Remove sensitive entrances',
-  description: 'Remove sensitive entrances from a data object.',
+  friendlyName: 'Clear sensitive properties from entrances',
+  description: 'Clear sensitive properties of entrances from a data object.',
   inputs: {
     data: {
       type: 'ref',
-      description: 'The data to remove the entrances from.',
+      description: 'The data to clean the entrances from.',
       required: true,
     },
     req: {
@@ -30,7 +30,7 @@ module.exports = {
 
   exits: {
     success: {
-      data: "The data with sensitive entrances removed if the user can't see them.",
+      data: "The data with entrances with sensitive properties cleared if the user can't see them.",
     },
   },
 
