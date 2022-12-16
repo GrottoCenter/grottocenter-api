@@ -42,6 +42,19 @@ module.exports = {
       columnName: 'date_reviewed',
     },
 
+    isDeleted: {
+      type: 'boolean',
+      allowNull: false,
+      columnName: 'is_deleted',
+      defaultsTo: false,
+    },
+
+    redirectTo: {
+      type: 'number',
+      allowNull: true,
+      columnName: 'redirect_to',
+    },
+
     documents: {
       collection: 'TDocument',
       via: 'massif',

@@ -47,12 +47,12 @@ const self = (module.exports = {
    * (document-collections and document-issues are excluded by default)
    * Params should contain an attribute 'query': others params are facultative.
    * @param {*} params  list of params of the request including :
-   *    @param {string}         query keyword(s) to use for the search
-   *    @param {integer}        from (optional, default = 0) number of first results to skip
-   *    @param {integer}        size (optional, default = 10) number of first results to return
-   *    @param {string}         resourceType (optional) resource type to search on.
+   *     {string}         query keyword(s) to use for the search
+   *     {integer}        from (optional, default = 0) number of first results to skip
+   *     {integer}        size (optional, default = 10) number of first results to return
+   *     {string}         resourceType (optional) resource type to search on.
    *            Must be one of INDEX_NAMES
-   *    @param {Array(string)}  resourceTypes (optional) resource types to search on.
+   *     {Array(string)}  resourceTypes (optional) resource types to search on.
    *            Must be an array containing some of the INDEX_NAMES
    */
   searchQuery: (params) =>
@@ -79,48 +79,56 @@ const self = (module.exports = {
             from: params.from ? params.from : 0,
             size: params.size ? params.size : 10,
             query: {
-              query_string: {
-                query: `*${self.sanitizeQuery(
-                  params.query
-                )}* + ${self.sanitizeQuery(params.query)}~${FUZZINESS}`,
-                fields: [
-                  // General useful fields
-                  'city^2',
-                  'country',
-                  'county',
-                  'description^0.5',
-                  'descriptions^0.5',
-                  'id',
-                  'name^5',
-                  'names^1.5',
-                  'region',
+              bool: {
+                must: {
+                  query_string: {
+                    query: `*${self.sanitizeQuery(
+                      params.query
+                    )}* + ${self.sanitizeQuery(params.query)}~${FUZZINESS}`,
+                    fields: [
+                      // General useful fields
+                      'city^2',
+                      'country',
+                      'county',
+                      'description^0.5',
+                      'descriptions^0.5',
+                      'id',
+                      'name^5',
+                      'names^1.5',
+                      'region',
 
-                  // ==== Entrances
-                  'bibliography^0.5',
-                  'caves',
-                  'location^0.5',
-                  'riggings',
+                      // ==== Entrances
+                      'bibliography^0.5',
+                      'caves',
+                      'location^0.5',
+                      'riggings',
 
-                  // ==== Grottos
-                  'custom_message',
+                      // ==== Grottos
+                      'custom_message',
 
-                  // ==== Massifs
+                      // ==== Massifs
 
-                  // ==== Document
-                  'authors',
-                  'identifier^1.5',
-                  'ref_bbs',
-                  'subjects',
-                  'title^2.7',
+                      // ==== Document
+                      'authors',
+                      'identifier^1.5',
+                      'ref_bbs',
+                      'subjects',
+                      'title^2.7',
 
-                  // ==== Cavers
-                  'mail^5',
-                  'nickname^3',
-                  'surname^4',
+                      // ==== Cavers
+                      'nickname^3',
+                      'surname^4',
 
-                  // ==== Languages
-                  'ref_name',
-                ],
+                      // ==== Languages
+                      'ref_name',
+                    ],
+                  },
+                },
+                filter: {
+                  term: {
+                    deleted: false,
+                  },
+                },
               },
             },
             highlight: {
@@ -239,7 +247,13 @@ const self = (module.exports = {
         index: `${params.resourceType}-index`,
         body: {
           query: {
-            bool: {},
+            bool: {
+              filter: {
+                term: {
+                  deleted: false,
+                },
+              },
+            },
           },
           highlight: {
             number_of_fragments: 3,

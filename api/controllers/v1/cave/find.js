@@ -3,7 +3,10 @@ const ControllerService = require('../../../services/ControllerService');
 const DescriptionService = require('../../../services/DescriptionService');
 const DocumentService = require('../../../services/DocumentService');
 const NameService = require('../../../services/NameService');
-const { toCave } = require('../../../services/mapping/converters');
+const {
+  toCave,
+  toDeletedCave,
+} = require('../../../services/mapping/converters');
 
 module.exports = async (req, res) => {
   const params = {
@@ -21,9 +24,17 @@ module.exports = async (req, res) => {
       .populate('reviewer')
       .populate('names');
 
-    // TODO How to delete/restore entity ?
-    if (!cave || cave.isDeleted)
-      return res.notFound(`${params.searchedItem} not found`);
+    if (!cave) return res.notFound(`${params.searchedItem} not found`);
+    if (cave.isDeleted) {
+      return ControllerService.treatAndConvert(
+        req,
+        null,
+        cave,
+        params,
+        res,
+        toDeletedCave
+      );
+    }
 
     [cave.massifs, cave.descriptions, ...cave.documents] = await Promise.all([
       CaveService.getMassifs(cave.id),
