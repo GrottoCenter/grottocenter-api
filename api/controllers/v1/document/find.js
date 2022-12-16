@@ -3,13 +3,15 @@ const ControllerService = require('../../../services/ControllerService');
 const DescriptionService = require('../../../services/DescriptionService');
 const DocumentService = require('../../../services/DocumentService');
 const ErrorService = require('../../../services/ErrorService');
-const { toDocument } = require('../../../services/mapping/converters');
+const {
+  toDocument,
+  toDeletedDocument,
+} = require('../../../services/mapping/converters');
 
 const NameService = require('../../../services/NameService');
 
 module.exports = async (req, res) => {
   let found;
-  let err;
   if (req.param('requireUpdate') === 'true') {
     const { id, modifiedDocJson } = await TDocument.findOne(req.param('id'));
     if (modifiedDocJson === null) {
@@ -126,9 +128,7 @@ module.exports = async (req, res) => {
       controllerMethod: 'DocumentController.find',
       searchedItem: `Document of id ${req.param('id')}`,
     };
-    if (!found) {
-      return res.notFound(`${params.searchedItem} not found`);
-    }
+    if (!found) return res.notFound(`${params.searchedItem} not found`);
     found.mainLanguage = await DocumentService.getMainLanguage(found.languages);
     await DocumentService.setNamesOfPopulatedDocument(found);
     await DescriptionService.setDocumentDescriptions(found);
@@ -142,10 +142,19 @@ module.exports = async (req, res) => {
   if (!found) {
     return res.json({ error: `${params.searchedItem} not found` });
   }
-
+  if (found.isDeleted) {
+    return ControllerService.treatAndConvert(
+      req,
+      null,
+      found,
+      params,
+      res,
+      toDeletedDocument
+    );
+  }
   return ControllerService.treatAndConvert(
     req,
-    err,
+    null,
     found,
     params,
     res,

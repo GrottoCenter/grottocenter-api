@@ -3,7 +3,10 @@ const ErrorService = require('../../../services/ErrorService');
 const MassifService = require('../../../services/MassifService');
 const NameService = require('../../../services/NameService');
 const DescriptionService = require('../../../services/DescriptionService');
-const { toMassif } = require('../../../services/mapping/converters');
+const {
+  toMassif,
+  toDeletedMassif,
+} = require('../../../services/mapping/converters');
 
 module.exports = async (req, res) => {
   try {
@@ -15,10 +18,17 @@ module.exports = async (req, res) => {
       .populate('documents');
     const params = {};
     params.searchedItem = `Massif of id ${req.params.id}`;
-    if (!massif) {
-      return res.notFound(`${params.searchedItem} not found`);
+    if (!massif) return res.notFound(`${params.searchedItem} not found`);
+    if (massif.isDeleted) {
+      return ControllerService.treatAndConvert(
+        req,
+        null,
+        massif,
+        params,
+        res,
+        toDeletedMassif
+      );
     }
-
     // Populate entrances
     massif.entrances = await MassifService.getEntrances(massif.id);
     await NameService.setNames(massif.entrances, 'entrance');

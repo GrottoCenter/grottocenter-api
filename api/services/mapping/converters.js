@@ -42,6 +42,18 @@ const c = {
     massifs: toList('massifs', source, c.toSimpleMassif),
   }),
 
+  toDeletedCave: (source) => ({
+    id: source.id,
+    '@id': String(source.id),
+    isDeleted: source.isDeleted,
+    redirectTo: source.redirectTo,
+    author: convertIfObject(source.author, c.toSimpleCaver),
+    reviewer: convertIfObject(source.reviewer, c.toSimpleCaver),
+    dateInscription: source.dateInscription,
+    dateReviewed: source.dateReviewed,
+    name: getMainName(source),
+  }),
+
   toSimpleCave: (source) => ({
     id: source.id,
     name: getMainName(source),
@@ -213,6 +225,7 @@ const c = {
     // point: source.point,
     author: convertIfObject(source.author, c.toSimpleCaver),
     reviewer: convertIfObject(source.reviewer, c.toSimpleCaver),
+    isDeleted: source.isDeleted,
   }),
 
   toDescription: (source) => ({
@@ -259,6 +272,7 @@ const c = {
     result.refBbs = source.ref_bbs ? source.ref_bbs : source.refBbs;
     result.title = source.title;
     result.validationComment = source.validationComment;
+    result.isDeleted = source.isDeleted;
 
     // Convert objects
     const {
@@ -342,7 +356,9 @@ const c = {
     }
 
     // Convert collections
-    result.authors = toList('authors', source, toCaver);
+    result.authors = toList('authors', source, toCaver, {
+      filterDeleted: false,
+    });
     result.children = toList('children', source, toDocument);
     result.files = toList('files', source, toFile);
     const formattedDescriptions = toList(
@@ -390,6 +406,17 @@ const c = {
     return result;
   },
 
+  toDeletedDocument: (source) => ({
+    id: source.id,
+    '@id': String(source.id),
+    isDeleted: source.isDeleted,
+    redirectTo: source.redirectTo,
+    dateInscription: source.dateInscription,
+    dateReviewed: source.dateReviewed,
+    author: convertIfObject(source.author, c.toSimpleCaver),
+    reviewer: convertIfObject(source.reviewer, c.toSimpleCaver),
+  }),
+
   toDocumentDuplicate: (source) => {
     const result = {
       ...DocumentDuplicateModel,
@@ -420,7 +447,6 @@ const c = {
     const result = {
       ...EntranceModel,
     };
-
     result['@id'] = String(source.id);
     result.id = source.id;
     result.isDeleted = source.isDeleted;
@@ -447,7 +473,6 @@ const c = {
     result.region = source.region;
     result.stats = source.stats;
     result.timeInfo = source.timeInfo; // Only used in random entrance
-
     // Convert objects
     if (source['cave name']) {
       // Elasticsearch
@@ -467,7 +492,6 @@ const c = {
     result.massifs = toList('massifs', source.cave ?? {}, c.toSimpleMassif);
     result.author = convertIfObject(source.author, c.toSimpleCaver);
     result.reviewer = convertIfObject(source.reviewer, c.toSimpleCaver);
-
     // Convert collections
     result.names = toList('names', source, c.toName);
     result.descriptions = toList('descriptions', source, c.toSimpleDescription);
@@ -476,7 +500,6 @@ const c = {
     result.histories = toList('histories', source, c.toSimpleHistory);
     result.locations = toList('locations', source, c.toSimpleLocation);
     result.riggings = toList('riggings', source, c.toSimpleRigging);
-
     // Massif from Elasticsearch
     if (source['massif name']) {
       result.massifs = {
@@ -486,26 +509,22 @@ const c = {
     return result;
   },
 
-  toDeletedEntrance: (source) => {
-    const result = {
-      ...EntranceModel,
-    };
-    result['@id'] = String(source.id);
-    result.id = source.id;
-    result.isDeleted = source.isDeleted;
-    result.isSensitive = source.isSensitive;
-    result.redirectTo = source.redirectTo;
-    result.dateInscription = source.dateInscription;
-    result.dateReviewed = source.dateReviewed;
-    result.country = source.country;
-    result.county = source.county;
-    result.city = source.city;
-    result.region = source.region;
-    result.name = getMainName(source);
-    result.author = convertIfObject(source.author, c.toSimpleCaver);
-    result.reviewer = convertIfObject(source.reviewer, c.toSimpleCaver);
-    return result;
-  },
+  toDeletedEntrance: (source) => ({
+    id: source.id,
+    '@id': String(source.id),
+    isDeleted: source.isDeleted,
+    isSensitive: source.isSensitive,
+    redirectTo: source.redirectTo,
+    author: convertIfObject(source.author, c.toSimpleCaver),
+    reviewer: convertIfObject(source.reviewer, c.toSimpleCaver),
+    dateInscription: source.dateInscription,
+    dateReviewed: source.dateReviewed,
+    name: getMainName(source),
+    country: source.country,
+    county: source.county,
+    city: source.city,
+    region: source.region,
+  }),
 
   toSimpleEntrance: (source) => ({
     id: source.id,
@@ -515,6 +534,7 @@ const c = {
     country: source.country,
     latitude: parseFloat(source.latitude),
     longitude: parseFloat(source.longitude),
+    isDeleted: source.isDeleted,
   }),
 
   toEntranceDuplicate: (source) => {
@@ -620,6 +640,7 @@ const c = {
     result.names = source.names;
     result.nbCaves = source['nb caves']; // from Elasticsearch
     result.nbEntrances = source['nb entrances']; // from Elasticsearch
+    result.isDeleted = source.isDeleted;
 
     // Convert objects
     const { toCave, toCaver, toSimpleDescription, toDocument, toEntrance } =
@@ -640,9 +661,22 @@ const c = {
     return result;
   },
 
+  toDeletedMassif: (source) => ({
+    id: source.id,
+    '@id': String(source.id),
+    isDeleted: source.isDeleted,
+    redirectTo: source.redirectTo,
+    author: convertIfObject(source.author, c.toSimpleCaver),
+    reviewer: convertIfObject(source.reviewer, c.toSimpleCaver),
+    dateInscription: source.dateInscription,
+    dateReviewed: source.dateReviewed,
+    name: getMainName(source),
+  }),
+
   toSimpleMassif: (source) => ({
     id: source.id,
     name: getMainName(source),
+    isDeleted: source.isDeleted,
   }),
 
   toName: (source) => ({
@@ -757,6 +791,7 @@ const c = {
     result.url = source.url;
     result.village = source.village;
     result.yearBirth = source.yearBirth;
+    result.isDeleted = source.isDeleted;
 
     // Convert collections
     const { toCave, toCaver, toDocument, toEntrance } = module.exports;
@@ -769,6 +804,22 @@ const c = {
 
     return result;
   },
+
+  toDeletedOrganization: (source) => ({
+    id: source.id,
+    '@id': String(source.id),
+    isDeleted: source.isDeleted,
+    redirectTo: source.redirectTo,
+    author: convertIfObject(source.author, c.toSimpleCaver),
+    reviewer: convertIfObject(source.reviewer, c.toSimpleCaver),
+    dateInscription: source.dateInscription,
+    dateReviewed: source.dateReviewed,
+    name: getMainName(source),
+    country: source.country,
+    county: source.county,
+    city: source.city,
+    region: source.region,
+  }),
 
   toSimpleRigging: (source) => ({
     id: source.id,

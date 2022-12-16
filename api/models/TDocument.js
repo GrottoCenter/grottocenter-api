@@ -118,6 +118,12 @@ module.exports = {
       defaultsTo: false,
     },
 
+    redirectTo: {
+      type: 'number',
+      allowNull: true,
+      columnName: 'redirect_to',
+    },
+
     entrance: {
       columnName: 'id_entrance',
       model: 'TEntrance',
