@@ -308,7 +308,12 @@ module.exports = {
     return updatedDocument;
   },
 
-  createDocument: async (req, documentData, langDescData) => {
+  createDocument: async (
+    req,
+    documentData,
+    langDescData,
+    shouldDownloadDistantFile = false
+  ) => {
     const document = await sails.getDatastore().transaction(async (db) => {
       // Perform some checks
       const docType =
@@ -368,23 +373,25 @@ module.exports = {
     ) {
       sails.log.info(`Downloading ${populatedDocument.identifier}...`);
       const acceptedFileFormats = await TFileFormat.find();
-      // Download distant file & tolerate error
 
-      const file = await sails.helpers.distantFileDownload
-        .with({
-          url: populatedDocument.identifier,
-          acceptedFileFormats: acceptedFileFormats.map((f) =>
-            f.extension.trim()
-          ),
-          refusedFileFormats: ['html'], // don't download html page, they are not a valid file for GC
-        })
-        .tolerate((error) =>
-          sails.log.error(
-            `Failed to download ${populatedDocument.identifier}: ${error.message}`
-          )
-        );
-      if (file) {
-        await FileService.create(file, document.id);
+      if (shouldDownloadDistantFile) {
+        // Download distant file & tolerate error
+        const file = await sails.helpers.distantFileDownload
+          .with({
+            url: populatedDocument.identifier,
+            acceptedFileFormats: acceptedFileFormats.map((f) =>
+              f.extension.trim()
+            ),
+            refusedFileFormats: ['html'], // don't download html page, they are not a valid file for GC
+          })
+          .tolerate((error) =>
+            sails.log.error(
+              `Failed to download ${populatedDocument.identifier}: ${error.message}`
+            )
+          );
+        if (file) {
+          await FileService.create(file, document.id);
+        }
       }
     }
 

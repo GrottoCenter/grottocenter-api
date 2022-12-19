@@ -106,7 +106,8 @@ module.exports = async (req, res) => {
       const createdDocument = await DocumentService.createDocument(
         req,
         dataDocument,
-        dataLangDesc
+        dataLangDesc,
+        true
       );
       // eslint-disable-next-line no-await-in-loop
       const docFiles = await TFile.find({ document: createdDocument.id });
