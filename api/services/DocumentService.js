@@ -280,6 +280,34 @@ module.exports = {
     }));
   },
 
+  updateDocument: async (req, newData, newDescriptionData, newFiles) => {
+    const jsonData = {
+      ...newData,
+      ...newDescriptionData,
+      id: req.param('id'),
+      author: req.token.id,
+      newFiles: ramda.isEmpty(newFiles) ? undefined : newFiles,
+    };
+    const updatedDocument = await TDocument.updateOne(req.param('id')).set({
+      isValidated: false,
+      dateValidation: null,
+      dateReviewed: new Date(),
+      modifiedDocJson: jsonData,
+    });
+
+    await NotificationService.notifySubscribers(
+      req,
+      updatedDocument,
+      req.token.id,
+      NOTIFICATION_TYPES.UPDATE,
+      NOTIFICATION_ENTITIES.DOCUMENT
+    );
+
+    await DescriptionService.setDocumentDescriptions(updatedDocument, false);
+
+    return updatedDocument;
+  },
+
   createDocument: async (req, documentData, langDescData) => {
     const document = await sails.getDatastore().transaction(async (db) => {
       // Perform some checks
