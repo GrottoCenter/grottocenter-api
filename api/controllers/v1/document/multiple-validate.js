@@ -63,25 +63,19 @@ module.exports = async (req, res) => {
                 } = doc.modifiedDocJson;
                 cleanedData.modifiedDocJson = null;
                 const updatedDocument = await TDocument.updateOne(doc.id)
-                  .set(cleanedData)
+                  .set({
+                    ...cleanedData,
+                    // Currently, only one language per document is allowed
+                    ...(documentMainLanguage && {
+                      languages: documentMainLanguage.id,
+                    }),
+                  })
                   .usingConnection(db);
                 if (!updatedDocument) {
                   return res.notFound();
                 }
 
                 // Update associated data not handled by TDocument manually
-                if (documentMainLanguage) {
-                  await JDocumentLanguage.updateOne({
-                    document: updatedDocument.id,
-                  })
-                    .set({
-                      document: updatedDocument.id,
-                      language: documentMainLanguage.id,
-                      isMain: true,
-                    })
-                    .usingConnection(db);
-                }
-
                 await TDescription.updateOne({ document: updatedDocument.id })
                   .set({
                     author,

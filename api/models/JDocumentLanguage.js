@@ -22,7 +22,7 @@ module.exports = {
     isMain: {
       columnName: 'is_main',
       allowNull: false,
-      defaultsTo: false,
+      defaultsTo: true,
       type: 'boolean',
     },
   },
