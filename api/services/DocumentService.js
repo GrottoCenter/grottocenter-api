@@ -280,7 +280,40 @@ module.exports = {
     }));
   },
 
-  createDocument: async (req, documentData, langDescData) => {
+  updateDocument: async (req, newData, newDescriptionData, newFiles) => {
+    const jsonData = {
+      ...newData,
+      ...newDescriptionData,
+      id: req.param('id'),
+      author: req.token.id,
+      newFiles: ramda.isEmpty(newFiles) ? undefined : newFiles,
+    };
+    const updatedDocument = await TDocument.updateOne(req.param('id')).set({
+      isValidated: false,
+      dateValidation: null,
+      dateReviewed: new Date(),
+      modifiedDocJson: jsonData,
+    });
+
+    await NotificationService.notifySubscribers(
+      req,
+      updatedDocument,
+      req.token.id,
+      NOTIFICATION_TYPES.UPDATE,
+      NOTIFICATION_ENTITIES.DOCUMENT
+    );
+
+    await DescriptionService.setDocumentDescriptions(updatedDocument, false);
+
+    return updatedDocument;
+  },
+
+  createDocument: async (
+    req,
+    documentData,
+    langDescData,
+    shouldDownloadDistantFile = false
+  ) => {
     const document = await sails.getDatastore().transaction(async (db) => {
       // Perform some checks
       const docType =
@@ -340,23 +373,25 @@ module.exports = {
     ) {
       sails.log.info(`Downloading ${populatedDocument.identifier}...`);
       const acceptedFileFormats = await TFileFormat.find();
-      // Download distant file & tolerate error
 
-      const file = await sails.helpers.distantFileDownload
-        .with({
-          url: populatedDocument.identifier,
-          acceptedFileFormats: acceptedFileFormats.map((f) =>
-            f.extension.trim()
-          ),
-          refusedFileFormats: ['html'], // don't download html page, they are not a valid file for GC
-        })
-        .tolerate((error) =>
-          sails.log.error(
-            `Failed to download ${populatedDocument.identifier}: ${error.message}`
-          )
-        );
-      if (file) {
-        await FileService.create(file, document.id);
+      if (shouldDownloadDistantFile) {
+        // Download distant file & tolerate error
+        const file = await sails.helpers.distantFileDownload
+          .with({
+            url: populatedDocument.identifier,
+            acceptedFileFormats: acceptedFileFormats.map((f) =>
+              f.extension.trim()
+            ),
+            refusedFileFormats: ['html'], // don't download html page, they are not a valid file for GC
+          })
+          .tolerate((error) =>
+            sails.log.error(
+              `Failed to download ${populatedDocument.identifier}: ${error.message}`
+            )
+          );
+        if (file) {
+          await FileService.create(file, document.id);
+        }
       }
     }
 

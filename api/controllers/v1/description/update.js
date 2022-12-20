@@ -2,6 +2,7 @@ const ControllerService = require('../../../services/ControllerService');
 const ErrorService = require('../../../services/ErrorService');
 const NotificationService = require('../../../services/NotificationService');
 const RightService = require('../../../services/RightService');
+const DescriptionService = require('../../../services/DescriptionService');
 const {
   NOTIFICATION_TYPES,
   NOTIFICATION_ENTITIES,
@@ -9,69 +10,63 @@ const {
 const { toDescription } = require('../../../services/mapping/converters');
 
 module.exports = async (req, res) => {
-  // Check right
-  const hasRight = await sails.helpers.checkRight
-    .with({
-      groups: req.token.groups,
-      rightEntity: RightService.RightEntities.DESCRIPTION,
-      rightAction: RightService.RightActions.EDIT_ANY,
-    })
-    .intercept('rightNotFound', () =>
-      res.serverError(
-        'A server error occured when checking your right to update any description.'
-      )
-    );
-  if (!hasRight) {
-    return res.forbidden('You are not authorized to update any description.');
-  }
-
-  // Check if description exists
-  const descriptionId = req.param('id');
-  const currentDescription = await TDescription.findOne(descriptionId);
-  if (!currentDescription) {
-    return res.notFound({
-      message: `Description of id ${descriptionId} not found.`,
-    });
-  }
-
-  const cleanedData = {
-    body: req.param('body') ? req.param('body') : currentDescription.body,
-    title: req.param('title') ? req.param('title') : currentDescription.title,
-    language: req.param('language')
-      ? req.param('language')
-      : currentDescription.language,
-  };
-
-  // Launch update request
   try {
-    await TDescription.updateOne({
-      id: descriptionId,
-    }).set(cleanedData);
-    const newDescription = await TDescription.findOne(descriptionId)
-      .populate('author')
-      .populate('cave')
-      .populate('document')
-      .populate('entrance')
-      .populate('exit')
-      .populate('language')
-      .populate('massif')
-      .populate('reviewer');
+    const hasRight = await sails.helpers.checkRight
+      .with({
+        groups: req.token.groups,
+        rightEntity: RightService.RightEntities.DESCRIPTION,
+        rightAction: RightService.RightActions.EDIT_ANY,
+      })
+      .intercept('rightNotFound', () =>
+        res.serverError(
+          'A server error occured when checking your right to update any description.'
+        )
+      );
+    if (!hasRight) {
+      return res.forbidden('You are not authorized to update any description.');
+    }
 
+    const descriptionId = req.param('id');
+    const rawDescription = await TDescription.findOne(descriptionId);
+    // TODO How to delete/restore entity ?
+    if (!rawDescription || rawDescription.isDeleted) {
+      return res.notFound({
+        message: `Description of id ${descriptionId} not found.`,
+      });
+    }
+
+    const newTitle = req.param('title');
+    const newBody = req.param('body');
+    const newLanguage = req.param('language');
+
+    const updatedFields = {
+      reviewer: req.token.id,
+      // dateReviewed will be updated automaticly by the SQL historisation trigger
+    };
+
+    if (newTitle) updatedFields.title = newTitle;
+    if (newBody) updatedFields.body = newBody;
+    if (newLanguage) updatedFields.language = newLanguage;
+    // TODO re-compute relevance ?
+
+    await TDescription.updateOne({ id: descriptionId }).set(updatedFields);
+
+    const populatedDescription = await DescriptionService.getDescription(
+      descriptionId
+    );
     await NotificationService.notifySubscribers(
       req,
-      newDescription,
+      populatedDescription,
       req.token.id,
       NOTIFICATION_TYPES.UPDATE,
       NOTIFICATION_ENTITIES.DESCRIPTION
     );
 
-    const params = {};
-    params.controllerMethod = 'DescriptionController.update';
     return ControllerService.treatAndConvert(
       req,
       null,
-      newDescription,
-      params,
+      populatedDescription,
+      { controllerMethod: 'DescriptionController.update' },
       res,
       toDescription
     );

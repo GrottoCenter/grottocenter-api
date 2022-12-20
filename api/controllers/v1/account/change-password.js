@@ -6,13 +6,13 @@ const TokenService = require('../../../services/TokenService');
 const ErrorService = require('../../../services/ErrorService');
 const RightService = require('../../../services/RightService');
 
-const { createHashedPassword, tokenSalt } = AuthService;
+const { createHashedPassword } = AuthService;
 
 const PASSWORD_MIN_LENGTH = 8;
 
 const getResetPasswordTokenSalt = (user) => {
   const { dateInscription, id, password } = user;
-  return password + id + dateInscription + tokenSalt;
+  return password + id + dateInscription + TokenService.tokenSalt;
 };
 
 // eslint-disable-next-line consistent-return
@@ -51,7 +51,7 @@ module.exports = async (req, res) => {
       await TCaver.updateOne({
         id: req.token.id,
       }).set({
-        password: createHashedPassword(password),
+        password: await createHashedPassword(password),
       });
 
       return res.ok();
@@ -99,7 +99,7 @@ module.exports = async (req, res) => {
       await TCaver.updateOne({
         id: decodedToken.userId,
       }).set({
-        password: createHashedPassword(password),
+        password: await createHashedPassword(password),
       });
 
       return res.ok();

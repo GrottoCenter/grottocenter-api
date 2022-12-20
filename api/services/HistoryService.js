@@ -1,26 +1,21 @@
 module.exports = {
+  getHistory: async (historyId, { includeDeleted = false } = {}) =>
+    THistory.findOne({ id: historyId, isDeleted: includeDeleted })
+      .populate('author')
+      .populate('reviewer'),
+
   getCaveHistories: async (caveId) => {
-    let histories = [];
-    if (caveId) {
-      histories = await THistory.find()
-        .where({
-          cave: caveId,
-        })
-        .populate('author')
-        .populate('language');
-    }
-    return histories;
+    if (!caveId) return [];
+    return THistory.find()
+      .where({ cave: caveId })
+      .populate('author')
+      .populate('reviewer');
   },
-  getEntranceHistories: async (entranceId) => {
-    let histories = [];
-    if (entranceId) {
-      histories = await THistory.find()
-        .where({
-          entrance: entranceId,
-        })
-        .populate('author')
-        .populate('language');
-    }
-    return histories;
+  getEntranceHistories: async (entranceId, { includeDeleted = false } = {}) => {
+    if (!entranceId) return [];
+    return THistory.find()
+      .where({ entrance: entranceId, isDeleted: includeDeleted })
+      .populate('author')
+      .populate('reviewer');
   },
 };

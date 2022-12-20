@@ -5,7 +5,7 @@ module.exports = (req, res) => {
   if (!entranceId) {
     return res.badRequest('EntranceId param is missing');
   }
-  return CommentService.getStats(entranceId).then(
+  return CommentService.getStatsFromId(entranceId).then(
     (result) => res.json(result),
     (err) => res.serverError(`getEntranceStats error : ${err}`)
   );

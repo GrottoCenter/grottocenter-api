@@ -50,7 +50,7 @@ module.exports = async (req, res) => {
 
     if (initialCave.entrances.length === 0) {
       await TCave.update(initialCave.id).set({
-        redirect_to: destinationCaveId,
+        redirectTo: destinationCaveId,
       });
       await CaveService.deleteCave(req, initialCave.id);
     }
@@ -62,6 +62,9 @@ module.exports = async (req, res) => {
     const updatedEntrance = await TEntrance.findOne(entranceId).populate(
       'cave'
     );
+    updatedEntrance.cave.entrances = await TEntrance.find().where({
+      cave: entrance.cave.id,
+    });
     const params = {
       controllerMethod: 'EntranceController.moveToCave',
     };

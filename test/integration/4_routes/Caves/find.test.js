@@ -1,6 +1,7 @@
 const supertest = require('supertest');
 const should = require('should');
 const CAVE_PROPERTIES = require('./CAVE_PROPERTIES');
+const CAVE_PROPERTIES_SHORT = require('./CAVE_PROPERTIES_SHORT');
 
 describe('Cave features', () => {
   describe('find', () => {
@@ -25,7 +26,7 @@ describe('Cave features', () => {
           should(cave.names).not.be.empty();
           should(cave.author).not.be.empty();
           cave.entrances.forEach((entrance) => {
-            should(entrance.names).not.be.empty();
+            should(entrance.name).not.be.empty();
           });
           return done();
         });
@@ -44,10 +45,8 @@ describe('Cave features', () => {
             body: { caves },
           } = res;
           caves.forEach((cave) => {
-            should(cave).have.properties(CAVE_PROPERTIES);
-            should(cave.name).not.be.empty();
-            should(cave.names).not.be.empty();
-            should(cave.author).not.be.empty();
+            should(cave).have.properties(CAVE_PROPERTIES_SHORT);
+            should(cave).not.be.empty();
           });
           return done();
         });

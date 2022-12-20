@@ -25,8 +25,6 @@ module.exports.http = {
    *************************************************************************** */
 
   middleware: {
-    passportInit: require('passport').initialize(),
-
     // Requests limiter configuration
     generalRateLimit: rateLimiter.generalRateLimit,
     userDeleteRateLimit: rateLimiter.userDeleteRateLimit,
@@ -40,13 +38,12 @@ module.exports.http = {
      ************************************************************************** */
 
     order: [
-      'cookieParser',
-      'session',
-      'passportInit',
       'parseAuthToken',
       'generalRateLimit',
       'userDeleteRateLimit',
       'moderatorDeleteRateLimit',
+      'responseTimeLogger',
+      'requestLogger',
       'fileMiddleware',
       'bodyParser',
       'compress',
@@ -114,6 +111,26 @@ module.exports.http = {
       const upload = multer({ storage: inMemoryStorage, fileSize: 100000000 });
       return upload.fields([{ name: 'files' }]);
     })(),
+
+    // Logs each request to the console
+    requestLogger(req, res, next) {
+      sails.log.info('Req ::', req.method, req.url);
+      return next();
+    },
+
+    // Logs each request response to the console (with status and time)
+    responseTimeLogger(req, res, next) {
+      res.on('finish', () => {
+        sails.log.info(
+          'Res ::',
+          req.method,
+          req.url,
+          res.statusCode,
+          res.get('X-Response-Time')
+        );
+      });
+      require('response-time')()(req, res, next);
+    },
   },
 
   /** *************************************************************************

@@ -83,7 +83,7 @@ describe('Cave features', () => {
         sourceCaveId = (
           await TCave.create({
             depth: sourceCaveDepth,
-            length: sourceCaveLength,
+            caveLength: sourceCaveLength,
           }).fetch()
         ).id;
         should(destinationCaveId).not.be.undefined();
@@ -94,7 +94,7 @@ describe('Cave features', () => {
         const resultCave = await TCave.findOne(destinationCaveId);
         should(resultCave.depth).equal(destinationCaveDepth);
         should(resultCave.temperature).equal(destinationCaveTemperature);
-        should(resultCave.length).equal(sourceCaveLength);
+        should(resultCave.caveLength).equal(sourceCaveLength);
         should(await TCave.findOne(sourceCaveId)).be.undefined();
         await TCave.destroyOne(destinationCaveId);
       });

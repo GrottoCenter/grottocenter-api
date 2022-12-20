@@ -5,12 +5,6 @@
  * @docs        :: http://sailsjs.org/#!documentation/models
  */
 
-// ===== 05/04/2021 - Note from Clément ROIG ===== //
-/**
- * The TCave.create() function doesn't work with TCave field alias.
- * See https://github.com/balderdashy/sails/issues/7106
- */
-
 module.exports = {
   tableName: 't_cave',
 
@@ -24,13 +18,13 @@ module.exports = {
       unique: true,
     },
 
-    id_author: {
+    author: {
       allowNull: false,
       columnName: 'id_author',
       model: 'TCaver',
     },
 
-    id_reviewer: {
+    reviewer: {
       columnName: 'id_reviewer',
       model: 'TCaver',
     },
@@ -58,13 +52,17 @@ module.exports = {
       allowNull: true,
     },
 
-    length: {
+    // Due to to an issue in sail ORM (waterline)
+    // We cannot have a property named 'length' or else
+    // the columnName resolution will not work anymore for this model
+    // https://github.com/balderdashy/sails/issues/7106#issuecomment-1341652168
+    caveLength: {
       type: 'number',
       columnName: 'length',
       allowNull: true,
     },
 
-    is_diving: {
+    isDiving: {
       type: 'boolean',
       allowNull: false,
       columnName: 'is_diving',
@@ -77,21 +75,21 @@ module.exports = {
       columnName: 'temperature',
     },
 
-    date_inscription: {
+    dateInscription: {
       type: 'ref',
       allowNull: false,
       columnName: 'date_inscription',
       columnType: 'timestamp',
     },
 
-    date_reviewed: {
+    dateReviewed: {
       type: 'ref',
       allowNull: false,
       columnName: 'date_reviewed',
       columnType: 'timestamp',
     },
 
-    is_deleted: {
+    isDeleted: {
       type: 'boolean',
       allowNull: false,
       columnName: 'is_deleted',
@@ -116,7 +114,7 @@ module.exports = {
       columnType: 'numeric(24,20)',
     },
 
-    redirect_to: {
+    redirectTo: {
       type: 'number',
       allowNull: true,
       columnName: 'redirect_to',

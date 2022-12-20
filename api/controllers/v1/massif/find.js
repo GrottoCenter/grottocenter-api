@@ -9,6 +9,7 @@ module.exports = async (req, res) => {
   try {
     const massif = await TMassif.findOne(req.params.id)
       .populate('author')
+      .populate('reviewer')
       .populate('names')
       .populate('descriptions')
       .populate('documents');
@@ -22,7 +23,7 @@ module.exports = async (req, res) => {
     massif.entrances = await MassifService.getEntrances(massif.id);
     await NameService.setNames(massif.entrances, 'entrance');
 
-    // Populate networks
+    // Populate networks (cave)
     massif.networks = await MassifService.getNetworks(massif.id);
     await NameService.setNames(massif.networks, 'cave');
 

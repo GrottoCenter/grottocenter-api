@@ -84,6 +84,12 @@ module.exports = {
       .populate('cave')
       .populate('documents')
       .populate('names');
+
+    if (entrance.cave)
+      entrance.cave.entrances = await TEntrance.find().where({
+        cave: entrance.cave.id,
+      });
+
     if (!ramda.isNil(entrance.documents)) {
       entrance.documents = await Promise.all(
         entrance.documents.map(async (doc) => ({
@@ -100,25 +106,9 @@ module.exports = {
    */
   completeRandomEntrance: async (entranceId) => {
     const entranceData = await module.exports.findEntrance(entranceId);
-    entranceData.stats = await CommentService.getStats(entranceId);
+    entranceData.stats = await CommentService.getStatsFromId(entranceId);
     entranceData.timeInfo = await CommentService.getTimeInfos(entranceId);
     return entranceData;
-  },
-
-  /**
-   * @returns {Promise} which resolves to the succesfully findAllInterestEntrances
-   */
-  findAllInterestEntrances: async () => {
-    const entrances = await CommonService.query(INTEREST_ENTRANCES_QUERY, []);
-
-    const allEntrances = [];
-    const mapEntrances = entrances.rows.map(async (item) => {
-      const entrance = await module.exports.completeRandomEntrance(item.id);
-      allEntrances.push(entrance);
-    });
-
-    await Promise.all(mapEntrances);
-    return allEntrances;
   },
 
   createEntrance: async (req, entranceData, nameDescLocData) => {

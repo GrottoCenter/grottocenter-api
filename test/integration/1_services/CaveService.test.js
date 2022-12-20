@@ -32,11 +32,11 @@ describe('CaveService', () => {
 
   describe('create()', () => {
     const caveData = {
-      id_author: 1,
-      is_diving: true,
+      author: 1,
+      isDiving: true,
       depth: 1234,
       latitude: 42.34,
-      length: 5678,
+      caveLength: 5678,
       longitude: 6.345676,
       temperature: 42,
     };
@@ -74,8 +74,8 @@ describe('CaveService', () => {
 
       // Cave data verifications
       should(createdCave.depth).equal(caveData.depth);
-      should(createdCave.id_author).equal(caveData.id_author);
-      should(createdCave.is_diving).equal(caveData.is_diving);
+      should(createdCave.author).equal(caveData.author);
+      should(createdCave.isDiving).equal(caveData.isDiving);
       should(parseFloat(createdCave.latitude)).equal(
         parseFloat(caveData.latitude)
       );
@@ -125,8 +125,8 @@ describe('CaveService', () => {
 
   describe('mergeCaves()', () => {
     const cave1Data = {
-      id_author: 1,
-      is_diving: false,
+      author: 1,
+      isDiving: false,
       depth: 1234,
       exploringGrottos: [1, 2],
       partneringGrottos: [1],
@@ -153,8 +153,8 @@ describe('CaveService', () => {
     ];
 
     const cave2Data = {
-      id_author: 2,
-      is_diving: true,
+      author: 2,
+      isDiving: true,
       depth: 12,
       exploringGrottos: [1, 3],
       partneringGrottos: [2, 3],
@@ -261,11 +261,11 @@ describe('CaveService', () => {
       // Destroy created data
       await TCave.destroyOne({
         depth: cleanedCave1Data.depth,
-        length: cleanedCave1Data.length,
+        caveLength: cleanedCave1Data.length,
       });
       await TCave.destroyOne({
         depth: cleanedCave2Data.depth,
-        length: cleanedCave2Data.length,
+        caveLength: cleanedCave2Data.length,
       });
       await TDescription.destroy({
         title: { in: descriptions1Data.map((d) => d.title) },
