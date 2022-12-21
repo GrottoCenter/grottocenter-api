@@ -1,7 +1,7 @@
 \c grottoce;
 
 INSERT INTO t_region (id, code, is_deprecated, "name", id_country) VALUES
-	(0, '--', false, 'the whole country', '00'),
+	(999, '--', false, 'the whole country', '00'),
 	(1, 'Abchazia', true, 'Abkhazia', 'GE'),
 	(2, 'Antilles', true, 'Antilles (Petites / Lesser) Antigua & Barbuda, Antilles néérlandaises (NL) (Curaçao), Barbados, Dominica, Grenada, Guadeloupe (F), Martinique (F), Montserrat (Commonw.), St.Kitts, Nevis & Anguilla, St. Lucia, St. Pierre(F), St. Vincent, Trinidad & Tobago', '00'),
 	(3, 'ArabieEmirats', true, NULL, 'SA'),
