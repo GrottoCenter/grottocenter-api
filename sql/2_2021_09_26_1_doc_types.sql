@@ -6,7 +6,7 @@ INSERT INTO t_type (id,"name","comment",id_parent,is_available,url) VALUES
 	 (3,'Event','A non-persistent, time-based occurrence',NULL,true,'http://purl.org/dc/dcmitype/Event'),
 	 (4,'Image','A visual representation other than text',NULL,true,'http://purl.org/dc/dcmitype/Image'),
 	 (5,'Interactive Resource','A resource requiring interaction from the user to be understood, executed, or experienced',NULL,true,'http://purl.org/dc/dcmitype/InteractiveResource'),
-	 (6,'Moving Image','A series of visual representations imparting an impression of motion when shown in succession',NULL,true,'http://purl.org/dc/dcmitype/MovingImage'),
+	 (6,'Moving Image','A serie of visual representations imparting an impression of motion when shown in succession',NULL,true,'http://purl.org/dc/dcmitype/MovingImage'),
 	 (7,'Physical Object','An inanimate, three-dimensional object or substance',NULL,true,'http://purl.org/dc/dcmitype/PhysicalObject'),
 	 (8,'Service','A system that provides one or more functions',NULL,true,'http://purl.org/dc/dcmitype/Service'),
 	 (9,'Software','A computer program in source or compiled form',NULL,true,'http://purl.org/dc/dcmitype/Software'),
