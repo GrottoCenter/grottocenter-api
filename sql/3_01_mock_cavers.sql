@@ -32,7 +32,7 @@ INSERT INTO public.t_caver (
     send_notification_by_email
 	)
 VALUES (
-		0,
+		7,
 		'deleted',
 		'$argon2id$v=19$m=65536,t=3,p=4$uhUWVLfyiprNpi2kp7250Q$/h5Q3hfOOGse4w/3QGcacAQq2qUTzXc+dczYoCUEQEY', -- welcome1
 		false,

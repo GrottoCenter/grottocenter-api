@@ -1,7 +1,7 @@
 \c grottoce;
 
 INSERT INTO t_country (iso, iso3, "numeric", latitude, longitude, native_name, en_name, fr_name, es_name, de_name, bg_name, it_name, ca_name, nl_name, rs_name) VALUES
-	('00', '000', 0, NULL, NULL, '-Undefined-', '-Undefined-', '-Undefined-', '-Undefined-', '-Undefined-', '-Undefined-', '-Undefined-', '-Undefined-', '-Undefined-', '-Undefined-'),
+	('00', '000', 0, 0, 0, '-Undefined-', '-Undefined-', '-Undefined-', '-Undefined-', '-Undefined-', '-Undefined-', '-Undefined-', '-Undefined-', '-Undefined-', '-Undefined-'),
 	('AD', 'AND', 20, 42.54624500000000000000, 1.60155400000000000000, 'Andorra', 'Andorra', 'Andorre', 'Andorra', 'Andorra', 'Андора', 'Andorra', 'Andorra', 'Andorra', 'Andorra'),
 	('AE', 'ARE', 784, 23.42407600000000000000, 53.84781800000000000000, 'الامارات العربية المتحدة', 'United Arab Emirates', 'Emirats Arabes Unis', 'Emiratos Árabes Unidos', 'Vereinigte Arabische Emirate', 'Обединени Арабски Емирства', 'Emirati Arabi Uniti', 'Emirats Àrabs Units', 'Verenigde Arabische emiraten', 'United Arab Emirates'),
 	('AF', 'AFG', 4, 33.93911000000000000000, 67.70995300000000000000, 'افغانستان', 'Afghanistan', 'Afghanistan', 'Afganistán', 'Afghanistan', 'Афганистан', 'Afganistan', 'Afganistan', 'Afghanistan', 'Afghanistan'),
