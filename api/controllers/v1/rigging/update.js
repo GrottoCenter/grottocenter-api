@@ -3,7 +3,7 @@ const ErrorService = require('../../../services/ErrorService');
 const NotificationService = require('../../../services/NotificationService');
 const RightService = require('../../../services/RightService');
 const RiggingService = require('../../../services/RiggingService');
-const { toRigging } = require('../../../services/mapping/converters');
+const { toSimpleRigging } = require('../../../services/mapping/converters');
 const {
   NOTIFICATION_TYPES,
   NOTIFICATION_ENTITIES,
@@ -78,7 +78,7 @@ module.exports = async (req, res) => {
       populatedRigging,
       { controllerMethod: 'RiggingController.update' },
       res,
-      toRigging
+      toSimpleRigging
     );
   } catch (e) {
     return ErrorService.getDefaultErrorHandler(res)(e);

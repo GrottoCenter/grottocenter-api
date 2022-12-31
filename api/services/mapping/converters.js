@@ -475,7 +475,7 @@ const c = {
     result.documents = toList('documents', source, c.toDocument);
     result.histories = toList('histories', source, c.toSimpleHistory);
     result.locations = toList('locations', source, c.toSimpleLocation);
-    result.riggings = toList('riggings', source, c.toRigging);
+    result.riggings = toList('riggings', source, c.toSimpleRigging);
 
     // Massif from Elasticsearch
     if (source['massif name']) {
@@ -770,7 +770,7 @@ const c = {
     return result;
   },
 
-  toRigging: (source) => ({
+  toSimpleRigging: (source) => ({
     id: source.id,
     isDeleted: source.isDeleted,
     title: source.title,
@@ -781,6 +781,12 @@ const c = {
     obstacles: RiggingService.deserializeForAPI(source),
     author: convertIfObject(source.author, c.toSimpleCaver),
     reviewer: convertIfObject(source.reviewer, c.toSimpleCaver),
+  }),
+
+  toRigging: (source) => ({
+    ...c.toSimpleRigging(source),
+    entrance: convertIfObject(source.entrance, c.toSimpleEntrance),
+    cave: convertIfObject(source.cave, c.toSimpleCave),
   }),
 
   toSearchResult: (source) => {
