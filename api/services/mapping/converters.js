@@ -122,7 +122,7 @@ const c = {
     nickname: source.nickname,
   }),
 
-  toComment: (source) => ({
+  toSimpleComment: (source) => ({
     id: source.id,
     isDeleted: source.isDeleted,
     language: source.language,
@@ -139,6 +139,12 @@ const c = {
     // alert: source.alert; // TODO ?
     author: convertIfObject(source.author, c.toSimpleCaver),
     reviewer: convertIfObject(source.reviewer, c.toSimpleCaver),
+  }),
+
+  toComment: (source) => ({
+    ...c.toSimpleComment(source),
+    entrance: convertIfObject(source.entrance, c.toSimpleEntrance),
+    cave: convertIfObject(source.cave, c.toSimpleCave),
   }),
 
   toCompleteSearchResult: (source) => {
@@ -465,7 +471,7 @@ const c = {
     // Convert collections
     result.names = toList('names', source, c.toName);
     result.descriptions = toList('descriptions', source, c.toSimpleDescription);
-    result.comments = toList('comments', source, c.toComment);
+    result.comments = toList('comments', source, c.toSimpleComment);
     result.documents = toList('documents', source, c.toDocument);
     result.histories = toList('histories', source, c.toHistory);
     result.locations = toList('locations', source, c.toSimpleLocation);
