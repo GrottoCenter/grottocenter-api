@@ -473,7 +473,7 @@ const c = {
     result.descriptions = toList('descriptions', source, c.toSimpleDescription);
     result.comments = toList('comments', source, c.toSimpleComment);
     result.documents = toList('documents', source, c.toDocument);
-    result.histories = toList('histories', source, c.toHistory);
+    result.histories = toList('histories', source, c.toSimpleHistory);
     result.locations = toList('locations', source, c.toSimpleLocation);
     result.riggings = toList('riggings', source, c.toRigging);
 
@@ -546,7 +546,7 @@ const c = {
     };
   },
 
-  toHistory: (source) => ({
+  toSimpleHistory: (source) => ({
     id: source.id,
     body: source.body,
     dateInscription: source.dateInscription,
@@ -556,6 +556,12 @@ const c = {
     isDeleted: source.isDeleted,
     author: convertIfObject(source.author, c.toSimpleCaver),
     reviewer: convertIfObject(source.reviewer, c.toSimpleCaver),
+  }),
+
+  toHistory: (source) => ({
+    ...c.toSimpleHistory(source),
+    entrance: convertIfObject(source.entrance, c.toSimpleEntrance),
+    cave: convertIfObject(source.cave, c.toSimpleCave),
   }),
 
   toLanguage: (source) => {

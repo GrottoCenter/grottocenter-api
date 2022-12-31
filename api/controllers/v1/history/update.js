@@ -7,7 +7,7 @@ const {
 const NotificationService = require('../../../services/NotificationService');
 const RightService = require('../../../services/RightService');
 const HistoryService = require('../../../services/HistoryService');
-const { toHistory } = require('../../../services/mapping/converters');
+const { toSimpleHistory } = require('../../../services/mapping/converters');
 
 module.exports = async (req, res) => {
   try {
@@ -63,7 +63,7 @@ module.exports = async (req, res) => {
       populatedHistory,
       { controllerMethod: 'HistoryController.update' },
       res,
-      toHistory
+      toSimpleHistory
     );
   } catch (e) {
     return ErrorService.getDefaultErrorHandler(res)(e);
