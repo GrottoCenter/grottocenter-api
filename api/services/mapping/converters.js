@@ -468,7 +468,7 @@ const c = {
     result.comments = toList('comments', source, c.toComment);
     result.documents = toList('documents', source, c.toDocument);
     result.histories = toList('histories', source, c.toHistory);
-    result.locations = toList('locations', source, c.toLocation);
+    result.locations = toList('locations', source, c.toSimpleLocation);
     result.riggings = toList('riggings', source, c.toRigging);
 
     // Massif from Elasticsearch
@@ -574,7 +574,7 @@ const c = {
     return result;
   },
 
-  toLocation: (source) => ({
+  toSimpleLocation: (source) => ({
     id: source.id,
     body: source.body,
     dateInscription: source.dateInscription,
@@ -585,6 +585,13 @@ const c = {
     isDeleted: source.isDeleted,
     author: convertIfObject(source.author, c.toSimpleCaver),
     reviewer: convertIfObject(source.reviewer, c.toSimpleCaver),
+  }),
+
+  toLocation: (source) => ({
+    ...c.toSimpleLocation(source),
+    entrance: convertIfObject(source.entrance, c.toSimpleEntrance),
+    massif: convertIfObject(source.massif, c.toSimpleMassif),
+    cave: convertIfObject(source.cave, c.toSimpleCave),
   }),
 
   toMassif: (source) => {
