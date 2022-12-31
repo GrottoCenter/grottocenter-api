@@ -36,7 +36,7 @@ const c = {
     longitude: parseFloat(source.longitude),
 
     names: toList('names', source, c.toName),
-    descriptions: toList('descriptions', source, c.toDescription),
+    descriptions: toList('descriptions', source, c.toSimpleDescription),
     entrances: toList('entrances', source, c.toSimpleEntrance),
     documents: toList('documents', source, c.toDocument),
     massifs: toList('massifs', source, c.toSimpleMassif),
@@ -196,7 +196,7 @@ const c = {
     return res;
   },
 
-  toDescription: (source) => ({
+  toSimpleDescription: (source) => ({
     id: source.id,
     language: source.language,
     title: source.title,
@@ -207,6 +207,13 @@ const c = {
     // point: source.point,
     author: convertIfObject(source.author, c.toSimpleCaver),
     reviewer: convertIfObject(source.reviewer, c.toSimpleCaver),
+  }),
+
+  toDescription: (source) => ({
+    ...c.toSimpleDescription(source),
+    entrance: convertIfObject(source.entrance, c.toSimpleEntrance),
+    massif: convertIfObject(source.massif, c.toSimpleMassif),
+    cave: convertIfObject(source.cave, c.toSimpleCave),
   }),
 
   toDocument: (source) => {
@@ -250,7 +257,7 @@ const c = {
     // Convert objects
     const {
       toCaver,
-      toDescription,
+      toSimpleDescription,
       toDocument,
       toFile,
       toOrganization,
@@ -332,7 +339,11 @@ const c = {
     result.authors = toList('authors', source, toCaver);
     result.children = toList('children', source, toDocument);
     result.files = toList('files', source, toFile);
-    const formattedDescriptions = toList('descriptions', source, toDescription);
+    const formattedDescriptions = toList(
+      'descriptions',
+      source,
+      toSimpleDescription
+    );
 
     // source.descriptions contains both title and descriptions (in .title and .body)
     // Split them in 2 different attributes
@@ -453,7 +464,7 @@ const c = {
 
     // Convert collections
     result.names = toList('names', source, c.toName);
-    result.descriptions = toList('descriptions', source, c.toDescription);
+    result.descriptions = toList('descriptions', source, c.toSimpleDescription);
     result.comments = toList('comments', source, c.toComment);
     result.documents = toList('documents', source, c.toDocument);
     result.histories = toList('histories', source, c.toHistory);
@@ -592,7 +603,7 @@ const c = {
     result.nbEntrances = source['nb entrances']; // from Elasticsearch
 
     // Convert objects
-    const { toCave, toCaver, toDescription, toDocument, toEntrance } =
+    const { toCave, toCaver, toSimpleDescription, toDocument, toEntrance } =
       module.exports;
     result.author =
       source.author instanceof Object ? toCaver(source.author) : source.author;
@@ -603,7 +614,7 @@ const c = {
 
     // Convert collections
     result.entrances = toList('entrances', source, toEntrance);
-    result.descriptions = toList('descriptions', source, toDescription);
+    result.descriptions = toList('descriptions', source, toSimpleDescription);
     result.documents = toList('documents', source, toDocument);
     result.networks = toList('networks', source, toCave);
 
