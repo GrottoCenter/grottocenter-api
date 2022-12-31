@@ -9,7 +9,7 @@ const NotificationService = require('../../../services/NotificationService');
 const RightService = require('../../../services/RightService');
 const RiggingService = require('../../../services/RiggingService');
 const ParametersValidatorService = require('../../../services/ParametersValidatorService');
-const { toRigging } = require('../../../services/mapping/converters');
+const { toSimpleRigging } = require('../../../services/mapping/converters');
 
 module.exports = async (req, res) => {
   try {
@@ -74,7 +74,7 @@ module.exports = async (req, res) => {
       populatedRigging,
       { controllerMethod: 'RiggingController.create' },
       res,
-      toRigging
+      toSimpleRigging
     );
   } catch (e) {
     return ErrorService.getDefaultErrorHandler(res)(e);
