@@ -7,7 +7,7 @@ const {
 const NotificationService = require('../../../services/NotificationService');
 const RightService = require('../../../services/RightService');
 const CommentService = require('../../../services/CommentService');
-const { toComment } = require('../../../services/mapping/converters');
+const { toSimpleComment } = require('../../../services/mapping/converters');
 
 const { checkRight } = sails.helpers;
 
@@ -81,7 +81,7 @@ module.exports = async (req, res) => {
       populatedComment,
       { controllerMethod: 'CommentController.update' },
       res,
-      toComment
+      toSimpleComment
     );
   } catch (e) {
     return ErrorService.getDefaultErrorHandler(res)(e);

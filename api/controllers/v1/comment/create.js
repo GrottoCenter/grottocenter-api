@@ -8,7 +8,7 @@ const NotificationService = require('../../../services/NotificationService');
 const RightService = require('../../../services/RightService');
 const CommentService = require('../../../services/CommentService');
 const ParametersValidatorService = require('../../../services/ParametersValidatorService');
-const { toComment } = require('../../../services/mapping/converters');
+const { toSimpleComment } = require('../../../services/mapping/converters');
 
 module.exports = async (req, res) => {
   try {
@@ -73,7 +73,7 @@ module.exports = async (req, res) => {
       populatedComment,
       { controllerMethod: 'CommentController.create' },
       res,
-      toComment
+      toSimpleComment
     );
   } catch (e) {
     return ErrorService.getDefaultErrorHandler(res)(e);
