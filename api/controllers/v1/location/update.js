@@ -3,7 +3,7 @@ const ErrorService = require('../../../services/ErrorService');
 const NotificationService = require('../../../services/NotificationService');
 const RightService = require('../../../services/RightService');
 const LocationService = require('../../../services/LocationService');
-const { toLocation } = require('../../../services/mapping/converters');
+const { toSimpleLocation } = require('../../../services/mapping/converters');
 const {
   NOTIFICATION_TYPES,
   NOTIFICATION_ENTITIES,
@@ -66,7 +66,7 @@ module.exports = async (req, res) => {
       populatedLocation,
       { controllerMethod: 'LocationController.update' },
       res,
-      toLocation
+      toSimpleLocation
     );
   } catch (e) {
     return ErrorService.getDefaultErrorHandler(res)(e);
