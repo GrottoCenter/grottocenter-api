@@ -51,7 +51,7 @@ const c = {
     depth: source.depth,
     temperature: source.temperature,
     isDiving: source.isDiving,
-    entrances: source.entrances.map((e) => e.id),
+    entrances: source.entrances?.map((e) => e.id),
   }),
 
   toCaver: (source) => {
