@@ -164,6 +164,7 @@ module.exports.policies = {
   'v1/massif/unsubscribe': ['tokenAuth', 'leaderAuth'],
   'v1/massif/delete-one': ['tokenAuth', 'moderatorAuth'],
   'v1/massif/find': true,
+  'v1/massif/get-statistics': true,
   'v1/massif/update': 'tokenAuth',
 
   // Name

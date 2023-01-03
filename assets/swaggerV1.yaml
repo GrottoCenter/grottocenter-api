@@ -2431,6 +2431,28 @@ paths:
         '403':
           description: Forbidden you don't have the rights to update massifs
 
+  '/massifs/{id}/statistics':
+    get:
+      tags:
+        - massifs
+      description: Get the statistics about a massif, number of caves, of networks, cave with max depth and length, number of diving caves, average depth and length & total length.
+      parameters:
+        - name: id
+          in: path
+          description: Massif id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Statistics-massif'
+        '404':
+          description: Resource not found
+
   '/organizations':
     post:
       tags:
@@ -3605,3 +3627,47 @@ components:
           observation:
             type: string
             example: Les AN sont des arbres.
+
+    Statistics-massif:
+      type: object
+      properties:
+        nb_caves:
+          type: integer
+        nb_networks:
+          type: integer
+        cave_with_max_depth:
+          $ref: '#/components/schemas/Specific-cave'
+        cave_with_max_length:
+          $ref: '#/components/schemas/Specific-cave'
+        diving_caves:
+          type: integer
+        avg:
+          $ref: '#/components/schemas/Average-values'
+        total_length:
+          $ref: '#/components/schemas/Total-values'
+
+    Specific-cave:
+      type: object
+      properties:
+        id_cave:
+          type: integer
+        name_cave:
+          type: string
+        value:
+          type: integer
+
+    Average-values:
+      type: object
+      properties:
+        avg_depth:
+          type: integer
+        avg_length:
+          type: integer
+
+    Total-values:
+      type: object
+      properties:
+        value:
+          type: integer
+        nb_data:
+          type: integer
