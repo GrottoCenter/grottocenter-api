@@ -1,8 +1,8 @@
-# Grottocenter 3 API
+# Grottocenter API
 
 **Grottocenter** is The Wiki database made by cavers for cavers!
 
-This github project is the backend application which provide the Grottocenter API to the grottocenter front app.
+This GitHub project is the backend application which provide the Grottocenter API to the grottocenter front app.
 
 For the Front-End See the [grottocenter-front project](https://github.com/GrottoCenter/grottocenter-front)
 
@@ -50,7 +50,7 @@ Decharte, Dominique Lagrenee.
 
 Software requirement:
 
-- NodeJS (v16.x.x recommended, you can also use the .nvmrc file with nvm)
+- NodeJS (v18.x.x recommended, you can also use the .nvmrc file with nvm)
 - NPM (v8.x.x recommended)
 - Git client (see [Git usage](#git) for configuration)
 - Docker
@@ -59,7 +59,7 @@ Software requirement:
 Clone the project on your computer:
 
 ```
-> git clone https://github.com/GrottoCenter/Grottocenter3.git
+> git clone https://github.com/GrottoCenter/Grottocenter-api.git
 ```
 
 ## Usage
@@ -195,23 +195,19 @@ See the wiki article [Automated data versioning](https://github.com/GrottoCenter
 
 ## Build
 
-Build is run by Github Actions on every push. See `build.yaml` to see what is run during the build workflow.
+Build is run by GitHub Actions on every push. See `build.yaml` to see what is run during the build workflow.
 
-If the build is triggered from a push on `master` then this workflow generates an artifact (`latest.tar.gz`) which is temporary stored on github for 1 day and permanently stored on AWS S3 for production deployment.
+If the build is triggered from a push on `master` then a deployment of the API to Azure App Service is automatically triggered.
 
 ## Deployment in production
 
-Deployment done with Github Actions and AWS CodeDeploy.
+Deployment done with GitHub Actions and Azure App Service.
 
 You first need to merge your changes to `master` using if possible the `git flow release start vXX.X.X` command.
 
-Don't forget to update the version number on the swagger file and on the package.json file.
+Don't forget to update the version number on the `swagger` file and on the `package.json` file.
 
 when the merge on master is completed, you should create a release for the newly pushed tag.
-
-To Deploy you need to run manually the Actions workflow `Deploy to api.grottocenter.org` on the `master` branch from the Github Actions page.
-
-If you trigger the deployment workflow manually, the execution will be paused until an administrator validate it.
 
 For more information see the wiki page [Production deployment](https://github.com/GrottoCenter/Grottocenter3/wiki/Production-deployment)
 

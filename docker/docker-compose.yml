@@ -49,6 +49,8 @@ services:
       - cluster.routing.allocation.disk.watermark.low=3gb
       - cluster.routing.allocation.disk.watermark.high=2gb
       - cluster.routing.allocation.disk.watermark.flood_stage=1gb
+      - http.cors.enabled=true
+      - http.cors.allow-origin=https://app.elasticvue.com
     volumes:
       - gc-es-data:/usr/share/elasticsearch/data
     restart: always

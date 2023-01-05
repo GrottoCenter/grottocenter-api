@@ -8,7 +8,7 @@ const NotificationService = require('../../../services/NotificationService');
 const RightService = require('../../../services/RightService');
 const ParametersValidatorService = require('../../../services/ParametersValidatorService');
 const LocationService = require('../../../services/LocationService');
-const { toLocation } = require('../../../services/mapping/converters');
+const { toSimpleLocation } = require('../../../services/mapping/converters');
 
 module.exports = async (req, res) => {
   try {
@@ -68,7 +68,7 @@ module.exports = async (req, res) => {
       locationPopulated,
       { controllerMethod: 'LocationController.create' },
       res,
-      toLocation
+      toSimpleLocation
     );
   } catch (e) {
     return ErrorService.getDefaultErrorHandler(res)(e);

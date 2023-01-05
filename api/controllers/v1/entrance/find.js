@@ -7,7 +7,10 @@ const RiggingService = require('../../../services/RiggingService');
 const DescriptionService = require('../../../services/DescriptionService');
 const HistoryService = require('../../../services/HistoryService');
 const LocationService = require('../../../services/LocationService');
-const { toEntrance } = require('../../../services/mapping/converters');
+const {
+  toEntrance,
+  toDeletedEntrance,
+} = require('../../../services/mapping/converters');
 const ErrorService = require('../../../services/ErrorService');
 
 module.exports = async (req, res) => {
@@ -20,22 +23,28 @@ module.exports = async (req, res) => {
       .populate('names');
 
     const params = { searchedItem: `Entrance of id ${req.params.id}` };
-    // TODO How to delete/restore entity ?
-    if (!entrance || entrance.isDeleted)
-      return res.notFound(`${params.searchedItem} not found`);
 
+    if (!entrance) return res.notFound(`${params.searchedItem} not found`);
+    if (entrance.isDeleted) {
+      return ControllerService.treatAndConvert(
+        req,
+        null,
+        entrance,
+        params,
+        res,
+        toDeletedEntrance
+      );
+    }
     if (entrance.cave) {
       [entrance.cave.massifs, entrance.cave.entrances] = await Promise.all([
         CaveService.getMassifs(entrance.cave.id),
         TEntrance.find().where({ cave: entrance.cave.id }),
       ]);
-
       await Promise.all([
         NameService.setNames(entrance.cave.massifs, 'massif'),
         NameService.setNames([entrance.cave], 'cave'),
       ]);
     }
-
     [
       entrance.descriptions,
       entrance.locations,
@@ -51,7 +60,6 @@ module.exports = async (req, res) => {
       CommentService.getEntranceComments(entrance.id),
       ...entrance.documents.map((d) => DocumentService.getDocument(d.id)),
     ]);
-
     entrance.stats = CommentService.getStatsFromComments(entrance.comments);
 
     return ControllerService.treatAndConvert(

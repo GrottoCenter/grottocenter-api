@@ -7,7 +7,7 @@ const {
   NOTIFICATION_TYPES,
   NOTIFICATION_ENTITIES,
 } = require('../../../services/NotificationService');
-const { toDescription } = require('../../../services/mapping/converters');
+const { toSimpleDescription } = require('../../../services/mapping/converters');
 
 module.exports = async (req, res) => {
   try {
@@ -68,7 +68,7 @@ module.exports = async (req, res) => {
       populatedDescription,
       { controllerMethod: 'DescriptionController.update' },
       res,
-      toDescription
+      toSimpleDescription
     );
   } catch (e) {
     return ErrorService.getDefaultErrorHandler(res)(e);

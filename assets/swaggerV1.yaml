@@ -3,7 +3,7 @@ openapi: '3.0.0'
 info:
   description: "This page documents the available Grottocenter's API."
   title: 'Grottocenter 3 - REST API'
-  version: 'v1 - 22.0.31'
+  version: 'v1 - 23.0.0'
   termsOfService: 'https://wiki.grottocenter.org/wiki/GrottoCenter:En/API'
   contact:
     name: 'Slack space'
@@ -1951,10 +1951,13 @@ paths:
       tags:
         - entrances
       description: |
-        Get an entrance by id. If the entrance is sensitive (i.e. not public):
+        Get an entrance by id.
+        If the entrance is sensitive (i.e. not public):
         - if you are an unauthenticated visitor, you will not be able to get it.
         - if you are an authenticated Grottocenter user, you will be able to get the entrance information but the fields "longitude", "latitude" and "locations" will be hidden.
         - if you are an authenticated Grottocenter administrator, you will be able to get all the information.
+        If the entrance is deleted you will get a 200 response but the returned entrance will be partial. Only a few fields like "name", "author", ... will be provided.
+        The "redirectTo" optional field is the ID of the entrance to display instead of this deleted entrance.
       parameters:
         - name: id
           in: path
@@ -1972,7 +1975,7 @@ paths:
         '403':
           description: You are not authorized to view the entrance.
         '404':
-          description: Entrance not found.
+          description: Entrance not found. A deleted entrance will return a 200 response.
 
     delete:
       tags:
@@ -3176,6 +3179,8 @@ components:
             $ref: '#/components/schemas/Document'
         externalUrl:
           type: string
+        redirectTo:
+          type: integer
         id:
           type: integer
         isSensitive:

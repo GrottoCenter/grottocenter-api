@@ -148,6 +148,12 @@ module.exports = {
       defaultsTo: false,
     },
 
+    redirectTo: {
+      type: 'number',
+      allowNull: true,
+      columnName: 'redirect_to',
+    },
+
     country: {
       columnName: 'id_country',
       model: 'TCountry',
