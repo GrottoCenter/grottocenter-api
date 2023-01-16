@@ -80,10 +80,18 @@ module.exports = {
    */
   getCaver: async (caverId, req) => {
     const caver = await TCaver.findOne(caverId)
-      .populate('documents')
-      .populate('exploredEntrances')
+      .populate('documents', {
+        limit: 10,
+        sort: [{ dateInscription: 'DESC' }],
+      })
+      .populate('exploredEntrances', {
+        limit: 10,
+        sort: [{ dateInscription: 'DESC' }],
+      })
       .populate('grottos')
-      .populate('groups');
+      .populate('groups')
+      .populate('subscribedToCountries')
+      .populate('subscribedToMassifs');
 
     if (!caver) return caver; // not found return
 
@@ -127,6 +135,8 @@ module.exports = {
       nickname: caver.nickname,
       grottos: caver.grottos,
       surname: caver.surname,
+      subscribedToMassifs: caver.subscribedToMassifs,
+      subscribedToCountries: caver.subscribedToCountries,
     };
   },
   /**

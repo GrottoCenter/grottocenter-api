@@ -72,7 +72,6 @@ module.exports.routes = {
     'v1/caver/remove-explored-entrance',
   'DELETE /api/v1/cavers/:caverId/groups/:groupId':
     'v1/caver/remove-from-group',
-  'GET /api/v1/cavers': 'v1/caver/find-all',
   'GET /api/v1/cavers/:id': 'v1/caver/find',
   'GET /api/v1/cavers/:caverId/documents': 'v1/document/find-by-caver-id',
   'GET /api/v1/cavers/:caverId/subscriptions': 'v1/caver/get-subscriptions',
@@ -86,11 +85,6 @@ module.exports.routes = {
   'PUT /api/v1/cavers/:caverId/entrances/:entranceId':
     'v1/caver/add-explored-entrance',
   'PUT /api/v1/cavers/:caverId/groups/:groupId': 'v1/caver/put-on-group',
-
-  /**
-   * @deprecated use api/v1/cavers instead
-   */
-  'GET /api/v1/cavers/findAll': 'v1/caver/find-all',
 
   // Entrance
   'DELETE /api/v1/entrances/:id': 'v1/entrance/delete-one',
