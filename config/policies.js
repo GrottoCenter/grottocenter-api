@@ -49,7 +49,6 @@ module.exports.policies = {
   'v1/caver/count': true,
   'v1/caver/create': 'tokenAuth',
   'v1/caver/find': true,
-  'v1/caver/find-all': false,
   'v1/caver/get-admins': 'tokenAuth',
   'v1/caver/get-moderators': 'tokenAuth',
   'v1/caver/get-subscriptions': true,

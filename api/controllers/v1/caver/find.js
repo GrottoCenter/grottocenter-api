@@ -5,34 +5,26 @@ const ControllerService = require('../../../services/ControllerService');
 const { toCaver } = require('../../../services/mapping/converters');
 
 module.exports = async (req, res) => {
-  const caverId = req.param('id');
-
-  const params = {};
-  params.searchedItem = `Caver of id ${caverId}`;
+  const caverId = req.params.id;
+  const params = { searchedItem: `Caver of id ${caverId}` };
 
   const caverFound = await CaverService.getCaver(caverId, req);
-
-  if (!caverFound) {
+  if (!caverFound)
     return res.notFound({ error: `${params.searchedItem} not found` });
-  }
 
-  // complete names
-  await NameService.setNames(caverFound.exploredEntrances, 'entrance');
-  await NameService.setNames(caverFound.grottos, 'grotto');
-
-  // complete descriptions
-  if (caverFound.documents && caverFound.documents.length > 0) {
-    const promisesArray = [];
-    for (let i = 0; i < caverFound.documents.length; i += 1) {
-      promisesArray.push(
-        DescriptionService.setDocumentDescriptions(
-          caverFound.documents[i],
-          false
-        )
-      );
-    }
-    await Promise.all(promisesArray);
+  const asyncArr = [
+    NameService.setNames(caverFound.exploredEntrances, 'entrance'),
+    NameService.setNames(caverFound.grottos, 'grotto'),
+    NameService.setNames(caverFound.subscribedToMassifs, 'massif'),
+  ];
+  if (caverFound.documents) {
+    asyncArr.push(
+      ...caverFound.documents.map((d) =>
+        DescriptionService.setDocumentDescriptions(d, false)
+      )
+    );
   }
+  await Promise.all(asyncArr);
 
   return ControllerService.treatAndConvert(
     req,
