@@ -2821,6 +2821,29 @@ paths:
         '404':
           description: Resource not found
 
+  '/countries/{id}/statistics':
+    get:
+      tags:
+        - countries
+      description: Get the statistics about a country, number of massifs, of caves, of networks, cave with max depth and length, number of diving caves, average depth and length & total length.
+      parameters:
+        - name: id
+          in: path
+          description: Country id
+          example: FR, GB, IT
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Statistics-country'
+        '404':
+          description: Country id not found
+
   '/documents/check-rows':
     post:
       tags:
@@ -3787,6 +3810,26 @@ components:
     Statistics-massif:
       type: object
       properties:
+        nb_caves:
+          type: integer
+        nb_networks:
+          type: integer
+        cave_with_max_depth:
+          $ref: '#/components/schemas/Specific-cave'
+        cave_with_max_length:
+          $ref: '#/components/schemas/Specific-cave'
+        diving_caves:
+          type: integer
+        avg:
+          $ref: '#/components/schemas/Average-values'
+        total_length:
+          $ref: '#/components/schemas/Total-values'
+
+    Statistics-country:
+      type: object
+      properties:
+        nb_massifs:
+          type: integer
         nb_caves:
           type: integer
         nb_networks:

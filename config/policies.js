@@ -157,6 +157,7 @@ module.exports.policies = {
   'v1/country/find': true,
   'v1/country/subscribe': ['tokenAuth', 'leaderAuth'],
   'v1/country/unsubscribe': ['tokenAuth', 'leaderAuth'],
+  'v1/country/get-statistics': true,
 
   // Massif
   'v1/massif/create': 'tokenAuth',
