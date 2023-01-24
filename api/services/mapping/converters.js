@@ -15,6 +15,7 @@ const SubjectModel = require('./models/SubjectModel');
 const { getMainName, toList, convertIfObject } = require('./utils');
 const FileService = require('../FileService');
 const RiggingService = require('../RiggingService');
+const getQualityData = require('../../utils/computeEntranceDataQuality');
 
 const c = {
   toCave: (source) => ({
@@ -961,6 +962,20 @@ const c = {
         ? module.exports.toSubject(source.parent)
         : source.parent;
     return result;
+  },
+
+  toQualityDataEntrance: (entrance) => {
+    const res = {};
+
+    res.name = entrance.entrance_name;
+    res.massif_name = entrance.massif_name;
+    res.id_entrance = entrance.id_entrance;
+    res.id_country = entrance.id_country;
+    res.country_name = entrance.country_name;
+    res.data_quality = getQualityData(entrance);
+    res.date_of_update = entrance.date_of_update;
+
+    return res;
   },
 };
 

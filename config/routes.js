@@ -93,6 +93,10 @@ module.exports.routes = {
   'GET /api/v1/entrances/count': 'v1/entrance/count',
   'GET /api/v1/entrances/findRandom': 'v1/entrance/find-random',
   'GET /api/v1/entrances/publicCount': 'v1/entrance/public-count',
+  'GET /api/v1/entrances/with-quality/massifs/:id':
+    'v1/massif/get-entrances-data-quality',
+  'GET /api/v1/entrances/with-quality/countries/:id':
+    'v1/country/get-entrances-data-quality',
   'GET /api/v1/entrances/:id': 'v1/entrance/find',
   'PATCH /api/v1/entrances/:entranceId/cave/:caveId':
     'v1/entrance/move-to-cave',
