@@ -98,6 +98,7 @@ module.exports = {
   },
 
   compareDescriptionDate(documentDate, newDescDate, oldDescDate) {
+    // Go back 2 minutes to not be affected by the database save time
     newDescDate.setMinutes(newDescDate.getMinutes() - 2);
     if (documentDate.getTime() >= newDescDate.getTime()) {
       if (newDescDate.getTime() > oldDescDate.getTime()) {

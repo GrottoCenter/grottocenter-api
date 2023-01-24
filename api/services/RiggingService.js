@@ -89,14 +89,12 @@ module.exports = {
       .populate('reviewer')
       .populate('author');
     hRiggings.forEach((rigging) => {
-      // eslint-disable-next-line no-param-reassign
+      /* eslint-disable no-param-reassign */
       rigging.obstacles = module.exports.deserializeForAPI(rigging);
-      // eslint-disable-next-line no-param-reassign
       delete rigging.anchors;
-      // eslint-disable-next-line no-param-reassign
       delete rigging.observations;
-      // eslint-disable-next-line no-param-reassign
       delete rigging.ropes;
+      /* eslint-disable no-param-reassign */
     });
     return hRiggings;
   },

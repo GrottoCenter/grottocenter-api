@@ -111,7 +111,7 @@ module.exports = {
     return entranceData;
   },
 
-  // If the entrance belong to a network we send different information
+  // If the entrance do not belong to a network the associated cave is populated
   getHEntrancesById: async (entranceId, isNetwork) => {
     let entrancesH = {};
     if (isNetwork === 'true') {
@@ -130,19 +130,23 @@ module.exports = {
   getHEntrancesWithName: async (HEntrances, isNetwork) =>
     Promise.all(
       HEntrances.map(async (entrance) => {
-        const name = await NameService.setName(
-          { id: entrance.t_id },
+        const name = await NameService.setNames(
+          [{ id: entrance.t_id }],
           'entrance'
         );
-        // eslint-disable-next-line no-param-reassign
-        entrance.name = name.name;
+        if (name && name.length > 0) {
+          // eslint-disable-next-line no-param-reassign
+          entrance.name = name[0].name;
+        }
         if (isNetwork === true) {
-          const caveName = await NameService.setName(
-            { id: entrance.id_cave },
+          const caveName = await NameService.setNames(
+            [{ id: entrance.cave }],
             'cave'
           );
-          // eslint-disable-next-line no-param-reassign
-          entrance.caveName = caveName.name;
+          if (caveName && caveName.length > 0) {
+            // eslint-disable-next-line no-param-reassign
+            entrance.caveName = caveName[0].name;
+          }
         }
         return entrance;
       })
