@@ -157,6 +157,7 @@ module.exports.routes = {
   'GET /api/v1/countries/:id': 'v1/country/find',
   'POST /api/v1/countries/:id/subscribe': 'v1/country/subscribe',
   'POST /api/v1/countries/:id/unsubscribe': 'v1/country/unsubscribe',
+  'GET /api/v1/countries/:id/statistics': 'v1/country/get-statistics',
 
   // Organization
   'DELETE /api/v1/organizations/:id': 'v1/organization/delete-one',

@@ -11,4 +11,5 @@ DATABASE="grottoce"
 # Refresh views
 psql $DATABASE <<END
     REFRESH MATERIALIZED VIEW CONCURRENTLY v_massif_info;
+    REFRESH MATERIALIZED VIEW CONCURRENTLY v_country_info;
 END
