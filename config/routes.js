@@ -72,7 +72,6 @@ module.exports.routes = {
     'v1/caver/remove-explored-entrance',
   'DELETE /api/v1/cavers/:caverId/groups/:groupId':
     'v1/caver/remove-from-group',
-  'GET /api/v1/cavers': 'v1/caver/find-all',
   'GET /api/v1/cavers/:id': 'v1/caver/find',
   'GET /api/v1/cavers/:caverId/documents': 'v1/document/find-by-caver-id',
   'GET /api/v1/cavers/:caverId/subscriptions': 'v1/caver/get-subscriptions',
@@ -86,11 +85,6 @@ module.exports.routes = {
   'PUT /api/v1/cavers/:caverId/entrances/:entranceId':
     'v1/caver/add-explored-entrance',
   'PUT /api/v1/cavers/:caverId/groups/:groupId': 'v1/caver/put-on-group',
-
-  /**
-   * @deprecated use api/v1/cavers instead
-   */
-  'GET /api/v1/cavers/findAll': 'v1/caver/find-all',
 
   // Entrance
   'DELETE /api/v1/entrances/:id': 'v1/entrance/delete-one',
@@ -168,7 +162,7 @@ module.exports.routes = {
   'DELETE /api/v1/organizations/:id': 'v1/organization/delete-one',
   'GET /api/v1/organizations/count': 'v1/organization/count',
   'GET /api/v1/organizations/:id': 'v1/organization/find',
-  'GET /api/v1//organizations': 'v1/organization/find-all',
+  'GET /api/v1/organizations': 'v1/organization/find-all',
   'POST /api/v1/organizations': 'v1/organization/create',
   'PUT /api/v1/organizations/:id': 'v1/organization/update',
 
@@ -184,6 +178,7 @@ module.exports.routes = {
   'POST /api/v1/massifs/:id/subscribe': 'v1/massif/subscribe',
   'POST /api/v1/massifs/:id/unsubscribe': 'v1/massif/unsubscribe',
   'PUT /api/v1/massifs/:id': 'v1/massif/update',
+  'GET /api/v1/massifs/:id/statistics': 'v1/massif/get-statistics',
 
   // Document
   'GET /api/v1/documents': 'v1/document/find-all',
@@ -310,6 +305,15 @@ module.exports.routes = {
   'GET /api/v1/entrance-duplicates/:id': 'v1/entrance-duplicate/find',
   'POST /api/v1/entrances/from-duplicate/:id':
     'v1/entrance-duplicate/create-from-duplicate',
+
+  // Snapshots
+  'GET /api/v1/comments/:id/snapshots': 'v1/comment/get-snapshots',
+  'GET /api/v1/descriptions/:id/snapshots': 'v1/description/get-snapshots',
+  'GET /api/v1/documents/:id/snapshots': 'v1/document/get-snapshots',
+  'GET /api/v1/entrances/:id/snapshots': 'v1/entrance/get-snapshots',
+  'GET /api/v1/histories/:id/snapshots': 'v1/history/get-snapshots',
+  'GET /api/v1/locations/:id/snapshots': 'v1/location/get-snapshots',
+  'GET /api/v1/riggings/:id/snapshots': 'v1/rigging/get-snapshots',
 
   //  ╦ ╦╔═╗╔╗ ╦ ╦╔═╗╔═╗╦╔═╔═╗
   //  ║║║║╣ ╠╩╗╠═╣║ ║║ ║╠╩╗╚═╗

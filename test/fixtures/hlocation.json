@@ -1,0 +1,26 @@
+[
+  {
+    "id": "2008-07-28T19:35:20.000Z",
+    "t_id": 1,
+    "dateInscription": "2008-07-28T19:35:20.000Z",
+    "relevance": 3,
+    "body": "Description de la route",
+    "title": "Route",
+    "author": 6,
+    "reviewer": null,
+    "entrance": 1,
+    "language": "fra"
+  },
+  {
+    "id": "2009-07-28T19:35:20.000Z",
+    "t_id": 2,
+    "dateInscription": "2008-07-28T19:35:20.000Z",
+    "relevance": 3,
+    "body": "Description de la route avec sensitive entrance",
+    "title": "Route",
+    "author": 6,
+    "reviewer": null,
+    "entrance": 6,
+    "language": "fra"
+  }
+]

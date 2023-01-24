@@ -111,6 +111,43 @@ module.exports = {
     return entranceData;
   },
 
+  // If the entrance belong to a network we send different information
+  getHEntrancesById: async (entranceId, isNetwork) => {
+    let entrancesH = {};
+    if (isNetwork === 'true') {
+      entrancesH = await HEntrance.find({ t_id: entranceId })
+        .populate('reviewer')
+        .populate('author');
+      return module.exports.getHEntrancesWithName(entrancesH, true);
+    }
+    entrancesH = await HEntrance.find({ t_id: entranceId })
+      .populate('reviewer')
+      .populate('author')
+      .populate('cave');
+    return module.exports.getHEntrancesWithName(entrancesH, false);
+  },
+
+  getHEntrancesWithName: async (HEntrances, isNetwork) =>
+    Promise.all(
+      HEntrances.map(async (entrance) => {
+        const name = await NameService.setName(
+          { id: entrance.t_id },
+          'entrance'
+        );
+        // eslint-disable-next-line no-param-reassign
+        entrance.name = name.name;
+        if (isNetwork === true) {
+          const caveName = await NameService.setName(
+            { id: entrance.id_cave },
+            'cave'
+          );
+          // eslint-disable-next-line no-param-reassign
+          entrance.caveName = caveName.name;
+        }
+        return entrance;
+      })
+    ),
+
   createEntrance: async (req, entranceData, nameDescLocData) => {
     const newEntrancePopulated = await sails
       .getDatastore()

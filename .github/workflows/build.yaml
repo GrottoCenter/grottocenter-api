@@ -1,8 +1,8 @@
-name: Build test deploy
+name: Build Lint Test
 on: [push]
 jobs:
   # ===== Build & test API
-  build-test-deploy:
+  build-test:
     environment: build
     runs-on: ubuntu-latest
 

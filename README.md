@@ -14,7 +14,7 @@ Current production version is available [here](https://api.grottocenter.org)
 
 ### Master
 
-![Latest Deployment](https://github.com/GrottoCenter/grottocenter-api/actions/workflows/deploy-aws.yml/badge.svg?branch=master)
+![Latest Deployment](https://github.com/GrottoCenter/grottocenter-api/actions/workflows/master_grottocenter-api.yml/badge.svg)
 
 [![Coverage Status](https://coveralls.io/repos/github/GrottoCenter/grottocenter-api/badge.svg?branch=master)](https://coveralls.io/github/GrottoCenter/grottocenter-api?branch=refs/heads/master)
 [![Build](https://github.com/GrottoCenter/grottocenter-api/actions/workflows/build.yaml/badge.svg?branch=master)](https://github.com/GrottoCenter/grottocenter-api/actions/workflows/build.yaml)

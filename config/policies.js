@@ -49,7 +49,6 @@ module.exports.policies = {
   'v1/caver/count': true,
   'v1/caver/create': 'tokenAuth',
   'v1/caver/find': true,
-  'v1/caver/find-all': false,
   'v1/caver/get-admins': 'tokenAuth',
   'v1/caver/get-moderators': 'tokenAuth',
   'v1/caver/get-subscriptions': true,
@@ -165,6 +164,7 @@ module.exports.policies = {
   'v1/massif/unsubscribe': ['tokenAuth', 'leaderAuth'],
   'v1/massif/delete-one': ['tokenAuth', 'moderatorAuth'],
   'v1/massif/find': true,
+  'v1/massif/get-statistics': true,
   'v1/massif/update': 'tokenAuth',
 
   // Name
@@ -209,6 +209,15 @@ module.exports.policies = {
   'v1/subject/find': true,
   'v1/subject/find-all': true,
   'v1/subject/search': true,
+
+  // Snapshots
+  'v1/comment/get-snapshots': true,
+  'v1/description/get-snapshots': true,
+  'v1/document/get-snapshots': true,
+  'v1/entrance/get-snapshots': true,
+  'v1/history/get-snapshots': true,
+  'v1/location/get-snapshots': true,
+  'v1/rigging/get-snapshots': true,
 
   // Swagger (API doc)
   'v1/swagger/get-yaml': true,

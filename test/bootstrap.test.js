@@ -59,6 +59,9 @@ before(function (done) {
           'tfile',
           'trigging',
           'tnotification',
+          'hlocation',
+          'hdescription',
+          'hentrance',
         ],
         // eslint-disable-next-line consistent-return
         (fixtedError) => {

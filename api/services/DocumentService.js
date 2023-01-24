@@ -506,4 +506,17 @@ module.exports = {
     );
     return result;
   },
+
+  getHDocumentById: async (documentId) =>
+    HDocument.find({ t_id: documentId })
+      .populate('author')
+      .populate('reviewer')
+      .populate('massif')
+      .populate('cave')
+      .populate('editor')
+      .populate('entrance')
+      .populate('identifierType')
+      .populate('library')
+      .populate('license')
+      .populate('type'),
 };

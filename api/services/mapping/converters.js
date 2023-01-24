@@ -69,62 +69,35 @@ const c = {
   toCaver: (source) => {
     const result = {
       ...CaverModel,
+      id: source.id,
+      '@id': String(source.id),
+      language: source.language,
+      nickname: source.nickname,
+      surname: source.surname,
+      name: source.name,
+      subscribedToCountries: source.subscribedToCountries,
+      subscribedToMassifs: source.subscribedToMassifs,
+      // Mail and hashed password should never be returned (RGPD)
     };
-    result.id = source.id;
-    result['@id'] = String(source.id);
-    result.language = source.language;
-    result.nickname = source.nickname;
-    result.name = source.name;
-    result.surname = source.surname;
 
-    const { toDocument, toEntrance, toOrganization } = module.exports;
+    const listParser = (srcField, converterFn, dstField) => {
+      if (!source[srcField]) return;
+      // eslint-disable-next-line no-param-reassign
+      if (!dstField) dstField = srcField;
+      if (source[srcField] instanceof Array) {
+        result[dstField] = toList(srcField, source, converterFn);
+      } else {
+        result[dstField] = source[srcField].split(',').map((aId) => ({
+          id: parseInt(aId, 10),
+        }));
+      }
+    };
 
     // Convert collections
-    if (source.documents) {
-      if (source.documents instanceof Array) {
-        result.documents = toList('documents', source, toDocument);
-      } else {
-        result.documents = source.documents.split(',').map((documentId) => ({
-          id: parseInt(documentId, 10),
-        }));
-      }
-    }
-
-    if (source.exploredEntrances) {
-      if (source.exploredEntrances instanceof Array) {
-        result.exploredEntrances = toList(
-          'exploredEntrances',
-          source,
-          toEntrance
-        );
-      } else {
-        result.exploredEntrances = source.exploredEntrances
-          .split(',')
-          .map((entranceId) => ({
-            id: parseInt(entranceId, 10),
-          }));
-      }
-    }
-
-    if (source.groups) {
-      if (source.groups instanceof Array) {
-        result.groups = source.groups;
-      } else {
-        result.groups = source.groups.split(',').map((groupId) => ({
-          id: parseInt(groupId, 10),
-        }));
-      }
-    }
-
-    if (source.grottos) {
-      if (source.grottos instanceof Array) {
-        result.organizations = toList('organizations', source, toOrganization);
-      } else {
-        result.organizations = source.grottos.split(',').map((grottoId) => ({
-          id: parseInt(grottoId, 10),
-        }));
-      }
-    }
+    listParser('exploredEntrances', c.toSimpleEntrance);
+    listParser('groups', (group) => group);
+    listParser('documents', c.toDocument);
+    listParser('grottos', c.toOrganization, 'organizations');
 
     return result;
   },

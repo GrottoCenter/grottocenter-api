@@ -1,12 +1,12 @@
 /**
- * HDescription.js
+ * HLocation.js
  *
- * @description :: hDescription model
+ * @description :: hLocation model
  * @docs        :: http://sailsjs.org/#!documentation/models
  */
 
 module.exports = {
-  tableName: 'h_description',
+  tableName: 'h_location',
 
   primaryKey: 'id',
 
@@ -30,7 +30,6 @@ module.exports = {
       allowNull: false,
       columnName: 'id_author',
       model: 'TCaver',
-      required: true,
     },
 
     reviewer: {
@@ -49,53 +48,28 @@ module.exports = {
       type: 'number',
       allowNull: false,
       columnName: 'relevance',
-      defaultsTo: 0,
-    },
-
-    title: {
-      type: 'string',
-      allowNull: false,
-      columnName: 'title',
-      maxLength: 300,
     },
 
     body: {
       type: 'string',
-      allowNull: true,
+      allowNull: false,
       columnName: 'body',
     },
 
-    cave: {
-      columnName: 'id_cave',
-      model: 'TCave',
+    title: {
+      type: 'string',
+      allowNull: true,
+      columnName: 'title',
     },
 
     entrance: {
+      allowNull: false,
       columnName: 'id_entrance',
       model: 'TEntrance',
     },
 
-    exit: {
-      columnName: 'id_exit',
-      model: 'TEntrance',
-    },
-
-    massif: {
-      columnName: 'id_massif',
-      model: 'TMassif',
-    },
-
-    point: {
-      columnName: 'id_point',
-      model: 'TPoint',
-    },
-
-    document: {
-      columnName: 'id_document',
-      model: 'TDocument',
-    },
-
     language: {
+      allowNull: false,
       columnName: 'id_language',
       model: 'TLanguage',
     },

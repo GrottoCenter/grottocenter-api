@@ -1,12 +1,12 @@
 /**
- * HDescription.js
+ * HComment.js
  *
- * @description :: hDescription model
+ * @description :: hComment model
  * @docs        :: http://sailsjs.org/#!documentation/models
  */
 
 module.exports = {
-  tableName: 'h_description',
+  tableName: 'h_comment',
 
   primaryKey: 'id',
 
@@ -49,7 +49,36 @@ module.exports = {
       type: 'number',
       allowNull: false,
       columnName: 'relevance',
-      defaultsTo: 0,
+    },
+
+    eTUnderground: {
+      type: 'ref',
+      columnName: 'e_t_underground',
+      columnType: 'interval',
+    },
+
+    eTTrail: {
+      type: 'ref',
+      columnName: 'e_t_trail',
+      columnType: 'interval',
+    },
+
+    aestheticism: {
+      type: 'number',
+      allowNull: true,
+      columnName: 'aestheticism',
+    },
+
+    caving: {
+      type: 'number',
+      allowNull: true,
+      columnName: 'caving',
+    },
+
+    approach: {
+      type: 'number',
+      allowNull: true,
+      columnName: 'approach',
     },
 
     title: {
@@ -61,8 +90,15 @@ module.exports = {
 
     body: {
       type: 'string',
-      allowNull: true,
+      allowNull: false,
       columnName: 'body',
+    },
+
+    alert: {
+      type: 'boolean',
+      allowNull: false,
+      defaultsTo: false,
+      columnName: 'alert',
     },
 
     cave: {
@@ -78,21 +114,6 @@ module.exports = {
     exit: {
       columnName: 'id_exit',
       model: 'TEntrance',
-    },
-
-    massif: {
-      columnName: 'id_massif',
-      model: 'TMassif',
-    },
-
-    point: {
-      columnName: 'id_point',
-      model: 'TPoint',
-    },
-
-    document: {
-      columnName: 'id_document',
-      model: 'TDocument',
     },
 
     language: {

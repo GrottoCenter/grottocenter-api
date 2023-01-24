@@ -3,7 +3,7 @@
 -- Version v1.0 - 20210204 - B. Soufflet - V. Verdon
 ------------------------------------------------------------
 \c grottoce;
--- 
+--
 CREATE OR REPLACE FUNCTION calcule_size_coef() RETURNS trigger LANGUAGE plpgsql AS $function$
 declare coef int2 := 0;
 begin IF new.depth IS NOT NULL THEN IF new.depth < 20 THEN --rien
@@ -476,6 +476,7 @@ INSERT INTO h_location (
         date_reviewed,
         relevance,
         body,
+        title,
         id_entrance,
         id_language
     )
@@ -487,6 +488,7 @@ VALUES (
         date_r,
         OLD.relevance,
         OLD.body,
+        OLD.title,
         OLD.id_entrance,
         OLD.id_language
     );

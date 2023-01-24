@@ -1,7 +1,7 @@
 const ControllerService = require('../../../services/ControllerService');
 const ErrorService = require('../../../services/ErrorService');
 const MassifService = require('../../../services/MassifService');
-const NameService = require('../../../services/NameService');
+// const NameService = require('../../../services/NameService');
 const DescriptionService = require('../../../services/DescriptionService');
 const {
   toMassif,
@@ -30,12 +30,12 @@ module.exports = async (req, res) => {
       );
     }
     // Populate entrances
-    massif.entrances = await MassifService.getEntrances(massif.id);
-    await NameService.setNames(massif.entrances, 'entrance');
+    // massif.entrances = await MassifService.getEntrances(massif.id);
+    // await NameService.setNames(massif.entrances, 'entrance');
 
     // Populate networks (cave)
-    massif.networks = await MassifService.getNetworks(massif.id);
-    await NameService.setNames(massif.networks, 'cave');
+    // massif.networks = await MassifService.getNetworks(massif.id);
+    // await NameService.setNames(massif.networks, 'cave');
 
     // Complete documents descriptions
     if (massif.documents && massif.documents.length > 0) {

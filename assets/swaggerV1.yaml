@@ -3,7 +3,7 @@ openapi: '3.0.0'
 info:
   description: "This page documents the available Grottocenter's API."
   title: 'Grottocenter 3 - REST API'
-  version: 'v1 - 23.0.0'
+  version: 'v1 - 23.0.1'
   termsOfService: 'https://wiki.grottocenter.org/wiki/GrottoCenter:En/API'
   contact:
     name: 'Slack space'
@@ -704,6 +704,28 @@ paths:
               schema:
                 $ref: '#/components/schemas/Description'
 
+  '/descriptions/{id}/snapshots':
+    get:
+      tags:
+        - descriptions
+      description: Get snapshots of a description.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Description'
+        '404':
+          description: We don't find these description's snapshots.
+
   '/documents/{id}':
     get:
       tags:
@@ -1100,6 +1122,28 @@ paths:
                     items:
                       $ref: '#/components/schemas/Document-identifierType'
 
+  '/documents/{id}/snapshots':
+    get:
+      tags:
+        - documents
+      description: Get snapshots of a document.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+        '404':
+          description: We don't find these document's snapshots.
+
   '/regions/search/logical/or':
     post:
       tags:
@@ -1254,6 +1298,30 @@ paths:
               schema:
                 $ref: '#/components/schemas/Location'
 
+  '/locations/{id}/snapshots':
+    get:
+      tags:
+        - locations
+      description: Get snapshots of a location.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Location'
+        '403':
+          description: You are not authorized to get these location's snapshots.
+        '404':
+          description: We don't find these location's snapshots.
+
   '/histories':
     post:
       tags:
@@ -1319,6 +1387,28 @@ paths:
               schema:
                 $ref: '#/components/schemas/History'
 
+  '/histories/{id}/snapshots':
+    get:
+      tags:
+        - histories
+      description: Get snapshots of a history.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/History'
+        '404':
+          description: We don't find these history's snapshots.
+
   '/comments':
     post:
       tags:
@@ -1366,6 +1456,28 @@ paths:
               schema:
                 $ref: '#/components/schemas/Comment'
 
+  '/comments/{id}/snapshots':
+    get:
+      tags:
+        - comments
+      description: Get snapshots of a comment.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+        '404':
+          description: We don't find these comment's snapshots.
+
   '/riggings':
     post:
       tags:
@@ -1412,6 +1524,28 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Rigging'
+
+  '/riggings/{id}/snapshots':
+    get:
+      tags:
+        - riggings
+      description: Get snapshots of a rigging.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Rigging'
+        '404':
+          description: We don't find these rigging's snapshots.
 
   '/names/{id}':
     patch:
@@ -2043,6 +2177,28 @@ paths:
               schema:
                 $ref: '#/components/schemas/Count'
 
+  '/entrances/{id}/snapshots':
+    get:
+      tags:
+        - entrances
+      description: Get snapshots of an entrance.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Entrance'
+        '404':
+          description: We don't find these entrance's snapshots.
+
   '/search':
     post:
       tags:
@@ -2430,6 +2586,28 @@ paths:
           description: Resource not found
         '403':
           description: Forbidden you don't have the rights to update massifs
+
+  '/massifs/{id}/statistics':
+    get:
+      tags:
+        - massifs
+      description: Get the statistics about a massif, number of caves, of networks, cave with max depth and length, number of diving caves, average depth and length & total length.
+      parameters:
+        - name: id
+          in: path
+          description: Massif id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Statistics-massif'
+        '404':
+          description: Resource not found
 
   '/organizations':
     post:
@@ -3605,3 +3783,47 @@ components:
           observation:
             type: string
             example: Les AN sont des arbres.
+
+    Statistics-massif:
+      type: object
+      properties:
+        nb_caves:
+          type: integer
+        nb_networks:
+          type: integer
+        cave_with_max_depth:
+          $ref: '#/components/schemas/Specific-cave'
+        cave_with_max_length:
+          $ref: '#/components/schemas/Specific-cave'
+        diving_caves:
+          type: integer
+        avg:
+          $ref: '#/components/schemas/Average-values'
+        total_length:
+          $ref: '#/components/schemas/Total-values'
+
+    Specific-cave:
+      type: object
+      properties:
+        id_cave:
+          type: integer
+        name_cave:
+          type: string
+        value:
+          type: integer
+
+    Average-values:
+      type: object
+      properties:
+        avg_depth:
+          type: integer
+        avg_length:
+          type: integer
+
+    Total-values:
+      type: object
+      properties:
+        value:
+          type: integer
+        nb_data:
+          type: integer
