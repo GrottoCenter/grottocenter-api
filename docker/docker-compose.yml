@@ -93,6 +93,7 @@ services:
       - sails_datastores__default__url=postgres://${DOCKER_DB_USER}:${DOCKER_DB_PASSWORD}@dbserver/${DOCKER_DB_DATABASE}
       - NODE_ENV=dev-docker
       - ES_HOST=${ES_TAGNAME}:${ES_LOCAL_PORT}
+      - POSTGRE_TEST_URL=postgres://${DOCKER_DB_USER}:${DOCKER_DB_PASSWORD}@testdbserver:${TEST_DB_LOCAL_PORT}/${DOCKER_DB_DATABASE}
     command: npm run start-hot
     volumes:
       - ../:/app
