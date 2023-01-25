@@ -114,11 +114,13 @@ module.exports.routes = {
   // Cave
   'DELETE /api/v1/caves/:id': 'v1/cave/delete-one',
   'GET /api/v1/caves/:id': 'v1/cave/find',
+  'GET /api/v1/caves/cumulated-length': 'v1/cave/cumulated-length',
   'GET /api/v1/caves': 'v1/cave/find-all',
   'POST /api/v1/caves': 'v1/cave/create',
   'PUT /api/v1/caves/:caveId/documents/:documentId': 'v1/cave/add-document',
   'PUT /api/v1/caves/:id': 'v1/cave/update',
   'PUT /api/v1/caves/:caveId/massif/:massifId': 'v1/cave/set-massif',
+
   /**
    * @deprecated use api/v1/caves instead
    */
@@ -158,6 +160,7 @@ module.exports.routes = {
   'POST /api/v1/countries/:id/subscribe': 'v1/country/subscribe',
   'POST /api/v1/countries/:id/unsubscribe': 'v1/country/unsubscribe',
   'GET /api/v1/countries/:id/statistics': 'v1/country/get-statistics',
+  'GET /api/v1/countries/count': 'v1/country/count',
 
   // Organization
   'DELETE /api/v1/organizations/:id': 'v1/organization/delete-one',

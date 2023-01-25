@@ -289,6 +289,19 @@ paths:
         '403':
           description: You are not authorized to set the massif of a cave.
 
+  '/caves/cumulated-length':
+    get:
+      tags:
+        - caves
+      description: Get cumulated length of all caves in the database.
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Count'
+
   '/cavers':
     post:
       tags:
@@ -2865,6 +2878,19 @@ paths:
                 $ref: '#/components/schemas/Statistics-country'
         '404':
           description: Country id not found
+
+  '/countries/count':
+    get:
+      tags:
+        - countries
+      description: Get the number of countries in the database which are at least associated with one entrance.
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Count'
 
   '/documents/check-rows':
     post:
