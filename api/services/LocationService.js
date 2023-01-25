@@ -30,22 +30,26 @@ module.exports = {
                                                                 JOIN t_entrance TE ON HL.id_entrance = TE.id
                                                          WHERE HL.id = $1; `;
     try {
+      const res = { error: null, hLocations: [] };
       const sensitivity = await HLocation.getDatastore().sendNativeQuery(
         CHECK_SENSITIVTY_OF_ENTRANCE_FROM_LOCATION_ID,
         [locationId]
       );
       if (!sensitivity.rows[0]) {
-        return '404';
+        res.error = '404';
+        return res;
       }
       const isSensitive = sensitivity.rows[0].is_sensitive;
 
       if (isSensitive === undefined) {
-        return '500';
+        res.error = '500';
+        return res;
       }
 
       if (isSensitive && !token) {
         // The person is not authenticated
-        return '401';
+        res.error = '401';
+        return res;
       }
 
       const hasRight = isSensitive
@@ -57,15 +61,16 @@ module.exports = {
         : true; // No need to call checkRight if it's not a sensitive entrance
 
       if (isSensitive && !hasRight) {
-        return '403';
+        res.error = '403';
+        return res;
       }
 
-      const locationsHPopulated = await HLocation.find({ t_id: locationId })
+      res.hLocations = await HLocation.find({ t_id: locationId })
         .populate('reviewer')
         .populate('author')
         .populate('entrance');
 
-      return locationsHPopulated;
+      return res;
     } catch (error) {
       return error;
     }

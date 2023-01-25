@@ -312,6 +312,7 @@ module.exports.routes = {
   'GET /api/v1/descriptions/:id/snapshots': 'v1/description/get-snapshots',
   'GET /api/v1/documents/:id/snapshots': 'v1/document/get-snapshots',
   'GET /api/v1/entrances/:id/snapshots': 'v1/entrance/get-snapshots',
+  'GET /api/v1/entrances/:id/all-snapshots': 'v1/entrance/get-all-snapshots',
   'GET /api/v1/histories/:id/snapshots': 'v1/history/get-snapshots',
   'GET /api/v1/locations/:id/snapshots': 'v1/location/get-snapshots',
   'GET /api/v1/riggings/:id/snapshots': 'v1/rigging/get-snapshots',

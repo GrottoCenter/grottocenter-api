@@ -2199,6 +2199,28 @@ paths:
         '404':
           description: We don't find these entrance's snapshots.
 
+  '/entrances/{id}/all-snapshots':
+    get:
+      tags:
+        - entrances
+      description: Get all elements snapshots of an entrance.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntranceAllSnapshots'
+        '404':
+          description: We don't find these entrance's snapshots.
+
   '/search':
     post:
       tags:
@@ -3426,6 +3448,23 @@ components:
         approach:
           type: number
           format: float
+
+    EntranceAllSnapshots:
+      properties:
+        comments:
+          $ref: '#/components/schemas/Comment'
+        descriptions:
+          $ref: '#/components/schemas/Description'
+        documents:
+          $ref: '#/components/schemas/Document'
+        entrances:
+          $ref: '#/components/schemas/Entrance'
+        histories:
+          $ref: '#/components/schemas/History'
+        locations:
+          $ref: '#/components/schemas/Location'
+        riggings:
+          $ref: '#/components/schemas/Rigging'
 
     File:
       type: object
