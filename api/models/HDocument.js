@@ -20,6 +20,7 @@ module.exports = {
     },
 
     t_id: {
+      required: true,
       type: 'number',
       columnName: 'id',
       unique: false,

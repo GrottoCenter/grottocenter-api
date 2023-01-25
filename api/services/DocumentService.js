@@ -1,17 +1,16 @@
 const RECURSIVE_GET_CHILD_DOC = `
-  WITH RECURSIVE recursiveChildren AS  (
-    SELECT *
-    FROM t_document
-    WHERE id_parent = $1
-  UNION ALL
-      SELECT td.*
-      FROM t_document td
-      INNER JOIN recursiveChildren
-      ON td.id_parent = recursiveChildren.id
-  )
-  SELECT * FROM recursiveChildren
+  WITH RECURSIVE recursiveChildren AS (SELECT *
+                                       FROM t_document
+                                       WHERE id_parent = $1
+                                       UNION ALL
+                                       SELECT td.*
+                                       FROM t_document td
+                                              INNER JOIN recursiveChildren
+                                                         ON td.id_parent = recursiveChildren.id)
+  SELECT *
+  FROM recursiveChildren
   WHERE is_validated = true
-  AND is_deleted = false;
+    AND is_deleted = false;
 `;
 
 // Doc types needing a parent in order to be created
@@ -519,4 +518,42 @@ module.exports = {
       .populate('library')
       .populate('license')
       .populate('type'),
+
+  populateHDocumentsWithDescription: async (documentId, hDocuments) => {
+    const descriptions = await DescriptionService.getHDescriptionsOfDocument(
+      documentId
+    );
+    hDocuments.forEach((document) => {
+      if (Object.keys(descriptions).length > 0) {
+        // eslint-disable-next-line no-param-reassign
+        document.description = descriptions[0];
+        descriptions.forEach((desc) => {
+          if (
+            // Return true if the description should be associate to this document according to her dateReviewed
+            DescriptionService.compareDescriptionDate(
+              // Id represents here the dateReviewed like in the H models
+              new Date(document.id),
+              new Date(desc.id),
+              new Date(document.description.id)
+            )
+          ) {
+            // eslint-disable-next-line no-param-reassign
+            document.description = desc;
+          }
+        });
+      }
+    });
+    return hDocuments;
+  },
+
+  getIdDocumentByEntranceId: async (entranceId) => {
+    let documentsId = [];
+    if (entranceId) {
+      documentsId = await TDocument.find({
+        where: { entrance: entranceId },
+        select: ['id'],
+      });
+    }
+    return documentsId;
+  },
 };
