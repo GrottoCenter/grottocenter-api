@@ -105,7 +105,7 @@ $ docker-compose down -v
 Log in the node container:
 
 ```shell
-$ docker exec -it nodegrotto bash -l
+$ docker exec -it nodegrotto sh -l
 ```
 
 Run all tests:

@@ -75,7 +75,6 @@ module.exports = {
       type: 'string',
       allowNull: true,
       columnName: 'geog_polygon',
-      maxLength: 2000,
     },
 
     subscribedCavers: {
