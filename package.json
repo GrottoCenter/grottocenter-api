@@ -70,7 +70,7 @@
     "eslint-config-prettier": "^8.6.0",
     "eslint-plugin-import": "^2.27.5",
     "fixted": "^4.0.2",
-    "grunt": "^1.5.3",
+    "grunt": "^1.6.1",
     "grunt-eslint": "^24.0.1",
     "husky": "^8.0.3",
     "lint-staged": "^13.1.0",
