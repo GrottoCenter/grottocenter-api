@@ -66,6 +66,7 @@ module.exports = async (req, res) => {
       name: newCaver.name,
       nickname: newCaver.nickname,
       surname: newCaver.surname,
+      deleted: false,
     });
 
     return res.ok();

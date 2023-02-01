@@ -278,6 +278,7 @@ module.exports = {
       descriptions: description,
       'massifs names': newEntrancePopulated.cave.massifs?.names,
       name: newEntrancePopulated.name,
+      deleted: newEntrancePopulated.isDeleted,
       names: newEntrancePopulated.names.map((n) => n.name).join(', '),
       tags: ['entrance'],
     });

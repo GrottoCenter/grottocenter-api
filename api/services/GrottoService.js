@@ -137,6 +137,7 @@ module.exports = {
       name: names[0].name, // There is only one name right after the creation
       names: names.map((n) => n.name).join(', '),
       'nb cavers': 0,
+      deleted: newOrganizationPopulated.isDeleted,
       tags: ['grotto'],
     });
 

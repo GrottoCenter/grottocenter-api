@@ -104,6 +104,7 @@ module.exports = {
       title: document.descriptions[0].title,
       'type id': ramda.propOr(null, 'id', type),
       'type name': ramda.propOr(null, 'name', type),
+      deleted: document.isDeleted,
     };
   },
 

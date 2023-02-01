@@ -65,6 +65,7 @@ module.exports = {
       name: newCaver.name,
       nickname: newCaver.nickname,
       surname: newCaver.surname,
+      deleted: false,
       tags: ['caver'],
     });
 
