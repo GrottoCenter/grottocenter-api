@@ -114,6 +114,13 @@ module.exports = {
   // If the entrance do not belong to a network the associated cave is populated
   getHEntrancesById: async (entranceId, isNetwork) => {
     let entrancesH = {};
+    const tEntranceSensitivity = await TEntrance.find({
+      where: { id: entranceId },
+      select: ['isSensitive'],
+    });
+    const isEntranceSensitive = tEntranceSensitivity[0]
+      ? tEntranceSensitivity[0].isSensitive
+      : true;
     if (isNetwork === 'true') {
       entrancesH = await HEntrance.find({ t_id: entranceId })
         .populate('reviewer')
@@ -124,12 +131,23 @@ module.exports = {
       .populate('reviewer')
       .populate('author')
       .populate('cave');
-    return module.exports.getHEntrancesWithName(entrancesH, false);
+    return module.exports.getHEntrancesWithName(
+      entrancesH,
+      false,
+      isEntranceSensitive
+    );
   },
 
-  getHEntrancesWithName: async (HEntrances, isNetwork) =>
+  getHEntrancesWithName: async (HEntrances, isNetwork, isEntranceSensitive) =>
     Promise.all(
       HEntrances.map(async (entrance) => {
+        if (isEntranceSensitive) {
+          /* eslint-disable no-param-reassign */
+          entrance.locations = [];
+          entrance.longitude = null;
+          entrance.latitude = null;
+          /* eslint-enable no-param-reassign */
+        }
         const name = await NameService.setNames(
           [{ id: entrance.t_id }],
           'entrance'

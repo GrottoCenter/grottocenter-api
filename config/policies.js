@@ -216,6 +216,7 @@ module.exports.policies = {
   'v1/description/get-snapshots': true,
   'v1/document/get-snapshots': true,
   'v1/entrance/get-snapshots': true,
+  'v1/entrance/get-all-snapshots': true,
   'v1/history/get-snapshots': true,
   'v1/location/get-snapshots': true,
   'v1/rigging/get-snapshots': true,
