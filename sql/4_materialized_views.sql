@@ -31,12 +31,12 @@ CREATE MATERIALIZED VIEW v_country_info AS
   c.is_diving as is_diving_cave,
   COUNT(e.id) as nb_entrances,
   m.id as id_massif
-  FROM t_entrance e 
-  LEFT JOIN t_cave c ON e.id_cave = c.id 
-  LEFT JOIN t_name n ON n.id_cave = c.id 
+  FROM t_entrance e
+  LEFT JOIN t_cave c ON e.id_cave = c.id
+  LEFT JOIN t_name n ON n.id_cave = c.id
   LEFT JOIN t_massif m ON ST_Contains(ST_SetSRID(m.geog_polygon::geometry, 4326), ST_SetSRID(ST_MakePoint(e.longitude, e.latitude), 4326))
-  AND n.is_main = true 
-  AND c.is_deleted = false 
+  AND n.is_main = true
+  AND c.is_deleted = false
   AND m.is_deleted = false
   AND e.is_deleted = false
   GROUP BY(e.id_country, c.id, n.name, c.depth, c.length, c.is_diving, m.id)
@@ -46,24 +46,24 @@ CREATE MATERIALIZED VIEW v_country_info AS
 -- not populated, (WITH NO DATA), the schema only
 CREATE MATERIALIZED VIEW v_data_quality_compute_entrance AS
 
-  SELECT e.id as id_entrance, 
+  SELECT e.id as id_entrance,
   GREATEST(e.date_inscription, e.date_reviewed) as general_latest_date_of_update,
-  (COUNT(DISTINCT e.date_inscription)+ COUNT(DISTINCT e.date_reviewed)) as general_nb_contributions, 
+  (COUNT(DISTINCT e.date_inscription)+ COUNT(DISTINCT e.date_reviewed)) as general_nb_contributions,
 
   GREATEST(MAX(l.date_inscription), MAX(l.date_reviewed)) as location_latest_date_of_update,
-  (COUNT(DISTINCT l.date_inscription)+ COUNT(DISTINCT l.date_reviewed)) as location_nb_contributions, 
+  (COUNT(DISTINCT l.date_inscription)+ COUNT(DISTINCT l.date_reviewed)) as location_nb_contributions,
 
   GREATEST(MAX(d.date_inscription), MAX(d.date_reviewed)) as description_latest_date_of_update,
-  (COUNT(DISTINCT d.date_inscription)+ COUNT(DISTINCT d.date_reviewed)) as description_nb_contributions, 
+  (COUNT(DISTINCT d.date_inscription)+ COUNT(DISTINCT d.date_reviewed)) as description_nb_contributions,
 
   GREATEST(MAX(doc.date_inscription), MAX(doc.date_reviewed)) as document_latest_date_of_update,
-  (COUNT(DISTINCT doc.date_inscription)+ COUNT(DISTINCT doc.date_reviewed)) as document_nb_contributions, 
+  (COUNT(DISTINCT doc.date_inscription)+ COUNT(DISTINCT doc.date_reviewed)) as document_nb_contributions,
 
   GREATEST(MAX(r.date_inscription), MAX(r.date_reviewed)) as rigging_latest_date_of_update,
-  (COUNT(DISTINCT r.date_inscription)+ COUNT(DISTINCT r.date_reviewed)) as rigging_nb_contributions, 
+  (COUNT(DISTINCT r.date_inscription)+ COUNT(DISTINCT r.date_reviewed)) as rigging_nb_contributions,
 
   GREATEST(MAX(h.date_inscription), MAX(h.date_reviewed)) as history_latest_date_of_update,
-  (COUNT(DISTINCT h.date_inscription)+ COUNT(DISTINCT h.date_reviewed)) as history_nb_contributions, 
+  (COUNT(DISTINCT h.date_inscription)+ COUNT(DISTINCT h.date_reviewed)) as history_nb_contributions,
 
   GREATEST(MAX(c.date_inscription), MAX(c.date_reviewed)) as comment_latest_date_of_update,
   (COUNT(DISTINCT c.date_inscription)+ COUNT(DISTINCT c.date_reviewed)) as comment_nb_contributions,
@@ -86,11 +86,11 @@ CREATE MATERIALIZED VIEW v_data_quality_compute_entrance AS
   LEFT JOIN t_name n ON e.id = n.id_entrance
   LEFT JOIN t_massif m ON ST_Contains(ST_SetSRID(m.geog_polygon::geometry, 4326), ST_SetSRID(ST_MakePoint(e.longitude, e.latitude), 4326))
   LEFT JOIN (SELECT * FROM t_name WHERE is_main = true) nn ON m.id = nn.id_massif
-  WHERE n.is_main = true 
+  WHERE n.is_main = true
   AND e.is_deleted = false
   GROUP BY e.id, m.id, n.name, nn.name, co.fr_name
   WITH NO DATA;
 
-CREATE UNIQUE INDEX index_data_quality_compute_entrance ON v_data_quality_compute_entrance(id_massif, id_entrance);
-CREATE UNIQUE INDEX index_massif_info ON v_massif_info(id_massif, id_cave);
-CREATE UNIQUE INDEX index_country_info ON v_country_info(id_massif, id_cave);
+CREATE UNIQUE INDEX ON v_data_quality_compute_entrance(id_massif, id_entrance);
+CREATE UNIQUE INDEX ON v_massif_info(id_massif, id_cave);
+CREATE UNIQUE INDEX ON v_country_info(id_massif, id_cave);
