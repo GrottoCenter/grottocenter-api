@@ -3,7 +3,7 @@ openapi: '3.0.0'
 info:
   description: "This page documents the available Grottocenter's API."
   title: 'Grottocenter 3 - REST API'
-  version: 'v1 - 23.0.3'
+  version: 'v1 - 23.0.4'
   termsOfService: 'https://wiki.grottocenter.org/wiki/GrottoCenter:En/API'
   contact:
     name: 'Slack space'
@@ -288,6 +288,19 @@ paths:
           description: 'Bad request. Both the caveId and massifId parameters must exist in the database.'
         '403':
           description: You are not authorized to set the massif of a cave.
+
+  '/caves/cumulated-length':
+    get:
+      tags:
+        - caves
+      description: Get cumulated length of all caves in the database.
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Count'
 
   '/cavers':
     post:
@@ -2631,6 +2644,28 @@ paths:
         '404':
           description: Resource not found
 
+  'entrances/with-quality/massifs/{id}':
+    get:
+      tags:
+        - massifs
+      description: Get the entrances of a massif with the data quality value computed
+      parameters:
+        - name: id
+          in: path
+          description: Massif id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Data-quality-info'
+        '404':
+          description: Massif doesn't exist or hasn't entrances
+
   '/organizations':
     post:
       tags:
@@ -2865,6 +2900,42 @@ paths:
                 $ref: '#/components/schemas/Statistics-country'
         '404':
           description: Country id not found
+
+  'entrances/with-quality/countries/{id}':
+    get:
+      tags:
+        - countries
+      description: Get the entrances of a country with the data quality value computed
+      parameters:
+        - name: id
+          in: path
+          description: Country id
+          example: FR, GB, IT
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Data-quality-info'
+        '404':
+          description: Country doesn't exist or hasn't entrances
+
+  '/countries/count':
+    get:
+      tags:
+        - countries
+      description: Get the number of countries in the database which are at least associated with one entrance.
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Count'
 
   '/documents/check-rows':
     post:
@@ -3909,3 +3980,21 @@ components:
           type: integer
         nb_data:
           type: integer
+
+    Data-quality-info:
+      type: object
+      properties:
+        name:
+          type: string
+        massif_name:
+          type: string
+        id_entrance:
+          type: integer
+        id_country:
+          type: string
+        country_name:
+          type: string
+        data_quality:
+          type: integer
+        date_of_update:
+          type: string

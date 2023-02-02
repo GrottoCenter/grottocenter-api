@@ -14,15 +14,19 @@ const GET_NB_MASSIFS = `
 
 const GET_NB_CAVES = `
   SELECT COUNT(*) as nb_caves
-  FROM v_country_info
-  WHERE id_country = $1
+  FROM (
+    SELECT DISTINCT id_cave 
+    FROM v_country_info
+    WHERE id_country = $1) as tmp;
 `;
 
 const GET_NB_NETWORKS = `
   SELECT COUNT(*) as nb_networks
-  FROM v_country_info
-  WHERE id_country = $1
-  AND nb_entrances > 1
+  FROM (
+    SELECT DISTINCT id_cave 
+    FROM v_country_info
+    WHERE id_country = $1
+    AND nb_entrances > 1) as tmp;
 `;
 
 const FIND_CAVE_WITH_MAX_DEPTH_IN_COUNTRY = `
@@ -33,7 +37,6 @@ const FIND_CAVE_WITH_MAX_DEPTH_IN_COUNTRY = `
     FROM v_country_info
     WHERE id_country = $1
     )
-  AND id_country = $1
 `;
 
 const FIND_CAVE_WITH_MAX_LENGTH_IN_COUNTRY = `
@@ -44,28 +47,33 @@ const FIND_CAVE_WITH_MAX_LENGTH_IN_COUNTRY = `
     FROM v_country_info
     WHERE id_country = $1
   )
-  AND id_country = $1
   LIMIT 1
 `;
 
 const GET_NB_CAVES_WHICH_ARE_DIVING_IN_COUNTRY = `
   SELECT COUNT(*) as nb_diving_cave
-  FROM v_country_info
-  WHERE is_diving_cave = true
-  AND id_country = $1
+  FROM (
+    SELECT DISTINCT id_cave 
+    FROM v_country_info
+    WHERE id_country = $1
+    AND is_diving_cave = true) as tmp;
 `;
 
 const GET_AVG_DEPTH_AND_LENGTH_IN_COUNTRY = `
   SELECT AVG(depth_cave) as avg_depth, AVG(length_cave) as avg_length
-  FROM v_country_info
-  WHERE id_country = $1 
+  FROM (
+    SELECT DISTINCT id_cave, depth_cave, length_cave
+    FROM v_country_info
+    WHERE id_country = $1) as tmp;
 `;
 
 const GET_TOTAL_LENGTH_IN_COUNTRY = `
   SELECT SUM(length_cave) as value, COUNT(length_cave) as nb_data
-  FROM v_country_info
-  WHERE length_cave IS NOT NULL
-  AND id_country = $1
+  FROM (
+    SELECT DISTINCT id_country, id_cave, depth_cave, length_cave
+    FROM v_country_info
+    WHERE id_country = $1
+    AND length_cave IS NOT NULL) as tmp
 `;
 
 const CommonService = require('./CommonService');

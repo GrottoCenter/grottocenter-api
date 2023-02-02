@@ -93,6 +93,10 @@ module.exports.routes = {
   'GET /api/v1/entrances/count': 'v1/entrance/count',
   'GET /api/v1/entrances/findRandom': 'v1/entrance/find-random',
   'GET /api/v1/entrances/publicCount': 'v1/entrance/public-count',
+  'GET /api/v1/entrances/with-quality/massifs/:id':
+    'v1/massif/get-entrances-data-quality',
+  'GET /api/v1/entrances/with-quality/countries/:id':
+    'v1/country/get-entrances-data-quality',
   'GET /api/v1/entrances/:id': 'v1/entrance/find',
   'PATCH /api/v1/entrances/:entranceId/cave/:caveId':
     'v1/entrance/move-to-cave',
@@ -114,11 +118,13 @@ module.exports.routes = {
   // Cave
   'DELETE /api/v1/caves/:id': 'v1/cave/delete-one',
   'GET /api/v1/caves/:id': 'v1/cave/find',
+  'GET /api/v1/caves/cumulated-length': 'v1/cave/cumulated-length',
   'GET /api/v1/caves': 'v1/cave/find-all',
   'POST /api/v1/caves': 'v1/cave/create',
   'PUT /api/v1/caves/:caveId/documents/:documentId': 'v1/cave/add-document',
   'PUT /api/v1/caves/:id': 'v1/cave/update',
   'PUT /api/v1/caves/:caveId/massif/:massifId': 'v1/cave/set-massif',
+
   /**
    * @deprecated use api/v1/caves instead
    */
@@ -158,6 +164,7 @@ module.exports.routes = {
   'POST /api/v1/countries/:id/subscribe': 'v1/country/subscribe',
   'POST /api/v1/countries/:id/unsubscribe': 'v1/country/unsubscribe',
   'GET /api/v1/countries/:id/statistics': 'v1/country/get-statistics',
+  'GET /api/v1/countries/count': 'v1/country/count',
 
   // Organization
   'DELETE /api/v1/organizations/:id': 'v1/organization/delete-one',

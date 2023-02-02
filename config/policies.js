@@ -43,6 +43,7 @@ module.exports.policies = {
   'v1/cave/create': 'tokenAuth',
   'v1/cave/delete-one': 'tokenAuth',
   'v1/cave/update': 'tokenAuth',
+  'v1/cave/cumulated-length': true,
 
   // Caver
   'v1/caver/add-explored-entrance': 'tokenAuth',
@@ -158,6 +159,8 @@ module.exports.policies = {
   'v1/country/subscribe': ['tokenAuth', 'leaderAuth'],
   'v1/country/unsubscribe': ['tokenAuth', 'leaderAuth'],
   'v1/country/get-statistics': true,
+  'v1/country/get-entrances-data-quality': true,
+  'v1/country/count': true,
 
   // Massif
   'v1/massif/create': 'tokenAuth',
@@ -167,6 +170,7 @@ module.exports.policies = {
   'v1/massif/find': true,
   'v1/massif/get-statistics': true,
   'v1/massif/update': 'tokenAuth',
+  'v1/massif/get-entrances-data-quality': true,
 
   // Name
   'v1/name/set-as-main': 'tokenAuth',

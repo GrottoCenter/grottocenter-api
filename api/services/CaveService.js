@@ -7,6 +7,15 @@ const {
 } = require('./NotificationService');
 const NotificationService = require('./NotificationService');
 
+const GET_CUMULATED_LENGTH = `
+  SELECT SUM(c.length) as sum_length, COUNT(c.length) as nb_data
+  FROM t_entrance e
+  JOIN t_cave c ON e.id_cave = c.id
+  WHERE c.length IS NOT NULL
+  AND c.is_deleted = false
+  AND e.is_deleted = false  
+`;
+
 module.exports = {
   /**
    * @param {Array<Object>} caves caves to set
@@ -216,5 +225,25 @@ module.exports = {
       NOTIFICATION_TYPES.DELETE,
       NOTIFICATION_ENTITIES.CAVE
     );
+  },
+
+  /**
+   *
+   * @param
+   * @returns {Object} the cumulated length of the caves present in the database whose value length is not null
+   *                and the number of data on which this value is calculated
+   *                or null if no result or something went wrong
+   */
+  getCumulatedLength: async () => {
+    try {
+      const queryResult = await CommonService.query(GET_CUMULATED_LENGTH, []);
+      const result = queryResult.rows;
+      if (result.length > 0) {
+        return result[0];
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
   },
 };

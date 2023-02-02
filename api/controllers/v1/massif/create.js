@@ -110,6 +110,7 @@ module.exports = async (req, res) => {
         names: newMassifPopulated.names.map((n) => n.name).join(', '),
         'nb caves': newMassifPopulated.caves.length,
         'nb entrances': newMassifPopulated.entrances.length,
+        deleted: newMassifPopulated.isDeleted,
         descriptions: [description],
         tags: ['massif'],
       });
