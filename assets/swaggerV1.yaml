@@ -1280,7 +1280,7 @@ paths:
           description: The entrance which the location is refering to was not found.
 
   '/locations/{id}':
-    patch:
+    put:
       tags:
         - locations
       description: Update a location's body and/or title and/or language (you can provide one or multiple).
