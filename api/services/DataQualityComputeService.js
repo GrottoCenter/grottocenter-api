@@ -11,8 +11,11 @@ const GET_ENTRANCES_WITH_QUALITY_BY_MASSIF = `
 `;
 
 const GET_ENTRANCES_WITH_QUALITY_BY_COUNTRY = `
-  SELECT *
-  FROM v_data_quality_compute_entrance
+  SELECT DISTINCT *
+  FROM (
+    SELECT id_entrance, general_latest_date_of_update, general_nb_contributions, location_latest_date_of_update, location_nb_contributions,description_latest_date_of_update, description_nb_contributions, document_latest_date_of_update, document_nb_contributions, rigging_latest_date_of_update, rigging_nb_contributions, history_latest_date_of_update, history_nb_contributions, comment_latest_date_of_update, comment_nb_contributions, entrance_name, id_country, country_name, date_of_update
+    FROM v_data_quality_compute_entrance
+  ) as tmp
   WHERE id_country = $1
 `;
 
