@@ -44,7 +44,8 @@ module.exports = async (req, res) => {
 
     const hEntrances = await EntranceService.getHEntrancesById(
       entranceId,
-      req.query.isNetwork
+      req.query.isNetwork,
+      req.token
     );
 
     const hHistories = await Promise.all(

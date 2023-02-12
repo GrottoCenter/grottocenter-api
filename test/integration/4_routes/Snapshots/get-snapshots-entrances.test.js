@@ -41,7 +41,6 @@ describe('Entrances snapshots features', () => {
           should(entrances.entrances[0]).not.be.null();
           should(entrances.entrances[0].latitude).not.be.null();
           should(entrances.entrances[0].longitude).not.be.null();
-          should(entrances.entrances[0].cave).not.be.null();
           should(entrances.entrances[0].cave.id).equal(6);
           return done();
         });
