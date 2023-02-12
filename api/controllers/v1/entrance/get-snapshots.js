@@ -6,7 +6,8 @@ module.exports = async (req, res) => {
   try {
     const entrancesH = await EntranceService.getHEntrancesById(
       req.params.id,
-      req.query.isNetwork
+      req.query.isNetwork,
+      req.token
     );
 
     const params = {};
