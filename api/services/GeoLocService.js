@@ -28,7 +28,7 @@ const NETWORKS_IN_BOUNDS = `
   INNER JOIN t_cave c ON c.id = en.id_cave
   LEFT JOIN t_name AS nc ON nc.id_cave = c.id
   LEFT JOIN t_name as ne ON ne.id_entrance = en.id
-  WHERE en.latitude > $1 AND en.latitude < $2 AND en.longitude > $3 AND en.longitude < $4 
+  WHERE en.latitude > $1 AND en.latitude < $2 AND en.longitude > $3 AND en.longitude < $4
   AND en.is_sensitive = false
   AND en.is_deleted = false
   AND c.is_deleted = false
@@ -40,7 +40,7 @@ const PUBLIC_NETWORKS_COORDINATES_IN_BOUNDS = `
   SELECT avg(en.longitude) as longitude, avg(en.latitude) as latitude
   FROM t_cave AS c
   LEFT JOIN t_entrance en ON c.id = en.id_cave
-  WHERE en.latitude > $1 AND en.latitude < $2 AND en.longitude > $3 AND en.longitude < $4 
+  WHERE en.latitude > $1 AND en.latitude < $2 AND en.longitude > $3 AND en.longitude < $4
   AND en.is_sensitive = false
   AND en.is_deleted = false
   AND c.is_deleted = false
@@ -70,34 +70,19 @@ const formatNetworks = (networks) =>
  * @param entrances
  */
 const formatEntrances = (entrances) =>
-  entrances.map((entrance) => {
-    let entranceCave;
-
-    if (entrance.idCave) {
-      entranceCave = {
-        id: entrance.idCave,
-        name: entrance.nameCave,
-        depth: entrance.depthCave,
-        length: entrance.lengthCave,
-      };
-    } else {
-      entranceCave = {
-        depth: entrance.depthSE,
-        length: entrance.lengthSE,
-      };
-    }
-
-    return {
-      id: entrance.id,
-      name: entrance.name,
-      city: entrance.city,
-      region: entrance.region,
-      cave: entranceCave,
-      longitude: parseFloat(entrance.longitude),
-      latitude: parseFloat(entrance.latitude),
-      quality: entrance.size_coef,
-    };
-  });
+  entrances.map((entrance) => ({
+    id: entrance.id,
+    name: entrance.name,
+    city: entrance.city,
+    region: entrance.region,
+    caveId: entrance.idcave,
+    caveName: entrance.namecave,
+    depth: entrance.depthcave,
+    length: entrance.lengthcave,
+    longitude: parseFloat(entrance.longitude),
+    latitude: parseFloat(entrance.latitude),
+    quality: entrance.size_coef,
+  }));
 
 /**
  * Return a lighter version of the grottos
@@ -153,7 +138,7 @@ module.exports = {
           (param.value < -180 || param.value > 180)
         ) {
           errors.push(
-            `${param.name} value must be between -180 & 80 (value found: ${param.value})`
+            `${param.name} value must be between -180 & 180 (value found: ${param.value})`
           );
         }
       }
@@ -189,8 +174,7 @@ module.exports = {
 
     // TODO : to adapt when authentication will be implemented
     parameters.isSensitive = false;
-    const entrance = await TEntrance.count(parameters);
-    return entrance;
+    return TEntrance.count(parameters);
   },
 
   getEntrancesCoordinates: async (
