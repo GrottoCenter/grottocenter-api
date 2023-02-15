@@ -18,6 +18,7 @@ const {
   NOTIFICATION_ENTITIES,
   NOTIFICATION_TYPES,
 } = require('./NotificationService');
+const RightService = require('./RightService');
 
 module.exports = {
   getConvertedNameDescLocFromClientRequest: (req) => {
@@ -112,36 +113,47 @@ module.exports = {
   },
 
   // If the entrance do not belong to a network the associated cave is populated
-  getHEntrancesById: async (entranceId, isNetwork) => {
+  getHEntrancesById: async (entranceId, isNetwork, token) => {
     let entrancesH = {};
-    const tEntranceSensitivity = await TEntrance.find({
-      where: { id: entranceId },
-      select: ['isSensitive'],
-    });
-    const isEntranceSensitive = tEntranceSensitivity[0]
-      ? tEntranceSensitivity[0].isSensitive
-      : true;
     if (isNetwork === 'true') {
       entrancesH = await HEntrance.find({ t_id: entranceId })
         .populate('reviewer')
         .populate('author');
-      return module.exports.getHEntrancesWithName(entrancesH, true);
+      return module.exports.getHEntrancesWithName(
+        entranceId,
+        entrancesH,
+        token
+      );
     }
     entrancesH = await HEntrance.find({ t_id: entranceId })
       .populate('reviewer')
       .populate('author')
       .populate('cave');
-    return module.exports.getHEntrancesWithName(
-      entrancesH,
-      false,
-      isEntranceSensitive
-    );
+    return module.exports.getHEntrancesWithName(entranceId, entrancesH, token);
   },
 
-  getHEntrancesWithName: async (HEntrances, isNetwork, isEntranceSensitive) =>
-    Promise.all(
+  getHEntrancesWithName: async (entranceId, HEntrances, token) => {
+    const tEntranceSensitivity = await TEntrance.find({
+      where: { id: entranceId },
+      select: ['isSensitive'],
+    });
+    // Check if the entrance exist
+    if (Object.keys(tEntranceSensitivity).length === 0) {
+      return {};
+    }
+    const isEntranceSensitive = tEntranceSensitivity[0]
+      ? tEntranceSensitivity[0].isSensitive
+      : true;
+    const hasRight = isEntranceSensitive
+      ? await sails.helpers.checkRight.with({
+          groups: token.groups,
+          rightEntity: RightService.RightEntities.ENTRANCE,
+          rightAction: RightService.RightActions.VIEW_COMPLETE,
+        })
+      : true; // No need to call checkRight if it's not a sensitive entrance
+    return Promise.all(
       HEntrances.map(async (entrance) => {
-        if (isEntranceSensitive) {
+        if (!hasRight) {
           /* eslint-disable no-param-reassign */
           entrance.locations = [];
           entrance.longitude = null;
@@ -152,23 +164,25 @@ module.exports = {
           [{ id: entrance.t_id }],
           'entrance'
         );
-        if (name && name.length > 0) {
+        if (name && name[0] && name[0].names && name[0].names[0]) {
+          // eslint-disable-next-line no-param-reassign
+          entrance.languageName = name[0].names[0].language;
           // eslint-disable-next-line no-param-reassign
           entrance.name = name[0].name;
         }
-        if (isNetwork === true) {
-          const caveName = await NameService.setNames(
-            [{ id: entrance.cave }],
-            'cave'
-          );
-          if (caveName && caveName.length > 0) {
-            // eslint-disable-next-line no-param-reassign
-            entrance.caveName = caveName[0].name;
-          }
+        const caveName = await NameService.setNames(
+          [{ id: entrance.cave.id ?? entrance.cave }],
+          'cave'
+        );
+        if (caveName && caveName.length > 0) {
+          // eslint-disable-next-line no-param-reassign
+          entrance.caveName = caveName[0].name;
         }
+
         return entrance;
       })
-    ),
+    );
+  },
 
   createEntrance: async (req, entranceData, nameDescLocData) => {
     const newEntrancePopulated = await sails

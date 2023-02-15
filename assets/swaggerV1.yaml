@@ -1,9 +1,9 @@
-openapi: '3.0.0'
+openapi: 3.0.0
 
 info:
   description: "This page documents the available Grottocenter's API."
   title: 'Grottocenter API'
-  version: 'v1 - 23.0.5'
+  version: 'v1 - 23.0.6'
   termsOfService: 'https://wiki.grottocenter.org/wiki/GrottoCenter:En/API'
   contact:
     name: 'Slack space'
@@ -1280,7 +1280,7 @@ paths:
           description: The entrance which the location is refering to was not found.
 
   '/locations/{id}':
-    patch:
+    put:
       tags:
         - locations
       description: Update a location's body and/or title and/or language (you can provide one or multiple).
@@ -2339,30 +2339,10 @@ paths:
         - geoloc
       description: See countEntrances instead ! Count entrances contained inside the given coords
       parameters:
-        - name: sw_lat
-          in: query
-          description: South West latitude
-          required: true
-          schema:
-            type: string
-        - name: sw_lng
-          in: query
-          description: South West longitude
-          required: true
-          schema:
-            type: string
-        - name: ne_lat
-          in: query
-          description: North East latitude
-          required: true
-          schema:
-            type: string
-        - name: ne_lng
-          in: query
-          description: North East longitude
-          required: true
-          schema:
-            type: string
+        - $ref: '#/parameters/sw_lat'
+        - $ref: '#/parameters/sw_lng'
+        - $ref: '#/parameters/ne_lat'
+        - $ref: '#/parameters/ne_lng'
       responses:
         '200':
           description: Successful operation
@@ -2370,39 +2350,154 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Count'
-        '404':
-          description: Resource not found
-
+  '/geoloc/entrances':
+    get:
+      tags:
+        - geoloc
+      description: Count entrances contained inside the given coords
+      parameters:
+        - $ref: '#/parameters/sw_lat'
+        - $ref: '#/parameters/sw_lng'
+        - $ref: '#/parameters/ne_lat'
+        - $ref: '#/parameters/ne_lng'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  name:
+                    type: string
+                  city:
+                    type: string
+                  region:
+                    type: string
+                  caveId:
+                    type: integer
+                  caveName:
+                    type: string
+                  depth:
+                    type: integer
+                  length:
+                    type: integer
+                  longitude:
+                    type: number
+                  latitude:
+                    type: number
+                  quality:
+                    type: integer
+  '/geoloc/entrancesCoordinates':
+    get:
+      tags:
+        - geoloc
+      description: Count entrances contained inside the given coords
+      parameters:
+        - $ref: '#/parameters/sw_lat'
+        - $ref: '#/parameters/sw_lng'
+        - $ref: '#/parameters/ne_lat'
+        - $ref: '#/parameters/ne_lng'
+      responses:
+        '200':
+          description: List of coordinates [long,lat]
+          content:
+            application/json:
+              example: [[4.55, 0.17], [45.89, -10.56]]
+              schema:
+                type: array
+                items:
+                  type: array
+                  items:
+                    type: number
+  '/geoloc/networks':
+    get:
+      tags:
+        - geoloc
+      description: Count entrances contained inside the given coords
+      parameters:
+        - $ref: '#/parameters/sw_lat'
+        - $ref: '#/parameters/sw_lng'
+        - $ref: '#/parameters/ne_lat'
+        - $ref: '#/parameters/ne_lng'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  name:
+                    type: string
+                  longitude:
+                    type: number
+                  latitude:
+                    type: number
+  '/geoloc/networksCoordinates':
+    get:
+      tags:
+        - geoloc
+      description: Count entrances contained inside the given coords
+      parameters:
+        - $ref: '#/parameters/sw_lat'
+        - $ref: '#/parameters/sw_lng'
+        - $ref: '#/parameters/ne_lat'
+        - $ref: '#/parameters/ne_lng'
+      responses:
+        '200':
+          description: List of coordinates [long,lat]
+          content:
+            application/json:
+              example: [[4.55, 0.17], [45.89, -10.56]]
+              schema:
+                type: array
+                items:
+                  type: array
+                  items:
+                    type: number
+  '/geoloc/organizations':
+    get:
+      tags:
+        - geoloc
+      description: Count entrances contained inside the given coords
+      parameters:
+        - $ref: '#/parameters/sw_lat'
+        - $ref: '#/parameters/sw_lng'
+        - $ref: '#/parameters/ne_lat'
+        - $ref: '#/parameters/ne_lng'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  name:
+                    type: string
+                  address:
+                    type: string
+                  longitude:
+                    type: number
+                  latitude:
+                    type: number
   '/geoloc/countEntrances':
     get:
       tags:
         - geoloc
       description: Count entrances contained inside the given coords
       parameters:
-        - name: sw_lat
-          in: query
-          description: South West latitude
-          required: true
-          schema:
-            type: string
-        - name: sw_lng
-          in: query
-          description: South West longitude
-          required: true
-          schema:
-            type: string
-        - name: ne_lat
-          in: query
-          description: North East latitude
-          required: true
-          schema:
-            type: string
-        - name: ne_lng
-          in: query
-          description: North East longitude
-          required: true
-          schema:
-            type: string
+        - $ref: '#/parameters/sw_lat'
+        - $ref: '#/parameters/sw_lng'
+        - $ref: '#/parameters/ne_lat'
+        - $ref: '#/parameters/ne_lng'
       responses:
         '200':
           description: Successful operation
@@ -2410,46 +2505,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Count'
-        '404':
-          description: Resource not found
-
-  '/geoloc/findByBounds':
-    get:
-      tags:
-        - geoloc
-      description: Find entrances contained inside the given coords
-      parameters:
-        - name: sw_lat
-          in: query
-          description: South West latitude
-          required: true
-          schema:
-            type: string
-        - name: sw_lng
-          in: query
-          description: South West longitude
-          required: true
-          schema:
-            type: string
-        - name: ne_lat
-          in: query
-          description: North East latitude
-          required: true
-          schema:
-            type: string
-        - name: ne_lng
-          in: query
-          description: North East longitude
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Geoloc'
         '404':
           description: Resource not found
 
@@ -2644,7 +2699,7 @@ paths:
         '404':
           description: Resource not found
 
-  'entrances/with-quality/massifs/{id}':
+  '/entrances/with-quality/massifs/{id}':
     get:
       tags:
         - massifs
@@ -2901,7 +2956,7 @@ paths:
         '404':
           description: Country id not found
 
-  'entrances/with-quality/countries/{id}':
+  '/entrances/with-quality/countries/{id}':
     get:
       tags:
         - countries
@@ -3027,7 +3082,52 @@ paths:
 
         '403':
           description: You are not authorized to create a document (or entrance).
-
+parameters:
+  sw_lat:
+    name: sw_lat
+    in: query
+    description: South West latitude (WGS84 decimal)
+    required: true
+    schema:
+      type: number
+      minimum: -90
+      maximum: 90
+  sw_lng:
+    name: sw_lng
+    in: query
+    description: South West longitude (WGS84 decimal)
+    required: true
+    schema:
+      type: number
+      minimum: -180
+      maximum: 180
+  ne_lat:
+    name: ne_lat
+    in: query
+    description: North East latitude (WGS84 decimal)
+    required: true
+    schema:
+      type: number
+      minimum: -90
+      maximum: 90
+  ne_lng:
+    name: ne_lng
+    in: query
+    description: North East longitude (WGS84 decimal)
+    required: true
+    schema:
+      type: number
+      minimum: -180
+      maximum: 180
+  zoom:
+    name: zoom
+    in: query
+    description: zoom level (1 to 22)
+    required: true
+    schema:
+      type: integer
+      minimum: 1
+      maximum: 22
 components:
   schemas:
     Auth-success:
@@ -3812,7 +3912,6 @@ components:
           type: string
           maxLength: 300
         obstacles:
-          description: list of obstacles. 1 item per line. Each line contains the columns obstacle, rope, anchor, observation.
           $ref: '#/components/schemas/Obstacles'
         language:
           description: Language id used for the body. The list of languages supported by Grottocenter is available using the /languages route.
@@ -3839,7 +3938,6 @@ components:
         language:
           type: string
         obstacles:
-          description: list of obstacles. 1 item per line. Each line contains the columns obstacle, rope, anchor, observation.
           $ref: '#/components/schemas/Obstacles'
         point:
           $ref: '#/components/schemas/Point'
@@ -3900,6 +3998,7 @@ components:
           type: string
 
     Obstacles:
+      description: list of obstacles. 1 item per line. Each line contains the columns obstacle, rope, anchor, observation.
       type: array
       items:
         type: object
