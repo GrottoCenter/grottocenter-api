@@ -108,24 +108,31 @@ const c = {
     nickname: source.nickname,
   }),
 
-  toSimpleComment: (source) => ({
-    id: source.id,
-    isDeleted: source.isDeleted,
-    language: source.language,
-    title: source.title,
-    body: source.body,
-    dateInscription: source.dateInscription,
-    dateReviewed: source.dateReviewed,
-    relevance: source.relevance,
-    aestheticism: source.aestheticism,
-    approach: source.approach,
-    caving: source.caving,
-    eTTrail: postgreIntervalObjectToDbString(source.eTTrail),
-    eTUnderground: postgreIntervalObjectToDbString(source.eTUnderground),
-    // alert: source.alert; // TODO ?
-    author: convertIfObject(source.author, c.toSimpleCaver),
-    reviewer: convertIfObject(source.reviewer, c.toSimpleCaver),
-  }),
+  toSimpleComment: (source) => {
+    const result = {
+      id: source.id,
+      isDeleted: source.isDeleted,
+      language: source.language,
+      title: source.title,
+      body: source.body,
+      dateInscription: source.dateInscription,
+      dateReviewed: source.dateReviewed,
+      relevance: source.relevance,
+      aestheticism: source.aestheticism,
+      approach: source.approach,
+      caving: source.caving,
+      eTTrail: postgreIntervalObjectToDbString(source.eTTrail),
+      eTUnderground: postgreIntervalObjectToDbString(source.eTUnderground),
+      // alert: source.alert; // TODO ?
+      author: convertIfObject(source.author, c.toSimpleCaver),
+      reviewer: convertIfObject(source.reviewer, c.toSimpleCaver),
+    };
+    if (source.t_id) {
+      // snapshot
+      result.t_id = source.t_id;
+    }
+    return result;
+  },
 
   toComment: (source) => ({
     ...c.toSimpleComment(source),
@@ -188,19 +195,26 @@ const c = {
     return res;
   },
 
-  toSimpleDescription: (source) => ({
-    id: source.id,
-    language: source.language,
-    title: source.title,
-    body: source.body,
-    dateInscription: source.dateInscription,
-    dateReviewed: source.dateReviewed,
-    relevance: source.relevance,
-    // point: source.point,
-    author: convertIfObject(source.author, c.toSimpleCaver),
-    reviewer: convertIfObject(source.reviewer, c.toSimpleCaver),
-    isDeleted: source.isDeleted,
-  }),
+  toSimpleDescription: (source) => {
+    const result = {
+      id: source.id,
+      language: source.language,
+      title: source.title,
+      body: source.body,
+      dateInscription: source.dateInscription,
+      dateReviewed: source.dateReviewed,
+      relevance: source.relevance,
+      // point: source.point,
+      author: convertIfObject(source.author, c.toSimpleCaver),
+      reviewer: convertIfObject(source.reviewer, c.toSimpleCaver),
+      isDeleted: source.isDeleted,
+    };
+    if (source.t_id) {
+      // snapshot
+      result.t_id = source.t_id;
+    }
+    return result;
+  },
 
   toDescription: (source) => ({
     ...c.toSimpleDescription(source),
@@ -217,6 +231,10 @@ const c = {
     // Conversion (from Elasticsearch or not)
     result.id = source.id;
     result['@id'] = String(source.id);
+    if (source.t_id) {
+      // snapshot
+      result.t_id = source.t_id;
+    }
     result.authorComment = source.authorComment;
     result.cave = source.cave;
     result.dateInscription = source.dateInscription;
@@ -423,6 +441,10 @@ const c = {
     };
     result['@id'] = String(source.id);
     result.id = source.id;
+    if (source.t_id) {
+      // snapshot
+      result.t_id = source.t_id;
+    }
     result.isDeleted = source.isDeleted;
     result.isSensitive = source.isSensitive;
     result.redirectTo = source.redirectTo;
@@ -540,17 +562,24 @@ const c = {
     };
   },
 
-  toSimpleHistory: (source) => ({
-    id: source.id,
-    body: source.body,
-    dateInscription: source.dateInscription,
-    dateReviewed: source.dateReviewed,
-    relevance: source.relevance,
-    language: source.language,
-    isDeleted: source.isDeleted,
-    author: convertIfObject(source.author, c.toSimpleCaver),
-    reviewer: convertIfObject(source.reviewer, c.toSimpleCaver),
-  }),
+  toSimpleHistory: (source) => {
+    const result = {
+      id: source.id,
+      body: source.body,
+      dateInscription: source.dateInscription,
+      dateReviewed: source.dateReviewed,
+      relevance: source.relevance,
+      language: source.language,
+      isDeleted: source.isDeleted,
+      author: convertIfObject(source.author, c.toSimpleCaver),
+      reviewer: convertIfObject(source.reviewer, c.toSimpleCaver),
+    };
+    if (source.t_id) {
+      // snapshot
+      result.t_id = source.t_id;
+    }
+    return result;
+  },
 
   toHistory: (source) => ({
     ...c.toSimpleHistory(source),
@@ -580,18 +609,25 @@ const c = {
     return result;
   },
 
-  toSimpleLocation: (source) => ({
-    id: source.id,
-    body: source.body,
-    dateInscription: source.dateInscription,
-    dateReviewed: source.dateReviewed,
-    language: source.language,
-    relevance: source.relevance,
-    title: source.title,
-    isDeleted: source.isDeleted,
-    author: convertIfObject(source.author, c.toSimpleCaver),
-    reviewer: convertIfObject(source.reviewer, c.toSimpleCaver),
-  }),
+  toSimpleLocation: (source) => {
+    const result = {
+      id: source.id,
+      body: source.body,
+      dateInscription: source.dateInscription,
+      dateReviewed: source.dateReviewed,
+      language: source.language,
+      relevance: source.relevance,
+      title: source.title,
+      isDeleted: source.isDeleted,
+      author: convertIfObject(source.author, c.toSimpleCaver),
+      reviewer: convertIfObject(source.reviewer, c.toSimpleCaver),
+    };
+    if (source.t_id) {
+      // snapshot
+      result.t_id = source.t_id;
+    }
+    return result;
+  },
 
   toLocation: (source) => ({
     ...c.toSimpleLocation(source),
@@ -795,18 +831,25 @@ const c = {
     region: source.region,
   }),
 
-  toSimpleRigging: (source) => ({
-    id: source.id,
-    isDeleted: source.isDeleted,
-    title: source.title,
-    language: source.language,
-    dateInscription: source.dateInscription,
-    dateReviewed: source.dateReviewed,
-    relevance: source.relevance,
-    obstacles: RiggingService.deserializeForAPI(source),
-    author: convertIfObject(source.author, c.toSimpleCaver),
-    reviewer: convertIfObject(source.reviewer, c.toSimpleCaver),
-  }),
+  toSimpleRigging: (source) => {
+    const result = {
+      id: source.id,
+      isDeleted: source.isDeleted,
+      title: source.title,
+      language: source.language,
+      dateInscription: source.dateInscription,
+      dateReviewed: source.dateReviewed,
+      relevance: source.relevance,
+      obstacles: RiggingService.deserializeForAPI(source),
+      author: convertIfObject(source.author, c.toSimpleCaver),
+      reviewer: convertIfObject(source.reviewer, c.toSimpleCaver),
+    };
+    if (source.t_id) {
+      // snapshot
+      result.t_id = source.t_id;
+    }
+    return result;
+  },
 
   toRigging: (source) => ({
     ...c.toSimpleRigging(source),

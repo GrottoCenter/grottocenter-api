@@ -1,6 +1,8 @@
 const ControllerService = require('../../../services/ControllerService');
 const ErrorService = require('../../../services/ErrorService');
 const RiggingService = require('../../../services/RiggingService');
+const { toListFromController } = require('../../../services/mapping/utils');
+const { toSimpleRigging } = require('../../../services/mapping/converters');
 
 module.exports = async (req, res) => {
   try {
@@ -13,12 +15,13 @@ module.exports = async (req, res) => {
       return res.notFound(`Rigging ${req.params.id} has no snapshot.`);
     }
 
-    return ControllerService.treat(
+    return ControllerService.treatAndConvert(
       req,
       null,
-      { riggings: riggingH },
+      riggingH,
       params,
-      res
+      res,
+      (data) => toListFromController('riggings', data, toSimpleRigging)
     );
   } catch (e) {
     return ErrorService.getDefaultErrorHandler(res)(e);

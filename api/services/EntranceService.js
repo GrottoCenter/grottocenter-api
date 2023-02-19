@@ -114,7 +114,7 @@ module.exports = {
 
   // If the entrance do not belong to a network the associated cave is populated
   getHEntrancesById: async (entranceId, isNetwork, token) => {
-    let entrancesH = {};
+    let entrancesH;
     if (isNetwork === 'true') {
       entrancesH = await HEntrance.find({ t_id: entranceId })
         .populate('reviewer')

@@ -1,6 +1,8 @@
 const ControllerService = require('../../../services/ControllerService');
 const ErrorService = require('../../../services/ErrorService');
 const HistoryService = require('../../../services/HistoryService');
+const { toListFromController } = require('../../../services/mapping/utils');
+const { toSimpleHistory } = require('../../../services/mapping/converters');
 
 module.exports = async (req, res) => {
   try {
@@ -13,12 +15,13 @@ module.exports = async (req, res) => {
       return res.notFound(`History ${req.params.id} has no snapshot.`);
     }
 
-    return ControllerService.treat(
+    return ControllerService.treatAndConvert(
       req,
       null,
-      { histories: historyH },
+      historyH,
       params,
-      res
+      res,
+      (data) => toListFromController('histories', data, toSimpleHistory)
     );
   } catch (e) {
     return ErrorService.getDefaultErrorHandler(res)(e);

@@ -6,6 +6,14 @@ const RiggingService = require('../../../services/RiggingService');
 const HistoryService = require('../../../services/HistoryService');
 const LocationService = require('../../../services/LocationService');
 const ErrorService = require('../../../services/ErrorService');
+const {
+  toDocument,
+  toSimpleDescription,
+  toEntrance,
+  toSimpleLocation,
+  toSimpleRigging,
+  toSimpleHistory,
+} = require('../../../services/mapping/converters');
 
 module.exports = async (req, res) => {
   try {
@@ -92,12 +100,12 @@ module.exports = async (req, res) => {
       req,
       null,
       {
-        descriptions: hDescriptions.flat(),
-        documents: hDocuments.flat(),
-        entrances: hEntrances.flat(),
-        locations: filteredLocations.flat(),
-        riggings: hRiggings.flat(),
-        histories: hHistories.flat(),
+        descriptions: hDescriptions.flat().map((d) => toSimpleDescription(d)),
+        documents: hDocuments.flat().map((d) => toDocument(d)),
+        entrances: hEntrances.flat().map((e) => toEntrance(e)),
+        locations: filteredLocations.flat().map((l) => toSimpleLocation(l)),
+        riggings: hRiggings.flat().map((r) => toSimpleRigging(r)),
+        histories: hHistories.flat().map((h) => toSimpleHistory(h)),
       },
       params,
       res

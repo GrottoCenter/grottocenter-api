@@ -1,6 +1,8 @@
 const ControllerService = require('../../../services/ControllerService');
 const ErrorService = require('../../../services/ErrorService');
 const CommentService = require('../../../services/CommentService');
+const { toListFromController } = require('../../../services/mapping/utils');
+const { toSimpleComment } = require('../../../services/mapping/converters');
 
 module.exports = async (req, res) => {
   try {
@@ -13,12 +15,13 @@ module.exports = async (req, res) => {
       return res.notFound(`Comment ${req.params.id} has no snapshot.`);
     }
 
-    return ControllerService.treat(
+    return ControllerService.treatAndConvert(
       req,
       null,
-      { comments: commentH },
+      commentH,
       params,
-      res
+      res,
+      (data) => toListFromController('comments', data, toSimpleComment)
     );
   } catch (e) {
     return ErrorService.getDefaultErrorHandler(res)(e);

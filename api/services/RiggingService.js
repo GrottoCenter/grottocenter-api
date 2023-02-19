@@ -84,20 +84,8 @@ module.exports = {
     return riggingsId;
   },
 
-  getHRiggingById: async (riggingId) => {
-    const hRiggings = await HRigging.find({ t_id: riggingId })
-      .populate('reviewer')
-      .populate('author');
-    hRiggings.forEach((rigging) => {
-      /* eslint-disable no-param-reassign */
-      rigging.obstacles = module.exports.deserializeForAPI(rigging);
-      delete rigging.anchors;
-      delete rigging.observations;
-      delete rigging.ropes;
-      /* eslint-disable no-param-reassign */
-    });
-    return hRiggings;
-  },
+  getHRiggingById: async (riggingId) =>
+    HRigging.find({ t_id: riggingId }).populate('reviewer').populate('author'),
 
   getRigging: async (riggingId, { includeDeleted = false } = {}) =>
     TRigging.findOne({ id: riggingId, isDeleted: includeDeleted })
