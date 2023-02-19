@@ -43,11 +43,11 @@ module.exports = async (req, res) => {
     const newTitle = req.param('title');
     const newBody = req.param('body');
     const newLanguage = req.param('language');
-    const newETUnderground = req.param('eTUnderground');
-    const newETTrail = req.param('eTTrail');
-    const newAestheticism = req.param('aestheticism');
-    const newCaving = req.param('caving');
-    const newApproach = req.param('approach');
+    const newETUnderground = req.param('eTUnderground', null);
+    const newETTrail = req.param('eTTrail', null);
+    const newAestheticism = req.param('aestheticism', null);
+    const newCaving = req.param('caving', null);
+    const newApproach = req.param('approach', null);
 
     const updatedFields = {
       reviewer: req.token.id,
@@ -57,11 +57,14 @@ module.exports = async (req, res) => {
     if (newTitle) updatedFields.title = newTitle;
     if (newBody) updatedFields.body = newBody;
     if (newLanguage) updatedFields.language = newLanguage;
-    if (newETUnderground) updatedFields.eTUnderground = newETUnderground;
-    if (newETTrail) updatedFields.eTTrail = newETTrail;
-    if (newAestheticism) updatedFields.aestheticism = newAestheticism;
-    if (newCaving) updatedFields.caving = newCaving;
-    if (newApproach) updatedFields.approach = newApproach;
+
+    // To enable erasure, these parameters are mandatory
+    updatedFields.eTUnderground = newETUnderground;
+    updatedFields.eTTrail = newETTrail;
+    updatedFields.aestheticism = newAestheticism;
+    updatedFields.caving = newCaving;
+    updatedFields.approach = newApproach;
+
     // TODO re-compute relevance ?
 
     await TComment.updateOne({ id: commentId }).set(updatedFields);
