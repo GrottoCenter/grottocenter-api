@@ -3,7 +3,7 @@ openapi: 3.0.0
 info:
   description: "This page documents the available Grottocenter's API."
   title: 'Grottocenter API'
-  version: 'v1 - 23.0.6'
+  version: 'v1 - 23.0.7'
   termsOfService: 'https://wiki.grottocenter.org/wiki/GrottoCenter:En/API'
   contact:
     name: 'Slack space'

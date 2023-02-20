@@ -1,6 +1,8 @@
 const ControllerService = require('../../../services/ControllerService');
 const ErrorService = require('../../../services/ErrorService');
 const LocationService = require('../../../services/LocationService');
+const { toListFromController } = require('../../../services/mapping/utils');
+const { toSimpleLocation } = require('../../../services/mapping/converters');
 
 module.exports = async (req, res) => {
   try {
@@ -41,12 +43,13 @@ module.exports = async (req, res) => {
     const params = {};
     params.controllerMethod = 'GrottoController.getAllSnapshots';
 
-    return ControllerService.treat(
+    return ControllerService.treatAndConvert(
       req,
       null,
-      { locations: locationsHPopulated.hLocations },
+      locationsHPopulated.hLocations,
       params,
-      res
+      res,
+      (data) => toListFromController('locations', data, toSimpleLocation)
     );
   } catch (e) {
     return ErrorService.getDefaultErrorHandler(res)(e);

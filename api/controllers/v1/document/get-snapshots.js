@@ -1,6 +1,8 @@
 const ControllerService = require('../../../services/ControllerService');
 const ErrorService = require('../../../services/ErrorService');
 const DocumentService = require('../../../services/DocumentService');
+const { toListFromController } = require('../../../services/mapping/utils');
+const { toDocument } = require('../../../services/mapping/converters');
 
 module.exports = async (req, res) => {
   try {
@@ -18,12 +20,13 @@ module.exports = async (req, res) => {
       return res.notFound(`Document ${req.params.id} has no snapshot.`);
     }
 
-    return ControllerService.treat(
+    return ControllerService.treatAndConvert(
       req,
       null,
-      { documents: documentWithDescription },
+      documentWithDescription,
       params,
-      res
+      res,
+      (data) => toListFromController('documents', data, toDocument)
     );
   } catch (e) {
     return ErrorService.getDefaultErrorHandler(res)(e);

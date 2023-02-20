@@ -1,6 +1,8 @@
 const ControllerService = require('../../../services/ControllerService');
 const ErrorService = require('../../../services/ErrorService');
 const EntranceService = require('../../../services/EntranceService');
+const { toListFromController } = require('../../../services/mapping/utils');
+const { toEntrance } = require('../../../services/mapping/converters');
 
 module.exports = async (req, res) => {
   try {
@@ -17,12 +19,13 @@ module.exports = async (req, res) => {
       return res.notFound(`Entrance ${req.params.id} has no snapshot.`);
     }
 
-    return ControllerService.treat(
+    return ControllerService.treatAndConvert(
       req,
       null,
-      { entrances: entrancesH },
+      entrancesH,
       params,
-      res
+      res,
+      (data) => toListFromController('entrances', data, toEntrance)
     );
   } catch (e) {
     return ErrorService.getDefaultErrorHandler(res)(e);
