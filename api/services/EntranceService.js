@@ -151,37 +151,42 @@ module.exports = {
           rightAction: RightService.RightActions.VIEW_COMPLETE,
         })
       : true; // No need to call checkRight if it's not a sensitive entrance
+    /* eslint-disable no-param-reassign */
     return Promise.all(
       HEntrances.map(async (entrance) => {
         if (!hasRight) {
-          /* eslint-disable no-param-reassign */
           entrance.locations = [];
           entrance.longitude = null;
           entrance.latitude = null;
-          /* eslint-enable no-param-reassign */
         }
-        const name = await NameService.setNames(
+        // TODO refactor this which always return the current name instead of name's revisions
+        const nameResult = await NameService.setNames(
           [{ id: entrance.t_id }],
           'entrance'
         );
-        if (name && name[0] && name[0].names && name[0].names[0]) {
-          // eslint-disable-next-line no-param-reassign
-          entrance.languageName = name[0].names[0].language;
-          // eslint-disable-next-line no-param-reassign
-          entrance.name = name[0].name;
+        entrance.names = [];
+        entrance.name = '';
+        if (
+          nameResult &&
+          nameResult[0] &&
+          nameResult[0].names &&
+          nameResult[0].names[0]
+        ) {
+          entrance.names = nameResult[0].names;
+          entrance.name = entrance.names[0].name;
         }
         const caveName = await NameService.setNames(
           [{ id: entrance.cave.id ?? entrance.cave }],
           'cave'
         );
         if (caveName && caveName.length > 0) {
-          // eslint-disable-next-line no-param-reassign
           entrance.caveName = caveName[0].name;
         }
 
         return entrance;
       })
     );
+    /* eslint-enable no-param-reassign */
   },
 
   createEntrance: async (req, entranceData, nameDescLocData) => {
