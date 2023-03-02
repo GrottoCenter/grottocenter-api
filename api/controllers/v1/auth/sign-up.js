@@ -12,7 +12,7 @@ module.exports = async (req, res) => {
   if (
     await sails.helpers.checkIfExists.with({
       attributeName: 'mail',
-      attributeValue: req.param('email'),
+      attributeValue: req.param('email').toLowerCase(),
       sailsModel: TCaver,
     })
   ) {
@@ -49,7 +49,7 @@ module.exports = async (req, res) => {
     const newCaver = await TCaver.create({
       dateInscription: new Date(),
       language: '000', // default null language id
-      mail: req.param('email'),
+      mail: req.param('email').toLowerCase(),
       name: req.param('name') === '' ? null : req.param('name'),
       nickname: req.param('nickname'),
       password: await AuthService.createHashedPassword(req.param('password')),

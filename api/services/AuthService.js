@@ -29,7 +29,9 @@ async function authenticate(email, password) {
 
   if (!email || !password) return { status: authenticateResult.MISMATCH };
 
-  const user = await TCaver.findOne({ mail: email }).populate('groups');
+  const user = await TCaver.findOne({ mail: email.toLowerCase() }).populate(
+    'groups'
+  );
 
   if (!user) return { status: authenticateResult.MISMATCH };
   if (!user.password?.startsWith('$argon2'))
