@@ -31,7 +31,7 @@ module.exports = async (req, res) => {
     await TCaver.updateOne({
       id: req.token.id,
     }).set({
-      mail: req.param('email'),
+      mail: req.param('email').toLowerCase(),
     });
 
     return res.ok();

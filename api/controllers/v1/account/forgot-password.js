@@ -10,9 +10,9 @@ module.exports = async (req, res) => {
   }
 
   // Get info about the user
-  const userFound = await TCaver.findOne({ mail: emailProvided }).populate(
-    'language'
-  );
+  const userFound = await TCaver.findOne({
+    mail: emailProvided.toLowerCase(),
+  }).populate('language');
   if (!userFound) {
     return res.notFound({
       message: `Caver with email ${emailProvided} not found.`,
