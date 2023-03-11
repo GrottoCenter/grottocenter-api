@@ -1171,3 +1171,34 @@ CREATE TABLE t_notification (
   CONSTRAINT t_notification_t_massif_fk FOREIGN KEY (id_massif) REFERENCES t_massif(id),
   CONSTRAINT t_notification_t_rigging_fk FOREIGN KEY (id_rigging) REFERENCES t_rigging(id)
 );
+
+-- t_admin1 definition
+-- Drop table
+-- DROP TABLE t_admin1;
+CREATE TABLE t_admin1 (
+	id serial NOT NULL,
+	id_geoname int8 NULL,
+	id_google varchar(16) NULL,
+	iso varchar(8) NULL,
+	id_country varchar(2) NOT NULL,
+	latitude numeric(24, 20) NULL,
+	longitude numeric(24, 20) NULL,
+	name varchar(200) NOT NULL,
+	alternatenames varchar(10000) NULL,
+	FRA varchar(200) NULL,
+	ENG varchar(200) NULL,
+	ARA varchar(200) NULL,
+	BUL varchar(200) NULL,
+	CAT varchar(200) NULL,
+	DEU varchar(200) NULL,
+	ELL varchar(200) NULL,
+	SPA varchar(200) NULL,
+	HEB varchar(200) NULL,
+	ITA varchar(200) NULL,
+	NLD varchar(200) NULL,
+	POR varchar(200) NULL,
+	RON varchar(200) NULL,
+	RUS varchar(200) NULL,
+	ZHO varchar(200) NULL,
+	CONSTRAINT t_admin1_pk PRIMARY KEY (id)
+);
