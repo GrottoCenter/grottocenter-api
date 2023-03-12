@@ -5,8 +5,8 @@ const PUBLIC_ENTRANCES_IN_BOUNDS = `
   c.length as lengthCave
   FROM t_entrance as e
   LEFT JOIN t_name as ne ON ne.id_entrance = e.id
-  LEFT JOIN t_name as nc ON nc.id_cave = e.id
-  LEFT JOIN t_cave as c ON c.Id = e.Id_cave
+  LEFT JOIN t_name as nc ON nc.id_cave = e.id_cave
+  LEFT JOIN t_cave as c ON c.Id = e.id_cave
   WHERE e.latitude > $1 AND e.latitude < $2 AND e.longitude > $3 AND e.longitude < $4
   AND e.is_sensitive = false
   AND e.is_deleted = false
