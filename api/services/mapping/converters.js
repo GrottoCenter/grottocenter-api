@@ -448,7 +448,6 @@ const c = {
     result.isDeleted = source.isDeleted;
     result.isSensitive = source.isSensitive;
     result.redirectTo = source.redirectTo;
-    result.address = source.address;
     result.aestheticism = source.aestheticism;
     result.altitude = source.altitude;
     result.approach = source.approach;
@@ -462,11 +461,11 @@ const c = {
     result.name = getMainName(source);
     result.country = source.country;
     result.countryCode = source['country code'];
+    result.region = source.region;
     result.county = source.county;
     result.city = source.city;
-    result.postalCode = source.postalCode;
+    result.iso_3166_2 = source.iso_3166_2;
     result.precision = source.precision;
-    result.region = source.region;
     result.stats = source.stats;
     result.timeInfo = source.timeInfo; // Only used in random entrance
     // Convert objects
@@ -517,17 +516,20 @@ const c = {
     dateReviewed: source.dateReviewed,
     name: getMainName(source),
     country: source.country,
+    region: source.region,
     county: source.county,
     city: source.city,
-    region: source.region,
+    iso_3166_2: source.iso_3166_2,
   }),
 
   toSimpleEntrance: (source) => ({
     id: source.id,
     name: getMainName(source),
-    city: source.city,
-    county: source.county,
     country: source.country,
+    region: source.region,
+    county: source.county,
+    city: source.city,
+    iso_3166_2: source.iso_3166_2,
     latitude: parseFloat(source.latitude),
     longitude: parseFloat(source.longitude),
     isDeleted: source.isDeleted,
@@ -781,12 +783,7 @@ const c = {
 
     result.id = source.id;
     result['@id'] = String(source.id);
-    result.address = source.address;
-    result.city = source.city;
     result.customMessage = source.customMessage;
-    result.country = source.country;
-    result.countryCode = source['country code'];
-    result.county = source.county;
     result.dateInscription = source.dateInscription;
     result.isOfficialPartner = source.isOfficialPartner;
     result.latitude = parseFloat(source.latitude);
@@ -796,11 +793,16 @@ const c = {
     result.nbCavers = source['nb cavers']; // from Elasticsearch
     result.mail = source.mail;
     result.pictureFileName = source.pictureFileName;
-    result.postalCode = source.postalCode;
-    result.region = source.region;
     result.url = source.url;
-    result.village = source.village;
     result.yearBirth = source.yearBirth;
+    result.country = source.country;
+    result.countryCode = source['country code'];
+    result.region = source.region;
+    result.county = source.county;
+    result.city = source.city;
+    result.address = source.address;
+    result.postalCode = source.postalCode;
+    result.iso_3166_2 = source.iso_3166_2;
     result.isDeleted = source.isDeleted;
 
     // Convert collections
@@ -826,9 +828,10 @@ const c = {
     dateReviewed: source.dateReviewed,
     name: getMainName(source),
     country: source.country,
+    region: source.region,
     county: source.county,
     city: source.city,
-    region: source.region,
+    iso_3166_2: source.iso_3166_2,
   }),
 
   toSimpleRigging: (source) => {
@@ -900,6 +903,7 @@ const c = {
               length: item._source['cave length'],
             };
             data.city = item._source.city;
+            data.county = item._source.county;
             data.region = item._source.region;
             data.names = item._source.names;
             data.descriptions = item._source.descriptions;

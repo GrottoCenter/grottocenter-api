@@ -14,6 +14,8 @@ const DocumentService = require('./DocumentService');
 const ElasticsearchService = require('./ElasticsearchService');
 const NameService = require('./NameService');
 const NotificationService = require('./NotificationService');
+const GeocodingService = require('./GeocodingService');
+
 const {
   NOTIFICATION_ENTITIES,
   NOTIFICATION_TYPES,
@@ -190,6 +192,20 @@ module.exports = {
   },
 
   createEntrance: async (req, entranceData, nameDescLocData) => {
+    const address = await GeocodingService.reverse(
+      entranceData.latitude,
+      entranceData.longitude
+    );
+    if (address) {
+      /* eslint-disable no-param-reassign */
+      entranceData.region = address.region;
+      entranceData.county = address.county;
+      entranceData.city = address.city;
+      entranceData.id_country = address.id_country;
+      entranceData.iso_3166_2 = address.iso_3166_2;
+      /* eslint-enable no-param-reassign */
+    }
+
     const newEntrancePopulated = await sails
       .getDatastore()
       .transaction(async (db) => {

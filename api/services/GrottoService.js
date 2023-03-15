@@ -4,6 +4,7 @@ const ElasticsearchService = require('./ElasticsearchService');
 const NameService = require('./NameService');
 const NotificationService = require('./NotificationService');
 const DescriptionService = require('./DescriptionService');
+const GeocodingService = require('./GeocodingService');
 const {
   NOTIFICATION_ENTITIES,
   NOTIFICATION_TYPES,
@@ -88,6 +89,15 @@ module.exports = {
    * @returns
    */
   createGrotto: async (req, cleanedData, nameData) => {
+    if (cleanedData.latitude && cleanedData.longitude) {
+      const address = await GeocodingService.reverse(
+        cleanedData.latitude,
+        cleanedData.longitude
+      );
+      // eslint-disable-next-line no-param-reassign
+      if (address) cleanedData.iso_3166_2 = address.iso_3166_2;
+    }
+
     const newOrganizationPopulated = await sails
       .getDatastore()
       .transaction(async (db) => {

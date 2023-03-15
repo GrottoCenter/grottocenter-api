@@ -24,6 +24,5 @@ module.exports = {
   postalCode: undefined,
   region: undefined,
   URL: undefined,
-  village: undefined,
   yearBirth: undefined,
 };
