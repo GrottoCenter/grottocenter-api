@@ -2,6 +2,7 @@ const ControllerService = require('../../../services/ControllerService');
 const EntranceService = require('../../../services/EntranceService');
 const ErrorService = require('../../../services/ErrorService');
 const NameService = require('../../../services/NameService');
+const GeocodingService = require('../../../services/GeocodingService');
 const {
   NOTIFICATION_TYPES,
   NOTIFICATION_ENTITIES,
@@ -68,6 +69,25 @@ module.exports = async (req, res) => {
           newIsSensitiveValue ? 'un' : ''
         }mark an entrance as sensitive.`
       );
+    }
+  }
+
+  // Update reverse geocoding if the position has changed
+  if (
+    entrance &&
+    (Math.abs(entrance.latitude - cleanedData.latitude) > 0.001 ||
+      Math.abs(entrance.longitude - cleanedData.longitude) > 0.001)
+  ) {
+    const address = await GeocodingService.reverse(
+      cleanedData.latitude,
+      cleanedData.longitude
+    );
+    if (address) {
+      cleanedData.region = address.region;
+      cleanedData.county = address.county;
+      cleanedData.city = address.city;
+      cleanedData.id_country = address.id_country;
+      cleanedData.iso_3166_2 = address.iso_3166_2;
     }
   }
 

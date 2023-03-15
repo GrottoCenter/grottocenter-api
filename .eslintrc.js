@@ -34,6 +34,7 @@ module.exports = {
     TGroup: 'readonly',
     THistory: 'readonly',
     TIdentifierType: 'readonly',
+    TISO31662: 'readonly',
     TLanguage: 'readonly',
     TLicense: 'readonly',
     TLocation: 'readonly',

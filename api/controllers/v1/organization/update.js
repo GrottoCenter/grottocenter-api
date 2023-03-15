@@ -3,6 +3,7 @@ const ErrorService = require('../../../services/ErrorService');
 const GrottoService = require('../../../services/GrottoService');
 const NameService = require('../../../services/NameService');
 const NotificationService = require('../../../services/NotificationService');
+const GeocodingService = require('../../../services/GeocodingService');
 const RightService = require('../../../services/RightService');
 const { toOrganization } = require('../../../services/mapping/converters');
 const {
@@ -40,6 +41,18 @@ module.exports = async (req, res) => {
     ...GrottoService.getConvertedDataFromClientRequest(req),
     id: organizationId,
   };
+
+  // Update reverse geocoding if the position has changed
+  if (
+    Math.abs(currentOrganization.latitude - cleanedData.latitude) > 0.001 ||
+    Math.abs(currentOrganization.longitude - cleanedData.longitude) > 0.001
+  ) {
+    const address = await GeocodingService.reverse(
+      cleanedData.latitude,
+      cleanedData.longitude
+    );
+    if (address) cleanedData.iso_3166_2 = address.iso_3166_2;
+  }
 
   try {
     const updatedOrganization = await TGrotto.updateOne({

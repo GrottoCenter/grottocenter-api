@@ -3,7 +3,7 @@ INSERT INTO public.t_grotto (
 		id,
 		id_author,
 		id_reviewer,
-		village,
+		iso_3166_2,
 		county,
 		region,
 		city,
