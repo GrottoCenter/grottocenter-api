@@ -29,11 +29,11 @@ module.exports = {
       model: 'TCaver',
     },
 
-    village: {
+    iso_3166_2: {
       type: 'string',
       allowNull: true,
-      maxLength: 100,
-      columnName: 'village',
+      maxLength: 10,
+      columnName: 'iso_3166_2',
     },
 
     county: {

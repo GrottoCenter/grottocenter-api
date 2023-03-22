@@ -20,23 +20,18 @@ const GET_NB_NETWORKS = `
 const FIND_CAVE_WITH_MAX_DEPTH_IN_MASSIF = `
   SELECT id_cave, name_cave, depth_cave as value
   FROM v_massif_info
-  WHERE depth_cave IN (
-    SELECT MAX(depth_cave)
-    FROM v_massif_info
-    WHERE id_massif = $1
-    )
-  AND id_massif = $1
+  WHERE id_massif = $1
+  AND depth_cave IS NOT NULL
+  ORDER BY depth_cave DESC
+  LIMIT 1
 `;
 
 const FIND_CAVE_WITH_MAX_LENGTH_IN_MASSIF = `
   SELECT id_cave, name_cave, length_cave as value
   FROM v_massif_info
-  WHERE length_cave IN (
-    SELECT MAX(length_cave)
-    FROM v_massif_info
-    WHERE id_massif = $1
-  )
-  AND id_massif = $1
+  WHERE id_massif = $1
+  AND length_cave IS NOT NULL
+  ORDER BY length_cave DESC
   LIMIT 1
 `;
 
@@ -50,7 +45,7 @@ const GET_NB_CAVES_WHICH_ARE_DIVING_IN_MASSIF = `
 const GET_AVG_DEPTH_AND_LENGTH_IN_MASSIF = `
   SELECT AVG(depth_cave) as avg_depth, AVG(length_cave) as avg_length
   FROM v_massif_info
-  WHERE id_massif = $1 
+  WHERE id_massif = $1
 `;
 
 const GET_TOTAL_LENGTH_IN_MASSIF = `
@@ -74,10 +69,7 @@ module.exports = {
         massifId,
       ]);
       const result = queryResult.rows;
-      if (result.length > 0) {
-        return true;
-      }
-      return false;
+      return result.length > 0;
     } catch (e) {
       return false;
     }

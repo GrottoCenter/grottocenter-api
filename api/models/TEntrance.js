@@ -50,11 +50,11 @@ module.exports = {
       maxLength: 100,
     },
 
-    address: {
+    iso_3166_2: {
       type: 'string',
       allowNull: true,
-      columnName: 'address',
-      maxLength: 200,
+      columnName: 'iso_3166_2',
+      maxLength: 10,
     },
 
     yearDiscovery: {

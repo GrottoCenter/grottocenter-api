@@ -97,7 +97,6 @@ describe('Entrance features', () => {
 
       it('should return code 200 on basic data update', (done) => {
         const newValues = {
-          address: 'new address',
           city: 'new city',
           county: 'new county',
           externalUrl: 'https://new.entrance.com',

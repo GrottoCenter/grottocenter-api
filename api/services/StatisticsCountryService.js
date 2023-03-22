@@ -15,7 +15,7 @@ const GET_NB_MASSIFS = `
 const GET_NB_CAVES = `
   SELECT COUNT(*) as nb_caves
   FROM (
-    SELECT DISTINCT id_cave 
+    SELECT DISTINCT id_cave
     FROM v_country_info
     WHERE id_country = $1) as tmp;
 `;
@@ -23,7 +23,7 @@ const GET_NB_CAVES = `
 const GET_NB_NETWORKS = `
   SELECT COUNT(*) as nb_networks
   FROM (
-    SELECT DISTINCT id_cave 
+    SELECT DISTINCT id_cave
     FROM v_country_info
     WHERE id_country = $1
     AND nb_entrances > 1) as tmp;
@@ -32,28 +32,25 @@ const GET_NB_NETWORKS = `
 const FIND_CAVE_WITH_MAX_DEPTH_IN_COUNTRY = `
   SELECT id_cave, name_cave, depth_cave as value
   FROM v_country_info
-  WHERE depth_cave IN (
-    SELECT MAX(depth_cave)
-    FROM v_country_info
-    WHERE id_country = $1
-    )
+  WHERE id_country = $1
+  AND depth_cave IS NOT NULL
+  ORDER BY depth_cave DESC
+  LIMIT 1
 `;
 
 const FIND_CAVE_WITH_MAX_LENGTH_IN_COUNTRY = `
   SELECT id_cave, name_cave, length_cave as value
   FROM v_country_info
-  WHERE length_cave IN (
-    SELECT MAX(length_cave)
-    FROM v_country_info
-    WHERE id_country = $1
-  )
+  WHERE id_country = $1
+  AND length_cave IS NOT NULL
+  ORDER BY length_cave DESC
   LIMIT 1
 `;
 
 const GET_NB_CAVES_WHICH_ARE_DIVING_IN_COUNTRY = `
   SELECT COUNT(*) as nb_diving_cave
   FROM (
-    SELECT DISTINCT id_cave 
+    SELECT DISTINCT id_cave
     FROM v_country_info
     WHERE id_country = $1
     AND is_diving_cave = true) as tmp;
@@ -90,10 +87,7 @@ module.exports = {
         countryId,
       ]);
       const result = queryResult.rows;
-      if (result.length > 0) {
-        return true;
-      }
-      return false;
+      return result.length > 0;
     } catch (e) {
       return false;
     }

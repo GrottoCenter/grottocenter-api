@@ -24,7 +24,6 @@ const ORGANIZATION_PROPERTIES = [
   'postalCode',
   'region',
   'url',
-  'village',
   'yearBirth',
 ];
 
