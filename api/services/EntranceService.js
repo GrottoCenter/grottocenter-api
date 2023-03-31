@@ -201,7 +201,7 @@ module.exports = {
       entranceData.region = address.region;
       entranceData.county = address.county;
       entranceData.city = address.city;
-      entranceData.id_country = address.id_country;
+      entranceData.country = address.id_country;
       entranceData.iso_3166_2 = address.iso_3166_2;
       /* eslint-enable no-param-reassign */
     }
