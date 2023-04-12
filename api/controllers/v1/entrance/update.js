@@ -86,7 +86,7 @@ module.exports = async (req, res) => {
       cleanedData.region = address.region;
       cleanedData.county = address.county;
       cleanedData.city = address.city;
-      cleanedData.id_country = address.id_country;
+      cleanedData.country = address.id_country;
       cleanedData.iso_3166_2 = address.iso_3166_2;
     }
   }
