@@ -456,6 +456,7 @@ module.exports = {
     doc.reviewer = reviewer ? await TCaver.findOne(reviewer) : null;
     doc.type = type ? await TType.findOne(type) : null;
 
+    doc.author = author ? await TCaver.findOne(author) : null;
     doc.authors = authors
       ? await Promise.all(
           authors.map(async (a) => {

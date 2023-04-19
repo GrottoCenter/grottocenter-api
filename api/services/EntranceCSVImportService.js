@@ -55,7 +55,7 @@ module.exports = {
     return {
       // The TCave.create() function doesn't work with TCave field alias. See TCave.js Model
 
-      id_author: idAuthor,
+      author: idAuthor,
       latitude: doubleCheckWithData({
         key: 'w3geo:latitude',
       }),
@@ -66,12 +66,12 @@ module.exports = {
         key: 'karstlink:length',
       }),
       depth,
-      date_inscription: doubleCheckWithData({
+      dateInscription: doubleCheckWithData({
         key: 'dct:rights/dct:created',
         defaultValue: new Date(),
         func: getDateFromKarstlink,
       }),
-      date_reviewed: doubleCheckWithData({
+      dateReviewed: doubleCheckWithData({
         key: 'dct:rights/dct:modified',
         func: getDateFromKarstlink,
       }),
