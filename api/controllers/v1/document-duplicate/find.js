@@ -46,11 +46,11 @@ module.exports = async (req, res) => {
   const duplicateDoc = duplicate.content.document;
   const duplicateDesc = duplicate.content.description;
   let descLang;
-  if (duplicateDesc.documentMainLanguage) {
+  if (duplicateDesc.documentMainLanguage?.id) {
     duplicateDoc.languages = [duplicateDesc.documentMainLanguage.id];
     duplicateDesc.documentMainLanguage = undefined;
   }
-  if (duplicateDesc.titleAndDescriptionLanguage) {
+  if (duplicateDesc.titleAndDescriptionLanguage?.id) {
     descLang = duplicateDesc.titleAndDescriptionLanguage.id;
     duplicateDesc.titleAndDescriptionLanguage = undefined;
   }

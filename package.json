@@ -1,13 +1,13 @@
 {
   "name": "grottocenter-api",
   "private": true,
-  "version": "23.0.11",
+  "version": "23.0.12",
   "description": "Grottocenter - API",
   "author": "Wikicaves",
   "license": "CC-BY-SA-3.0",
   "keywords": [],
   "dependencies": {
-    "@aws-sdk/client-ses": "^3.224.0",
+    "@aws-sdk/client-ses": "^3.312.0",
     "@azure/storage-blob": "^12.13.0",
     "@snyk/protect": "^1.1133.0",
     "argon2": "^0.30.2",
