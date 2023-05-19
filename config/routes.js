@@ -324,6 +324,9 @@ module.exports.routes = {
   'GET /api/v1/locations/:id/snapshots': 'v1/location/get-snapshots',
   'GET /api/v1/riggings/:id/snapshots': 'v1/rigging/get-snapshots',
 
+  // Changes
+  'GET /api/v1/changes/recent': 'v1/change/get-recent',
+
   //  ╦ ╦╔═╗╔╗ ╦ ╦╔═╗╔═╗╦╔═╔═╗
   //  ║║║║╣ ╠╩╗╠═╣║ ║║ ║╠╩╗╚═╗
   //  ╚╩╝╚═╝╚═╝╩ ╩╚═╝╚═╝╩ ╩╚═╝

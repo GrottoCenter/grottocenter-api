@@ -1,5 +1,4 @@
 const DocumentService = require('../../../services/DocumentService');
-const ErrorService = require('../../../services/ErrorService');
 const FileService = require('../../../services/FileService');
 const {
   NOTIFICATION_TYPES,
@@ -7,178 +6,191 @@ const {
 } = require('../../../services/NotificationService');
 const NotificationService = require('../../../services/NotificationService');
 
+async function markDocumentValidated(
+  documentId,
+  validationComment,
+  validationAuthor
+) {
+  await TDocument.updateOne(documentId).set({
+    isValidated: true,
+    modifiedDocJson: null,
+    dateValidation: new Date(),
+    validationComment,
+    validator: validationAuthor,
+  });
+}
+
+async function validateAndUpdateDocument(
+  document,
+  validationComment,
+  validationAuthor
+) {
+  const {
+    documentMainLanguage,
+    author,
+    description,
+    titleAndDescriptionLanguage,
+    title,
+    modifiedFiles,
+    deletedFiles,
+    newFiles,
+    ...cleanedData
+  } = document.modifiedDocJson;
+
+  await sails.getDatastore().transaction(async (db) => {
+    // Update associated data not handled by TDocument manually
+    // Updated before the TDocument update so the last_change_document DB trigger will fetch the last updated name
+    await TDescription.updateOne({ document: document.id })
+      .set({
+        author,
+        body: description,
+        document: document.id,
+        language: titleAndDescriptionLanguage.id,
+        title,
+      })
+      .usingConnection(db);
+
+    await TDocument.updateOne(document.id)
+      .set({
+        ...cleanedData,
+        // Currently, only one language per document is allowed
+        ...(documentMainLanguage && {
+          languages: documentMainLanguage.id,
+        }),
+        modifiedDocJson: null,
+        dateValidation: new Date(),
+        isValidated: true,
+        validationComment,
+        validator: validationAuthor,
+      })
+      .usingConnection(db);
+
+    const filePromises = [];
+    // Files have already been created,
+    // they just need to be linked to the document.
+    if (newFiles) {
+      filePromises.push(
+        ...newFiles.map((f) =>
+          FileService.updateOne(f.id).set({ isValidated: true })
+        )
+      );
+    }
+    if (modifiedFiles) {
+      filePromises.push(...modifiedFiles.map((f) => FileService.update(f)));
+    }
+
+    if (deletedFiles) {
+      filePromises.push(...deletedFiles.map((f) => FileService.delete(f)));
+    }
+    await Promise.all(filePromises);
+  });
+}
+
+async function updateESAndNotify(req, documentId, hasChange, userId) {
+  const found = await TDocument.findOne(documentId)
+    .populate('author')
+    .populate('authorizationDocument')
+    .populate('authors')
+    .populate('cave')
+    .populate('descriptions')
+    .populate('editor')
+    .populate('entrance')
+    .populate('identifierType')
+    .populate('languages')
+    .populate('library')
+    .populate('license')
+    .populate('massif')
+    .populate('option')
+    .populate('parent')
+    .populate('regions')
+    .populate('reviewer')
+    .populate('subjects')
+    .populate('type');
+  await DocumentService.setNamesOfPopulatedDocument(found);
+
+  if (hasChange) {
+    await DocumentService.updateDocumentInElasticSearchIndexes(found);
+  } else {
+    await DocumentService.addDocumentToElasticSearchIndexes(found);
+  }
+
+  await NotificationService.notifySubscribers(
+    req,
+    found,
+    userId,
+    NOTIFICATION_TYPES.VALIDATE,
+    NOTIFICATION_ENTITIES.DOCUMENT
+  );
+}
+
 module.exports = async (req, res) => {
-  const documents = req.param('documents');
-  const updatePromises = [];
-  documents.map((doc) => {
+  const documentChanges = [];
+  // Validate input
+  for (const doc of req.param('documents') ?? []) {
     const isValidated = doc.isValidated
       ? !(doc.isValidated.toLowerCase() === 'false')
       : true;
-    const { validationComment } = doc;
-    const { id } = doc;
 
-    if (isValidated === false && !validationComment) {
+    if (isValidated === false && !doc.validationComment) {
       return res.badRequest(
-        `If the document with id ${req.param(
-          'id'
-        )} is refused, a comment must be provided.`
+        `If the document with id ${doc.id} is refused, a comment must be provided.`
       );
     }
 
-    updatePromises.push(
-      TDocument.updateOne({ id }).set({
-        dateValidation: new Date(),
-        isValidated,
-        validationComment,
-        validator: req.token.id,
-      })
-    );
-    return doc;
-  });
-
-  try {
-    // eslint-disable-next-line consistent-return
-    await Promise.all(updatePromises).then(async (results) => {
-      for (const doc of results) {
-        const isAModifiedDoc = !!doc.modifiedDocJson;
-        if (doc.isValidated) {
-          // If there is modified doc stored in the json column,
-          // update the document with the data contained in it. Then, remove the json.
-          if (isAModifiedDoc) {
-            // eslint-disable-next-line no-await-in-loop
-            await sails
-              .getDatastore()
-              // eslint-disable-next-line consistent-return
-              .transaction(async (db) => {
-                const {
-                  documentMainLanguage,
-                  author,
-                  description,
-                  titleAndDescriptionLanguage,
-                  title,
-                  modifiedFiles,
-                  deletedFiles,
-                  newFiles,
-                  ...cleanedData
-                } = doc.modifiedDocJson;
-                cleanedData.modifiedDocJson = null;
-                const updatedDocument = await TDocument.updateOne(doc.id)
-                  .set({
-                    ...cleanedData,
-                    // Currently, only one language per document is allowed
-                    ...(documentMainLanguage && {
-                      languages: documentMainLanguage.id,
-                    }),
-                  })
-                  .usingConnection(db);
-                if (!updatedDocument) {
-                  return res.notFound();
-                }
-
-                // Update associated data not handled by TDocument manually
-                await TDescription.updateOne({ document: updatedDocument.id })
-                  .set({
-                    author,
-                    body: description,
-                    document: updatedDocument.id,
-                    language: titleAndDescriptionLanguage.id,
-                    title,
-                  })
-                  .usingConnection(db);
-
-                // New files have already been created,
-                // they just need to be linked to the document.
-                if (newFiles) {
-                  const newPromises = newFiles.map(
-                    async (file) =>
-                      // eslint-disable-next-line no-return-await
-                      await TFile.updateOne(file.id).set({
-                        isValidated: true,
-                      })
-                  );
-                  await Promise.all(newPromises);
-                }
-                if (modifiedFiles) {
-                  const modificationPromises = modifiedFiles.map(
-                    // eslint-disable-next-line no-return-await
-                    async (file) => await FileService.update(file)
-                  );
-                  await Promise.all(modificationPromises);
-                }
-
-                if (deletedFiles) {
-                  const deletionPromises = deletedFiles.map(
-                    // eslint-disable-next-line no-return-await
-                    async (file) => await FileService.delete(file)
-                  );
-                  await Promise.all(deletionPromises);
-                }
-              })
-              .intercept((err) =>
-                ErrorService.getDefaultErrorHandler(res)(err)
-              );
-          }
-          // Get full document an index it in Elasticsearch
-          try {
-            // eslint-disable-next-line no-await-in-loop
-            const found = await TDocument.findOne(doc.id)
-              .populate('author')
-              .populate('authorizationDocument')
-              .populate('authors')
-              .populate('cave')
-              .populate('descriptions')
-              .populate('editor')
-              .populate('entrance')
-              .populate('identifierType')
-              .populate('languages')
-              .populate('library')
-              .populate('license')
-              .populate('massif')
-              .populate('option')
-              .populate('parent')
-              .populate('regions')
-              .populate('reviewer')
-              .populate('subjects')
-              .populate('type');
-            // eslint-disable-next-line no-await-in-loop
-            await DocumentService.setNamesOfPopulatedDocument(found);
-            if (isAModifiedDoc) {
-              // eslint-disable-next-line no-await-in-loop
-              await DocumentService.updateDocumentInElasticSearchIndexes(found);
-            } else {
-              // eslint-disable-next-line no-await-in-loop
-              await DocumentService.addDocumentToElasticSearchIndexes(found);
-            }
-            // eslint-disable-next-line no-await-in-loop
-            await NotificationService.notifySubscribers(
-              req,
-              found,
-              req.token.id,
-              NOTIFICATION_TYPES.VALIDATE,
-              NOTIFICATION_ENTITIES.DOCUMENT
-            );
-          } catch (err) {
-            return res.serverError(
-              'An error occured when trying to get all information about the document.'
-            );
-          }
-        } else if (isAModifiedDoc) {
-          /*
-          If the document refused, check if there is a json document.
-          If there is one, remove it and validate the document
-          because the document kept the same values as when
-          it was validated (the modified data was in the json).
-          */
-          // eslint-disable-next-line no-await-in-loop
-          await TDocument.updateOne(doc.id).set({
-            isValidated: true,
-            modifiedDocJson: null,
-          });
-        }
-      }
+    documentChanges.push({
+      id: doc.id,
+      isValidated,
+      validationComment: doc.validationComment,
     });
-    return res.ok();
-  } catch (e) {
-    return ErrorService.getDefaultErrorHandler(res)(e);
   }
+  const documentIds = documentChanges.map((e) => e.id);
+  const foundDocuments = await TDocument.find({ id: documentIds });
+
+  for (const document of foundDocuments) {
+    const change = documentChanges.find((d) => d.id === document.id);
+    const isAModifiedDoc = !!document.modifiedDocJson;
+    if (!change.isValidated) {
+      // Validate it but do not update its fields
+      // eslint-disable-next-line no-await-in-loop
+      await markDocumentValidated(
+        document.id,
+        change.validationComment,
+        req.token.id
+      );
+      continue; // eslint-disable-line no-continue
+    }
+
+    if (isAModifiedDoc) {
+      // eslint-disable-next-line no-await-in-loop
+      await validateAndUpdateDocument(
+        document,
+        change.validationComment,
+        req.token.id
+      );
+    } else {
+      // Likely a document creation
+      // eslint-disable-next-line no-await-in-loop
+      await markDocumentValidated(
+        document.id,
+        change.validationComment,
+        req.token.id
+      );
+    }
+
+    // eslint-disable-next-line no-await-in-loop
+    await updateESAndNotify(
+      res,
+      document.id,
+      isAModifiedDoc,
+      req.token.id
+    ).catch((err) =>
+      sails.log.error(
+        'Document multiple validate updateESAndNotify error',
+        document,
+        err
+      )
+    );
+  }
+
+  return res.ok();
 };

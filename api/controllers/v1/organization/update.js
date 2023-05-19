@@ -39,6 +39,7 @@ module.exports = async (req, res) => {
 
   const cleanedData = {
     ...GrottoService.getConvertedDataFromClientRequest(req),
+    reviewer: req.token.id,
     id: organizationId,
   };
 
@@ -55,6 +56,7 @@ module.exports = async (req, res) => {
   }
 
   try {
+    // The name is updated via the /api/v1/names route by the front
     const updatedOrganization = await TGrotto.updateOne({
       id: organizationId,
     }).set(cleanedData);

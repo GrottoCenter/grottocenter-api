@@ -24,6 +24,7 @@ const ElasticsearchService = require('./ElasticsearchService');
 const FileService = require('./FileService');
 const NameService = require('./NameService');
 const NotificationService = require('./NotificationService');
+const RecentChangeService = require('./RecentChangeService');
 const {
   NOTIFICATION_TYPES,
   NOTIFICATION_ENTITIES,
@@ -292,6 +293,7 @@ module.exports = {
       isValidated: false,
       dateValidation: null,
       dateReviewed: new Date(),
+      reviewer: req.token.id,
       modifiedDocJson: jsonData,
     });
 
@@ -360,6 +362,13 @@ module.exports = {
 
       return createdDocument;
     });
+
+    await RecentChangeService.setNameCreate(
+      'document',
+      document.id,
+      req.token.id,
+      langDescData.title
+    );
 
     const populatedDocument = await module.exports.getDocument(
       document.id,
