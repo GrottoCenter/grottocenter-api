@@ -5,6 +5,7 @@ const ErrorService = require('../../../services/ErrorService');
 const MassifService = require('../../../services/MassifService');
 const NotificationService = require('../../../services/NotificationService');
 const RightService = require('../../../services/RightService');
+const RecentChangeService = require('../../../services/RecentChangeService');
 const {
   NOTIFICATION_TYPES,
   NOTIFICATION_ENTITIES,
@@ -117,6 +118,13 @@ module.exports = async (req, res) => {
 
       return newMassifPopulated;
     });
+
+    await RecentChangeService.setNameCreate(
+      'massif',
+      newMassif.id,
+      req.token.id,
+      req.body.name
+    );
 
     await NotificationService.notifySubscribers(
       req,

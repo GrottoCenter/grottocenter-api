@@ -3082,6 +3082,59 @@ paths:
 
         '403':
           description: You are not authorized to create a document (or entrance).
+
+  '/changes/recent':
+    get:
+      tags:
+        - changes
+      description: Get the latest entity changes on Grottocenter
+      parameters:
+        - name: offset
+          in: query
+          description: The number of changes to skip
+          schema:
+            type: integer
+            default: 0
+        - name: limit
+          in: query
+          description: The number of changes to retrieve
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  changes:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        date:
+                          type: string
+                        authorId:
+                          type: integer
+                        author:
+                          type: string
+                        mainEntityType:
+                          type: string
+                        mainEntityId:
+                          type: integer
+                        subEntityTypes:
+                          type: array
+                          items:
+                            type: string
+                        mainAction:
+                          type: string
+                        subAction:
+                          type: string
+                        name:
+                          type: string
+
 parameters:
   sw_lat:
     name: sw_lat

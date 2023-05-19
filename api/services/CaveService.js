@@ -6,6 +6,7 @@ const {
   NOTIFICATION_ENTITIES,
 } = require('./NotificationService');
 const NotificationService = require('./NotificationService');
+const RecentChangeService = require('./RecentChangeService');
 
 const GET_CUMULATED_LENGTH = `
   SELECT SUM(c.length) as sum_length, COUNT(c.length) as nb_data
@@ -13,7 +14,7 @@ const GET_CUMULATED_LENGTH = `
   JOIN t_cave c ON e.id_cave = c.id
   WHERE c.length IS NOT NULL
   AND c.is_deleted = false
-  AND e.is_deleted = false  
+  AND e.is_deleted = false
 `;
 
 module.exports = {
@@ -73,6 +74,13 @@ module.exports = {
     });
 
     module.exports.setEntrances([res]);
+
+    await RecentChangeService.setNameCreate(
+      'cave',
+      res.id,
+      req.token.id,
+      nameData.name
+    );
 
     await NotificationService.notifySubscribers(
       req,

@@ -228,6 +228,9 @@ module.exports.policies = {
   // Swagger (API doc)
   'v1/swagger/get-yaml': true,
 
+  // Changes
+  'v1/change/get-recent': true,
+
   /** *************************************************************************
    *                                                                          *
    * Here's an example of mapping some policies to run before a controller    *

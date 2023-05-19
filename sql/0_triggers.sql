@@ -22,10 +22,7 @@ new.size_coef := coef;
 return new;
 end;
 $function$;
-CREATE TRIGGER size_coef_insert_update BEFORE
-INSERT
-    OR
-UPDATE ON t_cave for each row execute function calcule_size_coef();
+CREATE OR REPLACE TRIGGER size_coef_insert_update BEFORE INSERT OR UPDATE ON t_cave for each row execute function calcule_size_coef();
 --
 --Procédure d'historisation suite à DELETE déclenchée par le trigger
 ----------------------------------------------------------------------
@@ -108,13 +105,60 @@ NEW.date_reviewed := now();
 RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+--
+--Sauvegarde des derniers changements dans la table t_last_change
+-------------------------------------------------------------
+CREATE OR REPLACE FUNCTION change_grotto() RETURNS trigger AS $$
+DECLARE type_change varchar(20);
+DECLARE id_author int4;
+DECLARE entity_name text;
+BEGIN
+type_change := '';
+if NEW.is_deleted != OLD.is_deleted AND NEW.is_deleted = true then
+    type_change := 'delete';
+    id_author := NEW.id_reviewer;
+elsif NEW.is_deleted != OLD.is_deleted AND NEW.is_deleted = false then
+    type_change := 'restore';
+    id_author := NEW.id_reviewer;
+elsif NEW.is_deleted = false AND NEW.id_reviewer is null then
+    type_change := 'create';
+    id_author := NEW.id_author;
+elsif NEW.is_deleted = false then
+    type_change := 'update';
+    id_author := NEW.id_reviewer;
+end if;
+if type_change != '' then
+-- Récupère le nom de la grotto associé (dans le cas d'un INSERT le name n'est pas encore créé il sera donc null)
+SELECT tname.name INTO entity_name FROM t_name tname WHERE tname.is_main = true AND tname.id_grotto = NEW.id LIMIT 1;
+INSERT INTO t_last_change (
+        type_entity,
+        type_change,
+        date_change,
+        id_entity,
+        id_author,
+        name
+    )
+VALUES (
+        'grotto',
+        type_change,
+        now(),
+        NEW.id,
+        id_author,
+        entity_name
+    );
+end if;
+RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
 --trigger qui exécute l'historisation lors d'un UPDATE
 --------------------------------------------------------
-CREATE TRIGGER histo_update_grotto BEFORE
-UPDATE ON t_grotto FOR EACH ROW EXECUTE PROCEDURE histo_update_grotto();
+CREATE OR REPLACE TRIGGER histo_update_grotto BEFORE UPDATE ON t_grotto FOR EACH ROW EXECUTE PROCEDURE histo_update_grotto();
 --trigger qui exécute l'historisation lors d'un DELETE
 --------------------------------------------------------
-CREATE TRIGGER histo_delete_grotto BEFORE DELETE ON t_grotto FOR EACH ROW EXECUTE PROCEDURE histo_delete();
+CREATE OR REPLACE TRIGGER histo_delete_grotto BEFORE DELETE ON t_grotto FOR EACH ROW EXECUTE PROCEDURE histo_delete();
+--trigger qui exécute la sauvegarde des derniers changements lors d'un CREATE ou d'un UPDATE
+--------------------------------------------------------
+CREATE OR REPLACE TRIGGER last_change_grotto BEFORE INSERT OR UPDATE ON t_grotto FOR EACH ROW EXECUTE PROCEDURE change_grotto();
 --
 --
 ------------------------------------------------------------
@@ -153,13 +197,60 @@ NEW.date_reviewed := now();
 RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+--
+--Sauvegarde des derniers changements dans la table t_last_change
+-------------------------------------------------------------
+CREATE OR REPLACE FUNCTION change_massif() RETURNS trigger AS $$
+DECLARE type_change varchar(20);
+DECLARE id_author int4;
+DECLARE entity_name text;
+BEGIN
+type_change := '';
+if NEW.is_deleted != OLD.is_deleted AND NEW.is_deleted = true then
+    type_change := 'delete';
+    id_author := NEW.id_reviewer;
+elsif NEW.is_deleted != OLD.is_deleted AND NEW.is_deleted = false then
+    type_change := 'restore';
+    id_author := NEW.id_reviewer;
+elsif NEW.is_deleted = false AND NEW.id_reviewer is null then
+    type_change := 'create';
+    id_author := NEW.id_author;
+elsif NEW.is_deleted = false then
+    type_change := 'update';
+    id_author := NEW.id_reviewer;
+end if;
+if type_change != '' then
+-- Récupère le nom du massif associé (dans le cas d'un INSERT le name n'est pas encore créé il sera donc null)
+SELECT tname.name INTO entity_name FROM t_name tname WHERE tname.is_main = true AND tname.id_massif = NEW.id LIMIT 1;
+INSERT INTO t_last_change (
+        type_entity,
+        type_change,
+        date_change,
+        id_entity,
+        id_author,
+        name
+    )
+VALUES (
+        'massif',
+        type_change,
+        now(),
+        NEW.id,
+        id_author,
+        entity_name
+    );
+end if;
+RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
 --trigger qui exécute l'historisation lors d'un UPDATE
 --------------------------------------------------------
-CREATE TRIGGER histo_update_massif BEFORE
-UPDATE ON t_massif FOR EACH ROW EXECUTE PROCEDURE histo_update_massif();
+CREATE OR REPLACE TRIGGER histo_update_massif BEFORE UPDATE ON t_massif FOR EACH ROW EXECUTE PROCEDURE histo_update_massif();
 --trigger qui exécute l'historisation lors d'un DELETE
 --------------------------------------------------------
-CREATE TRIGGER histo_delete_massif BEFORE DELETE ON t_massif FOR EACH ROW EXECUTE PROCEDURE histo_delete();
+CREATE OR REPLACE TRIGGER histo_delete_massif BEFORE DELETE ON t_massif FOR EACH ROW EXECUTE PROCEDURE histo_delete();
+--trigger qui exécute la sauvegarde des derniers changements lors d'un CREATE ou d'un UPDATE
+--------------------------------------------------------
+CREATE OR REPLACE TRIGGER last_change_massif BEFORE INSERT OR UPDATE ON t_massif FOR EACH ROW EXECUTE PROCEDURE change_massif();
 --
 --
 ------------------------------------------------------------
@@ -214,13 +305,60 @@ NEW.date_reviewed := now();
 RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+--
+--Sauvegarde des derniers changements dans la table t_last_change
+-------------------------------------------------------------
+CREATE OR REPLACE FUNCTION change_cave() RETURNS trigger AS $$
+DECLARE type_change varchar(20);
+DECLARE id_author int4;
+DECLARE entity_name text;
+BEGIN
+type_change := '';
+if NEW.is_deleted != OLD.is_deleted AND NEW.is_deleted = true then
+    type_change := 'delete';
+    id_author := NEW.id_reviewer;
+elsif NEW.is_deleted != OLD.is_deleted AND NEW.is_deleted = false then
+    type_change := 'restore';
+    id_author := NEW.id_reviewer;
+elsif NEW.is_deleted = false AND NEW.id_reviewer is null then
+    type_change := 'create';
+    id_author := NEW.id_author;
+elsif NEW.is_deleted = false then
+    type_change := 'update';
+    id_author := NEW.id_reviewer;
+end if;
+if type_change != '' then
+-- Récupère le nom de la cave associée (dans le cas d'un INSERT le name n'est pas encore créé il sera donc null)
+SELECT tname.name INTO entity_name FROM t_name tname WHERE tname.is_main = true AND tname.id_cave = NEW.id LIMIT 1;
+INSERT INTO t_last_change (
+        type_entity,
+        type_change,
+        date_change,
+        id_entity,
+        id_author,
+        name
+    )
+VALUES (
+        'cave',
+        type_change,
+        now(),
+        NEW.id,
+        id_author,
+        entity_name
+    );
+end if;
+RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
 --trigger qui exécute l'historisation lors d'un UPDATE
 --------------------------------------------------------
-CREATE TRIGGER histo_update_cave BEFORE
-UPDATE ON t_cave FOR EACH ROW EXECUTE PROCEDURE histo_update_cave();
+CREATE OR REPLACE TRIGGER histo_update_cave BEFORE UPDATE ON t_cave FOR EACH ROW EXECUTE PROCEDURE histo_update_cave();
 --trigger qui exécute l'historisation lors d'un DELETE
 --------------------------------------------------------
-CREATE TRIGGER histo_delete_cave BEFORE DELETE ON t_cave FOR EACH ROW EXECUTE PROCEDURE histo_delete();
+CREATE OR REPLACE TRIGGER histo_delete_cave BEFORE DELETE ON t_cave FOR EACH ROW EXECUTE PROCEDURE histo_delete();
+--trigger qui exécute la sauvegarde des derniers changements lors d'un CREATE ou d'un UPDATE
+--------------------------------------------------------
+CREATE OR REPLACE TRIGGER last_change_cave BEFORE INSERT OR UPDATE ON t_cave FOR EACH ROW EXECUTE PROCEDURE change_cave();
 --
 --
 ------------------------------------------------------------
@@ -295,13 +433,60 @@ NEW.date_reviewed := now();
 RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+--
+--Sauvegarde des derniers changements dans la table t_last_change
+-------------------------------------------------------------
+CREATE OR REPLACE FUNCTION change_entrance() RETURNS trigger AS $$
+DECLARE type_change varchar(20);
+DECLARE id_author int4;
+DECLARE entity_name text;
+BEGIN
+type_change := '';
+if NEW.is_deleted != OLD.is_deleted AND NEW.is_deleted = true then
+    type_change := 'delete';
+    id_author := NEW.id_reviewer;
+elsif NEW.is_deleted != OLD.is_deleted AND NEW.is_deleted = false then
+    type_change := 'restore';
+    id_author := NEW.id_reviewer;
+elsif NEW.is_deleted = false AND NEW.id_reviewer is null then
+    type_change := 'create';
+    id_author := NEW.id_author;
+elsif NEW.is_deleted = false then
+    type_change := 'update';
+    id_author := NEW.id_reviewer;
+end if;
+if type_change != '' then
+-- Récupère le nom de l'entrance associée (dans le cas d'un INSERT le name n'est pas encore créé il sera donc null)
+SELECT tname.name INTO entity_name FROM t_name tname WHERE tname.is_main = true AND tname.id_entrance = NEW.id LIMIT 1;
+INSERT INTO t_last_change (
+        type_entity,
+        type_change,
+        date_change,
+        id_entity,
+        id_author,
+        name
+    )
+VALUES (
+        'entrance',
+        type_change,
+        now(),
+        NEW.id,
+        id_author,
+        entity_name
+    );
+end if;
+RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
 --trigger qui exécute l'historisation lors d'un UPDATE
 --------------------------------------------------------
-CREATE TRIGGER histo_update_entrance BEFORE
-UPDATE ON t_entrance FOR EACH ROW EXECUTE PROCEDURE histo_update_entrance();
+CREATE OR REPLACE TRIGGER histo_update_entrance BEFORE UPDATE ON t_entrance FOR EACH ROW EXECUTE PROCEDURE histo_update_entrance();
 --trigger qui exécute l'historisation lors d'un DELETE
 --------------------------------------------------------
-CREATE TRIGGER histo_delete_entrance BEFORE DELETE ON t_entrance FOR EACH ROW EXECUTE PROCEDURE histo_delete();
+CREATE OR REPLACE TRIGGER histo_delete_entrance BEFORE DELETE ON t_entrance FOR EACH ROW EXECUTE PROCEDURE histo_delete();
+--trigger qui exécute la sauvegarde des derniers changements lors d'un CREATE ou d'un UPDATE
+--------------------------------------------------------
+CREATE OR REPLACE TRIGGER last_change_entrance BEFORE INSERT OR UPDATE ON t_entrance FOR EACH ROW EXECUTE PROCEDURE change_entrance();
 --
 --
 ------------------------------------------------------------
@@ -388,13 +573,61 @@ NEW.date_reviewed := now();
 RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+--
+--Sauvegarde des derniers changements dans la table t_last_change
+-------------------------------------------------------------
+CREATE OR REPLACE FUNCTION change_document() RETURNS trigger AS $$
+DECLARE type_change varchar(20);
+DECLARE id_author int4;
+DECLARE entity_name text;
+BEGIN
+type_change := '';
+if NEW.is_deleted != OLD.is_deleted AND NEW.is_deleted = true then
+    type_change := 'delete';
+    id_author := NEW.id_reviewer;
+elsif NEW.is_deleted != OLD.is_deleted AND NEW.is_deleted = false then
+    type_change := 'restore';
+    id_author := NEW.id_reviewer;
+elsif NEW.is_deleted = false AND NEW.id_reviewer is null then
+    type_change := 'create';
+    id_author := NEW.id_author;
+elsif NEW.is_deleted = false then
+    type_change := 'update';
+    id_author := NEW.id_reviewer;
+end if;
+-- Les changements d'un document ne sont sauvegardé que lorsqu'ils sont validés
+if type_change != '' AND NEW.is_validated = true then
+-- Récupère le nom du document associé (dans le cas d'un INSERT le name n'est pas encore créé il sera donc null)
+SELECT tdesc.title INTO entity_name FROM t_description tdesc WHERE tdesc.id_document = NEW.id LIMIT 1;
+INSERT INTO t_last_change (
+        type_entity,
+        type_change,
+        date_change,
+        id_entity,
+        id_author,
+        name
+    )
+VALUES (
+        'document',
+        type_change,
+        now(),
+        NEW.id,
+        id_author,
+        entity_name
+    );
+end if;
+RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
 --trigger qui exécute l'historisation lors d'un UPDATE
 --------------------------------------------------------
-CREATE TRIGGER histo_update_document BEFORE
-UPDATE ON t_document FOR EACH ROW EXECUTE PROCEDURE histo_update_document();
+CREATE OR REPLACE TRIGGER histo_update_document BEFORE UPDATE ON t_document FOR EACH ROW EXECUTE PROCEDURE histo_update_document();
 --trigger qui exécute l'historisation lors d'un DELETE
 --------------------------------------------------------
-CREATE TRIGGER histo_delete_document BEFORE DELETE ON t_document FOR EACH ROW EXECUTE PROCEDURE histo_delete();
+CREATE OR REPLACE TRIGGER histo_delete_document BEFORE DELETE ON t_document FOR EACH ROW EXECUTE PROCEDURE histo_delete();
+--trigger qui exécute la sauvegarde des derniers changements lors d'un CREATE ou d'un UPDATE
+--------------------------------------------------------
+CREATE OR REPLACE TRIGGER last_change_document BEFORE INSERT OR UPDATE ON t_document FOR EACH ROW EXECUTE PROCEDURE change_document();
 --
 --
 ------------------------------------------------------------
@@ -443,13 +676,64 @@ NEW.date_reviewed := now();
 RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+--
+--Sauvegarde des derniers changements dans la table t_last_change
+-------------------------------------------------------------
+CREATE OR REPLACE FUNCTION change_history() RETURNS trigger AS $$
+DECLARE type_change varchar(20);
+DECLARE id_author int4;
+DECLARE entity_name text;
+BEGIN
+type_change := '';
+if NEW.is_deleted != OLD.is_deleted AND NEW.is_deleted = true then
+    type_change := 'delete';
+    id_author := NEW.id_reviewer;
+elsif NEW.is_deleted != OLD.is_deleted AND NEW.is_deleted = false then
+    type_change := 'restore';
+    id_author := NEW.id_reviewer;
+elsif NEW.is_deleted = false AND NEW.id_reviewer is null then
+    type_change := 'create';
+    id_author := NEW.id_author;
+elsif NEW.is_deleted = false then
+    type_change := 'update';
+    id_author := NEW.id_reviewer;
+end if;
+if type_change != '' then
+-- Récupère le nom de l'entrance associé
+SELECT tname.name INTO entity_name FROM t_name tname WHERE tname.is_main = true AND tname.id_entrance = NEW.id_entrance LIMIT 1;
+INSERT INTO t_last_change (
+        type_entity,
+        type_change,
+        date_change,
+        id_entity,
+        id_author,
+        type_related_entity,
+        id_related_entity,
+        name
+    )
+VALUES (
+        'history',
+        type_change,
+        now(),
+        NEW.id,
+        id_author,
+        'entrance',
+        NEW.id_entrance,
+        entity_name
+    );
+end if;
+RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
 --trigger qui exécute l'historisation lors d'un UPDATE
 --------------------------------------------------------
-CREATE TRIGGER histo_update_history BEFORE
-UPDATE ON t_history FOR EACH ROW EXECUTE PROCEDURE histo_update_history();
+CREATE OR REPLACE TRIGGER histo_update_history BEFORE UPDATE ON t_history FOR EACH ROW EXECUTE PROCEDURE histo_update_history();
 --trigger qui exécute l'historisation lors d'un DELETE
 --------------------------------------------------------
-CREATE TRIGGER histo_delete_history BEFORE DELETE ON t_history FOR EACH ROW EXECUTE PROCEDURE histo_delete();
+CREATE OR REPLACE TRIGGER histo_delete_history BEFORE DELETE ON t_history FOR EACH ROW EXECUTE PROCEDURE histo_delete();
+--trigger qui exécute la sauvegarde des derniers changements lors d'un CREATE ou d'un UPDATE
+--------------------------------------------------------
+CREATE OR REPLACE TRIGGER last_change_history BEFORE INSERT OR UPDATE ON t_history FOR EACH ROW EXECUTE PROCEDURE change_history();
 --
 --
 ------------------------------------------------------------
@@ -496,13 +780,64 @@ NEW.date_reviewed := now();
 RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+--
+--Sauvegarde des derniers changements dans la table t_last_change
+-------------------------------------------------------------
+CREATE OR REPLACE FUNCTION change_location() RETURNS trigger AS $$
+DECLARE type_change varchar(20);
+DECLARE id_author int4;
+DECLARE entity_name text;
+BEGIN
+type_change := '';
+if NEW.is_deleted != OLD.is_deleted AND NEW.is_deleted = true then
+    type_change := 'delete';
+    id_author := NEW.id_reviewer;
+elsif NEW.is_deleted != OLD.is_deleted AND NEW.is_deleted = false then
+    type_change := 'restore';
+    id_author := NEW.id_reviewer;
+elsif NEW.is_deleted = false AND NEW.id_reviewer is null then
+    type_change := 'create';
+    id_author := NEW.id_author;
+elsif NEW.is_deleted = false then
+    type_change := 'update';
+    id_author := NEW.id_reviewer;
+end if;
+if type_change != '' then
+-- Récupère le nom de l'entrance associé
+SELECT tname.name INTO entity_name FROM t_name tname WHERE tname.is_main = true AND tname.id_entrance = NEW.id_entrance LIMIT 1;
+INSERT INTO t_last_change (
+        type_entity,
+        type_change,
+        date_change,
+        id_entity,
+        id_author,
+        type_related_entity,
+        id_related_entity,
+        name
+    )
+VALUES (
+        'location',
+        type_change,
+        now(),
+        NEW.id,
+        id_author,
+        'entrance',
+        NEW.id_entrance,
+        entity_name
+    );
+end if;
+RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
 --trigger qui exécute l'historisation lors d'un UPDATE
 --------------------------------------------------------
-CREATE TRIGGER histo_update_location BEFORE
-UPDATE ON t_location FOR EACH ROW EXECUTE PROCEDURE histo_update_location();
+CREATE OR REPLACE TRIGGER histo_update_location BEFORE UPDATE ON t_location FOR EACH ROW EXECUTE PROCEDURE histo_update_location();
 --trigger qui exécute l'historisation lors d'un DELETE
 --------------------------------------------------------
-CREATE TRIGGER histo_delete_location BEFORE DELETE ON t_location FOR EACH ROW EXECUTE PROCEDURE histo_delete();
+CREATE OR REPLACE TRIGGER histo_delete_location BEFORE DELETE ON t_location FOR EACH ROW EXECUTE PROCEDURE histo_delete();
+--trigger qui exécute la sauvegarde des derniers changements lors d'un CREATE ou d'un UPDATE
+--------------------------------------------------------
+CREATE OR REPLACE TRIGGER last_change_location BEFORE INSERT OR UPDATE ON t_location FOR EACH ROW EXECUTE PROCEDURE change_location();
 --
 --
 ------------------------------------------------------------
@@ -557,11 +892,11 @@ END;
 $$ LANGUAGE plpgsql;
 --trigger qui exécute l'historisation lors d'un UPDATE
 --------------------------------------------------------
-CREATE TRIGGER histo_update_name BEFORE
-UPDATE ON t_name FOR EACH ROW EXECUTE PROCEDURE histo_update_name();
+CREATE OR REPLACE TRIGGER histo_update_name BEFORE UPDATE ON t_name FOR EACH ROW EXECUTE PROCEDURE histo_update_name();
 --trigger qui exécute l'historisation lors d'un DELETE
 --------------------------------------------------------
-CREATE TRIGGER histo_delete_name BEFORE DELETE ON t_name FOR EACH ROW EXECUTE PROCEDURE histo_delete();
+CREATE OR REPLACE TRIGGER histo_delete_name BEFORE DELETE ON t_name FOR EACH ROW EXECUTE PROCEDURE histo_delete();
+--trigger qui exécute la sauvegarde des derniers changements lors d'un CREATE ou d'un UPDATE
 --
 --
 ------------------------------------------------------------
@@ -624,13 +959,64 @@ NEW.date_reviewed := now();
 RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+--
+--Sauvegarde des derniers changements dans la table t_last_change
+-------------------------------------------------------------
+CREATE OR REPLACE FUNCTION change_comment() RETURNS trigger AS $$
+DECLARE type_change varchar(20);
+DECLARE id_author int4;
+DECLARE entity_name text;
+BEGIN
+type_change := '';
+if NEW.is_deleted != OLD.is_deleted AND NEW.is_deleted = true then
+    type_change := 'delete';
+    id_author := NEW.id_reviewer;
+elsif NEW.is_deleted != OLD.is_deleted AND NEW.is_deleted = false then
+    type_change := 'restore';
+    id_author := NEW.id_reviewer;
+elsif NEW.is_deleted = false AND NEW.id_reviewer is null then
+    type_change := 'create';
+    id_author := NEW.id_author;
+elsif NEW.is_deleted = false then
+    type_change := 'update';
+    id_author := NEW.id_reviewer;
+end if;
+if type_change != '' then
+-- Récupère le nom de l'entrance associé
+SELECT tname.name INTO entity_name FROM t_name tname WHERE tname.is_main = true AND tname.id_entrance = NEW.id_entrance LIMIT 1;
+INSERT INTO t_last_change (
+        type_entity,
+        type_change,
+        date_change,
+        id_entity,
+        id_author,
+        type_related_entity,
+        id_related_entity,
+        name
+    )
+VALUES (
+        'comment',
+        type_change,
+        now(),
+        NEW.id,
+        id_author,
+        'entrance',
+        NEW.id_entrance,
+        entity_name
+    );
+end if;
+RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
 --trigger qui exécute l'historisation lors d'un UPDATE
 --------------------------------------------------------
-CREATE TRIGGER histo_update_comment BEFORE
-UPDATE ON t_comment FOR EACH ROW EXECUTE PROCEDURE histo_update_comment();
+CREATE OR REPLACE TRIGGER histo_update_comment BEFORE UPDATE ON t_comment FOR EACH ROW EXECUTE PROCEDURE histo_update_comment();
 --trigger qui exécute l'historisation lors d'un DELETE
 --------------------------------------------------------
-CREATE TRIGGER histo_delete_comment BEFORE DELETE ON t_comment FOR EACH ROW EXECUTE PROCEDURE histo_delete();
+CREATE OR REPLACE TRIGGER histo_delete_comment BEFORE DELETE ON t_comment FOR EACH ROW EXECUTE PROCEDURE histo_delete();
+--trigger qui exécute la sauvegarde des derniers changements lors d'un CREATE ou d'un UPDATE
+--------------------------------------------------------
+CREATE OR REPLACE TRIGGER last_change_comment BEFORE INSERT OR UPDATE ON t_comment FOR EACH ROW EXECUTE PROCEDURE change_comment();
 --
 --
 ------------------------------------------------------------
@@ -687,13 +1073,78 @@ NEW.date_reviewed := now();
 RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+--
+--Sauvegarde des derniers changements dans la table t_last_change
+-------------------------------------------------------------
+CREATE OR REPLACE FUNCTION change_description() RETURNS trigger AS $$
+DECLARE type_change varchar(20);
+DECLARE id_author int4;
+DECLARE type_related_entity varchar(20);
+DECLARE id_related_entity int4;
+DECLARE entity_name text;
+BEGIN
+type_change := '';
+if NEW.is_deleted != OLD.is_deleted AND NEW.is_deleted = true then
+    type_change := 'delete';
+    id_author := NEW.id_reviewer;
+elsif NEW.is_deleted != OLD.is_deleted AND NEW.is_deleted = false then
+    type_change := 'restore';
+    id_author := NEW.id_reviewer;
+elsif NEW.is_deleted = false AND NEW.id_reviewer is null then
+    type_change := 'create';
+    id_author := NEW.id_author;
+elsif NEW.is_deleted = false then
+    type_change := 'update';
+    id_author := NEW.id_reviewer;
+end if;
+-- Les descriptions des documents comptabilisés comme changement car elles correspondent à leur nom
+if type_change != '' AND NEW.id_document is null then
+
+if NEW.id_cave is not null then
+type_related_entity := 'cave';
+id_related_entity := NEW.id_cave;
+elsif NEW.id_entrance is not null then
+type_related_entity := 'entrance';
+id_related_entity := NEW.id_entrance;
+elsif NEW.id_massif is not null then
+type_related_entity := 'massif';
+id_related_entity := NEW.id_massif;
+end if;
+-- Récupère le nom de la cave ou l'entrance ou le massif associé
+SELECT tname.name INTO entity_name FROM t_name tname WHERE tname.is_main = true AND (tname.id_cave = NEW.id_cave OR tname.id_entrance = NEW.id_entrance OR tname.id_massif = NEW.id_massif) LIMIT 1;
+INSERT INTO t_last_change (
+        type_entity,
+        type_change,
+        date_change,
+        id_entity,
+        id_author,
+        type_related_entity,
+        id_related_entity,
+        name
+    )
+VALUES (
+        'description',
+        type_change,
+        now(),
+        NEW.id,
+        id_author,
+        type_related_entity,
+        id_related_entity,
+        entity_name
+    );
+end if;
+RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
 --trigger qui exécute l'historisation lors d'un UPDATE
 --------------------------------------------------------
-CREATE TRIGGER histo_update_description BEFORE
-UPDATE ON t_description FOR EACH ROW EXECUTE PROCEDURE histo_update_description();
+CREATE OR REPLACE TRIGGER histo_update_description BEFORE UPDATE ON t_description FOR EACH ROW EXECUTE PROCEDURE histo_update_description();
 --trigger qui exécute l'historisation lors d'un DELETE
 --------------------------------------------------------
-CREATE TRIGGER histo_delete_description BEFORE DELETE ON t_description FOR EACH ROW EXECUTE PROCEDURE histo_delete();
+CREATE OR REPLACE TRIGGER histo_delete_description BEFORE DELETE ON t_description FOR EACH ROW EXECUTE PROCEDURE histo_delete();
+--trigger qui exécute la sauvegarde des derniers changements lors d'un CREATE ou d'un UPDATE
+--------------------------------------------------------
+CREATE OR REPLACE TRIGGER last_change_description BEFORE INSERT OR UPDATE ON t_description FOR EACH ROW EXECUTE PROCEDURE change_description();
 --
 --
 ------------------------------------------------------------
@@ -701,7 +1152,7 @@ CREATE TRIGGER histo_delete_description BEFORE DELETE ON t_description FOR EACH 
 ------------------------------------------------------------
 --Historisation suite à UPDATE déclenchée par le trigger
 --La procédure met aussi à jour date_reviewed
----------------------------------------------------------------------
+-------------------------------------------------------------
 CREATE OR REPLACE FUNCTION histo_update_rigging() RETURNS trigger AS $$
 DECLARE date_r timestamp;
 BEGIN --prise en compte du cas de la première modif d'un enregistrement
@@ -750,10 +1201,61 @@ NEW.date_reviewed := now();
 RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+--
+--Sauvegarde des derniers changements dans la table t_last_change
+-------------------------------------------------------------
+CREATE OR REPLACE FUNCTION change_rigging() RETURNS trigger AS $$
+DECLARE type_change varchar(20);
+DECLARE id_author int4;
+DECLARE entity_name text;
+BEGIN
+type_change := '';
+if NEW.is_deleted != OLD.is_deleted AND NEW.is_deleted = true then
+    type_change := 'delete';
+    id_author := NEW.id_reviewer;
+elsif NEW.is_deleted != OLD.is_deleted AND NEW.is_deleted = false then
+    type_change := 'restore';
+    id_author := NEW.id_reviewer;
+elsif NEW.is_deleted = false AND NEW.id_reviewer is null then
+    type_change := 'create';
+    id_author := NEW.id_author;
+elsif NEW.is_deleted = false then
+    type_change := 'update';
+    id_author := NEW.id_reviewer;
+end if;
+if type_change != '' then
+-- Récupère le nom de l'entrance associé
+SELECT tname.name INTO entity_name FROM t_name tname WHERE tname.is_main = true AND tname.id_entrance = NEW.id_entrance LIMIT 1;
+INSERT INTO t_last_change (
+        type_entity,
+        type_change,
+        date_change,
+        id_entity,
+        id_author,
+        type_related_entity,
+        id_related_entity,
+        name
+    )
+VALUES (
+        'rigging',
+        type_change,
+        now(),
+        NEW.id,
+        id_author,
+        'entrance',
+        NEW.id_entrance,
+        entity_name
+    );
+end if;
+RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
 --trigger qui exécute l'historisation lors d'un UPDATE
 --------------------------------------------------------
-CREATE TRIGGER histo_update_rigging BEFORE
-UPDATE ON t_rigging FOR EACH ROW EXECUTE PROCEDURE histo_update_rigging();
+CREATE OR REPLACE TRIGGER histo_update_rigging BEFORE UPDATE ON t_rigging FOR EACH ROW EXECUTE PROCEDURE histo_update_rigging();
 --trigger qui exécute l'historisation lors d'un DELETE
 --------------------------------------------------------
-CREATE TRIGGER histo_delete_rigging BEFORE DELETE ON t_rigging FOR EACH ROW EXECUTE PROCEDURE histo_delete();
+CREATE OR REPLACE TRIGGER histo_delete_rigging BEFORE DELETE ON t_rigging FOR EACH ROW EXECUTE PROCEDURE histo_delete();
+--trigger qui exécute la sauvegarde des derniers changements lors d'un CREATE ou d'un UPDATE
+--------------------------------------------------------
+CREATE OR REPLACE TRIGGER last_change_rigging BEFORE INSERT OR UPDATE ON t_rigging FOR EACH ROW EXECUTE PROCEDURE change_rigging();

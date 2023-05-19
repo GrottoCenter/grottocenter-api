@@ -15,6 +15,7 @@ const ElasticsearchService = require('./ElasticsearchService');
 const NameService = require('./NameService');
 const NotificationService = require('./NotificationService');
 const GeocodingService = require('./GeocodingService');
+const RecentChangeService = require('./RecentChangeService');
 
 const {
   NOTIFICATION_ENTITIES,
@@ -68,7 +69,7 @@ module.exports = {
     }
     return {
       ...reqBodyWithoutId,
-      geology: ramda.propOr('Q35758', 'geology', req.body),
+      geology: req.body.geology ?? 'Q35758',
       isSensitive,
     };
   },
@@ -284,6 +285,13 @@ module.exports = {
           .usingConnection(db);
         return res;
       });
+
+    await RecentChangeService.setNameCreate(
+      'entrance',
+      newEntrancePopulated.id,
+      req.token.id,
+      nameDescLocData.name.text
+    );
 
     // Prepare data for Elasticsearch indexation
     const description =

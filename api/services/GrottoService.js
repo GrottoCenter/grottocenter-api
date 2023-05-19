@@ -5,6 +5,8 @@ const NameService = require('./NameService');
 const NotificationService = require('./NotificationService');
 const DescriptionService = require('./DescriptionService');
 const GeocodingService = require('./GeocodingService');
+const RecentChangeService = require('./RecentChangeService');
+
 const {
   NOTIFICATION_ENTITIES,
   NOTIFICATION_TYPES,
@@ -150,6 +152,13 @@ module.exports = {
       deleted: newOrganizationPopulated.isDeleted,
       tags: ['grotto'],
     });
+
+    await RecentChangeService.setNameCreate(
+      'grotto',
+      newOrganizationPopulated.id,
+      req.token.id,
+      nameData.text
+    );
 
     await NotificationService.notifySubscribers(
       req,
