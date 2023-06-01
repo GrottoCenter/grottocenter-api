@@ -259,16 +259,10 @@ module.exports = {
    * @returns main language of the document
    */
   getMainLanguage: (languages) => {
-    if (languages) {
-      if (languages.length === 0) {
-        return undefined;
-      }
-      if (languages.length === 1) {
-        return languages[0];
-      }
-      return languages.filter((l) => l.isMain);
-    }
-    return undefined;
+    if (!languages) return undefined;
+    if (languages.length === 0) return undefined;
+    if (languages.length === 1) return languages[0];
+    return languages.filter((l) => l.isMain);
   },
 
   getTopoFiles: async (docId) => {

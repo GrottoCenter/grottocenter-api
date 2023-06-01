@@ -36,6 +36,7 @@ module.exports = (req, res) => {
           .populate('authors')
           .populate('cave')
           .populate('descriptions')
+          .populate('authorizationDocument')
           .populate('editor')
           .populate('entrance')
           .populate('identifierType')
