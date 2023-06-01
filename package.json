@@ -70,7 +70,7 @@
     "eslint-plugin-import": "^2.27.5",
     "fixted": "^4.2.0",
     "grunt": "^1.6.1",
-    "grunt-eslint": "^24.0.1",
+    "grunt-eslint": "^24.1.0",
     "husky": "^8.0.3",
     "lint-staged": "^13.2.2",
     "mocha": "^10.2.0",
