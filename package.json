@@ -27,7 +27,7 @@
     "passport": "^0.6.0",
     "passport-local": "^1.0.0",
     "prop-types": "^15.8.1",
-    "ramda": "^0.28.0",
+    "ramda": "^0.29.0",
     "rc": "~1.2.8",
     "response-time": "^2.3.2",
     "sails": "^1.5.4",
