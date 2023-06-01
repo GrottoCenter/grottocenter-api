@@ -393,7 +393,7 @@ module.exports = {
             )
           );
         if (file) {
-          await FileService.create(file, document.id);
+          await FileService.document.create(file, document.id);
         }
       }
     }

@@ -9,8 +9,11 @@
  * https://sailsjs.com/config/bootstrap
  */
 
+const periodicDbExport = require('../script/periodicDbExport');
+
 // eslint-disable-next-line func-names
 module.exports.bootstrap = async function (done) {
+  periodicDbExport();
   return done();
 };
 // By convention, this is a good place to set up fake data during development.

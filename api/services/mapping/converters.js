@@ -556,13 +556,10 @@ const c = {
     return result;
   },
 
-  toFile: (source) => {
-    const { container, linkAccount } = FileService.getAzureData();
-    return {
-      ...source,
-      completePath: `${linkAccount}/${container}/${source.path}`,
-    };
-  },
+  toFile: (source) => ({
+    ...source,
+    completePath: FileService.document.getUrl(source.path),
+  }),
 
   toSimpleHistory: (source) => {
     const result = {

@@ -70,17 +70,19 @@ async function validateAndUpdateDocument(
     // they just need to be linked to the document.
     if (newFiles) {
       filePromises.push(
-        ...newFiles.map((f) =>
-          FileService.updateOne(f.id).set({ isValidated: true })
-        )
+        ...newFiles.map((f) => TFile.updateOne(f.id).set({ isValidated: true }))
       );
     }
     if (modifiedFiles) {
-      filePromises.push(...modifiedFiles.map((f) => FileService.update(f)));
+      filePromises.push(
+        ...modifiedFiles.map((f) => FileService.document.update(f))
+      );
     }
 
     if (deletedFiles) {
-      filePromises.push(...deletedFiles.map((f) => FileService.delete(f)));
+      filePromises.push(
+        ...deletedFiles.map((f) => FileService.document.delete(f))
+      );
     }
     await Promise.all(filePromises);
   });

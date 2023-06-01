@@ -1,0 +1,23 @@
+Licence
+
+Les données contenues dans les fichiers de cette archive proviennent du site grottocenter.org et doivent être
+utilisées dans le respect de la licence retenue, à savoir :
+● CC-BY-SA pour les données soumises au droit d’auteur (https://creativecommons.org/licenses/by-sa/3.0/fr/).
+● ODbL pour les autres données (https://opendatacommons.org/licenses/odbl/).
+
+Cas particuliers : les fichiers archivés sur grottocenter.org et dont l’URL est indiquée dans ces fichiers sont placés
+sous différentes licences libres, qui sont précisées à chaque fois.
+
+Pour respecter chacune de ces licences vous pouvez vous référer aux textes qui les décrivent.
+
+En résumé et de manière générale :
+● Vous pouvez utiliser ces données pour un site Web, une application ou pour tout autre usage, dans un
+cadre où les données sont librement accessible, sans authentification de l’utilisateur;
+● Vous devez indiquer la licence qui s’applique aux données que vous proposez. Celle-ci doit donc être
+compatible avec les licences retenues pour les données du site grottocenter.org que vous utilisez.
+● Vous devez également créditer les auteurs :
+    ○ Pour les données sous licence ODbL en apposant la mention "© Grottocenter et ses contributeurs",
+    ○ Pour les données sous licence CC-BY-SA vous pouvez utiliser le nom de l’auteur initial et celui du
+    dernier contributeur qui sont indiqués dans le fichier joint. Pour les cavités vous pouvez utiliser la
+    page snapshot. Par exemple pour la cavité dont l’ID est 37497, vous pouvez porter la mention "@
+    Grottocenter (auteurs)"
