@@ -10,7 +10,7 @@
     "@aws-sdk/client-ses": "^3.335.0",
     "@azure/storage-blob": "^12.13.0",
     "@snyk/protect": "^1.1133.0",
-    "argon2": "^0.30.2",
+    "argon2": "^0.30.3",
     "async": "^3.2.4",
     "dotenv": "^16.0.3",
     "ejs": "^3.1.9",
