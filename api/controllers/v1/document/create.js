@@ -43,7 +43,7 @@ module.exports = async (req, res) => {
       try {
         await Promise.all(
           files.map(async (file) => {
-            await FileService.create(file, createdDocument.id);
+            await FileService.document.create(file, createdDocument.id);
           })
         );
       } catch (err) {
