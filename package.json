@@ -9,7 +9,7 @@
   "dependencies": {
     "@aws-sdk/client-ses": "^3.345.0",
     "@azure/storage-blob": "^12.14.0",
-    "@snyk/protect": "^1.1133.0",
+    "@snyk/protect": "^1.1173.0",
     "argon2": "^0.30.3",
     "async": "^3.2.4",
     "dotenv": "^16.1.4",
