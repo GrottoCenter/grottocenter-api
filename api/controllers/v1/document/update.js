@@ -43,7 +43,7 @@ module.exports = async (req, res) => {
     try {
       await Promise.all(
         files.map(async (file) => {
-          const createdFile = await FileService.create(
+          const createdFile = await FileService.document.create(
             file,
             req.param('id'),
             true,

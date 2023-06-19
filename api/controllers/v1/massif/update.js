@@ -53,6 +53,7 @@ module.exports = async (req, res) => {
         cleanedData.geogPolygon
       );
     }
+    // The name is updated via the /api/v1/names route by the front
     const updatedMassif = await TMassif.updateOne(massifId).set(cleanedData);
     await NameService.setNames([updatedMassif], 'massif');
     await NotificationService.notifySubscribers(

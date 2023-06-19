@@ -24,6 +24,7 @@ module.exports = async (req, res) => {
     .sort(sort)
     .populate('author')
     .populate('authors')
+    .populate('authorizationDocument')
     .populate('cave')
     .populate('children')
     .populate('descriptions')
@@ -55,9 +56,7 @@ module.exports = async (req, res) => {
       try {
         for (const doc of documents) {
           /* eslint-disable no-await-in-loop */
-          doc.mainLanguage = await DocumentService.getMainLanguage(
-            doc.languages
-          );
+          doc.mainLanguage = DocumentService.getMainLanguage(doc.languages);
           await DocumentService.setNamesOfPopulatedDocument(doc);
           if (doc.children) {
             await Promise.all(

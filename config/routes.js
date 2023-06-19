@@ -79,6 +79,7 @@ module.exports.routes = {
   'GET /api/v1/cavers/count': 'v1/caver/count',
   'GET /api/v1/cavers/moderators': 'v1/caver/get-moderators',
   'GET /api/v1/cavers/users/count': 'v1/caver/users-count',
+  'GET /api/v1/cavers/export/db': 'v1/caver/get-db-export',
   'POST /api/v1/cavers/': 'v1/caver/create',
   'POST /api/v1/cavers/:caverId/groups': 'v1/caver/set-groups',
   'PUT /api/v1/cavers/:caverId': 'v1/caver/update',
@@ -323,6 +324,9 @@ module.exports.routes = {
   'GET /api/v1/histories/:id/snapshots': 'v1/history/get-snapshots',
   'GET /api/v1/locations/:id/snapshots': 'v1/location/get-snapshots',
   'GET /api/v1/riggings/:id/snapshots': 'v1/rigging/get-snapshots',
+
+  // Changes
+  'GET /api/v1/changes/recent': 'v1/change/get-recent',
 
   //  ╦ ╦╔═╗╔╗ ╦ ╦╔═╗╔═╗╦╔═╔═╗
   //  ║║║║╣ ╠╩╗╠═╣║ ║║ ║╠╩╗╚═╗

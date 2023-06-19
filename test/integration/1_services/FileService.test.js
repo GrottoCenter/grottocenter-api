@@ -16,7 +16,7 @@ describe('FileService', () => {
 
     it('should update the file name', async () => {
       const newName = 'new_file_name';
-      const res = await FileService.update({
+      const res = await FileService.document.update({
         ...initialFile,
         fileName: newName,
       });

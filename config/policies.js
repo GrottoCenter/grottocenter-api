@@ -59,6 +59,7 @@ module.exports.policies = {
   'v1/caver/set-groups': ['tokenAuth', 'adminAuth'],
   'v1/caver/users-count': true,
   'v1/caver/update': 'tokenAuth',
+  'v1/caver/get-db-export': ['tokenAuth', 'leaderAuth'],
 
   // Convert
   'v1/convert/convert': true,
@@ -227,6 +228,9 @@ module.exports.policies = {
 
   // Swagger (API doc)
   'v1/swagger/get-yaml': true,
+
+  // Changes
+  'v1/change/get-recent': true,
 
   /** *************************************************************************
    *                                                                          *

@@ -24,6 +24,7 @@ const ElasticsearchService = require('./ElasticsearchService');
 const FileService = require('./FileService');
 const NameService = require('./NameService');
 const NotificationService = require('./NotificationService');
+const RecentChangeService = require('./RecentChangeService');
 const {
   NOTIFICATION_TYPES,
   NOTIFICATION_ENTITIES,
@@ -259,16 +260,10 @@ module.exports = {
    * @returns main language of the document
    */
   getMainLanguage: (languages) => {
-    if (languages) {
-      if (languages.length === 0) {
-        return undefined;
-      }
-      if (languages.length === 1) {
-        return languages[0];
-      }
-      return languages.filter((l) => l.isMain);
-    }
-    return undefined;
+    if (!languages) return undefined;
+    if (languages.length === 0) return undefined;
+    if (languages.length === 1) return languages[0];
+    return languages.filter((l) => l.isMain);
   },
 
   getTopoFiles: async (docId) => {
@@ -292,6 +287,7 @@ module.exports = {
       isValidated: false,
       dateValidation: null,
       dateReviewed: new Date(),
+      reviewer: req.token.id,
       modifiedDocJson: jsonData,
     });
 
@@ -361,6 +357,13 @@ module.exports = {
       return createdDocument;
     });
 
+    await RecentChangeService.setNameCreate(
+      'document',
+      document.id,
+      req.token.id,
+      langDescData.title
+    );
+
     const populatedDocument = await module.exports.getDocument(
       document.id,
       false
@@ -390,7 +393,7 @@ module.exports = {
             )
           );
         if (file) {
-          await FileService.create(file, document.id);
+          await FileService.document.create(file, document.id);
         }
       }
     }

@@ -1191,3 +1191,18 @@ CREATE TABLE t_iso3166_2 (
 	name_ro varchar(200) NULL,
 	CONSTRAINT t_iso3166_2_pk PRIMARY KEY (iso)
 );
+
+-- DROP TABLE t_last_change;
+CREATE TABLE t_last_change (
+	-- id serial NOT NULL,
+	type_entity varchar(30) NOT NULL,
+	type_change varchar(30) NOT NULL,
+	date_change timestamp NOT NULL DEFAULT now(),
+	id_author int4 NOT NULL,
+	id_entity int4 NOT NULL,
+	type_related_entity varchar(30) NULL,
+	id_related_entity int4 NULL,
+	name varchar(300) NULL,
+
+	CONSTRAINT t_last_change_t_caver_fk FOREIGN KEY (id_author) REFERENCES t_caver(id)
+);

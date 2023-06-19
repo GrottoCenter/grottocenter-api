@@ -7,16 +7,13 @@ module.exports = {
    *    (recursive and cost a lot of resources)
    */
   setDocumentDescriptions: async (document, setParent = true) => {
-    if (document) {
-      // eslint-disable-next-line no-param-reassign
-      document.descriptions = await TDescription.find()
-        .where({
-          document: document.id,
-        })
-        .populate('language');
-      if (setParent && ramda.pathOr(null, ['parent', 'id'], document)) {
-        await module.exports.setDocumentDescriptions(document.parent);
-      }
+    if (!document?.id) return;
+    // eslint-disable-next-line no-param-reassign
+    document.descriptions = await TDescription.find()
+      .where({ document: document.id })
+      .populate('language');
+    if (setParent && ramda.pathOr(null, ['parent', 'id'], document)) {
+      await module.exports.setDocumentDescriptions(document.parent);
     }
   },
 
