@@ -60,7 +60,7 @@
     "url": "git://github.com/GrottoCenter/Grottocenter3.git"
   },
   "devDependencies": {
-    "@commitlint/cli": "^17.6.5",
+    "@commitlint/cli": "^17.6.6",
     "@commitlint/config-conventional": "^17.6.5",
     "core-js": "^3.30.2",
     "coveralls": "^3.1.1",
