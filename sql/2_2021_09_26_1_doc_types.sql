@@ -19,5 +19,5 @@ INSERT INTO t_type (id,"name","comment",id_parent,is_available,url) VALUES
 	 (17,'Issue','An issue of a periodic publication',12,true,'http://id.loc.gov/vocabulary/marcgt/iss'),
 	 (18,'Article','An article from a source',12,true,'http://id.loc.gov/vocabulary/marcgt/art'),
 	 (19,'Map','A geographical map',11,true,'http://id.loc.gov/vocabulary/marcgt/map'),
-	 (20,'Authorization To Publish','Document attesting to the authorization to publish other documents under a defined licence',NULL,true,'https://ontology.uis-speleo.org/ontology/#AutorizationToPublish');
+	 (20,'Authorization To Publish','Document attesting to the authorization to publish other documents under a defined licence',NULL,true,'https://ontology.uis-speleo.org/ontology/#AutorizationToPublish'),
 	 (21,'Report','Proceedings, reports or summaries of a conference, study, expedition',NULL,true,'http://id.loc.gov/vocabulary/marcgt/cpb');

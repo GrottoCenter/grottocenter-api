@@ -1,0 +1,22 @@
+{
+    "Servers": {
+        "1": {
+            "Name": "Development",
+            "Group": "Servers",
+            "Host": "grotto-postgres",
+            "Port": 5432,
+            "MaintenanceDB": "postgres",
+            "Username": "root",
+            "SSLMode": "prefer"
+        },
+        "2": {
+            "Name": "Development Test",
+            "Group": "Servers",
+            "Host": "grotto-postgres-test",
+            "Port": 5432,
+            "MaintenanceDB": "postgres",
+            "Username": "root",
+            "SSLMode": "prefer"
+        }
+    }
+}
