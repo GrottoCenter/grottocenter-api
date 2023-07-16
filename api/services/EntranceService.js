@@ -2,7 +2,7 @@ const ramda = require('ramda');
 
 // query to get all entrances of interest
 const INTEREST_ENTRANCES_QUERY =
-  'SELECT id FROM t_entrance WHERE Is_of_interest=true';
+  'SELECT id FROM t_entrance WHERE is_of_interest=true';
 
 // query to get a random entrance of interest
 const RANDOM_ENTRANCE_QUERY = `${INTEREST_ENTRANCES_QUERY} ORDER BY RANDOM() LIMIT 1`;

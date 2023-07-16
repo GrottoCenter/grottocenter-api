@@ -72,12 +72,14 @@ module.exports = {
         const extension = mime.extension(contentType);
 
         if (refusedFileFormats && refusedFileFormats.includes(extension)) {
+          res.socket.end();
           return exits.formatRefused(extension);
         }
         if (
           acceptedFileFormats !== undefined &&
           !acceptedFileFormats.includes(extension)
         ) {
+          res.socket.end();
           return exits.formatRefused(extension);
         }
 

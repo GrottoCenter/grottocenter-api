@@ -18,9 +18,9 @@ before(function (done) {
       datastores: {
         default: {
           adapter: sailsPostGreAdapter,
-          url: process.env.POSTGRE_TEST_URL
-            ? process.env.POSTGRE_TEST_URL
-            : 'postgres://root:root@localhost:5432/grottoce',
+          url:
+            process.env.POSTGRE_TEST_URL ??
+            'postgres://root:root@localhost:5432/grottoce',
         },
       },
       models: {

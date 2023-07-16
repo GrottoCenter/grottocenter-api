@@ -50,63 +50,59 @@ Decharte, Dominique Lagrenee.
 
 Software requirement:
 
-- NodeJS (v18.x.x recommended, you can also use the .nvmrc file with nvm)
-- NPM (v8.x.x recommended)
+- NodeJS + NPM (v20 minimum)
 - Git client (see [Git usage](#git) for configuration)
 - Docker
 - [docker-compose](https://docs.docker.com/compose/install/)
 
-Clone the project on your computer:
+Clone the project on your computer and install dependencies:
 
-```
-> git clone https://github.com/GrottoCenter/Grottocenter-api.git
+```shell
+$ git clone git@github.com:GrottoCenter/grottocenter-api.git
+$ cd grottocenter-api
+$ npm install
 ```
 
 ## Usage
 
-### Development deployment
+### Development setup
 
-The development deployment aims to launch locally all the tools needed for the GrottoCenter development:
+The development setup aims to launch locally all tools needed for the GrottoCenter API development:
+- Postgresql database containers (main + test)
+- A Elasticsearch container
+- A Logstash container
 
-First copy `/docker/sample.env` to `/docker/.env`.
+> All the definition for containers is located in the `docker/` folder
 
-Make sure the sql files in `/sql/` have reading and execution access rights (a+rx), including the sql directory itself.
-Same goes with `/postgresql-connector.jar`. `/docker/esdata` folder needs writing, reading and execution rights (
-a+wrx).
+To launch the development setup run:
+```shell
+$ npm run dev:up
+```
 
-Then launch the orchestrated containers:
+Then the Grottocenter API app can be launched using:
+```shell
+$ npm run dev
+```
+
+The API should now be available at http://localhost:1337/
+
+Each time you change a file in the source code, the server is restarted automatically.
+
+To stop the development setup you can run :
 
 ```shell
-$ cd docker
-$ docker-compose up --remove-orphans
+$ npm run dev:stop # Stop all containers
+$ npm run dev:down # Stop and destroy all containers
 ```
+## Development
 
-Wait until you see the following lines in the logs:
+Caver's community needs YOU!
 
-```
- : Grunt :: Running "watch" task
- : Grunt :: Waiting...
-```
+Yon can also join us on Slack! (using the QR-code above)
 
-At this point you are good to go. The API is available at http://localhost:1337/, and you can monitor the evolution of ES
-indices at http://localhost:9200/\_cat/indices?v
-
-Each time you change a file in the source code, the code is recompiled automatically, you just need to refresh the page
-in your browser.
-
-To stop and clear your docker compose you should run :
-
-```shell
-$ docker-compose down -v
-```
+> For more details, read [the development guide](https://github.com/GrottoCenter/Grottocenter3/wiki/Development-guide)
 
 ### Tests
-
-Log in the node container:
-
-```shell
-$ docker exec -it nodegrotto sh -l
-```
 
 Run all tests:
 
@@ -127,18 +123,38 @@ Check code coverage:
 ```shell
 $ npm run coverage
 ```
+### I18n / Translation
 
-For more details, read [the installation guide](https://github.com/GrottoCenter/Grottocenter3/wiki/Installation-guide)
+See the wiki article [translation workflow](https://github.com/GrottoCenter/Grottocenter3/wiki/Translation-workflow)
 
-## Development
+### Data versioning
 
-Caver's community needs YOU!
+See the wiki article [Automated data versioning](https://github.com/GrottoCenter/Grottocenter3/wiki/Automated-data-versioning)
 
-Yon can also join us on Slack! (using the QR-code above)
+### Build
 
-~~For more details, read [the development guide](https://github.com/GrottoCenter/Grottocenter3/wiki/Development-guide)
+Build is run by GitHub Actions on every push. See `build.yaml` to see what is run during the build workflow.
 
-## Git
+If the build is triggered from a push on `master` then a deployment of the API to Azure App Service is automatically triggered.
+
+### Deployment in production
+
+Deployment done with GitHub Actions and Azure App Service.
+
+You first need to merge your changes to `master` using if possible the `git flow release start vXX.X.X` command.
+
+Don't forget to update the version number on the `swagger` file and on the `package.json` file.
+
+when the merge on master is completed, you should create a release for the newly pushed tag.
+
+For more information see the wiki page [Production deployment](https://github.com/GrottoCenter/Grottocenter3/wiki/Production-deployment)
+
+### ElasticSearch
+
+See [ElasticSearch Wiki page](<https://github.com/GrottoCenter/Grottocenter3/wiki/Elasticsearch-(quick-&-advanced-search)>)
+
+
+### Git
 
 #### Workflow
 
@@ -185,35 +201,6 @@ The commit linter accepts the following types:
 - **test**: Adding missing or correcting existing tests
 - **revert**: Reverts a previous work
 
-## I18n / Translation
-
-See the wiki article [translation workflow](https://github.com/GrottoCenter/Grottocenter3/wiki/Translation-workflow)
-
-## Data versioning
-
-See the wiki article [Automated data versioning](https://github.com/GrottoCenter/Grottocenter3/wiki/Automated-data-versioning)
-
-## Build
-
-Build is run by GitHub Actions on every push. See `build.yaml` to see what is run during the build workflow.
-
-If the build is triggered from a push on `master` then a deployment of the API to Azure App Service is automatically triggered.
-
-## Deployment in production
-
-Deployment done with GitHub Actions and Azure App Service.
-
-You first need to merge your changes to `master` using if possible the `git flow release start vXX.X.X` command.
-
-Don't forget to update the version number on the `swagger` file and on the `package.json` file.
-
-when the merge on master is completed, you should create a release for the newly pushed tag.
-
-For more information see the wiki page [Production deployment](https://github.com/GrottoCenter/Grottocenter3/wiki/Production-deployment)
-
-## ElasticSearch
-
-See [ElasticSearch Wiki page](<https://github.com/GrottoCenter/Grottocenter3/wiki/Elasticsearch-(quick-&-advanced-search)>)
 
 ## Licence
 
