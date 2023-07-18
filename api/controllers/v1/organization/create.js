@@ -1,26 +1,9 @@
 const ControllerService = require('../../../services/ControllerService');
 const ErrorService = require('../../../services/ErrorService');
 const GrottoService = require('../../../services/GrottoService');
-const RightService = require('../../../services/RightService');
 const { toOrganization } = require('../../../services/mapping/converters');
 
 module.exports = async (req, res) => {
-  // Check right
-  const hasRight = await sails.helpers.checkRight
-    .with({
-      groups: req.token.groups,
-      rightEntity: RightService.RightEntities.ORGANIZATION,
-      rightAction: RightService.RightActions.CREATE,
-    })
-    .intercept('rightNotFound', () =>
-      res.serverError(
-        'A server error occured when checking your right to create an organization.'
-      )
-    );
-  if (!hasRight) {
-    return res.forbidden('You are not authorized to create an organization.');
-  }
-
   // Check params
   if (!req.param('name')) {
     return res.badRequest(

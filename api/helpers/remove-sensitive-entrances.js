@@ -37,19 +37,10 @@ module.exports = {
   async fn(inputs, exits) {
     const { data, req } = inputs;
     const resultData = { ...data };
-    const checkRight = sails.helpers.checkRight.with;
 
     // Retrieve user rights
     const hasCompleteViewRight = req.token
-      ? await checkRight({
-          groups: req.token.groups,
-          rightEntity: RightService.RightEntities.ENTRANCE,
-          rightAction: RightService.RightActions.VIEW_COMPLETE,
-        }).tolerate('rightNotFound', () =>
-          sails.log.error(
-            'A server error occured when checking your right to entirely view an entrance.'
-          )
-        )
+      ? RightService.hasGroup(req.token.groups, RightService.G.ADMINISTRATOR)
       : false;
 
     if (!hasCompleteViewRight) {

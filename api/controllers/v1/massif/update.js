@@ -1,6 +1,5 @@
 const ControllerService = require('../../../services/ControllerService');
 const ErrorService = require('../../../services/ErrorService');
-const RightService = require('../../../services/RightService');
 const MassifService = require('../../../services/MassifService');
 const NameService = require('../../../services/NameService');
 const NotificationService = require('../../../services/NotificationService');
@@ -11,23 +10,6 @@ const {
 const { toMassif } = require('../../../services/mapping/converters');
 
 module.exports = async (req, res) => {
-  // Check right
-
-  const hasRight = await sails.helpers.checkRight
-    .with({
-      groups: req.token.groups,
-      rightEntity: RightService.RightEntities.MASSIF,
-      rightAction: RightService.RightActions.EDIT_ANY,
-    })
-    .intercept('rightNotFound', () =>
-      res.serverError(
-        'A server error occured when checking your right to update a caver.'
-      )
-    );
-  if (!hasRight) {
-    return res.forbidden('You are not authorized to update a massif.');
-  }
-
   // Check if massif exists
   const massifId = req.param('id');
   if (

@@ -5,29 +5,12 @@ const {
   NOTIFICATION_ENTITIES,
 } = require('../../../services/NotificationService');
 const NotificationService = require('../../../services/NotificationService');
-const RightService = require('../../../services/RightService');
 const HistoryService = require('../../../services/HistoryService');
 const ParametersValidatorService = require('../../../services/ParametersValidatorService');
 const { toSimpleHistory } = require('../../../services/mapping/converters');
 
 module.exports = async (req, res) => {
   try {
-    // Check right
-    const hasRight = await sails.helpers.checkRight
-      .with({
-        groups: req.token.groups,
-        rightEntity: RightService.RightEntities.HISTORY,
-        rightAction: RightService.RightActions.CREATE,
-      })
-      .intercept('rightNotFound', () =>
-        res.serverError(
-          'A server error occurred when checking your right to create an history.'
-        )
-      );
-    if (!hasRight) {
-      return res.forbidden('You are not authorized to create an history.');
-    }
-
     const mandatoryParams = ParametersValidatorService.checkAllExist(req, res, [
       'entrance',
       'body',

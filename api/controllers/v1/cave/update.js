@@ -6,27 +6,9 @@ const {
   NOTIFICATION_ENTITIES,
 } = require('../../../services/NotificationService');
 const NotificationService = require('../../../services/NotificationService');
-const RightService = require('../../../services/RightService');
 const { toCave } = require('../../../services/mapping/converters');
 
-const { checkRight } = sails.helpers;
-
 module.exports = async (req, res) => {
-  const hasRight = await checkRight
-    .with({
-      groups: req.token.groups,
-      rightEntity: RightService.RightEntities.CAVE,
-      rightAction: RightService.RightActions.EDIT_ANY,
-    })
-    .intercept('rightNotFound', () =>
-      res.serverError(
-        'A server error occured when checking your right to update a cave.'
-      )
-    );
-  if (!hasRight) {
-    return res.forbidden('You are not authorized to update a cave.');
-  }
-
   try {
     const caveId = req.param('id');
     const rawCave = await TCave.findOne(caveId);

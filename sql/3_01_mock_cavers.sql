@@ -195,12 +195,9 @@ VALUES (
 INSERT INTO public.j_caver_group (id_caver, id_group)
 VALUES (1, 1),
 	(2, 2),
-	(3, 3),
 	(4, 5),
 	(5, 1),
 	(5, 2),
-	(5, 3),
-	(5, 4),
 	(5, 5),
 	(6, 2),
 	(6, 5);

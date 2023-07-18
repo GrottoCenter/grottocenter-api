@@ -4,17 +4,10 @@ const RightService = require('../../../services/RightService');
 
 module.exports = async (req, res) => {
   // Check right
-  const hasRight = await sails.helpers.checkRight
-    .with({
-      groups: req.token.groups,
-      rightEntity: RightService.RightEntities.CAVER,
-      rightAction: RightService.RightActions.EDIT_ANY,
-    })
-    .intercept('rightNotFound', () =>
-      res.serverError(
-        'A server error occured when checking your right to remove a caver from a group.'
-      )
-    );
+  const hasRight = RightService.hasGroup(
+    req.token.groups,
+    RightService.G.ADMINISTRATOR
+  );
   if (!hasRight) {
     return res.forbidden(
       'You are not authorized to remove a caver from a group.'

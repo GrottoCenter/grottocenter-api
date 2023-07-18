@@ -1,5 +1,6 @@
 const DocumentService = require('../../../services/DocumentService');
 const FileService = require('../../../services/FileService');
+const RightService = require('../../../services/RightService');
 const {
   NOTIFICATION_TYPES,
   NOTIFICATION_ENTITIES,
@@ -126,6 +127,16 @@ async function updateESAndNotify(req, documentId, hasChange, userId) {
 }
 
 module.exports = async (req, res) => {
+  const hasRight = RightService.hasGroup(
+    req.token.groups,
+    RightService.G.MODERATOR
+  );
+  if (!hasRight) {
+    return res.forbidden(
+      'You are not authorized to validate multiple documents.'
+    );
+  }
+
   const documentChanges = [];
   // Validate input
   for (const doc of req.param('documents') ?? []) {

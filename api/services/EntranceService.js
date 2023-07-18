@@ -148,12 +148,8 @@ module.exports = {
       ? tEntranceSensitivity[0].isSensitive
       : true;
     const hasRight = isEntranceSensitive
-      ? await sails.helpers.checkRight.with({
-          groups: token.groups,
-          rightEntity: RightService.RightEntities.ENTRANCE,
-          rightAction: RightService.RightActions.VIEW_COMPLETE,
-        })
-      : true; // No need to call checkRight if it's not a sensitive entrance
+      ? RightService.hasGroup(token.groups, RightService.G.ADMINISTRATOR)
+      : true; // No need to call hasRight if it's not a sensitive entrance
     /* eslint-disable no-param-reassign */
     return Promise.all(
       HEntrances.map(async (entrance) => {

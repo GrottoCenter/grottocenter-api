@@ -4,7 +4,6 @@ const AuthService = require('../../../services/AuthService');
 const TokenService = require('../../../services/TokenService');
 
 const ErrorService = require('../../../services/ErrorService');
-const RightService = require('../../../services/RightService');
 
 const { createHashedPassword } = AuthService;
 
@@ -30,22 +29,6 @@ module.exports = async (req, res) => {
   }
 
   if (req.token) {
-    const hasRight = await sails.helpers.checkRight
-      .with({
-        groups: req.token.groups,
-        rightEntity: RightService.RightEntities.CAVER,
-        rightAction: RightService.RightActions.EDIT_OWN,
-      })
-      .intercept('rightNotFound', () =>
-        res.serverError(
-          'A server error occured when checking your right to change your account information.'
-        )
-      );
-    if (!hasRight) {
-      return res.forbidden(
-        'You are not authorized to change your account information.'
-      );
-    }
     // password update
     try {
       await TCaver.updateOne({

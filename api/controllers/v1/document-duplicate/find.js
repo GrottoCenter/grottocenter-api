@@ -1,9 +1,20 @@
 const ControllerService = require('../../../services/ControllerService');
 const DescriptionService = require('../../../services/DescriptionService');
 const DocumentService = require('../../../services/DocumentService');
+const RightService = require('../../../services/RightService');
 const { toDocumentDuplicate } = require('../../../services/mapping/converters');
 
 module.exports = async (req, res) => {
+  const hasRight = RightService.hasGroup(
+    req.token.groups,
+    RightService.G.MODERATOR
+  );
+  if (!hasRight) {
+    return res.forbidden(
+      'You are not authorized to find a document duplicate.'
+    );
+  }
+
   if (
     !(await sails.helpers.checkIfExists.with({
       attributeName: 'id',

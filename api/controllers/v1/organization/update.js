@@ -4,7 +4,6 @@ const GrottoService = require('../../../services/GrottoService');
 const NameService = require('../../../services/NameService');
 const NotificationService = require('../../../services/NotificationService');
 const GeocodingService = require('../../../services/GeocodingService');
-const RightService = require('../../../services/RightService');
 const { toOrganization } = require('../../../services/mapping/converters');
 const {
   NOTIFICATION_TYPES,
@@ -12,22 +11,6 @@ const {
 } = require('../../../services/NotificationService');
 
 module.exports = async (req, res) => {
-  // Check right
-  const hasRight = await sails.helpers.checkRight
-    .with({
-      groups: req.token.groups,
-      rightEntity: RightService.RightEntities.ORGANIZATION,
-      rightAction: RightService.RightActions.EDIT_ANY,
-    })
-    .intercept('rightNotFound', () =>
-      res.serverError(
-        'A server error occured when checking your right to update an organization.'
-      )
-    );
-  if (!hasRight) {
-    return res.forbidden('You are not authorized to update an organization.');
-  }
-
   // Check if organization exists
   const organizationId = req.param('id');
   const currentOrganization = await TGrotto.findOne(organizationId);

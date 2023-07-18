@@ -3,20 +3,12 @@ const ErrorService = require('../../../services/ErrorService');
 const RightService = require('../../../services/RightService');
 
 const { checkIfExists } = sails.helpers;
-const { checkRight } = sails.helpers;
 
 module.exports = async (req, res) => {
-  const hasRight = await checkRight
-    .with({
-      groups: req.token.groups,
-      rightEntity: RightService.RightEntities.CAVE,
-      rightAction: RightService.RightActions.DELETE_ANY,
-    })
-    .intercept('rightNotFound', () =>
-      res.serverError(
-        'A server error occured when checking your right to delete a cave.'
-      )
-    );
+  const hasRight = RightService.hasGroup(
+    req.token.groups,
+    RightService.G.MODERATOR
+  );
   if (!hasRight) {
     return res.forbidden('You are not authorized to delete a cave.');
   }
@@ -45,23 +37,6 @@ module.exports = async (req, res) => {
       );
     }
 
-    // Check right
-    const hasMergeRight = await checkRight
-      .with({
-        groups: req.token.groups,
-        rightEntity: RightService.RightEntities.CAVE,
-        rightAction: RightService.RightActions.MERGE,
-      })
-      .intercept('rightNotFound', () =>
-        res.serverError(
-          'A server error occured when checking your right to merge a cave into another one.'
-        )
-      );
-    if (!hasMergeRight) {
-      return res.forbidden(
-        'You are not authorized to merge a cave into another one.'
-      );
-    }
     try {
       await CaveService.mergeCaves(caveId, destinationCaveId);
     } catch (e) {

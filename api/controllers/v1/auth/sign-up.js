@@ -55,13 +55,11 @@ module.exports = async (req, res) => {
       password: await AuthService.createHashedPassword(req.param('password')),
       surname: req.param('surname') === '' ? null : req.param('surname'),
     }).fetch();
-    const userGroup = await TGroup.findOne({ name: 'User' });
-    await TCaver.addToCollection(newCaver.id, 'groups', userGroup.id);
 
     ElasticsearchService.create('cavers', newCaver.id, {
       tags: ['caver'],
       id: newCaver.id,
-      groups: String(userGroup.id),
+      groups: '',
       mail: newCaver.mail,
       name: newCaver.name,
       nickname: newCaver.nickname,

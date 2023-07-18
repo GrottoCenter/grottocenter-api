@@ -4,7 +4,6 @@ const ElasticsearchService = require('../../../services/ElasticsearchService');
 const ErrorService = require('../../../services/ErrorService');
 const MassifService = require('../../../services/MassifService');
 const NotificationService = require('../../../services/NotificationService');
-const RightService = require('../../../services/RightService');
 const RecentChangeService = require('../../../services/RecentChangeService');
 const {
   NOTIFICATION_TYPES,
@@ -13,24 +12,7 @@ const {
 
 // eslint-disable-next-line consistent-return
 module.exports = async (req, res) => {
-  // Check right
-  const hasRight = await sails.helpers.checkRight
-    .with({
-      groups: req.token.groups,
-      rightEntity: RightService.RightEntities.MASSIF,
-      rightAction: RightService.RightActions.CREATE,
-    })
-    .intercept('rightNotFound', () =>
-      res.serverError(
-        'A server error occured when checking your right to create a massif.'
-      )
-    );
-  if (!hasRight) {
-    return res.forbidden('You are not authorized to create a massif.');
-  }
-
   // Check params
-
   const requiredParams = [
     'name',
     'description',

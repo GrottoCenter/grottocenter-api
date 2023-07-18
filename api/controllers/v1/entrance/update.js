@@ -11,22 +11,7 @@ const NotificationService = require('../../../services/NotificationService');
 const RightService = require('../../../services/RightService');
 const { toEntrance } = require('../../../services/mapping/converters');
 
-const checkRight = sails.helpers.checkRight.with;
-
 module.exports = async (req, res) => {
-  const hasRight = await checkRight({
-    groups: req.token.groups,
-    rightEntity: RightService.RightEntities.ENTRANCE,
-    rightAction: RightService.RightActions.EDIT_ANY,
-  }).intercept('rightNotFound', () =>
-    res.serverError(
-      'A server error occured when checking your right to update an entrance.'
-    )
-  );
-  if (!hasRight) {
-    return res.forbidden('You are not authorized to update an entrance.');
-  }
-
   try {
     const entranceId = req.param('id');
     const currentEntrance = await TEntrance.findOne(entranceId);
@@ -45,27 +30,17 @@ module.exports = async (req, res) => {
     // Check if sensitive change is permitted
     const newIsSensitiveValue = cleanedData.isSensitive;
     if (
-      newIsSensitiveValue !== undefined &&
+      newIsSensitiveValue === false &&
       newIsSensitiveValue !== currentEntrance.isSensitive
     ) {
-      const hasSensitiveRight = await checkRight({
-        groups: req.token.groups,
-        rightEntity: RightService.RightEntities.ENTRANCE,
-        rightAction: newIsSensitiveValue
-          ? RightService.RightActions.MARK_AS_SENSITIVE
-          : RightService.RightActions.UNMARK_AS_SENSITIVE,
-      }).intercept('rightNotFound', () =>
-        res.serverError(
-          `A server error occured when checking your right to ${
-            newIsSensitiveValue ? 'un' : ''
-          }mark an entrance as sensitive.`
-        )
+      // Only administrator can remove the sensitive property of an entrance
+      const hasSensitiveRight = RightService.hasGroup(
+        req.token.groups,
+        RightService.G.ADMINISTRATOR
       );
       if (!hasSensitiveRight) {
         return res.forbidden(
-          `You are not authorized to ${
-            newIsSensitiveValue ? 'un' : ''
-          }mark an entrance as sensitive.`
+          `You are not authorized to unmark an entrance as sensitive.`
         );
       }
     }

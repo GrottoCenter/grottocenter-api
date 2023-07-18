@@ -3,9 +3,9 @@ const should = require('should');
 const AuthTokenService = require('../../AuthTokenService');
 
 describe('Cave features', () => {
-  let adminToken;
+  let moderatorToken;
   before(async () => {
-    adminToken = await AuthTokenService.getRawBearerAdminToken();
+    moderatorToken = await AuthTokenService.getRawBearerModeratorToken();
   });
 
   describe('Delete', () => {
@@ -13,7 +13,7 @@ describe('Cave features', () => {
       it('should return code 400 on inexisting cave', (done) => {
         supertest(sails.hooks.http.app)
           .delete(`/api/v1/caves/${987654321}`)
-          .set('Authorization', adminToken)
+          .set('Authorization', moderatorToken)
           .set('Content-type', 'application/json')
           .set('Accept', 'application/json')
           .expect(400, done);
@@ -33,7 +33,7 @@ describe('Cave features', () => {
       it('should return code 204', (done) => {
         supertest(sails.hooks.http.app)
           .delete(`/api/v1/caves/${caveToDeleteId}`)
-          .set('Authorization', adminToken)
+          .set('Authorization', moderatorToken)
           .set('Content-type', 'application/json')
           .set('Accept', 'application/json')
           .expect(204, done);
@@ -57,7 +57,7 @@ describe('Cave features', () => {
         supertest(sails.hooks.http.app)
           .delete(`/api/v1/caves/${caveToDeleteId}`)
           .send({ destinationCaveForOrphan: 123456789 })
-          .set('Authorization', adminToken)
+          .set('Authorization', moderatorToken)
           .set('Content-type', 'application/json')
           .set('Accept', 'application/json')
           .expect(400, done);
@@ -103,7 +103,7 @@ describe('Cave features', () => {
         supertest(sails.hooks.http.app)
           .delete(`/api/v1/caves/${sourceCaveId}`)
           .send({ destinationCaveForOrphan: destinationCaveId })
-          .set('Authorization', adminToken)
+          .set('Authorization', moderatorToken)
           .set('Content-type', 'application/json')
           .set('Accept', 'application/json')
           .expect(204, done);

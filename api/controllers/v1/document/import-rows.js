@@ -6,17 +6,10 @@ const RightService = require('../../../services/RightService');
 const { doubleCheck } = sails.helpers.csvhelpers;
 
 module.exports = async (req, res) => {
-  const hasRight = await sails.helpers.checkRight
-    .with({
-      groups: req.token.groups,
-      rightEntity: RightService.RightEntities.DOCUMENT,
-      rightAction: RightService.RightActions.CSV_IMPORT,
-    })
-    .intercept('rightNotFound', () =>
-      res.serverError(
-        'A server error occured when checking your right to import documents via CSV.'
-      )
-    );
+  const hasRight = RightService.hasGroup(
+    req.token.groups,
+    RightService.G.ADMINISTRATOR
+  );
   if (!hasRight) {
     return res.forbidden('You are not authorized to import documents via CSV.');
   }
