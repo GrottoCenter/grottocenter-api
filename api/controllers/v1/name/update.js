@@ -1,26 +1,8 @@
 const ControllerService = require('../../../services/ControllerService');
 const ErrorService = require('../../../services/ErrorService');
-const RightService = require('../../../services/RightService');
 const { toName } = require('../../../services/mapping/converters');
 
 module.exports = async (req, res) => {
-  // Check right
-  const hasRight = await sails.helpers.checkRight
-    .with({
-      groups: req.token.groups,
-      rightEntity: RightService.RightEntities.NAME,
-      rightAction: RightService.RightActions.EDIT_ANY,
-    })
-    .intercept('rightNotFound', () =>
-      res.serverError(
-        'A server error occured when checking your right to update any name.'
-      )
-    );
-
-  if (!hasRight) {
-    return res.forbidden('You are not authorized to update any name.');
-  }
-
   // Check if name exists
   const nameId = req.param('id');
   const currentName = await TName.findOne(nameId);

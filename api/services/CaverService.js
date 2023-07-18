@@ -96,21 +96,6 @@ module.exports = {
 
     if (!caver) return caver; // not found return
 
-    // Check complete view right
-    const hasCompleteViewRight = req.token
-      ? await sails.helpers.checkRight
-          .with({
-            groups: req.token.groups,
-            rightEntity: RightService.RightEntities.CAVER,
-            rightAction: RightService.RightActions.VIEW_COMPLETE,
-          })
-          .tolerate('rightNotFound', () => {
-            // Silently fail
-            sails.log.warn('Right Caver - view complete not found');
-            return false;
-          })
-      : false;
-
     // Delete sensitive data
     delete caver.activationCode;
     delete caver.password;
@@ -122,6 +107,13 @@ module.exports = {
       return caver;
     }
 
+    // Check complete view right
+    const hasCompleteViewRight = req.token
+      ? await RightService.hasGroup(
+          req.token.groups,
+          RightService.G.ADMINISTRATOR
+        )
+      : false;
     if (hasCompleteViewRight) {
       return caver;
     }

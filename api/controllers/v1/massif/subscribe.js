@@ -2,21 +2,13 @@ const ErrorService = require('../../../services/ErrorService');
 const RightService = require('../../../services/RightService');
 
 const { checkIfExists } = sails.helpers;
-const { checkRight } = sails.helpers;
 
 module.exports = async (req, res) => {
   // Check right
-  const hasRight = await checkRight
-    .with({
-      groups: req.token.groups,
-      rightEntity: RightService.RightEntities.MASSIF,
-      rightAction: RightService.RightActions.SUBSCRIBE,
-    })
-    .intercept('rightNotFound', () =>
-      res.serverError(
-        'A server error occured when checking your right to subscribe to a massif.'
-      )
-    );
+  const hasRight = RightService.hasGroup(
+    req.token.groups,
+    RightService.G.LEADER
+  );
   if (!hasRight) {
     return res.forbidden('You are not authorized to subscribe to a massif.');
   }

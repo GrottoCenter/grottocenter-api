@@ -13,27 +13,18 @@ module.exports = async (req, res) => {
     id: req.param('id'),
     modifiedDocJson: { '!=': null },
   });
-  const rightAction = docWithModif
-    ? RightService.RightActions.EDIT_NOT_VALIDATED
-    : RightService.RightActions.EDIT_ANY;
-  const hasRight = await sails.helpers.checkRight
-    .with({
-      groups: req.token.groups,
-      rightEntity: RightService.RightEntities.DOCUMENT,
-      rightAction,
-    })
-    .intercept('rightNotFound', () =>
-      res.serverError(
-        'A server error occured when checking your right to update a document.'
-      )
+
+  if (docWithModif) {
+    const hasRight = RightService.hasGroup(
+      req.token.groups,
+      RightService.G.MODERATOR
     );
 
-  if (!hasRight) {
-    return res.forbidden(
-      `You are not authorized to update a document${
-        docWithModif && ' with modifications waiting a moderator approval'
-      }.`
-    );
+    if (!hasRight) {
+      return res.forbidden(
+        `You are not authorized to update a document with modifications waiting a moderator approval.`
+      );
+    }
   }
 
   // Add new files

@@ -9,8 +9,6 @@ const RightService = require('../../../services/RightService');
 const CommentService = require('../../../services/CommentService');
 const { toSimpleComment } = require('../../../services/mapping/converters');
 
-const { checkRight } = sails.helpers;
-
 module.exports = async (req, res) => {
   try {
     const commentId = req.param('id');
@@ -22,22 +20,15 @@ module.exports = async (req, res) => {
       });
     }
 
-    const hasRight = await checkRight
-      .with({
-        groups: req.token.groups,
-        rightEntity: RightService.RightEntities.COMMENT,
-        rightAction:
-          req.token.id === rawComment.author
-            ? RightService.RightActions.EDIT_OWN
-            : RightService.RightActions.EDIT_ANY,
-      })
-      .intercept('rightNotFound', () =>
-        res.serverError(
-          'A server error occured when checking your right to update any comment.'
-        )
+    if (req.token.id !== rawComment.author) {
+      const hasRight = RightService.hasGroup(
+        req.token.groups,
+        RightService.G.MODERATOR
       );
-    if (!hasRight) {
-      return res.forbidden('You are not authorized to update any/own comment.');
+
+      if (!hasRight) {
+        return res.forbidden('You are not authorized to update any comment.');
+      }
     }
 
     const newTitle = req.param('title');

@@ -24,14 +24,6 @@ describe('CaverService', () => {
           name: 'Moderator',
         },
         {
-          id: 3,
-          name: 'User',
-        },
-        {
-          id: 4,
-          name: 'Visitor',
-        },
-        {
           id: 5,
           name: 'Leader',
         },

@@ -53,12 +53,8 @@ module.exports = {
       }
 
       const hasRight = isSensitive
-        ? await sails.helpers.checkRight.with({
-            groups: token.groups,
-            rightEntity: RightService.RightEntities.ENTRANCE,
-            rightAction: RightService.RightActions.VIEW_COMPLETE,
-          })
-        : true; // No need to call checkRight if it's not a sensitive entrance
+        ? RightService.hasGroup(token.groups, RightService.G.ADMINISTRATOR)
+        : true; // No need to call hasGroup if it's not a sensitive entrance
 
       if (isSensitive && !hasRight) {
         res.error = '403';

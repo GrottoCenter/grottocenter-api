@@ -17,38 +17,13 @@ module.exports = async (req, res) => {
   // Check right
   const caverId = req.param('caverId');
 
-  const hasRightOfUser = await sails.helpers.checkRight
-    .with({
-      groups: req.token.groups,
-      rightEntity: RightService.RightEntities.CAVER,
-      rightAction: RightService.RightActions.EDIT_OWN,
-    })
-    .intercept('rightNotFound', () =>
-      res.serverError(
-        'A server error occured when checking your right to update a caver.'
-      )
-    );
+  const hasRightOfAdmin = RightService.hasGroup(
+    req.token.groups,
+    RightService.G.ADMINISTRATOR
+  );
 
-  const hasRightOfAdmin = await sails.helpers.checkRight
-    .with({
-      groups: req.token.groups,
-      rightEntity: RightService.RightEntities.CAVER,
-      rightAction: RightService.RightActions.EDIT_ANY,
-    })
-    .intercept('rightNotFound', () =>
-      res.serverError(
-        'A server error occured when checking your right to update a caver.'
-      )
-    );
-
-  if (!hasRightOfAdmin) {
-    if (!hasRightOfUser) {
-      return res.forbidden('You are not authorized to update a caver.');
-    }
-
-    if (Number(caverId) !== req.token.id) {
-      return res.forbidden('You can not edit an other account than yours.');
-    }
+  if (!hasRightOfAdmin && Number(caverId) !== req.token.id) {
+    return res.forbidden('You can not edit an other account than yours.');
   }
 
   // Check if caver exists

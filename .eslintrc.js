@@ -46,7 +46,6 @@ module.exports = {
     TPoint: 'readonly',
     TRegion: 'readonly',
     TRigging: 'readonly',
-    TRight: 'readonly',
     TSubject: 'readonly',
     TType: 'readonly',
     sails: 'readonly',

@@ -105,15 +105,6 @@ CREATE TABLE t_license (
 	url varchar(100) NOT NULL,
 	CONSTRAINT t_license_pk PRIMARY KEY (id)
 );
--- t_right definition
--- Drop table
--- DROP TABLE t_right;
-CREATE TABLE t_right (
-	id smallserial NOT NULL,
-	"name" varchar(200) NOT NULL,
-	"comments" varchar(1000) NULL,
-	CONSTRAINT t_right_pk PRIMARY KEY (id)
-);
 -- j_country_language definition
 -- Drop table
 -- DROP TABLE j_country_language;
@@ -125,16 +116,6 @@ CREATE TABLE j_country_language (
 	CONSTRAINT j_country_language_pk PRIMARY KEY (id_country, id_language),
 	CONSTRAINT j_country_language0_fk FOREIGN KEY (id_country) REFERENCES t_country(iso),
 	CONSTRAINT j_country_language1_fk FOREIGN KEY (id_language) REFERENCES t_language(id)
-);
--- j_group_right definition
--- Drop table
--- DROP TABLE j_group_right;
-CREATE TABLE j_group_right (
-	id_group int2 NOT NULL,
-	id_right int2 NOT NULL,
-	CONSTRAINT j_group_right_pk PRIMARY KEY (id_group, id_right),
-	CONSTRAINT j_group_right_t_group_fk FOREIGN KEY (id_group) REFERENCES t_group(id),
-	CONSTRAINT j_group_right_t_right0_fk FOREIGN KEY (id_right) REFERENCES t_right(id)
 );
 -- t_caver definition
 -- Drop table

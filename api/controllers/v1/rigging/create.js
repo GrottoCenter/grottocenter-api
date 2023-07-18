@@ -6,29 +6,12 @@ const {
   NOTIFICATION_ENTITIES,
 } = require('../../../services/NotificationService');
 const NotificationService = require('../../../services/NotificationService');
-const RightService = require('../../../services/RightService');
 const RiggingService = require('../../../services/RiggingService');
 const ParametersValidatorService = require('../../../services/ParametersValidatorService');
 const { toSimpleRigging } = require('../../../services/mapping/converters');
 
 module.exports = async (req, res) => {
   try {
-    // Check right
-    const hasRight = await sails.helpers.checkRight
-      .with({
-        groups: req.token.groups,
-        rightEntity: RightService.RightEntities.RIGGING,
-        rightAction: RightService.RightActions.CREATE,
-      })
-      .intercept('rightNotFound', () =>
-        res.serverError(
-          'A server error occurred when checking your right to create a rigging.'
-        )
-      );
-    if (!hasRight) {
-      return res.forbidden('You are not authorized to create a rigging.');
-    }
-
     const mandatoryParams = ParametersValidatorService.checkAllExist(req, res, [
       'title',
       'language',

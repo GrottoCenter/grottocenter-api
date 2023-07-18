@@ -37,7 +37,6 @@ before(function (done) {
       fixted.populate(
         [
           'tlanguage',
-          'tright',
           'tidentifiertype',
           'tsubject',
           'ttype',

@@ -1,6 +1,7 @@
 const ControllerService = require('../../../services/ControllerService');
 const DocumentService = require('../../../services/DocumentService');
 const NotificationService = require('../../../services/NotificationService');
+const RightService = require('../../../services/RightService');
 const {
   NOTIFICATION_TYPES,
   NOTIFICATION_ENTITIES,
@@ -8,6 +9,14 @@ const {
 
 // eslint-disable-next-line consistent-return
 module.exports = (req, res) => {
+  const hasRight = RightService.hasGroup(
+    req.token.groups,
+    RightService.G.MODERATOR
+  );
+  if (!hasRight) {
+    return res.forbidden('You are not authorized to validate a document.');
+  }
+
   const isValidated = req.param('isValidated')
     ? !(req.param('isValidated').toLowerCase() === 'false')
     : true;

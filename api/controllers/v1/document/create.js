@@ -3,24 +3,8 @@ const ControllerService = require('../../../services/ControllerService');
 const DocumentService = require('../../../services/DocumentService');
 const ErrorService = require('../../../services/ErrorService');
 const FileService = require('../../../services/FileService');
-const RightService = require('../../../services/RightService');
 
 module.exports = async (req, res) => {
-  const hasRight = await sails.helpers.checkRight
-    .with({
-      groups: req.token.groups,
-      rightEntity: RightService.RightEntities.DOCUMENT,
-      rightAction: RightService.RightActions.CREATE,
-    })
-    .intercept('rightNotFound', () =>
-      res.serverError(
-        'A server error occured when checking your right to create a document.'
-      )
-    );
-  if (!hasRight) {
-    return res.forbidden('You are not authorized to create a document.');
-  }
-
   const dataFromClient = await DocumentService.getConvertedDataFromClient(req);
 
   const cleanedData = {
