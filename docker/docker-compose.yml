@@ -3,6 +3,8 @@ version: '3.3'
 # Date: Feb 13 2021
 # Requirement: docker, docker-compose
 
+name: grottocenter
+
 services:
   dbserver:
     container_name: ${POSTGRES_CONTAINER_NAME}
