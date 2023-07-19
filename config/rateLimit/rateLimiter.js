@@ -1,141 +1,137 @@
 const rateLimit = require('express-rate-limit');
-const RightService = require('../../api/services/RightService');
+
+const RATE_LIMIT_WINDOW = 600000; // 10 minutes
+const DELETE_RATE_LIMIT_WINDOW = 3600000; // 1 hour
+
+const VISITOR_RATE_LIMIT_PER_WINDOW = 200;
+const USER_RATE_LIMIT_PER_WINDOW = 400;
+const USER_DELETE_RATE_LIMIT_PER_WINDOW = 1;
+const DELETE_RATE_LIMIT_PER_WINDOW = 20;
+const LEADER_RATE_LIMIT_PER_WINDOW = 1000;
+const MODERATOR_RATE_LIMIT_PER_WINDOW = 10000;
+
+const ADMIN_GROUP_NAME = 'Administrator';
+const LEADER_GROUP_NAME = 'Leader';
+const MODERATOR_GROUP_NAME = 'Moderator';
+
+const isAdmin = (token) =>
+  token?.groups.some((g) => g.name === ADMIN_GROUP_NAME);
+const isLeader = (token) =>
+  token?.groups.some((g) => g.name === LEADER_GROUP_NAME);
+const isModerator = (token) =>
+  token?.groups.some((g) => g.name === MODERATOR_GROUP_NAME);
+
+// If an user is from group X, it is also from other "less important" groups.
+// Admin > Moderator > Leader > User
+// So, to check only with isUser() is not enough to know the "real" group of an user
+const isMoreThanUser = (token) =>
+  isLeader(token) || isModerator(token) || isAdmin(token);
+const isMoreThanLeader = (token) => isModerator(token) || isAdmin(token);
+const isMoreThanModerator = (token) => isAdmin(token);
+
+const isFromAnotherAppAndNotInTest = (req) =>
+  req.headers.origin !== sails.config.custom.baseUrl &&
+  process.env.NODE_ENV !== 'test';
 
 module.exports = {
-  generalRateLimit: rateLimit({
-    windowMs: process.env.RATE_LIMIT_WINDOW
-      ? process.env.RATE_LIMIT_WINDOWS
-      : 1 * 30 * 1000, // 30 seconds
-    max: process.env.RATE_LIMIT_PER_WINDOW
-      ? process.env.RATE_LIMIT_PER_WINDOW
-      : 100, // limit each IP to 100 requests per windowMs
-    message: 'Too many requests with the same IP, try again later.',
-    standardHeaders: true,
-    statusCode: 429,
-    skip: async (req, res) => {
-      // Ignore OPTIONS request
-      if (req.method.toUpperCase() === 'OPTIONS') {
-        return true;
-      }
-
-      // Currently, ignore limiting when in test
-      if (process.env.NODE_ENV === 'test') {
-        return true;
-      }
-
-      // If you are not authenticated, you are limited
-      if (!req.token) {
-        return false;
-      }
-      const hasNoRequestLimit = await sails.helpers.checkRight
-        .with({
-          groups: req.token.groups,
-          rightEntity: RightService.RightEntities.APPLICATION,
-          rightAction: RightService.RightActions.NO_REQUEST_LIMIT,
-        })
-        .intercept('rightNotFound', () =>
-          res.serverError(
-            'A server error occured when checking your right to not having a request limit.'
-          )
-        );
-
-      return hasNoRequestLimit;
-    },
-  }),
-
-  userDeleteRateLimit: rateLimit({
-    windowMs: process.env.USER_DELETE_RATE_LIMIT_WINDOWS
-      ? process.env.USER_DELETE_RATE_LIMIT_WINDOWS
-      : 12 * 60 * 60 * 1000, // 12h
-    max: process.env.USER_DELETE_RATE_LIMIT_PER_WINDOW
-      ? process.env.USER_DELETE_RATE_LIMIT_PER_WINDOW
-      : 1, // limit each IP to 1 request per windowMs
+  visitorRateLimit: rateLimit({
+    windowMs: RATE_LIMIT_WINDOW,
+    max: VISITOR_RATE_LIMIT_PER_WINDOW,
     message:
-      'Too many DELETE requests with the same IP as an user, try again later.',
+      'Too many requests with the same IP as a visitor, try again later.',
     standardHeaders: true,
     statusCode: 429,
-    skip: async (req, res) => {
-      // Ignore request others than DELETE
-      if (req.method.toUpperCase() !== 'DELETE') {
-        return true;
-      }
-      // If you are not authenticated, you are limited
-      if (!req.token) {
-        return false;
-      }
-      // If the request doesn't come from our main client and the app is not in test phase,
-      // you are limited
+    skip: async (req /* , res */) => {
+      /* Ignore:
+        - OPTIONS requests
+        - login route
+        - api in test env
+       */
       if (
-        req.headers.origin !== sails.config.custom.baseUrl &&
-        process.env.NODE_ENV !== 'test'
+        req.method.toUpperCase() === 'OPTIONS' ||
+        req.originalUrl.includes('login') ||
+        process.env.NODE_ENV === 'test'
       ) {
-        sails.log.error(
-          `User ${req.token.nickname} (id=${req.token.id}) is being limited because the request doesn't come from our main client app.`
-        );
-        return false;
+        return true;
       }
 
-      const hasNoRequestLimit = await sails.helpers.checkRight
-        .with({
-          groups: req.token.groups,
-          rightEntity: RightService.RightEntities.APPLICATION,
-          rightAction: RightService.RightActions.NO_USER_DELETE_REQUEST_LIMIT,
-        })
-        .intercept('rightNotFound', () =>
-          res.serverError(
-            'A server error occured when checking your right to not having a request limit on DELETE actions.'
-          )
-        );
-      if (!hasNoRequestLimit) {
-        sails.log.error(
-          `User ${req.token.nickname} (id=${req.token.id}) is being limited on DELETE requests as an user.`
-        );
-      }
-
-      return hasNoRequestLimit;
+      // If you are not authenticated, you are limited
+      return !!req.token;
     },
   }),
 
-  moderatorDeleteRateLimit: rateLimit({
-    windowMs: process.env.MODERATOR_DELETE_RATE_LIMIT_WINDOWS
-      ? process.env.MODERATOR_DELETE_RATE_LIMIT_WINDOWS
-      : 1 * 60 * 60 * 1000, // 1h
-    max: process.env.MODERATOR_DELETE_RATE_LIMIT_PER_WINDOW
-      ? process.env.MODERATOR_DELETE_RATE_LIMIT_PER_WINDOW
-      : 20, // limit each IP to  request per windowMs
+  authenticatedRateLimit: rateLimit({
+    windowMs: RATE_LIMIT_WINDOW,
+    max: (req) => {
+      if (!isMoreThanUser(req.token)) {
+        return USER_RATE_LIMIT_PER_WINDOW;
+      }
+      if (!isMoreThanLeader(req.token)) {
+        return LEADER_RATE_LIMIT_PER_WINDOW;
+      }
+      if (!isMoreThanModerator(req.token)) {
+        return MODERATOR_RATE_LIMIT_PER_WINDOW;
+      }
+      return 0;
+    },
     message:
-      'Too many DELETE requests with the same IP as a moderator, try again later.',
+      'Too many requests with the same IP as an authenticated user, try again later.',
     standardHeaders: true,
     statusCode: 429,
-    skip: async (req, res) => {
-      // Ignore request others than DELETE
-      if (req.method.toUpperCase() !== 'DELETE') {
+    skip: async (req /* , res */) => {
+      // Ignore DELETE requests (see userDeleteRateLimit below)
+      if (req.method.toUpperCase() === 'DELETE') {
         return true;
       }
+
+      // If you are not authenticated, you are limited
       if (!req.token) {
         return false;
       }
 
-      const hasNoRequestLimit = await sails.helpers.checkRight
-        .with({
-          groups: req.token.groups,
-          rightEntity: RightService.RightEntities.APPLICATION,
-          rightAction:
-            RightService.RightActions.NO_MODERATOR_DELETE_REQUEST_LIMIT,
-        })
-        .intercept('rightNotFound', () =>
-          res.serverError(
-            'A server error occured when checking your right to not having a request limit on DELETE actions.'
-          )
-        );
-
-      if (!hasNoRequestLimit) {
+      if (isFromAnotherAppAndNotInTest(req)) {
         sails.log.error(
-          `User ${req.token.nickname} (id=${req.token.id}) is being limited on DELETE requests as an user.`
+          `${req.token.nickname} (id=${req.token.id}) is being limited because the request doesn't come from our main client app.`
         );
+        return false;
       }
 
-      return hasNoRequestLimit;
+      return false;
+    },
+  }),
+
+  deleteRateLimit: rateLimit({
+    windowMs: DELETE_RATE_LIMIT_WINDOW,
+    max: (req) => {
+      if (!isMoreThanUser(req.token)) {
+        return USER_DELETE_RATE_LIMIT_PER_WINDOW;
+      }
+      if (isAdmin(req.token)) {
+        return 0; // no limiting for admins
+      }
+      return DELETE_RATE_LIMIT_PER_WINDOW;
+    },
+    message: 'Too many DELETE requests with the same IP, try again later.',
+    standardHeaders: true,
+    statusCode: 429,
+    skip: async (req /* , res */) => {
+      // Ignore request others than DELETE
+      if (req.method.toUpperCase() !== 'DELETE') {
+        return true;
+      }
+      // If you are not authenticated, you are limited
+      if (!req.token) {
+        return false;
+      }
+
+      if (isFromAnotherAppAndNotInTest(req)) {
+        sails.log.error(
+          `${req.token.nickname} (id=${req.token.id}) is being limited because the request doesn't come from our main client app.`
+        );
+        return false;
+      }
+
+      return true;
     },
   }),
 };
