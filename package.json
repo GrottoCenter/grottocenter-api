@@ -7,7 +7,7 @@
   "license": "CC-BY-SA-3.0",
   "keywords": [],
   "dependencies": {
-    "@aws-sdk/client-ses": "^3.350.0",
+    "@aws-sdk/client-ses": "^3.370.0",
     "@azure/storage-blob": "^12.14.0",
     "archiver": "^5.3.1",
     "argon2": "^0.30.3",
@@ -49,7 +49,7 @@
   },
   "devDependencies": {
     "@commitlint/cli": "^17.6.5",
-    "@commitlint/config-conventional": "^17.6.5",
+    "@commitlint/config-conventional": "^17.6.7",
     "coveralls": "^3.1.1",
     "cross-env": "^7.0.3",
     "eslint": "^8.39.0",
