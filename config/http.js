@@ -26,9 +26,9 @@ module.exports.http = {
 
   middleware: {
     // Requests limiter configuration
-    generalRateLimit: rateLimiter.generalRateLimit,
-    userDeleteRateLimit: rateLimiter.userDeleteRateLimit,
-    moderatorDeleteRateLimit: rateLimiter.moderatorDeleteRateLimit,
+    visitorRateLimit: rateLimiter.visitorRateLimit,
+    authenticatedRateLimit: rateLimiter.authenticatedRateLimit,
+    deleteRateLimit: rateLimiter.deleteRateLimit,
 
     /** *************************************************************************
      *                                                                          *
@@ -39,9 +39,9 @@ module.exports.http = {
 
     order: [
       'parseAuthToken',
-      'generalRateLimit',
-      'userDeleteRateLimit',
-      'moderatorDeleteRateLimit',
+      'visitorRateLimit',
+      'authenticatedRateLimit',
+      'deleteRateLimit',
       'responseTimeLogger',
       'requestLogger',
       'fileMiddleware',
