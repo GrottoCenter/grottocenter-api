@@ -33,8 +33,6 @@ const c = {
     temperature: source.temperature,
     isDeleted: source.isDeleted,
     isDiving: source.isDiving,
-    latitude: parseFloat(source.latitude),
-    longitude: parseFloat(source.longitude),
 
     names: toList('names', source, c.toName),
     descriptions: toList('descriptions', source, c.toSimpleDescription),
@@ -456,8 +454,8 @@ const c = {
     result.dateReviewed = source.dateReviewed;
     result.discoveryYear = source.yearDiscovery;
     result.externalUrl = source.externalUrl;
-    result.latitude = parseFloat(source.latitude);
-    result.longitude = parseFloat(source.longitude);
+    result.latitude = source.isSensitive ? null : parseFloat(source.latitude);
+    result.longitude = source.isSensitive ? null : parseFloat(source.longitude);
     result.name = getMainName(source);
     result.country = source.country;
     result.countryCode = source['country code'];
@@ -493,7 +491,9 @@ const c = {
     result.comments = toList('comments', source, c.toSimpleComment);
     result.documents = toList('documents', source, c.toDocument);
     result.histories = toList('histories', source, c.toSimpleHistory);
-    result.locations = toList('locations', source, c.toSimpleLocation);
+    result.locations = source.isSensitive
+      ? []
+      : toList('locations', source, c.toSimpleLocation);
     result.riggings = toList('riggings', source, c.toSimpleRigging);
     // Massif from Elasticsearch
     if (source['massif name']) {
@@ -530,8 +530,9 @@ const c = {
     county: source.county,
     city: source.city,
     iso_3166_2: source.iso_3166_2,
-    latitude: parseFloat(source.latitude),
-    longitude: parseFloat(source.longitude),
+    latitude: source.isSensitive ? null : parseFloat(source.latitude),
+    longitude: source.isSensitive ? null : parseFloat(source.longitude),
+    isSensitive: source.isSensitive,
     isDeleted: source.isDeleted,
   }),
 
