@@ -62,9 +62,7 @@ describe('Cave features', () => {
         const newValues = {
           depth: 100,
           isDiving: true,
-          latitude: 33,
           length: 100,
-          longitude: 55,
           temperature: 10,
         };
         supertest(sails.hooks.http.app)

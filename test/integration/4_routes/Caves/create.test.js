@@ -81,9 +81,7 @@ describe('Cave features', () => {
             should(cave.documents.length).equal(
               caveCreationData.documents.length
             );
-            should(cave.latitude).equal(caveCreationData.latitude);
             should(cave.length).equal(caveCreationData.length);
-            should(cave.longitude).equal(caveCreationData.longitude);
             should(cave.temperature).equal(caveCreationData.temperature);
 
             createdCave = cave;
