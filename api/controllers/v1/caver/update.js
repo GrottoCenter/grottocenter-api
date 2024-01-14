@@ -1,7 +1,7 @@
 const ControllerService = require('../../../services/ControllerService');
 const ErrorService = require('../../../services/ErrorService');
 const RightService = require('../../../services/RightService');
-const { toCaver } = require('../../../services/mapping/converters');
+const { toSimpleCaver } = require('../../../services/mapping/converters');
 
 module.exports = async (req, res) => {
   // list of propreties to update
@@ -64,15 +64,13 @@ module.exports = async (req, res) => {
     }
     const updatedCaver = await TCaver.updateOne(caverId).set(req.body);
 
-    const params = {};
-    params.controllerMethod = 'CaverController.update';
     return ControllerService.treatAndConvert(
       req,
       null,
       updatedCaver,
-      params,
+      { controllerMethod: 'CaverController.update' },
       res,
-      toCaver
+      toSimpleCaver
     );
   } catch (e) {
     return ErrorService.getDefaultErrorHandler(res)(e);

@@ -1,10 +1,23 @@
 const ControllerService = require('../../../services/ControllerService');
+const GrottoService = require('../../../services/GrottoService');
+const {
+  toOrganization,
+  toDeletedOrganization,
+} = require('../../../services/mapping/converters');
 
-module.exports = (req) => {
-  TGrotto.findOne(req.params.id).exec((err, found) => {
-    const params = {};
-    params.controllerMethod = 'PartnerController.find';
-    params.notFoundMessage = `Partner of id ${req.params.id} not found.`;
-    return ControllerService.treat(req, err, found, params);
-  });
+// TODO Same as organization/find, remove ?
+module.exports = async (req, res) => {
+  const params = { searchedItem: `Partner of id ${req.params.id}` };
+  const organization = await GrottoService.getPopulatedOrganization(
+    req.params.id
+  );
+  if (!organization) return res.notFound(`${params.searchedItem} not found`);
+  return ControllerService.treatAndConvert(
+    req,
+    null,
+    organization,
+    params,
+    res,
+    organization.isDeleted ? toDeletedOrganization : toOrganization
+  );
 };

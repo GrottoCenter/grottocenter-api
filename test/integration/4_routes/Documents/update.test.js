@@ -24,35 +24,37 @@ describe('Document features', () => {
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json')
         .expect(200)
-        .end((err, res) => {
+        .end(async (err, res) => {
           if (err) return done(err);
           const document = res.body;
           should(document.isValidated).be.false();
-          // After updating, new values are stored in modifiedDocJson
-          should(document.modifiedDocJson.description).equals(newDescription);
-          should(document.modifiedDocJson.title).equals(newTitle);
+
+          // After updating, new values are stored in modifiedDocJson (not exposed in the response body)
+          const modifiedDoc = await TDocument.findOne(4);
+          should(modifiedDoc.modifiedDocJson.descriptionData.body).equals(
+            newDescription
+          );
+          should(modifiedDoc.modifiedDocJson.descriptionData.title).equals(
+            newTitle
+          );
           return done();
         });
     });
     it('should modify the document type from 18 (Article) to 17 (Issue)', (done) => {
-      const issueTypeId = 17;
       supertest(sails.hooks.http.app)
         .put('/api/v1/documents/4')
-        .send({
-          documentType: {
-            id: issueTypeId,
-          },
-        })
+        .send({ type: 'Issue' })
         .set('Authorization', moderatorToken) // Doc is not validated because of previous test updating it: only a moderator can edit it
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json')
         .expect(200)
-        .end((err, res) => {
+        .end(async (err, res) => {
           if (err) return done(err);
           const document = res.body;
           should(document.isValidated).be.false();
-          // After updating, new values are stored in modifiedDocJson
-          should(document.modifiedDocJson.type).equals(issueTypeId);
+          // After updating, new values are stored in modifiedDocJson (not exposed in the response body)
+          const modifiedDoc = await TDocument.findOne(4);
+          should(modifiedDoc.modifiedDocJson.documentData.type).equals(17);
           return done();
         });
     });

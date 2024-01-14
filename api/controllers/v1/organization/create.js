@@ -1,5 +1,4 @@
 const ControllerService = require('../../../services/ControllerService');
-const ErrorService = require('../../../services/ErrorService');
 const GrottoService = require('../../../services/GrottoService');
 const { toOrganization } = require('../../../services/mapping/converters');
 
@@ -23,23 +22,18 @@ module.exports = async (req, res) => {
     text: req.param('name').text,
   };
 
-  try {
-    const newOrganizationPopulated = await GrottoService.createGrotto(
-      req,
-      cleanedData,
-      nameData
-    );
-    const params = {};
-    params.controllerMethod = 'GrottoController.create';
-    return ControllerService.treatAndConvert(
-      req,
-      null,
-      newOrganizationPopulated,
-      params,
-      res,
-      toOrganization
-    );
-  } catch (e) {
-    return ErrorService.getDefaultErrorHandler(res)(e);
-  }
+  const newOrganizationPopulated = await GrottoService.createGrotto(
+    req,
+    cleanedData,
+    nameData
+  );
+
+  return ControllerService.treatAndConvert(
+    req,
+    null,
+    newOrganizationPopulated,
+    { controllerMethod: 'GrottoController.create' },
+    res,
+    toOrganization
+  );
 };

@@ -84,5 +84,12 @@ module.exports = {
       columnName: 'id_grotto',
       model: 'TGrotto',
     },
+
+    isDeleted: {
+      type: 'boolean',
+      allowNull: false,
+      columnName: 'is_deleted',
+      defaultsTo: false,
+    },
   },
 };

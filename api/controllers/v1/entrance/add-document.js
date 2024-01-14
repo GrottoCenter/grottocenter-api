@@ -1,23 +1,15 @@
 const ErrorService = require('../../../services/ErrorService');
 
 module.exports = async (req, res) => {
-  // Check params
   const entranceId = req.param('entranceId');
   const currentEntrance = await TEntrance.findOne(entranceId);
   if (!currentEntrance) {
-    return res.notFound({
-      message: `Entrance of id ${entranceId} not found.`,
-    });
+    return res.notFound({ message: `Entrance of id ${entranceId} not found.` });
   }
 
   const documentId = req.param('documentId');
-  if (
-    !(await sails.helpers.checkIfExists.with({
-      attributeName: 'id',
-      attributeValue: documentId,
-      sailsModel: TDocument,
-    }))
-  ) {
+  const document = await TDocument.findOne({ id: documentId });
+  if (!document) {
     return res.notFound({ message: `Document of id ${documentId} not found.` });
   }
 

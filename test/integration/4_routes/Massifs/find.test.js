@@ -14,7 +14,7 @@ const MASSIF_PROPERTIES = [
   'entrances',
   'geogPolygon',
   'name',
-  'names',
+  'author',
   'reviewer',
 ];
 
@@ -39,7 +39,6 @@ describe('Massif features', () => {
           should(massif).have.properties(MASSIF_PROPERTIES);
           should(massif.geogPolygon).equal(massifPolygon.geoJson1ToString);
           should(massif.name).not.be.empty();
-          should(massif.names).not.be.empty();
           return done();
         });
     });

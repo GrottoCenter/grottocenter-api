@@ -129,5 +129,11 @@ module.exports = {
       allowNull: true,
       maxLength: 200,
     },
+
+    documents: {
+      collection: 'TDocument',
+      via: 'iso',
+      through: 'JDocumentISO31662',
+    },
   },
 };

@@ -1,6 +1,6 @@
 const CaverService = require('../../../services/CaverService');
 const ControllerService = require('../../../services/ControllerService');
-const { toCaver } = require('../../../services/mapping/converters');
+const { toSimpleCaver } = require('../../../services/mapping/converters');
 const { toListFromController } = require('../../../services/mapping/utils');
 
 module.exports = async (req, res) => {
@@ -8,10 +8,9 @@ module.exports = async (req, res) => {
   const moderatorGroup = await TGroup.find({
     name: 'Moderator',
   }).populate('cavers');
-  if (!moderatorGroup) {
-    return res.notFound({ message: 'No moderators found.' });
-  }
-  const params = {};
+
+  if (!moderatorGroup) return res.notFound({ message: 'No moderators found.' });
+
   const moderators = moderatorGroup[0].cavers;
   const moderatorsWithGroups = await Promise.all(
     moderators.map(async (caver) => ({
@@ -19,13 +18,12 @@ module.exports = async (req, res) => {
       groups: await CaverService.getGroups(caver.id),
     }))
   );
-  params.controllerMethod = 'CaverController.getModerators';
   return ControllerService.treatAndConvert(
     req,
     null,
     moderatorsWithGroups,
-    params,
+    { controllerMethod: 'CaverController.getModerators' },
     res,
-    (data) => toListFromController('cavers', data, toCaver)
+    (data) => toListFromController('cavers', data, toSimpleCaver)
   );
 };

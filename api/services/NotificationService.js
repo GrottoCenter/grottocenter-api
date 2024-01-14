@@ -498,9 +498,10 @@ module.exports = {
       // Had to require in the function to avoid a circular dependency with notifySubscribers() in DocumentService.createDocument()
       // eslint-disable-next-line global-require
       const DocumentService = require('./DocumentService');
-      populatedNotification.document = await DocumentService.getDocument(
-        safeGetPropId('document', notification)
-      );
+      const populatedDocuments = await DocumentService.getDocuments([
+        safeGetPropId('document', notification),
+      ]);
+      populatedNotification.document = populatedDocuments[0];
     }
     if (populatedNotification.entrance) {
       await NameService.setNames([populatedNotification.entrance], 'entrance');

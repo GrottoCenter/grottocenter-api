@@ -55,99 +55,91 @@ const self = (module.exports = {
    *     {Array(string)}  resourceTypes (optional) resource types to search on.
    *            Must be an array containing some of the INDEX_NAMES
    */
-  searchQuery: (params) =>
-    new Promise((resolve, reject) => {
-      let indexToSearchOn = [
-        'cavers',
-        'documents',
-        'entrances',
-        'grottos',
-        'massifs',
-      ];
-      if (params.resourceTypes instanceof Array) {
-        indexToSearchOn = params.resourceTypes.map(
-          (resType) => `${resType}-index`
-        );
-      } else if (params.resourceType) {
-        indexToSearchOn = `${params.resourceType}-index`;
-      }
+  searchQuery: (params) => {
+    let indexToSearchOn = [
+      'cavers',
+      'documents',
+      'entrances',
+      'grottos',
+      'massifs',
+    ];
+    if (params.resourceTypes instanceof Array) {
+      indexToSearchOn = params.resourceTypes.map(
+        (resType) => `${resType}-index`
+      );
+    } else if (params.resourceType) {
+      indexToSearchOn = `${params.resourceType}-index`;
+    }
 
-      client
-        .search({
-          index: indexToSearchOn,
-          body: {
-            from: params.from ? params.from : 0,
-            size: params.size ? params.size : 10,
-            query: {
-              bool: {
-                must: {
-                  query_string: {
-                    query: `*${self.sanitizeQuery(
-                      params.query
-                    )}* + ${self.sanitizeQuery(params.query)}~${FUZZINESS}`,
-                    fields: [
-                      // General useful fields
-                      'city^2',
-                      'country',
-                      'county',
-                      'description^0.5',
-                      'descriptions^0.5',
-                      'id',
-                      'name^5',
-                      'names^1.5',
-                      'region',
+    return client.search({
+      index: indexToSearchOn,
+      body: {
+        from: params.from ? params.from : 0,
+        size: params.size ? params.size : 10,
+        query: {
+          bool: {
+            must: {
+              query_string: {
+                query: `*${self.sanitizeQuery(
+                  params.query
+                )}* + ${self.sanitizeQuery(params.query)}~${FUZZINESS}`,
+                fields: [
+                  // General useful fields
+                  'city^2',
+                  'country',
+                  'county',
+                  'description^0.5',
+                  'descriptions^0.5',
+                  'id',
+                  'name^5',
+                  'names^1.5',
+                  'region',
 
-                      // ==== Entrances
-                      'bibliography^0.5',
-                      'caves',
-                      'location^0.5',
-                      'riggings',
+                  // ==== Entrances
+                  'bibliography^0.5',
+                  'caves',
+                  'location^0.5',
+                  'riggings',
 
-                      // ==== Grottos
-                      'custom_message',
+                  // ==== Grottos
+                  'custom_message',
 
-                      // ==== Massifs
+                  // ==== Massifs
 
-                      // ==== Document
-                      'authors',
-                      'identifier^1.5',
-                      'ref_bbs',
-                      'subjects',
-                      'title^2.7',
+                  // ==== Document
+                  'authors',
+                  'identifier^1.5',
+                  'id_db_import',
+                  'subjects',
+                  'title^2.7',
 
-                      // ==== Cavers
-                      'nickname^3',
-                      'surname^4',
+                  // ==== Cavers
+                  'nickname^3',
+                  'surname^4',
 
-                      // ==== Languages
-                      'ref_name',
-                    ],
-                  },
-                },
-                filter: {
-                  term: {
-                    deleted: false,
-                  },
-                },
+                  // ==== Languages
+                  'ref_name',
+                ],
               },
             },
-            highlight: {
-              number_of_fragments: 3,
-              fragment_size: 50,
-              fields: {
-                '*': {},
+            filter: {
+              term: {
+                deleted: false,
               },
-              order: 'score',
             },
           },
-        })
-        .then((result) => {
-          resolve(result);
-        })
-        .catch((err) => {
-          reject(err);
-        });
-    }),
+        },
+        highlight: {
+          number_of_fragments: 3,
+          fragment_size: 50,
+          fields: {
+            '*': {},
+          },
+          order: 'score',
+        },
+      },
+    });
+  },
 
   /**
    * Retrieve data from elasticsearch on all index according to the given params.
@@ -160,127 +152,102 @@ const self = (module.exports = {
    *
    * @param {*} params : list of params of the request
    */
-  advancedSearchQuery: (params) =>
-    new Promise((resolve, reject) => {
-      // Determine if the logic operator is OR (should) or AND (must) for the request.
-      const queryVerb = params.matchAllFields === false ? 'should' : 'must';
+  async advancedSearchQuery(params) {
+    // Build match fields to search on, i.e. every parameters in the url which are not metaParams
+    const matchingParams = [];
+    const rangeParams = [];
+    const boolParams = [];
 
-      // Build match fields to search on, i.e. every parameters in the url which are not metaParams
-      const matchingParams = [];
-      const rangeParams = [];
-      const boolParams = [];
+    for (const key of Object.keys(params)) {
+      // Meta params ?
+      // eslint-disable-next-line no-continue
+      if (SEARCH_META_PARAMS.includes(key)) continue;
 
-      // ==== Construct the params
-      Object.keys(params).forEach((key) => {
-        // Meta params ?
-        if (!SEARCH_META_PARAMS.includes(key)) {
-          // min / max (range) param ? boolean param ? field param ?
-          const isMinParam = key.split('-min').length > 1;
-          const isMaxParam = key.split('-max').length > 1;
-          const isBoolParam = key.split('-bool').length > 1;
-          const isFieldParam = !isMinParam && !isMaxParam && !isBoolParam;
+      // min / max (range) param ? boolean param ? field param ?
+      const isMinParam = key.split('-min').length > 1;
+      const isMaxParam = key.split('-max').length > 1;
+      const isBoolParam = key.split('-bool').length > 1;
+      const isFieldParam = !isMinParam && !isMaxParam && !isBoolParam;
 
-          // Value of a field
-          if (isFieldParam && params[key] !== '') {
-            // Sanitize all the query and remove empty words
-            const sanitizedWords = self
-              .sanitizeQuery(params[key])
-              .split(' ')
-              .filter((w) => w !== '');
-            sanitizedWords.map((word, index) => {
-              const matchObj = {
-                wildcard: {},
-              };
-
-              /*
-                The value is set to lower case because the data are indexed in lowercase.
-                We want a search not case sensitive.
-
-                The character * is used for the first and the last word to (auto)complete the query.
-              */
-              if (sanitizedWords.length === 1) {
-                matchObj.wildcard[key] = `*${word.toLowerCase()}*`;
-              } else if (index === 0) {
-                matchObj.wildcard[key] = `*${word.toLowerCase()}`;
-              } else if (index === sanitizedWords.length - 1) {
-                matchObj.wildcard[key] = `${word.toLowerCase()}*`;
-              } else {
-                matchObj.wildcard[key] = word.toLowerCase();
-              }
-
-              return matchingParams.push(matchObj);
-            });
-
-            // Min range param
-          } else if (isMinParam) {
-            const rangeObj = {
-              range: {},
-            };
-            rangeObj.range[key.split('-min')[0].toString()] = {
-              gte: params[key],
-            };
-            rangeParams.push(rangeObj);
-
-            // Max range param
-          } else if (isMaxParam) {
-            const rangeObj = {
-              range: {},
-            };
-            rangeObj.range[key.split('-max')[0].toString()] = {
-              lte: params[key],
-            };
-            rangeParams.push(rangeObj);
-
-            // Bool param
-          } else if (isBoolParam) {
-            const boolObj = {
-              term: {},
-            };
-            boolObj.term[key.split('-bool')[0].toString()] = params[key];
-            boolParams.push(boolObj);
+      // Value of a field
+      if (isFieldParam && params[key] !== '') {
+        // Sanitize all the query and remove empty words
+        const sanitizedWords = self
+          .sanitizeQuery(params[key])
+          .split(' ')
+          .filter((w) => w !== '');
+        for (const [index, word] of sanitizedWords.entries()) {
+          // The value is set to lower case because the data are indexed in lowercase.
+          // We want a search not case sensitive.
+          // The character * is used for the first and the last word to (auto)complete the query.
+          const matchObj = { wildcard: {} };
+          if (sanitizedWords.length === 1) {
+            matchObj.wildcard[key] = `*${word.toLowerCase()}*`;
+          } else if (index === 0) {
+            matchObj.wildcard[key] = `*${word.toLowerCase()}`;
+          } else if (index === sanitizedWords.length - 1) {
+            matchObj.wildcard[key] = `${word.toLowerCase()}*`;
+          } else {
+            matchObj.wildcard[key] = word.toLowerCase();
           }
+
+          matchingParams.push(matchObj);
         }
-      });
 
-      // ==== Build the query
-      const query = {
-        index: `${params.resourceType}-index`,
-        body: {
-          query: {
-            bool: {
-              filter: {
-                term: {
-                  deleted: false,
-                },
-              },
+        // Min range param
+      } else if (isMinParam) {
+        const rangeObj = { range: {} };
+        rangeObj.range[key.split('-min')[0].toString()] = {
+          gte: params[key],
+        };
+        rangeParams.push(rangeObj);
+
+        // Max range param
+      } else if (isMaxParam) {
+        const rangeObj = { range: {} };
+        rangeObj.range[key.split('-max')[0].toString()] = {
+          lte: params[key],
+        };
+        rangeParams.push(rangeObj);
+
+        // Bool param
+      } else if (isBoolParam) {
+        const boolObj = { term: {} };
+        boolObj.term[key.split('-bool')[0].toString()] = params[key];
+        boolParams.push(boolObj);
+      }
+    }
+
+    // ==== Build the query
+    const query = {
+      index: `${params.resourceType}-index`,
+      body: {
+        query: {
+          bool: {
+            filter: {
+              term: { deleted: false },
             },
           },
-          highlight: {
-            number_of_fragments: 3,
-            fragment_size: 50,
-            fields: {
-              '*': {},
-            },
-            order: 'score',
-          },
-          from: params.from ? params.from : 0,
-          size: params.size ? params.size : 10,
         },
-      };
+        highlight: {
+          number_of_fragments: 3,
+          fragment_size: 50,
+          fields: { '*': {} },
+          order: 'score',
+        },
+        from: params.from ? params.from : 0,
+        size: params.size ? params.size : 10,
+      },
+    };
 
-      query.body.query.bool[queryVerb] = matchingParams
-        .concat(rangeParams)
-        .concat(boolParams);
+    // Determine if the logic operator is OR (should) or AND (must) for the request.
+    const queryVerb = params.matchAllFields === false ? 'should' : 'must';
+    query.body.query.bool[queryVerb] = matchingParams
+      .concat(rangeParams)
+      .concat(boolParams);
 
-      client
-        .search(query)
-        .then((result) => {
-          resolve(result);
-        })
-        .catch((err) => {
-          reject(err);
-        });
-    }),
+    return client.search(query);
+  },
 
   /**
    * Custom GC wrapper for the Elasticsearch client create method

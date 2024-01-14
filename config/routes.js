@@ -188,6 +188,10 @@ module.exports.routes = {
   'POST /api/v1/massifs/:id/unsubscribe': 'v1/massif/unsubscribe',
   'PUT /api/v1/massifs/:id': 'v1/massif/update',
   'GET /api/v1/massifs/:id/statistics': 'v1/massif/get-statistics',
+  'PUT /api/v1/massifs/:massifId/documents/:documentId':
+    'v1/massif/add-document',
+  'DELETE /api/v1/massifs/:massifId/documents/:documentId':
+    'v1/massif/unlink-document',
 
   // Document
   'GET /api/v1/documents': 'v1/document/find-all',

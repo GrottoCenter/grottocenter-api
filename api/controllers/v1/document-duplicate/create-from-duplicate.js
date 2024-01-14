@@ -1,7 +1,7 @@
-const ErrorService = require('../../../services/ErrorService');
 const DocumentService = require('../../../services/DocumentService');
 const RightService = require('../../../services/RightService');
 
+// Create a new document from an existing duplicate document content
 module.exports = async (req, res) => {
   const hasRight = RightService.hasGroup(
     req.token.groups,
@@ -27,11 +27,7 @@ module.exports = async (req, res) => {
   const id = req.param('id');
   const duplicate = await TDocumentDuplicate.findOne(id);
   const { document, description } = duplicate.content;
-  try {
-    await DocumentService.createDocument(req, document, description);
-    await TDocumentDuplicate.destroyOne(id);
-    return res.ok();
-  } catch (e) {
-    return ErrorService.getDefaultErrorHandler(res)(e);
-  }
+  await DocumentService.createDocument(req, document, description);
+  await TDocumentDuplicate.destroyOne(id);
+  return res.ok();
 };

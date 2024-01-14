@@ -10,7 +10,6 @@ const RANDOM_ENTRANCE_QUERY = `${INTEREST_ENTRANCES_QUERY} ORDER BY RANDOM() LIM
 const CaveService = require('./CaveService');
 const CommentService = require('./CommentService');
 const CommonService = require('./CommonService');
-const DocumentService = require('./DocumentService');
 const ElasticsearchService = require('./ElasticsearchService');
 const NameService = require('./NameService');
 const NotificationService = require('./NotificationService');
@@ -74,45 +73,19 @@ module.exports = {
     };
   },
 
-  /**
-   * @returns {Promise} which resolves to the succesfully findRandom
-   */
   findRandom: async () => {
     const result = await CommonService.query(RANDOM_ENTRANCE_QUERY, []);
     const entranceId = result.rows[0].id;
-    return module.exports.completeRandomEntrance(entranceId);
-  },
 
-  findEntrance: async (entranceId) => {
-    const entrance = await TEntrance.findOne(entranceId)
-      .populate('cave')
-      .populate('documents')
-      .populate('names');
+    const [entrance, stats, timeInfo] = await Promise.all([
+      TEntrance.findOne(entranceId).populate('names'),
+      CommentService.getStatsFromId(entranceId),
+      CommentService.getTimeInfos(entranceId),
+    ]);
 
-    if (entrance.cave)
-      entrance.cave.entrances = await TEntrance.find().where({
-        cave: entrance.cave.id,
-      });
-
-    if (!ramda.isNil(entrance.documents)) {
-      entrance.documents = await Promise.all(
-        entrance.documents.map(async (doc) => ({
-          ...doc,
-          files: await DocumentService.getTopoFiles(doc.id),
-        }))
-      );
-    }
+    entrance.stats = stats;
+    entrance.timeInfo = timeInfo;
     return entrance;
-  },
-
-  /**
-   * @returns {Promise} which resolves to the succesfully completeRandomEntrance
-   */
-  completeRandomEntrance: async (entranceId) => {
-    const entranceData = await module.exports.findEntrance(entranceId);
-    entranceData.stats = await CommentService.getStatsFromId(entranceId);
-    entranceData.timeInfo = await CommentService.getTimeInfos(entranceId);
-    return entranceData;
   },
 
   // If the entrance do not belong to a network the associated cave is populated

@@ -27,38 +27,27 @@ async function validateAndUpdateDocument(
   validationAuthor
 ) {
   const {
-    documentMainLanguage,
-    author,
-    description,
-    titleAndDescriptionLanguage,
-    title,
+    reviewerId,
+    documentData,
+    descriptionData,
     modifiedFiles,
     deletedFiles,
     newFiles,
-    ...cleanedData
   } = document.modifiedDocJson;
 
   await sails.getDatastore().transaction(async (db) => {
     // Update associated data not handled by TDocument manually
     // Updated before the TDocument update so the last_change_document DB trigger will fetch the last updated name
     await TDescription.updateOne({ document: document.id })
-      .set({
-        author,
-        body: description,
-        document: document.id,
-        language: titleAndDescriptionLanguage.id,
-        title,
-      })
+      .set(descriptionData)
       .usingConnection(db);
 
     await TDocument.updateOne(document.id)
       .set({
-        ...cleanedData,
-        // Currently, only one language per document is allowed
-        ...(documentMainLanguage && {
-          languages: documentMainLanguage.id,
-        }),
+        ...documentData,
         modifiedDocJson: null,
+        dateReviewed: new Date(),
+        reviewer: reviewerId,
         dateValidation: new Date(),
         isValidated: true,
         validationComment,
@@ -90,26 +79,11 @@ async function validateAndUpdateDocument(
 }
 
 async function updateESAndNotify(req, documentId, hasChange, userId) {
-  const found = await TDocument.findOne(documentId)
-    .populate('author')
-    .populate('authorizationDocument')
-    .populate('authors')
-    .populate('cave')
-    .populate('descriptions')
-    .populate('editor')
-    .populate('entrance')
-    .populate('identifierType')
-    .populate('languages')
-    .populate('library')
-    .populate('license')
-    .populate('massif')
-    .populate('option')
-    .populate('parent')
-    .populate('regions')
-    .populate('reviewer')
-    .populate('subjects')
-    .populate('type');
-  await DocumentService.setNamesOfPopulatedDocument(found);
+  const found = await DocumentService.appendPopulateForSimpleDocument(
+    TDocument.findOne(documentId)
+  );
+
+  await DocumentService.populateFullDocumentSubEntities(found);
 
   if (hasChange) {
     await DocumentService.updateDocumentInElasticSearchIndexes(found);
@@ -140,8 +114,9 @@ module.exports = async (req, res) => {
   const documentChanges = [];
   // Validate input
   for (const doc of req.param('documents') ?? []) {
+    // Whether or not the pending changes are accepted or not
     const isValidated = doc.isValidated
-      ? !(doc.isValidated.toLowerCase() === 'false')
+      ? doc.isValidated.toLowerCase() !== 'false'
       : true;
 
     if (isValidated === false && !doc.validationComment) {
@@ -163,7 +138,7 @@ module.exports = async (req, res) => {
     const change = documentChanges.find((d) => d.id === document.id);
     const isAModifiedDoc = !!document.modifiedDocJson;
     if (!change.isValidated) {
-      // Validate it but do not update its fields
+      // Validate it but do not update its fields (reject change)
       // eslint-disable-next-line no-await-in-loop
       await markDocumentValidated(
         document.id,

@@ -1,7 +1,6 @@
 const ControllerService = require('../../../services/ControllerService');
 const ErrorService = require('../../../services/ErrorService');
 const GrottoService = require('../../../services/GrottoService');
-const NameService = require('../../../services/NameService');
 const NotificationService = require('../../../services/NotificationService');
 const GeocodingService = require('../../../services/GeocodingService');
 const { toOrganization } = require('../../../services/mapping/converters');
@@ -40,11 +39,13 @@ module.exports = async (req, res) => {
 
   try {
     // The name is updated via the /api/v1/names route by the front
-    const updatedOrganization = await TGrotto.updateOne({
+    await TGrotto.updateOne({
       id: organizationId,
     }).set(cleanedData);
 
-    await NameService.setNames([updatedOrganization], 'grotto');
+    const updatedOrganization = await GrottoService.getPopulatedOrganization(
+      organizationId
+    );
 
     await NotificationService.notifySubscribers(
       req,
@@ -54,13 +55,11 @@ module.exports = async (req, res) => {
       NOTIFICATION_ENTITIES.ORGANIZATION
     );
 
-    const params = {};
-    params.controllerMethod = 'OrganizationController.update';
     return ControllerService.treatAndConvert(
       req,
       null,
       updatedOrganization,
-      params,
+      { controllerMethod: 'OrganizationController.update' },
       res,
       toOrganization
     );

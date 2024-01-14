@@ -104,6 +104,7 @@ module.exports = {
       model: 'TIdentifierType',
     },
 
+    // Deprecated use idDbImport and nameDbImport='BBS'
     refBbs: {
       type: 'string',
       allowNull: true,
@@ -129,6 +130,7 @@ module.exports = {
       model: 'TEntrance',
     },
 
+    // Deprecated use massifs instead
     massif: {
       columnName: 'id_massif',
       model: 'TMassif',
@@ -137,16 +139,6 @@ module.exports = {
     cave: {
       columnName: 'id_cave',
       model: 'TCave',
-    },
-
-    authorCaver: {
-      columnName: 'id_author_caver',
-      model: 'TCaver',
-    },
-
-    authorGrotto: {
-      columnName: 'id_author_grotto',
-      model: 'TGrotto',
     },
 
     editor: {
@@ -257,6 +249,18 @@ module.exports = {
       collection: 'TRegion',
       via: 'document',
       through: 'JDocumentRegion',
+    },
+
+    isoRegions: {
+      collection: 'TISO31662',
+      via: 'document',
+      through: 'JDocumentISO31662',
+    },
+
+    countries: {
+      collection: 'TCountry',
+      via: 'document',
+      through: 'JDocumentCountry',
     },
 
     subjects: {

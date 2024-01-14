@@ -1,9 +1,11 @@
 const DocumentService = require('../../../services/DocumentService');
 const DocumentCSVImportService = require('../../../services/DocumentCSVImportService');
-const DocumentDuplicateService = require('../../../services/DocumentDuplicateService');
 const RightService = require('../../../services/RightService');
-
-const { doubleCheck } = sails.helpers.csvhelpers;
+const {
+  checkColumns,
+  valIfTruthyOrNull,
+  getOrCreateAuthor,
+} = require('../../../utils/csvHelper');
 
 module.exports = async (req, res) => {
   const hasRight = RightService.hasGroup(
@@ -16,20 +18,14 @@ module.exports = async (req, res) => {
 
   const requestResponse = {
     type: 'document',
-    total: {
-      success: 0,
-      failure: 0,
-    },
+    total: {},
     successfulImport: [],
     successfulImportAsDuplicates: [],
     failureImport: [],
   };
 
   for (const [index, data] of req.body.data.entries()) {
-    // eslint-disable-next-line no-await-in-loop
-    const missingColumns = await sails.helpers.csvhelpers.checkColumns.with({
-      data,
-    });
+    const missingColumns = checkColumns(data);
     // Stop if missing columnes
     if (missingColumns.length > 0) {
       requestResponse.failureImport.push({
@@ -39,30 +35,11 @@ module.exports = async (req, res) => {
       continue; // eslint-disable-line no-continue
     }
 
-    // Check for duplicates
-    const idDb = doubleCheck.with({
-      data,
-      key: 'id',
-    });
-    const nameDb = doubleCheck.with({
-      data,
-      key: 'dct:rights/cc:attributionName',
-    });
-
-    // eslint-disable-next-line no-await-in-loop
-    const result = await TDocument.find({
-      idDbImport: idDb,
-      nameDbImport: nameDb,
-      isDeleted: false,
-    });
-
-    // Data formatting
-    // Author retrieval : create one if not present in db
-    // eslint-disable-next-line no-await-in-loop
-    const authorId = await sails.helpers.csvhelpers.getAuthor.with({
-      data,
-    });
     try {
+      // Data formatting
+      // Author retrieval : create one if not present in db
+      // eslint-disable-next-line no-await-in-loop
+      const authorId = await getOrCreateAuthor(data);
       const dataDocument =
         // eslint-disable-next-line no-await-in-loop
         await DocumentCSVImportService.getConvertedDocumentFromCsv(
@@ -70,24 +47,35 @@ module.exports = async (req, res) => {
           data,
           authorId
         );
-      const dataLangDesc =
-        DocumentCSVImportService.getConvertedLangDescDocumentFromCsv(
+      const dataDescription =
+        // eslint-disable-next-line no-await-in-loop
+        await DocumentCSVImportService.getConvertedDescriptionFromCsv(
           data,
           authorId
         );
 
-      if (result.length !== 0) {
+      // Check for duplicates
+      const idDb = valIfTruthyOrNull(data.id);
+      const nameDb = valIfTruthyOrNull(data['dct:rights/cc:attributionName']);
+      // eslint-disable-next-line no-await-in-loop
+      const dbDocument = await TDocument.findOne({
+        idDbImport: idDb,
+        nameDbImport: nameDb,
+        isDeleted: false,
+      });
+      if (dbDocument) {
         // Create a duplicate in DB
-        const duplicateContent = {
-          document: dataDocument,
-          description: dataLangDesc,
-        };
         // eslint-disable-next-line no-await-in-loop
-        await DocumentDuplicateService.create(
-          req.token.id,
-          duplicateContent,
-          result[0].id
-        );
+        await TDocumentDuplicate.create({
+          author: req.token.id,
+          content: {
+            document: dataDocument,
+            description: dataDescription,
+          },
+          dateInscription: new Date(),
+          document: dbDocument.id,
+        });
+
         requestResponse.successfulImportAsDuplicates.push({
           line: index + 2,
           message: `Document with id ${idDb} has been created as a document duplicate.`,
@@ -99,14 +87,15 @@ module.exports = async (req, res) => {
       const createdDocument = await DocumentService.createDocument(
         req,
         dataDocument,
-        dataLangDesc,
+        dataDescription,
         true
       );
       // eslint-disable-next-line no-await-in-loop
       const docFiles = await TFile.find({ document: createdDocument.id });
+
       requestResponse.successfulImport.push({
         documentId: createdDocument.id,
-        title: dataLangDesc.title,
+        title: dataDescription.title,
         filesImported: docFiles.map((f) => f.fileName).join(','),
       });
     } catch (err) {
@@ -118,9 +107,12 @@ module.exports = async (req, res) => {
     }
   }
 
-  requestResponse.total.success = requestResponse.successfulImport.length;
-  requestResponse.total.successfulImportAsDuplicates =
-    requestResponse.successfulImportAsDuplicates.length;
-  requestResponse.total.failure = requestResponse.failureImport.length;
+  requestResponse.total = {
+    success: requestResponse.successfulImport.length,
+    successfulImportAsDuplicates:
+      requestResponse.successfulImportAsDuplicates.length,
+    failure: requestResponse.failureImport.length,
+  };
+
   return res.ok(requestResponse);
 };

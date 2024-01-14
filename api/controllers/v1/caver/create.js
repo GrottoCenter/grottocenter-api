@@ -1,7 +1,7 @@
 const CaverService = require('../../../services/CaverService');
 const ControllerService = require('../../../services/ControllerService');
 const ErrorService = require('../../../services/ErrorService');
-const { toCaver } = require('../../../services/mapping/converters');
+const { toSimpleCaver } = require('../../../services/mapping/converters');
 
 module.exports = async (req, res) => {
   // Check params
@@ -12,22 +12,19 @@ module.exports = async (req, res) => {
     return res.badRequest('You must provide a surname to create a new caver.');
   }
 
-  const paramsCaver = {
-    name: req.param('name'),
-    surname: req.param('surname'),
-  };
-
   try {
-    const newCaver = await CaverService.createNonUserCaver(paramsCaver);
-    const params = {};
-    params.controllerMethod = 'CaverController.create';
+    const newCaver = await CaverService.createNonUserCaver({
+      name: req.param('name'),
+      surname: req.param('surname'),
+    });
+
     return ControllerService.treatAndConvert(
       req,
       null,
       newCaver,
-      params,
+      { controllerMethod: 'CaverController.create' },
       res,
-      toCaver
+      toSimpleCaver
     );
   } catch (e) {
     return ErrorService.getDefaultErrorHandler(res)(e);

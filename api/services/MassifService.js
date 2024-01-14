@@ -1,3 +1,6 @@
+const DocumentService = require('./DocumentService');
+const NameService = require('./NameService');
+
 const FIND_NETWORKS_IN_MASSIF = `
   SELECT c.*
   FROM t_entrance AS e
@@ -11,18 +14,18 @@ const FIND_NETWORKS_IN_MASSIF = `
 const FIND_CAVES_IN_MASSIF = `
   SELECT c.*
   FROM t_cave AS c
-  JOIN t_massif as m 
+  JOIN t_massif as m
   ON ST_Contains(ST_SetSRID(m.geog_polygon::geometry, 4326), ST_SetSRID(ST_MakePoint(c.longitude, c.latitude), 4326))
-  WHERE m.id = $1 
+  WHERE m.id = $1
   AND c.is_deleted = false
 `;
 
 const FIND_ENTRANCES_IN_MASSIF = `
   SELECT e.*
   FROM t_entrance AS e
-  JOIN t_massif as m 
+  JOIN t_massif as m
   ON ST_Contains(ST_SetSRID(m.geog_polygon::geometry, 4326), ST_SetSRID(ST_MakePoint(e.longitude, e.latitude), 4326))
-  WHERE m.id = $1 
+  WHERE m.id = $1
   AND e.is_deleted = false
 `;
 
@@ -36,6 +39,33 @@ module.exports = {
     geogPolygon: req.param('geogPolygon'),
     names: req.param('names'),
   }),
+
+  async getPopulatedMassif(massifId) {
+    const massif = await TMassif.findOne(massifId)
+      .populate('author')
+      .populate('reviewer')
+      .populate('names')
+      .populate('descriptions')
+      .populate('documents');
+
+    if (!massif) return null;
+    if (massif.isDeleted) return massif;
+
+    [massif.entrances, massif.networks, massif.documents, massif.geoJson] =
+      await Promise.all([
+        module.exports.getEntrances(massif.id),
+        module.exports.getNetworks(massif.id),
+        DocumentService.getDocuments(massif.documents.map((d) => d.id)),
+        module.exports.wktToGeoJson(massif.geogPolygon),
+      ]);
+
+    await Promise.all([
+      NameService.setNames(massif.entrances, 'entrance'),
+      NameService.setNames(massif.networks, 'cave'),
+    ]);
+
+    return massif;
+  },
 
   getCaves: async (massifId) => {
     try {

@@ -2,11 +2,14 @@ const ControllerService = require('../../../services/ControllerService');
 const DocumentService = require('../../../services/DocumentService');
 const NotificationService = require('../../../services/NotificationService');
 const RightService = require('../../../services/RightService');
+const { toDocument } = require('../../../services/mapping/converters');
 const {
   NOTIFICATION_TYPES,
   NOTIFICATION_ENTITIES,
 } = require('../../../services/NotificationService');
 
+// Unused by front
+// TODO Remove ?
 // eslint-disable-next-line consistent-return
 module.exports = (req, res) => {
   const hasRight = RightService.hasGroup(
@@ -40,25 +43,11 @@ module.exports = (req, res) => {
     })
     .then(async (updatedDocument) => {
       if (isValidated) {
-        const populatedDoc = await TDocument.findOne(updatedDocument.id)
-          .populate('author')
-          .populate('authors')
-          .populate('cave')
-          .populate('descriptions')
-          .populate('authorizationDocument')
-          .populate('editor')
-          .populate('entrance')
-          .populate('identifierType')
-          .populate('languages')
-          .populate('library')
-          .populate('license')
-          .populate('massif')
-          .populate('parent')
-          .populate('regions')
-          .populate('reviewer')
-          .populate('subjects')
-          .populate('type');
-        await DocumentService.setNamesOfPopulatedDocument(populatedDoc);
+        const populatedDoc =
+          await DocumentService.appendPopulateForFullDocument(
+            TDocument.findOne(id)
+          );
+        await DocumentService.populateFullDocumentSubEntities(populatedDoc);
         await DocumentService.addDocumentToElasticSearchIndexes(
           updatedDocument
         );
@@ -76,6 +65,13 @@ module.exports = (req, res) => {
         notFoundMessage: `Document of id ${id} not found`,
         searchedItem: `Document of id ${id}`,
       };
-      return ControllerService.treat(req, null, updatedDocument, params, res);
+      return ControllerService.treatAndConvert(
+        req,
+        null,
+        updatedDocument,
+        params,
+        res,
+        toDocument
+      );
     });
 };

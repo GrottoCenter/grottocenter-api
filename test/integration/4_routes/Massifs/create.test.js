@@ -29,7 +29,7 @@ describe('Massif features', () => {
         should(createdMassif).be.not.undefined();
         await TMassif.destroyOne(createdMassif.id);
         await TDescription.destroy(createdMassif.descriptions.map((d) => d.id));
-        await TName.destroy(createdMassif.names.map((n) => n.id));
+        await TName.destroy({ massif: createdMassif.id });
       });
 
       it('should return code 200', (done) => {
@@ -50,10 +50,7 @@ describe('Massif features', () => {
           .end((err, res) => {
             if (err) return done(err);
             const { body: massif } = res;
-            should(massif.names.length).equal(1);
-            should(massif.names).containDeep([
-              { name: 'Massif 1', language: 'fra' },
-            ]);
+            should(massif.name).equal('Massif 1');
             should(massif.descriptions.length).equal(1);
             should(massif.descriptions).containDeep([
               {
@@ -64,7 +61,7 @@ describe('Massif features', () => {
             ]);
             should(massif.documents.length).equal(2);
             should(massif.documents).containDeep([{ id: 1 }, { id: 2 }]);
-            should(massif.geogPolygon).equal(massifPolygon.geoJson1ToWKB);
+            should(massif.geogPolygon).equal(massifPolygon.geoJson1ToString);
             createdMassif = massif;
             return done();
           });
