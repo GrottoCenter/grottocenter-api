@@ -13,7 +13,7 @@ before(function (done) {
   sails.lift(
     {
       log: {
-        level: 'silly',
+        // level: 'silly', // Enable for test debugging
       },
       datastores: {
         default: {

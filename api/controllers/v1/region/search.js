@@ -1,56 +1,38 @@
 const ControllerService = require('../../../services/ControllerService');
+const CommonService = require('../../../services/CommonService');
 
-module.exports = (req, res) => {
-  const orSearchArray = [];
-  if (req.param('name', null)) {
-    const name = req.param('name');
-    /* Case insensitive search + first letter capitalized
-      Example with "grot" => search with ["grot", "grot", "GROT", "Grot"]
-              with "GROT" => search with ["GROT", "grot", "GROT", "Grot"]
-              with "Grot" => search with ["Grot", "grot", "GROT", "Grot"]
-        ===>  in all cases, it searches with all the possible cases
-    */
-    orSearchArray.push({ name: { contains: name } });
-    orSearchArray.push({
-      name: { contains: name.toLowerCase() },
-    });
-    orSearchArray.push({
-      name: { contains: name.toUpperCase() },
-    });
-    orSearchArray.push({
-      name: {
-        contains: name.charAt(0).toUpperCase() + name.slice(1).toLowerCase(),
-      },
-    });
-  }
-  if (req.param('code', null)) {
-    const code = req.param('code');
-    orSearchArray.push({ code: { contains: code } });
-    orSearchArray.push({
-      code: { contains: code.toLowerCase() },
-    });
-    orSearchArray.push({
-      code: { contains: code.toUpperCase() },
-    });
-    orSearchArray.push({
-      code: {
-        contains: code.charAt(0).toUpperCase() + code.slice(1).toLowerCase(),
-      },
-    });
+module.exports = async (req, res) => {
+  const query = req.param('query', null);
+  let results = [];
+  if (query) {
+    const fmtQuery = `%${query.replace(/_|%/g, '')}%`;
+
+    const isoRegions = await CommonService.query(
+      'SELECT * FROM t_iso3166_2 WHERE name ILIKE $1 OR iso ILIKE $1 LIMIT 10',
+      [fmtQuery]
+    );
+    const countries = await CommonService.query(
+      'SELECT * FROM t_country WHERE native_name ILIKE $1 OR iso ILIKE $1 LIMIT 10',
+      [fmtQuery]
+    );
+
+    results = [
+      ...isoRegions.rows.map((e) => ({
+        type: 'region',
+        iso: e.iso,
+        name: e.name,
+      })),
+      ...countries.rows.map((e) => ({
+        type: 'country',
+        iso: e.iso,
+        name: e.native_name,
+      })),
+    ];
   }
 
-  TRegion.find()
-    .where({
-      or: orSearchArray,
-      isDeprecated: req.param('isDeprecated'),
-    })
-    .exec((err, found) => {
-      const params = {};
-      params.controllerMethod = 'TRegionController.findByName';
-      params.searchedItem = `Region with name ${req.params.name}`;
-      const formattedFound = {
-        regions: found,
-      };
-      return ControllerService.treat(req, err, formattedFound, params, res);
-    });
+  const params = {
+    controllerMethod: 'TRegionController.findByName',
+    searchedItem: `Region with name ${req.params.name}`,
+  };
+  return ControllerService.treat(req, null, { results }, params, res);
 };

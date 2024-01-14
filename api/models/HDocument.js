@@ -116,16 +116,6 @@ module.exports = {
       model: 'TCave',
     },
 
-    authorCaver: {
-      columnName: 'id_author_caver',
-      model: 'TCaver',
-    },
-
-    authorGrotto: {
-      columnName: 'id_author_grotto',
-      model: 'TGrotto',
-    },
-
     editor: {
       columnName: 'id_editor',
       model: 'TGrotto',

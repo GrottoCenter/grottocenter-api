@@ -1,9 +1,7 @@
 const ControllerService = require('../../../services/ControllerService');
-const DescriptionService = require('../../../services/DescriptionService');
 const DocumentService = require('../../../services/DocumentService');
 const { toDocument } = require('../../../services/mapping/converters');
 const { toListFromController } = require('../../../services/mapping/utils');
-const NameService = require('../../../services/NameService');
 
 module.exports = async (req, res) => {
   // By default get only the validated ones
@@ -24,100 +22,45 @@ module.exports = async (req, res) => {
       with a dateValidation set to null
       (= submitted documents which need to be reviewed).
     */
-  const whereClause = {
-    and: [{ isValidated }],
-  };
+  const whereClause = { and: [{ isValidated }] };
   if (!isValidated) whereClause.and.push({ dateValidation: null });
 
   const type = req.param('documentType');
   const foundType = type ? await TType.findOne({ name: type }) : null;
   if (foundType) whereClause.and.push({ type: foundType.id });
 
-  TDocument.find()
-    .where(whereClause)
-    .skip(req.param('skip', 0))
-    .limit(req.param('limit', 50))
-    .sort(sort)
-    .populate('author')
-    .populate('authorizationDocument')
-    .populate('authors')
-    .populate('cave')
-    .populate('descriptions')
-    .populate('editor')
-    .populate('entrance')
-    .populate('files')
-    .populate('identifierType')
-    .populate('languages')
-    .populate('library')
-    .populate('license')
-    .populate('massif')
-    .populate('option')
-    .populate('parent')
-    .populate('regions')
-    .populate('reviewer')
-    .populate('subjects')
-    .populate('type')
-    .exec((err, found) => {
-      TDocument.count()
-        .where(whereClause)
-        .exec(async (error, countFound) => {
-          if (error) {
-            return res.serverError('An unexpected server error occured.');
-          }
+  const skip = Math.max(req.param('skip', 0), 0);
+  const limit = Math.max(Math.min(req.param('limit', 50), 100), 1);
 
-          if (found.length === 0) {
-            return res.ok({
-              documents: [],
-              message: `There is no document matching your criterias. It can be because sorting by ${sort} is not supported.`,
-            });
-          }
-
-          await Promise.all(
-            found.map(async (doc) => {
-              /* eslint-disable no-param-reassign */
-              doc.mainLanguage = await DocumentService.getMainLanguage(
-                doc.languages
-              );
-              await NameService.setNames(
-                [
-                  ...(doc.library ? [doc.library] : []),
-                  ...(doc.editor ? [doc.editor] : []),
-                ],
-                'grotto'
-              );
-              if (doc.authorizationDocument) {
-                await DescriptionService.setDocumentDescriptions(
-                  doc.authorizationDocument
-                );
-              }
-              await DocumentService.setNamesOfPopulatedDocument(doc);
-              if (doc.children) {
-                await Promise.all(
-                  doc.children.map(async (childDoc) => {
-                    await DescriptionService.setDocumentDescriptions(childDoc);
-                  })
-                );
-              }
-            })
-          );
-          /* eslint-enable no-param-reassign */
-
-          const params = {
-            controllerMethod: 'DocumentController.findAll',
-            limit: req.param('limit', 50),
-            searchedItem: 'All documents',
-            skip: req.param('skip', 0),
-            total: countFound,
-            url: req.originalUrl,
-          };
-          return ControllerService.treatAndConvert(
-            req,
-            err,
-            found,
-            params,
-            res,
-            (data) => toListFromController('documents', data, toDocument)
-          );
-        });
+  const totalDocuments = await TDocument.count();
+  const documents = await DocumentService.appendPopulateForSimpleDocument(
+    TDocument.find().where(whereClause).skip(skip).limit(limit).sort(sort)
+  );
+  if (documents.length === 0) {
+    return res.ok({
+      documents: [],
+      message: `There is no document matching your criterias. It can be because sorting by ${sort} is not supported.`,
     });
+  }
+
+  for (const document of documents) {
+    document.mainLanguage = DocumentService.getMainLanguage(document.languages);
+  }
+
+  const params = {
+    controllerMethod: 'DocumentController.findAll',
+    searchedItem: 'All documents',
+    limit,
+    skip,
+    total: totalDocuments,
+    url: req.originalUrl,
+  };
+  return ControllerService.treatAndConvert(
+    req,
+    null,
+    documents,
+    params,
+    res,
+    (data) => toListFromController('documents', data, toDocument)
+  );
 };

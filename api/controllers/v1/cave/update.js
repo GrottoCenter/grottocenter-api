@@ -1,6 +1,6 @@
 const ControllerService = require('../../../services/ControllerService');
 const ErrorService = require('../../../services/ErrorService');
-const NameService = require('../../../services/NameService');
+const CaveService = require('../../../services/CaveService');
 const {
   NOTIFICATION_TYPES,
   NOTIFICATION_ENTITIES,
@@ -49,10 +49,7 @@ module.exports = async (req, res) => {
 
     await TCave.updateOne({ id: caveId }).set(updatedFields);
 
-    const populatedCave = await TCave.findOne(caveId)
-      .populate('author')
-      .populate('reviewer');
-    await NameService.setNames([populatedCave], 'cave');
+    const populatedCave = await CaveService.getCavePopulated(caveId);
 
     await NotificationService.notifySubscribers(
       req,

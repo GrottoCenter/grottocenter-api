@@ -1,10 +1,10 @@
 const ramda = require('ramda');
 const ControllerService = require('../../../services/ControllerService');
 const ElasticsearchService = require('../../../services/ElasticsearchService');
-const ErrorService = require('../../../services/ErrorService');
 const MassifService = require('../../../services/MassifService');
 const NotificationService = require('../../../services/NotificationService');
 const RecentChangeService = require('../../../services/RecentChangeService');
+const { toMassif } = require('../../../services/mapping/converters');
 const {
   NOTIFICATION_TYPES,
   NOTIFICATION_ENTITIES,
@@ -34,92 +34,89 @@ module.exports = async (req, res) => {
   }
 
   // Launch creation request using transaction: it performs a rollback if an error occurs
-  try {
-    const newMassif = await sails.getDatastore().transaction(async (db) => {
-      const cleanedData = {
-        author: req.token.id,
-        dateInscription: new Date(),
-        documents: req.body.documents ? req.body.documents : [],
-        geogPolygon: await MassifService.geoJsonToWKT(req.body.geogPolygon),
-      };
 
-      const massif = await TMassif.create(cleanedData)
-        .fetch()
-        .usingConnection(db);
+  const newMassif = await sails.getDatastore().transaction(async (db) => {
+    const cleanedData = {
+      author: req.token.id,
+      dateInscription: new Date(),
+      documents: req.body.documents ? req.body.documents : [],
+      geogPolygon: await MassifService.geoJsonToWKT(req.body.geogPolygon),
+    };
 
-      // Name
-      await TName.create({
+    const massif = await TMassif.create(cleanedData)
+      .fetch()
+      .usingConnection(db);
+
+    // Name
+    await TName.create({
+      author: req.token.id,
+      dateInscription: new Date(),
+      isMain: true,
+      language: req.body.descriptionAndNameLanguage.id,
+      massif: massif.id,
+      name: req.body.name,
+    }).usingConnection(db);
+
+    // Description
+    if (ramda.propOr(null, 'description', req.body)) {
+      await TDescription.create({
         author: req.token.id,
+        body: req.body.description,
         dateInscription: new Date(),
-        isMain: true,
-        language: req.body.descriptionAndNameLanguage.id,
         massif: massif.id,
-        name: req.body.name,
+        language: req.body.descriptionAndNameLanguage.id,
+        title: req.body.descriptionTitle,
       }).usingConnection(db);
+    }
 
-      // Description
-      if (ramda.propOr(null, 'description', req.body)) {
-        await TDescription.create({
-          author: req.token.id,
-          body: req.body.description,
-          dateInscription: new Date(),
-          massif: massif.id,
-          language: req.body.descriptionAndNameLanguage.id,
-          title: req.body.descriptionTitle,
-        }).usingConnection(db);
-      }
+    return massif;
+  });
 
-      // Prepare data for Elasticsearch indexation
-      const newMassifPopulated = await TMassif.findOne(massif.id)
-        .populate('descriptions')
-        .populate('names')
-        .populate('documents')
-        .usingConnection(db);
-      newMassifPopulated.caves = await MassifService.getCaves(massif.id);
-      newMassifPopulated.entrances = await MassifService.getEntrances(
-        massif.id
-      );
+  // Prepare data for Elasticsearch indexation
 
-      const description =
-        newMassifPopulated.descriptions.length === 0
-          ? null
-          : `${newMassifPopulated.descriptions[0].title} ${newMassifPopulated.descriptions[0].body}`;
+  const newMassifPopulated = await MassifService.getPopulatedMassif(
+    newMassif.id
+  );
 
-      // Format data
-      const { cave, name, names, ...newMassifESData } = newMassifPopulated;
-      await ElasticsearchService.create('massifs', newMassifPopulated.id, {
-        ...newMassifESData,
-        name: newMassifPopulated.names[0].name, // There is only one name at the creation time
-        names: newMassifPopulated.names.map((n) => n.name).join(', '),
-        'nb caves': newMassifPopulated.caves.length,
-        'nb entrances': newMassifPopulated.entrances.length,
-        deleted: newMassifPopulated.isDeleted,
-        descriptions: [description],
-        tags: ['massif'],
-      });
+  const description =
+    newMassifPopulated.descriptions.length === 0
+      ? null
+      : `${newMassifPopulated.descriptions[0].title} ${newMassifPopulated.descriptions[0].body}`;
 
-      return newMassifPopulated;
-    });
+  // Format data
+  const { cave, name, names, ...newMassifESData } = newMassifPopulated;
+  await ElasticsearchService.create('massifs', newMassifPopulated.id, {
+    ...newMassifESData,
+    name: newMassifPopulated.names[0].name, // There is only one name at the creation time
+    names: newMassifPopulated.names.map((n) => n.name).join(', '),
+    'nb caves': newMassifPopulated.networks.length,
+    'nb entrances': newMassifPopulated.entrances.length,
+    deleted: newMassifPopulated.isDeleted,
+    descriptions: [description],
+    tags: ['massif'],
+  });
 
-    await RecentChangeService.setNameCreate(
-      'massif',
-      newMassif.id,
-      req.token.id,
-      req.body.name
-    );
+  await RecentChangeService.setNameCreate(
+    'massif',
+    newMassif.id,
+    req.token.id,
+    req.body.name
+  );
 
-    await NotificationService.notifySubscribers(
-      req,
-      newMassif,
-      req.token.id,
-      NOTIFICATION_TYPES.CREATE,
-      NOTIFICATION_ENTITIES.MASSIF
-    );
+  await NotificationService.notifySubscribers(
+    req,
+    newMassifPopulated,
+    req.token.id,
+    NOTIFICATION_TYPES.CREATE,
+    NOTIFICATION_ENTITIES.MASSIF
+  );
 
-    const params = {};
-    params.controllerMethod = 'MassifController.create';
-    return ControllerService.treat(req, null, newMassif, params, res);
-  } catch (e) {
-    return ErrorService.getDefaultErrorHandler(res)(e);
-  }
+  return ControllerService.treatAndConvert(
+    req,
+    null,
+    newMassifPopulated,
+    { controllerMethod: 'MassifController.create' },
+    res,
+    toMassif
+  );
 };

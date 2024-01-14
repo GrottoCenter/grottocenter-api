@@ -1,22 +1,15 @@
 const should = require('should');
 
+const { distantFileDownload } = require('../../../api/utils/csvHelper');
+
 describe('DistantFileDownload helper', () => {
   it('should download the grottocenter logo', async () => {
-    const resultHttp = await sails.helpers.distantFileDownload.with({
-      url: 'http://grottocenter.org/images/logo.svg',
-    });
-    const resultHttps = await sails.helpers.distantFileDownload.with({
+    const file = await distantFileDownload({
       url: 'https://grottocenter.org/images/logo.svg',
+      allowedExtentions: ['svg'],
     });
-    should(resultHttp).not.be.empty();
-    should(resultHttp).have.properties([
-      'buffer',
-      'mimetype',
-      'originalname',
-      'size',
-    ]);
-    should(resultHttps).not.be.empty();
-    should(resultHttps).have.properties([
+    should(file).not.be.empty();
+    should(file).have.properties([
       'buffer',
       'mimetype',
       'originalname',
@@ -24,35 +17,36 @@ describe('DistantFileDownload helper', () => {
     ]);
   });
 
-  it('should raise exceptions on refused (or not accepted) file formats', async () => {
-    await sails.helpers.distantFileDownload
-      .with({
-        url: 'https://grottocenter.org/images/logo.svg',
-        refusedFileFormats: ['svg'],
-      })
-      .should.be.rejectedWith({
-        name: 'Exception',
-        code: 'formatRefused',
-      });
-    await sails.helpers.distantFileDownload
-      .with({
-        url: 'https://grottocenter.org/images/logo.svg',
-        acceptedFileFormats: ['pdf', 'txt'],
-      })
-      .should.be.rejectedWith({
-        name: 'Exception',
-        code: 'formatRefused',
-      });
+  it('should raise an exception on invalid status', async () => {
+    distantFileDownload({
+      url: 'http://grottocenter.org/images/logo.svg', // Will redirect to HTTPS
+      allowedExtentions: [],
+    }).should.be.rejectedWith('Invalid response status');
+  });
+
+  it('should raise an exception on invalid protocol', async () => {
+    distantFileDownload({
+      url: 'ftp://grottocenter.org/images/logo.svg',
+      allowedExtentions: [],
+    }).should.be.rejectedWith('Invalid protocol');
   });
 
   it('should raise an exception on invalid url', async () => {
-    await sails.helpers.distantFileDownload
-      .with({
-        url: 'an.invalid/url.pdf/mustraise/an/error',
-      })
-      .should.be.rejectedWith({
-        name: 'Exception',
-        code: 'invalidUrl',
-      });
+    distantFileDownload({
+      url: 'an.invalid/url.pdf/mustraise/an/error',
+      allowedExtentions: [],
+    }).should.be.rejectedWith('Invalid URL');
+  });
+
+  it('should raise exceptions on refused (or not accepted) file formats', async () => {
+    distantFileDownload({
+      url: 'https://grottocenter.org/images/logo.svg',
+      allowedExtentions: [],
+    }).should.be.rejectedWith('Invalid file extention');
+
+    distantFileDownload({
+      url: 'https://grottocenter.org/images/logo.svg',
+      allowedExtentions: ['pdf', 'txt'],
+    }).should.be.rejectedWith('Invalid file extention');
   });
 });

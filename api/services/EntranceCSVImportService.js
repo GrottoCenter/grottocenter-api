@@ -1,6 +1,7 @@
 const { getDateFromKarstlink } = require('../../config/constants/karstlink');
 
 const doubleCheck = sails.helpers.csvhelpers.doubleCheck.with;
+const { getCreator } = require('../utils/csvHelper');
 
 module.exports = {
   getConvertedNameAndDescCaveFromCsv: (rawData, authorId) => {
@@ -145,9 +146,7 @@ module.exports = {
         key: 'karstlink:hasAccessDocument/dct:creator',
       });
       if (authorFromCsv) {
-        const auth = await sails.helpers.csvhelpers.getCreator.with({
-          creator: authorFromCsv,
-        });
+        const auth = await getCreator(authorFromCsv);
         authorLoc = auth.id;
       }
       result = {

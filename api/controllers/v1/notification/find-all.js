@@ -1,5 +1,4 @@
 const ControllerService = require('../../../services/ControllerService');
-const ErrorService = require('../../../services/ErrorService');
 const { toNotification } = require('../../../services/mapping/converters');
 const { toListFromController } = require('../../../services/mapping/utils');
 const NotificationService = require('../../../services/NotificationService');
@@ -21,53 +20,49 @@ module.exports = async (req, res) => {
     notified: req.token.id,
   };
 
-  try {
-    const notifications = await TNotification.find()
-      .where(whereClause)
-      .skip(skip)
-      .limit(size)
-      .sort(sort)
-      .populate('cave')
-      .populate('comment')
-      .populate('document')
-      .populate('description')
-      .populate('entrance')
-      .populate('grotto')
-      .populate('history')
-      .populate('location')
-      .populate('massif')
-      .populate('notificationType')
-      .populate('notified')
-      .populate('notifier')
-      .populate('rigging');
+  const notifications = await TNotification.find()
+    .where(whereClause)
+    .skip(skip)
+    .limit(size)
+    .sort(sort)
+    .populate('cave')
+    .populate('comment')
+    .populate('document')
+    .populate('description')
+    .populate('entrance')
+    .populate('grotto')
+    .populate('history')
+    .populate('location')
+    .populate('massif')
+    .populate('notificationType')
+    .populate('notified')
+    .populate('notifier')
+    .populate('rigging');
 
-    const populatedNotifications = await Promise.all(
-      notifications.map(async (n) => {
-        const result = await NotificationService.populateEntities(n);
-        return result;
-      })
-    );
+  const populatedNotifications = await Promise.all(
+    notifications.map(async (n) => {
+      const result = await NotificationService.populateEntities(n);
+      return result;
+    })
+  );
 
-    const countFound = await TNotification.count().where(whereClause);
+  const countFound = await TNotification.count().where(whereClause);
 
-    const params = {
-      controllerMethod: 'Notification.findAll',
-      limit: req.param('limit', 50),
-      maxRange: MAX_SIZE,
-      searchedItem: 'Notification',
-      skip: req.param('skip', 0),
-      total: countFound,
-      url: req.originalUrl,
-    };
-    return ControllerService.treatAndConvert(
-      req,
-      undefined,
-      populatedNotifications,
-      params,
-      res,
-      (data) => toListFromController('notifications', data, toNotification)
-    );
-  } catch (e) {
-    return ErrorService.getDefaultErrorHandler(res)(e);
-  }
+  const params = {
+    controllerMethod: 'Notification.findAll',
+    limit: req.param('limit', 50),
+    maxRange: MAX_SIZE,
+    searchedItem: 'Notification',
+    skip: req.param('skip', 0),
+    total: countFound,
+    url: req.originalUrl,
+  };
+  return ControllerService.treatAndConvert(
+    req,
+    undefined,
+    populatedNotifications,
+    params,
+    res,
+    (data) => toListFromController('notifications', data, toNotification)
+  );
 };

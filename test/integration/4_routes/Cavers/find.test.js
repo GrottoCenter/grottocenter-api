@@ -88,13 +88,13 @@ describe('Caver features', () => {
           should(caver).have.properties(CAVER_PROPERTIES);
           should(caver.nickname).not.be.empty();
           caver.documents.forEach((document) => {
-            should(document).have.properties('descriptions');
+            should(document).have.properties('description');
           });
           caver.exploredEntrances.forEach((entrance) => {
-            should(entrance).have.properties('names');
+            should(entrance).have.properties('name');
           });
           caver.organizations.forEach((organization) => {
-            should(organization).have.properties('names');
+            should(organization).have.properties('name');
           });
           return done();
         });

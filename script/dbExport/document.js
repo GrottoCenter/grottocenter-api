@@ -3,30 +3,46 @@ const exportUtils = require('./utils');
 const query = `
     SELECT
       d.id,
-      COALESCE(d.date_reviewed, d.date_inscription) AS last_modified,
-      COALESCE(d.id_reviewer, d.id_author) AS last_author_id,
-      COALESCE(r.nickname, a.nickname) AS last_author,
+      d.id_db_import AS import_id,
+      d.name_db_import AS import_source,
+      d.identifier,
+      d.id_identifier_type AS identifier_type,
+      d.date_inscription AS created_at,
+      d.date_reviewed AS last_modified,
+      d.id_author AS author_id,
+      a.nickname AS author,
+      d.id_reviewer AS last_author_id,
+      d.author_comment,
+      r.nickname AS last_author,
+      d.date_publication,
+      d.id_editor AS id_organization_editor,
+      d.id_library AS id_organization_library,
       t.name AS type,
       n.title,
-      n.body AS summary,
-      d.pages,
-      d.identifier,
-      d.date_publication,
+      n.body AS description,
       d.issue,
-      d.ref_bbs,
+      d.pages,
+      l.name AS license,
+      d.id_entrance,
+      d.id_cave,
       d.id_parent,
-      d.author_comment,
-      d.id_editor AS id_organization_editor,
-      d.id_library AS id_organization_library
+      d.id_authorization_document
     FROM t_document AS d
     LEFT JOIN t_description n ON n.id_document = d.id
     LEFT JOIN t_type t ON t.id = d.id_type
+    LEFT JOIN t_license l ON l.id = d.id_license
     LEFT JOIN t_caver a ON a.id = d.id_author
     LEFT JOIN t_caver r ON r.id = d.id_reviewer
     WHERE d.is_deleted = false AND d.is_validated = true
-    GROUP BY d.id, t.name, n.title, n.body, r.nickname, a.nickname
+    GROUP BY d.id, t.name, n.title, n.body, r.nickname, a.nickname, l.name
     ${exportUtils.PAGGING_PLACEHOLDER}
   `;
+
+// TODO Add old bbs fields ?
+// - pages_bbs_old
+// - comments_bbs_old
+// - publication_other_bbs_old
+// - publication_fascicule_bbs_old
 
 const baseUrl = 'https://grottocenter.blob.core.windows.net/documents/';
 
@@ -43,20 +59,28 @@ async function* processRows(source) {
         transform: (e) => ({ filename: e.filename, url: baseUrl + e.path }),
       },
       {
-        table: 'j_document_region',
+        table: 'j_document_iso3166_2',
         foreignField: 'id_document',
         rows,
-        localField: 'regions',
-        fields: ['r.id_country', 'r.name'],
+        localField: 'iso_regions',
+        fields: ['id_iso'],
         where: [],
-        join: ['LEFT JOIN t_region r ON r.id = id_region'],
-        transform: (e) => ({ country: e.id_country, name: e.name }),
+        transform: (e) => e.id_iso,
+      },
+      {
+        table: 'j_document_country',
+        foreignField: 'id_document',
+        rows,
+        localField: 'countries',
+        fields: ['id_country'],
+        where: [],
+        transform: (e) => e.id_country,
       },
       {
         table: 'j_document_subject',
         foreignField: 'id_document',
         rows,
-        localField: 'regions',
+        localField: 'subjects',
         fields: ['s.code', 's.subject'],
         where: [],
         join: ['LEFT JOIN t_subject s ON s.code = code_subject'],
@@ -80,10 +104,23 @@ async function* processRows(source) {
         where: [],
         transform: (e) => e.id_language,
       },
+      {
+        table: 'j_document_massif',
+        foreignField: 'id_document',
+        rows,
+        localField: 'massifs',
+        fields: ['id_massif'],
+        where: [],
+        transform: (e) => e.id_massif,
+      },
     ];
 
     await Promise.all(joins.map((e) => exportUtils.joinMany(e)));
-    for (const row of rows) yield row;
+    for (const row of rows) {
+      if (row.identifier_type) row.identifier_type = row.identifier_type.trim();
+
+      yield row;
+    }
   }
 }
 

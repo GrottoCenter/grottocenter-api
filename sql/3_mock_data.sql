@@ -278,6 +278,8 @@ VALUES ('FR', 'epo', false, false),
 	('US', 'epo', true, true);
 INSERT INTO public.j_document_caver_author (id_document, id_caver)
 VALUES (16746, 4);
+INSERT INTO public.j_document_massif (id_document, id_massif)
+VALUES (16746, 490);
 INSERT INTO public.j_document_language (id_document, id_language, is_main)
 VALUES (109, '000', false),
 	(161, '000', false),
@@ -295,23 +297,24 @@ VALUES (109, '000', false),
 	(12106, '000', false),
 	(12639, '000', false),
 	(16746, '000', false);
-INSERT INTO public.j_document_region (id_document, id_region)
-VALUES (109, 82),
-	(161, 82),
-	(191, 82),
-	(1378, 82),
-	(1409, 82),
-	(2542, 82),
-	(2591, 82),
-	(2998, 82),
-	(5801, 82),
-	(6065, 82),
-	(6068, 82),
-	(6096, 82),
-	(10406, 82),
-	(12106, 82),
-	(12639, 82),
-	(16746, 82);
+INSERT INTO public.j_document_iso3166_2 (id_document, id_iso)
+VALUES (109,'FR-ARA'),
+	(161,'FR-ARA'),
+	(191,'FR-ARA'),
+	(1378,'FR-ARA'),
+	(1409,'FR-ARA'),
+	(2542,'FR-ARA'),
+	(2591,'FR-ARA'),
+	(2998,'FR-ARA'),
+	(5801,'FR-ARA'),
+	(6065,'FR-ARA'),
+	(6068,'FR-ARA'),
+	(6096,'FR-ARA'),
+	(10406,'FR-ARA'),
+	(12106,'FR-ARA');
+INSERT INTO public.j_document_country (id_document, id_country)
+VALUES (12639, 'BE'),
+	(16746, 'FR');
 INSERT INTO public.j_entrance_caver (id_entrance, id_caver)
 VALUES (1, 1),
 	(1, 4),

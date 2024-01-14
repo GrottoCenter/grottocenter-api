@@ -1,5 +1,8 @@
 const RightService = require('../../../services/RightService');
 
+// Usused by front
+// TODO Remove as no input validation is done ?
+// TDocumentDuplicate are created only when importing a CSV
 module.exports = async (req, res) => {
   const hasRight = RightService.hasGroup(
     req.token.groups,

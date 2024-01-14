@@ -1,24 +1,3 @@
-const RECURSIVE_GET_CHILD_DOC = `
-  WITH RECURSIVE recursiveChildren AS (SELECT *
-                                       FROM t_document
-                                       WHERE id_parent = $1
-                                       UNION ALL
-                                       SELECT td.*
-                                       FROM t_document td
-                                              INNER JOIN recursiveChildren
-                                                         ON td.id_parent = recursiveChildren.id)
-  SELECT *
-  FROM recursiveChildren
-  WHERE is_validated = true
-    AND is_deleted = false;
-`;
-
-// Doc types needing a parent in order to be created
-// (ex; an issue needs a collection, an article needs an issue)
-const MANDATORY_PARENT_TYPES = ['article', 'issue'];
-const oldTopoFilesUrl = 'https://www.grottocenter.org/upload/topos/';
-const ramda = require('ramda');
-const CommonService = require('./CommonService');
 const DescriptionService = require('./DescriptionService');
 const ElasticsearchService = require('./ElasticsearchService');
 const FileService = require('./FileService');
@@ -29,6 +8,10 @@ const {
   NOTIFICATION_TYPES,
   NOTIFICATION_ENTITIES,
 } = require('./NotificationService');
+const {
+  valIfTruthyOrNull,
+  distantFileDownload,
+} = require('../utils/csvHelper');
 
 const getAdditionalESIndexFromDocumentType = (document) => {
   if (document.type.name === 'Issue') {
@@ -60,7 +43,7 @@ module.exports = {
   /**
    * Based on the logstash.conf file.
    * The document must be fully populated and with all its names set
-   *    (@see DocumentService.setNamesOfPopulatedDocument).
+   *    (@see DocumentService.populateFullDocumentSubEntities).
    */
   addDocumentToElasticSearchIndexes: async (document) => {
     const esBody = module.exports.getElasticsearchBody(document);
@@ -79,179 +62,163 @@ module.exports = {
     }
   },
 
-  getElasticsearchBody: (document) => {
-    const { type, modifiedDocJson, ...docWithoutJsonAndType } = document;
-    return {
-      ...docWithoutJsonAndType,
-      authors: document.authors
-        ? document.authors.map((a) => a.nickname).join(', ')
-        : null,
-      'contributor id': document.author.id,
-      'contributor nickname': document.author.nickname,
-      date_part: document.datePublication
-        ? new Date(document.datePublication).getFullYear()
-        : null,
-      description: document.descriptions[0].body,
-      'editor id': ramda.pathOr(null, ['editor', 'id'], document),
-      'editor name': ramda.pathOr(null, ['editor', 'name'], document),
-      'library id': ramda.pathOr(null, ['library', 'id'], document),
-      'library name': ramda.pathOr(null, ['library', 'name'], document),
-      regions: document.regions
-        ? document.regions.map((r) => r.name).join(', ')
-        : null,
-      subjects: document.subjects
-        ? document.subjects.map((s) => s.subject).join(', ')
-        : null,
-      title: document.descriptions[0].title,
-      'type id': ramda.propOr(null, 'id', type),
-      'type name': ramda.propOr(null, 'name', type),
-      deleted: document.isDeleted,
-    };
-  },
+  // Used to create or update a document in elasticsearch
+  // Should match the the same format than the logstash document sql query
+  getElasticsearchBody: (doc) => ({
+    id: doc.id,
+    identifier: doc.identifier ?? null,
+    id_identifier_type: doc.identifierType?.id ?? null,
+    deleted: doc.isDeleted,
+    id_db_import: doc.idDbImport ?? null,
+    name_db_import: doc.nameDbImport ?? null,
+    date_publication: doc.datePublication ?? null,
+    'contributor id': doc.author.id,
+    'contributor nickname': doc.author.nickname,
+    subjects: doc.subjects?.map((e) => e.id)?.join(', ') ?? null,
+    authors: doc.authors?.map((a) => a.nickname).join(', ') ?? null,
+    'type id': doc.type?.id,
+    'type name': doc.type?.name,
+    title: doc.descriptions?.[0].title,
+    description: doc.descriptions?.[0].body,
+    issue: doc.issue ?? null,
+    countries: doc?.countries?.map((e) => e.id)?.join(', ') ?? [],
+    iso_regions: doc?.isoRegions?.map((e) => e.id)?.join(', ') ?? [],
+    'editor id': doc.editor?.id ?? null,
+    'editor name': doc.editor?.name ?? null,
+    'library id': doc.library?.id ?? null,
+    'library name': doc.library?.name ?? null,
+  }),
 
-  getLangDescDataFromClient: (req) => {
-    let langDescData = {
-      author: req.token.id,
-      description: req.body.description,
-      title: req.body.title,
-    };
-
-    if (ramda.pathOr(false, ['documentMainLanguage', 'id'], req.body)) {
-      langDescData = {
-        ...langDescData,
-        documentMainLanguage: {
-          id: req.body.documentMainLanguage.id,
-        },
-      };
-    }
-    if (ramda.pathOr(false, ['titleAndDescriptionLanguage', 'id'], req.body)) {
-      langDescData = {
-        ...langDescData,
-        titleAndDescriptionLanguage: {
-          id: req.body.titleAndDescriptionLanguage.id,
-        },
-      };
-    }
-
-    return langDescData;
-  },
+  getDescriptionDataFromClient: (body, authorId) => ({
+    author: authorId,
+    body: body.description,
+    title: body.title,
+    language: body.mainLanguage,
+  }),
 
   // Extract everything from the request body except id and dateInscription
-  getConvertedDataFromClient: async (req) => {
-    // Remove id if present to avoid null id (and an error)
-    const { id, option, ...reqBodyWithoutId } = req.body;
-
-    const optionFound = option
-      ? await TOption.findOne({ name: option })
-      : undefined;
-
+  // Used when creating or editing an existing document
+  getConvertedDataFromClient: async (body) => {
     // Massif will be deleted in the future (a document can be about many massifs and a massif can be the subject of many documents): use massifs
-    const massif = ramda.pathOr(undefined, ['massif', 'id'], req.body);
-    const massifs = [
-      ...ramda.propOr([], 'massifs', req.body),
-      ...(massif ? [massif] : []),
-    ];
+    const massif = body.massif?.id;
+    const massifs = [...(body.massifs ?? []), ...(massif ? [massif] : [])];
+
+    const optionFound = undefined;
+    // eslint-disable-next-line no-param-reassign
+    if (body.option) body.option = await TOption.findOne({ name: body.option });
+    let typeFound;
+    if (body.type) typeFound = await TType.findOne({ name: body.type });
 
     return {
-      ...reqBodyWithoutId,
-      authorizationDocument: ramda.pathOr(
-        undefined,
-        ['authorizationDocument', 'id'],
-        req.body
-      ),
-      authors: req.body.authors ? req.body.authors.map((a) => a.id) : undefined,
-      datePublication:
-        req.body.publicationDate === '' ? null : req.body.publicationDate,
-      editor: ramda.pathOr(undefined, ['editor', 'id'], req.body),
-      identifierType: ramda.pathOr(
-        undefined,
-        ['identifierType', 'id'],
-        req.body
-      ),
-      issue:
-        req.body.issue && req.body.issue !== '' ? req.body.issue : undefined,
-      library: ramda.pathOr(undefined, ['library', 'id'], req.body),
-      license: ramda.pathOr(1, ['license', 'id'], req.body),
-      massif,
+      identifier: body.identifier,
+      identifierType: body.identifierType?.id,
+
+      // dateInscription is added only at document creation
+      // dateReviewed will be updated automaticly by the SQL historisation trigger
+      datePublication: valIfTruthyOrNull(body.datePublication),
+      // author are added only at document creation (done after if needed)
+      authors: body.authors?.map((a) => a.id),
+      authorsGrotto: body.authorsGrotto?.map((a) => a.id),
+      editor: body.editor?.id,
+      library: body.library?.id,
+      authorComment: body.creatorComment,
+
+      type: typeFound?.id,
+      // descriptions is changed independently
+      subjects: body.subjects?.map((s) => s.id ?? s.code),
+      issue: valIfTruthyOrNull(body.issue),
+      pages: valIfTruthyOrNull(body.pages),
+      license: body.license?.id ?? 1,
+      option: optionFound?.id,
+      languages: body.mainLanguage ? [body.mainLanguage] : [],
+      // massif, // Deprecated, use massifs instead
       massifs,
-      option: optionFound ? optionFound.id : undefined,
-      parent: ramda.pathOr(undefined, ['partOf', 'id'], req.body),
-      regions: req.body.regions ? req.body.regions.map((r) => r.id) : undefined,
-      subjects: req.body.subjects
-        ? req.body.subjects.map((s) => s.code)
-        : undefined,
-      type: ramda.pathOr(undefined, ['documentType', 'id'], req.body),
+      // cave is linked with the cave/add-document controller
+      // entrance is linked with the entrance/add-document controller
+      // files changes are handled independently
+      // regions: body.regions?.map((r) => r.id), // Deprecated
+      isoRegions: body.iso3166?.map((s) => s.iso)?.filter((e) => e.length > 2),
+      countries: body.iso3166?.map((s) => s.iso)?.filter((e) => e.length <= 2),
+      parent: body.parent?.id,
+      // children cannot be set. The parent child relation can only be changed in one direction
+      authorizationDocument: body.authorizationDocument?.id,
     };
+  },
+
+  appendPopulateForSimpleDocument: (docQuery) => {
+    docQuery
+      .populate('identifierType')
+      .populate('author')
+      .populate('authors')
+      .populate('authorsGrotto')
+      .populate('reviewer')
+      .populate('validator')
+      .populate('editor')
+      .populate('library')
+      .populate('type')
+      .populate('descriptions')
+      .populate('subjects')
+      .populate('license')
+      .populate('languages')
+      .populate('option')
+      // .populate('massif') // deprecated, replaced by countries and isoRegions
+      .populate('countries')
+      .populate('isoRegions')
+      // .populate('massif') // deprecated, replaced by massifs
+      .populate('massifs')
+      .populate('files', { where: { isValidated: true } });
+    return docQuery;
+  },
+
+  appendPopulateForFullDocument: (docQuery) => {
+    module.exports
+      .appendPopulateForSimpleDocument(docQuery)
+      .populate('cave')
+      .populate('entrance');
+    // .populate('parent') // resolved in populateFullDocumentSubEntities()
+    // .populate('children') // resolved in populateFullDocumentSubEntities()
+    // .populate('authorizationDocument'); // resolved in populateFullDocumentSubEntities()
+
+    return docQuery;
   },
 
   // Set name of cave, entrance, massif, editor and library if present
-  setNamesOfPopulatedDocument: async (document) => {
-    if (!ramda.isNil(document.entrance))
-      await NameService.setNames([document.entrance], 'entrance');
-    if (!ramda.isNil(document.cave)) {
-      await NameService.setNames([document.cave], 'cave');
+  populateFullDocumentSubEntities: async (document) => {
+    const asyncQueue = [];
+
+    // eslint-disable-next-line no-param-reassign
+    document.mainLanguage = module.exports.getMainLanguage(document.languages);
+
+    if (document.entrance) {
+      asyncQueue.push(NameService.setNames([document.entrance], 'entrance'));
     }
-    if (!ramda.isNil(document.massif)) {
-      await NameService.setNames([document.massif], 'massif');
+    if (document.cave) {
+      asyncQueue.push(NameService.setNames([document.cave], 'cave'));
     }
-    if (!ramda.isNil(document.library)) {
-      await NameService.setNames([document.library], 'grotto');
+    const allMassifs = document.massifs;
+    if (allMassifs.length > 0) {
+      asyncQueue.push(NameService.setNames(allMassifs, 'massif'));
     }
-    if (!ramda.isNil(document.editor)) {
-      await NameService.setNames([document.editor], 'grotto');
+    const allGrottos = [];
+    if (document.library) allGrottos.push(document.library);
+    if (document.editor) allGrottos.push(document.editor);
+    if (document.authorsGrotto) allGrottos.push(...document.authorsGrotto);
+    if (allGrottos.length > 0) {
+      asyncQueue.push(NameService.setNames(allGrottos, 'grotto'));
     }
-    await DescriptionService.setDocumentDescriptions(document);
-    if (!ramda.isNil(document.authorizationDocument)) {
-      await DescriptionService.setDocumentDescriptions(
-        document.authorizationDocument
-      );
+
+    async function resolveDocument(doc, key) {
+      // eslint-disable-next-line no-param-reassign
+      doc[key] = (await module.exports.getDocuments([doc[key]]))[0];
     }
+
+    if (document.parent) asyncQueue.push(resolveDocument(document, 'parent'));
+    if (document.authorizationDocument)
+      asyncQueue.push(resolveDocument(document, 'authorizationDocument'));
+
+    await Promise.all(asyncQueue);
+
     return document;
-  },
-  /**
-   * Deep populate children and sub-children only (not recursive currently)
-   * @param {*} doc
-   * @returns {*} the doc with its children and sub-children populated
-   */
-  deepPopulateChildren: async (doc) => {
-    const result = await CommonService.query(RECURSIVE_GET_CHILD_DOC, [doc.id]);
-    const childIds = result.rows.map((d) => d.id);
-
-    // Populate
-    const childrenAndGrandChildren = await TDocument.find({
-      id: { in: childIds },
-    }).populate('descriptions');
-    const children = childrenAndGrandChildren.filter(
-      (c) => c.parent === doc.id
-    );
-    const grandChildren = childrenAndGrandChildren.filter(
-      (c) => c.parent !== doc.id
-    );
-
-    const formattedChildren = [];
-    // Format children
-    for (const childDoc of children) {
-      // Is a direct child ?
-      if (childDoc.parent === doc.id) {
-        formattedChildren.push(childDoc);
-      }
-    }
-    // Format grand children
-    for (const grandChildDoc of grandChildren) {
-      const childIdx = formattedChildren.findIndex(
-        (c) => c.id === grandChildDoc.parent
-      );
-      if (childIdx !== -1) {
-        const alreadyPickedChild = formattedChildren[childIdx];
-        if (alreadyPickedChild.children) {
-          alreadyPickedChild.children.push(grandChildDoc);
-        } else {
-          alreadyPickedChild.children = [grandChildDoc];
-        }
-      }
-    }
-    doc.children = formattedChildren; // eslint-disable-line no-param-reassign
-    return doc;
   },
 
   /**
@@ -266,50 +233,40 @@ module.exports = {
     return languages.filter((l) => l.isMain);
   },
 
-  getTopoFiles: async (docId) => {
-    const files = await TFile.find({ document: docId });
-    // Build path old
-    return files.map((f) => ({
-      ...f,
-      pathOld: oldTopoFilesUrl + f.path,
-    }));
-  },
-
-  updateDocument: async (req, newData, newDescriptionData, newFiles) => {
-    const jsonData = {
-      ...newData,
-      ...newDescriptionData,
-      id: req.param('id'),
-      author: req.token.id,
-      newFiles: ramda.isEmpty(newFiles) ? undefined : newFiles,
-    };
-    const updatedDocument = await TDocument.updateOne(req.param('id')).set({
+  async updateDocument({
+    documentId,
+    reviewerId,
+    documentData,
+    descriptionData,
+    newFiles,
+    modifiedFiles,
+    deletedFiles,
+  } = {}) {
+    return TDocument.updateOne(documentId).set({
+      dateReviewed: new Date(), // Avoid an uniqueness error
       isValidated: false,
       dateValidation: null,
-      dateReviewed: new Date(),
-      reviewer: req.token.id,
-      modifiedDocJson: jsonData,
+      modifiedDocJson: {
+        reviewerId,
+        documentData,
+        descriptionData,
+        newFiles,
+        modifiedFiles,
+        deletedFiles,
+      },
     });
-
-    await NotificationService.notifySubscribers(
-      req,
-      updatedDocument,
-      req.token.id,
-      NOTIFICATION_TYPES.UPDATE,
-      NOTIFICATION_ENTITIES.DOCUMENT
-    );
-
-    await DescriptionService.setDocumentDescriptions(updatedDocument, false);
-
-    return updatedDocument;
   },
 
   createDocument: async (
     req,
     documentData,
-    langDescData,
+    descriptionData,
     shouldDownloadDistantFile = false
   ) => {
+    // Doc types needing a parent in order to be created
+    // (ex; an issue needs a collection, an article needs an issue)
+    const MANDATORY_PARENT_TYPES = ['article', 'issue'];
+
     const document = await sails.getDatastore().transaction(async (db) => {
       // Perform some checks
       const docType =
@@ -331,27 +288,14 @@ module.exports = {
         .fetch()
         .usingConnection(db);
 
-      // Create associated data not handled by TDocument manually
-      if (ramda.pathOr(null, ['documentMainLanguage', 'id'], langDescData)) {
-        await JDocumentLanguage.create({
-          document: createdDocument.id,
-          language: langDescData.documentMainLanguage.id,
-          isMain: true,
-        }).usingConnection(db);
-      }
-
       await TDescription.create({
-        author: langDescData.author,
-        body: langDescData.description,
-        dateInscription: ramda.propOr(
-          new Date(),
-          'dateInscription',
-          langDescData
-        ),
-        dateReviewed: ramda.propOr(undefined, 'dateReviewed', langDescData),
+        dateInscription: descriptionData.dateInscription ?? new Date(),
+        dateReviewed: descriptionData?.dateReviewed,
+        author: descriptionData.author,
+        title: descriptionData.title,
+        body: descriptionData.body,
         document: createdDocument.id,
-        language: langDescData.titleAndDescriptionLanguage.id,
-        title: langDescData.title,
+        language: descriptionData.language,
       }).usingConnection(db);
 
       return createdDocument;
@@ -361,40 +305,30 @@ module.exports = {
       'document',
       document.id,
       req.token.id,
-      langDescData.title
+      descriptionData.title
     );
 
-    const populatedDocument = await module.exports.getDocument(
-      document.id,
-      false
-    );
+    const populatedDocuments = await module.exports.getDocuments([document.id]);
+    const populatedDocument = populatedDocuments[0];
 
-    if (
-      populatedDocument.identifier &&
-      ramda.pathOr('', ['identifierType', 'id'], populatedDocument).trim() ===
-        'url'
-    ) {
-      sails.log.info(`Downloading ${populatedDocument.identifier}...`);
+    const documentType = populatedDocument?.identifierType?.id?.trim() ?? '';
+    if (documentType === 'url' && shouldDownloadDistantFile) {
+      const url = populatedDocument.identifier;
+      sails.log.info(`Downloading ${url}...`);
       const acceptedFileFormats = await TFileFormat.find();
+      const allowedExtentions = acceptedFileFormats.map((f) =>
+        f.extension.trim()
+      );
 
-      if (shouldDownloadDistantFile) {
-        // Download distant file & tolerate error
-        const file = await sails.helpers.distantFileDownload
-          .with({
-            url: populatedDocument.identifier,
-            acceptedFileFormats: acceptedFileFormats.map((f) =>
-              f.extension.trim()
-            ),
-            refusedFileFormats: ['html'], // don't download html page, they are not a valid file for GC
-          })
-          .tolerate((error) =>
-            sails.log.error(
-              `Failed to download ${populatedDocument.identifier}: ${error.message}`
-            )
-          );
-        if (file) {
-          await FileService.document.create(file, document.id);
-        }
+      const file = await distantFileDownload({
+        url,
+        allowedExtentions,
+      }).catch((err) => {
+        sails.log.error(`Failed to download ${url}: ${err}`);
+      });
+
+      if (file) {
+        await FileService.document.create(file, document.id);
       }
     }
 
@@ -410,106 +344,89 @@ module.exports = {
   },
 
   /**
-   * Populate any document-like object.
-   * Avoid using when possible. Mainly used for json column that cannot be populated
-   * using waterline query language.
-   * @param {*} document
+   * Populate document-like object for a csv duplicate import or a modified document
+   * Mainly used for json column that cannot be populated using waterline query language.
+   * @param {*} documentData format from getConvertedDataFromClient()
    * @returns populated document
    */
-  populateJSON: async (document) => {
+  populateJSON: async (documentId, documentData) => {
     const {
+      identifierType,
       author,
       authors,
-      cave,
-      editor,
-      entrance,
-      identifierType,
-      languages,
-      library,
-      license,
-      massif,
-      parent,
-      regions,
+      authorsGrotto,
       reviewer,
-      subjects,
+      editor,
+      library,
       type,
+      subjects,
+      license,
       option,
+      languages,
+      countries,
+      isoRegions,
+      cave,
+      entrance,
+      massifs,
+      parent,
       authorizationDocument,
-      ...cleanedData
-    } = document;
+      ...otherSimpleData
+    } = documentData;
 
     // Join the tables
-    const doc = { ...cleanedData };
-    doc.authorizationDocument = authorizationDocument
-      ? await TDocument.findOne(authorizationDocument)
-      : null;
-    doc.cave = cave ? await TCave.findOne(cave) : null;
-    doc.editor = editor ? await TGrotto.findOne(editor) : null;
-    doc.entrance = entrance ? await TEntrance.findOne(entrance) : null;
+    const doc = { ...otherSimpleData, id: documentId };
     doc.identifierType = identifierType
       ? await TIdentifierType.findOne(identifierType)
       : null;
-    doc.library = library ? await TGrotto.findOne(library) : null;
-    doc.license = license ? await TLicense.findOne(license) : null;
-    doc.massif = massif ? await TMassif.findOne(massif) : null;
-    doc.option = option ? await TOption.findOne(option) : null;
-    doc.parent = parent
-      ? await TDocument.findOne(parent).populate('descriptions')
-      : null;
-    doc.reviewer = reviewer ? await TCaver.findOne(reviewer) : null;
-    doc.type = type ? await TType.findOne(type) : null;
-
     doc.author = author ? await TCaver.findOne(author) : null;
-    doc.authors = authors
-      ? await Promise.all(
-          authors.map(async (a) => {
-            const res = await TCaver.findOne(a);
-            return res;
-          })
-        )
+    doc.authors = authors ? await TCaver.find({ id: authors }) : [];
+    doc.authorsGrotto = authorsGrotto
+      ? await TGrotto.find({ id: authorsGrotto })
       : [];
-    doc.languages = languages
-      ? await Promise.all(
-          languages.map(async (lang) => {
-            const res = await TLanguage.findOne(lang);
-            return res;
-          })
-        )
-      : [];
-    doc.regions = regions
-      ? await Promise.all(
-          regions.map(async (region) => {
-            const res = await TRegion.findOne(region);
-            return res;
-          })
-        )
-      : [];
-    doc.subjects = subjects
-      ? await Promise.all(
-          subjects.map(async (subject) => {
-            const res = await TSubject.findOne(subject);
-            return res;
-          })
-        )
-      : [];
+    doc.reviewer = reviewer ? await TCaver.findOne(reviewer) : null;
+    doc.editor = editor ? await TGrotto.findOne(editor) : null;
+    doc.library = library ? await TGrotto.findOne(library) : null;
+
+    doc.type = type ? await TType.findOne(type) : null;
+    // descriptions is a special case
+    doc.subjects = subjects ? await TSubject.find({ id: subjects }) : [];
+    doc.license = license ? await TLicense.findOne(license) : null;
+    doc.option = option ? await TOption.findOne(option) : null;
+    doc.languages = languages ? await TLanguage.find({ id: languages }) : [];
+
+    // TODO files ?
+    doc.countries = countries ? await TCountry.find({ id: countries }) : [];
+    doc.isoRegions = isoRegions ? await TISO31662.find({ id: isoRegions }) : [];
+    doc.cave = cave ? await TCave.findOne(cave) : null;
+    doc.entrance = entrance ? await TEntrance.findOne(entrance) : null;
+    doc.massifs = massifs ? await TCountry.find({ id: massifs }) : [];
+    doc.parent = parent
+      ? (await module.exports.getDocuments([parent]))[0]
+      : null;
+    doc.authorizationDocument = authorizationDocument
+      ? await TDocument.findOne(authorizationDocument)
+      : null;
     return doc;
   },
 
-  getDocument: async (documentId, setParentDescriptions = false) => {
-    // Simple function currently but will be extended depending on needs
-    const result = await TDocument.findOne(documentId)
-      .populate('cave')
-      .populate('entrance')
-      .populate('files')
-      .populate('identifierType')
-      .populate('license')
-      .populate('type');
-    await DescriptionService.setDocumentDescriptions(
-      result,
-      setParentDescriptions
-    );
-    return result;
+  /**
+   * Get basic informations for a list of document ids
+   * The result is intended to be passed to the toSimpleDocument converter
+   * @param {Array} documentIds
+   * @returns
+   */
+  getDocuments: async (documentIds) => {
+    if (documentIds.length === 0) return [];
+    return TDocument.find({ id: documentIds })
+      .populate('descriptions')
+      .populate('type')
+      .populate('files', { where: { isValidated: true } });
   },
+
+  getDocumentChildren: async (documentId) =>
+    TDocument.find({ parent: documentId })
+      .populate('descriptions')
+      .populate('type'),
 
   getHDocumentById: async (documentId) =>
     HDocument.find({ t_id: documentId })

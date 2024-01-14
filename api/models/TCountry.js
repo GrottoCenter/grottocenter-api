@@ -119,5 +119,11 @@ module.exports = {
       via: 'country',
       through: 'JCaverCountrySubscription',
     },
+
+    documents: {
+      collection: 'TDocument',
+      via: 'country',
+      through: 'JDocumentCountry',
+    },
   },
 };

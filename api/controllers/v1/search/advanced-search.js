@@ -3,8 +3,8 @@ const ElasticsearchService = require('../../../services/ElasticsearchService');
 const {
   INDEX_NAMES,
 } = require('../../../../config/constants/elasticsearch-indexes');
-const { toSearchResult } = require('../../../services/mapping/converters');
 const {
+  toSearchResult,
   toCompleteSearchResult,
 } = require('../../../services/mapping/converters');
 
@@ -16,7 +16,7 @@ const {
  * - matchAllFields: bool, determine if the results need to match all the fields (logic AND)
  *      or at least one of them (logic OR) (default = true) (FACULTATIVE)
  */
-module.exports = (req, res) => {
+module.exports = async (req, res) => {
   // Store every params in the url and check if there is the type parameter
   const paramsURL = req.query;
 
@@ -37,37 +37,13 @@ module.exports = (req, res) => {
     paramsURL.matchAllFields = true;
   }
 
-  const params = {};
-
-  return ElasticsearchService.advancedSearchQuery(paramsURL)
-    .then((results) => {
-      if (complete) {
-        return ControllerService.treatAndConvert(
-          req,
-          undefined,
-          results,
-          params,
-          res,
-          toCompleteSearchResult
-        );
-      }
-      return ControllerService.treatAndConvert(
-        req,
-        undefined,
-        results,
-        params,
-        res,
-        toSearchResult
-      );
-    })
-    .catch((err) =>
-      ControllerService.treatAndConvert(
-        req,
-        err,
-        undefined,
-        params,
-        res,
-        toSearchResult
-      )
-    );
+  const results = await ElasticsearchService.advancedSearchQuery(paramsURL);
+  return ControllerService.treatAndConvert(
+    req,
+    undefined,
+    results,
+    {},
+    res,
+    complete ? toCompleteSearchResult : toSearchResult
+  );
 };

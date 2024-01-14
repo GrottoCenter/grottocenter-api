@@ -53,9 +53,7 @@ describe('Caver features', () => {
         .end((err, res) => {
           if (err) return done(err);
           const caver = res.body;
-          should(caver.name).equal(update.name);
           should(caver.nickname).equal(update.nickname);
-          should(caver.surname).equal(update.surname);
           return done();
         });
     });

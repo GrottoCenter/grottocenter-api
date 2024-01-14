@@ -63,19 +63,13 @@ module.exports = async (req, res) => {
       descriptionsData
     );
 
-    const populatedCave = await TCave.findOne(createdCave.id)
-      .populate('descriptions')
-      .populate('documents')
-      .populate('histories')
-      .populate('names');
+    const populatedCave = await CaveService.getCavePopulated(createdCave.id);
 
-    const params = {};
-    params.controllerMethod = 'CaveController.create';
     return ControllerService.treatAndConvert(
       req,
       null,
       populatedCave,
-      params,
+      { controllerMethod: 'CaveController.create' },
       res,
       toCave
     );

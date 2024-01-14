@@ -5,9 +5,7 @@ const CaveModel = require('./models/CaveModel');
 const CaverModel = require('./models/CaverModel');
 const DocumentModel = require('./models/DocumentModel');
 const EntranceModel = require('./models/EntranceModel');
-const DocumentDuplicateModel = require('./models/DocumentDuplicateModel');
 const EntranceDuplicateModel = require('./models/EntranceDuplicateModel');
-const LanguageModel = require('./models/LanguageModel');
 const MassifModel = require('./models/MassifModel');
 const NotificationModel = require('./models/NotificationModel');
 const OrganizationModel = require('./models/OrganizationModel');
@@ -37,8 +35,8 @@ const c = {
     names: toList('names', source, c.toName),
     descriptions: toList('descriptions', source, c.toSimpleDescription),
     entrances: toList('entrances', source, c.toSimpleEntrance),
-    documents: toList('documents', source, c.toDocument),
     massifs: toList('massifs', source, c.toSimpleMassif),
+    documents: toList('documents', source, c.toSimpleDocument),
   }),
 
   toDeletedCave: (source) => ({
@@ -74,8 +72,12 @@ const c = {
       nickname: source.nickname,
       surname: source.surname,
       name: source.name,
-      subscribedToCountries: source.subscribedToCountries,
-      subscribedToMassifs: source.subscribedToMassifs,
+      subscribedToCountries: source.subscribedToCountries?.map((e) => e.id),
+      subscribedToMassifs: toList(
+        'subscribedToMassifs',
+        source,
+        c.toSimpleMassif
+      ),
       // Mail and hashed password should never be returned (RGPD)
     };
 
@@ -95,7 +97,7 @@ const c = {
     // Convert collections
     listParser('exploredEntrances', c.toSimpleEntrance);
     listParser('groups', (group) => group);
-    listParser('documents', c.toDocument);
+    listParser('documents', c.toSimpleDocument);
     listParser('grottos', c.toOrganization, 'organizations');
 
     return result;
@@ -139,58 +141,32 @@ const c = {
   }),
 
   toCompleteSearchResult: (source) => {
-    const res = {};
-    const values = [];
-    const {
-      toCave,
-      toCaver,
-      toDocument,
-      toEntrance,
-      toLanguage,
-      toMassif,
-      toOrganization,
-    } = module.exports;
+    // For each result of the search, convert the item and add it to the json to send
+    const results = source.hits.hits.map((item) => {
+      const type = item._source.tags[0];
+      let data = {};
 
-    // For each result of the research, convert the item and add it to the json to send
-    source.hits.hits.forEach((item) => {
-      let data = '';
-      // Convert the data according to its first tag
-      switch (item._source.tags[0]) {
-        case 'cave':
-          data = toCave(item._source);
-          break;
-        case 'caver':
-          data = toCaver(item._source);
-          break;
-        case 'document':
-          data = toDocument(item._source);
-          break;
-        case 'entrance':
-          data = toEntrance(item._source);
-          break;
-        case 'grotto':
-          data = toOrganization(item._source);
-          break;
-        case 'language':
-          data = toLanguage(item._source);
-          break;
-        case 'massif':
-          data = toMassif(item._source);
-          break;
-        case 'network':
-          data = toCave(item._source);
-          break;
-        default:
-      }
-      // Add the type and hightlight of the data
-      data.type = item._source.tags[0];
-      data.highlights = item.highlight;
+      if (type === 'caver') data = c.toCaver(item._source);
+      else if (type === 'document') data = c.toSearchDocument(item._source);
+      else if (type === 'entrance') data = c.toEntrance(item._source);
+      else if (type === 'grotto') data = c.toOrganization(item._source);
+      else if (type === 'language') data = c.toLanguage(item._source);
+      else if (type === 'massif') data = c.toMassif(item._source);
+      else if (type === 'cave') data = c.toCave(item._source);
+      else if (type === 'network') data = c.toCave(item._source);
 
-      values.push(data);
+      return {
+        ...data,
+        // Add the type and hightlight to the data
+        type,
+        highlights: item.highlight,
+      };
     });
-    res.results = values;
-    res.totalNbResults = source.hits.total.value;
-    return res;
+
+    return {
+      results,
+      totalNbResults: source.hits.total.value,
+    };
   },
 
   toSimpleDescription: (source) => {
@@ -221,177 +197,142 @@ const c = {
     cave: convertIfObject(source.cave, c.toSimpleCave),
   }),
 
+  toDocumentDescriptions: (sources) => {
+    if (!sources) return {};
+    const descs = sources.filter((e) => !e.isDeleted);
+    if (!descs || descs.length === 0) return {};
+    return {
+      title: descs[0].title,
+      description: descs[0].body,
+    };
+  },
+
+  toSimpleDocument: (source) => ({
+    id: source.id,
+    type: source.type?.name,
+    ...c.toDocumentDescriptions(source.descriptions),
+    files: toList('files', source, c.toFile),
+    dateInscription: source.dateInscription,
+    dateReviewed: source.dateReviewed,
+    datePublication: source.datePublication,
+    isValidated: source.isValidated,
+    isDeleted: source.isDeleted,
+  }),
+
+  // There is 2 source format
+  // - From logstash
+  // - From
+  toSearchDocument: (source) => {
+    const result = {
+      ...DocumentModel,
+      id: source.id,
+      importId: source.idDbImport ?? undefined,
+      importSource: source.nameDbImport?.trim(),
+      identifierType:
+        source.id_identifier_type?.trim() ?? source.identifierType?.id?.trim(),
+      identifier: source.identifier ?? undefined,
+
+      datePublication: source.date_publication,
+      isDeleted: source.deleted,
+
+      creator: {
+        id: source['contributor id'],
+        nickname: source['contributor nickname'],
+      },
+      authors: source.authors, // A string of nicknames separated by '; '
+      editor: {
+        id: source['editor id'],
+        name: source['editor name'],
+      },
+      library: {
+        id: source['library id'],
+        name: source['library name'],
+      },
+      documentType: source['type name'],
+      title: source.title,
+      description: source.description,
+      subjects: source.subjects,
+      issue: source.issue,
+
+      iso3166: [
+        ...(source.iso_regions?.split(', ') ?? []),
+        ...(source.countries?.split(', ') ?? []),
+      ],
+    };
+    return result;
+  },
+
   toDocument: (source) => {
     const result = {
       ...DocumentModel,
+      id: source.id,
+      '@id': String(source.id),
+      importId: source.idDbImport ?? undefined,
+      importSource: source.nameDbImport?.trim(),
+      identifierType: source.identifierType?.id?.trim(),
+      identifier: source.identifier ?? undefined,
+
+      dateInscription: source.dateInscription,
+      dateReviewed: source.dateReviewed,
+      dateValidation: source.dateValidation,
+      datePublication: source.datePublication,
+      isDeleted: source.isDeleted,
+      redirectTo: source.redirectTo,
+      isValidated: source.isValidated,
+
+      creator: convertIfObject(source.author, c.toSimpleCaver),
+      creatorComment: source.authorComment,
+      authors: toList('authors', source, c.toSimpleCaver),
+      authorsOrganization: toList(
+        'authorsGrotto',
+        source,
+        c.toSimpleOrganization
+      ),
+      reviewer: convertIfObject(source.reviewer, c.toSimpleCaver),
+      validator: convertIfObject(source.validator, c.toSimpleCaver),
+      validatorComment: source.validationComment,
+      editor: convertIfObject(source.editor, c.toSimpleOrganization),
+      library: convertIfObject(source.library, c.toSimpleOrganization),
+      type: source.type?.name,
+      ...c.toDocumentDescriptions(source.descriptions),
+      subjects: source.subjects,
+      issue: source.issue,
+      pages: source.pages,
+      license: source.license?.name,
+      option: source.option?.name,
+      mainLanguage: source.mainLanguage?.id ?? source.languages?.[0]?.id,
+      languages: source.languages?.map((e) => e.id),
+
+      iso3166: [
+        ...(source.countries?.map((e) => ({ iso: e.id, name: e.nativeName })) ??
+          []),
+        ...(source.isoRegions?.map((e) => ({ iso: e.id, name: e.name })) ?? []),
+      ],
+      entrance: convertIfObject(source.entrance, c.toSimpleEntrance),
+      cave: convertIfObject(source.cave, c.toSimpleCave),
+      massifs: toList('massifs', source, c.toSimpleMassif),
+      parent: convertIfObject(source.parent, c.toSimpleDocument),
+      files: toList('files', source, c.toFile),
+      authorizationDocument: convertIfObject(
+        source.authorizationDocument,
+        c.toSimpleDocument
+      ),
+
+      oldBBS: {
+        pages: source.pagesBBSOld,
+        comments: source.commentsBBSOld,
+        publicationOther: source.publicationOtherBBSOld,
+        publicationFascicule: source.publicationFasciculeBBSOld,
+      },
+
+      // Only present when it is a modified document
+      modifiedFiles: source.modifiedFiles,
+      newFiles: source.newFiles,
+      deletedFiles: source.deletedFiles,
     };
 
-    // Conversion (from Elasticsearch or not)
-    result.id = source.id;
-    result['@id'] = String(source.id);
-    if (source.t_id) {
-      // snapshot
-      result.t_id = source.t_id;
-    }
-    result.authorComment = source.authorComment;
-    result.cave = source.cave;
-    result.dateInscription = source.dateInscription;
-    result.datePublication = source.date_publication ?? source.datePublication;
-    result.dateReviewed = source.dateReviewed;
-    result.dateValidation = source.dateValidation;
-    result.deletedFiles = source.deletedFiles;
-    result.entrance = source.entrance;
-    result.identifier = source.identifier;
-    result.intactDescriptions = source.descriptions;
-    result.issue = source.issue;
-    result.isValidated = source.isValidated;
-    result.languages = source.languages;
-    result.license = source.license;
-    result.mainLanguage = source.mainLanguage;
-    result.massif = source.massif;
-    result.modifiedDocJson = source.modifiedDocJson;
-    result.modifiedFiles = source.modifiedFiles;
-    result.newFiles = source.newFiles;
-    result.option = source.option;
-    result.pages = source.pages;
-    // TODO: handle publication (old bbs & parent)
-    result.publication = source.publication_other_bbs_old
-      ? source.publication_other_bbs_old
-      : source.publicationOtherBBSOld;
-    result.publicationFasciculeBBSOld = source.publicationFasciculeBBSOld;
-    result.refBbs = source.ref_bbs ? source.ref_bbs : source.refBbs;
-    result.title = source.title;
-    result.validationComment = source.validationComment;
-    result.isDeleted = source.isDeleted;
-
-    // Convert objects
-    const {
-      toCaver,
-      toSimpleDescription,
-      toDocument,
-      toFile,
-      toOrganization,
-      toSubject,
-    } = module.exports;
-
-    result.author = convertIfObject(source.author, c.toSimpleCaver);
-    result.reviewer = convertIfObject(source.reviewer, c.toSimpleCaver);
-    result.validator = convertIfObject(source.validator, c.toSimpleCaver);
-
-    result.authorizationDocument =
-      source.authorizationDocument instanceof Object
-        ? toDocument(source.authorizationDocument)
-        : source.authorizationDocument;
-
-    result.parent =
-      source.parent instanceof Object
-        ? toDocument(source.parent)
-        : source.parent;
-
-    if (source.identifierType instanceof Object) {
-      result.identifierType = {
-        ...source.identifierType,
-        id: ramda.pipe(
-          ramda.pathOr(undefined, ['identifierType', 'id']),
-          (id) => (id ? id.trim() : id)
-        )(source),
-      };
-    } else {
-      result.identifierType = source.identifierType;
-    }
-
-    if (source['library id']) {
-      // Elasticsearch
-      result.library = {
-        id: source['library id'],
-        name: source['library name'],
-      };
-    } else {
-      result.library =
-        source.library instanceof Object
-          ? toOrganization(source.library)
-          : source.library;
-    }
-
-    if (source['editor id']) {
-      // Elasticsearch
-      result.editor = {
-        id: source['editor id'],
-        name: source['editor name'],
-      };
-    } else {
-      result.editor =
-        source.editor instanceof Object
-          ? toOrganization(source.editor)
-          : source.editor;
-    }
-
-    if (source['type id']) {
-      // Elasticsearch
-      result.type = {
-        id: source['type id'],
-        name: source['type name'],
-      };
-    }
-
-    if (source.type) {
-      // source.type can be the id of the type only or the full type object
-      if (ramda.propOr(null, 'id', source.type)) {
-        result.type = source.type;
-      } else {
-        result.type = {
-          id: source.type,
-        };
-      }
-    }
-
-    // Convert collections
-    result.authors = toList('authors', source, toCaver, {
-      filterDeleted: false,
-    });
-    result.children = toList('children', source, toDocument);
-    result.files = toList('files', source, toFile);
-    const formattedDescriptions = toList(
-      'descriptions',
-      source,
-      toSimpleDescription
-    );
-
-    // source.descriptions contains both title and descriptions (in .title and .body)
-    // Split them in 2 different attributes
-    result.descriptions = formattedDescriptions.map((d) => ({
-      ...ramda.omit(['title', 'body'], d),
-      text: d.body,
-    }));
-    result.titles = formattedDescriptions.map((d) => ({
-      ...ramda.omit(['title', 'body'], d),
-      text: d.title,
-    }));
-
-    if (source.subjects instanceof Array) {
-      result.subjects = toList('subjects', source, toSubject);
-    } else {
-      // Elasticsearch
-      result.subjects = source.subjects
-        ? source.subjects.split(', ').map((s) => ({
-            code: s,
-          }))
-        : null;
-    }
-
-    // Convert regions
-    if (source.regions) {
-      if (source.regions instanceof Array) {
-        result.regions = source.regions;
-      } else {
-        // Elasticsearch
-        result.regions = source.regions
-          ? source.regions.split(', ').map((r) => ({
-              name: r,
-            }))
-          : null;
-      }
-    }
+    // snapshot
+    if (source.t_id) result.t_id = source.t_id;
 
     return result;
   },
@@ -407,31 +348,21 @@ const c = {
     reviewer: convertIfObject(source.reviewer, c.toSimpleCaver),
   }),
 
-  toDocumentDuplicate: (source) => {
-    const result = {
-      ...DocumentDuplicateModel,
-    };
-    const { toCaver, toDocument } = module.exports;
-    result.id = source.id;
-    // When comming from a duplicate list, the content can't be casted to a full document model.
-    // Detect this "simple" content by checking the number of keys (2: document and description)
-    if (Object.keys(source.content).length === 2) {
-      result.content = source.content;
-    } else {
-      result.content = toDocument(source.content);
-    }
-    result.datePublication = source.datePublication;
+  toDocumentDuplicate: (source) => ({
+    id: source.id,
+    datePublication: source.datePublication,
+    author: convertIfObject(source.author, c.toSimpleCaver),
+    document: convertIfObject(source.document, c.toDocument),
+    content: convertIfObject(source.content, c.toDocument),
+  }),
 
-    // Convert objects
-    result.author =
-      source.author instanceof Object ? toCaver(source.author) : source.author;
-    result.document =
-      source.document instanceof Object
-        ? toDocument(source.document)
-        : source.document;
-
-    return result;
-  },
+  toSimpleDocumentDuplicate: (source) => ({
+    id: source.id,
+    datePublication: source.datePublication,
+    author: convertIfObject(source.author, c.toSimpleCaver),
+    document: convertIfObject(source.document, c.toSimpleDocument),
+    content: source.content, // TODO is this ok ? (format: {document, description} instead of a document object)
+  }),
 
   toEntrance: (source) => {
     const result = {
@@ -489,7 +420,7 @@ const c = {
     result.names = toList('names', source, c.toName);
     result.descriptions = toList('descriptions', source, c.toSimpleDescription);
     result.comments = toList('comments', source, c.toSimpleComment);
-    result.documents = toList('documents', source, c.toDocument);
+    result.documents = toList('documents', source, c.toSimpleDocument);
     result.histories = toList('histories', source, c.toSimpleHistory);
     result.locations = source.isSensitive
       ? []
@@ -558,7 +489,9 @@ const c = {
   },
 
   toFile: (source) => ({
-    ...source,
+    dateInscription: source.dateInscription,
+    isValidated: source.isValidated,
+    fileName: source.fileName,
     completePath: FileService.document.getUrl(source.path),
   }),
 
@@ -587,27 +520,17 @@ const c = {
     cave: convertIfObject(source.cave, c.toSimpleCave),
   }),
 
-  toLanguage: (source) => {
-    const result = {
-      ...LanguageModel,
-    };
-    result.id = source.id;
-    result.comment = source.comment;
-    result.isPrefered = source.isPrefered;
-    result.part2b = source.part2b;
-    result.part2t = source.part2t;
-    result.part1 = source.part1;
-    result.refName = source.refName;
-    result.scope = source.scope;
-    result.type = source.type;
-
-    const { toDocument } = module.exports;
-
-    // Convert collections
-    result.documents = toList('documents', source, toDocument);
-
-    return result;
-  },
+  toLanguage: (source) => ({
+    id: source.id,
+    comment: source.comment,
+    isPrefered: source.isPrefered,
+    part2b: source.part2b,
+    part2t: source.part2t,
+    part1: source.part1,
+    refName: source.refName,
+    scope: source.scope,
+    type: source.type,
+  }),
 
   toSimpleLocation: (source) => {
     const result = {
@@ -636,40 +559,24 @@ const c = {
     cave: convertIfObject(source.cave, c.toSimpleCave),
   }),
 
-  toMassif: (source) => {
-    const result = {
-      ...MassifModel,
-    };
-
-    result.id = source.id;
-    result['@id'] = String(source.id);
-    result.dateInscription = source.dateInscription;
-    result.dateReviewed = source.dateReviewed;
-    result.geogPolygon = source.geoJson;
-    result.name = getMainName(source);
-    result.names = source.names;
-    result.nbCaves = source['nb caves']; // from Elasticsearch
-    result.nbEntrances = source['nb entrances']; // from Elasticsearch
-    result.isDeleted = source.isDeleted;
-
-    // Convert objects
-    const { toCave, toCaver, toSimpleDescription, toDocument, toEntrance } =
-      module.exports;
-    result.author =
-      source.author instanceof Object ? toCaver(source.author) : source.author;
-    result.reviewer =
-      source.reviewer instanceof Object
-        ? toCaver(source.reviewer)
-        : source.reviewer;
-
-    // Convert collections
-    result.entrances = toList('entrances', source, toEntrance);
-    result.descriptions = toList('descriptions', source, toSimpleDescription);
-    result.documents = toList('documents', source, toDocument);
-    result.networks = toList('networks', source, toCave);
-
-    return result;
-  },
+  toMassif: (source) => ({
+    ...MassifModel,
+    id: source.id,
+    '@id': String(source.id),
+    isDeleted: source.isDeleted,
+    author: convertIfObject(source.author, c.toSimpleCaver),
+    reviewer: convertIfObject(source.reviewer, c.toSimpleCaver),
+    dateInscription: source.dateInscription,
+    dateReviewed: source.dateReviewed,
+    name: getMainName(source),
+    geogPolygon: source.geoJson,
+    nbCaves: source['nb caves'], // from Elasticsearch
+    nbEntrances: source['nb entrances'], // from Elasticsearch
+    descriptions: toList('descriptions', source, c.toSimpleDescription),
+    entrances: toList('entrances', source, c.toSimpleEntrance),
+    documents: toList('documents', source, c.toSimpleDocument),
+    networks: toList('networks', source, c.toSimpleCave),
+  }),
 
   toDeletedMassif: (source) => ({
     id: source.id,
@@ -713,107 +620,61 @@ const c = {
     result.notifier = source.notifier;
 
     // Convert objects
-    const {
-      toCave,
-      toCaver,
-      toComment,
-      toDescription,
-      toDocument,
-      toEntrance,
-      toHistory,
-      toLocation,
-      toMassif,
-      toOrganization,
-      toRigging,
-    } = module.exports;
-    result.cave =
-      source.cave instanceof Object ? toCave(source.cave) : source.cave;
-    result.comment =
-      source.comment instanceof Object
-        ? toComment(source.comment)
-        : source.comment;
-    result.description =
-      source.description instanceof Object
-        ? toDescription(source.description)
-        : source.description;
-    result.document =
-      source.document instanceof Object
-        ? toDocument(source.document)
-        : source.document;
-    result.entrance =
-      source.entrance instanceof Object
-        ? toEntrance(source.entrance)
-        : source.entrance;
-    result.history =
-      source.history instanceof Object
-        ? toHistory(source.history)
-        : source.history;
-    result.location =
-      source.location instanceof Object
-        ? toLocation(source.location)
-        : source.location;
-    result.massif =
-      source.massif instanceof Object ? toMassif(source.massif) : source.massif;
-    result.notified =
-      source.notified instanceof Object
-        ? toCaver(source.notified)
-        : source.notified;
-    result.notifier =
-      source.notifier instanceof Object
-        ? toCaver(source.notifier)
-        : source.notifier;
-    result.organization =
-      source.grotto instanceof Object
-        ? toOrganization(source.grotto)
-        : source.grotto;
-    result.rigging =
-      source.rigging instanceof Object
-        ? toRigging(source.rigging)
-        : source.rigging;
-
+    result.cave = convertIfObject(source.cave, c.toCave);
+    result.comment = convertIfObject(source.comment, c.toComment);
+    result.description = convertIfObject(source.description, c.toDescription);
+    result.document = convertIfObject(source.document, c.toSimpleDocument);
+    result.entrance = convertIfObject(source.entrance, c.toEntrance);
+    result.history = convertIfObject(source.history, c.toHistory);
+    result.location = convertIfObject(source.location, c.toLocation);
+    result.massif = convertIfObject(source.massif, c.toMassif);
+    result.notified = convertIfObject(source.notified, c.toCaver);
+    result.notifier = convertIfObject(source.notifier, c.toCaver);
+    result.organization = convertIfObject(source.grotto, c.toOrganization);
+    result.rigging = convertIfObject(source.rigging, c.toRigging);
     return result;
   },
 
-  toOrganization: (source) => {
-    const result = {
-      ...OrganizationModel,
-    };
+  toSimpleOrganization: (source) => ({
+    id: source.id,
+    name: getMainName(source),
+    isDeleted: source.isDeleted,
+  }),
 
-    result.id = source.id;
-    result['@id'] = String(source.id);
-    result.customMessage = source.customMessage;
-    result.dateInscription = source.dateInscription;
-    result.isOfficialPartner = source.isOfficialPartner;
-    result.latitude = parseFloat(source.latitude);
-    result.longitude = parseFloat(source.longitude);
-    result.name = getMainName(source);
-    result.names = source.names;
-    result.nbCavers = source['nb cavers']; // from Elasticsearch
-    result.mail = source.mail;
-    result.pictureFileName = source.pictureFileName;
-    result.url = source.url;
-    result.yearBirth = source.yearBirth;
-    result.country = source.country;
-    result.countryCode = source['country code'];
-    result.region = source.region;
-    result.county = source.county;
-    result.city = source.city;
-    result.address = source.address;
-    result.postalCode = source.postalCode;
-    result.iso_3166_2 = source.iso_3166_2;
-    result.isDeleted = source.isDeleted;
-
-    // Convert collections
-    const { toCave, toCaver, toDocument, toEntrance } = module.exports;
-    result.cavers = toList('cavers', source, toCaver);
-    result.documents = toList('documents', source, toDocument);
-    result.exploredEntrances = toList('exploredEntrances', source, toEntrance);
-    result.exploredNetworks = toList('exploredNetworks', source, toCave);
-    result.partnerEntrances = toList('partnerEntrances', source, toEntrance);
-    result.partnerNetworks = toList('partnerNetworks', source, toCave);
-
-    return result;
-  },
+  toOrganization: (source) => ({
+    ...OrganizationModel,
+    id: source.id,
+    '@id': String(source.id),
+    isDeleted: source.isDeleted,
+    dateInscription: source.dateInscription,
+    dateReviewed: source.dateReviewed,
+    author: convertIfObject(source.author, c.toSimpleCaver),
+    reviewer: convertIfObject(source.reviewer, c.toSimpleCaver),
+    name: getMainName(source),
+    latitude: parseFloat(source.latitude),
+    longitude: parseFloat(source.longitude),
+    country: source.country,
+    countryCode: source['country code'],
+    region: source.region,
+    county: source.county,
+    city: source.city,
+    address: source.address,
+    postalCode: source.postalCode,
+    iso_3166_2: source.iso_3166_2,
+    mail: source.mail,
+    url: source.url,
+    customMessage: source.customMessage,
+    isOfficialPartner: source.isOfficialPartner,
+    pictureFileName: source.pictureFileName,
+    yearBirth: source.yearBirth,
+    nbCavers: source['nb cavers'], // from Elasticsearch
+    cavers: toList('cavers', source, c.toSimpleCaver),
+    documents: toList('documents', source, c.toSimpleDocument),
+    exploredEntrances: toList('exploredEntrances', source, c.toSimpleEntrance),
+    exploredNetworks: toList('exploredNetworks', source, c.toSimpleCave),
+    partnerEntrances: toList('partnerEntrances', source, c.toSimpleEntrance),
+    partnerNetworks: toList('partnerNetworks', source, c.toSimpleCave),
+  }),
 
   toDeletedOrganization: (source) => ({
     id: source.id,
@@ -1009,19 +870,15 @@ const c = {
     return result;
   },
 
-  toQualityDataEntrance: (entrance) => {
-    const res = {};
-
-    res.name = entrance.entrance_name;
-    res.massif_name = entrance.massif_name;
-    res.id_entrance = entrance.id_entrance;
-    res.id_country = entrance.id_country;
-    res.country_name = entrance.country_name;
-    res.data_quality = getQualityData(entrance);
-    res.date_of_update = entrance.date_of_update;
-
-    return res;
-  },
+  toQualityDataEntrance: (entrance) => ({
+    name: entrance.entrance_name,
+    massif_name: entrance.massif_name,
+    id_entrance: entrance.id_entrance,
+    id_country: entrance.id_country,
+    country_name: entrance.country_name,
+    data_quality: getQualityData(entrance),
+    date_of_update: entrance.date_of_update,
+  }),
 };
 
 module.exports = c;

@@ -11,10 +11,10 @@ module.exports = async (req, res) => {
     );
   }
 
-  const entranceId = req.param('entranceId');
-  const currentEntrance = await TEntrance.findOne(entranceId);
-  if (!currentEntrance) {
-    return res.notFound({ message: `Entrance of id ${entranceId} not found.` });
+  const massifId = req.param('massifId');
+  const currentMassif = await TMassif.findOne(massifId);
+  if (!currentMassif) {
+    return res.notFound({ message: `Entrance of id ${massifId} not found.` });
   }
 
   const documentId = req.param('documentId');
@@ -24,7 +24,7 @@ module.exports = async (req, res) => {
   }
 
   // Update entrance
-  await TEntrance.removeFromCollection(entranceId, 'documents', documentId);
+  await TMassif.removeFromCollection(massifId, 'documents', documentId);
 
   return res.ok();
 };
