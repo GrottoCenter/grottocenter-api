@@ -24,9 +24,8 @@ module.exports = async (req, res) => {
     const obstacles = req.param('obstacles');
     let serializedObstacles;
     if (Array.isArray(obstacles)) {
-      serializedObstacles = await RiggingService.serializeObstaclesForDB(
-        obstacles
-      );
+      serializedObstacles =
+        await RiggingService.serializeObstaclesForDB(obstacles);
     }
 
     const updatedFields = {

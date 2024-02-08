@@ -168,9 +168,8 @@ const getCountryAndMassifSubscribers = async (
   const countrySubscribers = [];
   const massifsSubscribers = [];
   if (entityCountryId) {
-    const country = await TCountry.findOne(entityCountryId).populate(
-      'subscribedCavers'
-    );
+    const country =
+      await TCountry.findOne(entityCountryId).populate('subscribedCavers');
     countrySubscribers.push(
       ...country.subscribedCavers.map((caver) => ({
         ...caver,
@@ -182,9 +181,8 @@ const getCountryAndMassifSubscribers = async (
   if (entityMassifIds) {
     await Promise.all(
       entityMassifIds.map(async (massifId) => {
-        const massif = await TMassif.findOne(massifId).populate(
-          'subscribedCavers'
-        );
+        const massif =
+          await TMassif.findOne(massifId).populate('subscribedCavers');
         await NameService.setNames([massif], 'massif');
         massifsSubscribers.push(
           ...massif.subscribedCavers.map((caver) => ({

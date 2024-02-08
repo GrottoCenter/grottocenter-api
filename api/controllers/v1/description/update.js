@@ -35,9 +35,8 @@ module.exports = async (req, res) => {
 
     await TDescription.updateOne({ id: descriptionId }).set(updatedFields);
 
-    const populatedDescription = await DescriptionService.getDescription(
-      descriptionId
-    );
+    const populatedDescription =
+      await DescriptionService.getDescription(descriptionId);
     await NotificationService.notifySubscribers(
       req,
       populatedDescription,

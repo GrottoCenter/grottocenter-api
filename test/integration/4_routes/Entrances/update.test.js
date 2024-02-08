@@ -132,9 +132,8 @@ describe('Entrance features', () => {
           .expect(200)
           .end(async (err) => {
             if (err) return done(err);
-            const populatedEntrance = await TEntrance.findOne(
-              entranceId
-            ).populate('cave');
+            const populatedEntrance =
+              await TEntrance.findOne(entranceId).populate('cave');
             should(populatedEntrance.cave.id).equal(1);
             return done();
           });
@@ -155,9 +154,8 @@ describe('Entrance features', () => {
           .expect(200)
           .end(async (err) => {
             if (err) return done(err);
-            const populatedEntrance = await TEntrance.findOne(
-              entranceId
-            ).populate('names');
+            const populatedEntrance =
+              await TEntrance.findOne(entranceId).populate('names');
             should(populatedEntrance.names[0].name).equal('new entrance name');
             should(populatedEntrance.names[0].language).equal('aut');
             return done();

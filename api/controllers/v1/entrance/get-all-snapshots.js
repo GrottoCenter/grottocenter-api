@@ -21,18 +21,14 @@ module.exports = async (req, res) => {
     // Get Ids of elements of an entrance
     const descriptionIds =
       await DescriptionService.getIdDescriptionsByEntranceId(entranceId);
-    const documentsId = await DocumentService.getIdDocumentByEntranceId(
-      entranceId
-    );
-    const historyIds = await HistoryService.getIdHistoriesByEntranceId(
-      entranceId
-    );
-    const locationIds = await LocationService.getIdLocationsByEntranceId(
-      entranceId
-    );
-    const riggingIds = await RiggingService.getIdRiggingsByEntranceId(
-      entranceId
-    );
+    const documentsId =
+      await DocumentService.getIdDocumentByEntranceId(entranceId);
+    const historyIds =
+      await HistoryService.getIdHistoriesByEntranceId(entranceId);
+    const locationIds =
+      await LocationService.getIdLocationsByEntranceId(entranceId);
+    const riggingIds =
+      await RiggingService.getIdRiggingsByEntranceId(entranceId);
 
     const hDescriptions = await Promise.all(
       descriptionIds.map(async (d) =>

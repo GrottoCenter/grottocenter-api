@@ -35,9 +35,8 @@ describe('Cave features', () => {
         await TCave.removeFromCollection(existingCaveId, 'documents').members([
           existingDocumentId,
         ]);
-        const existingCave = await TCave.findOne(existingCaveId).populate(
-          'documents'
-        );
+        const existingCave =
+          await TCave.findOne(existingCaveId).populate('documents');
         should(existingCave.documents.length).be.equal(0);
       });
 
