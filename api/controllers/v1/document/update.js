@@ -1,43 +1,36 @@
 const ControllerService = require('../../../services/ControllerService');
 const DocumentService = require('../../../services/DocumentService');
-const ErrorService = require('../../../services/ErrorService');
+const NotificationService = require('../../../services/NotificationService');
 const FileService = require('../../../services/FileService');
 const RightService = require('../../../services/RightService');
+const {
+  NOTIFICATION_TYPES,
+  NOTIFICATION_ENTITIES,
+} = require('../../../services/NotificationService');
 const { toDocument } = require('../../../services/mapping/converters');
 
 const { INVALID_FORMAT, INVALID_NAME, ERROR_DURING_UPLOAD_TO_AZURE } =
   FileService;
 
 module.exports = async (req, res) => {
-  const docWithModif = await TDocument.findOne({
-    id: req.param('id'),
-    modifiedDocJson: { '!=': null },
-  });
-  const rightAction = docWithModif
-    ? RightService.RightActions.EDIT_NOT_VALIDATED
-    : RightService.RightActions.EDIT_ANY;
-  const hasRight = await sails.helpers.checkRight
-    .with({
-      groups: req.token.groups,
-      rightEntity: RightService.RightEntities.DOCUMENT,
-      rightAction,
-    })
-    .intercept('rightNotFound', () =>
-      res.serverError(
-        'A server error occured when checking your right to update a document.'
-      )
+  const document = await TDocument.findOne({ id: req.param('id') });
+  if (!document) return res.notFound(`Document not found`);
+
+  if (document.modifiedDocJson) {
+    const hasRight = RightService.hasGroup(
+      req.token.groups,
+      RightService.G.MODERATOR
     );
 
-  if (!hasRight) {
-    return res.forbidden(
-      `You are not authorized to update a document${
-        docWithModif && ' with modifications waiting a moderator approval'
-      }.`
-    );
+    if (!hasRight) {
+      return res.forbidden(
+        `You are not authorized to update a document with modifications waiting a moderator approval.`
+      );
+    }
   }
 
   // Add new files
-  const newFilesArray = [];
+  const newFiles = [];
   if (req.files && req.files.files) {
     const { files } = req.files;
     try {
@@ -49,7 +42,7 @@ module.exports = async (req, res) => {
             true,
             false
           );
-          newFilesArray.push(createdFile);
+          newFiles.push(createdFile);
         })
       );
     } catch (err) {
@@ -72,32 +65,46 @@ module.exports = async (req, res) => {
     }
   }
 
+  const authorId = req.token.id;
+
   // Update json data (upcoming modifications which need to be validated)
-  const dataFromClient = await DocumentService.getConvertedDataFromClient(req);
-  const descriptionData = await DocumentService.getLangDescDataFromClient(req);
+  const documentData = await DocumentService.getConvertedDataFromClient(
+    req.body
+  );
+  const descriptionData = DocumentService.getDescriptionDataFromClient(
+    req.body,
+    authorId
+  );
 
-  try {
-    const updatedDocument = await DocumentService.updateDocument(
-      req,
-      dataFromClient,
-      descriptionData,
-      newFilesArray
-    );
-    if (!updatedDocument) {
-      return res.notFound();
-    }
+  const updatedDocument = await DocumentService.updateDocument({
+    documentId: req.param('id'),
+    reviewerId: authorId,
+    documentData,
+    descriptionData,
+    newFiles,
+  });
+  if (!updatedDocument) return res.notFound();
 
-    const params = {};
-    params.controllerMethod = 'DocumentController.update';
-    return ControllerService.treatAndConvert(
-      req,
-      null,
-      updatedDocument,
-      params,
-      res,
-      toDocument
-    );
-  } catch (e) {
-    return ErrorService.getDefaultErrorHandler(res)(e);
-  }
+  // The returned document does not include the modifications as they have to be validated before being applied
+  const doc = await DocumentService.appendPopulateForFullDocument(
+    TDocument.findOne(updatedDocument.id)
+  );
+  await DocumentService.populateFullDocumentSubEntities(doc);
+
+  await NotificationService.notifySubscribers(
+    req,
+    doc,
+    authorId,
+    NOTIFICATION_TYPES.UPDATE,
+    NOTIFICATION_ENTITIES.DOCUMENT
+  );
+
+  return ControllerService.treatAndConvert(
+    req,
+    null,
+    doc,
+    { controllerMethod: 'DocumentController.update' },
+    res,
+    toDocument
+  );
 };

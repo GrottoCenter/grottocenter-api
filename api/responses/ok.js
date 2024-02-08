@@ -14,7 +14,6 @@ module.exports = async function sendOK(data) {
   const { req } = this;
   const { res } = this;
   const sails = req._sails; // eslint-disable-line no-underscore-dangle
-  const removeSensitiveEntrances = sails.helpers.removeSensitiveEntrances.with;
   const formatResponseData = sails.helpers.formatResponseData.with;
   const logResponse = sails.helpers.logResponse.with;
 
@@ -22,11 +21,6 @@ module.exports = async function sendOK(data) {
   const httpCode = data ? 200 : 204;
   res.status(httpCode);
 
-  // Filter data
-  const filteredData = data
-    ? await removeSensitiveEntrances({ req, data })
-    : data;
-
-  logResponse.with({ httpCode, data: filteredData });
-  return res.json(formatResponseData.with({ data: filteredData }));
+  logResponse.with({ httpCode, data });
+  return res.json(formatResponseData.with({ data }));
 };

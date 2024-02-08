@@ -1,5 +1,8 @@
 const ramda = require('ramda');
 const CommonService = require('./CommonService');
+const DocumentService = require('./DocumentService');
+const DescriptionService = require('./DescriptionService');
+const NameService = require('./NameService');
 const ElasticsearchService = require('./ElasticsearchService');
 const {
   NOTIFICATION_TYPES,
@@ -253,5 +256,43 @@ module.exports = {
     } catch (e) {
       return null;
     }
+  },
+
+  async getCavePopulated(documentId) {
+    const cave = await TCave.findOne(documentId)
+      .populate('descriptions')
+      .populate('entrances')
+      .populate('author')
+      .populate('reviewer')
+      .populate('names')
+      .populate('documents');
+
+    if (!cave) return null;
+    if (cave.isDeleted) return cave;
+
+    [cave.massifs, cave.descriptions, cave.documents] = await Promise.all([
+      module.exports.getMassifs(cave.id),
+      DescriptionService.getCaveDescriptions(cave.id),
+      DocumentService.getDocuments(cave.documents?.map((d) => d.id) ?? []),
+    ]);
+
+    const nameAsyncArr = [
+      NameService.setNames(cave?.entrances, 'entrance'),
+      NameService.setNames(cave?.massifs, 'massif'),
+    ];
+    if (cave.names.length === 0) {
+      // As the name service will also get the entrance name if needed
+      nameAsyncArr.push(NameService.setNames([cave], 'cave'));
+    }
+    await Promise.all(nameAsyncArr);
+
+    // TODO What about other linked entities ?
+    // - histories
+    // - riggings
+    // - comments
+    // - exploringGrottos
+    // - partneringGrottos
+
+    return cave;
   },
 };

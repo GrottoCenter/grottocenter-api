@@ -1,7 +1,6 @@
 const ControllerService = require('../../../services/ControllerService');
 const ErrorService = require('../../../services/ErrorService');
 const NotificationService = require('../../../services/NotificationService');
-const RightService = require('../../../services/RightService');
 const LocationService = require('../../../services/LocationService');
 const { toSimpleLocation } = require('../../../services/mapping/converters');
 const {
@@ -11,22 +10,6 @@ const {
 
 module.exports = async (req, res) => {
   try {
-    // Check right
-    const hasRight = await sails.helpers.checkRight
-      .with({
-        groups: req.token.groups,
-        rightEntity: RightService.RightEntities.LOCATION,
-        rightAction: RightService.RightActions.EDIT_ANY,
-      })
-      .intercept('rightNotFound', () =>
-        res.serverError(
-          'A server error occured when checking your right to update any location.'
-        )
-      );
-    if (!hasRight) {
-      return res.forbidden('You are not authorized to update any location.');
-    }
-
     const locationId = req.param('id');
     const rawLocation = await TLocation.findOne(locationId);
     // TODO How to delete/restore entity ?

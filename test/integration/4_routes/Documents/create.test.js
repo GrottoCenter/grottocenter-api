@@ -48,7 +48,7 @@ describe('Document features', () => {
             library: null,
             massif: null,
             partOf: null,
-            publicationDate: '',
+            datePublication: '',
             regions: [],
             startPage: null,
             subjects: [{ code: '1.25' }, { code: '4.0' }],

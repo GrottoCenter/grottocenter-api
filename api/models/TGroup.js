@@ -36,11 +36,5 @@ module.exports = {
       via: 'group',
       through: 'JCaverGroup',
     },
-
-    rights: {
-      collection: 'TRight',
-      via: 'group',
-      through: 'JGroupRight',
-    },
   },
 };

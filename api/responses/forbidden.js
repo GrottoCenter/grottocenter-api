@@ -13,7 +13,7 @@
  * @param  {Object | string | undefined} data
  */
 
-module.exports = function forbidden(data) {
+module.exports = function forbidden(data = 'Forbidden request') {
   const { req } = this;
   const { res } = this;
   const sails = req._sails; // eslint-disable-line no-underscore-dangle

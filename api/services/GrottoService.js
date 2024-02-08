@@ -1,9 +1,9 @@
 const ramda = require('ramda');
 const CaveService = require('./CaveService');
+const DocumentService = require('./DocumentService');
 const ElasticsearchService = require('./ElasticsearchService');
 const NameService = require('./NameService');
 const NotificationService = require('./NotificationService');
-const DescriptionService = require('./DescriptionService');
 const GeocodingService = require('./GeocodingService');
 const RecentChangeService = require('./RecentChangeService');
 
@@ -29,59 +29,68 @@ module.exports = {
     yearBirth: req.param('yearBirth'),
   }),
 
-  populateOrganization: async (organization) => {
-    await CaveService.setEntrances(organization.exploredCaves);
-    await CaveService.setEntrances(organization.partnerCaves);
-    await NameService.setNames(organization.exploredCaves, 'cave');
-    await NameService.setNames(organization.partnerCaves, 'cave');
-    await NameService.setNames([organization], 'grotto');
+  getPopulatedOrganization: async (organizationId) => {
+    const organization = await TGrotto.findOne(organizationId)
+      .populate('author')
+      .populate('reviewer')
+      .populate('names')
+      .populate('cavers')
+      .populate('documents')
+      .populate('exploredCaves')
+      .populate('partnerCaves');
 
-    // Split caves between entrances and networks
-    const exploredEntrances = [];
-    const exploredNetworks = [];
-    const partnerEntrances = [];
-    const partnerNetworks = [];
+    if (!organization) return null;
+    if (organization.isDeleted) return organization;
+
+    await Promise.all([
+      CaveService.setEntrances(organization.exploredCaves),
+      CaveService.setEntrances(organization.partnerCaves),
+    ]);
+
+    await Promise.all([
+      NameService.setNames(
+        [...organization.exploredCaves, ...organization.partnerCaves],
+        'cave'
+      ),
+      NameService.setNames([organization], 'grotto'),
+    ]);
+
+    // Split caves between entrances and networks (cave)
+    organization.exploredNetworks = [];
+    organization.exploredEntrances = [];
     for (const cave of organization.exploredCaves) {
       if (cave.entrances.length > 1) {
-        exploredNetworks.push(cave);
+        organization.exploredNetworks.push(cave);
       }
       if (cave.entrances.length === 1) {
-        exploredEntrances.push(cave.entrances.pop());
+        organization.exploredEntrances.push(cave.entrances.pop());
       }
     }
+
+    organization.partnerNetworks = [];
+    organization.partnerEntrances = [];
     for (const cave of organization.partnerCaves) {
       if (cave.entrances.length > 1) {
-        partnerNetworks.push(cave);
+        organization.partnerNetworks.push(cave);
       }
       if (cave.entrances.length === 1) {
-        partnerEntrances.push(cave.entrances.pop());
+        organization.partnerEntrances.push(cave.entrances.pop());
       }
     }
 
     // Set Entrances names
-    await NameService.setNames([exploredEntrances], 'entrance');
-    await NameService.setNames([partnerEntrances], 'entrance');
+    await NameService.setNames(
+      [...organization.exploredEntrances, ...organization.partnerEntrances],
+      'entrance'
+    );
 
     // Format organization
-    /* eslint-disable no-param-reassign */
     delete organization.exploredCaves;
     delete organization.partnerCaves;
-    organization.exploredEntrances = exploredEntrances;
-    organization.exploredNetworks = exploredNetworks;
-    organization.partnerEntrances = partnerEntrances;
-    organization.partnerNetworks = partnerNetworks;
-    /* eslint-enable no-param-reassign */
-
-    // complete descriptions
-    if (organization.documents && organization.documents.length > 0) {
-      const promisesArray = [];
-      for (const document of organization.documents) {
-        promisesArray.push(
-          DescriptionService.setDocumentDescriptions(document, false)
-        );
-      }
-      await Promise.all(promisesArray);
-    }
+    organization.documents = await DocumentService.getDocuments(
+      organization.documents.map((e) => e.id)
+    );
+    return organization;
   },
   /**
    * @param {*} req
@@ -100,10 +109,18 @@ module.exports = {
       if (address) cleanedData.iso_3166_2 = address.iso_3166_2;
     }
 
-    const newOrganizationPopulated = await sails
+    const newOrganizationId = await sails
       .getDatastore()
       .transaction(async (db) => {
         const caver = await TCaver.findOne(nameData.author).usingConnection(db);
+
+        if (nameData.language && nameData.language.length === 2) {
+          const nameLang = await TLanguage.findOne({
+            part1: nameData.language,
+          }).usingConnection(db);
+          // eslint-disable-next-line no-param-reassign
+          if (nameLang) nameData.language = nameLang.id;
+        }
 
         const newOrganization = await TGrotto.create(cleanedData)
           .fetch()
@@ -113,24 +130,17 @@ module.exports = {
           dateInscription: new Date(),
           grotto: newOrganization.id,
           isMain: true,
-          language:
-            ramda.propOr(null, 'language', nameData) !== null
-              ? nameData.language
-              : caver.language,
+          language: nameData.language ? nameData.language : caver.language,
           name: nameData.text,
         })
           .fetch()
           .usingConnection(db);
 
-        // Prepare data for Elasticsearch indexation
-        const resPopulated = await TGrotto.findOne(newOrganization.id)
-          .populate('country')
-          .populate('names')
-          .usingConnection(db);
-
-        return resPopulated;
+        return newOrganization.id;
       });
 
+    const newOrganizationPopulated =
+      await module.exports.getPopulatedOrganization(newOrganizationId);
     const { country, names, ...newOrganizationESData } =
       newOrganizationPopulated;
 

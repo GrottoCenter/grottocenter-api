@@ -1,7 +1,6 @@
 const ControllerService = require('../../../services/ControllerService');
 const ErrorService = require('../../../services/ErrorService');
 const NotificationService = require('../../../services/NotificationService');
-const RightService = require('../../../services/RightService');
 const DescriptionService = require('../../../services/DescriptionService');
 const ParametersValidatorService = require('../../../services/ParametersValidatorService');
 const {
@@ -12,21 +11,6 @@ const { toSimpleDescription } = require('../../../services/mapping/converters');
 
 module.exports = async (req, res) => {
   try {
-    const hasRight = await sails.helpers.checkRight
-      .with({
-        groups: req.token.groups,
-        rightEntity: RightService.RightEntities.DESCRIPTION,
-        rightAction: RightService.RightActions.CREATE,
-      })
-      .intercept('rightNotFound', () =>
-        res.serverError(
-          'A server error occured when checking your right to create a description.'
-        )
-      );
-    if (!hasRight) {
-      return res.forbidden('You are not authorized to create a description.');
-    }
-
     const mandatoryParams = ParametersValidatorService.checkAllExist(req, res, [
       'title',
       'body',

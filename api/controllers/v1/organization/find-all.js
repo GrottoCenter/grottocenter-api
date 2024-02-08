@@ -1,5 +1,7 @@
 const ControllerService = require('../../../services/ControllerService');
-const ErrorService = require('../../../services/ErrorService');
+const {
+  toSimpleOrganization,
+} = require('../../../services/mapping/converters');
 
 module.exports = async (req, res) => {
   const parameters = {};
@@ -14,16 +16,22 @@ module.exports = async (req, res) => {
     };
   }
 
-  try {
-    const organizations = await TGrotto.find(parameters)
-      .populate('author')
-      .sort('id ASC')
-      .limit(10);
-    const params = {};
-    params.controllerMethod = 'GrottoController.findAll';
-    params.notFoundMessage = 'No organizations found.';
-    return ControllerService.treat(req, undefined, organizations, params, res);
-  } catch (e) {
-    return ErrorService.getDefaultErrorHandler(res)(e);
-  }
+  const organizations = await TGrotto.find(parameters)
+    .populate('author')
+    .sort('id ASC')
+    .limit(10);
+
+  const params = {
+    controllerMethod: 'GrottoController.findAll',
+    notFoundMessage: 'No organizations found.',
+  };
+
+  return ControllerService.treatAndConvert(
+    req,
+    null,
+    organizations,
+    params,
+    res,
+    toSimpleOrganization
+  );
 };

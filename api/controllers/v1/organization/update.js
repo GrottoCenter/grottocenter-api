@@ -1,10 +1,8 @@
 const ControllerService = require('../../../services/ControllerService');
 const ErrorService = require('../../../services/ErrorService');
 const GrottoService = require('../../../services/GrottoService');
-const NameService = require('../../../services/NameService');
 const NotificationService = require('../../../services/NotificationService');
 const GeocodingService = require('../../../services/GeocodingService');
-const RightService = require('../../../services/RightService');
 const { toOrganization } = require('../../../services/mapping/converters');
 const {
   NOTIFICATION_TYPES,
@@ -12,22 +10,6 @@ const {
 } = require('../../../services/NotificationService');
 
 module.exports = async (req, res) => {
-  // Check right
-  const hasRight = await sails.helpers.checkRight
-    .with({
-      groups: req.token.groups,
-      rightEntity: RightService.RightEntities.ORGANIZATION,
-      rightAction: RightService.RightActions.EDIT_ANY,
-    })
-    .intercept('rightNotFound', () =>
-      res.serverError(
-        'A server error occured when checking your right to update an organization.'
-      )
-    );
-  if (!hasRight) {
-    return res.forbidden('You are not authorized to update an organization.');
-  }
-
   // Check if organization exists
   const organizationId = req.param('id');
   const currentOrganization = await TGrotto.findOne(organizationId);
@@ -57,11 +39,12 @@ module.exports = async (req, res) => {
 
   try {
     // The name is updated via the /api/v1/names route by the front
-    const updatedOrganization = await TGrotto.updateOne({
+    await TGrotto.updateOne({
       id: organizationId,
     }).set(cleanedData);
 
-    await NameService.setNames([updatedOrganization], 'grotto');
+    const updatedOrganization =
+      await GrottoService.getPopulatedOrganization(organizationId);
 
     await NotificationService.notifySubscribers(
       req,
@@ -71,13 +54,11 @@ module.exports = async (req, res) => {
       NOTIFICATION_ENTITIES.ORGANIZATION
     );
 
-    const params = {};
-    params.controllerMethod = 'OrganizationController.update';
     return ControllerService.treatAndConvert(
       req,
       null,
       updatedOrganization,
-      params,
+      { controllerMethod: 'OrganizationController.update' },
       res,
       toOrganization
     );

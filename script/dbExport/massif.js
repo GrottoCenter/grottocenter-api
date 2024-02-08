@@ -3,9 +3,12 @@ const exportUtils = require('./utils');
 const query = `
     SELECT
       m.id,
-      COALESCE(m.date_reviewed, m.date_inscription) AS last_modified,
-      COALESCE(m.id_reviewer, m.id_author) AS last_author_id,
-      COALESCE(r.nickname, a.nickname) AS last_author,
+      m.date_inscription AS created_at,
+      m.date_reviewed AS last_modified,
+      m.id_author AS author_id,
+      a.nickname AS author,
+      m.id_reviewer AS last_author_id,
+      r.nickname AS last_author,
       n.name AS name,
       ST_AsGeoJSON(m.geog_polygon) AS geojson
     FROM t_massif AS m

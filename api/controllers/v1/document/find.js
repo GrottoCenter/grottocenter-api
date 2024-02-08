@@ -1,147 +1,72 @@
-const ramda = require('ramda');
 const ControllerService = require('../../../services/ControllerService');
-const DescriptionService = require('../../../services/DescriptionService');
 const DocumentService = require('../../../services/DocumentService');
-const ErrorService = require('../../../services/ErrorService');
 const {
   toDocument,
   toDeletedDocument,
 } = require('../../../services/mapping/converters');
 
-const NameService = require('../../../services/NameService');
+async function getModifiedDocumentData(documentId) {
+  const { id, modifiedDocJson } = await TDocument.findOne(documentId);
+  if (modifiedDocJson === null) return null;
+
+  const {
+    // reviewerId,
+    documentData,
+    descriptionData,
+    newFiles,
+    modifiedFiles,
+    deletedFiles,
+  } = modifiedDocJson;
+
+  const populatedDoc = await DocumentService.populateJSON(
+    documentId,
+    documentData
+  );
+  populatedDoc.descriptions = [descriptionData];
+
+  // Files retrieval
+  const filesCriterias = {
+    document: id,
+    isValidated: true,
+  };
+  // Don't retrieve files which are modified, new or deleted (because we already have them).
+  // New are those which have isValidated = false
+  const filesToIgnore = [].concat(
+    newFiles ?? [],
+    modifiedFiles ?? [],
+    deletedFiles ?? []
+  );
+  if (filesToIgnore.length > 0) {
+    const filesToIgnoreId = filesToIgnore.map((file) => file.id);
+    filesCriterias.id = { '!=': filesToIgnoreId };
+  }
+
+  const files = await TFile.find(filesCriterias);
+  populatedDoc.files = files; // Other current document File
+  populatedDoc.newFiles = newFiles;
+  populatedDoc.deletedFiles = deletedFiles;
+  populatedDoc.modifiedFiles = modifiedFiles;
+
+  return populatedDoc;
+}
 
 module.exports = async (req, res) => {
   let found;
-  if (req.param('requireUpdate') === 'true') {
-    const { id, modifiedDocJson } = await TDocument.findOne(req.param('id'));
-    if (modifiedDocJson === null) {
-      return res.serverError('This document has not been updated.');
-    }
-    try {
-      const {
-        author,
-        title,
-        description,
-        titleAndDescriptionLanguage,
-        descriptions,
-        documentMainLanguage,
-        newFiles,
-        modifiedFiles,
-        deletedFiles,
-        ...otherData
-      } = modifiedDocJson;
-      const populatedDoc = await DocumentService.populateJSON({
-        author,
-        ...otherData,
-      });
-      found = { ...populatedDoc, id };
+  // Get the modified document
+  if (req.param('requireUpdate') === 'true')
+    found = await getModifiedDocumentData(req.param('id'));
 
-      // Files retrieval
-      let filesCriterias = {
-        document: id,
-        isValidated: true,
-      };
-      // Don't retrieve files which are modified, new or deleted (because we already have them).
-      // New are those which have isValidated = false
-      let filesToIgnore = modifiedFiles || [];
-      filesToIgnore =
-        (deletedFiles && ramda.concat(filesToIgnore, deletedFiles)) ||
-        filesToIgnore;
-      const filesToIgnoreId = filesToIgnore.map((file) => file.id);
-
-      if (!ramda.isEmpty(filesToIgnoreId)) {
-        filesCriterias = {
-          document: id,
-          id: { '!=': filesToIgnoreId },
-          isValidated: true,
-        };
-      }
-      const files = await TFile.find(filesCriterias);
-      found.files = files;
-      found.newFiles = newFiles;
-      found.deletedFiles = deletedFiles;
-      found.modifiedFiles = modifiedFiles;
-
-      // We can only modify the main language, so we don't have a "languages" attribute
-      // stored in the json. Uncomment if the possibility to add language is implemented.
-      // if (languages) {
-      //   found.languages = await Promise.all(languages.map(async (language) => {
-      //     const completeLanguage = await TLanguage.findOne(language);
-      //     return completeLanguage;
-      //   }));
-      // } else {
-      //   found.languages = [];
-      // }
-
-      if (documentMainLanguage) {
-        found.mainLanguage = await TLanguage.findOne(documentMainLanguage);
-      }
-
-      // Populate names & descriptions
-      if (found.editor) {
-        await NameService.setNames([found.editor], 'grotto');
-      }
-      if (found.parent) {
-        await DescriptionService.setDocumentDescriptions(found.parent, false);
-      }
-
-      // Handle the description because even if it has been modified,
-      // the entry in TDescription stayed intact.
-      const descLang = await TLanguage.findOne(titleAndDescriptionLanguage);
-      found.descriptions = [];
-      found.descriptions.push({
-        author,
-        title,
-        body: description,
-        document: id,
-        language: descLang,
-      });
-    } catch (e) {
-      return ErrorService.getDefaultErrorHandler(res)(e);
-    }
-  } else {
-    found = await TDocument.findOne(req.param('id'))
-      .populate('author')
-      .populate('authorizationDocument')
-      .populate('authors')
-      .populate('cave')
-      .populate('descriptions')
-      .populate('editor')
-      .populate('entrance')
-      .populate('files', {
-        where: {
-          isValidated: true,
-        },
-      })
-      .populate('identifierType')
-      .populate('languages')
-      .populate('library')
-      .populate('license')
-      .populate('massif')
-      .populate('option')
-      .populate('parent')
-      .populate('regions')
-      .populate('reviewer')
-      .populate('subjects')
-      .populate('type');
-    const params = {
-      controllerMethod: 'DocumentController.find',
-      searchedItem: `Document of id ${req.param('id')}`,
-    };
-    if (!found) return res.notFound(`${params.searchedItem} not found`);
-    found.mainLanguage = await DocumentService.getMainLanguage(found.languages);
-    await DocumentService.setNamesOfPopulatedDocument(found);
-    await DescriptionService.setDocumentDescriptions(found);
-  }
+  // Get the base document
+  if (!found)
+    found = await DocumentService.appendPopulateForFullDocument(
+      TDocument.findOne(req.param('id'))
+    );
 
   const params = {
     controllerMethod: 'DocumentController.find',
     searchedItem: `Document of id ${req.param('id')}`,
   };
-
-  if (!found) {
-    return res.json({ error: `${params.searchedItem} not found` });
-  }
+  if (!found) return res.notFound(`${params.searchedItem} not found`);
   if (found.isDeleted) {
     return ControllerService.treatAndConvert(
       req,
@@ -152,6 +77,9 @@ module.exports = async (req, res) => {
       toDeletedDocument
     );
   }
+
+  await DocumentService.populateFullDocumentSubEntities(found);
+
   return ControllerService.treatAndConvert(
     req,
     null,

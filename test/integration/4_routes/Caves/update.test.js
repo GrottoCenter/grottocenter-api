@@ -62,9 +62,7 @@ describe('Cave features', () => {
         const newValues = {
           depth: 100,
           isDiving: true,
-          latitude: 33,
           length: 100,
-          longitude: 55,
           temperature: 10,
         };
         supertest(sails.hooks.http.app)
@@ -96,9 +94,8 @@ describe('Cave features', () => {
           .expect(200)
           .end(async (err) => {
             if (err) return done(err);
-            const populatedCave = await TCave.findOne(caveId).populate(
-              'entrances'
-            );
+            const populatedCave =
+              await TCave.findOne(caveId).populate('entrances');
             should(populatedCave.entrances[0].id).equal(1);
             should(populatedCave.entrances[1].id).equal(2);
             return done();

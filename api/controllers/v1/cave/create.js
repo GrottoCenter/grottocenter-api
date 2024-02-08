@@ -7,28 +7,9 @@
 const CaveService = require('../../../services/CaveService');
 const ControllerService = require('../../../services/ControllerService');
 const ErrorService = require('../../../services/ErrorService');
-const RightService = require('../../../services/RightService');
 const { toCave } = require('../../../services/mapping/converters');
 
-const { checkRight } = sails.helpers;
-
 module.exports = async (req, res) => {
-  // Check right
-  const hasRight = await checkRight
-    .with({
-      groups: req.token.groups,
-      rightEntity: RightService.RightEntities.CAVE,
-      rightAction: RightService.RightActions.CREATE,
-    })
-    .intercept('rightNotFound', () =>
-      res.serverError(
-        'A server error occured when checking your right to create a cave.'
-      )
-    );
-  if (!hasRight) {
-    return res.forbidden('You are not authorized to create a cave.');
-  }
-
   const rawDescriptionsData = req.param('descriptions');
   const rawNameData = req.param('name');
 
@@ -82,19 +63,13 @@ module.exports = async (req, res) => {
       descriptionsData
     );
 
-    const populatedCave = await TCave.findOne(createdCave.id)
-      .populate('descriptions')
-      .populate('documents')
-      .populate('histories')
-      .populate('names');
+    const populatedCave = await CaveService.getCavePopulated(createdCave.id);
 
-    const params = {};
-    params.controllerMethod = 'CaveController.create';
     return ControllerService.treatAndConvert(
       req,
       null,
       populatedCave,
-      params,
+      { controllerMethod: 'CaveController.create' },
       res,
       toCave
     );

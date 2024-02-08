@@ -3,13 +3,15 @@ version: '3.3'
 # Date: Feb 13 2021
 # Requirement: docker, docker-compose
 
+name: grottocenter
+
 services:
   dbserver:
-    container_name: ${DB_TAGNAME}
+    container_name: ${POSTGRES_CONTAINER_NAME}
     image: postgis/postgis
     environment:
-      - POSTGRES_USER=${DOCKER_DB_USER}
-      - POSTGRES_PASSWORD=${DOCKER_DB_PASSWORD}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     healthcheck:
       test: pg_isready
     volumes:
@@ -17,27 +19,28 @@ services:
       - gc-postgis-data:/var/lib/postgresql
     restart: always
     ports:
-      - ${DB_LOCAL_PORT}:5432
+      - ${POSTGRES_LOCAL_PORT}:5432
 
   testdbserver:
-    container_name: ${TEST_DB_TAGNAME}
+    container_name: ${POSTGRES_TEST_CONTAINER_NAME}
     image: postgis/postgis
+    restart: unless-stopped
     environment:
-      - POSTGRES_USER=${DOCKER_DB_USER}
-      - POSTGRES_PASSWORD=${DOCKER_DB_PASSWORD}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     healthcheck:
       test: pg_isready
     volumes:
-      # Juste use initDatabase sql request. The tests will populate it by themselves.
+      # Just use initDatabase sql request. The tests will populate it by themselves.
       - ../sql/0_initDatabase.sql:/docker-entrypoint-initdb.d/init.sql
-      - gc-postgis-data:/var/lib/postgresql
-    restart: always
+      - gc-postgis-test-data:/var/lib/postgresql
     ports:
-      - ${TEST_DB_LOCAL_PORT}:5432
+      - ${POSTGRES_TEST_LOCAL_PORT}:5432
 
   elasticsearch:
-    container_name: ${ES_TAGNAME}
+    container_name: ${ES_CONTAINER_NAME}
     image: elasticsearch:${ES_AND_LS_VERSION}
+    restart: unless-stopped
     deploy:
       resources:
         limits:
@@ -45,7 +48,7 @@ services:
           memory: 500M
     environment:
       - discovery.type=single-node
-      # prevent flood stage on disk with small free space
+      # Prevent flood stage on disk with small free space
       - cluster.routing.allocation.disk.watermark.low=3gb
       - cluster.routing.allocation.disk.watermark.high=2gb
       - cluster.routing.allocation.disk.watermark.flood_stage=1gb
@@ -53,7 +56,6 @@ services:
       - http.cors.allow-origin=https://app.elasticvue.com
     volumes:
       - gc-es-data:/usr/share/elasticsearch/data
-    restart: always
     ports:
       - ${ES_LOCAL_PORT}:9200
       - 9300:9300
@@ -61,49 +63,47 @@ services:
       - dbserver
 
   logstash:
-    container_name: ${LS_TAGNAME}
+    container_name: ${LS_CONTAINER_NAME}
+    restart: unless-stopped
     build:
       context: ./
-      dockerfile: ls.Dockerfile
+      dockerfile: logstash.Dockerfile
       args:
         - ES_AND_LS_VERSION=${ES_AND_LS_VERSION}
     command: logstash -r -f /config-dir/logstash.conf
     environment:
-      - XPACK.MONITORING.ELASTICSEARCH.URL=${ES_TAGNAME}
+      - XPACK.MONITORING.ELASTICSEARCH.URL=${ES_CONTAINER_NAME}
       - CONFIG.SUPPORT_ESCAPES=true
-      - JDBC_POSTGRESQL=jdbc:postgresql://${DB_TAGNAME}/${DOCKER_DB_DATABASE}
-      - JDBC_USER=${DOCKER_DB_USER}
-      - JDBC_PASSWORD=${DOCKER_DB_PASSWORD}
-      - ES_HOSTS=${ES_TAGNAME}:${ES_LOCAL_PORT}
+      - JDBC_POSTGRESQL=jdbc:postgresql://${POSTGRES_CONTAINER_NAME}:5432/${POSTGRES_DATABASE}
+      - JDBC_USER=${POSTGRES_USER}
+      - JDBC_PASSWORD=${POSTGRES_PASSWORD}
+      - ES_HOSTS=${ES_CONTAINER_NAME}:${ES_LOCAL_PORT}
     healthcheck:
       test: curl -X GET "localhost:9600" --silent
       retries: 5
     volumes:
-      - ../:/config-dir
+      - ./logstash.conf:/config-dir/logstash.conf
+      - ./postgresql-connector.jar:/config-dir/postgresql-connector.jar
     depends_on:
       - elasticsearch
 
-  node:
-    container_name: nodegrotto
-    image: grottoce-front
-    build:
-      context: ../
-      dockerfile: docker/node.Dockerfile
-    environment:
-      - sails_datastores__default__url=postgres://${DOCKER_DB_USER}:${DOCKER_DB_PASSWORD}@dbserver/${DOCKER_DB_DATABASE}
-      - NODE_ENV=dev-docker
-      - ES_HOST=${ES_TAGNAME}:${ES_LOCAL_PORT}
-      - POSTGRE_TEST_URL=postgres://${DOCKER_DB_USER}:${DOCKER_DB_PASSWORD}@testdbserver:${TEST_DB_LOCAL_PORT}/${DOCKER_DB_DATABASE}
-    command: npm run start-hot
-    volumes:
-      - ../:/app
-      - ../node_modules:/app/node_modules
-    depends_on:
-      - elasticsearch
-    ports:
-      - 1337:1337
-      - 6006:6006
+  # # For debuging postgresql
+  # pgadmin:
+  #   image: dpage/pgadmin4:7.4
+  #   container_name: grotto-pgadmin
+  #   restart: unless-stopped
+  #   environment:
+  #     PGADMIN_DEFAULT_EMAIL: admin@admin.com
+  #     PGADMIN_DEFAULT_PASSWORD: admin
+  #   volumes:
+  #     - ./pdagmin.servers.json:/pgadmin4/servers.json
+  #   ports:
+  #     - '5050:80'
+  #   depends_on:
+  #     - dbserver
+  #     - testdbserver
 
 volumes:
   gc-postgis-data:
+  gc-postgis-test-data:
   gc-es-data:

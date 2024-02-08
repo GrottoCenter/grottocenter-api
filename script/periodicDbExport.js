@@ -86,10 +86,7 @@ function getMsUntilNextExec() {
   // Next day of at 2 AM UTC
   const d = new Date();
   d.setUTCDate(d.getUTCDate() + 1);
-  d.setUTCHours(2);
-  d.setUTCMinutes(0);
-  d.setUTCSeconds(0);
-  d.setUTCMilliseconds(0);
+  d.setUTCHours(2, 0, 0, 0);
   return d.getTime() - Date.now();
 }
 
@@ -142,13 +139,14 @@ function registerMakeDbExport() {
 
   // <!> Only works on mono instance, does not support scaling
   clearTimeout(dbExportTim);
+
   dbExportTim = setTimeout(() => {
+    registerMakeDbExport();
+
     // Only fully run the first day of each month
     if (new Date().getUTCDate() !== 1) return;
     // Cannot set the total time as a 32-bit signed integer is used by setTimeout()
     // It will overflow and trigger a timeoutoverflowwarning
-
-    registerMakeDbExport();
 
     makeDbExport().catch((err) => sails.log.error('makeDbExport error', err));
   }, getMsUntilNextExec());

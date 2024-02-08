@@ -5,7 +5,7 @@ module.exports = {
     node: true,
     mocha: true,
   },
-  extends: ['airbnb-base', 'prettier'],
+  extends: ['eslint:recommended', 'airbnb-base', 'prettier'],
   parserOptions: {
     ecmaVersion: 'latest',
   },
@@ -46,7 +46,6 @@ module.exports = {
     TPoint: 'readonly',
     TRegion: 'readonly',
     TRigging: 'readonly',
-    TRight: 'readonly',
     TSubject: 'readonly',
     TType: 'readonly',
     sails: 'readonly',
@@ -54,22 +53,12 @@ module.exports = {
   rules: {
     'no-restricted-syntax': [
       'error',
-      {
-        selector: 'ForInStatement',
-        message:
-          'for..in loops iterate over the entire prototype chain, which is virtually never what you want. Use Object.{keys,values,entries}, and iterate over the resulting array.',
-      },
-      {
-        selector: 'LabeledStatement',
-        message:
-          'Labels are a form of GOTO; using them makes code confusing and hard to maintain and understand.',
-      },
-      {
-        selector: 'WithStatement',
-        message:
-          '`with` is disallowed in strict mode because it makes code impossible to predict and optimize.',
-      },
+      'ForInStatement',
+      'LabeledStatement',
+      'WithStatement',
     ],
     'prefer-destructuring': ['error', { object: true, array: false }],
+    'prettier/prettier': 'error',
   },
+  plugins: ['prettier'],
 };

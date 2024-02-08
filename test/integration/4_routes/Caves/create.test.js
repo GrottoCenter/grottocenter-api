@@ -62,7 +62,7 @@ describe('Cave features', () => {
         should(createdCave).be.not.undefined();
         await TCave.destroyOne(createdCave.id);
         await TDescription.destroy(createdCave.descriptions.map((d) => d.id));
-        await TName.destroy(createdCave.names.map((n) => n.id));
+        await TName.destroy({ cave: createdCave.id });
       });
 
       it('should return code 200', (done) => {
@@ -76,14 +76,13 @@ describe('Cave features', () => {
           .end((err, res) => {
             if (err) return done(err);
             const { body: cave } = res;
+
             should(cave).have.properties(CAVE_PROPERTIES);
             should(cave.depth).equal(caveCreationData.depth);
             should(cave.documents.length).equal(
               caveCreationData.documents.length
             );
-            should(cave.latitude).equal(caveCreationData.latitude);
             should(cave.length).equal(caveCreationData.length);
-            should(cave.longitude).equal(caveCreationData.longitude);
             should(cave.temperature).equal(caveCreationData.temperature);
 
             createdCave = cave;

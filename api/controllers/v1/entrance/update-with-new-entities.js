@@ -7,27 +7,10 @@ const {
   NOTIFICATION_ENTITIES,
 } = require('../../../services/NotificationService');
 const NotificationService = require('../../../services/NotificationService');
-const RightService = require('../../../services/RightService');
 const { toEntranceDuplicate } = require('../../../services/mapping/converters');
 
 // eslint-disable-next-line consistent-return
 module.exports = async (req, res) => {
-  // Check right
-  const hasRight = await sails.helpers.checkRight
-    .with({
-      groups: req.token.groups,
-      rightEntity: RightService.RightEntities.ENTRANCE,
-      rightAction: RightService.RightActions.EDIT_ANY,
-    })
-    .intercept('rightNotFound', () =>
-      res.serverError(
-        'A server error occured when checking your right to update an entrance.'
-      )
-    );
-  if (!hasRight) {
-    return res.forbidden('You are not authorized to update an entrance.');
-  }
-
   // Check if entrance exists
   const entranceId = req.param('id');
   const currentEntrance = await TEntrance.findOne(entranceId);
@@ -69,9 +52,8 @@ module.exports = async (req, res) => {
         ...desc,
         entrance: entranceId,
       }));
-      const createdDescriptions = await TDescription.createEach(
-        descParams
-      ).fetch();
+      const createdDescriptions =
+        await TDescription.createEach(descParams).fetch();
       const createdDescriptionsIds = createdDescriptions.map((desc) => desc.id);
       cleanedData.descriptions = ramda.concat(
         cleanedData.descriptions,

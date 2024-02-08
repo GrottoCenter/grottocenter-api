@@ -5,29 +5,12 @@ const {
   NOTIFICATION_ENTITIES,
 } = require('../../../services/NotificationService');
 const NotificationService = require('../../../services/NotificationService');
-const RightService = require('../../../services/RightService');
 const ParametersValidatorService = require('../../../services/ParametersValidatorService');
 const LocationService = require('../../../services/LocationService');
 const { toSimpleLocation } = require('../../../services/mapping/converters');
 
 module.exports = async (req, res) => {
   try {
-    // Check right
-    const hasRight = await sails.helpers.checkRight
-      .with({
-        groups: req.token.groups,
-        rightEntity: RightService.RightEntities.LOCATION,
-        rightAction: RightService.RightActions.CREATE,
-      })
-      .intercept('rightNotFound', () =>
-        res.serverError(
-          'A server error occured when checking your right to create a location.'
-        )
-      );
-    if (!hasRight) {
-      return res.forbidden('You are not authorized to create a location.');
-    }
-
     const mandatoryParams = ParametersValidatorService.checkAllExist(req, res, [
       'entrance',
       'body',

@@ -1,121 +1,117 @@
-const { doubleCheck } = sails.helpers.csvhelpers;
-const { getDateFromKarstlink } = require('../../config/constants/karstlink');
+const {
+  valIfTruthyOrNull,
+  getDateFromKarstlink,
+  extractUrlFragment,
+  getCreator,
+} = require('../utils/csvHelper');
 const GrottoService = require('./GrottoService');
 
 module.exports = {
-  getConvertedLangDescDocumentFromCsv: (rawData, authorId) => {
-    const doubleCheckWithData = (args) =>
-      doubleCheck.with({ data: rawData, ...args });
+  getConvertedDescriptionFromCsv: async (data, authorId) => {
+    let descLang =
+      valIfTruthyOrNull(data['karstlink:hasDescriptionDocument/dc:language']) ??
+      valIfTruthyOrNull(data['dc:language']);
 
-    const description = doubleCheckWithData({
-      key: 'karstlink:hasDescriptionDocument/dct:description',
-    });
-    const langDesc = description
-      ? doubleCheckWithData({
-          key: 'karstlink:hasDescriptionDocument/dc:language',
-          func: (value) => value.toLowerCase(),
-        })
-      : doubleCheckWithData({
-          key: 'dc:language',
-          func: (value) => value.toLowerCase(),
-        });
+    if (descLang) descLang = descLang.toLowerCase();
+    if (descLang && descLang.length === 2) {
+      const nameLang = await TLanguage.findOne({ part1: descLang });
+      if (nameLang) descLang = nameLang.id;
+    }
+
     return {
       author: authorId,
-      title: doubleCheckWithData({
-        key: 'rdfs:label',
-      }),
-      description,
-      dateInscription: doubleCheckWithData({
-        key: 'dct:rights/dct:created',
-        defaultValue: new Date(),
-        func: getDateFromKarstlink,
-      }),
-      dateReviewed: doubleCheckWithData({
-        key: 'dct:rights/dct:modified',
-        func: getDateFromKarstlink,
-      }),
-      documentMainLanguage: {
-        id: doubleCheckWithData({
-          key: 'dc:language',
-          func: (value) => value.toLowerCase(),
-        }),
-      },
-      titleAndDescriptionLanguage: {
-        id: langDesc,
-      },
+      title: valIfTruthyOrNull(data['rdfs:label']),
+      description: valIfTruthyOrNull(
+        data['karstlink:hasDescriptionDocument/dct:description']
+      ),
+      dateInscription: getDateFromKarstlink(
+        valIfTruthyOrNull(data['dct:rights/dct:created']) ?? new Date()
+      ),
+      dateReviewed: getDateFromKarstlink(
+        valIfTruthyOrNull(data['dct:rights/dct:modified']) ?? new Date()
+      ),
+      language: descLang,
     };
   },
 
-  getConvertedDocumentFromCsv: async (req, rawData, authorId) => {
-    const doubleCheckWithData = (args) =>
-      doubleCheck.with({ data: rawData, ...args });
-    const retrieveFromLink = sails.helpers.csvhelpers.retrieveFromLink.with;
-
+  getConvertedDocumentFromCsv: async (req, data, authorId) => {
     // License
-    const rawLicence = doubleCheckWithData({
-      key: 'dct:rights/karstlink:licenseType',
-    });
-    const licence = await retrieveFromLink({ stringArg: rawLicence });
+    const licence = extractUrlFragment(
+      valIfTruthyOrNull(data['dct:rights/karstlink:licenseType'])
+    );
     const licenceDb = await TLicense.findOne({ name: licence });
     if (!licenceDb) {
       throw Error(`This kind of license (${licence}) cannot be imported.`);
     }
 
+    const language = valIfTruthyOrNull(data['dc:language'])?.toLowerCase();
+    let nameLang;
+    if (language && language.length === 2) {
+      nameLang = await TLanguage.findOne({ part1: language });
+    }
+    const languages = nameLang ? [nameLang.id] : [];
+
+    const country = valIfTruthyOrNull(data['gn:countryCode'])?.toUpperCase();
+    let aCountry;
+    if (country && country.length === 2) {
+      aCountry = await TCountry.findOne({ id: country });
+    }
+    const countries = aCountry ? [aCountry.id] : [];
+
     // Creator(s)
-    const rawCreators = rawData['dct:creator'].split('|');
-    const checkedRawCreators = rawCreators[0] === '' ? [] : rawCreators; // Empty the first array value if it's an empty string to avoid iterating through it
+    const rawCreators = data['dct:creator'].split('|').filter((e) => e);
     // For each creator, first check if there is a grotto of this name.
     // If not, check for a caver. If not, create a caver.
-    const creatorsPromises = checkedRawCreators.map(async (creatorRaw) => {
-      const authorGrotto = await TName.find({
-        name: await retrieveFromLink({ stringArg: creatorRaw }),
+    const creatorsPromises = rawCreators.map(async (creatorRaw) => {
+      const authorGrotto = await TName.findOne({
+        name: extractUrlFragment(creatorRaw),
         grotto: { '!=': null },
-      }).limit(1);
+        isDeleted: false,
+      });
+
       // If a grotto is found, a name object is returned.
+      if (authorGrotto) return { type: 'grotto', value: authorGrotto };
+
       // If it as a caver which is found, it returns a caver object
-      if (authorGrotto.length === 0) {
-        return {
-          type: 'caver',
-          value: await sails.helpers.csvhelpers.getCreator.with({
-            creator: creatorRaw,
-          }),
-        };
-      }
-      return { type: 'grotto', value: authorGrotto[0] };
+      return {
+        type: 'caver',
+        value: await getCreator(creatorRaw),
+      };
     });
     const creators = await Promise.all(creatorsPromises);
+    const creatorsCaverId = [];
+    const creatorsGrottoId = [];
+
+    for (const creator of creators) {
+      if (creator.type === 'caver') creatorsCaverId.push(creator.value.id);
+      if (creator.type === 'grotto')
+        creatorsGrottoId.push(creator.value.grotto);
+    }
 
     // Editor
-    const editorsRaw = doubleCheckWithData({
-      key: 'dct:publisher',
-      defaultValue: null,
-    });
     let editorId;
+    const editorsRaw = valIfTruthyOrNull(data['dct:publisher']);
+
     if (editorsRaw) {
-      const editorsRawArray = editorsRaw.split('|');
-      let editorName = '';
-      for (const editorRaw of editorsRawArray) {
-        // eslint-disable-next-line no-await-in-loop
-        const editorNameRaw = await retrieveFromLink({ stringArg: editorRaw });
-        editorName += `${editorNameRaw.replace('_', ' ')}, `;
-      }
-      editorName = editorName.slice(0, -2);
-      const namesArray = await TName.find({
+      const editorName = editorsRaw
+        .split('|')
+        .map((e) => extractUrlFragment(e).replace(/_/g, ' '))
+        .filter((e) => e)
+        .join(', ');
+
+      const name = await TName.findOne({
         name: editorName,
         grotto: { '!=': null },
-      }).limit(1);
-      if (namesArray.length === 0) {
+        isDeleted: false,
+      });
+      if (!name) {
         const paramsGrotto = {
           author: authorId,
           dateInscription: new Date(),
         };
         const nameGrotto = {
           text: editorName,
-          language: doubleCheckWithData({
-            key: 'dc:language',
-            defaultValue: 'eng',
-            func: (value) => value.toLowerCase(),
-          }),
+          language: language ?? 'eng',
           author: authorId,
         };
         const editorGrotto = await GrottoService.createGrotto(
@@ -125,16 +121,13 @@ module.exports = {
         );
         editorId = editorGrotto.id;
       } else {
-        const name = namesArray[0];
         editorId = name.grotto;
       }
     }
 
     // Doc type
-    const typeData = doubleCheckWithData({
-      key: 'karstlink:documentType',
-    });
     let typeId;
+    const typeData = valIfTruthyOrNull(data['karstlink:documentType']);
     if (typeData) {
       const typeCriteria = typeData.startsWith('http')
         ? { url: typeData }
@@ -147,9 +140,7 @@ module.exports = {
     }
 
     // Parent / partOf
-    const parentId = doubleCheckWithData({
-      key: 'dct:isPartOf',
-    });
+    const parentId = valIfTruthyOrNull(data['dct:isPartOf']);
     const doesParentExist = parentId
       ? await sails.helpers.checkIfExists.with({
           attributeName: 'id',
@@ -161,61 +152,44 @@ module.exports = {
       throw Error(`Document parent with id ${parentId} not found.`);
     }
 
-    // Subjects
-    const subjectsData = doubleCheckWithData({
-      key: 'dct:subject',
-    });
-    const subjects = subjectsData ? subjectsData.split('|') : undefined;
-
-    const creatorsCaverId = [];
-    const creatorsGrottoId = [];
-    for (const creator of creators) {
-      switch (creator.type) {
-        case 'caver':
-          creatorsCaverId.push(creator.value.id);
-          break;
-        case 'grotto':
-          creatorsGrottoId.push(creator.value.grotto);
-          break;
-        default:
-          break;
-      }
-    }
-
     return {
+      idDbImport: valIfTruthyOrNull(data.id),
+      nameDbImport: valIfTruthyOrNull(data['dct:rights/cc:attributionName']),
+      identifier: valIfTruthyOrNull(data['dct:source']),
+      identifierType: valIfTruthyOrNull(data['dct:identifier'])
+        ?.trim()
+        ?.toLowerCase(),
+
+      dateInscription: getDateFromKarstlink(
+        valIfTruthyOrNull(data['dct:rights/dct:created']) ?? new Date()
+      ),
+      dateReviewed: getDateFromKarstlink(
+        valIfTruthyOrNull(data['dct:rights/dct:modified']) ?? new Date()
+      ),
+      datePublication: valIfTruthyOrNull(data['dct:date']),
+      // isValidated, // TODO auto validate an imported document ?
+      // validationComment: 'From CSV import',
+
       author: authorId,
+      // authorComment: '', // TODO Add ?
       authors: creatorsCaverId,
       authorsGrotto: creatorsGrottoId,
-      dateInscription: doubleCheckWithData({
-        key: 'dct:rights/dct:created',
-        defaultValue: new Date(),
-        func: getDateFromKarstlink,
-      }),
-      datePublication: doubleCheckWithData({
-        key: 'dct:date',
-      }),
-      dateReviewed: doubleCheckWithData({
-        key: 'dct:rights/dct:modified',
-        func: getDateFromKarstlink,
-      }),
       editor: editorId,
-      idDbImport: doubleCheckWithData({
-        key: 'id',
-      }),
-      identifier: doubleCheckWithData({
-        key: 'dct:source',
-      }),
-      identifierType: doubleCheckWithData({
-        key: 'dct:identifier',
-        func: (value) => value.trim().toLowerCase(),
-      }),
-      license: licenceDb.id,
-      nameDbImport: doubleCheckWithData({
-        key: 'dct:rights/cc:attributionName',
-      }),
-      parent: parentId,
-      subjects,
+      // library: '', // TODO Add ?
+
       type: typeId,
+      // descriptions is changed independently (getConvertedDescriptionFromCsv)
+      subjects: valIfTruthyOrNull(data['dct:subject'])?.split('|'),
+      // issue: '', // TODO Add ?
+      // pages: '', // TODO Add ?
+      // option: '', // TODO Add ?
+      license: licenceDb.id,
+      languages,
+
+      // TODO Add massifs, cave, entrance, files, authorizationDocument ?
+      // TODO Add isoRegions ?
+      countries,
+      parent: parentId,
     };
   },
 };

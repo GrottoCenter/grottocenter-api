@@ -6,8 +6,6 @@ VALUES (
 		'Technical responsible of the application.'
 	),
 	(2, 'Moderator', 'Content reviewers.'),
-	(3, 'User', 'Default users group'),
-	(4, 'Visitor', 'Non connected people'),
 	(
 		5,
 		'Leader',

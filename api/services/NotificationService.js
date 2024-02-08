@@ -168,9 +168,8 @@ const getCountryAndMassifSubscribers = async (
   const countrySubscribers = [];
   const massifsSubscribers = [];
   if (entityCountryId) {
-    const country = await TCountry.findOne(entityCountryId).populate(
-      'subscribedCavers'
-    );
+    const country =
+      await TCountry.findOne(entityCountryId).populate('subscribedCavers');
     countrySubscribers.push(
       ...country.subscribedCavers.map((caver) => ({
         ...caver,
@@ -182,9 +181,8 @@ const getCountryAndMassifSubscribers = async (
   if (entityMassifIds) {
     await Promise.all(
       entityMassifIds.map(async (massifId) => {
-        const massif = await TMassif.findOne(massifId).populate(
-          'subscribedCavers'
-        );
+        const massif =
+          await TMassif.findOne(massifId).populate('subscribedCavers');
         await NameService.setNames([massif], 'massif');
         massifsSubscribers.push(
           ...massif.subscribedCavers.map((caver) => ({
@@ -498,9 +496,10 @@ module.exports = {
       // Had to require in the function to avoid a circular dependency with notifySubscribers() in DocumentService.createDocument()
       // eslint-disable-next-line global-require
       const DocumentService = require('./DocumentService');
-      populatedNotification.document = await DocumentService.getDocument(
-        safeGetPropId('document', notification)
-      );
+      const populatedDocuments = await DocumentService.getDocuments([
+        safeGetPropId('document', notification),
+      ]);
+      populatedNotification.document = populatedDocuments[0];
     }
     if (populatedNotification.entrance) {
       await NameService.setNames([populatedNotification.entrance], 'entrance');

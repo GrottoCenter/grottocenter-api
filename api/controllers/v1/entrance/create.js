@@ -2,25 +2,8 @@ const ramda = require('ramda');
 const ControllerService = require('../../../services/ControllerService');
 const EntranceService = require('../../../services/EntranceService');
 const ErrorService = require('../../../services/ErrorService');
-const RightService = require('../../../services/RightService');
 
 module.exports = async (req, res) => {
-  // Check right
-  const hasRight = await sails.helpers.checkRight
-    .with({
-      groups: req.token.groups,
-      rightEntity: RightService.RightEntities.ENTRANCE,
-      rightAction: RightService.RightActions.CREATE,
-    })
-    .intercept('rightNotFound', () =>
-      res.serverError(
-        'A server error occured when checking your right to create an entrance.'
-      )
-    );
-  if (!hasRight) {
-    return res.forbidden('You are not authorized to create an entrance.');
-  }
-
   // Check params
   // name
   if (

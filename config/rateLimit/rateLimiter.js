@@ -12,7 +12,7 @@ module.exports = {
     message: 'Too many requests with the same IP, try again later.',
     standardHeaders: true,
     statusCode: 429,
-    skip: async (req, res) => {
+    skip: async (req) => {
       // Ignore OPTIONS request
       if (req.method.toUpperCase() === 'OPTIONS') {
         return true;
@@ -27,17 +27,9 @@ module.exports = {
       if (!req.token) {
         return false;
       }
-      const hasNoRequestLimit = await sails.helpers.checkRight
-        .with({
-          groups: req.token.groups,
-          rightEntity: RightService.RightEntities.APPLICATION,
-          rightAction: RightService.RightActions.NO_REQUEST_LIMIT,
-        })
-        .intercept('rightNotFound', () =>
-          res.serverError(
-            'A server error occured when checking your right to not having a request limit.'
-          )
-        );
+      const hasNoRequestLimit =
+        RightService.hasGroup(req.token.groups, RightService.G.ADMINISTRATOR) ||
+        RightService.hasGroup(req.token.groups, RightService.G.MODERATOR);
 
       return hasNoRequestLimit;
     },
@@ -54,7 +46,7 @@ module.exports = {
       'Too many DELETE requests with the same IP as an user, try again later.',
     standardHeaders: true,
     statusCode: 429,
-    skip: async (req, res) => {
+    skip: async (req) => {
       // Ignore request others than DELETE
       if (req.method.toUpperCase() !== 'DELETE') {
         return true;
@@ -75,17 +67,9 @@ module.exports = {
         return false;
       }
 
-      const hasNoRequestLimit = await sails.helpers.checkRight
-        .with({
-          groups: req.token.groups,
-          rightEntity: RightService.RightEntities.APPLICATION,
-          rightAction: RightService.RightActions.NO_USER_DELETE_REQUEST_LIMIT,
-        })
-        .intercept('rightNotFound', () =>
-          res.serverError(
-            'A server error occured when checking your right to not having a request limit on DELETE actions.'
-          )
-        );
+      const hasNoRequestLimit =
+        RightService.hasGroup(req.token.groups, RightService.G.ADMINISTRATOR) ||
+        RightService.hasGroup(req.token.groups, RightService.G.MODERATOR);
       if (!hasNoRequestLimit) {
         sails.log.error(
           `User ${req.token.nickname} (id=${req.token.id}) is being limited on DELETE requests as an user.`
@@ -107,7 +91,7 @@ module.exports = {
       'Too many DELETE requests with the same IP as a moderator, try again later.',
     standardHeaders: true,
     statusCode: 429,
-    skip: async (req, res) => {
+    skip: async (req) => {
       // Ignore request others than DELETE
       if (req.method.toUpperCase() !== 'DELETE') {
         return true;
@@ -116,18 +100,10 @@ module.exports = {
         return false;
       }
 
-      const hasNoRequestLimit = await sails.helpers.checkRight
-        .with({
-          groups: req.token.groups,
-          rightEntity: RightService.RightEntities.APPLICATION,
-          rightAction:
-            RightService.RightActions.NO_MODERATOR_DELETE_REQUEST_LIMIT,
-        })
-        .intercept('rightNotFound', () =>
-          res.serverError(
-            'A server error occured when checking your right to not having a request limit on DELETE actions.'
-          )
-        );
+      const hasNoRequestLimit = RightService.hasGroup(
+        req.token.groups,
+        RightService.G.ADMINISTRATOR
+      );
 
       if (!hasNoRequestLimit) {
         sails.log.error(

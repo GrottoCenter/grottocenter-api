@@ -7,17 +7,10 @@ const {
 } = require('../../../services/NotificationService');
 
 module.exports = async (req, res) => {
-  const hasRight = await sails.helpers.checkRight
-    .with({
-      groups: req.token.groups,
-      rightEntity: RightService.RightEntities.MASSIF,
-      rightAction: RightService.RightActions.DELETE_ANY,
-    })
-    .intercept('rightNotFound', () =>
-      res.serverError(
-        'A server error occured when checking your right to delete a massif.'
-      )
-    );
+  const hasRight = RightService.hasGroup(
+    req.token.groups,
+    RightService.G.MODERATOR
+  );
   if (!hasRight) {
     return res.forbidden('You are not authorized to delete a massif.');
   }

@@ -3,28 +3,10 @@ const {
   NOTIFICATION_ENTITIES,
 } = require('../../../services/NotificationService');
 const NotificationService = require('../../../services/NotificationService');
-const RightService = require('../../../services/RightService');
 
 const { checkIfExists } = sails.helpers;
-const { checkRight } = sails.helpers;
 
 module.exports = async (req, res) => {
-  // Check right
-  const hasRight = await checkRight
-    .with({
-      groups: req.token.groups,
-      rightEntity: RightService.RightEntities.CAVE,
-      rightAction: RightService.RightActions.EDIT_ANY,
-    })
-    .intercept('rightNotFound', () =>
-      res.serverError(
-        'A server error occured when checking your right to add a cave to a massif.'
-      )
-    );
-  if (!hasRight) {
-    return res.forbidden('You are not authorized to add a cave to a massif.');
-  }
-
   // Check params
   const caveId = req.param('caveId');
   if (!(await checkIfExists('id', caveId, TCave))) {

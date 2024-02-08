@@ -1,5 +1,6 @@
 \c grottoce;
 
+-- Deprecated, replaced by the t_country and t_iso3166_2 tables
 INSERT INTO t_region (id, code, is_deprecated, "name", id_country) VALUES
 	(999, '--', false, 'the whole country', '00'),
 	(1, 'Abchazia', true, 'Abkhazia', 'GE'),

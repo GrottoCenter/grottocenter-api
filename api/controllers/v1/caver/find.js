@@ -1,5 +1,5 @@
 const NameService = require('../../../services/NameService');
-const DescriptionService = require('../../../services/DescriptionService');
+const DocumentService = require('../../../services/DocumentService');
 const CaverService = require('../../../services/CaverService');
 const ControllerService = require('../../../services/ControllerService');
 const { toCaver } = require('../../../services/mapping/converters');
@@ -16,14 +16,13 @@ module.exports = async (req, res) => {
     NameService.setNames(caverFound.exploredEntrances, 'entrance'),
     NameService.setNames(caverFound.grottos, 'grotto'),
     NameService.setNames(caverFound.subscribedToMassifs, 'massif'),
+    (async () => {
+      caverFound.documents = await DocumentService.getDocuments(
+        caverFound.documents.map((d) => d.id)
+      );
+    })(),
   ];
-  if (caverFound.documents) {
-    asyncArr.push(
-      ...caverFound.documents.map((d) =>
-        DescriptionService.setDocumentDescriptions(d, false)
-      )
-    );
-  }
+
   await Promise.all(asyncArr);
 
   return ControllerService.treatAndConvert(

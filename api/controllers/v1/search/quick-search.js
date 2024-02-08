@@ -12,9 +12,10 @@ const {
  * - resourceTypes:  Array of string, entity types to search for (@see INDEX_NAMES) (FACULTATIVE).
  * By default, search on all entities except document-collections.
  * */
-module.exports = (req, res) => {
+module.exports = async (req, res) => {
   if (!req.param('query')) {
-    return res.badRequest();
+    res.badRequest();
+    return;
   }
 
   // By default, the query asked will send every information.
@@ -39,25 +40,14 @@ module.exports = (req, res) => {
     resourceTypes: req.param('resourceTypes'),
   };
 
-  return ElasticsearchService.searchQuery(searchParams)
-    .then((results) =>
-      ControllerService.treatAndConvert(
-        req,
-        undefined,
-        results,
-        params,
-        res,
-        complete ? toCompleteSearchResult : toSearchResult
-      )
-    )
-    .catch((err) =>
-      ControllerService.treatAndConvert(
-        req,
-        err,
-        undefined,
-        params,
-        res,
-        toSearchResult
-      )
-    );
+  const results = await ElasticsearchService.searchQuery(searchParams);
+
+  ControllerService.treatAndConvert(
+    req,
+    undefined,
+    results,
+    params,
+    res,
+    complete ? toCompleteSearchResult : toSearchResult
+  );
 };

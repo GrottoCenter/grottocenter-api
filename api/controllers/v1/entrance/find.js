@@ -51,14 +51,14 @@ module.exports = async (req, res) => {
       entrance.riggings,
       entrance.histories,
       entrance.comments,
-      ...entrance.documents
+      entrance.documents,
     ] = await Promise.all([
       DescriptionService.getEntranceDescriptions(entrance.id),
       LocationService.getEntranceLocations(entrance.id),
       RiggingService.getEntranceRiggings(entrance.id),
       HistoryService.getEntranceHistories(entrance.id),
       CommentService.getEntranceComments(entrance.id),
-      ...entrance.documents.map((d) => DocumentService.getDocument(d.id)),
+      DocumentService.getDocuments(entrance.documents.map((d) => d.id)),
     ]);
     entrance.stats = CommentService.getStatsFromComments(entrance.comments);
 

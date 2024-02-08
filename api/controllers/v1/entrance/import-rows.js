@@ -1,10 +1,12 @@
 const CaveService = require('../../../services/CaveService');
-const EntranceDuplicateService = require('../../../services/EntranceDuplicateService');
 const EntranceService = require('../../../services/EntranceService');
 const EntranceCSVImportService = require('../../../services/EntranceCSVImportService');
 const RightService = require('../../../services/RightService');
-
-const doubleCheck = sails.helpers.csvhelpers.doubleCheck.with;
+const {
+  checkColumns,
+  valIfTruthyOrNull,
+  getOrCreateAuthor,
+} = require('../../../utils/csvHelper');
 
 const ENTRANCE_MANDATORY_COLUMNS = [
   'w3geo:latitude',
@@ -13,17 +15,10 @@ const ENTRANCE_MANDATORY_COLUMNS = [
 ];
 
 module.exports = async (req, res) => {
-  const hasRight = await sails.helpers.checkRight
-    .with({
-      groups: req.token.groups,
-      rightEntity: RightService.RightEntities.ENTRANCE,
-      rightAction: RightService.RightActions.CSV_IMPORT,
-    })
-    .intercept('rightNotFound', () =>
-      res.serverError(
-        'A server error occured when checking your right to import entrances via CSV.'
-      )
-    );
+  const hasRight = RightService.hasGroup(
+    req.token.groups,
+    RightService.G.ADMINISTRATOR
+  );
   if (!hasRight) {
     return res.forbidden('You are not authorized to import entrances via CSV.');
   }
@@ -41,10 +36,7 @@ module.exports = async (req, res) => {
 
   /* eslint-disable no-await-in-loop */
   for (const [index, data] of req.body.data.entries()) {
-    const missingColumns = await sails.helpers.csvhelpers.checkColumns.with({
-      data,
-      additionalColumns: ENTRANCE_MANDATORY_COLUMNS,
-    });
+    const missingColumns = await checkColumns(data, ENTRANCE_MANDATORY_COLUMNS);
 
     // Stop if missing columnes
     if (missingColumns.length > 0) {
@@ -56,50 +48,41 @@ module.exports = async (req, res) => {
     }
 
     // Check for duplicates
-    const idDb = doubleCheck.with({
-      data,
-      key: 'id',
-      defaultValue: undefined,
-    });
-    const nameDb = doubleCheck.with({
-      data,
-      key: 'dct:rights/cc:attributionName',
-      defaultValue: undefined,
-    });
+    const idDb = valIfTruthyOrNull(data.id);
+    const nameDb = valIfTruthyOrNull(data['dct:rights/cc:attributionName']);
 
     try {
       // Get data
       // Author retrieval: create one if not present in db
-      const authorId = await sails.helpers.csvhelpers.getAuthor(data);
+      const authorId = await getOrCreateAuthor(data);
       const dataNameDescLoc =
         await EntranceCSVImportService.getConvertedNameDescLocEntranceFromCsv(
           data,
           authorId
         );
 
-      const result = await TEntrance.find({
+      const result = await TEntrance.findOne({
         idDbImport: idDb,
         nameDbImport: nameDb,
       });
-      if (result.length !== 0) {
+      if (result) {
         // Create a duplicate in DB
-        const cave = await TCave.findOne(result[0].cave);
+        const cave = await TCave.findOne(result.cave);
         const entrance = EntranceCSVImportService.getConvertedEntranceFromCsv(
           data,
           authorId,
           cave
         );
 
-        const duplicateContent = {
-          entrance,
-          nameDescLoc: dataNameDescLoc,
-        };
-
-        await EntranceDuplicateService.create(
-          req.token.id,
-          duplicateContent,
-          result[0].id
-        );
+        await TEntranceDuplicate.create({
+          author: req.token.id,
+          content: {
+            entrance,
+            nameDescLoc: dataNameDescLoc,
+          },
+          dateInscription: new Date(),
+          entrance: result.id,
+        });
 
         requestResponse.successfulImportAsDuplicates.push({
           line: index + 2,
@@ -134,13 +117,7 @@ module.exports = async (req, res) => {
         dataEntrance,
         dataNameDescLoc
       );
-      if (
-        doubleCheck.with({
-          data,
-          key: 'gn:alternateName',
-          defaultValue: null,
-        })
-      ) {
+      if (valIfTruthyOrNull(data['gn:alternateName'])) {
         await TName.create({
           author: authorId,
           entrance: createdEntrance.id,

@@ -11,13 +11,11 @@ CREATE MATERIALIZED VIEW v_massif_info AS
   COUNT(DISTINCT e.id) as nb_entrances
   FROM t_massif m
   JOIN t_entrance e ON ST_Contains(ST_SetSRID(m.geog_polygon::geometry, 4326), ST_SetSRID(ST_MakePoint(e.longitude, e.latitude), 4326))
-  JOIN t_cave c ON e.id_cave = c.id
-  JOIN t_name n ON n.id_cave = c.id
-  WHERE n.is_main = true
-  AND c.is_deleted = false
   AND e.is_deleted = false
-  AND m.is_deleted = false
-  GROUP BY(m.id, c.id, n.name, c.depth, c.length, c.is_diving )
+  JOIN t_cave c ON e.id_cave = c.id AND c.is_deleted = false
+  JOIN t_name n ON n.id_cave = c.id AND n.is_main = true
+  WHERE m.is_deleted = false
+  GROUP BY(m.id, c.id, n.name, c.depth, c.length, c.is_diving)
 WITH NO DATA;
 
 -- v_country_info definition
@@ -32,13 +30,11 @@ CREATE MATERIALIZED VIEW v_country_info AS
   COUNT(e.id) as nb_entrances,
   m.id as id_massif
   FROM t_entrance e
-  LEFT JOIN t_cave c ON e.id_cave = c.id
-  LEFT JOIN t_name n ON n.id_cave = c.id
+  LEFT JOIN t_cave c ON e.id_cave = c.id AND c.is_deleted = false
+  LEFT JOIN t_name n ON n.id_cave = c.id AND n.is_main = true
   LEFT JOIN t_massif m ON ST_Contains(ST_SetSRID(m.geog_polygon::geometry, 4326), ST_SetSRID(ST_MakePoint(e.longitude, e.latitude), 4326))
-  AND n.is_main = true
-  AND c.is_deleted = false
   AND m.is_deleted = false
-  AND e.is_deleted = false
+  WHERE e.is_deleted = false
   GROUP BY(e.id_country, c.id, n.name, c.depth, c.length, c.is_diving, m.id)
   WITH NO DATA;
 

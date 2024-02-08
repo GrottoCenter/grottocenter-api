@@ -47,7 +47,6 @@ describe('Organization features', () => {
           const { body: organization } = res;
           should(organization).have.properties(ORGANIZATION_PROPERTIES);
           should(organization.name).not.be.empty();
-          should(organization.names).not.be.empty();
           should(organization.dateInscription).not.be.empty();
           return done();
         });

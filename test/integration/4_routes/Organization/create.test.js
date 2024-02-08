@@ -15,8 +15,7 @@ describe('Organization features', () => {
         // Destroy created data
         should(createdOrganization).be.not.undefined();
         await TGrotto.destroyOne(createdOrganization.id);
-
-        await TName.destroy(createdOrganization.names.map((n) => n.id));
+        await TName.destroy({ grotto: createdOrganization.id });
       });
 
       it('should return code 200', (done) => {

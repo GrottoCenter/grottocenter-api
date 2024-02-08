@@ -3,9 +3,12 @@ const exportUtils = require('./utils');
 const query = `
     SELECT
       c.id,
-      COALESCE(c.date_reviewed, c.date_inscription) AS last_modified,
-      COALESCE(c.id_reviewer, c.id_author) AS last_author_id,
-      COALESCE(r.nickname, a.nickname) AS last_author,
+      c.date_inscription AS created_at,
+      c.date_reviewed AS last_modified,
+      c.id_author AS author_id,
+      a.nickname AS author,
+      c.id_reviewer AS last_author_id,
+      r.nickname AS last_author,
       n.name AS name,
       c.depth,
       c.length,

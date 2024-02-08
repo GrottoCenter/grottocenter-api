@@ -5,25 +5,8 @@ const {
   NOTIFICATION_ENTITIES,
 } = require('../../../services/NotificationService');
 const NotificationService = require('../../../services/NotificationService');
-const RightService = require('../../../services/RightService');
 
 module.exports = async (req, res) => {
-  const hasRight = await sails.helpers.checkRight
-    .with({
-      groups: req.token.groups,
-      rightEntity: RightService.RightEntities.DOCUMENT,
-      rightAction: RightService.RightActions.EDIT_ANY,
-    })
-    .intercept('rightNotFound', () =>
-      res.serverError(
-        'A server error occured when checking your right to update a document.'
-      )
-    );
-
-  if (!hasRight) {
-    return res.forbidden('You are not authorized to update a document.');
-  }
-
   // Check if document exists
   const documentId = req.param('id');
   const currentDocument = await TDocument.findOne(documentId);
@@ -66,18 +49,16 @@ module.exports = async (req, res) => {
         ...desc,
         document: documentId,
       }));
-      const createdDescriptions = await TDescription.createEach(
-        descParams
-      ).fetch();
+      const createdDescriptions =
+        await TDescription.createEach(descParams).fetch();
       const createdDescriptionsIds = createdDescriptions.map((desc) => desc.id);
       cleanedData.descriptions = ramda.concat(
         cleanedData.descriptions,
         createdDescriptionsIds
       );
     }
-    const updatedDocument = await TDocument.updateOne(documentId).set(
-      cleanedData
-    );
+    const updatedDocument =
+      await TDocument.updateOne(documentId).set(cleanedData);
 
     await NotificationService.notifySubscribers(
       req,

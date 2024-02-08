@@ -13,14 +13,14 @@ before(function (done) {
   sails.lift(
     {
       log: {
-        level: 'silly',
+        // level: 'silly', // Enable for test debugging
       },
       datastores: {
         default: {
           adapter: sailsPostGreAdapter,
-          url: process.env.POSTGRE_TEST_URL
-            ? process.env.POSTGRE_TEST_URL
-            : 'postgres://root:root@localhost:5432/grottoce',
+          url:
+            process.env.POSTGRE_TEST_URL ??
+            'postgres://root:root@localhost:5432/grottoce',
         },
       },
       models: {
@@ -37,7 +37,6 @@ before(function (done) {
       fixted.populate(
         [
           'tlanguage',
-          'tright',
           'tidentifiertype',
           'tsubject',
           'ttype',

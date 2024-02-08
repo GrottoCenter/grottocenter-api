@@ -1,35 +1,28 @@
 const ControllerService = require('../../../services/ControllerService');
 const DocumentService = require('../../../services/DocumentService');
-const { toDocument } = require('../../../services/mapping/converters');
+const { toSimpleDocument } = require('../../../services/mapping/converters');
 const { toListFromController } = require('../../../services/mapping/utils');
 
 module.exports = async (req, res) => {
-  // Check param
-  if (
-    !(await sails.helpers.checkIfExists.with({
-      attributeName: 'id',
-      attributeValue: req.param('id'),
-      sailsModel: TDocument,
-    }))
-  ) {
-    return res.badRequest(
-      `Could not find document with id ${req.param('id')}.`
-    );
+  const documentId = Number(req.param('id'));
+  const baseDocument = await TDocument.findOne(documentId);
+  if (!baseDocument) {
+    return res.notFound(`Could not find document with id ${req.param('id')}.`);
   }
-
-  const doc = { id: Number(req.param('id')) };
-  await DocumentService.deepPopulateChildren(doc);
 
   const params = {
     controllerMethod: 'DocumentController.findChildren',
     searchedItem: `Children of document with id ${req.param('id')}`,
   };
+
+  const children = await DocumentService.getDocumentChildren(baseDocument.id);
+
   return ControllerService.treatAndConvert(
     req,
     null,
-    doc.children,
+    children,
     params,
     res,
-    (data) => toListFromController('documents', data, toDocument)
+    (data) => toListFromController('documents', data, toSimpleDocument)
   );
 };
