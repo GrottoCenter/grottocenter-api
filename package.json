@@ -8,7 +8,7 @@
   "keywords": [],
   "dependencies": {
     "@aws-sdk/client-ses": "^3.509.0",
-    "@azure/storage-blob": "^12.14.0",
+    "@azure/storage-blob": "^12.17.0",
     "archiver": "^6.0.1",
     "argon2": "^0.30.3",
     "async": "^3.2.4",
