@@ -42,9 +42,8 @@ module.exports = async (req, res) => {
     await TCave.addToCollection(destinationCaveId, 'entrances', [entranceId]);
 
     // Return populated entrance
-    const updatedEntrance = await TEntrance.findOne(entranceId).populate(
-      'cave'
-    );
+    const updatedEntrance =
+      await TEntrance.findOne(entranceId).populate('cave');
     updatedEntrance.cave.entrances = await TEntrance.find().where({
       cave: entrance.cave.id,
     });

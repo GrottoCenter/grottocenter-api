@@ -52,9 +52,8 @@ module.exports = async (req, res) => {
         ...desc,
         entrance: entranceId,
       }));
-      const createdDescriptions = await TDescription.createEach(
-        descParams
-      ).fetch();
+      const createdDescriptions =
+        await TDescription.createEach(descParams).fetch();
       const createdDescriptionsIds = createdDescriptions.map((desc) => desc.id);
       cleanedData.descriptions = ramda.concat(
         cleanedData.descriptions,

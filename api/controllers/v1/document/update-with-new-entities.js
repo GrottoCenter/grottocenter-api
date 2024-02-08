@@ -49,18 +49,16 @@ module.exports = async (req, res) => {
         ...desc,
         document: documentId,
       }));
-      const createdDescriptions = await TDescription.createEach(
-        descParams
-      ).fetch();
+      const createdDescriptions =
+        await TDescription.createEach(descParams).fetch();
       const createdDescriptionsIds = createdDescriptions.map((desc) => desc.id);
       cleanedData.descriptions = ramda.concat(
         cleanedData.descriptions,
         createdDescriptionsIds
       );
     }
-    const updatedDocument = await TDocument.updateOne(documentId).set(
-      cleanedData
-    );
+    const updatedDocument =
+      await TDocument.updateOne(documentId).set(cleanedData);
 
     await NotificationService.notifySubscribers(
       req,

@@ -442,9 +442,8 @@ module.exports = {
       .populate('type'),
 
   populateHDocumentsWithDescription: async (documentId, hDocuments) => {
-    const descriptions = await DescriptionService.getHDescriptionsOfDocument(
-      documentId
-    );
+    const descriptions =
+      await DescriptionService.getHDescriptionsOfDocument(documentId);
     hDocuments.forEach((document) => {
       if (Object.keys(descriptions).length > 0) {
         // eslint-disable-next-line no-param-reassign

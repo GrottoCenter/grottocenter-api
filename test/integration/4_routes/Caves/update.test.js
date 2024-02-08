@@ -94,9 +94,8 @@ describe('Cave features', () => {
           .expect(200)
           .end(async (err) => {
             if (err) return done(err);
-            const populatedCave = await TCave.findOne(caveId).populate(
-              'entrances'
-            );
+            const populatedCave =
+              await TCave.findOne(caveId).populate('entrances');
             should(populatedCave.entrances[0].id).equal(1);
             should(populatedCave.entrances[1].id).equal(2);
             return done();

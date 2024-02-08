@@ -43,9 +43,8 @@ module.exports = async (req, res) => {
       id: organizationId,
     }).set(cleanedData);
 
-    const updatedOrganization = await GrottoService.getPopulatedOrganization(
-      organizationId
-    );
+    const updatedOrganization =
+      await GrottoService.getPopulatedOrganization(organizationId);
 
     await NotificationService.notifySubscribers(
       req,
