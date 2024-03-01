@@ -58,7 +58,7 @@
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-prettier": "^5.0.0",
-    "fixted": "^4.2.1",
+    "fixted": "^4.2.4",
     "husky": "^8.0.3",
     "lint-staged": "^15.2.1",
     "mocha": "^10.2.0",
