@@ -36,7 +36,8 @@ module.exports = (req, res) => {
         found,
         params,
         res,
-        (data) => toListFromController('organization', data, toOrganization)
+        (data, meta) =>
+          toListFromController('organization', data, toOrganization, { meta })
       );
     });
 };

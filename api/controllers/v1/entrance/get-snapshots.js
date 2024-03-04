@@ -25,7 +25,8 @@ module.exports = async (req, res) => {
       entrancesH,
       params,
       res,
-      (data) => toListFromController('entrances', data, toEntrance)
+      (data, meta) =>
+        toListFromController('entrances', data, toEntrance, { meta })
     );
   } catch (e) {
     return ErrorService.getDefaultErrorHandler(res)(e);

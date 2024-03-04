@@ -27,28 +27,35 @@ module.exports = async (req, res) => {
       ...EntranceService.getConvertedDataFromClientRequest(req),
     };
 
+    const isAdmin = RightService.hasGroup(
+      req.token.groups,
+      RightService.G.ADMINISTRATOR
+    );
+
     // Check if sensitive change is permitted
     const newIsSensitiveValue = cleanedData.isSensitive;
     if (
+      !isAdmin &&
       newIsSensitiveValue === false &&
       newIsSensitiveValue !== currentEntrance.isSensitive
     ) {
       // Only administrator can remove the sensitive property of an entrance
-      const hasSensitiveRight = RightService.hasGroup(
-        req.token.groups,
-        RightService.G.ADMINISTRATOR
+      return res.forbidden(
+        `You are not authorized to unmark an entrance as sensitive.`
       );
-      if (!hasSensitiveRight) {
-        return res.forbidden(
-          `You are not authorized to unmark an entrance as sensitive.`
-        );
-      }
     }
 
+    if (!isAdmin && newIsSensitiveValue) {
+      delete cleanedData.latitude;
+      delete cleanedData.longitude;
+    }
+
+    const isValidCoordinate = cleanedData.latitude && cleanedData.longitude;
     // Update reverse geocoding if the position has changed
     if (
-      Math.abs(currentEntrance.latitude - cleanedData.latitude) > 0.001 ||
-      Math.abs(currentEntrance.longitude - cleanedData.longitude) > 0.001
+      isValidCoordinate &&
+      (Math.abs(currentEntrance.latitude - cleanedData.latitude) > 0.001 ||
+        Math.abs(currentEntrance.longitude - cleanedData.longitude) > 0.001)
     ) {
       const address = await GeocodingService.reverse(
         cleanedData.latitude,
