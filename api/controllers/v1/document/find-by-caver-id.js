@@ -46,6 +46,6 @@ module.exports = async (req, res) => {
     documents,
     params,
     res,
-    (data) => toListFromController('documents', data, toDocument)
+    (data, meta) => toListFromController('documents', data, toDocument, meta)
   );
 };

@@ -33,7 +33,8 @@ module.exports = async (req, res) => {
       duplicates,
       params,
       res,
-      (data) => toListFromController('duplicates', data, toEntranceDuplicate)
+      (data, meta) =>
+        toListFromController('duplicates', data, toEntranceDuplicate, { meta })
     );
   } catch (err) {
     ErrorService.getDefaultErrorHandler(res)(err);

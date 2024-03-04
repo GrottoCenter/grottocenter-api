@@ -63,6 +63,7 @@ module.exports = async (req, res) => {
     populatedNotifications,
     params,
     res,
-    (data) => toListFromController('notifications', data, toNotification)
+    (data, meta) =>
+      toListFromController('notifications', data, toNotification, { meta })
   );
 };

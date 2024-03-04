@@ -16,7 +16,7 @@ const RiggingService = require('../RiggingService');
 const getQualityData = require('../../utils/computeEntranceDataQuality');
 
 const c = {
-  toCave: (source) => ({
+  toCave: (source, meta) => ({
     ...CaveModel,
     id: source.id,
     '@id': String(source.id),
@@ -34,7 +34,7 @@ const c = {
 
     names: toList('names', source, c.toName),
     descriptions: toList('descriptions', source, c.toSimpleDescription),
-    entrances: toList('entrances', source, c.toSimpleEntrance),
+    entrances: toList('entrances', source, c.toSimpleEntrance, { meta }),
     massifs: toList('massifs', source, c.toSimpleMassif),
     documents: toList('documents', source, c.toSimpleDocument),
   }),
@@ -54,8 +54,6 @@ const c = {
   toSimpleCave: (source) => ({
     id: source.id,
     name: getMainName(source),
-    latitude: parseFloat(source.latitude),
-    longitude: parseFloat(source.longitude),
     length: source.caveLength,
     depth: source.depth,
     temperature: source.temperature,
@@ -134,9 +132,9 @@ const c = {
     return result;
   },
 
-  toComment: (source) => ({
+  toComment: (source, meta) => ({
     ...c.toSimpleComment(source),
-    entrance: convertIfObject(source.entrance, c.toSimpleEntrance),
+    entrance: convertIfObject(source.entrance, c.toSimpleEntrance, { meta }),
     cave: convertIfObject(source.cave, c.toSimpleCave),
   }),
 
@@ -190,9 +188,9 @@ const c = {
     return result;
   },
 
-  toDescription: (source) => ({
+  toDescription: (source, meta) => ({
     ...c.toSimpleDescription(source),
-    entrance: convertIfObject(source.entrance, c.toSimpleEntrance),
+    entrance: convertIfObject(source.entrance, c.toSimpleEntrance, { meta }),
     massif: convertIfObject(source.massif, c.toSimpleMassif),
     cave: convertIfObject(source.cave, c.toSimpleCave),
   }),
@@ -262,7 +260,7 @@ const c = {
     return result;
   },
 
-  toDocument: (source) => {
+  toDocument: (source, meta) => {
     const result = {
       ...DocumentModel,
       id: source.id,
@@ -308,7 +306,7 @@ const c = {
           []),
         ...(source.isoRegions?.map((e) => ({ iso: e.id, name: e.name })) ?? []),
       ],
-      entrance: convertIfObject(source.entrance, c.toSimpleEntrance),
+      entrance: convertIfObject(source.entrance, c.toSimpleEntrance, { meta }),
       cave: convertIfObject(source.cave, c.toSimpleCave),
       massifs: toList('massifs', source, c.toSimpleMassif),
       parent: convertIfObject(source.parent, c.toSimpleDocument),
@@ -348,12 +346,12 @@ const c = {
     reviewer: convertIfObject(source.reviewer, c.toSimpleCaver),
   }),
 
-  toDocumentDuplicate: (source) => ({
+  toDocumentDuplicate: (source, meta) => ({
     id: source.id,
     datePublication: source.datePublication,
     author: convertIfObject(source.author, c.toSimpleCaver),
-    document: convertIfObject(source.document, c.toDocument),
-    content: convertIfObject(source.content, c.toDocument),
+    document: convertIfObject(source.document, c.toDocument, { meta }),
+    content: convertIfObject(source.content, c.toDocument, { meta }),
   }),
 
   toSimpleDocumentDuplicate: (source) => ({
@@ -364,7 +362,7 @@ const c = {
     content: source.content, // TODO is this ok ? (format: {document, description} instead of a document object)
   }),
 
-  toEntrance: (source) => {
+  toEntrance: (source, meta) => {
     const result = {
       ...EntranceModel,
     };
@@ -385,8 +383,14 @@ const c = {
     result.dateReviewed = source.dateReviewed;
     result.discoveryYear = source.yearDiscovery;
     result.externalUrl = source.externalUrl;
-    result.latitude = source.isSensitive ? null : parseFloat(source.latitude);
-    result.longitude = source.isSensitive ? null : parseFloat(source.longitude);
+    result.latitude =
+      !source.isSensitive || meta?.hasCompleteViewRight === true
+        ? parseFloat(source.latitude)
+        : null;
+    result.longitude =
+      !source.isSensitive || meta?.hasCompleteViewRight === true
+        ? parseFloat(source.longitude)
+        : null;
     result.name = getMainName(source);
     result.country = source.country;
     result.countryCode = source['country code'];
@@ -422,9 +426,10 @@ const c = {
     result.comments = toList('comments', source, c.toSimpleComment);
     result.documents = toList('documents', source, c.toSimpleDocument);
     result.histories = toList('histories', source, c.toSimpleHistory);
-    result.locations = source.isSensitive
-      ? []
-      : toList('locations', source, c.toSimpleLocation);
+    result.locations =
+      !source.isSensitive || meta?.hasCompleteViewRight === true
+        ? toList('locations', source, c.toSimpleLocation)
+        : [];
     result.riggings = toList('riggings', source, c.toSimpleRigging);
     // Massif from Elasticsearch
     if (source['massif name']) {
@@ -453,7 +458,7 @@ const c = {
     iso_3166_2: source.iso_3166_2,
   }),
 
-  toSimpleEntrance: (source) => ({
+  toSimpleEntrance: (source, meta) => ({
     id: source.id,
     name: getMainName(source),
     country: source.country,
@@ -461,13 +466,19 @@ const c = {
     county: source.county,
     city: source.city,
     iso_3166_2: source.iso_3166_2,
-    latitude: source.isSensitive ? null : parseFloat(source.latitude),
-    longitude: source.isSensitive ? null : parseFloat(source.longitude),
+    latitude:
+      !source.isSensitive || meta?.hasCompleteViewRight === true
+        ? parseFloat(source.latitude)
+        : null,
+    longitude:
+      !source.isSensitive || meta?.hasCompleteViewRight === true
+        ? parseFloat(source.longitude)
+        : null,
     isSensitive: source.isSensitive,
     isDeleted: source.isDeleted,
   }),
 
-  toEntranceDuplicate: (source) => {
+  toEntranceDuplicate: (source, meta) => {
     const result = {
       ...EntranceDuplicateModel,
     };
@@ -482,7 +493,7 @@ const c = {
       source.author instanceof Object ? toCaver(source.author) : source.author;
     result.entrance =
       source.entrance instanceof Object
-        ? toEntrance(source.entrance)
+        ? toEntrance(source.entrance, meta)
         : source.entrance;
 
     return result;
@@ -514,9 +525,9 @@ const c = {
     return result;
   },
 
-  toHistory: (source) => ({
+  toHistory: (source, meta) => ({
     ...c.toSimpleHistory(source),
-    entrance: convertIfObject(source.entrance, c.toSimpleEntrance),
+    entrance: convertIfObject(source.entrance, c.toSimpleEntrance, { meta }),
     cave: convertIfObject(source.cave, c.toSimpleCave),
   }),
 
@@ -552,14 +563,14 @@ const c = {
     return result;
   },
 
-  toLocation: (source) => ({
+  toLocation: (source, meta) => ({
     ...c.toSimpleLocation(source),
-    entrance: convertIfObject(source.entrance, c.toSimpleEntrance),
+    entrance: convertIfObject(source.entrance, c.toSimpleEntrance, { meta }),
     massif: convertIfObject(source.massif, c.toSimpleMassif),
     cave: convertIfObject(source.cave, c.toSimpleCave),
   }),
 
-  toMassif: (source) => ({
+  toMassif: (source, meta) => ({
     ...MassifModel,
     id: source.id,
     '@id': String(source.id),
@@ -573,7 +584,7 @@ const c = {
     nbCaves: source['nb caves'], // from Elasticsearch
     nbEntrances: source['nb entrances'], // from Elasticsearch
     descriptions: toList('descriptions', source, c.toSimpleDescription),
-    entrances: toList('entrances', source, c.toSimpleEntrance),
+    entrances: toList('entrances', source, c.toSimpleEntrance, { meta }),
     documents: toList('documents', source, c.toSimpleDocument),
     networks: toList('networks', source, c.toSimpleCave),
   }),
@@ -608,7 +619,7 @@ const c = {
     reviewer: convertIfObject(source.reviewer, c.toSimpleCaver),
   }),
 
-  toNotification: (source) => {
+  toNotification: (source, meta) => {
     const result = {
       ...NotificationModel,
     };
@@ -620,18 +631,22 @@ const c = {
     result.notifier = source.notifier;
 
     // Convert objects
-    result.cave = convertIfObject(source.cave, c.toCave);
-    result.comment = convertIfObject(source.comment, c.toComment);
-    result.description = convertIfObject(source.description, c.toDescription);
+    result.cave = convertIfObject(source.cave, c.toCave, { meta });
+    result.comment = convertIfObject(source.comment, c.toComment, { meta });
+    result.description = convertIfObject(source.description, c.toDescription, {
+      meta,
+    });
     result.document = convertIfObject(source.document, c.toSimpleDocument);
-    result.entrance = convertIfObject(source.entrance, c.toEntrance);
-    result.history = convertIfObject(source.history, c.toHistory);
-    result.location = convertIfObject(source.location, c.toLocation);
-    result.massif = convertIfObject(source.massif, c.toMassif);
-    result.notified = convertIfObject(source.notified, c.toCaver);
-    result.notifier = convertIfObject(source.notifier, c.toCaver);
-    result.organization = convertIfObject(source.grotto, c.toOrganization);
-    result.rigging = convertIfObject(source.rigging, c.toRigging);
+    result.entrance = convertIfObject(source.entrance, c.toEntrance, { meta });
+    result.history = convertIfObject(source.history, c.toHistory, { meta });
+    result.location = convertIfObject(source.location, c.toLocation, { meta });
+    result.massif = convertIfObject(source.massif, c.toMassif, { meta });
+    result.notified = convertIfObject(source.notified, c.toCaver, { meta });
+    result.notifier = convertIfObject(source.notifier, c.toCaver, { meta });
+    result.organization = convertIfObject(source.grotto, c.toOrganization, {
+      meta,
+    });
+    result.rigging = convertIfObject(source.rigging, c.toRigging, { meta });
     return result;
   },
 
@@ -641,7 +656,7 @@ const c = {
     isDeleted: source.isDeleted,
   }),
 
-  toOrganization: (source) => ({
+  toOrganization: (source, meta) => ({
     ...OrganizationModel,
     id: source.id,
     '@id': String(source.id),
@@ -651,6 +666,8 @@ const c = {
     author: convertIfObject(source.author, c.toSimpleCaver),
     reviewer: convertIfObject(source.reviewer, c.toSimpleCaver),
     name: getMainName(source),
+    nameId: source.names.find((name) => name.isMain)?.id,
+    language: source.names.find((name) => name.isMain)?.language,
     latitude: parseFloat(source.latitude),
     longitude: parseFloat(source.longitude),
     country: source.country,
@@ -670,9 +687,13 @@ const c = {
     nbCavers: source['nb cavers'], // from Elasticsearch
     cavers: toList('cavers', source, c.toSimpleCaver),
     documents: toList('documents', source, c.toSimpleDocument),
-    exploredEntrances: toList('exploredEntrances', source, c.toSimpleEntrance),
+    exploredEntrances: toList('exploredEntrances', source, c.toSimpleEntrance, {
+      meta,
+    }),
     exploredNetworks: toList('exploredNetworks', source, c.toSimpleCave),
-    partnerEntrances: toList('partnerEntrances', source, c.toSimpleEntrance),
+    partnerEntrances: toList('partnerEntrances', source, c.toSimpleEntrance, {
+      meta,
+    }),
     partnerNetworks: toList('partnerNetworks', source, c.toSimpleCave),
   }),
 
@@ -713,9 +734,9 @@ const c = {
     return result;
   },
 
-  toRigging: (source) => ({
+  toRigging: (source, meta) => ({
     ...c.toSimpleRigging(source),
-    entrance: convertIfObject(source.entrance, c.toSimpleEntrance),
+    entrance: convertIfObject(source.entrance, c.toSimpleEntrance, { meta }),
     cave: convertIfObject(source.cave, c.toSimpleCave),
   }),
 

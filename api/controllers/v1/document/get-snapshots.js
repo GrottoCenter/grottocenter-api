@@ -26,7 +26,8 @@ module.exports = async (req, res) => {
       documentWithDescription,
       params,
       res,
-      (data) => toListFromController('documents', data, toDocument)
+      (data, meta) =>
+        toListFromController('documents', data, toDocument, { meta })
     );
   } catch (e) {
     return ErrorService.getDefaultErrorHandler(res)(e);

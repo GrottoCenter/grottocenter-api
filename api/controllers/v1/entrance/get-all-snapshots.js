@@ -14,6 +14,7 @@ const {
   toSimpleRigging,
   toSimpleHistory,
 } = require('../../../services/mapping/converters');
+const { getMetaFromRequest } = require('../../../services/mapping/utils');
 
 module.exports = async (req, res) => {
   try {
@@ -98,7 +99,9 @@ module.exports = async (req, res) => {
       {
         descriptions: hDescriptions.flat().map((d) => toSimpleDescription(d)),
         documents: hDocuments.flat().map((d) => toDocument(d)),
-        entrances: hEntrances.flat().map((e) => toEntrance(e)),
+        entrances: hEntrances
+          .flat()
+          .map((e) => toEntrance(e, getMetaFromRequest(req))),
         locations: filteredLocations.flat().map((l) => toSimpleLocation(l)),
         riggings: hRiggings.flat().map((r) => toSimpleRigging(r)),
         histories: hHistories.flat().map((h) => toSimpleHistory(h)),

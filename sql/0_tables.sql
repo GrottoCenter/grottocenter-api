@@ -409,7 +409,7 @@ CREATE TABLE t_entrance (
 	altitude int2 NULL,
 	is_of_interest bool NULL,
 	id_cave int4 NULL,
-	id_country bpchar(2) NOT NULL,
+	id_country bpchar(2) NOT NULL DEFAULT '00'::bpchar,
 	id_geology bpchar(10) NOT NULL DEFAULT 'Q35758'::bpchar,
 	is_deleted bool NOT NULL DEFAULT false,
 	redirect_to int4 NULL,

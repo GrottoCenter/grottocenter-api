@@ -1,4 +1,4 @@
-const ramda = require('ramda');
+const RightService = require('../RightService');
 
 module.exports = {
   /**
@@ -11,7 +11,7 @@ module.exports = {
    *                      the given function to apply.
    * @returns Array
    */
-  toList: (key, data, fn, { filterDeleted = true } = {}) => {
+  toList: (key, data, fn, { filterDeleted = true, meta } = {}) => {
     if (!data[key]) {
       return [];
     }
@@ -21,7 +21,7 @@ module.exports = {
     }
     return data[key]
       .filter((obj) => !filterDeleted || !obj.isDeleted)
-      .map((item) => fn(item));
+      .map((item) => fn(item, meta));
   },
 
   /**
@@ -32,20 +32,33 @@ module.exports = {
    * @param {Boolean} filterDeleted @see toList
    * @returns {Object}
    */
-  toListFromController: (key, data, fn, { filterDeleted = true } = {}) => ({
+  toListFromController: (
+    key,
+    data,
+    fn,
+    { filterDeleted = true, meta } = {}
+  ) => ({
     [key]: module.exports.toList(key, { [key]: data }, fn, {
       filterDeleted,
+      meta,
     }),
   }),
 
-  convertIfObject: (data, fn) => (data instanceof Object ? fn(data) : data),
+  convertIfObject: (data, fn, { meta } = {}) =>
+    data instanceof Object ? fn(data, meta) : data,
 
   getMainName: (source) => {
-    let mainName = ramda.pathOr(null, ['name'], source); // from Elasticsearch, name is the mainName
+    let mainName = source?.name ?? null; // from Elasticsearch, name is the mainName
     if (mainName === null && source.names instanceof Array) {
       mainName = source.names.find((name) => name.isMain);
       mainName = mainName === undefined ? null : mainName.name;
     }
     return mainName;
   },
+
+  getMetaFromRequest: (req) => ({
+    hasCompleteViewRight: req?.token
+      ? RightService.hasGroup(req.token.groups, RightService.G.ADMINISTRATOR)
+      : false,
+  }),
 };

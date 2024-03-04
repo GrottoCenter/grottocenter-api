@@ -1,4 +1,6 @@
-const treatRange = (parameters, res, converter, found) => {
+const { getMetaFromRequest } = require('./mapping/utils');
+
+const treatRange = (parameters, req, res, converter, found) => {
   res.set('Accept-Range', `${parameters.searchedItem} ${parameters.maxRange}`);
 
   const rangeTo = Math.min(
@@ -44,7 +46,8 @@ const treatRange = (parameters, res, converter, found) => {
   );
 
   res.set('Access-Control-Expose-Headers', 'Content-Range');
-  return res.partialContent(converter(found));
+  const meta = getMetaFromRequest(req);
+  return res.partialContent(converter(found, meta));
 };
 
 module.exports = {
@@ -73,8 +76,9 @@ module.exports = {
       return res.notFound(`${parameters.searchedItem} not found`);
     }
     if (parameters.total > found.length) {
-      return treatRange(parameters, res, converter, found);
+      return treatRange(parameters, req, res, converter, found);
     }
-    return res.ok(converter(found));
+    const meta = getMetaFromRequest(req);
+    return res.ok(converter(found, meta));
   },
 };
