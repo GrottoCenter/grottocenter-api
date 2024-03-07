@@ -8,7 +8,7 @@ name: grottocenter
 services:
   dbserver:
     container_name: ${POSTGRES_CONTAINER_NAME}
-    image: postgis/postgis
+    image: postgis/postgis:16-3.4
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
@@ -23,7 +23,7 @@ services:
 
   testdbserver:
     container_name: ${POSTGRES_TEST_CONTAINER_NAME}
-    image: postgis/postgis
+    image: postgis/postgis:16-3.4
     restart: unless-stopped
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
