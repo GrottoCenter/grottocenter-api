@@ -1,16 +1,10 @@
 const ControllerService = require('../../../services/ControllerService');
-const ErrorService = require('../../../services/ErrorService');
 
 module.exports = async (req, res) => {
-  try {
-    const countResult = await TGrotto.count();
-    const params = {};
-    params.controllerMethod = 'GrottoController.count';
-    params.notFoundMessage = 'Problem while getting number of organizations.';
-
-    const count = { count: countResult };
-    return ControllerService.treat(req, null, count, params, res);
-  } catch (e) {
-    return ErrorService.getDefaultErrorHandler(res)(e);
-  }
+  const count = await TGrotto.count({ isDeleted: false });
+  const params = {
+    controllerMethod: 'GrottoController.count',
+    notFoundMessage: 'Problem while getting number of organizations.',
+  };
+  return ControllerService.treat(req, null, { count }, params, res);
 };
