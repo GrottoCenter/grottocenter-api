@@ -139,13 +139,13 @@ If the build is triggered from a push on `master` then a deployment of the API t
 
 ### Deployment in production
 
-Deployment done with GitHub Actions and Azure App Service.
+Deployment is done with GitHub Actions on Azure App Service when a pull request is merged into the `develop` branch.
 
-You first need to merge your changes to `master` using if possible the `git flow release start vXX.X.X` command.
+#### API release
 
-Don't forget to update the version number on the `swagger` file and on the `package.json` file.
+Additionally, periodic release of the API can be done.
 
-when the merge on master is completed, you should create a release for the newly pushed tag.
+You first need to merge your changes to `master` using if possible the `git flow release start vXX.X.X` command. Don't forget to update the version number on the `swagger` file and on the `package.json` file. When the merge on master is completed, you should create a release for the newly pushed tag.
 
 For more information see the wiki page [Production deployment](https://github.com/GrottoCenter/Grottocenter3/wiki/Production-deployment)
 
@@ -168,7 +168,7 @@ When running the `git flow init` command you should keep all the default configu
 
 You should use the proper type when creating a new branch with the workflow (`feature`, `bugfix`, `hotfix`, ...).
 
-Before pushing your branch always de a `git rebase -i` to merge unnecessary commits together.
+Before pushing your branch always do a `git rebase -i` to merge unnecessary commits together.
 
 #### Merging
 
