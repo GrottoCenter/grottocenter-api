@@ -26,7 +26,7 @@
     "response-time": "^2.3.2",
     "sails": "^1.5.9",
     "sails-hook-orm": "^4.0.1",
-    "sails-hook-sockets": "^2.0.4",
+    "sails-hook-sockets": "^3.0.0",
     "sails-postgresql": "^5.0.1",
     "underscore.date": "^0.6.1",
     "underscore.string": "^3.3.6"
