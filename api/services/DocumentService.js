@@ -96,6 +96,12 @@ module.exports = {
     language: body.mainLanguage,
   }),
 
+  getChangedFileFromClient: (fileObjectArray) =>
+    fileObjectArray.map((e) => ({
+      id: e.id,
+      fileName: e.fileName,
+    })),
+
   // Extract everything from the request body except id and dateInscription
   // Used when creating or editing an existing document
   getConvertedDataFromClient: async (body) => {
@@ -103,9 +109,9 @@ module.exports = {
     const massif = body.massif?.id;
     const massifs = [...(body.massifs ?? []), ...(massif ? [massif] : [])];
 
-    const optionFound = undefined;
+    let optionFound;
     // eslint-disable-next-line no-param-reassign
-    if (body.option) body.option = await TOption.findOne({ name: body.option });
+    if (body.option) optionFound = await TOption.findOne({ name: body.option });
     let typeFound;
     if (body.type) typeFound = await TType.findOne({ name: body.type });
 

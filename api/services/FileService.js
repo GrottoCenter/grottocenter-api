@@ -116,22 +116,22 @@ module.exports = {
       }
 
       if (!credentials) {
-        return noCredentialWarning('Document upload', {
+        noCredentialWarning('Document upload', {
           name,
           mimeType,
           size: file.size,
         });
-      }
-
-      sails.log.info(`Uploading ${name} to Azure Blob...`);
-      try {
-        const blockBlobClient =
-          credentials.documentsBlobClient.getBlockBlobClient(pathName);
-        await blockBlobClient.uploadData(file.buffer, {
-          blobHTTPHeaders: { blobContentType: mimeType },
-        });
-      } catch (err) {
-        throw new FileError(ERROR_DURING_UPLOAD_TO_AZURE, name);
+      } else {
+        sails.log.info(`Uploading ${name} to Azure Blob...`);
+        try {
+          const blockBlobClient =
+            credentials.documentsBlobClient.getBlockBlobClient(pathName);
+          await blockBlobClient.uploadData(file.buffer, {
+            blobHTTPHeaders: { blobContentType: mimeType },
+          });
+        } catch (err) {
+          throw new FileError(ERROR_DURING_UPLOAD_TO_AZURE, name);
+        }
       }
 
       const param = {
@@ -157,11 +157,16 @@ module.exports = {
     },
 
     async delete(file) {
-      const blockBlobClient =
-        credentials.documentsBlobClient.getBlockBlobClient(file.path);
-      await blockBlobClient.delete({ deleteSnapshots: 'include' });
-
       const destroyedRecord = await TFile.destroyOne(file.id);
+      if (!credentials) {
+        noCredentialWarning('Document delete', file);
+      } else {
+        const blockBlobClient =
+          credentials.documentsBlobClient.getBlockBlobClient(
+            destroyedRecord.path
+          );
+        await blockBlobClient.delete({ deleteSnapshots: 'include' });
+      }
       return destroyedRecord;
     },
   },
