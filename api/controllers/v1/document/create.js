@@ -47,13 +47,14 @@ module.exports = async (req, res) => {
 
   const out = {
     document: toDocument(newDoc),
-    status: errorFiles
-      ? {
-          errorCode: 'FileNotImported',
-          errorString: 'Some files were not imported.',
-          content: errorFiles,
-        }
-      : undefined,
+    status:
+      errorFiles.length > 0
+        ? {
+            errorCode: 'FileNotImported',
+            errorString: 'Some files were not imported.',
+            content: errorFiles,
+          }
+        : undefined,
   };
 
   return ControllerService.treat(

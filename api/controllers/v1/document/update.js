@@ -76,12 +76,22 @@ module.exports = async (req, res) => {
     authorId
   );
 
+  const modifiedFiles = DocumentService.getChangedFileFromClient(
+    req.body.modifiedFiles ?? []
+  );
+
+  const deletedFiles = DocumentService.getChangedFileFromClient(
+    req.body.deletedFiles ?? []
+  );
+
   const updatedDocument = await DocumentService.updateDocument({
     documentId: req.param('id'),
     reviewerId: authorId,
     documentData,
     descriptionData,
     newFiles,
+    modifiedFiles,
+    deletedFiles,
   });
   if (!updatedDocument) return res.notFound();
 

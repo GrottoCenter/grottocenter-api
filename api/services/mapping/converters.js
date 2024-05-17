@@ -324,9 +324,9 @@ const c = {
       },
 
       // Only present when it is a modified document
-      modifiedFiles: source.modifiedFiles,
-      newFiles: source.newFiles,
-      deletedFiles: source.deletedFiles,
+      newFiles: toList('newFiles', source, c.toFile),
+      modifiedFiles: toList('modifiedFiles', source, c.toFile),
+      deletedFiles: toList('deletedFiles', source, c.toFile),
     };
 
     // snapshot
@@ -500,6 +500,7 @@ const c = {
   },
 
   toFile: (source) => ({
+    id: source.id,
     dateInscription: source.dateInscription,
     isValidated: source.isValidated,
     fileName: source.fileName,
