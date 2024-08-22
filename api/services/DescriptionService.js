@@ -1,5 +1,3 @@
-const ramda = require('ramda');
-
 module.exports = {
   /**
    * @param {string} document to document to set names including its parent if present
@@ -12,7 +10,7 @@ module.exports = {
     document.descriptions = await TDescription.find()
       .where({ document: document.id })
       .populate('language');
-    if (setParent && ramda.pathOr(null, ['parent', 'id'], document)) {
+    if (setParent && (document?.parent?.id ?? null)) {
       await module.exports.setDocumentDescriptions(document.parent);
     }
   },
@@ -34,40 +32,32 @@ module.exports = {
     }
     return descriptions;
   },
-  getEntranceDescriptions: async (
-    entranceId,
-    { includeDeleted = false } = {}
-  ) => {
+
+  getEntranceDescriptions: async (entranceId, where = {}) => {
     if (!entranceId) return [];
-    return TDescription.find()
-      .where({ entrance: entranceId, isDeleted: includeDeleted })
+    return TDescription.find({ ...where, entrance: entranceId })
       .populate('author')
       .populate('reviewer');
   },
 
-  getIdDescriptionsByEntranceId: async (
-    entranceId,
-    { includeDeleted = false } = {}
-  ) => {
+  getEntranceHDescriptions: async (entranceId, where = {}) => {
     if (!entranceId) return [];
-    return TDescription.find({
-      where: { entrance: entranceId, isDeleted: includeDeleted },
+    const descriptionIds = await TDescription.find({
+      where: { ...where, entrance: entranceId },
       select: ['id'],
     });
+    return module.exports.getHDescription(descriptionIds.map((e) => e.id));
   },
 
-  getHDescriptionsById: async (descriptionId) =>
+  getDescription: async (descriptionId) =>
+    TDescription.findOne({ id: descriptionId })
+      .populate('author')
+      .populate('reviewer'),
+
+  getHDescription: async (descriptionId) =>
     HDescription.find({ t_id: descriptionId })
       .populate('reviewer')
       .populate('author'),
-
-  getDescription: async (descriptionId, { includeDeleted = false } = {}) =>
-    TDescription.findOne({
-      id: descriptionId,
-      isDeleted: includeDeleted,
-    })
-      .populate('author')
-      .populate('reviewer'),
 
   getHDescriptionsOfDocument: async (documentId) => {
     const hDescriptions = await HDescription.find()

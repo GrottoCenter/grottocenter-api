@@ -422,15 +422,28 @@ const c = {
     result.reviewer = convertIfObject(source.reviewer, c.toSimpleCaver);
     // Convert collections
     result.names = toList('names', source, c.toName);
-    result.descriptions = toList('descriptions', source, c.toSimpleDescription);
-    result.comments = toList('comments', source, c.toSimpleComment);
+    result.descriptions = toList(
+      'descriptions',
+      source,
+      c.toSimpleDescription,
+      { filterDeleted: false }
+    );
+    result.comments = toList('comments', source, c.toSimpleComment, {
+      filterDeleted: false,
+    });
     result.documents = toList('documents', source, c.toSimpleDocument);
-    result.histories = toList('histories', source, c.toSimpleHistory);
+    result.histories = toList('histories', source, c.toSimpleHistory, {
+      filterDeleted: false,
+    });
     result.locations =
       !source.isSensitive || meta?.hasCompleteViewRight === true
-        ? toList('locations', source, c.toSimpleLocation)
+        ? toList('locations', source, c.toSimpleLocation, {
+            filterDeleted: false,
+          })
         : [];
-    result.riggings = toList('riggings', source, c.toSimpleRigging);
+    result.riggings = toList('riggings', source, c.toSimpleRigging, {
+      filterDeleted: false,
+    });
     // Massif from Elasticsearch
     if (source['massif name']) {
       result.massifs = {

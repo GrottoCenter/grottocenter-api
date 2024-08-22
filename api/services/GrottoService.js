@@ -146,16 +146,8 @@ module.exports = {
 
     await ElasticsearchService.create('grottos', newOrganizationPopulated.id, {
       ...newOrganizationESData,
-      country: ramda.pathOr(
-        null,
-        ['country', 'nativeName'],
-        newOrganizationPopulated
-      ),
-      'country code': ramda.pathOr(
-        null,
-        ['country', 'id'],
-        newOrganizationPopulated
-      ),
+      country: newOrganizationPopulated?.country?.nativeName ?? null,
+      'country code': newOrganizationPopulated?.country?.id ?? null,
       name: names[0].name, // There is only one name right after the creation
       names: names.map((n) => n.name).join(', '),
       'nb cavers': 0,

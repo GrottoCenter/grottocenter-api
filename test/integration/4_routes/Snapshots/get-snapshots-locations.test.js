@@ -25,12 +25,12 @@ describe('Locations snapshots features', () => {
           return done();
         });
     });
-    it('should return code 403', (done) => {
+    it('should also return code 404', (done) => {
       supertest(sails.hooks.http.app)
         .get('/api/v1/locations/2/snapshots')
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json')
-        .expect(403, done);
+        .expect(404, done);
     });
   });
 });

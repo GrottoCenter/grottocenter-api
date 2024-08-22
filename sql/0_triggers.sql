@@ -28,7 +28,14 @@ CREATE OR REPLACE TRIGGER size_coef_insert_update BEFORE INSERT OR UPDATE ON t_c
 ----------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION histo_delete() RETURNS trigger AS $$
 DECLARE date_r timestamp;
-BEGIN --on update la table t_ pour déclarer l'enregistrement deleted
+BEGIN
+
+-- Hard delete when the row was alreay deleted
+if OLD.is_deleted = true then
+RETURN OLD;
+end if;
+
+--Soft delete, on update la table t_ pour déclarer l'enregistrement deleted
 --évidemment ça provoque l'exécution du trigger sur update !
 EXECUTE format(
     'UPDATE %I.%I SET is_deleted = true WHERE id = $1.id',
@@ -116,16 +123,16 @@ BEGIN
 type_change := '';
 if NEW.is_deleted != OLD.is_deleted AND NEW.is_deleted = true then
     type_change := 'delete';
-    id_author := NEW.id_reviewer;
+    id_author := COALESCE(NEW.id_reviewer, NEW.id_author);
 elsif NEW.is_deleted != OLD.is_deleted AND NEW.is_deleted = false then
     type_change := 'restore';
-    id_author := NEW.id_reviewer;
+    id_author := COALESCE(NEW.id_reviewer, NEW.id_author);
 elsif NEW.is_deleted = false AND NEW.id_reviewer is null then
     type_change := 'create';
     id_author := NEW.id_author;
 elsif NEW.is_deleted = false then
     type_change := 'update';
-    id_author := NEW.id_reviewer;
+    id_author := COALESCE(NEW.id_reviewer, NEW.id_author);
 end if;
 if type_change != '' then
 -- Récupère le nom de la grotto associé (dans le cas d'un INSERT le name n'est pas encore créé il sera donc null)
@@ -208,16 +215,16 @@ BEGIN
 type_change := '';
 if NEW.is_deleted != OLD.is_deleted AND NEW.is_deleted = true then
     type_change := 'delete';
-    id_author := NEW.id_reviewer;
+    id_author := COALESCE(NEW.id_reviewer, NEW.id_author);
 elsif NEW.is_deleted != OLD.is_deleted AND NEW.is_deleted = false then
     type_change := 'restore';
-    id_author := NEW.id_reviewer;
+    id_author := COALESCE(NEW.id_reviewer, NEW.id_author);
 elsif NEW.is_deleted = false AND NEW.id_reviewer is null then
     type_change := 'create';
     id_author := NEW.id_author;
 elsif NEW.is_deleted = false then
     type_change := 'update';
-    id_author := NEW.id_reviewer;
+    id_author := COALESCE(NEW.id_reviewer, NEW.id_author);
 end if;
 if type_change != '' then
 -- Récupère le nom du massif associé (dans le cas d'un INSERT le name n'est pas encore créé il sera donc null)
@@ -316,16 +323,16 @@ BEGIN
 type_change := '';
 if NEW.is_deleted != OLD.is_deleted AND NEW.is_deleted = true then
     type_change := 'delete';
-    id_author := NEW.id_reviewer;
+    id_author := COALESCE(NEW.id_reviewer, NEW.id_author);
 elsif NEW.is_deleted != OLD.is_deleted AND NEW.is_deleted = false then
     type_change := 'restore';
-    id_author := NEW.id_reviewer;
+    id_author := COALESCE(NEW.id_reviewer, NEW.id_author);
 elsif NEW.is_deleted = false AND NEW.id_reviewer is null then
     type_change := 'create';
     id_author := NEW.id_author;
 elsif NEW.is_deleted = false then
     type_change := 'update';
-    id_author := NEW.id_reviewer;
+    id_author := COALESCE(NEW.id_reviewer, NEW.id_author);
 end if;
 if type_change != '' then
 -- Récupère le nom de la cave associée (dans le cas d'un INSERT le name n'est pas encore créé il sera donc null)
@@ -444,16 +451,16 @@ BEGIN
 type_change := '';
 if NEW.is_deleted != OLD.is_deleted AND NEW.is_deleted = true then
     type_change := 'delete';
-    id_author := NEW.id_reviewer;
+    id_author := COALESCE(NEW.id_reviewer, NEW.id_author);
 elsif NEW.is_deleted != OLD.is_deleted AND NEW.is_deleted = false then
     type_change := 'restore';
-    id_author := NEW.id_reviewer;
+    id_author := COALESCE(NEW.id_reviewer, NEW.id_author);
 elsif NEW.is_deleted = false AND NEW.id_reviewer is null then
     type_change := 'create';
     id_author := NEW.id_author;
 elsif NEW.is_deleted = false then
     type_change := 'update';
-    id_author := NEW.id_reviewer;
+    id_author := COALESCE(NEW.id_reviewer, NEW.id_author);
 end if;
 if type_change != '' then
 -- Récupère le nom de l'entrance associée (dans le cas d'un INSERT le name n'est pas encore créé il sera donc null)
@@ -580,16 +587,16 @@ BEGIN
 type_change := '';
 if NEW.is_deleted != OLD.is_deleted AND NEW.is_deleted = true then
     type_change := 'delete';
-    id_author := NEW.id_reviewer;
+    id_author := COALESCE(NEW.id_reviewer, NEW.id_author);
 elsif NEW.is_deleted != OLD.is_deleted AND NEW.is_deleted = false then
     type_change := 'restore';
-    id_author := NEW.id_reviewer;
+    id_author := COALESCE(NEW.id_reviewer, NEW.id_author);
 elsif NEW.is_deleted = false AND NEW.id_reviewer is null then
     type_change := 'create';
     id_author := NEW.id_author;
 elsif NEW.is_deleted = false then
     type_change := 'update';
-    id_author := NEW.id_reviewer;
+    id_author := COALESCE(NEW.id_reviewer, NEW.id_author);
 end if;
 -- Les changements d'un document ne sont sauvegardé que lorsqu'ils sont validés
 if type_change != '' AND NEW.is_validated = true then
@@ -683,16 +690,16 @@ BEGIN
 type_change := '';
 if NEW.is_deleted != OLD.is_deleted AND NEW.is_deleted = true then
     type_change := 'delete';
-    id_author := NEW.id_reviewer;
+    id_author := COALESCE(NEW.id_reviewer, NEW.id_author);
 elsif NEW.is_deleted != OLD.is_deleted AND NEW.is_deleted = false then
     type_change := 'restore';
-    id_author := NEW.id_reviewer;
+    id_author := COALESCE(NEW.id_reviewer, NEW.id_author);
 elsif NEW.is_deleted = false AND NEW.id_reviewer is null then
     type_change := 'create';
     id_author := NEW.id_author;
 elsif NEW.is_deleted = false then
     type_change := 'update';
-    id_author := NEW.id_reviewer;
+    id_author := COALESCE(NEW.id_reviewer, NEW.id_author);
 end if;
 if type_change != '' then
 -- Récupère le nom de l'entrance associé
@@ -787,16 +794,16 @@ BEGIN
 type_change := '';
 if NEW.is_deleted != OLD.is_deleted AND NEW.is_deleted = true then
     type_change := 'delete';
-    id_author := NEW.id_reviewer;
+    id_author := COALESCE(NEW.id_reviewer, NEW.id_author);
 elsif NEW.is_deleted != OLD.is_deleted AND NEW.is_deleted = false then
     type_change := 'restore';
-    id_author := NEW.id_reviewer;
+    id_author := COALESCE(NEW.id_reviewer, NEW.id_author);
 elsif NEW.is_deleted = false AND NEW.id_reviewer is null then
     type_change := 'create';
     id_author := NEW.id_author;
 elsif NEW.is_deleted = false then
     type_change := 'update';
-    id_author := NEW.id_reviewer;
+    id_author := COALESCE(NEW.id_reviewer, NEW.id_author);
 end if;
 if type_change != '' then
 -- Récupère le nom de l'entrance associé
@@ -966,16 +973,16 @@ BEGIN
 type_change := '';
 if NEW.is_deleted != OLD.is_deleted AND NEW.is_deleted = true then
     type_change := 'delete';
-    id_author := NEW.id_reviewer;
+    id_author := COALESCE(NEW.id_reviewer, NEW.id_author);
 elsif NEW.is_deleted != OLD.is_deleted AND NEW.is_deleted = false then
     type_change := 'restore';
-    id_author := NEW.id_reviewer;
+    id_author := COALESCE(NEW.id_reviewer, NEW.id_author);
 elsif NEW.is_deleted = false AND NEW.id_reviewer is null then
     type_change := 'create';
     id_author := NEW.id_author;
 elsif NEW.is_deleted = false then
     type_change := 'update';
-    id_author := NEW.id_reviewer;
+    id_author := COALESCE(NEW.id_reviewer, NEW.id_author);
 end if;
 if type_change != '' then
 -- Récupère le nom de l'entrance associé
@@ -1082,16 +1089,16 @@ BEGIN
 type_change := '';
 if NEW.is_deleted != OLD.is_deleted AND NEW.is_deleted = true then
     type_change := 'delete';
-    id_author := NEW.id_reviewer;
+    id_author := COALESCE(NEW.id_reviewer, NEW.id_author);
 elsif NEW.is_deleted != OLD.is_deleted AND NEW.is_deleted = false then
     type_change := 'restore';
-    id_author := NEW.id_reviewer;
+    id_author := COALESCE(NEW.id_reviewer, NEW.id_author);
 elsif NEW.is_deleted = false AND NEW.id_reviewer is null then
     type_change := 'create';
     id_author := NEW.id_author;
 elsif NEW.is_deleted = false then
     type_change := 'update';
-    id_author := NEW.id_reviewer;
+    id_author := COALESCE(NEW.id_reviewer, NEW.id_author);
 end if;
 -- Les descriptions des documents comptabilisés comme changement car elles correspondent à leur nom
 if type_change != '' AND NEW.id_document is null then
@@ -1208,16 +1215,16 @@ BEGIN
 type_change := '';
 if NEW.is_deleted != OLD.is_deleted AND NEW.is_deleted = true then
     type_change := 'delete';
-    id_author := NEW.id_reviewer;
+    id_author := COALESCE(NEW.id_reviewer, NEW.id_author);
 elsif NEW.is_deleted != OLD.is_deleted AND NEW.is_deleted = false then
     type_change := 'restore';
-    id_author := NEW.id_reviewer;
+    id_author := COALESCE(NEW.id_reviewer, NEW.id_author);
 elsif NEW.is_deleted = false AND NEW.id_reviewer is null then
     type_change := 'create';
     id_author := NEW.id_author;
 elsif NEW.is_deleted = false then
     type_change := 'update';
-    id_author := NEW.id_reviewer;
+    id_author := COALESCE(NEW.id_reviewer, NEW.id_author);
 end if;
 if type_change != '' then
 -- Récupère le nom de l'entrance associé

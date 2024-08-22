@@ -60,35 +60,24 @@ module.exports = {
       observations: observations.join(SEPARATOR),
     };
   },
-  getEntranceRiggings: async (entranceId, { includeDeleted = false } = {}) => {
-    let riggings = [];
-    if (entranceId) {
-      riggings = await TRigging.find()
-        .where({ entrance: entranceId, isDeleted: includeDeleted })
-        .populate('author')
-        .populate('reviewer');
-    }
-    return riggings;
-  },
-  getIdRiggingsByEntranceId: async (
-    entranceId,
-    { includeDeleted = false } = {}
-  ) => {
-    let riggingsId = [];
-    if (entranceId) {
-      riggingsId = await TRigging.find({
-        where: { entrance: entranceId, isDeleted: includeDeleted },
-        select: ['id'],
-      });
-    }
-    return riggingsId;
-  },
-
-  getHRiggingById: async (riggingId) =>
-    HRigging.find({ t_id: riggingId }).populate('reviewer').populate('author'),
-
-  getRigging: async (riggingId, { includeDeleted = false } = {}) =>
-    TRigging.findOne({ id: riggingId, isDeleted: includeDeleted })
+  getEntranceRiggings: async (entranceId, where = {}) => {
+    if (!entranceId) return [];
+    return TRigging.find({ ...where, entrance: entranceId })
       .populate('author')
-      .populate('reviewer'),
+      .populate('reviewer');
+  },
+  getEntranceHRiggings: async (entranceId, where = {}) => {
+    if (!entranceId) return [];
+    const riggingIds = await TRigging.find({
+      where: { ...where, entrance: entranceId },
+      select: ['id'],
+    });
+    return module.exports.getHRiggings(riggingIds.map((e) => e.id));
+  },
+
+  getRigging: async (riggingId) =>
+    TRigging.findOne({ id: riggingId }).populate('author').populate('reviewer'),
+
+  getHRiggings: async (riggingId) =>
+    HRigging.find({ t_id: riggingId }).populate('reviewer').populate('author'),
 };

@@ -6,6 +6,7 @@ module.exports = {
   },
 
   hasGroup(userGroups, aGroup) {
+    if (!Array.isArray(userGroups)) return false;
     return userGroups.some((g) => g.name === aGroup);
   },
 };
