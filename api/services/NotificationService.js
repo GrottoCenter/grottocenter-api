@@ -16,8 +16,10 @@ const NOTIFICATION_ENTITIES = {
 const NOTIFICATION_TYPES = {
   CREATE: 'CREATE',
   DELETE: 'DELETE',
+  PERMANENT_DELETE: 'PERMANENT_DELETE',
   UPDATE: 'UPDATE',
   VALIDATE: 'VALIDATE',
+  RESTORE: 'RESTORE',
 };
 
 const safeGetPropId = (prop, data) => {
@@ -56,6 +58,9 @@ const sendNotificationEmail = async (
     case NOTIFICATION_TYPES.DELETE:
       actionVerb = 'deleted';
       break;
+    case NOTIFICATION_TYPES.PERMANENT_DELETE:
+      actionVerb = 'permanently deleted';
+      break;
 
     case NOTIFICATION_TYPES.UPDATE:
       actionVerb = 'updated';
@@ -63,6 +68,10 @@ const sendNotificationEmail = async (
 
     case NOTIFICATION_TYPES.VALIDATE:
       actionVerb = 'validated';
+      break;
+
+    case NOTIFICATION_TYPES.RESTORE:
+      actionVerb = 'restored';
       break;
 
     default:

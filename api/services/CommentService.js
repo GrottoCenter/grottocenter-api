@@ -1,17 +1,10 @@
-/**
- */
-
 const moment = require('moment');
 const momentDurationFormatSetup = require('moment-duration-format');
 
-momentDurationFormatSetup(moment);
-// query to get time infos average
-const TIME_INFO_QUERY = `
-  SELECT avg(e_t_trail) AS avg_t_trail, avg(e_t_underground) AS avg_t_underground
-  FROM t_comment WHERE id_entrance=$1`;
-
 const { isNil } = require('ramda');
 const CommonService = require('./CommonService');
+
+momentDurationFormatSetup(moment);
 
 function average(arr) {
   if (arr.length === 0) return 0;
@@ -34,6 +27,7 @@ module.exports = {
       approach: average(comments.map((c) => c.approach).filter(filterFn)),
     };
   },
+
   getStatsFromId: async (entranceId) => {
     const [aestheticism, caving, approach] = await Promise.all([
       TComment.avg('aestheticism').where({
@@ -59,6 +53,11 @@ module.exports = {
    * @returns {Promise} which resolves to the succesfully getTimeInfos
    */
   getTimeInfos: async (entranceId) => {
+    // query to get time infos average
+    const TIME_INFO_QUERY = `
+    SELECT avg(e_t_trail) AS avg_t_trail, avg(e_t_underground) AS avg_t_underground
+    FROM t_comment WHERE id_entrance=$1`;
+
     const timeInfosQueryResult = await CommonService.query(TIME_INFO_QUERY, [
       entranceId,
     ]);
@@ -82,30 +81,7 @@ module.exports = {
       eTUnderground: avgTUndergroundFormatted,
     };
   },
-  getEntranceComments: async (entranceId, { includeDeleted = false } = {}) => {
-    let comments = [];
-    if (entranceId) {
-      comments = await TComment.find()
-        .where({ entrance: entranceId, isDeleted: includeDeleted })
-        .populate('author')
-        .populate('reviewer');
-    }
-    return comments;
-  },
 
-  getIdCommentsByEntranceId: async (
-    entranceId,
-    { includeDeleted = false } = {}
-  ) => {
-    let commentsId = [];
-    if (entranceId) {
-      commentsId = await TComment.find({
-        where: { entrance: entranceId, isDeleted: includeDeleted },
-        select: ['id'],
-      });
-    }
-    return commentsId;
-  },
   /**
    *
    * @param pgInterval PostgresInterval Object {hours: ${number}, minutes: ${number}, seconds: ${number}}
@@ -125,11 +101,26 @@ module.exports = {
         trim: false,
       });
   },
-  getHCommentById: async (commentId) =>
-    HComment.find({ t_id: commentId }).populate('reviewer').populate('author'),
 
-  getComment: async (commentId, { includeDeleted = false } = {}) =>
-    TComment.findOne({ id: commentId, isDeleted: includeDeleted })
+  getEntranceComments: async (entranceId, where = {}) => {
+    if (!entranceId) return [];
+    return TComment.find({ ...where, entrance: entranceId })
       .populate('author')
-      .populate('reviewer'),
+      .populate('reviewer');
+  },
+
+  getEntranceHComments: async (entranceId, where = {}) => {
+    if (!entranceId) return [];
+    const commentIds = await TComment.find({
+      where: { ...where, entrance: entranceId },
+      select: ['id'],
+    });
+    return module.exports.getHComments(commentIds.map((e) => e.id));
+  },
+
+  getComment: async (commentId) =>
+    TComment.findOne({ id: commentId }).populate('author').populate('reviewer'),
+
+  getHComments: async (commentId) =>
+    HComment.find({ t_id: commentId }).populate('reviewer').populate('author'),
 };

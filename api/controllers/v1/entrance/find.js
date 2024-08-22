@@ -7,6 +7,7 @@ const RiggingService = require('../../../services/RiggingService');
 const DescriptionService = require('../../../services/DescriptionService');
 const HistoryService = require('../../../services/HistoryService');
 const LocationService = require('../../../services/LocationService');
+const RightService = require('../../../services/RightService');
 const {
   toEntrance,
   toDeletedEntrance,
@@ -45,6 +46,15 @@ module.exports = async (req, res) => {
         NameService.setNames([entrance.cave], 'cave'),
       ]);
     }
+
+    const hasRight = RightService.hasGroup(
+      req.token?.groups,
+      RightService.G.MODERATOR
+    );
+
+    const where = {};
+    if (!hasRight) where.isDeleted = false;
+
     [
       entrance.descriptions,
       entrance.locations,
@@ -53,11 +63,11 @@ module.exports = async (req, res) => {
       entrance.comments,
       entrance.documents,
     ] = await Promise.all([
-      DescriptionService.getEntranceDescriptions(entrance.id),
-      LocationService.getEntranceLocations(entrance.id),
-      RiggingService.getEntranceRiggings(entrance.id),
-      HistoryService.getEntranceHistories(entrance.id),
-      CommentService.getEntranceComments(entrance.id),
+      DescriptionService.getEntranceDescriptions(entrance.id, where),
+      LocationService.getEntranceLocations(entrance.id, where),
+      RiggingService.getEntranceRiggings(entrance.id, where),
+      HistoryService.getEntranceHistories(entrance.id, where),
+      CommentService.getEntranceComments(entrance.id, where),
       DocumentService.getDocuments(entrance.documents.map((d) => d.id)),
     ]);
     entrance.stats = CommentService.getStatsFromComments(entrance.comments);

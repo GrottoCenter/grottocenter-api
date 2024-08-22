@@ -1,27 +1,22 @@
 module.exports = {
-  getHistory: async (historyId, { includeDeleted = false } = {}) =>
-    THistory.findOne({ id: historyId, isDeleted: includeDeleted })
+  getEntranceHistories: async (entranceId, where = {}) => {
+    if (!entranceId) return [];
+    return THistory.find({ ...where, entrance: entranceId })
       .populate('author')
-      .populate('reviewer'),
+      .populate('reviewer');
+  },
+  getEntranceHHistories: async (entranceId, where = {}) => {
+    if (!entranceId) return [];
+    const historyIds = await THistory.find({
+      where: { ...where, entrance: entranceId },
+      select: ['id'],
+    });
+    return module.exports.getHHistories(historyIds.map((e) => e.id));
+  },
 
-  getCaveHistories: async (caveId) => {
-    if (!caveId) return [];
-    return THistory.find()
-      .where({ cave: caveId })
-      .populate('author')
-      .populate('reviewer');
-  },
-  getEntranceHistories: async (entranceId, { includeDeleted = false } = {}) => {
-    if (!entranceId) return [];
-    return THistory.find()
-      .where({ entrance: entranceId, isDeleted: includeDeleted })
-      .populate('author')
-      .populate('reviewer');
-  },
-  getIdHistoriesByEntranceId: async (entranceId) => {
-    if (!entranceId) return [];
-    return THistory.find({ where: { entrance: entranceId }, select: ['id'] });
-  },
-  getHHistoriesById: async (historyId) =>
+  getHistory: async (historyId) =>
+    THistory.findOne({ id: historyId }).populate('author').populate('reviewer'),
+
+  getHHistories: async (historyId) =>
     HHistory.find({ t_id: historyId }).populate('reviewer').populate('author'),
 };
