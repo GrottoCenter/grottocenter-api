@@ -66,6 +66,8 @@ module.exports.policies = {
   'v1/description/get-snapshots': true,
   'v1/description/create': 'tokenAuth',
   'v1/description/update': 'tokenAuth',
+  'v1/description/delete': 'tokenAuth',
+  'v1/description/restore': 'tokenAuth',
 
   // Document
   'v1/document/count': true,
@@ -136,21 +138,29 @@ module.exports.policies = {
   'v1/location/get-snapshots': true,
   'v1/location/create': 'tokenAuth',
   'v1/location/update': 'tokenAuth',
+  'v1/location/delete': 'tokenAuth',
+  'v1/location/restore': 'tokenAuth',
 
   // History
   'v1/history/get-snapshots': true,
   'v1/history/create': 'tokenAuth',
   'v1/history/update': 'tokenAuth',
+  'v1/history/delete': 'tokenAuth',
+  'v1/history/restore': 'tokenAuth',
 
   // Rigging
   'v1/rigging/get-snapshots': true,
   'v1/rigging/create': 'tokenAuth',
   'v1/rigging/update': 'tokenAuth',
+  'v1/rigging/delete': 'tokenAuth',
+  'v1/rigging/restore': 'tokenAuth',
 
   // Comment
   'v1/comment/get-snapshots': true,
   'v1/comment/create': 'tokenAuth',
   'v1/comment/update': 'tokenAuth',
+  'v1/comment/delete': 'tokenAuth',
+  'v1/comment/restore': 'tokenAuth',
 
   // Country
   'v1/country/count': true,

@@ -1,74 +1,50 @@
-const RightService = require('./RightService');
-
 module.exports = {
-  getLocation: async (locationId, { includeDeleted = false } = {}) =>
-    TLocation.findOne({ id: locationId, isDeleted: includeDeleted })
-      .populate('author')
-      .populate('reviewer'),
-
-  getEntranceLocations: async (entranceId, { includeDeleted = false } = {}) => {
+  getEntranceLocations: async (entranceId, where = {}) => {
     if (!entranceId) return [];
-    return TLocation.find()
-      .where({ entrance: entranceId, isDeleted: includeDeleted })
+    return TLocation.find({ ...where, entrance: entranceId })
       .populate('author')
       .populate('reviewer');
   },
-  getIdLocationsByEntranceId: async (
+  getEntranceHLocations: async (
     entranceId,
-    { includeDeleted = false } = {}
+    hasCompleteViewRight,
+    where = {}
   ) => {
     if (!entranceId) return [];
-    return TLocation.find({
-      where: { entrance: entranceId, isDeleted: includeDeleted },
+    const loactionIds = await TLocation.find({
+      where: { ...where, entrance: entranceId },
       select: ['id'],
     });
+    return module.exports.getHLocation(
+      loactionIds.map((e) => e.id),
+      hasCompleteViewRight
+    );
   },
 
-  getHLocationById: async (locationId, token) => {
-    const CHECK_SENSITIVTY_OF_ENTRANCE_FROM_LOCATION_ID = `SELECT TE.is_sensitive
-                                                         FROM h_location HL
-                                                                JOIN t_entrance TE ON HL.id_entrance = TE.id
-                                                         WHERE HL.id = $1; `;
-    try {
-      const res = { error: null, hLocations: [] };
+  getLocation: async (locationId) =>
+    TLocation.findOne({ id: locationId })
+      .populate('author')
+      .populate('reviewer'),
+
+  getHLocation: async (locationId, hasCompleteViewRight) => {
+    const CHECK_SENSITIVTY_OF_ENTRANCE_FROM_LOCATION_ID = `
+    SELECT TE.is_sensitive
+    FROM h_location HL
+          JOIN t_entrance TE ON HL.id_entrance = TE.id
+    WHERE HL.id = $1;`;
+
+    if (!hasCompleteViewRight) {
+      // For non admin user, we do not return locations for sensitive entrance
       const sensitivity = await HLocation.getDatastore().sendNativeQuery(
         CHECK_SENSITIVTY_OF_ENTRANCE_FROM_LOCATION_ID,
-        [locationId]
+        [Array.isArray(locationId) ? locationId[0] : locationId]
       );
-      if (!sensitivity.rows[0]) {
-        res.error = '404';
-        return res;
-      }
-      const isSensitive = sensitivity.rows[0].is_sensitive;
 
-      if (isSensitive === undefined) {
-        res.error = '500';
-        return res;
-      }
-
-      if (isSensitive && !token) {
-        // The person is not authenticated
-        res.error = '401';
-        return res;
-      }
-
-      const hasRight = isSensitive
-        ? RightService.hasGroup(token.groups, RightService.G.ADMINISTRATOR)
-        : true; // No need to call hasGroup if it's not a sensitive entrance
-
-      if (isSensitive && !hasRight) {
-        res.error = '403';
-        return res;
-      }
-
-      res.hLocations = await HLocation.find({ t_id: locationId })
-        .populate('reviewer')
-        .populate('author')
-        .populate('entrance');
-
-      return res;
-    } catch (error) {
-      return error;
+      if (!sensitivity.rows[0] || sensitivity.rows[0].is_sensitive) return [];
     }
+
+    return HLocation.find({ t_id: locationId })
+      .populate('reviewer')
+      .populate('author');
   },
 };

@@ -151,8 +151,10 @@ module.exports.routes = {
   'GET /api/v1/comments/stats/:entranceId': 'v1/comment/get-entrance-stats',
   'GET /api/v1/comments/timeinfos/:entranceId':
     'v1/comment/get-entrance-time-infos',
-  'PATCH /api/v1/comments/:id': 'v1/comment/update',
   'POST /api/v1/comments': 'v1/comment/create',
+  'PATCH /api/v1/comments/:id': 'v1/comment/update',
+  'DELETE /api/v1/comments/:id': 'v1/comment/delete',
+  'POST /api/v1/comments/:id/restore': 'v1/comment/restore',
 
   /**
    * @deprecated use /v1 routes above instead
@@ -214,6 +216,8 @@ module.exports.routes = {
   // Description
   'PATCH /api/v1/descriptions/:id': 'v1/description/update',
   'POST /api/v1/descriptions': 'v1/description/create',
+  'DELETE /api/v1/descriptions/:id': 'v1/description/delete',
+  'POST /api/v1/descriptions/:id/restore': 'v1/description/restore',
 
   // Name
   'PATCH /api/v1/names/:id': 'v1/name/update',
@@ -222,14 +226,20 @@ module.exports.routes = {
   // Location
   'POST /api/v1/locations': 'v1/location/create',
   'PUT /api/v1/locations/:id': 'v1/location/update',
+  'DELETE /api/v1/locations/:id': 'v1/location/delete',
+  'POST /api/v1/locations/:id/restore': 'v1/location/restore',
 
   // History
   'POST /api/v1/histories': 'v1/history/create',
   'PUT /api/v1/histories/:id': 'v1/history/update',
+  'DELETE /api/v1/histories/:id': 'v1/history/delete',
+  'POST /api/v1/histories/:id/restore': 'v1/history/restore',
 
   // Rigging
   'POST /api/v1/riggings': 'v1/rigging/create',
   'PATCH /api/v1/riggings/:id': 'v1/rigging/update',
+  'DELETE /api/v1/riggings/:id': 'v1/rigging/delete',
+  'POST /api/v1/riggings/:id/restore': 'v1/rigging/restore',
 
   // Document Subject
   'GET /api/v1/documents/subjects': 'v1/subject/find-all',
