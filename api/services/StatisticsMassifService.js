@@ -57,6 +57,19 @@ const GET_TOTAL_LENGTH_IN_MASSIF = `
 
 const CommonService = require('./CommonService');
 
+async function safeDBQuery(sql, param) {
+  try {
+    const queryResult = await CommonService.query(sql, [param]);
+    const result = queryResult.rows;
+    if (result.length > 0) {
+      return result[0];
+    }
+    return null;
+  } catch (e) {
+    return null;
+  }
+}
+
 module.exports = {
   /**
    *
@@ -64,15 +77,8 @@ module.exports = {
    * @returns {boolean} true if there is some line about this massif, else false
    */
   isMassifInView: async (massifId) => {
-    try {
-      const queryResult = await CommonService.query(FIND_MASSIF_IN_VIEW, [
-        massifId,
-      ]);
-      const result = queryResult.rows;
-      return result.length > 0;
-    } catch (e) {
-      return false;
-    }
+    const result = await safeDBQuery(FIND_MASSIF_IN_VIEW, massifId);
+    return result && result.length > 0;
   },
 
   /**
@@ -81,18 +87,7 @@ module.exports = {
    * @returns {int} the number of caves in the massif
    *                or null if no result or something went wrong
    */
-  getNbCavesInMassif: async (massifId) => {
-    try {
-      const queryResult = await CommonService.query(GET_NB_CAVES, [massifId]);
-      const result = queryResult.rows;
-      if (result.length > 0) {
-        return result[0];
-      }
-      return null;
-    } catch (e) {
-      return null;
-    }
-  },
+  getNbCavesInMassif: async (massifId) => safeDBQuery(GET_NB_CAVES, massifId),
 
   /**
    *
@@ -100,20 +95,8 @@ module.exports = {
    * @returns {int} the number of networks in the massif
    *                or null if no result or something went wrong
    */
-  getNbNetworksInMassif: async (massifId) => {
-    try {
-      const queryResult = await CommonService.query(GET_NB_NETWORKS, [
-        massifId,
-      ]);
-      const result = queryResult.rows;
-      if (result.length > 0) {
-        return result[0];
-      }
-      return null;
-    } catch (e) {
-      return null;
-    }
-  },
+  getNbNetworksInMassif: async (massifId) =>
+    safeDBQuery(GET_NB_NETWORKS, massifId),
 
   /**
    *
@@ -121,21 +104,8 @@ module.exports = {
    * @returns {Object} the cave with the maximum depth in the massif (id, name and depth)
    *                or null if no result or something went wrong
    */
-  getCaveWithMaxDepthInMassif: async (massifId) => {
-    try {
-      const queryResult = await CommonService.query(
-        FIND_CAVE_WITH_MAX_DEPTH_IN_MASSIF,
-        [massifId]
-      );
-      const result = queryResult.rows;
-      if (result.length > 0) {
-        return result[0];
-      }
-      return null;
-    } catch (e) {
-      return null;
-    }
-  },
+  getCaveWithMaxDepthInMassif: async (massifId) =>
+    safeDBQuery(FIND_CAVE_WITH_MAX_DEPTH_IN_MASSIF, massifId),
 
   /**
    *
@@ -143,21 +113,8 @@ module.exports = {
    * @returns {Object} the cave with the maximum length in the massif (id, name and length)
    *                or null if no result or something went wrong
    */
-  getCaveWithMaxLengthInMassif: async (massifId) => {
-    try {
-      const queryResult = await CommonService.query(
-        FIND_CAVE_WITH_MAX_LENGTH_IN_MASSIF,
-        [massifId]
-      );
-      const result = queryResult.rows;
-      if (result.length > 0) {
-        return result[0];
-      }
-      return null;
-    } catch (e) {
-      return null;
-    }
-  },
+  getCaveWithMaxLengthInMassif: async (massifId) =>
+    safeDBQuery(FIND_CAVE_WITH_MAX_LENGTH_IN_MASSIF, massifId),
 
   /**
    *
@@ -165,21 +122,8 @@ module.exports = {
    * @returns {int} the number of caves which are diving in the massif
    *                or null if no result or something went wrong
    */
-  getNbCavesWhichAreDivingInMassif: async (massifId) => {
-    try {
-      const queryResult = await CommonService.query(
-        GET_NB_CAVES_WHICH_ARE_DIVING_IN_MASSIF,
-        [massifId]
-      );
-      const result = queryResult.rows;
-      if (result.length > 0) {
-        return result[0];
-      }
-      return null;
-    } catch (e) {
-      return null;
-    }
-  },
+  getNbCavesWhichAreDivingInMassif: async (massifId) =>
+    safeDBQuery(GET_NB_CAVES_WHICH_ARE_DIVING_IN_MASSIF, massifId),
 
   /**
    *
@@ -187,21 +131,8 @@ module.exports = {
    * @returns {Object} the average depth and length in the massif
    *                or null if no result or something went wrong
    */
-  getAvgDepthAndLengthInMassif: async (massifId) => {
-    try {
-      const queryResult = await CommonService.query(
-        GET_AVG_DEPTH_AND_LENGTH_IN_MASSIF,
-        [massifId]
-      );
-      const result = queryResult.rows;
-      if (result.length > 0) {
-        return result[0];
-      }
-      return null;
-    } catch (e) {
-      return null;
-    }
-  },
+  getAvgDepthAndLengthInMassif: async (massifId) =>
+    safeDBQuery(GET_AVG_DEPTH_AND_LENGTH_IN_MASSIF, massifId),
 
   /**
    *
@@ -209,19 +140,6 @@ module.exports = {
    * @returns {int} the sum of the lengths of each cave in the massif
    *                or null if no result or something went wrong
    */
-  getTotalLength: async (massifId) => {
-    try {
-      const queryResult = await CommonService.query(
-        GET_TOTAL_LENGTH_IN_MASSIF,
-        [massifId]
-      );
-      const result = queryResult.rows;
-      if (result.length > 0) {
-        return result[0];
-      }
-      return null;
-    } catch (e) {
-      return null;
-    }
-  },
+  getTotalLength: async (massifId) =>
+    safeDBQuery(GET_TOTAL_LENGTH_IN_MASSIF, massifId),
 };

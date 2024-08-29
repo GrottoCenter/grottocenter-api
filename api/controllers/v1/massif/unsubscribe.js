@@ -1,7 +1,4 @@
-const ErrorService = require('../../../services/ErrorService');
 const RightService = require('../../../services/RightService');
-
-const { checkIfExists } = sails.helpers;
 
 module.exports = async (req, res) => {
   // Check right
@@ -14,34 +11,23 @@ module.exports = async (req, res) => {
   }
 
   // Check if massif exists
-  const massifId = Number(req.param('id'));
-  if (
-    !(await checkIfExists.with({
-      attributeName: 'id',
-      attributeValue: massifId,
-      sailsModel: TMassif,
-    }))
-  ) {
-    return res.notFound({
-      error: `Could not find massif with id ${massifId}.`,
-    });
+  const massifId = req.param('id');
+  const massif = await TMassif.findOne(massifId);
+  if (!massif || massif.isDeleted) {
+    return res.notFound({ message: `Massif of id ${massifId} not found.` });
   }
 
-  try {
-    const caver = await TCaver.findOne(req.token.id).populate(
-      'subscribedToMassifs'
+  const caver = await TCaver.findOne(req.token.id).populate(
+    'subscribedToMassifs'
+  );
+  if (!caver.subscribedToMassifs.find((m) => m.id === massif.id)) {
+    return res.badRequest(
+      `You are not subscribed to the massif with id ${massifId} and therefore cannot be unsubscribed.`
     );
-    if (!caver.subscribedToMassifs.find((m) => m.id === massifId)) {
-      return res.unprocessable(
-        `You are not subscribed to the massif with id ${massifId} and therefore cannot be unsubscribed.`
-      );
-    }
-
-    await TCaver.removeFromCollection(req.token.id, 'subscribedToMassifs', [
-      massifId,
-    ]);
-    return res.ok();
-  } catch (e) {
-    return ErrorService.getDefaultErrorHandler(res)(e);
   }
+
+  await TCaver.removeFromCollection(req.token.id, 'subscribedToMassifs', [
+    massifId,
+  ]);
+  return res.ok();
 };
