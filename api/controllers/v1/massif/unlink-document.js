@@ -12,9 +12,9 @@ module.exports = async (req, res) => {
   }
 
   const massifId = req.param('massifId');
-  const currentMassif = await TMassif.findOne(massifId);
-  if (!currentMassif) {
-    return res.notFound({ message: `Entrance of id ${massifId} not found.` });
+  const massif = await TMassif.findOne(massifId);
+  if (!massif || massif.isDeleted) {
+    return res.notFound({ message: `Massif of id ${massifId} not found.` });
   }
 
   const documentId = req.param('documentId');

@@ -1,7 +1,4 @@
-const ErrorService = require('../../../services/ErrorService');
 const RightService = require('../../../services/RightService');
-
-const { checkIfExists } = sails.helpers;
 
 module.exports = async (req, res) => {
   // Check right
@@ -15,24 +12,11 @@ module.exports = async (req, res) => {
 
   // Check if massif exists
   const massifId = req.param('id');
-  if (
-    !(await checkIfExists.with({
-      attributeName: 'id',
-      attributeValue: massifId,
-      sailsModel: TMassif,
-    }))
-  ) {
-    return res.notFound({
-      error: `Could not find massif with id ${massifId}.`,
-    });
+  const massif = await TMassif.findOne(massifId);
+  if (!massif || massif.isDeleted) {
+    return res.notFound({ message: `Massif of id ${massifId} not found.` });
   }
 
-  try {
-    await TCaver.addToCollection(req.token.id, 'subscribedToMassifs', [
-      massifId,
-    ]);
-    return res.ok();
-  } catch (e) {
-    return ErrorService.getDefaultErrorHandler(res)(e);
-  }
+  await TCaver.addToCollection(req.token.id, 'subscribedToMassifs', [massifId]);
+  return res.ok();
 };

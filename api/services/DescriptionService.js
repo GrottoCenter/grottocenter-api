@@ -15,13 +15,13 @@ module.exports = {
     }
   },
 
-  getMassifDescriptions: async (massifId, { includeDeleted = false } = {}) => {
-    const descriptions = await TDescription.find()
-      .where({ massif: massifId, isDeleted: includeDeleted })
+  getMassifDescriptions: async (massifId) => {
+    if (!massifId) return [];
+    return TDescription.find({ massif: massifId })
       .populate('author')
       .populate('reviewer');
-    return descriptions;
   },
+
   getCaveDescriptions: async (caveId, { includeDeleted = false } = {}) => {
     let descriptions = [];
     if (caveId) {
