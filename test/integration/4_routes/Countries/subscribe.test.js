@@ -48,13 +48,13 @@ describe('Country features', () => {
         .expect(404, done);
     });
 
-    it('should return 422 on trying to unsubscribe from an inexisting subscription', (done) => {
+    it('should return 400 on trying to unsubscribe from an inexisting subscription', (done) => {
       supertest(sails.hooks.http.app)
         .post('/api/v1/countries/GB/unsubscribe')
         .set('Authorization', leaderToken)
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json')
-        .expect(422, done);
+        .expect(400, done);
     });
 
     it('should return 204 on country unsubscription', (done) => {

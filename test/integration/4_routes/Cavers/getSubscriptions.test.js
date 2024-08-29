@@ -26,14 +26,14 @@ describe('Caver features', () => {
           should(countries).have.length(2);
           should(massifs).have.length(2);
           for (const country of countries) {
-            should(country).have.properties(['id', 'iso3']);
+            should(country).have.properties(['id', 'name']);
             should(country.id).not.be.undefined();
-            should(country.iso3).not.be.undefined();
+            should(country.name).not.be.undefined();
           }
           for (const massif of massifs) {
-            should(massif).have.properties(['id', 'names']);
+            should(massif).have.properties(['id', 'name']);
             should(massif.id).not.be.undefined();
-            should(massif.names).not.be.empty();
+            should(massif.name).not.be.undefined();
           }
           return done();
         });
