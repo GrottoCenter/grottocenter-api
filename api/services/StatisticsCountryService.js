@@ -75,6 +75,19 @@ const GET_TOTAL_LENGTH_IN_COUNTRY = `
 
 const CommonService = require('./CommonService');
 
+async function safeDBQuery(sql, param) {
+  try {
+    const queryResult = await CommonService.query(sql, [param]);
+    const result = queryResult.rows;
+    if (result.length > 0) {
+      return result[0];
+    }
+    return null;
+  } catch (e) {
+    return null;
+  }
+}
+
 module.exports = {
   /**
    *
@@ -82,15 +95,8 @@ module.exports = {
    * @returns {boolean} true if there is some line about this country, else false
    */
   isCountryInView: async (countryId) => {
-    try {
-      const queryResult = await CommonService.query(FIND_COUNTRY_IN_VIEW, [
-        countryId,
-      ]);
-      const result = queryResult.rows;
-      return result.length > 0;
-    } catch (e) {
-      return false;
-    }
+    const result = await safeDBQuery(FIND_COUNTRY_IN_VIEW, countryId);
+    return result && result.length > 0;
   },
 
   /**
@@ -99,20 +105,8 @@ module.exports = {
    * @returns {int} the number of massifs in the country
    *                or null if no result or something went wrong
    */
-  getNbMassifsInCountry: async (countryId) => {
-    try {
-      const queryResult = await CommonService.query(GET_NB_MASSIFS, [
-        countryId,
-      ]);
-      const result = queryResult.rows;
-      if (result.length > 0) {
-        return result[0];
-      }
-      return null;
-    } catch (e) {
-      return null;
-    }
-  },
+  getNbMassifsInCountry: async (countryId) =>
+    safeDBQuery(GET_NB_MASSIFS, countryId),
 
   /**
    *
@@ -120,18 +114,8 @@ module.exports = {
    * @returns {int} the number of caves in the country
    *                or null if no result or something went wrong
    */
-  getNbCavesInCountry: async (countryId) => {
-    try {
-      const queryResult = await CommonService.query(GET_NB_CAVES, [countryId]);
-      const result = queryResult.rows;
-      if (result.length > 0) {
-        return result[0];
-      }
-      return null;
-    } catch (e) {
-      return null;
-    }
-  },
+  getNbCavesInCountry: async (countryId) =>
+    safeDBQuery(GET_NB_CAVES, countryId),
 
   /**
    *
@@ -139,20 +123,8 @@ module.exports = {
    * @returns {int} the number of networks in the country
    *                or null if no result or something went wrong
    */
-  getNbNetworksInCountry: async (countryId) => {
-    try {
-      const queryResult = await CommonService.query(GET_NB_NETWORKS, [
-        countryId,
-      ]);
-      const result = queryResult.rows;
-      if (result.length > 0) {
-        return result[0];
-      }
-      return null;
-    } catch (e) {
-      return null;
-    }
-  },
+  getNbNetworksInCountry: async (countryId) =>
+    safeDBQuery(GET_NB_NETWORKS, countryId),
 
   /**
    *
@@ -160,21 +132,8 @@ module.exports = {
    * @returns {Object} the cave with the maximum depth in the country (id, name and depth)
    *                or null if no result or something went wrong
    */
-  getCaveWithMaxDepthInCountry: async (countryId) => {
-    try {
-      const queryResult = await CommonService.query(
-        FIND_CAVE_WITH_MAX_DEPTH_IN_COUNTRY,
-        [countryId]
-      );
-      const result = queryResult.rows;
-      if (result.length > 0) {
-        return result[0];
-      }
-      return null;
-    } catch (e) {
-      return null;
-    }
-  },
+  getCaveWithMaxDepthInCountry: async (countryId) =>
+    safeDBQuery(FIND_CAVE_WITH_MAX_DEPTH_IN_COUNTRY, countryId),
 
   /**
    *
@@ -182,21 +141,8 @@ module.exports = {
    * @returns {Object} the cave with the maximum length in the country (id, name and length)
    *                or null if no result or something went wrong
    */
-  getCaveWithMaxLengthInCountry: async (countryId) => {
-    try {
-      const queryResult = await CommonService.query(
-        FIND_CAVE_WITH_MAX_LENGTH_IN_COUNTRY,
-        [countryId]
-      );
-      const result = queryResult.rows;
-      if (result.length > 0) {
-        return result[0];
-      }
-      return null;
-    } catch (e) {
-      return null;
-    }
-  },
+  getCaveWithMaxLengthInCountry: async (countryId) =>
+    safeDBQuery(FIND_CAVE_WITH_MAX_LENGTH_IN_COUNTRY, countryId),
 
   /**
    *
@@ -204,21 +150,8 @@ module.exports = {
    * @returns {int} the number of caves which are diving in the country
    *                or null if no result or something went wrong
    */
-  getNbCavesWhichAreDivingInCountry: async (countryId) => {
-    try {
-      const queryResult = await CommonService.query(
-        GET_NB_CAVES_WHICH_ARE_DIVING_IN_COUNTRY,
-        [countryId]
-      );
-      const result = queryResult.rows;
-      if (result.length > 0) {
-        return result[0];
-      }
-      return null;
-    } catch (e) {
-      return null;
-    }
-  },
+  getNbCavesWhichAreDivingInCountry: async (countryId) =>
+    safeDBQuery(GET_NB_CAVES_WHICH_ARE_DIVING_IN_COUNTRY, countryId),
 
   /**
    *
@@ -226,21 +159,8 @@ module.exports = {
    * @returns {Object} the average depth and length in the country
    *                or null if no result or something went wrong
    */
-  getAvgDepthAndLengthInCountry: async (countryId) => {
-    try {
-      const queryResult = await CommonService.query(
-        GET_AVG_DEPTH_AND_LENGTH_IN_COUNTRY,
-        [countryId]
-      );
-      const result = queryResult.rows;
-      if (result.length > 0) {
-        return result[0];
-      }
-      return null;
-    } catch (e) {
-      return null;
-    }
-  },
+  getAvgDepthAndLengthInCountry: async (countryId) =>
+    safeDBQuery(GET_AVG_DEPTH_AND_LENGTH_IN_COUNTRY, countryId),
 
   /**
    *
@@ -248,19 +168,6 @@ module.exports = {
    * @returns {int} the sum of the lengths of each cave in the country
    *                or null if no result or something went wrong
    */
-  getTotalLength: async (countryId) => {
-    try {
-      const queryResult = await CommonService.query(
-        GET_TOTAL_LENGTH_IN_COUNTRY,
-        [countryId]
-      );
-      const result = queryResult.rows;
-      if (result.length > 0) {
-        return result[0];
-      }
-      return null;
-    } catch (e) {
-      return null;
-    }
-  },
+  getTotalLength: async (countryId) =>
+    safeDBQuery(GET_TOTAL_LENGTH_IN_COUNTRY, countryId),
 };

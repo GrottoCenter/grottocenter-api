@@ -1,14 +1,8 @@
-const ramda = require('ramda');
 const ControllerService = require('../../../services/ControllerService');
-const ElasticsearchService = require('../../../services/ElasticsearchService');
 const MassifService = require('../../../services/MassifService');
 const NotificationService = require('../../../services/NotificationService');
 const RecentChangeService = require('../../../services/RecentChangeService');
 const { toMassif } = require('../../../services/mapping/converters');
-const {
-  NOTIFICATION_TYPES,
-  NOTIFICATION_ENTITIES,
-} = require('../../../services/NotificationService');
 
 // eslint-disable-next-line consistent-return
 module.exports = async (req, res) => {
@@ -34,7 +28,6 @@ module.exports = async (req, res) => {
   }
 
   // Launch creation request using transaction: it performs a rollback if an error occurs
-
   const newMassif = await sails.getDatastore().transaction(async (db) => {
     const cleanedData = {
       author: req.token.id,
@@ -58,7 +51,7 @@ module.exports = async (req, res) => {
     }).usingConnection(db);
 
     // Description
-    if (ramda.propOr(null, 'description', req.body)) {
+    if (req.body?.description) {
       await TDescription.create({
         author: req.token.id,
         body: req.body.description,
@@ -72,29 +65,11 @@ module.exports = async (req, res) => {
     return massif;
   });
 
-  // Prepare data for Elasticsearch indexation
-
   const newMassifPopulated = await MassifService.getPopulatedMassif(
     newMassif.id
   );
 
-  const description =
-    newMassifPopulated.descriptions.length === 0
-      ? null
-      : `${newMassifPopulated.descriptions[0].title} ${newMassifPopulated.descriptions[0].body}`;
-
-  // Format data
-  const { cave, name, names, ...newMassifESData } = newMassifPopulated;
-  await ElasticsearchService.create('massifs', newMassifPopulated.id, {
-    ...newMassifESData,
-    name: newMassifPopulated.names[0].name, // There is only one name at the creation time
-    names: newMassifPopulated.names.map((n) => n.name).join(', '),
-    'nb caves': newMassifPopulated.networks.length,
-    'nb entrances': newMassifPopulated.entrances.length,
-    deleted: newMassifPopulated.isDeleted,
-    descriptions: [description],
-    tags: ['massif'],
-  });
+  await MassifService.createESMassif(newMassifPopulated);
 
   await RecentChangeService.setNameCreate(
     'massif',
@@ -107,8 +82,8 @@ module.exports = async (req, res) => {
     req,
     newMassifPopulated,
     req.token.id,
-    NOTIFICATION_TYPES.CREATE,
-    NOTIFICATION_ENTITIES.MASSIF
+    NotificationService.NOTIFICATION_TYPES.CREATE,
+    NotificationService.NOTIFICATION_ENTITIES.MASSIF
   );
 
   return ControllerService.treatAndConvert(

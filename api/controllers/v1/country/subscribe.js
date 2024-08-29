@@ -1,7 +1,4 @@
-const ErrorService = require('../../../services/ErrorService');
 const RightService = require('../../../services/RightService');
-
-const { checkIfExists } = sails.helpers;
 
 module.exports = async (req, res) => {
   // Check right
@@ -15,24 +12,13 @@ module.exports = async (req, res) => {
 
   // Check if country exists
   const countryId = req.param('id');
-  if (
-    !(await checkIfExists.with({
-      attributeName: 'id',
-      attributeValue: countryId,
-      sailsModel: TCountry,
-    }))
-  ) {
-    return res.notFound({
-      error: `Could not find country with id ${countryId}.`,
-    });
+  const country = await TCountry.findOne(countryId);
+  if (!country) {
+    return res.notFound({ message: `Country with id ${countryId} not found.` });
   }
 
-  try {
-    await TCaver.addToCollection(req.token.id, 'subscribedToCountries', [
-      countryId,
-    ]);
-    return res.ok();
-  } catch (e) {
-    return ErrorService.getDefaultErrorHandler(res)(e);
-  }
+  await TCaver.addToCollection(req.token.id, 'subscribedToCountries', [
+    countryId,
+  ]);
+  return res.ok();
 };

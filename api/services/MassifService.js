@@ -1,12 +1,15 @@
 const DocumentService = require('./DocumentService');
 const NameService = require('./NameService');
+const ElasticsearchService = require('./ElasticsearchService');
+const DescriptionService = require('./DescriptionService');
+const CommonService = require('./CommonService');
 
 const FIND_NETWORKS_IN_MASSIF = `
-  SELECT c.*
+  SELECT c.*, c.length AS "caveLength", count(e.id_cave) as "nbEntrances"
   FROM t_entrance AS e
   LEFT JOIN t_cave c ON c.id = e.id_cave
   WHERE c.is_deleted = false
-  AND ST_Contains(ST_SetSRID((SELECT geog_polygon::geometry FROM t_massif WHERE id = $1 ), 4326), ST_SetSRID(ST_MakePoint(c.longitude, c.latitude), 4326))
+  AND ST_Contains(ST_SetSRID((SELECT geog_polygon::geometry FROM t_massif WHERE id = $1 ), 4326), ST_SetSRID(ST_MakePoint(e.longitude, e.latitude), 4326))
   GROUP BY c.id
   HAVING count(e.id_cave) > 1
 `;
@@ -29,7 +32,14 @@ const FIND_ENTRANCES_IN_MASSIF = `
   AND e.is_deleted = false
 `;
 
-const CommonService = require('./CommonService');
+async function safeDBQuery(sql, param) {
+  try {
+    const queryResult = await CommonService.query(sql, [param]);
+    return queryResult.rows;
+  } catch (e) {
+    return []; // Fail silently (happens when the longitude and latitude are null for example)
+  }
+}
 
 module.exports = {
   getConvertedDataFromClientRequest: (req) => ({
@@ -45,19 +55,23 @@ module.exports = {
       .populate('author')
       .populate('reviewer')
       .populate('names')
-      .populate('descriptions')
       .populate('documents');
 
     if (!massif) return null;
-    if (massif.isDeleted) return massif;
 
-    [massif.entrances, massif.networks, massif.documents, massif.geoJson] =
-      await Promise.all([
-        module.exports.getEntrances(massif.id),
-        module.exports.getNetworks(massif.id),
-        DocumentService.getDocuments(massif.documents.map((d) => d.id)),
-        module.exports.wktToGeoJson(massif.geogPolygon),
-      ]);
+    [
+      massif.entrances,
+      massif.networks,
+      massif.documents,
+      massif.geoJson,
+      massif.descriptions,
+    ] = await Promise.all([
+      module.exports.getEntrances(massif.id),
+      module.exports.getNetworks(massif.id),
+      DocumentService.getDocuments(massif.documents.map((d) => d.id)),
+      module.exports.wktToGeoJson(massif.geogPolygon),
+      DescriptionService.getMassifDescriptions(massif.id),
+    ]);
 
     await Promise.all([
       NameService.setNames(massif.entrances, 'entrance'),
@@ -67,38 +81,29 @@ module.exports = {
     return massif;
   },
 
-  getCaves: async (massifId) => {
-    try {
-      const queryResult = await CommonService.query(FIND_CAVES_IN_MASSIF, [
-        massifId,
-      ]);
-      return queryResult.rows;
-    } catch (e) {
-      return []; // Fail silently (happens when the longitude and latitude are null for example)
-    }
+  async createESMassif(populatedMassif) {
+    const description =
+      populatedMassif.descriptions.length === 0
+        ? null
+        : `${populatedMassif.descriptions[0].title} ${populatedMassif.descriptions[0].body}`;
+    const { cave, name, names, ...newMassifESData } = populatedMassif;
+    await ElasticsearchService.create('massifs', populatedMassif.id, {
+      ...newMassifESData,
+      name: populatedMassif.names[0].name, // There is only one name at the creation time
+      names: populatedMassif.names.map((n) => n.name).join(', '),
+      'nb caves': populatedMassif.networks.length,
+      'nb entrances': populatedMassif.entrances.length,
+      deleted: populatedMassif.isDeleted,
+      descriptions: [description],
+      tags: ['massif'],
+    });
   },
 
-  getEntrances: async (massifId) => {
-    try {
-      const queryResult = await CommonService.query(FIND_ENTRANCES_IN_MASSIF, [
-        massifId,
-      ]);
-      return queryResult.rows;
-    } catch (e) {
-      return []; // Fail silently (happens when the longitude and latitude are null for example)
-    }
-  },
-
-  getNetworks: async (massifId) => {
-    try {
-      const queryResult = await CommonService.query(FIND_NETWORKS_IN_MASSIF, [
-        massifId,
-      ]);
-      return queryResult.rows;
-    } catch (e) {
-      return []; // Fail silently (happens when the longitude and latitude are null for example)
-    }
-  },
+  getCaves: async (massifId) => safeDBQuery(FIND_CAVES_IN_MASSIF, massifId),
+  getEntrances: async (massifId) =>
+    safeDBQuery(FIND_ENTRANCES_IN_MASSIF, massifId),
+  getNetworks: async (massifId) =>
+    safeDBQuery(FIND_NETWORKS_IN_MASSIF, massifId),
 
   geoJsonToWKT: async (geoJson) => {
     const query = `SELECT ST_AsText($1) `;
