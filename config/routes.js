@@ -170,12 +170,13 @@ module.exports.routes = {
   'GET /api/v1/countries/count': 'v1/country/count',
 
   // Organization
-  'DELETE /api/v1/organizations/:id': 'v1/organization/delete-one',
   'GET /api/v1/organizations/count': 'v1/organization/count',
   'GET /api/v1/organizations/:id': 'v1/organization/find',
   'GET /api/v1/organizations': 'v1/organization/find-all',
   'POST /api/v1/organizations': 'v1/organization/create',
   'PUT /api/v1/organizations/:id': 'v1/organization/update',
+  'DELETE /api/v1/organizations/:id': 'v1/organization/delete',
+  'POST /api/v1/organizations/:id/restore': 'v1/organization/restore',
 
   /**
    * @deprecated use /v1/organizations route above instead
@@ -183,13 +184,14 @@ module.exports.routes = {
   'GET /api/organizations/findAll': 'v1/organization/find-all',
 
   // Massif
-  'DELETE /api/v1/massifs/:id': 'v1/massif/delete-one',
   'GET /api/v1/massifs/:id': 'v1/massif/find',
   'POST /api/v1/massifs': 'v1/massif/create',
   'POST /api/v1/massifs/:id/subscribe': 'v1/massif/subscribe',
   'POST /api/v1/massifs/:id/unsubscribe': 'v1/massif/unsubscribe',
   'PUT /api/v1/massifs/:id': 'v1/massif/update',
   'GET /api/v1/massifs/:id/statistics': 'v1/massif/get-statistics',
+  'DELETE /api/v1/massifs/:id': 'v1/massif/delete',
+  'POST /api/v1/massifs/:id/restore': 'v1/massif/restore',
   'PUT /api/v1/massifs/:massifId/documents/:documentId':
     'v1/massif/add-document',
   'DELETE /api/v1/massifs/:massifId/documents/:documentId':
