@@ -132,9 +132,9 @@ module.exports.routes = {
   'GET /api/v1/caves/findAll': 'v1/cave/find-all',
 
   // Partner
-  'GET /api/v1/partners/:id': 'v1/partner/find',
   'GET /api/v1/partners/count': 'v1/partner/count',
-  'GET /api/v1/partners/findAll': 'v1/partner/find-all',
+  'GET /api/v1/partners/:id': 'v1/organization/find',
+  'GET /api/v1/partners': 'v1/organization/find-all',
   'GET /api/v1/partners/findForCarousel': 'v1/partner/find-for-carousel',
   'GET /api/v1/partners/findForCarousel/:skip/:limit':
     'v1/partner/find-for-carousel',
@@ -142,8 +142,8 @@ module.exports.routes = {
   /**
    * @deprecated use api/v1/partners instead
    */
-  'GET /api/partners/:id': 'v1/partner/find',
-  'GET /api/partners/findAll': 'v1/partner/find-all',
+  'GET /api/partners/:id': 'v1/organization/find',
+  'GET /api/partners/findAll': 'v1/organization/find-all',
   'GET /api/partners/findForCarousel/:skip/:limit':
     'v1/partner/find-for-carousel',
 
