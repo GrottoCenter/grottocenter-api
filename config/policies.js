@@ -194,15 +194,13 @@ module.exports.policies = {
   // Organizations
   'v1/organization/count': true,
   'v1/organization/find': true,
+  'v1/organization/find-all': true,
   'v1/organization/create': 'tokenAuth',
   'v1/organization/delete-one': 'tokenAuth',
-  'v1/organization/find-all': 'paginate',
   'v1/organization/update': 'tokenAuth',
 
   // Partner
   'v1/partner/count': true,
-  'v1/partner/find': true,
-  'v1/partner/find-all': true,
   'v1/partner/find-for-carousel': true,
 
   // Region

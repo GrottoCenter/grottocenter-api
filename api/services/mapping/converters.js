@@ -589,6 +589,7 @@ const c = {
     id: source.id,
     '@id': String(source.id),
     isDeleted: source.isDeleted,
+    redirectTo: source.redirectTo,
     author: convertIfObject(source.author, c.toSimpleCaver),
     reviewer: convertIfObject(source.reviewer, c.toSimpleCaver),
     dateInscription: source.dateInscription,
@@ -601,18 +602,6 @@ const c = {
     entrances: toList('entrances', source, c.toSimpleEntrance, { meta }),
     documents: toList('documents', source, c.toSimpleDocument),
     networks: toList('networks', source, c.toSimpleCave),
-  }),
-
-  toDeletedMassif: (source) => ({
-    id: source.id,
-    '@id': String(source.id),
-    isDeleted: source.isDeleted,
-    redirectTo: source.redirectTo,
-    author: convertIfObject(source.author, c.toSimpleCaver),
-    reviewer: convertIfObject(source.reviewer, c.toSimpleCaver),
-    dateInscription: source.dateInscription,
-    dateReviewed: source.dateReviewed,
-    name: getMainName(source),
   }),
 
   toSimpleMassif: (source) => ({
@@ -675,13 +664,18 @@ const c = {
     id: source.id,
     '@id': String(source.id),
     isDeleted: source.isDeleted,
+    redirectTo: source.redirectTo,
     dateInscription: source.dateInscription,
     dateReviewed: source.dateReviewed,
     author: convertIfObject(source.author, c.toSimpleCaver),
     reviewer: convertIfObject(source.reviewer, c.toSimpleCaver),
     name: getMainName(source),
-    nameId: source.names.find((name) => name.isMain)?.id,
-    language: source.names.find((name) => name.isMain)?.language,
+    nameId: Array.isArray(source.names)
+      ? source.names.find((name) => name.isMain)?.id // PostgreSQL
+      : undefined, // Elasticsearch
+    language: Array.isArray(source.names)
+      ? source.names.find((name) => name.isMain)?.language
+      : undefined,
     latitude: parseFloat(source.latitude),
     longitude: parseFloat(source.longitude),
     country: source.country,
@@ -711,9 +705,8 @@ const c = {
     partnerNetworks: toList('partnerNetworks', source, c.toSimpleCave),
   }),
 
-  toDeletedOrganization: (source) => ({
+  toDeletedEntity: (source) => ({
     id: source.id,
-    '@id': String(source.id),
     isDeleted: source.isDeleted,
     redirectTo: source.redirectTo,
     author: convertIfObject(source.author, c.toSimpleCaver),
@@ -721,11 +714,6 @@ const c = {
     dateInscription: source.dateInscription,
     dateReviewed: source.dateReviewed,
     name: getMainName(source),
-    country: source.country,
-    region: source.region,
-    county: source.county,
-    city: source.city,
-    iso_3166_2: source.iso_3166_2,
   }),
 
   toSimpleRigging: (source) => {
