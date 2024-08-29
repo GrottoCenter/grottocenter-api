@@ -178,7 +178,8 @@ module.exports.policies = {
   'v1/massif/create': 'tokenAuth',
   'v1/massif/subscribe': 'tokenAuth',
   'v1/massif/unsubscribe': 'tokenAuth',
-  'v1/massif/delete-one': 'tokenAuth',
+  'v1/massif/delete': 'tokenAuth',
+  'v1/massif/restore': 'tokenAuth',
   'v1/massif/add-document': 'tokenAuth',
   'v1/massif/unlink-document': 'tokenAuth',
 
@@ -196,7 +197,8 @@ module.exports.policies = {
   'v1/organization/find': true,
   'v1/organization/find-all': true,
   'v1/organization/create': 'tokenAuth',
-  'v1/organization/delete-one': 'tokenAuth',
+  'v1/organization/delete': 'tokenAuth',
+  'v1/organization/restore': 'tokenAuth',
   'v1/organization/update': 'tokenAuth',
 
   // Partner
