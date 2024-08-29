@@ -1,4 +1,3 @@
-const ramda = require('ramda');
 const CaveService = require('./CaveService');
 const DocumentService = require('./DocumentService');
 const ElasticsearchService = require('./ElasticsearchService');
@@ -7,17 +6,12 @@ const NotificationService = require('./NotificationService');
 const GeocodingService = require('./GeocodingService');
 const RecentChangeService = require('./RecentChangeService');
 
-const {
-  NOTIFICATION_ENTITIES,
-  NOTIFICATION_TYPES,
-} = require('./NotificationService');
-
 module.exports = {
   // Extract everything from a request body except id
   getConvertedDataFromClientRequest: (req) => ({
     address: req.param('address'),
     city: req.param('city'),
-    country: ramda.pathOr(null, ['country', 'id'], req.body),
+    country: req.body?.country?.id ?? null,
     county: req.param('county'),
     customMessage: req.param('customMessage'),
     latitude: req.param('latitude'),
@@ -30,7 +24,7 @@ module.exports = {
   }),
 
   getPopulatedOrganization: async (organizationId) => {
-    const organization = await TGrotto.findOne(organizationId)
+    const organization = await TGrotto.findOne({ id: organizationId })
       .populate('author')
       .populate('reviewer')
       .populate('names')
@@ -40,7 +34,6 @@ module.exports = {
       .populate('partnerCaves');
 
     if (!organization) return null;
-    if (organization.isDeleted) return organization;
 
     await Promise.all([
       CaveService.setEntrances(organization.exploredCaves),
@@ -109,6 +102,11 @@ module.exports = {
       if (address) cleanedData.iso_3166_2 = address.iso_3166_2;
     }
 
+    // eslint-disable-next-line no-param-reassign
+    if (cleanedData.latitude === '') delete cleanedData.latitude;
+    // eslint-disable-next-line no-param-reassign
+    if (cleanedData.longitude === '') delete cleanedData.longitude;
+
     const newOrganizationId = await sails
       .getDatastore()
       .transaction(async (db) => {
@@ -141,19 +139,8 @@ module.exports = {
 
     const newOrganizationPopulated =
       await module.exports.getPopulatedOrganization(newOrganizationId);
-    const { country, names, ...newOrganizationESData } =
-      newOrganizationPopulated;
 
-    await ElasticsearchService.create('grottos', newOrganizationPopulated.id, {
-      ...newOrganizationESData,
-      country: newOrganizationPopulated?.country?.nativeName ?? null,
-      'country code': newOrganizationPopulated?.country?.id ?? null,
-      name: names[0].name, // There is only one name right after the creation
-      names: names.map((n) => n.name).join(', '),
-      'nb cavers': 0,
-      deleted: newOrganizationPopulated.isDeleted,
-      tags: ['grotto'],
-    });
+    await module.exports.createESOrganization(newOrganizationPopulated);
 
     await RecentChangeService.setNameCreate(
       'grotto',
@@ -166,10 +153,25 @@ module.exports = {
       req,
       newOrganizationPopulated,
       req.token.id,
-      NOTIFICATION_TYPES.CREATE,
-      NOTIFICATION_ENTITIES.ORGANIZATION
+      NotificationService.NOTIFICATION_TYPES.CREATE,
+      NotificationService.NOTIFICATION_ENTITIES.ORGANIZATION
     );
 
     return newOrganizationPopulated;
+  },
+
+  async createESOrganization(populatedOrganization) {
+    const { country, names, ...newOrganizationESData } = populatedOrganization;
+
+    await ElasticsearchService.create('grottos', populatedOrganization.id, {
+      ...newOrganizationESData,
+      country: populatedOrganization?.country?.nativeName ?? null,
+      'country code': populatedOrganization?.country?.id ?? null,
+      name: names[0].name, // There is only one name right after the creation
+      names: names.map((n) => n.name).join(', '),
+      'nb cavers': 0,
+      deleted: populatedOrganization.isDeleted,
+      tags: ['grotto'],
+    });
   },
 };
