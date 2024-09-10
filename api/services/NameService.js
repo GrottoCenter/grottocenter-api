@@ -39,6 +39,12 @@ module.exports = {
 
     return entitiesToComplete;
   },
+
+  async permanentDelete(where) {
+    await TName.destroy(where); // TName first soft delete
+    await HName.destroy(where);
+    await TName.destroy(where); // Hard delete
+  },
 };
 
 /* eslint-enable no-param-reassign */

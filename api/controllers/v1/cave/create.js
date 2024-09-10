@@ -6,7 +6,6 @@
  */
 const CaveService = require('../../../services/CaveService');
 const ControllerService = require('../../../services/ControllerService');
-const ErrorService = require('../../../services/ErrorService');
 const { toCave } = require('../../../services/mapping/converters');
 
 module.exports = async (req, res) => {
@@ -24,9 +23,8 @@ module.exports = async (req, res) => {
     );
   }
 
-  if (
-    rawDescriptionsData // description is optional
-  ) {
+  // description is optional
+  if (rawDescriptionsData) {
     for (const description of rawDescriptionsData) {
       if (!description.body || !description.language || !description.title) {
         return res.badRequest(
@@ -55,25 +53,19 @@ module.exports = async (req, res) => {
     : undefined;
 
   // Create cave
-  try {
-    const createdCave = await CaveService.createCave(
-      req,
-      cleanedData,
-      nameData,
-      descriptionsData
-    );
+  const populatedCave = await CaveService.createCave(
+    req,
+    cleanedData,
+    nameData,
+    descriptionsData
+  );
 
-    const populatedCave = await CaveService.getCavePopulated(createdCave.id);
-
-    return ControllerService.treatAndConvert(
-      req,
-      null,
-      populatedCave,
-      { controllerMethod: 'CaveController.create' },
-      res,
-      toCave
-    );
-  } catch (e) {
-    return ErrorService.getDefaultErrorHandler(res)(e);
-  }
+  return ControllerService.treatAndConvert(
+    req,
+    null,
+    populatedCave,
+    { controllerMethod: 'CaveController.create' },
+    res,
+    toCave
+  );
 };

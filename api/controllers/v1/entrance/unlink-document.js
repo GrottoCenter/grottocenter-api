@@ -12,8 +12,8 @@ module.exports = async (req, res) => {
   }
 
   const entranceId = req.param('entranceId');
-  const currentEntrance = await TEntrance.findOne(entranceId);
-  if (!currentEntrance) {
+  const entrance = await TEntrance.findOne(entranceId);
+  if (!entrance || entrance.isDeleted) {
     return res.notFound({ message: `Entrance of id ${entranceId} not found.` });
   }
 
@@ -23,7 +23,6 @@ module.exports = async (req, res) => {
     return res.notFound({ message: `Document of id ${documentId} not found.` });
   }
 
-  // Update entrance
   await TEntrance.removeFromCollection(entranceId, 'documents', documentId);
 
   return res.ok();

@@ -100,11 +100,13 @@ module.exports = {
       model: 'TEntrance',
     },
 
+    // Unused (warn 17 rows non null in prod DB)
     exit: {
       columnName: 'id_exit',
       model: 'TEntrance',
     },
 
+    // Unused
     point: {
       columnName: 'id_point',
       model: 'TPoint',
