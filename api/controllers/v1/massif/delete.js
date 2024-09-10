@@ -4,6 +4,7 @@ const NotificationService = require('../../../services/NotificationService');
 const MassifService = require('../../../services/MassifService');
 const RightService = require('../../../services/RightService');
 const { toMassif } = require('../../../services/mapping/converters');
+const NameService = require('../../../services/NameService');
 
 module.exports = async (req, res) => {
   const hasRight = RightService.hasGroup(
@@ -49,6 +50,11 @@ module.exports = async (req, res) => {
   }
 
   if (deletePermanently) {
+    await TMassif.update({ redirectTo: massifId }).set({
+      redirectTo: shouldMergeInto ? mergeIntoId : null,
+    });
+    await TNotification.destroy({ massif: massifId });
+
     if (massif.documents.length > 0) {
       if (shouldMergeInto) {
         const currentDocuments = mergeIntoEntity.documents.map((e) => e.id);
@@ -64,6 +70,7 @@ module.exports = async (req, res) => {
       // Even if the DB model support having multiple descriptions per massif the front UI does not allow to edit or remove them
       // So for now it is considered that a massif can have at most, one description
       await TDescription.destroy({ massif: massifId }); // TDescription first soft delete
+      await HDescription.destroy({ massif: massifId });
       await TDescription.destroy({ massif: massifId });
     }
 
@@ -86,8 +93,7 @@ module.exports = async (req, res) => {
       await TMassif.updateOne(massifId).set({ subscribedCavers: [] });
     }
 
-    await TName.destroy({ massif: massifId }); // TName first soft delete
-    await TName.destroy({ massif: massifId });
+    await NameService.permanentDelete({ massif: massifId });
 
     // Networks (caves with multiple entrances) are associated to the massif only because they are inside its polygon
     // No need to do special deletion
