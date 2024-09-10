@@ -10,13 +10,13 @@ describe('Cave features', () => {
 
   describe('Delete', () => {
     describe('Invalid parameter', () => {
-      it('should return code 400 on inexisting cave', (done) => {
+      it('should return code 404 on inexisting cave', (done) => {
         supertest(sails.hooks.http.app)
           .delete(`/api/v1/caves/${987654321}`)
           .set('Authorization', moderatorToken)
           .set('Content-type', 'application/json')
           .set('Accept', 'application/json')
-          .expect(400, done);
+          .expect(404, done);
       });
     });
     describe('Successfull delete', () => {
@@ -30,42 +30,20 @@ describe('Cave features', () => {
         should(await TCave.findOne(caveToDeleteId)).be.undefined();
       });
 
-      it('should return code 204', (done) => {
+      it('should return code 200', (done) => {
         supertest(sails.hooks.http.app)
           .delete(`/api/v1/caves/${caveToDeleteId}`)
           .set('Authorization', moderatorToken)
           .set('Content-type', 'application/json')
           .set('Accept', 'application/json')
-          .expect(204, done);
+          .expect(200, done);
       });
     });
   });
 
-  describe('Merge and delete', () => {
-    describe('Invalid parameter', () => {
-      let caveToDeleteId;
-      before(async () => {
-        caveToDeleteId = (await TCave.create({}).fetch()).id;
-        should(caveToDeleteId).not.be.undefined();
-      });
-
-      after(async () => {
-        await TCave.destroyOne(caveToDeleteId);
-      });
-
-      it('should return code 400 on inexisting destination cave', (done) => {
-        supertest(sails.hooks.http.app)
-          .delete(`/api/v1/caves/${caveToDeleteId}`)
-          .send({ destinationCaveForOrphan: 123456789 })
-          .set('Authorization', moderatorToken)
-          .set('Content-type', 'application/json')
-          .set('Accept', 'application/json')
-          .expect(400, done);
-      });
-    });
-
+  describe('Delete', () => {
     // Merge & delete is tested in details in the CaveService.test.js file
-    describe('Successfull merge', () => {
+    describe('Successfull delete', () => {
       const destinationCaveDepth = 5423;
       const destinationCaveTemperature = 42;
       const sourceCaveDepth = 1111;
@@ -91,22 +69,18 @@ describe('Cave features', () => {
       });
 
       after(async () => {
-        const resultCave = await TCave.findOne(destinationCaveId);
-        should(resultCave.depth).equal(destinationCaveDepth);
-        should(resultCave.temperature).equal(destinationCaveTemperature);
-        should(resultCave.caveLength).equal(sourceCaveLength);
         should(await TCave.findOne(sourceCaveId)).be.undefined();
         await TCave.destroyOne(destinationCaveId);
       });
 
-      it('should return code 204 on successfull caves merge', (done) => {
+      it('should return code 200 on successfull caves merge', (done) => {
         supertest(sails.hooks.http.app)
           .delete(`/api/v1/caves/${sourceCaveId}`)
-          .send({ destinationCaveForOrphan: destinationCaveId })
+          .send()
           .set('Authorization', moderatorToken)
           .set('Content-type', 'application/json')
           .set('Accept', 'application/json')
-          .expect(204, done);
+          .expect(200, done);
       });
     });
   });

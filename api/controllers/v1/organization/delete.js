@@ -4,6 +4,7 @@ const NotificationService = require('../../../services/NotificationService');
 const GrottoService = require('../../../services/GrottoService');
 const RightService = require('../../../services/RightService');
 const { toOrganization } = require('../../../services/mapping/converters');
+const NameService = require('../../../services/NameService');
 
 module.exports = async (req, res) => {
   const hasRight = RightService.hasGroup(
@@ -53,8 +54,12 @@ module.exports = async (req, res) => {
       return res.status(501).send();
     }
 
-    await TName.destroy({ grotto: organizationId }); // TName first soft delete
-    await TName.destroy({ grotto: organizationId });
+    await TGrotto.update({ redirectTo: organizationId }).set({
+      redirectTo: null,
+    });
+    await TNotification.destroy({ grotto: organizationId });
+
+    await NameService.permanentDelete({ grotto: organizationId });
 
     await HGrotto.destroy({ id: organizationId });
     await TGrotto.destroyOne({ id: organizationId }); // Hard delete
