@@ -10,7 +10,12 @@ const MassifModel = require('./models/MassifModel');
 const NotificationModel = require('./models/NotificationModel');
 const OrganizationModel = require('./models/OrganizationModel');
 const SubjectModel = require('./models/SubjectModel');
-const { getMainName, toList, convertIfObject } = require('./utils');
+const {
+  getMainName,
+  getMainLanguage,
+  toList,
+  convertIfObject,
+} = require('./utils');
 const FileService = require('../FileService');
 const RiggingService = require('../RiggingService');
 const getQualityData = require('../../utils/computeEntranceDataQuality');
@@ -26,6 +31,7 @@ const c = {
     dateInscription: source.dateInscription,
     dateReviewed: source.dateReviewed,
     name: getMainName(source),
+    language: getMainLanguage(source),
     depth: source.depth,
     length: source.caveLength,
     temperature: source.temperature,
@@ -33,27 +39,18 @@ const c = {
     isDiving: source.isDiving,
 
     names: toList('names', source, c.toName),
-    descriptions: toList('descriptions', source, c.toSimpleDescription),
+    descriptions: toList('descriptions', source, c.toSimpleDescription, {
+      filterDeleted: false,
+    }),
     entrances: toList('entrances', source, c.toSimpleEntrance, { meta }),
     massifs: toList('massifs', source, c.toSimpleMassif),
     documents: toList('documents', source, c.toSimpleDocument),
   }),
 
-  toDeletedCave: (source) => ({
-    id: source.id,
-    '@id': String(source.id),
-    isDeleted: source.isDeleted,
-    redirectTo: source.redirectTo,
-    author: convertIfObject(source.author, c.toSimpleCaver),
-    reviewer: convertIfObject(source.reviewer, c.toSimpleCaver),
-    dateInscription: source.dateInscription,
-    dateReviewed: source.dateReviewed,
-    name: getMainName(source),
-  }),
-
   toSimpleCave: (source) => ({
     id: source.id,
     name: getMainName(source),
+    language: getMainLanguage(source),
     length: source.caveLength,
     depth: source.depth,
     temperature: source.temperature,
@@ -392,6 +389,7 @@ const c = {
         ? parseFloat(source.longitude)
         : null;
     result.name = getMainName(source);
+    result.language = getMainLanguage(source);
     result.country = source.country;
     result.countryCode = source['country code'];
     result.region = source.region;
@@ -453,27 +451,10 @@ const c = {
     return result;
   },
 
-  toDeletedEntrance: (source) => ({
-    id: source.id,
-    '@id': String(source.id),
-    isDeleted: source.isDeleted,
-    isSensitive: source.isSensitive,
-    redirectTo: source.redirectTo,
-    author: convertIfObject(source.author, c.toSimpleCaver),
-    reviewer: convertIfObject(source.reviewer, c.toSimpleCaver),
-    dateInscription: source.dateInscription,
-    dateReviewed: source.dateReviewed,
-    name: getMainName(source),
-    country: source.country,
-    region: source.region,
-    county: source.county,
-    city: source.city,
-    iso_3166_2: source.iso_3166_2,
-  }),
-
   toSimpleEntrance: (source, meta) => ({
     id: source.id,
     name: getMainName(source),
+    language: getMainLanguage(source),
     country: source.country,
     region: source.region,
     county: source.county,
@@ -595,6 +576,7 @@ const c = {
     dateInscription: source.dateInscription,
     dateReviewed: source.dateReviewed,
     name: getMainName(source),
+    language: getMainLanguage(source),
     geogPolygon: source.geoJson,
     nbCaves: source['nb caves'], // from Elasticsearch
     nbEntrances: source['nb entrances'], // from Elasticsearch
@@ -607,6 +589,7 @@ const c = {
   toSimpleMassif: (source) => ({
     id: source.id,
     name: getMainName(source),
+    language: getMainLanguage(source),
     isDeleted: source.isDeleted,
   }),
 
@@ -656,6 +639,7 @@ const c = {
   toSimpleOrganization: (source) => ({
     id: source.id,
     name: getMainName(source),
+    language: getMainLanguage(source),
     isDeleted: source.isDeleted,
   }),
 
@@ -714,6 +698,7 @@ const c = {
     dateInscription: source.dateInscription,
     dateReviewed: source.dateReviewed,
     name: getMainName(source),
+    language: getMainLanguage(source),
   }),
 
   toSimpleRigging: (source) => {

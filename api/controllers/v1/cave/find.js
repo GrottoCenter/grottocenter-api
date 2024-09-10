@@ -1,26 +1,30 @@
 const CaveService = require('../../../services/CaveService');
 const ControllerService = require('../../../services/ControllerService');
+const RightService = require('../../../services/RightService');
 const {
   toCave,
-  toDeletedCave,
+  toDeletedEntity,
 } = require('../../../services/mapping/converters');
 
 module.exports = async (req, res) => {
-  const params = {
-    controllerMethod: 'CaveController.find',
-    searchedItem: `Cave of id ${req.params.id}`,
-    notFoundMessage: `Cave of id ${req.params.id} not found.`,
-  };
+  const hasRight = RightService.hasGroup(
+    req.token?.groups,
+    RightService.G.MODERATOR
+  );
 
-  const cave = await CaveService.getCavePopulated(req.params.id);
+  const where = {};
+  if (!hasRight) where.isDeleted = false;
+
+  const params = { searchedItem: `Cave of id ${req.params.id}` };
+  const cave = await CaveService.getPopulatedCave(req.params.id, where);
+
   if (!cave) return res.notFound(`${params.searchedItem} not found`);
-
   return ControllerService.treatAndConvert(
     req,
     null,
     cave,
     params,
     res,
-    cave.isDeleted ? toDeletedCave : toCave
+    cave.isDeleted && !hasRight ? toDeletedEntity : toCave
   );
 };

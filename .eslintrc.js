@@ -19,6 +19,8 @@ module.exports = {
     HDocument: 'readonly',
     HGrotto: 'readonly',
     HMassif: 'readonly',
+    HCave: 'readonly',
+    HName: 'readonly',
     JDocumentLanguage: 'readonly',
     TCave: 'readonly',
     TCaver: 'readonly',

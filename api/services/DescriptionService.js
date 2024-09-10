@@ -22,15 +22,11 @@ module.exports = {
       .populate('reviewer');
   },
 
-  getCaveDescriptions: async (caveId, { includeDeleted = false } = {}) => {
-    let descriptions = [];
-    if (caveId) {
-      descriptions = await TDescription.find()
-        .where({ cave: caveId, isDeleted: includeDeleted })
-        .populate('author')
-        .populate('reviewer');
-    }
-    return descriptions;
+  getCaveDescriptions: async (caveId, where = {}) => {
+    if (!caveId) return [];
+    return TDescription.find({ ...where, cave: caveId })
+      .populate('author')
+      .populate('reviewer');
   },
 
   getEntranceDescriptions: async (entranceId, where = {}) => {

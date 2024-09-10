@@ -88,7 +88,6 @@ module.exports.routes = {
   'PUT /api/v1/cavers/:caverId/groups/:groupId': 'v1/caver/put-on-group',
 
   // Entrance
-  'DELETE /api/v1/entrances/:id': 'v1/entrance/delete-one',
   'DELETE /api/v1/entrances/:entranceId/documents/:documentId':
     'v1/entrance/unlink-document',
   'GET /api/v1/entrances/count': 'v1/entrance/count',
@@ -109,6 +108,8 @@ module.exports.routes = {
     'v1/entrance/update-with-new-entities',
   'PUT /api/v1/entrances/:entranceId/documents/:documentId':
     'v1/entrance/add-document',
+  'DELETE /api/v1/entrances/:id': 'v1/entrance/delete',
+  'POST /api/v1/entrances/:id/restore': 'v1/entrance/restore',
 
   // Notification
   'GET /api/v1/notifications/unread/count': 'v1/notification/count-unread',
@@ -117,15 +118,16 @@ module.exports.routes = {
     'v1/notification/mark-as-read',
 
   // Cave
-  'DELETE /api/v1/caves/:id': 'v1/cave/delete-one',
+  'DELETE /api/v1/caves/:id': 'v1/cave/delete',
+  'POST /api/v1/caves/:id/restore': 'v1/cave/restore',
   'GET /api/v1/caves/:id': 'v1/cave/find',
   'GET /api/v1/caves/cumulated-length': 'v1/cave/cumulated-length',
   'GET /api/v1/caves': 'v1/cave/find-all',
   'POST /api/v1/caves': 'v1/cave/create',
   'PUT /api/v1/caves/:caveId/documents/:documentId': 'v1/cave/add-document',
   'PUT /api/v1/caves/:id': 'v1/cave/update',
-  'PUT /api/v1/caves/:caveId/massif/:massifId': 'v1/cave/set-massif',
-
+  'DELETE /api/v1/caves/:caveId/documents/:documentId':
+    'v1/cave/unlink-document',
   /**
    * @deprecated use api/v1/caves instead
    */
