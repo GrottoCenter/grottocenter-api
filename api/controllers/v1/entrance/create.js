@@ -1,34 +1,18 @@
-const ramda = require('ramda');
 const ControllerService = require('../../../services/ControllerService');
 const EntranceService = require('../../../services/EntranceService');
-const ErrorService = require('../../../services/ErrorService');
 
 module.exports = async (req, res) => {
-  // Check params
-  // name
-  if (
-    !ramda.propOr(null, 'text', req.param('name')) ||
-    !ramda.propOr(null, 'language', req.param('name'))
-  ) {
+  const name = req.param('name');
+  if (!name?.text || !name?.language) {
     return res.badRequest(
       'You must provide a name (with a language) for the new entrance'
     );
   }
 
-  // cave
-  if (!req.param('cave')) {
-    return res.badRequest('You must provide a cave id for the new entrance');
-  }
-  if (
-    !(await sails.helpers.checkIfExists.with({
-      attributeName: 'id',
-      attributeValue: req.param('cave'),
-      sailsModel: TCave,
-    }))
-  ) {
-    return res.badRequest(
-      `The cave with id ${req.param('cave')} does not exist.`
-    );
+  const caveId = req.param('cave');
+  const cave = TCave.findOne(caveId);
+  if (!cave || cave.isDeleted) {
+    return res.badRequest(`The cave with id ${caveId} does not exist.`);
   }
 
   // Get data & create entrance
@@ -40,24 +24,19 @@ module.exports = async (req, res) => {
   };
 
   const nameDescLocData =
-    EntranceService.getConvertedNameDescLocFromClientRequest(req);
+    EntranceService.getConvertedNameFromClientRequest(req);
 
-  try {
-    const newEntrancePopulated = await EntranceService.createEntrance(
-      req,
-      cleanedData,
-      nameDescLocData
-    );
-    const params = {};
-    params.controllerMethod = 'EntranceController.create';
-    return ControllerService.treat(
-      req,
-      null,
-      newEntrancePopulated,
-      params,
-      res
-    );
-  } catch (e) {
-    return ErrorService.getDefaultErrorHandler(res)(e);
-  }
+  const newEntrancePopulated = await EntranceService.createEntrance(
+    req,
+    cleanedData,
+    nameDescLocData
+  );
+
+  return ControllerService.treat(
+    req,
+    null,
+    newEntrancePopulated,
+    { controllerMethod: 'EntranceController.create' },
+    res
+  );
 };

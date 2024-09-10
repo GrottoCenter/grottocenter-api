@@ -41,10 +41,11 @@ module.exports.policies = {
   'v1/cave/find-all': true,
   'v1/cave/cumulated-length': true,
   'v1/cave/add-document': 'tokenAuth',
-  'v1/cave/set-massif': 'tokenAuth',
+  'v1/cave/unlink-document': 'tokenAuth',
   'v1/cave/create': 'tokenAuth',
-  'v1/cave/delete-one': 'tokenAuth',
+  'v1/cave/delete': 'tokenAuth',
   'v1/cave/update': 'tokenAuth',
+  'v1/cave/restore': 'tokenAuth',
 
   // Caver
   'v1/caver/count': true,
@@ -107,12 +108,13 @@ module.exports.policies = {
   'v1/entrance/add-document': 'tokenAuth',
   'v1/entrance/check-rows': 'tokenAuth',
   'v1/entrance/create': 'tokenAuth',
-  'v1/entrance/delete-one': 'tokenAuth',
   'v1/entrance/import-rows': 'tokenAuth',
   'v1/entrance/move-to-cave': 'tokenAuth',
   'v1/entrance/unlink-document': 'tokenAuth',
   'v1/entrance/update': 'tokenAuth',
   'v1/entrance/update-with-new-entities': 'tokenAuth',
+  'v1/entrance/restore': 'tokenAuth',
+  'v1/entrance/delete': 'tokenAuth',
 
   // EntranceDuplicate
   'v1/entrance-duplicate/create-from-duplicate': 'tokenAuth',

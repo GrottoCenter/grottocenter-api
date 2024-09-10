@@ -99,6 +99,7 @@ module.exports = {
       defaultsTo: false,
     },
 
+    // Unused
     alert: {
       type: 'boolean',
       allowNull: false,
@@ -116,6 +117,7 @@ module.exports = {
       model: 'TEntrance',
     },
 
+    // Unused (warn 12 rows non null in prod DB)
     exit: {
       columnName: 'id_exit',
       model: 'TEntrance',

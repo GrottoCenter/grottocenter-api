@@ -16,7 +16,7 @@ module.exports = async (req, res) => {
   const linkedEntity = await ParametersValidatorService.checkOneOfEntityExist(
     req,
     res,
-    ['cave', 'entrance']
+    ['entrance']
   );
   if (!linkedEntity) return null;
 

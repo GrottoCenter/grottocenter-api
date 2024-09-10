@@ -4,7 +4,6 @@ const NotificationService = require('../../../services/NotificationService');
 const { toMassif } = require('../../../services/mapping/converters');
 
 module.exports = async (req, res) => {
-  // Check if massif exists
   const massifId = req.param('id');
   const rawMassif = await TMassif.findOne(massifId);
   if (!rawMassif || rawMassif.isDeleted) {

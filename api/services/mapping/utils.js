@@ -55,6 +55,10 @@ module.exports = {
     }
     return mainName;
   },
+  getMainLanguage: (source) => {
+    if (!(source.names instanceof Array)) return null;
+    return source.names.find((name) => name.isMain)?.language ?? null;
+  },
 
   getMetaFromRequest: (req) => ({
     hasCompleteViewRight: req?.token

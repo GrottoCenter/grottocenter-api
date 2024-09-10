@@ -2,13 +2,14 @@ module.exports = async (req, res) => {
   const massifId = req.param('massifId');
   const massif = await TMassif.findOne({ id: massifId });
   if (!massif || massif.isDeleted) {
-    return res.notFound({ message: `Entrance of id ${massifId} not found.` });
+    return res.notFound({ message: `Massif of id ${massifId} not found.` });
   }
 
   const documentId = req.param('documentId');
-  const document = await TDocument.findOne({ id: documentId }).populate(
-    'massifs'
-  );
+  const document = await TDocument.findOne({
+    id: documentId,
+    isDeleted: false,
+  }).populate('massifs');
   if (!document) {
     return res.notFound({ message: `Document of id ${documentId} not found.` });
   }

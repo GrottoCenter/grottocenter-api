@@ -1,12 +1,12 @@
 /**
- * TCave.js
+ * HCave.js
  *
- * @description :: tCave model
+ * @description :: hCave model
  * @docs        :: http://sailsjs.org/#!documentation/models
  */
 
 module.exports = {
-  tableName: 't_cave',
+  tableName: 'h_cave',
 
   primaryKey: 'id',
 
@@ -27,11 +27,6 @@ module.exports = {
     reviewer: {
       columnName: 'id_reviewer',
       model: 'TCaver',
-    },
-
-    names: {
-      collection: 'TName',
-      via: 'cave',
     },
 
     min_depth: {
@@ -89,13 +84,6 @@ module.exports = {
       columnType: 'timestamp',
     },
 
-    isDeleted: {
-      type: 'boolean',
-      allowNull: false,
-      columnName: 'is_deleted',
-      defaultsTo: false,
-    },
-
     // Sails' ORM, Waterline, doesn't support large number:
     // that's why we use the type 'string' for the latitude
     // Deprecated: The location of a cave is where its entrances are located.
@@ -116,55 +104,9 @@ module.exports = {
       columnType: 'numeric(24,20)',
     },
 
-    redirectTo: {
-      type: 'number',
-      allowNull: true,
-      columnName: 'redirect_to',
-    },
-
-    exploringGrottos: {
-      collection: 'TGrotto',
-      via: 'cave',
-      through: 'JGrottoCaveExplorer',
-    },
-
-    partneringGrottos: {
-      collection: 'TGrotto',
-      via: 'cave',
-      through: 'JGrottoCavePartner',
-    },
-
-    entrances: {
-      collection: 'TEntrance',
-      via: 'cave',
-    },
-
-    descriptions: {
-      collection: 'TDescription',
-      via: 'cave',
-    },
-
-    documents: {
-      collection: 'TDocument',
-      via: 'cave',
-    },
-
-    // Unused
-    histories: {
-      collection: 'THistory',
-      via: 'cave',
-    },
-
-    // Unused
-    riggings: {
-      collection: 'TRigging',
-      via: 'cave',
-    },
-
-    // Unused
-    comments: {
-      collection: 'TComment',
-      via: 'cave',
+    cave: {
+      columnName: 'id_cave',
+      model: 'TCave',
     },
   },
 };
