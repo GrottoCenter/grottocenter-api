@@ -9,7 +9,6 @@ async function checkOneOfEntityExist(req, res, possibleEntities) {
   const ENTITIES_MODEL = {
     cave: TCave,
     entrance: TEntrance,
-    exit: TEntrance,
     document: TDocument,
     massif: TMassif,
     point: TPoint,

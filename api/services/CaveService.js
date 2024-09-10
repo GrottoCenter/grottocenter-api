@@ -1,13 +1,8 @@
-const ramda = require('ramda');
 const CommonService = require('./CommonService');
 const DocumentService = require('./DocumentService');
 const DescriptionService = require('./DescriptionService');
 const NameService = require('./NameService');
 const ElasticsearchService = require('./ElasticsearchService');
-const {
-  NOTIFICATION_TYPES,
-  NOTIFICATION_ENTITIES,
-} = require('./NotificationService');
 const NotificationService = require('./NotificationService');
 const RecentChangeService = require('./RecentChangeService');
 
@@ -76,7 +71,8 @@ module.exports = {
       return createdCave;
     });
 
-    module.exports.setEntrances([res]);
+    const populatedCave = await module.exports.getPopulatedCave(res.id);
+    module.exports.createESCave(populatedCave).catch(() => {});
 
     await RecentChangeService.setNameCreate(
       'cave',
@@ -87,104 +83,13 @@ module.exports = {
 
     await NotificationService.notifySubscribers(
       req,
-      res,
+      populatedCave,
       req.token.id,
-      NOTIFICATION_TYPES.CREATE,
-      NOTIFICATION_ENTITIES.CAVE
+      NotificationService.NOTIFICATION_TYPES.CREATE,
+      NotificationService.NOTIFICATION_ENTITIES.CAVE
     );
 
-    return res;
-  },
-
-  /**
-   * Merge a source cave into a destination cave (no checks performed)
-   * @param {*} req
-   * @param {*} res
-   * @param {*} sourceCaveId cave id to be merged into destinationCave
-   * @param {*} destinationCaveId cave id which will receive sourceCaveId data
-   * @throws Sails ORM errors (see https://sailsjs.com/documentation/concepts/models-and-orm/errors)
-   */
-  mergeCaves: async (sourceCaveId, destinationCaveId) => {
-    await sails.getDatastore().transaction(async (db) => {
-      // Delete sourceCave names
-      await TName.destroy({ cave: sourceCaveId }).usingConnection(db);
-
-      // Move associated data
-      await TComment.update({ cave: sourceCaveId })
-        .set({ cave: destinationCaveId })
-        .usingConnection(db);
-      await TDescription.update({ cave: sourceCaveId })
-        .set({ cave: destinationCaveId })
-        .usingConnection(db);
-      await TDocument.update({ cave: sourceCaveId })
-        .set({ cave: destinationCaveId })
-        .usingConnection(db);
-      await TEntrance.update({ cave: sourceCaveId })
-        .set({ cave: destinationCaveId })
-        .usingConnection(db);
-      await THistory.update({ cave: sourceCaveId })
-        .set({ cave: destinationCaveId })
-        .usingConnection(db);
-
-      // Handle many-to-many relationships
-      const sourceCave = await TCave.findOne(sourceCaveId)
-        .populate('exploringGrottos')
-        .populate('partneringGrottos')
-        .usingConnection(db);
-      const destinationCave = await TCave.findOne(destinationCaveId)
-        .populate('exploringGrottos')
-        .populate('partneringGrottos')
-        .usingConnection(db);
-
-      const {
-        exploringGrottos: sourceExplorers,
-        partneringGrottos: sourcePartners,
-      } = sourceCave;
-      const {
-        exploringGrottos: destinationExplorers,
-        partneringGrottos: destinationPartners,
-      } = destinationCave;
-
-      // Update explored / partner caves only if not already explored / partner
-      // by the destination cave.
-      for (const sourceExp of sourceExplorers) {
-        if (!destinationExplorers.some((g) => g.id === sourceExp.id)) {
-          // eslint-disable-next-line no-await-in-loop
-          await TCave.addToCollection(
-            destinationCaveId,
-            'exploringGrottos',
-            sourceExp.id
-          ).usingConnection(db);
-        }
-      }
-      for (const sourcePartn of sourcePartners) {
-        if (!destinationPartners.some((g) => g.id === sourcePartn.id)) {
-          // eslint-disable-next-line no-await-in-loop
-          await TCave.addToCollection(
-            destinationCaveId,
-            'partneringGrottos',
-            sourcePartn.id
-          ).usingConnection(db);
-        }
-      }
-
-      // Update cave data with destination data being prioritised
-      const mergedData = ramda.mergeWith(
-        (a, b) => (b === null ? a : b),
-        sourceCave,
-        destinationCave
-      );
-
-      const { id, exploringGrottos, partneringGrottos, ...cleanedMergedData } =
-        mergedData;
-      await TCave.update(destinationCaveId)
-        .set(cleanedMergedData)
-        .usingConnection(db);
-
-      sails.log.info(`Deleting cave with id ${sourceCaveId}`);
-      await TCave.destroy(sourceCaveId).usingConnection(db);
-      await ElasticsearchService.deleteResource('caves', sourceCaveId);
-    });
+    return populatedCave;
   },
 
   // Extract everything from the request body except id and dateInscription
@@ -206,6 +111,7 @@ module.exports = {
    * @param {*} caveId
    * @returns [Massif]
    */
+  // TODO Change to use the cave entrances location instead
   getMassifs: async (caveId) => {
     try {
       const WGS84_SRID = 4326; // GPS
@@ -222,20 +128,6 @@ module.exports = {
       // Fail silently (happens when the longitude and latitude are null for example)
       return [];
     }
-  },
-
-  deleteCave: async (req, caveId) => {
-    sails.log.info(`Deleting cave with id ${caveId}`);
-    const cave = await TCave.findOne(caveId);
-    await TCave.destroyOne(Number(caveId));
-    await ElasticsearchService.deleteResource('caves', caveId);
-    await NotificationService.notifySubscribers(
-      req,
-      cave,
-      req.token.id,
-      NOTIFICATION_TYPES.DELETE,
-      NOTIFICATION_ENTITIES.CAVE
-    );
   },
 
   /**
@@ -258,21 +150,20 @@ module.exports = {
     }
   },
 
-  async getCavePopulated(documentId) {
-    const cave = await TCave.findOne(documentId)
-      .populate('descriptions')
-      .populate('entrances')
+  async getPopulatedCave(caveId, subEntitiesWhere = {}) {
+    const cave = await TCave.findOne(caveId)
       .populate('author')
       .populate('reviewer')
       .populate('names')
+      .populate('descriptions')
+      .populate('entrances')
       .populate('documents');
 
     if (!cave) return null;
-    if (cave.isDeleted) return cave;
 
     [cave.massifs, cave.descriptions, cave.documents] = await Promise.all([
       module.exports.getMassifs(cave.id),
-      DescriptionService.getCaveDescriptions(cave.id),
+      DescriptionService.getCaveDescriptions(cave.id, subEntitiesWhere),
       DocumentService.getDocuments(cave.documents?.map((d) => d.id) ?? []),
     ]);
 
@@ -294,5 +185,67 @@ module.exports = {
     // - partneringGrottos
 
     return cave;
+  },
+
+  async createESCave(populatedCave) {
+    const description =
+      populatedCave.descriptions.length === 0
+        ? null
+        : `${populatedCave.descriptions[0].title} ${populatedCave.descriptions[0].body}`;
+    await ElasticsearchService.create('caves', populatedCave.id, {
+      id: populatedCave.id,
+      depth: populatedCave.depth,
+      length: populatedCave.length,
+      is_diving: populatedCave.isDiving,
+      temperature: populatedCave.temperature,
+      name: populatedCave.name,
+      names: populatedCave.names.map((n) => n.name).join(', '),
+      'nb entrances': populatedCave.entrances.length,
+      deleted: populatedCave.isDeleted,
+      descriptions: [description],
+      tags: ['cave'],
+    });
+  },
+
+  async permanentlyDeleteCave(cave, shouldMergeInto, mergeIntoId) {
+    await TCave.update({ redirectTo: cave.id }).set({
+      redirectTo: shouldMergeInto ? mergeIntoId : null,
+    });
+    await TNotification.destroy({ cave: cave.id });
+
+    if (cave.documents.length > 0) {
+      if (shouldMergeInto) {
+        const newDocuments = cave.documents.map((e) => e.id);
+        await TCave.addToCollection(mergeIntoId, 'documents', newDocuments);
+      }
+      await HDocument.update({ cave: cave.id }).set({ cave: null });
+      await TCave.updateOne(cave.id).set({ documents: [] });
+    }
+
+    if (cave.entrances.length > 0 && shouldMergeInto) {
+      const newEntrances = cave.entrances.map((e) => e.id);
+      await TCave.addToCollection(mergeIntoId, 'entrances', newEntrances);
+    }
+    await HEntrance.update({ cave: cave.id }).set({ cave: null });
+
+    if (cave.descriptions.length > 0) {
+      if (shouldMergeInto) {
+        await TDescription.update({ cave: cave.id }).set({
+          cave: mergeIntoId,
+        });
+        await HDescription.update({ cave: cave.id }).set({
+          cave: mergeIntoId,
+        });
+      } else {
+        await TDescription.destroy({ cave: cave.id }); // TDescription first soft delete
+        await HDescription.destroy({ cave: cave.id });
+        await TDescription.destroy({ cave: cave.id });
+      }
+    }
+
+    await NameService.permanentDelete({ cave: cave.id });
+
+    await HCave.destroy({ id: cave.id });
+    await TCave.destroyOne({ id: cave.id }); // Hard delete
   },
 };

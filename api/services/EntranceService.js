@@ -1,5 +1,3 @@
-const ramda = require('ramda');
-
 // query to get all entrances of interest
 const INTEREST_ENTRANCES_QUERY =
   'SELECT id FROM t_entrance WHERE is_of_interest=true';
@@ -7,53 +5,30 @@ const INTEREST_ENTRANCES_QUERY =
 // query to get a random entrance of interest
 const RANDOM_ENTRANCE_QUERY = `${INTEREST_ENTRANCES_QUERY} ORDER BY RANDOM() LIMIT 1`;
 
-const CaveService = require('./CaveService');
-const CommentService = require('./CommentService');
 const CommonService = require('./CommonService');
 const ElasticsearchService = require('./ElasticsearchService');
-const NameService = require('./NameService');
 const NotificationService = require('./NotificationService');
 const GeocodingService = require('./GeocodingService');
 const RecentChangeService = require('./RecentChangeService');
-
-const {
-  NOTIFICATION_ENTITIES,
-  NOTIFICATION_TYPES,
-} = require('./NotificationService');
+const CaveService = require('./CaveService');
+const CommentService = require('./CommentService');
+const DocumentService = require('./DocumentService');
+const NameService = require('./NameService');
+const RiggingService = require('./RiggingService');
+const DescriptionService = require('./DescriptionService');
+const HistoryService = require('./HistoryService');
+const LocationService = require('./LocationService');
 const RightService = require('./RightService');
 
 module.exports = {
-  getConvertedNameDescLocFromClientRequest: (req) => {
-    let result = {
+  getConvertedNameFromClientRequest: (req) => {
+    const result = {
       name: {
         author: req.token.id,
         text: req.param('name').text,
         language: req.param('name').language,
       },
     };
-    if (ramda.pathOr(null, ['description', 'body'], req.body)) {
-      result = {
-        ...result,
-        description: {
-          author: req.token.id,
-          body: req.body.description.body,
-          language: req.body.description.language,
-          title: req.body.description.title,
-        },
-      };
-    }
-
-    if (ramda.pathOr(null, ['location', 'body'], req.body)) {
-      result = {
-        ...result,
-        location: {
-          author: req.token.id,
-          body: req.body.location.body,
-          language: req.body.location.language,
-        },
-      };
-    }
-
     return result;
   },
 
@@ -176,134 +151,102 @@ module.exports = {
       /* eslint-enable no-param-reassign */
     }
 
-    const newEntrancePopulated = await sails
-      .getDatastore()
-      .transaction(async (db) => {
-        const newEntrance = await TEntrance.create(entranceData)
+    const newEntranceId = await sails.getDatastore().transaction(async (db) => {
+      const newEntrance = await TEntrance.create(entranceData)
+        .fetch()
+        .usingConnection(db);
+
+      // Name
+      if (nameDescLocData?.name?.text) {
+        await TName.create({
+          author: nameDescLocData.name.author,
+          dateInscription: nameDescLocData.name?.dateInscription ?? new Date(),
+          dateReviewed: nameDescLocData.name?.dateReviewed ?? undefined,
+          entrance: newEntrance.id,
+          isMain: true,
+          language: nameDescLocData.name.language,
+          name: nameDescLocData.name.text,
+        })
           .fetch()
           .usingConnection(db);
+      }
+      // Description (if provided durring csv import)
+      if (nameDescLocData?.description?.body) {
+        await TDescription.create({
+          author: nameDescLocData.description.author,
+          body: nameDescLocData.description.body,
+          dateInscription:
+            nameDescLocData.description?.dateInscription ?? new Date(),
+          dateReviewed: nameDescLocData.description?.dateReviewed ?? undefined,
+          entrance: newEntrance.id,
+          language: nameDescLocData.description.language,
+          title: nameDescLocData.description.title,
+        }).usingConnection(db);
+      }
 
-        // Name
-        if (ramda.pathOr(null, ['name', 'text'], nameDescLocData)) {
-          await TName.create({
-            author: nameDescLocData.name.author,
-            dateInscription: ramda.propOr(
-              new Date(),
-              'dateInscription',
-              nameDescLocData.name
-            ),
-            dateReviewed: ramda.propOr(
-              undefined,
-              'dateReviewed',
-              nameDescLocData.name
-            ),
-            entrance: newEntrance.id,
-            isMain: true,
-            language: nameDescLocData.name.language,
-            name: nameDescLocData.name.text,
-          })
-            .fetch()
-            .usingConnection(db);
-        }
-        // Description (if provided)
-        if (ramda.pathOr(null, ['description', 'body'], nameDescLocData)) {
-          await TDescription.create({
-            author: nameDescLocData.description.author,
-            body: nameDescLocData.description.body,
-            dateInscription: ramda.propOr(
-              new Date(),
-              'dateInscription',
-              nameDescLocData.description
-            ),
-            dateReviewed: ramda.propOr(
-              undefined,
-              'dateReviewed',
-              nameDescLocData.description
-            ),
-            entrance: newEntrance.id,
-            language: nameDescLocData.description.language,
-            title: nameDescLocData.description.title,
-          }).usingConnection(db);
-        }
+      // Location (if provided durring csv import)
+      if (nameDescLocData?.location?.body) {
+        await TLocation.create({
+          author: nameDescLocData.location.author,
+          body: nameDescLocData.location.body,
+          dateInscription:
+            nameDescLocData.location?.dateInscription ?? new Date(),
+          dateReviewed: nameDescLocData.location?.dateReviewed ?? undefined,
+          entrance: newEntrance.id,
+          language: nameDescLocData.location.language,
+        }).usingConnection(db);
+      }
 
-        // Location (if provided)
-        if (ramda.pathOr(null, ['location', 'body'], nameDescLocData)) {
-          await TLocation.create({
-            author: nameDescLocData.location.author,
-            body: nameDescLocData.location.body,
-            dateInscription: ramda.propOr(
-              new Date(),
-              'dateInscription',
-              nameDescLocData.location
-            ),
-            dateReviewed: ramda.propOr(
-              undefined,
-              'dateReviewed',
-              nameDescLocData.location
-            ),
-            entrance: newEntrance.id,
-            language: nameDescLocData.location.language,
-          }).usingConnection(db);
-        }
-
-        // Prepare data for Elasticsearch indexation
-        const res = await TEntrance.findOne(newEntrance.id)
-          .populate('cave')
-          .populate('country')
-          .populate('descriptions')
-          .usingConnection(db);
-        return res;
-      });
+      return newEntrance.id;
+    });
 
     await RecentChangeService.setNameCreate(
       'entrance',
-      newEntrancePopulated.id,
+      newEntranceId,
       req.token.id,
       nameDescLocData.name.text
     );
 
-    // Prepare data for Elasticsearch indexation
-    const description =
-      newEntrancePopulated.descriptions.length === 0
-        ? null
-        : // There is only one description at the moment
-          `${newEntrancePopulated.descriptions[0].title} ${newEntrancePopulated.descriptions[0].body}`;
+    const newEntrancePopulated =
+      await module.exports.getPopulatedEntrance(newEntranceId);
 
-    // Format cave massif
-    newEntrancePopulated.cave.massif = {
-      id: newEntrancePopulated.cave.massif,
-    };
-    await CaveService.setEntrances([newEntrancePopulated.cave]);
-    await NameService.setNames([newEntrancePopulated], 'entrance');
-    await NameService.setNames([newEntrancePopulated.cave], 'cave');
-    await NameService.setNames([newEntrancePopulated.cave.massif], 'massif');
-
-    const { cave, name, names, ...newEntranceESData } = newEntrancePopulated;
-    await ElasticsearchService.create('entrances', newEntrancePopulated.id, {
-      ...newEntranceESData,
-      'cave name': newEntrancePopulated.cave.name,
-      'cave length': newEntrancePopulated.cave.length,
-      'cave depth': newEntrancePopulated.cave.depth,
-      'cave is diving': newEntrancePopulated.cave.isDiving,
-      country: newEntrancePopulated.country?.nativeName,
-      'country code': newEntrancePopulated.country?.iso3,
-      descriptions: description,
-      'massifs names': newEntrancePopulated.cave.massifs?.names,
-      name: newEntrancePopulated.name,
-      deleted: newEntrancePopulated.isDeleted,
-      names: newEntrancePopulated.names.map((n) => n.name).join(', '),
-      tags: ['entrance'],
-    });
+    await module.exports.createESEntrance(newEntrancePopulated).catch(() => {});
 
     await NotificationService.notifySubscribers(
       req,
       newEntrancePopulated,
       req.token.id,
-      NOTIFICATION_TYPES.CREATE,
-      NOTIFICATION_ENTITIES.ENTRANCE
+      NotificationService.NOTIFICATION_TYPES.CREATE,
+      NotificationService.NOTIFICATION_ENTITIES.ENTRANCE
     );
 
     return newEntrancePopulated;
+  },
+
+  async createESEntrance(populatedEntrance) {
+    // Prepare data for Elasticsearch indexation
+    const description =
+      populatedEntrance.descriptions.length === 0
+        ? null
+        : // There is only one description at the moment
+          `${populatedEntrance.descriptions[0].title} ${populatedEntrance.descriptions[0].body}`;
+
+    const { cave, name, names, ...newEntranceESData } = populatedEntrance;
+    await ElasticsearchService.create('entrances', populatedEntrance.id, {
+      ...newEntranceESData,
+      'cave name': populatedEntrance.cave.name,
+      'cave length': populatedEntrance.cave.length,
+      'cave depth': populatedEntrance.cave.depth,
+      'cave is diving': populatedEntrance.cave.isDiving,
+      country: populatedEntrance.country?.nativeName,
+      'country code': populatedEntrance.country?.iso3,
+      descriptions: description,
+      'massifs names': populatedEntrance.cave.massifs?.names,
+      name: populatedEntrance.name,
+      deleted: populatedEntrance.isDeleted,
+      names: populatedEntrance.names.map((n) => n.name).join(', '),
+      tags: ['entrance'],
+    });
   },
 
   /**
@@ -392,5 +335,46 @@ module.exports = {
       : [];
 
     return populatedEntrance;
+  },
+
+  async getPopulatedEntrance(entranceId, subEntitiesWhere = {}) {
+    const entrance = await TEntrance.findOne(entranceId)
+      .populate('author')
+      .populate('reviewer')
+      .populate('cave')
+      .populate('documents')
+      .populate('names');
+
+    if (!entrance) return null;
+
+    if (entrance.cave) {
+      [entrance.cave.massifs, entrance.cave.entrances] = await Promise.all([
+        CaveService.getMassifs(entrance.cave.id),
+        TEntrance.find({ cave: entrance.cave.id }),
+      ]);
+      await Promise.all([
+        NameService.setNames(entrance.cave.massifs, 'massif'),
+        NameService.setNames([entrance.cave], 'cave'),
+      ]);
+    }
+
+    [
+      entrance.descriptions,
+      entrance.locations,
+      entrance.riggings,
+      entrance.histories,
+      entrance.comments,
+      entrance.documents,
+    ] = await Promise.all([
+      DescriptionService.getEntranceDescriptions(entrance.id, subEntitiesWhere),
+      LocationService.getEntranceLocations(entrance.id, subEntitiesWhere),
+      RiggingService.getEntranceRiggings(entrance.id, subEntitiesWhere),
+      HistoryService.getEntranceHistories(entrance.id, subEntitiesWhere),
+      CommentService.getEntranceComments(entrance.id, subEntitiesWhere),
+      DocumentService.getDocuments(entrance.documents.map((d) => d.id)),
+    ]);
+    entrance.stats = CommentService.getStatsFromComments(entrance.comments);
+
+    return entrance;
   },
 };

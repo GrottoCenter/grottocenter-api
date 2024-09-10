@@ -11,10 +11,10 @@ module.exports = async (req, res) => {
     );
   }
 
-  const massifId = req.param('massifId');
-  const massif = await TMassif.findOne(massifId);
-  if (!massif || massif.isDeleted) {
-    return res.notFound({ message: `Massif of id ${massifId} not found.` });
+  const caveId = req.param('caveId');
+  const cave = await TCave.findOne(caveId);
+  if (!cave || cave.isDeleted) {
+    return res.notFound({ message: `Cave of id ${caveId} not found.` });
   }
 
   const documentId = req.param('documentId');
@@ -23,7 +23,7 @@ module.exports = async (req, res) => {
     return res.notFound({ message: `Document of id ${documentId} not found.` });
   }
 
-  await TMassif.removeFromCollection(massifId, 'documents', documentId);
+  await TCave.removeFromCollection(caveId, 'documents', documentId);
 
   return res.ok();
 };
