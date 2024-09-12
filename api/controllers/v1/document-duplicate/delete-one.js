@@ -10,21 +10,15 @@ module.exports = async (req, res) => {
       'You are not authorized to delete a document duplicate.'
     );
   }
+
   const id = req.param('id');
   if (!id) {
     return res.badRequest('You must provide the id of the duplicate.');
   }
 
-  if (
-    !(await sails.helpers.checkIfExists.with({
-      attributeName: 'id',
-      attributeValue: req.param('id'),
-      sailsModel: TDocumentDuplicate,
-    }))
-  ) {
-    return res.badRequest(
-      `Could not find duplicate with id ${req.param('id')}.`
-    );
+  const documentDuplicate = await TDocumentDuplicate.findOne({ id });
+  if (!documentDuplicate) {
+    return res.badRequest(`Could not find duplicate with id ${id}.`);
   }
 
   await TDocumentDuplicate.destroyOne(id);
