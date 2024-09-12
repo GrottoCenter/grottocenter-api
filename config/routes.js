@@ -212,6 +212,8 @@ module.exports.routes = {
     'v1/document/update-with-new-entities',
   'PUT /api/v1/documents/:id/validate': 'v1/document/validate',
   'PUT /api/v1/documents/validate': 'v1/document/multiple-validate',
+  'DELETE /api/v1/documents/:id': 'v1/document/delete',
+  'POST /api/v1/documents/:id/restore': 'v1/document/restore',
 
   // Document Type
   'GET /api/v1/documents/types': 'v1/document-type/find-all',

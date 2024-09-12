@@ -20,10 +20,9 @@ module.exports = async (req, res) => {
   if (!duplicate) return res.notFound(`${req.param('id')} not found`);
   const params = { searchedItem: `Document Duplicate of id ${duplicate.id}` };
 
-  duplicate.document = await DocumentService.appendPopulateForFullDocument(
-    TDocument.findOne(duplicate.document)
+  duplicate.document = await DocumentService.getPopulatedDocument(
+    duplicate.document
   );
-  await DocumentService.populateFullDocumentSubEntities(duplicate.document);
 
   // Populate the duplicate content
   const duplicateDoc = duplicate.content.document; // From CSV import getConvertedDocumentFromCsv() data format

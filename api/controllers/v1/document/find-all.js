@@ -22,7 +22,7 @@ module.exports = async (req, res) => {
       with a dateValidation set to null
       (= submitted documents which need to be reviewed).
     */
-  const whereClause = { and: [{ isValidated }] };
+  const whereClause = { and: [{ isValidated, isDeleted: false }] };
   if (!isValidated) whereClause.and.push({ dateValidation: null });
 
   const type = req.param('documentType');

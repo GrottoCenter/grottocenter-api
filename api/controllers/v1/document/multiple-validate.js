@@ -1,10 +1,6 @@
 const DocumentService = require('../../../services/DocumentService');
 const FileService = require('../../../services/FileService');
 const RightService = require('../../../services/RightService');
-const {
-  NOTIFICATION_TYPES,
-  NOTIFICATION_ENTITIES,
-} = require('../../../services/NotificationService');
 const NotificationService = require('../../../services/NotificationService');
 
 async function markDocumentValidated(
@@ -79,24 +75,20 @@ async function validateAndUpdateDocument(
 }
 
 async function updateESAndNotify(req, documentId, hasChange, userId) {
-  const found = await DocumentService.appendPopulateForSimpleDocument(
-    TDocument.findOne(documentId)
-  );
-
-  await DocumentService.populateFullDocumentSubEntities(found);
+  const document = await DocumentService.getPopulatedDocument(documentId);
 
   if (hasChange) {
-    await DocumentService.updateDocumentInElasticSearchIndexes(found);
+    await DocumentService.updateESDocument(document);
   } else {
-    await DocumentService.addDocumentToElasticSearchIndexes(found);
+    await DocumentService.createESDocument(document);
   }
 
   await NotificationService.notifySubscribers(
     req,
-    found,
+    document,
     userId,
-    NOTIFICATION_TYPES.VALIDATE,
-    NOTIFICATION_ENTITIES.DOCUMENT
+    NotificationService.NOTIFICATION_TYPES.VALIDATE,
+    NotificationService.NOTIFICATION_ENTITIES.DOCUMENT
   );
 }
 
