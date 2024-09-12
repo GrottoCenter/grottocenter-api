@@ -3,22 +3,13 @@ const EntranceService = require('../../../services/EntranceService');
 const { toEntranceDuplicate } = require('../../../services/mapping/converters');
 
 module.exports = async (req, res) => {
-  if (
-    !(await sails.helpers.checkIfExists.with({
-      attributeName: 'id',
-      attributeValue: req.param('id'),
-      sailsModel: TEntranceDuplicate,
-    }))
-  ) {
-    return res.badRequest(
-      `Could not find duplicate with id ${req.param('id')}.`
-    );
-  }
+  const id = req.param('id');
 
-  // Populate the entrance
-  const duplicateFound = await TEntranceDuplicate.findOne(
-    req.param('id')
-  ).populate('author');
+  const duplicateFound =
+    await TEntranceDuplicate.findOne(id).populate('author');
+  if (!duplicateFound) {
+    return res.badRequest(`Could not find duplicate with id ${id}.`);
+  }
 
   duplicateFound.entrance = await TEntrance.findOne(duplicateFound.entrance)
     .populate('author')
@@ -48,15 +39,12 @@ module.exports = async (req, res) => {
   }
 
   duplicateFound.content = popDuplicate;
-  const params = {
-    searchedItem: `Entrance Duplicate of id ${duplicateFound.id}`,
-  };
 
   return ControllerService.treatAndConvert(
     req,
     null,
     duplicateFound,
-    params,
+    { searchedItem: `Entrance Duplicate of id ${duplicateFound.id}` },
     res,
     toEntranceDuplicate
   );

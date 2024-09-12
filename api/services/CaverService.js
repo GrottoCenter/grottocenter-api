@@ -1,4 +1,3 @@
-const ramda = require('ramda');
 // Non-users caver (like authors) have no password set.
 const REAL_USERS_QUERY = 'SELECT count(password) FROM t_caver';
 
@@ -35,9 +34,9 @@ module.exports = {
    * @returns {TCaver} the created caver
    */
   createNonUserCaver: async (caverData) => {
-    let nickname = ramda.propOr('', 'nickname', caverData);
-    const name = ramda.propOr(undefined, 'name', caverData);
-    const surname = ramda.propOr(undefined, 'surname', caverData);
+    let nickname = caverData?.nickname ?? '';
+    const name = caverData?.name ?? undefined;
+    const surname = caverData?.surname ?? undefined;
     if (nickname === '') {
       if (name) {
         nickname += name;
