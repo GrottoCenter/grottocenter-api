@@ -1,8 +1,10 @@
 const ControllerService = require('../../../services/ControllerService');
 const DocumentService = require('../../../services/DocumentService');
+const RightService = require('../../../services/RightService');
 const {
   toDocument,
-  toDeletedDocument,
+  toDeletedEntity,
+  toDocumentDescriptions,
 } = require('../../../services/mapping/converters');
 
 async function getModifiedDocumentData(documentId) {
@@ -51,41 +53,39 @@ async function getModifiedDocumentData(documentId) {
 }
 
 module.exports = async (req, res) => {
-  let found;
+  const hasRight = RightService.hasGroup(
+    req.token?.groups,
+    RightService.G.MODERATOR
+  );
+
+  let document;
   // Get the modified document
   if (req.param('requireUpdate') === 'true')
-    found = await getModifiedDocumentData(req.param('id'));
+    document = await getModifiedDocumentData(req.param('id'));
 
   // Get the base document
-  if (!found)
-    found = await DocumentService.appendPopulateForFullDocument(
-      TDocument.findOne(req.param('id'))
-    );
+  if (!document)
+    document = await DocumentService.getPopulatedDocument(req.param('id'));
 
   const params = {
     controllerMethod: 'DocumentController.find',
     searchedItem: `Document of id ${req.param('id')}`,
   };
-  if (!found) return res.notFound(`${params.searchedItem} not found`);
-  if (found.isDeleted) {
-    return ControllerService.treatAndConvert(
-      req,
-      null,
-      found,
-      params,
-      res,
-      toDeletedDocument
-    );
-  }
+  if (!document) return res.notFound(`${params.searchedItem} not found`);
 
-  await DocumentService.populateFullDocumentSubEntities(found);
+  if (document.isDeleted) {
+    document = {
+      ...document,
+      ...toDocumentDescriptions(document.descriptions),
+    };
+  }
 
   return ControllerService.treatAndConvert(
     req,
     null,
-    found,
+    document,
     params,
     res,
-    toDocument
+    document.isDeleted && !hasRight ? toDeletedEntity : toDocument
   );
 };

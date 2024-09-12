@@ -85,6 +85,8 @@ module.exports.policies = {
   'v1/document/update': 'tokenAuth',
   'v1/document/update-with-new-entities': 'tokenAuth',
   'v1/document/validate': 'tokenAuth',
+  'v1/document/delete': 'tokenAuth',
+  'v1/document/restore': 'tokenAuth',
 
   // DocumentDuplicate
   'v1/document-duplicate/create-from-duplicate': 'tokenAuth',

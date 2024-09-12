@@ -5,32 +5,55 @@ const NameService = require('./NameService');
 const NotificationService = require('./NotificationService');
 const RecentChangeService = require('./RecentChangeService');
 const {
-  NOTIFICATION_TYPES,
-  NOTIFICATION_ENTITIES,
-} = require('./NotificationService');
-const {
   valIfTruthyOrNull,
   distantFileDownload,
 } = require('../utils/csvHelper');
 
 const getAdditionalESIndexFromDocumentType = (document) => {
-  if (document.type.name === 'Issue') {
+  if (document.type === 'Issue') {
     return 'document-issues';
   }
-  if (document.type.name === 'Collection') {
+  if (document.type === 'Collection') {
     return 'document-collections';
   }
   return '';
 };
 
+// Used to create or update a document in elasticsearch
+// Should match the the same format than the logstash document sql query
+const getElasticsearchBody = (doc) => ({
+  id: doc.id,
+  identifier: doc.identifier ?? null,
+  id_identifier_type: doc.identifierType?.id ?? null,
+  deleted: doc.isDeleted,
+  id_db_import: doc.idDbImport ?? null,
+  name_db_import: doc.nameDbImport ?? null,
+  date_publication: doc.datePublication ?? null,
+  'contributor id': doc.author.id,
+  'contributor nickname': doc.author.nickname,
+  subjects: doc.subjects?.map((e) => e.id)?.join(', ') ?? null,
+  authors: doc.authors?.map((a) => a.nickname).join(', ') ?? null,
+  'type id': doc.type?.id,
+  'type name': doc.type?.name,
+  title: doc.descriptions?.[0].title,
+  description: doc.descriptions?.[0].body,
+  issue: doc.issue ?? null,
+  countries: doc?.countries?.map((e) => e.id)?.join(', ') ?? [],
+  iso_regions: doc?.isoRegions?.map((e) => e.id)?.join(', ') ?? [],
+  'editor id': doc.editor?.id ?? null,
+  'editor name': doc.editor?.name ?? null,
+  'library id': doc.library?.id ?? null,
+  'library name': doc.library?.name ?? null,
+});
+
 module.exports = {
-  // TO DO: proper update
-  updateDocumentInElasticSearchIndexes: async (document) => {
-    await module.exports.deleteDocumentFromElasticsearchIndexes(document);
-    await module.exports.addDocumentToElasticSearchIndexes(document);
+  updateESDocument: async (document) => {
+    // TODO: proper update
+    await module.exports.deleteESDocument(document);
+    await module.exports.createESDocument(document);
   },
 
-  deleteDocumentFromElasticsearchIndexes: async (document) => {
+  deleteESDocument: async (document) => {
     await ElasticsearchService.deleteResource('documents', document.id);
     const additionalIndex = getAdditionalESIndexFromDocumentType(document);
 
@@ -45,8 +68,8 @@ module.exports = {
    * The document must be fully populated and with all its names set
    *    (@see DocumentService.populateFullDocumentSubEntities).
    */
-  addDocumentToElasticSearchIndexes: async (document) => {
-    const esBody = module.exports.getElasticsearchBody(document);
+  createESDocument: async (document) => {
+    const esBody = getElasticsearchBody(document);
     await ElasticsearchService.create('documents', document.id, {
       ...esBody,
       tags: ['document'],
@@ -61,33 +84,6 @@ module.exports = {
       });
     }
   },
-
-  // Used to create or update a document in elasticsearch
-  // Should match the the same format than the logstash document sql query
-  getElasticsearchBody: (doc) => ({
-    id: doc.id,
-    identifier: doc.identifier ?? null,
-    id_identifier_type: doc.identifierType?.id ?? null,
-    deleted: doc.isDeleted,
-    id_db_import: doc.idDbImport ?? null,
-    name_db_import: doc.nameDbImport ?? null,
-    date_publication: doc.datePublication ?? null,
-    'contributor id': doc.author.id,
-    'contributor nickname': doc.author.nickname,
-    subjects: doc.subjects?.map((e) => e.id)?.join(', ') ?? null,
-    authors: doc.authors?.map((a) => a.nickname).join(', ') ?? null,
-    'type id': doc.type?.id,
-    'type name': doc.type?.name,
-    title: doc.descriptions?.[0].title,
-    description: doc.descriptions?.[0].body,
-    issue: doc.issue ?? null,
-    countries: doc?.countries?.map((e) => e.id)?.join(', ') ?? [],
-    iso_regions: doc?.isoRegions?.map((e) => e.id)?.join(', ') ?? [],
-    'editor id': doc.editor?.id ?? null,
-    'editor name': doc.editor?.name ?? null,
-    'library id': doc.library?.id ?? null,
-    'library name': doc.library?.name ?? null,
-  }),
 
   getDescriptionDataFromClient: (body, authorId) => ({
     author: authorId,
@@ -227,6 +223,15 @@ module.exports = {
     return document;
   },
 
+  async getPopulatedDocument(documentId) {
+    const doc = await module.exports.appendPopulateForFullDocument(
+      TDocument.findOne(documentId)
+    );
+    if (!doc) return null;
+    await module.exports.populateFullDocumentSubEntities(doc);
+    return doc;
+  },
+
   /**
    * Depending on the number of languages, return the document main language.
    * @param {TLanguage[]} languages
@@ -342,8 +347,8 @@ module.exports = {
       req,
       populatedDocument,
       req.token.id,
-      NOTIFICATION_TYPES.CREATE,
-      NOTIFICATION_ENTITIES.DOCUMENT
+      NotificationService.NOTIFICATION_TYPES.CREATE,
+      NotificationService.NOTIFICATION_ENTITIES.DOCUMENT
     );
 
     return populatedDocument;
