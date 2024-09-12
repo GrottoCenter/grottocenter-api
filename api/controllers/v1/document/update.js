@@ -3,10 +3,6 @@ const DocumentService = require('../../../services/DocumentService');
 const NotificationService = require('../../../services/NotificationService');
 const FileService = require('../../../services/FileService');
 const RightService = require('../../../services/RightService');
-const {
-  NOTIFICATION_TYPES,
-  NOTIFICATION_ENTITIES,
-} = require('../../../services/NotificationService');
 const { toDocument } = require('../../../services/mapping/converters');
 
 const { INVALID_FORMAT, INVALID_NAME, ERROR_DURING_UPLOAD_TO_AZURE } =
@@ -14,7 +10,8 @@ const { INVALID_FORMAT, INVALID_NAME, ERROR_DURING_UPLOAD_TO_AZURE } =
 
 module.exports = async (req, res) => {
   const document = await TDocument.findOne({ id: req.param('id') });
-  if (!document) return res.notFound(`Document not found`);
+  if (!document || document.isDeleted)
+    return res.notFound(`Document not found`);
 
   if (document.modifiedDocJson) {
     const hasRight = RightService.hasGroup(
@@ -96,17 +93,14 @@ module.exports = async (req, res) => {
   if (!updatedDocument) return res.notFound();
 
   // The returned document does not include the modifications as they have to be validated before being applied
-  const doc = await DocumentService.appendPopulateForFullDocument(
-    TDocument.findOne(updatedDocument.id)
-  );
-  await DocumentService.populateFullDocumentSubEntities(doc);
+  const doc = await DocumentService.getPopulatedDocument(updatedDocument.id);
 
   await NotificationService.notifySubscribers(
     req,
     doc,
     authorId,
-    NOTIFICATION_TYPES.UPDATE,
-    NOTIFICATION_ENTITIES.DOCUMENT
+    NotificationService.NOTIFICATION_TYPES.UPDATE,
+    NotificationService.NOTIFICATION_ENTITIES.DOCUMENT
   );
 
   return ControllerService.treatAndConvert(

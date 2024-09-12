@@ -13,7 +13,7 @@ module.exports = async (req, res) => {
     'ASC'
   )}`;
 
-  const whereClause = { and: [{ author: caverId }] };
+  const whereClause = { author: caverId, isDeleted: false };
 
   const totalDocuments = await TDocument.count().where(whereClause);
   const documents = await DocumentService.appendPopulateForSimpleDocument(
