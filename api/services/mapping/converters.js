@@ -1,5 +1,4 @@
 /* eslint-disable no-underscore-dangle */
-const ramda = require('ramda');
 const { postgreIntervalObjectToDbString } = require('../CommentService');
 const CaveModel = require('./models/CaveModel');
 const CaverModel = require('./models/CaverModel');
@@ -788,7 +787,7 @@ const c = {
 
           case 'document':
           case 'document-collection':
-          case 'document-issue':
+          case 'document-issue': {
             // Rename keys of source and highlights
             // 08/2020 - C. ROIG - Not needed at the moment but keep in case
             // renameKeys(item['_source'], replacementKeys);
@@ -801,32 +800,35 @@ const c = {
 
             // Construct document type
             data.documentType = {
-              id: ramda.pathOr(null, ['_source', 'type id'], item),
-              name: ramda.pathOr(null, ['_source', 'type name'], item),
+              id: item?._source?.['type id'] ?? null,
+              name: item?._source?.['type name'] ?? null,
             };
             delete data['type id'];
             delete data['type name'];
 
             // Construct editor
+            const editorId = item?._source?.['editor id'] ?? null;
             data.editor =
-              ramda.pathOr(null, ['_source', 'editor id'], item) === null
+              editorId === null
                 ? null
                 : {
-                    id: ramda.pathOr(null, ['_source', 'editor id'], item),
-                    name: ramda.pathOr(null, ['_source', 'editor name'], item),
+                    id: editorId,
+                    name: item?._source?.['editor name'] ?? null,
                   };
 
             // Construct library
+            const libraryId = item?._source?.['library id'] ?? null;
             data.library =
-              ramda.pathOr(null, ['_source', 'library id'], item) === null
+              libraryId === null
                 ? null
                 : {
-                    id: ramda.pathOr(null, ['_source', 'library id'], item),
-                    name: ramda.pathOr(null, ['_source', 'library name'], item),
+                    id: libraryId,
+                    name: item?._source?.['library name'] ?? null,
                   };
             delete data['library id'];
             delete data['library name'];
             break;
+          }
 
           case 'caver':
             data.surname = item._source.surname;

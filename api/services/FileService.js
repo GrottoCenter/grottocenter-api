@@ -5,7 +5,6 @@ const {
   generateBlobSASQueryParameters,
 } = require('@azure/storage-blob');
 const stream = require('stream');
-const ramda = require('ramda');
 
 const AZURE_ACCOUNT = 'grottocenter';
 const AZURE_CONTAINER_DOCUMENTS = 'documents';
@@ -111,7 +110,7 @@ module.exports = {
         mimeType,
         extension: nameSplit[1].toLowerCase(),
       }).limit(1);
-      if (ramda.isEmpty(foundFormat)) {
+      if (foundFormat.length === 0) {
         throw new FileError(INVALID_FORMAT, name);
       }
 
