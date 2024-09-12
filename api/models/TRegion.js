@@ -8,6 +8,8 @@
 module.exports = {
   tableName: 't_region',
 
+  // Deprecated as we now use ISO3166 regions (TISO31662.js)
+
   attributes: {
     id: {
       type: 'number',

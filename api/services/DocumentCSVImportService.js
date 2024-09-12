@@ -142,11 +142,7 @@ module.exports = {
     // Parent / partOf
     const parentId = valIfTruthyOrNull(data['dct:isPartOf']);
     const doesParentExist = parentId
-      ? await sails.helpers.checkIfExists.with({
-          attributeName: 'id',
-          attributeValue: parentId,
-          sailsModel: TDocument,
-        })
+      ? await TDocument.findOne({ id: parentId })
       : false;
     if (parentId && !doesParentExist) {
       throw Error(`Document parent with id ${parentId} not found.`);
