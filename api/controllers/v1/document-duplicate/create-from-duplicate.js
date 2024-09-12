@@ -13,20 +13,13 @@ module.exports = async (req, res) => {
     );
   }
 
-  if (
-    !(await sails.helpers.checkIfExists.with({
-      attributeName: 'id',
-      attributeValue: req.param('id'),
-      sailsModel: TDocumentDuplicate,
-    }))
-  ) {
-    return res.badRequest(
-      `Could not find duplicate with id ${req.param('id')}.`
-    );
-  }
   const id = req.param('id');
-  const duplicate = await TDocumentDuplicate.findOne(id);
-  const { document, description } = duplicate.content;
+  const documentDuplicate = await TDocumentDuplicate.findOne({ id });
+  if (!documentDuplicate) {
+    return res.badRequest(`Could not find duplicate with id ${id}.`);
+  }
+
+  const { document, description } = documentDuplicate.content;
   await DocumentService.createDocument(req, document, description);
   await TDocumentDuplicate.destroyOne(id);
   return res.ok();

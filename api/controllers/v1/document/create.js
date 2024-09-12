@@ -40,10 +40,7 @@ module.exports = async (req, res) => {
     }
   }
 
-  const newDoc = await DocumentService.appendPopulateForFullDocument(
-    TDocument.findOne(createdDocument.id)
-  );
-  await DocumentService.populateFullDocumentSubEntities(newDoc);
+  const newDoc = await DocumentService.getPopulatedDocument(createdDocument.id);
 
   const out = {
     document: toDocument(newDoc),

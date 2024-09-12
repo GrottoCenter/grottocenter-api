@@ -35,6 +35,7 @@ const c = {
     length: source.caveLength,
     temperature: source.temperature,
     isDeleted: source.isDeleted,
+    redirectTo: source.redirectTo,
     isDiving: source.isDiving,
 
     names: toList('names', source, c.toName),
@@ -330,17 +331,6 @@ const c = {
 
     return result;
   },
-
-  toDeletedDocument: (source) => ({
-    id: source.id,
-    '@id': String(source.id),
-    isDeleted: source.isDeleted,
-    redirectTo: source.redirectTo,
-    dateInscription: source.dateInscription,
-    dateReviewed: source.dateReviewed,
-    author: convertIfObject(source.author, c.toSimpleCaver),
-    reviewer: convertIfObject(source.reviewer, c.toSimpleCaver),
-  }),
 
   toDocumentDuplicate: (source, meta) => ({
     id: source.id,
@@ -696,7 +686,7 @@ const c = {
     reviewer: convertIfObject(source.reviewer, c.toSimpleCaver),
     dateInscription: source.dateInscription,
     dateReviewed: source.dateReviewed,
-    name: getMainName(source),
+    name: getMainName(source) ?? source.title, // title is for document
     language: getMainLanguage(source),
   }),
 
