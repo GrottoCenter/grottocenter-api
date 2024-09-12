@@ -1,7 +1,6 @@
 const moment = require('moment');
 const momentDurationFormatSetup = require('moment-duration-format');
 
-const { isNil } = require('ramda');
 const CommonService = require('./CommonService');
 
 momentDurationFormatSetup(moment);
@@ -88,7 +87,7 @@ module.exports = {
    * @returns string with format hh:mm:ss
    */
   postgreIntervalObjectToDbString: (pgInterval) => {
-    if (isNil(pgInterval)) return null;
+    if (!pgInterval) return null;
     const emptyDuration = {
       days: 0,
       hours: 0,

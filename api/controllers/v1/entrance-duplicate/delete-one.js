@@ -15,13 +15,8 @@ module.exports = async (req, res) => {
     return res.badRequest('You must provide the id of the duplicate.');
   }
 
-  if (
-    !(await sails.helpers.checkIfExists.with({
-      attributeName: 'id',
-      attributeValue: req.param('id'),
-      sailsModel: TEntranceDuplicate,
-    }))
-  ) {
+  const entranceDuplicate = await TEntranceDuplicate.findOne({ id });
+  if (!entranceDuplicate) {
     return res.badRequest(
       `Could not find duplicate with id ${req.param('id')}.`
     );
