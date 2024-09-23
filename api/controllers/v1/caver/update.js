@@ -1,10 +1,8 @@
 const ControllerService = require('../../../services/ControllerService');
-const ErrorService = require('../../../services/ErrorService');
 const RightService = require('../../../services/RightService');
 const { toSimpleCaver } = require('../../../services/mapping/converters');
 
 module.exports = async (req, res) => {
-  // list of propreties to update
   const propretiesUpdatable = [
     'name',
     'nickname',
@@ -14,65 +12,52 @@ module.exports = async (req, res) => {
     'organizations',
   ];
 
-  // Check right
-  const caverId = req.param('caverId');
-
-  const hasRightOfAdmin = RightService.hasGroup(
+  const hasAdminRight = RightService.hasGroup(
     req.token.groups,
     RightService.G.ADMINISTRATOR
   );
 
-  if (!hasRightOfAdmin && Number(caverId) !== req.token.id) {
+  const caverId = req.param('caverId');
+  if (!hasAdminRight && Number(caverId) !== req.token.id) {
     return res.forbidden('You can not edit an other account than yours.');
   }
 
-  // Check if caver exists
-  if (
-    !(await sails.helpers.checkIfExists.with({
-      attributeName: 'id',
-      attributeValue: caverId,
-      sailsModel: TCaver,
-    }))
-  ) {
-    return res.notFound({ error: `Could not find caver with id ${caverId}.` });
+  const caver = await TCaver.findOne({ id: caverId });
+  if (!caver) {
+    return res.badRequest(`Could not find caver with id ${caverId}.`);
   }
 
   // Check if the changes requested are authorized (check propretiesUpdatable)
-  const keys = Object.keys(req.body);
-  // eslint-disable-next-line consistent-return
-  keys.forEach((prop) => {
+  for (const prop of Object.keys(req.body)) {
     if (!propretiesUpdatable.includes(prop)) {
       return res.badRequest(
         `Could not update property ${prop}, it is not a property which is updatable.`
       );
     }
+
     if (prop === 'mail' || prop === 'password') {
-      if (hasRightOfAdmin) {
+      if (hasAdminRight) {
         return res.forbidden({
           error: `Admin can not update property ${prop}`,
         });
       }
     }
-  });
-
-  try {
-    // update organizations linked to the caver if needed
-    if (req.body.organizations) {
-      await TCaver.replaceCollection(caverId, 'grottos').members(
-        req.body.organizations.map((organizations) => organizations.id)
-      );
-    }
-    const updatedCaver = await TCaver.updateOne(caverId).set(req.body);
-
-    return ControllerService.treatAndConvert(
-      req,
-      null,
-      updatedCaver,
-      { controllerMethod: 'CaverController.update' },
-      res,
-      toSimpleCaver
-    );
-  } catch (e) {
-    return ErrorService.getDefaultErrorHandler(res)(e);
   }
+
+  // update organizations linked to the caver if needed
+  if (req.body.organizations) {
+    await TCaver.replaceCollection(caverId, 'grottos').members(
+      req.body.organizations.map((organizations) => organizations.id)
+    );
+  }
+  const updatedCaver = await TCaver.updateOne(caverId).set(req.body);
+
+  return ControllerService.treatAndConvert(
+    req,
+    null,
+    updatedCaver,
+    { controllerMethod: 'CaverController.update' },
+    res,
+    toSimpleCaver
+  );
 };

@@ -1,12 +1,12 @@
-const AccountService = require('../../../services/AccountService');
 const TokenService = require('../../../services/TokenService');
+const CaverService = require('../../../services/CaverService');
 
 const RESET_PASSWORD_LINK = `${sails.config.custom.baseUrl}/ui/changePassword?token=`;
 
 module.exports = async (req, res) => {
   const emailProvided = req.param('email');
-  if (!emailProvided) {
-    return res.badRequest('You must provide an email.');
+  if (!emailProvided || !CaverService.isARealCaver(emailProvided)) {
+    return res.badRequest('You must provide a valid email.');
   }
 
   // Get info about the user
@@ -26,7 +26,7 @@ module.exports = async (req, res) => {
     },
     sails.config.custom.passwordResetTokenTTL,
     'Reset password',
-    AccountService.getResetPasswordTokenSalt(userFound) // custom salt used for more security
+    TokenService.getResetPasswordTokenSalt(userFound) // custom salt used for more security
   );
 
   // Change locale to the user's one to translate the mail

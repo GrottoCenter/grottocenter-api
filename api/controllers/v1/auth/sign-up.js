@@ -1,58 +1,49 @@
 const AuthService = require('../../../services/AuthService');
 const ElasticsearchService = require('../../../services/ElasticsearchService');
-const ErrorService = require('../../../services/ErrorService');
+const CaverService = require('../../../services/CaverService');
 
 const PASSWORD_MIN_LENGTH = 8;
 
 module.exports = async (req, res) => {
   // Check params
-  if (!req.param('email')) {
+  let email = req.param('email');
+  if (!email || !CaverService.isARealCaver(email)) {
     return res.badRequest('You must provide an email.');
   }
-  if (
-    await sails.helpers.checkIfExists.with({
-      attributeName: 'mail',
-      attributeValue: req.param('email').toLowerCase(),
-      sailsModel: TCaver,
-    })
-  ) {
-    return res.conflict(`The email ${req.param('email')} is already used.`);
+  email = email.toLowerCase();
+  const caverEmail = await TCaver.findOne({ mail: email });
+  if (caverEmail) {
+    return res.conflict(`The email ${email} is already used.`);
   }
-  if (!req.param('password')) {
+
+  const password = req.param('password');
+  if (!password) {
     return res.badRequest('You must provide a password.');
   }
-  if (
-    req.param('password') &&
-    req.param('password').length < PASSWORD_MIN_LENGTH
-  ) {
+  if (password && password.length < PASSWORD_MIN_LENGTH) {
     return res.badRequest(
       `Your password must be at least ${PASSWORD_MIN_LENGTH} characters long.`
     );
   }
-  if (!req.param('nickname')) {
+
+  const nickname = req.param('nickname');
+  if (!nickname) {
     return res.badRequest('You must provide a nickname.');
   }
-  if (
-    await sails.helpers.checkIfExists.with({
-      attributeName: 'nickname',
-      attributeValue: req.param('nickname'),
-      sailsModel: TCaver,
-    })
-  ) {
-    return res.conflict(
-      `The nickname ${req.param('nickname')} is already used.`
-    );
+  const caverNickname = await TCaver.findOne({ nickname });
+  if (caverNickname) {
+    return res.conflict(`The nickname ${nickname} is already used.`);
   }
 
-  // Create caver
   try {
+    // Rely on the ORM for the rest of the input validation
     const newCaver = await TCaver.create({
       dateInscription: new Date(),
       language: '000', // default null language id
-      mail: req.param('email').toLowerCase(),
+      mail: email,
       name: req.param('name') === '' ? null : req.param('name'),
-      nickname: req.param('nickname'),
-      password: await AuthService.createHashedPassword(req.param('password')),
+      nickname,
+      password: await AuthService.createHashedPassword(password),
       surname: req.param('surname') === '' ? null : req.param('surname'),
     }).fetch();
 
@@ -66,9 +57,9 @@ module.exports = async (req, res) => {
       surname: newCaver.surname,
       deleted: false,
     });
-
-    return res.ok();
-  } catch (e) {
-    return ErrorService.getDefaultErrorHandler(res)(e);
+  } catch (_) {
+    return res.badRequest();
   }
+
+  return res.ok();
 };
