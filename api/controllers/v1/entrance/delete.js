@@ -55,8 +55,19 @@ module.exports = async (req, res) => {
     await TNotification.destroy({ entrance: entranceId });
 
     // eslint-disable-next-line no-inner-declarations
-    async function subEntityDelete(subEntities, model, hModel) {
+    async function subEntityDelete(
+      subEntitiesKey,
+      notificationKey,
+      model,
+      hModel
+    ) {
+      const subEntities = entrance[subEntitiesKey];
       if (subEntities.length === 0) return;
+
+      await TNotification.destroy({
+        [notificationKey]: subEntities.map((e) => e.id),
+      });
+
       if (shouldMergeInto) {
         await model.update({ entrance: entranceId }).set({
           entrance: mergeIntoEntity.id,
@@ -71,11 +82,16 @@ module.exports = async (req, res) => {
       }
     }
 
-    await subEntityDelete(entrance.locations, TLocation, HLocation);
-    await subEntityDelete(entrance.descriptions, TDescription, HDescription);
-    await subEntityDelete(entrance.riggings, TRigging, HRigging);
-    await subEntityDelete(entrance.histories, THistory, HHistory);
-    await subEntityDelete(entrance.comments, TComment, HComment);
+    await subEntityDelete('locations', 'location', TLocation, HLocation);
+    await subEntityDelete(
+      'descriptions',
+      'description',
+      TDescription,
+      HDescription
+    );
+    await subEntityDelete('riggings', 'rigging', TRigging, HRigging);
+    await subEntityDelete('histories', 'history', THistory, HHistory);
+    await subEntityDelete('comments', 'comment', TComment, HComment);
 
     if (entrance.documents.length > 0) {
       if (shouldMergeInto) {
@@ -95,7 +111,7 @@ module.exports = async (req, res) => {
       await CaveService.permanentlyDeleteCave(
         cave,
         shouldMergeInto,
-        mergeIntoEntity.cave.id
+        mergeIntoEntity?.cave?.id
       );
     }
 

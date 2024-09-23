@@ -28,6 +28,7 @@ module.exports = async (req, res) => {
   const deletePermanently = !!req.param('isPermanent');
   if (deletePermanently) {
     await HDescription.destroy({ t_id: descriptionId });
+    await TNotification.destroy({ description: descriptionId });
     await TDescription.destroyOne({ id: descriptionId }); // Hard delete
   }
 

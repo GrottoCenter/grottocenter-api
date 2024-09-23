@@ -26,6 +26,7 @@ module.exports = async (req, res) => {
   const deletePermanently = !!req.param('isPermanent');
   if (deletePermanently) {
     await HLocation.destroy({ t_id: locationId });
+    await TNotification.destroy({ location: locationId });
     await TLocation.destroyOne({ id: locationId }); // Hard delete
   }
 
