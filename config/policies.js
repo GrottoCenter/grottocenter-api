@@ -63,6 +63,7 @@ module.exports.policies = {
   'v1/caver/set-groups': 'tokenAuth',
   'v1/caver/update': 'tokenAuth',
   'v1/caver/get-db-export': 'tokenAuth',
+  'v1/caver/delete': 'tokenAuth',
 
   // Description
   'v1/description/get-snapshots': true,

@@ -87,6 +87,7 @@ module.exports.routes = {
   'PUT /api/v1/cavers/:caverId/entrances/:entranceId':
     'v1/caver/add-explored-entrance',
   'PUT /api/v1/cavers/:caverId/groups/:groupId': 'v1/caver/put-on-group',
+  'DELETE /api/v1/cavers/:id': 'v1/caver/delete',
 
   // Entrance
   'DELETE /api/v1/entrances/:entranceId/documents/:documentId':

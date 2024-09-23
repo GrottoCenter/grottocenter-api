@@ -40,6 +40,7 @@ module.exports = {
     TIdentifierType: 'readonly',
     TISO31662: 'readonly',
     TLanguage: 'readonly',
+    TLastChange: 'readonly',
     TLicense: 'readonly',
     TLocation: 'readonly',
     TMassif: 'readonly',
