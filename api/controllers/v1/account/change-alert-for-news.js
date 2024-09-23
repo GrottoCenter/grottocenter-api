@@ -1,5 +1,4 @@
 module.exports = async (req, res) => {
-  // Check params
   const newAlertForNewsValue = req.param('alertForNews');
   if (newAlertForNewsValue !== 'true' && newAlertForNewsValue !== 'false') {
     return res.badRequest(
@@ -7,20 +6,14 @@ module.exports = async (req, res) => {
     );
   }
 
-  // Update alertForNews request
-  try {
-    const updatedCaver = await TCaver.updateOne({
-      id: req.token.id,
-    }).set({
-      alertForNews: newAlertForNewsValue === 'true',
+  const updatedCaver = await TCaver.updateOne({ id: req.token.id }).set({
+    alertForNews: newAlertForNewsValue === 'true',
+  });
+
+  if (!updatedCaver) {
+    return res.notFound({
+      message: `Caver with id ${req.token.id} not found.`,
     });
-    if (!updatedCaver) {
-      return res.notFound({
-        message: `Caver with id ${req.token.id} not found.`,
-      });
-    }
-  } catch (error) {
-    sails.log.error(error);
   }
 
   return res.ok();

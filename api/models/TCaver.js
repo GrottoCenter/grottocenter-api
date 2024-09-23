@@ -33,12 +33,14 @@ module.exports = {
       maxLength: 100,
     },
 
+    // Unsued
     activated: {
       type: 'boolean',
       columnName: 'activated',
       defaultsTo: false,
     },
 
+    // Unsued
     activationCode: {
       type: 'string',
       allowNull: true,
@@ -46,12 +48,14 @@ module.exports = {
       maxLength: 64,
     },
 
+    // Unsued
     banned: {
       type: 'boolean',
       columnName: 'banned',
       defaultsTo: false,
     },
 
+    // Unsued
     connectionCounter: {
       type: 'number',
       allowNull: false,
@@ -59,6 +63,7 @@ module.exports = {
       defaultsTo: 0,
     },
 
+    // Unsued
     relevance: {
       type: 'number',
       allowNull: false,
@@ -96,6 +101,7 @@ module.exports = {
       unique: true,
     },
 
+    // Unsued
     mailIsValid: {
       type: 'boolean',
       allowNull: false,
@@ -110,12 +116,14 @@ module.exports = {
       columnType: 'timestamp',
     },
 
+    // Unsued
     dateLastConnection: {
       type: 'ref',
       columnName: 'date_last_connection',
       columnType: 'timestamp',
     },
 
+    // Can be set but unused elsewhere
     alertForNews: {
       type: 'boolean',
       allowNull: false,
@@ -123,6 +131,7 @@ module.exports = {
       defaultsTo: false,
     },
 
+    // Unsued
     showLinks: {
       type: 'boolean',
       allowNull: false,
@@ -130,12 +139,14 @@ module.exports = {
       defaultsTo: false,
     },
 
+    // Unsued
     detailLevel: {
       type: 'number',
       allowNull: true,
       columnName: 'detail_level',
     },
 
+    // Unsued
     defaultZoom: {
       type: 'number',
       allowNull: true,

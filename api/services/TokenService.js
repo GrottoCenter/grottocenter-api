@@ -32,3 +32,8 @@ module.exports.verify = (token, callback, customTokenSalt = tokenSalt) =>
     {}, // No Option, for more see https://github.com/auth0/node-jsonwebtoken#jwtverifytoken-secretorpublickey-options-callback
     callback // Pass errors or decoded token to callback
   );
+
+module.exports.getResetPasswordTokenSalt = (user) => {
+  const { dateInscription, id, password } = user;
+  return password + id + dateInscription + tokenSalt;
+};

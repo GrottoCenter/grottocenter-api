@@ -1,26 +1,17 @@
-// Non-users caver (like authors) have no password set.
-const REAL_USERS_QUERY = 'SELECT count(password) FROM t_caver';
-
 const CommonService = require('./CommonService');
 const ElasticsearchService = require('./ElasticsearchService');
-const RightService = require('./RightService');
+const NameService = require('./NameService');
 
 module.exports = {
-  /**
-   * Return the groups of the caver without checking if the caver exists.
-   * @param {int} caverId
-   * @throws Sails ORM errors (see https://sailsjs.com/documentation/concepts/models-and-orm/errors)
-   * @returns {Array[TGroup]}
-   */
-  getGroups: async (caverId) => {
-    const caver = await TCaver.findOne(caverId).populate('groups');
-    return caver.groups;
-  },
+  isARealCaver: async (email) =>
+    email && !email.toLowerCase().endsWith('@mail.no'),
 
   /**
    * Count the "real" users (@see REAL_USERS_QUERY)
    */
   countDistinctUsers: async () => {
+    // Non-users caver (like authors) have no password set.
+    const REAL_USERS_QUERY = 'SELECT count(password) FROM t_caver';
     const result = await CommonService.query(REAL_USERS_QUERY);
     return Number(result.rows[0].count);
   },
@@ -66,19 +57,18 @@ module.exports = {
       surname: newCaver.surname,
       deleted: false,
       tags: ['caver'],
-    });
+    }).catch(() => {});
 
     return newCaver;
   },
 
   /**
    * @param {Integer} caverId
-   * @param {Object} req
    * @throws Sails ORM errors (see https://sailsjs.com/documentation/concepts/models-and-orm/errors)
    * @description Get a caver by his id and populate it according to the user rights (using req).
    * @returns {Object}
    */
-  getCaver: async (caverId, req) => {
+  getCaver: async (caverId) => {
     const caver = await TCaver.findOne(caverId)
       .populate('documents', {
         limit: 10,
@@ -93,57 +83,39 @@ module.exports = {
       .populate('subscribedToCountries')
       .populate('subscribedToMassifs');
 
-    if (!caver) return caver; // not found return
+    if (!caver) return null;
 
     // Delete sensitive data
     delete caver.activationCode;
     delete caver.password;
+
+    caver.type = module.exports.isARealCaver(caver.mail) ? 'CAVER' : 'AUTHOR';
+
     caver.exploredEntrances = caver.exploredEntrances.filter(
       (entrance) => entrance.isPublic
     );
 
-    if (req.token && Number(caverId) === req.token.id) {
-      return caver;
-    }
+    const asyncArr = [
+      NameService.setNames(caver.exploredEntrances, 'entrance'),
+      NameService.setNames(caver.grottos, 'grotto'),
+      NameService.setNames(caver.subscribedToMassifs, 'massif'),
+    ];
 
-    // Check complete view right
-    const hasCompleteViewRight = req.token
-      ? await RightService.hasGroup(
-          req.token.groups,
-          RightService.G.ADMINISTRATOR
-        )
-      : false;
-    if (hasCompleteViewRight) {
-      return caver;
-    }
+    await Promise.all(asyncArr);
 
     return {
       id: caver.id,
-      documents: caver.documents,
-      exploredEntrances: caver.exploredEntrances,
-      groups: caver.groups,
-      language: caver.language,
+      type: caver.type,
       name: caver.name,
-      nickname: caver.nickname,
-      grottos: caver.grottos,
       surname: caver.surname,
+      nickname: caver.nickname,
+      language: caver.language,
+      groups: caver.groups,
+      grottos: caver.grottos,
+      exploredEntrances: caver.exploredEntrances,
+      documents: caver.documents,
       subscribedToMassifs: caver.subscribedToMassifs,
       subscribedToCountries: caver.subscribedToCountries,
     };
-  },
-  /**
-   * @param {Integer} caverId
-   * @throws Sails ORM errors (see https://sailsjs.com/documentation/concepts/models-and-orm/errors)
-   * @description Check if a caver is an author by looking at his email. If caver not found return false.
-   * @returns {Boolean}
-   */
-  isAuthor: async (caverId) => {
-    const caver = await TCaver.findOne(caverId);
-
-    if (caver && caver.mail && caver.mail.endsWith('@mail.no')) {
-      if (caver.mail.endsWith('@mail.no')) return true;
-    }
-
-    return false;
   },
 };

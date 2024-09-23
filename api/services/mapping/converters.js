@@ -63,6 +63,7 @@ const c = {
       ...CaverModel,
       id: source.id,
       '@id': String(source.id),
+      type: source.type,
       language: source.language,
       nickname: source.nickname,
       surname: source.surname,
@@ -93,7 +94,7 @@ const c = {
     listParser('exploredEntrances', c.toSimpleEntrance);
     listParser('groups', (group) => group);
     listParser('documents', c.toSimpleDocument);
-    listParser('grottos', c.toOrganization, 'organizations');
+    listParser('grottos', c.toSimpleOrganization, 'organizations');
 
     return result;
   },
@@ -471,9 +472,11 @@ const c = {
     result.datePublication = source.datePublication;
 
     // Convert objects
-    const { toCaver, toEntrance } = module.exports;
+    const { toSimpleCaver, toEntrance } = module.exports;
     result.author =
-      source.author instanceof Object ? toCaver(source.author) : source.author;
+      source.author instanceof Object
+        ? toSimpleCaver(source.author)
+        : source.author;
     result.entrance =
       source.entrance instanceof Object
         ? toEntrance(source.entrance, meta)
@@ -617,8 +620,12 @@ const c = {
     result.history = convertIfObject(source.history, c.toHistory, { meta });
     result.location = convertIfObject(source.location, c.toLocation, { meta });
     result.massif = convertIfObject(source.massif, c.toMassif, { meta });
-    result.notified = convertIfObject(source.notified, c.toCaver, { meta });
-    result.notifier = convertIfObject(source.notifier, c.toCaver, { meta });
+    result.notified = convertIfObject(source.notified, c.toSimpleCaver, {
+      meta,
+    });
+    result.notifier = convertIfObject(source.notifier, c.toSimpleCaver, {
+      meta,
+    });
     result.organization = convertIfObject(source.grotto, c.toOrganization, {
       meta,
     });

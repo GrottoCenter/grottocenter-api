@@ -50,7 +50,8 @@ module.exports = {
 
   findRandom: async () => {
     const result = await CommonService.query(RANDOM_ENTRANCE_QUERY, []);
-    const entranceId = result.rows[0].id;
+    const entranceId = result.rows[0]?.id;
+    if (!entranceId) return null;
 
     const [entrance, stats, timeInfo] = await Promise.all([
       TEntrance.findOne(entranceId).populate('names'),
