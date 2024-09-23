@@ -26,6 +26,7 @@ module.exports = async (req, res) => {
   const deletePermanently = !!req.param('isPermanent');
   if (deletePermanently) {
     await HRigging.destroy({ t_id: riggingId });
+    await TNotification.destroy({ rigging: riggingId });
     await TRigging.destroyOne({ id: riggingId }); // Hard delete
   }
 

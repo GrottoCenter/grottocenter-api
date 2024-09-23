@@ -26,6 +26,7 @@ module.exports = async (req, res) => {
   const deletePermanently = !!req.param('isPermanent');
   if (deletePermanently) {
     await HComment.destroy({ t_id: commentId });
+    await TNotification.destroy({ comment: commentId });
     await TComment.destroyOne({ id: commentId }); // Hard delete
   }
 
