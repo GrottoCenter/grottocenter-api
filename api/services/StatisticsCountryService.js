@@ -1,7 +1,8 @@
 const FIND_COUNTRY_IN_VIEW = `
-  SELECT *
+  SELECT id_country
   FROM v_country_info
   WHERE id_country = $1
+  LIMIT 1
 `;
 
 const GET_NB_MASSIFS = `
@@ -96,7 +97,7 @@ module.exports = {
    */
   isCountryInView: async (countryId) => {
     const result = await safeDBQuery(FIND_COUNTRY_IN_VIEW, countryId);
-    return result && result.length > 0;
+    return result;
   },
 
   /**

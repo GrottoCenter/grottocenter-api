@@ -99,7 +99,6 @@ module.exports = {
     // eslint-disable-next-line consistent-return
     async create(file, idDocument, fetchResult = false, isValidated = true) {
       const name = file.originalname;
-      const mimeType = file.mimetype;
       const pathName = generateName(name);
       const nameSplit = name.split('.');
       if (nameSplit.length !== 2) {
@@ -107,12 +106,12 @@ module.exports = {
       }
 
       const foundFormat = await TFileFormat.find({
-        mimeType,
         extension: nameSplit[1].toLowerCase(),
       }).limit(1);
       if (foundFormat.length === 0) {
         throw new FileError(INVALID_FORMAT, name);
       }
+      const { mimeType } = foundFormat;
 
       if (!credentials) {
         noCredentialWarning('Document upload', {
