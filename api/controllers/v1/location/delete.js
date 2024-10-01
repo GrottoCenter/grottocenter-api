@@ -3,6 +3,7 @@ const NotificationService = require('../../../services/NotificationService');
 const LocationService = require('../../../services/LocationService');
 const { toSimpleLocation } = require('../../../services/mapping/converters');
 const RightService = require('../../../services/RightService');
+const RecentChangeService = require('../../../services/RecentChangeService');
 
 module.exports = async (req, res) => {
   const hasRight = RightService.hasGroup(
@@ -21,6 +22,13 @@ module.exports = async (req, res) => {
   if (!location.isDeleted) {
     await TLocation.destroyOne({ id: locationId }); // Soft delete
     location.isDeleted = true;
+
+    await RecentChangeService.setDeleteRestoreAuthor(
+      'delete',
+      'location',
+      locationId,
+      req.token.id
+    );
   }
 
   const deletePermanently = !!req.param('isPermanent');

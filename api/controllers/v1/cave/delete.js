@@ -3,6 +3,7 @@ const NotificationService = require('../../../services/NotificationService');
 const ElasticsearchService = require('../../../services/ElasticsearchService');
 const CaveService = require('../../../services/CaveService');
 const RightService = require('../../../services/RightService');
+const RecentChangeService = require('../../../services/RecentChangeService');
 const { toCave } = require('../../../services/mapping/converters');
 
 module.exports = async (req, res) => {
@@ -31,8 +32,15 @@ module.exports = async (req, res) => {
     }
 
     await TCave.destroyOne({ id: caveId }); // Soft delete
-    await ElasticsearchService.deleteResource('caves', caveId).catch(() => {});
     cave.isDeleted = true;
+
+    await ElasticsearchService.deleteResource('caves', caveId).catch(() => {});
+    await RecentChangeService.setDeleteRestoreAuthor(
+      'delete',
+      'cave',
+      caveId,
+      req.token.id
+    );
   }
 
   const deletePermanently = !!req.param('isPermanent');

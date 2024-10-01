@@ -3,6 +3,7 @@ const NotificationService = require('../../../services/NotificationService');
 const RiggingService = require('../../../services/RiggingService');
 const { toSimpleRigging } = require('../../../services/mapping/converters');
 const RightService = require('../../../services/RightService');
+const RecentChangeService = require('../../../services/RecentChangeService');
 
 module.exports = async (req, res) => {
   const hasRight = RightService.hasGroup(
@@ -21,6 +22,13 @@ module.exports = async (req, res) => {
   if (!rigging.isDeleted) {
     await TRigging.destroyOne({ id: riggingId }); // Soft delete
     rigging.isDeleted = true;
+
+    await RecentChangeService.setDeleteRestoreAuthor(
+      'delete',
+      'rigging',
+      riggingId,
+      req.token.id
+    );
   }
 
   const deletePermanently = !!req.param('isPermanent');

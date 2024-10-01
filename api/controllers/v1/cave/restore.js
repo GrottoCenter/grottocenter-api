@@ -3,6 +3,7 @@ const NotificationService = require('../../../services/NotificationService');
 const CaveService = require('../../../services/CaveService');
 const { toCave } = require('../../../services/mapping/converters');
 const RightService = require('../../../services/RightService');
+const RecentChangeService = require('../../../services/RecentChangeService');
 
 module.exports = async (req, res) => {
   const hasRight = RightService.hasGroup(
@@ -26,6 +27,13 @@ module.exports = async (req, res) => {
   });
   cave.isDeleted = false;
   cave.redirectTo = null;
+
+  await RecentChangeService.setDeleteRestoreAuthor(
+    'restore',
+    'cave',
+    caveId,
+    req.token.id
+  );
 
   await CaveService.createESCave(cave).catch(() => {});
 

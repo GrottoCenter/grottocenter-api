@@ -6,6 +6,7 @@ const RightService = require('../../../services/RightService');
 const { toEntrance } = require('../../../services/mapping/converters');
 const NameService = require('../../../services/NameService');
 const CaveService = require('../../../services/CaveService');
+const RecentChangeService = require('../../../services/RecentChangeService');
 
 module.exports = async (req, res) => {
   const hasRight = RightService.hasGroup(
@@ -33,10 +34,17 @@ module.exports = async (req, res) => {
     }
 
     await TEntrance.destroyOne({ id: entranceId }); // Soft delete
+    entrance.isDeleted = true;
+
     await ElasticsearchService.deleteResource('entrances', entranceId).catch(
       () => {}
     );
-    entrance.isDeleted = true;
+    await RecentChangeService.setDeleteRestoreAuthor(
+      'delete',
+      'entrance',
+      entranceId,
+      req.token.id
+    );
   }
 
   const deletePermanently = !!req.param('isPermanent');

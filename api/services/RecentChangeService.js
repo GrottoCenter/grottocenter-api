@@ -18,6 +18,26 @@ async function setNameCreate(entityType, entityId, authorId, name) {
   await CommonService.query(query, [name, entityType, entityId, authorId]);
 }
 
+// When deleting / restoring an entity, the author is not historized, so it is updated afterward
+async function setDeleteRestoreAuthor(
+  changeType,
+  entityType,
+  entityId,
+  authorId
+) {
+  const query = `
+  UPDATE t_last_change
+  SET id_author = $4
+  WHERE type_entity = $2 AND type_change = $1 AND id_entity = $3 AND date_change > current_timestamp - interval '1 minute';
+  `;
+  await CommonService.query(query, [
+    changeType,
+    entityType,
+    entityId,
+    authorId,
+  ]);
+}
+
 // To make the change list more relevant we groups change event when they are from the same author and about the same entity
 function groupChanges(changes) {
   const authorChanges = {};
@@ -127,4 +147,5 @@ async function getRecent() {
 module.exports = {
   getRecent,
   setNameCreate,
+  setDeleteRestoreAuthor,
 };

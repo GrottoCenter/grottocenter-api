@@ -5,6 +5,7 @@ const MassifService = require('../../../services/MassifService');
 const RightService = require('../../../services/RightService');
 const { toMassif } = require('../../../services/mapping/converters');
 const NameService = require('../../../services/NameService');
+const RecentChangeService = require('../../../services/RecentChangeService');
 
 module.exports = async (req, res) => {
   const hasRight = RightService.hasGroup(
@@ -32,10 +33,17 @@ module.exports = async (req, res) => {
     }
 
     await TMassif.destroyOne({ id: massifId }); // Soft delete
+    massif.isDeleted = true;
+
     await ElasticsearchService.deleteResource('massifs', massifId).catch(
       () => {}
     );
-    massif.isDeleted = true;
+    await RecentChangeService.setDeleteRestoreAuthor(
+      'delete',
+      'massif',
+      massifId,
+      req.token.id
+    );
   }
 
   const deletePermanently = !!req.param('isPermanent');
