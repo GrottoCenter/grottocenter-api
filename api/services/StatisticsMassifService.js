@@ -1,7 +1,8 @@
 const FIND_MASSIF_IN_VIEW = `
-  SELECT *
+  SELECT id_massif
   FROM v_massif_info
   WHERE id_massif = $1
+  LIMIT 1
 `;
 
 const GET_NB_CAVES = `
@@ -78,7 +79,7 @@ module.exports = {
    */
   isMassifInView: async (massifId) => {
     const result = await safeDBQuery(FIND_MASSIF_IN_VIEW, massifId);
-    return result && result.length > 0;
+    return result;
   },
 
   /**

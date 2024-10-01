@@ -21,7 +21,7 @@ module.exports = {
     return {
       author: authorId,
       title: valIfTruthyOrNull(data['rdfs:label']),
-      description: valIfTruthyOrNull(
+      body: valIfTruthyOrNull(
         data['karstlink:hasDescriptionDocument/dct:description']
       ),
       dateInscription: getDateFromKarstlink(

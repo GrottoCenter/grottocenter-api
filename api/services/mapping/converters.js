@@ -565,6 +565,7 @@ const c = {
     dateInscription: source.dateInscription,
     dateReviewed: source.dateReviewed,
     name: getMainName(source),
+    names: toList('names', source, c.toName),
     language: getMainLanguage(source),
     geogPolygon: source.geoJson,
     nbCaves: source['nb caves'], // from Elasticsearch
