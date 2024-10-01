@@ -3,6 +3,7 @@ const NotificationService = require('../../../services/NotificationService');
 const { toSimpleComment } = require('../../../services/mapping/converters');
 const RightService = require('../../../services/RightService');
 const CommentService = require('../../../services/CommentService');
+const RecentChangeService = require('../../../services/RecentChangeService');
 
 module.exports = async (req, res) => {
   const hasRight = RightService.hasGroup(
@@ -21,6 +22,13 @@ module.exports = async (req, res) => {
   if (!comment.isDeleted) {
     await TComment.destroyOne({ id: commentId }); // Soft delete
     comment.isDeleted = true;
+
+    await RecentChangeService.setDeleteRestoreAuthor(
+      'delete',
+      'comment',
+      commentId,
+      req.token.id
+    );
   }
 
   const deletePermanently = !!req.param('isPermanent');

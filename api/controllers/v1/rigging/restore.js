@@ -3,6 +3,7 @@ const NotificationService = require('../../../services/NotificationService');
 const RiggingService = require('../../../services/RiggingService');
 const { toSimpleRigging } = require('../../../services/mapping/converters');
 const RightService = require('../../../services/RightService');
+const RecentChangeService = require('../../../services/RecentChangeService');
 
 module.exports = async (req, res) => {
   const hasRight = RightService.hasGroup(
@@ -22,6 +23,13 @@ module.exports = async (req, res) => {
 
   await TRigging.updateOne({ id: riggingId }).set({ isDeleted: false });
   rigging.isDeleted = false;
+
+  await RecentChangeService.setDeleteRestoreAuthor(
+    'restore',
+    'rigging',
+    riggingId,
+    req.token.id
+  );
 
   await NotificationService.notifySubscribers(
     req,

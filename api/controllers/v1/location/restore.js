@@ -3,6 +3,7 @@ const NotificationService = require('../../../services/NotificationService');
 const LocationService = require('../../../services/LocationService');
 const { toSimpleLocation } = require('../../../services/mapping/converters');
 const RightService = require('../../../services/RightService');
+const RecentChangeService = require('../../../services/RecentChangeService');
 
 module.exports = async (req, res) => {
   const hasRight = RightService.hasGroup(
@@ -22,6 +23,13 @@ module.exports = async (req, res) => {
 
   await TLocation.updateOne({ id: locationId }).set({ isDeleted: false });
   location.isDeleted = false;
+
+  await RecentChangeService.setDeleteRestoreAuthor(
+    'restore',
+    'location',
+    locationId,
+    req.token.id
+  );
 
   await NotificationService.notifySubscribers(
     req,

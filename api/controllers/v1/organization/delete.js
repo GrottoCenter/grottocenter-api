@@ -5,6 +5,7 @@ const GrottoService = require('../../../services/GrottoService');
 const RightService = require('../../../services/RightService');
 const { toOrganization } = require('../../../services/mapping/converters');
 const NameService = require('../../../services/NameService');
+const RecentChangeService = require('../../../services/RecentChangeService');
 
 module.exports = async (req, res) => {
   const hasRight = RightService.hasGroup(
@@ -34,10 +35,17 @@ module.exports = async (req, res) => {
         .catch(() => {});
     }
     await TGrotto.destroyOne({ id: organizationId }); // Soft delete
+    organization.isDeleted = true;
+
     await ElasticsearchService.deleteResource('grottos', organizationId).catch(
       () => {}
     );
-    organization.isDeleted = true;
+    await RecentChangeService.setDeleteRestoreAuthor(
+      'delete',
+      'grotto',
+      organizationId,
+      req.token.id
+    );
   }
 
   const deletePermanently = !!req.param('isPermanent');

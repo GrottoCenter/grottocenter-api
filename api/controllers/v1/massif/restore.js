@@ -3,6 +3,7 @@ const NotificationService = require('../../../services/NotificationService');
 const MassifService = require('../../../services/MassifService');
 const { toMassif } = require('../../../services/mapping/converters');
 const RightService = require('../../../services/RightService');
+const RecentChangeService = require('../../../services/RecentChangeService');
 
 module.exports = async (req, res) => {
   const hasRight = RightService.hasGroup(
@@ -26,6 +27,13 @@ module.exports = async (req, res) => {
   });
   massif.isDeleted = false;
   massif.redirectTo = null;
+
+  await RecentChangeService.setDeleteRestoreAuthor(
+    'restore',
+    'massif',
+    massifId,
+    req.token.id
+  );
 
   await MassifService.createESMassif(massif).catch(() => {});
 

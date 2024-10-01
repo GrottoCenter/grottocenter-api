@@ -4,6 +4,7 @@ const DocumentService = require('../../../services/DocumentService');
 const RightService = require('../../../services/RightService');
 const { toDocument } = require('../../../services/mapping/converters');
 const FileService = require('../../../services/FileService');
+const RecentChangeService = require('../../../services/RecentChangeService');
 
 module.exports = async (req, res) => {
   const hasRight = RightService.hasGroup(
@@ -31,8 +32,15 @@ module.exports = async (req, res) => {
     }
 
     await TDocument.destroyOne({ id: documentId }); // Soft delete
-    await DocumentService.createESDocument(document).catch(() => {});
     document.isDeleted = true;
+
+    await DocumentService.deleteESDocument(document).catch(() => {});
+    await RecentChangeService.setDeleteRestoreAuthor(
+      'delete',
+      'document',
+      documentId,
+      req.token.id
+    );
   }
 
   const deletePermanently = !!req.param('isPermanent');

@@ -3,6 +3,7 @@ const NotificationService = require('../../../services/NotificationService');
 const HistoryService = require('../../../services/HistoryService');
 const { toSimpleHistory } = require('../../../services/mapping/converters');
 const RightService = require('../../../services/RightService');
+const RecentChangeService = require('../../../services/RecentChangeService');
 
 module.exports = async (req, res) => {
   const hasRight = RightService.hasGroup(
@@ -22,6 +23,13 @@ module.exports = async (req, res) => {
 
   await THistory.updateOne({ id: historyId }).set({ isDeleted: false });
   history.isDeleted = false;
+
+  await RecentChangeService.setDeleteRestoreAuthor(
+    'restore',
+    'history',
+    historyId,
+    req.token.id
+  );
 
   await NotificationService.notifySubscribers(
     req,

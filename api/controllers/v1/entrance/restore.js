@@ -3,6 +3,7 @@ const NotificationService = require('../../../services/NotificationService');
 const EntranceService = require('../../../services/EntranceService');
 const { toEntrance } = require('../../../services/mapping/converters');
 const RightService = require('../../../services/RightService');
+const RecentChangeService = require('../../../services/RecentChangeService');
 
 module.exports = async (req, res) => {
   const hasRight = RightService.hasGroup(
@@ -26,6 +27,13 @@ module.exports = async (req, res) => {
   });
   entrance.isDeleted = false;
   entrance.redirectTo = null;
+
+  await RecentChangeService.setDeleteRestoreAuthor(
+    'restore',
+    'entrance',
+    entranceId,
+    req.token.id
+  );
 
   await EntranceService.createESEntrance(entrance).catch(() => {});
 

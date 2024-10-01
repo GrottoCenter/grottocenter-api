@@ -3,6 +3,7 @@ const NotificationService = require('../../../services/NotificationService');
 const GrottoService = require('../../../services/GrottoService');
 const { toOrganization } = require('../../../services/mapping/converters');
 const RightService = require('../../../services/RightService');
+const RecentChangeService = require('../../../services/RecentChangeService');
 
 module.exports = async (req, res) => {
   const hasRight = RightService.hasGroup(
@@ -27,6 +28,13 @@ module.exports = async (req, res) => {
   });
   organization.isDeleted = false;
   organization.redirectTo = null;
+
+  await RecentChangeService.setDeleteRestoreAuthor(
+    'restore',
+    'grotto',
+    organizationId,
+    req.token.id
+  );
 
   await GrottoService.createESOrganization(organization).catch(() => {});
 

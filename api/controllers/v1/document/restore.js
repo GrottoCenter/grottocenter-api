@@ -3,6 +3,7 @@ const NotificationService = require('../../../services/NotificationService');
 const DocumentService = require('../../../services/DocumentService');
 const { toDocument } = require('../../../services/mapping/converters');
 const RightService = require('../../../services/RightService');
+const RecentChangeService = require('../../../services/RecentChangeService');
 
 module.exports = async (req, res) => {
   const hasRight = RightService.hasGroup(
@@ -27,7 +28,14 @@ module.exports = async (req, res) => {
   document.isDeleted = false;
   document.redirectTo = null;
 
-  await DocumentService.deleteESDocument(document).catch(() => {});
+  await RecentChangeService.setDeleteRestoreAuthor(
+    'restore',
+    'document',
+    documentId,
+    req.token.id
+  );
+
+  await DocumentService.createESDocument(document).catch(() => {});
 
   await NotificationService.notifySubscribers(
     req,

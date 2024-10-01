@@ -3,6 +3,7 @@ const NotificationService = require('../../../services/NotificationService');
 const HistoryService = require('../../../services/HistoryService');
 const { toSimpleHistory } = require('../../../services/mapping/converters');
 const RightService = require('../../../services/RightService');
+const RecentChangeService = require('../../../services/RecentChangeService');
 
 module.exports = async (req, res) => {
   const hasRight = RightService.hasGroup(
@@ -21,6 +22,13 @@ module.exports = async (req, res) => {
   if (!history.isDeleted) {
     await THistory.destroyOne({ id: historyId }); // Soft delete
     history.isDeleted = true;
+
+    await RecentChangeService.setDeleteRestoreAuthor(
+      'delete',
+      'history',
+      historyId,
+      req.token.id
+    );
   }
 
   const deletePermanently = !!req.param('isPermanent');

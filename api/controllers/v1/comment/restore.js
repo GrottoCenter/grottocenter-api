@@ -3,6 +3,7 @@ const NotificationService = require('../../../services/NotificationService');
 const CommentService = require('../../../services/CommentService');
 const { toSimpleComment } = require('../../../services/mapping/converters');
 const RightService = require('../../../services/RightService');
+const RecentChangeService = require('../../../services/RecentChangeService');
 
 module.exports = async (req, res) => {
   const hasRight = RightService.hasGroup(
@@ -22,6 +23,13 @@ module.exports = async (req, res) => {
 
   await TComment.updateOne({ id: commentId }).set({ isDeleted: false });
   comment.isDeleted = false;
+
+  await RecentChangeService.setDeleteRestoreAuthor(
+    'restore',
+    'comment',
+    commentId,
+    req.token.id
+  );
 
   await NotificationService.notifySubscribers(
     req,

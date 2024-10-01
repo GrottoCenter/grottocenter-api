@@ -3,6 +3,7 @@ const NotificationService = require('../../../services/NotificationService');
 const DescriptionService = require('../../../services/DescriptionService');
 const { toSimpleDescription } = require('../../../services/mapping/converters');
 const RightService = require('../../../services/RightService');
+const RecentChangeService = require('../../../services/RecentChangeService');
 
 module.exports = async (req, res) => {
   const hasRight = RightService.hasGroup(
@@ -23,6 +24,13 @@ module.exports = async (req, res) => {
   if (!description.isDeleted) {
     await TDescription.destroyOne({ id: descriptionId }); // Soft delete
     description.isDeleted = true;
+
+    await RecentChangeService.setDeleteRestoreAuthor(
+      'delete',
+      'description',
+      descriptionId,
+      req.token.id
+    );
   }
 
   const deletePermanently = !!req.param('isPermanent');
