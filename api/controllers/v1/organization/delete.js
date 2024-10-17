@@ -48,22 +48,63 @@ module.exports = async (req, res) => {
     );
   }
 
+  // eslint-disable-next-line no-inner-declarations
+  async function reafectField(model, hModel, field, replacement = null) {
+    await model
+      .update({ [field]: organizationId })
+      .set({ [field]: replacement });
+    await hModel
+      .update({ [field]: organizationId })
+      .set({ [field]: replacement });
+  }
+
   const deletePermanently = !!req.param('isPermanent');
+  const mergeIntoId = parseInt(req.param('entityId'), 10);
+  let shouldMergeInto = !Number.isNaN(mergeIntoId);
+  let mergeIntoEntity;
+  if (shouldMergeInto) {
+    mergeIntoEntity = await TGrotto.findOne(mergeIntoId).populate('documents');
+    shouldMergeInto = !!mergeIntoEntity;
+  }
+
   if (deletePermanently) {
     if (
       organization.exploredNetworks.length > 0 ||
       organization.exploredEntrances.length > 0 ||
       organization.partnerNetworks.length > 0 ||
       organization.partnerEntrances.length > 0 ||
-      organization.cavers.length > 0 ||
-      organization.documents.length > 0
+      organization.cavers.length > 0
     ) {
       // TODO Properly handle the removal of these properties once there are APIs to set/disable them
       return res.status(501).send();
     }
 
+    if (organization.documents.length > 0) {
+      if (shouldMergeInto) {
+        const existingDocuments = mergeIntoEntity.documents.map((e) => e.id);
+        const documentsToAdd = organization.documents
+          .map((e) => e.id)
+          .filter((e) => !existingDocuments.includes(e));
+        await TGrotto.addToCollection(mergeIntoId, 'documents', documentsToAdd);
+      }
+      await TGrotto.updateOne(organizationId).set({ documents: [] });
+    }
+
+    await reafectField(
+      TDocument,
+      HDocument,
+      'editor',
+      shouldMergeInto ? mergeIntoId : null
+    );
+    await reafectField(
+      TDocument,
+      HDocument,
+      'library',
+      shouldMergeInto ? mergeIntoId : null
+    );
+
     await TGrotto.update({ redirectTo: organizationId }).set({
-      redirectTo: null,
+      redirectTo: shouldMergeInto ? mergeIntoId : null,
     });
     await TNotification.destroy({ grotto: organizationId });
 
