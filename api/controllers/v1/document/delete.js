@@ -56,15 +56,20 @@ module.exports = async (req, res) => {
 
   if (deletePermanently) {
     await TDocument.update({ redirectTo: documentId }).set({
+      dateReviewed: new Date(), // Avoid a uniqueness error
       redirectTo: shouldMergeInto ? mergeIntoId : null,
     });
-    await TDocument.update({ parent: documentId }).set({
-      parent: shouldMergeInto ? mergeIntoId : null,
-    });
+    await TDocument.update({ parent: documentId })
+      .set({
+        dateReviewed: new Date(), // Avoid a uniqueness error
+        parent: shouldMergeInto ? mergeIntoId : null,
+      })
+      .meta({ fetch: false });
     await HDocument.update({ parent: documentId }).set({
       parent: shouldMergeInto ? mergeIntoId : null,
     });
-    await TDocument.update({ authorizationDocument: null }).set({
+    await TDocument.update({ authorizationDocument: documentId }).set({
+      dateReviewed: new Date(), // Avoid a uniqueness error
       authorizationDocument: null,
     });
 
