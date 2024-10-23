@@ -1,4 +1,5 @@
 const NameService = require('./NameService');
+const CommonService = require('./CommonService');
 
 const NOTIFICATION_ENTITIES = {
   CAVE: 'cave',
@@ -21,6 +22,11 @@ const NOTIFICATION_TYPES = {
   VALIDATE: 'VALIDATE',
   RESTORE: 'RESTORE',
 };
+
+async function removeOlderNotifications() {
+  const query = `DELETE FROM t_notification WHERE date_inscription < current_timestamp - interval '2 month';`;
+  await CommonService.query(query);
+}
 
 const safeGetPropId = (prop, data) => {
   if (data && data[prop]) {
@@ -470,6 +476,11 @@ module.exports = {
           return true;
         })
       );
+
+      // 5% chance to also remove older notifications
+      if (process.env.NODE_ENV !== 'test' && Math.random() < 0.05)
+        removeOlderNotifications();
+
       return res;
     } catch (error) {
       // Fail silently to avoid sending an error to the user
