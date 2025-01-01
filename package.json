@@ -7,7 +7,7 @@
   "license": "CC-BY-SA-3.0",
   "keywords": [],
   "dependencies": {
-    "@aws-sdk/client-ses": "^3.664.0",
+    "@aws-sdk/client-ses": "^3.716.0",
     "@azure/storage-blob": "^12.25.0",
     "archiver": "^7.0.1",
     "argon2": "^0.41.1",
