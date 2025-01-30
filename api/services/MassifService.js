@@ -24,7 +24,7 @@ const FIND_CAVES_IN_MASSIF = `
 `;
 
 const FIND_ENTRANCES_IN_MASSIF = `
-  SELECT e.*
+  SELECT e.*, e.is_sensitive as "isSensitive"
   FROM t_entrance AS e
   JOIN t_massif as m
   ON ST_Contains(ST_SetSRID(m.geog_polygon::geometry, 4326), ST_SetSRID(ST_MakePoint(e.longitude, e.latitude), 4326))
