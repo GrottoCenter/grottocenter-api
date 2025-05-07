@@ -136,20 +136,21 @@ const c = {
     cave: convertIfObject(source.cave, c.toSimpleCave),
   }),
 
-  toCompleteSearchResult: (source) => {
+  toCompleteSearchResult: (source, meta) => {
     // For each result of the search, convert the item and add it to the json to send
     const results = source.hits.hits.map((item) => {
       const type = item._source.tags[0];
       let data = {};
 
-      if (type === 'caver') data = c.toCaver(item._source);
-      else if (type === 'document') data = c.toSearchDocument(item._source);
-      else if (type === 'entrance') data = c.toEntrance(item._source);
-      else if (type === 'grotto') data = c.toOrganization(item._source);
-      else if (type === 'language') data = c.toLanguage(item._source);
-      else if (type === 'massif') data = c.toMassif(item._source);
-      else if (type === 'cave') data = c.toCave(item._source);
-      else if (type === 'network') data = c.toCave(item._source);
+      if (type === 'caver') data = c.toCaver(item._source, meta);
+      else if (type === 'document')
+        data = c.toSearchDocument(item._source, meta);
+      else if (type === 'entrance') data = c.toEntrance(item._source, meta);
+      else if (type === 'grotto') data = c.toOrganization(item._source, meta);
+      else if (type === 'language') data = c.toLanguage(item._source, meta);
+      else if (type === 'massif') data = c.toMassif(item._source, meta);
+      else if (type === 'cave') data = c.toCave(item._source, meta);
+      else if (type === 'network') data = c.toCave(item._source, meta);
 
       return {
         ...data,
@@ -353,6 +354,8 @@ const c = {
     const result = {
       ...EntranceModel,
     };
+    const isSensitive = source.isSensitive ?? source.is_sensitive;
+
     result['@id'] = String(source.id);
     result.id = source.id;
     if (source.t_id) {
@@ -360,7 +363,7 @@ const c = {
       result.t_id = source.t_id;
     }
     result.isDeleted = source.isDeleted;
-    result.isSensitive = source.isSensitive;
+    result.isSensitive = isSensitive;
     result.redirectTo = source.redirectTo;
     result.aestheticism = source.aestheticism;
     result.altitude = source.altitude;
@@ -371,11 +374,11 @@ const c = {
     result.discoveryYear = source.yearDiscovery;
     result.externalUrl = source.externalUrl;
     result.latitude =
-      !source.isSensitive || meta?.hasCompleteViewRight === true
+      !isSensitive || meta?.hasCompleteViewRight === true
         ? parseFloat(source.latitude)
         : null;
     result.longitude =
-      !source.isSensitive || meta?.hasCompleteViewRight === true
+      !isSensitive || meta?.hasCompleteViewRight === true
         ? parseFloat(source.longitude)
         : null;
     result.name = getMainName(source);
@@ -724,7 +727,7 @@ const c = {
     cave: convertIfObject(source.cave, c.toSimpleCave),
   }),
 
-  toSearchResult: (source) => {
+  toSearchResult: (source, meta) => {
     const res = {};
     const values = [];
 
@@ -738,10 +741,13 @@ const c = {
           highlights: item.highlight,
         };
 
-        if (item._source.longitude) {
+        const isAllowedToViewCoordinate =
+          !item._source.is_sensitive || meta?.hasCompleteViewRight === true;
+
+        if (item._source.longitude && isAllowedToViewCoordinate) {
           data.longitude = parseFloat(item._source.longitude);
         }
-        if (item._source.latitude) {
+        if (item._source.latitude && isAllowedToViewCoordinate) {
           data.latitude = parseFloat(item._source.latitude);
         }
 
@@ -771,6 +777,7 @@ const c = {
             data.region = item._source.region;
             data.names = item._source.names;
             data.descriptions = item._source.descriptions;
+            data.isSensitive = item._source.isSensitive;
             break;
 
           case 'grotto':
