@@ -143,8 +143,8 @@ function registerMakeDbExport() {
   dbExportTim = setTimeout(() => {
     registerMakeDbExport();
 
-    // Only fully run the first day of each month
-    if (new Date().getUTCDate() !== 1) return;
+    // Only fully run the first day of each week (Monday)
+    if (new Date().getUTCDay() !== 1) return;
     // Cannot set the total time as a 32-bit signed integer is used by setTimeout()
     // It will overflow and trigger a timeoutoverflowwarning
 
