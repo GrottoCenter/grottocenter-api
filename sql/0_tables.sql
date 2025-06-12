@@ -245,6 +245,11 @@ CREATE TABLE t_subject (
 	code bpchar(5) NOT NULL,
 	subject varchar(300) NOT NULL,
 	code_parent bpchar(5) NULL,
+  url varchar(300),
+  dewey_cote bpchar(12),
+  dewey_topic varchar(300),
+  rameau_topic varchar(300),
+  rameau_url varchar(300),
 	CONSTRAINT t_subject_pk PRIMARY KEY (code),
 	CONSTRAINT t_subject_fk FOREIGN KEY (code_parent) REFERENCES t_subject(code)
 );
