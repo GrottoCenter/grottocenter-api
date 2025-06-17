@@ -1214,3 +1214,36 @@ CREATE TABLE t_last_change (
 
 	CONSTRAINT t_last_change_t_caver_fk FOREIGN KEY (id_author) REFERENCES t_caver(id)
 );
+
+-- Internal record status for OAI-PMH server behavior control
+-- - 'registered': Record is active and will be included in OAI-PMH responses with full metadata
+-- - 'deleted': Record is marked as deleted and will be included in OAI-PMH responses without metadata 
+CREATE TYPE e_metadata_status AS ENUM ('registered', 'deleted');
+
+-- DROP TABLE t_bibliographic_metadata;
+CREATE TABLE t_bibliographic_metadata (
+	id_document int4 NOT NULL,
+	oai_identifier varchar(50) NOT NULL,
+	last_update timestamp NOT NULL DEFAULT now(),
+	list_sets text[] NULL,
+	dc_title text NULL,
+	dc_creators text[] NULL,
+	dc_contributor text NULL,
+	dc_publisher text NULL,
+	dc_date date NULL,
+	dc_languages bpchar(3)[] NULL,
+	dc_descriptions text[] NULL,
+	dc_coverages text[] NULL,
+	dc_subjects text[] NULL,
+	dc_formats text[] NULL,
+	dc_identifiers text[] NULL,
+	dc_relations text[] NULL,
+	dc_sources text[] NULL,
+	dc_rights text[] NULL,
+	dc_types text[] NULL,
+	has_been_updated bool NOT NULL DEFAULT false,
+	metadata_status e_metadata_status NOT NULL DEFAULT 'registered',
+
+	CONSTRAINT t_record_pk PRIMARY KEY (id_document),
+    CONSTRAINT t_record_t_document_fk FOREIGN KEY (id_document) REFERENCES t_document(id)
+);
