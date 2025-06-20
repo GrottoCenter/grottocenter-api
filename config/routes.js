@@ -221,6 +221,10 @@ module.exports.routes = {
   'GET /api/v1/documents/types': 'v1/document-type/find-all',
   'GET /api/v1/documents/types/:id': 'v1/document-type/find',
 
+  // Bibliographic Metadata (Record)
+  'GET /api/v1/bibliographic-metadata/:id/format/:format':
+    'v1/bibliographic-metadata/get-record-format',
+
   // Description
   'PATCH /api/v1/descriptions/:id': 'v1/description/update',
   'POST /api/v1/descriptions': 'v1/description/create',
