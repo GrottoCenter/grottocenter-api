@@ -102,6 +102,9 @@ module.exports.policies = {
   'v1/document-type/find': true,
   'v1/document-type/find-all': true,
 
+  // Bibliographic Metadata (Record)
+  'v1/bibliographic-metadata/get-record-format': true,
+
   // Entrance
   'v1/entrance/count': true,
   'v1/entrance/public-count': true,
