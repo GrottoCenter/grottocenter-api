@@ -3135,6 +3135,84 @@ paths:
                         name:
                           type: string
 
+  'bibliographic-metadata/{id}/format/{format}':
+    get:
+      tags:
+        - bibliographic metadata
+      description: Export the bibliographic metadata of a document in a specific format (Unimarc or Marc21 with a country code, only it or default).
+      parameters:
+        - name: id
+          in: path
+          description: Document id
+          required: true
+          schema:
+            type: integer
+        - name: format
+          in: path
+          description: Format of the export (Unimarc-it, Unimarc-default, Marc21-it, Marc21-default)
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation, returns the exported metadata in the specified format.
+          content:
+            application/json:
+              schema:
+                metadata:
+                  type: string
+                  description: The exported bibliographic metadata in the specified format.
+                format:
+                  type: string
+                  description: The format of the exported metadata (Unimarc, Marc21).
+                country:
+                  type: string
+                  description: The country code used for the export (it, default).
+        '400':
+          description: 'ID and format parameters are required'
+        '404':
+          description: Record with ID ${id} not found
+
+  'bibliographic-metadata/search':
+    post:
+      tags:
+        - bibliographic metadata
+      description: Search for bibliographic metadata using a query. (limit to 1500 results, accent insensitive, case insensitive)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                query:
+                  type: string
+                  description: The search query to find bibliographic metadata.
+      responses:
+        '200':
+          description: Successful operation, returns the search results.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    title:
+                      type: string
+                    publisher:
+                      type: string
+                    authors:
+                      type: array
+                      items:
+                        type: string
+                    publicationYear:
+                      type: integer
+        '404':
+          description: Request body must be a valid JSON object
+
+
 parameters:
   sw_lat:
     name: sw_lat

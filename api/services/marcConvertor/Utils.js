@@ -46,6 +46,7 @@ function getFileFormat(url) {
 
 /**
  * Get current date in YYYYMMDD format
+ * @returns {string}
  */
 function getCurrentDateYYYYMMDD() {
   const now = new Date();
@@ -70,6 +71,87 @@ function determineIsoCode3166(countryCode) {
 
   return 0;
 }
+/**
+ * Determine bibliographic level of the document according to UNIMARC standard
+ * @param {string} type - The type of document (e.g., 'collection', 'article', 'book')
+ * @returns {string} - Returns 's' for collection, 'a' for article, m for other
+ */
+function determineBibliographicLevel(type) {
+  switch (type.toLowerCase()) {
+    case 'collection':
+      return 's';
+    case 'article':
+      return 'a';
+    default:
+      return 'm';
+  }
+}
+
+/**
+ * Determine document type according to UNIMARC standard
+ * @param {Array} types - Array of document types from metadata
+ * @param {Array} identifiers - Array of identifiers
+ * @returns {string|null} - Returns UNIMARC document type code or null
+ */
+function determineTypeDocument(types) {
+  if (!types || !Array.isArray(types) || types.length === 0) {
+    return null;
+  }
+
+  const type = types[0].toLowerCase();
+  switch (type) {
+    case 'text':
+    case 'article':
+    case 'book':
+    case 'report':
+      return 'a'; // text
+
+    case 'map':
+    case 'topographic drawing':
+    case 'topographic data':
+      return 'e'; // document cartographic
+
+    case 'moving image':
+      return 'g'; // video
+
+    case 'sound':
+      return 'i'; // sound record no musical
+
+    case 'image':
+      return 'k'; // document graphic 2 dimension
+
+    case 'interactive resource':
+      return 'l'; // electronical support
+
+    case 'dataset':
+      return 'l'; // electronical support
+
+    case 'collection':
+    case 'issue':
+    case 'physical object':
+    case 'authorization to publish':
+      return 'm'; // other
+
+    default:
+      break;
+  }
+
+  // if no specific type is found, default to 'a' (text)
+  return 'a';
+}
+
+/**
+ * Get type from listSets
+ * @param {Array} listSets - Array of list sets from metadata
+ * @returns {string|null} - Returns the type of the document or null if not found
+ */
+function getTypeWithListSets(listSets) {
+  if (!listSets || !Array.isArray(listSets) || listSets.length <= 1) {
+    return null;
+  }
+
+  return listSets[1].toLowerCase().replace('grottocenter:', '');
+}
 
 module.exports = {
   extractIdentifier,
@@ -77,4 +159,7 @@ module.exports = {
   getFileFormat,
   getCurrentDateYYYYMMDD,
   determineIsoCode3166,
+  determineBibliographicLevel,
+  determineTypeDocument,
+  getTypeWithListSets,
 };

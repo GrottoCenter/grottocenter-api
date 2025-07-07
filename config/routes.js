@@ -224,6 +224,8 @@ module.exports.routes = {
   // Bibliographic Metadata (Record)
   'GET /api/v1/bibliographic-metadata/:id/format/:format':
     'v1/bibliographic-metadata/get-record-format',
+  'POST /api/v1/bibliographic-metadata/search':
+    'v1/bibliographic-metadata/search',
 
   // Description
   'PATCH /api/v1/descriptions/:id': 'v1/description/update',

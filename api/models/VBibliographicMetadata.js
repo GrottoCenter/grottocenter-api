@@ -164,6 +164,13 @@ module.exports = {
       isIn: Object.values(METADATA_STATUS),
       defaultsTo: 'registered',
     },
+
+    children: {
+      type: 'ref',
+      columnName: 'children',
+      columnType: 'int4[]',
+      defaultsTo: [],
+    },
   },
 
   METADATA_STATUS,

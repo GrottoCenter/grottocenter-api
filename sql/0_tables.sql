@@ -1243,6 +1243,7 @@ CREATE TABLE t_bibliographic_metadata (
 	dc_types text[] NULL,
 	has_been_updated bool NOT NULL DEFAULT false,
 	metadata_status e_metadata_status NOT NULL DEFAULT 'registered',
+	children int4[] NULL,
 
 	CONSTRAINT t_record_pk PRIMARY KEY (id_document),
     CONSTRAINT t_record_t_document_fk FOREIGN KEY (id_document) REFERENCES t_document(id)

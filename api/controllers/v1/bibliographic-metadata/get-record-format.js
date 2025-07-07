@@ -15,16 +15,48 @@ module.exports = async (req, res) => {
     });
   }
 
+  const ids = id.includes(',') ? id.split(',').map((i) => i.trim()) : id;
   const bibliographicMetadata =
-    await BibliographicMetadataService.getMetadata(id);
+    await BibliographicMetadataService.getMetadata(ids);
 
-  if (!bibliographicMetadata) {
+  if (
+    !bibliographicMetadata ||
+    (Array.isArray(bibliographicMetadata) && bibliographicMetadata.length === 0)
+  ) {
     return res.notFound({
       message: `Record with ID ${id} not found`,
     });
   }
   // Transform by the format selected
   const [marcFormat, country] = format.split('-');
+
+  if (Array.isArray(bibliographicMetadata)) {
+    const response = await Promise.all(
+      bibliographicMetadata.map(async (document) => {
+        const [marcRecord, countrySelected] =
+          await MarcConvertorService.documentToMarc(
+            document,
+            marcFormat,
+            country
+          );
+        return {
+          id: document.id,
+          metadata: marcRecord,
+          format: marcFormat,
+          country: countrySelected,
+        };
+      })
+    );
+
+    const params = {
+      controllerMethod: 'RecordController.getRecordByFormat',
+      searchedItem: `Record ${id} in format ${format}`,
+      notFoundMessage: `Record ${id} not found in format ${format}`,
+    };
+
+    return ControllerService.treat(req, null, response, params, res);
+  }
+
   const [marcRecord, countrySelected] =
     await MarcConvertorService.documentToMarc(
       bibliographicMetadata,
