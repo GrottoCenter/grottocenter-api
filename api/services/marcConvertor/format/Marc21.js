@@ -184,10 +184,10 @@ module.exports = {
       ]);
     }
 
-    if (document.dcTypes && document.dcTypes.length > 0) {
-      document.dcTypes.forEach((type) => {
-        marcRecord.addDataField('655', ' ', '7', [['a', type]]);
-      });
+    if (document.dcTypeGrottocenter) {
+      marcRecord.addDataField('655', ' ', '7', [
+        ['a', document.dcTypeGrottocenter],
+      ]);
     }
 
     marcRecord.addDataField('040', ' ', ' ', [['a', 'GrottoCenterAgencyCode']]);

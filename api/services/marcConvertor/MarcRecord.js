@@ -16,8 +16,9 @@ class Marc {
    * @param {string} ind1 - The first indicator of the data field.
    * @param {string} ind2 - The second indicator of the data field.
    * @param {Array} subfields - An array of subfields, where each subfield is an array containing the subfield code and value.
+   * @param {boolean} [skipValidation=false] - If true, skips validation of the field (by the module marc record) before adding it. Useful for field no include in marc format.
    */
-  addDataField(tag, ind1, ind2, subfields) {
+  addDataField(tag, ind1, ind2, subfields, skipValidation = false) {
     const subfieldObjects = subfields.map((sf) => ({
       code: sf[0],
       value: sf[1],
@@ -30,7 +31,11 @@ class Marc {
       subfields: subfieldObjects,
     };
 
-    this.record.insertField(field);
+    if (skipValidation) {
+      this.record.fields.push(field);
+    } else {
+      this.record.insertField(field);
+    }
     return this;
   }
 

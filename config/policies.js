@@ -93,6 +93,9 @@ module.exports.policies = {
   'v1/document/delete': 'tokenAuth',
   'v1/document/restore': 'tokenAuth',
 
+  // Bibliographic Metadata
+  'v1/bibliographic-metadata/search': true,
+
   // DocumentDuplicate
   'v1/document-duplicate/create-from-duplicate': 'tokenAuth',
   'v1/document-duplicate/create-many': 'tokenAuth',

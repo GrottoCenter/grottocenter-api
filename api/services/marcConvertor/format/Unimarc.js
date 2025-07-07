@@ -4,7 +4,10 @@ const {
   getCurrentDateYYYYMMDD,
   formatDateForMarc,
   extractIdentifier,
+  determineBibliographicLevel,
+  determineTypeDocument,
 } = require('../Utils');
+const BibliographicMetadataService = require('../../BibliographicMetadataService');
 
 /**
  * Generate UNIMARC leader
@@ -16,20 +19,9 @@ function generateLeader(type) {
   let leader = '00000'; // size of the document
   leader += 'n'; // status : new document
 
-  switch (
-    type // type of document (more need to be implemente)
-  ) {
-    case 'article':
-      leader += 'a';
-      break;
-    case 'book':
-      leader += 'a';
-      break;
-    default:
-      leader += 'a';
-  }
+  leader += determineTypeDocument(type) || 'a'; // type of document
+  leader += determineBibliographicLevel(type); // bibliographic level
 
-  leader += 'm'; // bibliographic level
   leader += ' ';
   leader += 'a';
   leader += '2'; // Unimarc code
@@ -51,12 +43,10 @@ module.exports = {
    * @param {Object} document - Document data from your notice format
    * @returns {Object} UNIMARC formatted data
    */
-  transform: (document) => {
+  transform: async (document) => {
     const marcRecord = new Marc();
 
-    sails.log.info(document);
-
-    marcRecord.addLeader(generateLeader(document.dcTypes));
+    marcRecord.addLeader(generateLeader(document.dcTypeGrottocenter));
 
     marcRecord
       .addControlField('001', document.id)
@@ -81,8 +71,6 @@ module.exports = {
           marcRecord.addDataField('701', ' ', ' ', [['a', creator]]); // Additional authors
         });
       }
-    } else {
-      marcRecord.addDataField('700', ' ', ' ', [['a', 'Unknown Author']]);
     }
 
     if (document.dcContibutor) {
@@ -115,6 +103,14 @@ module.exports = {
     if (document.dcDescriptions) {
       document.dcDescriptions.forEach((description) => {
         marcRecord.addDataField('330', ' ', ' ', [['a', description]]);
+      });
+    }
+
+    if (document.dcSources) {
+      document.dcSources.forEach((sources) => {
+        marcRecord.addDataField('330', ' ', ' ', [
+          ['a', `Source : ${sources}`],
+        ]);
       });
     }
 
@@ -168,10 +164,15 @@ module.exports = {
       });
     }
 
-    if (document.dcRelations && document.dcRelations.length > 0) {
-      document.dcRelations.forEach((relation) => {
-        marcRecord.addDataField('461', ' ', ' ', [['t', relation]]);
-      });
+    const parents = await BibliographicMetadataService.getTitleAndIdParents(
+      document.id
+    );
+
+    for (const parent of parents) {
+      marcRecord.addDataField('461', ' ', ' ', [
+        ['0', parent.id.toString()],
+        ['t', parent.dcTitle],
+      ]);
     }
 
     if (document.dcRights) {
@@ -180,18 +181,30 @@ module.exports = {
       ]);
     }
 
-    if (document.dcTypes) {
-      const types = [];
-      document.dcTypes.forEach((type) => {
-        types.push(['a', type]);
-      });
-      marcRecord.addDataField('183', ' ', ' ', types);
+    if (document.dcTypeGrottocenter) {
+      marcRecord.addDataField('183', ' ', ' ', [
+        ['a', document.dcTypeGrottocenter],
+      ]);
     }
 
     marcRecord.addDataField('801', ' ', ' ', [
       ['a', 'FR-740335301'],
       ['b', 'BERNEX-BBS/SA'],
     ]); // agency code
+
+    if (document.otherField) {
+      document.otherField.forEach((field) => {
+        if (Array.isArray(field) && field.length > 0) {
+          const tag = field[0];
+          const subfields = field
+            .slice(1)
+            .map((subfield) =>
+              Array.isArray(subfield) ? subfield : ['a', subfield]
+            );
+          marcRecord.addDataField(tag, ' ', ' ', subfields);
+        }
+      });
+    }
 
     return marcRecord;
   },

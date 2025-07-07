@@ -91,8 +91,24 @@ CREATE MATERIALIZED VIEW v_data_quality_compute_entrance AS
 -- not populated, (WITH NO DATA), the schema only
 
 CREATE MATERIALIZED VIEW v_bibliographic_metadata AS
+  WITH RECURSIVE doc_children(root, child) AS (
+      SELECT id_parent, id
+        FROM t_document
+      WHERE id_parent IS NOT NULL
+    UNION ALL
+      SELECT dc.root, d.id
+        FROM t_document d
+        JOIN doc_children dc ON d.id_parent = dc.child
+  ),
+  children_agg AS (
+      SELECT root AS id_document,
+            array_agg(child) AS children
+        FROM doc_children
+      GROUP BY root
+  )
   SELECT
     d.id as id_document,
+    COALESCE(ca.children, ARRAY[]::int[]) AS children,
     'oai:grottocenter.org:' || d.id as oai_identifier,
     d.date_validation as last_update,
     ARRAY[
@@ -199,7 +215,7 @@ CREATE MATERIALIZED VIEW v_bibliographic_metadata AS
   LEFT JOIN t_license lic ON lic.id = d.id_license
   LEFT JOIN t_type tt ON tt.id = d.id_type
   LEFT JOIN t_identifier_type idtype ON idtype.code = d.id_identifier_type
-
+  LEFT JOIN children_agg ca ON ca.id_document = d.id
   WHERE d.id IS NOT NULL
 
   GROUP BY
@@ -212,7 +228,8 @@ CREATE MATERIALIZED VIEW v_bibliographic_metadata AS
     author.nickname,
     tn.name,
     lic.name,
-    tt.name
+    tt.name,
+    ca.children
   WITH NO DATA;
 
 CREATE UNIQUE INDEX ON v_data_quality_compute_entrance(id_massif, id_entrance);
