@@ -14,7 +14,7 @@ const METADATA_STATUS = {
 };
 
 module.exports = {
-  tableName: 't_bibliographic_metadata',
+  tableName: 'v_bibliographic_metadata',
   primaryKey: 'id',
 
   attributes: {
