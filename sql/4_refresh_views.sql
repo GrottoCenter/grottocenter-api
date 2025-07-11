@@ -7,3 +7,6 @@ REFRESH MATERIALIZED VIEW v_country_info;
 
 -- refresh v_data_quality_compute_entrance
 REFRESH MATERIALIZED VIEW v_data_quality_compute_entrance;
+
+-- refresh v_bibliographic_metadata
+REFRESH MATERIALIZED VIEW v_bibliographic_metadata;
