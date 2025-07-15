@@ -161,26 +161,28 @@ CREATE MATERIALIZED VIEW v_bibliographic_metadata AS
       ARRAY[NULLIF(lic.name, '')],
       ARRAY[]::text[]
     ) as dc_rights,
-    ARRAY[
-      CASE
-        WHEN tt.name ILIKE 'Image' THEN 'image'
-        WHEN tt.name ILIKE 'Still Image' THEN 'image'
-        WHEN tt.name ILIKE 'Map' THEN 'image'
-        WHEN tt.name ILIKE 'Topographic Drawing' THEN 'image'
-        WHEN tt.name ILIKE 'Moving Image' THEN 'video'
-        WHEN tt.name ILIKE 'Sound' THEN 'sound'
-        WHEN tt.name ILIKE 'Dataset' THEN 'dataset'
-        WHEN tt.name ILIKE 'Text' THEN 'text'
-        WHEN tt.name ILIKE 'Article' THEN 'text'
-        WHEN tt.name ILIKE 'Book' THEN 'text'
-        WHEN tt.name ILIKE 'Issue' THEN 'text'
-        WHEN tt.name ILIKE 'Report' THEN 'text'
-        WHEN tt.name ILIKE 'Authorization To Publish' THEN 'text'
-        ELSE 'text'
-      END
-    ] as dc_types,
+
+    -- Nouveau champ : type grottocenter nettoyé
+    lower(regexp_replace(tt.name, '\s+', '_', 'g')) as dc_type_grottocenter,
+
+    -- Nouveau champ : type DCMI
+    CASE
+      WHEN tt.name ILIKE 'Image' THEN 'image'
+      WHEN tt.name ILIKE 'Still Image' THEN 'image'
+      WHEN tt.name ILIKE 'Map' THEN 'image'
+      WHEN tt.name ILIKE 'Topographic Drawing' THEN 'image'
+      WHEN tt.name ILIKE 'Moving Image' THEN 'moving image'
+      WHEN tt.name ILIKE 'Sound' THEN 'sound'
+      WHEN tt.name ILIKE 'Dataset' THEN 'dataset'
+      WHEN tt.name ILIKE 'Interactive Resource' THEN 'interactive resource'
+      WHEN tt.name ILIKE 'Physical Object' THEN 'physical object'
+      WHEN tt.name ILIKE 'Collection' THEN 'collection'
+      ELSE 'text'
+    END as dc_type_dcmi,
+
     false as has_been_updated,
     'registered'::e_metadata_status as metadata_status
+
   FROM t_document d
   LEFT JOIN t_description td ON td.id_document = d.id
   LEFT JOIN j_document_caver_author jca ON jca.id_document = d.id
@@ -197,7 +199,9 @@ CREATE MATERIALIZED VIEW v_bibliographic_metadata AS
   LEFT JOIN t_license lic ON lic.id = d.id_license
   LEFT JOIN t_type tt ON tt.id = d.id_type
   LEFT JOIN t_identifier_type idtype ON idtype.code = d.id_identifier_type
+
   WHERE d.id IS NOT NULL
+
   GROUP BY
     d.id,
     d.date_validation,

@@ -140,11 +140,16 @@ module.exports = {
       defaultsTo: [],
     },
 
-    dcTypes: {
-      type: 'ref',
-      columnName: 'dc_types',
-      columnType: 'text[]',
-      defaultsTo: [],
+    dcTypeGrottocenter: {
+      type: 'string',
+      columnName: 'dc_type_grottocenter',
+      allowNull: true,
+    },
+
+    dcTypeDcmi: {
+      type: 'string',
+      columnName: 'dc_type_dcmi',
+      allowNull: true,
     },
 
     hasBeenUpdated: {
