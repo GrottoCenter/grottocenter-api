@@ -399,6 +399,66 @@ paths:
                       $ref: '#/components/schemas/Caver'
         '404':
           description: No administrators found.
+  
+  '/cavers/authors':
+    get:
+      tags:
+        - cavers
+      description: Get all authors (if the user have one document in j_document_caver_author with is id) of Grottocenter. (only for moderators and administrators)
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cavers:
+                    type: array
+        '404':
+          description: No authors found.
+        '401':
+          description: You are not authorized to get the authors of Grottocenter.
+
+  '/cavers/contributors':
+    get:
+      tags:
+        - cavers
+      description: Get all contributors (if the user have one document in t_document with is id in id_authors) of Grottocenter. (only for moderators and administrators)
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cavers:
+                    type: array
+        '404':
+          description: No contributors found
+        '401':
+          description: You are not authorized to get the contributors of Grottocenter.
+
+  'cavers/users':
+    get:
+      tags:
+        - cavers
+      description: Get all users (valid email and have a password) of Grottocenter. (only for moderators and administrators)
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cavers:
+                    type: array
+        '404':
+          description: No users found
+        '401':
+          description: You are not authorized to get the users of Grottocenter.
 
   '/cavers/count':
     get:
