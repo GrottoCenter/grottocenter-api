@@ -19,6 +19,8 @@ servers:
 tags:
   - name: account
   - name: authentication
+  - name: bibliographic metadata
+    description: OAI-PMH endpoints for metadata harvesting
   - name: caves
   - name: cavers
   - name: countries
@@ -72,6 +74,7 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/File-format'
+
   '/caves':
     post:
       tags:
@@ -83,7 +86,6 @@ paths:
           description: Depth of the cave
           schema:
             type: integer
-
         - name: descriptions
           in: query
           description: Description objects array
@@ -100,7 +102,6 @@ paths:
                   description: Language used for the description. The list of languages supported by Grottocenter is available using the /languages route.
                 title:
                   type: string
-
         - name: documents
           in: query
           description: Document ids related to the cave
@@ -108,36 +109,30 @@ paths:
             type: array
             items:
               type: integer
-
         - name: isDiving
           in: query
           description: If the cave is flooded or not
           schema:
             type: boolean
             default: false
-
         - name: latitude
           in: query
           schema:
             type: number
-
         - name: length
           in: query
           description: Length of the cave
           schema:
             type: integer
-
         - name: longitude
           in: query
           schema:
             type: number
-
         - name: massif
           in: query
           description: Massif id in which the cave is located.
           schema:
             type: integer
-
         - name: name
           in: query
           description: Name object
@@ -151,14 +146,12 @@ paths:
               language:
                 type: string
                 description: Language used for the name. The list of languages supported by Grottocenter is available using the /languages route.
-
         - name: temperature
           in: query
           description: Average temperature in the cave
           schema:
             type: number
             format: double
-
       responses:
         200:
           description: Successful operation
@@ -168,6 +161,20 @@ paths:
                 $ref: '#/components/schemas/Cave'
         403:
           description: You are not authorized to create a cave.
+
+    get:
+      tags:
+        - caves
+      description: Get all caves.
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Cave'
 
   '/caves/{id}':
     get:
@@ -730,7 +737,6 @@ paths:
           in: query
           schema:
             type: string
-
       responses:
         '200':
           description: Successful operation
@@ -768,7 +774,6 @@ paths:
           in: query
           schema:
             type: string
-
       responses:
         '200':
           description: Successful operation
@@ -788,7 +793,6 @@ paths:
           required: true
           schema:
             type: string
-
       responses:
         '200':
           description: Successful operation
@@ -798,56 +802,6 @@ paths:
                 $ref: '#/components/schemas/Description'
         '404':
           description: We don't find these description's snapshots.
-
-  '/documents/{id}':
-    get:
-      tags:
-        - documents
-      description: Get a document by id.
-      parameters:
-        - name: id
-          in: path
-          description: Document id
-          required: true
-          schema:
-            type: string
-        - name: requireUpdate
-          in: query
-          description: Specify if you want to retrieve the current update (not validated) of the document
-          required: false
-          schema:
-            type: boolean
-            default: false
-      responses:
-        '200':
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Document'
-        '404':
-          description: Document not found.
-
-    put:
-      tags:
-        - documents
-      description: Update a document. See the POST /documents route explaination about the parameters you can use to update a document.
-      parameters:
-        - name: id
-          in: path
-          description: id of the document to be updated.
-          required: true
-          schema:
-            type: string
-      responses:
-        200:
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Document'
-        403:
-          description: You are not authorized to update a document.
 
   '/documents':
     post:
@@ -865,7 +819,6 @@ paths:
               properties:
                 id:
                   type: string
-
         - name: datePublication
           in: query
           description: Date on which the document you submit was made public. You can refer to the date indicated on the document.
@@ -881,7 +834,6 @@ paths:
             full date:
               value: '2014-06-21'
               summary: Full date
-
         - name: editor
           in: query
           description: Organization that ensures the publication of the document.
@@ -890,13 +842,11 @@ paths:
             properties:
               id:
                 type: string
-
         - name: identifier
           in: query
           description: Code for designating a document in a unique way. This can be a DOI, URL, ISBN or ISSN.
           schema:
             type: string
-
         - name: identifierType
           in: query
           description: Type of the identifier provided.
@@ -906,7 +856,6 @@ paths:
               id:
                 type: string
                 enum: ['DOI', 'ISBN', 'ISSN', 'URL']
-
         - name: library
           in: query
           description: Place (= Organization) where the document can be consulted.
@@ -915,7 +864,6 @@ paths:
             properties:
               id:
                 type: string
-
         - name: massif
           in: query
           description: Massif to which the document refers to.
@@ -924,7 +872,6 @@ paths:
             properties:
               id:
                 type: string
-
         - name: partOf
           in: query
           description: Document that contains the document you are submitting (an article has a periodical issue as its parent document, a periodical issue has a periodical as its parent document).
@@ -933,7 +880,6 @@ paths:
             properties:
               id:
                 type: string
-
         - name: regions
           in: query
           description: BBS regions to which the document refers to.
@@ -944,7 +890,6 @@ paths:
               properties:
                 id:
                   type: string
-
         - name: subjects
           in: query
           description: List of subjects and their description is available using the /documents/subjects route or here => https://www.ssslib.ch/bbs/wp-content/uploads/2017/03/chapter_and_geo_1_2008.pdf
@@ -955,7 +900,6 @@ paths:
               properties:
                 code:
                   type: string
-
         - name: documentType
           in: query
           description: Type of the document (Collection, Issue, Article or Text).
@@ -966,19 +910,16 @@ paths:
               properties:
                 id:
                   type: string
-
         - name: description
           in: query
           description: Precise sentence pleasant to read with keywords.
           schema:
             type: string
-
         - name: title
           in: query
           description: Title of the text as it is. In its absence, put a fictitious title between [].
           schema:
             type: string
-
         - name: titleAndDescriptionLanguage
           in: query
           description: Language used for the title and the description you are providing. List of languages supported by Grottocenter is available using the /languages route.
@@ -989,7 +930,6 @@ paths:
               properties:
                 id:
                   type: string
-
         - name: documentMainLanguage
           in: query
           description: Language used in the document. List of languages supported by Grottocenter is available using the /languages route.
@@ -1000,7 +940,6 @@ paths:
               properties:
                 id:
                   type: string
-
         - name: files
           in: query
           description: The files linked to the document.
@@ -1009,7 +948,6 @@ paths:
             items:
               type: string
               format: binary
-
       responses:
         200:
           description: Successful operation
@@ -1079,6 +1017,56 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/Document'
+
+  '/documents/{id}':
+    get:
+      tags:
+        - documents
+      description: Get a document by id.
+      parameters:
+        - name: id
+          in: path
+          description: Document id
+          required: true
+          schema:
+            type: string
+        - name: requireUpdate
+          in: query
+          description: Specify if you want to retrieve the current update (not validated) of the document
+          required: false
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+        '404':
+          description: Document not found.
+
+    put:
+      tags:
+        - documents
+      description: Update a document. See the POST /documents route explaination about the parameters you can use to update a document.
+      parameters:
+        - name: id
+          in: path
+          description: id of the document to be updated.
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+        403:
+          description: You are not authorized to update a document.
 
   '/documents/count':
     get:
@@ -1167,7 +1155,6 @@ paths:
                   type: boolean
                 validationComment:
                   type: string
-
       responses:
         '200':
           description: Successful operation
@@ -1206,7 +1193,6 @@ paths:
           required: true
           schema:
             type: string
-
       responses:
         '200':
           description: Successful operation
@@ -1216,6 +1202,441 @@ paths:
                 $ref: '#/components/schemas/Document'
         '404':
           description: We don't find these document's snapshots.
+
+  '/documents/subjects':
+    get:
+      tags:
+        - documents
+        - subjects
+      description: Get all the document subjects.
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  subjects:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Document-subject'
+
+  '/documents/subjects/{code}':
+    get:
+      tags:
+        - documents
+        - subjects
+      description: Get a subject by its code.
+      parameters:
+        - name: code
+          in: path
+          description: Subject code
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document-subject'
+        '404':
+          description: Subject not found
+
+  '/documents/subjects/search/logical/or':
+    post:
+      tags:
+        - documents
+        - subjects
+      description: Get a subject according to the parameters given, applying a logical OR. The search is case insensitive and autocompleted (i.e. it search for the parameters being contained in the actual field).
+      parameters:
+        - name: name
+          in: query
+          description: Subject name (case insensitive)
+          required: false
+          schema:
+            type: string
+        - name: code
+          in: query
+          description: Subject code (case insensitive)
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  subjects:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Document-subject'
+
+  '/documents/check-rows':
+    post:
+      tags:
+        - documents
+      description: Check if the data sent are already present in Grottocenter (incomplete).
+      requestBody:
+        description: Check https://ontology.uis-speleo.org/howto/ to learn the mandatories properties. It must be an array of object containing the properties mentioned.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Import-csv'
+      responses:
+        '200':
+          description: Successful operation. Returns the data which are not duplicates. For those which are indeed duplicates, returns the line concerned in the csv.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  willBeCreated:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Import-csv'
+                  wontBeCreated:
+                    type: array
+                    items:
+                      properties:
+                        line:
+                          type: integer
+
+  '/documents/import-rows':
+    post:
+      tags:
+        - import csv
+      description: Import the data in the database.
+      requestBody:
+        description: Check https://ontology.uis-speleo.org/howto/ to learn the mandatories properties. It must be an array of object containing the properties mentioned.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Import-csv'
+      responses:
+        '200':
+          description: Successful operation. Returns the id of the cave/entrance or document (depending on what you imported). In case of failure, returns the line concerned and an error message.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: object
+                    properties:
+                      success:
+                        type: integer
+                      failure:
+                        type: integer
+                  successfulImport:
+                    type: array
+                    items:
+                      oneOf:
+                        - type: object
+                          properties:
+                            caveId:
+                              type: integer
+                            entranceId:
+                              type: integer
+                        - type: object
+                          properties:
+                            documentId:
+                              type: integer
+                  failureImport:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        line:
+                          type: integer
+                        message:
+                          type: string
+        '403':
+          description: You are not authorized to create a document (or entrance).
+
+  '/bibliographic-metadata/{identifier}':
+    get:
+      tags:
+        - bibliographic metadata
+      description: 'Retrieve a single bibliographic metadata record by OAI identifier (GetRecord operation).'
+      parameters:
+        - name: identifier
+          in: path
+          description: 'OAI identifier of the record to retrieve'
+          required: true
+          schema:
+            type: string
+            example: 'oai:grottocenter.org:25022'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BibliographicMetadataRecord'
+        '404':
+          description: Record not found
+
+  '/bibliographic-metadata/{id}/format/{format}':
+    get:
+      tags:
+        - bibliographic metadata
+      description: 'Get bibliographic metadata by ID and convert to specific MARC format.'
+      parameters:
+        - name: id
+          in: path
+          description: 'Unique identifier of the bibliographic metadata record'
+          required: true
+          schema:
+            type: string
+            example: '25022'
+        - name: format
+          in: path
+          description: 'MARC format specification with optional country code'
+          required: true
+          schema:
+            type: string
+            example: 'marc21-US'
+            pattern: '^[a-zA-Z0-9]+(-[A-Z]{2})?$'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  metadata:
+                    type: object
+                    description: 'Converted MARC record'
+                  format:
+                    type: string
+                    description: 'Applied MARC format'
+                    example: 'marc21'
+                  country:
+                    type: string
+                    description: 'Applied country code'
+                    example: 'US'
+        '400':
+          description: 'ID and format parameters are required'
+        '404':
+          description: 'Record not found'
+
+  '/bibliographic-metadata/records':
+    get:
+      tags:
+        - bibliographic metadata
+      description: 'Retrieve multiple bibliographic metadata records with full metadata (ListRecords operation).'
+      parameters:
+        - name: set
+          in: query
+          description: 'Filter records by set specification'
+          required: false
+          schema:
+            type: string
+            example: 'grottocenter'
+        - name: from
+          in: query
+          description: 'Filter records modified from this date (YYYY-MM-DD format)'
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2023-01-01'
+        - name: until
+          in: query
+          description: 'Filter records modified until this date (YYYY-MM-DD format)'
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2023-12-31'
+        - name: includeDeleted
+          in: query
+          description: 'Include deleted records in the response'
+          required: false
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  records:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/BibliographicMetadataRecord'
+                  count:
+                    type: integer
+                    description: 'Total number of records returned'
+                  parameters:
+                    type: object
+                    description: 'Applied filter parameters'
+                    properties:
+                      set:
+                        type: string
+                      from:
+                        type: string
+                      until:
+                        type: string
+
+  '/bibliographic-metadata/identifiers':
+    get:
+      tags:
+        - bibliographic metadata
+      description: 'Retrieve record headers only without full metadata (ListIdentifiers operation).'
+      parameters:
+        - name: set
+          in: query
+          description: 'Filter records by set specification'
+          required: false
+          schema:
+            type: string
+            example: 'grottocenter'
+        - name: from
+          in: query
+          description: 'Filter records modified from this date (YYYY-MM-DD format)'
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2023-01-01'
+        - name: until
+          in: query
+          description: 'Filter records modified until this date (YYYY-MM-DD format)'
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2023-12-31'
+        - name: includeDeleted
+          in: query
+          description: 'Include deleted records in the response'
+          required: false
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  identifiers:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/BibliographicMetadataIdentifier'
+                  count:
+                    type: integer
+                    description: 'Total number of identifiers returned'
+                  parameters:
+                    type: object
+                    description: 'Applied filter parameters'
+                    properties:
+                      set:
+                        type: string
+                      from:
+                        type: string
+                      until:
+                        type: string
+
+  '/bibliographic-metadata/sets':
+    get:
+      tags:
+        - bibliographic metadata
+      description: 'List available sets for selective harvesting (ListSets operation).'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sets:
+                    type: array
+                    items:
+                      type: string
+                      description: 'OAI-PMH set specification'
+                      example: 'grottocenter'
+                  count:
+                    type: integer
+                    description: 'Total number of sets available'
+
+  '/bibliographic-metadata/count':
+    get:
+      tags:
+        - bibliographic metadata
+      description: 'Get the number of matching bibliographic metadata records (custom endpoint for pagination support).'
+      parameters:
+        - name: set
+          in: query
+          description: 'Filter records by set specification'
+          required: false
+          schema:
+            type: string
+            example: 'grottocenter:issue'
+        - name: from
+          in: query
+          description: 'Filter records modified from this date (YYYY-MM-DD format)'
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2023-01-01'
+        - name: until
+          in: query
+          description: 'Filter records modified until this date (YYYY-MM-DD format)'
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2023-12-31'
+        - name: includeDeleted
+          in: query
+          description: 'Include deleted records in the count'
+          required: false
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    description: 'Total number of matching records'
+                  parameters:
+                    type: object
+                    description: 'Applied filter parameters'
+                    properties:
+                      set:
+                        type: string
+                      from:
+                        type: string
+                      until:
+                        type: string
 
   '/regions/search/logical/or':
     post:
@@ -1326,7 +1747,6 @@ paths:
           description: Entrance id which the location is refering to.
           schema:
             type: integer
-
       responses:
         '200':
           description: Successful operation
@@ -1362,7 +1782,6 @@ paths:
           in: query
           schema:
             type: string
-
       responses:
         '200':
           description: Successful operation
@@ -1382,7 +1801,6 @@ paths:
           required: true
           schema:
             type: string
-
       responses:
         '200':
           description: Successful operation
@@ -1419,7 +1837,6 @@ paths:
           description: Entrance id which the history is referring to.
           schema:
             type: integer
-
       responses:
         '200':
           description: Successful operation
@@ -1451,7 +1868,6 @@ paths:
           in: query
           schema:
             type: string
-
       responses:
         '200':
           description: Successful operation
@@ -1471,7 +1887,6 @@ paths:
           required: true
           schema:
             type: string
-
       responses:
         '200':
           description: Successful operation
@@ -1540,7 +1955,6 @@ paths:
           required: true
           schema:
             type: string
-
       responses:
         '200':
           description: Successful operation
@@ -1609,7 +2023,6 @@ paths:
           required: true
           schema:
             type: string
-
       responses:
         '200':
           description: Successful operation
@@ -1636,7 +2049,6 @@ paths:
           required: true
           schema:
             type: string
-
       responses:
         '200':
           description: Successful operation
@@ -1656,7 +2068,6 @@ paths:
           required: true
           schema:
             type: string
-
       responses:
         '200':
           description: Successful operation
@@ -1678,11 +2089,9 @@ paths:
           required: true
           schema:
             type: string
-
       responses:
         '204':
           description: Successful operation
-
         '400':
           description: You must provide a (valid) email.
 
@@ -1708,13 +2117,10 @@ paths:
       responses:
         '204':
           description: Successful operation
-
         '400':
           description: You must provide a password and a reset password token in the body of your request. The password must be at least 8 characters long.
-
         '403':
           description: The password reset token has expired or is invalid.
-
         '404':
           description: User in the password reset token not found.
 
@@ -1753,7 +2159,6 @@ paths:
 
 
         Otherwise, the email will not be sent and its content will be simply logged in your console.
-
       parameters:
         - name: email
           in: query
@@ -1764,10 +2169,8 @@ paths:
       responses:
         '204':
           description: Successful operation
-
         '400':
           description: You must provide an email in the body of your request.
-
         '404':
           description: The email is not used by any Grottocenter's caver.
 
@@ -1796,7 +2199,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Auth-success'
-
         '401':
           description: Invalid email or password or the password must be reset first.
           content:
@@ -1843,86 +2245,10 @@ paths:
       responses:
         '204':
           description: Successful sign up.
-
         '400':
           description: Bad request (password too short, missing value(s)...).
-
         '409':
           description: Email or nickname already used.
-
-  '/documents/subjects':
-    get:
-      tags:
-        - documents
-        - subjects
-      description: Get all the document subjects.
-      responses:
-        '200':
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  subjects:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Document-subject'
-
-  '/documents/subjects/{code}':
-    get:
-      tags:
-        - documents
-        - subjects
-      description: Get a subject by its code.
-      parameters:
-        - name: code
-          in: path
-          description: Subject code
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Document-subject'
-        '404':
-          description: Subject not found
-
-  '/documents/subjects/search/logical/or':
-    post:
-      tags:
-        - documents
-        - subjects
-      description: Get a subject according to the parameters given, applying a logical OR. The search is case insensitive and autocompleted (i.e. it search for the parameters being contained in the actual field).
-      parameters:
-        - name: name
-          in: query
-          description: Subject name (case insensitive)
-          required: false
-          schema:
-            type: string
-        - name: code
-          in: query
-          description: Subject code (case insensitive)
-          required: false
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  subjects:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Document-subject'
 
   '/entrances':
     post:
@@ -2261,7 +2587,6 @@ paths:
           required: true
           schema:
             type: string
-
       responses:
         '200':
           description: Successful operation
@@ -2283,7 +2608,6 @@ paths:
           required: true
           schema:
             type: string
-
       responses:
         '200':
           description: Successful operation
@@ -2293,6 +2617,51 @@ paths:
                 $ref: '#/components/schemas/EntranceAllSnapshots'
         '404':
           description: We don't find these entrance's snapshots.
+
+  '/entrances/with-quality/massifs/{id}':
+    get:
+      tags:
+        - massifs
+      description: Get the entrances of a massif with the data quality value computed
+      parameters:
+        - name: id
+          in: path
+          description: Massif id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Data-quality-info'
+        '404':
+          description: Massif doesn't exist or hasn't entrances
+
+  '/entrances/with-quality/countries/{id}':
+    get:
+      tags:
+        - countries
+      description: Get the entrances of a country with the data quality value computed
+      parameters:
+        - name: id
+          in: path
+          description: Country id
+          example: FR, GB, IT
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Data-quality-info'
+        '404':
+          description: Country doesn't exist or hasn't entrances
 
   '/search':
     post:
@@ -2318,7 +2687,6 @@ paths:
                 complete:
                   type: boolean
                   description: Does the query need to send every information about the results? If it's set to false, the id and the name of each result only will be returned.
-
       responses:
         '200':
           description: Successful operation
@@ -2381,7 +2749,6 @@ paths:
           schema:
             type: boolean
             default: true
-
       responses:
         '200':
           description: Successful operation
@@ -2410,6 +2777,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Count'
+
   '/geoloc/entrances':
     get:
       tags:
@@ -2450,6 +2818,7 @@ paths:
                     type: number
                   quality:
                     type: integer
+
   '/geoloc/entrancesCoordinates':
     get:
       tags:
@@ -2472,6 +2841,7 @@ paths:
                   type: array
                   items:
                     type: number
+
   '/geoloc/networks':
     get:
       tags:
@@ -2498,6 +2868,7 @@ paths:
                     type: number
                   latitude:
                     type: number
+
   '/geoloc/networksCoordinates':
     get:
       tags:
@@ -2520,6 +2891,7 @@ paths:
                   type: array
                   items:
                     type: number
+
   '/geoloc/organizations':
     get:
       tags:
@@ -2548,6 +2920,7 @@ paths:
                     type: number
                   latitude:
                     type: number
+
   '/geoloc/countEntrances':
     get:
       tags:
@@ -2596,7 +2969,6 @@ paths:
               id:
                 type: string
                 description: Must be a language supported by Grottocenter (see GET /languages route) using the 3-letters format.
-
         - name: geogPolygon
           in: query
           required: true
@@ -2611,14 +2983,12 @@ paths:
                 type: array
                 items:
                   type: object
-
         - name: name
           in: query
           required: true
           description: Name of the massif
           schema:
             type: string
-
         - name: caves
           in: query
           description: List of caves ids related to the massif
@@ -2671,6 +3041,7 @@ paths:
                   $ref: '#/components/schemas/Massif'
         '404':
           description: Resource not found
+
     put:
       tags:
         - massifs
@@ -2729,7 +3100,6 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Massif'
-
         '400':
           description: Bad request
         '404':
@@ -2758,28 +3128,6 @@ paths:
                 $ref: '#/components/schemas/Statistics-massif'
         '404':
           description: Resource not found
-
-  '/entrances/with-quality/massifs/{id}':
-    get:
-      tags:
-        - massifs
-      description: Get the entrances of a massif with the data quality value computed
-      parameters:
-        - name: id
-          in: path
-          description: Massif id
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Data-quality-info'
-        '404':
-          description: Massif doesn't exist or hasn't entrances
 
   '/organizations':
     post:
@@ -3016,29 +3364,6 @@ paths:
         '404':
           description: Country id not found
 
-  '/entrances/with-quality/countries/{id}':
-    get:
-      tags:
-        - countries
-      description: Get the entrances of a country with the data quality value computed
-      parameters:
-        - name: id
-          in: path
-          description: Country id
-          example: FR, GB, IT
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Data-quality-info'
-        '404':
-          description: Country doesn't exist or hasn't entrances
-
   '/countries/count':
     get:
       tags:
@@ -3051,97 +3376,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Count'
-
-  '/documents/check-rows':
-    post:
-      tags:
-        - documents
-      description: Check if the data sent are already present in Grottocenter (incomplete).
-      requestBody:
-        description: Check https://ontology.uis-speleo.org/howto/ to learn the mandatories properties. It must be an array of object containing the properties mentioned.
-        required: true
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                $ref: '#/components/schemas/Import-csv'
-      responses:
-        '200':
-          description: Successful operation. Returns the data which are not duplicates. For those which are indeed duplicates, returns the line concerned in the csv.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  willBeCreated:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Import-csv'
-
-                  wontBeCreated:
-                    type: array
-                    items:
-                      properties:
-                        line:
-                          type: integer
-
-  '/documents/import-rows':
-    post:
-      tags:
-        - import csv
-      description: Import the data in the database.
-      requestBody:
-        description: Check https://ontology.uis-speleo.org/howto/ to learn the mandatories properties. It must be an array of object containing the properties mentioned.
-        required: true
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                $ref: '#/components/schemas/Import-csv'
-      responses:
-        '200':
-          description: Successful operation. Returns the id of the cave/entrance or document (depending on what you imported). In case of failure, returns the line concerned and an error message.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  total:
-                    type: object
-                    properties:
-                      success:
-                        type: integer
-                      failure:
-                        type: integer
-                  successfulImport:
-                    type: array
-                    items:
-                      oneOf:
-                        - type: object
-                          properties:
-                            caveId:
-                              type: integer
-                            entranceId:
-                              type: integer
-                        - type: object
-                          properties:
-                            documentId:
-                              type: integer
-
-                  failureImport:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        line:
-                          type: integer
-                        message:
-                          type: string
-
-        '403':
-          description: You are not authorized to create a document (or entrance).
 
   '/changes/recent':
     get:
@@ -3319,6 +3553,7 @@ parameters:
       type: integer
       minimum: 1
       maximum: 22
+
 components:
   schemas:
     Auth-success:
@@ -3338,6 +3573,144 @@ components:
           enum: [Mismatch, MustReset]
         message:
           type: string
+
+    Average-values:
+      type: object
+      properties:
+        avg_depth:
+          type: integer
+        avg_length:
+          type: integer
+
+    BibliographicMetadataRecord:
+      type: object
+      description: 'Complete bibliographic metadata record with all Dublin Core fields'
+      properties:
+        id:
+          type: integer
+          description: 'Unique document identifier'
+          example: 25022
+        oaiIdentifier:
+          type: string
+          description: 'OAI-PMH unique identifier'
+          example: 'oai:grottocenter.org:25022'
+        lastUpdate:
+          type: string
+          format: date-time
+          description: 'Last modification timestamp'
+        listSets:
+          type: array
+          items:
+            type: string
+          description: 'Array of OAI-PMH set specifications'
+          example: ['grottocenter', 'grottocenter:article']
+        dcTitle:
+          type: string
+          description: 'Dublin Core title'
+          example: 'Speleological Survey of the Mammoth Cave System'
+        dcCreators:
+          type: array
+          items:
+            type: string
+          description: 'Dublin Core creators/authors'
+          example: ['Smith, John', 'Doe, Jane']
+        dcContributor:
+          type: string
+          description: 'Dublin Core contributor'
+          example: 'National Speleological Society'
+        dcPublisher:
+          type: string
+          description: 'Dublin Core publisher'
+          example: 'Cave Research Institute'
+        dcDate:
+          type: string
+          format: date-time
+          description: 'Dublin Core publication date'
+        dcLanguages:
+          type: array
+          items:
+            type: string
+            minLength: 3
+            maxLength: 3
+          description: 'Dublin Core languages (ISO 639-2 3-letter codes)'
+          example: ['eng', 'fra']
+        dcDescriptions:
+          type: array
+          items:
+            type: string
+          description: 'Dublin Core descriptions'
+        dcCoverages:
+          type: array
+          items:
+            type: string
+          description: 'Dublin Core coverage information'
+        dcSubjects:
+          type: array
+          items:
+            type: string
+          description: 'Dublin Core subjects/topics'
+        dcFormats:
+          type: array
+          items:
+            type: string
+          description: 'Dublin Core format information'
+        dcIdentifiers:
+          type: array
+          items:
+            type: string
+          description: 'Dublin Core identifiers (DOI, ISBN, etc.)'
+        dcRelations:
+          type: array
+          items:
+            type: string
+          description: 'Dublin Core related resources'
+        dcSources:
+          type: array
+          items:
+            type: string
+          description: 'Dublin Core source information'
+        dcRights:
+          type: array
+          items:
+            type: string
+          description: 'Dublin Core rights information'
+        dcTypeGrottocenter:
+          type: string
+          description: 'Grottocenter-specific document type'
+          example: 'Article'
+        dcTypeDcmi:
+          type: string
+          description: 'DCMI type vocabulary'
+          example: 'Text'
+        hasBeenUpdated:
+          type: boolean
+          description: 'Indicates if the record has been updated'
+          default: false
+        metadataStatus:
+          type: string
+          enum: ['registered', 'deleted']
+          description: 'Current metadata status'
+          default: 'registered'
+
+    BibliographicMetadataIdentifier:
+      type: object
+      description: 'Minimal bibliographic metadata for identifier listing'
+      properties:
+        oaiIdentifier:
+          type: string
+          description: 'OAI-PMH unique identifier'
+          example: 'oai:grottocenter.org:25022'
+        lastUpdate:
+          type: string
+          format: date-time
+          description: 'Last modification timestamp'
+        listSets:
+          type: array
+          items:
+            type: string
+          description: 'Array of OAI-PMH set specifications'
+          example: ['grottocenter', 'grottocenter:article']
+
     Cave:
       type: object
       properties:
@@ -3424,6 +3797,48 @@ components:
         surname:
           type: string
 
+    Comment:
+      type: object
+      properties:
+        aestheticism:
+          type: number
+        alert:
+          type: boolean
+        approach:
+          type: number
+        author:
+          $ref: '#/components/schemas/Caver'
+        body:
+          type: string
+        cave:
+          $ref: '#/components/schemas/Cave'
+        caving:
+          type: number
+        dateInscription:
+          type: string
+        dateReviewed:
+          type: string
+        entrance:
+          $ref: '#/components/schemas/Entrance'
+        exit:
+          $ref: '#/components/schemas/Entrance'
+        eTTrail:
+          type: string
+          example: 01:35:00
+        eTUnderground:
+          type: string
+          example: 01:35:00
+        id:
+          type: integer
+        language:
+          type: string
+        relevance:
+          type: number
+        reviewer:
+          $ref: '#/components/schemas/Caver'
+        title:
+          type: string
+
     CommentRequest:
       type: object
       required:
@@ -3471,47 +3886,6 @@ components:
         cave:
           description: Cave id which the comment is referring to.
           type: integer
-    Comment:
-      type: object
-      properties:
-        aestheticism:
-          type: number
-        alert:
-          type: boolean
-        approach:
-          type: number
-        author:
-          $ref: '#/components/schemas/Caver'
-        body:
-          type: string
-        cave:
-          $ref: '#/components/schemas/Cave'
-        caving:
-          type: number
-        dateInscription:
-          type: string
-        dateReviewed:
-          type: string
-        entrance:
-          $ref: '#/components/schemas/Entrance'
-        exit:
-          $ref: '#/components/schemas/Entrance'
-        eTTrail:
-          type: string
-          example: 01:35:00
-        eTUnderground:
-          type: string
-          example: 01:35:00
-        id:
-          type: integer
-        language:
-          type: string
-        relevance:
-          type: number
-        reviewer:
-          $ref: '#/components/schemas/Caver'
-        title:
-          type: string
 
     Count:
       type: object
@@ -3530,6 +3904,24 @@ components:
           type: string
         numeric:
           type: integer
+
+    Data-quality-info:
+      type: object
+      properties:
+        name:
+          type: string
+        massif_name:
+          type: string
+        id_entrance:
+          type: integer
+        id_country:
+          type: string
+        country_name:
+          type: string
+        data_quality:
+          type: integer
+        date_of_update:
+          type: string
 
     Description:
       type: object
@@ -3858,6 +4250,13 @@ components:
         softwares:
           type: string
 
+    Geoloc:
+      properties:
+        entries:
+          type: array
+          items:
+            $ref: '#/components/schemas/Entrance'
+
     Group:
       type: object
       properties:
@@ -3868,12 +4267,28 @@ components:
         comment:
           type: string
 
-    Geoloc:
+    History:
+      type: object
+
+    Import-csv:
+      type: object
       properties:
-        entries:
-          type: array
-          items:
-            $ref: '#/components/schemas/Entrance'
+        id:
+          type: integer
+        rdf-type:
+          type: string
+        'dct:rights/karstlink:licenceType':
+          type: string
+        'dct:rights/cc:attributionURL':
+          type: string
+        'dct:rights/cc:attributionName':
+          type: string
+        'karstlink:documentType':
+          type: string
+        'rdfs:label':
+          type: string
+        'dct:creator':
+          type: string
 
     Language:
       properties:
@@ -3980,6 +4395,25 @@ components:
           type: object
         reviewer:
           $ref: '#/components/schemas/Caver'
+
+    Obstacles:
+      description: list of obstacles. 1 item per line. Each line contains the columns obstacle, rope, anchor, observation.
+      type: array
+      items:
+        type: object
+        properties:
+          obstacle:
+            type: string
+            example: P40
+          rope:
+            type: string
+            example: C25 + C40 + C3 (facultative)
+          anchor:
+            type: string
+            example: 2 AN et 10 spits
+          observation:
+            type: string
+            example: Les AN sont des arbres.
 
     Option:
       type: object
@@ -4093,26 +4527,7 @@ components:
         exp:
           type: string
           description: Expiration date (Unix time)
-    RiggingRequest:
-      type: object
-      required:
-        - title
-        - language
-      properties:
-        title:
-          type: string
-          maxLength: 300
-        obstacles:
-          $ref: '#/components/schemas/Obstacles'
-        language:
-          description: Language id used for the body. The list of languages supported by Grottocenter is available using the /languages route.
-          type: string
-        entrance:
-          description: Entrance id which the rigging is referring to (Entrance or Cave ID required).
-          type: integer
-        cave:
-          description: Cave id which the rigging is referring to (Entrance or Cave ID required).
-          type: integer
+
     Rigging:
       type: object
       properties:
@@ -4143,8 +4558,26 @@ components:
         cave:
           $ref: '#/components/schemas/Cave'
 
-    History:
+    RiggingRequest:
       type: object
+      required:
+        - title
+        - language
+      properties:
+        title:
+          type: string
+          maxLength: 300
+        obstacles:
+          $ref: '#/components/schemas/Obstacles'
+        language:
+          description: Language id used for the body. The list of languages supported by Grottocenter is available using the /languages route.
+          type: string
+        entrance:
+          description: Entrance id which the rigging is referring to (Entrance or Cave ID required).
+          type: integer
+        cave:
+          description: Cave id which the rigging is referring to (Entrance or Cave ID required).
+          type: integer
 
     Search:
       properties:
@@ -4168,62 +4601,15 @@ components:
         - grottos
         - massifs
 
-    Import-csv:
+    Specific-cave:
       type: object
       properties:
-        id:
+        id_cave:
           type: integer
-        rdf-type:
+        name_cave:
           type: string
-        'dct:rights/karstlink:licenceType':
-          type: string
-        'dct:rights/cc:attributionURL':
-          type: string
-        'dct:rights/cc:attributionName':
-          type: string
-        'karstlink:documentType':
-          type: string
-        'rdfs:label':
-          type: string
-        'dct:creator':
-          type: string
-
-    Obstacles:
-      description: list of obstacles. 1 item per line. Each line contains the columns obstacle, rope, anchor, observation.
-      type: array
-      items:
-        type: object
-        properties:
-          obstacle:
-            type: string
-            example: P40
-          rope:
-            type: string
-            example: C25 + C40 + C3 (facultative)
-          anchor:
-            type: string
-            example: 2 AN et 10 spits
-          observation:
-            type: string
-            example: Les AN sont des arbres.
-
-    Statistics-massif:
-      type: object
-      properties:
-        nb_caves:
+        value:
           type: integer
-        nb_networks:
-          type: integer
-        cave_with_max_depth:
-          $ref: '#/components/schemas/Specific-cave'
-        cave_with_max_length:
-          $ref: '#/components/schemas/Specific-cave'
-        diving_caves:
-          type: integer
-        avg:
-          $ref: '#/components/schemas/Average-values'
-        total_length:
-          $ref: '#/components/schemas/Total-values'
 
     Statistics-country:
       type: object
@@ -4245,23 +4631,23 @@ components:
         total_length:
           $ref: '#/components/schemas/Total-values'
 
-    Specific-cave:
+    Statistics-massif:
       type: object
       properties:
-        id_cave:
+        nb_caves:
           type: integer
-        name_cave:
-          type: string
-        value:
+        nb_networks:
           type: integer
-
-    Average-values:
-      type: object
-      properties:
-        avg_depth:
+        cave_with_max_depth:
+          $ref: '#/components/schemas/Specific-cave'
+        cave_with_max_length:
+          $ref: '#/components/schemas/Specific-cave'
+        diving_caves:
           type: integer
-        avg_length:
-          type: integer
+        avg:
+          $ref: '#/components/schemas/Average-values'
+        total_length:
+          $ref: '#/components/schemas/Total-values'
 
     Total-values:
       type: object
