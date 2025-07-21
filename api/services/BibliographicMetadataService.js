@@ -1,3 +1,20 @@
+/**
+ * Bibliographic Metadata Service
+ *
+ * Service layer for managing bibliographic metadata records in compliance with Z39.50 and OAI-PMH (Open Archives Initiative
+ * Protocol for Metadata Harvesting) specifications. This service provides comprehensive data access methods
+ * for bibliographic metadata operations including record retrieval, filtering, counting, and set management.
+ *
+ * Key Features:
+ * - OAI-PMH compliant record retrieval and filtering
+ * - Date range filtering with ISO 8601 support
+ * - Set-based record organization and filtering
+ * - Metadata status management (registered/deleted)
+ *
+ * Database Model: TBibliographicMetadata
+ */
+
+// Enumeration of valid metadata status values for bibliographic records
 const METADATA_STATUS = {
   REGISTERED: 'registered',
   DELETED: 'deleted',
@@ -40,13 +57,21 @@ function findFieldInQuery(node, fieldName) {
 
 module.exports = {
   /**
-   * Get a bibliographic record by its ID
-   * @param {string} id - the ID of the record to retrieve
-   * @param {boolean} registeredOnly - if true, only return registered records; if false, return all records
+   * Retrieves a Single Bibliographic Metadata Record by ID
+   *
+   * Fetches a specific bibliographic metadata record using its unique identifier.
+   * This method supports filtering by metadata status to control visibility of
+   * deleted or inactive records.
+   *
+   * @param {string} id - Unique identifier of the bibliographic metadata record
+   * @param {boolean} [registeredOnly=true] - Filter to include only active registered records
+   * @returns {Promise<Object|null>} Bibliographic metadata record or null if not found
+   * @throws {Error} Database query errors
    */
   async getMetadata(id, registeredOnly = true) {
     const criteria = {};
 
+    // Apply status filter if only registered records are requested
     if (registeredOnly) {
       criteria.metadataStatus = METADATA_STATUS.REGISTERED;
     }
@@ -370,5 +395,276 @@ module.exports = {
       id: parent.id,
       dcTitle: parent.dctitle,
     }));
+  },
+
+  /**
+   * Retrieves All Distinct OAI-PMH Set Specifications
+   *
+   * Extracts and returns a sorted list of all unique OAI-PMH set specifications
+   * from the bibliographic metadata repository. This method implements the ListSets
+   * verb functionality by aggregating set data from all records.
+   *
+   * @param {boolean} [registeredOnly=true] - Filter to include only sets from active registered records
+   * @returns {Promise<string[]>} Sorted array of distinct set specifications
+   * @throws {Error} Database query or processing errors
+   */
+  async getDistinctSets(registeredOnly = true) {
+    try {
+      // Initialize query criteria object
+      const criteria = {};
+
+      // Apply metadata status filter if only registered records are requested
+      if (registeredOnly) {
+        criteria.metadataStatus = METADATA_STATUS.REGISTERED;
+      }
+
+      // Fetch records with only the listSets field to optimize query performance
+      const records = await sails.models.tbibliographicmetadata.find({
+        where: criteria,
+        select: ['listSets'],
+      });
+
+      // Use Set data structure to automatically handle uniqueness
+      const allSets = new Set();
+
+      // Process each record to extract and normalize set specifications
+      records.forEach((record) => {
+        // Ensure listSets exists and is an array
+        if (record.listSets && Array.isArray(record.listSets)) {
+          record.listSets.forEach((set) => {
+            // Clean and validate each set specification
+            if (set && set.trim()) {
+              allSets.add(set.trim());
+            }
+          });
+        }
+      });
+
+      // Convert Set to sorted array for consistent output
+      return Array.from(allSets).sort();
+    } catch (error) {
+      sails.log.error('Error in getDistinctSets:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Retrieves Single Record by OAI-PMH Identifier
+   *
+   * Implements the GetRecord verb of the OAI-PMH protocol by fetching a specific
+   * bibliographic metadata record using its unique OAI identifier. Supports
+   * flexible filtering based on metadata status and other criteria.
+   *
+   * @param {string} identifier - Unique OAI-PMH identifier for the target record
+   * @param {Object} [filter={metadataStatus: 'registered'}] - Query filter criteria
+   * @param {string} [filter.metadataStatus] - Metadata status filter ('registered' or 'deleted')
+   * @returns {Promise<Object|null>} Complete bibliographic metadata record or null if not found
+   * @throws {Error} Database query errors or invalid identifier format
+   */
+  async getOAIRecord(
+    identifier,
+    filter = { metadataStatus: METADATA_STATUS.REGISTERED }
+  ) {
+    try {
+      // Construct Waterline criteria combining identifier and status filter
+      const criteria = {
+        oaiIdentifier: identifier,
+        ...filter,
+      };
+
+      // Fetch single record matching criteria
+      return await sails.models.tbibliographicmetadata.findOne(criteria);
+    } catch (error) {
+      sails.log.error('Error in getRecord:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Retrieves Complete Bibliographic Records with OAI-PMH Filtering
+   *
+   * Implements the ListRecords verb of the OAI-PMH protocol by returning complete
+   * bibliographic metadata records that match the specified criteria. Supports
+   * date range filtering, set-based filtering, and metadata status filtering.
+   *
+   * @param {Object} [parameters={}] - OAI-PMH query parameters for filtering
+   * @param {string} [parameters.set] - OAI-PMH set specification to filter records
+   * @param {string} [parameters.from] - Start date for date range filtering (ISO 8601 format)
+   * @param {string} [parameters.until] - End date for date range filtering (ISO 8601 format)
+   * @param {string} [filter.metadataStatus] - Metadata status filter ('registered' or 'deleted')
+   * @returns {Promise<Array<Object>>} Array of complete bibliographic metadata records
+   * @throws {Error} Database query errors or invalid date format
+   */
+  async getOAIRecords(
+    parameters = {},
+    filter = { metadataStatus: METADATA_STATUS.REGISTERED }
+  ) {
+    try {
+      // Start with the provided filter criteria (typically metadata status)
+      const criteria = { ...filter };
+
+      // Build date range query if from/until parameters are provided
+      if (parameters.from || parameters.until) {
+        criteria.lastUpdate = {};
+
+        // Add greater-than-or-equal constraint for 'from' date
+        if (parameters.from) {
+          criteria.lastUpdate['>='] = new Date(parameters.from);
+        }
+
+        // Add less-than-or-equal constraint for 'until' date
+        if (parameters.until) {
+          criteria.lastUpdate['<='] = new Date(parameters.until);
+        }
+      }
+
+      // Execute database query with non-array filters (Waterline doesn't support array filtering)
+      let records = await sails.models.tbibliographicmetadata.find(criteria);
+
+      // Apply set filtering in JavaScript since listSets is an array field
+      // This is necessary because SQL/Waterline array operations are limited
+      if (parameters.set) {
+        records = records.filter(
+          (record) =>
+            Array.isArray(record.listSets) &&
+            record.listSets.includes(parameters.set)
+        );
+      }
+
+      return records;
+    } catch (error) {
+      sails.log.error('Error in recordsQuery:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Retrieves OAI-PMH Identifiers with Minimal Metadata
+   *
+   * Implements the ListIdentifiers verb of the OAI-PMH protocol by returning only
+   * essential header information (identifiers, timestamps, sets) without full metadata
+   * content. This provides an efficient way to discover available records for harvesting.
+   *
+   * @param {Object} [parameters={}] - OAI-PMH query parameters for filtering
+   * @param {string} [parameters.set] - OAI-PMH set specification to filter records
+   * @param {string} [parameters.from] - Start date for date range filtering (ISO 8601 format)
+   * @param {string} [parameters.until] - End date for date range filtering (ISO 8601 format)
+   * @param {Object} [filter={metadataStatus: 'registered'}] - Additional filter criteria
+   * @param {string} [filter.metadataStatus] - Metadata status filter ('registered' or 'deleted')
+   * @returns {Promise<Array<Object>>} Array of identifier objects with minimal metadata
+   * @returns {string} return[].oaiIdentifier - Unique OAI-PMH identifier
+   * @returns {Date} return[].lastUpdate - Last modification timestamp
+   * @returns {string[]} return[].listSets - Array of associated set specifications
+   * @throws {Error} Database query errors or invalid date format
+   */
+  async getOAIIdentifiers(
+    parameters = {},
+    filter = { metadataStatus: METADATA_STATUS.REGISTERED }
+  ) {
+    try {
+      // Start with the provided filter criteria (typically metadata status)
+      const criteria = { ...filter };
+
+      // Build date range query if from/until parameters are provided
+      if (parameters.from || parameters.until) {
+        criteria.lastUpdate = {};
+
+        // Add greater-than-or-equal constraint for 'from' date
+        if (parameters.from) {
+          criteria.lastUpdate['>='] = new Date(parameters.from);
+        }
+        // Add less-than-or-equal constraint for 'until' date
+        if (parameters.until) {
+          criteria.lastUpdate['<='] = new Date(parameters.until);
+        }
+      }
+
+      // Optimize query by selecting only essential fields for identifier response
+      // This reduces network transfer and memory usage for large datasets
+      let records = await sails.models.tbibliographicmetadata.find({
+        where: criteria,
+        select: ['oaiIdentifier', 'lastUpdate', 'listSets'],
+      });
+
+      // Apply set filtering in JavaScript since array operations are limited in SQL
+      // This post-query filtering ensures accurate results for set-based queries
+      if (parameters.set) {
+        records = records.filter(
+          (record) =>
+            Array.isArray(record.listSets) &&
+            record.listSets.includes(parameters.set)
+        );
+      }
+
+      // Return records with listSets included for OAI-PMH header information
+      // ListSets is required for proper OAI-PMH identifier responses
+      return records;
+    } catch (error) {
+      sails.log.error('Error in identifiersQuery:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Counts Bibliographic Records Matching OAI-PMH Criteria
+   *
+   * Provides an efficient count of bibliographic metadata records that match the
+   * specified OAI-PMH parameters without retrieving the full record data. This is
+   * useful for pagination and resource estimation in OAI-PMH implementations.
+   *
+   * @param {Object} [parameters={}] - OAI-PMH query parameters for filtering
+   * @param {string} [parameters.set] - OAI-PMH set specification to filter records
+   * @param {string} [parameters.from] - Start date for date range filtering (ISO 8601 format)
+   * @param {string} [parameters.until] - End date for date range filtering (ISO 8601 format)
+   * @param {Object} [filter={metadataStatus: 'registered'}] - Additional filter criteria
+   * @param {string} [filter.metadataStatus] - Metadata status filter ('registered' or 'deleted')
+   * @returns {Promise<number>} Total count of records matching the specified criteria
+   * @throws {Error} Database query errors or invalid date format
+   */
+  async countRecords(
+    parameters = {},
+    filter = { metadataStatus: METADATA_STATUS.REGISTERED }
+  ) {
+    try {
+      // Start with the provided filter criteria (typically metadata status)
+      const criteria = { ...filter };
+
+      // Build date range query if from/until parameters are provided
+      if (parameters.from || parameters.until) {
+        criteria.lastUpdate = {};
+
+        // Add greater-than-or-equal constraint for 'from' date
+        if (parameters.from) {
+          criteria.lastUpdate['>='] = new Date(parameters.from);
+        }
+        // Add less-than-or-equal constraint for 'until' date
+        if (parameters.until) {
+          criteria.lastUpdate['<='] = new Date(parameters.until);
+        }
+      }
+
+      // Optimize query by selecting only the listSets field needed for set filtering
+      // This avoids transferring unnecessary data for counting operations
+      let records = await sails.models.tbibliographicmetadata.find({
+        where: criteria,
+        select: ['listSets'],
+      });
+
+      // Apply set filtering in JavaScript if a specific set is requested
+      // This is necessary because SQL array operations don't work well with Waterline
+      if (parameters.set) {
+        records = records.filter(
+          (record) =>
+            Array.isArray(record.listSets) &&
+            record.listSets.includes(parameters.set)
+        );
+      }
+
+      // Return the count of filtered records
+      return records.length;
+    } catch (error) {
+      sails.log.error('Error in countPublication:', error);
+      throw error;
+    }
   },
 };
