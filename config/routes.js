@@ -229,6 +229,15 @@ module.exports.routes = {
     'v1/bibliographic-metadata/get-record-format',
   'POST /api/v1/bibliographic-metadata/search':
     'v1/bibliographic-metadata/search',
+  'GET /api/v1/bibliographic-metadata/sets':
+    'v1/bibliographic-metadata/get-sets',
+  'GET /api/v1/bibliographic-metadata/:identifier':
+    'v1/bibliographic-metadata/get-record',
+  'GET /api/v1/bibliographic-metadata/records':
+    'v1/bibliographic-metadata/get-records',
+  'GET /api/v1/bibliographic-metadata/identifiers':
+    'v1/bibliographic-metadata/get-identifiers',
+  'GET /api/v1/bibliographic-metadata/count': 'v1/bibliographic-metadata/count',
 
   // Description
   'PATCH /api/v1/descriptions/:id': 'v1/description/update',

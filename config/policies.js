@@ -110,6 +110,11 @@ module.exports.policies = {
 
   // Bibliographic Metadata (Record)
   'v1/bibliographic-metadata/get-record-format': true,
+  'v1/bibliographic-metadata/get-sets': true,
+  'v1/bibliographic-metadata/get-record': true,
+  'v1/bibliographic-metadata/get-records': true,
+  'v1/bibliographic-metadata/get-identifiers': true,
+  'v1/bibliographic-metadata/count': true,
 
   // Entrance
   'v1/entrance/count': true,
