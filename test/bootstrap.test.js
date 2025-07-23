@@ -63,6 +63,7 @@ before(function (done) {
           'hlocation',
           'hdescription',
           'hentrance',
+          'vcaverroles',
         ],
         // eslint-disable-next-line consistent-return
         (fixtedError) => {
