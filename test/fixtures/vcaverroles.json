@@ -1,0 +1,65 @@
+[
+    {
+        "id": 4,
+        "nickname": "LéaLead",
+        "name": "Léa",
+        "surname": "Lead",
+        "isUser": true,
+        "isAuthor": true,
+        "isContributor": true
+    },
+    {
+        "id": 2,
+        "nickname": "MelvildMode",
+        "name": "Melvil",
+        "surname": "Mode",
+        "isUser": true,
+        "isAuthor": false,
+        "isContributor": true
+    },
+    {
+        "id": 5,
+        "nickname": "AlexAll",
+        "name": "Alex",
+        "surname": "All",
+        "isUser": true,
+        "isAuthor": false,
+        "isContributor": true
+    },
+    {
+        "id": 8,
+        "nickname": "deleted",
+        "name": "deleted",
+        "surname": "deleted",
+        "isUser": true,
+        "isAuthor": false,
+        "isContributor": false
+    },
+    {
+        "id": 6,
+        "nickname": "JohnDoe",
+        "name": "John",
+        "surname": null,
+        "isUser": true,
+        "isAuthor": false,
+        "isContributor": true
+    },
+    {
+        "id": 1,
+        "nickname": "AdrienAdmin",
+        "name": "Adrien",
+        "surname": "Admin",
+        "isUser": true,
+        "isAuthor": false,
+        "isContributor": true
+    },
+    {
+        "id": 3,
+        "nickname": "UrsulleUse",
+        "name": "Ursulle",
+        "surname": "Use",
+        "isUser": true,
+        "isAuthor": false,
+        "isContributor": false
+    }
+]

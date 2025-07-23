@@ -10,7 +10,7 @@ module.exports = {
 
   attributes: {
     id: {
-      type: 'string',
+      type: 'number',
       allowNull: false,
       columnName: 'caver_id',
       required: true,
