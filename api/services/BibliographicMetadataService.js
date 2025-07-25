@@ -11,7 +11,7 @@
  * - Set-based record organization and filtering
  * - Metadata status management (registered/deleted)
  *
- * Database Model: TBibliographicMetadata
+ * Database Model: VBibliographicMetadata
  */
 
 // Enumeration of valid metadata status values for bibliographic records
@@ -404,7 +404,7 @@ module.exports = {
    * from the bibliographic metadata repository. This method implements the ListSets
    * verb functionality by aggregating set data from all records.
    *
-   * @param {boolean} [registeredOnly=true] - Filter to include only sets from active registered records
+   * @param {boolean} [registeredOnly=true] - When false, includes sets from deleted records; when true, only sets from records with metadataStatus = 'registered' are returned
    * @returns {Promise<string[]>} Sorted array of distinct set specifications
    * @throws {Error} Database query or processing errors
    */
@@ -419,7 +419,7 @@ module.exports = {
       }
 
       // Fetch records with only the listSets field to optimize query performance
-      const records = await sails.models.tbibliographicmetadata.find({
+      const records = await sails.models.vbibliographicmetadata.find({
         where: criteria,
         select: ['listSets'],
       });
@@ -473,7 +473,7 @@ module.exports = {
       };
 
       // Fetch single record matching criteria
-      return await sails.models.tbibliographicmetadata.findOne(criteria);
+      return await sails.models.vbibliographicmetadata.findOne(criteria);
     } catch (error) {
       sails.log.error('Error in getRecord:', error);
       throw error;
@@ -489,8 +489,9 @@ module.exports = {
    *
    * @param {Object} [parameters={}] - OAI-PMH query parameters for filtering
    * @param {string} [parameters.set] - OAI-PMH set specification to filter records
-   * @param {string} [parameters.from] - Start date for date range filtering (ISO 8601 format)
-   * @param {string} [parameters.until] - End date for date range filtering (ISO 8601 format)
+   * @param {string} [parameters.from] - Start date (inclusive, filters on `lastUpdate`) – format: ISO 8601
+   * @param {string} [parameters.until] - End date (inclusive, filters on `lastUpdate`) – format: ISO 8601
+   * @param {Object} [filter={metadataStatus: 'registered'}] - Additional filter criteria
    * @param {string} [filter.metadataStatus] - Metadata status filter ('registered' or 'deleted')
    * @returns {Promise<Array<Object>>} Array of complete bibliographic metadata records
    * @throws {Error} Database query errors or invalid date format
@@ -519,7 +520,7 @@ module.exports = {
       }
 
       // Execute database query with non-array filters (Waterline doesn't support array filtering)
-      let records = await sails.models.tbibliographicmetadata.find(criteria);
+      let records = await sails.models.vbibliographicmetadata.find(criteria);
 
       // Apply set filtering in JavaScript since listSets is an array field
       // This is necessary because SQL/Waterline array operations are limited
@@ -547,8 +548,8 @@ module.exports = {
    *
    * @param {Object} [parameters={}] - OAI-PMH query parameters for filtering
    * @param {string} [parameters.set] - OAI-PMH set specification to filter records
-   * @param {string} [parameters.from] - Start date for date range filtering (ISO 8601 format)
-   * @param {string} [parameters.until] - End date for date range filtering (ISO 8601 format)
+   * @param {string} [parameters.from] - Start date (inclusive, filters on `lastUpdate`) – format: ISO 8601
+   * @param {string} [parameters.until] - End date (inclusive, filters on `lastUpdate`) – format: ISO 8601
    * @param {Object} [filter={metadataStatus: 'registered'}] - Additional filter criteria
    * @param {string} [filter.metadataStatus] - Metadata status filter ('registered' or 'deleted')
    * @returns {Promise<Array<Object>>} Array of identifier objects with minimal metadata
@@ -581,7 +582,7 @@ module.exports = {
 
       // Optimize query by selecting only essential fields for identifier response
       // This reduces network transfer and memory usage for large datasets
-      let records = await sails.models.tbibliographicmetadata.find({
+      let records = await sails.models.vbibliographicmetadata.find({
         where: criteria,
         select: ['oaiIdentifier', 'lastUpdate', 'listSets'],
       });
@@ -614,8 +615,8 @@ module.exports = {
    *
    * @param {Object} [parameters={}] - OAI-PMH query parameters for filtering
    * @param {string} [parameters.set] - OAI-PMH set specification to filter records
-   * @param {string} [parameters.from] - Start date for date range filtering (ISO 8601 format)
-   * @param {string} [parameters.until] - End date for date range filtering (ISO 8601 format)
+   * @param {string} [parameters.from] - Start date (inclusive, filters on `lastUpdate`) – format: ISO 8601
+   * @param {string} [parameters.until] - End date (inclusive, filters on `lastUpdate`) – format: ISO 8601
    * @param {Object} [filter={metadataStatus: 'registered'}] - Additional filter criteria
    * @param {string} [filter.metadataStatus] - Metadata status filter ('registered' or 'deleted')
    * @returns {Promise<number>} Total count of records matching the specified criteria
@@ -645,7 +646,7 @@ module.exports = {
 
       // Optimize query by selecting only the listSets field needed for set filtering
       // This avoids transferring unnecessary data for counting operations
-      let records = await sails.models.tbibliographicmetadata.find({
+      let records = await sails.models.vbibliographicmetadata.find({
         where: criteria,
         select: ['listSets'],
       });

@@ -197,7 +197,10 @@ CREATE MATERIALIZED VIEW v_bibliographic_metadata AS
     END as dc_type_dcmi,
 
     false as has_been_updated,
-    'registered'::e_metadata_status as metadata_status
+    CASE
+      WHEN d.id = 109 THEN 'deleted'::e_metadata_status
+      ELSE 'registered'::e_metadata_status
+    END as metadata_status
 
   FROM t_document d
   LEFT JOIN t_description td ON td.id_document = d.id

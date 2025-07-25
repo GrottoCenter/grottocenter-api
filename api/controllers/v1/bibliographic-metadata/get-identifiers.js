@@ -9,10 +9,10 @@ const ControllerService = require('../../../services/ControllerService');
  * the unique identifiers and header information without the full metadata content.
  *
  * @route GET /api/v1/bibliographic-metadata/identifiers
- * @param {string} [set] - Optional OAI-PMH set specification to filter records
- * @param {string} [from] - Optional start date (YYYY-MM-DD) for date range filtering
- * @param {string} [until] - Optional end date (YYYY-MM-DD) for date range filtering
- * @param {string} [includeDeleted] - Set to 'true' to include deleted records (default: false)
+ * @param {string} [set] - Optional OAI-PMH set specification to filter records (e.g. 'grottocenter:issue')
+ * @param {string} [from] - Optional start date (inclusive, filters on `lastUpdate`) – format: YYYY-MM-DD
+ * @param {string} [until] - Optional end date (inclusive, filters on `lastUpdate`) – format: YYYY-MM-DD
+ * @param {string} [includeDeleted] - Optional parameter: (default: false) when set to 'true', includes records with metadataStatus = 'deleted'
  * @returns {Object} Response containing identifiers array, count, and parameters
  * @returns {Array} response.identifiers - Array of OAI-PMH identifier objects
  * @returns {number} response.count - Total number of identifiers returned

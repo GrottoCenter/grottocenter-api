@@ -8,10 +8,10 @@ const ControllerService = require('../../../services/ControllerService');
  * This endpoint supports standard OAI-PMH filtering by set, date range, and metadata status.
  *
  * @route GET /api/v1/bibliographic-metadata/count
- * @param {string} [set] - Optional OAI-PMH set specification to filter records
- * @param {string} [from] - Optional start date (YYYY-MM-DD) for date range filtering
- * @param {string} [until] - Optional end date (YYYY-MM-DD) for date range filtering
- * @param {string} [includeDeleted] - Set to 'false' to exclude deleted records (default: true)
+ * @param {string} [set] - Optional OAI-PMH set specification to filter records (e.g. 'grottocenter:issue')
+ * @param {string} [from] - Optional start date (inclusive, filters on `lastUpdate`) – format: YYYY-MM-DD
+ * @param {string} [until] - Optional end date (inclusive, filters on `lastUpdate`) – format: YYYY-MM-DD
+ * @param {string} [includeDeleted] - Optional parameter: (default: false) when set to 'true', includes records with metadataStatus = 'deleted'
  * @returns {Object} Response containing count and applied parameters
  * @returns {number} response.count - Total number of matching records
  * @returns {Object} response.parameters - Applied filter parameters
@@ -27,7 +27,7 @@ module.exports = async (req, res) => {
 
     // Configure metadata status filter
     const filter = {};
-    if (req.query.includeDeleted === 'false') {
+    if (req.query.includeDeleted !== 'true') {
       filter.metadataStatus = 'registered';
     }
 
