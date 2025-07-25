@@ -1448,15 +1448,15 @@ paths:
             example: 'grottocenter'
         - name: from
           in: query
-          description: 'Filter records modified from this date (YYYY-MM-DD format)'
+          description: 'Filter records modified from this date (inclusive, filters on lastUpdate field) - YYYY-MM-DD format'
           required: false
           schema:
             type: string
             format: date
-            example: '2023-01-01'
+            example: '2023-01-25'
         - name: until
           in: query
-          description: 'Filter records modified until this date (YYYY-MM-DD format)'
+          description: 'Filter records modified until this date (inclusive, filters on lastUpdate field) - YYYY-MM-DD format'
           required: false
           schema:
             type: string
@@ -1464,11 +1464,13 @@ paths:
             example: '2023-12-31'
         - name: includeDeleted
           in: query
-          description: 'Include deleted records in the response'
-          required: false
+          description: >
+            Optional flag to include deleted records (with metadataStatus = 'deleted').
+            Defaults to 'false', meaning only registered records are counted.
           schema:
-            type: boolean
-            default: false
+            type: string
+            enum: ['true', 'false']
+            default: 'false'
       responses:
         '200':
           description: Successful operation
@@ -1510,15 +1512,15 @@ paths:
             example: 'grottocenter'
         - name: from
           in: query
-          description: 'Filter records modified from this date (YYYY-MM-DD format)'
+          description: 'Filter records modified from this date (inclusive, filters on lastUpdate field) - YYYY-MM-DD format'
           required: false
           schema:
             type: string
             format: date
-            example: '2023-01-01'
+            example: '2023-01-25'
         - name: until
           in: query
-          description: 'Filter records modified until this date (YYYY-MM-DD format)'
+          description: 'Filter records modified until this date (inclusive, filters on lastUpdate field) - YYYY-MM-DD format'
           required: false
           schema:
             type: string
@@ -1526,11 +1528,13 @@ paths:
             example: '2023-12-31'
         - name: includeDeleted
           in: query
-          description: 'Include deleted records in the response'
-          required: false
+          description: >
+            Optional flag to include deleted records (with metadataStatus = 'deleted').
+            Defaults to 'false', meaning only registered records are counted.
           schema:
-            type: boolean
-            default: false
+            type: string
+            enum: ['true', 'false']
+            default: 'false'
       responses:
         '200':
           description: Successful operation
@@ -1595,15 +1599,15 @@ paths:
             example: 'grottocenter:issue'
         - name: from
           in: query
-          description: 'Filter records modified from this date (YYYY-MM-DD format)'
+          description: 'Filter records modified from this date (inclusive, filters on lastUpdate field) - YYYY-MM-DD format'
           required: false
           schema:
             type: string
             format: date
-            example: '2023-01-01'
+            example: '2023-01-25'
         - name: until
           in: query
-          description: 'Filter records modified until this date (YYYY-MM-DD format)'
+          description: 'Filter records modified until this date (inclusive, filters on lastUpdate field) - YYYY-MM-DD format'
           required: false
           schema:
             type: string
@@ -1611,11 +1615,13 @@ paths:
             example: '2023-12-31'
         - name: includeDeleted
           in: query
-          description: 'Include deleted records in the count'
-          required: false
+          description: >
+            Optional flag to include deleted records (with metadataStatus = 'deleted').
+            Defaults to 'false', meaning only registered records are counted.
           schema:
-            type: boolean
-            default: false
+            type: string
+            enum: ['true', 'false']
+            default: 'false'
       responses:
         '200':
           description: Successful operation

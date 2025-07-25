@@ -9,10 +9,10 @@ const ControllerService = require('../../../services/ControllerService');
  * metadata content including headers and record data for harvesting purposes.
  *
  * @route GET /api/v1/bibliographic-metadata/records
- * @param {string} [set] - Optional OAI-PMH set specification to filter records
- * @param {string} [from] - Optional start date (YYYY-MM-DD) for date range filtering
- * @param {string} [until] - Optional end date (YYYY-MM-DD) for date range filtering
- * @param {string} [includeDeleted] - Set to 'true' to include deleted records (default: false)
+ * @param {string} [set] - Optional OAI-PMH set specification to filter records (e.g. 'grottocenter:issue')
+ * @param {string} [from] - Optional start date (inclusive, filters on `lastUpdate`) – format: YYYY-MM-DD
+ * @param {string} [until] - Optional end date (inclusive, filters on `lastUpdate`) – format: YYYY-MM-DD
+ * @param {string} [includeDeleted] - Optional parameter: (default: false) when set to 'true', includes records with metadataStatus = 'deleted'
  * @returns {Object} Response containing records array, count, and parameters
  * @returns {Array} response.records - Array of complete bibliographic metadata records
  * @returns {number} response.count - Total number of records returned
