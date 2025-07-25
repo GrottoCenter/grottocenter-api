@@ -407,11 +407,17 @@ paths:
         '404':
           description: No administrators found.
   
-  '/cavers/authors':
+  '/cavers/authors/{page}':
     get:
       tags:
         - cavers
       description: Get all authors (if the user have one document in j_document_caver_author with is id) of Grottocenter. (only for moderators and administrators)
+      parameters:
+        - name: page
+          in: path
+          required: true
+          schema:
+            type: string
       responses:
         '200':
           description: Successful operation
@@ -426,12 +432,20 @@ paths:
           description: No authors found.
         '401':
           description: You are not authorized to get the authors of Grottocenter.
+        '400':
+          description: Invalid page parameter. Page must be a positive integer.
 
-  '/cavers/contributors':
+  '/cavers/contributors/{page}':
     get:
       tags:
         - cavers
       description: Get all contributors (if the user have one document in t_document with is id in id_authors) of Grottocenter. (only for moderators and administrators)
+      parameters:
+        - name: page
+          in: path
+          required: true
+          schema:
+            type: string
       responses:
         '200':
           description: Successful operation
@@ -446,12 +460,20 @@ paths:
           description: No contributors found
         '401':
           description: You are not authorized to get the contributors of Grottocenter.
+        '400':
+          description: Invalid page parameter. Page must be a positive integer.
 
-  'cavers/users':
+  'cavers/users/{page}':
     get:
       tags:
         - cavers
       description: Get all users (valid email and have a password) of Grottocenter. (only for moderators and administrators)
+      parameters:
+        - name: page
+          in: path
+          required: true
+          schema:
+            type: string
       responses:
         '200':
           description: Successful operation
@@ -466,6 +488,8 @@ paths:
           description: No users found
         '401':
           description: You are not authorized to get the users of Grottocenter.
+        '400':
+          description: Invalid page parameter. Page must be a positive integer.
 
   '/cavers/count':
     get:
