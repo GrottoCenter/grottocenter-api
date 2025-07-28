@@ -7,7 +7,6 @@ const {
   determineBibliographicLevel,
   determineTypeDocument,
 } = require('../Utils');
-const BibliographicMetadataService = require('../../BibliographicMetadataService');
 
 /**
  * Generate UNIMARC leader
@@ -164,11 +163,7 @@ module.exports = {
       });
     }
 
-    const parents = await BibliographicMetadataService.getTitleAndIdParents(
-      document.id
-    );
-
-    for (const parent of parents) {
+    for (const parent of document.parents) {
       marcRecord.addDataField('461', ' ', ' ', [
         ['0', parent.id.toString()],
         ['t', parent.dcTitle],

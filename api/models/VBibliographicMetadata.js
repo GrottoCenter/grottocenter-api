@@ -168,7 +168,14 @@ module.exports = {
     children: {
       type: 'ref',
       columnName: 'children',
-      columnType: 'int4[]',
+      columnType: 'json[]',
+      defaultsTo: [],
+    },
+
+    parents: {
+      type: 'ref',
+      columnName: 'parents',
+      columnType: 'json[]',
       defaultsTo: [],
     },
   },

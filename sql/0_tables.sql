@@ -742,6 +742,11 @@ CREATE TABLE t_document (
 	CONSTRAINT t_document_t_option_fk FOREIGN KEY (id_option) REFERENCES t_option (id),
 	CONSTRAINT t_document_t_document_fk3 FOREIGN KEY (id_authorization_document) REFERENCES t_document (id)
 );
+
+CREATE INDEX IF NOT EXISTS idx_document_id_parent ON t_document(id_parent) WHERE id_parent IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_document_hierarchy ON t_document(id, id_parent);
+
+
 -- t_document_duplicate definition
 -- Drop table
 -- DROP TABLE t_document_duplicate;

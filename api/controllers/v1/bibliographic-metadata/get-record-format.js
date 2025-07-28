@@ -33,6 +33,7 @@ module.exports = async (req, res) => {
   if (Array.isArray(bibliographicMetadata)) {
     const response = await Promise.all(
       bibliographicMetadata.map(async (document) => {
+        sails.log.info(document);
         const [marcRecord, countrySelected] =
           await MarcConvertorService.documentToMarc(
             document,
