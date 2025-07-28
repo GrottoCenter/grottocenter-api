@@ -105,8 +105,20 @@ module.exports = {
             AND unaccent(dc_title) ILIKE unaccent('%${titleFilter}%')`;
       const { rows } = await sails.sendNativeQuery(sqlTitle);
       const ids = rows.map((m) => m.id);
-      const children = rows.flatMap((m) => m.children || []);
-      matchingIds = Array.from(new Set([...ids, ...children]));
+
+      const childrenIds = rows.flatMap((m) => {
+        if (!m.children || !Array.isArray(m.children)) return [];
+        return m.children
+          .map((child) => {
+            if (typeof child === 'object' && child.id) {
+              return child.id;
+            }
+            return null;
+          })
+          .filter((id) => id !== null);
+      });
+
+      matchingIds = Array.from(new Set([...ids, ...childrenIds]));
     }
 
     if (matchingIds.length > 0) {

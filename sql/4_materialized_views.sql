@@ -91,24 +91,82 @@ CREATE MATERIALIZED VIEW v_data_quality_compute_entrance AS
 -- not populated, (WITH NO DATA), the schema only
 
 CREATE MATERIALIZED VIEW v_bibliographic_metadata AS
-  WITH RECURSIVE doc_children(root, child) AS (
-      SELECT id_parent, id
-        FROM t_document
-      WHERE id_parent IS NOT NULL
+WITH RECURSIVE doc_children(root, child, level) AS (
+    -- Base case: direct children (level 1)
+    SELECT 
+        id_parent as root,
+        id as child,
+        1 as level
+    FROM t_document 
+    WHERE id_parent IS NOT NULL
+    
     UNION ALL
-      SELECT dc.root, d.id
-        FROM t_document d
-        JOIN doc_children dc ON d.id_parent = dc.child
-  ),
-  children_agg AS (
-      SELECT root AS id_document,
-            array_agg(child) AS children
-        FROM doc_children
-      GROUP BY root
-  )
-  SELECT
+    
+    -- Recursive case: add level tracking and limit depth
+    SELECT 
+        dc.root,
+        d.id,
+        dc.level + 1
+    FROM t_document d
+    JOIN doc_children dc ON d.id_parent = dc.child
+    WHERE dc.level < 100  -- Prevent infinite recursion and limit depth
+),
+doc_parents(child, parent, level) AS (
+    -- Base case: direct parents (level 1)
+    SELECT 
+        id as child,
+        id_parent as parent,
+        1 as level
+    FROM t_document 
+    WHERE id_parent IS NOT NULL
+    
+    UNION ALL
+    
+    -- Recursive case: add level tracking and limit depth
+    SELECT 
+        dp.child,
+        d.id_parent,
+        dp.level + 1
+    FROM t_document d
+    JOIN doc_parents dp ON d.id = dp.parent
+    WHERE dp.level < 100 AND d.id_parent IS NOT NULL  -- Prevent infinite recursion and limit depth
+),
+children_agg AS (
+    SELECT 
+        dc.root AS id_document,
+        ARRAY_AGG(
+            jsonb_build_object(
+                'id', dc.child,
+                'dcTitle', COALESCE(NULLIF(btrim(td_child.title), ''), 'Sans titre'),
+                'dcTypeGrottocenter', lower(regexp_replace(tt_child.name, '\s+', '_', 'g'))
+            ) ORDER BY dc.level, dc.child
+        ) AS children
+    FROM doc_children dc
+    LEFT JOIN t_description td_child ON td_child.id_document = dc.child
+    LEFT JOIN t_document d_child ON d_child.id = dc.child
+    LEFT JOIN t_type tt_child ON tt_child.id = d_child.id_type
+    GROUP BY dc.root
+),
+parents_agg AS (
+    SELECT 
+        dp.child AS id_document,
+        ARRAY_AGG(
+            jsonb_build_object(
+                'id', dp.parent,
+                'dcTitle', COALESCE(NULLIF(btrim(td_parent.title), ''), 'Sans titre'),
+                'dcTypeGrottocenter', lower(regexp_replace(tt_parent.name, '\s+', '_', 'g'))
+            ) ORDER BY dp.level, dp.parent
+        ) AS parents
+    FROM doc_parents dp
+    LEFT JOIN t_description td_parent ON td_parent.id_document = dp.parent
+    LEFT JOIN t_document d_parent ON d_parent.id = dp.parent
+    LEFT JOIN t_type tt_parent ON tt_parent.id = d_parent.id_type
+    GROUP BY dp.child
+)
+SELECT
     d.id as id_document,
-    COALESCE(ca.children, ARRAY[]::int[]) AS children,
+    COALESCE(ca.children, ARRAY[]::jsonb[]) AS children,
+    COALESCE(pa.parents, ARRAY[]::jsonb[]) AS parents,
     'oai:grottocenter.org:' || d.id as oai_identifier,
     d.date_validation as last_update,
     ARRAY[
@@ -177,11 +235,7 @@ CREATE MATERIALIZED VIEW v_bibliographic_metadata AS
       ARRAY[NULLIF(lic.name, '')],
       ARRAY[]::text[]
     ) as dc_rights,
-
-    -- Nouveau champ : type grottocenter nettoyé
     lower(regexp_replace(tt.name, '\s+', '_', 'g')) as dc_type_grottocenter,
-
-    -- Nouveau champ : type DCMI
     CASE
       WHEN tt.name ILIKE 'Image' THEN 'image'
       WHEN tt.name ILIKE 'Still Image' THEN 'image'
@@ -195,13 +249,8 @@ CREATE MATERIALIZED VIEW v_bibliographic_metadata AS
       WHEN tt.name ILIKE 'Collection' THEN 'collection'
       ELSE 'text'
     END as dc_type_dcmi,
-
     false as has_been_updated,
-    CASE
-      WHEN d.id = 109 THEN 'deleted'::e_metadata_status
-      ELSE 'registered'::e_metadata_status
-    END as metadata_status
-
+    'registered'::e_metadata_status as metadata_status
   FROM t_document d
   LEFT JOIN t_description td ON td.id_document = d.id
   LEFT JOIN j_document_caver_author jca ON jca.id_document = d.id
@@ -219,8 +268,8 @@ CREATE MATERIALIZED VIEW v_bibliographic_metadata AS
   LEFT JOIN t_type tt ON tt.id = d.id_type
   LEFT JOIN t_identifier_type idtype ON idtype.code = d.id_identifier_type
   LEFT JOIN children_agg ca ON ca.id_document = d.id
+  LEFT JOIN parents_agg pa ON pa.id_document = d.id
   WHERE d.id IS NOT NULL
-
   GROUP BY
     d.id,
     d.date_validation,
@@ -232,7 +281,8 @@ CREATE MATERIALIZED VIEW v_bibliographic_metadata AS
     tn.name,
     lic.name,
     tt.name,
-    ca.children
+    ca.children,
+    pa.parents
   WITH NO DATA;
 
 CREATE UNIQUE INDEX ON v_data_quality_compute_entrance(id_massif, id_entrance);
