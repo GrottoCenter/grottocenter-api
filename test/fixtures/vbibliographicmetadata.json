@@ -1,0 +1,1046 @@
+[
+  {
+    "id": 1,
+    "oaiIdentifier": "oai:grottocenter.org:1",
+    "lastUpdate": "2025-01-02T00:00:00Z",
+    "listSets": [
+      "grottocenter",
+      "grottocenter:sound"
+    ],
+    "dcTitle": "Document 1 on sound",
+    "dcCreators": [],
+    "dcContributor": null,
+    "dcPublisher": "Publisher 1",
+    "dcDate": "2021-05-01T00:00:00Z",
+    "dcLanguages": [
+      "fre"
+    ],
+    "dcDescriptions": [
+      "This is a description of document 1."
+    ],
+    "dcCoverages": [
+      "FR-XXX",
+      "FRA"
+    ],
+    "dcSubjects": [
+      "Subject 4",
+      "Subject 10"
+    ],
+    "dcFormats": [
+      "pdf"
+    ],
+    "dcIdentifiers": [
+      "doi:10.1000/gc1",
+      "url:https://grottocenter.org/doc/1.pdf"
+    ],
+    "dcRelations": [],
+    "dcSources": [
+      "Bulletin Bibliographique Sp\u00e9l\u00e9ologique / Speleo Abstracts"
+    ],
+    "dcRights": [
+      "CC-BY-4.0"
+    ],
+    "dcTypeGrottocenter": "sound",
+    "dcTypeDcmi": "sound",
+    "hasBeenUpdated": false,
+    "metadataStatus": "registered",
+    "children": []
+  },
+  {
+    "id": 2,
+    "oaiIdentifier": "oai:grottocenter.org:2",
+    "lastUpdate": "2025-01-03T00:00:00Z",
+    "listSets": [
+      "grottocenter",
+      "grottocenter:image"
+    ],
+    "dcTitle": "Document 2 on image",
+    "dcCreators": [
+      "Author 2A",
+      "Author 2B"
+    ],
+    "dcContributor": null,
+    "dcPublisher": "Publisher 2",
+    "dcDate": "2023-06-01T00:00:00Z",
+    "dcLanguages": [
+      "fre"
+    ],
+    "dcDescriptions": [
+      "This is a description of document 2."
+    ],
+    "dcCoverages": [
+      "FR-XXX",
+      "FRA"
+    ],
+    "dcSubjects": [
+      "Subject 1",
+      "Subject 8"
+    ],
+    "dcFormats": [
+      "pdf",
+      "jpg"
+    ],
+    "dcIdentifiers": [
+      "doi:10.1000/gc2",
+      "url:https://grottocenter.org/doc/2.pdf"
+    ],
+    "dcRelations": [],
+    "dcSources": [
+      "Bulletin Bibliographique Sp\u00e9l\u00e9ologique / Speleo Abstracts"
+    ],
+    "dcRights": [
+      "CC-BY-4.0"
+    ],
+    "dcTypeGrottocenter": "image",
+    "dcTypeDcmi": "image",
+    "hasBeenUpdated": false,
+    "metadataStatus": "registered",
+    "children": []
+  },
+  {
+    "id": 3,
+    "oaiIdentifier": "oai:grottocenter.org:3",
+    "lastUpdate": "2025-01-04T00:00:00Z",
+    "listSets": [
+      "grottocenter",
+      "grottocenter:interactive_resource"
+    ],
+    "dcTitle": "Document 3 on interactive_resource",
+    "dcCreators": [],
+    "dcContributor": "Contributor 3",
+    "dcPublisher": "Publisher 3",
+    "dcDate": "2021-03-01T00:00:00Z",
+    "dcLanguages": [
+      "fre"
+    ],
+    "dcDescriptions": [
+      "This is a description of document 3."
+    ],
+    "dcCoverages": [
+      "FR-XXX",
+      "FRA"
+    ],
+    "dcSubjects": [
+      "Subject 3",
+      "Subject 9"
+    ],
+    "dcFormats": [
+      "pdf"
+    ],
+    "dcIdentifiers": [
+      "doi:10.1000/gc3",
+      "url:https://grottocenter.org/doc/3.pdf"
+    ],
+    "dcRelations": [],
+    "dcSources": [
+      "Bulletin Bibliographique Sp\u00e9l\u00e9ologique / Speleo Abstracts"
+    ],
+    "dcRights": [
+      "CC0"
+    ],
+    "dcTypeGrottocenter": "interactive_resource",
+    "dcTypeDcmi": "interactive resource",
+    "hasBeenUpdated": false,
+    "metadataStatus": "registered",
+    "children": [4]
+  },
+  {
+    "id": 4,
+    "oaiIdentifier": "oai:grottocenter.org:4",
+    "lastUpdate": "2025-01-05T00:00:00Z",
+    "listSets": [
+      "grottocenter",
+      "grottocenter:sound"
+    ],
+    "dcTitle": "Document 4 on sound",
+    "dcCreators": [
+      "Author 4A",
+      "Author 4B"
+    ],
+    "dcContributor": null,
+    "dcPublisher": null,
+    "dcDate": "2020-02-01T00:00:00Z",
+    "dcLanguages": [
+      "fre"
+    ],
+    "dcDescriptions": [
+      "This is a description of document 4."
+    ],
+    "dcCoverages": [
+      "FR-XXX",
+      "FRA"
+    ],
+    "dcSubjects": [
+      "Subject 2",
+      "Subject 6"
+    ],
+    "dcFormats": [
+      "pdf",
+      "jpg"
+    ],
+    "dcIdentifiers": [
+      "doi:10.1000/gc4",
+      "url:https://grottocenter.org/doc/4.pdf"
+    ],
+    "dcRelations": [
+      "oai:grottocenter.org:3"
+    ],
+    "dcSources": [
+      "Bulletin Bibliographique Sp\u00e9l\u00e9ologique / Speleo Abstracts"
+    ],
+    "dcRights": [
+      "CC-BY-4.0"
+    ],
+    "dcTypeGrottocenter": "sound",
+    "dcTypeDcmi": "sound",
+    "hasBeenUpdated": false,
+    "metadataStatus": "registered",
+    "children": []
+  },
+  {
+    "id": 5,
+    "oaiIdentifier": "oai:grottocenter.org:5",
+    "lastUpdate": "2025-01-06T00:00:00Z",
+    "listSets": [
+      "grottocenter",
+      "grottocenter:interactive_resource"
+    ],
+    "dcTitle": "Document 5 on interactive_resource",
+    "dcCreators": [],
+    "dcContributor": null,
+    "dcPublisher": "Publisher 5",
+    "dcDate": "2023-05-01T00:00:00Z",
+    "dcLanguages": [
+      "fre",
+      "eng"
+    ],
+    "dcDescriptions": [
+      "This is a description of document 5."
+    ],
+    "dcCoverages": [
+      "FR-XXX",
+      "FRA"
+    ],
+    "dcSubjects": [
+      "Subject 5",
+      "Subject 6"
+    ],
+    "dcFormats": [
+      "pdf"
+    ],
+    "dcIdentifiers": [
+      "doi:10.1000/gc5",
+      "url:https://grottocenter.org/doc/5.pdf"
+    ],
+    "dcRelations": [],
+    "dcSources": [
+      "Bulletin Bibliographique Sp\u00e9l\u00e9ologique / Speleo Abstracts"
+    ],
+    "dcRights": [
+      "CC-BY-4.0"
+    ],
+    "dcTypeGrottocenter": "interactive_resource",
+    "dcTypeDcmi": "interactive resource",
+    "hasBeenUpdated": false,
+    "metadataStatus": "registered",
+    "children": []
+  },
+  {
+    "id": 6,
+    "oaiIdentifier": "oai:grottocenter.org:6",
+    "lastUpdate": "2025-01-07T00:00:00Z",
+    "listSets": [
+      "grottocenter",
+      "grottocenter:map"
+    ],
+    "dcTitle": "Document 6 on map",
+    "dcCreators": [
+      "Author 6A",
+      "Author 6B"
+    ],
+    "dcContributor": "Contributor 6",
+    "dcPublisher": "Publisher 6",
+    "dcDate": "2022-02-01T00:00:00Z",
+    "dcLanguages": [
+      "fre"
+    ],
+    "dcDescriptions": [
+      "This is a description of document 6."
+    ],
+    "dcCoverages": [
+      "FR-XXX",
+      "FRA"
+    ],
+    "dcSubjects": [
+      "Subject 2",
+      "Subject 8"
+    ],
+    "dcFormats": [
+      "pdf",
+      "jpg"
+    ],
+    "dcIdentifiers": [
+      "doi:10.1000/gc6",
+      "url:https://grottocenter.org/doc/6.pdf"
+    ],
+    "dcRelations": [],
+    "dcSources": [
+      "Bulletin Bibliographique Sp\u00e9l\u00e9ologique / Speleo Abstracts"
+    ],
+    "dcRights": [
+      "CC0"
+    ],
+    "dcTypeGrottocenter": "map",
+    "dcTypeDcmi": "image",
+    "hasBeenUpdated": false,
+    "metadataStatus": "registered",
+    "children": []
+  },
+  {
+    "id": 7,
+    "oaiIdentifier": "oai:grottocenter.org:7",
+    "lastUpdate": "2025-01-08T00:00:00Z",
+    "listSets": [
+      "grottocenter",
+      "grottocenter:collection"
+    ],
+    "dcTitle": "Document 7 on collection",
+    "dcCreators": [],
+    "dcContributor": null,
+    "dcPublisher": "Publisher 7",
+    "dcDate": "2020-08-01T00:00:00Z",
+    "dcLanguages": [
+      "fre"
+    ],
+    "dcDescriptions": [
+      "This is a description of document 7."
+    ],
+    "dcCoverages": [
+      "FR-XXX",
+      "FRA"
+    ],
+    "dcSubjects": [
+      "Subject 2",
+      "Subject 10"
+    ],
+    "dcFormats": [
+      "pdf"
+    ],
+    "dcIdentifiers": [
+      "doi:10.1000/gc7",
+      "url:https://grottocenter.org/doc/7.pdf"
+    ],
+    "dcRelations": [],
+    "dcSources": [
+      "Bulletin Bibliographique Sp\u00e9l\u00e9ologique / Speleo Abstracts"
+    ],
+    "dcRights": [
+      "CC-BY-4.0"
+    ],
+    "dcTypeGrottocenter": "collection",
+    "dcTypeDcmi": "collection",
+    "hasBeenUpdated": false,
+    "metadataStatus": "registered",
+    "children": [8]
+  },
+  {
+    "id": 8,
+    "oaiIdentifier": "oai:grottocenter.org:8",
+    "lastUpdate": "2025-01-09T00:00:00Z",
+    "listSets": [
+      "grottocenter",
+      "grottocenter:image"
+    ],
+    "dcTitle": "Document 8 on image",
+    "dcCreators": [
+      "Author 8A",
+      "Author 8B"
+    ],
+    "dcContributor": null,
+    "dcPublisher": null,
+    "dcDate": "2021-05-01T00:00:00Z",
+    "dcLanguages": [
+      "fre"
+    ],
+    "dcDescriptions": [
+      "This is a description of document 8."
+    ],
+    "dcCoverages": [
+      "FR-XXX",
+      "FRA"
+    ],
+    "dcSubjects": [
+      "Subject 5",
+      "Subject 9"
+    ],
+    "dcFormats": [
+      "pdf",
+      "jpg"
+    ],
+    "dcIdentifiers": [
+      "doi:10.1000/gc8",
+      "url:https://grottocenter.org/doc/8.pdf"
+    ],
+    "dcRelations": [
+      "oai:grottocenter.org:7"
+    ],
+    "dcSources": [
+      "Bulletin Bibliographique Sp\u00e9l\u00e9ologique / Speleo Abstracts"
+    ],
+    "dcRights": [
+      "CC-BY-4.0"
+    ],
+    "dcTypeGrottocenter": "image",
+    "dcTypeDcmi": "image",
+    "hasBeenUpdated": false,
+    "metadataStatus": "registered",
+    "children": []
+  },
+  {
+    "id": 9,
+    "oaiIdentifier": "oai:grottocenter.org:9",
+    "lastUpdate": "2025-01-10T00:00:00Z",
+    "listSets": [
+      "grottocenter",
+      "grottocenter:image"
+    ],
+    "dcTitle": "Document 9 on image",
+    "dcCreators": [],
+    "dcContributor": "Contributor 9",
+    "dcPublisher": "Publisher 9",
+    "dcDate": "2021-04-01T00:00:00Z",
+    "dcLanguages": [
+      "fre"
+    ],
+    "dcDescriptions": [
+      "This is a description of document 9."
+    ],
+    "dcCoverages": [
+      "FR-XXX",
+      "FRA"
+    ],
+    "dcSubjects": [
+      "Subject 4",
+      "Subject 6"
+    ],
+    "dcFormats": [
+      "pdf"
+    ],
+    "dcIdentifiers": [
+      "doi:10.1000/gc9",
+      "url:https://grottocenter.org/doc/9.pdf"
+    ],
+    "dcRelations": [],
+    "dcSources": [
+      "Bulletin Bibliographique Sp\u00e9l\u00e9ologique / Speleo Abstracts"
+    ],
+    "dcRights": [
+      "CC0"
+    ],
+    "dcTypeGrottocenter": "image",
+    "dcTypeDcmi": "image",
+    "hasBeenUpdated": false,
+    "metadataStatus": "registered",
+    "children": []
+  },
+  {
+    "id": 10,
+    "oaiIdentifier": "oai:grottocenter.org:10",
+    "lastUpdate": "2025-01-11T00:00:00Z",
+    "listSets": [
+      "grottocenter",
+      "grottocenter:interactive_resource"
+    ],
+    "dcTitle": "Document 10 on interactive_resource",
+    "dcCreators": [
+      "Author 10A",
+      "Author 10B"
+    ],
+    "dcContributor": null,
+    "dcPublisher": "Publisher 10",
+    "dcDate": "2023-07-01T00:00:00Z",
+    "dcLanguages": [
+      "fre",
+      "eng"
+    ],
+    "dcDescriptions": [
+      "This is a description of document 10."
+    ],
+    "dcCoverages": [
+      "FR-XXX",
+      "FRA"
+    ],
+    "dcSubjects": [
+      "Subject 2",
+      "Subject 10"
+    ],
+    "dcFormats": [
+      "pdf",
+      "jpg"
+    ],
+    "dcIdentifiers": [
+      "doi:10.1000/gc10",
+      "url:https://grottocenter.org/doc/10.pdf"
+    ],
+    "dcRelations": [],
+    "dcSources": [
+      "Bulletin Bibliographique Sp\u00e9l\u00e9ologique / Speleo Abstracts"
+    ],
+    "dcRights": [
+      "CC-BY-4.0"
+    ],
+    "dcTypeGrottocenter": "interactive_resource",
+    "dcTypeDcmi": "interactive resource",
+    "hasBeenUpdated": false,
+    "metadataStatus": "registered",
+    "children": []
+  },
+  {
+    "id": 11,
+    "oaiIdentifier": "oai:grottocenter.org:11",
+    "lastUpdate": "2025-01-12T00:00:00Z",
+    "listSets": [
+      "grottocenter",
+      "grottocenter:dataset"
+    ],
+    "dcTitle": "Document 11 on dataset",
+    "dcCreators": [],
+    "dcContributor": null,
+    "dcPublisher": "Publisher 11",
+    "dcDate": "2022-08-01T00:00:00Z",
+    "dcLanguages": [
+      "fre"
+    ],
+    "dcDescriptions": [
+      "This is a description of document 11."
+    ],
+    "dcCoverages": [
+      "FR-XXX",
+      "FRA"
+    ],
+    "dcSubjects": [
+      "Subject 3",
+      "Subject 7"
+    ],
+    "dcFormats": [
+      "pdf"
+    ],
+    "dcIdentifiers": [
+      "doi:10.1000/gc11",
+      "url:https://grottocenter.org/doc/11.pdf"
+    ],
+    "dcRelations": [],
+    "dcSources": [
+      "Bulletin Bibliographique Sp\u00e9l\u00e9ologique / Speleo Abstracts"
+    ],
+    "dcRights": [
+      "CC-BY-4.0"
+    ],
+    "dcTypeGrottocenter": "dataset",
+    "dcTypeDcmi": "dataset",
+    "hasBeenUpdated": false,
+    "metadataStatus": "registered",
+    "children": [12]
+  },
+  {
+    "id": 12,
+    "oaiIdentifier": "oai:grottocenter.org:12",
+    "lastUpdate": "2025-01-13T00:00:00Z",
+    "listSets": [
+      "grottocenter",
+      "grottocenter:article"
+    ],
+    "dcTitle": "Document 12 on article",
+    "dcCreators": [
+      "Author 12A",
+      "Author 12B"
+    ],
+    "dcContributor": "Contributor 12",
+    "dcPublisher": null,
+    "dcDate": "2024-04-01T00:00:00Z",
+    "dcLanguages": [
+      "fre"
+    ],
+    "dcDescriptions": [
+      "This is a description of document 12."
+    ],
+    "dcCoverages": [
+      "FR-XXX",
+      "FRA"
+    ],
+    "dcSubjects": [
+      "Subject 3",
+      "Subject 8"
+    ],
+    "dcFormats": [
+      "pdf",
+      "jpg"
+    ],
+    "dcIdentifiers": [
+      "doi:10.1000/gc12",
+      "url:https://grottocenter.org/doc/12.pdf"
+    ],
+    "dcRelations": [
+      "oai:grottocenter.org:11"
+    ],
+    "dcSources": [
+      "Bulletin Bibliographique Sp\u00e9l\u00e9ologique / Speleo Abstracts"
+    ],
+    "dcRights": [
+      "CC0"
+    ],
+    "dcTypeGrottocenter": "article",
+    "dcTypeDcmi": "text",
+    "hasBeenUpdated": false,
+    "metadataStatus": "registered",
+    "children": []
+  },
+  {
+    "id": 13,
+    "oaiIdentifier": "oai:grottocenter.org:13",
+    "lastUpdate": "2025-01-14T00:00:00Z",
+    "listSets": [
+      "grottocenter",
+      "grottocenter:collection"
+    ],
+    "dcTitle": "Document 13 on collection",
+    "dcCreators": [],
+    "dcContributor": null,
+    "dcPublisher": "Publisher 13",
+    "dcDate": "2020-02-01T00:00:00Z",
+    "dcLanguages": [
+      "fre"
+    ],
+    "dcDescriptions": [
+      "This is a description of document 13."
+    ],
+    "dcCoverages": [
+      "FR-XXX",
+      "FRA"
+    ],
+    "dcSubjects": [
+      "Subject 1",
+      "Subject 9"
+    ],
+    "dcFormats": [
+      "pdf"
+    ],
+    "dcIdentifiers": [
+      "doi:10.1000/gc13",
+      "url:https://grottocenter.org/doc/13.pdf"
+    ],
+    "dcRelations": [],
+    "dcSources": [
+      "Bulletin Bibliographique Sp\u00e9l\u00e9ologique / Speleo Abstracts"
+    ],
+    "dcRights": [
+      "CC-BY-4.0"
+    ],
+    "dcTypeGrottocenter": "collection",
+    "dcTypeDcmi": "collection",
+    "hasBeenUpdated": false,
+    "metadataStatus": "deleted",
+    "children": [
+      3,
+      14
+    ]
+  },
+  {
+    "id": 14,
+    "oaiIdentifier": "oai:grottocenter.org:14",
+    "lastUpdate": "2025-01-15T00:00:00Z",
+    "listSets": [
+      "grottocenter",
+      "grottocenter:sound"
+    ],
+    "dcTitle": "Document 14 on sound",
+    "dcCreators": [
+      "Author 14A",
+      "Author 14B"
+    ],
+    "dcContributor": null,
+    "dcPublisher": "Publisher 14",
+    "dcDate": "2022-01-01T00:00:00Z",
+    "dcLanguages": [
+      "fre"
+    ],
+    "dcDescriptions": [
+      "This is a description of document 14."
+    ],
+    "dcCoverages": [
+      "FR-XXX",
+      "FRA"
+    ],
+    "dcSubjects": [
+      "Subject 5",
+      "Subject 8"
+    ],
+    "dcFormats": [
+      "pdf",
+      "jpg"
+    ],
+    "dcIdentifiers": [
+      "doi:10.1000/gc14",
+      "url:https://grottocenter.org/doc/14.pdf"
+    ],
+    "dcRelations": [],
+    "dcSources": [
+      "Bulletin Bibliographique Sp\u00e9l\u00e9ologique / Speleo Abstracts"
+    ],
+    "dcRights": [
+      "CC-BY-4.0"
+    ],
+    "dcTypeGrottocenter": "sound",
+    "dcTypeDcmi": "sound",
+    "hasBeenUpdated": false,
+    "metadataStatus": "registered",
+    "children": []
+  },
+  {
+    "id": 15,
+    "oaiIdentifier": "oai:grottocenter.org:15",
+    "lastUpdate": "2025-01-16T00:00:00Z",
+    "listSets": [
+      "grottocenter",
+      "grottocenter:sound"
+    ],
+    "dcTitle": "Document 15 on sound",
+    "dcCreators": [],
+    "dcContributor": "Contributor 15",
+    "dcPublisher": "Publisher 15",
+    "dcDate": "2020-02-01T00:00:00Z",
+    "dcLanguages": [
+      "fre",
+      "eng"
+    ],
+    "dcDescriptions": [
+      "This is a description of document 15."
+    ],
+    "dcCoverages": [
+      "FR-XXX",
+      "FRA"
+    ],
+    "dcSubjects": [
+      "Subject 4",
+      "Subject 8"
+    ],
+    "dcFormats": [
+      "pdf"
+    ],
+    "dcIdentifiers": [
+      "doi:10.1000/gc15",
+      "url:https://grottocenter.org/doc/15.pdf"
+    ],
+    "dcRelations": [],
+    "dcSources": [
+      "Bulletin Bibliographique Sp\u00e9l\u00e9ologique / Speleo Abstracts"
+    ],
+    "dcRights": [
+      "CC0"
+    ],
+    "dcTypeGrottocenter": "sound",
+    "dcTypeDcmi": "sound",
+    "hasBeenUpdated": false,
+    "metadataStatus": "registered",
+    "children": [16]
+  },
+  {
+    "id": 16,
+    "oaiIdentifier": "oai:grottocenter.org:16",
+    "lastUpdate": "2025-01-17T00:00:00Z",
+    "listSets": [
+      "grottocenter",
+      "grottocenter:interactive_resource"
+    ],
+    "dcTitle": "Document 16 on interactive_resource",
+    "dcCreators": [
+      "Author 16A",
+      "Author 16B"
+    ],
+    "dcContributor": null,
+    "dcPublisher": null,
+    "dcDate": "2023-03-01T00:00:00Z",
+    "dcLanguages": [
+      "fre"
+    ],
+    "dcDescriptions": [
+      "This is a description of document 16."
+    ],
+    "dcCoverages": [
+      "FR-XXX",
+      "FRA"
+    ],
+    "dcSubjects": [
+      "Subject 1",
+      "Subject 9"
+    ],
+    "dcFormats": [
+      "pdf",
+      "jpg"
+    ],
+    "dcIdentifiers": [
+      "doi:10.1000/gc16",
+      "url:https://grottocenter.org/doc/16.pdf"
+    ],
+    "dcRelations": [
+      "oai:grottocenter.org:15"
+    ],
+    "dcSources": [
+      "Bulletin Bibliographique Sp\u00e9l\u00e9ologique / Speleo Abstracts"
+    ],
+    "dcRights": [
+      "CC-BY-4.0"
+    ],
+    "dcTypeGrottocenter": "interactive_resource",
+    "dcTypeDcmi": "interactive resource",
+    "hasBeenUpdated": false,
+    "metadataStatus": "registered",
+    "children": []
+  },
+  {
+    "id": 17,
+    "oaiIdentifier": "oai:grottocenter.org:17",
+    "lastUpdate": "2025-01-18T00:00:00Z",
+    "listSets": [
+      "grottocenter",
+      "grottocenter:sound"
+    ],
+    "dcTitle": "Document 17 on sound",
+    "dcCreators": [],
+    "dcContributor": null,
+    "dcPublisher": "Publisher 17",
+    "dcDate": "2020-06-01T00:00:00Z",
+    "dcLanguages": [
+      "fre"
+    ],
+    "dcDescriptions": [
+      "This is a description of document 17."
+    ],
+    "dcCoverages": [
+      "FR-XXX",
+      "FRA"
+    ],
+    "dcSubjects": [
+      "Subject 3",
+      "Subject 8"
+    ],
+    "dcFormats": [
+      "pdf"
+    ],
+    "dcIdentifiers": [
+      "doi:10.1000/gc17",
+      "url:https://grottocenter.org/doc/17.pdf"
+    ],
+    "dcRelations": [],
+    "dcSources": [
+      "Bulletin Bibliographique Sp\u00e9l\u00e9ologique / Speleo Abstracts"
+    ],
+    "dcRights": [
+      "CC-BY-4.0"
+    ],
+    "dcTypeGrottocenter": "sound",
+    "dcTypeDcmi": "sound",
+    "hasBeenUpdated": false,
+    "metadataStatus": "registered",
+    "children": []
+  },
+  {
+    "id": 18,
+    "oaiIdentifier": "oai:grottocenter.org:18",
+    "lastUpdate": "2025-01-19T00:00:00Z",
+    "listSets": [
+      "grottocenter",
+      "grottocenter:image"
+    ],
+    "dcTitle": "Document 18 on image",
+    "dcCreators": [
+      "Author 18A",
+      "Author 18B"
+    ],
+    "dcContributor": "Contributor 18",
+    "dcPublisher": "Publisher 18",
+    "dcDate": "2024-03-01T00:00:00Z",
+    "dcLanguages": [
+      "fre"
+    ],
+    "dcDescriptions": [
+      "This is a description of document 18."
+    ],
+    "dcCoverages": [
+      "FR-XXX",
+      "FRA"
+    ],
+    "dcSubjects": [
+      "Subject 4",
+      "Subject 6"
+    ],
+    "dcFormats": [
+      "pdf",
+      "jpg"
+    ],
+    "dcIdentifiers": [
+      "doi:10.1000/gc18",
+      "url:https://grottocenter.org/doc/18.pdf"
+    ],
+    "dcRelations": [],
+    "dcSources": [
+      "Bulletin Bibliographique Sp\u00e9l\u00e9ologique / Speleo Abstracts"
+    ],
+    "dcRights": [
+      "CC0"
+    ],
+    "dcTypeGrottocenter": "image",
+    "dcTypeDcmi": "image",
+    "hasBeenUpdated": false,
+    "metadataStatus": "registered",
+    "children": []
+  },
+  {
+    "id": 19,
+    "oaiIdentifier": "oai:grottocenter.org:19",
+    "lastUpdate": "2025-01-20T00:00:00Z",
+    "listSets": [
+      "grottocenter",
+      "grottocenter:interactive_resource"
+    ],
+    "dcTitle": "Document 19 on interactive_resource",
+    "dcCreators": [],
+    "dcContributor": null,
+    "dcPublisher": "Publisher 19",
+    "dcDate": "2024-06-01T00:00:00Z",
+    "dcLanguages": [
+      "fre"
+    ],
+    "dcDescriptions": [
+      "This is a description of document 19."
+    ],
+    "dcCoverages": [
+      "FR-XXX",
+      "FRA"
+    ],
+    "dcSubjects": [
+      "Subject 2",
+      "Subject 10"
+    ],
+    "dcFormats": [
+      "pdf"
+    ],
+    "dcIdentifiers": [
+      "doi:10.1000/gc19",
+      "url:https://grottocenter.org/doc/19.pdf"
+    ],
+    "dcRelations": [],
+    "dcSources": [
+      "Bulletin Bibliographique Sp\u00e9l\u00e9ologique / Speleo Abstracts"
+    ],
+    "dcRights": [
+      "CC-BY-4.0"
+    ],
+    "dcTypeGrottocenter": "interactive_resource",
+    "dcTypeDcmi": "interactive resource",
+    "hasBeenUpdated": false,
+    "metadataStatus": "registered",
+    "children": [20]
+  },
+  {
+    "id": 20,
+    "oaiIdentifier": "oai:grottocenter.org:20",
+    "lastUpdate": "2025-01-21T00:00:00Z",
+    "listSets": [
+      "grottocenter",
+      "grottocenter:dataset"
+    ],
+    "dcTitle": "Document 20 on dataset",
+    "dcCreators": [
+      "Author 20A",
+      "Author 20B"
+    ],
+    "dcContributor": null,
+    "dcPublisher": null,
+    "dcDate": "2021-04-01T00:00:00Z",
+    "dcLanguages": [
+      "fre",
+      "eng"
+    ],
+    "dcDescriptions": [
+      "This is a description of document 20."
+    ],
+    "dcCoverages": [
+      "FR-XXX",
+      "FRA"
+    ],
+    "dcSubjects": [
+      "Subject 1",
+      "Subject 8"
+    ],
+    "dcFormats": [
+      "pdf",
+      "jpg"
+    ],
+    "dcIdentifiers": [
+      "doi:10.1000/gc20",
+      "url:https://grottocenter.org/doc/20.pdf"
+    ],
+    "dcRelations": [
+      "oai:grottocenter.org:19"
+    ],
+    "dcSources": [
+      "Bulletin Bibliographique Sp\u00e9l\u00e9ologique / Speleo Abstracts"
+    ],
+    "dcRights": [
+      "CC-BY-4.0"
+    ],
+    "dcTypeGrottocenter": "dataset",
+    "dcTypeDcmi": "dataset",
+    "hasBeenUpdated": false,
+    "metadataStatus": "registered",
+    "children": []
+  },
+  {
+    "id": 21,
+    "oaiIdentifier": "oai:grottocenter.org:21",
+    "lastUpdate": "2025-01-22T00:00:00Z",
+    "listSets": [
+      "grottocenter",
+      "grottocenter:map"
+    ],
+    "dcTitle": "Document 21 on map",
+    "dcCreators": [],
+    "dcContributor": "Contributor 21",
+    "dcPublisher": "Publisher 21",
+    "dcDate": "2021-02-01T00:00:00Z",
+    "dcLanguages": [
+      "fre"
+    ],
+    "dcDescriptions": [
+      "This is a description of document 21."
+    ],
+    "dcCoverages": [
+      "FR-XXX",
+      "FRA"
+    ],
+    "dcSubjects": [
+      "Subject 2",
+      "Subject 10"
+    ],
+    "dcFormats": [
+      "pdf"
+    ],
+    "dcIdentifiers": [
+      "doi:10.1000/gc21",
+      "url:https://grottocenter.org/doc/21.pdf"
+    ],
+    "dcRelations": [],
+    "dcSources": [
+      "Bulletin Bibliographique Sp\u00e9l\u00e9ologique / Speleo Abstracts"
+    ],
+    "dcRights": [
+      "CC0"
+    ],
+    "dcTypeGrottocenter": "map",
+    "dcTypeDcmi": "image",
+    "hasBeenUpdated": false,
+    "metadataStatus": "registered",
+    "children": []
+  }
+]
