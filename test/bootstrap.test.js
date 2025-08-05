@@ -64,6 +64,7 @@ before(function (done) {
           'hdescription',
           'hentrance',
           'vcaverroles',
+          'vbibliographicmetadata',
         ],
         // eslint-disable-next-line consistent-return
         (fixtedError) => {
