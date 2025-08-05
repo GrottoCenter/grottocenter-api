@@ -115,6 +115,8 @@ module.exports.policies = {
   'v1/bibliographic-metadata/get-records': true,
   'v1/bibliographic-metadata/get-identifiers': true,
   'v1/bibliographic-metadata/count': true,
+  'v1/bibliographic-metadata/get-identifiers-paginated': true,
+  'v1/bibliographic-metadata/get-records-paginated': true,
 
   // Entrance
   'v1/entrance/count': true,

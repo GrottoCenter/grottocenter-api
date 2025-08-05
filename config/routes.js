@@ -238,6 +238,10 @@ module.exports.routes = {
   'GET /api/v1/bibliographic-metadata/identifiers':
     'v1/bibliographic-metadata/get-identifiers',
   'GET /api/v1/bibliographic-metadata/count': 'v1/bibliographic-metadata/count',
+  'GET /api/v1/bibliographic-metadata/records-paginated':
+    'v1/bibliographic-metadata/get-records-paginated',
+  'GET /api/v1/bibliographic-metadata/identifiers-paginated':
+    'v1/bibliographic-metadata/get-identifiers-paginated',
 
   // Description
   'PATCH /api/v1/descriptions/:id': 'v1/description/update',
