@@ -1389,19 +1389,19 @@ paths:
         '403':
           description: You are not authorized to create a document (or entrance).
 
-  '/bibliographic-metadata/{identifier}':
+  '/bibliographic-metadata/record/{id}':
     get:
       tags:
         - bibliographic metadata
-      description: 'Retrieve a single bibliographic metadata record by OAI identifier (GetRecord operation).'
+      description: 'Retrieve a single bibliographic metadata record by numeric ID (GetRecord operation).'
       parameters:
-        - name: identifier
+        - name: id
           in: path
-          description: 'OAI identifier of the record to retrieve'
+          description: 'Numeric ID of the record to retrieve'
           required: true
           schema:
-            type: string
-            example: 'oai:grottocenter.org:25022'
+            type: integer
+            example: 25022
       responses:
         '200':
           description: Successful operation
@@ -1585,6 +1585,206 @@ paths:
                       until:
                         type: string
 
+  '/bibliographic-metadata/records-paginated':
+    get:
+      tags:
+        - bibliographic metadata
+      description: 'Retrieve paginated bibliographic metadata records with full metadata (ListRecords operation with pagination).'
+      parameters:
+        - name: limit
+          in: query
+          description: 'Maximum number of records to return'
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 1000
+            default: 50
+            example: 50
+        - name: offset
+          in: query
+          description: 'Number of records to skip for pagination'
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+            example: 0
+        - name: set
+          in: query
+          description: 'Filter records by set specification'
+          required: false
+          schema:
+            type: string
+            example: 'grottocenter'
+        - name: from
+          in: query
+          description: 'Filter records modified from this date (inclusive, filters on lastUpdate field) - YYYY-MM-DD format'
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2023-01-25'
+        - name: until
+          in: query
+          description: 'Filter records modified until this date (inclusive, filters on lastUpdate field) - YYYY-MM-DD format'
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2023-12-31'
+        - name: includeDeleted
+          in: query
+          description: >
+            Optional flag to include deleted records (with metadataStatus = 'deleted').
+            Defaults to 'false', meaning only registered records are returned.
+          schema:
+            type: string
+            enum: ['true', 'false']
+            default: 'false'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  records:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/BibliographicMetadataRecord'
+                  pagination:
+                    type: object
+                    description: 'Pagination metadata'
+                    properties:
+                      total:
+                        type: integer
+                        description: 'Total number of matching records'
+                      limit:
+                        type: integer
+                        description: 'Maximum number of records per page'
+                      offset:
+                        type: integer
+                        description: 'Number of records skipped'
+                      hasNext:
+                        type: boolean
+                        description: 'Whether there are more records available'
+                  parameters:
+                    type: object
+                    description: 'Applied filter parameters'
+                    properties:
+                      set:
+                        type: string
+                      from:
+                        type: string
+                      until:
+                        type: string
+                      limit:
+                        type: integer
+                      offset:
+                        type: integer
+
+  '/bibliographic-metadata/identifiers-paginated':
+    get:
+      tags:
+        - bibliographic metadata
+      description: 'Retrieve paginated record headers without full metadata (ListIdentifiers operation with pagination).'
+      parameters:
+        - name: limit
+          in: query
+          description: 'Maximum number of identifiers to return'
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 1000
+            default: 50
+            example: 50
+        - name: offset
+          in: query
+          description: 'Number of identifiers to skip for pagination'
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+            example: 0
+        - name: set
+          in: query
+          description: 'Filter records by set specification'
+          required: false
+          schema:
+            type: string
+            example: 'grottocenter'
+        - name: from
+          in: query
+          description: 'Filter records modified from this date (inclusive, filters on lastUpdate field) - YYYY-MM-DD format'
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2023-01-25'
+        - name: until
+          in: query
+          description: 'Filter records modified until this date (inclusive, filters on lastUpdate field) - YYYY-MM-DD format'
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2023-12-31'
+        - name: includeDeleted
+          in: query
+          description: >
+            Optional flag to include deleted records (with metadataStatus = 'deleted').
+            Defaults to 'false', meaning only registered records are returned.
+          schema:
+            type: string
+            enum: ['true', 'false']
+            default: 'false'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  identifiers:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/BibliographicMetadataIdentifier'
+                  pagination:
+                    type: object
+                    description: 'Pagination metadata'
+                    properties:
+                      total:
+                        type: integer
+                        description: 'Total number of matching identifiers'
+                      limit:
+                        type: integer
+                        description: 'Maximum number of identifiers per page'
+                      offset:
+                        type: integer
+                        description: 'Number of identifiers skipped'
+                      hasNext:
+                        type: boolean
+                        description: 'Whether there are more identifiers available'
+                  parameters:
+                    type: object
+                    description: 'Applied filter parameters'
+                    properties:
+                      set:
+                        type: string
+                      from:
+                        type: string
+                      until:
+                        type: string
+                      limit:
+                        type: integer
+                      offset:
+                        type: integer
+
   '/bibliographic-metadata/sets':
     get:
       tags:
@@ -1620,7 +1820,7 @@ paths:
           required: false
           schema:
             type: string
-            example: 'grottocenter:issue'
+            example: 'grottocenter'
         - name: from
           in: query
           description: 'Filter records modified from this date (inclusive, filters on lastUpdate field) - YYYY-MM-DD format'
