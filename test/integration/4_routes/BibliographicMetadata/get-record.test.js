@@ -13,6 +13,8 @@ describe('Bibliographic Metadata Get Record Controller', () => {
   let adminToken;
 
   before(async () => {
+    // Mock timezone to UTC for consistent date handling
+    process.env.TZ = 'UTC';
     adminToken = await AuthTokenService.getRawBearerAdminToken();
   });
 
@@ -358,5 +360,10 @@ describe('Bibliographic Metadata Get Record Controller', () => {
 
         return done();
       });
+  });
+
+  after(() => {
+    // Restore original timezone
+    delete process.env.TZ;
   });
 });

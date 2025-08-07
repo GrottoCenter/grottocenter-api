@@ -372,27 +372,36 @@ module.exports = {
     let matchingIds = [];
 
     if (titleFilter) {
-      // search by title
-      const sqlTitle = `SELECT id_document AS id, children
-            FROM v_bibliographic_metadata
-            WHERE metadata_status = 'registered'
-            AND unaccent(dc_title) ILIKE unaccent('%${titleFilter}%')`;
-      const { rows } = await sails.sendNativeQuery(sqlTitle);
-      const ids = rows.map((m) => m.id);
-
-      const childrenIds = rows.flatMap((m) => {
-        if (!m.children || !Array.isArray(m.children)) return [];
-        return m.children
-          .map((child) => {
-            if (typeof child === 'object' && child.id) {
-              return child.id;
-            }
-            return null;
-          })
-          .filter((id) => id !== null);
-      });
-
-      matchingIds = Array.from(new Set([...ids, ...childrenIds]));
+      // search by title - use unaccent if available, otherwise fall back to simple ILIKE
+      let sqlTitle;
+      try {
+        // Try with unaccent first
+        sqlTitle = `SELECT id_document AS id, children
+              FROM v_bibliographic_metadata
+              WHERE metadata_status = 'registered'
+              AND unaccent(dc_title) ILIKE unaccent('%${titleFilter}%')`;
+        const { rows } = await sails.sendNativeQuery(sqlTitle);
+        const ids = rows.map((m) => m.id);
+        const children = rows.flatMap((m) => m.children || []);
+        matchingIds = Array.from(new Set([...ids, ...children]));
+      } catch (error) {
+        // If unaccent function doesn't exist, fall back to simple ILIKE
+        if (error.message && error.message.includes('unaccent')) {
+          sails.log.warn(
+            'unaccent extension not available, falling back to ILIKE search'
+          );
+          sqlTitle = `SELECT id_document AS id, children
+                FROM v_bibliographic_metadata
+                WHERE metadata_status = 'registered'
+                AND dc_title ILIKE '%${titleFilter}%'`;
+          const { rows } = await sails.sendNativeQuery(sqlTitle);
+          const ids = rows.map((m) => m.id);
+          const children = rows.flatMap((m) => m.children || []);
+          matchingIds = Array.from(new Set([...ids, ...children]));
+        } else {
+          throw error;
+        }
+      }
     }
 
     if (matchingIds.length > 0) {
