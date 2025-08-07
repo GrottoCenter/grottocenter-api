@@ -361,8 +361,6 @@ paths:
                 $ref: '#/components/schemas/Caver'
         '404':
           description: Caver not found.
-
-  '/cavers/{caverId}':
     put:
       tags:
         - cavers
@@ -417,7 +415,8 @@ paths:
           in: path
           required: true
           schema:
-            type: string
+            type: integer
+            minimum: 1
       responses:
         '200':
           description: Successful operation
@@ -426,14 +425,44 @@ paths:
               schema:
                 type: object
                 properties:
-                  cavers:
+                  data:
                     type: array
-        '404':
-          description: No authors found.
-        '401':
-          description: You are not authorized to get the authors of Grottocenter.
+                    items:
+                      type: object
+                      properties:
+                        caverId:
+                          type: integer
+                        nickname:
+                          type: string
+                        name:
+                          type: string
+                        surname:
+                          type: string
+                        isUser:
+                          type: boolean
+                        isAuthor:
+                          type: boolean
+                        isContributor:
+                          type: boolean
+                  pagination:
+                    type: object
+                    properties:
+                      page:
+                        type: integer
+                      limit:
+                        type: integer
+                      total:
+                        type: integer
+                      totalPages:
+                        type: integer
         '400':
           description: Invalid page parameter. Page must be a positive integer.
+        '401':
+          description: You are not authorized to get the authors of Grottocenter.
+        '403':
+          description: You are not authorized to access this endpoint.
+        '404':
+          description: No authors found.
 
   '/cavers/contributors/{page}':
     get:
@@ -445,7 +474,8 @@ paths:
           in: path
           required: true
           schema:
-            type: string
+            type: integer
+            minimum: 1
       responses:
         '200':
           description: Successful operation
@@ -454,16 +484,46 @@ paths:
               schema:
                 type: object
                 properties:
-                  cavers:
+                  data:
                     type: array
-        '404':
-          description: No contributors found
-        '401':
-          description: You are not authorized to get the contributors of Grottocenter.
+                    items:
+                      type: object
+                      properties:
+                        caverId:
+                          type: integer
+                        nickname:
+                          type: string
+                        name:
+                          type: string
+                        surname:
+                          type: string
+                        isUser:
+                          type: boolean
+                        isAuthor:
+                          type: boolean
+                        isContributor:
+                          type: boolean
+                  pagination:
+                    type: object
+                    properties:
+                      page:
+                        type: integer
+                      limit:
+                        type: integer
+                      total:
+                        type: integer
+                      totalPages:
+                        type: integer
         '400':
           description: Invalid page parameter. Page must be a positive integer.
+        '401':
+          description: You are not authorized to get the contributors of Grottocenter.
+        '403':
+          description: You are not authorized to access this endpoint.
+        '404':
+          description: Page not found or no contributors found.
 
-  'cavers/users/{page}':
+  '/cavers/users/{page}':
     get:
       tags:
         - cavers
@@ -473,7 +533,8 @@ paths:
           in: path
           required: true
           schema:
-            type: string
+            type: integer
+            minimum: 1
       responses:
         '200':
           description: Successful operation
@@ -482,14 +543,44 @@ paths:
               schema:
                 type: object
                 properties:
-                  cavers:
+                  data:
                     type: array
-        '404':
-          description: No users found
-        '401':
-          description: You are not authorized to get the users of Grottocenter.
+                    items:
+                      type: object
+                      properties:
+                        caverId:
+                          type: integer
+                        nickname:
+                          type: string
+                        name:
+                          type: string
+                        surname:
+                          type: string
+                        isUser:
+                          type: boolean
+                        isAuthor:
+                          type: boolean
+                        isContributor:
+                          type: boolean
+                  pagination:
+                    type: object
+                    properties:
+                      page:
+                        type: integer
+                      limit:
+                        type: integer
+                      total:
+                        type: integer
+                      totalPages:
+                        type: integer
         '400':
           description: Invalid page parameter. Page must be a positive integer.
+        '401':
+          description: You are not authorized to get the users of Grottocenter.
+        '403':
+          description: You are not authorized to access this endpoint.
+        '404':
+          description: Page not found or no users found.
 
   '/cavers/count':
     get:
@@ -1432,7 +1523,6 @@ paths:
           schema:
             type: string
             example: 'marc21-US'
-            pattern: '^[a-zA-Z0-9]+(-[A-Z]{2})?$'
       responses:
         '200':
           description: Successful operation
@@ -1447,11 +1537,11 @@ paths:
                   format:
                     type: string
                     description: 'Applied MARC format'
-                    example: 'marc21'
+                    example: 'Unimarc'
                   country:
                     type: string
                     description: 'Applied country code'
-                    example: 'US'
+                    example: 'IT'
         '400':
           description: 'ID and format parameters are required'
         '404':
@@ -2133,7 +2223,7 @@ paths:
         - comments
       description: Create a comment. You must provide an existing entrance or cave id which your comment is referring to.
       parameters:
-        - in: body
+        - in: query
           name: comment
           description: The comment to create.
           schema:
@@ -2161,7 +2251,7 @@ paths:
           required: true
           schema:
             type: integer
-        - in: body
+        - in: query
           name: comment
           description: The comment to create.
           schema:
@@ -2201,7 +2291,7 @@ paths:
         - riggings
       description: Create a rigging. You must provide an existing entrance/cave id which your rigging is refering to.
       parameters:
-        - in: body
+        - in: query
           name: riggings
           description: The riggings to create.
           schema:
@@ -2229,7 +2319,7 @@ paths:
           required: true
           schema:
             type: integer
-        - in: body
+        - in: query
           name: riggings
           description: The riggings to create.
           schema:
@@ -3659,44 +3749,6 @@ paths:
                         name:
                           type: string
 
-  'bibliographic-metadata/{id}/format/{format}':
-    get:
-      tags:
-        - bibliographic metadata
-      description: Export the bibliographic metadata of a document in a specific format (Unimarc or Marc21 with a country code, only it or default).
-      parameters:
-        - name: id
-          in: path
-          description: Document id
-          required: true
-          schema:
-            type: integer
-        - name: format
-          in: path
-          description: Format of the export (Unimarc-it, Unimarc-default, Marc21-it, Marc21-default)
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Successful operation, returns the exported metadata in the specified format.
-          content:
-            application/json:
-              schema:
-                metadata:
-                  type: string
-                  description: The exported bibliographic metadata in the specified format.
-                format:
-                  type: string
-                  description: The format of the exported metadata (Unimarc, Marc21).
-                country:
-                  type: string
-                  description: The country code used for the export (it, default).
-        '400':
-          description: 'ID and format parameters are required'
-        '404':
-          description: Record with ID ${id} not found
-
   'bibliographic-metadata/search':
     post:
       tags:
@@ -4886,21 +4938,3 @@ components:
           type: integer
         nb_data:
           type: integer
-
-    Data-quality-info:
-      type: object
-      properties:
-        name:
-          type: string
-        massif_name:
-          type: string
-        id_entrance:
-          type: integer
-        id_country:
-          type: string
-        country_name:
-          type: string
-        data_quality:
-          type: integer
-        date_of_update:
-          type: string
