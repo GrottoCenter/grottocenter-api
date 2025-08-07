@@ -231,7 +231,7 @@ module.exports.routes = {
     'v1/bibliographic-metadata/search',
   'GET /api/v1/bibliographic-metadata/sets':
     'v1/bibliographic-metadata/get-sets',
-  'GET /api/v1/bibliographic-metadata/:identifier':
+  'GET /api/v1/bibliographic-metadata/record/:id':
     'v1/bibliographic-metadata/get-record',
   'GET /api/v1/bibliographic-metadata/records':
     'v1/bibliographic-metadata/get-records',
