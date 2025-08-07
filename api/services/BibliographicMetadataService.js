@@ -55,32 +55,63 @@ function findFieldInQuery(node, fieldName) {
   return null;
 }
 
+/**
+ * Builds criteria for filtering bibliographic metadata records using OAI-PMH parameters.
+ *
+ * @param {Object} parameters - OAI parameters (from, until, set)
+ * @param {Object} baseCriteria - Base Waterline criteria (e.g. metadataStatus)
+ * @returns {{ where: Object, postFilter: Function|null }}
+ */
+function buildOaiCriteria(parameters = {}, baseCriteria = {}) {
+  const where = { ...baseCriteria };
+  const range = {};
+
+  // Handle "from"
+  if (parameters.from) {
+    const fromDate = new Date(parameters.from);
+    if (Number.isNaN(fromDate.getTime()))
+      throw new Error(`Invalid 'from' date: ${parameters.from}`);
+    fromDate.setUTCHours(0, 0, 0, 0);
+    range['>='] = fromDate;
+  }
+
+  // Handle "until"
+  if (parameters.until) {
+    const untilDate = new Date(parameters.until);
+    if (Number.isNaN(untilDate.getTime()))
+      throw new Error(`Invalid 'until' date: ${parameters.until}`);
+    untilDate.setUTCHours(23, 59, 59, 999);
+    range['<='] = untilDate;
+  }
+
+  if (Object.keys(range).length > 0) {
+    where.lastUpdate = range;
+  }
+
+  // Handle set filtering after Waterline (array includes)
+  const { set } = parameters;
+  const postFilter = set
+    ? (record) =>
+        Array.isArray(record.listSets) && record.listSets.includes(set)
+    : null;
+
+  return { where, postFilter };
+}
+
 async function getOAIRecordsPaginatedWithoutSet(
   parameters = {},
   filter = { metadataStatus: METADATA_STATUS.REGISTERED }
 ) {
   try {
-    const limit = parseInt(parameters.limit, 10) || 50;
-    const offset = parseInt(parameters.offset, 10) || 0;
+    // Validate and sanitize pagination parameters
+    const limit = Math.max(0, parseInt(parameters.limit, 10) || 50);
+    const offset = Math.max(0, parseInt(parameters.offset, 10) || 0);
 
-    // Start with the provided filter criteria (typically metadata status)
-    const baseCriteria = { ...filter };
-
-    // Build date range query if from/until parameters are provided
-    if (parameters.from || parameters.until) {
-      baseCriteria.lastUpdate = {};
-
-      if (parameters.from) {
-        baseCriteria.lastUpdate['>='] = new Date(parameters.from);
-      }
-      if (parameters.until) {
-        baseCriteria.lastUpdate['<='] = new Date(parameters.until);
-      }
-    }
+    const { where } = buildOaiCriteria(parameters, filter);
 
     // Si pas de filtre set, on peut utiliser directement Waterline avec pagination
     const records = await sails.models.vbibliographicmetadata.find({
-      where: baseCriteria,
+      where,
       limit,
       skip: offset,
       sort: 'id ASC', // Pour assurer un ordre consistant
@@ -107,17 +138,22 @@ async function getOAIRecordsPaginatedWithSet(
   filter = { metadataStatus: METADATA_STATUS.REGISTERED }
 ) {
   try {
-    const limit = parseInt(parameters.limit, 10) || 50;
-    const offset = parseInt(parameters.offset, 10) || 0;
+    // Validate and sanitize pagination parameters
+    const limit = Math.max(0, parseInt(parameters.limit, 10) || 50);
+    const offset = Math.max(0, parseInt(parameters.offset, 10) || 0);
 
     // Si filtre par set, on doit utiliser une approche différente car array filtering
     // Pour les performances, on utilise une requête SQL native
     const setCondition = parameters.set ? `AND $1 = ANY(list_sets)` : '';
     const setParams = parameters.set ? [parameters.set] : [];
 
-    const whereConditions = [
-      `metadata_status = '${filter.metadataStatus || 'registered'}'`,
-    ];
+    const whereConditions = [];
+
+    // Only add metadata status filter if explicitly provided
+    if (filter.metadataStatus) {
+      whereConditions.push(`metadata_status = '${filter.metadataStatus}'`);
+    }
+
     const sqlParams = [...setParams];
     let paramIndex = setParams.length + 1;
 
@@ -133,13 +169,15 @@ async function getOAIRecordsPaginatedWithSet(
       paramIndex += 1;
     }
 
-    const whereClause = whereConditions.join(' AND ');
+    const whereClause =
+      whereConditions.length > 0 ? whereConditions.join(' AND ') : '';
+    const whereSQL = whereClause ? `WHERE ${whereClause}` : 'WHERE 1=1';
 
     // Requête pour récupérer les records paginés
     const recordsQuery = `
     SELECT id_document as id
     FROM v_bibliographic_metadata
-    WHERE ${whereClause} ${setCondition}
+    ${whereSQL} ${setCondition}
     ORDER BY id_document ASC
     LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
   `;
@@ -154,7 +192,7 @@ async function getOAIRecordsPaginatedWithSet(
     const countQuery = `
     SELECT COUNT(*) as total
     FROM v_bibliographic_metadata
-    WHERE ${whereClause} ${setCondition}
+    ${whereSQL} ${setCondition}
   `;
 
     const {
@@ -183,27 +221,15 @@ async function getOAIIdentifiersPaginatedWithoutSet(
   filter = { metadataStatus: METADATA_STATUS.REGISTERED }
 ) {
   try {
-    const limit = parseInt(parameters.limit, 10) || 50;
-    const offset = parseInt(parameters.offset, 10) || 0;
+    // Validate and sanitize pagination parameters
+    const limit = Math.max(0, parseInt(parameters.limit, 10) || 50);
+    const offset = Math.max(0, parseInt(parameters.offset, 10) || 0);
 
-    // Start with the provided filter criteria (typically metadata status)
-    const baseCriteria = { ...filter };
-
-    // Build date range query if from/until parameters are provided
-    if (parameters.from || parameters.until) {
-      baseCriteria.lastUpdate = {};
-
-      if (parameters.from) {
-        baseCriteria.lastUpdate['>='] = new Date(parameters.from);
-      }
-      if (parameters.until) {
-        baseCriteria.lastUpdate['<='] = new Date(parameters.until);
-      }
-    }
+    const { where } = buildOaiCriteria(parameters, filter);
 
     // Si pas de filtre set, on peut utiliser directement Waterline avec pagination
     const identifiers = await sails.models.vbibliographicmetadata.find({
-      where: baseCriteria,
+      where,
       select: ['oaiIdentifier', 'lastUpdate', 'listSets'],
       limit,
       skip: offset,
@@ -238,9 +264,13 @@ async function getOAIIdentifiersPaginatedWithSet(
     const setCondition = parameters.set ? `AND $1 = ANY(list_sets)` : '';
     const setParams = parameters.set ? [parameters.set] : [];
 
-    const whereConditions = [
-      `metadata_status = '${filter.metadataStatus || 'registered'}'`,
-    ];
+    const whereConditions = [];
+
+    // Only add metadata status filter if explicitly provided
+    if (filter.metadataStatus) {
+      whereConditions.push(`metadata_status = '${filter.metadataStatus}'`);
+    }
+
     const sqlParams = [...setParams];
     let paramIndex = setParams.length + 1;
 
@@ -256,13 +286,15 @@ async function getOAIIdentifiersPaginatedWithSet(
       paramIndex += 1;
     }
 
-    const whereClause = whereConditions.join(' AND ');
+    const whereClause =
+      whereConditions.length > 0 ? whereConditions.join(' AND ') : '';
+    const whereSQL = whereClause ? `WHERE ${whereClause}` : 'WHERE 1=1';
 
     // Requête pour récupérer les identifiers paginés (seulement les champs nécessaires)
     const identifiersQuery = `
       SELECT oai_identifier as "oaiIdentifier", last_update as "lastUpdate", list_sets as "listSets"
       FROM v_bibliographic_metadata
-      WHERE ${whereClause} ${setCondition}
+      ${whereSQL} ${setCondition}
       ORDER BY id_document ASC
       LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
     `;
@@ -277,7 +309,7 @@ async function getOAIIdentifiersPaginatedWithSet(
     const countQuery = `
       SELECT COUNT(*) as total
       FROM v_bibliographic_metadata
-      WHERE ${whereClause} ${setCondition}
+      ${whereSQL} ${setCondition}
     `;
 
     const {
@@ -727,9 +759,47 @@ module.exports = {
       };
 
       // Fetch single record matching criteria
-      return await sails.models.vbibliographicmetadata.findOne(criteria);
+      const result =
+        await sails.models.vbibliographicmetadata.findOne(criteria);
+      return result || null;
     } catch (error) {
       sails.log.error('Error in getRecord:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Retrieves Single Record by ID
+   *
+   * Fetches a specific bibliographic metadata record using its numeric ID.
+   * This method supports filtering by metadata status and returns the complete record.
+   *
+   * @param {number|string} id - Numeric ID of the target record
+   * @param {Object} [filter={}] - Query filter criteria (by default, includes both registered and deleted)
+   * @param {string} [filter.metadataStatus] - Optional metadata status filter ('registered' or 'deleted')
+   * @returns {Promise<Object|null>} Complete bibliographic metadata record or null if not found
+   * @throws {Error} Database query errors or invalid ID format
+   */
+  async getRecordById(id, filter = {}) {
+    try {
+      // Parse and validate ID
+      const parsedId = parseInt(id, 10);
+      if (Number.isNaN(parsedId) || parsedId <= 0) {
+        return null;
+      }
+
+      // Construct Waterline criteria combining ID and optional status filter
+      const criteria = {
+        id: parsedId,
+        ...filter,
+      };
+
+      // Fetch single record matching criteria
+      const result =
+        await sails.models.vbibliographicmetadata.findOne(criteria);
+      return result || null;
+    } catch (error) {
+      sails.log.error('Error in getRecordById:', error);
       throw error;
     }
   },
@@ -755,35 +825,15 @@ module.exports = {
     filter = { metadataStatus: METADATA_STATUS.REGISTERED }
   ) {
     try {
-      // Start with the provided filter criteria (typically metadata status)
-      const criteria = { ...filter };
-
-      // Build date range query if from/until parameters are provided
-      if (parameters.from || parameters.until) {
-        criteria.lastUpdate = {};
-
-        // Add greater-than-or-equal constraint for 'from' date
-        if (parameters.from) {
-          criteria.lastUpdate['>='] = new Date(parameters.from);
-        }
-
-        // Add less-than-or-equal constraint for 'until' date
-        if (parameters.until) {
-          criteria.lastUpdate['<='] = new Date(parameters.until);
-        }
-      }
+      const { where, postFilter } = buildOaiCriteria(parameters, filter);
 
       // Execute database query with non-array filters (Waterline doesn't support array filtering)
-      let records = await sails.models.vbibliographicmetadata.find(criteria);
+      let records = await sails.models.vbibliographicmetadata.find(where);
 
       // Apply set filtering in JavaScript since listSets is an array field
       // This is necessary because SQL/Waterline array operations are limited
-      if (parameters.set) {
-        records = records.filter(
-          (record) =>
-            Array.isArray(record.listSets) &&
-            record.listSets.includes(parameters.set)
-        );
+      if (postFilter) {
+        records = records.filter(postFilter);
       }
 
       return records;
@@ -817,38 +867,19 @@ module.exports = {
     filter = { metadataStatus: METADATA_STATUS.REGISTERED }
   ) {
     try {
-      // Start with the provided filter criteria (typically metadata status)
-      const criteria = { ...filter };
-
-      // Build date range query if from/until parameters are provided
-      if (parameters.from || parameters.until) {
-        criteria.lastUpdate = {};
-
-        // Add greater-than-or-equal constraint for 'from' date
-        if (parameters.from) {
-          criteria.lastUpdate['>='] = new Date(parameters.from);
-        }
-        // Add less-than-or-equal constraint for 'until' date
-        if (parameters.until) {
-          criteria.lastUpdate['<='] = new Date(parameters.until);
-        }
-      }
+      const { where, postFilter } = buildOaiCriteria(parameters, filter);
 
       // Optimize query by selecting only essential fields for identifier response
       // This reduces network transfer and memory usage for large datasets
       let records = await sails.models.vbibliographicmetadata.find({
-        where: criteria,
+        where,
         select: ['oaiIdentifier', 'lastUpdate', 'listSets'],
       });
 
       // Apply set filtering in JavaScript since array operations are limited in SQL
       // This post-query filtering ensures accurate results for set-based queries
-      if (parameters.set) {
-        records = records.filter(
-          (record) =>
-            Array.isArray(record.listSets) &&
-            record.listSets.includes(parameters.set)
-        );
+      if (postFilter) {
+        records = records.filter(postFilter);
       }
 
       // Return records with listSets included for OAI-PMH header information
@@ -881,41 +912,19 @@ module.exports = {
     filter = { metadataStatus: METADATA_STATUS.REGISTERED }
   ) {
     try {
-      // Start with the provided filter criteria (typically metadata status)
-      const criteria = { ...filter };
+      const { where, postFilter } = buildOaiCriteria(parameters, filter);
 
-      // Build date range query if from/until parameters are provided
-      if (parameters.from || parameters.until) {
-        criteria.lastUpdate = {};
-
-        // Add greater-than-or-equal constraint for 'from' date
-        if (parameters.from) {
-          criteria.lastUpdate['>='] = new Date(parameters.from);
-        }
-        // Add less-than-or-equal constraint for 'until' date
-        if (parameters.until) {
-          criteria.lastUpdate['<='] = new Date(parameters.until);
-        }
-      }
-
-      // Optimize query by selecting only the listSets field needed for set filtering
-      // This avoids transferring unnecessary data for counting operations
-      let records = await sails.models.vbibliographicmetadata.find({
-        where: criteria,
-        select: ['listSets'],
+      const records = await sails.models.vbibliographicmetadata.find({
+        where,
+        select: ['id', 'lastUpdate', 'listSets', 'metadataStatus'],
       });
 
-      // Apply set filtering in JavaScript if a specific set is requested
-      // This is necessary because SQL array operations don't work well with Waterline
-      if (parameters.set) {
-        records = records.filter(
-          (record) =>
-            Array.isArray(record.listSets) &&
-            record.listSets.includes(parameters.set)
-        );
+      if (postFilter) {
+        const filteredRecords = records.filter(postFilter);
+
+        return filteredRecords.length;
       }
 
-      // Return the count of filtered records
       return records.length;
     } catch (error) {
       sails.log.error('Error in countPublication:', error);

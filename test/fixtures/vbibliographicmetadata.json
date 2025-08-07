@@ -2,7 +2,7 @@
   {
     "id": 1,
     "oaiIdentifier": "oai:grottocenter.org:1",
-    "lastUpdate": "2025-01-02T00:00:00Z",
+    "lastUpdate": "2025-01-02 00:00:00",
     "listSets": [
       "grottocenter",
       "grottocenter:sound"
@@ -49,7 +49,7 @@
   {
     "id": 2,
     "oaiIdentifier": "oai:grottocenter.org:2",
-    "lastUpdate": "2025-01-03T00:00:00Z",
+    "lastUpdate": "2025-01-03 00:00:00",
     "listSets": [
       "grottocenter",
       "grottocenter:image"
@@ -100,7 +100,7 @@
   {
     "id": 3,
     "oaiIdentifier": "oai:grottocenter.org:3",
-    "lastUpdate": "2025-01-04T00:00:00Z",
+    "lastUpdate": "2025-01-04 00:00:00",
     "listSets": [
       "grottocenter",
       "grottocenter:interactive_resource"
@@ -147,7 +147,7 @@
   {
     "id": 4,
     "oaiIdentifier": "oai:grottocenter.org:4",
-    "lastUpdate": "2025-01-05T00:00:00Z",
+    "lastUpdate": "2025-01-05 00:00:00",
     "listSets": [
       "grottocenter",
       "grottocenter:sound"
@@ -200,7 +200,7 @@
   {
     "id": 5,
     "oaiIdentifier": "oai:grottocenter.org:5",
-    "lastUpdate": "2025-01-06T00:00:00Z",
+    "lastUpdate": "2025-01-06 00:00:00",
     "listSets": [
       "grottocenter",
       "grottocenter:interactive_resource"
@@ -248,7 +248,7 @@
   {
     "id": 6,
     "oaiIdentifier": "oai:grottocenter.org:6",
-    "lastUpdate": "2025-01-07T00:00:00Z",
+    "lastUpdate": "2025-01-07 00:00:00",
     "listSets": [
       "grottocenter",
       "grottocenter:map"
@@ -299,7 +299,7 @@
   {
     "id": 7,
     "oaiIdentifier": "oai:grottocenter.org:7",
-    "lastUpdate": "2025-01-08T00:00:00Z",
+    "lastUpdate": "2025-01-08 00:00:00",
     "listSets": [
       "grottocenter",
       "grottocenter:collection"
@@ -346,7 +346,7 @@
   {
     "id": 8,
     "oaiIdentifier": "oai:grottocenter.org:8",
-    "lastUpdate": "2025-01-09T00:00:00Z",
+    "lastUpdate": "2025-01-09 00:00:00",
     "listSets": [
       "grottocenter",
       "grottocenter:image"
@@ -399,7 +399,7 @@
   {
     "id": 9,
     "oaiIdentifier": "oai:grottocenter.org:9",
-    "lastUpdate": "2025-01-10T00:00:00Z",
+    "lastUpdate": "2025-01-10 00:00:00",
     "listSets": [
       "grottocenter",
       "grottocenter:image"
@@ -446,7 +446,7 @@
   {
     "id": 10,
     "oaiIdentifier": "oai:grottocenter.org:10",
-    "lastUpdate": "2025-01-11T00:00:00Z",
+    "lastUpdate": "2025-01-11 00:00:00",
     "listSets": [
       "grottocenter",
       "grottocenter:interactive_resource"
@@ -498,7 +498,7 @@
   {
     "id": 11,
     "oaiIdentifier": "oai:grottocenter.org:11",
-    "lastUpdate": "2025-01-12T00:00:00Z",
+    "lastUpdate": "2025-01-12 00:00:00",
     "listSets": [
       "grottocenter",
       "grottocenter:dataset"
@@ -545,7 +545,7 @@
   {
     "id": 12,
     "oaiIdentifier": "oai:grottocenter.org:12",
-    "lastUpdate": "2025-01-13T00:00:00Z",
+    "lastUpdate": "2025-01-13 00:00:00",
     "listSets": [
       "grottocenter",
       "grottocenter:article"
@@ -598,7 +598,7 @@
   {
     "id": 13,
     "oaiIdentifier": "oai:grottocenter.org:13",
-    "lastUpdate": "2025-01-14T00:00:00Z",
+    "lastUpdate": "2025-01-14 00:00:00",
     "listSets": [
       "grottocenter",
       "grottocenter:collection"
@@ -648,7 +648,7 @@
   {
     "id": 14,
     "oaiIdentifier": "oai:grottocenter.org:14",
-    "lastUpdate": "2025-01-15T00:00:00Z",
+    "lastUpdate": "2025-01-15 00:00:00",
     "listSets": [
       "grottocenter",
       "grottocenter:sound"
@@ -699,7 +699,7 @@
   {
     "id": 15,
     "oaiIdentifier": "oai:grottocenter.org:15",
-    "lastUpdate": "2025-01-16T00:00:00Z",
+    "lastUpdate": "2025-01-16 00:00:00",
     "listSets": [
       "grottocenter",
       "grottocenter:sound"
@@ -747,7 +747,7 @@
   {
     "id": 16,
     "oaiIdentifier": "oai:grottocenter.org:16",
-    "lastUpdate": "2025-01-17T00:00:00Z",
+    "lastUpdate": "2025-01-17 00:00:00",
     "listSets": [
       "grottocenter",
       "grottocenter:interactive_resource"
@@ -800,7 +800,7 @@
   {
     "id": 17,
     "oaiIdentifier": "oai:grottocenter.org:17",
-    "lastUpdate": "2025-01-18T00:00:00Z",
+    "lastUpdate": "2025-01-18 00:00:00",
     "listSets": [
       "grottocenter",
       "grottocenter:sound"
@@ -847,7 +847,7 @@
   {
     "id": 18,
     "oaiIdentifier": "oai:grottocenter.org:18",
-    "lastUpdate": "2025-01-19T00:00:00Z",
+    "lastUpdate": "2025-01-19 00:00:00",
     "listSets": [
       "grottocenter",
       "grottocenter:image"
@@ -898,7 +898,7 @@
   {
     "id": 19,
     "oaiIdentifier": "oai:grottocenter.org:19",
-    "lastUpdate": "2025-01-20T00:00:00Z",
+    "lastUpdate": "2025-01-20 00:00:00",
     "listSets": [
       "grottocenter",
       "grottocenter:interactive_resource"
@@ -945,7 +945,7 @@
   {
     "id": 20,
     "oaiIdentifier": "oai:grottocenter.org:20",
-    "lastUpdate": "2025-01-21T00:00:00Z",
+    "lastUpdate": "2025-01-21 00:00:00",
     "listSets": [
       "grottocenter",
       "grottocenter:dataset"
@@ -999,7 +999,7 @@
   {
     "id": 21,
     "oaiIdentifier": "oai:grottocenter.org:21",
-    "lastUpdate": "2025-01-22T00:00:00Z",
+    "lastUpdate": "2025-01-22 00:00:00",
     "listSets": [
       "grottocenter",
       "grottocenter:map"
