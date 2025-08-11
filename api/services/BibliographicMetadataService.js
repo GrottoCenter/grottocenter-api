@@ -110,25 +110,24 @@ async function getOAIRecordsPaginatedWithoutSet(
     const { where } = buildOaiCriteria(parameters, filter);
 
     // Si pas de filtre set, on peut utiliser directement Waterline avec pagination
-    const records = await sails.models.vbibliographicmetadata.find({
+    const rows = await sails.models.vbibliographicmetadata.find({
       where,
-      limit,
+      limit: limit + 1,
       skip: offset,
       sort: 'id ASC', // Pour assurer un ordre consistant
     });
 
-    // Requête pour le total (sans pagination)
-    const total = await module.exports.countRecords(parameters, filter);
+    const hasNext = rows.length > limit;
+    const records = hasNext ? rows.slice(0, limit) : rows;
 
     return {
       records,
-      total,
       limit,
       offset,
-      hasNext: offset + limit < total,
+      hasNext,
     };
   } catch (error) {
-    sails.log.error('Error in getOAIRecordsPaginated:', error);
+    sails.log.error('Error in getOAIRecordsPaginatedWithoutSet:', error);
     throw error;
   }
 }
@@ -182,36 +181,27 @@ async function getOAIRecordsPaginatedWithSet(
     LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
   `;
 
-    const recordsParams = [...sqlParams, limit, offset];
+    const recordsParams = [...sqlParams, limit + 1, offset];
     const { rows: ids } = await sails.sendNativeQuery(
       recordsQuery,
       recordsParams
     );
 
-    // Requête pour le total
-    const countQuery = `
-    SELECT COUNT(*) as total
-    FROM v_bibliographic_metadata
-    ${whereSQL} ${setCondition}
-  `;
-
-    const {
-      rows: [{ total }],
-    } = await sails.sendNativeQuery(countQuery, sqlParams);
+    const hasNext = ids.length > limit;
+    const idList = hasNext ? ids.slice(0, limit) : ids;
 
     const records = await sails.models.vbibliographicmetadata.find({
-      where: { id: ids.map((r) => r.id) },
+      where: { id: idList.map((r) => r.id) },
     });
 
     return {
       records,
-      total: parseInt(total, 10),
       limit,
       offset,
-      hasNext: offset + limit < parseInt(total, 10),
+      hasNext,
     };
   } catch (error) {
-    sails.log.error('Error in getOAIRecordsPaginated:', error);
+    sails.log.error('Error in getOAIRecordsPaginatedWithSet:', error);
     throw error;
   }
 }
@@ -221,30 +211,27 @@ async function getOAIIdentifiersPaginatedWithoutSet(
   filter = { metadataStatus: METADATA_STATUS.REGISTERED }
 ) {
   try {
-    // Validate and sanitize pagination parameters
     const limit = Math.max(0, parseInt(parameters.limit, 10) || 50);
     const offset = Math.max(0, parseInt(parameters.offset, 10) || 0);
 
     const { where } = buildOaiCriteria(parameters, filter);
 
-    // Si pas de filtre set, on peut utiliser directement Waterline avec pagination
-    const identifiers = await sails.models.vbibliographicmetadata.find({
+    const rows = await sails.models.vbibliographicmetadata.find({
       where,
       select: ['oaiIdentifier', 'lastUpdate', 'listSets'],
-      limit,
+      limit: limit + 1,
       skip: offset,
-      sort: 'id ASC', // Pour assurer un ordre consistant
+      sort: 'id ASC',
     });
 
-    // Requête pour le total (sans pagination)
-    const total = await module.exports.countRecords(parameters, filter);
+    const hasNext = rows.length > limit;
+    const identifiers = hasNext ? rows.slice(0, limit) : rows;
 
     return {
       identifiers,
-      total,
       limit,
       offset,
-      hasNext: offset + limit < total,
+      hasNext,
     };
   } catch (error) {
     sails.log.error('Error in getOAIIdentifiersPaginatedWithoutSet:', error);
@@ -260,13 +247,11 @@ async function getOAIIdentifiersPaginatedWithSet(
     const limit = parseInt(parameters.limit, 10) || 50;
     const offset = parseInt(parameters.offset, 10) || 0;
 
-    // Si filtre par set, utiliser une requête SQL native pour les performances
     const setCondition = parameters.set ? `AND $1 = ANY(list_sets)` : '';
     const setParams = parameters.set ? [parameters.set] : [];
 
     const whereConditions = [];
 
-    // Only add metadata status filter if explicitly provided
     if (filter.metadataStatus) {
       whereConditions.push(`metadata_status = '${filter.metadataStatus}'`);
     }
@@ -274,7 +259,6 @@ async function getOAIIdentifiersPaginatedWithSet(
     const sqlParams = [...setParams];
     let paramIndex = setParams.length + 1;
 
-    // Ajouter les conditions de date
     if (parameters.from) {
       whereConditions.push(`last_update >= $${paramIndex}::timestamp`);
       sqlParams.push(parameters.from);
@@ -299,29 +283,20 @@ async function getOAIIdentifiersPaginatedWithSet(
       LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
     `;
 
-    const identifiersParams = [...sqlParams, limit, offset];
-    const { rows: identifiers } = await sails.sendNativeQuery(
+    const identifiersParams = [...sqlParams, limit + 1, offset];
+    const { rows } = await sails.sendNativeQuery(
       identifiersQuery,
       identifiersParams
     );
 
-    // Requête pour le total
-    const countQuery = `
-      SELECT COUNT(*) as total
-      FROM v_bibliographic_metadata
-      ${whereSQL} ${setCondition}
-    `;
-
-    const {
-      rows: [{ total }],
-    } = await sails.sendNativeQuery(countQuery, sqlParams);
+    const hasNext = rows.length > limit;
+    const identifiers = hasNext ? rows.slice(0, limit) : rows;
 
     return {
       identifiers,
-      total: parseInt(total, 10),
       limit,
       offset,
-      hasNext: offset + limit < parseInt(total, 10),
+      hasNext,
     };
   } catch (error) {
     sails.log.error('Error in getOAIIdentifiersPaginatedWithSet:', error);
