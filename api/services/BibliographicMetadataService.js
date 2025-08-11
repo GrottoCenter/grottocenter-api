@@ -178,7 +178,7 @@ async function getOAIRecordsPaginatedWithSet(
     FROM v_bibliographic_metadata
     ${whereSQL} ${setCondition}
     ORDER BY id_document ASC
-    LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
+    LIMIT $${paramIndex} OFFSET $${paramIndex + 1} 
   `;
 
     const recordsParams = [...sqlParams, limit + 1, offset];
@@ -953,10 +953,10 @@ module.exports = {
     try {
       // Si pas de filtre set, on peut utiliser directement Waterline avec pagination
       if (!parameters.set) {
-        return this.getOAIRecordsPaginatedWithoutSet(parameters, filter);
+        return getOAIRecordsPaginatedWithoutSet(parameters, filter);
       }
 
-      return this.getOAIRecordsPaginatedWithSet(parameters, filter);
+      return getOAIRecordsPaginatedWithSet(parameters, filter);
     } catch (error) {
       sails.log.error('Error in getOAIRecordsPaginated:', error);
       throw error;

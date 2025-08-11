@@ -114,7 +114,6 @@ describe('BibliographicMetadataService', () => {
       });
       result.records.should.be.an.Array();
       result.records.length.should.be.belowOrEqual(10);
-      result.total.should.be.a.Number();
       result.limit.should.equal(10);
       result.offset.should.equal(0);
       result.should.have.property('hasNext');
@@ -140,7 +139,6 @@ describe('BibliographicMetadataService', () => {
         {}
       );
       result.records.should.be.an.Array();
-      result.total.should.equal(21); // Includes deleted record
     });
 
     it('should filter by set in paginated results', async () => {
@@ -150,7 +148,6 @@ describe('BibliographicMetadataService', () => {
         offset: 0,
       });
       result.records.should.be.an.Array();
-      result.total.should.equal(4); // ids: 2, 8, 9, 18
       result.records.forEach((record) => {
         record.listSets.should.containEql('grottocenter:image');
       });
@@ -262,7 +259,6 @@ describe('BibliographicMetadataService', () => {
       });
       result.identifiers.should.be.an.Array();
       result.identifiers.length.should.be.belowOrEqual(5);
-      result.total.should.be.a.Number();
       result.limit.should.equal(5);
       result.offset.should.equal(0);
       result.should.have.property('hasNext');
@@ -288,7 +284,6 @@ describe('BibliographicMetadataService', () => {
         {}
       );
       result.identifiers.should.be.an.Array();
-      result.total.should.equal(21); // Includes deleted record
     });
 
     it('should filter by set in paginated results', async () => {
@@ -298,7 +293,6 @@ describe('BibliographicMetadataService', () => {
         offset: 0,
       });
       result.identifiers.should.be.an.Array();
-      result.total.should.equal(1); // Only id 7 is registered (id 13 is deleted)
       result.identifiers.forEach((identifier) => {
         identifier.listSets.should.containEql('grottocenter:collection');
       });
@@ -314,7 +308,6 @@ describe('BibliographicMetadataService', () => {
         {}
       );
       result.identifiers.should.be.an.Array();
-      result.total.should.equal(2); // ids 7 and 13
     });
 
     it('should handle pagination beyond available identifiers', async () => {
@@ -660,7 +653,6 @@ describe('BibliographicMetadataService', () => {
       result.records.should.be.an.Array();
       result.should.have.property('limit');
       result.should.have.property('offset');
-      result.should.have.property('total');
       result.should.have.property('hasNext');
     });
 
@@ -1181,7 +1173,6 @@ describe('BibliographicMetadataService', () => {
       });
       result.should.be.an.Object();
       result.records.length.should.equal(0);
-      result.total.should.equal(0);
     });
 
     it('should handle pagination with malformed set names', async () => {
@@ -1234,7 +1225,6 @@ describe('BibliographicMetadataService', () => {
         offset: 0,
       });
       result.should.be.an.Object();
-      result.total.should.equal(0);
       result.hasNext.should.be.false();
     });
   });

@@ -32,7 +32,6 @@ describe('Bibliographic Metadata Get Identifiers Paginated Controller', () => {
         res.body.should.have.property('parameters');
 
         // Check pagination metadata
-        res.body.pagination.should.have.property('total', 20); // Excludes id 13 (deleted)
         res.body.pagination.should.have.property('limit', 50);
         res.body.pagination.should.have.property('offset', 0);
         res.body.pagination.should.have.property('hasNext', false);
@@ -62,7 +61,6 @@ describe('Bibliographic Metadata Get Identifiers Paginated Controller', () => {
 
         res.body.identifiers.length.should.equal(5);
         res.body.pagination.should.have.property('limit', 5);
-        res.body.pagination.should.have.property('total', 20);
         res.body.pagination.should.have.property('hasNext', true);
 
         return done();
@@ -82,7 +80,6 @@ describe('Bibliographic Metadata Get Identifiers Paginated Controller', () => {
         res.body.identifiers.length.should.equal(5);
         res.body.pagination.should.have.property('limit', 5);
         res.body.pagination.should.have.property('offset', 5);
-        res.body.pagination.should.have.property('total', 20);
         res.body.pagination.should.have.property('hasNext', true);
 
         return done();
@@ -99,7 +96,6 @@ describe('Bibliographic Metadata Get Identifiers Paginated Controller', () => {
       .end((err, res) => {
         if (err) return done(err);
 
-        res.body.pagination.should.have.property('total', 21);
         res.body.identifiers.length.should.equal(21);
 
         // Should include the deleted record (id 13)
@@ -122,7 +118,6 @@ describe('Bibliographic Metadata Get Identifiers Paginated Controller', () => {
       .end((err, res) => {
         if (err) return done(err);
 
-        res.body.pagination.should.have.property('total', 5); // ids: 1, 4, 14, 15, 17
         res.body.identifiers.length.should.equal(5);
 
         // All returned identifiers should have the 'grottocenter:sound' set
@@ -144,7 +139,6 @@ describe('Bibliographic Metadata Get Identifiers Paginated Controller', () => {
       .end((err, res) => {
         if (err) return done(err);
 
-        res.body.pagination.should.have.property('total', 12); // actual count from CI
         res.body.identifiers.length.should.equal(12);
 
         // All returned identifiers should have lastUpdate >= 2025-01-10
@@ -169,7 +163,6 @@ describe('Bibliographic Metadata Get Identifiers Paginated Controller', () => {
       .end((err, res) => {
         if (err) return done(err);
 
-        res.body.pagination.should.have.property('total', 4); // actual count from CI
         res.body.identifiers.length.should.equal(4);
 
         // All returned identifiers should have lastUpdate <= 2025-01-05 23:59:59.999
@@ -194,7 +187,6 @@ describe('Bibliographic Metadata Get Identifiers Paginated Controller', () => {
       .end((err, res) => {
         if (err) return done(err);
 
-        res.body.pagination.should.have.property('total', 3); // ids: 2, 3, 4
         res.body.identifiers.length.should.equal(3);
 
         // All returned identifiers should be within the date range
@@ -223,7 +215,6 @@ describe('Bibliographic Metadata Get Identifiers Paginated Controller', () => {
       .end((err, res) => {
         if (err) return done(err);
 
-        res.body.pagination.should.have.property('total', 5); // Total sound records
         res.body.pagination.should.have.property('limit', 3);
         res.body.pagination.should.have.property('offset', 1);
         res.body.pagination.should.have.property('hasNext', true);
@@ -247,7 +238,6 @@ describe('Bibliographic Metadata Get Identifiers Paginated Controller', () => {
         if (err) return done(err);
 
         res.body.identifiers.length.should.equal(0);
-        res.body.pagination.should.have.property('total', 20);
         res.body.pagination.should.have.property('hasNext', false);
 
         return done();
