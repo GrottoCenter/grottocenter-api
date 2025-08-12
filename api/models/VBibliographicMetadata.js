@@ -152,6 +152,12 @@ module.exports = {
       allowNull: true,
     },
 
+    dcPages: {
+      type: 'string',
+      columnName: 'dc_pages',
+      allowNull: true,
+    },
+
     hasBeenUpdated: {
       type: 'boolean',
       columnName: 'has_been_updated',
