@@ -137,7 +137,7 @@ children_agg AS (
         ARRAY_AGG(
             jsonb_build_object(
                 'id', dc.child,
-                'dcTitle', COALESCE(NULLIF(btrim(td_child.title), ''), 'Sans titre'),
+                'dcTitle', NULLIF(btrim(td_child.title), ''),
                 'dcTypeGrottocenter', lower(regexp_replace(tt_child.name, '\s+', '_', 'g'))
             ) ORDER BY dc.level, dc.child
         ) AS children
@@ -153,7 +153,7 @@ parents_agg AS (
         ARRAY_AGG(
             jsonb_build_object(
                 'id', dp.parent,
-                'dcTitle', COALESCE(NULLIF(btrim(td_parent.title), ''), 'Sans titre'),
+                'dcTitle', NULLIF(btrim(td_parent.title), ''),
                 'dcTypeGrottocenter', lower(regexp_replace(tt_parent.name, '\s+', '_', 'g'))
             ) ORDER BY dp.level, dp.parent
         ) AS parents
