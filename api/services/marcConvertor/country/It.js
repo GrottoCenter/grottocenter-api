@@ -7,6 +7,10 @@ module.exports = {
   normalizeMarc: async (document) => {
     const newBibliographicMetadata = document;
 
+    if (document.dcRights) {
+      newBibliographicMetadata.dcRights = null;
+    }
+
     if (
       document.dcCreators &&
       document.dcCreators.length > 0 &&
