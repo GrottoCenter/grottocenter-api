@@ -24,7 +24,6 @@ module.exports = async (req, res) => {
       count: sets.length,
     };
 
-    // Configure controller service parameters for standardized response handling
     const params = {
       controllerMethod: 'BibliographicMetadataController.getSets',
       searchedItem: 'distinct sets',

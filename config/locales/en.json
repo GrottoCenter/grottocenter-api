@@ -26,5 +26,7 @@
   "validated": "validated",
   "We received a request to reset the password for your account.": "We received a request to reset the password for your account.",
   "You are receiving this email because of your subscription to the country %s.": "You are receiving this email because of your subscription to the country %s.",
-  "You are receiving this email because of your subscription to the massif %s.": "You are receiving this email because of your subscription to the massif %s."
+  "You are receiving this email because of your subscription to the massif %s.": "You are receiving this email because of your subscription to the massif %s.",
+  "Parent collection title": "Parent collection title",
+  "Parent issue title": "Parent issue title"
 }

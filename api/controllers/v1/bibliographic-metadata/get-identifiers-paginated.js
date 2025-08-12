@@ -27,7 +27,6 @@ module.exports = async (req, res) => {
       offset: parseInt(req.query.offset, 10) || 0,
     };
 
-    // Configure metadata status filter (exclude deleted records by default)
     const filter = {};
     if (req.query.includeDeleted !== 'true') {
       filter.metadataStatus = 'registered';
@@ -52,7 +51,6 @@ module.exports = async (req, res) => {
       parameters,
     };
 
-    // Configure controller service parameters for standardized response handling
     const params = {
       controllerMethod:
         'BibliographicMetadataController.getIdentifiersPaginated',

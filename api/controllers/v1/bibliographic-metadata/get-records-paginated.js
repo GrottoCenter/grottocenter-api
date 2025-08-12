@@ -27,7 +27,6 @@ module.exports = async (req, res) => {
       offset: parseInt(req.query.offset, 10) || 0,
     };
 
-    // Configure metadata status filter (exclude deleted records by default)
     const filter = {};
     if (req.query.includeDeleted !== 'true') {
       filter.metadataStatus = 'registered';
@@ -39,9 +38,16 @@ module.exports = async (req, res) => {
       filter
     );
 
+    // Localize parent descriptions for each record
+    const localizedRecords = await Promise.all(
+      result.records.map((record) =>
+        sails.helpers.localizeParentDescriptions(record, req)
+      )
+    );
+
     // Structure response with records, pagination metadata, and applied parameters
     const response = {
-      records: result.records,
+      records: localizedRecords,
       pagination: {
         total: result.total,
         limit: result.limit,
@@ -51,7 +57,6 @@ module.exports = async (req, res) => {
       parameters,
     };
 
-    // Configure controller service parameters for standardized response handling
     const params = {
       controllerMethod: 'BibliographicMetadataController.getRecordsPaginated',
       searchedItem: 'bibliographic records',
