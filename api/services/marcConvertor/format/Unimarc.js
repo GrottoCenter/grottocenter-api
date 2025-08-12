@@ -176,6 +176,10 @@ module.exports = {
       ]);
     }
 
+    if (document.dcPages) {
+      marcRecord.addDataField('215', ' ', ' ', [['a', document.dcPages]]);
+    }
+
     if (document.dcTypeGrottocenter) {
       marcRecord.addDataField('183', ' ', ' ', [
         ['a', document.dcTypeGrottocenter],

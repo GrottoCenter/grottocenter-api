@@ -252,6 +252,7 @@ SELECT
       WHEN tt.name ILIKE 'Collection' THEN 'collection'
       ELSE 'text'
     END as dc_type_dcmi,
+    d.pages as dc_pages,
     false as has_been_updated,
     'registered'::e_metadata_status as metadata_status
   FROM t_document d
@@ -285,7 +286,8 @@ SELECT
     lic.name,
     tt.name,
     ca.children,
-    pa.parents
+    pa.parents,
+    d.pages
   WITH NO DATA;
 
 CREATE UNIQUE INDEX ON v_data_quality_compute_entrance(id_massif, id_entrance);
