@@ -191,43 +191,7 @@ SELECT
     ) as dc_languages,
     COALESCE(
       ARRAY_REMOVE(
-        ARRAY_CAT(
-          ARRAY_REMOVE(ARRAY_AGG(DISTINCT NULLIF(btrim(td.body), '')), NULL),
-          ARRAY[
-            -- For an ARTICLE: add the parent issue name
-            CASE
-              WHEN tt.name ILIKE 'Article%' THEN
-                CASE
-                  WHEN d.id_parent IS NOT NULL THEN
-                    'Revue parente : ' || (
-                      SELECT COALESCE(NULLIF(btrim(tdp.title), ''), 'Sans titre')
-                      FROM t_document p
-                      LEFT JOIN t_description tdp ON tdp.id_document = p.id
-                      WHERE p.id = d.id_parent
-                      LIMIT 1
-                    )
-                  ELSE NULL
-                END
-              ELSE NULL
-            END,
-            -- For an ISSUE: add the parent collection name
-            CASE
-              WHEN tt.name ILIKE 'Issue%' THEN
-                (
-                  SELECT 'Collection parente : ' || COALESCE(NULLIF(btrim(tdc.title), ''), 'Sans titre')
-                  FROM doc_parents dp2
-                  JOIN t_document p2 ON p2.id = dp2.parent
-                  JOIN t_type tt2 ON tt2.id = p2.id_type
-                  LEFT JOIN t_description tdc ON tdc.id_document = p2.id
-                  WHERE dp2.child = d.id
-                    AND tt2.name ILIKE 'Collection'
-                  ORDER BY dp2.level ASC, dp2.parent
-                  LIMIT 1
-                )
-              ELSE NULL
-            END
-          ]
-        ),
+        ARRAY_REMOVE(ARRAY_AGG(DISTINCT NULLIF(btrim(td.body), '')), NULL),
         NULL
       ),
       ARRAY[]::text[]

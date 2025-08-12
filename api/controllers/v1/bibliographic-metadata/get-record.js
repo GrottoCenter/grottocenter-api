@@ -23,9 +23,13 @@ module.exports = async (req, res) => {
 
     // Retrieve the specific bibliographic metadata record by its ID
     // Note: No status filter - returns both registered and deleted records
-    const record = await BibliographicMetadataService.getRecordById(id);
+    let record = await BibliographicMetadataService.getRecordById(id);
 
-    // Configure controller service parameters for standardized response handling
+    // Localize parent descriptions if record has parents
+    if (record) {
+      record = await sails.helpers.localizeParentDescriptions(record, req);
+    }
+
     const params = {
       controllerMethod: 'BibliographicMetadataController.getRecord',
       notFoundMessage: `Record with ID ${id} not found.`,

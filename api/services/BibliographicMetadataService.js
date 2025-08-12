@@ -109,12 +109,12 @@ async function getOAIRecordsPaginatedWithoutSet(
 
     const { where } = buildOaiCriteria(parameters, filter);
 
-    // Si pas de filtre set, on peut utiliser directement Waterline avec pagination
+    // No set filter - use Waterline with pagination directly
     const rows = await sails.models.vbibliographicmetadata.find({
       where,
-      limit: limit + 1,
+      limit: limit + 1, // Fetch one extra record to determine if there are more pages (hasNext)
       skip: offset,
-      sort: 'id ASC', // Pour assurer un ordre consistant
+      sort: 'id ASC', // Ensure consistent ordering
     });
 
     const hasNext = rows.length > limit;
@@ -141,8 +141,8 @@ async function getOAIRecordsPaginatedWithSet(
     const limit = Math.max(0, parseInt(parameters.limit, 10) || 50);
     const offset = Math.max(0, parseInt(parameters.offset, 10) || 0);
 
-    // Si filtre par set, on doit utiliser une approche différente car array filtering
-    // Pour les performances, on utilise une requête SQL native
+    // Set filtering requires different approach due to array filtering
+    // Use native SQL query for performance
     const setCondition = parameters.set ? `AND $1 = ANY(list_sets)` : '';
     const setParams = parameters.set ? [parameters.set] : [];
 
@@ -156,7 +156,7 @@ async function getOAIRecordsPaginatedWithSet(
     const sqlParams = [...setParams];
     let paramIndex = setParams.length + 1;
 
-    // Ajouter les conditions de date
+    // Add date conditions
     if (parameters.from) {
       whereConditions.push(`last_update >= $${paramIndex}::timestamp`);
       sqlParams.push(parameters.from);
@@ -172,7 +172,7 @@ async function getOAIRecordsPaginatedWithSet(
       whereConditions.length > 0 ? whereConditions.join(' AND ') : '';
     const whereSQL = whereClause ? `WHERE ${whereClause}` : 'WHERE 1=1';
 
-    // Requête pour récupérer les records paginés
+    // Query to fetch paginated records
     const recordsQuery = `
     SELECT id_document as id
     FROM v_bibliographic_metadata
@@ -181,7 +181,7 @@ async function getOAIRecordsPaginatedWithSet(
     LIMIT $${paramIndex} OFFSET $${paramIndex + 1} 
   `;
 
-    const recordsParams = [...sqlParams, limit + 1, offset];
+    const recordsParams = [...sqlParams, limit + 1, offset]; // Fetch one extra record to check if there are more pages
     const { rows: ids } = await sails.sendNativeQuery(
       recordsQuery,
       recordsParams
@@ -219,7 +219,7 @@ async function getOAIIdentifiersPaginatedWithoutSet(
     const rows = await sails.models.vbibliographicmetadata.find({
       where,
       select: ['oaiIdentifier', 'lastUpdate', 'listSets'],
-      limit: limit + 1,
+      limit: limit + 1, // Fetch one extra identifier to determine if there are more pages (hasNext)
       skip: offset,
       sort: 'id ASC',
     });
@@ -274,7 +274,7 @@ async function getOAIIdentifiersPaginatedWithSet(
       whereConditions.length > 0 ? whereConditions.join(' AND ') : '';
     const whereSQL = whereClause ? `WHERE ${whereClause}` : 'WHERE 1=1';
 
-    // Requête pour récupérer les identifiers paginés (seulement les champs nécessaires)
+    // Query to fetch paginated identifiers (only necessary fields)
     const identifiersQuery = `
       SELECT oai_identifier as "oaiIdentifier", last_update as "lastUpdate", list_sets as "listSets"
       FROM v_bibliographic_metadata
@@ -283,7 +283,7 @@ async function getOAIIdentifiersPaginatedWithSet(
       LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
     `;
 
-    const identifiersParams = [...sqlParams, limit + 1, offset];
+    const identifiersParams = [...sqlParams, limit + 1, offset]; // Fetch one extra identifier to check if there are more pages
     const { rows } = await sails.sendNativeQuery(
       identifiersQuery,
       identifiersParams
@@ -951,7 +951,7 @@ module.exports = {
     filter = { metadataStatus: METADATA_STATUS.REGISTERED }
   ) {
     try {
-      // Si pas de filtre set, on peut utiliser directement Waterline avec pagination
+      // No set filter - use Waterline with pagination directly
       if (!parameters.set) {
         return getOAIRecordsPaginatedWithoutSet(parameters, filter);
       }
@@ -987,7 +987,7 @@ module.exports = {
     filter = { metadataStatus: METADATA_STATUS.REGISTERED }
   ) {
     try {
-      // Si pas de filtre set, on peut utiliser directement Waterline avec pagination
+      // No set filter - use Waterline with pagination directly
       if (!parameters.set) {
         return getOAIIdentifiersPaginatedWithoutSet(parameters, filter);
       }

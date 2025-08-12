@@ -25,7 +25,6 @@ module.exports = async (req, res) => {
       until: req.query.until,
     };
 
-    // Configure metadata status filter
     const filter = {};
     if (req.query.includeDeleted !== 'true') {
       filter.metadataStatus = 'registered';
@@ -43,7 +42,6 @@ module.exports = async (req, res) => {
       parameters,
     };
 
-    // Configure controller service parameters for standardized response handling
     const params = {
       controllerMethod: 'BibliographicMetadataController.getCount',
       searchedItem: 'count of bibliographic records',

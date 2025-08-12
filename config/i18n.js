@@ -33,6 +33,7 @@ module.exports.i18n = {
     'fr',
     'he',
     'id',
+    'it',
     'nl',
     'pt',
     'ro',
