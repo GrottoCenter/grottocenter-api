@@ -50,7 +50,7 @@ module.exports = {
 
     // Process each parent to add localized description
     record.parents.forEach((parent) => {
-      if (parent.dcTitle && parent.dcTypeGrottocenter) {
+      if (parent.dcTypeGrottocenter) {
         let localizedKey = '';
 
         // Determine the appropriate localization key based on parent type
@@ -71,7 +71,19 @@ module.exports = {
             localizedPrefix = req.i18n.__(localizedKey);
           }
 
-          const finalMessage = `${localizedPrefix}: ${parent.dcTitle}`;
+          // Handle missing or "Sans titre" titles - localize appropriately
+          let title = parent.dcTitle;
+          if (!title || title === 'Sans titre') {
+            // eslint-disable-next-line no-underscore-dangle
+            if (req.i18n && typeof req.i18n.__ === 'function') {
+              // eslint-disable-next-line no-underscore-dangle
+              title = req.i18n.__('Untitled');
+            } else {
+              title = 'Untitled';
+            }
+          }
+
+          const finalMessage = `${localizedPrefix}: ${title}`;
           localizedDescriptions.push(finalMessage);
         }
       }
