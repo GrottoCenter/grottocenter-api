@@ -27,7 +27,7 @@ describe('Organization features', () => {
           latitude: 43.62505,
           longitude: 3.862038,
           mail: 'organization@organization.com',
-          name: { text: 'Organisation Montpellier', languge: 'fr' },
+          name: { text: 'Organisation Montpellier', language: 'fr' },
           postalCode: '84000',
           region: 'Occitanie',
           url: 'https://fr.wikipedia.org/wiki/Montpellier',
