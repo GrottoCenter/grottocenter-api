@@ -200,6 +200,12 @@ module.exports = {
       via: 'caver',
       through: 'JCaverCountrySubscription',
     },
+
+    subscribedToRegions: {
+      collection: 'TISO31662',
+      via: 'caver',
+      through: 'JCaverRegionSubscription',
+    },
   },
 
   // Commented because it was taking some attributes away

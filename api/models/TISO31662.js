@@ -135,5 +135,11 @@ module.exports = {
       via: 'iso',
       through: 'JDocumentISO31662',
     },
+
+    subscribedCavers: {
+      collection: 'TCaver',
+      via: 'region',
+      through: 'JCaverRegionSubscription',
+    },
   },
 };

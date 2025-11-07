@@ -102,6 +102,8 @@ module.exports.routes = {
     'v1/massif/get-entrances-data-quality',
   'GET /api/v1/entrances/with-quality/countries/:id':
     'v1/country/get-entrances-data-quality',
+  'GET /api/v1/entrances/with-quality/countries/:countryId/regions/:regionId':
+    'v1/region/get-entrances-data-quality',
   'GET /api/v1/entrances/:id': 'v1/entrance/find',
   'PATCH /api/v1/entrances/:entranceId/cave/:caveId':
     'v1/entrance/move-to-cave',
@@ -175,6 +177,17 @@ module.exports.routes = {
   'POST /api/v1/countries/:id/unsubscribe': 'v1/country/unsubscribe',
   'GET /api/v1/countries/:id/statistics': 'v1/country/get-statistics',
   'GET /api/v1/countries/count': 'v1/country/count',
+
+  // Region
+  'GET /api/v1/countries/:countryId/regions/:regionId':
+    'v1/region/find-by-country',
+  'POST /api/v1/countries/:countryId/regions/:regionId/subscribe':
+    'v1/region/subscribe',
+  'POST /api/v1/countries/:countryId/regions/:regionId/unsubscribe':
+    'v1/region/unsubscribe',
+  'GET /api/v1/countries/:countryId/regions/:regionId/statistics':
+    'v1/region/get-statistics',
+  'GET /api/v1/countries/:countryId/regions/count': 'v1/region/count',
 
   // Organization
   'GET /api/v1/organizations/count': 'v1/organization/count',

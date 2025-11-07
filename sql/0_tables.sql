@@ -1133,6 +1133,15 @@ CREATE TABLE j_caver_country_subscription (
   CONSTRAINT j_caver_country_t_country_fk FOREIGN KEY (iso) REFERENCES t_country(iso)
 );
 
+-- DROP TABLE j_caver_region_subscription ;
+CREATE TABLE j_caver_region_subscription (
+	id_caver int4 NOT NULL,
+	id_region varchar(10) NOT NULL,
+	CONSTRAINT j_caver_region_subscription_pk PRIMARY KEY (id_caver, id_region),
+	CONSTRAINT j_caver_region_t_caver_fk FOREIGN KEY (id_caver) REFERENCES t_caver(id),
+  CONSTRAINT j_caver_region_t_iso3166_2_fk FOREIGN KEY (id_region) REFERENCES t_iso3166_2(iso)
+);
+
 -- DROP TABLE t_notification_type ;
 CREATE TABLE t_notification_type (
 	id serial NOT NULL,

@@ -1,6 +1,6 @@
 const supertest = require('supertest');
 
-describe('Massif statistics features', () => {
+describe('Country statistics features', () => {
   describe('get-statistics', () => {
     it('should return code 404', (done) => {
       supertest(sails.hooks.http.app)
