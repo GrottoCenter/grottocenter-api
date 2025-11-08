@@ -395,17 +395,36 @@ module.exports = {
           entityMassifIds,
           entityRegionId
         );
-      // List users who will receive the notification
-      const allSubscribers = [
-        ...countrySubscribers.filter((u) => u.id !== notifierId),
-        ...massifsSubscribers.filter((u) => u.id !== notifierId),
-        ...regionSubscribers.filter((u) => u.id !== notifierId),
-      ];
+      // Consolidate subscribers by user ID and combine subscription types
+      const subscriberMap = new Map();
 
-      // Deduplicate by user ID
-      const uniqueUsers = allSubscribers.filter(
-        (user, index, arr) => arr.findIndex((u) => u.id === user.id) === index
-      );
+      const addSubscribers = (subscribers) => {
+        subscribers
+          .filter((u) => u.id !== notifierId)
+          .forEach((user) => {
+            if (subscriberMap.has(user.id)) {
+              const existing = subscriberMap.get(user.id);
+              existing.subscriptionNames.push(user.subscriptionName);
+              existing.subscriptionTypes.push(user.subscriptionType);
+            } else {
+              subscriberMap.set(user.id, {
+                ...user,
+                subscriptionNames: [user.subscriptionName],
+                subscriptionTypes: [user.subscriptionType],
+              });
+            }
+          });
+      };
+
+      addSubscribers(countrySubscribers);
+      addSubscribers(massifsSubscribers);
+      addSubscribers(regionSubscribers);
+
+      const uniqueUsers = Array.from(subscriberMap.values()).map((user) => ({
+        ...user,
+        subscriptionName: user.subscriptionNames.join(' and '),
+        subscriptionType: user.subscriptionTypes.join(', '),
+      }));
 
       // Create notifications & optionally send email
       const res = await Promise.all(

@@ -254,7 +254,7 @@ describe('NotificationService', () => {
         fakeReq,
         entrance,
         user3.id,
-        NOTIFICATION_TYPES.UPDATE,
+        NOTIFICATION_TYPES.CREATE, // Use CREATE to avoid conflicts with UPDATE tests
         NOTIFICATION_ENTITIES.ENTRANCE
       );
       if (!res) throw Error('should succeed');
@@ -262,9 +262,12 @@ describe('NotificationService', () => {
         notified: 1,
         notifier: 3,
         entrance: entrance.id,
+        notificationType: (
+          await TNotificationType.findOne({ name: NOTIFICATION_TYPES.CREATE })
+        ).id,
       });
-      // User 1 gets notifications from both country (FR) and region (FR-01) subscriptions
-      should(user1Notifications).have.length(2);
+      // User 1 gets 1 consolidated notification combining country (FR) and region (FR-01) subscriptions
+      should(user1Notifications).have.length(1);
     });
 
     // Additional coverage tests
