@@ -51,5 +51,16 @@
     "title": "Best description for entrance 1",
     "language": "eng",
     "entrance": 1
+  },
+  {
+    "id": 6,
+    "author": 1,
+    "reviewer": 2,
+    "dateInscription": "2017-04-19 01:38:39",
+    "dateReviewed": "2018-05-19 12:38:39",
+    "title": "Cave description with cave relation",
+    "body": "This is a description directly related to a cave",
+    "language": "eng",
+    "cave": 1
   }
 ]

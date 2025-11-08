@@ -24,7 +24,9 @@ const NOTIFICATION_TYPES = {
 };
 
 async function removeOlderNotifications() {
-  const query = `DELETE FROM t_notification WHERE date_inscription < current_timestamp - interval '2 month';`;
+  const query = `DELETE
+                 FROM t_notification
+                 WHERE date_inscription < current_timestamp - interval '2 month';`;
   await CommonService.query(query);
 }
 
@@ -46,109 +48,74 @@ const sendNotificationEmail = async (
   user
 ) => {
   // Get entity name (handle all cases)
-  let entityName = '';
-  if (entity.name) entityName = entity.name;
-  else if (entity.names) entityName = entity.names[0]?.name;
-  else if (entity.title) entityName = entity.title;
-  else if (entity.titles) entityName = entity.titles[0]?.text;
-  else if (entity.body) entityName = `${entity.body.slice(0, 50)}...`;
-  else if (entity.descriptions) entityName = entity.descriptions[0].title;
+  const getEntityName = (entityData) => {
+    if (entityData.name) return entityData.name;
+    if (entityData.names) return entityData.names[0]?.name;
+    if (entityData.title) return entityData.title;
+    if (entityData.titles) return entityData.titles[0]?.text;
+    if (entityData.body) return `${entityData.body.slice(0, 50)}...`;
+    if (entityData.descriptions) return entityData.descriptions[0].title;
+    return '';
+  };
+
+  const entityName = getEntityName(entity);
 
   // Format action verb
-  let actionVerb = '';
-  switch (notificationType) {
-    case NOTIFICATION_TYPES.CREATE:
-      actionVerb = 'created';
-      break;
+  const actionVerbMap = {
+    [NOTIFICATION_TYPES.CREATE]: 'created',
+    [NOTIFICATION_TYPES.DELETE]: 'deleted',
+    [NOTIFICATION_TYPES.PERMANENT_DELETE]: 'permanently deleted',
+    [NOTIFICATION_TYPES.UPDATE]: 'updated',
+    [NOTIFICATION_TYPES.VALIDATE]: 'validated',
+    [NOTIFICATION_TYPES.RESTORE]: 'restored',
+  };
 
-    case NOTIFICATION_TYPES.DELETE:
-      actionVerb = 'deleted';
-      break;
-    case NOTIFICATION_TYPES.PERMANENT_DELETE:
-      actionVerb = 'permanently deleted';
-      break;
-
-    case NOTIFICATION_TYPES.UPDATE:
-      actionVerb = 'updated';
-      break;
-
-    case NOTIFICATION_TYPES.VALIDATE:
-      actionVerb = 'validated';
-      break;
-
-    case NOTIFICATION_TYPES.RESTORE:
-      actionVerb = 'restored';
-      break;
-
-    default:
-      throw Error(`Unknown notification type: ${notificationType}`);
+  const actionVerb = actionVerbMap[notificationType];
+  if (!actionVerb) {
+    throw Error(`Unknown notification type: ${notificationType}`);
   }
 
   // Format entity Link
-  let entityLink = `${sails.config.custom.baseUrl}/ui/`;
+  const baseUrl = `${sails.config.custom.baseUrl}/ui/`;
   const relatedCaveId = safeGetPropId('cave', entity);
   const relatedEntranceId = safeGetPropId('entrance', entity);
   const relatedMassifId = safeGetPropId('massif', entity);
 
-  switch (notificationEntity) {
-    case NOTIFICATION_ENTITIES.CAVE:
-      entityLink += `caves/${entity.id}`;
-      break;
+  const getRelatedEntityLink = () => {
+    if (relatedCaveId) return `caves/${relatedCaveId}`;
+    if (relatedEntranceId) return `entrances/${relatedEntranceId}`;
+    if (relatedMassifId) return `massifs/${relatedMassifId}`;
+    return null;
+  };
 
-    case NOTIFICATION_ENTITIES.COMMENT:
-    case NOTIFICATION_ENTITIES.HISTORY:
-    case NOTIFICATION_ENTITIES.RIGGING:
-      if (relatedCaveId) entityLink += `caves/${relatedCaveId}`;
-      else if (relatedEntranceId)
-        entityLink += `entrances/${relatedEntranceId}`;
-      else
-        throw Error(
-          `Can't find related entity (cave or entrance) of the
-          ${notificationType === NOTIFICATION_ENTITIES.COMMENT && 'comment'}
-          ${notificationType === NOTIFICATION_ENTITIES.HISTORY && 'history'}
-          ${
-            notificationType === NOTIFICATION_ENTITIES.RIGGING && 'rigging'
-          } with id ${entity.id}`
-        );
-      break;
+  const directLinkEntities = {
+    [NOTIFICATION_ENTITIES.CAVE]: `caves/${entity.id}`,
+    [NOTIFICATION_ENTITIES.DOCUMENT]: `documents/${entity.id}`,
+    [NOTIFICATION_ENTITIES.ENTRANCE]: `entrances/${entity.id}`,
+    [NOTIFICATION_ENTITIES.MASSIF]: `massifs/${entity.id}`,
+    [NOTIFICATION_ENTITIES.ORGANIZATION]: `organizations/${entity.id}`,
+  };
 
-    case NOTIFICATION_ENTITIES.DESCRIPTION:
-      if (relatedCaveId) entityLink += `caves/${relatedCaveId}`;
-      else if (relatedEntranceId)
-        entityLink += `entrances/${relatedEntranceId}`;
-      else if (relatedMassifId) entityLink += `massifs/${relatedMassifId}`;
-      else
-        throw Error(
-          `Cant find related entity (cave, entrance or massif) of the description with id ${entity.id}`
-        );
-      break;
-
-    case NOTIFICATION_ENTITIES.DOCUMENT:
-      entityLink += `documents/${entity.id}`;
-      break;
-
-    case NOTIFICATION_ENTITIES.ENTRANCE:
-      entityLink += `entrances/${entity.id}`;
-      break;
-
-    case NOTIFICATION_ENTITIES.LOCATION:
-      if (relatedEntranceId) entityLink += `entrances/${relatedEntranceId}`;
-      else
-        throw Error(
-          `Cant find related entity (entrance) of the location with id ${entity.id}`
-        );
-      break;
-
-    case NOTIFICATION_ENTITIES.MASSIF:
-      entityLink += `massifs/${entity.id}`;
-      break;
-
-    case NOTIFICATION_ENTITIES.ORGANIZATION:
-      entityLink += `organizations/${entity.id}`;
-      break;
-
-    default:
-      throw Error(`Unknown notification entity: ${notificationEntity}`);
+  let entityLink;
+  if (directLinkEntities[notificationEntity]) {
+    entityLink = baseUrl + directLinkEntities[notificationEntity];
+  } else {
+    const relatedLink = getRelatedEntityLink();
+    if (!relatedLink) {
+      const entityTypeName = notificationEntity.toLowerCase();
+      let requiredEntities;
+      if (notificationEntity === NOTIFICATION_ENTITIES.DESCRIPTION) {
+        requiredEntities = 'cave, entrance or massif';
+      } else if (notificationEntity === NOTIFICATION_ENTITIES.LOCATION) {
+        requiredEntities = 'entrance';
+      } else {
+        requiredEntities = 'cave or entrance';
+      }
+      throw Error(
+        `Can't find related entity (${requiredEntities}) of the ${entityTypeName} with id ${entity.id}`
+      );
+    }
+    entityLink = baseUrl + relatedLink;
   }
 
   await sails.helpers.sendEmail
@@ -269,10 +236,6 @@ module.exports = {
 
       const populatedEntity = notification[entityKey];
 
-      // Find massifs nor country concerned about the notification
-      let entityMassifIds = [];
-      let entityCountryId;
-
       const caveId = safeGetPropId('cave', populatedEntity);
       const entranceId = safeGetPropId('entrance', populatedEntity);
       const massifId = safeGetPropId('massif', populatedEntity);
@@ -281,171 +244,136 @@ module.exports = {
         (await CaveService.getMassifs(id)).map((m) => m.id);
       const getCountryId = (id) => safeGetPropId('country', id);
 
-      switch (notificationEntity) {
-        case NOTIFICATION_ENTITIES.CAVE: {
-          if (
-            populatedEntity.entrances &&
-            populatedEntity.entrances.length > 0
-          ) {
-            entityCountryId = getCountryId(populatedEntity?.entrances[0]);
-          }
-          entityMassifIds = await getMassifIdsFromCave(populatedEntity.id);
-          break;
+      const getCountryFromCaveEntrances = (cave) => {
+        if (cave?.entrances?.length > 0) {
+          return getCountryId(cave.entrances[0]);
         }
+        return null;
+      };
 
-        case NOTIFICATION_ENTITIES.COMMENT: {
-          if (caveId) {
-            if (
-              populatedEntity.cave.entrances &&
-              populatedEntity.cave.entrances.length > 0
-            ) {
-              entityCountryId = getCountryId(
-                populatedEntity?.cave.entrances[0]
-              ); // Get country from first entrance (not perfect but good enough)
-            }
-            entityMassifIds = await getMassifIdsFromCave(caveId);
-          } else if (entranceId) {
-            entityCountryId = getCountryId(populatedEntity?.entrance);
-            entityMassifIds = await getMassifIdsFromCave(
-              safeGetPropId('cave', populatedEntity.entrance)
-            );
-          } else {
-            throw new Error(`Can't retrieve related cave or entrance id.`);
-          }
-          break;
+      const resolveLocationFromCaveOrEntrance = async (
+        relatedCaveId,
+        relatedEntranceId,
+        entityData
+      ) => {
+        if (relatedCaveId) {
+          return {
+            countryId: getCountryFromCaveEntrances(entityData.cave),
+            massifIds: await getMassifIdsFromCave(relatedCaveId),
+          };
         }
+        if (relatedEntranceId) {
+          return {
+            countryId: getCountryId(entityData.entrance),
+            massifIds: await getMassifIdsFromCave(
+              safeGetPropId('cave', entityData.entrance)
+            ),
+          };
+        }
+        return { countryId: null, massifIds: [] };
+      };
 
-        case NOTIFICATION_ENTITIES.DESCRIPTION: {
-          if (caveId) {
-            if (
-              populatedEntity.cave.entrances &&
-              populatedEntity.cave.entrances.length > 0
-            ) {
-              entityCountryId = getCountryId(
-                populatedEntity?.cave?.entrances[0]
-              ); // Get country from first entrance (not perfect but good enough)
-            }
-            entityMassifIds = await getMassifIdsFromCave(caveId);
-          } else if (entranceId) {
-            entityCountryId = getCountryId(populatedEntity?.entrance);
-            entityMassifIds = await getMassifIdsFromCave(
-              safeGetPropId('cave', populatedEntity.entrance)
-            );
-          } else if (massifId) {
-            entityMassifIds = [populatedEntity.massif];
-          } else {
-            throw new Error(
-              `Can't retrieve related cave, entrance or massif id.`
-            );
-          }
-          break;
-        }
-        case NOTIFICATION_ENTITIES.DOCUMENT: {
-          if (caveId) {
-            if (
-              populatedEntity.cave.entrances &&
-              populatedEntity.cave.entrances.length > 0
-            ) {
-              entityCountryId = getCountryId(
-                populatedEntity?.cave.entrances[0]
-              ); // Get country from first entrance (not perfect but good enough)
-            }
-            entityMassifIds = await getMassifIdsFromCave(caveId);
-          } else if (entranceId) {
-            entityCountryId = getCountryId(populatedEntity.entrance);
-            entityMassifIds = await getMassifIdsFromCave(
-              safeGetPropId('cave', populatedEntity.entrance)
-            );
-          } else if (massifId) {
-            entityMassifIds = [safeGetPropId('massif', populatedEntity)];
-          }
-          // A document can relate to no massif / cave / entrance
-          break;
-        }
-        case NOTIFICATION_ENTITIES.ENTRANCE:
-          entityCountryId = getCountryId(populatedEntity);
-          if (populatedEntity?.cave) {
-            entityMassifIds = await getMassifIdsFromCave(
-              safeGetPropId('cave', populatedEntity.entrance)
-            );
-          }
-          break;
-        case NOTIFICATION_ENTITIES.HISTORY: {
-          if (caveId) {
-            if (
-              populatedEntity.cave.entrances &&
-              populatedEntity.cave.entrances.length > 0
-            ) {
-              entityCountryId = getCountryId(
-                populatedEntity?.cave?.entrances[0]
-              ); // Get country from first entrance (not perfect but good enough)
-            }
-            entityMassifIds = await getMassifIdsFromCave(caveId);
-          } else if (entranceId) {
-            entityCountryId = getCountryId(populatedEntity.entrance);
-            entityMassifIds = await getMassifIdsFromCave(
-              safeGetPropId('cave', populatedEntity.entrance)
-            );
-          } else {
-            throw new Error(`Can't retrieve related cave or entrance id.`);
-          }
-          break;
-        }
-        case NOTIFICATION_ENTITIES.LOCATION: {
-          if (entranceId) {
-            entityCountryId = getCountryId(populatedEntity.entrance);
-            entityMassifIds = await getMassifIdsFromCave(
-              safeGetPropId('cave', populatedEntity.entrance)
-            );
-          } else {
+      // Entity-specific location resolution
+      const entityResolvers = {
+        [NOTIFICATION_ENTITIES.CAVE]: async () => ({
+          countryId: getCountryFromCaveEntrances(populatedEntity),
+          massifIds: await getMassifIdsFromCave(populatedEntity.id),
+        }),
+
+        [NOTIFICATION_ENTITIES.ENTRANCE]: async () => ({
+          countryId: getCountryId(populatedEntity),
+          massifIds: populatedEntity?.cave
+            ? await getMassifIdsFromCave(safeGetPropId('cave', populatedEntity))
+            : [],
+        }),
+
+        [NOTIFICATION_ENTITIES.MASSIF]: async () => ({
+          countryId: null,
+          massifIds: [populatedEntity.id],
+        }),
+
+        [NOTIFICATION_ENTITIES.ORGANIZATION]: async () => ({
+          countryId: getCountryId(populatedEntity),
+          massifIds: [],
+        }),
+
+        [NOTIFICATION_ENTITIES.LOCATION]: async () => {
+          if (!entranceId)
             throw new Error(`Can't retrieve related entrance id.`);
-          }
-          break;
-        }
-        case NOTIFICATION_ENTITIES.MASSIF:
-          entityMassifIds = [populatedEntity.id];
-          break;
-        case NOTIFICATION_ENTITIES.ORGANIZATION:
-          entityCountryId = getCountryId(populatedEntity);
-          break;
-
-        case NOTIFICATION_ENTITIES.RIGGING: {
-          if (caveId) {
-            if (
-              populatedEntity.cave.entrances &&
-              populatedEntity.cave.entrances.length > 0
-            ) {
-              entityCountryId = getCountryId(
-                populatedEntity?.cave.entrances[0]
-              ); // Get country from first entrance (not perfect but good enough)
-            }
-            entityMassifIds = await getMassifIdsFromCave(caveId);
-          } else if (entranceId) {
-            entityCountryId = getCountryId(populatedEntity.entrance);
-            entityMassifIds = await getMassifIdsFromCave(
+          return {
+            countryId: getCountryId(populatedEntity.entrance),
+            massifIds: await getMassifIdsFromCave(
               safeGetPropId('cave', populatedEntity.entrance)
-            );
-          } else {
-            throw new Error(`Can't retrieve related cave or entrance id.`);
-          }
-          break;
+            ),
+          };
+        },
+      };
+
+      // Entities that can relate to cave, entrance, or massif
+      const multiRelationEntities = [
+        NOTIFICATION_ENTITIES.COMMENT,
+        NOTIFICATION_ENTITIES.DESCRIPTION,
+        NOTIFICATION_ENTITIES.HISTORY,
+        NOTIFICATION_ENTITIES.RIGGING,
+      ];
+
+      // Find massifs and country concerned about the notification
+      let result;
+      if (entityResolvers[notificationEntity]) {
+        result = await entityResolvers[notificationEntity]();
+      } else if (multiRelationEntities.includes(notificationEntity)) {
+        result = await resolveLocationFromCaveOrEntrance(
+          caveId,
+          entranceId,
+          populatedEntity
+        );
+
+        // Handle massif-only case for description and document
+        if (!result.countryId && !result.massifIds.length && massifId) {
+          result.massifIds = [safeGetPropId('massif', populatedEntity)];
         }
-        default:
-          throw new Error(
-            `Can't find what to do with the following notification entity value: ${notificationEntity}`
-          );
+
+        // Require cave or entrance for most entities
+        if (
+          !caveId &&
+          !entranceId &&
+          ![
+            NOTIFICATION_ENTITIES.DESCRIPTION,
+            NOTIFICATION_ENTITIES.DOCUMENT,
+          ].includes(notificationEntity)
+        ) {
+          throw new Error(`Can't retrieve related cave or entrance id.`);
+        }
+      } else if (notificationEntity === NOTIFICATION_ENTITIES.DOCUMENT) {
+        result = await resolveLocationFromCaveOrEntrance(
+          caveId,
+          entranceId,
+          populatedEntity
+        );
+        if (!result.countryId && !result.massifIds.length && massifId) {
+          result.massifIds = [safeGetPropId('massif', populatedEntity)];
+        }
+      } else {
+        throw new Error(
+          `Can't find what to do with the following notification entity value: ${notificationEntity}`
+        );
       }
+
+      const entityCountryId = result.countryId;
+      const entityMassifIds = result.massifIds;
 
       // Find subscribers to the entity.
       const { countrySubscribers, massifsSubscribers } =
         await getCountryAndMassifSubscribers(entityCountryId, entityMassifIds);
       // List users who will receive the notification
-      const uniqueUsers = Array.from(
-        new Set([
-          // Don't notify the notifierId
-          ...countrySubscribers.filter((u) => u.id !== notifierId),
-          ...massifsSubscribers.filter((u) => u.id !== notifierId),
-        ])
+      const allSubscribers = [
+        ...countrySubscribers.filter((u) => u.id !== notifierId),
+        ...massifsSubscribers.filter((u) => u.id !== notifierId),
+      ];
+
+      // Deduplicate by user ID
+      const uniqueUsers = allSubscribers.filter(
+        (user, index, arr) => arr.findIndex((u) => u.id === user.id) === index
       );
 
       // Create notifications & optionally send email
