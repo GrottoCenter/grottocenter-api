@@ -456,8 +456,15 @@ module.exports = {
       );
 
       // 5% chance to also remove older notifications
-      if (process.env.NODE_ENV !== 'test' && Math.random() < 0.05)
-        removeOlderNotifications();
+      if (process.env.NODE_ENV !== 'test' && Math.random() < 0.05) {
+        try {
+          await removeOlderNotifications();
+        } catch (cleanupError) {
+          sails.log.error(
+            `Error during notification cleanup: ${cleanupError.message}`
+          );
+        }
+      }
 
       return res;
     } catch (error) {
