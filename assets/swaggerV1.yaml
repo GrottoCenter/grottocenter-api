@@ -1964,36 +1964,55 @@ paths:
         - regions
       description: Get a region according to the parameters given, applying a logical OR. The search is case insensitive and autocompleted (i.e. it search for the parameters being contained in the actual field).
       parameters:
-        - name: name
+        - name: query
           in: query
-          description: Region name (case insensitive)
+          description: Search query for region name or ISO code (case insensitive)
           required: false
           schema:
             type: string
-        - name: code
+        - name: limit
           in: query
-          description: Region code (case insensitive)
+          description: Maximum number of results to return (default 10, max 100)
           required: false
           schema:
-            type: string
-        - name: isDeprecated
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+        - name: offset
           in: query
-          description: Region deprecated or not (currently, the deprecated ones are the ones from the BBS)
+          description: Number of results to skip for pagination (default 0)
           required: false
           schema:
-            type: boolean
+            type: integer
+            minimum: 0
+            default: 0
       responses:
         '200':
-          description: Successful login
+          description: Successful operation
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  regions:
+                  results:
                     type: array
                     items:
-                      $ref: '#/components/schemas/Region'
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                          enum: [region, country]
+                        iso:
+                          type: string
+                        name:
+                          type: string
+                  totalCount:
+                    type: integer
+                    description: Total number of matching results
+                  totalPages:
+                    type: integer
+                    description: Total number of pages based on limit
 
   '/countries/{countryId}/regions/{regionId}':
     get:
