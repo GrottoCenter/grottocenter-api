@@ -143,12 +143,14 @@ const sendNotificationEmail = async (
     });
 };
 
-const getCountryAndMassifSubscribers = async (
+const getCountryMassifAndRegionSubscribers = async (
   entityCountryId,
-  entityMassifIds
+  entityMassifIds,
+  entityRegionId
 ) => {
   const countrySubscribers = [];
   const massifsSubscribers = [];
+  const regionSubscribers = [];
   if (entityCountryId) {
     const country =
       await TCountry.findOne(entityCountryId).populate('subscribedCavers');
@@ -176,7 +178,18 @@ const getCountryAndMassifSubscribers = async (
       })
     );
   }
-  return { countrySubscribers, massifsSubscribers };
+  if (entityRegionId) {
+    const region =
+      await TISO31662.findOne(entityRegionId).populate('subscribedCavers');
+    regionSubscribers.push(
+      ...region.subscribedCavers.map((caver) => ({
+        ...caver,
+        subscriptionName: region.name,
+        subscriptionType: 'region',
+      }))
+    );
+  }
+  return { countrySubscribers, massifsSubscribers, regionSubscribers };
 };
 
 module.exports = {
@@ -243,6 +256,7 @@ module.exports = {
       const getMassifIdsFromCave = async (id) =>
         (await CaveService.getMassifs(id)).map((m) => m.id);
       const getCountryId = (id) => safeGetPropId('country', id);
+      const getRegionId = (entityData) => entityData?.iso_3166_2;
 
       const getCountryFromCaveEntrances = (cave) => {
         if (cave?.entrances?.length > 0) {
@@ -260,6 +274,9 @@ module.exports = {
           return {
             countryId: getCountryFromCaveEntrances(entityData.cave),
             massifIds: await getMassifIdsFromCave(relatedCaveId),
+            regionId: entityData.cave?.entrances?.[0]
+              ? getRegionId(entityData.cave.entrances[0])
+              : null,
           };
         }
         if (relatedEntranceId) {
@@ -268,9 +285,10 @@ module.exports = {
             massifIds: await getMassifIdsFromCave(
               safeGetPropId('cave', entityData.entrance)
             ),
+            regionId: getRegionId(entityData.entrance),
           };
         }
-        return { countryId: null, massifIds: [] };
+        return { countryId: null, massifIds: [], regionId: null };
       };
 
       // Entity-specific location resolution
@@ -278,6 +296,9 @@ module.exports = {
         [NOTIFICATION_ENTITIES.CAVE]: async () => ({
           countryId: getCountryFromCaveEntrances(populatedEntity),
           massifIds: await getMassifIdsFromCave(populatedEntity.id),
+          regionId: populatedEntity?.entrances?.[0]
+            ? getRegionId(populatedEntity.entrances[0])
+            : null,
         }),
 
         [NOTIFICATION_ENTITIES.ENTRANCE]: async () => ({
@@ -285,16 +306,19 @@ module.exports = {
           massifIds: populatedEntity?.cave
             ? await getMassifIdsFromCave(safeGetPropId('cave', populatedEntity))
             : [],
+          regionId: getRegionId(populatedEntity),
         }),
 
         [NOTIFICATION_ENTITIES.MASSIF]: async () => ({
           countryId: null,
           massifIds: [populatedEntity.id],
+          regionId: null,
         }),
 
         [NOTIFICATION_ENTITIES.ORGANIZATION]: async () => ({
           countryId: getCountryId(populatedEntity),
           massifIds: [],
+          regionId: getRegionId(populatedEntity),
         }),
 
         [NOTIFICATION_ENTITIES.LOCATION]: async () => {
@@ -305,6 +329,7 @@ module.exports = {
             massifIds: await getMassifIdsFromCave(
               safeGetPropId('cave', populatedEntity.entrance)
             ),
+            regionId: getRegionId(populatedEntity.entrance),
           };
         },
       };
@@ -361,14 +386,20 @@ module.exports = {
 
       const entityCountryId = result.countryId;
       const entityMassifIds = result.massifIds;
+      const entityRegionId = result.regionId;
 
       // Find subscribers to the entity.
-      const { countrySubscribers, massifsSubscribers } =
-        await getCountryAndMassifSubscribers(entityCountryId, entityMassifIds);
+      const { countrySubscribers, massifsSubscribers, regionSubscribers } =
+        await getCountryMassifAndRegionSubscribers(
+          entityCountryId,
+          entityMassifIds,
+          entityRegionId
+        );
       // List users who will receive the notification
       const allSubscribers = [
         ...countrySubscribers.filter((u) => u.id !== notifierId),
         ...massifsSubscribers.filter((u) => u.id !== notifierId),
+        ...regionSubscribers.filter((u) => u.id !== notifierId),
       ];
 
       // Deduplicate by user ID

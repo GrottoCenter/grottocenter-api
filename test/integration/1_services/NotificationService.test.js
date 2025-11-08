@@ -248,6 +248,25 @@ describe('NotificationService', () => {
       should(user1Notifications[0].history).be.equal(1);
     });
 
+    it('should create a notification about the entrance for user 1 subscribed to the region FR-01', async () => {
+      const entrance = await TEntrance.findOne(2); // Has iso_3166_2: "FR-01"
+      const res = await NotificationService.notifySubscribers(
+        fakeReq,
+        entrance,
+        user3.id,
+        NOTIFICATION_TYPES.UPDATE,
+        NOTIFICATION_ENTITIES.ENTRANCE
+      );
+      if (!res) throw Error('should succeed');
+      const user1Notifications = await TNotification.find({
+        notified: 1,
+        notifier: 3,
+        entrance: entrance.id,
+      });
+      // User 1 gets notifications from both country (FR) and region (FR-01) subscriptions
+      should(user1Notifications).have.length(2);
+    });
+
     // Additional coverage tests
     it('should throw error for invalid notification entity in notifySubscribers', async () => {
       try {
@@ -306,6 +325,20 @@ describe('NotificationService', () => {
       should(res).not.be.false();
     });
 
+    it('should handle CAVE entity notifications with region from entrance', async () => {
+      const cave = await TCave.findOne(1);
+      await CaveService.setEntrances([cave]);
+      // Cave 1 has entrance 2 which has iso_3166_2: "FR-01"
+      const res = await NotificationService.notifySubscribers(
+        fakeReq,
+        cave,
+        user3.id,
+        NOTIFICATION_TYPES.CREATE,
+        NOTIFICATION_ENTITIES.CAVE
+      );
+      should(res).not.be.false();
+    });
+
     it('should handle MASSIF entity notifications', async () => {
       const massif = await TMassif.findOne(1);
       const res = await NotificationService.notifySubscribers(
@@ -320,6 +353,18 @@ describe('NotificationService', () => {
 
     it('should handle ORGANIZATION entity notifications', async () => {
       const grotto = await TGrotto.findOne(1);
+      const res = await NotificationService.notifySubscribers(
+        fakeReq,
+        grotto,
+        user3.id,
+        NOTIFICATION_TYPES.UPDATE,
+        NOTIFICATION_ENTITIES.ORGANIZATION
+      );
+      should(res).not.be.false();
+    });
+
+    it('should handle ORGANIZATION entity notifications with region', async () => {
+      const grotto = { ...(await TGrotto.findOne(1)), iso_3166_2: 'FR-01' };
       const res = await NotificationService.notifySubscribers(
         fakeReq,
         grotto,
@@ -373,6 +418,19 @@ describe('NotificationService', () => {
         location,
         user3.id,
         NOTIFICATION_TYPES.CREATE,
+        NOTIFICATION_ENTITIES.LOCATION
+      );
+      should(res).not.be.false();
+    });
+
+    it('should handle LOCATION entity notifications with region from entrance', async () => {
+      // Create a location with entrance that has region
+      const location = { id: 1, entrance: 2 }; // Entrance 2 has iso_3166_2: "FR-01"
+      const res = await NotificationService.notifySubscribers(
+        fakeReq,
+        location,
+        user3.id,
+        NOTIFICATION_TYPES.UPDATE,
         NOTIFICATION_ENTITIES.LOCATION
       );
       should(res).not.be.false();
