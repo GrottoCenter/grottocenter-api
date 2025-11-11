@@ -20,10 +20,10 @@ describe('Country features', () => {
         .expect(200)
         .end((err, res) => {
           if (err) return done(err);
-          const { body: organization } = res;
-          should(organization).have.properties(COUNTRY_PROPERTIES);
-          should(organization.id).not.be.empty();
-          should(organization.nativeName).not.be.empty();
+          const { body: country } = res;
+          should(country).have.properties(COUNTRY_PROPERTIES);
+          should(country.id).not.be.empty();
+          should(country.nativeName).not.be.empty();
           return done();
         });
     });

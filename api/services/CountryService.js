@@ -1,13 +1,12 @@
-const NB_COUNTRIES = `
-SELECT COUNT(*)
-FROM (
-    SELECT DISTINCT id_country
-    FROM t_country c
-    JOIN t_entrance e ON e.id_country = c.iso
-    WHERE e.is_deleted = false) as tmp;
-`;
-
 const CommonService = require('./CommonService');
+
+const NB_COUNTRIES = `
+  SELECT COUNT(*)
+  FROM (SELECT DISTINCT id_country
+        FROM t_country c
+               JOIN t_entrance e ON e.id_country = c.iso
+        WHERE e.is_deleted = false) as tmp;
+`;
 
 module.exports = {
   /**

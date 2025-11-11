@@ -9,11 +9,19 @@ function toSimpleCountry(source) {
   };
 }
 
+function toSimpleRegion(source) {
+  return {
+    id: source.id,
+    name: source.name,
+  };
+}
+
 module.exports = async (req, res) => {
   const caverId = req.param('caverId');
   const caver = await TCaver.findOne(caverId)
     .populate('subscribedToCountries')
-    .populate('subscribedToMassifs');
+    .populate('subscribedToMassifs')
+    .populate('subscribedToRegions');
 
   if (!caver) {
     return res.notFound({ message: `Caver with id ${caverId} not found.` });
@@ -25,6 +33,7 @@ module.exports = async (req, res) => {
     subscriptions: {
       massifs: toList('subscribedToMassifs', caver, toSimpleMassif),
       countries: toList('subscribedToCountries', caver, toSimpleCountry),
+      regions: toList('subscribedToRegions', caver, toSimpleRegion),
     },
   });
 };

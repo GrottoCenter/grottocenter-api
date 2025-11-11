@@ -41,6 +41,7 @@ before(function (done) {
           'tsubject',
           'ttype',
           'tcountry',
+          'tiso31662',
           'tgroup',
           'tnotificationtype',
           'tcaver',

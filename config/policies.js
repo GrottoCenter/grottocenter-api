@@ -231,6 +231,12 @@ module.exports.policies = {
   'v1/region/find': true,
   'v1/region/find-all': true,
   'v1/region/search': true,
+  'v1/region/find-by-country': true,
+  'v1/region/count': true,
+  'v1/region/get-statistics': true,
+  'v1/region/get-entrances-data-quality': true,
+  'v1/region/subscribe': 'tokenAuth',
+  'v1/region/unsubscribe': 'tokenAuth',
 
   // Search
   'v1/search/quick-search': true,
