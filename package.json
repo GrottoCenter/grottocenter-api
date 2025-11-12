@@ -17,13 +17,13 @@
     "ejs": "^3.1.10",
     "elasticsearch": "^16.7.3",
     "express-rate-limit": "^8.2.1",
-    "feed-read": "^0.0.1",
     "jsonwebtoken": "^9.0.2",
     "mime-types": "^3.0.1",
     "moment": "^2.30.1",
     "moment-duration-format": "^2.3.2",
     "multer": "^2.0.2",
     "response-time": "^2.3.3",
+    "rss-parser": "^3.13.0",
     "sails": "^1.5.12",
     "sails-hook-orm": "^4.0.3",
     "sails-postgresql": "^5.0.1",
@@ -39,8 +39,8 @@
     "dev:down": "node script/developmentSetup.js down",
     "lint": "cross-env eslint '**/*.js'",
     "lint:fix": "cross-env eslint '**/*.js' --fix",
-    "test": "cross-env NODE_ENV=test mocha test/bootstrap.test.js \"test/integration/**/*.test.js\"",
-    "coverage": "cross-env NODE_ENV=test nyc --reporter=html --reporter=text --reporter=lcov mocha test/bootstrap.test.js \"test/integration/**/*.test.js\""
+    "test": "cross-env NODE_ENV=test mocha --exit test/bootstrap.test.js \"test/integration/**/*.test.js\"",
+    "coverage": "cross-env NODE_ENV=test nyc --reporter=html --reporter=text --reporter=lcov mocha --exit test/bootstrap.test.js \"test/integration/**/*.test.js\""
   },
   "main": "app.js",
   "repository": {
