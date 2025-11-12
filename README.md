@@ -111,6 +111,28 @@ Example:
 docker exec grotto-postgres psql -U root -d grottoce -c "SELECT id, id_country, iso_3166_2 FROM t_entrance WHERE id_country = 'US' LIMIT 5;"
 ```
 
+### Refresh materialized views (development only)
+
+The database uses materialized views for performance optimization. These views need to be refreshed periodically to reflect the latest data. In development, you can manually refresh them using the provided cron scripts:
+
+```shell
+# Copy and run the data quality refresh script (refreshes daily in production)
+docker cp cron/refresh_data_quality_view_procedure.sh grotto-postgres:/tmp/
+docker exec grotto-postgres chmod +x /tmp/refresh_data_quality_view_procedure.sh
+docker exec grotto-postgres bash /tmp/refresh_data_quality_view_procedure.sh
+
+# Copy and run the views refresh script (refreshes weekly in production)
+docker cp cron/refresh_views_procedure.sh grotto-postgres:/tmp/
+docker exec grotto-postgres chmod +x /tmp/refresh_views_procedure.sh
+docker exec grotto-postgres bash /tmp/refresh_views_procedure.sh
+```
+
+These scripts refresh the following materialized views:
+- `v_data_quality_compute_entrance` - Data quality metrics for entrances
+- `v_massif_info` - Massif statistics and information
+- `v_country_info` - Country statistics and information
+- `v_region_info` - Region statistics and information
+
 ### Tests
 
 Run all tests:

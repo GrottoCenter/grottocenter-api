@@ -91,10 +91,6 @@ module.exports = {
 
     caver.type = module.exports.isARealCaver(caver.mail) ? 'CAVER' : 'AUTHOR';
 
-    caver.exploredEntrances = caver.exploredEntrances.filter(
-      (entrance) => entrance.isPublic
-    );
-
     const asyncArr = [
       NameService.setNames(caver.exploredEntrances, 'entrance'),
       NameService.setNames(caver.grottos, 'grotto'),
