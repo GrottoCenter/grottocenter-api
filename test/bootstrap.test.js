@@ -5,6 +5,21 @@ const ALTER_GEOGRAPHY_QUERY = require('./alter_geography');
 const UPDATE_SEQUENCES_QUERY = require('./update_sequences');
 const CommonService = require('../api/services/CommonService');
 
+// Suppress Waterline adapter warnings about timestamp primary keys in history tables
+const originalWarn = console.warn;
+console.warn = function (...args) {
+  const message = args.join(' ');
+  if (
+    message.includes(
+      'Records sent back from a database adapter should always have a valid property'
+    ) ||
+    message.includes('corresponds with the primary key attribute')
+  ) {
+    return;
+  }
+  originalWarn.apply(console, args);
+};
+
 // this.timeout() is not accessible with an arrow function
 // eslint-disable-next-line func-names
 before(function (done) {
@@ -13,7 +28,7 @@ before(function (done) {
   sails.lift(
     {
       log: {
-        // level: 'silly', // Enable for test debugging
+        level: 'error', // Suppress warnings, only show errors
       },
       datastores: {
         default: {
@@ -88,5 +103,14 @@ before(function (done) {
 
 after((done) => {
   // here you can clear fixtures, etc.
-  sails.lower(done);
+  sails.lower((err) => {
+    if (err) {
+      console.error('Error lowering sails:', err);
+    }
+    // Force exit after a short delay to ensure cleanup
+    setTimeout(() => {
+      process.exit(0);
+    }, 100);
+    done(err);
+  });
 });
