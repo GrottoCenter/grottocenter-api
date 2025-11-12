@@ -72,5 +72,8 @@
   },
   "lint-staged": {
     "*.js": "eslint --cache --fix"
+  },
+  "overrides": {
+    "validator": "^13.15.20"
   }
 }
