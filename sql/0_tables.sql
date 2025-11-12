@@ -1133,6 +1133,28 @@ CREATE TABLE j_caver_country_subscription (
   CONSTRAINT j_caver_country_t_country_fk FOREIGN KEY (iso) REFERENCES t_country(iso)
 );
 
+-- DROP TABLE t_iso3166_2;
+CREATE TABLE t_iso3166_2 (
+	iso varchar(10) NOT NULL,
+	name varchar(200) NOT NULL,
+	name_ar varchar(200) NULL,
+	name_bg varchar(200) NULL,
+	name_ca varchar(200) NULL,
+	name_de varchar(200) NULL,
+	name_el varchar(200) NULL,
+	name_en varchar(200) NULL,
+	name_es varchar(200) NULL,
+	name_fr varchar(200) NULL,
+	name_he varchar(200) NULL,
+	name_id varchar(200) NULL,
+	name_it varchar(200) NULL,
+	name_ja varchar(200) NULL,
+	name_nl varchar(200) NULL,
+	name_pt varchar(200) NULL,
+	name_ro varchar(200) NULL,
+	CONSTRAINT t_iso3166_2_pk PRIMARY KEY (iso)
+);
+
 -- DROP TABLE j_caver_region_subscription ;
 CREATE TABLE j_caver_region_subscription (
 	id_caver int4 NOT NULL,
@@ -1181,28 +1203,6 @@ CREATE TABLE t_notification (
   CONSTRAINT t_notification_t_location_fk FOREIGN KEY (id_location) REFERENCES t_location(id),
   CONSTRAINT t_notification_t_massif_fk FOREIGN KEY (id_massif) REFERENCES t_massif(id),
   CONSTRAINT t_notification_t_rigging_fk FOREIGN KEY (id_rigging) REFERENCES t_rigging(id)
-);
-
--- DROP TABLE t_iso3166_2;
-CREATE TABLE t_iso3166_2 (
-	iso varchar(10) NOT NULL,
-	name varchar(200) NOT NULL,
-	name_ar varchar(200) NULL,
-	name_bg varchar(200) NULL,
-	name_ca varchar(200) NULL,
-	name_de varchar(200) NULL,
-	name_el varchar(200) NULL,
-	name_en varchar(200) NULL,
-	name_es varchar(200) NULL,
-	name_fr varchar(200) NULL,
-	name_he varchar(200) NULL,
-	name_id varchar(200) NULL,
-	name_it varchar(200) NULL,
-	name_ja varchar(200) NULL,
-	name_nl varchar(200) NULL,
-	name_pt varchar(200) NULL,
-	name_ro varchar(200) NULL,
-	CONSTRAINT t_iso3166_2_pk PRIMARY KEY (iso)
 );
 
 -- DROP TABLE j_document_iso3166_2;
