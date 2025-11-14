@@ -70,7 +70,7 @@ describe('Caver features', () => {
             should(entrance).have.properties('names');
           });
           caver.organizations.forEach((organization) => {
-            should(organization).have.properties('names');
+            should(organization).have.properties('name');
           });
           return done();
         });
