@@ -90,6 +90,10 @@ module.exports.routes = {
   'PUT /api/v1/cavers/:caverId/entrances/:entranceId':
     'v1/caver/add-explored-entrance',
   'PUT /api/v1/cavers/:caverId/groups/:groupId': 'v1/caver/put-on-group',
+  'PUT /api/v1/cavers/:caverId/organizations/:organizationId':
+    'v1/caver/add-to-organization',
+  'DELETE /api/v1/cavers/:caverId/organizations/:organizationId':
+    'v1/caver/remove-from-organization',
   'DELETE /api/v1/cavers/:id': 'v1/caver/delete',
 
   // Entrance

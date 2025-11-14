@@ -750,6 +750,63 @@ paths:
         '403':
           description: You are not authorized to mark an entrance as explored by a caver or you can't unmark an entrance as explored for someone else than you.
 
+  '/cavers/{caverId}/organizations/{organizationId}':
+    put:
+      tags:
+        - cavers
+        - organizations
+      description: Add a caver to an organization. Users can only manage their own memberships unless they are administrators.
+      parameters:
+        - name: caverId
+          in: path
+          description: Caver id to be added to the organization.
+          required: true
+          schema:
+            type: string
+        - name: organizationId
+          in: path
+          description: Organization id to add the caver to.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+        '400':
+          description: "Bad request. Both the caverId and organizationId parameters must exist in the database. Also, you can't add a caver if they are already a member of the organization."
+        '403':
+          description: You are not authorized to manage organization memberships for other users.
+        '404':
+          description: Caver or organization not found.
+
+    delete:
+      tags:
+        - cavers
+        - organizations
+      description: Remove a caver from an organization. Users can only manage their own memberships unless they are administrators.
+      parameters:
+        - name: caverId
+          in: path
+          description: Caver id to be removed from the organization.
+          required: true
+          schema:
+            type: string
+        - name: organizationId
+          in: path
+          description: Organization id to remove the caver from.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+        '400':
+          description: Bad request. The caver is not a member of this organization.
+        '403':
+          description: You are not authorized to manage organization memberships for other users.
+        '404':
+          description: Caver or organization not found.
+
   '/cavers/{id}/documents':
     get:
       tags:
@@ -3300,10 +3357,10 @@ paths:
         - geoloc
       description: See countEntrances instead ! Count entrances contained inside the given coords
       parameters:
-        - $ref: '#/parameters/sw_lat'
-        - $ref: '#/parameters/sw_lng'
-        - $ref: '#/parameters/ne_lat'
-        - $ref: '#/parameters/ne_lng'
+        - $ref: '#/components/parameters/sw_lat'
+        - $ref: '#/components/parameters/sw_lng'
+        - $ref: '#/components/parameters/ne_lat'
+        - $ref: '#/components/parameters/ne_lng'
       responses:
         '200':
           description: Successful operation
@@ -3318,10 +3375,10 @@ paths:
         - geoloc
       description: Count entrances contained inside the given coords
       parameters:
-        - $ref: '#/parameters/sw_lat'
-        - $ref: '#/parameters/sw_lng'
-        - $ref: '#/parameters/ne_lat'
-        - $ref: '#/parameters/ne_lng'
+        - $ref: '#/components/parameters/sw_lat'
+        - $ref: '#/components/parameters/sw_lng'
+        - $ref: '#/components/parameters/ne_lat'
+        - $ref: '#/components/parameters/ne_lng'
       responses:
         '200':
           description: Successful operation
@@ -3359,10 +3416,10 @@ paths:
         - geoloc
       description: Count entrances contained inside the given coords
       parameters:
-        - $ref: '#/parameters/sw_lat'
-        - $ref: '#/parameters/sw_lng'
-        - $ref: '#/parameters/ne_lat'
-        - $ref: '#/parameters/ne_lng'
+        - $ref: '#/components/parameters/sw_lat'
+        - $ref: '#/components/parameters/sw_lng'
+        - $ref: '#/components/parameters/ne_lat'
+        - $ref: '#/components/parameters/ne_lng'
       responses:
         '200':
           description: List of coordinates [long,lat]
@@ -3382,10 +3439,10 @@ paths:
         - geoloc
       description: Count entrances contained inside the given coords
       parameters:
-        - $ref: '#/parameters/sw_lat'
-        - $ref: '#/parameters/sw_lng'
-        - $ref: '#/parameters/ne_lat'
-        - $ref: '#/parameters/ne_lng'
+        - $ref: '#/components/parameters/sw_lat'
+        - $ref: '#/components/parameters/sw_lng'
+        - $ref: '#/components/parameters/ne_lat'
+        - $ref: '#/components/parameters/ne_lng'
       responses:
         '200':
           description: Successful operation
@@ -3409,10 +3466,10 @@ paths:
         - geoloc
       description: Count entrances contained inside the given coords
       parameters:
-        - $ref: '#/parameters/sw_lat'
-        - $ref: '#/parameters/sw_lng'
-        - $ref: '#/parameters/ne_lat'
-        - $ref: '#/parameters/ne_lng'
+        - $ref: '#/components/parameters/sw_lat'
+        - $ref: '#/components/parameters/sw_lng'
+        - $ref: '#/components/parameters/ne_lat'
+        - $ref: '#/components/parameters/ne_lng'
       responses:
         '200':
           description: List of coordinates [long,lat]
@@ -3432,10 +3489,10 @@ paths:
         - geoloc
       description: Count entrances contained inside the given coords
       parameters:
-        - $ref: '#/parameters/sw_lat'
-        - $ref: '#/parameters/sw_lng'
-        - $ref: '#/parameters/ne_lat'
-        - $ref: '#/parameters/ne_lng'
+        - $ref: '#/components/parameters/sw_lat'
+        - $ref: '#/components/parameters/sw_lng'
+        - $ref: '#/components/parameters/ne_lat'
+        - $ref: '#/components/parameters/ne_lng'
       responses:
         '200':
           description: Successful operation
@@ -3461,10 +3518,10 @@ paths:
         - geoloc
       description: Count entrances contained inside the given coords
       parameters:
-        - $ref: '#/parameters/sw_lat'
-        - $ref: '#/parameters/sw_lng'
-        - $ref: '#/parameters/ne_lat'
-        - $ref: '#/parameters/ne_lng'
+        - $ref: '#/components/parameters/sw_lat'
+        - $ref: '#/components/parameters/sw_lng'
+        - $ref: '#/components/parameters/ne_lat'
+        - $ref: '#/components/parameters/ne_lng'
       responses:
         '200':
           description: Successful operation
@@ -3963,7 +4020,7 @@ paths:
                         name:
                           type: string
 
-  'bibliographic-metadata/search':
+  '/bibliographic-metadata/search':
     post:
       tags:
         - bibliographic metadata
@@ -4003,54 +4060,53 @@ paths:
           description: Request body must be a valid JSON object
 
 
-parameters:
-  sw_lat:
-    name: sw_lat
-    in: query
-    description: South West latitude (WGS84 decimal)
-    required: true
-    schema:
-      type: number
-      minimum: -90
-      maximum: 90
-  sw_lng:
-    name: sw_lng
-    in: query
-    description: South West longitude (WGS84 decimal)
-    required: true
-    schema:
-      type: number
-      minimum: -180
-      maximum: 180
-  ne_lat:
-    name: ne_lat
-    in: query
-    description: North East latitude (WGS84 decimal)
-    required: true
-    schema:
-      type: number
-      minimum: -90
-      maximum: 90
-  ne_lng:
-    name: ne_lng
-    in: query
-    description: North East longitude (WGS84 decimal)
-    required: true
-    schema:
-      type: number
-      minimum: -180
-      maximum: 180
-  zoom:
-    name: zoom
-    in: query
-    description: zoom level (1 to 22)
-    required: true
-    schema:
-      type: integer
-      minimum: 1
-      maximum: 22
-
 components:
+  parameters:
+    sw_lat:
+      name: sw_lat
+      in: query
+      description: South West latitude (WGS84 decimal)
+      required: true
+      schema:
+        type: number
+        minimum: -90
+        maximum: 90
+    sw_lng:
+      name: sw_lng
+      in: query
+      description: South West longitude (WGS84 decimal)
+      required: true
+      schema:
+        type: number
+        minimum: -180
+        maximum: 180
+    ne_lat:
+      name: ne_lat
+      in: query
+      description: North East latitude (WGS84 decimal)
+      required: true
+      schema:
+        type: number
+        minimum: -90
+        maximum: 90
+    ne_lng:
+      name: ne_lng
+      in: query
+      description: North East longitude (WGS84 decimal)
+      required: true
+      schema:
+        type: number
+        minimum: -180
+        maximum: 180
+    zoom:
+      name: zoom
+      in: query
+      description: zoom level (1 to 22)
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 22
   schemas:
     Auth-success:
       type: object
