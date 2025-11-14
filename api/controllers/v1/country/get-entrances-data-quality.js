@@ -8,8 +8,17 @@ const { toListFromController } = require('../../../services/mapping/utils');
 module.exports = async (req, res) => {
   // Get entrances and the informations associated at each entrance
   const countryId = req.params.id;
-  const entrancesInformationToCompute =
-    await DataQualityComputeService.getEntrancesWithQualityByCountry(countryId);
+  const limit = Math.min(parseInt(req.param('limit', 50), 10), 1000);
+  const offset = Math.max(parseInt(req.param('offset', 0), 10), 0);
+
+  const [entrancesInformationToCompute, totalCount] = await Promise.all([
+    DataQualityComputeService.getEntrancesWithQualityByCountry(
+      countryId,
+      limit,
+      offset
+    ),
+    DataQualityComputeService.getEntrancesWithQualityByCountryCount(countryId),
+  ]);
 
   if (
     !entrancesInformationToCompute ||
@@ -20,12 +29,22 @@ module.exports = async (req, res) => {
     });
   }
 
-  return ControllerService.treatAndConvert(
+  const totalPages = Math.ceil(totalCount / limit);
+  const result = {
+    quality: toListFromController(
+      'quality',
+      entrancesInformationToCompute,
+      toQualityDataEntrance
+    ).quality,
+    totalCount,
+    totalPages,
+  };
+
+  return ControllerService.treat(
     req,
     null,
-    entrancesInformationToCompute,
+    result,
     { controllerMethod: 'CountryController.get-entrances-data-quality' },
-    res,
-    (data) => toListFromController('quality', data, toQualityDataEntrance)
+    res
   );
 };
