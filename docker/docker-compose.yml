@@ -54,6 +54,10 @@ services:
       - cluster.routing.allocation.disk.watermark.flood_stage=1gb
       - http.cors.enabled=true
       - http.cors.allow-origin=https://app.elasticvue.com
+      - ES_LOCAL_PORT=${ES_LOCAL_PORT}
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:$$ES_LOCAL_PORT/_cluster/health || exit 1"]
+      retries: 5
     volumes:
       - gc-es-data:/usr/share/elasticsearch/data
     ports:
@@ -79,13 +83,16 @@ services:
       - JDBC_PASSWORD=${POSTGRES_PASSWORD}
       - ES_HOSTS=${ES_CONTAINER_NAME}:${ES_LOCAL_PORT}
     healthcheck:
-      test: curl -X GET "localhost:9600" --silent
+      test: ["CMD-SHELL", "curl -X GET 'localhost:9600' --silent"]
       retries: 5
     volumes:
       - ./logstash.conf:/config-dir/logstash.conf
       - ./postgresql-connector.jar:/config-dir/postgresql-connector.jar
     depends_on:
-      - elasticsearch
+      dbserver:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
 
   # # For debuging postgresql
   # pgadmin:
