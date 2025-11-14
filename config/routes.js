@@ -139,6 +139,9 @@ module.exports.routes = {
   'PUT /api/v1/caves/:id': 'v1/cave/update',
   'DELETE /api/v1/caves/:caveId/documents/:documentId':
     'v1/cave/unlink-document',
+  'PUT /api/v1/caves/:caveId/explorers/:organizationId': 'v1/cave/add-explorer',
+  'DELETE /api/v1/caves/:caveId/explorers/:organizationId':
+    'v1/cave/remove-explorer',
   /**
    * @deprecated use api/v1/caves instead
    */
