@@ -33,7 +33,7 @@
   "scripts": {
     "prepare": "husky",
     "start": "node app.js",
-    "dev": "nodemon sails lift",
+    "dev": "cross-env NODE_ENV=development nodemon sails lift",
     "dev:up": "node script/developmentSetup.js up",
     "dev:stop": "node script/developmentSetup.js stop",
     "dev:down": "node script/developmentSetup.js down",
