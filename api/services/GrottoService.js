@@ -81,10 +81,23 @@ module.exports = {
     delete organization.exploredCaves;
     delete organization.partnerCaves;
 
-    // Get Collection ancestors of organization documents
-    const orgDocIds = organization.documents.map((e) => e.id);
+    // Get documents where organization is author (existing functionality)
+    const authorDocIds = organization.documents.map((e) => e.id);
+
+    // Get documents where organization is editor
+    const editorDocs = await TDocument.find({ editor: organizationId })
+      .populate('descriptions')
+      .populate('type')
+      .populate('files', { where: { isValidated: true } });
+
+    // Combine both sets of documents and remove duplicates
+    const allDocIds = [
+      ...new Set([...authorDocIds, ...editorDocs.map((d) => d.id)]),
+    ];
+
+    // Get Collection ancestors of all organization documents
     organization.documents =
-      await DocumentService.getCollectionAncestors(orgDocIds);
+      await DocumentService.getCollectionAncestors(allDocIds);
 
     return organization;
   },
