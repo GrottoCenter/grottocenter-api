@@ -18,8 +18,11 @@ module.exports = {
         return true;
       }
 
-      // Currently, ignore limiting when in test
-      if (process.env.NODE_ENV === 'test') {
+      // Currently, ignore limiting when in test or development
+      if (
+        process.env.NODE_ENV === 'test' ||
+        process.env.NODE_ENV === 'development'
+      ) {
         return true;
       }
 
@@ -51,15 +54,23 @@ module.exports = {
       if (req.method.toUpperCase() !== 'DELETE') {
         return true;
       }
+      // Skip rate limiting in development/test
+      if (
+        process.env.NODE_ENV === 'test' ||
+        process.env.NODE_ENV === 'development'
+      ) {
+        return true;
+      }
       // If you are not authenticated, you are limited
       if (!req.token) {
         return false;
       }
-      // If the request doesn't come from our main client and the app is not in test phase,
+      // If the request doesn't come from our main client and the app is not in test or development phase,
       // you are limited
       if (
         req.headers.origin !== sails.config.custom.baseUrl &&
-        process.env.NODE_ENV !== 'test'
+        process.env.NODE_ENV !== 'test' &&
+        process.env.NODE_ENV !== 'development'
       ) {
         sails.log.error(
           `User ${req.token.nickname} (id=${req.token.id}) is being limited because the request doesn't come from our main client app.`
