@@ -271,6 +271,67 @@ paths:
         '403':
           description: You are not authorized to add a document to a cave.
 
+  '/caves/{caveId}/explorers/{organizationId}':
+    put:
+      tags:
+        - caves
+        - organizations
+      description: Add an organization as a cave explorer. Organization members, moderators, or administrators can manage explorer relationships.
+      parameters:
+        - name: caveId
+          in: path
+          description: Cave id to add the explorer to.
+          required: true
+          schema:
+            type: string
+        - name: organizationId
+          in: path
+          description: Organization id to be added as cave explorer.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+        '400':
+          description: Organization is already exploring this cave.
+        '401':
+          description: Authentication required.
+        '403':
+          description: You are not authorized to add a cave explorer. Must be a member of the organization, moderator, or administrator.
+        '404':
+          description: Cave or organization not found.
+
+    delete:
+      tags:
+        - caves
+        - organizations
+      description: Remove an organization as a cave explorer. Organization members, moderators, or administrators can manage explorer relationships.
+      parameters:
+        - name: caveId
+          in: path
+          description: Cave id to remove the explorer from.
+          required: true
+          schema:
+            type: string
+        - name: organizationId
+          in: path
+          description: Organization id to be removed as cave explorer.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+        '400':
+          description: Organization is not exploring this cave.
+        '401':
+          description: Authentication required.
+        '403':
+          description: You are not authorized to remove a cave explorer. Must be a member of the organization, moderator, or administrator.
+        '404':
+          description: Cave or organization not found.
+
   '/caves/{caveId}/massif/{massifId}':
     put:
       tags:

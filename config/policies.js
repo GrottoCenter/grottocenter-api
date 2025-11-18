@@ -46,6 +46,8 @@ module.exports.policies = {
   'v1/cave/delete': 'tokenAuth',
   'v1/cave/update': 'tokenAuth',
   'v1/cave/restore': 'tokenAuth',
+  'v1/cave/add-explorer': 'tokenAuth',
+  'v1/cave/remove-explorer': 'tokenAuth',
 
   // Caver
   'v1/caver/count': true,

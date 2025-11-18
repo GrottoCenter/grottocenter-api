@@ -22,6 +22,8 @@ module.exports = {
     HCave: 'readonly',
     HName: 'readonly',
     JDocumentLanguage: 'readonly',
+    JGrottoCaver: 'readonly',
+    JGrottoCaveExplorer: 'readonly',
     TCave: 'readonly',
     TCaver: 'readonly',
     TComment: 'readonly',
