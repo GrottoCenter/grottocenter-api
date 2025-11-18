@@ -80,9 +80,12 @@ module.exports = {
     // Format organization
     delete organization.exploredCaves;
     delete organization.partnerCaves;
-    organization.documents = await DocumentService.getDocuments(
-      organization.documents.map((e) => e.id)
-    );
+
+    // Get Collection ancestors of organization documents
+    const orgDocIds = organization.documents.map((e) => e.id);
+    organization.documents =
+      await DocumentService.getCollectionAncestors(orgDocIds);
+
     return organization;
   },
   /**

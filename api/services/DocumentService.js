@@ -488,4 +488,31 @@ module.exports = {
     }
     return documentsId;
   },
+
+  getCollectionAncestors: async (documentIds) => {
+    if (documentIds.length === 0) return [];
+
+    const query = `
+      WITH RECURSIVE doc_hierarchy AS (
+        SELECT id, id_parent, id_type
+        FROM t_document 
+        WHERE id = ANY($1)
+        
+        UNION ALL
+        
+        SELECT d.id, d.id_parent, d.id_type
+        FROM t_document d
+        JOIN doc_hierarchy dh ON d.id = dh.id_parent
+      )
+      SELECT DISTINCT dh.id
+      FROM doc_hierarchy dh
+      JOIN t_type t ON dh.id_type = t.id
+      WHERE t.name = 'Collection'
+    `;
+
+    const result = await sails.sendNativeQuery(query, [documentIds]);
+    const collectionIds = result.rows.map((row) => row.id);
+
+    return module.exports.getDocuments(collectionIds);
+  },
 };
