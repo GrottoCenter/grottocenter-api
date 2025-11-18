@@ -64,6 +64,8 @@ module.exports.policies = {
   'v1/caver/remove-explored-entrance': 'tokenAuth',
   'v1/caver/remove-from-group': 'tokenAuth',
   'v1/caver/set-groups': 'tokenAuth',
+  'v1/caver/add-to-organization': 'tokenAuth',
+  'v1/caver/remove-from-organization': 'tokenAuth',
   'v1/caver/update': 'tokenAuth',
   'v1/caver/get-db-export': 'tokenAuth',
   'v1/caver/delete': 'tokenAuth',
