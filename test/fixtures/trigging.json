@@ -17,5 +17,24 @@
     "language": "fra",
     "is_deleted": false,
     "cave": null
+  },
+  {
+    "id": 4,
+    "author": 1,
+    "reviewer": null,
+    "date_inscription": "2009-03-29T09:45:39.000Z",
+    "date_reviewed": "2022-08-09T08:17:05.135Z",
+    "relevance": 2,
+    "title": "Rigging with cave relation",
+    "obstacles": "P10",
+    "ropes": "15 m",
+    "anchors": "2S",
+    "observations": "Test rigging for cave",
+    "entrance": null,
+    "exit": null,
+    "point": null,
+    "language": "eng",
+    "is_deleted": false,
+    "cave": 1
   }
 ]

@@ -6,17 +6,28 @@ const {
 const { toListFromController } = require('../../../services/mapping/utils');
 
 module.exports = async (req, res) => {
-  // Get entrances and the informations associated at each entrance
-  const countryId = req.params.id;
+  const { countryId } = req.params;
+  const { regionId } = req.params;
+  const isoCode = `${countryId}-${regionId}`;
+
+  // Check if ISO 3166-2 region exists
+  const region = await TISO31662.findOne({ id: isoCode });
+  if (!region) {
+    return res.notFound({
+      message: `Region ${isoCode} not found.`,
+    });
+  }
+
+  // Get entrances with quality data for the specific region
   const entrancesInformationToCompute =
-    await DataQualityComputeService.getEntrancesWithQualityByCountry(countryId);
+    await DataQualityComputeService.getEntrancesWithQualityByRegion(isoCode);
 
   if (
     !entrancesInformationToCompute ||
     entrancesInformationToCompute.length <= 0
   ) {
     return res.notFound({
-      message: `Country does not exist or has no entrances`,
+      message: `Region ${isoCode} does not exist or has no entrances`,
     });
   }
 
@@ -24,7 +35,7 @@ module.exports = async (req, res) => {
     req,
     null,
     entrancesInformationToCompute,
-    { controllerMethod: 'CountryController.get-entrances-data-quality' },
+    { controllerMethod: 'RegionController.get-entrances-data-quality' },
     res,
     (data) => toListFromController('quality', data, toQualityDataEntrance)
   );

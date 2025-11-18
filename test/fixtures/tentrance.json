@@ -19,7 +19,8 @@
     "latitude": "3",
     "longitude": "3",
     "name": "The entrance with name 12 & 13",
-    "names": [12, 13]
+    "names": [12, 13],
+    "iso_3166_2": "FR-01"
   },
   {
     "id": 3,

@@ -13,8 +13,8 @@ info:
     url: 'https://creativecommons.org/licenses/by-sa/3.0/'
 
 servers:
-  - url: https://api.grottocenter.org/api/v1/
-  - url: http://localhost:1337/api/v1/
+  - url: https://api.grottocenter.org/api/v1
+  - url: http://localhost:1337/api/v1
 
 tags:
   - name: account
@@ -404,7 +404,7 @@ paths:
                       $ref: '#/components/schemas/Caver'
         '404':
           description: No administrators found.
-  
+
   '/cavers/authors/{page}':
     get:
       tags:
@@ -1964,36 +1964,250 @@ paths:
         - regions
       description: Get a region according to the parameters given, applying a logical OR. The search is case insensitive and autocompleted (i.e. it search for the parameters being contained in the actual field).
       parameters:
-        - name: name
+        - name: query
           in: query
-          description: Region name (case insensitive)
+          description: Search query for region name or ISO code (case insensitive)
           required: false
           schema:
             type: string
-        - name: code
+        - name: limit
           in: query
-          description: Region code (case insensitive)
+          description: Maximum number of results to return (default 10, max 100)
           required: false
           schema:
-            type: string
-        - name: isDeprecated
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+        - name: offset
           in: query
-          description: Region deprecated or not (currently, the deprecated ones are the ones from the BBS)
+          description: Number of results to skip for pagination (default 0)
           required: false
           schema:
-            type: boolean
+            type: integer
+            minimum: 0
+            default: 0
       responses:
         '200':
-          description: Successful login
+          description: Successful operation
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  regions:
+                  results:
                     type: array
                     items:
-                      $ref: '#/components/schemas/Region'
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                          enum: [region, country]
+                        iso:
+                          type: string
+                        name:
+                          type: string
+                  totalCount:
+                    type: integer
+                    description: Total number of matching results
+                  totalPages:
+                    type: integer
+                    description: Total number of pages based on limit
+
+  '/countries/{countryId}/regions/{regionId}':
+    get:
+      tags:
+        - regions
+        - countries
+      description: Get a region by ID within a specific country.
+      parameters:
+        - name: countryId
+          in: path
+          description: Country ID (ISO 2-letter code)
+          required: true
+          schema:
+            type: string
+            example: US
+        - name: regionId
+          in: path
+          description: Region ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Region'
+        '404':
+          description: Region not found in the specified country
+        '403':
+          description: Forbidden request
+
+  '/countries/{countryId}/regions/{regionId}/subscribe':
+    post:
+      tags:
+        - regions
+        - countries
+      description: Subscribe to a region within a specific country. Requires LEADER group permissions.
+      parameters:
+        - name: countryId
+          in: path
+          description: Country ID (ISO 2-letter code)
+          required: true
+          schema:
+            type: string
+            example: US
+        - name: regionId
+          in: path
+          description: Region ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successfully subscribed to region
+        '400':
+          description: Bad request
+        '403':
+          description: You are not authorized to subscribe to a region
+        '404':
+          description: Region not found in the specified country
+
+  '/countries/{countryId}/regions/{regionId}/unsubscribe':
+    post:
+      tags:
+        - regions
+        - countries
+      description: Unsubscribe from a region within a specific country. Requires LEADER group permissions.
+      parameters:
+        - name: countryId
+          in: path
+          description: Country ID (ISO 2-letter code)
+          required: true
+          schema:
+            type: string
+            example: US
+        - name: regionId
+          in: path
+          description: Region ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successfully unsubscribed from region
+        '400':
+          description: You are not subscribed to this region
+        '403':
+          description: You are not authorized to unsubscribe from a region
+        '404':
+          description: Region not found in the specified country
+
+  '/countries/{countryId}/regions/{regionId}/statistics':
+    get:
+      tags:
+        - regions
+        - countries
+      description: Get statistics for a region within a specific country.
+      parameters:
+        - name: countryId
+          in: path
+          description: Country ID (ISO 2-letter code)
+          required: true
+          schema:
+            type: string
+            example: US
+        - name: regionId
+          in: path
+          description: Region ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  region_id:
+                    type: string
+                  region_name:
+                    type: string
+                  country_id:
+                    type: string
+                  nb_caves:
+                    type: integer
+                    nullable: true
+                  nb_entrances:
+                    type: integer
+                    nullable: true
+                  nb_massifs:
+                    type: integer
+                    nullable: true
+                  message:
+                    type: string
+        '404':
+          description: Region not found in the specified country
+
+  '/countries/{countryId}/regions/count':
+    get:
+      tags:
+        - regions
+        - countries
+      description: Get the count of regions within a specific country.
+      parameters:
+        - name: countryId
+          in: path
+          description: Country ID (ISO 2-letter code)
+          required: true
+          schema:
+            type: string
+            example: US
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Count'
+        '404':
+          description: Country not found
+
+  '/entrances/with-quality/countries/{countryId}/regions/{regionId}':
+    get:
+      tags:
+        - entrances
+        - regions
+      description: Get entrance data quality information for a specific region.
+      parameters:
+        - name: countryId
+          in: path
+          description: Country ID (ISO 3166-1 alpha-2 code)
+          required: true
+          schema:
+            type: string
+            example: US
+        - name: regionId
+          in: path
+          description: Region ID (ISO 3166-2 subdivision code)
+          required: true
+          schema:
+            type: string
+            example: TN
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Data-quality-info'
+        '404':
+          description: Region not found or has no entrances
 
   '/languages':
     get:

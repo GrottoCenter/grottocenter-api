@@ -21,10 +21,11 @@ describe('Caver features', () => {
             return done(err);
           }
           const {
-            subscriptions: { countries, massifs },
+            subscriptions: { countries, massifs, regions },
           } = res.body;
           should(countries).have.length(2);
           should(massifs).have.length(2);
+          should(regions).have.length(0);
           for (const country of countries) {
             should(country).have.properties(['id', 'name']);
             should(country.id).not.be.undefined();
@@ -34,6 +35,11 @@ describe('Caver features', () => {
             should(massif).have.properties(['id', 'name']);
             should(massif.id).not.be.undefined();
             should(massif.name).not.be.undefined();
+          }
+          for (const region of regions) {
+            should(region).have.properties(['id', 'name']);
+            should(region.id).not.be.undefined();
+            should(region.name).not.be.undefined();
           }
           return done();
         });

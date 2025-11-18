@@ -8,6 +8,8 @@ For the Front-End See the [grottocenter-front project](https://github.com/Grotto
 
 Current production version is available [here](https://api.grottocenter.org)
 
+API documentation is available [here](https://api.grottocenter.org/api/v1/swagger.yaml)
+
 ## Project overview
 
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
@@ -98,9 +100,16 @@ $ npm run dev:down # Stop and destroy all containers
 
 Caver's community needs YOU!
 
-Yon can also join us on Slack! (using the QR-code above)
+Yon can also join us on Slack: [https://grottocenter.slack.com](https://grottocenter.slack.com).
 
 > For more details, read [the development guide](https://github.com/GrottoCenter/Grottocenter3/wiki/Development-guide)
+
+### Query the database on your local environment
+
+Example:
+```shell
+docker exec grotto-postgres psql -U root -d grottoce -c "SELECT id, id_country, iso_3166_2 FROM t_entrance WHERE id_country = 'US' LIMIT 5;"
+```
 
 ### Tests
 

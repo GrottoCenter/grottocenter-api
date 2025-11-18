@@ -123,4 +123,4 @@ coverage
 docker/esdata/*
 !docker/esdata/for-docker-compose
 
-Grottocenter3.iml
+*.iml
