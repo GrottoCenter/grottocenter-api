@@ -6,6 +6,7 @@ const UPDATE_SEQUENCES_QUERY = require('./update_sequences');
 const CommonService = require('../api/services/CommonService');
 
 // Suppress Waterline adapter warnings about timestamp primary keys in history tables
+/* eslint-disable no-console, func-names */
 const originalWarn = console.warn;
 console.warn = function (...args) {
   const message = args.join(' ');
@@ -21,7 +22,7 @@ console.warn = function (...args) {
 };
 
 // this.timeout() is not accessible with an arrow function
-// eslint-disable-next-line func-names
+/* eslint-disable func-names */
 before(function (done) {
   this.timeout(20000);
 
@@ -105,6 +106,7 @@ after((done) => {
   // here you can clear fixtures, etc.
   sails.lower((err) => {
     if (err) {
+      /* eslint-disable-next-line no-console */
       console.error('Error lowering sails:', err);
     }
     // Force exit after a short delay to ensure cleanup
