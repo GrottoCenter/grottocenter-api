@@ -1,6 +1,7 @@
 \c grottoce;
 -- v_massif_info definition
 -- not populated, (WITH NO DATA), the schema only
+DROP MATERIALIZED VIEW IF EXISTS v_massif_info;
 CREATE MATERIALIZED VIEW v_massif_info AS
   SELECT m.id as id_massif,
   c.id as id_cave,
@@ -20,6 +21,7 @@ WITH NO DATA;
 
 -- v_country_info definition
 -- not populated, (WITH NO DATA), the schema only
+DROP MATERIALIZED VIEW IF EXISTS v_country_info;
 CREATE MATERIALIZED VIEW v_country_info AS
   SELECT e.id_country as id_country,
   c.id as id_cave,
@@ -40,6 +42,7 @@ CREATE MATERIALIZED VIEW v_country_info AS
 
 -- v_region_info definition
 -- not populated, (WITH NO DATA), the schema only
+DROP MATERIALIZED VIEW IF EXISTS v_region_info;
 CREATE MATERIALIZED VIEW v_region_info AS
   SELECT e.iso_3166_2 as id_region,
   c.id as id_cave,
@@ -61,6 +64,7 @@ CREATE MATERIALIZED VIEW v_region_info AS
 
 -- v_data_quality_compute_entrance definition
 -- not populated, (WITH NO DATA), the schema only
+DROP MATERIALIZED VIEW IF EXISTS v_data_quality_compute_entrance;
 CREATE MATERIALIZED VIEW v_data_quality_compute_entrance AS
 
   SELECT e.id as id_entrance,
@@ -110,7 +114,7 @@ CREATE MATERIALIZED VIEW v_data_quality_compute_entrance AS
 
 -- v_bibliographic_metadata definition
 -- not populated, (WITH NO DATA), the schema only
-
+DROP MATERIALIZED VIEW IF EXISTS v_bibliographic_metadata;
 CREATE MATERIALIZED VIEW v_bibliographic_metadata AS
 WITH RECURSIVE doc_children(root, child, level) AS (
     -- Base case: direct children (level 1)
