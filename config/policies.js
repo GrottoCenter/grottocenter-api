@@ -261,6 +261,9 @@ module.exports.policies = {
   'v1/swagger/get-yaml': true,
   'v1/change/get-recent': true,
 
+  // Health check
+  'v1/health/check': true,
+
   /** *************************************************************************
    *                                                                          *
    * Here's an example of mapping some policies to run before a controller    *

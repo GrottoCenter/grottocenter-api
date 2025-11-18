@@ -124,3 +124,4 @@ docker/esdata/*
 !docker/esdata/for-docker-compose
 .amazonq
 *.iml
+build-info.json
