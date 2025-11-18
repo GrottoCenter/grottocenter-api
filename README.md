@@ -16,6 +16,8 @@ Health endpoint documentation is available in [HEALTH_ENDPOINT.md](HEALTH_ENDPOI
 
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
 
+[![Better Stack Badge](https://uptime.betterstack.com/status-badges/v2/monitor/29psh.svg)](https://wikicaves.betteruptime.com)
+
 ### Master
 
 ![Latest Deployment](https://github.com/GrottoCenter/grottocenter-api/actions/workflows/master_grottocenter-api.yml/badge.svg)
