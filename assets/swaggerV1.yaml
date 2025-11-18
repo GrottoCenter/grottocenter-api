@@ -30,6 +30,8 @@ tags:
   - name: file formats
   - name: geoloc
   - name: groups
+  - name: health
+    description: API health monitoring endpoints
   - name: identifierTypes
   - name: languages
   - name: licenses
@@ -45,6 +47,25 @@ tags:
   - name: riggings
 
 paths:
+  '/health':
+    get:
+      tags:
+        - health
+      description: 'Check the health of the API and its dependencies including database, Elasticsearch, and build information generated at build time.'
+      responses:
+        200:
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+        503:
+          description: API is unhealthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+
   '/licenses':
     get:
       tags:
@@ -4963,6 +4984,50 @@ components:
           type: string
         comment:
           type: string
+
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [healthy, unhealthy]
+          description: Overall health status of the API
+        timestamp:
+          type: string
+          format: date-time
+          description: Timestamp when the health check was performed
+        services:
+          type: object
+          properties:
+            database:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [healthy, unhealthy]
+                message:
+                  type: string
+            elasticsearch:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [healthy, unhealthy]
+                message:
+                  type: string
+        build:
+          type: object
+          properties:
+            gitCommit:
+              type: string
+              description: Git commit hash of the current build
+            buildTime:
+              type: string
+              format: date-time
+              description: Timestamp when the current build was generated
+            error:
+              type: string
+              description: Error message if build information could not be retrieved
 
     History:
       type: object
