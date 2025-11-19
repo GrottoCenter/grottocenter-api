@@ -1,4 +1,4 @@
-const CommonService = require('../../api/services/CommonService');
+const CommonService = require('../services/CommonService');
 
 // For a group of rows make a query to a foreign table
 // And merge the result back into each row
@@ -11,35 +11,40 @@ async function joinMany({
   transform,
   where = ['is_deleted = false'],
   join = [],
+  rowsKey = 'id',
 } = {}) {
-  const ids = rows.map((e) => e.id);
+  const ids = rows.map((e) => e[rowsKey]);
   where.unshift(`${foreignField} = ANY($1::int[])`);
   const query = `SELECT ${fields.join(
     ','
   )}, ${foreignField} FROM ${table} ${join.join(' ')} WHERE ${where.join(
     ' AND '
   )}`;
-
   const { rows: foreignRows } = await CommonService.query(query, [ids]);
-  for (const frow of foreignRows) {
-    const row = rows.find((e) => e.id === frow[foreignField]);
-    if (!row) continue; // eslint-disable-line no-continue
+  // Remove the table alias if present. So we can match it with our rows
+  const cleanForeignField = foreignField.split('.').pop();
+  for (const row of rows) {
+    const frow = foreignRows.find((e) => e[cleanForeignField] === row[rowsKey]);
+    if (!frow) continue; // eslint-disable-line no-continue
     if (!row[localField]) row[localField] = [];
 
     if (transform) {
       row[localField].push(transform(frow));
     } else {
-      delete frow[foreignField];
-      row[localField].push(frow);
+      const { [cleanForeignField]: _, ...cleanFRow } = frow;
+      row[localField].push(cleanFRow);
     }
   }
 }
 
 function dateAndAuthorFields(tableAlias) {
   return [
-    `COALESCE(${tableAlias}.date_reviewed, ${tableAlias}.date_inscription) AS last_modified`,
-    `COALESCE(${tableAlias}.id_reviewer, ${tableAlias}.id_author) AS last_author_id`,
-    `COALESCE(r.nickname, a.nickname) AS last_author`,
+    `${tableAlias}.date_inscription AS "dateInscription"`,
+    `${tableAlias}.date_reviewed AS "dateReviewed"`,
+    `${tableAlias}.id_author AS "authorId"`,
+    `a.nickname AS author`,
+    `${tableAlias}.id_reviewer "reviewerId"`,
+    `r.nickname AS reviewer`,
   ];
 }
 

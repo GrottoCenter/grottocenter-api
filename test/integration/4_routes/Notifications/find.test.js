@@ -17,13 +17,13 @@ describe('Notifications features', () => {
   });
 
   describe('Count unread', () => {
-    it('should return code 200', (done) => {
+    it('should return code 206', (done) => {
       supertest(sails.hooks.http.app)
         .get('/api/v1/notifications')
         .set('Authorization', adminToken)
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json')
-        .expect(200)
+        .expect(206)
         .end((err, res) => {
           if (err) return done(err);
           const { notifications } = res.body;

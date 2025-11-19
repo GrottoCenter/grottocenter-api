@@ -1,5 +1,4 @@
 const ControllerService = require('../../../services/ControllerService');
-const ElasticsearchService = require('../../../services/ElasticsearchService');
 const NotificationService = require('../../../services/NotificationService');
 const EntranceService = require('../../../services/EntranceService');
 const RightService = require('../../../services/RightService');
@@ -36,9 +35,7 @@ module.exports = async (req, res) => {
     await TEntrance.destroyOne({ id: entranceId }); // Soft delete
     entrance.isDeleted = true;
 
-    await ElasticsearchService.deleteResource('entrances', entranceId).catch(
-      () => {}
-    );
+    await EntranceService.deleteInSearch(entranceId);
     await RecentChangeService.setDeleteRestoreAuthor(
       'delete',
       'entrance',

@@ -245,6 +245,8 @@ module.exports.policies = {
   // Search
   'v1/search/quick-search': true,
   'v1/search/advanced-search': true,
+  'v1/search/advanced-search-export': true,
+  'v1/search/field-search': true,
 
   // Subject
   'v1/subject/find': true,

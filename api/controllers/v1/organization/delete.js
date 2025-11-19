@@ -1,5 +1,4 @@
 const ControllerService = require('../../../services/ControllerService');
-const ElasticsearchService = require('../../../services/ElasticsearchService');
 const NotificationService = require('../../../services/NotificationService');
 const GrottoService = require('../../../services/GrottoService');
 const RightService = require('../../../services/RightService');
@@ -37,9 +36,7 @@ module.exports = async (req, res) => {
     await TGrotto.destroyOne({ id: organizationId }); // Soft delete
     organization.isDeleted = true;
 
-    await ElasticsearchService.deleteResource('grottos', organizationId).catch(
-      () => {}
-    );
+    await GrottoService.deleteInSearch(organizationId);
     await RecentChangeService.setDeleteRestoreAuthor(
       'delete',
       'grotto',

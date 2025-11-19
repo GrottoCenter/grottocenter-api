@@ -38,7 +38,7 @@ module.exports = async (req, res) => {
   let populatedDoc;
   if (isValidated) {
     populatedDoc = await DocumentService.getPopulatedDocument(id);
-    await DocumentService.createESDocument(populatedDoc);
+    await DocumentService.updateInSearch(populatedDoc);
 
     await NotificationService.notifySubscribers(
       req,

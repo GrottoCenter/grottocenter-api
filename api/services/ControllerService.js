@@ -75,7 +75,7 @@ module.exports = {
     if (!found) {
       return res.notFound(`${parameters.searchedItem} not found`);
     }
-    if (parameters.total > found.length) {
+    if (parameters.total >= found.length) {
       return treatRange(parameters, req, res, converter, found);
     }
     const meta = getMetaFromRequest(req);

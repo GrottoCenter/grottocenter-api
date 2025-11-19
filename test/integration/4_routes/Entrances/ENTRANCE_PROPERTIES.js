@@ -26,7 +26,6 @@ const ENTRANCE_PROPERTIES = [
   'precision',
   'region',
   'riggings',
-  'stats',
 ];
 
 module.exports = ENTRANCE_PROPERTIES;

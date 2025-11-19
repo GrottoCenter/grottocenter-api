@@ -1,6 +1,5 @@
 const ControllerService = require('../../../services/ControllerService');
 const NotificationService = require('../../../services/NotificationService');
-const ElasticsearchService = require('../../../services/ElasticsearchService');
 const CaveService = require('../../../services/CaveService');
 const RightService = require('../../../services/RightService');
 const RecentChangeService = require('../../../services/RecentChangeService');
@@ -34,7 +33,7 @@ module.exports = async (req, res) => {
     await TCave.destroyOne({ id: caveId }); // Soft delete
     cave.isDeleted = true;
 
-    await ElasticsearchService.deleteResource('caves', caveId).catch(() => {});
+    await CaveService.deleteInSearch(caveId);
     await RecentChangeService.setDeleteRestoreAuthor(
       'delete',
       'cave',

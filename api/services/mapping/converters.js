@@ -32,7 +32,7 @@ const c = {
     name: getMainName(source),
     language: getMainLanguage(source),
     depth: source.depth,
-    length: source.caveLength,
+    length: source.caveLength ?? source.length ?? null,
     temperature: source.temperature,
     isDeleted: source.isDeleted,
     redirectTo: source.redirectTo,
@@ -51,7 +51,7 @@ const c = {
     id: source.id,
     name: getMainName(source),
     language: getMainLanguage(source),
-    length: source.caveLength,
+    length: source.caveLength ?? source.length ?? null,
     depth: source.depth,
     temperature: source.temperature,
     isDiving: source.isDiving,
@@ -136,36 +136,6 @@ const c = {
     cave: convertIfObject(source.cave, c.toSimpleCave),
   }),
 
-  toCompleteSearchResult: (source, meta) => {
-    // For each result of the search, convert the item and add it to the json to send
-    const results = source.hits.hits.map((item) => {
-      const type = item._source.tags[0];
-      let data = {};
-
-      if (type === 'caver') data = c.toCaver(item._source, meta);
-      else if (type === 'document')
-        data = c.toSearchDocument(item._source, meta);
-      else if (type === 'entrance') data = c.toEntrance(item._source, meta);
-      else if (type === 'grotto') data = c.toOrganization(item._source, meta);
-      else if (type === 'language') data = c.toLanguage(item._source, meta);
-      else if (type === 'massif') data = c.toMassif(item._source, meta);
-      else if (type === 'cave') data = c.toCave(item._source, meta);
-      else if (type === 'network') data = c.toCave(item._source, meta);
-
-      return {
-        ...data,
-        // Add the type and hightlight to the data
-        type,
-        highlights: item.highlight,
-      };
-    });
-
-    return {
-      results,
-      totalNbResults: source.hits.total.value,
-    };
-  },
-
   toSimpleDescription: (source) => {
     const result = {
       id: source.id,
@@ -207,7 +177,9 @@ const c = {
   toSimpleDocument: (source) => ({
     id: source.id,
     type: source.type?.name,
-    ...c.toDocumentDescriptions(source.descriptions),
+    title: source.title, // From search
+    description: source.description, // From search
+    ...c.toDocumentDescriptions(source.descriptions), // From DB
     files: toList('files', source, c.toFile),
     dateInscription: source.dateInscription,
     dateReviewed: source.dateReviewed,
@@ -216,56 +188,13 @@ const c = {
     isDeleted: source.isDeleted,
   }),
 
-  // There is 2 source format
-  // - From logstash
-  // - From
-  toSearchDocument: (source) => {
-    const result = {
-      ...DocumentModel,
-      id: source.id,
-      importId: source.idDbImport ?? undefined,
-      importSource: source.nameDbImport?.trim(),
-      identifierType:
-        source.id_identifier_type?.trim() ?? source.identifierType?.id?.trim(),
-      identifier: source.identifier ?? undefined,
-
-      datePublication: source.date_publication,
-      isDeleted: source.deleted,
-
-      creator: {
-        id: source['contributor id'],
-        nickname: source['contributor nickname'],
-      },
-      authors: source.authors, // A string of nicknames separated by '; '
-      editor: {
-        id: source['editor id'],
-        name: source['editor name'],
-      },
-      library: {
-        id: source['library id'],
-        name: source['library name'],
-      },
-      documentType: source['type name'],
-      title: source.title,
-      description: source.description,
-      subjects: source.subjects,
-      issue: source.issue,
-
-      iso3166: [
-        ...(source.iso_regions?.split(', ') ?? []),
-        ...(source.countries?.split(', ') ?? []),
-      ],
-    };
-    return result;
-  },
-
   toDocument: (source, meta) => {
     const result = {
       ...DocumentModel,
       id: source.id,
       '@id': String(source.id),
-      importId: source.idDbImport ?? undefined,
-      importSource: source.nameDbImport?.trim(),
+      importId: source.idDbImport ?? source.importId ?? undefined,
+      importSource: source.nameDbImport?.trim() ?? source.importSource,
       identifierType: source.identifierType?.id?.trim(),
       identifier: source.identifier ?? undefined,
 
@@ -277,8 +206,9 @@ const c = {
       redirectTo: source.redirectTo,
       isValidated: source.isValidated,
 
-      creator: convertIfObject(source.author, c.toSimpleCaver),
-      creatorComment: source.authorComment,
+      creator:
+        convertIfObject(source.author, c.toSimpleCaver) ?? source.creator,
+      creatorComment: source.authorComment ?? source.creatorComment ?? null,
       authors: toList('authors', source, c.toSimpleCaver),
       authorsOrganization: toList(
         'authorsGrotto',
@@ -290,30 +220,32 @@ const c = {
       validatorComment: source.validationComment,
       editor: convertIfObject(source.editor, c.toSimpleOrganization),
       library: convertIfObject(source.library, c.toSimpleOrganization),
-      type: source.type?.name,
-      ...c.toDocumentDescriptions(source.descriptions),
+      type: source.type?.name ?? source.type,
+      title: source.title, // From search
+      description: source.description, // From search
+      ...c.toDocumentDescriptions(source.descriptions), // From DB
       subjects: source.subjects,
       issue: source.issue,
       pages: source.pages,
-      license: source.license?.name,
+      license: source.license?.name ?? source.license,
       option: source.option?.name,
       mainLanguage: source.mainLanguage?.id ?? source.languages?.[0]?.id,
       languages: source.languages?.map((e) => e.id),
 
-      iso3166: [
+      iso3166: source.iso3166 ?? [
         ...(source.countries?.map((e) => ({ iso: e.id, name: e.nativeName })) ??
           []),
         ...(source.isoRegions?.map((e) => ({ iso: e.id, name: e.name })) ?? []),
       ],
-      entrance: convertIfObject(source.entrance, c.toSimpleEntrance, { meta }),
-      cave: convertIfObject(source.cave, c.toSimpleCave),
-      massifs: toList('massifs', source, c.toSimpleMassif),
       parent: convertIfObject(source.parent, c.toSimpleDocument),
       files: toList('files', source, c.toFile),
       authorizationDocument: convertIfObject(
         source.authorizationDocument,
         c.toSimpleDocument
       ),
+      entrance: convertIfObject(source.entrance, c.toSimpleEntrance, { meta }),
+      cave: convertIfObject(source.cave, c.toSimpleCave),
+      massifs: toList('massifs', source, c.toSimpleMassif),
 
       oldBBS: {
         pages: source.pagesBBSOld,
@@ -365,14 +297,10 @@ const c = {
     result.isDeleted = source.isDeleted;
     result.isSensitive = isSensitive;
     result.redirectTo = source.redirectTo;
-    result.aestheticism = source.aestheticism;
-    result.altitude = source.altitude;
-    result.approach = source.approach;
-    result.caving = source.caving;
     result.dateInscription = source.dateInscription;
     result.dateReviewed = source.dateReviewed;
-    result.discoveryYear = source.yearDiscovery;
-    result.externalUrl = source.externalUrl;
+    result.altitude = source.altitude;
+    result.precision = source.precision;
     result.latitude =
       !isSensitive || meta?.hasCompleteViewRight === true
         ? parseFloat(source.latitude)
@@ -382,26 +310,19 @@ const c = {
         ? parseFloat(source.longitude)
         : null;
     result.name = getMainName(source);
+    result.discoveryYear = source.yearDiscovery;
+    result.geology = source.geology;
     result.language = getMainLanguage(source);
-    result.country = source.country;
-    result.countryCode = source['country code'];
+    result.country = source.country?.id ?? source.country;
     result.region = source.region;
     result.county = source.county;
     result.city = source.city;
-    result.iso_3166_2 = source.iso_3166_2;
-    result.precision = source.precision;
-    result.stats = source.stats;
+    result.iso3166 = source.iso_3166_2 ?? source.iso3166;
+    result.commentsRating = source.commentsRating; // From search
+
     result.timeInfo = source.timeInfo; // Only used in random entrance
     // Convert objects
-    if (source['cave name']) {
-      // Elasticsearch
-      result.cave = {
-        depth: source['cave depth'],
-        length: source['cave length'],
-        name: source['cave name'],
-        isDiving: source['cave is diving'],
-      };
-    } else if (source.cave instanceof Object) {
+    if (source.cave instanceof Object) {
       result.cave = c.toSimpleCave(source.cave);
     } else {
       result.cave = source.cave;
@@ -435,12 +356,6 @@ const c = {
     result.riggings = toList('riggings', source, c.toSimpleRigging, {
       filterDeleted: false,
     });
-    // Massif from Elasticsearch
-    if (source['massif name']) {
-      result.massifs = {
-        name: source['massif name'],
-      };
-    }
     return result;
   },
 
@@ -448,11 +363,11 @@ const c = {
     id: source.id,
     name: getMainName(source),
     language: getMainLanguage(source),
-    country: source.country,
+    country: source.country?.id ?? source.country,
     region: source.region,
     county: source.county,
     city: source.city,
-    iso_3166_2: source.iso_3166_2,
+    iso3166: source.iso_3166_2 ?? source.iso3166,
     latitude:
       !source.isSensitive || meta?.hasCompleteViewRight === true
         ? parseFloat(source.latitude)
@@ -574,8 +489,7 @@ const c = {
     names: toList('names', source, c.toName),
     language: getMainLanguage(source),
     geogPolygon: source.geoJson,
-    nbCaves: source['nb caves'], // from Elasticsearch
-    nbEntrances: source['nb entrances'], // from Elasticsearch
+    nbEntrances: source.nbEntrances, // from search
     descriptions: toList('descriptions', source, c.toSimpleDescription),
     entrances: toList('entrances', source, c.toSimpleEntrance, { meta }),
     documents: toList('documents', source, c.toSimpleDocument),
@@ -656,27 +570,26 @@ const c = {
     name: getMainName(source),
     nameId: Array.isArray(source.names)
       ? source.names.find((name) => name.isMain)?.id // PostgreSQL
-      : undefined, // Elasticsearch
+      : undefined,
     language: Array.isArray(source.names)
       ? source.names.find((name) => name.isMain)?.language
       : undefined,
     latitude: parseFloat(source.latitude),
     longitude: parseFloat(source.longitude),
-    country: source.country,
-    countryCode: source['country code'],
+    country: source.country?.id ?? source.country,
     region: source.region,
     county: source.county,
     city: source.city,
     address: source.address,
     postalCode: source.postalCode,
-    iso_3166_2: source.iso_3166_2,
+    iso3166: source.iso_3166_2 ?? source.iso3166,
     mail: source.mail,
     url: source.url,
     customMessage: source.customMessage,
     isOfficialPartner: source.isOfficialPartner,
     pictureFileName: source.pictureFileName,
     yearBirth: source.yearBirth,
-    nbCavers: source['nb cavers'], // from Elasticsearch
+    nbCavers: source.nbCavers, // From search
     cavers: toList('cavers', source, c.toSimpleCaver),
     documents: toList('documents', source, c.toSimpleDocument),
     exploredEntrances: toList('exploredEntrances', source, c.toSimpleEntrance, {
@@ -727,149 +640,38 @@ const c = {
     cave: convertIfObject(source.cave, c.toSimpleCave),
   }),
 
+  // Transform the typesense response
   toSearchResult: (source, meta) => {
-    const res = {};
-    const values = [];
+    // For each result of the search, convert the item and add it to the json to send
+    const defaultType =
+      source.request_params?.collection_name.split('_')[0] ?? '';
+    const results = source.hits.map((item) => {
+      const _type = item.collection?.split('_')[0] ?? defaultType;
+      let data = {};
 
-    if (source.hits) {
-      source.hits.hits.forEach((item) => {
-        // Common data
-        const data = {
-          id: item._id,
-          name: item._source.name ? item._source.name : item._source.title, // Handle title for documents (instead of name)
-          type: item._source.tags[0],
-          highlights: item.highlight,
-        };
+      if (_type === 'persons') data = c.toCaver(item.document, meta);
+      else if (_type === 'documents') data = c.toDocument(item.document, meta);
+      else if (_type === 'caves')
+        data = c.toSimpleCave(item.document, meta); // Only used in quick search
+      else if (_type === 'entrances') data = c.toEntrance(item.document, meta);
+      else if (_type === 'organizations')
+        data = c.toOrganization(item.document, meta);
+      else if (_type === 'massifs') data = c.toMassif(item.document, meta);
 
-        const isAllowedToViewCoordinate =
-          !item._source.is_sensitive || meta?.hasCompleteViewRight === true;
+      return {
+        ...data,
+        // Add the type and hightlight to the data
+        _type,
+        _highlights: item.highlight,
+      };
+    });
 
-        if (item._source.longitude && isAllowedToViewCoordinate) {
-          data.longitude = parseFloat(item._source.longitude);
-        }
-        if (item._source.latitude && isAllowedToViewCoordinate) {
-          data.latitude = parseFloat(item._source.latitude);
-        }
-
-        // 08/2020 - C. ROIG - Not needed at the moment but keep in case
-        // const replacementKeys = {};
-
-        // // Convert from a collection of keys newKeys, rename the keys of obj
-        // const renameKeys = (obj, newKeys) => {
-        //   Object.keys(obj).map((key) => {
-        //     if (newKeys[key]) {
-        //       obj[newKeys[key]] = obj[key];
-        //       delete obj[key];
-        //     }
-        //   });
-        // };
-
-        switch (item._source.tags[0]) {
-          case 'entrance':
-            data.cave = {
-              id: item._source.id_cave,
-              name: item._source['cave name'],
-              depth: item._source['cave depth'],
-              length: item._source['cave length'],
-            };
-            data.city = item._source.city;
-            data.county = item._source.county;
-            data.region = item._source.region;
-            data.names = item._source.names;
-            data.descriptions = item._source.descriptions;
-            data.isSensitive = item._source.isSensitive;
-            break;
-
-          case 'grotto':
-            data.names = item._source.names;
-            data.address = item._source.address;
-            break;
-
-          case 'massif':
-            data.names = item._source.names;
-            data.descriptions = item._source.descriptions;
-            break;
-
-          case 'document':
-          case 'document-collection':
-          case 'document-issue': {
-            // Rename keys of source and highlights
-            // 08/2020 - C. ROIG - Not needed at the moment but keep in case
-            // renameKeys(item['_source'], replacementKeys);
-            // renameKeys(data.highlights, replacementKeys);
-
-            // Fill data with appropriate keys
-            Object.keys(item._source).forEach((key) => {
-              data[key] = item._source[key];
-            });
-
-            // Construct document type
-            data.documentType = {
-              id: item?._source?.['type id'] ?? null,
-              name: item?._source?.['type name'] ?? null,
-            };
-            delete data['type id'];
-            delete data['type name'];
-
-            // Construct editor
-            const editorId = item?._source?.['editor id'] ?? null;
-            data.editor =
-              editorId === null
-                ? null
-                : {
-                    id: editorId,
-                    name: item?._source?.['editor name'] ?? null,
-                  };
-
-            // Construct library
-            const libraryId = item?._source?.['library id'] ?? null;
-            data.library =
-              libraryId === null
-                ? null
-                : {
-                    id: libraryId,
-                    name: item?._source?.['library name'] ?? null,
-                  };
-            delete data['library id'];
-            delete data['library name'];
-            break;
-          }
-
-          case 'caver':
-            data.surname = item._source.surname;
-            data.nickname = item._source.nickname;
-            // Don't return mail (RGPD)
-            // data.mail = item['_source'].mail;
-            break;
-
-          case 'language':
-            data.refName = item._source.ref_name;
-            data.isPrefered = item._source.is_prefered;
-            data.part1 = item._source.part1;
-            data.part2b = item._source.part2b;
-            data.part2t = item._source.part2t;
-            data.scope = item._source.scope;
-            break;
-
-          case 'cave':
-          case 'network':
-            data.depth = item._source.depth;
-            data.descriptions = item._source.descriptions;
-            data.isDiving = item._source.is_diving;
-            data.length = item._source.length;
-            data.names = item._source.names;
-            data.sizeCoef = item._source.size_coef;
-            data.temperature = item._source.temperature;
-            break;
-          default:
-        }
-        values.push(data);
-      });
-    }
-
-    res.results = values;
-    res.totalNbResults = source.hits.total.value;
-    return res;
+    return {
+      results,
+      totalResults: source.found,
+      totalEntities: source.out_of,
+      page: source.page,
+    };
   },
 
   toSubject: (source) => {

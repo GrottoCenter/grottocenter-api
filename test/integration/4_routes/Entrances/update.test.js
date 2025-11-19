@@ -99,7 +99,6 @@ describe('Entrance features', () => {
         const newValues = {
           city: 'new city',
           county: 'new county',
-          externalUrl: 'https://new.entrance.com',
           isSensitive: true,
           region: 'new region',
         };

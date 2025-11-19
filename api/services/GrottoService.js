@@ -1,6 +1,6 @@
 const CaveService = require('./CaveService');
 const DocumentService = require('./DocumentService');
-const ElasticsearchService = require('./ElasticsearchService');
+const SearchService = require('./SearchService');
 const NameService = require('./NameService');
 const NotificationService = require('./NotificationService');
 const GeocodingService = require('./GeocodingService');
@@ -29,6 +29,7 @@ module.exports = {
       .populate('reviewer')
       .populate('names')
       .populate('cavers')
+      .populate('country')
       .populate('documents')
       .populate('exploredCaves')
       .populate('partnerCaves');
@@ -156,7 +157,7 @@ module.exports = {
     const newOrganizationPopulated =
       await module.exports.getPopulatedOrganization(newOrganizationId);
 
-    await module.exports.createESOrganization(newOrganizationPopulated);
+    await module.exports.updateInSearch(newOrganizationPopulated);
 
     await RecentChangeService.setNameCreate(
       'grotto',
@@ -176,18 +177,33 @@ module.exports = {
     return newOrganizationPopulated;
   },
 
-  async createESOrganization(populatedOrganization) {
-    const { country, names, ...newOrganizationESData } = populatedOrganization;
+  async deleteInSearch(organizationId) {
+    await SearchService.deleteDocument('organizations', organizationId);
+  },
 
-    await ElasticsearchService.create('grottos', populatedOrganization.id, {
-      ...newOrganizationESData,
-      country: populatedOrganization?.country?.nativeName ?? null,
-      'country code': populatedOrganization?.country?.id ?? null,
-      name: names[0].name, // There is only one name right after the creation
-      names: names.map((n) => n.name).join(', '),
-      'nb cavers': 0,
-      deleted: populatedOrganization.isDeleted,
-      tags: ['grotto'],
-    });
+  async updateInSearch(populatedOrganization) {
+    const {
+      names,
+      cavers,
+      country,
+      exploredNetworks,
+      exploredEntrances,
+      partnerNetworks,
+      partnerEntrances,
+      ...o
+    } = populatedOrganization;
+    const organization = {
+      ...o,
+      authorId: o.author.id,
+      author: o.author.nickname,
+      reviewerId: o.reviewer?.id,
+      reviewer: o.reviewer?.nickname,
+      name: names?.[0]?.name,
+      language: names?.[0]?.language,
+      iso3166: o.iso_3166_2,
+      country: country?.nativeName,
+      nbCavers: cavers?.length ?? 0,
+    };
+    await SearchService.updateDocument('organizations', organization);
   },
 };

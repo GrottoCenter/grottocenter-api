@@ -3,6 +3,7 @@ const DocumentService = require('../../../services/DocumentService');
 const { toDocument } = require('../../../services/mapping/converters');
 const { toListFromController } = require('../../../services/mapping/utils');
 
+// TODO Unused in front, remove ?
 module.exports = async (req, res) => {
   const caverId = req.param('caverId');
 

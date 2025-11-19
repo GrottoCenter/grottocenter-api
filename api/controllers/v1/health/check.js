@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const ElasticsearchService = require('../../../services/ElasticsearchService');
+const SearchService = require('../../../services/SearchService');
 
 module.exports = {
   friendlyName: 'Health check',
@@ -40,26 +40,25 @@ module.exports = {
       healthStatus.status = 'unhealthy';
     }
 
-    // Check Elasticsearch health
+    // Check Search health
     try {
-      const isESAlive = await ElasticsearchService.isConnectionAlive();
-
-      if (isESAlive) {
-        healthStatus.services.elasticsearch = {
+      const isSearchAlive = await SearchService.isAlive();
+      if (isSearchAlive) {
+        healthStatus.services.search = {
           status: 'healthy',
-          message: 'Elasticsearch connection successful',
+          message: 'Search connection successful',
         };
       } else {
-        healthStatus.services.elasticsearch = {
+        healthStatus.services.search = {
           status: 'unhealthy',
-          message: 'Elasticsearch connection failed',
+          message: 'Search connection failed',
         };
         healthStatus.status = 'unhealthy';
       }
     } catch (error) {
-      healthStatus.services.elasticsearch = {
+      healthStatus.services.search = {
         status: 'unhealthy',
-        message: `Elasticsearch check failed: ${error.message}`,
+        message: `Search check failed: ${error.message}`,
       };
       healthStatus.status = 'unhealthy';
     }

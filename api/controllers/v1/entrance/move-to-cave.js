@@ -1,5 +1,6 @@
 const ControllerService = require('../../../services/ControllerService');
 const EntranceService = require('../../../services/EntranceService');
+const CaveService = require('../../../services/CaveService');
 const { toEntrance } = require('../../../services/mapping/converters');
 
 module.exports = async (req, res) => {
@@ -26,6 +27,7 @@ module.exports = async (req, res) => {
   if (initialCave.entrances.length === 0) {
     await TCave.update(initialCave.id).set({ redirectTo: destinationCaveId });
     await TCave.destroyOne({ id: initialCave.id }); // Soft delete
+    await CaveService.deleteInSearch(initialCave.id);
   }
 
   // Add entrance to destination cave

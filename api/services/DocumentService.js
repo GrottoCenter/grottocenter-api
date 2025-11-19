@@ -1,5 +1,5 @@
 const DescriptionService = require('./DescriptionService');
-const ElasticsearchService = require('./ElasticsearchService');
+const SearchService = require('./SearchService');
 const FileService = require('./FileService');
 const NameService = require('./NameService');
 const NotificationService = require('./NotificationService');
@@ -9,80 +9,70 @@ const {
   distantFileDownload,
 } = require('../utils/csvHelper');
 
-const getAdditionalESIndexFromDocumentType = (document) => {
-  if (document.type === 'Issue') {
-    return 'document-issues';
-  }
-  if (document.type === 'Collection') {
-    return 'document-collections';
-  }
-  return '';
-};
-
-// Used to create or update a document in elasticsearch
-// Should match the the same format than the logstash document sql query
-const getElasticsearchBody = (doc) => ({
-  id: doc.id,
-  identifier: doc.identifier ?? null,
-  id_identifier_type: doc.identifierType?.id ?? null,
-  deleted: doc.isDeleted,
-  id_db_import: doc.idDbImport ?? null,
-  name_db_import: doc.nameDbImport ?? null,
-  date_publication: doc.datePublication ?? null,
-  'contributor id': doc.author.id,
-  'contributor nickname': doc.author.nickname,
-  subjects: doc.subjects?.map((e) => e.id)?.join(', ') ?? null,
-  authors: doc.authors?.map((a) => a.nickname).join(', ') ?? null,
-  'type id': doc.type?.id,
-  'type name': doc.type?.name,
-  title: doc.descriptions?.[0].title,
-  description: doc.descriptions?.[0].body,
-  issue: doc.issue ?? null,
-  countries: doc?.countries?.map((e) => e.id)?.join(', ') ?? [],
-  iso_regions: doc?.isoRegions?.map((e) => e.id)?.join(', ') ?? [],
-  'editor id': doc.editor?.id ?? null,
-  'editor name': doc.editor?.name ?? null,
-  'library id': doc.library?.id ?? null,
-  'library name': doc.library?.name ?? null,
-});
-
 module.exports = {
-  updateESDocument: async (document) => {
-    // TODO: proper update
-    await module.exports.deleteESDocument(document);
-    await module.exports.createESDocument(document);
+  async deleteInSearch(documentId) {
+    await SearchService.deleteDocument('documents', documentId);
   },
 
-  deleteESDocument: async (document) => {
-    await ElasticsearchService.deleteResource('documents', document.id);
-    const additionalIndex = getAdditionalESIndexFromDocumentType(document);
-
-    // Delete in document-collections-index or document-issues-index
-    if (additionalIndex !== '') {
-      await ElasticsearchService.deleteResource(additionalIndex, document.id);
-    }
-  },
-
-  /**
-   * Based on the logstash.conf file.
-   * The document must be fully populated and with all its names set
-   *    (@see DocumentService.populateFullDocumentSubEntities).
-   */
-  createESDocument: async (document) => {
-    const esBody = getElasticsearchBody(document);
-    await ElasticsearchService.create('documents', document.id, {
-      ...esBody,
-      tags: ['document'],
-    });
-    // Create in document-collections-index or document-issues-index
-    const additionalIndex = getAdditionalESIndexFromDocumentType(document);
-
-    if (additionalIndex !== '') {
-      await ElasticsearchService.create(additionalIndex, document.id, {
-        ...esBody,
-        tags: [`document-${document.type.name.toLowerCase()}`],
-      });
-    }
+  async updateInSearch(populatedDocument) {
+    // Warning: All linked entities may contain sensitive information (same as in entrance).
+    // For example, the complete caver object for the 'author' and 'reviewer' fields.
+    // Although we could leave them intact, since search results also pass through the converter,
+    // We prefer to clean them to ensure only clean data remains in the search database.
+    const {
+      authors,
+      descriptions,
+      subjects,
+      countries,
+      isoRegions,
+      editor,
+      library,
+      massifs,
+      entrance,
+      cave,
+      parent,
+      ...d
+    } = populatedDocument;
+    const document = {
+      id: d.id,
+      importId: d.idDbImport,
+      identifier: d.identifier,
+      identifierType: d.identifierType?.id?.trim(),
+      importSource: d.nameDbImport,
+      dateInscription: d.dateInscription,
+      dateReviewed: d.dateReviewed,
+      dateValidation: d.dateValidation,
+      creatorId: d.author.id,
+      creator: d.author.nickname,
+      creatorComment: d.creatorComment,
+      reviewerId: d.reviewer?.id,
+      reviewer: d.reviewer?.nickname,
+      validatorId: d.validator?.id,
+      validator: d.validator?.nickname,
+      type: d.type?.name,
+      title: descriptions?.[0]?.title,
+      description: descriptions?.[0]?.body,
+      issue: d.issue,
+      pages: d.pages,
+      license: d.license?.name,
+      parent: parent && {
+        type: parent.type?.name,
+        title: parent.descriptions?.[0]?.title,
+        descriptions: parent.descriptions?.[0]?.body,
+      },
+      editor: editor && { name: editor.names?.[0]?.name },
+      library: library && { name: library.names?.[0]?.name },
+      authors: authors?.map((e) => ({ nickname: e.nickname })),
+      subjects: subjects?.map((e) => ({ code: e.id })),
+      iso3166: [
+        ...(countries?.map((e) => ({ iso: e.id, name: e.nativeName })) ?? []),
+        ...(isoRegions?.map((e) => ({ iso: e.id, name: e.name })) ?? []),
+      ],
+      cave: cave && { name: cave.names?.[0]?.name },
+      entrance: entrance && { name: entrance.names?.[0]?.name },
+      massifs: massifs?.map((e) => ({ name: e.names?.[0]?.name })),
+    };
+    await SearchService.updateDocument('documents', document);
   },
 
   getDescriptionDataFromClient: (body, authorId) => ({

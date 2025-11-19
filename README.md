@@ -75,8 +75,7 @@ $ npm install
 
 The development setup aims to launch locally all tools needed for the GrottoCenter API development:
 - Postgresql database containers (main + test)
-- A Elasticsearch container
-- A Logstash container
+- A Typesense container (search)
 
 > All the definition for containers is located in the `docker/` folder
 
@@ -183,11 +182,6 @@ Additionally, periodic release of the API can be done.
 You first need to merge your changes to `master` using if possible the `git flow release start vXX.X.X` command. Don't forget to update the version number on the `swagger` file and on the `package.json` file. When the merge on master is completed, you should create a release for the newly pushed tag.
 
 For more information see the wiki page [Production deployment](https://github.com/GrottoCenter/Grottocenter3/wiki/Production-deployment)
-
-### ElasticSearch
-
-See [ElasticSearch Wiki page](<https://github.com/GrottoCenter/Grottocenter3/wiki/Elasticsearch-(quick-&-advanced-search)>)
-
 
 ### Git
 

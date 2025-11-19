@@ -1,8 +1,7 @@
 const sails = require('sails');
 const Fixted = require('fixted');
 const sailsPostGreAdapter = require('sails-postgresql');
-const ALTER_GEOGRAPHY_QUERY = require('./alter_geography');
-const UPDATE_SEQUENCES_QUERY = require('./update_sequences');
+const customSQL = require('./customSQL');
 const CommonService = require('../api/services/CommonService');
 
 // Suppress Waterline adapter warnings about timestamp primary keys in history tables
@@ -43,11 +42,17 @@ before(function (done) {
         migrate: 'drop',
       },
       csrf: false,
+      async bootstrap() {
+        // Replace the normal bootstrap.js
+        await CommonService.query(customSQL.ALTER_MASSIF_COLUMN_GEOG_POLYGON);
+        await CommonService.query(customSQL.ALTER_ENTRANCE_COLUMN_POINT_GEOM);
+      },
     },
 
     // eslint-disable-next-line consistent-return
-    (err) => {
+    async (err) => {
       if (err) return done(err);
+
       // Here you can load fixtures, etc.
       const fixted = new Fixted();
       fixted.populate(
@@ -88,12 +93,9 @@ before(function (done) {
           if (fixtedError) {
             return done(fixtedError);
           }
-          CommonService.query(UPDATE_SEQUENCES_QUERY)
-            .then(() => {
-              CommonService.query(ALTER_GEOGRAPHY_QUERY)
-                .then(() => done())
-                .catch((commonServiceError) => done(commonServiceError));
-            })
+
+          CommonService.query(customSQL.UPDATE_SEQUENCES_QUERY)
+            .then(() => done())
             .catch((commonServiceError) => done(commonServiceError));
         },
         false

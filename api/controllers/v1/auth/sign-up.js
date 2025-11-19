@@ -1,5 +1,4 @@
 const AuthService = require('../../../services/AuthService');
-const ElasticsearchService = require('../../../services/ElasticsearchService');
 const CaverService = require('../../../services/CaverService');
 
 const PASSWORD_MIN_LENGTH = 8;
@@ -47,16 +46,7 @@ module.exports = async (req, res) => {
       surname: req.param('surname') === '' ? null : req.param('surname'),
     }).fetch();
 
-    ElasticsearchService.create('cavers', newCaver.id, {
-      tags: ['caver'],
-      id: newCaver.id,
-      groups: '',
-      mail: newCaver.mail,
-      name: newCaver.name,
-      nickname: newCaver.nickname,
-      surname: newCaver.surname,
-      deleted: false,
-    });
+    await CaverService.updateInSearch(newCaver);
   } catch (_) {
     return res.badRequest();
   }

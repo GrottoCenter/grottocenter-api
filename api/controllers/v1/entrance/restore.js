@@ -35,7 +35,7 @@ module.exports = async (req, res) => {
     req.token.id
   );
 
-  await EntranceService.createESEntrance(entrance).catch(() => {});
+  await EntranceService.updateInSearch(entrance);
 
   await NotificationService.notifySubscribers(
     req,

@@ -74,14 +74,9 @@ async function validateAndUpdateDocument(
   });
 }
 
-async function updateESAndNotify(req, documentId, hasChange, userId) {
+async function updateSearchAndNotify(req, documentId, userId) {
   const document = await DocumentService.getPopulatedDocument(documentId);
-
-  if (hasChange) {
-    await DocumentService.updateESDocument(document);
-  } else {
-    await DocumentService.createESDocument(document);
-  }
+  await DocumentService.updateInSearch(document);
 
   await NotificationService.notifySubscribers(
     req,
@@ -158,14 +153,9 @@ module.exports = async (req, res) => {
     }
 
     // eslint-disable-next-line no-await-in-loop
-    await updateESAndNotify(
-      res,
-      document.id,
-      isAModifiedDoc,
-      req.token.id
-    ).catch((err) =>
+    await updateSearchAndNotify(res, document.id, req.token.id).catch((err) =>
       sails.log.error(
-        'Document multiple validate updateESAndNotify error',
+        'Document multiple validate updateSearchAndNotify error',
         document,
         err
       )

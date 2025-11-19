@@ -69,7 +69,7 @@ module.exports = async (req, res) => {
     newMassif.id
   );
 
-  await MassifService.createESMassif(newMassifPopulated);
+  await MassifService.updateInSearch(newMassifPopulated);
 
   await RecentChangeService.setNameCreate(
     'massif',

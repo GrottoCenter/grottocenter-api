@@ -51,7 +51,7 @@ paths:
     get:
       tags:
         - health
-      description: 'Check the health of the API and its dependencies including database, Elasticsearch, and build information generated at build time.'
+      description: 'Check the health of the API and its dependencies including database, search, and build information generated at build time.'
       responses:
         200:
           description: API is healthy
@@ -3424,7 +3424,7 @@ paths:
     post:
       tags:
         - search
-      description: Search for resources (cavers, documents, document collections, entrances, massifs & organizations). Case insensitive. Search over a lots of resource properties (not only name).
+      description: Quick search for multiple resources (persons, documents, caves, entrances, massifs, organizations). Case insensitive. Search over a many of resource properties (not only name).
       requestBody:
         content:
           application/json:
@@ -3436,14 +3436,14 @@ paths:
                 query:
                   type: string
                   description: Resource property (or part of property) to search.
-                resourceTypes:
+                entities:
                   type: array
-                  description: Resource types to search on. If not specified, it will search on all resources except document-collections and document-issues (already indexed by documents index)
+                  description: Resource types to search on. If not specified, it will search on all resources
                   items:
                     $ref: '#/components/schemas/Quicksearch-type'
-                complete:
-                  type: boolean
-                  description: Does the query need to send every information about the results? If it's set to false, the id and the name of each result only will be returned.
+                filter:
+                  type: object
+                  description: Filter to specify the request, the keys are field in the entities
       responses:
         '200':
           description: Successful operation
@@ -3458,54 +3458,41 @@ paths:
     post:
       tags:
         - search
-      description: Search for resources (caves, documents, document-collections, document-issues, entrances, massifs, organizations) in the criterias mentionned in the request. It's case insensitive. In the following parameters, paramX, paramY or paramZ must be replaced by the name of the parameter you want to search on (for example, if you want to search on a document title, use title=your_query).
-      parameters:
-        - name: query
-          in: query
-          description: Resource property (or part of property)
-          required: true
-          schema:
-            type: string
-        - name: resourceType
-          in: query
-          description: Resource type to be searched
-          required: true
-          schema:
-            type: string
-            oneOf:
-              - $ref: '#/components/schemas/Search-type'
-        - name: complete
-          in: query
-          description: Does the query need to send every information about the results? If it's set to false, the id and the name of each result will be returned.
-          required: false
-          schema:
-            type: boolean
-            default: true
-        - name: paramX
-          in: query
-          description: String property of the resource you want to search on. The resource property will be matched exactly (no auto-complete, no fuzziness etc.). You can specify as much properties as you want.
-          required: false
-          schema:
-            type: string
-        - name: paramY-min
-          in: query
-          description: Range number property of the resource you want to search on. The resource property will be superior or equal to this value. You can specify as much properties as you want.
-          required: false
-          schema:
-            type: number
-        - name: paramY-max
-          in: query
-          description: Range number property of the resource you want to search on. The resource property will be inferior or equal to this value. You can specify as much properties as you want.
-          required: false
-          schema:
-            type: number
-        - name: paramZ-bool
-          in: query
-          description: Boolean property of the resource you want to search on. You can specify as much properties as you want.
-          required: false
-          schema:
-            type: boolean
-            default: true
+      description: Search in a entity (persons, documents, caves, entrances, massifs, organizations) in the criterias mentionned in the request. It's case insensitive.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - query
+                - entity
+              properties:
+                query:
+                  type: string
+                  description: Resource property (or part of property) to search.
+                entity:
+                  type: string
+                  description: Resource type to search on
+                  items:
+                    $ref: '#/components/schemas/Quicksearch-type'
+                sort:
+                  type: string
+                  description: On what field to sort on, format "field:direction", direction can be "asc" or "desc", for example "depth:desc"
+                filter:
+                  type: object
+                  description: Filter to specify the request, the keys are field in the entities
+                matchAllFields:
+                  type: boolean
+                  description: Specify if the provided filters are added using the logical comparator "And" or "Or"
+                  default: true
+                page:
+                  type: integer
+                  description: The page number, start at 1
+                size:
+                  type: integer
+                  description: The size of the page, default 10
+                  default: 10
       responses:
         '200':
           description: Successful operation
@@ -3516,6 +3503,105 @@ paths:
         '404':
           description: Resource not found
 
+  '/advanced-search/export':
+    post:
+      tags:
+        - search
+      description: Export all search result into a CSV, max number of row 10 000
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - query
+                - entity
+              properties:
+                query:
+                  type: string
+                  description: Resource property (or part of property) to search.
+                entity:
+                  type: string
+                  description: Resource type to search on
+                  items:
+                    $ref: '#/components/schemas/Quicksearch-type'
+                sort:
+                  type: string
+                  description: On what field to sort on, format "field:direction", direction can be "asc" or "desc", for example "depth:desc"
+                filter:
+                  type: object
+                  description: Filter to specify the request, the keys are field in the entities
+                matchAllFields:
+                  type: boolean
+                  description: Specify if the provided filters are added using the logical comparator "And" or "Or"
+                  default: true
+                columns:
+                  type: array
+                  description: What fields to export
+                  items:
+                    type: string
+                columnsName:
+                  type: array
+                  description: What is the name of the fields to export
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            text/csv: {}
+
+  '/field-search':
+    post:
+      tags:
+        - search
+      description: Get a few possible of a field for a given search
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - query
+                - entity
+              properties:
+                field:
+                  type: string
+                  description: The name of field to get value of
+                query:
+                  type: string
+                  description: Resource property (or part of property) to search.
+                entity:
+                  type: string
+                  description: Resource type to search on
+                  items:
+                    $ref: '#/components/schemas/Quicksearch-type'
+                size:
+                  type: integer
+                  description: The number of result to return, default 10
+                  default: 10
+                filter:
+                  type: object
+                  description: Filter to specify the request, the keys are field in the entities
+                matchAllFields:
+                  type: boolean
+                  description: Specify if the provided filters are added using the logical comparator "And" or "Or"
+                  default: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  hits:
+                    type: array
+                    description: The possible values of the field
+                    items:
+                      anyOf:
+                        - type: string
+                        - type: integer
   '/geoloc/countEntries':
     get:
       deprecated: true
@@ -5007,7 +5093,7 @@ components:
                   enum: [healthy, unhealthy]
                 message:
                   type: string
-            elasticsearch:
+            search:
               type: object
               properties:
                 status:
@@ -5256,12 +5342,10 @@ components:
       type: string
       enum:
         - caves
-        - cavers
+        - persons
         - documents
-        - document-collections
-        - document-issues
         - entrances
-        - grottos
+        - organizations
         - massifs
 
     Region:
@@ -5349,18 +5433,19 @@ components:
             oneOf:
               - $ref: '#/components/schemas/Entrance'
               - $ref: '#/components/schemas/Massif'
+              - $ref: '#/components/schemas/Cave'
+              - $ref: '#/components/schemas/Caver'
+              - $ref: '#/components/schemas/Document'
               - $ref: '#/components/schemas/Organization'
 
     Search-type:
       type: string
       enum:
         - caves
-        - cavers
+        - persons
         - documents
-        - document-collections
-        - document-issues
         - entrances
-        - grottos
+        - organizations
         - massifs
 
     Specific-cave:

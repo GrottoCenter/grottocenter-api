@@ -11,7 +11,7 @@ describe('Document features', () => {
         .get('/api/v1/cavers/1/documents')
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json')
-        .expect(200)
+        .expect(206)
         .end((err, res) => {
           if (err) return done(err);
           const { documents } = res.body;
@@ -43,7 +43,7 @@ describe('Document features', () => {
         .get('/api/v1/cavers/1/documents?sortBy=id&orderBy=DESC')
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json')
-        .expect(200)
+        .expect(206)
         .end((err, res) => {
           if (err) return done(err);
           const { documents } = res.body;

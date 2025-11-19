@@ -21,9 +21,9 @@ The endpoint returns a JSON object with the following structure:
       "status": "healthy|unhealthy",
       "message": "Database connection successful"
     },
-    "elasticsearch": {
+    "search": {
       "status": "healthy|unhealthy",
-      "message": "Elasticsearch connection successful"
+      "message": "Search connection successful"
     }
   },
   "build": {
@@ -48,7 +48,7 @@ The endpoint returns a JSON object with the following structure:
 
 ### Services
 - `database`: PostgreSQL database connection status
-- `elasticsearch`: Elasticsearch cluster connection status
+- `search`: Typesense connection status
 
 Each service contains:
 - `status`: Service-specific health status (`healthy` or `unhealthy`)
@@ -87,7 +87,7 @@ This endpoint is designed to be used with monitoring systems like:
 
 - The endpoint is publicly accessible (no authentication required)
 - Database health is checked using a simple `SELECT 1` query
-- Elasticsearch health uses the built-in ping functionality
+- Typesense health uses the built-in health endpoint
 - Build information (git commit hash and build time) is generated at build time and stored in `build-info.json`
 - Git commit hash is captured during CI/CD using `git log` or `GITHUB_SHA` environment variable
 - If any service is unhealthy, the overall status becomes `unhealthy` and HTTP 503 is returned

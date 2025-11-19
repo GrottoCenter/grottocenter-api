@@ -35,7 +35,7 @@ module.exports = async (req, res) => {
     req.token.id
   );
 
-  await MassifService.createESMassif(massif).catch(() => {});
+  await MassifService.updateInSearch(massif);
 
   await NotificationService.notifySubscribers(
     req,

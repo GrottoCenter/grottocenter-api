@@ -36,7 +36,7 @@ module.exports = async (req, res) => {
     req.token.id
   );
 
-  await GrottoService.createESOrganization(organization).catch(() => {});
+  await GrottoService.updateInSearch(organization);
 
   await NotificationService.notifySubscribers(
     req,

@@ -1,6 +1,6 @@
 const DocumentService = require('./DocumentService');
 const NameService = require('./NameService');
-const ElasticsearchService = require('./ElasticsearchService');
+const SearchService = require('./SearchService');
 const DescriptionService = require('./DescriptionService');
 const CommonService = require('./CommonService');
 
@@ -9,7 +9,7 @@ const FIND_NETWORKS_IN_MASSIF = `
   FROM t_entrance AS e
   LEFT JOIN t_cave c ON c.id = e.id_cave
   WHERE c.is_deleted = false
-  AND ST_Contains(ST_SetSRID((SELECT geog_polygon::geometry FROM t_massif WHERE id = $1 ), 4326), ST_SetSRID(ST_MakePoint(e.longitude, e.latitude), 4326))
+  AND ST_Contains((SELECT geog_polygon::geometry FROM t_massif WHERE id = $1 ), e.point_geom)
   GROUP BY c.id
   HAVING count(e.id_cave) > 1
 `;
@@ -27,7 +27,7 @@ const FIND_ENTRANCES_IN_MASSIF = `
   SELECT e.*, e.is_sensitive as "isSensitive"
   FROM t_entrance AS e
   JOIN t_massif as m
-  ON ST_Contains(ST_SetSRID(m.geog_polygon::geometry, 4326), ST_SetSRID(ST_MakePoint(e.longitude, e.latitude), 4326))
+  ON e.point_geom && m.geog_polygon AND ST_Contains(m.geog_polygon::geometry, e.point_geom)
   WHERE m.id = $1
   AND e.is_deleted = false
 `;
@@ -81,22 +81,28 @@ module.exports = {
     return massif;
   },
 
-  async createESMassif(populatedMassif) {
-    const description =
-      populatedMassif.descriptions.length === 0
-        ? null
-        : `${populatedMassif.descriptions[0].title} ${populatedMassif.descriptions[0].body}`;
-    const { cave, name, names, ...newMassifESData } = populatedMassif;
-    await ElasticsearchService.create('massifs', populatedMassif.id, {
-      ...newMassifESData,
-      name: populatedMassif.names[0].name, // There is only one name at the creation time
-      names: populatedMassif.names.map((n) => n.name).join(', '),
-      'nb caves': populatedMassif.networks.length,
-      'nb entrances': populatedMassif.entrances.length,
-      deleted: populatedMassif.isDeleted,
-      descriptions: [description],
-      tags: ['massif'],
-    });
+  async deleteInSearch(massifId) {
+    await SearchService.deleteDocument('massifs', massifId);
+  },
+
+  async updateInSearch(populatedMassif) {
+    const { entrances, documents, networks, names, ...m } = populatedMassif;
+    const massif = {
+      id: m.id,
+      dateInscription: m.dateInscription,
+      dateReviewed: m.dateReviewed,
+      authorId: m.author.id,
+      author: m.author.nickname,
+      reviewerId: m.reviewer?.id,
+      reviewer: m.reviewer?.nickname,
+
+      // Will still have the previous name as the front make a second API call to update the name
+      // TODO Change, the API should update the name itself in single API call
+      name: names?.[0]?.name,
+      language: names?.[0]?.language,
+      nbEntrances: entrances?.length ?? 0,
+    };
+    await SearchService.updateDocument('massifs', massif);
   },
 
   getCaves: async (massifId) => safeDBQuery(FIND_CAVES_IN_MASSIF, massifId),

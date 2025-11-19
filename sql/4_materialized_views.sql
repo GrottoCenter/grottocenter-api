@@ -11,7 +11,7 @@ CREATE MATERIALIZED VIEW v_massif_info AS
   c.is_diving as is_diving_cave,
   COUNT(DISTINCT e.id) as nb_entrances
   FROM t_massif m
-  JOIN t_entrance e ON ST_Contains(ST_SetSRID(m.geog_polygon::geometry, 4326), ST_SetSRID(ST_MakePoint(e.longitude, e.latitude), 4326))
+  JOIN t_entrance e ON e.point_geom && m.geog_polygon AND ST_Contains(m.geog_polygon::geometry, e.point_geom)
   AND e.is_deleted = false
   JOIN t_cave c ON e.id_cave = c.id AND c.is_deleted = false
   JOIN t_name n ON n.id_cave = c.id AND n.is_main = true
@@ -34,7 +34,7 @@ CREATE MATERIALIZED VIEW v_country_info AS
   FROM t_entrance e
   LEFT JOIN t_cave c ON e.id_cave = c.id AND c.is_deleted = false
   LEFT JOIN t_name n ON n.id_cave = c.id AND n.is_main = true
-  LEFT JOIN t_massif m ON ST_Contains(ST_SetSRID(m.geog_polygon::geometry, 4326), ST_SetSRID(ST_MakePoint(e.longitude, e.latitude), 4326))
+  LEFT JOIN t_massif m ON e.point_geom && m.geog_polygon AND ST_Contains(m.geog_polygon::geometry, e.point_geom)
   AND m.is_deleted = false
   WHERE e.is_deleted = false
   GROUP BY(e.id_country, c.id, n.name, c.depth, c.length, c.is_diving, m.id)
@@ -55,7 +55,7 @@ CREATE MATERIALIZED VIEW v_region_info AS
   FROM t_entrance e
   LEFT JOIN t_cave c ON e.id_cave = c.id AND c.is_deleted = false
   LEFT JOIN t_name n ON n.id_cave = c.id AND n.is_main = true
-  LEFT JOIN t_massif m ON ST_Contains(ST_SetSRID(m.geog_polygon::geometry, 4326), ST_SetSRID(ST_MakePoint(e.longitude, e.latitude), 4326))
+  LEFT JOIN t_massif m ON e.point_geom && m.geog_polygon AND ST_Contains(m.geog_polygon::geometry, e.point_geom)
   AND m.is_deleted = false
   WHERE e.is_deleted = false
   AND e.iso_3166_2 IS NOT NULL
@@ -66,7 +66,6 @@ CREATE MATERIALIZED VIEW v_region_info AS
 -- not populated, (WITH NO DATA), the schema only
 DROP MATERIALIZED VIEW IF EXISTS v_data_quality_compute_entrance;
 CREATE MATERIALIZED VIEW v_data_quality_compute_entrance AS
-
   SELECT e.id as id_entrance,
   GREATEST(e.date_inscription, e.date_reviewed) as general_latest_date_of_update,
   (COUNT(DISTINCT e.date_inscription)+ COUNT(DISTINCT e.date_reviewed)) as general_nb_contributions,
@@ -105,7 +104,7 @@ CREATE MATERIALIZED VIEW v_data_quality_compute_entrance AS
   LEFT JOIN t_history h ON e.id = h.id_entrance
   LEFT JOIN t_comment c ON e.id = c.id_entrance
   LEFT JOIN t_name n ON e.id = n.id_entrance
-  LEFT JOIN t_massif m ON ST_Contains(ST_SetSRID(m.geog_polygon::geometry, 4326), ST_SetSRID(ST_MakePoint(e.longitude, e.latitude), 4326))
+  LEFT JOIN t_massif m ON e.point_geom && m.geog_polygon AND ST_Contains(m.geog_polygon::geometry, e.point_geom)
   LEFT JOIN (SELECT * FROM t_name WHERE is_main = true) nn ON m.id = nn.id_massif
   WHERE n.is_main = true
   AND e.is_deleted = false
@@ -118,17 +117,17 @@ DROP MATERIALIZED VIEW IF EXISTS v_bibliographic_metadata;
 CREATE MATERIALIZED VIEW v_bibliographic_metadata AS
 WITH RECURSIVE doc_children(root, child, level) AS (
     -- Base case: direct children (level 1)
-    SELECT 
+    SELECT
         id_parent as root,
         id as child,
-        1 as level 
-    FROM t_document 
+        1 as level
+    FROM t_document
     WHERE id_parent IS NOT NULL
-    
+
     UNION ALL
-    
+
     -- Recursive case: add level tracking and limit depth
-    SELECT 
+    SELECT
         dc.root,
         d.id,
         dc.level + 1
@@ -138,17 +137,17 @@ WITH RECURSIVE doc_children(root, child, level) AS (
 ),
 doc_parents(child, parent, level) AS (
     -- Base case: direct parents (level 1)
-    SELECT 
+    SELECT
         id as child,
         id_parent as parent,
         1 as level
-    FROM t_document 
+    FROM t_document
     WHERE id_parent IS NOT NULL
-    
+
     UNION ALL
-    
+
     -- Recursive case: add level tracking and limit depth
-    SELECT 
+    SELECT
         dp.child,
         d.id_parent,
         dp.level + 1
@@ -157,7 +156,7 @@ doc_parents(child, parent, level) AS (
     WHERE dp.level < 100 AND d.id_parent IS NOT NULL  -- Prevent infinite recursion and limit depth
 ),
 children_agg AS (
-    SELECT 
+    SELECT
         dc.root AS id_document,
         ARRAY_AGG(
             jsonb_build_object(
@@ -173,7 +172,7 @@ children_agg AS (
     GROUP BY dc.root
 ),
 parents_agg AS (
-    SELECT 
+    SELECT
         dp.child AS id_document,
         ARRAY_AGG(
             jsonb_build_object(
