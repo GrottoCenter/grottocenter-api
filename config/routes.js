@@ -345,6 +345,8 @@ module.exports.routes = {
   // Search
   'POST /api/v1/search': 'v1/search/quick-search',
   'POST /api/v1/advanced-search': 'v1/search/advanced-search',
+  'POST /api/v1/advanced-search/export': 'v1/search/advanced-search-export',
+  'POST /api/v1/field-search': 'v1/search/field-search',
 
   // Language
   'GET /api/v1/languages/:id': 'v1/language/find',

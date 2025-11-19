@@ -4,7 +4,7 @@
 
 **Grottocenter API** is a Node.js backend application providing REST API services for the Grottocenter platform - a collaborative wiki database for cave exploration data. Built with Sails.js framework, it serves as the data layer for cave entrances, documents, cavers, organizations, and speleological information worldwide.
 
-**Key Technologies**: Node.js 20+, Sails.js 1.5, PostgreSQL with PostGIS, Elasticsearch, Docker
+**Key Technologies**: Node.js 20+, Sails.js 1.5, PostgreSQL with PostGIS, Typesense, Docker
 
 ## Architecture Overview
 
@@ -12,21 +12,21 @@
 - **Framework**: Sails.js MVC framework with Waterline ORM
 - **API Version**: RESTful API v1 with OpenAPI 3.0 documentation
 - **Database**: PostgreSQL with PostGIS for geographical data
-- **Search**: Elasticsearch for advanced search capabilities
+- **Search**: Typesense for advanced search capabilities
 - **File Storage**: Azure Blob Storage for document files
 - **Email**: AWS SES for notifications
 
 ### Core Components Interaction
 ```
-Frontend (grottocenter-front) 
+Frontend (grottocenter-front)
     ↓ HTTP/REST
-API Layer (controllers/v1/) 
+API Layer (controllers/v1/)
     ↓ Business Logic
-Services Layer (api/services/) 
+Services Layer (api/services/)
     ↓ Data Access
-Models Layer (api/models/) 
+Models Layer (api/models/)
     ↓ ORM
-PostgreSQL Database + Elasticsearch
+PostgreSQL Database + Typesense
 ```
 
 ## Key File Paths & Descriptions
@@ -35,7 +35,7 @@ PostgreSQL Database + Elasticsearch
 - `config/policies.js` - Route-level authorization policies (tokenAuth, public access)
 - `config/routes.js` - API endpoint routing configuration
 - `config/datastores.js` - Database connection configuration
-- `config/elasticsearch.js` - Elasticsearch client configuration
+- `config/typesense.js` - Typesense client configuration
 - `config/locales/` - Internationalization files (15 languages supported)
 
 ### API Structure
@@ -89,7 +89,7 @@ t_entrance → t_location/t_description/t_rigging (one-to-many)
 ### Core Dependencies (package.json v24.0.0)
 - **sails**: ^1.5.12 - MVC framework
 - **sails-postgresql**: ^5.0.1 - PostgreSQL adapter
-- **elasticsearch**: ^16.7.3 - Search engine client
+- **typesense**: ^2.1.0 - Search engine client
 - **jsonwebtoken**: ^9.0.2 - JWT authentication
 - **argon2**: ^0.41.1 - Password hashing
 - **@azure/storage-blob**: ^12.25.0 - File storage
@@ -197,7 +197,7 @@ REFRESH MATERIALIZED VIEW CONCURRENTLY v_data_quality_compute_entrance;
 
 ### Performance Views
 - **v_massif_info**: Cave statistics per massif
-- **v_country_info**: National cave statistics  
+- **v_country_info**: National cave statistics
 - **v_region_info**: Regional cave statistics
 - **v_data_quality_compute_entrance**: Data completeness scoring
 - **v_bibliographic_metadata**: OAI-PMH metadata aggregation
@@ -243,7 +243,7 @@ npm test -- --grep "Auth"  # Specific test patterns
 ```javascript
 // Database tables
 t_* - Main tables (t_entrance, t_cave)
-h_* - History/audit tables (h_entrance, h_cave)  
+h_* - History/audit tables (h_entrance, h_cave)
 j_* - Junction tables (j_document_caver_author)
 v_* - Views (v_caver_roles)
 
@@ -292,7 +292,7 @@ npm run dev         # Development with auto-restart
 
 ### Environment Setup
 ```bash
-npm run dev:up      # Start PostgreSQL + Elasticsearch containers
+npm run dev:up      # Start PostgreSQL + Typesense containers
 npm run dev         # Start API server with hot reload
 npm run dev:down    # Stop and cleanup containers
 ```
@@ -304,7 +304,7 @@ npm run dev:down    # Stop and cleanup containers
 - Create service in `api/services/`
 - Add controllers in `api/controllers/v1/`
 - Update policies in `config/policies.js`
-- Add Elasticsearch indexing
+- Add Typesense indexing
 
 ### 2. Additional Languages
 - Add JSON file in `config/locales/`
@@ -327,7 +327,7 @@ module.exports = async (req, res) => {
 - Add corresponding model and relationships
 
 ### 5. Search Enhancements
-- Extend `ElasticsearchService.searchQuery()`
+- Extend `SearchService`
 - Add new fields to search indexes
 - Update search result converters
 

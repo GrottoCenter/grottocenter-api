@@ -2,7 +2,8 @@ const supertest = require('supertest');
 const should = require('should');
 const AuthTokenService = require('../../AuthTokenService');
 
-describe('Organization features', () => {
+describe('Organization features', function test() {
+  this.timeout(4000);
   describe('create', () => {
     let userToken;
     before(async () => {

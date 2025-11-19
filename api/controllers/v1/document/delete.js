@@ -34,7 +34,7 @@ module.exports = async (req, res) => {
     await TDocument.destroyOne({ id: documentId }); // Soft delete
     document.isDeleted = true;
 
-    await DocumentService.deleteESDocument(document).catch(() => {});
+    await DocumentService.deleteInSearch(documentId);
     await RecentChangeService.setDeleteRestoreAuthor(
       'delete',
       'document',

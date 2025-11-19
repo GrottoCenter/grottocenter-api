@@ -45,6 +45,7 @@ module.exports = async (req, res) => {
 
   const populatedCave = await CaveService.getPopulatedCave(caveId);
 
+  await CaveService.updateInSearch(populatedCave);
   await NotificationService.notifySubscribers(
     req,
     populatedCave,

@@ -1,5 +1,6 @@
 const ControllerService = require('../../../services/ControllerService');
 const RightService = require('../../../services/RightService');
+const CaverService = require('../../../services/CaverService');
 const { toSimpleCaver } = require('../../../services/mapping/converters');
 
 module.exports = async (req, res) => {
@@ -51,6 +52,7 @@ module.exports = async (req, res) => {
     );
   }
   const updatedCaver = await TCaver.updateOne(caverId).set(req.body);
+  await CaverService.updateInSearch(updatedCaver);
 
   return ControllerService.treatAndConvert(
     req,

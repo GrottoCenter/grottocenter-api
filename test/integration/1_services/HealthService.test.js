@@ -1,7 +1,7 @@
 const should = require('should');
 const fs = require('fs');
 const path = require('path');
-const ElasticsearchService = require('../../../api/services/ElasticsearchService');
+const SearchService = require('../../../api/services/SearchService');
 
 describe('Health Service Logic', () => {
   describe('Build info retrieval', () => {
@@ -48,13 +48,13 @@ describe('Health Service Logic', () => {
     });
   });
 
-  describe('Elasticsearch health check', () => {
-    it('should be able to check Elasticsearch connection', async () => {
+  describe('Search health check', () => {
+    it('should be able to check Search connection', async () => {
       try {
-        const isAlive = await ElasticsearchService.isConnectionAlive();
+        const isAlive = await SearchService.isAlive();
         should(isAlive).be.a.Boolean();
       } catch (error) {
-        // Elasticsearch connection check failed
+        // Search connection check failed
         should(error).be.an.Error();
       }
     });

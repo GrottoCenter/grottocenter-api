@@ -38,6 +38,7 @@ module.exports = async (req, res) => {
   const updatedOrganization =
     await GrottoService.getPopulatedOrganization(organizationId);
 
+  await GrottoService.updateInSearch(updatedOrganization);
   await NotificationService.notifySubscribers(
     req,
     updatedOrganization,

@@ -32,7 +32,7 @@ module.exports = async (req, res) => {
   const skip = Math.max(req.param('skip', 0), 0);
   const limit = Math.max(Math.min(req.param('limit', 50), 100), 1);
 
-  const totalDocuments = await TDocument.count();
+  const totalDocuments = await TDocument.count().where(whereClause);
   const documents = await DocumentService.appendPopulateForSimpleDocument(
     TDocument.find().where(whereClause).skip(skip).limit(limit).sort(sort)
   );

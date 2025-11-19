@@ -5,28 +5,7 @@ const CommonService = require('./CommonService');
 
 momentDurationFormatSetup(moment);
 
-function average(arr) {
-  if (arr.length === 0) return 0;
-  return arr.reduce((a, b) => a + b, 0) / arr.length;
-}
-
 module.exports = {
-  /**
-   * @param {integer} entranceId - id of the entrance for which stats are needed
-   *
-   * @returns {Promise} which resolves to the succesfully getStats
-   */
-  getStatsFromComments: (comments) => {
-    const filterFn = (e) => e && e > 0;
-    return {
-      aestheticism: average(
-        comments.map((c) => c.aestheticism).filter(filterFn)
-      ),
-      caving: average(comments.map((c) => c.caving).filter(filterFn)),
-      approach: average(comments.map((c) => c.approach).filter(filterFn)),
-    };
-  },
-
   getStatsFromId: async (entranceId) => {
     const [aestheticism, caving, approach] = await Promise.all([
       TComment.avg('aestheticism').where({

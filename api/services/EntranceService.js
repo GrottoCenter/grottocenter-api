@@ -6,7 +6,7 @@ const INTEREST_ENTRANCES_QUERY =
 const RANDOM_ENTRANCE_QUERY = `${INTEREST_ENTRANCES_QUERY} ORDER BY RANDOM() LIMIT 1`;
 
 const CommonService = require('./CommonService');
-const ElasticsearchService = require('./ElasticsearchService');
+const SearchService = require('./SearchService');
 const NotificationService = require('./NotificationService');
 const GeocodingService = require('./GeocodingService');
 const RecentChangeService = require('./RecentChangeService');
@@ -211,7 +211,7 @@ module.exports = {
     const newEntrancePopulated =
       await module.exports.getPopulatedEntrance(newEntranceId);
 
-    await module.exports.createESEntrance(newEntrancePopulated).catch(() => {});
+    await module.exports.updateInSearch(newEntrancePopulated);
 
     await NotificationService.notifySubscribers(
       req,
@@ -224,30 +224,76 @@ module.exports = {
     return newEntrancePopulated;
   },
 
-  async createESEntrance(populatedEntrance) {
-    // Prepare data for Elasticsearch indexation
-    const description =
-      populatedEntrance.descriptions.length === 0
-        ? null
-        : // There is only one description at the moment
-          `${populatedEntrance.descriptions[0].title} ${populatedEntrance.descriptions[0].body}`;
+  async deleteInSearch(entranceId) {
+    await SearchService.deleteDocument('entrances', entranceId);
+  },
 
-    const { cave, name, names, ...newEntranceESData } = populatedEntrance;
-    await ElasticsearchService.create('entrances', populatedEntrance.id, {
-      ...newEntranceESData,
-      'cave name': populatedEntrance.cave.name,
-      'cave length': populatedEntrance.cave.length,
-      'cave depth': populatedEntrance.cave.depth,
-      'cave is diving': populatedEntrance.cave.isDiving,
-      country: populatedEntrance.country?.nativeName,
-      'country code': populatedEntrance.country?.iso3,
-      descriptions: description,
-      'massifs names': populatedEntrance.cave.massifs?.names,
-      name: populatedEntrance.name,
-      deleted: populatedEntrance.isDeleted,
-      names: populatedEntrance.names.map((n) => n.name).join(', '),
-      tags: ['entrance'],
-    });
+  async updateInSearch(populatedEntrance) {
+    // Warning: All linked entities may contain sensitive information (same as in document).
+    // For example, the complete caver object for the 'author' and 'reviewer' fields.
+    // Although we could leave them intact, since search results also pass through the converter,
+    // We prefer to clean them to ensure only clean data remains in the search database.
+    const {
+      names,
+      country,
+      cave,
+      locations,
+      descriptions,
+      riggings,
+      histories,
+      documents,
+      comments,
+      ...e
+    } = populatedEntrance;
+    const entrance = {
+      ...e,
+      dateInscription: e.dateInscription,
+      dateReviewed: e.dateReviewed,
+      authorId: e.author.id,
+      author: e.author.nickname,
+      reviewerId: e.reviewer?.id,
+      reviewer: e.reviewer?.nickname,
+      name: names[0].name,
+      language: names[0].language,
+      iso3166: e.iso_3166_2,
+      country: country?.nativeName,
+      geology: e.geology?.trim(),
+      cave: cave && {
+        name: cave.name,
+        depth: cave.depth,
+        length: cave.caveLength,
+        temperature: cave.temperature,
+        isDiving: cave.isDiving,
+      },
+      descriptions: descriptions?.map((d) => ({
+        title: d.title,
+        body: d.body,
+      })),
+      locations: locations?.map((l) => ({ title: l.title, body: l.body })),
+      riggings: riggings?.map((r) => ({
+        title: r.title,
+        obstacles: r.obstacles,
+        ropes: r.ropes,
+        anchors: r.anchors,
+      })),
+      histories: histories?.map((h) => ({ body: h.body })),
+      documents: documents?.map((d) => d.id),
+      comments: comments?.map((c) => ({
+        title: c.title,
+        body: c.body,
+        aestheticism: c.aestheticism,
+        caving: c.caving,
+        approach: c.approach,
+      })),
+    };
+
+    if (entrance.isSensitive) {
+      entrance.latitude = null;
+      entrance.longitude = null;
+      entrance.locations = [];
+    }
+
+    await SearchService.updateDocument('entrances', entrance);
   },
 
   /**
@@ -344,6 +390,7 @@ module.exports = {
       .populate('reviewer')
       .populate('cave')
       .populate('documents')
+      .populate('country')
       .populate('names');
 
     if (!entrance) return null;
@@ -374,7 +421,6 @@ module.exports = {
       CommentService.getEntranceComments(entrance.id, subEntitiesWhere),
       DocumentService.getDocuments(entrance.documents.map((d) => d.id)),
     ]);
-    entrance.stats = CommentService.getStatsFromComments(entrance.comments);
 
     return entrance;
   },

@@ -25,15 +25,15 @@ describe('Health endpoint', () => {
 
           // Check services
           should(res.body.services).have.property('database');
-          should(res.body.services).have.property('elasticsearch');
+          should(res.body.services).have.property('search');
 
           // Check database service
           should(res.body.services.database).have.property('status');
           should(res.body.services.database).have.property('message');
 
-          // Check elasticsearch service
-          should(res.body.services.elasticsearch).have.property('status');
-          should(res.body.services.elasticsearch).have.property('message');
+          // Check search service
+          should(res.body.services.search).have.property('status');
+          should(res.body.services.search).have.property('message');
 
           // Check build info
           should(res.body.build).have.property('gitCommit');
@@ -45,7 +45,7 @@ describe('Health endpoint', () => {
             res.body.services.database.status
           );
           should(['healthy', 'unhealthy']).containEql(
-            res.body.services.elasticsearch.status
+            res.body.services.search.status
           );
 
           // Validate timestamp format

@@ -405,6 +405,7 @@ CREATE TABLE t_entrance (
 	has_contributions bool NOT NULL DEFAULT false,
 	latitude numeric(24, 20) NOT NULL,
 	longitude numeric(24, 20) NOT NULL,
+	point_geom geometry(Point, 4326),
 	precision int2 NULL,
 	altitude int2 NULL,
 	is_of_interest bool NULL,
@@ -430,6 +431,9 @@ CREATE TABLE t_entrance (
 	CONSTRAINT t_entrance_t_entrance_fk FOREIGN KEY (redirect_to) REFERENCES t_entrance(id),
 	CONSTRAINT t_entrance_t_geology_fk FOREIGN KEY (id_geology) REFERENCES t_geology(id)
 );
+
+CREATE INDEX idx_entrance_geom_gist ON t_entrance USING gist (point_geom);
+
 -- t_location definition
 -- Drop table
 -- DROP TABLE t_location;
@@ -1231,7 +1235,7 @@ CREATE TABLE t_last_change (
 
 -- Internal record status for OAI-PMH server behavior control
 -- - 'registered': Record is active and will be included in OAI-PMH responses with full metadata
--- - 'deleted': Record is marked as deleted and will be included in OAI-PMH responses without metadata 
+-- - 'deleted': Record is marked as deleted and will be included in OAI-PMH responses without metadata
 CREATE TYPE e_metadata_status AS ENUM ('registered', 'deleted');
 
 -- DROP TABLE t_bibliographic_metadata;

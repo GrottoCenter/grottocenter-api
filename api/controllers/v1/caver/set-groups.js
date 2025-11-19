@@ -1,4 +1,3 @@
-const esClient = require('../../../../config/elasticsearch').elasticsearchCli;
 const ControllerService = require('../../../services/ControllerService');
 const RightService = require('../../../services/RightService');
 
@@ -24,12 +23,6 @@ module.exports = async (req, res) => {
   }
 
   await TCaver.replaceCollection(caverId, 'groups', newGroupIds);
-
-  esClient.update({
-    index: 'cavers-index',
-    id: req.param('caverId'),
-    body: { doc: { groups: newGroupIds.join(',') } },
-  });
 
   const params = { controllerMethod: 'CaverController.setGroups' };
   return ControllerService.treat(req, null, {}, params, res);

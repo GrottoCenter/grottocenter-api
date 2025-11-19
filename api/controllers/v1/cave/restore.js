@@ -35,7 +35,7 @@ module.exports = async (req, res) => {
     req.token.id
   );
 
-  await CaveService.createESCave(cave).catch(() => {});
+  await CaveService.updateInSearch(cave);
 
   await NotificationService.notifySubscribers(
     req,

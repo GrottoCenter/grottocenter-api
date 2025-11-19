@@ -48,7 +48,7 @@ module.exports = {
     data instanceof Object ? fn(data, meta) : data,
 
   getMainName: (source) => {
-    let mainName = source?.name ?? null; // from Elasticsearch, name is the mainName
+    let mainName = source?.name ?? null; // from search, name is the mainName
     if (mainName === null && source.names instanceof Array) {
       mainName = source.names.find((name) => name.isMain);
       mainName = mainName === undefined ? null : mainName.name;

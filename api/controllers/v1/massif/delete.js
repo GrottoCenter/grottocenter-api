@@ -1,5 +1,4 @@
 const ControllerService = require('../../../services/ControllerService');
-const ElasticsearchService = require('../../../services/ElasticsearchService');
 const NotificationService = require('../../../services/NotificationService');
 const MassifService = require('../../../services/MassifService');
 const RightService = require('../../../services/RightService');
@@ -35,9 +34,7 @@ module.exports = async (req, res) => {
     await TMassif.destroyOne({ id: massifId }); // Soft delete
     massif.isDeleted = true;
 
-    await ElasticsearchService.deleteResource('massifs', massifId).catch(
-      () => {}
-    );
+    await MassifService.deleteInSearch(massifId);
     await RecentChangeService.setDeleteRestoreAuthor(
       'delete',
       'massif',

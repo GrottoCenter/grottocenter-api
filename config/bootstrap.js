@@ -9,11 +9,12 @@
  * https://sailsjs.com/config/bootstrap
  */
 
-const periodicDbExport = require('../script/periodicDbExport');
+const dbSync = require('../api/dbSync/dbSync');
 
 // eslint-disable-next-line func-names
 module.exports.bootstrap = async function (done) {
-  periodicDbExport();
+  dbSync.registerMakeDbSync();
+  await dbSync.ensureSearchDbIsPopulated();
   return done();
 };
 // By convention, this is a good place to set up fake data during development.

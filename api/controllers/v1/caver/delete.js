@@ -1,5 +1,4 @@
 const ControllerService = require('../../../services/ControllerService');
-const ElasticsearchService = require('../../../services/ElasticsearchService');
 const NotificationService = require('../../../services/NotificationService');
 const RightService = require('../../../services/RightService');
 const { toCaver } = require('../../../services/mapping/converters');
@@ -137,7 +136,7 @@ module.exports = async (req, res) => {
 
   await TCaver.destroyOne({ id: caverId });
 
-  await ElasticsearchService.deleteResource('cavers', caverId).catch(() => {});
+  await CaverService.deleteInSearch(caverId);
 
   await NotificationService.notifySubscribers(
     req,

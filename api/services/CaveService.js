@@ -2,7 +2,7 @@ const CommonService = require('./CommonService');
 const DocumentService = require('./DocumentService');
 const DescriptionService = require('./DescriptionService');
 const NameService = require('./NameService');
-const ElasticsearchService = require('./ElasticsearchService');
+const SearchService = require('./SearchService');
 const NotificationService = require('./NotificationService');
 const RecentChangeService = require('./RecentChangeService');
 
@@ -72,7 +72,7 @@ module.exports = {
     });
 
     const populatedCave = await module.exports.getPopulatedCave(res.id);
-    module.exports.createESCave(populatedCave).catch(() => {});
+    module.exports.updateInSearch(populatedCave);
 
     await RecentChangeService.setNameCreate(
       'cave',
@@ -187,24 +187,28 @@ module.exports = {
     return cave;
   },
 
-  async createESCave(populatedCave) {
-    const description =
-      populatedCave.descriptions.length === 0
-        ? null
-        : `${populatedCave.descriptions[0].title} ${populatedCave.descriptions[0].body}`;
-    await ElasticsearchService.create('caves', populatedCave.id, {
-      id: populatedCave.id,
-      depth: populatedCave.depth,
-      length: populatedCave.length,
-      is_diving: populatedCave.isDiving,
-      temperature: populatedCave.temperature,
-      name: populatedCave.name,
-      names: populatedCave.names.map((n) => n.name).join(', '),
-      'nb entrances': populatedCave.entrances.length,
-      deleted: populatedCave.isDeleted,
-      descriptions: [description],
-      tags: ['cave'],
-    });
+  async deleteInSearch(caveId) {
+    await SearchService.deleteDocument('caves', caveId);
+  },
+
+  async updateInSearch(populatedCave) {
+    const { names, ...c } = populatedCave;
+    const cave = {
+      id: c.id,
+      dateInscription: c.dateInscription,
+      dateReviewed: c.dateReviewed,
+      authorId: c.author.id,
+      author: c.author.nickname,
+      reviewerId: c.reviewer?.id,
+      reviewer: c.reviewer?.nickname,
+      name: names[0].name,
+      language: names[0].language,
+      depth: c.depth,
+      length: c.caveLength,
+      temperature: c.temperature,
+      isDiving: c.isDiving,
+    };
+    await SearchService.updateDocument('caves', cave);
   },
 
   async permanentlyDeleteCave(cave, shouldMergeInto, mergeIntoId) {

@@ -22,4 +22,15 @@ SELECT SETVAL('public.t_region_id_seq', COALESCE(MAX(id), 1) ) FROM public.t_reg
 SELECT SETVAL('public.t_rigging_id_seq', COALESCE(MAX(id), 1) ) FROM public.t_rigging;
 `;
 
-module.exports = UPDATE_SEQUENCES_QUERY;
+const ALTER_MASSIF_COLUMN_GEOG_POLYGON = `
+ALTER TABLE public.t_massif ALTER COLUMN geog_polygon TYPE geography USING geog_polygon::geography;
+`;
+
+const ALTER_ENTRANCE_COLUMN_POINT_GEOM =
+  'ALTER TABLE t_entrance ADD COLUMN point_geom geometry(Point, 4326);';
+
+module.exports = {
+  UPDATE_SEQUENCES_QUERY,
+  ALTER_MASSIF_COLUMN_GEOG_POLYGON,
+  ALTER_ENTRANCE_COLUMN_POINT_GEOM,
+};

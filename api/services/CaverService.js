@@ -1,5 +1,5 @@
 const CommonService = require('./CommonService');
-const ElasticsearchService = require('./ElasticsearchService');
+const SearchService = require('./SearchService');
 const NameService = require('./NameService');
 
 module.exports = {
@@ -10,7 +10,7 @@ module.exports = {
    * Count the "real" users (@see REAL_USERS_QUERY)
    */
   countDistinctUsers: async () => {
-    // Non-users caver (like authors) have no password set.
+    // Non-users caver like authors (and with the email ending with @mail.no) have no password set.
     const REAL_USERS_QUERY = 'SELECT count(password) FROM t_caver';
     const result = await CommonService.query(REAL_USERS_QUERY);
     return Number(result.rows[0].count);
@@ -48,16 +48,7 @@ module.exports = {
       language: '000', // default null language id
     }).fetch();
 
-    await ElasticsearchService.create('cavers', newCaver.id, {
-      id: newCaver.id,
-      groups: '',
-      mail: newCaver.mail,
-      name: newCaver.name,
-      nickname: newCaver.nickname,
-      surname: newCaver.surname,
-      deleted: false,
-      tags: ['caver'],
-    }).catch(() => {});
+    await module.exports.updateInSearch(newCaver);
 
     return newCaver;
   },
@@ -113,5 +104,20 @@ module.exports = {
       subscribedToMassifs: caver.subscribedToMassifs,
       subscribedToCountries: caver.subscribedToCountries,
     };
+  },
+
+  async deleteInSearch(caverId) {
+    await SearchService.deleteDocument('persons', caverId);
+  },
+
+  async updateInSearch(caver) {
+    await SearchService.updateDocument('persons', {
+      id: caver.id,
+      dateInscription: caver.dateInscription,
+      mail: caver.mail,
+      name: caver.name,
+      surname: caver.surname,
+      nickname: caver.nickname,
+    });
   },
 };

@@ -437,6 +437,9 @@ VALUES (
 end if;
 --on insert la valeur de la date de modification dans t_entrance
 NEW.date_reviewed := now();
+
+-- Keep the point geometry up to date
+NEW.point_geom := ST_SetSRID(ST_MakePoint(NEW.longitude, NEW.latitude), 4326);
 RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;

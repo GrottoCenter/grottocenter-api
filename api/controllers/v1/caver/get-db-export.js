@@ -1,7 +1,7 @@
 const ControllerService = require('../../../services/ControllerService');
 const FileService = require('../../../services/FileService');
-const exportUtils = require('../../../../script/dbExport/utils');
 const RightService = require('../../../services/RightService');
+const syncUtils = require('../../../dbSync/utils');
 
 module.exports = async (req, res) => {
   const SIX_HOUR_MS = 1000 * 60 * 60 * 6;
@@ -13,7 +13,7 @@ module.exports = async (req, res) => {
   if (!hasRight) return res.forbidden();
 
   const url = FileService.dbExport.getUrl(
-    exportUtils.EXPORT_FILE_NAME,
+    syncUtils.EXPORT_FILE_NAME,
     SIX_HOUR_MS
   );
   const metadata = await FileService.dbExport.getMetadata();

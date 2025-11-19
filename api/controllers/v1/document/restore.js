@@ -35,7 +35,7 @@ module.exports = async (req, res) => {
     req.token.id
   );
 
-  await DocumentService.createESDocument(document).catch(() => {});
+  await DocumentService.updateInSearch(document);
 
   await NotificationService.notifySubscribers(
     req,

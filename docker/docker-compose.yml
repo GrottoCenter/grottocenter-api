@@ -37,62 +37,20 @@ services:
     ports:
       - ${POSTGRES_TEST_LOCAL_PORT}:5432
 
-  elasticsearch:
-    container_name: ${ES_CONTAINER_NAME}
-    image: elasticsearch:${ES_AND_LS_VERSION}
+  typesense:
+    image: typesense/typesense:29.0
+    container_name: ${SEARCH_CONTAINER_NAME}
     restart: unless-stopped
-    deploy:
-      resources:
-        limits:
-          cpus: '0.50'
-          memory: 500M
     environment:
-      - discovery.type=single-node
-      # Prevent flood stage on disk with small free space
-      - cluster.routing.allocation.disk.watermark.low=3gb
-      - cluster.routing.allocation.disk.watermark.high=2gb
-      - cluster.routing.allocation.disk.watermark.flood_stage=1gb
-      - http.cors.enabled=true
-      - http.cors.allow-origin=https://app.elasticvue.com
-      - ES_LOCAL_PORT=${ES_LOCAL_PORT}
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:$$ES_LOCAL_PORT/_cluster/health || exit 1"]
-      retries: 5
+      TYPESENSE_DATA_DIR: /data
+      TYPESENSE_API_KEY: ${SEARCH_API_KEY}
+      TYPESENSE_MAX_PER_PAGE: 1000
     volumes:
-      - gc-es-data:/usr/share/elasticsearch/data
+      - gc-search-data:/data
     ports:
-      - ${ES_LOCAL_PORT}:9200
-      - 9300:9300
+      - ${SEARCH_LOCAL_PORT}:8108
     depends_on:
       - dbserver
-
-  logstash:
-    container_name: ${LS_CONTAINER_NAME}
-    restart: unless-stopped
-    build:
-      context: ./
-      dockerfile: logstash.Dockerfile
-      args:
-        - ES_AND_LS_VERSION=${ES_AND_LS_VERSION}
-    command: logstash -r -f /config-dir/logstash.conf
-    environment:
-      - XPACK.MONITORING.ELASTICSEARCH.URL=${ES_CONTAINER_NAME}
-      - CONFIG.SUPPORT_ESCAPES=true
-      - JDBC_POSTGRESQL=jdbc:postgresql://${POSTGRES_CONTAINER_NAME}:5432/${POSTGRES_DATABASE}
-      - JDBC_USER=${POSTGRES_USER}
-      - JDBC_PASSWORD=${POSTGRES_PASSWORD}
-      - ES_HOSTS=${ES_CONTAINER_NAME}:${ES_LOCAL_PORT}
-    healthcheck:
-      test: ["CMD-SHELL", "curl -X GET 'localhost:9600' --silent"]
-      retries: 5
-    volumes:
-      - ./logstash.conf:/config-dir/logstash.conf
-      - ./postgresql-connector.jar:/config-dir/postgresql-connector.jar
-    depends_on:
-      dbserver:
-        condition: service_healthy
-      elasticsearch:
-        condition: service_healthy
 
   # # For debuging postgresql
   # pgadmin:
@@ -113,4 +71,4 @@ services:
 volumes:
   gc-postgis-data:
   gc-postgis-test-data:
-  gc-es-data:
+  gc-search-data:

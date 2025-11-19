@@ -22,6 +22,7 @@ module.exports = async (req, res) => {
   await TMassif.updateOne(massifId).set(cleanedData);
 
   const updatedMassif = await MassifService.getPopulatedMassif(massifId);
+  await MassifService.updateInSearch(updatedMassif);
   await NotificationService.notifySubscribers(
     req,
     updatedMassif,
