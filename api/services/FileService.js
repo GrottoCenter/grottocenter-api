@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const {
   BlobServiceClient,
   StorageSharedKeyCredential,
@@ -5,6 +6,11 @@ const {
   generateBlobSASQueryParameters,
 } = require('@azure/storage-blob');
 const stream = require('stream');
+
+// Ensure crypto is available globally for Azure SDK
+if (!global.crypto) {
+  global.crypto = crypto;
+}
 
 const AZURE_ACCOUNT = 'grottocenter';
 const AZURE_CONTAINER_DOCUMENTS = 'documents';
