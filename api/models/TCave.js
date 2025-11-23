@@ -166,5 +166,11 @@ module.exports = {
       collection: 'TComment',
       via: 'cave',
     },
+
+    sizeCoef: {
+      type: 'number',
+      columnName: 'size_coef',
+      allowNull: true,
+    },
   },
 };

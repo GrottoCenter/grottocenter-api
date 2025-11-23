@@ -42,7 +42,8 @@
     "lint": "cross-env eslint '**/*.js'",
     "lint:fix": "cross-env eslint '**/*.js' --fix",
     "test": "cross-env NODE_ENV=test mocha --exit test/bootstrap.test.js \"test/integration/**/*.test.js\"",
-    "coverage": "cross-env NODE_ENV=test nyc --reporter=html --reporter=text --reporter=lcov mocha --exit test/bootstrap.test.js \"test/integration/**/*.test.js\""
+    "coverage": "cross-env NODE_ENV=test nyc --reporter=html --reporter=text --reporter=lcov --reporter=json mocha --exit test/bootstrap.test.js \"test/integration/**/*.test.js\"",
+    "check-coverage": "node scripts/check-coverage.js"
   },
   "main": "app.js",
   "repository": {
@@ -66,6 +67,7 @@
     "nyc": "^17.1.0",
     "prettier": "^3.6.2",
     "should": "^13.2.3",
+    "sinon": "^21.0.0",
     "supertest": "^7.1.4"
   },
   "engines": {

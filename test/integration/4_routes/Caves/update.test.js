@@ -25,7 +25,7 @@ describe('Cave features', () => {
       const caveId = 1;
       let initialCave = {};
 
-      after(async () => {
+      before(async () => {
         initialCave = await TCave.findOne(caveId)
           .populate('author')
           .populate('reviewer')
@@ -48,6 +48,7 @@ describe('Cave features', () => {
           reviewer: initialCave.reviewer?.id,
           comments: initialCave.comments.map((x) => x.id),
           descriptions: initialCave.descriptions.map((x) => x.id),
+          documents: initialCave.documents.map((x) => x.id),
           entrances: initialCave.entrances.map((x) => x.id),
           exploringGrottos: initialCave.exploringGrottos.map((x) => x.id),
           histories: initialCave.histories.map((x) => x.id),

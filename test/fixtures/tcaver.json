@@ -74,5 +74,37 @@
     "alertForNews": "false",
     "language": "fra",
     "groups": [5]
+  },
+  {
+    "id": 8,
+    "_comment": "Default deleted caver - should not be deletable",
+    "mail": "deleted@deleted.com",
+    "nickname": "DeletedCaver",
+    "name": "Deleted",
+    "surname": "Caver",
+    "language": "fra",
+    "groups": []
+  },
+  {
+    "id": 100,
+    "_comment": "Test author without password - can be deleted by moderator",
+    "mail": "test-author@test.com",
+    "nickname": "TestAuthor",
+    "name": "Test",
+    "surname": "Author",
+    "language": "fra",
+    "groups": []
+  },
+  {
+    "id": 101,
+    "_comment": "Test caver with password - can only be deleted by admin",
+    "login": "testcaver",
+    "mail": "test-caver@test.com",
+    "nickname": "TestCaver",
+    "name": "Test",
+    "surname": "Caver",
+    "password": "$argon2id$v=19$m=4096,t=3,p=4$cXY0Z2ljNG41ejAwMDAwMA$pXwJA/uLYjE0XcXbLbL9GNrzztGZ9VBmOUosrXE6LAk",
+    "language": "fra",
+    "groups": []
   }
 ]

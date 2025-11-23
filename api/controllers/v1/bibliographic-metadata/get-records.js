@@ -20,6 +20,18 @@ const ControllerService = require('../../../services/ControllerService');
  */
 module.exports = async (req, res) => {
   try {
+    // Validate date parameters
+    if (req.query.from && Number.isNaN(Date.parse(req.query.from))) {
+      return res.badRequest({
+        message: 'Invalid from date parameter. Expected format: YYYY-MM-DD',
+      });
+    }
+    if (req.query.until && Number.isNaN(Date.parse(req.query.until))) {
+      return res.badRequest({
+        message: 'Invalid until date parameter. Expected format: YYYY-MM-DD',
+      });
+    }
+
     // Extract and structure OAI-PMH query parameters for record retrieval
     const parameters = {
       set: req.query.set,

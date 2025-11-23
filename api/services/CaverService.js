@@ -80,7 +80,9 @@ module.exports = {
     delete caver.activationCode;
     delete caver.password;
 
-    caver.type = module.exports.isARealCaver(caver.mail) ? 'CAVER' : 'AUTHOR';
+    caver.type = (await module.exports.isARealCaver(caver.mail))
+      ? 'CAVER'
+      : 'AUTHOR';
 
     const asyncArr = [
       NameService.setNames(caver.exploredEntrances, 'entrance'),

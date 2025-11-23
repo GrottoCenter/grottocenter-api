@@ -16,5 +16,5 @@ module.exports = async (req, res) => {
     { id: notificationId },
     { dateReadAt: new Date() }
   );
-  return res.ok();
+  return res.status(204).send();
 };

@@ -1,4 +1,5 @@
 const supertest = require('supertest');
+const AuthTokenService = require('../AuthTokenService');
 
 describe('Cave Explorer endpoints', () => {
   let agent;
@@ -11,25 +12,8 @@ describe('Cave Explorer endpoints', () => {
   before(async () => {
     agent = supertest.agent(sails.hooks.http.app);
 
-    // Login as admin
-    const adminLoginResponse = await agent
-      .post('/api/v1/login')
-      .send({
-        email: 'admin1@admin1.com',
-        password: 'testtest',
-      })
-      .expect(200);
-    adminToken = adminLoginResponse.body.token;
-
-    // Login as regular user
-    const userLoginResponse = await agent
-      .post('/api/v1/login')
-      .send({
-        email: 'user1@user1.com',
-        password: 'testtest',
-      })
-      .expect(200);
-    userToken = userLoginResponse.body.token;
+    adminToken = await AuthTokenService.getRawBearerAdminToken();
+    userToken = await AuthTokenService.getRawBearerUserToken();
 
     // Create test cave
     const cave = await TCave.create({
@@ -64,7 +48,7 @@ describe('Cave Explorer endpoints', () => {
   });
 
   describe('PUT /api/v1/caves/:caveId/explorers/:organizationId', () => {
-    afterEach(async () => {
+    after(async () => {
       await JGrottoCaveExplorer.destroy({
         cave: caveId,
         grotto: organizationId,
@@ -74,14 +58,14 @@ describe('Cave Explorer endpoints', () => {
     it('should add organization as cave explorer with admin token', async () => {
       await agent
         .put(`/api/v1/caves/${caveId}/explorers/${organizationId}`)
-        .set('Authorization', `Bearer ${adminToken}`)
+        .set('Authorization', adminToken)
         .expect(200);
     });
 
     it('should return 403 with non-member user token', async () => {
       await agent
         .put(`/api/v1/caves/${caveId}/explorers/${organizationId}`)
-        .set('Authorization', `Bearer ${userToken}`)
+        .set('Authorization', userToken)
         .expect(403);
     });
 
@@ -94,14 +78,14 @@ describe('Cave Explorer endpoints', () => {
     it('should return 404 for non-existent cave', async () => {
       await agent
         .put(`/api/v1/caves/99999/explorers/${organizationId}`)
-        .set('Authorization', `Bearer ${adminToken}`)
+        .set('Authorization', adminToken)
         .expect(404);
     });
 
     it('should return 404 for non-existent organization', async () => {
       await agent
         .put(`/api/v1/caves/${caveId}/explorers/99999`)
-        .set('Authorization', `Bearer ${adminToken}`)
+        .set('Authorization', adminToken)
         .expect(404);
     });
 
@@ -113,14 +97,21 @@ describe('Cave Explorer endpoints', () => {
 
       await agent
         .put(`/api/v1/caves/${caveId}/explorers/${organizationId}`)
-        .set('Authorization', `Bearer ${adminToken}`)
+        .set('Authorization', adminToken)
         .expect(400);
     });
   });
 
   describe('DELETE /api/v1/caves/:caveId/explorers/:organizationId', () => {
-    beforeEach(async () => {
+    before(async () => {
       await JGrottoCaveExplorer.create({
+        cave: caveId,
+        grotto: organizationId,
+      });
+    });
+
+    after(async () => {
+      await JGrottoCaveExplorer.destroy({
         cave: caveId,
         grotto: organizationId,
       });
@@ -129,14 +120,14 @@ describe('Cave Explorer endpoints', () => {
     it('should remove organization as cave explorer with admin token', async () => {
       await agent
         .delete(`/api/v1/caves/${caveId}/explorers/${organizationId}`)
-        .set('Authorization', `Bearer ${adminToken}`)
+        .set('Authorization', adminToken)
         .expect(200);
     });
 
     it('should return 403 with non-member user token', async () => {
       await agent
         .delete(`/api/v1/caves/${caveId}/explorers/${organizationId}`)
-        .set('Authorization', `Bearer ${userToken}`)
+        .set('Authorization', userToken)
         .expect(403);
     });
 
@@ -149,7 +140,7 @@ describe('Cave Explorer endpoints', () => {
     it('should return 404 for non-existent cave', (done) => {
       supertest(sails.hooks.http.app)
         .delete(`/api/v1/caves/99999/explorers/${organizationId}`)
-        .set('Authorization', `Bearer ${adminToken}`)
+        .set('Authorization', adminToken)
         .expect(404)
         .end(done);
     });
@@ -162,7 +153,7 @@ describe('Cave Explorer endpoints', () => {
 
       await agent
         .delete(`/api/v1/caves/${caveId}/explorers/${organizationId}`)
-        .set('Authorization', `Bearer ${adminToken}`)
+        .set('Authorization', adminToken)
         .expect(400);
     });
   });

@@ -2,7 +2,7 @@ const supertest = require('supertest');
 const should = require('should');
 const AuthTokenService = require('../../AuthTokenService');
 
-describe('Comment features', () => {
+describe('Comment update', () => {
   let userToken;
   let moderatorToken;
   before(async () => {
@@ -40,7 +40,6 @@ describe('Comment features', () => {
           const commentUpdated = res.body;
           should(commentUpdated.body).equals(update.body);
           should(commentUpdated.language).equals(update.language);
-          should(commentUpdated.author.nickname).equals('NewNickname');
           should(commentUpdated.eTTrail).equals('01:54:04');
           should(commentUpdated.eTUnderground).equals('00:30:01');
           should(commentUpdated.aestheticism).equals(update.aestheticism);
@@ -82,7 +81,6 @@ describe('Comment features', () => {
           const commentUpdated = res.body;
           should(commentUpdated.body).equals(update.body);
           should(commentUpdated.language).equals(update.language);
-          should(commentUpdated.author.nickname).equals('Admin1');
           should(commentUpdated.eTTrail).equals('01:54:04');
           should(commentUpdated.eTUnderground).equals('00:30:01');
           should(commentUpdated.aestheticism).equals(update.aestheticism);

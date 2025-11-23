@@ -11,21 +11,7 @@ module.exports = async (req, res) => {
     RightService.G.MODERATOR
   );
 
-  const parameters = {};
-  if (!hasRight) parameters.isDeleted = false;
-
-  if (req.param('name')) {
-    parameters.name = {
-      like: `%${req.param('name')}%`,
-    };
-  }
-  if (req.param('region')) {
-    parameters.region = {
-      like: `%${req.param('region')}%`,
-    };
-  }
-
-  const organizations = await TGrotto.find(parameters)
+  const organizations = await TGrotto.find(hasRight ? {} : { isDeleted: false })
     .populate('names')
     .sort('id ASC')
     .limit(10);

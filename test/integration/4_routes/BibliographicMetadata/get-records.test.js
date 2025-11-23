@@ -444,17 +444,31 @@ describe('Bibliographic Metadata Get Records Controller', () => {
       });
   });
 
-  it('should handle invalid date parameters gracefully', (done) => {
+  it('should handle invalid from date parameter', (done) => {
     supertest(sails.hooks.http.app)
       .get('/api/v1/bibliographic-metadata/records?from=invalid-date')
       .set('Authorization', adminToken)
-      .expect(500) // Should return server error for invalid date
+      .expect(400)
       .end((err, res) => {
         if (err) return done(err);
 
         res.body.should.have.property('message');
-        // The actual error message is generic, so just check it exists
-        res.body.message.should.be.a.String();
+        res.body.message.should.containEql('Invalid from date parameter');
+
+        return done();
+      });
+  });
+
+  it('should handle invalid until date parameter', (done) => {
+    supertest(sails.hooks.http.app)
+      .get('/api/v1/bibliographic-metadata/records?until=not-a-date')
+      .set('Authorization', adminToken)
+      .expect(400)
+      .end((err, res) => {
+        if (err) return done(err);
+
+        res.body.should.have.property('message');
+        res.body.message.should.containEql('Invalid until date parameter');
 
         return done();
       });

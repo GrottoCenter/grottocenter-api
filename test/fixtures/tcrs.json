@@ -1,0 +1,16 @@
+[
+  {
+    "id": 1,
+    "id_author": 1,
+    "code": "SR-ORG:6892",
+    "definition": "+title=RGM 04 +proj=eqc +lat_ts=0 +lon_0=0 +x_0=0 +y_0=0 +ellps=GRS80 +towgs84=0.0000,0.0000,0.0000,0,0,0,0 +units=m +no_defs",
+    "enabled": true
+  },
+  {
+    "id": 2,
+    "id_author": 1,
+    "code": "EPSG:61356405",
+    "definition": "+title=Old Hawaiian mean +proj=longlat +ellps=clrk66 +towgs84=58.0,-283.0,-182.0,0.0,0.0,0.0,0.0 +no_defs",
+    "enabled": true
+  }
+]

@@ -1,7 +1,9 @@
 const supertest = require('supertest');
 const should = require('should');
+const sinon = require('sinon');
 
 const AuthTokenService = require('../../AuthTokenService');
+const GeocodingService = require('../../../../api/services/GeocodingService');
 
 describe('Entrance features', () => {
   let allGroupsToken;
@@ -60,6 +62,11 @@ describe('Entrance features', () => {
       });
 
       describe('Unmark an entrance as sensitive', () => {
+        before(async () => {
+          // Ensure entrance is sensitive before tests
+          await TEntrance.update(entranceId).set({ isSensitive: true });
+        });
+
         it('should return code 403 on unmarking sensitive entrance by an user', (done) => {
           supertest(sails.hooks.http.app)
             .put(`/api/v1/entrances/${entranceId}`)
@@ -159,6 +166,48 @@ describe('Entrance features', () => {
             should(populatedEntrance.names[0].language).equal('aut');
             return done();
           });
+      });
+
+      it('should update coordinates and trigger reverse geocoding', async () => {
+        sinon.stub(GeocodingService, 'reverse').resolves({
+          region: 'Test Region',
+          county: 'Test County',
+          city: 'Test City',
+          id_country: 'FR',
+          iso_3166_2: 'FR-ARA',
+        });
+
+        await supertest(sails.hooks.http.app)
+          .put(`/api/v1/entrances/${entranceId}`)
+          .set('Authorization', userToken)
+          .set('Content-type', 'application/json')
+          .send({
+            latitude: 45.5,
+            longitude: 6.5,
+          })
+          .expect(200);
+
+        const updatedEntrance = await TEntrance.findOne(entranceId);
+        should(updatedEntrance.latitude).be.approximately(45.5, 0.01);
+        should(updatedEntrance.longitude).be.approximately(6.5, 0.01);
+
+        sinon.restore();
+      });
+
+      it('should not update coordinates when marking as sensitive by non-admin', async () => {
+        await supertest(sails.hooks.http.app)
+          .put(`/api/v1/entrances/${entranceId}`)
+          .set('Authorization', userToken)
+          .set('Content-type', 'application/json')
+          .send({
+            isSensitive: true,
+            latitude: 46.0,
+            longitude: 7.0,
+          })
+          .expect(200);
+
+        const entrance = await TEntrance.findOne(entranceId);
+        should(entrance.isSensitive).be.true();
       });
     });
   });

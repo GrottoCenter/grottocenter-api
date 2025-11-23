@@ -111,4 +111,79 @@ describe('RiggingService', () => {
       });
     });
   });
+
+  describe('getEntranceRiggings()', () => {
+    it('should return empty array when entranceId is null', async () => {
+      const riggings = await RiggingService.getEntranceRiggings(null);
+      should(riggings).be.an.Array();
+      should(riggings.length).equal(0);
+    });
+
+    it('should get riggings for entrance', async () => {
+      const riggings = await RiggingService.getEntranceRiggings(1);
+      should(riggings).be.an.Array();
+    });
+  });
+
+  describe('getEntranceHRiggings()', () => {
+    it('should return empty array when entranceId is null', async () => {
+      const riggings = await RiggingService.getEntranceHRiggings(null);
+      should(riggings).be.an.Array();
+      should(riggings.length).equal(0);
+    });
+
+    it('should get historical riggings for entrance', async () => {
+      const riggings = await RiggingService.getEntranceHRiggings(1);
+      should(riggings).be.an.Array();
+    });
+  });
+
+  describe('getRigging()', () => {
+    it('should get a rigging by id', async () => {
+      const rigging = await RiggingService.getRigging(1);
+      if (rigging) {
+        should.exist(rigging.author);
+      }
+    });
+  });
+
+  describe('getHRiggings()', () => {
+    it('should get historical riggings by id', async () => {
+      const riggings = await RiggingService.getHRiggings(1);
+      should(riggings).be.an.Array();
+    });
+  });
+
+  describe('deserializeForAPI() - edge cases', () => {
+    it('should handle rigging with null values', () => {
+      const rigging = {
+        obstacles: null,
+        ropes: null,
+        anchors: null,
+        observations: null,
+      };
+      const result = RiggingService.deserializeForAPI(rigging);
+      should(result).be.an.Array();
+      should(result.length).equal(0);
+    });
+
+    it('should handle rigging with undefined values', () => {
+      const rigging = {};
+      const result = RiggingService.deserializeForAPI(rigging);
+      should(result).be.an.Array();
+      should(result.length).equal(0);
+    });
+
+    it('should filter out completely empty lines', () => {
+      const rigging = {
+        obstacles: '|;||;|R3',
+        ropes: '|;||;|50m',
+        anchors: '|;||;|AN',
+        observations: '|;||;|Test',
+      };
+      const result = RiggingService.deserializeForAPI(rigging);
+      should(result.length).equal(1);
+      should(result[0].obstacle).equal('R3');
+    });
+  });
 });

@@ -10,8 +10,11 @@ describe('Notifications features', () => {
   });
 
   after(async () => {
-    // Unread read notification
+    // Reset notification states
     await TNotification.updateOne(ownNotificationId).set({ dateReadAt: null });
+    await TNotification.updateOne(otherNotificationId).set({
+      dateReadAt: null,
+    });
   });
 
   describe('Mark as read', () => {

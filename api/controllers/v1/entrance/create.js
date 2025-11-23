@@ -10,7 +10,7 @@ module.exports = async (req, res) => {
   }
 
   const caveId = req.param('cave');
-  const cave = TCave.findOne(caveId);
+  const cave = await TCave.findOne(caveId);
   if (!cave || cave.isDeleted) {
     return res.badRequest(`The cave with id ${caveId} does not exist.`);
   }

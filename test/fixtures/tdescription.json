@@ -62,5 +62,25 @@
     "body": "This is a description directly related to a cave",
     "language": "eng",
     "cave": 1
+  },
+  {
+    "id": 7,
+    "author": 1,
+    "reviewer": 2,
+    "dateInscription": "2020-01-01 10:00:00",
+    "title": "Document with entrance description",
+    "body": "Description for document 5",
+    "language": "eng",
+    "document": 5
+  },
+  {
+    "id": 8,
+    "author": 1,
+    "reviewer": 2,
+    "dateInscription": "2020-01-01 10:00:00",
+    "title": "Document with cave description",
+    "body": "Description for document 6",
+    "language": "eng",
+    "document": 6
   }
 ]

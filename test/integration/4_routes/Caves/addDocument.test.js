@@ -30,6 +30,13 @@ describe('Cave features', () => {
       });
     });
     describe('Successfull addDocument', () => {
+      let initialDocumentCount;
+
+      before(async () => {
+        const cave = await TCave.findOne(existingCaveId).populate('documents');
+        initialDocumentCount = cave.documents.length;
+      });
+
       after(async () => {
         // Remove added document
         await TCave.removeFromCollection(existingCaveId, 'documents').members([
@@ -37,7 +44,7 @@ describe('Cave features', () => {
         ]);
         const existingCave =
           await TCave.findOne(existingCaveId).populate('documents');
-        should(existingCave.documents.length).be.equal(0);
+        should(existingCave.documents.length).be.equal(initialDocumentCount);
       });
 
       it('should return code 204', (done) => {

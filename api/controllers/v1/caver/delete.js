@@ -13,7 +13,7 @@ module.exports = async (req, res) => {
   );
   const isAdministrator = RightService.hasGroup(
     req.token.groups,
-    RightService.G.MODERATOR
+    RightService.G.ADMINISTRATOR
   );
 
   const caverId = req.param('id');
@@ -22,7 +22,7 @@ module.exports = async (req, res) => {
     return res.notFound({ message: `Caver of id ${caverId} not found.` });
   }
 
-  if (caverId === DEFAULT_DELETED_CAVER_ID)
+  if (parseInt(caverId, 10) === DEFAULT_DELETED_CAVER_ID)
     return res.forbidden('You are not authorized to delete this caver.');
   if (caver.type === 'CAVER' && !isAdministrator)
     return res.forbidden('You are not authorized to delete a caver.');

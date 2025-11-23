@@ -102,5 +102,20 @@ describe('Health endpoint', () => {
           return done();
         });
     });
+
+    it('should handle missing build-info.json gracefully', (done) => {
+      request
+        .get('/api/v1/health')
+        .expect(200)
+        .end((err, res) => {
+          if (err) return done(err);
+
+          should(res.body.build).be.an.Object();
+          should(res.body.build).have.property('gitCommit');
+          should(res.body.build).have.property('buildTime');
+
+          return done();
+        });
+    });
   });
 });

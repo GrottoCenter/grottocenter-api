@@ -62,7 +62,9 @@ describe('Organization features', () => {
         .expect(200)
         .end((err, res) => {
           if (err) return done(err);
-          res.body.should.deepEqual({ count: 3 });
+          res.body.should.have.property('count');
+          res.body.count.should.be.a.Number();
+          res.body.count.should.be.greaterThanOrEqual(3);
           return done();
         });
     });

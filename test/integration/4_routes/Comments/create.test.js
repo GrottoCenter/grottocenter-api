@@ -2,7 +2,7 @@ const supertest = require('supertest');
 const should = require('should');
 const AuthTokenService = require('../../AuthTokenService');
 
-describe('Comment features', () => {
+describe('Comment create', () => {
   let userToken;
   before(async () => {
     userToken = await AuthTokenService.getRawBearerUserToken();

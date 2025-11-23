@@ -4,14 +4,21 @@ const ENTRANCE_PROPERTIES = require('./ENTRANCE_PROPERTIES');
 
 describe('Entrance features', () => {
   describe('find', () => {
-    it('should return code 404', (done) => {
+    it('should return code 404 for non-existent entrance', (done) => {
       supertest(sails.hooks.http.app)
         .get('/api/v1/entrances/987654321')
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json')
         .expect(404, done);
     });
-    it('should return code 200', (done) => {
+    it('should return code 404 for invalid ID format', (done) => {
+      supertest(sails.hooks.http.app)
+        .get('/api/v1/entrances/558_')
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(404, done);
+    });
+    it('should return code 200 for valid entrance', (done) => {
       supertest(sails.hooks.http.app)
         .get('/api/v1/entrances/1')
         .set('Content-type', 'application/json')

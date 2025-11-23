@@ -1,7 +1,7 @@
 const ControllerService = require('../../../services/ControllerService');
 
 module.exports = async (req, res) => {
-  const count = await TCaver.count({ isDeleted: false });
+  const count = await TCaver.count();
   const params = {
     controllerMethod: 'CaverController.count',
     notFoundMessage: 'Problem while getting number of cavers.',

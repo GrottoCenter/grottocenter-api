@@ -153,10 +153,28 @@ $ npm run test -- --grep "<your_partial_name_tests>"
 $ npm run test -- --grep "Auth features"
 ```
 
+Fail fast:
+```shell
+npm run test -- --bail
+```
+
+You can combine all these options:
+```shell
+$ npm run test -- --grep "Auth features" --bail
+```
+
 Check code coverage:
 
 ```shell
 $ npm run coverage
+```
+
+Check files below a coverage threshold:
+
+```shell
+$ npm run check-coverage        # Default: files under 90% coverage
+$ npm run check-coverage 80     # Files under 80% coverage
+$ npm run check-coverage 95     # Files under 95% coverage
 ```
 ### I18n / Translation
 
