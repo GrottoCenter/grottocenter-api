@@ -276,9 +276,6 @@ VALUES ('FR', 'epo', false, false),
 	('US', 'ces', false, false),
 	('US', 'fra', false, false),
 	('US', 'epo', true, true);
-INSERT INTO public.j_document_caver_author (id_document, id_caver)
-VALUES (16746, 4), 
-(25018, 4);
 INSERT INTO public.j_document_massif (id_document, id_massif)
 VALUES (16746, 490);
 INSERT INTO public.j_document_language (id_document, id_language, is_main)

@@ -26,7 +26,7 @@ SELECT id, id_author FROM t_document WHERE is_deleted = false;
 UPDATE t_document SET id_cave = 5 WHERE id IN (5555, 6666) AND is_deleted = false;
 UPDATE t_document SET id_cave = 6 WHERE id IN (1409, 2542) AND is_deleted = false;
 
--- Link some documents to entrances  
+-- Link some documents to entrances
 UPDATE t_document SET id_entrance = 1 WHERE id IN (2998, 6065) AND is_deleted = false;
 UPDATE t_document SET id_entrance = 2 WHERE id IN (6096, 10406) AND is_deleted = false;
 

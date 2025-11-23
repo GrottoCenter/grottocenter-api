@@ -98,6 +98,7 @@ To stop the development setup you can run :
 ```shell
 $ npm run dev:stop # Stop all containers
 $ npm run dev:down # Stop and destroy all containers
+$ npm run dev:clean # Stop and destroy all containers, delete all volumes and restart fresh
 ```
 ## Development
 
