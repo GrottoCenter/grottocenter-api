@@ -97,10 +97,36 @@ function downCommand() {
   console.log('All containers where removed');
 }
 
+function cleanCommand() {
+  console.log(
+    'Will clean and restart the developement environment for Grottocenter API'
+  );
+
+  if (checkIfNotInstalled('docker')) process.exit(1);
+  if (checkIfNotInstalled('docker-compose')) process.exit(1);
+
+  downCommand();
+  console.log('Removing volumes: docker volume rm');
+  run(scriptPath, 'docker', [
+    'volume',
+    'rm',
+    ...childProcess
+      .execSync('docker volume ls -q --filter name=grottocenter_')
+      .toString()
+      .trim()
+      .split('\n')
+      .filter(Boolean),
+  ]);
+  console.log('All volumes removed');
+  upCommand();
+}
+
 function main() {
   const command = process.argv[2];
-  if (!['up', 'stop', 'down'].includes(command)) {
-    console.log(`Usage: ${process.argv.slice(0, 2).join(' ')} up|stop|down`);
+  if (!['up', 'stop', 'down', 'clean'].includes(command)) {
+    console.log(
+      `Usage: ${process.argv.slice(0, 2).join(' ')} up|stop|down|clean`
+    );
     console.log();
     console.log(
       'Launch, stop or remove the developement setup required for Grottocenter API'
@@ -112,5 +138,6 @@ function main() {
   if (command === 'up') upCommand();
   if (command === 'stop') stopCommand();
   if (command === 'down') downCommand();
+  if (command === 'clean') cleanCommand();
 }
 main();

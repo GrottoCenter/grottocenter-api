@@ -38,6 +38,7 @@
     "dev:up": "node script/developmentSetup.js up",
     "dev:stop": "node script/developmentSetup.js stop",
     "dev:down": "node script/developmentSetup.js down",
+    "dev:clean": "node script/developmentSetup.js clean",
     "lint": "cross-env eslint '**/*.js'",
     "lint:fix": "cross-env eslint '**/*.js' --fix",
     "test": "cross-env NODE_ENV=test mocha --exit test/bootstrap.test.js \"test/integration/**/*.test.js\"",
