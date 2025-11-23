@@ -82,11 +82,17 @@ before(function (done) {
           'tfile',
           'trigging',
           'tnotification',
+          'tcrs',
+          'jcountrycrs',
           'hlocation',
           'hdescription',
           'hentrance',
           'vcaverroles',
           'vbibliographicmetadata',
+          'vcountryinfo',
+          'vregioninfo',
+          'vmassifinfo',
+          'vdataqualitycomputeentrance',
         ],
         // eslint-disable-next-line consistent-return
         (fixtedError) => {

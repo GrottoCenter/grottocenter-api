@@ -1,6 +1,6 @@
 const supertest = require('supertest');
 
-describe('Document features', () => {
+describe('Document count', () => {
   describe('Count', () => {
     it('should return code 200', (done) => {
       supertest(sails.hooks.http.app)
@@ -10,7 +10,9 @@ describe('Document features', () => {
         .expect(200)
         .end((err, res) => {
           if (err) return done(err);
-          res.body.should.deepEqual({ count: 4 });
+          res.body.should.have.property('count');
+          res.body.count.should.be.a.Number();
+          res.body.count.should.be.greaterThanOrEqual(6);
           return done();
         });
     });

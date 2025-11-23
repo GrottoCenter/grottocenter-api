@@ -14,10 +14,16 @@ module.exports = async (req, res) => {
     );
   }
 
-  const duplicate = await TDocumentDuplicate.findOne(req.param('id')).populate(
-    'author'
-  );
-  if (!duplicate) return res.notFound(`${req.param('id')} not found`);
+  const duplicateId = req.param('id');
+
+  // Validate ID is a number
+  if (!duplicateId || Number.isNaN(parseInt(duplicateId, 10))) {
+    return res.badRequest('Invalid duplicate ID format');
+  }
+
+  const duplicate =
+    await TDocumentDuplicate.findOne(duplicateId).populate('author');
+  if (!duplicate) return res.notFound(`${duplicateId} not found`);
   const params = { searchedItem: `Document Duplicate of id ${duplicate.id}` };
 
   duplicate.document = await DocumentService.getPopulatedDocument(

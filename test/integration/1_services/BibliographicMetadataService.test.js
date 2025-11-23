@@ -1390,4 +1390,198 @@ describe('BibliographicMetadataService', () => {
       records.length.should.equal(0); // Should return no results
     });
   });
+
+  describe('buildSearchSQL', () => {
+    it('should build SQL with registered status by default', () => {
+      const { sql, params } = service.buildSearchSQL({});
+      sql.should.be.a.String();
+      sql.should.containEql("metadata_status = 'registered'");
+      params.should.be.an.Array();
+    });
+
+    it('should build SQL with deleted status when includeDeleted is true', () => {
+      const { sql, params } = service.buildSearchSQL({}, true);
+      sql.should.be.a.String();
+      sql.should.containEql("metadata_status = 'deleted'");
+      params.should.be.an.Array();
+    });
+
+    it('should build SQL with IDs filter', () => {
+      const { sql, params } = service.buildSearchSQL({}, false, [1, 2, 3]);
+      sql.should.be.a.String();
+      sql.should.containEql('id_document = ANY');
+      params.should.be.an.Array();
+      params.length.should.equal(1);
+      params[0].should.deepEqual([1, 2, 3]);
+    });
+  });
+
+  describe('processQueryNode', () => {
+    it('should process simple id query', () => {
+      const params = [];
+      const { clause, nextParamIndex } = service.processQueryNode(
+        { id: 1 },
+        params,
+        1
+      );
+      clause.should.be.a.String();
+      clause.should.containEql('id_document');
+      nextParamIndex.should.equal(2);
+      params.length.should.equal(1);
+    });
+
+    it('should process author query', () => {
+      const params = [];
+      const { clause } = service.processQueryNode(
+        { author: 'Smith' },
+        params,
+        1
+      );
+      clause.should.be.a.String();
+      clause.should.containEql('ILIKE');
+      params[0].should.equal('%Smith%');
+    });
+
+    it('should process date query', () => {
+      const params = [];
+      const { clause } = service.processQueryNode({ date: '2020' }, params, 1);
+      clause.should.be.a.String();
+      clause.should.containEql('BETWEEN');
+      params.length.should.equal(2);
+      params[0].should.equal('2020-01-01');
+      params[1].should.equal('2020-12-31');
+    });
+
+    it('should process isbn query', () => {
+      const params = [];
+      const { clause } = service.processQueryNode(
+        { isbn: '1234567890' },
+        params,
+        1
+      );
+      clause.should.be.a.String();
+      clause.should.containEql('ILIKE');
+      params[0].should.equal('%isbn:1234567890%');
+    });
+
+    it('should process bibliographiclevel s (collection)', () => {
+      const params = [];
+      const { clause } = service.processQueryNode(
+        { bibliographiclevel: 's' },
+        params,
+        1
+      );
+      clause.should.be.a.String();
+      params[0].should.deepEqual(['grottocenter:collection']);
+    });
+
+    it('should process bibliographiclevel a (article)', () => {
+      const params = [];
+      const { clause } = service.processQueryNode(
+        { bibliographiclevel: 'a' },
+        params,
+        1
+      );
+      clause.should.be.a.String();
+      params[0].should.deepEqual(['grottocenter:article']);
+    });
+
+    it('should process bibliographiclevel m (monograph)', () => {
+      const params = [];
+      const { clause } = service.processQueryNode(
+        { bibliographiclevel: 'm' },
+        params,
+        1
+      );
+      clause.should.be.a.String();
+      params[0].should.be.an.Array();
+      params[0].length.should.be.greaterThan(5);
+    });
+
+    it('should process AND logic', () => {
+      const params = [];
+      const { clause } = service.processQueryNode(
+        { and: [{ id: 1 }, { author: 'Smith' }] },
+        params,
+        1
+      );
+      clause.should.be.a.String();
+      clause.should.containEql('AND');
+      params.length.should.equal(2);
+    });
+
+    it('should process OR logic', () => {
+      const params = [];
+      const { clause } = service.processQueryNode(
+        { or: [{ id: 1 }, { id: 2 }] },
+        params,
+        1
+      );
+      clause.should.be.a.String();
+      clause.should.containEql('OR');
+    });
+
+    it('should process NOT logic', () => {
+      const params = [];
+      const { clause } = service.processQueryNode(
+        { not: { id: 1 } },
+        params,
+        1,
+        false
+      );
+      clause.should.be.a.String();
+      clause.should.containEql('!=');
+    });
+  });
+
+  describe('getFieldMappings', () => {
+    it('should return field mappings object', () => {
+      const mappings = service.getFieldMappings();
+      mappings.should.be.an.Object();
+      mappings.should.have.property('id', 'id_document');
+      mappings.should.have.property('title', 'dc_title');
+      mappings.should.have.property('author', 'dc_creators::text');
+    });
+  });
+
+  describe('formatSearchResult', () => {
+    it('should format search result correctly', () => {
+      const record = {
+        id_document: 1,
+        dc_title: 'Test Title',
+        dc_publisher: 'Test Publisher',
+        dc_creators: ['Author 1', 'Author 2'],
+        dc_date: new Date('2020-01-01'),
+      };
+      const result = service.formatSearchResult(record);
+      result.should.be.an.Object();
+      result.should.have.property('id', 1);
+      result.should.have.property('title', 'Test Title');
+      result.should.have.property('publisher', 'Test Publisher');
+      result.should.have.property('authors');
+      result.authors.should.deepEqual(['Author 1', 'Author 2']);
+      result.should.have.property('publicationYear', 2020);
+    });
+
+    it('should handle null values in search result', () => {
+      const record = {
+        id_document: 1,
+        dc_title: null,
+        dc_publisher: null,
+        dc_creators: null,
+        dc_date: null,
+      };
+      const result = service.formatSearchResult(record);
+      result.should.be.an.Object();
+      result.should.have.property('id', 1);
+      result.should.have.property('title', null);
+      result.should.have.property('publisher', null);
+      result.should.have.property('authors', null);
+      result.should.have.property('publicationYear', null);
+    });
+  });
+
+  // getTitleAndIdParents is not tested here because the test database schema
+  // uses JSON type for children column while production uses JSONB array.
+  // The SQL query `WHERE $1 = ANY(children)` requires JSONB or integer array type.
 });

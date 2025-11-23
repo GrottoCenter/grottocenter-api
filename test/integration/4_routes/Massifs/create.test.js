@@ -6,8 +6,28 @@ const massifPolygon = require('./FAKE_DATA');
 describe('Massif features', () => {
   describe('create', () => {
     let adminToken;
+    let testDoc1Id;
+    let testDoc2Id;
+
     before(async () => {
       adminToken = await AuthTokenService.getRawBearerAdminToken();
+      const doc1 = await TDocument.create({
+        author: 1,
+        type: 1,
+        license: 1,
+      }).fetch();
+      testDoc1Id = doc1.id;
+      const doc2 = await TDocument.create({
+        author: 1,
+        type: 1,
+        license: 1,
+      }).fetch();
+      testDoc2Id = doc2.id;
+    });
+
+    after(async () => {
+      await TDocument.destroy({ id: testDoc1Id });
+      await TDocument.destroy({ id: testDoc2Id });
     });
 
     describe('Missing parameters', () => {
@@ -40,7 +60,7 @@ describe('Massif features', () => {
             description: 'description du massif',
             descriptionTitle: 'Titre',
             descriptionAndNameLanguage: { id: 'fra' },
-            documents: [1, 2],
+            documents: [testDoc1Id, testDoc2Id],
             geogPolygon: massifPolygon.geoJson1,
           })
           .set('Authorization', adminToken)
@@ -60,7 +80,10 @@ describe('Massif features', () => {
               },
             ]);
             should(massif.documents.length).equal(2);
-            should(massif.documents).containDeep([{ id: 1 }, { id: 2 }]);
+            should(massif.documents).containDeep([
+              { id: testDoc1Id },
+              { id: testDoc2Id },
+            ]);
             should(massif.geogPolygon).equal(massifPolygon.geoJson1ToString);
             createdMassif = massif;
             return done();

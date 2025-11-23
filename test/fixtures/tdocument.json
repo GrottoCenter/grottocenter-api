@@ -59,5 +59,29 @@
     "license": 1,
     "parent": 3,
     "type": 18
+  },
+  {
+    "_comment": "Document with entrance",
+    "id": 5,
+    "author": 1,
+    "reviewer": 2,
+    "dateInscription": "2020-01-01 10:00:00",
+    "isValidated": true,
+    "entrance": 1,
+    "descriptions": [7],
+    "license": 1,
+    "type": 1
+  },
+  {
+    "_comment": "Document with cave",
+    "id": 6,
+    "author": 1,
+    "reviewer": 2,
+    "dateInscription": "2020-01-01 10:00:00",
+    "isValidated": true,
+    "cave": 1,
+    "descriptions": [8],
+    "license": 1,
+    "type": 1
   }
 ]

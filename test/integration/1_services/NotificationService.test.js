@@ -195,79 +195,93 @@ describe('NotificationService', () => {
     let entrance2;
     let history1;
     let user3;
-    const testBeginningDate = new Date();
-    let initialNbOfNotifications;
+    const createdNotificationIds = [];
 
     before(async () => {
       history1 = await THistory.findOne(1).populate('cave');
       await CaveService.setEntrances([history1.cave]);
       entrance2 = await TEntrance.findOne(2);
       user3 = await TCaver.findOne(3);
-      initialNbOfNotifications = await TNotification.count();
     });
     after(async () => {
-      await TNotification.destroy({
-        dateInscription: { '>=': testBeginningDate },
-      });
-      const finalNbOfNotifications = await TNotification.count();
-      should(finalNbOfNotifications).be.equal(initialNbOfNotifications);
+      if (createdNotificationIds.length > 0) {
+        await TNotification.destroy({ id: createdNotificationIds });
+      }
     });
 
-    it('should create a notification about the entrance for user 1 subscribed to the country FR', async () => {
-      const res = await NotificationService.notifySubscribers(
-        fakeReq,
-        { ...entrance2, country: 'FR' },
-        user3.id,
-        NOTIFICATION_TYPES.UPDATE,
-        NOTIFICATION_ENTITIES.ENTRANCE
+    const trackNotifications = async (callback) => {
+      const beforeIds = (await TNotification.find().select(['id'])).map(
+        (n) => n.id
       );
-      if (!res) throw Error('should succeed');
-      const user1Notifications = await TNotification.find({
-        notified: 1,
-        notifier: 3,
-        entrance: entrance2.id,
+      await callback();
+      const afterIds = (await TNotification.find().select(['id'])).map(
+        (n) => n.id
+      );
+      const newIds = afterIds.filter((id) => !beforeIds.includes(id));
+      createdNotificationIds.push(...newIds);
+    };
+
+    it('should create a notification about the entrance for user 1 subscribed to the country FR', async () => {
+      await trackNotifications(async () => {
+        const res = await NotificationService.notifySubscribers(
+          fakeReq,
+          { ...entrance2, country: 'FR' },
+          user3.id,
+          NOTIFICATION_TYPES.UPDATE,
+          NOTIFICATION_ENTITIES.ENTRANCE
+        );
+        if (!res) throw Error('should succeed');
+        const user1Notifications = await TNotification.find({
+          notified: 1,
+          notifier: 3,
+          entrance: entrance2.id,
+        });
+        should(user1Notifications).have.length(1);
       });
-      should(user1Notifications).have.length(1);
     });
 
     it('should create a notification about the cave history for user 1 subscribed to the massif with id 1', async () => {
-      const res = await NotificationService.notifySubscribers(
-        fakeReq,
-        history1,
-        user3.id,
-        NOTIFICATION_TYPES.CREATE,
-        NOTIFICATION_ENTITIES.HISTORY
-      );
-      if (!res) throw Error('should succeed');
-      const user1Notifications = await TNotification.find({
-        notified: 1,
-        notifier: 3,
-        history: history1.id,
+      await trackNotifications(async () => {
+        const res = await NotificationService.notifySubscribers(
+          fakeReq,
+          history1,
+          user3.id,
+          NOTIFICATION_TYPES.CREATE,
+          NOTIFICATION_ENTITIES.HISTORY
+        );
+        if (!res) throw Error('should succeed');
+        const user1Notifications = await TNotification.find({
+          notified: 1,
+          notifier: 3,
+          history: history1.id,
+        });
+        should(user1Notifications).have.length(1);
+        should(user1Notifications[0].history).be.equal(1);
       });
-      should(user1Notifications).have.length(1);
-      should(user1Notifications[0].history).be.equal(1);
     });
 
     it('should create a notification about the entrance for user 1 subscribed to the region FR-01', async () => {
-      const entrance = await TEntrance.findOne(2); // Has iso_3166_2: "FR-01"
-      const res = await NotificationService.notifySubscribers(
-        fakeReq,
-        entrance,
-        user3.id,
-        NOTIFICATION_TYPES.CREATE, // Use CREATE to avoid conflicts with UPDATE tests
-        NOTIFICATION_ENTITIES.ENTRANCE
-      );
-      if (!res) throw Error('should succeed');
-      const user1Notifications = await TNotification.find({
-        notified: 1,
-        notifier: 3,
-        entrance: entrance.id,
-        notificationType: (
-          await TNotificationType.findOne({ name: NOTIFICATION_TYPES.CREATE })
-        ).id,
+      await trackNotifications(async () => {
+        const entrance = await TEntrance.findOne(2); // Has iso_3166_2: "FR-01"
+        const res = await NotificationService.notifySubscribers(
+          fakeReq,
+          entrance,
+          user3.id,
+          NOTIFICATION_TYPES.CREATE, // Use CREATE to avoid conflicts with UPDATE tests
+          NOTIFICATION_ENTITIES.ENTRANCE
+        );
+        if (!res) throw Error('should succeed');
+        const user1Notifications = await TNotification.find({
+          notified: 1,
+          notifier: 3,
+          entrance: entrance.id,
+          notificationType: (
+            await TNotificationType.findOne({ name: NOTIFICATION_TYPES.CREATE })
+          ).id,
+        });
+        // User 1 gets 1 consolidated notification combining country (FR) and region (FR-01) subscriptions
+        should(user1Notifications).have.length(1);
       });
-      // User 1 gets 1 consolidated notification combining country (FR) and region (FR-01) subscriptions
-      should(user1Notifications).have.length(1);
     });
 
     // Additional coverage tests

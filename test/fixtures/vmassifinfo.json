@@ -1,0 +1,47 @@
+[
+  {
+    "id_massif": 1,
+    "id_cave": 1,
+    "name_cave": "Gouffre Berger",
+    "depth_cave": 1200,
+    "length_cave": 10000,
+    "nb_entrances": 2,
+    "is_diving_cave": false
+  },
+  {
+    "id_massif": 1,
+    "id_cave": 2,
+    "name_cave": "Grotte de la Diau",
+    "depth_cave": 500,
+    "length_cave": 5000,
+    "nb_entrances": 1,
+    "is_diving_cave": false
+  },
+  {
+    "id_massif": 2,
+    "id_cave": 3,
+    "name_cave": "Réseau Jean Bernard",
+    "depth_cave": 1602,
+    "length_cave": 23500,
+    "nb_entrances": 3,
+    "is_diving_cave": false
+  },
+  {
+    "id_massif": 2,
+    "id_cave": 4,
+    "name_cave": "Fontaine de Vaucluse",
+    "depth_cave": 315,
+    "length_cave": 2500,
+    "nb_entrances": 1,
+    "is_diving_cave": true
+  },
+  {
+    "id_massif": 2,
+    "id_cave": 5,
+    "name_cave": "Grotte Cosquer",
+    "depth_cave": 37,
+    "length_cave": 175,
+    "nb_entrances": 1,
+    "is_diving_cave": true
+  }
+]

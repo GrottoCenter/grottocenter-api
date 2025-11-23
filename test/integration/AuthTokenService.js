@@ -2,10 +2,12 @@ const sails = require('sails');
 const supertest = require('supertest');
 const TokenService = require('../../api/services/TokenService');
 
+const TEST_PASSWORD = 'testtest';
+
 const getRawAuthToken = async (email) => {
   const res = await supertest(sails.hooks.http.app)
     .post('/api/v1/login')
-    .send({ email, password: 'testtest' })
+    .send({ email, password: TEST_PASSWORD })
     .set('Content-type', 'application/json')
     .set('Accept', 'application/json');
   return res.body.token;
@@ -40,4 +42,6 @@ module.exports = {
   getUserToken: async () => getToken('user1@user1.com'),
   getLeaderToken: async () => getToken('leader1@leader1.com'),
   getAllGroupsToken: async () => getToken('all1@all1.com'),
+
+  TEST_PASSWORD,
 };

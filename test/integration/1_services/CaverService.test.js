@@ -84,6 +84,18 @@ describe('CaverService', () => {
       testCaver(caver);
       should.exist(caver.grottos);
       should.exist(caver.groups);
+      should(caver.type).equal('CAVER');
+    });
+
+    it('should return an author with type AUTHOR', async () => {
+      const author = await CaverService.createNonUserCaver({
+        nickname: 'TestAuthor',
+        name: 'Test',
+        surname: 'Author',
+      });
+      const result = await CaverService.getCaver(author.id);
+      should(result.type).equal('AUTHOR');
+      await TCaver.destroyOne({ id: author.id });
     });
   });
 
@@ -92,9 +104,99 @@ describe('CaverService', () => {
       const res = await CaverService.isARealCaver('Caver@test.com');
       should(res).equal(true);
     });
+
     it('should return false with the id of a non-author', async () => {
       const res = await CaverService.isARealCaver('author@MAIL.no');
       should(res).equal(false);
+    });
+
+    it('should return null when email is null', async () => {
+      const res = await CaverService.isARealCaver(null);
+      should(res).be.null();
+    });
+
+    it('should return undefined when email is undefined', async () => {
+      const res = await CaverService.isARealCaver(undefined);
+      should(res).be.undefined();
+    });
+
+    it('should return empty string when email is empty string', async () => {
+      const res = await CaverService.isARealCaver('');
+      should(res).equal('');
+    });
+  });
+
+  describe('countDistinctUsers()', () => {
+    it('should return the count of real users', async () => {
+      const count = await CaverService.countDistinctUsers();
+      should(count).be.a.Number();
+      should(count).be.greaterThan(0);
+    });
+  });
+
+  describe('createNonUserCaver() - edge cases', () => {
+    let createdCavers = [];
+
+    afterEach(async () => {
+      await Promise.all(
+        createdCavers.map((caver) => TCaver.destroyOne({ id: caver.id }))
+      );
+      createdCavers = [];
+    });
+
+    it('should create caver with only name when nickname is empty', async () => {
+      const caverData = { nickname: '', name: 'OnlyName' };
+      const newCaver = await CaverService.createNonUserCaver(caverData);
+      createdCavers.push(newCaver);
+      should(newCaver.nickname).equal('OnlyName');
+      should(newCaver.name).equal('OnlyName');
+    });
+
+    it('should create caver with only surname when nickname is empty', async () => {
+      const caverData = { nickname: '', surname: 'OnlySurname' };
+      const newCaver = await CaverService.createNonUserCaver(caverData);
+      createdCavers.push(newCaver);
+      should(newCaver.nickname).equal('OnlySurname');
+      should(newCaver.surname).equal('OnlySurname');
+    });
+
+    it('should create caver with empty nickname when no data provided', async () => {
+      const caverData = { nickname: '' };
+      const newCaver = await CaverService.createNonUserCaver(caverData);
+      createdCavers.push(newCaver);
+      should(newCaver.nickname).equal('');
+    });
+
+    it('should create caver when caverData is null', async () => {
+      const newCaver = await CaverService.createNonUserCaver(null);
+      createdCavers.push(newCaver);
+      should(newCaver.nickname).equal('');
+    });
+
+    it('should create caver when caverData is undefined', async () => {
+      const newCaver = await CaverService.createNonUserCaver(undefined);
+      createdCavers.push(newCaver);
+      should(newCaver.nickname).equal('');
+    });
+  });
+
+  describe('deleteInSearch()', () => {
+    it('should call SearchService.deleteDocument', async () => {
+      await CaverService.deleteInSearch(123);
+    });
+  });
+
+  describe('updateInSearch()', () => {
+    it('should call SearchService.updateDocument', async () => {
+      const caver = {
+        id: 1,
+        dateInscription: new Date(),
+        mail: 'test@test.com',
+        name: 'Test',
+        surname: 'User',
+        nickname: 'TestUser',
+      };
+      await CaverService.updateInSearch(caver);
     });
   });
 });

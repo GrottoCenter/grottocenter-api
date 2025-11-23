@@ -4,9 +4,17 @@ const AuthTokenService = require('../../AuthTokenService');
 
 describe('History features', () => {
   let userToken;
+  let createdHistoryId;
   before(async () => {
     userToken = await AuthTokenService.getRawBearerUserToken();
   });
+
+  after(async () => {
+    if (createdHistoryId) {
+      await THistory.destroy({ id: createdHistoryId });
+    }
+  });
+
   describe('create', () => {
     it('should return 400', (done) => {
       const newHistory = {
@@ -38,6 +46,7 @@ describe('History features', () => {
           if (err) return done(err);
           const historyUpdated = res.body;
           should(historyUpdated.body).equals(newHistory.body);
+          createdHistoryId = historyUpdated.id;
           return done();
         });
     });
