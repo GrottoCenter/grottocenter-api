@@ -28,7 +28,8 @@
     "sails-postgresql": "^5.0.1",
     "typesense": "^2.1.0",
     "underscore.date": "^0.6.1",
-    "underscore.string": "^3.3.6"
+    "underscore.string": "^3.3.6",
+    "uuid": "^13.0.0"
   },
   "scripts": {
     "prepare": "husky",

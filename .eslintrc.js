@@ -66,6 +66,7 @@ module.exports = {
     ],
     'prefer-destructuring': ['error', { object: true, array: false }],
     'prettier/prettier': 'error',
+    'import/no-unresolved': ['error', { ignore: ['^uuid$'] }],
   },
-  plugins: ['prettier'],
+  plugins: ['prettier', 'import'],
 };

@@ -10,9 +10,12 @@
  */
 
 const dbSync = require('../api/dbSync/dbSync');
+const logger = require('../api/utils/logger');
 
 // eslint-disable-next-line func-names
 module.exports.bootstrap = async function (done) {
+  logger.patchSailsLog();
+
   dbSync.registerMakeDbSync();
   await dbSync.ensureSearchDbIsPopulated();
   return done();
