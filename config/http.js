@@ -1,4 +1,3 @@
-/* eslint-disable global-require */
 /**
  * HTTP Server Settings
  * (sails.config.http)
@@ -9,9 +8,14 @@
  * For more information on configuration, check out:
  * http://sailsjs.org/#/documentation/reference/sails.config/sails.config.http.html
  */
+const { v7: uuidv7 } = require('uuid');
+const multer = require('multer');
+const responseTime = require('response-time');
 const rateLimiter = require('./rateLimit/rateLimiter');
 const { version: packageVersion } = require('../package.json');
 const TokenService = require('../api/services/TokenService');
+const logger = require('../api/utils/logger');
+const sanitize = require('../api/utils/sanitize');
 
 module.exports.http = {
   /** **************************************************************************
@@ -38,6 +42,7 @@ module.exports.http = {
      ************************************************************************** */
 
     order: [
+      'traceId',
       'parseAuthToken',
       'generalRateLimit',
       'userDeleteRateLimit',
@@ -58,6 +63,13 @@ module.exports.http = {
      * Example custom middleware; logs each request to the console.              *
      *                                                                           *
      *************************************************************************** */
+
+    traceId(req, res, next) {
+      const traceId = req.get('X-Trace-Id') || uuidv7();
+      req.traceId = traceId;
+      res.set('X-Trace-Id', traceId);
+      logger.run(traceId, next);
+    },
 
     // TODO: when various API versions are used (v1, v2 etc.), this needs to be changed.
     addPackageVersionHeader(req, res, next) {
@@ -105,7 +117,6 @@ module.exports.http = {
 
     // eslint-disable-next-line func-names
     fileMiddleware: (function () {
-      const multer = require('multer');
       const inMemoryStorage = multer.memoryStorage();
       // File size is 100 Mo (Mb)
       const upload = multer({ storage: inMemoryStorage, fileSize: 100000000 });
@@ -121,15 +132,24 @@ module.exports.http = {
     // Logs each request response to the console (with status and time)
     responseTimeLogger(req, res, next) {
       res.on('finish', () => {
-        sails.log.info(
+        const logLevel = res.statusCode >= 500 ? 'error' : 'info';
+        sails.log[logLevel](
           'Res ::',
           req.method,
           req.url,
           res.statusCode,
           res.get('X-Response-Time')
         );
+
+        if (res.statusCode >= 500) {
+          sails.log.error('Request data:', {
+            body: sanitize(req.body),
+            params: req.params,
+            query: sanitize(req.query),
+          });
+        }
       });
-      require('response-time')()(req, res, next);
+      responseTime()(req, res, next);
     },
   },
 

@@ -16,6 +16,14 @@ servers:
   - url: https://api.grottocenter.org/api/v1
   - url: http://localhost:1337/api/v1
 
+x-response-headers:
+  X-Trace-Id:
+    description: Trace identifier returned in response (either provided by client or generated)
+    schema:
+      type: string
+      format: uuid
+      example: '01932e9e-7890-7000-8000-0123456789ab'
+
 tags:
   - name: account
   - name: authentication
@@ -4314,6 +4322,15 @@ paths:
 
 components:
   parameters:
+    X-Trace-Id:
+      name: X-Trace-Id
+      in: header
+      description: Optional trace ID for distributed tracing. If not provided, a new UUID v7 will be generated.
+      required: false
+      schema:
+        type: string
+        format: uuid
+        example: '01932e9e-7890-7000-8000-0123456789ab'
     sw_lat:
       name: sw_lat
       in: query
