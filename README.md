@@ -10,7 +10,7 @@ Current production version is available [here](https://api.grottocenter.org)
 
 API documentation is available [here](https://api.grottocenter.org/api/v1/swagger.yaml)
 
-Health endpoint documentation is available in [HEALTH_ENDPOINT.md](HEALTH_ENDPOINT.md)
+Health endpoint documentation is available [here](HEALTH_ENDPOINT.md)
 
 ## Project overview
 
