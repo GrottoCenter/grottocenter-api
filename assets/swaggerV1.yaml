@@ -2228,7 +2228,7 @@ paths:
       tags:
         - regions
         - countries
-      description: Unsubscribe from a region within a specific country. Requires LEADER group permissions.
+      description: Unsubscribe from a region within a specific country. Leaders can unsubscribe themselves. Administrators can unsubscribe any user by providing a userId query parameter.
       parameters:
         - name: countryId
           in: path
@@ -2243,8 +2243,14 @@ paths:
           required: true
           schema:
             type: string
+        - name: userId
+          in: query
+          description: User ID to unsubscribe (administrators only). If not provided, unsubscribes the authenticated user.
+          required: false
+          schema:
+            type: integer
       responses:
-        '200':
+        '204':
           description: Successfully unsubscribed from region
         '400':
           description: You are not subscribed to this region
@@ -3958,6 +3964,56 @@ paths:
         '403':
           description: Forbidden you don't have the rights to update massifs
 
+  '/massifs/{id}/subscribe':
+    post:
+      tags:
+        - massifs
+      description: Subscribe to a massif. Requires LEADER group permissions.
+      parameters:
+        - name: id
+          in: path
+          description: Massif ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Successfully subscribed to massif
+        '400':
+          description: Bad request
+        '403':
+          description: You are not authorized to subscribe to a massif
+        '404':
+          description: Massif not found
+
+  '/massifs/{id}/unsubscribe':
+    post:
+      tags:
+        - massifs
+      description: Unsubscribe from a massif. Leaders can unsubscribe themselves. Administrators can unsubscribe any user by providing a userId query parameter.
+      parameters:
+        - name: id
+          in: path
+          description: Massif ID
+          required: true
+          schema:
+            type: integer
+        - name: userId
+          in: query
+          description: User ID to unsubscribe (administrators only). If not provided, unsubscribes the authenticated user.
+          required: false
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Successfully unsubscribed from massif
+        '400':
+          description: You are not subscribed to this massif
+        '403':
+          description: You are not authorized to unsubscribe from a massif
+        '404':
+          description: Massif not found
+
   '/massifs/{id}/statistics':
     get:
       tags:
@@ -4214,6 +4270,58 @@ paths:
                 $ref: '#/components/schemas/Statistics-country'
         '404':
           description: Country id not found
+
+  '/countries/{id}/subscribe':
+    post:
+      tags:
+        - countries
+      description: Subscribe to a country. Requires LEADER group permissions.
+      parameters:
+        - name: id
+          in: path
+          description: Country ID (ISO 2-letter code)
+          required: true
+          schema:
+            type: string
+            example: FR
+      responses:
+        '204':
+          description: Successfully subscribed to country
+        '400':
+          description: Bad request
+        '403':
+          description: You are not authorized to subscribe to a country
+        '404':
+          description: Country not found
+
+  '/countries/{id}/unsubscribe':
+    post:
+      tags:
+        - countries
+      description: Unsubscribe from a country. Leaders can unsubscribe themselves. Administrators can unsubscribe any user by providing a userId query parameter.
+      parameters:
+        - name: id
+          in: path
+          description: Country ID (ISO 2-letter code)
+          required: true
+          schema:
+            type: string
+            example: FR
+        - name: userId
+          in: query
+          description: User ID to unsubscribe (administrators only). If not provided, unsubscribes the authenticated user.
+          required: false
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Successfully unsubscribed from country
+        '400':
+          description: You are not subscribed to this country
+        '403':
+          description: You are not authorized to unsubscribe from a country
+        '404':
+          description: Country not found
 
   '/countries/count':
     get:
