@@ -15,7 +15,8 @@ module.exports = async (req, res) => {
     });
   }
 
-  const ids = id.includes(',') ? id.split(',').map((i) => i.trim()) : id;
+  const ids = id.includes(',') ? id.split(',').map((i) => i.trim()) : [id];
+  const isMultipleIds = id.includes(',');
   const bibliographicMetadata =
     await BibliographicMetadataService.getMetadata(ids);
 
@@ -55,7 +56,14 @@ module.exports = async (req, res) => {
       notFoundMessage: `Record ${id} not found in format ${format}`,
     };
 
-    return ControllerService.treat(req, null, response, params, res);
+    // Return array only if multiple IDs were requested
+    return ControllerService.treat(
+      req,
+      null,
+      isMultipleIds ? response : response[0],
+      params,
+      res
+    );
   }
 
   const [marcRecord, countrySelected] =

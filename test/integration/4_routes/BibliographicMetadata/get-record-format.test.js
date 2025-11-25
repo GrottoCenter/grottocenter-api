@@ -44,7 +44,7 @@ describe('Bibliographic Metadata features', () => {
         });
     });
 
-    it('should get record in marc21 format', (done) => {
+    it('should get single record in marc21 format', (done) => {
       supertest(sails.hooks.http.app)
         .get(`/api/v1/bibliographic-metadata/${testDocumentId}/format/marc21`)
         .set('Authorization', userToken)
@@ -54,6 +54,7 @@ describe('Bibliographic Metadata features', () => {
           if (err) return done(err);
           should(res.body).have.property('metadata');
           should(res.body).have.property('format', 'marc21');
+          should(res.body).not.be.an.Array();
           return done();
         });
     });
