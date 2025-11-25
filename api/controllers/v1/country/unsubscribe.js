@@ -1,13 +1,25 @@
 const RightService = require('../../../services/RightService');
 
 module.exports = async (req, res) => {
-  // Check right
-  const hasRight = RightService.hasGroup(
+  const isAdmin = RightService.hasGroup(
+    req.token.groups,
+    RightService.G.ADMINISTRATOR
+  );
+  const isLeader = RightService.hasGroup(
     req.token.groups,
     RightService.G.LEADER
   );
-  if (!hasRight) {
-    return res.forbidden('You are not authorized to unsubscribe to a country.');
+
+  if (!isAdmin && !isLeader) {
+    return res.forbidden(
+      'You are not authorized to unsubscribe from a country.'
+    );
+  }
+
+  const targetUserId = req.param('userId') || req.token.id;
+
+  if (!isAdmin && targetUserId !== req.token.id) {
+    return res.forbidden('You can only unsubscribe yourself.');
   }
 
   // Check if country exists
@@ -17,16 +29,20 @@ module.exports = async (req, res) => {
     return res.notFound({ message: `Country with id ${countryId} not found.` });
   }
 
-  const caver = await TCaver.findOne(req.token.id).populate(
+  const caver = await TCaver.findOne(targetUserId).populate(
     'subscribedToCountries'
   );
-  if (!caver.subscribedToCountries.find((m) => m.id === country.id)) {
+
+  if (
+    !isAdmin &&
+    !caver.subscribedToCountries.find((m) => m.id === country.id)
+  ) {
     return res.badRequest(
       `You are not subscribed to the country with id ${countryId} and therefore cannot be unsubscribed.`
     );
   }
 
-  await TCaver.removeFromCollection(req.token.id, 'subscribedToCountries', [
+  await TCaver.removeFromCollection(targetUserId, 'subscribedToCountries', [
     countryId,
   ]);
   return res.ok();

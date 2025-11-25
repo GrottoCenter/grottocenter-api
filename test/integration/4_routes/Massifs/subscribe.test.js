@@ -4,9 +4,13 @@ const AuthTokenService = require('../../AuthTokenService');
 
 describe('Massif features', () => {
   let leaderToken;
+  let adminToken;
+  let userToken;
   const massifId = 1;
   before(async () => {
     leaderToken = await AuthTokenService.getRawBearerLeaderToken();
+    adminToken = await AuthTokenService.getRawBearerAdminToken();
+    userToken = await AuthTokenService.getRawBearerUserToken();
   });
   describe('subscribe', () => {
     it('should return 404 on inexsisting massif subscription', (done) => {
@@ -57,6 +61,24 @@ describe('Massif features', () => {
         .expect(400, done);
     });
 
+    it('should return 403 when non-leader/non-admin tries to unsubscribe', (done) => {
+      supertest(sails.hooks.http.app)
+        .post(`/api/v1/massifs/${massifId}/unsubscribe`)
+        .set('Authorization', userToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(403, done);
+    });
+
+    it('should return 403 when leader tries to unsubscribe another user', (done) => {
+      supertest(sails.hooks.http.app)
+        .post(`/api/v1/massifs/${massifId}/unsubscribe?userId=1`)
+        .set('Authorization', leaderToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(403, done);
+    });
+
     it('should return 204 on massif unsubscription', (done) => {
       supertest(sails.hooks.http.app)
         .post(`/api/v1/massifs/${massifId}/unsubscribe`)
@@ -73,6 +95,34 @@ describe('Massif features', () => {
           );
           should(updatedCaver.subscribedToMassifs).have.length(0);
           return done();
+        });
+    });
+
+    it('should allow admin to unsubscribe another user', (done) => {
+      supertest(sails.hooks.http.app)
+        .post(`/api/v1/massifs/${massifId}/subscribe`)
+        .set('Authorization', leaderToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(204)
+        .end(async (err) => {
+          if (err) return done(err);
+
+          return supertest(sails.hooks.http.app)
+            .post(`/api/v1/massifs/${massifId}/unsubscribe?userId=7`)
+            .set('Authorization', adminToken)
+            .set('Content-type', 'application/json')
+            .set('Accept', 'application/json')
+            .expect(204)
+            .end(async (err2) => {
+              if (err2) return done(err2);
+
+              const updatedCaver = await TCaver.findOne(7).populate(
+                'subscribedToMassifs'
+              );
+              should(updatedCaver.subscribedToMassifs).have.length(0);
+              return done();
+            });
         });
     });
   });

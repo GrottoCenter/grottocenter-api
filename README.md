@@ -202,6 +202,12 @@ You first need to merge your changes to `master` using if possible the `git flow
 
 For more information see the wiki page [Production deployment](https://github.com/GrottoCenter/Grottocenter3/wiki/Production-deployment)
 
+### Permission System
+
+Grottocenter API implements a Role-Based Access Control (RBAC) system with 5 user roles: Visitor, User, Leader, Moderator, and Administrator. Each role has specific permissions for accessing and modifying content.
+
+For detailed information about roles, permissions, and implementation, see [here](PERMISSION_SYSTEM.md).
+
 ### Git
 
 #### Workflow
