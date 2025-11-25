@@ -88,10 +88,10 @@ describe('Document Duplicate features', () => {
         .get('/api/v1/document-duplicates/invalid')
         .set('Authorization', moderatorToken)
         .set('Accept', 'application/json')
-        .expect(400)
+        .expect(404)
         .end((err, res) => {
           if (err) return done(err);
-          should(res.body.message).containEql('Invalid duplicate ID format');
+          should(res.body.message).containEql('Invalid ID');
           return done();
         });
     });
@@ -101,7 +101,12 @@ describe('Document Duplicate features', () => {
         .get('/api/v1/document-duplicates/-1')
         .set('Authorization', moderatorToken)
         .set('Accept', 'application/json')
-        .expect(404, done);
+        .expect(404)
+        .end((err, res) => {
+          if (err) return done(err);
+          should(res.body.message).containEql('Invalid ID');
+          return done();
+        });
     });
 
     it('should handle zero duplicate ID', (done) => {
@@ -109,7 +114,12 @@ describe('Document Duplicate features', () => {
         .get('/api/v1/document-duplicates/0')
         .set('Authorization', moderatorToken)
         .set('Accept', 'application/json')
-        .expect(404, done);
+        .expect(404)
+        .end((err, res) => {
+          if (err) return done(err);
+          should(res.body.message).containEql('Invalid ID');
+          return done();
+        });
     });
   });
 });

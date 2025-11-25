@@ -3,7 +3,7 @@ const EntranceService = require('../../../services/EntranceService');
 const { toEntranceDuplicate } = require('../../../services/mapping/converters');
 
 module.exports = async (req, res) => {
-  const id = req.param('id');
+  const id = Number(req.param('id'));
 
   const duplicateFound =
     await TEntranceDuplicate.findOne(id).populate('author');

@@ -43,8 +43,7 @@ async function getModifiedDocumentData(documentId) {
     filesCriterias.id = { '!=': filesToIgnoreId };
   }
 
-  const files = await TFile.find(filesCriterias);
-  populatedDoc.files = files; // Other current document File
+  populatedDoc.files = await TFile.find(filesCriterias);
   populatedDoc.newFiles = newFiles;
   populatedDoc.deletedFiles = deletedFiles;
   populatedDoc.modifiedFiles = modifiedFiles;
@@ -53,6 +52,8 @@ async function getModifiedDocumentData(documentId) {
 }
 
 module.exports = async (req, res) => {
+  const documentId = Number(req.param('id'));
+
   const hasRight = RightService.hasGroup(
     req.token?.groups,
     RightService.G.MODERATOR
@@ -61,15 +62,15 @@ module.exports = async (req, res) => {
   let document;
   // Get the modified document
   if (req.param('requireUpdate') === 'true')
-    document = await getModifiedDocumentData(req.param('id'));
+    document = await getModifiedDocumentData(documentId);
 
   // Get the base document
   if (!document)
-    document = await DocumentService.getPopulatedDocument(req.param('id'));
+    document = await DocumentService.getPopulatedDocument(documentId);
 
   const params = {
     controllerMethod: 'DocumentController.find',
-    searchedItem: `Document of id ${req.param('id')}`,
+    searchedItem: `Document of id ${documentId}`,
   };
   if (!document) return res.notFound(`${params.searchedItem} not found`);
 

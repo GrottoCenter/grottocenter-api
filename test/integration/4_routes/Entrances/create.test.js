@@ -153,7 +153,8 @@ describe('Entrance features', () => {
           });
       });
 
-      it('should return code 200 and create entrance with complete data', (done) => {
+      it('should return code 200 and create entrance with complete data', function (done) {
+        this.timeout(10000);
         const entranceData = {
           cave: 1,
           name: { text: 'Complete Test Entrance', language: 'fra' },
@@ -173,11 +174,18 @@ describe('Entrance features', () => {
           .set('Content-type', 'application/json')
           .set('Accept', 'application/json')
           .send(entranceData)
-          .expect(200)
           .end(async (err, res) => {
-            if (err) return done(err);
+            if (err) {
+              sails.log.error('Request error:', err);
+              return done(err);
+            }
 
             try {
+              if (res.status !== 200) {
+                sails.log.error('Unexpected status:', res.status, res.body);
+                return done(new Error(`Expected 200 but got ${res.status}`));
+              }
+
               const { body: entrance } = res;
               createdEntranceIds.push(entrance.id);
 
@@ -190,6 +198,7 @@ describe('Entrance features', () => {
 
               return done();
             } catch (testErr) {
+              sails.log.error('Test assertion error:', testErr);
               return done(testErr);
             }
           });

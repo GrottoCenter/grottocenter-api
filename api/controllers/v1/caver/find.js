@@ -4,7 +4,8 @@ const DocumentService = require('../../../services/DocumentService');
 const { toCaver } = require('../../../services/mapping/converters');
 
 module.exports = async (req, res) => {
-  const caverId = req.params.id;
+  const caverId = Number(req.params.id);
+
   const params = { searchedItem: `Caver of id ${caverId}` };
 
   const caverFound = await CaverService.getCaver(caverId);

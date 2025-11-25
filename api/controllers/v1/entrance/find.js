@@ -8,9 +8,6 @@ const {
 
 module.exports = async (req, res) => {
   const entranceId = Number(req.params.id);
-  if (!Number.isInteger(entranceId)) {
-    return res.notFound(`Entrance of id ${req.params.id} not found`);
-  }
 
   const hasRight = RightService.hasGroup(
     req.token?.groups,

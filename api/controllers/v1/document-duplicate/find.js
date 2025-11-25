@@ -14,12 +14,7 @@ module.exports = async (req, res) => {
     );
   }
 
-  const duplicateId = req.param('id');
-
-  // Validate ID is a number
-  if (!duplicateId || Number.isNaN(parseInt(duplicateId, 10))) {
-    return res.badRequest('Invalid duplicate ID format');
-  }
+  const duplicateId = Number(req.param('id'));
 
   const duplicate =
     await TDocumentDuplicate.findOne(duplicateId).populate('author');

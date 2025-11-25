@@ -5,9 +5,30 @@ const CAVE_PROPERTIES_SHORT = require('./CAVE_PROPERTIES_SHORT');
 
 describe('Cave features', () => {
   describe('find', () => {
-    it('should return code 404', (done) => {
+    it('should return code 404 for non-existent cave', (done) => {
       supertest(sails.hooks.http.app)
         .get('/api/v1/caves/987654321')
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(404, done);
+    });
+    it('should return code 404 for cave ID 0', (done) => {
+      supertest(sails.hooks.http.app)
+        .get('/api/v1/caves/0')
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(404, done);
+    });
+    it('should return code 404 for negative cave ID', (done) => {
+      supertest(sails.hooks.http.app)
+        .get('/api/v1/caves/-1')
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(404, done);
+    });
+    it('should return code 404 for invalid cave ID format', (done) => {
+      supertest(sails.hooks.http.app)
+        .get('/api/v1/caves/abc')
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json')
         .expect(404, done);

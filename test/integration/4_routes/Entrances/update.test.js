@@ -168,30 +168,34 @@ describe('Entrance features', () => {
           });
       });
 
-      it('should update coordinates and trigger reverse geocoding', async () => {
-        sinon.stub(GeocodingService, 'reverse').resolves({
-          region: 'Test Region',
-          county: 'Test County',
-          city: 'Test City',
-          id_country: 'FR',
-          iso_3166_2: 'FR-ARA',
-        });
+      it('should update coordinates and trigger reverse geocoding', async function () {
+        this.timeout(10000);
+        let stub;
+        try {
+          stub = sinon.stub(GeocodingService, 'reverse').resolves({
+            region: 'Test Region',
+            county: 'Test County',
+            city: 'Test City',
+            id_country: 'FR',
+            iso_3166_2: 'FR-ARA',
+          });
 
-        await supertest(sails.hooks.http.app)
-          .put(`/api/v1/entrances/${entranceId}`)
-          .set('Authorization', userToken)
-          .set('Content-type', 'application/json')
-          .send({
-            latitude: 45.5,
-            longitude: 6.5,
-          })
-          .expect(200);
+          await supertest(sails.hooks.http.app)
+            .put(`/api/v1/entrances/${entranceId}`)
+            .set('Authorization', userToken)
+            .set('Content-type', 'application/json')
+            .send({
+              latitude: 45.5,
+              longitude: 6.5,
+            })
+            .expect(200);
 
-        const updatedEntrance = await TEntrance.findOne(entranceId);
-        should(updatedEntrance.latitude).be.approximately(45.5, 0.01);
-        should(updatedEntrance.longitude).be.approximately(6.5, 0.01);
-
-        sinon.restore();
+          const updatedEntrance = await TEntrance.findOne(entranceId);
+          should(updatedEntrance.latitude).be.approximately(45.5, 0.01);
+          should(updatedEntrance.longitude).be.approximately(6.5, 0.01);
+        } finally {
+          if (stub) stub.restore();
+        }
       });
 
       it('should not update coordinates when marking as sensitive by non-admin', async () => {

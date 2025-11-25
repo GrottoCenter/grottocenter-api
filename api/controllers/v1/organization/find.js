@@ -7,15 +7,16 @@ const {
 } = require('../../../services/mapping/converters');
 
 module.exports = async (req, res) => {
+  const organizationId = Number(req.params.id);
+
   const hasRight = RightService.hasGroup(
     req.token?.groups,
     RightService.G.MODERATOR
   );
 
-  const params = { searchedItem: `Organization of id ${req.params.id}` };
-  const organization = await GrottoService.getPopulatedOrganization(
-    req.params.id
-  );
+  const params = { searchedItem: `Organization of id ${organizationId}` };
+  const organization =
+    await GrottoService.getPopulatedOrganization(organizationId);
 
   if (!organization) return res.notFound(`${params.searchedItem} not found`);
   return ControllerService.treatAndConvert(
