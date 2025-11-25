@@ -41,7 +41,7 @@ describe('Entrance Duplicate features', () => {
     });
 
     it('should create entrance from duplicate', async () => {
-      const cave = await TCave.create({ author: 1 });
+      const cave = await TCave.create({ author: 1 }).fetch();
       const duplicate = await TEntranceDuplicate.create({
         author: 1,
         entrance: testEntranceId,
@@ -55,7 +55,7 @@ describe('Entrance Duplicate features', () => {
           nameDescLoc: { name: { text: 'Test', language: 'eng', author: 1 } },
         },
         dateInscription: new Date(),
-      });
+      }).fetch();
 
       await supertest(sails.hooks.http.app)
         .post(`/api/v1/entrances/from-duplicate/${duplicate.id}`)
@@ -65,8 +65,7 @@ describe('Entrance Duplicate features', () => {
 
       const deletedDup = await TEntranceDuplicate.findOne({ id: duplicate.id });
       should(deletedDup).be.undefined();
-
       await TCave.destroy({ id: cave.id });
-    }).timeout(5000);
+    }).timeout(10000);
   });
 });

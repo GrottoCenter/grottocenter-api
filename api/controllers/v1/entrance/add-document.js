@@ -14,13 +14,19 @@ module.exports = async (req, res) => {
     return res.notFound({ message: `Document of id ${documentId} not found.` });
   }
 
-  /**
-   * TEntrance.addToCollection() is not used here because of the Grottocenter's historization process.
-   * To avoid an uniqueness error, the dateReviewed must be set at the same time the entrance id is set, which can't be accomplished with addToCollection().
-   * */
+  const existingLink = await JDocumentEntrance.count({
+    document: documentId,
+    entrance: entranceId,
+  });
+  if (existingLink > 0) {
+    return res.badRequest({
+      message: `Document ${documentId} is already linked to entrance ${entranceId}.`,
+    });
+  }
+
+  await TEntrance.addToCollection(entranceId, 'documents', documentId);
   await TDocument.updateOne(documentId).set({
     dateReviewed: new Date(),
-    entrance: entranceId,
   });
   return res.ok();
 };

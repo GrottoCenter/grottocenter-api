@@ -99,7 +99,8 @@ CREATE MATERIALIZED VIEW v_data_quality_compute_entrance AS
   LEFT JOIN t_country co ON co.iso = e.id_country
   LEFT JOIN t_location l ON e.id = l.id_entrance
   LEFT JOIN t_description d ON e.id = d.id_entrance
-  LEFT JOIN t_document doc ON e.id = doc.id_entrance
+  LEFT JOIN j_document_entrance jde ON e.id = jde.id_entrance
+  LEFT JOIN t_document doc ON jde.id_document = doc.id
   LEFT JOIN t_rigging r ON e.id = r.id_entrance
   LEFT JOIN t_history h ON e.id = h.id_entrance
   LEFT JOIN t_comment c ON e.id = c.id_entrance

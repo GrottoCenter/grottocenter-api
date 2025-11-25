@@ -98,11 +98,12 @@ async function* processRows(source) {
         join: exportUtils.dateAndAuthorJoins('h'),
       },
       {
-        table: 't_document',
-        foreignField: 'id_entrance',
+        table: 'j_document_entrance j',
+        foreignField: 'j.id_entrance',
         rows,
         localField: 'documents',
-        fields: ['id'],
+        fields: ['j.id_document AS id'],
+        where: [],
         transform: (e) => e.id,
       },
       {

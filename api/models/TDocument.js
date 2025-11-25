@@ -125,9 +125,10 @@ module.exports = {
       columnName: 'redirect_to',
     },
 
-    entrance: {
-      columnName: 'id_entrance',
-      model: 'TEntrance',
+    entrances: {
+      collection: 'TEntrance',
+      via: 'document',
+      through: 'JDocumentEntrance',
     },
 
     // Deprecated use massifs instead

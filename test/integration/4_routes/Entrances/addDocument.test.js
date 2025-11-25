@@ -23,6 +23,7 @@ describe('Entrance add document features', () => {
   });
 
   after(async () => {
+    await JDocumentEntrance.destroy({ document: testDocumentId });
     await TEntrance.destroy({ id: testEntranceId });
     await TDocument.destroy({ id: testDocumentId });
   });
@@ -73,8 +74,12 @@ describe('Entrance add document features', () => {
       });
     });
 
-    describe('Successful add document', () => {
-      it('should return 204 and set entrance on document', async () => {
+    describe('Duplicate document-entrance relationship', () => {
+      afterEach(async () => {
+        await JDocumentEntrance.destroy({ document: testDocumentId });
+      });
+
+      it('should return 400 when adding same document twice to same entrance', async () => {
         await supertest(sails.hooks.http.app)
           .put(
             `/api/v1/entrances/${testEntranceId}/documents/${testDocumentId}`
@@ -82,8 +87,107 @@ describe('Entrance add document features', () => {
           .set('Authorization', userToken)
           .expect(204);
 
-        const doc = await TDocument.findOne(testDocumentId);
-        should(doc.entrance).equal(testEntranceId);
+        const response = await supertest(sails.hooks.http.app)
+          .put(
+            `/api/v1/entrances/${testEntranceId}/documents/${testDocumentId}`
+          )
+          .set('Authorization', userToken)
+          .expect(400);
+
+        should(response.body.message).match(/already linked to entrance/);
+      });
+    });
+
+    describe('Successful add document', () => {
+      afterEach(async () => {
+        await JDocumentEntrance.destroy({ document: testDocumentId });
+      });
+
+      it('should return 204 and link document to entrance', async () => {
+        await supertest(sails.hooks.http.app)
+          .put(
+            `/api/v1/entrances/${testEntranceId}/documents/${testDocumentId}`
+          )
+          .set('Authorization', userToken)
+          .expect(204);
+
+        const links = await JDocumentEntrance.find({
+          document: testDocumentId,
+          entrance: testEntranceId,
+        });
+        should(links).have.length(1);
+      });
+
+      it('should allow linking document to multiple entrances', async () => {
+        const entrance2 = await TEntrance.create({
+          latitude: 1,
+          longitude: 1,
+        }).fetch();
+
+        await supertest(sails.hooks.http.app)
+          .put(
+            `/api/v1/entrances/${testEntranceId}/documents/${testDocumentId}`
+          )
+          .set('Authorization', userToken)
+          .expect(204);
+
+        await supertest(sails.hooks.http.app)
+          .put(`/api/v1/entrances/${entrance2.id}/documents/${testDocumentId}`)
+          .set('Authorization', userToken)
+          .expect(204);
+
+        const doc =
+          await TDocument.findOne(testDocumentId).populate('entrances');
+        should(doc.entrances).have.length(2);
+        const entranceIds = doc.entrances.map((e) => e.id).sort();
+        should(entranceIds).deepEqual([testEntranceId, entrance2.id].sort());
+
+        await TEntrance.destroy({ id: entrance2.id });
+      });
+
+      it('should allow document to be linked to 3+ entrances', async () => {
+        const entrance2 = await TEntrance.create({
+          latitude: 1,
+          longitude: 1,
+        }).fetch();
+        const entrance3 = await TEntrance.create({
+          latitude: 2,
+          longitude: 2,
+        }).fetch();
+        const entrance4 = await TEntrance.create({
+          latitude: 3,
+          longitude: 3,
+        }).fetch();
+
+        await supertest(sails.hooks.http.app)
+          .put(
+            `/api/v1/entrances/${testEntranceId}/documents/${testDocumentId}`
+          )
+          .set('Authorization', userToken)
+          .expect(204);
+
+        await supertest(sails.hooks.http.app)
+          .put(`/api/v1/entrances/${entrance2.id}/documents/${testDocumentId}`)
+          .set('Authorization', userToken)
+          .expect(204);
+
+        await supertest(sails.hooks.http.app)
+          .put(`/api/v1/entrances/${entrance3.id}/documents/${testDocumentId}`)
+          .set('Authorization', userToken)
+          .expect(204);
+
+        await supertest(sails.hooks.http.app)
+          .put(`/api/v1/entrances/${entrance4.id}/documents/${testDocumentId}`)
+          .set('Authorization', userToken)
+          .expect(204);
+
+        const doc =
+          await TDocument.findOne(testDocumentId).populate('entrances');
+        should(doc.entrances).have.length(4);
+
+        await TEntrance.destroy({
+          id: [entrance2.id, entrance3.id, entrance4.id],
+        });
       });
     });
   });

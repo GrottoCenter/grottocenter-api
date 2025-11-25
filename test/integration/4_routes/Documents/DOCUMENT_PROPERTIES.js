@@ -27,7 +27,7 @@ const DOCUMENT_PROPERTIES = [
   'languages',
   'files',
   'iso3166',
-  'entrance',
+  'entrances',
   'cave',
   'massifs',
   'parent',

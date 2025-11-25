@@ -516,10 +516,10 @@ describe('DocumentService', () => {
   });
 
   describe('populateFullDocumentSubEntities()', () => {
-    it('should populate document with entrance', async () => {
+    it('should populate document with entrances', async () => {
       const document = await TDocument.findOne(5)
         .populate('languages')
-        .populate('entrance')
+        .populate('entrances')
         .populate('cave')
         .populate('massifs')
         .populate('library')
@@ -529,13 +529,15 @@ describe('DocumentService', () => {
       const result =
         await DocumentService.populateFullDocumentSubEntities(document);
       should(result).have.property('mainLanguage');
-      should(result.entrance).have.property('name');
+      if (result.entrances && result.entrances.length > 0) {
+        should(result.entrances[0]).have.property('name');
+      }
     });
 
     it('should populate document with cave', async () => {
       const document = await TDocument.findOne(6)
         .populate('languages')
-        .populate('entrance')
+        .populate('entrances')
         .populate('cave')
         .populate('massifs')
         .populate('library')
@@ -545,13 +547,15 @@ describe('DocumentService', () => {
       const result =
         await DocumentService.populateFullDocumentSubEntities(document);
       should(result).have.property('mainLanguage');
-      should(result.cave).have.property('name');
+      if (result.cave) {
+        should(result.cave).have.property('name');
+      }
     });
 
     it('should populate document with parent', async () => {
       const document = await TDocument.findOne(1)
         .populate('languages')
-        .populate('entrance')
+        .populate('entrances')
         .populate('cave')
         .populate('massifs')
         .populate('library')

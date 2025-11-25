@@ -200,8 +200,9 @@ module.exports = {
     },
 
     documents: {
-      collection: 'Tdocument',
+      collection: 'TDocument',
       via: 'entrance',
+      through: 'JDocumentEntrance',
     },
 
     locations: {

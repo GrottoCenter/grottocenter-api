@@ -27,7 +27,6 @@ const query = `
       d.pages,
       l.name AS license,
       d.id_option AS "optionId",
-      d.id_entrance AS "entranceId",
       d.id_cave AS "caveId",
       d.id_parent AS "parentId",
       d.id_authorization_document AS authorizationDocumentId
@@ -142,14 +141,14 @@ async function* processRows(source) {
         transform: (e) => e.id_language,
       },
       {
-        table: 't_entrance e',
-        foreignField: 'e.id',
+        table: 'j_document_entrance j',
+        foreignField: 'j.id_document',
         rows,
-        rowsKey: 'entranceId',
-        localField: 'entrance',
-        fields: ['n.name', 'n.id_language AS language'],
+        localField: 'entrances',
+        fields: ['j.id_entrance AS id', 'n.name', 'n.id_language AS language'],
         join: [
-          `LEFT JOIN t_name n ON n.id_entrance = e.id AND n.is_main = true`,
+          'LEFT JOIN t_entrance e ON e.id = j.id_entrance',
+          'LEFT JOIN t_name n ON n.id_entrance = e.id AND n.is_main = true',
         ],
         where: [],
       },
@@ -190,7 +189,6 @@ async function* processRows(source) {
         ...(row.isoRegions?.map((e) => ({ iso: e.iso, name: e.name })) ?? []),
       ];
       row.cave = row.cave?.[0] ?? null;
-      row.entrance = row.entrance?.[0] ?? null;
 
       yield row;
     }
@@ -292,8 +290,8 @@ module.exports = {
           optional: true,
         },
         { name: 'cave.name', type: 'string', optional: true, sort: true },
-        { name: 'entrance.name', type: 'string', optional: true, sort: true },
-        { name: 'massif.name', type: 'string[]', optional: true },
+        { name: 'entrances.name', type: 'string[]', optional: true },
+        { name: 'massifs.name', type: 'string[]', optional: true },
       ],
       default_sorting_field: 'dateInscription',
     },

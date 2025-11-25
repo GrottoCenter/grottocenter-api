@@ -48,7 +48,7 @@ PostgreSQL Database + Typesense
 ### Database Schema
 - `sql/0_tables.sql` - Complete database schema definition
 - `sql/0_views.sql` - Database views for complex queries
-- `sql/4_materialized_views.sql` - Performance-optimized materialized views
+- `sql/91_materialized_views.sql` - Performance-optimized materialized views
 - `sql/2_*.sql` - Migration files with timestamps
 
 ### Documentation
