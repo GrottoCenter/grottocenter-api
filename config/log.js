@@ -10,19 +10,35 @@
  * http://sailsjs.org/#/documentation/concepts/Logging
  */
 
-module.exports.log = {
-  /** *************************************************************************
-   *                                                                          *
-   * Valid `level` configs: i.e. the minimum log level to capture with        *
-   * sails.log.*()                                                            *
-   *                                                                          *
-   * The order of precedence for log levels from lowest to highest is:        *
-   * silly, verbose, info, debug, warn, error                                 *
-   *                                                                          *
-   * You may also set the level to "silent" to suppress all logs.             *
-   *                                                                          *
-   ************************************************************************** */
+const winston = require('winston');
 
+module.exports.log = {
   level: 'info',
-  noShip: true, // don't display "fancy" Sails ship when starting the app
+  noShip: true,
+
+  // Custom formatter for production to handle multiline logs in Azure
+  // Custom formatter for non-production to add timestamps
+  // No custom logger in test environment
+  ...(process.env.NODE_ENV !== 'test' && {
+    custom: winston.createLogger({
+      format:
+        process.env.NODE_ENV === 'production'
+          ? winston.format.printf(({ message }) => {
+              const msg =
+                typeof message === 'string' ? message : JSON.stringify(message);
+              return msg.replace(/\n/g, '\\n');
+            })
+          : winston.format.combine(
+              winston.format.timestamp(),
+              winston.format.printf(({ message, timestamp }) => {
+                const msg =
+                  typeof message === 'string'
+                    ? message
+                    : JSON.stringify(message);
+                return `${timestamp} ${msg}`;
+              })
+            ),
+      transports: [new winston.transports.Console()],
+    }),
+  }),
 };

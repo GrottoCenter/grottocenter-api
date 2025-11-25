@@ -29,7 +29,8 @@
     "typesense": "^2.1.0",
     "underscore.date": "^0.6.1",
     "underscore.string": "^3.3.6",
-    "uuid": "^13.0.0"
+    "uuid": "^13.0.0",
+    "winston": "^3.18.3"
   },
   "scripts": {
     "prepare": "husky",

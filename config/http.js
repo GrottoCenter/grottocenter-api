@@ -131,23 +131,26 @@ module.exports.http = {
 
     // Logs each request response to the console (with status and time)
     responseTimeLogger(req, res, next) {
+      const { traceId } = req;
       res.on('finish', () => {
-        const logLevel = res.statusCode >= 500 ? 'error' : 'info';
-        sails.log[logLevel](
-          'Res ::',
-          req.method,
-          req.url,
-          res.statusCode,
-          res.get('X-Response-Time')
-        );
+        logger.run(traceId, () => {
+          const logLevel = res.statusCode >= 500 ? 'error' : 'info';
+          sails.log[logLevel](
+            'Res ::',
+            req.method,
+            req.url,
+            res.statusCode,
+            res.get('X-Response-Time')
+          );
 
-        if (res.statusCode >= 500) {
-          sails.log.error('Request data:', {
-            body: sanitize(req.body),
-            params: req.params,
-            query: sanitize(req.query),
-          });
-        }
+          if (res.statusCode >= 500) {
+            sails.log.error('Request data:', {
+              body: sanitize(req.body),
+              params: req.params,
+              query: sanitize(req.query),
+            });
+          }
+        });
       });
       responseTime()(req, res, next);
     },
