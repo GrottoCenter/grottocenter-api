@@ -168,8 +168,7 @@ describe('Entrance features', () => {
           });
       });
 
-      it('should update coordinates and trigger reverse geocoding', async function () {
-        this.timeout(10000);
+      it('should update coordinates and trigger reverse geocoding', async () => {
         let stub;
         try {
           stub = sinon.stub(GeocodingService, 'reverse').resolves({
@@ -196,7 +195,7 @@ describe('Entrance features', () => {
         } finally {
           if (stub) stub.restore();
         }
-      });
+      }).timeout(10000);
 
       it('should not update coordinates when marking as sensitive by non-admin', async () => {
         await supertest(sails.hooks.http.app)

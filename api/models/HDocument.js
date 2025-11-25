@@ -101,11 +101,6 @@ module.exports = {
       columnName: 'ref_bbs',
     },
 
-    entrance: {
-      columnName: 'id_entrance',
-      model: 'TEntrance',
-    },
-
     massif: {
       columnName: 'id_massif',
       model: 'TMassif',

@@ -24,6 +24,7 @@ describe('Entrance unlink document features', () => {
   });
 
   after(async () => {
+    await JDocumentEntrance.destroy({ document: testDocumentId });
     await TEntrance.destroy({ id: testEntranceId });
     await TDocument.destroy({ id: testDocumentId });
   });
@@ -67,7 +68,7 @@ describe('Entrance unlink document features', () => {
         .expect(404, done);
     });
 
-    it('should return 204 and unlink document', async () => {
+    it('should return 204 and unlink document from entrance', async () => {
       await TEntrance.addToCollection(
         testEntranceId,
         'documents',
@@ -80,6 +81,65 @@ describe('Entrance unlink document features', () => {
         )
         .set('Authorization', moderatorToken)
         .expect(204);
+    });
+
+    it('should verify entrance no longer has the document', async () => {
+      await TEntrance.addToCollection(
+        testEntranceId,
+        'documents',
+        testDocumentId
+      );
+
+      await supertest(sails.hooks.http.app)
+        .delete(
+          `/api/v1/entrances/${testEntranceId}/documents/${testDocumentId}`
+        )
+        .set('Authorization', moderatorToken)
+        .expect(204);
+
+      const entrance =
+        await TEntrance.findOne(testEntranceId).populate('documents');
+      const hasDocument = entrance.documents.some(
+        (d) => d.id === testDocumentId
+      );
+      hasDocument.should.equal(false);
+    });
+
+    it('should only unlink from specified entrance when document is linked to multiple', async () => {
+      const entrance2 = await TEntrance.create({
+        latitude: 1,
+        longitude: 1,
+      }).fetch();
+
+      await TEntrance.addToCollection(
+        testEntranceId,
+        'documents',
+        testDocumentId
+      );
+      await TEntrance.addToCollection(
+        entrance2.id,
+        'documents',
+        testDocumentId
+      );
+
+      await supertest(sails.hooks.http.app)
+        .delete(
+          `/api/v1/entrances/${testEntranceId}/documents/${testDocumentId}`
+        )
+        .set('Authorization', moderatorToken)
+        .expect(204);
+
+      const entrance1 =
+        await TEntrance.findOne(testEntranceId).populate('documents');
+      const entrance2Updated = await TEntrance.findOne(entrance2.id).populate(
+        'documents'
+      );
+
+      entrance1.documents.should.have.length(0);
+      entrance2Updated.documents.should.have.length(1);
+      entrance2Updated.documents[0].id.should.equal(testDocumentId);
+
+      await TEntrance.destroy({ id: entrance2.id });
     });
   });
 });

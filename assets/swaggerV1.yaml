@@ -4930,8 +4930,10 @@ components:
                 type: string
         editor:
           $ref: '#/components/schemas/Organization'
-        entrance:
-          $ref: '#/components/schemas/Entrance'
+        entrances:
+          type: array
+          items:
+            $ref: '#/components/schemas/Entrance'
         files:
           type: array
           items:

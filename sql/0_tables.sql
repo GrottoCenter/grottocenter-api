@@ -1056,6 +1056,15 @@ CREATE TABLE j_document_country (
 	CONSTRAINT j_document_country_t_country_fk FOREIGN KEY (id_country) REFERENCES t_country(iso)
 );
 
+-- DROP TABLE j_document_entrance;
+CREATE TABLE j_document_entrance (
+	id_document int4 NOT NULL,
+	id_entrance int4 NOT NULL,
+	CONSTRAINT j_document_entrance_pk PRIMARY KEY (id_document, id_entrance),
+	CONSTRAINT j_document_entrance_t_document_fk FOREIGN KEY (id_document) REFERENCES t_document(id),
+	CONSTRAINT j_document_entrance_t_entrance_fk FOREIGN KEY (id_entrance) REFERENCES t_entrance(id)
+);
+
 -- t_description definition
 -- Drop table
 -- DROP TABLE t_description;

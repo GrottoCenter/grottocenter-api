@@ -153,8 +153,7 @@ describe('Entrance features', () => {
           });
       });
 
-      it('should return code 200 and create entrance with complete data', function (done) {
-        this.timeout(10000);
+      it('should return code 200 and create entrance with complete data', (done) => {
         const entranceData = {
           cave: 1,
           name: { text: 'Complete Test Entrance', language: 'fra' },
@@ -202,7 +201,7 @@ describe('Entrance features', () => {
               return done(testErr);
             }
           });
-      });
+      }).timeout(10000);
     });
   });
 });

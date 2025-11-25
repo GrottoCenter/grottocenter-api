@@ -243,7 +243,7 @@ const c = {
         source.authorizationDocument,
         c.toSimpleDocument
       ),
-      entrance: convertIfObject(source.entrance, c.toSimpleEntrance, { meta }),
+      entrances: toList('entrances', source, c.toSimpleEntrance, { meta }),
       cave: convertIfObject(source.cave, c.toSimpleCave),
       massifs: toList('massifs', source, c.toSimpleMassif),
 

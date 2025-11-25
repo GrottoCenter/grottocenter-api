@@ -18,8 +18,8 @@ const query = `
     LEFT JOIN t_name n ON n.id_massif = m.id AND n.is_main = true
     LEFT JOIN t_caver a ON a.id = m.id_author
     LEFT JOIN t_caver r ON r.id = m.id_reviewer
-    LEFT JOIN t_entrance e ON e.point_geom && m.geog_polygon AND ST_Contains(m.geog_polygon::geometry, e.point_geom)
-    WHERE m.is_deleted = false AND e.is_deleted = false
+    LEFT JOIN t_entrance e ON e.point_geom && m.geog_polygon AND ST_Contains(m.geog_polygon::geometry, e.point_geom) AND e.is_deleted = false
+    WHERE m.is_deleted = false
     GROUP BY m.id, n.name, n.id_language, r.nickname, a.nickname
     ${exportUtils.PAGGING_PLACEHOLDER}
   `;
@@ -76,8 +76,14 @@ module.exports = {
         { name: 'authorId', type: 'int32' },
         { name: 'author', type: 'string' },
         { name: 'reviewer', type: 'string', optional: true },
-        { name: 'name', type: 'string', sort: true },
-        { name: 'language', type: 'string', facet: true, sort: true },
+        { name: 'name', type: 'string', optional: true, sort: true },
+        {
+          name: 'language',
+          type: 'string',
+          facet: true,
+          optional: true,
+          sort: true,
+        },
         { name: 'nbEntrances', type: 'int32', optional: true },
       ],
       default_sorting_field: 'dateInscription',

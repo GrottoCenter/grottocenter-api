@@ -166,7 +166,7 @@ module.exports = {
     module.exports
       .appendPopulateForSimpleDocument(docQuery)
       .populate('cave')
-      .populate('entrance');
+      .populate('entrances');
     // .populate('parent') // resolved in populateFullDocumentSubEntities()
     // .populate('children') // resolved in populateFullDocumentSubEntities()
     // .populate('authorizationDocument'); // resolved in populateFullDocumentSubEntities()
@@ -181,8 +181,8 @@ module.exports = {
     // eslint-disable-next-line no-param-reassign
     document.mainLanguage = module.exports.getMainLanguage(document.languages);
 
-    if (document.entrance) {
-      asyncQueue.push(NameService.setNames([document.entrance], 'entrance'));
+    if (document.entrances && document.entrances.length > 0) {
+      asyncQueue.push(NameService.setNames(document.entrances, 'entrance'));
     }
     if (document.cave) {
       asyncQueue.push(NameService.setNames([document.cave], 'cave'));
@@ -367,7 +367,7 @@ module.exports = {
       countries,
       isoRegions,
       cave,
-      entrance,
+      entrances,
       massifs,
       parent,
       authorizationDocument,
@@ -399,7 +399,7 @@ module.exports = {
     doc.countries = countries ? await TCountry.find({ id: countries }) : [];
     doc.isoRegions = isoRegions ? await TISO31662.find({ id: isoRegions }) : [];
     doc.cave = cave ? await TCave.findOne(cave) : null;
-    doc.entrance = entrance ? await TEntrance.findOne(entrance) : null;
+    doc.entrances = entrances ? await TEntrance.find({ id: entrances }) : [];
     doc.massifs = massifs ? await TCountry.find({ id: massifs }) : [];
     doc.parent = parent
       ? (await module.exports.getDocuments([parent]))[0]
@@ -436,7 +436,6 @@ module.exports = {
       .populate('massif')
       .populate('cave')
       .populate('editor')
-      .populate('entrance')
       .populate('identifierType')
       .populate('library')
       .populate('license')
@@ -469,14 +468,12 @@ module.exports = {
   },
 
   getIdDocumentByEntranceId: async (entranceId) => {
-    let documentsId = [];
-    if (entranceId) {
-      documentsId = await TDocument.find({
-        where: { entrance: entranceId },
-        select: ['id'],
-      });
-    }
-    return documentsId;
+    if (!entranceId) return [];
+
+    const entrance = await TEntrance.findOne(entranceId).populate('documents');
+    if (!entrance) return [];
+
+    return entrance.documents.map((doc) => ({ id: doc.id }));
   },
 
   getCollectionAncestors: async (documentIds) => {
