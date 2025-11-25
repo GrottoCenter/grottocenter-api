@@ -58,6 +58,22 @@ describe('Document find', () => {
         .expect(404, done);
     });
 
+    it('should return 404 for document ID 0', (done) => {
+      supertest(sails.hooks.http.app)
+        .get('/api/v1/documents/0')
+        .set('Authorization', userToken)
+        .set('Accept', 'application/json')
+        .expect(404, done);
+    });
+
+    it('should return 404 for negative document ID', (done) => {
+      supertest(sails.hooks.http.app)
+        .get('/api/v1/documents/-1')
+        .set('Authorization', userToken)
+        .set('Accept', 'application/json')
+        .expect(404, done);
+    });
+
     it('should return a document', (done) => {
       supertest(sails.hooks.http.app)
         .get(`/api/v1/documents/${testDocId}`)

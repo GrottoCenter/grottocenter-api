@@ -41,6 +41,32 @@ describe('Entrance Duplicate features', () => {
         });
     });
 
+    it('should return not found for entrance duplicate ID 0', (done) => {
+      supertest(sails.hooks.http.app)
+        .get('/api/v1/entrance-duplicates/0')
+        .set('Authorization', userToken)
+        .set('Accept', 'application/json')
+        .expect(404)
+        .end((err, res) => {
+          if (err) return done(err);
+          should(res.body.message).containEql('Invalid ID');
+          return done();
+        });
+    });
+
+    it('should return not found for negative entrance duplicate ID', (done) => {
+      supertest(sails.hooks.http.app)
+        .get('/api/v1/entrance-duplicates/-1')
+        .set('Authorization', userToken)
+        .set('Accept', 'application/json')
+        .expect(404)
+        .end((err, res) => {
+          if (err) return done(err);
+          should(res.body.message).containEql('Invalid ID');
+          return done();
+        });
+    });
+
     it('should find entrance duplicate by id', (done) => {
       supertest(sails.hooks.http.app)
         .get(`/api/v1/entrance-duplicates/${testDuplicateId}`)

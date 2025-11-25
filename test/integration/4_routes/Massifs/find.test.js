@@ -20,9 +20,23 @@ const MASSIF_PROPERTIES = [
 
 describe('Massif features', () => {
   describe('find', () => {
-    it('should return code 404', (done) => {
+    it('should return code 404 for non-existent massif', (done) => {
       supertest(sails.hooks.http.app)
         .get('/api/v1/massifs/987654321')
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(404, done);
+    });
+    it('should return code 404 for massif ID 0', (done) => {
+      supertest(sails.hooks.http.app)
+        .get('/api/v1/massifs/0')
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(404, done);
+    });
+    it('should return code 404 for negative massif ID', (done) => {
+      supertest(sails.hooks.http.app)
+        .get('/api/v1/massifs/-1')
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json')
         .expect(404, done);

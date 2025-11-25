@@ -7,6 +7,8 @@ const {
 } = require('../../../services/mapping/converters');
 
 module.exports = async (req, res) => {
+  const caveId = Number(req.params.id);
+
   const hasRight = RightService.hasGroup(
     req.token?.groups,
     RightService.G.MODERATOR
@@ -15,8 +17,8 @@ module.exports = async (req, res) => {
   const where = {};
   if (!hasRight) where.isDeleted = false;
 
-  const params = { searchedItem: `Cave of id ${req.params.id}` };
-  const cave = await CaveService.getPopulatedCave(req.params.id, where);
+  const params = { searchedItem: `Cave of id ${caveId}` };
+  const cave = await CaveService.getPopulatedCave(caveId, where);
 
   if (!cave) return res.notFound(`${params.searchedItem} not found`);
   return ControllerService.treatAndConvert(

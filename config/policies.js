@@ -37,7 +37,7 @@ module.exports.policies = {
   'v1/auth/sign-up': true,
 
   // Caves
-  'v1/cave/find': true,
+  'v1/cave/find': ['validateId'],
   'v1/cave/find-all': true,
   'v1/cave/cumulated-length': true,
   'v1/cave/add-document': 'tokenAuth',
@@ -52,7 +52,7 @@ module.exports.policies = {
   // Caver
   'v1/caver/count': true,
   'v1/caver/users-count': true,
-  'v1/caver/find': true,
+  'v1/caver/find': ['validateId'],
   'v1/caver/get-subscriptions': true,
   'v1/caver/add-explored-entrance': 'tokenAuth',
   'v1/caver/create': 'tokenAuth',
@@ -85,7 +85,7 @@ module.exports.policies = {
   'v1/document/find-all': true,
   'v1/document/find-by-caver-id': true,
   'v1/document/find-children': true,
-  'v1/document/find': true,
+  'v1/document/find': ['validateId'],
   'v1/document/get-snapshots': true,
   'v1/document/check-rows': 'tokenAuth',
   'v1/document/create': 'tokenAuth',
@@ -105,7 +105,7 @@ module.exports.policies = {
   'v1/document-duplicate/create-many': 'tokenAuth',
   'v1/document-duplicate/delete-many': 'tokenAuth',
   'v1/document-duplicate/delete-one': 'tokenAuth',
-  'v1/document-duplicate/find': 'tokenAuth',
+  'v1/document-duplicate/find': ['validateId', 'tokenAuth'],
   'v1/document-duplicate/find-all': 'tokenAuth',
 
   // DocumentType
@@ -125,7 +125,7 @@ module.exports.policies = {
   // Entrance
   'v1/entrance/count': true,
   'v1/entrance/public-count': true,
-  'v1/entrance/find': true,
+  'v1/entrance/find': ['validateId'],
   'v1/entrance/find-random': true,
   'v1/entrance/get-snapshots': true,
   'v1/entrance/get-all-snapshots': true,
@@ -145,7 +145,7 @@ module.exports.policies = {
   'v1/entrance-duplicate/create-many': 'tokenAuth',
   'v1/entrance-duplicate/delete-many': 'tokenAuth',
   'v1/entrance-duplicate/delete-one': 'tokenAuth',
-  'v1/entrance-duplicate/find': 'tokenAuth',
+  'v1/entrance-duplicate/find': ['validateId', 'tokenAuth'],
   'v1/entrance-duplicate/find-all': 'tokenAuth',
 
   // GeoLoc
@@ -197,7 +197,7 @@ module.exports.policies = {
   'v1/country/unsubscribe': 'tokenAuth',
 
   // Massif
-  'v1/massif/find': true,
+  'v1/massif/find': ['validateId'],
   'v1/massif/get-statistics': true,
   'v1/massif/get-entrances-data-quality': true,
   'v1/massif/update': 'tokenAuth',
@@ -220,7 +220,7 @@ module.exports.policies = {
 
   // Organizations
   'v1/organization/count': true,
-  'v1/organization/find': true,
+  'v1/organization/find': ['validateId'],
   'v1/organization/find-all': true,
   'v1/organization/create': 'tokenAuth',
   'v1/organization/delete': 'tokenAuth',

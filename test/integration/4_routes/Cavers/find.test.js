@@ -28,9 +28,25 @@ describe('Caver features', () => {
   });
 
   describe('find()', () => {
-    it('should return code 404', (done) => {
+    it('should return code 404 for non-existent caver', (done) => {
       supertest(sails.hooks.http.app)
         .get('/api/v1/cavers/987654321')
+        .set('Authorization', userToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(404, done);
+    });
+    it('should return code 404 for caver ID 0', (done) => {
+      supertest(sails.hooks.http.app)
+        .get('/api/v1/cavers/0')
+        .set('Authorization', userToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(404, done);
+    });
+    it('should return code 404 for negative caver ID', (done) => {
+      supertest(sails.hooks.http.app)
+        .get('/api/v1/cavers/-1')
         .set('Authorization', userToken)
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json')

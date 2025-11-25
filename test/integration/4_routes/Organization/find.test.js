@@ -29,9 +29,23 @@ const ORGANIZATION_PROPERTIES = [
 
 describe('Organization features', () => {
   describe('Find', () => {
-    it('should return code 404', (done) => {
+    it('should return code 404 for non-existent organization', (done) => {
       supertest(sails.hooks.http.app)
         .get('/api/v1/organizations/987654321')
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(404, done);
+    });
+    it('should return code 404 for organization ID 0', (done) => {
+      supertest(sails.hooks.http.app)
+        .get('/api/v1/organizations/0')
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(404, done);
+    });
+    it('should return code 404 for negative organization ID', (done) => {
+      supertest(sails.hooks.http.app)
+        .get('/api/v1/organizations/-1')
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json')
         .expect(404, done);
