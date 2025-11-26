@@ -4,8 +4,7 @@ const sinon = require('sinon');
 const AuthTokenService = require('../../AuthTokenService');
 const GeocodingService = require('../../../../api/services/GeocodingService');
 
-describe('Organization features', function test() {
-  this.timeout(4000);
+describe('Organization features', () => {
   describe('create', () => {
     let userToken;
     before(async () => {
@@ -71,7 +70,7 @@ describe('Organization features', function test() {
 
             return done();
           });
-      });
+      }).timeout(4000);
     });
   });
 });

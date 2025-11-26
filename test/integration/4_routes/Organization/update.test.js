@@ -24,9 +24,7 @@ describe('Organization features', () => {
         url: 'https://fr.wikipedia.org/wiki/Montpellier',
         yearBirth: 2022,
       };
-      it('should return code 200', function updateOrganizationTest(done) {
-        // Increase timeout for this test
-        this.timeout(10000);
+      it('should return code 200', (done) => {
         supertest(sails.hooks.http.app)
           .put(`/api/v1/organizations/1`)
           .set('Authorization', userToken)

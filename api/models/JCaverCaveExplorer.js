@@ -1,12 +1,12 @@
 /**
- * JEntranceCaver.js
+ * JCaverCaveExplorer.js
  *
- * @description :: jEntranceCaver model
+ * @description :: jCaverCaveExplorer model
  * @docs        :: http://sailsjs.org/#!documentation/models
  */
 
 module.exports = {
-  tableName: 'j_entrance_caver',
+  tableName: 'j_caver_cave_explorer',
 
   attributes: {
     caver: {
@@ -14,9 +14,9 @@ module.exports = {
       model: 'TCaver',
     },
 
-    entrance: {
-      columnName: 'id_entrance',
-      model: 'TEntrance',
+    cave: {
+      columnName: 'id_cave',
+      model: 'TCave',
     },
   },
 };

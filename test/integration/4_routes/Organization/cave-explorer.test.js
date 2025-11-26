@@ -1,5 +1,5 @@
 const supertest = require('supertest');
-const AuthTokenService = require('../AuthTokenService');
+const AuthTokenService = require('../../AuthTokenService');
 
 describe('Cave Explorer endpoints', () => {
   let agent;
@@ -47,7 +47,7 @@ describe('Cave Explorer endpoints', () => {
     await TGrotto.destroy({ id: organizationId });
   });
 
-  describe('PUT /api/v1/caves/:caveId/explorers/:organizationId', () => {
+  describe('PUT /api/v1/caves/:caveId/organizations/:organizationId', () => {
     after(async () => {
       await JGrottoCaveExplorer.destroy({
         cave: caveId,
@@ -57,34 +57,34 @@ describe('Cave Explorer endpoints', () => {
 
     it('should add organization as cave explorer with admin token', async () => {
       await agent
-        .put(`/api/v1/caves/${caveId}/explorers/${organizationId}`)
+        .put(`/api/v1/caves/${caveId}/organizations/${organizationId}`)
         .set('Authorization', adminToken)
-        .expect(200);
+        .expect(204);
     });
 
     it('should return 403 with non-member user token', async () => {
       await agent
-        .put(`/api/v1/caves/${caveId}/explorers/${organizationId}`)
+        .put(`/api/v1/caves/${caveId}/organizations/${organizationId}`)
         .set('Authorization', userToken)
         .expect(403);
     });
 
     it('should return 401 without token', async () => {
       await agent
-        .put(`/api/v1/caves/${caveId}/explorers/${organizationId}`)
+        .put(`/api/v1/caves/${caveId}/organizations/${organizationId}`)
         .expect(401);
     });
 
     it('should return 404 for non-existent cave', async () => {
       await agent
-        .put(`/api/v1/caves/99999/explorers/${organizationId}`)
+        .put(`/api/v1/caves/99999/organizations/${organizationId}`)
         .set('Authorization', adminToken)
         .expect(404);
     });
 
     it('should return 404 for non-existent organization', async () => {
       await agent
-        .put(`/api/v1/caves/${caveId}/explorers/99999`)
+        .put(`/api/v1/caves/${caveId}/organizations/99999`)
         .set('Authorization', adminToken)
         .expect(404);
     });
@@ -96,13 +96,13 @@ describe('Cave Explorer endpoints', () => {
       });
 
       await agent
-        .put(`/api/v1/caves/${caveId}/explorers/${organizationId}`)
+        .put(`/api/v1/caves/${caveId}/organizations/${organizationId}`)
         .set('Authorization', adminToken)
         .expect(400);
     });
   });
 
-  describe('DELETE /api/v1/caves/:caveId/explorers/:organizationId', () => {
+  describe('DELETE /api/v1/caves/:caveId/organizations/:organizationId', () => {
     before(async () => {
       await JGrottoCaveExplorer.create({
         cave: caveId,
@@ -119,27 +119,27 @@ describe('Cave Explorer endpoints', () => {
 
     it('should remove organization as cave explorer with admin token', async () => {
       await agent
-        .delete(`/api/v1/caves/${caveId}/explorers/${organizationId}`)
+        .delete(`/api/v1/caves/${caveId}/organizations/${organizationId}`)
         .set('Authorization', adminToken)
-        .expect(200);
+        .expect(204);
     });
 
     it('should return 403 with non-member user token', async () => {
       await agent
-        .delete(`/api/v1/caves/${caveId}/explorers/${organizationId}`)
+        .delete(`/api/v1/caves/${caveId}/organizations/${organizationId}`)
         .set('Authorization', userToken)
         .expect(403);
     });
 
     it('should return 401 without token', async () => {
       await agent
-        .delete(`/api/v1/caves/${caveId}/explorers/${organizationId}`)
+        .delete(`/api/v1/caves/${caveId}/organizations/${organizationId}`)
         .expect(401);
     });
 
     it('should return 404 for non-existent cave', (done) => {
       supertest(sails.hooks.http.app)
-        .delete(`/api/v1/caves/99999/explorers/${organizationId}`)
+        .delete(`/api/v1/caves/99999/organizations/${organizationId}`)
         .set('Authorization', adminToken)
         .expect(404)
         .end(done);
@@ -152,7 +152,7 @@ describe('Cave Explorer endpoints', () => {
       });
 
       await agent
-        .delete(`/api/v1/caves/${caveId}/explorers/${organizationId}`)
+        .delete(`/api/v1/caves/${caveId}/organizations/${organizationId}`)
         .set('Authorization', adminToken)
         .expect(400);
     });

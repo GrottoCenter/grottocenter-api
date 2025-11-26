@@ -1,5 +1,5 @@
 const supertest = require('supertest');
-const AuthTokenService = require('../AuthTokenService');
+const AuthTokenService = require('../../AuthTokenService');
 
 describe('Caver Organization Membership', () => {
   let agent;

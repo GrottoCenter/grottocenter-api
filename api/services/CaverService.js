@@ -65,10 +65,7 @@ module.exports = {
         limit: 10,
         sort: [{ dateInscription: 'DESC' }],
       })
-      .populate('exploredEntrances', {
-        limit: 10,
-        sort: [{ dateInscription: 'DESC' }],
-      })
+      .populate('exploredCaves')
       .populate('grottos')
       .populate('groups')
       .populate('subscribedToCountries')
@@ -84,13 +81,30 @@ module.exports = {
       ? 'CAVER'
       : 'AUTHOR';
 
-    const asyncArr = [
+    // Set entrances for explored caves
+    // eslint-disable-next-line global-require
+    const CaveService = require('./CaveService');
+    await CaveService.setEntrances(caver.exploredCaves);
+
+    await NameService.setNames([...caver.exploredCaves], 'cave');
+
+    // Split caves between entrances and networks (cave)
+    caver.exploredNetworks = [];
+    caver.exploredEntrances = [];
+    for (const cave of caver.exploredCaves) {
+      if (cave.entrances.length > 1) {
+        caver.exploredNetworks.push(cave);
+      }
+      if (cave.entrances.length === 1) {
+        caver.exploredEntrances.push(cave.entrances.pop());
+      }
+    }
+
+    await Promise.all([
       NameService.setNames(caver.exploredEntrances, 'entrance'),
       NameService.setNames(caver.grottos, 'grotto'),
       NameService.setNames(caver.subscribedToMassifs, 'massif'),
-    ];
-
-    await Promise.all(asyncArr);
+    ]);
 
     return {
       id: caver.id,
@@ -102,6 +116,7 @@ module.exports = {
       groups: caver.groups,
       grottos: caver.grottos,
       exploredEntrances: caver.exploredEntrances,
+      exploredNetworks: caver.exploredNetworks,
       documents: caver.documents,
       subscribedToMassifs: caver.subscribedToMassifs,
       subscribedToCountries: caver.subscribedToCountries,

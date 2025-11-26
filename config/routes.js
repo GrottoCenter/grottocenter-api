@@ -71,8 +71,6 @@ module.exports.routes = {
   'POST /api/v1/signup': 'v1/auth/sign-up',
 
   // Caver
-  'DELETE /api/v1/cavers/:caverId/entrances/:entranceId':
-    'v1/caver/remove-explored-entrance',
   'DELETE /api/v1/cavers/:caverId/groups/:groupId':
     'v1/caver/remove-from-group',
   'GET /api/v1/cavers/:id': 'v1/caver/find',
@@ -90,8 +88,7 @@ module.exports.routes = {
   'POST /api/v1/cavers/': 'v1/caver/create',
   'POST /api/v1/cavers/:caverId/groups': 'v1/caver/set-groups',
   'PUT /api/v1/cavers/:caverId': 'v1/caver/update',
-  'PUT /api/v1/cavers/:caverId/entrances/:entranceId':
-    'v1/caver/add-explored-entrance',
+
   'PUT /api/v1/cavers/:caverId/groups/:groupId': 'v1/caver/put-on-group',
   'PUT /api/v1/cavers/:caverId/organizations/:organizationId':
     'v1/caver/add-to-organization',
@@ -142,9 +139,13 @@ module.exports.routes = {
   'PUT /api/v1/caves/:id': 'v1/cave/update',
   'DELETE /api/v1/caves/:caveId/documents/:documentId':
     'v1/cave/unlink-document',
-  'PUT /api/v1/caves/:caveId/explorers/:organizationId': 'v1/cave/add-explorer',
-  'DELETE /api/v1/caves/:caveId/explorers/:organizationId':
-    'v1/cave/remove-explorer',
+  'PUT /api/v1/caves/:caveId/organizations/:organizationId':
+    'v1/organization/add-explored-cave',
+  'DELETE /api/v1/caves/:caveId/organizations/:organizationId':
+    'v1/organization/remove-explored-cave',
+  'PUT /api/v1/caves/:caveId/cavers/:caverId': 'v1/caver/add-explored-cave',
+  'DELETE /api/v1/caves/:caveId/cavers/:caverId':
+    'v1/caver/remove-explored-cave',
   /**
    * @deprecated use api/v1/caves instead
    */

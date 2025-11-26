@@ -80,6 +80,9 @@ describe('Organization features', () => {
         isDeleted: true,
       }).fetch();
 
+      const cave = await TCave.create({ author: 1 }).fetch();
+      await JGrottoCaveExplorer.create({ cave: cave.id, grotto: org.id });
+
       await supertest(sails.hooks.http.app)
         .delete(`/api/v1/organizations/${org.id}?isPermanent=true`)
         .set('Authorization', moderatorToken)
@@ -89,6 +92,11 @@ describe('Organization features', () => {
 
       const deleted = await TGrotto.findOne(org.id);
       should(deleted).be.undefined();
+
+      const junctionCaveExplorer = await JGrottoCaveExplorer.find({
+        grotto: org.id,
+      });
+      should(junctionCaveExplorer).have.length(0);
     });
 
     it('should permanently delete and merge into another organization', async () => {

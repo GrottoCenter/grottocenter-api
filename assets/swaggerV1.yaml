@@ -300,7 +300,7 @@ paths:
         '403':
           description: You are not authorized to add a document to a cave.
 
-  '/caves/{caveId}/explorers/{organizationId}':
+  '/caves/{caveId}/organizations/{organizationId}':
     put:
       tags:
         - caves
@@ -320,7 +320,7 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        '204':
           description: Successful operation
         '400':
           description: Organization is already exploring this cave.
@@ -350,7 +350,7 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        '204':
           description: Successful operation
         '400':
           description: Organization is not exploring this cave.
@@ -791,20 +791,22 @@ paths:
         '403':
           description: You are not authorized to remove a caver from a group.
 
-  '/cavers/{caverId}/entrances/{entranceId}':
+  '/caves/{caveId}/cavers/{caverId}':
     put:
       tags:
+        - caves
         - cavers
-        - entrances
-      description: Make an entrance as explored by a caver. Can only be used on self account.
+      description: Add a caver as a cave explorer. Users can only add caves to their own profile. Moderators and administrators can add caves to any user's profile.
       parameters:
-        - name: caverId
+        - name: caveId
           in: path
+          description: Cave id to add the explorer to.
           required: true
           schema:
             type: string
-        - name: entranceId
+        - name: caverId
           in: path
+          description: Caver id to be added as cave explorer.
           required: true
           schema:
             type: string
@@ -812,33 +814,39 @@ paths:
         '204':
           description: Successful operation
         '400':
-          description: "Bad request. Both the caverId and entranceId parameters must exist in the database. Also, you can't mark an entrance as as explored if it is already marked as explored for the caver."
+          description: Cave not found or caver is already exploring this cave.
+        '401':
+          description: Authentication required.
         '403':
-          description: You are not authorized to mark an entrance as explored by a caver or you can't mark an entrance as explored for someone else than you.
+          description: You can only manage your own explored caves (unless you are a moderator or administrator).
 
     delete:
       tags:
+        - caves
         - cavers
-        - entrances
-      description: Unmark an entrance as explored for a caver. Can only be used on self account.
+      description: Remove a caver as a cave explorer. Users can only remove caves from their own profile. Moderators and administrators can remove caves from any user's profile.
       parameters:
-        - name: caverId
+        - name: caveId
           in: path
+          description: Cave id to remove the explorer from.
           required: true
           schema:
             type: string
-        - name: entranceId
+        - name: caverId
           in: path
+          description: Caver id to be removed as cave explorer.
           required: true
           schema:
             type: string
       responses:
-        '200':
+        '204':
           description: Successful operation
         '400':
-          description: Bad request. Both the caverId and entranceId parameters must exist in the database.
+          description: Cave not found or caver is not exploring this cave.
+        '401':
+          description: Authentication required.
         '403':
-          description: You are not authorized to mark an entrance as explored by a caver or you can't unmark an entrance as explored for someone else than you.
+          description: You can only manage your own explored caves (unless you are a moderator or administrator).
 
   '/cavers/{caverId}/organizations/{organizationId}':
     put:
@@ -4707,6 +4715,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Entrance'
+        exploredNetworks:
+          type: array
+          items:
+            $ref: '#/components/schemas/Cave'
         groups:
           type: array
           items:
