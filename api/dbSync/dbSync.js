@@ -191,7 +191,7 @@ async function makeDbSync(isFileExportEnabled = true) {
 
   const licenseFiles = ['license_en.txt', 'license_fr.txt'];
   for (const licenseFile of licenseFiles) {
-    const path = `${__dirname}/../assets/dbExport/${licenseFile}`;
+    const path = `${__dirname}/../../assets/dbExport/${licenseFile}`;
     archive.append(fs.createReadStream(path), { name: licenseFile });
   }
 
