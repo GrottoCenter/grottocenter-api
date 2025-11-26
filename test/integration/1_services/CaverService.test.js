@@ -47,6 +47,22 @@ describe('CaverService', () => {
       should(newCaver.mail).containEql('@mail.no');
     });
 
+    it('should create a non user caver with only name', async () => {
+      const caverData = { name: 'OnlyName' };
+      const newCaver = await CaverService.createNonUserCaver(caverData);
+      should(newCaver.name).equal('OnlyName');
+      should(newCaver.nickname).equal('OnlyName');
+      await TCaver.destroyOne({ id: newCaver.id });
+    });
+
+    it('should create a non user caver with only surname', async () => {
+      const caverData = { surname: 'OnlySurname' };
+      const newCaver = await CaverService.createNonUserCaver(caverData);
+      should(newCaver.surname).equal('OnlySurname');
+      should(newCaver.nickname).equal('OnlySurname');
+      await TCaver.destroyOne({ id: newCaver.id });
+    });
+
     after(async () => {
       const res1 = await TCaver.destroyOne(caver1Data);
       const res2 = await TCaver.destroyOne(caver2Data);
@@ -67,8 +83,12 @@ describe('CaverService', () => {
       should(caver.grottos.length).equal(2);
       should(caver.grottos).containDeep([{ id: 1 }, { id: 2 }]);
       should(caver.groups).containDeep([{ id: 1 }]);
-      should(caver.exploredEntrances.length).equal(2);
-      should(caver.exploredEntrances).containDeep([{ id: 4 }, { id: 5 }]);
+      should(caver.exploredNetworks.length).equal(1);
+      should(caver.exploredNetworks[0].entrances.length).equal(2);
+      should(caver.exploredNetworks[0].entrances).containDeep([
+        { id: 4 },
+        { id: 5 },
+      ]);
       should(caver.language).equal('fra');
       should.not.exist(caver.password);
       should.not.exist(caver.activationCode);

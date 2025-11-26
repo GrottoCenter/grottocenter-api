@@ -633,6 +633,18 @@ CREATE TABLE j_entrance_caver (
 	CONSTRAINT j_entrance_caver_t_caver0_fk FOREIGN KEY (id_caver) REFERENCES t_caver(id),
 	CONSTRAINT j_entrance_caver_t_entrance_fk FOREIGN KEY (id_entrance) REFERENCES t_entrance(id)
 );
+-- j_caver_cave_explorer definition
+-- Drop table
+-- DROP TABLE j_caver_cave_explorer;
+CREATE TABLE j_caver_cave_explorer (
+  id_caver int4 NOT NULL,
+  id_cave int4 NOT NULL,
+  CONSTRAINT j_caver_cave_explorer_pk PRIMARY KEY (id_caver, id_cave),
+  CONSTRAINT j_caver_cave_explorer_t_caver_fk FOREIGN KEY (id_caver) REFERENCES t_caver(id),
+  CONSTRAINT j_caver_cave_explorer_t_cave_fk FOREIGN KEY (id_cave) REFERENCES t_cave(id)
+);
+CREATE INDEX j_caver_cave_explorer_id_caver_idx ON j_caver_cave_explorer (id_caver);
+CREATE INDEX j_caver_cave_explorer_id_cave_idx ON j_caver_cave_explorer (id_cave);
 -- j_grotto_cave_explorer definition
 -- Drop table
 -- DROP TABLE j_grotto_cave_explorer;

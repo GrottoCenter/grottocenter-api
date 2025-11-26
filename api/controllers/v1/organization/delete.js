@@ -66,8 +66,6 @@ module.exports = async (req, res) => {
 
   if (deletePermanently) {
     if (
-      organization.exploredNetworks.length > 0 ||
-      organization.exploredEntrances.length > 0 ||
       organization.partnerNetworks.length > 0 ||
       organization.partnerEntrances.length > 0 ||
       organization.cavers.length > 0
@@ -75,6 +73,9 @@ module.exports = async (req, res) => {
       // TODO Properly handle the removal of these properties once there are APIs to set/disable them
       return res.status(501).send();
     }
+
+    // Remove explored cave/entrance relationships
+    await JGrottoCaveExplorer.destroy({ grotto: organizationId });
 
     if (organization.documents.length > 0) {
       if (shouldMergeInto) {

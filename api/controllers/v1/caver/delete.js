@@ -35,6 +35,7 @@ module.exports = async (req, res) => {
   if (shouldMergeInto) {
     mergeIntoEntity = await TCaver.findOne(mergeIntoId)
       .populate('exploredEntrances')
+      .populate('exploredCaves')
       .populate('groups')
       .populate('subscribedToCountries')
       .populate('subscribedToMassifs')
@@ -62,7 +63,7 @@ module.exports = async (req, res) => {
 
   // eslint-disable-next-line no-inner-declarations
   async function linkedEntitiesDeleteOrMerge(key) {
-    if (caver[key].length === 0) return;
+    if (!caver[key] || caver[key].length === 0) return;
     if (shouldMergeInto) {
       const existingEntities = mergeIntoEntity[key].map((e) => e.id);
       const entitiesToAdd = caver[key]
@@ -127,6 +128,7 @@ module.exports = async (req, res) => {
 
   await Promise.all([
     linkedEntitiesDeleteOrMerge('exploredEntrances'),
+    linkedEntitiesDeleteOrMerge('exploredCaves'),
     linkedEntitiesDeleteOrMerge('groups'),
     linkedEntitiesDeleteOrMerge('subscribedToCountries'),
     linkedEntitiesDeleteOrMerge('subscribedToMassifs'),

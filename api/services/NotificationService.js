@@ -154,40 +154,46 @@ const getCountryMassifAndRegionSubscribers = async (
   if (entityCountryId) {
     const country =
       await TCountry.findOne(entityCountryId).populate('subscribedCavers');
-    countrySubscribers.push(
-      ...country.subscribedCavers.map((caver) => ({
-        ...caver,
-        subscriptionName: country.nativeName,
-        subscriptionType: 'country',
-      }))
-    );
+    if (country) {
+      countrySubscribers.push(
+        ...country.subscribedCavers.map((caver) => ({
+          ...caver,
+          subscriptionName: country.nativeName,
+          subscriptionType: 'country',
+        }))
+      );
+    }
   }
   if (entityMassifIds) {
     await Promise.all(
       entityMassifIds.map(async (massifId) => {
         const massif =
           await TMassif.findOne(massifId).populate('subscribedCavers');
-        await NameService.setNames([massif], 'massif');
-        massifsSubscribers.push(
-          ...massif.subscribedCavers.map((caver) => ({
-            ...caver,
-            subscriptionType: 'massif',
-            subscriptionName: massif.names[0]?.name,
-          }))
-        );
+        if (massif) {
+          await NameService.setNames([massif], 'massif');
+          massifsSubscribers.push(
+            ...massif.subscribedCavers.map((caver) => ({
+              ...caver,
+              subscriptionType: 'massif',
+              subscriptionName: massif.names[0]?.name,
+            }))
+          );
+        }
       })
     );
   }
   if (entityRegionId) {
     const region =
       await TISO31662.findOne(entityRegionId).populate('subscribedCavers');
-    regionSubscribers.push(
-      ...region.subscribedCavers.map((caver) => ({
-        ...caver,
-        subscriptionName: region.name,
-        subscriptionType: 'region',
-      }))
-    );
+    if (region) {
+      regionSubscribers.push(
+        ...region.subscribedCavers.map((caver) => ({
+          ...caver,
+          subscriptionName: region.name,
+          subscriptionType: 'region',
+        }))
+      );
+    }
   }
   return { countrySubscribers, massifsSubscribers, regionSubscribers };
 };

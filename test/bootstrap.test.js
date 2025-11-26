@@ -73,6 +73,7 @@ before(function (done) {
           'tlocation',
           'tcave',
           'tentrance',
+          'jcavercaveexplorer',
           'tmassif',
           'thistory',
           'tfileformat',

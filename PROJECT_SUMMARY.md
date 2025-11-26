@@ -224,6 +224,14 @@ test/
 - **Fixtures**: Fixted library for consistent test data
 - **Coverage**: NYC for code coverage reporting
 
+### Test Conventions
+- **CRITICAL**: Always use arrow functions `() => {}` for `describe()` blocks
+- **NEVER** use `function` keyword in `describe()` blocks (causes func-names linting error)
+- For `it()` test cases:
+  - Always use arrow functions: `it('test name', (done) => {})`
+  - Chain `.timeout()` at the end if needed: `it('test name', (done) => { ... }).timeout(5000);`
+- Always use arrow functions for `before()`/`after()` hooks
+
 ### Running Tests
 ```bash
 npm test                    # All tests
