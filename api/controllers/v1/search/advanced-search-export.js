@@ -48,7 +48,7 @@ module.exports = async (req, res) => {
       size: BATCH_SIZE,
     }).catch((err) => err);
 
-    if (!results.hits) {
+    if (!results || !results.hits) {
       sails.log.error('Export to CSV error', params, page, results);
       if (!hasSentHeader) {
         res.serverError('An internal error occurred');

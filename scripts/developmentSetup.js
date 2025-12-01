@@ -76,7 +76,7 @@ function upCommand() {
 }
 
 function stopCommand() {
-  console.log('Will remove the developement environment for Grottocenter API');
+  console.log('Will stop the developement environment for Grottocenter API');
 
   if (checkIfNotInstalled('docker')) process.exit(1);
   if (checkIfNotInstalled('docker-compose')) process.exit(1);
@@ -86,14 +86,18 @@ function stopCommand() {
   console.log('All containers are stoped');
 }
 
-function downCommand() {
+function downCommand(shouldRemoveVolumes = false) {
   console.log('Will remove the developement environment for Grottocenter API');
 
   if (checkIfNotInstalled('docker')) process.exit(1);
   if (checkIfNotInstalled('docker-compose')) process.exit(1);
 
-  console.log('Stoping docker containers: docker-compose down');
-  run(dockerConfFolder, 'docker-compose', ['down']);
+  console.log(
+    `Stoping docker containers ${shouldRemoveVolumes ? '(includings volumes)' : ''}: docker-compose down ${shouldRemoveVolumes ? '-v' : ''}`
+  );
+  const args = ['down'];
+  if (shouldRemoveVolumes) args.push('-v');
+  run(dockerConfFolder, 'docker-compose', args);
   console.log('All containers where removed');
 }
 
@@ -105,19 +109,7 @@ function cleanCommand() {
   if (checkIfNotInstalled('docker')) process.exit(1);
   if (checkIfNotInstalled('docker-compose')) process.exit(1);
 
-  downCommand();
-  console.log('Removing volumes: docker volume rm');
-  run(scriptPath, 'docker', [
-    'volume',
-    'rm',
-    ...childProcess
-      .execSync('docker volume ls -q --filter name=grottocenter_')
-      .toString()
-      .trim()
-      .split('\n')
-      .filter(Boolean),
-  ]);
-  console.log('All volumes removed');
+  downCommand(true);
   upCommand();
 }
 
