@@ -13,7 +13,7 @@
     "@natlibfi/marc-record": "^9.1.6",
     "@natlibfi/marc-record-serializers": "^10.1.6",
     "archiver": "^7.0.1",
-    "argon2": "^0.41.1",
+    "argon2": "^0.44.0",
     "ejs": "^3.1.10",
     "express-rate-limit": "^8.2.1",
     "jsonwebtoken": "^9.0.2",
