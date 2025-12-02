@@ -66,7 +66,10 @@ module.exports = async (req, res) => {
   // Handle name manually
   // Currently, use only one name per entrance (even if the model can handle multiple names)
   // Done before the TCave update so the last_change_cave DB trigger will fetch the last updated name
-  await TName.updateOne({ entrance: entranceId }).set({
+  await TName.updateOne({
+    entrance: entranceId,
+    isMain: true,
+  }).set({
     name: req.param('name')?.text,
     language: req.param('name')?.language,
   });
