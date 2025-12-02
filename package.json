@@ -11,7 +11,7 @@
     "@azure/storage-blob": "^12.29.1",
     "@babel/runtime": "^7.28.4",
     "@natlibfi/marc-record": "^9.1.6",
-    "@natlibfi/marc-record-serializers": "^10.1.6",
+    "@natlibfi/marc-record-serializers": "^11.0.0",
     "archiver": "^7.0.1",
     "argon2": "^0.41.1",
     "ejs": "^3.1.10",
