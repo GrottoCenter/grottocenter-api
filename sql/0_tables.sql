@@ -327,6 +327,10 @@ CREATE TABLE j_caver_group (
 	CONSTRAINT j_caver_group_t_caver_fk FOREIGN KEY (id_caver) REFERENCES t_caver(id),
 	CONSTRAINT j_caver_group_t_group0_fk FOREIGN KEY (id_group) REFERENCES t_group(id)
 );
+-- Performance indexes for t_caver
+CREATE INDEX idx_j_caver_group_caver ON j_caver_group(id_caver);
+CREATE INDEX idx_j_caver_group_group ON j_caver_group(id_group);
+
 -- j_country_crs definition
 -- Drop table
 -- DROP TABLE j_country_crs;
@@ -347,6 +351,10 @@ CREATE TABLE j_grotto_caver (
 	CONSTRAINT j_grotto_caver_t_caver_fk FOREIGN KEY (id_caver) REFERENCES t_caver(id),
 	CONSTRAINT j_grotto_caver_t_grotto0_fk FOREIGN KEY (id_grotto) REFERENCES t_grotto(id)
 );
+-- Performance indexes for t_caver
+CREATE INDEX idx_j_grotto_caver_caver ON j_grotto_caver(id_caver);
+CREATE INDEX idx_j_grotto_caver_grotto ON j_grotto_caver(id_grotto);
+
 -- j_license_type definition
 -- Drop table
 -- DROP TABLE j_license_type;
@@ -382,6 +390,10 @@ CREATE TABLE t_cave (
 	CONSTRAINT t_cave_t_caver2_fk FOREIGN KEY (id_reviewer) REFERENCES t_caver(id),
 	CONSTRAINT t_cave_t_caver_fk FOREIGN KEY (id_author) REFERENCES t_caver(id)
 );
+-- Performance indexes for t_cave
+CREATE INDEX idx_t_cave_is_deleted ON t_cave(is_deleted);
+CREATE INDEX idx_t_cave_author ON t_cave(id_author);
+
 -- t_entrance definition
 -- Drop table
 -- DROP TABLE t_entrance;
@@ -433,6 +445,10 @@ CREATE TABLE t_entrance (
 );
 
 CREATE INDEX idx_entrance_geom_gist ON t_entrance USING gist (point_geom);
+-- Performance indexes for t_entrance
+CREATE INDEX idx_t_entrance_cave ON t_entrance(id_cave) WHERE id_cave IS NOT NULL;
+CREATE INDEX idx_t_entrance_country ON t_entrance(id_country);
+CREATE INDEX idx_t_entrance_is_deleted ON t_entrance(is_deleted);
 
 -- t_location definition
 -- Drop table
@@ -455,6 +471,9 @@ CREATE TABLE t_location (
 	CONSTRAINT t_location_t_entrance_fk FOREIGN KEY (id_entrance) REFERENCES t_entrance(id),
 	CONSTRAINT t_location_t_language0_fk FOREIGN KEY (id_language) REFERENCES t_language(id)
 );
+-- Performance indexes for t_location
+CREATE INDEX idx_t_location_entrance ON t_location(id_entrance);
+
 -- t_point definition
 -- Drop table
 -- DROP TABLE t_point;
@@ -512,6 +531,9 @@ CREATE TABLE t_rigging (
 	CONSTRAINT t_rigging_t_point_fk FOREIGN KEY (id_point) REFERENCES t_point(id),
 	CONSTRAINT t_rigging_t_cave_fk FOREIGN KEY (id_cave) REFERENCES t_cave(id)
 );
+CREATE INDEX idx_t_rigging_entrance ON t_rigging(id_entrance) WHERE id_entrance IS NOT NULL;
+CREATE INDEX idx_t_rigging_cave ON t_rigging(id_cave) WHERE id_cave IS NOT NULL;
+
 -- h_cave definition
 -- Drop table
 -- DROP TABLE h_cave;
@@ -696,6 +718,9 @@ CREATE TABLE t_comment (
 	CONSTRAINT t_comment_t_entrance2_fk FOREIGN KEY (id_exit) REFERENCES t_entrance(id),
 	CONSTRAINT t_comment_t_language0_fk FOREIGN KEY (id_language) REFERENCES t_language(id)
 );
+CREATE INDEX idx_t_comment_entrance ON t_comment(id_entrance) WHERE id_entrance IS NOT NULL;
+CREATE INDEX idx_t_comment_cave ON t_comment(id_cave) WHERE id_cave IS NOT NULL;
+
 -- t_document definition
 -- Drop table
 -- DROP TABLE t_document;
@@ -759,9 +784,12 @@ CREATE TABLE t_document (
 	CONSTRAINT t_document_t_document_fk3 FOREIGN KEY (id_authorization_document) REFERENCES t_document (id)
 );
 
-CREATE INDEX IF NOT EXISTS idx_document_id_parent ON t_document(id_parent) WHERE id_parent IS NOT NULL;
-CREATE INDEX IF NOT EXISTS idx_document_hierarchy ON t_document(id, id_parent);
-
+CREATE INDEX idx_document_id_parent ON t_document(id_parent) WHERE id_parent IS NOT NULL;
+CREATE INDEX idx_document_hierarchy ON t_document(id, id_parent);
+-- Performance indexes for t_document
+CREATE INDEX idx_t_document_type ON t_document(id_type);
+CREATE INDEX idx_t_document_author ON t_document(id_author);
+CREATE INDEX idx_t_document_is_deleted ON t_document(is_deleted);
 
 -- t_document_duplicate definition
 -- Drop table
@@ -805,6 +833,10 @@ CREATE TABLE t_file (
 	CONSTRAINT t_file_t_document_fk FOREIGN KEY (id_document) REFERENCES t_document(id),
 	CONSTRAINT t_file_t_file_format_fk FOREIGN KEY (id_file_format) REFERENCES t_file_format(id)
 );
+-- Performance indexes for t_file
+CREATE INDEX idx_t_file_document ON t_file(id_document);
+CREATE INDEX idx_t_file_validated ON t_file(is_validated);
+
 -- t_history definition
 -- Drop table
 -- DROP TABLE t_history;
@@ -829,6 +861,9 @@ CREATE TABLE t_history (
 	CONSTRAINT t_history_t_language0_fk FOREIGN KEY (id_language) REFERENCES t_language(id),
 	CONSTRAINT t_history_t_point_fk FOREIGN KEY (id_point) REFERENCES t_point(id)
 );
+CREATE INDEX idx_t_history_cave ON t_history(id_cave) WHERE id_cave IS NOT NULL;
+CREATE INDEX idx_t_history_entrance ON t_history(id_entrance) WHERE id_entrance IS NOT NULL;
+
 -- t_junction definition
 -- Drop table
 -- DROP TABLE t_junction;
@@ -868,6 +903,14 @@ CREATE TABLE t_name (
 	CONSTRAINT t_name_t_massif0_fk FOREIGN KEY (id_massif) REFERENCES t_massif(id),
 	CONSTRAINT t_name_t_point_fk FOREIGN KEY (id_point) REFERENCES t_point(id)
 );
+-- Composite index for common query patterns
+CREATE INDEX idx_t_name_entity_main ON t_name(id_entrance, id_cave, id_massif, id_grotto, is_main) WHERE is_deleted = false;
+CREATE INDEX idx_t_name_grotto ON t_name(id_grotto) WHERE id_grotto IS NOT NULL;
+CREATE INDEX idx_t_name_point ON t_name(id_point) WHERE id_point IS NOT NULL;
+CREATE INDEX idx_t_name_massif ON t_name(id_massif) WHERE id_massif IS NOT NULL;
+CREATE INDEX idx_t_name_cave ON t_name(id_cave) WHERE id_cave IS NOT NULL;
+CREATE INDEX idx_t_name_entrance ON t_name(id_entrance) WHERE id_entrance IS NOT NULL;
+
 -- h_comment definition
 -- Drop table
 -- DROP TABLE h_comment;
@@ -1076,6 +1119,9 @@ CREATE TABLE j_document_entrance (
 	CONSTRAINT j_document_entrance_t_document_fk FOREIGN KEY (id_document) REFERENCES t_document(id),
 	CONSTRAINT j_document_entrance_t_entrance_fk FOREIGN KEY (id_entrance) REFERENCES t_entrance(id)
 );
+-- Performance indexes for j_document_entrance
+CREATE INDEX idx_j_document_entrance_entrance ON j_document_entrance(id_entrance);
+CREATE INDEX idx_j_document_entrance_document ON j_document_entrance(id_document);
 
 -- t_description definition
 -- Drop table
@@ -1108,6 +1154,10 @@ CREATE TABLE t_description (
 	CONSTRAINT t_description_t_massif3_fk FOREIGN KEY (id_massif) REFERENCES t_massif(id),
 	CONSTRAINT t_description_t_point_fk FOREIGN KEY (id_point) REFERENCES t_point(id)
 );
+CREATE INDEX idx_t_description_document ON t_description(id_document) WHERE id_document IS NOT NULL;
+CREATE INDEX idx_t_description_entrance ON t_description(id_entrance) WHERE id_entrance IS NOT NULL;
+CREATE INDEX idx_t_description_cave ON t_description(id_cave) WHERE id_cave IS NOT NULL;
+
 -- h_description definition
 -- Drop table
 -- DROP TABLE h_description;
@@ -1148,6 +1198,8 @@ CREATE TABLE j_caver_massif_subscription (
 	CONSTRAINT j_caver_massif_t_caver_fk FOREIGN KEY (id_caver) REFERENCES t_caver(id),
   CONSTRAINT j_caver_massif_t_massif_fk FOREIGN KEY (id_massif) REFERENCES t_massif(id)
 );
+-- Performance indexes for subscription queries
+CREATE INDEX idx_j_caver_massif_subscription_caver ON j_caver_massif_subscription(id_caver);
 
 -- DROP TABLE j_caver_country_subscription ;
 CREATE TABLE j_caver_country_subscription (
@@ -1157,6 +1209,8 @@ CREATE TABLE j_caver_country_subscription (
 	CONSTRAINT j_caver_country_t_caver_fk FOREIGN KEY (id_caver) REFERENCES t_caver(id),
   CONSTRAINT j_caver_country_t_country_fk FOREIGN KEY (iso) REFERENCES t_country(iso)
 );
+-- Performance indexes for subscription queries
+CREATE INDEX idx_j_caver_country_subscription_caver ON j_caver_country_subscription(id_caver);
 
 -- DROP TABLE t_iso3166_2;
 CREATE TABLE t_iso3166_2 (
