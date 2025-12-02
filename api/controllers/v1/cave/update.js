@@ -36,6 +36,7 @@ module.exports = async (req, res) => {
   // Done before the TCave update so the last_change_cave DB trigger will fetch the last updated name
   await TName.updateOne({
     cave: caveId,
+    isMain: true,
   }).set({
     name: req.param('name')?.text,
     language: req.param('name')?.language,
