@@ -18,7 +18,7 @@ const query = `
       n.name AS name,
       n.id_language AS language,
       e.iso_3166_2 AS iso3166,
-      e.id_country AS country,
+      c.native_name AS country,
       e.region,
       e.county,
       e.city,
@@ -32,10 +32,11 @@ const query = `
       e.id_cave AS "caveId"
     FROM t_entrance AS e
     LEFT JOIN t_name n ON n.id_entrance = e.id AND n.is_main = true
+    LEFT JOIN t_country c ON c.iso = e.id_country
     LEFT JOIN t_caver a ON a.id = e.id_author
     LEFT JOIN t_caver r ON r.id = e.id_reviewer
     WHERE e.is_deleted = false
-    GROUP BY e.id, n.name, n.id_language, r.nickname, a.nickname
+    GROUP BY e.id, n.name, n.id_language, c.native_name, r.nickname, a.nickname
     ${exportUtils.PAGGING_PLACEHOLDER}
   `;
 
