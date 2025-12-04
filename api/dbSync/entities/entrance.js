@@ -18,7 +18,7 @@ const query = `
       n.name AS name,
       n.id_language AS language,
       e.iso_3166_2 AS iso3166,
-      c.native_name AS country,
+      CONCAT (e.id_country, ' - ', c.native_name) AS country,
       e.region,
       e.county,
       e.city,

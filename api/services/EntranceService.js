@@ -256,7 +256,7 @@ module.exports = {
       name: names[0].name,
       language: names[0].language,
       iso3166: e.iso_3166_2,
-      country: country?.nativeName,
+      country: [country?.id, country?.nativeName].filter((c) => c).join(' - '),
       geology: e.geology?.trim(),
       cave: cave && {
         name: cave.name,

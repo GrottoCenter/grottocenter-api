@@ -201,7 +201,7 @@ module.exports = {
       name: names?.[0]?.name,
       language: names?.[0]?.language,
       iso3166: o.iso_3166_2,
-      country: country?.nativeName,
+      country: [country?.id, country?.nativeName].filter((e) => e).join(' - '),
       nbCavers: cavers?.length ?? 0,
     };
     await SearchService.updateDocument('organizations', organization);
