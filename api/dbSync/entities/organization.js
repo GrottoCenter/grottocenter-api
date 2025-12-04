@@ -23,7 +23,7 @@ const query = `
       g.city,
       g.county,
       g.region,
-      c.native_name AS country,
+      CONCAT (g.id_country, ' - ', c.native_name) AS country,
       g.postal_code AS "postalCode",
       COUNT(m.id_caver) AS "nbCavers"
     FROM t_grotto AS g
