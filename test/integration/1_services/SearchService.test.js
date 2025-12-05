@@ -301,6 +301,36 @@ describe('SearchService', () => {
       const call = typesenseStub.search.getCall(0);
       should(call.args[1].include_fields).equal('id,name');
     });
+
+    it('should cap size parameter at 1000 to prevent Typesense errors', async () => {
+      typesenseStub.search = sinon
+        .stub(typesense, 'search')
+        .resolves({ hits: [] });
+
+      await SearchService.collectionSearch({
+        query: 'test',
+        entity: 'organizations',
+        size: 2000,
+      });
+
+      const call = typesenseStub.search.getCall(0);
+      should(call.args[1].per_page).equal(1000);
+    });
+
+    it('should not modify size parameter when under 1000', async () => {
+      typesenseStub.search = sinon
+        .stub(typesense, 'search')
+        .resolves({ hits: [] });
+
+      await SearchService.collectionSearch({
+        query: 'test',
+        entity: 'organizations',
+        size: 500,
+      });
+
+      const call = typesenseStub.search.getCall(0);
+      should(call.args[1].per_page).equal(500);
+    });
   });
 
   describe('fieldSearch()', () => {
