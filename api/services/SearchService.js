@@ -101,11 +101,14 @@ async function collectionSearch({
   const q = query || '*';
   const filterBy = buildFilter(filter, isLogicalCompareAnd);
 
+  // Cap size at Typesense's limit of 1000 hits per page
+  const perPage = size ? Math.min(size, 1000) : size;
+
   const params = {
     q,
     query_by: allEntities[entity].query.query_by,
     page, // Page starts at 1
-    per_page: size,
+    per_page: perPage,
     ...(sort && { sort_by: `${sort},_text_match:desc` }),
     ...(filterBy && { filter_by: filterBy }),
     ...(fields && { include_fields: fields.join(',') }),

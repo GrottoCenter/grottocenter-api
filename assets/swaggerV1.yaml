@@ -3513,8 +3513,9 @@ paths:
                   description: The page number, start at 1
                 size:
                   type: integer
-                  description: The size of the page, default 10
+                  description: The size of the page, default 10. Maximum 1000 due to search engine limitations.
                   default: 10
+                  maximum: 1000
       responses:
         '200':
           description: Successful operation
