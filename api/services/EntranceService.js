@@ -97,7 +97,7 @@ module.exports = {
       ? tEntranceSensitivity[0].isSensitive
       : true;
     const hasRight = isEntranceSensitive
-      ? RightService.hasGroup(token.groups, RightService.G.ADMINISTRATOR)
+      ? RightService.hasGroup(token?.groups, RightService.G.ADMINISTRATOR)
       : true; // No need to call hasRight if it's not a sensitive entrance
     /* eslint-disable no-param-reassign */
     return Promise.all(
