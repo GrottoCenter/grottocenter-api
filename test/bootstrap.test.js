@@ -4,17 +4,20 @@ const sailsPostGreAdapter = require('sails-postgresql');
 const customSQL = require('./customSQL');
 const CommonService = require('../api/services/CommonService');
 
-// Suppress Waterline adapter warnings about timestamp primary keys in history tables
-/* eslint-disable no-console, func-names */
+// Condense primary key validation warnings for all models to save on log output
+/* eslint-disable no-console */
 const originalWarn = console.warn;
-console.warn = function (...args) {
+console.warn = (...args) => {
   const message = args.join(' ');
   if (
-    message.includes(
-      'Records sent back from a database adapter should always have a valid property'
-    ) ||
-    message.includes('corresponds with the primary key attribute')
+    message.includes('missing or invalid `id`') &&
+    message.includes('Records sent back from a database adapter')
   ) {
+    const modelMatch = message.match(/for model `([^`]+)`/);
+    const model = modelMatch ? modelMatch[1] : 'unknown';
+    console.warn(
+      `Primary key validation issue in model '${model}' - type mismatch between database and model definition`
+    );
     return;
   }
   originalWarn.apply(console, args);
