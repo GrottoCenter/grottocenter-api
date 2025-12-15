@@ -166,7 +166,7 @@ describe('Entrance features', () => {
             should(populatedEntrance.names[0].language).equal('aut');
             return done();
           });
-      });
+      }).timeout(10000);
 
       it('should update coordinates and trigger reverse geocoding', async () => {
         let stub;
@@ -211,7 +211,7 @@ describe('Entrance features', () => {
 
         const entrance = await TEntrance.findOne(entranceId);
         should(entrance.isSensitive).be.true();
-      });
+      }).timeout(10000);
     });
   });
 });

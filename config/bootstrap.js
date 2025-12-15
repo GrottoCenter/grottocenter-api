@@ -16,6 +16,25 @@ const logger = require('../api/utils/logger');
 module.exports.bootstrap = async function (done) {
   logger.patchSailsLog();
 
+  // Condense primary key validation warnings for all models to save on log output
+  /* eslint-disable no-console */
+  const originalWarn = console.warn;
+  console.warn = (...args) => {
+    const message = args.join(' ');
+    if (
+      message.includes('missing or invalid `id`') &&
+      message.includes('Records sent back from a database adapter')
+    ) {
+      const modelMatch = message.match(/for model `([^`]+)`/);
+      const model = modelMatch ? modelMatch[1] : 'unknown';
+      sails.log.warn(
+        `Primary key validation issue in model '${model}' - type mismatch between database and model definition`
+      );
+      return;
+    }
+    originalWarn.apply(console, args);
+  };
+
   dbSync.registerMakeDbSync();
   await dbSync.ensureSearchDbIsPopulated();
   return done();

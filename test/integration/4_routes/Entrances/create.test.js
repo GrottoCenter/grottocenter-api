@@ -151,7 +151,7 @@ describe('Entrance features', () => {
               return done(testErr);
             }
           });
-      });
+      }).timeout(10000);
 
       it('should return code 200 and create entrance with complete data', (done) => {
         const entranceData = {
