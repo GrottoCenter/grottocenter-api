@@ -247,6 +247,11 @@ npm test -- --grep "Auth"  # Specific test patterns
 - **Models**: Data validation, relationships, lifecycle callbacks
 - **Converters**: Transform database models to API responses
 
+### ORM & Database Best Practices
+- **Prefer ORM over Raw SQL**: Use Waterline ORM methods instead of `CommonService.query()` when possible
+- **Leverage Model Relationships**: Use `.populate()` with defined associations rather than manual joins
+- **Performance Optimization**: Only fetch required data - avoid full population when using converter functions like `toSimpleCave()`
+
 ### Naming Conventions
 ```javascript
 // Database tables

@@ -175,6 +175,30 @@ describe('CaveService', () => {
     });
   });
 
+  describe('getExploringOrganizations()', () => {
+    it('should return exploring organizations for a cave', async () => {
+      const organizations = await CaveService.getExploringOrganizations(1);
+      should(organizations).be.an.Array();
+      organizations.forEach((org) => {
+        should.exist(org.id);
+        should.exist(org.name);
+        // Language comes from names array via getMainLanguage
+        if (org.names && org.names.length > 0) {
+          const mainName = org.names.find((n) => n.isMain);
+          if (mainName) {
+            should.exist(mainName.language);
+          }
+        }
+      });
+    });
+
+    it('should return empty array for cave with no exploring organizations', async () => {
+      const organizations = await CaveService.getExploringOrganizations(999999);
+      should(organizations).be.an.Array();
+      should(organizations.length).equal(0);
+    });
+  });
+
   describe('getPopulatedCave()', () => {
     it('should return null for non-existent cave', async () => {
       const cave = await CaveService.getPopulatedCave(999999);
@@ -188,6 +212,8 @@ describe('CaveService', () => {
       should.exist(cave.names);
       should.exist(cave.entrances);
       should.exist(cave.massifs);
+      should.exist(cave.exploringOrganizations);
+      should(cave.exploringOrganizations).be.an.Array();
     });
 
     it('should handle cave with no names', async () => {
@@ -201,6 +227,8 @@ describe('CaveService', () => {
 
       const cave = await CaveService.getPopulatedCave(createdCave.id);
       should.exist(cave);
+      should.exist(cave.exploringOrganizations);
+      should(cave.exploringOrganizations).be.an.Array();
 
       await TCave.destroyOne({ id: createdCave.id });
     });
@@ -215,6 +243,14 @@ describe('CaveService', () => {
   describe('updateInSearch()', () => {
     it('should call SearchService.updateDocument', async () => {
       const populatedCave = await CaveService.getPopulatedCave(1);
+      await CaveService.updateInSearch(populatedCave);
+    });
+
+    it('should exclude exploringOrganizations from search data', async () => {
+      const populatedCave = await CaveService.getPopulatedCave(1);
+      populatedCave.exploringOrganizations = [{ id: 1, name: 'Test Org' }];
+
+      // This should not throw an error and should exclude exploringOrganizations
       await CaveService.updateInSearch(populatedCave);
     });
   });
