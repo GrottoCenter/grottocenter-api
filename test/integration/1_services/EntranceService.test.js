@@ -433,6 +433,14 @@ describe('EntranceService', () => {
       should(result).have.property('comments');
       should(result).have.property('documents');
     });
+
+    it('should populate cave with exploringOrganizations when cave exists', async () => {
+      const result = await EntranceService.getPopulatedEntrance(1);
+      if (result && result.cave) {
+        should.exist(result.cave.exploringOrganizations);
+        should(result.cave.exploringOrganizations).be.an.Array();
+      }
+    });
   });
 
   describe('createEntrance()', () => {

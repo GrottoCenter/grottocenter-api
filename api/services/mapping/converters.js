@@ -45,6 +45,11 @@ const c = {
     entrances: toList('entrances', source, c.toSimpleEntrance, { meta }),
     massifs: toList('massifs', source, c.toSimpleMassif),
     documents: toList('documents', source, c.toSimpleDocument),
+    exploringOrganizations: toList(
+      'exploringOrganizations',
+      source,
+      c.toSimpleOrganization
+    ),
   }),
 
   toSimpleCave: (source) => ({
@@ -56,6 +61,11 @@ const c = {
     temperature: source.temperature,
     isDiving: source.isDiving,
     entrances: source.entrances?.map((e) => e.id),
+    exploringOrganizations: toList(
+      'exploringOrganizations',
+      source,
+      c.toSimpleOrganization
+    ),
   }),
 
   toCaver: (source) => {

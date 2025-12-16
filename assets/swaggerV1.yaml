@@ -4678,6 +4678,25 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Entrance'
+        exploringOrganizations:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+                description: Organization ID
+              name:
+                type: string
+                description: Organization name
+              language:
+                type: string
+                nullable: true
+                description: Organization language
+              isDeleted:
+                type: boolean
+                description: Whether the organization is deleted
+          description: List of organizations that explored this cave
         id:
           type: integer
         isDiving:

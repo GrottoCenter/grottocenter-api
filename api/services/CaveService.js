@@ -150,6 +150,30 @@ module.exports = {
     }
   },
 
+  /**
+   * Get organizations that explored the cave
+   * @param {number} caveId
+   * @returns {Promise<Array>} Array of organizations with id and name
+   */
+  getExploringOrganizations: async (caveId) => {
+    const query = `
+      SELECT g.*
+      FROM t_grotto g
+             JOIN j_grotto_cave_explorer j ON g.id = j.id_grotto
+      WHERE j.id_cave = $1
+        AND g.is_deleted = false
+    `;
+    const result = await CommonService.query(query, [caveId]);
+    const grottos = result.rows;
+
+    if (!grottos || grottos.length === 0) {
+      return [];
+    }
+
+    await NameService.setNames(grottos, 'grotto');
+    return grottos;
+  },
+
   async getPopulatedCave(caveId, subEntitiesWhere = {}) {
     const cave = await TCave.findOne(caveId)
       .populate('author')
@@ -167,6 +191,9 @@ module.exports = {
       DocumentService.getDocuments(cave.documents?.map((d) => d.id) ?? []),
     ]);
 
+    cave.exploringOrganizations =
+      await module.exports.getExploringOrganizations(cave.id);
+
     const nameAsyncArr = [
       NameService.setNames(cave?.entrances, 'entrance'),
       NameService.setNames(cave?.massifs, 'massif'),
@@ -181,7 +208,6 @@ module.exports = {
     // - histories
     // - riggings
     // - comments
-    // - exploringGrottos
     // - partneringGrottos
 
     return cave;

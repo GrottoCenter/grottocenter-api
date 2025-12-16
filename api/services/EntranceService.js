@@ -396,9 +396,14 @@ module.exports = {
     if (!entrance) return null;
 
     if (entrance.cave) {
-      [entrance.cave.massifs, entrance.cave.entrances] = await Promise.all([
+      [
+        entrance.cave.massifs,
+        entrance.cave.entrances,
+        entrance.cave.exploringOrganizations,
+      ] = await Promise.all([
         CaveService.getMassifs(entrance.cave.id),
         TEntrance.find({ cave: entrance.cave.id }),
+        CaveService.getExploringOrganizations(entrance.cave.id),
       ]);
       await Promise.all([
         NameService.setNames(entrance.cave.massifs, 'massif'),
