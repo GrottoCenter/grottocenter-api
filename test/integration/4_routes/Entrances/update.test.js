@@ -59,6 +59,23 @@ describe('Entrance features', () => {
           locations: initialEntrance.locations.map((x) => x.id),
         };
         await TEntrance.update(entranceId).set(cleanedData);
+
+        // Reset names to original state
+        await TName.destroy({ entrance: entranceId });
+        for (const name of initialEntrance.names) {
+          // eslint-disable-next-line no-await-in-loop
+          await TName.create({
+            id: name.id,
+            name: name.name,
+            isMain: name.isMain,
+            author: name.author?.id || name.author,
+            reviewer: name.reviewer?.id || name.reviewer,
+            dateInscription: name.dateInscription,
+            dateReviewed: name.dateReviewed,
+            language: name.language?.id || name.language,
+            entrance: entranceId,
+          });
+        }
       });
 
       describe('Unmark an entrance as sensitive', () => {
@@ -145,27 +162,46 @@ describe('Entrance features', () => {
           });
       });
 
-      it('should return code 200 on name update', (done) => {
-        supertest(sails.hooks.http.app)
-          .put(`/api/v1/entrances/${entranceId}`)
-          .set('Authorization', userToken)
-          .set('Content-type', 'application/json')
-          .set('Accept', 'application/json')
-          .send({
-            name: {
-              text: 'new entrance name',
-              language: 'aut',
-            },
-          })
-          .expect(200)
-          .end(async (err) => {
-            if (err) return done(err);
-            const populatedEntrance =
-              await TEntrance.findOne(entranceId).populate('names');
-            should(populatedEntrance.names[0].name).equal('new entrance name');
-            should(populatedEntrance.names[0].language).equal('aut');
-            return done();
-          });
+      it('should return code 200 on name update', async () => {
+        // Ensure entrance 1 has a main name before the test
+        await TName.destroy({ entrance: entranceId });
+        await TName.create({
+          entrance: entranceId,
+          name: 'Original Name',
+          isMain: true,
+          author: 1,
+          language: 'eng',
+          dateInscription: new Date(),
+        });
+
+        return new Promise((resolve, reject) => {
+          supertest(sails.hooks.http.app)
+            .put(`/api/v1/entrances/${entranceId}`)
+            .set('Authorization', userToken)
+            .set('Content-type', 'application/json')
+            .set('Accept', 'application/json')
+            .send({
+              name: {
+                text: 'new entrance name',
+                language: 'aut',
+              },
+            })
+            .expect(200)
+            .end(async (err) => {
+              if (err) return reject(err);
+              try {
+                const populatedEntrance =
+                  await TEntrance.findOne(entranceId).populate('names');
+                should(populatedEntrance.names[0].name).equal(
+                  'new entrance name'
+                );
+                should(populatedEntrance.names[0].language).equal('aut');
+                return resolve();
+              } catch (testErr) {
+                return reject(testErr);
+              }
+            });
+        });
       }).timeout(10000);
 
       it('should update coordinates and trigger reverse geocoding', async () => {
