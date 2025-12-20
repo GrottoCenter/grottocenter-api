@@ -94,7 +94,10 @@ module.exports.http = {
       if (token) {
         TokenService.verify(token, (err, responseToken) => {
           if (!err) {
+            sails.log.info('Authenticated user', responseToken);
             req.token = responseToken; // This is the decrypted token or the payload you provided
+          } else {
+            sails.log.warn('Token verification failed:', err.message);
           }
         });
       }
@@ -126,6 +129,10 @@ module.exports.http = {
     // Logs each request to the console
     requestLogger(req, res, next) {
       sails.log.info('Req ::', req.method, req.url);
+      sails.log.info('Client data:', {
+        ip: req.ip || req.headers['x-forwarded-for'],
+        userAgent: req.headers['user-agent'],
+      });
       return next();
     },
 
@@ -144,11 +151,18 @@ module.exports.http = {
           );
 
           if (res.statusCode >= 500) {
-            sails.log.error('Request data:', {
-              body: sanitize(req.body),
-              params: req.params,
-              query: sanitize(req.query),
-            });
+            sails.log.error(
+              'Request data:',
+              JSON.stringify(
+                {
+                  body: sanitize(req.body),
+                  params: req.params,
+                  query: sanitize(req.query),
+                },
+                null,
+                2
+              )
+            );
           }
         });
       });
