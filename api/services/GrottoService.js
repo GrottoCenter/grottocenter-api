@@ -86,10 +86,7 @@ module.exports = {
     const authorDocIds = organization.documents.map((e) => e.id);
 
     // Get documents where organization is editor
-    const editorDocs = await TDocument.find({ editor: organizationId })
-      .populate('descriptions')
-      .populate('type')
-      .populate('files', { where: { isValidated: true } });
+    const editorDocs = await TDocument.find({ editor: organizationId });
 
     // Combine both sets of documents and remove duplicates
     const allDocIds = [
