@@ -479,14 +479,18 @@ module.exports = {
   getCollectionAncestors: async (documentIds) => {
     if (documentIds.length === 0) return [];
 
+    // Infinite loop should normaly not happen unless the t_document table is not properly formated as a tree
+    // In case it happend search for:
+    // - Self reference: SELECT id, id_parent FROM t_document WHERE id = id_parent;
+    // - Cycle: A → B → A
     const query = `
       WITH RECURSIVE doc_hierarchy AS (
         SELECT id, id_parent, id_type
-        FROM t_document 
+        FROM t_document
         WHERE id = ANY($1)
-        
+
         UNION ALL
-        
+
         SELECT d.id, d.id_parent, d.id_type
         FROM t_document d
         JOIN doc_hierarchy dh ON d.id = dh.id_parent

@@ -123,12 +123,15 @@ module.exports = {
           entrance.names = nameResult[0].names;
           entrance.name = entrance.names[0].name;
         }
-        const caveName = await NameService.setNames(
-          [{ id: entrance.cave.id ?? entrance.cave }],
-          'cave'
-        );
-        if (caveName && caveName.length > 0) {
-          entrance.caveName = caveName[0].name;
+
+        if (entrance.cave) {
+          const caveName = await NameService.setNames(
+            [{ id: entrance.cave?.id ?? entrance.cave }],
+            'cave'
+          );
+          if (caveName && caveName.length > 0) {
+            entrance.caveName = caveName[0].name;
+          }
         }
 
         return entrance;
