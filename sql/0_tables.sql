@@ -242,9 +242,9 @@ CREATE TABLE t_region (
 -- Drop table
 -- DROP TABLE t_subject;
 CREATE TABLE t_subject (
-	code bpchar(5) NOT NULL,
+	code bpchar(8) NOT NULL,
 	subject varchar(300) NOT NULL,
-	code_parent bpchar(5) NULL,
+	code_parent bpchar(8) NULL,
   url varchar(300),
   dewey_cote bpchar(12),
   dewey_topic varchar(300),
