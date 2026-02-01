@@ -8,7 +8,7 @@
   "keywords": [],
   "dependencies": {
     "@aws-sdk/client-ses": "^3.948.0",
-    "@azure/storage-blob": "^12.29.1",
+    "@azure/storage-blob": "^12.30.0",
     "@babel/runtime": "^7.28.4",
     "@natlibfi/marc-record": "^10.0.1",
     "@natlibfi/marc-record-serializers": "^11.0.1",
