@@ -23,16 +23,22 @@ async function joinMany({
   const { rows: foreignRows } = await CommonService.query(query, [ids]);
   // Remove the table alias if present. So we can match it with our rows
   const cleanForeignField = foreignField.split('.').pop();
+  // Remember:
+  // - A single row can attach multiple different foreign rows (ie: the entrance can have multiple locations)
+  // - The same foreign row can be attached to multiple different rows (ie: the same cave can be attached to multiple entrances)
   for (const row of rows) {
-    const frow = foreignRows.find((e) => e[cleanForeignField] === row[rowsKey]);
-    if (!frow) continue; // eslint-disable-line no-continue
+    const fRows = foreignRows.filter(
+      (e) => e[cleanForeignField] === row[rowsKey]
+    );
+    if (fRows.length === 0) continue; // eslint-disable-line no-continue
     if (!row[localField]) row[localField] = [];
-
-    if (transform) {
-      row[localField].push(transform(frow));
-    } else {
-      const { [cleanForeignField]: _, ...cleanFRow } = frow;
-      row[localField].push(cleanFRow);
+    for (const fRow of fRows) {
+      if (transform) {
+        row[localField].push(transform(fRow));
+      } else {
+        const { [cleanForeignField]: _, ...cleanFRow } = fRow;
+        row[localField].push(cleanFRow);
+      }
     }
   }
 }
