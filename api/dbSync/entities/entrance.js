@@ -57,6 +57,7 @@ async function* processRows(source) {
           'is_diving AS "isDiving"',
         ],
         join: [`LEFT JOIN t_name n ON n.id_cave = c.id AND n.is_main = true`],
+        transform: (e) => e, // Allow to also keep the id
         where: [],
       },
       {
