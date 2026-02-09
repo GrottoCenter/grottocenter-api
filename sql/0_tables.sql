@@ -245,7 +245,7 @@ CREATE TABLE t_subject (
 	code bpchar(8) NOT NULL,
 	subject varchar(300) NOT NULL,
 	code_parent bpchar(8) NULL,
-  url varchar(300),
+  url varchar(1000),
   dewey_cote bpchar(12),
   dewey_topic varchar(300),
 	CONSTRAINT t_subject_pk PRIMARY KEY (code),
