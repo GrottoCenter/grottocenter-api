@@ -7,7 +7,7 @@
   "license": "CC-BY-SA-3.0",
   "keywords": [],
   "dependencies": {
-    "@aws-sdk/client-ses": "^3.948.0",
+    "@aws-sdk/client-ses": "^3.986.0",
     "@azure/storage-blob": "^12.30.0",
     "@babel/runtime": "^7.28.4",
     "@natlibfi/marc-record": "^10.0.1",
