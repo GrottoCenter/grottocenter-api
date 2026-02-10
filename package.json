@@ -9,7 +9,7 @@
   "dependencies": {
     "@aws-sdk/client-ses": "^3.986.0",
     "@azure/storage-blob": "^12.30.0",
-    "@babel/runtime": "^7.28.4",
+    "@babel/runtime": "^7.28.6",
     "@natlibfi/marc-record": "^10.0.1",
     "@natlibfi/marc-record-serializers": "^11.0.1",
     "archiver": "^7.0.1",
