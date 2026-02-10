@@ -23,7 +23,7 @@
     "multer": "^2.0.2",
     "response-time": "^2.3.4",
     "rss-parser": "^3.13.0",
-    "sails": "^1.5.15",
+    "sails": "^1.5.16",
     "sails-hook-orm": "^4.0.3",
     "sails-postgresql": "^5.0.1",
     "typesense": "^2.1.0",
