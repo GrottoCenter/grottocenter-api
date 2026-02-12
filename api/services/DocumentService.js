@@ -58,7 +58,7 @@ module.exports = {
       parent: parent && {
         type: parent.type?.name,
         title: parent.descriptions?.[0]?.title,
-        descriptions: parent.descriptions?.[0]?.body,
+        description: parent.descriptions?.[0]?.body,
       },
       editor: editor && { name: editor.names?.[0]?.name },
       library: library && { name: library.names?.[0]?.name },

@@ -176,15 +176,7 @@ const c = {
   }),
 
   toDocumentDescriptions: (sources) => {
-    if (!Array.isArray(sources)) {
-      if (sources !== undefined && sources !== null) {
-        sails.log.info(
-          'toDocumentDescriptions received non-array descriptions:',
-          { type: typeof sources, value: sources }
-        );
-      }
-      return {};
-    }
+    if (!Array.isArray(sources)) return {};
     const descs = sources.filter((e) => !e.isDeleted);
     if (!descs || descs.length === 0) return {};
     return {
