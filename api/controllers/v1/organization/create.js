@@ -1,6 +1,7 @@
 const ControllerService = require('../../../services/ControllerService');
 const GrottoService = require('../../../services/GrottoService');
 const { toOrganization } = require('../../../services/mapping/converters');
+const { validateNameLength } = require('../../../utils/nameValidation');
 
 module.exports = async (req, res) => {
   // Check params
@@ -8,6 +9,12 @@ module.exports = async (req, res) => {
     return res.badRequest(
       'You must provide a name to create a new organization.'
     );
+  }
+
+  // Validate name length
+  const nameError = validateNameLength(req.body.name?.text);
+  if (nameError) {
+    return res.badRequest(nameError);
   }
 
   const cleanedData = {

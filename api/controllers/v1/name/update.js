@@ -1,6 +1,7 @@
 const ControllerService = require('../../../services/ControllerService');
 const ErrorService = require('../../../services/ErrorService');
 const { toName } = require('../../../services/mapping/converters');
+const { validateNameLength } = require('../../../utils/nameValidation');
 
 module.exports = async (req, res) => {
   // Check if name exists
@@ -12,8 +13,15 @@ module.exports = async (req, res) => {
     });
   }
 
+  // Validate name length
+  const nameText = req.param('name');
+  const nameError = validateNameLength(nameText);
+  if (nameError) {
+    return res.badRequest(nameError);
+  }
+
   const cleanedData = {
-    name: req.param('name'),
+    name: nameText,
   };
 
   try {

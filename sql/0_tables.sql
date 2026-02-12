@@ -1021,7 +1021,7 @@ CREATE TABLE h_history (
 -- DROP TABLE h_name;
 CREATE TABLE h_name (
 	id serial NOT NULL,
-	"name" varchar(100) NULL,
+	"name" varchar(200) NULL,
 	is_main bool NOT NULL DEFAULT false,
 	id_author int4 NOT NULL,
 	id_reviewer int4 NULL,

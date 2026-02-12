@@ -2,6 +2,7 @@ const ControllerService = require('../../../services/ControllerService');
 const CaveService = require('../../../services/CaveService');
 const NotificationService = require('../../../services/NotificationService');
 const { toCave } = require('../../../services/mapping/converters');
+const { validateNameLength } = require('../../../utils/nameValidation');
 
 module.exports = async (req, res) => {
   const caveId = req.param('id');
@@ -31,6 +32,13 @@ module.exports = async (req, res) => {
   if (newTemperature) updatedFields.temperature = newTemperature;
   if (newIsDiving) updatedFields.isDiving = newIsDiving;
 
+  // Validate name length
+  const nameText = req.body.name?.text;
+  const nameError = validateNameLength(nameText);
+  if (nameError) {
+    return res.badRequest(nameError);
+  }
+
   // Handle name manually
   // Currently, use only one name per cave (even if the model can handle multiple names)
   // Done before the TCave update so the last_change_cave DB trigger will fetch the last updated name
@@ -38,8 +46,8 @@ module.exports = async (req, res) => {
     cave: caveId,
     isMain: true,
   }).set({
-    name: req.param('name')?.text,
-    language: req.param('name')?.language,
+    name: nameText,
+    language: req.body.name?.language,
   });
 
   await TCave.updateOne({ id: caveId }).set(updatedFields);
