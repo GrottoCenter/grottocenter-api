@@ -17,10 +17,45 @@ const allEntities = {
 };
 const allEntitiesKeys = Object.keys(allEntities);
 
+/**
+ * Increment the last numeric segment of a date string to compute
+ * an exclusive upper bound for prefix-based range filtering.
+ * Works with any depth: "2025" -> "2026", "2025-01" -> "2025-02",
+ * "2025-12" -> "2026-01", "2025-01-31" -> "2025-02-01", etc.
+ */
+function getDateUpperBound(value) {
+  const parts = value.split('-').map(Number);
+  if (parts.some(Number.isNaN)) return null;
+
+  // Increment from the last segment, carrying over when needed
+  // Limits: month max 12, day max 31 (intentionally simple ceiling)
+  const limits = [Infinity, 12, 31];
+  for (let i = parts.length - 1; i >= 0; i -= 1) {
+    parts[i] += 1;
+    if (parts[i] <= (limits[i] ?? Infinity)) break;
+    parts[i] = 1;
+    if (i === 0) return null; // overflow past year — shouldn't happen in practice
+  }
+
+  return parts
+    .map((p, i) => (i === 0 ? `${p}` : String(p).padStart(2, '0')))
+    .join('-');
+}
+
 function buildFilter(filter, isLogicalCompareAnd = true) {
   const out = Object.entries(filter)
     .filter(([, v]) => v)
-    .map(([k, v]) => {
+    .flatMap(([k, v]) => {
+      // For datePublication, use a range filter so that partial dates
+      // (year, year-month, or full date) match all more-specific entries.
+      // e.g. "2025" matches "2025", "2025-01", "2025-01-15", etc.
+      if (k === 'datePublication' && typeof v === 'string') {
+        const upperBound = getDateUpperBound(v);
+        if (upperBound) {
+          return [`${k}:>=${v}`, `${k}:<${upperBound}`];
+        }
+      }
+
       let vFmt = v;
       let operator = ':'; // Partial equal
       if (Array.isArray(v))
@@ -28,7 +63,7 @@ function buildFilter(filter, isLogicalCompareAnd = true) {
       else if (typeof v === 'boolean' || typeof v === 'number')
         operator = ':='; // Exact equal
       else vFmt = `\`${v}\``;
-      return `${k}${operator}${vFmt}`;
+      return [`${k}${operator}${vFmt}`];
     });
   return out.join(isLogicalCompareAnd ? ' && ' : ' || ');
 }
