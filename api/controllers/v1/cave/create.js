@@ -7,6 +7,7 @@
 const CaveService = require('../../../services/CaveService');
 const ControllerService = require('../../../services/ControllerService');
 const { toCave } = require('../../../services/mapping/converters');
+const { validateNameLength } = require('../../../utils/nameValidation');
 
 module.exports = async (req, res) => {
   const rawDescriptionsData = req.param('descriptions');
@@ -21,6 +22,12 @@ module.exports = async (req, res) => {
     return res.badRequest(
       'You must provide a complete name object (with attributes "text" and "language").'
     );
+  }
+
+  // Validate name length
+  const nameError = validateNameLength(rawNameData.text);
+  if (nameError) {
+    return res.badRequest(nameError);
   }
 
   // description is optional

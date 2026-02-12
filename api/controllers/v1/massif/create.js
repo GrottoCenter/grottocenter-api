@@ -3,6 +3,7 @@ const MassifService = require('../../../services/MassifService');
 const NotificationService = require('../../../services/NotificationService');
 const RecentChangeService = require('../../../services/RecentChangeService');
 const { toMassif } = require('../../../services/mapping/converters');
+const { validateNameLength } = require('../../../utils/nameValidation');
 
 // eslint-disable-next-line consistent-return
 module.exports = async (req, res) => {
@@ -25,6 +26,12 @@ module.exports = async (req, res) => {
   }
   if (missingParamaters.length > 0) {
     return res.badRequest(`${missingParamaters} parameter(s) must be provided`);
+  }
+
+  // Validate name length
+  const nameError = validateNameLength(req.body.name);
+  if (nameError) {
+    return res.badRequest(nameError);
   }
 
   // Launch creation request using transaction: it performs a rollback if an error occurs

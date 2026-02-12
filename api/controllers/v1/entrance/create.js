@@ -1,5 +1,6 @@
 const ControllerService = require('../../../services/ControllerService');
 const EntranceService = require('../../../services/EntranceService');
+const { validateNameLength } = require('../../../utils/nameValidation');
 
 module.exports = async (req, res) => {
   const name = req.param('name');
@@ -7,6 +8,12 @@ module.exports = async (req, res) => {
     return res.badRequest(
       'You must provide a name (with a language) for the new entrance'
     );
+  }
+
+  // Validate name length
+  const nameError = validateNameLength(name.text);
+  if (nameError) {
+    return res.badRequest(nameError);
   }
 
   const caveId = req.param('cave');

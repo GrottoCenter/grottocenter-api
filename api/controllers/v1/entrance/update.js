@@ -4,6 +4,7 @@ const GeocodingService = require('../../../services/GeocodingService');
 const NotificationService = require('../../../services/NotificationService');
 const RightService = require('../../../services/RightService');
 const { toEntrance } = require('../../../services/mapping/converters');
+const { validateNameLength } = require('../../../utils/nameValidation');
 
 module.exports = async (req, res) => {
   const entranceId = req.param('id');
@@ -63,6 +64,13 @@ module.exports = async (req, res) => {
     }
   }
 
+  // Validate name length
+  const nameText = req.param('name')?.text;
+  const nameError = validateNameLength(nameText);
+  if (nameError) {
+    return res.badRequest(nameError);
+  }
+
   // Handle name manually
   // Currently, use only one name per entrance (even if the model can handle multiple names)
   // Done before the TCave update so the last_change_cave DB trigger will fetch the last updated name
@@ -70,7 +78,7 @@ module.exports = async (req, res) => {
     entrance: entranceId,
     isMain: true,
   }).set({
-    name: req.param('name')?.text,
+    name: nameText,
     language: req.param('name')?.language,
   });
 
