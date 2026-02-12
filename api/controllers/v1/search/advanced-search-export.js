@@ -7,12 +7,40 @@ function escapeCSV(v) {
   return /[",\n]/.test(escaped) ? `"${escaped}"` : escaped;
 }
 
+/**
+ * Resolve a dot-notation key from a Typesense document.
+ * Typesense with enable_nested_fields returns nested structures,
+ * e.g. "authors.nickname" is stored as authors: [{ nickname: "X" }].
+ * This function traverses the path and flattens arrays of primitives
+ * into a semicolon-separated string suitable for CSV.
+ */
+function resolveField(doc, key) {
+  // Try flat key first (works for simple fields like "title", "id")
+  if (Object.prototype.hasOwnProperty.call(doc, key)) return doc[key];
+
+  const parts = key.split('.');
+  let current = doc[parts[0]];
+  for (let i = 1; i < parts.length && current != null; i += 1) {
+    if (Array.isArray(current)) {
+      // Extract the sub-field from each element in the array
+      current = current
+        .map((item) => item?.[parts[i]])
+        .filter((v) => v != null);
+    } else {
+      current = current[parts[i]];
+    }
+  }
+
+  if (Array.isArray(current)) return current.join('; ');
+  return current;
+}
+
 function documentsToCSV(documents, columns) {
   const csvRows = documents
     .map((doc) => {
       const row = [];
       for (const key of columns) {
-        row.push(escapeCSV(doc[key]));
+        row.push(escapeCSV(resolveField(doc, key)));
       }
       return row.join(',');
     })
