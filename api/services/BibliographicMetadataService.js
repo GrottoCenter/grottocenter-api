@@ -348,14 +348,15 @@ module.exports = {
 
     if (titleFilter) {
       // search by title - use unaccent if available, otherwise fall back to simple ILIKE
+      const titleParam = `%${titleFilter}%`;
       let sqlTitle;
       try {
         // Try with unaccent first
         sqlTitle = `SELECT id_document AS id, children
               FROM v_bibliographic_metadata
               WHERE metadata_status = 'registered'
-              AND unaccent(dc_title) ILIKE unaccent('%${titleFilter}%')`;
-        const { rows } = await sails.sendNativeQuery(sqlTitle);
+              AND unaccent(dc_title) ILIKE unaccent($1)`;
+        const { rows } = await sails.sendNativeQuery(sqlTitle, [titleParam]);
         const ids = rows.map((m) => m.id);
         const childrenIds = rows.flatMap((m) => {
           if (!m.children || !Array.isArray(m.children)) return [];
@@ -379,8 +380,8 @@ module.exports = {
           sqlTitle = `SELECT id_document AS id, children
                 FROM v_bibliographic_metadata
                 WHERE metadata_status = 'registered'
-                AND dc_title ILIKE '%${titleFilter}%'`;
-          const { rows } = await sails.sendNativeQuery(sqlTitle);
+                AND dc_title ILIKE $1`;
+          const { rows } = await sails.sendNativeQuery(sqlTitle, [titleParam]);
           const ids = rows.map((m) => m.id);
           const children = rows.flatMap((m) => m.children || []);
           matchingIds = Array.from(new Set([...ids, ...children]));
