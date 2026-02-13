@@ -8,31 +8,59 @@ function escapeCSV(v) {
 }
 
 /**
+ * Convert a value to a CSV-safe primitive.
+ * - primitives pass through
+ * - arrays of primitives are joined with "; "
+ * - plain objects are stringified by picking the first string-valued field
+ * - arrays of objects: extract the first string field from each, then join
+ */
+function toPrimitive(val) {
+  if (val == null) return val;
+  if (typeof val !== 'object') return val;
+
+  if (Array.isArray(val)) {
+    const flat = val.map((item) => toPrimitive(item)).filter((v) => v != null);
+    return flat.join('; ');
+  }
+
+  // Plain object — pick the first string-valued property as a display value
+  const strVal = Object.values(val).find((v) => typeof v === 'string');
+  return strVal ?? JSON.stringify(val);
+}
+
+/**
  * Resolve a dot-notation key from a Typesense document.
  * Typesense with enable_nested_fields returns nested structures,
  * e.g. "authors.nickname" is stored as authors: [{ nickname: "X" }].
  * This function traverses the path and flattens arrays of primitives
  * into a semicolon-separated string suitable for CSV.
+ *
+ * Also handles the case where a parent key (e.g. "authors") is requested
+ * instead of a nested path (e.g. "authors.nickname") — objects and arrays
+ * of objects are coerced to readable strings.
  */
 function resolveField(doc, key) {
-  // Try flat key first (works for simple fields like "title", "id")
-  if (Object.prototype.hasOwnProperty.call(doc, key)) return doc[key];
-
-  const parts = key.split('.');
-  let current = doc[parts[0]];
-  for (let i = 1; i < parts.length && current != null; i += 1) {
-    if (Array.isArray(current)) {
-      // Extract the sub-field from each element in the array
-      current = current
-        .map((item) => item?.[parts[i]])
-        .filter((v) => v != null);
-    } else {
-      current = current[parts[i]];
+  // For dot-notation keys, always traverse the nested structure
+  if (key.includes('.')) {
+    const parts = key.split('.');
+    let current = doc[parts[0]];
+    for (let i = 1; i < parts.length && current != null; i += 1) {
+      if (Array.isArray(current)) {
+        // Extract the sub-field from each element in the array
+        current = current
+          .map((item) => item?.[parts[i]])
+          .filter((v) => v != null);
+      } else {
+        current = current[parts[i]];
+      }
     }
+
+    if (Array.isArray(current)) return current.join('; ');
+    return current;
   }
 
-  if (Array.isArray(current)) return current.join('; ');
-  return current;
+  // Simple key — return directly, but coerce objects to readable strings
+  return toPrimitive(doc[key]);
 }
 
 function documentsToCSV(documents, columns) {
