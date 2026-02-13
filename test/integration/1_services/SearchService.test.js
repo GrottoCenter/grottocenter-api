@@ -523,7 +523,7 @@ describe('SearchService', () => {
       should(call.args[1].filter_by).equal('country:`FR`');
     });
 
-    it('should use range filter for datePublication with year only', async () => {
+    it('should use prefix filter for datePublication with year only', async () => {
       typesenseStub.search = sinon
         .stub(typesense, 'search')
         .resolves({ hits: [] });
@@ -534,12 +534,10 @@ describe('SearchService', () => {
       });
 
       const call = typesenseStub.search.getCall(0);
-      should(call.args[1].filter_by).equal(
-        'datePublication:>=2025 && datePublication:<2026'
-      );
+      should(call.args[1].filter_by).equal('datePublication:=2025*');
     });
 
-    it('should use range filter for datePublication with year-month', async () => {
+    it('should use prefix filter for datePublication with year-month', async () => {
       typesenseStub.search = sinon
         .stub(typesense, 'search')
         .resolves({ hits: [] });
@@ -550,28 +548,10 @@ describe('SearchService', () => {
       });
 
       const call = typesenseStub.search.getCall(0);
-      should(call.args[1].filter_by).equal(
-        'datePublication:>=2025-01 && datePublication:<2025-02'
-      );
+      should(call.args[1].filter_by).equal('datePublication:=2025-01*');
     });
 
-    it('should handle datePublication year-month rollover (December)', async () => {
-      typesenseStub.search = sinon
-        .stub(typesense, 'search')
-        .resolves({ hits: [] });
-
-      await SearchService.collectionSearch({
-        entity: 'documents',
-        filter: { datePublication: '2025-12' },
-      });
-
-      const call = typesenseStub.search.getCall(0);
-      should(call.args[1].filter_by).equal(
-        'datePublication:>=2025-12 && datePublication:<2026-01'
-      );
-    });
-
-    it('should use exact match for datePublication with full date', async () => {
+    it('should use prefix filter for datePublication with full date', async () => {
       typesenseStub.search = sinon
         .stub(typesense, 'search')
         .resolves({ hits: [] });
@@ -582,9 +562,7 @@ describe('SearchService', () => {
       });
 
       const call = typesenseStub.search.getCall(0);
-      should(call.args[1].filter_by).equal(
-        'datePublication:>=2025-01-15 && datePublication:<2025-01-16'
-      );
+      should(call.args[1].filter_by).equal('datePublication:=2025-01-15*');
     });
   });
 });
