@@ -18,6 +18,7 @@ const allEntities = {
 const allEntitiesKeys = Object.keys(allEntities);
 
 function buildFilter(filter, isLogicalCompareAnd = true) {
+  let hasPrefixFilter = false;
   const out = Object.entries(filter)
     .filter(([, v]) => v)
     .flatMap(([k, v]) => {
@@ -26,6 +27,7 @@ function buildFilter(filter, isLogicalCompareAnd = true) {
       // e.g. "2025" matches "2025", "2025-01", "2025-01-15", etc.
       // Typesense supports prefix matching on string fields with := and *.
       if (k === 'datePublication' && typeof v === 'string') {
+        hasPrefixFilter = true;
         return [`${k}:=${v}*`];
       }
 
@@ -38,7 +40,10 @@ function buildFilter(filter, isLogicalCompareAnd = true) {
       else vFmt = `\`${v}\``;
       return [`${k}${operator}${vFmt}`];
     });
-  return out.join(isLogicalCompareAnd ? ' && ' : ' || ');
+  return {
+    filterBy: out.join(isLogicalCompareAnd ? ' && ' : ' || '),
+    hasPrefixFilter,
+  };
 }
 
 async function isAlive() {
@@ -81,7 +86,7 @@ async function multiCollectionsSearch({
   entities = entities.filter((e) => allEntitiesKeys.includes(e));
   if (entities.length === 0) return null;
   const q = query || '*';
-  const filterBy = buildFilter(filter);
+  const { filterBy, hasPrefixFilter } = buildFilter(filter);
 
   const collections = entities.map((e) => ({
     collection: e,
@@ -92,6 +97,10 @@ async function multiCollectionsSearch({
   return typesense.multiSearch(collections, {
     per_page: 20,
     q,
+    // Typesense defaults max_filter_by_candidates to 4, which is too low
+    // for prefix filters like datePublication:=2025* that can match many
+    // distinct values (2025, 2025-01, …, 2025-12, 2025-01-15, etc.).
+    ...(hasPrefixFilter && { max_filter_by_candidates: 100 }),
   });
 }
 
@@ -107,7 +116,10 @@ async function collectionSearch({
 } = {}) {
   if (!allEntitiesKeys.includes(entity)) return null;
   const q = query || '*';
-  const filterBy = buildFilter(filter, isLogicalCompareAnd);
+  const { filterBy, hasPrefixFilter } = buildFilter(
+    filter,
+    isLogicalCompareAnd
+  );
 
   // Cap size at Typesense's limit of 1000 hits per page
   const perPage = size ? Math.min(size, 1000) : size;
@@ -120,6 +132,10 @@ async function collectionSearch({
     ...(sort && { sort_by: `${sort},_text_match:desc` }),
     ...(filterBy && { filter_by: filterBy }),
     ...(fields && { include_fields: fields.join(',') }),
+    // Typesense defaults max_filter_by_candidates to 4, which is too low
+    // for prefix filters like datePublication:=2025* that can match many
+    // distinct values (2025, 2025-01, …, 2025-12, 2025-01-15, etc.).
+    ...(hasPrefixFilter && { max_filter_by_candidates: 100 }),
   };
 
   return typesense.search(entity, params);
@@ -136,7 +152,10 @@ async function fieldSearch({
   if (!allEntitiesKeys.includes(entity)) return null;
   if (!field) return null;
   const q = query || '*';
-  const filterBy = buildFilter(filter, isLogicalCompareAnd);
+  const { filterBy, hasPrefixFilter } = buildFilter(
+    filter,
+    isLogicalCompareAnd
+  );
 
   const params = {
     q,
@@ -146,6 +165,7 @@ async function fieldSearch({
     sort_by: '_group_found:desc',
     per_page: size,
     ...(filterBy && { filter_by: filterBy }),
+    ...(hasPrefixFilter && { max_filter_by_candidates: 100 }),
   };
 
   return typesense.search(entity, params);
