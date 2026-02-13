@@ -265,6 +265,88 @@ describe('Advanced Search Export features', () => {
         });
     });
 
+    it('should flatten nested objects when parent key is used as column', (done) => {
+      const SearchService = require('../../../api/services/SearchService');
+      sinon.stub(SearchService, 'collectionSearch').resolves({
+        hits: [
+          {
+            document: {
+              id: '1',
+              title: 'Karst Book',
+              authors: [
+                { id: 10, nickname: 'PANOS Vladimir' },
+                { id: 20, nickname: 'DUPONT Jean' },
+              ],
+              iso3166: [
+                { iso: 'FR', name: 'France' },
+                { iso: 'FR-OCC', name: 'Occitanie' },
+              ],
+              editor: { id: 5, name: 'MDPI' },
+            },
+          },
+        ],
+        found: 1,
+      });
+
+      supertest(sails.hooks.http.app)
+        .post('/api/v1/advanced-search/export')
+        .send({
+          query: 'test',
+          entity: 'documents',
+          columns: ['id', 'title', 'authors', 'iso3166', 'editor'],
+          columnsName: ['ID', 'Title', 'Author', 'Country', 'Editor'],
+        })
+        .expect(200)
+        .end((err, res) => {
+          if (err) return done(err);
+          // Should NOT contain [object Object]
+          should(res.text).not.match(/\[object Object\]/);
+          // Authors: first string field is nickname (id is number)
+          should(res.text).match(/PANOS Vladimir; DUPONT Jean/);
+          // iso3166: first string field is iso
+          should(res.text).match(/FR; FR-OCC/);
+          // editor: single object, first string field is name (id is number)
+          should(res.text).match(/MDPI/);
+          return done();
+        });
+    });
+
+    it('should resolve dot-notation keys through nested structures', (done) => {
+      const SearchService = require('../../../api/services/SearchService');
+      sinon.stub(SearchService, 'collectionSearch').resolves({
+        hits: [
+          {
+            document: {
+              id: '1',
+              authors: [
+                { id: 10, nickname: 'Author A' },
+                { id: 20, nickname: 'Author B' },
+              ],
+              editor: { id: 5, name: 'Publisher X' },
+            },
+          },
+        ],
+        found: 1,
+      });
+
+      supertest(sails.hooks.http.app)
+        .post('/api/v1/advanced-search/export')
+        .send({
+          query: 'test',
+          entity: 'documents',
+          columns: ['id', 'authors.nickname', 'editor.name'],
+          columnsName: ['ID', 'Author', 'Editor'],
+        })
+        .expect(200)
+        .end((err, res) => {
+          if (err) return done(err);
+          should(res.text).not.match(/\[object Object\]/);
+          should(res.text).match(/Author A; Author B/);
+          should(res.text).match(/Publisher X/);
+          return done();
+        });
+    });
+
     it('should handle null and undefined values in CSV', (done) => {
       const SearchService = require('../../../api/services/SearchService');
       sinon.stub(SearchService, 'collectionSearch').resolves({
