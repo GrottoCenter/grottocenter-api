@@ -564,5 +564,48 @@ describe('SearchService', () => {
       const call = typesenseStub.search.getCall(0);
       should(call.args[1].filter_by).equal('datePublication:=2025-01-15*');
     });
+
+    it('should set max_filter_by_candidates when datePublication prefix filter is used', async () => {
+      typesenseStub.search = sinon
+        .stub(typesense, 'search')
+        .resolves({ hits: [] });
+
+      await SearchService.collectionSearch({
+        entity: 'documents',
+        filter: { datePublication: '2025' },
+      });
+
+      const call = typesenseStub.search.getCall(0);
+      should(call.args[1].max_filter_by_candidates).equal(100);
+    });
+
+    it('should not set max_filter_by_candidates when no prefix filter is used', async () => {
+      typesenseStub.search = sinon
+        .stub(typesense, 'search')
+        .resolves({ hits: [] });
+
+      await SearchService.collectionSearch({
+        entity: 'organizations',
+        filter: { country: 'FR' },
+      });
+
+      const call = typesenseStub.search.getCall(0);
+      should(call.args[1].max_filter_by_candidates).be.undefined();
+    });
+
+    it('should set max_filter_by_candidates in multiCollectionsSearch with prefix filter', async () => {
+      typesenseStub.multiSearch = sinon
+        .stub(typesense, 'multiSearch')
+        .resolves({ results: [] });
+
+      await SearchService.multiCollectionsSearch({
+        query: 'test',
+        entities: ['documents'],
+        filter: { datePublication: '2025' },
+      });
+
+      const call = typesenseStub.multiSearch.getCall(0);
+      should(call.args[1].max_filter_by_candidates).equal(100);
+    });
   });
 });
