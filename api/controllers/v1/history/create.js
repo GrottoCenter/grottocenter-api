@@ -1,3 +1,4 @@
+const RelevanceService = require('../../../services/RelevanceService');
 const ControllerService = require('../../../services/ControllerService');
 const NotificationService = require('../../../services/NotificationService');
 const HistoryService = require('../../../services/HistoryService');
@@ -20,13 +21,17 @@ module.exports = async (req, res) => {
   );
   if (!linkedEntity) return null;
 
+  const relevance = await RelevanceService.computeNextRelevance('history', {
+    entrance: entranceId,
+  });
+
   const newHistory = await THistory.create({
     author: req.token.id,
     body,
     dateInscription: new Date(),
     entrance: entranceId,
     language: languageId,
-    // TODO compute relevance
+    relevance,
   }).fetch();
 
   const populatedHistory = await HistoryService.getHistory(newHistory.id);

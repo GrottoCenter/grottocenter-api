@@ -2,6 +2,7 @@ const ControllerService = require('../../../services/ControllerService');
 const NotificationService = require('../../../services/NotificationService');
 const DescriptionService = require('../../../services/DescriptionService');
 const ParametersValidatorService = require('../../../services/ParametersValidatorService');
+const RelevanceService = require('../../../services/RelevanceService');
 const { toSimpleDescription } = require('../../../services/mapping/converters');
 
 module.exports = async (req, res) => {
@@ -20,6 +21,10 @@ module.exports = async (req, res) => {
   );
   if (!linkedEntity) return null;
 
+  const relevance = await RelevanceService.computeNextRelevance('description', {
+    [linkedEntity.type]: linkedEntity.id,
+  });
+
   const newDescription = await TDescription.create({
     author: req.token.id,
     dateInscription: new Date(),
@@ -27,7 +32,7 @@ module.exports = async (req, res) => {
     title,
     language,
     [linkedEntity.type]: linkedEntity.id,
-    // TODO compute relevance
+    relevance,
   }).fetch();
 
   const populatedDescription = await DescriptionService.getDescription(

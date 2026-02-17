@@ -1073,6 +1073,42 @@ paths:
         '404':
           description: We don't find these description's snapshots.
 
+  '/descriptions/{id}/move-relevance':
+    patch:
+      tags:
+        - descriptions
+      description: Move a description up or down in the relevance ordering within its cave, entrance, massif, or document scope.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - direction
+              properties:
+                direction:
+                  type: integer
+                  enum: [1, -1]
+                  description: "1 to move down (increase relevance), -1 to move up (decrease relevance)"
+      responses:
+        '200':
+          description: Successful swap — returns both entities with updated relevance values
+        '400':
+          description: Invalid direction, entity is deleted, or entity is already at boundary
+        '401':
+          description: Authentication required
+        '404':
+          description: Entity not found
+
   '/documents':
     post:
       tags:
@@ -2536,6 +2572,42 @@ paths:
         '404':
           description: We don't find these location's snapshots.
 
+  '/locations/{id}/move-relevance':
+    patch:
+      tags:
+        - locations
+      description: Move a location up or down in the relevance ordering within its entrance scope.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - direction
+              properties:
+                direction:
+                  type: integer
+                  enum: [1, -1]
+                  description: "1 to move down (increase relevance), -1 to move up (decrease relevance)"
+      responses:
+        '200':
+          description: Successful swap — returns both entities with updated relevance values
+        '400':
+          description: Invalid direction, entity is deleted, or entity is already at boundary
+        '401':
+          description: Authentication required
+        '404':
+          description: Entity not found
+
   '/histories':
     post:
       tags:
@@ -2688,6 +2760,42 @@ paths:
         '404':
           description: We don't find these comment's snapshots.
 
+  '/comments/{id}/move-relevance':
+    patch:
+      tags:
+        - comments
+      description: Move a comment up or down in the relevance ordering within its entrance or cave scope.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - direction
+              properties:
+                direction:
+                  type: integer
+                  enum: [1, -1]
+                  description: "1 to move down (increase relevance), -1 to move up (decrease relevance)"
+      responses:
+        '200':
+          description: Successful swap — returns both entities with updated relevance values
+        '400':
+          description: Invalid direction, entity is deleted, or entity is already at boundary
+        '401':
+          description: Authentication required
+        '404':
+          description: Entity not found
+
   '/riggings':
     post:
       tags:
@@ -2755,6 +2863,78 @@ paths:
                 $ref: '#/components/schemas/Rigging'
         '404':
           description: We don't find these rigging's snapshots.
+
+  '/riggings/{id}/move-relevance':
+    patch:
+      tags:
+        - riggings
+      description: Move a rigging up or down in the relevance ordering within its entrance or cave scope.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - direction
+              properties:
+                direction:
+                  type: integer
+                  enum: [1, -1]
+                  description: "1 to move down (increase relevance), -1 to move up (decrease relevance)"
+      responses:
+        '200':
+          description: Successful swap — returns both entities with updated relevance values
+        '400':
+          description: Invalid direction, entity is deleted, or entity is already at boundary
+        '401':
+          description: Authentication required
+        '404':
+          description: Entity not found
+
+  '/histories/{id}/move-relevance':
+    patch:
+      tags:
+        - histories
+      description: Move a history up or down in the relevance ordering within its entrance or cave scope.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - direction
+              properties:
+                direction:
+                  type: integer
+                  enum: [1, -1]
+                  description: "1 to move down (increase relevance), -1 to move up (decrease relevance)"
+      responses:
+        '200':
+          description: Successful swap — returns both entities with updated relevance values
+        '400':
+          description: Invalid direction, entity is deleted, or entity is already at boundary
+        '401':
+          description: Authentication required
+        '404':
+          description: Entity not found
 
   '/names/{id}':
     patch:
@@ -4493,6 +4673,11 @@ components:
         type: integer
         minimum: 1
         maximum: 22
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   schemas:
     Auth-success:
       type: object

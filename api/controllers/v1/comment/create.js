@@ -1,6 +1,7 @@
 const ControllerService = require('../../../services/ControllerService');
 const NotificationService = require('../../../services/NotificationService');
 const CommentService = require('../../../services/CommentService');
+const RelevanceService = require('../../../services/RelevanceService');
 const ParametersValidatorService = require('../../../services/ParametersValidatorService');
 const { toSimpleComment } = require('../../../services/mapping/converters');
 
@@ -20,6 +21,10 @@ module.exports = async (req, res) => {
   );
   if (!linkedEntity) return null;
 
+  const relevance = await RelevanceService.computeNextRelevance('comment', {
+    [linkedEntity.type]: linkedEntity.id,
+  });
+
   const newComment = await TComment.create({
     author: req.token.id,
     body,
@@ -32,7 +37,7 @@ module.exports = async (req, res) => {
     dateInscription: new Date(),
     language,
     [linkedEntity.type]: linkedEntity.id,
-    // TODO compute relevance
+    relevance,
   }).fetch();
 
   const populatedComment = await CommentService.getComment(newComment.id);
