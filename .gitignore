@@ -123,5 +123,6 @@ coverage
 docker/esdata/*
 !docker/esdata/for-docker-compose
 .amazonq
+.kiro
 *.iml
 build-info.json

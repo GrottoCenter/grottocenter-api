@@ -1,6 +1,7 @@
 const ControllerService = require('../../../services/ControllerService');
 const NotificationService = require('../../../services/NotificationService');
 const RiggingService = require('../../../services/RiggingService');
+const RelevanceService = require('../../../services/RelevanceService');
 const ParametersValidatorService = require('../../../services/ParametersValidatorService');
 const { toSimpleRigging } = require('../../../services/mapping/converters');
 
@@ -22,6 +23,11 @@ module.exports = async (req, res) => {
   const parsedObstacles = await RiggingService.serializeObstaclesForDB(
     req.param('obstacles', [])
   );
+
+  const relevance = await RelevanceService.computeNextRelevance('rigging', {
+    [linkedEntity.type]: linkedEntity.id,
+  });
+
   const newRigging = await TRigging.create({
     author: req.token.id,
     title,
@@ -32,7 +38,7 @@ module.exports = async (req, res) => {
     dateInscription: new Date(),
     language,
     [linkedEntity.type]: linkedEntity.id,
-    // TODO compute relevance
+    relevance,
   }).fetch();
 
   const populatedRigging = await RiggingService.getRigging(newRigging.id);

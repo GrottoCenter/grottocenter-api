@@ -295,6 +295,14 @@ module.exports.routes = {
   'DELETE /api/v1/riggings/:id': 'v1/rigging/delete',
   'POST /api/v1/riggings/:id/restore': 'v1/rigging/restore',
 
+  // Relevance ordering
+  'PATCH /api/v1/locations/:id/move-relevance': 'v1/location/move-relevance',
+  'PATCH /api/v1/descriptions/:id/move-relevance':
+    'v1/description/move-relevance',
+  'PATCH /api/v1/comments/:id/move-relevance': 'v1/comment/move-relevance',
+  'PATCH /api/v1/riggings/:id/move-relevance': 'v1/rigging/move-relevance',
+  'PATCH /api/v1/histories/:id/move-relevance': 'v1/history/move-relevance',
+
   // Document Subject
   'GET /api/v1/documents/subjects': 'v1/subject/find-all',
   'GET /api/v1/documents/subjects/:code': {
