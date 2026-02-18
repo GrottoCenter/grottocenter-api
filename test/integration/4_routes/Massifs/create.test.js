@@ -41,6 +41,31 @@ describe('Massif features', () => {
           .expect(400, done);
       });
     });
+    describe('Oversized polygon', () => {
+      it('should return code 400 when polygon area exceeds 8000 km²', (done) => {
+        supertest(sails.hooks.http.app)
+          .post('/api/v1/massifs')
+          .send({
+            name: 'Oversized Massif',
+            description: 'too large',
+            descriptionTitle: 'Title',
+            descriptionAndNameLanguage: { id: 'fra' },
+            geogPolygon: massifPolygon.geoJsonOversized,
+          })
+          .set('Authorization', adminToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .expect(400)
+          .end((err, res) => {
+            if (err) return done(err);
+            should(res.text).match(
+              /exceeds the maximum allowed size of 8000 km²/
+            );
+            return done();
+          });
+      });
+    });
+
     describe('Complete data', () => {
       let createdMassif;
 
@@ -61,7 +86,7 @@ describe('Massif features', () => {
             descriptionTitle: 'Titre',
             descriptionAndNameLanguage: { id: 'fra' },
             documents: [testDoc1Id, testDoc2Id],
-            geogPolygon: massifPolygon.geoJson1,
+            geogPolygon: massifPolygon.geoJsonSmall,
           })
           .set('Authorization', adminToken)
           .set('Content-type', 'application/json')
@@ -84,7 +109,9 @@ describe('Massif features', () => {
               { id: testDoc1Id },
               { id: testDoc2Id },
             ]);
-            should(massif.geogPolygon).equal(massifPolygon.geoJson1ToString);
+            should(massif.geogPolygon).equal(
+              massifPolygon.geoJsonSmallToString
+            );
             createdMassif = massif;
             return done();
           });

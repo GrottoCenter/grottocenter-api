@@ -125,3 +125,6 @@ docker/esdata/*
 .amazonq
 *.iml
 build-info.json
+
+# Kiro IDE
+.kiro

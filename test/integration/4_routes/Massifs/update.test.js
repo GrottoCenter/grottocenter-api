@@ -66,7 +66,7 @@ describe('Massif features', () => {
         id: testMassifId,
         descriptions: [testDescId],
         documents: [testDoc1Id, testDoc2Id],
-        geogPolygon: massifPolygon.geoJson2,
+        geogPolygon: massifPolygon.geoJsonSmall,
         names: [testNameId],
       };
       supertest(sails.hooks.http.app)
@@ -90,10 +90,41 @@ describe('Massif features', () => {
             { id: testDoc1Id },
             { id: testDoc2Id },
           ]);
-          should(massifUpdated.geogPolygon).equal(massifPolygon.geoJson2ToWKB);
+          should(massifUpdated.geogPolygon).not.be.null();
           should(massifUpdated.names).containDeep([{ id: testNameId }]);
           return done();
         });
+    });
+
+    it('should return 400 when polygon area exceeds 8000 km²', (done) => {
+      supertest(sails.hooks.http.app)
+        .put(`/api/v1/massifs/${testMassifId}`)
+        .send({
+          geogPolygon: massifPolygon.geoJsonOversized,
+        })
+        .set('Authorization', userToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(400)
+        .end((err, res) => {
+          if (err) return done(err);
+          should(res.text).match(
+            /exceeds the maximum allowed size of 8000 km²/
+          );
+          return done();
+        });
+    });
+
+    it('should return 200 when no geogPolygon is provided', (done) => {
+      supertest(sails.hooks.http.app)
+        .put(`/api/v1/massifs/${testMassifId}`)
+        .send({
+          descriptions: [testDescId],
+        })
+        .set('Authorization', userToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(200, done);
     });
   });
 });

@@ -69,11 +69,42 @@ const geoJson2 = {
   ],
 };
 
+// A small polygon (~123 km²) well within the 8,000 km² limit
+const geoJsonSmall = {
+  type: 'Polygon',
+  coordinates: [
+    [
+      [2.0, 43.0],
+      [2.1, 43.0],
+      [2.1, 43.1],
+      [2.0, 43.1],
+      [2.0, 43.0],
+    ],
+  ],
+};
+
+// A large polygon (~49,000 km²) that exceeds the 8,000 km² limit
+const geoJsonOversized = {
+  type: 'Polygon',
+  coordinates: [
+    [
+      [0, 0],
+      [2, 0],
+      [2, 2],
+      [0, 2],
+      [0, 0],
+    ],
+  ],
+};
+
 const massifPolygon = {
   geoJson1,
   geoJson2,
+  geoJsonSmall,
+  geoJsonOversized,
   geoJson1ToString: JSON.stringify(geoJson1),
   geoJson2ToString: JSON.stringify(geoJson2),
+  geoJsonSmallToString: JSON.stringify(geoJsonSmall),
   geoJson1ToWKB:
     '0106000020E610000002000000010300000001000000040000000000000040AA554070292137674C51400000000000314A406FE6DE63B3214D400000000040125740B78EC00B5AAA4A400000000040AA554070292137674C51400103000000010000000800000000000000C07456405580D699CE2151400000000080CE5A40821316840EFD4D400000000060DF5A405580D699CE2151400000000040D45840D9861A1D41BF514000000000808558409631AD69387352400000000020E85540F8B10DD28F2D52400000000060995540C89CBDEC647F514000000000C07456405580D699CE215140',
   geoJson2ToWKB:

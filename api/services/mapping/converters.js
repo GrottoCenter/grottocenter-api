@@ -486,7 +486,7 @@ const c = {
     cave: convertIfObject(source.cave, c.toSimpleCave),
   }),
 
-  toMassif: (source, meta) => ({
+  toMassif: (source) => ({
     ...MassifModel,
     id: source.id,
     '@id': String(source.id),
@@ -502,7 +502,6 @@ const c = {
     geogPolygon: source.geoJson,
     nbEntrances: source.nbEntrances, // from search
     descriptions: toList('descriptions', source, c.toSimpleDescription),
-    entrances: toList('entrances', source, c.toSimpleEntrance, { meta }),
     documents: toList('documents', source, c.toSimpleDocument),
     networks: toList('networks', source, c.toSimpleCave),
   }),
@@ -667,7 +666,7 @@ const c = {
       else if (_type === 'entrances') data = c.toEntrance(item.document, meta);
       else if (_type === 'organizations')
         data = c.toOrganization(item.document, meta);
-      else if (_type === 'massifs') data = c.toMassif(item.document, meta);
+      else if (_type === 'massifs') data = c.toMassif(item.document);
 
       return {
         ...data,

@@ -38,6 +38,38 @@ describe('MassifService', () => {
     });
   });
 
+  describe('computePolygonAreaKm2', () => {
+    it('should return a positive area for a known polygon', async () => {
+      const wkt = await MassifService.geoJsonToWKT(massifPolygon.geoJson1);
+      const area = await MassifService.computePolygonAreaKm2(wkt);
+      area.should.be.above(0);
+      area.should.be.a.Number();
+    });
+
+    it('should return total area equal to sum of parts for a MULTIPOLYGON', async () => {
+      // geoJson1 is a MULTIPOLYGON with 2 parts
+      const part1 = {
+        type: 'Polygon',
+        coordinates: massifPolygon.geoJson1.coordinates[0],
+      };
+      const part2 = {
+        type: 'Polygon',
+        coordinates: massifPolygon.geoJson1.coordinates[1],
+      };
+
+      const wktFull = await MassifService.geoJsonToWKT(massifPolygon.geoJson1);
+      const wktPart1 = await MassifService.geoJsonToWKT(part1);
+      const wktPart2 = await MassifService.geoJsonToWKT(part2);
+
+      const areaFull = await MassifService.computePolygonAreaKm2(wktFull);
+      const areaPart1 = await MassifService.computePolygonAreaKm2(wktPart1);
+      const areaPart2 = await MassifService.computePolygonAreaKm2(wktPart2);
+
+      const sumOfParts = areaPart1 + areaPart2;
+      areaFull.should.be.approximately(sumOfParts, 0.01);
+    });
+  });
+
   describe('deleteInSearch', () => {
     it('should delete massif from search index', async () => {
       const originalEnv = process.env.NODE_ENV;
@@ -52,11 +84,11 @@ describe('MassifService', () => {
     });
   });
 
-  describe('getEntrances', () => {
-    it('should return empty array on database error', async () => {
+  describe('countEntrances', () => {
+    it('should return 0 on database error', async () => {
       sinon.stub(CommonService, 'query').rejects(new Error('DB Error'));
-      const entrances = await MassifService.getEntrances(999);
-      should(entrances).eql([]);
+      const count = await MassifService.countEntrances(999);
+      should(count).eql(0);
     });
   });
 

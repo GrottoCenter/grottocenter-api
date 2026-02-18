@@ -4,6 +4,8 @@ const SearchService = require('./SearchService');
 const DescriptionService = require('./DescriptionService');
 const CommonService = require('./CommonService');
 
+const MAX_AREA_KM2 = 8000;
+
 const FIND_NETWORKS_IN_MASSIF = `
   SELECT c.*, c.length AS "caveLength", count(e.id_cave) as "nbEntrances"
   FROM t_entrance AS e
@@ -23,10 +25,10 @@ const FIND_CAVES_IN_MASSIF = `
   AND c.is_deleted = false
 `;
 
-const FIND_ENTRANCES_IN_MASSIF = `
-  SELECT e.*, e.is_sensitive as "isSensitive"
+const COUNT_ENTRANCES_IN_MASSIF = `
+  SELECT COUNT(e.id)::integer AS count
   FROM t_entrance AS e
-  JOIN t_massif as m
+  JOIN t_massif AS m
   ON e.point_geom && m.geog_polygon AND ST_Contains(m.geog_polygon::geometry, e.point_geom)
   WHERE m.id = $1
   AND e.is_deleted = false
@@ -42,6 +44,20 @@ async function safeDBQuery(sql, param) {
 }
 
 module.exports = {
+  MAX_AREA_KM2,
+
+  /**
+   * Compute the area of a polygon in square kilometers using PostGIS geodesic calculation.
+   * Handles both POLYGON and MULTIPOLYGON (sums all parts).
+   * @param {string} wktPolygon - WKT representation of the polygon
+   * @returns {Promise<number>} area in km²
+   */
+  async computePolygonAreaKm2(wktPolygon) {
+    const query = `SELECT ST_Area($1::geography) / 1000000 AS area_km2`;
+    const result = await CommonService.query(query, [wktPolygon]);
+    return parseFloat(result.rows[0].area_km2);
+  },
+
   getConvertedDataFromClientRequest: (req) => ({
     caves: req.param('caves'),
     descriptions: req.param('descriptions'),
@@ -59,24 +75,15 @@ module.exports = {
 
     if (!massif) return null;
 
-    [
-      massif.entrances,
-      massif.networks,
-      massif.documents,
-      massif.geoJson,
-      massif.descriptions,
-    ] = await Promise.all([
-      module.exports.getEntrances(massif.id),
-      module.exports.getNetworks(massif.id),
-      DocumentService.getDocuments(massif.documents.map((d) => d.id)),
-      module.exports.wktToGeoJson(massif.geogPolygon),
-      DescriptionService.getMassifDescriptions(massif.id),
-    ]);
+    [massif.networks, massif.documents, massif.geoJson, massif.descriptions] =
+      await Promise.all([
+        module.exports.getNetworks(massif.id),
+        DocumentService.getDocuments(massif.documents.map((d) => d.id)),
+        module.exports.wktToGeoJson(massif.geogPolygon),
+        DescriptionService.getMassifDescriptions(massif.id),
+      ]);
 
-    await Promise.all([
-      NameService.setNames(massif.entrances, 'entrance'),
-      NameService.setNames(massif.networks, 'cave'),
-    ]);
+    await NameService.setNames(massif.networks, 'cave');
 
     return massif;
   },
@@ -86,7 +93,8 @@ module.exports = {
   },
 
   async updateInSearch(populatedMassif) {
-    const { entrances, documents, networks, names, ...m } = populatedMassif;
+    const { documents, networks, names, ...m } = populatedMassif;
+    const nbEntrances = await module.exports.countEntrances(m.id);
     const massif = {
       id: m.id,
       dateInscription: m.dateInscription,
@@ -100,14 +108,22 @@ module.exports = {
       // TODO Change, the API should update the name itself in single API call
       name: names?.[0]?.name,
       language: names?.[0]?.language,
-      nbEntrances: entrances?.length ?? 0,
+      nbEntrances,
     };
     await SearchService.updateDocument('massifs', massif);
   },
 
   getCaves: async (massifId) => safeDBQuery(FIND_CAVES_IN_MASSIF, massifId),
-  getEntrances: async (massifId) =>
-    safeDBQuery(FIND_ENTRANCES_IN_MASSIF, massifId),
+  countEntrances: async (massifId) => {
+    try {
+      const result = await CommonService.query(COUNT_ENTRANCES_IN_MASSIF, [
+        massifId,
+      ]);
+      return result.rows[0]?.count ?? 0;
+    } catch (e) {
+      return 0;
+    }
+  },
   getNetworks: async (massifId) =>
     safeDBQuery(FIND_NETWORKS_IN_MASSIF, massifId),
 

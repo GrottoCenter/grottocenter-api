@@ -13,10 +13,40 @@ const PUBLIC_ENTRANCES_IN_BOUNDS = `
   ORDER BY size_coef DESC
   LIMIT $5;
 `;
+
+const PUBLIC_ENTRANCES_IN_BOUNDS_AND_MASSIF = `
+  SELECT e.id as id, ne.name as name, e.city as city,
+  e.region as region, e.longitude as longitude, e.latitude as latitude,
+  c.size_coef as size_coef, e.id_cave as idCave, nc.name as nameCave, c.depth as depthCave,
+  c.length as lengthCave
+  FROM t_entrance as e
+  LEFT JOIN t_name as ne ON ne.id_entrance = e.id
+  LEFT JOIN t_name as nc ON nc.id_cave = e.id_cave
+  LEFT JOIN t_cave as c ON c.Id = e.id_cave
+  JOIN t_massif AS m ON m.id = $6
+  WHERE e.latitude > $1 AND e.latitude < $2 AND e.longitude > $3 AND e.longitude < $4
+  AND ST_Contains(m.geog_polygon::geometry, e.point_geom)
+  AND e.is_sensitive = false
+  AND e.is_deleted = false
+  ORDER BY size_coef DESC
+  LIMIT $5;
+`;
 const PUBLIC_ENTRANCES_COORDINATES_IN_BOUNDS = `
   SELECT e.longitude as longitude, e.latitude as latitude
   FROM t_entrance as e
   WHERE e.latitude > $1 AND e.latitude < $2 AND e.longitude > $3 AND e.longitude < $4
+  AND e.is_sensitive = false
+  AND e.is_deleted = false
+  LIMIT $5;
+`;
+
+const PUBLIC_ENTRANCES_COORDINATES_IN_BOUNDS_AND_MASSIF = `
+  SELECT e.longitude AS longitude, e.latitude AS latitude
+  FROM t_entrance AS e
+  JOIN t_massif AS m ON m.id = $6
+  WHERE e.latitude > $1 AND e.latitude < $2
+  AND e.longitude > $3 AND e.longitude < $4
+  AND ST_Contains(m.geog_polygon::geometry, e.point_geom)
   AND e.is_sensitive = false
   AND e.is_deleted = false
   LIMIT $5;
@@ -97,9 +127,43 @@ const formatGrottos = (grottos) =>
     latitude: parseFloat(grotto.latitude),
   }));
 
+/**
+ * Parse and validate the optional `massif` query parameter.
+ * Returns { massifId, errorResponse } where errorResponse is null if valid.
+ * If errorResponse is not null, the caller should return it immediately.
+ */
+const checkAndGetMassifParam = async (req, res) => {
+  const rawMassifId = req.param('massif', null);
+  const massifId = rawMassifId ? parseInt(rawMassifId, 10) : null;
+
+  if (rawMassifId && (!Number.isFinite(massifId) || massifId < 1)) {
+    return {
+      massifId: null,
+      errorResponse: res.badRequest(
+        'massif parameter must be a positive integer.'
+      ),
+    };
+  }
+
+  if (massifId) {
+    const massif = await TMassif.findOne(massifId);
+    if (!massif) {
+      return {
+        massifId: null,
+        errorResponse: res.notFound({
+          message: `Massif of id ${massifId} not found.`,
+        }),
+      };
+    }
+  }
+
+  return { massifId, errorResponse: null };
+};
+
 // ====================================
 
 module.exports = {
+  checkAndGetMassifParam,
   checkAndGetCoordinatesParams: (req) => {
     let errorMessage = '';
     const errors = [];
@@ -180,18 +244,23 @@ module.exports = {
   getEntrancesCoordinates: async (
     southWestBound,
     northEastBound,
-    limitEntrances
+    limitEntrances,
+    massifId = null
   ) => {
-    const results = await CommonService.query(
-      PUBLIC_ENTRANCES_COORDINATES_IN_BOUNDS,
-      [
-        southWestBound.lat,
-        northEastBound.lat,
-        southWestBound.lng,
-        northEastBound.lng,
-        limitEntrances,
-      ]
-    );
+    const query = massifId
+      ? PUBLIC_ENTRANCES_COORDINATES_IN_BOUNDS_AND_MASSIF
+      : PUBLIC_ENTRANCES_COORDINATES_IN_BOUNDS;
+    const params = [
+      southWestBound.lat,
+      northEastBound.lat,
+      southWestBound.lng,
+      northEastBound.lng,
+      limitEntrances,
+    ];
+    if (massifId) {
+      params.push(massifId);
+    }
+    const results = await CommonService.query(query, params);
     if (!results || results.rows.length <= 0 || results.rows[0].count === 0) {
       return [];
     }
@@ -234,14 +303,26 @@ module.exports = {
    * @param limitEntrances Max number of entrances that will be showed at a certain level of zoom
    * @returns {Promise<any>}
    */
-  getEntrancesMap: async (southWestBound, northEastBound, limitEntrances) => {
-    const results = await CommonService.query(PUBLIC_ENTRANCES_IN_BOUNDS, [
+  getEntrancesMap: async (
+    southWestBound,
+    northEastBound,
+    limitEntrances,
+    massifId = null
+  ) => {
+    const query = massifId
+      ? PUBLIC_ENTRANCES_IN_BOUNDS_AND_MASSIF
+      : PUBLIC_ENTRANCES_IN_BOUNDS;
+    const params = [
       southWestBound.lat,
       northEastBound.lat,
       southWestBound.lng,
       northEastBound.lng,
       limitEntrances,
-    ]);
+    ];
+    if (massifId) {
+      params.push(massifId);
+    }
+    const results = await CommonService.query(query, params);
     if (!results || results.rows.length <= 0 || results.rows[0].count === 0) {
       return [];
     }
