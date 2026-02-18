@@ -34,13 +34,22 @@ module.exports = async (req, res) => {
     return res.badRequest(nameError);
   }
 
+  // Convert polygon and validate area before the transaction
+  const wkt = await MassifService.geoJsonToWKT(req.body.geogPolygon);
+  const areaKm2 = await MassifService.computePolygonAreaKm2(wkt);
+  if (areaKm2 > MassifService.MAX_AREA_KM2) {
+    return res.badRequest(
+      `The massif polygon area (${areaKm2.toFixed(0)} km²) exceeds the maximum allowed size of ${MassifService.MAX_AREA_KM2} km².`
+    );
+  }
+
   // Launch creation request using transaction: it performs a rollback if an error occurs
   const newMassif = await sails.getDatastore().transaction(async (db) => {
     const cleanedData = {
       author: req.token.id,
       dateInscription: new Date(),
       documents: req.body.documents ? req.body.documents : [],
-      geogPolygon: await MassifService.geoJsonToWKT(req.body.geogPolygon),
+      geogPolygon: wkt,
     };
 
     const massif = await TMassif.create(cleanedData)

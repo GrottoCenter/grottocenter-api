@@ -126,3 +126,6 @@ docker/esdata/*
 .kiro
 *.iml
 build-info.json
+
+# Kiro IDE
+.kiro

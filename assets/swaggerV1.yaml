@@ -3828,53 +3828,69 @@ paths:
     get:
       tags:
         - geoloc
-      description: Count entrances contained inside the given coords
+      description: Get detailed entrances inside the given bounding box. Optionally filter by massif polygon. When both bounding box and massif are provided, returns entrances in the intersection of both areas.
       parameters:
         - $ref: '#/components/parameters/sw_lat'
         - $ref: '#/components/parameters/sw_lng'
         - $ref: '#/components/parameters/ne_lat'
         - $ref: '#/components/parameters/ne_lng'
+        - name: massif
+          in: query
+          required: false
+          description: Massif id to filter entrances by massif polygon
+          schema:
+            type: integer
       responses:
         '200':
           description: Successful operation
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  id:
-                    type: integer
-                  name:
-                    type: string
-                  city:
-                    type: string
-                  region:
-                    type: string
-                  caveId:
-                    type: integer
-                  caveName:
-                    type: string
-                  depth:
-                    type: integer
-                  length:
-                    type: integer
-                  longitude:
-                    type: number
-                  latitude:
-                    type: number
-                  quality:
-                    type: integer
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    name:
+                      type: string
+                    city:
+                      type: string
+                    region:
+                      type: string
+                    caveId:
+                      type: integer
+                    caveName:
+                      type: string
+                    depth:
+                      type: integer
+                    length:
+                      type: integer
+                    longitude:
+                      type: number
+                    latitude:
+                      type: number
+                    quality:
+                      type: integer
+        '404':
+          description: Massif not found (when massif parameter is provided)
 
   '/geoloc/entrancesCoordinates':
     get:
       tags:
         - geoloc
-      description: Count entrances contained inside the given coords
+      description: Get entrance coordinates inside the given bounding box. Optionally filter by massif polygon. When both bounding box and massif are provided, returns entrances in the intersection of both areas.
       parameters:
         - $ref: '#/components/parameters/sw_lat'
         - $ref: '#/components/parameters/sw_lng'
         - $ref: '#/components/parameters/ne_lat'
         - $ref: '#/components/parameters/ne_lng'
+        - name: massif
+          in: query
+          required: false
+          description: Massif id to filter entrances by massif polygon
+          schema:
+            type: integer
       responses:
         '200':
           description: List of coordinates [long,lat]
@@ -3887,6 +3903,8 @@ paths:
                   type: array
                   items:
                     type: number
+        '404':
+          description: Massif not found (when massif parameter is provided)
 
   '/geoloc/networks':
     get:
@@ -4060,7 +4078,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Massif'
         '400':
-          description: Some required information are missing.
+          description: Some required information are missing, or the polygon area exceeds the 8 000 km² limit.
         '403':
           description: You are not authorized to create a massif.
 
@@ -4068,7 +4086,7 @@ paths:
     get:
       tags:
         - massifs
-      description: Get a massif, its authors, names, geogPolygon, documents, descriptions and caves.
+      description: Get a massif, its authors, names, geogPolygon, documents, descriptions and networks.
       parameters:
         - name: id
           in: path
@@ -4091,7 +4109,7 @@ paths:
     put:
       tags:
         - massifs
-      description: Update a massif, its list of caves, names, descriptions and documents and its geogPolygon.
+      description: Update a massif, its list of caves, names, descriptions and documents and its geogPolygon. The polygon area must not exceed 8 000 km².
       parameters:
         - name: id
           in: path
@@ -4147,7 +4165,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/Massif'
         '400':
-          description: Bad request
+          description: Bad request, or the polygon area exceeds the 8 000 km² limit.
         '404':
           description: Resource not found
         '403':
@@ -4615,7 +4633,6 @@ paths:
                       type: integer
         '404':
           description: Request body must be a valid JSON object
-
 
 components:
   parameters:
@@ -5542,22 +5559,46 @@ components:
     Massif:
       type: object
       properties:
+        id:
+          type: integer
+        '@id':
+          type: string
+        isDeleted:
+          type: boolean
+        redirectTo:
+          type: integer
+          nullable: true
         author:
           $ref: '#/components/schemas/Caver'
-        caves:
-          type: array
-          items:
-            $ref: '#/components/schemas/Cave'
+        reviewer:
+          $ref: '#/components/schemas/Caver'
         dateInscription:
           type: string
         dateReviewed:
           type: string
-        id:
-          type: integer
         name:
           type: string
-        reviewer:
-          $ref: '#/components/schemas/Caver'
+        names:
+          type: array
+          items:
+            $ref: '#/components/schemas/Name'
+        language:
+          type: string
+        geogPolygon:
+          type: object
+          description: GeoJSON polygon (EPSG 4326)
+        descriptions:
+          type: array
+          items:
+            type: object
+        documents:
+          type: array
+          items:
+            $ref: '#/components/schemas/Document'
+        networks:
+          type: array
+          items:
+            $ref: '#/components/schemas/Cave'
 
     Name:
       properties:
