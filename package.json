@@ -52,7 +52,7 @@
     "url": "git://github.com/GrottoCenter/grottocenter-api.git"
   },
   "devDependencies": {
-    "@commitlint/cli": "^20.4.1",
+    "@commitlint/cli": "^20.4.2",
     "@commitlint/config-conventional": "^20.4.1",
     "cross-env": "^10.1.0",
     "eslint": "^8.57.1",
