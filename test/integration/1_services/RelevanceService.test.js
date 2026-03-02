@@ -5,15 +5,11 @@ const RelevanceService = require('../../../api/services/RelevanceService');
 describe('RelevanceService', () => {
   describe('computeNextRelevance()', () => {
     /**
-     * Property 1: Creation assigns next relevance
-     *
-     * For any parent scope containing N non-deleted entities with relevance
-     * values, computeNextRelevance should return max(existing) + 1.
-     * When N is 0, it should return 1.
-     *
-     * **Validates: Requirements 1.1, 1.2, 1.3**
+     * Next relevance equals max(existing) + 1, or 1 for empty scope.
+     * Encodes: new entities always land after the current highest relevance.
+     * Covers: scopes with 0 to N non-deleted entities with arbitrary relevance values.
      */
-    it('should assign max(existing relevance) + 1, or 1 for empty scope', async function pbt1() {
+    it('should assign max(existing relevance) + 1, or 1 for empty scope', async function nextRelevanceIsMaxPlusOne() {
       this.timeout(120000);
       // Use a high entrance ID to avoid fixture conflicts
       const BASE_ENTRANCE_ID = 9000;
@@ -74,10 +70,15 @@ describe('RelevanceService', () => {
       );
     });
 
-    it('should only consider non-deleted entities (ignores deleted)', async function pbt2() {
+    /**
+     * Deleted entities are invisible to relevance computation.
+     * Encodes: only non-deleted entities contribute to the max relevance.
+     * Covers: scopes with a mix of active and deleted entities.
+     */
+    it('should only consider non-deleted entities (ignores deleted)', async function deletedEntitiesAreInvisible() {
       this.timeout(120000);
-      const entranceId = 8999;
-      const createdIds = [];
+      const BASE_ENTRANCE_ID = 8900;
+      let scenarioIndex = 0;
 
       await fc.assert(
         fc.asyncProperty(
@@ -90,7 +91,9 @@ describe('RelevanceService', () => {
             maxLength: 5,
           }),
           async (activeRelevances, deletedRelevances) => {
-            createdIds.length = 0;
+            scenarioIndex += 1;
+            const entranceId = BASE_ENTRANCE_ID + scenarioIndex;
+            const createdIds = [];
 
             try {
               // Create active (non-deleted) comments
@@ -147,10 +150,7 @@ describe('RelevanceService', () => {
       );
     });
 
-    /**
-     * Unit test: returns 1 for empty scope
-     * **Validates: Requirements 1.2**
-     */
+    /** Returns 1 when no entities exist — the base case for relevance. */
     it('should return 1 when no entities exist in the scope', async () => {
       const entranceId = 6001;
       // Ensure no comments exist for this entrance
@@ -163,10 +163,7 @@ describe('RelevanceService', () => {
       should(result).equal(1);
     });
 
-    /**
-     * Unit test: ignores deleted entities when computing next relevance
-     * **Validates: Requirements 1.3**
-     */
+    /** Returns 1 when only deleted entities exist — they are invisible. */
     it('should return 1 when only deleted entities exist in the scope', async () => {
       const entranceId = 6002;
       const createdIds = [];
@@ -204,17 +201,11 @@ describe('RelevanceService', () => {
 
   describe('moveRelevance()', () => {
     /**
-     * Property 2: Move swaps exactly two entities and preserves all others
-     *
-     * For any parent scope containing at least 2 non-deleted entities, and any
-     * valid move direction (+1 or -1) applied to a non-boundary entity, the move
-     * operation should exchange the relevance values of exactly the target entity
-     * and its adjacent neighbor, while all other entities in the scope retain
-     * their original relevance values.
-     *
-     * **Validates: Requirements 2.1, 5.1**
+     * Move swaps exactly the target and its neighbor; all others are unchanged.
+     * Encodes: move is a pairwise swap, not a shift or reorder of the full list.
+     * Covers: scopes with 2–10 entities, both move directions, non-boundary targets.
      */
-    it('should swap exactly two entities and preserve all others', async function pbt3() {
+    it('should swap exactly two entities and preserve all others', async function moveSwapsExactlyTwoEntities() {
       this.timeout(120000);
       const BASE_ENTRANCE_ID = 7000;
       let scenarioIndex = 0;
@@ -331,10 +322,7 @@ describe('RelevanceService', () => {
       );
     });
 
-    /**
-     * Unit test: throws 404 for non-existent entity
-     * **Validates: Requirements 2.2**
-     */
+    /** Throws 404 when the entity does not exist. */
     it('should throw 404 for a non-existent entity', async () => {
       try {
         await RelevanceService.moveRelevance('comment', 999999, 1);
@@ -345,10 +333,7 @@ describe('RelevanceService', () => {
       }
     });
 
-    /**
-     * Unit test: throws 400 for a deleted entity
-     * **Validates: Requirements 2.3**
-     */
+    /** Throws 400 when the entity is deleted. */
     it('should throw 400 for a deleted entity', async () => {
       const entranceId = 6003;
       let commentId;
@@ -380,10 +365,7 @@ describe('RelevanceService', () => {
       }
     });
 
-    /**
-     * Unit test: throws 400 at boundary (single entity, no neighbor)
-     * **Validates: Requirements 2.4**
-     */
+    /** Throws 400 when the entity is at the boundary with no neighbor. */
     it('should throw 400 when entity is at boundary', async () => {
       const entranceId = 6004;
       let commentId;
@@ -429,10 +411,7 @@ describe('RelevanceService', () => {
       }
     });
 
-    /**
-     * Unit test: throws 400 for invalid direction values
-     * **Validates: Requirements 2.4**
-     */
+    /** Throws 400 for invalid direction values (only 1 and -1 are valid). */
     it('should throw 400 for invalid direction values', async () => {
       const invalidDirections = [0, 2, -3];
 

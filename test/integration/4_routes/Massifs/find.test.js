@@ -58,7 +58,11 @@ describe('Massif features', () => {
     });
   });
 
-  // **Validates: Requirements 3.1, 3.2**
+  /**
+   * GET response includes all expected domain fields and excludes entrances.
+   * Encodes: the massif endpoint returns a curated shape, not the raw model.
+   * Covers: all fixture massif IDs.
+   */
   describe('Property: Massif GET response shape excludes entrances and includes all other fields', () => {
     const EXPECTED_FIELDS = [
       'id',

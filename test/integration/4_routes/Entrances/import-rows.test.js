@@ -1,5 +1,6 @@
 const supertest = require('supertest');
 const should = require('should');
+const sinon = require('sinon');
 const AuthTokenService = require('../../AuthTokenService');
 
 describe('Entrance features', () => {
@@ -144,6 +145,75 @@ describe('Entrance features', () => {
           should(res.body.total.failure).equal(1);
           return done();
         });
+    });
+  });
+
+  // **Validates: Requirements 1.1, 5.3**
+  describe('Import rows - CoordinatesSnapshot wiring', () => {
+    const fs = require('fs'); // eslint-disable-line global-require
+    const path = require('path'); // eslint-disable-line global-require
+
+    afterEach(() => {
+      sinon.restore();
+      sails.services.coordinatessnapshotservice.reset();
+    });
+
+    it('should have CoordinatesSnapshotService.load() wired in bootstrap', () => {
+      const bootstrapSource = fs.readFileSync(
+        path.join(__dirname, '../../../../config/bootstrap.js'),
+        'utf8'
+      );
+      should(bootstrapSource).containEql('coordinatessnapshotservice');
+      should(bootstrapSource).containEql('.load()');
+    });
+
+    it('should call clear() after successful entrance import', async () => {
+      const clearSpy = sinon.spy(
+        sails.services.coordinatessnapshotservice,
+        'clear'
+      );
+
+      const res = await supertest(sails.hooks.http.app)
+        .post('/api/v1/entrances/import-rows')
+        .send({
+          data: [
+            {
+              'rdf:type': 'Entrance',
+              'dct:rights/cc:attributionName': 'Snapshot Test Author',
+              'dct:rights/karstlink:licenseType': 'CC-BY-SA',
+              'gn:countryCode': 'FR',
+              'w3geo:latitude': '48.8',
+              'w3geo:longitude': '2.3',
+              'rdfs:label': 'Snapshot Test Entrance',
+              'rdfs:label/dc:language': 'eng',
+            },
+          ],
+        })
+        .set('Authorization', adminToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(200);
+
+      if (res.body.successfulImport.length > 0) {
+        should(clearSpy.calledOnce).be.true();
+      }
+    });
+
+    it('should NOT call clear() when no entrances were imported', async () => {
+      const clearSpy = sinon.spy(
+        sails.services.coordinatessnapshotservice,
+        'clear'
+      );
+
+      await supertest(sails.hooks.http.app)
+        .post('/api/v1/entrances/import-rows')
+        .send({ data: [] })
+        .set('Authorization', adminToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(200);
+
+      should(clearSpy.called).be.false();
     });
   });
 });

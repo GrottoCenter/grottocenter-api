@@ -87,4 +87,13 @@ module.exports.custom = {
    *                                                                          *
    ************************************************************************** */
   // …
+
+  /** *************************************************************************
+   *                                                                          *
+   * TTL (in seconds) for the in-memory coordinates snapshot used by the      *
+   * geoloc entrances coordinates endpoint. After this duration, a background *
+   * refresh is triggered.                                                    *
+   *                                                                          *
+   ************************************************************************** */
+  coordinatesSnapshotTTL: 86400, // 24 hours
 };

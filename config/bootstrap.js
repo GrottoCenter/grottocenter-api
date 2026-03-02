@@ -37,6 +37,14 @@ module.exports.bootstrap = async function (done) {
 
   dbSync.registerMakeDbSync();
   await dbSync.ensureSearchDbIsPopulated();
+
+  // Fire-and-forget: load coordinates snapshot without blocking server startup
+  // Must use sails.services to get the same instance Sails loaded (include-all
+  // clears the require cache, so a direct require() returns a stale instance).
+  sails.services.coordinatessnapshotservice.load().catch((err) => {
+    sails.log.error('Failed to load coordinates snapshot on bootstrap:', err);
+  });
+
   return done();
 };
 // By convention, this is a good place to set up fake data during development.

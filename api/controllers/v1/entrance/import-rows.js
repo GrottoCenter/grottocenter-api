@@ -1,4 +1,5 @@
 const CaveService = require('../../../services/CaveService');
+const CoordinatesSnapshotService = require('../../../services/CoordinatesSnapshotService');
 const EntranceService = require('../../../services/EntranceService');
 const EntranceCSVImportService = require('../../../services/EntranceCSVImportService');
 const RightService = require('../../../services/RightService');
@@ -149,5 +150,11 @@ module.exports = async (req, res) => {
   requestResponse.total.successfulImportAsDuplicates =
     requestResponse.successfulImportAsDuplicates.length;
   requestResponse.total.failure = requestResponse.failureImport.length;
+
+  // Invalidate coordinates snapshot so newly imported entrances appear on the map
+  if (requestResponse.successfulImport.length > 0) {
+    CoordinatesSnapshotService.clear();
+  }
+
   return res.ok(requestResponse);
 };
