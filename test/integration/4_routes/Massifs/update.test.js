@@ -96,7 +96,7 @@ describe('Massif features', () => {
         });
     });
 
-    it('should return 400 when polygon area exceeds 8000 km²', (done) => {
+    it('should return 400 when polygon area exceeds 35000 km²', (done) => {
       supertest(sails.hooks.http.app)
         .put(`/api/v1/massifs/${testMassifId}`)
         .send({
@@ -109,7 +109,7 @@ describe('Massif features', () => {
         .end((err, res) => {
           if (err) return done(err);
           should(res.text).match(
-            /exceeds the maximum allowed size of 8000 km²/
+            /exceeds the maximum allowed size of 35000 km²/
           );
           return done();
         });
