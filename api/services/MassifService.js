@@ -4,7 +4,7 @@ const SearchService = require('./SearchService');
 const DescriptionService = require('./DescriptionService');
 const CommonService = require('./CommonService');
 
-const MAX_AREA_KM2 = 8000;
+const MAX_AREA_KM2 = 35000;
 
 const FIND_NETWORKS_IN_MASSIF = `
   SELECT c.*, c.length AS "caveLength", count(e.id_cave) as "nbEntrances"

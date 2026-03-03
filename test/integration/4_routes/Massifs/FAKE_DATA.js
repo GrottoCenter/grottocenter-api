@@ -69,7 +69,7 @@ const geoJson2 = {
   ],
 };
 
-// A small polygon (~123 km²) well within the 8,000 km² limit
+// A small polygon (~123 km²) well within the 35,000 km² limit
 const geoJsonSmall = {
   type: 'Polygon',
   coordinates: [
@@ -83,7 +83,7 @@ const geoJsonSmall = {
   ],
 };
 
-// A large polygon (~49,000 km²) that exceeds the 8,000 km² limit
+// A large polygon (~49,000 km²) that exceeds the 35,000 km² limit
 const geoJsonOversized = {
   type: 'Polygon',
   coordinates: [
