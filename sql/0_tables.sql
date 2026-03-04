@@ -1100,7 +1100,7 @@ CREATE TABLE j_document_region (
 -- DROP TABLE j_document_subject;
 CREATE TABLE j_document_subject (
 	id_document int4 NOT NULL,
-	code_subject bpchar(5) NOT NULL,
+	code_subject bpchar(8) NOT NULL,
 	CONSTRAINT j_document_subject_pk PRIMARY KEY (id_document, code_subject),
 	CONSTRAINT j_document_subject_t_document_fk FOREIGN KEY (id_document) REFERENCES t_document(id),
 	CONSTRAINT j_document_subject_t_subject_fk FOREIGN KEY (code_subject) REFERENCES t_subject(code)
