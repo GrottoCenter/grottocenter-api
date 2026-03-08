@@ -12,5 +12,12 @@
     "code": "EPSG:61356405",
     "definition": "+title=Old Hawaiian mean +proj=longlat +ellps=clrk66 +towgs84=58.0,-283.0,-182.0,0.0,0.0,0.0,0.0 +no_defs",
     "enabled": true
+  },
+  {
+    "id": 3,
+    "id_author": 1,
+    "code": "EPSG:NO_TITLE",
+    "definition": "+proj=longlat +ellps=WGS84 +no_defs",
+    "enabled": true
   }
 ]
