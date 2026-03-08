@@ -1,12 +1,10 @@
 const CommentService = require('../../../services/CommentService');
 
-module.exports = (req, res) => {
+module.exports = async (req, res) => {
   const entranceId = req.param('entranceId');
   if (!entranceId) {
     return res.badRequest('EntranceId param is missing');
   }
-  return CommentService.getStatsFromId(entranceId).then(
-    (result) => res.json(result),
-    (err) => res.serverError(`getEntranceStats error : ${err}`)
-  );
+  const result = await CommentService.getStatsFromId(entranceId);
+  return res.json(result);
 };
