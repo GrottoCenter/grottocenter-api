@@ -40,14 +40,25 @@ module.exports = {
       (ids) => TName.find().where({ [entitiesType]: ids }),
       allIds
     );
+    const namesByEntity = new Map();
+    for (const name of allNames) {
+      const key = name[entitiesType];
+      if (!namesByEntity.has(key)) namesByEntity.set(key, []);
+      namesByEntity.get(key).push(name);
+    }
     for (const entity of entitiesToComplete) {
-      entity.names = allNames.filter((n) => n[entitiesType] === entity.id);
+      entity.names = namesByEntity.get(entity.id) || [];
       extractMainName(entity);
     }
 
     if (entitiesType !== 'cave') return entitiesToComplete;
-    // For a cave, if there is no name for it, search the name
-    // of its first entrance (the only one): the name of the cave is the same as its entrance.
+
+    // Cave → entrance name fallback:
+    // Some caves have no TName rows of their own because they were created
+    // through an entrance-first workflow where only the entrance received a
+    // name. In the Grottocenter domain model a single-entrance cave shares
+    // its identity with that entrance, so we fall back to the entrance's
+    // name when the cave itself has none.
     const emptyNameCaves = entitiesToComplete.filter(
       (entity) => entity.names.length === 0
     );
