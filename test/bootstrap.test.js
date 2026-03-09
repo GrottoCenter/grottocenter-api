@@ -105,6 +105,12 @@ before(function (done) {
           }
 
           CommonService.query(customSQL.UPDATE_SEQUENCES_QUERY)
+            .then(() =>
+              CommonService.query(customSQL.POPULATE_ENTRANCE_POINT_GEOM)
+            )
+            .then(() =>
+              CommonService.query(customSQL.INDEX_OPTIMIZATION_MIGRATION)
+            )
             .then(() => done())
             .catch((commonServiceError) => done(commonServiceError));
         },
