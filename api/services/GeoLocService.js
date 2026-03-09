@@ -7,7 +7,7 @@ const PUBLIC_ENTRANCES_IN_BOUNDS = `
   LEFT JOIN t_name as ne ON ne.id_entrance = e.id
   LEFT JOIN t_name as nc ON nc.id_cave = e.id_cave
   LEFT JOIN t_cave as c ON c.Id = e.id_cave
-  WHERE e.latitude > $1 AND e.latitude < $2 AND e.longitude > $3 AND e.longitude < $4
+  WHERE ST_Within(e.point_geom, ST_MakeEnvelope($1, $2, $3, $4, 4326))
   AND e.is_sensitive = false
   AND e.is_deleted = false
   ORDER BY size_coef DESC
@@ -24,7 +24,7 @@ const PUBLIC_ENTRANCES_IN_BOUNDS_AND_MASSIF = `
   LEFT JOIN t_name as nc ON nc.id_cave = e.id_cave
   LEFT JOIN t_cave as c ON c.Id = e.id_cave
   JOIN t_massif AS m ON m.id = $6
-  WHERE e.latitude > $1 AND e.latitude < $2 AND e.longitude > $3 AND e.longitude < $4
+  WHERE ST_Within(e.point_geom, ST_MakeEnvelope($1, $2, $3, $4, 4326))
   AND ST_Contains(m.geog_polygon::geometry, e.point_geom)
   AND e.is_sensitive = false
   AND e.is_deleted = false
@@ -34,7 +34,7 @@ const PUBLIC_ENTRANCES_IN_BOUNDS_AND_MASSIF = `
 const PUBLIC_ENTRANCES_COORDINATES_IN_BOUNDS = `
   SELECT e.longitude as longitude, e.latitude as latitude
   FROM t_entrance as e
-  WHERE e.latitude > $1 AND e.latitude < $2 AND e.longitude > $3 AND e.longitude < $4
+  WHERE ST_Within(e.point_geom, ST_MakeEnvelope($1, $2, $3, $4, 4326))
   AND e.is_sensitive = false
   AND e.is_deleted = false
   LIMIT $5;
@@ -44,8 +44,7 @@ const PUBLIC_ENTRANCES_COORDINATES_IN_BOUNDS_AND_MASSIF = `
   SELECT e.longitude AS longitude, e.latitude AS latitude
   FROM t_entrance AS e
   JOIN t_massif AS m ON m.id = $6
-  WHERE e.latitude > $1 AND e.latitude < $2
-  AND e.longitude > $3 AND e.longitude < $4
+  WHERE ST_Within(e.point_geom, ST_MakeEnvelope($1, $2, $3, $4, 4326))
   AND ST_Contains(m.geog_polygon::geometry, e.point_geom)
   AND e.is_sensitive = false
   AND e.is_deleted = false
@@ -58,7 +57,7 @@ const NETWORKS_IN_BOUNDS = `
   INNER JOIN t_cave c ON c.id = en.id_cave
   LEFT JOIN t_name AS nc ON nc.id_cave = c.id
   LEFT JOIN t_name as ne ON ne.id_entrance = en.id
-  WHERE en.latitude > $1 AND en.latitude < $2 AND en.longitude > $3 AND en.longitude < $4
+  WHERE ST_Within(en.point_geom, ST_MakeEnvelope($1, $2, $3, $4, 4326))
   AND en.is_sensitive = false
   AND en.is_deleted = false
   AND c.is_deleted = false
@@ -70,7 +69,7 @@ const PUBLIC_NETWORKS_COORDINATES_IN_BOUNDS = `
   SELECT avg(en.longitude) as longitude, avg(en.latitude) as latitude
   FROM t_cave AS c
   LEFT JOIN t_entrance en ON c.id = en.id_cave
-  WHERE en.latitude > $1 AND en.latitude < $2 AND en.longitude > $3 AND en.longitude < $4
+  WHERE ST_Within(en.point_geom, ST_MakeEnvelope($1, $2, $3, $4, 4326))
   AND en.is_sensitive = false
   AND en.is_deleted = false
   AND c.is_deleted = false
@@ -224,21 +223,19 @@ module.exports = {
   },
 
   countEntrances: async (southWestBound, northEastBound) => {
-    const parameters = {
-      isDeleted: false,
-      latitude: {
-        '>': southWestBound.lat,
-        '<': northEastBound.lat,
-      },
-      longitude: {
-        '>': southWestBound.lng,
-        '<': northEastBound.lng,
-      },
-    };
-
-    // TODO : to adapt when authentication will be implemented
-    parameters.isSensitive = false;
-    return TEntrance.count(parameters);
+    const result = await CommonService.query(
+      `SELECT count(*) as count FROM t_entrance AS e
+       WHERE ST_Within(e.point_geom, ST_MakeEnvelope($1, $2, $3, $4, 4326))
+       AND e.is_sensitive = false
+       AND e.is_deleted = false`,
+      [
+        southWestBound.lng,
+        southWestBound.lat,
+        northEastBound.lng,
+        northEastBound.lat,
+      ]
+    );
+    return parseInt(result.rows[0].count, 10);
   },
 
   getEntrancesCoordinates: async (
@@ -251,17 +248,17 @@ module.exports = {
       ? PUBLIC_ENTRANCES_COORDINATES_IN_BOUNDS_AND_MASSIF
       : PUBLIC_ENTRANCES_COORDINATES_IN_BOUNDS;
     const params = [
-      southWestBound.lat,
-      northEastBound.lat,
       southWestBound.lng,
+      southWestBound.lat,
       northEastBound.lng,
+      northEastBound.lat,
       limitEntrances,
     ];
     if (massifId) {
       params.push(massifId);
     }
     const results = await CommonService.query(query, params);
-    if (!results || results.rows.length <= 0 || results.rows[0].count === 0) {
+    if (!results || results.rows.length <= 0) {
       return [];
     }
     const coordinates = results.rows;
@@ -280,14 +277,14 @@ module.exports = {
     const results = await CommonService.query(
       PUBLIC_NETWORKS_COORDINATES_IN_BOUNDS,
       [
-        southWestBound.lat,
-        northEastBound.lat,
         southWestBound.lng,
+        southWestBound.lat,
         northEastBound.lng,
+        northEastBound.lat,
         limitNetworks,
       ]
     );
-    if (!results || results.rows.length <= 0 || results.rows[0].count === 0) {
+    if (!results || results.rows.length <= 0) {
       return [];
     }
     const coordinates = results.rows;
@@ -313,17 +310,17 @@ module.exports = {
       ? PUBLIC_ENTRANCES_IN_BOUNDS_AND_MASSIF
       : PUBLIC_ENTRANCES_IN_BOUNDS;
     const params = [
-      southWestBound.lat,
-      northEastBound.lat,
       southWestBound.lng,
+      southWestBound.lat,
       northEastBound.lng,
+      northEastBound.lat,
       limitEntrances,
     ];
     if (massifId) {
       params.push(massifId);
     }
     const results = await CommonService.query(query, params);
-    if (!results || results.rows.length <= 0 || results.rows[0].count === 0) {
+    if (!results || results.rows.length <= 0) {
       return [];
     }
     return formatEntrances(results.rows);
@@ -331,6 +328,7 @@ module.exports = {
 
   getGrottosMap: async (southWestBound, northEastBound) => {
     const parameters = {
+      isDeleted: false,
       latitude: {
         '>': southWestBound.lat,
         '<': northEastBound.lat,
@@ -347,12 +345,12 @@ module.exports = {
 
   getNetworksMap: async (southWestBound, northEastBound) => {
     const results = await CommonService.query(NETWORKS_IN_BOUNDS, [
-      southWestBound.lat,
-      northEastBound.lat,
       southWestBound.lng,
+      southWestBound.lat,
       northEastBound.lng,
+      northEastBound.lat,
     ]);
-    if (!results || results.rows.length <= 0 || results.rows[0].count === 0) {
+    if (!results || results.rows.length <= 0) {
       return [];
     }
     return formatNetworks(results.rows);

@@ -5,8 +5,8 @@
     "reviewer": 1,
     "isOfInterest": true,
     "cave": 1,
-    "latitude": "3",
-    "longitude": "3",
+    "latitude": "62.8",
+    "longitude": "78.5",
     "name": "The entrance with name 11",
     "names": [11]
   },
@@ -16,8 +16,8 @@
     "reviewer": 2,
     "isOfInterest": false,
     "cave": 1,
-    "latitude": "3",
-    "longitude": "3",
+    "latitude": "62.9",
+    "longitude": "78.6",
     "name": "The entrance with name 12 & 13",
     "names": [12, 13],
     "iso_3166_2": "FR-01"
@@ -37,8 +37,8 @@
     "reviewer": 2,
     "isOfInterest": false,
     "cave": 3,
-    "latitude": "-1",
-    "longitude": "-3",
+    "latitude": "61.2",
+    "longitude": "73.4",
     "isPublic": true
   },
   {
@@ -47,8 +47,8 @@
     "reviewer": 2,
     "isOfInterest": false,
     "cave": 3,
-    "latitude": "-1",
-    "longitude": "-3",
+    "latitude": "61.3",
+    "longitude": "73.5",
     "isPublic": false
   },
   {
@@ -60,6 +60,24 @@
     "longitude": "30",
     "isSensitive": true,
     "name": "A sensitive entrance"
+  },
+  {
+    "id": 7,
+    "author": 2,
+    "reviewer": 1,
+    "isOfInterest": false,
+    "cave": 5,
+    "latitude": "57.4",
+    "longitude": "72.0"
+  },
+  {
+    "id": 8,
+    "author": 2,
+    "reviewer": 1,
+    "isOfInterest": false,
+    "cave": 6,
+    "latitude": "57.4",
+    "longitude": "72.0"
   },
   {
     "id": 999,

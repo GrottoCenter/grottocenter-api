@@ -16,13 +16,18 @@ const FIND_NETWORKS_IN_MASSIF = `
   HAVING count(e.id_cave) > 1
 `;
 
+// Spatial queries below route through t_entrance to leverage the GiST index on
+// point_geom. A cave with no entrance will not appear in these results, which
+// is acceptable because every cave in the domain model must have at least one
+// entrance.
 const FIND_CAVES_IN_MASSIF = `
-  SELECT c.*
+  SELECT DISTINCT c.*
   FROM t_cave AS c
-  JOIN t_massif as m
-  ON ST_Contains(ST_SetSRID(m.geog_polygon::geometry, 4326), ST_SetSRID(ST_MakePoint(c.longitude, c.latitude), 4326))
-  WHERE m.id = $1
+  JOIN t_entrance AS e ON e.id_cave = c.id
+  JOIN t_massif AS m ON m.id = $1
+  WHERE ST_Contains(m.geog_polygon::geometry, e.point_geom)
   AND c.is_deleted = false
+  AND e.is_deleted = false
 `;
 
 const COUNT_ENTRANCES_IN_MASSIF = `
