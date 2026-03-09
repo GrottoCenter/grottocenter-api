@@ -108,24 +108,29 @@ module.exports = {
   /**
    * Get the massifs in which the cave is contained.
    * If there is none, return an empty array.
+   *
+   * Note: this query routes through t_entrance to leverage the GiST index on
+   * point_geom. A cave with no entrance will therefore return no massifs, which
+   * is acceptable because every cave in the domain model must have at least one
+   * entrance.
+   *
    * @param {*} caveId
    * @returns [Massif]
    */
-  // TODO Change to use the cave entrances location instead
   getMassifs: async (caveId) => {
     try {
-      const WGS84_SRID = 4326; // GPS
       const query = `
-      SELECT m.*
-      FROM t_massif as m
-      JOIN  t_cave AS c
-      ON ST_Contains(ST_SetSRID(m.geog_polygon::geometry, ${WGS84_SRID}), ST_SetSRID(ST_MakePoint(c.longitude, c.latitude), ${WGS84_SRID}))
-      WHERE c.id = $1
+      SELECT DISTINCT m.*
+      FROM t_massif AS m
+      JOIN t_entrance AS e ON ST_Contains(m.geog_polygon::geometry, e.point_geom)
+      WHERE e.id_cave = $1
+      AND e.is_deleted = false
+      AND m.is_deleted = false
     `;
       const queryResult = await CommonService.query(query, [caveId]);
       return queryResult.rows;
     } catch (e) {
-      // Fail silently (happens when the longitude and latitude are null for example)
+      // Fail silently (happens when the point_geom is null for example)
       return [];
     }
   },

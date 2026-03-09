@@ -254,16 +254,16 @@ describe('Geoloc features', () => {
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json')
         .query({
-          sw_lat: 0,
-          sw_lng: 0,
-          ne_lat: 5,
-          ne_lng: 5,
+          sw_lat: 62,
+          sw_lng: 78,
+          ne_lat: 63,
+          ne_lng: 79,
         })
         .expect(200)
         .end((err, res) => {
           if (err) return done(err);
           const { count } = res.body;
-          should(count).equal(2); // 3rd entrance is out of bounds, so the result is 2.
+          should(count).equal(2); // entrances 1 & 2 are in bounds, others are outside
           return done();
         });
     });
