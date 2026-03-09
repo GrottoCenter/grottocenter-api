@@ -60,17 +60,6 @@ try {
   process.exit(1);
 } // -•
 
-// Last-resort safety net: log and survive instead of crashing.
-// Individual controllers should still handle their own errors —
-// these handlers exist only to prevent a full server reboot when
-// an edge case slips through.
-process.on('uncaughtException', (err) => {
-  console.error(new Date().toISOString(), 'Uncaught exception:', err);
-});
-process.on('unhandledRejection', (reason) => {
-  console.error(new Date().toISOString(), 'Unhandled rejection:', reason);
-});
-
 // Start server
 sails.lift(rc('sails'));
 sails.on('lifted', () => console.log(new Date().toISOString(), 'Sails lifted'));
