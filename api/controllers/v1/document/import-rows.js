@@ -16,6 +16,8 @@ module.exports = async (req, res) => {
     return res.forbidden('You are not authorized to import documents via CSV.');
   }
 
+  const cache = await DocumentCSVImportService.loadReferenceCache();
+
   const requestResponse = {
     type: 'document',
     total: {},
@@ -45,13 +47,15 @@ module.exports = async (req, res) => {
         await DocumentCSVImportService.getConvertedDocumentFromCsv(
           req,
           data,
-          authorId
+          authorId,
+          cache
         );
       const dataDescription =
         // eslint-disable-next-line no-await-in-loop
         await DocumentCSVImportService.getConvertedDescriptionFromCsv(
           data,
-          authorId
+          authorId,
+          cache
         );
 
       // Check for duplicates

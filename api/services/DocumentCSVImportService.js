@@ -6,15 +6,39 @@ const {
 } = require('../utils/csvHelper');
 const GrottoService = require('./GrottoService');
 
+/**
+ * Pre-load reference data into Maps for bulk CSV import.
+ * Avoids per-row DB queries for licenses, languages, countries, and doc types.
+ * @returns {Object} cache with licensesByName, languagesByPart1, countriesById, typesByUrl, typesByName
+ */
+async function loadReferenceCache() {
+  const [licenses, languages, countries, types] = await Promise.all([
+    TLicense.find(),
+    TLanguage.find(),
+    TCountry.find(),
+    TType.find(),
+  ]);
+  return {
+    licensesByName: new Map(licenses.map((l) => [l.name, l])),
+    languagesByPart1: new Map(languages.map((l) => [l.part1, l])),
+    countriesById: new Map(countries.map((c) => [c.id, c])),
+    typesByUrl: new Map(types.filter((t) => t.url).map((t) => [t.url, t])),
+    typesByName: new Map(types.map((t) => [t.name, t])),
+  };
+}
+
 module.exports = {
-  getConvertedDescriptionFromCsv: async (data, authorId) => {
+  loadReferenceCache,
+  getConvertedDescriptionFromCsv: async (data, authorId, cache = null) => {
     let descLang =
       valIfTruthyOrNull(data['karstlink:hasDescriptionDocument/dc:language']) ??
       valIfTruthyOrNull(data['dc:language']);
 
     if (descLang) descLang = descLang.toLowerCase();
     if (descLang && descLang.length === 2) {
-      const nameLang = await TLanguage.findOne({ part1: descLang });
+      const nameLang =
+        cache?.languagesByPart1?.get(descLang) ??
+        (await TLanguage.findOne({ part1: descLang }));
       if (nameLang) descLang = nameLang.id;
     }
 
@@ -34,12 +58,14 @@ module.exports = {
     };
   },
 
-  getConvertedDocumentFromCsv: async (req, data, authorId) => {
+  getConvertedDocumentFromCsv: async (req, data, authorId, cache = null) => {
     // License
     const licence = extractUrlFragment(
       valIfTruthyOrNull(data['dct:rights/karstlink:licenseType'])
     );
-    const licenceDb = await TLicense.findOne({ name: licence });
+    const licenceDb =
+      cache?.licensesByName?.get(licence) ??
+      (await TLicense.findOne({ name: licence }));
     if (!licenceDb) {
       throw Error(`This kind of license (${licence}) cannot be imported.`);
     }
@@ -47,14 +73,18 @@ module.exports = {
     const language = valIfTruthyOrNull(data['dc:language'])?.toLowerCase();
     let nameLang;
     if (language && language.length === 2) {
-      nameLang = await TLanguage.findOne({ part1: language });
+      nameLang =
+        cache?.languagesByPart1?.get(language) ??
+        (await TLanguage.findOne({ part1: language }));
     }
     const languages = nameLang ? [nameLang.id] : [];
 
     const country = valIfTruthyOrNull(data['gn:countryCode'])?.toUpperCase();
     let aCountry;
     if (country && country.length === 2) {
-      aCountry = await TCountry.findOne({ id: country });
+      aCountry =
+        cache?.countriesById?.get(country) ??
+        (await TCountry.findOne({ id: country }));
     }
     const countries = aCountry ? [aCountry.id] : [];
 
@@ -129,10 +159,11 @@ module.exports = {
     let typeId;
     const typeData = valIfTruthyOrNull(data['karstlink:documentType']);
     if (typeData) {
-      const typeCriteria = typeData.startsWith('http')
-        ? { url: typeData }
-        : { name: typeData };
-      const type = await TType.findOne(typeCriteria);
+      const type = typeData.startsWith('http')
+        ? (cache?.typesByUrl?.get(typeData) ??
+          (await TType.findOne({ url: typeData })))
+        : (cache?.typesByName?.get(typeData) ??
+          (await TType.findOne({ name: typeData })));
       if (!type) {
         throw Error(`The document type '${typeData}' is incorrect.`);
       }
