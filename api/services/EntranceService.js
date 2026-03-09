@@ -99,45 +99,46 @@ module.exports = {
     const hasRight = isEntranceSensitive
       ? RightService.hasGroup(token?.groups, RightService.G.ADMINISTRATOR)
       : true; // No need to call hasRight if it's not a sensitive entrance
-    /* eslint-disable no-param-reassign */
-    return Promise.all(
-      HEntrances.map(async (entrance) => {
-        if (!hasRight) {
-          entrance.locations = [];
-          entrance.longitude = null;
-          entrance.latitude = null;
-        }
-        // TODO refactor this which always return the current name instead of name's revisions
-        const nameResult = await NameService.setNames(
-          [{ id: entrance.t_id }],
-          'entrance'
-        );
-        entrance.names = [];
-        entrance.name = '';
-        if (
-          nameResult &&
-          nameResult[0] &&
-          nameResult[0].names &&
-          nameResult[0].names[0]
-        ) {
-          entrance.names = nameResult[0].names;
-          entrance.name = entrance.names[0].name;
-        }
 
-        if (entrance.cave) {
-          const caveName = await NameService.setNames(
-            [{ id: entrance.cave?.id ?? entrance.cave }],
-            'cave'
-          );
-          if (caveName && caveName.length > 0) {
-            entrance.caveName = caveName[0].name;
-          }
-        }
-
-        return entrance;
-      })
+    // Batch resolve entrance names — one call for all history entries
+    const entranceStubs = HEntrances.map((e) => ({ id: e.t_id }));
+    await NameService.setNames(entranceStubs, 'entrance');
+    const entranceNameMap = new Map(
+      entranceStubs.map((s) => [s.id, { names: s.names, name: s.name }])
     );
+
+    // Batch resolve cave names for entries that have a cave
+    const caveIds = [
+      ...new Set(
+        HEntrances.filter((e) => e.cave).map((e) => e.cave?.id ?? e.cave)
+      ),
+    ];
+    const caveNameMap = new Map();
+    if (caveIds.length > 0) {
+      const caveStubs = caveIds.map((id) => ({ id }));
+      await NameService.setNames(caveStubs, 'cave');
+      caveStubs.forEach((s) => caveNameMap.set(s.id, s.name));
+    }
+
+    /* eslint-disable no-param-reassign */
+    HEntrances.forEach((entrance) => {
+      if (!hasRight) {
+        entrance.locations = [];
+        entrance.longitude = null;
+        entrance.latitude = null;
+      }
+      const resolved = entranceNameMap.get(entrance.t_id);
+      entrance.names = resolved?.names ?? [];
+      entrance.name = resolved?.name ?? '';
+
+      if (entrance.cave) {
+        const caveId = entrance.cave?.id ?? entrance.cave;
+        entrance.caveName = caveNameMap.get(caveId) ?? null;
+      }
+    });
     /* eslint-enable no-param-reassign */
+
+    return HEntrances;
   },
 
   createEntrance: async (req, entranceData, nameDescLocData) => {
@@ -329,59 +330,29 @@ module.exports = {
       ? await TGeology.findOne(geology)
       : null;
 
-    // Join many to many
-    populatedEntrance.names = names
-      ? await Promise.all(
-          names.map(async (name) => {
-            const res = await TName.findOne(name);
-            return res;
-          })
-        )
+    // Join many to many — batch find instead of per-item findOne
+    populatedEntrance.names = names?.length
+      ? await TName.find({ id: names })
       : [];
 
-    populatedEntrance.descriptions = descriptions
-      ? await Promise.all(
-          descriptions.map(async (desc) => {
-            const res = await TDescription.findOne(desc);
-            return res;
-          })
-        )
+    populatedEntrance.descriptions = descriptions?.length
+      ? await TDescription.find({ id: descriptions })
       : [];
 
-    populatedEntrance.locations = locations
-      ? await Promise.all(
-          locations.map(async (loc) => {
-            const res = await TLocation.findOne(loc);
-            return res;
-          })
-        )
+    populatedEntrance.locations = locations?.length
+      ? await TLocation.find({ id: locations })
       : [];
 
-    populatedEntrance.documents = documents
-      ? await Promise.all(
-          documents.map(async (doc) => {
-            const res = await TDocument.findOne(doc);
-            return res;
-          })
-        )
+    populatedEntrance.documents = documents?.length
+      ? await TDocument.find({ id: documents })
       : [];
 
-    populatedEntrance.riggings = riggings
-      ? await Promise.all(
-          riggings.map(async (rig) => {
-            const res = await TRigging.findOne(rig);
-            return res;
-          })
-        )
+    populatedEntrance.riggings = riggings?.length
+      ? await TRigging.find({ id: riggings })
       : [];
 
-    populatedEntrance.comments = comments
-      ? await Promise.all(
-          comments.map(async (comment) => {
-            const res = await TComment.findOne(comment);
-            return res;
-          })
-        )
+    populatedEntrance.comments = comments?.length
+      ? await TComment.find({ id: comments })
       : [];
 
     return populatedEntrance;
