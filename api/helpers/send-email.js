@@ -114,7 +114,7 @@ module.exports = {
       const command = new SendEmailCommand(params);
       try {
         await awsSesCli.send(command);
-        sails.log(`An email has been sent using AWS SES service.
+        sails.log.info(`An email has been sent using AWS SES service.
           FROM: ${params.Source}
           TO: ${params.Destination.ToAddresses.join(',')}
           SUBJECT: ${params.Message.Subject.Data}
@@ -125,16 +125,16 @@ module.exports = {
         return exits.sendSESEmailError();
       }
     } else {
-      sails.log(
+      sails.log.info(
         `===== SEND EMAIL HELPER - DEBUG =====
 You are seing this message because you didn't configure your AWS credentials locally. In production website, the following email would be sent using AWS SES service.
-      
+
       FROM: ${params.Source}
       TO: ${params.Destination.ToAddresses.join(',')}
       SUBJECT: ${params.Message.Subject.Data}
       CONTENT:
 
-${params.Message.Body.Html.Data}        
+${params.Message.Body.Html.Data}
       `
       );
       return exits.success();
