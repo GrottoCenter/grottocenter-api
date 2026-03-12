@@ -13,7 +13,7 @@ const entrance = require('./entities/entrance');
 const cave = require('./entities/cave');
 const document = require('./entities/document');
 
-async function* paggingQuery(query) {
+async function* paggingQuery(name, query, ref = {}) {
   let fetched = 0;
   let nbRows = 0;
   do {
@@ -24,17 +24,19 @@ async function* paggingQuery(query) {
 
     // eslint-disable-next-line no-await-in-loop
     const rep = await CommonService.query(queryRaw).catch((e) => {
-      sails.log.error('Error paggingQuery', query, e);
+      sails.log.error(`[dbSync] Error paggingQuery ${name}`, query, e);
       throw e;
     });
-    process.stdout.write('.');
     nbRows = rep.rowCount;
     fetched += nbRows;
+    ref.fetched = fetched; // eslint-disable-line no-param-reassign
     yield rep.rows;
     // return // For debug
   } while (nbRows === syncUtils.PAGGING_SIZE);
 
-  process.stdout.write('\n');
+  if (fetched === 0) {
+    sails.log.warn(`[dbSync] WARNING: ${name} returned 0 rows`);
+  }
 }
 
 function searchImport(collectionName, formater) {
@@ -43,7 +45,7 @@ function searchImport(collectionName, formater) {
 
     const catchError = (e) => {
       sails.log.error(
-        'Error searchImport importDocuments',
+        '[dbSync] Error searchImport',
         collectionName,
         e.importResults.filter((j) => j.success === false),
         e
@@ -108,7 +110,8 @@ async function processCollection(
   isFileExportEnabled,
   { name, query, processRows, shouldExportToFile, search } = {}
 ) {
-  sails.log(`${new Date().toISOString()} Processing ${name} begin`);
+  const startTime = Date.now();
+  sails.log.info(`[dbSync] Start processing ${name}`);
   const hasFileExport = isFileExportEnabled && shouldExportToFile;
   const transformers = [];
   if (search) {
@@ -123,9 +126,10 @@ async function processCollection(
     hasFileExport ? Duplex.from(JSONArrayStringify) : consumeVoid
   ); // Stringify each rows
 
+  const ref = { fetched: 0 };
   // eslint-disable-next-line prefer-const
   let { stream, promise } = pipelineAsync(
-    Readable.from(paggingQuery(query)),
+    Readable.from(paggingQuery(name, query, ref)),
     Duplex.from(processRows), // Treat each group of rows into rows
     ...transformers
   );
@@ -133,11 +137,15 @@ async function processCollection(
   promise = promise
     .then(() => search && typesense.switchCollectionAlias(search.schema.name))
     .then(() => {
-      sails.log(`${new Date().toISOString()} Processing ${name} end`);
+      const elapsed = Date.now() - startTime;
+      if (hasFileExport) sails.log.info(`[dbSync] Exported ${name} to file`);
+      sails.log.info(
+        `[dbSync] Done processing ${ref.fetched} ${name} in ${elapsed}ms`
+      );
     })
     .catch((err) => {
       sails.log.error(
-        `${new Date().toISOString()} Processing ${name} error`,
+        `[dbSync] Error processing ${name} (fetched: ${ref.fetched})`,
         err
       );
     });
@@ -157,13 +165,14 @@ function getMsUntilNextExec() {
  * For each main entity in the database, export all data to a file and update the search database (typesense)
  */
 async function makeDbSync(isFileExportEnabled = true) {
-  sails.log(`${new Date().toISOString()} DB sync begin`);
+  sails.log.info(`[dbSync] Start search DB sync`);
+  const syncStartTime = Date.now();
 
   let archive;
   let archiveP;
   if (isFileExportEnabled) {
     if (!FileService.isCredentials) {
-      sails.log.warn('DB sync aborded, no azure credentials supplied');
+      sails.log.warn('[dbSync] DB sync aborded, no azure credentials supplied');
       return;
     }
     archive = archiver('zip');
@@ -187,7 +196,11 @@ async function makeDbSync(isFileExportEnabled = true) {
     await promise; // eslint-disable-line no-await-in-loop
   }
 
-  if (!isFileExportEnabled) return;
+  if (!isFileExportEnabled) {
+    const totalElapsed = Date.now() - syncStartTime;
+    sails.log.info(`[dbSync] Done search DB sync in ${totalElapsed}ms`);
+    return;
+  }
 
   const licenseFiles = ['license_en.txt', 'license_fr.txt'];
   for (const licenseFile of licenseFiles) {
@@ -200,6 +213,8 @@ async function makeDbSync(isFileExportEnabled = true) {
 
   const archiveSize = archive.pointer();
   await FileService.dbExport.setMetadata(archiveSize);
+  const totalElapsed = Date.now() - syncStartTime;
+  sails.log.info(`[dbSync] Done search DB sync in ${totalElapsed}ms`);
 }
 
 let dbSyncTim = null; // Ensures only one sync can be registered
@@ -215,13 +230,15 @@ function registerMakeDbSync() {
     // Cannot set the total time as a 32-bit signed integer is used by setTimeout()
     // It will overflow and trigger a timeoutoverflowwarning
 
-    makeDbSync().catch((err) => sails.log.error('makeDbSync error', err));
+    makeDbSync().catch((err) =>
+      sails.log.error('[dbSync] makeDbSync error', err)
+    );
   }, getMsUntilNextExec());
 }
 
 async function ensureSearchDbIsPopulated() {
   if (await typesense.isPopulated()) return;
-  sails.log(`${new Date().toISOString()} Search DB is empty`);
+  sails.log.info(`[dbSync] Search DB is empty`);
 
   // Initial setup of the search DB
   makeDbSync(false);
@@ -233,6 +250,6 @@ module.exports = {
 };
 
 // async function main() {
-//   makeDbSync().catch((err) => sails.log.error('makeDbSync error', err));
+//   makeDbSync(false).catch((err) => sails.log.error('[dbSync] makeDbSync error', err));
 // }
 // setTimeout(() => { main() }, 5000);
