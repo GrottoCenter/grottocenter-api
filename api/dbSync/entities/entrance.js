@@ -37,6 +37,7 @@ const query = `
     LEFT JOIN t_caver r ON r.id = e.id_reviewer
     WHERE e.is_deleted = false
     GROUP BY e.id, n.name, n.id_language, c.native_name, r.nickname, a.nickname
+    ORDER BY e.id ASC
     ${exportUtils.PAGGING_PLACEHOLDER}
   `;
 

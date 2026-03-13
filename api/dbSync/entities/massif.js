@@ -3,7 +3,6 @@ const exportUtils = require('../utils');
 const query = `
     SELECT
       m.id,
-      m.id,
       m.date_inscription AS "dateInscription",
       m.date_reviewed AS "dateReviewed",
       m.id_author AS "authorId",
@@ -20,7 +19,8 @@ const query = `
     LEFT JOIN t_caver r ON r.id = m.id_reviewer
     LEFT JOIN t_entrance e ON e.point_geom && m.geog_polygon AND ST_Contains(m.geog_polygon::geometry, e.point_geom) AND e.is_deleted = false
     WHERE m.is_deleted = false
-    GROUP BY m.id, n.name, n.id_language, r.nickname, a.nickname
+    GROUP BY m.id, m.geog_polygon, n.name, n.id_language, r.nickname, a.nickname
+    ORDER BY m.id ASC
     ${exportUtils.PAGGING_PLACEHOLDER}
   `;
 

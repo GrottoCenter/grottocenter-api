@@ -39,6 +39,7 @@ const query = `
     LEFT JOIN t_caver v ON v.id = d.id_validator
     WHERE d.is_deleted = false AND d.is_validated = true
     GROUP BY d.id, t.name, n.title, n.body, r.nickname, a.nickname, v.nickname, l.name
+    ORDER BY d.id ASC
     ${exportUtils.PAGGING_PLACEHOLDER}
   `;
 

@@ -9,6 +9,7 @@ const query = `
       c.surname,
       c.nickname
       FROM t_caver AS c
+    ORDER BY c.id ASC
     ${exportUtils.PAGGING_PLACEHOLDER}
   `;
 
