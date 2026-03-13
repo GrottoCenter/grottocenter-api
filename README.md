@@ -137,6 +137,34 @@ These scripts refresh the following materialized views:
 - `v_country_info` - Country statistics and information
 - `v_region_info` - Region statistics and information
 
+### Manual Typesense resync
+
+The search indexes (Typesense) are automatically synced every Monday at 2 AM UTC. On first startup, if Typesense is empty, a sync is triggered automatically.
+
+To manually trigger a resync (e.g. after fixing a data issue), connect to the production server via SSH and run the resync script.
+
+#### 1. Connect via SSH
+
+1. Log in to the [Azure Portal](https://portal.azure.com)
+2. Navigate to the **grottocenter-api** Web App
+3. Go to **Development Tools** > **SSH** > **Go**
+
+#### 2. Run the resync script
+
+From the SSH shell:
+
+```shell
+cd /home/site/wwwroot
+
+# Resync all collections (Typesense only, no file export)
+node scripts/resync-search.js
+
+# Resync all collections + Azure Blob file export
+node scripts/resync-search.js --export
+```
+
+The script lifts Sails, runs the sync, and exits. It creates timestamped collections in Typesense and switches aliases atomically, so there is no search downtime during the resync. Environment variables (database, Typesense, Azure) are already configured on the Web App.
+
 ### Tests
 
 Run all tests:

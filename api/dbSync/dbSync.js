@@ -246,10 +246,6 @@ async function ensureSearchDbIsPopulated() {
 
 module.exports = {
   ensureSearchDbIsPopulated,
+  makeDbSync,
   registerMakeDbSync,
 };
-
-// async function main() {
-//   makeDbSync(false).catch((err) => sails.log.error('[dbSync] makeDbSync error', err));
-// }
-// setTimeout(() => { main() }, 5000);
