@@ -132,6 +132,7 @@ module.exports.http = {
       sails.log.info('Client data:', {
         ip: req.ip || req.headers['x-forwarded-for'],
         userAgent: req.headers['user-agent'],
+        origin: req.headers.origin || req.headers.referer || 'unknown',
       });
       return next();
     },
