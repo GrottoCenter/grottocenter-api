@@ -115,22 +115,30 @@ describe('GeoLocService - Property 2: centroid exclusion filtering', () => {
   it('should return exactly the centroids matching non-deleted massifs with non-null polygons in bbox', async function centroidExclusion() {
     this.timeout(120000);
     await fc.assert(
-      fc.asyncProperty(massifBboxArb, async ({ swLat, swLng, neLat, neLng }) => {
-        const southWestBound = { lat: swLat, lng: swLng };
-        const northEastBound = { lat: neLat, lng: neLng };
+      fc.asyncProperty(
+        massifBboxArb,
+        async ({ swLat, swLng, neLat, neLng }) => {
+          const southWestBound = { lat: swLat, lng: swLng };
+          const northEastBound = { lat: neLat, lng: neLng };
 
-        const [centroids, refResult] = await Promise.all([
-          GeoLocService.getMassifsCoordinates(southWestBound, northEastBound),
-          CommonService.query(REFERENCE_COUNT_QUERY, [swLng, swLat, neLng, neLat]),
-        ]);
+          const [centroids, refResult] = await Promise.all([
+            GeoLocService.getMassifsCoordinates(southWestBound, northEastBound),
+            CommonService.query(REFERENCE_COUNT_QUERY, [
+              swLng,
+              swLat,
+              neLng,
+              neLat,
+            ]),
+          ]);
 
-        const expectedCount = refResult.rows[0].count;
+          const expectedCount = refResult.rows[0].count;
 
-        should(centroids.length).equal(
-          expectedCount,
-          `Centroid count mismatch for bbox sw(${swLat},${swLng}) ne(${neLat},${neLng}): got ${centroids.length}, expected ${expectedCount}`
-        );
-      }),
+          should(centroids.length).equal(
+            expectedCount,
+            `Centroid count mismatch for bbox sw(${swLat},${swLng}) ne(${neLat},${neLng}): got ${centroids.length}, expected ${expectedCount}`
+          );
+        }
+      ),
       { numRuns: 100 }
     );
   });

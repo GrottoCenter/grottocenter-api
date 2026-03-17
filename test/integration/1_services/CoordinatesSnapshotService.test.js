@@ -151,7 +151,7 @@ describe('CoordinatesSnapshotService', () => {
     });
   });
 
-  describe('clear()', () => {
+  describe('invalidate()', () => {
     it('should trigger refresh without nullifying snapshot', async () => {
       queryStub = sinon
         .stub(CommonService, 'query')
@@ -162,7 +162,7 @@ describe('CoordinatesSnapshotService', () => {
       queryStub = sinon
         .stub(CommonService, 'query')
         .resolves({ rows: sampleRows });
-      CoordinatesSnapshotService.clear();
+      CoordinatesSnapshotService.invalidate();
 
       // Snapshot still available (not nullified)
       should(CoordinatesSnapshotService.isLoaded()).be.true();
@@ -178,8 +178,8 @@ describe('CoordinatesSnapshotService', () => {
       // Background load was triggered
       should(queryStub.calledOnce).be.true();
 
-      // lastRefreshedAt is null (set by clear before async load completes)
-      should(CoordinatesSnapshotService.getLastRefreshedAt()).be.null();
+      // lastRefreshedAt is preserved (not nullified) so Cache-Control stays correct
+      should(CoordinatesSnapshotService.getLastRefreshedAt()).not.be.null();
     });
   });
 

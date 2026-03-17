@@ -7,6 +7,11 @@
  *
  * State is stored in module-level variables (not on the exported object)
  * so that Sails' _.bindAll() cannot interfere with it.
+ *
+ * NOTE: If load() fails at bootstrap, there is no automatic retry.
+ * The DB fallback in the controller will handle requests correctly,
+ * but without the snapshot's performance benefit. A server restart
+ * is required to restore the in-memory snapshot.
  */
 
 const CommonService = require('./CommonService');
@@ -89,6 +94,10 @@ module.exports = {
     // Strict inequalities (>) are intentional: coordinates exactly on the bbox
     // boundary are excluded to match Leaflet's convention where tile edges
     // belong to the adjacent tile, avoiding duplicate markers.
+    //
+    // The fullLat / fullLng special cases use inclusive (>=, <=) bounds because
+    // they represent the full geographic range (±90° lat or ±180° lng). There is
+    // no adjacent tile beyond these limits, so boundary exclusion is unnecessary.
     const fullLat = swLat <= -90 && neLat >= 90;
     const fullLng = swLng <= -180 && neLng >= 180;
 
@@ -115,11 +124,12 @@ module.exports = {
     );
   },
 
-  clear() {
+  invalidate() {
     sails.log.info(
-      'MassifCoordinatesSnapshot cleared, triggering background refresh'
+      'MassifCoordinatesSnapshot TTL invalidated, triggering background refresh'
     );
-    lastRefreshedAt = null;
+    // Keep lastRefreshedAt at its previous value so the controller computes
+    // a correct (increasing) Cache-Control age while the refresh runs.
     load().catch(() => {});
   },
 

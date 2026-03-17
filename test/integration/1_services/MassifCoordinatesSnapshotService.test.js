@@ -145,7 +145,7 @@ describe('MassifCoordinatesSnapshotService', () => {
     });
   });
 
-  describe('clear()', () => {
+  describe('invalidate()', () => {
     it('should trigger refresh without nullifying snapshot', async () => {
       queryStub = sinon
         .stub(CommonService, 'query')
@@ -156,7 +156,7 @@ describe('MassifCoordinatesSnapshotService', () => {
       queryStub = sinon
         .stub(CommonService, 'query')
         .resolves({ rows: sampleRows });
-      MassifCoordinatesSnapshotService.clear();
+      MassifCoordinatesSnapshotService.invalidate();
 
       should(MassifCoordinatesSnapshotService.isLoaded()).be.true();
       const result = MassifCoordinatesSnapshotService.getCoordinates(
@@ -169,7 +169,11 @@ describe('MassifCoordinatesSnapshotService', () => {
       should(result).have.length(3);
 
       should(queryStub.calledOnce).be.true();
-      should(MassifCoordinatesSnapshotService.getLastRefreshedAt()).be.null();
+
+      // lastRefreshedAt is preserved (not nullified) so Cache-Control stays correct
+      should(
+        MassifCoordinatesSnapshotService.getLastRefreshedAt()
+      ).not.be.null();
     });
   });
 

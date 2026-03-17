@@ -46,12 +46,16 @@ module.exports = async (req, res) => {
     }
 
     // Cache-Control header for all successful responses (AC 4.1)
+    // When lastRefreshed is null (snapshot not yet loaded), emit max-age=0
+    // to prevent CDNs from caching a DB-fallback response for the full TTL.
     const lastRefreshed = CoordinatesSnapshotService.getLastRefreshedAt();
     const ttl = CoordinatesSnapshotService.getTTL();
-    const age = lastRefreshed
-      ? Math.floor((Date.now() - lastRefreshed.getTime()) / 1000)
-      : 0;
-    res.set('Cache-Control', `public, max-age=${Math.max(ttl - age, 0)}`);
+    if (lastRefreshed) {
+      const age = Math.floor((Date.now() - lastRefreshed.getTime()) / 1000);
+      res.set('Cache-Control', `public, max-age=${Math.max(ttl - age, 0)}`);
+    } else {
+      res.set('Cache-Control', 'public, max-age=0');
+    }
 
     return res.json(result);
   } catch (e) {
