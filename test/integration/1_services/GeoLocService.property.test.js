@@ -69,3 +69,69 @@ describe('GeoLocService - Property 1: spatial query equivalence', () => {
     );
   });
 });
+
+// Feature: massif-geometry-endpoints, Property 2: Centroid exclusion filtering
+const GeoLocService = require('../../../api/services/GeoLocService');
+
+/**
+ * Bounding box arbitrary for massif centroid tests: generates valid SW/NE
+ * coordinate pairs where sw_lat < ne_lat and sw_lng < ne_lng.
+ */
+const massifBboxArb = fc
+  .tuple(
+    fc.double({ min: -90, max: 89, noNaN: true }),
+    fc.double({ min: -180, max: 179, noNaN: true })
+  )
+  .chain(([swLat, swLng]) =>
+    fc
+      .tuple(
+        fc.double({ min: swLat + 0.01, max: 90, noNaN: true }),
+        fc.double({ min: swLng + 0.01, max: 180, noNaN: true })
+      )
+      .map(([neLat, neLng]) => ({ swLat, swLng, neLat, neLng }))
+  );
+
+/**
+ * Property 2: Centroid exclusion filtering.
+ * Encodes: For any bounding box query, the number of returned centroids
+ * equals the number of non-deleted massifs with non-null geog_polygon
+ * whose centroid falls within the bounding box.
+ * Covers: all valid bounding boxes over the fixture massif data.
+ *
+ * Validates: Requirements 1.3, 1.4
+ */
+describe('GeoLocService - Property 2: centroid exclusion filtering', () => {
+  const REFERENCE_COUNT_QUERY = `
+    SELECT COUNT(*)::integer AS count
+    FROM t_massif
+    WHERE is_deleted = false
+      AND geog_polygon IS NOT NULL
+      AND ST_Within(
+        ST_Centroid(geog_polygon::geometry),
+        ST_MakeEnvelope($1, $2, $3, $4, 4326)
+      );
+  `;
+
+  it('should return exactly the centroids matching non-deleted massifs with non-null polygons in bbox', async function centroidExclusion() {
+    this.timeout(120000);
+    await fc.assert(
+      fc.asyncProperty(massifBboxArb, async ({ swLat, swLng, neLat, neLng }) => {
+        const southWestBound = { lat: swLat, lng: swLng };
+        const northEastBound = { lat: neLat, lng: neLng };
+
+        const [centroids, refResult] = await Promise.all([
+          GeoLocService.getMassifsCoordinates(southWestBound, northEastBound),
+          CommonService.query(REFERENCE_COUNT_QUERY, [swLng, swLat, neLng, neLat]),
+        ]);
+
+        const expectedCount = refResult.rows[0].count;
+
+        should(centroids.length).equal(
+          expectedCount,
+          `Centroid count mismatch for bbox sw(${swLat},${swLng}) ne(${neLat},${neLng}): got ${centroids.length}, expected ${expectedCount}`
+        );
+      }),
+      { numRuns: 100 }
+    );
+  });
+});

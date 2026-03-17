@@ -77,6 +77,51 @@ const PUBLIC_NETWORKS_COORDINATES_IN_BOUNDS = `
   HAVING count(en.id_cave) > 1
   LIMIT $5;
 `;
+const PUBLIC_MASSIFS_COORDINATES_IN_BOUNDS = `
+  SELECT
+    ST_X(ST_Centroid(m.geog_polygon::geometry)) AS longitude,
+    ST_Y(ST_Centroid(m.geog_polygon::geometry)) AS latitude
+  FROM t_massif AS m
+  WHERE m.is_deleted = false
+    AND m.geog_polygon IS NOT NULL
+    AND ST_Within(
+      ST_Centroid(m.geog_polygon::geometry),
+      ST_MakeEnvelope($1, $2, $3, $4, 4326)
+    );
+`;
+
+const MASSIFS_IN_BOUNDS = `
+  SELECT
+    m.id AS id,
+    n.name AS name,
+    ST_AsGeoJSON(m.geog_polygon) AS "geogPolygon",
+    (
+      SELECT COUNT(e.id)::integer
+      FROM t_entrance AS e
+      WHERE e.is_deleted = false
+        AND ST_Contains(m.geog_polygon::geometry, e.point_geom)
+    ) AS "entranceCount",
+    (
+      SELECT COUNT(*)::integer FROM (
+        SELECT c.id
+        FROM t_entrance AS e
+        JOIN t_cave AS c ON c.id = e.id_cave
+        WHERE e.is_deleted = false
+          AND c.is_deleted = false
+          AND ST_Contains(m.geog_polygon::geometry, e.point_geom)
+        GROUP BY c.id
+        HAVING COUNT(e.id) > 1
+      ) AS networks
+    ) AS "networkCount"
+  FROM t_massif AS m
+  LEFT JOIN t_name AS n ON n.id_massif = m.id AND n.is_main = true
+  WHERE m.is_deleted = false
+    AND m.geog_polygon IS NOT NULL
+    AND ST_Intersects(
+      m.geog_polygon::geometry,
+      ST_MakeEnvelope($1, $2, $3, $4, 4326)
+    );
+`;
 
 const CommonService = require('./CommonService');
 const NameService = require('./NameService');
@@ -354,5 +399,42 @@ module.exports = {
       return [];
     }
     return formatNetworks(results.rows);
+  },
+  getMassifsCoordinates: async (southWestBound, northEastBound) => {
+    const results = await CommonService.query(
+      PUBLIC_MASSIFS_COORDINATES_IN_BOUNDS,
+      [
+        southWestBound.lng,
+        southWestBound.lat,
+        northEastBound.lng,
+        northEastBound.lat,
+      ]
+    );
+    if (!results || results.rows.length <= 0) {
+      return [];
+    }
+    return results.rows.map((coord) => [
+      Number(coord.longitude),
+      Number(coord.latitude),
+    ]);
+  },
+
+  getMassifsMap: async (southWestBound, northEastBound) => {
+    const results = await CommonService.query(MASSIFS_IN_BOUNDS, [
+      southWestBound.lng,
+      southWestBound.lat,
+      northEastBound.lng,
+      northEastBound.lat,
+    ]);
+    if (!results || results.rows.length <= 0) {
+      return [];
+    }
+    return results.rows.map((row) => ({
+      id: row.id,
+      name: row.name,
+      geogPolygon: JSON.parse(row.geogPolygon),
+      entranceCount: row.entranceCount,
+      networkCount: row.networkCount,
+    }));
   },
 };
