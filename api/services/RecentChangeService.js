@@ -2,6 +2,12 @@ const CommonService = require('./CommonService');
 
 const GROUP_MAX_TIME_DIFF_S = 60 * 60 * 6; // 6 Hours
 
+// Dashboard only needs a short lookback; 7 days covers the typical review cycle
+// while keeping the query fast on the unpartitioned t_last_change table.
+const RECENT_CHANGES_WINDOW_DAYS = 7;
+// Hard cap to avoid oversized payloads — the dashboard is a summary, not a full audit log.
+const RECENT_CHANGES_LIMIT = 500;
+
 async function removeOlderChanges() {
   const query = `DELETE FROM t_last_change WHERE date_change < current_timestamp - interval '1 month';`;
   await CommonService.query(query);
@@ -108,7 +114,9 @@ async function getRecent() {
   const query = `
   SELECT tbl.*, author.nickname FROM t_last_change tbl
   LEFT JOIN t_caver author ON tbl.id_author = author.id
+  WHERE tbl.date_change > current_timestamp - interval '${RECENT_CHANGES_WINDOW_DAYS} days'
   ORDER BY date_change DESC
+  LIMIT ${RECENT_CHANGES_LIMIT}
   `;
   const rep = await CommonService.query(query);
 

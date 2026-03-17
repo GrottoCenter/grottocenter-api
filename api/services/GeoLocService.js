@@ -4,8 +4,8 @@ const PUBLIC_ENTRANCES_IN_BOUNDS = `
   c.size_coef as size_coef, e.id_cave as idCave, nc.name as nameCave, c.depth as depthCave,
   c.length as lengthCave
   FROM t_entrance as e
-  LEFT JOIN t_name as ne ON ne.id_entrance = e.id
-  LEFT JOIN t_name as nc ON nc.id_cave = e.id_cave
+  LEFT JOIN t_name as ne ON ne.id_entrance = e.id AND ne.is_main = true AND ne.is_deleted = false
+  LEFT JOIN t_name as nc ON nc.id_cave = e.id_cave AND nc.is_main = true AND nc.is_deleted = false
   LEFT JOIN t_cave as c ON c.Id = e.id_cave
   WHERE ST_Within(e.point_geom, ST_MakeEnvelope($1, $2, $3, $4, 4326))
   AND e.is_sensitive = false
@@ -20,8 +20,8 @@ const PUBLIC_ENTRANCES_IN_BOUNDS_AND_MASSIF = `
   c.size_coef as size_coef, e.id_cave as idCave, nc.name as nameCave, c.depth as depthCave,
   c.length as lengthCave
   FROM t_entrance as e
-  LEFT JOIN t_name as ne ON ne.id_entrance = e.id
-  LEFT JOIN t_name as nc ON nc.id_cave = e.id_cave
+  LEFT JOIN t_name as ne ON ne.id_entrance = e.id AND ne.is_main = true AND ne.is_deleted = false
+  LEFT JOIN t_name as nc ON nc.id_cave = e.id_cave AND nc.is_main = true AND nc.is_deleted = false
   LEFT JOIN t_cave as c ON c.Id = e.id_cave
   JOIN t_massif AS m ON m.id = $6
   WHERE ST_Within(e.point_geom, ST_MakeEnvelope($1, $2, $3, $4, 4326))
@@ -55,8 +55,8 @@ const NETWORKS_IN_BOUNDS = `
   SELECT c.id as id, COALESCE(nc.name, ne.name) as name, avg(en.longitude) as longitude, avg(en.latitude) as latitude
   FROM t_entrance as en
   INNER JOIN t_cave c ON c.id = en.id_cave
-  LEFT JOIN t_name AS nc ON nc.id_cave = c.id
-  LEFT JOIN t_name as ne ON ne.id_entrance = en.id
+  LEFT JOIN t_name AS nc ON nc.id_cave = c.id AND nc.is_main = true AND nc.is_deleted = false
+  LEFT JOIN t_name as ne ON ne.id_entrance = en.id AND ne.is_main = true AND ne.is_deleted = false
   WHERE ST_Within(en.point_geom, ST_MakeEnvelope($1, $2, $3, $4, 4326))
   AND en.is_sensitive = false
   AND en.is_deleted = false

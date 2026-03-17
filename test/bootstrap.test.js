@@ -111,6 +111,9 @@ before(function (done) {
             .then(() =>
               CommonService.query(customSQL.INDEX_OPTIMIZATION_MIGRATION)
             )
+            .then(() =>
+              CommonService.query(customSQL.QUERY_PERFORMANCE_FIXES_MIGRATION)
+            )
             .then(() => done())
             .catch((commonServiceError) => done(commonServiceError));
         },
