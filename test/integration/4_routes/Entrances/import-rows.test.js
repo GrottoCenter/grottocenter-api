@@ -167,10 +167,10 @@ describe('Entrance features', () => {
       should(bootstrapSource).containEql('.load()');
     });
 
-    it('should call clear() after successful entrance import', async () => {
-      const clearSpy = sinon.spy(
+    it('should call invalidate() after successful entrance import', async () => {
+      const invalidateSpy = sinon.spy(
         sails.services.coordinatessnapshotservice,
-        'clear'
+        'invalidate'
       );
 
       const res = await supertest(sails.hooks.http.app)
@@ -195,14 +195,14 @@ describe('Entrance features', () => {
         .expect(200);
 
       if (res.body.successfulImport.length > 0) {
-        should(clearSpy.calledOnce).be.true();
+        should(invalidateSpy.calledOnce).be.true();
       }
     });
 
-    it('should NOT call clear() when no entrances were imported', async () => {
-      const clearSpy = sinon.spy(
+    it('should NOT call invalidate() when no entrances were imported', async () => {
+      const invalidateSpy = sinon.spy(
         sails.services.coordinatessnapshotservice,
-        'clear'
+        'invalidate'
       );
 
       await supertest(sails.hooks.http.app)
@@ -213,7 +213,7 @@ describe('Entrance features', () => {
         .set('Accept', 'application/json')
         .expect(200);
 
-      should(clearSpy.called).be.false();
+      should(invalidateSpy.called).be.false();
     });
   });
 });

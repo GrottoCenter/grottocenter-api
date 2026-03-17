@@ -315,16 +315,16 @@ describe('CoordinatesSnapshotService - Property 1: Fault Condition', () => {
   });
 
   /**
-   * Bug 2 — Stuck Cache: after clear() + failed load(), lastRefreshedAt must be non-null.
+   * Bug 2 — Stuck Cache: after invalidate() + failed load(), lastRefreshedAt must be non-null.
    * Encodes: cache recovery requires lastRefreshedAt to be truthy for stale-while-revalidate.
-   * Covers: clear() followed by a failed background load().
+   * Covers: invalidate() followed by a failed background load().
    *
    * On UNFIXED code: lastRefreshedAt stays null (stuck cache) — test FAILS.
    * On FIXED code: lastRefreshedAt is set to epoch new Date(0) — test PASSES.
    *
    * Validates: Requirements 1.2, 2.2
    */
-  it('should preserve non-null lastRefreshedAt after clear() + failed load() (Bug 2 — Stuck Cache)', async function () {
+  it('should preserve non-null lastRefreshedAt after invalidate() + failed load() (Bug 2 — Stuck Cache)', async function () {
     this.timeout(30000);
     const logStub = sinon.stub(sails.log, 'error');
 
@@ -358,13 +358,13 @@ describe('CoordinatesSnapshotService - Property 1: Fault Condition', () => {
 
           should(CoordinatesSnapshotService.getLastRefreshedAt()).be.a.Date();
 
-          // Step 2: clear() sets lastRefreshedAt = null, then triggers background load()
-          // Stub DB to fail BEFORE calling clear() so the background load() fails
+          // Step 2: invalidate() preserves lastRefreshedAt, then triggers background load()
+          // Stub DB to fail BEFORE calling invalidate() so the background load() fails
           stubs.stubError(new Error(errorMsg));
-          CoordinatesSnapshotService.clear();
+          CoordinatesSnapshotService.invalidate();
 
           // Step 3: Wait for the background load() to complete
-          // clear() calls load().catch(() => {}), so we call load() again to get the same promise
+          // invalidate() calls load().catch(() => {}), so we call load() again to get the same promise
           // (single-flight guard) and await it, catching the expected rejection
           try {
             await CoordinatesSnapshotService.load();
@@ -380,7 +380,7 @@ describe('CoordinatesSnapshotService - Property 1: Fault Condition', () => {
           // Expected behavior: lastRefreshedAt is NOT null (recovery state preserved)
           const refreshedAt = CoordinatesSnapshotService.getLastRefreshedAt();
           should(refreshedAt !== null).be.true(
-            'lastRefreshedAt should be non-null after clear() + failed load(), but it is null (stuck cache)'
+            'lastRefreshedAt should be non-null after invalidate() + failed load(), but it is null (stuck cache)'
           );
         }
       ),

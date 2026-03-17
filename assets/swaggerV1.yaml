@@ -4005,6 +4005,87 @@ paths:
         '404':
           description: Resource not found
 
+  '/geoloc/massifsCoordinates':
+    get:
+      tags:
+        - geoloc
+      description: Get massif centroid coordinates inside the given bounding box. Returns an array of [longitude, latitude] pairs for use in hexbin heatmap rendering. Results are served from an in-memory snapshot cache when available, with a database fallback.
+      parameters:
+        - $ref: '#/components/parameters/sw_lat'
+        - $ref: '#/components/parameters/sw_lng'
+        - $ref: '#/components/parameters/ne_lat'
+        - $ref: '#/components/parameters/ne_lng'
+      responses:
+        '200':
+          description: Successful operation
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+              description: 'Cache directive, e.g. public, max-age=3600'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: array
+                  items:
+                    type: number
+                  minItems: 2
+                  maxItems: 2
+                  description: '[longitude, latitude] pair'
+        '400':
+          description: Missing or invalid bounding box parameters
+        '500':
+          description: Internal server error
+
+  '/geoloc/massifs':
+    get:
+      tags:
+        - geoloc
+      description: Get massif polygons with popup metadata inside the given bounding box. Returns massifs whose polygon intersects the bounding box, with name, GeoJSON polygon, entrance count, and network count.
+      parameters:
+        - $ref: '#/components/parameters/sw_lat'
+        - $ref: '#/components/parameters/sw_lng'
+        - $ref: '#/components/parameters/ne_lat'
+        - $ref: '#/components/parameters/ne_lng'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      description: Massif ID
+                    name:
+                      type: string
+                      nullable: true
+                      description: Main name of the massif
+                    geogPolygon:
+                      type: object
+                      description: GeoJSON geometry object (MultiPolygon or Polygon)
+                      properties:
+                        type:
+                          type: string
+                        coordinates:
+                          type: array
+                          items: {}
+                    entranceCount:
+                      type: integer
+                      description: Number of non-deleted entrances within the massif polygon
+                    networkCount:
+                      type: integer
+                      description: Number of caves with more than one entrance within the massif polygon
+        '400':
+          description: Missing or invalid bounding box parameters
+        '500':
+          description: Internal server error
+
   '/massifs':
     post:
       tags:

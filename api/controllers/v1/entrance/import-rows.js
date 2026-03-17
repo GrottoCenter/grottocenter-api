@@ -153,7 +153,7 @@ module.exports = async (req, res) => {
 
   // Invalidate coordinates snapshot so newly imported entrances appear on the map
   if (requestResponse.successfulImport.length > 0) {
-    CoordinatesSnapshotService.clear();
+    CoordinatesSnapshotService.invalidate();
   }
 
   return res.ok(requestResponse);
