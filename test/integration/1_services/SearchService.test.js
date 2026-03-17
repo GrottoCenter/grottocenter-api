@@ -495,7 +495,7 @@ describe('SearchService', () => {
       should(call.args[1].filter_by).equal('year:[2020..2024]');
     });
 
-    it('should filter out all falsy values including zero', async () => {
+    it('should filter out null but keep false and zero as valid filter values', async () => {
       typesenseStub.search = sinon
         .stub(typesense, 'search')
         .resolves({ hits: [] });
@@ -506,7 +506,35 @@ describe('SearchService', () => {
       });
 
       const call = typesenseStub.search.getCall(0);
-      should(call.args[1].filter_by).equal('country:`FR`');
+      should(call.args[1].filter_by).equal('country:`FR` && zero:=0');
+    });
+
+    it('should keep false as a valid filter value', async () => {
+      typesenseStub.search = sinon
+        .stub(typesense, 'search')
+        .resolves({ hits: [] });
+
+      await SearchService.collectionSearch({
+        entity: 'entrances',
+        filter: { isPublic: false },
+      });
+
+      const call = typesenseStub.search.getCall(0);
+      should(call.args[1].filter_by).equal('isPublic:=false');
+    });
+
+    it('should keep zero as a valid filter value', async () => {
+      typesenseStub.search = sinon
+        .stub(typesense, 'search')
+        .resolves({ hits: [] });
+
+      await SearchService.collectionSearch({
+        entity: 'entrances',
+        filter: { altitude: 0 },
+      });
+
+      const call = typesenseStub.search.getCall(0);
+      should(call.args[1].filter_by).equal('altitude:=0');
     });
 
     it('should filter out null and undefined', async () => {
@@ -606,6 +634,76 @@ describe('SearchService', () => {
 
       const call = typesenseStub.multiSearch.getCall(0);
       should(call.args[1].max_filter_by_candidates).equal(100);
+    });
+
+    it('should filter out empty strings', async () => {
+      typesenseStub.search = sinon
+        .stub(typesense, 'search')
+        .resolves({ hits: [] });
+
+      await SearchService.collectionSearch({
+        entity: 'entrances',
+        filter: { city: '', country: 'FR' },
+      });
+
+      const call = typesenseStub.search.getCall(0);
+      should(call.args[1].filter_by).equal('country:`FR`');
+    });
+
+    it('should filter out whitespace-only strings', async () => {
+      typesenseStub.search = sinon
+        .stub(typesense, 'search')
+        .resolves({ hits: [] });
+
+      await SearchService.collectionSearch({
+        entity: 'entrances',
+        filter: { city: '   ', country: 'FR' },
+      });
+
+      const call = typesenseStub.search.getCall(0);
+      should(call.args[1].filter_by).equal('country:`FR`');
+    });
+
+    it('should trim trailing whitespace from non-empty string values before filtering', async () => {
+      typesenseStub.search = sinon
+        .stub(typesense, 'search')
+        .resolves({ hits: [] });
+
+      await SearchService.collectionSearch({
+        entity: 'entrances',
+        filter: { city: '. ', county: '', country: '', region: '' },
+      });
+
+      const call = typesenseStub.search.getCall(0);
+      should(call.args[1].filter_by).equal('city:`.`');
+    });
+
+    it('should trim leading and trailing whitespace from string filter values', async () => {
+      typesenseStub.search = sinon
+        .stub(typesense, 'search')
+        .resolves({ hits: [] });
+
+      await SearchService.collectionSearch({
+        entity: 'entrances',
+        filter: { country: '  FR  ' },
+      });
+
+      const call = typesenseStub.search.getCall(0);
+      should(call.args[1].filter_by).equal('country:`FR`');
+    });
+
+    it('should produce no filter_by when all filter values are empty or whitespace', async () => {
+      typesenseStub.search = sinon
+        .stub(typesense, 'search')
+        .resolves({ hits: [] });
+
+      await SearchService.collectionSearch({
+        entity: 'entrances',
+        filter: { city: '', county: '', country: '', region: '   ' },
+      });
+
+      const call = typesenseStub.search.getCall(0);
+      should(call.args[1].filter_by).be.undefined();
     });
   });
 });
