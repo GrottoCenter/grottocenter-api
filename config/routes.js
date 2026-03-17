@@ -332,6 +332,9 @@ module.exports.routes = {
   'GET /api/v1/geoloc/networks': 'v1/geoloc/find-networks',
   'GET /api/v1/geoloc/networksCoordinates':
     'v1/geoloc/find-networks-coordinates',
+  'GET /api/v1/geoloc/massifs': 'v1/geoloc/find-massifs',
+  'GET /api/v1/geoloc/massifsCoordinates':
+    'v1/geoloc/find-massifs-coordinates',
   'GET /api/v1/geoloc/organizations': 'v1/geoloc/find-organizations',
 
   /**

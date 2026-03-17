@@ -45,6 +45,13 @@ module.exports.bootstrap = async function (done) {
     sails.log.error('Failed to load coordinates snapshot on bootstrap:', err);
   });
 
+  sails.services.massifcoordinatessnapshotservice.load().catch((err) => {
+    sails.log.error(
+      'Failed to load massif coordinates snapshot on bootstrap:',
+      err
+    );
+  });
+
   return done();
 };
 // By convention, this is a good place to set up fake data during development.
