@@ -53,7 +53,7 @@ module.exports.policies = {
   'v1/caver/count': true,
   'v1/caver/users-count': true,
   'v1/caver/find': ['validateId'],
-  'v1/caver/get-subscriptions': true,
+  'v1/caver/get-subscriptions': ['validateId'],
   'v1/caver/add-explored-cave': 'tokenAuth',
   'v1/caver/create': 'tokenAuth',
   'v1/caver/get-groups': 'tokenAuth',
