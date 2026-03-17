@@ -20,24 +20,30 @@ const allEntitiesKeys = Object.keys(allEntities);
 function buildFilter(filter, isLogicalCompareAnd = true) {
   let hasPrefixFilter = false;
   const out = Object.entries(filter)
-    .filter(([, v]) => v)
+    .filter(([, v]) => {
+      if (v === null || v === undefined) return false;
+      if (typeof v === 'string') return v.trim().length > 0;
+      return true;
+    })
     .flatMap(([k, v]) => {
       // For datePublication, use a prefix filter so that partial dates
       // (year, year-month, or full date) match all more-specific entries.
       // e.g. "2025" matches "2025", "2025-01", "2025-01-15", etc.
       // Typesense supports prefix matching on string fields with := and *.
-      if (k === 'datePublication' && typeof v === 'string') {
+      const trimmed = typeof v === 'string' ? v.trim() : v;
+
+      if (k === 'datePublication' && typeof trimmed === 'string') {
         hasPrefixFilter = true;
-        return [`${k}:=${v}*`];
+        return [`${k}:=${trimmed}*`];
       }
 
-      let vFmt = v;
+      let vFmt = trimmed;
       let operator = ':'; // Partial equal
-      if (Array.isArray(v))
-        vFmt = `[${v.join('..')}]`; // Range
-      else if (typeof v === 'boolean' || typeof v === 'number')
+      if (Array.isArray(trimmed))
+        vFmt = `[${trimmed.join('..')}]`; // Range
+      else if (typeof trimmed === 'boolean' || typeof trimmed === 'number')
         operator = ':='; // Exact equal
-      else vFmt = `\`${v}\``;
+      else vFmt = `\`${trimmed}\``;
       return [`${k}${operator}${vFmt}`];
     });
   return {
