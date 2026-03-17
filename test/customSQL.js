@@ -100,10 +100,34 @@ CREATE INDEX IF NOT EXISTS idx_v_biblio_sets
   ON v_bibliographic_metadata USING gin(list_sets);
 `;
 
+const QUERY_PERFORMANCE_FIXES_MIGRATION = `
+-- Fix 4: Add synthetic PK to t_last_change
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 't_last_change' AND column_name = 'id'
+  ) THEN
+    ALTER TABLE t_last_change ADD COLUMN id SERIAL PRIMARY KEY;
+  END IF;
+END $$;
+
+-- Fix 3: Notification covering index
+CREATE INDEX IF NOT EXISTS idx_t_notification_notified
+  ON t_notification(id_notified, date_inscription DESC);
+
+-- Fix 5: Replace partial comment indexes with non-partial
+DROP INDEX IF EXISTS idx_t_comment_entrance;
+DROP INDEX IF EXISTS idx_t_comment_cave;
+CREATE INDEX IF NOT EXISTS idx_t_comment_entrance ON t_comment(id_entrance);
+CREATE INDEX IF NOT EXISTS idx_t_comment_cave ON t_comment(id_cave);
+`;
+
 module.exports = {
   UPDATE_SEQUENCES_QUERY,
   ALTER_MASSIF_COLUMN_GEOG_POLYGON,
   ALTER_ENTRANCE_COLUMN_POINT_GEOM,
   POPULATE_ENTRANCE_POINT_GEOM,
   INDEX_OPTIMIZATION_MIGRATION,
+  QUERY_PERFORMANCE_FIXES_MIGRATION,
 };

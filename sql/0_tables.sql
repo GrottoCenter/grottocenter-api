@@ -721,8 +721,8 @@ CREATE TABLE t_comment (
 	CONSTRAINT t_comment_t_entrance2_fk FOREIGN KEY (id_exit) REFERENCES t_entrance(id),
 	CONSTRAINT t_comment_t_language0_fk FOREIGN KEY (id_language) REFERENCES t_language(id)
 );
-CREATE INDEX idx_t_comment_entrance ON t_comment(id_entrance) WHERE id_entrance IS NOT NULL;
-CREATE INDEX idx_t_comment_cave ON t_comment(id_cave) WHERE id_cave IS NOT NULL;
+CREATE INDEX idx_t_comment_entrance ON t_comment(id_entrance);
+CREATE INDEX idx_t_comment_cave ON t_comment(id_cave);
 
 -- t_document definition
 -- Drop table
@@ -1286,6 +1286,7 @@ CREATE TABLE t_notification (
   CONSTRAINT t_notification_t_massif_fk FOREIGN KEY (id_massif) REFERENCES t_massif(id),
   CONSTRAINT t_notification_t_rigging_fk FOREIGN KEY (id_rigging) REFERENCES t_rigging(id)
 );
+CREATE INDEX idx_t_notification_notified ON t_notification(id_notified, date_inscription DESC);
 
 -- DROP TABLE j_document_iso3166_2;
 CREATE TABLE j_document_iso3166_2 (
@@ -1298,7 +1299,7 @@ CREATE TABLE j_document_iso3166_2 (
 
 -- DROP TABLE t_last_change;
 CREATE TABLE t_last_change (
-	-- id serial NOT NULL,
+	id serial NOT NULL,
 	type_entity varchar(30) NOT NULL,
 	type_change varchar(30) NOT NULL,
 	date_change timestamp NOT NULL DEFAULT now(),
@@ -1308,7 +1309,11 @@ CREATE TABLE t_last_change (
 	id_related_entity int4 NULL,
 	name varchar(300) NULL,
 
+	CONSTRAINT t_last_change_pk PRIMARY KEY (id),
 	CONSTRAINT t_last_change_t_caver_fk FOREIGN KEY (id_author) REFERENCES t_caver(id)
+) WITH (
+  autovacuum_vacuum_scale_factor = 0.05,
+  autovacuum_analyze_scale_factor = 0.02
 );
 
 -- Internal record status for OAI-PMH server behavior control
