@@ -87,4 +87,79 @@ describe('validateId policy', () => {
     should(next.calledOnce).be.true();
     should(res.notFound.called).be.false();
   });
+
+  it('should return notFound for ID exceeding PostgreSQL integer max', () => {
+    req.params.id = '36600000000';
+
+    validateId(req, res, next);
+
+    should(res.notFound.calledOnce).be.true();
+    should(res.notFound.calledWith('Invalid ID: 36600000000')).be.true();
+    should(next.called).be.false();
+  });
+
+  it('should return notFound for very large ID values', () => {
+    req.params.id = '246000000000000';
+
+    validateId(req, res, next);
+
+    should(res.notFound.calledOnce).be.true();
+    should(next.called).be.false();
+  });
+
+  it('should accept the maximum valid PostgreSQL integer', () => {
+    req.params.id = '2147483647';
+
+    validateId(req, res, next);
+
+    should(next.calledOnce).be.true();
+    should(res.notFound.called).be.false();
+  });
+
+  it('should reject one above the PostgreSQL integer max', () => {
+    req.params.id = '2147483648';
+
+    validateId(req, res, next);
+
+    should(res.notFound.calledOnce).be.true();
+    should(next.called).be.false();
+  });
+
+  it('should validate named ID params like caverId', () => {
+    req.params.caverId = '36600000000';
+
+    validateId(req, res, next);
+
+    should(res.notFound.calledOnce).be.true();
+    should(next.called).be.false();
+  });
+
+  it('should call next() for valid named ID params', () => {
+    req.params.caverId = '123';
+
+    validateId(req, res, next);
+
+    should(next.calledOnce).be.true();
+    should(res.notFound.called).be.false();
+  });
+
+  it('should validate multiple named ID params', () => {
+    req.params.entranceId = '5';
+    req.params.documentId = '99999999999';
+
+    validateId(req, res, next);
+
+    should(res.notFound.calledOnce).be.true();
+    should(next.called).be.false();
+  });
+
+  it('should call next() when all named ID params are valid', () => {
+    req.params.entranceId = '5';
+    req.params.documentId = '10';
+
+    validateId(req, res, next);
+
+    should(next.calledOnce).be.true();
+    should(res.notFound.called).be.false();
+  });
 });
