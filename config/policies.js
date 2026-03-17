@@ -155,6 +155,8 @@ module.exports.policies = {
   'v1/geoloc/find-entrances-coordinates': true,
   'v1/geoloc/find-networks': true,
   'v1/geoloc/find-networks-coordinates': true,
+  'v1/geoloc/find-massifs': true,
+  'v1/geoloc/find-massifs-coordinates': true,
   'v1/geoloc/find-organizations': true,
 
   // Languages
