@@ -28,8 +28,7 @@ jobs:
       - run: npm ci
       - run: npm run build:info
       - run: npm run lint
-      - run: npm test
-      - run: npm run-script coverage
+      - run: npm run coverage
       - name: Coveralls GitHub Action
         uses: coverallsapp/github-action@v2
         with:
