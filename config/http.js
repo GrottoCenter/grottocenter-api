@@ -122,7 +122,16 @@ module.exports.http = {
     fileMiddleware: (function () {
       const inMemoryStorage = multer.memoryStorage();
       // File size is 100 Mo (Mb)
-      const upload = multer({ storage: inMemoryStorage, fileSize: 100000000 });
+      //
+      // defParamCharset: 'utf8' fixes mojibake for non-ASCII filenames.
+      // It only affects the legacy `filename=` parameter in Content-Disposition
+      // headers (RFC 2047). Modern browsers using RFC 5987 `filename*=UTF-8''…`
+      // are already decoded correctly by busboy regardless of this setting.
+      const upload = multer({
+        storage: inMemoryStorage,
+        fileSize: 100000000,
+        defParamCharset: 'utf8',
+      });
       return upload.fields([{ name: 'files' }]);
     })(),
 
