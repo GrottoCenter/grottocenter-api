@@ -38,6 +38,9 @@ module.exports.bootstrap = async function (done) {
   dbSync.registerMakeDbSync();
   await dbSync.ensureSearchDbIsPopulated();
 
+  // Blocking: load token blacklist cache before accepting requests
+  await sails.services.blacklistservice.loadCache();
+
   // Fire-and-forget: load coordinates snapshot without blocking server startup
   // Must use sails.services to get the same instance Sails loaded (include-all
   // clears the require cache, so a direct require() returns a stale instance).

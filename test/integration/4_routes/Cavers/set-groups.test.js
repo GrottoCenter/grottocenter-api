@@ -88,5 +88,22 @@ describe('Caver features', () => {
       const groupIds = updatedCaver.groups.map((g) => g.id);
       should(groupIds).containEql(group2.id);
     });
+
+    it('should revoke tokens after setting groups', async () => {
+      const adminToken = await AuthTokenService.getRawBearerAdminToken();
+      sails.services.blacklistservice.getCache().delete(testCaverId);
+
+      await supertest(sails.hooks.http.app)
+        .post(`/api/v1/cavers/${testCaverId}/groups`)
+        .send({ groups: [{ id: testGroupId }] })
+        .set('Authorization', adminToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(200);
+
+      const entry = sails.services.blacklistservice.getCache().get(testCaverId);
+      should(entry).be.ok();
+      should(entry).be.a.Date();
+    });
   });
 });

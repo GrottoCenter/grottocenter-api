@@ -18,6 +18,7 @@ describe('Caver features', () => {
   describe('Put on group', () => {
     afterEach(async () => {
       await TCaver.addToCollection(testCaverId, 'groups', testGroupId);
+      sails.services.blacklistservice.getCache().delete(testCaverId);
     });
 
     it('should forbid non-admin users', (done) => {
@@ -71,6 +72,21 @@ describe('Caver features', () => {
       const caver = await TCaver.findOne(testCaverId).populate('groups');
       const groupIds = caver.groups.map((g) => g.id);
       should(groupIds).containEql(testGroupId);
+    });
+
+    it('should revoke tokens after adding caver to group', async () => {
+      await TCaver.removeFromCollection(testCaverId, 'groups', testGroupId);
+      sails.services.blacklistservice.getCache().delete(testCaverId);
+
+      await supertest(sails.hooks.http.app)
+        .put(`/api/v1/cavers/${testCaverId}/groups/${testGroupId}`)
+        .set('Authorization', adminToken)
+        .set('Accept', 'application/json')
+        .expect(200);
+
+      const entry = sails.services.blacklistservice.getCache().get(testCaverId);
+      should(entry).be.ok();
+      should(entry).be.a.Date();
     });
   });
 });

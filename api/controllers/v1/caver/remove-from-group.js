@@ -26,6 +26,7 @@ module.exports = async (req, res) => {
   }
 
   await TCaver.removeFromCollection(caverId, 'groups', groupId);
+  await BlacklistService.revoke(parseInt(caverId, 10));
   // TODO ES update ?
 
   const params = { controllerMethod: 'CaverController.removeFromGroup' };

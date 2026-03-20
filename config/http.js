@@ -43,6 +43,7 @@ module.exports.http = {
 
     order: [
       'traceId',
+      'corsHeaders',
       'parseAuthToken',
       'generalRateLimit',
       'userDeleteRateLimit',
@@ -71,6 +72,22 @@ module.exports.http = {
       logger.run(traceId, next);
     },
 
+    // Ensure CORS headers are present on every response, including
+    // preflight OPTIONS requests that Sails' built-in CORS may not cover.
+    corsHeaders(req, res, next) {
+      res.set('Access-Control-Allow-Origin', '*');
+      res.set('Access-Control-Allow-Headers', 'content-type, authorization');
+      res.set(
+        'Access-Control-Allow-Methods',
+        'GET, POST, PUT, PATCH, DELETE, OPTIONS'
+      );
+
+      if (req.method === 'OPTIONS') {
+        return res.sendStatus(200);
+      }
+      return next();
+    },
+
     // TODO: when various API versions are used (v1, v2 etc.), this needs to be changed.
     addPackageVersionHeader(req, res, next) {
       res.set('X-Api-Version', packageVersion);
@@ -83,6 +100,7 @@ module.exports.http = {
     },
 
     // If a bearer token is present & valid, put it in req.token.
+    // If a token is present but revoked or missing iat, actively reject with 401.
     parseAuthToken: (req, res, next) => {
       const authHeader = req.headers.authorization;
       if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -91,17 +109,37 @@ module.exports.http = {
 
       const token = authHeader.substring(7, authHeader.length);
 
-      if (token) {
-        TokenService.verify(token, (err, responseToken) => {
-          if (!err) {
-            sails.log.info('Authenticated user', responseToken);
-            req.token = responseToken; // This is the decrypted token or the payload you provided
-          } else {
-            sails.log.warn('Token verification failed:', err.message);
-          }
-        });
+      if (!token) {
+        return next();
       }
-      return next();
+
+      return TokenService.verify(token, (err, responseToken) => {
+        if (err) {
+          sails.log.warn('Token verification failed:', err.message);
+          return next();
+        }
+
+        if (!responseToken.iat) {
+          sails.log.warn('Token missing iat claim, rejecting');
+          res.status(401);
+          return res.json({ message: 'Token missing iat claim.' });
+        }
+
+        if (
+          sails.services.blacklistservice.isRevoked(
+            responseToken.id,
+            responseToken.iat
+          )
+        ) {
+          sails.log.info('Token revoked for user', responseToken.id);
+          res.status(401);
+          return res.json({ message: 'Token has been revoked.' });
+        }
+
+        sails.log.info('Authenticated user', responseToken);
+        req.token = responseToken;
+        return next();
+      });
     },
 
     /** *************************************************************************
