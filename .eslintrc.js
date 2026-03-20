@@ -10,6 +10,8 @@ module.exports = {
     ecmaVersion: 'latest',
   },
   globals: {
+    BlacklistService: 'readonly',
+    CommonService: 'readonly',
     HComment: 'readonly',
     HDescription: 'readonly',
     HEntrance: 'readonly',
@@ -57,6 +59,7 @@ module.exports = {
     TRigging: 'readonly',
     TSubject: 'readonly',
     TType: 'readonly',
+    TTokenBlacklist: 'readonly',
     VDataQualityComputeEntrance: 'readonly',
     sails: 'readonly',
   },

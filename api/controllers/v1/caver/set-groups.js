@@ -23,6 +23,7 @@ module.exports = async (req, res) => {
   }
 
   await TCaver.replaceCollection(caverId, 'groups', newGroupIds);
+  await BlacklistService.revoke(parseInt(caverId, 10));
 
   const params = { controllerMethod: 'CaverController.setGroups' };
   return ControllerService.treat(req, null, {}, params, res);

@@ -68,6 +68,7 @@ before(function (done) {
           'tiso31662',
           'tgroup',
           'tnotificationtype',
+          'ttokenblacklist',
           'tcaver',
           'tname',
           'tgrotto',
