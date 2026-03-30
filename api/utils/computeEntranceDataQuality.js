@@ -25,27 +25,53 @@
  *      - else 0 pts
  */
 const moment = require('moment');
+
+// Categories of entrance data used for quality scoring
+const QUALITY_CATEGORIES = [
+  'general',
+  'location',
+  'description',
+  'document',
+  'rigging',
+  'history',
+  'comment',
+];
+
+// Date freshness scoring tiers
+const DATE_SCORE_RECENT = 7;
+const DATE_SCORE_MODERATE = 5;
+const DATE_SCORE_OLD = 3;
+const DATE_SCORE_VERY_OLD = 1;
+const DATE_SCORE_NONE = 0;
+
+// Contribution count scoring tiers
+const CONTRIB_SCORE_MULTIPLE = 7;
+const CONTRIB_SCORE_SINGLE = 3;
+const CONTRIB_SCORE_NONE = 0;
+
+// Age thresholds in years for date freshness scoring
+const DATE_THRESHOLD_RECENT = 2;
+const DATE_THRESHOLD_MODERATE = 5;
+const DATE_THRESHOLD_OLD = 10;
+
+// Derived max scores
+const MAX_DATE_SCORE = DATE_SCORE_RECENT;
+const MAX_CONTRIB_SCORE = CONTRIB_SCORE_MULTIPLE;
+const MAX_RAW_CATEGORY = MAX_DATE_SCORE + MAX_CONTRIB_SCORE;
+const MAX_RAW_TOTAL = QUALITY_CATEGORIES.length * MAX_RAW_CATEGORY;
+
 /**
  *
  * @param {Date} entityDate the date that we need to test
  * @returns {int} the score associated with the date
  */
 const getIndividualScoreAboutLastestDateOfUpdate = (entityDate) => {
-  const mEntityDate = moment(entityDate);
-  const now = moment();
-  if (entityDate) {
-    if (mEntityDate.isAfter(now.subtract(2, 'years'))) {
-      return 7;
-    }
-    if (mEntityDate.isAfter(now.subtract(5, 'years'))) {
-      return 5;
-    }
-    if (mEntityDate.isAfter(now.subtract(10, 'years'))) {
-      return 3;
-    }
-    return 1;
-  }
-  return 0;
+  if (!entityDate) return DATE_SCORE_NONE;
+  const ageInYears = moment().diff(moment(entityDate), 'years', true);
+  if (ageInYears < DATE_THRESHOLD_RECENT) return DATE_SCORE_RECENT;
+  if (ageInYears < DATE_THRESHOLD_MODERATE) return DATE_SCORE_MODERATE;
+  if (ageInYears < DATE_THRESHOLD_OLD) return DATE_SCORE_OLD;
+  return DATE_SCORE_VERY_OLD;
 };
 
 /**
@@ -55,75 +81,59 @@ const getIndividualScoreAboutLastestDateOfUpdate = (entityDate) => {
  */
 const getIndividualScoreAboutNbContributions = (nbContributions) => {
   if (nbContributions) {
-    // nbContributionsNumber is a string, but we want to compare with an int
     const nbContributionsNumber = Number.parseInt(nbContributions, 10);
-    if (nbContributionsNumber <= 0) {
-      return 0;
-    }
-    if (nbContributionsNumber === 1) {
-      return 3;
-    }
-    // (nbContributions >= 2)
-    return 7;
+    if (nbContributionsNumber <= 0) return CONTRIB_SCORE_NONE;
+    if (nbContributionsNumber === 1) return CONTRIB_SCORE_SINGLE;
+    return CONTRIB_SCORE_MULTIPLE;
   }
-  return 0;
+  return CONTRIB_SCORE_NONE;
 };
 
 /**
  *
  * @param {Object} entrance the entrance information to compute the quality of its data
- * @returns {int} the score associated at the entrance after the computation of the quality of its data
+ * @returns {int} the score (0–100) after normalizing the raw quality sum
  */
 const getQualityData = (entrance) => {
   let score = 0;
-
-  // calculate score related to the date of the last update
-  score += getIndividualScoreAboutLastestDateOfUpdate(
-    entrance.general_latest_date_of_update
-  );
-  score += getIndividualScoreAboutLastestDateOfUpdate(
-    entrance.location_latest_date_of_update
-  );
-  score += getIndividualScoreAboutLastestDateOfUpdate(
-    entrance.description_latest_date_of_update
-  );
-  score += getIndividualScoreAboutLastestDateOfUpdate(
-    entrance.document_latest_date_of_update
-  );
-  score += getIndividualScoreAboutLastestDateOfUpdate(
-    entrance.rigging_latest_date_of_update
-  );
-  score += getIndividualScoreAboutLastestDateOfUpdate(
-    entrance.history_latest_date_of_update
-  );
-  score += getIndividualScoreAboutLastestDateOfUpdate(
-    entrance.comment_latest_date_of_update
-  );
-
-  // calculate score related to the number of contributors
-  score += getIndividualScoreAboutNbContributions(
-    entrance.general_nb_contributions
-  );
-  score += getIndividualScoreAboutNbContributions(
-    entrance.location_nb_contributions
-  );
-  score += getIndividualScoreAboutNbContributions(
-    entrance.description_nb_contributions
-  );
-  score += getIndividualScoreAboutNbContributions(
-    entrance.document_nb_contributions
-  );
-  score += getIndividualScoreAboutNbContributions(
-    entrance.rigging_nb_contributions
-  );
-  score += getIndividualScoreAboutNbContributions(
-    entrance.history_nb_contributions
-  );
-  score += getIndividualScoreAboutNbContributions(
-    entrance.comment_nb_contributions
-  );
-
-  return score;
+  for (const cat of QUALITY_CATEGORIES) {
+    score += getIndividualScoreAboutLastestDateOfUpdate(
+      entrance[`${cat}_latest_date_of_update`]
+    );
+    score += getIndividualScoreAboutNbContributions(
+      entrance[`${cat}_nb_contributions`]
+    );
+  }
+  return Math.round((score / MAX_RAW_TOTAL) * 100);
 };
 
-module.exports = getQualityData;
+/**
+ *
+ * @param {Object} entrance row from v_data_quality_compute_entrance
+ * @returns {Object} per-category breakdown with 7 entity type scores (each 0–100)
+ */
+const getQualityBreakdown = (entrance) => {
+  const breakdown = {};
+  for (const cat of QUALITY_CATEGORIES) {
+    const dateScore = getIndividualScoreAboutLastestDateOfUpdate(
+      entrance[`${cat}_latest_date_of_update`]
+    );
+    const contribScore = getIndividualScoreAboutNbContributions(
+      entrance[`${cat}_nb_contributions`]
+    );
+    breakdown[cat] = Math.round(
+      ((dateScore + contribScore) / MAX_RAW_CATEGORY) * 100
+    );
+  }
+  return breakdown;
+};
+
+module.exports = {
+  QUALITY_CATEGORIES,
+  MAX_DATE_SCORE,
+  MAX_CONTRIB_SCORE,
+  MAX_RAW_CATEGORY,
+  MAX_RAW_TOTAL,
+  getQualityData,
+  getQualityBreakdown,
+};
