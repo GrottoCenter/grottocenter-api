@@ -17,7 +17,7 @@ const {
 } = require('./utils');
 const FileService = require('../FileService');
 const RiggingService = require('../RiggingService');
-const getQualityData = require('../../utils/computeEntranceDataQuality');
+const { getQualityData } = require('../../utils/computeEntranceDataQuality');
 
 const c = {
   toCave: (source, meta) => ({
