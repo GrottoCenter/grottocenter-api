@@ -10,6 +10,7 @@ const ENTRANCE_PROPERTIES = [
   'comments',
   'county',
   'country',
+  'dataQuality',
   'dateInscription',
   'dateReviewed',
   'descriptions',

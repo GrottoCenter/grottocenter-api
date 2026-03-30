@@ -57,6 +57,7 @@ module.exports = {
     TRigging: 'readonly',
     TSubject: 'readonly',
     TType: 'readonly',
+    VDataQualityComputeEntrance: 'readonly',
     sails: 'readonly',
   },
   rules: {

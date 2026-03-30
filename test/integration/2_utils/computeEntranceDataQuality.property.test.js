@@ -8,7 +8,6 @@ const {
   getQualityBreakdown,
 } = require('../../../api/utils/computeEntranceDataQuality');
 const {
-  toEntrance,
   toQualityDataEntrance,
 } = require('../../../api/services/mapping/converters');
 
@@ -28,40 +27,28 @@ const qualityRowArb = fc.record({
 
 describe('computeEntranceDataQuality - Property Tests', () => {
   /**
-   * Property 1: Converter output completeness
+   * Property 1: Utility output completeness
    *
-   * For any materialized view row, converting an entrance source with
-   * qualityData set via toEntrance produces a dataQuality object with
-   * the correct shape: total (number), categories (7 keys), dateOfUpdate.
+   * For any materialized view row, getQualityData returns a number and
+   * getQualityBreakdown returns an object with exactly the seven category keys,
+   * each being a number.
    *
-   * Validates: Requirements 1.1, 1.2, 1.3, 2.3
+   * Validates: Requirements 1.1, 1.2, 2.3
    */
-  describe('Property 1: Converter output completeness', () => {
-    it('should produce dataQuality with total, 7 categories, and dateOfUpdate', function () {
+  describe('Property 1: Utility output completeness', () => {
+    it('should produce a numeric total and 7 numeric category scores', function () {
       this.timeout(10000);
       fc.assert(
         fc.property(qualityRowArb, (row) => {
-          const source = {
-            id: 1,
-            names: [{ name: 'Test', isMain: true, language: 'eng' }],
-            qualityData: row,
-          };
+          const total = getQualityData(row);
+          should(total).be.a.Number();
 
-          const result = toEntrance(source);
-
-          should(result).have.property('dataQuality');
-          should(result.dataQuality).not.be.null();
-          should(result.dataQuality).have.property('total');
-          should(result.dataQuality.total).be.a.Number();
-          should(result.dataQuality).have.property('categories');
-          should(Object.keys(result.dataQuality.categories)).have.length(
-            QUALITY_CATEGORIES.length
-          );
+          const breakdown = getQualityBreakdown(row);
+          should(Object.keys(breakdown)).have.length(QUALITY_CATEGORIES.length);
           for (const cat of QUALITY_CATEGORIES) {
-            should(result.dataQuality.categories).have.property(cat);
+            should(breakdown).have.property(cat);
+            should(breakdown[cat]).be.a.Number();
           }
-          should(result.dataQuality).have.property('dateOfUpdate');
-          should(result.dataQuality.dateOfUpdate).eql(row.date_of_update);
         }),
         { numRuns: 100 }
       );

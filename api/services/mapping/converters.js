@@ -17,7 +17,10 @@ const {
 } = require('./utils');
 const FileService = require('../FileService');
 const RiggingService = require('../RiggingService');
-const { getQualityData } = require('../../utils/computeEntranceDataQuality');
+const {
+  getQualityData,
+  getQualityBreakdown,
+} = require('../../utils/computeEntranceDataQuality');
 
 const c = {
   toCave: (source, meta) => ({
@@ -367,6 +370,17 @@ const c = {
     result.riggings = toList('riggings', source, c.toSimpleRigging, {
       filterDeleted: false,
     });
+
+    if (source.qualityData) {
+      result.dataQuality = {
+        total: getQualityData(source.qualityData),
+        categories: getQualityBreakdown(source.qualityData),
+        lastComputedAt: source.qualityData.date_of_update,
+      };
+    } else {
+      result.dataQuality = null;
+    }
+
     return result;
   },
 
