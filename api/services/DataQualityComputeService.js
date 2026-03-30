@@ -74,6 +74,7 @@ module.exports = {
       const queryResult = await CommonService.query(query, params);
       return queryResult.rows;
     } catch (e) {
+      sails.log.error(e);
       return null;
     }
   },
@@ -91,6 +92,7 @@ module.exports = {
       );
       return parseInt(queryResult.rows[0].count, 10);
     } catch (e) {
+      sails.log.error(e);
       return 0;
     }
   },
@@ -123,6 +125,7 @@ module.exports = {
       const queryResult = await CommonService.query(query, params);
       return queryResult.rows;
     } catch (e) {
+      sails.log.error(e);
       return null;
     }
   },
@@ -140,6 +143,7 @@ module.exports = {
       );
       return parseInt(queryResult.rows[0].count, 10);
     } catch (e) {
+      sails.log.error(e);
       return 0;
     }
   },
@@ -172,6 +176,7 @@ module.exports = {
       const queryResult = await CommonService.query(query, params);
       return queryResult.rows;
     } catch (e) {
+      sails.log.error(e);
       return null;
     }
   },
@@ -189,7 +194,26 @@ module.exports = {
       );
       return parseInt(queryResult.rows[0].count, 10);
     } catch (e) {
+      sails.log.error(e);
       return 0;
+    }
+  },
+
+  /**
+   *
+   * @param {number} entranceId
+   * @returns {Object|null} the materialized view row, or null if not found
+   */
+  getEntranceQualityById: async (entranceId) => {
+    try {
+      const queryResult = await CommonService.query(
+        'SELECT * FROM v_data_quality_compute_entrance WHERE id_entrance = $1 ORDER BY id_massif NULLS LAST LIMIT 1',
+        [entranceId]
+      );
+      return queryResult.rows[0] || null;
+    } catch (e) {
+      sails.log.error(e);
+      return null;
     }
   },
 };

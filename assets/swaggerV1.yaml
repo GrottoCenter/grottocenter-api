@@ -5435,6 +5435,66 @@ components:
           $ref: '#/components/schemas/Entrance-stats'
         discoveryYear:
           type: integer
+        dataQuality:
+          allOf:
+            - $ref: '#/components/schemas/DataQuality'
+          nullable: true
+
+    DataQuality:
+      type: object
+      required:
+        - total
+        - categories
+        - lastComputedAt
+      properties:
+        total:
+          type: integer
+          minimum: 0
+          maximum: 100
+        categories:
+          type: object
+          required:
+            - general
+            - location
+            - description
+            - document
+            - rigging
+            - history
+            - comment
+          properties:
+            general:
+              type: integer
+              minimum: 0
+              maximum: 100
+            location:
+              type: integer
+              minimum: 0
+              maximum: 100
+            description:
+              type: integer
+              minimum: 0
+              maximum: 100
+            document:
+              type: integer
+              minimum: 0
+              maximum: 100
+            rigging:
+              type: integer
+              minimum: 0
+              maximum: 100
+            history:
+              type: integer
+              minimum: 0
+              maximum: 100
+            comment:
+              type: integer
+              minimum: 0
+              maximum: 100
+        lastComputedAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: Timestamp at which the quality scores were last recomputed (materialized view refresh time).
 
     Entrance-stats:
       type: object

@@ -40,4 +40,5 @@ module.exports = {
   riggings: [],
   stats: undefined,
   timeInfo: undefined,
+  dataQuality: undefined,
 };
