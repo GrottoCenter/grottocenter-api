@@ -236,6 +236,31 @@ Grottocenter API implements a Role-Based Access Control (RBAC) system with 5 use
 
 For detailed information about roles, permissions, and implementation, see [here](PERMISSION_SYSTEM.md).
 
+### Sortable fields
+
+The advanced search endpoints (`POST /api/v1/advanced-search` and `POST /api/v1/advanced-search/export`) accept a `sort` parameter in the format `field:asc` or `field:desc`. Only fields that are sortable in the target entity's Typesense schema are accepted; invalid fields return a 400 error.
+
+The source of truth for sortable fields is the `search.schema.fields` array in each entity module under `api/dbSync/entities/`. A field is sortable when:
+
+- it has `sort: true` in its schema definition, or
+- its type is numeric or boolean (`int32`, `int64`, `float`, `bool`, and their array variants), which Typesense makes sortable by default
+
+To list all sortable fields for a given entity:
+
+```bash
+node -e "
+const SORTABLE_BY_DEFAULT = ['int32','int64','float','bool','int32[]','int64[]','float[]','bool[]'];
+const entities = ['organization','person','massif','cave','entrance','document'];
+entities.forEach(e => {
+  const mod = require('./api/dbSync/entities/' + e);
+  const sortable = mod.search.schema.fields
+    .filter(f => f.sort === true || SORTABLE_BY_DEFAULT.includes(f.type))
+    .map(f => f.name);
+  console.log(mod.search.schema.name + ': ' + sortable.join(', '));
+});
+"
+```
+
 ### Git
 
 #### Workflow

@@ -3734,7 +3734,11 @@ paths:
                     $ref: '#/components/schemas/Quicksearch-type'
                 sort:
                   type: string
-                  description: On what field to sort on, format "field:direction", direction can be "asc" or "desc", for example "depth:desc"
+                  description: |
+                    Sort field and direction in the format "field:asc" or "field:desc".
+                    The field must exist and be sortable in the target entity's schema.
+                    Returns 400 if the field is invalid or not sortable.
+                  example: "cave.depth:desc"
                 filter:
                   type: object
                   description: Filter to specify the request, the keys are field in the entities
@@ -3757,6 +3761,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Search'
+        '400':
+          description: Invalid sort parameter (unknown field, non-sortable field, or bad format)
         '404':
           description: Resource not found
 
@@ -3784,7 +3790,10 @@ paths:
                     $ref: '#/components/schemas/Quicksearch-type'
                 sort:
                   type: string
-                  description: On what field to sort on, format "field:direction", direction can be "asc" or "desc", for example "depth:desc"
+                  description: |
+                    Sort field and direction in the format "field:asc" or "field:desc".
+                    The field must exist and be sortable in the target entity's schema.
+                  example: "cave.depth:desc"
                 filter:
                   type: object
                   description: Filter to specify the request, the keys are field in the entities

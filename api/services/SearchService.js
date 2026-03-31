@@ -110,6 +110,51 @@ async function multiCollectionsSearch({
   });
 }
 
+function validateSort(entity, sort) {
+  const parts = sort.split(':');
+  if (parts.length !== 2 || !parts[0] || !['asc', 'desc'].includes(parts[1])) {
+    const err = new Error(
+      `Invalid sort format '${sort}'. Expected 'field:asc' or 'field:desc'.`
+    );
+    err.code = 'E_SORT_VALIDATION';
+    throw err;
+  }
+
+  const [fieldName] = parts;
+  const { fields } = allEntities[entity].schema;
+  const fieldDef = fields.find((f) => f.name === fieldName);
+
+  if (!fieldDef) {
+    const err = new Error(
+      `Field '${fieldName}' does not exist in '${entity}' schema.`
+    );
+    err.code = 'E_SORT_VALIDATION';
+    throw err;
+  }
+
+  // Typesense allows sorting on numeric and boolean fields by default.
+  // Only string fields require explicit `sort: true` in the schema.
+  const numericAndBoolTypes = [
+    'int32',
+    'int64',
+    'float',
+    'bool',
+    'int32[]',
+    'int64[]',
+    'float[]',
+    'bool[]',
+  ];
+  const isSortableByDefault = numericAndBoolTypes.includes(fieldDef.type);
+
+  if (!isSortableByDefault && fieldDef.sort !== true) {
+    const err = new Error(
+      `Field '${fieldName}' is not sortable in '${entity}' schema.`
+    );
+    err.code = 'E_SORT_VALIDATION';
+    throw err;
+  }
+}
+
 async function collectionSearch({
   query,
   entity = [],
@@ -121,6 +166,7 @@ async function collectionSearch({
   fields,
 } = {}) {
   if (!allEntitiesKeys.includes(entity)) return null;
+  if (sort && sort.trim()) validateSort(entity, sort);
   const q = query || '*';
   const { filterBy, hasPrefixFilter } = buildFilter(
     filter,
@@ -178,6 +224,9 @@ async function fieldSearch({
 }
 
 module.exports = {
+  allEntities,
+  allEntitiesKeys,
+
   isAlive,
 
   updateDocument,
