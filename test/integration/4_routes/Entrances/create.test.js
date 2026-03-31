@@ -202,6 +202,54 @@ describe('Entrance features', () => {
             }
           });
       }).timeout(10000);
+
+      it('should return code 200 and create entrance with boolean characteristics set to true', (done) => {
+        const entranceData = {
+          cave: 1,
+          name: { text: 'Boolean Chars Entrance', language: 'eng' },
+          latitude: 47.0,
+          longitude: 4.0,
+          hasBat: true,
+          dangerFlooding: true,
+          dangerCo2: true,
+          dangerRockfall: true,
+          dangerPollution: true,
+          needCleanGear: true,
+          needStayOnTrail: true,
+          hasRules: true,
+          isTouristic: true,
+        };
+
+        supertest(sails.hooks.http.app)
+          .post('/api/v1/entrances')
+          .set('Authorization', userToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .send(entranceData)
+          .expect(200)
+          .end((err, res) => {
+            if (err) return done(err);
+
+            try {
+              const { body: entrance } = res;
+              createdEntranceIds.push(entrance.id);
+
+              should(entrance.hasBat).equal(true);
+              should(entrance.dangerFlooding).equal(true);
+              should(entrance.dangerCo2).equal(true);
+              should(entrance.dangerRockfall).equal(true);
+              should(entrance.dangerPollution).equal(true);
+              should(entrance.needCleanGear).equal(true);
+              should(entrance.needStayOnTrail).equal(true);
+              should(entrance.hasRules).equal(true);
+              should(entrance.isTouristic).equal(true);
+
+              return done();
+            } catch (testErr) {
+              return done(testErr);
+            }
+          });
+      }).timeout(10000);
     });
   });
 });

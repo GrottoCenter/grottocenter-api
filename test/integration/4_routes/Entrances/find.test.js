@@ -103,5 +103,26 @@ describe('Entrance features', () => {
           return done();
         });
     });
+    it('should return boolean characteristics defaulting to false for existing entrances', (done) => {
+      supertest(sails.hooks.http.app)
+        .get('/api/v1/entrances/1')
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(200)
+        .end((err, res) => {
+          if (err) return done(err);
+          const { body: entrance } = res;
+          should(entrance.hasBat).equal(false);
+          should(entrance.dangerFlooding).equal(false);
+          should(entrance.dangerCo2).equal(false);
+          should(entrance.dangerRockfall).equal(false);
+          should(entrance.dangerPollution).equal(false);
+          should(entrance.needCleanGear).equal(false);
+          should(entrance.needStayOnTrail).equal(false);
+          should(entrance.hasRules).equal(false);
+          should(entrance.isTouristic).equal(false);
+          return done();
+        });
+    });
   });
 });

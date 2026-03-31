@@ -3227,6 +3227,60 @@ paths:
           in: query
           schema:
             type: boolean
+        - name: hasBat
+          in: query
+          description: The cave is a known bat habitat
+          schema:
+            type: boolean
+            default: false
+        - name: dangerFlooding
+          in: query
+          description: Flooding risk present
+          schema:
+            type: boolean
+            default: false
+        - name: dangerCo2
+          in: query
+          description: CO2 accumulation risk
+          schema:
+            type: boolean
+            default: false
+        - name: dangerRockfall
+          in: query
+          description: Rockfall risk
+          schema:
+            type: boolean
+            default: false
+        - name: dangerPollution
+          in: query
+          description: Pollution risk (water contamination etc.)
+          schema:
+            type: boolean
+            default: false
+        - name: needCleanGear
+          in: query
+          description: Clean/decontaminated gear required (biosecurity)
+          schema:
+            type: boolean
+            default: false
+        - name: needStayOnTrail
+          in: query
+          description: Visitors must stay on the marked trail
+          schema:
+            type: boolean
+            default: false
+        - name: hasRules
+          in: query
+          description: Specific entry rules apply (permit, reservation…)
+          schema:
+            type: boolean
+            default: false
+        - name: isTouristic
+          in: query
+          description: Developed/touristic cave open to the public
+          schema:
+            type: boolean
+            default: false
         - name: latitude
           in: query
           schema:
@@ -5408,6 +5462,33 @@ components:
           type: integer
         isSensitive:
           type: boolean
+        hasBat:
+          type: boolean
+          default: false
+        dangerFlooding:
+          type: boolean
+          default: false
+        dangerCo2:
+          type: boolean
+          default: false
+        dangerRockfall:
+          type: boolean
+          default: false
+        dangerPollution:
+          type: boolean
+          default: false
+        needCleanGear:
+          type: boolean
+          default: false
+        needStayOnTrail:
+          type: boolean
+          default: false
+        hasRules:
+          type: boolean
+          default: false
+        isTouristic:
+          type: boolean
+          default: false
         latitude:
           type: number
         locations:

@@ -143,6 +143,62 @@ describe('Entrance features', () => {
           });
       });
 
+      it('should return code 200 on toggling boolean characteristic fields', (done) => {
+        const booleanValues = {
+          hasBat: true,
+          dangerFlooding: true,
+          dangerCo2: true,
+          dangerRockfall: true,
+          dangerPollution: true,
+          needCleanGear: true,
+          needStayOnTrail: true,
+          hasRules: true,
+          isTouristic: true,
+        };
+        supertest(sails.hooks.http.app)
+          .put(`/api/v1/entrances/${entranceId}`)
+          .set('Authorization', userToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .send(booleanValues)
+          .expect(200)
+          .end((err, res) => {
+            if (err) return done(err);
+            const { body: entrance } = res;
+            for (const key of Object.keys(booleanValues)) {
+              should(entrance[key]).equal(true);
+            }
+
+            // Now toggle them back to false
+            const falseValues = {
+              hasBat: false,
+              dangerFlooding: false,
+              dangerCo2: false,
+              dangerRockfall: false,
+              dangerPollution: false,
+              needCleanGear: false,
+              needStayOnTrail: false,
+              hasRules: false,
+              isTouristic: false,
+            };
+            return supertest(sails.hooks.http.app)
+              .put(`/api/v1/entrances/${entranceId}`)
+              .set('Authorization', userToken)
+              .set('Content-type', 'application/json')
+              .set('Accept', 'application/json')
+              .send(falseValues)
+              .expect(200)
+              .end((err2, res2) => {
+                if (err2) return done(err2);
+                const { body: updated } = res2;
+                for (const key of Object.keys(falseValues)) {
+                  should(updated[key]).equal(false);
+                }
+                return done();
+              });
+          });
+      }).timeout(10000);
+
       it('should return code 200 on cave update', (done) => {
         supertest(sails.hooks.http.app)
           .put(`/api/v1/entrances/${entranceId}`)
