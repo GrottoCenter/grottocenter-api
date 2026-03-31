@@ -310,6 +310,15 @@ const c = {
     }
     result.isDeleted = source.isDeleted;
     result.isSensitive = isSensitive;
+    result.hasBat = source.hasBat;
+    result.dangerFlooding = source.dangerFlooding;
+    result.dangerCo2 = source.dangerCo2;
+    result.dangerRockfall = source.dangerRockfall;
+    result.dangerPollution = source.dangerPollution;
+    result.needCleanGear = source.needCleanGear;
+    result.needStayOnTrail = source.needStayOnTrail;
+    result.hasRules = source.hasRules;
+    result.isTouristic = source.isTouristic;
     result.redirectTo = source.redirectTo;
     result.dateInscription = source.dateInscription;
     result.dateReviewed = source.dateReviewed;

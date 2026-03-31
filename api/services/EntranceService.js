@@ -20,7 +20,17 @@ const HistoryService = require('./HistoryService');
 const LocationService = require('./LocationService');
 const RightService = require('./RightService');
 
+function coerceBool(req, field) {
+  let value = req.param(field);
+  if (value !== undefined) {
+    value = typeof value === 'string' ? value === 'true' : value;
+  }
+  return value;
+}
+
 module.exports = {
+  coerceBool,
+
   getConvertedNameFromClientRequest: (req) => {
     const result = {
       name: {
@@ -36,15 +46,19 @@ module.exports = {
   getConvertedDataFromClientRequest: (req) => {
     // remove id if present to avoid null id (and an error)
     const { id, ...reqBodyWithoutId } = req.body;
-    let isSensitive = req.param('isSensitive');
-    if (isSensitive !== undefined) {
-      isSensitive =
-        typeof isSensitive === 'string' ? isSensitive === 'true' : isSensitive; // handle string and bool value ('true', 'false', true or false)
-    }
     return {
       ...reqBodyWithoutId,
       geology: req.body.geology ?? 'Q35758',
-      isSensitive,
+      isSensitive: coerceBool(req, 'isSensitive'),
+      hasBat: coerceBool(req, 'hasBat'),
+      dangerFlooding: coerceBool(req, 'dangerFlooding'),
+      dangerCo2: coerceBool(req, 'dangerCo2'),
+      dangerRockfall: coerceBool(req, 'dangerRockfall'),
+      dangerPollution: coerceBool(req, 'dangerPollution'),
+      needCleanGear: coerceBool(req, 'needCleanGear'),
+      needStayOnTrail: coerceBool(req, 'needStayOnTrail'),
+      hasRules: coerceBool(req, 'hasRules'),
+      isTouristic: coerceBool(req, 'isTouristic'),
     };
   },
 
