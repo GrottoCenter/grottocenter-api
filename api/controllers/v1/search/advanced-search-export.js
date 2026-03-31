@@ -97,12 +97,24 @@ module.exports = async (req, res) => {
   let hasSentHeader = false;
   let page = 1;
   for (;;) {
-    // eslint-disable-next-line no-await-in-loop
-    const results = await SearchService.collectionSearch({
-      ...params,
-      page,
-      size: BATCH_SIZE,
-    }).catch((err) => err);
+    let results;
+    try {
+      // eslint-disable-next-line no-await-in-loop
+      results = await SearchService.collectionSearch({
+        ...params,
+        page,
+        size: BATCH_SIZE,
+      });
+    } catch (err) {
+      if (err.code === 'E_SORT_VALIDATION') {
+        if (!hasSentHeader) {
+          res.badRequest({ error: err.message });
+          return;
+        }
+        break;
+      }
+      results = err;
+    }
 
     if (!results || !results.hits) {
       sails.log.error('Export to CSV error', params, page, results);
