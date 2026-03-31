@@ -98,6 +98,69 @@ module.exports = {
       defaultsTo: false,
     },
 
+    hasBat: {
+      type: 'boolean',
+      allowNull: false,
+      columnName: 'has_bat',
+      defaultsTo: false,
+    },
+
+    dangerFlooding: {
+      type: 'boolean',
+      allowNull: false,
+      columnName: 'danger_flooding',
+      defaultsTo: false,
+    },
+
+    dangerCo2: {
+      type: 'boolean',
+      allowNull: false,
+      columnName: 'danger_co2',
+      defaultsTo: false,
+    },
+
+    dangerRockfall: {
+      type: 'boolean',
+      allowNull: false,
+      columnName: 'danger_rockfall',
+      defaultsTo: false,
+    },
+
+    dangerPollution: {
+      type: 'boolean',
+      allowNull: false,
+      columnName: 'danger_pollution',
+      defaultsTo: false,
+    },
+
+    needCleanGear: {
+      type: 'boolean',
+      allowNull: false,
+      columnName: 'need_clean_gear',
+      defaultsTo: false,
+    },
+
+    needStayOnTrail: {
+      type: 'boolean',
+      allowNull: false,
+      columnName: 'need_stay_on_trail',
+      defaultsTo: false,
+    },
+
+    hasRules: {
+      type: 'boolean',
+      allowNull: false,
+      columnName: 'has_rules',
+      defaultsTo: false,
+    },
+
+    isTouristic: {
+      type: 'boolean',
+      allowNull: false,
+      columnName: 'is_touristic',
+      defaultsTo: false,
+    },
+
     contact: {
       type: 'string',
       maxLength: 1000,
