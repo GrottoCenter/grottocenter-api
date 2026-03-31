@@ -1,4 +1,7 @@
 const exportUtils = require('../utils');
+const {
+  NON_INDEXED_BOOLEAN_FIELDS,
+} = require('../../../config/constants/entrance');
 
 function average(arr) {
   if (arr.length === 0) return null;
@@ -27,6 +30,15 @@ const query = `
       e.altitude,
       e.precision,
       e.is_sensitive AS "isSensitive",
+      e.has_bat AS "hasBat",
+      e.danger_flooding AS "dangerFlooding",
+      e.danger_co2 AS "dangerCo2",
+      e.danger_rockfall AS "dangerRockfall",
+      e.danger_pollution AS "dangerPollution",
+      e.need_clean_gear AS "needCleanGear",
+      e.need_stay_on_trail AS "needStayOnTrail",
+      e.has_rules AS "hasRules",
+      e.is_touristic AS "isTouristic",
       e.year_discovery AS "discoveryYear",
       e.id_geology AS geology,
       e.id_cave AS "caveId"
@@ -161,7 +173,10 @@ function importFormater(d) {
     approach: average(comments.map((c) => c.approach).filter(filterFn)),
   };
 
-  return d;
+  // Strip non-indexed boolean characteristics so they don't leak into search
+  const clean = { ...d };
+  NON_INDEXED_BOOLEAN_FIELDS.forEach((f) => delete clean[f]);
+  return clean;
 }
 /* eslint-enable no-param-reassign */
 
@@ -185,6 +200,8 @@ module.exports = {
         { name: 'name', type: 'string', sort: true },
         { name: 'language', type: 'string', facet: true, sort: true },
         { name: 'isSensitive', type: 'bool' },
+        { name: 'isTouristic', type: 'bool', optional: true },
+        { name: 'dangerPollution', type: 'bool', optional: true },
         { name: 'discoveryYear', type: 'int32', optional: true },
         {
           name: 'geology',

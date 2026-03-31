@@ -13,6 +13,9 @@ const RecentChangeService = require('./RecentChangeService');
 const CaveService = require('./CaveService');
 const CommentService = require('./CommentService');
 const DocumentService = require('./DocumentService');
+const {
+  NON_INDEXED_BOOLEAN_FIELDS,
+} = require('../../config/constants/entrance');
 const NameService = require('./NameService');
 const RiggingService = require('./RiggingService');
 const DescriptionService = require('./DescriptionService');
@@ -21,11 +24,9 @@ const LocationService = require('./LocationService');
 const RightService = require('./RightService');
 
 function coerceBool(req, field) {
-  let value = req.param(field);
-  if (value !== undefined) {
-    value = typeof value === 'string' ? value === 'true' : value;
-  }
-  return value;
+  const value = req.param(field);
+  if (value === undefined || value === null) return value;
+  return typeof value === 'string' ? value === 'true' : Boolean(value);
 }
 
 module.exports = {
@@ -263,6 +264,8 @@ module.exports = {
       comments,
       ...e
     } = populatedEntrance;
+    // Strip non-indexed boolean characteristics from search document
+    NON_INDEXED_BOOLEAN_FIELDS.forEach((f) => delete e[f]);
     const entrance = {
       ...e,
       dateInscription: e.dateInscription,

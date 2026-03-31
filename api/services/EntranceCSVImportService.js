@@ -3,6 +3,8 @@ const { getDateFromKarstlink } = require('../../config/constants/karstlink');
 const doubleCheck = sails.helpers.csvhelpers.doubleCheck.with;
 const { getCreator } = require('../utils/csvHelper');
 
+const parseBool = (v) => String(v).toLowerCase() === 'true';
+
 module.exports = {
   getConvertedNameAndDescCaveFromCsv: (rawData, authorId) => {
     const doubleCheckWithData = (args) =>
@@ -210,6 +212,52 @@ module.exports = {
       }),
       nameDbImport: doubleCheckWithData({
         key: 'dct:rights/cc:attributionName',
+      }),
+      // Boolean characteristics
+      hasBat: doubleCheckWithData({
+        key: 'karstlink:hasBat',
+        defaultValue: false,
+        func: parseBool,
+      }),
+      dangerFlooding: doubleCheckWithData({
+        key: 'karstlink:dangerFlooding',
+        defaultValue: false,
+        func: parseBool,
+      }),
+      dangerCo2: doubleCheckWithData({
+        key: 'karstlink:dangerCo2',
+        defaultValue: false,
+        func: parseBool,
+      }),
+      dangerRockfall: doubleCheckWithData({
+        key: 'karstlink:dangerRockfall',
+        defaultValue: false,
+        func: parseBool,
+      }),
+      dangerPollution: doubleCheckWithData({
+        key: 'karstlink:dangerPollution',
+        defaultValue: false,
+        func: parseBool,
+      }),
+      needCleanGear: doubleCheckWithData({
+        key: 'karstlink:needCleanGear',
+        defaultValue: false,
+        func: parseBool,
+      }),
+      needStayOnTrail: doubleCheckWithData({
+        key: 'karstlink:needStayOnTrail',
+        defaultValue: false,
+        func: parseBool,
+      }),
+      hasRules: doubleCheckWithData({
+        key: 'karstlink:hasRules',
+        defaultValue: false,
+        func: parseBool,
+      }),
+      isTouristic: doubleCheckWithData({
+        key: 'karstlink:isTouristic',
+        defaultValue: false,
+        func: parseBool,
       }),
       // Default value, never provided by csv import
       geology: 'Q35758',

@@ -86,4 +86,66 @@ describe('EntranceBooleanCoercion - Property 3: String-to-bool coercion round-tr
       { numRuns: 100 }
     );
   });
+
+  it('should return null for null input', function () {
+    this.timeout(10000);
+
+    const fieldArb = fc.constantFrom(...BOOLEAN_FIELDS);
+
+    fc.assert(
+      fc.property(fieldArb, (field) => {
+        const body = { [field]: null };
+        const req = mockReq(body);
+        const result = getConvertedDataFromClientRequest(req);
+
+        should(result[field]).be.null();
+      }),
+      { numRuns: 100 }
+    );
+  });
+
+  it('should coerce numeric values to booleans', function () {
+    this.timeout(10000);
+
+    const fieldArb = fc.constantFrom(...BOOLEAN_FIELDS);
+    const numericArb = fc.constantFrom(0, 1, -1, 42);
+
+    fc.assert(
+      fc.property(fieldArb, numericArb, (field, numValue) => {
+        const body = { [field]: numValue };
+        const req = mockReq(body);
+        const result = getConvertedDataFromClientRequest(req);
+
+        should(result[field]).equal(Boolean(numValue));
+        should(result[field]).be.a.Boolean();
+      }),
+      { numRuns: 100 }
+    );
+  });
+
+  it('should handle case variants of string booleans', function () {
+    this.timeout(10000);
+
+    const fieldArb = fc.constantFrom(...BOOLEAN_FIELDS);
+    const caseVariantArb = fc.constantFrom(
+      'TRUE',
+      'True',
+      'FALSE',
+      'False',
+      'tRuE'
+    );
+
+    fc.assert(
+      fc.property(fieldArb, caseVariantArb, (field, strValue) => {
+        const body = { [field]: strValue };
+        const req = mockReq(body);
+        const result = getConvertedDataFromClientRequest(req);
+
+        // Only exact 'true' (lowercase) should be true
+        should(result[field]).equal(strValue === 'true');
+        should(result[field]).be.a.Boolean();
+      }),
+      { numRuns: 100 }
+    );
+  });
 });
