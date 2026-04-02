@@ -25,7 +25,7 @@
     "sails": "^1.5.17",
     "sails-hook-orm": "^4.0.3",
     "sails-postgresql": "^5.0.1",
-    "typesense": "^3.0.1",
+    "typesense": "^3.0.5",
     "underscore.date": "^0.6.1",
     "underscore.string": "^3.3.6",
     "uuid": "^13.0.0",
