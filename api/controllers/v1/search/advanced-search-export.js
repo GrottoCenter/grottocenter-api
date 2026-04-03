@@ -1,4 +1,7 @@
 const SearchService = require('../../../services/SearchService');
+const {
+  handleTypesenseError,
+} = require('../../../services/TypesenseErrorService');
 
 function escapeCSV(v) {
   // Escape double quotes
@@ -106,13 +109,8 @@ module.exports = async (req, res) => {
         size: BATCH_SIZE,
       });
     } catch (err) {
-      if (err.code === 'E_SORT_VALIDATION') {
-        if (!hasSentHeader) {
-          res.badRequest({ error: err.message });
-          return;
-        }
-        break;
-      }
+      if (!hasSentHeader && handleTypesenseError(res, err)) return;
+      if (hasSentHeader) break;
       results = err;
     }
 

@@ -1,5 +1,8 @@
 const ControllerService = require('../../../services/ControllerService');
 const SearchService = require('../../../services/SearchService');
+const {
+  handleTypesenseError,
+} = require('../../../services/TypesenseErrorService');
 const { toSearchResult } = require('../../../services/mapping/converters');
 
 module.exports = async (req, res) => {
@@ -18,9 +21,7 @@ module.exports = async (req, res) => {
       size: req.param('size') ?? 10,
     });
   } catch (error) {
-    if (error.code === 'E_SORT_VALIDATION') {
-      return res.badRequest({ error: error.message });
-    }
+    if (handleTypesenseError(res, error)) return undefined;
     throw error;
   }
 

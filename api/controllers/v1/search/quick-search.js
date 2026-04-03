@@ -1,5 +1,8 @@
 const ControllerService = require('../../../services/ControllerService');
 const SearchService = require('../../../services/SearchService');
+const {
+  handleTypesenseError,
+} = require('../../../services/TypesenseErrorService');
 const { toSearchResult } = require('../../../services/mapping/converters');
 
 module.exports = async (req, res) => {
@@ -10,11 +13,17 @@ module.exports = async (req, res) => {
   }
 
   // Search on multiple entities but with no pagging and sort
-  const results = await SearchService.multiCollectionsSearch({
-    query,
-    entities: req.param('entities'),
-    filter: req.param('filter') ?? {},
-  });
+  let results;
+  try {
+    results = await SearchService.multiCollectionsSearch({
+      query,
+      entities: req.param('entities'),
+      filter: req.param('filter') ?? {},
+    });
+  } catch (error) {
+    if (handleTypesenseError(res, error)) return;
+    throw error;
+  }
 
   ControllerService.treatAndConvert(
     req,

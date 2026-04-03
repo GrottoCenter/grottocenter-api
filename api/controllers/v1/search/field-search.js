@@ -1,5 +1,8 @@
 const ControllerService = require('../../../services/ControllerService');
 const SearchService = require('../../../services/SearchService');
+const {
+  handleTypesenseError,
+} = require('../../../services/TypesenseErrorService');
 
 module.exports = async (req, res) => {
   const field = req.param('field');
@@ -16,14 +19,20 @@ module.exports = async (req, res) => {
   let matchAllFields = req.param('matchAllFields') ?? true;
   if (!matchAllFields || matchAllFields === 'false') matchAllFields = false;
 
-  const r = await SearchService.fieldSearch({
-    entity,
-    field,
-    query: req.param('query'),
-    size: req.param('size') ?? 10,
-    filter: req.param('filter') ?? {},
-    isLogicalCompareAnd: !!matchAllFields,
-  });
+  let r;
+  try {
+    r = await SearchService.fieldSearch({
+      entity,
+      field,
+      query: req.param('query'),
+      size: req.param('size') ?? 10,
+      filter: req.param('filter') ?? {},
+      isLogicalCompareAnd: !!matchAllFields,
+    });
+  } catch (error) {
+    if (handleTypesenseError(res, error)) return;
+    throw error;
+  }
 
   const out = {
     totalDistinct: r.found,
