@@ -1,4 +1,5 @@
 const ControllerService = require('../../../services/ControllerService');
+const coerceToInt = require('../../../utils/coerceToInt');
 const CaveService = require('../../../services/CaveService');
 const NotificationService = require('../../../services/NotificationService');
 const { toCave } = require('../../../services/mapping/converters');
@@ -27,8 +28,8 @@ module.exports = async (req, res) => {
 
   if (newLatitude != null) updatedFields.latitude = newLatitude;
   if (newLongitude != null) updatedFields.longitude = newLongitude;
-  if (newDepth != null) updatedFields.depth = newDepth;
-  if (newLength != null) updatedFields.caveLength = newLength;
+  if (newDepth != null) updatedFields.depth = coerceToInt(newDepth);
+  if (newLength != null) updatedFields.caveLength = coerceToInt(newLength);
   if (newTemperature != null) updatedFields.temperature = newTemperature;
   if (newIsDiving != null) updatedFields.isDiving = newIsDiving;
 
