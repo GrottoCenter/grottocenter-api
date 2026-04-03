@@ -1,4 +1,5 @@
 const { getDateFromKarstlink } = require('../../config/constants/karstlink');
+const coerceToInt = require('../utils/coerceToInt');
 
 const doubleCheck = sails.helpers.csvhelpers.doubleCheck.with;
 const { getCreator } = require('../utils/csvHelper');
@@ -65,10 +66,12 @@ module.exports = {
       longitude: doubleCheckWithData({
         key: 'w3geo:longitude',
       }),
-      length: doubleCheckWithData({
-        key: 'karstlink:length',
-      }),
-      depth,
+      length: coerceToInt(
+        doubleCheckWithData({
+          key: 'karstlink:length',
+        })
+      ),
+      depth: coerceToInt(depth),
       dateInscription: doubleCheckWithData({
         key: 'dct:rights/dct:created',
         defaultValue: new Date(),
@@ -188,12 +191,16 @@ module.exports = {
       country: doubleCheckWithData({
         key: 'gn:countryCode',
       }),
-      precision: doubleCheckWithData({
-        key: 'dwc:coordinatePrecision',
-      }),
-      altitude: doubleCheckWithData({
-        key: 'w3geo:altitude',
-      }),
+      precision: coerceToInt(
+        doubleCheckWithData({
+          key: 'dwc:coordinatePrecision',
+        })
+      ),
+      altitude: coerceToInt(
+        doubleCheckWithData({
+          key: 'w3geo:altitude',
+        })
+      ),
       latitude: cave.latitude,
       longitude: cave.longitude,
       cave: cave.id,

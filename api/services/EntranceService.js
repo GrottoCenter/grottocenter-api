@@ -22,6 +22,7 @@ const DescriptionService = require('./DescriptionService');
 const HistoryService = require('./HistoryService');
 const LocationService = require('./LocationService');
 const RightService = require('./RightService');
+const coerceToInt = require('../utils/coerceToInt');
 
 function coerceBool(req, field) {
   const value = req.param(field);
@@ -49,6 +50,9 @@ module.exports = {
     const { id, ...reqBodyWithoutId } = req.body;
     return {
       ...reqBodyWithoutId,
+      altitude: coerceToInt(reqBodyWithoutId.altitude),
+      precision: coerceToInt(reqBodyWithoutId.precision),
+      yearDiscovery: coerceToInt(reqBodyWithoutId.yearDiscovery),
       geology: req.body.geology ?? 'Q35758',
       isSensitive: coerceBool(req, 'isSensitive'),
       hasBat: coerceBool(req, 'hasBat'),

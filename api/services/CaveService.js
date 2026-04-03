@@ -1,4 +1,5 @@
 const CommonService = require('./CommonService');
+const coerceToInt = require('../utils/coerceToInt');
 const DocumentService = require('./DocumentService');
 const DescriptionService = require('./DescriptionService');
 const NameService = require('./NameService');
@@ -95,12 +96,12 @@ module.exports = {
   // Extract everything from the request body except id and dateInscription
   getConvertedDataFromClient: (req) => ({
     // The TCave.create() function doesn't work with TCave field alias. See TCave.js Model
-    depth: req.param('depth'),
+    depth: coerceToInt(req.param('depth')),
     documents: req.param('documents'),
     isDiving: req.param('isDiving'),
     latitude: req.param('latitude'),
     longitude: req.param('longitude'),
-    caveLength: req.param('length'),
+    caveLength: coerceToInt(req.param('length')),
     massif: req.param('massif'),
     temperature: req.param('temperature'),
   }),
