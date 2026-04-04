@@ -109,6 +109,7 @@ module.exports = {
     return {
       id: caver.id,
       type: caver.type,
+      banned: caver.banned,
       name: caver.name,
       surname: caver.surname,
       nickname: caver.nickname,

@@ -1,5 +1,5 @@
 const ControllerService = require('../../../services/ControllerService');
-const { toSimpleCaver } = require('../../../services/mapping/converters');
+const { toListCaver } = require('../../../services/mapping/converters');
 const { toListFromController } = require('../../../services/mapping/utils');
 
 module.exports = async (req, res) => {
@@ -15,6 +15,6 @@ module.exports = async (req, res) => {
     moderatorGroup.cavers,
     { controllerMethod: 'CaverController.getModerators' },
     res,
-    (data) => toListFromController('cavers', data, toSimpleCaver)
+    (data) => toListFromController('cavers', data, toListCaver)
   );
 };

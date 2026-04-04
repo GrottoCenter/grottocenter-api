@@ -1,6 +1,7 @@
 const CaverService = require('../../../services/CaverService');
 const ControllerService = require('../../../services/ControllerService');
 const DocumentService = require('../../../services/DocumentService');
+const RightService = require('../../../services/RightService');
 const { toCaver } = require('../../../services/mapping/converters');
 
 module.exports = async (req, res) => {
@@ -16,12 +17,16 @@ module.exports = async (req, res) => {
     caverFound.documents.map((d) => d.id)
   );
 
+  const isAdmin =
+    req.token &&
+    RightService.hasGroup(req.token.groups, RightService.G.ADMINISTRATOR);
+
   return ControllerService.treatAndConvert(
     req,
     null,
     caverFound,
     params,
     res,
-    toCaver
+    (source) => toCaver(source, { isAdmin })
   );
 };

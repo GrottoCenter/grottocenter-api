@@ -19,6 +19,13 @@ module.exports = async (req, res) => {
     });
   }
 
+  // If the caver is banned, return 200 OK without generating a token or sending an email
+  // to prevent information leakage about ban status
+  if (userFound.banned === true) {
+    sails.log.warn(`Banned caver ${userFound.id} attempted password reset`);
+    return res.ok();
+  }
+
   // Generate reset password token
   const token = TokenService.issue(
     {

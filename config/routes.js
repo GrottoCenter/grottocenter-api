@@ -73,6 +73,7 @@ module.exports.routes = {
   // Caver
   'DELETE /api/v1/cavers/:caverId/groups/:groupId':
     'v1/caver/remove-from-group',
+  'GET /api/v1/cavers/banned': 'v1/caver/get-banned',
   'GET /api/v1/cavers/:id': 'v1/caver/find',
   'GET /api/v1/cavers/:caverId/documents': 'v1/document/find-by-caver-id',
   'GET /api/v1/cavers/:caverId/subscriptions': 'v1/caver/get-subscriptions',
@@ -94,6 +95,8 @@ module.exports.routes = {
     'v1/caver/add-to-organization',
   'DELETE /api/v1/cavers/:caverId/organizations/:organizationId':
     'v1/caver/remove-from-organization',
+  'POST /api/v1/cavers/:caverId/ban': 'v1/caver/ban',
+  'POST /api/v1/cavers/:caverId/unban': 'v1/caver/unban',
   'DELETE /api/v1/cavers/:id': 'v1/caver/delete',
 
   // Entrance

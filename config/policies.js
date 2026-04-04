@@ -50,6 +50,7 @@ module.exports.policies = {
   'v1/organization/remove-explored-cave': 'tokenAuth',
 
   // Caver
+  'v1/caver/get-banned': 'tokenAuth',
   'v1/caver/count': true,
   'v1/caver/users-count': true,
   'v1/caver/find': ['validateId'],
@@ -64,6 +65,8 @@ module.exports.policies = {
   'v1/caver/get-users': 'tokenAuth',
   'v1/caver/put-on-group': 'tokenAuth',
   'v1/caver/remove-explored-cave': 'tokenAuth',
+  'v1/caver/ban': 'tokenAuth',
+  'v1/caver/unban': 'tokenAuth',
   'v1/caver/remove-from-group': 'tokenAuth',
   'v1/caver/set-groups': 'tokenAuth',
   'v1/caver/add-to-organization': 'tokenAuth',
