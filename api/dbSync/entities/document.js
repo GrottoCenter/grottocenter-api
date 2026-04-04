@@ -202,6 +202,7 @@ function importFormater(d) {
   d.dateInscription = new Date(d.dateInscription).getTime();
   if (d.dateReviewed) d.dateReviewed = new Date(d.dateReviewed).getTime();
   if (d.dateValidation) d.dateValidation = new Date(d.dateValidation).getTime();
+  d.language = d.languages?.[0];
   return d;
 }
 /* eslint-enable no-param-reassign */
@@ -293,6 +294,13 @@ module.exports = {
         { name: 'cave.name', type: 'string', optional: true, sort: true },
         { name: 'entrances.name', type: 'string[]', optional: true },
         { name: 'massifs.name', type: 'string[]', optional: true },
+        {
+          name: 'language',
+          type: 'string',
+          facet: true,
+          optional: true,
+          sort: true,
+        },
       ],
       default_sorting_field: 'dateInscription',
     },

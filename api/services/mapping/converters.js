@@ -245,6 +245,12 @@ const c = {
       option: source.option?.name,
       mainLanguage: source.mainLanguage?.id ?? source.languages?.[0]?.id,
       languages: source.languages?.map((e) => e.id),
+      // language: from Typesense flat field, or derived from DB mainLanguage/languages
+      language:
+        source.language ??
+        source.mainLanguage?.id ??
+        source.languages?.[0]?.id ??
+        null,
 
       iso3166: source.iso3166 ?? [
         ...(source.countries?.map((e) => ({ iso: e.id, name: e.nativeName })) ??
@@ -606,7 +612,7 @@ const c = {
       : undefined,
     language: Array.isArray(source.names)
       ? source.names.find((name) => name.isMain)?.language
-      : undefined,
+      : source.language,
     latitude: parseFloat(source.latitude),
     longitude: parseFloat(source.longitude),
     country: source.country?.id ?? source.country,
