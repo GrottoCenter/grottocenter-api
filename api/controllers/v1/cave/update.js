@@ -25,12 +25,12 @@ module.exports = async (req, res) => {
     // dateReviewed will be updated automaticly by the SQL historisation trigger
   };
 
-  if (newLatitude) updatedFields.latitude = newLatitude;
-  if (newLongitude) updatedFields.longitude = newLongitude;
-  if (newDepth) updatedFields.depth = newDepth;
-  if (newLength) updatedFields.caveLength = newLength;
-  if (newTemperature) updatedFields.temperature = newTemperature;
-  if (newIsDiving) updatedFields.isDiving = newIsDiving;
+  if (newLatitude != null) updatedFields.latitude = newLatitude;
+  if (newLongitude != null) updatedFields.longitude = newLongitude;
+  if (newDepth != null) updatedFields.depth = newDepth;
+  if (newLength != null) updatedFields.caveLength = newLength;
+  if (newTemperature != null) updatedFields.temperature = newTemperature;
+  if (newIsDiving != null) updatedFields.isDiving = newIsDiving;
 
   // Validate name length
   const nameText = req.body.name?.text;
