@@ -26,6 +26,24 @@ module.exports = async (req, res) => {
       message: 'Invalid email or password.',
     });
   }
+
+  // Update login metadata (fire-and-forget)
+  CommonService.query(
+    `UPDATE t_caver SET date_last_connection = NOW(), connection_counter = connection_counter + 1 WHERE id = $1`,
+    [result.user.id]
+  ).catch((e) =>
+    sails.log.error('Failed to update login metadata:', e.message)
+  );
+
+  // Reject banned cavers — return generic 401 to hide ban status
+  if (result.user.banned) {
+    sails.log.warn(`Banned caver ${result.user.id} attempted login`);
+    return res.unauthorized({
+      status: 'Mismatch',
+      message: 'Invalid email or password.',
+    });
+  }
+
   const token = TokenService.issue(
     {
       id: result.user.id,

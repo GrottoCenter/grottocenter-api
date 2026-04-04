@@ -48,14 +48,12 @@ module.exports = {
       maxLength: 64,
     },
 
-    // Unsued
     banned: {
       type: 'boolean',
       columnName: 'banned',
       defaultsTo: false,
     },
 
-    // Unsued
     connectionCounter: {
       type: 'number',
       allowNull: false,
@@ -116,7 +114,6 @@ module.exports = {
       columnType: 'timestamp',
     },
 
-    // Unsued
     dateLastConnection: {
       type: 'ref',
       columnName: 'date_last_connection',

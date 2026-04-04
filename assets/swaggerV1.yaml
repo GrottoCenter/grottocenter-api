@@ -959,6 +959,102 @@ paths:
                     items:
                       $ref: '#/components/schemas/Document'
 
+  '/cavers/{caverId}/ban':
+    post:
+      tags:
+        - cavers
+      summary: Ban a caver
+      description: Bans a caver, revoking all active tokens and preventing future logins. Requires Administrator role.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: caverId
+          in: path
+          description: Caver id to ban
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Caver banned successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  banned:
+                    type: boolean
+                    example: true
+        '401':
+          description: Unauthorized — missing or invalid bearer token.
+        '403':
+          description: Forbidden — caller is not an administrator, or attempted to ban themselves.
+        '404':
+          description: Caver not found.
+
+  '/cavers/{caverId}/unban':
+    post:
+      tags:
+        - cavers
+      summary: Unban a caver
+      description: Unbans a previously banned caver, allowing them to log in again. Requires Administrator role.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: caverId
+          in: path
+          description: Caver id to unban
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Caver unbanned successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  banned:
+                    type: boolean
+                    example: false
+        '401':
+          description: Unauthorized — missing or invalid bearer token.
+        '403':
+          description: Forbidden — caller is not an administrator.
+        '404':
+          description: Caver not found.
+
+  '/cavers/banned':
+    get:
+      tags:
+        - cavers
+      summary: List banned cavers
+      description: Returns all currently banned cavers. Requires Administrator role.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  banned:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        nickname:
+                          type: string
+        '401':
+          description: Unauthorized — missing or invalid bearer token.
+        '403':
+          description: Forbidden — caller is not an administrator.
+
   '/descriptions':
     post:
       tags:
@@ -3023,7 +3119,7 @@ paths:
         '400':
           description: You must provide a password and a reset password token in the body of your request. The password must be at least 8 characters long.
         '403':
-          description: The password reset token has expired or is invalid.
+          description: The password reset token has expired, is invalid, or the account is banned. The response is intentionally identical for all cases to prevent information leakage.
         '404':
           description: User in the password reset token not found.
 
@@ -3053,6 +3149,9 @@ paths:
         - authentication
       description: >-
         Launch the procedure of password change. This will send an email to the email adress you provided if it exists as a Grottocenter user's email. This email contains a password reset link expiring after 24 hours using the Grottocenter application.
+
+
+        The endpoint always returns 200 OK regardless of whether the account is banned or not, to prevent information leakage about ban status. If the account is banned, no reset email is sent.
 
 
         __IMPORTANT NOTICE__
@@ -3103,7 +3202,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Auth-success'
         '401':
-          description: Invalid email or password or the password must be reset first.
+          description: Invalid email or password, password must be reset, or account is banned. The response is intentionally identical for all failure cases to prevent information leakage.
           content:
             application/json:
               schema:
@@ -3151,7 +3250,7 @@ paths:
         '400':
           description: Bad request (password too short, missing value(s)...).
         '409':
-          description: Email or nickname already used.
+          description: Email or nickname is already used. The response intentionally does not specify which field caused the conflict to prevent account enumeration.
 
   '/entrances':
     post:
@@ -5091,6 +5190,9 @@ components:
             $ref: '#/components/schemas/Group'
         id:
           type: integer
+        isBanned:
+          type: boolean
+          description: Whether the caver is banned. Only present when the caller is an authenticated administrator.
         language:
           type: string
         name:

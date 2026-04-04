@@ -71,7 +71,7 @@ const c = {
     ),
   }),
 
-  toCaver: (source) => {
+  toCaver: (source, meta) => {
     const result = {
       ...CaverModel,
       id: source.id,
@@ -110,12 +110,23 @@ const c = {
     listParser('documents', c.toSimpleDocument);
     listParser('grottos', c.toSimpleOrganization, 'organizations');
 
+    if (meta?.isAdmin) {
+      result.isBanned = Boolean(source.banned);
+    }
+
     return result;
   },
 
   toSimpleCaver: (source) => ({
     id: source.id,
     nickname: source.nickname,
+  }),
+
+  toListCaver: (source) => ({
+    id: source.id,
+    nickname: source.nickname,
+    name: source.name,
+    surname: source.surname,
   }),
 
   toSimpleComment: (source) => {

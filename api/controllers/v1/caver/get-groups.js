@@ -1,4 +1,4 @@
-const { toSimpleCaver } = require('../../../services/mapping/converters');
+const { toListCaver } = require('../../../services/mapping/converters');
 const { toList } = require('../../../services/mapping/utils');
 
 module.exports = async (req, res) => {
@@ -9,8 +9,8 @@ module.exports = async (req, res) => {
   ]);
 
   return res.ok({
-    administrators: toList('cavers', administrators, toSimpleCaver),
-    moderators: toList('cavers', moderators, toSimpleCaver),
-    leaders: toList('cavers', leaders, toSimpleCaver),
+    administrators: toList('cavers', administrators, toListCaver),
+    moderators: toList('cavers', moderators, toListCaver),
+    leaders: toList('cavers', leaders, toListCaver),
   });
 };

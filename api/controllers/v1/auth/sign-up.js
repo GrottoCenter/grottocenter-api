@@ -12,7 +12,8 @@ module.exports = async (req, res) => {
   email = email.toLowerCase();
   const caverEmail = await TCaver.findOne({ mail: email });
   if (caverEmail) {
-    return res.conflict(`The email ${email} is already used.`);
+    sails.log.warn(`Sign-up attempt with existing email: ${email}`);
+    return res.conflict('Email or nickname is already used.');
   }
 
   const password = req.param('password');
@@ -31,7 +32,8 @@ module.exports = async (req, res) => {
   }
   const caverNickname = await TCaver.findOne({ nickname });
   if (caverNickname) {
-    return res.conflict(`The nickname ${nickname} is already used.`);
+    sails.log.warn(`Sign-up attempt with existing nickname: ${nickname}`);
+    return res.conflict('Email or nickname is already used.');
   }
 
   try {

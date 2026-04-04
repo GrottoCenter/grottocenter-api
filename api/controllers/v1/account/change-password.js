@@ -46,6 +46,14 @@ module.exports = async (req, res) => {
     });
   }
 
+  // Block banned cavers — return same response as expired token to hide ban status
+  if (userFound.banned === true) {
+    sails.log.warn(
+      `Banned caver ${userFound.id} attempted password change via reset token`
+    );
+    return res.forbidden('The password reset token has expired.');
+  }
+
   // Check token
   const verifyTokenCallback = async (err) => {
     if (err) {
