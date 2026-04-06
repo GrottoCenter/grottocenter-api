@@ -156,9 +156,8 @@ describe('BlacklistService - Property 3: UPSERT idempotence', () => {
         caverIdArb,
         fc.integer({ min: 1, max: 5 }),
         async (caverId, callCount) => {
-          let lastCallTime;
+          const beforeFirstCall = Math.floor(Date.now() / 1000);
           for (let i = 0; i < callCount; i += 1) {
-            lastCallTime = Math.floor(Date.now() / 1000);
             // eslint-disable-next-line no-await-in-loop
             await BlacklistService.revoke(caverId);
           }
@@ -167,10 +166,13 @@ describe('BlacklistService - Property 3: UPSERT idempotence', () => {
           // Exactly one entry for this caverId
           should(cache.has(caverId)).be.true();
 
-          // The stored timestamp should be >= the time of the last call
+          // The stored timestamp (from DB NOW()) should be >= the time
+          // captured before the first call. We use beforeFirstCall rather
+          // than a per-iteration snapshot to avoid Node/DB clock skew
+          // causing off-by-one failures.
           const stored = cache.get(caverId);
           const storedSec = Math.floor(stored.getTime() / 1000);
-          should(storedSec).be.aboveOrEqual(lastCallTime);
+          should(storedSec).be.aboveOrEqual(beforeFirstCall);
         }
       ),
       { numRuns: 100 }
