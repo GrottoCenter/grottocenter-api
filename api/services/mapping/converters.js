@@ -339,6 +339,7 @@ const c = {
     result.redirectTo = source.redirectTo;
     result.dateInscription = source.dateInscription;
     result.dateReviewed = source.dateReviewed;
+    result.dateLastModif = source.dateLastModif;
     result.altitude = source.altitude;
     result.precision = source.precision;
     result.latitude =

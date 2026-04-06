@@ -372,6 +372,16 @@ describe('Converters Service', () => {
       const result = converters.toEntrance(source);
       should(result.iso3166).equal('FR-75');
     });
+
+    it('should include dateLastModif from source in the result', () => {
+      const source = {
+        id: 1,
+        isSensitive: false,
+        dateLastModif: 1700000000000,
+      };
+      const result = converters.toEntrance(source);
+      should(result.dateLastModif).equal(1700000000000);
+    });
   });
 
   describe('toSimpleEntrance()', () => {

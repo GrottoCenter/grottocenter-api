@@ -237,6 +237,57 @@ describe('EntranceService', () => {
       process.env.NODE_ENV = originalEnv;
     });
 
+    it('should include numericId matching e.id', async () => {
+      const originalEnv = process.env.NODE_ENV;
+      process.env.NODE_ENV = 'development';
+      const updateStub = sinon.stub(SearchService, 'updateDocument').resolves();
+
+      const entrance = {
+        id: 42,
+        isSensitive: false,
+        dateInscription: new Date('2024-01-15'),
+        author: { id: 1, nickname: 'Author' },
+        names: [{ name: 'Test', language: 'en' }],
+        iso_3166_2: 'FR-75',
+      };
+
+      await EntranceService.updateInSearch(entrance);
+
+      should(updateStub.calledOnce).be.true();
+      const callArg = updateStub.getCall(0).args[1];
+      should(callArg.numericId).equal(42);
+      process.env.NODE_ENV = originalEnv;
+    });
+
+    it('should include dateLastModif computed from dateInscription and dateReviewed', async () => {
+      const originalEnv = process.env.NODE_ENV;
+      process.env.NODE_ENV = 'development';
+      const updateStub = sinon.stub(SearchService, 'updateDocument').resolves();
+
+      const dateInscription = new Date('2024-01-15');
+      const dateReviewed = new Date('2024-06-20');
+      const entrance = {
+        id: 7,
+        isSensitive: false,
+        dateInscription,
+        dateReviewed,
+        author: { id: 1, nickname: 'Author' },
+        names: [{ name: 'Test', language: 'en' }],
+        iso_3166_2: 'FR-75',
+      };
+
+      await EntranceService.updateInSearch(entrance);
+
+      should(updateStub.calledOnce).be.true();
+      const callArg = updateStub.getCall(0).args[1];
+      const expected = Math.max(
+        dateInscription.getTime(),
+        dateReviewed.getTime()
+      );
+      should(callArg.dateLastModif).equal(expected);
+      process.env.NODE_ENV = originalEnv;
+    });
+
     it('should map all optional fields correctly', async () => {
       const originalEnv = process.env.NODE_ENV;
       process.env.NODE_ENV = 'development';

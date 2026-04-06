@@ -12,4 +12,14 @@ const NON_INDEXED_BOOLEAN_FIELDS = [
   'hasRules',
 ];
 
-module.exports = { NON_INDEXED_BOOLEAN_FIELDS };
+/**
+ * Compute the last modification date for an entrance.
+ * @param {number} dateInscription - Epoch milliseconds of inscription date
+ * @param {number|null|undefined} dateReviewed - Epoch milliseconds of review date, or nullish
+ * @returns {number} Epoch milliseconds of the most recent modification
+ */
+function computeDateLastModif(dateInscription, dateReviewed) {
+  return Math.max(dateInscription, dateReviewed ?? dateInscription);
+}
+
+module.exports = { NON_INDEXED_BOOLEAN_FIELDS, computeDateLastModif };
