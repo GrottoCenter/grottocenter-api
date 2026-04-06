@@ -34,6 +34,14 @@ module.exports = async (req, res) => {
     throw error;
   }
 
+  if (!r) {
+    const validEntities = SearchService.allEntitiesKeys.join(', ');
+    res.badRequest(
+      `Unknown entity "${entity}". Valid entities are: ${validEntities}`
+    );
+    return;
+  }
+
   const out = {
     totalDistinct: r.found,
     totalDocuments: r.found_docs,

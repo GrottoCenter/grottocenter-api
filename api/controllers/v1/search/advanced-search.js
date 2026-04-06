@@ -9,11 +9,13 @@ module.exports = async (req, res) => {
   let matchAllFields = req.param('matchAllFields') ?? true;
   if (!matchAllFields || matchAllFields === 'false') matchAllFields = false;
 
+  const entity = req.param('entity') ?? '';
+
   let results;
   try {
     results = await SearchService.collectionSearch({
       query: req.param('query'),
-      entity: req.param('entity') ?? '',
+      entity,
       sort: req.param('sort'),
       filter: req.param('filter') ?? {},
       isLogicalCompareAnd: !!matchAllFields,
@@ -23,6 +25,13 @@ module.exports = async (req, res) => {
   } catch (error) {
     if (handleTypesenseError(res, error)) return undefined;
     throw error;
+  }
+
+  if (!results) {
+    const validEntities = SearchService.allEntitiesKeys.join(', ');
+    return res.badRequest(
+      `Unknown entity "${entity}". Valid entities are: ${validEntities}`
+    );
   }
 
   return ControllerService.treatAndConvert(
