@@ -18,6 +18,7 @@ module.exports = {
   countryCode: undefined,
   county: undefined,
   dateInscription: undefined,
+  dateLastModif: undefined,
   dateReviewed: undefined,
   descriptions: [],
   discoveryYear: undefined,

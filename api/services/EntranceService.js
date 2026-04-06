@@ -15,6 +15,7 @@ const CommentService = require('./CommentService');
 const DocumentService = require('./DocumentService');
 const {
   NON_INDEXED_BOOLEAN_FIELDS,
+  computeDateLastModif,
 } = require('../../config/constants/entrance');
 const NameService = require('./NameService');
 const RiggingService = require('./RiggingService');
@@ -272,8 +273,13 @@ module.exports = {
     NON_INDEXED_BOOLEAN_FIELDS.forEach((f) => delete e[f]);
     const entrance = {
       ...e,
+      numericId: e.id,
       dateInscription: e.dateInscription,
       dateReviewed: e.dateReviewed,
+      dateLastModif: computeDateLastModif(
+        new Date(e.dateInscription).getTime(),
+        e.dateReviewed ? new Date(e.dateReviewed).getTime() : null
+      ),
       authorId: e.author.id,
       author: e.author.nickname,
       reviewerId: e.reviewer?.id,

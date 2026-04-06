@@ -1,6 +1,7 @@
 const exportUtils = require('../utils');
 const {
   NON_INDEXED_BOOLEAN_FIELDS,
+  computeDateLastModif,
 } = require('../../../config/constants/entrance');
 
 function average(arr) {
@@ -161,8 +162,10 @@ async function* processRows(source) {
 /* eslint-disable no-param-reassign */
 function importFormater(d) {
   d.id = `${d.id}`;
+  d.numericId = parseInt(d.id, 10);
   d.dateInscription = new Date(d.dateInscription).getTime();
   if (d.dateReviewed) d.dateReviewed = new Date(d.dateReviewed).getTime();
+  d.dateLastModif = computeDateLastModif(d.dateInscription, d.dateReviewed);
   if (d.latitude) d.latitude = parseFloat(d.latitude);
   if (d.longitude) d.longitude = parseFloat(d.longitude);
 
@@ -192,8 +195,10 @@ module.exports = {
       enable_nested_fields: true,
       fields: [
         { name: 'id', type: 'string' },
+        { name: 'numericId', type: 'int32', sort: true },
         { name: 'dateInscription', type: 'int64' },
         { name: 'dateReviewed', type: 'int64', optional: true },
+        { name: 'dateLastModif', type: 'int64', sort: true, optional: true },
         { name: 'authorId', type: 'int32' },
         { name: 'author', type: 'string' },
         { name: 'reviewer', type: 'string', optional: true },
