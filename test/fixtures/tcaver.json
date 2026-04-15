@@ -8,12 +8,14 @@
     "password": "$argon2id$v=19$m=4096,t=3,p=4$cXY0Z2ljNG41ejAwMDAwMA$pXwJA/uLYjE0XcXbLbL9GNrzztGZ9VBmOUosrXE6LAk",
     "_comment": "The password is 'testtest'",
     "alertForNews": "false",
+    "activated": true,
+    "mailIsValid": true,
     "language": "fra",
-    "documents": [1, 2, 4],
+    "documents": [1,2,4],
     "exploredEntrances": [1],
     "groups": [1],
-    "subscribedToCountries": ["FR", "GB"],
-    "subscribedToMassifs": [1, 2]
+    "subscribedToCountries": ["FR","GB"],
+    "subscribedToMassifs": [1,2]
   },
   {
     "login": "moderator1",
@@ -21,6 +23,8 @@
     "nickname": "Moderator1",
     "password": "$argon2id$v=19$m=4096,t=3,p=4$cXY0Z2ljNG41ejAwMDAwMA$pXwJA/uLYjE0XcXbLbL9GNrzztGZ9VBmOUosrXE6LAk",
     "alertForNews": "false",
+    "activated": true,
+    "mailIsValid": true,
     "language": "fra",
     "groups": [2]
   },
@@ -30,6 +34,8 @@
     "nickname": "User1",
     "password": "$argon2id$v=19$m=4096,t=3,p=4$cXY0Z2ljNG41ejAwMDAwMA$pXwJA/uLYjE0XcXbLbL9GNrzztGZ9VBmOUosrXE6LAk",
     "alertForNews": "false",
+    "activated": true,
+    "mailIsValid": true,
     "language": "fra",
     "groups": [3]
   },
@@ -39,8 +45,10 @@
     "nickname": "All1",
     "password": "$argon2id$v=19$m=4096,t=3,p=4$cXY0Z2ljNG41ejAwMDAwMA$pXwJA/uLYjE0XcXbLbL9GNrzztGZ9VBmOUosrXE6LAk",
     "alertForNews": "false",
+    "activated": true,
+    "mailIsValid": true,
     "language": "fra",
-    "groups": [1, 2, 3, 4, 5]
+    "groups": [1,2,3,4,5]
   },
   {
     "mail": "4456@mail.no",
@@ -59,11 +67,13 @@
     "password": "$argon2id$v=19$m=4096,t=3,p=4$cXY0Z2ljNG41ejAwMDAwMA$pXwJA/uLYjE0XcXbLbL9GNrzztGZ9VBmOUosrXE6LAk",
     "activationCode": "activationCode",
     "alertForNews": "false",
+    "activated": true,
+    "mailIsValid": true,
     "language": "fra",
-    "documents": [1, 2, 4],
-    "grottos": [1, 2],
+    "documents": [1,2,4],
+    "grottos": [1,2],
     "groups": [1],
-    "exploredEntrances": [4, 5]
+    "exploredEntrances": [4,5]
   },
   {
     "id": 7,
@@ -72,6 +82,8 @@
     "nickname": "Leader1",
     "password": "$argon2id$v=19$m=4096,t=3,p=4$cXY0Z2ljNG41ejAwMDAwMA$pXwJA/uLYjE0XcXbLbL9GNrzztGZ9VBmOUosrXE6LAk",
     "alertForNews": "false",
+    "activated": true,
+    "mailIsValid": true,
     "language": "fra",
     "groups": [5]
   },
@@ -104,6 +116,8 @@
     "name": "Test",
     "surname": "Caver",
     "password": "$argon2id$v=19$m=4096,t=3,p=4$cXY0Z2ljNG41ejAwMDAwMA$pXwJA/uLYjE0XcXbLbL9GNrzztGZ9VBmOUosrXE6LAk",
+    "activated": true,
+    "mailIsValid": true,
     "language": "fra",
     "groups": []
   }

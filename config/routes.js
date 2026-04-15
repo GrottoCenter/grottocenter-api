@@ -69,6 +69,8 @@ module.exports.routes = {
   // Auth
   'POST /api/v1/login': 'v1/auth/login',
   'POST /api/v1/signup': 'v1/auth/sign-up',
+  'GET /api/v1/verify-email': 'v1/auth/verify-email',
+  'POST /api/v1/resend-verification-email': 'v1/auth/resend-verification-email',
 
   // Caver
   'DELETE /api/v1/cavers/:caverId/groups/:groupId':

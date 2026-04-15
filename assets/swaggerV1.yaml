@@ -3151,7 +3151,7 @@ paths:
         Launch the procedure of password change. This will send an email to the email adress you provided if it exists as a Grottocenter user's email. This email contains a password reset link expiring after 24 hours using the Grottocenter application.
 
 
-        The endpoint always returns 200 OK regardless of whether the account is banned or not, to prevent information leakage about ban status. If the account is banned, no reset email is sent.
+        The endpoint returns 200 OK regardless of whether the account is banned or not, to prevent information leakage about ban status. If the account is banned, no reset email is sent. However, it returns 401 Unauthorized if the account is not verified yet.
 
 
         __IMPORTANT NOTICE__
@@ -3173,6 +3173,8 @@ paths:
           description: Successful operation
         '400':
           description: You must provide an email in the body of your request.
+        '401':
+          description: The account is not verified yet.
         '404':
           description: The email is not used by any Grottocenter's caver.
 
@@ -3181,19 +3183,22 @@ paths:
       tags:
         - authentication
       description: Login to Grottocenter
-      parameters:
-        - name: email
-          in: query
-          description: Email of the account you want to connect to
-          required: true
-          schema:
-            type: string
-        - name: password
-          in: query
-          description: Password of the account you want to connect to
-          required: true
-          schema:
-            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: Email of the account you want to connect to
+                password:
+                  type: string
+                  description: Password of the account you want to connect to
+              required:
+                - email
+                - password
       responses:
         '200':
           description: Successful login
@@ -3202,7 +3207,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Auth-success'
         '401':
-          description: Invalid email or password, password must be reset, or account is banned. The response is intentionally identical for all failure cases to prevent information leakage.
+          description: Authentication failed. Returns different statuses and messages depending on the error ('MustReset' if password needs to be reset, 'NotVerified' if account is not activated, or 'Mismatch' for invalid credentials). Banned accounts return a generic 'Mismatch' response to prevent information leakage about ban status.
           content:
             application/json:
               schema:
@@ -3213,37 +3218,32 @@ paths:
       tags:
         - authentication
       description: Create an account on Grottocenter
-      parameters:
-        - name: email
-          in: query
-          description: Email of the account
-          required: true
-          schema:
-            type: string
-        - name: nickname
-          in: query
-          description: Nickname (how the user is displayed in the application)
-          required: true
-          schema:
-            type: string
-        - name: name
-          in: query
-          description: Real name of the user
-          required: false
-          schema:
-            type: string
-        - name: surname
-          in: query
-          description: Real surname of the user
-          required: false
-          schema:
-            type: string
-        - name: password
-          in: query
-          description: Password of the account
-          required: true
-          schema:
-            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: Email of the account
+                nickname:
+                  type: string
+                  description: Nickname (how the user is displayed in the application)
+                name:
+                  type: string
+                  description: Real name of the user
+                surname:
+                  type: string
+                  description: Real surname of the user
+                password:
+                  type: string
+                  description: Password of the account
+              required:
+                - email
+                - nickname
+                - password
       responses:
         '204':
           description: Successful sign up.
@@ -3251,6 +3251,58 @@ paths:
           description: Bad request (password too short, missing value(s)...).
         '409':
           description: Email or nickname is already used. The response intentionally does not specify which field caused the conflict to prevent account enumeration.
+
+  '/verify-email':
+    get:
+      tags:
+        - authentication
+      description: Verify a user's email address using the activation token sent to their email. Called from a link click in the verification email. On success, the user is activated and their email is marked as valid.
+      parameters:
+        - name: token
+          in: query
+          description: The activation token for email verification
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Account successfully verified or Account was already verified.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: You must provide an activation token.
+        '404':
+          description: Activation token is invalid or has already been used.
+        '500':
+          description: An error occurred during account activation.
+
+  '/resend-verification-email':
+    post:
+      tags:
+        - authentication
+      description: Resend the verification email to the user if they are not yet verified.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: The email of the account to resend the verification to
+              required:
+                - email
+      responses:
+        '204':
+          description: Email resent successfully. If the user does not exist or is already verified, it returns success silently to prevent account enumeration.
+        '400':
+          description: Missing email parameter or the email is marked as invalid.
 
   '/entrances':
     post:
@@ -4953,7 +5005,7 @@ components:
       properties:
         status:
           type: string
-          enum: [Mismatch, MustReset]
+          enum: [Mismatch, MustReset, NotVerified]
         message:
           type: string
 
