@@ -35,6 +35,8 @@ module.exports.policies = {
   // Auth
   'v1/auth/login': true,
   'v1/auth/sign-up': true,
+  'v1/auth/verify-email': true,
+  'v1/auth/resend-verification-email': true,
 
   // Caves
   'v1/cave/find': ['validateId'],

@@ -36,6 +36,9 @@ module.exports = async (req, res) => {
     return res.conflict('Email or nickname is already used.');
   }
 
+  // Only generate the activation code after every other check passes
+  const activationCode = AuthService.generateActivationCode();
+
   try {
     // Rely on the ORM for the rest of the input validation
     const newCaver = await TCaver.create({
@@ -45,10 +48,24 @@ module.exports = async (req, res) => {
       name: req.param('name') === '' ? null : req.param('name'),
       nickname,
       password: await AuthService.createHashedPassword(password),
+      activated: false,
+      mailIsValid: false,
+      activationCode,
       surname: req.param('surname') === '' ? null : req.param('surname'),
     }).fetch();
 
     await CaverService.updateInSearch(newCaver);
+
+    try {
+      await AuthService.sendVerificationEmail(
+        newCaver,
+        activationCode,
+        req.i18n
+      );
+    } catch (_) {
+      // Errors are already logged in AuthService.
+      // We catch them here to ensure the signup itself isn't considered a failure if sending the email fails.
+    }
   } catch (_) {
     return res.badRequest();
   }

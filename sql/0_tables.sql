@@ -148,6 +148,8 @@ CREATE TABLE t_caver (
 	CONSTRAINT t_caver_t_language0_fk FOREIGN KEY (id_language) REFERENCES t_language(id)
 );
 CREATE INDEX t_caver_idx ON t_caver USING btree (login);
+CREATE INDEX t_caver_activation_code_idx ON t_caver USING btree (activation_code);
+
 -- t_crs definition
 -- Drop table
 -- DROP TABLE t_crs;

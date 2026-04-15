@@ -1,5 +1,7 @@
 const supertest = require('supertest');
+const should = require('should');
 const AuthTokenService = require('../AuthTokenService');
+const AuthService = require('../../../api/services/AuthService');
 
 describe('Account features', () => {
   let userToken;
@@ -123,6 +125,56 @@ describe('Account features', () => {
           .set('Content-type', 'application/json')
           .set('Accept', 'application/json')
           .expect(404, done);
+      });
+    });
+    describe('Unverified account', () => {
+      before(async () => {
+        await TCaver.create({
+          mail: 'unverified_forgot@test.com',
+          nickname: 'unverified_forgot',
+          password: await AuthService.createHashedPassword('test'),
+          activated: false,
+        });
+      });
+      after(async () => {
+        await TCaver.destroy({ mail: 'unverified_forgot@test.com' });
+      });
+      it('should return code 401 with NotVerified status', (done) => {
+        supertest(sails.hooks.http.app)
+          .post('/api/v1/forgotPassword')
+          .send({ email: 'unverified_forgot@test.com' })
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .expect(401)
+          .end((err, res) => {
+            if (err) {
+              return done(err);
+            }
+            should(res.body).have.property('status', 'NotVerified');
+            return done();
+          });
+      });
+    });
+    describe('Banned account', () => {
+      before(async () => {
+        await TCaver.create({
+          mail: 'banned_forgot@test.com',
+          nickname: 'banned_forgot',
+          password: await AuthService.createHashedPassword('test'),
+          activated: true,
+          banned: true,
+        });
+      });
+      after(async () => {
+        await TCaver.destroy({ mail: 'banned_forgot@test.com' });
+      });
+      it('should return code 204 silently', (done) => {
+        supertest(sails.hooks.http.app)
+          .post('/api/v1/forgotPassword')
+          .send({ email: 'banned_forgot@test.com' })
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .expect(204, done);
       });
     });
     describe('Success', () => {

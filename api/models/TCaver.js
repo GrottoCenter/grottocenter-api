@@ -33,14 +33,12 @@ module.exports = {
       maxLength: 100,
     },
 
-    // Unsued
     activated: {
       type: 'boolean',
       columnName: 'activated',
       defaultsTo: false,
     },
 
-    // Unsued
     activationCode: {
       type: 'string',
       allowNull: true,
@@ -99,12 +97,11 @@ module.exports = {
       unique: true,
     },
 
-    // Unsued
     mailIsValid: {
       type: 'boolean',
       allowNull: false,
       columnName: 'mail_is_valid',
-      defaultsTo: true,
+      defaultsTo: false,
     },
 
     dateInscription: {

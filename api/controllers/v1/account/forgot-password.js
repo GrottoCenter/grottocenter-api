@@ -26,6 +26,15 @@ module.exports = async (req, res) => {
     return res.ok();
   }
 
+  // instructs the user to verify their email before asking for a password reset
+  if (!userFound.activated) {
+    return res.unauthorized({
+      status: 'NotVerified',
+      message:
+        'Your account is not verified yet. Please check your email for the verification link.',
+    });
+  }
+
   // Generate reset password token
   const token = TokenService.issue(
     {
