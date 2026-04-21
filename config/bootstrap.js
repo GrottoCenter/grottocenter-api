@@ -10,6 +10,7 @@
  */
 
 const dbSync = require('../api/dbSync/dbSync');
+const sesSuppressionPoller = require('../api/sesSuppressionPoller/sesSuppressionPoller');
 const logger = require('../api/utils/logger');
 
 // eslint-disable-next-line func-names
@@ -36,6 +37,7 @@ module.exports.bootstrap = async function (done) {
   };
 
   dbSync.registerMakeDbSync();
+  sesSuppressionPoller.registerPoller();
   await dbSync.ensureSearchDbIsPopulated();
 
   // Blocking: load token blacklist cache before accepting requests

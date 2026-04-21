@@ -1055,6 +1055,42 @@ paths:
         '403':
           description: Forbidden — caller is not an administrator.
 
+  '/cavers/invalid-mail':
+    get:
+      tags:
+        - cavers
+      summary: List cavers with invalid email
+      description: Returns all cavers whose email has been marked as invalid (e.g. due to bounce or complaint). Requires Administrator role.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cavers:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        nickname:
+                          type: string
+                        name:
+                          type: string
+                          nullable: true
+                        surname:
+                          type: string
+                          nullable: true
+        '401':
+          description: Unauthorized — missing or invalid bearer token.
+        '403':
+          description: Forbidden — caller is not an administrator.
+
   '/descriptions':
     post:
       tags:

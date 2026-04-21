@@ -1,5 +1,5 @@
 /* eslint-disable no-underscore-dangle */
-const { SendEmailCommand } = require('@aws-sdk/client-ses');
+const { SendEmailCommand } = require('@aws-sdk/client-sesv2');
 const ejs = require('ejs');
 const { awsSesCli } = require('../../config/awsSes');
 
@@ -82,32 +82,35 @@ module.exports = {
       }
     );
 
-    // Create sendEmail params
+    // Create sendEmail params (SES v2 structure)
     const params = {
       Destination: {
         CcAddresses: [],
         ToAddresses: [recipientEmail],
       },
-      Message: {
-        Body: {
-          Html: {
-            Charset: 'UTF-8',
-            Data: emailHtml,
+      Content: {
+        Simple: {
+          Body: {
+            Html: {
+              Charset: 'UTF-8',
+              Data: emailHtml,
+            },
+            Text: {
+              Charset: 'UTF-8',
+              Data: '',
+            },
           },
-          Text: {
+          Subject: {
             Charset: 'UTF-8',
-            Data: '',
+            Data: `Grottocenter - ${i18n.__(emailSubject)}`,
           },
-        },
-        Subject: {
-          Charset: 'UTF-8',
-          Data: `Grottocenter - ${i18n.__(emailSubject)}`,
         },
       },
-      Source: allowResponse
+      FromEmailAddress: allowResponse
         ? sails.config.custom.internalEmailAddress
         : sails.config.custom.fromEmailAddress,
-      ReplyToAddresses: [],
+      // ReplyToAddresses intentionally omitted — SES v2 defaults to no
+      // reply-to header, matching the previous v1 behaviour (explicit []).
     };
 
     if (await awsSesCli.areAwsCredentialsSet()) {
@@ -115,9 +118,9 @@ module.exports = {
       try {
         await awsSesCli.send(command);
         sails.log.info(`An email has been sent using AWS SES service.
-          FROM: ${params.Source}
+          FROM: ${params.FromEmailAddress}
           TO: ${params.Destination.ToAddresses.join(',')}
-          SUBJECT: ${params.Message.Subject.Data}
+          SUBJECT: ${params.Content.Simple.Subject.Data}
         `);
         return exits.success();
       } catch (error) {
@@ -129,12 +132,12 @@ module.exports = {
         `===== SEND EMAIL HELPER - DEBUG =====
 You are seing this message because you didn't configure your AWS credentials locally. In production website, the following email would be sent using AWS SES service.
 
-      FROM: ${params.Source}
+      FROM: ${params.FromEmailAddress}
       TO: ${params.Destination.ToAddresses.join(',')}
-      SUBJECT: ${params.Message.Subject.Data}
+      SUBJECT: ${params.Content.Simple.Subject.Data}
       CONTENT:
 
-${params.Message.Body.Html.Data}
+${params.Content.Simple.Body.Html.Data}
       `
       );
       return exits.success();

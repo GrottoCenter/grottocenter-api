@@ -53,6 +53,7 @@ module.exports.policies = {
 
   // Caver
   'v1/caver/get-banned': 'tokenAuth',
+  'v1/caver/get-invalid-mail': 'tokenAuth',
   'v1/caver/count': true,
   'v1/caver/users-count': true,
   'v1/caver/find': ['validateId'],

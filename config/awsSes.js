@@ -1,12 +1,11 @@
-const { SESClient } = require('@aws-sdk/client-ses');
+const { SESv2Client } = require('@aws-sdk/client-sesv2');
 
-const client = new SESClient({
+const client = new SESv2Client({
   credentials: {
     accessKeyId: process.env.AWS_ACCESS_KEY,
     secretAccessKey: process.env.AWS_SECRET_KEY,
   },
   region: process.env.AWS_REGION || 'eu-central-1',
-  ses: '2010-12-01',
 });
 
 client.areAwsCredentialsSet = async () => {
