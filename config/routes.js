@@ -76,6 +76,7 @@ module.exports.routes = {
   'DELETE /api/v1/cavers/:caverId/groups/:groupId':
     'v1/caver/remove-from-group',
   'GET /api/v1/cavers/banned': 'v1/caver/get-banned',
+  'GET /api/v1/cavers/invalid-mail': 'v1/caver/get-invalid-mail',
   'GET /api/v1/cavers/:id': 'v1/caver/find',
   'GET /api/v1/cavers/:caverId/documents': 'v1/document/find-by-caver-id',
   'GET /api/v1/cavers/:caverId/subscriptions': 'v1/caver/get-subscriptions',
