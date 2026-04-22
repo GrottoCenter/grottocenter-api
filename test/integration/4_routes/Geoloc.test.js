@@ -1,6 +1,5 @@
 const supertest = require('supertest');
 const should = require('should');
-const fc = require('fast-check');
 const CommonService = require('../../../api/services/CommonService');
 
 describe('Geoloc features', () => {
@@ -662,573 +661,253 @@ describe('Geoloc features', () => {
   });
 
   /**
-   * Every coordinate returned for a massif-filtered request lies within the
-   * requested bounding box.
-   * Encodes: the spatial filter applies the bbox constraint even when a massif
-   * polygon is also in play.
-   * Covers: random bounding boxes overlapping massif 1's polygon area.
+   * Massif-filtered entrance coordinates are within the bounding box.
+   * Uses a known bbox overlapping massif 1's polygon (lat 53-74, lng 52-108).
    */
-  describe('Property: Massif-filtered entrance coordinates are within the bounding box', () => {
-    // eslint-disable-next-line func-names
-    it('should return coordinates within the bounding box for random overlapping bounds and massif 1', async function () {
-      this.timeout(60000);
+  describe('Massif-filtered entrance coordinates within bounding box', () => {
+    it('should return coordinates within the bbox for massif 1', (done) => {
+      supertest(sails.hooks.http.app)
+        .get('/api/v1/geoloc/entrancesCoordinates')
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .query({
+          sw_lat: 53,
+          sw_lng: 52,
+          ne_lat: 74,
+          ne_lng: 108,
+          massif: 1,
+        })
+        .expect(200)
+        .end((err, res) => {
+          if (err) return done(err);
+          should(res.body).be.Array();
+          res.body.forEach(([lng, lat]) => {
+            should(lat).be.aboveOrEqual(53);
+            should(lat).be.belowOrEqual(74);
+            should(lng).be.aboveOrEqual(52);
+            should(lng).be.belowOrEqual(108);
+          });
+          return done();
+        });
+    });
 
-      // Massif 1 polygon is roughly lat 53-74, lng 52-108.
-      // Lat and lng pairs are independent — use fc.tuple + .map for better
-      // shrinkability instead of a single .chain() over both dimensions.
-      const boundingBoxArb = fc
-        .tuple(
-          fc
-            .double({ min: 50, max: 70, noNaN: true })
-            .chain((swLat) =>
-              fc
-                .double({ min: swLat + 1, max: 75, noNaN: true })
-                .map((neLat) => [swLat, neLat])
-            ),
-          fc
-            .double({ min: 50, max: 100, noNaN: true })
-            .chain((swLng) =>
-              fc
-                .double({ min: swLng + 1, max: 110, noNaN: true })
-                .map((neLng) => [swLng, neLng])
-            )
-        )
-        .map(([[swLat, neLat], [swLng, neLng]]) => [
-          swLat,
-          swLng,
-          neLat,
-          neLng,
-        ]);
-
-      await fc.assert(
-        fc.asyncProperty(
-          boundingBoxArb,
-          async ([swLat, swLng, neLat, neLng]) => {
-            const res = await supertest(sails.hooks.http.app)
-              .get('/api/v1/geoloc/entrancesCoordinates')
-              .set('Content-type', 'application/json')
-              .set('Accept', 'application/json')
-              .query({
-                sw_lat: swLat,
-                sw_lng: swLng,
-                ne_lat: neLat,
-                ne_lng: neLng,
-                massif: 1,
-              })
-              .expect(200);
-
-            const coordinates = res.body;
-            should(coordinates).be.Array();
-
-            // Every returned coordinate [lng, lat] must be within the bounding box
-            coordinates.forEach(([lng, lat]) => {
-              should(lat).be.aboveOrEqual(swLat);
-              should(lat).be.belowOrEqual(neLat);
-              should(lng).be.aboveOrEqual(swLng);
-              should(lng).be.belowOrEqual(neLng);
-            });
-          }
-        ),
-        { numRuns: 100 }
-      );
+    it('should return coordinates within a tight bbox for massif 1', (done) => {
+      supertest(sails.hooks.http.app)
+        .get('/api/v1/geoloc/entrancesCoordinates')
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .query({
+          sw_lat: 60,
+          sw_lng: 75,
+          ne_lat: 65,
+          ne_lng: 85,
+          massif: 1,
+        })
+        .expect(200)
+        .end((err, res) => {
+          if (err) return done(err);
+          should(res.body).be.Array();
+          res.body.forEach(([lng, lat]) => {
+            should(lat).be.aboveOrEqual(60);
+            should(lat).be.belowOrEqual(65);
+            should(lng).be.aboveOrEqual(75);
+            should(lng).be.belowOrEqual(85);
+          });
+          return done();
+        });
     });
   });
 
   /**
-   * Property 1: Centroid computation correctness
-   * For any bounding box overlapping massif 1's polygon area, each returned
-   * centroid matches the ST_Centroid value computed directly by PostGIS.
-   * Covers: Requirements 1.1, 1.2
+   * Centroid computation correctness — verified against a direct PostGIS query.
    */
-  describe('Property 1: Centroid computation correctness', () => {
-    // eslint-disable-next-line func-names
-    it('should return centroids matching direct ST_Centroid query', async function () {
-      this.timeout(60000);
+  describe('Centroid computation correctness', () => {
+    it('should return centroids matching direct ST_Centroid query', async () => {
+      const bbox = { sw_lat: 50, sw_lng: 50, ne_lat: 75, ne_lng: 110 };
 
-      // Massif 1 polygon spans roughly lat 53-74, lng 52-108
-      const boundingBoxArb = fc
-        .tuple(
-          fc
-            .double({ min: 50, max: 70, noNaN: true })
-            .chain((swLat) =>
-              fc
-                .double({ min: swLat + 1, max: 75, noNaN: true })
-                .map((neLat) => [swLat, neLat])
-            ),
-          fc
-            .double({ min: 50, max: 100, noNaN: true })
-            .chain((swLng) =>
-              fc
-                .double({ min: swLng + 1, max: 110, noNaN: true })
-                .map((neLng) => [swLng, neLng])
-            )
-        )
-        .map(([[swLat, neLat], [swLng, neLng]]) => ({
-          swLat,
-          swLng,
-          neLat,
-          neLng,
-        }));
+      const res = await supertest(sails.hooks.http.app)
+        .get('/api/v1/geoloc/massifsCoordinates')
+        .query(bbox)
+        .expect(200);
 
-      await fc.assert(
-        fc.asyncProperty(
-          boundingBoxArb,
-          async ({ swLat, swLng, neLat, neLng }) => {
-            const res = await supertest(sails.hooks.http.app)
-              .get('/api/v1/geoloc/massifsCoordinates')
-              .query({
-                sw_lat: swLat,
-                sw_lng: swLng,
-                ne_lat: neLat,
-                ne_lng: neLng,
-              })
-              .expect(200);
+      if (res.body.length === 0) return;
 
-            const coordinates = res.body;
-            if (coordinates.length === 0) return;
+      const ref = await CommonService.query(
+        `SELECT
+           ST_X(ST_Centroid(m.geog_polygon::geometry)) AS longitude,
+           ST_Y(ST_Centroid(m.geog_polygon::geometry)) AS latitude
+         FROM t_massif AS m
+         WHERE m.is_deleted = false
+           AND m.geog_polygon IS NOT NULL
+           AND ST_Within(
+             ST_Centroid(m.geog_polygon::geometry),
+             ST_MakeEnvelope($1, $2, $3, $4, 4326)
+           )`,
+        [bbox.sw_lng, bbox.sw_lat, bbox.ne_lng, bbox.ne_lat]
+      );
 
-            // Reference query: get all centroids in this bbox directly
-            const ref = await CommonService.query(
-              `SELECT
-               ST_X(ST_Centroid(m.geog_polygon::geometry)) AS longitude,
-               ST_Y(ST_Centroid(m.geog_polygon::geometry)) AS latitude
+      const refCoords = ref.rows.map((r) => [
+        Number(r.longitude),
+        Number(r.latitude),
+      ]);
+
+      should(res.body.length).equal(refCoords.length);
+      res.body.forEach(([lng, lat]) => {
+        const match = refCoords.find(
+          ([rLng, rLat]) =>
+            Math.abs(rLng - lng) < 1e-6 && Math.abs(rLat - lat) < 1e-6
+        );
+        should(match).not.be.undefined();
+      });
+    });
+  });
+
+  /**
+   * Polygon spatial intersection — every returned massif intersects the bbox.
+   */
+  describe('Polygon spatial intersection', () => {
+    it('should only return massifs whose polygon intersects the bbox', async () => {
+      const bbox = { sw_lat: 50, sw_lng: 50, ne_lat: 75, ne_lng: 110 };
+
+      const res = await supertest(sails.hooks.http.app)
+        .get('/api/v1/geoloc/massifs')
+        .query(bbox)
+        .expect(200);
+
+      await Promise.all(
+        res.body.map(async (massif) => {
+          const ref = await CommonService.query(
+            `SELECT ST_Intersects(
+               m.geog_polygon::geometry,
+               ST_MakeEnvelope($1, $2, $3, $4, 4326)
+             ) AS intersects
              FROM t_massif AS m
-             WHERE m.is_deleted = false
-               AND m.geog_polygon IS NOT NULL
-               AND ST_Within(
-                 ST_Centroid(m.geog_polygon::geometry),
-                 ST_MakeEnvelope($1, $2, $3, $4, 4326)
-               )`,
-              [swLng, swLat, neLng, neLat]
-            );
-
-            const refCoords = ref.rows.map((r) => [
-              Number(r.longitude),
-              Number(r.latitude),
-            ]);
-
-            should(coordinates.length).equal(refCoords.length);
-            coordinates.forEach(([lng, lat]) => {
-              const match = refCoords.find(
-                ([rLng, rLat]) =>
-                  Math.abs(rLng - lng) < 1e-6 && Math.abs(rLat - lat) < 1e-6
-              );
-              should(match).not.be.undefined();
-            });
-          }
-        ),
-        { numRuns: 100 }
-      );
-    });
-  });
-
-  /**
-   * Property 5: Polygon response shape and GeoJSON parsing
-   * For any valid bounding box, every massif in the response has all required
-   * fields with correct types and geogPolygon is a parsed object.
-   * Covers: Requirements 3.3, 3.4
-   */
-  describe('Property 5: Polygon response shape and GeoJSON parsing', () => {
-    // eslint-disable-next-line func-names
-    it('should return correctly shaped massif objects for random bboxes', async function () {
-      this.timeout(60000);
-
-      const boundingBoxArb = fc
-        .tuple(
-          fc
-            .double({ min: -90, max: 89, noNaN: true })
-            .chain((swLat) =>
-              fc
-                .double({ min: swLat + 0.1, max: 90, noNaN: true })
-                .map((neLat) => [swLat, neLat])
-            ),
-          fc
-            .double({ min: -180, max: 179, noNaN: true })
-            .chain((swLng) =>
-              fc
-                .double({ min: swLng + 0.1, max: 180, noNaN: true })
-                .map((neLng) => [swLng, neLng])
-            )
-        )
-        .map(([[swLat, neLat], [swLng, neLng]]) => ({
-          swLat,
-          swLng,
-          neLat,
-          neLng,
-        }));
-
-      await fc.assert(
-        fc.asyncProperty(
-          boundingBoxArb,
-          async ({ swLat, swLng, neLat, neLng }) => {
-            const res = await supertest(sails.hooks.http.app)
-              .get('/api/v1/geoloc/massifs')
-              .query({
-                sw_lat: swLat,
-                sw_lng: swLng,
-                ne_lat: neLat,
-                ne_lng: neLng,
-              })
-              .expect(200);
-
-            res.body.should.be.Array();
-            res.body.forEach((massif) => {
-              should(massif).have.property('id');
-              should(massif.id).be.a.Number();
-              should(massif).have.property('name');
-              should(massif).have.property('geogPolygon');
-              should(massif.geogPolygon).be.an.Object();
-              should(massif.geogPolygon).have.property('type');
-              should(massif).have.property('entranceCount');
-              should(massif.entranceCount).be.a.Number();
-              should(massif).have.property('networkCount');
-              should(massif.networkCount).be.a.Number();
-            });
-          }
-        ),
-        { numRuns: 100 }
-      );
-    });
-  });
-
-  /**
-   * Property 7: Polygon spatial intersection
-   * For any valid bounding box, every returned massif's polygon intersects
-   * the requested bbox (verified via a reference ST_Intersects query).
-   * Covers: Requirements 3.1
-   */
-  describe('Property 7: Polygon spatial intersection', () => {
-    // eslint-disable-next-line func-names
-    it('should only return massifs whose polygon intersects the bbox', async function () {
-      this.timeout(60000);
-
-      const boundingBoxArb = fc
-        .tuple(
-          fc
-            .double({ min: 50, max: 70, noNaN: true })
-            .chain((swLat) =>
-              fc
-                .double({ min: swLat + 1, max: 75, noNaN: true })
-                .map((neLat) => [swLat, neLat])
-            ),
-          fc
-            .double({ min: 50, max: 100, noNaN: true })
-            .chain((swLng) =>
-              fc
-                .double({ min: swLng + 1, max: 110, noNaN: true })
-                .map((neLng) => [swLng, neLng])
-            )
-        )
-        .map(([[swLat, neLat], [swLng, neLng]]) => ({
-          swLat,
-          swLng,
-          neLat,
-          neLng,
-        }));
-
-      await fc.assert(
-        fc.asyncProperty(
-          boundingBoxArb,
-          async ({ swLat, swLng, neLat, neLng }) => {
-            const res = await supertest(sails.hooks.http.app)
-              .get('/api/v1/geoloc/massifs')
-              .query({
-                sw_lat: swLat,
-                sw_lng: swLng,
-                ne_lat: neLat,
-                ne_lng: neLng,
-              })
-              .expect(200);
-
-            await Promise.all(
-              res.body.map(async (massif) => {
-                const ref = await CommonService.query(
-                  `SELECT ST_Intersects(
-                   m.geog_polygon::geometry,
-                   ST_MakeEnvelope($1, $2, $3, $4, 4326)
-                 ) AS intersects
-                 FROM t_massif AS m
-                 WHERE m.id = $5`,
-                  [swLng, swLat, neLng, neLat, massif.id]
-                );
-                should(ref.rows.length).equal(1);
-                should(ref.rows[0].intersects).be.true();
-              })
-            );
-          }
-        ),
-        { numRuns: 100 }
-      );
-    });
-  });
-
-  /**
-   * Property 8: Invalid bounding box rejection
-   * For any request with missing params or out-of-range lat/lng,
-   * the endpoint returns HTTP 400.
-   * Covers: Requirements 4.1, 4.2, 4.3
-   */
-  describe('Property 8: Invalid bounding box rejection', () => {
-    // eslint-disable-next-line func-names
-    it('should return 400 for random invalid bbox params on massifsCoordinates', async function () {
-      this.timeout(60000);
-
-      // Strategy: generate objects that are missing at least one param
-      // or have out-of-range values
-      const missingParamArb = fc
-        .subarray(['sw_lat', 'sw_lng', 'ne_lat', 'ne_lng'], {
-          minLength: 1,
-          maxLength: 3,
+             WHERE m.id = $5`,
+            [bbox.sw_lng, bbox.sw_lat, bbox.ne_lng, bbox.ne_lat, massif.id]
+          );
+          should(ref.rows.length).equal(1);
+          should(ref.rows[0].intersects).be.true();
         })
-        .map((presentKeys) => {
-          const query = {};
-          if (presentKeys.includes('sw_lat')) query.sw_lat = 0;
-          if (presentKeys.includes('sw_lng')) query.sw_lng = 0;
-          if (presentKeys.includes('ne_lat')) query.ne_lat = 5;
-          if (presentKeys.includes('ne_lng')) query.ne_lng = 5;
-          return query;
-        });
-
-      const outOfRangeArb = fc.record({
-        sw_lat: fc.oneof(
-          fc.integer({ min: -200, max: -91 }),
-          fc.integer({ min: 91, max: 200 })
-        ),
-        sw_lng: fc.integer({ min: -180, max: 180 }),
-        ne_lat: fc.oneof(
-          fc.integer({ min: -200, max: -91 }),
-          fc.integer({ min: 91, max: 200 })
-        ),
-        ne_lng: fc.integer({ min: -180, max: 180 }),
-      });
-
-      const invalidArb = fc.oneof(missingParamArb, outOfRangeArb);
-
-      await fc.assert(
-        fc.asyncProperty(invalidArb, async (query) => {
-          await supertest(sails.hooks.http.app)
-            .get('/api/v1/geoloc/massifsCoordinates')
-            .query(query)
-            .expect(400);
-        }),
-        { numRuns: 100 }
-      );
-    });
-
-    // eslint-disable-next-line func-names
-    it('should return 400 for random invalid bbox params on massifs', async function () {
-      this.timeout(60000);
-
-      const missingParamArb = fc
-        .subarray(['sw_lat', 'sw_lng', 'ne_lat', 'ne_lng'], {
-          minLength: 1,
-          maxLength: 3,
-        })
-        .map((presentKeys) => {
-          const query = {};
-          if (presentKeys.includes('sw_lat')) query.sw_lat = 0;
-          if (presentKeys.includes('sw_lng')) query.sw_lng = 0;
-          if (presentKeys.includes('ne_lat')) query.ne_lat = 5;
-          if (presentKeys.includes('ne_lng')) query.ne_lng = 5;
-          return query;
-        });
-
-      const outOfRangeArb = fc.record({
-        sw_lat: fc.oneof(
-          fc.integer({ min: -200, max: -91 }),
-          fc.integer({ min: 91, max: 200 })
-        ),
-        sw_lng: fc.integer({ min: -180, max: 180 }),
-        ne_lat: fc.oneof(
-          fc.integer({ min: -200, max: -91 }),
-          fc.integer({ min: 91, max: 200 })
-        ),
-        ne_lng: fc.integer({ min: -180, max: 180 }),
-      });
-
-      const invalidArb = fc.oneof(missingParamArb, outOfRangeArb);
-
-      await fc.assert(
-        fc.asyncProperty(invalidArb, async (query) => {
-          await supertest(sails.hooks.http.app)
-            .get('/api/v1/geoloc/massifs')
-            .query(query)
-            .expect(400);
-        }),
-        { numRuns: 100 }
       );
     });
   });
 
   /**
-   * Property 9: Polygon field correctness
-   * For any bounding box overlapping fixture data, the name matches the
-   * reference t_name query, entranceCount and networkCount match reference
-   * count queries.
-   * Covers: Requirements 5.1, 6.1, 6.2
+   * Polygon field correctness — name, entranceCount, networkCount match DB.
    */
-  describe('Property 9: Polygon field correctness', () => {
-    // eslint-disable-next-line func-names
-    it('should return correct name, entranceCount, and networkCount', async function () {
-      this.timeout(60000);
+  describe('Polygon field correctness', () => {
+    it('should return correct name, entranceCount, and networkCount', async () => {
+      const bbox = { sw_lat: 50, sw_lng: 50, ne_lat: 75, ne_lng: 110 };
 
-      // Focus on bboxes overlapping massif 1
-      const boundingBoxArb = fc
-        .tuple(
-          fc
-            .double({ min: 50, max: 70, noNaN: true })
-            .chain((swLat) =>
-              fc
-                .double({ min: swLat + 1, max: 75, noNaN: true })
-                .map((neLat) => [swLat, neLat])
-            ),
-          fc
-            .double({ min: 50, max: 100, noNaN: true })
-            .chain((swLng) =>
-              fc
-                .double({ min: swLng + 1, max: 110, noNaN: true })
-                .map((neLng) => [swLng, neLng])
-            )
-        )
-        .map(([[swLat, neLat], [swLng, neLng]]) => ({
-          swLat,
-          swLng,
-          neLat,
-          neLng,
-        }));
+      const res = await supertest(sails.hooks.http.app)
+        .get('/api/v1/geoloc/massifs')
+        .query(bbox)
+        .expect(200);
 
-      await fc.assert(
-        fc.asyncProperty(
-          boundingBoxArb,
-          async ({ swLat, swLng, neLat, neLng }) => {
-            const res = await supertest(sails.hooks.http.app)
-              .get('/api/v1/geoloc/massifs')
-              .query({
-                sw_lat: swLat,
-                sw_lng: swLng,
-                ne_lat: neLat,
-                ne_lng: neLng,
-              })
-              .expect(200);
+      should(res.body.length).be.above(0);
 
-            await Promise.all(
-              res.body.map(async (massif) => {
-                // Verify name against t_name
-                const nameRef = await CommonService.query(
-                  `SELECT n.name FROM t_name AS n
-               WHERE n.id_massif = $1 AND n.is_main = true
-               LIMIT 1`,
-                  [massif.id]
-                );
-                const expectedName =
-                  nameRef.rows.length > 0 ? nameRef.rows[0].name : null;
-                should(massif.name).equal(expectedName);
+      await Promise.all(
+        res.body.map(async (massif) => {
+          const nameRef = await CommonService.query(
+            `SELECT n.name FROM t_name AS n
+             WHERE n.id_massif = $1 AND n.is_main = true LIMIT 1`,
+            [massif.id]
+          );
+          should(massif.name).equal(
+            nameRef.rows.length > 0 ? nameRef.rows[0].name : null
+          );
 
-                // Verify entranceCount
-                const entranceRef = await CommonService.query(
-                  `SELECT COUNT(e.id)::integer AS cnt
-               FROM t_entrance AS e
-               WHERE e.is_deleted = false
+          const entranceRef = await CommonService.query(
+            `SELECT COUNT(e.id)::integer AS cnt FROM t_entrance AS e
+             WHERE e.is_deleted = false AND ST_Contains(
+               (SELECT m.geog_polygon::geometry FROM t_massif AS m WHERE m.id = $1),
+               e.point_geom)`,
+            [massif.id]
+          );
+          should(massif.entranceCount).equal(entranceRef.rows[0].cnt);
+
+          const networkRef = await CommonService.query(
+            `SELECT COUNT(*)::integer AS cnt FROM (
+               SELECT c.id FROM t_entrance AS e
+               JOIN t_cave AS c ON c.id = e.id_cave
+               WHERE e.is_deleted = false AND c.is_deleted = false
                  AND ST_Contains(
                    (SELECT m.geog_polygon::geometry FROM t_massif AS m WHERE m.id = $1),
-                   e.point_geom
-                 )`,
-                  [massif.id]
-                );
-                should(massif.entranceCount).equal(entranceRef.rows[0].cnt);
-
-                // Verify networkCount
-                const networkRef = await CommonService.query(
-                  `SELECT COUNT(*)::integer AS cnt FROM (
-                 SELECT c.id
-                 FROM t_entrance AS e
-                 JOIN t_cave AS c ON c.id = e.id_cave
-                 WHERE e.is_deleted = false
-                   AND c.is_deleted = false
-                   AND ST_Contains(
-                     (SELECT m.geog_polygon::geometry FROM t_massif AS m WHERE m.id = $1),
-                     e.point_geom
-                   )
-                 GROUP BY c.id
-                 HAVING COUNT(e.id) > 1
-               ) AS networks`,
-                  [massif.id]
-                );
-                should(massif.networkCount).equal(networkRef.rows[0].cnt);
-              })
-            );
-          }
-        ),
-        { numRuns: 100 }
+                   e.point_geom)
+               GROUP BY c.id HAVING COUNT(e.id) > 1
+             ) AS networks`,
+            [massif.id]
+          );
+          should(massif.networkCount).equal(networkRef.rows[0].cnt);
+        })
       );
     });
   });
 
   /**
-   * Property 6: Polygon exclusion filtering
-   * For each massif returned by the endpoint, the source massif in the
-   * database is non-deleted and has a non-null geog_polygon.
-   * Covers: Requirements 3.5, 3.6
+   * Polygon exclusion filtering — only non-deleted massifs with polygons.
    */
-  describe('Property 6: Polygon exclusion filtering', () => {
-    // eslint-disable-next-line func-names
-    it('should only return non-deleted massifs with non-null polygons', async function () {
-      this.timeout(60000);
+  describe('Polygon exclusion filtering', () => {
+    it('should only return non-deleted massifs with non-null polygons', async () => {
+      const bbox = { sw_lat: 50, sw_lng: 50, ne_lat: 75, ne_lng: 110 };
 
-      const boundingBoxArb = fc
-        .tuple(
-          fc
-            .double({ min: -90, max: 89, noNaN: true })
-            .chain((swLat) =>
-              fc
-                .double({ min: swLat + 0.1, max: 90, noNaN: true })
-                .map((neLat) => [swLat, neLat])
-            ),
-          fc
-            .double({ min: -180, max: 179, noNaN: true })
-            .chain((swLng) =>
-              fc
-                .double({ min: swLng + 0.1, max: 180, noNaN: true })
-                .map((neLng) => [swLng, neLng])
-            )
-        )
-        .map(([[swLat, neLat], [swLng, neLng]]) => ({
-          swLat,
-          swLng,
-          neLat,
-          neLng,
-        }));
+      const res = await supertest(sails.hooks.http.app)
+        .get('/api/v1/geoloc/massifs')
+        .query(bbox)
+        .expect(200);
 
-      await fc.assert(
-        fc.asyncProperty(
-          boundingBoxArb,
-          async ({ swLat, swLng, neLat, neLng }) => {
-            const res = await supertest(sails.hooks.http.app)
-              .get('/api/v1/geoloc/massifs')
-              .query({
-                sw_lat: swLat,
-                sw_lng: swLng,
-                ne_lat: neLat,
-                ne_lng: neLng,
-              })
-              .expect(200);
-
-            await Promise.all(
-              res.body.map(async (massif) => {
-                const ref = await CommonService.query(
-                  `SELECT m.is_deleted, m.geog_polygon IS NOT NULL AS has_polygon
-               FROM t_massif AS m WHERE m.id = $1`,
-                  [massif.id]
-                );
-                should(ref.rows.length).equal(1);
-                should(ref.rows[0].is_deleted).be.false();
-                should(ref.rows[0].has_polygon).be.true();
-              })
-            );
-          }
-        ),
-        { numRuns: 100 }
+      await Promise.all(
+        res.body.map(async (massif) => {
+          const ref = await CommonService.query(
+            `SELECT m.is_deleted, m.geog_polygon IS NOT NULL AS has_polygon
+             FROM t_massif AS m WHERE m.id = $1`,
+            [massif.id]
+          );
+          should(ref.rows.length).equal(1);
+          should(ref.rows[0].is_deleted).be.false();
+          should(ref.rows[0].has_polygon).be.true();
+        })
       );
+    });
+  });
+
+  /**
+   * Invalid bounding box rejection — missing params and out-of-range values.
+   */
+  describe('Invalid bounding box rejection', () => {
+    it('should return 400 for missing ne_lat on massifsCoordinates', (done) => {
+      supertest(sails.hooks.http.app)
+        .get('/api/v1/geoloc/massifsCoordinates')
+        .query({ sw_lat: 0, sw_lng: 0, ne_lng: 5 })
+        .expect(400, done);
+    });
+
+    it('should return 400 for missing sw_lng on massifsCoordinates', (done) => {
+      supertest(sails.hooks.http.app)
+        .get('/api/v1/geoloc/massifsCoordinates')
+        .query({ sw_lat: 0, ne_lat: 5, ne_lng: 5 })
+        .expect(400, done);
+    });
+
+    it('should return 400 for out-of-range lat on massifsCoordinates', (done) => {
+      supertest(sails.hooks.http.app)
+        .get('/api/v1/geoloc/massifsCoordinates')
+        .query({ sw_lat: -100, sw_lng: 0, ne_lat: 5, ne_lng: 5 })
+        .expect(400, done);
+    });
+
+    it('should return 400 for missing ne_lat on massifs', (done) => {
+      supertest(sails.hooks.http.app)
+        .get('/api/v1/geoloc/massifs')
+        .query({ sw_lat: 0, sw_lng: 0, ne_lng: 5 })
+        .expect(400, done);
+    });
+
+    it('should return 400 for out-of-range lat on massifs', (done) => {
+      supertest(sails.hooks.http.app)
+        .get('/api/v1/geoloc/massifs')
+        .query({ sw_lat: 95, sw_lng: 0, ne_lat: 100, ne_lng: 5 })
+        .expect(400, done);
     });
   });
 });

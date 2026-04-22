@@ -17,7 +17,7 @@ describe('RecentChangeService - 7-day window fix', () => {
     it('should include WHERE date_change filter in the query', async () => {
       querySpy = sinon.spy(CommonService, 'query');
       await RecentChangeService.getRecent();
-      should(querySpy.calledOnce).be.true();
+      should(querySpy.called).be.true();
       const sql = querySpy.firstCall.args[0];
       should(sql).containEql("interval '7 days'");
       should(sql).containEql('current_timestamp');

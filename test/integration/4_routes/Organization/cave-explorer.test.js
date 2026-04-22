@@ -2,7 +2,6 @@ const supertest = require('supertest');
 const AuthTokenService = require('../../AuthTokenService');
 
 describe('Cave Explorer endpoints', () => {
-  let agent;
   let adminToken;
   let userToken;
   let caveId;
@@ -10,8 +9,6 @@ describe('Cave Explorer endpoints', () => {
   let memberId;
 
   before(async () => {
-    agent = supertest.agent(sails.hooks.http.app);
-
     adminToken = await AuthTokenService.getRawBearerAdminToken();
     userToken = await AuthTokenService.getRawBearerUserToken();
 
@@ -56,34 +53,34 @@ describe('Cave Explorer endpoints', () => {
     });
 
     it('should add organization as cave explorer with admin token', async () => {
-      await agent
+      await supertest(sails.hooks.http.app)
         .put(`/api/v1/caves/${caveId}/organizations/${organizationId}`)
         .set('Authorization', adminToken)
         .expect(204);
     });
 
     it('should return 403 with non-member user token', async () => {
-      await agent
+      await supertest(sails.hooks.http.app)
         .put(`/api/v1/caves/${caveId}/organizations/${organizationId}`)
         .set('Authorization', userToken)
         .expect(403);
     });
 
     it('should return 401 without token', async () => {
-      await agent
+      await supertest(sails.hooks.http.app)
         .put(`/api/v1/caves/${caveId}/organizations/${organizationId}`)
         .expect(401);
     });
 
     it('should return 404 for non-existent cave', async () => {
-      await agent
+      await supertest(sails.hooks.http.app)
         .put(`/api/v1/caves/99999/organizations/${organizationId}`)
         .set('Authorization', adminToken)
         .expect(404);
     });
 
     it('should return 404 for non-existent organization', async () => {
-      await agent
+      await supertest(sails.hooks.http.app)
         .put(`/api/v1/caves/${caveId}/organizations/99999`)
         .set('Authorization', adminToken)
         .expect(404);
@@ -95,7 +92,7 @@ describe('Cave Explorer endpoints', () => {
         grotto: organizationId,
       });
 
-      await agent
+      await supertest(sails.hooks.http.app)
         .put(`/api/v1/caves/${caveId}/organizations/${organizationId}`)
         .set('Authorization', adminToken)
         .expect(400);
@@ -118,31 +115,30 @@ describe('Cave Explorer endpoints', () => {
     });
 
     it('should remove organization as cave explorer with admin token', async () => {
-      await agent
+      await supertest(sails.hooks.http.app)
         .delete(`/api/v1/caves/${caveId}/organizations/${organizationId}`)
         .set('Authorization', adminToken)
         .expect(204);
     });
 
     it('should return 403 with non-member user token', async () => {
-      await agent
+      await supertest(sails.hooks.http.app)
         .delete(`/api/v1/caves/${caveId}/organizations/${organizationId}`)
         .set('Authorization', userToken)
         .expect(403);
     });
 
     it('should return 401 without token', async () => {
-      await agent
+      await supertest(sails.hooks.http.app)
         .delete(`/api/v1/caves/${caveId}/organizations/${organizationId}`)
         .expect(401);
     });
 
-    it('should return 404 for non-existent cave', (done) => {
-      supertest(sails.hooks.http.app)
+    it('should return 404 for non-existent cave', async () => {
+      await supertest(sails.hooks.http.app)
         .delete(`/api/v1/caves/99999/organizations/${organizationId}`)
         .set('Authorization', adminToken)
-        .expect(404)
-        .end(done);
+        .expect(404);
     });
 
     it('should return 400 when relationship does not exist', async () => {
@@ -151,7 +147,7 @@ describe('Cave Explorer endpoints', () => {
         grotto: organizationId,
       });
 
-      await agent
+      await supertest(sails.hooks.http.app)
         .delete(`/api/v1/caves/${caveId}/organizations/${organizationId}`)
         .set('Authorization', adminToken)
         .expect(400);

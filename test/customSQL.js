@@ -45,7 +45,44 @@ DROP INDEX IF EXISTS t_caver_idx;
 DROP INDEX IF EXISTS idx_j_caver_massif_subscription_caver;
 DROP INDEX IF EXISTS idx_j_caver_country_subscription_caver;
 
--- Table indexes
+-- Production indexes from sql/0_tables.sql
+-- (Waterline migrate:drop does not run 0_tables.sql, so these must be
+-- created explicitly for the test DB to match production performance.)
+CREATE INDEX IF NOT EXISTS t_caver_activation_code_idx ON t_caver USING btree (activation_code);
+CREATE INDEX IF NOT EXISTS idx_j_caver_group_caver ON j_caver_group(id_caver);
+CREATE INDEX IF NOT EXISTS idx_j_caver_group_group ON j_caver_group(id_group);
+CREATE INDEX IF NOT EXISTS idx_j_grotto_caver_caver ON j_grotto_caver(id_caver);
+CREATE INDEX IF NOT EXISTS idx_j_grotto_caver_grotto ON j_grotto_caver(id_grotto);
+CREATE INDEX IF NOT EXISTS idx_t_cave_author ON t_cave(id_author);
+CREATE INDEX IF NOT EXISTS idx_entrance_geom_gist ON t_entrance USING gist (point_geom);
+CREATE INDEX IF NOT EXISTS idx_t_entrance_cave ON t_entrance(id_cave) WHERE id_cave IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_t_entrance_country ON t_entrance(id_country);
+CREATE INDEX IF NOT EXISTS idx_t_entrance_is_deleted ON t_entrance(is_deleted);
+CREATE INDEX IF NOT EXISTS idx_t_location_entrance ON t_location(id_entrance);
+CREATE INDEX IF NOT EXISTS idx_t_rigging_entrance ON t_rigging(id_entrance) WHERE id_entrance IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_t_rigging_cave ON t_rigging(id_cave) WHERE id_cave IS NOT NULL;
+CREATE INDEX IF NOT EXISTS j_caver_cave_explorer_id_caver_idx ON j_caver_cave_explorer (id_caver);
+CREATE INDEX IF NOT EXISTS j_caver_cave_explorer_id_cave_idx ON j_caver_cave_explorer (id_cave);
+CREATE INDEX IF NOT EXISTS idx_document_id_parent ON t_document(id_parent) WHERE id_parent IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_document_hierarchy ON t_document(id, id_parent);
+CREATE INDEX IF NOT EXISTS idx_t_document_type ON t_document(id_type);
+CREATE INDEX IF NOT EXISTS idx_t_document_author ON t_document(id_author);
+CREATE INDEX IF NOT EXISTS idx_t_document_is_deleted ON t_document(is_deleted);
+CREATE INDEX IF NOT EXISTS idx_t_file_document ON t_file(id_document);
+CREATE INDEX IF NOT EXISTS idx_t_history_cave ON t_history(id_cave) WHERE id_cave IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_t_history_entrance ON t_history(id_entrance) WHERE id_entrance IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_t_name_entity_main ON t_name(id_entrance, id_cave, id_massif, id_grotto, is_main) WHERE is_deleted = false;
+CREATE INDEX IF NOT EXISTS idx_t_name_grotto ON t_name(id_grotto) WHERE id_grotto IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_t_name_massif ON t_name(id_massif) WHERE id_massif IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_t_name_cave ON t_name(id_cave) WHERE id_cave IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_t_name_entrance ON t_name(id_entrance) WHERE id_entrance IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_j_document_entrance_entrance ON j_document_entrance(id_entrance);
+CREATE INDEX IF NOT EXISTS idx_j_document_entrance_document ON j_document_entrance(id_document);
+CREATE INDEX IF NOT EXISTS idx_t_description_document ON t_description(id_document) WHERE id_document IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_t_description_entrance ON t_description(id_entrance) WHERE id_entrance IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_t_description_cave ON t_description(id_cave) WHERE id_cave IS NOT NULL;
+
+-- Additional test-specific indexes
 CREATE INDEX IF NOT EXISTS idx_t_entrance_geom_public
   ON t_entrance USING gist(point_geom)
   WHERE is_sensitive = false AND is_deleted = false;

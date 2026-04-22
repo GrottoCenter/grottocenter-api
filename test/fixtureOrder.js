@@ -1,0 +1,47 @@
+/**
+ * Ordered list of fixture tables for Fixted.populate().
+ * Order matters — tables with foreign keys must come after their dependencies.
+ *
+ * Shared between test/bootstrap.test.js and scripts/snapshot-test-db.js
+ * to keep the template in sync with the test bootstrap.
+ */
+module.exports = [
+  'tlanguage',
+  'tidentifiertype',
+  'tsubject',
+  'ttype',
+  'tcountry',
+  'tiso31662',
+  'tgroup',
+  'tnotificationtype',
+  'ttokenblacklist',
+  'tcaver',
+  'tname',
+  'tgrotto',
+  'tdocument',
+  'tdescription',
+  'tlocation',
+  'tcave',
+  'tentrance',
+  'jcavercaveexplorer',
+  'tmassif',
+  'thistory',
+  'tfileformat',
+  'tlicense',
+  'toption',
+  'tcomment',
+  'tfile',
+  'trigging',
+  'tnotification',
+  'tcrs',
+  'jcountrycrs',
+  'hlocation',
+  'hdescription',
+  'hentrance',
+  'vcaverroles',
+  'vbibliographicmetadata',
+  'vcountryinfo',
+  'vregioninfo',
+  'vmassifinfo',
+  'vdataqualitycomputeentrance',
+];

@@ -9,11 +9,11 @@ describe('Cave features', () => {
     userToken = await AuthTokenService.getRawBearerUserToken();
   });
 
-  describe('Update', async () => {
+  describe('Update', () => {
     describe('Invalid cave id', () => {
       it('should return code 404 on inexisting cave', (done) => {
         supertest(sails.hooks.http.app)
-          .put(`/api/v1/caves/987654321`)
+          .put('/api/v1/caves/987654321')
           .set('Authorization', userToken)
           .set('Content-type', 'application/json')
           .set('Accept', 'application/json')
@@ -21,42 +21,48 @@ describe('Cave features', () => {
       });
     });
 
-    describe('Successfull updates', () => {
+    describe('Successful updates', () => {
       const caveId = 1;
-      let initialCave = {};
+      let initialScalars = {};
+      let initialEntranceIds = [];
+      let initialNameData = {};
 
       before(async () => {
-        initialCave = await TCave.findOne(caveId)
-          .populate('author')
-          .populate('reviewer')
-          .populate('comments')
-          .populate('descriptions')
-          .populate('documents')
+        const cave = await TCave.findOne(caveId)
           .populate('entrances')
-          .populate('exploringGrottos')
-          .populate('histories')
-          .populate('names')
-          .populate('partneringGrottos')
-          .populate('riggings');
+          .populate('names');
+        initialScalars = {
+          depth: cave.depth,
+          isDiving: cave.isDiving,
+          length: cave.length,
+          temperature: cave.temperature,
+        };
+        initialEntranceIds = cave.entrances.map((e) => e.id);
+        if (cave.names.length > 0) {
+          initialNameData = {
+            id: cave.names[0].id,
+            name: cave.names[0].name,
+            language: cave.names[0].language,
+          };
+        }
       });
 
       after(async () => {
-        // Reset cave
-        const cleanedData = {
-          ...initialCave,
-          author: initialCave.author?.id,
-          reviewer: initialCave.reviewer?.id,
-          comments: initialCave.comments.map((x) => x.id),
-          descriptions: initialCave.descriptions.map((x) => x.id),
-          documents: initialCave.documents.map((x) => x.id),
-          entrances: initialCave.entrances.map((x) => x.id),
-          exploringGrottos: initialCave.exploringGrottos.map((x) => x.id),
-          histories: initialCave.histories.map((x) => x.id),
-          names: initialCave.names.map((x) => x.id),
-          partneringGrottos: initialCave.partneringGrottos.map((x) => x.id),
-          riggings: initialCave.riggings.map((x) => x.id),
-        };
-        await TCave.update(caveId).set(cleanedData);
+        // Restore scalar fields
+        await TCave.updateOne(caveId).set(initialScalars);
+
+        // Restore entrance associations
+        await TCave.replaceCollection(caveId, 'entrances').members(
+          initialEntranceIds
+        );
+
+        // Restore name if it was changed
+        if (initialNameData.id) {
+          await TName.updateOne(initialNameData.id).set({
+            name: initialNameData.name,
+            language: initialNameData.language,
+          });
+        }
       });
 
       it('should return code 200 on basic data update', (done) => {

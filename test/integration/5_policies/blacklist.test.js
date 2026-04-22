@@ -54,14 +54,19 @@ describe('Token blacklist middleware', () => {
       });
     });
 
-    // Revoke the user's tokens
+    // Revoke the user's tokens, then backdate revoked_before by 2 seconds
+    // so a freshly issued token (iat = now) is strictly after the revocation.
+    // This avoids a real 1.1s sleep for second-level iat granularity.
     await sails.services.blacklistservice.revoke(decoded.id);
-
-    // Wait 1 second so the fresh token's iat (whole seconds) is strictly
-    // after the revoked_before timestamp, avoiding same-second ambiguity.
-    await new Promise((resolve) => {
-      setTimeout(resolve, 1100);
-    });
+    const result = await CommonService.query(
+      `UPDATE t_token_blacklist
+       SET revoked_before = NOW() - interval '2 seconds'
+       WHERE id_caver = $1
+       RETURNING revoked_before`,
+      [decoded.id]
+    );
+    const backdated = new Date(result.rows[0].revoked_before);
+    sails.services.blacklistservice.getCache().set(decoded.id, backdated);
 
     // Get a fresh token by logging in again
     const freshToken = await AuthTokenService.getRawBearerUserToken();

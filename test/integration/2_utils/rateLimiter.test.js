@@ -29,9 +29,9 @@ describe('Rate Limiter', () => {
       app.use(rateLimiter.generalRateLimit);
       app.get('/test', (req, res) => res.status(200).send('ok'));
 
-      // Make 5 requests - should all succeed in test env
+      const agent = supertest.agent(app);
       for (let i = 0; i < 5; i += 1) {
-        await supertest(app).get('/test').expect(200);
+        await agent.get('/test').expect(200);
       }
     });
   });
@@ -48,9 +48,9 @@ describe('Rate Limiter', () => {
       app.use(rateLimiter.generalRateLimit);
       app.get('/test', (req, res) => res.status(200).send('ok'));
 
-      // Make 50 requests (under limit of 100)
+      const agent = supertest.agent(app);
       for (let i = 0; i < 50; i += 1) {
-        await supertest(app).get('/test').expect(200);
+        await agent.get('/test').expect(200);
       }
     });
 
@@ -65,10 +65,10 @@ describe('Rate Limiter', () => {
       app.use(rateLimiter.generalRateLimit);
       app.get('/test', (req, res) => res.status(200).send('ok'));
 
-      // Make requests until rate limited (default is 100 per 30s)
+      const agent = supertest.agent(app);
       const responses = [];
       for (let i = 0; i < 105; i += 1) {
-        const res = await supertest(app).get('/test');
+        const res = await agent.get('/test');
         responses.push(res.status);
       }
 
@@ -87,9 +87,9 @@ describe('Rate Limiter', () => {
       app.use(rateLimiter.generalRateLimit);
       app.options('/test', (req, res) => res.status(200).send('ok'));
 
-      // Make 105 OPTIONS requests (above limit of 100)
+      const agent = supertest.agent(app);
       for (let i = 0; i < 105; i += 1) {
-        await supertest(app).options('/test').expect(200);
+        await agent.options('/test').expect(200);
       }
     });
 
@@ -114,9 +114,9 @@ describe('Rate Limiter', () => {
       app.use(rateLimiter.moderatorDeleteRateLimit);
       app.delete('/test', (req, res) => res.status(200).send('ok'));
 
-      // Make 10 DELETE requests (under limit of 20)
+      const agent = supertest.agent(app);
       for (let i = 0; i < 10; i += 1) {
-        await supertest(app).delete('/test').expect(200);
+        await agent.delete('/test').expect(200);
       }
     });
 
@@ -141,10 +141,10 @@ describe('Rate Limiter', () => {
       app.use(rateLimiter.moderatorDeleteRateLimit);
       app.delete('/test', (req, res) => res.status(200).send('ok'));
 
-      // Make 25 DELETE requests (limit is 20)
+      const agent = supertest.agent(app);
       const responses = [];
       for (let i = 0; i < 25; i += 1) {
-        const res = await supertest(app).delete('/test');
+        const res = await agent.delete('/test');
         responses.push(res.status);
       }
 
