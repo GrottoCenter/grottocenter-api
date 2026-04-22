@@ -1,6 +1,5 @@
 const supertest = require('supertest');
 const should = require('should');
-const fc = require('fast-check');
 const massifPolygon = require('./FAKE_DATA');
 const AuthTokenService = require('../../AuthTokenService');
 
@@ -80,12 +79,7 @@ describe('Massif features', () => {
     });
   });
 
-  /**
-   * GET response includes all expected domain fields and excludes entrances.
-   * Encodes: the massif endpoint returns a curated shape, not the raw model.
-   * Covers: all fixture massif IDs.
-   */
-  describe('Property: Massif GET response shape excludes entrances and includes all other fields', () => {
+  describe('GET response shape excludes entrances and includes domain fields', () => {
     const EXPECTED_FIELDS = [
       'id',
       'name',
@@ -97,19 +91,14 @@ describe('Massif features', () => {
       'reviewer',
     ];
 
-    // eslint-disable-next-line func-names
-    it('should contain expected fields and not contain entrances for any fixture massif', async function () {
-      this.timeout(60000);
-      const massifIds = [1];
-
-      await fc.assert(
-        fc.asyncProperty(fc.constantFrom(...massifIds), async (massifId) => {
-          const res = await supertest(sails.hooks.http.app)
-            .get(`/api/v1/massifs/${massifId}`)
-            .set('Content-type', 'application/json')
-            .set('Accept', 'application/json')
-            .expect(200);
-
+    it('should contain expected fields and not contain entrances for massif 1', (done) => {
+      supertest(sails.hooks.http.app)
+        .get('/api/v1/massifs/1')
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(200)
+        .end((err, res) => {
+          if (err) return done(err);
           const massif = res.body;
 
           EXPECTED_FIELDS.forEach((field) => {
@@ -119,9 +108,8 @@ describe('Massif features', () => {
           // isSensitive is only returned for admins
           should(massif).not.have.property('isSensitive');
           should(massif).not.have.property('entrances');
-        }),
-        { numRuns: 100 }
-      );
+          return done();
+        });
     });
   });
 });

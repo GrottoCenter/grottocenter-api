@@ -96,4 +96,12 @@ module.exports.custom = {
    *                                                                          *
    ************************************************************************** */
   coordinatesSnapshotTTL: 86400, // 24 hours
+
+  /** *************************************************************************
+   *                                                                          *
+   * Authentication settings.                                                 *
+   *                                                                          *
+   ************************************************************************** */
+  authBruteForceDelay: 500, // ms — delay before responding to login attempts
+  argon2Options: {}, // use argon2 defaults (see config/env/test.js for overrides)
 };

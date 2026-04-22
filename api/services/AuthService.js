@@ -9,7 +9,7 @@ const setTimeoutP = util.promisify(setTimeout);
  * @param {String} password
  */
 async function createHashedPassword(password) {
-  return argon2.hash(password);
+  return argon2.hash(password, sails.config.custom.argon2Options);
 }
 module.exports.createHashedPassword = createHashedPassword;
 
@@ -28,7 +28,10 @@ module.exports.authenticateResult = authenticateResult;
  * @param {String} password
  */
 async function authenticate(email, password) {
-  await setTimeoutP(500); // Basic brute force prevention
+  const delay = sails.config.custom.authBruteForceDelay;
+  if (delay > 0) {
+    await setTimeoutP(delay);
+  }
 
   if (!email || !password) return { status: authenticateResult.MISMATCH };
 

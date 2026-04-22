@@ -133,3 +133,6 @@ build-info.json
 
 # Temporary test output
 *.tmp
+
+# Test database snapshot stamp
+test/.snapshot-stamp

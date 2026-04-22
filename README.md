@@ -167,13 +167,17 @@ The script lifts Sails, runs the sync, and exits. It creates timestamped collect
 
 ### Tests
 
-Run all tests:
+Tests run in parallel by default, with each shard using its own database
+cloned from a pre-seeded template. The template is rebuilt automatically
+when fixture files, models, or SQL migrations change — no manual step needed.
+
+Run all tests (parallel):
 
 ```shell
 $ npm run test
 ```
 
-Run (a) specific test(s) matching a String:
+Run specific tests matching a pattern:
 
 ```shell
 $ npm run test -- --grep "<your_partial_name_tests>"
@@ -183,15 +187,25 @@ $ npm run test -- --grep "Auth features"
 
 Fail fast:
 ```shell
-npm run test -- --bail
+$ npm run test -- --bail
 ```
 
-You can combine all these options:
+> **Note:** `--bail` stops the *failing shard* on its first failure, but other
+> shards continue running. This is inherent to parallel execution — each shard
+> is an independent Mocha process. If you need the entire suite to abort on the
+> first failure, run sequentially: `npm run test:sequential -- --bail`.
+
+Override shard count:
 ```shell
-$ npm run test -- --grep "Auth features" --bail
+$ npm run test -- --shards 4
 ```
 
-Check code coverage:
+Run sequentially (single process, useful for debugging):
+```shell
+$ npm run test:sequential
+```
+
+Check code coverage (runs sequentially — slower than `npm test`):
 
 ```shell
 $ npm run coverage

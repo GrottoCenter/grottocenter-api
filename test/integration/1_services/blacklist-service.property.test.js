@@ -167,12 +167,11 @@ describe('BlacklistService - Property 3: UPSERT idempotence', () => {
           should(cache.has(caverId)).be.true();
 
           // The stored timestamp (from DB NOW()) should be >= the time
-          // captured before the first call. We use beforeFirstCall rather
-          // than a per-iteration snapshot to avoid Node/DB clock skew
-          // causing off-by-one failures.
+          // captured before the first call. Allow 1s tolerance for
+          // Node/DB clock skew under parallel load.
           const stored = cache.get(caverId);
           const storedSec = Math.floor(stored.getTime() / 1000);
-          should(storedSec).be.aboveOrEqual(beforeFirstCall);
+          should(storedSec).be.aboveOrEqual(beforeFirstCall - 1);
         }
       ),
       { numRuns: 100 }
