@@ -49,6 +49,13 @@ module.exports = {
       defaultsTo: false,
     },
 
+    isSensitive: {
+      type: 'boolean',
+      allowNull: false,
+      columnName: 'is_sensitive',
+      defaultsTo: false,
+    },
+
     redirectTo: {
       type: 'number',
       allowNull: true,
