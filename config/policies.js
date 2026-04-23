@@ -216,6 +216,8 @@ module.exports.policies = {
   'v1/massif/unsubscribe': 'tokenAuth',
   'v1/massif/delete': 'tokenAuth',
   'v1/massif/restore': 'tokenAuth',
+  'v1/massif/mark-sensitive': 'tokenAuth',
+  'v1/massif/unmark-sensitive': 'tokenAuth',
   'v1/massif/add-document': 'tokenAuth',
   'v1/massif/unlink-document': 'tokenAuth',
 

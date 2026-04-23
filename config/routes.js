@@ -226,6 +226,8 @@ module.exports.routes = {
   'GET /api/v1/massifs/:id/statistics': 'v1/massif/get-statistics',
   'DELETE /api/v1/massifs/:id': 'v1/massif/delete',
   'POST /api/v1/massifs/:id/restore': 'v1/massif/restore',
+  'POST /api/v1/massifs/:id/mark-sensitive': 'v1/massif/mark-sensitive',
+  'POST /api/v1/massifs/:id/unmark-sensitive': 'v1/massif/unmark-sensitive',
   'PUT /api/v1/massifs/:massifId/documents/:documentId':
     'v1/massif/add-document',
   'DELETE /api/v1/massifs/:massifId/documents/:documentId':
