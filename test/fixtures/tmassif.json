@@ -14,5 +14,17 @@
     "author": 3,
     "names": [10],
     "reviewer": 1
+  },
+  {
+    "id": 100,
+    "author": 2,
+    "isSensitive": true,
+    "geogPolygon": "POLYGON((0.9 0.9, 0.9 1.1, 1.1 1.1, 1.1 0.9, 0.9 0.9))"
+  },
+  {
+    "id": 101,
+    "author": 2,
+    "isSensitive": false,
+    "geogPolygon": "POLYGON((1.9 1.9, 1.9 2.1, 2.1 2.1, 2.1 1.9, 1.9 1.9))"
   }
 ]
