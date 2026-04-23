@@ -43,13 +43,16 @@ module.exports = async (req, res) => {
     );
   }
 
+  const rawData = MassifService.getConvertedDataFromClientRequest(req);
+
   // Launch creation request using transaction: it performs a rollback if an error occurs
   const newMassif = await sails.getDatastore().transaction(async (db) => {
     const cleanedData = {
       author: req.token.id,
       dateInscription: new Date(),
-      documents: req.body.documents ? req.body.documents : [],
+      documents: rawData.documents ? rawData.documents : [],
       geogPolygon: wkt,
+      isSensitive: rawData.isSensitive,
     };
 
     const massif = await TMassif.create(cleanedData)
@@ -80,6 +83,10 @@ module.exports = async (req, res) => {
 
     return massif;
   });
+
+  if (newMassif.isSensitive) {
+    await MassifService.setSensitivity(newMassif.id, true);
+  }
 
   const newMassifPopulated = await MassifService.getPopulatedMassif(
     newMassif.id
