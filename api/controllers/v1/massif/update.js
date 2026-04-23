@@ -26,6 +26,16 @@ module.exports = async (req, res) => {
       );
     }
   }
+  // Handle sensitivity change separately as it propagates to entrances
+  if (
+    cleanedData.isSensitive !== undefined &&
+    cleanedData.isSensitive !== rawMassif.isSensitive
+  ) {
+    await MassifService.setSensitivity(massifId, cleanedData.isSensitive);
+    // Remove from cleanedData to avoid redundant update below
+    delete cleanedData.isSensitive;
+  }
+
   // The name is updated via the /api/v1/names route by the front
   await TMassif.updateOne(massifId).set(cleanedData);
 
