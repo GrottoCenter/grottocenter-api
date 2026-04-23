@@ -20,9 +20,6 @@ describe('Massif Sensitivity Propagation', () => {
     let massifId;
     let caveId;
     let entranceId;
-    const searchUpdateStub = sinon
-      .stub(EntranceService, 'updateInSearch')
-      .resolves();
 
     try {
       // Step 1: Create a massif
@@ -83,8 +80,9 @@ describe('Massif Sensitivity Propagation', () => {
       }
 
       // Step 3: Trigger Service propagation logic
+      let updatedEntranceIds;
       try {
-        await MassifService.setSensitivity(massifId, true);
+        updatedEntranceIds = await MassifService.setSensitivity(massifId, true);
       } catch (err) {
         throw new Error(
           `MassifService.setSensitivity threw an error: ${err.stack}`
@@ -93,6 +91,8 @@ describe('Massif Sensitivity Propagation', () => {
 
       // Step 4: Verify Propagation
       try {
+        updatedEntranceIds.should.containEql(entranceId);
+
         const updatedEntrance = await TEntrance.findOne(entranceId);
         updatedEntrance.isSensitive.should.be.true(
           'Entrance did not inherit sensitivity from Massif'
@@ -101,10 +101,6 @@ describe('Massif Sensitivity Propagation', () => {
         const updatedMassif = await TMassif.findOne(massifId);
         updatedMassif.isSensitive.should.be.true(
           'Massif sensitivity was not updated in database'
-        );
-
-        searchUpdateStub.calledOnce.should.be.true(
-          'EntranceService.updateInSearch was not called for propagation'
         );
       } catch (err) {
         throw new Error(`Verification step failed: ${err.message}`);

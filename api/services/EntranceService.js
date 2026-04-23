@@ -177,6 +177,12 @@ module.exports = {
       /* eslint-enable no-param-reassign */
     }
 
+    /* eslint-disable no-param-reassign */
+    entranceData.geology = entranceData.geology ?? 'Q35758';
+    entranceData.isSensitive = entranceData.isSensitive ?? false;
+    entranceData.dateInscription = entranceData.dateInscription ?? new Date();
+    /* eslint-enable no-param-reassign */
+
     // Automatically inherit sensitivity from the massif
     if (entranceData.latitude !== null && entranceData.longitude !== null) {
       /* eslint-disable no-param-reassign */
@@ -270,6 +276,9 @@ module.exports = {
     // For example, the complete caver object for the 'author' and 'reviewer' fields.
     // Although we could leave them intact, since search results also pass through the converter,
     // We prefer to clean them to ensure only clean data remains in the search database.
+    const rawEntrance = populatedEntrance.toJSON
+      ? populatedEntrance.toJSON()
+      : populatedEntrance;
     const {
       names,
       country,
@@ -281,7 +290,7 @@ module.exports = {
       documents,
       comments,
       ...e
-    } = populatedEntrance;
+    } = rawEntrance;
     // Strip non-indexed boolean characteristics from search document
     NON_INDEXED_BOOLEAN_FIELDS.forEach((f) => delete e[f]);
     const entrance = {
@@ -293,12 +302,12 @@ module.exports = {
         new Date(e.dateInscription).getTime(),
         e.dateReviewed ? new Date(e.dateReviewed).getTime() : null
       ),
-      authorId: e.author.id,
-      author: e.author.nickname,
+      authorId: e.author?.id,
+      author: e.author?.nickname,
       reviewerId: e.reviewer?.id,
       reviewer: e.reviewer?.nickname,
-      name: names[0].name,
-      language: names[0].language,
+      name: names?.[0]?.name,
+      language: names?.[0]?.language,
       iso3166: e.iso_3166_2,
       country: [country?.id, country?.nativeName].filter((c) => c).join(' - '),
       geology: e.geology?.trim(),

@@ -14,6 +14,7 @@ const MASSIF_PROPERTIES = [
   'documents',
   'geogPolygon',
   'name',
+  'isSensitive',
   'author',
   'reviewer',
 ];
@@ -71,6 +72,7 @@ describe('Massif features', () => {
       'documents',
       'networks',
       'geogPolygon',
+      'isSensitive',
       'author',
       'reviewer',
     ];

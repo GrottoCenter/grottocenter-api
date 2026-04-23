@@ -3,7 +3,6 @@ const NameService = require('./NameService');
 const SearchService = require('./SearchService');
 const DescriptionService = require('./DescriptionService');
 const CommonService = require('./CommonService');
-const EntranceService = require('./EntranceService');
 
 const MAX_AREA_KM2 = 35000;
 
@@ -161,25 +160,32 @@ module.exports = {
    * @returns {Promise<boolean>}
    */
   async isPointInSensitiveMassif(latitude, longitude) {
-    if (latitude === null || longitude === null) return false;
-    const query = `
-      SELECT EXISTS (
-        SELECT 1
-        FROM t_massif 
-        WHERE is_sensitive = true 
-        AND is_deleted = false
-        AND geog_polygon && ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography
-        AND ST_Contains(geog_polygon::geometry, ST_SetSRID(ST_MakePoint($1, $2), 4326))
-      ) as is_sensitive;
-    `;
-    const result = await CommonService.query(query, [longitude, latitude]);
-    return result.rows[0].is_sensitive;
+    if (latitude == null || longitude == null) return false;
+    try {
+      const query = `
+        SELECT EXISTS (
+          SELECT 1
+          FROM t_massif 
+          WHERE is_sensitive = true 
+          AND is_deleted = false
+          AND geog_polygon && ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography
+          AND ST_Contains(geog_polygon::geometry, ST_SetSRID(ST_MakePoint($1, $2), 4326))
+        ) as is_sensitive;
+      `;
+      const result = await CommonService.query(query, [longitude, latitude]);
+      return result.rows[0].is_sensitive;
+    } catch (e) {
+      return false;
+    }
   },
 
   /**
    * Set the sensitivity status of a massif and propagate it to all entrances within it.
+   * Returns the IDs of entrances that were updated, so the caller can refresh
+   * the search index without introducing a circular dependency.
    * @param {number} massifId
    * @param {boolean} isSensitive
+   * @returns {Promise<number[]>} IDs of entrances whose sensitivity was changed
    */
   async setSensitivity(massifId, isSensitive) {
     // 1. Update the massif itself
@@ -201,20 +207,12 @@ module.exports = {
       const entranceIds = result.rows.map((r) => r.id);
 
       if (entranceIds.length > 0) {
-        // Update DB
         await TEntrance.update({ id: entranceIds }).set({ isSensitive: true });
-
-        // Update Search Index for each entrance
-        await Promise.all(
-          entranceIds.map(async (id) => {
-            const populatedEntrance =
-              await EntranceService.getPopulatedEntrance(id);
-            if (populatedEntrance) {
-              await EntranceService.updateInSearch(populatedEntrance);
-            }
-          })
-        );
       }
+
+      return entranceIds;
     }
+
+    return [];
   },
 };

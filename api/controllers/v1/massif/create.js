@@ -1,5 +1,6 @@
 const ControllerService = require('../../../services/ControllerService');
 const MassifService = require('../../../services/MassifService');
+const EntranceService = require('../../../services/EntranceService');
 const NotificationService = require('../../../services/NotificationService');
 const RecentChangeService = require('../../../services/RecentChangeService');
 const { toMassif } = require('../../../services/mapping/converters');
@@ -85,7 +86,16 @@ module.exports = async (req, res) => {
   });
 
   if (newMassif.isSensitive) {
-    await MassifService.setSensitivity(newMassif.id, true);
+    const updatedEntranceIds = await MassifService.setSensitivity(
+      newMassif.id,
+      true
+    );
+    await Promise.all(
+      updatedEntranceIds.map(async (id) => {
+        const populated = await EntranceService.getPopulatedEntrance(id);
+        if (populated) await EntranceService.updateInSearch(populated);
+      })
+    );
   }
 
   const newMassifPopulated = await MassifService.getPopulatedMassif(

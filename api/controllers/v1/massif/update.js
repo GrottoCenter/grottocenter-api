@@ -1,5 +1,6 @@
 const ControllerService = require('../../../services/ControllerService');
 const MassifService = require('../../../services/MassifService');
+const EntranceService = require('../../../services/EntranceService');
 const NotificationService = require('../../../services/NotificationService');
 const { toMassif } = require('../../../services/mapping/converters');
 
@@ -31,7 +32,16 @@ module.exports = async (req, res) => {
     cleanedData.isSensitive !== undefined &&
     cleanedData.isSensitive !== rawMassif.isSensitive
   ) {
-    await MassifService.setSensitivity(massifId, cleanedData.isSensitive);
+    const updatedEntranceIds = await MassifService.setSensitivity(
+      massifId,
+      cleanedData.isSensitive
+    );
+    await Promise.all(
+      updatedEntranceIds.map(async (id) => {
+        const populated = await EntranceService.getPopulatedEntrance(id);
+        if (populated) await EntranceService.updateInSearch(populated);
+      })
+    );
     // Remove from cleanedData to avoid redundant update below
     delete cleanedData.isSensitive;
   }

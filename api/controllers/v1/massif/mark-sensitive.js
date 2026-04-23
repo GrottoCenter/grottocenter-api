@@ -1,5 +1,6 @@
 const RightService = require('../../../services/RightService');
 const MassifService = require('../../../services/MassifService');
+const EntranceService = require('../../../services/EntranceService');
 const ControllerService = require('../../../services/ControllerService');
 const { toMassif } = require('../../../services/mapping/converters');
 
@@ -23,8 +24,18 @@ module.exports = async (req, res) => {
     return res.notFound({ message: `Massif of id ${massifId} not found.` });
   }
 
-  // Set the massif as sensitive. Logic in MassifService will propagate to entrances.
-  await MassifService.setSensitivity(massifId, true);
+  // Set the massif as sensitive and get IDs of entrances that were updated
+  const updatedEntranceIds = await MassifService.setSensitivity(massifId, true);
+
+  // Update search index for each affected entrance
+  await Promise.all(
+    updatedEntranceIds.map(async (id) => {
+      const populatedEntrance = await EntranceService.getPopulatedEntrance(id);
+      if (populatedEntrance) {
+        await EntranceService.updateInSearch(populatedEntrance);
+      }
+    })
+  );
 
   const updatedMassif = await MassifService.getPopulatedMassif(massifId);
   await MassifService.updateInSearch(updatedMassif);
