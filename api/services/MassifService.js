@@ -3,6 +3,7 @@ const NameService = require('./NameService');
 const SearchService = require('./SearchService');
 const DescriptionService = require('./DescriptionService');
 const CommonService = require('./CommonService');
+const EntranceService = require('./EntranceService');
 
 const MAX_AREA_KM2 = 35000;
 
@@ -48,6 +49,12 @@ async function safeDBQuery(sql, param) {
   }
 }
 
+function coerceBool(req, field) {
+  const value = req.param(field);
+  if (value === undefined || value === null) return value;
+  return value === 'true' || value === true;
+}
+
 module.exports = {
   MAX_AREA_KM2,
 
@@ -69,6 +76,7 @@ module.exports = {
     documents: req.param('documents'),
     geogPolygon: req.param('geogPolygon'),
     names: req.param('names'),
+    isSensitive: coerceBool(req, 'isSensitive') ?? false,
   }),
 
   async getPopulatedMassif(massifId) {
@@ -144,5 +152,69 @@ module.exports = {
     const query = `SELECT ST_AsGeoJSON($1)`;
     const queryResult = await CommonService.query(query, [geometry]);
     return queryResult.rows[0].st_asgeojson;
+  },
+
+  /**
+   * Check if a point (lat, long) is within a massif marked as sensitive.
+   * @param {number} latitude
+   * @param {number} longitude
+   * @returns {Promise<boolean>}
+   */
+  async isPointInSensitiveMassif(latitude, longitude) {
+    if (latitude === null || longitude === null) return false;
+    const query = `
+      SELECT EXISTS (
+        SELECT 1
+        FROM t_massif 
+        WHERE is_sensitive = true 
+        AND is_deleted = false
+        AND geog_polygon && ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography
+        AND ST_Contains(geog_polygon::geometry, ST_SetSRID(ST_MakePoint($1, $2), 4326))
+      ) as is_sensitive;
+    `;
+    const result = await CommonService.query(query, [longitude, latitude]);
+    return result.rows[0].is_sensitive;
+  },
+
+  /**
+   * Set the sensitivity status of a massif and propagate it to all entrances within it.
+   * @param {number} massifId
+   * @param {boolean} isSensitive
+   */
+  async setSensitivity(massifId, isSensitive) {
+    // 1. Update the massif itself
+    await TMassif.updateOne({ id: massifId }).set({ isSensitive });
+
+    // 2. If setting to sensitive, propagate to all entrances geographically within it
+    if (isSensitive) {
+      // Find IDs of non-sensitive entrances within the massif
+      const findEntrancesQuery = `
+        SELECT e.id
+        FROM t_entrance AS e
+        JOIN t_massif AS m ON m.id = $1
+        WHERE e.is_deleted = false
+        AND e.point_geom && m.geog_polygon
+        AND ST_Contains(m.geog_polygon::geometry, e.point_geom)
+        AND e.is_sensitive = false
+      `;
+      const result = await CommonService.query(findEntrancesQuery, [massifId]);
+      const entranceIds = result.rows.map((r) => r.id);
+
+      if (entranceIds.length > 0) {
+        // Update DB
+        await TEntrance.update({ id: entranceIds }).set({ isSensitive: true });
+
+        // Update Search Index for each entrance
+        await Promise.all(
+          entranceIds.map(async (id) => {
+            const populatedEntrance =
+              await EntranceService.getPopulatedEntrance(id);
+            if (populatedEntrance) {
+              await EntranceService.updateInSearch(populatedEntrance);
+            }
+          })
+        );
+      }
+    }
   },
 };

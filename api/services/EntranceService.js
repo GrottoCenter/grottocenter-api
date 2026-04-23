@@ -13,6 +13,7 @@ const RecentChangeService = require('./RecentChangeService');
 const CaveService = require('./CaveService');
 const CommentService = require('./CommentService');
 const DocumentService = require('./DocumentService');
+const MassifService = require('./MassifService');
 const {
   NON_INDEXED_BOOLEAN_FIELDS,
   computeDateLastModif,
@@ -173,6 +174,18 @@ module.exports = {
       entranceData.city = address.city;
       entranceData.country = address.id_country;
       entranceData.iso_3166_2 = address.iso_3166_2;
+      /* eslint-enable no-param-reassign */
+    }
+
+    // Automatically inherit sensitivity from the massif
+    if (entranceData.latitude !== null && entranceData.longitude !== null) {
+      /* eslint-disable no-param-reassign */
+      entranceData.isSensitive =
+        entranceData.isSensitive ||
+        (await MassifService.isPointInSensitiveMassif(
+          entranceData.latitude,
+          entranceData.longitude
+        ));
       /* eslint-enable no-param-reassign */
     }
 
