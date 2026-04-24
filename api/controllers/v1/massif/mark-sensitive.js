@@ -1,8 +1,8 @@
 const RightService = require('../../../services/RightService');
 const MassifService = require('../../../services/MassifService');
 const EntranceService = require('../../../services/EntranceService');
-const ControllerService = require('../../../services/ControllerService');
 const { toMassif } = require('../../../services/mapping/converters');
+const { getMetaFromRequest } = require('../../../services/mapping/utils');
 
 module.exports = async (req, res) => {
   const isAdmin = RightService.hasGroup(
@@ -25,7 +25,11 @@ module.exports = async (req, res) => {
   }
 
   // Set the massif as sensitive and get IDs of entrances that were updated
-  const updatedEntranceIds = await MassifService.setSensitivity(massifId, true);
+  const updatedEntranceIds = await MassifService.setSensitivity(
+    massifId,
+    true,
+    req.token.id
+  );
 
   // Update search index for each affected entrance
   await Promise.all(
@@ -40,12 +44,10 @@ module.exports = async (req, res) => {
   const updatedMassif = await MassifService.getPopulatedMassif(massifId);
   await MassifService.updateInSearch(updatedMassif);
 
-  return ControllerService.treatAndConvert(
-    req,
-    null,
-    updatedMassif,
-    { controllerMethod: 'MassifController.mark-sensitive' },
-    res,
-    toMassif
-  );
+  const meta = getMetaFromRequest(req);
+
+  return res.ok({
+    count: updatedEntranceIds.length,
+    massif: toMassif(updatedMassif, meta),
+  });
 };
