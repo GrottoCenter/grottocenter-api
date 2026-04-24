@@ -5,6 +5,7 @@ const NotificationService = require('../../../services/NotificationService');
 const RecentChangeService = require('../../../services/RecentChangeService');
 const { toMassif } = require('../../../services/mapping/converters');
 const { validateNameLength } = require('../../../utils/nameValidation');
+const RightService = require('../../../services/RightService');
 
 // eslint-disable-next-line consistent-return
 module.exports = async (req, res) => {
@@ -45,6 +46,15 @@ module.exports = async (req, res) => {
   }
 
   const rawData = MassifService.getConvertedDataFromClientRequest(req);
+
+  const isAdmin = RightService.hasGroup(
+    req.token.groups,
+    RightService.G.ADMINISTRATOR
+  );
+
+  if (rawData.isSensitive !== undefined && !isAdmin) {
+    return res.forbidden('Only administrators can set the sensitivity status.');
+  }
 
   // Launch creation request using transaction: it performs a rollback if an error occurs
   const newMassif = await sails.getDatastore().transaction(async (db) => {
@@ -88,7 +98,8 @@ module.exports = async (req, res) => {
   if (newMassif.isSensitive) {
     const updatedEntranceIds = await MassifService.setSensitivity(
       newMassif.id,
-      true
+      true,
+      req.token.id
     );
     await Promise.all(
       updatedEntranceIds.map(async (id) => {
