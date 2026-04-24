@@ -24,7 +24,7 @@ module.exports = async (req, res) => {
   }
 
   // Unmark the massif as sensitive. Logic won't cascade the removal to entrances.
-  await MassifService.setSensitivity(massifId, false);
+  await MassifService.setSensitivity(massifId, false, req.token.id);
 
   const updatedMassif = await MassifService.getPopulatedMassif(massifId);
   await MassifService.updateInSearch(updatedMassif);
