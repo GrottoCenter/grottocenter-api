@@ -232,6 +232,7 @@ module.exports.routes = {
     'v1/massif/add-document',
   'DELETE /api/v1/massifs/:massifId/documents/:documentId':
     'v1/massif/unlink-document',
+  'GET /api/v1/massifs/:id/preview-sensitive': 'v1/massif/preview-sensitive',
 
   // Document
   'GET /api/v1/documents': 'v1/document/find-all',
