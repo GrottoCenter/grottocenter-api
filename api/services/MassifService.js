@@ -39,6 +39,16 @@ const COUNT_ENTRANCES_IN_MASSIF = `
   AND e.is_deleted = false
 `;
 
+const COUNT_UNSENSITIVE_ENTRANCES_IN_MASSIF = `
+  SELECT COUNT(e.id)::integer AS count
+  FROM t_entrance AS e
+  JOIN t_massif AS m
+  ON e.point_geom && m.geog_polygon AND ST_Contains(m.geog_polygon::geometry, e.point_geom)
+  WHERE m.id = $1
+  AND e.is_deleted = false
+  AND e.is_sensitive = false
+`;
+
 async function safeDBQuery(sql, param) {
   try {
     const queryResult = await CommonService.query(sql, [param]);
@@ -131,6 +141,17 @@ module.exports = {
       const result = await CommonService.query(COUNT_ENTRANCES_IN_MASSIF, [
         massifId,
       ]);
+      return result.rows[0]?.count ?? 0;
+    } catch (e) {
+      return 0;
+    }
+  },
+  countUnsensitiveEntrances: async (massifId) => {
+    try {
+      const result = await CommonService.query(
+        COUNT_UNSENSITIVE_ENTRANCES_IN_MASSIF,
+        [massifId]
+      );
       return result.rows[0]?.count ?? 0;
     } catch (e) {
       return 0;
