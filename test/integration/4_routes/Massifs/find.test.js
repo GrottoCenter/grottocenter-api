@@ -2,7 +2,9 @@ const supertest = require('supertest');
 const should = require('should');
 const fc = require('fast-check');
 const massifPolygon = require('./FAKE_DATA');
+const AuthTokenService = require('../../AuthTokenService');
 
+// Fields visible to any user (no auth required)
 const MASSIF_PROPERTIES = [
   '@context',
   '@id',
@@ -14,12 +16,17 @@ const MASSIF_PROPERTIES = [
   'documents',
   'geogPolygon',
   'name',
-  'isSensitive',
   'author',
   'reviewer',
 ];
 
 describe('Massif features', () => {
+  let adminToken;
+
+  before(async () => {
+    adminToken = await AuthTokenService.getRawBearerAdminToken();
+  });
+
   describe('find', () => {
     it('should return code 404 for non-existent massif', (done) => {
       supertest(sails.hooks.http.app)
@@ -52,8 +59,22 @@ describe('Massif features', () => {
           if (err) return done(err);
           const { body: massif } = res;
           should(massif).have.properties(MASSIF_PROPERTIES);
+          should(massif).not.have.property('isSensitive');
           should(massif.geogPolygon).equal(massifPolygon.geoJson1ToString);
           should(massif.name).not.be.empty();
+          return done();
+        });
+    });
+    it('should return isSensitive for admin', (done) => {
+      supertest(sails.hooks.http.app)
+        .get('/api/v1/massifs/1')
+        .set('Authorization', adminToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(200)
+        .end((err, res) => {
+          if (err) return done(err);
+          should(res.body).have.property('isSensitive');
           return done();
         });
     });
@@ -72,7 +93,6 @@ describe('Massif features', () => {
       'documents',
       'networks',
       'geogPolygon',
-      'isSensitive',
       'author',
       'reviewer',
     ];
@@ -96,6 +116,8 @@ describe('Massif features', () => {
             should(massif).have.property(field);
           });
 
+          // isSensitive is only returned for admins
+          should(massif).not.have.property('isSensitive');
           should(massif).not.have.property('entrances');
         }),
         { numRuns: 100 }

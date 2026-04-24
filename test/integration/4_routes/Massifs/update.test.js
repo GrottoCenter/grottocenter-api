@@ -94,7 +94,7 @@ describe('Massif features', () => {
             .populate('documents');
           massifUpdated.caves = await MassifService.getCaves(testMassifId);
 
-          should(massifUpdated.isSensitive).be.true();
+          should(massifUpdated.isSensitive).be.false();
 
           should(massifUpdated.descriptions).containDeep([{ id: testDescId }]);
           should(massifUpdated.documents).containDeep([
