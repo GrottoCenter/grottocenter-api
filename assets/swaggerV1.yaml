@@ -4504,7 +4504,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Massif'
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    description: Number of entrances marked as sensitive
+                  massif:
+                    $ref: '#/components/schemas/Massif'
         '403':
           description: Only administrators can perform this action.
         '404':
