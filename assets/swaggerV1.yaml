@@ -4486,6 +4486,82 @@ paths:
         '404':
           description: Resource not found
 
+  '/massifs/{id}/mark-sensitive':
+    post:
+      tags:
+        - massifs
+      description: Mark a massif as sensitive and propagate this status to all entrances inside it. Requires ADMINISTRATOR group permissions.
+      parameters:
+        - name: id
+          in: path
+          description: Massif ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Massif'
+        '403':
+          description: Only administrators can perform this action.
+        '404':
+          description: Massif not found
+
+  '/massifs/{id}/unmark-sensitive':
+    post:
+      tags:
+        - massifs
+      description: Unmark a massif as sensitive. This action does not propagate to entrances. Requires ADMINISTRATOR group permissions.
+      parameters:
+        - name: id
+          in: path
+          description: Massif ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Massif'
+        '403':
+          description: Only administrators can perform this action.
+        '404':
+          description: Massif not found
+
+  '/massifs/{id}/preview-sensitive':
+    get:
+      tags:
+        - massifs
+      description: Compute the number of currently unsensitive entrances that would be affected by marking this massif as sensitive. Requires ADMINISTRATOR group permissions.
+      parameters:
+        - name: id
+          in: path
+          description: Massif ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    description: Number of affected entrances
+        '403':
+          description: Only administrators can perform this action.
+        '404':
+          description: Massif not found
+
   '/organizations':
     post:
       tags:
