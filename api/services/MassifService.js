@@ -85,7 +85,7 @@ module.exports = {
     documents: req.param('documents'),
     geogPolygon: req.param('geogPolygon'),
     names: req.param('names'),
-    isSensitive: coerceBool(req, 'isSensitive') ?? false,
+    isSensitive: coerceBool(req, 'isSensitive'),
   }),
 
   async getPopulatedMassif(massifId) {
@@ -204,13 +204,16 @@ module.exports = {
    * Set the sensitivity status of a massif and propagate it to all entrances within it.
    * Returns the IDs of entrances that were updated, so the caller can refresh
    * the search index without introducing a circular dependency.
-   * @param {number} massifId
-   * @param {boolean} isSensitive
+   * @param {number} reviewerId
    * @returns {Promise<number[]>} IDs of entrances whose sensitivity was changed
    */
-  async setSensitivity(massifId, isSensitive) {
+  async setSensitivity(massifId, isSensitive, reviewerId) {
     // 1. Update the massif itself
-    await TMassif.updateOne({ id: massifId }).set({ isSensitive });
+    await TMassif.updateOne({ id: massifId }).set({
+      isSensitive,
+      reviewer: reviewerId,
+      dateReviewed: new Date(),
+    });
 
     // 2. If setting to sensitive, propagate to all entrances geographically within it
     if (isSensitive) {
