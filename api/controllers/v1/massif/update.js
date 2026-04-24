@@ -1,6 +1,5 @@
 const ControllerService = require('../../../services/ControllerService');
 const MassifService = require('../../../services/MassifService');
-const EntranceService = require('../../../services/EntranceService');
 const NotificationService = require('../../../services/NotificationService');
 const { toMassif } = require('../../../services/mapping/converters');
 
@@ -27,24 +26,8 @@ module.exports = async (req, res) => {
       );
     }
   }
-  // Handle sensitivity change separately as it propagates to entrances
-  if (
-    cleanedData.isSensitive !== undefined &&
-    cleanedData.isSensitive !== rawMassif.isSensitive
-  ) {
-    const updatedEntranceIds = await MassifService.setSensitivity(
-      massifId,
-      cleanedData.isSensitive
-    );
-    await Promise.all(
-      updatedEntranceIds.map(async (id) => {
-        const populated = await EntranceService.getPopulatedEntrance(id);
-        if (populated) await EntranceService.updateInSearch(populated);
-      })
-    );
-    // Remove from cleanedData to avoid redundant update below
-    delete cleanedData.isSensitive;
-  }
+  // Sensitivity is managed exclusively via mark-sensitive / unmark-sensitive
+  delete cleanedData.isSensitive;
 
   // The name is updated via the /api/v1/names route by the front
   await TMassif.updateOne(massifId).set(cleanedData);
