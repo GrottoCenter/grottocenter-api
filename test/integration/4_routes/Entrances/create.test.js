@@ -2,6 +2,7 @@ const supertest = require('supertest');
 const should = require('should');
 
 const AuthTokenService = require('../../AuthTokenService');
+const CommonService = require('../../../../api/services/CommonService');
 
 describe('Entrance features', () => {
   let userToken;
@@ -243,6 +244,53 @@ describe('Entrance features', () => {
               should(entrance.needStayOnTrail).equal(true);
               should(entrance.hasRules).equal(true);
               should(entrance.isTouristic).equal(true);
+
+              return done();
+            } catch (testErr) {
+              return done(testErr);
+            }
+          });
+      }).timeout(10000);
+
+      it('should populate point_geom from latitude/longitude on INSERT', (done) => {
+        const lat = 48.8566;
+        const lon = 2.3522;
+        const entranceData = {
+          cave: 1,
+          name: { text: 'Point Geom Test Entrance', language: 'eng' },
+          latitude: lat,
+          longitude: lon,
+        };
+
+        supertest(sails.hooks.http.app)
+          .post('/api/v1/entrances')
+          .set('Authorization', userToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .send(entranceData)
+          .expect(200)
+          .end(async (err, res) => {
+            if (err) return done(err);
+
+            try {
+              const { body: entrance } = res;
+              createdEntranceIds.push(entrance.id);
+
+              // Query the raw point_geom value from the database
+              const result = await CommonService.query(
+                `SELECT
+                   ST_X(point_geom) AS lon,
+                   ST_Y(point_geom) AS lat,
+                   ST_SRID(point_geom) AS srid
+                 FROM t_entrance WHERE id = $1`,
+                [entrance.id]
+              );
+
+              const row = result.rows[0];
+              should(row).not.be.null();
+              should(row.lon).be.approximately(lon, 0.0001);
+              should(row.lat).be.approximately(lat, 0.0001);
+              should(row.srid).equal(4326);
 
               return done();
             } catch (testErr) {
