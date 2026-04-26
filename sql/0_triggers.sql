@@ -438,8 +438,8 @@ end if;
 --on insert la valeur de la date de modification dans t_entrance
 NEW.date_reviewed := now();
 
--- Keep the point geometry up to date
-NEW.point_geom := ST_SetSRID(ST_MakePoint(NEW.longitude, NEW.latitude), 4326);
+-- point_geom is now maintained by the set_entrance_point_geom trigger
+-- (BEFORE INSERT OR UPDATE), so no duplication here.
 RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -497,6 +497,24 @@ CREATE OR REPLACE TRIGGER histo_delete_entrance BEFORE DELETE ON t_entrance FOR 
 --trigger qui exécute la sauvegarde des derniers changements lors d'un CREATE ou d'un UPDATE
 --------------------------------------------------------
 CREATE OR REPLACE TRIGGER last_change_entrance BEFORE INSERT OR UPDATE ON t_entrance FOR EACH ROW EXECUTE PROCEDURE change_entrance();
+--
+-- Keep point_geom in sync with latitude/longitude on every INSERT or UPDATE.
+-- This single trigger replaces the previous duplication between
+-- histo_update_entrance (UPDATE-only, no NULL guard) and a separate
+-- INSERT-only trigger. NULL coordinates produce a NULL point_geom.
+--------------------------------------------------------
+CREATE OR REPLACE FUNCTION set_entrance_point_geom() RETURNS trigger AS $$
+BEGIN
+  IF NEW.longitude IS NOT NULL AND NEW.latitude IS NOT NULL THEN
+    NEW.point_geom := ST_SetSRID(ST_MakePoint(NEW.longitude, NEW.latitude), 4326);
+  ELSE
+    NEW.point_geom := NULL;
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER set_entrance_point_geom_trigger BEFORE INSERT OR UPDATE ON t_entrance FOR EACH ROW EXECUTE PROCEDURE set_entrance_point_geom();
 --
 --
 ------------------------------------------------------------

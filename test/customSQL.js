@@ -29,6 +29,24 @@ ALTER TABLE public.t_massif ALTER COLUMN geog_polygon TYPE geography USING geog_
 const ALTER_ENTRANCE_COLUMN_POINT_GEOM =
   'ALTER TABLE t_entrance ADD COLUMN point_geom geometry(Point, 4326);';
 
+const CREATE_ENTRANCE_POINT_GEOM_INSERT_TRIGGER = `
+CREATE OR REPLACE FUNCTION set_entrance_point_geom() RETURNS trigger AS $$
+BEGIN
+  IF NEW.longitude IS NOT NULL AND NEW.latitude IS NOT NULL THEN
+    NEW.point_geom := ST_SetSRID(ST_MakePoint(NEW.longitude, NEW.latitude), 4326);
+  ELSE
+    NEW.point_geom := NULL;
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER set_entrance_point_geom_trigger
+  BEFORE INSERT OR UPDATE ON t_entrance
+  FOR EACH ROW
+  EXECUTE PROCEDURE set_entrance_point_geom();
+`;
+
 const POPULATE_ENTRANCE_POINT_GEOM = `
   UPDATE t_entrance
   SET point_geom = ST_SetSRID(ST_MakePoint(longitude, latitude), 4326)
@@ -164,6 +182,7 @@ module.exports = {
   UPDATE_SEQUENCES_QUERY,
   ALTER_MASSIF_COLUMN_GEOG_POLYGON,
   ALTER_ENTRANCE_COLUMN_POINT_GEOM,
+  CREATE_ENTRANCE_POINT_GEOM_INSERT_TRIGGER,
   POPULATE_ENTRANCE_POINT_GEOM,
   INDEX_OPTIMIZATION_MIGRATION,
   QUERY_PERFORMANCE_FIXES_MIGRATION,

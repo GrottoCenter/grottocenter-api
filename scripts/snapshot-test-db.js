@@ -57,6 +57,9 @@ function runFullBootstrap() {
         async bootstrap() {
           await CommonService.query(customSQL.ALTER_MASSIF_COLUMN_GEOG_POLYGON);
           await CommonService.query(customSQL.ALTER_ENTRANCE_COLUMN_POINT_GEOM);
+          await CommonService.query(
+            customSQL.CREATE_ENTRANCE_POINT_GEOM_INSERT_TRIGGER
+          );
         },
       },
       // eslint-disable-next-line consistent-return
