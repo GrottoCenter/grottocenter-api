@@ -25,16 +25,9 @@ const HistoryService = require('./HistoryService');
 const LocationService = require('./LocationService');
 const RightService = require('./RightService');
 const coerceToInt = require('../utils/coerceToInt');
-
-function coerceBool(req, field) {
-  const value = req.param(field);
-  if (value === undefined || value === null) return value;
-  return typeof value === 'string' ? value === 'true' : Boolean(value);
-}
+const coerceBool = require('../utils/coerceBool');
 
 module.exports = {
-  coerceBool,
-
   getConvertedNameFromClientRequest: (req) => {
     const result = {
       name: {

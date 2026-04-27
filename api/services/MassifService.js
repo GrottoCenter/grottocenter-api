@@ -3,6 +3,7 @@ const NameService = require('./NameService');
 const SearchService = require('./SearchService');
 const DescriptionService = require('./DescriptionService');
 const CommonService = require('./CommonService');
+const coerceBool = require('../utils/coerceBool');
 
 const MAX_AREA_KM2 = 35000;
 
@@ -56,12 +57,6 @@ async function safeDBQuery(sql, param) {
   } catch (e) {
     return []; // Fail silently (happens when the longitude and latitude are null for example)
   }
-}
-
-function coerceBool(req, field) {
-  const value = req.param(field);
-  if (value === undefined || value === null) return value;
-  return value === 'true' || value === true;
 }
 
 module.exports = {
@@ -143,7 +138,8 @@ module.exports = {
       ]);
       return result.rows[0]?.count ?? 0;
     } catch (e) {
-      return 0;
+      sails.log.error(`Error counting entrances for massif ${massifId}:`, e);
+      throw e;
     }
   },
   countUnsensitiveEntrances: async (massifId) => {
@@ -154,7 +150,11 @@ module.exports = {
       );
       return result.rows[0]?.count ?? 0;
     } catch (e) {
-      return 0;
+      sails.log.error(
+        `Error counting unsensitive entrances for massif ${massifId}:`,
+        e
+      );
+      throw e;
     }
   },
   getNetworks: async (massifId) =>
@@ -196,7 +196,11 @@ module.exports = {
       const result = await CommonService.query(query, [longitude, latitude]);
       return result.rows[0].is_sensitive;
     } catch (e) {
-      return false;
+      sails.log.error(
+        `Error checking point sensitivity for lat=${latitude}, long=${longitude}:`,
+        e
+      );
+      throw e;
     }
   },
 
