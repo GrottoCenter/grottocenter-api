@@ -4511,6 +4511,8 @@ paths:
                     description: Number of entrances marked as sensitive
                   massif:
                     $ref: '#/components/schemas/Massif'
+        '401':
+          description: Authentication required.
         '403':
           description: Only administrators can perform this action.
         '404':
@@ -4535,6 +4537,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Massif'
+        '401':
+          description: Authentication required.
         '403':
           description: Only administrators can perform this action.
         '404':
@@ -4563,6 +4567,8 @@ paths:
                   count:
                     type: integer
                     description: Number of affected entrances
+        '401':
+          description: Authentication required.
         '403':
           description: Only administrators can perform this action.
         '404':
@@ -5991,6 +5997,9 @@ components:
           type: string
         dateReviewed:
           type: string
+        isSensitive:
+          type: boolean
+          description: Whether the massif is marked as sensitive
         name:
           type: string
         names:
