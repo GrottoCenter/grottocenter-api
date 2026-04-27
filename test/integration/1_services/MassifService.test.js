@@ -85,10 +85,29 @@ describe('MassifService', () => {
   });
 
   describe('countEntrances', () => {
-    it('should return 0 on database error', async () => {
+    it('should throw on database error', async () => {
       sinon.stub(CommonService, 'query').rejects(new Error('DB Error'));
-      const count = await MassifService.countEntrances(999);
-      should(count).eql(0);
+      await MassifService.countEntrances(999).should.be.rejectedWith(
+        'DB Error'
+      );
+    });
+  });
+
+  describe('countUnsensitiveEntrances', () => {
+    it('should throw on database error', async () => {
+      sinon.stub(CommonService, 'query').rejects(new Error('DB Error'));
+      await MassifService.countUnsensitiveEntrances(999).should.be.rejectedWith(
+        'DB Error'
+      );
+    });
+  });
+
+  describe('isPointInSensitiveMassif', () => {
+    it('should throw on database error', async () => {
+      sinon.stub(CommonService, 'query').rejects(new Error('DB Error'));
+      await MassifService.isPointInSensitiveMassif(0, 0).should.be.rejectedWith(
+        'DB Error'
+      );
     });
   });
 

@@ -82,7 +82,11 @@ describe('Massif Sensitivity Propagation', () => {
       // Step 3: Trigger Service propagation logic
       let updatedEntranceIds;
       try {
-        updatedEntranceIds = await MassifService.setSensitivity(massifId, true);
+        updatedEntranceIds = await MassifService.setSensitivity(
+          massifId,
+          true,
+          userReq.token.id
+        );
       } catch (err) {
         throw new Error(
           `MassifService.setSensitivity threw an error: ${err.stack}`
@@ -101,6 +105,10 @@ describe('Massif Sensitivity Propagation', () => {
         const updatedMassif = await TMassif.findOne(massifId);
         updatedMassif.isSensitive.should.be.true(
           'Massif sensitivity was not updated in database'
+        );
+        updatedMassif.reviewer.should.equal(
+          userReq.token.id,
+          'Massif reviewer was not correctly set'
         );
       } catch (err) {
         throw new Error(`Verification step failed: ${err.message}`);
@@ -173,7 +181,7 @@ describe('Massif Sensitivity Propagation', () => {
 
       // Step 3: Trigger Reversal logic
       try {
-        await MassifService.setSensitivity(massifId, false);
+        await MassifService.setSensitivity(massifId, false, userReq.token.id);
       } catch (err) {
         throw new Error(
           `MassifService.setSensitivity threw an error: ${err.stack}`
@@ -190,6 +198,10 @@ describe('Massif Sensitivity Propagation', () => {
         const updatedMassif = await TMassif.findOne(massifId);
         updatedMassif.isSensitive.should.be.false(
           'Massif failed to lose its sensitive status'
+        );
+        updatedMassif.reviewer.should.equal(
+          userReq.token.id,
+          'Massif reviewer was not correctly set during reversal'
         );
       } catch (err) {
         throw new Error(`Verification step failed: ${err.message}`);

@@ -1,5 +1,6 @@
 const supertest = require('supertest');
 const sinon = require('sinon');
+const should = require('should');
 const AuthTokenService = require('../../AuthTokenService');
 
 describe('Massif preview-sensitive route features', () => {
@@ -28,6 +29,17 @@ describe('Massif preview-sensitive route features', () => {
         .get('/api/v1/massifs/987654321/preview-sensitive')
         .set('Authorization', adminToken)
         .expect(404, done);
+    });
+
+    it('should return 200 and a count for admin', (done) => {
+      supertest(sails.hooks.http.app)
+        .get('/api/v1/massifs/100/preview-sensitive')
+        .set('Authorization', adminToken)
+        .expect(200)
+        .expect((res) => {
+          should(res.body).have.property('count', 0);
+        })
+        .end(done);
     });
   });
 });

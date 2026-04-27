@@ -19,12 +19,14 @@
     "id": 100,
     "author": 2,
     "isSensitive": true,
-    "geogPolygon": "POLYGON((0.9 0.9, 0.9 1.1, 1.1 1.1, 1.1 0.9, 0.9 0.9))"
+    "geogPolygon": "POLYGON((0.9 0.9, 0.9 1.1, 1.1 1.1, 1.1 0.9, 0.9 0.9))",
+    "names": [100]
   },
   {
     "id": 101,
     "author": 2,
     "isSensitive": false,
-    "geogPolygon": "POLYGON((1.9 1.9, 1.9 2.1, 2.1 2.1, 2.1 1.9, 1.9 1.9))"
+    "geogPolygon": "POLYGON((1.9 1.9, 1.9 2.1, 2.1 2.1, 2.1 1.9, 1.9 1.9))",
+    "names": [101]
   }
 ]
