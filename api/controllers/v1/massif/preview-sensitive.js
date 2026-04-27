@@ -22,13 +22,21 @@ module.exports = async (req, res) => {
     return res.notFound({ message: `Massif of id ${massifId} not found.` });
   }
 
-  const count = await MassifService.countUnsensitiveEntrances(massifId);
+  try {
+    const count = await MassifService.countUnsensitiveEntrances(massifId);
 
-  return ControllerService.treat(
-    req,
-    null,
-    { count },
-    { controllerMethod: 'MassifController.preview-sensitive' },
-    res
-  );
+    return ControllerService.treat(
+      req,
+      null,
+      { count },
+      { controllerMethod: 'MassifController.preview-sensitive' },
+      res
+    );
+  } catch (err) {
+    sails.log.error(
+      `Error fetching preview for massif with id ${massifId}:`,
+      err
+    );
+    return res.serverError(err);
+  }
 };

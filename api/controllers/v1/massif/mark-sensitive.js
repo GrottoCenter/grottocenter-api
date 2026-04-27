@@ -1,6 +1,7 @@
 const RightService = require('../../../services/RightService');
 const MassifService = require('../../../services/MassifService');
 const EntranceService = require('../../../services/EntranceService');
+const ControllerService = require('../../../services/ControllerService');
 const { toMassif } = require('../../../services/mapping/converters');
 const { getMetaFromRequest } = require('../../../services/mapping/utils');
 
@@ -24,30 +25,45 @@ module.exports = async (req, res) => {
     return res.notFound({ message: `Massif of id ${massifId} not found.` });
   }
 
-  // Set the massif as sensitive and get IDs of entrances that were updated
-  const updatedEntranceIds = await MassifService.setSensitivity(
-    massifId,
-    true,
-    req.token.id
-  );
+  try {
+    // Set the massif as sensitive and get IDs of entrances that were updated
+    const updatedEntranceIds = await MassifService.setSensitivity(
+      massifId,
+      true,
+      req.token.id
+    );
 
-  // Update search index for each affected entrance
-  await Promise.all(
-    updatedEntranceIds.map(async (id) => {
-      const populatedEntrance = await EntranceService.getPopulatedEntrance(id);
-      if (populatedEntrance) {
-        await EntranceService.updateInSearch(populatedEntrance);
-      }
-    })
-  );
+    // Update search index for each affected entrance
+    await Promise.all(
+      updatedEntranceIds.map(async (id) => {
+        const populatedEntrance =
+          await EntranceService.getPopulatedEntrance(id);
+        if (populatedEntrance) {
+          await EntranceService.updateInSearch(populatedEntrance);
+        }
+      })
+    );
 
-  const updatedMassif = await MassifService.getPopulatedMassif(massifId);
-  await MassifService.updateInSearch(updatedMassif);
+    const updatedMassif = await MassifService.getPopulatedMassif(massifId);
+    await MassifService.updateInSearch(updatedMassif);
 
-  const meta = getMetaFromRequest(req);
+    const meta = getMetaFromRequest(req);
 
-  return res.ok({
-    count: updatedEntranceIds.length,
-    massif: toMassif(updatedMassif, meta),
-  });
+    return ControllerService.treat(
+      req,
+      null,
+      {
+        count: updatedEntranceIds.length,
+        massif: toMassif(updatedMassif, meta),
+      },
+      { controllerMethod: 'MassifController.mark-sensitive' },
+      res
+    );
+  } catch (err) {
+    sails.log.error(
+      `Error setting massif with id ${massifId} as sensitive:`,
+      err
+    );
+    return res.serverError(err);
+  }
 };

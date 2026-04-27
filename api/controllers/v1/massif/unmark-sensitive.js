@@ -23,18 +23,26 @@ module.exports = async (req, res) => {
     return res.notFound({ message: `Massif of id ${massifId} not found.` });
   }
 
-  // Unmark the massif as sensitive. Logic won't cascade the removal to entrances.
-  await MassifService.setSensitivity(massifId, false, req.token.id);
+  try {
+    // Unmark the massif as sensitive. Logic won't cascade the removal to entrances.
+    await MassifService.setSensitivity(massifId, false, req.token.id);
 
-  const updatedMassif = await MassifService.getPopulatedMassif(massifId);
-  await MassifService.updateInSearch(updatedMassif);
+    const updatedMassif = await MassifService.getPopulatedMassif(massifId);
+    await MassifService.updateInSearch(updatedMassif);
 
-  return ControllerService.treatAndConvert(
-    req,
-    null,
-    updatedMassif,
-    { controllerMethod: 'MassifController.unmark-sensitive' },
-    res,
-    toMassif
-  );
+    return ControllerService.treatAndConvert(
+      req,
+      null,
+      updatedMassif,
+      { controllerMethod: 'MassifController.unmark-sensitive' },
+      res,
+      toMassif
+    );
+  } catch (err) {
+    sails.log.error(
+      `Error clearing sensitive status from massif with id ${massifId}:`,
+      err
+    );
+    return res.serverError(err);
+  }
 };
