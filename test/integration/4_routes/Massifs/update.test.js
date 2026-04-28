@@ -94,7 +94,9 @@ describe('Massif features', () => {
             .populate('documents');
           massifUpdated.caves = await MassifService.getCaves(testMassifId);
 
-          should(massifUpdated.isSensitive).be.false(); // Sensitivity must only be changed via dedicated /mark-sensitive and /unmark-sensitive endpoints
+          // We check that the update controller doesnt change sensitivity status
+          // Sensitivity must only be changed via dedicated /mark-sensitive and /unmark-sensitive endpoints
+          should(massifUpdated.isSensitive).be.false();
 
           should(massifUpdated.descriptions).containDeep([{ id: testDescId }]);
           should(massifUpdated.documents).containDeep([

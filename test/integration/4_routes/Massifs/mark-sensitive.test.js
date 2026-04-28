@@ -65,6 +65,33 @@ describe('Massif mark-sensitive route features', () => {
       const modified = await TMassif.findOne(massif.id);
       modified.isSensitive.should.be.true();
 
+      await TName.destroy({ massif: massif.id });
+      await TMassif.destroyOne(massif.id);
+    });
+
+    it('should be idempotent: return 200 and count: 0 when marking an already sensitive massif', async () => {
+      sinon.stub(MassifService, 'updateInSearch').resolves();
+
+      const massif = await TMassif.create({
+        isSensitive: true,
+        author: 1,
+      }).fetch();
+      await TName.create({
+        massif: massif.id,
+        name: 'Already Sensitive Massif',
+        language: 'eng',
+        isMain: true,
+        author: 1,
+      });
+
+      const response = await supertest(sails.hooks.http.app)
+        .post(`/api/v1/massifs/${massif.id}/mark-sensitive`)
+        .set('Authorization', adminToken)
+        .expect(200);
+
+      response.body.count.should.equal(0);
+      response.body.massif.isSensitive.should.be.true();
+
       // Cleanup
       await TName.destroy({ massif: massif.id });
       await TMassif.destroyOne(massif.id);
