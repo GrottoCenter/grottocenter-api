@@ -179,12 +179,18 @@ module.exports = {
     // Automatically inherit sensitivity from the massif
     if (entranceData.latitude !== null && entranceData.longitude !== null) {
       /* eslint-disable no-param-reassign */
-      entranceData.isSensitive =
-        entranceData.isSensitive ||
-        (await MassifService.isPointInSensitiveMassif(
+      const isPointInSensitiveMassif =
+        await MassifService.isPointInSensitiveMassif(
           entranceData.latitude,
           entranceData.longitude
-        ));
+        );
+      if (!entranceData.isSensitive && isPointInSensitiveMassif) {
+        sails.log.info(
+          'Entrance auto-marked sensitive at creation because its coordinates lie within a sensitive massif.'
+        );
+      }
+      entranceData.isSensitive =
+        entranceData.isSensitive || isPointInSensitiveMassif;
       /* eslint-enable no-param-reassign */
     }
 
