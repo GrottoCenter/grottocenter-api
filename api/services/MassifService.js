@@ -205,42 +205,93 @@ module.exports = {
   },
 
   /**
+   * Propagates sensitivity to all non-sensitive entrances geographically within the massif.
+   *
+   * Decoupled from `setSensitivity` so new massifs can update child entrances without
+   * triggering a redundant TMassif update that creates spurious history logs.
+   *
+   * @param {number} massifId
+   * @param {number} reviewerId
+   * @param {object} [db] - optional database connection for transactions
+   * @returns {Promise<number[]>} IDs of entrances whose sensitivity was changed
+   */
+  async propagateSensitivityToEntrances(massifId, reviewerId, db) {
+    // Find IDs of non-sensitive entrances within the massif
+    const findEntrancesQuery = `
+      SELECT e.id
+      FROM t_entrance AS e
+      JOIN t_massif AS m ON m.id = $1
+      WHERE e.is_deleted = false
+      AND e.point_geom && m.geog_polygon
+      AND ST_Contains(m.geog_polygon::geometry, e.point_geom)
+      AND e.is_sensitive = false
+    `;
+    const result = await CommonService.query(
+      findEntrancesQuery,
+      [massifId],
+      db
+    );
+    const entranceIds = result.rows.map((r) => r.id);
+
+    if (entranceIds.length > 0) {
+      let updateQuery = TEntrance.update({ id: entranceIds }).set({
+        isSensitive: true,
+        reviewer: reviewerId,
+        dateReviewed: new Date(),
+      });
+      if (db) {
+        updateQuery = updateQuery.usingConnection(db);
+      }
+      await updateQuery;
+      sails.log.info(
+        `Massif ${massifId} marked sensitive: converted non-sensitive entrances [${entranceIds.join(
+          ', '
+        )}] to sensitive.`
+      );
+    }
+
+    return entranceIds;
+  },
+
+  /**
    * Set the sensitivity status of a massif and propagate it to all entrances within it.
    * Returns the IDs of entrances that were updated, so the caller can refresh
    * the search index without introducing a circular dependency.
-   * @param {number} reviewerId
+   *
+   * @param {number} massifId - ID of the massif to update
+   * @param {boolean} isSensitive - The new sensitivity status
+   * @param {number} reviewerId - ID of the admin performing this action
+   * @param {object} [db] - optional database connection for transactions
    * @returns {Promise<number[]>} IDs of entrances whose sensitivity was changed
    */
-  async setSensitivity(massifId, isSensitive, reviewerId) {
-    // 1. Update the massif itself
-    await TMassif.updateOne({ id: massifId }).set({
-      isSensitive,
-      reviewer: reviewerId,
-      dateReviewed: new Date(),
-    });
+  async setSensitivity(massifId, isSensitive, reviewerId, db) {
+    const work = async (connection) => {
+      // 1. Update the massif itself
+      let updateMassif = TMassif.updateOne({ id: massifId }).set({
+        isSensitive,
+        reviewer: reviewerId,
+        dateReviewed: new Date(),
+      });
+      if (connection) {
+        updateMassif = updateMassif.usingConnection(connection);
+      }
+      await updateMassif;
 
-    // 2. If setting to sensitive, propagate to all entrances geographically within it
-    if (isSensitive) {
-      // Find IDs of non-sensitive entrances within the massif
-      const findEntrancesQuery = `
-        SELECT e.id
-        FROM t_entrance AS e
-        JOIN t_massif AS m ON m.id = $1
-        WHERE e.is_deleted = false
-        AND e.point_geom && m.geog_polygon
-        AND ST_Contains(m.geog_polygon::geometry, e.point_geom)
-        AND e.is_sensitive = false
-      `;
-      const result = await CommonService.query(findEntrancesQuery, [massifId]);
-      const entranceIds = result.rows.map((r) => r.id);
-
-      if (entranceIds.length > 0) {
-        await TEntrance.update({ id: entranceIds }).set({ isSensitive: true });
+      // 2. If setting to sensitive, propagate to all entrances geographically within it
+      if (isSensitive) {
+        return module.exports.propagateSensitivityToEntrances(
+          massifId,
+          reviewerId,
+          connection
+        );
       }
 
-      return entranceIds;
-    }
+      return [];
+    };
 
-    return [];
+    if (db) {
+      return work(db);
+    }
+    return sails.getDatastore().transaction(work);
   },
 };
