@@ -25,6 +25,22 @@ module.exports = async (req, res) => {
     return res.notFound({ message: `Massif of id ${massifId} not found.` });
   }
 
+  // Idempotency: skip if already sensitive
+  if (massif.isSensitive) {
+    const updatedMassif = await MassifService.getPopulatedMassif(massifId);
+    const meta = getMetaFromRequest(req);
+    return ControllerService.treat(
+      req,
+      null,
+      {
+        count: 0,
+        massif: toMassif(updatedMassif, meta),
+      },
+      { controllerMethod: 'MassifController.mark-sensitive' },
+      res
+    );
+  }
+
   try {
     // Set the massif as sensitive and get IDs of entrances that were updated
     const updatedEntranceIds = await MassifService.setSensitivity(
