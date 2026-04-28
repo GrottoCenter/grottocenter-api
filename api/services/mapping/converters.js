@@ -709,7 +709,7 @@ const c = {
       else if (_type === 'entrances') data = c.toEntrance(item.document, meta);
       else if (_type === 'organizations')
         data = c.toOrganization(item.document, meta);
-      else if (_type === 'massifs') data = c.toMassif(item.document);
+      else if (_type === 'massifs') data = c.toMassif(item.document, meta);
 
       return {
         ...data,
