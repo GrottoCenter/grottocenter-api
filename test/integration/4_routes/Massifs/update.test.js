@@ -14,10 +14,6 @@ describe('Massif features', () => {
   let testDescId;
   let testNameId;
 
-  afterEach(() => {
-    sinon.restore();
-  });
-
   before(async () => {
     userToken = await AuthTokenService.getRawBearerUserToken();
     const massif = await TMassif.create({ author: 1, reviewer: 2 }).fetch();
@@ -46,6 +42,10 @@ describe('Massif features', () => {
       massif: massif.id,
     }).fetch();
     testNameId = name.id;
+  });
+
+  afterEach(() => {
+    sinon.restore();
   });
 
   after(async () => {
