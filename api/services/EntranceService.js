@@ -13,6 +13,7 @@ const RecentChangeService = require('./RecentChangeService');
 const CaveService = require('./CaveService');
 const CommentService = require('./CommentService');
 const DocumentService = require('./DocumentService');
+const MassifService = require('./MassifService');
 const {
   NON_INDEXED_BOOLEAN_FIELDS,
   computeDateLastModif,
@@ -24,16 +25,9 @@ const HistoryService = require('./HistoryService');
 const LocationService = require('./LocationService');
 const RightService = require('./RightService');
 const coerceToInt = require('../utils/coerceToInt');
-
-function coerceBool(req, field) {
-  const value = req.param(field);
-  if (value === undefined || value === null) return value;
-  return typeof value === 'string' ? value === 'true' : Boolean(value);
-}
+const coerceBool = require('../utils/coerceBool');
 
 module.exports = {
-  coerceBool,
-
   getConvertedNameFromClientRequest: (req) => {
     const result = {
       name: {
@@ -176,6 +170,29 @@ module.exports = {
       /* eslint-enable no-param-reassign */
     }
 
+    /* eslint-disable no-param-reassign */
+    entranceData.geology = entranceData.geology ?? 'Q35758';
+    entranceData.isSensitive = entranceData.isSensitive ?? false;
+    entranceData.dateInscription = entranceData.dateInscription ?? new Date();
+    /* eslint-enable no-param-reassign */
+
+    let autoMarkedSensitive = false;
+    // Automatically inherit sensitivity from the massif
+    if (entranceData.latitude !== null && entranceData.longitude !== null) {
+      /* eslint-disable no-param-reassign */
+      const isPointInSensitiveMassif =
+        await MassifService.isPointInSensitiveMassif(
+          entranceData.latitude,
+          entranceData.longitude
+        );
+      if (!entranceData.isSensitive && isPointInSensitiveMassif) {
+        autoMarkedSensitive = true;
+      }
+      entranceData.isSensitive =
+        entranceData.isSensitive || isPointInSensitiveMassif;
+      /* eslint-enable no-param-reassign */
+    }
+
     const newEntranceId = await sails.getDatastore().transaction(async (db) => {
       const newEntrance = await TEntrance.create(entranceData)
         .fetch()
@@ -225,6 +242,12 @@ module.exports = {
       return newEntrance.id;
     });
 
+    if (autoMarkedSensitive) {
+      sails.log.info(
+        `Entrance with ID ${newEntranceId} auto-marked sensitive at creation because its coordinates lie within a sensitive massif.`
+      );
+    }
+
     await RecentChangeService.setNameCreate(
       'entrance',
       newEntranceId,
@@ -257,6 +280,9 @@ module.exports = {
     // For example, the complete caver object for the 'author' and 'reviewer' fields.
     // Although we could leave them intact, since search results also pass through the converter,
     // We prefer to clean them to ensure only clean data remains in the search database.
+    const rawEntrance = populatedEntrance.toJSON
+      ? populatedEntrance.toJSON()
+      : populatedEntrance;
     const {
       names,
       country,
@@ -268,7 +294,7 @@ module.exports = {
       documents,
       comments,
       ...e
-    } = populatedEntrance;
+    } = rawEntrance;
     // Strip non-indexed boolean characteristics from search document
     NON_INDEXED_BOOLEAN_FIELDS.forEach((f) => delete e[f]);
     const entrance = {
@@ -280,12 +306,12 @@ module.exports = {
         new Date(e.dateInscription).getTime(),
         e.dateReviewed ? new Date(e.dateReviewed).getTime() : null
       ),
-      authorId: e.author.id,
-      author: e.author.nickname,
+      authorId: e.author?.id,
+      author: e.author?.nickname,
       reviewerId: e.reviewer?.id,
       reviewer: e.reviewer?.nickname,
-      name: names[0].name,
-      language: names[0].language,
+      name: names?.[0]?.name,
+      language: names?.[0]?.language,
       iso3166: e.iso_3166_2,
       country: [country?.id, country?.nativeName].filter((c) => c).join(' - '),
       geology: e.geology?.trim(),

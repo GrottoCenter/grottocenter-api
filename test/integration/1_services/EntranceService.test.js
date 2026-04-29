@@ -612,5 +612,90 @@ describe('EntranceService', () => {
       should(result.locations.length).be.greaterThan(0);
       await TLocation.destroy({ entrance: createdEntranceId });
     });
+
+    it('should automatically set isSensitive to true when created within a sensitive massif', async () => {
+      sinon.stub(GeocodingService, 'reverse').resolves(null);
+
+      const entranceData = {
+        author: 1,
+        latitude: 1.0, // Inside sensitive massif ID 100
+        longitude: 1.0,
+        cave: 1,
+      };
+
+      const nameDescLocData = {
+        name: {
+          author: 1,
+          text: 'Sensitive Massif Test',
+          language: 'eng',
+        },
+      };
+
+      const result = await EntranceService.createEntrance(
+        userReq,
+        entranceData,
+        nameDescLocData
+      );
+
+      createdEntranceId = result.id;
+      should(result.isSensitive).be.true();
+    });
+
+    it('should set isSensitive to false when created within a non-sensitive massif', async () => {
+      sinon.stub(GeocodingService, 'reverse').resolves(null);
+
+      const entranceData = {
+        author: 1,
+        latitude: 2.0, // Inside non-sensitive massif ID 101
+        longitude: 2.0,
+        cave: 1,
+      };
+
+      const nameDescLocData = {
+        name: {
+          author: 1,
+          text: 'Non-Sensitive Massif Test',
+          language: 'eng',
+        },
+      };
+
+      const result = await EntranceService.createEntrance(
+        userReq,
+        entranceData,
+        nameDescLocData
+      );
+
+      createdEntranceId = result.id;
+      should(result.isSensitive).be.false();
+    });
+
+    it('should keep isSensitive as true if manually provided even if not in a sensitive massif', async () => {
+      sinon.stub(GeocodingService, 'reverse').resolves(null);
+
+      const entranceData = {
+        author: 1,
+        latitude: 0,
+        longitude: 0,
+        cave: 1,
+        isSensitive: true,
+      };
+
+      const nameDescLocData = {
+        name: {
+          author: 1,
+          text: 'Manual Sensitive Test',
+          language: 'eng',
+        },
+      };
+
+      const result = await EntranceService.createEntrance(
+        userReq,
+        entranceData,
+        nameDescLocData
+      );
+
+      createdEntranceId = result.id;
+      should(result.isSensitive).be.true();
+    });
   });
 });

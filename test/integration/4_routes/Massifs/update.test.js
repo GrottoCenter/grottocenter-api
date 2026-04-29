@@ -1,8 +1,10 @@
 const supertest = require('supertest');
 const should = require('should');
+const sinon = require('sinon');
 const AuthTokenService = require('../../AuthTokenService');
 const massifPolygon = require('./FAKE_DATA');
 const MassifService = require('../../../../api/services/MassifService');
+const EntranceService = require('../../../../api/services/EntranceService');
 
 describe('Massif features', () => {
   let userToken;
@@ -42,6 +44,10 @@ describe('Massif features', () => {
     testNameId = name.id;
   });
 
+  afterEach(() => {
+    sinon.restore();
+  });
+
   after(async () => {
     await TMassif.destroy({ id: testMassifId });
     await TDocument.destroy({ id: testDoc1Id });
@@ -68,7 +74,10 @@ describe('Massif features', () => {
         documents: [testDoc1Id, testDoc2Id],
         geogPolygon: massifPolygon.geoJsonSmall,
         names: [testNameId],
+        isSensitive: true,
       };
+      sinon.stub(EntranceService, 'updateInSearch').resolves();
+
       supertest(sails.hooks.http.app)
         .put(`/api/v1/massifs/${testMassifId}`)
         .send(updateData)
@@ -84,6 +93,10 @@ describe('Massif features', () => {
             .populate('descriptions')
             .populate('documents');
           massifUpdated.caves = await MassifService.getCaves(testMassifId);
+
+          // We check that the update controller doesnt change sensitivity status
+          // Sensitivity must only be changed via dedicated /mark-sensitive and /unmark-sensitive endpoints
+          should(massifUpdated.isSensitive).be.false();
 
           should(massifUpdated.descriptions).containDeep([{ id: testDescId }]);
           should(massifUpdated.documents).containDeep([

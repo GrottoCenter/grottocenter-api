@@ -10,7 +10,13 @@ module.exports = {
    *
    * @returns {Promise} which resolves to the succesfully queried strings
    */
-  query: async (sql, values) => sails.sendNativeQuery(sql, values || []),
+  query: async (sql, values, connection) => {
+    let query = sails.sendNativeQuery(sql, values || []);
+    if (connection) {
+      query = query.usingConnection(connection);
+    }
+    return query;
+  },
 
   /**
    * @param {string} html - the html string to convert to text

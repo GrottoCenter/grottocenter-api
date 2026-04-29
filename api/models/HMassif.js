@@ -47,5 +47,11 @@ module.exports = {
       allowNull: true,
       columnName: 'geog_polygon',
     },
+    isSensitive: {
+      type: 'boolean',
+      allowNull: false,
+      columnName: 'is_sensitive',
+      defaultsTo: false,
+    },
   },
 };

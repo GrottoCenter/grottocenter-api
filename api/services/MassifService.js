@@ -3,6 +3,7 @@ const NameService = require('./NameService');
 const SearchService = require('./SearchService');
 const DescriptionService = require('./DescriptionService');
 const CommonService = require('./CommonService');
+const coerceBool = require('../utils/coerceBool');
 
 const MAX_AREA_KM2 = 35000;
 
@@ -39,6 +40,16 @@ const COUNT_ENTRANCES_IN_MASSIF = `
   AND e.is_deleted = false
 `;
 
+const COUNT_UNSENSITIVE_ENTRANCES_IN_MASSIF = `
+  SELECT COUNT(e.id)::integer AS count
+  FROM t_entrance AS e
+  JOIN t_massif AS m
+  ON e.point_geom && m.geog_polygon AND ST_Contains(m.geog_polygon::geometry, e.point_geom)
+  WHERE m.id = $1
+  AND e.is_deleted = false
+  AND e.is_sensitive = false
+`;
+
 async function safeDBQuery(sql, param) {
   try {
     const queryResult = await CommonService.query(sql, [param]);
@@ -69,6 +80,7 @@ module.exports = {
     documents: req.param('documents'),
     geogPolygon: req.param('geogPolygon'),
     names: req.param('names'),
+    isSensitive: coerceBool(req, 'isSensitive'),
   }),
 
   async getPopulatedMassif(massifId) {
@@ -126,7 +138,23 @@ module.exports = {
       ]);
       return result.rows[0]?.count ?? 0;
     } catch (e) {
-      return 0;
+      sails.log.error(`Error counting entrances for massif ${massifId}:`, e);
+      throw e;
+    }
+  },
+  countUnsensitiveEntrances: async (massifId) => {
+    try {
+      const result = await CommonService.query(
+        COUNT_UNSENSITIVE_ENTRANCES_IN_MASSIF,
+        [massifId]
+      );
+      return result.rows[0]?.count ?? 0;
+    } catch (e) {
+      sails.log.error(
+        `Error counting unsensitive entrances for massif ${massifId}:`,
+        e
+      );
+      throw e;
     }
   },
   getNetworks: async (massifId) =>
@@ -144,5 +172,126 @@ module.exports = {
     const query = `SELECT ST_AsGeoJSON($1)`;
     const queryResult = await CommonService.query(query, [geometry]);
     return queryResult.rows[0].st_asgeojson;
+  },
+
+  /**
+   * Check if a point (lat, long) is within a massif marked as sensitive.
+   * @param {number} latitude
+   * @param {number} longitude
+   * @returns {Promise<boolean>}
+   */
+  async isPointInSensitiveMassif(latitude, longitude) {
+    if (latitude == null || longitude == null) return false;
+    try {
+      const query = `
+        SELECT EXISTS (
+          SELECT 1
+          FROM t_massif 
+          WHERE is_sensitive = true 
+          AND is_deleted = false
+          AND geog_polygon && ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography
+          AND ST_Contains(geog_polygon::geometry, ST_SetSRID(ST_MakePoint($1, $2), 4326))
+        ) as is_sensitive;
+      `;
+      const result = await CommonService.query(query, [longitude, latitude]);
+      return result.rows[0].is_sensitive;
+    } catch (e) {
+      sails.log.error(
+        `Error checking point sensitivity for lat=${latitude}, long=${longitude}:`,
+        e
+      );
+      throw e;
+    }
+  },
+
+  /**
+   * Propagates sensitivity to all non-sensitive entrances geographically within the massif.
+   *
+   * Decoupled from `setSensitivity` so new massifs can update child entrances without
+   * triggering a redundant TMassif update that creates spurious history logs.
+   *
+   * @param {number} massifId
+   * @param {number} reviewerId
+   * @param {object} [db] - optional database connection for transactions
+   * @returns {Promise<number[]>} IDs of entrances whose sensitivity was changed
+   */
+  async propagateSensitivityToEntrances(massifId, reviewerId, db) {
+    // Find IDs of non-sensitive entrances within the massif
+    const findEntrancesQuery = `
+      SELECT e.id
+      FROM t_entrance AS e
+      JOIN t_massif AS m ON m.id = $1
+      WHERE e.is_deleted = false
+      AND e.point_geom && m.geog_polygon
+      AND ST_Contains(m.geog_polygon::geometry, e.point_geom)
+      AND e.is_sensitive = false
+    `;
+    const result = await CommonService.query(
+      findEntrancesQuery,
+      [massifId],
+      db
+    );
+    const entranceIds = result.rows.map((r) => r.id);
+
+    if (entranceIds.length > 0) {
+      let updateQuery = TEntrance.update({ id: entranceIds }).set({
+        isSensitive: true,
+        reviewer: reviewerId,
+        dateReviewed: new Date(),
+      });
+      if (db) {
+        updateQuery = updateQuery.usingConnection(db);
+      }
+      await updateQuery;
+      sails.log.info(
+        `Massif ${massifId} marked sensitive: converted non-sensitive entrances [${entranceIds.join(
+          ', '
+        )}] to sensitive.`
+      );
+    }
+
+    return entranceIds;
+  },
+
+  /**
+   * Set the sensitivity status of a massif and propagate it to all entrances within it.
+   * Returns the IDs of entrances that were updated, so the caller can refresh
+   * the search index without introducing a circular dependency.
+   *
+   * @param {number} massifId - ID of the massif to update
+   * @param {boolean} isSensitive - The new sensitivity status
+   * @param {number} reviewerId - ID of the admin performing this action
+   * @param {object} [db] - optional database connection for transactions
+   * @returns {Promise<number[]>} IDs of entrances whose sensitivity was changed
+   */
+  async setSensitivity(massifId, isSensitive, reviewerId, db) {
+    const work = async (connection) => {
+      // 1. Update the massif itself
+      let updateMassif = TMassif.updateOne({ id: massifId }).set({
+        isSensitive,
+        reviewer: reviewerId,
+        dateReviewed: new Date(),
+      });
+      if (connection) {
+        updateMassif = updateMassif.usingConnection(connection);
+      }
+      await updateMassif;
+
+      // 2. If setting to sensitive, propagate to all entrances geographically within it
+      if (isSensitive) {
+        return module.exports.propagateSensitivityToEntrances(
+          massifId,
+          reviewerId,
+          connection
+        );
+      }
+
+      return [];
+    };
+
+    if (db) {
+      return work(db);
+    }
+    return sails.getDatastore().transaction(work);
   },
 };

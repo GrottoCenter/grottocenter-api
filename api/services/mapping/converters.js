@@ -527,11 +527,14 @@ const c = {
     cave: convertIfObject(source.cave, c.toSimpleCave),
   }),
 
-  toMassif: (source) => ({
+  toMassif: (source, meta) => ({
     ...MassifModel,
     id: source.id,
     '@id': String(source.id),
     isDeleted: source.isDeleted,
+    ...(meta?.hasCompleteViewRight === true && {
+      isSensitive: source.isSensitive,
+    }),
     redirectTo: source.redirectTo,
     author: convertIfObject(source.author, c.toSimpleCaver),
     reviewer: convertIfObject(source.reviewer, c.toSimpleCaver),
@@ -707,7 +710,7 @@ const c = {
       else if (_type === 'entrances') data = c.toEntrance(item.document, meta);
       else if (_type === 'organizations')
         data = c.toOrganization(item.document, meta);
-      else if (_type === 'massifs') data = c.toMassif(item.document);
+      else if (_type === 'massifs') data = c.toMassif(item.document, meta);
 
       return {
         ...data,

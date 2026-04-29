@@ -26,6 +26,9 @@ module.exports = async (req, res) => {
       );
     }
   }
+  // Sensitivity is managed exclusively via mark-sensitive / unmark-sensitive
+  delete cleanedData.isSensitive;
+
   // The name is updated via the /api/v1/names route by the front
   await TMassif.updateOne(massifId).set(cleanedData);
 

@@ -87,6 +87,7 @@ describe('Massif features', () => {
             descriptionAndNameLanguage: { id: 'fra' },
             documents: [testDoc1Id, testDoc2Id],
             geogPolygon: massifPolygon.geoJsonSmall,
+            isSensitive: true,
           })
           .set('Authorization', adminToken)
           .set('Content-type', 'application/json')
@@ -95,6 +96,7 @@ describe('Massif features', () => {
           .end((err, res) => {
             if (err) return done(err);
             const { body: massif } = res;
+            should(massif.isSensitive).be.true();
             should(massif.name).equal('Massif 1');
             should(massif.descriptions.length).equal(1);
             should(massif.descriptions).containDeep([
