@@ -109,6 +109,28 @@ describe('Cave features', () => {
           });
       });
 
+      it('should return 200 when latitude and longitude are empty strings', (done) => {
+        supertest(sails.hooks.http.app)
+          .put(`/api/v1/caves/${caveId}`)
+          .set('Authorization', userToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .send({
+            latitude: '',
+            longitude: '',
+          })
+          .expect(200)
+          .end(async (err) => {
+            if (err) return done(err);
+            // latitude/longitude are deprecated on TCave and not exposed
+            // by the toCave converter, so verify at the DB level.
+            const cave = await TCave.findOne(caveId);
+            should(cave.latitude).equal(null);
+            should(cave.longitude).equal(null);
+            return done();
+          });
+      });
+
       it('should return code 200 on name update', (done) => {
         supertest(sails.hooks.http.app)
           .put(`/api/v1/caves/${caveId}`)

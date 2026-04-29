@@ -42,6 +42,27 @@ describe('Organization features', () => {
             return done();
           });
       });
+
+      it('should return 200 when latitude and longitude are empty strings', (done) => {
+        supertest(sails.hooks.http.app)
+          .put(`/api/v1/organizations/1`)
+          .set('Authorization', userToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .send({
+            latitude: '',
+            longitude: '',
+            url: 'https://example.com',
+          })
+          .expect(200)
+          .end(async (err, res) => {
+            if (err) return done(err);
+            const { body: organization } = res;
+            should(organization.latitude).equal(null);
+            should(organization.longitude).equal(null);
+            return done();
+          });
+      });
     });
   });
 });

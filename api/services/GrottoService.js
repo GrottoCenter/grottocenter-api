@@ -5,6 +5,7 @@ const NameService = require('./NameService');
 const NotificationService = require('./NotificationService');
 const GeocodingService = require('./GeocodingService');
 const RecentChangeService = require('./RecentChangeService');
+const coerceToNumeric = require('../utils/coerceToNumeric');
 
 module.exports = {
   // Extract everything from a request body except id
@@ -14,8 +15,8 @@ module.exports = {
     country: req.body?.country?.id ?? null,
     county: req.param('county'),
     customMessage: req.param('customMessage'),
-    latitude: req.param('latitude'),
-    longitude: req.param('longitude'),
+    latitude: coerceToNumeric(req.param('latitude')),
+    longitude: coerceToNumeric(req.param('longitude')),
     mail: req.param('mail'),
     postalCode: req.param('postalCode'),
     region: req.param('region'),
@@ -107,6 +108,14 @@ module.exports = {
    * @returns
    */
   createGrotto: async (req, cleanedData, nameData) => {
+    // Defensive re-coercion: createGrotto can be called directly with raw
+    // data that hasn't gone through getConvertedDataFromClientRequest, so we
+    // ensure coordinates are coerced here as a safety net.
+    // eslint-disable-next-line no-param-reassign
+    cleanedData.latitude = coerceToNumeric(cleanedData.latitude);
+    // eslint-disable-next-line no-param-reassign
+    cleanedData.longitude = coerceToNumeric(cleanedData.longitude);
+
     if (cleanedData.latitude && cleanedData.longitude) {
       const address = await GeocodingService.reverse(
         cleanedData.latitude,
@@ -115,11 +124,6 @@ module.exports = {
       // eslint-disable-next-line no-param-reassign
       if (address) cleanedData.iso_3166_2 = address.iso_3166_2;
     }
-
-    // eslint-disable-next-line no-param-reassign
-    if (cleanedData.latitude === '') delete cleanedData.latitude;
-    // eslint-disable-next-line no-param-reassign
-    if (cleanedData.longitude === '') delete cleanedData.longitude;
 
     const newOrganizationId = await sails
       .getDatastore()
