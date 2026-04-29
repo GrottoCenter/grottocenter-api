@@ -1,5 +1,6 @@
 const ControllerService = require('../../../services/ControllerService');
 const coerceToInt = require('../../../utils/coerceToInt');
+const coerceToNumeric = require('../../../utils/coerceToNumeric');
 const CaveService = require('../../../services/CaveService');
 const NotificationService = require('../../../services/NotificationService');
 const { toCave } = require('../../../services/mapping/converters');
@@ -26,8 +27,10 @@ module.exports = async (req, res) => {
     // dateReviewed will be updated automaticly by the SQL historisation trigger
   };
 
-  if (newLatitude != null) updatedFields.latitude = newLatitude;
-  if (newLongitude != null) updatedFields.longitude = newLongitude;
+  if (newLatitude != null)
+    updatedFields.latitude = coerceToNumeric(newLatitude);
+  if (newLongitude != null)
+    updatedFields.longitude = coerceToNumeric(newLongitude);
   if (newDepth != null) updatedFields.depth = coerceToInt(newDepth);
   if (newLength != null) updatedFields.caveLength = coerceToInt(newLength);
   if (newTemperature != null) updatedFields.temperature = newTemperature;

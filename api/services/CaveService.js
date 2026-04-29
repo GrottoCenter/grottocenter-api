@@ -1,5 +1,6 @@
 const CommonService = require('./CommonService');
 const coerceToInt = require('../utils/coerceToInt');
+const coerceToNumeric = require('../utils/coerceToNumeric');
 const DocumentService = require('./DocumentService');
 const DescriptionService = require('./DescriptionService');
 const NameService = require('./NameService');
@@ -99,8 +100,8 @@ module.exports = {
     depth: coerceToInt(req.param('depth')),
     documents: req.param('documents'),
     isDiving: req.param('isDiving'),
-    latitude: req.param('latitude'),
-    longitude: req.param('longitude'),
+    latitude: coerceToNumeric(req.param('latitude')),
+    longitude: coerceToNumeric(req.param('longitude')),
     caveLength: coerceToInt(req.param('length')),
     massif: req.param('massif'),
     temperature: req.param('temperature'),
