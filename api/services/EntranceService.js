@@ -176,6 +176,7 @@ module.exports = {
     entranceData.dateInscription = entranceData.dateInscription ?? new Date();
     /* eslint-enable no-param-reassign */
 
+    let autoMarkedSensitive = false;
     // Automatically inherit sensitivity from the massif
     if (entranceData.latitude !== null && entranceData.longitude !== null) {
       /* eslint-disable no-param-reassign */
@@ -185,9 +186,7 @@ module.exports = {
           entranceData.longitude
         );
       if (!entranceData.isSensitive && isPointInSensitiveMassif) {
-        sails.log.info(
-          'Entrance auto-marked sensitive at creation because its coordinates lie within a sensitive massif.'
-        );
+        autoMarkedSensitive = true;
       }
       entranceData.isSensitive =
         entranceData.isSensitive || isPointInSensitiveMassif;
@@ -242,6 +241,12 @@ module.exports = {
 
       return newEntrance.id;
     });
+
+    if (autoMarkedSensitive) {
+      sails.log.info(
+        `Entrance with ID ${newEntranceId} auto-marked sensitive at creation because its coordinates lie within a sensitive massif.`
+      );
+    }
 
     await RecentChangeService.setNameCreate(
       'entrance',
