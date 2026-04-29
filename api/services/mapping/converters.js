@@ -532,8 +532,9 @@ const c = {
     id: source.id,
     '@id': String(source.id),
     isDeleted: source.isDeleted,
-    isSensitive:
-      meta?.hasCompleteViewRight === true ? source.isSensitive : undefined,
+    ...(meta?.hasCompleteViewRight === true && {
+      isSensitive: source.isSensitive,
+    }),
     redirectTo: source.redirectTo,
     author: convertIfObject(source.author, c.toSimpleCaver),
     reviewer: convertIfObject(source.reviewer, c.toSimpleCaver),
