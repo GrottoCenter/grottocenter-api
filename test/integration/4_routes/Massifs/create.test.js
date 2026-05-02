@@ -119,5 +119,84 @@ describe('Massif features', () => {
           });
       });
     });
+
+    describe('Without description', () => {
+      let createdMassif;
+
+      after(async () => {
+        should(createdMassif).be.not.undefined();
+        await TMassif.destroyOne(createdMassif.id);
+        await TName.destroy({ massif: createdMassif.id });
+      });
+
+      it('should return code 200 when description is omitted', (done) => {
+        supertest(sails.hooks.http.app)
+          .post('/api/v1/massifs')
+          .send({
+            name: 'Massif Without Description',
+            descriptionAndNameLanguage: { id: 'fra' },
+            geogPolygon: massifPolygon.geoJsonSmall,
+          })
+          .set('Authorization', adminToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .expect(200)
+          .end((err, res) => {
+            if (err) return done(err);
+            const { body: massif } = res;
+            should(massif.name).equal('Massif Without Description');
+            should(massif.descriptions).be.an.Array();
+            should(massif.descriptions.length).equal(0);
+            createdMassif = massif;
+            return done();
+          });
+      });
+    });
+
+    describe('Partial description', () => {
+      it('should return code 400 when description is provided without descriptionTitle', (done) => {
+        supertest(sails.hooks.http.app)
+          .post('/api/v1/massifs')
+          .send({
+            name: 'Massif Partial',
+            description: 'some description',
+            descriptionAndNameLanguage: { id: 'fra' },
+            geogPolygon: massifPolygon.geoJsonSmall,
+          })
+          .set('Authorization', adminToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .expect(400)
+          .end((err, res) => {
+            if (err) return done(err);
+            should(res.text).match(
+              /description and descriptionTitle must be provided together/
+            );
+            return done();
+          });
+      });
+
+      it('should return code 400 when descriptionTitle is provided without description', (done) => {
+        supertest(sails.hooks.http.app)
+          .post('/api/v1/massifs')
+          .send({
+            name: 'Massif Partial',
+            descriptionTitle: 'some title',
+            descriptionAndNameLanguage: { id: 'fra' },
+            geogPolygon: massifPolygon.geoJsonSmall,
+          })
+          .set('Authorization', adminToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .expect(400)
+          .end((err, res) => {
+            if (err) return done(err);
+            should(res.text).match(
+              /description and descriptionTitle must be provided together/
+            );
+            return done();
+          });
+      });
+    });
   });
 });

@@ -10,13 +10,7 @@ const RightService = require('../../../services/RightService');
 // eslint-disable-next-line consistent-return
 module.exports = async (req, res) => {
   // Check params
-  const requiredParams = [
-    'name',
-    'description',
-    'descriptionAndNameLanguage',
-    'descriptionTitle',
-    'geogPolygon',
-  ];
+  const requiredParams = ['name', 'descriptionAndNameLanguage', 'geogPolygon'];
 
   let i = 0;
   const missingParamaters = [];
@@ -28,6 +22,15 @@ module.exports = async (req, res) => {
   }
   if (missingParamaters.length > 0) {
     return res.badRequest(`${missingParamaters} parameter(s) must be provided`);
+  }
+
+  // If a description is provided, its title must also be provided (and vice versa)
+  const hasDescription = !!req.param('description');
+  const hasDescriptionTitle = !!req.param('descriptionTitle');
+  if (hasDescription !== hasDescriptionTitle) {
+    return res.badRequest(
+      'description and descriptionTitle must be provided together'
+    );
   }
 
   // Validate name length
