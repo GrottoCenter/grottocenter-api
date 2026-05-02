@@ -4,6 +4,11 @@ const {
   toQualityDataEntrance,
 } = require('../../../services/mapping/converters');
 const { toListFromController } = require('../../../services/mapping/utils');
+const {
+  SORTABLE_COLUMNS_COUNTRY,
+  VALIDATION_ERROR,
+  validateSortParams,
+} = require('../../../utils/validateSortParams');
 
 module.exports = async (req, res) => {
   const { countryId } = req.params;
@@ -11,6 +16,11 @@ module.exports = async (req, res) => {
   const isoCode = `${countryId}-${regionId}`;
   const limit = Math.min(parseInt(req.param('limit', 50), 10), 1000);
   const offset = Math.max(parseInt(req.param('offset', 0), 10), 0);
+
+  const sortResult = validateSortParams(req, res, SORTABLE_COLUMNS_COUNTRY);
+  if (sortResult === VALIDATION_ERROR) return null;
+  const sort = sortResult ? sortResult.sort : null;
+  const order = sortResult ? sortResult.order : null;
 
   // Check if ISO 3166-2 region exists
   const region = await TISO31662.findOne({ id: isoCode });
@@ -25,7 +35,9 @@ module.exports = async (req, res) => {
     DataQualityComputeService.getEntrancesWithQualityByRegion(
       isoCode,
       limit,
-      offset
+      offset,
+      sort,
+      order
     ),
     DataQualityComputeService.getEntrancesWithQualityByRegionCount(isoCode),
   ]);

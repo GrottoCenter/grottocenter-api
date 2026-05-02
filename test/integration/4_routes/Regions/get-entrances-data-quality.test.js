@@ -1,5 +1,6 @@
 const supertest = require('supertest');
 const should = require('should');
+const { describeSortAndOrder } = require('../_helpers/sortOrderTests');
 
 describe('Region entrances data quality features', () => {
   describe('get-entrances-data-quality', () => {
@@ -108,5 +109,12 @@ describe('Region entrances data quality features', () => {
         .set('Accept', 'application/json')
         .expect(404, done);
     });
+  });
+
+  describe('sort and order parameters', () => {
+    describeSortAndOrder(
+      '/api/v1/entrances/with-quality/countries/FR/regions/01',
+      { supportsMassifName: false }
+    );
   });
 });
