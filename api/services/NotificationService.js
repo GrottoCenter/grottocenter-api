@@ -21,6 +21,7 @@ const NOTIFICATION_TYPES = {
   UPDATE: 'UPDATE',
   VALIDATE: 'VALIDATE',
   RESTORE: 'RESTORE',
+  REJECT: 'REJECT',
 };
 
 async function removeOlderNotifications() {
@@ -68,6 +69,7 @@ const sendNotificationEmail = async (
     [NOTIFICATION_TYPES.UPDATE]: 'updated',
     [NOTIFICATION_TYPES.VALIDATE]: 'validated',
     [NOTIFICATION_TYPES.RESTORE]: 'restored',
+    [NOTIFICATION_TYPES.REJECT]: 'rejected',
   };
 
   const actionVerb = actionVerbMap[notificationType];
@@ -133,6 +135,8 @@ const sendNotificationEmail = async (
         recipientName: user.nickname,
         subscriptionName: user.subscriptionName,
         subscriptionType: user.subscriptionType,
+        isAuthorNotification: user.isAuthorNotification || false,
+        validationComment: user.validationComment || null,
       },
     })
     .intercept('sendSESEmailError', () => {
@@ -477,6 +481,82 @@ module.exports = {
       // Fail silently to avoid sending an error to the user
       sails.log.error(
         `An error occurred when trying to notify subscribers: ${error.message} ${error.stack}`
+      );
+      return false;
+    }
+  },
+
+  /**
+   * Create an in-app notification for the document author and optionally send an email.
+   *
+   * @param {Object}  req              - Express request (carries i18n)
+   * @param {Object}  document         - Populated TDocument (must have .author)
+   * @param {Number}  moderatorId      - ID of the moderator who made the decision
+   * @param {String}  notificationType - NOTIFICATION_TYPES.VALIDATE or NOTIFICATION_TYPES.REJECT
+   * @param {String|null} validationComment - Moderator's comment (required for REJECT)
+   * @returns {Boolean} true on success, false on silent failure
+   */
+  notifyAuthor: async (
+    req,
+    document,
+    moderatorId,
+    notificationType,
+    validationComment
+  ) => {
+    const authorId = safeGetPropId('author', document);
+    if (!authorId) {
+      sails.log.debug(
+        `notifyAuthor: document ${document.id} has no author, skipping notification`
+      );
+      return true;
+    }
+    if (authorId === moderatorId) {
+      return true;
+    }
+
+    if (!Object.values(NOTIFICATION_TYPES).includes(notificationType)) {
+      throw new Error(`Invalid notification type: ${notificationType}`);
+    }
+
+    try {
+      const notificationTypeRecord = await TNotificationType.findOne({
+        name: notificationType,
+      });
+
+      if (!notificationTypeRecord) {
+        throw new Error(
+          `Notification type '${notificationType}' not found in DB — migration may not have run`
+        );
+      }
+
+      await TNotification.create({
+        dateInscription: new Date(),
+        notificationType: notificationTypeRecord.id,
+        notifier: moderatorId,
+        notified: authorId,
+        document: document.id,
+      });
+
+      const author = await TCaver.findOne(authorId);
+
+      if (author && author.sendNotificationByEmail) {
+        await sendNotificationEmail(
+          document,
+          notificationType,
+          NOTIFICATION_ENTITIES.DOCUMENT,
+          req,
+          {
+            ...author,
+            isAuthorNotification: true,
+            validationComment,
+          }
+        );
+      }
+
+      return true;
+    } catch (error) {
+      sails.log.error(
+        `An error occurred when trying to notify the document author: ${error.message} ${error.stack}`
       );
       return false;
     }

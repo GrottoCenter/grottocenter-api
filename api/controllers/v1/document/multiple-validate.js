@@ -85,6 +85,8 @@ async function updateSearchAndNotify(req, documentId, userId) {
     NotificationService.NOTIFICATION_TYPES.VALIDATE,
     NotificationService.NOTIFICATION_ENTITIES.DOCUMENT
   );
+
+  return document;
 }
 
 module.exports = async (req, res) => {
@@ -121,6 +123,7 @@ module.exports = async (req, res) => {
   const documentIds = documentChanges.map((e) => e.id);
   const foundDocuments = await TDocument.find({ id: documentIds });
 
+  // Sequential to preserve partial-success semantics per document
   for (const document of foundDocuments) {
     const change = documentChanges.find((d) => d.id === document.id);
     const isAModifiedDoc = !!document.modifiedDocJson;
@@ -131,6 +134,24 @@ module.exports = async (req, res) => {
         document.id,
         change.validationComment,
         req.token.id
+      );
+      // eslint-disable-next-line no-await-in-loop
+      const rejectedDoc = await DocumentService.getPopulatedDocument(
+        document.id
+      );
+      // eslint-disable-next-line no-await-in-loop
+      await NotificationService.notifyAuthor(
+        req,
+        rejectedDoc,
+        req.token.id,
+        NotificationService.NOTIFICATION_TYPES.REJECT,
+        change.validationComment
+      ).catch((err) =>
+        sails.log.error(
+          'Document multiple-validate notifyAuthor error',
+          document,
+          err
+        )
       );
       continue; // eslint-disable-line no-continue
     }
@@ -153,13 +174,35 @@ module.exports = async (req, res) => {
     }
 
     // eslint-disable-next-line no-await-in-loop
-    await updateSearchAndNotify(res, document.id, req.token.id).catch((err) =>
+    const populatedDoc = await updateSearchAndNotify(
+      req,
+      document.id,
+      req.token.id
+    ).catch((err) => {
       sails.log.error(
         'Document multiple validate updateSearchAndNotify error',
         document,
         err
-      )
-    );
+      );
+      return null;
+    });
+
+    if (populatedDoc) {
+      // eslint-disable-next-line no-await-in-loop
+      await NotificationService.notifyAuthor(
+        req,
+        populatedDoc,
+        req.token.id,
+        NotificationService.NOTIFICATION_TYPES.VALIDATE,
+        change.validationComment
+      ).catch((err) =>
+        sails.log.error(
+          'Document multiple-validate notifyAuthor error',
+          document,
+          err
+        )
+      );
+    }
   }
 
   return res.ok();

@@ -14,5 +14,17 @@
   {
     "id": 4,
     "name": "VALIDATE"
+  },
+  {
+    "id": 5,
+    "name": "PERMANENT_DELETE"
+  },
+  {
+    "id": 6,
+    "name": "RESTORE"
+  },
+  {
+    "id": 7,
+    "name": "REJECT"
   }
 ]
