@@ -10,7 +10,11 @@
         - entityType        String      Entity concerned by the notification type
         - recipientName     String      Full name or nickname of the recipient
         - subscriptionName  String      The subscription name which generated this notification
-        - subscriptionTypeame  String   The subscription type which generated this notification
+        - subscriptionType   String   The subscription type which generated this notification
+
+    Optional values:
+        - isAuthorNotification  Boolean      Whether this is an author validation notification (defaults to false)
+        - validationComment     String|null  Moderator's rejection comment (optional)
   */ %>
 
   <p>
@@ -27,6 +31,7 @@
       <% } %>
   </p>
 
+  <% if (!isAuthorNotification) { %>
   <p>
     <%if (subscriptionType === 'country') { %>
       <%- i18n.__('You are receiving this email because of your subscription to the country %s.', '<b>' +subscriptionName+'</b>') %>
@@ -35,5 +40,17 @@
       <%- i18n.__('You are receiving this email because of your subscription to the massif %s.', '<b>' +subscriptionName+'</b>') %>
     <% } %>
   </p>
+  <% } else { %>
+  <p>
+    <%- i18n.__('You are receiving this email because you are the author of this document.') %>
+  </p>
+  <% if (validationComment) { %>
+  <p>
+    <%- i18n.__('Reviewer comment:') %>
+    <br/>
+    <b><%= validationComment %></b>
+  </p>
+  <% } %>
+  <% } %>
 
   <%- include('emailFooter', { i18n: i18n }); %>

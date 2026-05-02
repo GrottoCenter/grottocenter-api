@@ -1,10 +1,12 @@
 const should = require('should');
+const sinon = require('sinon');
 const CaveService = require('../../../api/services/CaveService');
 const NotificationService = require('../../../api/services/NotificationService');
 const {
   NOTIFICATION_ENTITIES,
   NOTIFICATION_TYPES,
 } = require('../../../api/services/NotificationService');
+const tnotificationtypeFixture = require('../../fixtures/tnotificationtype.json');
 
 describe('NotificationService', () => {
   const fakeReq = {
@@ -13,6 +15,34 @@ describe('NotificationService', () => {
       getLocale: () => 'eng',
     },
   };
+
+  describe('REJECT notification type', () => {
+    it('should have REJECT in NOTIFICATION_TYPES with value "REJECT"', () => {
+      should(NOTIFICATION_TYPES).have.property('REJECT');
+      should(NOTIFICATION_TYPES.REJECT).equal('REJECT');
+    });
+
+    it('should have a REJECT entry with id 7 in the tnotificationtype fixture', () => {
+      const rejectEntry = tnotificationtypeFixture.find(
+        (entry) => entry.name === 'REJECT'
+      );
+      should(rejectEntry).not.be.undefined();
+      should(rejectEntry.id).equal(7);
+      should(rejectEntry.name).equal('REJECT');
+    });
+
+    it('should not throw when sendNotificationEmail is called with REJECT type', async () => {
+      const user = await TCaver.findOne(1);
+      await NotificationService.sendNotificationEmail(
+        { id: 1, name: 'test document' },
+        NOTIFICATION_TYPES.REJECT,
+        NOTIFICATION_ENTITIES.DOCUMENT,
+        fakeReq,
+        user
+      );
+    });
+  });
+
   describe('sendNotificationEmail()', () => {
     let user;
     before(async () => {
@@ -188,6 +218,40 @@ describe('NotificationService', () => {
       } catch (error) {
         should(error.message).containEql("Can't find related entity");
       }
+    });
+
+    it('should complete without error for author rejection email', async () => {
+      await NotificationService.sendNotificationEmail(
+        { id: 1, name: 'Test Document' },
+        NOTIFICATION_TYPES.REJECT,
+        NOTIFICATION_ENTITIES.DOCUMENT,
+        fakeReq,
+        {
+          ...user,
+          isAuthorNotification: true,
+          validationComment: 'Incomplete metadata',
+        }
+      );
+    });
+
+    it('should complete without error for author acceptance email', async () => {
+      await NotificationService.sendNotificationEmail(
+        { id: 1, name: 'Test Document' },
+        NOTIFICATION_TYPES.VALIDATE,
+        NOTIFICATION_ENTITIES.DOCUMENT,
+        fakeReq,
+        { ...user, isAuthorNotification: true, validationComment: null }
+      );
+    });
+
+    it('should complete without error for default subscriber email', async () => {
+      await NotificationService.sendNotificationEmail(
+        { id: 1, name: 'Test Document' },
+        NOTIFICATION_TYPES.VALIDATE,
+        NOTIFICATION_ENTITIES.DOCUMENT,
+        fakeReq,
+        { ...user, isAuthorNotification: false }
+      );
     });
   });
 
@@ -463,6 +527,202 @@ describe('NotificationService', () => {
         NOTIFICATION_ENTITIES.COMMENT
       );
       should(res).not.be.false();
+    });
+  });
+
+  describe('notifyAuthor()', () => {
+    // Document 1 has author: 1 (Admin1)
+    // Caver 3 (User1) is NOT the author — use as moderator
+    const moderatorId = 3;
+    const authorId = 1;
+    const createdNotificationIds = [];
+    let sendEmailStub;
+
+    after(async () => {
+      if (createdNotificationIds.length > 0) {
+        await TNotification.destroy({ id: createdNotificationIds });
+      }
+      // Restore sendNotificationByEmail to default for author caver
+      await TCaver.updateOne({ id: authorId }).set({
+        sendNotificationByEmail: false,
+      });
+    });
+
+    afterEach(() => {
+      if (sendEmailStub) {
+        sendEmailStub.restore();
+        sendEmailStub = null;
+      }
+    });
+
+    const trackNotifications = async (callback) => {
+      const beforeIds = (await TNotification.find().select(['id'])).map(
+        (n) => n.id
+      );
+      const result = await callback();
+      const afterIds = (await TNotification.find().select(['id'])).map(
+        (n) => n.id
+      );
+      const newIds = afterIds.filter((id) => !beforeIds.includes(id));
+      createdNotificationIds.push(...newIds);
+      return { newIds, result };
+    };
+
+    it('should create a VALIDATE notification for the document author on acceptance', async () => {
+      const document = { id: 1, author: authorId, name: 'Test Document' };
+      const validateTypeId = (
+        await TNotificationType.findOne({ name: NOTIFICATION_TYPES.VALIDATE })
+      ).id;
+
+      const { newIds } = await trackNotifications(() =>
+        NotificationService.notifyAuthor(
+          fakeReq,
+          document,
+          moderatorId,
+          NOTIFICATION_TYPES.VALIDATE,
+          null
+        )
+      );
+
+      should(newIds).have.length(1);
+      const notification = await TNotification.findOne({ id: newIds[0] });
+      should(notification.notified).equal(authorId);
+      should(notification.document).equal(document.id);
+      should(notification.notificationType).equal(validateTypeId);
+    });
+
+    it('should create a REJECT notification for the document author on rejection', async () => {
+      const document = { id: 1, author: authorId, name: 'Test Document' };
+      const rejectTypeId = (
+        await TNotificationType.findOne({ name: NOTIFICATION_TYPES.REJECT })
+      ).id;
+
+      const { newIds } = await trackNotifications(() =>
+        NotificationService.notifyAuthor(
+          fakeReq,
+          document,
+          moderatorId,
+          NOTIFICATION_TYPES.REJECT,
+          'Incomplete metadata'
+        )
+      );
+
+      should(newIds).have.length(1);
+      const notification = await TNotification.findOne({ id: newIds[0] });
+      should(notification.notified).equal(authorId);
+      should(notification.document).equal(document.id);
+      should(notification.notificationType).equal(rejectTypeId);
+    });
+
+    it('should skip notification when moderator is the document author', async () => {
+      // Use authorId as both moderator and author (self-notification)
+      const document = { id: 1, author: authorId, name: 'Test Document' };
+
+      const { newIds, result } = await trackNotifications(() =>
+        NotificationService.notifyAuthor(
+          fakeReq,
+          document,
+          authorId,
+          NOTIFICATION_TYPES.VALIDATE,
+          null
+        )
+      );
+
+      should(result).equal(true);
+      should(newIds).have.length(0);
+    });
+
+    it('should set the notifier field to the moderator ID', async () => {
+      const document = { id: 1, author: authorId, name: 'Test Document' };
+
+      const { newIds } = await trackNotifications(() =>
+        NotificationService.notifyAuthor(
+          fakeReq,
+          document,
+          moderatorId,
+          NOTIFICATION_TYPES.VALIDATE,
+          null
+        )
+      );
+
+      should(newIds).have.length(1);
+      const notification = await TNotification.findOne({ id: newIds[0] });
+      should(notification.notifier).equal(moderatorId);
+    });
+
+    it('should return early when document has no author', async () => {
+      const document = { id: 1, name: 'Test Document' };
+
+      const { newIds, result } = await trackNotifications(() =>
+        NotificationService.notifyAuthor(
+          fakeReq,
+          document,
+          moderatorId,
+          NOTIFICATION_TYPES.VALIDATE,
+          null
+        )
+      );
+
+      should(result).equal(true);
+      should(newIds).have.length(0);
+    });
+
+    it('should send email when author has sendNotificationByEmail: true', async () => {
+      await TCaver.updateOne({ id: authorId }).set({
+        sendNotificationByEmail: true,
+      });
+
+      sendEmailStub = sinon.stub(sails.helpers, 'sendEmail').value({
+        with: sinon.stub().returns({
+          intercept: sinon.stub().resolves(),
+        }),
+      });
+
+      const document = { id: 1, author: authorId, name: 'Test Document' };
+
+      const { newIds } = await trackNotifications(() =>
+        NotificationService.notifyAuthor(
+          fakeReq,
+          document,
+          moderatorId,
+          NOTIFICATION_TYPES.REJECT,
+          'Missing references'
+        )
+      );
+
+      should(newIds).have.length(1);
+      should(sails.helpers.sendEmail.with.calledOnce).be.true();
+
+      const callArgs = sails.helpers.sendEmail.with.firstCall.args[0];
+      should(callArgs.viewValues.isAuthorNotification).equal(true);
+      should(callArgs.viewValues.validationComment).equal('Missing references');
+    });
+
+    it('should not send email when author has sendNotificationByEmail: false', async () => {
+      await TCaver.updateOne({ id: authorId }).set({
+        sendNotificationByEmail: false,
+      });
+
+      sendEmailStub = sinon.stub(sails.helpers, 'sendEmail').value({
+        with: sinon.stub().returns({
+          intercept: sinon.stub().resolves(),
+        }),
+      });
+
+      const document = { id: 1, author: authorId, name: 'Test Document' };
+
+      const { newIds } = await trackNotifications(() =>
+        NotificationService.notifyAuthor(
+          fakeReq,
+          document,
+          moderatorId,
+          NOTIFICATION_TYPES.VALIDATE,
+          null
+        )
+      );
+
+      should(newIds).have.length(1);
+      should(sails.helpers.sendEmail.with.called).be.false();
     });
   });
 });
