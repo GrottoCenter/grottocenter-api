@@ -4344,14 +4344,14 @@ paths:
       parameters:
         - name: description
           in: query
-          required: true
-          description: Description of the massif
+          required: false
+          description: Description of the massif. If provided, descriptionTitle must also be provided.
           schema:
             type: string
         - name: descriptionTitle
           in: query
-          required: true
-          description: Description title of the massif
+          required: false
+          description: Description title of the massif. If provided, description must also be provided.
           schema:
             type: string
         - name: descriptionAndNameLanguage
