@@ -25,13 +25,12 @@ describe('sesSuppressionPoller - Property 5: getMsUntilNextExec targets next day
     this.timeout(30000);
 
     // Generate random timestamps across a wide range of times
-    // Cover different hours, minutes, seconds within a realistic date range
-    const timestampArb = fc
-      .date({
-        min: new Date('2020-01-01T00:00:00Z'),
-        max: new Date('2030-12-31T23:59:59Z'),
-      })
-      .map((d) => d.getTime());
+    // Use fc.integer directly to avoid fc.date producing invalid Date objects
+    // whose getTime() returns NaN
+    const timestampArb = fc.integer({
+      min: new Date('2020-01-01T00:00:00Z').getTime(),
+      max: new Date('2030-12-31T23:59:59Z').getTime(),
+    });
 
     fc.assert(
       fc.property(timestampArb, (now) => {
