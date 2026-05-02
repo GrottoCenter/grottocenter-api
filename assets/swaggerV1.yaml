@@ -2545,6 +2545,8 @@ paths:
             type: integer
             minimum: 0
             default: 0
+        - $ref: '#/components/parameters/qualitySortCountry'
+        - $ref: '#/components/parameters/qualityOrder'
       responses:
         '200':
           description: Successful operation
@@ -2563,6 +2565,8 @@ paths:
                   totalPages:
                     type: integer
                     description: Total number of pages based on limit
+        '400':
+          description: Invalid sort or order parameter value. The sort column must be one of the allowed column names and order must be asc or desc.
         '404':
           description: Region not found or has no entrances
 
@@ -3791,6 +3795,8 @@ paths:
             type: integer
             minimum: 0
             default: 0
+        - $ref: '#/components/parameters/qualitySortAll'
+        - $ref: '#/components/parameters/qualityOrder'
       responses:
         '200':
           description: Successful operation
@@ -3809,6 +3815,8 @@ paths:
                   totalPages:
                     type: integer
                     description: Total number of pages based on limit
+        '400':
+          description: Invalid sort or order parameter value. The sort column must be one of the allowed column names and order must be asc or desc.
         '404':
           description: Massif doesn't exist or hasn't entrances
 
@@ -3842,6 +3850,8 @@ paths:
             type: integer
             minimum: 0
             default: 0
+        - $ref: '#/components/parameters/qualitySortCountry'
+        - $ref: '#/components/parameters/qualityOrder'
       responses:
         '200':
           description: Successful operation
@@ -3860,6 +3870,8 @@ paths:
                   totalPages:
                     type: integer
                     description: Total number of pages based on limit
+        '400':
+          description: Invalid sort or order parameter value. The sort column must be one of the allowed column names and order must be asc or desc.
         '404':
           description: Country doesn't exist or hasn't entrances
 
@@ -5115,6 +5127,68 @@ components:
         type: integer
         minimum: 1
         maximum: 22
+    qualitySortAll:
+      name: sort
+      in: query
+      description: Column name to sort results by. When omitted, no specific order is applied.
+      required: false
+      schema:
+        type: string
+        enum:
+          - entrance_name
+          - date_of_update
+          - general_latest_date_of_update
+          - general_nb_contributions
+          - location_latest_date_of_update
+          - location_nb_contributions
+          - description_latest_date_of_update
+          - description_nb_contributions
+          - document_latest_date_of_update
+          - document_nb_contributions
+          - rigging_latest_date_of_update
+          - rigging_nb_contributions
+          - history_latest_date_of_update
+          - history_nb_contributions
+          - comment_latest_date_of_update
+          - comment_nb_contributions
+          - country_name
+          - massif_name
+    qualitySortCountry:
+      name: sort
+      in: query
+      description: Column name to sort results by. When omitted, no specific order is applied. Note that massif_name is not available on country and region endpoints.
+      required: false
+      schema:
+        type: string
+        enum:
+          - entrance_name
+          - date_of_update
+          - general_latest_date_of_update
+          - general_nb_contributions
+          - location_latest_date_of_update
+          - location_nb_contributions
+          - description_latest_date_of_update
+          - description_nb_contributions
+          - document_latest_date_of_update
+          - document_nb_contributions
+          - rigging_latest_date_of_update
+          - rigging_nb_contributions
+          - history_latest_date_of_update
+          - history_nb_contributions
+          - comment_latest_date_of_update
+          - comment_nb_contributions
+          - country_name
+    qualityOrder:
+      name: order
+      in: query
+      description: Sort direction. Only used when `sort` is provided. Defaults to `asc` when omitted.
+      required: false
+      schema:
+        type: string
+        enum:
+          - asc
+          - desc
+        default: asc
   securitySchemes:
     bearerAuth:
       type: http

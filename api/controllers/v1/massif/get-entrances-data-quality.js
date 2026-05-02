@@ -4,6 +4,11 @@ const {
   toQualityDataEntrance,
 } = require('../../../services/mapping/converters');
 const { toListFromController } = require('../../../services/mapping/utils');
+const {
+  SORTABLE_COLUMNS,
+  VALIDATION_ERROR,
+  validateSortParams,
+} = require('../../../utils/validateSortParams');
 
 module.exports = async (req, res) => {
   // Get entrances and the informations associated at each entrance
@@ -11,11 +16,18 @@ module.exports = async (req, res) => {
   const limit = Math.min(parseInt(req.param('limit', 50), 10), 1000);
   const offset = Math.max(parseInt(req.param('offset', 0), 10), 0);
 
+  const sortResult = validateSortParams(req, res, SORTABLE_COLUMNS);
+  if (sortResult === VALIDATION_ERROR) return null;
+  const sort = sortResult ? sortResult.sort : null;
+  const order = sortResult ? sortResult.order : null;
+
   const [entrancesInformationToCompute, totalCount] = await Promise.all([
     DataQualityComputeService.getEntrancesWithQualityByMassif(
       massifId,
       limit,
-      offset
+      offset,
+      sort,
+      order
     ),
     DataQualityComputeService.getEntrancesWithQualityByMassifCount(massifId),
   ]);
