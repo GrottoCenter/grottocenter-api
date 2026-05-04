@@ -108,6 +108,7 @@ module.exports.routes = {
   'GET /api/v1/messages/conversations/archived':
     'v1/message/list-archived-conversations',
   'GET /api/v1/messages/conversations/:id': 'v1/message/get-messages',
+  'GET /api/v1/messages/unread/count': 'v1/message/count-unread',
 
   // Entrance
   'DELETE /api/v1/entrances/:entranceId/documents/:documentId':

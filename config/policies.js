@@ -234,6 +234,7 @@ module.exports.policies = {
   'v1/message/list-conversations': 'tokenAuth',
   'v1/message/list-archived-conversations': 'tokenAuth',
   'v1/message/get-messages': 'tokenAuth',
+  'v1/message/count-unread': 'tokenAuth',
 
   // Notification
   'v1/notification/count-unread': 'tokenAuth',
