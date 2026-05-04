@@ -53,6 +53,7 @@ tags:
   - name: import csv
   - name: comments
   - name: riggings
+  - name: messaging
 
 paths:
   '/health':
@@ -5059,7 +5060,50 @@ paths:
         '404':
           description: Request body must be a valid JSON object
 
+  '/messages':
+    post:
+      tags:
+        - messaging
+      description: 'Send a private message to another user. If no conversation exists between the sender and the recipient, a new one is created. If conversationId is provided, it acts as a reply.'
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - body
+              properties:
+                recipientId:
+                  type: integer
+                  description: ID of the recipient caver. Required if conversationId is not provided.
+                conversationId:
+                  type: integer
+                  description: ID of the conversation to reply to. Required if recipientId is not provided.
+                body:
+                  type: string
+                  description: Content of the message.
+                  maxLength: 5000
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        400:
+          description: Validation error (empty body, body too long, missing recipientId/conversationId, or sending to self)
+        403:
+          description: Forbidden (recipient not eligible, or not a participant in the conversation he attempts to send a message to)
+        404:
+          description: Recipient not found
+        500:
+          description: Internal server error
+
 components:
+
   parameters:
     X-Trace-Id:
       name: X-Trace-Id
@@ -5495,6 +5539,23 @@ components:
           type: string
         numeric:
           type: integer
+
+    Conversation:
+      type: object
+      properties:
+        id:
+          type: integer
+        dateInscription:
+          type: string
+          format: date-time
+        participants:
+          type: array
+          items:
+            $ref: '#/components/schemas/Participant'
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/Message'
 
     Data-quality-info:
       type: object
@@ -6117,6 +6178,35 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Cave'
+
+    Message:
+      type: object
+      properties:
+        id:
+          type: integer
+        conversation:
+          type: integer
+        caverSender:
+          $ref: '#/components/schemas/Caver'
+        body:
+          type: string
+        dateSent:
+          type: string
+          format: date-time
+        dateRead:
+          type: string
+          format: date-time
+
+    Participant:
+      type: object
+      properties:
+        conversation:
+          type: integer
+        caver:
+          $ref: '#/components/schemas/Caver'
+        state:
+          type: string
+          enum: [active, archived]
 
     Name:
       properties:
