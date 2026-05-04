@@ -104,6 +104,10 @@ module.exports.routes = {
 
   // Messages
   'POST /api/v1/messages': 'v1/message/create',
+  'GET /api/v1/messages/conversations': 'v1/message/list-conversations',
+  'GET /api/v1/messages/conversations/archived':
+    'v1/message/list-archived-conversations',
+  'GET /api/v1/messages/conversations/:id': 'v1/message/get-messages',
 
   // Entrance
   'DELETE /api/v1/entrances/:entranceId/documents/:documentId':
