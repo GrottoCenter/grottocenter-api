@@ -102,6 +102,9 @@ module.exports.routes = {
   'POST /api/v1/cavers/:caverId/unban': 'v1/caver/unban',
   'DELETE /api/v1/cavers/:id': 'v1/caver/delete',
 
+  // Messages
+  'POST /api/v1/messages': 'v1/message/create',
+
   // Entrance
   'DELETE /api/v1/entrances/:entranceId/documents/:documentId':
     'v1/entrance/unlink-document',
