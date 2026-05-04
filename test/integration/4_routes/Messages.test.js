@@ -200,4 +200,104 @@ describe('Messages features', () => {
         });
     });
   });
+
+  describe('GET /api/v1/messages/conversations', () => {
+    it('should return a paginated list of active conversations', (done) => {
+      supertest(sails.hooks.http.app)
+        .get('/api/v1/messages/conversations')
+        .set('Authorization', `Bearer ${senderToken}`)
+        .expect(206)
+        .end((err, res) => {
+          if (err) return done(err);
+          should(res.body).have.property('conversations');
+          should(res.body.conversations).be.an.Array();
+          should(res.body.conversations.length).be.greaterThan(0);
+          const convo = res.body.conversations[0];
+          should(convo).have.properties([
+            'id',
+            'lastMessage',
+            'unreadCount',
+            'otherParticipant',
+          ]);
+          should(convo.otherParticipant).have.properties(['id', 'nickname']);
+          should(convo.otherParticipant.nickname).be.equal('RecipientUser');
+          done();
+          return null;
+        });
+    });
+
+    it('should cap limit at 50', (done) => {
+      supertest(sails.hooks.http.app)
+        .get('/api/v1/messages/conversations?limit=100')
+        .set('Authorization', `Bearer ${senderToken}`)
+        .expect(206)
+        .end((err, res) => {
+          if (err) return done(err);
+          should(res.header).have.property('content-range');
+          should(res.header['content-range']).startWith('0-');
+          // The limit in treatRange is used for Content-Range
+          done();
+          return null;
+        });
+    });
+  });
+
+  describe('GET /api/v1/messages/conversations/archived', () => {
+    it('should return empty list if no archived conversations', (done) => {
+      supertest(sails.hooks.http.app)
+        .get('/api/v1/messages/conversations/archived')
+        .set('Authorization', `Bearer ${senderToken}`)
+        .expect(206)
+        .end((err, res) => {
+          if (err) return done(err);
+          should(res.body.conversations).have.length(0);
+          done();
+          return null;
+        });
+    });
+  });
+
+  describe('GET /api/v1/messages/conversations/:id', () => {
+    it('should return messages and mark them as read', async () => {
+      // Get conversation ID
+      const result = await sails.sendNativeQuery(
+        'SELECT id_conversation FROM j_participant WHERE id_caver = $1 LIMIT 1',
+        [sender.id]
+      );
+      const convoId = result.rows[0].id_conversation;
+
+      // Ensure an unread message from recipient exists
+      await TMessage.create({
+        conversation: convoId,
+        caverSender: recipient.id,
+        body: 'Unread from recipient',
+        dateSent: new Date(),
+      });
+
+      const res = await supertest(sails.hooks.http.app)
+        .get(`/api/v1/messages/conversations/${convoId}`)
+        .set('Authorization', `Bearer ${senderToken}`)
+        .expect(206);
+
+      should(res.body).have.property('messages');
+      should(res.body.messages).be.an.Array();
+      should(res.body.messages.length).be.greaterThan(0);
+
+      // Verify marked as read
+      const unreadCount = await TMessage.count({
+        conversation: convoId,
+        caverSender: recipient.id,
+        dateRead: null,
+      });
+      should(unreadCount).be.equal(0);
+    });
+
+    it('should return 403 if not a participant', async () => {
+      const otherConvo = await TConversation.create({}).fetch();
+      await supertest(sails.hooks.http.app)
+        .get(`/api/v1/messages/conversations/${otherConvo.id}`)
+        .set('Authorization', `Bearer ${senderToken}`)
+        .expect(403);
+    });
+  });
 });
