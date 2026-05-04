@@ -31,8 +31,7 @@ module.exports.http = {
   middleware: {
     // Requests limiter configuration
     generalRateLimit: rateLimiter.generalRateLimit,
-    userDeleteRateLimit: rateLimiter.userDeleteRateLimit,
-    moderatorDeleteRateLimit: rateLimiter.moderatorDeleteRateLimit,
+    deleteRateLimit: rateLimiter.deleteRateLimit,
 
     /** *************************************************************************
      *                                                                          *
@@ -46,8 +45,7 @@ module.exports.http = {
       'corsHeaders',
       'parseAuthToken',
       'generalRateLimit',
-      'userDeleteRateLimit',
-      'moderatorDeleteRateLimit',
+      'deleteRateLimit',
       'responseTimeLogger',
       'requestLogger',
       'fileMiddleware',
