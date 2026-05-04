@@ -5226,6 +5226,32 @@ paths:
         500:
           description: Internal server error
 
+  '/messages/unread/count':
+    get:
+      tags:
+        - messaging
+      description: 'Get unread message counts for active and archived lists.'
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  active:
+                    type: integer
+                    description: Count of unread messages in active conversations.
+                  archived:
+                    type: integer
+                    description: Count of unread messages in archived conversations.
+        401:
+          description: Unauthorized
+        500:
+          description: Internal server error
+
 components:
 
   parameters:
