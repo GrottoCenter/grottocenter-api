@@ -225,4 +225,28 @@ module.exports = {
     );
     return result.rows.length > 0;
   },
+  /**
+   * Get unread message counts for both active and archived conversations.
+   * @param {number} caverId
+   * @returns {Promise<Object>} { active, archived }
+   */
+  getUnreadCounts: async (caverId) => {
+    const query = `
+      SELECT 
+        p.state,
+        COUNT(m.id)::int as count
+      FROM j_participant p
+      JOIN t_message m ON p.id_conversation = m.id_conversation 
+      WHERE p.id_caver = $1
+        AND m.id_caver_sender != $1 
+        AND m.date_read IS NULL
+      GROUP BY p.state
+    `;
+    const result = await CommonService.query(query, [caverId]);
+    const counts = { active: 0, archived: 0 };
+    result.rows.forEach((row) => {
+      counts[row.state] = row.count;
+    });
+    return counts;
+  },
 };
