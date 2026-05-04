@@ -300,4 +300,32 @@ describe('Messages features', () => {
         .expect(403);
     });
   });
+
+  describe('GET /api/v1/messages/unread/count', () => {
+    it('should return unread counts for active and archived lists', async () => {
+      // Get conversation ID between sender and recipient
+      const result = await sails.sendNativeQuery(
+        'SELECT id_conversation FROM j_participant WHERE id_caver = $1 LIMIT 1',
+        [sender.id]
+      );
+      const convoId = result.rows[0].id_conversation;
+
+      // Ensure an unread message from recipient exists in active list
+      await TMessage.create({
+        conversation: convoId,
+        caverSender: recipient.id,
+        body: 'Unread active',
+        dateSent: new Date(),
+      });
+
+      const res = await supertest(sails.hooks.http.app)
+        .get('/api/v1/messages/unread/count')
+        .set('Authorization', `Bearer ${senderToken}`)
+        .expect(200);
+
+      should(res.body).have.properties(['active', 'archived']);
+      should(res.body.active).be.greaterThanOrEqual(1);
+      should(res.body.archived).be.equal(0);
+    });
+  });
 });
