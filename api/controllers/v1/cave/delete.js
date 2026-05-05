@@ -33,13 +33,15 @@ module.exports = async (req, res) => {
     await TCave.destroyOne({ id: caveId }); // Soft delete
     cave.isDeleted = true;
 
-    await CaveService.deleteInSearch(caveId);
-    await RecentChangeService.setDeleteRestoreAuthor(
-      'delete',
-      'cave',
-      caveId,
-      req.token.id
-    );
+    await Promise.all([
+      CaveService.deleteInSearch(caveId),
+      RecentChangeService.setDeleteRestoreAuthor(
+        'delete',
+        'cave',
+        caveId,
+        req.token.id
+      ),
+    ]);
   }
 
   const deletePermanently = !!req.param('isPermanent');
@@ -60,7 +62,8 @@ module.exports = async (req, res) => {
     await CaveService.permanentlyDeleteCave(cave, shouldMergeInto, mergeIntoId);
   }
 
-  await NotificationService.notifySubscribers(
+  // Fire-and-forget: don't block the response on subscriber notifications
+  NotificationService.notifySubscribers(
     req,
     cave,
     req.token.id,
@@ -68,7 +71,11 @@ module.exports = async (req, res) => {
       ? NotificationService.NOTIFICATION_TYPES.PERMANENT_DELETE
       : NotificationService.NOTIFICATION_TYPES.DELETE,
     NotificationService.NOTIFICATION_ENTITIES.CAVE
-  );
+  ).catch((err) => {
+    sails.log.error(
+      `Failed to notify subscribers for cave ${caveId}: ${err.message}`
+    );
+  });
 
   return ControllerService.treatAndConvert(
     req,

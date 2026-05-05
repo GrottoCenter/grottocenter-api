@@ -6,6 +6,55 @@ const { toEntrance } = require('../../../services/mapping/converters');
 const NameService = require('../../../services/NameService');
 const CaveService = require('../../../services/CaveService');
 const RecentChangeService = require('../../../services/RecentChangeService');
+const CommonService = require('../../../services/CommonService');
+
+/**
+ * Hard-delete rows matching `criteria` from `model`.
+ *
+ * Waterline uses a two-phase destroy for models with `is_deleted`:
+ *   1st destroy() → sets is_deleted = true (soft delete)
+ *   2nd destroy() → removes the row (hard delete, since it's already soft-deleted)
+ *
+ * This helper encapsulates that convention so the intent is explicit and
+ * any future Waterline behaviour change only needs fixing in one place.
+ */
+async function hardDestroy(model, criteria) {
+  await model.destroy(criteria); // Soft delete (is_deleted = true)
+  await model.destroy(criteria); // Hard delete (removes row)
+}
+
+/**
+ * Delete sub-entities linked to an entrance.
+ * History (h_) rows are intentionally NOT touched — they are preserved
+ * for auditability with FK references nulled via raw SQL separately.
+ *
+ * IMPORTANT: When adding a new sub-entity type here, also add a matching
+ * h_ UPDATE in the raw SQL block below (search for "h_location" to find it).
+ */
+async function subEntityDelete(
+  entrance,
+  subEntitiesKey,
+  notificationKey,
+  model,
+  entranceId,
+  shouldMergeInto,
+  mergeIntoEntity
+) {
+  const subEntities = entrance[subEntitiesKey];
+  if (subEntities.length === 0) return;
+
+  await TNotification.destroy({
+    [notificationKey]: subEntities.map((e) => e.id),
+  });
+
+  if (shouldMergeInto) {
+    await model.update({ entrance: entranceId }).set({
+      entrance: mergeIntoEntity.id,
+    });
+  } else {
+    await hardDestroy(model, { entrance: entranceId });
+  }
+}
 
 module.exports = async (req, res) => {
   const hasRight = RightService.hasGroup(
@@ -16,8 +65,7 @@ module.exports = async (req, res) => {
     return res.forbidden('You are not authorized to delete a entrance.');
   }
 
-  // Check if entrance exists and if it's not already deleted
-  const entranceId = req.param('id');
+  const entranceId = Number(req.param('id'));
   const entrance = await EntranceService.getPopulatedEntrance(entranceId);
   if (!entrance) {
     return res.notFound({ message: `Entrance of id ${entranceId} not found.` });
@@ -35,13 +83,15 @@ module.exports = async (req, res) => {
     await TEntrance.destroyOne({ id: entranceId }); // Soft delete
     entrance.isDeleted = true;
 
-    await EntranceService.deleteInSearch(entranceId);
-    await RecentChangeService.setDeleteRestoreAuthor(
-      'delete',
-      'entrance',
-      entranceId,
-      req.token.id
-    );
+    await Promise.all([
+      EntranceService.deleteInSearch(entranceId),
+      RecentChangeService.setDeleteRestoreAuthor(
+        'delete',
+        'entrance',
+        entranceId,
+        req.token.id
+      ),
+    ]);
   }
 
   const deletePermanently = !!req.param('isPermanent');
@@ -54,63 +104,146 @@ module.exports = async (req, res) => {
   }
 
   if (deletePermanently) {
-    await TEntrance.update({ redirectTo: entranceId }).set({
-      redirectTo: shouldMergeInto ? mergeIntoId : null,
-    });
-    await TNotification.destroy({ entrance: entranceId });
-
-    // eslint-disable-next-line no-inner-declarations
-    async function subEntityDelete(
-      subEntitiesKey,
-      notificationKey,
-      model,
-      hModel
-    ) {
-      const subEntities = entrance[subEntitiesKey];
-      if (subEntities.length === 0) return;
-
-      await TNotification.destroy({
-        [notificationKey]: subEntities.map((e) => e.id),
-      });
-
-      if (shouldMergeInto) {
-        await model.update({ entrance: entranceId }).set({
-          entrance: mergeIntoEntity.id,
-        });
-        await hModel
-          .update({ entrance: entranceId })
-          .set({ entrance: mergeIntoEntity.id });
-      } else {
-        await model.destroy({ entrance: entranceId }); // model first soft delete
-        await hModel.destroy({ entrance: entranceId });
-        await model.destroy({ entrance: entranceId });
-      }
-    }
-
-    await subEntityDelete('locations', 'location', TLocation, HLocation);
-    await subEntityDelete(
-      'descriptions',
-      'description',
-      TDescription,
-      HDescription
+    const action = shouldMergeInto ? 'merge' : 'delete';
+    const target = shouldMergeInto ? mergeIntoEntity.id : null;
+    const ids = (arr) => arr.map((e) => e.id);
+    const audit = {
+      action,
+      entranceId,
+      ...(shouldMergeInto && { mergeIntoId }),
+      locations: ids(entrance.locations),
+      descriptions: ids(entrance.descriptions),
+      riggings: ids(entrance.riggings),
+      histories: ids(entrance.histories),
+      comments: ids(entrance.comments),
+      documents: ids(entrance.documents),
+      names: ids(entrance.names),
+      ...(entrance.cave &&
+        entrance.cave.entrances.length === 1 && {
+          cave: entrance.cave.id,
+        }),
+    };
+    sails.log.info(
+      `Permanent ${action} entrance ${entranceId}: ${JSON.stringify(audit)}`
     );
-    await subEntityDelete('riggings', 'rigging', TRigging, HRigging);
-    await subEntityDelete('histories', 'history', THistory, HHistory);
-    await subEntityDelete('comments', 'comment', TComment, HComment);
+
+    await Promise.all([
+      TEntrance.update({ redirectTo: entranceId }).set({ redirectTo: target }),
+      TNotification.destroy({ entrance: entranceId }),
+    ]);
+
+    await Promise.all([
+      subEntityDelete(
+        entrance,
+        'locations',
+        'location',
+        TLocation,
+        entranceId,
+        shouldMergeInto,
+        mergeIntoEntity
+      ),
+      subEntityDelete(
+        entrance,
+        'descriptions',
+        'description',
+        TDescription,
+        entranceId,
+        shouldMergeInto,
+        mergeIntoEntity
+      ),
+      subEntityDelete(
+        entrance,
+        'riggings',
+        'rigging',
+        TRigging,
+        entranceId,
+        shouldMergeInto,
+        mergeIntoEntity
+      ),
+      subEntityDelete(
+        entrance,
+        'histories',
+        'history',
+        THistory,
+        entranceId,
+        shouldMergeInto,
+        mergeIntoEntity
+      ),
+      subEntityDelete(
+        entrance,
+        'comments',
+        'comment',
+        TComment,
+        entranceId,
+        shouldMergeInto,
+        mergeIntoEntity
+      ),
+    ]);
+
+    // Clean up FK references to this entrance in history tables.
+    // H-rows are preserved for auditability — only the FK is nulled/reassigned
+    // so the hard delete of t_entrance can proceed.
+    // Raw SQL is required because Waterline silently fails on composite-PK models.
+    //
+    // IMPORTANT: This block must cover every h_ table that has an id_entrance
+    // or id_exit column. If a new sub-entity type is added to subEntityDelete
+    // above, a matching h_ UPDATE must be added here.
+    await Promise.all([
+      // T-models: secondary 'exit' FK
+      TDescription.update({ exit: entranceId }).set({ exit: target }),
+      TRigging.update({ exit: entranceId }).set({ exit: target }),
+      TComment.update({ exit: entranceId }).set({ exit: target }),
+      // H-models: all entrance/exit references
+      CommonService.query(
+        'UPDATE h_location SET id_entrance = $1 WHERE id_entrance = $2',
+        [target, entranceId]
+      ),
+      CommonService.query(
+        'UPDATE h_description SET id_entrance = $1 WHERE id_entrance = $2',
+        [target, entranceId]
+      ),
+      CommonService.query(
+        'UPDATE h_description SET id_exit = $1 WHERE id_exit = $2',
+        [target, entranceId]
+      ),
+      CommonService.query(
+        'UPDATE h_rigging SET id_entrance = $1 WHERE id_entrance = $2',
+        [target, entranceId]
+      ),
+      CommonService.query(
+        'UPDATE h_rigging SET id_exit = $1 WHERE id_exit = $2',
+        [target, entranceId]
+      ),
+      CommonService.query(
+        'UPDATE h_comment SET id_entrance = $1 WHERE id_entrance = $2',
+        [target, entranceId]
+      ),
+      CommonService.query(
+        'UPDATE h_comment SET id_exit = $1 WHERE id_exit = $2',
+        [target, entranceId]
+      ),
+      CommonService.query(
+        'UPDATE h_history SET id_entrance = $1 WHERE id_entrance = $2',
+        [target, entranceId]
+      ),
+      CommonService.query(
+        'UPDATE h_name SET id_entrance = $1 WHERE id_entrance = $2',
+        [target, entranceId]
+      ),
+    ]);
 
     if (entrance.documents.length > 0) {
       if (shouldMergeInto) {
         const newDocuments = entrance.documents.map((e) => e.id);
         await TEntrance.addToCollection(mergeIntoId, 'documents', newDocuments);
       }
-      await HDocument.update({ entrance: entranceId }).set({ entrance: null });
       await TEntrance.updateOne(entranceId).set({ documents: [] });
     }
 
     if (entrance.cave && entrance.cave.entrances.length === 1) {
       await TEntrance.updateOne(entranceId).set({ cave: null });
 
-      // When the associated cave only have this entrance, we also delete the cave
+      // When the associated cave only has this entrance, also delete the cave
       const cave = await CaveService.getPopulatedCave(entrance.cave.id);
       if (!cave.isDeleted) await TCave.destroyOne({ id: cave.id }); // Soft delete
       await CaveService.permanentlyDeleteCave(
@@ -120,16 +253,17 @@ module.exports = async (req, res) => {
       );
     }
 
-    await TEntrance.updateOne(entranceId).set({ explorerCavers: [] });
-    await TEntranceDuplicate.destroy({ id: entranceId });
+    await Promise.all([
+      TEntrance.updateOne(entranceId).set({ explorerCavers: [] }),
+      TEntranceDuplicate.destroy({ id: entranceId }),
+      NameService.permanentDelete({ entrance: entranceId }),
+    ]);
 
-    await NameService.permanentDelete({ entrance: entranceId });
-
-    await HEntrance.destroy({ t_id: entranceId });
     await TEntrance.destroyOne({ id: entranceId }); // Hard delete
   }
 
-  await NotificationService.notifySubscribers(
+  // Fire-and-forget: don't block the response on subscriber notifications
+  NotificationService.notifySubscribers(
     req,
     entrance,
     req.token.id,
@@ -137,7 +271,11 @@ module.exports = async (req, res) => {
       ? NotificationService.NOTIFICATION_TYPES.PERMANENT_DELETE
       : NotificationService.NOTIFICATION_TYPES.DELETE,
     NotificationService.NOTIFICATION_ENTITIES.ENTRANCE
-  );
+  ).catch((err) => {
+    sails.log.error(
+      `Failed to notify subscribers for entrance ${entranceId}: ${err.message}`
+    );
+  });
 
   return ControllerService.treatAndConvert(
     req,

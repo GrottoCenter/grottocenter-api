@@ -178,6 +178,41 @@ CREATE INDEX IF NOT EXISTS idx_t_comment_entrance ON t_comment(id_entrance);
 CREATE INDEX IF NOT EXISTS idx_t_comment_cave ON t_comment(id_cave);
 `;
 
+// Drop FK constraints on history tables that reference their parent t_ table.
+// These are auto-created by Waterline's migrate:drop but do NOT exist in
+// production (where the schema comes from SQL migrations). Dropping them
+// aligns the test DB with production behavior and allows permanent deletes
+// to preserve history rows for auditability.
+const DROP_HISTORY_PARENT_FK_CONSTRAINTS = `
+-- Parent FK constraints (h_.id -> t_.id)
+ALTER TABLE h_entrance DROP CONSTRAINT IF EXISTS h_entrance_t_entrance;
+ALTER TABLE h_description DROP CONSTRAINT IF EXISTS h_description_t_description;
+ALTER TABLE h_location DROP CONSTRAINT IF EXISTS h_location_t_location;
+ALTER TABLE h_rigging DROP CONSTRAINT IF EXISTS h_rigging_t_rigging;
+ALTER TABLE h_history DROP CONSTRAINT IF EXISTS h_history_t_history;
+ALTER TABLE h_comment DROP CONSTRAINT IF EXISTS h_comment_t_comment;
+ALTER TABLE h_cave DROP CONSTRAINT IF EXISTS h_cave_t_cave;
+ALTER TABLE h_name DROP CONSTRAINT IF EXISTS h_name_t_name;
+-- Cross-entity FKs referencing t_entrance(id)
+ALTER TABLE h_location DROP CONSTRAINT IF EXISTS h_location_t_entrance_fk;
+ALTER TABLE h_name DROP CONSTRAINT IF EXISTS h_name_t_entrance_fk;
+ALTER TABLE h_description DROP CONSTRAINT IF EXISTS h_description_t_entrance1_fk;
+ALTER TABLE h_description DROP CONSTRAINT IF EXISTS h_description_t_entrance2_fk;
+ALTER TABLE h_comment DROP CONSTRAINT IF EXISTS h_comment_t_entrance1_fk;
+ALTER TABLE h_comment DROP CONSTRAINT IF EXISTS h_comment_t_entrance2_fk;
+ALTER TABLE h_rigging DROP CONSTRAINT IF EXISTS h_rigging_t_entrance_fk;
+ALTER TABLE h_rigging DROP CONSTRAINT IF EXISTS h_rigging_t_entrance1_fk;
+ALTER TABLE h_history DROP CONSTRAINT IF EXISTS h_history_t_entrance_fk;
+-- Cross-entity FKs referencing t_cave(id)
+ALTER TABLE h_entrance DROP CONSTRAINT IF EXISTS h_entrance_t_cave_fk;
+ALTER TABLE h_description DROP CONSTRAINT IF EXISTS h_description_t_cave_fk;
+ALTER TABLE h_comment DROP CONSTRAINT IF EXISTS h_comment_t_cave_fk;
+ALTER TABLE h_rigging DROP CONSTRAINT IF EXISTS h_rigging_t_cave_fk;
+ALTER TABLE h_history DROP CONSTRAINT IF EXISTS h_history_t_cave_fk;
+ALTER TABLE h_document DROP CONSTRAINT IF EXISTS h_document_t_cave_fk;
+ALTER TABLE h_name DROP CONSTRAINT IF EXISTS h_name_t_cave0_fk;
+`;
+
 module.exports = {
   UPDATE_SEQUENCES_QUERY,
   ALTER_MASSIF_COLUMN_GEOG_POLYGON,
@@ -186,4 +221,5 @@ module.exports = {
   POPULATE_ENTRANCE_POINT_GEOM,
   INDEX_OPTIMIZATION_MIGRATION,
   QUERY_PERFORMANCE_FIXES_MIGRATION,
+  DROP_HISTORY_PARENT_FK_CONSTRAINTS,
 };
