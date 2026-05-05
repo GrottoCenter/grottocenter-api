@@ -184,6 +184,7 @@ function liftFull() {
                 customSQL.POPULATE_ENTRANCE_POINT_GEOM,
                 customSQL.INDEX_OPTIMIZATION_MIGRATION,
                 customSQL.QUERY_PERFORMANCE_FIXES_MIGRATION,
+                customSQL.DROP_HISTORY_PARENT_FK_CONSTRAINTS,
               ].join('\n')
             )
               .then(() => resolve())

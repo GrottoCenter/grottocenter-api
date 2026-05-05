@@ -77,10 +77,20 @@ module.exports = {
     return entitiesToComplete;
   },
 
+  /**
+   * Hard-delete name rows matching `where`.
+   *
+   * Waterline uses a two-phase destroy for models with `is_deleted`:
+   *   1st destroy() → sets is_deleted = true (soft delete)
+   *   2nd destroy() → removes the row (hard delete)
+   *
+   * h_name rows are intentionally preserved for auditability.
+   * HName.destroy() via Waterline silently fails anyway (composite PK),
+   * but we explicitly skip it to make the intent clear.
+   */
   async permanentDelete(where) {
-    await TName.destroy(where); // TName first soft delete
-    await HName.destroy(where);
-    await TName.destroy(where); // Hard delete
+    await TName.destroy(where); // Soft delete (is_deleted = true)
+    await TName.destroy(where); // Hard delete (removes row)
   },
 };
 
