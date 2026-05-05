@@ -128,15 +128,18 @@ module.exports = {
     return result.rows.map((row) => ({
       id: row.id,
       dateInscription: row.dateInscription,
-      lastMessage: {
-        dateSent: row.lastMessageDate,
-        body: row.lastMessageBody,
-      },
-      unreadCount: row.unreadCount,
-      otherParticipant: {
+      lastMessage: row.lastMessageId
+        ? {
+            id: row.lastMessageId,
+            body: row.lastMessageBody,
+            dateSent: row.lastMessageDate,
+          }
+        : null,
+      unreadCount: parseInt(row.unreadCount, 10),
+      otherParticipant: module.exports.formatParticipant({
         id: row.otherParticipantId,
-        nickname: row.otherParticipantNickname || 'Deleted User',
-      },
+        nickname: row.otherParticipantNickname,
+      }),
     }));
   },
 
@@ -161,30 +164,23 @@ module.exports = {
    * @param {number} conversationId
    * @param {number} skip
    * @param {number} limit
+   * @param {number} readerId - Required. Marks messages as read for this participant.
    * @returns {Promise<Array>}
    */
-  getMessages: async (conversationId, skip, limit) => {
+  getMessages: async (conversationId, skip, limit, readerId) => {
+    if (!readerId) {
+      throw new Error('readerId is required to fetch messages');
+    }
+
+    await module.exports.markAsRead(conversationId, readerId);
+
     const messages = await TMessage.find({ conversation: conversationId })
       .skip(skip)
       .limit(limit)
       .sort('dateSent ASC')
       .populate('caverSender');
 
-    return messages.map((m) => ({
-      id: m.id,
-      body: m.body,
-      dateSent: m.dateSent,
-      dateRead: m.dateRead,
-      caverSender: m.caverSender
-        ? {
-            id: m.caverSender.id,
-            nickname: m.caverSender.nickname,
-          }
-        : {
-            id: null,
-            nickname: 'Deleted User',
-          },
-    }));
+    return messages.map((m) => module.exports.formatMessage(m));
   },
 
   /**
@@ -202,14 +198,13 @@ module.exports = {
    * @returns {Promise<void>}
    */
   markAsRead: async (conversationId, readerId) => {
-    const query = `
-      UPDATE t_message 
-      SET date_read = NOW() 
-      WHERE id_conversation = $1 
-        AND id_caver_sender != $2 
-        AND date_read IS NULL
-    `;
-    await CommonService.query(query, [conversationId, readerId]);
+    await TMessage.update({
+      conversation: conversationId,
+      caverSender: { '!=': readerId },
+      dateRead: null,
+    }).set({
+      dateRead: new Date(),
+    });
   },
 
   /**
@@ -248,5 +243,37 @@ module.exports = {
       counts[row.state] = row.count;
     });
     return counts;
+  },
+
+  /**
+   * Format a participant for API response (strips PII).
+   * @param {object|number} participant
+   * @returns {object|number}
+   */
+  formatParticipant: (participant) => {
+    if (!participant || typeof participant !== 'object') {
+      return participant;
+    }
+    return {
+      id: participant.id,
+      nickname: participant.nickname || 'Deleted User',
+    };
+  },
+
+  /**
+   * Format a message for API response (strips PII).
+   * @param {object} message
+   * @returns {object}
+   */
+  formatMessage: (message) => {
+    if (!message) return null;
+    return {
+      id: message.id,
+      body: message.body,
+      dateSent: message.dateSent,
+      dateRead: message.dateRead,
+      conversation: message.conversation,
+      caverSender: module.exports.formatParticipant(message.caverSender),
+    };
   },
 };
