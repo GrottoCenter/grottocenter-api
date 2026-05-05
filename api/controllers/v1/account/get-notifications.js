@@ -15,9 +15,9 @@ module.exports = async (req, res) => {
     }
 
     return res.ok({
-      alertForNews: caver.alertForNews,
-      sendNotificationByEmail: caver.sendNotificationByEmail,
-      sendMessageNotificationByEmail: caver.sendMessageNotificationByEmail,
+      alert_for_news: caver.alertForNews,
+      send_notification_by_email: caver.sendNotificationByEmail,
+      send_message_notification_by_email: caver.sendMessageNotificationByEmail,
     });
   } catch (err) {
     sails.log.error(err);

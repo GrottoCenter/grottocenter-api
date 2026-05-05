@@ -1,5 +1,5 @@
 /**
- * AccountController.updateNotificationPreferences
+ * AccountController.updateNotifications
  *
  * @description :: Update notification preferences for the authenticated caver.
  * @help        :: See https://sailsjs.com/documentation/concepts/controllers
@@ -8,11 +8,11 @@
 module.exports = async (req, res) => {
   try {
     const caverId = req.token.id;
-    const {
-      alertForNews,
-      sendNotificationByEmail,
-      sendMessageNotificationByEmail,
-    } = req.allParams();
+    const params = req.allParams();
+    const alertForNews = params.alert_for_news;
+    const sendNotificationByEmail = params.send_notification_by_email;
+    const sendMessageNotificationByEmail =
+      params.send_message_notification_by_email;
 
     const updateData = {};
 
@@ -23,7 +23,7 @@ module.exports = async (req, res) => {
         alertForNews !== 'false'
       ) {
         return res.badRequest(
-          "You must provide an alertForNews value ('true' or 'false' or boolean)."
+          "You must provide an alert_for_news value ('true' or 'false' or boolean)."
         );
       }
       updateData.alertForNews =
@@ -37,7 +37,7 @@ module.exports = async (req, res) => {
         sendNotificationByEmail !== 'false'
       ) {
         return res.badRequest(
-          "You must provide a sendNotificationByEmail value ('true' or 'false' or boolean)."
+          "You must provide a send_notification_by_email value ('true' or 'false' or boolean)."
         );
       }
       updateData.sendNotificationByEmail =
@@ -51,7 +51,7 @@ module.exports = async (req, res) => {
         sendMessageNotificationByEmail !== 'false'
       ) {
         return res.badRequest(
-          "You must provide a sendMessageNotificationByEmail value ('true' or 'false' or boolean)."
+          "You must provide a send_message_notification_by_email value ('true' or 'false' or boolean)."
         );
       }
       updateData.sendMessageNotificationByEmail =
@@ -74,9 +74,9 @@ module.exports = async (req, res) => {
     }
 
     return res.ok({
-      alertForNews: updatedCaver.alertForNews,
-      sendNotificationByEmail: updatedCaver.sendNotificationByEmail,
-      sendMessageNotificationByEmail:
+      alert_for_news: updatedCaver.alertForNews,
+      send_notification_by_email: updatedCaver.sendNotificationByEmail,
+      send_message_notification_by_email:
         updatedCaver.sendMessageNotificationByEmail,
     });
   } catch (err) {

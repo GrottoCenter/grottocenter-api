@@ -29,8 +29,8 @@ module.exports.policies = {
   // Account
   'v1/account/change-password': true,
   'v1/account/forgot-password': true,
-  'v1/account/get-notification-preferences': 'tokenAuth',
-  'v1/account/update-notification-preferences': 'tokenAuth',
+  'v1/account/get-notifications': 'tokenAuth',
+  'v1/account/update-notifications': 'tokenAuth',
   'v1/account/change-email': 'tokenAuth',
 
   // Auth
