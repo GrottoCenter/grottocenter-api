@@ -48,7 +48,11 @@ module.exports = async (req, res) => {
   } catch (err) {
     sails.log.error(err);
     return res.serverError(
-      'An error occurred while listing archived conversations.'
+      sails.helpers.formatMessagingError(
+        req,
+        'An error occurred while listing archived conversations.',
+        'E_SERVER_ERROR'
+      )
     );
   }
 };
