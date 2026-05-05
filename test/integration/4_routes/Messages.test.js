@@ -1,6 +1,7 @@
 const should = require('should');
 const supertest = require('supertest');
 const TokenService = require('../../../api/services/TokenService');
+const MessageService = require('../../../api/services/MessageService');
 
 describe('Messages features', () => {
   let sender;
@@ -59,7 +60,19 @@ describe('Messages features', () => {
         .post('/api/v1/messages')
         .set('Authorization', `Bearer ${senderToken}`)
         .send({ recipientId: recipient.id, body: '' })
-        .expect(400, done);
+        .expect(400)
+        .end((err, res) => {
+          if (err) return done(err);
+          should(res.body).have.properties([
+            'code',
+            'message',
+            'metadata',
+            'reference_id',
+          ]);
+          should(res.body.code).be.equal('E_VALIDATION');
+          done();
+          return null;
+        });
     });
 
     it('should return 400 if body is whitespace only', (done) => {
@@ -67,7 +80,13 @@ describe('Messages features', () => {
         .post('/api/v1/messages')
         .set('Authorization', `Bearer ${senderToken}`)
         .send({ recipientId: recipient.id, body: '   ' })
-        .expect(400, done);
+        .expect(400)
+        .end((err, res) => {
+          if (err) return done(err);
+          should(res.body.code).be.equal('E_VALIDATION');
+          done();
+          return null;
+        });
     });
 
     it('should return 400 if body exceeds 5000 chars', (done) => {
@@ -75,7 +94,13 @@ describe('Messages features', () => {
         .post('/api/v1/messages')
         .set('Authorization', `Bearer ${senderToken}`)
         .send({ recipientId: recipient.id, body: 'a'.repeat(5001) })
-        .expect(400, done);
+        .expect(400)
+        .end((err, res) => {
+          if (err) return done(err);
+          should(res.body.code).be.equal('E_VALIDATION');
+          done();
+          return null;
+        });
     });
 
     it('should return 400 if sending to self', (done) => {
@@ -83,7 +108,13 @@ describe('Messages features', () => {
         .post('/api/v1/messages')
         .set('Authorization', `Bearer ${senderToken}`)
         .send({ recipientId: sender.id, body: 'Hello self' })
-        .expect(400, done);
+        .expect(400)
+        .end((err, res) => {
+          if (err) return done(err);
+          should(res.body.code).be.equal('E_VALIDATION');
+          done();
+          return null;
+        });
     });
 
     it('should return 404 if recipient does not exist', (done) => {
@@ -91,7 +122,13 @@ describe('Messages features', () => {
         .post('/api/v1/messages')
         .set('Authorization', `Bearer ${senderToken}`)
         .send({ recipientId: 999999, body: 'Hello' })
-        .expect(404, done);
+        .expect(404)
+        .end((err, res) => {
+          if (err) return done(err);
+          should(res.body.code).be.equal('E_NOT_FOUND');
+          done();
+          return null;
+        });
     });
 
     it('should return 403 if recipient is banned', (done) => {
@@ -99,7 +136,13 @@ describe('Messages features', () => {
         .post('/api/v1/messages')
         .set('Authorization', `Bearer ${senderToken}`)
         .send({ recipientId: bannedRecipient.id, body: 'Hello banned' })
-        .expect(403, done);
+        .expect(403)
+        .end((err, res) => {
+          if (err) return done(err);
+          should(res.body.code).be.equal('E_AUTHORIZATION');
+          done();
+          return null;
+        });
     });
 
     it('should return 403 if recipient is non-user (no login)', (done) => {
@@ -107,7 +150,13 @@ describe('Messages features', () => {
         .post('/api/v1/messages')
         .set('Authorization', `Bearer ${senderToken}`)
         .send({ recipientId: nonUserRecipient.id, body: 'Hello non-user' })
-        .expect(403, done);
+        .expect(403)
+        .end((err, res) => {
+          if (err) return done(err);
+          should(res.body.code).be.equal('E_AUTHORIZATION');
+          done();
+          return null;
+        });
     });
 
     it('should create a new conversation and message on first contact', (done) => {
@@ -154,7 +203,12 @@ describe('Messages features', () => {
           const convoId = res.body.conversation;
 
           // Verify it's the same conversation as before
-          const messages = await TMessage.find({ conversation: convoId });
+          const messages = await MessageService.getMessages(
+            convoId,
+            0,
+            10,
+            sender.id
+          );
           should(messages.length).be.greaterThanOrEqual(2);
           done();
         });
@@ -195,7 +249,15 @@ describe('Messages features', () => {
             .post('/api/v1/messages')
             .set('Authorization', `Bearer ${senderToken}`)
             .send({ conversationId: convo.id, body: 'Intruder message' })
-            .expect(403, done);
+            .expect(403)
+            .end((err, res) => {
+              if (err) {
+                done(err);
+                return;
+              }
+              should(res.body.code).be.equal('E_AUTHORIZATION');
+              done();
+            });
           return null;
         });
     });
@@ -294,10 +356,11 @@ describe('Messages features', () => {
 
     it('should return 403 if not a participant', async () => {
       const otherConvo = await TConversation.create({}).fetch();
-      await supertest(sails.hooks.http.app)
+      const res = await supertest(sails.hooks.http.app)
         .get(`/api/v1/messages/conversations/${otherConvo.id}`)
         .set('Authorization', `Bearer ${senderToken}`)
         .expect(403);
+      should(res.body.code).be.equal('E_AUTHORIZATION');
     });
   });
 
@@ -326,6 +389,76 @@ describe('Messages features', () => {
       should(res.body).have.properties(['active', 'archived']);
       should(res.body.active).be.greaterThanOrEqual(1);
       should(res.body.archived).be.equal(0);
+    });
+  });
+
+  describe('MessageService.getMessages', () => {
+    it('should mark messages as read when readerId is provided', async () => {
+      // Get conversation ID between sender and recipient
+      const result = await sails.sendNativeQuery(
+        'SELECT id_conversation FROM j_participant WHERE id_caver = $1 LIMIT 1',
+        [sender.id]
+      );
+      const convoId = result.rows[0].id_conversation;
+
+      // Ensure an unread message from recipient exists
+      await TMessage.create({
+        conversation: convoId,
+        caverSender: recipient.id,
+        body: 'Service unread test',
+        dateSent: new Date(),
+      });
+
+      // Fetch via service with readerId (sender)
+      await MessageService.getMessages(convoId, 0, 10, sender.id);
+
+      // Verify marked as read in DB
+      const unreadCount = await TMessage.count({
+        conversation: convoId,
+        caverSender: recipient.id,
+        dateRead: null,
+      });
+      should(unreadCount).be.equal(0);
+    });
+
+    it('should throw an error if readerId is NOT provided', async () => {
+      // Get conversation ID
+      const result = await sails.sendNativeQuery(
+        'SELECT id_conversation FROM j_participant WHERE id_caver = $1 LIMIT 1',
+        [sender.id]
+      );
+      const convoId = result.rows[0].id_conversation;
+
+      try {
+        await MessageService.getMessages(convoId, 0, 10);
+        throw new Error('Should have thrown an error');
+      } catch (err) {
+        should(err.message).be.equal('readerId is required to fetch messages');
+      }
+    });
+    it('should NOT leak PII in message responses', async () => {
+      // Get conversation ID
+      const result = await sails.sendNativeQuery(
+        'SELECT id_conversation FROM j_participant WHERE id_caver = $1 LIMIT 1',
+        [sender.id]
+      );
+      const convoId = result.rows[0].id_conversation;
+
+      const res = await supertest(sails.hooks.http.app)
+        .get(`/api/v1/messages/conversations/${convoId}`)
+        .set('Authorization', `Bearer ${senderToken}`)
+        .expect(206);
+
+      const message = res.body.messages[0];
+      should(message).have.property('caverSender');
+      should(message.caverSender).have.properties(['id', 'nickname']);
+      should(message.caverSender).not.have.properties([
+        'mail',
+        'login',
+        'password',
+        'name',
+        'surname',
+      ]);
     });
   });
 });

@@ -58,10 +58,10 @@ describe('Account features', () => {
   });
 
   describe('Change alert for news', () => {
-    describe('Missing alertForNews parameter', () => {
+    describe('Missing parameters', () => {
       it('should return code 400', (done) => {
         supertest(sails.hooks.http.app)
-          .patch('/api/v1/account/alertForNews')
+          .patch('/api/v1/account/notification-preferences')
           .set('Authorization', userToken)
           .set('Content-type', 'application/json')
           .set('Accept', 'application/json')
@@ -71,7 +71,7 @@ describe('Account features', () => {
     describe('Invalid alertForNews parameter', () => {
       it('should return code 400', (done) => {
         supertest(sails.hooks.http.app)
-          .patch('/api/v1/account/alertForNews')
+          .patch('/api/v1/account/notification-preferences')
           .send({ alertForNews: 'change' })
           .set('Authorization', userToken)
           .set('Content-type', 'application/json')
@@ -80,14 +80,14 @@ describe('Account features', () => {
       });
     });
     describe('Success', () => {
-      it('should return code 204', async () => {
+      it('should return code 200', async () => {
         await supertest(sails.hooks.http.app)
-          .patch('/api/v1/account/alertForNews')
-          .send({ alertForNews: 'true' })
+          .patch('/api/v1/account/notification-preferences')
+          .send({ alertForNews: true })
           .set('Authorization', userToken)
           .set('Content-type', 'application/json')
           .set('Accept', 'application/json')
-          .expect(204);
+          .expect(200);
         (
           await TCaver.findOne({
             nickname: 'User1',
@@ -97,12 +97,12 @@ describe('Account features', () => {
       // Restore previous value
       after((done) => {
         supertest(sails.hooks.http.app)
-          .patch('/api/v1/account/alertForNews')
-          .send({ alertForNews: 'false' })
+          .patch('/api/v1/account/notification-preferences')
+          .send({ alertForNews: false })
           .set('Authorization', userToken)
           .set('Content-type', 'application/json')
           .set('Accept', 'application/json')
-          .expect(204, done);
+          .expect(200, done);
       });
     });
   });
