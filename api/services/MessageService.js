@@ -116,7 +116,7 @@ module.exports = {
         GROUP BY id_conversation
       ) u ON c.id = u.id_conversation
       WHERE my_p.id_caver = $1 AND my_p.state = $2
-      ORDER BY "lastMessageDate" DESC NULLS LAST
+      ORDER BY (CASE WHEN $2 = 'archived' THEN my_p.archived_at ELSE last_m.date_sent END) DESC NULLS LAST
       LIMIT $3 OFFSET $4
     `;
     const result = await CommonService.query(query, [
