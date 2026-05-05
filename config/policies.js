@@ -29,7 +29,8 @@ module.exports.policies = {
   // Account
   'v1/account/change-password': true,
   'v1/account/forgot-password': true,
-  'v1/account/change-alert-for-news': 'tokenAuth',
+  'v1/account/get-notification-preferences': 'tokenAuth',
+  'v1/account/update-notification-preferences': 'tokenAuth',
   'v1/account/change-email': 'tokenAuth',
 
   // Auth
@@ -234,6 +235,8 @@ module.exports.policies = {
   'v1/message/list-conversations': 'tokenAuth',
   'v1/message/list-archived-conversations': 'tokenAuth',
   'v1/message/get-messages': 'tokenAuth',
+  'v1/message/archive': 'tokenAuth',
+  'v1/message/unarchive': 'tokenAuth',
   'v1/message/count-unread': 'tokenAuth',
 
   // Notification

@@ -62,7 +62,10 @@ module.exports.routes = {
 
   // Account
   'PATCH /api/v1/account/password': 'v1/account/change-password',
-  'PATCH /api/v1/account/alertForNews': 'v1/account/change-alert-for-news',
+  'GET /api/v1/account/notification-preferences':
+    'v1/account/get-notification-preferences',
+  'PATCH /api/v1/account/notification-preferences':
+    'v1/account/update-notification-preferences',
   'PATCH /api/v1/account/email': 'v1/account/change-email',
   'POST /api/v1/forgotPassword': 'v1/account/forgot-password',
 
@@ -108,6 +111,8 @@ module.exports.routes = {
   'GET /api/v1/messages/conversations/archived':
     'v1/message/list-archived-conversations',
   'GET /api/v1/messages/conversations/:id': 'v1/message/get-messages',
+  'POST /api/v1/messages/conversations/:id/archive': 'v1/message/archive',
+  'POST /api/v1/messages/conversations/:id/unarchive': 'v1/message/unarchive',
   'GET /api/v1/messages/unread/count': 'v1/message/count-unread',
 
   // Entrance
