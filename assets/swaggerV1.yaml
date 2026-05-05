@@ -3160,24 +3160,71 @@ paths:
         '404':
           description: User in the password reset token not found.
 
-  '/account/alertForNews':
+  '/account/notifications':
+    get:
+      tags:
+        - account
+      description: Get notification preferences for the authenticated caver.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  alert_for_news:
+                    type: boolean
+                  send_notification_by_email:
+                    type: boolean
+                  send_message_notification_by_email:
+                    type: boolean
+        '401':
+          description: Unauthorized
+        '404':
+          description: Caver not found
+
     patch:
       tags:
         - account
-      description: Change the fact that the user wants to receive the Grottocenter news.
-      parameters:
-        - name: alertForNews
-          in: query
-          required: true
-          schema:
-            type: boolean
+      description: Update notification preferences for the authenticated caver.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                alert_for_news:
+                  type: boolean
+                send_notification_by_email:
+                  type: boolean
+                send_message_notification_by_email:
+                  type: boolean
       responses:
-        '204':
+        '200':
           description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  alert_for_news:
+                    type: boolean
+                  send_notification_by_email:
+                    type: boolean
+                  send_message_notification_by_email:
+                    type: boolean
         '400':
-          description: You must provide an alertForNews valid value ('true' or 'false')
+          description: Invalid preference value provided
+        '401':
+          description: Unauthorized
         '404':
-          description: User in the authentication token not found.
+          description: Caver not found
 
   '/forgotPassword':
     post:
@@ -5226,6 +5273,54 @@ paths:
         500:
           description: Internal server error
 
+  '/messages/conversations/{id}/archive':
+    post:
+      tags:
+        - messaging
+      description: Archive a conversation for the authenticated caver.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the conversation.
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Successful operation
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden (not a participant)
+        500:
+          description: Internal server error
+
+  '/messages/conversations/{id}/unarchive':
+    post:
+      tags:
+        - messaging
+      description: Unarchive a conversation for the authenticated caver.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the conversation.
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Successful operation
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden (not a participant)
+        500:
+          description: Internal server error
+
   '/messages/unread/count':
     get:
       tags:
@@ -6386,6 +6481,9 @@ components:
         state:
           type: string
           enum: [active, archived]
+        archivedAt:
+          type: string
+          format: date-time
 
     Name:
       properties:
