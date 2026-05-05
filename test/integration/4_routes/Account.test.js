@@ -57,52 +57,87 @@ describe('Account features', () => {
     });
   });
 
-  describe('Change alert for news', () => {
-    describe('Missing parameters', () => {
-      it('should return code 400', (done) => {
+  describe('Notification preferences', () => {
+    describe('GET /api/v1/account/notifications', () => {
+      it('should return code 200 with snake_case fields', (done) => {
         supertest(sails.hooks.http.app)
-          .patch('/api/v1/account/notification-preferences')
+          .get('/api/v1/account/notifications')
           .set('Authorization', userToken)
-          .set('Content-type', 'application/json')
-          .set('Accept', 'application/json')
-          .expect(400, done);
+          .expect(200)
+          .end((err, res) => {
+            if (err) return done(err);
+            should(res.body).have.properties([
+              'alert_for_news',
+              'send_notification_by_email',
+              'send_message_notification_by_email',
+            ]);
+            done();
+            return null;
+          });
       });
     });
-    describe('Invalid alertForNews parameter', () => {
-      it('should return code 400', (done) => {
-        supertest(sails.hooks.http.app)
-          .patch('/api/v1/account/notification-preferences')
-          .send({ alertForNews: 'change' })
-          .set('Authorization', userToken)
-          .set('Content-type', 'application/json')
-          .set('Accept', 'application/json')
-          .expect(400, done);
+
+    describe('PATCH /api/v1/account/notifications', () => {
+      describe('Missing parameters', () => {
+        it('should return code 400', (done) => {
+          supertest(sails.hooks.http.app)
+            .patch('/api/v1/account/notifications')
+            .set('Authorization', userToken)
+            .set('Content-type', 'application/json')
+            .set('Accept', 'application/json')
+            .expect(400, done);
+        });
       });
-    });
-    describe('Success', () => {
-      it('should return code 200', async () => {
-        await supertest(sails.hooks.http.app)
-          .patch('/api/v1/account/notification-preferences')
-          .send({ alertForNews: true })
-          .set('Authorization', userToken)
-          .set('Content-type', 'application/json')
-          .set('Accept', 'application/json')
-          .expect(200);
-        (
-          await TCaver.findOne({
-            nickname: 'User1',
-          })
-        ).alertForNews.should.be.true();
+      describe('Invalid alert_for_news parameter', () => {
+        it('should return code 400', (done) => {
+          supertest(sails.hooks.http.app)
+            .patch('/api/v1/account/notifications')
+            .send({ alert_for_news: 'change' })
+            .set('Authorization', userToken)
+            .set('Content-type', 'application/json')
+            .set('Accept', 'application/json')
+            .expect(400, done);
+        });
       });
-      // Restore previous value
-      after((done) => {
-        supertest(sails.hooks.http.app)
-          .patch('/api/v1/account/notification-preferences')
-          .send({ alertForNews: false })
-          .set('Authorization', userToken)
-          .set('Content-type', 'application/json')
-          .set('Accept', 'application/json')
-          .expect(200, done);
+      describe('Success', () => {
+        it('should return code 200 and update preferences', async () => {
+          await supertest(sails.hooks.http.app)
+            .patch('/api/v1/account/notifications')
+            .send({
+              alert_for_news: true,
+              send_notification_by_email: true,
+              send_message_notification_by_email: false,
+            })
+            .set('Authorization', userToken)
+            .set('Content-type', 'application/json')
+            .set('Accept', 'application/json')
+            .expect(200)
+            .then((res) => {
+              should(res.body.alert_for_news).be.true();
+              should(res.body.send_notification_by_email).be.true();
+              should(res.body.send_message_notification_by_email).be.false();
+            });
+
+          const caver = await TCaver.findOne({ nickname: 'User1' });
+          caver.alertForNews.should.be.true();
+          caver.sendNotificationByEmail.should.be.true();
+          caver.sendMessageNotificationByEmail.should.be.false();
+        });
+
+        // Restore previous values
+        after(async () => {
+          await supertest(sails.hooks.http.app)
+            .patch('/api/v1/account/notifications')
+            .send({
+              alert_for_news: false,
+              send_notification_by_email: false,
+              send_message_notification_by_email: true,
+            })
+            .set('Authorization', userToken)
+            .set('Content-type', 'application/json')
+            .set('Accept', 'application/json')
+            .expect(200);
+        });
       });
     });
   });
@@ -134,6 +169,7 @@ describe('Account features', () => {
           nickname: 'unverified_forgot',
           password: await AuthService.createHashedPassword('test'),
           activated: false,
+          idLanguage: '000',
         });
       });
       after(async () => {
@@ -163,6 +199,7 @@ describe('Account features', () => {
           password: await AuthService.createHashedPassword('test'),
           activated: true,
           banned: true,
+          idLanguage: '000',
         });
       });
       after(async () => {

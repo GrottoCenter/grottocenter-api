@@ -18,6 +18,7 @@ describe('Account - Notification Preferences', () => {
       alertForNews: false,
       sendNotificationByEmail: false,
       sendMessageNotificationByEmail: true,
+      idLanguage: '000',
     }).fetch();
 
     userId = caver.id;
@@ -29,10 +30,10 @@ describe('Account - Notification Preferences', () => {
     await TCaver.destroy({ id: userId });
   });
 
-  describe('GET /api/v1/account/notification-preferences', () => {
+  describe('GET /api/v1/account/notifications', () => {
     it('should return current notification preferences', (done) => {
       supertest(sails.hooks.http.app)
-        .get('/api/v1/account/notification-preferences')
+        .get('/api/v1/account/notifications')
         .set('Authorization', `Bearer ${userToken}`)
         .expect(200)
         .end((err, res) => {
@@ -40,10 +41,10 @@ describe('Account - Notification Preferences', () => {
             done(err);
             return;
           }
-          should(res.body).have.property('alertForNews', false);
-          should(res.body).have.property('sendNotificationByEmail', false);
+          should(res.body).have.property('alert_for_news', false);
+          should(res.body).have.property('send_notification_by_email', false);
           should(res.body).have.property(
-            'sendMessageNotificationByEmail',
+            'send_message_notification_by_email',
             true
           );
           done();
@@ -51,22 +52,22 @@ describe('Account - Notification Preferences', () => {
     });
   });
 
-  describe('PATCH /api/v1/account/notification-preferences', () => {
+  describe('PATCH /api/v1/account/notifications', () => {
     it('should partially update notification preferences', (done) => {
       supertest(sails.hooks.http.app)
-        .patch('/api/v1/account/notification-preferences')
+        .patch('/api/v1/account/notifications')
         .set('Authorization', `Bearer ${userToken}`)
-        .send({ alertForNews: true })
+        .send({ alert_for_news: true })
         .expect(200)
         .end((err, res) => {
           if (err) {
             done(err);
             return;
           }
-          should(res.body).have.property('alertForNews', true);
-          should(res.body).have.property('sendNotificationByEmail', false);
+          should(res.body).have.property('alert_for_news', true);
+          should(res.body).have.property('send_notification_by_email', false);
           should(res.body).have.property(
-            'sendMessageNotificationByEmail',
+            'send_message_notification_by_email',
             true
           );
           done();
@@ -75,12 +76,12 @@ describe('Account - Notification Preferences', () => {
 
     it('should completely update notification preferences', (done) => {
       supertest(sails.hooks.http.app)
-        .patch('/api/v1/account/notification-preferences')
+        .patch('/api/v1/account/notifications')
         .set('Authorization', `Bearer ${userToken}`)
         .send({
-          alertForNews: false,
-          sendNotificationByEmail: true,
-          sendMessageNotificationByEmail: false,
+          alert_for_news: false,
+          send_notification_by_email: true,
+          send_message_notification_by_email: false,
         })
         .expect(200)
         .end((err, res) => {
@@ -88,10 +89,10 @@ describe('Account - Notification Preferences', () => {
             done(err);
             return;
           }
-          should(res.body).have.property('alertForNews', false);
-          should(res.body).have.property('sendNotificationByEmail', true);
+          should(res.body).have.property('alert_for_news', false);
+          should(res.body).have.property('send_notification_by_email', true);
           should(res.body).have.property(
-            'sendMessageNotificationByEmail',
+            'send_message_notification_by_email',
             false
           );
           done();
@@ -100,7 +101,7 @@ describe('Account - Notification Preferences', () => {
 
     it('should return 400 if no preferences are provided', (done) => {
       supertest(sails.hooks.http.app)
-        .patch('/api/v1/account/notification-preferences')
+        .patch('/api/v1/account/notifications')
         .set('Authorization', `Bearer ${userToken}`)
         .send({})
         .expect(400)

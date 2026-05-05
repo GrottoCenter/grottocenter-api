@@ -461,4 +461,131 @@ describe('Messages features', () => {
       ]);
     });
   });
+
+  describe('Conversation Management', () => {
+    let convoId;
+
+    before(async () => {
+      const result = await sails.sendNativeQuery(
+        'SELECT id_conversation FROM j_participant WHERE id_caver = $1 LIMIT 1',
+        [sender.id]
+      );
+      convoId = result.rows[0].id_conversation;
+    });
+
+    it('should return 403 if trying to archive a conversation not belonging to', (done) => {
+      TConversation.create({})
+        .fetch()
+        .then((convo) => {
+          supertest(sails.hooks.http.app)
+            .post(`/api/v1/messages/conversations/${convo.id}/archive`)
+            .set('Authorization', `Bearer ${senderToken}`)
+            .expect(403)
+            .end((err, res) => {
+              if (err) {
+                return done(err);
+              }
+              should(res.body.code).be.equal('E_FORBIDDEN');
+              return done();
+            });
+          return null;
+        });
+    });
+
+    it('should archive a conversation and set archived_at', (done) => {
+      supertest(sails.hooks.http.app)
+        .post(`/api/v1/messages/conversations/${convoId}/archive`)
+        .set('Authorization', `Bearer ${senderToken}`)
+        .expect(204)
+        .end(async (err) => {
+          if (err) {
+            return done(err);
+          }
+          const participant = await JParticipant.findOne({
+            conversation: convoId,
+            caver: sender.id,
+          });
+          should(participant.state).be.equal('archived');
+          should(participant.archivedAt).not.be.null();
+          return done();
+        });
+    });
+
+    it('should sort archived conversations by archivedAt DESC', async () => {
+      // Create another conversation and archive it later
+      const recipient2 = await TCaver.create({
+        mail: 'recipient2@test.com',
+        nickname: 'Recipient2',
+        activated: true,
+        idLanguage: '000',
+        login: 'recipient2_login',
+      }).fetch();
+
+      const convo2Res = await supertest(sails.hooks.http.app)
+        .post('/api/v1/messages')
+        .set('Authorization', `Bearer ${senderToken}`)
+        .send({ recipientId: recipient2.id, body: 'Message to recipient 2' })
+        .expect(200);
+
+      const convoId2 = convo2Res.body.conversation;
+
+      // Archive convo2 later
+      await new Promise((resolve) => {
+        setTimeout(resolve, 1000);
+      });
+      await supertest(sails.hooks.http.app)
+        .post(`/api/v1/messages/conversations/${convoId2}/archive`)
+        .set('Authorization', `Bearer ${senderToken}`)
+        .expect(204);
+
+      // List archived
+      const res = await supertest(sails.hooks.http.app)
+        .get('/api/v1/messages/conversations/archived')
+        .set('Authorization', `Bearer ${senderToken}`)
+        .expect(206);
+
+      should(res.body.conversations).be.an.Array();
+      should(res.body.conversations.length).be.greaterThanOrEqual(2);
+      // convoId2 should be first as it was archived last
+      should(res.body.conversations[0].id).be.equal(convoId2);
+
+      // Cleanup
+      await TCaver.destroy({ id: recipient2.id });
+    });
+
+    it('should list the archived conversation', (done) => {
+      supertest(sails.hooks.http.app)
+        .get('/api/v1/messages/conversations/archived')
+        .set('Authorization', `Bearer ${senderToken}`)
+        .expect(206)
+        .end((err, res) => {
+          if (err) {
+            return done(err);
+          }
+          should(res.body.conversations).be.an.Array();
+          const ids = res.body.conversations.map((c) => c.id);
+          should(ids).containEql(convoId);
+          return done();
+        });
+    });
+
+    it('should unarchive a conversation and reset archived_at', (done) => {
+      supertest(sails.hooks.http.app)
+        .post(`/api/v1/messages/conversations/${convoId}/unarchive`)
+        .set('Authorization', `Bearer ${senderToken}`)
+        .expect(204)
+        .end(async (err) => {
+          if (err) {
+            return done(err);
+          }
+          const participant = await JParticipant.findOne({
+            conversation: convoId,
+            caver: sender.id,
+          });
+          should(participant.state).be.equal('active');
+          should(participant.archivedAt).be.null();
+          return done();
+        });
+    });
+  });
 });
