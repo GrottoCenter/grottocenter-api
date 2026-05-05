@@ -1366,6 +1366,7 @@ CREATE TABLE j_participant (
     id_conversation int4 NOT NULL,
     id_caver int4 NOT NULL,
     state participant_state NOT NULL DEFAULT 'active',
+    archived_at timestamp NULL,
     CONSTRAINT j_participant_pk PRIMARY KEY (id_conversation, id_caver),
     CONSTRAINT j_participant_t_conversation_fk FOREIGN KEY (id_conversation) REFERENCES t_conversation(id) ON DELETE CASCADE,
     CONSTRAINT j_participant_t_caver_fk FOREIGN KEY (id_caver) REFERENCES t_caver(id) ON DELETE CASCADE
