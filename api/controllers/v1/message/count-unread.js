@@ -15,6 +15,12 @@ module.exports = async (req, res) => {
     return res.ok(counts);
   } catch (err) {
     sails.log.error(err);
-    return res.serverError('An error occurred while counting unread messages.');
+    return res.serverError(
+      sails.helpers.formatMessagingError(
+        req,
+        'An error occurred while counting unread messages.',
+        'E_SERVER_ERROR'
+      )
+    );
   }
 };

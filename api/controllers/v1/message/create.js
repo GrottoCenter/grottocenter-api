@@ -17,10 +17,22 @@ module.exports = async (req, res) => {
 
   // Validation
   if (!body || body.trim().length === 0) {
-    return res.badRequest('Message body cannot be empty.');
+    return res.badRequest(
+      sails.helpers.formatMessagingError(
+        req,
+        'Message body cannot be empty.',
+        'E_VALIDATION'
+      )
+    );
   }
   if (body.length > 5000) {
-    return res.badRequest('Message body cannot exceed 5000 characters.');
+    return res.badRequest(
+      sails.helpers.formatMessagingError(
+        req,
+        'Message body cannot exceed 5000 characters.',
+        'E_VALIDATION'
+      )
+    );
   }
 
   let finalConversationId;
@@ -34,32 +46,60 @@ module.exports = async (req, res) => {
       );
 
       if (queryResult.rows.length === 0) {
-        return res.forbidden('You are not a participant in this conversation.');
+        return res.forbidden(
+          sails.helpers.formatMessagingError(
+            req,
+            'You are not a participant in this conversation.',
+            'E_AUTHORIZATION'
+          )
+        );
       }
       finalConversationId = conversationId;
     } catch (err) {
       sails.log.error(err);
       return res.serverError(
-        'An error occurred while verifying conversation membership.'
+        sails.helpers.formatMessagingError(
+          req,
+          'An error occurred while verifying conversation membership.',
+          'E_SERVER_ERROR'
+        )
       );
     }
   } else if (recipientId) {
     if (Number(recipientId) === Number(senderId)) {
-      return res.badRequest('You cannot send a message to yourself.');
+      return res.badRequest(
+        sails.helpers.formatMessagingError(
+          req,
+          'You cannot send a message to yourself.',
+          'E_VALIDATION'
+        )
+      );
     }
 
     try {
       await MessageService.getEligibleRecipient(recipientId);
     } catch (err) {
       if (err.code === 'E_NOT_FOUND') {
-        return res.notFound(err.message);
+        return res.notFound(
+          sails.helpers.formatMessagingError(req, err.message, 'E_NOT_FOUND')
+        );
       }
       if (err.code === 'E_FORBIDDEN') {
-        return res.forbidden(err.message);
+        return res.forbidden(
+          sails.helpers.formatMessagingError(
+            req,
+            err.message,
+            'E_AUTHORIZATION'
+          )
+        );
       }
       sails.log.error(err);
       return res.serverError(
-        'An error occurred while verifying the recipient.'
+        sails.helpers.formatMessagingError(
+          req,
+          'An error occurred while verifying the recipient.',
+          'E_SERVER_ERROR'
+        )
       );
     }
 
@@ -79,12 +119,20 @@ module.exports = async (req, res) => {
     } catch (err) {
       sails.log.error(err);
       return res.serverError(
-        'An error occurred while establishing the conversation.'
+        sails.helpers.formatMessagingError(
+          req,
+          'An error occurred while establishing the conversation.',
+          'E_SERVER_ERROR'
+        )
       );
     }
   } else {
     return res.badRequest(
-      'You must provide either a recipientId or a conversationId.'
+      sails.helpers.formatMessagingError(
+        req,
+        'You must provide either a recipientId or a conversationId.',
+        'E_VALIDATION'
+      )
     );
   }
 
@@ -100,12 +148,18 @@ module.exports = async (req, res) => {
     return ControllerService.treat(
       req,
       null,
-      newMessage,
+      MessageService.formatMessage(newMessage),
       { controllerMethod: 'MessageController.create' },
       res
     );
   } catch (err) {
     sails.log.error(err);
-    return res.serverError('An error occurred while sending the message.');
+    return res.serverError(
+      sails.helpers.formatMessagingError(
+        req,
+        'An error occurred while sending the message.',
+        'E_SERVER_ERROR'
+      )
+    );
   }
 };

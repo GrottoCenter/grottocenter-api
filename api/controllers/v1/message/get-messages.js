@@ -25,15 +25,20 @@ module.exports = async (req, res) => {
       caverId
     );
     if (!isParticipant) {
-      return res.forbidden('You are not a participant in this conversation.');
+      return res.forbidden(
+        sails.helpers.formatMessagingError(
+          req,
+          'You are not a participant in this conversation.',
+          'E_AUTHORIZATION'
+        )
+      );
     }
-
-    await MessageService.markAsRead(conversationId, caverId);
 
     const messages = await MessageService.getMessages(
       conversationId,
       skip,
-      limit
+      limit,
+      caverId
     );
     const total = await MessageService.countMessages(conversationId);
 
@@ -57,6 +62,12 @@ module.exports = async (req, res) => {
     );
   } catch (err) {
     sails.log.error(err);
-    return res.serverError('An error occurred while fetching messages.');
+    return res.serverError(
+      sails.helpers.formatMessagingError(
+        req,
+        'An error occurred while fetching messages.',
+        'E_SERVER_ERROR'
+      )
+    );
   }
 };
