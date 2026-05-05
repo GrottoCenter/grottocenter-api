@@ -27,5 +27,11 @@ module.exports = {
       isIn: ['active', 'archived'],
       defaultsTo: 'active',
     },
+
+    archivedAt: {
+      type: 'ref',
+      columnName: 'archived_at',
+      columnType: 'timestamp',
+    },
   },
 };

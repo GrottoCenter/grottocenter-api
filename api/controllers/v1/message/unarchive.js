@@ -14,14 +14,15 @@ module.exports = async (req, res) => {
       caver: caverId,
     }).set({
       state: 'active',
+      archivedAt: null,
     });
 
     if (!updated) {
-      return res.notFound(
+      return res.forbidden(
         sails.helpers.formatMessagingError(
           req,
-          'Conversation not found or you are not a participant.',
-          'E_NOT_FOUND'
+          'You are not a participant in this conversation or it does not exist.',
+          'E_FORBIDDEN'
         )
       );
     }
