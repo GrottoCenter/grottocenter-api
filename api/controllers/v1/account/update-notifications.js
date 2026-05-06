@@ -23,7 +23,11 @@ module.exports = async (req, res) => {
         alertForNews !== 'false'
       ) {
         return res.badRequest(
-          "You must provide an alert_for_news value ('true' or 'false' or boolean)."
+          sails.helpers.formatMessagingError(
+            req,
+            "You must provide an alert_for_news value ('true' or 'false' or boolean).",
+            'E_BAD_REQUEST'
+          )
         );
       }
       updateData.alertForNews =
@@ -37,7 +41,11 @@ module.exports = async (req, res) => {
         sendNotificationByEmail !== 'false'
       ) {
         return res.badRequest(
-          "You must provide a send_notification_by_email value ('true' or 'false' or boolean)."
+          sails.helpers.formatMessagingError(
+            req,
+            "You must provide a send_notification_by_email value ('true' or 'false' or boolean).",
+            'E_BAD_REQUEST'
+          )
         );
       }
       updateData.sendNotificationByEmail =
@@ -51,7 +59,11 @@ module.exports = async (req, res) => {
         sendMessageNotificationByEmail !== 'false'
       ) {
         return res.badRequest(
-          "You must provide a send_message_notification_by_email value ('true' or 'false' or boolean)."
+          sails.helpers.formatMessagingError(
+            req,
+            "You must provide a send_message_notification_by_email value ('true' or 'false' or boolean).",
+            'E_BAD_REQUEST'
+          )
         );
       }
       updateData.sendMessageNotificationByEmail =
@@ -60,7 +72,13 @@ module.exports = async (req, res) => {
     }
 
     if (Object.keys(updateData).length === 0) {
-      return res.badRequest('No notification preferences provided to update.');
+      return res.badRequest(
+        sails.helpers.formatMessagingError(
+          req,
+          'No notification preferences provided to update.',
+          'E_BAD_REQUEST'
+        )
+      );
     }
 
     const updatedCaver = await TCaver.updateOne({ id: caverId }).set(
@@ -68,9 +86,13 @@ module.exports = async (req, res) => {
     );
 
     if (!updatedCaver) {
-      return res.notFound({
-        message: `Caver with id ${caverId} not found.`,
-      });
+      return res.notFound(
+        sails.helpers.formatMessagingError(
+          req,
+          `Caver with id ${caverId} not found.`,
+          'E_NOT_FOUND'
+        )
+      );
     }
 
     return res.ok({
@@ -82,7 +104,11 @@ module.exports = async (req, res) => {
   } catch (err) {
     sails.log.error(err);
     return res.serverError(
-      'An error occurred while updating notification preferences.'
+      sails.helpers.formatMessagingError(
+        req,
+        'An error occurred while updating notification preferences.',
+        'E_SERVER_ERROR'
+      )
     );
   }
 };

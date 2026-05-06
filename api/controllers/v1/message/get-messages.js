@@ -20,6 +20,19 @@ module.exports = async (req, res) => {
   const skip = parseInt(req.param('skip', 0), 10);
 
   try {
+    const conversationExists = await TConversation.count({
+      id: conversationId,
+    });
+    if (!conversationExists) {
+      return res.notFound(
+        sails.helpers.formatMessagingError(
+          req,
+          'Conversation not found.',
+          'E_NOT_FOUND'
+        )
+      );
+    }
+
     const isParticipant = await MessageService.isParticipant(
       conversationId,
       caverId

@@ -11,7 +11,13 @@ module.exports = async (req, res) => {
     const caver = await TCaver.findOne({ id: caverId });
 
     if (!caver) {
-      return res.notFound({ error: `Caver with id ${caverId} not found.` });
+      return res.notFound(
+        sails.helpers.formatMessagingError(
+          req,
+          `Caver with id ${caverId} not found.`,
+          'E_NOT_FOUND'
+        )
+      );
     }
 
     return res.ok({
@@ -22,7 +28,11 @@ module.exports = async (req, res) => {
   } catch (err) {
     sails.log.error(err);
     return res.serverError(
-      'An error occurred while retrieving notification preferences.'
+      sails.helpers.formatMessagingError(
+        req,
+        'An error occurred while retrieving notification preferences.',
+        'E_SERVER_ERROR'
+      )
     );
   }
 };
