@@ -55,6 +55,38 @@ module.exports = async (req, res) => {
           )
         );
       }
+
+      // Check if the other participant is still eligible
+      const otherParticipantId = await MessageService.getOtherParticipantId(
+        conversationId,
+        senderId
+      );
+      if (otherParticipantId) {
+        try {
+          await MessageService.getEligibleRecipient(otherParticipantId);
+        } catch (err) {
+          if (err.code === 'E_NOT_FOUND') {
+            return res.notFound(
+              sails.helpers.formatMessagingError(
+                req,
+                err.message,
+                'E_NOT_FOUND'
+              )
+            );
+          }
+          if (err.code === 'E_FORBIDDEN') {
+            return res.forbidden(
+              sails.helpers.formatMessagingError(
+                req,
+                err.message,
+                'E_AUTHORIZATION'
+              )
+            );
+          }
+          throw err;
+        }
+      }
+
       finalConversationId = conversationId;
     } catch (err) {
       sails.log.error(err);

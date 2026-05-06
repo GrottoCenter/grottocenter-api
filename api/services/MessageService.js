@@ -96,6 +96,7 @@ module.exports = {
         last_m.date_sent as "lastMessageDate",
         last_m.body as "lastMessageBody",
         COALESCE(u.unread_count, 0)::int as "unreadCount",
+        last_m.id as "lastMessageId",
         other_p.id_caver as "otherParticipantId",
         other_c.nickname as "otherParticipantNickname"
       FROM t_conversation c
@@ -103,7 +104,7 @@ module.exports = {
       JOIN j_participant other_p ON c.id = other_p.id_conversation AND other_p.id_caver != $1
       LEFT JOIN t_caver other_c ON other_p.id_caver = other_c.id
       LEFT JOIN LATERAL (
-        SELECT date_sent, body 
+        SELECT id, date_sent, body 
         FROM t_message 
         WHERE id_conversation = c.id 
         ORDER BY date_sent DESC 
@@ -220,6 +221,21 @@ module.exports = {
     );
     return result.rows.length > 0;
   },
+
+  /**
+   * Get the ID of the other participant in a 1-on-1 conversation.
+   * @param {number} conversationId
+   * @param {number} caverId - The ID of the participant to exclude.
+   * @returns {Promise<number|null>}
+   */
+  getOtherParticipantId: async (conversationId, caverId) => {
+    const result = await CommonService.query(
+      'SELECT id_caver FROM j_participant WHERE id_conversation = $1 AND id_caver != $2',
+      [conversationId, caverId]
+    );
+    return result.rows.length > 0 ? result.rows[0].id_caver : null;
+  },
+
   /**
    * Get unread message counts for both active and archived conversations.
    * @param {number} caverId
