@@ -32,5 +32,13 @@
 	"validated": "επικυρώθηκε",
 	"We received a request to reset the password for your account.": "Λάβαμε αίτηση για επαναφορά του κωδικού πρόσβασης του λογαριασμού σας.",
 	"You are receiving this email because of your subscription to the country %s.": "Λαμβάνετε αυτό το email λόγω της συνδρομής σας στη χώρα %s.",
-	"You are receiving this email because of your subscription to the massif %s.": "Λαμβάνετε αυτό το email λόγω της συνδρομής σας στον όρεινό όγκο %s."
+	"You are receiving this email because of your subscription to the massif %s.": "Λαμβάνετε αυτό το email λόγω της συνδρομής σας στον όρεινό όγκο %s.",
+	"Thank you for creating your Grottocenter account.": "Ευχαριστούμε που δημιουργήσατε τον λογαριασμό σας στο Grottocenter.",
+	"Please verify your email address by clicking the link below.": "Παρακαλώ επιβεβαιώστε τη διεύθυνση email σας κάνοντας κλικ στον παρακάτω σύνδεσμο.",
+	"If you didn't create an account, you can ignore this email.": "Αν δεν δημιουργήσατε λογαριασμό, μπορείτε να αγνοήσετε αυτό το email.",
+	"Verify my email address": "Επιβεβαίωση της διεύθυνσης email μου",
+	"Verify your email address": "Επιβεβαιώστε τη διεύθυνση email σας",
+	"rejected": "απορρίφθηκε",
+	"You are receiving this email because you are the author of this document.": "Λαμβάνετε αυτό το email επειδή είστε ο συγγραφέας αυτού του εγγράφου.",
+	"Reviewer comment:": "Σχόλιο του συντονιστή:"
 }

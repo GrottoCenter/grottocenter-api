@@ -90,7 +90,6 @@ module.exports = async (req, res) => {
   await EntranceService.updateInSearch(populatedEntrance);
 
   await NotificationService.notifySubscribers(
-    req,
     populatedEntrance,
     req.token.id,
     NotificationService.NOTIFICATION_TYPES.UPDATE,

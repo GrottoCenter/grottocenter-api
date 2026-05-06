@@ -43,7 +43,6 @@ module.exports = async (req, res) => {
 
   const populatedRigging = await RiggingService.getRigging(newRigging.id);
   await NotificationService.notifySubscribers(
-    req,
     populatedRigging,
     req.token.id,
     NotificationService.NOTIFICATION_TYPES.CREATE,

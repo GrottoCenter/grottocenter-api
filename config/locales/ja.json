@@ -32,5 +32,13 @@
 	"validated": "検証されました",
 	"We received a request to reset the password for your account.": "アカウントのパスワードリセットのリクエストを受け取りました。",
 	"You are receiving this email because of your subscription to the country %s.": "国 %s への購読により、このメールを受け取っています。",
-	"You are receiving this email because of your subscription to the massif %s.": "山塊 %s への購読により、このメールを受け取っています。"
+	"You are receiving this email because of your subscription to the massif %s.": "山塊 %s への購読により、このメールを受け取っています。",
+	"Thank you for creating your Grottocenter account.": "Grottocenterアカウントを作成いただきありがとうございます。",
+	"Please verify your email address by clicking the link below.": "下のリンクをクリックして、メールアドレスを確認してください。",
+	"If you didn't create an account, you can ignore this email.": "アカウントを作成していない場合は、このメールを無視してください。",
+	"Verify my email address": "メールアドレスを確認する",
+	"Verify your email address": "メールアドレスを確認してください",
+	"rejected": "却下されました",
+	"You are receiving this email because you are the author of this document.": "あなたがこの文書の著者であるため、このメールを受け取っています。",
+	"Reviewer comment:": "モデレーターのコメント："
 }

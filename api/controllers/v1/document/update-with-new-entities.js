@@ -52,7 +52,6 @@ module.exports = async (req, res) => {
     await TDocument.updateOne(documentId).set(cleanedData);
 
   await NotificationService.notifySubscribers(
-    req,
     updatedDocument,
     req.token.id,
     NotificationService.NOTIFICATION_TYPES.UPDATE,

@@ -1,16 +1,17 @@
-<%- include('emailHeader', { emailTitle: 'Grottocenter - Notification' }); %>
+<%- include('emailHeader', { emailTitle: emailTitle, locale: locale }); %>
   <% /*
   ===== EMAIL BODY =====
 
     Required values:
-        - i18n              Object      internationalization module
+        - __                Function    locale-scoped translation helper
+        - locale            String      ISO 639-1 locale code
         - actionVerb        String      The action performed on the entity
         - entityLink        String      Entity concerned by the notification link
         - entityName        String      Entity concerned by the notification name
         - entityType        String      Entity concerned by the notification type
         - recipientName     String      Full name or nickname of the recipient
         - subscriptionName  String      The subscription name which generated this notification
-        - subscriptionType   String   The subscription type which generated this notification
+        - subscriptionType  String      The subscription type which generated this notification
 
     Optional values:
         - isAuthorNotification  Boolean      Whether this is an author validation notification (defaults to false)
@@ -18,15 +19,15 @@
   */ %>
 
   <p>
-    <%- i18n.__('Dear %s', '<b>' +recipientName+'</b>') %>
+    <%- __('Dear %s', '<b>' +recipientName+'</b>') %>
   </p>
 
   <p>
     <%if (entityName && actionVerb) { %>
-      <%- i18n.__('%s (%s) has been %s on Grottocenter.', '<b>' + entityName +'</b>', i18n.__(entityType), '<b>' + i18n.__(actionVerb) +'</b>') %>
+      <%- __('%s (%s) has been %s on Grottocenter.', '<b>' + entityName +'</b>', __(entityType), '<b>' + __(actionVerb) +'</b>') %>
     <% } %>
     <%if (entityLink) { %>
-      <%- i18n.__('Click the link below to know more about this modification:') %>
+      <%- __('Click the link below to know more about this modification:') %>
       <a href="<%= entityLink %>"><%= entityLink %></a>
       <% } %>
   </p>
@@ -34,23 +35,23 @@
   <% if (!isAuthorNotification) { %>
   <p>
     <%if (subscriptionType === 'country') { %>
-      <%- i18n.__('You are receiving this email because of your subscription to the country %s.', '<b>' +subscriptionName+'</b>') %>
+      <%- __('You are receiving this email because of your subscription to the country %s.', '<b>' +subscriptionName+'</b>') %>
     <% } %>
     <%if (subscriptionType === 'massif') { %>
-      <%- i18n.__('You are receiving this email because of your subscription to the massif %s.', '<b>' +subscriptionName+'</b>') %>
+      <%- __('You are receiving this email because of your subscription to the massif %s.', '<b>' +subscriptionName+'</b>') %>
     <% } %>
   </p>
   <% } else { %>
   <p>
-    <%- i18n.__('You are receiving this email because you are the author of this document.') %>
+    <%- __('You are receiving this email because you are the author of this document.') %>
   </p>
   <% if (validationComment) { %>
   <p>
-    <%- i18n.__('Reviewer comment:') %>
+    <%- __('Reviewer comment:') %>
     <br/>
     <b><%= validationComment %></b>
   </p>
   <% } %>
   <% } %>
 
-  <%- include('emailFooter', { i18n: i18n }); %>
+  <%- include('emailFooter', { __: __, locale: locale }); %>

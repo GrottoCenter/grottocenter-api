@@ -32,5 +32,13 @@
 	"validated": "validat",
 	"We received a request to reset the password for your account.": "Hem rebut una sol·licitud per restablir la contrasenya del vostre compte.",
 	"You are receiving this email because of your subscription to the country %s.": "Rebeu aquest correu electrònic a causa de la vostra subscripció al país %s.",
-	"You are receiving this email because of your subscription to the massif %s.": "Rebeu aquest correu electrònic a causa de la vostra subscripció al massís %s."
+	"You are receiving this email because of your subscription to the massif %s.": "Rebeu aquest correu electrònic a causa de la vostra subscripció al massís %s.",
+	"Thank you for creating your Grottocenter account.": "Gràcies per crear el vostre compte a Grottocenter.",
+	"Please verify your email address by clicking the link below.": "Si us plau, verifiqueu la vostra adreça de correu electrònic fent clic a l'enllaç de sota.",
+	"If you didn't create an account, you can ignore this email.": "Si no heu creat un compte, podeu ignorar aquest correu electrònic.",
+	"Verify my email address": "Verificar la meva adreça de correu electrònic",
+	"Verify your email address": "Verifiqueu la vostra adreça de correu electrònic",
+	"rejected": "rebutjat",
+	"You are receiving this email because you are the author of this document.": "Rebeu aquest correu electrònic perquè sou l'autor d'aquest document.",
+	"Reviewer comment:": "Comentari del moderador:"
 }

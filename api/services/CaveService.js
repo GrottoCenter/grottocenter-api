@@ -84,7 +84,6 @@ module.exports = {
     );
 
     await NotificationService.notifySubscribers(
-      req,
       populatedCave,
       req.token.id,
       NotificationService.NOTIFICATION_TYPES.CREATE,

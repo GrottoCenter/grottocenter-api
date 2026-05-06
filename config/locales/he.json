@@ -32,5 +32,13 @@
 	"validated": "אומת",
 	"We received a request to reset the password for your account.": "קיבלנו בקשה לאפס את הסיסמה של החשבון שלך.",
 	"You are receiving this email because of your subscription to the country %s.": "אתה מקבל את האימייל הזה בשל המנוי שלך למדינה %s.",
-	"You are receiving this email because of your subscription to the massif %s.": "אתה מקבל את האימייל הזה בשל המנוי שלך למסיף הרים %s."
+	"You are receiving this email because of your subscription to the massif %s.": "אתה מקבל את האימייל הזה בשל המנוי שלך למסיף הרים %s.",
+	"Thank you for creating your Grottocenter account.": "תודה שיצרת את חשבון Grottocenter שלך.",
+	"Please verify your email address by clicking the link below.": "אנא אמת את כתובת האימייל שלך על ידי לחיצה על הקישור מתחת.",
+	"If you didn't create an account, you can ignore this email.": "אם לא יצרת חשבון, אתה יכול להתעלם מהאימייל הזה.",
+	"Verify my email address": "אמת את כתובת האימייל שלי",
+	"Verify your email address": "אמת את כתובת האימייל שלך",
+	"rejected": "נדחה",
+	"You are receiving this email because you are the author of this document.": "אתה מקבל את האימייל הזה כי אתה מחבר המסמך הזה.",
+	"Reviewer comment:": "הערת המנחה:"
 }

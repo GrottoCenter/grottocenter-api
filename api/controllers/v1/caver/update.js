@@ -4,44 +4,29 @@ const CaverService = require('../../../services/CaverService');
 const { toSimpleCaver } = require('../../../services/mapping/converters');
 
 module.exports = async (req, res) => {
-  const propretiesUpdatable = [
-    'name',
-    'nickname',
-    'mail',
-    'password',
-    'surname',
-    'organizations',
-  ];
+  const propertiesUpdatable = ['name', 'nickname', 'surname', 'organizations'];
 
   const hasAdminRight = RightService.hasGroup(
     req.token.groups,
     RightService.G.ADMINISTRATOR
   );
 
-  const caverId = req.param('caverId');
-  if (!hasAdminRight && Number(caverId) !== req.token.id) {
-    return res.forbidden('You can not edit an other account than yours.');
+  if (!hasAdminRight) {
+    return res.forbidden('Only administrators can use this endpoint.');
   }
 
+  const caverId = req.param('caverId');
   const caver = await TCaver.findOne({ id: caverId });
   if (!caver) {
     return res.badRequest(`Could not find caver with id ${caverId}.`);
   }
 
-  // Check if the changes requested are authorized (check propretiesUpdatable)
+  // Check if the changes requested are authorized (check propertiesUpdatable)
   for (const prop of Object.keys(req.body)) {
-    if (!propretiesUpdatable.includes(prop)) {
+    if (!propertiesUpdatable.includes(prop)) {
       return res.badRequest(
         `Could not update property ${prop}, it is not a property which is updatable.`
       );
-    }
-
-    if (prop === 'mail' || prop === 'password') {
-      if (hasAdminRight) {
-        return res.forbidden({
-          error: `Admin can not update property ${prop}`,
-        });
-      }
     }
   }
 

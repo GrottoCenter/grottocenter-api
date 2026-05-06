@@ -46,13 +46,11 @@ module.exports = async (req, res) => {
   );
 
   // Change locale to the user's one to translate the mail
-  req.setLocale(userFound.language.part1);
-
   await sails.helpers.sendEmail
     .with({
       allowResponse: false,
       emailSubject: 'Password Reset',
-      i18n: req.i18n,
+      locale: userFound.language ? userFound.language.part1 : undefined,
       recipientEmail: emailProvided,
       viewName: 'forgotPassword',
       viewValues: {

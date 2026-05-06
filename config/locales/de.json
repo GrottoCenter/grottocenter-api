@@ -32,5 +32,13 @@
 	"validated": "validiert",
 	"We received a request to reset the password for your account.": "Wir haben eine Anfrage zum Zurücksetzen des Passworts für Ihr Konto erhalten.",
 	"You are receiving this email because of your subscription to the country %s.": "Sie erhalten diese E-Mail aufgrund Ihres Abonnements für das Land %s.",
-	"You are receiving this email because of your subscription to the massif %s.": "Sie erhalten diese E-Mail aufgrund Ihres Abonnements für das Massiv %s."
+	"You are receiving this email because of your subscription to the massif %s.": "Sie erhalten diese E-Mail aufgrund Ihres Abonnements für das Massiv %s.",
+	"Thank you for creating your Grottocenter account.": "Vielen Dank für die Erstellung Ihres Grottocenter-Kontos.",
+	"Please verify your email address by clicking the link below.": "Bitte bestätigen Sie Ihre E-Mail-Adresse, indem Sie auf den Link unten klicken.",
+	"If you didn't create an account, you can ignore this email.": "Wenn Sie kein Konto erstellt haben, können Sie diese E-Mail ignorieren.",
+	"Verify my email address": "Meine E-Mail-Adresse bestätigen",
+	"Verify your email address": "Bestätigen Sie Ihre E-Mail-Adresse",
+	"rejected": "abgelehnt",
+	"You are receiving this email because you are the author of this document.": "Sie erhalten diese E-Mail, weil Sie der Autor dieses Dokuments sind.",
+	"Reviewer comment:": "Kommentar des Moderators:"
 }

@@ -23,7 +23,7 @@ describe('Caver features', () => {
   });
 
   describe('Update the caver data using different token', () => {
-    it('should raise an error if the user token do not match with the caver to edit', (done) => {
+    it('should raise an error if a non-admin user tries to edit a caver', (done) => {
       supertest(sails.hooks.http.app)
         .put('/api/v1/cavers/6')
         .send({})
@@ -33,32 +33,17 @@ describe('Caver features', () => {
         .expect(403, done);
     });
 
-    it('should modify the caver data with userToken', (done) => {
-      const newName = 'NewName';
-      const newNickname = 'NewNickname';
-      const newsurname = 'newSurname';
-
-      const update = {
-        name: newName,
-        nickname: newNickname,
-        surname: newsurname,
-      };
+    it('should raise an error if a non-admin user tries to edit their own profile via this endpoint', (done) => {
       supertest(sails.hooks.http.app)
         .put('/api/v1/cavers/3')
-        .send(update)
+        .send({ name: 'NewName' })
         .set('Authorization', userToken)
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json')
-        .expect(200)
-        .end((err, res) => {
-          if (err) return done(err);
-          const caver = res.body;
-          should(caver.nickname).equal(update.nickname);
-          return done();
-        });
+        .expect(403, done);
     });
 
-    it('should modify the caver data execept email and password with AdminToken', (done) => {
+    it('should modify the caver data with AdminToken', (done) => {
       const newName = 'NewName2';
       const newNickname = 'NewNickname2';
       const newSurname = 'newSurname2';
@@ -123,10 +108,9 @@ describe('Caver features', () => {
         .set('Accept', 'application/json')
         .expect(400, done);
     });
-    it('should raise an error if an admin try to edit the mail and password of a caver', (done) => {
-      const newMail = 'test@test.com';
+    it('should raise an error if an admin tries to edit mail (not an updatable field)', (done) => {
       const update = {
-        mail: newMail,
+        mail: 'test@test.com',
       };
       supertest(sails.hooks.http.app)
         .put('/api/v1/cavers/6')
@@ -134,7 +118,7 @@ describe('Caver features', () => {
         .set('Authorization', adminToken)
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json')
-        .expect(403, done);
+        .expect(400, done);
     });
   });
 });

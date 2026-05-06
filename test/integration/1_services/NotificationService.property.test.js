@@ -7,13 +7,6 @@ const {
   NOTIFICATION_ENTITIES,
 } = require('../../../api/services/NotificationService');
 
-const fakeReq = {
-  i18n: {
-    __: (message) => message,
-    getLocale: () => 'eng',
-  },
-};
-
 describe('NotificationService - Property Tests', () => {
   afterEach(() => {
     sinon.restore();
@@ -54,7 +47,6 @@ describe('NotificationService - Property Tests', () => {
 
             const document = { id: 99, author: authorId, name: 'Test Doc' };
             await NotificationService.notifyAuthor(
-              fakeReq,
               document,
               moderatorId,
               notificationType,
@@ -108,7 +100,6 @@ describe('NotificationService - Property Tests', () => {
 
             const document = { id: 99, author: authorId, name: 'Test Doc' };
             await NotificationService.notifyAuthor(
-              fakeReq,
               document,
               moderatorId,
               notificationType,
@@ -173,7 +164,6 @@ describe('NotificationService - Property Tests', () => {
 
             const document = { id: 99, author: 2, name: 'Test Doc' };
             await NotificationService.notifyAuthor(
-              fakeReq,
               document,
               1,
               notificationType,
@@ -240,7 +230,6 @@ describe('NotificationService - Property Tests', () => {
               entity,
               NOTIFICATION_TYPES.REJECT,
               NOTIFICATION_ENTITIES.DOCUMENT,
-              fakeReq,
               { ...user, validationComment }
             );
 
@@ -298,7 +287,6 @@ describe('NotificationService - Property Tests', () => {
             entity,
             NOTIFICATION_TYPES.VALIDATE,
             NOTIFICATION_ENTITIES.DOCUMENT,
-            fakeReq,
             user
           );
 

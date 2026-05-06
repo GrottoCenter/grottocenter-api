@@ -27,10 +27,10 @@ module.exports.policies = {
   '*': false, // by default, prevents all access
 
   // Account
+  'v1/account/find': 'tokenAuth',
+  'v1/account/update': 'tokenAuth',
   'v1/account/change-password': true,
   'v1/account/forgot-password': true,
-  'v1/account/change-alert-for-news': 'tokenAuth',
-  'v1/account/change-email': 'tokenAuth',
 
   // Auth
   'v1/auth/login': true,

@@ -32,5 +32,13 @@
 	"validated": "validat",
 	"We received a request to reset the password for your account.": "Am primit o cerere de resetare a parolei pentru contul dumneavoastră.",
 	"You are receiving this email because of your subscription to the country %s.": "Primești acest email din cauza abonamentului tău la țara %s.",
-	"You are receiving this email because of your subscription to the massif %s.": "Primești acest email din cauza abonamentului tău la masivul %s."
+	"You are receiving this email because of your subscription to the massif %s.": "Primești acest email din cauza abonamentului tău la masivul %s.",
+	"Thank you for creating your Grottocenter account.": "Vă mulțumim pentru crearea contului dumneavoastră Grottocenter.",
+	"Please verify your email address by clicking the link below.": "Vă rugăm să verificați adresa de email făcând clic pe linkul de mai jos.",
+	"If you didn't create an account, you can ignore this email.": "Dacă nu ați creat un cont, puteți ignora acest email.",
+	"Verify my email address": "Verifică adresa mea de email",
+	"Verify your email address": "Verificați adresa de email",
+	"rejected": "respins",
+	"You are receiving this email because you are the author of this document.": "Primiți acest email deoarece sunteți autorul acestui document.",
+	"Reviewer comment:": "Comentariul moderatorului:"
 }

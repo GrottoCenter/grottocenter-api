@@ -64,7 +64,6 @@ module.exports = async (req, res) => {
 
   // Fire-and-forget: don't block the response on subscriber notifications
   NotificationService.notifySubscribers(
-    req,
     cave,
     req.token.id,
     deletePermanently

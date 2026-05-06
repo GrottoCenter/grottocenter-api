@@ -32,5 +32,13 @@
 	"validated": "تم التحقق منه",
 	"We received a request to reset the password for your account.": "لقد تلقينا طلباً لإعادة تعيين كلمة المرور لحسابك.",
 	"You are receiving this email because of your subscription to the country %s.": "أنت تتلقى هذا البريد الإلكتروني بسبب اشتراكك في البلد %s.",
-	"You are receiving this email because of your subscription to the massif %s.": "أنت تتلقى هذا البريد الإلكتروني بسبب اشتراكك في الكتلة الجبلية %s."
+	"You are receiving this email because of your subscription to the massif %s.": "أنت تتلقى هذا البريد الإلكتروني بسبب اشتراكك في الكتلة الجبلية %s.",
+	"Thank you for creating your Grottocenter account.": "شكراً لإنشاء حسابك على Grottocenter.",
+	"Please verify your email address by clicking the link below.": "يرجى التحقق من عنوان بريدك الإلكتروني بالنقر على الرابط أدناه.",
+	"If you didn't create an account, you can ignore this email.": "إذا لم تقم بإنشاء حساب، يمكنك تجاهل هذا البريد الإلكتروني.",
+	"Verify my email address": "تحقق من عنوان بريدي الإلكتروني",
+	"Verify your email address": "تحقق من عنوان بريدك الإلكتروني",
+	"rejected": "مرفوض",
+	"You are receiving this email because you are the author of this document.": "أنت تتلقى هذا البريد الإلكتروني لأنك مؤلف هذه الوثيقة.",
+	"Reviewer comment:": "تعليق المراجع:"
 }

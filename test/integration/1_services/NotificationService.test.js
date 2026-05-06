@@ -9,13 +9,6 @@ const {
 const tnotificationtypeFixture = require('../../fixtures/tnotificationtype.json');
 
 describe('NotificationService', () => {
-  const fakeReq = {
-    i18n: {
-      __: (message) => message,
-      getLocale: () => 'eng',
-    },
-  };
-
   describe('REJECT notification type', () => {
     it('should have REJECT in NOTIFICATION_TYPES with value "REJECT"', () => {
       should(NOTIFICATION_TYPES).have.property('REJECT');
@@ -37,7 +30,6 @@ describe('NotificationService', () => {
         { id: 1, name: 'test document' },
         NOTIFICATION_TYPES.REJECT,
         NOTIFICATION_ENTITIES.DOCUMENT,
-        fakeReq,
         user
       );
     });
@@ -54,7 +46,6 @@ describe('NotificationService', () => {
         entity,
         notifType,
         notifEntity,
-        fakeReq,
         user
       );
 
@@ -225,7 +216,6 @@ describe('NotificationService', () => {
         { id: 1, name: 'Test Document' },
         NOTIFICATION_TYPES.REJECT,
         NOTIFICATION_ENTITIES.DOCUMENT,
-        fakeReq,
         {
           ...user,
           isAuthorNotification: true,
@@ -239,7 +229,6 @@ describe('NotificationService', () => {
         { id: 1, name: 'Test Document' },
         NOTIFICATION_TYPES.VALIDATE,
         NOTIFICATION_ENTITIES.DOCUMENT,
-        fakeReq,
         { ...user, isAuthorNotification: true, validationComment: null }
       );
     });
@@ -249,7 +238,6 @@ describe('NotificationService', () => {
         { id: 1, name: 'Test Document' },
         NOTIFICATION_TYPES.VALIDATE,
         NOTIFICATION_ENTITIES.DOCUMENT,
-        fakeReq,
         { ...user, isAuthorNotification: false }
       );
     });
@@ -288,7 +276,6 @@ describe('NotificationService', () => {
     it('should create a notification about the entrance for user 1 subscribed to the country FR', async () => {
       await trackNotifications(async () => {
         const res = await NotificationService.notifySubscribers(
-          fakeReq,
           { ...entrance2, country: 'FR' },
           user3.id,
           NOTIFICATION_TYPES.UPDATE,
@@ -307,7 +294,6 @@ describe('NotificationService', () => {
     it('should create a notification about the cave history for user 1 subscribed to the massif with id 1', async () => {
       await trackNotifications(async () => {
         const res = await NotificationService.notifySubscribers(
-          fakeReq,
           history1,
           user3.id,
           NOTIFICATION_TYPES.CREATE,
@@ -328,7 +314,6 @@ describe('NotificationService', () => {
       await trackNotifications(async () => {
         const entrance = await TEntrance.findOne(2); // Has iso_3166_2: "FR-01"
         const res = await NotificationService.notifySubscribers(
-          fakeReq,
           entrance,
           user3.id,
           NOTIFICATION_TYPES.CREATE, // Use CREATE to avoid conflicts with UPDATE tests
@@ -352,7 +337,6 @@ describe('NotificationService', () => {
     it('should throw error for invalid notification entity in notifySubscribers', async () => {
       try {
         await NotificationService.notifySubscribers(
-          fakeReq,
           { id: 1 },
           3,
           NOTIFICATION_TYPES.CREATE,
@@ -367,7 +351,6 @@ describe('NotificationService', () => {
     it('should throw error for invalid notification type in notifySubscribers', async () => {
       try {
         await NotificationService.notifySubscribers(
-          fakeReq,
           { id: 1 },
           3,
           'INVALID_TYPE',
@@ -382,7 +365,6 @@ describe('NotificationService', () => {
     it('should throw error for missing notifier id', async () => {
       try {
         await NotificationService.notifySubscribers(
-          fakeReq,
           { id: 1 },
           null,
           NOTIFICATION_TYPES.CREATE,
@@ -397,7 +379,6 @@ describe('NotificationService', () => {
     it('should handle CAVE entity notifications', async () => {
       const cave = await TCave.findOne(1);
       const res = await NotificationService.notifySubscribers(
-        fakeReq,
         cave,
         user3.id,
         NOTIFICATION_TYPES.UPDATE,
@@ -411,7 +392,6 @@ describe('NotificationService', () => {
       await CaveService.setEntrances([cave]);
       // Cave 1 has entrance 2 which has iso_3166_2: "FR-01"
       const res = await NotificationService.notifySubscribers(
-        fakeReq,
         cave,
         user3.id,
         NOTIFICATION_TYPES.CREATE,
@@ -423,7 +403,6 @@ describe('NotificationService', () => {
     it('should handle MASSIF entity notifications', async () => {
       const massif = await TMassif.findOne(1);
       const res = await NotificationService.notifySubscribers(
-        fakeReq,
         massif,
         user3.id,
         NOTIFICATION_TYPES.CREATE,
@@ -435,7 +414,6 @@ describe('NotificationService', () => {
     it('should handle ORGANIZATION entity notifications', async () => {
       const grotto = await TGrotto.findOne(1);
       const res = await NotificationService.notifySubscribers(
-        fakeReq,
         grotto,
         user3.id,
         NOTIFICATION_TYPES.UPDATE,
@@ -447,7 +425,6 @@ describe('NotificationService', () => {
     it('should handle ORGANIZATION entity notifications with region', async () => {
       const grotto = { ...(await TGrotto.findOne(1)), iso_3166_2: 'FR-01' };
       const res = await NotificationService.notifySubscribers(
-        fakeReq,
         grotto,
         user3.id,
         NOTIFICATION_TYPES.UPDATE,
@@ -459,7 +436,6 @@ describe('NotificationService', () => {
     it('should handle DOCUMENT entity notifications', async () => {
       const document = await TDocument.findOne(1);
       const res = await NotificationService.notifySubscribers(
-        fakeReq,
         document,
         user3.id,
         NOTIFICATION_TYPES.CREATE,
@@ -471,7 +447,6 @@ describe('NotificationService', () => {
     it('should handle DESCRIPTION entity notifications with cave relation', async () => {
       const description = await TDescription.findOne(6); // Use new fixture with cave relation
       const res = await NotificationService.notifySubscribers(
-        fakeReq,
         description,
         user3.id,
         NOTIFICATION_TYPES.UPDATE,
@@ -483,7 +458,6 @@ describe('NotificationService', () => {
     it('should handle RIGGING entity notifications with cave relation', async () => {
       const rigging = await TRigging.findOne(4); // Use new fixture with cave relation
       const res = await NotificationService.notifySubscribers(
-        fakeReq,
         rigging,
         user3.id,
         NOTIFICATION_TYPES.UPDATE,
@@ -495,7 +469,6 @@ describe('NotificationService', () => {
     it('should handle LOCATION entity notifications', async () => {
       const location = await TLocation.findOne(1);
       const res = await NotificationService.notifySubscribers(
-        fakeReq,
         location,
         user3.id,
         NOTIFICATION_TYPES.CREATE,
@@ -508,7 +481,6 @@ describe('NotificationService', () => {
       // Create a location with entrance that has region
       const location = { id: 1, entrance: 2 }; // Entrance 2 has iso_3166_2: "FR-01"
       const res = await NotificationService.notifySubscribers(
-        fakeReq,
         location,
         user3.id,
         NOTIFICATION_TYPES.UPDATE,
@@ -520,7 +492,6 @@ describe('NotificationService', () => {
     it('should handle COMMENT entity notifications', async () => {
       const comment = await TComment.findOne(1);
       const res = await NotificationService.notifySubscribers(
-        fakeReq,
         comment,
         user3.id,
         NOTIFICATION_TYPES.CREATE,
@@ -576,7 +547,6 @@ describe('NotificationService', () => {
 
       const { newIds } = await trackNotifications(() =>
         NotificationService.notifyAuthor(
-          fakeReq,
           document,
           moderatorId,
           NOTIFICATION_TYPES.VALIDATE,
@@ -599,7 +569,6 @@ describe('NotificationService', () => {
 
       const { newIds } = await trackNotifications(() =>
         NotificationService.notifyAuthor(
-          fakeReq,
           document,
           moderatorId,
           NOTIFICATION_TYPES.REJECT,
@@ -620,7 +589,6 @@ describe('NotificationService', () => {
 
       const { newIds, result } = await trackNotifications(() =>
         NotificationService.notifyAuthor(
-          fakeReq,
           document,
           authorId,
           NOTIFICATION_TYPES.VALIDATE,
@@ -637,7 +605,6 @@ describe('NotificationService', () => {
 
       const { newIds } = await trackNotifications(() =>
         NotificationService.notifyAuthor(
-          fakeReq,
           document,
           moderatorId,
           NOTIFICATION_TYPES.VALIDATE,
@@ -655,7 +622,6 @@ describe('NotificationService', () => {
 
       const { newIds, result } = await trackNotifications(() =>
         NotificationService.notifyAuthor(
-          fakeReq,
           document,
           moderatorId,
           NOTIFICATION_TYPES.VALIDATE,
@@ -682,7 +648,6 @@ describe('NotificationService', () => {
 
       const { newIds } = await trackNotifications(() =>
         NotificationService.notifyAuthor(
-          fakeReq,
           document,
           moderatorId,
           NOTIFICATION_TYPES.REJECT,
@@ -713,7 +678,6 @@ describe('NotificationService', () => {
 
       const { newIds } = await trackNotifications(() =>
         NotificationService.notifyAuthor(
-          fakeReq,
           document,
           moderatorId,
           NOTIFICATION_TYPES.VALIDATE,

@@ -32,5 +32,13 @@
 	"validated": "потвърден",
 	"We received a request to reset the password for your account.": "Получихме заявка за нулиране на паролата за вашия акаунт.",
 	"You are receiving this email because of your subscription to the country %s.": "Получавате този имейл поради вашия абонамент за страната %s.",
-	"You are receiving this email because of your subscription to the massif %s.": "Получавате този имейл поради вашия абонамент за масива %s."
+	"You are receiving this email because of your subscription to the massif %s.": "Получавате този имейл поради вашия абонамент за масива %s.",
+	"Thank you for creating your Grottocenter account.": "Благодарим ви за създаването на вашия акаунт в Grottocenter.",
+	"Please verify your email address by clicking the link below.": "Моля, потвърдете имейл адреса си, като кликнете върху връзката по-долу.",
+	"If you didn't create an account, you can ignore this email.": "Ако не сте създали акаунт, можете да игнорирате този имейл.",
+	"Verify my email address": "Потвърди имейл адреса ми",
+	"Verify your email address": "Потвърдете имейл адреса си",
+	"rejected": "отхвърлен",
+	"You are receiving this email because you are the author of this document.": "Получавате този имейл, защото сте автор на този документ.",
+	"Reviewer comment:": "Коментар на модератора:"
 }

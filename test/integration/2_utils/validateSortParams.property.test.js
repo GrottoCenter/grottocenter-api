@@ -1,3 +1,4 @@
+/* eslint-disable func-names */
 const should = require('should');
 const sinon = require('sinon');
 const fc = require('fast-check');

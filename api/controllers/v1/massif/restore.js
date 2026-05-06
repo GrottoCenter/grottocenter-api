@@ -38,7 +38,6 @@ module.exports = async (req, res) => {
   await MassifService.updateInSearch(massif);
 
   await NotificationService.notifySubscribers(
-    req,
     massif,
     req.token.id,
     NotificationService.NOTIFICATION_TYPES.RESTORE,

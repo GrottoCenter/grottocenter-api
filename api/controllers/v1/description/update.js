@@ -31,7 +31,6 @@ module.exports = async (req, res) => {
   const populatedDescription =
     await DescriptionService.getDescription(descriptionId);
   await NotificationService.notifySubscribers(
-    req,
     populatedDescription,
     req.token.id,
     NotificationService.NOTIFICATION_TYPES.UPDATE,
