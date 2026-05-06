@@ -32,7 +32,6 @@ module.exports = async (req, res) => {
   );
 
   await NotificationService.notifySubscribers(
-    req,
     history,
     req.token.id,
     NotificationService.NOTIFICATION_TYPES.RESTORE,

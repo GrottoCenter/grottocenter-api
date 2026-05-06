@@ -261,7 +261,6 @@ module.exports = {
     await module.exports.updateInSearch(newEntrancePopulated);
 
     await NotificationService.notifySubscribers(
-      req,
       newEntrancePopulated,
       req.token.id,
       NotificationService.NOTIFICATION_TYPES.CREATE,

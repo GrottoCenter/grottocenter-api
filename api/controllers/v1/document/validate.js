@@ -41,7 +41,6 @@ module.exports = async (req, res) => {
     await DocumentService.updateInSearch(populatedDoc);
 
     await NotificationService.notifySubscribers(
-      req,
       populatedDoc,
       req.token.id,
       NotificationService.NOTIFICATION_TYPES.VALIDATE,
@@ -51,7 +50,6 @@ module.exports = async (req, res) => {
 
   // Notify author for both acceptance and rejection
   await NotificationService.notifyAuthor(
-    req,
     populatedDoc,
     req.token.id,
     isValidated

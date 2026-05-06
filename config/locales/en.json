@@ -36,5 +36,9 @@
 	"Thank you for creating your Grottocenter account.": "Thank you for creating your Grottocenter account.",
 	"Please verify your email address by clicking the link below.": "Please verify your email address by clicking the link below.",
 	"If you didn't create an account, you can ignore this email.": "If you didn't create an account, you can ignore this email.",
-	"Verify my email address": "Verify my email address"
+	"Verify my email address": "Verify my email address",
+	"Verify your email address": "Verify your email address",
+	"rejected": "rejected",
+	"You are receiving this email because you are the author of this document.": "You are receiving this email because you are the author of this document.",
+	"Reviewer comment:": "Reviewer comment:"
 }

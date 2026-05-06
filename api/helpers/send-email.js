@@ -1,6 +1,8 @@
 /* eslint-disable no-underscore-dangle */
+const path = require('path');
 const { SendEmailCommand } = require('@aws-sdk/client-sesv2');
 const ejs = require('ejs');
+const I18n = require('i18n-2');
 const { awsSesCli } = require('../../config/awsSes');
 
 module.exports = {
@@ -23,10 +25,11 @@ module.exports = {
       example: 'Welcome to Grottocenter!',
       required: true,
     },
-    i18n: {
-      type: 'ref',
-      defaultsTo: sails.hooks.i18n,
-      description: 'Locale module to use to translate the email content.',
+    locale: {
+      type: 'string',
+      description:
+        'ISO 639-1 locale code (e.g. "fr", "en") to use for the email.',
+      defaultsTo: sails.config.i18n.defaultLocale,
     },
     recipientEmail: {
       type: 'string',
@@ -67,18 +70,37 @@ module.exports = {
     const {
       allowResponse,
       emailSubject,
-      i18n,
+      locale,
       recipientEmail,
       viewName,
       viewValues,
     } = inputs;
 
-    // TODO: set locale temporarily
+    // Create a fresh i18n instance scoped to this email's locale.
+    // Each email gets its own instance — no shared mutable state.
+    const i18n = new I18n({
+      locales: sails.config.i18n.locales,
+      defaultLocale: sails.config.i18n.defaultLocale,
+      directory: path.resolve(
+        sails.config.appPath,
+        sails.config.i18n.localesDirectory || 'config/locales'
+      ),
+      extension: '.json',
+      devMode: process.env.NODE_ENV === 'development',
+    });
+    i18n.setLocale(locale);
+
+    const __ = (...args) => i18n.__(...args);
+
+    const subjectText = `Grottocenter - ${__(emailSubject)}`;
+
     const emailHtml = await ejs.renderFile(
       `./views/emailTemplates/${viewName}.ejs`,
       {
         ...viewValues,
-        i18n,
+        __,
+        locale,
+        emailTitle: subjectText,
       }
     );
 
@@ -102,7 +124,7 @@ module.exports = {
           },
           Subject: {
             Charset: 'UTF-8',
-            Data: `Grottocenter - ${i18n.__(emailSubject)}`,
+            Data: subjectText,
           },
         },
       },

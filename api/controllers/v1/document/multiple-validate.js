@@ -79,7 +79,6 @@ async function updateSearchAndNotify(req, documentId, userId) {
   await DocumentService.updateInSearch(document);
 
   await NotificationService.notifySubscribers(
-    req,
     document,
     userId,
     NotificationService.NOTIFICATION_TYPES.VALIDATE,
@@ -141,7 +140,6 @@ module.exports = async (req, res) => {
       );
       // eslint-disable-next-line no-await-in-loop
       await NotificationService.notifyAuthor(
-        req,
         rejectedDoc,
         req.token.id,
         NotificationService.NOTIFICATION_TYPES.REJECT,
@@ -190,7 +188,6 @@ module.exports = async (req, res) => {
     if (populatedDoc) {
       // eslint-disable-next-line no-await-in-loop
       await NotificationService.notifyAuthor(
-        req,
         populatedDoc,
         req.token.id,
         NotificationService.NOTIFICATION_TYPES.VALIDATE,

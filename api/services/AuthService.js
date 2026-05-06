@@ -68,16 +68,16 @@ module.exports.generateActivationCode = generateActivationCode;
  * Send a verification email to a user
  * @param {Object} user
  * @param {String} token
- * @param {Object} i18n
+ * @param {String} [locale] - ISO 639-1 locale code (e.g. "fr", "en")
  */
-async function sendVerificationEmail(user, token, i18n) {
+async function sendVerificationEmail(user, token, locale) {
   const verifyLink = `${sails.config.custom.baseUrl}/ui/verify-email?token=${token}`;
 
   try {
     await sails.helpers.sendEmail.with({
       allowResponse: false,
       emailSubject: 'Verify your email address',
-      i18n,
+      locale,
       recipientEmail: user.mail,
       viewName: 'verifyEmail',
       viewValues: {

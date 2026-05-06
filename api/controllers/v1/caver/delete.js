@@ -141,7 +141,6 @@ module.exports = async (req, res) => {
   await CaverService.deleteInSearch(caverId);
 
   await NotificationService.notifySubscribers(
-    req,
     caver,
     req.token.id,
     NotificationService.NOTIFICATION_TYPES.PERMANENT_DELETE,

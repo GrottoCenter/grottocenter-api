@@ -32,5 +32,13 @@
 	"validated": "divalidasi",
 	"We received a request to reset the password for your account.": "Kami menerima permintaan untuk mengatur ulang kata sandi akun Anda.",
 	"You are receiving this email because of your subscription to the country %s.": "Anda menerima email ini karena langganan Anda ke negara %s.",
-	"You are receiving this email because of your subscription to the massif %s.": "Anda menerima email ini karena langganan Anda ke massif %s."
+	"You are receiving this email because of your subscription to the massif %s.": "Anda menerima email ini karena langganan Anda ke massif %s.",
+	"Thank you for creating your Grottocenter account.": "Terima kasih telah membuat akun Grottocenter Anda.",
+	"Please verify your email address by clicking the link below.": "Silakan verifikasi alamat email Anda dengan mengklik tautan di bawah.",
+	"If you didn't create an account, you can ignore this email.": "Jika Anda tidak membuat akun, Anda dapat mengabaikan email ini.",
+	"Verify my email address": "Verifikasi alamat email saya",
+	"Verify your email address": "Verifikasi alamat email Anda",
+	"rejected": "ditolak",
+	"You are receiving this email because you are the author of this document.": "Anda menerima email ini karena Anda adalah penulis dokumen ini.",
+	"Reviewer comment:": "Komentar moderator:"
 }

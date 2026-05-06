@@ -39,7 +39,6 @@ module.exports = async (req, res) => {
   }
 
   await NotificationService.notifySubscribers(
-    req,
     rigging,
     req.token.id,
     deletePermanently

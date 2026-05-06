@@ -36,7 +36,6 @@ module.exports = async (req, res) => {
 
   const populatedHistory = await HistoryService.getHistory(newHistory.id);
   await NotificationService.notifySubscribers(
-    req,
     populatedHistory,
     req.token.id,
     NotificationService.NOTIFICATION_TYPES.CREATE,

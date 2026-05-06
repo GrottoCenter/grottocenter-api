@@ -334,7 +334,6 @@ module.exports = {
     }
 
     await NotificationService.notifySubscribers(
-      req,
       populatedDocument,
       req.token.id,
       NotificationService.NOTIFICATION_TYPES.CREATE,

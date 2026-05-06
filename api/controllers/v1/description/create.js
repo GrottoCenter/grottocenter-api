@@ -40,7 +40,6 @@ module.exports = async (req, res) => {
   );
 
   await NotificationService.notifySubscribers(
-    req,
     populatedDescription,
     req.token.id,
     NotificationService.NOTIFICATION_TYPES.CREATE,

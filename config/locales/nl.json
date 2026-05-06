@@ -32,5 +32,13 @@
 	"validated": "gevalideerd",
 	"We received a request to reset the password for your account.": "We hebben een verzoek ontvangen om het wachtwoord voor uw account opnieuw in te stellen.",
 	"You are receiving this email because of your subscription to the country %s.": "U ontvangt deze e-mail vanwege uw abonnement op het land %s.",
-	"You are receiving this email because of your subscription to the massif %s.": "U ontvangt deze e-mail vanwege uw abonnement op het bergmassief %s."
+	"You are receiving this email because of your subscription to the massif %s.": "U ontvangt deze e-mail vanwege uw abonnement op het bergmassief %s.",
+	"Thank you for creating your Grottocenter account.": "Bedankt voor het aanmaken van uw Grottocenter-account.",
+	"Please verify your email address by clicking the link below.": "Bevestig uw e-mailadres door op de onderstaande link te klikken.",
+	"If you didn't create an account, you can ignore this email.": "Als u geen account heeft aangemaakt, kunt u deze e-mail negeren.",
+	"Verify my email address": "Mijn e-mailadres bevestigen",
+	"Verify your email address": "Bevestig uw e-mailadres",
+	"rejected": "afgewezen",
+	"You are receiving this email because you are the author of this document.": "U ontvangt deze e-mail omdat u de auteur bent van dit document.",
+	"Reviewer comment:": "Opmerking van de moderator:"
 }

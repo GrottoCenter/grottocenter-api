@@ -168,7 +168,6 @@ module.exports = {
     );
 
     await NotificationService.notifySubscribers(
-      req,
       newOrganizationPopulated,
       req.token.id,
       NotificationService.NOTIFICATION_TYPES.CREATE,

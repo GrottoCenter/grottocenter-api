@@ -1,3 +1,4 @@
+/* eslint-disable func-names */
 const should = require('should');
 const fc = require('fast-check');
 const moment = require('moment');

@@ -1,5 +1,6 @@
 const NameService = require('./NameService');
 const CommonService = require('./CommonService');
+const LanguageService = require('./LanguageService');
 
 const NOTIFICATION_ENTITIES = {
   CAVE: 'cave',
@@ -45,9 +46,11 @@ const sendNotificationEmail = async (
   entity,
   notificationType,
   notificationEntity,
-  req,
   user
 ) => {
+  // Resolve the recipient's preferred locale
+  const locale = await LanguageService.getLocale(user.language);
+
   // Get entity name (handle all cases)
   const getEntityName = (entityData) => {
     if (entityData.name) return entityData.name;
@@ -124,7 +127,7 @@ const sendNotificationEmail = async (
     .with({
       allowResponse: false,
       emailSubject: 'Notification',
-      i18n: req.i18n,
+      locale,
       recipientEmail: user.mail,
       viewName: 'notification',
       viewValues: {
@@ -209,7 +212,6 @@ module.exports = {
 
   /**
    *
-   * @param {*} req
    * @param {*} entity
    * @param {Number} notifierId
    * @param {NOTIFICATION_TYPES} notificationType
@@ -217,7 +219,6 @@ module.exports = {
    * @return {Boolean} true if everything went well, else false
    */
   notifySubscribers: async (
-    req,
     entity,
     notifierId,
     notificationType,
@@ -457,7 +458,6 @@ module.exports = {
               populatedEntity,
               notificationType,
               notificationEntity,
-              req,
               user
             );
           }
@@ -489,7 +489,6 @@ module.exports = {
   /**
    * Create an in-app notification for the document author and optionally send an email.
    *
-   * @param {Object}  req              - Express request (carries i18n)
    * @param {Object}  document         - Populated TDocument (must have .author)
    * @param {Number}  moderatorId      - ID of the moderator who made the decision
    * @param {String}  notificationType - NOTIFICATION_TYPES.VALIDATE or NOTIFICATION_TYPES.REJECT
@@ -497,7 +496,6 @@ module.exports = {
    * @returns {Boolean} true on success, false on silent failure
    */
   notifyAuthor: async (
-    req,
     document,
     moderatorId,
     notificationType,
@@ -544,7 +542,6 @@ module.exports = {
           document,
           notificationType,
           NOTIFICATION_ENTITIES.DOCUMENT,
-          req,
           {
             ...author,
             isAuthorNotification: true,
