@@ -214,6 +214,7 @@ module.exports = {
         result.rows.map(async (row) => {
           const recipient = await TCaver.findOne({ id: row.id_caver });
           if (!recipient || !recipient.sendMessageNotificationByEmail) return;
+          // TODO: construct conversation link when the  frontend is worked on
           const conversationLink = '';
           await sails.helpers.sendEmail
             .with({
