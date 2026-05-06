@@ -1,5 +1,6 @@
 {
 	"cave": "cavité",
+	"Click the link below to view the conversation:": "Cliquez sur le lien ci-dessous pour voir la conversation :",
 	"Click the link below to know more about this modification:": "Cliquez sur le lien ci-dessous pour en savoir plus à propos de cette modification :",
 	"comment": "commentaire",
 	"created": "créé(e)",
@@ -14,6 +15,7 @@
 	"If you made this request, click the button below.": "Si vous avez fait cette demande, cliquez sur le bouton ci-dessous.",
 	"location": "localisation",
 	"massif": "massif",
+	"New Message": "Nouveau message",
 	"Notification": "Notification",
 	"Or use this link to reset your password:": "Ou utilisez ce lien pour réinitialiser votre mot de passe :",
 	"organization": "organisation",
@@ -26,6 +28,7 @@
 	"restored": "restauré(e)",
 	"rigging": "équipement",
 	"%s (%s) has been %s on Grottocenter.": "%s (%s) a été %s sur Grottocenter.",
+	"%s sent you a new message on Grottocenter.": "%s vous a envoyé un nouveau message sur Grottocenter.",
 	"Thanks": "Merci",
 	"Untitled": "Sans titre",
 	"updated": "modifié(e)",
