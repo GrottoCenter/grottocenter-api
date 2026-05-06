@@ -261,6 +261,34 @@ describe('Messages features', () => {
           return null;
         });
     });
+
+    it('should return 403 if replying to a conversation where the other participant is banned', async () => {
+      // 1. Create a conversation between sender and recipient
+      const resConvo = await supertest(sails.hooks.http.app)
+        .post('/api/v1/messages')
+        .set('Authorization', `Bearer ${senderToken}`)
+        .send({ recipientId: recipient.id, body: 'Initial message' })
+        .expect(200);
+
+      const convoId = resConvo.body.conversation;
+
+      // 2. Ban the recipient
+      await TCaver.update({ id: recipient.id }).set({ banned: true });
+
+      try {
+        // 3. Attempt to reply using conversationId
+        const resReply = await supertest(sails.hooks.http.app)
+          .post('/api/v1/messages')
+          .set('Authorization', `Bearer ${senderToken}`)
+          .send({ conversationId: convoId, body: 'Reply to banned' })
+          .expect(403);
+
+        should(resReply.body.code).be.equal('E_AUTHORIZATION');
+      } finally {
+        // Cleanup: Unban for other tests
+        await TCaver.update({ id: recipient.id }).set({ banned: false });
+      }
+    });
   });
 
   describe('GET /api/v1/messages/conversations', () => {
