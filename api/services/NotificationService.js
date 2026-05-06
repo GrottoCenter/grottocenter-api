@@ -200,6 +200,48 @@ const getCountryMassifAndRegionSubscribers = async (
 
 module.exports = {
   NOTIFICATION_ENTITIES,
+  notifyMessageRecipient: async (req, senderId, conversationId) => {
+    try {
+      const sender = await TCaver.findOne({ id: senderId });
+      if (!sender) return;
+      const query = `SELECT id_caver FROM j_participant WHERE id_conversation = $1 AND id_caver != $2`;
+      const result = await CommonService.query(query, [
+        conversationId,
+        senderId,
+      ]);
+      if (result.rows.length === 0) return;
+      await Promise.all(
+        result.rows.map(async (row) => {
+          const recipient = await TCaver.findOne({ id: row.id_caver });
+          if (!recipient || !recipient.sendMessageNotificationByEmail) return;
+          const conversationLink = '';
+          await sails.helpers.sendEmail
+            .with({
+              allowResponse: false,
+              emailSubject: 'New Message',
+              i18n: req.i18n,
+              recipientEmail: recipient.mail,
+              viewName: 'new-message',
+              viewValues: {
+                senderNickname: sender.nickname,
+                conversationLink,
+                recipientName: recipient.nickname,
+              },
+            })
+            .intercept('sendSESEmailError', () => {
+              sails.log.error(
+                `The email service error notifying user ${recipient.nickname}.`
+              );
+              return false;
+            });
+        })
+      );
+    } catch (error) {
+      sails.log.error(
+        `An error occurred in notifyMessageRecipient: ${error.message}`
+      );
+    }
+  },
   NOTIFICATION_TYPES,
   ...(process.env.NODE_ENV === 'test' ? { sendNotificationEmail } : undefined),
 

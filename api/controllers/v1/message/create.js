@@ -1,6 +1,7 @@
 const MessageService = require('../../../services/MessageService');
 const ControllerService = require('../../../services/ControllerService');
 const CommonService = require('../../../services/CommonService');
+const NotificationService = require('../../../services/NotificationService');
 
 /**
  * MessageController.create
@@ -144,6 +145,14 @@ module.exports = async (req, res) => {
       body: body.trim(),
       dateSent: new Date(),
     }).fetch();
+
+    // Notify recipient
+    // Errors are handled inside the service to avoid affecting message creation
+    await NotificationService.notifyMessageRecipient(
+      req,
+      senderId,
+      finalConversationId
+    );
 
     return ControllerService.treat(
       req,

@@ -1,0 +1,28 @@
+<%- include('emailHeader', { emailTitle: 'Grottocenter - New Message' }); %>
+  <% /*
+  ===== EMAIL BODY =====
+
+    Required values:
+        - i18n              Object      internationalization module
+        - senderNickname    String      Nickname of the sender
+        - conversationLink  String      Link to the conversation
+        - recipientName     String      Full name or nickname of the recipient
+  */ %>
+
+  <p>
+    <%- i18n.__('Dear %s', '<b>' + recipientName + '</b>') %>
+  </p>
+
+  <p>
+    <%- i18n.__('%s sent you a new message on Grottocenter.', '<b>' + senderNickname + '</b>') %>
+  </p>
+
+  <% if (conversationLink) { %>
+    <p>
+      <%- i18n.__('Click the link below to view the conversation:') %>
+      <br>
+      <a href="<%= conversationLink %>"><%= conversationLink %></a>
+    </p>
+  <% } %>
+
+  <%- include('emailFooter', { i18n: i18n }); %>
