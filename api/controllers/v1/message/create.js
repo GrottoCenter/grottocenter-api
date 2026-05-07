@@ -178,13 +178,15 @@ module.exports = async (req, res) => {
       dateSent: new Date(),
     }).fetch();
 
-    // Notify recipient
+    // Notify recipient (non-blocking)
     // Errors are handled inside the service to avoid affecting message creation
-    await NotificationService.notifyMessageRecipient(
+    NotificationService.notifyMessageRecipient(
       req,
       senderId,
       finalConversationId
-    );
+    ).catch((err) => {
+      sails.log.error('Background notification failed:', err);
+    });
 
     return ControllerService.treat(
       req,
