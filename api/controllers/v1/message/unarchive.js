@@ -35,12 +35,12 @@ module.exports = async (req, res) => {
         sails.helpers.formatMessagingError(
           req,
           'You are not a participant in this conversation or it does not exist.',
-          'E_FORBIDDEN'
+          'E_AUTHORIZATION'
         )
       );
     }
 
-    return res.ok();
+    return res.status(204).send();
   } catch (err) {
     sails.log.error(err);
     return res.serverError(
