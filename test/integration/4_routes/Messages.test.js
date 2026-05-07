@@ -477,7 +477,7 @@ describe('Messages features', () => {
         .set('Authorization', `Bearer ${senderToken}`)
         .expect(403);
 
-      should(res.body.code).be.equal('E_FORBIDDEN');
+      should(res.body.code).be.equal('E_AUTHORIZATION');
     });
 
     it('should archive a conversation and set archived_at', async () => {
