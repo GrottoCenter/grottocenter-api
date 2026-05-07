@@ -133,6 +133,9 @@ CREATE INDEX IF NOT EXISTS idx_j_document_grotto_author_grotto
 CREATE INDEX IF NOT EXISTS idx_h_name_id ON h_name(id);
 CREATE INDEX IF NOT EXISTS idx_h_description_document
   ON h_description(id_document) WHERE id_document IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_j_participant_caver ON j_participant(id_caver);
+CREATE INDEX IF NOT EXISTS idx_t_message_conversation ON t_message(id_conversation, date_sent DESC);
+CREATE INDEX IF NOT EXISTS idx_t_message_sender ON t_message(id_caver_sender);
 
 -- Materialized view indexes (tables in test DB)
 CREATE INDEX IF NOT EXISTS idx_v_dq_country
