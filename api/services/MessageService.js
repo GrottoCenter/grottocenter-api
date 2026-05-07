@@ -203,6 +203,11 @@ module.exports = {
    * @returns {Promise<void>}
    */
   markAsRead: async (conversationId, readerId) => {
+    await JParticipant.update({
+      conversation: conversationId,
+      caver: readerId,
+    }).set({ state: 'active', archivedAt: null });
+
     await TMessage.update({
       conversation: conversationId,
       caverSender: { '!=': readerId },
