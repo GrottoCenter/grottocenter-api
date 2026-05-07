@@ -65,11 +65,15 @@ module.exports = {
       throw error;
     }
 
-    // Eligible Registered User criteria:
+    // Eligible Recipient criteria:
     // - Not banned
-    // - Activated
-    // - Has a login (not a Non_User_Caver)
-    if (caver.banned || !caver.activated || !caver.login) {
+    // - Has a password (not a Non_User_Caver)
+    // - mail_is_valid OR NOT activated
+    if (
+      caver.banned ||
+      !caver.password ||
+      (caver.activated && !caver.mailIsValid)
+    ) {
       const error = new Error(
         'Recipient is not eligible for private messaging'
       );
