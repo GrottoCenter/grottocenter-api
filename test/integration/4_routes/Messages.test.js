@@ -48,6 +48,7 @@ describe('Messages features', () => {
 
   after(async () => {
     await TMessage.destroy({});
+    await sails.sendNativeQuery('DELETE FROM t_conversation_archive');
     await sails.sendNativeQuery('DELETE FROM j_participant');
     await TConversation.destroy({});
     await TCaver.destroy({
@@ -480,18 +481,18 @@ describe('Messages features', () => {
       should(res.body.code).be.equal('E_AUTHORIZATION');
     });
 
-    it('should archive a conversation and set archived_at', async () => {
+    it('should archive a conversation and create an archive record', async () => {
       await supertest(sails.hooks.http.app)
         .post(`/api/v1/messages/conversations/${convoId}/archive`)
         .set('Authorization', `Bearer ${senderToken}`)
         .expect(204);
 
-      const participant = await JParticipant.findOne({
+      const archiveRow = await TConversationArchive.findOne({
         conversation: convoId,
         caver: sender.id,
       });
-      should(participant.state).be.equal('archived');
-      should(participant.archivedAt).not.be.null();
+      should(archiveRow).not.be.undefined();
+      should(archiveRow.archivedAt).be.a.Date();
     });
 
     it('should sort archived conversations by archivedAt DESC', async () => {
@@ -542,18 +543,17 @@ describe('Messages features', () => {
       should(ids).containEql(convoId);
     });
 
-    it('should unarchive a conversation and reset archived_at', async () => {
+    it('should unarchive a conversation and remove the archive record', async () => {
       await supertest(sails.hooks.http.app)
         .post(`/api/v1/messages/conversations/${convoId}/unarchive`)
         .set('Authorization', `Bearer ${senderToken}`)
         .expect(204);
 
-      const participant = await JParticipant.findOne({
+      const archiveRow = await TConversationArchive.findOne({
         conversation: convoId,
         caver: sender.id,
       });
-      should(participant.state).be.equal('active');
-      should(participant.archivedAt).be.null();
+      should(archiveRow).be.undefined();
     });
   });
 });
