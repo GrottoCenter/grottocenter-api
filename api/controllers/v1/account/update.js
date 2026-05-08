@@ -18,6 +18,8 @@ const UPDATABLE_PROPERTIES = [
 
 module.exports = async (req, res) => {
   const updates = {};
+  let verificationEmail = null;
+  let caver = null;
 
   // Reject unknown properties
   for (const prop of Object.keys(req.body)) {
@@ -38,18 +40,57 @@ module.exports = async (req, res) => {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
       return res.badRequest('You must provide a valid email address.');
     }
-    const existingEmail = await TCaver.findOne({ mail: normalizedEmail });
-    if (existingEmail && existingEmail.id !== req.token.id) {
-      return res.conflict('This email is already used.');
+
+    // Fetch the caver early so we can compare against the current email
+    caver = await TCaver.findOne({ id: req.token.id });
+
+    if (caver.mail === normalizedEmail) {
+      // If user submits their current email while a change is pending, cancel it
+      if (caver.pendingMail) {
+        await TCaver.updateOne({ id: req.token.id }).set({
+          pendingMail: null,
+          activationCode: null,
+          mailIsValid: true,
+        });
+        return res.ok({ message: 'Pending email change cancelled.' });
+      }
+      return res.badRequest(
+        'The new email must be different from the current one.'
+      );
     }
-    updates.mail = normalizedEmail;
+
+    // Check uniqueness against both mail and pendingMail (exclude self)
+    const alreadyInUse = await TCaver.findOne({
+      id: { '!=': req.token.id },
+      or: [{ mail: normalizedEmail }, { pendingMail: normalizedEmail }],
+    });
+    if (alreadyInUse) {
+      return res.conflict('This email is already in use.');
+    }
+
+    // Generate activation code and store as pending (don't update mail directly)
+    const activationCode = AuthService.generateActivationCode();
+    updates.pendingMail = normalizedEmail;
+    updates.activationCode = activationCode;
+    updates.mailIsValid = false;
+
+    // Send verification email (fire-and-forget, after the update is persisted)
+    // We store a reference to send it after the DB update below
+    verificationEmail = {
+      nickname: caver.nickname,
+      mail: normalizedEmail,
+      activationCode,
+      locale: req.getLocale ? req.getLocale() : undefined,
+    };
   }
 
   // Fetch current caver before any updates — needed for password verification
   // and for notification emails (pre-update email address). This runs on every
   // update (even non-sensitive fields) to keep the flow simple; the cost is a
   // single primary-key lookup which is negligible compared to the overall request.
-  const caver = await TCaver.findOne({ id: req.token.id });
+  if (!caver) {
+    caver = await TCaver.findOne({ id: req.token.id });
+  }
 
   if (req.body.password !== undefined) {
     if (!req.body.password) {
@@ -132,19 +173,31 @@ module.exports = async (req, res) => {
 
     await CaverService.updateInSearch(updatedCaver);
 
-    // Fire-and-forget notifications (no await)
-    if (updates.mail && caver.mail !== updates.mail) {
-      AccountNotificationService.notifyEmailChanged({
-        oldEmail: caver.mail,
-        nickname: caver.nickname,
-        languageId: caver.language,
+    // Send verification email for pending email change (fire-and-forget)
+    if (verificationEmail) {
+      AuthService.sendVerificationEmail(
+        {
+          nickname: verificationEmail.nickname,
+          mail: verificationEmail.mail,
+        },
+        verificationEmail.activationCode,
+        verificationEmail.locale
+      ).catch((err) => {
+        sails.log.error(
+          'Failed to send verification email for email change:',
+          err
+        );
       });
     }
+
+    // Fire-and-forget password change notification
     if (updates.password) {
       AccountNotificationService.notifyPasswordChanged({
         email: caver.mail,
         nickname: caver.nickname,
         languageId: caver.language,
+      }).catch((err) => {
+        sails.log.error('Failed to send password change notification:', err);
       });
     }
   } catch (err) {

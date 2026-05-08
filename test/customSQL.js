@@ -70,6 +70,7 @@ DROP INDEX IF EXISTS idx_j_caver_country_subscription_caver;
 -- (Waterline migrate:drop does not run 0_tables.sql, so these must be
 -- created explicitly for the test DB to match production performance.)
 CREATE INDEX IF NOT EXISTS t_caver_activation_code_idx ON t_caver USING btree (activation_code);
+CREATE INDEX IF NOT EXISTS t_caver_pending_mail_idx ON t_caver(pending_mail);
 CREATE INDEX IF NOT EXISTS idx_j_caver_group_caver ON j_caver_group(id_caver);
 CREATE INDEX IF NOT EXISTS idx_j_caver_group_group ON j_caver_group(id_group);
 CREATE INDEX IF NOT EXISTS idx_j_grotto_caver_caver ON j_grotto_caver(id_caver);

@@ -511,6 +511,16 @@ paths:
                   type: boolean
                   description: Whether to receive notifications by email
       responses:
+        '200':
+          description: Pending email change cancelled.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Pending email change cancelled.
         '204':
           description: Successful operation
         '400':
@@ -3246,7 +3256,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Name'
-
   '/account/password':
     patch:
       tags:
@@ -3597,7 +3606,7 @@ paths:
     get:
       tags:
         - authentication
-      description: Verify a user's email address using the activation token sent to their email. Called from a link click in the verification email. On success, the user is activated and their email is marked as valid.
+      description: Verify a user's email address or an email change request using the activation token. On success, the account is activated (if not already) and any pending email change is committed.
       parameters:
         - name: token
           in: query
@@ -3607,7 +3616,7 @@ paths:
             type: string
       responses:
         '200':
-          description: Account successfully verified or Account was already verified.
+          description: Account successfully verified, email change committed, or account was already verified.
           content:
             application/json:
               schema:
@@ -3619,8 +3628,10 @@ paths:
           description: You must provide an activation token.
         '404':
           description: Activation token is invalid or has already been used.
+        '409':
+          description: Conflict. The new email address is now taken by another account.
         '500':
-          description: An error occurred during account activation.
+          description: An error occurred during email verification.
 
   '/resend-verification-email':
     post:

@@ -1,3 +1,5 @@
+const AccountNotificationService = require('../../../services/AccountNotificationService');
+
 module.exports = async (req, res) => {
   const token = req.param('token');
 
@@ -18,6 +20,26 @@ module.exports = async (req, res) => {
     mailIsValid: true,
   };
 
+  if (caver.pendingMail) {
+    const alreadyInUse = await TCaver.findOne({
+      id: { '!=': caver.id },
+      or: [{ mail: caver.pendingMail }, { pendingMail: caver.pendingMail }],
+    });
+
+    if (alreadyInUse) {
+      await TCaver.updateOne({ id: caver.id }).set({
+        pendingMail: null,
+        activationCode: null,
+      });
+      return res.conflict(
+        'The new email is already in use by another account.'
+      );
+    }
+
+    updates.mail = caver.pendingMail;
+    updates.pendingMail = null;
+  }
+
   if (!caver.activated) {
     updates.activated = true;
   }
@@ -25,8 +47,28 @@ module.exports = async (req, res) => {
   try {
     await TCaver.updateOne({ id: caver.id }).set(updates);
   } catch (err) {
-    sails.log.error(`Failed to activate user ${caver.id}:`, err);
-    return res.serverError('An error occurred during account activation.');
+    if (err.code === 'E_UNIQUE') {
+      await TCaver.updateOne({ id: caver.id }).set({
+        pendingMail: null,
+        activationCode: null,
+      });
+      return res.conflict(
+        'The new email is already in use by another account.'
+      );
+    }
+    sails.log.error(`Failed to verify email for user ${caver.id}:`, err);
+    return res.serverError('An error occurred during email verification.');
+  }
+
+  if (caver.pendingMail) {
+    AccountNotificationService.notifyEmailChanged({
+      oldEmail: caver.mail,
+      nickname: caver.nickname,
+      languageId: caver.language,
+    }).catch((err) => {
+      sails.log.error('Failed to send email change notification:', err);
+    });
+    return res.ok({ message: 'Email successfully changed.' });
   }
 
   if (caver.activated) {
