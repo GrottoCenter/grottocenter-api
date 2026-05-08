@@ -1360,16 +1360,24 @@ CREATE TABLE t_conversation (
 );
 
 -- j_participant definition
-CREATE TYPE participant_state AS ENUM ('active', 'archived');
-
 CREATE TABLE j_participant (
     id_conversation int4 NOT NULL,
     id_caver int4 NOT NULL,
-    state participant_state NOT NULL DEFAULT 'active',
-    archived_at timestamp NULL,
     CONSTRAINT j_participant_pk PRIMARY KEY (id_conversation, id_caver),
     CONSTRAINT j_participant_t_conversation_fk FOREIGN KEY (id_conversation) REFERENCES t_conversation(id) ON DELETE CASCADE,
     CONSTRAINT j_participant_t_caver_fk FOREIGN KEY (id_caver) REFERENCES t_caver(id) ON DELETE CASCADE
+);
+
+-- t_conversation_archive definition
+CREATE TABLE t_conversation_archive (
+    id serial NOT NULL,
+    id_conversation int4 NOT NULL,
+    id_caver int4 NOT NULL,
+    archived_at timestamp NOT NULL DEFAULT now(),
+    CONSTRAINT t_conversation_archive_pk PRIMARY KEY (id),
+    CONSTRAINT t_conversation_archive_conversation_fk FOREIGN KEY (id_conversation) REFERENCES t_conversation(id) ON DELETE CASCADE,
+    CONSTRAINT t_conversation_archive_caver_fk FOREIGN KEY (id_caver) REFERENCES t_caver(id) ON DELETE CASCADE,
+    CONSTRAINT t_conversation_archive_unique UNIQUE (id_conversation, id_caver)
 );
 
 -- t_message definition
@@ -1387,5 +1395,6 @@ CREATE TABLE t_message (
 
 -- Performance indexes for private messaging
 CREATE INDEX idx_j_participant_caver ON j_participant(id_caver);
+CREATE INDEX idx_t_conversation_archive ON t_conversation_archive(id_conversation, id_caver);
 CREATE INDEX idx_t_message_conversation ON t_message(id_conversation, date_sent DESC);
 CREATE INDEX idx_t_message_sender ON t_message(id_caver_sender);
