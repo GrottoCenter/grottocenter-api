@@ -1,7 +1,8 @@
 module.exports = {
-  friendlyName: 'Format messaging error',
+  friendlyName: 'Format structured error',
 
-  description: 'Format a structured error object for the messaging system.',
+  description:
+    'Format a structured error object with code, message, and trace ID.',
 
   sync: true,
 
