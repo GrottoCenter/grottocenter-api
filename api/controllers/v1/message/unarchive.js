@@ -16,7 +16,7 @@ module.exports = async (req, res) => {
     });
     if (!conversationExists) {
       return res.notFound(
-        sails.helpers.formatMessagingError(
+        sails.helpers.formatStructuredError(
           req,
           'Conversation not found.',
           'E_NOT_FOUND'
@@ -30,7 +30,7 @@ module.exports = async (req, res) => {
     );
     if (!isParticipant) {
       return res.forbidden(
-        sails.helpers.formatMessagingError(
+        sails.helpers.formatStructuredError(
           req,
           'You are not a participant in this conversation or it does not exist.',
           'E_AUTHORIZATION'
@@ -47,7 +47,7 @@ module.exports = async (req, res) => {
   } catch (err) {
     sails.log.error(err);
     return res.serverError(
-      sails.helpers.formatMessagingError(
+      sails.helpers.formatStructuredError(
         req,
         'An error occurred while unarchiving the conversation.',
         'E_SERVER_ERROR'

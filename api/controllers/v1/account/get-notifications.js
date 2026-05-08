@@ -12,7 +12,7 @@ module.exports = async (req, res) => {
 
     if (!caver) {
       return res.notFound(
-        sails.helpers.formatMessagingError(
+        sails.helpers.formatStructuredError(
           req,
           `Caver with id ${caverId} not found.`,
           'E_NOT_FOUND'
@@ -28,7 +28,7 @@ module.exports = async (req, res) => {
   } catch (err) {
     sails.log.error(err);
     return res.serverError(
-      sails.helpers.formatMessagingError(
+      sails.helpers.formatStructuredError(
         req,
         'An error occurred while retrieving notification preferences.',
         'E_SERVER_ERROR'

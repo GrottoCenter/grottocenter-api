@@ -48,7 +48,7 @@ module.exports = async (req, res) => {
   } catch (err) {
     sails.log.error(err);
     return res.serverError(
-      sails.helpers.formatMessagingError(
+      sails.helpers.formatStructuredError(
         req,
         'An error occurred while listing conversations.',
         'E_SERVER_ERROR'
