@@ -47,7 +47,9 @@ const treatRange = (parameters, req, res, converter, found) => {
 
   res.set('Access-Control-Expose-Headers', 'Content-Range');
   const meta = getMetaFromRequest(req);
-  return res.partialContent(converter(found, meta));
+  return res.partialContent(
+    converter.length > 1 ? converter(found, meta) : converter(found)
+  );
 };
 
 module.exports = {
@@ -79,6 +81,8 @@ module.exports = {
       return treatRange(parameters, req, res, converter, found);
     }
     const meta = getMetaFromRequest(req);
-    return res.ok(converter(found, meta));
+    return res.ok(
+      converter.length > 1 ? converter(found, meta) : converter(found)
+    );
   },
 };

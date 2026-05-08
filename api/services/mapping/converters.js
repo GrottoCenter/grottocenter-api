@@ -588,7 +588,7 @@ const c = {
     result.entrance = convertIfObject(source.entrance, c.toEntrance, { meta });
     result.history = convertIfObject(source.history, c.toHistory, { meta });
     result.location = convertIfObject(source.location, c.toLocation, { meta });
-    result.massif = convertIfObject(source.massif, c.toMassif, { meta });
+    result.massif = convertIfObject(source.massif, c.toMassif);
     result.notified = convertIfObject(source.notified, c.toSimpleCaver, {
       meta,
     });
@@ -708,7 +708,7 @@ const c = {
       else if (_type === 'entrances') data = c.toEntrance(item.document, meta);
       else if (_type === 'organizations')
         data = c.toOrganization(item.document, meta);
-      else if (_type === 'massifs') data = c.toMassif(item.document, meta);
+      else if (_type === 'massifs') data = c.toMassif(item.document);
 
       return {
         ...data,

@@ -43,6 +43,7 @@ describe('Massif features', () => {
           const { body: massif } = res;
 
           should(massif).have.properties(MASSIF_PROPERTIES);
+          should(massif.isSensitive).be.a.Boolean();
           should(massif).not.have.property('entrances');
           should(massif.geogPolygon).equal(massifPolygon.geoJson1ToString);
           should(massif.name).not.be.empty();
