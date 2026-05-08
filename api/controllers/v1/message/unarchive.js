@@ -4,6 +4,8 @@
  * @description :: Unarchive a conversation for the authenticated caver.
  */
 
+const MessageService = require('../../../services/MessageService');
+
 module.exports = async (req, res) => {
   const caverId = req.token.id;
   const conversationId = req.params.id;
@@ -22,15 +24,11 @@ module.exports = async (req, res) => {
       );
     }
 
-    const updated = await JParticipant.updateOne({
-      conversation: conversationId,
-      caver: caverId,
-    }).set({
-      state: 'active',
-      archivedAt: null,
-    });
-
-    if (!updated) {
+    const isParticipant = await MessageService.isParticipant(
+      conversationId,
+      caverId
+    );
+    if (!isParticipant) {
       return res.forbidden(
         sails.helpers.formatMessagingError(
           req,
@@ -39,6 +37,11 @@ module.exports = async (req, res) => {
         )
       );
     }
+
+    await TConversationArchive.destroyOne({
+      conversation: conversationId,
+      caver: caverId,
+    });
 
     return res.status(204).send();
   } catch (err) {

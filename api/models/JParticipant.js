@@ -1,7 +1,7 @@
 /**
  * JParticipant.js
  *
- * @description :: jParticipant model
+ * @description :: jParticipant model — pure junction table linking cavers to conversations.
  * @docs        :: http://sailsjs.org/#!documentation/models
  */
 
@@ -19,19 +19,6 @@ module.exports = {
       columnName: 'id_caver',
       model: 'TCaver',
       required: true,
-    },
-
-    state: {
-      type: 'string',
-      columnName: 'state',
-      isIn: ['active', 'archived'],
-      defaultsTo: 'active',
-    },
-
-    archivedAt: {
-      type: 'ref',
-      columnName: 'archived_at',
-      columnType: 'timestamp',
     },
   },
 };

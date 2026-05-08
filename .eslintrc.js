@@ -62,6 +62,7 @@ module.exports = {
     TTokenBlacklist: 'readonly',
     TConversation: 'readonly',
     TMessage: 'readonly',
+    TConversationArchive: 'readonly',
     JParticipant: 'readonly',
     VDataQualityComputeEntrance: 'readonly',
     sails: 'readonly',
