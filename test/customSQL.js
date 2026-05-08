@@ -20,6 +20,7 @@ SELECT SETVAL('public.t_option_id_seq', COALESCE(MAX(id), 1) ) FROM public.t_opt
 SELECT SETVAL('public.t_point_id_seq', COALESCE(MAX(id), 1) ) FROM public.t_point;
 SELECT SETVAL('public.t_region_id_seq', COALESCE(MAX(id), 1) ) FROM public.t_region;
 SELECT SETVAL('public.t_rigging_id_seq', COALESCE(MAX(id), 1) ) FROM public.t_rigging;
+SELECT SETVAL('public.t_conversation_archive_id_seq', COALESCE(MAX(id), 1) ) FROM public.t_conversation_archive;
 `;
 
 const ALTER_MASSIF_COLUMN_GEOG_POLYGON = `
@@ -134,6 +135,7 @@ CREATE INDEX IF NOT EXISTS idx_h_name_id ON h_name(id);
 CREATE INDEX IF NOT EXISTS idx_h_description_document
   ON h_description(id_document) WHERE id_document IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_j_participant_caver ON j_participant(id_caver);
+CREATE INDEX IF NOT EXISTS idx_t_conversation_archive ON t_conversation_archive(id_conversation, id_caver);
 CREATE INDEX IF NOT EXISTS idx_t_message_conversation ON t_message(id_conversation, date_sent DESC);
 CREATE INDEX IF NOT EXISTS idx_t_message_sender ON t_message(id_caver_sender);
 
