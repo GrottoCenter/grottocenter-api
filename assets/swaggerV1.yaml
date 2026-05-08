@@ -5142,12 +5142,30 @@ paths:
                 $ref: '#/components/schemas/Message'
         400:
           description: Validation error (empty body, body too long, missing recipientId/conversationId, or sending to self)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StructuredError'
+        401:
+          description: Unauthorized
         403:
-          description: Forbidden (recipient not eligible, or not a participant in the conversation he attempts to send a message to)
+          description: Forbidden (recipient not eligible, or not a participant in the conversation)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StructuredError'
         404:
-          description: Recipient not found
+          description: Recipient or conversation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StructuredError'
         500:
           description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StructuredError'
 
   '/messages/conversations':
     get:
@@ -5171,8 +5189,8 @@ paths:
             type: integer
             default: 0
       responses:
-        200:
-          description: Successful operation
+        206:
+          description: Successful operation (Partial Content)
           content:
             application/json:
               schema:
@@ -5186,6 +5204,10 @@ paths:
           description: Unauthorized
         500:
           description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StructuredError'
 
   '/messages/conversations/archived':
     get:
@@ -5209,8 +5231,8 @@ paths:
             type: integer
             default: 0
       responses:
-        200:
-          description: Successful operation
+        206:
+          description: Successful operation (Partial Content)
           content:
             application/json:
               schema:
@@ -5224,6 +5246,10 @@ paths:
           description: Unauthorized
         500:
           description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StructuredError'
 
   '/messages/conversations/{id}':
     get:
@@ -5253,8 +5279,8 @@ paths:
             type: integer
             default: 0
       responses:
-        200:
-          description: Successful operation
+        206:
+          description: Successful operation (Partial Content)
           content:
             application/json:
               schema:
@@ -5268,10 +5294,22 @@ paths:
           description: Unauthorized
         403:
           description: Forbidden (not a participant)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StructuredError'
         404:
           description: Conversation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StructuredError'
         500:
           description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StructuredError'
 
   '/messages/conversations/{id}/archive':
     post:
@@ -5288,14 +5326,28 @@ paths:
           schema:
             type: integer
       responses:
-        200:
-          description: Successful operation
+        204:
+          description: Successful operation (No Content)
         401:
           description: Unauthorized
         403:
           description: Forbidden (not a participant)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StructuredError'
+        404:
+          description: Conversation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StructuredError'
         500:
           description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StructuredError'
 
   '/messages/conversations/{id}/unarchive':
     post:
@@ -5312,14 +5364,22 @@ paths:
           schema:
             type: integer
       responses:
-        200:
-          description: Successful operation
+        204:
+          description: Successful operation (No Content)
         401:
           description: Unauthorized
         403:
           description: Forbidden (not a participant)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StructuredError'
         500:
           description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StructuredError'
 
   '/messages/unread/count':
     get:
@@ -5346,6 +5406,10 @@ paths:
           description: Unauthorized
         500:
           description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StructuredError'
 
 components:
 
@@ -5784,23 +5848,6 @@ components:
           type: string
         numeric:
           type: integer
-
-    Conversation:
-      type: object
-      properties:
-        id:
-          type: integer
-        dateInscription:
-          type: string
-          format: date-time
-        participants:
-          type: array
-          items:
-            $ref: '#/components/schemas/Participant'
-        messages:
-          type: array
-          items:
-            $ref: '#/components/schemas/Message'
 
     Data-quality-info:
       type: object
@@ -6424,6 +6471,25 @@ components:
           items:
             $ref: '#/components/schemas/Cave'
 
+    StructuredError:
+      type: object
+      description: 'Structured error response returned by messaging and notification endpoints.'
+      properties:
+        code:
+          type: string
+          description: 'Machine-readable error code (e.g. E_VALIDATION, E_NOT_FOUND, E_AUTHORIZATION, E_SERVER_ERROR).'
+          example: E_VALIDATION
+        message:
+          type: string
+          description: 'Human-readable error description.'
+        metadata:
+          type: object
+          description: 'Optional additional context about the error.'
+        reference_id:
+          type: string
+          description: 'Trace ID from the originating request, useful for debugging.'
+          example: 'req-abc-123'
+
     Message:
       type: object
       properties:
@@ -6451,8 +6517,11 @@ components:
           type: string
           format: date-time
         lastMessage:
+          nullable: true
           type: object
           properties:
+            id:
+              type: integer
             dateSent:
               type: string
               format: date-time
@@ -6460,6 +6529,11 @@ components:
               type: string
         unreadCount:
           type: integer
+        archivedAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: 'Present only for archived conversations; null for active ones.'
         otherParticipant:
           $ref: '#/components/schemas/SimpleCaver'
 
@@ -6471,19 +6545,7 @@ components:
         nickname:
           type: string
 
-    Participant:
-      type: object
-      properties:
-        conversation:
-          type: integer
-        caver:
-          $ref: '#/components/schemas/Caver'
-        state:
-          type: string
-          enum: [active, archived]
-        archivedAt:
-          type: string
-          format: date-time
+
 
     Name:
       properties:
