@@ -42,8 +42,8 @@ module.exports = {
         .fetch();
 
       await CommonService.query(
-        'INSERT INTO j_participant (id_conversation, id_caver, state) VALUES ($1, $2, $3), ($4, $5, $6)',
-        [newConvo.id, caver1Id, 'active', newConvo.id, caver2Id, 'active'],
+        'INSERT INTO j_participant (id_conversation, id_caver) VALUES ($1, $2), ($3, $4)',
+        [newConvo.id, caver1Id, newConvo.id, caver2Id],
         db
       );
 
@@ -93,6 +93,7 @@ module.exports = {
    * @returns {Promise<Array>}
    */
   listConversations: async (caverId, state, skip, limit) => {
+    const isArchived = state === 'archived';
     const query = `
       SELECT 
         c.id, 
@@ -102,9 +103,11 @@ module.exports = {
         COALESCE(u.unread_count, 0)::int as "unreadCount",
         last_m.id as "lastMessageId",
         other_p.id_caver as "otherParticipantId",
-        other_c.nickname as "otherParticipantNickname"
+        other_c.nickname as "otherParticipantNickname",
+        tca.archived_at as "archivedAt"
       FROM t_conversation c
-      JOIN j_participant my_p ON c.id = my_p.id_conversation
+      JOIN j_participant my_p ON c.id = my_p.id_conversation AND my_p.id_caver = $1
+      LEFT JOIN t_conversation_archive tca ON tca.id_conversation = c.id AND tca.id_caver = $1
       JOIN j_participant other_p ON c.id = other_p.id_conversation AND other_p.id_caver != $1
       LEFT JOIN t_caver other_c ON other_p.id_caver = other_c.id
       LEFT JOIN LATERAL (
@@ -120,16 +123,11 @@ module.exports = {
         WHERE id_caver_sender != $1 AND date_read IS NULL
         GROUP BY id_conversation
       ) u ON c.id = u.id_conversation
-      WHERE my_p.id_caver = $1 AND my_p.state = $2
-      ORDER BY (CASE WHEN $2 = 'archived' THEN my_p.archived_at ELSE last_m.date_sent END) DESC NULLS LAST
-      LIMIT $3 OFFSET $4
+      WHERE ${isArchived ? 'tca.id IS NOT NULL' : 'tca.id IS NULL'}
+      ORDER BY ${isArchived ? 'tca.archived_at' : 'last_m.date_sent'} DESC NULLS LAST
+      LIMIT $2 OFFSET $3
     `;
-    const result = await CommonService.query(query, [
-      caverId,
-      state,
-      limit,
-      skip,
-    ]);
+    const result = await CommonService.query(query, [caverId, limit, skip]);
     return result.rows.map((row) => ({
       id: row.id,
       dateInscription: row.dateInscription,
@@ -155,12 +153,16 @@ module.exports = {
    * @returns {Promise<number>}
    */
   countConversations: async (caverId, state) => {
+    const isArchived = state === 'archived';
     const query = `
       SELECT COUNT(*)
-      FROM j_participant
-      WHERE id_caver = $1 AND state = $2
+      FROM j_participant p
+      LEFT JOIN t_conversation_archive tca
+        ON tca.id_conversation = p.id_conversation AND tca.id_caver = p.id_caver
+      WHERE p.id_caver = $1
+        AND ${isArchived ? 'tca.id IS NOT NULL' : 'tca.id IS NULL'}
     `;
-    const result = await CommonService.query(query, [caverId, state]);
+    const result = await CommonService.query(query, [caverId]);
     return parseInt(result.rows[0].count, 10);
   },
 
@@ -203,11 +205,9 @@ module.exports = {
    * @returns {Promise<void>}
    */
   markAsRead: async (conversationId, readerId) => {
-    await JParticipant.update({
-      conversation: conversationId,
-      caver: readerId,
-    }).set({ state: 'active', archivedAt: null });
-
+    // Only mark messages from other participants as read.
+    // Opening a conversation does NOT auto-unarchive it; that is
+    // exclusively handled by the /unarchive endpoint.
     await TMessage.update({
       conversation: conversationId,
       caverSender: { '!=': readerId },
@@ -253,14 +253,16 @@ module.exports = {
   getUnreadCounts: async (caverId) => {
     const query = `
       SELECT 
-        p.state,
+        CASE WHEN tca.id IS NOT NULL THEN 'archived' ELSE 'active' END as state,
         COUNT(m.id)::int as count
       FROM j_participant p
+      LEFT JOIN t_conversation_archive tca
+        ON tca.id_conversation = p.id_conversation AND tca.id_caver = p.id_caver
       JOIN t_message m ON p.id_conversation = m.id_conversation 
       WHERE p.id_caver = $1
         AND m.id_caver_sender != $1 
         AND m.date_read IS NULL
-      GROUP BY p.state
+      GROUP BY tca.id IS NOT NULL
     `;
     const result = await CommonService.query(query, [caverId]);
     const counts = { active: 0, archived: 0 };
