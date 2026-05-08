@@ -104,6 +104,14 @@ module.exports = {
       defaultsTo: false,
     },
 
+    pendingMail: {
+      type: 'string',
+      allowNull: true,
+      columnName: 'pending_mail',
+      isEmail: true,
+      maxLength: 50,
+    },
+
     dateInscription: {
       type: 'ref',
       allowNull: false,
