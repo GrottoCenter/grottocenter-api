@@ -1,0 +1,1 @@
+ALTER TABLE t_caver ADD COLUMN pending_mail VARCHAR(50) DEFAULT NULL;
