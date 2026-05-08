@@ -8,7 +8,8 @@ const RANDOM_ENTRANCE_QUERY = `${INTEREST_ENTRANCES_QUERY} ORDER BY RANDOM() LIM
 const CommonService = require('./CommonService');
 const SearchService = require('./SearchService');
 const NotificationService = require('./NotificationService');
-const GeocodingService = require('./GeocodingService');
+const CountryResolverService = require('./CountryResolverService');
+const EnrichmentQueueService = require('./EnrichmentQueueService');
 const RecentChangeService = require('./RecentChangeService');
 const CaveService = require('./CaveService');
 const CommentService = require('./CommentService');
@@ -156,19 +157,12 @@ module.exports = {
   },
 
   createEntrance: async (req, entranceData, nameDescLocData) => {
-    const address = await GeocodingService.reverse(
+    // Synchronous country resolution (offline, no network dependency)
+    // eslint-disable-next-line no-param-reassign
+    entranceData.country = CountryResolverService.resolve(
       entranceData.latitude,
       entranceData.longitude
     );
-    if (address) {
-      /* eslint-disable no-param-reassign */
-      entranceData.region = address.region;
-      entranceData.county = address.county;
-      entranceData.city = address.city;
-      entranceData.country = address.id_country;
-      entranceData.iso_3166_2 = address.iso_3166_2;
-      /* eslint-enable no-param-reassign */
-    }
 
     /* eslint-disable no-param-reassign */
     entranceData.geology = entranceData.geology ?? 'Q35758';
@@ -254,6 +248,17 @@ module.exports = {
       req.token.id,
       nameDescLocData.name.text
     );
+
+    // Enqueue async enrichment (region, county, city, iso_3166_2)
+    if (entranceData.country !== '00') {
+      EnrichmentQueueService.enqueue(
+        newEntranceId,
+        'entrance',
+        req.traceId
+      ).catch((err) => {
+        sails.log.error('Failed to enqueue entrance enrichment:', err);
+      });
+    }
 
     const newEntrancePopulated =
       await module.exports.getPopulatedEntrance(newEntranceId);

@@ -72,7 +72,10 @@ module.exports = {
     ],
     'prefer-destructuring': ['error', { object: true, array: false }],
     'prettier/prettier': 'error',
-    'import/no-unresolved': ['error', { ignore: ['^uuid$'] }],
+    'import/no-unresolved': [
+      'error',
+      { ignore: ['^uuid$', '@rapideditor/country-coder'] },
+    ],
     'no-unused-vars': [
       'error',
       {

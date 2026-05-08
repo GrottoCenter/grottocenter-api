@@ -1,7 +1,7 @@
 const ControllerService = require('../../../services/ControllerService');
 const GrottoService = require('../../../services/GrottoService');
 const NotificationService = require('../../../services/NotificationService');
-const GeocodingService = require('../../../services/GeocodingService');
+const EnrichmentQueueService = require('../../../services/EnrichmentQueueService');
 const { toOrganization } = require('../../../services/mapping/converters');
 
 module.exports = async (req, res) => {
@@ -20,20 +20,33 @@ module.exports = async (req, res) => {
     id: organizationId,
   };
 
-  // Update reverse geocoding if the position has changed
+  // Detect coordinate change for async enrichment.
+  // Note: unlike entrances, organization country is user-provided (not resolved
+  // from coordinates), so we only enqueue iso_3166_2 enrichment here.
+  let coordinatesChanged = false;
   if (
-    Math.abs(rawOrganization.latitude - cleanedData.latitude) > 0.001 ||
-    Math.abs(rawOrganization.longitude - cleanedData.longitude) > 0.001
+    cleanedData.latitude &&
+    cleanedData.longitude &&
+    (Math.abs(rawOrganization.latitude - cleanedData.latitude) > 0.001 ||
+      Math.abs(rawOrganization.longitude - cleanedData.longitude) > 0.001)
   ) {
-    const address = await GeocodingService.reverse(
-      cleanedData.latitude,
-      cleanedData.longitude
-    );
-    if (address) cleanedData.iso_3166_2 = address.iso_3166_2;
+    // Clear stale enrichment field — it'll be repopulated by the async job
+    cleanedData.iso_3166_2 = null;
+    coordinatesChanged = true;
   }
 
   // The name is updated via the /api/v1/names route by the front
   await TGrotto.updateOne({ id: organizationId }).set(cleanedData);
+
+  if (coordinatesChanged) {
+    EnrichmentQueueService.enqueue(
+      organizationId,
+      'organization',
+      req.traceId
+    ).catch((err) => {
+      sails.log.error('Failed to enqueue organization enrichment:', err);
+    });
+  }
 
   const updatedOrganization =
     await GrottoService.getPopulatedOrganization(organizationId);

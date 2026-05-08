@@ -136,3 +136,6 @@ build-info.json
 
 # Test database snapshot stamp
 test/.snapshot-stamp
+
+# Error triage agent timestamp
+.last-error-triage
