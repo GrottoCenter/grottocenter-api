@@ -2,7 +2,7 @@ const supertest = require('supertest');
 const should = require('should');
 const sinon = require('sinon');
 const AuthTokenService = require('../../AuthTokenService');
-const GeocodingService = require('../../../../api/services/GeocodingService');
+const EnrichmentQueueService = require('../../../../api/services/EnrichmentQueueService');
 
 describe('Organization features', () => {
   describe('create', () => {
@@ -13,20 +13,14 @@ describe('Organization features', () => {
 
     describe('Complete data', () => {
       let createdOrganization;
-      let geocodingStub;
+      let enqueueStub;
 
       before(() => {
-        geocodingStub = sinon.stub(GeocodingService, 'reverse').resolves({
-          region: 'Occitanie',
-          county: 'Héraut',
-          city: 'Montpellier',
-          id_country: 'FR',
-          iso_3166_2: 'FR-OCC',
-        });
+        enqueueStub = sinon.stub(EnrichmentQueueService, 'enqueue').resolves();
       });
 
       after(async () => {
-        geocodingStub.restore();
+        enqueueStub.restore();
         // Destroy created data
         should(createdOrganization).be.not.undefined();
         await TGrotto.destroyOne(createdOrganization.id);

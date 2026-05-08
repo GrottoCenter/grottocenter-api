@@ -1,6 +1,7 @@
 const ControllerService = require('../../../services/ControllerService');
 const EntranceService = require('../../../services/EntranceService');
-const GeocodingService = require('../../../services/GeocodingService');
+const CountryResolverService = require('../../../services/CountryResolverService');
+const EnrichmentQueueService = require('../../../services/EnrichmentQueueService');
 const NotificationService = require('../../../services/NotificationService');
 const RightService = require('../../../services/RightService');
 const { toEntrance } = require('../../../services/mapping/converters');
@@ -46,22 +47,22 @@ module.exports = async (req, res) => {
 
   const isValidCoordinate = cleanedData.latitude && cleanedData.longitude;
   // Update reverse geocoding if the position has changed
+  let coordinatesChanged = false;
   if (
     isValidCoordinate &&
     (Math.abs(currentEntrance.latitude - cleanedData.latitude) > 0.001 ||
       Math.abs(currentEntrance.longitude - cleanedData.longitude) > 0.001)
   ) {
-    const address = await GeocodingService.reverse(
+    cleanedData.country = CountryResolverService.resolve(
       cleanedData.latitude,
       cleanedData.longitude
     );
-    if (address) {
-      cleanedData.region = address.region;
-      cleanedData.county = address.county;
-      cleanedData.city = address.city;
-      cleanedData.country = address.id_country;
-      cleanedData.iso_3166_2 = address.iso_3166_2;
-    }
+    // Clear stale enrichment fields — they'll be repopulated by the async job
+    cleanedData.region = null;
+    cleanedData.county = null;
+    cleanedData.city = null;
+    cleanedData.iso_3166_2 = null;
+    coordinatesChanged = true;
   }
 
   // Validate name length
@@ -83,6 +84,14 @@ module.exports = async (req, res) => {
   });
 
   await TEntrance.updateOne({ id: entranceId }).set(cleanedData);
+
+  if (coordinatesChanged && cleanedData.country !== '00') {
+    EnrichmentQueueService.enqueue(entranceId, 'entrance', req.traceId).catch(
+      (err) => {
+        sails.log.error('Failed to enqueue entrance enrichment:', err);
+      }
+    );
+  }
 
   const populatedEntrance =
     await EntranceService.getPopulatedEntrance(entranceId);

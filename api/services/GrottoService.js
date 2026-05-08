@@ -3,7 +3,7 @@ const DocumentService = require('./DocumentService');
 const SearchService = require('./SearchService');
 const NameService = require('./NameService');
 const NotificationService = require('./NotificationService');
-const GeocodingService = require('./GeocodingService');
+const EnrichmentQueueService = require('./EnrichmentQueueService');
 const RecentChangeService = require('./RecentChangeService');
 const coerceToNumeric = require('../utils/coerceToNumeric');
 
@@ -116,15 +116,6 @@ module.exports = {
     // eslint-disable-next-line no-param-reassign
     cleanedData.longitude = coerceToNumeric(cleanedData.longitude);
 
-    if (cleanedData.latitude && cleanedData.longitude) {
-      const address = await GeocodingService.reverse(
-        cleanedData.latitude,
-        cleanedData.longitude
-      );
-      // eslint-disable-next-line no-param-reassign
-      if (address) cleanedData.iso_3166_2 = address.iso_3166_2;
-    }
-
     const newOrganizationId = await sails
       .getDatastore()
       .transaction(async (db) => {
@@ -157,6 +148,16 @@ module.exports = {
 
     const newOrganizationPopulated =
       await module.exports.getPopulatedOrganization(newOrganizationId);
+
+    if (cleanedData.latitude && cleanedData.longitude) {
+      EnrichmentQueueService.enqueue(
+        newOrganizationId,
+        'organization',
+        req.traceId
+      ).catch((err) => {
+        sails.log.error('Failed to enqueue organization enrichment:', err);
+      });
+    }
 
     await module.exports.updateInSearch(newOrganizationPopulated);
 
