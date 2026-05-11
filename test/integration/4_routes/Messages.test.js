@@ -300,7 +300,9 @@ describe('Messages features', () => {
         'lastMessage',
         'unreadCount',
         'otherParticipant',
+        'archivedAt',
       ]);
+      should(convo.archivedAt).be.null();
       should(convo.otherParticipant).have.properties(['id', 'nickname']);
       should(convo.otherParticipant.nickname).be.equal('RecipientUser');
     });
@@ -529,6 +531,8 @@ describe('Messages features', () => {
       should(res.body.conversations.length).be.greaterThanOrEqual(2);
       // convoId2 should be first as it was archived last
       should(res.body.conversations[0].id).be.equal(convoId2);
+      should(res.body.conversations[0]).have.property('archivedAt');
+      should(res.body.conversations[0].archivedAt).not.be.null();
 
       await TCaver.destroy({ id: recipient2.id });
     });
