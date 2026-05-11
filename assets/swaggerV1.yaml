@@ -5374,6 +5374,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/StructuredError'
+        404:
+          description: Conversation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StructuredError'
         500:
           description: Internal server error
           content:
