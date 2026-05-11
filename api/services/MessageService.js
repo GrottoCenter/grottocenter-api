@@ -143,6 +143,7 @@ module.exports = {
         id: row.otherParticipantId,
         nickname: row.otherParticipantNickname,
       }),
+      archivedAt: row.archivedAt || null,
     }));
   },
 
