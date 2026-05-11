@@ -47,6 +47,8 @@ const treatRange = (parameters, req, res, converter, found) => {
 
   res.set('Access-Control-Expose-Headers', 'Content-Range');
   const meta = getMetaFromRequest(req);
+  // Converters that declare a second parameter receive request metadata (meta).
+  // Single-param converters (e.g., toMassif) are called without meta.
   return res.partialContent(
     converter.length > 1 ? converter(found, meta) : converter(found)
   );
@@ -81,6 +83,8 @@ module.exports = {
       return treatRange(parameters, req, res, converter, found);
     }
     const meta = getMetaFromRequest(req);
+    // Converters that declare a second parameter receive request metadata (meta).
+    // Single-param converters (e.g., toMassif) are called without meta.
     return res.ok(
       converter.length > 1 ? converter(found, meta) : converter(found)
     );
