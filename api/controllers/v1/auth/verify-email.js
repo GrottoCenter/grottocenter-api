@@ -18,6 +18,25 @@ module.exports = async (req, res) => {
     mailIsValid: true,
   };
 
+  if (caver.pendingMail) {
+    const alreadyInUse = await TCaver.findOne({
+      mail: caver.pendingMail,
+    });
+
+    if (alreadyInUse) {
+      await TCaver.updateOne({ id: caver.id }).set({
+        pendingMail: null,
+        activationCode: null,
+      });
+      return res.conflict(
+        'The new email is already in use by another account.'
+      );
+    }
+
+    updates.mail = caver.pendingMail;
+    updates.pendingMail = null;
+  }
+
   if (!caver.activated) {
     updates.activated = true;
   }
@@ -25,8 +44,12 @@ module.exports = async (req, res) => {
   try {
     await TCaver.updateOne({ id: caver.id }).set(updates);
   } catch (err) {
-    sails.log.error(`Failed to activate user ${caver.id}:`, err);
-    return res.serverError('An error occurred during account activation.');
+    sails.log.error(`Failed to verify email for user ${caver.id}:`, err);
+    return res.serverError('An error occurred during email verification.');
+  }
+
+  if (caver.pendingMail) {
+    return res.ok({ message: 'Email successfully changed.' });
   }
 
   if (caver.activated) {
