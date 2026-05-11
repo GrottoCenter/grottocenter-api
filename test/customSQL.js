@@ -20,6 +20,8 @@ SELECT SETVAL('public.t_option_id_seq', COALESCE(MAX(id), 1) ) FROM public.t_opt
 SELECT SETVAL('public.t_point_id_seq', COALESCE(MAX(id), 1) ) FROM public.t_point;
 SELECT SETVAL('public.t_region_id_seq', COALESCE(MAX(id), 1) ) FROM public.t_region;
 SELECT SETVAL('public.t_rigging_id_seq', COALESCE(MAX(id), 1) ) FROM public.t_rigging;
+SELECT SETVAL('public.t_conversation_id_seq', COALESCE(MAX(id), 1) ) FROM public.t_conversation;
+SELECT SETVAL('public.t_message_id_seq', COALESCE(MAX(id), 1) ) FROM public.t_message;
 SELECT SETVAL('public.t_conversation_archive_id_seq', COALESCE(MAX(id), 1) ) FROM public.t_conversation_archive;
 `;
 

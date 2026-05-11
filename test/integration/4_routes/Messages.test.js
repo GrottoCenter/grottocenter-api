@@ -498,11 +498,9 @@ describe('Messages features', () => {
     });
 
     it('should sort archived conversations by archivedAt DESC', async () => {
-      // Use createEligibleUser to ensure the recipient is valid
       const recipient2 = await createEligibleUser({
         mail: 'recipient2@test.com',
         nickname: 'Recipient2',
-        login: 'recipient2_login',
       });
 
       const convo2Res = await supertest(sails.hooks.http.app)
@@ -513,14 +511,24 @@ describe('Messages features', () => {
 
       const convoId2 = convo2Res.body.conversation;
 
-      // Ensure some delay between archivals
-      await new Promise((resolve) => {
-        setTimeout(resolve, 100);
+      // Manually create archive records with explicit times to ensure stable sorting
+      // Clear existing archives first for this caver
+      await TConversationArchive.destroy({ caver: sender.id });
+
+      const now = new Date();
+      const older = new Date(now.getTime() - 10000);
+
+      await TConversationArchive.create({
+        conversation: convoId,
+        caver: sender.id,
+        archivedAt: older,
       });
-      await supertest(sails.hooks.http.app)
-        .post(`/api/v1/messages/conversations/${convoId2}/archive`)
-        .set('Authorization', `Bearer ${senderToken}`)
-        .expect(204);
+
+      await TConversationArchive.create({
+        conversation: convoId2,
+        caver: sender.id,
+        archivedAt: now,
+      });
 
       const res = await supertest(sails.hooks.http.app)
         .get('/api/v1/messages/conversations/archived')
@@ -528,10 +536,9 @@ describe('Messages features', () => {
         .expect(206);
 
       should(res.body.conversations).be.an.Array();
-      should(res.body.conversations.length).be.greaterThanOrEqual(2);
-      // convoId2 should be first as it was archived last
+      should(res.body.conversations.length).be.equal(2);
+      // convoId2 should be first as it has the most recent archivedAt
       should(res.body.conversations[0].id).be.equal(convoId2);
-      should(res.body.conversations[0]).have.property('archivedAt');
       should(res.body.conversations[0].archivedAt).not.be.null();
 
       await TCaver.destroy({ id: recipient2.id });
