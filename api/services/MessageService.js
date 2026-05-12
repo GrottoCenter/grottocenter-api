@@ -185,10 +185,10 @@ module.exports = {
     const messages = await TMessage.find({ conversation: conversationId })
       .skip(skip)
       .limit(limit)
-      .sort('dateSent ASC')
+      .sort('dateSent DESC')
       .populate('caverSender');
 
-    return messages.map((m) => module.exports.formatMessage(m));
+    return messages.map((m) => module.exports.formatMessage(m)).reverse();
   },
 
   /**

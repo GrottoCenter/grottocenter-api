@@ -18,7 +18,7 @@ describe('Account - Notification Preferences', () => {
       alertForNews: false,
       sendNotificationByEmail: false,
       sendMessageNotificationByEmail: true,
-      idLanguage: '000',
+      language: '000',
     }).fetch();
 
     userId = caver.id;

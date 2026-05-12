@@ -15,7 +15,7 @@ describe('Messages features', () => {
       activated: true,
       mailIsValid: true,
       password: 'argon2_hashed_password_mock',
-      idLanguage: 'eng',
+      language: 'eng',
       ...data,
     }).fetch();
 

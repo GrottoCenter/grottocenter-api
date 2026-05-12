@@ -169,7 +169,7 @@ describe('Account features', () => {
           nickname: 'unverified_forgot',
           password: await AuthService.createHashedPassword('test'),
           activated: false,
-          idLanguage: '000',
+          language: '000',
         });
       });
       after(async () => {
@@ -199,7 +199,7 @@ describe('Account features', () => {
           password: await AuthService.createHashedPassword('test'),
           activated: true,
           banned: true,
-          idLanguage: '000',
+          language: '000',
         });
       });
       after(async () => {
