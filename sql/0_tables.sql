@@ -1385,7 +1385,7 @@ CREATE TABLE t_message (
     id serial NOT NULL,
     id_conversation int4 NOT NULL,
     id_caver_sender int4 NOT NULL,
-    body text NOT NULL,
+    body varchar(5000) NOT NULL,
     date_sent timestamp NOT NULL DEFAULT now(),
     date_read timestamp NULL,
     CONSTRAINT t_message_pk PRIMARY KEY (id),
