@@ -452,7 +452,7 @@ describe('Caver features', () => {
         try {
           const res = await supertest(sails.hooks.http.app)
             .patch('/api/v1/account/password')
-            .send({ password: 'newpassword123', token: resetToken })
+            .send({ password: 'New_password1!', token: resetToken })
             .set('Content-type', 'application/json')
             .set('Accept', 'application/json');
 
@@ -488,7 +488,7 @@ describe('Caver features', () => {
         try {
           const res = await supertest(sails.hooks.http.app)
             .patch('/api/v1/account/password')
-            .send({ password: 'newpassword123', token: resetToken })
+            .send({ password: 'New_password1!', token: resetToken })
             .set('Content-type', 'application/json')
             .set('Accept', 'application/json');
 
@@ -514,7 +514,7 @@ describe('Caver features', () => {
           .send({
             email: 'admin1@admin1.com',
             nickname: 'UniqueNickTest1',
-            password: 'securepassword',
+            password: 'Secure_pass1!',
           })
           .set('Content-type', 'application/json')
           .set('Accept', 'application/json');
@@ -535,7 +535,7 @@ describe('Caver features', () => {
           .send({
             email: 'uniquetest@test.com',
             nickname: 'Admin1',
-            password: 'securepassword',
+            password: 'Secure_pass1!',
           })
           .set('Content-type', 'application/json')
           .set('Accept', 'application/json');

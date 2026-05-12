@@ -4,6 +4,10 @@
  * @description :: Shared helpers for language/locale resolution.
  */
 
+// In-memory cache for locale lookups. Languages are static data that never
+// change at runtime, so no TTL or invalidation is needed.
+const localeCache = new Map();
+
 module.exports = {
   /**
    * Resolve a TLanguage FK id to an ISO 639-1 locale code (e.g. "fr", "en").
@@ -13,10 +17,12 @@ module.exports = {
    */
   getLocale: async (languageId) => {
     if (!languageId) return undefined;
+    if (localeCache.has(languageId)) return localeCache.get(languageId);
     const lang = await TLanguage.findOne({ id: languageId });
-    if (lang && lang.part1) {
-      return lang.part1;
-    }
-    return undefined;
+    // Guard against empty string: part1 can be '' for languages without an
+    // ISO 639-1 code, in which case we want to return undefined, not ''.
+    const locale = lang?.part1 || undefined;
+    localeCache.set(languageId, locale);
+    return locale;
   },
 };

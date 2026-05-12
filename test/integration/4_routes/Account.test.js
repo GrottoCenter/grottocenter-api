@@ -59,6 +59,17 @@ describe('Account features', () => {
           .expect(400, done);
       });
     });
+    describe('Email already used by another caver', () => {
+      it('should return code 409', (done) => {
+        supertest(sails.hooks.http.app)
+          .patch('/api/v1/account')
+          .send({ email: 'admin1@admin1.com' })
+          .set('Authorization', userToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .expect(409, done);
+      });
+    });
     describe('Success', () => {
       it('should return code 204', async () => {
         await supertest(sails.hooks.http.app)
@@ -212,6 +223,65 @@ describe('Account features', () => {
     after(async () => {
       await TCaver.updateOne({ id: 3 }).set({
         sendNotificationByEmail: false,
+      });
+    });
+  });
+
+  describe('Update password via account endpoint', () => {
+    it('should return 400 if currentPassword is not provided', (done) => {
+      supertest(sails.hooks.http.app)
+        .patch('/api/v1/account')
+        .send({ password: 'New_password1!' })
+        .set('Authorization', userToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(400, done);
+    });
+
+    it('should return 403 if currentPassword is incorrect', (done) => {
+      supertest(sails.hooks.http.app)
+        .patch('/api/v1/account')
+        .send({ password: 'New_password1!', currentPassword: 'wrongpassword' })
+        .set('Authorization', userToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(403, done);
+    });
+
+    it('should return 400 if new password is too short', (done) => {
+      supertest(sails.hooks.http.app)
+        .patch('/api/v1/account')
+        .send({ password: 'short', currentPassword: 'testtest' })
+        .set('Authorization', userToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(400, done);
+    });
+
+    it('should return 400 if new password lacks special character', (done) => {
+      supertest(sails.hooks.http.app)
+        .patch('/api/v1/account')
+        .send({ password: 'NewPassword123', currentPassword: 'testtest' })
+        .set('Authorization', userToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(400, done);
+    });
+
+    it('should update password when currentPassword is correct', async () => {
+      await supertest(sails.hooks.http.app)
+        .patch('/api/v1/account')
+        .send({ password: 'New_password1!', currentPassword: 'testtest' })
+        .set('Authorization', userToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(204);
+    });
+
+    // Restore original password
+    after(async () => {
+      await TCaver.updateOne({ id: 3 }).set({
+        password: await AuthService.createHashedPassword('testtest'),
       });
     });
   });

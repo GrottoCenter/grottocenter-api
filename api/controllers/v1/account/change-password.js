@@ -3,8 +3,6 @@ const jwt = require('jsonwebtoken');
 const AuthService = require('../../../services/AuthService');
 const TokenService = require('../../../services/TokenService');
 
-const PASSWORD_MIN_LENGTH = 8;
-
 // eslint-disable-next-line consistent-return
 module.exports = async (req, res) => {
   const password = req.param('password');
@@ -12,10 +10,9 @@ module.exports = async (req, res) => {
   if (!password) {
     return res.badRequest('You must provide a password.');
   }
-  if (password.length < PASSWORD_MIN_LENGTH) {
-    return res.badRequest(
-      `Your password must be at least ${PASSWORD_MIN_LENGTH} characters long.`
-    );
+  const validation = AuthService.validatePassword(password);
+  if (!validation.valid) {
+    return res.badRequest(validation.message);
   }
 
   if (req.token) {

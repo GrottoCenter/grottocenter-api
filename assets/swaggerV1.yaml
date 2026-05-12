@@ -488,6 +488,9 @@ paths:
                 password:
                   type: string
                   description: New password (minimum 8 characters)
+                currentPassword:
+                  type: string
+                  description: Current password (required when changing password)
                 language:
                   type: string
                   description: Preferred language as an ISO 639-3 code (e.g. "fra", "eng", "deu")
@@ -511,10 +514,12 @@ paths:
           description: Invalid input (unknown property, missing value, or validation error).
         '401':
           description: Unauthorized — valid JWT required.
+        '403':
+          description: Current password is incorrect.
         '404':
           description: Caver not found.
         '409':
-          description: Nickname is already taken.
+          description: Email or nickname is already taken.
 
   '/cavers/{id}':
     get:
