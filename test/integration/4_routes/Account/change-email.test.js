@@ -98,6 +98,31 @@ describe('Account change-email', () => {
       secondUser.activationCode.should.not.equal(firstCode);
     });
 
+    it('should allow resubmitting the same pending email (to resend verification)', async () => {
+      const pendingEmail = 'same-pending@example.com';
+      await supertest(sails.hooks.http.app)
+        .patch('/api/v1/account/email')
+        .send({ email: pendingEmail })
+        .set('Authorization', userToken)
+        .set('Accept', 'application/json')
+        .expect(204);
+
+      const firstUser = await TCaver.findOne({ id: userId });
+      const firstCode = firstUser.activationCode;
+
+      await supertest(sails.hooks.http.app)
+        .patch('/api/v1/account/email')
+        .send({ email: pendingEmail })
+        .set('Authorization', userToken)
+        .set('Accept', 'application/json')
+        .expect(204);
+
+      const secondUser = await TCaver.findOne({ id: userId });
+      secondUser.pendingMail.should.equal(pendingEmail);
+      secondUser.activationCode.should.be.a.String().and.not.empty();
+      secondUser.activationCode.should.not.equal(firstCode);
+    });
+
     it('should return 409 when email is already in use (pendingMail)', async () => {
       const secondUserToken =
         await AuthTokenService.getRawBearerModeratorToken();
