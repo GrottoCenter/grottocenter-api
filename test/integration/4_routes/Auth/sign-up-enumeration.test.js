@@ -14,7 +14,7 @@ describe('Auth features', () => {
           .send({
             email: duplicateEmail,
             nickname: 'UniqueNickname123',
-            password: 'securepassword',
+            password: 'Secure_pass1!',
           })
           .set('Content-type', 'application/json')
           .set('Accept', 'application/json')
@@ -29,7 +29,7 @@ describe('Auth features', () => {
           .send({
             email: duplicateEmail,
             nickname: 'UniqueNickname456',
-            password: 'securepassword',
+            password: 'Secure_pass1!',
           })
           .set('Content-type', 'application/json')
           .set('Accept', 'application/json')
@@ -49,7 +49,7 @@ describe('Auth features', () => {
           .send({
             email: 'unique-email@example.com',
             nickname: duplicateNickname,
-            password: 'securepassword',
+            password: 'Secure_pass1!',
           })
           .set('Content-type', 'application/json')
           .set('Accept', 'application/json')
@@ -64,7 +64,7 @@ describe('Auth features', () => {
           .send({
             email: 'unique-email2@example.com',
             nickname: duplicateNickname,
-            password: 'securepassword',
+            password: 'Secure_pass1!',
           })
           .set('Content-type', 'application/json')
           .set('Accept', 'application/json')

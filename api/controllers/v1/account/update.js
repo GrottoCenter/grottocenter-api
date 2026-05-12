@@ -1,9 +1,11 @@
 const AuthService = require('../../../services/AuthService');
 const CaverService = require('../../../services/CaverService');
 
-const PASSWORD_MIN_LENGTH = 8;
-
+// Fields that can be updated via this endpoint. `currentPassword` is handled
+// as an out-of-band credential (required when changing password) and is not
+// persisted — it is listed here only so it passes the unknown-property guard.
 const UPDATABLE_PROPERTIES = [
+  'currentPassword',
   'email',
   'language',
   'name',
@@ -35,6 +37,10 @@ module.exports = async (req, res) => {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
       return res.badRequest('You must provide a valid email address.');
     }
+    const existingEmail = await TCaver.findOne({ mail: normalizedEmail });
+    if (existingEmail && existingEmail.id !== req.token.id) {
+      return res.conflict('This email is already used.');
+    }
     updates.mail = normalizedEmail;
   }
 
@@ -42,10 +48,22 @@ module.exports = async (req, res) => {
     if (!req.body.password) {
       return res.badRequest('You must provide a password.');
     }
-    if (req.body.password.length < PASSWORD_MIN_LENGTH) {
+    if (!req.body.currentPassword) {
       return res.badRequest(
-        `Your password must be at least ${PASSWORD_MIN_LENGTH} characters long.`
+        'You must provide your current password to set a new one.'
       );
+    }
+    const caver = await TCaver.findOne({ id: req.token.id });
+    const isMatch = await AuthService.verifyPassword(
+      caver.password,
+      req.body.currentPassword
+    );
+    if (!isMatch) {
+      return res.forbidden('Current password is incorrect.');
+    }
+    const validation = AuthService.validatePassword(req.body.password);
+    if (!validation.valid) {
+      return res.badRequest(validation.message);
     }
     updates.password = await AuthService.createHashedPassword(
       req.body.password

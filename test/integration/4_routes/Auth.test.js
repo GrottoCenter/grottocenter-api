@@ -265,13 +265,13 @@ describe('Auth features', () => {
     const newAccount1 = {
       email: 'newtest@newtest.com',
       nickname: 'NewTest',
-      password: 'new_password',
+      password: 'New_password1!',
     };
     const newAccount2 = {
       email: 'newtest2@newtest2.com',
       name: 'Bob',
       nickname: 'NewTest2',
-      password: 'new_password',
+      password: 'New_password1!',
       surname: 'Testuser',
     };
     describe('Email missing', () => {
@@ -280,7 +280,7 @@ describe('Auth features', () => {
           .post('/api/v1/signup')
           .send({
             nickname: 'NewTest',
-            password: 'new_password',
+            password: 'New_password1!',
           })
           .set('Content-type', 'application/json')
           .set('Accept', 'application/json')
@@ -321,7 +321,7 @@ describe('Auth features', () => {
           .send({
             email: 'newtest@newtest.com',
             nickname: 'Admin1',
-            password: 'new_password',
+            password: 'New_password1!',
           })
           .set('Content-type', 'application/json')
           .set('Accept', 'application/json')
@@ -355,7 +355,7 @@ describe('Auth features', () => {
           .send({
             email: 'admin1@admin1.com',
             nickname: 'NewTest3',
-            password: 'new_password',
+            password: 'New_password1!',
           })
           .set('Content-type', 'application/json')
           .set('Accept', 'application/json')
@@ -369,7 +369,7 @@ describe('Auth features', () => {
           .send({
             email: 'newtest2@newtest2.com',
             nickname: 'Admin1',
-            password: 'new_password',
+            password: 'New_password1!',
           })
           .set('Content-type', 'application/json')
           .set('Accept', 'application/json')

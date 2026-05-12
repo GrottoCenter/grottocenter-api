@@ -2,8 +2,6 @@ const AuthService = require('../../../services/AuthService');
 const CaverService = require('../../../services/CaverService');
 const LanguageService = require('../../../services/LanguageService');
 
-const PASSWORD_MIN_LENGTH = 8;
-
 module.exports = async (req, res) => {
   // Check params
   let email = req.param('email');
@@ -21,10 +19,9 @@ module.exports = async (req, res) => {
   if (!password) {
     return res.badRequest('You must provide a password.');
   }
-  if (password && password.length < PASSWORD_MIN_LENGTH) {
-    return res.badRequest(
-      `Your password must be at least ${PASSWORD_MIN_LENGTH} characters long.`
-    );
+  const validation = AuthService.validatePassword(password);
+  if (!validation.valid) {
+    return res.badRequest(validation.message);
   }
 
   const nickname = req.param('nickname');
