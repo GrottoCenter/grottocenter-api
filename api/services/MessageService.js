@@ -15,12 +15,10 @@ module.exports = {
    */
   findExistingConversation: async (caver1Id, caver2Id) => {
     const query = `
-      SELECT id_conversation 
-      FROM j_participant 
-      WHERE id_conversation IN (
-        SELECT id_conversation FROM j_participant WHERE id_caver = $1
-      )
-      AND id_caver = $2
+      SELECT p1.id_conversation 
+      FROM j_participant p1 
+      JOIN j_participant p2 ON p1.id_conversation = p2.id_conversation 
+      WHERE p1.id_caver = $1 AND p2.id_caver = $2 
       LIMIT 1
     `;
     const result = await CommonService.query(query, [caver1Id, caver2Id]);
@@ -169,6 +167,8 @@ module.exports = {
 
   /**
    * Get messages in a conversation.
+   * Note: This uses "chat-style" pagination. skip=0 fetches the most recent messages.
+   * The returned array is reversed to maintain chronological order for the client.
    * @param {number} conversationId
    * @param {number} skip
    * @param {number} limit
