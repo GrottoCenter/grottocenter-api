@@ -32,7 +32,7 @@ module.exports = async (req, res) => {
       return res.forbidden(
         sails.helpers.formatStructuredError(
           req,
-          'You are not a participant in this conversation or it does not exist.',
+          'You are not a participant in this conversation.',
           'E_AUTHORIZATION'
         )
       );

@@ -41,6 +41,19 @@ module.exports = async (req, res) => {
   // 1. Resolve Conversation or Recipient Eligibility
   if (conversationId) {
     try {
+      const conversationExists = await TConversation.count({
+        id: conversationId,
+      });
+      if (!conversationExists) {
+        return res.notFound(
+          sails.helpers.formatStructuredError(
+            req,
+            'Conversation not found.',
+            'E_NOT_FOUND'
+          )
+        );
+      }
+
       const queryResult = await CommonService.query(
         'SELECT 1 FROM j_participant WHERE id_conversation = $1 AND id_caver = $2',
         [conversationId, senderId]
