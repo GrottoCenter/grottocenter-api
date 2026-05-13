@@ -27,6 +27,7 @@ const LocationService = require('./LocationService');
 const RightService = require('./RightService');
 const coerceToInt = require('../utils/coerceToInt');
 const coerceBool = require('../utils/coerceBool');
+const { getQualityData } = require('../utils/computeEntranceDataQuality');
 
 module.exports = {
   getConvertedNameFromClientRequest: (req) => {
@@ -353,6 +354,39 @@ module.exports = {
       entrance.longitude = null;
       entrance.locations = [];
     }
+
+    // Compute data quality score and fetch massifs in parallel (independent queries)
+    const [qualityRows, massifRows] = await Promise.all([
+      CommonService.query(
+        `SELECT general_latest_date_of_update, general_nb_contributions,
+                location_latest_date_of_update, location_nb_contributions,
+                description_latest_date_of_update, description_nb_contributions,
+                document_latest_date_of_update, document_nb_contributions,
+                rigging_latest_date_of_update, rigging_nb_contributions,
+                history_latest_date_of_update, history_nb_contributions,
+                comment_latest_date_of_update, comment_nb_contributions
+         FROM v_data_quality_compute_entrance WHERE id_entrance = $1 ORDER BY id_massif ASC LIMIT 1`,
+        [rawEntrance.id]
+      ),
+      CommonService.query(
+        `SELECT m.id, n.name, n.id_language AS language
+         FROM t_massif m
+         JOIN t_entrance e ON ST_Contains(m.geog_polygon::geometry, e.point_geom)
+         LEFT JOIN t_name n ON n.id_massif = m.id AND n.is_main = true AND n.is_deleted = false
+         WHERE e.id = $1 AND e.is_deleted = false AND m.is_deleted = false`,
+        [rawEntrance.id]
+      ),
+    ]);
+    entrance.dataQuality = qualityRows?.rows?.[0]
+      ? getQualityData(qualityRows.rows[0])
+      : 0;
+    entrance.massifs =
+      massifRows?.rows?.map((r) => ({
+        id: r.id,
+        name: r.name,
+        language: r.language,
+        isDeleted: false,
+      })) ?? [];
 
     await SearchService.updateDocument('entrances', entrance);
   },

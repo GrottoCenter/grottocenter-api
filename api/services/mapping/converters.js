@@ -370,7 +370,12 @@ const c = {
     }
     // Once cave is populated, put the massifs at the root of the entrance
     // (more convenient for the client)
-    result.massifs = toList('massifs', source.cave ?? {}, c.toSimpleMassif);
+    // For search results, massifs come directly from the Typesense document
+    if (Array.isArray(source.massifs) && source.massifs.length > 0) {
+      result.massifs = source.massifs;
+    } else {
+      result.massifs = toList('massifs', source.cave ?? {}, c.toSimpleMassif);
+    }
     result.author = convertIfObject(source.author, c.toSimpleCaver);
     result.reviewer = convertIfObject(source.reviewer, c.toSimpleCaver);
     // Convert collections
@@ -404,6 +409,9 @@ const c = {
         categories: getQualityBreakdown(source.qualityData),
         lastComputedAt: source.qualityData.date_of_update,
       };
+    } else if (typeof source.dataQuality === 'number') {
+      // Pass through integer score from Typesense search documents
+      result.dataQuality = source.dataQuality;
     } else {
       result.dataQuality = null;
     }

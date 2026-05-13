@@ -129,6 +129,25 @@ describe('GeoLocService', () => {
       should(entrances).be.an.Array();
       should(entrances.length).equal(0);
     });
+
+    it('should include dataQuality field as an integer for each entrance', async () => {
+      const southWestBound = { lat: 62, lng: 78 };
+      const northEastBound = { lat: 63, lng: 79 };
+      const entrances = await GeoLocService.getEntrancesMap(
+        southWestBound,
+        northEastBound,
+        100
+      );
+      should(entrances).be.an.Array();
+      should(entrances.length).be.above(0);
+      entrances.forEach((entrance) => {
+        should(entrance).have.property('dataQuality');
+        should(entrance.dataQuality).be.a.Number();
+        should(entrance.dataQuality % 1).equal(0);
+        should(entrance.dataQuality).be.aboveOrEqual(0);
+        should(entrance.dataQuality).be.belowOrEqual(100);
+      });
+    });
   });
 
   describe('getGrottosMap()', () => {

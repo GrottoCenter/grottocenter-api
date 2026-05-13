@@ -139,6 +139,8 @@ CREATE INDEX IF NOT EXISTS idx_v_dq_country
   ON v_data_quality_compute_entrance(id_country);
 CREATE INDEX IF NOT EXISTS idx_v_dq_entrance
   ON v_data_quality_compute_entrance(id_entrance);
+CREATE INDEX IF NOT EXISTS idx_vdqce_entrance_massif
+  ON v_data_quality_compute_entrance(id_entrance, id_massif);
 CREATE INDEX IF NOT EXISTS idx_v_country_info_country
   ON v_country_info(id_country);
 CREATE INDEX IF NOT EXISTS idx_v_region_info_region

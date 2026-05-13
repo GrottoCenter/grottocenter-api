@@ -4016,10 +4016,32 @@ paths:
                     Sort field and direction in the format "field:asc" or "field:desc".
                     The field must exist and be sortable in the target entity's schema.
                     Returns 400 if the field is invalid or not sortable.
+                    Entity-specific sort fields:
+                      - entrances: "dataQuality:asc" or "dataQuality:desc" (sort by data quality score)
+                    Using an entity-specific sort field with a different entity returns 400.
                   example: "cave.depth:desc"
                 filter:
                   type: object
                   description: Filter to specify the request, the keys are field in the entities
+                  properties:
+                    dataQuality:
+                      type: array
+                      description: |
+                        Range filter for entrance data quality score (only valid for entity=entrances).
+                        A two-element array [min, max] where each element is an integer (0–100) or null.
+                        - [min, max]: returns entrances with dataQuality between min and max inclusive.
+                        - [min, null]: returns entrances with dataQuality >= min.
+                        - [null, max]: returns entrances with dataQuality <= max.
+                        Values are clamped to the 0–100 range. Non-numeric values cause the filter to be ignored.
+                      minItems: 1
+                      maxItems: 2
+                      items:
+                        type: integer
+                        minimum: 0
+                        maximum: 100
+                        nullable: true
+                      example: [50, 100]
+                  additionalProperties: true
                 matchAllFields:
                   type: boolean
                   description: Specify if the provided filters are added using the logical comparator "And" or "Or"
@@ -4213,6 +4235,14 @@ paths:
                       type: number
                     quality:
                       type: integer
+                      minimum: 0
+                      maximum: 10
+                      description: Cave size/importance coefficient (0–10) computed from the cave's depth and length. Used to prioritize which entrances to display at a given map zoom level.
+                    dataQuality:
+                      type: integer
+                      minimum: 0
+                      maximum: 100
+                      description: Overall data quality score (0–100) representing how complete and up-to-date the entrance's data is. Returns 0 if no quality data is available.
         '404':
           description: Massif not found (when massif parameter is provided)
 
@@ -5963,9 +5993,18 @@ components:
         discoveryYear:
           type: integer
         dataQuality:
-          allOf:
+          description: >
+            Data quality score for the entrance. In search results (advanced-search endpoint),
+            this is a simple integer (0–100) representing the overall data completeness score.
+            In full entrance responses, this is a detailed object with category breakdowns.
+            Null when no quality data is available.
+          oneOf:
+            - type: integer
+              minimum: 0
+              maximum: 100
+              nullable: true
+              description: Overall data quality score (0–100) returned in search results, or null if unavailable.
             - $ref: '#/components/schemas/DataQuality'
-          nullable: true
 
     DataQuality:
       type: object
