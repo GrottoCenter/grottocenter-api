@@ -27,7 +27,6 @@ module.exports = {
     caverSender: {
       columnName: 'id_caver_sender',
       model: 'TCaver',
-      allowNull: true,
     },
 
     body: {

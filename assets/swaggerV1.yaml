@@ -5255,7 +5255,7 @@ paths:
     get:
       tags:
         - messaging
-      description: 'Get messages in a conversation (paginated, marks as read).'
+      description: 'Get messages in a conversation (paginated, marks as read). Messages are returned in chronological order, but pagination starts from the most recent (e.g., skip=0 returns the latest page).'
       security:
         - bearerAuth: []
       parameters:
@@ -5267,14 +5267,14 @@ paths:
             type: integer
         - name: limit
           in: query
-          description: Maximum number of messages to return.
+          description: Maximum number of messages to return (fetches the most recent messages first).
           schema:
             type: integer
             default: 20
             maximum: 50
         - name: skip
           in: query
-          description: Number of messages to skip.
+          description: Number of messages to skip from the most recent.
           schema:
             type: integer
             default: 0
