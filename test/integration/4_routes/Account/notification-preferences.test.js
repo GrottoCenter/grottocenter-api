@@ -8,9 +8,6 @@ describe('Account - Notification Preferences', () => {
 
   before(async () => {
     // We can reuse the first user from the DB or create a mock one.
-    // Assuming `Tcaver` and `TokenService` are globally available via `sails` or we require them.
-    const TCaver = sails.models.tcaver;
-
     const caver = await TCaver.create({
       nickname: 'NotificationUser',
       mail: 'notif@example.com',
@@ -26,7 +23,6 @@ describe('Account - Notification Preferences', () => {
   });
 
   after(async () => {
-    const TCaver = sails.models.tcaver;
     await TCaver.destroy({ id: userId });
   });
 

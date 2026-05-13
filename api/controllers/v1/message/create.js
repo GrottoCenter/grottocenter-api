@@ -1,8 +1,3 @@
-const MessageService = require('../../../services/MessageService');
-const ControllerService = require('../../../services/ControllerService');
-const CommonService = require('../../../services/CommonService');
-const NotificationService = require('../../../services/NotificationService');
-
 /**
  * MessageController.create
  *

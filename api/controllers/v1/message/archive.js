@@ -4,8 +4,6 @@
  * @description :: Archive a conversation for the authenticated caver.
  */
 
-const MessageService = require('../../../services/MessageService');
-
 module.exports = async (req, res) => {
   const caverId = req.token.id;
   const conversationId = req.params.id;
@@ -43,7 +41,7 @@ module.exports = async (req, res) => {
       { conversation: conversationId, caver: caverId, archivedAt: new Date() }
     );
 
-    return res.status(204).send();
+    return res.ok();
   } catch (err) {
     sails.log.error(err);
     return res.serverError(

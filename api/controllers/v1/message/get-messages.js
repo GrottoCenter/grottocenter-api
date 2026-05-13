@@ -1,6 +1,3 @@
-const MessageService = require('../../../services/MessageService');
-const ControllerService = require('../../../services/ControllerService');
-
 /**
  * MessageController.getMessages
  *

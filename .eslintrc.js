@@ -12,6 +12,7 @@ module.exports = {
   globals: {
     BlacklistService: 'readonly',
     CommonService: 'readonly',
+    ControllerService: 'readonly',
     HComment: 'readonly',
     HDescription: 'readonly',
     HEntrance: 'readonly',
@@ -28,6 +29,8 @@ module.exports = {
     JDocumentLanguage: 'readonly',
     JGrottoCaver: 'readonly',
     JGrottoCaveExplorer: 'readonly',
+    MessageService: 'readonly',
+    NotificationService: 'readonly',
     TCave: 'readonly',
     TCaver: 'readonly',
     TComment: 'readonly',
