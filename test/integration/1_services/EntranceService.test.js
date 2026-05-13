@@ -260,6 +260,99 @@ describe('EntranceService', () => {
       process.env.NODE_ENV = originalEnv;
     });
 
+    it('should include dataQuality field defaulting to 0 when no quality data exists', async () => {
+      const originalEnv = process.env.NODE_ENV;
+      process.env.NODE_ENV = 'development';
+      const updateStub = sinon.stub(SearchService, 'updateDocument').resolves();
+      const queryStub = sinon.stub(CommonService, 'query');
+      queryStub
+        .withArgs(
+          sinon.match(/v_data_quality_compute_entrance/),
+          sinon.match.any
+        )
+        .resolves({ rows: [] });
+      queryStub
+        .withArgs(sinon.match(/t_massif/), sinon.match.any)
+        .resolves({ rows: [] });
+
+      const entrance = {
+        id: 99999,
+        isSensitive: false,
+        dateInscription: new Date('2024-01-15'),
+        author: { id: 1, nickname: 'Author' },
+        names: [{ name: 'Test', language: 'en' }],
+        iso_3166_2: 'FR-75',
+      };
+
+      await EntranceService.updateInSearch(entrance);
+
+      should(updateStub.calledOnce).be.true();
+      const callArg = updateStub.getCall(0).args[1];
+      should(callArg).have.property('dataQuality');
+      should(callArg.dataQuality).equal(0);
+      should(callArg.massifs).eql([]);
+      process.env.NODE_ENV = originalEnv;
+    });
+
+    it('should compute dataQuality from materialized view data', async () => {
+      const originalEnv = process.env.NODE_ENV;
+      process.env.NODE_ENV = 'development';
+      const updateStub = sinon.stub(SearchService, 'updateDocument').resolves();
+      const queryStub = sinon.stub(CommonService, 'query');
+      queryStub
+        .withArgs(
+          sinon.match(/v_data_quality_compute_entrance/),
+          sinon.match.any
+        )
+        .resolves({
+          rows: [
+            {
+              id_entrance: 1,
+              id_massif: 1,
+              general_latest_date_of_update: new Date(),
+              general_nb_contributions: 3,
+              location_latest_date_of_update: new Date(),
+              location_nb_contributions: 2,
+              description_latest_date_of_update: new Date(),
+              description_nb_contributions: 1,
+              document_latest_date_of_update: new Date(),
+              document_nb_contributions: 2,
+              rigging_latest_date_of_update: new Date(),
+              rigging_nb_contributions: 1,
+              history_latest_date_of_update: new Date(),
+              history_nb_contributions: 2,
+              comment_latest_date_of_update: new Date(),
+              comment_nb_contributions: 3,
+            },
+          ],
+        });
+      queryStub
+        .withArgs(sinon.match(/t_massif/), sinon.match.any)
+        .resolves({ rows: [{ id: 1, name: 'Test Massif', language: 'fra' }] });
+
+      const entrance = {
+        id: 1,
+        isSensitive: false,
+        dateInscription: new Date('2024-01-15'),
+        author: { id: 1, nickname: 'Author' },
+        names: [{ name: 'Test', language: 'en' }],
+        iso_3166_2: 'FR-75',
+      };
+
+      await EntranceService.updateInSearch(entrance);
+
+      should(updateStub.calledOnce).be.true();
+      const callArg = updateStub.getCall(0).args[1];
+      should(callArg).have.property('dataQuality');
+      should(callArg.dataQuality).be.a.Number();
+      should(callArg.dataQuality).be.greaterThan(0);
+      should(callArg.dataQuality).be.lessThanOrEqual(100);
+      should(callArg.massifs).eql([
+        { id: 1, name: 'Test Massif', language: 'fra', isDeleted: false },
+      ]);
+      process.env.NODE_ENV = originalEnv;
+    });
+
     it('should include dateLastModif computed from dateInscription and dateReviewed', async () => {
       const originalEnv = process.env.NODE_ENV;
       process.env.NODE_ENV = 'development';

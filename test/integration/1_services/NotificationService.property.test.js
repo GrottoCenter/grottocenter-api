@@ -20,7 +20,7 @@ describe('NotificationService - Property Tests', () => {
      *
      * Validates: Requirements 2.3, 3.3
      */
-    it('should never create a TNotification when moderatorId equals authorId', function () {
+    it('should never create a TNotification when moderatorId equals authorId', function selfNotificationSkip() {
       this.timeout(30000);
 
       const createStub = sinon.stub(TNotification, 'create').resolves();
@@ -71,7 +71,7 @@ describe('NotificationService - Property Tests', () => {
      *
      * Validates: Requirements 2.4, 3.4
      */
-    it('should set the notifier field to the moderatorId argument', function () {
+    it('should set the notifier field to the moderatorId argument', function notifierIdentity() {
       this.timeout(30000);
 
       const createStub = sinon.stub(TNotification, 'create').resolves();
@@ -131,7 +131,7 @@ describe('NotificationService - Property Tests', () => {
      *
      * Validates: Requirements 4.1, 4.2
      */
-    it('should call sendNotificationEmail iff sendNotificationByEmail is true', function () {
+    it('should call sendNotificationEmail iff sendNotificationByEmail is true', function emailOptInGate() {
       this.timeout(30000);
 
       sinon.stub(TNotification, 'create').resolves();
@@ -198,7 +198,7 @@ describe('NotificationService - Property Tests', () => {
      *
      * Validates: Requirements 4.3
      */
-    it('should include validationComment in viewValues for rejection emails', function () {
+    it('should include validationComment in viewValues for rejection emails', function rejectionCommentInclusion() {
       this.timeout(30000);
 
       const sendEmailWithStub = sinon.stub().returns({
@@ -257,7 +257,7 @@ describe('NotificationService - Property Tests', () => {
      *
      * Validates: Requirements 4.5
      */
-    it('should pass the correct isAuthorNotification flag in viewValues', function () {
+    it('should pass the correct isAuthorNotification flag in viewValues', function templateContextDistinction() {
       this.timeout(30000);
 
       const sendEmailWithStub = sinon.stub().returns({

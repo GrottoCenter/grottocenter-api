@@ -4,20 +4,42 @@ const {
   handleTypesenseError,
 } = require('../../../services/TypesenseErrorService');
 const { toSearchResult } = require('../../../services/mapping/converters');
+const normalizeDataQualityFilter = require('../../../utils/normalizeDataQualityFilter');
+
+// Sort fields that are only valid for specific entities
+const ENTITY_SPECIFIC_SORT_FIELDS = {
+  dataQuality: ['entrances'],
+};
 
 module.exports = async (req, res) => {
   let matchAllFields = req.param('matchAllFields') ?? true;
   if (!matchAllFields || matchAllFields === 'false') matchAllFields = false;
 
   const entity = req.param('entity') ?? '';
+  const sort = req.param('sort');
+
+  // Validate entity-specific sort fields
+  if (sort) {
+    const sortFields = sort.split(',').map((s) => s.trim().split(':')[0]);
+    for (const sortField of sortFields) {
+      const allowedEntities = ENTITY_SPECIFIC_SORT_FIELDS[sortField];
+      if (allowedEntities && !allowedEntities.includes(entity)) {
+        return res.badRequest(
+          `The ${sortField} sort field is only valid for entity=${allowedEntities.join(', ')}.`
+        );
+      }
+    }
+  }
+
+  const filter = normalizeDataQualityFilter(req.param('filter') ?? {});
 
   let results;
   try {
     results = await SearchService.collectionSearch({
       query: req.param('query'),
       entity,
-      sort: req.param('sort'),
-      filter: req.param('filter') ?? {},
+      sort,
+      filter,
       isLogicalCompareAnd: !!matchAllFields,
       page: req.param('page') ?? 1,
       size: req.param('size') ?? 10,
