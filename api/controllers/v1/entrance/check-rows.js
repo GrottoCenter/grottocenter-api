@@ -1,10 +1,17 @@
 const { valIfTruthyOrNull } = require('../../../utils/csvHelper');
 
 module.exports = async (req, res) => {
+  const { data } = req.body || {};
+  if (!Array.isArray(data)) {
+    return res.badRequest({
+      message: 'Missing or invalid "data" property. Expected an array.',
+    });
+  }
+
   const willBeCreated = [];
   const willBeCreatedAsDuplicates = [];
   const wontBeCreated = [];
-  for (const [index, row] of req.body.data.entries()) {
+  for (const [index, row] of data.entries()) {
     const idDbImport = valIfTruthyOrNull(row.id);
     const nameDbImport = valIfTruthyOrNull(
       row['dct:rights/cc:attributionName']
@@ -21,6 +28,7 @@ module.exports = async (req, res) => {
     const dnEntrance = await TEntrance.findOne({
       idDbImport,
       nameDbImport,
+      isDeleted: false,
     });
 
     if (!dnEntrance) {

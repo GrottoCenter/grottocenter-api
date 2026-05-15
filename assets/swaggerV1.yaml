@@ -1832,16 +1832,23 @@ paths:
     post:
       tags:
         - documents
-      description: Check if the data sent are already present in Grottocenter (incomplete).
+      description: Check if the document data sent are already present in Grottocenter.
+      security:
+        - bearerAuth: []
       requestBody:
-        description: Check https://ontology.uis-speleo.org/howto/ to learn the mandatories properties. It must be an array of object containing the properties mentioned.
+        description: An object with a "data" property containing an array of document rows to check. Check https://ontology.uis-speleo.org/howto/ for mandatory properties.
         required: true
         content:
           application/json:
             schema:
-              type: array
-              items:
-                $ref: '#/components/schemas/Import-csv'
+              type: object
+              required:
+                - data
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Import-csv'
       responses:
         '200':
           description: Successful operation. Returns the data which are not duplicates. For those which are indeed duplicates, returns the line concerned in the csv.
@@ -1854,12 +1861,21 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/Import-csv'
+                  willBeCreatedAsDuplicates:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Import-csv'
                   wontBeCreated:
                     type: array
                     items:
+                      type: object
                       properties:
                         line:
                           type: integer
+        '400':
+          description: Missing or invalid "data" property in request body.
+        '401':
+          description: Authentication required.
 
   '/documents/import-rows':
     post:
@@ -3802,6 +3818,55 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Count'
+
+  '/entrances/check-rows':
+    post:
+      tags:
+        - entrances
+      description: Check if the entrance data sent are already present in Grottocenter. Returns which rows will be created, which are duplicates, and which are invalid.
+      security:
+        - bearerAuth: []
+      requestBody:
+        description: An object with a "data" property containing an array of entrance rows to check. Check https://ontology.uis-speleo.org/howto/ for mandatory properties.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - data
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Import-csv'
+      responses:
+        '200':
+          description: Successful operation. Returns categorized rows.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  willBeCreated:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Import-csv'
+                  willBeCreatedAsDuplicates:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Import-csv'
+                  wontBeCreated:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        line:
+                          type: integer
+        '400':
+          description: Missing or invalid "data" property in request body.
+        '401':
+          description: Authentication required.
 
   '/entrances/{id}/snapshots':
     get:

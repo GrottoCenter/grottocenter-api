@@ -17,6 +17,36 @@ describe('Entrance features', () => {
   });
 
   describe('Check rows', () => {
+    it('should return 400 when body is empty', (done) => {
+      supertest(sails.hooks.http.app)
+        .post('/api/v1/entrances/check-rows')
+        .send({})
+        .set('Authorization', userToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(400)
+        .end((err, res) => {
+          if (err) return done(err);
+          should(res.body.message).match(/Missing or invalid "data"/);
+          return done();
+        });
+    });
+
+    it('should return 400 when data is not an array', (done) => {
+      supertest(sails.hooks.http.app)
+        .post('/api/v1/entrances/check-rows')
+        .send({ data: 'not-an-array' })
+        .set('Authorization', userToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(400)
+        .end((err, res) => {
+          if (err) return done(err);
+          should(res.body.message).match(/Missing or invalid "data"/);
+          return done();
+        });
+    });
+
     it('should return empty arrays for empty data', (done) => {
       supertest(sails.hooks.http.app)
         .post('/api/v1/entrances/check-rows')
