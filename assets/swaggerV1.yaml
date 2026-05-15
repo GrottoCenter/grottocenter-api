@@ -3642,7 +3642,7 @@ paths:
       tags:
         - entrances
         - documents
-      description: Add a document to an entrance.
+      description: Add a document to an entrance. This operation is idempotent — linking an already-linked document returns 204 without error.
       parameters:
         - name: entranceId
           in: path
@@ -3657,7 +3657,7 @@ paths:
             type: string
       responses:
         '204':
-          description: Successful operation
+          description: Successful operation (also returned if the link already exists)
         '404':
           description: Could not find entrance with the entrance id you provided or could not find the document with the document id you provided.
         '403':
