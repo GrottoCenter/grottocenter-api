@@ -1,5 +1,4 @@
 const ControllerService = require('../../../services/ControllerService');
-const NotificationService = require('../../../services/NotificationService');
 const RightService = require('../../../services/RightService');
 const { toCaver } = require('../../../services/mapping/converters');
 const CaverService = require('../../../services/CaverService');
@@ -30,22 +29,31 @@ module.exports = async (req, res) => {
     return res.forbidden('You are not authorized to delete an author.');
 
   const mergeIntoId = parseInt(req.param('entityId'), 10);
-  let shouldMergeInto = !Number.isNaN(mergeIntoId);
+  const shouldMergeInto = req.param('entityId') !== undefined;
+  if (shouldMergeInto && Number.isNaN(mergeIntoId)) {
+    return res.badRequest({
+      message: `Invalid entityId: expected a numeric caver ID, got "${req.param('entityId')}".`,
+    });
+  }
   let mergeIntoEntity;
   if (shouldMergeInto) {
     mergeIntoEntity = await TCaver.findOne(mergeIntoId)
-      .populate('exploredEntrances')
       .populate('exploredCaves')
       .populate('groups')
       .populate('subscribedToCountries')
       .populate('subscribedToMassifs')
+      .populate('subscribedToRegions')
       .populate('grottos')
       .populate('documents');
-    shouldMergeInto = !!mergeIntoEntity;
+    if (!mergeIntoEntity) {
+      return res.badRequest({
+        message: `Merge target caver of id ${mergeIntoId} not found.`,
+      });
+    }
   }
 
   // eslint-disable-next-line no-inner-declarations
-  async function reafectField(model, field, replacement = null) {
+  async function reassignField(model, field, replacement = null) {
     if (shouldMergeInto) {
       await model.update({ [field]: caverId }).set({ [field]: mergeIntoId });
     } else {
@@ -56,22 +64,24 @@ module.exports = async (req, res) => {
   // eslint-disable-next-line no-inner-declarations
   async function removeAuthorAndReviewer(model) {
     await Promise.all([
-      reafectField(model, 'author', DEFAULT_DELETED_CAVER_ID),
-      reafectField(model, 'reviewer'),
+      reassignField(model, 'author', DEFAULT_DELETED_CAVER_ID),
+      reassignField(model, 'reviewer'),
     ]);
   }
 
   // eslint-disable-next-line no-inner-declarations
-  async function linkedEntitiesDeleteOrMerge(key) {
-    if (!caver[key] || caver[key].length === 0) return;
+  async function linkedEntitiesDeleteOrMerge(key, sourceIds = null) {
     if (shouldMergeInto) {
-      const existingEntities = mergeIntoEntity[key].map((e) => e.id);
-      const entitiesToAdd = caver[key]
-        .map((e) => e.id)
-        .filter((e) => !existingEntities.includes(e));
-      await TCaver.addToCollection(mergeIntoId, key, entitiesToAdd);
+      const ids = sourceIds || (caver[key] || []).map((e) => e.id);
+      if (ids.length > 0) {
+        const existingIds = mergeIntoEntity[key].map((e) => e.id);
+        const idsToAdd = ids.filter((id) => !existingIds.includes(id));
+        if (idsToAdd.length > 0) {
+          await TCaver.addToCollection(mergeIntoId, key, idsToAdd);
+        }
+      }
     }
-    await TCaver.updateOne(caverId).set({ [key]: [] });
+    await TCaver.replaceCollection(caverId, key, []);
   }
 
   await Promise.all([
@@ -83,12 +93,14 @@ module.exports = async (req, res) => {
     removeAuthorAndReviewer(TRigging),
     removeAuthorAndReviewer(TComment),
     removeAuthorAndReviewer(TDocument),
-    reafectField(TDocument, 'validator'),
+    reassignField(TDocument, 'validator'),
     removeAuthorAndReviewer(THistory),
     removeAuthorAndReviewer(TName),
     removeAuthorAndReviewer(TDescription),
-    reafectField(TDocumentDuplicate, 'author', DEFAULT_DELETED_CAVER_ID),
-    reafectField(TEntranceDuplicate, 'author', DEFAULT_DELETED_CAVER_ID),
+    removeAuthorAndReviewer(TCrs),
+    removeAuthorAndReviewer(TPoint),
+    reassignField(TDocumentDuplicate, 'author', DEFAULT_DELETED_CAVER_ID),
+    reassignField(TEntranceDuplicate, 'author', DEFAULT_DELETED_CAVER_ID),
   ]);
 
   await Promise.all([
@@ -100,6 +112,7 @@ module.exports = async (req, res) => {
     removeAuthorAndReviewer(HRigging),
     removeAuthorAndReviewer(HComment),
     removeAuthorAndReviewer(HDocument),
+    reassignField(HDocument, 'validator'),
     removeAuthorAndReviewer(HHistory),
     removeAuthorAndReviewer(HName),
     removeAuthorAndReviewer(HDescription),
@@ -126,26 +139,41 @@ module.exports = async (req, res) => {
     await TLastChange.destroy({ author: caverId });
   }
 
+  await TTokenBlacklist.destroy({ id_caver: caverId });
+
+  // Documents are populated with a limit in getCaver, so we query
+  // without limit to get the full set for merge.
+  const allDocumentIds = shouldMergeInto
+    ? (await TCaver.findOne(caverId).populate('documents')).documents.map(
+        (d) => d.id
+      )
+    : null;
+
   await Promise.all([
-    linkedEntitiesDeleteOrMerge('exploredEntrances'),
     linkedEntitiesDeleteOrMerge('exploredCaves'),
     linkedEntitiesDeleteOrMerge('groups'),
     linkedEntitiesDeleteOrMerge('subscribedToCountries'),
     linkedEntitiesDeleteOrMerge('subscribedToMassifs'),
+    linkedEntitiesDeleteOrMerge('subscribedToRegions'),
     linkedEntitiesDeleteOrMerge('grottos'),
-    linkedEntitiesDeleteOrMerge('documents'),
+    linkedEntitiesDeleteOrMerge('documents', allDocumentIds),
   ]);
 
   await TCaver.destroyOne({ id: caverId });
 
-  await CaverService.deleteInSearch(caverId);
-
-  await NotificationService.notifySubscribers(
-    caver,
-    req.token.id,
-    NotificationService.NOTIFICATION_TYPES.PERMANENT_DELETE,
-    NotificationService.NOTIFICATION_ENTITIES.ENTRANCE
+  const action = shouldMergeInto ? 'delete+merge' : 'delete';
+  const audit = {
+    action,
+    caverId: parseInt(caverId, 10),
+    caverType: caver.type,
+    ...(shouldMergeInto && { mergeIntoId }),
+    deletedBy: req.token.id,
+  };
+  sails.log.info(
+    `Permanent ${action} caver ${caverId}: ${JSON.stringify(audit)}`
   );
+
+  await CaverService.deleteInSearch(caverId);
 
   return ControllerService.treatAndConvert(
     req,
