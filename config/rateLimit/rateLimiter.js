@@ -5,6 +5,8 @@ const RightService = require('../../api/services/RightService');
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
 // 1-hour window for DELETE requests
 const DELETE_RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000;
+// 15-minute window for auth endpoints (login, signup, forgot-password, change-password)
+const AUTH_RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
 
 // General request limits per 10-minute window, by role.
 // Each tier can be overridden via environment variables for tuning in production.
@@ -121,5 +123,25 @@ module.exports = {
 
       return false;
     },
+  }),
+
+  /**
+   * Stricter rate limiter for authentication endpoints.
+   * Limits unauthenticated callers to 10 attempts per 15-minute window per IP.
+   * This protects against brute-force login, credential stuffing, and
+   * password-reset abuse.
+   *
+   * Administrators are intentionally NOT exempted here — auth endpoints are the
+   * primary brute-force target and must be rate-limited uniformly regardless of
+   * role. An attacker does not yet have a valid token when hammering /login.
+   */
+  authRateLimit: rateLimit({
+    windowMs: AUTH_RATE_LIMIT_WINDOW_MS,
+    max: parseLimit(process.env.AUTH_RATE_LIMIT, 10),
+    message:
+      'Too many authentication attempts from this IP, please try again later.',
+    standardHeaders: true,
+    statusCode: 429,
+    skip: () => isTestOrDev(),
   }),
 };
