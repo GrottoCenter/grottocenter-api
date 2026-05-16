@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 
+const AccountNotificationService = require('../../../services/AccountNotificationService');
 const AuthService = require('../../../services/AuthService');
 const TokenService = require('../../../services/TokenService');
 
@@ -22,6 +23,15 @@ module.exports = async (req, res) => {
     }).set({
       password: await AuthService.createHashedPassword(password),
     });
+
+    const caver = await TCaver.findOne({ id: req.token.id });
+    if (caver) {
+      AccountNotificationService.notifyPasswordChanged({
+        email: caver.mail,
+        nickname: caver.nickname,
+        languageId: caver.language,
+      });
+    }
 
     return res.ok();
   }
@@ -73,6 +83,12 @@ module.exports = async (req, res) => {
       id: decodedToken.userId,
     }).set({
       password: await AuthService.createHashedPassword(password),
+    });
+
+    AccountNotificationService.notifyPasswordChanged({
+      email: userFound.mail,
+      nickname: userFound.nickname,
+      languageId: userFound.language,
     });
 
     return res.ok();

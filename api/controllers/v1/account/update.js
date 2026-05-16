@@ -1,3 +1,4 @@
+const AccountNotificationService = require('../../../services/AccountNotificationService');
 const AuthService = require('../../../services/AuthService');
 const CaverService = require('../../../services/CaverService');
 
@@ -44,6 +45,12 @@ module.exports = async (req, res) => {
     updates.mail = normalizedEmail;
   }
 
+  // Fetch current caver before any updates — needed for password verification
+  // and for notification emails (pre-update email address). This runs on every
+  // update (even non-sensitive fields) to keep the flow simple; the cost is a
+  // single primary-key lookup which is negligible compared to the overall request.
+  const caver = await TCaver.findOne({ id: req.token.id });
+
   if (req.body.password !== undefined) {
     if (!req.body.password) {
       return res.badRequest('You must provide a password.');
@@ -53,7 +60,6 @@ module.exports = async (req, res) => {
         'You must provide your current password to set a new one.'
       );
     }
-    const caver = await TCaver.findOne({ id: req.token.id });
     const isMatch = await AuthService.verifyPassword(
       caver.password,
       req.body.currentPassword
@@ -125,6 +131,22 @@ module.exports = async (req, res) => {
     }
 
     await CaverService.updateInSearch(updatedCaver);
+
+    // Fire-and-forget notifications (no await)
+    if (updates.mail && caver.mail !== updates.mail) {
+      AccountNotificationService.notifyEmailChanged({
+        oldEmail: caver.mail,
+        nickname: caver.nickname,
+        languageId: caver.language,
+      });
+    }
+    if (updates.password) {
+      AccountNotificationService.notifyPasswordChanged({
+        email: caver.mail,
+        nickname: caver.nickname,
+        languageId: caver.language,
+      });
+    }
   } catch (err) {
     if (err.name === 'UsageError' || err.code === 'E_INVALID_NEW_RECORD') {
       return res.badRequest('Invalid data provided.');
