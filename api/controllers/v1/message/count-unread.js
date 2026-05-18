@@ -1,5 +1,3 @@
-const MessageService = require('../../../services/MessageService');
-
 /**
  * MessageController.countUnread
  *
