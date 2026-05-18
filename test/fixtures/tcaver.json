@@ -12,7 +12,6 @@
     "mailIsValid": true,
     "language": "fra",
     "documents": [1,2,4],
-    "exploredEntrances": [1],
     "groups": [1],
     "subscribedToCountries": ["FR","GB"],
     "subscribedToMassifs": [1,2]
@@ -72,8 +71,7 @@
     "language": "fra",
     "documents": [1,2,4],
     "grottos": [1,2],
-    "groups": [1],
-    "exploredEntrances": [4,5]
+    "groups": [1]
   },
   {
     "id": 7,
@@ -119,6 +117,28 @@
     "activated": true,
     "mailIsValid": true,
     "language": "fra",
+    "groups": []
+  },
+  {
+    "id": 102,
+    "_comment": "Merge source - author with documents for merge test",
+    "mail": "merge-source@mail.no",
+    "nickname": "MergeSource",
+    "name": "Merge",
+    "surname": "Source",
+    "language": "fra",
+    "documents": [3],
+    "groups": []
+  },
+  {
+    "id": 103,
+    "_comment": "Merge target - author that receives data from merge source",
+    "mail": "merge-target@mail.no",
+    "nickname": "MergeTarget",
+    "name": "Merge",
+    "surname": "Target",
+    "language": "fra",
+    "documents": [4],
     "groups": []
   }
 ]

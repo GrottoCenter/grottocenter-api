@@ -17,6 +17,25 @@ const TokenService = require('../api/services/TokenService');
 const logger = require('../api/utils/logger');
 const sanitize = require('../api/utils/sanitize');
 
+// Auth endpoints that receive credentials and need stricter limits.
+// Note: PATCH /api/v1/account is intentionally excluded — while it can accept
+// a password field, it is primarily a general profile-update endpoint (nickname,
+// email, language, etc.) that requires an existing valid token. The dedicated
+// password-change route (/api/v1/account/password) is the one exposed to
+// unauthenticated reset flows and is covered here.
+const AUTH_PATHS = [
+  '/api/v1/login',
+  '/api/v1/signup',
+  '/api/v1/forgotPassword',
+  '/api/v1/account/password',
+];
+
+// Maximum body size for auth endpoints (1 KB).
+// Checked against the actual parsed body after the body parser runs,
+// so it cannot be bypassed via chunked transfer encoding or a spoofed
+// Content-Length header.
+const AUTH_BODY_LIMIT = 1024;
+
 module.exports.http = {
   /** **************************************************************************
    *                                                                           *
@@ -31,8 +50,16 @@ module.exports.http = {
   middleware: {
     // Requests limiter configuration
     generalRateLimit: rateLimiter.generalRateLimit,
-    userDeleteRateLimit: rateLimiter.userDeleteRateLimit,
-    moderatorDeleteRateLimit: rateLimiter.moderatorDeleteRateLimit,
+    deleteRateLimit: rateLimiter.deleteRateLimit,
+
+    // Stricter rate limiter for auth endpoints only.
+    // Wraps the express-rate-limit instance so it only fires on auth paths.
+    authRateLimit(req, res, next) {
+      if (AUTH_PATHS.includes(req.path)) {
+        return rateLimiter.authRateLimit(req, res, next);
+      }
+      return next();
+    },
 
     /** *************************************************************************
      *                                                                          *
@@ -44,14 +71,16 @@ module.exports.http = {
     order: [
       'traceId',
       'corsHeaders',
+      'securityHeaders',
       'parseAuthToken',
       'generalRateLimit',
-      'userDeleteRateLimit',
-      'moderatorDeleteRateLimit',
+      'deleteRateLimit',
+      'authRateLimit',
       'responseTimeLogger',
       'requestLogger',
       'fileMiddleware',
       'bodyParser',
+      'authBodyLimit',
       'compress',
       'poweredBy',
       'addPackageVersionHeader',
@@ -99,6 +128,39 @@ module.exports.http = {
       return next();
     },
 
+    // Security headers: HSTS, X-Content-Type-Options, X-Frame-Options
+    securityHeaders(req, res, next) {
+      // HSTS: instruct browsers to always use HTTPS (1 year, include subdomains)
+      res.set(
+        'Strict-Transport-Security',
+        'max-age=31536000; includeSubDomains'
+      );
+      // Prevent MIME-type sniffing
+      res.set('X-Content-Type-Options', 'nosniff');
+      // Prevent clickjacking — API responses should never be framed
+      res.set('X-Frame-Options', 'DENY');
+      return next();
+    },
+
+    // Stricter body size limit for auth endpoints (1 KB max).
+    // Runs after the body parser so it checks the actual parsed payload size,
+    // not the client-supplied Content-Length header (immune to chunked bypass).
+    authBodyLimit(req, res, next) {
+      if (!AUTH_PATHS.includes(req.path)) {
+        return next();
+      }
+      const bodySize = Buffer.byteLength(
+        JSON.stringify(req.body) || '',
+        'utf8'
+      );
+      if (bodySize > AUTH_BODY_LIMIT) {
+        return res.status(413).json({
+          message: 'Request body too large for this endpoint.',
+        });
+      }
+      return next();
+    },
+
     // If a bearer token is present & valid, put it in req.token.
     // If a token is present but revoked or missing iat, actively reject with 401.
     parseAuthToken: (req, res, next) => {
@@ -136,7 +198,15 @@ module.exports.http = {
           return res.json({ message: 'Token has been revoked.' });
         }
 
-        sails.log.info('Authenticated user', responseToken);
+        const groupNames = (responseToken.groups || []).map((g) => g.name);
+        sails.log.info(
+          'Authenticated user:',
+          JSON.stringify({
+            id: responseToken.id,
+            nickname: responseToken.nickname,
+            groups: groupNames,
+          })
+        );
         req.token = responseToken;
         return next();
       });
@@ -176,11 +246,14 @@ module.exports.http = {
     // Logs each request to the console
     requestLogger(req, res, next) {
       sails.log.info('Req ::', req.method, req.url);
-      sails.log.info('Client data:', {
-        ip: req.ip || req.headers['x-forwarded-for'],
-        userAgent: req.headers['user-agent'],
-        origin: req.headers.origin || req.headers.referer || 'unknown',
-      });
+      sails.log.info(
+        'Client data:',
+        JSON.stringify({
+          ip: req.ip || req.headers['x-forwarded-for'],
+          userAgent: req.headers['user-agent'],
+          origin: req.headers.origin || req.headers.referer || 'unknown',
+        })
+      );
       return next();
     },
 
@@ -201,15 +274,11 @@ module.exports.http = {
           if (res.statusCode >= 500) {
             sails.log.error(
               'Request data:',
-              JSON.stringify(
-                {
-                  body: sanitize(req.body),
-                  params: req.params,
-                  query: sanitize(req.query),
-                },
-                null,
-                2
-              )
+              JSON.stringify({
+                body: sanitize(req.body),
+                params: req.params,
+                query: sanitize(req.query),
+              })
             );
           }
         });

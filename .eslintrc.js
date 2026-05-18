@@ -35,6 +35,7 @@ module.exports = {
     TCaver: 'readonly',
     TComment: 'readonly',
     TCountry: 'readonly',
+    TCrs: 'readonly',
     TDescription: 'readonly',
     TDocument: 'readonly',
     TDocumentDuplicate: 'readonly',
@@ -79,7 +80,18 @@ module.exports = {
     ],
     'prefer-destructuring': ['error', { object: true, array: false }],
     'prettier/prettier': 'error',
-    'import/no-unresolved': ['error', { ignore: ['^uuid$'] }],
+    'import/no-unresolved': [
+      'error',
+      { ignore: ['^uuid$', '@rapideditor/country-coder'] },
+    ],
+    'no-unused-vars': [
+      'error',
+      {
+        argsIgnorePattern: '^_',
+        varsIgnorePattern: '^_',
+        ignoreRestSiblings: true,
+      },
+    ],
   },
   plugins: ['prettier', 'import'],
 };

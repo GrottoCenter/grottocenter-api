@@ -1,25 +1,27 @@
-<%- include('emailHeader', { emailTitle: 'Grottocenter - Verify your email' }); %>
+<%- include('emailHeader', { emailTitle: emailTitle, locale: locale }); %>
   <% /*
     =====EMAIL BODY=====
 
       Required values: 
-        - i18n Object internationalization module 
-        - recipientName String Full name or nickname of the recipient 
-        - verifyLink String Link allowing the recipient to verify their email address 
+        - __            Function    locale-scoped translation helper
+        - emailTitle    String      Subject line used as HTML <title>
+        - locale        String      ISO 639-1 locale code
+        - recipientName String      Full name or nickname of the recipient 
+        - verifyLink    String      Link allowing the recipient to verify their email address 
     */ %>
 
-  <p><%- i18n.__('Dear %s', '<b>' +recipientName+'</b>') %></p>
+  <p><%- __('Dear %s', '<b>' +recipientName+'</b>') %></p>
 
   <p>
-    <%- i18n.__('Thank you for creating your Grottocenter account.') %>
-    <%- i18n.__('Please verify your email address by clicking the link below.') %>
-    <%- i18n.__("If you didn't create an account, you can ignore this email.")%>
+    <%- __('Thank you for creating your Grottocenter account.') %>
+    <%- __('Please verify your email address by clicking the link below.') %>
+    <%- __("If you didn't create an account, you can ignore this email.")%>
   </p>
 
   <p>
     <a href="<%= verifyLink %>">
-      <%- i18n.__('Verify my email address') %>
+      <%- __('Verify my email address') %>
     </a>
   </p>
 
-  <%- include('emailFooter', { i18n: i18n }); %>
+  <%- include('emailFooter', { __: __, locale: locale }); %>

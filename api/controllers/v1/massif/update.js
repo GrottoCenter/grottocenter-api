@@ -35,7 +35,6 @@ module.exports = async (req, res) => {
   const updatedMassif = await MassifService.getPopulatedMassif(massifId);
   await MassifService.updateInSearch(updatedMassif);
   await NotificationService.notifySubscribers(
-    req,
     updatedMassif,
     req.token.id,
     NotificationService.NOTIFICATION_TYPES.UPDATE,

@@ -3,8 +3,13 @@ const AuthTokenService = require('../../AuthTokenService');
 
 describe('Account change-password', () => {
   let userToken;
+  let originalPasswordHash;
+
   before(async () => {
     userToken = await AuthTokenService.getRawBearerUserToken();
+    // user1 has id=3 in fixtures
+    const caver = await TCaver.findOne({ id: 3 });
+    originalPasswordHash = caver.password;
   });
 
   describe('PATCH /api/v1/account/password', () => {
@@ -26,10 +31,28 @@ describe('Account change-password', () => {
         .expect(400);
     });
 
+    it('should return 400 when password lacks uppercase', async () => {
+      await supertest(sails.hooks.http.app)
+        .patch('/api/v1/account/password')
+        .send({ password: 'new_password1!' })
+        .set('Authorization', userToken)
+        .set('Accept', 'application/json')
+        .expect(400);
+    });
+
+    it('should return 400 when password lacks special character', async () => {
+      await supertest(sails.hooks.http.app)
+        .patch('/api/v1/account/password')
+        .send({ password: 'NewPassword123' })
+        .set('Authorization', userToken)
+        .set('Accept', 'application/json')
+        .expect(400);
+    });
+
     it('should return 400 when missing token for reset', async () => {
       await supertest(sails.hooks.http.app)
         .patch('/api/v1/account/password')
-        .send({ password: 'newpassword123' })
+        .send({ password: 'New_password1!' })
         .set('Accept', 'application/json')
         .expect(400);
     });
@@ -37,7 +60,7 @@ describe('Account change-password', () => {
     it('should change password when authenticated', async () => {
       await supertest(sails.hooks.http.app)
         .patch('/api/v1/account/password')
-        .send({ password: 'newpassword123' })
+        .send({ password: 'New_password1!' })
         .set('Authorization', userToken)
         .set('Accept', 'application/json')
         .expect(204);
@@ -45,12 +68,9 @@ describe('Account change-password', () => {
   });
 
   after(async () => {
-    // Restore original password
-    await supertest(sails.hooks.http.app)
-      .patch('/api/v1/account/password')
-      .send({ password: AuthTokenService.TEST_PASSWORD })
-      .set('Authorization', userToken)
-      .set('Accept', 'application/json')
-      .expect(204);
+    // Restore original password hash directly in DB (bypasses validation)
+    await TCaver.updateOne({ id: 3 }).set({
+      password: originalPasswordHash,
+    });
   });
 });

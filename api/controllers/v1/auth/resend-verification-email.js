@@ -1,5 +1,6 @@
 const util = require('util');
 const AuthService = require('../../../services/AuthService');
+const LanguageService = require('../../../services/LanguageService');
 
 const setTimeoutP = util.promisify(setTimeout);
 
@@ -42,8 +43,11 @@ module.exports = async (req, res) => {
   }
 
   try {
+    // Resolve the user's preferred locale for the email
+    const locale = await LanguageService.getLocale(user.language);
+
     // Attempt to send the verification email
-    await AuthService.sendVerificationEmail(user, activationCode, req.i18n);
+    await AuthService.sendVerificationEmail(user, activationCode, locale);
   } catch (err) {
     // Errors are already logged in AuthService.
   }

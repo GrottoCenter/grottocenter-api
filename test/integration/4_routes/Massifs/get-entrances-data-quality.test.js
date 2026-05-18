@@ -1,5 +1,6 @@
 const supertest = require('supertest');
 const should = require('should');
+const { describeSortAndOrder } = require('../_helpers/sortOrderTests');
 
 describe('Massif entrances data quality features', () => {
   describe('get-entrances-data-quality', () => {
@@ -46,5 +47,9 @@ describe('Massif entrances data quality features', () => {
         .set('Accept', 'application/json')
         .expect(200);
     });
+  });
+
+  describe('sort and order parameters', () => {
+    describeSortAndOrder('/api/v1/entrances/with-quality/massifs/1');
   });
 });

@@ -432,6 +432,96 @@ paths:
         '403':
           description: You are not authorized to create a caver.
 
+  '/account':
+    get:
+      tags:
+        - account
+      summary: Get the authenticated user's account details
+      description: Returns private account information for the currently authenticated user, including email, language preference, and notification settings.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  nickname:
+                    type: string
+                  name:
+                    type: string
+                  surname:
+                    type: string
+                  mail:
+                    type: string
+                  language:
+                    type: string
+                    description: ISO 639-3 language code (e.g. "fra", "eng") or "000" if not set
+                  mailIsValid:
+                    type: boolean
+                  sendNotificationByEmail:
+                    type: boolean
+        '401':
+          description: Unauthorized — valid JWT required.
+        '404':
+          description: Caver not found.
+    patch:
+      tags:
+        - account
+      summary: Update the authenticated user's account settings
+      description: Update one or more account settings for the currently authenticated user. All fields are optional — only the provided fields will be updated.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: New email address
+                password:
+                  type: string
+                  description: New password (minimum 8 characters)
+                currentPassword:
+                  type: string
+                  description: Current password (required when changing password)
+                language:
+                  type: string
+                  description: Preferred language as an ISO 639-3 code (e.g. "fra", "eng", "deu")
+                  example: fra
+                name:
+                  type: string
+                  description: Real name of the user (empty string clears the value)
+                surname:
+                  type: string
+                  description: Real surname of the user (empty string clears the value)
+                nickname:
+                  type: string
+                  description: Nickname (display name, must be unique)
+                sendNotificationByEmail:
+                  type: boolean
+                  description: Whether to receive notifications by email
+      responses:
+        '204':
+          description: Successful operation
+        '400':
+          description: Invalid input (unknown property, missing value, or validation error).
+        '401':
+          description: Unauthorized — valid JWT required.
+        '403':
+          description: Current password is incorrect.
+        '404':
+          description: Caver not found.
+        '409':
+          description: Email or nickname is already taken.
+
   '/cavers/{id}':
     get:
       tags:
@@ -455,13 +545,36 @@ paths:
     put:
       tags:
         - cavers
-      description: Update a caver. See the POST /cavers route explaination about the parameters you can use to update a caver. Only the user and admninistrator can update. The user can update only his informations including his password and his mail adress. The administrator can't update mail and password but he can update every cavers.
+      description: Update a caver's profile. Administrator only. Use PATCH /account for self-service updates.
       parameters:
         - name: caverId
           in: path
           required: true
           schema:
             type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: Real name of the user
+                nickname:
+                  type: string
+                  description: Nickname (display name)
+                surname:
+                  type: string
+                  description: Real surname of the user
+                organizations:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
       responses:
         '200':
           description: Successful operation
@@ -1720,16 +1833,23 @@ paths:
     post:
       tags:
         - documents
-      description: Check if the data sent are already present in Grottocenter (incomplete).
+      description: Check if the document data sent are already present in Grottocenter.
+      security:
+        - bearerAuth: []
       requestBody:
-        description: Check https://ontology.uis-speleo.org/howto/ to learn the mandatories properties. It must be an array of object containing the properties mentioned.
+        description: An object with a "data" property containing an array of document rows to check. Check https://ontology.uis-speleo.org/howto/ for mandatory properties.
         required: true
         content:
           application/json:
             schema:
-              type: array
-              items:
-                $ref: '#/components/schemas/Import-csv'
+              type: object
+              required:
+                - data
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Import-csv'
       responses:
         '200':
           description: Successful operation. Returns the data which are not duplicates. For those which are indeed duplicates, returns the line concerned in the csv.
@@ -1742,12 +1862,21 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/Import-csv'
+                  willBeCreatedAsDuplicates:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Import-csv'
                   wontBeCreated:
                     type: array
                     items:
+                      type: object
                       properties:
                         line:
                           type: integer
+        '400':
+          description: Missing or invalid "data" property in request body.
+        '401':
+          description: Authentication required.
 
   '/documents/import-rows':
     post:
@@ -2546,6 +2675,8 @@ paths:
             type: integer
             minimum: 0
             default: 0
+        - $ref: '#/components/parameters/qualitySortCountry'
+        - $ref: '#/components/parameters/qualityOrder'
       responses:
         '200':
           description: Successful operation
@@ -2564,6 +2695,8 @@ paths:
                   totalPages:
                     type: integer
                     description: Total number of pages based on limit
+        '400':
+          description: Invalid sort or order parameter value. The sort column must be one of the allowed column names and order must be asc or desc.
         '404':
           description: Region not found or has no entrances
 
@@ -3112,25 +3245,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/Name'
 
-  '/account/email':
-    patch:
-      tags:
-        - account
-        - authentication
-      description: Update the user email. You can only change the email of your account, using your authentication token.
-      parameters:
-        - name: email
-          in: query
-          description: New email of the account.
-          required: true
-          schema:
-            type: string
-      responses:
-        '204':
-          description: Successful operation
-        '400':
-          description: You must provide a (valid) email.
-
   '/account/password':
     patch:
       tags:
@@ -3324,6 +3438,10 @@ paths:
                 password:
                   type: string
                   description: Password of the account
+                language:
+                  type: string
+                  description: Preferred language as an ISO 639-3 code (e.g. "fra", "eng", "deu"). If omitted, defaults to unset.
+                  example: fra
               required:
                 - email
                 - nickname
@@ -3607,7 +3725,7 @@ paths:
       tags:
         - entrances
         - documents
-      description: Add a document to an entrance.
+      description: Add a document to an entrance. This operation is idempotent — linking an already-linked document returns 204 without error.
       parameters:
         - name: entranceId
           in: path
@@ -3622,7 +3740,7 @@ paths:
             type: string
       responses:
         '204':
-          description: Successful operation
+          description: Successful operation (also returned if the link already exists)
         '404':
           description: Could not find entrance with the entrance id you provided or could not find the document with the document id you provided.
         '403':
@@ -3768,6 +3886,55 @@ paths:
               schema:
                 $ref: '#/components/schemas/Count'
 
+  '/entrances/check-rows':
+    post:
+      tags:
+        - entrances
+      description: Check if the entrance data sent are already present in Grottocenter. Returns which rows will be created, which are duplicates, and which are invalid.
+      security:
+        - bearerAuth: []
+      requestBody:
+        description: An object with a "data" property containing an array of entrance rows to check. Check https://ontology.uis-speleo.org/howto/ for mandatory properties.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - data
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Import-csv'
+      responses:
+        '200':
+          description: Successful operation. Returns categorized rows.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  willBeCreated:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Import-csv'
+                  willBeCreatedAsDuplicates:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Import-csv'
+                  wontBeCreated:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        line:
+                          type: integer
+        '400':
+          description: Missing or invalid "data" property in request body.
+        '401':
+          description: Authentication required.
+
   '/entrances/{id}/snapshots':
     get:
       tags:
@@ -3839,6 +4006,8 @@ paths:
             type: integer
             minimum: 0
             default: 0
+        - $ref: '#/components/parameters/qualitySortAll'
+        - $ref: '#/components/parameters/qualityOrder'
       responses:
         '200':
           description: Successful operation
@@ -3857,6 +4026,8 @@ paths:
                   totalPages:
                     type: integer
                     description: Total number of pages based on limit
+        '400':
+          description: Invalid sort or order parameter value. The sort column must be one of the allowed column names and order must be asc or desc.
         '404':
           description: Massif doesn't exist or hasn't entrances
 
@@ -3890,6 +4061,8 @@ paths:
             type: integer
             minimum: 0
             default: 0
+        - $ref: '#/components/parameters/qualitySortCountry'
+        - $ref: '#/components/parameters/qualityOrder'
       responses:
         '200':
           description: Successful operation
@@ -3908,6 +4081,8 @@ paths:
                   totalPages:
                     type: integer
                     description: Total number of pages based on limit
+        '400':
+          description: Invalid sort or order parameter value. The sort column must be one of the allowed column names and order must be asc or desc.
         '404':
           description: Country doesn't exist or hasn't entrances
 
@@ -3973,10 +4148,32 @@ paths:
                     Sort field and direction in the format "field:asc" or "field:desc".
                     The field must exist and be sortable in the target entity's schema.
                     Returns 400 if the field is invalid or not sortable.
+                    Entity-specific sort fields:
+                      - entrances: "dataQuality:asc" or "dataQuality:desc" (sort by data quality score)
+                    Using an entity-specific sort field with a different entity returns 400.
                   example: "cave.depth:desc"
                 filter:
                   type: object
                   description: Filter to specify the request, the keys are field in the entities
+                  properties:
+                    dataQuality:
+                      type: array
+                      description: |
+                        Range filter for entrance data quality score (only valid for entity=entrances).
+                        A two-element array [min, max] where each element is an integer (0–100) or null.
+                        - [min, max]: returns entrances with dataQuality between min and max inclusive.
+                        - [min, null]: returns entrances with dataQuality >= min.
+                        - [null, max]: returns entrances with dataQuality <= max.
+                        Values are clamped to the 0–100 range. Non-numeric values cause the filter to be ignored.
+                      minItems: 1
+                      maxItems: 2
+                      items:
+                        type: integer
+                        minimum: 0
+                        maximum: 100
+                        nullable: true
+                      example: [50, 100]
+                  additionalProperties: true
                 matchAllFields:
                   type: boolean
                   description: Specify if the provided filters are added using the logical comparator "And" or "Or"
@@ -4170,6 +4367,14 @@ paths:
                       type: number
                     quality:
                       type: integer
+                      minimum: 0
+                      maximum: 10
+                      description: Cave size/importance coefficient (0–10) computed from the cave's depth and length. Used to prioritize which entrances to display at a given map zoom level.
+                    dataQuality:
+                      type: integer
+                      minimum: 0
+                      maximum: 100
+                      description: Overall data quality score (0–100) representing how complete and up-to-date the entrance's data is. Returns 0 if no quality data is available.
         '404':
           description: Massif not found (when massif parameter is provided)
 
@@ -5474,6 +5679,68 @@ components:
         type: integer
         minimum: 1
         maximum: 22
+    qualitySortAll:
+      name: sort
+      in: query
+      description: Column name to sort results by. When omitted, no specific order is applied.
+      required: false
+      schema:
+        type: string
+        enum:
+          - entrance_name
+          - date_of_update
+          - general_latest_date_of_update
+          - general_nb_contributions
+          - location_latest_date_of_update
+          - location_nb_contributions
+          - description_latest_date_of_update
+          - description_nb_contributions
+          - document_latest_date_of_update
+          - document_nb_contributions
+          - rigging_latest_date_of_update
+          - rigging_nb_contributions
+          - history_latest_date_of_update
+          - history_nb_contributions
+          - comment_latest_date_of_update
+          - comment_nb_contributions
+          - country_name
+          - massif_name
+    qualitySortCountry:
+      name: sort
+      in: query
+      description: Column name to sort results by. When omitted, no specific order is applied. Note that massif_name is not available on country and region endpoints.
+      required: false
+      schema:
+        type: string
+        enum:
+          - entrance_name
+          - date_of_update
+          - general_latest_date_of_update
+          - general_nb_contributions
+          - location_latest_date_of_update
+          - location_nb_contributions
+          - description_latest_date_of_update
+          - description_nb_contributions
+          - document_latest_date_of_update
+          - document_nb_contributions
+          - rigging_latest_date_of_update
+          - rigging_nb_contributions
+          - history_latest_date_of_update
+          - history_nb_contributions
+          - comment_latest_date_of_update
+          - comment_nb_contributions
+          - country_name
+    qualityOrder:
+      name: order
+      in: query
+      description: Sort direction. Only used when `sort` is provided. Defaults to `asc` when omitted.
+      required: false
+      schema:
+        type: string
+        enum:
+          - asc
+          - desc
+        default: asc
   securitySchemes:
     bearerAuth:
       type: http
@@ -6169,9 +6436,18 @@ components:
         discoveryYear:
           type: integer
         dataQuality:
-          allOf:
+          description: >
+            Data quality score for the entrance. In search results (advanced-search endpoint),
+            this is a simple integer (0–100) representing the overall data completeness score.
+            In full entrance responses, this is a detailed object with category breakdowns.
+            Null when no quality data is available.
+          oneOf:
+            - type: integer
+              minimum: 0
+              maximum: 100
+              nullable: true
+              description: Overall data quality score (0–100) returned in search results, or null if unavailable.
             - $ref: '#/components/schemas/DataQuality'
-          nullable: true
 
     DataQuality:
       type: object

@@ -2,7 +2,7 @@ const supertest = require('supertest');
 const should = require('should');
 const TokenService = require('../../../../api/services/TokenService');
 
-const NEW_PASSWORD = 'newpassword123';
+const NEW_PASSWORD = 'New_password1!';
 const targetCaverId = 3; // user1
 
 describe('Account features', () => {

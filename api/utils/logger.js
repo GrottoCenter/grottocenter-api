@@ -1,6 +1,12 @@
 const { AsyncLocalStorage } = require('async_hooks');
 
-const asyncLocalStorage = new AsyncLocalStorage();
+// Use a singleton stored on global to survive Sails' require-cache clearing.
+// Without this, different require() calls get different AsyncLocalStorage
+// instances, causing trace IDs to be lost in background workers.
+if (!global.grottoAsyncLocalStorage) {
+  global.grottoAsyncLocalStorage = new AsyncLocalStorage();
+}
+const asyncLocalStorage = global.grottoAsyncLocalStorage;
 
 const getTraceId = () => asyncLocalStorage.getStore()?.traceId || 'no-trace';
 

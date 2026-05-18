@@ -31,76 +31,6 @@ const templateDbName = `${testDbName}_template`;
 url.pathname = '/postgres';
 const maintenanceUrl = url.toString();
 
-function runFullBootstrap() {
-  return new Promise((resolve, reject) => {
-    // eslint-disable-next-line global-require
-    const sails = require('sails');
-    // eslint-disable-next-line global-require, import/no-extraneous-dependencies
-    const Fixted = require('fixted');
-    // eslint-disable-next-line global-require
-    const sailsPostGreAdapter = require('sails-postgresql');
-    // eslint-disable-next-line global-require
-    const customSQL = require('../test/customSQL');
-    // eslint-disable-next-line global-require
-    const CommonService = require('../api/services/CommonService');
-    // eslint-disable-next-line global-require
-    const FIXTURE_ORDER = require('../test/fixtureOrder');
-
-    sails.lift(
-      {
-        log: { level: 'error' },
-        datastores: {
-          default: { adapter: sailsPostGreAdapter, url: testUrl },
-        },
-        models: { migrate: 'drop' },
-        csrf: false,
-        async bootstrap() {
-          await CommonService.query(customSQL.ALTER_MASSIF_COLUMN_GEOG_POLYGON);
-          await CommonService.query(customSQL.ALTER_ENTRANCE_COLUMN_POINT_GEOM);
-          await CommonService.query(
-            customSQL.CREATE_ENTRANCE_POINT_GEOM_INSERT_TRIGGER
-          );
-        },
-      },
-      // eslint-disable-next-line consistent-return
-      async (liftErr) => {
-        if (liftErr) return reject(liftErr);
-
-        const fixted = new Fixted();
-        fixted.populate(
-          FIXTURE_ORDER,
-          // eslint-disable-next-line consistent-return
-          (fixtedError) => {
-            if (fixtedError) {
-              sails.lower(() => reject(fixtedError));
-              return;
-            }
-
-            CommonService.query(
-              [
-                customSQL.UPDATE_SEQUENCES_QUERY,
-                customSQL.POPULATE_ENTRANCE_POINT_GEOM,
-                customSQL.INDEX_OPTIMIZATION_MIGRATION,
-                customSQL.QUERY_PERFORMANCE_FIXES_MIGRATION,
-              ].join('\n')
-            )
-              .then(() => {
-                sails.lower((lowerErr) => {
-                  if (lowerErr) reject(lowerErr);
-                  else resolve();
-                });
-              })
-              .catch((sqlErr) => {
-                sails.lower(() => reject(sqlErr));
-              });
-          },
-          false
-        );
-      }
-    );
-  });
-}
-
 async function seed() {
   console.log(`[snapshot] Seeding template "${templateDbName}"...`);
 
@@ -114,7 +44,17 @@ async function seed() {
   });
 
   console.log('[snapshot] Running full bootstrap (migrate:drop + fixtures)...');
-  await runFullBootstrap();
+
+  // eslint-disable-next-line global-require
+  const seedDatabase = require('../test/seed-database');
+  const sails = await seedDatabase({ testUrl });
+  await new Promise((resolve, reject) => {
+    sails.lower((err) => {
+      if (err) reject(err);
+      else resolve();
+    });
+  });
+
   console.log('[snapshot] Bootstrap complete. Creating template...');
 
   await withClient(maintenanceUrl, async (client) => {

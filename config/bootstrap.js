@@ -43,6 +43,30 @@ module.exports.bootstrap = async function (done) {
   // Blocking: load token blacklist cache before accepting requests
   await sails.services.blacklistservice.loadCache();
 
+  // Blocking: load country resolver cache before accepting requests
+  await sails.services.countryresolverservice.loadCache();
+
+  // Blocking: start enrichment queue before accepting requests
+  try {
+    await sails.services.enrichmentqueueservice.start();
+  } catch (err) {
+    sails.enrichmentBoss = null;
+    sails.log.error('Failed to start EnrichmentQueueService:', err.message);
+    sails.log.warn(
+      'Enrichment processing will be unavailable — entrance creation still works'
+    );
+  }
+
+  // Register graceful shutdown for enrichment queue
+  sails.config.beforeShutdown = async (cb) => {
+    try {
+      await sails.services.enrichmentqueueservice.stop();
+    } catch (err) {
+      sails.log.error('Error stopping EnrichmentQueueService:', err.message);
+    }
+    cb();
+  };
+
   // Fire-and-forget: load coordinates snapshot without blocking server startup
   // Must use sails.services to get the same instance Sails loaded (include-all
   // clears the require cache, so a direct require() returns a stale instance).

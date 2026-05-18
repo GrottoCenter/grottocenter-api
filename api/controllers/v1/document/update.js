@@ -96,7 +96,6 @@ module.exports = async (req, res) => {
   const doc = await DocumentService.getPopulatedDocument(updatedDocument.id);
 
   await NotificationService.notifySubscribers(
-    req,
     doc,
     authorId,
     NotificationService.NOTIFICATION_TYPES.UPDATE,

@@ -2,7 +2,6 @@ const RightService = require('../../../services/RightService');
 const MassifService = require('../../../services/MassifService');
 const ControllerService = require('../../../services/ControllerService');
 const { toMassif } = require('../../../services/mapping/converters');
-const { getMetaFromRequest } = require('../../../services/mapping/utils');
 
 module.exports = async (req, res) => {
   const isAdmin = RightService.hasGroup(
@@ -27,13 +26,12 @@ module.exports = async (req, res) => {
   // Idempotency: skip if already non-sensitive
   if (!massif.isSensitive) {
     const updatedMassif = await MassifService.getPopulatedMassif(massifId);
-    const meta = getMetaFromRequest(req);
     return ControllerService.treat(
       req,
       null,
       {
         count: 0,
-        massif: toMassif(updatedMassif, meta),
+        massif: toMassif(updatedMassif),
       },
       { controllerMethod: 'MassifController.unmark-sensitive' },
       res
@@ -47,14 +45,12 @@ module.exports = async (req, res) => {
     const updatedMassif = await MassifService.getPopulatedMassif(massifId);
     await MassifService.updateInSearch(updatedMassif);
 
-    const meta = getMetaFromRequest(req);
-
     return ControllerService.treat(
       req,
       null,
       {
         count: 0,
-        massif: toMassif(updatedMassif, meta),
+        massif: toMassif(updatedMassif),
       },
       { controllerMethod: 'MassifController.unmark-sensitive' },
       res

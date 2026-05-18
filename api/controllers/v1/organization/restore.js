@@ -39,7 +39,6 @@ module.exports = async (req, res) => {
   await GrottoService.updateInSearch(organization);
 
   await NotificationService.notifySubscribers(
-    req,
     organization,
     req.token.id,
     NotificationService.NOTIFICATION_TYPES.RESTORE,

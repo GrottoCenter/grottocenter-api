@@ -30,6 +30,33 @@ describe('Geoloc features', () => {
         })
         .expect(200, done);
     });
+
+    it('should include dataQuality integer field between 0 and 100 for each entrance', (done) => {
+      supertest(sails.hooks.http.app)
+        .get('/api/v1/geoloc/entrances')
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .query({
+          sw_lat: 62,
+          sw_lng: 78,
+          ne_lat: 63,
+          ne_lng: 79,
+        })
+        .expect(200)
+        .end((err, res) => {
+          if (err) return done(err);
+          res.body.should.be.Array();
+          res.body.length.should.be.above(0);
+          res.body.forEach((entrance) => {
+            should(entrance).have.property('dataQuality');
+            should(entrance.dataQuality).be.a.Number();
+            should(entrance.dataQuality % 1).equal(0);
+            should(entrance.dataQuality).be.aboveOrEqual(0);
+            should(entrance.dataQuality).be.belowOrEqual(100);
+          });
+          return done();
+        });
+    });
   });
 
   describe('find entrances with massif filter', () => {

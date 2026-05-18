@@ -3,7 +3,8 @@ const should = require('should');
 const sinon = require('sinon');
 
 const AuthTokenService = require('../../AuthTokenService');
-const GeocodingService = require('../../../../api/services/GeocodingService');
+const CountryResolverService = require('../../../../api/services/CountryResolverService');
+const EnrichmentQueueService = require('../../../../api/services/EnrichmentQueueService');
 
 describe('Entrance features', () => {
   let allGroupsToken;
@@ -261,15 +262,15 @@ describe('Entrance features', () => {
       }).timeout(10000);
 
       it('should update coordinates and trigger reverse geocoding', async () => {
-        let stub;
+        let resolveStub;
+        let enqueueStub;
         try {
-          stub = sinon.stub(GeocodingService, 'reverse').resolves({
-            region: 'Test Region',
-            county: 'Test County',
-            city: 'Test City',
-            id_country: 'FR',
-            iso_3166_2: 'FR-ARA',
-          });
+          resolveStub = sinon
+            .stub(CountryResolverService, 'resolve')
+            .returns('FR');
+          enqueueStub = sinon
+            .stub(EnrichmentQueueService, 'enqueue')
+            .resolves();
 
           await supertest(sails.hooks.http.app)
             .put(`/api/v1/entrances/${entranceId}`)
@@ -285,7 +286,8 @@ describe('Entrance features', () => {
           should(updatedEntrance.latitude).be.approximately(45.5, 0.01);
           should(updatedEntrance.longitude).be.approximately(6.5, 0.01);
         } finally {
-          if (stub) stub.restore();
+          if (resolveStub) resolveStub.restore();
+          if (enqueueStub) enqueueStub.restore();
         }
       }).timeout(10000);
 

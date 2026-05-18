@@ -146,6 +146,8 @@ CREATE INDEX IF NOT EXISTS idx_v_dq_country
   ON v_data_quality_compute_entrance(id_country);
 CREATE INDEX IF NOT EXISTS idx_v_dq_entrance
   ON v_data_quality_compute_entrance(id_entrance);
+CREATE INDEX IF NOT EXISTS idx_vdqce_entrance_massif
+  ON v_data_quality_compute_entrance(id_entrance, id_massif);
 CREATE INDEX IF NOT EXISTS idx_v_country_info_country
   ON v_country_info(id_country);
 CREATE INDEX IF NOT EXISTS idx_v_region_info_region
@@ -185,6 +187,84 @@ CREATE INDEX IF NOT EXISTS idx_t_comment_entrance ON t_comment(id_entrance);
 CREATE INDEX IF NOT EXISTS idx_t_comment_cave ON t_comment(id_cave);
 `;
 
+// Create t_bibliographic_metadata table (no Waterline model exists for this
+// table, so migrate:drop does not create it). Required for testing permanent
+// document deletion which must clean up bibliographic metadata FK references.
+const CREATE_BIBLIOGRAPHIC_METADATA_TABLE = `
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.tables
+    WHERE table_schema = 'public' AND table_name = 't_bibliographic_metadata'
+  ) THEN
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'e_metadata_status') THEN
+      CREATE TYPE e_metadata_status AS ENUM ('registered', 'deleted');
+    END IF;
+    CREATE TABLE t_bibliographic_metadata (
+      id_document int4 NOT NULL,
+      oai_identifier varchar(50) NOT NULL,
+      last_update timestamp NOT NULL DEFAULT now(),
+      list_sets text[] NULL,
+      dc_title text NULL,
+      dc_creators text[] NULL,
+      dc_contributor text NULL,
+      dc_publisher text NULL,
+      dc_date date NULL,
+      dc_languages bpchar(3)[] NULL,
+      dc_descriptions text[] NULL,
+      dc_coverages text[] NULL,
+      dc_subjects text[] NULL,
+      dc_formats text[] NULL,
+      dc_identifiers text[] NULL,
+      dc_relations text[] NULL,
+      dc_sources text[] NULL,
+      dc_rights text[] NULL,
+      dc_types text[] NULL,
+      has_been_updated bool NOT NULL DEFAULT false,
+      metadata_status e_metadata_status NOT NULL DEFAULT 'registered',
+      children int4[] NULL,
+      CONSTRAINT t_record_pk PRIMARY KEY (id_document),
+      CONSTRAINT t_record_t_document_fk FOREIGN KEY (id_document) REFERENCES t_document(id)
+    );
+  END IF;
+END $$;
+`;
+
+// Drop FK constraints on history tables that reference their parent t_ table.
+// These are auto-created by Waterline's migrate:drop but do NOT exist in
+// production (where the schema comes from SQL migrations). Dropping them
+// aligns the test DB with production behavior and allows permanent deletes
+// to preserve history rows for auditability.
+const DROP_HISTORY_PARENT_FK_CONSTRAINTS = `
+-- Parent FK constraints (h_.id -> t_.id)
+ALTER TABLE h_entrance DROP CONSTRAINT IF EXISTS h_entrance_t_entrance;
+ALTER TABLE h_description DROP CONSTRAINT IF EXISTS h_description_t_description;
+ALTER TABLE h_location DROP CONSTRAINT IF EXISTS h_location_t_location;
+ALTER TABLE h_rigging DROP CONSTRAINT IF EXISTS h_rigging_t_rigging;
+ALTER TABLE h_history DROP CONSTRAINT IF EXISTS h_history_t_history;
+ALTER TABLE h_comment DROP CONSTRAINT IF EXISTS h_comment_t_comment;
+ALTER TABLE h_cave DROP CONSTRAINT IF EXISTS h_cave_t_cave;
+ALTER TABLE h_name DROP CONSTRAINT IF EXISTS h_name_t_name;
+-- Cross-entity FKs referencing t_entrance(id)
+ALTER TABLE h_location DROP CONSTRAINT IF EXISTS h_location_t_entrance_fk;
+ALTER TABLE h_name DROP CONSTRAINT IF EXISTS h_name_t_entrance_fk;
+ALTER TABLE h_description DROP CONSTRAINT IF EXISTS h_description_t_entrance1_fk;
+ALTER TABLE h_description DROP CONSTRAINT IF EXISTS h_description_t_entrance2_fk;
+ALTER TABLE h_comment DROP CONSTRAINT IF EXISTS h_comment_t_entrance1_fk;
+ALTER TABLE h_comment DROP CONSTRAINT IF EXISTS h_comment_t_entrance2_fk;
+ALTER TABLE h_rigging DROP CONSTRAINT IF EXISTS h_rigging_t_entrance_fk;
+ALTER TABLE h_rigging DROP CONSTRAINT IF EXISTS h_rigging_t_entrance1_fk;
+ALTER TABLE h_history DROP CONSTRAINT IF EXISTS h_history_t_entrance_fk;
+-- Cross-entity FKs referencing t_cave(id)
+ALTER TABLE h_entrance DROP CONSTRAINT IF EXISTS h_entrance_t_cave_fk;
+ALTER TABLE h_description DROP CONSTRAINT IF EXISTS h_description_t_cave_fk;
+ALTER TABLE h_comment DROP CONSTRAINT IF EXISTS h_comment_t_cave_fk;
+ALTER TABLE h_rigging DROP CONSTRAINT IF EXISTS h_rigging_t_cave_fk;
+ALTER TABLE h_history DROP CONSTRAINT IF EXISTS h_history_t_cave_fk;
+ALTER TABLE h_document DROP CONSTRAINT IF EXISTS h_document_t_cave_fk;
+ALTER TABLE h_name DROP CONSTRAINT IF EXISTS h_name_t_cave0_fk;
+`;
+
 module.exports = {
   UPDATE_SEQUENCES_QUERY,
   ALTER_MASSIF_COLUMN_GEOG_POLYGON,
@@ -193,4 +273,6 @@ module.exports = {
   POPULATE_ENTRANCE_POINT_GEOM,
   INDEX_OPTIMIZATION_MIGRATION,
   QUERY_PERFORMANCE_FIXES_MIGRATION,
+  CREATE_BIBLIOGRAPHIC_METADATA_TABLE,
+  DROP_HISTORY_PARENT_FK_CONSTRAINTS,
 };

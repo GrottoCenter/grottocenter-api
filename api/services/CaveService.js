@@ -84,7 +84,6 @@ module.exports = {
     );
 
     await NotificationService.notifySubscribers(
-      req,
       populatedCave,
       req.token.id,
       NotificationService.NOTIFICATION_TYPES.CREATE,
@@ -245,8 +244,24 @@ module.exports = {
   },
 
   async permanentlyDeleteCave(cave, shouldMergeInto, mergeIntoId) {
+    const ids = (arr) => (arr || []).map((e) => e.id);
+    const action = shouldMergeInto ? 'merge' : 'delete';
+    const target = shouldMergeInto ? mergeIntoId : null;
+    const audit = {
+      action,
+      caveId: cave.id,
+      ...(shouldMergeInto && { mergeIntoId }),
+      entrances: ids(cave.entrances),
+      descriptions: ids(cave.descriptions),
+      documents: ids(cave.documents),
+      names: ids(cave.names),
+    };
+    sails.log.info(
+      `Permanent ${action} cave ${cave.id}: ${JSON.stringify(audit)}`
+    );
+
     await TCave.update({ redirectTo: cave.id }).set({
-      redirectTo: shouldMergeInto ? mergeIntoId : null,
+      redirectTo: target,
     });
     await TNotification.destroy({ cave: cave.id });
 
@@ -255,7 +270,6 @@ module.exports = {
         const newDocuments = cave.documents.map((e) => e.id);
         await TCave.addToCollection(mergeIntoId, 'documents', newDocuments);
       }
-      await HDocument.update({ cave: cave.id }).set({ cave: null });
       await TCave.updateOne(cave.id).set({ documents: [] });
     }
 
@@ -263,26 +277,37 @@ module.exports = {
       const newEntrances = cave.entrances.map((e) => e.id);
       await TCave.addToCollection(mergeIntoId, 'entrances', newEntrances);
     }
-    await HEntrance.update({ cave: cave.id }).set({ cave: null });
 
     if (cave.descriptions.length > 0) {
       if (shouldMergeInto) {
-        await TDescription.update({ cave: cave.id }).set({
-          cave: mergeIntoId,
-        });
-        await HDescription.update({ cave: cave.id }).set({
-          cave: mergeIntoId,
-        });
+        await TDescription.update({ cave: cave.id }).set({ cave: mergeIntoId });
       } else {
-        await TDescription.destroy({ cave: cave.id }); // TDescription first soft delete
-        await HDescription.destroy({ cave: cave.id });
-        await TDescription.destroy({ cave: cave.id });
+        await TDescription.destroy({ cave: cave.id }); // Soft delete (is_deleted = true)
+        await TDescription.destroy({ cave: cave.id }); // Hard delete (removes row)
       }
     }
 
     await NameService.permanentDelete({ cave: cave.id });
 
-    await HCave.destroy({ id: cave.id });
+    // Clean up junction tables before hard delete.
+    // Using raw SQL because the cave is already soft-deleted at this point,
+    // so Waterline's updateOne() won't find it.
+    await Promise.all([
+      CommonService.query(
+        'DELETE FROM j_grotto_cave_explorer WHERE id_cave = $1',
+        [cave.id]
+      ),
+      CommonService.query(
+        'DELETE FROM j_caver_cave_explorer WHERE id_cave = $1',
+        [cave.id]
+      ),
+      CommonService.query(
+        'DELETE FROM j_grotto_cave_partner WHERE id_cave = $1',
+        [cave.id]
+      ),
+    ]);
+
+    // h_ rows are intentionally preserved for auditability.
     await TCave.destroyOne({ id: cave.id }); // Hard delete
   },
 };

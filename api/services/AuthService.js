@@ -13,6 +13,70 @@ async function createHashedPassword(password) {
 }
 module.exports.createHashedPassword = createHashedPassword;
 
+const PASSWORD_MIN_LENGTH = 12;
+const SPECIAL_CHARACTERS = '!@#$%^&*()_+\\-=\\[\\]{}|;:\'",.<>?/~`';
+const SPECIAL_CHAR_REGEX = new RegExp(`[${SPECIAL_CHARACTERS}]`);
+
+/**
+ * Validate a plaintext password against the strength policy.
+ *
+ * Requirements:
+ * - At least 12 characters
+ * - At least one uppercase letter
+ * - At least one lowercase letter
+ * - At least one digit
+ * - At least one special character
+ *
+ * @param {String} password - The plaintext password to validate
+ * @returns {{ valid: boolean, message?: string }} Validation result
+ */
+function validatePassword(password) {
+  if (!password || password.length < PASSWORD_MIN_LENGTH) {
+    return {
+      valid: false,
+      message: `Your password must be at least ${PASSWORD_MIN_LENGTH} characters long.`,
+    };
+  }
+  if (!/[A-Z]/.test(password)) {
+    return {
+      valid: false,
+      message: 'Your password must contain at least one uppercase letter.',
+    };
+  }
+  if (!/[a-z]/.test(password)) {
+    return {
+      valid: false,
+      message: 'Your password must contain at least one lowercase letter.',
+    };
+  }
+  if (!/\d/.test(password)) {
+    return {
+      valid: false,
+      message: 'Your password must contain at least one digit.',
+    };
+  }
+  if (!SPECIAL_CHAR_REGEX.test(password)) {
+    return {
+      valid: false,
+      message:
+        'Your password must contain at least one special character (!@#$%^&*()_+-=[]{}|;:\'",.<>?/~`).',
+    };
+  }
+  return { valid: true };
+}
+module.exports.validatePassword = validatePassword;
+
+/**
+ * Verify a plaintext password against an argon2 hash.
+ * @param {String} hashedPassword - The stored argon2 hash
+ * @param {String} plainPassword - The plaintext password to verify
+ * @returns {Promise<boolean>} true if the password matches
+ */
+async function verifyPassword(hashedPassword, plainPassword) {
+  return argon2.verify(hashedPassword, plainPassword);
+}
+module.exports.verifyPassword = verifyPassword;
+
 const authenticateResult = {
   SUCCESS: 'SUCCESS',
   MISMATCH: 'MISMATCH',
@@ -44,7 +108,7 @@ async function authenticate(email, password) {
   if (!user.password?.startsWith('$argon2'))
     return { status: authenticateResult.MUST_RESET, user };
 
-  const isHashMatch = await argon2.verify(user.password, password);
+  const isHashMatch = await verifyPassword(user.password, password);
   if (!isHashMatch) return { status: authenticateResult.MISMATCH };
 
   if (user.banned) return { status: authenticateResult.BANNED, user };
@@ -68,16 +132,16 @@ module.exports.generateActivationCode = generateActivationCode;
  * Send a verification email to a user
  * @param {Object} user
  * @param {String} token
- * @param {Object} i18n
+ * @param {String} [locale] - ISO 639-1 locale code (e.g. "fr", "en")
  */
-async function sendVerificationEmail(user, token, i18n) {
+async function sendVerificationEmail(user, token, locale) {
   const verifyLink = `${sails.config.custom.baseUrl}/ui/verify-email?token=${token}`;
 
   try {
     await sails.helpers.sendEmail.with({
       allowResponse: false,
       emailSubject: 'Verify your email address',
-      i18n,
+      locale,
       recipientEmail: user.mail,
       viewName: 'verifyEmail',
       viewValues: {

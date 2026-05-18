@@ -370,7 +370,12 @@ const c = {
     }
     // Once cave is populated, put the massifs at the root of the entrance
     // (more convenient for the client)
-    result.massifs = toList('massifs', source.cave ?? {}, c.toSimpleMassif);
+    // For search results, massifs come directly from the Typesense document
+    if (Array.isArray(source.massifs) && source.massifs.length > 0) {
+      result.massifs = source.massifs;
+    } else {
+      result.massifs = toList('massifs', source.cave ?? {}, c.toSimpleMassif);
+    }
     result.author = convertIfObject(source.author, c.toSimpleCaver);
     result.reviewer = convertIfObject(source.reviewer, c.toSimpleCaver);
     // Convert collections
@@ -404,6 +409,9 @@ const c = {
         categories: getQualityBreakdown(source.qualityData),
         lastComputedAt: source.qualityData.date_of_update,
       };
+    } else if (typeof source.dataQuality === 'number') {
+      // Pass through integer score from Typesense search documents
+      result.dataQuality = source.dataQuality;
     } else {
       result.dataQuality = null;
     }
@@ -527,14 +535,12 @@ const c = {
     cave: convertIfObject(source.cave, c.toSimpleCave),
   }),
 
-  toMassif: (source, meta) => ({
+  toMassif: (source) => ({
     ...MassifModel,
     id: source.id,
     '@id': String(source.id),
     isDeleted: source.isDeleted,
-    ...(meta?.hasCompleteViewRight === true && {
-      isSensitive: source.isSensitive,
-    }),
+    isSensitive: source.isSensitive,
     redirectTo: source.redirectTo,
     author: convertIfObject(source.author, c.toSimpleCaver),
     reviewer: convertIfObject(source.reviewer, c.toSimpleCaver),
@@ -590,7 +596,7 @@ const c = {
     result.entrance = convertIfObject(source.entrance, c.toEntrance, { meta });
     result.history = convertIfObject(source.history, c.toHistory, { meta });
     result.location = convertIfObject(source.location, c.toLocation, { meta });
-    result.massif = convertIfObject(source.massif, c.toMassif, { meta });
+    result.massif = convertIfObject(source.massif, c.toMassif);
     result.notified = convertIfObject(source.notified, c.toSimpleCaver, {
       meta,
     });
@@ -710,7 +716,7 @@ const c = {
       else if (_type === 'entrances') data = c.toEntrance(item.document, meta);
       else if (_type === 'organizations')
         data = c.toOrganization(item.document, meta);
-      else if (_type === 'massifs') data = c.toMassif(item.document, meta);
+      else if (_type === 'massifs') data = c.toMassif(item.document);
 
       return {
         ...data,

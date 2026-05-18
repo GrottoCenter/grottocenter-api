@@ -53,7 +53,6 @@ module.exports = async (req, res) => {
 
   const populatedComment = await CommentService.getComment(commentId);
   await NotificationService.notifySubscribers(
-    req,
     populatedComment,
     req.token.id,
     NotificationService.NOTIFICATION_TYPES.UPDATE,

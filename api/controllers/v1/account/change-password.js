@@ -1,9 +1,8 @@
 const jwt = require('jsonwebtoken');
 
+const AccountNotificationService = require('../../../services/AccountNotificationService');
 const AuthService = require('../../../services/AuthService');
 const TokenService = require('../../../services/TokenService');
-
-const PASSWORD_MIN_LENGTH = 8;
 
 // eslint-disable-next-line consistent-return
 module.exports = async (req, res) => {
@@ -12,10 +11,9 @@ module.exports = async (req, res) => {
   if (!password) {
     return res.badRequest('You must provide a password.');
   }
-  if (password.length < PASSWORD_MIN_LENGTH) {
-    return res.badRequest(
-      `Your password must be at least ${PASSWORD_MIN_LENGTH} characters long.`
-    );
+  const validation = AuthService.validatePassword(password);
+  if (!validation.valid) {
+    return res.badRequest(validation.message);
   }
 
   if (req.token) {
@@ -25,6 +23,15 @@ module.exports = async (req, res) => {
     }).set({
       password: await AuthService.createHashedPassword(password),
     });
+
+    const caver = await TCaver.findOne({ id: req.token.id });
+    if (caver) {
+      AccountNotificationService.notifyPasswordChanged({
+        email: caver.mail,
+        nickname: caver.nickname,
+        languageId: caver.language,
+      });
+    }
 
     return res.ok();
   }
@@ -76,6 +83,12 @@ module.exports = async (req, res) => {
       id: decodedToken.userId,
     }).set({
       password: await AuthService.createHashedPassword(password),
+    });
+
+    AccountNotificationService.notifyPasswordChanged({
+      email: userFound.mail,
+      nickname: userFound.nickname,
+      languageId: userFound.language,
     });
 
     return res.ok();

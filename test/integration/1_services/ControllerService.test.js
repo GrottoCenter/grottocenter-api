@@ -599,7 +599,7 @@ describe('ControllerService', () => {
         total: 50,
         url: 'http://example.com/api/items?range=0-10',
       };
-      const converterSpy = sinon.spy((data) => data);
+      const converterSpy = sinon.spy((data, _meta) => data);
 
       ControllerService.treatAndConvert(
         req,

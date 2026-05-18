@@ -60,7 +60,6 @@ module.exports = async (req, res) => {
 
   await CaveService.updateInSearch(populatedCave);
   await NotificationService.notifySubscribers(
-    req,
     populatedCave,
     req.token.id,
     NotificationService.NOTIFICATION_TYPES.UPDATE,

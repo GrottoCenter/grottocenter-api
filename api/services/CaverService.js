@@ -69,7 +69,8 @@ module.exports = {
       .populate('grottos')
       .populate('groups')
       .populate('subscribedToCountries')
-      .populate('subscribedToMassifs');
+      .populate('subscribedToMassifs')
+      .populate('subscribedToRegions');
 
     if (!caver) return null;
 
@@ -116,11 +117,13 @@ module.exports = {
       language: caver.language,
       groups: caver.groups,
       grottos: caver.grottos,
+      exploredCaves: caver.exploredCaves,
       exploredEntrances: caver.exploredEntrances,
       exploredNetworks: caver.exploredNetworks,
       documents: caver.documents,
       subscribedToMassifs: caver.subscribedToMassifs,
       subscribedToCountries: caver.subscribedToCountries,
+      subscribedToRegions: caver.subscribedToRegions,
     };
   },
 

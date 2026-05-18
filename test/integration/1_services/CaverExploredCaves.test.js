@@ -110,7 +110,10 @@ describe('Caver explored caves relationship', () => {
 
       should(caver).have.property('exploredEntrances');
       should(caver).have.property('exploredNetworks');
-      should(caver).not.have.property('exploredCaves');
+      should(caver).have.property('exploredCaves');
+
+      // exploredCaves contains the raw populated array
+      should(caver.exploredCaves).have.length(2);
 
       // Cave with 1 entrance should be in exploredEntrances
       should(caver.exploredEntrances).have.length(1);

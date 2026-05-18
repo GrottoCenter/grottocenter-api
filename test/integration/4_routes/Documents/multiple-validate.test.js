@@ -162,4 +162,189 @@ describe('Document multiple-validate', () => {
       should(updated.modifiedDocJson).be.null();
     });
   });
+
+  describe('Author notifications', () => {
+    // Moderator1 (caver ID 2) validates/rejects documents
+    // VALIDATE type ID = 4, REJECT type ID = 7
+    const VALIDATE_TYPE_ID = 4;
+    const REJECT_TYPE_ID = 7;
+    const createdNotificationIds = [];
+    const createdDocumentIds = [];
+
+    after(async () => {
+      if (createdNotificationIds.length > 0) {
+        await TNotification.destroy({ id: createdNotificationIds });
+      }
+      if (createdDocumentIds.length > 0) {
+        await TDocument.destroy({ id: createdDocumentIds });
+      }
+    });
+
+    const trackNotifications = async (callback) => {
+      const beforeIds = (await TNotification.find().select(['id'])).map(
+        (n) => n.id
+      );
+      await callback();
+      const afterIds = (await TNotification.find().select(['id'])).map(
+        (n) => n.id
+      );
+      const newIds = afterIds.filter((id) => !beforeIds.includes(id));
+      createdNotificationIds.push(...newIds);
+      return newIds;
+    };
+
+    it('should create a VALIDATE author notification when accepting a document via batch', async () => {
+      const doc = await TDocument.create({
+        author: 1,
+        type: 1,
+        license: 1,
+        isValidated: false,
+      }).fetch();
+      createdDocumentIds.push(doc.id);
+
+      const newIds = await trackNotifications(async () => {
+        await supertest(sails.hooks.http.app)
+          .put('/api/v1/documents/validate')
+          .send({
+            documents: [{ id: doc.id, isValidated: 'true' }],
+          })
+          .set('Authorization', moderatorToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .expect(204);
+      });
+
+      const authorNotification = await TNotification.findOne({
+        id: newIds,
+        notified: 1,
+        document: doc.id,
+        notificationType: VALIDATE_TYPE_ID,
+      });
+      should(authorNotification).not.be.undefined();
+      should(authorNotification.notifier).equal(2);
+    });
+
+    it('should create a REJECT author notification when rejecting a document via batch', async () => {
+      const doc = await TDocument.create({
+        author: 1,
+        type: 1,
+        license: 1,
+        isValidated: false,
+      }).fetch();
+      createdDocumentIds.push(doc.id);
+
+      const newIds = await trackNotifications(async () => {
+        await supertest(sails.hooks.http.app)
+          .put('/api/v1/documents/validate')
+          .send({
+            documents: [
+              {
+                id: doc.id,
+                isValidated: 'false',
+                validationComment: 'Needs revision',
+              },
+            ],
+          })
+          .set('Authorization', moderatorToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .expect(204);
+      });
+
+      const authorNotification = await TNotification.findOne({
+        id: newIds,
+        notified: 1,
+        document: doc.id,
+        notificationType: REJECT_TYPE_ID,
+      });
+      should(authorNotification).not.be.undefined();
+      should(authorNotification.notifier).equal(2);
+    });
+
+    it('should NOT create author notifications when moderator is the author', async () => {
+      const doc = await TDocument.create({
+        author: 2,
+        type: 1,
+        license: 1,
+        isValidated: false,
+      }).fetch();
+      createdDocumentIds.push(doc.id);
+
+      const newIds = await trackNotifications(async () => {
+        await supertest(sails.hooks.http.app)
+          .put('/api/v1/documents/validate')
+          .send({
+            documents: [{ id: doc.id, isValidated: 'true' }],
+          })
+          .set('Authorization', moderatorToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .expect(204);
+      });
+
+      const selfNotification = newIds.length
+        ? await TNotification.find({
+            id: newIds,
+            notified: 2,
+            document: doc.id,
+          })
+        : [];
+      should(selfNotification).have.length(0);
+    });
+
+    it('should create correct notification types for a mixed batch', async () => {
+      const acceptedDoc = await TDocument.create({
+        author: 1,
+        type: 1,
+        license: 1,
+        isValidated: false,
+      }).fetch();
+      createdDocumentIds.push(acceptedDoc.id);
+
+      const rejectedDoc = await TDocument.create({
+        author: 1,
+        type: 1,
+        license: 1,
+        isValidated: false,
+      }).fetch();
+      createdDocumentIds.push(rejectedDoc.id);
+
+      const newIds = await trackNotifications(async () => {
+        await supertest(sails.hooks.http.app)
+          .put('/api/v1/documents/validate')
+          .send({
+            documents: [
+              { id: acceptedDoc.id, isValidated: 'true' },
+              {
+                id: rejectedDoc.id,
+                isValidated: 'false',
+                validationComment: 'Incomplete data',
+              },
+            ],
+          })
+          .set('Authorization', moderatorToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .expect(204);
+      });
+
+      const validateNotification = await TNotification.findOne({
+        id: newIds,
+        notified: 1,
+        document: acceptedDoc.id,
+        notificationType: VALIDATE_TYPE_ID,
+      });
+      should(validateNotification).not.be.undefined();
+      should(validateNotification.notifier).equal(2);
+
+      const rejectNotification = await TNotification.findOne({
+        id: newIds,
+        notified: 1,
+        document: rejectedDoc.id,
+        notificationType: REJECT_TYPE_ID,
+      });
+      should(rejectNotification).not.be.undefined();
+      should(rejectNotification.notifier).equal(2);
+    });
+  });
 });

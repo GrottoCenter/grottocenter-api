@@ -61,6 +61,8 @@ module.exports.routes = {
   'GET /api/v1/swagger.yaml': 'v1/swagger/get-yaml',
 
   // Account
+  'GET /api/v1/account': 'v1/account/find',
+  'PATCH /api/v1/account': 'v1/account/update',
   'PATCH /api/v1/account/password': 'v1/account/change-password',
   'GET /api/v1/account/notifications': 'v1/account/get-notifications',
   'PATCH /api/v1/account/notifications': 'v1/account/update-notifications',

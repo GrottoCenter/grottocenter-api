@@ -316,6 +316,7 @@ SELECT
   WITH NO DATA;
 
 CREATE UNIQUE INDEX ON v_data_quality_compute_entrance(id_massif, id_entrance);
+CREATE INDEX IF NOT EXISTS idx_vdqce_entrance_massif ON v_data_quality_compute_entrance (id_entrance, id_massif);
 CREATE UNIQUE INDEX ON v_massif_info(id_massif, id_cave);
 CREATE UNIQUE INDEX ON v_country_info(id_massif, id_cave);
 CREATE UNIQUE INDEX ON v_region_info(id_massif, id_cave, id_region);

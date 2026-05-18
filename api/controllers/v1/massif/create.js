@@ -133,7 +133,6 @@ module.exports = async (req, res) => {
   );
 
   await NotificationService.notifySubscribers(
-    req,
     newMassifPopulated,
     req.token.id,
     NotificationService.NOTIFICATION_TYPES.CREATE,

@@ -38,7 +38,6 @@ module.exports = async (req, res) => {
   await CaveService.updateInSearch(cave);
 
   await NotificationService.notifySubscribers(
-    req,
     cave,
     req.token.id,
     NotificationService.NOTIFICATION_TYPES.RESTORE,

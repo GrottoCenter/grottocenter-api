@@ -3,7 +3,7 @@ const sinon = require('sinon');
 const GrottoService = require('../../../api/services/GrottoService');
 const AuthTokenService = require('../AuthTokenService');
 const SearchService = require('../../../api/services/SearchService');
-const GeocodingService = require('../../../api/services/GeocodingService');
+const EnrichmentQueueService = require('../../../api/services/EnrichmentQueueService');
 
 describe('GrottoService', () => {
   const userReq = {};
@@ -128,9 +128,7 @@ describe('GrottoService', () => {
     });
 
     it('should create grotto with geocoding', async () => {
-      sinon.stub(GeocodingService, 'reverse').resolves({
-        iso_3166_2: 'FR-75',
-      });
+      sinon.stub(EnrichmentQueueService, 'enqueue').resolves();
 
       const cleanedData = {
         author: 1,
@@ -154,12 +152,11 @@ describe('GrottoService', () => {
       createdGrottoId = result.id;
       should(result).not.be.null();
       should(result.id).be.a.Number();
-      should(result.iso_3166_2).equal('FR-75');
       should(result.names[0].name).equal('Test Grotto');
     });
 
     it('should create grotto without geocoding', async () => {
-      sinon.stub(GeocodingService, 'reverse').resolves(null);
+      sinon.stub(EnrichmentQueueService, 'enqueue').resolves();
 
       const cleanedData = {
         author: 1,

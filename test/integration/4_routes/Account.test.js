@@ -9,11 +9,39 @@ describe('Account features', () => {
     userToken = await AuthTokenService.getRawBearerUserToken();
   });
 
+  describe('Get account', () => {
+    it('should return 200 with account details when authenticated', async () => {
+      const res = await supertest(sails.hooks.http.app)
+        .get('/api/v1/account')
+        .set('Authorization', userToken)
+        .set('Accept', 'application/json')
+        .expect(200);
+      should(res.body).have.property('id');
+      should(res.body).have.property('nickname');
+      should(res.body).have.property('name');
+      should(res.body).have.property('surname');
+      should(res.body).have.property('mail');
+      should(res.body).have.property('language');
+      should(res.body).have.property('mailIsValid');
+      should(res.body).have.property('sendNotificationByEmail');
+      should(res.body).not.have.property('password');
+      should(res.body).not.have.property('activationCode');
+    });
+
+    it('should return 401 when no token is provided', (done) => {
+      supertest(sails.hooks.http.app)
+        .get('/api/v1/account')
+        .set('Accept', 'application/json')
+        .expect(401, done);
+    });
+  });
+
   describe('Change email', () => {
     describe('Missing email parameter', () => {
       it('should return code 400', (done) => {
         supertest(sails.hooks.http.app)
-          .patch('/api/v1/account/email')
+          .patch('/api/v1/account')
+          .send({ email: '' })
           .set('Authorization', userToken)
           .set('Content-type', 'application/json')
           .set('Accept', 'application/json')
@@ -23,7 +51,7 @@ describe('Account features', () => {
     describe('Invalid email parameter', () => {
       it('should return code 400', (done) => {
         supertest(sails.hooks.http.app)
-          .patch('/api/v1/account/email')
+          .patch('/api/v1/account')
           .send({ email: 'invalidemail.com' })
           .set('Authorization', userToken)
           .set('Content-type', 'application/json')
@@ -31,10 +59,21 @@ describe('Account features', () => {
           .expect(400, done);
       });
     });
+    describe('Email already used by another caver', () => {
+      it('should return code 409', (done) => {
+        supertest(sails.hooks.http.app)
+          .patch('/api/v1/account')
+          .send({ email: 'admin1@admin1.com' })
+          .set('Authorization', userToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .expect(409, done);
+      });
+    });
     describe('Success', () => {
       it('should return code 204', async () => {
         await supertest(sails.hooks.http.app)
-          .patch('/api/v1/account/email')
+          .patch('/api/v1/account')
           .send({ email: 'newmail@newmail.com' })
           .set('Authorization', userToken)
           .set('Content-type', 'application/json')
@@ -47,7 +86,7 @@ describe('Account features', () => {
       // Restore previous email
       after((done) => {
         supertest(sails.hooks.http.app)
-          .patch('/api/v1/account/email')
+          .patch('/api/v1/account')
           .send({ email: 'user1@user1.com' })
           .set('Authorization', userToken)
           .set('Content-type', 'application/json')
@@ -124,7 +163,6 @@ describe('Account features', () => {
           caver.sendMessageNotificationByEmail.should.be.false();
         });
 
-        // Restore previous values
         after(async () => {
           await supertest(sails.hooks.http.app)
             .patch('/api/v1/account/notifications')
@@ -138,7 +176,178 @@ describe('Account features', () => {
             .set('Accept', 'application/json')
             .expect(200);
         });
+  describe('Update profile (name, surname, nickname)', () => {
+    it('should update name and surname', async () => {
+      await supertest(sails.hooks.http.app)
+        .patch('/api/v1/account')
+        .send({ name: 'NewName', surname: 'NewSurname' })
+        .set('Authorization', userToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(204);
+      const caver = await TCaver.findOne({ nickname: 'User1' });
+      should(caver.name).equal('NewName');
+      should(caver.surname).equal('NewSurname');
+    });
+
+    it('should update nickname', async () => {
+      await supertest(sails.hooks.http.app)
+        .patch('/api/v1/account')
+        .send({ nickname: 'UpdatedUser1' })
+        .set('Authorization', userToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(204);
+      const caver = await TCaver.findOne({ id: 3 });
+      should(caver.nickname).equal('UpdatedUser1');
+    });
+
+    it('should return 409 if nickname is already taken', async () => {
+      await supertest(sails.hooks.http.app)
+        .patch('/api/v1/account')
+        .send({ nickname: 'Admin1' })
+        .set('Authorization', userToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(409);
+    });
+
+    it('should return 400 if nickname is empty', async () => {
+      await supertest(sails.hooks.http.app)
+        .patch('/api/v1/account')
+        .send({ nickname: '' })
+        .set('Authorization', userToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(400);
+    });
+
+    it('should clear name when empty string is provided', async () => {
+      await supertest(sails.hooks.http.app)
+        .patch('/api/v1/account')
+        .send({ name: '' })
+        .set('Authorization', userToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(204);
+      const caver = await TCaver.findOne({ id: 3 });
+      should(caver.name).be.null();
+    });
+
+    it('should return 400 for unknown properties', async () => {
+      await supertest(sails.hooks.http.app)
+        .patch('/api/v1/account')
+        .send({ unknownField: 'value' })
+        .set('Authorization', userToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(400);
+    });
+
+    it('should return 400 if body is empty', async () => {
+      await supertest(sails.hooks.http.app)
+        .patch('/api/v1/account')
+        .send({})
+        .set('Authorization', userToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(400);
+    });
+
+    after(async () => {
+      await TCaver.updateOne({ id: 3 }).set({
+        name: 'Name1',
+        surname: 'Surname1',
+        nickname: 'User1',
       });
+    });
+  });
+
+  describe('Update password via account endpoint', () => {
+    it('should return 400 if currentPassword is not provided', (done) => {
+      supertest(sails.hooks.http.app)
+        .patch('/api/v1/account')
+        .send({ password: 'New_password1!' })
+        .set('Authorization', userToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(400, done);
+    });
+
+    it('should return 403 if currentPassword is incorrect', (done) => {
+      supertest(sails.hooks.http.app)
+        .patch('/api/v1/account')
+        .send({ password: 'New_password1!', currentPassword: 'wrongpassword' })
+        .set('Authorization', userToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(403, done);
+    });
+
+    it('should return 400 if new password is too short', (done) => {
+      supertest(sails.hooks.http.app)
+        .patch('/api/v1/account')
+        .send({ password: 'short', currentPassword: 'testtest' })
+        .set('Authorization', userToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(400, done);
+    });
+
+    it('should return 400 if new password lacks special character', (done) => {
+      supertest(sails.hooks.http.app)
+        .patch('/api/v1/account')
+        .send({ password: 'NewPassword123', currentPassword: 'testtest' })
+        .set('Authorization', userToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(400, done);
+    });
+
+    it('should update password when currentPassword is correct', async () => {
+      await supertest(sails.hooks.http.app)
+        .patch('/api/v1/account')
+        .send({ password: 'New_password1!', currentPassword: 'testtest' })
+        .set('Authorization', userToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(204);
+    });
+
+    // Restore original password
+    after(async () => {
+      await TCaver.updateOne({ id: 3 }).set({
+        password: await AuthService.createHashedPassword('testtest'),
+      });
+    });
+  });
+
+  describe('Update language', () => {
+    it('should update language with a valid ISO 639-3 code', async () => {
+      await supertest(sails.hooks.http.app)
+        .patch('/api/v1/account')
+        .send({ language: 'fra' })
+        .set('Authorization', userToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(204);
+      const caver = await TCaver.findOne({ id: 3 });
+      should(caver.language).equal('fra');
+    });
+
+    it('should return 400 for an invalid language code', async () => {
+      await supertest(sails.hooks.http.app)
+        .patch('/api/v1/account')
+        .send({ language: 'zzz' })
+        .set('Authorization', userToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(400);
+    });
+
+    // Restore original value
+    after(async () => {
+      await TCaver.updateOne({ id: 3 }).set({ language: '000' });
     });
   });
 

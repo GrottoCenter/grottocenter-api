@@ -108,7 +108,6 @@ module.exports = async (req, res) => {
   }
 
   await NotificationService.notifySubscribers(
-    req,
     massif,
     req.token.id,
     deletePermanently

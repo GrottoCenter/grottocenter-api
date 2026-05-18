@@ -8,7 +8,8 @@ const RANDOM_ENTRANCE_QUERY = `${INTEREST_ENTRANCES_QUERY} ORDER BY RANDOM() LIM
 const CommonService = require('./CommonService');
 const SearchService = require('./SearchService');
 const NotificationService = require('./NotificationService');
-const GeocodingService = require('./GeocodingService');
+const CountryResolverService = require('./CountryResolverService');
+const EnrichmentQueueService = require('./EnrichmentQueueService');
 const RecentChangeService = require('./RecentChangeService');
 const CaveService = require('./CaveService');
 const CommentService = require('./CommentService');
@@ -26,6 +27,7 @@ const LocationService = require('./LocationService');
 const RightService = require('./RightService');
 const coerceToInt = require('../utils/coerceToInt');
 const coerceBool = require('../utils/coerceBool');
+const { getQualityData } = require('../utils/computeEntranceDataQuality');
 
 module.exports = {
   getConvertedNameFromClientRequest: (req) => {
@@ -156,19 +158,12 @@ module.exports = {
   },
 
   createEntrance: async (req, entranceData, nameDescLocData) => {
-    const address = await GeocodingService.reverse(
+    // Synchronous country resolution (offline, no network dependency)
+    // eslint-disable-next-line no-param-reassign
+    entranceData.country = CountryResolverService.resolve(
       entranceData.latitude,
       entranceData.longitude
     );
-    if (address) {
-      /* eslint-disable no-param-reassign */
-      entranceData.region = address.region;
-      entranceData.county = address.county;
-      entranceData.city = address.city;
-      entranceData.country = address.id_country;
-      entranceData.iso_3166_2 = address.iso_3166_2;
-      /* eslint-enable no-param-reassign */
-    }
 
     /* eslint-disable no-param-reassign */
     entranceData.geology = entranceData.geology ?? 'Q35758';
@@ -255,13 +250,23 @@ module.exports = {
       nameDescLocData.name.text
     );
 
+    // Enqueue async enrichment (region, county, city, iso_3166_2)
+    if (entranceData.country !== '00') {
+      EnrichmentQueueService.enqueue(
+        newEntranceId,
+        'entrance',
+        req.traceId
+      ).catch((err) => {
+        sails.log.error('Failed to enqueue entrance enrichment:', err);
+      });
+    }
+
     const newEntrancePopulated =
       await module.exports.getPopulatedEntrance(newEntranceId);
 
     await module.exports.updateInSearch(newEntrancePopulated);
 
     await NotificationService.notifySubscribers(
-      req,
       newEntrancePopulated,
       req.token.id,
       NotificationService.NOTIFICATION_TYPES.CREATE,
@@ -349,6 +354,39 @@ module.exports = {
       entrance.longitude = null;
       entrance.locations = [];
     }
+
+    // Compute data quality score and fetch massifs in parallel (independent queries)
+    const [qualityRows, massifRows] = await Promise.all([
+      CommonService.query(
+        `SELECT general_latest_date_of_update, general_nb_contributions,
+                location_latest_date_of_update, location_nb_contributions,
+                description_latest_date_of_update, description_nb_contributions,
+                document_latest_date_of_update, document_nb_contributions,
+                rigging_latest_date_of_update, rigging_nb_contributions,
+                history_latest_date_of_update, history_nb_contributions,
+                comment_latest_date_of_update, comment_nb_contributions
+         FROM v_data_quality_compute_entrance WHERE id_entrance = $1 ORDER BY id_massif ASC LIMIT 1`,
+        [rawEntrance.id]
+      ),
+      CommonService.query(
+        `SELECT m.id, n.name, n.id_language AS language
+         FROM t_massif m
+         JOIN t_entrance e ON ST_Contains(m.geog_polygon::geometry, e.point_geom)
+         LEFT JOIN t_name n ON n.id_massif = m.id AND n.is_main = true AND n.is_deleted = false
+         WHERE e.id = $1 AND e.is_deleted = false AND m.is_deleted = false`,
+        [rawEntrance.id]
+      ),
+    ]);
+    entrance.dataQuality = qualityRows?.rows?.[0]
+      ? getQualityData(qualityRows.rows[0])
+      : 0;
+    entrance.massifs =
+      massifRows?.rows?.map((r) => ({
+        id: r.id,
+        name: r.name,
+        language: r.language,
+        isDeleted: false,
+      })) ?? [];
 
     await SearchService.updateDocument('entrances', entrance);
   },

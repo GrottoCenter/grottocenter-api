@@ -94,7 +94,6 @@ module.exports = async (req, res) => {
     await NameService.setNames([updatedEntrance], 'entrance');
 
     await NotificationService.notifySubscribers(
-      req,
       updatedEntrance,
       req.token.id,
       NotificationService.NOTIFICATION_TYPES.UPDATE,

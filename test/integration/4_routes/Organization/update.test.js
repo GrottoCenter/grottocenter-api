@@ -1,12 +1,21 @@
 const supertest = require('supertest');
 const should = require('should');
+const sinon = require('sinon');
 
 const AuthTokenService = require('../../AuthTokenService');
+const EnrichmentQueueService = require('../../../../api/services/EnrichmentQueueService');
 
 describe('Organization features', () => {
   let userToken;
+  let enqueueStub;
+
   before(async () => {
     userToken = await AuthTokenService.getRawBearerUserToken();
+    enqueueStub = sinon.stub(EnrichmentQueueService, 'enqueue').resolves();
+  });
+
+  after(() => {
+    enqueueStub.restore();
   });
 
   describe('Update', async () => {

@@ -99,6 +99,7 @@ module.exports = async (req, res) => {
     }
 
     await linkedEntitiesDeleteOrMerge('countries');
+    await linkedEntitiesDeleteOrMerge('entrances');
     await linkedEntitiesDeleteOrMerge('isoRegions');
     await linkedEntitiesDeleteOrMerge('languages');
     await linkedEntitiesDeleteOrMerge('massifs');
@@ -116,11 +117,14 @@ module.exports = async (req, res) => {
     await TDescription.destroy({ document: documentId });
 
     await HDocument.destroy({ t_id: documentId });
+    await sails.sendNativeQuery(
+      'DELETE FROM t_bibliographic_metadata WHERE id_document = $1',
+      [documentId]
+    );
     await TDocument.destroyOne({ id: documentId }); // Hard delete
   }
 
   await NotificationService.notifySubscribers(
-    req,
     document,
     req.token.id,
     deletePermanently

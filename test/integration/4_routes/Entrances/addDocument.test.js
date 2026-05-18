@@ -79,7 +79,7 @@ describe('Entrance add document features', () => {
         await JDocumentEntrance.destroy({ document: testDocumentId });
       });
 
-      it('should return 400 when adding same document twice to same entrance', async () => {
+      it('should return 204 idempotently across two identical PUT calls', async () => {
         await supertest(sails.hooks.http.app)
           .put(
             `/api/v1/entrances/${testEntranceId}/documents/${testDocumentId}`
@@ -87,14 +87,42 @@ describe('Entrance add document features', () => {
           .set('Authorization', userToken)
           .expect(204);
 
-        const response = await supertest(sails.hooks.http.app)
+        await supertest(sails.hooks.http.app)
           .put(
             `/api/v1/entrances/${testEntranceId}/documents/${testDocumentId}`
           )
           .set('Authorization', userToken)
-          .expect(400);
+          .expect(204);
 
-        should(response.body.message).match(/already linked to entrance/);
+        const links = await JDocumentEntrance.find({
+          document: testDocumentId,
+          entrance: testEntranceId,
+        });
+        should(links).have.length(1);
+      });
+
+      it('should not update dateReviewed on duplicate PUT', async () => {
+        // First PUT creates the link and sets dateReviewed
+        await supertest(sails.hooks.http.app)
+          .put(
+            `/api/v1/entrances/${testEntranceId}/documents/${testDocumentId}`
+          )
+          .set('Authorization', userToken)
+          .expect(204);
+
+        const docAfterFirst = await TDocument.findOne(testDocumentId);
+        const dateReviewedAfterFirst = docAfterFirst.dateReviewed;
+
+        // Second PUT is a duplicate — dateReviewed must remain unchanged
+        await supertest(sails.hooks.http.app)
+          .put(
+            `/api/v1/entrances/${testEntranceId}/documents/${testDocumentId}`
+          )
+          .set('Authorization', userToken)
+          .expect(204);
+
+        const docAfterSecond = await TDocument.findOne(testDocumentId);
+        should(docAfterSecond.dateReviewed).deepEqual(dateReviewedAfterFirst);
       });
     });
 

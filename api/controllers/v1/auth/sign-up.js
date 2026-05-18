@@ -1,7 +1,6 @@
 const AuthService = require('../../../services/AuthService');
 const CaverService = require('../../../services/CaverService');
-
-const PASSWORD_MIN_LENGTH = 8;
+const LanguageService = require('../../../services/LanguageService');
 
 module.exports = async (req, res) => {
   // Check params
@@ -20,10 +19,9 @@ module.exports = async (req, res) => {
   if (!password) {
     return res.badRequest('You must provide a password.');
   }
-  if (password && password.length < PASSWORD_MIN_LENGTH) {
-    return res.badRequest(
-      `Your password must be at least ${PASSWORD_MIN_LENGTH} characters long.`
-    );
+  const validation = AuthService.validatePassword(password);
+  if (!validation.valid) {
+    return res.badRequest(validation.message);
   }
 
   const nickname = req.param('nickname');
@@ -36,6 +34,19 @@ module.exports = async (req, res) => {
     return res.conflict('Email or nickname is already used.');
   }
 
+  // Validate optional language parameter (ISO 639-3 code)
+  const languageParam = req.param('language');
+  let language = '000'; // default null language id
+  let locale;
+  if (languageParam) {
+    const foundLanguage = await TLanguage.findOne({ id: languageParam });
+    if (!foundLanguage) {
+      return res.badRequest('The provided language does not exist.');
+    }
+    language = foundLanguage.id;
+    locale = await LanguageService.getLocale(language);
+  }
+
   // Only generate the activation code after every other check passes
   const activationCode = AuthService.generateActivationCode();
 
@@ -43,7 +54,7 @@ module.exports = async (req, res) => {
     // Rely on the ORM for the rest of the input validation
     const newCaver = await TCaver.create({
       dateInscription: new Date(),
-      language: '000', // default null language id
+      language,
       mail: email,
       name: req.param('name') === '' ? null : req.param('name'),
       nickname,
@@ -57,11 +68,7 @@ module.exports = async (req, res) => {
     await CaverService.updateInSearch(newCaver);
 
     try {
-      await AuthService.sendVerificationEmail(
-        newCaver,
-        activationCode,
-        req.i18n
-      );
+      await AuthService.sendVerificationEmail(newCaver, activationCode, locale);
     } catch (_) {
       // Errors are already logged in AuthService.
       // We catch them here to ensure the signup itself isn't considered a failure if sending the email fails.

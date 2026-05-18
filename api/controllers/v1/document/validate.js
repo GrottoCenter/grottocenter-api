@@ -35,19 +35,30 @@ module.exports = async (req, res) => {
     validator: req.token.id,
   });
 
-  let populatedDoc;
+  const populatedDoc = await DocumentService.getPopulatedDocument(id);
+
   if (isValidated) {
-    populatedDoc = await DocumentService.getPopulatedDocument(id);
     await DocumentService.updateInSearch(populatedDoc);
 
     await NotificationService.notifySubscribers(
-      req,
       populatedDoc,
       req.token.id,
       NotificationService.NOTIFICATION_TYPES.VALIDATE,
       NotificationService.NOTIFICATION_ENTITIES.DOCUMENT
     );
   }
+
+  // Notify author for both acceptance and rejection
+  await NotificationService.notifyAuthor(
+    populatedDoc,
+    req.token.id,
+    isValidated
+      ? NotificationService.NOTIFICATION_TYPES.VALIDATE
+      : NotificationService.NOTIFICATION_TYPES.REJECT,
+    validationComment
+  ).catch((err) =>
+    sails.log.error('Document validate notifyAuthor error', err)
+  );
 
   const params = {
     controllerMethod: 'DocumentController.validate',

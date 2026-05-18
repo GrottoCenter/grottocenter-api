@@ -37,7 +37,6 @@ module.exports = async (req, res) => {
 
   const locationPopulated = await LocationService.getLocation(newLocation.id);
   await NotificationService.notifySubscribers(
-    req,
     locationPopulated,
     req.token.id,
     NotificationService.NOTIFICATION_TYPES.CREATE,

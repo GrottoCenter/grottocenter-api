@@ -3,6 +3,8 @@ const {
   NON_INDEXED_BOOLEAN_FIELDS,
   computeDateLastModif,
 } = require('../../../config/constants/entrance');
+const { getQualityData } = require('../../utils/computeEntranceDataQuality');
+const CommonService = require('../../services/CommonService');
 
 function average(arr) {
   if (arr.length === 0) return null;
@@ -139,9 +141,59 @@ async function* processRows(source) {
         ],
         join: exportUtils.dateAndAuthorJoins('c'),
       },
+      {
+        table: 'v_data_quality_compute_entrance vq',
+        foreignField: 'vq.id_entrance',
+        rows,
+        localField: 'qualityData',
+        fields: [
+          'vq.id_massif',
+          'general_latest_date_of_update',
+          'general_nb_contributions',
+          'location_latest_date_of_update',
+          'location_nb_contributions',
+          'description_latest_date_of_update',
+          'description_nb_contributions',
+          'document_latest_date_of_update',
+          'document_nb_contributions',
+          'rigging_latest_date_of_update',
+          'rigging_nb_contributions',
+          'history_latest_date_of_update',
+          'history_nb_contributions',
+          'comment_latest_date_of_update',
+          'comment_nb_contributions',
+        ],
+        where: [],
+        transform: (e) => e,
+      },
     ];
 
     await Promise.all(joins.map((e) => exportUtils.joinMany(e)));
+
+    // Spatial join: find massifs containing each entrance
+    const ids = rows.map((r) => r.id);
+    const massifQuery = `
+      SELECT e.id AS id_entrance, m.id AS id_massif, n.name AS massif_name, n.id_language AS language
+      FROM t_entrance e
+      JOIN t_massif m ON ST_Contains(m.geog_polygon::geometry, e.point_geom)
+      LEFT JOIN t_name n ON n.id_massif = m.id AND n.is_main = true AND n.is_deleted = false
+      WHERE e.id = ANY($1::int[])
+      AND e.is_deleted = false
+      AND m.is_deleted = false
+    `;
+    const { rows: massifRows } = await CommonService.query(massifQuery, [ids]);
+    const massifsByEntrance = {};
+    for (const mr of massifRows) {
+      if (!massifsByEntrance[mr.id_entrance]) {
+        massifsByEntrance[mr.id_entrance] = [];
+      }
+      massifsByEntrance[mr.id_entrance].push({
+        id: mr.id_massif,
+        name: mr.massif_name,
+        language: mr.language,
+        isDeleted: false,
+      });
+    }
 
     for (const row of rows) {
       if (row.geology) row.geology = row.geology.trim();
@@ -153,6 +205,15 @@ async function* processRows(source) {
       }
 
       row.cave = row.cave?.[0] ?? null;
+
+      row.dataQuality = row.qualityData?.length
+        ? getQualityData(
+            row.qualityData.sort((a, b) => a.id_massif - b.id_massif)[0]
+          )
+        : 0;
+      delete row.qualityData;
+
+      row.massifs = massifsByEntrance[row.id] ?? [];
 
       yield row;
     }
@@ -277,6 +338,17 @@ module.exports = {
           optional: true,
           sort: true,
         },
+        { name: 'dataQuality', type: 'int32', optional: true, sort: true },
+        { name: 'massifs', type: 'object[]', optional: true },
+        { name: 'massifs.id', type: 'int32[]', optional: true, facet: true },
+        {
+          name: 'massifs.name',
+          type: 'string[]',
+          facet: true,
+          optional: true,
+        },
+        { name: 'massifs.language', type: 'string[]', optional: true },
+        { name: 'massifs.isDeleted', type: 'bool[]', optional: true },
       ],
       default_sorting_field: 'dateInscription',
     },

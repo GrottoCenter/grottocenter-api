@@ -1,11 +1,8 @@
 const sails = require('sails');
-const Fixted = require('fixted');
 const sailsPostGreAdapter = require('sails-postgresql');
 // eslint-disable-next-line import/no-extraneous-dependencies
 const { Client } = require('pg');
-const customSQL = require('./customSQL');
-const CommonService = require('../api/services/CommonService');
-const FIXTURE_ORDER = require('./fixtureOrder');
+const seedDatabase = require('./seed-database');
 const { DEFAULT_TEST_URL } = require('./test-config');
 
 const testUrl = process.env.POSTGRE_TEST_URL || DEFAULT_TEST_URL;
@@ -142,58 +139,14 @@ function liftSafe(label) {
 /**
  * Full path: drop all tables, load fixtures, run migrations.
  */
-function liftFull() {
-  return new Promise((resolve, reject) => {
-    console.log(
-      '[bootstrap] Full bootstrap (migrate:drop + fixtures). ' +
-        'Run `npm run test:snapshot` for faster runs.'
-    );
+async function liftFull() {
+  console.log(
+    '[bootstrap] Full bootstrap (migrate:drop + fixtures). ' +
+      'Run `npm run test:snapshot` for faster runs.'
+  );
 
-    sails.lift(
-      {
-        log: { level: 'error' },
-        datastores: {
-          default: { adapter: sailsPostGreAdapter, url: testUrl },
-        },
-        models: { migrate: 'drop' },
-        csrf: false,
-        async bootstrap() {
-          // Replace the normal bootstrap.js
-          await CommonService.query(customSQL.ALTER_MASSIF_COLUMN_GEOG_POLYGON);
-          await CommonService.query(customSQL.ALTER_ENTRANCE_COLUMN_POINT_GEOM);
-          await CommonService.query(
-            customSQL.CREATE_ENTRANCE_POINT_GEOM_INSERT_TRIGGER
-          );
-        },
-      },
-      // eslint-disable-next-line consistent-return
-      async (liftErr) => {
-        if (liftErr) return reject(liftErr);
-        configureServer();
-
-        const fixted = new Fixted();
-        fixted.populate(
-          FIXTURE_ORDER,
-          // eslint-disable-next-line consistent-return
-          (fixtedError) => {
-            if (fixtedError) return reject(fixtedError);
-
-            CommonService.query(
-              [
-                customSQL.UPDATE_SEQUENCES_QUERY,
-                customSQL.POPULATE_ENTRANCE_POINT_GEOM,
-                customSQL.INDEX_OPTIMIZATION_MIGRATION,
-                customSQL.QUERY_PERFORMANCE_FIXES_MIGRATION,
-              ].join('\n')
-            )
-              .then(() => resolve())
-              .catch(reject);
-          },
-          false
-        );
-      }
-    );
-  });
+  await seedDatabase({ testUrl });
+  configureServer();
 }
 
 // ─── Bootstrap strategy ──────────────────────────────────────────────────────
