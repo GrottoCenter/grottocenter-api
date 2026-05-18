@@ -75,9 +75,27 @@ module.exports = async (req, res) => {
 
     await TNotification.destroy({ document: documentId });
 
+    // Note: `regions` is intentionally excluded — it uses a separate
+    // native query below because its junction table (j_document_region)
+    // does not follow the same column naming convention.
+    const junctionTableMap = {
+      countries: 'j_document_country',
+      entrances: 'j_document_entrance',
+      isoRegions: 'j_document_iso3166_2',
+      languages: 'j_document_language',
+      massifs: 'j_document_massif',
+      subjects: 'j_document_subject',
+      authorsGrotto: 'j_document_grotto_author',
+      authors: 'j_document_caver_author',
+    };
+
     // eslint-disable-next-line no-inner-declarations
     async function linkedEntitiesDeleteOrMerge(key) {
-      if (document[key].length === 0) return;
+      if (!Array.isArray(document[key])) {
+        throw new Error(
+          `Association "${key}" was not populated on document ${documentId}`
+        );
+      }
       if (shouldMergeInto) {
         const existingEntities = mergeIntoEntity[key].map((e) => e.id);
         const entitiesToAdd = document[key]
@@ -85,12 +103,20 @@ module.exports = async (req, res) => {
           .filter((e) => !existingEntities.includes(e));
         await TDocument.addToCollection(mergeIntoId, key, entitiesToAdd);
       }
-      await TDocument.updateOne(documentId).set({ [key]: [] });
+      // Use native query to delete junction rows directly.
+      // Waterline's collection setter (set({ [key]: [] })) fails silently
+      // on soft-deleted records, leaving FK references that block hard delete.
+      await sails.sendNativeQuery(
+        `DELETE FROM ${junctionTableMap[key]} WHERE id_document = $1`,
+        [documentId]
+      );
     }
 
     if (document.files.length > 0) {
       if (shouldMergeInto) {
-        TFile.update({ document: documentId }).set({ document: mergeIntoId });
+        await TFile.update({ document: documentId }).set({
+          document: mergeIntoId,
+        });
       } else {
         await Promise.all(
           document.files.map((e) => FileService.document.delete(e))
@@ -107,7 +133,10 @@ module.exports = async (req, res) => {
     await linkedEntitiesDeleteOrMerge('authorsGrotto');
     await linkedEntitiesDeleteOrMerge('authors');
 
-    await TDocument.updateOne(documentId).set({ regions: [] });
+    await sails.sendNativeQuery(
+      'DELETE FROM j_document_region WHERE id_document = $1',
+      [documentId]
+    );
 
     await TDocumentDuplicate.destroy({ id: documentId });
 
