@@ -176,6 +176,10 @@ describe('Account features', () => {
             .set('Accept', 'application/json')
             .expect(200);
         });
+      });
+    });
+  });
+
   describe('Update profile (name, surname, nickname)', () => {
     it('should update name and surname', async () => {
       await supertest(sails.hooks.http.app)
@@ -277,7 +281,10 @@ describe('Account features', () => {
     it('should return 403 if currentPassword is incorrect', (done) => {
       supertest(sails.hooks.http.app)
         .patch('/api/v1/account')
-        .send({ password: 'New_password1!', currentPassword: 'wrongpassword' })
+        .send({
+          password: 'New_password1!',
+          currentPassword: 'wrongpassword',
+        })
         .set('Authorization', userToken)
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json')
@@ -459,7 +466,10 @@ describe('Account features', () => {
       it('should return code 400', (done) => {
         supertest(sails.hooks.http.app)
           .patch('/api/v1/account/password')
-          .send({ password: 'my_n3w-P4ssword', token: 'anInv4lidRand0mTok3n' })
+          .send({
+            password: 'my_n3w-P4ssword',
+            token: 'anInv4lidRand0mTok3n',
+          })
           .set('Content-type', 'application/json')
           .set('Accept', 'application/json')
           .expect(400, done);
