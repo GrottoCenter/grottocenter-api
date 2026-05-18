@@ -481,7 +481,7 @@ describe('SearchService', () => {
       should(call.args[1].filter_by).equal('count:=5');
     });
 
-    it('should handle array values as range', async () => {
+    it('should handle two-number array values as numeric range', async () => {
       typesenseStub.search = sinon
         .stub(typesense, 'search')
         .resolves({ hits: [] });
@@ -493,6 +493,94 @@ describe('SearchService', () => {
 
       const call = typesenseStub.search.getCall(0);
       should(call.args[1].filter_by).equal('year:[2020..2024]');
+    });
+
+    it('should handle string array values as multi-value exact match', async () => {
+      typesenseStub.search = sinon
+        .stub(typesense, 'search')
+        .resolves({ hits: [] });
+
+      await SearchService.collectionSearch({
+        entity: 'entrances',
+        filter: { 'massifs.name': ['Vercors (massif du)'] },
+      });
+
+      const call = typesenseStub.search.getCall(0);
+      should(call.args[1].filter_by).equal(
+        'massifs.name:=[`Vercors (massif du)`]'
+      );
+    });
+
+    it('should skip empty arrays and produce no filter', async () => {
+      typesenseStub.search = sinon
+        .stub(typesense, 'search')
+        .resolves({ hits: [] });
+
+      await SearchService.collectionSearch({
+        entity: 'entrances',
+        filter: { 'massifs.name': [] },
+      });
+
+      const call = typesenseStub.search.getCall(0);
+      should(call.args[1].filter_by).be.undefined();
+    });
+
+    it('should handle single-element numeric array as multi-value exact match', async () => {
+      typesenseStub.search = sinon
+        .stub(typesense, 'search')
+        .resolves({ hits: [] });
+
+      await SearchService.collectionSearch({
+        entity: 'entrances',
+        filter: { depth: [5] },
+      });
+
+      const call = typesenseStub.search.getCall(0);
+      should(call.args[1].filter_by).equal('depth:=[`5`]');
+    });
+
+    it('should strip backtick characters from string values to prevent malformed filters', async () => {
+      typesenseStub.search = sinon
+        .stub(typesense, 'search')
+        .resolves({ hits: [] });
+
+      await SearchService.collectionSearch({
+        entity: 'entrances',
+        filter: { city: 'foo`bar' },
+      });
+
+      const call = typesenseStub.search.getCall(0);
+      should(call.args[1].filter_by).equal('city:`foobar`');
+    });
+
+    it('should strip backtick characters from array element values', async () => {
+      typesenseStub.search = sinon
+        .stub(typesense, 'search')
+        .resolves({ hits: [] });
+
+      await SearchService.collectionSearch({
+        entity: 'entrances',
+        filter: { 'massifs.name': ['foo`bar', 'baz`qux'] },
+      });
+
+      const call = typesenseStub.search.getCall(0);
+      should(call.args[1].filter_by).equal('massifs.name:=[`foobar`,`bazqux`]');
+    });
+
+    it('should handle multiple string array values as multi-value exact match', async () => {
+      typesenseStub.search = sinon
+        .stub(typesense, 'search')
+        .resolves({ hits: [] });
+
+      await SearchService.collectionSearch({
+        entity: 'entrances',
+        filter: { 'massifs.name': ['Vercors (massif du)', 'Chartreuse'] },
+      });
+
+      const call = typesenseStub.search.getCall(0);
+      should(call.args[1].filter_by).equal(
+        'massifs.name:=[`Vercors (massif du)`,`Chartreuse`]'
+      );
     });
 
     it('should filter out null but keep false and zero as valid filter values', async () => {
