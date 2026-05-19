@@ -1,5 +1,4 @@
 {
-	"%s (%s) has been %s on Grottocenter.": "%s (%s) has been %s on Grottocenter.",
 	"cave": "cave",
 	"Click the link below to view the conversation:": "Click the link below to view the conversation:",
 	"Click the link below to know more about this modification:": "Click the link below to know more about this modification:",
@@ -49,10 +48,5 @@
 	"We received a request to reset the password for your account.": "We received a request to reset the password for your account.",
 	"You are receiving this email because of your subscription to the country %s.": "You are receiving this email because of your subscription to the country %s.",
 	"You are receiving this email because of your subscription to the massif %s.": "You are receiving this email because of your subscription to the massif %s.",
-	"Thank you for creating your Grottocenter account.": "Thank you for creating your Grottocenter account.",
-	"Please verify your email address by clicking the link below.": "Please verify your email address by clicking the link below.",
-	"If you didn't create an account, you can ignore this email.": "If you didn't create an account, you can ignore this email.",
-	"Verify my email address": "Verify my email address",
-	"Verify your email address": "Verify your email address"
 	"You are receiving this email because you are the author of this document.": "You are receiving this email because you are the author of this document."
 }

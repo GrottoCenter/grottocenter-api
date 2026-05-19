@@ -1,5 +1,4 @@
 {
-	"%s (%s) has been %s on Grottocenter.": "%s (%s) a été %s sur Grottocenter.",
 	"cave": "cavité",
 	"Click the link below to view the conversation:": "Cliquez sur le lien ci-dessous pour voir la conversation :",
 	"Click the link below to know more about this modification:": "Cliquez sur le lien ci-dessous pour en savoir plus à propos de cette modification :",
@@ -49,9 +48,5 @@
 	"We received a request to reset the password for your account.": "Nous avons reçu une demande de réinitialisation du mot de passe de votre compte.",
 	"You are receiving this email because of your subscription to the country %s.": "Vous recevez cet email car vous êtes abonné au pays %s.",
 	"You are receiving this email because of your subscription to the massif %s.": "Vous recevez cet email car vous êtes abonné au massif %s.",
-	"Thank you for creating your Grottocenter account.": "Merci d'avoir créé votre compte Grottocenter.",
-	"Please verify your email address by clicking the link below.": "Veuillez vérifier votre adresse mail en cliquant sur le lien ci-dessous.",
-	"If you didn't create an account, you can ignore this email.": "Si vous n'avez pas créé de compte, vous pouvez ignorer cet mail.",
-	"Verify my email address": "Vérifier mon adresse mail"
 	"You are receiving this email because you are the author of this document.": "Vous recevez cet email car vous êtes l'auteur de ce document."
 }

@@ -221,12 +221,13 @@ module.exports = {
         result.rows.map(async (row) => {
           const recipient = await TCaver.findOne({ id: row.id_caver });
           if (!recipient || !recipient.sendMessageNotificationByEmail) return;
+          const locale = await LanguageService.getLocale(recipient.language);
           const conversationLink = `${sails.config.custom.frontendUrl}/ui/messages/${conversationId}`;
           await sails.helpers.sendEmail
             .with({
               allowResponse: false,
               emailSubject: 'New Message',
-              i18n: req.i18n,
+              locale,
               recipientEmail: recipient.mail,
               viewName: 'new-message',
               viewValues: {
