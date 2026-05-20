@@ -24,6 +24,8 @@ module.exports = {
       required: true,
     },
 
+    // singular associations are nullable by default
+    //  using the allowNull property on them causes a bootstrap error
     caverSender: {
       columnName: 'id_caver_sender',
       model: 'TCaver',

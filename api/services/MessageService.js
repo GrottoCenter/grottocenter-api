@@ -1,5 +1,3 @@
-const CommonService = require('./CommonService');
-
 /**
  * MessageService.js
  *
