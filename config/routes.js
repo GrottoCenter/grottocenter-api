@@ -66,7 +66,6 @@ module.exports.routes = {
   'PATCH /api/v1/account/password': 'v1/account/change-password',
   'GET /api/v1/account/notifications': 'v1/account/get-notifications',
   'PATCH /api/v1/account/notifications': 'v1/account/update-notifications',
-  'PATCH /api/v1/account/email': 'v1/account/change-email',
   'POST /api/v1/forgotPassword': 'v1/account/forgot-password',
 
   // Auth

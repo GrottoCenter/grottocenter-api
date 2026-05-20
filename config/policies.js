@@ -33,7 +33,6 @@ module.exports.policies = {
   'v1/account/forgot-password': true,
   'v1/account/get-notifications': 'tokenAuth',
   'v1/account/update-notifications': 'tokenAuth',
-  'v1/account/change-email': 'tokenAuth',
 
   // Auth
   'v1/auth/login': true,
