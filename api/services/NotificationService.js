@@ -207,7 +207,7 @@ const getCountryMassifAndRegionSubscribers = async (
 
 module.exports = {
   NOTIFICATION_ENTITIES,
-  notifyMessageRecipient: async (req, senderId, conversationId) => {
+  notifyMessageRecipient: async (senderId, conversationId) => {
     try {
       const sender = await TCaver.findOne({ id: senderId });
       if (!sender) return;
@@ -217,33 +217,30 @@ module.exports = {
         senderId,
       ]);
       if (result.rows.length === 0) return;
-      await Promise.all(
-        result.rows.map(async (row) => {
-          const recipient = await TCaver.findOne({ id: row.id_caver });
-          if (!recipient || !recipient.sendMessageNotificationByEmail) return;
-          const locale = await LanguageService.getLocale(recipient.language);
-          const conversationLink = `${sails.config.custom.frontendUrl}/ui/messages/${conversationId}`;
-          await sails.helpers.sendEmail
-            .with({
-              allowResponse: false,
-              emailSubject: 'New Message',
-              locale,
-              recipientEmail: recipient.mail,
-              viewName: 'new-message',
-              viewValues: {
-                senderNickname: sender.nickname,
-                conversationLink,
-                recipientName: recipient.nickname,
-              },
-            })
-            .intercept('sendSESEmailError', () => {
-              sails.log.error(
-                `The email service error notifying user ${recipient.nickname}.`
-              );
-              return false;
-            });
+      const row = result.rows[0];
+      const recipient = await TCaver.findOne({ id: row.id_caver });
+      if (!recipient || !recipient.sendMessageNotificationByEmail) return;
+      const locale = await LanguageService.getLocale(recipient.language);
+      const conversationLink = `${sails.config.custom.baseUrl}/ui/messages/${conversationId}`;
+      await sails.helpers.sendEmail
+        .with({
+          allowResponse: false,
+          emailSubject: 'New Message',
+          locale,
+          recipientEmail: recipient.mail,
+          viewName: 'new-message',
+          viewValues: {
+            senderNickname: sender.nickname,
+            conversationLink,
+            recipientName: recipient.nickname,
+          },
         })
-      );
+        .intercept('sendSESEmailError', () => {
+          sails.log.error(
+            `The email service error notifying user ${recipient.nickname}.`
+          );
+          return false;
+        });
     } catch (error) {
       sails.log.error(
         `An error occurred in notifyMessageRecipient: ${error.message}`

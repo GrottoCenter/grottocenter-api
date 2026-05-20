@@ -189,7 +189,6 @@ module.exports = async (req, res) => {
     // Notify recipient (non-blocking)
     // Errors are handled inside the service to avoid affecting message creation
     NotificationService.notifyMessageRecipient(
-      req,
       senderId,
       finalConversationId
     ).catch((err) => {
