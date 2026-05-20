@@ -751,7 +751,6 @@ describe('NotificationService', () => {
       });
 
       await NotificationService.notifyMessageRecipient(
-        {},
         sender.id,
         conversation.id
       );
@@ -772,7 +771,6 @@ describe('NotificationService', () => {
 
       try {
         await NotificationService.notifyMessageRecipient(
-          {},
           sender.id,
           conversation.id
         );

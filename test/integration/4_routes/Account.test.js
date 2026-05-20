@@ -163,6 +163,34 @@ describe('Account features', () => {
           caver.sendMessageNotificationByEmail.should.be.false();
         });
 
+        it('should partially update notification preferences', async () => {
+          // Reset preferences first to have a clean state for partial check
+          await supertest(sails.hooks.http.app)
+            .patch('/api/v1/account/notifications')
+            .send({
+              alert_for_news: false,
+              send_notification_by_email: false,
+              send_message_notification_by_email: true,
+            })
+            .set('Authorization', userToken)
+            .set('Content-type', 'application/json')
+            .set('Accept', 'application/json')
+            .expect(200);
+
+          await supertest(sails.hooks.http.app)
+            .patch('/api/v1/account/notifications')
+            .send({ alert_for_news: true })
+            .set('Authorization', userToken)
+            .set('Content-type', 'application/json')
+            .set('Accept', 'application/json')
+            .expect(200)
+            .then((res) => {
+              should(res.body.alert_for_news).be.true();
+              should(res.body.send_notification_by_email).be.false();
+              should(res.body.send_message_notification_by_email).be.true();
+            });
+        });
+
         after(async () => {
           await supertest(sails.hooks.http.app)
             .patch('/api/v1/account/notifications')

@@ -9,6 +9,7 @@ describe('Messages features', () => {
   let bannedRecipient;
   let nonUserRecipient;
   let senderToken;
+  const manuallyCreatedConversationIds = [];
 
   const createEligibleUser = async (data = {}) =>
     TCaver.create({
@@ -47,10 +48,26 @@ describe('Messages features', () => {
   });
 
   after(async () => {
-    await TMessage.destroy({});
-    await sails.sendNativeQuery('DELETE FROM t_conversation_archive');
-    await sails.sendNativeQuery('DELETE FROM j_participant');
-    await TConversation.destroy({});
+    // Find all conversations where sender is a participant
+    const participantsResult = await sails.sendNativeQuery(
+      'SELECT id_conversation FROM j_participant WHERE id_caver = $1',
+      [sender.id]
+    );
+    const conversationIds = participantsResult.rows.map(
+      (p) => p.id_conversation
+    );
+    conversationIds.push(...manuallyCreatedConversationIds);
+
+    if (conversationIds.length > 0) {
+      await TMessage.destroy({ conversation: conversationIds });
+      await TConversationArchive.destroy({ conversation: conversationIds });
+      await sails.sendNativeQuery(
+        'DELETE FROM j_participant WHERE id_conversation = ANY($1)',
+        [conversationIds]
+      );
+      await TConversation.destroy({ id: conversationIds });
+    }
+
     await TCaver.destroy({
       id: [sender.id, recipient.id, bannedRecipient.id, nonUserRecipient.id],
     });
@@ -250,6 +267,7 @@ describe('Messages features', () => {
 
       it('should return 403 if replying to a conversation not belonging to', async () => {
         const otherConvo = await TConversation.create({}).fetch();
+        manuallyCreatedConversationIds.push(otherConvo.id);
         const res = await supertest(sails.hooks.http.app)
           .post('/api/v1/messages')
           .set('Authorization', `Bearer ${senderToken}`)
@@ -363,6 +381,7 @@ describe('Messages features', () => {
 
     it('should return 403 if not a participant', async () => {
       const otherConvo = await TConversation.create({}).fetch();
+      manuallyCreatedConversationIds.push(otherConvo.id);
       const res = await supertest(sails.hooks.http.app)
         .get(`/api/v1/messages/conversations/${otherConvo.id}`)
         .set('Authorization', `Bearer ${senderToken}`)
@@ -475,6 +494,7 @@ describe('Messages features', () => {
 
     it('should return 403 if trying to archive a conversation not belonging to', async () => {
       const convo = await TConversation.create({}).fetch();
+      manuallyCreatedConversationIds.push(convo.id);
       const res = await supertest(sails.hooks.http.app)
         .post(`/api/v1/messages/conversations/${convo.id}/archive`)
         .set('Authorization', `Bearer ${senderToken}`)
