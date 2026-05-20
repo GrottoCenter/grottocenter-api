@@ -1,3 +1,5 @@
+const AccountNotificationService = require('../../../services/AccountNotificationService');
+
 module.exports = async (req, res) => {
   const token = req.param('token');
 
@@ -49,6 +51,11 @@ module.exports = async (req, res) => {
   }
 
   if (caver.pendingMail) {
+    AccountNotificationService.notifyEmailChanged({
+      oldEmail: caver.mail,
+      nickname: caver.nickname,
+      languageId: caver.language,
+    });
     return res.ok({ message: 'Email successfully changed.' });
   }
 
