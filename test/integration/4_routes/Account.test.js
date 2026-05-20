@@ -71,7 +71,7 @@ describe('Account features', () => {
       });
     });
     describe('Success', () => {
-      it('should return code 204', async () => {
+      it('should store email in pendingMail and return code 204', async () => {
         await supertest(sails.hooks.http.app)
           .patch('/api/v1/account')
           .send({ email: 'newmail@newmail.com' })
@@ -79,19 +79,19 @@ describe('Account features', () => {
           .set('Content-type', 'application/json')
           .set('Accept', 'application/json')
           .expect(204);
-        (await TCaver.findOne({ nickname: 'User1' })).mail.should.equal(
-          'newmail@newmail.com'
-        );
+        const caver = await TCaver.findOne({ nickname: 'User1' });
+        // Email is stored in pendingMail, not in mail directly
+        caver.pendingMail.should.equal('newmail@newmail.com');
+        caver.mail.should.equal('user1@user1.com');
+        caver.mailIsValid.should.be.false();
       });
-      // Restore previous email
-      after((done) => {
-        supertest(sails.hooks.http.app)
-          .patch('/api/v1/account')
-          .send({ email: 'user1@user1.com' })
-          .set('Authorization', userToken)
-          .set('Content-type', 'application/json')
-          .set('Accept', 'application/json')
-          .expect(204, done);
+      // Restore user state
+      after(async () => {
+        await TCaver.updateOne({ nickname: 'User1' }).set({
+          pendingMail: null,
+          activationCode: null,
+          mailIsValid: true,
+        });
       });
     });
   });

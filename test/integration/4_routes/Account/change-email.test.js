@@ -26,11 +26,11 @@ describe('Account change-email', () => {
     userMail = user.mail;
   });
 
-  describe('PATCH /api/v1/account/email', () => {
-    it('should return 400 when missing email', async () => {
+  describe('PATCH /api/v1/account (email change)', () => {
+    it('should return 400 when email is empty', async () => {
       await supertest(sails.hooks.http.app)
-        .patch('/api/v1/account/email')
-        .send({})
+        .patch('/api/v1/account')
+        .send({ email: '' })
         .set('Authorization', userToken)
         .set('Accept', 'application/json')
         .expect(400);
@@ -38,7 +38,7 @@ describe('Account change-email', () => {
 
     it('should return 400 when new email is identical to current mail', async () => {
       await supertest(sails.hooks.http.app)
-        .patch('/api/v1/account/email')
+        .patch('/api/v1/account')
         .send({ email: userMail })
         .set('Authorization', userToken)
         .set('Accept', 'application/json')
@@ -49,7 +49,7 @@ describe('Account change-email', () => {
       // Find another user's email from fixtures
       const otherUser = fixtures.tcaver.find((c) => c.mail !== userMail);
       await supertest(sails.hooks.http.app)
-        .patch('/api/v1/account/email')
+        .patch('/api/v1/account')
         .send({ email: otherUser.mail })
         .set('Authorization', userToken)
         .set('Accept', 'application/json')
@@ -59,7 +59,7 @@ describe('Account change-email', () => {
     it('should store new email in pendingMail, activationCode and set mailIsValid to false', async () => {
       const newEmail = 'newemail@example.com';
       await supertest(sails.hooks.http.app)
-        .patch('/api/v1/account/email')
+        .patch('/api/v1/account')
         .send({ email: newEmail })
         .set('Authorization', userToken)
         .set('Accept', 'application/json')
@@ -75,7 +75,7 @@ describe('Account change-email', () => {
     it('should overwrite previous pendingMail and activationCode on new request', async () => {
       const firstEmail = 'first@example.com';
       await supertest(sails.hooks.http.app)
-        .patch('/api/v1/account/email')
+        .patch('/api/v1/account')
         .send({ email: firstEmail })
         .set('Authorization', userToken)
         .set('Accept', 'application/json')
@@ -86,7 +86,7 @@ describe('Account change-email', () => {
 
       const secondEmail = 'second@example.com';
       await supertest(sails.hooks.http.app)
-        .patch('/api/v1/account/email')
+        .patch('/api/v1/account')
         .send({ email: secondEmail })
         .set('Authorization', userToken)
         .set('Accept', 'application/json')
@@ -101,7 +101,7 @@ describe('Account change-email', () => {
     it('should allow resubmitting the same pending email (to resend verification)', async () => {
       const pendingEmail = 'same-pending@example.com';
       await supertest(sails.hooks.http.app)
-        .patch('/api/v1/account/email')
+        .patch('/api/v1/account')
         .send({ email: pendingEmail })
         .set('Authorization', userToken)
         .set('Accept', 'application/json')
@@ -111,7 +111,7 @@ describe('Account change-email', () => {
       const firstCode = firstUser.activationCode;
 
       await supertest(sails.hooks.http.app)
-        .patch('/api/v1/account/email')
+        .patch('/api/v1/account')
         .send({ email: pendingEmail })
         .set('Authorization', userToken)
         .set('Accept', 'application/json')
@@ -130,7 +130,7 @@ describe('Account change-email', () => {
 
       // First user claims it
       await supertest(sails.hooks.http.app)
-        .patch('/api/v1/account/email')
+        .patch('/api/v1/account')
         .send({ email: sharedPendingEmail })
         .set('Authorization', userToken)
         .set('Accept', 'application/json')
@@ -138,7 +138,7 @@ describe('Account change-email', () => {
 
       // Second user tries to claim the SAME email - should get 409
       await supertest(sails.hooks.http.app)
-        .patch('/api/v1/account/email')
+        .patch('/api/v1/account')
         .send({ email: sharedPendingEmail })
         .set('Authorization', secondUserToken)
         .set('Accept', 'application/json')
@@ -157,7 +157,7 @@ describe('Account change-email', () => {
 
       // Initiate change
       await supertest(sails.hooks.http.app)
-        .patch('/api/v1/account/email')
+        .patch('/api/v1/account')
         .send({ email: newEmail })
         .set('Authorization', userToken)
         .expect(204);
@@ -178,14 +178,14 @@ describe('Account change-email', () => {
     it('should cancel pending email change if current email is submitted', async () => {
       // 1. Initiate a change
       await supertest(sails.hooks.http.app)
-        .patch('/api/v1/account/email')
+        .patch('/api/v1/account')
         .send({ email: 'temporary@example.com' })
         .set('Authorization', userToken)
         .expect(204);
 
       // 2. Submit current email to cancel
       const res = await supertest(sails.hooks.http.app)
-        .patch('/api/v1/account/email')
+        .patch('/api/v1/account')
         .send({ email: userMail })
         .set('Authorization', userToken)
         .expect(200);
@@ -205,7 +205,7 @@ describe('Account change-email', () => {
     it('should commit pending email change and clear pending fields', async () => {
       const newEmail = 'verified@example.com';
       await supertest(sails.hooks.http.app)
-        .patch('/api/v1/account/email')
+        .patch('/api/v1/account')
         .send({ email: newEmail })
         .set('Authorization', userToken)
         .expect(204);
@@ -227,7 +227,7 @@ describe('Account change-email', () => {
     it('should return 409 and clear pendingMail if new email is taken by then', async () => {
       const newEmail = 'taken@example.com';
       await supertest(sails.hooks.http.app)
-        .patch('/api/v1/account/email')
+        .patch('/api/v1/account')
         .send({ email: newEmail })
         .set('Authorization', userToken)
         .expect(204);
