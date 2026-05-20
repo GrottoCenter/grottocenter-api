@@ -40,13 +40,22 @@ describe('Account update - notifications', () => {
     });
   });
 
-  it('should trigger notifyEmailChanged with old email when email is updated', async () => {
+  it('should trigger notifyEmailChanged with old email when email change is verified', async () => {
     await supertest(sails.hooks.http.app)
       .patch('/api/v1/account')
       .send({ email: 'newemail@example.com' })
       .set('Authorization', userToken)
       .set('Accept', 'application/json')
       .expect(204);
+
+    should(notifyEmailChangedStub.called).be.false();
+
+    const caver = await TCaver.findOne({ id: 3 });
+    const code = caver.activationCode;
+
+    await supertest(sails.hooks.http.app)
+      .get(`/api/v1/verify-email?token=${code}`)
+      .expect(200);
 
     should(notifyEmailChangedStub.calledOnce).be.true();
     const args = notifyEmailChangedStub.firstCall.args[0];
@@ -73,7 +82,7 @@ describe('Account update - notifications', () => {
     should(args).have.property('languageId');
   });
 
-  it('should send password notification to old email when both email and password change simultaneously', async () => {
+  it('should send password notification to old email immediately when both email and password change simultaneously, and email notification only upon verification', async () => {
     await supertest(sails.hooks.http.app)
       .patch('/api/v1/account')
       .send({
@@ -85,17 +94,25 @@ describe('Account update - notifications', () => {
       .set('Accept', 'application/json')
       .expect(204);
 
-    should(notifyEmailChangedStub.calledOnce).be.true();
+    should(notifyEmailChangedStub.called).be.false();
     should(notifyPasswordChangedStub.calledOnce).be.true();
-
-    const emailArgs = notifyEmailChangedStub.firstCall.args[0];
-    should(emailArgs.oldEmail).equal(originalEmail);
 
     const passwordArgs = notifyPasswordChangedStub.firstCall.args[0];
     should(passwordArgs.email).equal(originalEmail);
+
+    const caver = await TCaver.findOne({ id: 3 });
+    const code = caver.activationCode;
+
+    await supertest(sails.hooks.http.app)
+      .get(`/api/v1/verify-email?token=${code}`)
+      .expect(200);
+
+    should(notifyEmailChangedStub.calledOnce).be.true();
+    const emailArgs = notifyEmailChangedStub.firstCall.args[0];
+    should(emailArgs.oldEmail).equal(originalEmail);
   });
 
-  it('should return 204 even when notification throws an error', async () => {
+  it('should return 200 even when email change notification throws an error', async () => {
     notifyEmailChangedStub.restore();
     notifyEmailChangedStub = sinon
       .stub(AccountNotificationService, 'notifyEmailChanged')
@@ -107,6 +124,13 @@ describe('Account update - notifications', () => {
       .set('Authorization', userToken)
       .set('Accept', 'application/json')
       .expect(204);
+
+    const caver = await TCaver.findOne({ id: 3 });
+    const code = caver.activationCode;
+
+    await supertest(sails.hooks.http.app)
+      .get(`/api/v1/verify-email?token=${code}`)
+      .expect(200);
   });
 
   it('should NOT trigger notifications when updating non-email/non-password fields', async () => {
