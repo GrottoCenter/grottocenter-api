@@ -161,6 +161,52 @@ describe('Document multiple-validate', () => {
       should(updated.isValidated).be.true();
       should(updated.modifiedDocJson).be.null();
     });
+
+    it('should validate document with modifiedDocJson containing massifs as objects', async () => {
+      const massif = await TMassif.create({ author: 1 }).fetch();
+
+      const desc = await TDescription.create({
+        author: 1,
+        title: 'Original',
+        body: 'Original body',
+      }).fetch();
+
+      const doc = await TDocument.create({
+        author: 1,
+        type: 1,
+        license: 1,
+        isValidated: false,
+        descriptions: [desc.id],
+        modifiedDocJson: {
+          reviewerId: 2,
+          documentData: {
+            type: 17,
+            massifs: [{ id: massif.id, name: 'Some massif' }],
+          },
+          descriptionData: { title: 'Updated', body: 'Updated body' },
+        },
+      }).fetch();
+
+      await supertest(sails.hooks.http.app)
+        .put('/api/v1/documents/validate')
+        .send({
+          documents: [{ id: doc.id, isValidated: 'true' }],
+        })
+        .set('Authorization', moderatorToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(204);
+
+      const updated = await TDocument.findOne(doc.id).populate('massifs');
+      should(updated.isValidated).be.true();
+      should(updated.modifiedDocJson).be.null();
+      should(updated.massifs).be.an.Array();
+      should(updated.massifs.map((m) => m.id)).containDeep([massif.id]);
+
+      const updatedDesc = await TDescription.findOne(desc.id);
+      should(updatedDesc.title).equal('Updated');
+      should(updatedDesc.body).equal('Updated body');
+    });
   });
 
   describe('Author notifications', () => {
