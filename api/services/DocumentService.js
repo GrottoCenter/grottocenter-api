@@ -93,7 +93,10 @@ module.exports = {
   getConvertedDataFromClient: async (body) => {
     // Massif will be deleted in the future (a document can be about many massifs and a massif can be the subject of many documents): use massifs
     const massif = body.massif?.id;
-    const massifs = [...(body.massifs ?? []), ...(massif ? [massif] : [])];
+    const massifs = [
+      ...(body.massifs ?? []).map((m) => m.id ?? m),
+      ...(massif ? [massif] : []),
+    ];
 
     let optionFound;
     // eslint-disable-next-line no-param-reassign
