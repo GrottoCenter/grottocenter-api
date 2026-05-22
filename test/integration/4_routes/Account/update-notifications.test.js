@@ -37,6 +37,9 @@ describe('Account update - notifications', () => {
     await TCaver.updateOne({ id: 3 }).set({
       mail: originalEmail,
       password: originalPasswordHash,
+      pendingMail: null,
+      activationCode: null,
+      mailIsValid: true,
     });
   });
 
