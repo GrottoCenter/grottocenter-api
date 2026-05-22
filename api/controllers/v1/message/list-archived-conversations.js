@@ -10,10 +10,11 @@ const MAX_SIZE = 50;
 
 module.exports = async (req, res) => {
   const caverId = req.token.id;
-  const limit = req.param('limit')
-    ? Math.min(parseInt(req.param('limit'), 10), MAX_SIZE)
-    : DEFAULT_SIZE;
-  const skip = parseInt(req.param('skip', 0), 10);
+  const limit = Math.min(
+    parseInt(req.param('limit'), 10) || DEFAULT_SIZE,
+    MAX_SIZE
+  );
+  const skip = parseInt(req.param('skip'), 10) || 0;
 
   try {
     const conversations = await MessageService.listConversations(
