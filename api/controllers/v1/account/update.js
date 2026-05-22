@@ -19,6 +19,7 @@ const UPDATABLE_PROPERTIES = [
 module.exports = async (req, res) => {
   const updates = {};
   let verificationEmail = null;
+  let caver = null;
 
   // Reject unknown properties
   for (const prop of Object.keys(req.body)) {
@@ -41,11 +42,11 @@ module.exports = async (req, res) => {
     }
 
     // Fetch the caver early so we can compare against the current email
-    const currentCaver = await TCaver.findOne({ id: req.token.id });
+    caver = await TCaver.findOne({ id: req.token.id });
 
-    if (currentCaver.mail === normalizedEmail) {
+    if (caver.mail === normalizedEmail) {
       // If user submits their current email while a change is pending, cancel it
-      if (currentCaver.pendingMail) {
+      if (caver.pendingMail) {
         await TCaver.updateOne({ id: req.token.id }).set({
           pendingMail: null,
           activationCode: null,
@@ -76,7 +77,7 @@ module.exports = async (req, res) => {
     // Send verification email (fire-and-forget, after the update is persisted)
     // We store a reference to send it after the DB update below
     verificationEmail = {
-      nickname: currentCaver.nickname,
+      nickname: caver.nickname,
       mail: normalizedEmail,
       activationCode,
       locale: req.getLocale ? req.getLocale() : undefined,
@@ -87,7 +88,9 @@ module.exports = async (req, res) => {
   // and for notification emails (pre-update email address). This runs on every
   // update (even non-sensitive fields) to keep the flow simple; the cost is a
   // single primary-key lookup which is negligible compared to the overall request.
-  const caver = await TCaver.findOne({ id: req.token.id });
+  if (!caver) {
+    caver = await TCaver.findOne({ id: req.token.id });
+  }
 
   if (req.body.password !== undefined) {
     if (!req.body.password) {
