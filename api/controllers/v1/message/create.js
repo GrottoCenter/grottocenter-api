@@ -86,7 +86,7 @@ module.exports = async (req, res) => {
             return res.forbidden(
               sails.helpers.formatStructuredError(
                 req,
-                err.message,
+                'You cannot send messages in this conversation',
                 'E_AUTHORIZATION'
               )
             );
