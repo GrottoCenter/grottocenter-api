@@ -22,7 +22,8 @@ module.exports = async (req, res) => {
 
   if (caver.pendingMail) {
     const alreadyInUse = await TCaver.findOne({
-      mail: caver.pendingMail,
+      id: { '!=': caver.id },
+      or: [{ mail: caver.pendingMail }, { pendingMail: caver.pendingMail }],
     });
 
     if (alreadyInUse) {
@@ -46,6 +47,15 @@ module.exports = async (req, res) => {
   try {
     await TCaver.updateOne({ id: caver.id }).set(updates);
   } catch (err) {
+    if (err.code === 'E_UNIQUE') {
+      await TCaver.updateOne({ id: caver.id }).set({
+        pendingMail: null,
+        activationCode: null,
+      });
+      return res.conflict(
+        'The new email is already in use by another account.'
+      );
+    }
     sails.log.error(`Failed to verify email for user ${caver.id}:`, err);
     return res.serverError('An error occurred during email verification.');
   }
@@ -55,6 +65,8 @@ module.exports = async (req, res) => {
       oldEmail: caver.mail,
       nickname: caver.nickname,
       languageId: caver.language,
+    }).catch((err) => {
+      sails.log.error('Failed to send email change notification:', err);
     });
     return res.ok({ message: 'Email successfully changed.' });
   }
