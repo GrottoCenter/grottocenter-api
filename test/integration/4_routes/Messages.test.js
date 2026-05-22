@@ -161,7 +161,7 @@ describe('Messages features', () => {
         });
 
         try {
-          await supertest(sails.hooks.http.app)
+          const res = await supertest(sails.hooks.http.app)
             .post('/api/v1/messages')
             .set('Authorization', `Bearer ${senderToken}`)
             .send({
@@ -169,6 +169,10 @@ describe('Messages features', () => {
               body: 'Hello unactivated',
             })
             .expect(200);
+
+          if (res.body && res.body.conversation) {
+            manuallyCreatedConversationIds.push(res.body.conversation);
+          }
         } finally {
           await TCaver.destroy({ id: unactivatedRecipient.id });
         }
@@ -251,6 +255,9 @@ describe('Messages features', () => {
           .expect(200);
 
         const convoId = resSetup.body.conversation;
+        if (convoId) {
+          manuallyCreatedConversationIds.push(convoId);
+        }
 
         try {
           const res = await supertest(sails.hooks.http.app)
@@ -295,6 +302,9 @@ describe('Messages features', () => {
             .expect(403);
 
           should(resReply.body.code).be.equal('E_AUTHORIZATION');
+          should(resReply.body.message).be.equal(
+            'You cannot send messages in this conversation'
+          );
         } finally {
           await TCaver.update({ id: recipient.id }).set({ banned: false });
         }
@@ -333,6 +343,16 @@ describe('Messages features', () => {
 
       should(res.header).have.property('content-range');
       should(res.header['content-range']).startWith('0-');
+    });
+
+    it('should default limit and skip if non-numeric values are passed', async () => {
+      const res = await supertest(sails.hooks.http.app)
+        .get('/api/v1/messages/conversations?limit=abc&skip=xyz')
+        .set('Authorization', `Bearer ${senderToken}`)
+        .expect(206);
+
+      should(res.body).have.property('conversations');
+      should(res.body.conversations).be.an.Array();
     });
   });
 
@@ -523,45 +543,50 @@ describe('Messages features', () => {
         nickname: 'Recipient2',
       });
 
-      const convo2Res = await supertest(sails.hooks.http.app)
-        .post('/api/v1/messages')
-        .set('Authorization', `Bearer ${senderToken}`)
-        .send({ recipientId: recipient2.id, body: 'Message to recipient 2' })
-        .expect(200);
+      try {
+        const convo2Res = await supertest(sails.hooks.http.app)
+          .post('/api/v1/messages')
+          .set('Authorization', `Bearer ${senderToken}`)
+          .send({ recipientId: recipient2.id, body: 'Message to recipient 2' })
+          .expect(200);
 
-      const convoId2 = convo2Res.body.conversation;
+        const convoId2 = convo2Res.body.conversation;
+        if (convoId2) {
+          manuallyCreatedConversationIds.push(convoId2);
+        }
 
-      // Manually create archive records with explicit times to ensure stable sorting
-      // Clear existing archives first for this caver
-      await TConversationArchive.destroy({ caver: sender.id });
+        // Manually create archive records with explicit times to ensure stable sorting
+        // Clear existing archives first for this caver
+        await TConversationArchive.destroy({ caver: sender.id });
 
-      const now = new Date();
-      const older = new Date(now.getTime() - 10000);
+        const now = new Date();
+        const older = new Date(now.getTime() - 10000);
 
-      await TConversationArchive.create({
-        conversation: convoId,
-        caver: sender.id,
-        archivedAt: older,
-      });
+        await TConversationArchive.create({
+          conversation: convoId,
+          caver: sender.id,
+          archivedAt: older,
+        });
 
-      await TConversationArchive.create({
-        conversation: convoId2,
-        caver: sender.id,
-        archivedAt: now,
-      });
+        await TConversationArchive.create({
+          conversation: convoId2,
+          caver: sender.id,
+          archivedAt: now,
+        });
 
-      const res = await supertest(sails.hooks.http.app)
-        .get('/api/v1/messages/conversations/archived')
-        .set('Authorization', `Bearer ${senderToken}`)
-        .expect(206);
+        const res = await supertest(sails.hooks.http.app)
+          .get('/api/v1/messages/conversations/archived')
+          .set('Authorization', `Bearer ${senderToken}`)
+          .expect(206);
 
-      should(res.body.conversations).be.an.Array();
-      should(res.body.conversations.length).be.equal(2);
-      // convoId2 should be first as it has the most recent archivedAt
-      should(res.body.conversations[0].id).be.equal(convoId2);
-      should(res.body.conversations[0].archivedAt).not.be.null();
-
-      await TCaver.destroy({ id: recipient2.id });
+        should(res.body.conversations).be.an.Array();
+        should(res.body.conversations.length).be.equal(2);
+        // convoId2 should be first as it has the most recent archivedAt
+        should(res.body.conversations[0].id).be.equal(convoId2);
+        should(res.body.conversations[0].archivedAt).not.be.null();
+      } finally {
+        await TCaver.destroy({ id: recipient2.id });
+      }
     });
 
     it('should list the archived conversation', async () => {

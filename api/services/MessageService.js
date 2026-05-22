@@ -178,7 +178,14 @@ module.exports = {
       throw new Error('readerId is required to fetch messages');
     }
 
-    await module.exports.markAsRead(conversationId, readerId);
+    try {
+      await module.exports.markAsRead(conversationId, readerId);
+    } catch (err) {
+      sails.log.error(
+        `Failed to mark messages as read for conversation ${conversationId}:`,
+        err
+      );
+    }
 
     const messages = await TMessage.find({ conversation: conversationId })
       .skip(skip)
