@@ -508,6 +508,16 @@ paths:
                   type: boolean
                   description: Whether to receive notifications by email
       responses:
+        '200':
+          description: Pending email change cancelled.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Pending email change cancelled.
         '204':
           description: Successful operation
         '400':
