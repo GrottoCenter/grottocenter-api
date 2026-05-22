@@ -153,7 +153,7 @@ describe('Account change-email', () => {
 
     it('should allow login with old email while email change is pending', async () => {
       const newEmail = 'pending-login@example.com';
-      const userPassword = 'testtest'; // Standard password for fixtures
+      const userPassword = AuthTokenService.TEST_PASSWORD;
 
       // Initiate change
       await supertest(sails.hooks.http.app)
@@ -281,6 +281,57 @@ describe('Account change-email', () => {
         updatedUser.mailIsValid.should.be.true();
       } finally {
         await TCaver.destroy({ mail: signupEmail });
+      }
+    });
+
+    it('should not return 409 when user own mail equals pendingMail', async () => {
+      await TCaver.updateOne({ id: userId }).set({
+        pendingMail: userMail,
+        activationCode: 'own-mail-equal-pending-code',
+        mailIsValid: false,
+      });
+
+      await supertest(sails.hooks.http.app)
+        .get('/api/v1/verify-email?token=own-mail-equal-pending-code')
+        .expect(200);
+
+      const updatedUser = await TCaver.findOne({ id: userId });
+      updatedUser.mail.should.equal(userMail);
+      should(updatedUser.pendingMail).be.null();
+      should(updatedUser.activationCode).be.null();
+      updatedUser.mailIsValid.should.be.true();
+    });
+
+    it("should return 409 and clear pendingMail if new email is already in use as another user's pendingMail", async () => {
+      const otherUsers = await TCaver.find({ mail: { '!=': userMail } }).limit(
+        1
+      );
+      const otherUser = otherUsers[0];
+      const pendingEmail = 'shared-pending@example.com';
+
+      await TCaver.updateOne({ id: otherUser.id }).set({
+        pendingMail: pendingEmail,
+      });
+
+      try {
+        await TCaver.updateOne({ id: userId }).set({
+          pendingMail: pendingEmail,
+          activationCode: 'conflict-pending-code',
+          mailIsValid: false,
+        });
+
+        await supertest(sails.hooks.http.app)
+          .get('/api/v1/verify-email?token=conflict-pending-code')
+          .expect(409);
+
+        const updatedUser = await TCaver.findOne({ id: userId });
+        updatedUser.mail.should.equal(userMail);
+        should(updatedUser.pendingMail).be.null();
+        should(updatedUser.activationCode).be.null();
+      } finally {
+        await TCaver.updateOne({ id: otherUser.id }).set({
+          pendingMail: null,
+        });
       }
     });
   });
