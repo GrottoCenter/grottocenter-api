@@ -9,6 +9,10 @@ const {
   distantFileDownload,
 } = require('../utils/csvHelper');
 
+// Normalize a collection value to a plain ID (handles both raw IDs and objects).
+const normalizeToId = (item) =>
+  item != null && typeof item === 'object' ? (item.id ?? item) : item;
+
 module.exports = {
   async deleteInSearch(documentId) {
     await SearchService.deleteDocument('documents', documentId);
@@ -376,15 +380,18 @@ module.exports = {
       ...otherSimpleData
     } = documentData;
 
+    // Normalize collections and join the tables
+    const toIds = (arr) => arr.map(normalizeToId);
+
     // Join the tables
     const doc = { ...otherSimpleData, id: documentId };
     doc.identifierType = identifierType
       ? await TIdentifierType.findOne(identifierType)
       : null;
     doc.author = author ? await TCaver.findOne(author) : null;
-    doc.authors = authors ? await TCaver.find({ id: authors }) : [];
+    doc.authors = authors ? await TCaver.find({ id: toIds(authors) }) : [];
     doc.authorsGrotto = authorsGrotto
-      ? await TGrotto.find({ id: authorsGrotto })
+      ? await TGrotto.find({ id: toIds(authorsGrotto) })
       : [];
     doc.reviewer = reviewer ? await TCaver.findOne(reviewer) : null;
     doc.editor = editor ? await TGrotto.findOne(editor) : null;
@@ -392,17 +399,25 @@ module.exports = {
 
     doc.type = type ? await TType.findOne(type) : null;
     // descriptions is a special case
-    doc.subjects = subjects ? await TSubject.find({ id: subjects }) : [];
+    doc.subjects = subjects ? await TSubject.find({ id: toIds(subjects) }) : [];
     doc.license = license ? await TLicense.findOne(license) : null;
     doc.option = option ? await TOption.findOne(option) : null;
-    doc.languages = languages ? await TLanguage.find({ id: languages }) : [];
+    doc.languages = languages
+      ? await TLanguage.find({ id: toIds(languages) })
+      : [];
 
     // TODO files ?
-    doc.countries = countries ? await TCountry.find({ id: countries }) : [];
-    doc.isoRegions = isoRegions ? await TISO31662.find({ id: isoRegions }) : [];
+    doc.countries = countries
+      ? await TCountry.find({ id: toIds(countries) })
+      : [];
+    doc.isoRegions = isoRegions
+      ? await TISO31662.find({ id: toIds(isoRegions) })
+      : [];
     doc.cave = cave ? await TCave.findOne(cave) : null;
-    doc.entrances = entrances ? await TEntrance.find({ id: entrances }) : [];
-    doc.massifs = massifs ? await TCountry.find({ id: massifs }) : [];
+    doc.entrances = entrances
+      ? await TEntrance.find({ id: toIds(entrances) })
+      : [];
+    doc.massifs = massifs ? await TMassif.find({ id: toIds(massifs) }) : [];
     doc.parent = parent
       ? (await module.exports.getDocuments([parent]))[0]
       : null;
@@ -508,4 +523,6 @@ module.exports = {
 
     return module.exports.getDocuments(collectionIds);
   },
+
+  normalizeToId,
 };
