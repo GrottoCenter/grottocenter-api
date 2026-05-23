@@ -58,9 +58,74 @@ describe('Massif features', () => {
           .expect(400)
           .end((err, res) => {
             if (err) return done(err);
-            should(res.text).match(
+            should(res.body.code).equal('POLYGON_AREA_EXCEEDED');
+            should(res.body.message).match(
               /exceeds the maximum allowed size of 35000 km²/
             );
+            return done();
+          });
+      });
+    });
+
+    describe('Shared-edge MultiPolygon (#1606)', () => {
+      it('should return 400 with POLYGON_SELF_INTERSECTION for shared-edge MultiPolygon', (done) => {
+        supertest(sails.hooks.http.app)
+          .post('/api/v1/massifs')
+          .send({
+            name: 'Martinique - 1',
+            descriptionAndNameLanguage: { id: 'fra' },
+            geogPolygon: massifPolygon.geoJsonSharedEdgeMultiPolygon,
+          })
+          .set('Authorization', adminToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .expect(400)
+          .end((err, res) => {
+            if (err) return done(err);
+            should(res.body.code).equal('POLYGON_SELF_INTERSECTION');
+            should(res.body.message).match(/edges cross each other/);
+            return done();
+          });
+      });
+
+      it('should return 400 with POLYGON_ANTIPODAL_EDGE for 180° edge polygon', (done) => {
+        supertest(sails.hooks.http.app)
+          .post('/api/v1/massifs')
+          .send({
+            name: 'Antipodal Massif',
+            descriptionAndNameLanguage: { id: 'fra' },
+            geogPolygon: massifPolygon.geoJsonAntipodalEdge,
+          })
+          .set('Authorization', adminToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .expect(400)
+          .end((err, res) => {
+            if (err) return done(err);
+            should(res.body.code).equal('POLYGON_ANTIPODAL_EDGE');
+            should(res.body.message).match(/spans exactly 180/);
+            return done();
+          });
+      });
+    });
+
+    describe('Self-intersecting polygon', () => {
+      it('should return 400 for a self-intersecting polygon', (done) => {
+        supertest(sails.hooks.http.app)
+          .post('/api/v1/massifs')
+          .send({
+            name: 'Self-Intersecting Massif',
+            descriptionAndNameLanguage: { id: 'fra' },
+            geogPolygon: massifPolygon.geoJsonSelfIntersecting,
+          })
+          .set('Authorization', adminToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .expect(400)
+          .end((err, res) => {
+            if (err) return done(err);
+            should(res.body.code).equal('POLYGON_SELF_INTERSECTION');
+            should(res.body.message).match(/edges cross each other/);
             return done();
           });
       });

@@ -17,13 +17,12 @@ module.exports = async (req, res) => {
     cleanedData.geogPolygon = await MassifService.geoJsonToWKT(
       cleanedData.geogPolygon
     );
-    const areaKm2 = await MassifService.computePolygonAreaKm2(
+
+    const polygonError = await MassifService.validatePolygon(
       cleanedData.geogPolygon
     );
-    if (areaKm2 > MassifService.MAX_AREA_KM2) {
-      return res.badRequest(
-        `The massif polygon area (${areaKm2.toFixed(0)} km²) exceeds the maximum allowed size of ${MassifService.MAX_AREA_KM2} km².`
-      );
+    if (polygonError) {
+      return res.badRequest(polygonError);
     }
   }
   // Sensitivity is managed exclusively via mark-sensitive / unmark-sensitive
