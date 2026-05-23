@@ -121,9 +121,28 @@ describe('Massif features', () => {
         .expect(400)
         .end((err, res) => {
           if (err) return done(err);
-          should(res.text).match(
+          should(res.body.code).equal('POLYGON_AREA_EXCEEDED');
+          should(res.body.message).match(
             /exceeds the maximum allowed size of 35000 km²/
           );
+          return done();
+        });
+    });
+
+    it('should return 400 when polygon has invalid geometry (#1606)', (done) => {
+      supertest(sails.hooks.http.app)
+        .put(`/api/v1/massifs/${testMassifId}`)
+        .send({
+          geogPolygon: massifPolygon.geoJsonSharedEdgeMultiPolygon,
+        })
+        .set('Authorization', userToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(400)
+        .end((err, res) => {
+          if (err) return done(err);
+          should(res.body.code).equal('POLYGON_SELF_INTERSECTION');
+          should(res.body.message).match(/edges cross each other/);
           return done();
         });
     });

@@ -97,11 +97,90 @@ const geoJsonOversized = {
   ],
 };
 
+// A MultiPolygon that mimics the Martinique bug (#1606). The two polygons
+// share an edge, which PostGIS detects as a self-intersection. In the old code
+// (without ST_IsValid check), this reached ST_Area() which threw an unhandled
+// XX000 error. With the fix, ST_IsValid catches it first as POLYGON_SELF_INTERSECTION.
+const geoJsonSharedEdgeMultiPolygon = {
+  type: 'MultiPolygon',
+  coordinates: [
+    [
+      // Polygon 1: small valid CCW exterior ring
+      [
+        [-61.0, 14.5],
+        [-60.9, 14.5],
+        [-60.9, 14.6],
+        [-61.0, 14.6],
+        [-61.0, 14.5],
+      ],
+    ],
+    [
+      // Polygon 2: shares edge with Polygon 1 (causes self-intersection)
+      [
+        [-61.0, 14.4],
+        [-61.0, 14.5],
+        [-60.9, 14.5],
+        [-60.9, 14.4],
+        [-61.0, 14.4],
+      ],
+      // Inner ring: large bounding area extending far away
+      [
+        [-61.3, 14.2],
+        [-62.8, 14.1],
+        [-62.8, 15.0],
+        [-57.9, 16.2],
+        [-57.5, 16.5],
+        [-57.5, 16.0],
+        [-58.2, 15.8],
+        [-59.3, 14.8],
+        [-60.0, 14.1],
+        [-61.3, 14.2],
+      ],
+    ],
+  ],
+};
+
+// A polygon with an edge spanning exactly 180° of longitude.
+// This passes ST_IsValid (valid in 2D geometry) but fails ST_Area on geography
+// with "Antipodal (180 degrees long) edge detected!" — testing the XX000
+// catch path for errors that ST_IsValid cannot detect.
+const geoJsonAntipodalEdge = {
+  type: 'Polygon',
+  coordinates: [
+    [
+      [0, 0],
+      [180, 0],
+      [180, 80],
+      [0, 80],
+      [0, 0],
+    ],
+  ],
+};
+
+// A small polygon with a self-intersection (bowtie shape). This tests that
+// validation rejects geometrically invalid polygons with a 400 instead of
+// letting them through to potentially cause errors downstream.
+const geoJsonSelfIntersecting = {
+  type: 'Polygon',
+  coordinates: [
+    [
+      [2.0, 43.0],
+      [2.1, 43.1],
+      [2.1, 43.0],
+      [2.0, 43.1],
+      [2.0, 43.0],
+    ],
+  ],
+};
+
 const massifPolygon = {
   geoJson1,
   geoJson2,
   geoJsonSmall,
   geoJsonOversized,
+  geoJsonSharedEdgeMultiPolygon,
+  geoJsonAntipodalEdge,
+  geoJsonSelfIntersecting,
   geoJson1ToString: JSON.stringify(geoJson1),
   geoJson2ToString: JSON.stringify(geoJson2),
   geoJsonSmallToString: JSON.stringify(geoJsonSmall),

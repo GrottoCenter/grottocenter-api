@@ -41,11 +41,10 @@ module.exports = async (req, res) => {
 
   // Convert polygon and validate area before the transaction
   const wkt = await MassifService.geoJsonToWKT(req.body.geogPolygon);
-  const areaKm2 = await MassifService.computePolygonAreaKm2(wkt);
-  if (areaKm2 > MassifService.MAX_AREA_KM2) {
-    return res.badRequest(
-      `The massif polygon area (${areaKm2.toFixed(0)} km²) exceeds the maximum allowed size of ${MassifService.MAX_AREA_KM2} km².`
-    );
+
+  const polygonError = await MassifService.validatePolygon(wkt);
+  if (polygonError) {
+    return res.badRequest(polygonError);
   }
 
   const rawData = MassifService.getConvertedDataFromClientRequest(req);
