@@ -178,6 +178,12 @@ module.exports = {
       throw new Error('readerId is required to fetch messages');
     }
 
+    const messages = await TMessage.find({ conversation: conversationId })
+      .skip(skip)
+      .limit(limit)
+      .sort('dateSent DESC')
+      .populate('caverSender');
+
     try {
       await module.exports.markAsRead(conversationId, readerId);
     } catch (err) {
@@ -186,12 +192,6 @@ module.exports = {
         err
       );
     }
-
-    const messages = await TMessage.find({ conversation: conversationId })
-      .skip(skip)
-      .limit(limit)
-      .sort('dateSent DESC')
-      .populate('caverSender');
 
     return messages.map((m) => module.exports.formatMessage(m)).reverse();
   },
