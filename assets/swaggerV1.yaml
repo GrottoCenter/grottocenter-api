@@ -3256,9 +3256,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Name'
-
-
-
   '/account/password':
     patch:
       tags:
@@ -3619,7 +3616,7 @@ paths:
             type: string
       responses:
         '200':
-          description: Account successfully verified or Account was already verified.
+          description: Account successfully verified, email change committed, or account was already verified.
           content:
             application/json:
               schema:
@@ -3633,7 +3630,6 @@ paths:
           description: Activation token is invalid or has already been used.
         '409':
           description: Conflict. The new email address is now taken by another account.
-
         '500':
           description: An error occurred during account activation.
 
