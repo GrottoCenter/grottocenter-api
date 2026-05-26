@@ -48,24 +48,31 @@ describe('Messages features', () => {
   });
 
   after(async () => {
-    // Find all conversations where sender is a participant
+    // Find all conversations where any of the test cavers is a participant
     const participantsResult = await sails.sendNativeQuery(
-      'SELECT id_conversation FROM j_participant WHERE id_caver = $1',
-      [sender.id]
+      'SELECT DISTINCT id_conversation FROM j_participant WHERE id_caver = ANY($1)',
+      [[sender.id, recipient.id, bannedRecipient.id, nonUserRecipient.id]]
     );
     const conversationIds = participantsResult.rows.map(
       (p) => p.id_conversation
     );
     conversationIds.push(...manuallyCreatedConversationIds);
 
-    if (conversationIds.length > 0) {
-      await TMessage.destroy({ conversation: conversationIds });
-      await TConversationArchive.destroy({ conversation: conversationIds });
+    // Deduplicate and filter out falsy values
+    const uniqueConversationIds = Array.from(
+      new Set(conversationIds.filter((id) => id !== undefined && id !== null))
+    );
+
+    if (uniqueConversationIds.length > 0) {
+      await TMessage.destroy({ conversation: uniqueConversationIds });
+      await TConversationArchive.destroy({
+        conversation: uniqueConversationIds,
+      });
       await sails.sendNativeQuery(
         'DELETE FROM j_participant WHERE id_conversation = ANY($1)',
-        [conversationIds]
+        [uniqueConversationIds]
       );
-      await TConversation.destroy({ id: conversationIds });
+      await TConversation.destroy({ id: uniqueConversationIds });
     }
 
     await TCaver.destroy({
