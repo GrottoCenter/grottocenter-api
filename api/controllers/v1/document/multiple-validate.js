@@ -17,6 +17,28 @@ async function markDocumentValidated(
   });
 }
 
+// modifiedDocJson may pre-date this fix and contain populated objects instead of plain IDs.
+function normalizeCollectionIds(documentData) {
+  const collectionFields = [
+    'massifs',
+    'authors',
+    'authorsGrotto',
+    'subjects',
+    'languages',
+    'isoRegions',
+    'countries',
+  ];
+  const normalized = { ...documentData };
+  for (const field of collectionFields) {
+    if (Array.isArray(normalized[field])) {
+      normalized[field] = normalized[field].map((item) =>
+        typeof item === 'object' && item !== null ? (item.id ?? item) : item
+      );
+    }
+  }
+  return normalized;
+}
+
 async function validateAndUpdateDocument(
   document,
   validationComment,
@@ -31,6 +53,8 @@ async function validateAndUpdateDocument(
     newFiles,
   } = document.modifiedDocJson;
 
+  const cleanedDocumentData = normalizeCollectionIds(documentData);
+
   await sails.getDatastore().transaction(async (db) => {
     // Update associated data not handled by TDocument manually
     // Updated before the TDocument update so the last_change_document DB trigger will fetch the last updated name
@@ -40,7 +64,7 @@ async function validateAndUpdateDocument(
 
     await TDocument.updateOne(document.id)
       .set({
-        ...documentData,
+        ...cleanedDocumentData,
         modifiedDocJson: null,
         dateReviewed: new Date(),
         reviewer: reviewerId,

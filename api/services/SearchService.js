@@ -39,11 +39,20 @@ function buildFilter(filter, isLogicalCompareAnd = true) {
 
       let vFmt = trimmed;
       let operator = ':'; // Partial equal
-      if (Array.isArray(trimmed))
-        vFmt = `[${trimmed.join('..')}]`; // Range
-      else if (typeof trimmed === 'boolean' || typeof trimmed === 'number')
+      if (Array.isArray(trimmed)) {
+        if (trimmed.length === 0) return []; // Skip empty arrays
+        const isNumericRange =
+          trimmed.length === 2 && trimmed.every((el) => typeof el === 'number');
+        if (isNumericRange) {
+          vFmt = `[${trimmed.join('..')}]`; // Numeric range
+        } else {
+          // Multi-value exact match (non-numeric-range arrays)
+          operator = ':=';
+          vFmt = `[${trimmed.map((el) => `\`${String(el).replace(/`/g, '')}\``).join(',')}]`;
+        }
+      } else if (typeof trimmed === 'boolean' || typeof trimmed === 'number')
         operator = ':='; // Exact equal
-      else vFmt = `\`${trimmed}\``;
+      else vFmt = `\`${trimmed.replace(/`/g, '')}\``;
       return [`${k}${operator}${vFmt}`];
     });
   return {

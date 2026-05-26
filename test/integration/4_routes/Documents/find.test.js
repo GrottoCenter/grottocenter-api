@@ -103,6 +103,49 @@ describe('Document find', () => {
         });
     });
 
+    it('should return modified document with massifs as objects in modifiedDocJson', async () => {
+      const desc = await TDescription.create({
+        author: 1,
+        title: 'Test',
+        body: 'Test body',
+      }).fetch();
+
+      const doc = await TDocument.create({
+        author: 1,
+        type: 1,
+        license: 1,
+        isValidated: false,
+        descriptions: [desc.id],
+        modifiedDocJson: {
+          reviewerId: 2,
+          documentData: {
+            type: 17,
+            massifs: [{ id: 1, name: 'Some massif' }],
+          },
+          descriptionData: { title: 'Updated', body: 'Updated body' },
+        },
+      }).fetch();
+
+      // Inline cleanup: this test creates its own fixture data independent of the shared before/after hooks.
+      try {
+        await supertest(sails.hooks.http.app)
+          .get(`/api/v1/documents/${doc.id}?requireUpdate=true`)
+          .set('Authorization', moderatorToken)
+          .set('Accept', 'application/json')
+          .expect(200)
+          .then((res) => {
+            should(res.body).have.property('id');
+            should(res.body).have.property('massifs');
+            should(res.body.massifs).be.an.Array();
+            should(res.body.massifs).not.be.empty();
+            should(res.body.massifs).containDeep([{ id: 1 }]);
+          });
+      } finally {
+        await TDocument.destroy({ id: doc.id });
+        await TDescription.destroy({ id: desc.id });
+      }
+    });
+
     it('should return base document when requireUpdate is false', (done) => {
       supertest(sails.hooks.http.app)
         .get(`/api/v1/documents/${testDocId}?requireUpdate=false`)
