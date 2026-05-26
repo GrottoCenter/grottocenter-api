@@ -1,5 +1,13 @@
 \c grottoce;
 
+-- Caver IDs mapping (refer to sql/3_01_mock_cavers.sql):
+-- #1 - Adrien Admin (Admin)
+-- #2 - Melvil Mode (Moderator)
+-- #3 - Ursulle Use (User)
+-- #4 - Léa Lead (Leader)
+-- #5 - Alex All (Admin, Moderator, User, Leader)
+-- #6 - John Doe (User, Moderator)
+
 -- Conversation 1: Admin (1) and Moderator (2) [Active] - LONG Discussion (25 messages)
 INSERT INTO public.t_conversation (id, date_inscription) VALUES (1, '2023-01-01 10:00:00');
 INSERT INTO public.j_participant (id_conversation, id_caver) VALUES (1, 1), (1, 2);

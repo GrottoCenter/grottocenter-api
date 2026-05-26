@@ -49,7 +49,9 @@ const sendNotificationEmail = async (
   user
 ) => {
   // Resolve the recipient's preferred locale
-  const locale = await LanguageService.getLocale(user.language);
+  const locale =
+    (await LanguageService.getLocale(user.language)) ||
+    sails.config.i18n.defaultLocale;
 
   // Get entity name (handle all cases)
   const getEntityName = (entityData) => {
@@ -220,7 +222,9 @@ module.exports = {
       const row = result.rows[0];
       const recipient = await TCaver.findOne({ id: row.id_caver });
       if (!recipient || !recipient.sendMessageNotificationByEmail) return;
-      const locale = await LanguageService.getLocale(recipient.language);
+      const locale =
+        (await LanguageService.getLocale(recipient.language)) ||
+        sails.config.i18n.defaultLocale;
       const conversationLink = `${sails.config.custom.baseUrl}/ui/messages/${conversationId}`;
       await sails.helpers.sendEmail
         .with({
