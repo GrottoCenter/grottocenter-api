@@ -163,6 +163,82 @@ describe('RelevanceService', () => {
       should(result).equal(1);
     });
 
+    /**
+     * Entities with null relevance must not pollute the max computation.
+     * Root bug: PostgreSQL sorts NULLs first with DESC, so without filtering,
+     * results[0].relevance = null → null + 1 = 1 in JS → collision with
+     * existing items already at relevance=1.
+     */
+    it('should return 1 when all existing entities have null relevance', async () => {
+      const entranceId = 6005;
+      const createdIds = [];
+
+      try {
+        const created = await Promise.all(
+          [null, null, null].map(() =>
+            TComment.create({
+              author: 1,
+              dateInscription: new Date().toISOString(),
+              relevance: null,
+              title: 'Null relevance test',
+              body: 'Should be ignored',
+              entrance: entranceId,
+              language: 'fra',
+              isDeleted: false,
+            }).fetch()
+          )
+        );
+        created.forEach((c) => createdIds.push(c.id));
+
+        const result = await RelevanceService.computeNextRelevance('comment', {
+          entrance: entranceId,
+        });
+
+        should(result).equal(1);
+      } finally {
+        if (createdIds.length > 0) {
+          await TComment.destroy({ id: createdIds });
+        }
+      }
+    });
+
+    /**
+     * When the scope mixes null and non-null relevance, only non-null values
+     * count. The next relevance must be max(non-null) + 1, not 1.
+     */
+    it('should ignore null-relevance entities and use max of non-null values', async () => {
+      const entranceId = 6006;
+      const createdIds = [];
+
+      try {
+        const created = await Promise.all(
+          [null, 3, null, 7, null].map((rel) =>
+            TComment.create({
+              author: 1,
+              dateInscription: new Date().toISOString(),
+              relevance: rel,
+              title: 'Mixed null relevance test',
+              body: 'Should compute max of non-null',
+              entrance: entranceId,
+              language: 'fra',
+              isDeleted: false,
+            }).fetch()
+          )
+        );
+        created.forEach((c) => createdIds.push(c.id));
+
+        const result = await RelevanceService.computeNextRelevance('comment', {
+          entrance: entranceId,
+        });
+
+        should(result).equal(8); // max(3, 7) + 1
+      } finally {
+        if (createdIds.length > 0) {
+          await TComment.destroy({ id: createdIds });
+        }
+      }
+    });
+
     /** Returns 1 when only deleted entities exist — they are invisible. */
     it('should return 1 when only deleted entities exist in the scope', async () => {
       const entranceId = 6002;

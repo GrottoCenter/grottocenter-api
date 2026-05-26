@@ -72,7 +72,13 @@ module.exports = {
    */
   async computeNextRelevance(entityType, parentFieldValues) {
     const Model = getModel(entityType);
-    const where = { ...parentFieldValues, isDeleted: false };
+    // Exclude null relevance: PostgreSQL sorts NULLs first with DESC,
+    // causing null + 1 = 1 in JS and colliding with existing relevance=1 items.
+    const where = {
+      ...parentFieldValues,
+      isDeleted: false,
+      relevance: { '!=': null },
+    };
     const results = await Model.find({
       where,
       select: ['relevance'],
@@ -150,12 +156,17 @@ module.exports = {
 
     const neighbor = neighbors[0];
 
-    const moved = await Model.updateOne({ id: entityId }).set({
-      relevance: neighbor.relevance,
-    });
-    const swapped = await Model.updateOne({ id: neighbor.id }).set({
-      relevance: target.relevance,
-    });
+    const { moved, swapped } = await sails
+      .getDatastore()
+      .transaction(async (db) => {
+        const updatedTarget = await Model.updateOne({ id: entityId })
+          .set({ relevance: neighbor.relevance })
+          .usingConnection(db);
+        const updatedNeighbor = await Model.updateOne({ id: neighbor.id })
+          .set({ relevance: target.relevance })
+          .usingConnection(db);
+        return { moved: updatedTarget, swapped: updatedNeighbor };
+      });
 
     return { moved, swapped };
   },

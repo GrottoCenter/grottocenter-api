@@ -122,14 +122,8 @@ coverage
 
 docker/esdata/*
 !docker/esdata/for-docker-compose
-.amazonq
-.kiro
 *.iml
 build-info.json
-
-# Kiro IDE
-.kiro
-
 
 # Temporary test output
 *.tmp
@@ -139,3 +133,9 @@ test/.snapshot-stamp
 
 # Error triage agent timestamp
 .last-error-triage
+
+# AI
+CLAUDE.md
+.amazonq
+.kiro
+.claude
