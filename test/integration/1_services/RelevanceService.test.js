@@ -168,27 +168,22 @@ describe('RelevanceService', () => {
      * Root bug: PostgreSQL sorts NULLs first with DESC, so without filtering,
      * results[0].relevance = null → null + 1 = 1 in JS → collision with
      * existing items already at relevance=1.
+     * Uses native SQL to bypass Waterline's allowNull:false validation.
      */
     it('should return 1 when all existing entities have null relevance', async () => {
       const entranceId = 6005;
-      const createdIds = [];
 
       try {
-        const created = await Promise.all(
-          [null, null, null].map(() =>
-            TComment.create({
-              author: 1,
-              dateInscription: new Date().toISOString(),
-              relevance: null,
-              title: 'Null relevance test',
-              body: 'Should be ignored',
-              entrance: entranceId,
-              language: 'fra',
-              isDeleted: false,
-            }).fetch()
-          )
+        await sails.sendNativeQuery(
+          `INSERT INTO t_comment (id_author, date_inscription, relevance, title, body, id_entrance, id_language, is_deleted)
+           VALUES (1, NOW(), NULL, 'Null relevance test', 'Should be ignored', $1, 'fra', false)`,
+          [entranceId]
         );
-        created.forEach((c) => createdIds.push(c.id));
+        await sails.sendNativeQuery(
+          `INSERT INTO t_comment (id_author, date_inscription, relevance, title, body, id_entrance, id_language, is_deleted)
+           VALUES (1, NOW(), NULL, 'Null relevance test', 'Should be ignored', $1, 'fra', false)`,
+          [entranceId]
+        );
 
         const result = await RelevanceService.computeNextRelevance('comment', {
           entrance: entranceId,
@@ -196,23 +191,25 @@ describe('RelevanceService', () => {
 
         should(result).equal(1);
       } finally {
-        if (createdIds.length > 0) {
-          await TComment.destroy({ id: createdIds });
-        }
+        await sails.sendNativeQuery(
+          'DELETE FROM t_comment WHERE id_entrance = $1',
+          [entranceId]
+        );
       }
     });
 
     /**
      * When the scope mixes null and non-null relevance, only non-null values
      * count. The next relevance must be max(non-null) + 1, not 1.
+     * Uses native SQL to bypass Waterline's allowNull:false validation.
      */
     it('should ignore null-relevance entities and use max of non-null values', async () => {
       const entranceId = 6006;
-      const createdIds = [];
 
       try {
-        const created = await Promise.all(
-          [null, 3, null, 7, null].map((rel) =>
+        // Insert non-null entries via ORM
+        await Promise.all(
+          [3, 7].map((rel) =>
             TComment.create({
               author: 1,
               dateInscription: new Date().toISOString(),
@@ -222,10 +219,15 @@ describe('RelevanceService', () => {
               entrance: entranceId,
               language: 'fra',
               isDeleted: false,
-            }).fetch()
+            })
           )
         );
-        created.forEach((c) => createdIds.push(c.id));
+        // Insert null entries via native SQL
+        await sails.sendNativeQuery(
+          `INSERT INTO t_comment (id_author, date_inscription, relevance, title, body, id_entrance, id_language, is_deleted)
+           VALUES (1, NOW(), NULL, 'Mixed null relevance test', 'Null entry', $1, 'fra', false)`,
+          [entranceId]
+        );
 
         const result = await RelevanceService.computeNextRelevance('comment', {
           entrance: entranceId,
@@ -233,9 +235,10 @@ describe('RelevanceService', () => {
 
         should(result).equal(8); // max(3, 7) + 1
       } finally {
-        if (createdIds.length > 0) {
-          await TComment.destroy({ id: createdIds });
-        }
+        await sails.sendNativeQuery(
+          'DELETE FROM t_comment WHERE id_entrance = $1',
+          [entranceId]
+        );
       }
     });
 
@@ -490,14 +493,14 @@ describe('RelevanceService', () => {
     /**
      * An unranked entity (relevance = null) cannot be swapped.
      * Instead it is assigned computeNextRelevance() and returned with swapped: null.
+     * Uses native SQL to bypass Waterline's allowNull:false validation.
      */
     it('should assign relevance and return swapped: null for a null-relevance entity', async () => {
       const entranceId = 6007;
-      const createdIds = [];
 
       try {
         // Seed two ranked comments so computeNextRelevance returns 3
-        const ranked = await Promise.all(
+        await Promise.all(
           [1, 2].map((rel) =>
             TComment.create({
               author: 1,
@@ -508,36 +511,33 @@ describe('RelevanceService', () => {
               entrance: entranceId,
               language: 'fra',
               isDeleted: false,
-            }).fetch()
+            })
           )
         );
-        ranked.forEach((c) => createdIds.push(c.id));
 
-        const unranked = await TComment.create({
-          author: 1,
-          dateInscription: new Date().toISOString(),
-          relevance: null,
-          title: 'Unranked comment',
-          body: 'No relevance yet',
-          entrance: entranceId,
-          language: 'fra',
-          isDeleted: false,
-        }).fetch();
-        createdIds.push(unranked.id);
+        // Insert unranked comment via native SQL
+        const { rows } = await sails.sendNativeQuery(
+          `INSERT INTO t_comment (id_author, date_inscription, relevance, title, body, id_entrance, id_language, is_deleted)
+           VALUES (1, NOW(), NULL, 'Unranked comment', 'No relevance yet', $1, 'fra', false)
+           RETURNING id`,
+          [entranceId]
+        );
+        const unrankedId = rows[0].id;
 
         const result = await RelevanceService.moveRelevance(
           'comment',
-          unranked.id,
+          unrankedId,
           1
         );
 
         should(result.swapped).be.null();
-        should(result.moved).have.property('id', unranked.id);
+        should(result.moved).have.property('id', unrankedId);
         should(result.moved.relevance).equal(3); // max(1,2) + 1
       } finally {
-        if (createdIds.length > 0) {
-          await TComment.destroy({ id: createdIds });
-        }
+        await sails.sendNativeQuery(
+          'DELETE FROM t_comment WHERE id_entrance = $1',
+          [entranceId]
+        );
       }
     });
 
@@ -545,23 +545,19 @@ describe('RelevanceService', () => {
      * A null-relevance neighbor must not be a swap candidate.
      * The move should skip null-relevance entities and swap with the
      * nearest ranked neighbor only.
+     * Uses native SQL to bypass Waterline's allowNull:false validation.
      */
     it('should skip null-relevance neighbors and swap with the nearest ranked one', async () => {
       const entranceId = 6008;
-      const createdIds = [];
 
       try {
-        const comments = await Promise.all(
-          [
-            { relevance: 1 },
-            { relevance: 2 },
-            { relevance: null }, // must be skipped
-            { relevance: 3 },
-          ].map(({ relevance }) =>
+        // Insert ranked comments via ORM
+        const [c1, c2, c3] = await Promise.all(
+          [1, 2, 3].map((rel) =>
             TComment.create({
               author: 1,
               dateInscription: new Date().toISOString(),
-              relevance,
+              relevance: rel,
               title: 'Neighbor null test',
               body: 'Testing null skip',
               entrance: entranceId,
@@ -570,9 +566,13 @@ describe('RelevanceService', () => {
             }).fetch()
           )
         );
-        comments.forEach((c) => createdIds.push(c.id));
 
-        const [c1, c2, , c3] = comments; // c with relevance 1, 2, null, 3
+        // Insert a null-relevance neighbor via native SQL (should be skipped)
+        await sails.sendNativeQuery(
+          `INSERT INTO t_comment (id_author, date_inscription, relevance, title, body, id_entrance, id_language, is_deleted)
+           VALUES (1, NOW(), NULL, 'Null neighbor', 'Must be skipped', $1, 'fra', false)`,
+          [entranceId]
+        );
 
         // Move c2 (relevance=2) up by direction=1: nearest ranked neighbor above is c3 (relevance=3)
         const result = await RelevanceService.moveRelevance(
@@ -586,13 +586,14 @@ describe('RelevanceService', () => {
         should(result.swapped.id).equal(c3.id);
         should(result.swapped.relevance).equal(2);
 
-        // c1 and the null comment are untouched
+        // c1 is untouched
         const afterC1 = await TComment.findOne({ id: c1.id });
         should(afterC1.relevance).equal(1);
       } finally {
-        if (createdIds.length > 0) {
-          await TComment.destroy({ id: createdIds });
-        }
+        await sails.sendNativeQuery(
+          'DELETE FROM t_comment WHERE id_entrance = $1',
+          [entranceId]
+        );
       }
     });
 
