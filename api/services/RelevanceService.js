@@ -2,7 +2,7 @@
  * ENTITY_CONFIG maps each relevance entity type to its Waterline model
  * and the parent fields that define its scope.
  *
- * Models (TLocation, TDescription, etc.) are Sails globals — no imports needed.
+ * Models (TLocation, TDescription, etc.) are Sails globals - no imports needed.
  */
 const ENTITY_CONFIG = {
   location: {
@@ -127,6 +127,9 @@ module.exports = {
 
     // Unranked entity: assign a position first, no swap needed.
     if (target.relevance == null) {
+      sails.log.warn(
+        `moveRelevance: ${label} id=${entityId} has null relevance â€” assigning from computeNextRelevance`
+      );
       const nextRelevance = await this.computeNextRelevance(
         entityType,
         parentScope
@@ -137,11 +140,11 @@ module.exports = {
       return { moved, swapped: null };
     }
 
+    // '>' / '<' comparisons implicitly exclude NULL in PostgreSQL (NULL yields UNKNOWN, not TRUE).
     const where = {
       ...parentScope,
       isDeleted: false,
       id: { '!=': entityId },
-      // '>' / '<' comparisons implicitly exclude NULL in PostgreSQL (NULL yields UNKNOWN, not TRUE).
     };
 
     let sort;

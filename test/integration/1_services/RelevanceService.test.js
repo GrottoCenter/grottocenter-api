@@ -150,7 +150,7 @@ describe('RelevanceService', () => {
       );
     });
 
-    /** Returns 1 when no entities exist — the base case for relevance. */
+    /** Returns 1 when no entities exist â€” the base case for relevance. */
     it('should return 1 when no entities exist in the scope', async () => {
       const entranceId = 6001;
       // Ensure no comments exist for this entrance
@@ -166,7 +166,7 @@ describe('RelevanceService', () => {
     /**
      * Entities with null relevance must not pollute the max computation.
      * Root bug: PostgreSQL sorts NULLs first with DESC, so without filtering,
-     * results[0].relevance = null → null + 1 = 1 in JS → collision with
+     * results[0].relevance = null â†’ null + 1 = 1 in JS â†’ collision with
      * existing items already at relevance=1.
      * Uses native SQL to bypass Waterline's allowNull:false validation.
      */
@@ -238,7 +238,7 @@ describe('RelevanceService', () => {
       }
     });
 
-    /** Returns 1 when only deleted entities exist — they are invisible. */
+    /** Returns 1 when only deleted entities exist â€” they are invisible. */
     it('should return 1 when only deleted entities exist in the scope', async () => {
       const entranceId = 6002;
       const createdIds = [];
@@ -278,7 +278,7 @@ describe('RelevanceService', () => {
     /**
      * Move swaps exactly the target and its neighbor; all others are unchanged.
      * Encodes: move is a pairwise swap, not a shift or reorder of the full list.
-     * Covers: scopes with 2–10 entities, both move directions, non-boundary targets.
+     * Covers: scopes with 2â€“10 entities, both move directions, non-boundary targets.
      */
     it('should swap exactly two entities and preserve all others', async function moveSwapsExactlyTwoEntities() {
       this.timeout(120000);
@@ -458,7 +458,7 @@ describe('RelevanceService', () => {
         }).fetch();
         commentId = comment.id;
 
-        // Try moving up — no neighbor above
+        // Try moving up â€” no neighbor above
         try {
           await RelevanceService.moveRelevance('comment', commentId, -1);
           should.fail('Expected an error to be thrown');
@@ -469,7 +469,7 @@ describe('RelevanceService', () => {
           );
         }
 
-        // Try moving down — no neighbor below
+        // Try moving down â€” no neighbor below
         try {
           await RelevanceService.moveRelevance('comment', commentId, 1);
           should.fail('Expected an error to be thrown');
@@ -493,10 +493,11 @@ describe('RelevanceService', () => {
      */
     it('should assign relevance and return swapped: null for a null-relevance entity', async () => {
       const entranceId = 6007;
+      const createdIds = [];
 
       try {
         // Seed two ranked comments so computeNextRelevance returns 3
-        await Promise.all(
+        const ranked = await Promise.all(
           [1, 2].map((rel) =>
             TComment.create({
               author: 1,
@@ -507,9 +508,10 @@ describe('RelevanceService', () => {
               entrance: entranceId,
               language: 'fra',
               isDeleted: false,
-            })
+            }).fetch()
           )
         );
+        ranked.forEach((c) => createdIds.push(c.id));
 
         // Insert unranked comment via native SQL
         const { rows } = await sails.sendNativeQuery(
@@ -519,6 +521,7 @@ describe('RelevanceService', () => {
           [entranceId]
         );
         const unrankedId = rows[0].id;
+        createdIds.push(unrankedId);
 
         const result = await RelevanceService.moveRelevance(
           'comment',
@@ -530,10 +533,9 @@ describe('RelevanceService', () => {
         should(result.moved).have.property('id', unrankedId);
         should(result.moved.relevance).equal(3); // max(1,2) + 1
       } finally {
-        await sails.sendNativeQuery(
-          'DELETE FROM t_comment WHERE id_entrance = $1',
-          [entranceId]
-        );
+        if (createdIds.length > 0) {
+          await TComment.destroy({ id: createdIds });
+        }
       }
     });
 
@@ -545,6 +547,7 @@ describe('RelevanceService', () => {
      */
     it('should skip null-relevance neighbors and swap with the nearest ranked one', async () => {
       const entranceId = 6008;
+      const createdIds = [];
 
       try {
         // Insert ranked comments via ORM
@@ -562,13 +565,16 @@ describe('RelevanceService', () => {
             }).fetch()
           )
         );
+        createdIds.push(c1.id, c2.id, c3.id);
 
         // Insert a null-relevance neighbor via native SQL (should be skipped)
-        await sails.sendNativeQuery(
+        const { rows } = await sails.sendNativeQuery(
           `INSERT INTO t_comment (id_author, date_inscription, relevance, title, body, id_entrance, id_language, is_deleted)
-           VALUES (1, NOW(), NULL, 'Null neighbor', 'Must be skipped', $1, 'fra', false)`,
+           VALUES (1, NOW(), NULL, 'Null neighbor', 'Must be skipped', $1, 'fra', false)
+           RETURNING id`,
           [entranceId]
         );
+        createdIds.push(rows[0].id);
 
         // Move c2 (relevance=2) up by direction=1: nearest ranked neighbor above is c3 (relevance=3)
         const result = await RelevanceService.moveRelevance(
@@ -586,10 +592,9 @@ describe('RelevanceService', () => {
         const afterC1 = await TComment.findOne({ id: c1.id });
         should(afterC1.relevance).equal(1);
       } finally {
-        await sails.sendNativeQuery(
-          'DELETE FROM t_comment WHERE id_entrance = $1',
-          [entranceId]
-        );
+        if (createdIds.length > 0) {
+          await TComment.destroy({ id: createdIds });
+        }
       }
     });
 
