@@ -196,6 +196,8 @@ module.exports = async (req, res) => {
         email: caver.mail,
         nickname: caver.nickname,
         languageId: caver.language,
+      }).catch((err) => {
+        sails.log.error('Failed to send password change notification:', err);
       });
     }
   } catch (err) {
