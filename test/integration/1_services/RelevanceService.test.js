@@ -487,6 +487,115 @@ describe('RelevanceService', () => {
       }
     });
 
+    /**
+     * An unranked entity (relevance = null) cannot be swapped.
+     * Instead it is assigned computeNextRelevance() and returned with swapped: null.
+     */
+    it('should assign relevance and return swapped: null for a null-relevance entity', async () => {
+      const entranceId = 6007;
+      const createdIds = [];
+
+      try {
+        // Seed two ranked comments so computeNextRelevance returns 3
+        const ranked = await Promise.all(
+          [1, 2].map((rel) =>
+            TComment.create({
+              author: 1,
+              dateInscription: new Date().toISOString(),
+              relevance: rel,
+              title: 'Ranked comment',
+              body: 'Has a relevance value',
+              entrance: entranceId,
+              language: 'fra',
+              isDeleted: false,
+            }).fetch()
+          )
+        );
+        ranked.forEach((c) => createdIds.push(c.id));
+
+        const unranked = await TComment.create({
+          author: 1,
+          dateInscription: new Date().toISOString(),
+          relevance: null,
+          title: 'Unranked comment',
+          body: 'No relevance yet',
+          entrance: entranceId,
+          language: 'fra',
+          isDeleted: false,
+        }).fetch();
+        createdIds.push(unranked.id);
+
+        const result = await RelevanceService.moveRelevance(
+          'comment',
+          unranked.id,
+          1
+        );
+
+        should(result.swapped).be.null();
+        should(result.moved).have.property('id', unranked.id);
+        should(result.moved.relevance).equal(3); // max(1,2) + 1
+      } finally {
+        if (createdIds.length > 0) {
+          await TComment.destroy({ id: createdIds });
+        }
+      }
+    });
+
+    /**
+     * A null-relevance neighbor must not be a swap candidate.
+     * The move should skip null-relevance entities and swap with the
+     * nearest ranked neighbor only.
+     */
+    it('should skip null-relevance neighbors and swap with the nearest ranked one', async () => {
+      const entranceId = 6008;
+      const createdIds = [];
+
+      try {
+        const comments = await Promise.all(
+          [
+            { relevance: 1 },
+            { relevance: 2 },
+            { relevance: null }, // must be skipped
+            { relevance: 3 },
+          ].map(({ relevance }) =>
+            TComment.create({
+              author: 1,
+              dateInscription: new Date().toISOString(),
+              relevance,
+              title: 'Neighbor null test',
+              body: 'Testing null skip',
+              entrance: entranceId,
+              language: 'fra',
+              isDeleted: false,
+            }).fetch()
+          )
+        );
+        comments.forEach((c) => createdIds.push(c.id));
+
+        const [c1, c2, , c3] = comments; // c with relevance 1, 2, null, 3
+
+        // Move c2 (relevance=2) up by direction=1: nearest ranked neighbor above is c3 (relevance=3)
+        const result = await RelevanceService.moveRelevance(
+          'comment',
+          c2.id,
+          1
+        );
+
+        should(result.moved.id).equal(c2.id);
+        should(result.moved.relevance).equal(3);
+        should(result.swapped.id).equal(c3.id);
+        should(result.swapped.relevance).equal(2);
+
+        // c1 and the null comment are untouched
+        const afterC1 = await TComment.findOne({ id: c1.id });
+        should(afterC1.relevance).equal(1);
+      } finally {
+        if (createdIds.length > 0) {
+          await TComment.destroy({ id: createdIds });
+        }
+      }
+    });
+
     /** Throws 400 for invalid direction values (only 1 and -1 are valid). */
     it('should throw 400 for invalid direction values', async () => {
       const invalidDirections = [0, 2, -3];

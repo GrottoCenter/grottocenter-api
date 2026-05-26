@@ -125,10 +125,23 @@ module.exports = {
 
     const parentScope = this.getParentScope(entityType, target);
 
+    // Unranked entity: assign a position first, no swap needed.
+    if (target.relevance == null) {
+      const nextRelevance = await this.computeNextRelevance(
+        entityType,
+        parentScope
+      );
+      const moved = await Model.updateOne({ id: entityId }).set({
+        relevance: nextRelevance,
+      });
+      return { moved, swapped: null };
+    }
+
     const where = {
       ...parentScope,
       isDeleted: false,
       id: { '!=': entityId },
+      relevance: { '!=': null },
     };
 
     let sort;
