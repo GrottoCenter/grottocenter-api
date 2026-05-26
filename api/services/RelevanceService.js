@@ -141,7 +141,7 @@ module.exports = {
       ...parentScope,
       isDeleted: false,
       id: { '!=': entityId },
-      relevance: { '!=': null },
+      // '>' / '<' comparisons implicitly exclude NULL in PostgreSQL (NULL yields UNKNOWN, not TRUE).
     };
 
     let sort;

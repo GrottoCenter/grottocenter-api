@@ -176,12 +176,8 @@ describe('RelevanceService', () => {
       try {
         await sails.sendNativeQuery(
           `INSERT INTO t_comment (id_author, date_inscription, relevance, title, body, id_entrance, id_language, is_deleted)
-           VALUES (1, NOW(), NULL, 'Null relevance test', 'Should be ignored', $1, 'fra', false)`,
-          [entranceId]
-        );
-        await sails.sendNativeQuery(
-          `INSERT INTO t_comment (id_author, date_inscription, relevance, title, body, id_entrance, id_language, is_deleted)
-           VALUES (1, NOW(), NULL, 'Null relevance test', 'Should be ignored', $1, 'fra', false)`,
+           VALUES (1, NOW(), NULL, 'Null relevance test', 'Should be ignored', $1, 'fra', false),
+                  (1, NOW(), NULL, 'Null relevance test', 'Should be ignored', $1, 'fra', false)`,
           [entranceId]
         );
 
