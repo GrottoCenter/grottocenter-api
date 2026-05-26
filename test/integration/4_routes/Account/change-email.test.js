@@ -1,11 +1,7 @@
 const supertest = require('supertest');
-const Fixted = require('fixted');
 const should = require('should');
 const AuthTokenService = require('../../AuthTokenService');
 const TokenService = require('../../../../api/services/TokenService');
-
-const fixted = new Fixted();
-const fixtures = fixted.data;
 
 describe('Account change-email', () => {
   let userToken;
@@ -46,8 +42,11 @@ describe('Account change-email', () => {
     });
 
     it('should return 409 when email is already in use (mail)', async () => {
-      // Find another user's email from fixtures
-      const otherUser = fixtures.tcaver.find((c) => c.mail !== userMail);
+      // Find another user's email
+      const otherUsers = await TCaver.find({ mail: { '!=': userMail } }).limit(
+        1
+      );
+      const otherUser = otherUsers[0];
       await supertest(sails.hooks.http.app)
         .patch('/api/v1/account')
         .send({ email: otherUser.mail })
