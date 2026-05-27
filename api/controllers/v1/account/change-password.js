@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken');
 
 const AccountNotificationService = require('../../../services/AccountNotificationService');
 const AuthService = require('../../../services/AuthService');
+const RightService = require('../../../services/RightService');
 const TokenService = require('../../../services/TokenService');
 
 // eslint-disable-next-line consistent-return
@@ -30,6 +31,20 @@ module.exports = async (req, res) => {
         email: caver.mail,
         nickname: caver.nickname,
         languageId: caver.language,
+      });
+    }
+
+    // Revoke all existing tokens for admin users (fire-and-forget)
+    const isAdmin = RightService.hasGroup(
+      req.token.groups,
+      RightService.G.ADMINISTRATOR
+    );
+    if (isAdmin) {
+      BlacklistService.revoke(req.token.id).catch((err) => {
+        sails.log.error(
+          `Failed to revoke tokens for admin caver ${req.token.id} after password change:`,
+          err
+        );
       });
     }
 
@@ -84,6 +99,25 @@ module.exports = async (req, res) => {
     }).set({
       password: await AuthService.createHashedPassword(password),
     });
+
+    // Revoke all existing tokens for admin users (fire-and-forget)
+    const caverWithGroups = await TCaver.findOne({
+      id: decodedToken.userId,
+    }).populate('groups');
+    if (
+      caverWithGroups &&
+      RightService.hasGroup(
+        caverWithGroups.groups,
+        RightService.G.ADMINISTRATOR
+      )
+    ) {
+      BlacklistService.revoke(decodedToken.userId).catch((revokeErr) => {
+        sails.log.error(
+          `Failed to revoke tokens for admin caver ${decodedToken.userId} after password reset:`,
+          revokeErr
+        );
+      });
+    }
 
     AccountNotificationService.notifyPasswordChanged({
       email: userFound.mail,

@@ -14,6 +14,7 @@ const responseTime = require('response-time');
 const rateLimiter = require('./rateLimit/rateLimiter');
 const { version: packageVersion } = require('../package.json');
 const TokenService = require('../api/services/TokenService');
+const RightService = require('../api/services/RightService');
 const logger = require('../api/utils/logger');
 const sanitize = require('../api/utils/sanitize');
 
@@ -28,6 +29,8 @@ const AUTH_PATHS = [
   '/api/v1/signup',
   '/api/v1/forgotPassword',
   '/api/v1/account/password',
+  '/api/v1/mfa/enroll',
+  '/api/v1/mfa/verify',
 ];
 
 // Maximum body size for auth endpoints (1 KB).
@@ -81,6 +84,7 @@ module.exports.http = {
       'fileMiddleware',
       'bodyParser',
       'authBodyLimit',
+      'adminAuthRateLimit',
       'compress',
       'poweredBy',
       'addPackageVersionHeader',
@@ -159,6 +163,68 @@ module.exports.http = {
         });
       }
       return next();
+    },
+
+    // Stricter rate limiter for admin-targeted login attempts.
+    // Runs after bodyParser (needs req.body.email) and before router.
+    // Only applies to POST /api/v1/login. Looks up the email in the database
+    // to determine if the target account belongs to the Administrator group.
+    // If admin, applies the stricter adminAuthRateLimit (5 req / 15 min / IP).
+    // If not admin or email doesn't exist, skips (lets authRateLimit handle it).
+    //
+    // Note: the general authRateLimit (10 req / 15 min) runs earlier in the
+    // middleware chain, so a flood of requests is already bounded before this
+    // DB lookup executes. The DB query here is therefore limited to at most
+    // 10 requests per 15 minutes per IP in production.
+    //
+    // Known trade-off: when the 5-request admin limit is exhausted, the 429
+    // response is returned before the login controller's constantDelay()
+    // executes, making rate-limited responses measurably faster. This creates
+    // a minor timing oracle that could allow an attacker to distinguish admin
+    // emails after 5 probes per IP window. This is accepted because:
+    // (a) the attacker must already exhaust the auth rate limit to observe it,
+    // (b) the information leaked is limited to "this email belongs to an admin",
+    // (c) adding an artificial delay here would complicate middleware flow for
+    //     marginal security gain given the existing rate-limit protection.
+    adminAuthRateLimit(req, res, next) {
+      // Only apply to POST /api/v1/login
+      if (req.method.toUpperCase() !== 'POST' || req.path !== '/api/v1/login') {
+        return next();
+      }
+
+      const { email } = req.body || {};
+      if (!email) {
+        return next();
+      }
+
+      // Look up the account to determine if it's an admin.
+      // The result is stashed in req.adminCaver so the login controller
+      // can reuse it for failure tracking without a redundant DB query.
+      return TCaver.findOne({ mail: email.toLowerCase() })
+        .populate('groups')
+        .then((caver) => {
+          if (
+            !caver ||
+            !RightService.hasGroup(caver.groups, RightService.G.ADMINISTRATOR)
+          ) {
+            // Not an admin or account doesn't exist — skip admin rate limit
+            return next();
+          }
+
+          // Stash for downstream use in the login controller
+          req.adminCaver = caver;
+
+          // Admin account — apply stricter rate limit
+          return rateLimiter.adminAuthRateLimit(req, res, next);
+        })
+        .catch((err) => {
+          // DB lookup failed — skip admin rate limit gracefully
+          sails.log.error(
+            'adminAuthRateLimit: DB lookup failed, skipping:',
+            err.message
+          );
+          return next();
+        });
     },
 
     // If a bearer token is present & valid, put it in req.token.

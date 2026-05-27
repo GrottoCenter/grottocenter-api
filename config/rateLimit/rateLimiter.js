@@ -1,4 +1,5 @@
 const rateLimit = require('express-rate-limit');
+const { ipKeyGenerator } = require('express-rate-limit');
 const RightService = require('../../api/services/RightService');
 
 // 10-minute window for general requests
@@ -142,6 +143,28 @@ module.exports = {
       'Too many authentication attempts from this IP, please try again later.',
     standardHeaders: true,
     statusCode: 429,
+    skip: () => isTestOrDev(),
+  }),
+
+  /**
+   * Admin-specific authentication rate limiter.
+   * Limits login attempts targeting Administrator accounts to 5 per 15-minute
+   * window per IP. Uses a separate `admin:` key prefix so that admin-targeted
+   * and non-admin-targeted attempts are tracked under independent counters
+   * (Requirement 6.6).
+   *
+   * This is applied conditionally by the adminAuthRateLimit middleware in
+   * config/http.js, which looks up the email in the request body to determine
+   * whether the target account belongs to the Administrator group.
+   */
+  adminAuthRateLimit: rateLimit({
+    windowMs: AUTH_RATE_LIMIT_WINDOW_MS,
+    max: parseLimit(process.env.ADMIN_AUTH_RATE_LIMIT, 5),
+    message:
+      'Too many authentication attempts from this IP, please try again later.',
+    standardHeaders: true,
+    statusCode: 429,
+    keyGenerator: (req) => `admin:${ipKeyGenerator(req.ip)}`,
     skip: () => isTestOrDev(),
   }),
 };

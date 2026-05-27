@@ -206,6 +206,55 @@ module.exports = {
       via: 'caver',
       through: 'JCaverRegionSubscription',
     },
+
+    // MFA attributes
+    totpSecret: {
+      type: 'string',
+      allowNull: true,
+      columnName: 'totp_secret',
+    },
+
+    mfaEnabled: {
+      type: 'boolean',
+      defaultsTo: false,
+      columnName: 'mfa_enabled',
+    },
+
+    totpFailedAttempts: {
+      type: 'number',
+      defaultsTo: 0,
+      columnName: 'totp_failed_attempts',
+    },
+
+    loginFailedAttempts: {
+      type: 'number',
+      defaultsTo: 0,
+      columnName: 'login_failed_attempts',
+    },
+
+    lastUsedTotp: {
+      type: 'string',
+      allowNull: true,
+      columnName: 'last_used_totp',
+    },
+
+    lastUsedTotpAt: {
+      type: 'ref',
+      columnType: 'timestamp',
+      columnName: 'last_used_totp_at',
+    },
+
+    lastFailedLoginAt: {
+      type: 'ref',
+      columnType: 'timestamp',
+      columnName: 'last_failed_login_at',
+    },
+
+    lastSuspiciousEmailAt: {
+      type: 'ref',
+      columnType: 'timestamp',
+      columnName: 'last_suspicious_email_at',
+    },
   },
 
   // Commented because it was taking some attributes away

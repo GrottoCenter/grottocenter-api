@@ -46,6 +46,8 @@ tags:
   - name: locations
   - name: names
   - name: massifs
+  - name: mfa
+    description: Multi-Factor Authentication (TOTP) enrollment, verification, and reset for administrators
   - name: organizations
   - name: regions
   - name: search
@@ -3380,7 +3382,7 @@ paths:
     post:
       tags:
         - authentication
-      description: Login to Grottocenter
+      description: Login to Grottocenter. For administrators with active MFA, a valid TOTP code must be provided alongside credentials. For administrators without MFA enrolled, a restricted enrollment token is returned instead of a full auth token.
       requestBody:
         required: true
         content:
@@ -3394,6 +3396,11 @@ paths:
                 password:
                   type: string
                   description: Password of the account you want to connect to
+                totpCode:
+                  type: string
+                  description: 6-digit TOTP code from authenticator app (required for administrators with active MFA)
+                  pattern: '^\d{6}$'
+                  example: '123456'
               required:
                 - email
                 - password
@@ -3405,11 +3412,143 @@ paths:
               schema:
                 $ref: '#/components/schemas/Auth-success'
         '401':
-          description: Authentication failed. Returns different statuses and messages depending on the error ('MustReset' if password needs to be reset, 'NotVerified' if account is not activated, or 'Mismatch' for invalid credentials). Banned accounts return a generic 'Mismatch' response to prevent information leakage about ban status.
+          description: |
+            Authentication failed. Returns different statuses depending on the error:
+            - `Mismatch`: Invalid credentials or banned account (generic message to prevent information leakage)
+            - `MustReset`: Password needs to be reset
+            - `NotVerified`: Account email is not activated
+            - `MfaEnrollmentRequired`: Administrator must enroll in MFA before accessing the system. Response includes a short-lived `enrollmentToken` (10-min TTL) for use with `/mfa/enroll` and `/mfa/verify` endpoints.
+            - `MfaRequired`: Administrator has active MFA but did not provide a TOTP code
+            - `InvalidTotpCode`: The provided TOTP code is invalid or not a 6-digit numeric string
+            - `TotpAlreadyUsed`: The TOTP code has already been used within its validity window (replay protection)
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Auth-error'
+                oneOf:
+                  - $ref: '#/components/schemas/Auth-error'
+                  - $ref: '#/components/schemas/Auth-mfa-enrollment-required'
+                  - $ref: '#/components/schemas/Auth-mfa-required'
+                  - $ref: '#/components/schemas/Auth-invalid-totp'
+                  - $ref: '#/components/schemas/Auth-totp-already-used'
+
+  '/mfa/enroll':
+    post:
+      tags:
+        - mfa
+      summary: Start MFA enrollment
+      description: |
+        Generates a TOTP secret and returns it along with an otpauth:// URI for QR code scanning.
+        Requires a valid MFA enrollment token (issued by the login endpoint when MFA enrollment is required).
+        If a pending (unverified) secret exists, it is replaced with a newly generated one.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Enrollment started successfully. The secret and URI are returned for the administrator to configure their authenticator app.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Mfa-enroll-response'
+        '401':
+          description: Invalid, expired, or wrong type of token. Only MFA enrollment tokens (subject 'MfaEnrollment') are accepted; full auth tokens are rejected.
+        '403':
+          description: Non-administrator user. MFA enrollment is only available to administrators.
+        '409':
+          description: MFA is already enabled for this account. Use the reset endpoint first if re-enrollment is needed.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 'MFA is already enabled for this account.'
+
+  '/mfa/verify':
+    post:
+      tags:
+        - mfa
+      summary: Confirm MFA enrollment
+      description: |
+        Verifies a TOTP code to confirm MFA enrollment. On success, MFA is activated for the account
+        and a full auth token is issued (with admin TTL of 10 days), so the administrator does not
+        need to log in again.
+        Requires a valid MFA enrollment token (issued by the login endpoint).
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                totpCode:
+                  type: string
+                  description: 6-digit TOTP code from the authenticator app
+                  pattern: '^\d{6}$'
+                  example: '123456'
+              required:
+                - totpCode
+      responses:
+        '200':
+          description: MFA enrollment confirmed. A full auth token is issued.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Auth-success'
+        '401':
+          description: Invalid or expired enrollment token, or the provided TOTP code is invalid.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [InvalidTotpCode]
+                  message:
+                    type: string
+                    example: 'The TOTP code is invalid.'
+
+  '/mfa/reset':
+    post:
+      tags:
+        - mfa
+      summary: Reset MFA configuration
+      description: |
+        Resets the MFA configuration for the authenticated administrator. Clears the TOTP secret
+        and sets MFA status to inactive. The current auth token remains valid until its natural
+        expiration, but the next login will require MFA enrollment.
+        Requires a valid full auth token (standard tokenAuth policy) and password re-entry
+        to prevent stolen-token abuse.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                password:
+                  type: string
+                  description: Current account password (required for re-authentication)
+              required:
+                - password
+      responses:
+        '200':
+          description: MFA has been reset successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Mfa-reset-response'
+        '400':
+          description: Password not provided in request body.
+        '401':
+          description: No valid token provided, token has expired, or incorrect password.
+        '403':
+          description: Non-administrator user. MFA reset is only available to administrators.
 
   '/signup':
     post:
@@ -5764,6 +5903,68 @@ components:
           enum: [Mismatch, MustReset, NotVerified]
         message:
           type: string
+
+    Auth-mfa-enrollment-required:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [MfaEnrollmentRequired]
+        enrollmentToken:
+          type: string
+          description: Short-lived JWT (10-min TTL) valid only for /mfa/enroll and /mfa/verify endpoints
+
+    Auth-mfa-required:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [MfaRequired]
+        message:
+          type: string
+          example: 'TOTP code is required.'
+
+    Auth-invalid-totp:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [InvalidTotpCode]
+        message:
+          type: string
+          example: 'The TOTP code is invalid.'
+
+    Auth-totp-already-used:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [TotpAlreadyUsed]
+        message:
+          type: string
+          example: 'This code has already been used.'
+
+    Mfa-enroll-response:
+      type: object
+      properties:
+        secret:
+          type: string
+          description: Base32-encoded TOTP secret for manual entry in authenticator app
+          example: 'JBSWY3DPEHPK3PXP'
+        otpauthUri:
+          type: string
+          description: 'otpauth:// URI for QR code scanning (format: otpauth://totp/{issuer}:{email}?secret={base32}&issuer={issuer}&algorithm=SHA1&digits=6&period=30)'
+          example: 'otpauth://totp/Grottocenter:admin@example.com?secret=JBSWY3DPEHPK3PXP&issuer=Grottocenter&algorithm=SHA1&digits=6&period=30'
+
+    Mfa-reset-response:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [Success]
+        message:
+          type: string
+          example: 'MFA has been reset.'
 
     Average-values:
       type: object

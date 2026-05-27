@@ -103,5 +103,28 @@ module.exports.custom = {
    *                                                                          *
    ************************************************************************** */
   authBruteForceDelay: 500, // ms — delay before responding to login attempts
+  authFailureDelay: 200, // ms — constant-time delay on failed logins to prevent timing-based admin enumeration
   argon2Options: {}, // use argon2 defaults (see config/env/test.js for overrides)
+
+  /** *************************************************************************
+   *                                                                          *
+   * Admin security & MFA settings.                                           *
+   *                                                                          *
+   ************************************************************************** */
+
+  // --- TTLs (seconds) ---
+  adminAuthTokenTTL: 864000, // 10 days in seconds
+  mfaEnrollmentTokenTTL: 600, // 10 minutes in seconds
+
+  // --- MFA config ---
+  mfaIssuerName: 'Grottocenter',
+  mfaEncryptionKey: process.env.MFA_ENCRYPTION_KEY,
+
+  // --- Thresholds (counts) ---
+  adminLoginFailureThreshold: 5,
+  adminTotpFailureThreshold: 5,
+  suspiciousActivityEmailThreshold: 3,
+
+  // --- Cooldowns (milliseconds) ---
+  suspiciousActivityEmailCooldown: 900000, // 15 minutes in milliseconds
 };

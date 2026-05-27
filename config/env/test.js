@@ -11,6 +11,10 @@ module.exports = {
     // and the test suite makes dozens of login calls.
     authBruteForceDelay: 0,
 
+    // Skip the constant-time failure delay in tests — it adds 200ms per
+    // failed login and the test suite exercises many failure paths.
+    authFailureDelay: 0,
+
     // Use minimal argon2 cost for password hashing in tests.
     // Fixture passwords are pre-hashed with m=4096,t=3,p=4 which is
     // already fast for verify(). This only affects hash() calls
@@ -20,5 +24,11 @@ module.exports = {
       timeCost: 1,
       parallelism: 1,
     },
+
+    // MFA test configuration — deterministic values for reproducible tests.
+    mfaDevSecret: 'JBSWY3DPEHPK3PXP',
+    mfaIssuerName: 'Grottocenter (test)',
+    mfaEncryptionKey:
+      '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
   },
 };

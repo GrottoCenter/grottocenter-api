@@ -1,0 +1,30 @@
+<%- include('emailHeader', { emailTitle: emailTitle, locale: locale }); %>
+<% /*
+===== EMAIL BODY =====
+    Required values:
+        - __                Function    locale-scoped translation helper
+        - emailTitle        String      Subject line used as HTML <title>
+        - locale            String      ISO 639-1 locale code
+        - recipientName     String      Nickname of the recipient
+        - failedAttempts    Number      Number of consecutive failed login attempts
+        - lastAttemptTime   String      ISO 8601 UTC timestamp of the most recent failed attempt
+        - sourceIp          String      Source IP address of the attempts, or "unknown"
+*/ %>
+
+<p><%- __('Dear %s', '<b>' + recipientName + '</b>') %></p>
+
+<p>
+  <%- __('We detected suspicious login activity on your Grottocenter administrator account.') %>
+</p>
+
+<p>
+  <b><%- __('Failed attempts:') %></b> <%= failedAttempts %><br>
+  <b><%- __('Last attempt time:') %></b> <%= lastAttemptTime %><br>
+  <b><%- __('Source IP:') %></b> <%= sourceIp %>
+</p>
+
+<p>
+  <%- __('If you did not make these login attempts, please change your password immediately and contact an administrator at %s.', sails.config.custom.internalEmailAddress) %>
+</p>
+
+<%- include('emailFooter', { __: __, locale: locale }); %>
