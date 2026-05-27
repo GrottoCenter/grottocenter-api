@@ -18,6 +18,7 @@ module.exports = async (req, res) => {
     language: caver.language,
     mailIsValid: caver.mailIsValid,
     sendNotificationByEmail: caver.sendNotificationByEmail,
+    mfaEnabled: caver.mfaEnabled || false,
   };
 
   const params = { controllerMethod: 'AccountController.find' };

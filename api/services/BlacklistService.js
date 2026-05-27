@@ -35,6 +35,15 @@ module.exports = {
 
   /**
    * Check whether a token is revoked.
+   *
+   * IMPORTANT: This check uses an in-memory cache that is populated at
+   * bootstrap from t_token_blacklist. In a multi-instance deployment,
+   * a revocation triggered on instance A will NOT propagate to instance B
+   * until B restarts (or its cache is refreshed). With the admin token TTL
+   * of 10 days, this means a revoked admin token could remain valid on
+   * other instances for up to 10 days. This is a known limitation tracked
+   * for future improvement (e.g., Redis pub/sub or periodic cache refresh).
+   *
    * @param {number} caverId
    * @param {number} iat - Unix timestamp (seconds) from the JWT's iat claim
    * @returns {boolean} true if the token is revoked

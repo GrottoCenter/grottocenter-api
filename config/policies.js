@@ -40,6 +40,11 @@ module.exports.policies = {
   'v1/auth/verify-email': true,
   'v1/auth/resend-verification-email': true,
 
+  // MFA
+  'v1/mfa/enroll': ['mfaEnrollmentAuth'],
+  'v1/mfa/verify': ['mfaEnrollmentAuth'],
+  'v1/mfa/reset': ['tokenAuth'],
+
   // Caves
   'v1/cave/find': ['validateId'],
   'v1/cave/find-all': true,

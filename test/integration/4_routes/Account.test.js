@@ -24,6 +24,7 @@ describe('Account features', () => {
       should(res.body).have.property('language');
       should(res.body).have.property('mailIsValid');
       should(res.body).have.property('sendNotificationByEmail');
+      should(res.body).have.property('mfaEnabled');
       should(res.body).not.have.property('password');
       should(res.body).not.have.property('activationCode');
     });

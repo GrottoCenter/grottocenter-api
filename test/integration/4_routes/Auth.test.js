@@ -1,6 +1,8 @@
 const should = require('should');
 const supertest = require('supertest');
+const { authenticator } = require('otplib');
 const AuthService = require('../../../api/services/AuthService');
+const MfaService = require('../../../api/services/MfaService');
 
 describe('Auth features', () => {
   describe('Login', () => {
@@ -49,10 +51,33 @@ describe('Auth features', () => {
     });
 
     describe('Good credentials', () => {
+      const ADMIN_ID = 1;
+      const DEV_SECRET = 'JBSWY3DPEHPK3PXP';
+
+      before(async () => {
+        const encryptedSecret = MfaService.encryptSecret(DEV_SECRET);
+        await TCaver.updateOne({ id: ADMIN_ID }).set({
+          mfaEnabled: true,
+          totpSecret: encryptedSecret,
+          lastUsedTotp: null,
+          lastUsedTotpAt: null,
+        });
+      });
+
+      after(async () => {
+        await TCaver.updateOne({ id: ADMIN_ID }).set({
+          mfaEnabled: false,
+          totpSecret: null,
+          lastUsedTotp: null,
+          lastUsedTotpAt: null,
+        });
+      });
+
       it('should return code 200', (done) => {
+        const totpCode = authenticator.generate(DEV_SECRET);
         supertest(sails.hooks.http.app)
           .post('/api/v1/login')
-          .send({ email: 'admin1@admin1.com', password: 'testtest' })
+          .send({ email: 'admin1@admin1.com', password: 'testtest', totpCode })
           .set('Content-type', 'application/json')
           .set('Accept', 'application/json')
           .expect(200, done);

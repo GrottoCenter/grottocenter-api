@@ -74,6 +74,11 @@ module.exports.routes = {
   'GET /api/v1/verify-email': 'v1/auth/verify-email',
   'POST /api/v1/resend-verification-email': 'v1/auth/resend-verification-email',
 
+  // MFA
+  'POST /api/v1/mfa/enroll': 'v1/mfa/enroll',
+  'POST /api/v1/mfa/verify': 'v1/mfa/verify',
+  'POST /api/v1/mfa/reset': 'v1/mfa/reset',
+
   // Caver
   'DELETE /api/v1/cavers/:caverId/groups/:groupId':
     'v1/caver/remove-from-group',

@@ -1,0 +1,32 @@
+<%- include('emailHeader', { emailTitle: emailTitle, locale: locale }); %>
+<% /*
+===== EMAIL BODY =====
+    Required values:
+        - __                Function    locale-scoped translation helper
+        - emailTitle        String      Subject line used as HTML <title>
+        - locale            String      ISO 639-1 locale code
+        - recipientName     String      Nickname of the recipient
+        - lastAttemptTime   String      ISO 8601 UTC timestamp of the most recent failed attempt
+        - sourceIp          String      Source IP address of the attempts, or "unknown"
+*/ %>
+
+<p><%- __('Dear %s', '<b>' + recipientName + '</b>') %></p>
+
+<p>
+  <%- __('Your Grottocenter administrator account has been banned due to too many consecutive failed login attempts.') %>
+</p>
+
+<p>
+  <b><%- __('Last attempt time:') %></b> <%= lastAttemptTime %><br>
+  <b><%- __('Source IP:') %></b> <%= sourceIp %>
+</p>
+
+<p>
+  <%- __('Your account is now locked and cannot be used to log in. Another administrator must manually unban your account before access can be restored.') %>
+</p>
+
+<p>
+  <%- __('If you did not make these login attempts, your credentials may be compromised. Please contact an administrator immediately at %s.', sails.config.custom.internalEmailAddress) %>
+</p>
+
+<%- include('emailFooter', { __: __, locale: locale }); %>
