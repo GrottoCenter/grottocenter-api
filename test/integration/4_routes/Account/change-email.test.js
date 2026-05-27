@@ -1,7 +1,6 @@
 const supertest = require('supertest');
 const should = require('should');
 const AuthTokenService = require('../../AuthTokenService');
-const TokenService = require('../../../../api/services/TokenService');
 
 describe('Account change-email', () => {
   let userToken;
@@ -10,13 +9,7 @@ describe('Account change-email', () => {
 
   before(async () => {
     userToken = await AuthTokenService.getRawBearerUserToken();
-    const token = userToken.split(' ')[1];
-    const payload = await new Promise((resolve, reject) => {
-      TokenService.verify(token, (err, decoded) => {
-        if (err) return reject(err);
-        return resolve(decoded);
-      });
-    });
+    const payload = await AuthTokenService.getUserToken();
     userId = payload.id;
     const user = await TCaver.findOne({ id: userId });
     userMail = user.mail;
