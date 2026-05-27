@@ -1351,3 +1351,50 @@ CREATE TABLE t_bibliographic_metadata (
 	CONSTRAINT t_record_pk PRIMARY KEY (id_document),
     CONSTRAINT t_record_t_document_fk FOREIGN KEY (id_document) REFERENCES t_document(id)
 );
+
+-- t_conversation definition
+CREATE TABLE t_conversation (
+	id serial NOT NULL,
+	date_inscription timestamp NOT NULL DEFAULT now(),
+	CONSTRAINT t_conversation_pk PRIMARY KEY (id)
+);
+
+-- j_participant definition
+CREATE TABLE j_participant (
+	id_conversation int4 NOT NULL,
+	id_caver int4 NOT NULL,
+	CONSTRAINT j_participant_pk PRIMARY KEY (id_conversation, id_caver),
+	CONSTRAINT j_participant_t_conversation_fk FOREIGN KEY (id_conversation) REFERENCES t_conversation(id) ON DELETE CASCADE,
+	CONSTRAINT j_participant_t_caver_fk FOREIGN KEY (id_caver) REFERENCES t_caver(id) ON DELETE CASCADE
+);
+
+-- t_conversation_archive definition
+CREATE TABLE t_conversation_archive (
+	id serial NOT NULL,
+	id_conversation int4 NOT NULL,
+	id_caver int4 NOT NULL,
+	archived_at timestamp NOT NULL DEFAULT now(),
+	CONSTRAINT t_conversation_archive_pk PRIMARY KEY (id),
+	CONSTRAINT t_conversation_archive_conversation_fk FOREIGN KEY (id_conversation) REFERENCES t_conversation(id) ON DELETE CASCADE,
+	CONSTRAINT t_conversation_archive_caver_fk FOREIGN KEY (id_caver) REFERENCES t_caver(id) ON DELETE CASCADE,
+	CONSTRAINT t_conversation_archive_unique UNIQUE (id_conversation, id_caver)
+);
+
+-- t_message definition
+CREATE TABLE t_message (
+	id serial NOT NULL,
+	id_conversation int4 NOT NULL,
+	id_caver_sender int4,
+	body varchar(5000) NOT NULL,
+	date_sent timestamp NOT NULL DEFAULT now(),
+	date_read timestamp NULL,
+	CONSTRAINT t_message_pk PRIMARY KEY (id),
+	CONSTRAINT t_message_t_conversation_fk FOREIGN KEY (id_conversation) REFERENCES t_conversation(id) ON DELETE CASCADE,
+	CONSTRAINT t_message_t_caver_fk FOREIGN KEY (id_caver_sender) REFERENCES t_caver(id) ON DELETE SET NULL
+);
+
+-- Performance indexes for private messaging
+CREATE INDEX idx_j_participant_caver ON j_participant(id_caver);
+CREATE INDEX idx_t_conversation_archive ON t_conversation_archive(id_conversation, id_caver);
+CREATE INDEX idx_t_message_conversation ON t_message(id_conversation, date_sent DESC);
+CREATE INDEX idx_t_message_sender ON t_message(id_caver_sender);

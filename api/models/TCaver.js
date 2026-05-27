@@ -159,6 +159,12 @@ module.exports = {
       defaultsTo: false,
     },
 
+    sendMessageNotificationByEmail: {
+      type: 'boolean',
+      columnName: 'send_message_notification_by_email',
+      defaultsTo: true,
+    },
+
     grottos: {
       collection: 'TGrotto',
       via: 'caver',

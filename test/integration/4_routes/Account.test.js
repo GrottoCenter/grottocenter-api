@@ -96,6 +96,118 @@ describe('Account features', () => {
     });
   });
 
+  describe('Notification preferences', () => {
+    describe('GET /api/v1/account/notifications', () => {
+      it('should return code 200 with snake_case fields', (done) => {
+        supertest(sails.hooks.http.app)
+          .get('/api/v1/account/notifications')
+          .set('Authorization', userToken)
+          .expect(200)
+          .end((err, res) => {
+            if (err) return done(err);
+            should(res.body).have.properties([
+              'alert_for_news',
+              'send_notification_by_email',
+              'send_message_notification_by_email',
+            ]);
+            done();
+            return null;
+          });
+      });
+    });
+
+    describe('PATCH /api/v1/account/notifications', () => {
+      describe('Missing parameters', () => {
+        it('should return code 400', (done) => {
+          supertest(sails.hooks.http.app)
+            .patch('/api/v1/account/notifications')
+            .set('Authorization', userToken)
+            .set('Content-type', 'application/json')
+            .set('Accept', 'application/json')
+            .expect(400, done);
+        });
+      });
+      describe('Invalid alert_for_news parameter', () => {
+        it('should return code 400', (done) => {
+          supertest(sails.hooks.http.app)
+            .patch('/api/v1/account/notifications')
+            .send({ alert_for_news: 'change' })
+            .set('Authorization', userToken)
+            .set('Content-type', 'application/json')
+            .set('Accept', 'application/json')
+            .expect(400, done);
+        });
+      });
+      describe('Success', () => {
+        it('should return code 200 and update preferences', async () => {
+          await supertest(sails.hooks.http.app)
+            .patch('/api/v1/account/notifications')
+            .send({
+              alert_for_news: true,
+              send_notification_by_email: true,
+              send_message_notification_by_email: false,
+            })
+            .set('Authorization', userToken)
+            .set('Content-type', 'application/json')
+            .set('Accept', 'application/json')
+            .expect(200)
+            .then((res) => {
+              should(res.body.alert_for_news).be.true();
+              should(res.body.send_notification_by_email).be.true();
+              should(res.body.send_message_notification_by_email).be.false();
+            });
+
+          const caver = await TCaver.findOne({ nickname: 'User1' });
+          caver.alertForNews.should.be.true();
+          caver.sendNotificationByEmail.should.be.true();
+          caver.sendMessageNotificationByEmail.should.be.false();
+        });
+
+        it('should partially update notification preferences', async () => {
+          // Reset preferences first to have a clean state for partial check
+          await supertest(sails.hooks.http.app)
+            .patch('/api/v1/account/notifications')
+            .send({
+              alert_for_news: false,
+              send_notification_by_email: false,
+              send_message_notification_by_email: true,
+            })
+            .set('Authorization', userToken)
+            .set('Content-type', 'application/json')
+            .set('Accept', 'application/json')
+            .expect(200);
+
+          await supertest(sails.hooks.http.app)
+            .patch('/api/v1/account/notifications')
+            .send({ alert_for_news: true })
+            .set('Authorization', userToken)
+            .set('Content-type', 'application/json')
+            .set('Accept', 'application/json')
+            .expect(200)
+            .then((res) => {
+              should(res.body.alert_for_news).be.true();
+              should(res.body.send_notification_by_email).be.false();
+              should(res.body.send_message_notification_by_email).be.true();
+            });
+        });
+
+        after(async () => {
+          await supertest(sails.hooks.http.app)
+            .patch('/api/v1/account/notifications')
+            .send({
+              alert_for_news: false,
+              send_notification_by_email: false,
+              send_message_notification_by_email: true,
+            })
+            .set('Authorization', userToken)
+            .set('Content-type', 'application/json')
+            .set('Accept', 'application/json')
+            .expect(200);
+        });
+      });
+    });
+  });
+
   describe('Update profile (name, surname, nickname)', () => {
     it('should update name and surname', async () => {
       await supertest(sails.hooks.http.app)
@@ -174,55 +286,11 @@ describe('Account features', () => {
         .expect(400);
     });
 
-    // Restore original values
     after(async () => {
       await TCaver.updateOne({ id: 3 }).set({
         name: 'Name1',
         surname: 'Surname1',
         nickname: 'User1',
-      });
-    });
-  });
-
-  describe('Update sendNotificationByEmail', () => {
-    it('should update sendNotificationByEmail to true', async () => {
-      await supertest(sails.hooks.http.app)
-        .patch('/api/v1/account')
-        .send({ sendNotificationByEmail: true })
-        .set('Authorization', userToken)
-        .set('Content-type', 'application/json')
-        .set('Accept', 'application/json')
-        .expect(204);
-      const caver = await TCaver.findOne({ id: 3 });
-      should(caver.sendNotificationByEmail).equal(true);
-    });
-
-    it('should update sendNotificationByEmail to false', async () => {
-      await supertest(sails.hooks.http.app)
-        .patch('/api/v1/account')
-        .send({ sendNotificationByEmail: false })
-        .set('Authorization', userToken)
-        .set('Content-type', 'application/json')
-        .set('Accept', 'application/json')
-        .expect(204);
-      const caver = await TCaver.findOne({ id: 3 });
-      should(caver.sendNotificationByEmail).equal(false);
-    });
-
-    it('should return 400 if sendNotificationByEmail is not a boolean', async () => {
-      await supertest(sails.hooks.http.app)
-        .patch('/api/v1/account')
-        .send({ sendNotificationByEmail: 'yes' })
-        .set('Authorization', userToken)
-        .set('Content-type', 'application/json')
-        .set('Accept', 'application/json')
-        .expect(400);
-    });
-
-    // Restore original value
-    after(async () => {
-      await TCaver.updateOne({ id: 3 }).set({
-        sendNotificationByEmail: false,
       });
     });
   });
@@ -241,7 +309,10 @@ describe('Account features', () => {
     it('should return 403 if currentPassword is incorrect', (done) => {
       supertest(sails.hooks.http.app)
         .patch('/api/v1/account')
-        .send({ password: 'New_password1!', currentPassword: 'wrongpassword' })
+        .send({
+          password: 'New_password1!',
+          currentPassword: 'wrongpassword',
+        })
         .set('Authorization', userToken)
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json')
@@ -342,6 +413,7 @@ describe('Account features', () => {
           nickname: 'unverified_forgot',
           password: await AuthService.createHashedPassword('test'),
           activated: false,
+          language: '000',
         });
       });
       after(async () => {
@@ -371,6 +443,7 @@ describe('Account features', () => {
           password: await AuthService.createHashedPassword('test'),
           activated: true,
           banned: true,
+          language: '000',
         });
       });
       after(async () => {
@@ -421,7 +494,10 @@ describe('Account features', () => {
       it('should return code 400', (done) => {
         supertest(sails.hooks.http.app)
           .patch('/api/v1/account/password')
-          .send({ password: 'my_n3w-P4ssword', token: 'anInv4lidRand0mTok3n' })
+          .send({
+            password: 'my_n3w-P4ssword',
+            token: 'anInv4lidRand0mTok3n',
+          })
           .set('Content-type', 'application/json')
           .set('Accept', 'application/json')
           .expect(400, done);

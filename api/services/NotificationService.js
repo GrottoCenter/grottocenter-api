@@ -49,7 +49,9 @@ const sendNotificationEmail = async (
   user
 ) => {
   // Resolve the recipient's preferred locale
-  const locale = await LanguageService.getLocale(user.language);
+  const locale =
+    (await LanguageService.getLocale(user.language)) ||
+    sails.config.i18n.defaultLocale;
 
   // Get entity name (handle all cases)
   const getEntityName = (entityData) => {
@@ -207,6 +209,48 @@ const getCountryMassifAndRegionSubscribers = async (
 
 module.exports = {
   NOTIFICATION_ENTITIES,
+  notifyMessageRecipient: async (senderId, conversationId) => {
+    try {
+      const sender = await TCaver.findOne({ id: senderId });
+      if (!sender) return;
+      const query = `SELECT id_caver FROM j_participant WHERE id_conversation = $1 AND id_caver != $2`;
+      const result = await CommonService.query(query, [
+        conversationId,
+        senderId,
+      ]);
+      if (result.rows.length === 0) return;
+      const row = result.rows[0];
+      const recipient = await TCaver.findOne({ id: row.id_caver });
+      if (!recipient || !recipient.sendMessageNotificationByEmail) return;
+      const locale =
+        (await LanguageService.getLocale(recipient.language)) ||
+        sails.config.i18n.defaultLocale;
+      const conversationLink = `${sails.config.custom.baseUrl}/ui/messages/${conversationId}`;
+      await sails.helpers.sendEmail
+        .with({
+          allowResponse: false,
+          emailSubject: 'New Message',
+          locale,
+          recipientEmail: recipient.mail,
+          viewName: 'new-message',
+          viewValues: {
+            senderNickname: sender.nickname,
+            conversationLink,
+            recipientName: recipient.nickname,
+          },
+        })
+        .intercept('sendSESEmailError', () => {
+          sails.log.error(
+            `The email service error notifying user ${recipient.nickname}.`
+          );
+          return false;
+        });
+    } catch (error) {
+      sails.log.error(
+        `An error occurred in notifyMessageRecipient: ${error.message}`
+      );
+    }
+  },
   NOTIFICATION_TYPES,
   ...(process.env.NODE_ENV === 'test' ? { sendNotificationEmail } : undefined),
 

@@ -1,0 +1,30 @@
+<%- include('emailHeader', { emailTitle: emailTitle, locale: locale }); %>
+  <% /*
+  ===== EMAIL BODY =====
+
+    Required values:
+        - __                Function    locale-scoped translation helper
+        - emailTitle        String      Subject line used as HTML <title>
+        - locale            String      ISO 639-1 locale code
+        - senderNickname    String      Nickname of the sender
+        - conversationLink  String      Link to the conversation
+        - recipientName     String      Full name or nickname of the recipient
+  */ %>
+
+  <p>
+    <%- __('Dear %s', '<b>' + recipientName + '</b>') %>
+  </p>
+
+  <p>
+    <%- __('%s sent you a new message on Grottocenter.', '<b>' + senderNickname + '</b>') %>
+  </p>
+
+  <% if (conversationLink) { %>
+    <p>
+      <%- __('Click the link below to view the conversation:') %>
+      <br>
+      <a href="<%= conversationLink %>"><%= conversationLink %></a>
+    </p>
+  <% } %>
+
+  <%- include('emailFooter', { __: __, locale: locale }); %>

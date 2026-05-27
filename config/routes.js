@@ -64,6 +64,8 @@ module.exports.routes = {
   'GET /api/v1/account': 'v1/account/find',
   'PATCH /api/v1/account': 'v1/account/update',
   'PATCH /api/v1/account/password': 'v1/account/change-password',
+  'GET /api/v1/account/notifications': 'v1/account/get-notifications',
+  'PATCH /api/v1/account/notifications': 'v1/account/update-notifications',
   'POST /api/v1/forgotPassword': 'v1/account/forgot-password',
 
   // Auth
@@ -101,6 +103,16 @@ module.exports.routes = {
   'POST /api/v1/cavers/:caverId/ban': 'v1/caver/ban',
   'POST /api/v1/cavers/:caverId/unban': 'v1/caver/unban',
   'DELETE /api/v1/cavers/:id': 'v1/caver/delete',
+
+  // Messages
+  'POST /api/v1/messages': 'v1/message/create',
+  'GET /api/v1/messages/conversations': 'v1/message/list-conversations',
+  'GET /api/v1/messages/conversations/archived':
+    'v1/message/list-archived-conversations',
+  'GET /api/v1/messages/conversations/:id': 'v1/message/get-messages',
+  'POST /api/v1/messages/conversations/:id/archive': 'v1/message/archive',
+  'POST /api/v1/messages/conversations/:id/unarchive': 'v1/message/unarchive',
+  'GET /api/v1/messages/unread/count': 'v1/message/count-unread',
 
   // Entrance
   'DELETE /api/v1/entrances/:entranceId/documents/:documentId':

@@ -31,6 +31,8 @@ module.exports.policies = {
   'v1/account/update': 'tokenAuth',
   'v1/account/change-password': true,
   'v1/account/forgot-password': true,
+  'v1/account/get-notifications': 'tokenAuth',
+  'v1/account/update-notifications': 'tokenAuth',
 
   // Auth
   'v1/auth/login': true,
@@ -228,6 +230,15 @@ module.exports.policies = {
   // Name
   'v1/name/set-as-main': 'tokenAuth',
   'v1/name/update': 'tokenAuth',
+
+  // Messages
+  'v1/message/create': 'tokenAuth',
+  'v1/message/list-conversations': 'tokenAuth',
+  'v1/message/list-archived-conversations': 'tokenAuth',
+  'v1/message/get-messages': 'tokenAuth',
+  'v1/message/archive': 'tokenAuth',
+  'v1/message/unarchive': 'tokenAuth',
+  'v1/message/count-unread': 'tokenAuth',
 
   // Notification
   'v1/notification/count-unread': 'tokenAuth',

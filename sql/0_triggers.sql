@@ -1283,3 +1283,22 @@ CREATE OR REPLACE TRIGGER histo_delete_rigging BEFORE DELETE ON t_rigging FOR EA
 --trigger qui exécute la sauvegarde des derniers changements lors d'un CREATE ou d'un UPDATE
 --------------------------------------------------------
 CREATE OR REPLACE TRIGGER last_change_rigging BEFORE INSERT OR UPDATE ON t_rigging FOR EACH ROW EXECUTE PROCEDURE change_rigging();
+
+
+-- Trigger to prevent more than 2 participants in a private conversation
+----------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION check_participant_count() RETURNS trigger AS $$
+DECLARE
+    p_count int;
+BEGIN
+    SELECT COUNT(*) INTO p_count FROM j_participant WHERE id_conversation = NEW.id_conversation;
+    IF p_count >= 2 THEN
+        RAISE EXCEPTION 'A private conversation cannot have more than 2 participants.';
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER check_participant_count_trigger
+BEFORE INSERT ON j_participant
+FOR EACH ROW EXECUTE PROCEDURE check_participant_count();

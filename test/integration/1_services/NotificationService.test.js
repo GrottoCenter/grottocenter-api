@@ -1,6 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
 const CaveService = require('../../../api/services/CaveService');
+const MessageService = require('../../../api/services/MessageService');
 const NotificationService = require('../../../api/services/NotificationService');
 const {
   NOTIFICATION_ENTITIES,
@@ -687,6 +688,105 @@ describe('NotificationService', () => {
 
       should(newIds).have.length(1);
       should(sails.helpers.sendEmail.with.called).be.false();
+    });
+  });
+
+  describe('notifyMessageRecipient()', () => {
+    let sender;
+    let recipient;
+    let conversation;
+    let sendEmailStub;
+
+    before(async () => {
+      sender = await TCaver.create({
+        activated: true,
+        mailIsValid: true,
+        nickname: 'SenderCaver',
+        mail: 'sender.msg@test.com',
+        login: 'sender_msg_login',
+        password: 'argon2_hashed_password_mock',
+      }).fetch();
+
+      recipient = await TCaver.create({
+        activated: true,
+        mailIsValid: true,
+        nickname: 'RecipientCaver',
+        mail: 'recipient.msg@test.com',
+        login: 'recipient_msg_login',
+        password: 'argon2_hashed_password_mock',
+        sendMessageNotificationByEmail: true,
+      }).fetch();
+
+      conversation = await MessageService.createConversation(
+        sender.id,
+        recipient.id
+      );
+    });
+
+    after(async () => {
+      await sails.sendNativeQuery(
+        'DELETE FROM j_participant WHERE id_conversation = $1',
+        [conversation.id]
+      );
+      await TConversation.destroy({ id: conversation.id });
+      await TCaver.destroy({ id: [sender.id, recipient.id] });
+    });
+
+    afterEach(() => {
+      if (sendEmailStub) {
+        sendEmailStub.restore();
+        sendEmailStub = null;
+      }
+    });
+
+    it('should send email notification to the recipient of the message', async () => {
+      let emailSentArgs = null;
+      sendEmailStub = sinon.stub(sails.helpers, 'sendEmail').value({
+        with: sinon.stub().callsFake((args) => {
+          emailSentArgs = args;
+          return {
+            intercept: sinon.stub().resolves(),
+          };
+        }),
+      });
+
+      await NotificationService.notifyMessageRecipient(
+        sender.id,
+        conversation.id
+      );
+
+      should(sails.helpers.sendEmail.with.calledOnce).be.true();
+      should(emailSentArgs).not.be.null();
+      should(emailSentArgs.emailSubject).be.equal('New Message');
+      should(emailSentArgs.recipientEmail).be.equal(recipient.mail);
+      should(emailSentArgs.viewName).be.equal('new-message');
+      should(emailSentArgs.viewValues.senderNickname).be.equal(sender.nickname);
+      should(emailSentArgs.viewValues.recipientName).be.equal(
+        recipient.nickname
+      );
+    });
+
+    it('should successfully render the new-message email template without errors', async () => {
+      const errorLogSpy = sinon.spy(sails.log, 'error');
+
+      try {
+        await NotificationService.notifyMessageRecipient(
+          sender.id,
+          conversation.id
+        );
+
+        const errorCalls = errorLogSpy
+          .getCalls()
+          .filter(
+            (call) =>
+              call.args[0] &&
+              typeof call.args[0] === 'string' &&
+              call.args[0].includes('notifyMessageRecipient')
+          );
+        should(errorCalls).have.length(0);
+      } finally {
+        errorLogSpy.restore();
+      }
     });
   });
 });

@@ -1,0 +1,56 @@
+/**
+ * MessageController.listArchivedConversations
+ *
+ * @description :: List archived conversations for the authenticated caver.
+ * @help        :: See https://sailsjs.com/documentation/concepts/controllers
+ */
+
+const DEFAULT_SIZE = 20;
+const MAX_SIZE = 50;
+
+module.exports = async (req, res) => {
+  const caverId = req.token.id;
+  const limit = Math.min(
+    parseInt(req.param('limit'), 10) || DEFAULT_SIZE,
+    MAX_SIZE
+  );
+  const skip = parseInt(req.param('skip'), 10) || 0;
+
+  try {
+    const conversations = await MessageService.listConversations(
+      caverId,
+      'archived',
+      skip,
+      limit
+    );
+    const total = await MessageService.countConversations(caverId, 'archived');
+
+    const params = {
+      controllerMethod: 'MessageController.listArchivedConversations',
+      limit,
+      maxRange: MAX_SIZE,
+      searchedItem: 'Archived Conversations',
+      skip,
+      total,
+      url: req.originalUrl,
+    };
+
+    return ControllerService.treatAndConvert(
+      req,
+      null,
+      conversations,
+      params,
+      res,
+      (data) => ({ conversations: data })
+    );
+  } catch (err) {
+    sails.log.error(err);
+    return res.serverError(
+      sails.helpers.formatStructuredError(
+        req,
+        'An error occurred while listing archived conversations.',
+        'E_SERVER_ERROR'
+      )
+    );
+  }
+};

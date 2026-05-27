@@ -53,6 +53,7 @@ tags:
   - name: import csv
   - name: comments
   - name: riggings
+  - name: messaging
 
 paths:
   '/health':
@@ -3273,6 +3274,72 @@ paths:
         '404':
           description: User in the password reset token not found.
 
+  '/account/notifications':
+    get:
+      tags:
+        - account
+      description: Get notification preferences for the authenticated caver.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  alert_for_news:
+                    type: boolean
+                  send_notification_by_email:
+                    type: boolean
+                  send_message_notification_by_email:
+                    type: boolean
+        '401':
+          description: Unauthorized
+        '404':
+          description: Caver not found
+
+    patch:
+      tags:
+        - account
+      description: Update notification preferences for the authenticated caver.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                alert_for_news:
+                  type: boolean
+                send_notification_by_email:
+                  type: boolean
+                send_message_notification_by_email:
+                  type: boolean
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  alert_for_news:
+                    type: boolean
+                  send_notification_by_email:
+                    type: boolean
+                  send_message_notification_by_email:
+                    type: boolean
+        '400':
+          description: Invalid preference value provided
+        '401':
+          description: Unauthorized
+        '404':
+          description: Caver not found
+
   '/forgotPassword':
     post:
       tags:
@@ -5245,7 +5312,318 @@ paths:
         '404':
           description: Request body must be a valid JSON object
 
+  '/messages':
+    post:
+      tags:
+        - messaging
+      description: 'Send a private message to another user. If no conversation exists between the sender and the recipient, a new one is created. If conversationId is provided, it acts as a reply.'
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - body
+              properties:
+                recipientId:
+                  type: integer
+                  description: ID of the recipient caver. Required if conversationId is not provided.
+                conversationId:
+                  type: integer
+                  description: ID of the conversation to reply to. Required if recipientId is not provided.
+                body:
+                  type: string
+                  description: Content of the message.
+                  maxLength: 5000
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        400:
+          description: Validation error (empty body, body too long, missing recipientId/conversationId, or sending to self)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StructuredError'
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden (recipient not eligible, or not a participant in the conversation)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StructuredError'
+        404:
+          description: Recipient or conversation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StructuredError'
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StructuredError'
+
+  '/messages/conversations':
+    get:
+      tags:
+        - messaging
+      description: 'List active conversations for the authenticated caver (paginated).'
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: limit
+          in: query
+          description: Maximum number of conversations to return.
+          schema:
+            type: integer
+            default: 20
+            maximum: 50
+        - name: skip
+          in: query
+          description: Number of conversations to skip.
+          schema:
+            type: integer
+            default: 0
+      responses:
+        206:
+          description: Successful operation (Partial Content)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  conversations:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Conversation'
+        401:
+          description: Unauthorized
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StructuredError'
+
+  '/messages/conversations/archived':
+    get:
+      tags:
+        - messaging
+      description: 'List archived conversations for the authenticated caver (paginated).'
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: limit
+          in: query
+          description: Maximum number of conversations to return.
+          schema:
+            type: integer
+            default: 20
+            maximum: 50
+        - name: skip
+          in: query
+          description: Number of conversations to skip.
+          schema:
+            type: integer
+            default: 0
+      responses:
+        206:
+          description: Successful operation (Partial Content)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  conversations:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Conversation'
+        401:
+          description: Unauthorized
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StructuredError'
+
+  '/messages/conversations/{id}':
+    get:
+      tags:
+        - messaging
+      description: 'Get messages in a conversation (paginated, marks as read). Messages are returned in chronological order, but pagination starts from the most recent (e.g., skip=0 returns the latest page).'
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the conversation.
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          description: Maximum number of messages to return (fetches the most recent messages first).
+          schema:
+            type: integer
+            default: 20
+            maximum: 50
+        - name: skip
+          in: query
+          description: Number of messages to skip from the most recent.
+          schema:
+            type: integer
+            default: 0
+      responses:
+        206:
+          description: Successful operation (Partial Content)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  messages:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Message'
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden (not a participant)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StructuredError'
+        404:
+          description: Conversation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StructuredError'
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StructuredError'
+
+  '/messages/conversations/{id}/archive':
+    post:
+      tags:
+        - messaging
+      description: Archive a conversation for the authenticated caver.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the conversation.
+          schema:
+            type: integer
+      responses:
+        204:
+          description: Successful operation (No Content)
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden (not a participant)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StructuredError'
+        404:
+          description: Conversation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StructuredError'
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StructuredError'
+
+  '/messages/conversations/{id}/unarchive':
+    post:
+      tags:
+        - messaging
+      description: Unarchive a conversation for the authenticated caver.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the conversation.
+          schema:
+            type: integer
+      responses:
+        204:
+          description: Successful operation (No Content)
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden (not a participant)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StructuredError'
+        404:
+          description: Conversation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StructuredError'
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StructuredError'
+
+  '/messages/unread/count':
+    get:
+      tags:
+        - messaging
+      description: 'Get unread message counts for active and archived lists.'
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  active:
+                    type: integer
+                    description: Count of unread messages in active conversations.
+                  archived:
+                    type: integer
+                    description: Count of unread messages in archived conversations.
+        401:
+          description: Unauthorized
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StructuredError'
+
 components:
+
   parameters:
     X-Trace-Id:
       name: X-Trace-Id
@@ -6374,6 +6752,82 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Cave'
+
+    StructuredError:
+      type: object
+      description: 'Structured error response returned by messaging and notification endpoints.'
+      properties:
+        code:
+          type: string
+          description: 'Machine-readable error code (e.g. E_VALIDATION, E_NOT_FOUND, E_AUTHORIZATION, E_SERVER_ERROR).'
+          example: E_VALIDATION
+        message:
+          type: string
+          description: 'Human-readable error description.'
+        metadata:
+          type: object
+          description: 'Optional additional context about the error.'
+        reference_id:
+          type: string
+          description: 'Trace ID from the originating request, useful for debugging.'
+          example: 'req-abc-123'
+
+    Message:
+      type: object
+      properties:
+        id:
+          type: integer
+        conversation:
+          type: integer
+        caverSender:
+          $ref: '#/components/schemas/SimpleCaver'
+        body:
+          type: string
+        dateSent:
+          type: string
+          format: date-time
+        dateRead:
+          type: string
+          format: date-time
+
+    Conversation:
+      type: object
+      properties:
+        id:
+          type: integer
+        dateInscription:
+          type: string
+          format: date-time
+        lastMessage:
+          nullable: true
+          type: object
+          properties:
+            id:
+              type: integer
+            dateSent:
+              type: string
+              format: date-time
+            body:
+              type: string
+        unreadCount:
+          type: integer
+        archivedAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: 'Present only for archived conversations; null for active ones.'
+        otherParticipant:
+          $ref: '#/components/schemas/SimpleCaver'
+
+    SimpleCaver:
+      type: object
+      properties:
+        id:
+          type: integer
+        nickname:
+          type: string
+
+
 
     Name:
       properties:
