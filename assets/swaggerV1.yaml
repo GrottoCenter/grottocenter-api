@@ -3425,7 +3425,7 @@ paths:
         '409':
           description: Conflict. The new email address is now taken by another account.
         '500':
-          description: An error occurred during account activation.
+          description: An error occurred during email verification.
 
   '/resend-verification-email':
     post:
