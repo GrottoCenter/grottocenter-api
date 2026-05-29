@@ -1,6 +1,16 @@
 const rateLimit = require('express-rate-limit');
-const { ipKeyGenerator } = require('express-rate-limit');
 const RightService = require('../../api/services/RightService');
+
+/**
+ * Custom key generator that uses req.ip as-is, bypassing express-rate-limit's
+ * built-in IP validation. Azure App Service may forward IPs with a port suffix
+ * (e.g. "1.2.3.4:52241") which the library's default ipKeyGenerator rejects
+ * with ERR_ERL_INVALID_IP_ADDRESS. Since the key only needs to be a consistent
+ * string per client, req.ip works directly without normalization.
+ *
+ * @see https://express-rate-limit.github.io/ERR_ERL_INVALID_IP_ADDRESS/
+ */
+const keyGenerator = (req) => req.ip || 'unknown';
 
 // 10-minute window for general requests
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
@@ -77,6 +87,7 @@ module.exports = {
   generalRateLimit: rateLimit({
     windowMs: RATE_LIMIT_WINDOW_MS,
     max: generalMax,
+    keyGenerator,
     message: 'Too many requests with the same IP, try again later.',
     standardHeaders: true,
     statusCode: 429,
@@ -99,6 +110,7 @@ module.exports = {
   deleteRateLimit: rateLimit({
     windowMs: DELETE_RATE_LIMIT_WINDOW_MS,
     max: deleteMax,
+    keyGenerator,
     message: 'Too many DELETE requests with the same IP, try again later.',
     standardHeaders: true,
     statusCode: 429,
@@ -139,6 +151,7 @@ module.exports = {
   authRateLimit: rateLimit({
     windowMs: AUTH_RATE_LIMIT_WINDOW_MS,
     max: parseLimit(process.env.AUTH_RATE_LIMIT, 10),
+    keyGenerator,
     message:
       'Too many authentication attempts from this IP, please try again later.',
     standardHeaders: true,
@@ -164,7 +177,7 @@ module.exports = {
       'Too many authentication attempts from this IP, please try again later.',
     standardHeaders: true,
     statusCode: 429,
-    keyGenerator: (req) => `admin:${ipKeyGenerator(req.ip)}`,
+    keyGenerator: (req) => `admin:${req.ip || 'unknown'}`,
     skip: () => isTestOrDev(),
   }),
 };
