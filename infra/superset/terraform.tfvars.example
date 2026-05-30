@@ -1,0 +1,13 @@
+# Copy this file to terraform.tfvars and fill in the values.
+# Do NOT commit terraform.tfvars — it contains secrets.
+
+subscription_id        = "00000000-0000-0000-0000-000000000000"
+superset_secret_key    = "CHANGE_ME_generate_with_openssl_rand_base64_42"
+superset_database_uri  = "postgresql://superset_user:CHANGE_ME@your-azure-pg.postgres.database.azure.com:5432/superset_meta?sslmode=require"
+superset_custom_domain = "bi.grottocenter.org"
+superset_image_tag     = "4.1.1-pg-v2"
+ghcr_username          = "YourGitHubUsername"
+ghcr_token             = "ghp_CHANGE_ME"
+superset_admin_username = "admin"
+superset_admin_password = "CHANGE_ME"
+superset_admin_email    = "admin@grottocenter.org"

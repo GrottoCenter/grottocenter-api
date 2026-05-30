@@ -1,0 +1,48 @@
+Objet : Module « Données scientifiques » de Grottocenter — version alpha ouverte aux contributeurs
+
+Bonjour,
+
+L'équipe Wikicaves travaille depuis plusieurs mois sur un nouveau module pour Grottocenter dédié aux données scientifiques issues du milieu souterrain et de son environnement. Nous avons atteint un stade alpha fonctionnel et nous cherchons des scientifiques volontaires pour contribuer avec leurs données et tester l'outil de visualisation et d'analyse.
+
+Ce que le module permet aujourd'hui :
+
+- Stocker des séries temporelles de mesures (température, humidité, pression atmosphérique, CO₂, pluviométrie, niveau d'eau, conductivité, pH…) rattachées à des points d'observation géolocalisés, eux-mêmes liés à des cavités.
+- Gérer les métadonnées associées : appareil de mesure, configuration du capteur (unité, précision, limites de détection), intervalle d'échantillonnage, qualité des données.
+- Enregistrer des observations de contamination (métaux lourds, hydrocarbures, nitrates, microplastiques…) et d'activités humaines.
+- Accueillir des données de suivi de populations (chiroptères, invertébrés cavernicoles, flore d'entrée de grotte…) dans le cadre d'observations biospéléologiques.
+- Visualiser et analyser les données via un outil BI (Apache Superset) intégré à Grottocenter — tableaux de bord interactifs avec filtres temporels, graphiques de séries, cartes géolocalisées.
+
+Ce que nous offrons aux testeurs :
+
+Chaque contributeur reçoit un compte personnel sur l'outil BI. Vous ne vous limitez pas à consulter des tableaux de bord prédéfinis : vous pouvez explorer vos propres données, créer vos propres graphiques et construire vos propres tableaux de bord, que vous pourrez ensuite partager sur les pages des cavités concernées dans Grottocenter.
+
+Ce que nous attendons en retour :
+
+- Des jeux de données réelles issus de stations de monitoring en grotte ou en surface (data loggers, capteurs de CO₂, pluviomètres, sondes de niveau…), ou des données de suivi de populations (comptages, inventaires, relevés périodiques). Formats acceptés : Excel (.xlsx/.xls), CSV.
+- Des retours sur la structure du modèle de données : est-ce que les concepts (point d'observation, série temporelle, configuration capteur) correspondent à votre façon de travailler ?
+- Des retours sur l'outil d'analyse : quelles visualisations sont utiles, lesquelles manquent, quels croisements de données souhaiteriez-vous faire ?
+
+Principes directeurs :
+
+- Données ouvertes : comme toutes les données de Grottocenter, les données scientifiques sont sous licence CC-BY-SA 3.0. L'objectif est de mutualiser les connaissances sur le milieu souterrain.
+- Interopérabilité : le modèle s'appuie sur des ontologies standards (QUDT pour les grandeurs physiques, SOSA/SSN pour les observations, Darwin Core pour la biospéléologie, UIS Speleology Ontology pour les activités humaines).
+- Pérennité : les données sont stockées dans une base PostgreSQL partitionnée, hébergée sur une infrastructure cloud professionnelle avec sauvegardes automatiques régulières, conçue pour accueillir des millions de mesures sur le long terme.
+- Autonomie : chaque chercheur dispose de son propre espace d'analyse, sans dépendre de l'équipe technique pour produire ses visualisations.
+- Collaboration : plusieurs utilisateurs peuvent travailler sur un même jeu de données ou un même tableau de bord, facilitant l'analyse croisée et le travail en équipe entre chercheurs.
+
+Comment participer :
+
+Répondez à cet email avec :
+1. Une brève description de vos données (type de mesures ou de suivis, nombre de points, période couverte, fréquence, référence de l'appareil ou du capteur utilisé).
+2. Un fichier exemple si possible.
+3. Les noms et adresses email des personnes pour lesquelles vous souhaitez que nous créions des comptes.
+4. Vos questions ou remarques sur le modèle.
+
+Nous nous chargeons de l'import initial et nous créons des comptes sur l'outil d'analyse pour les personnes que vous nous indiquez, afin qu'elles puissent valider le résultat et commencer à explorer les données.
+
+Ce module est en développement actif — vos retours à ce stade influenceront directement sa forme finale. C'est le moment idéal pour contribuer.
+
+Merci pour votre intérêt et à bientôt,
+
+L'équipe Wikicaves
+https://grottocenter.org

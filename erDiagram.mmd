@@ -1,0 +1,228 @@
+erDiagram
+    %% === Core: Observation hub ===
+    t_observation {
+        int id PK "auto-increment"
+        int id_author FK "NOT NULL, references t_caver"
+        int id_reviewer FK "references t_caver"
+        timestamp date_inscription "NOT NULL"
+        timestamp date_reviewed
+        timestamp observation_date "NOT NULL"
+        int id_point FK "references t_point"
+        int id_cave FK "references t_cave"
+        int id_observation_type FK "NOT NULL, references t_observation_type"
+        varchar observation_type_code "NOT NULL, denormalized from t_observation_type"
+        varchar point_label "denormalized from t_point"
+        numeric latitude "denormalized from t_point"
+        numeric longitude "denormalized from t_point"
+        boolean is_deleted "NOT NULL, default false"
+    }
+
+    t_observation_type {
+        int id PK
+        varchar code "NOT NULL"
+        varchar url "NOT NULL"
+    }
+
+    t_point {
+        int id PK "auto-increment"
+        int id_author FK "NOT NULL, references t_caver"
+        int id_reviewer FK "references t_caver"
+        timestamp date_inscription "NOT NULL"
+        timestamp date_reviewed
+        varchar label "NOT NULL"
+        geometry(Point_4326) point_geom
+        numeric(24_20) latitude
+        numeric(24_20) longitude
+        int id_cave FK "references t_cave"
+        boolean is_deleted "NOT NULL, default false"
+    }
+
+    %% === Naming & Descriptions ===
+    t_name {
+        int id PK "auto-increment"
+        varchar(200) name
+        boolean is_main "NOT NULL, default false"
+        int id_author FK "NOT NULL, references t_caver"
+        int id_reviewer FK "references t_caver"
+        timestamp date_inscription "NOT NULL"
+        timestamp date_reviewed
+        int id_language FK "references t_language"
+        int id_observation FK "references t_observation"
+        int id_method FK "references t_method"
+        boolean is_deleted "NOT NULL, default false"
+    }
+
+    t_description {
+        int id PK "auto-increment"
+        int id_author FK "NOT NULL, references t_caver"
+        int id_reviewer FK "references t_caver"
+        timestamp date_inscription "NOT NULL, default now()"
+        timestamp date_reviewed
+        smallint relevance "NOT NULL, default 0"
+        varchar(300) title "NOT NULL"
+        text body
+        char(3) id_language FK "NOT NULL, references t_language"
+        int id_observation FK "references t_observation"
+        int id_point FK "references t_point"
+        int id_method FK "references t_method"
+        boolean is_deleted "NOT NULL, default false"
+    }
+
+    %% === Measurement chain ===
+    t_time_series {
+        int id PK "auto-increment"
+        int id_author FK "NOT NULL, references t_caver"
+        int id_reviewer FK "references t_caver"
+        timestamp date_inscription "NOT NULL"
+        timestamp date_reviewed
+        int id_observation FK "NOT NULL, references t_observation"
+        int id_sensor_configuration FK "NOT NULL, references t_sensor_configuration"
+        int id_medium FK "references t_medium"
+        int id_method FK "references t_method"
+        int sampling_interval_seconds
+        timestamp start_date "indexed for BI"
+        timestamp end_date "indexed for BI"
+        int measurement_count
+        numeric min_value
+        numeric max_value
+        varchar data_quality "CHECK (raw|validated|suspect|rejected)"
+        varchar quantity_kind_code "NOT NULL, denormalized from t_sensor_configuration->t_quantity_kind"
+        varchar unit_symbol "NOT NULL, denormalized from t_sensor_configuration->t_unit"
+        varchar medium_code "denormalized from t_medium"
+        varchar timezone_offset "original logger timezone for display"
+        boolean is_deleted "NOT NULL, default false"
+    }
+
+    t_measurement {
+        bigint id PK "auto-increment, composite PK with timestamp"
+        int id_time_series FK "NOT NULL, references t_time_series"
+        numeric value "NOT NULL"
+        numeric value_si "NOT NULL, SI-converted value for cross-sensor comparison"
+        timestamptz timestamp "NOT NULL, PARTITION BY RANGE"
+    }
+
+    t_device {
+        int id PK "auto-increment"
+        varchar name "NOT NULL"
+        varchar brand_name
+        varchar product_url
+        varchar manufacturer_url
+    }
+
+    t_sensor_configuration {
+        int id PK "auto-increment"
+        int id_device FK "NOT NULL, references t_device"
+        int id_quantity_kind FK "NOT NULL, references t_quantity_kind"
+        int id_unit FK "NOT NULL, references t_unit"
+        numeric precision_upper
+        numeric precision_lower
+        numeric resolution
+        numeric detection_limit_min
+        numeric detection_limit_max
+    }
+
+    t_quantity_kind {
+        int id PK
+        varchar code "NOT NULL"
+        varchar url "NOT NULL"
+        varchar symbol_si "NOT NULL, SI unit symbol for this quantity"
+    }
+
+    t_unit {
+        int id PK
+        varchar code "NOT NULL"
+        varchar symbol "NOT NULL"
+    }
+
+    t_method {
+        int id PK
+        varchar url "NOT NULL"
+    }
+
+    t_medium {
+        int id PK
+        varchar code "NOT NULL"
+        varchar url "NOT NULL"
+    }
+
+    %% === Human activities ===
+    t_human_activity {
+        int id PK "auto-increment"
+        int id_author FK "NOT NULL, references t_caver"
+        int id_reviewer FK "references t_caver"
+        timestamp date_inscription "NOT NULL"
+        timestamp date_reviewed
+        int id_observation FK "NOT NULL, references t_observation"
+        int id_human_activity_type FK "NOT NULL, references t_human_activity_type"
+        boolean is_deleted "NOT NULL, default false"
+    }
+
+    t_human_activity_type {
+        int id PK
+        varchar code "NOT NULL"
+        varchar url "NOT NULL"
+    }
+
+    %% === Quality audit ===
+    t_time_series_quality_log {
+        int id PK "auto-increment"
+        int id_time_series FK "NOT NULL, references t_time_series"
+        varchar old_quality
+        varchar new_quality "NOT NULL"
+        int changed_by FK "NOT NULL, references t_caver"
+        timestamptz changed_at "NOT NULL, default now()"
+    }
+
+    %% === Contamination ===
+    t_contamination {
+        int id PK "auto-increment"
+        int id_author FK "NOT NULL, references t_caver"
+        int id_reviewer FK "references t_caver"
+        timestamp date_inscription "NOT NULL"
+        timestamp date_reviewed
+        int id_observation FK "NOT NULL, references t_observation"
+        int id_contaminant_type FK "NOT NULL, references t_contaminant_type"
+        int id_medium FK "NOT NULL, references t_medium"
+        varchar medium_code "NOT NULL, denormalized from t_medium"
+        boolean is_deleted "NOT NULL, default false"
+    }
+
+    t_contaminant_type {
+        int id PK
+        varchar code "NOT NULL"
+        varchar url "NOT NULL"
+    }
+
+    %% === Relationships: Core ===
+    t_observation }o--o| t_point : "point"
+    t_observation }o--o| t_cave : "cave"
+    t_observation }o--|| t_observation_type : "type"
+    t_point }o--o| t_cave : "cave"
+
+    %% === Relationships: Naming & Descriptions ===
+    t_observation ||--o{ t_name : "names"
+    t_method ||--|{ t_name : "names"
+    t_observation ||--o{ t_description : "descriptions"
+    t_point ||--o{ t_description : "descriptions"
+    t_method ||--o{ t_description : "descriptions"
+    t_observation ||--o{ t_document : "documents"
+
+    %% === Relationships: Measurement chain ===
+    t_observation ||--o{ t_time_series : "time series"
+    t_time_series ||--|{ t_measurement : "measurements"
+    t_time_series ||--o{ t_time_series_quality_log : "quality log"
+    t_time_series }o--|| t_sensor_configuration : "sensor configuration"
+    t_sensor_configuration }o--|| t_device : "device"
+    t_sensor_configuration }o--|| t_quantity_kind : "quantity kind"
+    t_sensor_configuration }o--|| t_unit : "unit"
+    t_time_series }o--o| t_medium : "medium"
+    t_time_series }o--o| t_method : "method"
+
+    %% === Relationships: Human activities ===
+    t_observation ||--o{ t_human_activity : "human activities"
+    t_human_activity }o--|| t_human_activity_type : "type"
+
+    %% === Relationships: Contamination ===
+    t_observation ||--o{ t_contamination : "contaminations"
+    t_contamination }o--|| t_contaminant_type : "type"
+    t_contamination }o--|| t_medium : "medium"

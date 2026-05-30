@@ -139,3 +139,11 @@ CLAUDE.md
 .amazonq
 .kiro
 .claude
+
+# Terraform
+*.tfvars
+!*.tfvars.example
+*.tfstate
+*.tfstate.backup
+.terraform/
+.terraform.lock.hcl

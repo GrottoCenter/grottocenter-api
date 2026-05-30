@@ -1,0 +1,145 @@
+/**
+ * TTimeSeries.js
+ *
+ * @description :: A sequence of measurements from a single sensor
+ */
+
+module.exports = {
+  tableName: 't_time_series',
+
+  primaryKey: 'id',
+
+  attributes: {
+    id: {
+      type: 'number',
+      autoIncrement: true,
+      columnName: 'id',
+      unique: true,
+    },
+
+    author: {
+      allowNull: false,
+      columnName: 'id_author',
+      model: 'TCaver',
+    },
+
+    reviewer: {
+      columnName: 'id_reviewer',
+      model: 'TCaver',
+    },
+
+    dateInscription: {
+      type: 'ref',
+      columnName: 'date_inscription',
+      columnType: 'timestamp',
+    },
+
+    dateReviewed: {
+      type: 'ref',
+      columnName: 'date_reviewed',
+      columnType: 'timestamp',
+    },
+
+    observation: {
+      allowNull: false,
+      columnName: 'id_observation',
+      model: 'TObservation',
+    },
+
+    sensor: {
+      allowNull: false,
+      columnName: 'id_sensor_configuration',
+      model: 'TSensorConfiguration',
+    },
+
+    medium: {
+      columnName: 'id_medium',
+      model: 'TMedium',
+    },
+
+    method: {
+      columnName: 'id_method',
+      model: 'TMethod',
+    },
+
+    samplingIntervalSeconds: {
+      type: 'number',
+      allowNull: true,
+      columnName: 'sampling_interval_seconds',
+    },
+
+    startDate: {
+      type: 'ref',
+      columnName: 'start_date',
+      columnType: 'timestamp',
+    },
+
+    endDate: {
+      type: 'ref',
+      columnName: 'end_date',
+      columnType: 'timestamp',
+    },
+
+    measurementCount: {
+      type: 'number',
+      allowNull: true,
+      columnName: 'measurement_count',
+    },
+
+    minValue: {
+      type: 'number',
+      allowNull: true,
+      columnName: 'min_value',
+    },
+
+    maxValue: {
+      type: 'number',
+      allowNull: true,
+      columnName: 'max_value',
+    },
+
+    dataQuality: {
+      type: 'string',
+      allowNull: false,
+      columnName: 'data_quality',
+      defaultsTo: 'raw',
+      isIn: ['raw', 'validated', 'suspect', 'rejected'],
+    },
+
+    // Denormalized fields for BI
+    quantityKindCode: {
+      type: 'string',
+      allowNull: false,
+      columnName: 'quantity_kind_code',
+      maxLength: 100,
+    },
+
+    unitSymbol: {
+      type: 'string',
+      allowNull: false,
+      columnName: 'unit_symbol',
+      maxLength: 20,
+    },
+
+    mediumCode: {
+      type: 'string',
+      allowNull: true,
+      columnName: 'medium_code',
+      maxLength: 100,
+    },
+
+    timezoneOffset: {
+      type: 'string',
+      allowNull: true,
+      columnName: 'timezone_offset',
+      maxLength: 50,
+    },
+
+    isDeleted: {
+      type: 'boolean',
+      allowNull: false,
+      columnName: 'is_deleted',
+      defaultsTo: false,
+    },
+  },
+};

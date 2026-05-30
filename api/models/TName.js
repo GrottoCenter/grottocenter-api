@@ -80,6 +80,16 @@ module.exports = {
       model: 'TPoint',
     },
 
+    observation: {
+      columnName: 'id_observation',
+      model: 'TObservation',
+    },
+
+    method: {
+      columnName: 'id_method',
+      model: 'TMethod',
+    },
+
     grotto: {
       columnName: 'id_grotto',
       model: 'TGrotto',

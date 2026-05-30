@@ -1,11 +1,11 @@
 /**
- * TPoint.js
+ * TObservation.js
  *
- * @description :: Geographic location for scientific observations
+ * @description :: Scientific observation event at a specific point and time
  */
 
 module.exports = {
-  tableName: 't_point',
+  tableName: 't_observation',
 
   primaryKey: 'id',
 
@@ -40,10 +40,40 @@ module.exports = {
       columnType: 'timestamp',
     },
 
-    label: {
+    observationDate: {
+      type: 'ref',
+      columnName: 'observation_date',
+      columnType: 'timestamp',
+    },
+
+    point: {
+      columnName: 'id_point',
+      model: 'TPoint',
+    },
+
+    cave: {
+      columnName: 'id_cave',
+      model: 'TCave',
+    },
+
+    observationType: {
+      allowNull: false,
+      columnName: 'id_observation_type',
+      model: 'TObservationType',
+    },
+
+    // Denormalized fields for BI
+    observationTypeCode: {
       type: 'string',
       allowNull: false,
-      columnName: 'label',
+      columnName: 'observation_type_code',
+      maxLength: 100,
+    },
+
+    pointLabel: {
+      type: 'string',
+      allowNull: true,
+      columnName: 'point_label',
       maxLength: 200,
     },
 
@@ -61,24 +91,29 @@ module.exports = {
       columnType: 'numeric(24,20)',
     },
 
-    cave: {
-      columnName: 'id_cave',
-      model: 'TCave',
+    timeSeries: {
+      collection: 'TTimeSeries',
+      via: 'observation',
     },
 
-    observations: {
-      collection: 'TObservation',
-      via: 'point',
+    humanActivities: {
+      collection: 'THumanActivity',
+      via: 'observation',
     },
 
-    descriptions: {
-      collection: 'TDescription',
-      via: 'point',
+    contaminations: {
+      collection: 'TContamination',
+      via: 'observation',
     },
 
     names: {
       collection: 'TName',
-      via: 'point',
+      via: 'observation',
+    },
+
+    descriptions: {
+      collection: 'TDescription',
+      via: 'observation',
     },
 
     isDeleted: {

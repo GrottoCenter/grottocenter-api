@@ -1,0 +1,48 @@
+Asunto: Módulo "Datos científicos" de Grottocenter — versión alfa abierta a colaboradores
+
+Hola,
+
+El equipo de Wikicaves lleva varios meses trabajando en un nuevo módulo para Grottocenter dedicado a los datos científicos provenientes del medio subterráneo y su entorno. Hemos alcanzado una etapa alfa funcional y estamos buscando científicos dispuestos a contribuir con sus datos y probar la herramienta de visualización y análisis.
+
+Lo que el módulo permite hoy:
+
+- Almacenar series temporales de mediciones (temperatura, humedad, presión atmosférica, CO₂, pluviometría, nivel de agua, conductividad, pH…) vinculadas a puntos de observación geolocalizados y asociados a cavidades.
+- Gestionar los metadatos asociados: dispositivo de medición, configuración del sensor (unidad, precisión, límites de detección), intervalo de muestreo, calidad de los datos.
+- Registrar observaciones de contaminación (metales pesados, hidrocarburos, nitratos, microplásticos…) y actividades humanas.
+- Albergar datos de monitoreo de poblaciones (murciélagos, invertebrados cavernícolas, flora de entrada de cueva…) en el marco de observaciones bioespeleológicas.
+- Visualizar y analizar los datos mediante una herramienta de BI (Apache Superset) integrada en Grottocenter — tableros interactivos con filtros temporales, gráficos de series, mapas geolocalizados.
+
+Lo que ofrecemos a los colaboradores:
+
+Cada colaborador recibe una cuenta personal en la herramienta de BI. No se limitan a consultar tableros predefinidos: pueden explorar sus propios datos, crear sus propias gráficas y construir sus propios tableros, que después podrán compartir en las páginas de las cavidades correspondientes en Grottocenter.
+
+Lo que esperamos a cambio:
+
+- Conjuntos de datos reales provenientes de estaciones de monitoreo en cueva o en superficie (data loggers, sensores de CO₂, pluviómetros, sondas de nivel…), o datos de monitoreo de poblaciones (conteos, inventarios, relevamientos periódicos). Formatos aceptados: Excel (.xlsx/.xls), CSV.
+- Retroalimentación sobre la estructura del modelo de datos: ¿los conceptos (punto de observación, serie temporal, configuración de sensor) corresponden a su forma de trabajar?
+- Retroalimentación sobre la herramienta de análisis: ¿qué visualizaciones son útiles, cuáles faltan, qué cruces de datos les gustaría realizar?
+
+Principios rectores:
+
+- Datos abiertos: como todos los datos de Grottocenter, los datos científicos están bajo licencia CC-BY-SA 3.0. El objetivo es compartir el conocimiento sobre el medio subterráneo.
+- Interoperabilidad: el modelo se basa en ontologías estándar (QUDT para magnitudes físicas, SOSA/SSN para observaciones, Darwin Core para bioespeleología, UIS Speleology Ontology para actividades humanas).
+- Durabilidad: los datos se almacenan en una base de datos PostgreSQL particionada, alojada en infraestructura de nube profesional con respaldos automáticos periódicos, diseñada para albergar millones de mediciones a largo plazo.
+- Autonomía: cada investigador cuenta con su propio espacio de análisis, sin depender del equipo técnico para producir sus visualizaciones.
+- Colaboración: varios usuarios pueden trabajar sobre un mismo conjunto de datos o un mismo tablero, facilitando el análisis cruzado y el trabajo en equipo entre investigadores.
+
+Cómo participar:
+
+Responda a este correo con:
+1. Una breve descripción de sus datos (tipo de mediciones o monitoreos, número de puntos, periodo cubierto, frecuencia, referencia del dispositivo o sensor utilizado).
+2. Un archivo de ejemplo si es posible.
+3. Los nombres y correos electrónicos de las personas para quienes desea que creemos cuentas.
+4. Sus preguntas o comentarios sobre el modelo.
+
+Nosotros nos encargamos de la importación inicial y creamos cuentas en la herramienta de análisis para las personas que nos indiquen, para que puedan validar el resultado y comenzar a explorar los datos.
+
+Este módulo está en desarrollo activo — sus comentarios en esta etapa influirán directamente en su forma final. Es el momento ideal para contribuir.
+
+Gracias por su interés,
+
+El equipo Wikicaves
+https://grottocenter.org

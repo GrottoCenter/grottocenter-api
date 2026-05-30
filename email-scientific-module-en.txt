@@ -1,0 +1,48 @@
+Subject: Grottocenter "Scientific Data" module — alpha version open to contributors
+
+Hello,
+
+The Wikicaves team has been working for several months on a new Grottocenter module dedicated to scientific data from underground environments and their surroundings. We've reached a functional alpha stage and are looking for scientists willing to contribute their data and test the visualization and analysis tool.
+
+What the module supports today:
+
+- Storing time series measurements (temperature, humidity, atmospheric pressure, CO₂, rainfall, water level, conductivity, pH…) linked to geolocated observation points associated with caves.
+- Managing associated metadata: measurement device, sensor configuration (unit, precision, detection limits), sampling interval, data quality.
+- Recording contamination observations (heavy metals, hydrocarbons, nitrates, microplastics…) and human activities.
+- Hosting population monitoring data (bats, cave invertebrates, entrance flora…) as part of biospeleological observations.
+- Visualizing and analyzing data through a BI tool (Apache Superset) integrated into Grottocenter — interactive dashboards with time filters, time series charts, and geolocated maps.
+
+What we offer testers:
+
+Each contributor receives a personal account on the BI tool. You're not limited to viewing pre-built dashboards: you can explore your own data, create your own charts, and build your own dashboards, which you can then share on the relevant cave pages in Grottocenter.
+
+What we expect in return:
+
+- Real datasets from cave or surface monitoring stations (data loggers, CO₂ sensors, rain gauges, water level probes…), or population monitoring data (counts, inventories, periodic surveys). Accepted formats: Excel (.xlsx/.xls), CSV.
+- Feedback on the data model structure: do the concepts (observation point, time series, sensor configuration) match the way you work?
+- Feedback on the analysis tool: which visualizations are useful, which are missing, what data cross-references would you like to perform?
+
+Guiding principles:
+
+- Open data: like all Grottocenter data, scientific data is licensed under CC-BY-SA 3.0. The goal is to pool knowledge about underground environments.
+- Interoperability: the model relies on standard ontologies (QUDT for physical quantities, SOSA/SSN for observations, Darwin Core for biospeleology, UIS Speleology Ontology for human activities).
+- Durability: data is stored in a partitioned PostgreSQL database, hosted on professional cloud infrastructure with regular automated backups, designed to accommodate millions of measurements over the long term.
+- Autonomy: each researcher has their own analysis workspace, without depending on the technical team to produce visualizations.
+- Collaboration: multiple users can work on the same dataset or dashboard, enabling cross-analysis and teamwork between researchers.
+
+How to participate:
+
+Reply to this email with:
+1. A brief description of your data (type of measurements or surveys, number of points, time period covered, frequency, device or sensor reference).
+2. A sample file if possible.
+3. The names and email addresses of the people you'd like us to create accounts for.
+4. Your questions or comments about the model.
+
+We handle the initial import and create accounts on the analysis tool for the people you indicate, so they can validate the results and start exploring the data.
+
+This module is under active development — your feedback at this stage will directly shape its final form. Now is the ideal time to contribute.
+
+Thank you for your interest,
+
+The Wikicaves team
+https://grottocenter.org
