@@ -113,5 +113,28 @@ describe('Document update', () => {
 
       should(res.body).have.property('id');
     });
+
+    describe('Article with issue field', () => {
+      it('should return 400 when setting issue on an Article type document', async () => {
+        const articleDoc = await TDocument.create({
+          author: 1,
+          type: 18, // Article
+          license: 1,
+          isValidated: true,
+        }).fetch();
+
+        try {
+          await supertest(sails.hooks.http.app)
+            .put(`/api/v1/documents/${articleDoc.id}`)
+            .send({ issue: '102' })
+            .set('Authorization', userToken)
+            .set('Content-type', 'application/json')
+            .set('Accept', 'application/json')
+            .expect(400);
+        } finally {
+          await TDocument.destroy({ id: articleDoc.id });
+        }
+      });
+    });
   });
 });
