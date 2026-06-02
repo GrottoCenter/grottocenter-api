@@ -7,6 +7,16 @@ const {
 } = require('../../../../config/constants/document');
 
 module.exports = async (req, res) => {
+  // Validate required language fields
+  const hasDescriptionLanguage = Boolean(
+    req.body.titleAndDescriptionLanguage?.id ?? req.body.mainLanguage
+  );
+  if (!hasDescriptionLanguage) {
+    return res.badRequest(
+      'Missing required field: titleAndDescriptionLanguage.'
+    );
+  }
+
   const documentData = await DocumentService.getConvertedDataFromClient(
     req.body
   );

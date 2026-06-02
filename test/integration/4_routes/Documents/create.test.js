@@ -1,3 +1,4 @@
+const should = require('should');
 const supertest = require('supertest');
 const AuthTokenService = require('../../AuthTokenService');
 
@@ -14,6 +15,47 @@ describe('Document create', () => {
   });
 
   describe('Create', () => {
+    describe('Missing titleAndDescriptionLanguage', () => {
+      it('should return code 400 when titleAndDescriptionLanguage is missing', async () => {
+        const res = await supertest(sails.hooks.http.app)
+          .post('/api/v1/documents')
+          .send({
+            description: 'This is a test document.',
+            documentMainLanguage: { id: 'fra' },
+            documentType: { id: 1 },
+            editor: { id: 2 },
+            isNewDocument: true,
+            title: 'Test Missing Language',
+          })
+          .set('Authorization', userToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .expect(400);
+        should(res.text).match(/titleAndDescriptionLanguage/);
+      });
+    });
+
+    describe('Backward compatibility with mainLanguage', () => {
+      it('should return code 200 when using mainLanguage instead of titleAndDescriptionLanguage', async () => {
+        const res = await supertest(sails.hooks.http.app)
+          .post('/api/v1/documents')
+          .send({
+            description: 'Test backward compat with mainLanguage.',
+            documentMainLanguage: { id: 'fra' },
+            documentType: { id: 1 },
+            editor: { id: 2 },
+            isNewDocument: true,
+            mainLanguage: 'fra',
+            title: 'Test mainLanguage Compat',
+          })
+          .set('Authorization', userToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .expect(200);
+        createdDocIds.push(res.body.document.id);
+      });
+    });
+
     describe('Minimal Collection data', () => {
       it('should return code 200', async () => {
         const res = await supertest(sails.hooks.http.app)
@@ -33,7 +75,7 @@ describe('Document create', () => {
           .set('Content-type', 'application/json')
           .set('Accept', 'application/json')
           .expect(200);
-        createdDocIds.push(res.body.id);
+        createdDocIds.push(res.body.document.id);
       });
     });
     describe('With file upload errors', () => {
@@ -51,7 +93,7 @@ describe('Document create', () => {
           .set('Accept', 'application/json')
           .expect(200);
 
-        createdDocIds.push(res.body.id);
+        createdDocIds.push(res.body.document.id);
       });
     });
 
@@ -85,7 +127,7 @@ describe('Document create', () => {
           .set('Content-type', 'application/json')
           .set('Accept', 'application/json')
           .expect(200);
-        createdDocIds.push(res.body.id);
+        createdDocIds.push(res.body.document.id);
       });
     });
 

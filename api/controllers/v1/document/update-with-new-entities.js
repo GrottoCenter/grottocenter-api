@@ -36,6 +36,13 @@ module.exports = async (req, res) => {
   }
 
   if (isArrNotEmpty(newDescriptions)) {
+    const missingLanguage = newDescriptions.some((desc) => !desc.language);
+    if (missingLanguage) {
+      return res.badRequest(
+        'Each new description must include a language field.'
+      );
+    }
+
     const descParams = newDescriptions.map((desc) => ({
       ...desc,
       document: documentId,
