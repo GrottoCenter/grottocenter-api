@@ -2,6 +2,9 @@ const ControllerService = require('../../../services/ControllerService');
 const DocumentService = require('../../../services/DocumentService');
 const { toDocument } = require('../../../services/mapping/converters');
 const FileService = require('../../../services/FileService');
+const {
+  TYPES_ALLOWING_ISSUE,
+} = require('../../../../config/constants/document');
 
 module.exports = async (req, res) => {
   const documentData = await DocumentService.getConvertedDataFromClient(
@@ -11,6 +14,17 @@ module.exports = async (req, res) => {
     req.body,
     req.token.id
   );
+
+  // Validate that the issue field is only set for types that support it
+  if (
+    documentData.issue != null &&
+    !TYPES_ALLOWING_ISSUE.includes(documentData.type)
+  ) {
+    return res.badRequest(
+      'The "issue" field is only allowed for documents of type Book or Issue. ' +
+        'Articles should be linked to a parent document of type Issue instead.'
+    );
+  }
 
   const cleanedData = {
     ...documentData,

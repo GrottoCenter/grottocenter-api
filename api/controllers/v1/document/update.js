@@ -4,6 +4,9 @@ const NotificationService = require('../../../services/NotificationService');
 const FileService = require('../../../services/FileService');
 const RightService = require('../../../services/RightService');
 const { toDocument } = require('../../../services/mapping/converters');
+const {
+  TYPES_ALLOWING_ISSUE,
+} = require('../../../../config/constants/document');
 
 const { INVALID_FORMAT, INVALID_NAME, ERROR_DURING_UPLOAD_TO_AZURE } =
   FileService;
@@ -24,6 +27,21 @@ module.exports = async (req, res) => {
         `You are not authorized to update a document with modifications waiting a moderator approval.`
       );
     }
+  }
+
+  // Validate that the issue field is only set for types that support it
+  // (must run before file upload to avoid Azure side effects on invalid requests)
+  const documentDataForValidation =
+    await DocumentService.getConvertedDataFromClient(req.body);
+  const effectiveType = documentDataForValidation.type ?? document.type;
+  if (
+    documentDataForValidation.issue != null &&
+    !TYPES_ALLOWING_ISSUE.includes(effectiveType)
+  ) {
+    return res.badRequest(
+      'The "issue" field is only allowed for documents of type Book or Issue. ' +
+        'Articles should be linked to a parent document of type Issue instead.'
+    );
   }
 
   // Add new files
@@ -64,10 +82,9 @@ module.exports = async (req, res) => {
 
   const authorId = req.token.id;
 
-  // Update json data (upcoming modifications which need to be validated)
-  const documentData = await DocumentService.getConvertedDataFromClient(
-    req.body
-  );
+  // Reuse the already-converted data from the pre-upload validation
+  const documentData = documentDataForValidation;
+
   const descriptionData = DocumentService.getDescriptionDataFromClient(
     req.body,
     authorId

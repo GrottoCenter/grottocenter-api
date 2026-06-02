@@ -88,5 +88,24 @@ describe('Document create', () => {
         createdDocIds.push(res.body.id);
       });
     });
+
+    describe('Article with issue field', () => {
+      it('should return 400 when an Article is created with an issue value', async () => {
+        await supertest(sails.hooks.http.app)
+          .post('/api/v1/documents')
+          .send({
+            description: 'An article about a cave.',
+            title: 'Test Article with Issue',
+            type: 'Article',
+            issue: '102',
+            parent: { id: 1 },
+            editor: { id: 2 },
+          })
+          .set('Authorization', userToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .expect(400);
+      });
+    });
   });
 });
