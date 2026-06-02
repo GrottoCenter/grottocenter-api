@@ -13,6 +13,14 @@ const {
 const normalizeToId = (item) =>
   item != null && typeof item === 'object' ? (item.id ?? item) : item;
 
+// Extract the document's main language from the request body.
+// Prefers `documentMainLanguage.id` (current front-end field) with
+// fallback to `mainLanguage` (legacy/backward-compat).
+const getDocumentLanguages = (body) => {
+  const lang = body.documentMainLanguage?.id ?? body.mainLanguage;
+  return lang ? [lang] : [];
+};
+
 module.exports = {
   async deleteInSearch(documentId) {
     await SearchService.deleteDocument('documents', documentId);
@@ -83,7 +91,7 @@ module.exports = {
     author: authorId,
     body: body.description,
     title: body.title,
-    language: body.mainLanguage,
+    language: body.titleAndDescriptionLanguage?.id ?? body.mainLanguage,
   }),
 
   getChangedFileFromClient: (fileObjectArray) =>
@@ -129,7 +137,7 @@ module.exports = {
       pages: valIfTruthyOrNull(body.pages),
       license: body.license?.id ?? 1,
       option: optionFound?.id,
-      languages: body.mainLanguage ? [body.mainLanguage] : [],
+      languages: getDocumentLanguages(body),
       // massif, // Deprecated, use massifs instead
       massifs,
       // cave is linked with the cave/add-document controller

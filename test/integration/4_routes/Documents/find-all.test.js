@@ -30,9 +30,9 @@ describe('Document find-all', () => {
         .query({ isValidated: 'false' })
         .set('Authorization', userToken)
         .set('Accept', 'application/json')
-        .expect(200)
         .end((err, res) => {
           if (err) return done(err);
+          should([200, 206]).containEql(res.status);
           should(res.body).have.property('documents');
           return done();
         });

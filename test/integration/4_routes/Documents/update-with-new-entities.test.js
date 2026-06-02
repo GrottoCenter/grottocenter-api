@@ -96,6 +96,31 @@ describe('Document update-with-new-entities', () => {
         });
     });
 
+    it('should return 400 when new description is missing language', (done) => {
+      supertest(sails.hooks.http.app)
+        .put(`/api/v1/documents/${testDocId}/new-entities`)
+        .send({
+          document: { authors: [1], descriptions: [] },
+          newAuthors: [],
+          newDescriptions: [
+            {
+              title: 'No Language Desc',
+              body: 'Missing language field',
+              author: 1,
+            },
+          ],
+        })
+        .set('Authorization', userToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(400)
+        .end((err, res) => {
+          if (err) return done(err);
+          should(res.text).match(/language/);
+          return done();
+        });
+    });
+
     it('should update document with new descriptions', (done) => {
       supertest(sails.hooks.http.app)
         .put(`/api/v1/documents/${testDocId}/new-entities`)

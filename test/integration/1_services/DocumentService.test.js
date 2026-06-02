@@ -31,16 +31,37 @@ describe('DocumentService', () => {
   });
 
   describe('getDescriptionDataFromClient()', () => {
-    it('should extract description data', () => {
+    it('should extract description data from titleAndDescriptionLanguage', () => {
       const body = {
         description: 'Test description',
         title: 'Test title',
-        mainLanguage: 'eng',
+        titleAndDescriptionLanguage: { id: 'eng' },
       };
       const result = DocumentService.getDescriptionDataFromClient(body, 1);
       should(result.author).equal(1);
       should(result.body).equal('Test description');
       should(result.title).equal('Test title');
+      should(result.language).equal('eng');
+    });
+
+    it('should fall back to mainLanguage for backward compatibility', () => {
+      const body = {
+        description: 'Test description',
+        title: 'Test title',
+        mainLanguage: 'fra',
+      };
+      const result = DocumentService.getDescriptionDataFromClient(body, 1);
+      should(result.language).equal('fra');
+    });
+
+    it('should prefer titleAndDescriptionLanguage over mainLanguage', () => {
+      const body = {
+        description: 'Test description',
+        title: 'Test title',
+        titleAndDescriptionLanguage: { id: 'eng' },
+        mainLanguage: 'fra',
+      };
+      const result = DocumentService.getDescriptionDataFromClient(body, 1);
       should(result.language).equal('eng');
     });
   });
@@ -166,7 +187,7 @@ describe('DocumentService', () => {
         issue: '5',
         pages: '10-20',
         license: { id: 1 },
-        mainLanguage: 'eng',
+        documentMainLanguage: { id: 'eng' },
       };
       const result = await DocumentService.getConvertedDataFromClient(body);
       should(result.identifier).equal('ISBN-123');
@@ -176,6 +197,14 @@ describe('DocumentService', () => {
       should(result.pages).equal('10-20');
       should(result.license).equal(1);
       should(result.languages).eql(['eng']);
+    });
+
+    it('should fall back to mainLanguage for backward compatibility', async () => {
+      const body = {
+        mainLanguage: 'fra',
+      };
+      const result = await DocumentService.getConvertedDataFromClient(body);
+      should(result.languages).eql(['fra']);
     });
 
     it('should handle authors and organizations', async () => {
