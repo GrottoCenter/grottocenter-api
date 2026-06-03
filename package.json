@@ -12,7 +12,7 @@
     "@natlibfi/marc-record": "^10.0.1",
     "@natlibfi/marc-record-serializers": "^11.0.2",
     "@rapideditor/country-coder": "^5.6.1",
-    "archiver": "^7.0.1",
+    "archiver": "^8.0.0",
     "argon2": "^0.44.0",
     "ejs": "^5.0.2",
     "express-rate-limit": "^8.4.1",
