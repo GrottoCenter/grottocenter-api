@@ -168,7 +168,7 @@ module.exports = async (req, res) => {
       return res.serverError('MFA secret unavailable.');
     }
     const secret = MfaService.decryptSecret(caver.totpSecret);
-    const isValid = MfaService.verifyCode(totpCode, secret);
+    const isValid = await MfaService.verifyCode(totpCode, secret);
 
     if (!isValid) {
       const totpResult =

@@ -1,12 +1,11 @@
 const sails = require('sails');
 const supertest = require('supertest');
-const { authenticator } = require('otplib');
 const TokenService = require('../../api/services/TokenService');
 const MfaService = require('../../api/services/MfaService');
 const RightService = require('../../api/services/RightService');
+const { generateCode, DEV_SECRET } = require('../helpers/totp');
 
 const TEST_PASSWORD = 'testtest';
-const DEV_SECRET = 'JBSWY3DPEHPK3PXP';
 
 /**
  * Ensures MFA is set up for an admin caver so login can succeed with a TOTP code.
@@ -46,7 +45,7 @@ const getRawAuthToken = async (email) => {
       lastUsedTotp: null,
       lastUsedTotpAt: null,
     });
-    payload.totpCode = authenticator.generate(DEV_SECRET);
+    payload.totpCode = await generateCode();
   }
 
   const res = await supertest(sails.hooks.http.app)

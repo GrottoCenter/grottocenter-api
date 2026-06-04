@@ -1,13 +1,12 @@
 const should = require('should');
 const supertest = require('supertest');
 const jwt = require('jsonwebtoken');
-const { authenticator } = require('otplib');
 const TokenService = require('../../../../api/services/TokenService');
+const { generateCode } = require('../../../helpers/totp');
 
 const ADMIN_ID = 1;
 const ADMIN_EMAIL = 'admin1@admin1.com';
 const NON_ADMIN_ID = 3; // user1
-const DEV_SECRET = 'JBSWY3DPEHPK3PXP';
 
 /**
  * Issue an MFA enrollment token for a given caver.
@@ -178,7 +177,7 @@ describe('MFA Enrollment and Verification', () => {
         .expect(200);
 
       // Generate a valid TOTP code using the dev secret
-      const validCode = authenticator.generate(DEV_SECRET);
+      const validCode = await generateCode();
 
       const res = await supertest(sails.hooks.http.app)
         .post('/api/v1/mfa/verify')

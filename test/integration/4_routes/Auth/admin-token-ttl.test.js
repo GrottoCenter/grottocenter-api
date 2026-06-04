@@ -1,8 +1,8 @@
 const should = require('should');
 const supertest = require('supertest');
 const jwt = require('jsonwebtoken');
-const { authenticator } = require('otplib');
 const MfaService = require('../../../../api/services/MfaService');
+const { generateCode } = require('../../../helpers/totp');
 
 const ADMIN_EMAIL = 'admin1@admin1.com';
 const ADMIN_PASSWORD = 'testtest';
@@ -38,24 +38,21 @@ describe('Auth features', () => {
       });
     });
 
-    it('should issue a token that expires in ~10 days for an admin user', (done) => {
-      const totpCode = authenticator.generate(DEV_SECRET);
-      supertest(sails.hooks.http.app)
+    it('should issue a token that expires in ~10 days for an admin user', async () => {
+      const totpCode = await generateCode();
+      const res = await supertest(sails.hooks.http.app)
         .post('/api/v1/login')
         .send({ email: ADMIN_EMAIL, password: ADMIN_PASSWORD, totpCode })
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json')
-        .expect(200)
-        .end((err, res) => {
-          if (err) return done(err);
-          should(res.body).have.property('token');
-          const decoded = jwt.decode(res.body.token);
-          should(decoded).have.property('exp');
-          should(decoded).have.property('iat');
-          const ttl = decoded.exp - decoded.iat;
-          should(ttl).equal(TEN_DAYS);
-          return done();
-        });
+        .expect(200);
+
+      should(res.body).have.property('token');
+      const decoded = jwt.decode(res.body.token);
+      should(decoded).have.property('exp');
+      should(decoded).have.property('iat');
+      const ttl = decoded.exp - decoded.iat;
+      should(ttl).equal(TEN_DAYS);
     });
 
     it('should issue a token that expires in ~90 days for a non-admin user', (done) => {
@@ -89,24 +86,21 @@ describe('Auth features', () => {
         sails.config.custom.adminAuthTokenTTL = originalAdminAuthTokenTTL;
       });
 
-      it('should issue a 90-day token for an admin user', (done) => {
-        const totpCode = authenticator.generate(DEV_SECRET);
-        supertest(sails.hooks.http.app)
+      it('should issue a 90-day token for an admin user', async () => {
+        const totpCode = await generateCode();
+        const res = await supertest(sails.hooks.http.app)
           .post('/api/v1/login')
           .send({ email: ADMIN_EMAIL, password: ADMIN_PASSWORD, totpCode })
           .set('Content-type', 'application/json')
           .set('Accept', 'application/json')
-          .expect(200)
-          .end((err, res) => {
-            if (err) return done(err);
-            should(res.body).have.property('token');
-            const decoded = jwt.decode(res.body.token);
-            should(decoded).have.property('exp');
-            should(decoded).have.property('iat');
-            const ttl = decoded.exp - decoded.iat;
-            should(ttl).equal(NINETY_DAYS);
-            return done();
-          });
+          .expect(200);
+
+        should(res.body).have.property('token');
+        const decoded = jwt.decode(res.body.token);
+        should(decoded).have.property('exp');
+        should(decoded).have.property('iat');
+        const ttl = decoded.exp - decoded.iat;
+        should(ttl).equal(NINETY_DAYS);
       });
     });
   });

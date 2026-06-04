@@ -6,16 +6,34 @@
  */
 
 const crypto = require('crypto');
-const { authenticator } = require('otplib');
+const {
+  TOTP,
+  NobleCryptoPlugin,
+  ScureBase32Plugin,
+  createGuardrails,
+} = require('otplib');
 
-// Use a cloned instance to avoid mutating global otplib state.
-const totpAuth = authenticator.clone();
-totpAuth.options = {
-  step: 30,
-  window: 1,
+// Plugins must be instantiated and passed explicitly in otplib v13.
+const otpCrypto = new NobleCryptoPlugin();
+const base32 = new ScureBase32Plugin();
+
+// Allow 10-byte secrets (the dev secret JBSWY3DPEHPK3PXP is 10 bytes).
+// Production secrets are 20 bytes and always satisfy the default minimum.
+const guardrails = createGuardrails({ MIN_SECRET_BYTES: 10 });
+
+// Shared TOTP configuration (without secret — secret is passed per-call).
+const TOTP_OPTIONS = {
+  period: 30,
+  epochTolerance: [30, 30], // ±30s = ±1 step tolerance
   digits: 6,
   algorithm: 'sha1',
+  crypto: otpCrypto,
+  base32,
+  guardrails,
 };
+
+// Shared instance for secret generation and URI building (no secret needed).
+const totpAuth = new TOTP(TOTP_OPTIONS);
 
 // Version prefix for encrypted secrets — allows future key rotation or
 // algorithm changes without breaking existing ciphertexts.
@@ -105,20 +123,22 @@ function decryptSecret(encryptedSecret) {
  */
 function buildOtpauthUri(secret, email) {
   const issuer = sails.config.custom.mfaIssuerName || 'Grottocenter';
-  return totpAuth.keyuri(email, issuer, secret);
+  return totpAuth.toURI({ label: email, issuer, secret });
 }
 
 /**
  * Verify a TOTP code against a secret with ±1 step tolerance (30-second steps).
  * @param {string} code - 6-digit code from user
  * @param {string} secret - Base32-encoded TOTP secret (decrypted)
- * @returns {boolean}
+ * @returns {Promise<boolean>}
  */
-function verifyCode(code, secret) {
+async function verifyCode(code, secret) {
   if (!code || !/^\d{6}$/.test(code)) {
     return false;
   }
-  return totpAuth.verify({ token: code, secret });
+  const totp = new TOTP({ ...TOTP_OPTIONS, secret });
+  const result = await totp.verify(code);
+  return result?.valid ?? false;
 }
 
 /**
@@ -181,7 +201,7 @@ async function confirmEnrollment(caverId, code) {
   }
 
   const secret = decryptSecret(caver.totpSecret);
-  const isValid = verifyCode(code, secret);
+  const isValid = await verifyCode(code, secret);
 
   if (!isValid) {
     return { success: false, error: 'Invalid TOTP code' };
@@ -218,6 +238,7 @@ async function resetMfa(caverId) {
 }
 
 module.exports = {
+  TOTP_OPTIONS,
   generateSecret,
   encryptSecret,
   decryptSecret,

@@ -1,8 +1,8 @@
 const should = require('should');
 const supertest = require('supertest');
-const { authenticator } = require('otplib');
 const AuthService = require('../../../api/services/AuthService');
 const MfaService = require('../../../api/services/MfaService');
+const { generateCode } = require('../../helpers/totp');
 
 describe('Auth features', () => {
   describe('Login', () => {
@@ -73,14 +73,14 @@ describe('Auth features', () => {
         });
       });
 
-      it('should return code 200', (done) => {
-        const totpCode = authenticator.generate(DEV_SECRET);
-        supertest(sails.hooks.http.app)
+      it('should return code 200', async () => {
+        const totpCode = await generateCode();
+        await supertest(sails.hooks.http.app)
           .post('/api/v1/login')
           .send({ email: 'admin1@admin1.com', password: 'testtest', totpCode })
           .set('Content-type', 'application/json')
           .set('Accept', 'application/json')
-          .expect(200, done);
+          .expect(200);
       });
     });
     describe('Account status (unverified / banned)', () => {
