@@ -8,10 +8,10 @@ const RightService = require('../../api/services/RightService');
  * with ERR_ERL_INVALID_IP_ADDRESS. Since the key only needs to be a consistent
  * string per client, req.ip works directly without normalization.
  *
- * We also set `validate: { ipKeyGenerator: false }` on each limiter to suppress
- * the ERR_ERL_KEY_GEN_IPV6 warning. The library detects that we reference
- * req.ip without calling its ipKeyGenerator helper, but our use-case is safe:
- * we treat the IP as an opaque string key rather than parsing it.
+ * We also set `validate: { keyGeneratorIpFallback: false }` on each limiter to
+ * suppress the ERR_ERL_KEY_GEN_IPV6 warning. The library detects that we
+ * reference req.ip without calling its ipKeyGenerator helper, but our use-case
+ * is safe: we treat the IP as an opaque string key rather than parsing it.
  *
  * @see https://express-rate-limit.github.io/ERR_ERL_INVALID_IP_ADDRESS/
  * @see https://express-rate-limit.github.io/ERR_ERL_KEY_GEN_IPV6/
@@ -97,7 +97,7 @@ module.exports = {
     message: 'Too many requests with the same IP, try again later.',
     standardHeaders: true,
     statusCode: 429,
-    validate: { ipKeyGenerator: false },
+    validate: { keyGeneratorIpFallback: false },
     skip: (req) => {
       if (req.method.toUpperCase() === 'OPTIONS') return true;
       if (isTestOrDev()) return true;
@@ -121,7 +121,7 @@ module.exports = {
     message: 'Too many DELETE requests with the same IP, try again later.',
     standardHeaders: true,
     statusCode: 429,
-    validate: { ipKeyGenerator: false },
+    validate: { keyGeneratorIpFallback: false },
     skip: (req) => {
       if (req.method.toUpperCase() !== 'DELETE') return true;
       if (isTestOrDev()) return true;
@@ -164,7 +164,7 @@ module.exports = {
       'Too many authentication attempts from this IP, please try again later.',
     standardHeaders: true,
     statusCode: 429,
-    validate: { ipKeyGenerator: false },
+    validate: { keyGeneratorIpFallback: false },
     skip: () => isTestOrDev(),
   }),
 
@@ -187,7 +187,7 @@ module.exports = {
     standardHeaders: true,
     statusCode: 429,
     keyGenerator: (req) => `admin:${req.ip || 'unknown'}`,
-    validate: { ipKeyGenerator: false },
+    validate: { keyGeneratorIpFallback: false },
     skip: () => isTestOrDev(),
   }),
 };
