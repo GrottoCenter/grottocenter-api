@@ -16,7 +16,8 @@ module.exports = async (req, res) => {
   if (!matchAllFields || matchAllFields === 'false') matchAllFields = false;
 
   const entity = req.param('entity') ?? '';
-  const sort = req.param('sort');
+  const rawSort = req.param('sort');
+  const sort = typeof rawSort === 'string' ? rawSort : undefined;
 
   // Validate entity-specific sort fields
   if (sort) {
