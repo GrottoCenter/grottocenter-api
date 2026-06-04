@@ -38,6 +38,7 @@ tags:
   - name: file formats
   - name: geoloc
   - name: groups
+  - name: guidelines
   - name: health
     description: API health monitoring endpoints
   - name: identifierTypes
@@ -3223,6 +3224,390 @@ paths:
           description: Authentication required
         '404':
           description: Entity not found
+
+  '/guidelines':
+    get:
+      tags:
+        - guidelines
+      description: Find all guidelines.
+      parameters:
+        - name: skip
+          in: query
+          description: Number of guidelines to skip.
+          required: false
+          schema:
+            type: integer
+            default: 0
+        - name: limit
+          in: query
+          description: Maximum number of guidelines.
+          required: false
+          schema:
+            type: integer
+            default: 50
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Guideline'
+    post:
+      tags:
+        - guidelines
+      description: Create a new guideline. Authenticated action (any logged-in user).
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: At least one geographic entity (countries, regions, or massifs) must be provided and non-empty.
+              required:
+                - title
+                - language
+              properties:
+                title:
+                  type: string
+                  description: Title of the guideline. Must be 150 characters or less and cannot be empty.
+                  maxLength: 150
+                countries:
+                  type: array
+                  description: Array of country codes to associate.
+                  items:
+                    type: string
+                regions:
+                  type: array
+                  description: Array of region ISO codes to associate.
+                  items:
+                    type: string
+                massifs:
+                  type: array
+                  description: Array of massif IDs to associate.
+                  items:
+                    type: integer
+                language:
+                  type: string
+                  description: Language code (e.g. fra, eng).
+                description:
+                  type: string
+                  description: Optional description of the guideline. Must be 500 characters or less.
+                  maxLength: 500
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Guideline'
+        '400':
+          description: Bad Request (missing or invalid input values).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '401':
+          description: Unauthorized (missing or invalid JWT token).
+        '404':
+          description: Referenced entity does not exist.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  '/guidelines/{id}':
+    patch:
+      tags:
+        - guidelines
+      description: Update a guideline. Authenticated action (only the author or a moderator can update a guideline).
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Guideline ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  description: New title of the guideline. Must be 150 characters or less and cannot be empty.
+                  maxLength: 150
+                description:
+                  type: string
+                  description: New description. Must be 500 characters or less.
+                  maxLength: 500
+                  nullable: true
+                language:
+                  type: string
+                  description: New language code.
+                countries:
+                  type: array
+                  description: New array of country codes.
+                  items:
+                    type: string
+                regions:
+                  type: array
+                  description: New array of region ISO codes.
+                  items:
+                    type: string
+                massifs:
+                  type: array
+                  description: New array of massif IDs.
+                  items:
+                    type: integer
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Guideline'
+        '400':
+          description: Bad Request (invalid parameter values).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '401':
+          description: Unauthorized (missing or invalid JWT token).
+        '403':
+          description: Forbidden (user is not authorized to update this guideline).
+        '404':
+          description: Guideline not found or already deleted.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+    delete:
+      tags:
+        - guidelines
+      description: Soft-delete a guideline. Authenticated action (moderator only).
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Guideline ID to delete
+      responses:
+        '200':
+          description: Successful operation. Returns the soft-deleted guideline.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Guideline'
+        '401':
+          description: Unauthorized (missing or invalid JWT token).
+        '403':
+          description: Forbidden (user is not authorized to delete guidelines).
+        '404':
+          description: Guideline not found or already deleted.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  '/guidelines/{id}/restore':
+    post:
+      tags:
+        - guidelines
+      description: Restore a soft-deleted guideline. Authenticated action (moderator only).
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Guideline ID to restore
+      responses:
+        '200':
+          description: Successful operation. Returns the restored guideline.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Guideline'
+        '400':
+          description: Bad Request (guideline is not deleted).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '401':
+          description: Unauthorized (missing or invalid JWT token).
+        '403':
+          description: Forbidden (user is not authorized to restore guidelines).
+        '404':
+          description: Guideline not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  '/guidelines/{id}/snapshots':
+    get:
+      tags:
+        - guidelines
+      description: Get all history snapshots for a guideline.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Guideline ID
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  guidelines:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Guideline'
+        '404':
+          description: Guideline history snapshots not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  '/guidelines/{id}/rollback/{snapshotId}':
+    post:
+      tags:
+        - guidelines
+      description: Rollback a guideline to a specific history snapshot. Authenticated action.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Guideline ID
+        - name: snapshotId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The timestamp/ID of the history snapshot to rollback to
+      responses:
+        '200':
+          description: Successful operation. Returns the updated guideline.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Guideline'
+        '400':
+          description: Bad Request (missing or invalid parameter).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '401':
+          description: Unauthorized (missing or invalid JWT token).
+        '403':
+          description: Forbidden (user is not the author, a moderator, or an administrator).
+        '404':
+          description: Guideline or history snapshot not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  '/guidelines/by-entity/{entityType}/{entityId}':
+    get:
+      tags:
+        - guidelines
+      description: >-
+        Find all non-deleted guidelines for a specific entity. A non-existent
+        entity is not an error: it returns 200 with an empty array, identical to
+        an existing entity that simply has no guidelines.
+      parameters:
+        - name: entityType
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The type of entity (e.g. country, region, massif)
+        - name: entityId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The identifier/code of the entity
+      responses:
+        '200':
+          description: >-
+            Successful operation. Returns the (possibly empty) list of
+            guidelines for the entity. An empty array means either the entity
+            has no guidelines or the entity does not exist; the two cases are
+            not distinguished.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Guideline'
+        '400':
+          description: Bad Request (invalid entityType).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
 
   '/names/{id}':
     patch:
@@ -7513,6 +7898,51 @@ components:
           type: string
         comment:
           type: string
+
+    Guideline:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        countries:
+          type: array
+          items:
+            type: string
+        regions:
+          type: array
+          items:
+            type: string
+        massifs:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+        dateInscription:
+          type: string
+          format: date-time
+        dateReviewed:
+          type: string
+          format: date-time
+          nullable: true
+        isDeleted:
+          type: boolean
+        author:
+          $ref: '#/components/schemas/Caver'
+        reviewer:
+          $ref: '#/components/schemas/Caver'
+          nullable: true
+        language:
+          $ref: '#/components/schemas/Language'
+        t_id:
+          type: integer
+          description: "Only present in history snapshots. The ID of the parent guideline this snapshot belongs to."
 
     HealthStatus:
       type: object

@@ -315,6 +315,20 @@ module.exports.routes = {
   'DELETE /api/v1/histories/:id': 'v1/history/delete',
   'POST /api/v1/histories/:id/restore': 'v1/history/restore',
 
+  // Guideline
+  'GET /api/v1/guidelines': 'v1/guideline/find-all',
+  'POST /api/v1/guidelines': 'v1/guideline/create',
+  'PATCH /api/v1/guidelines/:id': 'v1/guideline/update',
+  'DELETE /api/v1/guidelines/:id': 'v1/guideline/delete',
+  'POST /api/v1/guidelines/:id/restore': 'v1/guideline/restore',
+  'GET /api/v1/guidelines/:id/snapshots': 'v1/guideline/get-snapshots',
+  'POST /api/v1/guidelines/:id/rollback/:snapshotId': 'v1/guideline/rollback',
+  // Uses a dedicated /by-entity prefix so entity lookups (entityType is a
+  // string, entityId may be a non-numeric code like "FR") can never collide
+  // with the numeric-:id routes above (e.g. /:id/snapshots, /:id/restore).
+  'GET /api/v1/guidelines/by-entity/:entityType/:entityId':
+    'v1/guideline/find-for-entity',
+
   // Rigging
   'POST /api/v1/riggings': 'v1/rigging/create',
   'PATCH /api/v1/riggings/:id': 'v1/rigging/update',

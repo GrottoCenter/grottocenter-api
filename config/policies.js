@@ -192,6 +192,20 @@ module.exports.policies = {
   'v1/history/restore': 'tokenAuth',
   'v1/history/move-relevance': ['validateId', 'tokenAuth'],
 
+  // Guideline
+  'v1/guideline/find-all': true,
+  'v1/guideline/create': 'tokenAuth',
+  'v1/guideline/update': ['validateId', 'tokenAuth'],
+  'v1/guideline/delete': ['validateId', 'tokenAuth'],
+  'v1/guideline/restore': ['validateId', 'tokenAuth'],
+  // No validateId: the :snapshotId route param is an ISO date string, not an
+  // integer, so validateId would reject every valid rollback request.
+  'v1/guideline/rollback': 'tokenAuth',
+  'v1/guideline/find-for-entity': true,
+  // Public, matching every other entity's get-snapshots and the public guideline
+  // reads above. The controller validates the :id itself, so no validateId here.
+  'v1/guideline/get-snapshots': true,
+
   // Rigging
   'v1/rigging/get-snapshots': true,
   'v1/rigging/create': 'tokenAuth',

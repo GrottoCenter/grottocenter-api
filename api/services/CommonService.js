@@ -26,4 +26,14 @@ module.exports = {
    */
   convertHtmlToText: (html, length) =>
     _.prune(_.unescapeHTML(_.stripTags(html)), length),
+
+  /**
+   * Ensures a value is an array. If falsy, returns empty array. If not an array, wraps in array.
+   * @param {*} val - Value to ensure is an array
+   * @returns {Array}
+   */
+  ensureArray: (val) => {
+    if (!val) return [];
+    return Array.isArray(val) ? val : [val];
+  },
 };

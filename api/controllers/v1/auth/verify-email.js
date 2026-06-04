@@ -15,12 +15,14 @@ module.exports = async (req, res) => {
     );
   }
 
+  const isEmailChange = !!caver.pendingMail;
+
   const updates = {
     activationCode: null,
     mailIsValid: true,
   };
 
-  if (caver.pendingMail) {
+  if (isEmailChange) {
     const alreadyInUse = await TCaver.findOne({
       id: { '!=': caver.id },
       or: [{ mail: caver.pendingMail }, { pendingMail: caver.pendingMail }],
@@ -60,7 +62,7 @@ module.exports = async (req, res) => {
     return res.serverError('An error occurred during email verification.');
   }
 
-  if (caver.pendingMail) {
+  if (isEmailChange) {
     AccountNotificationService.notifyEmailChanged({
       oldEmail: caver.mail,
       nickname: caver.nickname,

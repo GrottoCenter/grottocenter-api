@@ -28,6 +28,7 @@ SELECT SETVAL('public.t_sensor_configuration_id_seq', COALESCE(MAX(id), 1) ) FRO
 SELECT SETVAL('public.t_quantity_kind_id_seq', COALESCE(MAX(id), 1) ) FROM public.t_quantity_kind;
 SELECT SETVAL('public.t_unit_id_seq', COALESCE(MAX(id), 1) ) FROM public.t_unit;
 SELECT SETVAL('public.t_substance_id_seq', COALESCE(MAX(id), 1) ) FROM public.t_substance;
+SELECT SETVAL('public.t_guideline_id_seq', COALESCE(MAX(id), 1) ) FROM public.t_guideline;
 `;
 
 const ALTER_MASSIF_COLUMN_GEOG_POLYGON = `
@@ -304,6 +305,163 @@ ALTER TABLE h_rigging DROP CONSTRAINT IF EXISTS h_rigging_t_cave_fk;
 ALTER TABLE h_history DROP CONSTRAINT IF EXISTS h_history_t_cave_fk;
 ALTER TABLE h_document DROP CONSTRAINT IF EXISTS h_document_t_cave_fk;
 ALTER TABLE h_name DROP CONSTRAINT IF EXISTS h_name_t_cave0_fk;
+-- Guideline history parent FK
+ALTER TABLE h_guideline DROP CONSTRAINT IF EXISTS h_guideline_t_guideline_fk;
+`;
+
+const CREATE_GUIDELINE_TRIGGERS = `
+-- Indexes
+CREATE INDEX IF NOT EXISTS idx_t_guideline_is_deleted ON t_guideline(is_deleted);
+CREATE INDEX IF NOT EXISTS idx_j_guideline_country_guideline ON j_guideline_country(id_guideline);
+CREATE INDEX IF NOT EXISTS idx_j_guideline_country_country ON j_guideline_country(id_country);
+CREATE INDEX IF NOT EXISTS idx_j_guideline_region_guideline ON j_guideline_region(id_guideline);
+CREATE INDEX IF NOT EXISTS idx_j_guideline_region_region ON j_guideline_region(id_region);
+CREATE INDEX IF NOT EXISTS idx_j_guideline_massif_guideline ON j_guideline_massif(id_guideline);
+CREATE INDEX IF NOT EXISTS idx_j_guideline_massif_massif ON j_guideline_massif(id_massif);
+
+-- Trigger functions & Triggers
+CREATE OR REPLACE FUNCTION histo_delete() RETURNS trigger AS $$
+DECLARE date_r timestamp;
+BEGIN
+if OLD.is_deleted = true then
+RETURN OLD;
+end if;
+EXECUTE format(
+    'UPDATE %I.%I SET is_deleted = true WHERE id = $1.id',
+    TG_TABLE_SCHEMA,
+    TG_TABLE_NAME
+) USING OLD;
+RETURN null;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION histo_insert_guideline() RETURNS trigger AS $$
+DECLARE date_r timestamp;
+BEGIN
+if NEW.date_reviewed is null then date_r := NEW.date_inscription;
+else date_r := NEW.date_reviewed;
+end if;
+
+INSERT INTO h_guideline (
+        id,
+        title,
+        description,
+        id_author,
+        id_reviewer,
+        id_language,
+        date_inscription,
+        date_reviewed,
+        is_deleted
+    )
+VALUES (
+        NEW.id,
+        NEW.title,
+        NEW.description,
+        NEW.id_author,
+        NEW.id_reviewer,
+        NEW.id_language,
+        NEW.date_inscription,
+        date_r,
+        NEW.is_deleted
+    );
+
+RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION histo_update_guideline() RETURNS trigger AS $$
+DECLARE date_r timestamp;
+BEGIN
+if NEW.date_reviewed is null then date_r := NEW.date_inscription;
+else date_r := NEW.date_reviewed;
+end if;
+-- Snapshot Creation Truth Table:
+-- 1. Regular Update (OLD.is_deleted = false, NEW.is_deleted = false) -> CREATE SNAPSHOT
+-- 2. Soft-Delete    (OLD.is_deleted = false, NEW.is_deleted = true)  -> CREATE SNAPSHOT
+-- 3. Restore        (OLD.is_deleted = true,  NEW.is_deleted = false) -> SKIP (restore does not alter state worth capturing)
+-- 4. No-Op Delete   (OLD.is_deleted = true,  NEW.is_deleted = true)  -> CREATE SNAPSHOT (though typically caught by app logic)
+if NEW.is_deleted = OLD.is_deleted OR (OLD.is_deleted = false AND NEW.is_deleted = true) then
+IF NOT EXISTS (SELECT 1 FROM h_guideline WHERE id = OLD.id AND date_reviewed = date_r) THEN
+INSERT INTO h_guideline (
+        id,
+        title,
+        description,
+        id_author,
+        id_reviewer,
+        id_language,
+        date_inscription,
+        date_reviewed,
+        is_deleted
+    )
+VALUES (
+        OLD.id,
+        OLD.title,
+        OLD.description,
+        OLD.id_author,
+        OLD.id_reviewer,
+        OLD.id_language,
+        OLD.date_inscription,
+        date_r,
+        OLD.is_deleted
+    );
+END IF;
+end if;
+NEW.date_reviewed := now();
+RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION change_guideline() RETURNS trigger AS $$
+DECLARE type_change varchar(20);
+DECLARE id_author int4;
+BEGIN
+type_change := '';
+if TG_OP = 'INSERT' then
+    type_change := 'create';
+    id_author := NEW.id_author;
+elsif NEW.is_deleted != OLD.is_deleted AND NEW.is_deleted = true then
+    type_change := 'delete';
+    id_author := COALESCE(NEW.id_reviewer, NEW.id_author);
+elsif NEW.is_deleted != OLD.is_deleted AND NEW.is_deleted = false then
+    type_change := 'restore';
+    id_author := COALESCE(NEW.id_reviewer, NEW.id_author);
+elsif NEW.is_deleted = false then
+    type_change := 'update';
+    id_author := COALESCE(NEW.id_reviewer, NEW.id_author);
+end if;
+if type_change != '' then
+INSERT INTO t_last_change (
+        type_entity,
+        type_change,
+        date_change,
+        id_entity,
+        id_author,
+        name
+    )
+VALUES (
+        'guideline',
+        type_change,
+        now(),
+        NEW.id,
+        id_author,
+        NEW.title
+    );
+end if;
+RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS histo_insert_guideline ON t_guideline;
+CREATE TRIGGER histo_insert_guideline AFTER INSERT ON t_guideline FOR EACH ROW EXECUTE PROCEDURE histo_insert_guideline();
+
+DROP TRIGGER IF EXISTS histo_update_guideline ON t_guideline;
+CREATE TRIGGER histo_update_guideline BEFORE UPDATE ON t_guideline FOR EACH ROW EXECUTE PROCEDURE histo_update_guideline();
+
+DROP TRIGGER IF EXISTS histo_delete_guideline ON t_guideline;
+CREATE TRIGGER histo_delete_guideline BEFORE DELETE ON t_guideline FOR EACH ROW EXECUTE PROCEDURE histo_delete();
+
+DROP TRIGGER IF EXISTS last_change_guideline ON t_guideline;
+CREATE TRIGGER last_change_guideline BEFORE INSERT OR UPDATE ON t_guideline FOR EACH ROW EXECUTE PROCEDURE change_guideline();
 `;
 
 const ADMIN_MFA_MIGRATION = `
@@ -329,4 +487,5 @@ module.exports = {
   DROP_HISTORY_PARENT_FK_CONSTRAINTS,
   ADMIN_MFA_MIGRATION,
   CONVERT_MEASUREMENT_TO_PARTITIONED,
+  CREATE_GUIDELINE_TRIGGERS,
 };

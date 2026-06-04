@@ -1398,3 +1398,74 @@ CREATE INDEX idx_j_participant_caver ON j_participant(id_caver);
 CREATE INDEX idx_t_conversation_archive ON t_conversation_archive(id_conversation, id_caver);
 CREATE INDEX idx_t_message_conversation ON t_message(id_conversation, date_sent DESC);
 CREATE INDEX idx_t_message_sender ON t_message(id_caver_sender);
+
+-- Create t_guideline table
+CREATE TABLE t_guideline (
+  id serial NOT NULL,
+  title varchar(150) NOT NULL,
+  description varchar(500) NULL,
+  id_author int4 NOT NULL,
+  id_reviewer int4 NULL,
+  id_language bpchar(3) NOT NULL,
+  date_inscription timestamp NOT NULL DEFAULT now(),
+  date_reviewed timestamp NULL,
+  is_deleted bool NOT NULL DEFAULT false,
+  CONSTRAINT t_guideline_pk PRIMARY KEY (id),
+  CONSTRAINT t_guideline_t_caver_author_fk FOREIGN KEY (id_author) REFERENCES t_caver(id),
+  CONSTRAINT t_guideline_t_caver_reviewer_fk FOREIGN KEY (id_reviewer) REFERENCES t_caver(id),
+  CONSTRAINT t_guideline_t_language_fk FOREIGN KEY (id_language) REFERENCES t_language(id)
+);
+
+CREATE INDEX idx_t_guideline_is_deleted ON t_guideline(is_deleted);
+
+-- Create h_guideline table
+CREATE TABLE h_guideline (
+  id int4 NOT NULL,
+  title varchar(150) NOT NULL,
+  description varchar(500) NULL,
+  id_author int4 NOT NULL,
+  id_reviewer int4 NULL,
+  id_language bpchar(3) NOT NULL,
+  date_inscription timestamp NOT NULL DEFAULT now(),
+  date_reviewed timestamp NOT NULL,
+  is_deleted bool NOT NULL DEFAULT false,
+  CONSTRAINT h_guideline_pk PRIMARY KEY (id, date_reviewed),
+  CONSTRAINT h_guideline_t_guideline_fk FOREIGN KEY (id) REFERENCES t_guideline(id),
+  CONSTRAINT h_guideline_t_caver_author_fk FOREIGN KEY (id_author) REFERENCES t_caver(id),
+  CONSTRAINT h_guideline_t_caver_reviewer_fk FOREIGN KEY (id_reviewer) REFERENCES t_caver(id),
+  CONSTRAINT h_guideline_t_language_fk FOREIGN KEY (id_language) REFERENCES t_language(id)
+);
+
+-- j_guideline_country
+CREATE TABLE j_guideline_country (
+  id_guideline int4 NOT NULL,
+  id_country bpchar(2) NOT NULL,
+  CONSTRAINT j_guideline_country_pk PRIMARY KEY (id_guideline, id_country),
+  CONSTRAINT j_guideline_country_t_guideline_fk FOREIGN KEY (id_guideline) REFERENCES t_guideline(id),
+  CONSTRAINT j_guideline_country_t_country_fk FOREIGN KEY (id_country) REFERENCES t_country(iso)
+);
+CREATE INDEX idx_j_guideline_country_guideline ON j_guideline_country(id_guideline);
+CREATE INDEX idx_j_guideline_country_country ON j_guideline_country(id_country);
+
+-- j_guideline_region
+CREATE TABLE j_guideline_region (
+  id_guideline int4 NOT NULL,
+  id_region varchar(10) NOT NULL,
+  CONSTRAINT j_guideline_region_pk PRIMARY KEY (id_guideline, id_region),
+  CONSTRAINT j_guideline_region_t_guideline_fk FOREIGN KEY (id_guideline) REFERENCES t_guideline(id),
+  CONSTRAINT j_guideline_region_t_iso3166_2_fk FOREIGN KEY (id_region) REFERENCES t_iso3166_2(iso)
+);
+CREATE INDEX idx_j_guideline_region_guideline ON j_guideline_region(id_guideline);
+CREATE INDEX idx_j_guideline_region_region ON j_guideline_region(id_region);
+
+-- j_guideline_massif
+CREATE TABLE j_guideline_massif (
+  id_guideline int4 NOT NULL,
+  id_massif int4 NOT NULL,
+  CONSTRAINT j_guideline_massif_pk PRIMARY KEY (id_guideline, id_massif),
+  CONSTRAINT j_guideline_massif_t_guideline_fk FOREIGN KEY (id_guideline) REFERENCES t_guideline(id),
+  CONSTRAINT j_guideline_massif_t_massif_fk FOREIGN KEY (id_massif) REFERENCES t_massif(id)
+);
+CREATE INDEX idx_j_guideline_massif_guideline ON j_guideline_massif(id_guideline);
+CREATE INDEX idx_j_guideline_massif_massif ON j_guideline_massif(id_massif);
+

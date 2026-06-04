@@ -16,6 +16,7 @@ const CAVE_PROPERTIES = [
   'name',
   'names',
   'temperature',
+  'guidelines',
 ];
 
 module.exports = CAVE_PROPERTIES;

@@ -28,6 +28,27 @@ module.exports.bootstrap = async function (done) {
     ) {
       const modelMatch = message.match(/for model `([^`]+)`/);
       const model = modelMatch ? modelMatch[1] : 'unknown';
+      // Suppress validation warnings for legacy history models where Waterline expects
+      // a string/number primary key, but the database returned a Date object due to the legacy composite PK.
+      // NOTE: any new H-prefixed history model must be added to this list to keep its
+      // startup logs clean.
+      const legacyHistoryModels = [
+        'hcave',
+        'hcomment',
+        'hdescription',
+        'hdocument',
+        'hentrance',
+        'hgrotto',
+        'hguideline',
+        'hhistory',
+        'hlocation',
+        'hmassif',
+        'hname',
+        'hrigging',
+      ];
+      if (legacyHistoryModels.includes(model)) {
+        return;
+      }
       sails.log.warn(
         `Primary key validation issue in model '${model}' - type mismatch between database and model definition`
       );

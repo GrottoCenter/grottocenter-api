@@ -52,6 +52,24 @@ describe('Entrance features', () => {
           should(entrance.descriptions.length).equal(1);
           should(entrance.locations.length).equal(2);
           should(entrance.histories.length).equal(1);
+          should(entrance.guidelines).have.property('massif');
+          should(entrance.guidelines.massif).be.an.Array();
+          return done();
+        });
+    });
+
+    it('should return empty guidelines array when entrance has no guidelines', (done) => {
+      // Assumes entrance 3's country/region/massif have no guidelines attached
+      // in the fixtures; linking one to them in future fixtures will break this.
+      supertest(sails.hooks.http.app)
+        .get('/api/v1/entrances/3')
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(200)
+        .end((err, res) => {
+          if (err) return done(err);
+          const { body: entrance } = res;
+          should(entrance.guidelines).deepEqual([]);
           return done();
         });
     });

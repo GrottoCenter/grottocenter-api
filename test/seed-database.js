@@ -77,6 +77,7 @@ async function seedDatabase({ testUrl }) {
                 customSQL.CREATE_BIBLIOGRAPHIC_METADATA_TABLE,
                 customSQL.DROP_HISTORY_PARENT_FK_CONSTRAINTS,
                 customSQL.ADMIN_MFA_MIGRATION,
+                customSQL.CREATE_GUIDELINE_TRIGGERS,
               ].join('\n')
             )
               .then(() => resolve(sails))

@@ -1,6 +1,7 @@
 const ControllerService = require('../../../services/ControllerService');
 const MassifService = require('../../../services/MassifService');
 const RightService = require('../../../services/RightService');
+const GuidelineService = require('../../../services/GuidelineService');
 const {
   toMassif,
   toDeletedEntity,
@@ -18,10 +19,16 @@ module.exports = async (req, res) => {
   const massif = await MassifService.getPopulatedMassif(massifId);
 
   if (!massif) return res.notFound(`${params.searchedItem} not found`);
+
+  const guidelines = await GuidelineService.getGuidelinesForEntity(
+    'massif',
+    String(massifId)
+  );
+
   return ControllerService.treatAndConvert(
     req,
     null,
-    massif,
+    { ...massif, guidelines },
     params,
     res,
     massif.isDeleted && !hasRight ? toDeletedEntity : toMassif

@@ -37,6 +37,7 @@ const ENTRANCE_PROPERTIES = [
   'precision',
   'region',
   'riggings',
+  'guidelines',
 ];
 
 module.exports = ENTRANCE_PROPERTIES;
