@@ -1,0 +1,48 @@
+name: Superset Build & Deploy
+
+on:
+  push:
+    branches:
+      - develop
+    paths:
+      - 'docker/superset/**'
+  workflow_dispatch:
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Login to GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Build and push
+        uses: docker/build-push-action@v7
+        with:
+          context: docker/superset
+          push: true
+          platforms: linux/amd64
+          tags: |
+            ghcr.io/grottocenter/superset:latest
+            ghcr.io/grottocenter/superset:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Trigger Azure deployment
+        env:
+          WEBHOOK_URL: ${{ secrets.AZURE_SUPERSET_WEBHOOK_URL }}
+        run: |
+          curl -sf -X POST "$WEBHOOK_URL"
