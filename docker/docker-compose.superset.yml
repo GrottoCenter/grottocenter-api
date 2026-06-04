@@ -1,0 +1,46 @@
+version: '3.3'
+
+name: grottocenter-superset
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: grotto-redis
+    restart: unless-stopped
+    ports:
+      - '6379:6379'
+    volumes:
+      - gc-redis-data:/data
+
+  superset:
+    build: ./superset
+    container_name: grotto-superset
+    restart: unless-stopped
+    entrypoint: ["/app/docker-entrypoint.sh"]
+    environment:
+      - SUPERSET_SECRET_KEY=grottocenter_local_dev_secret_key_change_in_prod
+      - SQLALCHEMY_DATABASE_URI=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@dbserver:5432/${POSTGRES_DATABASE}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - REDIS_URL=redis://redis:6379/0
+      - SUPERSET_LOAD_EXAMPLES=no
+      - SUPERSET_ADMIN_PASSWORD=admin
+      - SESSION_COOKIE_SECURE=false
+    ports:
+      - '8088:8088'
+    depends_on:
+      - redis
+    networks:
+      - default
+      - grottocenter_default
+    volumes:
+      - ../docker/superset/superset_config.py:/app/pythonpath/superset_config.py
+      - ../docker/superset/docker-entrypoint.sh:/app/docker-entrypoint.sh
+      - ../docker/superset/export:/app/superset-export
+
+volumes:
+  gc-redis-data:
+
+networks:
+  grottocenter_default:
+    external: true
