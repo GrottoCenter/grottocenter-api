@@ -1,11 +1,11 @@
 /**
- * TPoint.js
+ * THumanActivity.js
  *
- * @description :: Geographic location for scientific observations
+ * @description :: Record of human activity observed at a point
  */
 
 module.exports = {
-  tableName: 't_point',
+  tableName: 't_human_activity',
 
   primaryKey: 'id',
 
@@ -40,45 +40,16 @@ module.exports = {
       columnType: 'timestamp',
     },
 
-    label: {
-      type: 'string',
+    observation: {
       allowNull: false,
-      columnName: 'label',
-      maxLength: 200,
+      columnName: 'id_observation',
+      model: 'TObservation',
     },
 
-    latitude: {
-      type: 'string',
-      allowNull: true,
-      columnName: 'latitude',
-      columnType: 'numeric(24,20)',
-    },
-
-    longitude: {
-      type: 'string',
-      allowNull: true,
-      columnName: 'longitude',
-      columnType: 'numeric(24,20)',
-    },
-
-    cave: {
-      columnName: 'id_cave',
-      model: 'TCave',
-    },
-
-    observations: {
-      collection: 'TObservation',
-      via: 'point',
-    },
-
-    descriptions: {
-      collection: 'TDescription',
-      via: 'point',
-    },
-
-    names: {
-      collection: 'TName',
-      via: 'point',
+    activityType: {
+      allowNull: false,
+      columnName: 'id_human_activity_type',
+      model: 'THumanActivityType',
     },
 
     isDeleted: {

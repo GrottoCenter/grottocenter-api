@@ -91,10 +91,20 @@ module.exports = {
       model: 'TMassif',
     },
 
-    // Unused
+    // Scientific observation point
     point: {
       columnName: 'id_point',
       model: 'TPoint',
+    },
+
+    observation: {
+      columnName: 'id_observation',
+      model: 'TObservation',
+    },
+
+    method: {
+      columnName: 'id_method',
+      model: 'TMethod',
     },
 
     document: {
