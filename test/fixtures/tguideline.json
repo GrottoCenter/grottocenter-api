@@ -1,0 +1,53 @@
+[
+  {
+    "id": 1,
+    "title": "French National Caving Guideline",
+    "description": "Guidelines for caving in France: respect private property.",
+    "author": 3,
+    "reviewer": 2,
+    "language": "fra",
+    "dateInscription": "2026-01-01T10:00:00.000Z",
+    "dateReviewed": "2026-01-02T12:00:00.000Z",
+    "isDeleted": false
+  },
+  {
+    "id": 2,
+    "title": "Spanish Access Rules",
+    "description": "Ensure you have permission from local authorities in Spain.",
+    "author": 3,
+    "language": "fra",
+    "dateInscription": "2026-02-01T10:00:00.000Z",
+    "isDeleted": false
+  },
+  {
+    "id": 3,
+    "title": "Auvergne-Rhône-Alpes Regional Rules",
+    "description": "Specific access requirements for ARA region.",
+    "author": 3,
+    "reviewer": 2,
+    "language": "fra",
+    "dateInscription": "2026-03-01T10:00:00.000Z",
+    "dateReviewed": "2026-03-02T12:00:00.000Z",
+    "isDeleted": false
+  },
+  {
+    "id": 4,
+    "title": "Vercors Massif Access Restrictions",
+    "description": "Access to massif 1 is restricted during nesting season.",
+    "author": 3,
+    "reviewer": 2,
+    "language": "fra",
+    "dateInscription": "2026-04-01T10:00:00.000Z",
+    "dateReviewed": "2026-04-02T12:00:00.000Z",
+    "isDeleted": false
+  },
+  {
+    "id": 5,
+    "title": "Chartreuse Massif General Rules",
+    "description": "Guidelines for massif 2.",
+    "author": 3,
+    "language": "fra",
+    "dateInscription": "2026-05-01T10:00:00.000Z",
+    "isDeleted": false
+  }
+]

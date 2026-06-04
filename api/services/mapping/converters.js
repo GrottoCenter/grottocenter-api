@@ -9,6 +9,7 @@ const MassifModel = require('./models/MassifModel');
 const NotificationModel = require('./models/NotificationModel');
 const OrganizationModel = require('./models/OrganizationModel');
 const SubjectModel = require('./models/SubjectModel');
+const GuidelineModel = require('./models/GuidelineModel');
 const {
   getMainName,
   getMainLanguage,
@@ -23,37 +24,51 @@ const {
 } = require('../../utils/computeEntranceDataQuality');
 
 const c = {
-  toCave: (source, meta) => ({
-    ...CaveModel,
-    id: source.id,
-    '@id': String(source.id),
+  toCave: (source, meta) => {
+    const result = {
+      ...CaveModel,
+      id: source.id,
+      '@id': String(source.id),
 
-    author: convertIfObject(source.author, c.toSimpleCaver),
-    reviewer: convertIfObject(source.reviewer, c.toSimpleCaver),
-    dateInscription: source.dateInscription,
-    dateReviewed: source.dateReviewed,
-    name: getMainName(source),
-    language: getMainLanguage(source),
-    depth: source.depth,
-    length: source.caveLength ?? source.length ?? null,
-    temperature: source.temperature,
-    isDeleted: source.isDeleted,
-    redirectTo: source.redirectTo,
-    isDiving: source.isDiving,
+      author: convertIfObject(source.author, c.toSimpleCaver),
+      reviewer: convertIfObject(source.reviewer, c.toSimpleCaver),
+      dateInscription: source.dateInscription,
+      dateReviewed: source.dateReviewed,
+      name: getMainName(source),
+      language: getMainLanguage(source),
+      depth: source.depth,
+      length: source.caveLength ?? source.length ?? null,
+      temperature: source.temperature,
+      isDeleted: source.isDeleted,
+      redirectTo: source.redirectTo,
+      isDiving: source.isDiving,
 
-    names: toList('names', source, c.toName),
-    descriptions: toList('descriptions', source, c.toSimpleDescription, {
-      filterDeleted: false,
-    }),
-    entrances: toList('entrances', source, c.toSimpleEntrance, { meta }),
-    massifs: toList('massifs', source, c.toSimpleMassif),
-    documents: toList('documents', source, c.toSimpleDocument),
-    exploringOrganizations: toList(
-      'exploringOrganizations',
-      source,
-      c.toSimpleOrganization
-    ),
-  }),
+      names: toList('names', source, c.toName),
+      descriptions: toList('descriptions', source, c.toSimpleDescription, {
+        filterDeleted: false,
+      }),
+      entrances: toList('entrances', source, c.toSimpleEntrance, { meta }),
+      massifs: toList('massifs', source, c.toSimpleMassif),
+      documents: toList('documents', source, c.toSimpleDocument),
+      exploringOrganizations: toList(
+        'exploringOrganizations',
+        source,
+        c.toSimpleOrganization
+      ),
+    };
+
+    // Caves only carry massif-level guidelines. source.guidelines is the
+    // grouped object from getGuidelinesForCave ({ massif: [...] }), read the
+    // same way the entrance converter reads its country/region/massif groups.
+    const massifList = toList(
+      'massif',
+      source.guidelines || {},
+      c.toSimpleGuideline
+    );
+    result.guidelines = massifList.length === 0 ? [] : { massif: massifList };
+
+    return result;
+  },
 
   toSimpleCave: (source) => ({
     id: source.id,
@@ -399,6 +414,36 @@ const c = {
       filterDeleted: false,
     });
 
+    const countryList = toList(
+      'country',
+      source.guidelines || {},
+      c.toSimpleGuideline
+    );
+    const regionList = toList(
+      'region',
+      source.guidelines || {},
+      c.toSimpleGuideline
+    );
+    const massifList = toList(
+      'massif',
+      source.guidelines || {},
+      c.toSimpleGuideline
+    );
+
+    if (
+      countryList.length === 0 &&
+      regionList.length === 0 &&
+      massifList.length === 0
+    ) {
+      result.guidelines = [];
+    } else {
+      result.guidelines = {
+        country: countryList,
+        region: regionList,
+        massif: massifList,
+      };
+    }
+
     if (source.qualityData) {
       result.dataQuality = {
         total: getQualityData(source.qualityData),
@@ -550,6 +595,9 @@ const c = {
     descriptions: toList('descriptions', source, c.toSimpleDescription),
     documents: toList('documents', source, c.toSimpleDocument),
     networks: toList('networks', source, c.toSimpleCave),
+    // Flat array from getGuidelinesForEntity, unlike the cave/entrance
+    // converters which receive a grouped object ({ country, region, massif }).
+    guidelines: toList('guidelines', source, c.toSimpleGuideline),
   }),
 
   toSimpleMassif: (source) => ({
@@ -777,6 +825,34 @@ const c = {
     entrance: convertIfObject(source.entrance, c.toSimpleEntrance, { meta }),
     cave: convertIfObject(source.cave, c.toSimpleCave),
   }),
+
+  toSimpleGuideline: (source) => {
+    const result = {
+      ...GuidelineModel,
+      id: source.id,
+      title: source.title,
+      description: source.description,
+      countries: toList(
+        'countries',
+        source,
+        (country) => country.id || country
+      ),
+      regions: toList('regions', source, (region) => region.id || region),
+      massifs: toList('massifs', source, (massif) =>
+        massif instanceof Object ? c.toSimpleMassif(massif) : { id: massif }
+      ),
+      dateInscription: source.dateInscription,
+      dateReviewed: source.dateReviewed,
+      isDeleted: source.isDeleted,
+      author: convertIfObject(source.author, c.toSimpleCaver),
+      reviewer: convertIfObject(source.reviewer, c.toSimpleCaver),
+      language: convertIfObject(source.language, c.toLanguage),
+    };
+    if (source.t_id) {
+      result.t_id = source.t_id;
+    }
+    return result;
+  },
 
   // Transform the typesense response
   toSearchResult: (source, meta) => {

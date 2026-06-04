@@ -89,5 +89,11 @@ module.exports = {
       via: 'massif',
       through: 'JCaverMassifSubscription',
     },
+
+    guidelines: {
+      collection: 'TGuideline',
+      via: 'massif',
+      through: 'JGuidelineMassif',
+    },
   },
 };

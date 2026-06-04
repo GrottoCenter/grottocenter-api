@@ -1,0 +1,32 @@
+[
+  {
+    "id": "2026-01-01T10:00:00.000Z",
+    "t_id": 1,
+    "title": "French National Caving Guideline Draft",
+    "description": "Draft guidelines.",
+    "author": 3,
+    "language": "fra",
+    "dateInscription": "2026-01-01T10:00:00.000Z",
+    "isDeleted": false
+  },
+  {
+    "id": "2026-03-01T10:00:00.000Z",
+    "t_id": 3,
+    "title": "Auvergne-Rhône-Alpes Regional Rules Draft",
+    "description": "Initial draft for regional rules.",
+    "author": 3,
+    "language": "fra",
+    "dateInscription": "2026-03-01T10:00:00.000Z",
+    "isDeleted": false
+  },
+  {
+    "id": "2026-04-01T10:00:00.000Z",
+    "t_id": 4,
+    "title": "Vercors Massif Draft",
+    "description": "Initial draft for Vercors massif.",
+    "author": 3,
+    "language": "fra",
+    "dateInscription": "2026-04-01T10:00:00.000Z",
+    "isDeleted": false
+  }
+]

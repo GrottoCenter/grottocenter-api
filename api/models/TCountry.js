@@ -125,5 +125,11 @@ module.exports = {
       via: 'country',
       through: 'JDocumentCountry',
     },
+
+    guidelines: {
+      collection: 'TGuideline',
+      via: 'country',
+      through: 'JGuidelineCountry',
+    },
   },
 };

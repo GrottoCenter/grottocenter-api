@@ -103,8 +103,11 @@ describe('Cave features', () => {
             if (err) return done(err);
             const populatedCave =
               await TCave.findOne(caveId).populate('entrances');
-            should(populatedCave.entrances[0].id).equal(1);
-            should(populatedCave.entrances[1].id).equal(2);
+            // populate() has no guaranteed order, so compare the set of ids
+            const entranceIds = populatedCave.entrances
+              .map((e) => e.id)
+              .sort((a, b) => a - b);
+            should(entranceIds).deepEqual([1, 2]);
             return done();
           });
       });

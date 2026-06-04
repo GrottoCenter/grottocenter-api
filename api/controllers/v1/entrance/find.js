@@ -2,6 +2,7 @@ const ControllerService = require('../../../services/ControllerService');
 const DataQualityComputeService = require('../../../services/DataQualityComputeService');
 const EntranceService = require('../../../services/EntranceService');
 const RightService = require('../../../services/RightService');
+const GuidelineService = require('../../../services/GuidelineService');
 const {
   toEntrance,
   toDeletedEntity,
@@ -20,21 +21,27 @@ module.exports = async (req, res) => {
 
   const params = { searchedItem: `Entrance of id ${entranceId}` };
 
-  // Fetch entrance and quality data in parallel.
-  // The quality query may return null for deleted entrances (the materialized
-  // view filters is_deleted = false) or for newly created entrances not yet
-  // in the view. In 404 cases the quality result is simply discarded.
-  const [entrance, qualityRow] = await Promise.all([
-    EntranceService.getPopulatedEntrance(entranceId, where),
-    DataQualityComputeService.getEntranceQualityById(entranceId),
-  ]);
+  // Fetch entrance first to avoid unnecessary queries if it doesn't exist
+  const entrance = await EntranceService.getPopulatedEntrance(
+    entranceId,
+    where
+  );
 
   if (!entrance) return res.notFound(`${params.searchedItem} not found`);
+
+  // Fetch quality data and guidelines.
+  // The quality query may return null for deleted entrances (the materialized
+  // view filters is_deleted = false) or for newly created entrances not yet
+  // in the view.
+  const [qualityRow, guidelines] = await Promise.all([
+    DataQualityComputeService.getEntranceQualityById(entranceId),
+    GuidelineService.getGuidelinesForEntrance(entrance),
+  ]);
 
   return ControllerService.treatAndConvert(
     req,
     null,
-    { ...entrance, qualityData: qualityRow },
+    { ...entrance, qualityData: qualityRow, guidelines },
     params,
     res,
     entrance.isDeleted && !hasRight ? toDeletedEntity : toEntrance

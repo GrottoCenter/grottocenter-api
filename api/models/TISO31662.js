@@ -141,5 +141,11 @@ module.exports = {
       via: 'region',
       through: 'JCaverRegionSubscription',
     },
+
+    guidelines: {
+      collection: 'TGuideline',
+      via: 'region',
+      through: 'JGuidelineRegion',
+    },
   },
 };

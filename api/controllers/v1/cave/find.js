@@ -1,6 +1,7 @@
 const CaveService = require('../../../services/CaveService');
 const ControllerService = require('../../../services/ControllerService');
 const RightService = require('../../../services/RightService');
+const GuidelineService = require('../../../services/GuidelineService');
 const {
   toCave,
   toDeletedEntity,
@@ -21,10 +22,13 @@ module.exports = async (req, res) => {
   const cave = await CaveService.getPopulatedCave(caveId, where);
 
   if (!cave) return res.notFound(`${params.searchedItem} not found`);
+
+  const guidelines = await GuidelineService.getGuidelinesForCave(caveId);
+
   return ControllerService.treatAndConvert(
     req,
     null,
-    cave,
+    { ...cave, guidelines },
     params,
     res,
     cave.isDeleted && !hasRight ? toDeletedEntity : toCave
