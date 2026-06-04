@@ -1,8 +1,8 @@
 const should = require('should');
 const supertest = require('supertest');
 const jwt = require('jsonwebtoken');
-const { authenticator } = require('otplib');
 const MfaService = require('../../../../api/services/MfaService');
+const { generateCode } = require('../../../helpers/totp');
 
 const ADMIN_EMAIL = 'admin1@admin1.com';
 const ADMIN_PASSWORD = 'testtest';
@@ -51,9 +51,9 @@ describe('Auth features', () => {
           });
       });
 
-      it('should return 200 with token when a valid TOTP code is provided', (done) => {
-        const validCode = authenticator.generate(DEV_SECRET);
-        supertest(sails.hooks.http.app)
+      it('should return 200 with token when a valid TOTP code is provided', async () => {
+        const validCode = await generateCode();
+        const res = await supertest(sails.hooks.http.app)
           .post('/api/v1/login')
           .send({
             email: ADMIN_EMAIL,
@@ -62,15 +62,12 @@ describe('Auth features', () => {
           })
           .set('Content-Type', 'application/json')
           .set('Accept', 'application/json')
-          .expect(200)
-          .end((err, res) => {
-            if (err) return done(err);
-            should(res.body).have.property('status', 'Success');
-            should(res.body).have.property('token');
-            const decoded = jwt.decode(res.body.token);
-            should(decoded).have.property('sub', 'Authentication');
-            return done();
-          });
+          .expect(200);
+
+        should(res.body).have.property('status', 'Success');
+        should(res.body).have.property('token');
+        const decoded = jwt.decode(res.body.token);
+        should(decoded).have.property('sub', 'Authentication');
       });
 
       it('should return 401 InvalidTotpCode when an invalid TOTP code is provided', (done) => {
@@ -92,7 +89,7 @@ describe('Auth features', () => {
       });
 
       it('should return 401 TotpAlreadyUsed when a replayed TOTP code is provided', async () => {
-        const validCode = authenticator.generate(DEV_SECRET);
+        const validCode = await generateCode();
 
         // First login — should succeed and record the code
         const firstRes = await supertest(sails.hooks.http.app)

@@ -1,8 +1,8 @@
 const should = require('should');
 const sinon = require('sinon');
 const crypto = require('crypto');
-const { authenticator } = require('otplib');
 const MfaService = require('../../../api/services/MfaService');
+const { TOTP, TOTP_OPTIONS, generateCode } = require('../../helpers/totp');
 
 describe('MfaService', () => {
   const DEV_SECRET = 'JBSWY3DPEHPK3PXP';
@@ -74,82 +74,85 @@ describe('MfaService', () => {
   });
 
   describe('verifyCode()', () => {
-    it('should accept current TOTP code', () => {
-      const code = authenticator.generate(DEV_SECRET);
-      const result = MfaService.verifyCode(code, DEV_SECRET);
+    it('should accept current TOTP code', async () => {
+      const code = await generateCode();
+      const result = await MfaService.verifyCode(code, DEV_SECRET);
       should(result).be.true();
     });
 
-    it('should accept +1 step code (30 seconds after)', () => {
+    it('should accept +1 step code (30 seconds after)', async () => {
       // Generate code at a future time, then verify at current time
       // Use a fixed base time aligned to a step boundary for predictability
       const baseTime = Math.floor(Date.now() / 30000) * 30000;
+      const totp = new TOTP({ ...TOTP_OPTIONS, secret: DEV_SECRET });
 
       // Generate code at +1 step
       const clockFuture = sinon.useFakeTimers(baseTime + 30000);
-      const codePlus1 = authenticator.generate(DEV_SECRET);
+      const codePlus1 = await totp.generate();
       clockFuture.restore();
 
-      // Verify at base time — window=1 should accept +1 step
+      // Verify at base time — epochTolerance=[30,30] should accept +1 step
       const clockBase = sinon.useFakeTimers(baseTime);
-      const result = MfaService.verifyCode(codePlus1, DEV_SECRET);
+      const result = await MfaService.verifyCode(codePlus1, DEV_SECRET);
       clockBase.restore();
 
       should(result).be.true();
     });
 
-    it('should accept -1 step code (30 seconds before)', () => {
+    it('should accept -1 step code (30 seconds before)', async () => {
       // Generate code at a past time, then verify at current time
       const baseTime = Math.floor(Date.now() / 30000) * 30000;
+      const totp = new TOTP({ ...TOTP_OPTIONS, secret: DEV_SECRET });
 
       // Generate code at -1 step
       const clockPast = sinon.useFakeTimers(baseTime - 30000);
-      const codeMinus1 = authenticator.generate(DEV_SECRET);
+      const codeMinus1 = await totp.generate();
       clockPast.restore();
 
-      // Verify at base time — window=1 should accept -1 step
+      // Verify at base time — epochTolerance=[30,30] should accept -1 step
       const clockBase = sinon.useFakeTimers(baseTime);
-      const result = MfaService.verifyCode(codeMinus1, DEV_SECRET);
+      const result = await MfaService.verifyCode(codeMinus1, DEV_SECRET);
       clockBase.restore();
 
       should(result).be.true();
     });
 
-    it('should reject ±2 step codes', () => {
+    it('should reject ±2 step codes', async () => {
       // Generate code at +3 steps, then verify at current time
       const baseTime = Math.floor(Date.now() / 30000) * 30000;
+      const totp = new TOTP({ ...TOTP_OPTIONS, secret: DEV_SECRET });
 
-      // Generate code at +3 steps (90s ahead) — guaranteed outside window=1
+      // Generate code at +3 steps (90s ahead) — guaranteed outside epochTolerance=[30,30]
       const clockFar = sinon.useFakeTimers(baseTime + 90000);
-      const codePlus3 = authenticator.generate(DEV_SECRET);
+      const codePlus3 = await totp.generate();
       clockFar.restore();
 
       // Verify at base time
       const clockBase = sinon.useFakeTimers(baseTime);
-      const result = MfaService.verifyCode(codePlus3, DEV_SECRET);
+      const result = await MfaService.verifyCode(codePlus3, DEV_SECRET);
       clockBase.restore();
 
       should(result).be.false();
     });
 
-    it('should reject non-6-digit strings: letters', () => {
-      should(MfaService.verifyCode('abcdef', DEV_SECRET)).be.false();
+    it('should reject non-6-digit strings: letters', async () => {
+      should(await MfaService.verifyCode('abcdef', DEV_SECRET)).be.false();
     });
 
-    it('should reject non-6-digit strings: 5 digits', () => {
-      should(MfaService.verifyCode('12345', DEV_SECRET)).be.false();
+    it('should reject non-6-digit strings: 5 digits', async () => {
+      should(await MfaService.verifyCode('12345', DEV_SECRET)).be.false();
     });
 
-    it('should reject non-6-digit strings: 7 digits', () => {
-      should(MfaService.verifyCode('1234567', DEV_SECRET)).be.false();
+    it('should reject non-6-digit strings: 7 digits', async () => {
+      should(await MfaService.verifyCode('1234567', DEV_SECRET)).be.false();
     });
 
-    it('should reject non-6-digit strings: empty', () => {
-      should(MfaService.verifyCode('', DEV_SECRET)).be.false();
+    it('should reject non-6-digit strings: empty', async () => {
+      should(await MfaService.verifyCode('', DEV_SECRET)).be.false();
     });
 
-    it('should reject null code', () => {
-      should(MfaService.verifyCode(null, DEV_SECRET)).be.false();
+    it('should reject null code', async () => {
+      should(await MfaService.verifyCode(null, DEV_SECRET)).be.false();
     });
   });
 
@@ -262,7 +265,7 @@ describe('MfaService', () => {
     });
 
     it('should activate MFA (sets mfaEnabled=true)', async () => {
-      const code = authenticator.generate(DEV_SECRET);
+      const code = await generateCode();
       const result = await MfaService.confirmEnrollment(ADMIN_CAVER_ID, code);
 
       should(result.success).be.true();
@@ -289,7 +292,7 @@ describe('MfaService', () => {
         totpSecret: null,
       });
 
-      const code = authenticator.generate(DEV_SECRET);
+      const code = await generateCode();
       const result = await MfaService.confirmEnrollment(ADMIN_CAVER_ID, code);
       should(result.success).be.false();
       should(result.error).equal('No pending enrollment found');
@@ -302,7 +305,7 @@ describe('MfaService', () => {
     beforeEach(async () => {
       // Set up active MFA
       await MfaService.startEnrollment(ADMIN_CAVER_ID);
-      const code = authenticator.generate(DEV_SECRET);
+      const code = await generateCode();
       await MfaService.confirmEnrollment(ADMIN_CAVER_ID, code);
     });
 

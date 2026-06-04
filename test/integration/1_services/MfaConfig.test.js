@@ -1,5 +1,6 @@
 const should = require('should');
-const otplib = require('otplib');
+const { TOTP } = require('otplib');
+const MfaService = require('../../../api/services/MfaService');
 
 describe('MFA config', () => {
   describe('adminAuthTokenTTL', () => {
@@ -30,9 +31,16 @@ describe('MFA config', () => {
   });
 
   describe('otplib dependency', () => {
-    it('should be requireable without error', () => {
-      should(otplib).be.an.Object();
-      should(otplib).have.property('authenticator');
+    it('should generate and verify a TOTP code via MfaService', async () => {
+      const secret = 'JBSWY3DPEHPK3PXP';
+      const totp = new TOTP({ ...MfaService.TOTP_OPTIONS, secret });
+      const code = await totp.generate();
+
+      should(code).be.a.String();
+      should(code).match(/^\d{6}$/);
+
+      const isValid = await MfaService.verifyCode(code, secret);
+      should(isValid).be.true();
     });
   });
 });

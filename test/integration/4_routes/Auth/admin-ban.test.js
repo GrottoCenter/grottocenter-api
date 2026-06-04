@@ -1,9 +1,9 @@
 /* eslint-disable no-await-in-loop */
 const should = require('should');
 const supertest = require('supertest');
-const { authenticator } = require('otplib');
 const MfaService = require('../../../../api/services/MfaService');
 const AuthTokenService = require('../../AuthTokenService');
+const { generateCode } = require('../../../helpers/totp');
 
 const ADMIN_EMAIL = 'admin1@admin1.com';
 const ADMIN_PASSWORD = 'testtest';
@@ -195,7 +195,7 @@ describe('Auth features', () => {
       should(caver.totpFailedAttempts).equal(5);
 
       // Next attempt with valid TOTP should get generic mismatch
-      const validCode = authenticator.generate(DEV_SECRET);
+      const validCode = await generateCode();
       const res = await supertest(sails.hooks.http.app)
         .post('/api/v1/login')
         .send({
