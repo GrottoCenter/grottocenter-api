@@ -1,11 +1,11 @@
 /**
- * TPoint.js
+ * TContamination.js
  *
- * @description :: Geographic location for scientific observations
+ * @description :: Record of contamination observed at a point
  */
 
 module.exports = {
-  tableName: 't_point',
+  tableName: 't_contamination',
 
   primaryKey: 'id',
 
@@ -40,45 +40,30 @@ module.exports = {
       columnType: 'timestamp',
     },
 
-    label: {
+    observation: {
+      allowNull: false,
+      columnName: 'id_observation',
+      model: 'TObservation',
+    },
+
+    contaminantType: {
+      allowNull: false,
+      columnName: 'id_contaminant_type',
+      model: 'TContaminantType',
+    },
+
+    medium: {
+      allowNull: false,
+      columnName: 'id_medium',
+      model: 'TMedium',
+    },
+
+    // Denormalized field for BI
+    mediumCode: {
       type: 'string',
       allowNull: false,
-      columnName: 'label',
-      maxLength: 200,
-    },
-
-    latitude: {
-      type: 'string',
-      allowNull: true,
-      columnName: 'latitude',
-      columnType: 'numeric(24,20)',
-    },
-
-    longitude: {
-      type: 'string',
-      allowNull: true,
-      columnName: 'longitude',
-      columnType: 'numeric(24,20)',
-    },
-
-    cave: {
-      columnName: 'id_cave',
-      model: 'TCave',
-    },
-
-    observations: {
-      collection: 'TObservation',
-      via: 'point',
-    },
-
-    descriptions: {
-      collection: 'TDescription',
-      via: 'point',
-    },
-
-    names: {
-      collection: 'TName',
-      via: 'point',
+      columnName: 'medium_code',
+      maxLength: 100,
     },
 
     isDeleted: {
