@@ -306,6 +306,96 @@ describe('Entrance features', () => {
         const entrance = await TEntrance.findOne(entranceId);
         should(entrance.isSensitive).be.true();
       }).timeout(10000);
+
+      it('should not change isSensitive when isTouristic is toggled from false to true', async () => {
+        const cave = await TCave.create({ author: 1 }).fetch();
+        const entrance = await TEntrance.create({
+          author: 1,
+          latitude: 45.0,
+          longitude: 5.0,
+          cave: cave.id,
+          isSensitive: true,
+          isTouristic: false,
+        }).fetch();
+
+        try {
+          await supertest(sails.hooks.http.app)
+            .put(`/api/v1/entrances/${entrance.id}`)
+            .set('Authorization', userToken)
+            .set('Content-type', 'application/json')
+            .send({
+              isTouristic: true,
+            })
+            .expect(200);
+
+          const updated = await TEntrance.findOne(entrance.id);
+          should(updated.isSensitive).be.true();
+          should(updated.isTouristic).be.true();
+        } finally {
+          await TEntrance.destroyOne(entrance.id);
+          await TCave.destroyOne(cave.id);
+        }
+      }).timeout(10000);
+
+      it('should not change isSensitive when isTouristic is toggled from true to false', async () => {
+        const cave = await TCave.create({ author: 1 }).fetch();
+        const entrance = await TEntrance.create({
+          author: 1,
+          latitude: 45.0,
+          longitude: 5.0,
+          cave: cave.id,
+          isSensitive: false,
+          isTouristic: true,
+        }).fetch();
+
+        try {
+          await supertest(sails.hooks.http.app)
+            .put(`/api/v1/entrances/${entrance.id}`)
+            .set('Authorization', userToken)
+            .set('Content-type', 'application/json')
+            .send({
+              isTouristic: false,
+            })
+            .expect(200);
+
+          const updated = await TEntrance.findOne(entrance.id);
+          should(updated.isSensitive).be.false();
+          should(updated.isTouristic).be.false();
+        } finally {
+          await TEntrance.destroyOne(entrance.id);
+          await TCave.destroyOne(cave.id);
+        }
+      }).timeout(10000);
+
+      it('should not change isSensitive when isTouristic is toggled on a sensitive touristic entrance', async () => {
+        const cave = await TCave.create({ author: 1 }).fetch();
+        const entrance = await TEntrance.create({
+          author: 1,
+          latitude: 45.0,
+          longitude: 5.0,
+          cave: cave.id,
+          isSensitive: true,
+          isTouristic: true,
+        }).fetch();
+
+        try {
+          await supertest(sails.hooks.http.app)
+            .put(`/api/v1/entrances/${entrance.id}`)
+            .set('Authorization', userToken)
+            .set('Content-type', 'application/json')
+            .send({
+              isTouristic: false,
+            })
+            .expect(200);
+
+          const updated = await TEntrance.findOne(entrance.id);
+          should(updated.isSensitive).be.true();
+          should(updated.isTouristic).be.false();
+        } finally {
+          await TEntrance.destroyOne(entrance.id);
+          await TCave.destroyOne(cave.id);
+        }
+      }).timeout(10000);
     });
   });
 });
