@@ -172,6 +172,7 @@ module.exports = {
     /* eslint-enable no-param-reassign */
 
     let autoMarkedSensitive = false;
+    let skippedAutoMarkDueToTouristic = false;
     // Automatically inherit sensitivity from the massif
     if (entranceData.latitude !== null && entranceData.longitude !== null) {
       /* eslint-disable no-param-reassign */
@@ -180,11 +181,16 @@ module.exports = {
           entranceData.latitude,
           entranceData.longitude
         );
-      if (!entranceData.isSensitive && isPointInSensitiveMassif) {
-        autoMarkedSensitive = true;
+      if (isPointInSensitiveMassif) {
+        if (entranceData.isTouristic) {
+          skippedAutoMarkDueToTouristic = true;
+        } else if (!entranceData.isSensitive) {
+          autoMarkedSensitive = true;
+        }
       }
       entranceData.isSensitive =
-        entranceData.isSensitive || isPointInSensitiveMassif;
+        entranceData.isSensitive ||
+        (isPointInSensitiveMassif && !entranceData.isTouristic);
       /* eslint-enable no-param-reassign */
     }
 
@@ -240,6 +246,11 @@ module.exports = {
     if (autoMarkedSensitive) {
       sails.log.info(
         `Entrance with ID ${newEntranceId} auto-marked sensitive at creation because its coordinates lie within a sensitive massif.`
+      );
+    }
+    if (skippedAutoMarkDueToTouristic) {
+      sails.log.info(
+        `Entrance with ID ${newEntranceId} is touristic — skipped auto-mark sensitive despite being within a sensitive massif.`
       );
     }
 

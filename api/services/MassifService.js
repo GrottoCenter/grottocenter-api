@@ -126,6 +126,18 @@ const COUNT_UNSENSITIVE_ENTRANCES_IN_MASSIF = `
   WHERE m.id = $1
   AND e.is_deleted = false
   AND e.is_sensitive = false
+  AND e.is_touristic = false
+`;
+
+const COUNT_TOURISTIC_UNSENSITIVE_ENTRANCES_IN_MASSIF = `
+  SELECT COUNT(e.id)::integer AS count
+  FROM t_entrance AS e
+  JOIN t_massif AS m
+  ON e.point_geom && m.geog_polygon AND ST_Contains(m.geog_polygon::geometry, e.point_geom)
+  WHERE m.id = $1
+  AND e.is_deleted = false
+  AND e.is_sensitive = false
+  AND e.is_touristic = true
 `;
 
 async function safeDBQuery(sql, param) {
@@ -288,6 +300,21 @@ module.exports = {
       throw e;
     }
   },
+  countTouristicUnsensitiveEntrances: async (massifId) => {
+    try {
+      const result = await CommonService.query(
+        COUNT_TOURISTIC_UNSENSITIVE_ENTRANCES_IN_MASSIF,
+        [massifId]
+      );
+      return result.rows[0]?.count ?? 0;
+    } catch (e) {
+      sails.log.error(
+        `Error counting touristic unsensitive entrances for massif ${massifId}:`,
+        e
+      );
+      throw e;
+    }
+  },
   getNetworks: async (massifId) =>
     safeDBQuery(FIND_NETWORKS_IN_MASSIF, massifId),
 
@@ -344,7 +371,7 @@ module.exports = {
    * @param {number} massifId
    * @param {number} reviewerId
    * @param {object} [db] - optional database connection for transactions
-   * @returns {Promise<number[]>} IDs of entrances whose sensitivity was changed
+   * @returns {Promise<{ updatedIds: number[], touristicSkipped: number }>} IDs of updated entrances and count of skipped touristic entrances
    */
   async propagateSensitivityToEntrances(massifId, reviewerId, db) {
     // Find IDs of non-sensitive entrances within the massif
@@ -356,6 +383,7 @@ module.exports = {
       AND e.point_geom && m.geog_polygon
       AND ST_Contains(m.geog_polygon::geometry, e.point_geom)
       AND e.is_sensitive = false
+      AND e.is_touristic = false
     `;
     const result = await CommonService.query(
       findEntrancesQuery,
@@ -363,6 +391,24 @@ module.exports = {
       db
     );
     const entranceIds = result.rows.map((r) => r.id);
+
+    // Count skipped touristic entrances
+    const findSkippedQuery = `
+      SELECT COUNT(e.id)::integer AS count
+      FROM t_entrance AS e
+      JOIN t_massif AS m ON m.id = $1
+      WHERE e.is_deleted = false
+      AND e.point_geom && m.geog_polygon
+      AND ST_Contains(m.geog_polygon::geometry, e.point_geom)
+      AND e.is_sensitive = false
+      AND e.is_touristic = true
+    `;
+    const skippedResult = await CommonService.query(
+      findSkippedQuery,
+      [massifId],
+      db
+    );
+    const touristicSkipped = skippedResult.rows[0]?.count ?? 0;
 
     if (entranceIds.length > 0) {
       let updateQuery = TEntrance.update({ id: entranceIds }).set({
@@ -381,7 +427,7 @@ module.exports = {
       );
     }
 
-    return entranceIds;
+    return { updatedIds: entranceIds, touristicSkipped };
   },
 
   /**
@@ -393,7 +439,7 @@ module.exports = {
    * @param {boolean} isSensitive - The new sensitivity status
    * @param {number} reviewerId - ID of the admin performing this action
    * @param {object} [db] - optional database connection for transactions
-   * @returns {Promise<number[]>} IDs of entrances whose sensitivity was changed
+   * @returns {Promise<{ updatedIds: number[], touristicSkipped: number }>} IDs of updated entrances and count of skipped touristic entrances
    */
   async setSensitivity(massifId, isSensitive, reviewerId, db) {
     const work = async (connection) => {
@@ -417,7 +463,7 @@ module.exports = {
         );
       }
 
-      return [];
+      return { updatedIds: [], touristicSkipped: 0 };
     };
 
     if (db) {

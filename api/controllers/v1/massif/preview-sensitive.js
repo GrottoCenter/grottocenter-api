@@ -23,12 +23,15 @@ module.exports = async (req, res) => {
   }
 
   try {
-    const count = await MassifService.countUnsensitiveEntrances(massifId);
+    const [sensitiveMarked, touristicSkipped] = await Promise.all([
+      MassifService.countUnsensitiveEntrances(massifId),
+      MassifService.countTouristicUnsensitiveEntrances(massifId),
+    ]);
 
     return ControllerService.treat(
       req,
       null,
-      { count },
+      { sensitiveMarked, touristicSkipped },
       { controllerMethod: 'MassifController.preview-sensitive' },
       res
     );

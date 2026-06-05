@@ -31,7 +31,8 @@ module.exports = async (req, res) => {
       req,
       null,
       {
-        count: 0,
+        sensitiveMarked: 0,
+        touristicSkipped: 0,
         massif: toMassif(updatedMassif),
       },
       { controllerMethod: 'MassifController.mark-sensitive' },
@@ -41,7 +42,7 @@ module.exports = async (req, res) => {
 
   try {
     // Set the massif as sensitive and get IDs of entrances that were updated
-    const updatedEntranceIds = await MassifService.setSensitivity(
+    const { updatedIds, touristicSkipped } = await MassifService.setSensitivity(
       massifId,
       true,
       req.token.id
@@ -49,7 +50,7 @@ module.exports = async (req, res) => {
 
     // Update search index for each affected entrance
     await Promise.all(
-      updatedEntranceIds.map(async (id) => {
+      updatedIds.map(async (id) => {
         const populatedEntrance =
           await EntranceService.getPopulatedEntrance(id);
         if (populatedEntrance) {
@@ -65,7 +66,8 @@ module.exports = async (req, res) => {
       req,
       null,
       {
-        count: updatedEntranceIds.length,
+        sensitiveMarked: updatedIds.length,
+        touristicSkipped,
         massif: toMassif(updatedMassif),
       },
       { controllerMethod: 'MassifController.mark-sensitive' },

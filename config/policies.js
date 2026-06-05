@@ -153,6 +153,7 @@ module.exports.policies = {
   'v1/entrance/update-with-new-entities': 'tokenAuth',
   'v1/entrance/restore': 'tokenAuth',
   'v1/entrance/delete': 'tokenAuth',
+  'v1/entrance/touristic-sensitive-report': 'tokenAuth',
 
   // EntranceDuplicate
   'v1/entrance-duplicate/create-from-duplicate': 'tokenAuth',

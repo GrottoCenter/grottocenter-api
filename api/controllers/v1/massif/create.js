@@ -98,12 +98,13 @@ module.exports = async (req, res) => {
 
       let affectedEntranceIds = [];
       if (massif.isSensitive) {
-        affectedEntranceIds =
+        const propagateResult =
           await MassifService.propagateSensitivityToEntrances(
             massif.id,
             req.token.id,
             db
           );
+        affectedEntranceIds = propagateResult.updatedIds;
       }
 
       return { newMassif: massif, updatedEntranceIds: affectedEntranceIds };

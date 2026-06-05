@@ -144,6 +144,8 @@ module.exports.routes = {
     'v1/entrance/add-document',
   'DELETE /api/v1/entrances/:id': 'v1/entrance/delete',
   'POST /api/v1/entrances/:id/restore': 'v1/entrance/restore',
+  'GET /api/v1/entrances/touristic-sensitive-report':
+    'v1/entrance/touristic-sensitive-report',
 
   // Notification
   'GET /api/v1/notifications/unread/count': 'v1/notification/count-unread',
