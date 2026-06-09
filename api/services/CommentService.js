@@ -1,9 +1,6 @@
-const moment = require('moment');
-const momentDurationFormatSetup = require('moment-duration-format');
+const dayjs = require('../utils/dayjs');
 
 const CommonService = require('./CommonService');
-
-momentDurationFormatSetup(moment);
 
 module.exports = {
   getStatsFromId: async (entranceId) => {
@@ -63,21 +60,24 @@ module.exports = {
   /**
    *
    * @param pgInterval PostgresInterval Object {hours: ${number}, minutes: ${number}, seconds: ${number}}
-   * @returns string with format hh:mm:ss
+   * @returns string with format HH:mm:ss
    */
   postgreIntervalObjectToDbString: (pgInterval) => {
     if (!pgInterval) return null;
-    const emptyDuration = {
-      days: 0,
-      hours: 0,
-      minutes: 0,
-      seconds: 0,
-    };
-    return moment
-      .duration(Object.assign(emptyDuration, pgInterval))
-      .format('hh:mm:ss', {
-        trim: false,
-      });
+    // PG interval for trip durations never includes months/years — only
+    // days, hours, minutes, seconds are expected from the AVG query.
+    const merged = { days: 0, hours: 0, minutes: 0, seconds: 0, ...pgInterval };
+    // Accumulate days into hours so formatting doesn't wrap at 24h
+    merged.hours += merged.days * 24;
+    // dayjs.duration().format() outputs "undefined" for missing fields,
+    // so all three components must be explicitly present in the object.
+    return dayjs
+      .duration({
+        hours: merged.hours,
+        minutes: merged.minutes,
+        seconds: merged.seconds,
+      })
+      .format('HH:mm:ss');
   },
 
   getEntranceComments: async (entranceId, where = {}) => {

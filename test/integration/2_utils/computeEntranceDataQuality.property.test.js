@@ -1,7 +1,7 @@
 /* eslint-disable func-names */
 const should = require('should');
 const fc = require('fast-check');
-const moment = require('moment');
+const dayjs = require('../../../api/utils/dayjs');
 const {
   QUALITY_CATEGORIES,
   MAX_RAW_TOTAL,
@@ -104,11 +104,7 @@ describe('computeEntranceDataQuality - Property Tests', () => {
             const entityDate = row[`${cat}_latest_date_of_update`];
             let dateScore = 0;
             if (entityDate) {
-              const ageInYears = moment().diff(
-                moment(entityDate),
-                'years',
-                true
-              );
+              const ageInYears = dayjs().diff(dayjs(entityDate), 'year', true);
               if (ageInYears < 2) dateScore = 7;
               else if (ageInYears < 5) dateScore = 5;
               else if (ageInYears < 10) dateScore = 3;

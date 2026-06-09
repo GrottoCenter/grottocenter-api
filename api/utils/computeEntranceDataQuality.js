@@ -24,7 +24,7 @@
  *      - if it has 2 or more reviewers => 7 pts
  *      - else 0 pts
  */
-const moment = require('moment');
+const dayjs = require('./dayjs');
 
 // Categories of entrance data used for quality scoring
 const QUALITY_CATEGORIES = [
@@ -67,7 +67,7 @@ const MAX_RAW_TOTAL = QUALITY_CATEGORIES.length * MAX_RAW_CATEGORY;
  */
 const getIndividualScoreAboutLastestDateOfUpdate = (entityDate) => {
   if (!entityDate) return DATE_SCORE_NONE;
-  const ageInYears = moment().diff(moment(entityDate), 'years', true);
+  const ageInYears = dayjs().diff(dayjs(entityDate), 'year', true);
   if (ageInYears < DATE_THRESHOLD_RECENT) return DATE_SCORE_RECENT;
   if (ageInYears < DATE_THRESHOLD_MODERATE) return DATE_SCORE_MODERATE;
   if (ageInYears < DATE_THRESHOLD_OLD) return DATE_SCORE_OLD;
