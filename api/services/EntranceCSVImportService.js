@@ -1,8 +1,7 @@
-const { getDateFromKarstlink } = require('../../config/constants/karstlink');
 const coerceToInt = require('../utils/coerceToInt');
 
 const doubleCheck = sails.helpers.csvhelpers.doubleCheck.with;
-const { getCreator } = require('../utils/csvHelper');
+const { getCreator, getDateFromKarstlink } = require('../utils/csvHelper');
 
 const parseBool = (v) => String(v).toLowerCase() === 'true';
 

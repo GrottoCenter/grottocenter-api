@@ -1,7 +1,7 @@
 const http = require('http');
 const https = require('https');
 const mime = require('mime-types');
-const moment = require('moment');
+const dayjs = require('./dayjs');
 const CaverService = require('../services/CaverService');
 
 // Usage example: https://ontology.uis-speleo.org/example/#Gouffre_Jean_Bernard
@@ -110,7 +110,8 @@ function checkColumns(data, additionalRequiredColumns = []) {
 // See https://ontology.uis-speleo.org/howto/ for more informations
 const KARSTLINK_DATE_FORMAT = 'YYYY-MM-DD';
 function getDateFromKarstlink(value) {
-  return moment(value, KARSTLINK_DATE_FORMAT);
+  if (value instanceof Date) return dayjs(value);
+  return dayjs(value, KARSTLINK_DATE_FORMAT, true);
 }
 
 const MAX_DOWNLOADED_FILE_SIZE_MO = 200;
