@@ -11,10 +11,12 @@ updates:
       interval: 'monthly'
     groups:
       minor-patch:
+        applies-to: version-updates
         patterns:
           - '*'
         update-types: ['minor', 'patch']
       major:
+        applies-to: version-updates
         patterns:
           - '*'
         update-types: ['major']
