@@ -172,18 +172,40 @@ async function fieldSearch({
     isLogicalCompareAnd
   );
 
+  // Use faceted search to get distinct values for the field.
+  // The previous approach (query_by + group_by) caused wrong results on
+  // array fields like massifs.name: a token-based text search would match
+  // documents containing other massif names that share tokens (e.g. "causse"),
+  // then group_by would surface those unrelated massif names.
+  // Facet search matches against the actual facet values, not document text.
   const params = {
-    q,
+    q: '*',
     query_by: field,
-    group_by: field,
-    group_limit: 1,
-    sort_by: '_group_found:desc',
-    per_page: size,
+    facet_by: field,
+    max_facet_values: size,
+    per_page: 0, // We only need facet counts, not document hits
+    ...(q !== '*' && { facet_query: `${field}:${q}` }),
     ...(filterBy && { filter_by: filterBy }),
     ...(hasPrefixFilter && { max_filter_by_candidates: 100 }),
   };
 
-  return typesense.search(entity, params);
+  const result = await typesense.search(entity, params);
+
+  // Transform facet response to match the grouped_hits format expected by
+  // the controller. The controller reads: found, found_docs, grouped_hits, page.
+  const facetInfo = result.facet_counts?.find((f) => f.field_name === field);
+  const counts = facetInfo?.counts ?? [];
+  const totalDocuments = counts.reduce((sum, c) => sum + c.count, 0);
+
+  return {
+    found: counts.length,
+    found_docs: totalDocuments,
+    grouped_hits: counts.map((c) => ({
+      group_key: [c.value],
+      found: c.count,
+    })),
+    page: result.page,
+  };
 }
 
 module.exports = {
