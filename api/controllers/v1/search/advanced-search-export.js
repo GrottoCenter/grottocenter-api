@@ -94,6 +94,18 @@ module.exports = async (req, res) => {
     res.badRequest('columnsName must be a non-empty array');
     return;
   }
+  if (columns.length !== columnsName.length) {
+    res.badRequest('columns and columnsName must have the same length');
+    return;
+  }
+  if (!columns.every((c) => typeof c === 'string' && c.length > 0)) {
+    res.badRequest('each element in columns must be a non-empty string');
+    return;
+  }
+  if (!columnsName.every((c) => typeof c === 'string' && c.length > 0)) {
+    res.badRequest('each element in columnsName must be a non-empty string');
+    return;
+  }
 
   const params = {
     query: req.param('query'),

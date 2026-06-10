@@ -75,6 +75,63 @@ describe('Advanced Search Export features', () => {
         });
     });
 
+    it('should return 400 when columns and columnsName have different lengths', (done) => {
+      supertest(sails.hooks.http.app)
+        .post('/api/v1/advanced-search/export')
+        .send({
+          query: 'test',
+          entity: 'organizations',
+          columns: ['id', 'name'],
+          columnsName: ['ID'],
+        })
+        .expect(400)
+        .end((err, res) => {
+          if (err) return done(err);
+          should(res.text).match(
+            /columns and columnsName must have the same length/
+          );
+          return done();
+        });
+    });
+
+    it('should return 400 when columns contains a non-string element', (done) => {
+      supertest(sails.hooks.http.app)
+        .post('/api/v1/advanced-search/export')
+        .send({
+          query: 'test',
+          entity: 'organizations',
+          columns: [null, 'name'],
+          columnsName: ['ID', 'Name'],
+        })
+        .expect(400)
+        .end((err, res) => {
+          if (err) return done(err);
+          should(res.text).match(
+            /each element in columns must be a non-empty string/
+          );
+          return done();
+        });
+    });
+
+    it('should return 400 when columnsName contains an empty string', (done) => {
+      supertest(sails.hooks.http.app)
+        .post('/api/v1/advanced-search/export')
+        .send({
+          query: 'test',
+          entity: 'organizations',
+          columns: ['id'],
+          columnsName: [''],
+        })
+        .expect(400)
+        .end((err, res) => {
+          if (err) return done(err);
+          should(res.text).match(
+            /each element in columnsName must be a non-empty string/
+          );
+          return done();
+        });
+    });
+
     it('should export search results to CSV', (done) => {
       const SearchService = require('../../../api/services/SearchService');
       sinon.stub(SearchService, 'collectionSearch').resolves({
