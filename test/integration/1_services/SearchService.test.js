@@ -334,15 +334,17 @@ describe('SearchService', () => {
   });
 
   describe('fieldSearch()', () => {
-    const facetResponse = (counts = []) => ({
-      facet_counts: [{ field_name: 'name', counts }],
+    const facetResponse = (counts = [], stats = {}) => ({
+      facet_counts: [{ field_name: 'name', counts, stats }],
       page: 1,
     });
 
     it('should search by specific field using facet search', async () => {
       typesenseStub.search = sinon
         .stub(typesense, 'search')
-        .resolves(facetResponse([{ value: 'Org A', count: 3 }]));
+        .resolves(
+          facetResponse([{ value: 'Org A', count: 3 }], { total_values: 1 })
+        );
 
       const result = await SearchService.fieldSearch({
         entity: 'organizations',
@@ -462,7 +464,7 @@ describe('SearchService', () => {
       should(call.args[1].filter_by).match(/\|\|/);
     });
 
-    it('should apply size as max_facet_values', async () => {
+    it('should apply size as max_facet_values capped at 100', async () => {
       typesenseStub.search = sinon
         .stub(typesense, 'search')
         .resolves(facetResponse());
@@ -471,7 +473,23 @@ describe('SearchService', () => {
         entity: 'organizations',
         field: 'name',
         query: 'test',
-        size: 100,
+        size: 50,
+      });
+
+      const call = typesenseStub.search.getCall(0);
+      should(call.args[1].max_facet_values).equal(50);
+    });
+
+    it('should cap max_facet_values at 100 for large size values', async () => {
+      typesenseStub.search = sinon
+        .stub(typesense, 'search')
+        .resolves(facetResponse());
+
+      await SearchService.fieldSearch({
+        entity: 'organizations',
+        field: 'name',
+        query: 'test',
+        size: 500,
       });
 
       const call = typesenseStub.search.getCall(0);
@@ -492,6 +510,48 @@ describe('SearchService', () => {
       should(result.found).equal(0);
       should(result.found_docs).equal(0);
       should(result.grouped_hits).deepEqual([]);
+    });
+
+    it('should use stats.total_values for found when more distinct values exist than returned', async () => {
+      typesenseStub.search = sinon.stub(typesense, 'search').resolves(
+        facetResponse(
+          [
+            { value: 'Org A', count: 3 },
+            { value: 'Org B', count: 2 },
+          ],
+          { total_values: 50 }
+        )
+      );
+
+      const result = await SearchService.fieldSearch({
+        entity: 'organizations',
+        field: 'name',
+        query: 'org',
+        size: 2,
+      });
+
+      // found reflects the true total, not just the returned count
+      should(result.found).equal(50);
+      should(result.found_docs).equal(5);
+      should(result.grouped_hits.length).equal(2);
+    });
+
+    it('should fall back to counts.length when stats.total_values is not available', async () => {
+      typesenseStub.search = sinon.stub(typesense, 'search').resolves(
+        facetResponse([
+          { value: 'Org A', count: 3 },
+          { value: 'Org B', count: 2 },
+        ])
+      );
+
+      const result = await SearchService.fieldSearch({
+        entity: 'organizations',
+        field: 'name',
+        query: 'org',
+      });
+
+      should(result.found).equal(2);
+      should(result.found_docs).equal(5);
     });
   });
 
