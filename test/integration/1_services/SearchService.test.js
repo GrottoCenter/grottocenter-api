@@ -334,10 +334,15 @@ describe('SearchService', () => {
   });
 
   describe('fieldSearch()', () => {
-    it('should search by specific field', async () => {
+    const facetResponse = (counts = []) => ({
+      facet_counts: [{ field_name: 'name', counts }],
+      page: 1,
+    });
+
+    it('should search by specific field using facet search', async () => {
       typesenseStub.search = sinon
         .stub(typesense, 'search')
-        .resolves({ grouped_hits: [] });
+        .resolves(facetResponse([{ value: 'Org A', count: 3 }]));
 
       const result = await SearchService.fieldSearch({
         entity: 'organizations',
@@ -347,6 +352,10 @@ describe('SearchService', () => {
 
       should(typesenseStub.search.calledOnce).be.true();
       should(result).have.property('grouped_hits');
+      should(result.found).equal(1);
+      should(result.found_docs).equal(3);
+      should(result.grouped_hits[0].group_key).deepEqual(['Org A']);
+      should(result.grouped_hits[0].found).equal(3);
     });
 
     it('should handle call with no arguments', async () => {
@@ -354,10 +363,10 @@ describe('SearchService', () => {
       should(result).be.null();
     });
 
-    it('should use wildcard when no query provided', async () => {
+    it('should use wildcard and no facet_query when no query provided', async () => {
       typesenseStub.search = sinon
         .stub(typesense, 'search')
-        .resolves({ grouped_hits: [] });
+        .resolves(facetResponse());
 
       await SearchService.fieldSearch({
         entity: 'organizations',
@@ -366,6 +375,38 @@ describe('SearchService', () => {
 
       const call = typesenseStub.search.getCall(0);
       should(call.args[1].q).equal('*');
+      should(call.args[1].facet_query).be.undefined();
+    });
+
+    it('should set facet_query when query is provided', async () => {
+      typesenseStub.search = sinon
+        .stub(typesense, 'search')
+        .resolves(facetResponse());
+
+      await SearchService.fieldSearch({
+        entity: 'organizations',
+        field: 'name',
+        query: 'test',
+      });
+
+      const call = typesenseStub.search.getCall(0);
+      should(call.args[1].facet_query).equal('name:test');
+    });
+
+    it('should use facet_by and per_page 0', async () => {
+      typesenseStub.search = sinon
+        .stub(typesense, 'search')
+        .resolves(facetResponse());
+
+      await SearchService.fieldSearch({
+        entity: 'organizations',
+        field: 'name',
+        query: 'test',
+      });
+
+      const call = typesenseStub.search.getCall(0);
+      should(call.args[1].facet_by).equal('name');
+      should(call.args[1].per_page).equal(0);
     });
 
     it('should return null for invalid entity', async () => {
@@ -390,7 +431,7 @@ describe('SearchService', () => {
     it('should apply filter with AND logic', async () => {
       typesenseStub.search = sinon
         .stub(typesense, 'search')
-        .resolves({ grouped_hits: [] });
+        .resolves(facetResponse());
 
       await SearchService.fieldSearch({
         entity: 'organizations',
@@ -407,7 +448,7 @@ describe('SearchService', () => {
     it('should apply filter with OR logic', async () => {
       typesenseStub.search = sinon
         .stub(typesense, 'search')
-        .resolves({ grouped_hits: [] });
+        .resolves(facetResponse());
 
       await SearchService.fieldSearch({
         entity: 'organizations',
@@ -421,10 +462,10 @@ describe('SearchService', () => {
       should(call.args[1].filter_by).match(/\|\|/);
     });
 
-    it('should apply size parameter', async () => {
+    it('should apply size as max_facet_values', async () => {
       typesenseStub.search = sinon
         .stub(typesense, 'search')
-        .resolves({ grouped_hits: [] });
+        .resolves(facetResponse());
 
       await SearchService.fieldSearch({
         entity: 'organizations',
@@ -434,7 +475,23 @@ describe('SearchService', () => {
       });
 
       const call = typesenseStub.search.getCall(0);
-      should(call.args[1].per_page).equal(100);
+      should(call.args[1].max_facet_values).equal(100);
+    });
+
+    it('should return empty grouped_hits when no facet counts', async () => {
+      typesenseStub.search = sinon
+        .stub(typesense, 'search')
+        .resolves({ facet_counts: [], page: 1 });
+
+      const result = await SearchService.fieldSearch({
+        entity: 'organizations',
+        field: 'name',
+        query: 'nonexistent',
+      });
+
+      should(result.found).equal(0);
+      should(result.found_docs).equal(0);
+      should(result.grouped_hits).deepEqual([]);
     });
   });
 
