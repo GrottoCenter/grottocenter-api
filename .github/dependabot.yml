@@ -10,9 +10,16 @@ updates:
     schedule:
       interval: 'monthly'
     groups:
-      all-dependencies:
+      minor-patch:
+        applies-to: version-updates
         patterns:
           - '*'
+        update-types: ['minor', 'patch']
+      major:
+        applies-to: version-updates
+        patterns:
+          - '*'
+        update-types: ['major']
     ignore:
       # ESLint must stay at v8 — eslint-config-airbnb-base does not support flat config (v9+)
       - dependency-name: 'eslint'
