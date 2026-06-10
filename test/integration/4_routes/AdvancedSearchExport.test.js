@@ -9,6 +9,72 @@ describe('Advanced Search Export features', () => {
   });
 
   describe('POST /api/v1/advanced-search/export', () => {
+    it('should return 400 when columns is missing', (done) => {
+      supertest(sails.hooks.http.app)
+        .post('/api/v1/advanced-search/export')
+        .send({
+          query: 'test',
+          entity: 'organizations',
+          columnsName: ['ID'],
+        })
+        .expect(400)
+        .end((err, res) => {
+          if (err) return done(err);
+          should(res.text).match(/columns must be a non-empty array/);
+          return done();
+        });
+    });
+
+    it('should return 400 when columnsName is missing', (done) => {
+      supertest(sails.hooks.http.app)
+        .post('/api/v1/advanced-search/export')
+        .send({
+          query: 'test',
+          entity: 'organizations',
+          columns: ['id'],
+        })
+        .expect(400)
+        .end((err, res) => {
+          if (err) return done(err);
+          should(res.text).match(/columnsName must be a non-empty array/);
+          return done();
+        });
+    });
+
+    it('should return 400 when columns is an empty array', (done) => {
+      supertest(sails.hooks.http.app)
+        .post('/api/v1/advanced-search/export')
+        .send({
+          query: 'test',
+          entity: 'organizations',
+          columns: [],
+          columnsName: ['ID'],
+        })
+        .expect(400)
+        .end((err, res) => {
+          if (err) return done(err);
+          should(res.text).match(/columns must be a non-empty array/);
+          return done();
+        });
+    });
+
+    it('should return 400 when columnsName is an empty array', (done) => {
+      supertest(sails.hooks.http.app)
+        .post('/api/v1/advanced-search/export')
+        .send({
+          query: 'test',
+          entity: 'organizations',
+          columns: ['id'],
+          columnsName: [],
+        })
+        .expect(400)
+        .end((err, res) => {
+          if (err) return done(err);
+          should(res.text).match(/columnsName must be a non-empty array/);
+          return done();
+        });
+    });
+
     it('should export search results to CSV', (done) => {
       const SearchService = require('../../../api/services/SearchService');
       sinon.stub(SearchService, 'collectionSearch').resolves({

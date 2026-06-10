@@ -85,6 +85,16 @@ module.exports = async (req, res) => {
   if (!matchAllFields || matchAllFields === 'false') matchAllFields = false;
   const columns = req.param('columns');
   const columnsName = req.param('columnsName');
+
+  if (!Array.isArray(columns) || columns.length === 0) {
+    res.badRequest('columns must be a non-empty array');
+    return;
+  }
+  if (!Array.isArray(columnsName) || columnsName.length === 0) {
+    res.badRequest('columnsName must be a non-empty array');
+    return;
+  }
+
   const params = {
     query: req.param('query'),
     entity: req.param('entity') ?? '',
