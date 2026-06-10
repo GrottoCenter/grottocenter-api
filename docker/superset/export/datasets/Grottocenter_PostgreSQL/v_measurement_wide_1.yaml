@@ -32,7 +32,7 @@ columns:
   verbose_name: null
   is_dttm: true
   is_active: true
-  type: TIMESTAMP WITHOUT TIME ZONE
+  type: TIMESTAMP WITH TIME ZONE
   advanced_data_type: null
   groupby: true
   filterable: true
@@ -236,7 +236,7 @@ columns:
   python_date_format: null
   datetime_format: null
   extra: null
-- column_name: id_sensor
+- column_name: id_sensor_configuration
   verbose_name: null
   is_dttm: false
   is_active: true

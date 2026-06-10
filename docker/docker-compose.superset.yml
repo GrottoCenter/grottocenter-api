@@ -24,7 +24,7 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - REDIS_URL=redis://redis:6379/0
       - SUPERSET_LOAD_EXAMPLES=no
-      - SUPERSET_ADMIN_PASSWORD=admin
+      - SUPERSET_ADMIN_PASSWORD=admin  # override in production
       - SESSION_COOKIE_SECURE=false
     ports:
       - '8088:8088'
