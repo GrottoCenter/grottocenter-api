@@ -35,7 +35,6 @@ module.exports = async (req, res) => {
       .populate('grotto')
       .populate('language')
       .populate('massif')
-      .populate('point')
       .populate('reviewer');
 
     const params = {};
