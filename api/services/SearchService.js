@@ -178,11 +178,18 @@ async function fieldSearch({
   // documents containing other massif names that share tokens (e.g. "causse"),
   // then group_by would surface those unrelated massif names.
   // Facet search matches against the actual facet values, not document text.
+
+  // Cap max_facet_values at 100 to avoid surfacing raw Typesense validation
+  // errors for out-of-range values (mirrors collectionSearch's per_page cap).
+  const maxFacetValues = size ? Math.min(size, 100) : size;
+
   const params = {
     q: '*',
+    // query_by is required by the Typesense API even for wildcard queries;
+    // it does not participate in matching when q is '*'.
     query_by: field,
     facet_by: field,
-    max_facet_values: size,
+    max_facet_values: maxFacetValues,
     per_page: 0, // We only need facet counts, not document hits
     ...(q !== '*' && { facet_query: `${field}:${q}` }),
     ...(filterBy && { filter_by: filterBy }),
@@ -195,10 +202,19 @@ async function fieldSearch({
   // the controller. The controller reads: found, found_docs, grouped_hits, page.
   const facetInfo = result.facet_counts?.find((f) => f.field_name === field);
   const counts = facetInfo?.counts ?? [];
+
+  // found_docs: sum of document counts for the returned facet values.
+  // Note: on array fields (e.g. massifs.name), a document with multiple
+  // matching values is counted once per value, so this may exceed the true
+  // distinct document count. This is acceptable for the UI's display purpose.
   const totalDocuments = counts.reduce((sum, c) => sum + c.count, 0);
 
+  // Use stats.total_values for the true count of distinct facet values
+  // matching the query, which is not capped by max_facet_values.
+  const totalDistinct = facetInfo?.stats?.total_values ?? counts.length;
+
   return {
-    found: counts.length,
+    found: totalDistinct,
     found_docs: totalDocuments,
     grouped_hits: counts.map((c) => ({
       group_key: [c.value],
