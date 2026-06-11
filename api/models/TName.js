@@ -85,11 +85,6 @@ module.exports = {
       model: 'TObservation',
     },
 
-    method: {
-      columnName: 'id_method',
-      model: 'TMethod',
-    },
-
     grotto: {
       columnName: 'id_grotto',
       model: 'TGrotto',
