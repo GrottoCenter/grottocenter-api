@@ -6,6 +6,7 @@ const massif = require('../dbSync/entities/massif');
 const entrance = require('../dbSync/entities/entrance');
 const cave = require('../dbSync/entities/cave');
 const document = require('../dbSync/entities/document');
+const device = require('../dbSync/entities/device');
 
 const allEntities = {
   [organization.search.schema.name]: organization.search,
@@ -14,6 +15,7 @@ const allEntities = {
   [cave.search.schema.name]: cave.search,
   [entrance.search.schema.name]: entrance.search,
   [document.search.schema.name]: document.search,
+  [device.search.schema.name]: device.search,
 };
 const allEntitiesKeys = Object.keys(allEntities);
 

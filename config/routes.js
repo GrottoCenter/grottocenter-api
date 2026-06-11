@@ -434,6 +434,14 @@ module.exports.routes = {
   // Changes
   'GET /api/v1/changes/recent': 'v1/change/get-recent',
 
+  // Device
+  'GET /api/v1/devices/search': 'v1/device/search',
+  'GET /api/v1/devices/:id': 'v1/device/find',
+  'POST /api/v1/devices': 'v1/device/create',
+  'PATCH /api/v1/devices/:id': 'v1/device/update',
+  'DELETE /api/v1/devices/:id': 'v1/device/delete',
+  'POST /api/v1/devices/:id/restore': 'v1/device/restore',
+
   //  ╦ ╦╔═╗╔╗ ╦ ╦╔═╗╔═╗╦╔═╔═╗
   //  ║║║║╣ ╠╩╗╠═╣║ ║║ ║╠╩╗╚═╗
   //  ╚╩╝╚═╝╚═╝╩ ╩╚═╝╚═╝╩ ╩╚═╝

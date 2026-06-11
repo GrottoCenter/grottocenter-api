@@ -16,6 +16,7 @@ module.exports = [
   'tnotificationtype',
   'ttokenblacklist',
   'tcaver',
+  'tdevice',
   'tname',
   'tgrotto',
   'tdocument',

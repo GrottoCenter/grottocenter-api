@@ -662,6 +662,67 @@ const c = {
     partnerNetworks: toList('partnerNetworks', source, c.toSimpleCave),
   }),
 
+  toSensorConfiguration: (source) => ({
+    id: source.id,
+    device: source.device,
+    quantityKind:
+      source.quantityKind instanceof Object
+        ? {
+            id: source.quantityKind.id,
+            code: source.quantityKind.code,
+            url: source.quantityKind.url,
+            symbolSi: source.quantityKind.symbolSi,
+            displaySymbol: source.quantityKind.displaySymbol,
+            siToDisplayFactor: source.quantityKind.siToDisplayFactor,
+            siToDisplayOffset: source.quantityKind.siToDisplayOffset,
+          }
+        : source.quantityKind,
+    unit:
+      source.unit instanceof Object
+        ? {
+            id: source.unit.id,
+            code: source.unit.code,
+            symbol: source.unit.symbol,
+          }
+        : source.unit,
+    precisionUpper: source.precisionUpper,
+    precisionLower: source.precisionLower,
+    resolution: source.resolution,
+    detectionLimitMin: source.detectionLimitMin,
+    detectionLimitMax: source.detectionLimitMax,
+    dateInscription: source.dateInscription,
+    dateReviewed: source.dateReviewed,
+    isDeleted: source.isDeleted,
+    author: convertIfObject(source.author, c.toSimpleCaver),
+    reviewer: convertIfObject(source.reviewer, c.toSimpleCaver),
+  }),
+
+  toDevice: (source) => ({
+    id: source.id,
+    name: source.name,
+    brandName: source.brandName,
+    productUrl: source.productUrl,
+    manufacturerUrl: source.manufacturerUrl,
+    dateInscription: source.dateInscription,
+    dateReviewed: source.dateReviewed,
+    isDeleted: source.isDeleted,
+    author: convertIfObject(source.author, c.toSimpleCaver),
+    reviewer: convertIfObject(source.reviewer, c.toSimpleCaver),
+    configurations: source.configurations ?? [],
+  }),
+
+  toSimpleDevice: (source) => ({
+    id: source.id,
+    name: source.name,
+    brandName: source.brandName,
+    productUrl: source.productUrl,
+    manufacturerUrl: source.manufacturerUrl,
+    isDeleted: source.isDeleted,
+    author: source.authorId
+      ? { id: source.authorId, nickname: source.authorNickname }
+      : convertIfObject(source.author, c.toSimpleCaver),
+  }),
+
   toDeletedEntity: (source) => ({
     id: source.id,
     isDeleted: source.isDeleted,
@@ -717,6 +778,7 @@ const c = {
       else if (_type === 'organizations')
         data = c.toOrganization(item.document, meta);
       else if (_type === 'massifs') data = c.toMassif(item.document);
+      else if (_type === 'devices') data = c.toSimpleDevice(item.document);
 
       return {
         ...data,

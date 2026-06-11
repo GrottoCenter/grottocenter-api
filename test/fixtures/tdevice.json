@@ -1,0 +1,30 @@
+[
+  {
+    "id": 1,
+    "author": 1,
+    "reviewer": 2,
+    "dateInscription": "2024-01-15T10:00:00.000Z",
+    "dateReviewed": "2024-02-20T14:30:00.000Z",
+    "name": "Multi-Parameter Logger X100",
+    "brandName": "AquaTech",
+    "productUrl": "https://aquatech.example.com/x100",
+    "manufacturerUrl": "https://aquatech.example.com",
+    "isDeleted": false
+  },
+  {
+    "id": 2,
+    "author": 3,
+    "dateInscription": "2024-03-10T08:00:00.000Z",
+    "name": "Temperature Probe T200",
+    "isDeleted": true
+  },
+  {
+    "id": 3,
+    "author": 2,
+    "dateInscription": "2024-05-01T12:00:00.000Z",
+    "name": "Pressure Sensor P300",
+    "brandName": "CaveSense",
+    "productUrl": "https://cavesense.example.com/p300",
+    "isDeleted": false
+  }
+]
