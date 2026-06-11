@@ -434,6 +434,9 @@ module.exports.routes = {
   // Changes
   'GET /api/v1/changes/recent': 'v1/change/get-recent',
 
+  // Observation
+  'POST /api/v1/observations/import': 'v1/observation/import',
+
   // Device
   'GET /api/v1/devices/search': 'v1/device/search',
   'GET /api/v1/devices/:id': 'v1/device/find',

@@ -313,6 +313,9 @@ module.exports.policies = {
   // Health check
   'v1/health/check': true,
 
+  // Observation
+  'v1/observation/import': 'tokenAuth',
+
   /** *************************************************************************
    *                                                                          *
    * Here's an example of mapping some policies to run before a controller    *

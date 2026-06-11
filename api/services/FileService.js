@@ -103,17 +103,26 @@ module.exports = {
      * @returns
      */
     // eslint-disable-next-line consistent-return
-    async create(file, idDocument, fetchResult = false, isValidated = true) {
+    async create(
+      file,
+      idDocument,
+      fetchResult = false,
+      isValidated = true,
+      connection = null
+    ) {
       const name = file.originalname;
       const pathName = generateName(name);
-      const nameSplit = name.split('.');
-      if (nameSplit.length !== 2) {
+      const lastDot = name.lastIndexOf('.');
+      if (lastDot <= 0 || lastDot === name.length - 1) {
         throw new FileError(INVALID_NAME, name);
       }
+      const extension = name.slice(lastDot + 1).toLowerCase();
 
-      const foundFormat = await TFileFormat.find({
-        extension: nameSplit[1].toLowerCase(),
-      }).limit(1);
+      let formatQuery = TFileFormat.find({ extension }).limit(1);
+      if (connection) {
+        formatQuery = formatQuery.usingConnection(connection);
+      }
+      const foundFormat = await formatQuery;
       if (foundFormat.length === 0) {
         throw new FileError(INVALID_FORMAT, name);
       }
@@ -147,10 +156,18 @@ module.exports = {
         isValidated,
       };
       if (fetchResult) {
-        const createdFile = await TFile.create(param).fetch();
+        let createQuery = TFile.create(param);
+        if (connection) {
+          createQuery = createQuery.usingConnection(connection);
+        }
+        const createdFile = await createQuery.fetch();
         return createdFile;
       }
-      await TFile.create(param);
+      let createQuery = TFile.create(param);
+      if (connection) {
+        createQuery = createQuery.usingConnection(connection);
+      }
+      await createQuery;
     },
 
     async update(file) {

@@ -306,7 +306,7 @@ module.exports.http = {
         fileSize: 100000000,
         defParamCharset: 'utf8',
       });
-      return upload.fields([{ name: 'files' }]);
+      return upload.fields([{ name: 'files' }, { name: 'file', maxCount: 1 }]);
     })(),
 
     // Logs each request to the console

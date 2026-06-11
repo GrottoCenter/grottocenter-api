@@ -163,18 +163,14 @@ describe('FileService', () => {
   });
 
   describe('document.create() with multiple dots in filename', () => {
-    it('should throw error for file name with multiple dots', async () => {
+    it('should accept file name with multiple dots and use last extension', async () => {
       const file = {
         originalname: 'test.file.pdf',
         buffer: Buffer.from('test'),
         size: 100,
       };
-      try {
-        await FileService.document.create(file, 1);
-        should.fail('Should have thrown error');
-      } catch (err) {
-        should(err.message).equal(FileService.INVALID_NAME);
-      }
+      // Should not throw — extension is 'pdf' (last segment after last dot)
+      await FileService.document.create(file, 1);
     });
   });
 

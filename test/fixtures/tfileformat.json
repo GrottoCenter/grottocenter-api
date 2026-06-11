@@ -53,5 +53,25 @@
     "id": 24,
     "extension": "epub",
     "mimeType": "application/epub+zip"
+  },
+  {
+    "id": 48,
+    "extension": "json",
+    "mimeType": "application/json"
+  },
+  {
+    "id": 49,
+    "extension": "csv",
+    "mimeType": "text/csv"
+  },
+  {
+    "id": 50,
+    "extension": "tsv",
+    "mimeType": "text/tab-separated-values"
+  },
+  {
+    "id": 51,
+    "extension": "txt",
+    "mimeType": "text/plain"
   }
 ]

@@ -1,7 +1,7 @@
 /**
  * TTimeSeries.js
  *
- * @description :: A sequence of measurements from a single sensor
+ * @description :: A sequence of measurements from a single sensor configuration
  */
 
 module.exports = {
@@ -46,7 +46,7 @@ module.exports = {
       model: 'TObservation',
     },
 
-    sensor: {
+    sensorConfiguration: {
       allowNull: false,
       columnName: 'id_sensor_configuration',
       model: 'TSensorConfiguration',
@@ -55,11 +55,6 @@ module.exports = {
     medium: {
       columnName: 'id_medium',
       model: 'TMedium',
-    },
-
-    method: {
-      columnName: 'id_method',
-      model: 'TMethod',
     },
 
     samplingIntervalSeconds: {
