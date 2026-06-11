@@ -4,7 +4,7 @@
 
 **Grottocenter API** is a Node.js backend application providing REST API services for the Grottocenter platform - a collaborative wiki database for cave exploration data. Built with Sails.js framework, it serves as the data layer for cave entrances, documents, cavers, organizations, and speleological information worldwide.
 
-**Key Technologies**: Node.js 20+, Sails.js 1.5, PostgreSQL with PostGIS, Typesense, Docker
+**Key Technologies**: Node.js 24+, Sails.js 1.5, PostgreSQL with PostGIS, Typesense, Docker
 
 ## Architecture Overview
 
@@ -23,6 +23,7 @@ Frontend (grottocenter-front)
 API Layer (controllers/v1/)
     ↓ Business Logic
 Services Layer (api/services/)
+    ├── observation-import/  ← Multi-stage ETL pipeline
     ↓ Data Access
 Models Layer (api/models/)
     ↓ ORM
@@ -71,12 +72,27 @@ PostgreSQL Database + Typesense
 - **Multilingual Support**: Names and descriptions in multiple languages
 - **Geographical Data**: PostGIS for spatial queries and containment
 
+### Scientific Observation Entities
+- **t_device** - Physical instruments (data loggers, sensors)
+- **t_sensor_configuration** - Sensor calibration/settings (links device, unit, quantity kind)
+- **t_observation** - Data collection events at a point, linked to a cave
+- **t_observation_type** - Classification of observations (e.g., `physical_measurements`)
+- **t_point** - Named locations within a cave where observations occur
+- **t_time_series** - Sequences of measurements from one sensor config under one observation
+- **t_measurement** - Individual data points (value, SI-converted value, timestamp)
+- **t_time_series_quality_log** - Audit trail for data quality state changes
+- **t_unit**, **t_quantity_kind**, **t_medium** - Reference tables for units, physical quantities, and sampling media
+
 ### Key Relationships
 ```sql
 t_entrance → t_cave (many-to-one)
 t_entrance → t_massif (spatial containment)
 t_document → t_caver (author relationship)
 t_entrance → t_location/t_description/t_rigging (one-to-many)
+t_device → t_sensor_configuration (one-to-many)
+t_observation → t_point → t_cave (observation at a point in a cave)
+t_observation → t_time_series → t_measurement (observation data chain)
+t_time_series → t_sensor_configuration (sensor that produced the data)
 ```
 
 ### Migration Management
@@ -127,6 +143,44 @@ POST /api/v1/search
 // Create new entrance (requires auth)
 POST /api/v1/entrances
 { name: {text: "Cave Name", language: "eng"}, latitude: 45.123, ... }
+```
+
+### Scientific Observation Import
+```javascript
+// Import observation data from CSV/TSV file (requires auth)
+POST /api/v1/observations/import
+Content-Type: multipart/form-data
+- file: raw CSV/TSV/TXT data file (max 100 MB)
+- profile: JSON string describing how to parse the file
+→ { observationId, pointId, documentId, timeSeriesMap, measurementCount, observationDate }
+
+// Profile key fields: encoding, headerRow, skipFirstRows, skipLastRows,
+// timezone, dateFormat/dateOnlyFormat/timeOnlyFormat, numberLocale,
+// columnMappings (timestamp + measurement roles), deviceId, caveId,
+// documentTitle, documentLanguage (required with title), dataQuality
+
+// The import pipeline performs atomic ETL:
+// profile validation → reference checks → CSV parsing → timestamp conversion → SI conversion → DB writes
+// Devices and sensor configurations must exist before import.
+// See observation-import-profile-contract.md for the full profile schema.
+```
+
+### Device & Sensor Configuration Management
+```javascript
+// List devices with Typesense search
+GET /api/v1/devices?name=Tinytag
+POST /api/v1/devices  // Create a new device (requires auth)
+PATCH /api/v1/devices/:id  // Update device
+DELETE /api/v1/devices/:id  // Soft-delete device
+POST /api/v1/devices/:id/restore  // Restore soft-deleted device
+
+// Sensor configurations (nested under devices)
+GET /api/v1/devices/:deviceId/sensor-configurations
+GET /api/v1/devices/:deviceId/sensor-configurations/:id
+POST /api/v1/devices/:deviceId/sensor-configurations  // Create
+PATCH /api/v1/devices/:deviceId/sensor-configurations/:id  // Update
+DELETE /api/v1/devices/:deviceId/sensor-configurations/:id  // Soft-delete
+POST /api/v1/devices/:deviceId/sensor-configurations/:id/restore  // Restore
 ```
 
 ### Advanced Features

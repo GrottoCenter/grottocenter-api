@@ -56,7 +56,7 @@ Decharte, Dominique Lagrenee.
 
 Software requirement:
 
-- NodeJS + NPM (v20 minimum)
+- NodeJS + NPM (v24 minimum)
 - Git client (see [Git usage](#git) for configuration)
 - Docker
 - [docker-compose](https://docs.docker.com/compose/install/)
