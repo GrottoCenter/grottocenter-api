@@ -9,42 +9,46 @@ BEGIN;
 
 -- ============================================================
 -- Devices (physical instruments)
+-- Each device represents a single physical logger; multi-channel
+-- loggers have multiple sensor configurations under one device.
 -- ============================================================
-INSERT INTO t_device (id, name, brand_name, product_url) VALUES
-  (1, 'Tinytag TGP-4500', 'Gemini Data Loggers', 'https://www.geminidataloggers.com/data-loggers/tinytag-plus-2/tgp-4500'),
-  (2, 'Tinytag TGP-4500', 'Gemini Data Loggers', 'https://www.geminidataloggers.com/data-loggers/tinytag-plus-2/tgp-4500'),
-  (3, 'Keller DCX-22', 'Keller AG', 'https://www.keller-druck.com/en/products/level-probes/dcx-22'),
-  (4, 'Vaisala GMP252', 'Vaisala', 'https://www.vaisala.com/en/products/instruments-sensors-and-other-measurement-devices/instruments-industrial-measurements/gmp252'),
-  (5, 'Paratronic SU-14608 (water level)', 'Paratronic', NULL),
-  (6, 'Paratronic SU-14608 (temperature)', 'Paratronic', NULL),
-  (7, 'Paratronic SU-11436 (water level)', 'Paratronic', NULL),
-  (8, 'Paratronic SU-11436 (temperature)', 'Paratronic', NULL),
-  (9, 'HOBO Pendant Event 050004770', 'Onset', 'https://www.onsetcomp.com/products/data-loggers/ua-003-64'),
-  (10, 'HOBO Pendant Event 050005719', 'Onset', 'https://www.onsetcomp.com/products/data-loggers/ua-003-64'),
-  (11, 'HOBO U23-001 (temperature)', 'Onset', 'https://www.onsetcomp.com/products/data-loggers/u23-001'),
-  (12, 'HOBO U23-001 (humidity)', 'Onset', 'https://www.onsetcomp.com/products/data-loggers/u23-001'),
-  (13, 'HOBO U23-001 (dew point)', 'Onset', 'https://www.onsetcomp.com/products/data-loggers/u23-001'),
-  (14, 'HOBO Water Temp Pro v2 010029976', 'Onset', 'https://www.onsetcomp.com/products/data-loggers/u22-001')
+INSERT INTO t_device (id, id_author, name, brand_name, product_url, manufacturer_url) VALUES
+  (1, 1, 'Tinytag TGP-4500', 'Gemini Data Loggers', 'https://www.geminidataloggers.com/data-loggers/tinytag-plus-2/tgp-4500', NULL),
+  (2, 1, 'Keller DCX-22', 'Keller AG', 'https://www.keller-druck.com/en/products/level-probes/dcx-22', NULL),
+  (3, 1, 'Vaisala GMP252', 'Vaisala', 'https://www.vaisala.com/en/products/instruments-sensors-and-other-measurement-devices/instruments-industrial-measurements/gmp252', NULL),
+  (4, 1, 'Paratronic SU-14608', 'Paratronic', NULL, NULL),
+  (5, 1, 'Paratronic SU-11436', 'Paratronic', NULL, NULL),
+  (6, 1, 'HOBO Pendant Event 050004770', 'Onset', 'https://www.onsetcomp.com/products/data-loggers/ua-003-64', NULL),
+  (7, 1, 'HOBO Pendant Event 050005719', 'Onset', 'https://www.onsetcomp.com/products/data-loggers/ua-003-64', NULL),
+  (8, 1, 'HOBO U23-001', 'Onset', 'https://www.onsetcomp.com/products/data-loggers/u23-001', NULL),
+  (9, 1, 'HOBO Water Temp Pro v2 010029976', 'Onset', 'https://www.onsetcomp.com/products/data-loggers/u22-001', NULL),
+  (10, 5, 'Reefnet Sensus Ultra', 'Reefnet', 'https://reefnet.ca/products/sensus/', 'https://reefnet.ca')
 ON CONFLICT DO NOTHING;
 
 -- ============================================================
 -- Sensor configurations (deployment-specific settings)
+-- Multiple configs per device represent different channels/sensors
 -- ============================================================
-INSERT INTO t_sensor_configuration (id, id_device, id_unit, id_quantity_kind, precision_upper, precision_lower, resolution) VALUES
-  (1, 1, 1, 1, 0.5, 0.5, 0.01),       -- Tinytag temperature in °C
-  (2, 2, 2, 2, 3.0, 3.0, 0.3),         -- Tinytag humidity in %
-  (3, 3, 5, 5, 0.01, 0.01, 0.001),     -- Keller water level in m
-  (4, 4, 4, 4, 50, 50, 1),             -- Vaisala CO2 in ppm
-  (5, 5, 10, 5, NULL, NULL, 1),         -- SU-14608 water level in mm
-  (6, 6, 9, 1, NULL, NULL, 0.01),       -- SU-14608 temperature in K
-  (7, 7, 10, 5, NULL, NULL, 1),         -- SU-11436 water level in mm
-  (8, 8, 9, 1, NULL, NULL, 0.01),       -- SU-11436 temperature in K
-  (9, 9, 11, 9, NULL, NULL, 1),         -- Pluviometer AIR in event counts
-  (10, 10, 11, 9, NULL, NULL, 1),       -- Pluviometer SOL in event counts
-  (11, 11, 1, 1, 0.21, 0.21, 0.02),    -- HOBO U23 temperature in °C
-  (12, 12, 2, 2, 2.5, 2.5, 0.1),       -- HOBO U23 humidity in %
-  (13, 13, 1, 10, NULL, NULL, 0.1),     -- HOBO U23 dew point in °C
-  (14, 14, 1, 1, 0.2, 0.2, 0.02)       -- HOBO Water Temp Pro ground temp in °C
+INSERT INTO t_sensor_configuration (id, id_device, id_unit, id_quantity_kind, precision_upper, precision_lower, resolution, detection_limit_min, detection_limit_max, id_author) VALUES
+  (1, 1, 1, 1, 0.5, 0.5, 0.01, -40, 85, 1),            -- Tinytag TGP-4500: temperature in °C
+  (2, 1, 2, 2, 3.0, 3.0, 0.3, 0, 100, 1),              -- Tinytag TGP-4500: humidity in %
+  (3, 2, 5, 5, 0.01, 0.01, 0.001, 0, 30, 1),           -- Keller DCX-22: water level in m
+  (4, 3, 4, 4, 50, 50, 1, 0, 5000, 1),                  -- Vaisala GMP252: CO2 in ppm
+  (5, 4, 10, 5, NULL, NULL, 1, NULL, NULL, 1),           -- Paratronic SU-14608: water level in mm
+  (6, 4, 9, 1, NULL, NULL, 0.01, NULL, NULL, 1),         -- Paratronic SU-14608: temperature in K
+  (7, 5, 10, 5, NULL, NULL, 1, NULL, NULL, 1),           -- Paratronic SU-11436: water level in mm
+  (8, 5, 9, 1, NULL, NULL, 0.01, NULL, NULL, 1),         -- Paratronic SU-11436: temperature in K
+  (9, 6, 11, 9, NULL, NULL, 1, NULL, NULL, 1),           -- HOBO Pendant 050004770: event counts
+  (10, 7, 11, 9, NULL, NULL, 1, NULL, NULL, 1),          -- HOBO Pendant 050005719: event counts
+  (11, 8, 1, 1, 0.21, 0.21, 0.02, -40, 70, 1),         -- HOBO U23-001: temperature in °C
+  (12, 8, 2, 2, 2.5, 2.5, 0.1, 0, 100, 1),             -- HOBO U23-001: humidity in %
+  (13, 8, 1, 10, NULL, NULL, 0.1, NULL, NULL, 1),        -- HOBO U23-001: dew point in °C
+  (14, 9, 1, 1, 0.2, 0.2, 0.02, -20, 50, 1),           -- HOBO Water Temp Pro v2: ground temp in °C
+  (15, 10, 3, 3, 1.0, 1.0, 0.1, 300, 1100, 5),         -- Reefnet Sensus Ultra: atmospheric pressure in hPa
+  (16, 10, 4, 4, 50, 50, 1, 0, 5000, 5),               -- Reefnet Sensus Ultra: CO2 concentration in ppm
+  (17, 10, 1, 10, 0.5, 0.5, 0.1, -40, 60, 5),          -- Reefnet Sensus Ultra: dew point temperature in °C
+  (18, 10, 1, 1, 0.2, 0.2, 0.01, -40, 85, 5),          -- Reefnet Sensus Ultra: temperature in °C
+  (19, 10, 2, 2, 2.0, 2.0, 0.1, 0, 100, 5)             -- Reefnet Sensus Ultra: relative humidity in %
 ON CONFLICT DO NOTHING;
 
 -- ============================================================

@@ -94,13 +94,6 @@ INSERT INTO t_medium (id, code, url) VALUES
 ON CONFLICT (code) DO NOTHING;
 
 -- ============================================================
--- Methods
--- ============================================================
-INSERT INTO t_method (id, url) VALUES
-  (1, 'https://www.iso.org/standard/75281.html')
-ON CONFLICT (url) DO NOTHING;
-
--- ============================================================
 -- Human activity types
 -- ============================================================
 INSERT INTO t_human_activity_type (id, code, url) VALUES
@@ -143,7 +136,6 @@ SELECT setval('t_observation_type_id_seq', (SELECT MAX(id) FROM t_observation_ty
 SELECT setval('t_quantity_kind_id_seq', (SELECT MAX(id) FROM t_quantity_kind));
 SELECT setval('t_unit_id_seq', (SELECT MAX(id) FROM t_unit));
 SELECT setval('t_medium_id_seq', (SELECT MAX(id) FROM t_medium));
-SELECT setval('t_method_id_seq', (SELECT MAX(id) FROM t_method));
 SELECT setval('t_human_activity_type_id_seq', (SELECT MAX(id) FROM t_human_activity_type));
 SELECT setval('t_contaminant_type_id_seq', (SELECT MAX(id) FROM t_contaminant_type));
 

@@ -23,6 +23,10 @@ SELECT SETVAL('public.t_rigging_id_seq', COALESCE(MAX(id), 1) ) FROM public.t_ri
 SELECT SETVAL('public.t_conversation_id_seq', COALESCE(MAX(id), 1) ) FROM public.t_conversation;
 SELECT SETVAL('public.t_message_id_seq', COALESCE(MAX(id), 1) ) FROM public.t_message;
 SELECT SETVAL('public.t_conversation_archive_id_seq', COALESCE(MAX(id), 1) ) FROM public.t_conversation_archive;
+SELECT SETVAL('public.t_device_id_seq', COALESCE(MAX(id), 1) ) FROM public.t_device;
+SELECT SETVAL('public.t_sensor_configuration_id_seq', COALESCE(MAX(id), 1) ) FROM public.t_sensor_configuration;
+SELECT SETVAL('public.t_quantity_kind_id_seq', COALESCE(MAX(id), 1) ) FROM public.t_quantity_kind;
+SELECT SETVAL('public.t_unit_id_seq', COALESCE(MAX(id), 1) ) FROM public.t_unit;
 `;
 
 const ALTER_MASSIF_COLUMN_GEOG_POLYGON = `
@@ -163,6 +167,38 @@ CREATE INDEX IF NOT EXISTS idx_v_biblio_last_update
   ON v_bibliographic_metadata(last_update);
 CREATE INDEX IF NOT EXISTS idx_v_biblio_sets
   ON v_bibliographic_metadata USING gin(list_sets);
+
+-- Scientific observations indexes
+CREATE INDEX IF NOT EXISTS idx_quantity_kind_code ON t_quantity_kind (code);
+`;
+
+// Convert t_measurement from a regular table (created by Waterline migrate:drop)
+// to a partitioned table matching production DDL. Required because PostgreSQL
+// PARTITION OF only works with a partitioned parent table, and the PartitionManager
+// integration tests need to verify real DDL.
+const CONVERT_MEASUREMENT_TO_PARTITIONED = `
+DO $$
+BEGIN
+  -- Only convert if the table is NOT already partitioned
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_partitioned_table
+    WHERE partrelid = 'public.t_measurement'::regclass
+  ) THEN
+    -- Drop the plain table and recreate as partitioned
+    DROP TABLE IF EXISTS t_measurement CASCADE;
+    CREATE TABLE t_measurement (
+      id SERIAL,
+      id_time_series INTEGER NOT NULL,
+      value DOUBLE PRECISION NOT NULL,
+      value_si DOUBLE PRECISION NOT NULL,
+      timestamp TIMESTAMPTZ,
+      PRIMARY KEY (id, timestamp)
+    ) PARTITION BY RANGE (timestamp);
+
+    CREATE INDEX IF NOT EXISTS idx_measurement_time_series
+      ON t_measurement (id_time_series, timestamp);
+  END IF;
+END $$;
 `;
 
 const QUERY_PERFORMANCE_FIXES_MIGRATION = `
@@ -288,4 +324,5 @@ module.exports = {
   CREATE_BIBLIOGRAPHIC_METADATA_TABLE,
   DROP_HISTORY_PARENT_FK_CONSTRAINTS,
   ADMIN_MFA_MIGRATION,
+  CONVERT_MEASUREMENT_TO_PARTITIONED,
 };
