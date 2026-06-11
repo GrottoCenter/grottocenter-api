@@ -13,6 +13,7 @@
 
 const ObservationImportService = require('../../../services/ObservationImportService');
 const ControllerService = require('../../../services/ControllerService');
+const isBlank = require('../../../utils/isBlank');
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100 MB in bytes
 
@@ -71,7 +72,7 @@ module.exports = async (req, res) => {
   // -------------------------------------------------------------------------
   const rawProfile = req.body && req.body.profile;
 
-  if (rawProfile === undefined || rawProfile === null || rawProfile === '') {
+  if (isBlank(rawProfile)) {
     return res.badRequest(
       formatImportError(req, {
         code: 'IMPORT_MISSING_PROFILE',

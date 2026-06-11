@@ -9,6 +9,8 @@
  * fail-fast behaviour.
  */
 
+const isBlank = require('../../utils/isBlank');
+
 /**
  * @typedef {Object} ResolvedEntities
  * @property {Object|null}      cave          - Resolved TCave record (or null)
@@ -39,19 +41,23 @@ const validate = async (profile) => {
     ? profile.columnMappings
     : [];
 
-  // Collect unique mediumIds and sensorConfigurationIds from column mappings
+  // Collect unique mediumIds and sensorConfigurationIds from measurement columns
+  const measurementColumns = columnMappings.filter(
+    (col) => col.role === 'measurement'
+  );
+
   const uniqueMediumIds = [
     ...new Set(
-      columnMappings
+      measurementColumns
         .map((col, idx) => ({ id: col.mediumId, idx }))
-        .filter(({ id }) => id !== undefined && id !== null)
+        .filter(({ id }) => !isBlank(id))
         .map(({ id }) => id)
     ),
   ];
 
-  const uniqueSensorConfigEntries = columnMappings
+  const uniqueSensorConfigEntries = measurementColumns
     .map((col, idx) => ({ id: col.sensorConfigurationId, idx }))
-    .filter(({ id }) => id !== undefined && id !== null);
+    .filter(({ id }) => !isBlank(id));
 
   // Build a map from sensorConfigurationId → column indices (for error messages)
   const sensorConfigIndexMap = new Map();
@@ -64,9 +70,9 @@ const validate = async (profile) => {
 
   // Build a map from mediumId → column indices (for error messages)
   const mediumIndexMap = new Map();
-  columnMappings.forEach((col, idx) => {
+  measurementColumns.forEach((col, idx) => {
     const { mediumId } = col;
-    if (mediumId !== undefined && mediumId !== null) {
+    if (!isBlank(mediumId)) {
       if (!mediumIndexMap.has(mediumId)) {
         mediumIndexMap.set(mediumId, []);
       }
@@ -79,7 +85,7 @@ const validate = async (profile) => {
   const checks = [];
 
   // Cave check (optional)
-  if (profile.caveId !== undefined && profile.caveId !== null) {
+  if (!isBlank(profile.caveId)) {
     checks.push(
       TCave.findOne({ id: profile.caveId }).then((cave) => {
         if (!cave) {
@@ -92,7 +98,7 @@ const validate = async (profile) => {
   }
 
   // License check (required)
-  if (profile.licenseId !== undefined && profile.licenseId !== null) {
+  if (!isBlank(profile.licenseId)) {
     checks.push(
       TLicense.findOne({ id: profile.licenseId }).then((license) => {
         if (!license) {
@@ -107,7 +113,7 @@ const validate = async (profile) => {
   }
 
   // Author check (required)
-  if (profile.authorId !== undefined && profile.authorId !== null) {
+  if (!isBlank(profile.authorId)) {
     checks.push(
       TCaver.findOne({ id: profile.authorId }).then((author) => {
         if (!author) {

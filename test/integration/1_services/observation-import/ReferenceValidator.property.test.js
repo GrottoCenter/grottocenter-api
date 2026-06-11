@@ -225,12 +225,14 @@ function countExpectedErrors(
     if (!topLevel.authorExists) count += 1;
   }
 
-  // Per-column: collect the unique IDs actually referenced in the profile,
-  // then check whether they exist.
+  // Per-column: collect the unique IDs actually referenced in measurement
+  // columns, then check whether they exist. Non-measurement columns are
+  // ignored by ReferenceValidator.
   const referencedMediumIds = new Set();
   const referencedSensorIds = new Set();
 
   (profile.columnMappings || []).forEach((col) => {
+    if (col.role !== 'measurement') return;
     if (col.mediumId !== undefined && col.mediumId !== null) {
       referencedMediumIds.add(col.mediumId);
     }

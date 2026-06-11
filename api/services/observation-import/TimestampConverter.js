@@ -222,6 +222,19 @@ const convert = (rows, profile, columnIndices) => {
         );
       }
       m = dayjs.unix(epochSeconds);
+      if (!m.isValid()) {
+        throw new Error(
+          `Failed to parse Unix epoch seconds at row ${rowIndex + 1}: '${raw}' produces an invalid date.`
+        );
+      }
+      // Reject absurd dates (before 1900 or after 2100) — catches out-of-range
+      // epoch values like 1e15 that pass Number.isInteger but produce nonsensical dates.
+      const epochYear = m.year();
+      if (epochYear < 1900 || epochYear > 2100) {
+        throw new Error(
+          `Failed to parse Unix epoch seconds at row ${rowIndex + 1}: '${raw}' produces year ${epochYear}, which is outside the accepted range (1900–2100).`
+        );
+      }
     } else {
       // 3.7. Component-based timestamp assembly
       const getComponent = (type, defaultValue) => {

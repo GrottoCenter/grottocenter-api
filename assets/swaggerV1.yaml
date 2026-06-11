@@ -6202,7 +6202,7 @@ paths:
                     See the ObservationImportProfile schema for the full structure.
                     Key fields: encoding, headerRow, skipFirstRows, skipLastRows,
                     timezone, dateFormat/dateOnlyFormat/timeOnlyFormat, numberLocale,
-                    columnMappings, deviceId, caveId, authorId, licenseId,
+                    columnMappings, caveId, authorId, licenseId,
                     documentTitle, documentLanguage, observationName, dataQuality,
                     samplingIntervalSeconds.
       responses:
@@ -6222,7 +6222,7 @@ paths:
                     type: integer
                   timeSeriesMap:
                     type: object
-                    description: Map of sensor configuration ID to created time series ID
+                    description: Map of column index (from columnMappings) to created time series ID
                     additionalProperties:
                       type: integer
                   measurementCount:
@@ -6240,11 +6240,11 @@ paths:
         '400':
           description: |
             Validation error. Possible error codes:
-            - IMPORT_VALIDATION_ERROR: Profile structure invalid (missing fields, bad locale, etc.)
+            - IMPORT_VALIDATION_ERROR: Profile structure invalid (missing fields, bad locale, non-integer IDs, invalid headerRow, etc.)
             - IMPORT_REFERENCE_ERROR: Referenced entity not found (device, sensor config, cave, etc.)
             - IMPORT_PARSE_ERROR: File cannot be parsed (encoding, delimiter, empty)
-            - IMPORT_TIMESTAMP_ERROR: Timestamp columns missing, unpaired, or format mismatch
-            - IMPORT_CONVERSION_ERROR: SI unit conversion failure
+            - IMPORT_TIMESTAMP_ERROR: Timestamp columns missing, unpaired, format mismatch, or epoch value out of range (1900–2100)
+            - IMPORT_CONVERSION_ERROR: SI unit conversion failure or measurement column index not found in parsed data
           content:
             application/json:
               schema:
@@ -7534,7 +7534,8 @@ components:
           description: File encoding (utf8, latin1, ascii, etc.)
         headerRow:
           type: integer
-          description: 1-based row number containing column headers. Rows before it are skipped.
+          minimum: 1
+          description: 1-based row number containing column headers. Must be >= 1. Rows before it are skipped.
           example: 3
         skipFirstRows:
           type: integer
@@ -7597,20 +7598,23 @@ components:
                   an offset (in seconds) to the base timestamp produced by that mode.
               sensorConfigurationId:
                 type: integer
-                description: Required when role is "measurement".
+                minimum: 1
+                maximum: 2147483647
+                description: Required when role is "measurement". Must be a positive integer.
               mediumId:
                 type: integer
-                description: Required when role is "measurement".
-        deviceId:
-          type: integer
-          description: ID of the device that produced the data.
+                minimum: 1
+                maximum: 2147483647
+                description: Required when role is "measurement". Must be a positive integer.
         caveId:
           type: integer
-          description: Cave where the observation was made.
+          minimum: 1
+          maximum: 2147483647
+          description: Cave where the observation was made. Must be a positive integer.
           nullable: true
         pointLabel:
           type: string
-          description: Label for the observation point (reuses existing or creates new).
+          description: Label for the observation point (reuses existing or creates new). Must be a string when provided.
         latitude:
           type: number
           nullable: true
@@ -7619,10 +7623,14 @@ components:
           nullable: true
         authorId:
           type: integer
-          description: Caver ID of the data author.
+          minimum: 1
+          maximum: 2147483647
+          description: Caver ID of the data author. Must be a positive integer.
         licenseId:
           type: integer
-          description: License ID for the created document.
+          minimum: 1
+          maximum: 2147483647
+          description: License ID for the created document. Must be a positive integer.
         documentTitle:
           type: string
           description: Custom title for the document. Falls back to filename if omitted.

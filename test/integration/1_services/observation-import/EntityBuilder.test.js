@@ -413,7 +413,7 @@ describe('EntityBuilder', () => {
       should(result).have.property('timeSeriesMap');
       should(result.timeSeriesMap).be.an.Object();
       should(Object.keys(result.timeSeriesMap).length).equal(1);
-      should(result.timeSeriesMap).have.property('10', 300);
+      should(result.timeSeriesMap).have.property('1', 300);
       should(result).have.property('measurementCount', 2);
       should(result).have.property('observationDate');
       should(result.observationDate).be.a.Date();
@@ -451,7 +451,7 @@ describe('EntityBuilder', () => {
       should(profileJson.metadata).have.property('pointId', 99);
       should(profileJson.metadata).have.property('documentId', 200);
       should(profileJson.metadata).have.property('timeSeriesMap');
-      should(profileJson.metadata.timeSeriesMap).have.property('10', 300);
+      should(profileJson.metadata.timeSeriesMap).have.property('1', 300);
       should(profileJson.metadata).have.property('measurementCount', 2);
       should(profileJson.metadata).have.property('observationDate');
       should(profileJson.metadata).have.property('importedAt');

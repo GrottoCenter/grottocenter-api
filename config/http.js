@@ -303,7 +303,7 @@ module.exports.http = {
       // are already decoded correctly by busboy regardless of this setting.
       const upload = multer({
         storage: inMemoryStorage,
-        fileSize: 100000000,
+        limits: { fileSize: 100 * 1024 * 1024 },
         defParamCharset: 'utf8',
       });
       return upload.fields([{ name: 'files' }, { name: 'file', maxCount: 1 }]);
