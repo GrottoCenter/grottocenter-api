@@ -30,11 +30,7 @@ module.exports = async (req, res) => {
     }).set(cleanedData);
     const newName = await TName.findOne(nameId)
       .populate('author')
-      .populate('cave')
-      .populate('entrance')
-      .populate('grotto')
       .populate('language')
-      .populate('massif')
       .populate('reviewer');
 
     const params = {};

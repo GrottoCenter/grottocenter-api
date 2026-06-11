@@ -14,12 +14,16 @@ module.exports = async (req, res) => {
 
   // Do nothing if already main
   if (currentName.isMain) {
+    const populatedName = await TName.findOne(nameId)
+      .populate('author')
+      .populate('language')
+      .populate('reviewer');
     const params = {};
     params.controllerMethod = 'NameController.setAsMain';
     return ControllerService.treatAndConvert(
       req,
       null,
-      currentName,
+      populatedName,
       params,
       res,
       toName
@@ -50,11 +54,7 @@ module.exports = async (req, res) => {
     // Return name updated and populated
     const newName = await TName.findOne(nameId)
       .populate('author')
-      .populate('cave')
-      .populate('entrance')
-      .populate('grotto')
       .populate('language')
-      .populate('massif')
       .populate('reviewer');
 
     const params = {};

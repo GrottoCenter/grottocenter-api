@@ -102,11 +102,6 @@ module.exports = {
       model: 'TObservation',
     },
 
-    method: {
-      columnName: 'id_method',
-      model: 'TMethod',
-    },
-
     document: {
       columnName: 'id_document',
       model: 'TDocument',
