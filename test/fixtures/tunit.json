@@ -1,0 +1,12 @@
+[
+  {
+    "id": 1,
+    "code": "DEG_C",
+    "symbol": "°C"
+  },
+  {
+    "id": 2,
+    "code": "HPA",
+    "symbol": "hPa"
+  }
+]

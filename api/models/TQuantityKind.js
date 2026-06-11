@@ -45,18 +45,24 @@ module.exports = {
       maxLength: 20,
     },
 
+    // Declared as type: 'string' because Waterline returns PostgreSQL `numeric`
+    // columns as strings to avoid JavaScript floating-point precision loss.
+    // Consumers (e.g. SIConverter) must coerce with Number() before arithmetic.
     siToDisplayFactor: {
-      type: 'number',
+      type: 'string',
       allowNull: false,
       columnName: 'si_to_display_factor',
-      defaultsTo: 1,
+      columnType: 'numeric',
+      defaultsTo: '1',
     },
 
+    // See siToDisplayFactor comment above — same rationale.
     siToDisplayOffset: {
-      type: 'number',
+      type: 'string',
       allowNull: false,
       columnName: 'si_to_display_offset',
-      defaultsTo: 0,
+      columnType: 'numeric',
+      defaultsTo: '0',
     },
   },
 };

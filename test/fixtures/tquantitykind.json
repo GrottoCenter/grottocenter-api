@@ -1,0 +1,20 @@
+[
+  {
+    "id": 1,
+    "code": "Temperature",
+    "url": "http://qudt.org/vocab/quantitykind/Temperature",
+    "symbolSi": "K",
+    "displaySymbol": "°C",
+    "siToDisplayFactor": "1",
+    "siToDisplayOffset": "-273.15"
+  },
+  {
+    "id": 2,
+    "code": "Pressure",
+    "url": "http://qudt.org/vocab/quantitykind/Pressure",
+    "symbolSi": "Pa",
+    "displaySymbol": "hPa",
+    "siToDisplayFactor": "0.01",
+    "siToDisplayOffset": "0"
+  }
+]

@@ -442,6 +442,18 @@ module.exports.routes = {
   'DELETE /api/v1/devices/:id': 'v1/device/delete',
   'POST /api/v1/devices/:id/restore': 'v1/device/restore',
 
+  // Sensor Configuration (nested under devices)
+  'POST /api/v1/devices/:deviceId/configurations':
+    'v1/sensor-configuration/create',
+  'GET /api/v1/devices/:deviceId/configurations/:id':
+    'v1/sensor-configuration/find',
+  'PATCH /api/v1/devices/:deviceId/configurations/:id':
+    'v1/sensor-configuration/update',
+  'DELETE /api/v1/devices/:deviceId/configurations/:id':
+    'v1/sensor-configuration/delete',
+  'POST /api/v1/devices/:deviceId/configurations/:id/restore':
+    'v1/sensor-configuration/restore',
+
   //  ╦ ╦╔═╗╔╗ ╦ ╦╔═╗╔═╗╦╔═╔═╗
   //  ║║║║╣ ╠╩╗╠═╣║ ║║ ║╠╩╗╚═╗
   //  ╚╩╝╚═╝╚═╝╩ ╩╚═╝╚═╝╩ ╩╚═╝

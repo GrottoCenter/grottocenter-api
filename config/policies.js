@@ -267,6 +267,13 @@ module.exports.policies = {
   'v1/device/delete': ['validateId', 'tokenAuth'],
   'v1/device/restore': ['validateId', 'tokenAuth'],
 
+  // Sensor Configuration
+  'v1/sensor-configuration/find': ['validateId'],
+  'v1/sensor-configuration/create': ['validateId', 'tokenAuth'],
+  'v1/sensor-configuration/update': ['validateId', 'tokenAuth'],
+  'v1/sensor-configuration/delete': ['validateId', 'tokenAuth'],
+  'v1/sensor-configuration/restore': ['validateId', 'tokenAuth'],
+
   // Partner
   'v1/partner/count': true,
   'v1/partner/find-for-carousel': true,
