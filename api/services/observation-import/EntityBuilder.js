@@ -491,7 +491,7 @@ const build = async ({
       });
 
       if (colResult) {
-        timeSeriesMap[colMapping.sensorConfigurationId] = colResult.id;
+        timeSeriesMap[colMapping.columnIndex] = colResult.id;
         totalMeasurements += colResult.measurementCount;
       }
     }

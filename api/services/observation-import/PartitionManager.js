@@ -69,10 +69,16 @@ const computeBoundaries = (year, quarter) => {
   const startMonth = (quarter - 1) * 3; // 0-indexed month (0, 3, 6, 9)
 
   // Start: first day of the quarter
-  const startDate = new Date(Date.UTC(year, startMonth, 1));
+  // Use setUTCFullYear to avoid Date.UTC's legacy behavior where years 0–99
+  // are interpreted as 1900–1999.
+  const startDate = new Date(0);
+  startDate.setUTCFullYear(year, startMonth, 1);
+  startDate.setUTCHours(0, 0, 0, 0);
 
   // End: first day of the next quarter (exclusive boundary)
-  const endDate = new Date(Date.UTC(year, startMonth + 3, 1));
+  const endDate = new Date(0);
+  endDate.setUTCFullYear(year, startMonth + 3, 1);
+  endDate.setUTCHours(0, 0, 0, 0);
 
   return {
     start: startDate.toISOString().slice(0, 10),

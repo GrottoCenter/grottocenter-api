@@ -93,13 +93,18 @@ const convertAll = (rows, sensorConfigMap, columnIndices, profile) => {
   const { numberLocale } = profile || {};
 
   // Pre-compute positions for all measurement columns present in sensorConfigMap
-  // (only columns that are in the map will be converted)
+  // Fail if any measurement column is not found in columnIndices (indicates a
+  // columnIndex that was excluded or exceeds the file width).
   const measurementColumns = [];
   for (const [colIndex, sensorConfig] of sensorConfigMap.entries()) {
     const pos = columnIndices.indexOf(colIndex);
-    if (pos !== -1) {
-      measurementColumns.push({ colIndex, pos, sensorConfig });
+    if (pos === -1) {
+      throw new Error(
+        `Measurement column index ${colIndex} not found in parsed data. ` +
+          'It may have been excluded or exceed the file width.'
+      );
     }
+    measurementColumns.push({ colIndex, pos, sensorConfig });
   }
 
   return rows.map((row, rowIdx) =>

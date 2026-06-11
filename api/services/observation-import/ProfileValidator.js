@@ -1,4 +1,7 @@
 const { COMPONENT_TYPES } = require('./TimestampConverter');
+const isBlank = require('../../utils/isBlank');
+const isNonBlankString = require('../../utils/isNonBlankString');
+const isValidId = require('../../utils/isValidId');
 
 const VALID_NUMBER_LOCALES = ['en', 'fr'];
 const VALID_DATA_QUALITIES = ['raw', 'validated', 'suspect', 'rejected'];
@@ -49,21 +52,34 @@ const validate = (profile) => {
     'licenseId',
   ];
   requiredFields.forEach((field) => {
-    if (
-      profile[field] === undefined ||
-      profile[field] === null ||
-      profile[field] === ''
-    ) {
+    if (isBlank(profile[field])) {
       errors.push(`Missing required field: ${field}`);
     }
   });
 
-  // 2. IANA timezone validation
+  // 1b. columnMappings must be an array (catches truthy non-array values)
   if (
-    profile.timezone !== undefined &&
-    profile.timezone !== null &&
-    profile.timezone !== ''
+    !isBlank(profile.columnMappings) &&
+    !Array.isArray(profile.columnMappings)
   ) {
+    errors.push('columnMappings must be an array');
+  }
+
+  // 1c. Referenced ID fields must be positive integers when present
+  const idFields = ['caveId', 'licenseId', 'authorId'];
+  idFields.forEach((field) => {
+    const val = profile[field];
+    if (val !== undefined && val !== null) {
+      if (!isValidId(val)) {
+        errors.push(
+          `${field} must be a positive integer (got ${JSON.stringify(val)})`
+        );
+      }
+    }
+  });
+
+  // 2. IANA timezone validation
+  if (!isBlank(profile.timezone)) {
     if (!isValidTimezone(profile.timezone)) {
       errors.push(
         `Invalid IANA timezone: '${profile.timezone}'. Fixed offsets like "+02:00" are not accepted.`
@@ -91,13 +107,27 @@ const validate = (profile) => {
       );
     }
 
-    // 4. Each measurement column must have sensorConfigurationId
+    // 4. Each measurement column must have a valid sensorConfigurationId and optional mediumId
     profile.columnMappings.forEach((col, index) => {
-      if (col.role === 'measurement' && !col.sensorConfigurationId) {
-        errors.push(
-          `columnMappings[${index}]: sensorConfigurationId is required for measurement columns`
-        );
+      if (col.role === 'measurement') {
+        if (!col.sensorConfigurationId) {
+          errors.push(
+            `columnMappings[${index}]: sensorConfigurationId is required for measurement columns`
+          );
+        } else if (!isValidId(col.sensorConfigurationId)) {
+          errors.push(
+            `columnMappings[${index}]: sensorConfigurationId must be a positive integer (got ${JSON.stringify(col.sensorConfigurationId)})`
+          );
+        }
+
+        // Validate mediumId on measurement columns where it is present
+        if (!isBlank(col.mediumId) && !isValidId(col.mediumId)) {
+          errors.push(
+            `columnMappings[${index}]: mediumId must be a positive integer (got ${JSON.stringify(col.mediumId)})`
+          );
+        }
       }
+
       if (col.role === 'timestamp' && col.timestampType) {
         if (!VALID_TIMESTAMP_TYPES.includes(col.timestampType)) {
           errors.push(
@@ -177,21 +207,17 @@ const validate = (profile) => {
   }
 
   // 6. caveId or pointLabel presence
-  const hasCaveId = profile.caveId !== undefined && profile.caveId !== null;
-  const hasPointLabel =
-    profile.pointLabel !== undefined &&
-    profile.pointLabel !== null &&
-    profile.pointLabel !== '';
+  const hasCaveId = !isBlank(profile.caveId);
+  const hasPointLabel = isNonBlankString(profile.pointLabel);
+  if (!isBlank(profile.pointLabel) && typeof profile.pointLabel !== 'string') {
+    errors.push('pointLabel must be a string when provided');
+  }
   if (!hasCaveId && !hasPointLabel) {
     errors.push('Either caveId or pointLabel must be provided');
   }
 
   // 7. numberLocale validation (if provided)
-  if (
-    profile.numberLocale !== undefined &&
-    profile.numberLocale !== null &&
-    profile.numberLocale !== ''
-  ) {
+  if (!isBlank(profile.numberLocale)) {
     if (!VALID_NUMBER_LOCALES.includes(profile.numberLocale)) {
       errors.push(
         `Invalid numberLocale: '${profile.numberLocale}'. Must be one of: ${VALID_NUMBER_LOCALES.join(', ')}`
@@ -200,11 +226,7 @@ const validate = (profile) => {
   }
 
   // 8. dataQuality validation (if provided)
-  if (
-    profile.dataQuality !== undefined &&
-    profile.dataQuality !== null &&
-    profile.dataQuality !== ''
-  ) {
+  if (!isBlank(profile.dataQuality)) {
     if (!VALID_DATA_QUALITIES.includes(profile.dataQuality)) {
       errors.push(
         `Invalid dataQuality: '${profile.dataQuality}'. Must be one of: ${VALID_DATA_QUALITIES.join(', ')}`
@@ -213,14 +235,30 @@ const validate = (profile) => {
   }
 
   // 9. documentLanguage is required when documentTitle is provided
-  const hasDocumentTitle =
-    profile.documentTitle !== undefined &&
-    profile.documentTitle !== null &&
-    profile.documentTitle.trim().length > 0;
+  const hasDocumentTitle = isNonBlankString(profile.documentTitle);
+  if (
+    !isBlank(profile.documentTitle) &&
+    typeof profile.documentTitle !== 'string'
+  ) {
+    errors.push('documentTitle must be a string when provided');
+  }
   if (hasDocumentTitle && !profile.documentLanguage) {
     errors.push(
       'documentLanguage is required when documentTitle is provided (ISO 639-2 code, e.g. "eng", "fra")'
     );
+  }
+
+  // 10. headerRow must be a positive integer when provided
+  if (profile.headerRow !== undefined && profile.headerRow !== null) {
+    if (
+      typeof profile.headerRow !== 'number' ||
+      !Number.isInteger(profile.headerRow) ||
+      profile.headerRow < 1
+    ) {
+      errors.push(
+        `headerRow must be an integer >= 1 (got ${JSON.stringify(profile.headerRow)})`
+      );
+    }
   }
 
   return errors;

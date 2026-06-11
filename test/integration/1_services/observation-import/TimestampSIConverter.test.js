@@ -801,7 +801,7 @@ describe('SIConverter', () => {
       should(col2Row1.valueSi).be.approximately(0.75, 1e-9);
     });
 
-    it('should skip sensorConfigMap columns not present in columnIndices', () => {
+    it('should throw when sensorConfigMap columns are not present in columnIndices', () => {
       // sensorConfigMap has col 5 but it's not in columnIndices (was excluded)
       const sensorConfigMap = new Map([
         [1, { quantityKind: { siToDisplayFactor: 1, siToDisplayOffset: 0 } }],
@@ -811,16 +811,9 @@ describe('SIConverter', () => {
       const columnIndices = [0, 1]; // col 5 not present
       const profile = {};
 
-      const result = SIConverter.convertAll(
-        rows,
-        sensorConfigMap,
-        columnIndices,
-        profile
-      );
-
-      should(result).have.length(1);
-      should(result[0]).have.length(1); // only col 1, col 5 was skipped
-      should(result[0][0].columnIndex).equal(1);
+      should(() =>
+        SIConverter.convertAll(rows, sensorConfigMap, columnIndices, profile)
+      ).throw(/Measurement column index 5 not found in parsed data/);
     });
 
     it('should throw if a quantity kind has zero factor', () => {
