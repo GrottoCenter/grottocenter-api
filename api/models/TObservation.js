@@ -67,6 +67,7 @@ module.exports = {
       type: 'string',
       allowNull: true,
       columnName: 'cave_name',
+      maxLength: 200,
     },
 
     observationTypeCode: {

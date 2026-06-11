@@ -44,15 +44,16 @@ describe('FileService with Azure credentials', () => {
       const pathName = `${Math.random()
         .toString()
         .replace(/0\./, '')}-${name.replace(/ /, '_')}`;
-      const nameSplit = name.split('.');
-      if (nameSplit.length !== 2) {
+      const lastDot = name.lastIndexOf('.');
+      if (lastDot <= 0 || lastDot === name.length - 1) {
         const err = new Error(FileService.INVALID_NAME);
         err.fileName = name;
         throw err;
       }
+      const extension = name.slice(lastDot + 1).toLowerCase();
 
       const foundFormat = await TFileFormat.find({
-        extension: nameSplit[1].toLowerCase(),
+        extension,
       }).limit(1);
       if (foundFormat.length === 0) {
         const err = new Error(FileService.INVALID_FORMAT);
