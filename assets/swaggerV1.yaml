@@ -56,6 +56,12 @@ tags:
   - name: comments
   - name: riggings
   - name: messaging
+  - name: devices
+    description: Physical measurement instrument (device) management
+  - name: SensorConfiguration
+    description: Per-channel sensor configuration management (nested under devices)
+  - name: Observation
+    description: Scientific observation data import
 
 paths:
   '/health':
@@ -5772,6 +5778,490 @@ paths:
               schema:
                 $ref: '#/components/schemas/StructuredError'
 
+  '/devices':
+    post:
+      tags:
+        - devices
+      summary: Create a device
+      description: Create a new device record. Requires authentication.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceCreate'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+        '400':
+          description: Validation error (missing or invalid fields).
+        '401':
+          description: Authentication required.
+
+  '/devices/{id}':
+    get:
+      tags:
+        - devices
+      summary: Find device by ID
+      description: >-
+        Get a device by its ID. Public access (no authentication required).
+        Soft-deleted devices are only visible to authenticated users with Moderator role.
+      parameters:
+        - name: id
+          in: path
+          description: Device ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+        '404':
+          description: Device not found.
+
+    patch:
+      tags:
+        - devices
+      summary: Update a device
+      description: Update one or more fields on an existing device. Requires authentication.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: Device ID
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceUpdate'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+        '400':
+          description: Validation error (no valid fields or invalid values).
+        '401':
+          description: Authentication required.
+        '404':
+          description: Device not found or soft-deleted.
+
+    delete:
+      tags:
+        - devices
+      summary: Delete a device
+      description: Soft-delete a device (Moderator) or permanently delete (Administrator with isPermanent=true). Requires authentication.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: Device ID
+          required: true
+          schema:
+            type: integer
+        - name: isPermanent
+          in: query
+          description: If true, permanently deletes the device (Administrator only).
+          required: false
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Successful operation. Returns the deleted device.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+        '401':
+          description: Authentication required.
+        '403':
+          description: Insufficient permissions.
+        '404':
+          description: Device not found.
+        '409':
+          description: Device is referenced by sensor configurations and cannot be permanently deleted.
+
+  '/devices/search':
+    get:
+      tags:
+        - devices
+      summary: Search devices
+      description: Full-text search on devices via Typesense. Public access (no authentication required).
+      parameters:
+        - name: query
+          in: query
+          description: Search query string. Defaults to wildcard (*) if omitted.
+          required: false
+          schema:
+            type: string
+        - name: page
+          in: query
+          description: Page number (defaults to 1).
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: size
+          in: query
+          description: Number of results per page (defaults to 10).
+          required: false
+          schema:
+            type: integer
+            default: 10
+        - name: sort
+          in: query
+          description: Sort field and direction for results.
+          required: false
+          schema:
+            type: string
+        - name: filter
+          in: query
+          description: Typesense filter conditions (as object).
+          required: false
+          schema:
+            type: object
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SimpleDevice'
+                  totalCount:
+                    type: integer
+        '400':
+          description: Typesense client error.
+
+  '/devices/{id}/restore':
+    post:
+      tags:
+        - devices
+      summary: Restore a soft-deleted device
+      description: Restore a previously soft-deleted device. Requires Moderator or Administrator role.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: Device ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+        '401':
+          description: Authentication required.
+        '403':
+          description: Insufficient permissions.
+        '404':
+          description: Device not found or not deleted.
+
+  '/devices/{deviceId}/configurations':
+    post:
+      tags:
+        - SensorConfiguration
+      summary: Create a sensor configuration
+      description: Create a new sensor configuration for a device. Requires authentication.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: deviceId
+          in: path
+          description: Device ID
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SensorConfigurationCreate'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SensorConfiguration'
+        '400':
+          description: Invalid quantityKind or unit.
+        '401':
+          description: Authentication required.
+        '404':
+          description: Device not found.
+
+  '/devices/{deviceId}/configurations/{id}':
+    get:
+      tags:
+        - SensorConfiguration
+      summary: Find sensor configuration by ID
+      description: >-
+        Get a sensor configuration by its ID. Public access (no authentication required).
+        Soft-deleted sensor configurations are only visible to authenticated users with Moderator role.
+      parameters:
+        - name: deviceId
+          in: path
+          description: Device ID
+          required: true
+          schema:
+            type: integer
+        - name: id
+          in: path
+          description: Sensor configuration ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SensorConfiguration'
+        '404':
+          description: Sensor configuration or device not found.
+
+    patch:
+      tags:
+        - SensorConfiguration
+      summary: Update a sensor configuration
+      description: Update one or more fields on an existing sensor configuration. Requires authentication.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: deviceId
+          in: path
+          description: Device ID
+          required: true
+          schema:
+            type: integer
+        - name: id
+          in: path
+          description: Sensor configuration ID
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SensorConfigurationUpdate'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SensorConfiguration'
+        '400':
+          description: Validation error (no valid fields or invalid values).
+        '401':
+          description: Authentication required.
+        '404':
+          description: Sensor configuration or device not found.
+
+    delete:
+      tags:
+        - SensorConfiguration
+      summary: Delete a sensor configuration
+      description: Soft-delete a sensor configuration (Moderator) or permanently delete (Administrator with isPermanent=true). Requires authentication.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: deviceId
+          in: path
+          description: Device ID
+          required: true
+          schema:
+            type: integer
+        - name: id
+          in: path
+          description: Sensor configuration ID
+          required: true
+          schema:
+            type: integer
+        - name: isPermanent
+          in: query
+          description: If true, permanently deletes the sensor configuration (Administrator only).
+          required: false
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Successful operation. Returns the deleted sensor configuration.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SensorConfiguration'
+        '401':
+          description: Authentication required.
+        '403':
+          description: Insufficient permissions.
+        '404':
+          description: Sensor configuration or device not found.
+        '409':
+          description: Sensor configuration is referenced by time series and cannot be permanently deleted.
+
+  '/devices/{deviceId}/configurations/{id}/restore':
+    post:
+      tags:
+        - SensorConfiguration
+      summary: Restore a soft-deleted sensor configuration
+      description: Restore a previously soft-deleted sensor configuration. Requires Moderator or Administrator role.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: deviceId
+          in: path
+          description: Device ID
+          required: true
+          schema:
+            type: integer
+        - name: id
+          in: path
+          description: Sensor configuration ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SensorConfiguration'
+        '401':
+          description: Authentication required.
+        '403':
+          description: Insufficient permissions.
+        '404':
+          description: Sensor configuration not found or not deleted.
+
+  '/observations/import':
+    post:
+      tags:
+        - Observation
+      summary: Import scientific observation data from a CSV/TSV file
+      description: |
+        Accepts a raw CSV/TSV/TXT data file and a profile JSON describing how to
+        parse it. Performs an atomic ETL operation creating the full observation
+        data chain (point → observation → document → time series → measurements).
+
+        Devices and sensor configurations must exist before import — they are not
+        created by this endpoint.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+                - profile
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: The raw CSV/TSV/TXT data file (max 100 MB)
+                profile:
+                  type: string
+                  description: |
+                    JSON-stringified object describing how to parse the file.
+                    See the ObservationImportProfile schema for the full structure.
+                    Key fields: encoding, headerRow, skipFirstRows, skipLastRows,
+                    timezone, dateFormat/dateOnlyFormat/timeOnlyFormat, numberLocale,
+                    columnMappings, deviceId, caveId, authorId, licenseId,
+                    documentTitle, documentLanguage, observationName, dataQuality,
+                    samplingIntervalSeconds.
+      responses:
+        '200':
+          description: Import successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  observationId:
+                    type: integer
+                  pointId:
+                    type: integer
+                    nullable: true
+                  documentId:
+                    type: integer
+                  timeSeriesMap:
+                    type: object
+                    description: Map of sensor configuration ID to created time series ID
+                    additionalProperties:
+                      type: integer
+                  measurementCount:
+                    type: integer
+                  observationDate:
+                    type: string
+                    format: date-time
+                  importedAt:
+                    type: string
+                    format: date-time
+                    description: Timestamp of when the import was performed
+                  importedBy:
+                    type: integer
+                    description: ID of the authenticated user who performed the import
+        '400':
+          description: |
+            Validation error. Possible error codes:
+            - IMPORT_VALIDATION_ERROR: Profile structure invalid (missing fields, bad locale, etc.)
+            - IMPORT_REFERENCE_ERROR: Referenced entity not found (device, sensor config, cave, etc.)
+            - IMPORT_PARSE_ERROR: File cannot be parsed (encoding, delimiter, empty)
+            - IMPORT_TIMESTAMP_ERROR: Timestamp columns missing, unpaired, or format mismatch
+            - IMPORT_CONVERSION_ERROR: SI unit conversion failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImportError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          description: |
+            Conflict error. Possible error codes:
+            - IMPORT_CONFLICT_ERROR: A record with conflicting unique values already exists (e.g., duplicate point label + cave)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImportError'
+        '500':
+          description: Internal server error
+
 components:
 
   parameters:
@@ -6984,6 +7474,177 @@ components:
           description: 'Trace ID from the originating request, useful for debugging.'
           example: 'req-abc-123'
 
+    ImportError:
+      type: object
+      description: Error response from the observation import endpoint.
+      properties:
+        code:
+          type: string
+          description: 'Machine-readable error code.'
+          enum:
+            - IMPORT_MISSING_FILE
+            - IMPORT_MISSING_PROFILE
+            - IMPORT_MALFORMED_PROFILE
+            - IMPORT_FILE_TOO_LARGE
+            - IMPORT_VALIDATION_ERROR
+            - IMPORT_REFERENCE_ERROR
+            - IMPORT_PARSE_ERROR
+            - IMPORT_TIMESTAMP_ERROR
+            - IMPORT_CONVERSION_ERROR
+            - IMPORT_CONFLICT_ERROR
+            - IMPORT_TRANSACTION_ERROR
+        message:
+          type: string
+          description: Human-readable error description.
+        metadata:
+          type: object
+          description: Additional structured context for the error.
+          properties:
+            details:
+              type: array
+              items:
+                type: object
+                properties:
+                  field:
+                    type: string
+                    description: Field or context related to the error.
+                    example: profile
+                  message:
+                    type: string
+                    description: Human-readable error detail.
+        reference_id:
+          type: string
+          description: Trace ID for support and debugging.
+          example: 'e57c9f23-1a80-45fc-a97a-b70a823e57c9'
+
+    ObservationImportProfile:
+      type: object
+      description: |
+        Profile describing how to parse a CSV/TSV file for observation import.
+        Passed as a JSON string in the multipart `profile` field.
+      required:
+        - timezone
+        - columnMappings
+        - authorId
+        - licenseId
+      properties:
+        encoding:
+          type: string
+          default: utf8
+          description: File encoding (utf8, latin1, ascii, etc.)
+        headerRow:
+          type: integer
+          description: 1-based row number containing column headers. Rows before it are skipped.
+          example: 3
+        skipFirstRows:
+          type: integer
+          default: 0
+          description: Number of data rows to skip after the header (e.g., a units row).
+        skipLastRows:
+          type: integer
+          default: 0
+          description: Number of trailing rows to skip (e.g., summary lines).
+        numberLocale:
+          type: string
+          enum: [en, fr]
+          default: en
+          description: 'Number format locale. "en" = dot decimal (1,234.56), "fr" = comma decimal (1 234,56).'
+        timezone:
+          type: string
+          description: IANA timezone for timestamp parsing.
+          example: Europe/Paris
+        dateFormat:
+          type: string
+          description: 'Moment.js format for datetime columns (e.g., "YYYY-MM-DD HH:mm:ss").'
+          nullable: true
+        dateOnlyFormat:
+          type: string
+          description: 'Moment.js format for dateOnly columns (e.g., "MM/DD/YY").'
+          nullable: true
+        timeOnlyFormat:
+          type: string
+          description: 'Moment.js format for timeOnly columns (e.g., "HH:mm").'
+          nullable: true
+        columnMappings:
+          type: array
+          description: One entry per column in the file.
+          items:
+            type: object
+            required:
+              - columnIndex
+              - role
+            properties:
+              columnIndex:
+                type: integer
+                description: 0-based column index in the file.
+              role:
+                type: string
+                enum: [excluded, timestamp, measurement]
+              timestampType:
+                type: string
+                enum: [datetime, dateOnly, timeOnly, year, month, day, hour, minute, second, elapsed_seconds]
+                description: |
+                  Required when role is "timestamp". Determines how the column contributes to the final timestamp.
+
+                  Modes (mutually exclusive, priority order):
+                  - "datetime": single column with full date+time, parsed using dateFormat.
+                  - "dateOnly" + "timeOnly": two columns combined, parsed using dateOnlyFormat + timeOnlyFormat.
+                  - "year"/"month"/"day"/"hour"/"minute"/"second": individual numeric components assembled into a timestamp.
+                    At minimum year, month, and day are required; hour/minute/second default to 0 if absent.
+                  - "elapsed_seconds" alone: interpreted as Unix epoch seconds.
+
+                  Additionally, "elapsed_seconds" can be combined with any of the above modes, in which case it adds
+                  an offset (in seconds) to the base timestamp produced by that mode.
+              sensorConfigurationId:
+                type: integer
+                description: Required when role is "measurement".
+              mediumId:
+                type: integer
+                description: Required when role is "measurement".
+        deviceId:
+          type: integer
+          description: ID of the device that produced the data.
+        caveId:
+          type: integer
+          description: Cave where the observation was made.
+          nullable: true
+        pointLabel:
+          type: string
+          description: Label for the observation point (reuses existing or creates new).
+        latitude:
+          type: number
+          nullable: true
+        longitude:
+          type: number
+          nullable: true
+        authorId:
+          type: integer
+          description: Caver ID of the data author.
+        licenseId:
+          type: integer
+          description: License ID for the created document.
+        documentTitle:
+          type: string
+          description: Custom title for the document. Falls back to filename if omitted.
+          nullable: true
+        documentLanguage:
+          type: string
+          description: 'ISO 639-2 code (e.g., "eng", "fra"). Required when documentTitle is provided.'
+          example: eng
+          nullable: true
+        observationName:
+          type: string
+          description: Name for the observation (creates a TName record).
+          nullable: true
+        dataQuality:
+          type: string
+          enum: [raw, validated, suspect, rejected]
+          default: raw
+        samplingIntervalSeconds:
+          type: integer
+          description: Fixed sampling interval in seconds.
+          nullable: true
+
     Message:
       type: object
       properties:
@@ -7329,3 +7990,214 @@ components:
           type: integer
         nb_data:
           type: integer
+
+    Device:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        brandName:
+          type: string
+          nullable: true
+        productUrl:
+          type: string
+          nullable: true
+        manufacturerUrl:
+          type: string
+          nullable: true
+        dateInscription:
+          type: string
+          format: date-time
+        dateReviewed:
+          type: string
+          format: date-time
+          nullable: true
+        isDeleted:
+          type: boolean
+        author:
+          $ref: '#/components/schemas/SimpleCaver'
+        reviewer:
+          $ref: '#/components/schemas/SimpleCaver'
+        configurations:
+          type: array
+          items:
+            $ref: '#/components/schemas/SensorConfiguration'
+
+    SimpleDevice:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        brandName:
+          type: string
+          nullable: true
+        productUrl:
+          type: string
+          nullable: true
+        manufacturerUrl:
+          type: string
+          nullable: true
+        isDeleted:
+          type: boolean
+
+    DeviceCreate:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          maxLength: 300
+          description: Device name (required, non-blank).
+        brandName:
+          type: string
+          maxLength: 200
+          description: Brand name (optional).
+        productUrl:
+          type: string
+          maxLength: 500
+          description: Product URL (optional).
+        manufacturerUrl:
+          type: string
+          maxLength: 500
+          description: Manufacturer URL (optional).
+
+    DeviceUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 300
+          description: Device name (non-blank if provided).
+        brandName:
+          type: string
+          maxLength: 200
+          description: Brand name.
+        productUrl:
+          type: string
+          maxLength: 500
+          description: Product URL.
+        manufacturerUrl:
+          type: string
+          maxLength: 500
+          description: Manufacturer URL.
+
+    SensorConfiguration:
+      type: object
+      properties:
+        id:
+          type: integer
+        device:
+          type: integer
+        quantityKind:
+          type: object
+          properties:
+            id:
+              type: integer
+            code:
+              type: string
+            url:
+              type: string
+            symbolSi:
+              type: string
+            displaySymbol:
+              type: string
+            siToDisplayFactor:
+              type: number
+            siToDisplayOffset:
+              type: number
+        unit:
+          type: object
+          properties:
+            id:
+              type: integer
+            code:
+              type: string
+            symbol:
+              type: string
+        precisionUpper:
+          type: number
+          nullable: true
+        precisionLower:
+          type: number
+          nullable: true
+        resolution:
+          type: number
+          nullable: true
+        detectionLimitMin:
+          type: number
+          nullable: true
+        detectionLimitMax:
+          type: number
+          nullable: true
+        dateInscription:
+          type: string
+          format: date-time
+        dateReviewed:
+          type: string
+          format: date-time
+          nullable: true
+        isDeleted:
+          type: boolean
+        author:
+          $ref: '#/components/schemas/SimpleCaver'
+        reviewer:
+          $ref: '#/components/schemas/SimpleCaver'
+          nullable: true
+
+    SensorConfigurationCreate:
+      type: object
+      required:
+        - quantityKind
+        - unit
+      properties:
+        quantityKind:
+          type: integer
+          description: ID of an existing quantity kind.
+        unit:
+          type: integer
+          description: ID of an existing unit.
+        precisionUpper:
+          type: number
+          description: Upper precision bound (optional).
+        precisionLower:
+          type: number
+          description: Lower precision bound (optional).
+        resolution:
+          type: number
+          description: Sensor resolution (optional).
+        detectionLimitMin:
+          type: number
+          description: Minimum detection limit (optional).
+        detectionLimitMax:
+          type: number
+          description: Maximum detection limit (optional).
+
+    SensorConfigurationUpdate:
+      type: object
+      properties:
+        quantityKind:
+          type: integer
+          description: ID of an existing quantity kind.
+        unit:
+          type: integer
+          description: ID of an existing unit.
+        precisionUpper:
+          type: number
+          description: Upper precision bound.
+        precisionLower:
+          type: number
+          description: Lower precision bound.
+        resolution:
+          type: number
+          description: Sensor resolution.
+        detectionLimitMin:
+          type: number
+          description: Minimum detection limit.
+        detectionLimitMax:
+          type: number
+          description: Maximum detection limit.
