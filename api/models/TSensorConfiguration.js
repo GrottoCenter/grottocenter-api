@@ -64,5 +64,36 @@ module.exports = {
       allowNull: true,
       columnName: 'detection_limit_max',
     },
+
+    // Audit fields
+    author: {
+      allowNull: false,
+      columnName: 'id_author',
+      model: 'TCaver',
+    },
+
+    reviewer: {
+      columnName: 'id_reviewer',
+      model: 'TCaver',
+    },
+
+    dateInscription: {
+      type: 'ref',
+      columnName: 'date_inscription',
+      columnType: 'timestamp',
+    },
+
+    dateReviewed: {
+      type: 'ref',
+      columnName: 'date_reviewed',
+      columnType: 'timestamp',
+    },
+
+    isDeleted: {
+      type: 'boolean',
+      allowNull: false,
+      columnName: 'is_deleted',
+      defaultsTo: false,
+    },
   },
 };

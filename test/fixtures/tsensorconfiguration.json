@@ -1,0 +1,41 @@
+[
+  {
+    "id": 1,
+    "device": 1,
+    "quantityKind": 1,
+    "unit": 1,
+    "precisionUpper": 0.5,
+    "precisionLower": -0.5,
+    "resolution": 0.01,
+    "detectionLimitMin": -40,
+    "detectionLimitMax": 85,
+    "author": 1,
+    "reviewer": 2,
+    "dateInscription": "2024-01-20T09:00:00.000Z",
+    "dateReviewed": "2024-02-25T11:00:00.000Z",
+    "isDeleted": false
+  },
+  {
+    "id": 2,
+    "device": 1,
+    "quantityKind": 2,
+    "unit": 2,
+    "precisionUpper": 1.0,
+    "precisionLower": -1.0,
+    "resolution": 0.1,
+    "detectionLimitMin": 300,
+    "detectionLimitMax": 1100,
+    "author": 3,
+    "dateInscription": "2024-03-15T14:00:00.000Z",
+    "isDeleted": true
+  },
+  {
+    "id": 3,
+    "device": 3,
+    "quantityKind": 1,
+    "unit": 1,
+    "author": 2,
+    "dateInscription": "2024-05-10T16:00:00.000Z",
+    "isDeleted": false
+  }
+]
