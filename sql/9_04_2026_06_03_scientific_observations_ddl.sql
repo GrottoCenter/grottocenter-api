@@ -51,14 +51,6 @@ CREATE TABLE IF NOT EXISTS t_medium (
   CONSTRAINT t_medium_code_key UNIQUE (code)
 );
 
--- Lookup: sampling methods
-CREATE TABLE IF NOT EXISTS t_method (
-  id smallserial NOT NULL,
-  url varchar(500) NOT NULL,
-  CONSTRAINT t_method_pk PRIMARY KEY (id),
-  CONSTRAINT t_method_url_key UNIQUE (url)
-);
-
 -- Lookup: human activity types
 CREATE TABLE IF NOT EXISTS t_human_activity_type (
   id smallserial NOT NULL,
@@ -131,6 +123,13 @@ ALTER TABLE h_history ADD CONSTRAINT h_history_t_point_fk FOREIGN KEY (id_point)
 ALTER TABLE t_junction ADD CONSTRAINT t_junction_t_point_fk FOREIGN KEY (id_point) REFERENCES t_point(id);
 ALTER TABLE t_name ADD CONSTRAINT t_name_t_point_fk FOREIGN KEY (id_point) REFERENCES t_point(id);
 ALTER TABLE h_name ADD CONSTRAINT h_name_t_point_fk FOREIGN KEY (id_point) REFERENCES t_point(id);
+
+-- Add observation FK column to t_name (for naming observations)
+ALTER TABLE t_name ADD COLUMN IF NOT EXISTS id_observation int4 NULL;
+
+-- Add observation FK column to t_description (for describing observations)
+ALTER TABLE t_description ADD COLUMN IF NOT EXISTS id_observation int4 NULL;
+
 ALTER TABLE t_description ADD CONSTRAINT t_description_t_point_fk FOREIGN KEY (id_point) REFERENCES t_point(id);
 ALTER TABLE h_description ADD CONSTRAINT h_description_t_point_fk FOREIGN KEY (id_point) REFERENCES t_point(id);
 
@@ -168,16 +167,27 @@ CREATE TABLE IF NOT EXISTS t_observation (
 -- ============================================================
 CREATE TABLE IF NOT EXISTS t_device (
   id serial NOT NULL,
+  id_author int4 NOT NULL,
+  id_reviewer int4 NULL,
+  date_inscription timestamp NOT NULL DEFAULT now(),
+  date_reviewed timestamp NULL,
   name varchar(300) NOT NULL,
   brand_name varchar(200),
   product_url varchar(500),
   manufacturer_url varchar(500),
-  CONSTRAINT t_device_pk PRIMARY KEY (id)
+  is_deleted bool NOT NULL DEFAULT false,
+  CONSTRAINT t_device_pk PRIMARY KEY (id),
+  CONSTRAINT t_device_t_caver_fk FOREIGN KEY (id_author) REFERENCES t_caver(id),
+  CONSTRAINT t_device_t_caver2_fk FOREIGN KEY (id_reviewer) REFERENCES t_caver(id)
 );
 
 -- Sensor configuration (per-deployment settings: unit, precision, detection limits)
 CREATE TABLE IF NOT EXISTS t_sensor_configuration (
   id serial NOT NULL,
+  id_author int4 NOT NULL DEFAULT 1,
+  id_reviewer int4 NULL,
+  date_inscription timestamp NOT NULL DEFAULT now(),
+  date_reviewed timestamp NULL,
   id_device int4 NOT NULL,
   id_unit int4 NOT NULL,
   id_quantity_kind int4 NOT NULL,
@@ -186,10 +196,13 @@ CREATE TABLE IF NOT EXISTS t_sensor_configuration (
   resolution numeric,
   detection_limit_min numeric,
   detection_limit_max numeric,
+  is_deleted bool NOT NULL DEFAULT false,
   CONSTRAINT t_sensor_configuration_pk PRIMARY KEY (id),
   CONSTRAINT t_sensor_configuration_t_device_fk FOREIGN KEY (id_device) REFERENCES t_device(id),
   CONSTRAINT t_sensor_configuration_t_unit_fk FOREIGN KEY (id_unit) REFERENCES t_unit(id),
-  CONSTRAINT t_sensor_configuration_t_quantity_kind_fk FOREIGN KEY (id_quantity_kind) REFERENCES t_quantity_kind(id)
+  CONSTRAINT t_sensor_configuration_t_quantity_kind_fk FOREIGN KEY (id_quantity_kind) REFERENCES t_quantity_kind(id),
+  CONSTRAINT t_sensor_configuration_t_caver_fk FOREIGN KEY (id_author) REFERENCES t_caver(id),
+  CONSTRAINT t_sensor_configuration_t_caver2_fk FOREIGN KEY (id_reviewer) REFERENCES t_caver(id)
 );
 
 -- ============================================================
@@ -204,7 +217,6 @@ CREATE TABLE IF NOT EXISTS t_time_series (
   id_observation int4 NOT NULL,
   id_sensor_configuration int4 NOT NULL,
   id_medium int4 NULL,
-  id_method int4 NULL,
   sampling_interval_seconds int4 NULL,
   start_date timestamptz NULL,
   end_date timestamptz NULL,
@@ -224,8 +236,7 @@ CREATE TABLE IF NOT EXISTS t_time_series (
   CONSTRAINT t_time_series_t_caver2_fk FOREIGN KEY (id_reviewer) REFERENCES t_caver(id),
   CONSTRAINT t_time_series_t_observation_fk FOREIGN KEY (id_observation) REFERENCES t_observation(id),
   CONSTRAINT t_time_series_t_sensor_configuration_fk FOREIGN KEY (id_sensor_configuration) REFERENCES t_sensor_configuration(id),
-  CONSTRAINT t_time_series_t_medium_fk FOREIGN KEY (id_medium) REFERENCES t_medium(id),
-  CONSTRAINT t_time_series_t_method_fk FOREIGN KEY (id_method) REFERENCES t_method(id)
+  CONSTRAINT t_time_series_t_medium_fk FOREIGN KEY (id_medium) REFERENCES t_medium(id)
 );
 
 -- Index for Superset time-range filtering
@@ -389,7 +400,7 @@ SELECT
   o.latitude,
   o.longitude,
   CASE WHEN o.latitude IS NOT NULL AND o.longitude IS NOT NULL
-    THEN ST_AsGeoJSON(ST_MakePoint(o.longitude::float8, o.latitude::float8))::json
+    THEN '{"type":"Point","coordinates":[' || o.longitude || ',' || o.latitude || ']}'
     ELSE NULL
   END AS geom,
   COALESCE(o.id_cave, p.id_cave) AS cave_id,
@@ -401,5 +412,153 @@ LEFT JOIN t_point p ON p.id = o.id_point
 LEFT JOIN t_quantity_kind qk ON qk.code = ts.quantity_kind_code
 WHERE o.is_deleted = false
   AND ts.is_deleted = false;
+
+-- FK constraints for t_name.id_observation (added after referenced tables exist)
+ALTER TABLE t_name DROP CONSTRAINT IF EXISTS t_name_t_observation_fk;
+ALTER TABLE t_name ADD CONSTRAINT t_name_t_observation_fk FOREIGN KEY (id_observation) REFERENCES t_observation(id);
+
+-- Add observation FK column to h_name (history table must mirror t_name)
+ALTER TABLE h_name ADD COLUMN IF NOT EXISTS id_observation int4 NULL;
+ALTER TABLE h_name DROP CONSTRAINT IF EXISTS h_name_t_observation_fk;
+ALTER TABLE h_name ADD CONSTRAINT h_name_t_observation_fk FOREIGN KEY (id_observation) REFERENCES t_observation(id);
+
+-- FK constraints for t_description.id_observation
+ALTER TABLE t_description DROP CONSTRAINT IF EXISTS t_description_t_observation_fk;
+ALTER TABLE t_description ADD CONSTRAINT t_description_t_observation_fk FOREIGN KEY (id_observation) REFERENCES t_observation(id);
+
+-- Add observation FK column to h_description (history table must mirror t_description)
+ALTER TABLE h_description ADD COLUMN IF NOT EXISTS id_observation int4 NULL;
+ALTER TABLE h_description DROP CONSTRAINT IF EXISTS h_description_t_observation_fk;
+ALTER TABLE h_description ADD CONSTRAINT h_description_t_observation_fk FOREIGN KEY (id_observation) REFERENCES t_observation(id);
+
+------------------------------------------------------------
+-- Update histo_update_name() to include id_observation
+------------------------------------------------------------
+CREATE OR REPLACE FUNCTION histo_update_name() RETURNS trigger AS $$
+DECLARE date_r timestamp;
+BEGIN
+if new.date_reviewed is null then date_r := NEW.date_inscription;
+else date_r := NEW.date_reviewed;
+end if;
+if NEW.is_deleted = OLD.is_deleted then
+INSERT INTO h_name (
+        id,
+        "name",
+        is_main,
+        id_author,
+        id_reviewer,
+        date_inscription,
+        date_reviewed,
+        id_language,
+        id_entrance,
+        id_cave,
+        id_massif,
+        id_point,
+        id_grotto,
+        id_observation
+    )
+VALUES (
+        OLD.id,
+        OLD."name",
+        OLD.is_main,
+        OLD.id_author,
+        OLD.id_reviewer,
+        OLD.date_inscription,
+        date_r,
+        OLD.id_language,
+        OLD.id_entrance,
+        OLD.id_cave,
+        OLD.id_massif,
+        OLD.id_point,
+        OLD.id_grotto,
+        OLD.id_observation
+    );
+end if;
+NEW.date_reviewed := now();
+RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+------------------------------------------------------------
+-- Update histo_update_description() to include id_observation
+------------------------------------------------------------
+CREATE OR REPLACE FUNCTION histo_update_description() RETURNS trigger AS $$
+DECLARE date_r timestamp;
+BEGIN
+if new.date_reviewed is null then date_r := NEW.date_inscription;
+else date_r := NEW.date_reviewed;
+end if;
+if NEW.is_deleted = OLD.is_deleted then
+INSERT INTO h_description (
+        id,
+        id_author,
+        id_reviewer,
+        date_inscription,
+        date_reviewed,
+        relevance,
+        title,
+        body,
+        id_cave,
+        id_entrance,
+        id_exit,
+        id_massif,
+        id_point,
+        id_document,
+        id_language,
+        id_observation
+    )
+VALUES (
+        OLD.id,
+        OLD.id_author,
+        OLD.id_reviewer,
+        OLD.date_inscription,
+        date_r,
+        OLD.relevance,
+        OLD.title,
+        OLD.body,
+        OLD.id_cave,
+        OLD.id_entrance,
+        OLD.id_exit,
+        OLD.id_massif,
+        OLD.id_point,
+        OLD.id_document,
+        OLD.id_language,
+        OLD.id_observation
+    );
+end if;
+NEW.date_reviewed := now();
+RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+------------------------------------------------------------
+-- Table: t_device — soft-delete trigger
+------------------------------------------------------------
+-- Enables the shared histo_delete() mechanism for t_device:
+-- DELETE on a non-deleted row → soft delete (is_deleted = true)
+-- DELETE on an already-deleted row → hard delete (actual removal)
+------------------------------------------------------------
+CREATE OR REPLACE TRIGGER histo_delete_device
+  BEFORE DELETE ON t_device
+  FOR EACH ROW EXECUTE PROCEDURE histo_delete();
+
+------------------------------------------------------------
+-- Table: t_sensor_configuration — Soft-delete trigger
+------------------------------------------------------------
+-- Enables the shared histo_delete() mechanism for t_sensor_configuration:
+-- DELETE on a non-deleted row → soft delete (is_deleted = true)
+-- DELETE on an already-deleted row → hard delete (actual removal)
+------------------------------------------------------------
+CREATE OR REPLACE TRIGGER histo_delete_sensor_configuration
+  BEFORE DELETE ON t_sensor_configuration
+  FOR EACH ROW EXECUTE PROCEDURE histo_delete();
+
+------------------------------------------------------------
+-- Index: t_quantity_kind(code) — used by v_measurement_wide
+------------------------------------------------------------
+-- The materialized view v_measurement_wide joins on qk.code = ts.quantity_kind_code
+-- (string join). An index on code speeds up this join for large result sets.
+------------------------------------------------------------
+CREATE INDEX IF NOT EXISTS idx_quantity_kind_code ON t_quantity_kind (code);
 
 COMMIT;
