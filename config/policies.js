@@ -259,6 +259,14 @@ module.exports.policies = {
   'v1/organization/restore': 'tokenAuth',
   'v1/organization/update': 'tokenAuth',
 
+  // Device
+  'v1/device/find': ['validateId'],
+  'v1/device/search': true,
+  'v1/device/create': 'tokenAuth',
+  'v1/device/update': ['validateId', 'tokenAuth'],
+  'v1/device/delete': ['validateId', 'tokenAuth'],
+  'v1/device/restore': ['validateId', 'tokenAuth'],
+
   // Partner
   'v1/partner/count': true,
   'v1/partner/find-for-carousel': true,

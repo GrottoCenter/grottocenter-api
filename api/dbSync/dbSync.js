@@ -12,6 +12,7 @@ const massif = require('./entities/massif');
 const entrance = require('./entities/entrance');
 const cave = require('./entities/cave');
 const document = require('./entities/document');
+const device = require('./entities/device');
 
 async function* paggingQuery(name, query, ref = {}) {
   let fetched = 0;
@@ -184,7 +185,15 @@ async function makeDbSync(isFileExportEnabled = true) {
     archiveP = promise;
   }
 
-  const collections = [massif, entrance, cave, document, organization, person];
+  const collections = [
+    massif,
+    entrance,
+    cave,
+    document,
+    organization,
+    person,
+    device,
+  ];
   for (const collection of collections) {
     // eslint-disable-next-line no-await-in-loop
     const { stream, promise } = await processCollection(
