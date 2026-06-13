@@ -7,6 +7,7 @@
     "dateReviewed": "2024-02-20T14:30:00.000Z",
     "name": "Multi-Parameter Logger X100",
     "brandName": "AquaTech",
+    "serialNumber": "AT-X100-2024-001",
     "productUrl": "https://aquatech.example.com/x100",
     "manufacturerUrl": "https://aquatech.example.com",
     "isDeleted": false
@@ -24,6 +25,7 @@
     "dateInscription": "2024-05-01T12:00:00.000Z",
     "name": "Pressure Sensor P300",
     "brandName": "CaveSense",
+    "serialNumber": "CS-P300-2024-042",
     "productUrl": "https://cavesense.example.com/p300",
     "isDeleted": false
   }

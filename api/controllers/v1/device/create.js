@@ -7,6 +7,7 @@ module.exports = async (req, res) => {
   const brandName = req.param('brandName');
   const productUrl = req.param('productUrl');
   const manufacturerUrl = req.param('manufacturerUrl');
+  const serialNumber = req.param('serialNumber');
 
   // Validate name: present and non-blank (trimmed)
   if (!name || !name.trim()) {
@@ -32,6 +33,11 @@ module.exports = async (req, res) => {
       'The device manufacturer URL must not exceed 500 characters.'
     );
   }
+  if (serialNumber && serialNumber.length > 200) {
+    return res.badRequest(
+      'The device serial number must not exceed 200 characters.'
+    );
+  }
 
   // Build device data
   const data = {
@@ -39,6 +45,7 @@ module.exports = async (req, res) => {
     brandName: brandName || null,
     productUrl: productUrl || null,
     manufacturerUrl: manufacturerUrl || null,
+    serialNumber: serialNumber || null,
     author: req.token.id,
     dateInscription: new Date(),
   };

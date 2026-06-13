@@ -79,6 +79,9 @@ const sensorConfigSourceArb = (quantityKindArb, unitArb) =>
     device: idArb,
     quantityKind: quantityKindArb,
     unit: unitArb,
+    label: fc.option(fc.string({ minLength: 1, maxLength: 300 }), {
+      nil: undefined,
+    }),
     precisionUpper: optionalNumericArb,
     precisionLower: optionalNumericArb,
     resolution: optionalNumericArb,
@@ -115,6 +118,7 @@ describe('toSensorConfiguration - Property 1: Create-then-find round trip', () =
         should(result).have.property('device', source.device);
         should(result).have.property('quantityKind');
         should(result).have.property('unit');
+        should(result).have.property('label');
         should(result).have.property('precisionUpper');
         should(result).have.property('precisionLower');
         should(result).have.property('resolution');
@@ -244,6 +248,9 @@ describe('toSensorConfiguration - Property 5: Device find populates configuratio
       device: idArb,
       quantityKind: quantityKindObjectArb,
       unit: unitObjectArb,
+      label: fc.option(fc.string({ minLength: 1, maxLength: 300 }), {
+        nil: undefined,
+      }),
       precisionUpper: optionalNumericArb,
       precisionLower: optionalNumericArb,
       resolution: optionalNumericArb,

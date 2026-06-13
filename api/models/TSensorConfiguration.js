@@ -65,6 +65,13 @@ module.exports = {
       columnName: 'detection_limit_max',
     },
 
+    label: {
+      type: 'string',
+      allowNull: true,
+      columnName: 'label',
+      maxLength: 300,
+    },
+
     // Audit fields
     author: {
       allowNull: false,

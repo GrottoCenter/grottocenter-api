@@ -8009,6 +8009,9 @@ components:
         brandName:
           type: string
           nullable: true
+        serialNumber:
+          type: string
+          nullable: true
         productUrl:
           type: string
           nullable: true
@@ -8043,6 +8046,9 @@ components:
         brandName:
           type: string
           nullable: true
+        serialNumber:
+          type: string
+          nullable: true
         productUrl:
           type: string
           nullable: true
@@ -8065,6 +8071,10 @@ components:
           type: string
           maxLength: 200
           description: Brand name (optional).
+        serialNumber:
+          type: string
+          maxLength: 200
+          description: Manufacturer serial number (optional).
         productUrl:
           type: string
           maxLength: 500
@@ -8085,6 +8095,10 @@ components:
           type: string
           maxLength: 200
           description: Brand name.
+        serialNumber:
+          type: string
+          maxLength: 200
+          description: Manufacturer serial number.
         productUrl:
           type: string
           maxLength: 500
@@ -8127,6 +8141,9 @@ components:
               type: string
             symbol:
               type: string
+        label:
+          type: string
+          nullable: true
         precisionUpper:
           type: number
           nullable: true
@@ -8169,6 +8186,10 @@ components:
         unit:
           type: integer
           description: ID of an existing unit.
+        label:
+          type: string
+          maxLength: 300
+          description: Human-readable label for the configuration (optional).
         precisionUpper:
           type: number
           description: Upper precision bound (optional).
@@ -8194,6 +8215,10 @@ components:
         unit:
           type: integer
           description: ID of an existing unit.
+        label:
+          type: string
+          maxLength: 300
+          description: Human-readable label for the configuration.
         precisionUpper:
           type: number
           description: Upper precision bound.

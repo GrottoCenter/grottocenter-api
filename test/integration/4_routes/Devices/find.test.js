@@ -6,6 +6,7 @@ const DEVICE_PROPERTIES = [
   'id',
   'name',
   'brandName',
+  'serialNumber',
   'productUrl',
   'manufacturerUrl',
   'dateInscription',
@@ -54,6 +55,7 @@ describe('Device features', () => {
           should(device).have.properties(DEVICE_PROPERTIES);
           should(device.id).equal(1);
           should(device.name).equal('Multi-Parameter Logger X100');
+          should(device.serialNumber).equal('AT-X100-2024-001');
           should(device.author).be.an.Object();
           should(device.author).have.property('id');
           should(device.configurations).be.an.Array();

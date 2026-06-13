@@ -86,6 +86,16 @@ describe('Device features', () => {
           .set('Accept', 'application/json')
           .expect(400, done);
       });
+
+      it('should return 400 when serialNumber exceeds 200 characters', (done) => {
+        supertest(sails.hooks.http.app)
+          .post('/api/v1/devices')
+          .send({ name: 'Valid Device', serialNumber: 's'.repeat(201) })
+          .set('Authorization', userToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .expect(400, done);
+      });
     });
 
     describe('Success', () => {
@@ -101,6 +111,7 @@ describe('Device features', () => {
         const deviceData = {
           name: 'Integration Test Device',
           brandName: 'TestBrand',
+          serialNumber: 'SN-TEST-001',
           productUrl: 'https://example.com/product',
           manufacturerUrl: 'https://example.com',
         };
@@ -120,6 +131,7 @@ describe('Device features', () => {
             should(device.id).be.a.Number();
             should(device.name).equal('Integration Test Device');
             should(device.brandName).equal('TestBrand');
+            should(device.serialNumber).equal('SN-TEST-001');
             should(device.productUrl).equal('https://example.com/product');
             should(device.manufacturerUrl).equal('https://example.com');
             should(device.dateInscription).not.be.empty();

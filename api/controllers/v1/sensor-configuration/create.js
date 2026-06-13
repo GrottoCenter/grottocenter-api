@@ -47,6 +47,14 @@ module.exports = async (req, res) => {
   const resolution = req.param('resolution');
   const detectionLimitMin = req.param('detectionLimitMin');
   const detectionLimitMax = req.param('detectionLimitMax');
+  const label = req.param('label');
+
+  // Validate label length
+  if (label && label.length > 300) {
+    return res.badRequest(
+      'The sensor configuration label must not exceed 300 characters.'
+    );
+  }
 
   // 7. Build data object
   const data = {
@@ -58,6 +66,7 @@ module.exports = async (req, res) => {
     resolution: resolution ?? null,
     detectionLimitMin: detectionLimitMin ?? null,
     detectionLimitMax: detectionLimitMax ?? null,
+    label: label || null,
     author: req.token.id,
     dateInscription: new Date(),
   };

@@ -58,6 +58,9 @@ describe('SensorConfiguration features', () => {
           should(config).have.property('detectionLimitMin');
           should(config).have.property('detectionLimitMax');
 
+          // Label field
+          should(config).have.property('label', 'Channel 1 - Temperature');
+
           // Audit fields
           should(config).have.property('dateInscription');
           should(config).have.property('isDeleted', false);

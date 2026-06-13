@@ -175,6 +175,24 @@ describe('SensorConfiguration features', () => {
             return done();
           });
       });
+
+      it('should update label field', (done) => {
+        supertest(sails.hooks.http.app)
+          .patch(`/api/v1/devices/${DEVICE_ID}/configurations/${testConfigId}`)
+          .send({ label: 'Updated Label' })
+          .set('Authorization', moderatorToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .expect(200)
+          .end((err, res) => {
+            if (err) return done(err);
+            const { body: config } = res;
+
+            should(config.id).equal(testConfigId);
+            should(config.label).equal('Updated Label');
+            return done();
+          });
+      });
     });
   });
 });
