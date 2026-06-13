@@ -15,7 +15,7 @@ const ProfileValidator = require('../../../../api/services/observation-import/Pr
 /** A minimal valid profile — use as a base and override individual fields. */
 const validBase = () => ({
   timezone: 'Europe/Paris',
-  authorId: 1,
+  authorIds: [1],
   licenseId: 1,
   caveId: 42,
   dateFormat: 'YYYY-MM-DD HH:mm:ss',
@@ -68,12 +68,45 @@ describe('ProfileValidator', () => {
     });
   });
 
-  describe('required field: authorId', () => {
-    it('should return an error when authorId is missing', () => {
+  describe('required field: authorIds', () => {
+    it('should return an error when authorIds is missing', () => {
       const profile = validBase();
-      delete profile.authorId;
+      delete profile.authorIds;
       const errors = ProfileValidator.validate(profile);
-      should(errors.some((e) => e.includes('authorId'))).be.true();
+      should(errors.some((e) => e.includes('authorIds'))).be.true();
+    });
+
+    it('should not return an error when authorIds is a valid array', () => {
+      const profile = validBase(); // has authorIds: [1]
+      const errors = ProfileValidator.validate(profile);
+      should(errors.some((e) => e.includes('authorIds'))).be.false();
+    });
+
+    it('should accept multiple author IDs', () => {
+      const profile = { ...validBase(), authorIds: [1, 5, 12] };
+      const errors = ProfileValidator.validate(profile);
+      should(errors.some((e) => e.includes('authorIds'))).be.false();
+    });
+
+    it('should return an error when authorIds is an empty array', () => {
+      const profile = { ...validBase(), authorIds: [] };
+      const errors = ProfileValidator.validate(profile);
+      should(errors.some((e) => e.includes('authorIds'))).be.true();
+    });
+
+    it('should return an error when authorIds contains non-positive integers', () => {
+      const profile = { ...validBase(), authorIds: [1, -3, 'abc'] };
+      const errors = ProfileValidator.validate(profile);
+      should(errors.some((e) => e.includes('authorIds[1]'))).be.true();
+      should(errors.some((e) => e.includes('authorIds[2]'))).be.true();
+    });
+
+    it('should return an error when authorIds is not an array', () => {
+      const profile = { ...validBase(), authorIds: 'not-an-array' };
+      const errors = ProfileValidator.validate(profile);
+      should(
+        errors.some((e) => e.includes('authorIds must be an array'))
+      ).be.true();
     });
   });
 
@@ -444,11 +477,11 @@ describe('ProfileValidator', () => {
   describe('error accumulation', () => {
     it('should return all errors at once when multiple validation rules fail', () => {
       const profile = {
-        // Missing: timezone, authorId, licenseId, columnMappings
+        // Missing: timezone, authorIds, licenseId, columnMappings
         // Also: no caveId/pointLabel
       };
       const errors = ProfileValidator.validate(profile);
-      // Should have at least 4 errors (timezone, authorId, licenseId, columnMappings, caveId/pointLabel)
+      // Should have at least 4 errors (timezone, authorIds, licenseId, columnMappings, caveId/pointLabel)
       should(errors.length).be.aboveOrEqual(4);
     });
 
@@ -472,11 +505,11 @@ describe('ProfileValidator', () => {
     it('should accumulate errors for multiple missing required fields', () => {
       const profile = {
         timezone: 'Europe/Paris',
-        // missing authorId, licenseId, columnMappings
+        // missing authorIds, licenseId, columnMappings
         caveId: 1,
       };
       const errors = ProfileValidator.validate(profile);
-      should(errors.some((e) => e.includes('authorId'))).be.true();
+      should(errors.some((e) => e.includes('authorIds'))).be.true();
       should(errors.some((e) => e.includes('licenseId'))).be.true();
       should(errors.some((e) => e.includes('columnMappings'))).be.true();
     });

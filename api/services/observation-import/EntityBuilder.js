@@ -261,7 +261,7 @@ const processColumn = async ({
  *   { rows: string[][], timestamps: Date[], measurements: Array<{columnIndex, value, valueSi}[]> }
  * @param {Object} params.profile - Full profile JSON
  * @param {Object} params.resolvedEntities
- *   { cave, license, author, media: Map<id,TMedium>, sensorConfigs: Map<id,TSensorConfiguration> }
+ *   { cave, license, authors: TCaver[], media: Map<id,TMedium>, sensorConfigs: Map<id,TSensorConfiguration> }
  * @param {Object} params.file - Multer file object { buffer, originalname, size, mimetype }
  * @param {number} params.requestAuthorId - Authenticated user ID
  * @returns {Promise<{
@@ -283,7 +283,15 @@ const build = async ({
   requestAuthorId,
 }) => {
   const { timestamps, measurements } = parsedData;
-  const { cave, license, author } = resolvedEntities;
+  const { cave, license, authors } = resolvedEntities;
+
+  // Effective author IDs: use resolved entities if available, else fall back to profile.
+  // Deduplicate to prevent duplicate junction rows.
+  const authorIds = [
+    ...new Set(
+      authors.length > 0 ? authors.map((a) => a.id) : profile.authorIds || []
+    ),
+  ];
 
   // Defensive check: timestamps and measurements must be aligned (same row count)
   if (timestamps.length !== measurements.length) {
@@ -408,7 +416,7 @@ const build = async ({
     const documentData = {
       type: 2, // Dataset
       license: license ? license.id : profile.licenseId,
-      author: author ? author.id : profile.authorId,
+      author: authorIds[0],
       isValidated: false,
       dateInscription: now,
     };
@@ -437,11 +445,15 @@ const build = async ({
       dateInscription: now,
     }).usingConnection(db);
 
-    // Link the author in the junction table
-    await JDocumentCaverAuthor.create({
-      document: document.id,
-      caver: author ? author.id : profile.authorId,
-    }).usingConnection(db);
+    // Link all authors in the junction table (sequential to share the
+    // transaction connection safely — same pattern as time series creation)
+    for (const caverId of authorIds) {
+      // eslint-disable-next-line no-await-in-loop
+      await JDocumentCaverAuthor.create({
+        document: document.id,
+        caver: caverId,
+      }).usingConnection(db);
+    }
 
     // -------------------------------------------------------------------------
     // 4. Upload raw data file to Azure

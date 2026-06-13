@@ -48,7 +48,7 @@ const validate = (profile) => {
   const requiredFields = [
     'timezone',
     'columnMappings',
-    'authorId',
+    'authorIds',
     'licenseId',
   ];
   requiredFields.forEach((field) => {
@@ -66,7 +66,7 @@ const validate = (profile) => {
   }
 
   // 1c. Referenced ID fields must be positive integers when present
-  const idFields = ['caveId', 'licenseId', 'authorId'];
+  const idFields = ['caveId', 'licenseId'];
   idFields.forEach((field) => {
     const val = profile[field];
     if (val !== undefined && val !== null) {
@@ -77,6 +77,25 @@ const validate = (profile) => {
       }
     }
   });
+
+  // 1d. authorIds must be a non-empty array of positive integers.
+  // Note: isBlank([]) is false (arrays are not blank), so an empty array passes
+  // the required check above but is caught here by the length check.
+  if (!isBlank(profile.authorIds)) {
+    if (!Array.isArray(profile.authorIds)) {
+      errors.push('authorIds must be an array');
+    } else if (profile.authorIds.length === 0) {
+      errors.push('authorIds must not be empty');
+    } else {
+      profile.authorIds.forEach((val, idx) => {
+        if (!isValidId(val)) {
+          errors.push(
+            `authorIds[${idx}] must be a positive integer (got ${JSON.stringify(val)})`
+          );
+        }
+      });
+    }
+  }
 
   // 2. IANA timezone validation
   if (!isBlank(profile.timezone)) {

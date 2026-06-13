@@ -61,7 +61,7 @@ const idArb = fc.integer({ min: 1, max: 100000 });
 /** A minimal valid profile with all required fields and no violations */
 const minimalValidProfileArb = fc.record({
   timezone: validTimezoneArb,
-  authorId: idArb,
+  authorIds: fc.uniqueArray(idArb, { minLength: 1, maxLength: 3 }),
   licenseId: idArb,
   dateFormat: fc.constant('YYYY-MM-DD HH:mm:ss'),
   columnMappings: fc
@@ -107,8 +107,12 @@ const VIOLATIONS = [
     apply: (p) => ({ ...p, timezone: undefined }),
   },
   {
-    name: 'missing authorId',
-    apply: (p) => ({ ...p, authorId: undefined }),
+    name: 'missing authorIds',
+    apply: (p) => {
+      const q = { ...p };
+      delete q.authorIds;
+      return q;
+    },
   },
   {
     name: 'missing licenseId',
@@ -187,7 +191,7 @@ function countExpectedProfileErrors(profile) {
   if (!profile || typeof profile !== 'object') return 1;
 
   // Required fields
-  ['timezone', 'columnMappings', 'authorId', 'licenseId'].forEach((field) => {
+  ['timezone', 'columnMappings', 'authorIds', 'licenseId'].forEach((field) => {
     if (
       profile[field] === undefined ||
       profile[field] === null ||
@@ -362,7 +366,7 @@ describe('ProfileValidator - Property 1: Profile validation reports all errors',
  */
 const profileWithTimezone = (tz) => ({
   timezone: tz,
-  authorId: 1,
+  authorIds: [1],
   licenseId: 1,
   caveId: 1,
   columnMappings: [

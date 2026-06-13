@@ -15,7 +15,7 @@ const isBlank = require('../../utils/isBlank');
  * @typedef {Object} ResolvedEntities
  * @property {Object|null}      cave          - Resolved TCave record (or null)
  * @property {Object}           license       - Resolved TLicense record
- * @property {Object}           author        - Resolved TCaver record
+ * @property {Object[]}         authors       - Resolved TCaver records for all author IDs
  * @property {Map<number,Object>} media       - Map of mediumId → TMedium record
  * @property {Map<number,Object>} sensorConfigs - Map of sensorConfigurationId → TSensorConfiguration (with quantityKind populated)
  */
@@ -32,7 +32,7 @@ const validate = async (profile) => {
   const resolved = {
     cave: null,
     license: null,
-    author: null,
+    authors: [],
     media: new Map(),
     sensorConfigs: new Map(),
   };
@@ -112,18 +112,19 @@ const validate = async (profile) => {
     );
   }
 
-  // Author check (required)
-  if (!isBlank(profile.authorId)) {
+  // Author checks: resolve all unique author IDs from authorIds
+  const uniqueAuthorIds = [...new Set(profile.authorIds || [])];
+  uniqueAuthorIds.forEach((authorId) => {
     checks.push(
-      TCaver.findOne({ id: profile.authorId }).then((author) => {
+      TCaver.findOne({ id: authorId }).then((author) => {
         if (!author) {
-          errors.push(`authorId: Caver with ID ${profile.authorId} not found`);
+          errors.push(`authorIds: Caver with ID ${authorId} not found`);
         } else {
-          resolved.author = author;
+          resolved.authors.push(author);
         }
       })
     );
-  }
+  });
 
   // Medium checks (per column mapping, unique IDs)
   uniqueMediumIds.forEach((mediumId) => {
