@@ -36,7 +36,7 @@ function buildMinimalParams(overrides = {}) {
       timezone: 'Europe/Paris',
       caveId: 1,
       pointLabel: 'Test Point',
-      authorId: 7,
+      authorIds: [7],
       licenseId: 1,
       dataQuality: 'raw',
       documentTitle: 'My Doc Title',
@@ -54,7 +54,7 @@ function buildMinimalParams(overrides = {}) {
     resolvedEntities: {
       cave: { id: 1 },
       license: { id: 1 },
-      author: { id: 7 },
+      authors: [{ id: 7 }],
       media: new Map([[5, { id: 5, code: 'air' }]]),
       sensorConfigs: new Map([
         [

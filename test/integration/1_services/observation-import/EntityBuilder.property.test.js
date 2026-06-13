@@ -54,7 +54,7 @@ function buildProfile(columnIndices, overrides = {}) {
     timezone: 'Europe/Paris',
     caveId: 1,
     pointLabel: 'Test Point',
-    authorId: 7,
+    authorIds: [7],
     licenseId: 1,
     dataQuality: 'raw',
     columnMappings: [
@@ -95,7 +95,7 @@ function buildResolvedEntities(columnIndices) {
   return {
     cave: { id: 1 },
     license: { id: 1 },
-    author: { id: 7 },
+    authors: [{ id: 7 }],
     media,
     sensorConfigs,
   };
@@ -581,7 +581,7 @@ describe('EntityBuilder - Property 10: Denormalized time series fields match sou
           const resolvedEntities = {
             cave: { id: 1 },
             license: { id: 1 },
-            author: { id: 7 },
+            authors: [{ id: 7 }],
             media,
             sensorConfigs,
           };

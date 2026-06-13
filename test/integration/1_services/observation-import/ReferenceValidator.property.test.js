@@ -4,7 +4,7 @@
  *
  * Property 13: Reference validation completeness
  *
- * For any profile containing M entity references (caveId, licenseId, authorId,
+ * For any profile containing M entity references (caveId, licenseId, authorIds,
  * mediumId per column, sensorConfigurationId per column), if K of
  * those references point to nonexistent entities, the reference validator SHALL
  * report exactly K errors.
@@ -104,7 +104,7 @@ const profileWithExistenceArb = fc
           profile: {
             caveId: base.caveId,
             licenseId: base.licenseId,
-            authorId: base.authorId,
+            authorIds: [base.authorId],
             columnMappings,
           },
           topLevel: {
@@ -145,9 +145,12 @@ function installStubs(profile, topLevel, sensorExistsMap, mediumExistsMap) {
     if (topLevel.licenseExists)
       licenseMap.set(profile.licenseId, { id: profile.licenseId });
   }
-  if (profile.authorId !== undefined && profile.authorId !== null) {
-    if (topLevel.authorExists)
-      caverMap.set(profile.authorId, { id: profile.authorId });
+  if (profile.authorIds && profile.authorIds.length > 0) {
+    if (topLevel.authorExists) {
+      profile.authorIds.forEach((id) => {
+        caverMap.set(id, { id });
+      });
+    }
   }
 
   // Per-ID existence for medium and sensor config
@@ -221,9 +224,11 @@ function countExpectedErrors(
   if (profile.licenseId !== undefined && profile.licenseId !== null) {
     if (!topLevel.licenseExists) count += 1;
   }
-  if (profile.authorId !== undefined && profile.authorId !== null) {
+  // Author(s): count each unique author ID that doesn't exist
+  const uniqueAuthorIds = [...new Set(profile.authorIds || [])];
+  uniqueAuthorIds.forEach(() => {
     if (!topLevel.authorExists) count += 1;
-  }
+  });
 
   // Per-column: collect the unique IDs actually referenced in measurement
   // columns, then check whether they exist. Non-measurement columns are
@@ -314,7 +319,7 @@ describe('ReferenceValidator - Property 13: Reference validation completeness', 
     const allExistProfile = {
       caveId: 1,
       licenseId: 2,
-      authorId: 3,
+      authorIds: [3],
       columnMappings: [
         { columnIndex: 0, role: 'timestamp', timestampType: 'datetime' },
         {
@@ -346,7 +351,8 @@ describe('ReferenceValidator - Property 13: Reference validation completeness', 
     should(result.errors).have.length(0);
     should(result.resolved.cave).be.ok();
     should(result.resolved.license).be.ok();
-    should(result.resolved.author).be.ok();
+    should(result.resolved.authors).be.an.Array();
+    should(result.resolved.authors.length).equal(1);
     should(result.resolved.media.has(5)).be.true();
     should(result.resolved.sensorConfigs.has(10)).be.true();
   });
@@ -357,7 +363,7 @@ describe('ReferenceValidator - Property 13: Reference validation completeness', 
     const profile = {
       caveId: 999,
       licenseId: 888,
-      authorId: 777,
+      authorIds: [777],
       columnMappings: [
         {
           columnIndex: 1,
@@ -385,20 +391,90 @@ describe('ReferenceValidator - Property 13: Reference validation completeness', 
       sinon.restore();
     }
 
-    // 5 errors: caveId, licenseId, authorId, sensorConfigurationId, mediumId
+    // 5 errors: caveId, licenseId, authorIds, sensorConfigurationId, mediumId
     should(result.errors.length).equal(5);
 
     const errorText = result.errors.join('\n');
     should(errorText).containEql('999'); // caveId
     should(errorText).containEql('888'); // licenseId
-    should(errorText).containEql('777'); // authorId
+    should(errorText).containEql('777'); // authorIds
     should(errorText).containEql('555'); // sensorConfigurationId
     should(errorText).containEql('444'); // mediumId
 
     should(errorText).containEql('caveId');
     should(errorText).containEql('licenseId');
-    should(errorText).containEql('authorId');
+    should(errorText).containEql('authorIds');
     should(errorText).containEql('sensorConfigurationId');
     should(errorText).containEql('mediumId');
+  });
+
+  it('should report errors only for nonexistent authors when authorIds has mixed existence', async function () {
+    this.timeout(10000);
+
+    const profile = {
+      caveId: 1,
+      licenseId: 2,
+      authorIds: [3, 777, 888],
+      columnMappings: [
+        { columnIndex: 0, role: 'timestamp', timestampType: 'datetime' },
+        {
+          columnIndex: 1,
+          role: 'measurement',
+          sensorConfigurationId: 10,
+          mediumId: 5,
+        },
+      ],
+    };
+
+    // Stubs: cave, license, sensor, medium all exist; author 3 exists, 777 and 888 do not
+    const caveMap = new Map([[1, { id: 1 }]]);
+    const licenseMap = new Map([[2, { id: 2 }]]);
+    const caverMap = new Map([[3, { id: 3 }]]);
+    const mediumMap = new Map([[5, { id: 5 }]]);
+    const sensorConfigMap = new Map([
+      [10, { id: 10, quantityKind: { id: 1, code: 'temperature' } }],
+    ]);
+
+    sinon.stub(TCave, 'findOne').callsFake((criteria) => ({
+      then: (resolve) =>
+        Promise.resolve(caveMap.get(criteria.id)).then(resolve),
+    }));
+    sinon.stub(TLicense, 'findOne').callsFake((criteria) => ({
+      then: (resolve) =>
+        Promise.resolve(licenseMap.get(criteria.id)).then(resolve),
+    }));
+    sinon.stub(TCaver, 'findOne').callsFake((criteria) => ({
+      then: (resolve) =>
+        Promise.resolve(caverMap.get(criteria.id)).then(resolve),
+    }));
+    sinon.stub(TMedium, 'findOne').callsFake((criteria) => ({
+      then: (resolve) =>
+        Promise.resolve(mediumMap.get(criteria.id)).then(resolve),
+    }));
+    sinon.stub(TSensorConfiguration, 'findOne').callsFake((criteria) => {
+      const record = sensorConfigMap.get(criteria.id);
+      const populatable = {
+        populate: () => populatable,
+        then: (resolve) => Promise.resolve(record).then(resolve),
+      };
+      return populatable;
+    });
+
+    let result;
+    try {
+      result = await ReferenceValidator.validate(profile);
+    } finally {
+      sinon.restore();
+    }
+
+    // Only 2 errors: author 777 and 888 not found
+    should(result.errors.length).equal(2);
+    should(result.errors.join('\n')).containEql('777');
+    should(result.errors.join('\n')).containEql('888');
+
+    // Resolved authors should contain only caver 3
+    should(result.resolved.authors).be.an.Array();
+    should(result.resolved.authors.length).equal(1);
+    should(result.resolved.authors[0].id).equal(3);
   });
 });

@@ -19,7 +19,7 @@ const FIXTURE_CSV = path.resolve(
 // Used for cases where we want to test controller behaviour, not pipeline logic.
 const VALID_PROFILE = JSON.stringify({
   timezone: 'Europe/Paris',
-  authorId: 1,
+  authorIds: [1],
   licenseId: 1,
   caveId: 1,
   columnMappings: [
@@ -190,7 +190,7 @@ describe('POST /api/v1/observations/import - E2E pipeline (EntityBuilder stubbed
     // This verifies the pipeline reaches ReferenceValidator with real DB checks.
     const profileWithBadRefs = JSON.stringify({
       timezone: 'Europe/Paris',
-      authorId: 99999,
+      authorIds: [99999],
       licenseId: 99999,
       caveId: 99999,
       columnMappings: [

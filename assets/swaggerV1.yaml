@@ -6202,9 +6202,14 @@ paths:
                     See the ObservationImportProfile schema for the full structure.
                     Key fields: encoding, headerRow, skipFirstRows, skipLastRows,
                     timezone, dateFormat/dateOnlyFormat/timeOnlyFormat, numberLocale,
-                    columnMappings, caveId, authorId, licenseId,
+                    columnMappings, caveId, authorIds, licenseId,
                     documentTitle, documentLanguage, observationName, dataQuality,
                     samplingIntervalSeconds.
+
+                    Author attribution: `authorIds` is a required array of caver IDs
+                    representing the document authors (people who contributed to the
+                    data collection). All listed authors are linked to the created
+                    document via the j_document_caver_author junction table.
       responses:
         '200':
           description: Import successful
