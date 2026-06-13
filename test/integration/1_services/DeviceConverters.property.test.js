@@ -18,6 +18,7 @@ const deviceArb = fc.record({
   id: fc.integer({ min: 1, max: 99999 }),
   name: fc.string({ minLength: 0, maxLength: 300 }),
   brandName: fc.option(fc.string({ maxLength: 200 }), { nil: undefined }),
+  serialNumber: fc.option(fc.string({ maxLength: 200 }), { nil: undefined }),
   productUrl: fc.option(fc.string({ maxLength: 500 }), { nil: undefined }),
   manufacturerUrl: fc.option(fc.string({ maxLength: 500 }), { nil: undefined }),
   dateInscription: fc.option(
@@ -73,6 +74,7 @@ describe('DeviceService - Property 5: Response shape invariant (toDevice)', () =
         should(result).have.property('author');
         should(result).have.property('reviewer');
         should(result).have.property('configurations');
+        should(result).have.property('serialNumber');
 
         // configurations is always an array
         should(result.configurations).be.an.Array();
@@ -92,6 +94,7 @@ describe('DeviceService - Property 5: Response shape invariant (toDevice)', () =
             'name',
             'productUrl',
             'reviewer',
+            'serialNumber',
           ].sort()
         );
       }),
@@ -121,6 +124,7 @@ describe('DeviceService - Property: toSimpleDevice output shape invariant', () =
         should(result).have.property('manufacturerUrl');
         should(result).have.property('isDeleted');
         should(result).have.property('author');
+        should(result).have.property('serialNumber');
 
         // Verify exact key set (no extra keys)
         const keys = Object.keys(result).sort();
@@ -133,6 +137,7 @@ describe('DeviceService - Property: toSimpleDevice output shape invariant', () =
             'manufacturerUrl',
             'name',
             'productUrl',
+            'serialNumber',
           ].sort()
         );
       }),

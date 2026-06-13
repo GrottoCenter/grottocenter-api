@@ -11,16 +11,18 @@ module.exports = async (req, res) => {
   const brandName = req.param('brandName');
   const productUrl = req.param('productUrl');
   const manufacturerUrl = req.param('manufacturerUrl');
+  const serialNumber = req.param('serialNumber');
 
   // Validate at least one updatable field is present
   if (
     name === undefined &&
     brandName === undefined &&
     productUrl === undefined &&
-    manufacturerUrl === undefined
+    manufacturerUrl === undefined &&
+    serialNumber === undefined
   ) {
     return res.badRequest(
-      'You must provide at least one updatable field (name, brandName, productUrl, manufacturerUrl).'
+      'You must provide at least one updatable field (name, brandName, productUrl, manufacturerUrl, serialNumber).'
     );
   }
 
@@ -72,6 +74,11 @@ module.exports = async (req, res) => {
       'The device manufacturer URL must not exceed 500 characters.'
     );
   }
+  if (serialNumber !== undefined && serialNumber && serialNumber.length > 200) {
+    return res.badRequest(
+      'The device serial number must not exceed 200 characters.'
+    );
+  }
 
   // Build update set: only provided fields + reviewer
   const updateData = {
@@ -84,6 +91,8 @@ module.exports = async (req, res) => {
   if (productUrl !== undefined) updateData.productUrl = productUrl || null;
   if (manufacturerUrl !== undefined)
     updateData.manufacturerUrl = manufacturerUrl || null;
+  if (serialNumber !== undefined)
+    updateData.serialNumber = serialNumber || null;
 
   // Update device
   await TDevice.updateOne({ id }).set(updateData);

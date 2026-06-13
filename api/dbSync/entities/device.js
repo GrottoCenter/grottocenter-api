@@ -5,6 +5,7 @@ const query = `
       d.id,
       d.name,
       d.brand_name AS "brandName",
+      d.serial_number AS "serialNumber",
       d.is_deleted AS "isDeleted",
       d.id_author AS "authorId",
       c.nickname AS "authorNickname"
@@ -42,6 +43,7 @@ module.exports = {
         { name: 'id', type: 'string' },
         { name: 'name', type: 'string', sort: true },
         { name: 'brandName', type: 'string', optional: true, sort: true },
+        { name: 'serialNumber', type: 'string', optional: true },
         { name: 'isDeleted', type: 'bool' },
         { name: 'authorId', type: 'string' },
         { name: 'authorNickname', type: 'string', optional: true },
@@ -50,7 +52,7 @@ module.exports = {
     },
     query: {
       collection: 'devices',
-      query_by: 'name,brandName',
+      query_by: 'name,brandName,serialNumber',
     },
   },
 };

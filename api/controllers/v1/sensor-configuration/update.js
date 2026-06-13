@@ -27,6 +27,7 @@ module.exports = async (req, res) => {
   const resolution = req.param('resolution');
   const detectionLimitMin = req.param('detectionLimitMin');
   const detectionLimitMax = req.param('detectionLimitMax');
+  const label = req.param('label');
 
   // 4. If no recognized updatable field is present → 400
   const hasUpdatableField =
@@ -36,11 +37,12 @@ module.exports = async (req, res) => {
     precisionLower !== undefined ||
     resolution !== undefined ||
     detectionLimitMin !== undefined ||
-    detectionLimitMax !== undefined;
+    detectionLimitMax !== undefined ||
+    label !== undefined;
 
   if (!hasUpdatableField) {
     return res.badRequest(
-      'You must provide at least one updatable field (quantityKind, unit, precisionUpper, precisionLower, resolution, detectionLimitMin, detectionLimitMax).'
+      'You must provide at least one updatable field (quantityKind, unit, precisionUpper, precisionLower, resolution, detectionLimitMin, detectionLimitMax, label).'
     );
   }
 
@@ -86,6 +88,13 @@ module.exports = async (req, res) => {
     }
   }
 
+  // 7b. Validate label length if provided
+  if (label !== undefined && label && label.length > 300) {
+    return res.badRequest(
+      'The sensor configuration label must not exceed 300 characters.'
+    );
+  }
+
   // 8. Build update set: only provided fields + reviewer/dateReviewed
   const updateData = {
     reviewer: req.token.id,
@@ -101,6 +110,7 @@ module.exports = async (req, res) => {
     updateData.detectionLimitMin = detectionLimitMin;
   if (detectionLimitMax !== undefined)
     updateData.detectionLimitMax = detectionLimitMax;
+  if (label !== undefined) updateData.label = label || null;
 
   // 9. Update the record
   await TSensorConfiguration.updateOne({ id }).set(updateData);

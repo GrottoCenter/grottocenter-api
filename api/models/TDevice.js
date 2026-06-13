@@ -69,6 +69,13 @@ module.exports = {
       maxLength: 500,
     },
 
+    serialNumber: {
+      type: 'string',
+      allowNull: true,
+      columnName: 'serial_number',
+      maxLength: 200,
+    },
+
     isDeleted: {
       type: 'boolean',
       allowNull: false,

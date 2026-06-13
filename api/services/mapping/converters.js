@@ -685,6 +685,7 @@ const c = {
             symbol: source.unit.symbol,
           }
         : source.unit,
+    label: source.label,
     precisionUpper: source.precisionUpper,
     precisionLower: source.precisionLower,
     resolution: source.resolution,
@@ -701,6 +702,7 @@ const c = {
     id: source.id,
     name: source.name,
     brandName: source.brandName,
+    serialNumber: source.serialNumber,
     productUrl: source.productUrl,
     manufacturerUrl: source.manufacturerUrl,
     dateInscription: source.dateInscription,
@@ -715,6 +717,7 @@ const c = {
     id: source.id,
     name: source.name,
     brandName: source.brandName,
+    serialNumber: source.serialNumber,
     productUrl: source.productUrl,
     manufacturerUrl: source.manufacturerUrl,
     isDeleted: source.isDeleted,

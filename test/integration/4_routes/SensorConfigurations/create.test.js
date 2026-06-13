@@ -80,6 +80,20 @@ describe('SensorConfiguration features', () => {
           .set('Accept', 'application/json')
           .expect(404, done);
       });
+
+      it('should return 400 when label exceeds 300 characters', (done) => {
+        supertest(sails.hooks.http.app)
+          .post(`/api/v1/devices/${DEVICE_ID}/configurations`)
+          .send({
+            quantityKind: VALID_QUANTITY_KIND,
+            unit: VALID_UNIT,
+            label: 'x'.repeat(301),
+          })
+          .set('Authorization', userToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .expect(400, done);
+      });
     });
 
     describe('Success', () => {
@@ -100,6 +114,7 @@ describe('SensorConfiguration features', () => {
           resolution: 0.01,
           detectionLimitMin: -40,
           detectionLimitMax: 85,
+          label: 'Outdoor probe',
         };
 
         supertest(sails.hooks.http.app)
@@ -128,6 +143,7 @@ describe('SensorConfiguration features', () => {
             should(config.resolution).equal(0.01);
             should(config.detectionLimitMin).equal(-40);
             should(config.detectionLimitMax).equal(85);
+            should(config.label).equal('Outdoor probe');
             should(config.dateInscription).not.be.empty();
             should(config.isDeleted).equal(false);
             should(config.author).be.an.Object();

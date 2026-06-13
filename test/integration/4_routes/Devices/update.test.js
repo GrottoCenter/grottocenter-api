@@ -65,6 +65,16 @@ describe('Device features', () => {
           .set('Accept', 'application/json')
           .expect(400, done);
       });
+
+      it('should return 400 when serialNumber exceeds 200 characters', (done) => {
+        supertest(sails.hooks.http.app)
+          .patch('/api/v1/devices/1')
+          .send({ serialNumber: 's'.repeat(201) })
+          .set('Authorization', moderatorToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .expect(400, done);
+      });
     });
 
     describe('Not found', () => {
@@ -133,6 +143,24 @@ describe('Device features', () => {
             // Reviewer should be set
             should(device.reviewer).be.an.Object();
             should(device.reviewer).have.property('id');
+            return done();
+          });
+      });
+
+      it('should update serialNumber field', (done) => {
+        supertest(sails.hooks.http.app)
+          .patch(`/api/v1/devices/${testDeviceId}`)
+          .send({ serialNumber: 'SN-UPDATED-999' })
+          .set('Authorization', moderatorToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .expect(200)
+          .end((err, res) => {
+            if (err) return done(err);
+            const { body: device } = res;
+
+            should(device.id).equal(testDeviceId);
+            should(device.serialNumber).equal('SN-UPDATED-999');
             return done();
           });
       });

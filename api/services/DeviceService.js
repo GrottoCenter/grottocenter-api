@@ -80,6 +80,7 @@ module.exports = {
       id: populatedDevice.id,
       name: populatedDevice.name,
       brandName: populatedDevice.brandName,
+      serialNumber: populatedDevice.serialNumber,
       isDeleted: populatedDevice.isDeleted,
       authorId: `${author.id || populatedDevice.author}`,
       authorNickname: author.nickname || '',
