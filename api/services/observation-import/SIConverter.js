@@ -88,8 +88,8 @@ const parseLocaleNumber = (rawString, numberLocale) => {
  * @param {number} [rowOffset=0] - Number of lines consumed before the first data row
  *   (headerRow + skipFirstRows). Added to 1-based row indices in error messages so
  *   they reference the original file line number.
- * @returns {Array<{columnIndex: number, value: number, valueSi: number}[]>}
- *   Per-row measurement arrays
+ * @returns {{ measurements: Array<{columnIndex: number, value: number, valueSi: number}[]>, skippedMeasurements: number }}
+ *   Per-row measurement arrays and count of skipped empty cells
  * @throws {Error} if siToDisplayFactor is zero for any quantity kind
  */
 const convertAll = (
@@ -116,11 +116,16 @@ const convertAll = (
     measurementColumns.push({ colIndex, pos, sensorConfig });
   }
 
-  return rows.map((row, rowIdx) =>
+  let skippedMeasurements = 0;
+
+  const measurements = rows.map((row, rowIdx) =>
     measurementColumns.reduce((acc, { colIndex, pos, sensorConfig }) => {
       const rawString = row[pos];
-      // Empty cell → no measurement for this column/row (sensor gap)
-      if (rawString === '') return acc;
+      // Empty or whitespace-only cell → no measurement for this column/row (sensor gap)
+      if (rawString.trim() === '') {
+        skippedMeasurements += 1;
+        return acc;
+      }
 
       let value;
       try {
@@ -135,6 +140,8 @@ const convertAll = (
       return acc;
     }, [])
   );
+
+  return { measurements, skippedMeasurements };
 };
 
 module.exports = { toSI, convertAll, parseLocaleNumber };

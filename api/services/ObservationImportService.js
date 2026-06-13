@@ -60,6 +60,7 @@ class ImportError extends Error {
  *   documentId: number,
  *   timeSeriesMap: Object<string, number>,
  *   measurementCount: number,
+ *   skippedMeasurements: number,
  *   observationDate: Date,
  *   importedAt: Date,
  *   importedBy: number,
@@ -150,14 +151,16 @@ const execute = async (file, profile, requestAuthorId) => {
   });
 
   let convertedMeasurements;
+  let skippedMeasurements;
   try {
-    convertedMeasurements = SIConverter.convertAll(
-      rows,
-      sensorConfigMap,
-      columnIndices,
-      profile,
-      fileRowOffset
-    );
+    ({ measurements: convertedMeasurements, skippedMeasurements } =
+      SIConverter.convertAll(
+        rows,
+        sensorConfigMap,
+        columnIndices,
+        profile,
+        fileRowOffset
+      ));
   } catch (err) {
     throw new ImportError('IMPORT_CONVERSION_ERROR', err.message, []);
   }
@@ -195,6 +198,8 @@ const execute = async (file, profile, requestAuthorId) => {
     }
     throw new ImportError('IMPORT_TRANSACTION_ERROR', err.message, []);
   }
+
+  importResult.skippedMeasurements = skippedMeasurements;
 
   return importResult;
 };
