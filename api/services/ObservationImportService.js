@@ -105,6 +105,17 @@ const execute = async (file, profile, requestAuthorId) => {
   const { rows, columnIndices } = parsedResult;
 
   // -------------------------------------------------------------------------
+  // Compute the file-line offset so that row numbers in error messages
+  // reference the original file line rather than the parsed-data index.
+  // Offset = (headerRow lines consumed) + (skipFirstRows lines consumed).
+  // The Parser already removed these lines from the data, so any 1-based
+  // row number from downstream stages must be shifted by this amount.
+  // -------------------------------------------------------------------------
+  const fileRowOffset =
+    (profile.headerRow != null ? profile.headerRow : 0) +
+    (profile.skipFirstRows || 0);
+
+  // -------------------------------------------------------------------------
   // Stage 4: TimestampConverter — parse timestamps → UTC Date objects
   // -------------------------------------------------------------------------
   let convertedTimestamps;
@@ -112,7 +123,8 @@ const execute = async (file, profile, requestAuthorId) => {
     convertedTimestamps = TimestampConverter.convert(
       rows,
       profile,
-      columnIndices
+      columnIndices,
+      fileRowOffset
     );
   } catch (err) {
     throw new ImportError('IMPORT_TIMESTAMP_ERROR', err.message, []);
@@ -143,7 +155,8 @@ const execute = async (file, profile, requestAuthorId) => {
       rows,
       sensorConfigMap,
       columnIndices,
-      profile
+      profile,
+      fileRowOffset
     );
   } catch (err) {
     throw new ImportError('IMPORT_CONVERSION_ERROR', err.message, []);

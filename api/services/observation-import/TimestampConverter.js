@@ -37,11 +37,14 @@ const COMPONENT_TYPES = [
  *   timeOnlyFormat, and columnMappings
  * @param {number[]} columnIndices - Original column indices present in rows
  *   (after excluded-column filtering). Used to map columnIndex → row position.
+ * @param {number} [rowOffset=0] - Number of lines consumed before the first data row
+ *   (headerRow + skipFirstRows). Added to 1-based row indices in error messages so
+ *   they reference the original file line number.
  * @returns {Date[]} Array of UTC Date objects, one per row
  * @throws {Error} with row number and raw value on parse failure
  * @throws {Error} on dateOnly/timeOnly column pairing issues
  */
-const convert = (rows, profile, columnIndices) => {
+const convert = (rows, profile, columnIndices, rowOffset = 0) => {
   const {
     timezone,
     dateFormat,
@@ -165,6 +168,7 @@ const convert = (rows, profile, columnIndices) => {
   // 3.2–3.5. Parse each row
   // -------------------------------------------------------------------------
   return rows.map((row, rowIndex) => {
+    const fileRow = rowIndex + 1 + rowOffset;
     let m;
 
     if (mode === 'datetime') {
@@ -186,7 +190,7 @@ const convert = (rows, profile, columnIndices) => {
       if (!m || !m.isValid()) {
         // 3.5. Stop at first unparseable row — 1-based row number
         throw new Error(
-          `Failed to parse timestamp at row ${rowIndex + 1}: '${rawValue}' does not match format '${dateFormat}'.`
+          `Failed to parse timestamp at row ${fileRow}: '${rawValue}' does not match format '${dateFormat}'.`
         );
       }
     } else if (mode === 'split') {
@@ -209,7 +213,7 @@ const convert = (rows, profile, columnIndices) => {
 
       if (!m || !m.isValid()) {
         throw new Error(
-          `Failed to parse timestamp at row ${rowIndex + 1}: combined value '${combined}' does not match format '${combinedFormat}'.`
+          `Failed to parse timestamp at row ${fileRow}: combined value '${combined}' does not match format '${combinedFormat}'.`
         );
       }
     } else if (mode === 'epoch') {
@@ -218,13 +222,13 @@ const convert = (rows, profile, columnIndices) => {
       const epochSeconds = Number(raw);
       if (!Number.isInteger(epochSeconds)) {
         throw new Error(
-          `Failed to parse Unix epoch seconds at row ${rowIndex + 1}: '${raw}' is not a valid integer.`
+          `Failed to parse Unix epoch seconds at row ${fileRow}: '${raw}' is not a valid integer.`
         );
       }
       m = dayjs.unix(epochSeconds);
       if (!m.isValid()) {
         throw new Error(
-          `Failed to parse Unix epoch seconds at row ${rowIndex + 1}: '${raw}' produces an invalid date.`
+          `Failed to parse Unix epoch seconds at row ${fileRow}: '${raw}' produces an invalid date.`
         );
       }
       // Reject absurd dates (before 1900 or after 2100) — catches out-of-range
@@ -232,7 +236,7 @@ const convert = (rows, profile, columnIndices) => {
       const epochYear = m.year();
       if (epochYear < 1900 || epochYear > 2100) {
         throw new Error(
-          `Failed to parse Unix epoch seconds at row ${rowIndex + 1}: '${raw}' produces year ${epochYear}, which is outside the accepted range (1900–2100).`
+          `Failed to parse Unix epoch seconds at row ${fileRow}: '${raw}' produces year ${epochYear}, which is outside the accepted range (1900–2100).`
         );
       }
     } else {
@@ -243,7 +247,7 @@ const convert = (rows, profile, columnIndices) => {
         const parsed = parseInt(raw, 10);
         if (Number.isNaN(parsed)) {
           throw new Error(
-            `Failed to parse timestamp component '${type}' at row ${rowIndex + 1}: '${raw}' is not a valid integer.`
+            `Failed to parse timestamp component '${type}' at row ${fileRow}: '${raw}' is not a valid integer.`
           );
         }
         return parsed;
@@ -269,7 +273,7 @@ const convert = (rows, profile, columnIndices) => {
 
       if (!m || !m.isValid()) {
         throw new Error(
-          `Failed to parse timestamp at row ${rowIndex + 1}: components year=${year}, month=${month}, day=${day}, hour=${hour}, minute=${minute}, second=${second} do not form a valid date.`
+          `Failed to parse timestamp at row ${fileRow}: components year=${year}, month=${month}, day=${day}, hour=${hour}, minute=${minute}, second=${second} do not form a valid date.`
         );
       }
     }
@@ -280,7 +284,7 @@ const convert = (rows, profile, columnIndices) => {
       const elapsedSeconds = Number(raw);
       if (!Number.isInteger(elapsedSeconds)) {
         throw new Error(
-          `Failed to parse elapsed_seconds at row ${rowIndex + 1}: '${raw}' is not a valid integer.`
+          `Failed to parse elapsed_seconds at row ${fileRow}: '${raw}' is not a valid integer.`
         );
       }
       if (elapsedSeconds !== 0) {

@@ -85,11 +85,20 @@ const parseLocaleNumber = (rawString, numberLocale) => {
  * @param {number[]} columnIndices - Original column indices in rows
  *   (after excluded-column filtering). Used to map columnIndex → row position.
  * @param {Object} profile - Profile (for numberLocale)
+ * @param {number} [rowOffset=0] - Number of lines consumed before the first data row
+ *   (headerRow + skipFirstRows). Added to 1-based row indices in error messages so
+ *   they reference the original file line number.
  * @returns {Array<{columnIndex: number, value: number, valueSi: number}[]>}
  *   Per-row measurement arrays
  * @throws {Error} if siToDisplayFactor is zero for any quantity kind
  */
-const convertAll = (rows, sensorConfigMap, columnIndices, profile) => {
+const convertAll = (
+  rows,
+  sensorConfigMap,
+  columnIndices,
+  profile,
+  rowOffset = 0
+) => {
   const { numberLocale } = profile || {};
 
   // Pre-compute positions for all measurement columns present in sensorConfigMap
@@ -108,20 +117,23 @@ const convertAll = (rows, sensorConfigMap, columnIndices, profile) => {
   }
 
   return rows.map((row, rowIdx) =>
-    measurementColumns.map(({ colIndex, pos, sensorConfig }) => {
+    measurementColumns.reduce((acc, { colIndex, pos, sensorConfig }) => {
       const rawString = row[pos];
+      // Empty cell → no measurement for this column/row (sensor gap)
+      if (rawString === '') return acc;
+
       let value;
       try {
         value = parseLocaleNumber(rawString, numberLocale);
       } catch (err) {
         throw new Error(
-          `Measurement conversion failed at row ${rowIdx + 1}, column index ${colIndex}: ${err.message}`
+          `Measurement conversion failed at row ${rowIdx + 1 + rowOffset}, column index ${colIndex}: ${err.message}`
         );
       }
       const valueSi = toSI(value, sensorConfig.quantityKind);
-
-      return { columnIndex: colIndex, value, valueSi };
-    })
+      acc.push({ columnIndex: colIndex, value, valueSi });
+      return acc;
+    }, [])
   );
 };
 
