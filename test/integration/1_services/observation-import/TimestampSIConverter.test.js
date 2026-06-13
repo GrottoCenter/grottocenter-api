@@ -698,7 +698,7 @@ describe('SIConverter', () => {
       const columnIndices = [1];
       const profile = { numberLocale: 'fr' };
 
-      const result = SIConverter.convertAll(
+      const { measurements: result } = SIConverter.convertAll(
         rows,
         sensorConfigMap,
         columnIndices,
@@ -731,7 +731,7 @@ describe('SIConverter', () => {
       const columnIndices = [1];
       const profile = { numberLocale: 'en' };
 
-      const result = SIConverter.convertAll(
+      const { measurements: result } = SIConverter.convertAll(
         rows,
         sensorConfigMap,
         columnIndices,
@@ -773,7 +773,7 @@ describe('SIConverter', () => {
       const columnIndices = [0, 1, 2];
       const profile = { numberLocale: 'en' };
 
-      const result = SIConverter.convertAll(
+      const { measurements: result } = SIConverter.convertAll(
         rows,
         sensorConfigMap,
         columnIndices,
@@ -828,5 +828,263 @@ describe('SIConverter', () => {
         SIConverter.convertAll(rows, sensorConfigMap, columnIndices, profile)
       ).throw(/zero|factor/i);
     });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// rowOffset parameter tests
+// ---------------------------------------------------------------------------
+
+describe('TimestampConverter - rowOffset parameter', () => {
+  it('should report the correct file-line number when rowOffset is non-zero', () => {
+    const profile = {
+      timezone: 'UTC',
+      dateFormat: 'YYYY-MM-DD HH:mm:ss',
+      columnMappings: [
+        { columnIndex: 0, role: 'timestamp', timestampType: 'datetime' },
+      ],
+    };
+    // Simulate: headerRow=1, skipFirstRows=1 → rowOffset=2
+    // Bad row at data index 0 → file line = 0 + 1 + 2 = row 3
+    const rows = [['INVALID']];
+    const columnIndices = [0];
+    const rowOffset = 2;
+
+    let caughtError;
+    try {
+      TimestampConverter.convert(rows, profile, columnIndices, rowOffset);
+    } catch (err) {
+      caughtError = err;
+    }
+    should(caughtError).be.instanceOf(Error);
+    should(caughtError.message).match(/row 3/i);
+  });
+
+  it('should report the correct file-line for a later row with rowOffset', () => {
+    const profile = {
+      timezone: 'UTC',
+      dateFormat: 'YYYY-MM-DD HH:mm:ss',
+      columnMappings: [
+        { columnIndex: 0, role: 'timestamp', timestampType: 'datetime' },
+      ],
+    };
+    // rowOffset=3, bad row at data index 2 → file line = 2 + 1 + 3 = row 6
+    const rows = [
+      ['2024-01-15 08:00:00'],
+      ['2024-01-15 09:00:00'],
+      ['BAD VALUE'],
+    ];
+    const columnIndices = [0];
+    const rowOffset = 3;
+
+    let caughtError;
+    try {
+      TimestampConverter.convert(rows, profile, columnIndices, rowOffset);
+    } catch (err) {
+      caughtError = err;
+    }
+    should(caughtError).be.instanceOf(Error);
+    should(caughtError.message).match(/row 6/i);
+  });
+
+  it('should report row 1 when rowOffset is 0 and bad row is at index 0', () => {
+    const profile = {
+      timezone: 'UTC',
+      dateFormat: 'YYYY-MM-DD HH:mm:ss',
+      columnMappings: [
+        { columnIndex: 0, role: 'timestamp', timestampType: 'datetime' },
+      ],
+    };
+    const rows = [['BAD']];
+    const columnIndices = [0];
+    const rowOffset = 0;
+
+    let caughtError;
+    try {
+      TimestampConverter.convert(rows, profile, columnIndices, rowOffset);
+    } catch (err) {
+      caughtError = err;
+    }
+    should(caughtError).be.instanceOf(Error);
+    should(caughtError.message).match(/row 1/i);
+  });
+});
+
+describe('SIConverter - rowOffset parameter', () => {
+  it('should report the correct file-line number when rowOffset is non-zero', () => {
+    const sensorConfigMap = new Map([
+      [1, { quantityKind: { siToDisplayFactor: 1, siToDisplayOffset: 0 } }],
+    ]);
+    // rowOffset=2, bad row at data index 0 → file line = 0 + 1 + 2 = row 3
+    const rows = [['not-a-number']];
+    const columnIndices = [1];
+    const profile = { numberLocale: 'en' };
+    const rowOffset = 2;
+
+    let caughtError;
+    try {
+      SIConverter.convertAll(
+        rows,
+        sensorConfigMap,
+        columnIndices,
+        profile,
+        rowOffset
+      );
+    } catch (err) {
+      caughtError = err;
+    }
+    should(caughtError).be.instanceOf(Error);
+    should(caughtError.message).match(/row 3/i);
+    should(caughtError.message).match(/column index 1/i);
+  });
+
+  it('should report the correct file-line for a later row with rowOffset', () => {
+    const sensorConfigMap = new Map([
+      [1, { quantityKind: { siToDisplayFactor: 1, siToDisplayOffset: 0 } }],
+    ]);
+    // rowOffset=3, bad row at data index 1 → file line = 1 + 1 + 3 = row 5
+    const rows = [['10.0'], ['xyz']];
+    const columnIndices = [1];
+    const profile = { numberLocale: 'en' };
+    const rowOffset = 3;
+
+    let caughtError;
+    try {
+      SIConverter.convertAll(
+        rows,
+        sensorConfigMap,
+        columnIndices,
+        profile,
+        rowOffset
+      );
+    } catch (err) {
+      caughtError = err;
+    }
+    should(caughtError).be.instanceOf(Error);
+    should(caughtError.message).match(/row 5/i);
+  });
+
+  it('should report row 1 when rowOffset is 0 and bad row is at index 0', () => {
+    const sensorConfigMap = new Map([
+      [1, { quantityKind: { siToDisplayFactor: 1, siToDisplayOffset: 0 } }],
+    ]);
+    const rows = [['abc']];
+    const columnIndices = [1];
+    const profile = {};
+    const rowOffset = 0;
+
+    let caughtError;
+    try {
+      SIConverter.convertAll(
+        rows,
+        sensorConfigMap,
+        columnIndices,
+        profile,
+        rowOffset
+      );
+    } catch (err) {
+      caughtError = err;
+    }
+    should(caughtError).be.instanceOf(Error);
+    should(caughtError.message).match(/row 1/i);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Empty and whitespace cell handling tests
+// ---------------------------------------------------------------------------
+
+describe('SIConverter - empty and whitespace cell handling', () => {
+  it('should skip empty cells and return skippedMeasurements count', () => {
+    const sensorConfigMap = new Map([
+      [1, { quantityKind: { siToDisplayFactor: 1, siToDisplayOffset: 0 } }],
+    ]);
+    // 3 rows: first has value, second is empty, third has value
+    const rows = [['10.0'], [''], ['20.0']];
+    const columnIndices = [1];
+    const profile = { numberLocale: 'en' };
+
+    const { measurements, skippedMeasurements } = SIConverter.convertAll(
+      rows,
+      sensorConfigMap,
+      columnIndices,
+      profile
+    );
+
+    should(measurements).have.length(3);
+    should(measurements[0]).have.length(1);
+    should(measurements[0][0].value).equal(10.0);
+    should(measurements[1]).have.length(0); // skipped
+    should(measurements[2]).have.length(1);
+    should(measurements[2][0].value).equal(20.0);
+    should(skippedMeasurements).equal(1);
+  });
+
+  it('should treat whitespace-only cells as empty (sensor gap)', () => {
+    const sensorConfigMap = new Map([
+      [1, { quantityKind: { siToDisplayFactor: 1, siToDisplayOffset: 0 } }],
+    ]);
+    const rows = [['  '], ['\t'], [' \t ']];
+    const columnIndices = [1];
+    const profile = { numberLocale: 'en' };
+
+    const { measurements, skippedMeasurements } = SIConverter.convertAll(
+      rows,
+      sensorConfigMap,
+      columnIndices,
+      profile
+    );
+
+    should(measurements[0]).have.length(0);
+    should(measurements[1]).have.length(0);
+    should(measurements[2]).have.length(0);
+    should(skippedMeasurements).equal(3);
+  });
+
+  it('should count skips across multiple measurement columns', () => {
+    const sensorConfigMap = new Map([
+      [1, { quantityKind: { siToDisplayFactor: 1, siToDisplayOffset: 0 } }],
+      [2, { quantityKind: { siToDisplayFactor: 1, siToDisplayOffset: 0 } }],
+    ]);
+    // Row with col1 present but col2 empty
+    const rows = [
+      ['10.0', ''],
+      ['', '20.0'],
+    ];
+    const columnIndices = [1, 2];
+    const profile = { numberLocale: 'en' };
+
+    const { measurements, skippedMeasurements } = SIConverter.convertAll(
+      rows,
+      sensorConfigMap,
+      columnIndices,
+      profile
+    );
+
+    should(measurements[0]).have.length(1);
+    should(measurements[0][0].columnIndex).equal(1);
+    should(measurements[1]).have.length(1);
+    should(measurements[1][0].columnIndex).equal(2);
+    should(skippedMeasurements).equal(2);
+  });
+
+  it('should return skippedMeasurements=0 when no cells are empty', () => {
+    const sensorConfigMap = new Map([
+      [1, { quantityKind: { siToDisplayFactor: 1, siToDisplayOffset: 0 } }],
+    ]);
+    const rows = [['10.0'], ['20.0']];
+    const columnIndices = [1];
+    const profile = { numberLocale: 'en' };
+
+    const { measurements, skippedMeasurements } = SIConverter.convertAll(
+      rows,
+      sensorConfigMap,
+      columnIndices,
+      profile
+    );
+
+    should(measurements[0]).have.length(1);
+    should(measurements[1]).have.length(1);
+    should(skippedMeasurements).equal(0);
   });
 });

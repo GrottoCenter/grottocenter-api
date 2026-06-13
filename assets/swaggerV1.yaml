@@ -6227,6 +6227,9 @@ paths:
                       type: integer
                   measurementCount:
                     type: integer
+                  skippedMeasurements:
+                    type: integer
+                    description: Number of empty or whitespace-only measurement cells skipped during import (sensor gaps)
                   observationDate:
                     type: string
                     format: date-time
