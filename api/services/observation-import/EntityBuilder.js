@@ -287,6 +287,9 @@ const build = async ({
 
   // Effective author IDs: use resolved entities if available, else fall back to profile.
   // Deduplicate to prevent duplicate junction rows.
+  // Note: authors.length should always be > 0 here because ProfileValidator
+  // guarantees authorIds is non-empty and ReferenceValidator resolves them.
+  // The fallback to profile.authorIds is a defensive safeguard only.
   const authorIds = [
     ...new Set(
       authors.length > 0 ? authors.map((a) => a.id) : profile.authorIds || []
