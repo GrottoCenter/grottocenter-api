@@ -7533,7 +7533,7 @@ components:
       required:
         - timezone
         - columnMappings
-        - authorId
+        - authorIds
         - licenseId
       properties:
         encoding:
@@ -7629,11 +7629,13 @@ components:
         longitude:
           type: number
           nullable: true
-        authorId:
-          type: integer
-          minimum: 1
-          maximum: 2147483647
-          description: Caver ID of the data author. Must be a positive integer.
+        authorIds:
+          type: array
+          items:
+            type: integer
+            minimum: 1
+          minItems: 1
+          description: Caver IDs of the data authors. Must be a non-empty array of positive integers.
         licenseId:
           type: integer
           minimum: 1

@@ -49,8 +49,8 @@ const profileWithExistenceArb = fc
     licenseId: idArb,
     licenseExists: existsArb,
 
-    authorId: idArb,
-    authorExists: existsArb,
+    // Pool of unique author IDs (1–3) for multi-author scenarios
+    authorIds: fc.uniqueArray(idArb, { minLength: 1, maxLength: 3 }),
 
     // Pools of unique IDs for column-level references
     // Up to 4 unique sensor config IDs and 4 unique medium IDs
@@ -58,24 +58,29 @@ const profileWithExistenceArb = fc
     mediumIds: fc.uniqueArray(idArb, { minLength: 1, maxLength: 4 }),
   })
   .chain((base) => {
-    // Generate existence flags for each unique sensor and medium ID
+    // Generate existence flags for each unique sensor, medium, and author ID
     const sensorExistsArbs = base.sensorIds.map(() => existsArb);
     const mediumExistsArbs = base.mediumIds.map(() => existsArb);
+    const authorExistsArbs = base.authorIds.map(() => existsArb);
 
     return fc
       .tuple(
         fc.tuple(...sensorExistsArbs),
         fc.tuple(...mediumExistsArbs),
+        fc.tuple(...authorExistsArbs),
         // Number of column mappings (1–4)
         fc.integer({ min: 1, max: 4 })
       )
-      .chain(([sensorExistsArr, mediumExistsArr, numCols]) => {
+      .chain(([sensorExistsArr, mediumExistsArr, authorExistsArr, numCols]) => {
         // Build existence maps (id → boolean)
         const sensorExistsMap = new Map(
           base.sensorIds.map((id, i) => [id, sensorExistsArr[i]])
         );
         const mediumExistsMap = new Map(
           base.mediumIds.map((id, i) => [id, mediumExistsArr[i]])
+        );
+        const authorExistsMap = new Map(
+          base.authorIds.map((id, i) => [id, authorExistsArr[i]])
         );
 
         // Generate column mappings that reference IDs from the pools
@@ -104,14 +109,14 @@ const profileWithExistenceArb = fc
           profile: {
             caveId: base.caveId,
             licenseId: base.licenseId,
-            authorIds: [base.authorId],
+            authorIds: base.authorIds,
             columnMappings,
           },
           topLevel: {
             caveExists: base.caveExists,
             licenseExists: base.licenseExists,
-            authorExists: base.authorExists,
           },
+          authorExistsMap,
           sensorExistsMap,
           mediumExistsMap,
         }));
@@ -128,7 +133,13 @@ const profileWithExistenceArb = fc
  * Existence is determined per unique ID (not per column), so the stubs are
  * consistent with the expected error count.
  */
-function installStubs(profile, topLevel, sensorExistsMap, mediumExistsMap) {
+function installStubs(
+  profile,
+  topLevel,
+  authorExistsMap,
+  sensorExistsMap,
+  mediumExistsMap
+) {
   // Build lookup maps for each model
   const caveMap = new Map();
   const licenseMap = new Map();
@@ -145,12 +156,13 @@ function installStubs(profile, topLevel, sensorExistsMap, mediumExistsMap) {
     if (topLevel.licenseExists)
       licenseMap.set(profile.licenseId, { id: profile.licenseId });
   }
+  // Per-author existence
   if (profile.authorIds && profile.authorIds.length > 0) {
-    if (topLevel.authorExists) {
-      profile.authorIds.forEach((id) => {
+    profile.authorIds.forEach((id) => {
+      if (authorExistsMap.get(id)) {
         caverMap.set(id, { id });
-      });
-    }
+      }
+    });
   }
 
   // Per-ID existence for medium and sensor config
@@ -212,6 +224,7 @@ function installStubs(profile, topLevel, sensorExistsMap, mediumExistsMap) {
 function countExpectedErrors(
   profile,
   topLevel,
+  authorExistsMap,
   sensorExistsMap,
   mediumExistsMap
 ) {
@@ -226,8 +239,8 @@ function countExpectedErrors(
   }
   // Author(s): count each unique author ID that doesn't exist
   const uniqueAuthorIds = [...new Set(profile.authorIds || [])];
-  uniqueAuthorIds.forEach(() => {
-    if (!topLevel.authorExists) count += 1;
+  uniqueAuthorIds.forEach((id) => {
+    if (!authorExistsMap.get(id)) count += 1;
   });
 
   // Per-column: collect the unique IDs actually referenced in measurement
@@ -281,9 +294,21 @@ describe('ReferenceValidator - Property 13: Reference validation completeness', 
     await fc.assert(
       fc.asyncProperty(
         profileWithExistenceArb,
-        async ({ profile, topLevel, sensorExistsMap, mediumExistsMap }) => {
+        async ({
+          profile,
+          topLevel,
+          authorExistsMap,
+          sensorExistsMap,
+          mediumExistsMap,
+        }) => {
           // Install stubs before calling validate
-          installStubs(profile, topLevel, sensorExistsMap, mediumExistsMap);
+          installStubs(
+            profile,
+            topLevel,
+            authorExistsMap,
+            sensorExistsMap,
+            mediumExistsMap
+          );
 
           let result;
           try {
@@ -295,6 +320,7 @@ describe('ReferenceValidator - Property 13: Reference validation completeness', 
           const expectedErrorCount = countExpectedErrors(
             profile,
             topLevel,
+            authorExistsMap,
             sensorExistsMap,
             mediumExistsMap
           );
@@ -334,12 +360,18 @@ describe('ReferenceValidator - Property 13: Reference validation completeness', 
     const topLevel = {
       caveExists: true,
       licenseExists: true,
-      authorExists: true,
     };
+    const authorExistsMap = new Map([[3, true]]);
     const sensorExistsMap = new Map([[10, true]]);
     const mediumExistsMap = new Map([[5, true]]);
 
-    installStubs(allExistProfile, topLevel, sensorExistsMap, mediumExistsMap);
+    installStubs(
+      allExistProfile,
+      topLevel,
+      authorExistsMap,
+      sensorExistsMap,
+      mediumExistsMap
+    );
 
     let result;
     try {
@@ -377,12 +409,18 @@ describe('ReferenceValidator - Property 13: Reference validation completeness', 
     const topLevel = {
       caveExists: false,
       licenseExists: false,
-      authorExists: false,
     };
+    const authorExistsMap = new Map([[777, false]]);
     const sensorExistsMap = new Map([[555, false]]);
     const mediumExistsMap = new Map([[444, false]]);
 
-    installStubs(profile, topLevel, sensorExistsMap, mediumExistsMap);
+    installStubs(
+      profile,
+      topLevel,
+      authorExistsMap,
+      sensorExistsMap,
+      mediumExistsMap
+    );
 
     let result;
     try {
