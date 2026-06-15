@@ -65,11 +65,6 @@ const c = {
     isDiving: source.isDiving,
     nbEntrances: source.nbEntrances ?? source.entrances?.length ?? 0,
     entrances: source.entrances?.map((e) => e.id),
-    exploringOrganizations: toList(
-      'exploringOrganizations',
-      source,
-      c.toSimpleOrganization
-    ),
   }),
 
   toCaver: (source, meta) => {
@@ -775,14 +770,43 @@ const c = {
       let data = {};
 
       if (_type === 'persons') data = c.toCaver(item.document, meta);
-      else if (_type === 'documents') data = c.toDocument(item.document, meta);
-      else if (_type === 'caves')
+      else if (_type === 'documents') {
+        data = c.toDocument(item.document, meta);
+        // Strip arrays not needed in search responses
+        delete data.authorsOrganization;
+        delete data.files;
+        delete data.newFiles;
+        delete data.modifiedFiles;
+        delete data.deletedFiles;
+      } else if (_type === 'caves')
         data = c.toSimpleCave(item.document, meta); // Only used in quick search
-      else if (_type === 'entrances') data = c.toEntrance(item.document, meta);
-      else if (_type === 'organizations')
+      else if (_type === 'entrances') {
+        data = c.toEntrance(item.document, meta);
+        // Strip arrays not needed in search responses
+        delete data.comments;
+        delete data.descriptions;
+        delete data.histories;
+        delete data.riggings;
+        delete data.locations;
+        delete data.documents;
+        delete data.names;
+        if (data.cave) delete data.cave.exploringOrganizations;
+      } else if (_type === 'organizations') {
         data = c.toOrganization(item.document, meta);
-      else if (_type === 'massifs') data = c.toMassif(item.document);
-      else if (_type === 'devices') data = c.toSimpleDevice(item.document);
+        // Strip arrays not needed in search responses
+        delete data.cavers;
+        delete data.documents;
+        delete data.exploredEntrances;
+        delete data.exploredNetworks;
+        delete data.partnerEntrances;
+        delete data.partnerNetworks;
+      } else if (_type === 'massifs') {
+        data = c.toMassif(item.document);
+        // Strip arrays not needed in search responses
+        delete data.descriptions;
+        delete data.documents;
+        delete data.networks;
+      } else if (_type === 'devices') data = c.toSimpleDevice(item.document);
 
       return {
         ...data,

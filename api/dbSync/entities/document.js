@@ -43,8 +43,6 @@ const query = `
     ${exportUtils.PAGGING_PLACEHOLDER}
   `;
 
-const baseUrl = 'https://grottocenter.blob.core.windows.net/documents/';
-
 async function* processRows(source) {
   for await (const rows of source) {
     const joins = [
@@ -86,15 +84,6 @@ async function* processRows(source) {
         fields: ['n.name', 'n.id_language AS language'],
         join: [`LEFT JOIN t_name n ON n.id_grotto = l.id AND n.is_main = true`],
         where: [],
-      },
-      {
-        table: 't_file',
-        foreignField: 'id_document',
-        rows,
-        localField: 'files',
-        fields: ['filename', 'path'],
-        where: ['is_validated = true'],
-        transform: (e) => ({ filename: e.filename, url: baseUrl + e.path }),
       },
       {
         table: 'j_document_iso3166_2',

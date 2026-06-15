@@ -29,6 +29,12 @@ const coerceToInt = require('../utils/coerceToInt');
 const coerceBool = require('../utils/coerceBool');
 const { getQualityData } = require('../utils/computeEntranceDataQuality');
 
+function average(arr) {
+  if (arr.length === 0) return null;
+  return arr.reduce((a, b) => a + b, 0) / arr.length;
+}
+const filterFn = (e) => e && e > 0;
+
 module.exports = {
   getConvertedNameFromClientRequest: (req) => {
     const result = {
@@ -327,32 +333,22 @@ module.exports = {
         temperature: cave.temperature,
         isDiving: cave.isDiving,
       },
-      descriptions: descriptions?.map((d) => ({
-        title: d.title,
-        body: d.body,
-      })),
-      locations: locations?.map((l) => ({ title: l.title, body: l.body })),
-      riggings: riggings?.map((r) => ({
-        title: r.title,
-        obstacles: r.obstacles,
-        ropes: r.ropes,
-        anchors: r.anchors,
-      })),
-      histories: histories?.map((h) => ({ body: h.body })),
-      documents: documents?.map((d) => d.id),
-      comments: comments?.map((c) => ({
-        title: c.title,
-        body: c.body,
-        aestheticism: c.aestheticism,
-        caving: c.caving,
-        approach: c.approach,
-      })),
+      commentsRating: {
+        aestheticism: average(
+          (comments ?? []).map((cm) => cm.aestheticism).filter(filterFn)
+        ),
+        caving: average(
+          (comments ?? []).map((cm) => cm.caving).filter(filterFn)
+        ),
+        approach: average(
+          (comments ?? []).map((cm) => cm.approach).filter(filterFn)
+        ),
+      },
     };
 
     if (entrance.isSensitive) {
       entrance.latitude = null;
       entrance.longitude = null;
-      entrance.locations = [];
     }
 
     // Compute data quality score and fetch massifs in parallel (independent queries)

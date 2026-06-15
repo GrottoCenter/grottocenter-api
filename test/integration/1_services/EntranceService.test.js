@@ -144,7 +144,6 @@ describe('EntranceService', () => {
         author: { id: 1, nickname: 'Author' },
         names: [{ name: 'Test', language: 'en' }],
         iso_3166_2: 'FR-75',
-        locations: [{ title: 'Loc', body: 'Body' }],
       };
 
       await EntranceService.updateInSearch(entrance);
@@ -153,7 +152,6 @@ describe('EntranceService', () => {
       const callArg = updateStub.getCall(0).args[1];
       should(callArg.latitude).be.null();
       should(callArg.longitude).be.null();
-      should(callArg.locations).eql([]);
       process.env.NODE_ENV = originalEnv;
     });
 
@@ -419,22 +417,16 @@ describe('EntranceService', () => {
       const callArg = updateStub.getCall(0).args[1];
       should(callArg.reviewer).equal('Reviewer');
       should(callArg.country).equal('France');
-      should(callArg.descriptions).eql([{ title: 'Desc1', body: 'Body1' }]);
-      should(callArg.locations).eql([{ title: 'Loc1', body: 'LocBody1' }]);
-      should(callArg.riggings).eql([
-        { title: 'Rig1', obstacles: 'obs', ropes: 'rope', anchors: 'anc' },
-      ]);
-      should(callArg.histories).eql([{ body: 'History1' }]);
-      should(callArg.documents).eql([1, 2]);
-      should(callArg.comments).eql([
-        {
-          title: 'Com1',
-          body: 'ComBody1',
-          aestheticism: 5,
-          caving: 4,
-          approach: 3,
-        },
-      ]);
+      // Arrays are no longer indexed — only commentsRating is computed
+      should(callArg.descriptions).be.undefined();
+      should(callArg.locations).be.undefined();
+      should(callArg.riggings).be.undefined();
+      should(callArg.histories).be.undefined();
+      should(callArg.documents).be.undefined();
+      should(callArg.comments).be.undefined();
+      should(callArg.commentsRating).have.property('aestheticism', 5);
+      should(callArg.commentsRating).have.property('caving', 4);
+      should(callArg.commentsRating).have.property('approach', 3);
       process.env.NODE_ENV = originalEnv;
     });
   });

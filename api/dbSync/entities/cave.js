@@ -31,26 +31,10 @@ async function* processRows(source) {
   for await (const rows of source) {
     const joins = [
       {
-        table: 't_description d',
-        foreignField: 'id_cave',
-        rows,
-        localField: 'descriptions',
-        fields: ['title', 'body', exportUtils.dateAndAuthorFields('d')],
-        join: exportUtils.dateAndAuthorJoins('d'),
-      },
-      {
         table: 't_entrance',
         foreignField: 'id_cave',
         rows,
         localField: 'entrances',
-        fields: ['id'],
-        transform: (e) => e.id,
-      },
-      {
-        table: 't_document',
-        foreignField: 'id_cave',
-        rows,
-        localField: 'documents',
         fields: ['id'],
         transform: (e) => e.id,
       },
