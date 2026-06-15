@@ -26,26 +26,6 @@ const query = `
 
 async function* processRows(source) {
   for await (const rows of source) {
-    const joins = [
-      {
-        table: 't_description d',
-        foreignField: 'id_massif',
-        rows,
-        localField: 'descriptions',
-        fields: ['title', 'body', exportUtils.dateAndAuthorFields('d')],
-        join: exportUtils.dateAndAuthorJoins('d'),
-      },
-      {
-        table: 't_document',
-        foreignField: 'id_massif',
-        rows,
-        localField: 'documents',
-        fields: ['id'],
-        transform: (e) => e.id,
-      },
-    ];
-
-    await Promise.all(joins.map((e) => exportUtils.joinMany(e)));
     for (const row of rows) yield row;
   }
 }

@@ -189,7 +189,7 @@ describe('Converters Service', () => {
       should(result.length).be.null();
     });
 
-    it('should include exploringOrganizations when present', () => {
+    it('should not include exploringOrganizations', () => {
       const source = {
         id: 1,
         exploringOrganizations: [
@@ -202,15 +202,7 @@ describe('Converters Service', () => {
         ],
       };
       const result = converters.toSimpleCave(source);
-      should(result.exploringOrganizations).eql([
-        { id: 1, name: 'Test Org', language: 'eng', isDeleted: false },
-      ]);
-    });
-
-    it('should handle missing exploringOrganizations', () => {
-      const source = { id: 1 };
-      const result = converters.toSimpleCave(source);
-      should(result.exploringOrganizations).eql([]);
+      should(result.exploringOrganizations).be.undefined();
     });
   });
 

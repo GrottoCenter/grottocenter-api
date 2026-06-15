@@ -77,69 +77,12 @@ async function* processRows(source) {
         where: [],
       },
       {
-        table: 't_location l',
-        foreignField: 'id_entrance',
-        rows,
-        localField: 'locations',
-        fields: ['title', 'body', exportUtils.dateAndAuthorFields('l')],
-        join: exportUtils.dateAndAuthorJoins('l'),
-      },
-      {
-        table: 't_description d',
-        foreignField: 'id_entrance',
-        rows,
-        localField: 'descriptions',
-        fields: ['title', 'body', exportUtils.dateAndAuthorFields('d')],
-        join: exportUtils.dateAndAuthorJoins('d'),
-      },
-      {
-        table: 't_rigging rg',
-        foreignField: 'id_entrance',
-        rows,
-        localField: 'riggings',
-        fields: [
-          'title',
-          'obstacles',
-          'ropes',
-          'anchors',
-          'observations',
-          exportUtils.dateAndAuthorFields('rg'),
-        ],
-        join: exportUtils.dateAndAuthorJoins('rg'),
-      },
-      {
-        table: 't_history h',
-        foreignField: 'id_entrance',
-        rows,
-        localField: 'histories',
-        fields: ['body', exportUtils.dateAndAuthorFields('h')],
-        join: exportUtils.dateAndAuthorJoins('h'),
-      },
-      {
-        table: 'j_document_entrance j',
-        foreignField: 'j.id_entrance',
-        rows,
-        localField: 'documents',
-        fields: ['j.id_document AS id'],
-        where: [],
-        transform: (e) => e.id,
-      },
-      {
         table: 't_comment c',
         foreignField: 'id_entrance',
         rows,
         localField: 'comments',
-        fields: [
-          'title',
-          'body',
-          'aestheticism',
-          'caving',
-          'approach',
-          'e_t_trail',
-          'e_t_underground',
-          exportUtils.dateAndAuthorFields('c'),
-        ],
-        join: exportUtils.dateAndAuthorJoins('c'),
+        fields: ['aestheticism', 'caving', 'approach'],
+        join: [],
       },
       {
         table: 'v_data_quality_compute_entrance vq',
@@ -201,7 +144,6 @@ async function* processRows(source) {
       if (row.isSensitive) {
         row.latitude = null;
         row.longitude = null;
-        row.locations = [];
       }
 
       row.cave = row.cave?.[0] ?? null;
@@ -236,6 +178,7 @@ function importFormater(d) {
     caving: average(comments.map((c) => c.caving).filter(filterFn)),
     approach: average(comments.map((c) => c.approach).filter(filterFn)),
   };
+  delete d.comments;
 
   // Strip non-indexed boolean characteristics so they don't leak into search
   const clean = { ...d };
