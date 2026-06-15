@@ -14,11 +14,13 @@ const query = `
       c.depth,
       c.length,
       c.temperature,
-      c.is_diving AS "isDiving"
+      c.is_diving AS "isDiving",
+      COUNT(e.id) AS "nbEntrances"
     FROM t_cave AS c
     LEFT JOIN t_name n ON n.id_cave = c.id AND n.is_main = true
     LEFT JOIN t_caver a ON a.id = c.id_author
     LEFT JOIN t_caver r ON r.id = c.id_reviewer
+    LEFT JOIN t_entrance e ON e.id_cave = c.id AND e.is_deleted = false
     WHERE c.is_deleted = false
     GROUP BY c.id, n.name, n.id_language, r.nickname, a.nickname
     ORDER BY c.id ASC
@@ -64,6 +66,7 @@ function importFormater(d) {
   d.id = `${d.id}`;
   d.dateInscription = new Date(d.dateInscription).getTime();
   if (d.dateReviewed) d.dateReviewed = new Date(d.dateReviewed).getTime();
+  if (d.nbEntrances) d.nbEntrances = parseInt(d.nbEntrances, 10);
   return d;
 }
 /* eslint-enable no-param-reassign */
@@ -90,6 +93,7 @@ module.exports = {
         { name: 'length', type: 'int32', optional: true, sort: true },
         { name: 'temperature', type: 'float', optional: true, sort: true },
         { name: 'isDiving', type: 'bool', optional: true, sort: true },
+        { name: 'nbEntrances', type: 'int32', optional: true },
       ],
       default_sorting_field: 'dateInscription',
     },
