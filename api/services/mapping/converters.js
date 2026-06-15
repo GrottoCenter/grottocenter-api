@@ -63,6 +63,7 @@ const c = {
     depth: source.depth,
     temperature: source.temperature,
     isDiving: source.isDiving,
+    nbEntrances: source.nbEntrances ?? source.entrances?.length ?? 0,
     entrances: source.entrances?.map((e) => e.id),
     exploringOrganizations: toList(
       'exploringOrganizations',
