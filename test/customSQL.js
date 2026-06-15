@@ -112,10 +112,7 @@ CREATE INDEX IF NOT EXISTS idx_t_description_cave ON t_description(id_cave) WHER
 CREATE INDEX IF NOT EXISTS idx_t_entrance_geom_public
   ON t_entrance USING gist(point_geom)
   WHERE is_sensitive = false AND is_deleted = false;
-CREATE INDEX IF NOT EXISTS idx_t_entrance_of_interest
-  ON t_entrance(id) WHERE is_of_interest = true AND is_deleted = false;
-CREATE INDEX IF NOT EXISTS idx_t_entrance_country_active
-  ON t_entrance(id_country) WHERE is_deleted = false;
+
 CREATE INDEX IF NOT EXISTS idx_t_entrance_iso3166
   ON t_entrance(iso_3166_2) WHERE iso_3166_2 IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_t_last_change_date
@@ -138,13 +135,11 @@ CREATE INDEX IF NOT EXISTS idx_j_document_caver_author_caver
   ON j_document_caver_author(id_caver);
 CREATE INDEX IF NOT EXISTS idx_j_document_grotto_author_grotto
   ON j_document_grotto_author(id_grotto);
-CREATE INDEX IF NOT EXISTS idx_h_name_id ON h_name(id);
 CREATE INDEX IF NOT EXISTS idx_h_description_document
   ON h_description(id_document) WHERE id_document IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_j_participant_caver ON j_participant(id_caver);
 CREATE INDEX IF NOT EXISTS idx_t_conversation_archive ON t_conversation_archive(id_conversation, id_caver);
 CREATE INDEX IF NOT EXISTS idx_t_message_conversation ON t_message(id_conversation, date_sent DESC);
-CREATE INDEX IF NOT EXISTS idx_t_message_sender ON t_message(id_caver_sender);
 
 -- Materialized view indexes (tables in test DB)
 CREATE INDEX IF NOT EXISTS idx_v_dq_country
@@ -168,8 +163,8 @@ CREATE INDEX IF NOT EXISTS idx_v_biblio_last_update
 CREATE INDEX IF NOT EXISTS idx_v_biblio_sets
   ON v_bibliographic_metadata USING gin(list_sets);
 
--- Scientific observations indexes
-CREATE INDEX IF NOT EXISTS idx_quantity_kind_code ON t_quantity_kind (code);
+-- History table indexes
+CREATE INDEX IF NOT EXISTS idx_h_document_id_massif ON h_document(id_massif);
 `;
 
 // Convert t_measurement from a regular table (created by Waterline migrate:drop)

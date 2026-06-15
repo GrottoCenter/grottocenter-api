@@ -8,8 +8,6 @@ const CommonService = require('../../../api/services/CommonService');
 const REQUIRED_INDEXES = [
   // Table indexes
   { table: 't_entrance', name: 'idx_t_entrance_geom_public' },
-  { table: 't_entrance', name: 'idx_t_entrance_of_interest' },
-  { table: 't_entrance', name: 'idx_t_entrance_country_active' },
   { table: 't_entrance', name: 'idx_t_entrance_iso3166' },
   { table: 't_last_change', name: 'idx_t_last_change_date' },
   { table: 't_last_change', name: 'idx_t_last_change_entity' },
@@ -27,8 +25,8 @@ const REQUIRED_INDEXES = [
     table: 'j_document_grotto_author',
     name: 'idx_j_document_grotto_author_grotto',
   },
-  { table: 'h_name', name: 'idx_h_name_id' },
   { table: 'h_description', name: 'idx_h_description_document' },
+  { table: 'h_document', name: 'idx_h_document_id_massif' },
   // Materialized view indexes (tables in test DB)
   { table: 'v_data_quality_compute_entrance', name: 'idx_v_dq_country' },
   { table: 'v_data_quality_compute_entrance', name: 'idx_v_dq_entrance' },
@@ -55,6 +53,10 @@ const DEAD_INDEXES = [
     table: 'j_caver_country_subscription',
     name: 'idx_j_caver_country_subscription_caver',
   },
+  // Dropped in 9_06_2026_06_15: 0 scans over 11 months (stats since 2024-07-21)
+  { table: 't_entrance', name: 'idx_t_entrance_of_interest' },
+  { table: 't_entrance', name: 'idx_t_entrance_country_active' },
+  { table: 'h_name', name: 'idx_h_name_id' },
 ];
 
 /**
