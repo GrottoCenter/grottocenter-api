@@ -52,6 +52,25 @@ describe('Organization features', () => {
           });
       });
 
+      it('should return 200 and trim postalCode with trailing whitespace', (done) => {
+        supertest(sails.hooks.http.app)
+          .put(`/api/v1/organizations/1`)
+          .set('Authorization', userToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .send({
+            postalCode: '56220 ',
+            url: 'https://example.com',
+          })
+          .expect(200)
+          .end(async (err, res) => {
+            if (err) return done(err);
+            const { body: organization } = res;
+            should(organization.postalCode).equal('56220');
+            return done();
+          });
+      });
+
       it('should return 200 when latitude and longitude are empty strings', (done) => {
         supertest(sails.hooks.http.app)
           .put(`/api/v1/organizations/1`)

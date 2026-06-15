@@ -50,6 +50,48 @@ describe('GrottoService', () => {
       should(result.yearBirth).equal(2000);
     });
 
+    it('should trim whitespace from string fields', () => {
+      const req = {
+        param: sinon.stub(),
+        body: { country: { id: 'FR' } },
+      };
+      req.param.withArgs('address').returns('  123 Main St  ');
+      req.param.withArgs('city').returns('Paris ');
+      req.param.withArgs('county').returns(' Paris County');
+      req.param.withArgs('customMessage').returns('Welcome ');
+      req.param.withArgs('latitude').returns(48.8566);
+      req.param.withArgs('longitude').returns(2.3522);
+      req.param.withArgs('mail').returns(' test@example.com ');
+      req.param.withArgs('postalCode').returns('56220 ');
+      req.param.withArgs('region').returns(' Île-de-France ');
+      req.param.withArgs('url').returns(' https://example.com ');
+      req.param.withArgs('yearBirth').returns(2000);
+
+      const result = GrottoService.getConvertedDataFromClientRequest(req);
+
+      should(result.address).equal('123 Main St');
+      should(result.city).equal('Paris');
+      should(result.county).equal('Paris County');
+      should(result.customMessage).equal('Welcome');
+      should(result.mail).equal('test@example.com');
+      should(result.postalCode).equal('56220');
+      should(result.region).equal('Île-de-France');
+      should(result.url).equal('https://example.com');
+    });
+
+    it('should handle null and undefined string params without throwing', () => {
+      const req = {
+        param: sinon.stub(),
+        body: {},
+      };
+      req.param.returns(null);
+
+      const result = GrottoService.getConvertedDataFromClientRequest(req);
+      should(result.postalCode).be.null();
+      should(result.address).be.null();
+      should(result.city).be.null();
+    });
+
     it('should handle missing country', () => {
       const req = {
         param: sinon.stub(),
