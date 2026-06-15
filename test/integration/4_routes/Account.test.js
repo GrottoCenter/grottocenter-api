@@ -245,6 +245,36 @@ describe('Account features', () => {
         .expect(409);
     });
 
+    it('should return 409 even when duplicate nicknames exist in DB', async () => {
+      // Simulate legacy data: create a caver with a nickname that already exists
+      const duplicateNickname = 'DuplicatedNick';
+      const caver1 = await TCaver.create({
+        nickname: duplicateNickname,
+        mail: 'dup1@test.com',
+        password: 'hashed',
+        language: '000',
+      }).fetch();
+      const caver2 = await TCaver.create({
+        nickname: duplicateNickname,
+        mail: 'dup2@test.com',
+        password: 'hashed',
+        language: '000',
+      }).fetch();
+
+      // The authenticated user (id 3) trying to claim this duplicated nickname
+      // should get 409, not 500
+      await supertest(sails.hooks.http.app)
+        .patch('/api/v1/account')
+        .send({ nickname: duplicateNickname })
+        .set('Authorization', userToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(409);
+
+      // Cleanup
+      await TCaver.destroy({ id: [caver1.id, caver2.id] });
+    });
+
     it('should return 400 if nickname is empty', async () => {
       await supertest(sails.hooks.http.app)
         .patch('/api/v1/account')
