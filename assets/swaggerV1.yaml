@@ -3224,18 +3224,27 @@ paths:
     patch:
       tags:
         - names
-      description: Update a name.
+      description: Update a name. Both fields are optional (PATCH semantics).
       parameters:
         - name: id
           in: path
           required: true
           schema:
-            type: string
-        - name: name
-          in: query
-          required: true
-          schema:
-            type: string
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: The name text (max 200 characters)
+                  maxLength: 200
+                language:
+                  type: string
+                  description: ISO 639-3 language code (must exist in TLanguage)
+                  example: fra
       responses:
         '200':
           description: Successful operation
@@ -3243,6 +3252,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Name'
+        '400':
+          description: Validation error (name too long, language null or not found)
+        '404':
+          description: Name not found
 
   '/names/{id}/setAsMain':
     post:
@@ -4849,7 +4862,7 @@ paths:
     put:
       tags:
         - massifs
-      description: Update a massif, its list of caves, names, descriptions and documents and its geogPolygon. The polygon area must not exceed 8 000 km².
+      description: Update a massif, its list of caves, names, descriptions and documents and its geogPolygon. The polygon area must not exceed 35 000 km². Accepts an optional name field to update the main name atomically.
       parameters:
         - name: id
           in: path
@@ -4857,44 +4870,47 @@ paths:
           required: true
           schema:
             type: string
-        - name: geogPolygon
-          in: query
-          description: GeoJson EPSG4326 which represent the massif on a map (see post method)
-          required: false
-          schema:
-            type: object
-        - name: caves
-          in: query
-          description: List of caves ids
-          required: false
-          schema:
-            type: array
-            items:
+      requestBody:
+        content:
+          application/json:
+            schema:
               type: object
-        - name: descriptions
-          in: query
-          description: List of descriptions ids
-          required: false
-          schema:
-            type: array
-            items:
-              type: object
-        - name: documents
-          in: query
-          description: List of documents ids
-          required: false
-          schema:
-            type: array
-            items:
-              type: object
-        - name: names
-          in: query
-          description: List of names ids
-          required: false
-          schema:
-            type: array
-            items:
-              type: object
+              properties:
+                geogPolygon:
+                  type: object
+                  description: GeoJson EPSG4326 which represent the massif on a map
+                caves:
+                  type: array
+                  description: List of caves ids
+                  items:
+                    type: object
+                descriptions:
+                  type: array
+                  description: List of descriptions ids
+                  items:
+                    type: object
+                documents:
+                  type: array
+                  description: List of documents ids
+                  items:
+                    type: object
+                names:
+                  type: array
+                  description: List of names ids
+                  items:
+                    type: object
+                name:
+                  type: object
+                  description: Optional. Update the main name inline (text and/or language).
+                  properties:
+                    text:
+                      type: string
+                      description: Name text (max 200 characters)
+                      maxLength: 200
+                    language:
+                      type: string
+                      description: ISO 639-3 language code (must exist in TLanguage)
+                      example: fra
       responses:
         '200':
           description: Successful operation
@@ -4905,7 +4921,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/Massif'
         '400':
-          description: Bad request, or the polygon area exceeds the 8 000 km² limit.
+          description: Bad request, name too long, language null or not found, or the polygon area exceeds the 35 000 km² limit.
         '404':
           description: Resource not found
         '403':
@@ -5205,7 +5221,7 @@ paths:
     put:
       tags:
         - organizations
-      description: Update an organization. See the POST /organization route explaination about the parameters you can use to update an organization.
+      description: Update an organization. Accepts an optional name field to update the main name atomically.
       parameters:
         - name: id
           in: path
@@ -5213,6 +5229,52 @@ paths:
           required: true
           schema:
             type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                address:
+                  type: string
+                city:
+                  type: string
+                country:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      description: ISO 3166-1 alpha-2 country code
+                county:
+                  type: string
+                customMessage:
+                  type: string
+                latitude:
+                  type: number
+                longitude:
+                  type: number
+                mail:
+                  type: string
+                postalCode:
+                  type: string
+                region:
+                  type: string
+                url:
+                  type: string
+                yearBirth:
+                  type: integer
+                name:
+                  type: object
+                  description: Optional. Update the main name inline (text and/or language).
+                  properties:
+                    text:
+                      type: string
+                      description: Name text (max 200 characters)
+                      maxLength: 200
+                    language:
+                      type: string
+                      description: ISO 639-3 language code (must exist in TLanguage)
+                      example: fra
       responses:
         200:
           description: Successful operation
@@ -5220,8 +5282,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Organization'
+        400:
+          description: Validation error (name too long, language null or not found)
         403:
           description: You are not authorized to update an organization.
+        404:
+          description: Organization not found.
 
   '/organizations/count':
     get:
