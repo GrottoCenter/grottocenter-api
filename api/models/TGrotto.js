@@ -61,7 +61,7 @@ module.exports = {
       type: 'string',
       allowNull: true,
       columnName: 'postal_code',
-      maxLength: 5,
+      maxLength: 10,
     },
 
     address: {

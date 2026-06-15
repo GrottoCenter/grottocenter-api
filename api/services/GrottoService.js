@@ -7,20 +7,27 @@ const EnrichmentQueueService = require('./EnrichmentQueueService');
 const RecentChangeService = require('./RecentChangeService');
 const coerceToNumeric = require('../utils/coerceToNumeric');
 
+/**
+ * Trim a string value if non-null/undefined, otherwise return the value as-is.
+ * Useful for sanitizing user-provided string fields before persistence.
+ */
+const trimIfString = (value) =>
+  typeof value === 'string' ? value.trim() : value;
+
 module.exports = {
   // Extract everything from a request body except id
   getConvertedDataFromClientRequest: (req) => ({
-    address: req.param('address'),
-    city: req.param('city'),
+    address: trimIfString(req.param('address')),
+    city: trimIfString(req.param('city')),
     country: req.body?.country?.id ?? null,
-    county: req.param('county'),
-    customMessage: req.param('customMessage'),
+    county: trimIfString(req.param('county')),
+    customMessage: trimIfString(req.param('customMessage')),
     latitude: coerceToNumeric(req.param('latitude')),
     longitude: coerceToNumeric(req.param('longitude')),
-    mail: req.param('mail'),
-    postalCode: req.param('postalCode'),
-    region: req.param('region'),
-    url: req.param('url'),
+    mail: trimIfString(req.param('mail')),
+    postalCode: trimIfString(req.param('postalCode')),
+    region: trimIfString(req.param('region')),
+    url: trimIfString(req.param('url')),
     yearBirth: req.param('yearBirth'),
   }),
 
