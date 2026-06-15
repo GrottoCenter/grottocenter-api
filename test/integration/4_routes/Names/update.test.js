@@ -148,5 +148,83 @@ describe('Name features', () => {
         .send(updateData)
         .expect(400, done); // Very long name likely causes validation error
     });
+
+    it('should update language successfully', (done) => {
+      supertest(sails.hooks.http.app)
+        .patch('/api/v1/names/7')
+        .set('Authorization', userToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .send({ language: 'fra' })
+        .expect(200)
+        .end(async (err, res) => {
+          if (err) return done(err);
+
+          try {
+            const { body: name } = res;
+            should(name.language).have.property('id', 'fra');
+            should(name.name).equal('The cave with name 7');
+
+            // Reset language back to original
+            await TName.updateOne({ id: 7 }).set({ language: 'eng' });
+            return done();
+          } catch (testErr) {
+            return done(testErr);
+          }
+        });
+    });
+
+    it('should update both name and language simultaneously', (done) => {
+      supertest(sails.hooks.http.app)
+        .patch('/api/v1/names/7')
+        .set('Authorization', userToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .send({ name: 'Nom de grotte', language: 'fra' })
+        .expect(200)
+        .end(async (err, res) => {
+          if (err) return done(err);
+
+          try {
+            const { body: name } = res;
+            should(name.name).equal('Nom de grotte');
+            should(name.language).have.property('id', 'fra');
+
+            // Reset back to original
+            await TName.updateOne({ id: 7 }).set({
+              name: 'The cave with name 7',
+              language: 'eng',
+            });
+            return done();
+          } catch (testErr) {
+            return done(testErr);
+          }
+        });
+    });
+
+    it('should return 400 when language does not exist', (done) => {
+      supertest(sails.hooks.http.app)
+        .patch('/api/v1/names/7')
+        .set('Authorization', userToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .send({ language: 'zzz' })
+        .expect(400)
+        .end((err, res) => {
+          if (err) return done(err);
+          should(res.text).containEql('does not exist');
+          return done();
+        });
+    });
+
+    it('should return 400 when language is null', (done) => {
+      supertest(sails.hooks.http.app)
+        .patch('/api/v1/names/7')
+        .set('Authorization', userToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .send({ language: null })
+        .expect(400, done);
+    });
   });
 });

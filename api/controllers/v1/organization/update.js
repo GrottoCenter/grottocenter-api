@@ -3,6 +3,7 @@ const GrottoService = require('../../../services/GrottoService');
 const NotificationService = require('../../../services/NotificationService');
 const EnrichmentQueueService = require('../../../services/EnrichmentQueueService');
 const { toOrganization } = require('../../../services/mapping/converters');
+const { validateNameLength } = require('../../../utils/nameValidation');
 
 module.exports = async (req, res) => {
   // Check if organization exists
@@ -35,7 +36,42 @@ module.exports = async (req, res) => {
     coordinatesChanged = true;
   }
 
-  // The name is updated via the /api/v1/names route by the front
+  // Validate name length
+  const nameText = req.body.name?.text;
+  const nameError = validateNameLength(nameText);
+  if (nameError) {
+    return res.badRequest(nameError);
+  }
+
+  // Validate language if provided
+  const nameLanguage = req.body.name?.language;
+  if (nameLanguage !== undefined) {
+    if (nameLanguage === null) {
+      return res.badRequest('Language cannot be null.');
+    }
+    const foundLanguage = await TLanguage.findOne({ id: nameLanguage });
+    if (!foundLanguage) {
+      return res.badRequest('The provided language does not exist.');
+    }
+  }
+
+  // Handle name update inline (consistent with entrance and cave update)
+  if (req.body.name) {
+    const nameUpdate = {};
+    if (nameText !== undefined) {
+      nameUpdate.name = nameText;
+    }
+    if (nameLanguage !== undefined) {
+      nameUpdate.language = nameLanguage;
+    }
+    if (Object.keys(nameUpdate).length > 0) {
+      await TName.updateOne({
+        grotto: organizationId,
+        isMain: true,
+      }).set(nameUpdate);
+    }
+  }
+
   await TGrotto.updateOne({ id: organizationId }).set(cleanedData);
 
   if (coordinatesChanged) {

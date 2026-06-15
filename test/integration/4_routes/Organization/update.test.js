@@ -93,6 +93,111 @@ describe('Organization features', () => {
             return done();
           });
       });
+
+      it('should update name text via inline name field', (done) => {
+        supertest(sails.hooks.http.app)
+          .put('/api/v1/organizations/1')
+          .set('Authorization', userToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .send({ name: { text: 'Updated Org Name' } })
+          .expect(200)
+          .end(async (err, res) => {
+            if (err) return done(err);
+            try {
+              const { body: organization } = res;
+              should(organization.name).equal('Updated Org Name');
+
+              // Reset
+              await TName.updateOne({ id: 1 }).set({
+                name: 'Organization 1',
+              });
+              return done();
+            } catch (testErr) {
+              return done(testErr);
+            }
+          });
+      });
+
+      it('should update name language via inline name field', (done) => {
+        supertest(sails.hooks.http.app)
+          .put('/api/v1/organizations/1')
+          .set('Authorization', userToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .send({ name: { language: 'eng' } })
+          .expect(200)
+          .end(async (err, res) => {
+            if (err) return done(err);
+            try {
+              const { body: organization } = res;
+              should(organization.language).equal('eng');
+
+              // Reset
+              await TName.updateOne({ id: 1 }).set({ language: 'fra' });
+              return done();
+            } catch (testErr) {
+              return done(testErr);
+            }
+          });
+      });
+
+      it('should update both name text and language atomically', (done) => {
+        supertest(sails.hooks.http.app)
+          .put('/api/v1/organizations/1')
+          .set('Authorization', userToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .send({ name: { text: 'The Organization', language: 'eng' } })
+          .expect(200)
+          .end(async (err, res) => {
+            if (err) return done(err);
+            try {
+              const { body: organization } = res;
+              should(organization.name).equal('The Organization');
+              should(organization.language).equal('eng');
+
+              // Reset
+              await TName.updateOne({ id: 1 }).set({
+                name: 'Organization 1',
+                language: 'fra',
+              });
+              return done();
+            } catch (testErr) {
+              return done(testErr);
+            }
+          });
+      });
+
+      it('should return 400 when name language does not exist', (done) => {
+        supertest(sails.hooks.http.app)
+          .put('/api/v1/organizations/1')
+          .set('Authorization', userToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .send({ name: { language: 'zzz' } })
+          .expect(400, done);
+      });
+
+      it('should return 400 when name language is null', (done) => {
+        supertest(sails.hooks.http.app)
+          .put('/api/v1/organizations/1')
+          .set('Authorization', userToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .send({ name: { language: null } })
+          .expect(400, done);
+      });
+
+      it('should return 400 when name text is too long', (done) => {
+        supertest(sails.hooks.http.app)
+          .put('/api/v1/organizations/1')
+          .set('Authorization', userToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .send({ name: { text: 'A'.repeat(500) } })
+          .expect(400, done);
+      });
     });
   });
 });

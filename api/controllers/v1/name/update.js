@@ -20,9 +20,25 @@ module.exports = async (req, res) => {
     return res.badRequest(nameError);
   }
 
-  const cleanedData = {
-    name: nameText,
-  };
+  // Validate language if provided
+  const language = req.param('language');
+  if (language !== undefined) {
+    if (language === null) {
+      return res.badRequest('Language cannot be null.');
+    }
+    const foundLanguage = await TLanguage.findOne({ id: language });
+    if (!foundLanguage) {
+      return res.badRequest('The provided language does not exist.');
+    }
+  }
+
+  const cleanedData = {};
+  if (nameText !== undefined) {
+    cleanedData.name = nameText;
+  }
+  if (language !== undefined) {
+    cleanedData.language = language;
+  }
 
   try {
     await TName.updateOne({

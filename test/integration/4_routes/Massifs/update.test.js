@@ -40,6 +40,7 @@ describe('Massif features', () => {
       name: 'Test',
       language: 'fra',
       massif: massif.id,
+      isMain: true,
     }).fetch();
     testNameId = name.id;
   });
@@ -157,6 +158,111 @@ describe('Massif features', () => {
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json')
         .expect(200, done);
+    });
+
+    it('should update name text via inline name field', (done) => {
+      supertest(sails.hooks.http.app)
+        .put(`/api/v1/massifs/${testMassifId}`)
+        .send({ name: { text: 'Updated Massif Name' } })
+        .set('Authorization', userToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(200)
+        .end(async (err) => {
+          if (err) return done(err);
+          try {
+            const updatedName = await TName.findOne({ id: testNameId });
+            should(updatedName.name).equal('Updated Massif Name');
+
+            // Reset
+            await TName.updateOne({ id: testNameId }).set({ name: 'Test' });
+            return done();
+          } catch (testErr) {
+            return done(testErr);
+          }
+        });
+    });
+
+    it('should update name language via inline name field', (done) => {
+      supertest(sails.hooks.http.app)
+        .put(`/api/v1/massifs/${testMassifId}`)
+        .send({ name: { language: 'eng' } })
+        .set('Authorization', userToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(200)
+        .end(async (err) => {
+          if (err) return done(err);
+          try {
+            const updatedName = await TName.findOne({ id: testNameId });
+            should(updatedName.language).equal('eng');
+
+            // Reset
+            await TName.updateOne({ id: testNameId }).set({
+              language: 'fra',
+            });
+            return done();
+          } catch (testErr) {
+            return done(testErr);
+          }
+        });
+    });
+
+    it('should update both name text and language atomically', (done) => {
+      supertest(sails.hooks.http.app)
+        .put(`/api/v1/massifs/${testMassifId}`)
+        .send({ name: { text: 'Le Massif', language: 'fra' } })
+        .set('Authorization', userToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(200)
+        .end(async (err) => {
+          if (err) return done(err);
+          try {
+            const updatedName = await TName.findOne({ id: testNameId });
+            should(updatedName.name).equal('Le Massif');
+            should(updatedName.language).equal('fra');
+
+            // Reset
+            await TName.updateOne({ id: testNameId }).set({
+              name: 'Test',
+              language: 'fra',
+            });
+            return done();
+          } catch (testErr) {
+            return done(testErr);
+          }
+        });
+    });
+
+    it('should return 400 when name language does not exist', (done) => {
+      supertest(sails.hooks.http.app)
+        .put(`/api/v1/massifs/${testMassifId}`)
+        .send({ name: { language: 'zzz' } })
+        .set('Authorization', userToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(400, done);
+    });
+
+    it('should return 400 when name language is null', (done) => {
+      supertest(sails.hooks.http.app)
+        .put(`/api/v1/massifs/${testMassifId}`)
+        .send({ name: { language: null } })
+        .set('Authorization', userToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(400, done);
+    });
+
+    it('should return 400 when name text is too long', (done) => {
+      supertest(sails.hooks.http.app)
+        .put(`/api/v1/massifs/${testMassifId}`)
+        .send({ name: { text: 'A'.repeat(500) } })
+        .set('Authorization', userToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(400, done);
     });
   });
 });
