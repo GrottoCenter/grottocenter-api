@@ -79,7 +79,7 @@ describe('GrottoService', () => {
       should(result.url).equal('https://example.com');
     });
 
-    it('should handle null and undefined string params without throwing', () => {
+    it('should handle null string params without throwing', () => {
       const req = {
         param: sinon.stub(),
         body: {},
@@ -90,6 +90,19 @@ describe('GrottoService', () => {
       should(result.postalCode).be.null();
       should(result.address).be.null();
       should(result.city).be.null();
+    });
+
+    it('should handle undefined string params without throwing', () => {
+      const req = {
+        param: sinon.stub(),
+        body: {},
+      };
+      req.param.returns(undefined);
+
+      const result = GrottoService.getConvertedDataFromClientRequest(req);
+      should(result.postalCode).be.undefined();
+      should(result.address).be.undefined();
+      should(result.city).be.undefined();
     });
 
     it('should handle missing country', () => {

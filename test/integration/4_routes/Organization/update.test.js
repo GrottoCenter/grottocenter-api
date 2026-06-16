@@ -59,6 +59,7 @@ describe('Organization features', () => {
           .set('Content-type', 'application/json')
           .set('Accept', 'application/json')
           .send({
+            address: "  Rue de l'Étang  ",
             postalCode: '56220 ',
             url: 'https://example.com',
           })
@@ -67,6 +68,7 @@ describe('Organization features', () => {
             if (err) return done(err);
             const { body: organization } = res;
             should(organization.postalCode).equal('56220');
+            should(organization.address).equal("Rue de l'Étang");
             return done();
           });
       });

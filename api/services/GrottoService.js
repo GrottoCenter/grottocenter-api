@@ -6,13 +6,7 @@ const NotificationService = require('./NotificationService');
 const EnrichmentQueueService = require('./EnrichmentQueueService');
 const RecentChangeService = require('./RecentChangeService');
 const coerceToNumeric = require('../utils/coerceToNumeric');
-
-/**
- * Trim a string value if non-null/undefined, otherwise return the value as-is.
- * Useful for sanitizing user-provided string fields before persistence.
- */
-const trimIfString = (value) =>
-  typeof value === 'string' ? value.trim() : value;
+const trimIfString = require('../utils/trimIfString');
 
 module.exports = {
   // Extract everything from a request body except id
@@ -28,7 +22,7 @@ module.exports = {
     postalCode: trimIfString(req.param('postalCode')),
     region: trimIfString(req.param('region')),
     url: trimIfString(req.param('url')),
-    yearBirth: req.param('yearBirth'),
+    yearBirth: req.param('yearBirth'), // numeric field — no trim needed
   }),
 
   getPopulatedOrganization: async (organizationId) => {
