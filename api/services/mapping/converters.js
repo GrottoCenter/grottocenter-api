@@ -782,7 +782,8 @@ const c = {
         data = c.toSimpleCave(item.document, meta); // Only used in quick search
       else if (_type === 'entrances') {
         data = c.toEntrance(item.document, meta);
-        // Strip arrays not needed in search responses
+        // Strip arrays not needed in search responses (transitional: old indexed
+        // documents may still carry these until the post-deploy full re-sync)
         delete data.comments;
         delete data.descriptions;
         delete data.histories;

@@ -28,12 +28,7 @@ const RightService = require('./RightService');
 const coerceToInt = require('../utils/coerceToInt');
 const coerceBool = require('../utils/coerceBool');
 const { getQualityData } = require('../utils/computeEntranceDataQuality');
-
-function average(arr) {
-  if (arr.length === 0) return null;
-  return arr.reduce((a, b) => a + b, 0) / arr.length;
-}
-const filterFn = (e) => e && e > 0;
+const { computeCommentsRating } = require('../utils/commentsRating');
 
 module.exports = {
   getConvertedNameFromClientRequest: (req) => {
@@ -333,17 +328,7 @@ module.exports = {
         temperature: cave.temperature,
         isDiving: cave.isDiving,
       },
-      commentsRating: {
-        aestheticism: average(
-          (comments ?? []).map((cm) => cm.aestheticism).filter(filterFn)
-        ),
-        caving: average(
-          (comments ?? []).map((cm) => cm.caving).filter(filterFn)
-        ),
-        approach: average(
-          (comments ?? []).map((cm) => cm.approach).filter(filterFn)
-        ),
-      },
+      commentsRating: computeCommentsRating(comments ?? []),
     };
 
     if (entrance.isSensitive) {

@@ -239,7 +239,7 @@ module.exports = {
       length: c.caveLength,
       temperature: c.temperature,
       isDiving: c.isDiving,
-      nbEntrances: c.entrances?.length ?? 0,
+      nbEntrances: (c.entrances ?? []).filter((e) => !e.isDeleted).length,
     };
     await SearchService.updateDocument('caves', cave);
   },

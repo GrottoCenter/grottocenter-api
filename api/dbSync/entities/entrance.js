@@ -4,13 +4,8 @@ const {
   computeDateLastModif,
 } = require('../../../config/constants/entrance');
 const { getQualityData } = require('../../utils/computeEntranceDataQuality');
+const { computeCommentsRating } = require('../../utils/commentsRating');
 const CommonService = require('../../services/CommonService');
-
-function average(arr) {
-  if (arr.length === 0) return null;
-  return arr.reduce((a, b) => a + b, 0) / arr.length;
-}
-const filterFn = (e) => e && e > 0;
 
 const query = `
     SELECT
@@ -173,11 +168,7 @@ function importFormater(d) {
   if (d.longitude) d.longitude = parseFloat(d.longitude);
 
   const comments = d.comments ?? [];
-  d.commentsRating = {
-    aestheticism: average(comments.map((c) => c.aestheticism).filter(filterFn)),
-    caving: average(comments.map((c) => c.caving).filter(filterFn)),
-    approach: average(comments.map((c) => c.approach).filter(filterFn)),
-  };
+  d.commentsRating = computeCommentsRating(comments);
   delete d.comments;
 
   // Strip non-indexed boolean characteristics so they don't leak into search
