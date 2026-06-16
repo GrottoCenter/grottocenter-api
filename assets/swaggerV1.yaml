@@ -4371,7 +4371,20 @@ paths:
     post:
       tags:
         - search
-      description: Export all search result into a CSV, max number of row 10 000
+      description: |
+        Export search results in CSV, GeoJSON, KML, or GPX format. Maximum 10,000 rows.
+        Geographic formats (geojson, kml, gpx) are restricted to entrance searches only.
+      parameters:
+        - in: query
+          name: format
+          schema:
+            type: string
+            enum: [csv, geojson, kml, gpx]
+            default: csv
+          description: |
+            Output format for the export. Default is "csv".
+            Geographic formats (geojson, kml, gpx) are only available for entrance searches.
+            When using a geo format, columns and columnsName become optional — if provided, they filter and alias the exported fields; if absent, all fields are included.
       requestBody:
         content:
           application/json:
@@ -4404,19 +4417,48 @@ paths:
                   default: true
                 columns:
                   type: array
-                  description: What fields to export
+                  description: |
+                    Fields to export. Required for CSV format.
+                    For geo formats: optional — when provided, restricts which fields appear in properties/ExtendedData; when absent, all fields are included.
                   items:
                     type: string
                 columnsName:
                   type: array
-                  description: What is the name of the fields to export
+                  description: |
+                    Display names for the exported fields. Required for CSV format (must match columns length).
+                    For geo formats: optional — when provided alongside columns, aliases the field names in the output.
                   items:
                     type: string
       responses:
         '200':
           description: Successful operation
           content:
-            text/csv: {}
+            text/csv:
+              schema:
+                type: string
+                format: binary
+              description: CSV output (default format)
+            application/geo+json:
+              schema:
+                type: object
+              description: GeoJSON FeatureCollection output
+            application/vnd.google-earth.kml+xml:
+              schema:
+                type: string
+                format: binary
+              description: KML Document output
+            application/gpx+xml:
+              schema:
+                type: string
+                format: binary
+              description: GPX waypoints output
+        '400':
+          description: |
+            Bad request. Possible causes:
+            - Invalid format value (must be one of: csv, geojson, kml, gpx)
+            - Geographic format requested for non-entrance entity
+            - Missing or invalid columns/columnsName (CSV format only)
+            - Search results exceed 10,000 row limit
 
   '/field-search':
     post:
