@@ -8,5 +8,10 @@
     "id": 2,
     "code": "HPA",
     "symbol": "hPa"
+  },
+  {
+    "id": 3,
+    "code": "per_mil",
+    "symbol": "‰"
   }
 ]

@@ -16,5 +16,14 @@
     "displaySymbol": "hPa",
     "siToDisplayFactor": "0.01",
     "siToDisplayOffset": "0"
+  },
+  {
+    "id": 3,
+    "code": "IsotopeDelta",
+    "url": "http://qudt.org/vocab/quantitykind/DimensionlessRatio",
+    "symbolSi": "1",
+    "displaySymbol": "‰",
+    "siToDisplayFactor": "1000",
+    "siToDisplayOffset": "0"
   }
 ]
