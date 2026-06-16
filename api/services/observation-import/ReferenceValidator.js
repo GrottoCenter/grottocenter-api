@@ -15,7 +15,6 @@ const isBlank = require('../../utils/isBlank');
  * @typedef {Object} ResolvedEntities
  * @property {Object|null}      cave          - Resolved TCave record (or null)
  * @property {Object}           license       - Resolved TLicense record
- * @property {Object[]}         authors       - Resolved TCaver records for all author IDs
  * @property {Map<number,Object>} media       - Map of mediumId → TMedium record
  * @property {Map<number,Object>} sensorConfigs - Map of sensorConfigurationId → TSensorConfiguration (with quantityKind populated)
  */
@@ -32,7 +31,6 @@ const validate = async (profile) => {
   const resolved = {
     cave: null,
     license: null,
-    authors: [],
     media: new Map(),
     sensorConfigs: new Map(),
   };
@@ -112,15 +110,13 @@ const validate = async (profile) => {
     );
   }
 
-  // Author checks: resolve all unique author IDs from authorIds
+  // Author checks: verify all unique author IDs from authorIds exist
   const uniqueAuthorIds = [...new Set(profile.authorIds || [])];
   uniqueAuthorIds.forEach((authorId) => {
     checks.push(
       TCaver.findOne({ id: authorId }).then((author) => {
         if (!author) {
           errors.push(`authorIds: Caver with ID ${authorId} not found`);
-        } else {
-          resolved.authors.push(author);
         }
       })
     );

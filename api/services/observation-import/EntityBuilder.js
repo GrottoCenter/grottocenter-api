@@ -261,7 +261,7 @@ const processColumn = async ({
  *   { rows: string[][], timestamps: Date[], measurements: Array<{columnIndex, value, valueSi}[]> }
  * @param {Object} params.profile - Full profile JSON
  * @param {Object} params.resolvedEntities
- *   { cave, license, authors: TCaver[], media: Map<id,TMedium>, sensorConfigs: Map<id,TSensorConfiguration> }
+ *   { cave, license, media: Map<id,TMedium>, sensorConfigs: Map<id,TSensorConfiguration> }
  * @param {Object} params.file - Multer file object { buffer, originalname, size, mimetype }
  * @param {number} params.requestAuthorId - Authenticated user ID
  * @returns {Promise<{
@@ -283,18 +283,14 @@ const build = async ({
   requestAuthorId,
 }) => {
   const { timestamps, measurements } = parsedData;
-  const { cave, license, authors } = resolvedEntities;
+  const { cave, license } = resolvedEntities;
 
-  // Effective author IDs: use resolved entities if available, else fall back to profile.
-  // Deduplicate to prevent duplicate junction rows.
-  // Note: authors.length should always be > 0 here because ProfileValidator
-  // guarantees authorIds is non-empty and ReferenceValidator resolves them.
-  // The fallback to profile.authorIds is a defensive safeguard only.
-  const authorIds = [
-    ...new Set(
-      authors.length > 0 ? authors.map((a) => a.id) : profile.authorIds || []
-    ),
-  ];
+  // Use profile.authorIds directly to preserve user-specified ordering.
+  // ProfileValidator guarantees authorIds is a non-empty array of positive
+  // integers, and ReferenceValidator confirms each ID exists in TCaver.
+  // Deduplicate to prevent duplicate junction rows while keeping the first
+  // occurrence (preserves intended primary author at index 0).
+  const authorIds = [...new Set(profile.authorIds)];
 
   // Defensive check: timestamps and measurements must be aligned (same row count)
   if (timestamps.length !== measurements.length) {
