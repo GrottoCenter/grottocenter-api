@@ -29,6 +29,7 @@ const query = `
 
 async function* processRows(source) {
   for await (const rows of source) {
+    // Keep until frontend migrates from entrances.length to nbEntrances
     const joins = [
       {
         table: 't_entrance',
@@ -50,7 +51,7 @@ function importFormater(d) {
   d.id = `${d.id}`;
   d.dateInscription = new Date(d.dateInscription).getTime();
   if (d.dateReviewed) d.dateReviewed = new Date(d.dateReviewed).getTime();
-  if (d.nbEntrances) d.nbEntrances = parseInt(d.nbEntrances, 10);
+  if (d.nbEntrances != null) d.nbEntrances = parseInt(d.nbEntrances, 10);
   return d;
 }
 /* eslint-enable no-param-reassign */
