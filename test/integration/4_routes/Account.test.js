@@ -261,18 +261,35 @@ describe('Account features', () => {
         language: '000',
       }).fetch();
 
-      // The authenticated user (id 3) trying to claim this duplicated nickname
-      // should get 409, not 500
+      try {
+        // The authenticated user (id 3) trying to claim this duplicated nickname
+        // should get 409, not 500
+        await supertest(sails.hooks.http.app)
+          .patch('/api/v1/account')
+          .send({ nickname: duplicateNickname })
+          .set('Authorization', userToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .expect(409);
+      } finally {
+        await TCaver.destroy({ id: [caver1.id, caver2.id] });
+      }
+    });
+
+    it('should allow submitting own current nickname without conflict', async () => {
+      // The authenticated user (User1, id 3) should be able to submit their
+      // own nickname alongside other fields without triggering a 409
+      const caver = await TCaver.findOne({ id: 3 });
       await supertest(sails.hooks.http.app)
         .patch('/api/v1/account')
-        .send({ nickname: duplicateNickname })
+        .send({ nickname: caver.nickname, name: 'SelfNickTest' })
         .set('Authorization', userToken)
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json')
-        .expect(409);
-
-      // Cleanup
-      await TCaver.destroy({ id: [caver1.id, caver2.id] });
+        .expect(204);
+      const updated = await TCaver.findOne({ id: 3 });
+      should(updated.name).equal('SelfNickTest');
+      should(updated.nickname).equal(caver.nickname);
     });
 
     it('should return 400 if nickname is empty', async () => {
