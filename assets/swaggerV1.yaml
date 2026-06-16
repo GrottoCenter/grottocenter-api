@@ -8262,6 +8262,13 @@ components:
         label:
           type: string
           nullable: true
+        substance:
+          type: string
+          maxLength: 100
+          nullable: true
+          description: >-
+            Chemical species or isotope identifier (e.g. "NO₃⁻", "δ¹⁸O").
+            Required for Concentration or IsotopeDelta quantity kinds, forbidden otherwise.
         precisionUpper:
           type: number
           nullable: true
@@ -8323,6 +8330,13 @@ components:
         detectionLimitMax:
           type: number
           description: Maximum detection limit (optional).
+        substance:
+          type: string
+          maxLength: 100
+          description: >-
+            Chemical species or isotope identifier (e.g. "NO₃⁻", "δ¹⁸O").
+            Required when quantityKind is Concentration or IsotopeDelta.
+            Must not be provided for other quantity kinds.
 
     SensorConfigurationUpdate:
       type: object
@@ -8352,3 +8366,12 @@ components:
         detectionLimitMax:
           type: number
           description: Maximum detection limit.
+        substance:
+          type: string
+          maxLength: 100
+          nullable: true
+          description: >-
+            Chemical species or isotope identifier. Required when the effective quantity kind
+            (after applying any quantityKind change in the same request) is Concentration or
+            IsotopeDelta. Set to null to clear. Automatically cleared when quantityKind changes
+            to a non-substance-requiring type.

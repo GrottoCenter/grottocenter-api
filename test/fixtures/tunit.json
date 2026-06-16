@@ -13,5 +13,15 @@
     "id": 3,
     "code": "PER_MIL",
     "symbol": "‰"
+  },
+  {
+    "id": 18,
+    "code": "micromole",
+    "symbol": "µM"
+  },
+  {
+    "id": 29,
+    "code": "per_mil",
+    "symbol": "‰"
   }
 ]

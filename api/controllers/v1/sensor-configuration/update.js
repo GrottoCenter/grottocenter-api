@@ -28,6 +28,7 @@ module.exports = async (req, res) => {
   const detectionLimitMin = req.param('detectionLimitMin');
   const detectionLimitMax = req.param('detectionLimitMax');
   const label = req.param('label');
+  const substance = req.param('substance');
 
   // 4. If no recognized updatable field is present → 400
   const hasUpdatableField =
@@ -38,11 +39,12 @@ module.exports = async (req, res) => {
     resolution !== undefined ||
     detectionLimitMin !== undefined ||
     detectionLimitMax !== undefined ||
-    label !== undefined;
+    label !== undefined ||
+    substance !== undefined;
 
   if (!hasUpdatableField) {
     return res.badRequest(
-      'You must provide at least one updatable field (quantityKind, unit, precisionUpper, precisionLower, resolution, detectionLimitMin, detectionLimitMax, label).'
+      'You must provide at least one updatable field (quantityKind, unit, precisionUpper, precisionLower, resolution, detectionLimitMin, detectionLimitMax, label, substance).'
     );
   }
 
@@ -71,11 +73,10 @@ module.exports = async (req, res) => {
   }
 
   // 6. Validate quantityKind if provided
+  let resolvedQuantityKind;
   if (quantityKind !== undefined) {
-    const existingQuantityKind = await TQuantityKind.findOne({
-      id: quantityKind,
-    });
-    if (!existingQuantityKind) {
+    resolvedQuantityKind = await TQuantityKind.findOne({ id: quantityKind });
+    if (!resolvedQuantityKind) {
       return res.badRequest('You must provide a valid quantity kind.');
     }
   }
@@ -95,6 +96,41 @@ module.exports = async (req, res) => {
     );
   }
 
+  // 7c. Determine effective quantity kind code for substance validation
+  let effectiveQkCode;
+  if (resolvedQuantityKind) {
+    effectiveQkCode = resolvedQuantityKind.code;
+  } else {
+    const qk = await TQuantityKind.findOne({ id: config.quantityKind });
+    effectiveQkCode = qk?.code;
+  }
+
+  // 7d. Substance validation
+  if (substance !== undefined) {
+    const substanceError = SensorConfigurationService.validateSubstance(
+      substance,
+      effectiveQkCode
+    );
+    if (substanceError) {
+      return res.badRequest(substanceError);
+    }
+  } else if (
+    quantityKind !== undefined &&
+    SensorConfigurationService.isSubstanceRequired(effectiveQkCode) &&
+    !config.substance
+  ) {
+    return res.badRequest(
+      'Substance is required for Concentration or IsotopeDelta quantity kinds.'
+    );
+  }
+
+  // 7e. Auto-clear substance when QK changes to non-substance type
+  const shouldAutoClear =
+    quantityKind !== undefined &&
+    !SensorConfigurationService.isSubstanceRequired(effectiveQkCode) &&
+    config.substance != null &&
+    substance === undefined;
+
   // 8. Build update set: only provided fields + reviewer/dateReviewed
   const updateData = {
     reviewer: req.token.id,
@@ -111,6 +147,11 @@ module.exports = async (req, res) => {
   if (detectionLimitMax !== undefined)
     updateData.detectionLimitMax = detectionLimitMax;
   if (label !== undefined) updateData.label = label || null;
+  if (shouldAutoClear) {
+    updateData.substance = null;
+  } else if (substance !== undefined) {
+    updateData.substance = substance;
+  }
 
   // 9. Update the record
   await TSensorConfiguration.updateOne({ id }).set(updateData);

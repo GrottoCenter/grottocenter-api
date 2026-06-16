@@ -48,12 +48,22 @@ module.exports = async (req, res) => {
   const detectionLimitMin = req.param('detectionLimitMin');
   const detectionLimitMax = req.param('detectionLimitMax');
   const label = req.param('label');
+  const substance = req.param('substance');
 
   // Validate label length
   if (label && label.length > 300) {
     return res.badRequest(
       'The sensor configuration label must not exceed 300 characters.'
     );
+  }
+
+  // Validate substance
+  const substanceError = SensorConfigurationService.validateSubstance(
+    substance,
+    existingQuantityKind.code
+  );
+  if (substanceError) {
+    return res.badRequest(substanceError);
   }
 
   // 7. Build data object
@@ -67,6 +77,7 @@ module.exports = async (req, res) => {
     detectionLimitMin: detectionLimitMin ?? null,
     detectionLimitMax: detectionLimitMax ?? null,
     label: label || null,
+    substance: substance || null,
     author: req.token.id,
     dateInscription: new Date(),
   };
