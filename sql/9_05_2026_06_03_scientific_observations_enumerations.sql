@@ -45,7 +45,8 @@ INSERT INTO t_quantity_kind (id, code, url, symbol_si, display_symbol, si_to_dis
   (22, 'LightIntensity', 'http://qudt.org/vocab/quantitykind/Illuminance', 'lx', 'lx', 1, 0),
   (23, 'AirVelocity', 'http://qudt.org/vocab/quantitykind/Speed', 'm/s', 'm/s', 1, 0),
   (24, 'WaterVelocity', 'http://qudt.org/vocab/quantitykind/Speed', 'm/s', 'm/s', 1, 0),
-  (25, 'RadonConcentration', 'http://qudt.org/vocab/quantitykind/ActivityConcentration', 'Bq/m³', 'Bq/m³', 1, 0)
+  (25, 'RadonConcentration', 'http://qudt.org/vocab/quantitykind/ActivityConcentration', 'Bq/m³', 'Bq/m³', 1, 0),
+  (26, 'IsotopeDelta', 'http://qudt.org/vocab/quantitykind/DimensionlessRatio', '1', '‰', 1000, 0)
 ON CONFLICT (code) DO NOTHING;
 
 -- ============================================================
@@ -79,7 +80,8 @@ INSERT INTO t_unit (id, code, symbol) VALUES
   (25, 'lux', 'lx'),
   (26, 'becquerel_per_cubic_meter', 'Bq/m³'),
   (27, 'meter_per_second', 'm/s'),
-  (28, 'decibel', 'dB')
+  (28, 'decibel', 'dB'),
+  (29, 'per_mil', '‰')
 ON CONFLICT (code) DO NOTHING;
 
 -- ============================================================
