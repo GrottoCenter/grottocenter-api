@@ -72,6 +72,13 @@ module.exports = {
       maxLength: 300,
     },
 
+    substance: {
+      type: 'string',
+      allowNull: true,
+      columnName: 'substance',
+      maxLength: 100,
+    },
+
     // Audit fields
     author: {
       allowNull: false,

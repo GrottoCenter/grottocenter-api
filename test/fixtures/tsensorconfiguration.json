@@ -5,6 +5,7 @@
     "quantityKind": 1,
     "unit": 1,
     "label": "Channel 1 - Temperature",
+    "substance": null,
     "precisionUpper": 0.5,
     "precisionLower": -0.5,
     "resolution": 0.01,
@@ -22,6 +23,7 @@
     "quantityKind": 2,
     "unit": 2,
     "label": "Channel 2 - Pressure",
+    "substance": null,
     "precisionUpper": 1.0,
     "precisionLower": -1.0,
     "resolution": 0.1,
@@ -36,6 +38,7 @@
     "device": 3,
     "quantityKind": 1,
     "unit": 1,
+    "substance": null,
     "author": 2,
     "dateInscription": "2024-05-10T16:00:00.000Z",
     "isDeleted": false
@@ -49,6 +52,28 @@
     "precisionUpper": 0.1,
     "precisionLower": -0.1,
     "resolution": 0.01,
+    "author": 1,
+    "dateInscription": "2024-06-01T10:00:00.000Z",
+    "isDeleted": false
+  },
+  {
+    "id": 5,
+    "device": 1,
+    "quantityKind": 4,
+    "unit": 18,
+    "label": "Channel 4 - Nitrate",
+    "substance": "NO₃⁻",
+    "author": 1,
+    "dateInscription": "2024-06-01T10:00:00.000Z",
+    "isDeleted": false
+  },
+  {
+    "id": 6,
+    "device": 1,
+    "quantityKind": 3,
+    "unit": 29,
+    "label": "Channel 5 - Oxygen isotope",
+    "substance": "δ¹⁸O",
     "author": 1,
     "dateInscription": "2024-06-01T10:00:00.000Z",
     "isDeleted": false

@@ -682,6 +682,7 @@ const c = {
           }
         : source.unit,
     label: source.label,
+    substance: source.substance ?? null,
     precisionUpper: source.precisionUpper,
     precisionLower: source.precisionLower,
     resolution: source.resolution,

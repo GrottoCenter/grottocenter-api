@@ -128,6 +128,13 @@ module.exports = {
       maxLength: 100,
     },
 
+    substance: {
+      type: 'string',
+      allowNull: true,
+      columnName: 'substance',
+      maxLength: 100,
+    },
+
     timezoneOffset: {
       type: 'string',
       allowNull: true,
