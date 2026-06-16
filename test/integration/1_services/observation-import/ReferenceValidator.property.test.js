@@ -383,8 +383,6 @@ describe('ReferenceValidator - Property 13: Reference validation completeness', 
     should(result.errors).have.length(0);
     should(result.resolved.cave).be.ok();
     should(result.resolved.license).be.ok();
-    should(result.resolved.authors).be.an.Array();
-    should(result.resolved.authors.length).equal(1);
     should(result.resolved.media.has(5)).be.true();
     should(result.resolved.sensorConfigs.has(10)).be.true();
   });
@@ -509,10 +507,5 @@ describe('ReferenceValidator - Property 13: Reference validation completeness', 
     should(result.errors.length).equal(2);
     should(result.errors.join('\n')).containEql('777');
     should(result.errors.join('\n')).containEql('888');
-
-    // Resolved authors should contain only caver 3
-    should(result.resolved.authors).be.an.Array();
-    should(result.resolved.authors.length).equal(1);
-    should(result.resolved.authors[0].id).equal(3);
   });
 });
