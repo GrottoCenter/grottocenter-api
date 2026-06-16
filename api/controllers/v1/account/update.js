@@ -147,11 +147,14 @@ module.exports = async (req, res) => {
     if (!req.body.nickname) {
       return res.badRequest('You must provide a nickname.');
     }
-    const existingCavers = await TCaver.find({
-      nickname: req.body.nickname,
-      id: { '!=': req.token.id },
-    }).limit(1);
-    if (existingCavers.length > 0) {
+    const nicknameConflict =
+      (
+        await TCaver.find({
+          nickname: req.body.nickname,
+          id: { '!=': req.token.id },
+        }).limit(1)
+      ).length > 0;
+    if (nicknameConflict) {
       return res.conflict('This nickname is already used.');
     }
     updates.nickname = req.body.nickname;
