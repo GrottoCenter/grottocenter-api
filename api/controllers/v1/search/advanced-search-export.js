@@ -2,6 +2,10 @@ const SearchService = require('../../../services/SearchService');
 const {
   handleTypesenseError,
 } = require('../../../services/TypesenseErrorService');
+const {
+  serializers,
+  filterDocuments,
+} = require('../../../services/geo-serializers');
 
 function escapeCSV(v) {
   // Escape double quotes
@@ -80,44 +84,201 @@ function documentsToCSV(documents, columns) {
   return csvRows;
 }
 
+const VALID_FORMATS = ['csv', 'geojson', 'kml', 'gpx'];
+const GEO_FORMATS = ['geojson', 'kml', 'gpx'];
+const BATCH_SIZE = 1000;
+const MAX_NB_ROW_EXPORT = 10000;
+
 module.exports = async (req, res) => {
+  const format = req.param('format') || 'csv';
+  const entity = req.param('entity') ?? '';
+
+  // 1. Format validation
+  if (!VALID_FORMATS.includes(format)) {
+    res.badRequest('format must be one of: csv, geojson, kml, gpx');
+    return;
+  }
+
+  const isGeoFormat = GEO_FORMATS.includes(format);
+
+  // 2. Entity restriction for geo formats
+  if (isGeoFormat && entity !== 'entrances') {
+    res.badRequest(
+      'Geographic formats (geojson, kml, gpx) are only available for entrance searches'
+    );
+    return;
+  }
+
+  // 3. Column validation
   let matchAllFields = req.param('matchAllFields') ?? true;
   if (!matchAllFields || matchAllFields === 'false') matchAllFields = false;
   const columns = req.param('columns');
   const columnsName = req.param('columnsName');
 
-  if (!Array.isArray(columns) || columns.length === 0) {
-    res.badRequest('columns must be a non-empty array');
-    return;
+  // For geo formats, columns/columnsName are optional (when absent, all fields are included).
+  // When provided, they must pass the same validation as CSV.
+  const hasColumns = Array.isArray(columns) && columns.length > 0;
+  const hasColumnsName = Array.isArray(columnsName) && columnsName.length > 0;
+
+  if (!isGeoFormat) {
+    if (!hasColumns) {
+      res.badRequest('columns must be a non-empty array');
+      return;
+    }
+    if (!hasColumnsName) {
+      res.badRequest('columnsName must be a non-empty array');
+      return;
+    }
+    if (columns.length !== columnsName.length) {
+      res.badRequest('columns and columnsName must have the same length');
+      return;
+    }
+    if (!columns.every((c) => typeof c === 'string' && c.length > 0)) {
+      res.badRequest('each element in columns must be a non-empty string');
+      return;
+    }
+    if (!columnsName.every((c) => typeof c === 'string' && c.length > 0)) {
+      res.badRequest('each element in columnsName must be a non-empty string');
+      return;
+    }
   }
-  if (!Array.isArray(columnsName) || columnsName.length === 0) {
-    res.badRequest('columnsName must be a non-empty array');
-    return;
+
+  // For geo formats with columns provided, validate and build field mapping
+  let fieldMapping = null;
+  if (isGeoFormat && hasColumns) {
+    if (!columns.every((c) => typeof c === 'string' && c.length > 0)) {
+      res.badRequest('each element in columns must be a non-empty string');
+      return;
+    }
+    if (hasColumnsName) {
+      if (columns.length !== columnsName.length) {
+        res.badRequest('columns and columnsName must have the same length');
+        return;
+      }
+      if (!columnsName.every((c) => typeof c === 'string' && c.length > 0)) {
+        res.badRequest(
+          'each element in columnsName must be a non-empty string'
+        );
+        return;
+      }
+      // Map each column key to its display alias
+      fieldMapping = columns.map((key, i) => ({ key, alias: columnsName[i] }));
+    } else {
+      // columns provided without aliases — use key names as-is
+      fieldMapping = columns.map((key) => ({ key, alias: key }));
+    }
   }
-  if (columns.length !== columnsName.length) {
-    res.badRequest('columns and columnsName must have the same length');
-    return;
-  }
-  if (!columns.every((c) => typeof c === 'string' && c.length > 0)) {
-    res.badRequest('each element in columns must be a non-empty string');
-    return;
-  }
-  if (!columnsName.every((c) => typeof c === 'string' && c.length > 0)) {
-    res.badRequest('each element in columnsName must be a non-empty string');
+
+  // Geo streaming path
+  if (isGeoFormat) {
+    const serializer = serializers[format];
+    const timestamp = new Date().toISOString();
+
+    const geoParams = {
+      query: req.param('query'),
+      entity,
+      sort: req.param('sort'),
+      filter: req.param('filter') ?? {},
+      isLogicalCompareAnd: !!matchAllFields,
+    };
+
+    let hasSentHeader = false;
+    let isFirst = true;
+    let page = 1;
+    for (;;) {
+      let results;
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        results = await SearchService.collectionSearch({
+          ...geoParams,
+          page,
+          size: BATCH_SIZE,
+        });
+      } catch (err) {
+        if (!hasSentHeader && handleTypesenseError(res, err)) return;
+        if (hasSentHeader) {
+          sails.log.error('Export to geo format error after headers sent', err);
+          break;
+        }
+        results = err;
+      }
+
+      if (!results || !results.hits) {
+        sails.log.error('Export to geo format error', geoParams, page, results);
+        if (!hasSentHeader) {
+          res.serverError('An internal error occurred');
+          return;
+        }
+        break;
+      }
+
+      if (results.found > MAX_NB_ROW_EXPORT) {
+        if (!hasSentHeader) {
+          res.badRequest(
+            `To be exported a search cannot contain more than ${MAX_NB_ROW_EXPORT} results`
+          );
+          return;
+        }
+        break;
+      }
+
+      if (!hasSentHeader) {
+        hasSentHeader = true;
+        res.set({
+          'Content-Type': serializer.contentType,
+          'Content-Disposition': `attachment; filename="Grottocenter_search_export_${Math.trunc(Date.now() / 1000)}.${serializer.fileExtension}"`,
+        });
+        res.write(serializer.prologue(timestamp));
+      }
+
+      const documents = results.hits.map((e) => e.document);
+      const filtered = filterDocuments(documents);
+
+      // When fieldMapping is set, resolve dot-notation keys and apply aliases
+      // so serializers receive pre-resolved documents with aliased field names.
+      let docsToSerialize = filtered;
+      if (fieldMapping) {
+        docsToSerialize = filtered.map((doc) => {
+          // Only include coordinates and id for geometry construction;
+          // aliased fields are the sole user-visible properties.
+          const mapped = {
+            id: doc.id,
+            latitude: doc.latitude,
+            longitude: doc.longitude,
+          };
+          fieldMapping.forEach(({ key, alias }) => {
+            mapped[alias] = resolveField(doc, key);
+          });
+          return mapped;
+        });
+      }
+      res.write(serializer.serializeBatch(docsToSerialize, isFirst, null));
+      isFirst = false;
+
+      if (documents.length < BATCH_SIZE) break;
+      page += 1;
+    }
+
+    if (!hasSentHeader) {
+      res.set({
+        'Content-Type': serializer.contentType,
+        'Content-Disposition': `attachment; filename="Grottocenter_search_export_${Math.trunc(Date.now() / 1000)}.${serializer.fileExtension}"`,
+      });
+      res.write(serializer.prologue(timestamp));
+    }
+    res.write(serializer.epilogue());
+    res.end();
     return;
   }
 
   const params = {
     query: req.param('query'),
-    entity: req.param('entity') ?? '',
+    entity,
     sort: req.param('sort'),
     filter: req.param('filter') ?? {},
     isLogicalCompareAnd: !!matchAllFields,
     fields: columns,
   };
-
-  const BATCH_SIZE = 1000;
-  const MAX_NB_ROW_EXPORT = 10000;
 
   let hasSentHeader = false;
   let page = 1;
