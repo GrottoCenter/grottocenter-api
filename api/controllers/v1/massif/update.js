@@ -58,10 +58,13 @@ module.exports = async (req, res) => {
       nameUpdate.language = nameLanguage;
     }
     if (Object.keys(nameUpdate).length > 0) {
-      await TName.updateOne({
+      const updatedName = await TName.updateOne({
         massif: massifId,
         isMain: true,
       }).set(nameUpdate);
+      if (!updatedName) {
+        sails.log.warn(`Massif ${massifId} has no main name record to update.`);
+      }
     }
   }
 

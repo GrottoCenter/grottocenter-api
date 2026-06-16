@@ -40,6 +40,12 @@ module.exports = async (req, res) => {
     cleanedData.language = language;
   }
 
+  if (Object.keys(cleanedData).length === 0) {
+    return res.badRequest(
+      'At least one of `name` or `language` must be provided.'
+    );
+  }
+
   try {
     await TName.updateOne({
       id: nameId,
