@@ -58,18 +58,19 @@ describe('Name features', () => {
         });
     });
 
-    it('should handle empty name parameter', (done) => {
+    it('should return 400 when no fields are provided', (done) => {
       supertest(sails.hooks.http.app)
         .patch('/api/v1/names/8')
         .set('Authorization', moderatorToken)
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json')
         .send({})
-        .expect(200)
+        .expect(400)
         .end((err, res) => {
           if (err) return done(err);
-          // Should still return the name object even with no updates
-          should(res.body).have.property('name');
+          should(res.text).containEql(
+            'At least one of `name` or `language` must be provided'
+          );
           return done();
         });
     });

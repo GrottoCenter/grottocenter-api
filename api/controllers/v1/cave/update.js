@@ -43,16 +43,39 @@ module.exports = async (req, res) => {
     return res.badRequest(nameError);
   }
 
+  // Validate language if provided
+  const nameLanguage = req.body.name?.language;
+  if (nameLanguage !== undefined) {
+    if (nameLanguage === null) {
+      return res.badRequest('Language cannot be null.');
+    }
+    const foundLanguage = await TLanguage.findOne({ id: nameLanguage });
+    if (!foundLanguage) {
+      return res.badRequest('The provided language does not exist.');
+    }
+  }
+
   // Handle name manually
   // Currently, use only one name per cave (even if the model can handle multiple names)
   // Done before the TCave update so the last_change_cave DB trigger will fetch the last updated name
-  await TName.updateOne({
-    cave: caveId,
-    isMain: true,
-  }).set({
-    name: nameText,
-    language: req.body.name?.language,
-  });
+  if (req.body.name) {
+    const nameUpdate = {};
+    if (nameText !== undefined) {
+      nameUpdate.name = nameText;
+    }
+    if (nameLanguage !== undefined) {
+      nameUpdate.language = nameLanguage;
+    }
+    if (Object.keys(nameUpdate).length > 0) {
+      const updatedName = await TName.updateOne({
+        cave: caveId,
+        isMain: true,
+      }).set(nameUpdate);
+      if (!updatedName) {
+        sails.log.warn(`Cave ${caveId} has no main name record to update.`);
+      }
+    }
+  }
 
   await TCave.updateOne({ id: caveId }).set(updatedFields);
 

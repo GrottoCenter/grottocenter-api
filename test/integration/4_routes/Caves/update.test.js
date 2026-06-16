@@ -140,7 +140,7 @@ describe('Cave features', () => {
           .send({
             name: {
               text: 'new cave name',
-              language: 'aut',
+              language: 'fra',
             },
           })
           .expect(200)
@@ -148,7 +148,7 @@ describe('Cave features', () => {
             if (err) return done(err);
             const populatedCave = await TCave.findOne(caveId).populate('names');
             should(populatedCave.names[0].name).equal('new cave name');
-            should(populatedCave.names[0].language).equal('aut');
+            should(populatedCave.names[0].language).equal('fra');
             return done();
           });
       });

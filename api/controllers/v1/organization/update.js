@@ -65,10 +65,15 @@ module.exports = async (req, res) => {
       nameUpdate.language = nameLanguage;
     }
     if (Object.keys(nameUpdate).length > 0) {
-      await TName.updateOne({
+      const updatedName = await TName.updateOne({
         grotto: organizationId,
         isMain: true,
       }).set(nameUpdate);
+      if (!updatedName) {
+        sails.log.warn(
+          `Organization ${organizationId} has no main name record to update.`
+        );
+      }
     }
   }
 
